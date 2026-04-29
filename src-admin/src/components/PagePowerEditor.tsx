@@ -19,9 +19,19 @@ import {
 } from '@mui/material';
 import HomeIcon from '@mui/icons-material/Home';
 import EditIcon from '@mui/icons-material/Edit';
+import { ConfigGeneric, type ConfigGenericProps, type ConfigGenericState } from '@iobroker/json-config';
+import type { IobTheme, ThemeType } from '@iobroker/adapter-react-v5';
 import { EntitySelector } from './EntitySelector';
 import IconSelect from '../IconSelect';
 import iconsJson from '../icons.json';
+import {
+    ADAPTER_NAME,
+    type PowerEntry,
+    type PowerSlotConfig,
+    type PowerHomeTopConfig,
+    type PowerHomeBotConfig,
+    emptyPowerSlot,
+} from '../../../src/lib/types/adminShareConfig';
 
 const ICONS_LIST: { name: string; base64: string }[] = Array.isArray(iconsJson) ? iconsJson : [];
 
@@ -42,14 +52,6 @@ function getIconSvgHtml(name: string | undefined): string | null {
         return null;
     }
 }
-import {
-    ADAPTER_NAME,
-    type PowerEntry,
-    type PowerSlotConfig,
-    type PowerHomeTopConfig,
-    type PowerHomeBotConfig,
-    emptyPowerSlot,
-} from '../../../src/lib/types/adminShareConfig';
 
 type SlotKey = 'leftTop' | 'leftMiddle' | 'leftBottom' | 'rightTop' | 'rightMiddle' | 'rightBottom';
 
@@ -67,28 +69,24 @@ export interface PagePowerEditorProps {
     entry: PowerEntry;
     onEntryChange: (updated: PowerEntry) => void;
     onUniqueNameChange: (oldName: string, newName: string) => void;
-    getText: (key: string) => string;
-    oContext: any;
-    theme?: any;
+    theme?: IobTheme;
+    themeType?: ThemeType;
 }
 
-type EditingTarget =
-    | { kind: 'slot'; slot: SlotKey }
-    | { kind: 'homeTop' }
-    | { kind: 'homeBot' }
-    | null;
+type EditingTarget = { kind: 'slot'; slot: SlotKey } | { kind: 'homeTop' } | { kind: 'homeBot' } | null;
 
-interface PagePowerEditorState {
+interface PagePowerEditorState extends ConfigGenericState {
     alive: boolean;
     editing: EditingTarget;
 }
 
-export class PagePowerEditor extends React.Component<PagePowerEditorProps, PagePowerEditorState> {
+export class PagePowerEditor extends ConfigGeneric<ConfigGenericProps & PagePowerEditorProps, PagePowerEditorState> {
     private readonly emptyCommon: Record<string, any> = {};
 
-    constructor(props: PagePowerEditorProps) {
+    constructor(props: ConfigGenericProps & PagePowerEditorProps) {
         super(props);
         this.state = {
+            ...this.state,
             alive: false,
             editing: null,
         };
@@ -122,10 +120,6 @@ export class PagePowerEditor extends React.Component<PagePowerEditorProps, PageP
         }
     };
 
-    private getText(key: string): string {
-        return this.props.getText(key);
-    }
-
     private updateEntry(patch: Partial<PowerEntry>): void {
         this.props.onEntryChange({ ...this.props.entry, ...patch });
     }
@@ -152,7 +146,7 @@ export class PagePowerEditor extends React.Component<PagePowerEditorProps, PageP
         const label = `${this.getText('power')} ${idx}`;
         const empty = !data.state && !data.entityHeadline && !data.icon;
         const iconSvg = getIconSvgHtml(data.icon);
-        const isDark = this.props.theme?.palette?.mode === 'dark';
+        const isDark = this.props.themeName === 'dark';
 
         return (
             <Paper
@@ -192,15 +186,37 @@ export class PagePowerEditor extends React.Component<PagePowerEditorProps, PageP
                         dangerouslySetInnerHTML={{ __html: iconSvg }}
                     />
                 )}
-                <Box sx={{ position: 'relative', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <Typography variant="caption" color="text.secondary">{label}</Typography>
-                    <EditIcon fontSize="small" color="action" />
+                <Box
+                    sx={{
+                        position: 'relative',
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                    }}
+                >
+                    <Typography
+                        variant="caption"
+                        color="text.secondary"
+                    >
+                        {label}
+                    </Typography>
+                    <EditIcon
+                        fontSize="small"
+                        sx={{ color: 'text.secondary' }}
+                    />
                 </Box>
                 <Box sx={{ position: 'relative' }}>
-                    <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                    <Typography
+                        variant="body2"
+                        sx={{ fontWeight: 600 }}
+                    >
                         {data.entityHeadline || this.getText('power_slot_empty')}
                     </Typography>
-                    <Typography variant="caption" color="text.secondary" sx={{ wordBreak: 'break-all' }}>
+                    <Typography
+                        variant="caption"
+                        color="text.secondary"
+                        sx={{ wordBreak: 'break-all' }}
+                    >
                         {data.state || ''}
                     </Typography>
                 </Box>
@@ -226,10 +242,22 @@ export class PagePowerEditor extends React.Component<PagePowerEditorProps, PageP
                 }}
             >
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <Typography variant="caption" color="text.secondary">{this.getText('power_home_top')}</Typography>
-                    <EditIcon fontSize="small" color="action" />
+                    <Typography
+                        variant="caption"
+                        color="text.secondary"
+                    >
+                        {this.getText('power_home_top')}
+                    </Typography>
+                    <EditIcon
+                        fontSize="small"
+                        sx={{ color: 'text.secondary' }}
+                    />
                 </Box>
-                <Typography variant="caption" color="text.secondary" sx={{ wordBreak: 'break-all' }}>
+                <Typography
+                    variant="caption"
+                    color="text.secondary"
+                    sx={{ wordBreak: 'break-all' }}
+                >
                     {data.state || this.getText('power_slot_empty')}
                 </Typography>
             </Paper>
@@ -255,10 +283,22 @@ export class PagePowerEditor extends React.Component<PagePowerEditorProps, PageP
                 }}
             >
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <Typography variant="caption" color="text.secondary">{this.getText('power_home_bot')}</Typography>
-                    <EditIcon fontSize="small" color="action" />
+                    <Typography
+                        variant="caption"
+                        color="text.secondary"
+                    >
+                        {this.getText('power_home_bot')}
+                    </Typography>
+                    <EditIcon
+                        fontSize="small"
+                        sx={{ color: 'text.secondary' }}
+                    />
                 </Box>
-                <Typography variant="caption" color="text.secondary" sx={{ wordBreak: 'break-all' }}>
+                <Typography
+                    variant="caption"
+                    color="text.secondary"
+                    sx={{ wordBreak: 'break-all' }}
+                >
                     {isInternal
                         ? this.getText('power_internal_calculation')
                         : data.state || this.getText('power_slot_empty')}
@@ -269,7 +309,7 @@ export class PagePowerEditor extends React.Component<PagePowerEditorProps, PageP
 
     private renderSlotDialog(slot: SlotKey): React.JSX.Element {
         const data = this.props.entry[slot] ?? emptyPowerSlot();
-        const { oContext, theme } = this.props;
+        const { oContext, theme, themeType } = this.props;
 
         return (
             <Dialog
@@ -294,7 +334,7 @@ export class PagePowerEditor extends React.Component<PagePowerEditorProps, PageP
                             oContext={oContext}
                             alive={this.state.alive}
                             changed={false}
-                            themeName={theme?.palette?.mode === 'dark' ? 'dark' : 'light'}
+                            themeName={this.props.themeName}
                             common={this.emptyCommon}
                             attr="icon"
                             data={{ icon: data.icon ?? '' }}
@@ -308,13 +348,19 @@ export class PagePowerEditor extends React.Component<PagePowerEditorProps, PageP
                                 i18n: true,
                             }}
                             custom
-                            onChange={(attrOrData: string | Record<string, any>, val?: unknown, cb?: () => void): void => {
+                            onChange={(
+                                attrOrData: string | Record<string, any>,
+                                val?: unknown,
+                                cb?: () => void,
+                            ): void => {
                                 const newIcon =
                                     typeof attrOrData === 'string'
                                         ? typeof val === 'string' ? val : ''
                                         : typeof attrOrData.icon === 'string' ? attrOrData.icon : '';
                                 this.updateSlot(slot, { icon: newIcon });
-                                if (cb) cb();
+                                if (cb) {
+                                    cb();
+                                }
                             }}
                             theme={theme}
                         />
@@ -325,7 +371,7 @@ export class PagePowerEditor extends React.Component<PagePowerEditorProps, PageP
                                 onChange={(v: string) => this.updateSlot(slot, { state: v })}
                                 socket={oContext.socket}
                                 theme={theme}
-                                themeType={theme?.palette?.mode || 'light'}
+                                themeType={themeType ?? 'light'}
                                 dialogName="selectState"
                                 filterFunc={(obj: ioBroker.Object) =>
                                     !!(obj && obj.type === 'state' && obj.common && obj.common.type === 'number')
@@ -348,7 +394,7 @@ export class PagePowerEditor extends React.Component<PagePowerEditorProps, PageP
                             <InputLabel>{this.getText('power_unit')}</InputLabel>
                             <Select
                                 value={data.valueUnit ?? 'W'}
-                                onChange={e => this.updateSlot(slot, { valueUnit: e.target.value as string })}
+                                onChange={e => this.updateSlot(slot, { valueUnit: e.target.value })}
                             >
                                 <MenuItem value="W">W</MenuItem>
                                 <MenuItem value="kW">kW</MenuItem>
@@ -448,7 +494,7 @@ export class PagePowerEditor extends React.Component<PagePowerEditorProps, PageP
 
     private renderHomeTopDialog(): React.JSX.Element {
         const data = this.props.entry.homeTop ?? {};
-        const { oContext, theme } = this.props;
+        const { oContext, theme, themeType } = this.props;
 
         return (
             <Dialog
@@ -466,7 +512,7 @@ export class PagePowerEditor extends React.Component<PagePowerEditorProps, PageP
                             onChange={(v: string) => this.updateHomeTop({ state: v })}
                             socket={oContext.socket}
                             theme={theme}
-                            themeType={theme?.palette?.mode || 'light'}
+                            themeType={themeType ?? 'light'}
                             dialogName="selectState"
                             filterFunc={(obj: ioBroker.Object) =>
                                 !!(obj && obj.type === 'state' && obj.common && obj.common.type === 'number')
@@ -489,7 +535,7 @@ export class PagePowerEditor extends React.Component<PagePowerEditorProps, PageP
                                 <InputLabel>{this.getText('power_unit')}</InputLabel>
                                 <Select
                                     value={data.valueUnit ?? 'W'}
-                                    onChange={e => this.updateHomeTop({ valueUnit: e.target.value as string })}
+                                    onChange={e => this.updateHomeTop({ valueUnit: e.target.value })}
                                 >
                                     <MenuItem value="W">W</MenuItem>
                                     <MenuItem value="kW">kW</MenuItem>
@@ -508,7 +554,7 @@ export class PagePowerEditor extends React.Component<PagePowerEditorProps, PageP
 
     private renderHomeBotDialog(): React.JSX.Element {
         const data = this.props.entry.homeBot ?? {};
-        const { oContext, theme } = this.props;
+        const { oContext, theme, themeType } = this.props;
         const selected: number[] = Array.isArray(data.selPowerSupply) ? data.selPowerSupply : [];
 
         return (
@@ -539,7 +585,7 @@ export class PagePowerEditor extends React.Component<PagePowerEditorProps, PageP
                             onChange={(v: string) => this.updateHomeBot({ state: v })}
                             socket={oContext.socket}
                             theme={theme}
-                            themeType={theme?.palette?.mode || 'light'}
+                            themeType={themeType ?? 'light'}
                             dialogName="selectState"
                             filterFunc={(obj: ioBroker.Object) =>
                                 !!(obj && obj.type === 'state' && obj.common && obj.common.type === 'number')
@@ -553,12 +599,14 @@ export class PagePowerEditor extends React.Component<PagePowerEditorProps, PageP
                                 multiple
                                 value={selected}
                                 onChange={e => {
-                                    const value = e.target.value as number[];
-                                    this.updateHomeBot({ selPowerSupply: value });
+                                    this.updateHomeBot({ selPowerSupply: e.target.value as number[] });
                                 }}
                             >
                                 {[1, 2, 3, 4, 5, 6].map(n => (
-                                    <MenuItem key={n} value={n}>
+                                    <MenuItem
+                                        key={n}
+                                        value={n}
+                                    >
                                         {`${this.getText('power')} ${n}`}
                                     </MenuItem>
                                 ))}
@@ -581,7 +629,7 @@ export class PagePowerEditor extends React.Component<PagePowerEditorProps, PageP
                             <InputLabel>{this.getText('power_unit')}</InputLabel>
                             <Select
                                 value={data.valueUnit ?? 'W'}
-                                onChange={e => this.updateHomeBot({ valueUnit: e.target.value as string })}
+                                onChange={e => this.updateHomeBot({ valueUnit: e.target.value })}
                             >
                                 <MenuItem value="W">W</MenuItem>
                                 <MenuItem value="kW">kW</MenuItem>
@@ -597,13 +645,12 @@ export class PagePowerEditor extends React.Component<PagePowerEditorProps, PageP
         );
     }
 
-    render(): React.JSX.Element {
+    renderItem(_error: boolean, _disabled: boolean): React.JSX.Element {
         const entry = this.props.entry;
         const { editing } = this.state;
 
         return (
             <Box>
-                {/* UniqueName + Headline */}
                 <Box sx={{ mb: 1, p: 1, borderRadius: 1, backgroundColor: 'action.hover' }}>
                     <TextField
                         fullWidth
@@ -616,8 +663,8 @@ export class PagePowerEditor extends React.Component<PagePowerEditorProps, PageP
                                 this.props.onUniqueNameChange(entry.uniqueName, v);
                             }
                         }}
-                        InputProps={{
-                            sx: { backgroundColor: 'transparent', px: 1, fontWeight: 600, width: '50%' },
+                        slotProps={{
+                            input: { sx: { backgroundColor: 'transparent', px: 1, fontWeight: 600, width: '50%' } },
                         }}
                         disabled={!this.state.alive}
                     />
@@ -628,12 +675,13 @@ export class PagePowerEditor extends React.Component<PagePowerEditorProps, PageP
                     label={this.getText('headline')}
                     value={entry.headline ?? ''}
                     onChange={e => this.updateEntry({ headline: e.target.value })}
-                    InputProps={{ sx: { backgroundColor: 'transparent', px: 1, width: '50%' } }}
+                    slotProps={{
+                        input: { sx: { backgroundColor: 'transparent', px: 1, width: '50%' } },
+                    }}
                     sx={{ mb: 2 }}
                     disabled={!this.state.alive}
                 />
 
-                {/* 3 columns × 3 rows: left slots | home column | right slots */}
                 <Box
                     sx={{
                         display: 'grid',
@@ -643,12 +691,10 @@ export class PagePowerEditor extends React.Component<PagePowerEditorProps, PageP
                         maxWidth: 800,
                     }}
                 >
-                    {/* Row 1 */}
                     {this.renderSlotPaper('leftTop')}
                     {this.renderHomeTopPaper()}
                     {this.renderSlotPaper('rightTop')}
 
-                    {/* Row 2 */}
                     {this.renderSlotPaper('leftMiddle')}
                     <Paper
                         elevation={0}
@@ -660,11 +706,10 @@ export class PagePowerEditor extends React.Component<PagePowerEditorProps, PageP
                             backgroundColor: 'transparent',
                         }}
                     >
-                        <HomeIcon sx={{ fontSize: 56, color: 'text.disabled' }} />
+                        <HomeIcon sx={{ fontSize: 56, color: 'text.secondary' }} />
                     </Paper>
                     {this.renderSlotPaper('rightMiddle')}
 
-                    {/* Row 3 */}
                     {this.renderSlotPaper('leftBottom')}
                     {this.renderHomeBotPaper()}
                     {this.renderSlotPaper('rightBottom')}
@@ -679,5 +724,4 @@ export class PagePowerEditor extends React.Component<PagePowerEditorProps, PageP
 }
 
 export default PagePowerEditor;
-// Re-export of slot constants for callers that need to enumerate slots
 export { SLOT_KEYS };

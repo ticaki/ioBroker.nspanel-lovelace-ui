@@ -9,16 +9,11 @@
    - Adapter-Übersetzungen: `./admin/i18n/*/translations.json`
    - Mindestens Englisch **und** Deutsch bei neuen Keys.
 
-3. **Nach jeder Admin-Änderung Build prüfen:**
-   ```bash
-   npm run build:admin
-   ```
+3. **Return-Typen sind Pflicht** – öffentliche und interne Methoden müssen explizite Rückgabetypen haben.
 
-4. **Return-Typen sind Pflicht** – öffentliche und interne Methoden müssen explizite Rückgabetypen haben.
+4. **`as`-Casts minimieren** – stattdessen Type Guards, Discriminated Unions oder Helper-Funktionen.
 
-5. **`as`-Casts minimieren** – stattdessen Type Guards, Discriminated Unions oder Helper-Funktionen.
-
-6. **MUI v6 `slotProps` API verwenden** – nicht die veralteten Props:
+5. **MUI v6 `slotProps` API verwenden** – nicht die veralteten Props:
    ```tsx
    // Richtig
    <TextField slotProps={{ input: { sx: { ... } }, inputLabel: { shrink: true } }} />
@@ -36,7 +31,7 @@
 
 ## Changelog
 
-Jede Änderung bekommt einen kurzen Eintrag in `README.md` unter `## Changelog` → `### **WORK IN PROGRESS**`:
+Jede für den Endnutzer relevante Änderung bekommt einen kurzen Eintrag in `README.md` unter `## Changelog` → `### **WORK IN PROGRESS**`:
 ```
-- (ticaki) kurze Beschreibung
+- (author) short description
 ```

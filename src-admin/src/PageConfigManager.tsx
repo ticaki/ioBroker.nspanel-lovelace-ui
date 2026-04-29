@@ -530,12 +530,12 @@ class PageConfigManager extends ConfigGeneric<ConfigGenericProps & { theme?: any
         if (currentEntry.card === 'cardPower') {
             return (
                 <PagePowerEditor
+                    {...this.props}
                     entry={currentEntry}
                     onEntryChange={this.handleEntryChange}
                     onUniqueNameChange={this.handleUniqueNameChange}
-                    getText={key => this.getText(key)}
-                    oContext={this.props.oContext}
                     theme={this.props.theme}
+                    themeType={this.props.oContext?.themeType}
                 />
             );
         }
