@@ -8,11 +8,13 @@ import type {
     PageConfigBaseFields,
     MenuEntry,
     AdminPanelConfig,
+    PowerEntry,
 } from '../../src/lib/types/adminShareConfig';
-import { ADAPTER_NAME, SENDTO_GET_PAGES_All_COMMAND } from '../../src/lib/types/adminShareConfig';
+import { ADAPTER_NAME, emptyPowerSlot, SENDTO_GET_PAGES_All_COMMAND } from '../../src/lib/types/adminShareConfig';
 import { PageConfigLayout, type PageCardType } from './components/PageConfigLayout';
 import { PageAlarmEditor } from './components/PageAlarmEditor';
 import { PageMenuEditor } from './components/PageMenuEditor';
+import { PagePowerEditor } from './components/PagePowerEditor';
 import { PageQREditor } from './components/PageQREditor';
 import { PageTrashEditor } from './components/PageTrashEditor';
 
@@ -331,6 +333,20 @@ class PageConfigManager extends ConfigGeneric<ConfigGenericProps & { theme?: any
                     { textTrash: '', customTrash: '', iconColor: '#d2d2d2', icon: '' },
                 ],
             };
+        } else if (cardType === 'cardPower') {
+            newEntry = {
+                card: 'cardPower',
+                uniqueName: name,
+                headline: name,
+                leftTop: emptyPowerSlot(),
+                leftMiddle: emptyPowerSlot(),
+                leftBottom: emptyPowerSlot(),
+                rightTop: emptyPowerSlot(),
+                rightMiddle: emptyPowerSlot(),
+                rightBottom: emptyPowerSlot(),
+                homeTop: { state: '', valueDecimal: 0, valueUnit: 'W' },
+                homeBot: { state: '', valueDecimal: 0, valueUnit: 'W', selInternalCalculation: false, selPowerSupply: [] },
+            } satisfies PowerEntry;
         } else if (
             cardType === 'pageMenu' ||
             cardType === 'cardGrid' ||
@@ -501,6 +517,19 @@ class PageConfigManager extends ConfigGeneric<ConfigGenericProps & { theme?: any
         if (currentEntry.card === 'cardTrash') {
             return (
                 <PageTrashEditor
+                    entry={currentEntry}
+                    onEntryChange={this.handleEntryChange}
+                    onUniqueNameChange={this.handleUniqueNameChange}
+                    getText={key => this.getText(key)}
+                    oContext={this.props.oContext}
+                    theme={this.props.theme}
+                />
+            );
+        }
+
+        if (currentEntry.card === 'cardPower') {
+            return (
+                <PagePowerEditor
                     entry={currentEntry}
                     onEntryChange={this.handleEntryChange}
                     onUniqueNameChange={this.handleUniqueNameChange}

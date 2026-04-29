@@ -27,6 +27,7 @@ __export(adminShareConfig_exports, {
   SENDTO_GET_PANELS_COMMAND: () => SENDTO_GET_PANELS_COMMAND,
   SENDTO_GET_PANEL_NAVIGATION_COMMAND: () => SENDTO_GET_PANEL_NAVIGATION_COMMAND,
   emptyChannelValueConfig: () => emptyChannelValueConfig,
+  emptyPowerSlot: () => emptyPowerSlot,
   normalizeChannelId: () => normalizeChannelId,
   panelStatusColors: () => panelStatusColors,
   panelStatusStates: () => panelStatusStates,
@@ -61,6 +62,17 @@ function normalizeChannelId(raw) {
     };
   }
   return emptyChannelValueConfig();
+}
+function emptyPowerSlot() {
+  return {
+    icon: "",
+    iconColor: "",
+    state: "",
+    valueDecimal: 0,
+    valueUnit: "W",
+    entityHeadline: "",
+    useColorScale: false
+  };
 }
 const panelStatusStates = {
   0: "offline",
@@ -782,6 +794,7 @@ const CHANNEL_ROLES_LIST = Object.keys(requiredScriptDataPoints);
   SENDTO_GET_PANELS_COMMAND,
   SENDTO_GET_PANEL_NAVIGATION_COMMAND,
   emptyChannelValueConfig,
+  emptyPowerSlot,
   normalizeChannelId,
   panelStatusColors,
   panelStatusStates,

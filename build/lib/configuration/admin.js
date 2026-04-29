@@ -185,6 +185,14 @@ Stack: ${stack}`
           this.log.debug(`Generated trash 1page for '${entry.uniqueName}'`);
           break;
         }
+        case "cardPower": {
+          if (!isAlwaysOnMode(entry.alwaysOn)) {
+            entry.alwaysOn = "none";
+          }
+          newPage = dataForCardPower(entry, this.adapter);
+          this.log.debug(`Generated cardPower page for '${entry.uniqueName}'`);
+          break;
+        }
         case "cardGrid":
         case "cardGrid2":
         case "cardGrid3": {
@@ -565,6 +573,161 @@ function isAlwaysOnMode(F) {
       (0, import_function_and_const.exhaustiveCheck)(R);
       return false;
   }
+}
+function mapPowerTargetUnit(unit) {
+  switch (unit) {
+    case "kW":
+      return 1;
+    case "MW":
+      return 2;
+    case "W":
+      return 0;
+    default:
+      return void 0;
+  }
+}
+function buildPowerSlotData(slot) {
+  var _a, _b, _c;
+  const s = slot != null ? slot : {};
+  const stateId = (s.state || "").trim();
+  const useColorScale = !!s.useColorScale;
+  const iconColor = useColorScale ? "" : s.iconColor || "";
+  const unitSuffix = s.valueUnit ? ` ${s.valueUnit}` : "";
+  const icon = {
+    true: {
+      value: { type: "const", constVal: s.icon || "" },
+      color: { type: "const", constVal: iconColor }
+    },
+    false: void 0
+  };
+  if (useColorScale && typeof s.minColorScale === "number" && typeof s.maxColorScale === "number") {
+    icon.scale = {
+      type: "const",
+      constVal: {
+        val_min: s.minColorScale,
+        val_max: s.maxColorScale,
+        val_best: typeof s.bestColorScale === "number" ? s.bestColorScale : s.minColorScale,
+        mode: "triGrad"
+      }
+    };
+  }
+  const value = stateId ? {
+    value: { type: "triggered", dp: stateId },
+    decimal: { type: "const", constVal: (_a = s.valueDecimal) != null ? _a : 0 },
+    unit: { type: "const", constVal: unitSuffix }
+  } : void 0;
+  const speed = stateId ? {
+    value: { type: "triggered", dp: stateId },
+    minScale: { type: "const", constVal: (_b = s.minSpeedScale) != null ? _b : 0 },
+    maxScale: { type: "const", constVal: (_c = s.maxSpeedScale) != null ? _c : 1e4 },
+    negate: { type: "const", constVal: !!s.reverse }
+  } : void 0;
+  const targetUnit = mapPowerTargetUnit(s.valueUnit);
+  return {
+    icon,
+    value,
+    speed,
+    text: { true: { type: "const", constVal: s.entityHeadline || "" } },
+    targetUnit: targetUnit ? { type: "const", constVal: targetUnit } : void 0
+  };
+}
+function dataForCardPower(entry, adapter) {
+  var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _A, _B;
+  const cfg = adapter.config || {};
+  if (!Array.isArray(cfg.pagePowerdata)) {
+    cfg.pagePowerdata = [];
+  }
+  const slotMap = [
+    [1, entry.leftTop],
+    [2, entry.leftMiddle],
+    [3, entry.leftBottom],
+    [4, entry.rightTop],
+    [5, entry.rightMiddle],
+    [6, entry.rightBottom]
+  ];
+  const synth = {
+    pageName: entry.uniqueName,
+    headline: entry.headline || "",
+    alwaysOnDisplay: entry.alwaysOn === "always",
+    hiddenByTrigger: !!entry.hidden,
+    power7_state: ((_a = entry.homeTop) == null ? void 0 : _a.state) || "",
+    power7_valueDecimal: (_c = (_b = entry.homeTop) == null ? void 0 : _b.valueDecimal) != null ? _c : 0,
+    power7_valueUnit: ((_d = entry.homeTop) == null ? void 0 : _d.valueUnit) || "W",
+    power8_state: ((_e = entry.homeBot) == null ? void 0 : _e.state) || "",
+    power8_valueDecimal: (_g = (_f = entry.homeBot) == null ? void 0 : _f.valueDecimal) != null ? _g : 0,
+    power8_valueUnit: ((_h = entry.homeBot) == null ? void 0 : _h.valueUnit) || "W",
+    power8_selInternalCalculation: !!((_i = entry.homeBot) == null ? void 0 : _i.selInternalCalculation),
+    power8_selPowerSupply: Array.isArray((_j = entry.homeBot) == null ? void 0 : _j.selPowerSupply) ? entry.homeBot.selPowerSupply : []
+  };
+  for (const [i, s] of slotMap) {
+    const cur = s != null ? s : {};
+    synth[`power${i}_state`] = cur.state || "";
+    synth[`power${i}_icon`] = cur.icon || "";
+    synth[`power${i}_iconColor`] = cur.iconColor || "";
+    synth[`power${i}_valueDecimal`] = (_k = cur.valueDecimal) != null ? _k : 0;
+    synth[`power${i}_valueUnit`] = cur.valueUnit || "W";
+    synth[`power${i}_entityHeadline`] = cur.entityHeadline || "";
+    synth[`_power${i}_useColorScale`] = !!cur.useColorScale;
+    synth[`power${i}_minColorScale`] = (_l = cur.minColorScale) != null ? _l : 0;
+    synth[`power${i}_maxColorScale`] = (_m = cur.maxColorScale) != null ? _m : 1e4;
+    synth[`power${i}_bestColorScale`] = (_n = cur.bestColorScale) != null ? _n : 0;
+    synth[`power${i}_minSpeedScale`] = (_o = cur.minSpeedScale) != null ? _o : 0;
+    synth[`power${i}_maxSpeedScale`] = (_p = cur.maxSpeedScale) != null ? _p : 1e4;
+    synth[`power${i}_reverse`] = !!cur.reverse;
+  }
+  const existingIdx = cfg.pagePowerdata.findIndex(
+    (p) => p && typeof p === "object" && p.pageName === entry.uniqueName
+  );
+  let index;
+  if (existingIdx >= 0) {
+    cfg.pagePowerdata[existingIdx] = synth;
+    index = existingIdx;
+  } else {
+    index = cfg.pagePowerdata.length;
+    cfg.pagePowerdata.push(synth);
+  }
+  const homeBotInternal = !!((_q = entry.homeBot) == null ? void 0 : _q.selInternalCalculation);
+  const homeBotState = (((_r = entry.homeBot) == null ? void 0 : _r.state) || "").trim();
+  const homeBotUnitSuffix = ((_s = entry.homeBot) == null ? void 0 : _s.valueUnit) ? ` ${entry.homeBot.valueUnit}` : "";
+  const homeValueBot = homeBotInternal ? {
+    value: { type: "internal", dp: `///${entry.uniqueName}/powerSum` },
+    decimal: { type: "const", constVal: (_u = (_t = entry.homeBot) == null ? void 0 : _t.valueDecimal) != null ? _u : 0 },
+    unit: { type: "const", constVal: homeBotUnitSuffix }
+  } : homeBotState ? {
+    value: { type: "triggered", dp: homeBotState },
+    decimal: { type: "const", constVal: (_w = (_v = entry.homeBot) == null ? void 0 : _v.valueDecimal) != null ? _w : 0 },
+    unit: { type: "const", constVal: homeBotUnitSuffix }
+  } : void 0;
+  const homeTopState = (((_x = entry.homeTop) == null ? void 0 : _x.state) || "").trim();
+  const homeTopUnitSuffix = ((_y = entry.homeTop) == null ? void 0 : _y.valueUnit) ? ` ${entry.homeTop.valueUnit}` : "";
+  const homeValueTop = homeTopState ? {
+    value: { type: "triggered", dp: homeTopState },
+    decimal: { type: "const", constVal: (_A = (_z = entry.homeTop) == null ? void 0 : _z.valueDecimal) != null ? _A : 0 },
+    unit: { type: "const", constVal: homeTopUnitSuffix }
+  } : void 0;
+  return {
+    uniqueID: entry.uniqueName,
+    hidden: !!entry.hidden,
+    alwaysOn: (_B = entry.alwaysOn) != null ? _B : "none",
+    dpInit: "",
+    config: {
+      card: "cardPower",
+      index,
+      data: {
+        headline: { type: "const", constVal: entry.headline || entry.uniqueName },
+        homeIcon: { true: { value: { type: "const", constVal: "home" } }, false: void 0 },
+        homeValueTop,
+        homeValueBot,
+        leftTop: buildPowerSlotData(entry.leftTop),
+        leftMiddle: buildPowerSlotData(entry.leftMiddle),
+        leftBottom: buildPowerSlotData(entry.leftBottom),
+        rightTop: buildPowerSlotData(entry.rightTop),
+        rightMiddle: buildPowerSlotData(entry.rightMiddle),
+        rightBottom: buildPowerSlotData(entry.rightBottom)
+      }
+    },
+    pageItems: []
+  };
 }
 function dataForcardTrash(entry) {
   let newPage;

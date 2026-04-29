@@ -246,6 +246,87 @@ export type QREntry = {
     uniqueName: string;
 } & PageConfigBaseFields;
 
+/**
+ * Configuration for one of the six power slots on cardPower (leftTop / leftMiddle / leftBottom /
+ * rightTop / rightMiddle / rightBottom). Mirrors the flat `power${i}_*` fields of the legacy
+ * jsonConfig accordion but groups them per-slot so the React editor can show them as one panel.
+ */
+export type PowerSlotConfig = {
+    /** Material-design icon name shown for this slot */
+    icon?: string;
+    /** Static icon color (e.g. '#ffffff'); ignored when useColorScale is true */
+    iconColor?: string;
+    /** ioBroker state delivering the numeric value for this slot */
+    state?: string;
+    /** Number of decimal places to render (0–2 in the legacy UI) */
+    valueDecimal?: number;
+    /** Display unit when the source state has no common.unit. 'W' | 'kW' | 'MW' or any string */
+    valueUnit?: string;
+    /** Free-text headline rendered above the value */
+    entityHeadline?: string;
+    /** Activates the iconColor-by-value scale (min/max/best below) */
+    useColorScale?: boolean;
+    minColorScale?: number;
+    maxColorScale?: number;
+    /** Optional anchor for the gradient (defaults to triGrad mode in the runtime) */
+    bestColorScale?: number;
+    /** Lower bound for the speed/animation indicator (mapped to NSPanel.ScaledNumberType.minScale) */
+    minSpeedScale?: number;
+    /** Upper bound for the speed/animation indicator (mapped to NSPanel.ScaledNumberType.maxScale) */
+    maxSpeedScale?: number;
+    /** Reverse the speed/flow direction (negate=true at runtime) */
+    reverse?: boolean;
+};
+
+/** Configuration for the home-top value (the one drawn above the central 'home' icon) */
+export type PowerHomeTopConfig = {
+    state?: string;
+    valueDecimal?: number;
+    valueUnit?: string;
+};
+
+/**
+ * Configuration for the home-bottom value. Either a single state OR an internal
+ * sum calculated from a subset of the six side slots (selPowerSupply lists the 1-based
+ * slot indices to include; entries listed there are negated when summed).
+ */
+export type PowerHomeBotConfig = {
+    /** When true, ignore `state` and compute the sum from selPowerSupply */
+    selInternalCalculation?: boolean;
+    state?: string;
+    /** 1-based slot indices (1..6) treated as negative contributions to the sum */
+    selPowerSupply?: number[];
+    valueDecimal?: number;
+    valueUnit?: string;
+};
+
+export type PowerEntry = {
+    card: Extract<AdminCardTypes, 'cardPower'>;
+    uniqueName: string;
+    headline: string;
+    leftTop: PowerSlotConfig;
+    leftMiddle: PowerSlotConfig;
+    leftBottom: PowerSlotConfig;
+    rightTop: PowerSlotConfig;
+    rightMiddle: PowerSlotConfig;
+    rightBottom: PowerSlotConfig;
+    homeTop: PowerHomeTopConfig;
+    homeBot: PowerHomeBotConfig;
+} & PageConfigBaseFields;
+
+/** Empty default for a power slot — used when adding a new cardPower entry. */
+export function emptyPowerSlot(): PowerSlotConfig {
+    return {
+        icon: '',
+        iconColor: '',
+        state: '',
+        valueDecimal: 0,
+        valueUnit: 'W',
+        entityHeadline: '',
+        useColorScale: false,
+    };
+}
+
 export type TrashItem = {
     textTrash: string;
     customTrash: string;
@@ -277,8 +358,8 @@ export type NavigationAssignment = {
 };
 
 export type NavigationAssignmentList = NavigationAssignment[];
-export type PageConfigEntry = QREntry | UnlockEntry | ScreensaverEntry | TrashEntry | MenuEntry;
-export type PageConfig = QREntry | UnlockEntry | ScreensaverEntry | TrashEntry | MenuEntry;
+export type PageConfigEntry = QREntry | UnlockEntry | ScreensaverEntry | TrashEntry | MenuEntry | PowerEntry;
+export type PageConfig = QREntry | UnlockEntry | ScreensaverEntry | TrashEntry | MenuEntry | PowerEntry;
 
 export type PanelStatus =
     | 'offline'
