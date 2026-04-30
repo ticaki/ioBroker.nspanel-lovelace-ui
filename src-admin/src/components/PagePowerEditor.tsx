@@ -20,7 +20,7 @@ import {
 import HomeIcon from '@mui/icons-material/Home';
 import EditIcon from '@mui/icons-material/Edit';
 import { ConfigGeneric, type ConfigGenericProps, type ConfigGenericState } from '@iobroker/json-config';
-import type { IobTheme, ThemeType } from '@iobroker/adapter-react-v5';
+import type { IobTheme, ThemeType, ThemeName } from '@iobroker/adapter-react-v5';
 import { EntitySelector } from './EntitySelector';
 import IconSelect from '../IconSelect';
 import iconsJson from '../icons.json';
@@ -71,6 +71,7 @@ export interface PagePowerEditorProps {
     onUniqueNameChange: (oldName: string, newName: string) => void;
     theme?: IobTheme;
     themeType?: ThemeType;
+    themeName?: ThemeName;
 }
 
 type EditingTarget = { kind: 'slot'; slot: SlotKey } | { kind: 'homeTop' } | { kind: 'homeBot' } | null;
@@ -202,7 +203,7 @@ export class PagePowerEditor extends ConfigGeneric<ConfigGenericProps & PagePowe
                     </Typography>
                     <EditIcon
                         fontSize="small"
-                        sx={{ color: 'text.secondary' }}
+                        sx={{ color: isDark ? '#ffffff' : '#000000' }}
                     />
                 </Box>
                 <Box sx={{ position: 'relative' }}>
@@ -227,6 +228,8 @@ export class PagePowerEditor extends ConfigGeneric<ConfigGenericProps & PagePowe
     private renderHomeTopPaper(): React.JSX.Element {
         const data = this.props.entry.homeTop ?? {};
         const empty = !data.state;
+        const isDark = this.props.themeName === 'dark';
+
         return (
             <Paper
                 elevation={2}
@@ -250,7 +253,7 @@ export class PagePowerEditor extends ConfigGeneric<ConfigGenericProps & PagePowe
                     </Typography>
                     <EditIcon
                         fontSize="small"
-                        sx={{ color: 'text.secondary' }}
+                        sx={{ color: isDark ? '#ffffff' : '#000000' }}
                     />
                 </Box>
                 <Typography
@@ -268,6 +271,8 @@ export class PagePowerEditor extends ConfigGeneric<ConfigGenericProps & PagePowe
         const data = this.props.entry.homeBot ?? {};
         const isInternal = !!data.selInternalCalculation;
         const empty = !data.state && !isInternal;
+        const isDark = this.props.themeName === 'dark';
+
         return (
             <Paper
                 elevation={2}
@@ -291,7 +296,7 @@ export class PagePowerEditor extends ConfigGeneric<ConfigGenericProps & PagePowe
                     </Typography>
                     <EditIcon
                         fontSize="small"
-                        sx={{ color: 'text.secondary' }}
+                        sx={{ color: isDark ? '#ffffff' : '#000000' }}
                     />
                 </Box>
                 <Typography
@@ -309,7 +314,7 @@ export class PagePowerEditor extends ConfigGeneric<ConfigGenericProps & PagePowe
 
     private renderSlotDialog(slot: SlotKey): React.JSX.Element {
         const data = this.props.entry[slot] ?? emptyPowerSlot();
-        const { oContext, theme, themeType } = this.props;
+        const { oContext, theme, themeType, themeName } = this.props;
 
         return (
             <Dialog
@@ -334,7 +339,7 @@ export class PagePowerEditor extends ConfigGeneric<ConfigGenericProps & PagePowe
                             oContext={oContext}
                             alive={this.state.alive}
                             changed={false}
-                            themeName={this.props.themeName}
+                            themeName={themeName}
                             common={this.emptyCommon}
                             attr="icon"
                             data={{ icon: data.icon ?? '' }}
@@ -355,8 +360,12 @@ export class PagePowerEditor extends ConfigGeneric<ConfigGenericProps & PagePowe
                             ): void => {
                                 const newIcon =
                                     typeof attrOrData === 'string'
-                                        ? typeof val === 'string' ? val : ''
-                                        : typeof attrOrData.icon === 'string' ? attrOrData.icon : '';
+                                        ? typeof val === 'string'
+                                            ? val
+                                            : ''
+                                        : typeof attrOrData.icon === 'string'
+                                          ? attrOrData.icon
+                                          : '';
                                 this.updateSlot(slot, { icon: newIcon });
                                 if (cb) {
                                     cb();
@@ -379,7 +388,10 @@ export class PagePowerEditor extends ConfigGeneric<ConfigGenericProps & PagePowe
                                 disabled={!this.state.alive}
                             />
                         </Box>
-                        <FormControl variant="standard" fullWidth>
+                        <FormControl
+                            variant="standard"
+                            fullWidth
+                        >
                             <InputLabel>{this.getText('power_decimal')}</InputLabel>
                             <Select
                                 value={data.valueDecimal ?? 0}
@@ -390,7 +402,10 @@ export class PagePowerEditor extends ConfigGeneric<ConfigGenericProps & PagePowe
                                 <MenuItem value={2}>2</MenuItem>
                             </Select>
                         </FormControl>
-                        <FormControl variant="standard" fullWidth>
+                        <FormControl
+                            variant="standard"
+                            fullWidth
+                        >
                             <InputLabel>{this.getText('power_unit')}</InputLabel>
                             <Select
                                 value={data.valueUnit ?? 'W'}
@@ -426,7 +441,10 @@ export class PagePowerEditor extends ConfigGeneric<ConfigGenericProps & PagePowe
                     {data.useColorScale && (
                         <>
                             <Divider sx={{ my: 2 }} />
-                            <Typography variant="subtitle2" sx={{ mb: 1 }}>
+                            <Typography
+                                variant="subtitle2"
+                                sx={{ mb: 1 }}
+                            >
                                 {this.getText('power_colorScale')}
                             </Typography>
                             <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 2 }}>
@@ -456,7 +474,10 @@ export class PagePowerEditor extends ConfigGeneric<ConfigGenericProps & PagePowe
                     )}
 
                     <Divider sx={{ my: 2 }} />
-                    <Typography variant="subtitle2" sx={{ mb: 1 }}>
+                    <Typography
+                        variant="subtitle2"
+                        sx={{ mb: 1 }}
+                    >
                         {this.getText('power_speed')}
                     </Typography>
                     <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 2, alignItems: 'center' }}>
@@ -520,7 +541,10 @@ export class PagePowerEditor extends ConfigGeneric<ConfigGenericProps & PagePowe
                             disabled={!this.state.alive}
                         />
                         <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
-                            <FormControl variant="standard" fullWidth>
+                            <FormControl
+                                variant="standard"
+                                fullWidth
+                            >
                                 <InputLabel>{this.getText('power_decimal')}</InputLabel>
                                 <Select
                                     value={data.valueDecimal ?? 0}
@@ -531,7 +555,10 @@ export class PagePowerEditor extends ConfigGeneric<ConfigGenericProps & PagePowe
                                     <MenuItem value={2}>2</MenuItem>
                                 </Select>
                             </FormControl>
-                            <FormControl variant="standard" fullWidth>
+                            <FormControl
+                                variant="standard"
+                                fullWidth
+                            >
                                 <InputLabel>{this.getText('power_unit')}</InputLabel>
                                 <Select
                                     value={data.valueUnit ?? 'W'}
@@ -571,9 +598,7 @@ export class PagePowerEditor extends ConfigGeneric<ConfigGenericProps & PagePowe
                         control={
                             <Checkbox
                                 checked={!!data.selInternalCalculation}
-                                onChange={(_e, checked) =>
-                                    this.updateHomeBot({ selInternalCalculation: checked })
-                                }
+                                onChange={(_e, checked) => this.updateHomeBot({ selInternalCalculation: checked })}
                             />
                         }
                         label={this.getText('power_internal_calculation')}
@@ -593,7 +618,11 @@ export class PagePowerEditor extends ConfigGeneric<ConfigGenericProps & PagePowe
                             disabled={!this.state.alive}
                         />
                     ) : (
-                        <FormControl variant="standard" fullWidth sx={{ mt: 1 }}>
+                        <FormControl
+                            variant="standard"
+                            fullWidth
+                            sx={{ mt: 1 }}
+                        >
                             <InputLabel shrink>{this.getText('power_negate_supply')}</InputLabel>
                             <Select
                                 multiple
@@ -614,7 +643,10 @@ export class PagePowerEditor extends ConfigGeneric<ConfigGenericProps & PagePowe
                         </FormControl>
                     )}
                     <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2, mt: 2 }}>
-                        <FormControl variant="standard" fullWidth>
+                        <FormControl
+                            variant="standard"
+                            fullWidth
+                        >
                             <InputLabel>{this.getText('power_decimal')}</InputLabel>
                             <Select
                                 value={data.valueDecimal ?? 0}
@@ -625,7 +657,10 @@ export class PagePowerEditor extends ConfigGeneric<ConfigGenericProps & PagePowe
                                 <MenuItem value={2}>2</MenuItem>
                             </Select>
                         </FormControl>
-                        <FormControl variant="standard" fullWidth>
+                        <FormControl
+                            variant="standard"
+                            fullWidth
+                        >
                             <InputLabel>{this.getText('power_unit')}</InputLabel>
                             <Select
                                 value={data.valueUnit ?? 'W'}
@@ -648,6 +683,17 @@ export class PagePowerEditor extends ConfigGeneric<ConfigGenericProps & PagePowe
     renderItem(_error: boolean, _disabled: boolean): React.JSX.Element {
         const entry = this.props.entry;
         const { editing } = this.state;
+        const isDark = this.props.themeName === 'dark';
+        console.log(
+            'Rendering PagePowerEditor, alive:',
+            this.state.alive,
+            'entry:',
+            entry,
+            'editing:',
+            editing,
+            'isDark:',
+            isDark,
+        );
 
         return (
             <Box>
@@ -706,7 +752,12 @@ export class PagePowerEditor extends ConfigGeneric<ConfigGenericProps & PagePowe
                             backgroundColor: 'transparent',
                         }}
                     >
-                        <HomeIcon sx={{ fontSize: 56, color: 'text.secondary' }} />
+                        <HomeIcon
+                            sx={{
+                                fontSize: 56,
+                                color: isDark ? '#ffffff' : '#000000',
+                            }}
+                        />
                     </Paper>
                     {this.renderSlotPaper('rightMiddle')}
 

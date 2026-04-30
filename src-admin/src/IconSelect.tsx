@@ -12,8 +12,8 @@ interface IconSelectState extends ConfigGenericState {
     filteredIcons: { name: string; base64: string }[];
 }
 
-class IconSelect extends ConfigGeneric<ConfigGenericProps & { theme?: any }, IconSelectState> {
-    constructor(props: ConfigGenericProps & { theme?: any }) {
+class IconSelect extends ConfigGeneric<ConfigGenericProps & { themeName?: any }, IconSelectState> {
+    constructor(props: ConfigGenericProps & { themeName?: any }) {
         super(props);
         const savedValue = ConfigGeneric.getValue(props.data, props.attr!);
         const allIcons = Array.isArray(icons) ? icons : [];
@@ -48,7 +48,7 @@ class IconSelect extends ConfigGeneric<ConfigGenericProps & { theme?: any }, Ico
 
     renderItem(_error: string, _disabled: boolean, _defaultValue?: unknown): React.JSX.Element {
         const icons = this.state.icons;
-        const theme = this.props.theme;
+        const themeName = this.props.themeName || undefined;
         const filteredIcons = this.state.filteredIcons;
 
         return (
@@ -102,7 +102,7 @@ class IconSelect extends ConfigGeneric<ConfigGenericProps & { theme?: any }, Ico
                                         width: 24,
                                         height: 24,
                                         marginRight: 8,
-                                        color: theme?.palette?.secondary?.main || '#09f23fc1',
+                                        color: themeName ? (themeName === 'dark' ? '#ffffff' : '#000000') : '#09f23fc1',
                                     }}
                                     dangerouslySetInnerHTML={{
                                         __html: atob(
@@ -130,7 +130,11 @@ class IconSelect extends ConfigGeneric<ConfigGenericProps & { theme?: any }, Ico
                                                     width: 24,
                                                     height: 24,
                                                     marginRight: 8,
-                                                    color: theme?.palette?.secondary?.main || '#09f23fc1',
+                                                    color: themeName
+                                                        ? themeName === 'dark'
+                                                            ? '#ffffff'
+                                                            : '#000000'
+                                                        : '#09f23fc1',
                                                 }}
                                                 dangerouslySetInnerHTML={{
                                                     __html: atob(
