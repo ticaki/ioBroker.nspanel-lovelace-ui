@@ -21,7 +21,7 @@ import {
 } from '@mui/material';
 import { Upload as UploadIcon, SearchOutlined as SearchIcon } from '@mui/icons-material';
 import { ConfigGeneric, type ConfigGenericProps, type ConfigGenericState } from '@iobroker/json-config';
-import type { ThemeName } from '@iobroker/adapter-react-v5';
+import type { IobTheme, ThemeType, ThemeName } from '@iobroker/adapter-react-v5';
 import { EntitySelector } from './EntitySelector';
 import IconSelect from '../IconSelect';
 import type { TrashEntry } from '../../../src/lib/types/adminShareConfig';
@@ -32,7 +32,8 @@ export interface PageTrashEditorProps {
     onUniqueNameChange: (oldName: string, newName: string) => void;
     getText: (key: string) => string;
     oContext: any;
-    theme?: any;
+    theme?: IobTheme;
+    themeType?: ThemeType;
     themeName?: ThemeName;
 }
 
