@@ -345,7 +345,13 @@ class PageConfigManager extends ConfigGeneric<ConfigGenericProps & { theme?: any
                 rightMiddle: emptyPowerSlot(),
                 rightBottom: emptyPowerSlot(),
                 homeTop: { state: '', valueDecimal: 0, valueUnit: 'W' },
-                homeBot: { state: '', valueDecimal: 0, valueUnit: 'W', selInternalCalculation: false, selPowerSupply: [] },
+                homeBot: {
+                    state: '',
+                    valueDecimal: 0,
+                    valueUnit: 'W',
+                    selInternalCalculation: false,
+                    selPowerSupply: [],
+                },
             } satisfies PowerEntry;
         } else if (
             cardType === 'pageMenu' ||
@@ -517,6 +523,7 @@ class PageConfigManager extends ConfigGeneric<ConfigGenericProps & { theme?: any
         if (currentEntry.card === 'cardTrash') {
             return (
                 <PageTrashEditor
+                    {...this.props}
                     entry={currentEntry}
                     onEntryChange={this.handleEntryChange}
                     onUniqueNameChange={this.handleUniqueNameChange}

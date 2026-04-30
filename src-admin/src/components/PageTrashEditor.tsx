@@ -20,6 +20,8 @@ import {
     ListItemText,
 } from '@mui/material';
 import { Upload as UploadIcon, SearchOutlined as SearchIcon } from '@mui/icons-material';
+import { ConfigGeneric, type ConfigGenericProps, type ConfigGenericState } from '@iobroker/json-config';
+import type { ThemeName } from '@iobroker/adapter-react-v5';
 import { EntitySelector } from './EntitySelector';
 import IconSelect from '../IconSelect';
 import type { TrashEntry } from '../../../src/lib/types/adminShareConfig';
@@ -31,21 +33,23 @@ export interface PageTrashEditorProps {
     getText: (key: string) => string;
     oContext: any;
     theme?: any;
+    themeName?: ThemeName;
 }
 
-interface PageTrashEditorState {
+interface PageTrashEditorState extends ConfigGenericState {
     uploadedEvents: Array<{ summary: string }>;
     selectedEvents: string[];
     alive: boolean;
 }
 
-export class PageTrashEditor extends React.Component<PageTrashEditorProps, PageTrashEditorState> {
+export class PageTrashEditor extends ConfigGeneric<ConfigGenericProps & PageTrashEditorProps, PageTrashEditorState> {
     private fileInputRef = React.createRef<HTMLInputElement>();
     private readonly emptyCommon: Record<string, any> = {};
 
-    constructor(props: PageTrashEditorProps) {
+    constructor(props: ConfigGenericProps & PageTrashEditorProps) {
         super(props);
         this.state = {
+            ...this.state,
             uploadedEvents: [],
             selectedEvents: [],
             alive: false,
@@ -83,7 +87,7 @@ export class PageTrashEditor extends React.Component<PageTrashEditorProps, PageT
         this.setState({ alive: isAlive });
     };
 
-    private getText(key: string): string {
+    getText(key: string): string {
         return this.props.getText(key);
     }
 
@@ -254,8 +258,10 @@ export class PageTrashEditor extends React.Component<PageTrashEditorProps, PageT
     };
 
     render(): React.JSX.Element {
-        const { entry, oContext, theme } = this.props;
+        const { entry, oContext, theme, themeName } = this.props;
         const { alive } = this.state;
+
+        console.log('Rendering PageTrashEditor with entry:', entry, 'alive:', alive, 'themeName:', themeName);
 
         return (
             <Box>
@@ -281,12 +287,14 @@ export class PageTrashEditor extends React.Component<PageTrashEditorProps, PageT
                                 this.props.onUniqueNameChange(entry.uniqueName, newUniqueName);
                             }
                         }}
-                        InputProps={{
-                            sx: {
-                                backgroundColor: 'transparent',
-                                px: 1,
-                                fontWeight: 600,
-                                width: '50%',
+                        slotProps={{
+                            input: {
+                                sx: {
+                                    backgroundColor: 'transparent',
+                                    px: 1,
+                                    fontWeight: 600,
+                                    width: '50%',
+                                },
                             },
                         }}
                     />
@@ -304,8 +312,10 @@ export class PageTrashEditor extends React.Component<PageTrashEditorProps, PageT
                     onChange={e => {
                         this.handleFieldChange('headline', e.target.value);
                     }}
-                    InputProps={{
-                        sx: { backgroundColor: 'transparent', px: 1, width: '50%' },
+                    slotProps={{
+                        input: {
+                            sx: { backgroundColor: 'transparent', px: 1, width: '50%' },
+                        },
                     }}
                     sx={{ mb: 2 }}
                 />
@@ -460,8 +470,10 @@ export class PageTrashEditor extends React.Component<PageTrashEditorProps, PageT
                                 onChange={e => {
                                     this.handleFieldChange('trashFile', e.target.value);
                                 }}
-                                InputProps={{
-                                    sx: { backgroundColor: 'transparent', px: 1 },
+                                slotProps={{
+                                    input: {
+                                        sx: { backgroundColor: 'transparent', px: 1 },
+                                    },
                                 }}
                                 helperText={this.getText('trash_ics_file_path_help')}
                             />
@@ -558,8 +570,10 @@ export class PageTrashEditor extends React.Component<PageTrashEditorProps, PageT
                                 onChange={e => {
                                     this.handleItemChange(index, 'iconColor', e.target.value);
                                 }}
-                                InputProps={{
-                                    sx: { backgroundColor: 'transparent', px: 1 },
+                                slotProps={{
+                                    input: {
+                                        sx: { backgroundColor: 'transparent', px: 1 },
+                                    },
                                 }}
                                 sx={{ minWidth: 100, flexShrink: 0 }}
                             />
@@ -568,7 +582,7 @@ export class PageTrashEditor extends React.Component<PageTrashEditorProps, PageT
                                     oContext={oContext}
                                     alive={alive}
                                     changed={false}
-                                    themeName={theme?.palette?.mode === 'dark' ? 'dark' : 'light'}
+                                    themeName={themeName}
                                     common={this.emptyCommon}
                                     attr="icon"
                                     data={{ icon: item.icon ?? '' }}
@@ -603,8 +617,10 @@ export class PageTrashEditor extends React.Component<PageTrashEditorProps, PageT
                                 onChange={e => {
                                     this.handleItemChange(index, 'textTrash', e.target.value);
                                 }}
-                                InputProps={{
-                                    sx: { backgroundColor: 'transparent', px: 1 },
+                                slotProps={{
+                                    input: {
+                                        sx: { backgroundColor: 'transparent', px: 1 },
+                                    },
                                 }}
                                 sx={{ flex: 1, minWidth: 200 }}
                             />
@@ -619,8 +635,10 @@ export class PageTrashEditor extends React.Component<PageTrashEditorProps, PageT
                                 onChange={e => {
                                     this.handleItemChange(index, 'customTrash', e.target.value);
                                 }}
-                                InputProps={{
-                                    sx: { backgroundColor: 'transparent', px: 1 },
+                                slotProps={{
+                                    input: {
+                                        sx: { backgroundColor: 'transparent', px: 1 },
+                                    },
                                 }}
                                 sx={{ flex: 1, minWidth: 200 }}
                             />
