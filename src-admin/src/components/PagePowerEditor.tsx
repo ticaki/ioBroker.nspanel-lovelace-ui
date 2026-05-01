@@ -10,6 +10,7 @@ import {
     Divider,
     FormControl,
     FormControlLabel,
+    IconButton,
     InputLabel,
     MenuItem,
     Paper,
@@ -18,6 +19,7 @@ import {
     Typography,
 } from '@mui/material';
 import HomeIcon from '@mui/icons-material/Home';
+import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import { ConfigGeneric, type ConfigGenericProps, type ConfigGenericState } from '@iobroker/json-config';
 import type { IobTheme, ThemeType, ThemeName } from '@iobroker/adapter-react-v5';
@@ -79,6 +81,8 @@ type EditingTarget = { kind: 'slot'; slot: SlotKey } | { kind: 'homeTop' } | { k
 interface PagePowerEditorState extends ConfigGenericState {
     alive: boolean;
     editing: EditingTarget;
+    dragFrom: SlotKey | null;
+    dragOver: SlotKey | null;
 }
 
 export class PagePowerEditor extends ConfigGeneric<ConfigGenericProps & PagePowerEditorProps, PagePowerEditorState> {
@@ -90,6 +94,8 @@ export class PagePowerEditor extends ConfigGeneric<ConfigGenericProps & PagePowe
             ...this.state,
             alive: false,
             editing: null,
+            dragFrom: null,
+            dragOver: null,
         };
     }
 
@@ -140,29 +146,78 @@ export class PagePowerEditor extends ConfigGeneric<ConfigGenericProps & PagePowe
         this.updateEntry({ homeBot: { ...current, ...patch } });
     }
 
+    private clearSlot(slot: SlotKey, e: React.MouseEvent): void {
+        e.stopPropagation();
+        this.updateEntry({ [slot]: emptyPowerSlot() } as Partial<PowerEntry>);
+    }
+
+    private onDragStart(slot: SlotKey, e: React.DragEvent): void {
+        this.setState({ dragFrom: slot });
+        e.dataTransfer.effectAllowed = 'move';
+    }
+
+    private onDragOver(slot: SlotKey, e: React.DragEvent): void {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'move';
+        if (this.state.dragOver !== slot) {
+            this.setState({ dragOver: slot });
+        }
+    }
+
+    private onDragLeave(slot: SlotKey): void {
+        if (this.state.dragOver === slot) {
+            this.setState({ dragOver: null });
+        }
+    }
+
+    private onDrop(targetSlot: SlotKey, e: React.DragEvent): void {
+        e.preventDefault();
+        const { dragFrom } = this.state;
+        this.setState({ dragFrom: null, dragOver: null });
+        if (!dragFrom || dragFrom === targetSlot) {
+            return;
+        }
+        const entry = this.props.entry;
+        const fromData = entry[dragFrom] ?? emptyPowerSlot();
+        const toData = entry[targetSlot] ?? emptyPowerSlot();
+        this.updateEntry({ [dragFrom]: toData, [targetSlot]: fromData } as Partial<PowerEntry>);
+    }
+
+    private onDragEnd(): void {
+        this.setState({ dragFrom: null, dragOver: null });
+    }
+
     private renderSlotPaper(slot: SlotKey): React.JSX.Element {
         const entry = this.props.entry;
         const data = entry[slot] ?? emptyPowerSlot();
         const idx = SLOT_INDICES[slot];
-        const label = `${this.getText('power')} ${idx}`;
+        const fallbackLabel = `${this.getText('power')} ${idx}`;
+        const label = data.entityHeadline || fallbackLabel;
         const empty = !data.state && !data.entityHeadline && !data.icon;
         const iconSvg = getIconSvgHtml(data.icon);
         const isDark = this.props.themeName === 'dark';
+        const isDragOver = this.state.dragOver === slot;
 
         return (
             <Paper
                 key={slot}
                 elevation={2}
+                draggable={this.state.alive}
+                onDragStart={e => this.onDragStart(slot, e)}
+                onDragOver={e => this.onDragOver(slot, e)}
+                onDragLeave={() => this.onDragLeave(slot)}
+                onDrop={e => this.onDrop(slot, e)}
+                onDragEnd={() => this.onDragEnd()}
                 onClick={() => this.setState({ editing: { kind: 'slot', slot } })}
                 sx={{
                     p: 1.5,
                     minHeight: 90,
                     position: 'relative',
                     overflow: 'hidden',
-                    cursor: this.state.alive ? 'pointer' : 'not-allowed',
-                    opacity: this.state.alive ? 1 : 0.5,
-                    border: empty ? '1px dashed' : '1px solid',
-                    borderColor: empty ? 'divider' : 'primary.light',
+                    cursor: this.state.alive ? 'grab' : 'not-allowed',
+                    opacity: this.state.alive ? (this.state.dragFrom === slot ? 0.4 : 1) : 0.5,
+                    border: isDragOver ? '2px solid' : empty ? '1px dashed' : '1px solid',
+                    borderColor: isDragOver ? 'primary.main' : empty ? 'divider' : 'primary.light',
                     '&:hover': { borderColor: 'primary.main' },
                     display: 'flex',
                     flexDirection: 'column',
@@ -197,28 +252,27 @@ export class PagePowerEditor extends ConfigGeneric<ConfigGenericProps & PagePowe
                 >
                     <Typography
                         variant="caption"
-                        color="text.secondary"
+                        color={data.entityHeadline ? 'text.primary' : 'text.secondary'}
+                        sx={{ fontWeight: data.entityHeadline ? 600 : 400 }}
                     >
                         {label}
                     </Typography>
-                    <EditIcon
-                        fontSize="small"
-                        sx={{ color: isDark ? '#ffffff' : '#000000' }}
-                    />
+                    <IconButton
+                        size="small"
+                        onClick={e => this.clearSlot(slot, e)}
+                        disabled={!this.state.alive || empty}
+                        sx={{ p: 0.25, color: isDark ? '#ffffff' : '#000000' }}
+                    >
+                        <DeleteIcon fontSize="small" />
+                    </IconButton>
                 </Box>
                 <Box sx={{ position: 'relative' }}>
-                    <Typography
-                        variant="body2"
-                        sx={{ fontWeight: 600 }}
-                    >
-                        {data.entityHeadline || this.getText('power_slot_empty')}
-                    </Typography>
                     <Typography
                         variant="caption"
                         color="text.secondary"
                         sx={{ wordBreak: 'break-all' }}
                     >
-                        {data.state || ''}
+                        {data.state || (empty ? this.getText('power_slot_empty') : '')}
                     </Typography>
                 </Box>
             </Paper>
