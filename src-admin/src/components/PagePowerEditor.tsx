@@ -87,6 +87,7 @@ interface PagePowerEditorState extends ConfigGenericState {
 
 export class PagePowerEditor extends ConfigGeneric<ConfigGenericProps & PagePowerEditorProps, PagePowerEditorState> {
     private readonly emptyCommon: Record<string, any> = {};
+    private dragSourceSlot: SlotKey | null = null;
 
     constructor(props: ConfigGenericProps & PagePowerEditorProps) {
         super(props);
@@ -152,8 +153,10 @@ export class PagePowerEditor extends ConfigGeneric<ConfigGenericProps & PagePowe
     }
 
     private onDragStart(slot: SlotKey, e: React.DragEvent): void {
-        this.setState({ dragFrom: slot });
+        this.dragSourceSlot = slot;
         e.dataTransfer.effectAllowed = 'move';
+        e.dataTransfer.setData('text/plain', slot);
+        this.setState({ dragFrom: slot });
     }
 
     private onDragOver(slot: SlotKey, e: React.DragEvent): void {
@@ -172,7 +175,9 @@ export class PagePowerEditor extends ConfigGeneric<ConfigGenericProps & PagePowe
 
     private onDrop(targetSlot: SlotKey, e: React.DragEvent): void {
         e.preventDefault();
-        const { dragFrom } = this.state;
+        e.stopPropagation();
+        const dragFrom = this.dragSourceSlot;
+        this.dragSourceSlot = null;
         this.setState({ dragFrom: null, dragOver: null });
         if (!dragFrom || dragFrom === targetSlot) {
             return;
@@ -184,6 +189,7 @@ export class PagePowerEditor extends ConfigGeneric<ConfigGenericProps & PagePowe
     }
 
     private onDragEnd(): void {
+        this.dragSourceSlot = null;
         this.setState({ dragFrom: null, dragOver: null });
     }
 
