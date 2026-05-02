@@ -267,7 +267,7 @@ export class PagePowerEditor extends ConfigGeneric<ConfigGenericProps & PagePowe
                         size="small"
                         onClick={e => this.clearSlot(slot, e)}
                         disabled={!this.state.alive || empty}
-                        sx={{ p: 0.25, color: isDark ? '#ffffff' : '#000000' }}
+                        sx={{ p: 0.25, color: isDark ? '#be0101' : '#e70202' }}
                     >
                         <DeleteIcon fontSize="small" />
                     </IconButton>
