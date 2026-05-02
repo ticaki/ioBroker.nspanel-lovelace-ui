@@ -157,6 +157,9 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
     Placeholder for the next version (at the beginning of the line):
     ### **WORK IN PROGRESS**
 -->
+### **WORK IN PROGRESS**
+- (copilot) Adapter requires node.js >= 22 now
+
 ### 0.17.8 (2026-04-25)
 - (ticaki) fixed: Cannot read properties of undefined (reading 'trim')
 
