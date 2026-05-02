@@ -17,6 +17,7 @@ import {
 import { Visibility, VisibilityOff } from '@mui/icons-material';
 import { EntitySelector } from './EntitySelector';
 import { type QREntry, ADAPTER_NAME } from '../../../src/lib/types/adminShareConfig';
+import { ConfigGeneric, type ConfigGenericProps, type ConfigGenericState } from '@iobroker/json-config';
 
 export interface PageQREditorProps {
     entry: QREntry;
@@ -27,15 +28,16 @@ export interface PageQREditorProps {
     theme?: any;
 }
 
-interface PageQREditorState {
+interface PageQREditorState extends ConfigGenericState {
     showPassword: boolean;
     alive: boolean;
 }
 
-export class PageQREditor extends React.Component<PageQREditorProps, PageQREditorState> {
-    constructor(props: PageQREditorProps) {
+export class PageQREditor extends ConfigGeneric<ConfigGenericProps & PageQREditorProps, PageQREditorState> {
+    constructor(props: ConfigGenericProps & PageQREditorProps) {
         super(props);
         this.state = {
+            ...this.state,
             showPassword: false,
             alive: false,
         };
@@ -79,7 +81,7 @@ export class PageQREditor extends React.Component<PageQREditorProps, PageQREdito
         }
     };
 
-    private getText(key: string): string {
+    getText(key: string): string {
         return this.props.getText(key);
     }
 

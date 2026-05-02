@@ -510,6 +510,7 @@ class PageConfigManager extends ConfigGeneric<ConfigGenericProps & { theme?: any
         if (currentEntry.card === 'cardQR') {
             return (
                 <PageQREditor
+                    {...this.props}
                     entry={currentEntry}
                     onEntryChange={this.handleEntryChange}
                     onUniqueNameChange={this.handleUniqueNameChange}
