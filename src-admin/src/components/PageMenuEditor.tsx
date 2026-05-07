@@ -1047,7 +1047,7 @@ export class PageMenuEditor extends React.Component<PageMenuEditorProps, PageMen
                                     />
                                     <FormControlLabel
                                         value="cardGrid2"
-                                        disabled={grid2Conflict}
+                                        disabled={grid2Conflict || !this.state.alive}
                                         control={<Radio />}
                                         label={
                                             grid2Status === 'all-usp'
