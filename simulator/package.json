@@ -1,0 +1,31 @@
+{
+  "name": "nspanel-lovelace-ui-simulator",
+  "version": "0.1.0",
+  "description": "Standalone Tasmota+Berry+TFT simulator for ioBroker.nspanel-lovelace-ui adapter testing",
+  "private": true,
+  "type": "module",
+  "main": "dist/index.js",
+  "scripts": {
+    "start": "tsx src/index.ts",
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc --noEmit",
+    "test": "mocha --reporter spec"
+  },
+  "dependencies": {
+    "commander": "^12.1.0",
+    "mqtt": "^5.10.0",
+    "pino": "^9.5.0"
+  },
+  "devDependencies": {
+    "@types/chai": "^4.3.20",
+    "@types/mocha": "^10.0.10",
+    "@types/node": "^20.0.0",
+    "aedes": "^0.51.0",
+    "chai": "^4.5.0",
+    "mocha": "^10.8.0",
+    "pino-pretty": "^11.3.0",
+    "sinon": "^19.0.2",
+    "tsx": "^4.19.0",
+    "typescript": "^5.4.0"
+  }
+}

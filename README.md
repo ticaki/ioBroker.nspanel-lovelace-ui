@@ -159,6 +159,7 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
 -->
 ### **WORK IN PROGRESS**
 - (ticaki) cardPower admin: drag & drop between slots now works (missing dataTransfer.setData prevented Firefox/Safari from starting the drag)
+- (ticaki) added `/simulator` module: standalone Tasmota+Berry+TFT simulator that registers via `nsPanelInit` sendTo, learns MQTT credentials from the adapter and answers MQTT/HTTP like a real NSPanel (no flashing, reactive only)
 
 ### 0.17.8 (2026-04-25)
 - (ticaki) fixed: Cannot read properties of undefined (reading 'trim')

@@ -1,0 +1,12 @@
+{
+  "httpListenIp": "127.0.0.1",
+  "httpListenPort": 9080,
+  "topic": "",
+  "model": "eu",
+  "firmwareVersion": "14.4.1(release-nspanel)",
+  "displayVersion": "10",
+  "simulatedIp": "127.0.0.1",
+  "ackDelayMs": 30,
+  "statePath": "./state.json",
+  "logLevel": "info"
+}
