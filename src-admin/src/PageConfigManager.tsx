@@ -492,13 +492,12 @@ class PageConfigManager extends ConfigGeneric<ConfigGenericProps & { theme?: any
         ) {
             return (
                 <PageMenuEditor
+                    {...this.props}
                     entry={currentEntry}
                     onEntryChange={this.handleEntryChange}
                     onUniqueNameChange={this.handleUniqueNameChange}
                     getText={key => this.getText(key)}
                     oContext={this.props.oContext}
-                    theme={this.props.theme}
-                    themeType={this.props.oContext?.themeType as string | undefined}
                     panels={Array.isArray(this.props.data?.panels) ? this.props.data.panels : []}
                     expertMode={this.props.expertMode ?? false}
                     pagesList={pagesList}
