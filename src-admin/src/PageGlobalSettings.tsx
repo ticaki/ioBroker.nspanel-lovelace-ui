@@ -38,6 +38,7 @@ interface PageGlobalSettingsState extends ConfigGenericState {
     pw1?: string;
     rememberLastSite?: boolean;
     writeTasmotaTele?: boolean;
+    internalTftHttpServer?: boolean;
     alive?: boolean;
 }
 
@@ -224,6 +225,7 @@ class PageGlobalSettings extends ConfigGeneric<ConfigGenericProps & { theme?: an
         const pw1 = data.pw1 ?? '';
         const rememberLastSite = data.rememberLastSite ?? false;
         const weatherEntity = data.weatherEntity ?? '';
+        const internalTftHttpServer = data.internalTftHttpServer ?? false;
         // const writeTasmotaTele = data.writeTasmotaTele ?? false;
 
         // Expert Mode from props (provided by json-config system)
@@ -489,6 +491,27 @@ class PageGlobalSettings extends ConfigGeneric<ConfigGenericProps & { theme?: an
                         label={this.getText('rememberLastSite')}
                     />
                     <FormHelperText>{this.getText('rememberLastSiteHint')}</FormHelperText>
+                </Box>
+
+                {/* Internal TFT HTTP Server Checkbox */}
+                <Box sx={boxStyle}>
+                    <Typography
+                        variant="h6"
+                        gutterBottom
+                    >
+                        {this.getText('headerInternalTftHttpServer')}
+                    </Typography>
+                    <FormControlLabel
+                        control={
+                            <Checkbox
+                                checked={internalTftHttpServer}
+                                onChange={this.handleCheckboxChange('internalTftHttpServer')}
+                                disabled={!alive}
+                            />
+                        }
+                        label={this.getText('internalTftHttpServer')}
+                    />
+                    <FormHelperText>{this.getText('internalTftHttpServerHint')}</FormHelperText>
                 </Box>
 
                 {/* Write Tasmota Telemetry Checkbox */}

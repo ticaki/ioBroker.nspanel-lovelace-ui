@@ -9,6 +9,7 @@ declare global {
             versionJsonUrl: string;
             berryUrl: string;
             tftUrl: string;
+            internalTftHttpServer: boolean;
             adminOverridesScriptPages: boolean;
             rememberLastSite: boolean
             testCase: boolean;

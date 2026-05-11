@@ -18,6 +18,7 @@ import 'source-map-support/register';
 // Load your modules here, e.g.:
 
 import * as MQTT from './lib/classes/mqtt';
+import { HTTPServerClass, TempDirFileResolver, defaultTftStorageDir } from './lib/classes/http-server';
 import { Controller } from './lib/controller/controller';
 import { Icons } from './lib/const/icon_mapping';
 import * as definition from './lib/const/definition';
@@ -47,6 +48,7 @@ class NspanelLovelaceUi extends utils.Adapter {
     library: Library;
     mqttClient: MQTT.MQTTClientClass | undefined;
     mqttServer: MQTT.MQTTServerClass | undefined;
+    httpServer: HTTPServerClass | undefined;
     controller: Controller | undefined;
     unload: boolean = false;
     testSuccessful: boolean = true;
@@ -327,6 +329,26 @@ class NspanelLovelaceUi extends utils.Adapter {
                 this.config.testCase,
             );
             this.config.mqttIp = '127.0.0.1';
+        }
+
+        if (this.config.internalTftHttpServer) {
+            try {
+                const storageDir = defaultTftStorageDir();
+                await fs.promises.mkdir(storageDir, { recursive: true });
+                this.httpServer = await HTTPServerClass.createHTTPServer(
+                    this,
+                    0,
+                    '0.0.0.0',
+                    new TempDirFileResolver(storageDir),
+                );
+                this.log.info(
+                    `Internal TFT HTTP server ready on port ${this.httpServer.getPort()} (storage: ${storageDir})`,
+                );
+            } catch (err) {
+                this.log.error(
+                    `Failed to start internal TFT HTTP server: ${err instanceof Error ? err.message : String(err)}`,
+                );
+            }
         }
 
         if (!(this.config.mqttIp && this.config.mqttPort && this.config.mqttUsername && this.config.mqttPassword)) {
@@ -627,6 +649,9 @@ class NspanelLovelaceUi extends utils.Adapter {
             }
             if (this.mqttServer) {
                 this.mqttServer.destroy();
+            }
+            if (this.httpServer) {
+                this.httpServer.destroy();
             }
             callback();
         } catch {
