@@ -317,6 +317,7 @@
     "headerCardThermo": "cardThermo2 Einstellungen",
     "headerColorTheme": "Farbthema -Einstellungen",
     "headerDateFormat": "Datumsformat",
+    "headerInternalServerIp": "IP-Adresse des ioBroker-Hosts",
     "headerMaintain": "Wartung",
     "headerShutter": "Rollladensteuerung",
     "headerWeatherEntity": "Wetter-Entity",

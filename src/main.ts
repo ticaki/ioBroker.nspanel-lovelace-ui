@@ -18,6 +18,7 @@ import 'source-map-support/register';
 // Load your modules here, e.g.:
 
 import * as MQTT from './lib/classes/mqtt';
+import { HTTPServerClass, ProxyCacheResolver, defaultTftStorageDir } from './lib/classes/http-server';
 import { Controller } from './lib/controller/controller';
 import { Icons } from './lib/const/icon_mapping';
 import * as definition from './lib/const/definition';
@@ -47,6 +48,7 @@ class NspanelLovelaceUi extends utils.Adapter {
     library: Library;
     mqttClient: MQTT.MQTTClientClass | undefined;
     mqttServer: MQTT.MQTTServerClass | undefined;
+    httpServer: HTTPServerClass | undefined;
     controller: Controller | undefined;
     unload: boolean = false;
     testSuccessful: boolean = true;
@@ -333,6 +335,24 @@ class NspanelLovelaceUi extends utils.Adapter {
             this.log.error('Invalid admin configuration for mqtt!');
             this.testSuccessful = false;
             return;
+        }
+
+        if (!this.config.testCase) {
+            try {
+                const cacheDir = defaultTftStorageDir();
+                const resolver = new ProxyCacheResolver(cacheDir, this.config.tftUrl, {
+                    debug: (m: string) => this.log.debug(`[httpServer] ${m}`),
+                    info: (m: string) => this.log.info(`[httpServer] ${m}`),
+                    warn: (m: string) => this.log.warn(`[httpServer] ${m}`),
+                    error: (m: string) => this.log.error(`[httpServer] ${m}`),
+                });
+                this.httpServer = HTTPServerClass.createHTTPServer(this, 0, '0.0.0.0', resolver);
+            } catch (e: any) {
+                this.log.error(
+                    `Failed to prepare internal TFT HTTP server: ${e instanceof Error ? e.message : String(e)}`,
+                );
+                this.httpServer = undefined;
+            }
         }
 
         //check config
@@ -627,6 +647,9 @@ class NspanelLovelaceUi extends utils.Adapter {
             }
             if (this.mqttServer) {
                 this.mqttServer.destroy();
+            }
+            if (this.httpServer) {
+                this.httpServer.destroy();
             }
             callback();
         } catch {
@@ -1385,6 +1408,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                                             obj.message.useBetaTFT,
                                             this.config.forceTFTVersion,
                                             versionsJson,
+                                            obj.message.internalServerIp,
                                         );
                                         if (!cmnd) {
                                             this.log.error('No version found!');
@@ -1513,6 +1537,8 @@ class NspanelLovelaceUi extends utils.Adapter {
                                     obj.message.model,
                                     obj.message.useBetaTFT,
                                     this.config.forceTFTVersion,
+                                    undefined,
+                                    obj.message.internalServerIp,
                                 );
                                 if (!cmnd) {
                                     this.log.error('No version found!');
@@ -1558,6 +1584,8 @@ class NspanelLovelaceUi extends utils.Adapter {
                                     obj.message.model,
                                     obj.message.useBetaTFT,
                                     this.config.forceTFTVersion,
+                                    undefined,
+                                    obj.message.internalServerIp,
                                 );
                                 if (!cmnd) {
                                     this.log.error('No version found!');
@@ -2454,6 +2482,7 @@ class NspanelLovelaceUi extends utils.Adapter {
         beta: boolean,
         alpha: string,
         result?: Record<string, string>,
+        internalServerIp?: string,
     ): Promise<string | null> {
         if (!result) {
             result = await this.getVersionsJson();
@@ -2486,7 +2515,27 @@ class NspanelLovelaceUi extends utils.Adapter {
         }
 
         const fileName = `nspanel${modelSuffix}-v${version}.tft`;
-        const url = `${this.config.tftUrl}/${encodeURIComponent(fileName)}`;
+        let url = `${this.config.tftUrl}/${encodeURIComponent(fileName)}`;
+
+        if (this.httpServer && internalServerIp) {
+            const started = await this.httpServer.ensureStarted();
+            if (started && this.httpServer.ready) {
+                const cached = await this.httpServer.ensureCached(fileName);
+                if (cached) {
+                    url = `http://${internalServerIp}:${this.httpServer.port}/${encodeURIComponent(fileName)}`;
+                    this.httpServer.noteActivity();
+                    this.log.info(`Serving TFT "${fileName}" via internal HTTP server: ${url}`);
+                } else {
+                    this.log.error(
+                        `Internal TFT HTTP server could not cache "${fileName}" from ${this.config.tftUrl}. Aborting flash.`,
+                    );
+                    return null;
+                }
+            } else {
+                this.log.warn(`Internal TFT HTTP server could not be started — falling back to upstream URL "${url}".`);
+            }
+        }
+
         const cmnd = `FlashNextionAdv0 ${url}`;
 
         if (alpha) {
