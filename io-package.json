@@ -200,6 +200,7 @@
     "pw1": "",
     "tasmotaAdminPassword": "",
     "useBetaTFT": false,
+    "internalTftHttpServer": false,
     "shutterClosedIsZero": false,
     "colorStates": [
       {

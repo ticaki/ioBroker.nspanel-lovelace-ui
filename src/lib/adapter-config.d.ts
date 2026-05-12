@@ -32,6 +32,7 @@ declare global {
             hideDeveloperSymbols: boolean;
             writeTasmotaTele:boolean;
             deactivateDebugLog: boolean;
+            internalTftHttpServer: boolean;
 
             //onlyStartFromSystemConfig: boolean;
             logUnknownTokens: boolean;
