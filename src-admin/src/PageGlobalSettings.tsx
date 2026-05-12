@@ -16,6 +16,7 @@ import {
     type SelectChangeEvent,
     Tooltip,
 } from '@mui/material';
+import ConfigIP from './components/ConfigIP';
 
 interface WeatherEntity {
     label: string;
@@ -39,6 +40,7 @@ interface PageGlobalSettingsState extends ConfigGenericState {
     rememberLastSite?: boolean;
     writeTasmotaTele?: boolean;
     internalTftHttpServer?: boolean;
+    internalServerIp?: string;
     alive?: boolean;
 }
 
@@ -512,6 +514,24 @@ class PageGlobalSettings extends ConfigGeneric<ConfigGenericProps & { theme?: an
                         label={this.getText('internalTftHttpServer')}
                     />
                     <FormHelperText>{this.getText('internalTftHttpServerHint')}</FormHelperText>
+                    {internalTftHttpServer && (
+                        <>
+                            <ConfigIP
+                                {...this.props}
+                                schema={
+                                    {
+                                        sx: { m: 1, minWidth: 200 },
+                                        label: 'internalServerIp',
+                                        noInternal: true,
+                                        onlyIp4: true,
+                                    } as any
+                                }
+                                attr="internalServerIp"
+                                disabled={!alive}
+                            />
+                            <FormHelperText>{this.getText('internalServerIpHint')}</FormHelperText>
+                        </>
+                    )}
                 </Box>
 
                 {/* Write Tasmota Telemetry Checkbox */}
