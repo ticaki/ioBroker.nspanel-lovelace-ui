@@ -1,5 +1,11 @@
 import { expect } from 'chai';
-import { extractModelFromFilename, parseRangeHeader, resolveRange } from './http-server';
+import {
+    extractModelFromFilename,
+    parseRangeHeader,
+    resolveRange,
+    HTTPServerClass,
+    NoopFileResolver,
+} from './http-server';
 
 describe('http-server: parseRangeHeader', () => {
     it('returns null for missing/empty header', () => {
@@ -95,5 +101,67 @@ describe('http-server: extractModelFromFilename', () => {
     it('returns null for unrelated names', () => {
         expect(extractModelFromFilename('something-else.tft')).to.equal(null);
         expect(extractModelFromFilename('version.json')).to.equal(null);
+    });
+});
+
+function fakeAdapter(): any {
+    const noop = (): void => {};
+    const log = { silly: noop, debug: noop, info: noop, warn: noop, error: noop };
+    return { log, library: {} };
+}
+
+describe('http-server: on-demand lifecycle', () => {
+    it('does not listen until ensureStarted() is called', () => {
+        const s = HTTPServerClass.createHTTPServer(fakeAdapter(), 0, '127.0.0.1', new NoopFileResolver(), 60_000);
+        expect(s.ready).to.equal(false);
+        s.destroy();
+    });
+
+    it('ensureStarted() listens and is idempotent', async () => {
+        const s = HTTPServerClass.createHTTPServer(fakeAdapter(), 0, '127.0.0.1', new NoopFileResolver(), 60_000);
+        try {
+            const ok1 = await s.ensureStarted();
+            expect(ok1).to.equal(true);
+            expect(s.ready).to.equal(true);
+            const port1 = s.port;
+            const ok2 = await s.ensureStarted();
+            expect(ok2).to.equal(true);
+            expect(s.port).to.equal(port1);
+        } finally {
+            s.destroy();
+        }
+    });
+
+    it('stops automatically after idle-shutdown timeout', async () => {
+        const s = HTTPServerClass.createHTTPServer(fakeAdapter(), 0, '127.0.0.1', new NoopFileResolver(), 30);
+        try {
+            await s.ensureStarted();
+            expect(s.ready).to.equal(true);
+            await new Promise(r => setTimeout(r, 100));
+            expect(s.ready).to.equal(false);
+        } finally {
+            s.destroy();
+        }
+    });
+
+    it('can restart after idle shutdown', async () => {
+        const s = HTTPServerClass.createHTTPServer(fakeAdapter(), 0, '127.0.0.1', new NoopFileResolver(), 30);
+        try {
+            await s.ensureStarted();
+            await new Promise(r => setTimeout(r, 100));
+            expect(s.ready).to.equal(false);
+            const ok = await s.ensureStarted();
+            expect(ok).to.equal(true);
+            expect(s.ready).to.equal(true);
+        } finally {
+            s.destroy();
+        }
+    });
+
+    it('destroy() during armed idle timer does not throw', async () => {
+        const s = HTTPServerClass.createHTTPServer(fakeAdapter(), 0, '127.0.0.1', new NoopFileResolver(), 60_000);
+        await s.ensureStarted();
+        s.destroy();
+        expect(s.ready).to.equal(false);
     });
 });

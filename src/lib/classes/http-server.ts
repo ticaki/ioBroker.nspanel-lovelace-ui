@@ -313,33 +313,49 @@ export function resolveRange(range: ParsedRange | null, size: number): ResolvedR
     return { start, end, length: end - start + 1, full: false };
 }
 
+const DEFAULT_IDLE_SHUTDOWN_MS = 10 * 60 * 1000;
+
 export class HTTPServerClass extends BaseClass {
     server: Server;
     port: number = 0;
     bindAddress: string;
+    requestedPort: number;
     resolver: HTTPFileResolver;
     ready: boolean = false;
+    idleShutdownMs: number;
+    private idleTimer?: NodeJS.Timeout;
+    private activeRequests = 0;
+    private startInflight?: Promise<boolean>;
 
-    static async createHTTPServer(
+    /**
+     * Build (without listening) an on-demand HTTP server. Call `ensureStarted()` to listen.
+     */
+    static createHTTPServer(
         adapter: AdapterClassDefinition,
         port: number,
         bindAddress: string,
         resolver: HTTPFileResolver,
-    ): Promise<HTTPServerClass> {
-        const instance = new HTTPServerClass(adapter, bindAddress, resolver);
-        await instance.start(port);
-        return instance;
+        idleShutdownMs: number = DEFAULT_IDLE_SHUTDOWN_MS,
+    ): HTTPServerClass {
+        return new HTTPServerClass(adapter, port, bindAddress, resolver, idleShutdownMs);
     }
 
-    constructor(adapter: AdapterClassDefinition, bindAddress: string, resolver: HTTPFileResolver) {
+    constructor(
+        adapter: AdapterClassDefinition,
+        port: number,
+        bindAddress: string,
+        resolver: HTTPFileResolver,
+        idleShutdownMs: number = DEFAULT_IDLE_SHUTDOWN_MS,
+    ) {
         super(adapter, 'httpServer');
         this.bindAddress = bindAddress;
+        this.requestedPort = port;
         this.resolver = resolver;
+        this.idleShutdownMs = idleShutdownMs;
         this.server = http.createServer((req, res) => {
             void this.handleRequest(req, res);
         });
         this.server.on('error', err => {
-            this.ready = false;
             this.log.error(`HTTP server error: ${String(err)}`);
         });
     }
@@ -355,7 +371,35 @@ export class HTTPServerClass extends BaseClass {
         return this.resolver.resolve(file);
     }
 
+    /**
+     * Reset the idle-shutdown timer. Call when a flash trigger is dispatched so the
+     * 10-min window counts from the trigger, not just from the first Tasmota request.
+     */
+    noteActivity(): void {
+        if (this.ready) {
+            this.scheduleIdleShutdown();
+        }
+    }
+
     private async handleRequest(req: IncomingMessage, res: ServerResponse): Promise<void> {
+        this.activeRequests++;
+        this.cancelIdleTimer();
+        const onDone = (): void => {
+            if (this.activeRequests > 0) {
+                this.activeRequests--;
+            }
+            this.scheduleIdleShutdown();
+        };
+        let doneFired = false;
+        const safeDone = (): void => {
+            if (doneFired) {
+                return;
+            }
+            doneFired = true;
+            onDone();
+        };
+        res.on('finish', safeDone);
+        res.on('close', safeDone);
         try {
             if (req.method !== 'GET' && req.method !== 'HEAD') {
                 res.statusCode = 405;
@@ -427,6 +471,58 @@ export class HTTPServerClass extends BaseClass {
         }
     }
 
+    /**
+     * Start listening on demand. Idempotent: returns immediately if already ready or
+     * piggy-backs on an in-flight start. On success, arms the idle-shutdown timer.
+     */
+    async ensureStarted(): Promise<boolean> {
+        if (this.ready) {
+            this.scheduleIdleShutdown();
+            return true;
+        }
+        if (this.startInflight) {
+            return this.startInflight;
+        }
+        const p = (async (): Promise<boolean> => {
+            try {
+                await this.start(this.requestedPort);
+                this.scheduleIdleShutdown();
+                return true;
+            } catch (e) {
+                this.log.error(`Failed to start HTTP server: ${e instanceof Error ? e.message : String(e)}`);
+                return false;
+            } finally {
+                this.startInflight = undefined;
+            }
+        })();
+        this.startInflight = p;
+        return p;
+    }
+
+    private scheduleIdleShutdown(): void {
+        this.cancelIdleTimer();
+        if (!this.ready || this.activeRequests > 0) {
+            return;
+        }
+        this.idleTimer = setTimeout(() => {
+            this.idleTimer = undefined;
+            if (this.activeRequests > 0 || !this.ready) {
+                return;
+            }
+            void this.stop();
+        }, this.idleShutdownMs);
+        if (typeof this.idleTimer.unref === 'function') {
+            this.idleTimer.unref();
+        }
+    }
+
+    private cancelIdleTimer(): void {
+        if (this.idleTimer) {
+            clearTimeout(this.idleTimer);
+            this.idleTimer = undefined;
+        }
+    }
+
     async start(requestedPort: number): Promise<void> {
         const tryListen = (p: number): Promise<void> =>
             new Promise<void>((resolve, reject) => {
@@ -458,11 +554,36 @@ export class HTTPServerClass extends BaseClass {
         this.log.info(`HTTP server listening on http://${this.bindAddress}:${this.port}`);
     }
 
+    /**
+     * Graceful stop: lets in-flight responses finish. After stop(), the server can be
+     * relisten()ed via ensureStarted() — Node's http.Server allows reuse after close.
+     */
+    async stop(): Promise<void> {
+        this.cancelIdleTimer();
+        if (!this.ready) {
+            return;
+        }
+        this.ready = false;
+        await new Promise<void>(resolve => {
+            this.server.close(err => {
+                if (err) {
+                    this.log.warn(`Error closing HTTP server: ${err.message}`);
+                }
+                resolve();
+            });
+        });
+        this.log.info('HTTP server stopped (idle).');
+    }
+
     destroy(): void {
         void this.delete();
+        this.cancelIdleTimer();
         if (this.ready) {
             try {
                 this.server.close();
+                if (typeof (this.server as any).closeAllConnections === 'function') {
+                    (this.server as any).closeAllConnections();
+                }
             } catch (e) {
                 this.log.warn(`Error closing HTTP server: ${e instanceof Error ? e.message : String(e)}`);
             }

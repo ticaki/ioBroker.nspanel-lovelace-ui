@@ -16,7 +16,6 @@ import {
     type SelectChangeEvent,
     Tooltip,
 } from '@mui/material';
-import ConfigIP from './components/ConfigIP';
 
 interface WeatherEntity {
     label: string;
@@ -39,8 +38,6 @@ interface PageGlobalSettingsState extends ConfigGenericState {
     pw1?: string;
     rememberLastSite?: boolean;
     writeTasmotaTele?: boolean;
-    internalTftHttpServer?: boolean;
-    internalServerIp?: string;
     alive?: boolean;
 }
 
@@ -227,7 +224,6 @@ class PageGlobalSettings extends ConfigGeneric<ConfigGenericProps & { theme?: an
         const pw1 = data.pw1 ?? '';
         const rememberLastSite = data.rememberLastSite ?? false;
         const weatherEntity = data.weatherEntity ?? '';
-        const internalTftHttpServer = data.internalTftHttpServer ?? false;
         // const writeTasmotaTele = data.writeTasmotaTele ?? false;
 
         // Expert Mode from props (provided by json-config system)
@@ -493,45 +489,6 @@ class PageGlobalSettings extends ConfigGeneric<ConfigGenericProps & { theme?: an
                         label={this.getText('rememberLastSite')}
                     />
                     <FormHelperText>{this.getText('rememberLastSiteHint')}</FormHelperText>
-                </Box>
-
-                {/* Internal TFT HTTP Server Checkbox */}
-                <Box sx={boxStyle}>
-                    <Typography
-                        variant="h6"
-                        gutterBottom
-                    >
-                        {this.getText('headerInternalTftHttpServer')}
-                    </Typography>
-                    <FormControlLabel
-                        control={
-                            <Checkbox
-                                checked={internalTftHttpServer}
-                                onChange={this.handleCheckboxChange('internalTftHttpServer')}
-                                disabled={!alive}
-                            />
-                        }
-                        label={this.getText('internalTftHttpServer')}
-                    />
-                    <FormHelperText>{this.getText('internalTftHttpServerHint')}</FormHelperText>
-                    {internalTftHttpServer && (
-                        <>
-                            <ConfigIP
-                                {...this.props}
-                                schema={
-                                    {
-                                        sx: { m: 1, minWidth: 200 },
-                                        label: 'internalServerIp',
-                                        noInternal: true,
-                                        onlyIp4: true,
-                                    } as any
-                                }
-                                attr="internalServerIp"
-                                disabled={!alive}
-                            />
-                            <FormHelperText>{this.getText('internalServerIpHint')}</FormHelperText>
-                        </>
-                    )}
                 </Box>
 
                 {/* Write Tasmota Telemetry Checkbox */}

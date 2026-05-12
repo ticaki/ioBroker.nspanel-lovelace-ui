@@ -337,7 +337,7 @@ class NspanelLovelaceUi extends utils.Adapter {
             return;
         }
 
-        if (this.config.internalTftHttpServer && !this.config.testCase) {
+        if (!this.config.testCase) {
             try {
                 const cacheDir = defaultTftStorageDir();
                 const resolver = new ProxyCacheResolver(cacheDir, this.config.tftUrl, {
@@ -346,10 +346,10 @@ class NspanelLovelaceUi extends utils.Adapter {
                     warn: (m: string) => this.log.warn(`[httpServer] ${m}`),
                     error: (m: string) => this.log.error(`[httpServer] ${m}`),
                 });
-                this.httpServer = await HTTPServerClass.createHTTPServer(this, 0, '0.0.0.0', resolver);
+                this.httpServer = HTTPServerClass.createHTTPServer(this, 0, '0.0.0.0', resolver);
             } catch (e: any) {
                 this.log.error(
-                    `Failed to start internal TFT HTTP server: ${e instanceof Error ? e.message : String(e)}`,
+                    `Failed to prepare internal TFT HTTP server: ${e instanceof Error ? e.message : String(e)}`,
                 );
                 this.httpServer = undefined;
             }
@@ -2517,21 +2517,25 @@ class NspanelLovelaceUi extends utils.Adapter {
         const fileName = `nspanel${modelSuffix}-v${version}.tft`;
         let url = `${this.config.tftUrl}/${encodeURIComponent(fileName)}`;
 
-        if (this.config.internalTftHttpServer && this.httpServer && this.httpServer.ready && internalServerIp) {
-            const cached = await this.httpServer.ensureCached(fileName);
-            if (cached) {
-                url = `http://${internalServerIp}:${this.httpServer.port}/${encodeURIComponent(fileName)}`;
-                this.log.info(`Serving TFT "${fileName}" via internal HTTP server: ${url}`);
+        if (this.httpServer && internalServerIp) {
+            const started = await this.httpServer.ensureStarted();
+            if (started && this.httpServer.ready) {
+                const cached = await this.httpServer.ensureCached(fileName);
+                if (cached) {
+                    url = `http://${internalServerIp}:${this.httpServer.port}/${encodeURIComponent(fileName)}`;
+                    this.httpServer.noteActivity();
+                    this.log.info(`Serving TFT "${fileName}" via internal HTTP server: ${url}`);
+                } else {
+                    this.log.error(
+                        `Internal TFT HTTP server could not cache "${fileName}" from ${this.config.tftUrl}. Aborting flash.`,
+                    );
+                    return null;
+                }
             } else {
-                this.log.error(
-                    `Internal TFT HTTP server is active but could not cache "${fileName}" from ${this.config.tftUrl}. Aborting flash.`,
+                this.log.warn(
+                    `Internal TFT HTTP server could not be started — falling back to upstream URL "${url}".`,
                 );
-                return null;
             }
-        } else if (this.config.internalTftHttpServer && this.httpServer && this.httpServer.ready && !internalServerIp) {
-            this.log.warn(
-                `Internal TFT HTTP server is active but no internalServerIp was provided for this panel — falling back to upstream URL "${url}".`,
-            );
         }
 
         const cmnd = `FlashNextionAdv0 ${url}`;
