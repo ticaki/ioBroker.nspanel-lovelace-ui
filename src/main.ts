@@ -18,11 +18,7 @@ import 'source-map-support/register';
 // Load your modules here, e.g.:
 
 import * as MQTT from './lib/classes/mqtt';
-import {
-    HTTPServerClass,
-    ProxyCacheResolver,
-    defaultTftStorageDir,
-} from './lib/classes/http-server';
+import { HTTPServerClass, ProxyCacheResolver, defaultTftStorageDir } from './lib/classes/http-server';
 import { Controller } from './lib/controller/controller';
 import { Icons } from './lib/const/icon_mapping';
 import * as definition from './lib/const/definition';

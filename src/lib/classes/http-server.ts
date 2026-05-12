@@ -51,7 +51,12 @@ export class ProxyCacheResolver implements HTTPFileResolver {
     private locks = new Map<string, Promise<void>>();
     private log: ResolverLogger;
 
-    constructor(cacheDir: string, upstreamBase: string, log: ResolverLogger, keepPerModel: number = DEFAULT_KEEP_PER_MODEL) {
+    constructor(
+        cacheDir: string,
+        upstreamBase: string,
+        log: ResolverLogger,
+        keepPerModel: number = DEFAULT_KEEP_PER_MODEL,
+    ) {
         this.cacheDir = cacheDir;
         this.upstreamBase = upstreamBase.replace(/\/+$/, '');
         this.log = log;
@@ -155,7 +160,6 @@ export class ProxyCacheResolver implements HTTPFileResolver {
             const writeStream = out;
             const reader = (resp.body as ReadableStream<Uint8Array>).getReader();
             try {
-                // eslint-disable-next-line no-constant-condition
                 while (true) {
                     const { done, value } = await reader.read();
                     if (done) {
@@ -379,7 +383,7 @@ export class HTTPServerClass extends BaseClass {
                 res.end();
                 return;
             }
-            const range = parseRangeHeader(req.headers['range']);
+            const range = parseRangeHeader(req.headers.range);
             const resolved = resolveRange(range, file.size);
             res.setHeader('Accept-Ranges', 'bytes');
             res.setHeader('Content-Type', 'application/octet-stream');
