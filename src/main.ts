@@ -2532,9 +2532,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                     return null;
                 }
             } else {
-                this.log.warn(
-                    `Internal TFT HTTP server could not be started — falling back to upstream URL "${url}".`,
-                );
+                this.log.warn(`Internal TFT HTTP server could not be started — falling back to upstream URL "${url}".`);
             }
         }
 

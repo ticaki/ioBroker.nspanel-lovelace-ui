@@ -329,6 +329,12 @@ export class HTTPServerClass extends BaseClass {
 
     /**
      * Build (without listening) an on-demand HTTP server. Call `ensureStarted()` to listen.
+     *
+     * @param adapter ioBroker adapter instance (for logging).
+     * @param port TCP port to bind (`0` lets the OS choose a free port).
+     * @param bindAddress IP address to bind to (e.g. `0.0.0.0`).
+     * @param resolver Resolver providing TFT files & ranges to serve.
+     * @param idleShutdownMs Time (ms) of inactivity after which the server auto-stops.
      */
     static createHTTPServer(
         adapter: AdapterClassDefinition,

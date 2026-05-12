@@ -296,26 +296,40 @@ function resolveRange(range, size) {
   }
   return { start, end, length: end - start + 1, full: false };
 }
+const DEFAULT_IDLE_SHUTDOWN_MS = 10 * 60 * 1e3;
 class HTTPServerClass extends import_library.BaseClass {
   server;
   port = 0;
   bindAddress;
+  requestedPort;
   resolver;
   ready = false;
-  static async createHTTPServer(adapter, port, bindAddress, resolver) {
-    const instance = new HTTPServerClass(adapter, bindAddress, resolver);
-    await instance.start(port);
-    return instance;
+  idleShutdownMs;
+  idleTimer;
+  activeRequests = 0;
+  startInflight;
+  /**
+   * Build (without listening) an on-demand HTTP server. Call `ensureStarted()` to listen.
+   *
+   * @param adapter ioBroker adapter instance (for logging).
+   * @param port TCP port to bind (`0` lets the OS choose a free port).
+   * @param bindAddress IP address to bind to (e.g. `0.0.0.0`).
+   * @param resolver Resolver providing TFT files & ranges to serve.
+   * @param idleShutdownMs Time (ms) of inactivity after which the server auto-stops.
+   */
+  static createHTTPServer(adapter, port, bindAddress, resolver, idleShutdownMs = DEFAULT_IDLE_SHUTDOWN_MS) {
+    return new HTTPServerClass(adapter, port, bindAddress, resolver, idleShutdownMs);
   }
-  constructor(adapter, bindAddress, resolver) {
+  constructor(adapter, port, bindAddress, resolver, idleShutdownMs = DEFAULT_IDLE_SHUTDOWN_MS) {
     super(adapter, "httpServer");
     this.bindAddress = bindAddress;
+    this.requestedPort = port;
     this.resolver = resolver;
+    this.idleShutdownMs = idleShutdownMs;
     this.server = http.createServer((req, res) => {
       void this.handleRequest(req, res);
     });
     this.server.on("error", (err) => {
-      this.ready = false;
       this.log.error(`HTTP server error: ${String(err)}`);
     });
   }
@@ -328,7 +342,34 @@ class HTTPServerClass extends import_library.BaseClass {
     }
     return this.resolver.resolve(file);
   }
+  /**
+   * Reset the idle-shutdown timer. Call when a flash trigger is dispatched so the
+   * 10-min window counts from the trigger, not just from the first Tasmota request.
+   */
+  noteActivity() {
+    if (this.ready) {
+      this.scheduleIdleShutdown();
+    }
+  }
   async handleRequest(req, res) {
+    this.activeRequests++;
+    this.cancelIdleTimer();
+    const onDone = () => {
+      if (this.activeRequests > 0) {
+        this.activeRequests--;
+      }
+      this.scheduleIdleShutdown();
+    };
+    let doneFired = false;
+    const safeDone = () => {
+      if (doneFired) {
+        return;
+      }
+      doneFired = true;
+      onDone();
+    };
+    res.on("finish", safeDone);
+    res.on("close", safeDone);
     try {
       if (req.method !== "GET" && req.method !== "HEAD") {
         res.statusCode = 405;
@@ -399,6 +440,55 @@ class HTTPServerClass extends import_library.BaseClass {
       }
     }
   }
+  /**
+   * Start listening on demand. Idempotent: returns immediately if already ready or
+   * piggy-backs on an in-flight start. On success, arms the idle-shutdown timer.
+   */
+  async ensureStarted() {
+    if (this.ready) {
+      this.scheduleIdleShutdown();
+      return true;
+    }
+    if (this.startInflight) {
+      return this.startInflight;
+    }
+    const p = (async () => {
+      try {
+        await this.start(this.requestedPort);
+        this.scheduleIdleShutdown();
+        return true;
+      } catch (e) {
+        this.log.error(`Failed to start HTTP server: ${e instanceof Error ? e.message : String(e)}`);
+        return false;
+      } finally {
+        this.startInflight = void 0;
+      }
+    })();
+    this.startInflight = p;
+    return p;
+  }
+  scheduleIdleShutdown() {
+    this.cancelIdleTimer();
+    if (!this.ready || this.activeRequests > 0) {
+      return;
+    }
+    this.idleTimer = setTimeout(() => {
+      this.idleTimer = void 0;
+      if (this.activeRequests > 0 || !this.ready) {
+        return;
+      }
+      void this.stop();
+    }, this.idleShutdownMs);
+    if (typeof this.idleTimer.unref === "function") {
+      this.idleTimer.unref();
+    }
+  }
+  cancelIdleTimer() {
+    if (this.idleTimer) {
+      clearTimeout(this.idleTimer);
+      this.idleTimer = void 0;
+    }
+  }
   async start(requestedPort) {
     const tryListen = (p) => new Promise((resolve, reject) => {
       const onError = (err) => {
@@ -428,11 +518,35 @@ class HTTPServerClass extends import_library.BaseClass {
     this.ready = true;
     this.log.info(`HTTP server listening on http://${this.bindAddress}:${this.port}`);
   }
+  /**
+   * Graceful stop: lets in-flight responses finish. After stop(), the server can be
+   * relisten()ed via ensureStarted() — Node's http.Server allows reuse after close.
+   */
+  async stop() {
+    this.cancelIdleTimer();
+    if (!this.ready) {
+      return;
+    }
+    this.ready = false;
+    await new Promise((resolve) => {
+      this.server.close((err) => {
+        if (err) {
+          this.log.warn(`Error closing HTTP server: ${err.message}`);
+        }
+        resolve();
+      });
+    });
+    this.log.info("HTTP server stopped (idle).");
+  }
   destroy() {
     void this.delete();
+    this.cancelIdleTimer();
     if (this.ready) {
       try {
         this.server.close();
+        if (typeof this.server.closeAllConnections === "function") {
+          this.server.closeAllConnections();
+        }
       } catch (e) {
         this.log.warn(`Error closing HTTP server: ${e instanceof Error ? e.message : String(e)}`);
       }
