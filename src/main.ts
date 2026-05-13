@@ -39,7 +39,7 @@ import type {
     AdminPageItemConfig,
 } from './lib/types/adminShareConfig';
 import { isIconColorScaleElement, isTasmotaStatusNet } from './lib/types/function-and-const';
-import type { NSpanelModel, oldQRType } from './lib/types/types';
+import type { NSpanelModel, oldQRType, oldChartType } from './lib/types/types';
 import iCal from 'node-ical';
 import type { NSPanel } from './lib/types/NSPanel';
 

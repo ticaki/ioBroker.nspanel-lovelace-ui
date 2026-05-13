@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["../../../src/lib/templates/templateArray.ts"],
+  "sourcesContent": ["import { buttonTemplates } from './button';\nimport { lightTemplates } from './light';\nimport { shutterTemplates } from './shutter';\nimport { textTemplates } from './text';\nimport { scriptTemplates } from './script';\nimport { numberTemplates } from './number';\n\nexport const pageItemTemplates = Object.assign(\n    textTemplates,\n    shutterTemplates,\n    lightTemplates,\n    buttonTemplates,\n    scriptTemplates,\n    numberTemplates,\n);\n"],
+  "mappings": ";;;;;;;;;;;;;;;;;;AAAA;AAAA;AAAA;AAAA;AAAA;AAAA,oBAAgC;AAChC,mBAA+B;AAC/B,qBAAiC;AACjC,kBAA8B;AAC9B,oBAAgC;AAChC,oBAAgC;AAEzB,MAAM,oBAAoB,OAAO;AAAA,EACpC;AAAA,EACA;AAAA,EACA;AAAA,EACA;AAAA,EACA;AAAA,EACA;AACJ;",
+  "names": []
+}

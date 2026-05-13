@@ -52,22 +52,35 @@ export class PageChartLine extends PageChart {
             const maxXAxisTicks = items.maxTicks || 2; // alle x Stunden ein Tick, wenn maxTicks 2 ist, dann alle 2 Stunden ein Tick
             const xAxisTicksInterval = maxXAxisTicks > 0 ? maxXAxisTicks * 60 : 60; // Intervall in Minuten zwischen den X-Achsen-Ticks (z.B. 60 für 1 Tick pro Stunde)
             const xAxisLabelInterval = maxXAxisLabels > 0 ? maxXAxisLabels * 60 : 120; // Intervall in Minuten zwischen den X-Achsen-Beschriftungen (z.B. 120 für 1 Beschriftung pro 2 Stunden)
-            const maxX = 1440; // 24h = 1440min
+            const maxX = hoursRangeFromNow * 60; // 24h = 1440min
 
             const tempScale: number[] = [];
 
             try {
                 const dbDaten = await this.getDataFromDB(stateValue, hoursRangeFromNow, instance);
                 if (dbDaten && Array.isArray(dbDaten) && dbDaten.length > 0) {
-                    let ticksAndLabels = '';
-                    let coordinates = '';
-
-                    const ticksAndLabelsList = [];
                     const date = new Date();
                     date.setSeconds(0, 0);
                     const ts = Math.round(date.getTime() / 1000);
                     const tsStart = ts - hoursRangeFromNow * 3600;
 
+                    // Schritt 1: Koordinaten direkt aus DB-Daten berechnen
+                    const list: string[] = [];
+                    for (const entry of dbDaten) {
+                        if (entry.val == null) {
+                            continue;
+                        }
+                        const pos = Math.round((entry.ts / 1000 - tsStart) / 60);
+                        if (pos >= 0 && pos <= maxX) {
+                            const value = Math.round(entry.val as number);
+                            list.push(`${pos}:${value * 10}`);
+                            tempScale.push(value);
+                        }
+                    }
+                    const coordinates = list.join('~');
+
+                    // Schritt 2: Ticks und Labels passend zur Zeitspanne erstellen
+                    const ticksAndLabelsList: (string | number)[] = [];
                     for (let x = tsStart, i = 0; x < ts; x += xAxisTicksInterval * 60, i += xAxisTicksInterval) {
                         if (i % xAxisLabelInterval) {
                             ticksAndLabelsList.push(i);
@@ -81,32 +94,19 @@ export class PageChartLine extends PageChart {
                             ticksAndLabelsList.push(`${String(i)}^${formattedTime}`);
                         }
                     }
+                    const lastTickTs = ts - 50 * 60;
+                    const lastTickDate = new Date(lastTickTs * 1000);
                     ticksAndLabelsList.push(
-                        `${String(maxX - 10)}^${new Date(ts * 1000).getHours().toString().padStart(2, '0')}:${new Date(ts * 1000).getMinutes().toString().padStart(2, '0')}`,
+                        `${String(maxX - 50)}^${lastTickDate.getHours().toString().padStart(2, '0')}:${lastTickDate.getMinutes().toString().padStart(2, '0')}`,
                     );
-                    ticksAndLabels = ticksAndLabelsList.join('+');
+                    const ticksAndLabels = ticksAndLabelsList.join('+');
 
-                    const list = [];
-                    const startTs = Math.round(dbDaten[0].ts / 1000);
-                    const endTs = Math.round(dbDaten[dbDaten.length - 1].ts / 1000);
-                    const counter = dbDaten.length > 1 ? Math.max((endTs - startTs) / maxX, 1) : 1;
-                    for (let i = 0; i < dbDaten.length; i++) {
-                        const time = Math.round((dbDaten[i].ts / 1000 - startTs) / counter);
-                        const value = Math.round(dbDaten[i].val);
-                        if (value != null) {
-                            list.push(`${time}:${value}`);
-                            tempScale.push(value);
-                        }
-                    }
-
-                    list.pop(); // remove last element to avoid overflow
-                    coordinates = list.join('~');
                     valuesChart = `${ticksAndLabels}~${coordinates}`;
 
                     this.log.debug(`Ticks & Label: ${ticksAndLabels}`);
                     this.log.debug(`Coordinates: ${coordinates}`);
 
-                    // create ticks
+                    // create ticks y axis
                     if (tempScale.length > 0) {
                         // Round min down to nearest 10 and max up to nearest 10
                         const rawMax = Math.max(...tempScale);
@@ -124,7 +124,7 @@ export class PageChartLine extends PageChart {
                         const tempTickChart: string[] = [];
                         let currentTick = roundedMin - interval * 2;
                         while (currentTick < roundedMax + interval) {
-                            tempTickChart.push(String(currentTick));
+                            tempTickChart.push(String(currentTick * 10));
                             currentTick += interval;
                         }
                         ticksChart = tempTickChart;

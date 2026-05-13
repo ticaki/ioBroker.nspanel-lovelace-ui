@@ -63,7 +63,7 @@ class AdminConfiguration extends import_library.BaseClass {
    * @param option - Panel configuration partial containing pages and navigation arrays
    */
   async processentrys(option) {
-    var _a, _b, _c, _d, _e, _f, _g, _h;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j;
     const entries = this.pageConfig;
     for (const entry of entries) {
       if (!entry.navigationAssignment || !entry.card) {
@@ -349,7 +349,7 @@ class AdminConfiguration extends import_library.BaseClass {
             }
           } else if (!oldNext) {
             option.navigation[index].right = {
-              ...(_d = option.navigation[index].right) != null ? _d : {},
+              ...(_h = option.navigation[index].right) != null ? _h : {},
               single: newPage.uniqueID
             };
           }
@@ -361,7 +361,7 @@ class AdminConfiguration extends import_library.BaseClass {
           (b) => b && b.name === navigation.next
         );
         if (index !== -1 && option.navigation[index]) {
-          const oldPrev = (_h = option.navigation[index].left) == null ? void 0 : _h.single;
+          const oldPrev = (_i = option.navigation[index].left) == null ? void 0 : _i.single;
           if (oldPrev && oldPrev !== newPage.uniqueID) {
             option.navigation[index].left = option.navigation[index].left || {};
             option.navigation[index].left.single = newPage.uniqueID;
@@ -375,7 +375,7 @@ class AdminConfiguration extends import_library.BaseClass {
             }
           } else if (!oldPrev) {
             option.navigation[index].left = {
-              ...(_f = option.navigation[index].left) != null ? _f : {},
+              ...(_j = option.navigation[index].left) != null ? _j : {},
               single: newPage.uniqueID
             };
           }

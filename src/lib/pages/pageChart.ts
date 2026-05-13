@@ -222,6 +222,7 @@ export class PageChart extends Page {
                         if (result && 'result' in result) {
                             if (Array.isArray(result.result)) {
                                 this.log.debug(`Data points retrieved from DB: ${result.result.length}`);
+                                this.log.debug(`Data points: ${JSON.stringify(result.result)}`);
                                 for (let i = 0; i < result.result.length; i++) {
                                     this.log.debug(
                                         `Value: ${result.result[i].val}, ISO-Timestring: ${new Date(result.result[i].ts).toISOString()}`,
