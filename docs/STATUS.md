@@ -21,7 +21,7 @@ Legende: ✅ Fertig | 🔄 In Arbeit | ⚠️ Zu prüfen | ❌ Stub/leer | 🕐 
 
 | Seite (de) | Größe | Status DE | Status EN | Phase | Hinweis |
 |-----------|-------|-----------|-----------|-------|---------|
-| ScriptConfig.md | 34 KB | ⚠️ prüfen | ❌ | 2.1–2.3 | Hauptdoku |
+| ScriptConfig.md | 34 KB | ⚠️ prüfen | ❌ | 2.1–2.3 | Hauptdoku; ⚠️ doppelte H1/H2 „Seiten-Konfiguration" (Z.46 + Z.404 → Anker `seiten-konfiguration-1`), bei Phase 2 bereinigen |
 | GlobalPages.md | 22 KB | ⚠️ prüfen | ❌ | 2.4 | |
 | screensaver.md | 56 KB | ⚠️ prüfen | ❌ | 4 | Groß → 2 Sessions |
 
@@ -70,6 +70,14 @@ Legende: ✅ Fertig | 🔄 In Arbeit | ⚠️ Zu prüfen | ❌ Stub/leer | 🕐 
 | kommt-noch.md | 59 B | 🕐 Platzhalter | — | — | |
 | User-NSPanel-Funktionalität.md | 9 B | ❌ STUB | — | — | |
 
+## Bekannte Befunde / technische Schulden
+
+| Datei / Bereich | Befund | Aktion |
+|-----------------|--------|--------|
+| `src/lib/adapter-config.d.ts` Z.12 | `adminOverridesScriptPages` — nicht in Admin-UI, wird intern in `src/lib/configuration/admin.ts:301` genutzt. Kein Doku-Eintrag nötig. | — |
+| `src/lib/adapter-config.d.ts` Z.34 | `deactivateDebugLog` — deklariert, aber nirgends in Admin-UI oder Code aktiv genutzt (verwaist). Kein Doku-Eintrag. | Ggf. im Code entfernen |
+| `ScriptConfig.md` Z.46 + Z.404 | Doppelte Überschrift „Seiten-Konfiguration" (einmal `##`, einmal `#`). Erzeugt zweiten Anker `seiten-konfiguration-1`; Sidebar-Link auf ersten Anker funktioniert noch. | Bei Phase 2.1 bereinigen |
+
 ---
 
-*Zuletzt aktualisiert: 2026-05-13 (Phase 1.4 — Admin-UI vollständig)*
+*Zuletzt aktualisiert: 2026-05-13 (Phase 1.4 — Admin-UI vollständig, Review-Befunde dokumentiert)*
