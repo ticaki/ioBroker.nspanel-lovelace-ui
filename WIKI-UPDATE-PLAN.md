@@ -268,19 +268,27 @@ Da `screensaver.md` 56 KB hat, in zwei Hälften aufteilen:
 
 ## Workflow: Commit + PR nach jeder Phase
 
-Der Branch `docs/wiki-update` hat einen offenen **Entwurfs-PR**. Nach dem Abschluss jeder Phase müssen die Änderungen committet und gepusht werden — der PR aktualisiert sich automatisch.
+Der Branch `docs/wiki-update` hat einen offenen **Entwurfs-PR** (#685). Nach dem Abschluss jeder Phase müssen die Änderungen committet, gepusht **und der PR-Eingangspost aktualisiert** werden.
 
 ```bash
 # Nach jeder abgeschlossenen Phase ausführen:
 git add docs/
 git commit -m "docs(phase X.Y): kurze Beschreibung"
 git push
+
+# PR-Beschreibung aktualisieren (Phasentabelle im PR-Body):
+gh pr edit 685 --body "$(cat <<'EOF'
+## Zusammenfassung
+... (aktualisierter Text mit neuen ✅-Einträgen)
+EOF
+)"
 ```
 
 **Wichtig:**
 - Branch muss `docs/wiki-update` sein (`git branch` prüfen)
 - `docs/STATUS.md` in jedem Commit mitaktualisieren (Status auf ✅ setzen)
 - Commit-Message nennt die Phase: `docs(phase 1.1): globelSettings Admin-Tab dokumentiert`
+- **PR-Eingangspost (#685) nach jedem Phasenabschluss aktualisieren** — die Phasentabelle im PR-Body muss den neuen Status widerspiegeln (⏳ → ✅). Dazu `gh pr edit 685 --body "..."` verwenden oder den PR-Body direkt auf GitHub bearbeiten.
 
 ---
 
