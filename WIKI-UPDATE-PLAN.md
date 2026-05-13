@@ -219,7 +219,25 @@ Da `screensaver.md` 56 KB hat, in zwei Hälften aufteilen:
 
 ---
 
-## Phase 8 — Abschluss: Sidebar + Links + PR
+## Workflow: Commit + PR nach jeder Phase
+
+Der Branch `docs/wiki-update` hat einen offenen **Entwurfs-PR**. Nach dem Abschluss jeder Phase müssen die Änderungen committet und gepusht werden — der PR aktualisiert sich automatisch.
+
+```bash
+# Nach jeder abgeschlossenen Phase ausführen:
+git add docs/
+git commit -m "docs(phase X.Y): kurze Beschreibung"
+git push
+```
+
+**Wichtig:**
+- Branch muss `docs/wiki-update` sein (`git branch` prüfen)
+- `docs/STATUS.md` in jedem Commit mitaktualisieren (Status auf ✅ setzen)
+- Commit-Message nennt die Phase: `docs(phase 1.1): globelSettings Admin-Tab dokumentiert`
+
+---
+
+## Phase 8 — Abschluss: Sidebar + Links + PR für Merge vorbereiten
 
 **Aufgaben:**
 1. `docs/de/_Sidebar.md` finalisieren — alle "iA"-Markierungen entfernen wo fertig
@@ -227,12 +245,12 @@ Da `screensaver.md` 56 KB hat, in zwei Hälften aufteilen:
 3. `docs/STATUS.md` aktualisieren
 4. Alle Links prüfen: `grep -rn '\](' docs/de/ | grep '\.md)' | grep -v '#'` (Links MIT .md = falsch)
 5. Verwaiste Seiten finden: Dateien die in keinem Link vorkommen
-6. Pull Request erstellen
+6. PR-Status von "Entwurf" auf "Bereit zum Review" setzen: `gh pr ready`
 
 **Nach PR-Merge:**
 - Dateien aus `docs/de/` in das Wiki-Repo kopieren (flat)
 - Dateien aus `docs/en/` mit `en-`-Präfix in das Wiki-Repo kopieren
-- `git push` im Wiki-Repo
+- `git push` im Wiki-Repo (`/home/tim/ioBroker.nspanel-lovelace-ui.wiki/`)
 
 ---
 
