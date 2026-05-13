@@ -1,4 +1,4 @@
-# Wiki-Update-Plan: nspanel-lovelace-ui Dokumentation
+s# Wiki-Update-Plan: nspanel-lovelace-ui Dokumentation
 
 ## Worum es geht
 
@@ -51,7 +51,24 @@ docs/
 **Link-Format (GitHub-wiki-kompatibel, kein `.md`, kein Pfadpräfix):**
 - In `docs/de/*.md`: `[Linktext](Dateiname-ohne-Endung)` z.B. `[ScriptConfig](ScriptConfig)`
 - In `docs/en/*.md`: `[Linktext](en-Dateiname-ohne-Endung)` z.B. `[ScriptConfig](en-ScriptConfig)`
-- Bilder: `![alt](Pictures/bild.png)` wie im Wiki
+- Bilder: `![alt](Pictures/ordner/datei.png)` — Pfad relativ zum Wiki-Root
+
+**Bilder-Platzhalter (für fehlende Screenshots):**
+
+Überall wo ein Screenshot sinnvoll ist aber noch nicht existiert, folgendes Muster verwenden:
+
+```markdown
+> 🖼️ **Bild fehlt:** Kurze Beschreibung was zu sehen sein soll
+> Pfad: `Pictures/seitenname/beschreibung.png`
+> *Optionaler Hinweis für den Entwickler.*
+
+![Alt-Text](Pictures/seitenname/beschreibung.png)
+```
+
+- Der `> 🖼️`-Block ist für Reviewer sichtbar und zeigt klar wo ein Bild fehlt
+- Die `![...](...)`-Zeile danach ist bereits der finale Markdown — der Entwickler erstellt das Bild, legt es im Wiki-Repo unter `Pictures/` ab und entfernt den Platzhalter-Block
+- Bildpfade: `Pictures/<seitenname-lowercase>/<beschreibung-kebabcase>.png`
+- Gleiche Bilder in DE und EN verwenden (nur ein Ordner `Pictures/`, kein `de/` oder `en/` Unterordner)
 
 ---
 

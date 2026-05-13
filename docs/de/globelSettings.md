@@ -4,6 +4,12 @@ Der Tab **Global Settings** enthält adapterweite Einstellungen, die für alle a
 
 > **Hinweis:** Dieser Tab wird erst angezeigt, wenn MQTT vollständig konfiguriert ist und mindestens ein Panel angelegt wurde. Alle Einstellungen können nur geändert werden, während der Adapter läuft.
 
+> 🖼️ **Bild fehlt:** Gesamtansicht des Global Settings Tabs in der Admin-Oberfläche  
+> Pfad: `Pictures/globalSettings/global-settings-uebersicht.png`  
+> *Screenshot des kompletten Tabs mit allen Abschnitten einfügen.*
+
+![Global Settings Übersicht](Pictures/globalSettings/global-settings-uebersicht.png)
+
 ---
 
 ## Übersicht der Einstellungen
@@ -43,6 +49,11 @@ Legt das Farbschema für alle Panels fest.
 | `5` | Benutzerfarben | Vollständig benutzerdefiniertes Farbschema (konfigurierbar im Tab [colorTheme](ColorThemes)) |
 
 Bei Auswahl von `5` (Benutzerfarben) erscheint der Tab **colorTheme** in der Admin-Oberfläche.
+
+> 🖼️ **Bild fehlt:** Dropdown mit allen 6 Farbthema-Optionen  
+> Pfad: `Pictures/globalSettings/global-settings-colorTheme.png`
+
+![Farbthema Auswahl](Pictures/globalSettings/global-settings-colorTheme.png)
 
 ---
 

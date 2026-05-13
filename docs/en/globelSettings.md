@@ -4,6 +4,12 @@ The **Global Settings** tab contains adapter-wide settings that apply to all con
 
 > **Note:** This tab is only shown after MQTT is fully configured and at least one panel has been added. All settings can only be changed while the adapter is running.
 
+> 🖼️ **Image missing:** Full view of the Global Settings tab in the admin interface  
+> Path: `Pictures/globalSettings/global-settings-uebersicht.png`  
+> *Insert screenshot of the complete tab with all sections visible.*
+
+![Global Settings Overview](Pictures/globalSettings/global-settings-uebersicht.png)
+
 ---
 
 ## Settings Overview
@@ -43,6 +49,11 @@ Sets the color scheme for all panels.
 | `5` | User colors | Fully custom color scheme (configurable in the [colorTheme](ColorThemes) tab) |
 
 When `5` (User colors) is selected, the **colorTheme** tab appears in the admin interface.
+
+> 🖼️ **Image missing:** Dropdown showing all 6 color theme options  
+> Path: `Pictures/globalSettings/global-settings-colorTheme.png`
+
+![Color Theme Selection](Pictures/globalSettings/global-settings-colorTheme.png)
 
 ---
 
