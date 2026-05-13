@@ -49,7 +49,7 @@ Versucht, fehlerhafte `common.type`-Definitionen bei ioBroker-Datenpunkten autom
 | Typ | Textfeld |
 | Standard | leer |
 
-Erzwingt eine bestimmte TFT-Firmware-Version beim Flash-Vorgang, unabhängig von der aktuell empfohlenen Version. Format: Versionsnummer als String (z. B. `5.0.0`).
+Erzwingt eine bestimmte TFT-Firmware-Version beim Flash-Vorgang, unabhängig von der aktuell empfohlenen Version. Format: Versionsnummer als String, wie sie im versions-JSON des Adapters aufgeführt ist (z. B. `4.3.12` — nur als Formatbeispiel, keine Empfehlung).
 
 > ⚠️ **Nur für Tests.** Kein Support für Probleme die durch das Pinnen einer Version entstehen. Auf eigenes Risiko verwenden.
 

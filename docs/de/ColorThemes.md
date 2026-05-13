@@ -1,8 +1,12 @@
-# User-Farbthema 
+# Farbthemen
 
 **Seite im Aufbau**
 
-Diese Seite dokumentiert alle aktuell im Adapter definierten Farb-Theme Keys über alle verfügbaren Themes (default, topical, technical, sunset, volcano) und deren gegenwärtige Nutzungen im Code.
+> ⚠️ **Namens-Diskrepanz:** Die Code-Variablen heißen `topicalTheme` und `volcanoTheme` (`src/lib/const/Color.ts`). Die UI-Labels in der Admin-Oberfläche lauten jedoch **`tropical`** und **`vulcano`** (i18n-Keys `de.json`). In `globelSettings.md` werden die deutschen Anzeigenamen „Tropisch" und „Vulkan" verwendet. Beim Suchen nach einem Theme bitte alle drei Schreibweisen berücksichtigen.
+
+> **Was ist konfigurierbar?** Über `adapter-config.d.ts` (Z. 161–248) können folgende Farb-Gruppen angepasst werden: `colorStates`, `colorNavigation`, `colorWeatherIcon`, `colorDisplay`, `colorWeatherForecast`, `colorScreensaver`, `colorScreensaverForecast`, `colorCardMedia`. Jede Gruppe enthält die unten aufgeführten Keys.
+
+Diese Seite listet alle Farb-Keys über alle verfügbaren Themes (default, topical/tropical, technical, sunset, volcano/vulcano) mit Verwendungshäufigkeit im Code.
 
 Legende:
 - 1 = Key ist im jeweiligen Theme definiert

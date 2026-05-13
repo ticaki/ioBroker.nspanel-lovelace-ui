@@ -30,13 +30,7 @@ The **Tasmota Tools** tab provides tools for troubleshooting and manually reinst
 
 ---
 
-## Expert Mode: Advanced Functions
-
-The following functions are only visible in expert mode and should only be used when there is a known issue.
-
-| Button | Description |
-|--------|-------------|
-| **Factory MQTT reset Tasmota** | Resets the MQTT configuration of the panel to factory defaults (Wi-Fi is not touched). Shows a confirmation dialog. Equivalent to `reset 4` in the Tasmota console. Required when the panel was previously connected to a different MQTT host. |
+| **Factory reset Tasmota** | Resets **all Tasmota settings** to factory defaults — Wi-Fi credentials are preserved, everything else (MQTT, scripts, Berry driver) is erased. Shows a confirmation dialog. Equivalent to `reset 4` in the Tasmota console. The panel must be re-initialized afterward.
 
 ---
 

@@ -28,15 +28,7 @@ Der Tab **Tasmota Tools** stellt Werkzeuge zur Fehlerbehebung und Neuinstallatio
 | **Berry Treiber installieren** | Installiert den Berry-Treiber auf dem Panel neu. Zeigt den Fortschritt an. Nützlich, wenn der Treiber beschädigt ist oder nach Tasmota-Updates. |
 | **TFT Firmware installieren** | Installiert die TFT-Firmware neu. Berücksichtigt die Beta-TFT-Einstellung aus Global Settings (`useBetaTFT`) und das Panel-Modell. Zeigt den Fortschritt an. |
 
----
-
-## Experten-Modus: Erweiterte Funktionen
-
-Die folgenden Funktionen sind nur im Experten-Modus sichtbar und sollten nur bei bekannten Problemen verwendet werden.
-
-| Button | Beschreibung |
-|--------|-------------|
-| **Tasmota MQTT zurücksetzen** | Setzt die MQTT-Konfiguration des Panels auf die Werkseinstellungen zurück (Wifi bleibt erhalten). Zeigt einen Bestätigungsdialog. Entspricht `reset 4` in der Tasmota-Konsole. Erforderlich, wenn das Panel zuvor mit einem anderen MQTT-Host verbunden war. |
+| **Tasmota zurücksetzen** | Setzt **alle Tasmota-Einstellungen** auf Werkseinstellungen zurück — WLAN-Daten bleiben erhalten, alles andere (MQTT, Skripte, Berry-Treiber) wird gelöscht. Zeigt einen Bestätigungsdialog. Entspricht `reset 4` in der Tasmota-Konsole. Danach muss das Panel neu initialisiert werden.
 
 ---
 

@@ -49,7 +49,7 @@ Attempts to automatically correct faulty `common.type` definitions on ioBroker d
 | Type | Text field |
 | Default | empty |
 
-Forces a specific TFT firmware version during the flash process, regardless of the currently recommended version. Format: version number as string (e.g. `5.0.0`).
+Forces a specific TFT firmware version during the flash process, regardless of the currently recommended version. Format: version number as a string, exactly as listed in the adapter's version JSON (e.g. `4.3.12` — illustrative format only, not a recommendation).
 
 > ⚠️ **For testing only.** No support for issues caused by pinning a version. Use at your own risk.
 

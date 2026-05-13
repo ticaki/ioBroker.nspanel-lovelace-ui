@@ -1,4 +1,4 @@
-s# Wiki-Update-Plan: nspanel-lovelace-ui Dokumentation
+# Wiki-Update-Plan: nspanel-lovelace-ui Dokumentation
 
 ## Worum es geht
 
