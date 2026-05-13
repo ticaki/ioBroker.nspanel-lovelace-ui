@@ -8,8 +8,8 @@ Legende: ✅ Fertig | 🔄 In Arbeit | ⚠️ Zu prüfen | ❌ Stub/leer | 🕐 
 |-----------|-------|-----------|-----------|-------|---------|
 | globelSettings.md | ~4 KB | ✅ Fertig | ✅ Fertig | 1.1 | iA in Sidebar |
 | Developer.md | ~4 KB | ✅ Fertig | ✅ Fertig | 1.2 | iA in Sidebar |
-| Navigation.md | 21 B | ❌ STUB | ❌ | 1.3 | iA in Sidebar |
-| naviFlow.md | 319 B | ⚠️ minimal | ❌ | 1.3 | iA in Sidebar |
+| Navigation.md | ~4 KB | ✅ Fertig (⚠️ Tab in Überarb.) | ✅ Fertig | 1.3 | iA in Sidebar |
+| naviFlow.md | ~1 KB | ✅ Fertig | ✅ Fertig | 1.3 | iA in Sidebar |
 | symbolOverview.md | 377 B | ⚠️ minimal | ❌ | 1.4 | |
 | Maintain.md | 1024 B | ⚠️ prüfen | ❌ | 1.4 | |
 | General.md | 1520 B | ⚠️ prüfen | ❌ | 1.4 | MQTT-Einstellungen |
