@@ -34,6 +34,36 @@ cd /home/tim/ioBroker.nspanel-lovelace-ui.wiki && git pull
 
 ---
 
+## ⚠️ Qualitätsanforderungen — unbedingt lesen
+
+### Vollständigkeit
+
+Jede Dokumentationsseite muss **alle** relevanten Optionen, Parameter und Verhaltensweisen beschreiben. Eine knappe Übersicht reicht nicht — Nutzer sollen die Seite lesen können ohne in den Quellcode schauen zu müssen. Konkret:
+
+- Alle UI-Felder eines Admin-Tabs → alle dokumentieren (Name, Typ, Standard, Beschreibung)
+- Alle Konfig-Keys eines Skript-Abschnitts → alle dokumentieren mit Typ, Standardwert, Auswirkung
+- Interaktionen zwischen Feldern (z. B. "nur aktiv wenn X = true") → explizit beschreiben
+- Einschränkungen und Sonderfälle (z. B. "nur Expertenmodus", "Adapter muss laufen") → als Hinweis
+
+### Code muss geprüft werden
+
+**Vor dem Schreiben immer den zugehörigen Quellcode lesen** — nicht nur den bestehenden Wiki-Text übernehmen. Der Wiki-Text kann veraltet, unvollständig oder falsch sein.
+
+- **Admin-Tabs:** Quellcode der React-Komponente lesen (`src-admin/src/*.tsx`) + i18n-Dateien (`admin/custom/i18n/de.json`, `en.json`)
+- **Skript-Optionen:** TypeScript-Interface in `src/lib/types/config-manager.d.ts` lesen — jedes Feld prüfen
+- **Verhalten:** Implementierung in `src/lib/` nachvollziehen wenn unklar was eine Option bewirkt
+- **Kommentare im Code** (`// TODO`, `// Beta`, `// experimental`) → als Hinweis in die Doku übernehmen
+
+### Fehler die zu vermeiden sind
+
+- Felder dokumentieren die gar nicht existieren (aus altem Wiki-Text übernommen)
+- Felder weglassen die im Code existieren aber im Wiki fehlen
+- Falschen Standardwert angeben (immer aus Code ablesen, nicht raten)
+- Beschreibung aus dem Label-Key ableiten statt aus dem tatsächlichen Verhalten
+- Kommentierte (`/* ... */`) oder deaktivierte Features als aktiv dokumentieren
+
+---
+
 ## Ordnerstruktur und Konventionen
 
 ```
