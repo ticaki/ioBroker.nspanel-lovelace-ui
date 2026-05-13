@@ -1,6 +1,8 @@
 # Dokumentations-Fortschritt
 
-Legende: ✅ Fertig | 🔄 In Arbeit | ⚠️ Zu prüfen | ❌ Stub/leer | 🕐 Warten
+Legende: ✅ Fertig | 🔄 In Arbeit | ⚠️ Zu prüfen | ❌ Stub/leer | 🕐 Warten | ⏳ folgt mit DE-Phase
+
+> **Hinweis EN-Dateien:** EN-Versionen entstehen jeweils zusammen mit der DE-Phase. Aktuell existieren 11 EN-Dateien von 39 DE-Dateien — das ist plangemäß und kein Fehler. Die EN-Sidebar zeigt fehlende Seiten als „in progress".
 
 ## Admin-UI
 
@@ -15,50 +17,50 @@ Legende: ✅ Fertig | 🔄 In Arbeit | ⚠️ Zu prüfen | ❌ Stub/leer | 🕐 
 | General.md | ~3 KB | ✅ Fertig | ✅ Fertig | 1.4 | MQTT-Einstellungen |
 | NSPanelsetting.md | ~4 KB | ✅ Fertig | ✅ Fertig | 1.4 | |
 | tasmotatools.md | ~2 KB | ✅ Fertig | ✅ Fertig | 1.4 | |
-| ColorThemes.md | 5512 B | ⚠️ prüfen | ❌ | 1.4 | |
+| ColorThemes.md | 5512 B | ⚠️ prüfen | ⏳ folgt mit DE | 1.4 | |
 
 ## Konfigurationsskript
 
 | Seite (de) | Größe | Status DE | Status EN | Phase | Hinweis |
 |-----------|-------|-----------|-----------|-------|---------|
-| ScriptConfig.md | 34 KB | ⚠️ prüfen | ❌ | 2.1–2.3 | Hauptdoku; ⚠️ doppelte H1/H2 „Seiten-Konfiguration" (Z.46 + Z.404 → Anker `seiten-konfiguration-1`), bei Phase 2 bereinigen |
-| GlobalPages.md | 22 KB | ⚠️ prüfen | ❌ | 2.4 | |
-| screensaver.md | 56 KB | ⚠️ prüfen | ❌ | 4 | Groß → 2 Sessions |
+| ScriptConfig.md | 34 KB | ⚠️ prüfen | ⏳ folgt mit DE | 2.1–2.3 | Hauptdoku; ⚠️ doppelte H1/H2 „Seiten-Konfiguration" (Z.46 + Z.404 → Anker `seiten-konfiguration-1`), bei Phase 2 bereinigen |
+| GlobalPages.md | 22 KB | ⚠️ prüfen | ⏳ folgt mit DE | 2.4 | |
+| screensaver.md | 56 KB | ⚠️ prüfen | ⏳ folgt mit DE | 4 | Groß → 2 Sessions |
 
 ## Standard Pages
 
 | Seite (de) | Größe | Status DE | Status EN | Phase | Hinweis |
 |-----------|-------|-----------|-----------|-------|---------|
-| cardAlarm.md | 94 B | ❌ STUB | ❌ | 3 | |
-| pageUnlock.md | 80 B | 🕐 warten | 🕐 | — | Warte auf Tests |
-| PageConfig.md | 3195 B | ⚠️ prüfen | ❌ | 3 | |
-| cardGrid.md | 2620 B | ⚠️ prüfen | ❌ | 3 | |
-| cardQR.md | 4065 B | ⚠️ prüfen | ❌ | 3 | |
+| cardAlarm.md | 94 B | ❌ STUB | ⏳ folgt mit DE | 3 | |
+| pageUnlock.md | 80 B | 🕐 warten | 🕐 warten | — | Warte auf Tests |
+| PageConfig.md | 3195 B | ⚠️ prüfen | ⏳ folgt mit DE | 3 | |
+| cardGrid.md | 2620 B | ⚠️ prüfen | ⏳ folgt mit DE | 3 | |
+| cardQR.md | 4065 B | ⚠️ prüfen | ⏳ folgt mit DE | 3 | |
 | PageQR_old.md | 4674 B | 🕐 veraltet | — | — | Ggf. löschen |
-| PagePower.md | 5959 B | ⚠️ prüfen | ❌ | 3 | |
-| PageChart.md | 3139 B | ⚠️ prüfen | ❌ | 3 | |
-| PageMedia.md | 5434 B | ⚠️ prüfen | ❌ | 3 | |
-| PageThermo2.md | 9872 B | ⚠️ prüfen | ❌ | 3 | |
-| PagePopup.md | 3971 B | ⚠️ prüfen | ❌ | 3 | |
-| cardTrash.md | 2939 B | ⚠️ prüfen | ❌ | 3 | |
-| Pages.md | 503 B | ⚠️ prüfen | ❌ | 3 | Übersichtsseite |
+| PagePower.md | 5959 B | ⚠️ prüfen | ⏳ folgt mit DE | 3 | |
+| PageChart.md | 3139 B | ⚠️ prüfen | ⏳ folgt mit DE | 3 | |
+| PageMedia.md | 5434 B | ⚠️ prüfen | ⏳ folgt mit DE | 3 | |
+| PageThermo2.md | 9872 B | ⚠️ prüfen | ⏳ folgt mit DE | 3 | |
+| PagePopup.md | 3971 B | ⚠️ prüfen | ⏳ folgt mit DE | 3 | |
+| cardTrash.md | 2939 B | ⚠️ prüfen | ⏳ folgt mit DE | 3 | |
+| Pages.md | 503 B | ⚠️ prüfen | ⏳ folgt mit DE | 3 | Übersichtsseite |
 
 ## Developer
 
 | Seite (de) | Größe | Status DE | Status EN | Phase | Hinweis |
 |-----------|-------|-----------|-----------|-------|---------|
-| Developer-Templates.md | 23 KB | ⚠️ prüfen | ❌ | 5 | |
-| ALIAS.md | 14 KB | ⚠️ prüfen | ❌ | 5 | |
-| Developer-News-(Latest).md | 11 KB | ⚠️ prüfen | ❌ | 5 | Regelmäßig aktualisieren |
-| Developer-Readme.md | 5849 B | ⚠️ prüfen | ❌ | 5 | |
+| Developer-Templates.md | 23 KB | ⚠️ prüfen | ⏳ folgt mit DE | 5 | |
+| ALIAS.md | 14 KB | ⚠️ prüfen | ⏳ folgt mit DE | 5 | |
+| Developer-News-(Latest).md | 11 KB | ⚠️ prüfen | ⏳ folgt mit DE | 5 | Regelmäßig aktualisieren |
+| Developer-Readme.md | 5849 B | ⚠️ prüfen | ⏳ folgt mit DE | 5 | |
 
 ## Installation
 
 | Seite (de) | Größe | Status DE | Status EN | Phase | Hinweis |
 |-----------|-------|-----------|-----------|-------|---------|
-| NSPanel-flashen.md | 3233 B | ⚠️ prüfen | ❌ | 5 | |
-| Adapter-Installation.md | 3192 B | ⚠️ prüfen | ❌ | 5 | |
-| NSPanel-Nextion-Editor.md | 5727 B | ⚠️ prüfen | ❌ | 5 | |
+| NSPanel-flashen.md | 3233 B | ⚠️ prüfen | ⏳ folgt mit DE | 5 | |
+| Adapter-Installation.md | 3192 B | ⚠️ prüfen | ⏳ folgt mit DE | 5 | |
+| NSPanel-Nextion-Editor.md | 5727 B | ⚠️ prüfen | ⏳ folgt mit DE | 5 | |
 
 ## Infrastruktur
 
@@ -66,7 +68,7 @@ Legende: ✅ Fertig | 🔄 In Arbeit | ⚠️ Zu prüfen | ❌ Stub/leer | 🕐 
 |-----------|-------|-----------|-----------|-------|---------|
 | Home.md | 534 B | ⚠️ prüfen | ✅ Stub | 6 | |
 | _Sidebar.md | 2078 B | ⚠️ prüfen | ✅ Stub | 6 | |
-| _Footer.md | 191 B | ✅ OK | — | — | Nur Footer |
+| _Footer.md | 191 B | ✅ OK | ✅ Fertig | — | EN: „Back to top" |
 | kommt-noch.md | 59 B | 🕐 Platzhalter | — | — | |
 | User-NSPanel-Funktionalität.md | 9 B | ❌ STUB | — | — | |
 
