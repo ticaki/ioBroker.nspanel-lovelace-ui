@@ -10,7 +10,7 @@
   
   
 **Einleitung**  
-- [Funktionsübersicht]()  
+- [Funktionsübersicht](User-NSPanel-Funktionalität) *(im Aufbau)*  
   
 **Basisinstallation**  
 - [NSPanel flashen](NSPanel-flashen)  

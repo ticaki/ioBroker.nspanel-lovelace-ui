@@ -31,8 +31,8 @@ Legende: ✅ Fertig | 🔄 In Arbeit | ⚠️ Zu prüfen | ❌ Stub/leer | 🕐 
 
 | Seite (de) | Größe | Status DE | Status EN | Phase | Hinweis |
 |-----------|-------|-----------|-----------|-------|---------|
-| cardAlarm.md | 94 B | ❌ STUB | ⏳ folgt mit DE | 3 | |
-| pageUnlock.md | 80 B | 🕐 warten | 🕐 warten | — | Warte auf Tests |
+| cardAlarm.md | 94 B | ❌ STUB (Platzhaltertext, Bild) | ⏳ folgt mit DE | 3 | Im Sidebar verlinkt als „Page Alarm" — aktuell unfertig |
+| pageUnlock.md | 80 B | 🕐 warten | 🕐 warten | — | Warte auf Tests; kein Sidebar-Link |
 | PageConfig.md | 3195 B | ⚠️ prüfen | ⏳ folgt mit DE | 3 | |
 | cardGrid.md | 2620 B | ⚠️ prüfen | ⏳ folgt mit DE | 3 | |
 | cardQR.md | 4065 B | ⚠️ prüfen | ⏳ folgt mit DE | 3 | |
@@ -66,11 +66,11 @@ Legende: ✅ Fertig | 🔄 In Arbeit | ⚠️ Zu prüfen | ❌ Stub/leer | 🕐 
 
 | Seite (de) | Größe | Status DE | Status EN | Phase | Hinweis |
 |-----------|-------|-----------|-----------|-------|---------|
-| Home.md | 534 B | ⚠️ prüfen | ✅ Stub | 6 | |
-| _Sidebar.md | 2078 B | ⚠️ prüfen | ✅ Stub | 6 | |
+| Home.md | 534 B | ❌ praktisch leer (nur Bilder/Headlines) | ✅ Stub | 6 | Einstiegsseite, sichtbar im Wiki |
+| _Sidebar.md | 2078 B | ⚠️ prüfen | ✅ Stub | 6 | ⚠️ Z.13 war Leerlink → auf `User-NSPanel-Funktionalität` korrigiert |
 | _Footer.md | 191 B | ✅ OK | ✅ Fertig | — | EN: „Back to top" |
-| kommt-noch.md | 59 B | 🕐 Platzhalter | — | — | |
-| User-NSPanel-Funktionalität.md | 9 B | ❌ STUB | — | — | |
+| kommt-noch.md | 59 B | 🕐 Platzhalter | — | — | Catch-all für tote Adapter-Links, kein Inhalt geplant |
+| User-NSPanel-Funktionalität.md | 9 B | ❌ STUB | — | — | Ziel von `_Sidebar.md` → Funktionsübersicht, noch leer |
 
 ## Bekannte Befunde / technische Schulden
 
@@ -82,4 +82,16 @@ Legende: ✅ Fertig | 🔄 In Arbeit | ⚠️ Zu prüfen | ❌ Stub/leer | 🕐 
 
 ---
 
-*Zuletzt aktualisiert: 2026-05-13 (Phase 1.4 — Admin-UI vollständig, Review-Befunde dokumentiert)*
+## Aktuell im Wiki verlinkter, unvollständiger Inhalt
+
+Diese Seiten sind im Sidebar oder einer anderen Seite verlinkt, aber noch nicht fertiggestellt — sichtbar für Wiki-Leser:
+
+| Seite | Problem | Ziel |
+|-------|---------|------|
+| `cardAlarm.md` | Nur Platzhaltertext + Bild, kein echter Inhalt | Phase 3 |
+| `Home.md` | Nur Bilder und Headlines, kein beschreibender Text | Phase 6 |
+| `User-NSPanel-Funktionalität.md` | Nur „Im Aufbau", Sidebar verlinkt darauf | Phase 6 |
+
+---
+
+*Zuletzt aktualisiert: 2026-05-13 (Stubs und Sidebar-Leerlink dokumentiert)*
