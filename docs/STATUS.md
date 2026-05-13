@@ -10,11 +10,11 @@ Legende: ✅ Fertig | 🔄 In Arbeit | ⚠️ Zu prüfen | ❌ Stub/leer | 🕐 
 | Developer.md | ~4 KB | ✅ Fertig | ✅ Fertig | 1.2 | iA in Sidebar |
 | Navigation.md | ~4 KB | ✅ Fertig (⚠️ Tab in Überarb.) | ✅ Fertig | 1.3 | iA in Sidebar |
 | naviFlow.md | ~1 KB | ✅ Fertig | ✅ Fertig | 1.3 | iA in Sidebar |
-| symbolOverview.md | 377 B | ⚠️ minimal | ❌ | 1.4 | |
-| Maintain.md | 1024 B | ⚠️ prüfen | ❌ | 1.4 | |
-| General.md | 1520 B | ⚠️ prüfen | ❌ | 1.4 | MQTT-Einstellungen |
-| NSPanelsetting.md | 1732 B | ⚠️ prüfen | ❌ | 1.4 | |
-| tasmotatools.md | 614 B | ⚠️ prüfen | ❌ | 1.4 | |
+| symbolOverview.md | ~1 KB | ✅ Fertig | ✅ Fertig | 1.4 | |
+| Maintain.md | ~3 KB | ✅ Fertig | ✅ Fertig | 1.4 | |
+| General.md | ~3 KB | ✅ Fertig | ✅ Fertig | 1.4 | MQTT-Einstellungen |
+| NSPanelsetting.md | ~4 KB | ✅ Fertig | ✅ Fertig | 1.4 | |
+| tasmotatools.md | ~2 KB | ✅ Fertig | ✅ Fertig | 1.4 | |
 | ColorThemes.md | 5512 B | ⚠️ prüfen | ❌ | 1.4 | |
 
 ## Konfigurationsskript
@@ -72,4 +72,4 @@ Legende: ✅ Fertig | 🔄 In Arbeit | ⚠️ Zu prüfen | ❌ Stub/leer | 🕐 
 
 ---
 
-*Zuletzt aktualisiert: 2026-05-13 (Phase 0 — Baseline)*
+*Zuletzt aktualisiert: 2026-05-13 (Phase 1.4 — Admin-UI vollständig)*
