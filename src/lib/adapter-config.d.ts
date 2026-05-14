@@ -126,7 +126,7 @@ declare global {
                 power7_valueUnit: string,
                 power8_selInternalCalculation: boolean,
                 power8_state: string,
-                power8_selPowerSupply: number,
+                power8_selPowerSupply: number[],
                 power8_valueDecimal: number,
                 power8_valueUnit: string
             }[];

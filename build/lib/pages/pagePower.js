@@ -85,6 +85,7 @@ class PagePower extends import_Page.Page {
     super(config, options);
     if (options.config && options.config.card == "cardPower") {
       this.config = options.config;
+      this.index = this.config.index;
     }
     this.minUpdateInterval = 2e3;
   }
