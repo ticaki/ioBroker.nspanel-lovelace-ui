@@ -165,9 +165,7 @@ class MaintainPanel extends ConfigGeneric<ConfigGenericProps & MaintainPanelProp
                 const activatedState = await this.props.oContext.socket.getState(activatedStateId);
                 // null/undefined → treat as activated (true)
                 const isActivated =
-                    activatedState?.val !== undefined && activatedState.val !== null
-                        ? !!activatedState.val
-                        : true;
+                    activatedState?.val !== undefined && activatedState.val !== null ? !!activatedState.val : true;
                 if (this._isMounted) {
                     this.setState(prev => ({ activatedMap: { ...prev.activatedMap, [panel.id]: isActivated } }));
                 }
@@ -250,7 +248,9 @@ class MaintainPanel extends ConfigGeneric<ConfigGenericProps & MaintainPanelProp
         if (!this._isMounted) {
             return;
         }
-        const match = id.match(new RegExp(`${this.adapterName}\\.${this.instance}\\.panels\\.([^.]+)\\.cmd\\.activated`));
+        const match = id.match(
+            new RegExp(`${this.adapterName}\\.${this.instance}\\.panels\\.([^.]+)\\.cmd\\.activated`),
+        );
         if (!match) {
             return;
         }

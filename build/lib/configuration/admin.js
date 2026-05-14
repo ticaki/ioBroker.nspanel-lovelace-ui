@@ -72,9 +72,6 @@ class AdminConfiguration extends import_library.BaseClass {
    * @param option - Panel configuration partial containing pages and navigation arrays
    */
   async processentrys(option) {
-<<<<<<< HEAD
-    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j;
-=======
     var _a, _b;
     try {
       const pendingNavs = await this.createPagesFromConfig(option);
@@ -98,8 +95,7 @@ Stack: ${stack}`
    * @param option - Panel configuration partial
    */
   async createPagesFromConfig(option) {
-    var _a, _b;
->>>>>>> main
+    var _a, _b, _c, _d, _e, _f;
     const entries = this.pageConfig;
     const pendingNavs = [];
     for (const entry of entries) {
@@ -357,72 +353,6 @@ Stack: ${stack}`
         right: { single: void 0, double: void 0 },
         left: { single: void 0, double: void 0 }
       };
-<<<<<<< HEAD
-      if (!navigation.prev && !navigation.next && !navigation.home && !navigation.parent) {
-        navigation.home = "main";
-      }
-      let overrwriteNext = false;
-      if (navigation.prev) {
-        navigationEntry.left.single = navigation.prev;
-        const index = option.navigation.findIndex(
-          (b) => b && b.name === navigation.prev
-        );
-        if (index !== -1 && option.navigation[index]) {
-          const oldNext = (_g = option.navigation[index].right) == null ? void 0 : _g.single;
-          if (oldNext && oldNext !== newPage.uniqueID) {
-            overrwriteNext = true;
-            option.navigation[index].right = option.navigation[index].right || {};
-            option.navigation[index].right.single = newPage.uniqueID;
-            navigationEntry.right.single = oldNext;
-            const nextIndex = option.navigation.findIndex(
-              (b) => b && b.name === oldNext
-            );
-            if (nextIndex !== -1 && option.navigation[nextIndex]) {
-              option.navigation[nextIndex].left = option.navigation[nextIndex].left || {};
-              option.navigation[nextIndex].left.single = newPage.uniqueID;
-            }
-          } else if (!oldNext) {
-            option.navigation[index].right = {
-              ...(_h = option.navigation[index].right) != null ? _h : {},
-              single: newPage.uniqueID
-            };
-          }
-        }
-      }
-      if (!overrwriteNext && navigation.next) {
-        navigationEntry.right.single = navigation.next;
-        const index = option.navigation.findIndex(
-          (b) => b && b.name === navigation.next
-        );
-        if (index !== -1 && option.navigation[index]) {
-          const oldPrev = (_i = option.navigation[index].left) == null ? void 0 : _i.single;
-          if (oldPrev && oldPrev !== newPage.uniqueID) {
-            option.navigation[index].left = option.navigation[index].left || {};
-            option.navigation[index].left.single = newPage.uniqueID;
-            navigationEntry.left.single = oldPrev;
-            const prevIndex = option.navigation.findIndex(
-              (b) => b && b.name === oldPrev
-            );
-            if (prevIndex !== -1 && option.navigation[prevIndex]) {
-              option.navigation[prevIndex].right = option.navigation[prevIndex].right || {};
-              option.navigation[prevIndex].right.single = newPage.uniqueID;
-            }
-          } else if (!oldPrev) {
-            option.navigation[index].left = {
-              ...(_j = option.navigation[index].left) != null ? _j : {},
-              single: newPage.uniqueID
-            };
-          }
-        }
-      }
-      if (navigation.home) {
-        navigationEntry.left.double = navigation.home;
-      }
-      if (navigation.parent) {
-        navigationEntry.right.double = navigation.parent;
-      }
-=======
->>>>>>> main
       option.navigation.push(navigationEntry);
       const navigation = navAssign.navigation;
       if (!navigation) {
