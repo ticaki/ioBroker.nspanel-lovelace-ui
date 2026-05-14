@@ -159,6 +159,7 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
 -->
 ### **WORK IN PROGRESS**
 - (ticaki) cardPower admin: drag & drop between slots now works (missing dataTransfer.setData prevented Firefox/Safari from starting the drag)
+- (copilot) Adapter requires node.js >= 22 now
 
 ### 0.17.8 (2026-04-25)
 - (ticaki) fixed: Cannot read properties of undefined (reading 'trim')
@@ -280,6 +281,8 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
 - (ticaki) pagePopup added
 - (ticaki) color for brightsky favorit/bottom day fixed
 - (ticaki) unlock pin fail fixed
+
+[Older changelogs can be found there](CHANGELOG_OLD.md)
 
 ## License
 
