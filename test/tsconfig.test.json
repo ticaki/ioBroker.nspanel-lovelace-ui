@@ -1,0 +1,23 @@
+{
+    "extends": "../tsconfig.json",
+    "compilerOptions": {
+        "module": "commonjs",
+        "moduleResolution": "node",
+        "noEmit": false,
+        "isolatedModules": false,
+        "target": "es2022",
+        "esModuleInterop": true,
+        "resolveJsonModule": true
+    },
+    "ts-node": {
+        "transpileOnly": true,
+        "compilerOptions": {
+            "module": "commonjs",
+            "moduleResolution": "node",
+            "target": "es2022",
+            "esModuleInterop": true,
+            "resolveJsonModule": true
+        }
+    },
+    "include": ["../src/**/*.ts"]
+}
