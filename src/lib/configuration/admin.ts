@@ -189,6 +189,14 @@ export class AdminConfiguration extends BaseClass {
                     this.log.debug(`Generated trash 1page for '${entry.uniqueName}'`);
                     break;
                 }
+                case 'cardPower': {
+                    if (!isAlwaysOnMode(entry.alwaysOn)) {
+                        entry.alwaysOn = 'none';
+                    }
+                    newPage = dataForCardPower(entry, this.adapter);
+                    this.log.debug(`Generated cardPower page for '${entry.uniqueName}'`);
+                    break;
+                }
                 case 'cardGrid':
                 case 'cardGrid2':
                 case 'cardGrid3': {
@@ -640,6 +648,206 @@ function isAlwaysOnMode(F: any): F is AlwaysOnMode {
             exhaustiveCheck(R);
             return false;
     }
+}
+
+/**
+ * Map a 'W'|'kW'|'MW' selection to the internal targetUnit index used by PagePower.
+ *
+ * @param unit Display unit string from the React form
+ */
+function mapPowerTargetUnit(unit: string | undefined): number | undefined {
+    switch (unit) {
+        case 'kW':
+            return 1;
+        case 'MW':
+            return 2;
+        case 'W':
+            return 0;
+        default:
+            return undefined;
+    }
+}
+
+/**
+ * Build the per-slot data block for cardPower from a PowerSlotConfig.
+ * Mirrors the structure produced by PagePower.getPowerPageConfig() for one slot.
+ *
+ * @param slot Per-slot configuration from the React PowerEntry
+ */
+function buildPowerSlotData(slot: ShareConfig.PowerSlotConfig | undefined): any {
+    const s = slot ?? {};
+    const stateId = (s.state || '').trim();
+    const useColorScale = !!s.useColorScale;
+    const iconColor = useColorScale ? '' : s.iconColor || '';
+    const unitSuffix = s.valueUnit ? ` ${s.valueUnit}` : '';
+
+    const icon: any = {
+        true: {
+            value: { type: 'const', constVal: s.icon || '' },
+            color: { type: 'const', constVal: iconColor },
+        },
+        false: undefined,
+    };
+    if (useColorScale && typeof s.minColorScale === 'number' && typeof s.maxColorScale === 'number') {
+        icon.scale = {
+            type: 'const',
+            constVal: {
+                val_min: s.minColorScale,
+                val_max: s.maxColorScale,
+                val_best: typeof s.bestColorScale === 'number' ? s.bestColorScale : s.minColorScale,
+                mode: 'triGrad',
+            },
+        };
+    }
+
+    const value = stateId
+        ? {
+              value: { type: 'triggered', dp: stateId },
+              decimal: { type: 'const', constVal: s.valueDecimal ?? 0 },
+              unit: { type: 'const', constVal: unitSuffix },
+          }
+        : undefined;
+
+    const speed = stateId
+        ? {
+              value: { type: 'triggered', dp: stateId },
+              minScale: { type: 'const', constVal: s.minSpeedScale ?? 0 },
+              maxScale: { type: 'const', constVal: s.maxSpeedScale ?? 10_000 },
+              negate: { type: 'const', constVal: !!s.reverse },
+          }
+        : undefined;
+
+    const targetUnit = mapPowerTargetUnit(s.valueUnit);
+
+    return {
+        icon,
+        value,
+        speed,
+        text: { true: { type: 'const', constVal: s.entityHeadline || '' } },
+        targetUnit: targetUnit ? { type: 'const', constVal: targetUnit } : undefined,
+    };
+}
+
+/**
+ * Convert a PowerEntry from the React admin tab into a runtime PageBase for cardPower.
+ *
+ * Side effect: ensures `adapter.config.pagePowerdata` contains a flat-field record for this
+ * page (under its uniqueName). PagePower.update() and onInternalCommand read
+ * `adapter.config.pagePowerdata[index]` at runtime for the internal-sum calculation, so the
+ * synthetic record must be present and `index` must point at it. If a record with the same
+ * pageName already exists (legacy jsonConfig source), it is replaced — the React tab takes
+ * precedence by user request.
+ *
+ * @param entry   PowerEntry as built by the React admin editor
+ * @param adapter Adapter instance (for mutating `adapter.config.pagePowerdata`)
+ */
+function dataForCardPower(entry: ShareConfig.PowerEntry, adapter: any): PageBase {
+    const cfg: any = adapter.config || {};
+    if (!Array.isArray(cfg.pagePowerdata)) {
+        cfg.pagePowerdata = [];
+    }
+    const slotMap: Array<[number, ShareConfig.PowerSlotConfig | undefined]> = [
+        [1, entry.leftTop],
+        [2, entry.leftMiddle],
+        [3, entry.leftBottom],
+        [4, entry.rightTop],
+        [5, entry.rightMiddle],
+        [6, entry.rightBottom],
+    ];
+    const synth: Record<string, unknown> = {
+        pageName: entry.uniqueName,
+        headline: entry.headline || '',
+        alwaysOnDisplay: entry.alwaysOn === 'always',
+        hiddenByTrigger: !!entry.hidden,
+        power7_state: entry.homeTop?.state || '',
+        power7_valueDecimal: entry.homeTop?.valueDecimal ?? 0,
+        power7_valueUnit: entry.homeTop?.valueUnit || 'W',
+        power8_state: entry.homeBot?.state || '',
+        power8_valueDecimal: entry.homeBot?.valueDecimal ?? 0,
+        power8_valueUnit: entry.homeBot?.valueUnit || 'W',
+        power8_selInternalCalculation: !!entry.homeBot?.selInternalCalculation,
+        power8_selPowerSupply: Array.isArray(entry.homeBot?.selPowerSupply) ? entry.homeBot.selPowerSupply : [],
+    };
+    for (const [i, s] of slotMap) {
+        const cur = s ?? {};
+        synth[`power${i}_state`] = cur.state || '';
+        synth[`power${i}_icon`] = cur.icon || '';
+        synth[`power${i}_iconColor`] = cur.iconColor || '';
+        synth[`power${i}_valueDecimal`] = cur.valueDecimal ?? 0;
+        synth[`power${i}_valueUnit`] = cur.valueUnit || 'W';
+        synth[`power${i}_entityHeadline`] = cur.entityHeadline || '';
+        synth[`_power${i}_useColorScale`] = !!cur.useColorScale;
+        synth[`power${i}_minColorScale`] = cur.minColorScale ?? 0;
+        synth[`power${i}_maxColorScale`] = cur.maxColorScale ?? 10_000;
+        synth[`power${i}_bestColorScale`] = cur.bestColorScale ?? 0;
+        synth[`power${i}_minSpeedScale`] = cur.minSpeedScale ?? 0;
+        synth[`power${i}_maxSpeedScale`] = cur.maxSpeedScale ?? 10_000;
+        synth[`power${i}_reverse`] = !!cur.reverse;
+    }
+
+    // Replace existing record (jsonConfig or earlier React run) — React takes precedence.
+    const existingIdx = cfg.pagePowerdata.findIndex(
+        (p: any) => p && typeof p === 'object' && p.pageName === entry.uniqueName,
+    );
+    let index: number;
+    if (existingIdx >= 0) {
+        cfg.pagePowerdata[existingIdx] = synth;
+        index = existingIdx;
+    } else {
+        index = cfg.pagePowerdata.length;
+        cfg.pagePowerdata.push(synth);
+    }
+
+    const homeBotInternal = !!entry.homeBot?.selInternalCalculation;
+    const homeBotState = (entry.homeBot?.state || '').trim();
+    const homeBotUnitSuffix = entry.homeBot?.valueUnit ? ` ${entry.homeBot.valueUnit}` : '';
+    const homeValueBot: any = homeBotInternal
+        ? {
+              value: { type: 'internal', dp: `///${entry.uniqueName}/powerSum` },
+              decimal: { type: 'const', constVal: entry.homeBot?.valueDecimal ?? 0 },
+              unit: { type: 'const', constVal: homeBotUnitSuffix },
+          }
+        : homeBotState
+          ? {
+                value: { type: 'triggered', dp: homeBotState },
+                decimal: { type: 'const', constVal: entry.homeBot?.valueDecimal ?? 0 },
+                unit: { type: 'const', constVal: homeBotUnitSuffix },
+            }
+          : undefined;
+
+    const homeTopState = (entry.homeTop?.state || '').trim();
+    const homeTopUnitSuffix = entry.homeTop?.valueUnit ? ` ${entry.homeTop.valueUnit}` : '';
+    const homeValueTop = homeTopState
+        ? {
+              value: { type: 'triggered', dp: homeTopState },
+              decimal: { type: 'const', constVal: entry.homeTop?.valueDecimal ?? 0 },
+              unit: { type: 'const', constVal: homeTopUnitSuffix },
+          }
+        : undefined;
+
+    return {
+        uniqueID: entry.uniqueName,
+        hidden: !!entry.hidden,
+        alwaysOn: entry.alwaysOn ?? 'none',
+        dpInit: '',
+        config: {
+            card: 'cardPower',
+            index,
+            data: {
+                headline: { type: 'const', constVal: entry.headline || entry.uniqueName },
+                homeIcon: { true: { value: { type: 'const', constVal: 'home' } }, false: undefined },
+                homeValueTop,
+                homeValueBot,
+                leftTop: buildPowerSlotData(entry.leftTop),
+                leftMiddle: buildPowerSlotData(entry.leftMiddle),
+                leftBottom: buildPowerSlotData(entry.leftBottom),
+                rightTop: buildPowerSlotData(entry.rightTop),
+                rightMiddle: buildPowerSlotData(entry.rightMiddle),
+                rightBottom: buildPowerSlotData(entry.rightBottom),
+            },
+        },
+        pageItems: [],
+    } as unknown as PageBase;
 }
 
 function dataForcardTrash(entry: ShareConfig.TrashEntry): PageBase {

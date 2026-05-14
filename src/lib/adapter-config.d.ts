@@ -128,7 +128,7 @@ declare global {
                 power8_state: string,
                 power8_selPowerSupply: number,
                 power8_valueDecimal: number,
-                power8_valueUnit: string
+                power8_valueUnit: string,
             }[];
 
             // PageChart
