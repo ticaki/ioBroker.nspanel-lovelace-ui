@@ -15,6 +15,7 @@ import { PageAlarmEditor } from './components/PageAlarmEditor';
 import { PageMenuEditor } from './components/PageMenuEditor';
 import { PageQREditor } from './components/PageQREditor';
 import { PageTrashEditor } from './components/PageTrashEditor';
+import { PageChartEditor } from './components/PageChartEditor';
 
 interface PageConfigManagerState extends ConfigGenericState {
     entries: PageConfigEntry[];
@@ -331,6 +332,24 @@ class PageConfigManager extends ConfigGeneric<ConfigGenericProps & { theme?: any
                     { textTrash: '', customTrash: '', iconColor: '#d2d2d2', icon: '' },
                 ],
             };
+        } else if (cardType === 'cardChart') {
+            newEntry = {
+                card: 'cardChart',
+                uniqueName: name,
+                headline: name,
+                chartColor: '#FFFF00',
+                selChartType: 'cardChart',
+                selInstanceDataSource: 0,
+                selInstance: '',
+                setStateForTicks: '',
+                setStateForValues: '',
+                setStateForDB: '',
+                txtLabelYAchse: '',
+                rangeHours: 24,
+                maxXAxisTicks: 2,
+                factorCardChart: 1,
+                maxXAxisLabels: 4,
+            };
         } else if (
             cardType === 'pageMenu' ||
             cardType === 'cardGrid' ||
@@ -501,6 +520,19 @@ class PageConfigManager extends ConfigGeneric<ConfigGenericProps & { theme?: any
         if (currentEntry.card === 'cardTrash') {
             return (
                 <PageTrashEditor
+                    entry={currentEntry}
+                    onEntryChange={this.handleEntryChange}
+                    onUniqueNameChange={this.handleUniqueNameChange}
+                    getText={key => this.getText(key)}
+                    oContext={this.props.oContext}
+                    theme={this.props.theme}
+                />
+            );
+        }
+
+        if (currentEntry.card === 'cardChart') {
+            return (
+                <PageChartEditor
                     entry={currentEntry}
                     onEntryChange={this.handleEntryChange}
                     onUniqueNameChange={this.handleUniqueNameChange}

@@ -95,7 +95,7 @@ Stack: ${stack}`
    * @param option - Panel configuration partial
    */
   async createPagesFromConfig(option) {
-    var _a, _b;
+    var _a, _b, _c, _d, _e, _f;
     const entries = this.pageConfig;
     const pendingNavs = [];
     for (const entry of entries) {
@@ -185,6 +185,39 @@ Stack: ${stack}`
           this.log.debug(`Generated trash 1page for '${entry.uniqueName}'`);
           break;
         }
+        case "cardChart": {
+          if (!isAlwaysOnMode(entry.alwaysOn)) {
+            entry.alwaysOn = "none";
+          }
+          const dbData = entry.selInstanceDataSource === 1 ? {
+            instance: entry.selInstance || "",
+            state: entry.setStateForDB || "",
+            hours: (_a = entry.rangeHours) != null ? _a : 24,
+            maxTicks: (_b = entry.maxXAxisTicks) != null ? _b : 2,
+            factor: (_c = entry.factorCardChart) != null ? _c : 1,
+            maxLabels: (_d = entry.maxXAxisLabels) != null ? _d : 4
+          } : void 0;
+          newPage = {
+            uniqueID: entry.uniqueName,
+            hidden: !!entry.hidden,
+            alwaysOn: entry.alwaysOn,
+            dpInit: "",
+            config: {
+              card: entry.selChartType || "cardChart",
+              data: {
+                headline: { type: "const", constVal: entry.headline || "Page Chart" },
+                text: { type: "const", constVal: entry.txtLabelYAchse || "" },
+                color: { true: { color: { type: "const", constVal: entry.chartColor || "#FFFF00" } } },
+                ticks: { type: "triggered", dp: entry.setStateForTicks || "" },
+                value: { type: "triggered", dp: entry.setStateForValues || entry.setStateForDB || "" },
+                dbData: dbData ? { type: "const", constVal: JSON.stringify(dbData) } : void 0,
+                setStateForDB: entry.selInstanceDataSource === 1 && entry.setStateForDB ? { type: "triggered", dp: entry.setStateForDB } : void 0
+              }
+            },
+            pageItems: []
+          };
+          break;
+        }
         case "cardGrid":
         case "cardGrid2":
         case "cardGrid3": {
@@ -224,7 +257,7 @@ Stack: ${stack}`
                 []
               );
               if (!result.error && result.pageItem) {
-                newPage.pageItems = (_a = newPage.pageItems) != null ? _a : [];
+                newPage.pageItems = (_e = newPage.pageItems) != null ? _e : [];
                 newPage.pageItems.unshift(result.pageItem);
               } else if (result.error) {
                 this.log.warn(
@@ -272,7 +305,7 @@ Stack: ${stack}`
                 []
               );
               if (!result.error && result.pageItem) {
-                newPage.pageItems = (_b = newPage.pageItems) != null ? _b : [];
+                newPage.pageItems = (_f = newPage.pageItems) != null ? _f : [];
                 newPage.pageItems.unshift(result.pageItem);
               } else if (result.error) {
                 this.log.warn(
