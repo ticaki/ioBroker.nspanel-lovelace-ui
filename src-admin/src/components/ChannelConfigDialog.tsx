@@ -95,6 +95,9 @@ interface ChannelConfigDialogState {
     /** null = nicht geprüft, true = existiert, false = existiert nicht */
     channelExists: boolean | null;
     checkingChannel: boolean;
+
+    // null=kein State, undefined=kein boolean State, true/false=boolean State mit write=true/false
+    stateIsWriteable?: boolean | null;
     /** common.role des gewählten ioBroker-Objekts */
     channelRole: string | null;
     /** true wenn channelRole eine bekannte ScriptConfig.channelRole ist */
@@ -191,6 +194,7 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
             channelExists: null,
             checkingChannel: false,
             channelRole: null,
+            stateIsWriteable: null,
             roleIsValid: null,
             validChannelIds: [],
             nativeMode: false,
@@ -628,7 +632,10 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
      * @param id
      */
     private transformChannelId = (id: string): string => {
-        const { validChannelIds } = this.state;
+        const { validChannelIds, isCustom } = this.state;
+        if (isCustom) {
+            return id;
+        }
         let best = '';
         for (const chId of validChannelIds) {
             if ((id === chId || id.startsWith(`${chId}.`)) && chId.length > best.length) {
@@ -643,6 +650,7 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
             channelId: { ...this.state.channelId, valueStateId: id },
             channelExists: null,
             channelRole: null,
+            stateIsWriteable: null,
             roleIsValid: null,
             datapointErrors: [],
             datapointDuplicates: [],
@@ -671,6 +679,7 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
             this.setState({
                 channelExists: null,
                 channelRole: null,
+                stateIsWriteable: null,
                 roleIsValid: null,
                 datapointErrors: [],
                 datapointDuplicates: [],
@@ -689,6 +698,8 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
             const isCustom = checked === undefined ? this.state.isCustom : checked;
             const obj: ioBroker.Object | null | undefined = await socket.getObject(objectId);
             const role = obj?.common?.role ?? null;
+            const stateIsWriteable =
+                obj?.type === 'state' ? (obj.common.type !== 'boolean' ? undefined : obj.common?.write === true) : null;
             const channelRole = typeof role === 'string' ? role : null;
             const roleIsValid = channelRole !== null && (CHANNEL_ROLES_LIST as readonly string[]).includes(channelRole);
             const rawName: unknown = (obj as any)?.common?.name;
@@ -704,6 +715,7 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                 {
                     channelExists: obj != null,
                     channelRole,
+                    stateIsWriteable,
                     roleIsValid: channelRole !== null ? roleIsValid : null,
                     checkingChannel: false,
                     channelNameSuggestion,
@@ -1282,6 +1294,7 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
             channelExists,
             checkingChannel,
             channelRole,
+            stateIsWriteable,
             roleIsValid,
             nativeMode,
             nativeJson,
@@ -1358,6 +1371,18 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                     }}
                     fullWidth
                     maxWidth="md"
+                    sx={{
+                        '& .MuiDialog-container': {
+                            alignItems: 'flex-start',
+                        },
+                        '& .MuiDialog-paper': {
+                            mt: { xs: 0, sm: 4, lg: 8 },
+                            mx: { xs: 0, sm: 'auto' },
+                            borderRadius: { xs: 0, sm: 2 },
+                            maxHeight: { xs: '100dvh', sm: 'calc(100dvh - 64px)', lg: 'calc(100dvh - 128px)' },
+                            width: { xs: '100%', sm: undefined },
+                        },
+                    }}
                 >
                     <DialogTitle>
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -1511,7 +1536,11 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                                         )}
                                     <Box sx={{ flex: 1, minWidth: 0 }}>
                                         <EntitySelector
-                                            label={I18n.t('channelConfigDialog_channelId')}
+                                            label={I18n.t(
+                                                isCustom
+                                                    ? 'channelConfigDialog_stateId'
+                                                    : 'channelConfigDialog_channelId',
+                                            )}
                                             value={channelId.valueStateId}
                                             onChange={this.handleChannelIdChange}
                                             onCommit={this.handleChannelIdCommit}
@@ -1567,15 +1596,33 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                                         {I18n.t('channelConfigDialog_channelNotFound')}
                                     </Typography>
                                 )}
-                                {(isCustom && (
+                                {(!isNavigation && !channelId.valueStateId && (
                                     <Typography
                                         variant="caption"
                                         color="warning.main"
                                         sx={{ mt: -1.5 }}
                                     >
-                                        {I18n.t('channelConfigDialog_isCustomHint')}
+                                        {I18n.t('channelConfigDialog_missingIDForbidden')}
                                     </Typography>
                                 )) ||
+                                    (isCustom && (
+                                        <Typography
+                                            variant="caption"
+                                            color={stateIsWriteable != null ? 'text.disabled' : 'warning.main'}
+                                            sx={{ mt: -1.5 }}
+                                        >
+                                            {`${
+                                                I18n.t('channelConfigDialog_isCustomHint') +
+                                                (stateIsWriteable === false
+                                                    ? I18n.t('read-only')
+                                                    : stateIsWriteable === true
+                                                      ? I18n.t('writeable')
+                                                      : stateIsWriteable === undefined
+                                                        ? I18n.t('not_a_boolean_state')
+                                                        : I18n.t('not_a_state'))
+                                            }.`}
+                                        </Typography>
+                                    )) ||
                                     (roleIsValid === false && !checkingChannel && (
                                         <Typography
                                             variant="caption"
@@ -1584,7 +1631,24 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                                         >
                                             {I18n.t('channelConfigDialog_unknownRoleHint')}
                                         </Typography>
-                                    ))}
+                                    )) ||
+                                    (channelId.valueStateId && (
+                                        <Typography
+                                            variant="caption"
+                                            color="text.disabled"
+                                            sx={{ mt: -1.5 }}
+                                        >
+                                            {I18n.t(`ok ${channelRole ? `(role=${channelRole})` : ''}`)}
+                                        </Typography>
+                                    )) || (
+                                        <Typography
+                                            variant="caption"
+                                            color="text.disabled"
+                                            sx={{ mt: -1.5 }}
+                                        >
+                                            {I18n.t('channelConfigDialog_emptyIDAllowed')}
+                                        </Typography>
+                                    )}
 
                                 {/* Namensfeld + Value-Entry-Konfigurationsbutton */}
                                 <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
@@ -1815,54 +1879,60 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                         )}
                     </DialogContent>
 
-                    <DialogActions>
-                        {/* Nativ JSON-Modus Umschalter nur im Expertenmodus anzeigen */}
-                        {(expertMode || nativeMode) && (
-                            <Button
-                                size="small"
-                                variant={nativeMode ? 'contained' : 'outlined'}
-                                color={nativeMode ? 'warning' : 'inherit'}
-                                onClick={this.handleNativeModeToggle}
-                                sx={{ mr: 'auto' }}
-                            >
-                                {nativeMode
-                                    ? I18n.t('channelConfigDialog_standard')
-                                    : I18n.t('channelConfigDialog_native')}
-                            </Button>
-                        )}
-                        {/* Color-Button, wenn nicht im Native-Modus */}
+                    <DialogActions sx={{ flexDirection: 'column', alignItems: 'stretch', gap: 1, px: 2, pb: 2 }}>
+                        {/* Color-Button in eigener Zeile, wenn nicht im Native-Modus */}
                         {!internColorFieldsDisabled && (
-                            <Button
-                                size="small"
-                                variant="outlined"
-                                onClick={this.handleColorOpen}
-                                startIcon={<PaletteIcon />}
-                            >
-                                {I18n.t('channelConfigDialog_colorSettings')}
-                            </Button>
+                            <Box>
+                                <Button
+                                    size="small"
+                                    variant="outlined"
+                                    onClick={this.handleColorOpen}
+                                    startIcon={<PaletteIcon />}
+                                    fullWidth
+                                >
+                                    {I18n.t('channelConfigDialog_colorSettings')}
+                                </Button>
+                            </Box>
                         )}
-                        {/* Abbrechen-Button immer anzeigen, Speichern-Button nur wenn nicht im Native-Modus oder wenn im Native-Modus gültiges JSON vorliegt */}
-                        <Button onClick={this.handleClose}>{I18n.t('channelConfigDialog_cancel')}</Button>
-                        <Button
-                            variant="contained"
-                            onClick={this.handleSave}
-                            disabled={!canSave || this.state.isSaving}
-                            color={hasDatapointProblems || errorSaveDetails ? 'warning' : 'primary'}
-                            startIcon={
-                                this.state.isSaving ? (
-                                    <CircularProgress
-                                        size={16}
-                                        color="inherit"
-                                    />
-                                ) : undefined
-                            }
-                        >
-                            {this.state.isSaving
-                                ? I18n.t('channelConfigDialog_checking')
-                                : hasDatapointProblems || errorSaveDetails
-                                  ? I18n.t('channelConfigDialog_details')
-                                  : I18n.t('valueEntryDialog_save')}
-                        </Button>
+                        {/* Untere Zeile: Native-Toggle links, Abbrechen + Speichern rechts */}
+                        <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1 }}>
+                            {/* Nativ JSON-Modus Umschalter nur im Expertenmodus anzeigen */}
+                            {(expertMode || nativeMode) && (
+                                <Button
+                                    size="small"
+                                    variant={nativeMode ? 'contained' : 'outlined'}
+                                    color={nativeMode ? 'warning' : 'inherit'}
+                                    onClick={this.handleNativeModeToggle}
+                                    sx={{ mr: 'auto' }}
+                                >
+                                    {nativeMode
+                                        ? I18n.t('channelConfigDialog_standard')
+                                        : I18n.t('channelConfigDialog_native')}
+                                </Button>
+                            )}
+                            {/* Abbrechen-Button immer anzeigen, Speichern-Button nur wenn nicht im Native-Modus oder wenn im Native-Modus gültiges JSON vorliegt */}
+                            <Button onClick={this.handleClose}>{I18n.t('channelConfigDialog_cancel')}</Button>
+                            <Button
+                                variant="contained"
+                                onClick={this.handleSave}
+                                disabled={!canSave || this.state.isSaving}
+                                color={hasDatapointProblems || errorSaveDetails ? 'warning' : 'primary'}
+                                startIcon={
+                                    this.state.isSaving ? (
+                                        <CircularProgress
+                                            size={16}
+                                            color="inherit"
+                                        />
+                                    ) : undefined
+                                }
+                            >
+                                {this.state.isSaving
+                                    ? I18n.t('channelConfigDialog_checking')
+                                    : hasDatapointProblems || errorSaveDetails
+                                      ? I18n.t('channelConfigDialog_details')
+                                      : I18n.t('valueEntryDialog_save')}
+                            </Button>
+                        </Box>
                     </DialogActions>
                 </Dialog>
 

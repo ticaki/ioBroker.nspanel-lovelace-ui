@@ -58,7 +58,7 @@ import ReactFlow, {
 } from 'reactflow';
 import 'reactflow/dist/style.css';
 import type { SelectChangeEvent } from '@mui/material';
-import { Select, MenuItem, Box, Button, Typography, CircularProgress } from '@mui/material';
+import { Select, MenuItem, Box, Button, Typography, CircularProgress, Checkbox, FormControlLabel } from '@mui/material';
 import NodePageInfoPanel from './components/NodePageInfoPanel';
 import ConfirmDialog from './components/ConfirmDialog';
 import { useTheme } from '@mui/material/styles';
@@ -132,8 +132,8 @@ function mapNavigationMapToFlow(navigationMap: NavigationMap): FlowData {
     const edgeColors: Record<string, string> = {
         // Fallback-Werte, CSS-Variablen werden in der UI gesetzt
         // next/prev erhalten eigene Variablen, fallen aber auf --edge-color zurück
-        prev: 'var(--edge-prev, var(--edge-color, #1976d2))',
-        next: 'var(--edge-next, var(--edge-color, #1976d2))',
+        prev: 'var(--edge-prev, var(--edge-color, #6676d2))',
+        next: 'var(--edge-next, var(--edge-color, #19c3d2))',
         home: 'var(--edge-home, #fbc02d)', // gelb
         parent: 'var(--edge-parent, #d32f2f)', // rot
         target: 'var(--edge-target, #43a047)', // grün für targetPages
@@ -515,6 +515,7 @@ interface NavigationViewInternalState extends NavigationViewState {
     infoNodeId?: string | undefined;
     confirmAutoLayoutOpen?: boolean;
     isTouchDevice?: boolean;
+    showSystemPages: boolean;
 }
 
 class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInternalState> {
@@ -604,6 +605,7 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
             infoPanelOpen: false,
             infoData: null,
             infoNodeId: undefined,
+            showSystemPages: false,
         };
         this.checkAlive = this.checkAlive.bind(this);
         this.fetchNavigation = this.fetchNavigation.bind(this);
@@ -652,6 +654,10 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
         }));
         const flow = mapNavigationMapToFlow(cleaned as NavigationMap);
         this.setState({ nodes: newNodes, edges: flow.edges, dirty: true, confirmAutoLayoutOpen: false } as any);
+    }
+
+    handleShowSystemPagesChange(_event: React.ChangeEvent<HTMLInputElement>, checked: boolean): void {
+        this.setState({ showSystemPages: checked });
     }
 
     onNodeClick(_event: any, node: any): void {
@@ -839,14 +845,17 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
     }
 
     render(): string | React.ReactElement | null {
-        const { alive, loading, panelList, selectedPanel, nodes, edges, noData } = this.state;
+        const { alive, loading, panelList, selectedPanel, nodes, edges, noData, showSystemPages } = this.state;
+        // Filter system pages (starting with ///) unless showSystemPages is true; ///unlock is always shown
+        const isSystemPage = (id: string): boolean => id.startsWith('///') && id !== '///unlock';
+        const visibleNodes = showSystemPages ? nodes : nodes.filter(n => !isSystemPage(n.id));
+        const visibleNodeIds = new Set(visibleNodes.map(n => n.id));
         // remove dangling edges that reference missing nodes (safety for stale state)
-        const nodeIds = new Set(nodes.map(n => n.id));
-        const safeEdges = (edges || []).filter(e => nodeIds.has(e.source) && nodeIds.has(e.target));
+        const safeEdges = (edges || []).filter(e => visibleNodeIds.has(e.source) && visibleNodeIds.has(e.target));
         // Legende für die Kantenarten
         const legend = [
-            { label: 'prev', color: '#1976d2', dash: false },
-            { label: 'next', color: '#1976d2', dash: false },
+            { label: 'prev', color: '#6676d2', dash: false },
+            { label: 'next', color: '#19c3d2', dash: false },
             { label: 'home', color: '#fbc02d', dash: true },
             { label: 'parent', color: '#d32f2f', dash: false },
             { label: 'target', color: '#43a047', dash: true },
@@ -856,6 +865,16 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
                 <Box sx={{ display: 'flex', alignItems: 'center', mb: 2, gap: 2 }}>
                     <Typography variant="h6">{I18n.t('Panel_Navigation')}</Typography>
                     <Box sx={{ flex: 1 }} />
+                    <FormControlLabel
+                        control={
+                            <Checkbox
+                                checked={showSystemPages}
+                                onChange={this.handleShowSystemPagesChange}
+                                size="small"
+                            />
+                        }
+                        label={I18n.t('show_system_pages')}
+                    />
                     <Button
                         variant="outlined"
                         onClick={this.fetchNavigation}
@@ -991,7 +1010,7 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
                                     >
                                         <path
                                             d="M0,0 L8,4 L0,8 z"
-                                            fill="var(--edge-next, #1976d2)"
+                                            fill="var(--edge-next, #19c3d2)"
                                         />
                                     </marker>
                                     <marker
@@ -1005,7 +1024,7 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
                                     >
                                         <path
                                             d="M0,0 L8,4 L0,8 z"
-                                            fill="var(--edge-prev, #1976d2)"
+                                            fill="var(--edge-prev, #6676d2)"
                                         />
                                     </marker>
                                     <marker
@@ -1051,7 +1070,7 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
                             />
                             <ReactFlow
                                 key={selectedPanel || 'navigation-flow'}
-                                nodes={nodes}
+                                nodes={visibleNodes}
                                 fitView
                                 nodesDraggable={true}
                                 onNodesChange={this.onNodesChange}
@@ -1111,7 +1130,7 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
                                                         type="target"
                                                         position={Position.Top}
                                                         id="prev"
-                                                        style={{ background: '#1976d2' }}
+                                                        style={{ background: '#6676d2' }}
                                                     />
                                                 )}
                                                 {handleTypes.prev && (
@@ -1119,7 +1138,7 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
                                                         type="source"
                                                         position={Position.Top}
                                                         id="prev"
-                                                        style={{ background: '#1976d2' }}
+                                                        style={{ background: '#6676d2' }}
                                                     />
                                                 )}
                                                 {/* next: unten */}
@@ -1128,7 +1147,7 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
                                                         type="target"
                                                         position={Position.Bottom}
                                                         id="next"
-                                                        style={{ background: '#388e3c' }}
+                                                        style={{ background: '#19c3d2' }}
                                                     />
                                                 )}
                                                 {handleTypes.next && (
@@ -1136,7 +1155,7 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
                                                         type="source"
                                                         position={Position.Bottom}
                                                         id="next"
-                                                        style={{ background: '#388e3c' }}
+                                                        style={{ background: '#19c3d2' }}
                                                     />
                                                 )}
                                                 {/* home: links oben (source), rechts oben (target) */}
@@ -1260,8 +1279,8 @@ export function ThemeVarsProvider({ children }: { children: React.ReactNode }): 
         // Kantenfarben (Primärfarbe als Default für Kanten)
         root.style.setProperty('--edge-color', theme.palette.primary.main || '#1976d2');
         // next/prev sollen KEINE Theme-Farben verwenden — feste Farben
-        root.style.setProperty('--edge-next', '#1976d2');
-        root.style.setProperty('--edge-prev', '#1976d2');
+        root.style.setProperty('--edge-next', '#19c3d2');
+        root.style.setProperty('--edge-prev', '#6676d2');
         root.style.setProperty('--edge-home', '#fbc02d');
         root.style.setProperty('--edge-parent', '#d32f2f');
         root.style.setProperty('--edge-target', '#43a047');

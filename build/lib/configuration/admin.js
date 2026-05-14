@@ -34,6 +34,30 @@ module.exports = __toCommonJS(admin_exports);
 var import_library = require("../controller/library");
 var ShareConfig = __toESM(require("../types/adminShareConfig"));
 var import_function_and_const = require("../types/function-and-const");
+function shallowDescribe(value) {
+  if (value === null) {
+    return "null";
+  }
+  if (Array.isArray(value)) {
+    return `Array(${value.length})`;
+  }
+  if (typeof value === "object") {
+    const obj = value;
+    const keys = Object.keys(obj);
+    const entries = keys.map((k) => {
+      const v = obj[k];
+      if (Array.isArray(v)) {
+        return `${k}: Array(${v.length})`;
+      }
+      if (v !== null && typeof v === "object") {
+        return `${k}: {${Object.keys(v).join(", ")}}`;
+      }
+      return `${k}: ${JSON.stringify(v)}`;
+    });
+    return `{ ${entries.join(", ")} }`;
+  }
+  return JSON.stringify(value);
+}
 class AdminConfiguration extends import_library.BaseClass {
   pageConfig = [];
   constructor(adapter) {
@@ -41,30 +65,43 @@ class AdminConfiguration extends import_library.BaseClass {
     this.adapter = adapter;
     this.pageConfig = this.adapter.config.pageConfig || [];
   }
-  async processPanels(options) {
-    for (const option of options) {
-      await this.processentrys(option);
-    }
-    return options;
-  }
   /**
    * Process configurable pages from adapter config and build navigation entries.
-   * Supports ALL_PANELS_SPECIAL_ID for applying pages to all panels at once,
-   * then allows individual panel overrides or exclusions.
-   *
-   * Logic:
-   * - First pass: If ALL_PANELS_SPECIAL_ID assignment exists, apply to all panels
-   * - Second pass: Process panel-specific assignments
-   *   - Empty navigation with prior ALL = exclude this panel from that page
-   *   - Empty navigation without ALL = default to home:'main'
-   *
-   * Supported card types: cardAlarm (unlock/alarm), cardQR, and more in the future.
+   * Orchestrates page creation (phase 1) and deferred navigation chain resolution (phase 2).
    *
    * @param option - Panel configuration partial containing pages and navigation arrays
    */
   async processentrys(option) {
+<<<<<<< HEAD
     var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j;
+=======
+    var _a, _b;
+    try {
+      const pendingNavs = await this.createPagesFromConfig(option);
+      this.applyPendingNavigations(option, pendingNavs);
+    } catch (error) {
+      const msg = error instanceof Error ? error.message : String(error);
+      const stack = error instanceof Error ? (_a = error.stack) != null ? _a : "no stack" : "no stack";
+      this.log.error(
+        `[processentrys] Failed to process panel "${(_b = option.name) != null ? _b : shallowDescribe(option)}": ${msg}
+Option: ${shallowDescribe(option)}
+Stack: ${stack}`
+      );
+    }
+    return option;
+  }
+  /**
+   * Phase 1: create all pages from admin config, push stub navigation entries, and collect
+   * pending prev/next chain assignments for deferred resolution.
+   * home/parent links are applied immediately since they carry no chain dependency.
+   *
+   * @param option - Panel configuration partial
+   */
+  async createPagesFromConfig(option) {
+    var _a, _b;
+>>>>>>> main
     const entries = this.pageConfig;
+    const pendingNavs = [];
     for (const entry of entries) {
       if (!entry.navigationAssignment || !entry.card) {
         continue;
@@ -314,16 +351,13 @@ class AdminConfiguration extends import_library.BaseClass {
         });
       }
       option.pages.push(newPage);
-      const navigation = navAssign.navigation;
-      if (!navigation) {
-        continue;
-      }
       const navigationEntry = {
         name: newPage.uniqueID,
         page: newPage.uniqueID,
         right: { single: void 0, double: void 0 },
         left: { single: void 0, double: void 0 }
       };
+<<<<<<< HEAD
       if (!navigation.prev && !navigation.next && !navigation.home && !navigation.parent) {
         navigation.home = "main";
       }
@@ -387,9 +421,239 @@ class AdminConfiguration extends import_library.BaseClass {
       if (navigation.parent) {
         navigationEntry.right.double = navigation.parent;
       }
+=======
+>>>>>>> main
       option.navigation.push(navigationEntry);
+      const navigation = navAssign.navigation;
+      if (!navigation) {
+        continue;
+      }
+      const nav = { ...navigation };
+      if (!nav.prev && !nav.next && !nav.home && !nav.parent) {
+        nav.home = "main";
+      }
+      if (nav.home) {
+        navigationEntry.right.double = nav.home;
+      }
+      if (nav.parent) {
+        navigationEntry.left.double = nav.parent;
+      }
+      if (nav.prev !== void 0 || nav.next !== void 0) {
+        pendingNavs.push({
+          pageId: newPage.uniqueID,
+          prev: nav.prev,
+          next: nav.next
+        });
+      }
     }
-    return option;
+    return pendingNavs;
+  }
+  /**
+   * Phase 2: wire prev/next navigation by building full chains and splicing
+   * them into the existing navigation, preserving existing connections.
+   *
+   * Algorithm:
+   * 1. Apply each page's own left/right pointers from its explicit prev/next.
+   * 2. Group all pages by their declared `prev` target.
+   * 3. Find root insertion points (prevTarget is NOT a pending page) and build
+   *    full chains by recursively following sub-groups.
+   * 4. Splice each full chain after its prevTarget: if prevTarget had an existing
+   *    right pointer, it is moved to the end of the chain (preserving the topology).
+   * 5. Handle remaining groups (prevTarget is a pending page not reached from any root).
+   * 6. For pages that only declare `next` (no prev), splice before next target,
+   *    inheriting the target's old left pointer.
+   *
+   * @param option - Panel configuration partial
+   * @param pendingNavs - Pending navigation entries collected in phase 1
+   */
+  applyPendingNavigations(option, pendingNavs) {
+    var _a, _b, _c, _d, _e, _f, _g, _h, _i;
+    if (!pendingNavs.length) {
+      return;
+    }
+    const pendingMap = /* @__PURE__ */ new Map();
+    for (const p of pendingNavs) {
+      pendingMap.set(p.pageId, p);
+    }
+    for (const pending of pendingNavs) {
+      const pageEntry = option.navigation.find((b) => (b == null ? void 0 : b.name) === pending.pageId);
+      if (!pageEntry) {
+        continue;
+      }
+      if (pending.prev !== void 0) {
+        pageEntry.left = { ...(_a = pageEntry.left) != null ? _a : {}, single: pending.prev };
+      }
+      if (pending.next !== void 0) {
+        pageEntry.right = { ...(_b = pageEntry.right) != null ? _b : {}, single: pending.next };
+      }
+    }
+    const byPrev = /* @__PURE__ */ new Map();
+    for (const pending of pendingNavs) {
+      if (pending.prev !== void 0) {
+        const list = (_c = byPrev.get(pending.prev)) != null ? _c : [];
+        list.push(pending.pageId);
+        byPrev.set(pending.prev, list);
+      }
+    }
+    const processedGroups = /* @__PURE__ */ new Set();
+    for (const [prevTarget] of byPrev) {
+      if (pendingMap.has(prevTarget)) {
+        continue;
+      }
+      const fullChain = this.buildFullChain(prevTarget, byPrev, pendingMap, processedGroups);
+      if (fullChain.length) {
+        this.spliceChainAfter(prevTarget, fullChain, pendingMap, option);
+      }
+    }
+    for (const [prevTarget] of byPrev) {
+      if (processedGroups.has(prevTarget)) {
+        continue;
+      }
+      const fullChain = this.buildFullChain(prevTarget, byPrev, pendingMap, processedGroups);
+      if (fullChain.length) {
+        this.spliceChainAfter(prevTarget, fullChain, pendingMap, option);
+      }
+    }
+    for (const pending of pendingNavs) {
+      if (pending.next === void 0 || pending.prev !== void 0) {
+        continue;
+      }
+      const nextEntry = option.navigation.find((b) => (b == null ? void 0 : b.name) === pending.next);
+      if (!nextEntry) {
+        continue;
+      }
+      const pageEntry = option.navigation.find((b) => (b == null ? void 0 : b.name) === pending.pageId);
+      if (!pageEntry) {
+        continue;
+      }
+      const oldLeft = (_d = nextEntry.left) == null ? void 0 : _d.single;
+      nextEntry.left = { ...(_e = nextEntry.left) != null ? _e : {}, single: pending.pageId };
+      if (oldLeft !== void 0 && oldLeft !== pending.pageId && !((_f = pageEntry.left) == null ? void 0 : _f.single)) {
+        pageEntry.left = { ...(_g = pageEntry.left) != null ? _g : {}, single: oldLeft };
+        const oldLeftEntry = option.navigation.find((b) => (b == null ? void 0 : b.name) === oldLeft);
+        if (((_h = oldLeftEntry == null ? void 0 : oldLeftEntry.right) == null ? void 0 : _h.single) === pending.next) {
+          oldLeftEntry.right = { ...(_i = oldLeftEntry.right) != null ? _i : {}, single: pending.pageId };
+        }
+      }
+    }
+    for (const pending of pendingNavs) {
+      if (pending.prev !== void 0 && !option.navigation.find((b) => (b == null ? void 0 : b.name) === pending.prev)) {
+        this.log.warn(`Navigation unresolved for '${pending.pageId}': prev page '${pending.prev}' not found.`);
+      }
+      if (pending.next !== void 0 && !option.navigation.find((b) => (b == null ? void 0 : b.name) === pending.next)) {
+        this.log.warn(`Navigation unresolved for '${pending.pageId}': next page '${pending.next}' not found.`);
+      }
+    }
+  }
+  /**
+   * Splice a chain of pages after prevTarget, preserving existing connections.
+   * If prevTarget.right was already set, the old target is moved to the end
+   * of the chain (provided the last element has no explicit next declaration).
+   *
+   * @param prevTarget - Name of the page to insert after
+   * @param fullChain - Ordered list of page IDs to insert
+   * @param pendingMap - Lookup map from pageId to PendingNavEntry
+   * @param option - Panel configuration partial
+   */
+  spliceChainAfter(prevTarget, fullChain, pendingMap, option) {
+    var _a, _b, _c, _d, _e, _f, _g;
+    const prevEntry = option.navigation.find((b) => (b == null ? void 0 : b.name) === prevTarget);
+    const oldRight = (_a = prevEntry == null ? void 0 : prevEntry.right) == null ? void 0 : _a.single;
+    if (prevEntry) {
+      prevEntry.right = { ...(_b = prevEntry.right) != null ? _b : {}, single: fullChain[0] };
+    }
+    const firstEntry = option.navigation.find((b) => (b == null ? void 0 : b.name) === fullChain[0]);
+    if (firstEntry) {
+      firstEntry.left = { ...(_c = firstEntry.left) != null ? _c : {}, single: prevTarget };
+    }
+    for (let i = 1; i < fullChain.length; i++) {
+      const curr = option.navigation.find((b) => (b == null ? void 0 : b.name) === fullChain[i]);
+      const prev = option.navigation.find((b) => (b == null ? void 0 : b.name) === fullChain[i - 1]);
+      if (curr) {
+        curr.left = { ...(_d = curr.left) != null ? _d : {}, single: fullChain[i - 1] };
+      }
+      if (prev) {
+        const prevPending = pendingMap.get(fullChain[i - 1]);
+        const hasExternalNext = (prevPending == null ? void 0 : prevPending.next) !== void 0 && prevPending.next !== fullChain[i];
+        if (!hasExternalNext) {
+          prev.right = { ...(_e = prev.right) != null ? _e : {}, single: fullChain[i] };
+        }
+      }
+    }
+    if (oldRight !== void 0 && !fullChain.includes(oldRight)) {
+      const lastId = fullChain[fullChain.length - 1];
+      const lastPending = pendingMap.get(lastId);
+      const lastEntry = option.navigation.find((b) => (b == null ? void 0 : b.name) === lastId);
+      if (lastEntry && !(lastPending == null ? void 0 : lastPending.next)) {
+        lastEntry.right = { ...(_f = lastEntry.right) != null ? _f : {}, single: oldRight };
+        const oldRightEntry = option.navigation.find((b) => (b == null ? void 0 : b.name) === oldRight);
+        if (oldRightEntry) {
+          oldRightEntry.left = { ...(_g = oldRightEntry.left) != null ? _g : {}, single: lastId };
+        }
+      }
+    }
+  }
+  /**
+   * Recursively build a complete chain starting from pages grouped by prevTarget,
+   * following sub-groups where a chain member is itself the prevTarget of another group.
+   *
+   * @param prevTarget - The prevTarget whose group to process
+   * @param byPrev - Mapping from prevTarget to list of page IDs
+   * @param pendingMap - Lookup map from pageId to PendingNavEntry
+   * @param processedGroups - Set of already processed prevTargets (prevents cycles)
+   */
+  buildFullChain(prevTarget, byPrev, pendingMap, processedGroups) {
+    const pageIds = byPrev.get(prevTarget);
+    if (!pageIds || processedGroups.has(prevTarget)) {
+      return [];
+    }
+    processedGroups.add(prevTarget);
+    const groupChain = this.buildChainFromGroup(pageIds, pendingMap);
+    const result = [];
+    for (const pageId of groupChain) {
+      result.push(pageId);
+      if (byPrev.has(pageId) && !processedGroups.has(pageId)) {
+        const subChain = this.buildFullChain(pageId, byPrev, pendingMap, processedGroups);
+        result.push(...subChain);
+      }
+    }
+    return result;
+  }
+  /**
+   * Build an ordered chain from a group of pages that share the same `prev` target.
+   * Pages connected via intra-group `next` pointers are ordered first;
+   * remaining pages are appended in their original definition order.
+   *
+   * @param pageIds - Page IDs in the group (definition order)
+   * @param pendingMap - Lookup map from pageId to PendingNavEntry
+   */
+  buildChainFromGroup(pageIds, pendingMap) {
+    const pageSet = new Set(pageIds);
+    const nextInGroup = /* @__PURE__ */ new Map();
+    for (const id of pageIds) {
+      const p = pendingMap.get(id);
+      if ((p == null ? void 0 : p.next) !== void 0 && pageSet.has(p.next)) {
+        nextInGroup.set(id, p.next);
+      }
+    }
+    const hasIncoming = new Set(nextInGroup.values());
+    const starts = pageIds.filter((id) => !hasIncoming.has(id));
+    const result = [];
+    const visited = /* @__PURE__ */ new Set();
+    for (const start of starts) {
+      let curr = start;
+      while (curr !== void 0 && pageSet.has(curr) && !visited.has(curr)) {
+        visited.add(curr);
+        result.push(curr);
+        curr = nextInGroup.get(curr);
+      }
+    }
+    for (const id of pageIds) {
+      if (!visited.has(id)) {
+        result.push(id);
+      }
+    }
+    return result;
   }
 }
 function isAlwaysOnMode(F) {

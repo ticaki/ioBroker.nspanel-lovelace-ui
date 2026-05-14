@@ -232,6 +232,19 @@ const genericStateObjects = {
           },
           native: {}
         },
+        activated: {
+          _id: "",
+          type: "state",
+          common: {
+            name: "StateObjects.cmd.activated",
+            type: "boolean",
+            role: "switch",
+            read: true,
+            write: true,
+            def: true
+          },
+          native: {}
+        },
         tempOffset: {
           _id: "",
           type: "state",

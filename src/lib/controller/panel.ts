@@ -328,6 +328,7 @@ export class Panel extends BaseClass {
         // Process admin pages and build navigation
     }
     async preInit(options: panelConfigPartial): Promise<void> {
+        options.pages = options.pages || [];
         const admin = new AdminConfiguration(this.adapter);
         await admin.processentrys(options);
         options.pages = options.pages.filter(b => {
@@ -601,6 +602,25 @@ export class Panel extends BaseClass {
                 definition.genericStateObjects.panel.panels.buttons.screensaverGesture,
             );
         }
+        state = this.library.readdb(`panels.${this.name}.cmd.activated`);
+        if (state && state.val != null) {
+            await this.library.writedp(
+                `panels.${this.name}.cmd.activated`,
+                true,
+                definition.genericStateObjects.panel.panels.cmd.activated,
+            );
+        } else {
+            await this.library.writedp(
+                `panels.${this.name}.cmd.activated`,
+                true,
+                definition.genericStateObjects.panel.panels.cmd.activated,
+            );
+        }
+        await this.library.writedp(
+            `panels.${this.name}.cmd.hideCards`,
+            !!state?.val,
+            definition.genericStateObjects.panel.panels.cmd.hideCards,
+        );
 
         state = this.library.readdb(`panels.${this.name}.cmd.hideCards`);
         if (state && state.val != null) {
@@ -846,6 +866,7 @@ export class Panel extends BaseClass {
         force?: boolean,
         opt?: IClientPublishOptions,
     ) => void = () => {};
+
     protected sendToPanel: (
         payload: string,
         ackForType: boolean,
@@ -854,6 +875,7 @@ export class Panel extends BaseClass {
     ) => void = (payload: string, ackForType: boolean, force?: boolean, opt?: IClientPublishOptions) => {
         this.sendToPanelClass(payload, ackForType, force, opt);
     };
+
     /**
      * Activate a page or toggle sleep on the current page.
      *
@@ -1067,6 +1089,9 @@ export class Panel extends BaseClass {
                     if (this.unload || this.adapter.unload) {
                         return;
                     }
+                    if (msg.nlui_driver_version === -1) {
+                        return;
+                    }
                     this.adapter.setTimeout(async () => {
                         let result: Record<string, string> | undefined = undefined;
                         try {
@@ -1099,11 +1124,7 @@ export class Panel extends BaseClass {
                 }
             }
         } else if (topic.endsWith('/tele/LWT')) {
-            if (message === 'Offline') {
-                //this.log.warn('LWT shows offline!');
-                // deaktiviert, weils zu falschen offline meldungen bei 1 nutzer kommt
-                //this.isOnline = false;
-            }
+            // deaktiviert, weils zu falschen offline meldungen kommen.
         } else if (topic.endsWith('/tele/INFO1')) {
             this.restartLoops();
         } else if (topic.endsWith('/tele/STATE')) {

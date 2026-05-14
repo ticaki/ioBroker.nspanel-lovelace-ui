@@ -71,6 +71,9 @@ class CustomLog {
   getName() {
     return __privateGet(this, _prefix);
   }
+  silly(log, log2 = "") {
+    __privateGet(this, _adapter).log.silly(log2 ? `[${log}] ${log2}` : `[${__privateGet(this, _prefix)}] ${log}`);
+  }
   debug(log, log2 = "") {
     __privateGet(this, _adapter).log.debug(log2 ? `[${log}] ${log2}` : `[${__privateGet(this, _prefix)}] ${log}`);
   }

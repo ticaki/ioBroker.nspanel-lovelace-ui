@@ -11,7 +11,17 @@ import { type Server } from 'node:net';
 import { randomUUID } from 'node:crypto';
 import * as forge from 'node-forge';
 import type { Controller } from '../controller/controller';
+
+/**
+ * Callback invoked when an MQTT message arrives on a subscribed topic.
+ * Return `true` to automatically remove this handler after the current invocation (one-shot).
+ * Return `false` / `void` to keep the handler registered for future messages.
+ */
 export type callbackMessageType = (topic: string, message: string) => Promise<void | boolean>;
+
+/**
+ * Callback invoked once when the MQTT connection is (re-)established.
+ */
 export type callbackConnectType = () => Promise<void>;
 
 // RSA-Schlüsselpaar erzeugen (4096 Bit für hohe Sicherheit)
@@ -88,6 +98,17 @@ export class MQTTClientClass extends BaseClass {
         this.client.on('message', (topic, message) => {
             const _helper = async (topic: string, message: Buffer): Promise<void> => {
                 // NOTE: Simple prefix match with '/#' trimming, unchanged semantics
+                const strMessage = message.toString();
+
+                // Guard: Tasmota sends this specific payload as a background status message on connect
+                // and occasionally at random intervals. It carries no actionable data (all sensor
+                // readings are zero/default). Dispatching it to callbacks would cause the panel
+                // firmware to re-trigger its own reconnect sequence, so we drop it here before
+                // any handler ever sees it.
+                if (strMessage.startsWith('{"T1":')) {
+                    return;
+                }
+
                 const callbacks = this.subscriptDB.filter(entry => topic.startsWith(entry.topic.replace('/#', '')));
 
                 if (this.adapter.config.debugLogMqtt) {
@@ -96,10 +117,20 @@ export class MQTTClientClass extends BaseClass {
                     );
                 }
 
+                // Deferred-removal list — implements the one-shot subscriber pattern:
+                // A callback signals "I am done, remove me" by returning `true`.
+                // We must NOT remove entries while iterating `callbacks` (the slice was already
+                // taken, but removing from subscriptDB mid-loop would still be confusing and
+                // error-prone). Instead we collect finished entries here and process them after
+                // all callbacks have been invoked.
+                // After the loop each collected entry is removed from subscriptDB.
+                // Only when no callbacks remain for a given topic is the broker-level
+                // MQTT unsubscribe sent, so other still-active handlers on the same topic
+                // are never accidentally dropped.
                 const toRemove: Array<{ topic: string; callback: callbackMessageType }> = [];
                 for (const c of callbacks) {
                     try {
-                        if (await c.callback(topic, message.toString())) {
+                        if (await c.callback(topic, strMessage)) {
                             toRemove.push({ topic: c.topic, callback: c.callback });
                         }
                     } catch (e) {

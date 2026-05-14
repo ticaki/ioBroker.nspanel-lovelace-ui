@@ -12,6 +12,8 @@ import {
     DialogContent,
     DialogContentText,
     DialogActions,
+    FormControlLabel,
+    Switch,
 } from '@mui/material';
 import { grey, orange, blue, yellow } from '@mui/material/colors';
 import { type IobTheme, type ThemeName, type ThemeType } from '@iobroker/adapter-react-v5';
@@ -48,6 +50,8 @@ interface MaintainPanelState extends ConfigGenericState {
     error: string | null;
     processingPanel: string | null;
     alive?: boolean;
+    /** Map panelId → cmd.activated value */
+    activatedMap: Record<string, boolean>;
 }
 
 // Daten die aus der config kommen, also die props.data
@@ -84,6 +88,7 @@ class MaintainPanel extends ConfigGeneric<ConfigGenericProps & MaintainPanelProp
             error: null,
             processingPanel: null,
             alive: false,
+            activatedMap: {},
         };
     }
 
@@ -99,6 +104,10 @@ class MaintainPanel extends ConfigGeneric<ConfigGenericProps & MaintainPanelProp
             this.props.oContext.socket.unsubscribeState(
                 `${this.adapterName}.${this.instance}.panels.${panel.id}.info.isOnline`,
                 this.onPanelOnlineChanged,
+            );
+            this.props.oContext.socket.unsubscribeState(
+                `${this.adapterName}.${this.instance}.panels.${panel.id}.cmd.activated`,
+                this.onActivatedChanged,
             );
         }
         if (this.timeoutHandle) {
@@ -151,6 +160,18 @@ class MaintainPanel extends ConfigGeneric<ConfigGenericProps & MaintainPanelProp
                     `${this.adapterName}.${this.instance}.panels.${panel.id}.info.isOnline`,
                     this.onPanelOnlineChanged,
                 );
+                // Subscribe to activated state
+                const activatedStateId = `${this.adapterName}.${this.instance}.panels.${panel.id}.cmd.activated`;
+                const activatedState = await this.props.oContext.socket.getState(activatedStateId);
+                // null/undefined → treat as activated (true)
+                const isActivated =
+                    activatedState?.val !== undefined && activatedState.val !== null
+                        ? !!activatedState.val
+                        : true;
+                if (this._isMounted) {
+                    this.setState(prev => ({ activatedMap: { ...prev.activatedMap, [panel.id]: isActivated } }));
+                }
+                await this.props.oContext.socket.subscribeState(activatedStateId, this.onActivatedChanged);
             }
         } catch (error) {
             console.error('[Maintain] Failed to get alive state or subscribe:', error);
@@ -223,6 +244,31 @@ class MaintainPanel extends ConfigGeneric<ConfigGenericProps & MaintainPanelProp
             }
         }, 5000);
     };
+
+    // Callback for cmd.activated state changes
+    onActivatedChanged = (id: string, state: ioBroker.State | null | undefined): void => {
+        if (!this._isMounted) {
+            return;
+        }
+        const match = id.match(new RegExp(`${this.adapterName}\\.${this.instance}\\.panels\\.([^.]+)\\.cmd\\.activated`));
+        if (!match) {
+            return;
+        }
+        const panelId = match[1];
+        const isActivated = state?.val !== undefined && state.val !== null ? !!state.val : true;
+        this.setState(prev => ({ activatedMap: { ...prev.activatedMap, [panelId]: isActivated } }));
+    };
+
+    private async writeActivated(panelId: string, value: boolean): Promise<void> {
+        const stateId = `${this.adapterName}.${this.instance}.panels.${panelId}.cmd.activated`;
+        try {
+            await this.props.oContext.socket.setState(stateId, value, false);
+        } catch (error) {
+            if (this._isMounted) {
+                this.setState({ error: String(error) });
+            }
+        }
+    }
 
     private async refreshPanels(): Promise<void> {
         if (!this._isMounted) {
@@ -602,6 +648,23 @@ class MaintainPanel extends ConfigGeneric<ConfigGenericProps & MaintainPanelProp
                                         disableTooltip={true}
                                         showIcon={false}
                                         alive={alive}
+                                    />
+                                    {/* Activated toggle */}
+                                    <FormControlLabel
+                                        control={
+                                            <Switch
+                                                checked={this.state.activatedMap[panelConfig?.id || panel._id] ?? true}
+                                                onChange={e => {
+                                                    void this.writeActivated(
+                                                        panelConfig?.id || panel._id,
+                                                        e.target.checked,
+                                                    );
+                                                }}
+                                                disabled={!alive}
+                                                size="small"
+                                            />
+                                        }
+                                        label={this.getText('panelActivated')}
                                     />
                                 </Box>
 

@@ -6929,7 +6929,7 @@ class Icons {
     return Icons.GetIconWithType(ma_name);
   }
   static GetIconWithType(ma_name) {
-    if (!ma_name) {
+    if (!ma_name || typeof ma_name !== "string") {
       return "";
     }
     const val = ma_name.trim();

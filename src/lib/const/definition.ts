@@ -39,6 +39,7 @@ export const genericStateObjects: {
         panels: customChannelType & {
             status: ioBroker.StateObject;
             cmd: customChannelType & {
+                activated: ioBroker.StateObject;
                 tempOffset: ioBroker.StateObject;
                 buttons: customChannelType & {
                     left: ioBroker.StateObject;
@@ -289,6 +290,19 @@ export const genericStateObjects: {
                     type: 'channel',
                     common: {
                         name: 'StateObjects.cmd',
+                    },
+                    native: {},
+                },
+                activated: {
+                    _id: '',
+                    type: 'state',
+                    common: {
+                        name: 'StateObjects.cmd.activated',
+                        type: 'boolean',
+                        role: 'switch',
+                        read: true,
+                        write: true,
+                        def: true,
                     },
                     native: {},
                 },

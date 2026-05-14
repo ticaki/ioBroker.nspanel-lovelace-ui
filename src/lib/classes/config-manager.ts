@@ -683,7 +683,10 @@ export class ConfigManager extends BaseClass {
                     page.type !== 'cardChart' &&
                     page.type !== 'cardLChart' &&
                     page.type !== 'cardMedia' &&
-                    page.type !== 'cardSchedule'
+                    page.type !== 'cardSchedule' &&
+                    page.type !== 'cardQR' &&
+                    page.type !== 'cardAlarm' &&
+                    page.type !== 'cardUnlock'
                 ) {
                     const msg = `${page.heading || 'unknown'} with card type ${page.type} not implemented yet!..`;
                     messages.push(msg);
@@ -717,6 +720,9 @@ export class ConfigManager extends BaseClass {
                         };
                         panelConfig.navigation.push(navItem);
                     }
+                }
+                if (page.type === 'cardQR' || page.type === 'cardAlarm' || page.type === 'cardUnlock') {
+                    return { panelConfig, messages };
                 }
 
                 let gridItem: pages.PageBase = {
@@ -835,6 +841,7 @@ export class ConfigManager extends BaseClass {
                         if (page.type === 'cardThermo' && a === 0) {
                             continue;
                         }
+
                         try {
                             const temp = await this.getPageItemConfig(item, page, messages);
                             const itemConfig = temp.itemConfig;
@@ -1642,6 +1649,7 @@ export class ConfigManager extends BaseClass {
             textSize?: NSPanel.DataItemsOptions | null | undefined;
             prefix?: NSPanel.DataItemsOptions | null | undefined;
             suffix?: NSPanel.DataItemsOptions | null | undefined;
+            useValueConditions?: NSPanel.DataItemsOptions | null | undefined;
         } = {
             unit: item.unit ? { type: 'const', constVal: item.unit } : undefined,
             textSize: item.fontSize || item.fontSize == 0 ? { type: 'const', constVal: item.fontSize } : undefined,
@@ -1653,6 +1661,9 @@ export class ConfigManager extends BaseClass {
                 globals.isCardEntitiesType(page.type) && item.suffixValue
                     ? await this.getFieldAsDataItemConfig(item.suffixValue)
                     : undefined,
+            useValueConditions: item.useValueConditions
+                ? await this.getFieldAsDataItemConfig(item.useValueConditions)
+                : undefined,
         };
 
         if (!item.id) {
@@ -1704,7 +1715,7 @@ export class ConfigManager extends BaseClass {
                 const o = await this.adapter.getForeignObjectAsync(actual.dp);
                 t = o?.common?.type as string | undefined;
             } else {
-                t = actual?.type; // falls du den Typ schon trägst
+                t = actual?.type;
             }
 
             valueDisplayRole = t === 'string' || t === 'number' || t === 'mixed' ? 'textNotIcon' : 'iconNotText';
@@ -2492,6 +2503,12 @@ export class ConfigManager extends BaseClass {
                 throw new Error(`longPress is only supported for button and switch items!`);
             }
         }
+        if (item.fontSize != null && itemConfig.data?.icon) {
+            itemConfig.data.icon = {
+                ...itemConfig.data.icon,
+                textSize: item.fontSize ? { type: 'const', constVal: item.fontSize } : undefined,
+            };
+        }
 
         if (item.filter != null) {
             itemConfig.filter = item.filter;
@@ -2657,7 +2674,7 @@ export class ConfigManager extends BaseClass {
                                 type: 'button',
                                 data: {
                                     entity1: {
-                                        value: await this.getFieldAsDataItemConfig(item.id),
+                                        value: await this.getFieldAsDataItemConfig(item.id, true),
                                         set: writeable ? await this.getFieldAsDataItemConfig(item.id) : undefined,
                                     },
 
@@ -2834,6 +2851,7 @@ export class ConfigManager extends BaseClass {
                     textSize?: NSPanel.DataItemsOptions | null | undefined;
                     prefix?: NSPanel.DataItemsOptions | null | undefined;
                     suffix?: NSPanel.DataItemsOptions | null | undefined;
+                    useValueConditions?: NSPanel.DataItemsOptions | null | undefined;
                 } = {
                     unit: item.unit ? { type: 'const', constVal: item.unit } : undefined,
                     textSize:
@@ -2846,6 +2864,9 @@ export class ConfigManager extends BaseClass {
                         globals.isCardEntitiesType(page.type) && item.suffixValue
                             ? await this.getFieldAsDataItemConfig(item.suffixValue)
                             : undefined,
+                    useValueConditions: item.useValueConditions
+                        ? await this.getFieldAsDataItemConfig(item.useValueConditions)
+                        : undefined,
                 };
 
                 let pageConfig: ScriptConfig.PageType | undefined = undefined;
@@ -3641,7 +3662,7 @@ export class ConfigManager extends BaseClass {
                                             Color[pageItemDefaults.door.colorOn],
                                         ),
 
-                                        text: (await this.existsState(`${item.id}.ACTUAL`))
+                                        text: (await this.existsState(foundedStates[role].ACTUAL?.dp || ''))
                                             ? {
                                                   ...iconTextDefaults,
                                                   value: foundedStates[role].ACTUAL,
@@ -3654,7 +3675,7 @@ export class ConfigManager extends BaseClass {
                                             item.offColor || `${item.id}.COLORDEC`,
                                             Color[pageItemDefaults.door.colorOff],
                                         ),
-                                        text: (await this.existsState(`${item.id}.ACTUAL`))
+                                        text: (await this.existsState(foundedStates[role].ACTUAL?.dp || ''))
                                             ? {
                                                   ...iconTextDefaults,
                                                   value: foundedStates[role].ACTUAL,
@@ -4477,6 +4498,12 @@ export class ConfigManager extends BaseClass {
                 if (item.longPress && itemConfig?.type === 'button' && !itemConfig?.data?.longPress) {
                     itemConfig.data = itemConfig.data || {};
                     itemConfig.data.longPress = await this.getFieldAsDataItemConfig(item.longPress);
+                }
+                if (item.fontSize != null && itemConfig?.data?.icon) {
+                    itemConfig.data.icon = {
+                        ...itemConfig.data.icon,
+                        textSize: item.fontSize ? { type: 'const', constVal: item.fontSize } : undefined,
+                    };
                 }
                 if (item.enabled === false && itemConfig) {
                     if (!itemConfig.data) {

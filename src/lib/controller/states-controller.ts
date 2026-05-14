@@ -821,6 +821,7 @@ export class StatesControler extends BaseClass {
 
                 // Forward to panels only if writable and controller exists
                 if (libState.obj?.common?.write && this.adapter.controller) {
+                    await this.adapter.controller.onLibraryStateChange(id, state);
                     const panels = this.adapter.controller.panels;
                     for (const panel of panels) {
                         await panel.onStateChange(id, state);

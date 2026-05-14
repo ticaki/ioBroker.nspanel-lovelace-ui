@@ -84,6 +84,13 @@ class NspanelLovelaceUi extends utils.Adapter {
      * Is called when databases are connected and adapter received configuration.
      */
     private async onReady(): Promise<void> {
+        // this.config.deactivateDebugLog = true; // just for testing
+        // rewrite log functions to reduce log output while developing. Add silly log for important debug messages.
+        // remove silly logs after testing to reduce log output
+        if (this.config.deactivateDebugLog) {
+            this.log.debug = (_msg: string) => {};
+            this.log.silly = this.log.info;
+        }
         await this.extendForeignObjectAsync(this.namespace, {
             type: 'meta',
             common: { name: { en: 'Nspanel Instance', de: 'Nspanel Instanze' }, type: 'meta.folder' },
@@ -277,7 +284,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                             }
                         }
                         if (c && c.panelConfig) {
-                            c.panelConfig.model = (a.model as NSpanelModel) || 'eu';
+                            c.panelConfig.model = a.model || 'eu';
                             config.push(c.panelConfig);
                             usedConfig = 'raw';
                         } else {
@@ -291,7 +298,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                             (b: { topic: string }) => b.topic === a.topic,
                         );
                         if (conv) {
-                            conv.model = (a.model as NSpanelModel) || 'eu';
+                            conv.model = a.model || 'eu';
                             config.push(conv);
                             usedConfig = 'converted';
                         }
@@ -971,12 +978,13 @@ class NspanelLovelaceUi extends utils.Adapter {
                                             if (topic) {
                                                 const index = this.config.panels.findIndex(p => p.topic === topic);
                                                 if (index !== -1) {
-                                                    const index = this.controller.panels.findIndex(
+                                                    const indexC = this.controller.panels.findIndex(
                                                         a => a.topic === topic,
                                                     );
-                                                    if (index !== -1) {
+                                                    if (indexC !== -1) {
+                                                        config.model = this.config.panels[index].model;
                                                         await this.controller.removePanel(
-                                                            this.controller.panels[index],
+                                                            this.controller.panels[indexC],
                                                         );
 
                                                         if (this.unload) {
@@ -1148,7 +1156,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                                 const panels = config.panels ?? [];
                                 const index = panels.findIndex(a => a.topic === obj.message.tasmotaTopic);
                                 const item: (typeof this.config.panels)[number] =
-                                    index === -1 ? { name: '', ip: '', topic: '', id: '', model: '' } : panels[index];
+                                    index === -1 ? { name: '', ip: '', topic: '', id: '', model: 'eu' } : panels[index];
                                 const ipIndex = panels.findIndex(a => a.ip === obj.message.tasmotaIP);
                                 let versionsJson: Record<string, string> | undefined = undefined;
                                 versionsJson = await this.getVersionsJson();
@@ -2133,7 +2141,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                     let language = this.library.getLocalLanguage();
                     language = language === 'zh-cn' ? 'en' : language;
                     const result = await this.getVersionsJson();
-                    if (result && 'tasmota' in result) {
+                    if (result && 'tasmota' in result && typeof result.tasmota === 'string') {
                         const cmnd = `OtaUrl http://ota.tasmota.com/tasmota32/release-${result.tasmota.trim()}/tasmota32-${language.toUpperCase()}.bin; Upgrade 1`;
 
                         if (this.controller?.panels) {
@@ -2263,7 +2271,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                                     const eventName =
                                         typeof eventSummary === 'string' ? eventSummary : (eventSummary as any)?.val;
 
-                                    if (eventName && eventName.trim() !== '') {
+                                    if (eventName && typeof eventName === 'string' && eventName.trim() !== '') {
                                         eventNames.add(eventName);
                                     }
                                 }
@@ -2618,9 +2626,10 @@ class NspanelLovelaceUi extends utils.Adapter {
                     };
                 }
                 if (item.type !== 'custom') {
-                    item.fontSize = preItem.textSize
-                        ? (Number(preItem.textSize) as typeof preItem.textSize)
-                        : undefined;
+                    item.fontSize =
+                        preItem.textSize || preItem.textSize == 0
+                            ? (Number(preItem.textSize) as typeof preItem.textSize)
+                            : undefined;
                     if (!item.name && preItem.valueEntry) {
                         item.name = preItem.valueEntry.valueStateId;
                         item.suffixName = preItem.valueEntry.suffix ? preItem.valueEntry.suffix : undefined;

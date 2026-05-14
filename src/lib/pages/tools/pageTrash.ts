@@ -141,7 +141,7 @@ function getTrashItem(event: Partial<iCal.VEvent>, countItems: number, items: Tr
     const eventName = typeof eventSummary === 'string' ? eventSummary : (eventSummary as any)?.val;
 
     // Prüfen ob event existiert
-    if (!eventName || eventName.trim() === '') {
+    if (!eventName || typeof eventName !== 'string' || eventName.trim() === '') {
         return null;
     }
     let trashIndex = -1;
@@ -149,7 +149,7 @@ function getTrashItem(event: Partial<iCal.VEvent>, countItems: number, items: Tr
         const trashText = items[i].textTrash;
         const trashName = typeof trashText === 'string' ? trashText : (trashText as any)?.val;
 
-        if (trashName && trashName.trim() !== '' && eventName.includes(trashName)) {
+        if (trashName && typeof trashName === 'string' && trashName.trim() !== '' && eventName.includes(trashName)) {
             trashIndex = i;
             break;
         }

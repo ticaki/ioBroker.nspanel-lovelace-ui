@@ -25,7 +25,7 @@ var import_Color = require("../const/Color");
 var import_tools = require("../const/tools");
 var import_function_and_const = require("../types/function-and-const");
 async function handleCardRole(adapter, cardRole, page, _options) {
-  var _a, _b, _c;
+  var _a, _b, _c, _d, _e;
   if (!cardRole) {
     return null;
   }
@@ -202,8 +202,8 @@ async function handleCardRole(adapter, cardRole, page, _options) {
       arr = arr.sort((a, b) => a.name.localeCompare(b.name));
       result = [];
       for (let i = 0; i < arr.length; i++) {
-        const val = arr[i].name.trim();
-        const id = arr[i].id.trim();
+        const val = ((_b = arr[i].name) != null ? _b : "").trim();
+        const id = ((_c = arr[i].id) != null ? _c : "").trim();
         if (!val) {
           continue;
         }
@@ -232,8 +232,8 @@ async function handleCardRole(adapter, cardRole, page, _options) {
                 //regexp: /\.volume$/,
                 dp: `${id}.volume`
               },
-              minScale: { type: "const", constVal: (_b = _options == null ? void 0 : _options.min) != null ? _b : 0 },
-              maxScale: { type: "const", constVal: (_c = _options == null ? void 0 : _options.max) != null ? _c : 100 }
+              minScale: { type: "const", constVal: (_d = _options == null ? void 0 : _options.min) != null ? _d : 0 },
+              maxScale: { type: "const", constVal: (_e = _options == null ? void 0 : _options.max) != null ? _e : 100 }
             },
             icon: {
               true: {

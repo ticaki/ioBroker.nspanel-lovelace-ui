@@ -116,14 +116,14 @@ async function getTrashDataFromFile(entry, adapter) {
 function getTrashItem(event, countItems, items) {
   const eventSummary = event.summary !== void 0 ? event.summary : null;
   const eventName = typeof eventSummary === "string" ? eventSummary : eventSummary == null ? void 0 : eventSummary.val;
-  if (!eventName || eventName.trim() === "") {
+  if (!eventName || typeof eventName !== "string" || eventName.trim() === "") {
     return null;
   }
   let trashIndex = -1;
   for (let i = 0; i < items.length; i++) {
     const trashText = items[i].textTrash;
     const trashName = typeof trashText === "string" ? trashText : trashText == null ? void 0 : trashText.val;
-    if (trashName && trashName.trim() !== "" && eventName.includes(trashName)) {
+    if (trashName && typeof trashName === "string" && trashName.trim() !== "" && eventName.includes(trashName)) {
       trashIndex = i;
       break;
     }

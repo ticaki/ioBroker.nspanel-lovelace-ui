@@ -301,6 +301,7 @@ class Panel extends import_library.BaseClass {
     this.statesControler.clearObjectDatabase();
   }
   async preInit(options) {
+    options.pages = options.pages || [];
     const admin = new import_admin.AdminConfiguration(this.adapter);
     await admin.processentrys(options);
     options.pages = options.pages.filter((b) => {
@@ -550,6 +551,25 @@ class Panel extends import_library.BaseClass {
         definition.genericStateObjects.panel.panels.buttons.screensaverGesture
       );
     }
+    state = this.library.readdb(`panels.${this.name}.cmd.activated`);
+    if (state && state.val != null) {
+      await this.library.writedp(
+        `panels.${this.name}.cmd.activated`,
+        true,
+        definition.genericStateObjects.panel.panels.cmd.activated
+      );
+    } else {
+      await this.library.writedp(
+        `panels.${this.name}.cmd.activated`,
+        true,
+        definition.genericStateObjects.panel.panels.cmd.activated
+      );
+    }
+    await this.library.writedp(
+      `panels.${this.name}.cmd.hideCards`,
+      !!(state == null ? void 0 : state.val),
+      definition.genericStateObjects.panel.panels.cmd.hideCards
+    );
     state = this.library.readdb(`panels.${this.name}.cmd.hideCards`);
     if (state && state.val != null) {
       this.hideCards = !!state.val;
@@ -962,6 +982,9 @@ class Panel extends import_library.BaseClass {
           if (this.unload || this.adapter.unload) {
             return;
           }
+          if (msg.nlui_driver_version === -1) {
+            return;
+          }
           this.adapter.setTimeout(async () => {
             let result = void 0;
             try {
@@ -985,8 +1008,6 @@ class Panel extends import_library.BaseClass {
         }
       }
     } else if (topic.endsWith("/tele/LWT")) {
-      if (message === "Offline") {
-      }
     } else if (topic.endsWith("/tele/INFO1")) {
       this.restartLoops();
     } else if (topic.endsWith("/tele/STATE")) {

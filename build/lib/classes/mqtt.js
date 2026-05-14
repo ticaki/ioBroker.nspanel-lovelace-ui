@@ -90,6 +90,10 @@ class MQTTClientClass extends import_library.BaseClass {
     });
     this.client.on("message", (topic, message) => {
       const _helper = async (topic2, message2) => {
+        const strMessage = message2.toString();
+        if (strMessage.startsWith('{"T1":')) {
+          return;
+        }
         const callbacks = this.subscriptDB.filter((entry) => topic2.startsWith(entry.topic.replace("/#", "")));
         if (this.adapter.config.debugLogMqtt) {
           this.log.debug(
@@ -99,7 +103,7 @@ class MQTTClientClass extends import_library.BaseClass {
         const toRemove = [];
         for (const c of callbacks) {
           try {
-            if (await c.callback(topic2, message2.toString())) {
+            if (await c.callback(topic2, strMessage)) {
               toRemove.push({ topic: c.topic, callback: c.callback });
             }
           } catch (e) {

@@ -294,6 +294,7 @@ async function setScaledNumber(i, value) {
   }
 }
 async function getIconEntryValue(i, on, def, defOff = null, getText = false) {
+  var _a, _b;
   if (i === void 0) {
     return "";
   }
@@ -305,19 +306,33 @@ async function getIconEntryValue(i, on, def, defOff = null, getText = false) {
   const text = getText ? i.true && i.true.text && await getValueEntryString(i.true.text) || null : null;
   if (text !== null) {
     const textFalse = i.false && i.false.text && await getValueEntryString(i.false.text) || null;
-    if (typeof on === "number" && textFalse !== null) {
-      const scale = i.scale && await i.scale.getObject();
-      if (globals.isPartialColorScaleElement(scale)) {
-        if (scale.val_min && scale.val_min >= on || scale.val_max && scale.val_max <= on) {
-          return text + (textSize != null ? `\xAC${textSize}` : "");
-        }
-        textFalse;
+    const conditions = ((_b = (_a = i.true) == null ? void 0 : _a.text) == null ? void 0 : _b.useValueConditions) ? await i.true.text.useValueConditions.getString() : null;
+    let useValue = true;
+    if (conditions) {
+      try {
+        useValue = !!new Function("val", `return ${conditions}`)(on);
+      } catch (e) {
+        console.warn("Error evaluating useValueConditions:", e);
+      }
+      if (!useValue) {
+        on = !!on;
       }
     }
-    if (!on) {
-      return (textFalse || text) + (textSize != null ? `\xAC${textSize}` : "");
+    if (useValue) {
+      if (typeof on === "number" && textFalse !== null) {
+        const scale = i.scale && await i.scale.getObject();
+        if (globals.isPartialColorScaleElement(scale)) {
+          if (scale.val_min && scale.val_min >= on || scale.val_max && scale.val_max <= on) {
+            return text + (textSize != null ? `\xAC${textSize}` : "");
+          }
+          textFalse;
+        }
+      }
+      if (!on) {
+        return (textFalse || text) + (textSize != null ? `\xAC${textSize}` : "");
+      }
+      return text + (textSize != null ? `\xAC${textSize}` : "");
     }
-    return text + (textSize != null ? `\xAC${textSize}` : "");
   }
   const icon = i.true && i.true.value && await i.true.value.getString() || null;
   const scaleM = i.scale && await i.scale.getObject();
