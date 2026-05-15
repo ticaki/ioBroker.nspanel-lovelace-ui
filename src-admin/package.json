@@ -21,7 +21,7 @@
         "@mui/material": "^6.4.8",
         "@mui/styles": "^6.5.0",
         "@originjs/vite-plugin-federation": "^1.4.0",
-        "@types/dagre": "^0.7.53",
+        "@types/dagre": "^0.7.54",
         "@types/lodash": "^4.17.24",
         "@types/node": "^25.6.0",
         "@types/react": "^18.3.19",
