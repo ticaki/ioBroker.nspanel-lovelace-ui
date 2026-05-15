@@ -1,27 +1,14 @@
 {
     "extends": "../tsconfig.json",
     "compilerOptions": {
-        "module": "commonjs",
-        "moduleResolution": "node",
+        "module": "preserve",
+        "moduleResolution": "bundler",
         "noEmit": true,
         "isolatedModules": false,
         "target": "es2022",
         "esModuleInterop": true,
         "resolveJsonModule": true,
-        "rootDir": "..",
-        "ignoreDeprecations": "6.0"
-    },
-    "ts-node": {
-        "transpileOnly": true,
-        "compilerOptions": {
-            "module": "commonjs",
-            "moduleResolution": "node",
-            "target": "es2022",
-            "esModuleInterop": true,
-            "resolveJsonModule": true,
-            "rootDir": "..",
-            "ignoreDeprecations": "6.0"
-        }
+        "rootDir": ".."
     },
     "include": ["../src/**/*.ts"]
 }
