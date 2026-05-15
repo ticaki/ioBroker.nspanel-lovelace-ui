@@ -1,7 +1,6 @@
 import mqtt, { type IClientPublishOptions } from 'mqtt'; // import namespace "mqtt"
 import { Level } from 'level';
 
-//@ts-expect-error no types
 import aedesPersistencelevel from 'aedes-persistence-level';
 import * as factory from 'aedes-server-factory';
 import { BaseClass, type AdapterClassDefinition } from '../controller/library';

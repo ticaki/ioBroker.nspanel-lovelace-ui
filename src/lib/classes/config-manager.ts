@@ -5550,8 +5550,8 @@ export class ConfigManager extends BaseClass {
             result.data.entity2.value = await this.getFieldAsDataItemConfig(entity.ScreensaverEntity);
         }
         if (mode === 'indicator') {
-            // @ts-expect-error ignore this button has all propertys of text
-            result.type = 'button';
+            // button has all propertys of text
+            (result as { type: string }).type = 'button';
 
             if ('ScreensaverEntityButton' in entity && entity.ScreensaverEntityButton) {
                 result.data.setValue2 = (await this.existsAndWriteableState(entity.ScreensaverEntityButton))
