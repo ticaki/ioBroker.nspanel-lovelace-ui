@@ -227,7 +227,7 @@ describe('lib/const/tools', () => {
             expect(out).to.deep.equal({ list: [9] });
         });
         it('treats null in source as undefined (keeps default)', () => {
-            const out = deepAssign({ a: 1 }, { a: null as unknown as number });
+            const out = deepAssign({ a: 1 }, { a: null });
             expect(out).to.deep.equal({ a: 1 });
         });
         it('clones the result so mutations do not affect inputs', () => {

@@ -6928,10 +6928,10 @@ export class Icons {
     /**
      * Determines if the provided string is an icon.
      *
-     * @param F - The string to check.
+     * @param _F - The string to check.
      * @returns A type guard indicating whether the string is of type `AllIcons`.
      */
-    static isIcon(F: string): F is AllIcons {
+    static isIcon(_F: string): _F is AllIcons {
         return true;
     }
 }

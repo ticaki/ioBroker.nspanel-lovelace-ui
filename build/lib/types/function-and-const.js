@@ -240,7 +240,7 @@ const SCREENSAVER_MODE_NUMBERS = [0, 1, 2, 3];
 function isScreenSaverModeAsNumber(value) {
   return typeof value === "number" && SCREENSAVER_MODE_NUMBERS.includes(value);
 }
-function isStateRole(F) {
+function isStateRole(_F) {
   return true;
 }
 const BUTTON_ACTION_TYPES = /* @__PURE__ */ new Set([

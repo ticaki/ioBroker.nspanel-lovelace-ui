@@ -225,7 +225,7 @@ export class Page extends BaseClassPage {
                 options.type !== template.type &&
                 !(options.type == 'button' && template.type == 'text')
             ) {
-                this.log.error(`Type: ${String(options.type as string)} is not equal with ${template.type}`);
+                this.log.error(`Type: ${JSON.stringify(options.type)} is not equal with ${template.type}`);
                 return undefined;
             }
             const colorTrue = (options.color || {}).true;

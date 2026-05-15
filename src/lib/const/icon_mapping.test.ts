@@ -39,7 +39,7 @@ describe('lib/const/icon_mapping', () => {
     describe('Icons.GetIconWithType', () => {
         it('behaves identically to GetIcon for known icons', () => {
             expect(Icons.GetIconWithType('logo-alexa' as any)).to.equal('logo-alexa');
-            expect(Icons.GetIconWithType('home' as any)).to.equal(Icons.GetIcon('home'));
+            expect(Icons.GetIconWithType('home')).to.equal(Icons.GetIcon('home'));
         });
     });
 
