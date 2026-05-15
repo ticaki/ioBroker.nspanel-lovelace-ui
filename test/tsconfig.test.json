@@ -3,11 +3,13 @@
     "compilerOptions": {
         "module": "commonjs",
         "moduleResolution": "node",
-        "noEmit": false,
+        "noEmit": true,
         "isolatedModules": false,
         "target": "es2022",
         "esModuleInterop": true,
-        "resolveJsonModule": true
+        "resolveJsonModule": true,
+        "rootDir": "..",
+        "ignoreDeprecations": "6.0"
     },
     "ts-node": {
         "transpileOnly": true,
@@ -16,7 +18,9 @@
             "moduleResolution": "node",
             "target": "es2022",
             "esModuleInterop": true,
-            "resolveJsonModule": true
+            "resolveJsonModule": true,
+            "rootDir": "..",
+            "ignoreDeprecations": "6.0"
         }
     },
     "include": ["../src/**/*.ts"]
