@@ -1,0 +1,1 @@
+die Seite ist ein Platzhalter für offene Links vom Adapter
