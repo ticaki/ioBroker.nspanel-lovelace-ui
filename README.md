@@ -159,6 +159,7 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
 -->
 ### **WORK IN PROGRESS**
 - (copilot) Adapter requires node.js >= 22 now
+- (ticaki) fixed: cardSchedule with timeTable role not showing departure time (alias .ACTUAL state with role 'state' was not resolved due to wrong role filter 'date' in template)
 
 ### 0.17.8 (2026-04-25)
 - (ticaki) fixed: Cannot read properties of undefined (reading 'trim')

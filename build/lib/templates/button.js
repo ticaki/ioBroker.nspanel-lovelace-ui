@@ -61,12 +61,11 @@ const buttonTemplates = {
       },
       text1: {
         true: {
-          role: "date",
+          role: "state",
           mode: "auto",
           type: "state",
           dp: "",
-          regexp: /\.ACTUAL$/,
-          read: `{ return new Date(val).toLocaleTimeString().slice(0,5) }`
+          regexp: /\.ACTUAL$/
         },
         false: void 0
       }
