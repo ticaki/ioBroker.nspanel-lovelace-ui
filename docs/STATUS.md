@@ -23,7 +23,7 @@ Legende: ✅ Fertig | 🔄 In Arbeit | ⚠️ Zu prüfen | ❌ Stub/leer | 🕐 
 
 | Seite (de) | Größe | Status DE | Status EN | Phase | Hinweis |
 |-----------|-------|-----------|-----------|-------|---------|
-| ScriptConfig.md | 34 KB | ⚠️ prüfen | ⏳ folgt mit DE | 2.1–2.3 | Hauptdoku; ⚠️ doppelte H1/H2 „Seiten-Konfiguration" (Z.46 + Z.404 → Anker `seiten-konfiguration-1`), bei Phase 2 bereinigen |
+| ScriptConfig.md | 34 KB | 🔄 2.1 ✅ · 2.2 offen | ⏳ folgt (2.3) | 2.1–2.3 | Hauptdoku. **2.1 erledigt:** Seiten-Konfiguration + optionale Parameter gegen `config-manager.d.ts` verifiziert (Seitentyp-Tabelle, `scrollType`/`filterType`, `alwaysOnDisplay: 'action'`, `useColor` als veraltet markiert), doppelte H1 „Seiten-Konfiguration" + ABLAGE-Duplikat entfernt. **2.2 offen:** PageItems + Hardwarebutton |
 | GlobalPages.md | 22 KB | ⚠️ prüfen | ⏳ folgt mit DE | 2.4 | |
 | screensaver.md | 56 KB | ⚠️ prüfen | ⏳ folgt mit DE | 4 | Groß → 2 Sessions |
 
@@ -78,7 +78,7 @@ Legende: ✅ Fertig | 🔄 In Arbeit | ⚠️ Zu prüfen | ❌ Stub/leer | 🕐 
 |-----------------|--------|--------|
 | `src/lib/adapter-config.d.ts` Z.12 | `adminOverridesScriptPages` — nicht in Admin-UI, wird intern in `src/lib/configuration/admin.ts:301` genutzt. Kein Doku-Eintrag nötig. | — |
 | `src/lib/adapter-config.d.ts` Z.34 | `deactivateDebugLog` — deklariert, aber nirgends in Admin-UI oder Code aktiv genutzt (verwaist). Kein Doku-Eintrag. | Ggf. im Code entfernen |
-| `ScriptConfig.md` Z.46 + Z.404 | Doppelte Überschrift „Seiten-Konfiguration" (einmal `##`, einmal `#`). Erzeugt zweiten Anker `seiten-konfiguration-1`; Sidebar-Link auf ersten Anker funktioniert noch. | Bei Phase 2.1 bereinigen |
+| `ScriptConfig.md` Z.46 + Z.404 | Doppelte Überschrift „Seiten-Konfiguration" (einmal `##`, einmal `#`). Erzeugt zweiten Anker `seiten-konfiguration-1`; Sidebar-Link auf ersten Anker funktioniert noch. | ✅ erledigt (Phase 2.1): ABLAGE-Duplikat „# Seiten-Konfiguration" inkl. doppelter „Optionale Parameter" entfernt, nützlichen `pages`/`subPages`-Test nach oben integriert |
 
 ---
 
@@ -94,4 +94,4 @@ Diese Seiten sind im Sidebar oder einer anderen Seite verlinkt, aber noch nicht 
 
 ---
 
-*Zuletzt aktualisiert: 2026-05-13 (Stubs und Sidebar-Leerlink dokumentiert)*
+*Zuletzt aktualisiert: 2026-05-22 (Phase 2.1: ScriptConfig Seiten-Konfiguration + optionale Parameter gegen Code verifiziert, doppelte Überschrift bereinigt)*
