@@ -35,8 +35,9 @@ import {
 } from '../../../src/lib/types/adminShareConfig';
 import ChannelConfigDialog from './ChannelConfigDialog';
 import icons from '../icons.json';
-import { I18n } from '@iobroker/adapter-react-v5';
+import { I18n, type IobTheme, type ThemeName, type ThemeType } from '@iobroker/adapter-react-v5';
 import { getPageItemDefaultsByRole, getPageNaviItemDefaultsByRole } from '../../../src/lib/const/page-item-defaults';
+import { ConfigGeneric, type ConfigGenericProps, type ConfigGenericState } from '@iobroker/json-config';
 
 /** Basis-Slot-Anzahl pro Kartentyp (cardGrid2: eu/us-l = 8, us-p = 9) */
 const SLOT_COUNTS_BASE: Record<MenuEntry['card'], number> = {
@@ -56,8 +57,9 @@ export interface PageMenuEditorProps {
     onUniqueNameChange: (oldName: string, newName: string) => void;
     getText: (key: string) => string;
     oContext: any;
-    theme?: any;
-    themeType?: string;
+    theme?: IobTheme;
+    themeType?: ThemeType;
+    themeName?: ThemeName;
     /** Alle konfigurierten Panels aus den Adapter-Native-Daten */
     panels?: AdminPanelConfig[];
     /** Expert-Mode aus dem json-config-System */
@@ -68,7 +70,7 @@ export interface PageMenuEditorProps {
     panelPagesMap?: Record<string, string[]>;
 }
 
-interface PageMenuEditorState {
+interface PageMenuEditorState extends ConfigGenericState {
     alive: boolean;
     editingSlotIndex: number | null;
     dragOverIndex: number | null;
@@ -84,15 +86,16 @@ interface PageMenuEditorState {
     clipboard: AdminPageItemConfig | null;
 }
 
-export class PageMenuEditor extends React.Component<PageMenuEditorProps, PageMenuEditorState> {
+export class PageMenuEditor extends ConfigGeneric<ConfigGenericProps & PageMenuEditorProps, PageMenuEditorState> {
     private dialogRef = React.createRef<ChannelConfigDialog>();
     private static iconMap: Map<string, string> | null = null;
     /** Instanzvariable: synchroner Zugriff beim Drop ohne async-setState-Verzögerung */
     private dragSourceIndex: number | null = null;
 
-    constructor(props: PageMenuEditorProps) {
+    constructor(props: ConfigGenericProps & PageMenuEditorProps) {
         super(props);
         this.state = {
+            ...this.state,
             alive: false,
             editingSlotIndex: null,
             dragOverIndex: null,
@@ -481,7 +484,7 @@ export class PageMenuEditor extends React.Component<PageMenuEditorProps, PageMen
         }
     };
 
-    private getText(key: string): string {
+    getText(key: string): string {
         return this.props.getText(key);
     }
 
@@ -1047,7 +1050,7 @@ export class PageMenuEditor extends React.Component<PageMenuEditorProps, PageMen
                                     />
                                     <FormControlLabel
                                         value="cardGrid2"
-                                        disabled={grid2Conflict}
+                                        disabled={grid2Conflict || !this.state.alive}
                                         control={<Radio />}
                                         label={
                                             grid2Status === 'all-usp'

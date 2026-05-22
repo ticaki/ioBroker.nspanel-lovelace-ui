@@ -354,7 +354,7 @@ export class PageAlarm extends Page {
 
     private getMessage(message: Partial<pages.PageAlarmMessage>): string {
         let result: pages.PageAlarmMessage = PageAlarmMessageDefault;
-        result = { ...result, ...message } as pages.PageAlarmMessage;
+        result = { ...result, ...message };
         return getPayload(
             getPayloadRemoveTilde('entityUpd', result.headline),
             result.navigation,

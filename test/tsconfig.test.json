@@ -1,0 +1,14 @@
+{
+    "extends": "../tsconfig.json",
+    "compilerOptions": {
+        "module": "preserve",
+        "moduleResolution": "bundler",
+        "noEmit": true,
+        "isolatedModules": false,
+        "target": "es2022",
+        "esModuleInterop": true,
+        "resolveJsonModule": true,
+        "rootDir": ".."
+    },
+    "include": ["../src/**/*.ts"]
+}

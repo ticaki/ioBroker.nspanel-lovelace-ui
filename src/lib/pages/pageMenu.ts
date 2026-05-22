@@ -330,6 +330,7 @@ export class PageMenu extends Page {
                 }
             }
             if (this.config && globals.isPageMenuConfig(this.config)) {
+                const card = this.config.card;
                 switch (this.config.card) {
                     case 'cardSchedule':
                     case 'cardGrid':
@@ -351,8 +352,7 @@ export class PageMenu extends Page {
                         this.maxItems = 5;
                         break;
                     default:
-                        //@ts-expect-error
-                        this.log.error(`PageMenu: ${this.config.card} is not supported in onVisibilityChange!`);
+                        this.log.error(`PageMenu: ${card} is not supported in onVisibilityChange!`);
                         break;
                 }
                 const temp = await handleCardRole(this.adapter, this.config.cardRole, this, this.config?.options);

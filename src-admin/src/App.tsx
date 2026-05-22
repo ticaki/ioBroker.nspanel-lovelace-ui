@@ -86,8 +86,7 @@ class App extends GenericApp<GenericAppProps, AppState> {
         };
 
         I18n.setTranslations(translations);
-        // @ts-expect-error userLanguage could exist
-        I18n.setLanguage((navigator.language || navigator.userLanguage || 'en').substring(0, 2).toLowerCase());
+        I18n.setLanguage((navigator.language || (navigator as any).userLanguage || 'en').substring(0, 2).toLowerCase());
     }
 
     render(): React.JSX.Element {

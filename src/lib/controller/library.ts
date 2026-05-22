@@ -343,7 +343,7 @@ export class Library extends BaseClass {
      * @param ack        Acknowledged flag for state write.
      * @param forceWrite Force write even if `val` equals old value.
      * @returns Promise<void>
-     * @throws Error if a new state must be created but `obj` is missing.
+     * @throws {Error} if a new state must be created but `obj` is missing.
      */
     async writedp(
         dp: string,
@@ -516,7 +516,7 @@ export class Library extends BaseClass {
      * @param value Input value to convert (may be primitive, array, or object)
      * @param type  Target type: 'string' | 'number' | 'boolean' | 'array' | 'json'
      * @returns Converted value as ioBroker.StateValue (string | number | boolean | null)
-     * @throws Error if `type` is 'undefined'
+     * @throws {Error} if `type` is 'undefined'
      */
     convertToType(
         value: ioBroker.StateValue | unknown[] | Record<string, unknown> | null,
@@ -612,13 +612,11 @@ export class Library extends BaseClass {
         obj: ioBroker.Object | undefined = undefined,
         init: boolean = false,
     ): LibraryStateVal {
-        if (typeof type == 'object') {
-            type = type as LibraryStateVal;
+        if (typeof type == 'object' || type === undefined) {
             this.stateDataBase[dp] = type;
         } else {
-            type = type as ioBroker.ObjectType;
             this.stateDataBase[dp] = {
-                type: type,
+                type,
                 stateTyp:
                     stateType !== undefined
                         ? stateType

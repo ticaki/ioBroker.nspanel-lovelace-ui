@@ -805,7 +805,7 @@ export const siPrefixes = [
  * - `value`: The formatted value as a string, adjusted to fit within the specified space.
  * - `unit`: The unit of the value, including the appropriate SI prefix.
  * - `endFactor`: The final SI prefix factor used for formatting.
- * @throws An error if `v` and `unit` are not both null or both defined.
+ * @throws {Error} if `v` and `unit` are not both null or both defined.
  * - The function uses a predefined list of SI prefixes to determine the appropriate scaling for the value.
  * - If the value cannot be formatted to fit within the specified space, the function attempts to adjust the SI prefix factor.
  * - The function ensures that the formatted value does not exceed the allowed space, including the unit and decimal precision.
@@ -1182,10 +1182,10 @@ function cloneJson<T extends Jsonish>(v: any): any {
     v = nn(v) as T;
 
     if (v instanceof RegExp) {
-        return new RegExp(v.source, v.flags) as any as T;
+        return new RegExp(v.source, v.flags);
     }
     if (Array.isArray(v)) {
-        return v.map(cloneJson) as unknown as T;
+        return v.map(cloneJson);
     }
     if (isPlainObject(v)) {
         const o: Record<string, Jsonish> = {};

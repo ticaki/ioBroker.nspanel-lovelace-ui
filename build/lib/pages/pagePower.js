@@ -85,6 +85,7 @@ class PagePower extends import_Page.Page {
     super(config, options);
     if (options.config && options.config.card == "cardPower") {
       this.config = options.config;
+      this.index = this.config.index;
     }
     this.minUpdateInterval = 2e3;
   }
@@ -268,7 +269,7 @@ class PagePower extends import_Page.Page {
     }
     const unitPower8 = `power8_valueUnit`;
     if (config.power8_selInternalCalculation) {
-      valueUnit.push(` ${config[unitPower8]}`);
+      valueUnit.push(` ${String(config[unitPower8])}`);
     } else {
       if (states[7] != null && states[7] != "" && await configManager.existsState(states[7])) {
         const o = await configManager.adapter.getForeignObjectAsync(states[7]);

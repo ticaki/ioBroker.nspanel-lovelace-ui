@@ -4317,7 +4317,7 @@ class ConfigManager extends import_library.BaseClass {
    * @param item - The item to check the datapoints for.
    * @param mode - The mode of checking, can be 'both', 'script', or 'feature'. Defaults to 'both'. 'script' and 'feature' will only check the respective datapoints.
    * @returns A promise that resolves to true if all required datapoints are present and valid, otherwise throws an error with mode='both'. Return false if mode='feature' or 'script'.
-   * @throws Will throw an error if a required datapoint is missing or invalid and mode='both'.
+   * @throws {Error} Will throw an error if a required datapoint is missing or invalid and mode='both'.
    */
   async checkRequiredDatapoints(role, item, mode = "both") {
     const _checkScriptDataPoints = async (role2, item2) => {

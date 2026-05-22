@@ -1,0 +1,511 @@
+=== Logger started So 3. Mai 15:51:26 CEST 2026 target=/home/tim/ioBroker.nspanel-lovelace-ui/doc/tasmota_flash_20260503_155126_run6.log tasmota=192.168.1.182 poll=1s ===
+15:50:53.226 MQT: nspanel/ns_panel1/stat/STATUS7 = {"StatusTIM":{"UTC":"2026-05-03T13:50:53Z","Local":"2026-05-03T15:50:53","StartDST":"2026-03-29T02:00:00","EndDST":"2026-10-25T03:00:00","Timezone":99,"Sunrise":"06:26","Sunset":"21:07"}}
+15:50:53.249 MQT: nspanel/ns_panel1/stat/STATUS10 = {"StatusSNS":{"Time":"2026-05-03T15:50:53","ANALOG":{"Temperature1":29.1},"TempUnit":"C"}}
+15:50:53.271 MQT: nspanel/ns_panel1/stat/STATUS11 = {"StatusSTS":{"Time":"2026-05-03T15:50:53","Uptime":"0T00:00:11","UptimeSec":11,"Heap":94,"SleepMode":"Dynamic","Sleep":50,"LoadAvg":20,"MqttCount":1,"Berry":{"HeapUsed":18,"Objects":232},"POWER1":"OFF","POWER2":"ON","Wifi":{"AP":1,"SSId":"kiemen-iot","BSSId":"94:2A:6F:7E:DD:62","Channel":1,"Mode":"HT20","RSSI":22,"Signal":-89,"LinkCount":1,"Downtime":"0T00:00:03"},"Hostname":"NSPanel-Flur","IPAddress":"192.168.1.182"}}
+15:50:53.754 MQT: nspanel/ns_panel1/tele/STATE = {"Time":"2026-05-03T15:50:53","Uptime":"0T00:00:11","UptimeSec":11,"Heap":85,"SleepMode":"Dynamic","Sleep":50,"LoadAvg":20,"MqttCount":1,"Berry":{"HeapUsed":18,"Objects":232},"POWER1":"OFF","POWER2":"ON","Wifi":{"AP":1,"SSId":"kiemen-iot","BSSId":"94:2A:6F:7E:DD:62","Channel":1,"Mode":"HT20","RSSI":24,"Signal":-88,"LinkCount":1,"Downtime":"0T00:00:03"},"Hostname":"NSPanel-Flur","IPAddress":"192.168.1.182"}
+15:50:53.800 MQT: nspanel/ns_panel1/tele/SENSOR = {"Time":"2026-05-03T15:50:53","ANALOG":{"Temperature1":29.2},"TempUnit":"C"}
+15:50:54.205 APP: Startvorgänge 38
+15:50:54.211 HTP: Dateisystem verwalten
+15:50:55.093 CFG: Saved, Anzahl 63, Bytes 4096
+15:50:55.100 HTP: Befehl
+15:50:55.104 SRC: WebCommand from 192.168.178.65
+15:50:55.105 CMD: Grp 0, Cmd 'GETDRIVERVERSION', Idx 1, Len 0, Pld -99, Data ''
+15:50:55.113 MQT: nspanel/ns_panel1/tele/RESULT = {"nlui_driver_version":"10"}
+15:50:55.250 HTP: Befehl
+15:50:55.253 SRC: WebCommand from 192.168.178.65
+15:50:55.254 CMD: Grp 0, Cmd 'WEBLOG', Idx 1, Len 1, Pld 3, Data '3'
+15:50:55.258 MQT: nspanel/ns_panel1/stat/RESULT = {"WebLog":3}
+15:50:56.078 CFG: Saved, Anzahl 64, Bytes 4096
+15:50:59.428 SRC: MQTT
+15:50:59.429 CMD: Grp 0, Cmd 'STATUS', Idx 0, Len 0, Pld -99, Data ''
+15:50:59.478 MQT: nspanel/ns_panel1/stat/STATUS0 = {"Status":{"Module":0,"DeviceName":"Tasmota","FriendlyName":["NSPanel Flur","Tasmota2"],"Topic":"tasmota_FA6938","ButtonTopic":"0","Power":"10","PowerLock":"00","PowerOnState":3,"LedState":1,"LedMask":"FFFF","SaveData":1,"SaveState":1,"SwitchTopic":"0","SwitchMode":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],"ButtonRetain":0,"SwitchRetain":0,"SensorRetain":0,"PowerRetain":0,"InfoRetain":0,"StateRetain":0,"StatusRetain":0},"StatusPRM":{"Baudrate":115200,"SerialConfig":"8N1","GroupTopic":"tasmotas","OtaUrl":"http://ota.tasmota.com/tasmota32/release/tasmota32-DE.bin","RestartReason":"Software reset CPU","Uptime":"0T00:00:17","StartupUTC":"2026-05-03T13:50:42","Sleep":50,"CfgHolder":4617,"BootCount":38,"BCResetTime":"2026-05-02T21:57:30","SaveCount":64},"StatusFWR":{"Version":"15.4.0(release-tasmota32)","BuildDateTime":"2026.04.22 12:07:35","Core":"3.3.7","SDK":"5.3.4.260127","CpuFrequency":160,"Hardware":"ESP32-D0WD-V3 v3.0","CR":"554/699"},"StatusLOG":{"SerialLog":2,"WebLog":3,"MqttLog":0,"FileLog":0,"SysLog":0,"LogHost":"","LogPort":514,"SSId":["kiemen-iot",""],"TelePeriod":300,"Resolution":"558180C0","SetOption":["00008009","2805C80001000600003C5A0A192800000000","00000080","20206000","00044000","00000000"]},"StatusMEM":{"ProgramSize":2070,"Free":809,"Heap":95,"StackLowMark":2,"PsrMax":0,"PsrFree":0,"ProgramFlashSize":4096,"FlashSize":4096,"FlashChipId":"16405E","FlashFrequency":80,"FlashMode":"DIO","Features":["0407","9F9AD7DF","0015A001","B7F7BFCF","05DA9BC4","E0360DC7","480840D2","20200000","D4BC482D","810A80F1","00200814"],"Drivers":"1,2,!3,!4,!5,7,!8,9,10,11,12,!14,!16,!17,!20,!21,24,26,!27,29,!34,!35,38,50,52,!59,!60,62,!63,!66,!67,!68,!73,!75,82,!86,!87,!88,!91,!121","Sensors":"1,2,3,5,6,7,8,9,10,11,12,13,14,15,17,18,19,20,21,22,26,31,34,37,39,40,42,43,45,51,52,55,56,58,59,64,66,67,74,85,92,95,98,103,105,109,119,127","I2CDriver":"7,8,9,10,11,12,13,14,15,17,18,20,24,29,31,36,41,42,44,46,48,58,62,65,69,76,77,82,89,97"},"StatusNET":{"Hostname":"NSPanel-Flur","IPAddress":"192.168.1.182","Gateway":"192.168.1.1","Subnetmask":"255.255.255.0","DNSServer1":"192.168.1.1","DNSServer2":"0.0.0.0","Mac":"C0:49:EF:FA:69:38","IP6Global":"","IP6Local":"fe80::c249:efff:fefa:6938%st2","Ethernet":{"Hostname":"","IPAddress":"0.0.0.0","Gateway":"0.0.0.0","Subnetmask":"0.0.0.0","DNSServer1":"192.168.1.1","DNSServer2":"0.0.0.0","Mac":"00:00:00:00:00:00","IP6Global":"","IP6Local":""},"Webserver":2,"HTTP_API":1,"WifiConfig":4,"WifiPower":16.0},"StatusMQT":{"MqttHost":"192.168.1.7","MqttPort":8883,"MqttClientMask":"NSPanel_Flur-FA6938","MqttClient":"NSPanel_Flur-FA6938","MqttUser":"FAVVZKtZlWZNAJk","MqttCount":1,"MqttTLS":1,"MAX_PACKET_SIZE":1200,"KEEPALIVE":30,"SOCKET_TIMEOUT":4},"StatusTIM":{"UTC":"2026-05-03T13:50:59Z","Local":"2026-05-03T15:50:59","StartDST":"2026-03-29T02:00:00","EndDST":"2026-10-25T03:00:00","Timezone":99,"Sunrise":"06:26","Sunset":"21:07"},"StatusSNS":{"Time":"2026-05-03T15:50:59","ANALOG":{"Temperature1":28.9},"TempUnit":"C"},"StatusSTS":{"Time":"2026-05-03T15:50:59","Uptime":"0T00:00:17","UptimeSec":17,"Heap":94,"SleepMode":"Dynamic","Sleep":50,"LoadAvg":19,"MqttCount":1,"Berry":{"HeapUsed":18,"Objects":232},"POWER1":"OFF","POWER2":"ON","Wifi":{"AP":1,"SSId":"kiemen-iot","BSSId":"94:2A:6F:7E:DD:62","Channel":1,"Mode":"HT20","RSSI":24,"Signal":-88,"LinkCount":1,"Downtime":"0T00:00:03"},"Hostname":"NSPanel-Flur","IPAddress":"192.168.1.182"}}
+15:51:27.700 HTP: Befehl
+15:51:27.704 SRC: WebCommand from 192.168.178.65
+15:51:27.705 CMD: Grp 0, Cmd 'FLASHNEXTIONADV', Idx 0, Len 36, Pld -99, Data 'http://nspanel.de/nspanel-v5.1.1.tft'
+15:51:27.712 MQT: nspanel/ns_panel1/stat/RESULT = {"FlashNextionAdv":"Done"}
+15:51:27.729 FLH: host: nspanel.de, port: 80, get: /nspanel-v5.1.1.tft
+15:51:27.862 FLH: Connected:true
+15:51:27.964 FLH: Retry 2
+15:51:28.164 FLH: Retry 3
+15:51:28.464 FLH: Retry 4
+15:51:28.467 FLH: initial readbytes returned 1436 bytes
+15:51:28.706 FLH: header found at byte 262 (header=269 B, body remainder=1167 B)
+15:51:28.707 FLH: HTTP Respose is 200 OK or 206 Partial Content
+15:51:28.708 FLH: find('Content-Length: ') = 82
+15:51:28.709 FLH: content-length slice = '12227824' (len=8)
+15:51:28.710 FLH: int(s) = 12227824
+15:51:28.710 FLH: Flash file size: 12227824
+15:51:28.711 SRC: Berry
+15:51:28.712 CMD: Grp 0, Cmd 'RULETIMER', Idx 3, Len 1, Pld 0, Data '0'
+15:51:28.718 MQT: nspanel/ns_panel1/stat/RESULT = {"T1":0,"T2":0,"T3":0,"T4":0,"T5":0,"T6":0,"T7":0,"T8":0}
+15:51:28.721 SRC: Berry
+15:51:28.722 CMD: Grp 0, Cmd 'RULE', Idx 3, Len 1, Pld 0, Data '0'
+15:51:28.727 MQT: nspanel/ns_panel1/stat/RESULT = {"Rule3":{"State":"OFF","Once":"OFF","StopOnError":"OFF","Length":285,"Free":226,"Rules":"ON CustomSend DO RuleTimer3 140 ENDON ON Rules#Timer=3 DO CustomSend pageType~pageStartup ENDON ON Button1#state do Publish nspanel/ns_panel1/tele/RESULT {\"CustomRecv\":\"event,button1\"} ENDON ON Button2#state do Publish nspanel/ns_panel1/tele/RESULT {\"CustomRecv\":\"event,button2\"} ENDON"}}
+15:51:28.763 NXP: Nextion command sent = bytes('4452414B4A485355594447424E434A48474A4B534842444EFFFFFF')
+15:51:28.765 NXP: Nextion command sent = bytes('7265636D6F643D30FFFFFF')
+15:51:28.767 NXP: Nextion command sent = bytes('636F6E6E656374FFFFFF')
+15:51:28.773 FLH: UNKNOWN display response in flash_mode (size=4, hex=bytes('1AFFFFFF'))
+15:51:28.914 FLH: Send (High Speed) flash start
+15:51:28.918 NXP: Nextion command sent = bytes('77686D692D777269732031323232373832342C3932313630302C72657330FFFF...')
+15:51:28.941 BRY: Serial UART2
+15:51:29.310 FLH: write_block ENTER #1 buf=1167 written=0 size=12227824 tcp_conn=true avail=5760
+15:51:29.326 MQT: nspanel/ns_panel1/tele/RESULT = {"Flashing":{"complete": "0", "time_elapsed": 0}}
+15:51:29.419 FLH: Read block - Writing: 4096 - Total: 4096 - Buffer size: 1167
+15:51:29.420 FLH: write_block EXIT #1 remain=12223728 tcp_conn=true
+15:51:29.485 FLH: Waiting offset...
+15:51:34.278 FLH: Flash offset marker 10485760
+15:51:34.280 FLH: host: nspanel.de, port: 80, get: /nspanel-v5.1.1.tft
+15:51:34.526 FLH: Connected:true
+15:51:34.629 FLH: Retry 2
+15:51:34.829 FLH: Retry 3
+15:51:34.831 FLH: initial readbytes returned 1436 bytes
+15:51:35.063 FLH: header found at byte 268 (header=275 B, body remainder=1161 B)
+15:51:35.063 FLH: HTTP Respose is 200 OK or 206 Partial Content
+15:51:36.244 MQT: nspanel/ns_panel1/tele/RESULT = {"Flashing":{"complete": "85", "time_elapsed": 7}}
+15:51:36.335 FLH: Read block - Writing: 4096 - Total: 10489856 - Buffer size: 2825
+15:51:38.017 FLH: Read block - Writing: 4096 - Total: 10493952 - Buffer size: 165
+15:51:38.858 FLH: Read block - Writing: 4096 - Total: 10498048 - Buffer size: 377
+15:51:39.145 FLH: Read block - Writing: 4096 - Total: 10502144 - Buffer size: 589
+15:51:39.423 FLH: Read block - Writing: 4096 - Total: 10506240 - Buffer size: 801
+15:51:39.896 FLH: Read block - Writing: 4096 - Total: 10510336 - Buffer size: 2465
+15:51:40.306 FLH: Read block - Writing: 4096 - Total: 10514432 - Buffer size: 1225
+15:51:42.072 FLH: Read block - Writing: 4096 - Total: 10518528 - Buffer size: 1437
+15:51:43.369 MQT: nspanel/ns_panel1/tele/RESULT = {"Flashing":{"complete": "86", "time_elapsed": 14}}
+15:51:43.460 FLH: Read block - Writing: 4096 - Total: 10522624 - Buffer size: 1649
+15:51:44.250 FLH: Read block - Writing: 4096 - Total: 10526720 - Buffer size: 425
+15:51:44.736 FLH: Read block - Writing: 4096 - Total: 10530816 - Buffer size: 637
+15:51:45.916 FLH: Read block - Writing: 4096 - Total: 10534912 - Buffer size: 2073
+15:51:46.146 FLH: Read block - Writing: 4096 - Total: 10539008 - Buffer size: 1061
+15:51:46.559 FLH: Read block - Writing: 4096 - Total: 10543104 - Buffer size: 1061
+15:51:46.773 FLH: Read block - Writing: 4096 - Total: 10547200 - Buffer size: 1485
+15:51:48.386 FLH: Read block - Writing: 4096 - Total: 10551296 - Buffer size: 1697
+15:51:48.514 FLH: Read block - Writing: 4096 - Total: 10555392 - Buffer size: 473
+15:51:49.123 FLH: Read block - Writing: 4096 - Total: 10559488 - Buffer size: 685
+15:51:50.090 FLH: Read block - Writing: 4096 - Total: 10563584 - Buffer size: 897
+15:51:50.375 FLH: Read block - Writing: 4096 - Total: 10567680 - Buffer size: 1109
+15:51:50.586 FLH: Read block - Writing: 4096 - Total: 10571776 - Buffer size: 1321
+15:51:50.996 FLH: Read block - Writing: 4096 - Total: 10575872 - Buffer size: 97
+15:51:52.012 FLH: Read block - Writing: 4096 - Total: 10579968 - Buffer size: 309
+15:51:52.144 FLH: Read block - Writing: 4096 - Total: 10584064 - Buffer size: 309
+15:51:53.375 FLH: Read block - Writing: 4096 - Total: 10588160 - Buffer size: 733
+15:51:56.170 FLH: Read block - Writing: 4096 - Total: 10592256 - Buffer size: 2169
+15:51:56.350 FLH: Read block - Writing: 4096 - Total: 10596352 - Buffer size: 1157
+15:51:59.128 FLH: Read block - Writing: 4096 - Total: 10600448 - Buffer size: 1369
+15:51:59.694 FLH: Read block - Writing: 4096 - Total: 10604544 - Buffer size: 145
+15:52:01.983 FLH: Read block - Writing: 4096 - Total: 10608640 - Buffer size: 357
+15:52:02.270 FLH: Read block - Writing: 4096 - Total: 10612736 - Buffer size: 569
+15:52:02.752 FLH: Read block - Writing: 4096 - Total: 10616832 - Buffer size: 781
+15:52:04.135 FLH: Read block - Writing: 4096 - Total: 10620928 - Buffer size: 993
+15:52:05.205 FLH: Read block - Writing: 4096 - Total: 10625024 - Buffer size: 1205
+15:52:05.475 FLH: Read block - Writing: 4096 - Total: 10629120 - Buffer size: 1449
+15:52:05.607 FLH: Read block - Writing: 4096 - Total: 10633216 - Buffer size: 1449
+15:52:05.784 FLH: Read block - Writing: 4096 - Total: 10637312 - Buffer size: 405
+15:52:05.920 FLH: Read block - Writing: 4096 - Total: 10641408 - Buffer size: 405
+15:52:06.145 MQT: nspanel/ns_panel1/tele/RESULT = {"Flashing":{"complete": "87", "time_elapsed": 37}}
+15:52:06.237 FLH: Read block - Writing: 4096 - Total: 10645504 - Buffer size: 2053
+15:52:06.407 FLH: Read block - Writing: 4096 - Total: 10649600 - Buffer size: 3701
+15:52:06.520 FLH: Read block - Writing: 4096 - Total: 10653696 - Buffer size: 3701
+15:52:06.733 FLH: Read block - Writing: 4096 - Total: 10657792 - Buffer size: 3701
+15:52:06.865 FLH: Read block - Writing: 4096 - Total: 10661888 - Buffer size: 3701
+15:52:07.027 FLH: Read block - Writing: 4096 - Total: 10665984 - Buffer size: 1905
+15:52:07.239 FLH: Read block - Writing: 4096 - Total: 10670080 - Buffer size: 1905
+15:52:07.407 FLH: Read block - Writing: 4096 - Total: 10674176 - Buffer size: 3537
+15:52:07.612 FLH: Read block - Writing: 4096 - Total: 10678272 - Buffer size: 1089
+15:52:07.822 FLH: Read block - Writing: 4096 - Total: 10682368 - Buffer size: 1089
+15:52:08.529 FLH: Read block - Writing: 4096 - Total: 10686464 - Buffer size: 77
+15:52:08.870 FLH: Read block - Writing: 4096 - Total: 10690560 - Buffer size: 289
+15:52:09.200 FLH: Read block - Writing: 4096 - Total: 10694656 - Buffer size: 289
+15:52:09.514 FLH: Read block - Writing: 4096 - Total: 10698752 - Buffer size: 501
+15:52:09.779 FLH: Read block - Writing: 4096 - Total: 10702848 - Buffer size: 2361
+15:52:10.398 FLH: Read block - Writing: 4096 - Total: 10706944 - Buffer size: 3797
+15:52:10.528 FLH: Read block - Writing: 4096 - Total: 10711040 - Buffer size: 1349
+15:52:10.807 FLH: Read block - Writing: 4096 - Total: 10715136 - Buffer size: 125
+15:52:11.325 FLH: Read block - Writing: 4096 - Total: 10719232 - Buffer size: 2997
+15:52:11.437 FLH: Read block - Writing: 4096 - Total: 10723328 - Buffer size: 549
+15:52:12.447 FLH: Read block - Writing: 4096 - Total: 10727424 - Buffer size: 1985
+15:52:12.582 FLH: Read block - Writing: 4096 - Total: 10731520 - Buffer size: 973
+15:52:13.016 FLH: Read block - Writing: 4096 - Total: 10735616 - Buffer size: 1185
+15:52:13.851 FLH: Read block - Writing: 4096 - Total: 10739712 - Buffer size: 1185
+15:52:14.083 FLH: Read block - Writing: 4096 - Total: 10743808 - Buffer size: 173
+15:52:14.448 FLH: Read block - Writing: 4096 - Total: 10747904 - Buffer size: 3045
+15:52:14.560 FLH: Read block - Writing: 4096 - Total: 10752000 - Buffer size: 2033
+15:52:15.370 FLH: Read block - Writing: 4096 - Total: 10756096 - Buffer size: 3469
+15:52:15.504 FLH: Read block - Writing: 4096 - Total: 10760192 - Buffer size: 2457
+15:52:15.633 FLH: Read block - Writing: 4096 - Total: 10764288 - Buffer size: 1249
+15:52:16.335 MQT: nspanel/ns_panel1/tele/RESULT = {"Flashing":{"complete": "88", "time_elapsed": 47}}
+15:52:16.427 FLH: Read block - Writing: 4096 - Total: 10768384 - Buffer size: 1445
+15:52:16.537 FLH: Read block - Writing: 4096 - Total: 10772480 - Buffer size: 221
+15:52:16.952 FLH: Read block - Writing: 4096 - Total: 10776576 - Buffer size: 433
+15:52:20.015 FLH: Read block - Writing: 4096 - Total: 10780672 - Buffer size: 645
+15:52:20.453 FLH: Read block - Writing: 4096 - Total: 10784768 - Buffer size: 857
+15:52:23.399 FLH: Read block - Writing: 4096 - Total: 10788864 - Buffer size: 3729
+15:52:23.534 FLH: Read block - Writing: 4096 - Total: 10792960 - Buffer size: 2717
+15:52:23.708 FLH: Read block - Writing: 4096 - Total: 10797056 - Buffer size: 1493
+15:52:24.086 FLH: Read block - Writing: 4096 - Total: 10801152 - Buffer size: 269
+15:52:24.556 FLH: Read block - Writing: 4096 - Total: 10805248 - Buffer size: 481
+15:52:24.773 FLH: Read block - Writing: 4096 - Total: 10809344 - Buffer size: 693
+15:52:26.584 FLH: Read block - Writing: 4096 - Total: 10813440 - Buffer size: 905
+15:52:26.926 FLH: Read block - Writing: 4096 - Total: 10817536 - Buffer size: 1117
+15:52:27.912 FLH: Read block - Writing: 4096 - Total: 10821632 - Buffer size: 2553
+15:52:28.099 FLH: Read block - Writing: 4096 - Total: 10825728 - Buffer size: 1541
+15:52:28.371 FLH: Read block - Writing: 4096 - Total: 10829824 - Buffer size: 317
+15:52:28.538 FLH: Read block - Writing: 4096 - Total: 10833920 - Buffer size: 529
+15:52:28.905 FLH: Read block - Writing: 4096 - Total: 10838016 - Buffer size: 741
+15:52:29.220 FLH: Read block - Writing: 4096 - Total: 10842112 - Buffer size: 969
+15:52:29.434 FLH: Read block - Writing: 4096 - Total: 10846208 - Buffer size: 969
+15:52:31.365 FLH: Read block - Writing: 4096 - Total: 10850304 - Buffer size: 1409
+15:52:32.955 FLH: Read block - Writing: 4096 - Total: 10854400 - Buffer size: 2813
+15:52:33.084 FLH: Read block - Writing: 4096 - Total: 10858496 - Buffer size: 365
+15:52:33.671 FLH: Read block - Writing: 4096 - Total: 10862592 - Buffer size: 577
+15:52:33.983 FLH: Read block - Writing: 4096 - Total: 10866688 - Buffer size: 577
+15:52:34.348 FLH: Read block - Writing: 4096 - Total: 10870784 - Buffer size: 1001
+15:52:34.628 FLH: Read block - Writing: 4096 - Total: 10874880 - Buffer size: 2437
+15:52:34.769 FLH: Read block - Writing: 4096 - Total: 10878976 - Buffer size: 2437
+15:52:34.980 FLH: Read block - Writing: 4096 - Total: 10883072 - Buffer size: 2437
+15:52:35.111 MQT: nspanel/ns_panel1/tele/RESULT = {"Flashing":{"complete": "89", "time_elapsed": 66}}
+15:52:35.203 FLH: Read block - Writing: 4096 - Total: 10887168 - Buffer size: 2437
+15:52:35.433 FLH: Read block - Writing: 4096 - Total: 10891264 - Buffer size: 2437
+15:52:35.515 FLH: write_block ENTER #101 buf=2437 written=10891264 size=12227824 tcp_conn=true avail=3932
+15:52:35.615 FLH: Read block - Writing: 4096 - Total: 10895360 - Buffer size: 2273
+15:52:35.617 FLH: write_block EXIT #101 remain=1332464 tcp_conn=true
+15:52:35.780 FLH: Read block - Writing: 4096 - Total: 10899456 - Buffer size: 1049
+15:52:35.989 FLH: Read block - Writing: 4096 - Total: 10903552 - Buffer size: 1049
+15:52:37.053 FLH: Read block - Writing: 4096 - Total: 10907648 - Buffer size: 37
+15:52:37.190 FLH: Read block - Writing: 4096 - Total: 10911744 - Buffer size: 37
+15:52:37.451 FLH: Read block - Writing: 4096 - Total: 10915840 - Buffer size: 461
+15:52:37.971 FLH: Read block - Writing: 4096 - Total: 10919936 - Buffer size: 2109
+15:52:38.108 FLH: Read block - Writing: 4096 - Total: 10924032 - Buffer size: 2109
+15:52:38.473 FLH: Read block - Writing: 4096 - Total: 10928128 - Buffer size: 1097
+15:52:38.939 FLH: Read block - Writing: 4096 - Total: 10932224 - Buffer size: 1309
+15:52:39.070 FLH: Read block - Writing: 4096 - Total: 10936320 - Buffer size: 85
+15:52:39.289 FLH: Read block - Writing: 4096 - Total: 10940416 - Buffer size: 2957
+15:52:39.494 FLH: Read block - Writing: 4096 - Total: 10944512 - Buffer size: 509
+15:52:39.709 FLH: Read block - Writing: 4096 - Total: 10948608 - Buffer size: 509
+15:52:39.973 FLH: Read block - Writing: 4096 - Total: 10952704 - Buffer size: 933
+15:52:40.107 FLH: Read block - Writing: 4096 - Total: 10956800 - Buffer size: 933
+15:52:40.478 FLH: Read block - Writing: 4096 - Total: 10960896 - Buffer size: 1357
+15:52:40.613 FLH: Read block - Writing: 4096 - Total: 10964992 - Buffer size: 1357
+15:52:40.796 FLH: Read block - Writing: 4096 - Total: 10969088 - Buffer size: 345
+15:52:41.053 FLH: Read block - Writing: 4096 - Total: 10973184 - Buffer size: 557
+15:52:41.570 FLH: Read block - Writing: 4096 - Total: 10977280 - Buffer size: 769
+15:52:41.836 FLH: Read block - Writing: 4096 - Total: 10981376 - Buffer size: 769
+15:52:41.961 FLH: Read block - Writing: 4096 - Total: 10985472 - Buffer size: 769
+15:52:42.372 FLH: Read block - Writing: 4096 - Total: 10989568 - Buffer size: 1405
+15:52:42.592 FLH: Read block - Writing: 4096 - Total: 10993664 - Buffer size: 181
+15:52:42.808 FLH: Read block - Writing: 4096 - Total: 10997760 - Buffer size: 1617
+15:52:42.971 FLH: Read block - Writing: 4096 - Total: 11001856 - Buffer size: 2041
+15:52:43.178 FLH: Read block - Writing: 4096 - Total: 11005952 - Buffer size: 817
+15:52:43.715 MQT: nspanel/ns_panel1/tele/RESULT = {"Flashing":{"complete": "90", "time_elapsed": 74}}
+15:52:43.807 FLH: Read block - Writing: 4096 - Total: 11010048 - Buffer size: 1029
+15:52:44.444 FLH: Read block - Writing: 4096 - Total: 11014144 - Buffer size: 2465
+15:52:44.670 FLH: Read block - Writing: 4096 - Total: 11018240 - Buffer size: 17
+15:52:45.538 FLH: Read block - Writing: 4096 - Total: 11022336 - Buffer size: 229
+15:52:46.976 FLH: Read block - Writing: 4096 - Total: 11026432 - Buffer size: 441
+15:52:47.107 FLH: Read block - Writing: 4096 - Total: 11030528 - Buffer size: 441
+15:52:47.671 FLH: Read block - Writing: 4096 - Total: 11034624 - Buffer size: 865
+15:52:48.854 FLH: Read block - Writing: 4096 - Total: 11038720 - Buffer size: 2513
+15:52:49.240 FLH: Read block - Writing: 4096 - Total: 11042816 - Buffer size: 1289
+15:52:49.456 FLH: Read block - Writing: 4096 - Total: 11046912 - Buffer size: 1289
+15:52:49.586 FLH: Read block - Writing: 4096 - Total: 11051008 - Buffer size: 277
+15:52:50.544 FLH: Read block - Writing: 4096 - Total: 11055104 - Buffer size: 1713
+15:52:50.726 FLH: Read block - Writing: 4096 - Total: 11059200 - Buffer size: 701
+15:52:51.091 FLH: Read block - Writing: 4096 - Total: 11063296 - Buffer size: 913
+15:52:51.753 FLH: Read block - Writing: 4096 - Total: 11067392 - Buffer size: 1125
+15:52:55.523 FLH: Read block - Writing: 4096 - Total: 11071488 - Buffer size: 2773
+15:52:55.764 FLH: Read block - Writing: 4096 - Total: 11075584 - Buffer size: 1549
+15:52:55.891 FLH: Read block - Writing: 4096 - Total: 11079680 - Buffer size: 325
+15:52:56.259 FLH: Read block - Writing: 4096 - Total: 11083776 - Buffer size: 537
+15:52:57.174 FLH: Read block - Writing: 4096 - Total: 11087872 - Buffer size: 2185
+15:52:58.939 FLH: Read block - Writing: 4096 - Total: 11091968 - Buffer size: 977
+15:53:00.786 FLH: Read block - Writing: 4096 - Total: 11096064 - Buffer size: 1173
+15:53:01.255 FLH: Read block - Writing: 4096 - Total: 11100160 - Buffer size: 1385
+15:53:01.811 FLH: Read block - Writing: 4096 - Total: 11104256 - Buffer size: 1385
+15:53:01.945 FLH: Read block - Writing: 4096 - Total: 11108352 - Buffer size: 373
+15:53:02.331 FLH: Read block - Writing: 4096 - Total: 11112448 - Buffer size: 601
+15:53:03.701 FLH: Read block - Writing: 4096 - Total: 11116544 - Buffer size: 797
+15:53:05.370 FLH: Read block - Writing: 4096 - Total: 11120640 - Buffer size: 1009
+15:53:10.752 FLH: waited 107 iters (5360 ms) for tcp data, buf=5317 tcp_conn=true
+15:53:10.847 FLH: Read block - Writing: 4096 - Total: 11124736 - Buffer size: 1221
+15:53:12.037 FLH: Read block - Writing: 4096 - Total: 11128832 - Buffer size: 1433
+15:53:12.292 MQT: nspanel/ns_panel1/tele/RESULT = {"Flashing":{"complete": "91", "time_elapsed": 103}}
+15:53:12.384 FLH: Read block - Writing: 4096 - Total: 11132928 - Buffer size: 209
+15:53:12.611 FLH: Read block - Writing: 4096 - Total: 11137024 - Buffer size: 209
+15:53:13.107 FLH: Read block - Writing: 4096 - Total: 11141120 - Buffer size: 2069
+15:53:14.220 FLH: Read block - Writing: 4096 - Total: 11145216 - Buffer size: 845
+15:53:14.823 FLH: Read block - Writing: 4096 - Total: 11149312 - Buffer size: 2281
+15:53:15.227 FLH: Read block - Writing: 4096 - Total: 11153408 - Buffer size: 1269
+15:53:16.267 FLH: Read block - Writing: 4096 - Total: 11157504 - Buffer size: 45
+15:53:19.734 FLH: Read block - Writing: 4096 - Total: 11161600 - Buffer size: 257
+15:53:20.617 FLH: Read block - Writing: 4096 - Total: 11165696 - Buffer size: 469
+15:53:21.897 FLH: Read block - Writing: 4096 - Total: 11169792 - Buffer size: 681
+15:53:22.439 FLH: Read block - Writing: 4096 - Total: 11173888 - Buffer size: 893
+15:53:23.618 FLH: Read block - Writing: 4096 - Total: 11177984 - Buffer size: 1121
+15:53:28.895 FLH: Read block - Writing: 4096 - Total: 11182080 - Buffer size: 1317
+15:53:32.928 FLH: Read block - Writing: 4096 - Total: 11186176 - Buffer size: 2785
+15:53:33.063 FLH: Read block - Writing: 4096 - Total: 11190272 - Buffer size: 1741
+15:53:34.585 FLH: Read block - Writing: 4096 - Total: 11194368 - Buffer size: 517
+15:53:34.972 FLH: Read block - Writing: 4096 - Total: 11198464 - Buffer size: 729
+15:53:35.101 FLH: Read block - Writing: 4096 - Total: 11202560 - Buffer size: 729
+15:53:35.592 FLH: Read block - Writing: 4096 - Total: 11206656 - Buffer size: 1169
+15:53:35.805 FLH: Read block - Writing: 4096 - Total: 11210752 - Buffer size: 1169
+15:53:36.013 FLH: Read block - Writing: 4096 - Total: 11214848 - Buffer size: 1169
+15:53:36.228 FLH: Read block - Writing: 4096 - Total: 11218944 - Buffer size: 1169
+15:53:36.440 FLH: Read block - Writing: 4096 - Total: 11223040 - Buffer size: 1169
+15:53:36.567 FLH: Read block - Writing: 4096 - Total: 11227136 - Buffer size: 1169
+15:53:36.723 FLH: Read block - Writing: 4096 - Total: 11231232 - Buffer size: 1169
+15:53:36.835 FLH: Read block - Writing: 4096 - Total: 11235328 - Buffer size: 1169
+15:53:37.043 FLH: Read block - Writing: 4096 - Total: 11239424 - Buffer size: 1169
+15:53:37.231 FLH: Read block - Writing: 4096 - Total: 11243520 - Buffer size: 1169
+15:53:37.363 FLH: Read block - Writing: 4096 - Total: 11247616 - Buffer size: 1169
+15:53:37.519 FLH: Read block - Writing: 4096 - Total: 11251712 - Buffer size: 1169
+15:53:37.639 MQT: nspanel/ns_panel1/tele/RESULT = {"Flashing":{"complete": "92", "time_elapsed": 128}}
+15:53:37.731 FLH: Read block - Writing: 4096 - Total: 11255808 - Buffer size: 1169
+15:53:37.939 FLH: Read block - Writing: 4096 - Total: 11259904 - Buffer size: 1169
+15:53:38.149 FLH: Read block - Writing: 4096 - Total: 11264000 - Buffer size: 1169
+15:53:38.267 FLH: Read block - Writing: 4096 - Total: 11268096 - Buffer size: 1169
+15:53:38.425 FLH: Read block - Writing: 4096 - Total: 11272192 - Buffer size: 1169
+15:53:38.633 FLH: Read block - Writing: 4096 - Total: 11276288 - Buffer size: 1169
+15:53:38.845 FLH: Read block - Writing: 4096 - Total: 11280384 - Buffer size: 661
+15:53:39.513 FLH: Read block - Writing: 4096 - Total: 11284480 - Buffer size: 2309
+15:53:39.645 FLH: Read block - Writing: 4096 - Total: 11288576 - Buffer size: 1085
+15:53:40.312 FLH: Read block - Writing: 4096 - Total: 11292672 - Buffer size: 1297
+15:53:41.269 FLH: Read block - Writing: 4096 - Total: 11296768 - Buffer size: 1297
+15:53:41.696 FLH: Read block - Writing: 4096 - Total: 11300864 - Buffer size: 285
+15:53:41.726 FLH: write_block ENTER #201 buf=285 written=11300864 size=12227824 tcp_conn=true avail=0
+15:53:45.627 FLH: Read block - Writing: 4096 - Total: 11304960 - Buffer size: 1721
+15:53:45.628 FLH: write_block EXIT #201 remain=922864 tcp_conn=true
+15:53:46.667 FLH: Read block - Writing: 4096 - Total: 11309056 - Buffer size: 709
+15:53:47.006 FLH: Read block - Writing: 4096 - Total: 11313152 - Buffer size: 921
+15:53:47.490 FLH: Read block - Writing: 4096 - Total: 11317248 - Buffer size: 1133
+15:53:48.312 FLH: Read block - Writing: 4096 - Total: 11321344 - Buffer size: 1345
+15:53:48.626 FLH: Read block - Writing: 4096 - Total: 11325440 - Buffer size: 121
+15:53:48.907 FLH: Read block - Writing: 4096 - Total: 11329536 - Buffer size: 333
+15:53:49.775 FLH: Read block - Writing: 4096 - Total: 11333632 - Buffer size: 545
+15:53:50.011 FLH: Read block - Writing: 4096 - Total: 11337728 - Buffer size: 757
+15:53:50.244 FLH: Read block - Writing: 4096 - Total: 11341824 - Buffer size: 969
+15:53:51.358 FLH: Read block - Writing: 4096 - Total: 11345920 - Buffer size: 969
+15:53:55.046 FLH: Read block - Writing: 4096 - Total: 11350016 - Buffer size: 2829
+15:53:55.275 FLH: Read block - Writing: 4096 - Total: 11354112 - Buffer size: 169
+15:54:09.804 FLH: waited 290 iters (14505 ms) for tcp data, buf=4265 tcp_conn=true
+15:54:09.897 FLH: Read block - Writing: 4096 - Total: 11358208 - Buffer size: 169
+15:54:15.040 FLH: Read block - Writing: 4096 - Total: 11362304 - Buffer size: 593
+15:54:15.526 FLH: Read block - Writing: 4096 - Total: 11366400 - Buffer size: 805
+15:54:16.355 FLH: Read block - Writing: 4096 - Total: 11370496 - Buffer size: 1017
+15:54:16.890 FLH: Read block - Writing: 4096 - Total: 11374592 - Buffer size: 1229
+15:54:17.290 MQT: nspanel/ns_panel1/tele/RESULT = {"Flashing":{"complete": "93", "time_elapsed": 168}}
+15:54:17.382 FLH: Read block - Writing: 4096 - Total: 11378688 - Buffer size: 5
+15:54:17.773 FLH: Read block - Writing: 4096 - Total: 11382784 - Buffer size: 249
+15:54:18.009 FLH: Read block - Writing: 4096 - Total: 11386880 - Buffer size: 429
+15:54:18.196 FLH: Read block - Writing: 4096 - Total: 11390976 - Buffer size: 657
+15:54:18.511 FLH: Read block - Writing: 4096 - Total: 11395072 - Buffer size: 657
+15:54:18.624 FLH: Read block - Writing: 4096 - Total: 11399168 - Buffer size: 657
+15:54:22.343 FLH: Read block - Writing: 4096 - Total: 11403264 - Buffer size: 1277
+15:54:22.929 FLH: Read block - Writing: 4096 - Total: 11407360 - Buffer size: 53
+15:54:23.811 FLH: Read block - Writing: 4096 - Total: 11411456 - Buffer size: 265
+15:54:25.800 FLH: Read block - Writing: 4096 - Total: 11415552 - Buffer size: 477
+15:54:26.867 FLH: Read block - Writing: 4096 - Total: 11419648 - Buffer size: 689
+15:54:30.008 FLH: Read block - Writing: 4096 - Total: 11423744 - Buffer size: 705
+15:54:30.540 FLH: Read block - Writing: 4096 - Total: 11427840 - Buffer size: 2353
+15:54:36.931 FLH: waited 127 iters (6356 ms) for tcp data, buf=5421 tcp_conn=true
+15:54:37.024 FLH: Read block - Writing: 4096 - Total: 11431936 - Buffer size: 1325
+15:54:37.152 FLH: Read block - Writing: 4096 - Total: 11436032 - Buffer size: 101
+15:54:37.389 FLH: Read block - Writing: 4096 - Total: 11440128 - Buffer size: 313
+15:54:39.171 FLH: Read block - Writing: 4096 - Total: 11444224 - Buffer size: 525
+15:54:39.762 FLH: Read block - Writing: 4096 - Total: 11448320 - Buffer size: 737
+15:54:40.552 FLH: Read block - Writing: 4096 - Total: 11452416 - Buffer size: 2401
+15:54:42.646 FLH: Read block - Writing: 4096 - Total: 11456512 - Buffer size: 3821
+15:54:44.831 FLH: Read block - Writing: 4096 - Total: 11460608 - Buffer size: 1373
+15:54:45.110 FLH: Read block - Writing: 4096 - Total: 11464704 - Buffer size: 149
+15:54:45.344 FLH: Read block - Writing: 4096 - Total: 11468800 - Buffer size: 1797
+15:54:45.478 FLH: Read block - Writing: 4096 - Total: 11472896 - Buffer size: 1797
+15:54:45.787 FLH: Read block - Writing: 4096 - Total: 11476992 - Buffer size: 1797
+15:54:45.996 FLH: Read block - Writing: 4096 - Total: 11481088 - Buffer size: 1797
+15:54:46.123 FLH: Read block - Writing: 4096 - Total: 11485184 - Buffer size: 1797
+15:54:46.236 FLH: Read block - Writing: 4096 - Total: 11489280 - Buffer size: 1797
+15:54:46.397 FLH: Read block - Writing: 4096 - Total: 11493376 - Buffer size: 1797
+15:54:46.608 FLH: Read block - Writing: 4096 - Total: 11497472 - Buffer size: 1797
+15:54:46.635 MQT: nspanel/ns_panel1/tele/RESULT = {"Flashing":{"complete": "94", "time_elapsed": 197}}
+15:54:46.727 FLH: Read block - Writing: 4096 - Total: 11501568 - Buffer size: 1797
+15:54:46.884 FLH: Read block - Writing: 4096 - Total: 11505664 - Buffer size: 1797
+15:54:47.096 FLH: Read block - Writing: 4096 - Total: 11509760 - Buffer size: 1045
+15:54:47.413 FLH: Read block - Writing: 4096 - Total: 11513856 - Buffer size: 1257
+15:54:47.627 FLH: Read block - Writing: 4096 - Total: 11517952 - Buffer size: 33
+15:54:47.975 FLH: Read block - Writing: 4096 - Total: 11522048 - Buffer size: 245
+15:54:48.307 FLH: Read block - Writing: 4096 - Total: 11526144 - Buffer size: 245
+15:54:48.901 FLH: Read block - Writing: 4096 - Total: 11530240 - Buffer size: 2105
+15:54:49.117 FLH: Read block - Writing: 4096 - Total: 11534336 - Buffer size: 881
+15:54:49.328 FLH: Read block - Writing: 4096 - Total: 11538432 - Buffer size: 881
+15:54:49.558 FLH: Read block - Writing: 4096 - Total: 11542528 - Buffer size: 881
+15:54:49.667 FLH: Read block - Writing: 4096 - Total: 11546624 - Buffer size: 881
+15:54:49.779 FLH: Read block - Writing: 4096 - Total: 11550720 - Buffer size: 881
+15:54:49.955 FLH: Read block - Writing: 4096 - Total: 11554816 - Buffer size: 881
+15:54:50.170 FLH: Read block - Writing: 4096 - Total: 11558912 - Buffer size: 3377
+15:54:50.336 FLH: Read block - Writing: 4096 - Total: 11563008 - Buffer size: 3589
+15:54:50.450 FLH: Read block - Writing: 4096 - Total: 11567104 - Buffer size: 1141
+15:54:50.763 FLH: Read block - Writing: 4096 - Total: 11571200 - Buffer size: 2577
+15:54:50.896 FLH: Read block - Writing: 4096 - Total: 11575296 - Buffer size: 2577
+15:54:51.053 FLH: Read block - Writing: 4096 - Total: 11579392 - Buffer size: 2577
+15:54:51.164 FLH: Read block - Writing: 4096 - Total: 11583488 - Buffer size: 1989
+15:54:51.426 FLH: Read block - Writing: 4096 - Total: 11587584 - Buffer size: 765
+15:54:51.594 FLH: Read block - Writing: 4096 - Total: 11591680 - Buffer size: 977
+15:54:51.953 FLH: Read block - Writing: 4096 - Total: 11595776 - Buffer size: 1189
+15:54:53.140 FLH: Read block - Writing: 4096 - Total: 11599872 - Buffer size: 2837
+15:54:53.274 FLH: Read block - Writing: 4096 - Total: 11603968 - Buffer size: 1613
+15:54:54.334 FLH: Read block - Writing: 4096 - Total: 11608064 - Buffer size: 389
+15:54:54.951 FLH: Read block - Writing: 4096 - Total: 11612160 - Buffer size: 3261
+15:54:55.091 FLH: Read block - Writing: 4096 - Total: 11616256 - Buffer size: 813
+15:54:55.272 FLH: Read block - Writing: 4096 - Total: 11620352 - Buffer size: 1025
+15:54:55.495 MQT: nspanel/ns_panel1/tele/RESULT = {"Flashing":{"complete": "95", "time_elapsed": 206}}
+15:54:55.587 FLH: Read block - Writing: 4096 - Total: 11624448 - Buffer size: 1237
+15:54:55.826 FLH: Read block - Writing: 4096 - Total: 11628544 - Buffer size: 13
+15:54:56.086 FLH: Read block - Writing: 4096 - Total: 11632640 - Buffer size: 257
+15:54:58.055 FLH: Read block - Writing: 4096 - Total: 11636736 - Buffer size: 1873
+15:54:58.187 FLH: Read block - Writing: 4096 - Total: 11640832 - Buffer size: 649
+15:54:58.625 FLH: Read block - Writing: 4096 - Total: 11644928 - Buffer size: 861
+15:54:58.910 FLH: Read block - Writing: 4096 - Total: 11649024 - Buffer size: 1073
+15:55:00.226 FLH: Read block - Writing: 4096 - Total: 11653120 - Buffer size: 2721
+15:55:00.363 FLH: Read block - Writing: 4096 - Total: 11657216 - Buffer size: 61
+15:55:02.023 FLH: Read block - Writing: 4096 - Total: 11661312 - Buffer size: 273
+15:55:02.257 FLH: Read block - Writing: 4096 - Total: 11665408 - Buffer size: 1921
+15:55:02.389 FLH: Read block - Writing: 4096 - Total: 11669504 - Buffer size: 1921
+15:55:02.700 FLH: Read block - Writing: 4096 - Total: 11673600 - Buffer size: 1921
+15:55:02.857 FLH: Read block - Writing: 4096 - Total: 11677696 - Buffer size: 1121
+15:55:03.020 FLH: Read block - Writing: 4096 - Total: 11681792 - Buffer size: 1333
+15:55:03.828 FLH: Read block - Writing: 4096 - Total: 11685888 - Buffer size: 109
+15:55:04.349 FLH: Read block - Writing: 4096 - Total: 11689984 - Buffer size: 337
+15:55:06.817 FLH: Read block - Writing: 4096 - Total: 11694080 - Buffer size: 1969
+15:55:09.401 FLH: Read block - Writing: 4096 - Total: 11698176 - Buffer size: 745
+15:55:16.249 FLH: waited 136 iters (6809 ms) for tcp data, buf=6277 tcp_conn=true
+15:55:16.342 FLH: Read block - Writing: 4096 - Total: 11702272 - Buffer size: 2181
+15:55:19.139 FLH: Read block - Writing: 4096 - Total: 11706368 - Buffer size: 3829
+15:55:19.420 FLH: Read block - Writing: 4096 - Total: 11710464 - Buffer size: 1381
+15:55:19.460 FLH: write_block ENTER #301 buf=1381 written=11710464 size=12227824 tcp_conn=true avail=1436
+15:55:19.709 FLH: Read block - Writing: 4096 - Total: 11714560 - Buffer size: 157
+15:55:19.711 FLH: write_block EXIT #301 remain=513264 tcp_conn=true
+15:55:19.840 FLH: Read block - Writing: 4096 - Total: 11718656 - Buffer size: 157
+15:55:20.253 FLH: Read block - Writing: 4096 - Total: 11722752 - Buffer size: 157
+15:55:22.696 FLH: Read block - Writing: 4096 - Total: 11726848 - Buffer size: 793
+15:55:22.924 FLH: Read block - Writing: 4096 - Total: 11730944 - Buffer size: 793
+15:55:23.202 FLH: Read block - Writing: 4096 - Total: 11735040 - Buffer size: 1217
+15:55:23.489 FLH: Read block - Writing: 4096 - Total: 11739136 - Buffer size: 1429
+15:55:23.613 MQT: nspanel/ns_panel1/tele/RESULT = {"Flashing":{"complete": "96", "time_elapsed": 234}}
+15:55:23.705 FLH: Read block - Writing: 4096 - Total: 11743232 - Buffer size: 205
+15:55:24.422 FLH: Read block - Writing: 4096 - Total: 11747328 - Buffer size: 417
+15:55:24.888 FLH: Read block - Writing: 4096 - Total: 11751424 - Buffer size: 629
+15:55:25.071 FLH: Read block - Writing: 4096 - Total: 11755520 - Buffer size: 841
+15:55:27.189 FLH: Read block - Writing: 4096 - Total: 11759616 - Buffer size: 1053
+15:55:31.376 FLH: Read block - Writing: 4096 - Total: 11763712 - Buffer size: 1265
+15:55:31.518 FLH: Read block - Writing: 4096 - Total: 11767808 - Buffer size: 41
+15:55:35.696 FLH: Read block - Writing: 4096 - Total: 11771904 - Buffer size: 253
+15:55:35.877 FLH: Read block - Writing: 4096 - Total: 11776000 - Buffer size: 465
+15:55:36.259 FLH: Read block - Writing: 4096 - Total: 11780096 - Buffer size: 677
+15:55:36.396 FLH: Read block - Writing: 4096 - Total: 11784192 - Buffer size: 677
+15:55:37.785 FLH: Read block - Writing: 4096 - Total: 11788288 - Buffer size: 3761
+15:55:37.920 FLH: Read block - Writing: 4096 - Total: 11792384 - Buffer size: 1313
+15:55:38.133 FLH: Read block - Writing: 4096 - Total: 11796480 - Buffer size: 1313
+15:55:38.494 FLH: Read block - Writing: 4096 - Total: 11800576 - Buffer size: 301
+15:55:38.703 FLH: Read block - Writing: 4096 - Total: 11804672 - Buffer size: 301
+15:55:39.084 FLH: Read block - Writing: 4096 - Total: 11808768 - Buffer size: 3385
+15:55:39.212 FLH: Read block - Writing: 4096 - Total: 11812864 - Buffer size: 3385
+15:55:39.326 FLH: Read block - Writing: 4096 - Total: 11816960 - Buffer size: 1149
+15:55:39.458 FLH: Read block - Writing: 4096 - Total: 11821056 - Buffer size: 1149
+15:55:39.714 FLH: Read block - Writing: 4096 - Total: 11825152 - Buffer size: 1573
+15:55:39.925 FLH: Read block - Writing: 4096 - Total: 11829248 - Buffer size: 1573
+15:55:40.088 FLH: Read block - Writing: 4096 - Total: 11833344 - Buffer size: 561
+15:55:40.506 FLH: Read block - Writing: 4096 - Total: 11837440 - Buffer size: 773
+15:55:40.974 FLH: Read block - Writing: 4096 - Total: 11841536 - Buffer size: 1001
+15:55:41.190 FLH: Read block - Writing: 4096 - Total: 11845632 - Buffer size: 1197
+15:55:41.656 FLH: Read block - Writing: 4096 - Total: 11849728 - Buffer size: 2845
+15:55:41.771 FLH: Read block - Writing: 4096 - Total: 11853824 - Buffer size: 185
+15:55:42.085 FLH: Read block - Writing: 4096 - Total: 11857920 - Buffer size: 1833
+15:55:42.215 FLH: Read block - Writing: 4096 - Total: 11862016 - Buffer size: 609
+15:55:42.695 MQT: nspanel/ns_panel1/tele/RESULT = {"Flashing":{"complete": "97", "time_elapsed": 253}}
+15:55:42.787 FLH: Read block - Writing: 4096 - Total: 11866112 - Buffer size: 821
+15:55:43.685 FLH: Read block - Writing: 4096 - Total: 11870208 - Buffer size: 1033
+15:55:44.096 FLH: Read block - Writing: 4096 - Total: 11874304 - Buffer size: 1245
+15:55:44.912 FLH: Read block - Writing: 4096 - Total: 11878400 - Buffer size: 21
+15:55:45.931 FLH: Read block - Writing: 4096 - Total: 11882496 - Buffer size: 233
+15:55:46.602 FLH: Read block - Writing: 4096 - Total: 11886592 - Buffer size: 233
+15:55:46.830 FLH: Read block - Writing: 4096 - Total: 11890688 - Buffer size: 657
+15:55:47.279 FLH: Read block - Writing: 4096 - Total: 11894784 - Buffer size: 869
+15:55:47.684 FLH: Read block - Writing: 4096 - Total: 11898880 - Buffer size: 869
+15:55:47.951 FLH: Read block - Writing: 4096 - Total: 11902976 - Buffer size: 1293
+15:55:48.465 FLH: Read block - Writing: 4096 - Total: 11907072 - Buffer size: 69
+15:55:48.734 FLH: Read block - Writing: 4096 - Total: 11911168 - Buffer size: 281
+15:55:48.899 FLH: Read block - Writing: 4096 - Total: 11915264 - Buffer size: 493
+15:55:50.161 FLH: Read block - Writing: 4096 - Total: 11919360 - Buffer size: 705
+15:55:53.086 FLH: Read block - Writing: 4096 - Total: 11923456 - Buffer size: 917
+15:55:56.176 FLH: Read block - Writing: 4096 - Total: 11927552 - Buffer size: 2565
+15:56:00.314 FLH: Read block - Writing: 4096 - Total: 11931648 - Buffer size: 4001
+15:56:00.449 FLH: Read block - Writing: 4096 - Total: 11935744 - Buffer size: 1569
+15:56:01.533 FLH: Read block - Writing: 4096 - Total: 11939840 - Buffer size: 329
+15:56:01.569 SRC: MQTT
+15:56:01.570 CMD: Grp 0, Cmd 'STATUS', Idx 0, Len 0, Pld -99, Data ''
+15:56:01.617 MQT: nspanel/ns_panel1/stat/STATUS0 = {"Status":{"Module":0,"DeviceName":"Tasmota","FriendlyName":["NSPanel Flur","Tasmota2"],"Topic":"tasmota_FA6938","ButtonTopic":"0","Power":"10","PowerLock":"00","PowerOnState":3,"LedState":1,"LedMask":"FFFF","SaveData":1,"SaveState":1,"SwitchTopic":"0","SwitchMode":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],"ButtonRetain":0,"SwitchRetain":0,"SensorRetain":0,"PowerRetain":0,"InfoRetain":0,"StateRetain":0,"StatusRetain":0},"StatusPRM":{"Baudrate":115200,"SerialConfig":"8N1","GroupTopic":"tasmotas","OtaUrl":"http://ota.tasmota.com/tasmota32/release/tasmota32-DE.bin","RestartReason":"Software reset CPU","Uptime":"0T00:05:19","StartupUTC":"2026-05-03T13:50:42","Sleep":50,"CfgHolder":4617,"BootCount":38,"BCResetTime":"2026-05-02T21:57:30","SaveCount":64},"StatusFWR":{"Version":"15.4.0(release-tasmota32)","BuildDateTime":"2026.04.22 12:07:35","Core":"3.3.7","SDK":"5.3.4.260127","CpuFrequency":160,"Hardware":"ESP32-D0WD-V3 v3.0","CR":"554/699"},"StatusLOG":{"SerialLog":2,"WebLog":3,"MqttLog":0,"FileLog":0,"SysLog":0,"LogHost":"","LogPort":514,"SSId":["kiemen-iot",""],"TelePeriod":300,"Resolution":"558180C0","SetOption":["00008009","2805C80001000600003C5A0A192800000000","00000080","20206000","00044000","00000000"]},"StatusMEM":{"ProgramSize":2070,"Free":809,"Heap":50,"StackLowMark":2,"PsrMax":0,"PsrFree":0,"ProgramFlashSize":4096,"FlashSize":4096,"FlashChipId":"16405E","FlashFrequency":80,"FlashMode":"DIO","Features":["0407","9F9AD7DF","0015A001","B7F7BFCF","05DA9BC4","E0360DC7","480840D2","20200000","D4BC482D","810A80F1","00200814"],"Drivers":"1,2,!3,!4,!5,7,!8,9,10,11,12,!14,!16,!17,!20,!21,24,26,!27,29,!34,!35,38,50,52,!59,!60,62,!63,!66,!67,!68,!73,!75,82,!86,!87,!88,!91,!121","Sensors":"1,2,3,5,6,7,8,9,10,11,12,13,14,15,17,18,19,20,21,22,26,31,34,37,39,40,42,43,45,51,52,55,56,58,59,64,66,67,74,85,92,95,98,103,105,109,119,127","I2CDriver":"7,8,9,10,11,12,13,14,15,17,18,20,24,29,31,36,41,42,44,46,48,58,62,65,69,76,77,82,89,97"},"StatusNET":{"Hostname":"NSPanel-Flur","IPAddress":"192.168.1.182","Gateway":"192.168.1.1","Subnetmask":"255.255.255.0","DNSServer1":"192.168.1.1","DNSServer2":"0.0.0.0","Mac":"C0:49:EF:FA:69:38","IP6Global":"","IP6Local":"fe80::c249:efff:fefa:6938%st2","Ethernet":{"Hostname":"","IPAddress":"0.0.0.0","Gateway":"0.0.0.0","Subnetmask":"0.0.0.0","DNSServer1":"192.168.1.1","DNSServer2":"0.0.0.0","Mac":"00:00:00:00:00:00","IP6Global":"","IP6Local":""},"Webserver":2,"HTTP_API":1,"WifiConfig":4,"WifiPower":16.0},"StatusMQT":{"MqttHost":"192.168.1.7","MqttPort":8883,"MqttClientMask":"NSPanel_Flur-FA6938","MqttClient":"NSPanel_Flur-FA6938","MqttUser":"FAVVZKtZlWZNAJk","MqttCount":1,"MqttTLS":1,"MAX_PACKET_SIZE":1200,"KEEPALIVE":30,"SOCKET_TIMEOUT":4},"StatusTIM":{"UTC":"2026-05-03T13:56:01Z","Local":"2026-05-03T15:56:01","StartDST":"2026-03-29T02:00:00","EndDST":"2026-10-25T03:00:00","Timezone":99,"Sunrise":"06:26","Sunset":"21:07"},"StatusSNS":{"Time":"2026-05-03T15:56:01","ANALOG":{"Temperature1":29.4},"TempUnit":"C"},"StatusSTS":{"Time":"2026-05-03T15:56:01","Uptime":"0T00:05:19","UptimeSec":319,"Heap":48,"SleepMode":"Dynamic","Sleep":50,"LoadAvg":1600,"MqttCount":1,"Berry":{"HeapUsed":18,"Objects":237},"POWER1":"OFF","POWER2":"ON","Wifi":{"AP":1,"SSId":"kiemen-iot","BSSId":"94:2A:6F:7E:DD:62","Channel":1,"Mode":"HT20","RSSI":22,"Signal":-89,"LinkCount":1,"Downtime":"0T00:00:03"},"Hostname":"NSPanel-Flur","IPAddress":"192.168.1.182"}}
+15:56:02.732 FLH: Read block - Writing: 4096 - Total: 11943936 - Buffer size: 541
+15:56:05.081 FLH: Read block - Writing: 4096 - Total: 11948032 - Buffer size: 541
+15:56:05.488 FLH: Read block - Writing: 4096 - Total: 11952128 - Buffer size: 541
+15:56:06.228 FLH: Read block - Writing: 4096 - Total: 11956224 - Buffer size: 541
+15:56:06.979 FLH: Read block - Writing: 4096 - Total: 11960320 - Buffer size: 541
+15:56:07.096 FLH: Read block - Writing: 4096 - Total: 11964416 - Buffer size: 165
+15:56:07.762 FLH: Read block - Writing: 4096 - Total: 11968512 - Buffer size: 377
+15:56:10.427 FLH: Read block - Writing: 4096 - Total: 11972608 - Buffer size: 589
+15:56:12.745 FLH: Read block - Writing: 4096 - Total: 11976704 - Buffer size: 801
+15:56:15.534 FLH: Read block - Writing: 4096 - Total: 11980800 - Buffer size: 3689
+15:56:15.679 FLH: Read block - Writing: 4096 - Total: 11984896 - Buffer size: 2661
+15:56:15.867 MQT: nspanel/ns_panel1/tele/RESULT = {"Flashing":{"complete": "98", "time_elapsed": 286}}
+15:56:15.959 FLH: Read block - Writing: 4096 - Total: 11988992 - Buffer size: 1
+15:56:18.145 FLH: Read block - Writing: 4096 - Total: 11993088 - Buffer size: 213
+15:56:18.515 FLH: Read block - Writing: 4096 - Total: 11997184 - Buffer size: 1861
+15:56:18.698 FLH: Read block - Writing: 4096 - Total: 12001280 - Buffer size: 1861
+15:56:18.833 FLH: Read block - Writing: 4096 - Total: 12005376 - Buffer size: 849
+15:56:19.410 FLH: Read block - Writing: 4096 - Total: 12009472 - Buffer size: 1061
+15:56:19.874 FLH: Read block - Writing: 4096 - Total: 12013568 - Buffer size: 1273
+15:56:20.008 FLH: Read block - Writing: 4096 - Total: 12017664 - Buffer size: 1273
+15:56:20.269 FLH: Read block - Writing: 4096 - Total: 12021760 - Buffer size: 261
+15:56:20.435 FLH: Read block - Writing: 4096 - Total: 12025856 - Buffer size: 473
+15:56:20.649 FLH: Read block - Writing: 4096 - Total: 12029952 - Buffer size: 685
+15:56:21.116 FLH: Read block - Writing: 4096 - Total: 12034048 - Buffer size: 2333
+15:56:21.225 FLH: Read block - Writing: 4096 - Total: 12038144 - Buffer size: 1109
+15:56:22.839 FLH: Read block - Writing: 4096 - Total: 12042240 - Buffer size: 1321
+15:56:23.226 FLH: Read block - Writing: 4096 - Total: 12046336 - Buffer size: 113
+15:56:24.019 FLH: Read block - Writing: 4096 - Total: 12050432 - Buffer size: 309
+15:56:24.205 FLH: Read block - Writing: 4096 - Total: 12054528 - Buffer size: 521
+15:56:24.862 FLH: Read block - Writing: 4096 - Total: 12058624 - Buffer size: 733
+15:56:26.099 FLH: Read block - Writing: 4096 - Total: 12062720 - Buffer size: 945
+15:56:26.717 FLH: Read block - Writing: 4096 - Total: 12066816 - Buffer size: 1157
+15:56:26.000 FLH: Read block - Writing: 4096 - Total: 12070912 - Buffer size: 1369
+15:56:30.078 FLH: Read block - Writing: 4096 - Total: 12075008 - Buffer size: 145
+15:56:35.223 FLH: waited 102 iters (5108 ms) for tcp data, buf=4453 tcp_conn=true
+15:56:35.316 FLH: Read block - Writing: 4096 - Total: 12079104 - Buffer size: 357
+15:56:36.654 FLH: Read block - Writing: 4096 - Total: 12083200 - Buffer size: 569
+15:56:37.137 FLH: Read block - Writing: 4096 - Total: 12087296 - Buffer size: 781
+15:56:37.571 FLH: Read block - Writing: 4096 - Total: 12091392 - Buffer size: 993
+15:56:38.507 FLH: Read block - Writing: 4096 - Total: 12095488 - Buffer size: 1205
+15:56:39.294 FLH: Read block - Writing: 4096 - Total: 12099584 - Buffer size: 1417
+15:56:39.402 FLH: Read block - Writing: 4096 - Total: 12103680 - Buffer size: 193
+15:56:43.470 FLH: Read block - Writing: 4096 - Total: 12107776 - Buffer size: 405
+15:56:47.818 MQT: nspanel/ns_panel1/tele/RESULT = {"Flashing":{"complete": "99", "time_elapsed": 318}}
+15:56:47.909 FLH: Read block - Writing: 4096 - Total: 12111872 - Buffer size: 617
+15:56:48.243 FLH: Read block - Writing: 4096 - Total: 12115968 - Buffer size: 2265
+15:56:48.428 FLH: Read block - Writing: 4096 - Total: 12120064 - Buffer size: 1057
+15:56:48.467 FLH: write_block ENTER #401 buf=1057 written=12120064 size=12227824 tcp_conn=true avail=1420
+15:56:48.618 FLH: Read block - Writing: 4096 - Total: 12124160 - Buffer size: 2477
+15:56:48.620 FLH: write_block EXIT #401 remain=103664 tcp_conn=true
+15:56:48.743 FLH: Read block - Writing: 4096 - Total: 12128256 - Buffer size: 29
+15:56:49.359 FLH: Read block - Writing: 4096 - Total: 12132352 - Buffer size: 241
+15:56:49.576 FLH: Read block - Writing: 4096 - Total: 12136448 - Buffer size: 453
+15:56:52.896 FLH: Read block - Writing: 4096 - Total: 12140544 - Buffer size: 665
+15:56:53.130 FLH: Read block - Writing: 4096 - Total: 12144640 - Buffer size: 877
+15:56:53.666 FLH: Read block - Writing: 4096 - Total: 12148736 - Buffer size: 1089
+15:56:55.296 FLH: Read block - Writing: 4096 - Total: 12152832 - Buffer size: 1301
+15:56:56.214 FLH: Read block - Writing: 4096 - Total: 12156928 - Buffer size: 77
+15:57:26.232 FLH: TIMEOUT in wait loop after 600 iters, buf=1513, forcing exit
+15:57:26.234 FLH: waited 600 iters (30004 ms) for tcp data, buf=1513 tcp_conn=true
+15:57:26.268 FLH: Read block - Writing: 1513 - Total: 12158441 - Buffer size: 0
+15:57:41.127 HTP: Befehl
+15:57:41.131 SRC: WebCommand from 192.168.178.65
+15:57:41.132 CMD: Grp 0, Cmd 'STATUS', Idx 1, Len 2, Pld 11, Data '11'
+15:57:41.142 MQT: nspanel/ns_panel1/stat/STATUS11 = {"StatusSTS":{"Time":"2026-05-03T15:57:41","Uptime":"0T00:06:59","UptimeSec":419,"Heap":72,"SleepMode":"Dynamic","Sleep":50,"LoadAvg":19,"MqttCount":1,"Berry":{"HeapUsed":18,"Objects":237},"POWER1":"OFF","POWER2":"ON","Wifi":{"AP":1,"SSId":"kiemen-iot","BSSId":"94:2A:6F:7E:DD:62","Channel":1,"Mode":"HT20","RSSI":20,"Signal":-90,"LinkCount":1,"Downtime":"0T00:00:03"},"Hostname":"NSPanel-Flur","IPAddress":"192.168.1.182"}}
+15:58:42.307 MQT: nspanel/ns_panel1/tele/STATE = {"Time":"2026-05-03T15:58:42","Uptime":"0T00:08:00","UptimeSec":480,"Heap":83,"SleepMode":"Dynamic","Sleep":50,"LoadAvg":19,"MqttCount":1,"Berry":{"HeapUsed":18,"Objects":237},"POWER1":"OFF","POWER2":"ON","Wifi":{"AP":1,"SSId":"kiemen-iot","BSSId":"94:2A:6F:7E:DD:62","Channel":1,"Mode":"HT20","RSSI":22,"Signal":-89,"LinkCount":1,"Downtime":"0T00:00:03"},"Hostname":"NSPanel-Flur","IPAddress":"192.168.1.182"}
+15:58:42.350 MQT: nspanel/ns_panel1/tele/SENSOR = {"Time":"2026-05-03T15:58:42","ANALOG":{"Temperature1":29.2},"TempUnit":"C"}

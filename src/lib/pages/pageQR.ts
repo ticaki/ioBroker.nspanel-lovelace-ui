@@ -283,7 +283,7 @@ export class PageQR extends Page {
 
     private getMessage(_message: Partial<pages.PageQRMessage>): string {
         let result: pages.PageQRMessage = PageQRMessageDefault;
-        result = { ...result, ..._message } as pages.PageQRMessage;
+        result = { ...result, ..._message };
         return getPayload(
             getPayloadRemoveTilde('entityUpd', result.headline),
             result.navigation,

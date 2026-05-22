@@ -82,6 +82,7 @@ export class PagePower extends Page {
         super(config, options);
         if (options.config && options.config.card == 'cardPower') {
             this.config = options.config;
+            this.index = this.config.index;
         }
         this.minUpdateInterval = 2000;
     }
@@ -310,7 +311,7 @@ export class PagePower extends Page {
         // Sonderfall Power8 - ValueBottom
         const unitPower8 = `power8_valueUnit` as keyof typeof config;
         if (config.power8_selInternalCalculation) {
-            valueUnit.push(` ${config[unitPower8]}`);
+            valueUnit.push(` ${String(config[unitPower8])}`);
         } else {
             if (states[7] != null && states[7] != '' && (await configManager.existsState(states[7]))) {
                 const o = await configManager.adapter.getForeignObjectAsync(states[7]);

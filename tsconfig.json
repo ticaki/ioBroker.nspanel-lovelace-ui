@@ -39,7 +39,15 @@
         // "useUnknownInCatchVariables": false,
 
         "sourceMap": true,
-        "inlineSourceMap": false
+        "inlineSourceMap": false,
+
+        "types": ["node", "mocha"]
+    },
+    "ts-node": {
+        "compilerOptions": {
+            "module": "commonjs",
+            "moduleResolution": "node"
+        }
     },
     "include": ["src/**/*.ts", "tasks.ts"],
     "exclude": ["build/**", "node_modules/**", "widgets/**", ".dev-Data/*", "script/*", "doc/*", "testumgebung/*" ]

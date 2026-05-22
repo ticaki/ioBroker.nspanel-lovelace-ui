@@ -118,8 +118,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                         states[id] &&
                         states[id].type === 'state' &&
                         states[id].common &&
-                        //@ts-expect-error
-                        states[id].common.type === 'state'
+                        String(states[id].common.type) === 'state'
                     ) {
                         this.log.warn(`Fix broken common.type in ${id} set to 'mixed'`);
                         states[id].common.type = 'mixed';

@@ -25,13 +25,20 @@ import { ADAPTER_NAME, ALL_PANELS_SPECIAL_ID } from '../../../src/lib/types/admi
 export type PageCardType =
     | Extract<
           AdminCardTypes,
-          | 'cardChart'
+          | | 'cardChart'
           | 'cardAlarm'
+         
           | 'cardQR'
+          | 'cardPower'
+         
           | 'cardGrid'
+         
           | 'cardGrid2'
+         
           | 'cardGrid3'
+         
           | 'cardEntities'
+         
           | 'cardSchedule'
       >
     | 'all'
@@ -302,6 +309,7 @@ export class PageConfigLayout extends React.Component<PageConfigLayoutProps, Pag
                                 <MenuItem value="pageMenu">{this.getText('page_type_pageMenu')}</MenuItem>
                                 <MenuItem value="cardAlarm">{this.getText('page_type_alarm')}</MenuItem>
                                 <MenuItem value="cardQR">{this.getText('page_type_qr')}</MenuItem>
+                                <MenuItem value="cardPower">{this.getText('page_type_power')}</MenuItem>
                                 <MenuItem value="cardTrash">{this.getText('page_type_trash')}</MenuItem>
                                 <MenuItem value="cardChart">{this.getText('page_type_chart')}</MenuItem>
                             </Select>

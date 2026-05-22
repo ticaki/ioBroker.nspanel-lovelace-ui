@@ -4423,7 +4423,7 @@ export class ConfigManager extends BaseClass {
                                     pageItems: [],
                                     config: { card: 'cardMedia', data: {} },
                                     alwaysOn: 'none',
-                                } as pages.PageBase,
+                                },
                                 [],
                                 true,
                             );
@@ -5119,7 +5119,7 @@ export class ConfigManager extends BaseClass {
                 screensaverSwipe: false,
             },
             pageItems: pageItems,
-        } as pages.PageBase;
+        };
 
         return { configArray, messages };
     }
@@ -5131,7 +5131,7 @@ export class ConfigManager extends BaseClass {
      * @param item - The item to check the datapoints for.
      * @param mode - The mode of checking, can be 'both', 'script', or 'feature'. Defaults to 'both'. 'script' and 'feature' will only check the respective datapoints.
      * @returns A promise that resolves to true if all required datapoints are present and valid, otherwise throws an error with mode='both'. Return false if mode='feature' or 'script'.
-     * @throws Will throw an error if a required datapoint is missing or invalid and mode='both'.
+     * @throws {Error} Will throw an error if a required datapoint is missing or invalid and mode='both'.
      */
     async checkRequiredDatapoints(
         role: ScriptConfig.channelRoles,
@@ -5518,8 +5518,8 @@ export class ConfigManager extends BaseClass {
             result.data.entity2.value = await this.getFieldAsDataItemConfig(entity.ScreensaverEntity);
         }
         if (mode === 'indicator') {
-            // @ts-expect-error ignore this button has all propertys of text
-            result.type = 'button';
+            // button has all propertys of text
+            (result as { type: string }).type = 'button';
 
             if ('ScreensaverEntityButton' in entity && entity.ScreensaverEntityButton) {
                 result.data.setValue2 = (await this.existsAndWriteableState(entity.ScreensaverEntityButton))

@@ -6944,10 +6944,10 @@ class Icons {
   /**
    * Determines if the provided string is an icon.
    *
-   * @param F - The string to check.
+   * @param _F - The string to check.
    * @returns A type guard indicating whether the string is of type `AllIcons`.
    */
-  static isIcon(F) {
+  static isIcon(_F) {
     return true;
   }
 }

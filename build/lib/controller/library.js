@@ -313,7 +313,7 @@ class Library extends BaseClass {
    * @param ack        Acknowledged flag for state write.
    * @param forceWrite Force write even if `val` equals old value.
    * @returns Promise<void>
-   * @throws Error if a new state must be created but `obj` is missing.
+   * @throws {Error} if a new state must be created but `obj` is missing.
    */
   async writedp(dp, val, obj = null, ack = true, forceWrite = false) {
     var _a, _b, _c;
@@ -443,7 +443,7 @@ class Library extends BaseClass {
    * @param value Input value to convert (may be primitive, array, or object)
    * @param type  Target type: 'string' | 'number' | 'boolean' | 'array' | 'json'
    * @returns Converted value as ioBroker.StateValue (string | number | boolean | null)
-   * @throws Error if `type` is 'undefined'
+   * @throws {Error} if `type` is 'undefined'
    */
   convertToType(value, type) {
     if (value === null) {
@@ -517,11 +517,9 @@ class Library extends BaseClass {
     return this.stateDataBase[this.cleandp(dp)];
   }
   setdb(dp, type, val = void 0, stateType = void 0, ack = true, ts = Date.now(), obj = void 0, init = false) {
-    if (typeof type == "object") {
-      type = type;
+    if (typeof type == "object" || type === void 0) {
       this.stateDataBase[dp] = type;
     } else {
-      type = type;
       this.stateDataBase[dp] = {
         type,
         stateTyp: stateType !== void 0 ? stateType : this.stateDataBase[dp] !== void 0 && this.stateDataBase[dp].stateTyp !== void 0 ? this.stateDataBase[dp].stateTyp : void 0,
