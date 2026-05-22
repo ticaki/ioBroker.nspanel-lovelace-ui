@@ -228,7 +228,7 @@ When everything is set up, start the script and wait for the feedback – the sc
 | Kind | Identifier | Description |
 |------|------------|-------------|
 | **Standard** | `id` or `navigate`/`targetPage` | The normal case. The adapter reads role and values from the alias / channel. |
-| **Custom** | `type: 'custom'` + `id` | Reduced set of options (`id`, `name`, `icon`/`icon2`, `onColor`/`offColor`, `colorScale`, `fontSize`, `buttonText`, `navigate`/`targetPage`/`longPress`), no automatic role evaluation. |
+| **Custom** | `type: 'custom'` + `id` | Reduced set of options (`id`, `name`, `icon`/`icon2`, `onColor`/`offColor`, `colorScale`, `fontSize`, `buttonText`, `navigate`/`targetPage`/`targetPageLongPress`/`longPress`), no automatic role evaluation. |
 | **Native** | `native: { … }` | Adapter-internal raw configuration without type checking (e.g. for templates, see [Templates](#templates)). Optionally with `navigate`/`targetPage`. |
 
 ### Minimum entries (standard PageItem)
@@ -469,13 +469,13 @@ Example of a battery indicator (low battery, with `indicator.lowbat` role):
 
 #### Navigation extension
 
-All templates additionally support the attributes `navigate` and `targetpage`. This allows opening another page when triggered.  
+All templates additionally support the attributes `navigate` and `targetPage`. This allows opening another page when triggered.  
 If necessary, `type: 'button'` must be added.
 
 ```ts
 {
   navigate: true,
-  targetpage: 'targetpage',
+  targetPage: 'somePage',
   native: { template: 'text.battery.low', dpInit: '', type: 'button' },
 },
 ```
