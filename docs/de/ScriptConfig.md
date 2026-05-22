@@ -206,68 +206,234 @@ Dann gibt es noch die Standard-Seiten `cardQR`, `cardChart`/`cardLChart`, `cardP
 ```  
 
 ## PageItems    
-Die PageItems gleichen die vom Script, wobei der Adapter vieles aus den Objekten Channel und State auslesen kann. Deshalb reicht beim Adapter nur der Parameter `id` aus, um das pageItem zu erstellen. Vorausgesetzt der Channel und die States darunter sind richtig eingestellt, was die Rollen betrifft bzw. min/max oder der Type (number/string/usw.).  
-Für ein pageItem, was als Navigation genutzt werden soll, muss zusätzlich die Parameter `navigate: true` sowie `targetPage: 'uniqueName der Seite wohin gesprungen wird'` angegeben werden.  
-  
+
+Die PageItems gleichen denen aus dem Panel-Script, wobei der Adapter vieles aus den Objekten **Channel** und **State** ausliest. Deshalb reicht oft nur der Parameter `id`, um ein PageItem zu erstellen – vorausgesetzt, der Channel und die darunterliegenden States sind bezüglich Rolle, min/max bzw. Typ (number/string/…) korrekt eingestellt.
+
+Ein PageItem wird als Objekt `{ … },` deklariert und dem `items`-Array einer Seite hinzugefügt. Was es fast immer mitbringt, ist eine **`id`**, ein **`name`** und eine **Farbdefinition**:
+
 ```typescript
-        { id: 'alias.0.NSPanel.1.usr.Fenster.Obergeschoss.Wohnzimmer.room'},
-        
-        { navigate: true, icon:'home', name:'Haus', targetPage: 'MenuGrid'},
+{ id: 'alias.0.NSPanel_1.Luftreiniger', name: 'Luftreiniger', icon: 'power', icon2: 'power', offColor: MSRed, onColor: MSGreen },
 ```
 
-Wenn alles eingestellt ist, Skript starten und auf die Rückmeldung warten, das Skript beendet sich selbst.
-
-Dabei bedeutet die Phrase: `not implemented yet!` das wir es noch nicht eingebaut haben und `not supported` das wir das auch nicht werden ;)
-
-## Hardwarebutton Config  
-Es gibt diese Modi für die Button. 
-- page -> navigiert zu einer Seite
-- switch -> toggelt einen Datenpunkt zwischen true/false
-- button -> setzt ein Button-Datenpunkt kurz auf true und bleibt auch true, es ändert sich nur der Zeitstempel
-- buttonOnDelayOff, buttonOffDelayOn, buttonDelayOn, buttonDelayOff
-
-    - buttonOnDelayOff: sofort State auf true setzen, nach Ablauf der Zeitspanne (delay) zurück auf false
-    - buttonOffDelayOn: sofort State auf false setzen, nach Ablauf der Zeitspanne (delay) zurück auf true
-    - buttonDelayOn: nach Ablauf der Zeitspanne (delay) auf true
-    - buttonDelayOff: nach Ablauf der Zeitspanne (delay) auf false
-
-* Verzögerung in Sekunden für die zeitgesteuerte Zustandsänderung:
-    * Standard ist 0,25s, muss zwischen 0,001 und 2147483 (~24 Tage) liegen
-          delay?: number;
-
-- null -> Button ohne Funktion
-
-Hier Beispiele mit dem linken Button, der rechte Button heißt `buttonRight`.  
+Für ein PageItem, das zur **Navigation** dient, gibt man statt einer `id` die Parameter `navigate: true` und `targetPage: '<uniqueName der Zielseite>'` an:
 
 ```typescript
-    buttonLeft: {
-    mode: 'page',
-    page: 'main' // uniqueName der Seite als String 
-    }
+{ navigate: true, icon: 'home', name: 'Haus', targetPage: 'MenuGrid' },
+```
 
-    buttonLeft: {
-    mode: 'switch',
-    state: 'alias.0.Licht.switch' // Datenpunkt vom Type boolean z.B. ein Schalter 
-    }
+Wenn alles eingestellt ist, das Skript starten und auf die Rückmeldung warten – das Skript beendet sich selbst. Dabei bedeutet `not implemented yet!`, dass etwas noch nicht eingebaut ist, und `not supported`, dass es nicht eingebaut wird. ;)
 
-    buttonLeft: {
-    mode: 'button',
-    state: 'alias.0.Rollo.up' // Datenpunkt vom Type boolean und Rolle Button z.B. ein Taster vom Rollo  
-    }
+### Drei Arten von PageItems
 
-    buttonLeft: {
-    mode: 'buttonOnDelayOff',
-    delay: 30,
-    state: 'alias.0.relais' 
-    }
+| Art | Erkennungsmerkmal | Beschreibung |
+|-----|-------------------|--------------|
+| **Standard** | `id` oder `navigate`/`targetPage` | Der Normalfall. Der Adapter liest Rolle und Werte aus dem Alias bzw. Channel. |
+| **Custom** | `type: 'custom'` + `id` | Reduzierter Satz an Optionen (`id`, `name`, `icon`/`icon2`, `onColor`/`offColor`, `colorScale`, `fontSize`, `buttonText`, `navigate`/`targetPage`/`longPress`), keine automatische Rollenauswertung. |
+| **Native** | `native: { … }` | Adapterinterne Roh-Konfiguration ohne Typprüfung (z. B. für Templates, siehe [Templates](#templates)). Optional mit `navigate`/`targetPage`. |
 
-    buttonLeft: {
-    mode: 'buttonDelayOff',
-    delay: 600,
-    state: 'alias.0.relais' 
-    }
+### Mindestangaben (Standard-PageItem)
+* `id` :  Pfad zum Alias/Datenpunkt, in Hochkomma eingefasst
+* `name` :  Text, der als Label auf dem Display dargestellt wird, in Hochkomma eingefasst
 
-    buttonLeft: null
+> [!IMPORTANT]  
+> * `name` ist kein Muss, wenn der Alias richtig konfiguriert ist – dann wird der Name aus `common.name.de` gezogen.  
+> * Wie man Aliase definiert und welche Möglichkeiten es gibt, dafür gibt es im Wiki separate Kapitel.
+
+### Optionale / spezifische Angaben
+
+#### Sichtbarkeit & Status
+* `enabled` : `false` = Item dauerhaft deaktiviert (nicht anwählbar). Existiert ein Datenpunkt `<id>.ENABLED`, steuert dieser die Aktivierung zur Laufzeit.
+* `filter` : numerischer Filterwert; greift zusammen mit dem `filterType` der Seite (siehe [Filtern](#filtern--filtertype)).
+* `role` : überschreibt die automatisch erkannte Rolle des Items (nur in Sonderfällen nötig).
+
+#### Icon-Farbe
+* `offColor` :  Farbe für ausgeschaltet (RGB)
+* `onColor` :  Farbe für eingeschaltet (RGB; bei CardChart außerdem die Balkenfarbe)
+* `useColor` :  `true`/`false`. Bei `true` werden die Config-Parameter **defaultOnColor**/**defaultOffColor** verwendet, sofern keine `onColor`/`offColor` im PageItem gesetzt sind.
+* `colorScale` :  Farbskala bzw. Icon-Auswahl abhängig vom Wert (siehe [Farbskala – colorScale](#farbskala--colorscale)).
+
+> [!IMPORTANT]  
+> Ohne icon-Farbe greift eine Default-Kombination. Sie kann über **defaultColor** (**defaultOnColor** & **defaultOffColor**) in der Konfiguration festgelegt werden.
+
+#### Label & Text
+* `prefixName` / `suffixName` : Text vor bzw. nach `name`.
+* `prefixValue` / `suffixValue` : Text vor bzw. nach dem **Wert**.
+* `buttonText` : ersetzt den Standardtext „PRESS" (z. B. auf cardEntities).
+* `buttonTextOff` : abweichender Button-Text für den Aus-Zustand.
+* `fontSize` : Schriftgröße **0–5** (vor allem **cardGrid2**), in Verbindung mit `useValue: true`:
+  * **0** – Default – Größe 24 (keine Icons, viele Sonderzeichen)
+  * **1** – Größe 32 (Icons, eingeschränkte Zeichen)
+  * **2** – Größe 32 (keine Icons, viele Sonderzeichen)
+  * **3** – Größe 48 (Icons, eingeschränkte Zeichen)
+  * **4** – Größe 80 (Icons, eingeschränkte Zeichen)
+  * **5** – Größe 128 (nur ASCII)
+
+#### Icons
+* `icon` : Icon für den An-/True-Status
+* `icon2` : Icon für den Aus-/False-Status (nicht bei allen Aliasen unterstützt)
+* `icon3` : zusätzliches Icon, z. B. bei Rollläden für „teilweise geöffnet"
+
+> [!NOTE]  
+> Icon-Namen müssen aus der [Icon-Datei](https://htmlpreview.github.io/?https://github.com/jobr99/Generate-HASP-Fonts/blob/master/cheatsheet.html) stammen. `icon`/`icon2` übersteuern ein per Default vom Alias geliefertes Icon. Bei vielen Aliasen ist kein `icon`/`icon2` nötig.
+
+#### Werte & Einheiten
+* `unit` : Einheit (z. B. °C) – gilt nicht für alle Alias-Rollen
+* `useValue` : muss `true` sein, wenn `fontSize` genutzt wird
+* `minValue` / `maxValue` : Start-/Endwert für den Slider
+* `stepValue` : Schrittweite
+* `modeList` : Werteliste für ein **InSelPopup** (Array von Strings)
+* `inSel_Alias` : Alias-Datenpunkt für die InSel-Auswahl
+* `inSel_ChoiceState` : *(veraltet)* Fokus eines gewählten Werts im InSelPopup
+* `monobutton` : `true`, wenn ein echter Hardware-Taster verbaut ist (Taster wird emuliert); `false` emuliert einen Schalter.
+* `customIcons` : benutzerdefinierte Icon-Liste (Sonderfälle)
+* `actionStringArray` : benutzerdefinierte Action-Strings (Sonderfälle)
+* `useValueConditions` : *(Experten)* String-Ausdruck zur bedingten Wertanzeige
+
+#### Navigation, Langdruck & Subpages
+* `navigate` : `true` ersetzt `id` und benötigt `targetPage`; öffnet die Zielseite.
+* `targetPage` : `uniqueName` der Zielseite (Kurzdruck).
+* `targetPageLongPress` : Zielseite bei **Langdruck**.
+* `longPress` : Datenpunkt/Aktion bei **Langdruck**. ⚠️ `longPress` und `targetPageLongPress` dürfen **nicht** gemeinsam in einem Item gesetzt werden.
+
+#### Licht & Media-Steuerung
+* `interpolateColor` : `true` errechnet die aktuelle Farbe des Leuchtmittels.
+* `colormode` : bei ALIAS RGB – `'rgb'` (Default) oder `'xy'` (XY-Farbübersetzung).
+* `asControl` : bei Media-Items – `true` = direkte Steuerung (Play/Pause), `false` = Navigation zur Media-Seite.
+
+##### PopupLight
+* `minValueBrightness` / `maxValueBrightness` : Slider-Grenzen Helligkeit
+* `minValueColorTemp` / `maxValueColorTemp` : Slider-Grenzen Farbtemperatur
+
+#### Rollladen (PopupShutter)
+* `secondRow` : Text für die zweite Zeile
+* `minValueLevel` / `maxValueLevel` : kleinste (Down) / größte (Up) Position
+* `minValueTilt` / `maxValueTilt` : kleinste / größte Lamellenstellung
+* `shutterType` : Typ des Rollladens
+* `shutterIcons` : eigene Icon-Definitionen (bis zu 3)
+* `sliderItems` : eigene Slider-Definitionen (bis zu 3)
+
+#### role `button` – Bestätigung
+* `confirm` : Bestätigungsdialog vor dem Auslösen – entweder ein Text (String) oder ein Objekt `{ text?, icon?, color? }`.
+
+#### CardChart-spezifisch
+* `yAxis` : Name der y-Achse
+* `yAxisTicks` : Werte-Skala der y-Achse (Array von Zahlen oder String)
+* `xAxisDecorationId` : Datenpunkt für die Beschriftung der x-Achse
+* `onColor` : Farbe der Balken
+
+#### CardAlarm / CardUnlock / CardQR-spezifisch
+* `autoCreateALias` : Das NSPanel-Skript erstellt die Datenpunkte unter `0_userdata.0` und `alias.0` automatisch, wenn `true`.
+* `hidePassword` : *(CardQR)* versteckt das WLAN-Passwort auf der PageQR.
+
+#### CardThermo-spezifisch
+* `stepValue` : Schrittweite der Solltemperatur (zusammen mit `minValue`/`maxValue`)
+* `iconArray` : Ersatz für die Standard-Icons im unteren Teil (Schreibweise wie `modeList`)
+* `setThermoDestTemp2` : zweite Setpoint-Temperatur über zusätzlichen ALIAS-Datenpunkt (ACTUAL2)
+* `icon` : Icon des Popup-Fensters
+
+##### PopupThermo
+* `popupThermoMode1` / `popupThermoMode2` / `popupThermoMode3` : Popups (obere / mittlere / untere Zeile), die über die 3 Punkte unter der Setpoint-Temperatur eingeblendet werden und Werte zur Steuerung zusätzlicher Zustände annehmen.
+* `popUpThermoName` : Überschriften-Liste (Array)
+* `setThermoAlias` : ALIAS-Liste (Array), die die gewählten Zustände numerisch zurückgibt
+
+#### CardMedia (`media`-Objekt)
+Eine `cardMedia`-Seite wird nicht über normale PageItems, sondern über ihr `media`-Objekt konfiguriert; die Player-Instanz ergibt sich aus dessen `id`. Wichtige Felder:
+* `id` : Media-Datenpunkt (Ordner/Device/Channel) – bestimmt zugleich die Player-Instanz
+* `mediaDevice` : alexa2 = Echo-Seriennummer, sonos = IP, squeezeboxrpc = Devicename
+* `speakerList` : schaltbare/auswählbare Device-Namen
+* `playList` : nur alexa2 und spotify-premium
+* `favoriteList` : Whitelist anzuzeigender Playlists
+* `equalizerList` : falls Device + Adapter eine Equalizer-Funktion bieten
+* `repeatList` : z. B. `['off','context','track']` (spotify-premium)
+* `volumePresets` : Lautstärke-Presets als `"name?wert"` (z. B. `["leise?5","laut?95"]`)
+* `colorMediaIcon` / `colorMediaArtist` / `colorMediaTitle` : Farben für Icon / Interpret / Titel
+* `minValue` / `maxValue` : Lautstärke-Grenzen
+
+Vollständige Beschreibung auf der Seite [PageMedia](PageMedia).
+
+### Farbskala – `colorScale`
+
+`colorScale` färbt ein Icon abhängig von einem Wert ein. Es gibt zwei Varianten:
+
+**Farbverlauf** (`val_min`/`val_max`):
+```typescript
+colorScale: {
+    val_min: 0,        // Wert für die „min"-Farbe (Standard: Rot)
+    val_max: 10,       // Wert für die „max"-Farbe (Standard: Grün)
+    // val_best: 5,    // optional: Optimalwert; val_min/val_max werden dann Rot, val_best Grün
+    // color_best: { red: 0, green: 255, blue: 0 }, // nur wirksam, wenn val_best gesetzt ist
+    // mode: 'mixed',  // Mischmodus (Standard: 'mixed')
+    // log10: 'max',   // optional logarithmische Skalierung ('max'/'min'), sonst linear
+}
+```
+
+`mode` bestimmt die Farbmischung:
+* `mixed` (Standard) – lineare Interpolation zwischen zwei RGB-Farben
+* `cie` – Mischung über die CIE-Farbtabelle
+* `hue` – Skalierung über Farbton/Sättigung/Helligkeit
+* `triGrad` – dreifarbiger Verlauf Rot→Gelb→Grün (ignoriert eigene Farben)
+* `triGradAnchor` – wie `triGrad`, verankert Gelb an `val_best`
+* `quadriGrad` – vierfarbiger Verlauf Rot→Gelb→Grün→Blau (ignoriert eigene Farben)
+* `quadriGradAnchor` – wie `quadriGrad`, verankert Grün an `val_best`
+
+**Icon-Auswahl** – statt einer Farbe wird abhängig vom Wert ein anderes Icon gewählt:
+```typescript
+colorScale: { valIcon_min: 0, valIcon_max: 100 /*, valIcon_best: 50 */ }
+```
+
+## Basisseite mit PageItem
+
+Wenn man ein oder – je nach Seitentyp – mehrere `PageItems` aufgebaut und dem `items`-Array hinzugefügt hat, erhält man eine Seite mit sichtbarem Inhalt:
+
+```typescript
+const name: ScriptConfig.PageGrid = {
+    type: 'cardGrid',
+    heading: 'Seiten Überschrift',
+    uniqueName: 'wohnzimmer',
+    items: [
+        { id: 'alias.0.NSPanel_1.Luftreiniger', name: 'Luftreiniger', icon: 'power', icon2: 'power', offColor: MSRed, onColor: MSGreen },
+    ],
+};
+```
+
+> Testet eure `PageItems` Eintrag für Eintrag – das erleichtert die Fehlersuche.
+
+## Hardwarebutton Config  
+Die beiden Hardware-Tasten unterhalb des Displays werden im `config`-Objekt über `buttonLeft` und `buttonRight` konfiguriert. Es gibt folgende Modi:
+
+| `mode` | Wirkung | Zusätzliche Felder |
+|--------|---------|--------------------|
+| `'page'` | navigiert zu einer Seite | `page` (uniqueName der Zielseite) |
+| `'switch'` | toggelt einen Datenpunkt zwischen `true`/`false` | `state` (boolescher Datenpunkt) |
+| `'button'` | setzt einen Button-Datenpunkt kurz auf `true`; er bleibt `true`, nur der Zeitstempel ändert sich | `state` |
+| `'buttonOnDelayOff'` | sofort `true`, nach Ablauf von `delay` zurück auf `false` | `state`, `delay` |
+| `'buttonOffDelayOn'` | sofort `false`, nach Ablauf von `delay` zurück auf `true` | `state`, `delay` |
+| `'buttonDelayOn'` | nach Ablauf von `delay` auf `true` | `state`, `delay` |
+| `'buttonDelayOff'` | nach Ablauf von `delay` auf `false` | `state`, `delay` |
+| `null` | Taste ohne Funktion | – |
+
+* `delay` (nur bei den `button…Delay…`-Modi): Verzögerung in Sekunden. Standard 0,25 s, gültiger Bereich 0,001 bis 2147483 (~24 Tage).
+
+Beispiele (für `buttonLeft`; die rechte Taste heißt `buttonRight`):
+
+```typescript
+// Zu einer Seite navigieren (page = uniqueName der Seite)
+buttonLeft: { mode: 'page', page: 'main' },
+
+// Boolean-Datenpunkt umschalten (z. B. ein Schalter)
+buttonRight: { mode: 'switch', state: 'alias.0.Licht.switch' },
+
+// Taster: setzt kurz true (z. B. Rollo-Taster, Rolle Button)
+buttonLeft: { mode: 'button', state: 'alias.0.Rollo.up' },
+
+// 30 s lang true, dann automatisch false
+buttonRight: { mode: 'buttonOnDelayOff', delay: 30, state: 'alias.0.relais' },
+
+// nach 600 s auf false setzen
+buttonLeft: { mode: 'buttonDelayOff', delay: 600, state: 'alias.0.relais' },
+
+// Taste ohne Funktion
+buttonLeft: null,
 ```  
 ---
 ## Screensaver  
@@ -431,176 +597,12 @@ native: {
    Es kann jedoch vorkommen, dass bestimmte Optionen noch nicht im Konfigurationsskript eingebaut sind.  
    Das Hinzufügen ist meist in wenigen Minuten erledigt – bitte einfach Bescheid sagen, wenn etwas fehlt oder nicht wie erwartet funktioniert.
 
-  
 ---
-  
-**AB HIER NUR ABLAGE damit nichts verloren geht :)**  
-  
 
-- Farbthemen hingefügt - werden immer weiter auf die Items verteilt - findet man im Admin 2. Seite unter der Tabelle
+## Hinweis: ack-Verhalten der Datenpunkte
 
-Der Adapter reagiert in **0_userdata.0** und **alias.0** auf jede Änderung (`ack=true` oder `ack=false`) eines abonnierten Datenpunktes. Ansonsten gilt nachfolgendes:
-- Auserhalb vom Adapter namespace(`nspanel-lovelace-ui.0`) reagiert dieser Adapter auf `ack=true` und setzt Datenpunkte mit `ack=false`
-- Innerhalb des Adapter namespace reagiert dieser Adapter auf `ack=false` und setzt Datenpunkte mit `ack=true`
+Der Adapter reagiert in **0_userdata.0** und **alias.0** auf jede Änderung (`ack=true` oder `ack=false`) eines abonnierten Datenpunktes. Ansonsten gilt:
+- **Außerhalb** des Adapter-Namespace (`nspanel-lovelace-ui.0`) reagiert der Adapter auf `ack=true` und setzt Datenpunkte mit `ack=false`.
+- **Innerhalb** des Adapter-Namespace reagiert der Adapter auf `ack=false` und setzt Datenpunkte mit `ack=true`.
 
-Beim Farbscalieren `colorScale` gibt es diese unteren Zusatzoptionen
-```typescript
-/**
-* The color mix mode. Default is 'mixed'.
-* ‘mixed’: the target colour is achieved by scaling between the two RGB colours.
-* 'cie': the target colour is achieved by mixing according to the CIE colour table. 
-* 'hue': the target colour is calculated by scaling via colour, saturation and brightness.
-*/
-mode?: 'mixed' | 'hue' | 'cie';
-/**
-* The logarithm scaling to max, min or leave undefined for linear scaling.
-*/
-log10?: 'max' | 'min';
-```
-
-## Seiteninhalt - PageItem - definieren  
-Das `PageItem` -  wenn man es mal frei übersetzt , das Seiten-Gegenstand definiert einen auf der Seite sichtbaren Wert / Schalter. Was ein **PageItem** relativ immer mit sich bringt, ist eine **ID**, ein **Name** und eine **Farbdefinition**.  
-```typescript  
-{ id: 'alias.0.NSPanel_1.Luftreiniger', name: 'Luftreiniger', icon: 'power', icon2: 'power',offColor: MSRed, onColor: MSGreen},
-```
-Das `PageItem` wird mit `{},` declariert. Innerhalb der geschweiften Klammern folgt die weitere Konfiguration:  
- 
-### Mindestangaben:
-* `id` :  Pfad zum Alias, der verwendet wird, in Hochkomma eingefasst
-* `name` :  Text der als Label auf dem Display zu einem PageItem dargestellt wird, in Hochkomma eingefasst
-  
-> [!IMPORTANT]  
-> * `name` ist kein muss, wenn der Alias richtig konfiguriert ist. Dann wird der Name aus dem `common.name.de` gezogen.  
-> * Wie man Aliase definiert und welche Möglichkeiten es gibt, dafür haben wir hier in der Wiki seperate Kapitel, schaut da einfach mal rein
-  
-### **Optionale / spezifische Angaben**:  
-  
-#### Angaben für icon-Farbe:  
-* `offColor` :  Farbe für ausgeschaltet
-* `onColor` :  Farbe für eingeschaltet
-* `useColor` :  wird mit  `true` oder `false` angegeben und verwendet bei `true` die definierten Config-Parameter **defaultOnColor** und **defaultOffColor**, sofern keine `onColor` oder `offColor` im `<PageItem>` als Parameter definiert sind  
-* `colorScale` :  Colorscale ist ein Farbverlauf von Rot über Gelb nach Grün mit einem Bereich von 0 bis 10.
-  * `val_min` -> Rot
-  * `val_max` -> Grün
-  * in Verbindung mit `val_best`, ist `val_best` Grün und `val_min` und `val_max` Rot  
-  
-> [!IMPORTANT]  
-> Sofern keine icon-Farbe definiert wird, gibt es eine Default Farbkombination. Kann unter **defaultColor** (**defaultOnColor** & **defaultOffColor**) in der Konfiguration festgelegt werden.  
-  
-#### Angaben für Label:
-* `prefixName` : Erweiterung für `name`. Setzt einen Text als Prefix vor  `name`
-* `suffixName` : Erweiterung für `name`. Setzt einen Text als Postfix nach  `name` 
-* `buttonText` : ersetzt den Standard Text “PRESS” auf der cardEntities 
-* `fontSize` : Auf der **cardGrid(2)** kann man mit diesem Attribut die Schriftgröße auf  einen Wert zw. **0** und **5** gesetzt werden. Wird begleitet vom Attribut `useValue` mit dem Wert `true`:    
-  * **Font 0** - Default - Size 24 (No Icons, Support for various special chars from different langs)
-  * **Font 1** - Size 32 (Icons and limited chars)  
-  * **Font 2** - Size 32 (No Icons, Support for various special chars from different langs)  
-  * **Font 3** - Size 48 (Icons and limited chars)  
-  * **Font 4** - Size 80 (Icons and limited chars)  
-  * **Font 5** - Size 128 (ascii only)  
-  
-#### Definition Icons:
-* `icon` : Ein Icon für den An-Status
-* `icon2` : Ein Icon für den Aus-Status. `icon2` wird nicht bei allen Alias unterstützt
- 
-> [!NOTE]  
-> Die Icon-Namen müssen aus der [Icondatei](https://htmlpreview.github.io/?https://github.com/jobr99/Generate-HASP-Fonts/blob/master/cheatsheet.html) stammen. `icon` bzw. `icon2` übersteuern ein Icon welches per Default vom Alias kommt. Bei vielen Alias ist es nicht notwendig ein `icon(2)` zu definieren. Die Option steht einem aber jederzeit zur Verfügung.  
-  
-#### Einheiten - Werte - Diverses:
-* `unit` :  in Hochkomma gesetzte Einheit (z.B. °C) gilt nicht für alle Alias Rollen
-* `useValue` :  muss auf `true`, wenn `fontSize` genutzt wird
-* `minValue` :  legt den Startwert für den Slider fest
-* `maxValue` :  legt den Endwert für den Slider fest
-* `modeList` :  Ermöglicht ein **InSelPopup** für die Auswahl weiterer Werte. Wird in `[``, ``, ``]` gefasst und enthält eine kommaseparierte Liste an Werten 
-* `inSel_ChoiceState` : definiert, ob ein ausgewählter Wert auf einem **InSelPopup** einen Fokus erhält. Wird mit `true` oder `false`angegeben
-* `monobutton` : wenn als Schalter ein echter Hardware-Taster verbaut ist, wird immer _true/false_ für einen Umschaltvorgang gesendet. In dem Fall wird ein Taster emuliert und es ist `true` zu setzen. Andernfalls wird ein Schalter emuliert nud es ist `false` zu setzen. 
-  
-#### Angaben für Licht:  
-* `interpolateColor` :  wird mit  `true` oder `false` angegeben und errechnet bei `true` die aktuelle Farbe des Leuchtmittels  
-* `colormode` :  wird bei ALIAS RBG verwendet, um XY-Farbwerte zu errechnen und zu benutzen. Wert ist per default “rgb” und bei Verwendung von XY Farbübersetzungen: “xy”
-  
-  #### Angaben für PopupLight  
-  * `minValueBrightness` :  legt den Startwert für den Slider Helligkeit fest
-  * `maxValueBrightness` :  legt den Endwert für den Slider Helligkeit fest
-  * `minValueColorTemp` :  legt den Startwert für den Slider Farbtemperatur fest
-  * `maxValueColorTemp` :  legt den Endwert für den Slider Farbtemperatur fest
-  
-#### Angabe für Rolladen (PopupShutter)
-* `secondRow` : gehört zur popupPage Shutter (Text für die zweite Zeile)  
-* `minValueLevel` : definiert die kleinste Position (Down)
-* `maxValueLevel` : definiert die größte Position (Up)
-* `minValueTilt` :  definiert die - kleinste Lamellenposition-Stellung
-* `maxValueTilt` :  definiert die - größte Lamellenposition-Stellung  
-  
-#### Angaben für Navigation und Subpages:  
-* `navigate` :  Ersetzt `id` und wird mit `true` gesetzt und benötigt den Parameter **targetPage**. Öffnet eine Subpage
-* `targetPage` :  Zielseite die geöffnet wird, wenn man eine in navigate definierte SubPage öffnen will  
-  
-#### **CardChart** spezifische Angabe:  
-* `yAxis` :  name der y-Achse
-* `yAxisTicks` :  Werte-Skala der yAchse Wird in `[``, ``, ``]` gefasst und enthält eine kommaseparierte Liste an Werten
-* `onColor` : Farbe der Balken
-  
-#### **CardAlarm** spezifische Angabe:  
-* `autoCreateALias` :  NSPanel-Script erstellt die Datenpunkte unter 0_userdata.0 und alias.0 automatisch, wenn Wert = `true`
-  
-#### **CardUnlock** spezifische Angabe:  
-* `autoCreateALias` :  NSPanel-Script erstellt die Datenpunkte unter 0_userdata.0 und alias.0 automatisch, wenn Wert = `true`
-  
-#### **CardQR** spezifische Angabe:  
-* `hidePassword` :  versteckt das WLAN Passwort auf der **PageQR**
-* `autoCreateALias` :  NSPanel-Script erstellt die Datenpunkte unter 0_userdata.0 und alias.0 automatisch, wenn Wert = `true`
-  
-#### **CardMedia** spezifische Konfiguration:
-* `adapterPlayerInstance` :  legt die Adapter-Instanz für die Adapter alexa2, spotify-premium, sonos, squeezeboxrpc, chromecast oder volumio fest
-* `mediaDevice` :  bei alexa2 die Seriennummer des Echos, bei sonos die IP, bei squeezeboxrpc der erstellte Devicename
-* `speakerList` :  bei alexa2 schaltbare Device-Namen, bei spotify-premium auswählbare Device-Namen
-* `playList` :  nur für alexa2 und spotify-premium
-* `equalizerList` :  kann verwendet werden, wenn Das Device (z.B. Amazon Echo oder Sonos HTTP API) und der Adapter des Devices eine Equalizer-Funktionalität bereit stellt
-* `repeatList` : `['off','context','track']` bei spotify-premium Instanz
-* `colorMediaIcon` :  Farbe für Player-Icon
-* `colorMediaArtist` :  Farbe für Song-Interpreten
-* `colorMediaTitle` :  Farbe für Song-Titel (Track)
-* `crossfade` : Ersetzt die Seek-Funktion im Logo des Sonos-Players
-* `alwaysOnDisplay` : Lässt den Media-Player geöffnet, bis eine weitere Seite navigiert wird
-* `autoCreateALias` :  NSPanel-Script erstellt den Alias automatisch unter **alias.0** , wenn Wert = `true`
-  
-#### **CardThermo** spezifische Konfiguration:  
-* `stepValue` :  Schrittweite für die Veränderung der Solltemperatur. Wird mit zusätzlich `minValue` und `maxValue` konfiguriert
-* `iconArray` :  Wenn die Standard Icon im unteren Teil der PageThermo ersetzt werden sollen. Schreibweise wie bei `modeList`  
-  
-  #### Angaben für PopupThermo  
-   * `popupThermoMode1` :  Popup, falls definiert, wird mit Hilfe der 3 Punkte unter der Setpoint-Temperaturein Popup (oberste Zeile) eingeblendet, welches Werte zur Steuerung von zusätzlichen Zuständen annehmen kann
-   * `popupThermoMode2` : Popup, falls definiert, wird mit Hilfe der 3 Punkte unter der Setpoint-Temperaturein Popup (mittlere Zeile) eingeblendet, welches Werte zur Steuerung von zusätzlichen Zuständen annehmen kann 
-   * `popupThermoMode3` :  Popup, falls definiert, wird mit Hilfe der 3 Punkte unter der Setpoint-Temperaturein Popup (unterste Zeile) eingeblendet, welches Werte zur Steuerung von zusätzlichen Zuständen annehmen kann
-   * `popUpThermoName` :  Überschriften-Liste (Array) der in dem cardThermo
-   * `setThermoAlias` :  ALIAS Liste (Array) welches die gewählten Zustände zurückgibt (numerisch)
-  
-* `icon` : definiert das Icon des Popup-Fensters
-* `setThermoDestTemp2` : mit einem zusätzlichen ALIAS-Datenpunkt (ACTUAL2) kann eine 2. Setpoint-Temperatur visualisiert werden.  
-  
-## Basisseite mit PageItem
-  
-Wenn man nun ein oder je nach gewähltem Page Type mehrere `PageItems` aufgebaut hat und diese dem Punkte `items : []` hinzugefügt hat, erhält man eine Seite mit - nennen wir es etwas sichtbares.  
-```typescript  
-let name: PageType =  
-{
-    'type': 'cardType',
-    'heading': 'Seiten Überschrift',
-    'useColor': true,
-    'items': [
-        { id: 'alias.0.NSPanel_1.Luftreiniger', name: 'Luftreiniger', icon: 'power', icon2: 'power',offColor: MSRed, onColor: MSGreen},
-    ]
-}; 
-```  
-Wir haben weiter oben ja den Test mit der Basisseite gemacht, welche uns eine leere Seite auf dem NSPanel dargestellt hat. Nun, mit einem `PageItem` erhält man eine Anzeige.  
-  
-> Testet Eure `PageItems` Eintrag für Eintrag. Dies macht es bei der eventuellen Fehlersuche einfacher.
-  
-Bedient Euch gerne an den nachfolgend aufgelisteten Beispielen aus unserer Entwicklung. Mit den vorgefertigten `PageItem` aus den Beispielen habt Ihr es mit unter einfacher eure eigenen Seiten zu bauen. Mit der Zeit wird es dann immer mehr an eigenem, was man den Pages des NSPanels hinzufügt.
-  
-***  
-  
-
-
----
+> **Farbthemen:** Die Farbthemen für PageItems werden im Admin auf der 2. Seite unter der Tabelle gepflegt – siehe [User Farbthema](ColorThemes).

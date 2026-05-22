@@ -23,7 +23,7 @@ Legende: ✅ Fertig | 🔄 In Arbeit | ⚠️ Zu prüfen | ❌ Stub/leer | 🕐 
 
 | Seite (de) | Größe | Status DE | Status EN | Phase | Hinweis |
 |-----------|-------|-----------|-----------|-------|---------|
-| ScriptConfig.md | 34 KB | 🔄 2.1 ✅ · 2.2 offen | ⏳ folgt (2.3) | 2.1–2.3 | Hauptdoku. **2.1 erledigt:** Seiten-Konfiguration + optionale Parameter gegen `config-manager.d.ts` verifiziert (Seitentyp-Tabelle, `scrollType`/`filterType`, `alwaysOnDisplay: 'action'`, `useColor` als veraltet markiert), doppelte H1 „Seiten-Konfiguration" + ABLAGE-Duplikat entfernt. **2.2 offen:** PageItems + Hardwarebutton |
+| ScriptConfig.md | ~30 KB | 🔄 2.1 ✅ · 2.2 ✅ | 🔄 2.3 | 2.1–2.3 | Hauptdoku. **2.1:** Seiten-Konfiguration + optionale Parameter gegen `config-manager.d.ts` verifiziert. **2.2:** PageItems vollständig gegen `PageBaseItem`/`PageBaseItemSimple` dokumentiert (alle Felder, `enabled`/`confirm`/`longPress`/colorScale-Modi/Custom+Native-Items), Hardwarebutton gegen `ConfigButtonFunction`, fragmentierte PageItem-Doku konsolidiert, ABLAGE aufgelöst (ack-Hinweis erhalten). **2.3:** EN-Version |
 | GlobalPages.md | 22 KB | ⚠️ prüfen | ⏳ folgt mit DE | 2.4 | |
 | screensaver.md | 56 KB | ⚠️ prüfen | ⏳ folgt mit DE | 4 | Groß → 2 Sessions |
 
@@ -94,4 +94,4 @@ Diese Seiten sind im Sidebar oder einer anderen Seite verlinkt, aber noch nicht 
 
 ---
 
-*Zuletzt aktualisiert: 2026-05-22 (Phase 2.1: ScriptConfig Seiten-Konfiguration + optionale Parameter gegen Code verifiziert, doppelte Überschrift bereinigt)*
+*Zuletzt aktualisiert: 2026-05-22 (Phase 2.2: ScriptConfig PageItems + Hardwarebutton gegen Code verifiziert und konsolidiert)*
