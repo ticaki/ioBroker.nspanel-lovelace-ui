@@ -2,7 +2,7 @@
 
 Legende: ✅ Fertig | 🔄 In Arbeit | ⚠️ Zu prüfen | ❌ Stub/leer | 🕐 Warten | ⏳ folgt mit DE-Phase
 
-> **Hinweis EN-Dateien:** EN-Versionen entstehen jeweils zusammen mit der DE-Phase. Aktuell existieren 11 EN-Dateien von 39 DE-Dateien — das ist plangemäß und kein Fehler. Die EN-Sidebar zeigt fehlende Seiten als „in progress".
+> **Hinweis EN-Dateien:** EN-Versionen entstehen jeweils zusammen mit der DE-Phase. Aktuell existieren 12 EN-Dateien von 39 DE-Dateien — das ist plangemäß und kein Fehler. Die EN-Sidebar zeigt fehlende Seiten als „in progress".
 
 ## Admin-UI
 
@@ -23,7 +23,7 @@ Legende: ✅ Fertig | 🔄 In Arbeit | ⚠️ Zu prüfen | ❌ Stub/leer | 🕐 
 
 | Seite (de) | Größe | Status DE | Status EN | Phase | Hinweis |
 |-----------|-------|-----------|-----------|-------|---------|
-| ScriptConfig.md | ~30 KB | 🔄 2.1 ✅ · 2.2 ✅ | 🔄 2.3 | 2.1–2.3 | Hauptdoku. **2.1:** Seiten-Konfiguration + optionale Parameter gegen `config-manager.d.ts` verifiziert. **2.2:** PageItems vollständig gegen `PageBaseItem`/`PageBaseItemSimple` dokumentiert (alle Felder, `enabled`/`confirm`/`longPress`/colorScale-Modi/Custom+Native-Items), Hardwarebutton gegen `ConfigButtonFunction`, fragmentierte PageItem-Doku konsolidiert, ABLAGE aufgelöst (ack-Hinweis erhalten). **2.3:** EN-Version |
+| ScriptConfig.md | ~30 KB | ✅ Fertig (2.1+2.2) | ✅ Fertig (2.3) | 2.1–2.3 | Hauptdoku vollständig gegen `config-manager.d.ts`, `ConfigButtonFunction` und Adapter-Code verifiziert. **2.1:** Seiten-Konfiguration + optionale Parameter. **2.2:** PageItems (alle Felder, colorScale-Modi, Custom/Native-Items) + Hardwarebutton; fragmentierte Doku konsolidiert, ABLAGE aufgelöst. **2.3:** EN-Version mit identischer Heading-Struktur, `en-`-Links |
 | GlobalPages.md | 22 KB | ⚠️ prüfen | ⏳ folgt mit DE | 2.4 | |
 | screensaver.md | 56 KB | ⚠️ prüfen | ⏳ folgt mit DE | 4 | Groß → 2 Sessions |
 
@@ -94,4 +94,4 @@ Diese Seiten sind im Sidebar oder einer anderen Seite verlinkt, aber noch nicht 
 
 ---
 
-*Zuletzt aktualisiert: 2026-05-22 (Phase 2.2: ScriptConfig PageItems + Hardwarebutton gegen Code verifiziert und konsolidiert)*
+*Zuletzt aktualisiert: 2026-05-22 (Phase 2.3: ScriptConfig EN-Version erstellt — Phase 2.1–2.3 abgeschlossen)*

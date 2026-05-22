@@ -444,12 +444,12 @@ Beim Screensaver lassen sich mehere Layouts auswählen. Diese werden über die S
 
 ## Templates  
 
-## Einleitung
+### Einleitung
 
 Templates bieten eine einfache Möglichkeit, häufig verwendete Anzeige- und Steuerungselemente in **PageItems** zu integrieren. 
 Ein Template wird als Objekt im `items`-Array einer Seite eingebunden und stellt automatisch die passende Visualisierung und Logik bereit.
 
-## Verwendung
+### Verwendung
 
 Ein Template wird über das Attribut `native.template` definiert. 
 Über `dpInit` wird die Datenpunkt-ID angegeben, an die das Template gebunden ist.
@@ -466,7 +466,7 @@ Beispiel für Batterieanzeige (niedriger Batteriestand, mit `indicator.lowbat`-R
 { native: { template: 'text.battery.low', dpInit: 'hm-rpc.1.0000DYXSDSDEF71111B7.0.LOW_BAT' } },
 ```
 
-### Navigationserweiterung
+#### Navigationserweiterung
 
 Alle Templates unterstützen zusätzlich die Attribute `navigate` und `targetpage`. Damit kann beim Auslösen eine andere Seite geöffnet werden.  
 Falls notwendig, muss `type: 'button'` ergänzt werden.
@@ -479,9 +479,9 @@ Falls notwendig, muss `type: 'button'` ergänzt werden.
 },
 ```
 
-## Beispiele
+### Beispiele
 
-### Grid mit Template
+#### Grid mit Template
 
 Templates können in **cardGrid**-Seiten genutzt werden:
 
@@ -499,7 +499,7 @@ const subgrid1: PageType = {
 };
 ```
 
-### Einschränkungen
+#### Einschränkungen
 
 - Templates stehen in `cardMedia`-Seiten **nicht** zur Verfügung.  
   Benutzerdefinierte PageItems können jedoch weiterhin genutzt werden.  
@@ -507,7 +507,7 @@ const subgrid1: PageType = {
 
 - Bei Rollen muss die Schreibweise **exakt** stimmen (z. B. `indicator.lowbat`).
 
-## Verfügbare Templates
+### Verfügbare Templates
 
 Die folgende Übersicht zeigt gängige Templates und ihre Einsatzbereiche:
 
@@ -536,7 +536,7 @@ Die Benennung orientiert sich am vorgesehenen Einsatzgebiet (z. B. `button`, `li
 
 Eine vollständige Übersicht kann bei Bedarf bereitgestellt werden.
 
-## Erweiterte Anpassungen (für Experten)
+### Erweiterte Anpassungen (für Experten)
 
 Templates können vollständig angepasst werden – etwa Farbe, Icon oder auch die zugehörigen Datenpunkte.  
 Dies sollte jedoch **nur von erfahrenen Anwendern** und nach Rücksprache erfolgen, da solche Änderungen leicht zu Fehlern führen können.  
@@ -588,7 +588,7 @@ native: {
 },
 ```
 
-## Wichtige Hinweise zum Schluss
+### Wichtige Hinweise zum Schluss
 
 1. Für den Block `native` existieren **keine Typdefinitionen** im Konfigurationsskript.  
    Der Grund: Hier wird direkt die adapterinterne Konfiguration berührt, die aufwendig ist und sich teilweise noch ändern kann.  
