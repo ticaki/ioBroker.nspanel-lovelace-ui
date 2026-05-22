@@ -26,7 +26,7 @@ export const buttonTemplates: TemplateItems = {
                     mode: 'auto',
                     type: 'state',
                     dp: '',
-                    regexp: /\.Departure$/,
+                    regexp: /\.DEPARTURE$/,
                     read: 'return val === 0 ? null : val',
                 },
                 dateFormat: {
