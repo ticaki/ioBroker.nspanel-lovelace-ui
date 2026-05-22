@@ -185,14 +185,6 @@ Stack: ${stack}`
           this.log.debug(`Generated trash 1page for '${entry.uniqueName}'`);
           break;
         }
-        case "cardPower": {
-          if (!isAlwaysOnMode(entry.alwaysOn)) {
-            entry.alwaysOn = "none";
-          }
-          newPage = dataForCardPower(entry, this.adapter);
-          this.log.debug(`Generated cardPower page for '${entry.uniqueName}'`);
-          break;
-        }
         case "cardChart": {
           if (!isAlwaysOnMode(entry.alwaysOn)) {
             entry.alwaysOn = "none";
@@ -224,6 +216,14 @@ Stack: ${stack}`
             },
             pageItems: []
           };
+          break;
+        }
+        case "cardPower": {
+          if (!isAlwaysOnMode(entry.alwaysOn)) {
+            entry.alwaysOn = "none";
+          }
+          newPage = dataForCardPower(entry, this.adapter);
+          this.log.debug(`Generated cardPower page for '${entry.uniqueName}'`);
           break;
         }
         case "cardGrid":

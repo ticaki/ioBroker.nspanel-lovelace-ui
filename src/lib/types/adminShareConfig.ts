@@ -389,7 +389,14 @@ export type NavigationAssignment = {
 };
 
 export type NavigationAssignmentList = NavigationAssignment[];
-export type PageConfigEntry = QREntry | UnlockEntry | ScreensaverEntry | TrashEntry | ChartEntry | MenuEntry | PowerEntry;
+export type PageConfigEntry =
+    | QREntry
+    | UnlockEntry
+    | ScreensaverEntry
+    | TrashEntry
+    | ChartEntry
+    | MenuEntry
+    | PowerEntry;
 export type PageConfig = QREntry | UnlockEntry | ScreensaverEntry | TrashEntry | ChartEntry | MenuEntry | PowerEntry;
 
 export type PanelStatus =
