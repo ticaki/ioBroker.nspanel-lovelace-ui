@@ -1,3 +1,6 @@
+# Page PopupNotify
+
+> **Hinweis:** Dies ist **kein** Skript-Seitentyp. Benachrichtigungs-Popups werden nicht als Seite in `pages`/`subPages` konfiguriert, sondern zur Laufzeit über eine `sendTo`-Nachricht (`setPopupNotification`) bzw. die zugehörigen Befehls-Datenpunkte ausgelöst.
 
 Ab Adapter Version v0.8.0
 

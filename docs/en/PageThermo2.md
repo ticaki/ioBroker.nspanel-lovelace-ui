@@ -189,7 +189,7 @@ const ThermoNew: PageType = {
 - `'VM'` / `'HM'` – vertical resp. horizontal, centre-anchored
 - `'VB'` / `'HB'` – vertical resp. horizontal, bottom variant
 
-The paging/filter parameters (`scrollPresentation`, `scrollType`, `filterType`) from [ScriptConfig](en-ScriptConfig#additional-parameters-for-navigation-on-the-page) are also available, since `cardThermo2` can take in more than 8 (resp. 9) PageItems.
+The paging/filter parameters (`scrollPresentation`, `scrollType`, `filterType`) from [ScriptConfig](en-ScriptConfig#further-navigation-parameters) are also available, since `cardThermo2` can take in more than 8 (resp. 9) PageItems.
 
 ### PageItem extension
 For the PageItems there is a new property that is currently only relevant for cardThermo2:

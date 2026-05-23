@@ -42,7 +42,7 @@ The full structure of a PageItem (mandatory and optional fields, colours, `color
 
 ### Paging & filtering
 
-Grid cards support the paging and filter options from [ScriptConfig → additional parameters for navigation on the page](en-ScriptConfig#additional-parameters-for-navigation-on-the-page):
+Grid cards support the paging and filter options from [ScriptConfig → further navigation parameters](en-ScriptConfig#further-navigation-parameters):
 
 - `scrollPresentation`: `'classic'` (default, page by page via the arrow top right) · `'arrow'` (arrow tile on the last slot) · `'auto'` (automatic paging; interval via `scrollAutoTiming` in seconds, default 15).
 - `scrollType`: `'page'` (default, whole page) · `'half'` (half a page).

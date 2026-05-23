@@ -1,5 +1,7 @@
 # PageTrash  
-  
+
+> **Hinweis:** PageTrash ist **kein** eigener Skript-Seitentyp. Sie wird im Admin-**PageConfig**-Tab (Kartentyp **Abfall**, `cardTrash`) erstellt; intern erzeugt der Adapter daraus eine `cardEntities`- bzw. `cardSchedule`-Seite.
+
 <img alt='panel-Ansicht-4' src='Pictures/pageTrash/panel-ansicht-4.png' width="40%"><img alt='panel-Ansicht-6' src='Pictures/pageTrash/panel-ansicht-6.png' width="40%">  
   
 Die PageTrash ersetzt das [externe Script](https://github.com/tt-tom17/MyScripts/blob/main/Sonoff_NSPanel/Abfall_to%20NSPanel.ts) von tt-tom(tt-tom17) und die Seiten-Konfiguration im Script als cardEntities bzw. cardSchedule.  

@@ -33,7 +33,7 @@ Legende: ✅ Fertig | 🔄 In Arbeit | ⚠️ Zu prüfen | ❌ Stub/leer | 🕐 
 |-----------|-------|-----------|-----------|-------|---------|
 | cardAlarm.md | ~7 KB | ✅ Fertig (3.1) | ✅ Fertig (3.1) | 3.1 | Gegen `PageAlarm`-Typ, `pageAlarm.ts` (Zustandsmaschine, States, PIN), Admin `UnlockEntry`/`PageAlarmEditor.tsx` + i18n verifiziert. Konfiguration komplett im Admin-PageConfig-Tab; Skript-`items` bei cardAlarm/cardQR/cardUnlock nicht ausgewertet (`config-manager.ts:725`). Unlock-Variante nur erwähnt (pageUnlock 🕐). |
 | pageUnlock.md | 80 B | 🕐 warten | 🕐 warten | — | Warte auf Tests; kein Sidebar-Link |
-| PageConfig.md | 3195 B | ⚠️ prüfen | ⏳ folgt mit DE | 3 | |
+| PageConfig.md | ~4 KB | ✅ Fertig (3.5) | ✅ Fertig (3.5) | 3.5 | Admin-Tab bestätigt (`PageConfigLayout.tsx`). Typenfilter: all/pageMenu/cardAlarm/cardQR/cardTrash (Power+Chart eigene Tabs). Menü-Seite-Link ergänzt. EN erstellt. |
 | cardGrid.md | ~6 KB | ✅ Fertig (3.2) | ✅ Fertig (3.2) | 3.2 | Neu strukturiert: 3 Grid-Varianten (cardGrid 6 / cardGrid2 8 bzw. 9 us-p / cardGrid3 4 Kacheln, `pageMenu.ts`), Skript-Weg (PageGrid + PageItems) + Admin-Menü-Seite (cardMenue). Blättern/Filtern verlinkt auf ScriptConfig. |
 | cardQR.md | ~5 KB | ✅ Fertig (3.2) | ✅ Fertig (3.2) | 3.2 | Gegen `QREntry`/`pageQR.ts` verifiziert: selType 0=FREE/1=Wifi/2=URL/3=TEL, wlantype-Werte, `setState`-Schalter. Skript-Verweis (PageQR, heading/items optional) ergänzt. |
 | PageQR_old.md | — | 🗑️ gelöscht (3.2) | — | — | Veraltet, nicht verlinkt; auf Nachfrage gelöscht. cardQR.md ist die aktuelle Version. |
@@ -41,9 +41,9 @@ Legende: ✅ Fertig | 🔄 In Arbeit | ⚠️ Zu prüfen | ❌ Stub/leer | 🕐 
 | PageChart.md | 3139 B | ✅ Fertig (3.3) | ✅ Fertig (3.3) | 3.3 | Eigener Admin-Tab `pageChartdata`. Datenquelle `selInstanceDataSource` 0=oldScriptVersion / 1=dbAdapter (gegen `pageChart.ts`+jsonConfig verifiziert). Skript-Verweis `cardChart`/`cardLChart` ok. EN erstellt. |
 | PageMedia.md | ~6 KB | ✅ Fertig (3.4) | ✅ Fertig (3.4) | 3.4 | Gegen `PageMediaItem` + `pageMedia.ts`/Player-Tools verifiziert. Korrekturen: falscher RGB-Typ `{r,g,b}`→`{red,green,blue}`, `volumePresets` (mpd/spotify) ergänzt, ungenutzte Typ-Felder (`mediaDevice`/`equalizerList`/`repeatList`/`globalTracklist`) als nicht ausgewertet markiert. EN erstellt. |
 | PageThermo2.md | ~10 KB | ✅ Fertig (3.4) | ✅ Fertig (3.4) | 3.4 | Gegen `PageThermo2`/`PageThermo2Item` + `pageThermo2.ts` verifiziert. Fehlendes `sortOrder` (H/V/HM/VM/HB/VB, Default 'V') ergänzt; Heizkreis-Zuordnung über `filter` bestätigt. EN erstellt. |
-| PagePopup.md | 3971 B | ⚠️ prüfen | ⏳ folgt mit DE | 3 | |
-| cardTrash.md | 2939 B | ⚠️ prüfen | ⏳ folgt mit DE | 3 | |
-| Pages.md | 503 B | ⚠️ prüfen | ⏳ folgt mit DE | 3 | Übersichtsseite |
+| PagePopup.md | ~4 KB | ✅ Fertig (3.5) | ✅ Fertig (3.5) | 3.5 | **Kein** Skript-PageType: `setPopupNotification`-/`popupNotify`-Mechanismus (`pagePopup.ts`, `PagePopupDataDetails`). Hinweis ergänzt + H1-Titel; EN erstellt. |
+| cardTrash.md | ~3 KB | ✅ Fertig (3.5) | ✅ Fertig (3.5) | 3.5 | **Kein** Skript-PageType: Admin-Karte `cardTrash` (`TrashEntry`, `admin.ts:dataForcardTrash`), intern cardEntities/cardSchedule. Hinweis ergänzt; EN erstellt. |
+| Pages.md | ~2 KB | ✅ Fertig (3.5) | ✅ Fertig (3.5) | 3.5 | Seitentyp-Spalte gegen echte `type`-Strings korrigiert (cardPower/cardChart/cardThermo2/cardUnlock), PopupNotify+Trash als Nicht-PageType markiert, cardEntities/cardSchedule/cardThermo ergänzt. EN erstellt. |
 
 ## Developer
 
@@ -79,6 +79,11 @@ Legende: ✅ Fertig | 🔄 In Arbeit | ⚠️ Zu prüfen | ❌ Stub/leer | 🕐 
 | `src/lib/adapter-config.d.ts` Z.12 | `adminOverridesScriptPages` — nicht in Admin-UI, wird intern in `src/lib/configuration/admin.ts:301` genutzt. Kein Doku-Eintrag nötig. | — |
 | `src/lib/adapter-config.d.ts` Z.34 | `deactivateDebugLog` — deklariert, aber nirgends in Admin-UI oder Code aktiv genutzt (verwaist). Kein Doku-Eintrag. | Ggf. im Code entfernen |
 | `ScriptConfig.md` Z.46 + Z.404 | Doppelte Überschrift „Seiten-Konfiguration" (einmal `##`, einmal `#`). Erzeugt zweiten Anker `seiten-konfiguration-1`; Sidebar-Link auf ersten Anker funktioniert noch. | ✅ erledigt (Phase 2.1): ABLAGE-Duplikat „# Seiten-Konfiguration" inkl. doppelter „Optionale Parameter" entfernt, nützlichen `pages`/`subPages`-Test nach oben integriert |
+| `config-manager.ts:725` | Bei `cardQR`/`cardAlarm`/`cardUnlock` `return` (statt `continue`) → das Skript-`items`-Array dieser Seiten wird nicht ausgewertet; Konfiguration kommt aus dem Admin. Wirkt wie vorzeitiger Abbruch der Seitenschleife. | Befund (3.1) — Code prüfen, ob `continue` gemeint ist; Doku beschreibt das Verhalten (items wird ignoriert). |
+| `config-manager.d.ts` `PageMediaItem` | `mediaDevice`, `equalizerList`, `repeatList`, `globalTracklist` deklariert, aber von `pageMedia.ts`/Player-Tools nicht ausgewertet. | Befund (3.4) — in PageMedia.md als „nicht ausgewertet" markiert. |
+| `config-manager.d.ts` `PageThermo2PageItems.heatCycleIndex` | Deklariert, aber `pageThermo2.ts` nutzt `filter` für die Heizkreis-Zuordnung. | Befund (3.4) — Doku dokumentiert `filter`. |
+| Seitentypen ohne Wiki-Seite | `cardEntities`, `cardSchedule`, `cardThermo` sind in der `PageType`-Union, haben aber keine eigene Wiki-Seite (in [Pages](Pages) als „Weitere Seitentypen" gelistet, bei [cardGrid](cardGrid)/ScriptConfig mitbehandelt). | Befund (3.5) — bewusst keine Einzelseiten. |
+| `PagePopup` / `cardTrash` | Beide sind **keine** `PageType`-Union-Mitglieder: PagePopup = `setPopupNotification`-Nachricht (`popupNotify`), cardTrash = Admin-PageConfig-Karte (intern cardEntities/cardSchedule). | ✅ Befund (3.5) — in den Doku-Seiten als solche gekennzeichnet. |
 
 ---
 
@@ -93,4 +98,4 @@ Diese Seiten sind im Sidebar oder einer anderen Seite verlinkt, aber noch nicht 
 
 ---
 
-*Zuletzt aktualisiert: 2026-05-23 (Phase 3.1: cardAlarm.md Stub → komplett gegen `PageAlarm`/`pageAlarm.ts`/Admin verifiziert, DE+EN)*
+*Zuletzt aktualisiert: 2026-05-23 (Phase 3 abgeschlossen: alle Standard-Pages DE gegen Code verifiziert/ergänzt + EN-Versionen. cardAlarm neu, cardGrid neu strukturiert, PageQR_old gelöscht, Pages-Typtabelle korrigiert, PagePopup/cardTrash als Nicht-PageTypes gekennzeichnet.)*

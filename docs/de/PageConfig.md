@@ -16,7 +16,10 @@ Der Tab ist in drei Bereiche eingeteilt. Rechts befindet sich die [Übersicht](#
   
 ## Übersicht  
 
-In der Übersicht werden alle Seiten die im Admin erstellt wurden angezeigt. Über den Seiten Typ kann eine Selektion durchgeführt werden. Wenn eine Seite ausgewählt ist, kann über den Link "Dokumentation" direkt ins Wiki gesprungen werden für weitere Infos.  
+In der Übersicht werden alle Seiten die im Admin erstellt wurden angezeigt. Über den Seiten-Typ-Filter kann selektiert werden; verfügbar sind: **Alle**, **Menü-Seite** (`pageMenu`), **Alarm** (`cardAlarm`), **QR** (`cardQR`) und **Abfall** (`cardTrash`). Wenn eine Seite ausgewählt ist, kann über den Link "Dokumentation" direkt ins Wiki gesprungen werden für weitere Infos.
+
+> [!NOTE]
+> Die Seitentypen **PagePower** und **PageChart** werden **nicht** hier, sondern über die eigenen Admin-Tabs [Page Power](PagePower) bzw. [Page Chart](PageChart) konfiguriert.
 
 <img alt='pageConfig' src='Pictures/pageConfig/ansicht_pages.png' width="40%" height="40%">  
   
@@ -34,6 +37,7 @@ In der Übersicht werden alle Seiten die im Admin erstellt wurden angezeigt. Üb
   
 Die Seitenkonfiguration wird für jede Seite separat noch einmal beschrieben. Zu den Seiten kann über das Menu gesprungen werden oder von hier aus.  
   
++ [Menü-Seite (cardGrid)](cardGrid)  
 + [pageQR](cardQR)  
 + [pageAlarm / pageUnlock](cardAlarm)
 + [pageTrash](cardTrash)  
