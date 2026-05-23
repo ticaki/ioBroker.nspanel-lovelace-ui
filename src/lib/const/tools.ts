@@ -1182,10 +1182,10 @@ function cloneJson<T extends Jsonish>(v: any): any {
     v = nn(v) as T;
 
     if (v instanceof RegExp) {
-        return new RegExp(v.source, v.flags) as any as T;
+        return new RegExp(v.source, v.flags);
     }
     if (Array.isArray(v)) {
-        return v.map(cloneJson) as unknown as T;
+        return v.map(cloneJson);
     }
     if (isPlainObject(v)) {
         const o: Record<string, Jsonish> = {};

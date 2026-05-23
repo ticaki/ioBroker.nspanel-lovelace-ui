@@ -29,7 +29,7 @@ function shallowDescribe(value: unknown): string {
                 return `${k}: Array(${v.length})`;
             }
             if (v !== null && typeof v === 'object') {
-                return `${k}: {${Object.keys(v as Record<string, unknown>).join(', ')}}`;
+                return `${k}: {${Object.keys(v).join(', ')}}`;
             }
             return `${k}: ${JSON.stringify(v)}`;
         });

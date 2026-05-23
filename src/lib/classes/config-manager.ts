@@ -4455,7 +4455,7 @@ export class ConfigManager extends BaseClass {
                                     pageItems: [],
                                     config: { card: 'cardMedia', data: {} },
                                     alwaysOn: 'none',
-                                } as pages.PageBase,
+                                },
                                 [],
                                 true,
                             );
@@ -5151,7 +5151,7 @@ export class ConfigManager extends BaseClass {
                 screensaverSwipe: false,
             },
             pageItems: pageItems,
-        } as pages.PageBase;
+        };
 
         return { configArray, messages };
     }

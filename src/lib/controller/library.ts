@@ -613,12 +613,10 @@ export class Library extends BaseClass {
         init: boolean = false,
     ): LibraryStateVal {
         if (typeof type == 'object') {
-            type = type as LibraryStateVal;
             this.stateDataBase[dp] = type;
         } else {
-            type = type as ioBroker.ObjectType;
             this.stateDataBase[dp] = {
-                type: type,
+                type: type ?? this.stateDataBase[dp]?.type ?? 'state',
                 stateTyp:
                     stateType !== undefined
                         ? stateType

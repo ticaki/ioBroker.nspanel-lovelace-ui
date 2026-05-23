@@ -517,13 +517,12 @@ class Library extends BaseClass {
     return this.stateDataBase[this.cleandp(dp)];
   }
   setdb(dp, type, val = void 0, stateType = void 0, ack = true, ts = Date.now(), obj = void 0, init = false) {
+    var _a, _b;
     if (typeof type == "object") {
-      type = type;
       this.stateDataBase[dp] = type;
     } else {
-      type = type;
       this.stateDataBase[dp] = {
-        type,
+        type: (_b = type != null ? type : (_a = this.stateDataBase[dp]) == null ? void 0 : _a.type) != null ? _b : "state",
         stateTyp: stateType !== void 0 ? stateType : this.stateDataBase[dp] !== void 0 && this.stateDataBase[dp].stateTyp !== void 0 ? this.stateDataBase[dp].stateTyp : void 0,
         val,
         ack,

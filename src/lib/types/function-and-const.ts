@@ -63,10 +63,10 @@ export function isIconColorScaleElement(x: unknown): x is IconColorElement {
     const v = x as Partial<IconColorElement>;
 
     // required
-    if (!Number.isFinite(v.val_min as number)) {
+    if (!Number.isFinite(v.val_min)) {
         return false;
     }
-    if (!Number.isFinite(v.val_max as number)) {
+    if (!Number.isFinite(v.val_max)) {
         return false;
     }
 
@@ -237,7 +237,7 @@ const SCREENSAVER_MODE_NUMBERS = [0, 1, 2, 3] as const;
 export function isScreenSaverModeAsNumber(value: unknown): value is NSPanel.ScreensaverModeTypeAsNumber {
     return typeof value === 'number' && SCREENSAVER_MODE_NUMBERS.includes(value as any);
 }
-export function isStateRole(F: string): F is StateRole {
+export function isStateRole(_F: string): _F is StateRole {
     // Alle StateRole Werte sind gültig - triviale Type Guard
     return true;
 }
