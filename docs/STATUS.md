@@ -31,7 +31,7 @@ Legende: ✅ Fertig | 🔄 In Arbeit | ⚠️ Zu prüfen | ❌ Stub/leer | 🕐 
 
 | Seite (de) | Größe | Status DE | Status EN | Phase | Hinweis |
 |-----------|-------|-----------|-----------|-------|---------|
-| cardAlarm.md | 94 B | ❌ STUB (Platzhaltertext, Bild) | ⏳ folgt mit DE | 3 | Im Sidebar verlinkt als „Page Alarm" — aktuell unfertig |
+| cardAlarm.md | ~7 KB | ✅ Fertig (3.1) | ✅ Fertig (3.1) | 3.1 | Gegen `PageAlarm`-Typ, `pageAlarm.ts` (Zustandsmaschine, States, PIN), Admin `UnlockEntry`/`PageAlarmEditor.tsx` + i18n verifiziert. Konfiguration komplett im Admin-PageConfig-Tab; Skript-`items` bei cardAlarm/cardQR/cardUnlock nicht ausgewertet (`config-manager.ts:725`). Unlock-Variante nur erwähnt (pageUnlock 🕐). |
 | pageUnlock.md | 80 B | 🕐 warten | 🕐 warten | — | Warte auf Tests; kein Sidebar-Link |
 | PageConfig.md | 3195 B | ⚠️ prüfen | ⏳ folgt mit DE | 3 | |
 | cardGrid.md | 2620 B | ⚠️ prüfen | ⏳ folgt mit DE | 3 | |
@@ -88,10 +88,9 @@ Diese Seiten sind im Sidebar oder einer anderen Seite verlinkt, aber noch nicht 
 
 | Seite | Problem | Ziel |
 |-------|---------|------|
-| `cardAlarm.md` | Nur Platzhaltertext + Bild, kein echter Inhalt | Phase 3 |
 | `Home.md` | Nur Bilder und Headlines, kein beschreibender Text | Phase 6 |
 | `User-NSPanel-Funktionalität.md` | Nur „Im Aufbau", Sidebar verlinkt darauf | Phase 6 |
 
 ---
 
-*Zuletzt aktualisiert: 2026-05-23 (Phase 2.4: GlobalPages.md DE gegen Code verifiziert + korrigiert, EN-Version erstellt)*
+*Zuletzt aktualisiert: 2026-05-23 (Phase 3.1: cardAlarm.md Stub → komplett gegen `PageAlarm`/`pageAlarm.ts`/Admin verifiziert, DE+EN)*
