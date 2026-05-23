@@ -37,8 +37,8 @@ Legende: ✅ Fertig | 🔄 In Arbeit | ⚠️ Zu prüfen | ❌ Stub/leer | 🕐 
 | cardGrid.md | ~6 KB | ✅ Fertig (3.2) | ✅ Fertig (3.2) | 3.2 | Neu strukturiert: 3 Grid-Varianten (cardGrid 6 / cardGrid2 8 bzw. 9 us-p / cardGrid3 4 Kacheln, `pageMenu.ts`), Skript-Weg (PageGrid + PageItems) + Admin-Menü-Seite (cardMenue). Blättern/Filtern verlinkt auf ScriptConfig. |
 | cardQR.md | ~5 KB | ✅ Fertig (3.2) | ✅ Fertig (3.2) | 3.2 | Gegen `QREntry`/`pageQR.ts` verifiziert: selType 0=FREE/1=Wifi/2=URL/3=TEL, wlantype-Werte, `setState`-Schalter. Skript-Verweis (PageQR, heading/items optional) ergänzt. |
 | PageQR_old.md | — | 🗑️ gelöscht (3.2) | — | — | Veraltet, nicht verlinkt; auf Nachfrage gelöscht. cardQR.md ist die aktuelle Version. |
-| PagePower.md | 5959 B | ⚠️ prüfen | ⏳ folgt mit DE | 3 | |
-| PageChart.md | 3139 B | ⚠️ prüfen | ⏳ folgt mit DE | 3 | |
+| PagePower.md | 5959 B | ✅ Fertig (3.3) | ✅ Fertig (3.3) | 3.3 | Eigener Admin-Tab `pagePowerdata` (power1–6 + Home power7/8). DE gegen Typ + i18n verifiziert (korrekt), Skript-Verweis `cardPower` ok. EN erstellt. |
+| PageChart.md | 3139 B | ✅ Fertig (3.3) | ✅ Fertig (3.3) | 3.3 | Eigener Admin-Tab `pageChartdata`. Datenquelle `selInstanceDataSource` 0=oldScriptVersion / 1=dbAdapter (gegen `pageChart.ts`+jsonConfig verifiziert). Skript-Verweis `cardChart`/`cardLChart` ok. EN erstellt. |
 | PageMedia.md | 5434 B | ⚠️ prüfen | ⏳ folgt mit DE | 3 | |
 | PageThermo2.md | 9872 B | ⚠️ prüfen | ⏳ folgt mit DE | 3 | |
 | PagePopup.md | 3971 B | ⚠️ prüfen | ⏳ folgt mit DE | 3 | |
