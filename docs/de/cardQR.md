@@ -1,76 +1,112 @@
-# PageQR  
+# Page QR (`cardQR`)
 
-**Achtung die PageQR wird jetzt direkt im Admin vom Adapter konfiguriert und erstellt unter dem Tab "PageConfig"**  
+Die **`cardQR`** erzeugt auf dem Panel einen QR-Code, der z. B. mit dem Handy gescannt werden kann. Damit lassen sich WLAN-Zugangsdaten (Gäste-WLAN), eine Telefonnummer, eine URL oder ein beliebiger Freitext übergeben.
 
-**Content**  
-+ [Einstellungen im Admin](#einstellung-im-admin)  
-    + [Type Freitext](#freitext)
-    + [Type Wifi](#wifi)  
-    + [Type Telefon](#telefon)  
-    + [Type URL](#url)  
-+ [Naviagtion / Panel](#navigation--panel)
- 
+Die Seite wird **vollständig im Admin** über den Tab **PageConfig** konfiguriert; im Konfigurationsskript wird sie nur per `uniqueName` und `type` referenziert.
 
-Die PageQR erzeugt auf dem Panel ein QR-Code, der mit dem Handy zum Beispiel gescannt werden kann. Damit können Daten für das GästeWlan, eine Telefonnummer oder eine URL zu einer Website übermittelt werden.  
-  
----  
-## Einstellung im Admin
+**Inhalt**
++ [Einstellungen im Admin](#einstellungen-im-admin)
+    + [Freitext (FREE)](#freitext-free)
+    + [WLAN (Wifi)](#wlan-wifi)
+    + [URL](#url)
+    + [Telefon (TEL)](#telefon-tel)
++ [Navigation / Panel](#navigation--panel)
++ [Verweis im Konfig-Skript](#verweis-im-konfig-skript)
 
-Die komplette Beschreibung des Tab PageConfig ist [hier](PageConfig) hinterlegt.
-
-Zuerst wird der Seitentyp ausgewählt, in diesem Fall "QR". Dann im Textfeld "neue Seite" eine neu ID festlegen.  
-> [!Note]  
-> Diese ID muss einmalig sein im Adapter.  
-mit dem Klick auf den "Plus"-Button wird die Seite angelegt und die Konfiguration für die Seite sichtbar.
-
-Jetzt kann in der Konfiguration der QR-Code Typ ausgewählt werden und die Überschrift der Seite definiert werden.  
-
-### Freitext
-Hier kann eigener QR-Code eingefügt werden. Es gibt im Netz verschidenen Seiten zum nachlesen, wenn ihr diese Funktion nutzen möchtet. Probiert aus was geht.
-  
-### Wifi  
-Beim Typ Wifi stehen folgende Felder zusätzlich zur Verfügung.  
-
-- **WLAN-SSID** -> Hier wird der Name des Wlan eingeben   
-- **WlanVerschlüsselung** -> wählt die Verschlüsselung eures Wlan aus  
-- **Password** -> Wlan Password eintragen oder leer lassen
-- **verstecktes Netzwerk** -> aktivieren, wenn euer netzwerk nicht sichtbar ist  
-- **Password verbergen** ->  damit wird das Password auf der Seite im Panel ausgeblendet, befindet sich aber trozdem im QR Code  
-- **Schalter/State** -> hier kann ein Datenpunkt vom Typ boolean eingetragen werden bzw. mit den kleinen Button rechts ausgewählt werden.  
-
-> [!Note]  
-> Wenn der Datenpunkt hinterlegt ist, wird im Panel an der Stelle des Passwortes ein Schalter eingeblendet. Mit diesem wird dann der Datenpunkt auf true / false gesetzt.  
-
-<img alt='panelWifi' src='Pictures/pageQR/panelPageQRWifiPW.png' height='250' ><img alt='panelWifi' src='Pictures/pageQR/panelPageQRWifiSwitch.png' height='250' >  
-
----  
-
-### TELEFON  
-  
-Beim Type TEL kann eine Telefonnummer in den Code eingebettet werden. Nachdem scannen mit dem Handy, kann man diese direkt wählen. Um International zu bleiben, sollte die Nummer mit der Ländervorwahl beginnen z.B. +49 für Deutschland.  
-
-<img alt='panelWifi' src='Pictures/pageQR/panelPageQRTelefon.png' height='250' >  
-
----  
-
-### URL  
-
-Hier bei handelt es sich um den klassischen QR-Code wie er in jeder Werbung zu finden ist. Im Code verbirgt sich eine URL - die nach dem Scan aufgerufen werden kann. z.B. https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/wiki/PageQR  
-
-<img alt='panelWifi' src='Pictures/pageQR/panelPageQRURL.png' height='250' >  
-  
 ---
-  
-## Navigation / Panel  
-Zum Schluss wird die Navigation und allgemeine Seiteneinstellungen durchgefürht  
 
-Auf der linken Seite in dem eingeblendeten Fenster **"Navigation/Panel"** stellt man unter dem Reiter **"Navigation"** den Platz in der Seitenhierachie. Zuerst wird das Panel bzw. "alle" ausgewählt. Dann wählt man vor bzw. hinter welcher Seite die pageQR liegen soll.  
-> [NOTE]
-> nur eines der Felder Prev oder Next auswählen. bei der Feldern home und parent wird das Haussymbol bzw. Pfeil nachoben eingeblendet und als ziehl die ausgewählte Seite definiert.  
-  
-Im Reiter **"Pagedetails"** kann festgelegt werden, ob die Seite versteckt wird beim sezten des Datenpunktes **nspanel-lovelace-ui.0.panels.C0_49_XX_XX_XX_XX.cmd.hideCards** auf true.  
-Des Weiteren kann das Verhalten des Screensaver eingestellt werden für diese Seite.  
-+ **Standard-Timeout** -> Screensaver blendet sich nach x Sekunden ein.  
-+ **niemals aktivieren** -> Seite bleibt solange sichtbar bis manuell zur nächtes gesprungen wird.  
-+ **von der vorherigen Seite übernehmen** -> übernimmt die Einstellung von der vorherigen Seite.  
+## Einstellungen im Admin
 
+Die allgemeine Bedienung des Tabs ist unter [Page Config](PageConfig) beschrieben. Zuerst den Seitentyp **QR** wählen, im Feld „neue Seite" einen eindeutigen Namen vergeben und mit dem Plus-Button anlegen.
+
+> [!NOTE]
+> Der Name (`uniqueName`) muss im gesamten Adapter einmalig sein.
+
+Anschließend werden der QR-Typ und die Überschrift festgelegt.
+
+> 🖼️ **Bild fehlt:** PageConfig-Editor für eine QR-Seite (Auswahl QR-Typ, Überschrift, typabhängige Felder).
+> Pfad: `Pictures/pageQR/config.png`
+
+![QR-Konfiguration im Admin](Pictures/pageQR/config.png)
+
+Der QR-Typ wird über das Feld **„Auswahl des QR-Typs"** (`selType`) bestimmt:
+
+| Auswahl | `selType` | Inhalt des QR-Codes |
+|---------|:---------:|---------------------|
+| Freitext | 0 | beliebiger Text |
+| Wifi | 1 | WLAN-Zugangsdaten |
+| URL | 2 | Web-Adresse |
+| Telefon | 3 | Telefonnummer |
+
+Allen Typen gemeinsam ist das Feld **„SSID/URL/Telefon"** (`ssidUrlTel`), in das je nach Typ der Text, die SSID, die URL oder die Telefonnummer eingetragen wird.
+
+### Freitext (FREE)
+Hier kann ein beliebiger QR-Code-Inhalt als Freitext eingegeben werden.
+
+### WLAN (Wifi)
+Beim Typ Wifi stehen zusätzlich folgende Felder zur Verfügung:
+
+| Feld (Admin-Label) | Schlüssel | Beschreibung |
+|--------------------|-----------|--------------|
+| WLAN-SSID | `ssidUrlTel` | Name des WLANs |
+| WLAN-Verschlüsselung | `wlantype` | `nopass`, `WPA`, `WPA2`, `WPA3` oder `WEP` (Standard `WPA`) |
+| Password | `qrPass` | WLAN-Passwort (kann leer bleiben) |
+| verstecktes Netzwerk | `wlanhidden` | aktivieren, wenn das Netzwerk nicht sichtbar (hidden SSID) ist |
+| Password verbergen | `pwdhidden` | blendet das Passwort auf dem Panel aus; im QR-Code ist es dennoch enthalten |
+| Schalter/State | `setState` | optionaler boolescher Datenpunkt |
+
+> [!NOTE]
+> Ist ein `setState`-Datenpunkt hinterlegt, wird im Panel an der Stelle des Passworts ein Schalter eingeblendet, der den Datenpunkt auf `true`/`false` setzt.
+
+> 🖼️ **Bild fehlt:** Panel-Ansicht WLAN-QR mit sichtbarem Passwort bzw. mit Schalter.
+> Pfad: `Pictures/pageQR/panel-wifi.png`
+
+![WLAN-QR auf dem Panel](Pictures/pageQR/panel-wifi.png)
+
+### URL
+Der klassische QR-Code mit einer hinterlegten URL, die nach dem Scan aufgerufen werden kann (z. B. `https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/wiki`).
+
+### Telefon (TEL)
+Bettet eine Telefonnummer ein, die nach dem Scannen direkt gewählt werden kann. Um international zu bleiben, sollte die Nummer mit der Ländervorwahl beginnen (z. B. `+49` für Deutschland).
+
+---
+
+## Navigation / Panel
+
+Im linken Fenster **„Navigation/Panel"** wird unter dem Reiter **„Navigation"** der Platz in der Seitenhierarchie festgelegt. Zuerst das Panel bzw. „alle" wählen, dann vor (`prev`) bzw. hinter (`next`) welcher Seite die QR-Seite liegen soll.
+
+> [!NOTE]
+> Nur eines der Felder **Prev** oder **Next** wählen. Über **Home** und **Parent** werden Haussymbol bzw. Pfeil-nach-oben eingeblendet und auf die gewählte Seite verlinkt.
+
+Im Reiter **„Pagedetails"** lässt sich festlegen, ob die Seite beim Setzen des Datenpunktes
+`nspanel-lovelace-ui.0.panels.<MAC>.cmd.hideCards` auf `true` ausgeblendet wird, sowie das Screensaver-Verhalten:
++ **Standard-Timeout** → Screensaver blendet sich nach der eingestellten Zeit ein.
++ **niemals aktivieren** → Seite bleibt sichtbar, bis manuell zur nächsten gewechselt wird.
++ **von der vorherigen Seite übernehmen** → übernimmt die Einstellung der vorherigen Seite.
+
+---
+
+## Verweis im Konfig-Skript
+
+Die QR-Seite wird im Admin konfiguriert; im Skript genügt eine minimale Referenz mit identischem `uniqueName`. Beim Typ `PageQR` sind `heading` und `items` optional.
+
+```typescript
+// Als Hauptseite unter pages
+const wlanQR: ScriptConfig.PageQR = {
+    type: 'cardQR',
+    uniqueName: 'gastwlan', // muss mit dem Namen im Admin übereinstimmen
+};
+
+// Als Unterseite unter subPages
+const wlanQRSub: ScriptConfig.PageQR = {
+    type: 'cardQR',
+    uniqueName: 'gastwlan',
+    prev: 'main',
+    home: 'main',
+};
+```
+
+> [!NOTE]
+> Zuerst die Konfiguration im Admin durchführen, danach das Skript anpassen und neu starten.
+
+Übersicht aller Seitentypen unter [Pages](Pages).

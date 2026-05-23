@@ -34,9 +34,9 @@ Legende: ✅ Fertig | 🔄 In Arbeit | ⚠️ Zu prüfen | ❌ Stub/leer | 🕐 
 | cardAlarm.md | ~7 KB | ✅ Fertig (3.1) | ✅ Fertig (3.1) | 3.1 | Gegen `PageAlarm`-Typ, `pageAlarm.ts` (Zustandsmaschine, States, PIN), Admin `UnlockEntry`/`PageAlarmEditor.tsx` + i18n verifiziert. Konfiguration komplett im Admin-PageConfig-Tab; Skript-`items` bei cardAlarm/cardQR/cardUnlock nicht ausgewertet (`config-manager.ts:725`). Unlock-Variante nur erwähnt (pageUnlock 🕐). |
 | pageUnlock.md | 80 B | 🕐 warten | 🕐 warten | — | Warte auf Tests; kein Sidebar-Link |
 | PageConfig.md | 3195 B | ⚠️ prüfen | ⏳ folgt mit DE | 3 | |
-| cardGrid.md | 2620 B | ⚠️ prüfen | ⏳ folgt mit DE | 3 | |
-| cardQR.md | 4065 B | ⚠️ prüfen | ⏳ folgt mit DE | 3 | |
-| PageQR_old.md | 4674 B | 🕐 veraltet | — | — | Ggf. löschen |
+| cardGrid.md | ~6 KB | ✅ Fertig (3.2) | ✅ Fertig (3.2) | 3.2 | Neu strukturiert: 3 Grid-Varianten (cardGrid 6 / cardGrid2 8 bzw. 9 us-p / cardGrid3 4 Kacheln, `pageMenu.ts`), Skript-Weg (PageGrid + PageItems) + Admin-Menü-Seite (cardMenue). Blättern/Filtern verlinkt auf ScriptConfig. |
+| cardQR.md | ~5 KB | ✅ Fertig (3.2) | ✅ Fertig (3.2) | 3.2 | Gegen `QREntry`/`pageQR.ts` verifiziert: selType 0=FREE/1=Wifi/2=URL/3=TEL, wlantype-Werte, `setState`-Schalter. Skript-Verweis (PageQR, heading/items optional) ergänzt. |
+| PageQR_old.md | — | 🗑️ gelöscht (3.2) | — | — | Veraltet, nicht verlinkt; auf Nachfrage gelöscht. cardQR.md ist die aktuelle Version. |
 | PagePower.md | 5959 B | ⚠️ prüfen | ⏳ folgt mit DE | 3 | |
 | PageChart.md | 3139 B | ⚠️ prüfen | ⏳ folgt mit DE | 3 | |
 | PageMedia.md | 5434 B | ⚠️ prüfen | ⏳ folgt mit DE | 3 | |
