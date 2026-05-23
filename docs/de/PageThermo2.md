@@ -172,6 +172,26 @@ Ergänzend wurde TargetMode und CurrentMode aufgeteilt - siehe Alias Tabelle - d
 Wenn MODE nicht angegeben ist wird es durch MODESET ersetzt. 
 MODE: kann vom common.type = 'string' sein, dann wird einfach geschrieben was im Datenpunkt steht.
 
+### Anordnung der PageItems (`sortOrder`)
+Optionale Seiten-Eigenschaft, die festlegt, in welcher Reihenfolge die bis zu 8 umlaufenden PageItems um den Thermostat platziert werden. Standard ist `'V'`.
+
+```typescript
+const ThermoNew: PageType = {
+    type: 'cardThermo2',
+    uniqueName: 'main',
+    sortOrder: 'H', // optional, Standard 'V'
+    thermoItems: [/* ... */],
+    items: [/* ... */],
+};
+```
+
+- `'V'` – vertikal (Standard, natürliche Reihenfolge der `items`)
+- `'H'` – horizontal verschränkt
+- `'VM'` / `'HM'` – vertikal bzw. horizontal, mittig verankert
+- `'VB'` / `'HB'` – vertikal bzw. horizontal, untere Variante
+
+Die Blätter-/Filterparameter (`scrollPresentation`, `scrollType`, `filterType`) aus [ScriptConfig](ScriptConfig#weitere-parameter-für-die-navigation-auf-der-seite) stehen ebenfalls zur Verfügung, da `cardThermo2` mehr als 8 (bzw. 9) PageItems aufnehmen kann.
+
 ### PageItemerweiterung
 Für die Pageitems gibt es eine neue Eigenschaft die aktuell aber nur für die cardThermo2 von belang ist:
 ```typescript

@@ -39,8 +39,8 @@ Legende: ✅ Fertig | 🔄 In Arbeit | ⚠️ Zu prüfen | ❌ Stub/leer | 🕐 
 | PageQR_old.md | — | 🗑️ gelöscht (3.2) | — | — | Veraltet, nicht verlinkt; auf Nachfrage gelöscht. cardQR.md ist die aktuelle Version. |
 | PagePower.md | 5959 B | ✅ Fertig (3.3) | ✅ Fertig (3.3) | 3.3 | Eigener Admin-Tab `pagePowerdata` (power1–6 + Home power7/8). DE gegen Typ + i18n verifiziert (korrekt), Skript-Verweis `cardPower` ok. EN erstellt. |
 | PageChart.md | 3139 B | ✅ Fertig (3.3) | ✅ Fertig (3.3) | 3.3 | Eigener Admin-Tab `pageChartdata`. Datenquelle `selInstanceDataSource` 0=oldScriptVersion / 1=dbAdapter (gegen `pageChart.ts`+jsonConfig verifiziert). Skript-Verweis `cardChart`/`cardLChart` ok. EN erstellt. |
-| PageMedia.md | 5434 B | ⚠️ prüfen | ⏳ folgt mit DE | 3 | |
-| PageThermo2.md | 9872 B | ⚠️ prüfen | ⏳ folgt mit DE | 3 | |
+| PageMedia.md | ~6 KB | ✅ Fertig (3.4) | ✅ Fertig (3.4) | 3.4 | Gegen `PageMediaItem` + `pageMedia.ts`/Player-Tools verifiziert. Korrekturen: falscher RGB-Typ `{r,g,b}`→`{red,green,blue}`, `volumePresets` (mpd/spotify) ergänzt, ungenutzte Typ-Felder (`mediaDevice`/`equalizerList`/`repeatList`/`globalTracklist`) als nicht ausgewertet markiert. EN erstellt. |
+| PageThermo2.md | ~10 KB | ✅ Fertig (3.4) | ✅ Fertig (3.4) | 3.4 | Gegen `PageThermo2`/`PageThermo2Item` + `pageThermo2.ts` verifiziert. Fehlendes `sortOrder` (H/V/HM/VM/HB/VB, Default 'V') ergänzt; Heizkreis-Zuordnung über `filter` bestätigt. EN erstellt. |
 | PagePopup.md | 3971 B | ⚠️ prüfen | ⏳ folgt mit DE | 3 | |
 | cardTrash.md | 2939 B | ⚠️ prüfen | ⏳ folgt mit DE | 3 | |
 | Pages.md | 503 B | ⚠️ prüfen | ⏳ folgt mit DE | 3 | Übersichtsseite |

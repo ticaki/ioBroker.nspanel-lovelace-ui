@@ -50,12 +50,15 @@ const pageMediaTest1: PageType = {
 | `playList` | Liste verfügbarer Playlists | **Alexa/Spotify:** aus Adapter. **Sonos:** nutzergeneriert (Adapter kann sie nicht einlesen) |
 | `minValue` | Minimale Lautstärke (Panel) | Mapping auf Geräte‑Skala |
 | `maxValue` | Maximale Lautstärke (Panel) | Mapping auf Geräte‑Skala |
+| `volumePresets` | Lautstärke‑Presets als `"name?wert"` | z. B. `["leise?5","laut?95"]`; Wert wird auf `minValue`/`maxValue` begrenzt (nur **mpd** und **spotify-premium**) |
 | `itemsColorOn` | On‑Farbe für einzelne Standard‑PageItems | pro Item überschreibbar (s. unten) |
 | `itemsColorOff` | Off‑Farbe für einzelne Standard‑PageItems | s. unten |
 | `deactivateDefaultItems` | Standard‑PageItems gezielt ausblenden | s. unten + Beispiel |
 
 ### Standard‑PageItems (für Farben/Deaktivieren)
-- `trackList`, `speakerList`, `repeat`, `equalizer`, `playList`, `online`, `reminder`, `clock`, `favoriteList`, `crossfade`
+- `trackList`, `speakerList`, `repeat`, `equalizer`, `playList`, `online`, `reminder`, `clock`, `favoriteList`, `crossfade`, `volumePresets`
+
+> **Hinweis:** Welche dieser Standard‑Items tatsächlich erscheinen, hängt vom Adapter ab. `itemsColorOn`/`itemsColorOff` zusätzlich für `clock` und `volumePresets`; `deactivateDefaultItems` ohne `volumePresets`.
 
 > **Farben verwenden:** An dieser Stelle **bitte Farbnamen** wie `Blue`, `MSRed`, `HMIOn`, `HMIOff` etc. benutzen – **es ist auch möglich eigene zu verwenden** `{red:…, green:…, blue:…}`‑JSON.  
 > (Nur in Beispielen unten werden Farbnamen gezeigt – es gibt keine separate Farbtabelle in dieser Doku.)
@@ -121,10 +124,10 @@ media: {
 // Nur als Referenz – die Erklärung steht oben.
 // Farben bitte als Symbolnamen (z. B. Blue, MSRed) nutzen.
 
-type RGB = { r: number; g: number; b: number };
+type RGB = { red: number; green: number; blue: number };
 
-type MediaOptions = {
-  id: string;
+type PageMediaItem = {
+  id: string;            // Ordner/Device/Channel, KEIN State – bestimmt die Player-Instanz
   name?: string;
   colorMediaIcon?: RGB;
   colorMediaArtist?: RGB;
@@ -134,17 +137,19 @@ type MediaOptions = {
   favoriteList?: string[];
   /** Playlisten: Alexa/Spotify aus Adapter; Sonos nutzergeneriert */
   playList?: string[];
+  /** Lautstärke-Presets "name?wert" (nur mpd & spotify-premium) */
+  volumePresets?: string[];
   /** Lautstärke-Grenzen (Panel-Seite) */
   minValue?: number;
   maxValue?: number;
 
   /** On-/Off-Farben pro Default-Item */
   itemsColorOn?: Partial<Record<
-    'trackList' | 'speakerList' | 'repeat' | 'equalizer' | 'playList' | 'online' | 'reminder' | 'crossfade' | 'favoriteList',
+    'trackList' | 'speakerList' | 'repeat' | 'equalizer' | 'playList' | 'online' | 'reminder' | 'crossfade' | 'favoriteList' | 'clock' | 'volumePresets',
     RGB
   >>;
   itemsColorOff?: Partial<Record<
-    'trackList' | 'speakerList' | 'repeat' | 'equalizer' | 'playList' | 'online' | 'reminder' | 'crossfade' | 'favoriteList',
+    'trackList' | 'speakerList' | 'repeat' | 'equalizer' | 'playList' | 'online' | 'reminder' | 'crossfade' | 'favoriteList' | 'clock' | 'volumePresets',
     RGB
   >>;
 
@@ -155,4 +160,6 @@ type MediaOptions = {
   >>;
 };
 ```
-      
+
+> Die Felder `mediaDevice`, `equalizerList`, `repeatList` und `globalTracklist` existieren zwar im Typ `PageMediaItem`, werden aber von der aktuellen `cardMedia`-Implementierung nicht ausgewertet.
+
