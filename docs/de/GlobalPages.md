@@ -202,7 +202,10 @@ const wohnzimmerPage: PageType = {
 
 Wenn eine globale Seite in `pages` (Hauptseiten) verwendet wird, wird die Navigation der globalen Seite berücksichtigt, um fehlende referenzierte Seiten automatisch hinzuzufügen. Danach werden die Navigationsparameter (`prev`, `next`, `home`, `parent`) der eingefügten Seiten **entfernt**, und die Seiten werden in die zirkuläre Navigation der Hauptseiten eingebunden.
 
-**Automatisches Hinzufügen von Seiten**: Wenn eine globale Seite `next` oder `prev` auf eine andere globale Seite verweist, die noch nicht in `pages` enthalten ist, wird diese automatisch hinzugefügt. Dies geschieht nur für `next`-Verweise - bei `prev` wird eine Warnung ausgegeben, da dies die Reihenfolge ändern würde.
+**Automatisches Hinzufügen von Seiten**: Wenn eine globale Seite über `next` **oder** `prev` auf eine andere globale Seite verweist, die noch nicht in `pages` enthalten ist, wird diese automatisch direkt **hinter** der aktuellen Seite (an Position `i+1`) eingefügt. Das gilt für **beide** Verweisrichtungen. Der Unterschied liegt nur in der Log-Meldung:
+
+- Bei `next`: Hinweis, dass die Seite hinzugefügt wurde (Empfehlung, sie aus `subPages` zu entfernen).
+- Bei `prev`: zusätzlich eine Warnung „This is not recommended! Prev navigation will randomly change the order of pages!", weil das Einfügen einer per `prev` verlinkten Seite *hinter* der aktuellen Seite die logische Reihenfolge durcheinanderbringt.
 
 ```typescript
 const config: ScriptConfig.Config = {
@@ -530,8 +533,8 @@ In diesem Beispiel werden zwei isolierte Kopien der `room_control`-Seite mit jew
 
 1. **Pages Navigation**: 
    - Die Navigation (`next`, `prev`) aus dem Global Script wird verwendet, um automatisch fehlende referenzierte Seiten zu `pages` hinzuzufügen
-   - Bei `next`-Verweisen wird die referenzierte Seite automatisch nach der aktuellen Seite eingefügt
-   - Bei `prev`-Verweisen erfolgt eine Warnung, da dies die Reihenfolge zufällig ändern würde
+   - Sowohl bei `next`- als auch bei `prev`-Verweisen wird die referenzierte Seite automatisch direkt nach der aktuellen Seite (Position `i+1`) eingefügt
+   - Bei `prev`-Verweisen erfolgt zusätzlich eine Warnung, da das Einfügen *hinter* der aktuellen Seite die Reihenfolge zufällig ändert — die Seite wird trotzdem hinzugefügt
    - Nach dem automatischen Hinzufügen werden die Navigationsparameter entfernt und die Seiten zirkulär verlinkt
 
 2. **SubPages Navigation**: Bei Seiten in `subPages` gilt:
@@ -539,6 +542,12 @@ In diesem Beispiel werden zwei isolierte Kopien der `room_control`-Seite mit jew
    - Mit mindestens einem Navigationsparameter: Alle Navigationsparameter aus Local Script werden verwendet
 
 3. **Beispiel für automatisches Hinzufügen**: Wenn Sie `{ globalLink: 'wohnzimmer' }` in `pages` haben und die globale Seite `wohnzimmer` hat `next: 'kueche'`, wird `kueche` automatisch zu `pages` hinzugefügt, falls noch nicht vorhanden.
+
+### Nicht referenzierte globale Seiten
+
+Globale Seiten, die Sie **nicht** direkt per `globalLink` in `pages` oder `subPages` einbinden (und die auch nicht über die Navigation automatisch nachgezogen werden), werden trotzdem als Seitendefinitionen in die `subPages` des Panels übernommen. Sie sind damit auf dem Panel definiert, aber nur dann sichtbar, wenn sie über die Navigation erreichbar sind — andernfalls bleiben sie inaktiv.
+
+**Konsequenz**: Das Global Script gilt adapterweit für alle Panels. Möchten Sie auf einem Panel eine bestimmte globale Seite tatsächlich nutzen, binden Sie sie explizit ein; rechnen Sie aber damit, dass alle übrigen globalen Seiten weiterhin als (inaktive) Definitionen mitgeführt werden.
 
 ### Dokumentation und Nachverfolgung
 
@@ -586,6 +595,16 @@ const globalPagesConfig: ScriptConfig.globalPagesConfig = {
 **Lösung**: 
 - Prüfen Sie, ob der `globalLink` dem `uniqueName` im Global Script entspricht
 - Stellen Sie sicher, dass das Global Script erfolgreich ausgeführt wurde
+
+**Hinweis**: Eine nicht gefundene Referenz wird aus `pages` bzw. `subPages` entfernt; die übrige Konfiguration wird weiter verarbeitet.
+
+### "Abort - double uniqueName X in config!"
+
+**Problem**: Zwei Seiten teilen sich denselben `uniqueName`. Das kann nach dem Einbinden globaler Seiten passieren, wenn eine lokal definierte Seite denselben Namen wie eine globale Seite verwendet.
+
+**Lösung**:
+- Vergeben Sie für jede Seite — lokal wie global — einen eindeutigen `uniqueName`
+- Beachten Sie, dass die gesamte Panel-Konfiguration **abgebrochen** wird, sobald ein doppelter `uniqueName` erkannt wird (kein Teil-Update)
 
 ### Seite wird nicht angezeigt
 
