@@ -16,10 +16,10 @@ The tab is divided into three areas. On the right is the [overview](#overview) o
 
 ## Overview
 
-The overview shows all pages created in the admin. You can filter by page type; available are: **All**, **Menu page** (`pageMenu`), **Alarm** (`cardAlarm`), **QR** (`cardQR`) and **Trash** (`cardTrash`). When a page is selected, the "Documentation" link jumps directly to the wiki for more info.
+The overview shows all pages created in the admin. You can filter by page type; available are: **All**, **Menu page** (`pageMenu`), **Alarm** (`cardAlarm`), **QR** (`cardQR`), **Power** (`cardPower`) and **Trash** (`cardTrash`). When a page is selected, the "Documentation" link jumps directly to the wiki for more info.
 
 > [!NOTE]
-> The page types **PagePower** and **PageChart** are **not** configured here, but via their own admin tabs [Page Power](en-PagePower) resp. [Page Chart](en-PageChart).
+> The page type **PageChart** is **not** configured here, but via its own admin tab [Page Chart](en-PageChart). (**PagePower** is now configured here in the PageConfig tab as type **Power** / `cardPower` – see [Page Power](en-PagePower).)
 
 <img alt='pageConfig' src='Pictures/pageConfig/ansicht_pages.png' width="40%" height="40%">
 

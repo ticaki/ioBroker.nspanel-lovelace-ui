@@ -13,7 +13,7 @@ The string given after `type` is the **actual card type** (`cardGrid`, `cardQR` 
 | [Page Config](en-PageConfig) | — (admin tab) | admin tab for configuring pages directly in the admin interface |
 | [Page Menu / Grid](en-cardGrid) | `cardGrid`, `cardGrid2`, `cardGrid3` | grid pages with 6 / 8 (9) / 4 tiles |
 | [Page QR](en-cardQR) | `cardQR` | shows a QR code (e.g. for WLAN credentials) |
-| [Page Power](en-PagePower) | `cardPower` | power/energy flow display (own admin tab) |
+| [Page Power](en-PagePower) | `cardPower` | power/energy flow display (in the PageConfig tab as type **Power**) |
 | [Page Chart](en-PageChart) | `cardChart`, `cardLChart` | bar resp. line chart (own admin tab) |
 | [Page Alarm](en-cardAlarm) | `cardAlarm` | alarm/security page with numpad |
 | [Page Media](en-PageMedia) | `cardMedia` | media control (music, volume, title) |

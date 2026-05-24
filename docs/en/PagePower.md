@@ -1,104 +1,130 @@
-# PagePower
+# PagePower (`cardPower`)
+
+The **PagePower** displays and offsets up to 6 consumers / producers. It depicts the power distribution in your smart home – icons, colour gradients, the speed of the flow direction and the flow direction itself can be configured. You can create several of these pages.
+
+The page is configured **entirely in the admin** via the **PageConfig** tab (page type **Power** / `cardPower`) – including its position in the navigation (**Navigation/Panel** area). An entry in the configuration script is **not required**: once the page *and* its navigation are set in the admin, it appears on the panel without any script reference.
+
+> [!NOTE]
+> An older, **separate admin tab "Page Power"** still exists (legacy configuration). It writes the same data (`pagePowerdata`) as the new PageConfig editor. **The PageConfig route is recommended**, because it also handles the navigation and works without a script.
 
 **Content**
-+ [Basic settings](#basic-settings)
-    + [Producer / consumer](#producer--consumer)
-    + [Home](#home)
-+ [Reference in the configuration script](#reference-in-the-configuration-script)
-
-The Page Power can display and offset up to 6 consumers / producers. It is meant to depict the power distribution in your smart home. Icons, colour gradients, the speed of the flow direction and the flow direction itself can be configured here. The options are explained using an example. You can create several of these pages. On which panel you use them is decided in the configuration script of the respective panel.
-
----
-## Basic settings
-
-<img alt='PagePower general' src='Pictures/pagePower/pagePowerallg.png'>
-
-Selecting the `PagePower` tab takes you to the settings. To create a new page, click the PLUS sign and the data fields for the page appear (see image above).
-1. First define the page name; it must not repeat anywhere in the panel. It is the ID for this page and is identical to the `uniqueName`. The name also appears in the grey bar, so you can easily distinguish multiple pages.
-2. Set the headline shown on the page.
-3. If you tick `alwaysOnDisplay`, the page stays permanently visible and does not automatically jump into the screensaver. To re-enable the screensaver you have to switch to another page.
-4. The `hide page` option lets you remove the page from the navigation when the `hide Page` option is active in the `System` service page.
++ [How it works](#how-it-works)
++ [Settings in the admin (PageConfig)](#settings-in-the-admin-pageconfig)
+    + [Producer / consumer (slots)](#producer--consumer-slots)
+    + [Home (centre)](#home-centre)
++ [Navigation / Panel](#navigation--panel)
++ [Optional reference in the script](#optional-reference-in-the-script)
 
 ---
-## Producer / consumer
 
-<img alt='pagePowerItem' src='Pictures/pagePower/pagePowerItem.png'>
+## How it works
 
-+ **Icon** → an icon can be selected via the select field; a smart search assists you and suggests variants.
-+ **State for power** → select the state that contains the power (watts).
+On the panel the page shows three slots on the left and three on the right (top / middle / bottom) plus the **Home** symbol in the centre (the virtual distribution box / meter) where all power values come together. Each occupied slot displays a consumer or producer with icon, value and an animated flow direction. Producers should flow towards the centre, consumers away from it.
 
-<img alt='pagePowerItemMore' src='Pictures/pagePower/pagePowerItemMore.png'>
-
-+ **Number of decimal places** to be displayed, independent of the number stored in the state.
-+ **Unit** — selects the smallest unit to display. The AutoUnit function raises the unit when the number becomes four digits, e.g. 999 W becomes 1 kW when increased. If a unit is defined in the state, it takes precedence and overrides the one set here in the admin.
-+ **maximum power** → enter the maximum value expected from the state. The max value means 100 % speed of the flow-direction animation. At 0 W the dot stops and gets proportionally faster as the power rises.
-+ Ticking the box reverses the **flow direction**. All producers should flow towards the centre and consumers away from it. The centre of the page represents the distribution box where all consumers and producers come together.
-+ **Icon colour** → the icon colour can be chosen with the colour picker. If the icon should change colour according to the power level, enable `use colour scale`.
-
-<img alt='' src='Pictures/pagePower/pagePowerItemUsecolor.png'>
-
-With the values `min power`, `max power`, `best power` the colour gradient from green to red is defined. There are several ways to set the gradient. The value of `best power` decides which value is green.
-+ **Example 1**
-    0 W should be green and 100 W red
-    + `min power` = 0
-    + `max power` = 100
-    + `best power` = 0
-
-+ **Example 2**
-    0 W should be red and 100 W green
-    + `min power` = 0
-    + `max power` = 100
-    + `best power` = 100
-
-+ **Example 3**
-    -50 W should be red, 0 W green and 100 W red again
-    + `min power` = -50
-    + `max power` = 100
-    + `best power` = 0
-
-With **Description/Title** you can show a text above the flow display, e.g. which consumer it is.
+> 🖼️ **Image missing:** Panel view of the power page with Home symbol and flow animation.
+> Path: `Pictures/pagePower/panel-power.png`
 
 ---
-### Home
 
-<img alt='pagePowerHome' src='Pictures/pagePower/pagePowerHome.png'>
+## Settings in the admin (PageConfig)
 
-Home is the central part of the page where all power values come together. It is the virtual distribution box with its meter. There are two fields you can use to display values.
+The general operation of the tab is described under [Page Config](en-PageConfig) and should be read first. In the page-type selector choose **Power**, enter a name that is unique within the whole panel (= `uniqueName`) in the "new page" field and create it with the plus button. The slot layout (three fields left, three right) with the **Home** area in between then appears in the centre.
 
-+ `House top` is the value above the house symbol. You define the state you want to display and can additionally choose decimal places and unit via `more settings`. Again, the unit from the state overrides the admin.
-+ `House bottom` has two functions. If `internal calculation` is not active, it behaves like the `House top` field. When enabled, you can use `selection of power feeds` to select the fields that supply your smart home (e.g. grid, battery, solar panel).
+General page fields (as for all PageConfig pages):
+
+| Field (admin label) | Key | Description |
+|---------------------|-----|-------------|
+| Unique ID | `uniqueName` | Unique name of the page, unique across the whole adapter. Must match the `uniqueName` in the script when used there. |
+| Headline | `headline` | Title of the page (top centre on the panel). |
+| Screensaver behaviour | `alwaysOn` | Default timeout / Never activate / Inherit from previous page (see [Navigation / Panel](#navigation--panel)). |
+| Hidden | `hidden` | Hides the page when the state `…cmd.hideCards` is `true`. |
+
+> 🖼️ **Image missing:** PageConfig editor of a power page (slot layout + Home).
+> Path: `Pictures/pagePower/config.png`
+
+### Producer / consumer (slots)
+
+Clicking a slot opens the **"edit power slot"** dialog:
+
+| Field (admin label) | Description |
+|---------------------|-------------|
+| **Display name** | Text above the flow display, e.g. which consumer/producer it is. |
+| **Icon** | Icon selection via the select field (with search suggestions). |
+| **State for power** | State that contains the power (watts). |
+| **Decimal places** | Number of decimals displayed, independent of the state. |
+| **Unit** | Smallest unit to display. **AutoUnit** raises it once the number becomes four digits (e.g. 999 W → 1 kW). A unit defined in the state takes precedence and overrides the admin selection. |
+| **Icon colour** | Fixed icon colour (colour picker). Disabled when "colour depends on value" is active. |
+| **Colour depends on value** | Enables the **colour scale** – the icon changes colour depending on the power. |
+| **Speed scale** (min/max power) | Value range of the flow animation. At the maximum value the dot runs at 100 % speed; at 0 it stops and gets proportionally faster as the power rises. |
+| **Reverse flow direction** | Reverses the animation direction (producers towards the centre, consumers away from it). |
+
+With the **colour scale** active (`colour depends on value`), three values define the gradient from green to red. The value of **best power for colour** decides which value is green:
+
++ **Example 1** — 0 W green, 100 W red
+    + `min power for colour` = 0
+    + `max power for colour` = 100
+    + `best power for colour` = 0
+
++ **Example 2** — 0 W red, 100 W green
+    + `min power for colour` = 0
+    + `max power for colour` = 100
+    + `best power for colour` = 100
+
++ **Example 3** — -50 W red, 0 W green, 100 W red again
+    + `min power for colour` = -50
+    + `max power for colour` = 100
+    + `best power for colour` = 0
+
+### Home (centre)
+
+Home is the central part of the page – the virtual distribution box with its meter. There are two value fields:
+
++ **House top** (`power_home_top`): The value above the house symbol. Define the state, optionally choose decimal places and unit. Here too a unit from the state overrides the admin selection.
++ **House bottom** (`power_home_bot`): Has two modes.
+    + Without **use internal sum (house bottom)** it behaves like *House top* (its own state).
+    + With the internal sum enabled it instead shows a sum **calculated internally** from the slot values. Via **slots that count negatively in the sum** you choose which of the six slots are included in that sum.
+
 ---
-## Reference in the configuration script
-In the configuration script the page is embedded as follows.
-As a main page under pages:
+
+## Navigation / Panel
+
+In the left **"Navigation/Panel"** window the position in the page hierarchy is set under the **"Navigation"** tab. First select the panel or "all", then before (`prev`) or after (`next`) which page the power page should sit.
+
+> [!NOTE]
+> Select only one of the fields **Prev** or **Next**. Via **Home** and **Parent** the house symbol resp. up arrow are shown and linked to the selected page.
+
+In the **"Pagedetails"** tab the screensaver behaviour can be set:
++ **Default timeout** → the screensaver activates after the configured time.
++ **never activate** → the page stays visible until you manually switch to the next one.
++ **inherit from previous page** → adopts the setting of the previous page.
+
+---
+
+## Optional reference in the script
+
+If the power page is configured in the admin **including navigation** (**Navigation/Panel** area), **no script entry is needed** – it appears on the panel through the admin configuration alone.
+
+A reference in the script is only useful when the panel navigation is built entirely via the configuration script (instead of the admin navigation area). Then a minimal reference with an identical `uniqueName` suffices; the page content still comes from the admin (`pagePowerdata`). The `PagePower` type inherits the optional navigation parameters from the [page base type](en-ScriptConfig#optional-parameters) (`prev`, `next`, `home`, `parent` …).
+
 ```typescript
-    const powerGrid: ScriptConfig.PagePower = {
-        uniqueName: 'pagename', // must match the name in the admin
-        type: 'cardPower'
-    };
+// Only needed when navigation is set via the script – as a main page under pages
+const powerGrid: ScriptConfig.PagePower = {
+    type: 'cardPower',
+    uniqueName: 'pagename', // must match the name in the admin
+};
 ```
 
-As a subpage under subPages:
 ```typescript
-    const energyDisplay: ScriptConfig.PagePower = {
-        prev: 'uniqueName of a page',
-        home: 'main',
-        uniqueName: 'pagename', // must match the name in the admin
-        type: 'cardPower'
-    };
-```
-Under pages resp. subPages enter the name written after `const`.
-```typescript
-        // page division / Seiteneinteilung
-        // main pages / Hauptseiten
-        pages: [
-            powerGrid,
-        ],
-        // subpages / Unterseiten
-        subPages: [
-            energyDisplay,
-        ],
+// … or as a subpage under subPages
+const energyDisplay: ScriptConfig.PagePower = {
+    type: 'cardPower',
+    uniqueName: 'pagename', // must match the name in the admin
+    prev: 'uniqueName of a page',
+    home: 'main',
+};
 ```
 
 > [!NOTE]
-> Configure everything in the admin first, then adjust the script and restart it.
+> Do not position the same `uniqueName` both in the admin **with** navigation and in the script. By default the script page takes precedence and the admin entry with the same name is skipped with a warning.
+
+For more on embedding pages in the script see [ScriptConfig](en-ScriptConfig). An overview of all page types is under [Pages](en-Pages).

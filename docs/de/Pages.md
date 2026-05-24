@@ -13,7 +13,7 @@ Der hinter `type` angegebene String ist der **echte Kartentyp** (`cardGrid`, `ca
 | [Page Config](PageConfig) | — (Admin-Tab) | Admin-Tab zur Konfiguration von Seiten direkt in der Admin-Oberfläche |
 | [Page Menue / Grid](cardGrid) | `cardGrid`, `cardGrid2`, `cardGrid3` | Raster-Seiten mit 6 / 8 (9) / 4 Kacheln |
 | [Page QR](cardQR) | `cardQR` | Zeigt einen QR-Code an (z. B. für WLAN-Zugangsdaten) |
-| [Page Power](PagePower) | `cardPower` | Leistungs-/Energieflussanzeige (eigener Admin-Tab) |
+| [Page Power](PagePower) | `cardPower` | Leistungs-/Energieflussanzeige (im PageConfig-Tab als Typ **Leistung**) |
 | [Page Chart](PageChart) | `cardChart`, `cardLChart` | Balken- bzw. Liniendiagramm (eigener Admin-Tab) |
 | [Page Alarm](cardAlarm) | `cardAlarm` | Alarm-/Sicherheitsseite mit Numpad |
 | [Page Media](PageMedia) | `cardMedia` | Mediensteuerung (Musik, Lautstärke, Titel) |
