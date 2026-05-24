@@ -985,26 +985,6 @@ class Panel extends import_library.BaseClass {
           if (msg.nlui_driver_version === -1) {
             return;
           }
-          this.adapter.setTimeout(async () => {
-            let result = void 0;
-            try {
-              result = await this.adapter.getVersionsJson();
-              if (!result) {
-                this.log.error("No version data received.");
-                return;
-              }
-              const version = this.adapter.config.useBetaTFT ? result[`berry-beta`].split("_")[0] : result.berry.split("_")[0];
-              if (parseInt(version) != this.info.nspanel.berryDriverVersion && this.info.nspanel.berryDriverVersion != -1) {
-                const url = `http://${this.info.tasmota.net.IPAddress}/cm?${this.adapter.config.useTasmotaAdmin ? `user=admin&password=${this.adapter.config.tasmotaAdminPassword}` : ``}&cmnd=Backlog UrlFetch ${this.adapter.config.berryUrl}/${version}/autoexec.be; Restart 1`;
-                this.log.info(
-                  `Automatic update of the berry driver version from ${this.info.nspanel.berryDriverVersion} to ${version} on tasmota with IP ${this.info.tasmota.net.IPAddress} and  ${this.info.tasmota.net.Hostname}.`
-                );
-                await this.adapter.fetch(url);
-              }
-            } catch {
-            }
-          }, 1);
-          return;
         }
       }
     } else if (topic.endsWith("/tele/LWT")) {

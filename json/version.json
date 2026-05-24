@@ -1,7 +1,7 @@
 {
     "tasmota": "15.0.1",
     "berry": "10",
-    "berry-beta": "10",
+    "berry-beta": "11",
     "tft": "5.1.1",
     "tft-us-l": "5.1.1",
     "tft-us-p": "5.1.3",

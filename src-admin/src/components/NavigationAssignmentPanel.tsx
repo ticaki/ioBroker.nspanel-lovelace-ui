@@ -1600,7 +1600,7 @@ class NavigationAssignmentPanel extends ConfigGeneric<
                                                       flexWrap: 'wrap',
                                                   }}
                                               >
-                                                  {(['next', 'prev', 'parent', 'home'] as const).map((field, idx) => {
+                                                  {(['prev', 'next', 'parent', 'home'] as const).map((field, idx) => {
                                                       const val = this.getNavValue(topic, field);
                                                       return (
                                                           <React.Fragment key={`${topic}-${field}`}>

@@ -1092,7 +1092,7 @@ export class Panel extends BaseClass {
                     if (msg.nlui_driver_version === -1) {
                         return;
                     }
-                    this.adapter.setTimeout(async () => {
+                    /*this.adapter.setTimeout(async () => {
                         let result: Record<string, string> | undefined = undefined;
                         try {
                             result = await this.adapter.getVersionsJson();
@@ -1120,7 +1120,7 @@ export class Panel extends BaseClass {
                             // nothing
                         }
                     }, 1);
-                    return;
+                    return;*/
                 }
             }
         } else if (topic.endsWith('/tele/LWT')) {
