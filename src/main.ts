@@ -39,7 +39,7 @@ import type {
     AdminPageItemConfig,
 } from './lib/types/adminShareConfig';
 import { isIconColorScaleElement, isTasmotaStatusNet } from './lib/types/function-and-const';
-import type { oldQRType } from './lib/types/types';
+import type { oldQRType, oldChartType } from './lib/types/types';
 import iCal from 'node-ical';
 import type { NSPanel } from './lib/types/NSPanel';
 
@@ -174,6 +174,33 @@ class NspanelLovelaceUi extends utils.Adapter {
                     const errorMessage = e instanceof Error ? e.message : String(e);
                     this.log.error(`Error while reading io-package.json for default URLs: ${errorMessage}`);
                 }
+            }
+
+            if (native.pageChartdata) {
+                native.pageChartdata.forEach((page: oldChartType) => {
+                    const temp: PageConfig = {
+                        card: 'cardChart',
+                        uniqueName: page.pageName,
+                        headline: page.headline,
+                        hidden: page.hiddenByTrigger || false,
+                        chartColor: page.chart_color || '',
+                        selChartType: page.selChartType || 'cardChart',
+                        selInstanceDataSource: page.selInstanceDataSource || 0,
+                        selInstance: page.selInstance || '',
+                        setStateForTicks: page.setStateForTicks || '',
+                        setStateForValues: page.setStateForValues || '',
+                        setStateForDB: page.setStateForDB || '',
+                        txtLabelYAchse: page.txtlabelYAchse || '',
+                        rangeHours: page.rangeHours || 24,
+                        maxXAxisTicks: page.maxXAxisTicks || 2,
+                        factorCardChart: page.factorCardChart || 1,
+                        maxXAxisLabels: page.maxXAxisLabels || 4,
+                    };
+
+                    native.pageConfig.push(temp);
+                });
+                //delete native.pageChartdata;
+                change = true;
             }
 
             if (change) {
