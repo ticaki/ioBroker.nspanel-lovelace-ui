@@ -2,7 +2,7 @@
 
 The **`cardAlarm`** displays an alarm/security panel with a numeric keypad (numpad), a status icon and up to four labelled buttons. It can arm/disarm an alarm system or – as the **Unlock** variant – present a PIN-protected unlock dialog.
 
-The page is configured **entirely in the admin** via the **PageConfig** tab. In the configuration script it is only referenced – like the other admin pages – by `uniqueName` and `type`; no separate content in the script is required (the page's `items` array is not evaluated for `cardAlarm`).
+The page is configured **entirely in the admin** via the **PageConfig** tab – including its position in the navigation (the **Navigation/Panel** pane). An entry in the configuration script is **not required** for this: once the page *and* its navigation are set in the admin, it appears on the panel without any script reference. (An `items` array set in the script is not evaluated for `cardAlarm` anyway.)
 
 > The **Unlock** variant shares its implementation with the alarm. The dedicated [Page Unlock](en-pageUnlock) page is still under test – only the alarm part is fully described here.
 
@@ -15,7 +15,7 @@ The page is configured **entirely in the admin** via the **PageConfig** tab. In 
 + [Generated states](#generated-states)
 + [PIN behaviour](#pin-behaviour)
 + [Navigation / Panel](#navigation--panel)
-+ [Reference in the configuration script](#reference-in-the-configuration-script)
++ [Optional reference in the script](#optional-reference-in-the-script)
 
 ---
 
@@ -132,24 +132,17 @@ The **"Page details"** tab controls whether the page is hidden when the state
 
 ---
 
-## Reference in the configuration script
+## Optional reference in the script
 
-The alarm page is configured in the admin; in the script a minimal reference with an identical `uniqueName` is enough. The `PageAlarm` type inherits the optional navigation parameters from the [page base type](en-ScriptConfig#optional-parameters) (`prev`, `next`, `home`, `parent`, `hiddenByTrigger`, `alwaysOnDisplay` …); `useColor` does not exist here.
+If the alarm page is configured in the admin **including its navigation** (the **Navigation/Panel** pane), **no script entry is needed** – it appears on the panel from the admin configuration alone.
+
+A reference in the script only makes sense if the panel navigation is built entirely via the configuration script (instead of the admin's navigation pane). In that case a minimal reference with an identical `uniqueName` is enough; the page content still comes from the admin (the `items` array is not evaluated for `cardAlarm`). The `PageAlarm` type inherits the optional navigation parameters from the [page base type](en-ScriptConfig#optional-parameters) (`prev`, `next`, `home`, `parent`, `hiddenByTrigger`, `alwaysOnDisplay` …); `useColor` does not exist here.
 
 ```typescript
-// As a main page under pages
-const alarmPage: ScriptConfig.PageAlarm = {
-    type: 'cardAlarm',
-    uniqueName: 'alarm', // must match the name in the admin
-    heading: 'Alarm',
-    items: [],
-};
-
-// As a subpage under subPages
+// Only needed when navigation is set via the script – as a subpage under subPages
 const alarmSub: ScriptConfig.PageAlarm = {
     type: 'cardAlarm',
-    uniqueName: 'alarm',
-    heading: 'Alarm',
+    uniqueName: 'alarm', // must match the name in the admin
     prev: 'main',
     home: 'main',
     items: [],
@@ -157,6 +150,6 @@ const alarmSub: ScriptConfig.PageAlarm = {
 ```
 
 > [!NOTE]
-> Configure the page in the admin first, then adjust the script and restart it. Without a matching admin entry the page stays empty.
+> Do not position the same `uniqueName` both in the admin **with** navigation and in the script. By default the script page takes precedence and the admin entry of the same name is skipped with a warning.
 
 More on embedding pages in the script under [ScriptConfig](en-ScriptConfig). Overview of all page types under [Pages](en-Pages).

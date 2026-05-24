@@ -2,7 +2,7 @@
 
 Die **`cardQR`** erzeugt auf dem Panel einen QR-Code, der z. B. mit dem Handy gescannt werden kann. Damit lassen sich WLAN-Zugangsdaten (Gäste-WLAN), eine Telefonnummer, eine URL oder ein beliebiger Freitext übergeben.
 
-Die Seite wird **vollständig im Admin** über den Tab **PageConfig** konfiguriert; im Konfigurationsskript wird sie nur per `uniqueName` und `type` referenziert.
+Die Seite wird **vollständig im Admin** über den Tab **PageConfig** konfiguriert – einschließlich ihrer Position in der Navigation (Bereich **Navigation/Panel**). Ein Eintrag im Konfigurationsskript ist dafür **nicht erforderlich**.
 
 **Inhalt**
 + [Einstellungen im Admin](#einstellungen-im-admin)
@@ -11,7 +11,7 @@ Die Seite wird **vollständig im Admin** über den Tab **PageConfig** konfigurie
     + [URL](#url)
     + [Telefon (TEL)](#telefon-tel)
 + [Navigation / Panel](#navigation--panel)
-+ [Verweis im Konfig-Skript](#verweis-im-konfig-skript)
++ [Optionaler Verweis im Skript](#optionaler-verweis-im-skript)
 
 ---
 
@@ -86,27 +86,23 @@ Im Reiter **„Pagedetails"** lässt sich festlegen, ob die Seite beim Setzen de
 
 ---
 
-## Verweis im Konfig-Skript
+## Optionaler Verweis im Skript
 
-Die QR-Seite wird im Admin konfiguriert; im Skript genügt eine minimale Referenz mit identischem `uniqueName`. Beim Typ `PageQR` sind `heading` und `items` optional.
+Ist die QR-Seite im Admin **inklusive Navigation** (Bereich **Navigation/Panel**) konfiguriert, **ist kein Skript-Eintrag nötig** – sie erscheint allein durch die Admin-Konfiguration auf dem Panel.
+
+Ein Verweis im Skript ist nur dann sinnvoll, wenn die Panel-Navigation komplett über das Konfigurationsskript aufgebaut wird (statt über den Navigationsbereich des Admins). Dann genügt eine minimale Referenz mit identischem `uniqueName`; der Seiteninhalt kommt weiterhin aus dem Admin.
 
 ```typescript
-// Als Hauptseite unter pages
-const wlanQR: ScriptConfig.PageQR = {
-    type: 'cardQR',
-    uniqueName: 'gastwlan', // muss mit dem Namen im Admin übereinstimmen
-};
-
-// Als Unterseite unter subPages
+// Nur nötig, wenn die Navigation per Skript gesetzt wird – als Unterseite unter subPages
 const wlanQRSub: ScriptConfig.PageQR = {
     type: 'cardQR',
-    uniqueName: 'gastwlan',
+    uniqueName: 'gastwlan', // muss mit dem Namen im Admin übereinstimmen
     prev: 'main',
     home: 'main',
 };
 ```
 
 > [!NOTE]
-> Zuerst die Konfiguration im Admin durchführen, danach das Skript anpassen und neu starten.
+> Dieselbe `uniqueName` nicht gleichzeitig im Admin **mit** Navigation und im Skript positionieren. Standardmäßig hat die Skript-Seite Vorrang und der gleichnamige Admin-Eintrag wird mit einer Warnung übersprungen.
 
 Übersicht aller Seitentypen unter [Pages](Pages).

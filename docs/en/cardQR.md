@@ -2,7 +2,7 @@
 
 The **`cardQR`** generates a QR code on the panel that can be scanned, e.g. with a phone. It can pass on WLAN credentials (guest WLAN), a phone number, a URL or any free text.
 
-The page is configured **entirely in the admin** via the **PageConfig** tab; in the configuration script it is only referenced by `uniqueName` and `type`.
+The page is configured **entirely in the admin** via the **PageConfig** tab – including its position in the navigation (the **Navigation/Panel** pane). An entry in the configuration script is **not required** for this.
 
 **Content**
 + [Settings in the admin](#settings-in-the-admin)
@@ -11,7 +11,7 @@ The page is configured **entirely in the admin** via the **PageConfig** tab; in 
     + [URL](#url)
     + [Phone (TEL)](#phone-tel)
 + [Navigation / Panel](#navigation--panel)
-+ [Reference in the configuration script](#reference-in-the-configuration-script)
++ [Optional reference in the script](#optional-reference-in-the-script)
 
 ---
 
@@ -86,27 +86,23 @@ The **"Page details"** tab controls whether the page is hidden when the state
 
 ---
 
-## Reference in the configuration script
+## Optional reference in the script
 
-The QR page is configured in the admin; in the script a minimal reference with an identical `uniqueName` is enough. For the `PageQR` type `heading` and `items` are optional.
+If the QR page is configured in the admin **including its navigation** (the **Navigation/Panel** pane), **no script entry is needed** – it appears on the panel from the admin configuration alone.
+
+A reference in the script only makes sense if the panel navigation is built entirely via the configuration script (instead of the admin's navigation pane). In that case a minimal reference with an identical `uniqueName` is enough; the page content still comes from the admin.
 
 ```typescript
-// As a main page under pages
-const wlanQR: ScriptConfig.PageQR = {
-    type: 'cardQR',
-    uniqueName: 'guestwifi', // must match the name in the admin
-};
-
-// As a subpage under subPages
+// Only needed when navigation is set via the script – as a subpage under subPages
 const wlanQRSub: ScriptConfig.PageQR = {
     type: 'cardQR',
-    uniqueName: 'guestwifi',
+    uniqueName: 'guestwifi', // must match the name in the admin
     prev: 'main',
     home: 'main',
 };
 ```
 
 > [!NOTE]
-> Configure the page in the admin first, then adjust the script and restart it.
+> Do not position the same `uniqueName` both in the admin **with** navigation and in the script. By default the script page takes precedence and the admin entry of the same name is skipped with a warning.
 
 Overview of all page types under [Pages](en-Pages).

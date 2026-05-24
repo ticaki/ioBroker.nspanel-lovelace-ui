@@ -2,7 +2,7 @@
 
 Die **`cardAlarm`** stellt auf dem Panel ein Alarm-/Sicherheitsfeld mit Zifferntastatur (Numpad), Status-Symbol und bis zu vier beschrifteten Schaltflächen dar. Damit lässt sich eine Alarmanlage scharf-/unscharf schalten oder – als Variante **Entsperren** – ein PIN-geschützter Entsperr-Dialog abbilden.
 
-Die Seite wird **vollständig im Admin** über den Tab **PageConfig** konfiguriert. Im Konfigurationsskript wird sie – wie die übrigen Admin-Seiten – nur per `uniqueName` und `type` referenziert; ein eigener Inhalt im Skript ist nicht nötig (das `items`-Array der Seite wird beim `cardAlarm` nicht ausgewertet).
+Die Seite wird **vollständig im Admin** über den Tab **PageConfig** konfiguriert – einschließlich ihrer Position in der Navigation (Bereich **Navigation/Panel**). Ein Eintrag im Konfigurationsskript ist dafür **nicht erforderlich**: Sind Seite *und* Navigation im Admin gesetzt, erscheint sie ohne jeden Skript-Bezug auf dem Panel. (Ein im Skript gesetztes `items`-Array wird beim `cardAlarm` ohnehin nicht ausgewertet.)
 
 > Die Variante **Entsperren** teilt sich die Implementierung mit dem Alarm. Die eigenständige Seite [Page Unlock](pageUnlock) ist noch in Erprobung – hier wird nur der Alarm-Teil vollständig beschrieben.
 
@@ -15,7 +15,7 @@ Die Seite wird **vollständig im Admin** über den Tab **PageConfig** konfigurie
 + [Erzeugte Datenpunkte](#erzeugte-datenpunkte)
 + [PIN-Verhalten](#pin-verhalten)
 + [Navigation / Panel](#navigation--panel)
-+ [Verweis im Konfig-Skript](#verweis-im-konfig-skript)
++ [Optionaler Verweis im Skript](#optionaler-verweis-im-skript)
 
 ---
 
@@ -132,24 +132,17 @@ Im Reiter **„Pagedetails"** lässt sich festlegen, ob die Seite beim Setzen de
 
 ---
 
-## Verweis im Konfig-Skript
+## Optionaler Verweis im Skript
 
-Die Alarm-Seite wird im Admin konfiguriert; im Skript genügt eine minimale Referenz mit identischem `uniqueName`. Der Typ `PageAlarm` erbt die optionalen Navigationsparameter aus dem [Seiten-Basistyp](ScriptConfig#optionale-parameter) (`prev`, `next`, `home`, `parent`, `hiddenByTrigger`, `alwaysOnDisplay` …); `useColor` gibt es hier nicht.
+Ist die Alarm-Seite im Admin **inklusive Navigation** (Bereich **Navigation/Panel**) konfiguriert, **ist kein Skript-Eintrag nötig** – sie erscheint allein durch die Admin-Konfiguration auf dem Panel.
+
+Ein Verweis im Skript ist nur dann sinnvoll, wenn die Panel-Navigation komplett über das Konfigurationsskript aufgebaut wird (statt über den Navigationsbereich des Admins). Dann genügt eine minimale Referenz mit identischem `uniqueName`; der Seiteninhalt kommt weiterhin aus dem Admin (das `items`-Array wird beim `cardAlarm` nicht ausgewertet). Der Typ `PageAlarm` erbt die optionalen Navigationsparameter aus dem [Seiten-Basistyp](ScriptConfig#optionale-parameter) (`prev`, `next`, `home`, `parent`, `hiddenByTrigger`, `alwaysOnDisplay` …); `useColor` gibt es hier nicht.
 
 ```typescript
-// Als Hauptseite unter pages
-const alarmPage: ScriptConfig.PageAlarm = {
-    type: 'cardAlarm',
-    uniqueName: 'alarm', // muss mit dem Namen im Admin übereinstimmen
-    heading: 'Alarm',
-    items: [],
-};
-
-// Als Unterseite unter subPages
+// Nur nötig, wenn die Navigation per Skript gesetzt wird – als Unterseite unter subPages
 const alarmSub: ScriptConfig.PageAlarm = {
     type: 'cardAlarm',
-    uniqueName: 'alarm',
-    heading: 'Alarm',
+    uniqueName: 'alarm', // muss mit dem Namen im Admin übereinstimmen
     prev: 'main',
     home: 'main',
     items: [],
@@ -157,6 +150,6 @@ const alarmSub: ScriptConfig.PageAlarm = {
 ```
 
 > [!NOTE]
-> Zuerst die Konfiguration im Admin durchführen, danach das Skript anpassen und neu starten. Ohne passenden Admin-Eintrag bleibt die Seite leer.
+> Dieselbe `uniqueName` nicht gleichzeitig im Admin **mit** Navigation und im Skript positionieren. Standardmäßig hat die Skript-Seite Vorrang und der gleichnamige Admin-Eintrag wird mit einer Warnung übersprungen.
 
 Mehr zum Einbinden von Seiten im Skript unter [ScriptConfig](ScriptConfig). Übersicht aller Seitentypen unter [Pages](Pages).
