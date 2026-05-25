@@ -531,6 +531,7 @@ notifyScreensaverEntity: [
 - **Enabled**: Datenpunkt, der auf `true` oder `false` geprüft wird. Es können auch mehrere Datenpunkte als Array [string,string,...] angegeben werden. 
 - **VisibleCondition**: Ermöglicht direkte Bedingungen, ohne extra Alias erstellen zu müssen.  
 - **HeadlineIcon**: Fügt ein Icon vor dem Headline-Text ein und kann als Datenpunkt übergeben werden.
+- **Priority**: Kleinere Zahl = höhere Priorität (eine höher priorisierte Notification überschreibt niedriger priorisierte).
 
 ---
 
@@ -578,6 +579,8 @@ So sieht es aus, wenn die Zahl **10** ist:
 | `ScreensaverEntityValue` | string | Zusätzlicher Wert (für mrIcon) | `'alias.0.Helligkeit'` |
 | `ScreensaverEntityValueUnit` | string | Einheit für zusätzlichen Wert | `'%'` |
 | `ScreensaverEntityValueDecimalPlace` | number | Nachkommastellen für zusätzlichen Wert | `0` |
+
+> Die `ScreensaverEntityValue*`-Parameter existieren nur bei den MR-Icons (`mrIcon1/2ScreensaverEntity`), nicht bei normalen Script-Elementen.
 
 ### Formatierungs-Parameter
 
@@ -683,13 +686,15 @@ Die Farbkonstanten werden am Ende des Beispielskripts definiert und sind in alle
 
 ## colorScale - Erweiterte Icon-Skalierung
 
-Das `colorScale` ermöglicht eine erweiterte Konfiguration der Icon-Farbgebung mit verschiedenen Modi und Optionen:
+Die Farbskala ermöglicht eine erweiterte Konfiguration der Icon-Farbgebung mit verschiedenen Modi und Optionen.
+
+> **Wichtig:** Bei Screensaver-Elementen wird dieses Skala-Objekt im Feld **`ScreensaverEntityIconColor`** übergeben (ein eigenständiges Feld `colorScale` existiert nur bei PageItems, nicht im Screensaver). Die folgenden Beispiele zeigen daher direkt `ScreensaverEntityIconColor: { … }`.
 
 #### Verfügbare Modi:
 
 **1. Standard-Modus (ohne mode-Parameter)**
 ```typescript
-colorScale: {
+ScreensaverEntityIconColor: {
     val_min: 0,
     val_max: 100,
     val_best: 50    // Optional: Optimalwert für spezielle Hervorhebung
@@ -700,7 +705,7 @@ colorScale: {
 
 **2. TriGrad-Modus (Dreifarbiger Farbverlauf)**
 ```typescript
-colorScale: {
+ScreensaverEntityIconColor: {
     val_min: 0,
     val_max: 100,
     mode: 'triGrad'
@@ -715,7 +720,7 @@ colorScale: {
 
 **Besonderheit mit val_best:**
 ```typescript
-colorScale: {
+ScreensaverEntityIconColor: {
     val_min: 0,
     val_max: 100,
     val_best: 50,
@@ -730,7 +735,7 @@ colorScale: {
 
 **3. TriGradAnchor-Modus (Dreifarbiger Farbverlauf mit Ankerpunkt)**
 ```typescript
-colorScale: {
+ScreensaverEntityIconColor: {
     val_min: 0,
     val_max: 100,
     val_best: 50,
@@ -744,9 +749,21 @@ colorScale: {
   - Zu den Extremwerten hin: Über Gelb zu Rot (suboptimal bis kritisch)
   - Symmetrischer Verlauf um den Ankerpunkt
 
-**4. QuadriGradAnchor-Modus (Vierfarbiger Farbverlauf mit Ankerpunkt)**
+**4. QuadriGrad-Modus (Vierfarbiger Farbverlauf)**
 ```typescript
-colorScale: {
+ScreensaverEntityIconColor: {
+    val_min: 0,
+    val_max: 100,
+    mode: 'quadriGrad'
+}
+```
+- **Farbverlauf**: Vierstufiger Übergang (Rot → Gelb → Grün → Blau), ignoriert eigene Farben
+- **Anwendung**: Wertebereiche mit vier Abstufungen, ohne festen Optimalpunkt
+- **Hinweis**: Ohne `val_best` linear über die vier Farben verteilt
+
+**5. QuadriGradAnchor-Modus (Vierfarbiger Farbverlauf mit Ankerpunkt)**
+```typescript
+ScreensaverEntityIconColor: {
     val_min: -10,
     val_max: 40,
     val_best: 22,
@@ -755,16 +772,16 @@ colorScale: {
 ```
 - **Farbverlauf**: Vierstufiger Übergang für noch präzisere Darstellung
 - **Anwendung**: Besonders geeignet für Temperaturanzeigen oder komplexe Messwerte
-- **Wichtig**: Bei quadriGrad-Modi ist **val_best der Ankerpunkt** (Optimum)
+- **Wichtig**: Bei `quadriGradAnchor` ist **val_best der Ankerpunkt** (Optimum); ohne `val_best` verhält es sich wie `quadriGrad`
 - **Verhalten**:
   - Bei val_best (22°C): Grün (optimal)
   - Leichte Abweichung: Hellgrün/Gelb (akzeptabel)
   - Stärkere Abweichung: Orange (warnung)
   - Extreme Werte: Rot (kritisch kalt/heiß)
 
-**5. Mixed-Modus**
+**6. Mixed-Modus**
 ```typescript
-colorScale: {
+ScreensaverEntityIconColor: {
     val_min: 0,
     val_max: 100,
     mode: 'mixed'
@@ -773,9 +790,9 @@ colorScale: {
 - Kombiniert verschiedene Farbalgoritmen
 - Erweiterte Farbmischung für komplexe Darstellungen
 
-**6. Hue-Modus**
+**7. Hue-Modus**
 ```typescript
-colorScale: {
+ScreensaverEntityIconColor: {
     val_min: 0,
     val_max: 360,
     mode: 'hue'
@@ -784,9 +801,9 @@ colorScale: {
 - Farbton-basierte Skalierung über den Farbkreis
 - Ideal für Farbwert-Anzeigen (Hue-Lampen)
 
-**7. CIE-Modus**
+**8. CIE-Modus**
 ```typescript
-colorScale: {
+ScreensaverEntityIconColor: {
     val_min: 0,
     val_max: 1,
     mode: 'cie'
@@ -798,23 +815,24 @@ colorScale: {
 #### Logarithmische Skalierung:
 
 ```typescript
-colorScale: {
+ScreensaverEntityIconColor: {
     val_min: 1,
     val_max: 1000,
-    log10: 'max'    // 'min', 'max', oder 'center'
+    log10: 'max'    // nur 'min' oder 'max'
 }
 ```
 
 **Optionen für log10:**
 - `'min'`: Logarithmische Skalierung zum Minimum hin
-- `'max'`: Logarithmische Skalierung zum Maximum hin  
-- `'center'`: Logarithmische Skalierung zur Mitte hin
+- `'max'`: Logarithmische Skalierung zum Maximum hin
+
+> Es gibt **nur** die Werte `'min'` und `'max'`. Andere Werte (z. B. `'center'`) werden vom Adapter verworfen.
 
 #### Beispiele für verschiedene Anwendungen:
 
 **Temperatur-Anzeige:**
 ```typescript
-colorScale: {
+ScreensaverEntityIconColor: {
     val_min: -10,
     val_max: 35,
     val_best: 22,
@@ -824,7 +842,7 @@ colorScale: {
 
 **Wind-Geschwindigkeit:**
 ```typescript
-colorScale: {
+ScreensaverEntityIconColor: {
     val_min: 0,
     val_max: 120,
     mode: 'triGrad',
@@ -834,7 +852,7 @@ colorScale: {
 
 **Batterie-Level:**
 ```typescript
-colorScale: {
+ScreensaverEntityIconColor: {
     val_min: 10,
     val_max: 100,
     val_best: 80,
@@ -846,18 +864,17 @@ colorScale: {
 
 **Luftfeuchtigkeit mit Optimalbereich (40-60%):**
 ```typescript
-colorScale: {
+ScreensaverEntityIconColor: {
     val_min: 0,
     val_max: 100,
     val_best: 50,        // Optimum bei 50%
-    mode: 'quadriGradAnchor',
-    log10: 'center'      // Betonung des mittleren Bereichs
+    mode: 'quadriGradAnchor'
 }
 ```
 
 **Stromverbrauch mit logarithmischer Skalierung:**
 ```typescript
-colorScale: {
+ScreensaverEntityIconColor: {
     val_min: 1,
     val_max: 5000,
     mode: 'triGrad',
@@ -867,7 +884,7 @@ colorScale: {
 
 **Komplexer Temperaturbereich mit präziser Gradation:**
 ```typescript
-colorScale: {
+ScreensaverEntityIconColor: {
     val_min: -20,
     val_max: 45,
     val_best: 21,        // Ideale Raumtemperatur
@@ -878,7 +895,7 @@ colorScale: {
 
 **Internet-Geschwindigkeit mit Hue-Farbverlauf:**
 ```typescript
-colorScale: {
+ScreensaverEntityIconColor: {
     val_min: 0,
     val_max: 100,        // 100 Mbit/s
     mode: 'hue',         // Farbkreis-Verlauf von Rot bis Grün
@@ -1049,6 +1066,8 @@ const config: ScriptConfig.Config = {
     }
 }
 ```
+
+> `weatherAddDefaultItems` unterstützt zusätzlich `forecastDay4`, `forecastDay5` und `forecastDay6` (sofern der Adapter diese Tage liefert).
 
 ## Zusätzliche Text-Templates
 

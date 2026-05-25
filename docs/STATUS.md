@@ -2,7 +2,7 @@
 
 Legende: ✅ Fertig | 🔄 In Arbeit | ⚠️ Zu prüfen | ❌ Stub/leer | 🕐 Warten | ⏳ folgt mit DE-Phase
 
-> **Hinweis EN-Dateien:** EN-Versionen entstehen jeweils zusammen mit der DE-Phase. Aktuell existieren 13 EN-Dateien von 39 DE-Dateien — das ist plangemäß und kein Fehler. Die EN-Sidebar zeigt fehlende Seiten als „in progress".
+> **Hinweis EN-Dateien:** EN-Versionen entstehen jeweils zusammen mit der DE-Phase. Aktuell existieren 14 EN-Dateien von 39 DE-Dateien — das ist plangemäß und kein Fehler. Die EN-Sidebar zeigt fehlende Seiten als „in progress".
 
 ## Admin-UI
 
@@ -25,7 +25,7 @@ Legende: ✅ Fertig | 🔄 In Arbeit | ⚠️ Zu prüfen | ❌ Stub/leer | 🕐 
 |-----------|-------|-----------|-----------|-------|---------|
 | ScriptConfig.md | ~30 KB | ✅ Fertig (2.1+2.2) | ✅ Fertig (2.3) | 2.1–2.3 | Hauptdoku vollständig gegen `config-manager.d.ts`, `ConfigButtonFunction` und Adapter-Code verifiziert. **2.1:** Seiten-Konfiguration + optionale Parameter. **2.2:** PageItems (alle Felder, colorScale-Modi, Custom/Native-Items) + Hardwarebutton; fragmentierte Doku konsolidiert, ABLAGE aufgelöst. **2.3:** EN-Version mit identischer Heading-Struktur, `en-`-Links |
 | GlobalPages.md | ~25 KB | ✅ Fertig (2.4) | ✅ Fertig (2.4) | 2.4 | Gegen `config-manager.d.ts` (`globalPagesConfig`, `PageTypeGlobal`, `PageLink`) + `config-manager.ts` Merge-Logik verifiziert. Korrekturen: `prev`-Auto-Hinzufügen (nicht nur `next`), doppelter `uniqueName`-Abbruch, nicht referenzierte globale Seiten landen trotzdem in subPages. `version` wird vom Skript automatisch injiziert. |
-| screensaver.md | 56 KB | ⚠️ prüfen | ⏳ folgt mit DE | 4 | Groß → 2 Sessions |
+| screensaver.md | 56 KB | ✅ Fertig (4) | ✅ Fertig (4) | 4 | Gegen `config-manager.d.ts` (`ScreenSaverElement`/`ScreenSaverMRElement`/`ScreenSaverNotifyElement`), `Color.ts` (Skala-Modi), `text.ts` (54 Templates) und `main.ts`/`panel.ts` (Notifications) verifiziert. Korrekturen: `colorScale:`→`ScreensaverEntityIconColor` (Screensaver-Feld), `log10` nur `'min'`/`'max'` (kein `'center'`), Modus `quadriGrad` ergänzt, `ScreensaverEntityValue*` als mrIcon-only markiert, `forecastDay4–6` ergänzt, Priority-Hinweis. EN neu erstellt (identische Struktur). **Befund:** `screensaverNotify`-Handler (`main.ts:2166-2167`) prüft `panel`, sucht aber per `topic` → Code-Inkonsistenz. |
 
 ## Standard Pages
 
@@ -98,4 +98,4 @@ Diese Seiten sind im Sidebar oder einer anderen Seite verlinkt, aber noch nicht 
 
 ---
 
-*Zuletzt aktualisiert: 2026-05-23 (Phase 3 abgeschlossen: alle Standard-Pages DE gegen Code verifiziert/ergänzt + EN-Versionen. cardAlarm neu, cardGrid neu strukturiert, PageQR_old gelöscht, Pages-Typtabelle korrigiert, PagePopup/cardTrash als Nicht-PageTypes gekennzeichnet.)*
+*Zuletzt aktualisiert: 2026-05-25 (Phase 4 abgeschlossen: screensaver.md DE gegen Code verifiziert/korrigiert + EN-Version neu erstellt. Korrekturen: `ScreensaverEntityIconColor` statt `colorScale`, `log10` ohne `'center'`, Modus `quadriGrad` ergänzt, mrIcon-only-Hinweis, forecastDay4–6. Code-Befund: `screensaverNotify` panel/topic-Inkonsistenz.)*
