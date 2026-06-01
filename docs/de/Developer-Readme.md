@@ -1,4 +1,10 @@
+# Developer-Readme
+
+> Interne Entwickler-Notizen zum Stand der Konvertierung von Skript-Konfigurationen in die Admin-/Adapter-Konfiguration sowie Erläuterungen zu Icon-, Value- und PageItem-Typen.
+
 ## Konvertierung der Skriptkonfiguration in Adapterkonfig
+
+Legende: `[x]` = im Admin konfigurierbar, `[ ]` = noch nicht im Admin (nur per Skript).
 
 ### Cards
 - [x] cardChart
@@ -11,7 +17,7 @@
 - [ ] cardMedia
 - [x] cardUnlock
 - [x] cardQR
-- [ ] cardAlarm
+- [x] cardAlarm
 - [x] cardPower
 
 ### PageItems
@@ -40,15 +46,15 @@
 - [x] buttonSensor
 - [x] button
 - [ ] value.time
-- [ ] level.timer
+- [x] level.timer
 - [ ] value.alarmtime
 - [x] level.mode.fan
 - [x] lock
 - [x] slider
 - [ ] switch.mode.wlan
-- [ ] media
+- [x] media
 - [x] timeTable
-- [ ] airCondition
+- [x] airCondition
 
 ### PageItems Navigation
 - [x] light
@@ -76,15 +82,15 @@
 - [x] buttonSensor
 - [x] button
 - [ ] value.time
-- [ ] level.timer
+- [x] level.timer
 - [ ] value.alarmtime
 - [x] level.mode.fan
 - [x] lock
 - [x] slider
 - [ ] switch.mode.wlan
-- [ ] media
+- [x] media
 - [x] timeTable
-- [ ] airCondition
+- [x] airCondition
 
 
 

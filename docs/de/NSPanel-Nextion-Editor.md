@@ -35,7 +35,7 @@ Nachdem nun der ESP wieder erreichbar ist, prüft man in den Einstellungen unter
 
 <img src="Pictures/emulator/tasmotaConfig.png" alt= "esp32" width="25%" heigth= "25%">   
 
-Anschließend könnt Ihr Tasmota und MQTT über den Admin des Adapter einstellen. Da zu volgt ihr der Anleitung bis zu dem Punkt, wo ihr den Button für NSPanel Initzialisierung drückt. [Link zur Anleitung](Adapter-Installation.md#grundeinstellung)  
+Anschließend könnt Ihr Tasmota und MQTT über den Admin des Adapter einstellen. Da zu volgt ihr der Anleitung bis zu dem Punkt, wo ihr den Button für NSPanel Initzialisierung drückt. [Link zur Anleitung](Adapter-Installation#grundeinstellung-mqtt)  
 
 ## Berry-Driver für Emulation  
 **ACHTUNG:** Nicht den Berry Treiber hier aus dem Wiki nehmen, sondern hier aus dem nachfolgenden Link  

@@ -2,7 +2,7 @@
 
 Legende: ✅ Fertig | 🔄 In Arbeit | ⚠️ Zu prüfen | ❌ Stub/leer | 🕐 Warten | ⏳ folgt mit DE-Phase
 
-> **Hinweis EN-Dateien:** EN-Versionen entstehen jeweils zusammen mit der DE-Phase. Aktuell existieren 14 EN-Dateien von 39 DE-Dateien — das ist plangemäß und kein Fehler. Die EN-Sidebar zeigt fehlende Seiten als „in progress".
+> **Hinweis EN-Dateien:** EN-Versionen entstehen jeweils zusammen mit der DE-Phase. Nach Phase 5 existieren 21 EN-Dateien von 39 DE-Dateien — das ist plangemäß und kein Fehler. Die EN-Sidebar zeigt verbleibende fehlende Seiten als „in progress".
 
 ## Admin-UI
 
@@ -49,18 +49,18 @@ Legende: ✅ Fertig | 🔄 In Arbeit | ⚠️ Zu prüfen | ❌ Stub/leer | 🕐 
 
 | Seite (de) | Größe | Status DE | Status EN | Phase | Hinweis |
 |-----------|-------|-----------|-----------|-------|---------|
-| Developer-Templates.md | 23 KB | ⚠️ prüfen | ⏳ folgt mit DE | 5 | |
-| ALIAS.md | 14 KB | ⚠️ prüfen | ⏳ folgt mit DE | 5 | |
-| Developer-News-(Latest).md | 11 KB | ⚠️ prüfen | ⏳ folgt mit DE | 5 | Regelmäßig aktualisieren |
-| Developer-Readme.md | 5849 B | ⚠️ prüfen | ⏳ folgt mit DE | 5 | |
+| Developer-Templates.md | ~23 KB | ✅ Fertig (5) | ✅ Fertig (5) | 5 | Falsche Template-Namen korrigiert: `entities.departure-timetable`→`entities.fahrplan.departure-timetable`, `entities.departure-routes`→`entities.fahrplan.routes` (gegen `src/lib/templates/card.ts` verifiziert). Hinweis auf brightsky/openweathermap/pirate-weather-Pendants ergänzt. EN erstellt. |
+| ALIAS.md | ~14 KB | ✅ Fertig (5) | ✅ Fertig (5) | 5 | Gegen `src/lib/const/config-manager-const.ts:199-376` (`checkedDatapoints`) verifiziert — alle Rollen und State-IDs stimmen überein. EN erstellt (Strukturkopie mit englischen Headlines + Notes). |
+| Developer-News-(Latest).md | ~11 KB | ✅ Fertig (5) | ✅ Fertig (5) | 5 | Historische Changelog-Einträge (März 2024), bewusst nicht inhaltlich verändert. EN-Übersetzung erstellt. Regelmäßig aktualisieren. |
+| Developer-Readme.md | ~6 KB | ✅ Fertig (5) | ✅ Fertig (5) | 5 | Checkliste aktualisiert: `cardAlarm`, `airCondition`, `media`, `level.timer` jetzt `[x]` (gegen `src/lib/configuration/admin.ts:126` und `src/lib/classes/config-manager.ts:1928/2082/2431/3610/4275/4421` verifiziert). EN erstellt. |
 
 ## Installation
 
 | Seite (de) | Größe | Status DE | Status EN | Phase | Hinweis |
 |-----------|-------|-----------|-----------|-------|---------|
-| NSPanel-flashen.md | 3233 B | ⚠️ prüfen | ⏳ folgt mit DE | 5 | |
-| Adapter-Installation.md | 3192 B | ⚠️ prüfen | ⏳ folgt mit DE | 5 | |
-| NSPanel-Nextion-Editor.md | 5727 B | ⚠️ prüfen | ⏳ folgt mit DE | 5 | |
+| NSPanel-flashen.md | 3233 B | ✅ Fertig (5) | ✅ Fertig (5) | 5 | Hardware-Anleitung, inhaltlich unverändert. EN erstellt. |
+| Adapter-Installation.md | ~3.5 KB | ✅ Fertig (5) | ✅ Fertig (5) | 5 | Voraussetzungs-Abschnitt (js-controller ≥7.0.6, Node.js ≥22) ergänzt, kaputter `.md`-Link auf Wiki-Link umgestellt. EN erstellt. |
+| NSPanel-Nextion-Editor.md | 5727 B | ✅ Fertig (5) | ✅ Fertig (5) | 5 | `.md`-Link zu Adapter-Installation in Wiki-Link umgewandelt. EN erstellt. |
 
 ## Infrastruktur
 
@@ -98,4 +98,4 @@ Diese Seiten sind im Sidebar oder einer anderen Seite verlinkt, aber noch nicht 
 
 ---
 
-*Zuletzt aktualisiert: 2026-05-25 (Phase 4 abgeschlossen: screensaver.md DE gegen Code verifiziert/korrigiert + EN-Version neu erstellt. Korrekturen: `ScreensaverEntityIconColor` statt `colorScale`, `log10` ohne `'center'`, Modus `quadriGrad` ergänzt, mrIcon-only-Hinweis, forecastDay4–6. Code-Befund: `screensaverNotify` panel/topic-Inkonsistenz.)*
+*Zuletzt aktualisiert: 2026-06-01 (Phase 5 abgeschlossen: alle 4 Developer- und 3 Installations-Seiten DE gegen Code verifiziert + 7 EN-Versionen neu erstellt. Korrekturen: Developer-Readme-Checkliste auf aktuellen Code-Stand (cardAlarm, airCondition, media, level.timer = [x]); Developer-Templates falsche `entities.departure-*`-Namen gefixt; Adapter-Installation Voraussetzungen (Node.js ≥22) ergänzt; Wiki-Links bereinigt. ALIAS.md gegen `checkedDatapoints` (config-manager-const.ts) bestätigt – keine Abweichungen.)*

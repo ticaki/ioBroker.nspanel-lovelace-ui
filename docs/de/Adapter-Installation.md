@@ -1,3 +1,12 @@
+# Adapter-Installation
+
+## Voraussetzungen
+
+- ioBroker mit **js-controller >= 7.0.6**
+- **Node.js >= 22**
+- Adapter `nspanel-lovelace-ui` ab v1.x installiert
+- Geflashtes NSPanel mit Tasmota (siehe [NSPanel flashen](NSPanel-flashen))
+
 ## Grundeinstellung (MQTT)
 Im Tab `MQTT-Server-Einstellungen` muss die MQTT Verbindung eingestellt werden   
 
@@ -46,7 +55,7 @@ Wenn das Panel mit der Grundconfig läuft, kann mit dem Script begonnen werden.
     
 Weitere Erläuterungen zu diesem Script erhaltet ihr hier. [**Konfiguratiosscript** / Einleitung](ScriptConfig)  
 
-Bei Fragen fragen - Discord, Frum, hier, Telegram, Teams alles vorhanden :)
+Bei Fragen fragen - Discord, Forum, hier, Telegram, Teams alles vorhanden :)
 
 
-[Alias Tabelle](https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/blob/main/ALIAS.md)  
+[Alias Tabelle](ALIAS)

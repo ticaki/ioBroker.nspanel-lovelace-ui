@@ -1,3 +1,7 @@
+# Developer-Templates
+
+> Sammlung von praxiserprobten Template-Snippets für das Konfigurationsskript. Die vollständige Liste aller verfügbaren Templates findet sich im Code unter `src/lib/templates/` (`card.ts`, `text.ts`, `light.ts`, `shutter.ts`, `button.ts`, `script.ts`). Für **brightsky**, **openweathermap** und **pirate-weather** existieren Templates analog zu den `accuweather`-Beispielen unten — Namensschema z. B. `text.brightsky.bot2values`, `text.openweathermap.sunriseset`, `text.pirate-weather.windspeed`.
+
 # Content
 
 [Screensaver](#screensaver)  
@@ -582,7 +586,7 @@ const pageDeparture: pages.PageBaseConfig = {
     card: 'cardEntities',
     dpInit: 'fahrplan.0.DepartureTimetable0',
     uniqueID: 'Abfahrt ',
-    template: 'entities.departure-timetable',
+    template: 'entities.fahrplan.departure-timetable',
 };
 ```
 [back](#content)  
@@ -594,7 +598,7 @@ const pageDeparture: pages.PageBaseConfig = {
     card: 'cardEntities',
     dpInit: 'fahrplan.0.0',
     uniqueID: 'Abfahrt ',
-    template: 'entities.departure-routes',
+    template: 'entities.fahrplan.routes',
 };
 ```  
 [back](#content)  
