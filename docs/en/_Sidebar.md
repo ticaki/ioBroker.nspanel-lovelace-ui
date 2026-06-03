@@ -1,8 +1,8 @@
 # ioBroker NSPanel Lovelace UI
 
-**English documentation** — see [German version](_Sidebar) for the full content.
+**English documentation** — see [German version](_Sidebar) for the original.
 
-> Most pages are currently German only. English translations are in progress.
+> All pages are available in English. German remains the primary language, so wording may occasionally lag behind the German version.
 
 ---
 

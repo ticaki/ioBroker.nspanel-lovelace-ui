@@ -4,7 +4,7 @@
 
 NSPanel Lovelace UI is a firmware for the Nextion screen in the NSPanel, designed after the Lovelace UI style.
 
-> **Note:** Most documentation is currently available in German only. English translations are being added progressively.
+> **Note:** The documentation is available in both English and German. German is the primary language, so wording may occasionally lag behind the German version.
 
 ## Documentation
 
