@@ -6,6 +6,9 @@
 
 ---
 
+## Introduction
+- [Feature Overview](en-User-NSPanel-Funktionalität)
+
 ## Basic Installation
 - [NSPanel Flash](en-NSPanel-flashen)
 - [Adapter Installation](en-Adapter-Installation)
@@ -13,21 +16,21 @@
 
 ## Adapter Admin Interface
 - [Maintain](en-Maintain)
-- [Global Settings](en-globelSettings) *(in progress)*
+- [Global Settings](en-globelSettings)
 - [MQTT Server Settings](en-General)
 - [NSPanel Setting](en-NSPanelsetting)
 - [Tasmota Tools](en-tasmotatools)
-- [Symbol Overview](en-symbolOverview) *(in progress)*
-- [Navigation Overview](en-Navigation) *(in progress)*
-- [Navigation Flow](en-naviFlow) *(in progress)*
-- [Developer](en-Developer) *(in progress)*
+- [Symbol Overview](en-symbolOverview)
+- [Navigation Overview](en-Navigation)
+- [Navigation Flow](en-naviFlow)
+- [Developer](en-Developer)
 - [Color Themes](en-ColorThemes)
 
 ## Configuration Script
 - [Introduction (ScriptConfig)](en-ScriptConfig)
-- [Page Basics](en-ScriptConfig#page-configuration) *(in progress)*
+- [Page Basics](en-ScriptConfig#page-configuration)
 - [Global Pages & Global Link](en-GlobalPages)
-- [Page Items](en-ScriptConfig#pageitems) *(in progress)*
+- [Page Items](en-ScriptConfig#pageitems)
 - [Screensaver](en-screensaver)
 
 ## Standard Pages

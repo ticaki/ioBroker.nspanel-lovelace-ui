@@ -2,7 +2,7 @@
 
 Legende: ✅ Fertig | 🔄 In Arbeit | ⚠️ Zu prüfen | ❌ Stub/leer | 🕐 Warten | ⏳ folgt mit DE-Phase
 
-> **Hinweis EN-Dateien:** EN-Versionen entstehen jeweils zusammen mit der DE-Phase. Nach Phase 5 existieren 21 EN-Dateien von 39 DE-Dateien — das ist plangemäß und kein Fehler. Die EN-Sidebar zeigt verbleibende fehlende Seiten als „in progress".
+> **Hinweis EN-Dateien:** EN-Versionen entstehen jeweils zusammen mit der DE-Phase. Nach Phase 6 existiert für **jede** DE-Seite eine EN-Version (inkl. Platzhalter `kommt-noch` und `pageUnlock`). Die EN-Sidebar trägt keine „in progress"-Marker mehr.
 
 ## Admin-UI
 
@@ -17,7 +17,7 @@ Legende: ✅ Fertig | 🔄 In Arbeit | ⚠️ Zu prüfen | ❌ Stub/leer | 🕐 
 | General.md | ~3 KB | ✅ Fertig | ✅ Fertig | 1.4 | MQTT-Einstellungen |
 | NSPanelsetting.md | ~4 KB | ✅ Fertig | ✅ Fertig | 1.4 | |
 | tasmotatools.md | ~2 KB | ✅ Fertig | ✅ Fertig | 1.4 | |
-| ColorThemes.md | 5512 B | ⚠️ prüfen | ⏳ folgt mit DE | 1.4 | |
+| ColorThemes.md | ~7 KB | ✅ Fertig (6) | ✅ Fertig (6) | 6 | Gegen `Color.ts` verifiziert: 5 Themes (default/topical/technical/sunset/volcano), Index 0–4 via `getThemeByIndex`. Index-Tabelle + Namens-Diskrepanz dokumentiert. „Im Aufbau" entfernt, EN erstellt. |
 
 ## Konfigurationsskript
 
@@ -32,7 +32,7 @@ Legende: ✅ Fertig | 🔄 In Arbeit | ⚠️ Zu prüfen | ❌ Stub/leer | 🕐 
 | Seite (de) | Größe | Status DE | Status EN | Phase | Hinweis |
 |-----------|-------|-----------|-----------|-------|---------|
 | cardAlarm.md | ~7 KB | ✅ Fertig (3.1) | ✅ Fertig (3.1) | 3.1 | Gegen `PageAlarm`-Typ, `pageAlarm.ts` (Zustandsmaschine, States, PIN), Admin `UnlockEntry`/`PageAlarmEditor.tsx` + i18n verifiziert. Konfiguration komplett im Admin-PageConfig-Tab; Skript-`items` bei cardAlarm/cardQR/cardUnlock nicht ausgewertet (`config-manager.ts:725`). Unlock-Variante nur erwähnt (pageUnlock 🕐). |
-| pageUnlock.md | 80 B | 🕐 warten | 🕐 warten | — | Warte auf Tests; kein Sidebar-Link |
+| pageUnlock.md | 80 B | 🕐 warten | 🕐 warten | — | Warte auf Tests; kein Sidebar-Link. EN-Platzhalter (6) ergänzt, damit `en-pageUnlock`-Verweis aus cardAlarm/Pages nicht ins Leere zeigt. |
 | PageConfig.md | ~4 KB | ✅ Fertig (3.5) | ✅ Fertig (3.5) | 3.5 | Admin-Tab bestätigt (`PageConfigLayout.tsx`). Typenfilter: all/pageMenu/cardAlarm/cardQR/**cardPower**/cardTrash (Chart weiterhin eigener Tab). Menü-Seite-Link ergänzt. EN erstellt. |
 | cardGrid.md | ~6 KB | ✅ Fertig (3.2) | ✅ Fertig (3.2) | 3.2 | Neu strukturiert: 3 Grid-Varianten (cardGrid 6 / cardGrid2 8 bzw. 9 us-p / cardGrid3 4 Kacheln, `pageMenu.ts`), Skript-Weg (PageGrid + PageItems) + Admin-Menü-Seite (cardMenue). Blättern/Filtern verlinkt auf ScriptConfig. |
 | cardQR.md | ~5 KB | ✅ Fertig (3.2) | ✅ Fertig (3.2) | 3.2 | Gegen `QREntry`/`pageQR.ts` verifiziert: selType 0=FREE/1=Wifi/2=URL/3=TEL, wlantype-Werte, `setState`-Schalter. Skript-Verweis (PageQR, heading/items optional) ergänzt. |
@@ -66,11 +66,11 @@ Legende: ✅ Fertig | 🔄 In Arbeit | ⚠️ Zu prüfen | ❌ Stub/leer | 🕐 
 
 | Seite (de) | Größe | Status DE | Status EN | Phase | Hinweis |
 |-----------|-------|-----------|-----------|-------|---------|
-| Home.md | 534 B | ❌ praktisch leer (nur Bilder/Headlines) | ✅ Stub | 6 | Einstiegsseite, sichtbar im Wiki |
-| _Sidebar.md | 2078 B | ⚠️ prüfen | ✅ Stub | 6 | ⚠️ Z.13 war Leerlink → auf `User-NSPanel-Funktionalität` korrigiert |
+| Home.md | ~2 KB | ✅ Fertig (6) | ✅ Fertig (6) | 6 | Einstiegsseite ausgebaut: Intro, Erste-Schritte, Doku-Übersicht, Community-Links (Bilder behalten). EN um Funktionsübersicht-Link ergänzt. |
+| _Sidebar.md | ~2 KB | ✅ Fertig (6) | ✅ Fertig (6) | 6 | Alle „iA"-Marker entfernt (Seiten fertig), „(im Aufbau)" bei Funktionsübersicht gestrichen. EN: alle „(in progress)" entfernt + Introduction-Abschnitt mit Feature Overview ergänzt. |
 | _Footer.md | 191 B | ✅ OK | ✅ Fertig | — | EN: „Back to top" |
-| kommt-noch.md | 59 B | 🕐 Platzhalter | — | — | Catch-all für tote Adapter-Links, kein Inhalt geplant |
-| User-NSPanel-Funktionalität.md | 9 B | ❌ STUB | — | — | Ziel von `_Sidebar.md` → Funktionsübersicht, noch leer |
+| kommt-noch.md | 59 B | 🕐 Platzhalter | ✅ Fertig (6) | 6 | Catch-all für tote Adapter-Links, kein Inhalt geplant. EN-Platzhalter erstellt. |
+| User-NSPanel-Funktionalität.md | ~4 KB | ✅ Fertig (6) | ✅ Fertig (6) | 6 | Funktionsübersicht neu geschrieben: Was ist NSPanel, Bedienkonzept, Seitentypen-Tabelle, Popups, Screensaver, Voraussetzungen, Nächste Schritte. EN erstellt. |
 
 ## Bekannte Befunde / technische Schulden
 
@@ -89,13 +89,16 @@ Legende: ✅ Fertig | 🔄 In Arbeit | ⚠️ Zu prüfen | ❌ Stub/leer | 🕐 
 
 ## Aktuell im Wiki verlinkter, unvollständiger Inhalt
 
-Diese Seiten sind im Sidebar oder einer anderen Seite verlinkt, aber noch nicht fertiggestellt — sichtbar für Wiki-Leser:
+Alle im Sidebar oder von anderen Seiten verlinkten Seiten sind fertiggestellt. Einzige bewusste Ausnahme:
 
-| Seite | Problem | Ziel |
-|-------|---------|------|
-| `Home.md` | Nur Bilder und Headlines, kein beschreibender Text | Phase 6 |
-| `User-NSPanel-Funktionalität.md` | Nur „Im Aufbau", Sidebar verlinkt darauf | Phase 6 |
+| Seite | Status | Hinweis |
+|-------|--------|---------|
+| `pageUnlock.md` | 🕐 Platzhalter | Wartet auf Tests der Unlock-Funktion; **nicht** im Sidebar verlinkt. DE+EN sind Platzhalter, damit Verweise aus cardAlarm/Pages nicht ins Leere zeigen. |
 
 ---
 
-*Zuletzt aktualisiert: 2026-06-01 (Phase 5 abgeschlossen: alle 4 Developer- und 3 Installations-Seiten DE gegen Code verifiziert + 7 EN-Versionen neu erstellt. Korrekturen: Developer-Readme-Checkliste auf aktuellen Code-Stand (cardAlarm, airCondition, media, level.timer = [x]); Developer-Templates falsche `entities.departure-*`-Namen gefixt; Adapter-Installation Voraussetzungen (Node.js ≥22) ergänzt; Wiki-Links bereinigt. ALIAS.md gegen `checkedDatapoints` (config-manager-const.ts) bestätigt – keine Abweichungen.)*
+*Zuletzt aktualisiert: 2026-06-03 (Phase 6 abgeschlossen: Infrastruktur-Seiten fertiggestellt. `User-NSPanel-Funktionalität.md` (Funktionsübersicht) neu geschrieben DE+EN; `Home.md` zur vollwertigen Einstiegsseite ausgebaut; `ColorThemes.md` gegen `Color.ts` verifiziert (Index 0–4, 5 Themes) + EN; `_Sidebar.md` DE+EN finalisiert (alle „iA"/„in progress"-Marker entfernt); EN-Platzhalter für `kommt-noch` und `pageUnlock` ergänzt. Damit hat jede DE-Seite eine EN-Version; keine toten internen Links, keine `.md`-Links.)*
+
+---
+
+*Phase 5 (2026-06-01): alle 4 Developer- und 3 Installations-Seiten DE gegen Code verifiziert + 7 EN-Versionen neu erstellt. Korrekturen: Developer-Readme-Checkliste auf aktuellen Code-Stand (cardAlarm, airCondition, media, level.timer = [x]); Developer-Templates falsche `entities.departure-*`-Namen gefixt; Adapter-Installation Voraussetzungen (Node.js ≥22) ergänzt; Wiki-Links bereinigt. ALIAS.md gegen `checkedDatapoints` (config-manager-const.ts) bestätigt – keine Abweichungen.*

@@ -1,30 +1,30 @@
-# Farbthemen
+# Color Themes
 
-Der Adapter bringt **fünf eingebaute Farbthemen** mit, die über die Admin-Oberfläche per Index ausgewählt werden. Jedes Thema definiert denselben Schlüsselraum (identische Keys), nur mit anderen Farbwerten.
+The adapter ships with **five built-in color themes** that are selected by index in the admin interface. Every theme defines the same key space (identical keys), only with different color values.
 
-| Index | Theme (Code) | Anzeigename (Admin) |
-|-------|--------------|---------------------|
-| 0 | `defaultTheme` | Standard |
-| 1 | `topicalTheme` | Tropisch (`tropical`) |
-| 2 | `technicalTheme` | Technisch |
-| 3 | `sunsetTheme` | Sonnenuntergang |
-| 4 | `volcanoTheme` | Vulkan (`vulcano`) |
+| Index | Theme (code) | Display name (admin) |
+|-------|--------------|----------------------|
+| 0 | `defaultTheme` | Default |
+| 1 | `topicalTheme` | Tropical (`tropical`) |
+| 2 | `technicalTheme` | Technical |
+| 3 | `sunsetTheme` | Sunset |
+| 4 | `volcanoTheme` | Volcano (`vulcano`) |
 
-Unbekannte Indizes fallen auf `defaultTheme` zurück (`Color.getThemeByIndex`, `src/lib/const/Color.ts`).
+Unknown indices fall back to `defaultTheme` (`Color.getThemeByIndex`, `src/lib/const/Color.ts`).
 
-> ⚠️ **Namens-Diskrepanz:** Die Code-Variablen heißen `topicalTheme` und `volcanoTheme` (`src/lib/const/Color.ts`). Die UI-Labels in der Admin-Oberfläche lauten jedoch **`tropical`** und **`vulcano`** (i18n-Keys `de.json`). In `globelSettings.md` werden die deutschen Anzeigenamen „Tropisch" und „Vulkan" verwendet. Beim Suchen nach einem Theme bitte alle drei Schreibweisen berücksichtigen.
+> ⚠️ **Naming discrepancy:** The code variables are named `topicalTheme` and `volcanoTheme` (`src/lib/const/Color.ts`). The UI labels in the admin interface, however, read **`tropical`** and **`vulcano`** (i18n keys in `de.json`/`en.json`). When searching for a theme, please consider all three spellings.
 
-> **Was ist konfigurierbar?** Über `adapter-config.d.ts` (Z. 161–248) können folgende Farb-Gruppen angepasst werden: `colorStates`, `colorNavigation`, `colorWeatherIcon`, `colorDisplay`, `colorWeatherForecast`, `colorScreensaver`, `colorScreensaverForecast`, `colorCardMedia`. Jede Gruppe enthält die unten aufgeführten Keys.
+> **What is configurable?** Via `adapter-config.d.ts` (lines 161–248) the following color groups can be customized: `colorStates`, `colorNavigation`, `colorWeatherIcon`, `colorDisplay`, `colorWeatherForecast`, `colorScreensaver`, `colorScreensaverForecast`, `colorCardMedia`. Each group contains the keys listed below.
 
-Diese Seite listet alle Farb-Keys über alle verfügbaren Themes (default, topical/tropical, technical, sunset, volcano/vulcano) mit Verwendungshäufigkeit im Code.
+This page lists all color keys across every available theme (default, topical/tropical, technical, sunset, volcano/vulcano) together with their usage frequency in the code.
 
-Legende:
-- 1 = Key ist im jeweiligen Theme definiert
-- (leer) = nicht definiert (kommt hier nicht vor, alle Themes besitzen identischen Schlüsselraum)
-- Usage Count = grobe Anzahl direkter Referenzen auf `Color.<key>` außerhalb der Theme-Definition (erste 200 Treffer gescannt)
-- Example = erste Fundstelle (Datei:Zeile)
+Legend:
+- 1 = key is defined in the respective theme
+- (empty) = not defined (does not occur here; all themes share an identical key space)
+- Usage Count = rough number of direct references to `Color.<key>` outside the theme definition (first 200 matches scanned)
+- Example = first occurrence (file:line)
 
-> Hinweis: Viele Wetter-Keys werden derzeit nicht direkt im TypeScript-Code adressiert, können aber für dynamische Generierung / zukünftige Features oder Panel-Firmware genutzt werden.
+> Note: Many weather keys are currently not addressed directly in the TypeScript code, but may be used for dynamic generation / future features or the panel firmware.
 
 | Key | default | topical | technical | sunset | volcano | Usage Count (approx) | Example (first occurrence) |
 |-----|---------|---------|-----------|--------|---------|----------------------|----------------------------|
@@ -97,12 +97,13 @@ Legende:
 | mediaTitleOff | 1 | 1 | 1 | 1 | 1 | 2 | pages/pageMedia.ts:546 |
 | mediaOnOffColor | 1 | 1 | 1 | 1 | 1 | 1 | pages/pageMedia.ts:564 |
 
-## Beobachtungen
-- Wetter-Farben werden aktuell nicht direkt im TS-Code genutzt – möglich, dass sie für Panel-Rendering reserviert sind.
-- Navigation-Farben werden dynamisch im Navigations-Rendering verwendet.
-- Screensaver- und Media-Keys sind aktiv im Einsatz.
 
-## Mögliche nächste Schritte
-- Automatisches Skript zum Generieren dieser Tabelle in den Build-Prozess integrieren.
-- Unbenutzte Keys markieren oder Usage-Tracking erweitern.
-- Admin-UI Validierung: sicherstellen, dass bei Custom Theme nur existierende Keys akzeptiert werden.
+## Observations
+- Weather colors are currently not used directly in the TS code – they may be reserved for panel rendering.
+- Navigation colors are used dynamically in the navigation rendering.
+- Screensaver and media keys are actively in use.
+
+## Possible next steps
+- Integrate an automatic script for generating this table into the build process.
+- Mark unused keys or extend usage tracking.
+- Admin-UI validation: ensure that only existing keys are accepted for a custom theme.

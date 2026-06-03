@@ -10,7 +10,7 @@
   
   
 **Einleitung**  
-- [Funktionsübersicht](User-NSPanel-Funktionalität) *(im Aufbau)*  
+- [Funktionsübersicht](User-NSPanel-Funktionalität)  
   
 **Basisinstallation**  
 - [NSPanel flashen](NSPanel-flashen)  
@@ -19,21 +19,21 @@
 
 **Adapter Admin**
 - [Maintain](Maintain)  
-- [Global Setting](globelSettings) iA  
+- [Global Setting](globelSettings)  
 - [MQTT-Server Einstellungen](General)  
 - [NSPanel-Setting](NSPanelsetting)  
 - [Tasmota Tools](tasmotatools)  
-- [Symbolübersicht](symbolOverview) iA  
-- [Navigation Overview](Navigation) iA  
-- [Navigations Flow](naviFlow) iA  
-- [Developer](Developer) iA  
+- [Symbolübersicht](symbolOverview)  
+- [Navigation Overview](Navigation)  
+- [Navigations Flow](naviFlow)  
+- [Developer](Developer)  
 - [User Farbthema](ColorThemes)
   
 **Konfiguratiosscript**
-- [Einleitung](ScriptConfig) iA
+- [Einleitung](ScriptConfig)
 - [Grundlagen Seitenerstellung](ScriptConfig#seiten-konfiguration)  
 - [Global Pages & Global Link](GlobalPages)
-- [PageItems erstellen](ScriptConfig#pageitems) iA  
+- [PageItems erstellen](ScriptConfig#pageitems)  
 - [Screensaver](ScriptConfig#screensaver)   
 
 **Screensaver**  

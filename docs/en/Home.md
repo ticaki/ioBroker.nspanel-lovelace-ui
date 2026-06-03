@@ -14,6 +14,7 @@ For the complete German documentation, visit the [German home page](Home).
 
 ## Quick Links
 
+- [Feature Overview](en-User-NSPanel-Funktionalität)
 - [Basic Installation: NSPanel Flash](en-NSPanel-flashen)
 - [Adapter Installation](en-Adapter-Installation)
 - [Configuration Script Reference](en-ScriptConfig)
