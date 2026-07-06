@@ -479,6 +479,17 @@ export class Controller extends Library.BaseClass {
         }
 
         panel.name = this.adapter.config.panels[index].id;
+        // Guard against an empty/invalid panel id: `id` is normally derived from the panel MAC
+        // (`item.id = cleandp(mac)`) during the discovery flow. If it was never populated the
+        // object id becomes `panels.` which ioBroker rejects ("Ids are not allowed to end in .")
+        // and crashes the adapter with an unhandled rejection (see issue #730). Skip gracefully.
+        if (!panel.name || panel.name.endsWith('.')) {
+            this.adapter.testSuccessful = false;
+            this.adapter.log.error(
+                `Panel with topic ${panel.topic} has an empty or invalid id ('${panel.name ?? ''}') - please (re-)scan the panel in the adapter configuration so its MAC-based id gets assigned. Skipping this panel.`,
+            );
+            return false;
+        }
         const state = this.library.readdb(`panels.${panel.name}.cmd.activated`);
         if (state && state.val === false) {
             this.log.info(`Panel ${panel.name} is deactivated, skipping initialization.`);

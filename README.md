@@ -158,6 +158,7 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
     ### **WORK IN PROGRESS**
 -->
 ### **WORK IN PROGRESS**
+- (claude) fixed: adapter crashed with `The id "panels." is invalid` and entered a restart loop when a panel had an empty id (not yet scanned); such panels are now skipped with a clear error instead (#730)
 - (ticaki) cardPower admin: drag & drop between slots now works (missing dataTransfer.setData prevented Firefox/Safari from starting the drag)
 - (copilot) Adapter requires node.js >= 22 now
 

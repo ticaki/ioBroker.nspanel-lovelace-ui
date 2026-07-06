@@ -448,6 +448,7 @@ class Controller extends Library.BaseClass {
     this.log.info(`${this.panels.length} Panels initialized`);
   }
   addPanel = async (panel) => {
+    var _a;
     let index = this.panels.findIndex((p) => p.topic === panel.topic);
     if (index !== -1) {
       this.adapter.testSuccessful = false;
@@ -461,6 +462,13 @@ class Controller extends Library.BaseClass {
       return false;
     }
     panel.name = this.adapter.config.panels[index].id;
+    if (!panel.name || panel.name.endsWith(".")) {
+      this.adapter.testSuccessful = false;
+      this.adapter.log.error(
+        `Panel with topic ${panel.topic} has an empty or invalid id ('${(_a = panel.name) != null ? _a : ""}') - please (re-)scan the panel in the adapter configuration so its MAC-based id gets assigned. Skipping this panel.`
+      );
+      return false;
+    }
     const state = this.library.readdb(`panels.${panel.name}.cmd.activated`);
     if (state && state.val === false) {
       this.log.info(`Panel ${panel.name} is deactivated, skipping initialization.`);
