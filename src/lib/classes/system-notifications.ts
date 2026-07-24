@@ -81,7 +81,7 @@ export class SystemNotifications extends BaseClass {
             }
             const _helper = async (): Promise<GetNotificationsResponse> => {
                 return new Promise(resolve => {
-                    setTimeout(() => {
+                    this.adapter.setTimeout(() => {
                         resolve({ result: {} });
                     }, 1000);
                     return resolve(
