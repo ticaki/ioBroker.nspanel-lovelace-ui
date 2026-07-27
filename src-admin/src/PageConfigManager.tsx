@@ -17,6 +17,7 @@ import { PageMenuEditor } from './components/PageMenuEditor';
 import { PagePowerEditor } from './components/PagePowerEditor';
 import { PageQREditor } from './components/PageQREditor';
 import { PageTrashEditor } from './components/PageTrashEditor';
+import { PageChartEditor } from './components/PageChartEditor';
 
 interface PageConfigManagerState extends ConfigGenericState {
     entries: PageConfigEntry[];
@@ -353,6 +354,24 @@ class PageConfigManager extends ConfigGeneric<ConfigGenericProps & { theme?: any
                     selPowerSupply: [],
                 },
             } satisfies PowerEntry;
+        } else if (cardType === 'cardChart') {
+            newEntry = {
+                card: 'cardChart',
+                uniqueName: name,
+                headline: name,
+                chartColor: '#FFFF00',
+                selChartType: 'cardChart',
+                selInstanceDataSource: 0,
+                selInstance: '',
+                setStateForTicks: '',
+                setStateForValues: '',
+                setStateForDB: '',
+                txtLabelYAchse: '',
+                rangeHours: 24,
+                maxXAxisTicks: 2,
+                factorCardChart: 1,
+                maxXAxisLabels: 4,
+            };
         } else if (
             cardType === 'pageMenu' ||
             cardType === 'cardGrid' ||
@@ -543,6 +562,19 @@ class PageConfigManager extends ConfigGeneric<ConfigGenericProps & { theme?: any
                     onUniqueNameChange={this.handleUniqueNameChange}
                     theme={this.props.theme}
                     themeType={this.props.oContext?.themeType}
+                />
+            );
+        }
+
+        if (currentEntry.card === 'cardChart') {
+            return (
+                <PageChartEditor
+                    entry={currentEntry}
+                    onEntryChange={this.handleEntryChange}
+                    onUniqueNameChange={this.handleUniqueNameChange}
+                    getText={key => this.getText(key)}
+                    oContext={this.props.oContext}
+                    theme={this.props.theme}
                 />
             );
         }
