@@ -60,8 +60,7 @@ export class PageChartLine extends PageChart {
                         this.adminConfig.maxXAxisTicks > 0 ? this.adminConfig.maxXAxisTicks * 60 : 60;
                     const xAxisLabelInterval =
                         this.adminConfig.maxXAxisLabels > 0 ? this.adminConfig.maxXAxisLabels * 60 : 120;
-                    const maxX = 1440; // 24h = 1440min
-
+                    const maxX = hoursRangeFromNow * 60;
                     const tempScale: number[] = [];
 
                     try {
