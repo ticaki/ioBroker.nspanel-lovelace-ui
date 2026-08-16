@@ -21,13 +21,13 @@ import {
     Tabs,
     Tab,
 } from '@mui/material';
-import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
+import DeleteOutlineIcon from '@mui/icons-material/DeleteOutlined';
 import NavigationIcon from '@mui/icons-material/Navigation';
 import SettingsIcon from '@mui/icons-material/Settings';
 import ExtensionIcon from '@mui/icons-material/Extension';
 import Tooltip from '@mui/material/Tooltip';
 import { ConfigGeneric, type ConfigGenericProps, type ConfigGenericState } from '@iobroker/json-config';
-import { I18n } from '@iobroker/adapter-react-v5';
+import { I18n } from '@iobroker/gui-components';
 import type {
     PanelInfo,
     NavigationAssignmentList,
@@ -146,7 +146,7 @@ class NavigationAssignmentPanel extends ConfigGeneric<
     }
 
     async componentDidMount(): Promise<void> {
-        super.componentDidMount();
+        void super.componentDidMount();
 
         // Get initial alive state and subscribe to changes
         if (this.props.oContext && this.props.oContext.socket) {
@@ -422,7 +422,7 @@ class NavigationAssignmentPanel extends ConfigGeneric<
         let panel = available.find(p => p.panelTopic === selectedTopic);
         // if the special ALL id was chosen, create a synthetic panel entry
         if (!panel && selectedTopic === ALL_PANELS_SPECIAL_ID) {
-            panel = { panelTopic: ALL_PANELS_SPECIAL_ID, friendlyName: `(${I18n.t('all') || 'All'})` } as PanelInfo;
+            panel = { panelTopic: ALL_PANELS_SPECIAL_ID, friendlyName: `(${I18n.t('all') || 'All'})` };
         }
         if (!panel) {
             return;
@@ -801,10 +801,7 @@ class NavigationAssignmentPanel extends ConfigGeneric<
                             row
                             value={commonFields.alwaysOn || 'none'}
                             onChange={(_e, val) => {
-                                this.handleCommonFieldChange(
-                                    'alwaysOn',
-                                    val as 'none' | 'always' | 'action' | 'ignore',
-                                );
+                                this.handleCommonFieldChange('alwaysOn', val);
                             }}
                         >
                             <FormControlLabel

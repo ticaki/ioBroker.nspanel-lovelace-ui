@@ -1,5 +1,4 @@
 import React from 'react';
-import { withTheme } from '@mui/styles';
 import { ConfigGeneric, type ConfigGenericProps, type ConfigGenericState } from '@iobroker/json-config';
 import {
     Checkbox,
@@ -68,7 +67,7 @@ class PageGlobalSettings extends ConfigGeneric<ConfigGenericProps & { theme?: an
     }
 
     async componentDidMount(): Promise<void> {
-        super.componentDidMount();
+        void super.componentDidMount();
 
         // Get initial alive state and subscribe to changes
         const aliveStateId = `system.adapter.${this.adapterName}.${this.instance}.alive`;
@@ -215,9 +214,9 @@ class PageGlobalSettings extends ConfigGeneric<ConfigGenericProps & { theme?: an
         // Lade Werte aus this.props.data (hier werden die Config-Werte gespeichert)
         const data = this.props.data || {};
         const useBetaTFT = data.useBetaTFT ?? false;
-        const colorTheme = data.colorTheme ?? 0;
+        const colorTheme: number = data.colorTheme ?? 0;
         const weekdayFormat = data.weekdayFormat ?? false;
-        const monthFormat = data.monthFormat ?? 0;
+        const monthFormat: number = data.monthFormat ?? 0;
         const yearFormat = data.yearFormat ?? false;
         const shutterClosedIsZero = data.shutterClosedIsZero ?? false;
         const defaultValueCardThermo = data.defaultValueCardThermo ?? false;
@@ -511,4 +510,4 @@ class PageGlobalSettings extends ConfigGeneric<ConfigGenericProps & { theme?: an
     }
 }
 
-export default withTheme(PageGlobalSettings);
+export default PageGlobalSettings;

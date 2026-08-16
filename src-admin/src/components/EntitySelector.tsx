@@ -1,6 +1,6 @@
 import React from 'react';
 import { Box, Typography, TextField, Button } from '@mui/material';
-import { SelectID } from '@iobroker/adapter-react-v5';
+import { SelectID, type ThemeType } from '@iobroker/gui-components';
 
 interface EntitySelectorProps {
     label: string;
@@ -10,7 +10,7 @@ interface EntitySelectorProps {
     onCommit?: (value: string) => void;
     socket: any;
     theme: any;
-    themeType: string;
+    themeType: ThemeType;
     dialogName: string;
     filterFunc?: (obj: ioBroker.Object) => boolean;
     /**

@@ -9,12 +9,12 @@
         "noEmit": true,
 
         // check JS files, but do not compile them => tsconfig.build.json
-        "allowJs": true,
-        "checkJs": true,
+        "allowJs": false,
         "inlineSources": true,
 
         "noEmitOnError": true,
         "outDir": "./build/",
+        "rootDir": "./src/",
         "removeComments": false,
 
         // Override @tsconfig/node20 defaults: bundler resolution avoids issues with

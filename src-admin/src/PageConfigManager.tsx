@@ -1,6 +1,5 @@
 import React from 'react';
 import { Box, Typography } from '@mui/material';
-import { withTheme } from '@mui/styles';
 import { ConfigGeneric, type ConfigGenericProps, type ConfigGenericState } from '@iobroker/json-config';
 import type {
     PageConfigEntry,
@@ -35,7 +34,7 @@ class PageConfigManager extends ConfigGeneric<ConfigGenericProps & { theme?: any
 
     constructor(props: ConfigGenericProps & { theme?: any }) {
         super(props);
-        const saved = ConfigGeneric.getValue(props.data, props.attr!);
+        const saved = ConfigGeneric.getValue(props.data, props.attr);
         this.state = {
             ...(this.state as ConfigGenericState),
             entries: Array.isArray(saved) ? (saved as PageConfigEntry[]) : [],
@@ -45,7 +44,7 @@ class PageConfigManager extends ConfigGeneric<ConfigGenericProps & { theme?: any
             alive: false,
             pagesRetryCount: 0,
             panelPagesMap: {},
-        } as PageConfigManagerState;
+        };
     }
 
     componentWillUnmount(): void {
@@ -68,7 +67,7 @@ class PageConfigManager extends ConfigGeneric<ConfigGenericProps & { theme?: any
     }
 
     async componentDidMount(): Promise<void> {
-        super.componentDidMount();
+        void super.componentDidMount();
 
         const instance = this.props.oContext.instance ?? '0';
         const aliveStateId = `system.adapter.${ADAPTER_NAME}.${instance}.alive`;
@@ -118,12 +117,9 @@ class PageConfigManager extends ConfigGeneric<ConfigGenericProps & { theme?: any
         if (!panel?.topic) {
             return;
         }
-        this.setState(
-            prev =>
-                ({
-                    panelPagesMap: { ...prev.panelPagesMap, [panel.topic!]: nodes },
-                }) as PageConfigManagerState,
-        );
+        this.setState(prev => ({
+            panelPagesMap: { ...prev.panelPagesMap, [panel.topic!]: nodes },
+        }));
     };
 
     /**
@@ -163,12 +159,9 @@ class PageConfigManager extends ConfigGeneric<ConfigGenericProps & { theme?: any
                         : [];
                     const panel = panels.find(p => p.id && `${ADAPTER_NAME}.${instance}.panels.${p.id}` === id);
                     if (panel?.topic) {
-                        this.setState(
-                            prev =>
-                                ({
-                                    panelPagesMap: { ...prev.panelPagesMap, [panel.topic!]: nodes },
-                                }) as PageConfigManagerState,
-                        );
+                        this.setState(prev => ({
+                            panelPagesMap: { ...prev.panelPagesMap, [panel.topic!]: nodes },
+                        }));
                     }
                 } catch (e) {
                     console.warn(`[PageConfigManager] subscribeObject/getObject failed for ${id}`, e);
@@ -374,13 +367,13 @@ class PageConfigManager extends ConfigGeneric<ConfigGenericProps & { theme?: any
 
         const updated = [...this.state.entries, newEntry];
         this.setState({ entries: updated } as PageConfigManagerState);
-        void this.onChange(this.props.attr!, updated);
+        void this.onChange(this.props.attr, updated);
     };
 
     private handleDelete = (name: string): void => {
         const updated = this.state.entries.filter(e => e.uniqueName !== name);
         this.setState({ entries: updated } as PageConfigManagerState);
-        void this.onChange(this.props.attr!, updated);
+        void this.onChange(this.props.attr, updated);
 
         const MENU_TYPES = ['cardGrid', 'cardGrid2', 'cardGrid3', 'cardEntities', 'cardSchedule'];
         const { selectedCardType } = this.state;
@@ -400,13 +393,13 @@ class PageConfigManager extends ConfigGeneric<ConfigGenericProps & { theme?: any
             it.uniqueName === uniqueName ? { ...it, navigationAssignment: assignments } : it,
         );
         this.setState({ entries: updated } as PageConfigManagerState);
-        void this.onChange(this.props.attr!, updated);
+        void this.onChange(this.props.attr, updated);
     };
 
     private handleEntryChange = (updatedEntry: PageConfigEntry): void => {
         const updated = this.state.entries.map(it => (it.uniqueName === updatedEntry.uniqueName ? updatedEntry : it));
         this.setState({ entries: updated } as PageConfigManagerState);
-        void this.onChange(this.props.attr!, updated);
+        void this.onChange(this.props.attr, updated);
     };
 
     private handleUniqueNameChange = (oldName: string, newName: string): void => {
@@ -415,7 +408,7 @@ class PageConfigManager extends ConfigGeneric<ConfigGenericProps & { theme?: any
         }
         const updated = this.state.entries.map(it => (it.uniqueName === oldName ? { ...it, uniqueName: newName } : it));
         this.setState({ entries: updated, selected: newName } as PageConfigManagerState);
-        void this.onChange(this.props.attr!, updated);
+        void this.onChange(this.props.attr, updated);
     };
 
     private handleCardTypeChange = (cardType: PageCardType): void => {
@@ -434,7 +427,7 @@ class PageConfigManager extends ConfigGeneric<ConfigGenericProps & { theme?: any
     private handleCommonFieldsChange = (uniqueName: string, fields: Partial<PageConfigBaseFields>): void => {
         const updated = this.state.entries.map(it => (it.uniqueName === uniqueName ? { ...it, ...fields } : it));
         this.setState({ entries: updated } as PageConfigManagerState);
-        void this.onChange(this.props.attr!, updated);
+        void this.onChange(this.props.attr, updated);
     };
 
     private renderMiddlePanel(): React.JSX.Element {
@@ -597,4 +590,4 @@ class PageConfigManager extends ConfigGeneric<ConfigGenericProps & { theme?: any
     }
 }
 
-export default withTheme(PageConfigManager);
+export default PageConfigManager;

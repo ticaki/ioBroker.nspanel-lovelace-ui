@@ -1,1 +1,1 @@
-import"./assets/preload-helper-BDBacUwf.js";import{g as r,i as a}from"./assets/virtual_mf-REMOTE_ENTRY_ID_AdminComponentEasyAccessSet__customComponents_js-CF6gFUFw.js";export{r as get,a as init};
+import{n as e,t}from"./assets/virtual_mf-REMOTE_ENTRY_ID___mfe_internal__AdminComponentEasyAccessSet__customComponents_js-2hVQ3iWN.js";export{t as get,e as init};

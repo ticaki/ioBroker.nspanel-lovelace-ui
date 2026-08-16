@@ -21,7 +21,7 @@ import {
 } from '@mui/material';
 import { Upload as UploadIcon, SearchOutlined as SearchIcon } from '@mui/icons-material';
 import { ConfigGeneric, type ConfigGenericProps, type ConfigGenericState } from '@iobroker/json-config';
-import type { IobTheme, ThemeType, ThemeName } from '@iobroker/adapter-react-v5';
+import type { IobTheme, ThemeType, ThemeName } from '@iobroker/gui-components';
 import { EntitySelector } from './EntitySelector';
 import IconSelect from '../IconSelect';
 import type { TrashEntry } from '../../../src/lib/types/adminShareConfig';
@@ -207,8 +207,8 @@ export class PageTrashEditor extends ConfigGeneric<ConfigGenericProps & PageTras
         this.props.onEntryChange(updated);
     }
 
-    private getIconValueFromChange(attrOrData: string | Record<string, any>, value?: unknown): string {
-        if (typeof attrOrData === 'string') {
+    private getIconValueFromChange(attrOrData: string | Record<string, any> | undefined, value?: unknown): string {
+        if (typeof attrOrData !== 'object' || attrOrData === null) {
             return typeof value === 'string' ? value : '';
         }
 

@@ -116,12 +116,14 @@ export class PageQREditor extends ConfigGeneric<ConfigGenericProps & PageQREdito
                                 this.props.onUniqueNameChange(entry.uniqueName, newUniqueName);
                             }
                         }}
-                        InputProps={{
-                            sx: {
-                                backgroundColor: 'transparent',
-                                px: 1,
-                                fontWeight: 600,
-                                width: '50%',
+                        slotProps={{
+                            input: {
+                                sx: {
+                                    backgroundColor: 'transparent',
+                                    px: 1,
+                                    fontWeight: 600,
+                                    width: '50%',
+                                },
                             },
                         }}
                         disabled={!this.state.alive}
@@ -178,8 +180,8 @@ export class PageQREditor extends ConfigGeneric<ConfigGenericProps & PageQREdito
                     onChange={e => {
                         this.handleFieldChange('headline', e.target.value);
                     }}
-                    InputProps={{
-                        sx: { backgroundColor: 'transparent', px: 1, width: '50%' },
+                    slotProps={{
+                        input: { sx: { backgroundColor: 'transparent', px: 1, width: '50%' } },
                     }}
                     sx={{ mb: 2 }}
                     disabled={!this.state.alive}
@@ -209,8 +211,8 @@ export class PageQREditor extends ConfigGeneric<ConfigGenericProps & PageQREdito
                     onChange={e => {
                         this.handleFieldChange('ssidUrlTel', e.target.value);
                     }}
-                    InputProps={{
-                        sx: { backgroundColor: 'transparent', px: 1 },
+                    slotProps={{
+                        input: { sx: { backgroundColor: 'transparent', px: 1 } },
                     }}
                     sx={{ mb: 2 }}
                     disabled={!this.state.alive}
@@ -229,7 +231,7 @@ export class PageQREditor extends ConfigGeneric<ConfigGenericProps & PageQREdito
                             <Select
                                 value={entry.wlantype ?? 'WPA2'}
                                 onChange={e => {
-                                    const v = e.target.value as 'nopass' | 'WPA' | 'WPA2' | 'WPA3' | 'WEP';
+                                    const v = e.target.value;
                                     this.handleFieldChange('wlantype', v);
                                 }}
                             >
@@ -252,21 +254,23 @@ export class PageQREditor extends ConfigGeneric<ConfigGenericProps & PageQREdito
                                 onChange={e => {
                                     this.handleFieldChange('qrPass', e.target.value);
                                 }}
-                                InputProps={{
-                                    sx: { backgroundColor: 'transparent', px: 1 },
-                                    endAdornment: (
-                                        <InputAdornment position="end">
-                                            <IconButton
-                                                aria-label="toggle password visibility"
-                                                onClick={() => {
-                                                    this.setState({ showPassword: !this.state.showPassword });
-                                                }}
-                                                edge="end"
-                                            >
-                                                {this.state.showPassword ? <VisibilityOff /> : <Visibility />}
-                                            </IconButton>
-                                        </InputAdornment>
-                                    ),
+                                slotProps={{
+                                    input: {
+                                        sx: { backgroundColor: 'transparent', px: 1 },
+                                        endAdornment: (
+                                            <InputAdornment position="end">
+                                                <IconButton
+                                                    aria-label="toggle password visibility"
+                                                    onClick={() => {
+                                                        this.setState({ showPassword: !this.state.showPassword });
+                                                    }}
+                                                    edge="end"
+                                                >
+                                                    {this.state.showPassword ? <VisibilityOff /> : <Visibility />}
+                                                </IconButton>
+                                            </InputAdornment>
+                                        ),
+                                    },
                                 }}
                                 sx={{ mb: 2 }}
                                 disabled={!this.state.alive}

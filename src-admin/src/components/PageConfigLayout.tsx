@@ -11,7 +11,7 @@ import {
     MenuItem,
     FormControl,
 } from '@mui/material';
-import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
+import DeleteOutlineIcon from '@mui/icons-material/DeleteOutlined';
 import ConfirmDialog from './ConfirmDialog';
 import NavigationAssignmentPanel from './NavigationAssignmentPanel';
 import type {
@@ -291,7 +291,7 @@ export class PageConfigLayout extends React.Component<PageConfigLayoutProps, Pag
                                 disabled={!this.state.alive}
                                 value={selectedCardType}
                                 onChange={e => {
-                                    onCardTypeChange(e.target.value as PageCardType);
+                                    onCardTypeChange(e.target.value);
                                 }}
                                 sx={{
                                     backgroundColor: 'transparent',
@@ -335,8 +335,8 @@ export class PageConfigLayout extends React.Component<PageConfigLayoutProps, Pag
                                     }}
                                     variant="standard"
                                     placeholder={this.getText('New item')}
-                                    InputProps={{
-                                        sx: { backgroundColor: 'transparent', px: 1 },
+                                    slotProps={{
+                                        input: { sx: { backgroundColor: 'transparent', px: 1 } },
                                     }}
                                     sx={{
                                         flex: 1,

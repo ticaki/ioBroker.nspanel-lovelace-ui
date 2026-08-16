@@ -158,6 +158,7 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
     ### **WORK IN PROGRESS**
 -->
 ### **WORK IN PROGRESS**
+- (GermanBluefox) Admin UI migrated to React 19 / MUI 9 / `@iobroker/gui-components` – requires admin 8.0.0 or newer
 - (ticaki) cardPower admin: drag & drop between slots now works (missing dataTransfer.setData prevented Firefox/Safari from starting the drag)
 - (copilot) Adapter requires node.js >= 22 now
 

@@ -35,7 +35,7 @@ import {
 } from '../../../src/lib/types/adminShareConfig';
 import ChannelConfigDialog from './ChannelConfigDialog';
 import icons from '../icons.json';
-import { I18n, type IobTheme, type ThemeName, type ThemeType } from '@iobroker/adapter-react-v5';
+import { I18n, type IobTheme, type ThemeName, type ThemeType } from '@iobroker/gui-components';
 import { getPageItemDefaultsByRole, getPageNaviItemDefaultsByRole } from '../../../src/lib/const/page-item-defaults';
 import { ConfigGeneric, type ConfigGenericProps, type ConfigGenericState } from '@iobroker/json-config';
 

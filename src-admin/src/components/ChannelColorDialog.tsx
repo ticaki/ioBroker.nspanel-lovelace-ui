@@ -16,7 +16,7 @@ import {
 } from '@mui/material';
 import { Color, type RGB } from '../../../src/lib/const/Color';
 import { type PageItemRoleDefaults } from '../../../src/lib/const/page-item-defaults';
-import { I18n } from '@iobroker/adapter-react-v5';
+import { I18n } from '@iobroker/gui-components';
 import type { ChannelColorConfig, IconColorElement } from '../../../src/lib/types/adminShareConfig';
 
 export interface ChannelColorDialogProps {
