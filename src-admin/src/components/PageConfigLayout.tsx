@@ -11,7 +11,7 @@ import {
     MenuItem,
     FormControl,
 } from '@mui/material';
-import DeleteOutlineIcon from '@mui/icons-material/DeleteOutlined';
+import DeleteOutlineIcon from '@mui/icons-material/DeleteOutlineOutlined';
 import ConfirmDialog from './ConfirmDialog';
 import NavigationAssignmentPanel from './NavigationAssignmentPanel';
 import type {

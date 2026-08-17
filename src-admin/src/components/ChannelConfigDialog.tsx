@@ -24,7 +24,7 @@ import {
 } from '../../../src/lib/const/page-item-defaults';
 import icons from '../icons.json';
 import CancelIcon from '@mui/icons-material/Cancel';
-import ErrorOutline from '@mui/icons-material/ErrorOutlined';
+import ErrorOutline from '@mui/icons-material/ErrorOutlineOutlined';
 import PaletteIcon from '@mui/icons-material/Palette';
 import { I18n, type ThemeType } from '@iobroker/gui-components';
 import { ConfigGeneric, type ConfigGenericProps, type ConfigGenericState } from '@iobroker/json-config';
