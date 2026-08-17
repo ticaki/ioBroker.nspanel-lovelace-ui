@@ -1,6 +1,6 @@
 import React from 'react';
 import { Paper, Box, Typography } from '@mui/material';
-import { I18n } from '@iobroker/adapter-react-v5';
+import { I18n } from '@iobroker/gui-components';
 
 export interface NodePageInfoPanelProps {
     open: boolean;

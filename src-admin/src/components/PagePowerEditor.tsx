@@ -22,7 +22,7 @@ import HomeIcon from '@mui/icons-material/Home';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import { ConfigGeneric, type ConfigGenericProps, type ConfigGenericState } from '@iobroker/json-config';
-import type { IobTheme, ThemeType, ThemeName } from '@iobroker/adapter-react-v5';
+import type { IobTheme, ThemeType, ThemeName } from '@iobroker/gui-components';
 import { EntitySelector } from './EntitySelector';
 import IconSelect from '../IconSelect';
 import iconsJson from '../icons.json';
@@ -134,7 +134,7 @@ export class PagePowerEditor extends ConfigGeneric<ConfigGenericProps & PagePowe
 
     private updateSlot(slot: SlotKey, patch: Partial<PowerSlotConfig>): void {
         const current = this.props.entry[slot] ?? emptyPowerSlot();
-        this.updateEntry({ [slot]: { ...current, ...patch } } as Partial<PowerEntry>);
+        this.updateEntry({ [slot]: { ...current, ...patch } });
     }
 
     private updateHomeTop(patch: Partial<PowerHomeTopConfig>): void {
@@ -149,7 +149,7 @@ export class PagePowerEditor extends ConfigGeneric<ConfigGenericProps & PagePowe
 
     private clearSlot(slot: SlotKey, e: React.MouseEvent): void {
         e.stopPropagation();
-        this.updateEntry({ [slot]: emptyPowerSlot() } as Partial<PowerEntry>);
+        this.updateEntry({ [slot]: emptyPowerSlot() });
     }
 
     private onDragStart(slot: SlotKey, e: React.DragEvent): void {
@@ -185,7 +185,7 @@ export class PagePowerEditor extends ConfigGeneric<ConfigGenericProps & PagePowe
         const entry = this.props.entry;
         const fromData = entry[dragFrom] ?? emptyPowerSlot();
         const toData = entry[targetSlot] ?? emptyPowerSlot();
-        this.updateEntry({ [dragFrom]: toData, [targetSlot]: fromData } as Partial<PowerEntry>);
+        this.updateEntry({ [dragFrom]: toData, [targetSlot]: fromData });
     }
 
     private onDragEnd(): void {
@@ -414,17 +414,17 @@ export class PagePowerEditor extends ConfigGeneric<ConfigGenericProps & PagePowe
                             }}
                             custom
                             onChange={(
-                                attrOrData: string | Record<string, any>,
+                                attrOrData: string | Record<string, any> | undefined,
                                 val?: unknown,
                                 cb?: () => void,
                             ): void => {
                                 const newIcon =
-                                    typeof attrOrData === 'string'
-                                        ? typeof val === 'string'
-                                            ? val
+                                    typeof attrOrData === 'object' && attrOrData !== null
+                                        ? typeof attrOrData.icon === 'string'
+                                            ? attrOrData.icon
                                             : ''
-                                        : typeof attrOrData.icon === 'string'
-                                          ? attrOrData.icon
+                                        : typeof val === 'string'
+                                          ? val
                                           : '';
                                 this.updateSlot(slot, { icon: newIcon });
                                 if (cb) {

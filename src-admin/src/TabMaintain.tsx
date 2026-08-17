@@ -16,7 +16,7 @@ import {
     Switch,
 } from '@mui/material';
 import { grey, orange, blue, yellow } from '@mui/material/colors';
-import { type IobTheme, type ThemeName, type ThemeType } from '@iobroker/adapter-react-v5';
+import { type IobTheme, type ThemeName, type ThemeType } from '@iobroker/gui-components';
 import { PanelStatusBadge } from './components/PanelStatusBadge';
 
 interface MaintainPanelInfo {
@@ -133,7 +133,7 @@ class MaintainPanel extends ConfigGeneric<ConfigGenericProps & MaintainPanelProp
     }
 
     async componentDidMount(): Promise<void> {
-        super.componentDidMount();
+        void super.componentDidMount();
         this._isMounted = true;
 
         // Get initial alive state and subscribe to changes

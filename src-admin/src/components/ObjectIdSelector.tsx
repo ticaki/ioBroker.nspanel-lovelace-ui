@@ -1,7 +1,7 @@
 import React from 'react';
 import { Box } from '@mui/material';
 import { JsonConfigComponent } from '@iobroker/json-config';
-import { I18n, type ThemeName, type ThemeType, type IobTheme } from '@iobroker/adapter-react-v5';
+import { I18n, type ThemeName, type ThemeType, type IobTheme } from '@iobroker/gui-components';
 import type { ConfigItemPanel, ConfigItemObjectId } from '@iobroker/json-config';
 
 type ObjectIdSelectorProps = {
@@ -25,7 +25,7 @@ interface ObjectIdSelectorState {
 
 /**
  * ObjectIdSelector - Component for ObjectID selection without popup/dialog
- * Uses the built-in objectId selector from @iobroker/json-config
+ * Uses the built-in objectId selector from `@iobroker/json-config`
  */
 class ObjectIdSelector extends React.Component<ObjectIdSelectorProps, ObjectIdSelectorState> {
     private schema: ConfigItemPanel;
@@ -69,7 +69,10 @@ class ObjectIdSelector extends React.Component<ObjectIdSelectorProps, ObjectIdSe
         }
     }
 
-    private handleChange = (data: Record<string, any>): void => {
+    private handleChange = (data: Record<string, any> | null): void => {
+        if (!data) {
+            return;
+        }
         this.setState({ data });
 
         // Notify parent component of change

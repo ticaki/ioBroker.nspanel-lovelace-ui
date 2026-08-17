@@ -1,5 +1,4 @@
 import React from 'react';
-import { withTheme } from '@mui/styles';
 import { ConfigGeneric, type ConfigGenericProps, type ConfigGenericState } from '@iobroker/json-config';
 import {
     Alert,
@@ -130,7 +129,7 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
     }
     // Lade Timezone-Entities beim Mounten und abonniere Alive-Status
     async componentDidMount(): Promise<void> {
-        super.componentDidMount();
+        void super.componentDidMount();
 
         // Get initial alive state and subscribe to changes
         const aliveStateId = `system.adapter.${this.adapterName}.${this.instance}.alive`;
@@ -1125,4 +1124,4 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
     }
 }
 
-export default withTheme(PagePanelOverview);
+export default PagePanelOverview;

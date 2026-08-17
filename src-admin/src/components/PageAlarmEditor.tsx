@@ -114,12 +114,14 @@ export class PageAlarmEditor extends React.Component<PageAlarmEditorProps, PageA
                                 this.props.onUniqueNameChange(entry.uniqueName, newUniqueName);
                             }
                         }}
-                        InputProps={{
-                            sx: {
-                                backgroundColor: 'transparent',
-                                px: 1,
-                                fontWeight: 600,
-                                width: '50%',
+                        slotProps={{
+                            input: {
+                                sx: {
+                                    backgroundColor: 'transparent',
+                                    px: 1,
+                                    fontWeight: 600,
+                                    width: '50%',
+                                },
                             },
                         }}
                         disabled={!this.state.alive}
@@ -170,8 +172,8 @@ export class PageAlarmEditor extends React.Component<PageAlarmEditorProps, PageA
                     onChange={e => {
                         this.handleFieldChange('headline', e.target.value);
                     }}
-                    InputProps={{
-                        sx: { backgroundColor: 'transparent', px: 1, width: '50%' },
+                    slotProps={{
+                        input: { sx: { backgroundColor: 'transparent', px: 1, width: '50%' } },
                     }}
                     sx={{ mb: 2 }}
                     disabled={!this.state.alive}
@@ -190,26 +192,28 @@ export class PageAlarmEditor extends React.Component<PageAlarmEditorProps, PageA
                             const n = digits ? parseInt(digits, 10) : 0;
                             this.handleFieldChange('pin', n);
                         }}
-                        InputProps={{
-                            sx: { backgroundColor: 'transparent', px: 1 },
-                            endAdornment: (
-                                <InputAdornment position="end">
-                                    <IconButton
-                                        aria-label={this.state.showPin ? 'hide-pin' : 'show-pin'}
-                                        onClick={() => {
-                                            this.setState({ showPin: !this.state.showPin });
-                                        }}
-                                        edge="end"
-                                        size="small"
-                                    >
-                                        {this.state.showPin ? (
-                                            <VisibilityOff fontSize="small" />
-                                        ) : (
-                                            <Visibility fontSize="small" />
-                                        )}
-                                    </IconButton>
-                                </InputAdornment>
-                            ),
+                        slotProps={{
+                            input: {
+                                sx: { backgroundColor: 'transparent', px: 1 },
+                                endAdornment: (
+                                    <InputAdornment position="end">
+                                        <IconButton
+                                            aria-label={this.state.showPin ? 'hide-pin' : 'show-pin'}
+                                            onClick={() => {
+                                                this.setState({ showPin: !this.state.showPin });
+                                            }}
+                                            edge="end"
+                                            size="small"
+                                        >
+                                            {this.state.showPin ? (
+                                                <VisibilityOff fontSize="small" />
+                                            ) : (
+                                                <Visibility fontSize="small" />
+                                            )}
+                                        </IconButton>
+                                    </InputAdornment>
+                                ),
+                            },
                         }}
                         disabled={!this.state.alive}
                     />
@@ -256,13 +260,15 @@ export class PageAlarmEditor extends React.Component<PageAlarmEditorProps, PageA
                                                     onChange={e => {
                                                         this.handleFieldChange(key, e.target.value);
                                                     }}
-                                                    InputProps={{
-                                                        disableUnderline: true,
-                                                        sx: {
-                                                            backgroundColor: 'transparent',
-                                                            px: 1,
-                                                            '& input::placeholder': {
-                                                                color: 'text.disabled',
+                                                    slotProps={{
+                                                        input: {
+                                                            disableUnderline: true,
+                                                            sx: {
+                                                                backgroundColor: 'transparent',
+                                                                px: 1,
+                                                                '& input::placeholder': {
+                                                                    color: 'text.disabled',
+                                                                },
                                                             },
                                                         },
                                                     }}
@@ -304,13 +310,15 @@ export class PageAlarmEditor extends React.Component<PageAlarmEditorProps, PageA
                                                         this.handleFieldChange(key, e.target.value);
                                                     }}
                                                     disabled={!this.state.alive}
-                                                    InputProps={{
-                                                        disableUnderline: true,
-                                                        sx: {
-                                                            backgroundColor: 'transparent',
-                                                            px: 1,
-                                                            '& input::placeholder': {
-                                                                color: 'text.disabled',
+                                                    slotProps={{
+                                                        input: {
+                                                            disableUnderline: true,
+                                                            sx: {
+                                                                backgroundColor: 'transparent',
+                                                                px: 1,
+                                                                '& input::placeholder': {
+                                                                    color: 'text.disabled',
+                                                                },
                                                             },
                                                         },
                                                     }}

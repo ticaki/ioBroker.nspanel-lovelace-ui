@@ -11,7 +11,7 @@ import {
     Loader,
     type GenericAppProps,
     type GenericAppState,
-} from '@iobroker/adapter-react-v5';
+} from '@iobroker/gui-components';
 
 import IconSelect from './IconSelect';
 import IconOverview from './IconOverview';
@@ -124,7 +124,7 @@ class App extends GenericApp<GenericAppProps, AppState> {
             data: this.state.data,
             originalData: this.state.originalData,
             onError: (): void => {},
-            onChange: (attrOrData: string | Record<string, any>): void => {
+            onChange: (attrOrData: string | Record<string, any> | undefined): void => {
                 if (typeof attrOrData === 'object') {
                     this.setState({ data: attrOrData });
                 }

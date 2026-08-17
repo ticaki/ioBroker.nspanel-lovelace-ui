@@ -7,7 +7,7 @@ import {
     panelStatusTranslationKeys,
     type PanelStatus,
 } from '../../../src/lib/types/adminShareConfig';
-import { I18n } from '@iobroker/adapter-react-v5';
+import { I18n } from '@iobroker/gui-components';
 
 export interface PanelStatusBadgeProps {
     panelId: string;

@@ -159,10 +159,12 @@
     ],
     "globalDependencies": [
       {
-        "admin": ">=7.6.20",
-        "javascript": ">=8.9.2"
+        "admin": ">=8.0.0"
       }
     ],
+    "ifInstalledDependencies": {
+      "javascript": ">=8.9.2"
+    },
     "messagebox": true,
     "tier": 3
   },
