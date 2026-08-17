@@ -21,7 +21,7 @@ import {
     Tabs,
     Tab,
 } from '@mui/material';
-import DeleteOutlineIcon from '@mui/icons-material/DeleteOutlined';
+import DeleteOutlineIcon from '@mui/icons-material/DeleteOutlineOutlined';
 import NavigationIcon from '@mui/icons-material/Navigation';
 import SettingsIcon from '@mui/icons-material/Settings';
 import ExtensionIcon from '@mui/icons-material/Extension';
