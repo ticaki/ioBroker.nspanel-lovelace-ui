@@ -181,7 +181,7 @@ export class PageItemEditor extends React.Component<PageItemEditorProps, PageIte
                                 <Select
                                     value={editedItem.type}
                                     label={getText('pageItem_type')}
-                                    onChange={e => this.handleFieldChange('type', e.target.value as 'text' | 'button')}
+                                    onChange={e => this.handleFieldChange('type', e.target.value)}
                                 >
                                     <MenuItem value="button">{getText('pageItem_type_button')}</MenuItem>
                                     <MenuItem value="text">{getText('pageItem_type_text')}</MenuItem>

@@ -24,9 +24,9 @@ import {
 } from '../../../src/lib/const/page-item-defaults';
 import icons from '../icons.json';
 import CancelIcon from '@mui/icons-material/Cancel';
-import ErrorOutline from '@mui/icons-material/ErrorOutline';
+import ErrorOutline from '@mui/icons-material/ErrorOutlineOutlined';
 import PaletteIcon from '@mui/icons-material/Palette';
-import { I18n } from '@iobroker/adapter-react-v5';
+import { I18n, type ThemeType } from '@iobroker/gui-components';
 import { ConfigGeneric, type ConfigGenericProps, type ConfigGenericState } from '@iobroker/json-config';
 import Editor from '@iobroker/json-config/build/JsonConfigComponent/wrapper/Components/Editor';
 import { EntitySelector } from './EntitySelector';
@@ -54,7 +54,7 @@ export type { AdminPageItemConfig as PageItemConfig };
 type ChannelConfigDialogProps = {
     socket: any;
     theme?: any;
-    themeType?: string;
+    themeType?: ThemeType;
     adapterName?: string;
     instance?: number;
     /** oContext für IconSelect (optional – wird aus den anderen Props aufgebaut falls nicht übergeben) */
@@ -891,7 +891,7 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                             s =>
                                 (altDp.useKey !== true || s.key === altKey) &&
                                 altRoles.includes(s.common.role) &&
-                                altTypes.includes(s.common.type as string) &&
+                                altTypes.includes(s.common.type) &&
                                 (altDp.writeable !== true || s.common.write !== false),
                         );
                     }
@@ -1488,11 +1488,11 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                                                 label={I18n.t('channelConfigDialog_targetPage')}
                                                 slotProps={{
                                                     input: {
-                                                        ...params.InputProps,
+                                                        ...params.slotProps.input,
                                                         endAdornment: (
                                                             <>
                                                                 {loadingPages && <CircularProgress size={16} />}
-                                                                {params.InputProps.endAdornment}
+                                                                {params.slotProps.input.endAdornment}
                                                             </>
                                                         ),
                                                     },
@@ -1777,19 +1777,19 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                                                 <Box>
                                                     <Typography
                                                         variant="caption"
-                                                        display="block"
+                                                        sx={{ display: 'block' }}
                                                     >
                                                         {I18n.t('channelConfigDialog_longPressHint1')}
                                                     </Typography>
                                                     <Typography
                                                         variant="caption"
-                                                        display="block"
+                                                        sx={{ display: 'block' }}
                                                     >
                                                         {I18n.t('channelConfigDialog_longPressHint2')}
                                                     </Typography>
                                                     <Typography
                                                         variant="caption"
-                                                        display="block"
+                                                        sx={{ display: 'block' }}
                                                     >
                                                         {I18n.t('channelConfigDialog_longPressHint3')}
                                                     </Typography>
@@ -1847,11 +1847,11 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                                                         label={I18n.t('channelConfigDialog_targetLongPressPage')}
                                                         slotProps={{
                                                             input: {
-                                                                ...params.InputProps,
+                                                                ...params.slotProps.input,
                                                                 endAdornment: (
                                                                     <>
                                                                         {loadingPages && <CircularProgress size={16} />}
-                                                                        {params.InputProps.endAdornment}
+                                                                        {params.slotProps.input.endAdornment}
                                                                     </>
                                                                 ),
                                                             },
@@ -2077,9 +2077,9 @@ export class ChannelConfigDialogJsonConfig extends ConfigGeneric<ConfigGenericPr
             <ChannelConfigDialog
                 socket={oContext?.socket}
                 theme={oContext?.theme}
-                themeType={oContext?.themeType as string | undefined}
-                adapterName={oContext?.adapterName as string | undefined}
-                instance={oContext?.instance as number | undefined}
+                themeType={oContext?.themeType}
+                adapterName={oContext?.adapterName}
+                instance={oContext?.instance}
                 oContext={oContext}
             />
         );

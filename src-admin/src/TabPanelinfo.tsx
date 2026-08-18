@@ -19,7 +19,7 @@ import { grey, orange, yellow } from '@mui/material/colors';
 import SettingsOutlinedIcon from '@mui/icons-material/SettingsOutlined';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import CancelIcon from '@mui/icons-material/Cancel';
-import { type IobTheme, type ThemeName, type ThemeType } from '@iobroker/adapter-react-v5';
+import { type IobTheme, type ThemeName, type ThemeType } from '@iobroker/gui-components';
 import { PanelStatusBadge } from './components/PanelStatusBadge';
 
 interface PanelinfoInfo {
@@ -168,7 +168,7 @@ class TabPanelinfo extends ConfigGeneric<ConfigGenericProps & PanelinfoProps, Pa
     }
 
     async componentDidMount(): Promise<void> {
-        super.componentDidMount();
+        void super.componentDidMount();
         this._isMounted = true;
 
         // Get initial alive state and subscribe to changes
@@ -290,7 +290,7 @@ class TabPanelinfo extends ConfigGeneric<ConfigGenericProps & PanelinfoProps, Pa
                 const value = state?.val ?? null;
 
                 panelStateData.states[statePath] = {
-                    object: obj as ioBroker.StateObject,
+                    object: obj,
                     value,
                 };
 

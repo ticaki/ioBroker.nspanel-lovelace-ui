@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "nspanel-lovelace-ui",
-    "version": "0.17.8",
+    "version": "1.0.0",
     "news": {
+      "1.0.0": {
+        "en": "BREAKING: adapter requires node.js >= 22 now\nBREAKING: admin UI migrated to React 19 / MUI 9, requires admin 8.0.0 or newer\ncardPower configuration migrated to the new react based page config tab\nadmin: previous/next buttons in the navigation assignment panel were swapped\nberry driver generation 11 added (beta), the automatic berry driver update was removed",
+        "de": "BREAKING: Adapter benötigt jetzt node.js >= 22\nBREAKING: Admin-Oberfläche auf React 19 / MUI 9 migriert, benötigt admin 8.0.0 oder neuer\ncardPower-Konfiguration in den neuen react-basierten Seiten-Konfigurationstab migriert\nAdmin: Zurück-/Weiter-Buttons im Navigationszuweisungs-Panel waren vertauscht\nBerry-Treiber-Generation 11 hinzugefügt (Beta), das automatische Berry-Treiber-Update wurde entfernt",
+        "ru": "BREAKING: адаптеру теперь требуется node.js >= 22\nBREAKING: интерфейс администратора переведён на React 19 / MUI 9, требуется admin 8.0.0 или новее\nнастройка cardPower перенесена во вкладку конфигурации страниц на react\nадмин: кнопки «назад»/«вперёд» в панели назначения навигации были перепутаны\nдобавлено поколение 11 драйвера berry (бета), автоматическое обновление драйвера berry удалено",
+        "pt": "BREAKING: o adaptador agora requer node.js >= 22\nBREAKING: interface de administração migrada para React 19 / MUI 9, requer admin 8.0.0 ou mais recente\nconfiguração do cardPower migrada para a nova aba de configuração de páginas em react\nadmin: os botões anterior/próximo no painel de atribuição de navegação estavam trocados\ngeração 11 do driver berry adicionada (beta), a atualização automática do driver berry foi removida",
+        "nl": "BREAKING: adapter vereist nu node.js >= 22\nBREAKING: admin-interface gemigreerd naar React 19 / MUI 9, vereist admin 8.0.0 of nieuwer\ncardPower-configuratie verplaatst naar het nieuwe op react gebaseerde paginaconfiguratietabblad\nadmin: de vorige/volgende knoppen in het navigatietoewijzingspaneel waren verwisseld\nberry-driver generatie 11 toegevoegd (beta), de automatische berry-driver-update is verwijderd",
+        "fr": "BREAKING: l'adaptateur nécessite désormais node.js >= 22\nBREAKING: interface d'administration migrée vers React 19 / MUI 9, nécessite admin 8.0.0 ou plus récent\nconfiguration de cardPower migrée vers le nouvel onglet de configuration de page en react\nadmin: les boutons précédent/suivant du panneau d'affectation de navigation étaient inversés\ngénération 11 du pilote berry ajoutée (bêta), la mise à jour automatique du pilote berry a été supprimée",
+        "it": "BREAKING: l'adapter richiede ora node.js >= 22\nBREAKING: interfaccia di amministrazione migrata a React 19 / MUI 9, richiede admin 8.0.0 o successivo\nconfigurazione di cardPower migrata nella nuova scheda di configurazione pagine basata su react\nadmin: i pulsanti precedente/successivo nel pannello di assegnazione della navigazione erano invertiti\naggiunta la generazione 11 del driver berry (beta), l'aggiornamento automatico del driver berry è stato rimosso",
+        "es": "BREAKING: el adaptador requiere ahora node.js >= 22\nBREAKING: interfaz de administración migrada a React 19 / MUI 9, requiere admin 8.0.0 o superior\nconfiguración de cardPower migrada a la nueva pestaña de configuración de páginas basada en react\nadmin: los botones anterior/siguiente del panel de asignación de navegación estaban intercambiados\nañadida la generación 11 del controlador berry (beta), se eliminó la actualización automática del controlador berry",
+        "pl": "BREAKING: adapter wymaga teraz node.js >= 22\nBREAKING: interfejs administracyjny przeniesiony na React 19 / MUI 9, wymaga admin 8.0.0 lub nowszego\nkonfiguracja cardPower przeniesiona do nowej zakładki konfiguracji stron opartej na react\nadmin: przyciski poprzedni/następny w panelu przypisania nawigacji były zamienione\ndodano generację 11 sterownika berry (beta), automatyczna aktualizacja sterownika berry została usunięta",
+        "uk": "BREAKING: адаптер тепер потребує node.js >= 22\nBREAKING: інтерфейс адміністратора переведено на React 19 / MUI 9, потребує admin 8.0.0 або новіший\nналаштування cardPower перенесено на нову вкладку конфігурації сторінок на react\nадмін: кнопки «назад»/«вперед» на панелі призначення навігації були переплутані\nдодано покоління 11 драйвера berry (бета), автоматичне оновлення драйвера berry видалено",
+        "zh-cn": "BREAKING: 适配器现在需要 node.js >= 22\nBREAKING: 管理界面迁移到 React 19 / MUI 9，需要 admin 8.0.0 或更高版本\ncardPower 配置迁移到新的基于 react 的页面配置选项卡\n管理界面：导航分配面板中的上一个/下一个按钮曾被调换\n新增 berry 驱动第 11 代（测试版），已移除 berry 驱动的自动更新"
+      },
       "0.17.8": {
         "en": "fixed: Cannot read properties of undefined (reading 'trim')",
         "de": "fix: Kann keine Eigenschaften von undefiniert lesen (lesen 'trim')",
@@ -80,19 +93,6 @@
         "pl": "stałe: textSize / fontSize 0- 5 i końcówka narzędzia, układ administracyjny us- p, nie aktualizacja jagody emu, textSize dla niestandardowych elementów, aktywacja przycisku dla niestandardowych id",
         "uk": "виправлено: textSize/fontSize 0-5 і tooltip, us-p адмін макет, не оновити ему ягідку, текстВибір для користувацького елемента, активувати тригер для користувальницьких ідентифікаторів",
         "zh-cn": "固定:文本Size/fontSize 0-5和工具提示,我们-p管理员布局,不更新emu bery,文本Size为自定义项目,激活自定义ID的触发器"
-      },
-      "0.17.2": {
-        "en": "bugfix: pageitem name / icon as id for most roles / textSize",
-        "de": "bugfix: pageitem name / icon als id für die meisten Rollen / textGröße",
-        "ru": "bugfix: pageitem name / icon as id для большинства ролей / textSize",
-        "pt": "bugfix: nome / ícone do item de página como id para a maioria das funções / textoSize",
-        "nl": "bugfix: pageitem naam / pictogram als id voor de meeste rollen / tekstgrootte",
-        "fr": "bugfix : nom de pageitem / icône comme id pour la plupart des rôles / textSize",
-        "it": "bugfix: pageitem name / icona come id per la maggior parte dei ruoli / textSize",
-        "es": "bugfix: nombre de página / icono como id para la mayoría de los roles / texto",
-        "pl": "bugfix: nazwa obiektu / ikona jako id dla większości ról / textSize",
-        "uk": "виправлено помилку: ім'я сторінки / іконка як ідентифікатор для більшості ролей / текстВибір",
-        "zh-cn": "bugfix: 页面项目名称/ 图标作为大多数角色的 ID / textSize"
       }
     },
     "titleLang": {
@@ -159,10 +159,12 @@
     ],
     "globalDependencies": [
       {
-        "admin": ">=7.6.20",
-        "javascript": ">=8.9.2"
+        "admin": ">=8.0.0"
       }
     ],
+    "ifInstalledDependencies": {
+      "javascript": ">=8.9.2"
+    },
     "messagebox": true,
     "tier": 3
   },

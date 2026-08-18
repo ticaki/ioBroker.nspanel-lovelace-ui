@@ -15,9 +15,8 @@ import {
     MenuItem,
     InputLabel,
 } from '@mui/material';
-import { withTheme } from '@mui/styles';
 import ConfirmDialog from './components/ConfirmDialog';
-import { SelectID } from '@iobroker/adapter-react-v5';
+import { SelectID } from '@iobroker/gui-components';
 import {
     ConfigGeneric,
     type ConfigGenericProps,
@@ -89,7 +88,7 @@ class ScreensaverPage extends ConfigGeneric<ConfigGenericProps & { theme?: any }
 
     constructor(props: ConfigGenericProps & { theme?: any }) {
         super(props);
-        const saved = ConfigGeneric.getValue(props.data, props.attr!);
+        const saved = ConfigGeneric.getValue(props.data, props.attr);
         this.state = {
             ...(this.state as ConfigGenericState),
             entries: Array.isArray(saved) ? (saved as ScreensaverEntries) : [],
@@ -97,7 +96,7 @@ class ScreensaverPage extends ConfigGeneric<ConfigGenericProps & { theme?: any }
             confirmDeleteName: null,
             alive: false,
             pagesRetryCount: 0,
-        } as ScreensaverPageState;
+        };
     }
 
     private formatDatePreview(date: Date, format: string): string {
@@ -129,7 +128,7 @@ class ScreensaverPage extends ConfigGeneric<ConfigGenericProps & { theme?: any }
     }
 
     async componentDidMount(): Promise<void> {
-        super.componentDidMount();
+        void super.componentDidMount();
 
         // Get initial alive state and subscribe to changes
         const instance = this.props.oContext.instance ?? '0';
@@ -296,7 +295,7 @@ class ScreensaverPage extends ConfigGeneric<ConfigGenericProps & { theme?: any }
             };
             const updated = [...entries, newEntry];
             this.setState({ entries: updated } as ScreensaverPageState);
-            void this.onChange(this.props.attr!, updated);
+            void this.onChange(this.props.attr, updated);
             local.newName = '';
             local.selected = name;
         };
@@ -326,7 +325,7 @@ class ScreensaverPage extends ConfigGeneric<ConfigGenericProps & { theme?: any }
                 confirmDeleteOpen: false,
                 confirmDeleteName: null,
             } as ScreensaverPageState);
-            void this.onChange(this.props.attr!, updated);
+            void this.onChange(this.props.attr, updated);
             // pick next
             const remaining = Array.from(new Set(updated.map((e: ScreensaverEntry) => e.uniqueName))).filter(Boolean);
             if (local) {
@@ -391,8 +390,8 @@ class ScreensaverPage extends ConfigGeneric<ConfigGenericProps & { theme?: any }
                                 }}
                                 variant="standard"
                                 placeholder={this.getText('new_screensaver')}
-                                InputProps={{
-                                    sx: { backgroundColor: 'transparent', px: 1 },
+                                slotProps={{
+                                    input: { sx: { backgroundColor: 'transparent', px: 1 } },
                                 }}
                                 sx={{
                                     flex: 1,
@@ -527,9 +526,7 @@ class ScreensaverPage extends ConfigGeneric<ConfigGenericProps & { theme?: any }
                                     onChange={event => {
                                         if (local?.selected) {
                                             const newCard = event.target.value as
-                                                | 'screensaver'
-                                                | 'screensaver2'
-                                                | 'screensaver3';
+                                                'screensaver' | 'screensaver2' | 'screensaver3';
                                             const updatedEntries = [...this.state.entries];
                                             const index = updatedEntries.findIndex(
                                                 (entry: ScreensaverEntry) => entry.uniqueName === local.selected,
@@ -682,8 +679,8 @@ class ScreensaverPage extends ConfigGeneric<ConfigGenericProps & { theme?: any }
                                     return schema;
                                 })()}
                                 data={{ testObjectId: this.state.selectedObjectIdJson || '' }}
-                                onChange={(newData: Record<string, any>) => {
-                                    const sel = (newData && (newData as any).testObjectId) || '';
+                                onChange={(newData: Record<string, any> | null) => {
+                                    const sel = newData?.testObjectId || '';
                                     this.setState({ selectedObjectIdJson: sel });
                                 }}
                                 isFloatComma={false}
@@ -812,7 +809,7 @@ class ScreensaverPage extends ConfigGeneric<ConfigGenericProps & { theme?: any }
                                                                 editingPageItem: undefined,
                                                                 editingPageItemIndex: undefined,
                                                             } as ScreensaverPageState);
-                                                            void this.onChange(this.props.attr!, updatedEntries);
+                                                            void this.onChange(this.props.attr, updatedEntries);
                                                         }}
                                                         onDelete={() => {
                                                             if (this.state.editingPageItemIndex !== undefined) {
@@ -831,7 +828,7 @@ class ScreensaverPage extends ConfigGeneric<ConfigGenericProps & { theme?: any }
                                                                     editingPageItem: undefined,
                                                                     editingPageItemIndex: undefined,
                                                                 } as ScreensaverPageState);
-                                                                void this.onChange(this.props.attr!, updatedEntries);
+                                                                void this.onChange(this.props.attr, updatedEntries);
                                                             }
                                                         }}
                                                         onBack={() => {
@@ -871,7 +868,7 @@ class ScreensaverPage extends ConfigGeneric<ConfigGenericProps & { theme?: any }
                                                                     this.setState({
                                                                         entries: updated,
                                                                     } as ScreensaverPageState);
-                                                                    void this.onChange(this.props.attr!, updated);
+                                                                    void this.onChange(this.props.attr, updated);
                                                                 }}
                                                                 label={this.getText('dateFormat')}
                                                             >
@@ -904,7 +901,7 @@ class ScreensaverPage extends ConfigGeneric<ConfigGenericProps & { theme?: any }
                                                                     this.setState({
                                                                         entries: updated,
                                                                     } as ScreensaverPageState);
-                                                                    void this.onChange(this.props.attr!, updated);
+                                                                    void this.onChange(this.props.attr, updated);
                                                                 }}
                                                                 variant="outlined"
                                                                 fullWidth
@@ -976,7 +973,7 @@ class ScreensaverPage extends ConfigGeneric<ConfigGenericProps & { theme?: any }
                                                                     this.setState({
                                                                         entries: updated,
                                                                     } as ScreensaverPageState);
-                                                                    void this.onChange(this.props.attr!, updated);
+                                                                    void this.onChange(this.props.attr, updated);
                                                                 }}
                                                                 label={this.getText('timeFormat')}
                                                             >
@@ -1176,7 +1173,7 @@ class ScreensaverPage extends ConfigGeneric<ConfigGenericProps & { theme?: any }
                                     entry.uniqueName === uniqueName ? { ...entry, navigation: assignments } : entry,
                                 );
                                 this.setState({ entries: updated } as ScreensaverPageState);
-                                void this.onChange(this.props.attr!, updated);
+                                void this.onChange(this.props.attr, updated);
                             }}
                             hideNavigationFields={true}
                         />
@@ -1189,4 +1186,4 @@ class ScreensaverPage extends ConfigGeneric<ConfigGenericProps & { theme?: any }
     }
 }
 
-export default withTheme(ScreensaverPage);
+export default ScreensaverPage;

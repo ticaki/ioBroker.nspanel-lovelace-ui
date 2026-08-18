@@ -1,6 +1,6 @@
 import { Color } from '../../const/Color';
 //import * as fs from 'node:fs';
-import type { CalendarComponent } from 'node-ical';
+import type { CalendarComponent, VEvent } from 'node-ical';
 import iCal from 'node-ical';
 import { type AdapterClassDefinition } from '../../controller/library';
 
@@ -134,7 +134,7 @@ export async function getTrashDataFromFile(
     }
 }
 
-function getTrashItem(event: Partial<iCal.VEvent>, countItems: number, items: TrashItem[]): ItemObject | null {
+function getTrashItem(event: Partial<VEvent>, countItems: number, items: TrashItem[]): ItemObject | null {
     const eventSummary = event.summary !== undefined ? event.summary : null;
 
     // Extrahiere String-Wert aus ParameterValue-Objekt oder verwende direkt den String

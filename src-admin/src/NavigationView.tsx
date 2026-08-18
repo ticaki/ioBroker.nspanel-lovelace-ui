@@ -46,8 +46,9 @@ interface NavigationViewState extends ConfigGenericState {
     noData?: boolean;
 }
 // React import consolidated below with hooks
-import type { EdgeProps } from 'reactflow';
-import ReactFlow, {
+import type { Edge, EdgeProps } from '@xyflow/react';
+import {
+    ReactFlow,
     Background,
     Controls,
     Handle,
@@ -55,8 +56,8 @@ import ReactFlow, {
     applyNodeChanges,
     applyEdgeChanges,
     getBezierPath,
-} from 'reactflow';
-import 'reactflow/dist/style.css';
+} from '@xyflow/react';
+import '@xyflow/react/dist/style.css';
 import type { SelectChangeEvent } from '@mui/material';
 import { Select, MenuItem, Box, Button, Typography, CircularProgress, Checkbox, FormControlLabel } from '@mui/material';
 import NodePageInfoPanel from './components/NodePageInfoPanel';
@@ -65,7 +66,7 @@ import { useTheme } from '@mui/material/styles';
 import { hierarchy, tree } from 'd3-hierarchy';
 import React, { useEffect } from 'react';
 import { ConfigGeneric, type ConfigGenericProps, type ConfigGenericState } from '@iobroker/json-config';
-import { I18n } from '@iobroker/adapter-react-v5';
+import { I18n } from '@iobroker/gui-components';
 // Typdefinitionen für panelConfig (vereinfachte Annahme)
 // Siehe zentrale Typen in src/lib/types/navigation.ts
 type NavigationPanelConfig = {
@@ -74,13 +75,16 @@ type NavigationPanelConfig = {
     navigationMap: NavigationMap;
 };
 
-function CustomEdge(props: EdgeProps): React.ReactElement {
+/** Edge type of this view - `@xyflow/react` types `data` as `Record<string, unknown>` */
+type CustomEdgeType = Edge<{ isTarget?: boolean; navType?: string }>;
+
+function CustomEdge(props: EdgeProps<CustomEdgeType>): React.ReactElement {
     const [edgePath] = getBezierPath(props);
-    const navType = String(props.data?.navType ?? '');
+    const navType = props.data?.navType ?? '';
     const isTarget = !!props.data?.isTarget;
     const markerId = navType || (isTarget ? 'target' : 'default');
 
-    const tooltip = `${props.data?.navType ?? ''}: ${props.source} → ${props.target}`;
+    const tooltip = `${navType}: ${props.source} → ${props.target}`;
 
     // stroke is passed via style on the FlowEdge (mapNavigationMapToFlow)
     const stroke = props.style?.stroke ?? 'var(--edge-color, #1976d2)';
@@ -636,15 +640,12 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
             return;
         }
         // remove position field from entries (works on local copy)
-        const cleaned = nav.map(
-            e =>
-                ({
-                    ...e,
-                    position: undefined,
-                }) as NavigationMapEntry,
-        );
+        const cleaned = nav.map(e => ({
+            ...e,
+            position: undefined,
+        }));
         // compute positions and apply
-        const positions = computeAutoLayout(cleaned as NavigationMap);
+        const positions = computeAutoLayout(cleaned);
         const newNodes: FlowNode[] = cleaned.map(entry => ({
             id: entry.page,
             data: { label: entry.label || entry.page, entry },
@@ -652,7 +653,7 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
             type: 'custom',
             draggable: true,
         }));
-        const flow = mapNavigationMapToFlow(cleaned as NavigationMap);
+        const flow = mapNavigationMapToFlow(cleaned);
         this.setState({ nodes: newNodes, edges: flow.edges, dirty: true, confirmAutoLayoutOpen: false } as any);
     }
 
@@ -669,7 +670,8 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
         this.setState({ infoPanelOpen: false, infoData: null, infoNodeId: undefined });
     }
 
-    componentDidMount(): void {
+    // eslint-disable-next-line @typescript-eslint/require-await
+    async componentDidMount(): Promise<void> {
         this.checkAlive();
         this.fetchNavigation();
         // Autosave-Intervall starten
@@ -813,7 +815,7 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
             const posChange = changes.find(c => c.type === 'position');
             const movedId = posChange?.id;
             this.setState(state => {
-                const newNodes = applyNodeChanges(changes, state.nodes) as FlowNode[];
+                const newNodes = applyNodeChanges(changes, state.nodes);
                 const moved = newNodes.find(n => n.id === movedId);
                 const pageInfo = moved?.data?.entry?.pageInfo ?? null;
                 return {
@@ -822,11 +824,11 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
                     infoPanelOpen: true,
                     infoData: pageInfo,
                     infoNodeId: movedId,
-                } as any;
+                };
             });
         } else {
             this.setState(state => ({
-                nodes: applyNodeChanges(changes, state.nodes) as FlowNode[],
+                nodes: applyNodeChanges(changes, state.nodes),
             }));
         }
     }
@@ -834,12 +836,12 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
     onEdgesChange(changes: any[]): void {
         if (changes.some(change => change.type === 'position')) {
             this.setState(state => ({
-                edges: applyEdgeChanges(changes, state.edges) as FlowEdge[],
+                edges: applyEdgeChanges(changes, state.edges),
                 dirty: true,
             }));
         } else {
             this.setState(state => ({
-                edges: applyEdgeChanges(changes, state.edges) as FlowEdge[],
+                edges: applyEdgeChanges(changes, state.edges),
             }));
         }
     }
@@ -1293,7 +1295,7 @@ export default function WrappedNavigationView(props: ConfigGenericProps): React.
         <ThemeVarsProvider>
             {/* eslint-disable-next-line @typescript-eslint/ban-ts-comment */}
             {/* @ts-ignore allow passing through ConfigGenericProps to class component */}
-            <NavigationView {...(props as any)} />
+            <NavigationView {...props} />
         </ThemeVarsProvider>
     );
 }

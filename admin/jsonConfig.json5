@@ -9,6 +9,7 @@
             "items": {
                 "pageGlobalSettings": {
                     "type": "custom",
+                    "guiApi": 2,
                     "i18n": true,
                     "url": "custom/customComponents.js",
                     "name": "AdminComponentTemplateSet/Components/TabMaintain",
@@ -25,6 +26,7 @@
             "items": {
                 "pageGlobalSettings": {
                     "type": "custom",
+                    "guiApi": 2,
                     "i18n": true,
                     "url": "custom/customComponents.js",
                     "name": "AdminComponentTemplateSet/Components/PageGlobalSettings",
@@ -997,6 +999,7 @@
                         {
                             "attr": "power1_icon",                         
                             "type": "custom",
+                            "guiApi": 2,
                             "i18n": true,
                             "url": "custom/customComponents.js",
                             "name": "AdminComponentTemplateSet/Components/IconSelect",
@@ -1206,6 +1209,7 @@
                         {
                             "attr": "power2_icon",                         
                             "type": "custom",
+                            "guiApi": 2,
                             "i18n": true,
                             "url": "custom/customComponents.js",
                             "name": "AdminComponentTemplateSet/Components/IconSelect",
@@ -1413,6 +1417,7 @@
                         {
                             "attr": "power3_icon",                         
                             "type": "custom",
+                            "guiApi": 2,
                             "i18n": true,
                             "url": "custom/customComponents.js",
                             "name": "AdminComponentTemplateSet/Components/IconSelect",
@@ -1620,6 +1625,7 @@
                         {
                             "attr": "power4_icon",                         
                             "type": "custom",
+                            "guiApi": 2,
                             "i18n": true,
                             "url": "custom/customComponents.js",
                             "name": "AdminComponentTemplateSet/Components/IconSelect",
@@ -1827,6 +1833,7 @@
                         {
                             "attr": "power5_icon",                         
                             "type": "custom",
+                            "guiApi": 2,
                             "i18n": true,
                             "url": "custom/customComponents.js",
                             "name": "AdminComponentTemplateSet/Components/IconSelect",
@@ -2034,6 +2041,7 @@
                         {
                             "attr": "power6_icon",                         
                             "type": "custom",
+                            "guiApi": 2,
                             "i18n": true,
                             "url": "custom/customComponents.js",
                             "name": "AdminComponentTemplateSet/Components/IconSelect",
@@ -2749,6 +2757,7 @@
             "items": {
                 "pageConfig": {
                     "type": "custom",
+                    "guiApi": 2,
                     "i18n": true,
                     "url": "custom/customComponents.js",
                     "name": "AdminComponentTemplateSet/Components/PageConfigManager",
@@ -2908,6 +2917,7 @@
             "items": {
                 "pagePanelOverview": {
                     "type": "custom",
+                    "guiApi": 2,
                     "i18n": true,
                     "url": "custom/customComponents.js",
                     "name": "AdminComponentTemplateSet/Components/PagePanelOverview",
@@ -2923,6 +2933,7 @@
             "items": {
                 "pageMQTTSetting": {
                     "type": "custom",
+                    "guiApi": 2,
                     "i18n": true,
                     "url": "custom/customComponents.js",
                     "name": "AdminComponentTemplateSet/Components/PageMQTTSetting",
@@ -3264,6 +3275,7 @@
                 },
                 "myCustomAttribute": {
                     "type": "custom",
+                    "guiApi": 2,
                     "i18n": true,
                     "url": "custom/customComponents.js",
                     "name": "AdminComponentTemplateSet/Components/IconSelect",
@@ -3288,6 +3300,7 @@
                 },
                 "_channelConfigDialog": {
                     "type": "custom",
+                    "guiApi": 2,
                     "i18n": true,
                     "url": "custom/customComponents.js",
                     "name": "AdminComponentTemplateSet/Components/ChannelConfigDialog",
@@ -3303,6 +3316,7 @@
             "items": {
                 "_myCustomAttribute": {
                     "type": "custom",
+                    "guiApi": 2,
                     "i18n": true,
                     "url": "custom/customComponents.js",
                     "name": "AdminComponentTemplateSet/Components/NavigationView",
@@ -3319,6 +3333,7 @@
             "items": {
                 "ScreensaverPageConfig": {
                     "type": "custom",
+                    "guiApi": 2,
                     "i18n": true,
                     "url": "custom/customComponents.js",
                     "name": "AdminComponentTemplateSet/Components/ScreensaverPage",
@@ -3355,6 +3370,7 @@
                 },
                 "_iconGrid": {
                     "type": "custom",
+                    "guiApi": 2,
                     "i18n": true,
                     "url": "custom/customComponents.js",
                     "name": "AdminComponentTemplateSet/Components/IconOverview",

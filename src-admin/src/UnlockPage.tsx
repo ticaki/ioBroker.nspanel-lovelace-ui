@@ -1,5 +1,4 @@
 import React from 'react';
-import { withTheme } from '@mui/styles';
 import PageConfigManager from './PageConfigManager';
 import type { ConfigGenericProps } from '@iobroker/json-config';
 
@@ -10,4 +9,4 @@ class UnlockPage extends React.Component<ConfigGenericProps & { theme?: any }> {
     }
 }
 
-export default withTheme(UnlockPage);
+export default UnlockPage;
