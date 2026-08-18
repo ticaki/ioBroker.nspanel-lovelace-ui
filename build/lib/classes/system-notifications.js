@@ -97,7 +97,7 @@ class SystemNotifications extends import_library.BaseClass {
       }
       const _helper = async () => {
         return new Promise((resolve) => {
-          setTimeout(() => {
+          this.adapter.setTimeout(() => {
             resolve({ result: {} });
           }, 1e3);
           return resolve(
