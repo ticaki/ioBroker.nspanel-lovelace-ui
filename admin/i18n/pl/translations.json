@@ -555,6 +555,8 @@
     "trash_icon_field_6": "Pole ikon 6",
     "trash_ics_file_path": "plik .ics zawierający ścieżkę",
     "trash_ics_file_path_help": "Ścieżka do pliku .ics w systemie plików ioBroker. Wypełniane automatycznie podczas przesyłania pliku",
+    "trash_ics_upload_no_events": "Przesłano „%s”, ale w pliku nie znaleziono żadnych terminów.",
+    "trash_ics_upload_success": "Przesłano „%s” – znaleziono %d terminów. Wybierz te, które mają być wyświetlane.",
     "trash_import_ics_file": "Importuj poprzez plik .ics",
     "trash_import_state": "Importuj za pośrednictwem stanu adaptera iCal",
     "trash_import_type": "Typ importu",

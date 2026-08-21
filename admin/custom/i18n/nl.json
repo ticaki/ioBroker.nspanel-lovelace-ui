@@ -555,6 +555,8 @@
     "trash_icon_field_6": "Pictogramveld 6",
     "trash_ics_file_path": ".ics-bestand inclusief pad",
     "trash_ics_file_path_help": "Pad naar het .ics-bestand in het ioBroker-bestandssysteem. Wordt automatisch ingevuld bij het uploaden van het bestand",
+    "trash_ics_upload_no_events": "'%s' geüpload, maar er zijn geen afspraken in het bestand gevonden.",
+    "trash_ics_upload_success": "'%s' geüpload – %d afspraken gevonden. Selecteer de weer te geven afspraken.",
     "trash_import_ics_file": "Importeren via .ics-bestand",
     "trash_import_state": "Importeren via iCal-adapterstatus",
     "trash_import_type": "Importtype",
