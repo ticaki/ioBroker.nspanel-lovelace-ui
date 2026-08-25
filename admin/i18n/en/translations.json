@@ -581,6 +581,8 @@
     "trash_icon_field_6": "Icon field 6",
     "trash_ics_file_path": ".ics file including path",
     "trash_ics_file_path_help": "Path to the .ics file in the ioBroker file system. Automatically filled in when uploading the file",
+    "trash_ics_upload_no_events": "'%s' uploaded, but no appointments were found in the file.",
+    "trash_ics_upload_success": "'%s' uploaded – %d appointments found. Please select the ones to display.",
     "trash_import_ics_file": "Import via .ics file",
     "trash_import_state": "Import via iCal Adapter State",
     "trash_import_type": "Import type",

@@ -555,6 +555,8 @@
     "trash_icon_field_6": "图标字段 6",
     "trash_ics_file_path": ".ics 文件，包括路径",
     "trash_ics_file_path_help": "ioBroker 文件系统中 .ics 文件的路径。上传文件时自动填写",
+    "trash_ics_upload_no_events": "已上传“%s”，但文件中未找到任何日程。",
+    "trash_ics_upload_success": "已上传“%s”——找到 %d 个日程。请选择要显示的日程。",
     "trash_import_ics_file": "通过 .ics 文件导入",
     "trash_import_state": "通过 iCal 适配器状态导入",
     "trash_import_type": "进口型",

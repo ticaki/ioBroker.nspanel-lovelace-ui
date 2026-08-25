@@ -555,6 +555,8 @@
     "trash_icon_field_6": "Поле значка 6",
     "trash_ics_file_path": "Файл .ics, включая путь",
     "trash_ics_file_path_help": "Путь к файлу .ics в файловой системе ioBroker. Заполняется автоматически при загрузке файла",
+    "trash_ics_upload_no_events": "«%s» загружен, но в файле не найдено ни одной записи.",
+    "trash_ics_upload_success": "«%s» загружен — найдено %d записей. Выберите те, которые нужно отобразить.",
     "trash_import_ics_file": "Импорт через файл .ics",
     "trash_import_state": "Импорт через состояние адаптера iCal",
     "trash_import_type": "Тип импорта",

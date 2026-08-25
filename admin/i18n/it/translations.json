@@ -555,6 +555,8 @@
     "trash_icon_field_6": "Campo icona 6",
     "trash_ics_file_path": "File .ics incluso il percorso",
     "trash_ics_file_path_help": "Percorso del file .ics nel file system ioBroker. Compilato automaticamente durante il caricamento del file",
+    "trash_ics_upload_no_events": "'%s' caricato, ma nel file non è stato trovato alcun appuntamento.",
+    "trash_ics_upload_success": "'%s' caricato – %d appuntamenti trovati. Seleziona quelli da visualizzare.",
     "trash_import_ics_file": "Importa tramite file .ics",
     "trash_import_state": "Importa tramite lo stato dell'adattatore iCal",
     "trash_import_type": "Tipo di importazione",

@@ -1,5 +1,7 @@
 import React from 'react';
 import {
+    Alert,
+    type AlertColor,
     Box,
     TextField,
     FormControl,
@@ -41,6 +43,7 @@ interface PageTrashEditorState extends ConfigGenericState {
     uploadedEvents: Array<{ summary: string }>;
     selectedEvents: string[];
     alive: boolean;
+    uploadStatus: { severity: AlertColor; message: string } | null;
 }
 
 export class PageTrashEditor extends ConfigGeneric<ConfigGenericProps & PageTrashEditorProps, PageTrashEditorState> {
@@ -54,6 +57,7 @@ export class PageTrashEditor extends ConfigGeneric<ConfigGenericProps & PageTras
             uploadedEvents: [],
             selectedEvents: [],
             alive: false,
+            uploadStatus: null,
         };
     }
 
@@ -103,6 +107,9 @@ export class PageTrashEditor extends ConfigGeneric<ConfigGenericProps & PageTras
             return;
         }
 
+        // Statuszeile des vorigen Uploads verwerfen
+        this.setState({ uploadStatus: null });
+
         try {
             const { oContext } = this.props;
             const reader = new FileReader();
@@ -126,13 +133,14 @@ export class PageTrashEditor extends ConfigGeneric<ConfigGenericProps & PageTras
                     );
 
                     if (result?.success) {
-                        console.log('ICS-Datei erfolgreich hochgeladen:', result.path);
                         // Speichere relativen Pfad im Entry
                         this.handleFieldChange('trashFile', result.path);
-                        // Speichere Events im State
-                        if (result.events && Array.isArray(result.events)) {
-                            this.setState({ uploadedEvents: result.events });
-                        }
+                        // Speichere Events im State und melde das Ergebnis im Formular
+                        const events = Array.isArray(result.events) ? result.events : [];
+                        this.setState({
+                            uploadedEvents: events,
+                            uploadStatus: this.buildUploadStatus(file.name, events.length),
+                        });
                     } else {
                         throw new Error(result?.error);
                     }
@@ -159,6 +167,20 @@ export class PageTrashEditor extends ConfigGeneric<ConfigGenericProps & PageTras
             alert(`Upload failed: ${error.message}`);
         }
     };
+
+    private buildUploadStatus(fileName: string, count: number): { severity: AlertColor; message: string } {
+        if (!count) {
+            return {
+                severity: 'warning',
+                message: this.getText('trash_ics_upload_no_events').replace('%s', fileName),
+            };
+        }
+
+        return {
+            severity: 'success',
+            message: this.getText('trash_ics_upload_success').replace('%s', fileName).replace('%d', String(count)),
+        };
+    }
 
     private handleUploadClick = (): void => {
         this.fileInputRef.current?.click();
@@ -197,7 +219,7 @@ export class PageTrashEditor extends ConfigGeneric<ConfigGenericProps & PageTras
         this.props.onEntryChange(updated);
 
         // Auswahl zurücksetzen
-        this.setState({ selectedEvents: [], uploadedEvents: [] });
+        this.setState({ selectedEvents: [], uploadedEvents: [], uploadStatus: null });
     };
 
     private handleItemChange(index: number, field: keyof (typeof this.props.entry.items)[0], value: string): void {
@@ -361,7 +383,7 @@ export class PageTrashEditor extends ConfigGeneric<ConfigGenericProps & PageTras
                                 const value = e.target.value === 'true';
                                 this.handleFieldChange('trashImport', value);
                                 // Lösche die Events beim Wechsel der Import-Option
-                                this.setState({ uploadedEvents: [] });
+                                this.setState({ uploadedEvents: [], uploadStatus: null });
                             }}
                         >
                             <FormControlLabel
@@ -495,6 +517,15 @@ export class PageTrashEditor extends ConfigGeneric<ConfigGenericProps & PageTras
                             style={{ display: 'none' }}
                             onChange={this.handleFileSelect}
                         />
+                        {this.state.uploadStatus ? (
+                            <Alert
+                                severity={this.state.uploadStatus.severity}
+                                onClose={() => this.setState({ uploadStatus: null })}
+                                sx={{ mt: 2 }}
+                            >
+                                {this.state.uploadStatus.message}
+                            </Alert>
+                        ) : null}
                         {this.state.uploadedEvents.length > 0 && (
                             <Box sx={{ mt: 2 }}>
                                 <FormLabel>{this.getText('trash_select_events')}</FormLabel>

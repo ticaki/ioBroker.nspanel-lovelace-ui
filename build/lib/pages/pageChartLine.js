@@ -66,7 +66,7 @@ class PageChartLine extends import_pageChart.PageChart {
           const instance = this.adminConfig.selInstance;
           const xAxisTicksInterval = this.adminConfig.maxXAxisTicks > 0 ? this.adminConfig.maxXAxisTicks * 60 : 60;
           const xAxisLabelInterval = this.adminConfig.maxXAxisLabels > 0 ? this.adminConfig.maxXAxisLabels * 60 : 120;
-          const maxX = 1440;
+          const maxX = hoursRangeFromNow * 60;
           const tempScale = [];
           try {
             const dbDaten = await this.getDataFromDB(stateValue, hoursRangeFromNow, instance);
