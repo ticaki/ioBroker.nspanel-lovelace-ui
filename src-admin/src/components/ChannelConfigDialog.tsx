@@ -226,6 +226,21 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
         }
     }
 
+    /**
+     * Zieht die Zielseiten-Liste nach, wenn der Parent sie erst nachträglich liefert
+     * (die Seitenliste wird asynchron per sendTo geladen und kann nach dem Öffnen des Dialogs eintreffen).
+     *
+     * @param prevProps Vorherige Props
+     */
+    override componentDidUpdate(prevProps: ChannelConfigDialogProps): void {
+        if (prevProps.pagesList !== this.props.pagesList || prevProps.currentPageName !== this.props.currentPageName) {
+            const pagesList = this.props.pagesList;
+            if (pagesList && pagesList.length > 0) {
+                this.setState({ availablePages: this.sortPages(pagesList) });
+            }
+        }
+    }
+
     private handleOpen = (): void => {
         this.setState({
             open: true,
@@ -1481,12 +1496,14 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                                         onInputChange={(_e, val) => this.handleTargetPageChange(val)}
                                         disabled={loadingPages}
                                         freeSolo
+                                        forcePopupIcon
                                         renderInput={params => (
                                             <TextField
                                                 {...params}
                                                 variant="standard"
                                                 label={I18n.t('channelConfigDialog_targetPage')}
                                                 slotProps={{
+                                                    ...params.slotProps,
                                                     input: {
                                                         ...params.slotProps.input,
                                                         endAdornment: (
@@ -1840,12 +1857,14 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                                                 }
                                                 disabled={loadingPages}
                                                 freeSolo
+                                                forcePopupIcon
                                                 renderInput={params => (
                                                     <TextField
                                                         {...params}
                                                         variant="standard"
                                                         label={I18n.t('channelConfigDialog_targetLongPressPage')}
                                                         slotProps={{
+                                                            ...params.slotProps,
                                                             input: {
                                                                 ...params.slotProps.input,
                                                                 endAdornment: (
