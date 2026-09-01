@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "nspanel-lovelace-ui",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "news": {
+      "1.0.1": {
+        "en": "cardChart (line): the x-axis no longer uses a fixed 24 h window, it now follows the configured hours range\nadmin: the trash page now shows a status line after an .ics upload, including the number of appointments found\nadmin: fixed the target page selection in the page item dialog, the dropdown stayed empty and could crash the page config tab",
+        "de": "cardChart (Linie): die X-Achse verwendet kein festes 24-h-Fenster mehr, sondern folgt dem konfigurierten Stundenbereich\nAdmin: die Papierkorb-Seite zeigt nach einem .ics-Upload eine Statuszeile inklusive der Anzahl gefundener Termine\nAdmin: Auswahl der Zielseite im Seitenelement-Dialog korrigiert, die Auswahlliste blieb leer und konnte den Seiten-Konfigurationstab abstürzen lassen",
+        "ru": "cardChart (линия): ось X больше не использует фиксированное окно 24 ч, а следует настроенному диапазону часов\nадмин: страница корзины теперь показывает строку состояния после загрузки .ics, включая количество найденных встреч\nадмин: исправлен выбор целевой страницы в диалоге элемента страницы, список оставался пустым и мог привести к сбою вкладки конфигурации страниц",
+        "pt": "cardChart (linha): o eixo X já não usa uma janela fixa de 24 h, agora segue o intervalo de horas configurado\nadmin: a página da reciclagem mostra agora uma linha de estado após um upload .ics, incluindo o número de compromissos encontrados\nadmin: corrigida a seleção da página de destino no diálogo do item de página, a lista ficava vazia e podia bloquear o separador de configuração de páginas",
+        "nl": "cardChart (lijn): de x-as gebruikt geen vast venster van 24 uur meer, maar volgt het ingestelde urenbereik\nadmin: de prullenbakpagina toont nu een statusregel na een .ics-upload, inclusief het aantal gevonden afspraken\nadmin: de selectie van de doelpagina in het paginaelement-dialoogvenster is hersteld, de keuzelijst bleef leeg en kon het paginaconfiguratietabblad laten crashen",
+        "fr": "cardChart (ligne) : l'axe X n'utilise plus une fenêtre fixe de 24 h, il suit désormais la plage d'heures configurée\nadmin : la page corbeille affiche désormais une ligne d'état après un téléversement .ics, avec le nombre de rendez-vous trouvés\nadmin : correction de la sélection de la page cible dans la boîte de dialogue d'élément de page, la liste restait vide et pouvait faire planter l'onglet de configuration des pages",
+        "it": "cardChart (linea): l'asse X non usa più una finestra fissa di 24 h, ora segue l'intervallo di ore configurato\nadmin: la pagina cestino mostra ora una riga di stato dopo un caricamento .ics, incluso il numero di appuntamenti trovati\nadmin: corretta la selezione della pagina di destinazione nella finestra dell'elemento di pagina, l'elenco restava vuoto e poteva bloccare la scheda di configurazione pagine",
+        "es": "cardChart (línea): el eje X ya no usa una ventana fija de 24 h, ahora sigue el rango de horas configurado\nadmin: la página de la papelera muestra ahora una línea de estado tras una carga .ics, incluido el número de citas encontradas\nadmin: corregida la selección de la página de destino en el diálogo del elemento de página, la lista permanecía vacía y podía bloquear la pestaña de configuración de páginas",
+        "pl": "cardChart (linia): oś X nie używa już stałego okna 24 h, tylko podąża za skonfigurowanym zakresem godzin\nadmin: strona kosza pokazuje teraz wiersz stanu po przesłaniu pliku .ics, wraz z liczbą znalezionych terminów\nadmin: poprawiono wybór strony docelowej w oknie elementu strony, lista pozostawała pusta i mogła spowodować awarię zakładki konfiguracji stron",
+        "uk": "cardChart (лінія): вісь X більше не використовує фіксоване вікно 24 год, а відповідає налаштованому діапазону годин\nадмін: сторінка кошика тепер показує рядок стану після завантаження .ics, разом із кількістю знайдених подій\nадмін: виправлено вибір цільової сторінки в діалозі елемента сторінки, список залишався порожнім і міг спричинити збій вкладки конфігурації сторінок",
+        "zh-cn": "cardChart（折线）：X 轴不再使用固定的 24 小时范围，而是遵循所配置的小时范围\n管理界面：回收站页面在上传 .ics 后会显示状态行，包含找到的日程数量\n管理界面：修复了页面元素对话框中目标页面的选择，下拉列表保持为空并可能导致页面配置选项卡崩溃"
+      },
       "1.0.0": {
         "en": "BREAKING: adapter requires node.js >= 22 now\nBREAKING: admin UI migrated to React 19 / MUI 9, requires admin 8.0.0 or newer\ncardPower configuration migrated to the new react based page config tab\nadmin: previous/next buttons in the navigation assignment panel were swapped\nberry driver generation 11 added (beta), the automatic berry driver update was removed",
         "de": "BREAKING: Adapter benötigt jetzt node.js >= 22\nBREAKING: Admin-Oberfläche auf React 19 / MUI 9 migriert, benötigt admin 8.0.0 oder neuer\ncardPower-Konfiguration in den neuen react-basierten Seiten-Konfigurationstab migriert\nAdmin: Zurück-/Weiter-Buttons im Navigationszuweisungs-Panel waren vertauscht\nBerry-Treiber-Generation 11 hinzugefügt (Beta), das automatische Berry-Treiber-Update wurde entfernt",
@@ -80,19 +93,6 @@
         "pl": "fixed: strony nawigacji administratora były nieprawidłowo połączone\nimproved: wybór niestandardowych identyfikatorów przycisków\nfixed: dolna część ChannelConfigDialog odcięta na małych ekranach laptopów (przyciski zapisz/kolor niedostępne)",
         "uk": "fixed: сторінки навігації адміністратора були неправильно пов'язані\nimproved: вибір ідентифікаторів користувацьких кнопок\nfixed: нижня частина ChannelConfigDialog обрізана на невеликих екранах ноутбуків (кнопки збереження/кольору недоступні)",
         "zh-cn": "fixed: 管理员导航页面链接不正确\nimproved: 自定义按钮ID的选择\nfixed: ChannelConfigDialog底部在小型笔记本电脑屏幕上被截断（保存/颜色按钮无法访问）"
-      },
-      "0.17.3": {
-        "en": "fixed: textSize/fontSize 0-5 and tooltip, us-p admin layout, not update emu berry, textSize for custom item, activate trigger for custom id",
-        "de": "behoben: textSize/fontSize 0-5 und tooltip, us-p admin layout, ignoriere berry update für emu, textSize für benutzerdefiniertes Item, trigger für benutzerdefinierte Item ID aktiviert",
-        "ru": "фиксированный: textSize/fontSize 0-5 и tooltip, us-p admin layout, not update emu berry, textSize for custom item, activate trigger for custom id",
-        "pt": "fixo: textSize/fontSize 0-5 e tooltip, us-p layout de administrador, não atualizar emu berry, textSize para item personalizado, ativar gatilho para id personalizado",
-        "nl": "fixed: textSize/fontSize 0-5 en tooltip, us-p admin layout, geen update emu bery, textSize voor aangepast item, activeer trigger voor aangepaste id",
-        "fr": "fixe: textSize/fontSize 0-5 et tooltip, us-p admin layout, pas de mise à jour emu berry, textSize pour un élément personnalisé, activez le déclencheur pour un id personnalisé",
-        "it": "fisso: textSize/fontSize 0-5 e tooltip, us-p admin layout, non aggiornare emu berry, textSize per articolo personalizzato, attivare il trigger per id personalizzato",
-        "es": "fijo: textSize/fontSize 0-5 y tooltip, us-p admin layout, no actualizado emu berry, textoSize for custom item, activa el gatillo para id personalizado",
-        "pl": "stałe: textSize / fontSize 0- 5 i końcówka narzędzia, układ administracyjny us- p, nie aktualizacja jagody emu, textSize dla niestandardowych elementów, aktywacja przycisku dla niestandardowych id",
-        "uk": "виправлено: textSize/fontSize 0-5 і tooltip, us-p адмін макет, не оновити ему ягідку, текстВибір для користувацького елемента, активувати тригер для користувальницьких ідентифікаторів",
-        "zh-cn": "固定:文本Size/fontSize 0-5和工具提示,我们-p管理员布局,不更新emu bery,文本Size为自定义项目,激活自定义ID的触发器"
       }
     },
     "titleLang": {
