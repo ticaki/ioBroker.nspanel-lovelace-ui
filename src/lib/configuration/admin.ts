@@ -78,6 +78,14 @@ export class AdminConfiguration extends BaseClass {
         const entries = this.pageConfig;
         const pendingNavs: PendingNavEntry[] = [];
 
+        // Pages flagged as start page are published under the reserved id. Navigation targets that
+        // still use the name from the admin list are translated to that id.
+        const mainAliases = new Set(
+            entries.filter(e => ShareConfig.isMainPageEntry(e) && e.uniqueName !== mainPageName).map(e => e.uniqueName),
+        );
+        const resolveTarget = (target: string | undefined): string | undefined =>
+            target !== undefined && mainAliases.has(target) ? mainPageName : target;
+
         for (const entry of entries) {
             if (!entry.navigationAssignment || !entry.card) {
                 continue;
@@ -306,6 +314,11 @@ export class AdminConfiguration extends BaseClass {
                 }
             }
 
+            if (ShareConfig.isMainPageEntry(entry)) {
+                // Publish the page as the start page of this panel.
+                newPage.uniqueID = mainPageName;
+            }
+
             // Check for duplicate page name. The start page may always be replaced by an admin
             // page - being able to define it here is the whole point of it. Any other page needs
             // the global override flag.
@@ -359,7 +372,13 @@ export class AdminConfiguration extends BaseClass {
             }
 
             // Apply home/parent immediately – no chain dependency
-            const nav = { ...navigation };
+            const nav = {
+                ...navigation,
+                prev: resolveTarget(navigation.prev),
+                next: resolveTarget(navigation.next),
+                home: resolveTarget(navigation.home),
+                parent: resolveTarget(navigation.parent),
+            };
             // A page must not link to itself - that would dead-end the navigation.
             if (nav.home === newPage.uniqueID) {
                 this.log.warn(`Page '${newPage.uniqueID}' has a home link to itself! Removed!`);

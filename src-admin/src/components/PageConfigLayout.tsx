@@ -20,7 +20,20 @@ import type {
     PageConfigEntry,
     AdminPanelConfig,
 } from '../../../src/lib/types/adminShareConfig';
-import { ADAPTER_NAME, ALL_PANELS_SPECIAL_ID } from '../../../src/lib/types/adminShareConfig';
+import { ADAPTER_NAME, ALL_PANELS_SPECIAL_ID, mainPageName } from '../../../src/lib/types/adminShareConfig';
+
+/**
+ * Name under which an entry is shown while it is flagged as start page.
+ *
+ * The stored uniqueName is kept untouched - only the display is overlaid, so unchecking the
+ * flag brings the original name back.
+ *
+ * @param entry Admin page configuration entry.
+ * @returns The name to display.
+ */
+export function getDisplayName(entry: PageConfigEntry): string {
+    return 'isMainPage' in entry && entry.isMainPage ? mainPageName : entry.uniqueName;
+}
 
 export type PageCardType =
     | Extract<
@@ -172,10 +185,16 @@ export class PageConfigLayout extends React.Component<PageConfigLayoutProps, Pag
         const panels: AdminPanelConfig[] = this.props.panels ?? [];
         const uniqueNames = Array.from(new Set(entries.map(e => e.uniqueName))).filter(Boolean);
         const newName = this.state.newName.trim();
-        // Ein Name, den der Adapter schon kennt, der aber noch keine Admin-Seite ist, gehört zur
-        // Skriptkonfiguration - die Admin-Seite überschreibt sie dann (gilt auch für 'main').
+        // 'main' darf nicht von Hand vergeben werden - die Startseite wird ausschliesslich ueber
+        // die Checkbox in der Navigationszuweisung gesetzt, sonst laufen deren Pruefungen ins Leere.
+        const newNameIsReserved = newName === mainPageName;
+        // Ein Name, den der Adapter schon kennt, der aber noch keine Admin-Seite ist, gehoert zur
+        // Skriptkonfiguration - die Admin-Seite ueberschreibt sie dann.
         const overridesExistingPage =
-            !!newName && !uniqueNames.includes(newName) && (this.props.pagesList ?? []).includes(newName);
+            !!newName &&
+            !newNameIsReserved &&
+            !uniqueNames.includes(newName) &&
+            (this.props.pagesList ?? []).includes(newName);
 
         // Filter entries by selected card type
         const cardFilteredEntries =
@@ -370,13 +389,22 @@ export class PageConfigLayout extends React.Component<PageConfigLayoutProps, Pag
                                     onClick={this.handleAdd}
                                     disabled={
                                         !this.state.alive ||
-                                        !this.state.newName.trim() ||
-                                        uniqueNames.includes(this.state.newName.trim())
+                                        !newName ||
+                                        newNameIsReserved ||
+                                        uniqueNames.includes(newName)
                                     }
                                 >
                                     +
                                 </Button>
                             </Box>
+                            {newNameIsReserved && (
+                                <Typography
+                                    variant="caption"
+                                    sx={{ display: 'block', mt: 0.5, px: 1, color: 'warning.main' }}
+                                >
+                                    {this.getText('page_name_main_reserved')}
+                                </Typography>
+                            )}
                             {overridesExistingPage && (
                                 <Typography
                                     variant="caption"
@@ -424,7 +452,10 @@ export class PageConfigLayout extends React.Component<PageConfigLayoutProps, Pag
                                         variant="body2"
                                         sx={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis' }}
                                     >
-                                        {name}
+                                        {(() => {
+                                            const entry = entries.find(e => e.uniqueName === name);
+                                            return entry ? getDisplayName(entry) : name;
+                                        })()}
                                     </Typography>
                                     <IconButton
                                         disabled={!this.state.alive}

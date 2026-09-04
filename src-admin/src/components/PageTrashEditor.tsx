@@ -27,6 +27,7 @@ import type { IobTheme, ThemeType, ThemeName } from '@iobroker/gui-components';
 import { EntitySelector } from './EntitySelector';
 import IconSelect from '../IconSelect';
 import type { TrashEntry } from '../../../src/lib/types/adminShareConfig';
+import { isMainPageEntry, mainPageName } from '../../../src/lib/types/adminShareConfig';
 
 export interface PageTrashEditorProps {
     entry: TrashEntry;
@@ -302,8 +303,8 @@ export class PageTrashEditor extends ConfigGeneric<ConfigGenericProps & PageTras
                         variant="standard"
                         type="text"
                         label={this.getText('unique_label')}
-                        value={entry.uniqueName}
-                        disabled={!alive}
+                        value={isMainPageEntry(entry) ? mainPageName : entry.uniqueName}
+                        disabled={!alive || isMainPageEntry(entry)}
                         onChange={e => {
                             const newUniqueName = e.target.value;
                             if (newUniqueName.trim()) {
@@ -320,6 +321,7 @@ export class PageTrashEditor extends ConfigGeneric<ConfigGenericProps & PageTras
                                 },
                             },
                         }}
+                        helperText={isMainPageEntry(entry) ? this.getText('page_name_main_locked') : undefined}
                     />
                 </Box>
 

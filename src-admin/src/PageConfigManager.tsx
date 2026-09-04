@@ -9,7 +9,12 @@ import type {
     AdminPanelConfig,
     PowerEntry,
 } from '../../src/lib/types/adminShareConfig';
-import { ADAPTER_NAME, emptyPowerSlot, SENDTO_GET_PAGES_All_COMMAND } from '../../src/lib/types/adminShareConfig';
+import {
+    ADAPTER_NAME,
+    emptyPowerSlot,
+    mainPageName,
+    SENDTO_GET_PAGES_All_COMMAND,
+} from '../../src/lib/types/adminShareConfig';
 import { PageConfigLayout, type PageCardType } from './components/PageConfigLayout';
 import { PageAlarmEditor } from './components/PageAlarmEditor';
 import { PageMenuEditor } from './components/PageMenuEditor';
@@ -279,6 +284,9 @@ class PageConfigManager extends ConfigGeneric<ConfigGenericProps & { theme?: any
         if (cardType === 'all') {
             return; // Sollte nicht vorkommen (Button ist disabled)
         }
+        if (name.trim() === mainPageName) {
+            return; // Reservierter Name - Button ist disabled, hier nur zur Sicherheit
+        }
 
         let newEntry: PageConfigEntry;
 
@@ -404,6 +412,11 @@ class PageConfigManager extends ConfigGeneric<ConfigGenericProps & { theme?: any
 
     private handleUniqueNameChange = (oldName: string, newName: string): void => {
         if (!newName.trim()) {
+            return;
+        }
+        // 'main' is reserved: the start page is set via the checkbox in the navigation assignment,
+        // otherwise its checks could be bypassed by renaming a page afterwards.
+        if (newName.trim() === mainPageName) {
             return;
         }
         const updated = this.state.entries.map(it => (it.uniqueName === oldName ? { ...it, uniqueName: newName } : it));
@@ -570,6 +583,7 @@ class PageConfigManager extends ConfigGeneric<ConfigGenericProps & { theme?: any
                     onChange: this.props.onChange,
                     onError: this.props.onError,
                     panelPagesMap: this.state.panelPagesMap,
+                    allEntries: this.state.entries,
                     // Gemeinsame Felder für aktuellen Eintrag
                     commonFields: currentEntry
                         ? {

@@ -99,6 +99,10 @@ Stack: ${stack}`
     var _a, _b, _c, _d, _e, _f, _g;
     const entries = this.pageConfig;
     const pendingNavs = [];
+    const mainAliases = new Set(
+      entries.filter((e) => ShareConfig.isMainPageEntry(e) && e.uniqueName !== import_default_pages.mainPageName).map((e) => e.uniqueName)
+    );
+    const resolveTarget = (target) => target !== void 0 && mainAliases.has(target) ? import_default_pages.mainPageName : target;
     for (const entry of entries) {
       if (!entry.navigationAssignment || !entry.card) {
         continue;
@@ -297,6 +301,9 @@ Stack: ${stack}`
           continue;
         }
       }
+      if (ShareConfig.isMainPageEntry(entry)) {
+        newPage.uniqueID = import_default_pages.mainPageName;
+      }
       const overrideExisting = this.adapter.config.adminOverridesScriptPages || newPage.uniqueID === import_default_pages.mainPageName;
       let replacedIndex = -1;
       let replacedNav;
@@ -333,7 +340,13 @@ Stack: ${stack}`
       if (!navigation) {
         continue;
       }
-      const nav = { ...navigation };
+      const nav = {
+        ...navigation,
+        prev: resolveTarget(navigation.prev),
+        next: resolveTarget(navigation.next),
+        home: resolveTarget(navigation.home),
+        parent: resolveTarget(navigation.parent)
+      };
       if (nav.home === newPage.uniqueID) {
         this.log.warn(`Page '${newPage.uniqueID}' has a home link to itself! Removed!`);
         nav.home = void 0;

@@ -28,6 +28,8 @@ __export(adminShareConfig_exports, {
   SENDTO_GET_PANEL_NAVIGATION_COMMAND: () => SENDTO_GET_PANEL_NAVIGATION_COMMAND,
   emptyChannelValueConfig: () => emptyChannelValueConfig,
   emptyPowerSlot: () => emptyPowerSlot,
+  isMainPageEntry: () => isMainPageEntry,
+  mainPageName: () => mainPageName,
   normalizeChannelId: () => normalizeChannelId,
   panelStatusColors: () => panelStatusColors,
   panelStatusStates: () => panelStatusStates,
@@ -43,6 +45,7 @@ const SENDTO_GET_PANELS_COMMAND = "getPanels";
 const SENDTO_GET_PAGES_COMMAND = "getPagesForPanel";
 const SENDTO_GET_PAGES_All_COMMAND = "getAllPages";
 const ADAPTER_NAME = "nspanel-lovelace-ui";
+const mainPageName = "main";
 function emptyChannelValueConfig(valueStateId = "") {
   return { valueStateId, unit: "", prefix: "", suffix: "", dateFormat: "" };
 }
@@ -73,6 +76,9 @@ function emptyPowerSlot() {
     entityHeadline: "",
     useColorScale: false
   };
+}
+function isMainPageEntry(entry) {
+  return "isMainPage" in entry && !!entry.isMainPage;
 }
 const panelStatusStates = {
   0: "offline",
@@ -795,6 +801,8 @@ const CHANNEL_ROLES_LIST = Object.keys(requiredScriptDataPoints);
   SENDTO_GET_PANEL_NAVIGATION_COMMAND,
   emptyChannelValueConfig,
   emptyPowerSlot,
+  isMainPageEntry,
+  mainPageName,
   normalizeChannelId,
   panelStatusColors,
   panelStatusStates,

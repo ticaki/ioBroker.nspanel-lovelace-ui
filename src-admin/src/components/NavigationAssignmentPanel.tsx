@@ -33,11 +33,13 @@ import type {
     NavigationAssignmentList,
     NavigationAssignment,
     PageConfigBaseFields,
+    PageConfigEntry,
 } from '../../../src/lib/types/adminShareConfig';
 import {
     // SENDTO_GET_PANELS_COMMAND,
     ADAPTER_NAME,
     ALL_PANELS_SPECIAL_ID,
+    mainPageName,
 } from '../../../src/lib/types/adminShareConfig';
 
 // Special panel ID that the adapter will treat specially when present in assignments
@@ -60,6 +62,8 @@ type NavigationAssignmentPanelProps = {
     onCommonFieldsChange?: (fields: Partial<PageConfigBaseFields>) => void;
     /** Vom übergeordneten PageConfigManager bereitgestellt – navigationNodes pro panelTopic */
     panelPagesMap?: Record<string, string[]>;
+    /** Alle Admin-Seiten, für die Startseiten- und Zielprüfung */
+    allEntries?: PageConfigEntry[];
 };
 
 interface NavigationAssignmentPanelState extends ConfigGenericState {
@@ -746,6 +750,116 @@ class NavigationAssignmentPanel extends ConfigGeneric<
         this.setState({ activeTab: newValue });
     };
 
+    /**
+     * Panel-Topics, die eine Zuweisungsliste tatsächlich abdeckt.
+     *
+     * ALL_PANELS deckt alle bekannten Panels ab, abzüglich der Panels, die per eigenem Eintrag
+     * ohne Navigation ausdrücklich ausgenommen sind.
+     *
+     * @param assignments Zuweisungsliste einer Admin-Seite.
+     * @returns Liste der abgedeckten Panel-Topics.
+     */
+    private getCoveredTopics(assignments: NavigationAssignmentList | undefined): string[] {
+        if (!assignments || assignments.length === 0) {
+            return [];
+        }
+        const all = assignments.find(a => a.topic === ALL_PANELS_SPECIAL_ID);
+        if (all) {
+            const excluded = new Set(
+                assignments.filter(a => a.topic !== ALL_PANELS_SPECIAL_ID && !a.navigation).map(a => a.topic),
+            );
+            return this.state.available.map(p => p.panelTopic).filter(t => !!t && !excluded.has(t));
+        }
+        return assignments.filter(a => a.topic !== ALL_PANELS_SPECIAL_ID).map(a => a.topic);
+    }
+
+    /**
+     * Anzeigename eines Panels anhand seines Topics.
+     *
+     * @param topic Panel-Topic.
+     * @returns Freundlicher Name oder das Topic selbst.
+     */
+    private getPanelLabel(topic: string): string {
+        const panel = this.state.available.find(p => p.panelTopic === topic);
+        return panel?.friendlyName || topic;
+    }
+
+    /**
+     * Zustand der Startseiten-Checkbox inklusive Begründung, falls sie gesperrt ist.
+     *
+     * @returns Ob die Checkbox gesperrt ist und warum.
+     */
+    private getMainPageCheckboxState(): { disabled: boolean; reason: string } {
+        if (!this.state.alive) {
+            return { disabled: true, reason: I18n.t('main_page_disabled_offline') };
+        }
+        const mine = this.getCoveredTopics(this.state.assignments);
+        if (mine.length === 0) {
+            return { disabled: true, reason: I18n.t('main_page_disabled_no_panel') };
+        }
+        const mineSet = new Set(mine);
+        for (const other of this.props.allEntries ?? []) {
+            if (other.uniqueName === this.props.uniqueName) {
+                continue;
+            }
+            if (!('isMainPage' in other) || !other.isMainPage) {
+                continue;
+            }
+            const conflict = this.getCoveredTopics(other.navigationAssignment).filter(t => mineSet.has(t));
+            if (conflict.length > 0) {
+                return {
+                    disabled: true,
+                    reason: I18n.t('main_page_disabled_conflict')
+                        .replace('%s', other.uniqueName)
+                        .replace('%p', conflict.map(t => this.getPanelLabel(t)).join(', ')),
+                };
+            }
+        }
+        return { disabled: false, reason: I18n.t('main_page_hint') };
+    }
+
+    /**
+     * Prüft, ob ein Navigationsziel auf einem Panel überhaupt existiert.
+     *
+     * Bekannt sind die vom Adapter gemeldeten Seiten des Panels sowie alle Admin-Seiten, die
+     * diesem Panel zugewiesen sind. Liegen für ein Panel keine Daten vor, wird nicht gewarnt.
+     *
+     * @param panelTopic Panel-Topic.
+     * @param target Name des Navigationsziels.
+     * @returns True, wenn das Ziel auf dem Panel verfügbar ist oder nicht beurteilt werden kann.
+     */
+    private isTargetAvailableOnPanel(panelTopic: string, target: string): boolean {
+        const known = this.props.panelPagesMap?.[panelTopic];
+        if (!known || known.length === 0) {
+            return true; // keine Daten - keine Aussage
+        }
+        if (known.includes(target)) {
+            return true;
+        }
+        for (const entry of this.props.allEntries ?? []) {
+            if (!this.getCoveredTopics(entry.navigationAssignment).includes(panelTopic)) {
+                continue;
+            }
+            const isMain = 'isMainPage' in entry && !!entry.isMainPage;
+            if (entry.uniqueName === target || (isMain && target === mainPageName)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Panels, auf denen ein Navigationsziel fehlt.
+     *
+     * @param rowTopic Topic der Zuweisungszeile (auch ALL_PANELS).
+     * @param target Name des Navigationsziels.
+     * @returns Anzeigenamen der Panels ohne dieses Ziel.
+     */
+    private getPanelsMissingTarget(rowTopic: string, target: string): string[] {
+        const topics = rowTopic === ALL_PANELS_SPECIAL_ID ? this.getCoveredTopics(this.state.assignments) : [rowTopic];
+        return topics.filter(t => !this.isTargetAvailableOnPanel(t, target)).map(t => this.getPanelLabel(t));
+    }
+
     private handleCommonFieldChange(field: keyof PageConfigBaseFields, value: any): void {
         if (this.props.onCommonFieldsChange) {
             this.props.onCommonFieldsChange({ [field]: value });
@@ -767,8 +881,38 @@ class NavigationAssignmentPanel extends ConfigGeneric<
             );
         }
 
+        const mainState = this.getMainPageCheckboxState();
+        const isMain = 'isMainPage' in commonFields && !!commonFields.isMainPage;
+
         return (
             <Box sx={{ mt: 2, pt: 2, borderTop: '1px solid', borderColor: 'divider' }}>
+                {/* Startseite (main) */}
+                <Box sx={{ mb: 2 }}>
+                    <Tooltip title={mainState.reason}>
+                        <Box sx={{ display: 'inline-block' }}>
+                            <FormControlLabel
+                                control={
+                                    <Checkbox
+                                        checked={isMain}
+                                        onChange={(_e, checked) => {
+                                            this.handleCommonFieldChange('isMainPage', checked);
+                                        }}
+                                        disabled={mainState.disabled && !isMain}
+                                    />
+                                }
+                                label={I18n.t('main_page_label')}
+                            />
+                        </Box>
+                    </Tooltip>
+                    <Typography
+                        variant="caption"
+                        color={mainState.disabled && !isMain ? 'warning.main' : 'text.secondary'}
+                        sx={{ display: 'block', ml: 4 }}
+                    >
+                        {mainState.reason}
+                    </Typography>
+                </Box>
+
                 {/* Hidden Checkbox */}
                 <Box sx={{ mb: 2 }}>
                     <FormControlLabel
@@ -834,6 +978,9 @@ class NavigationAssignmentPanel extends ConfigGeneric<
             : [];
         // Strikte Bedingung: Panel darf nur geöffnet sein, wenn eine Card ausgewählt ist
         const shouldBeCollapsed = isCollapsed || !this.props.uniqueName;
+        // Ist die Seite als Startseite markiert, liegen Panelzuweisung und Navigation fest:
+        // die Startseite erbt die Navigation der Seite, die sie ersetzt.
+        const lockAssignment = !!this.props.commonFields?.isMainPage;
 
         return (
             <Box
@@ -1087,6 +1234,14 @@ class NavigationAssignmentPanel extends ConfigGeneric<
 
                     {activeTab === 0 && (
                         <>
+                            {lockAssignment && (
+                                <Typography
+                                    variant="caption"
+                                    sx={{ display: 'block', mb: 1, color: 'warning.main' }}
+                                >
+                                    {I18n.t('main_page_locks_assignment')}
+                                </Typography>
+                            )}
                             {/* controls: select + add button */}
                             <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', mb: 1 }}>
                                 <Select
@@ -1097,7 +1252,7 @@ class NavigationAssignmentPanel extends ConfigGeneric<
                                         void this.loadPanels();
                                     }}
                                     onChange={e => this.setState({ selectedTopic: String(e.target.value) })}
-                                    disabled={!this.state.alive}
+                                    disabled={!this.state.alive || lockAssignment}
                                     sx={{
                                         flex: 1,
                                         backgroundColor: 'transparent',
@@ -1136,7 +1291,7 @@ class NavigationAssignmentPanel extends ConfigGeneric<
                                     variant="contained"
                                     sx={{ minWidth: 32, padding: '4px 8px' }}
                                     onClick={this.doAddSelected}
-                                    disabled={!this.state.selectedTopic || !this.state.alive}
+                                    disabled={!this.state.selectedTopic || !this.state.alive || lockAssignment}
                                 >
                                     +
                                 </Button>
@@ -1172,13 +1327,18 @@ class NavigationAssignmentPanel extends ConfigGeneric<
                                                                     }}
                                                                     secondaryAction={
                                                                         <IconButton
-                                                                            disabled={!this.state.alive}
+                                                                            disabled={
+                                                                                !this.state.alive || lockAssignment
+                                                                            }
                                                                             className="delete-icon"
                                                                             edge="end"
                                                                             aria-label="delete"
                                                                             size="small"
                                                                             onClick={e => {
-                                                                                if (!this.state.alive) {
+                                                                                if (
+                                                                                    !this.state.alive ||
+                                                                                    lockAssignment
+                                                                                ) {
                                                                                     return;
                                                                                 }
                                                                                 e.stopPropagation();
@@ -1337,6 +1497,7 @@ class NavigationAssignmentPanel extends ConfigGeneric<
                                             sx={{ width: '100%' }}
                                             disabled={
                                                 !this.state.alive ||
+                                                lockAssignment ||
                                                 (this.state.selectedAddedTopic
                                                     ? this.state.isLoading[this.state.selectedAddedTopic] || false
                                                     : false)
@@ -1399,6 +1560,7 @@ class NavigationAssignmentPanel extends ConfigGeneric<
                                             sx={{ width: '100%' }}
                                             disabled={
                                                 !this.state.alive ||
+                                                lockAssignment ||
                                                 (this.state.selectedAddedTopic
                                                     ? this.state.isLoading[this.state.selectedAddedTopic] || false
                                                     : false)
@@ -1459,6 +1621,7 @@ class NavigationAssignmentPanel extends ConfigGeneric<
                                             sx={{ width: '100%' }}
                                             disabled={
                                                 !this.state.alive ||
+                                                lockAssignment ||
                                                 (this.state.selectedAddedTopic
                                                     ? this.state.isLoading[this.state.selectedAddedTopic] || false
                                                     : false)
@@ -1511,6 +1674,7 @@ class NavigationAssignmentPanel extends ConfigGeneric<
                                             sx={{ width: '100%' }}
                                             disabled={
                                                 !this.state.alive ||
+                                                lockAssignment ||
                                                 (this.state.selectedAddedTopic
                                                     ? this.state.isLoading[this.state.selectedAddedTopic] || false
                                                     : false)
@@ -1599,6 +1763,9 @@ class NavigationAssignmentPanel extends ConfigGeneric<
                                               >
                                                   {(['prev', 'next', 'parent', 'home'] as const).map((field, idx) => {
                                                       const val = this.getNavValue(topic, field);
+                                                      const missing = val
+                                                          ? this.getPanelsMissingTarget(topic, val)
+                                                          : [];
                                                       return (
                                                           <React.Fragment key={`${topic}-${field}`}>
                                                               <Box
@@ -1614,9 +1781,25 @@ class NavigationAssignmentPanel extends ConfigGeneric<
                                                                   >
                                                                       {I18n.t(field) || field}
                                                                   </Typography>
-                                                                  <Typography variant="body2">
-                                                                      {val || <em>—</em>}
-                                                                  </Typography>
+                                                                  {missing.length > 0 ? (
+                                                                      <Tooltip
+                                                                          title={I18n.t('nav_target_missing')
+                                                                              .replace('%s', val)
+                                                                              .replace('%p', missing.join(', '))}
+                                                                      >
+                                                                          <Typography
+                                                                              variant="body2"
+                                                                              color="warning.main"
+                                                                              sx={{ fontWeight: 600 }}
+                                                                          >
+                                                                              {val} ⚠
+                                                                          </Typography>
+                                                                      </Tooltip>
+                                                                  ) : (
+                                                                      <Typography variant="body2">
+                                                                          {val || <em>—</em>}
+                                                                      </Typography>
+                                                                  )}
                                                               </Box>
                                                               {idx < 3 && (
                                                                   <Divider

@@ -1,3 +1,4 @@
+import { mainPageName } from '../types/adminShareConfig';
 import type { PageBase } from '../types/pages';
 
 /**
@@ -6,8 +7,10 @@ import type { PageBase } from '../types/pages';
  * Every navigation link that points to "the start page" uses this name. The adapter guarantees
  * that a node with this name exists: it comes either from the configuration script, from the
  * admin configuration or - if neither provides one - from {@link getDefaultMainPage}.
+ *
+ * Defined in `adminShareConfig` because the admin UI needs the same value.
  */
-export const mainPageName = 'main';
+export { mainPageName };
 
 /**
  * Builds an empty start page used when neither the configuration script nor the admin

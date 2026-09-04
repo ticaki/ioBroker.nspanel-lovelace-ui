@@ -34,6 +34,7 @@ import {
     type PowerHomeBotConfig,
     emptyPowerSlot,
 } from '../../../src/lib/types/adminShareConfig';
+import { isMainPageEntry, mainPageName } from '../../../src/lib/types/adminShareConfig';
 
 const ICONS_LIST: { name: string; base64: string }[] = Array.isArray(iconsJson) ? iconsJson : [];
 
@@ -762,7 +763,7 @@ export class PagePowerEditor extends ConfigGeneric<ConfigGenericProps & PagePowe
                         fullWidth
                         variant="standard"
                         label={this.getText('unique_label')}
-                        value={entry.uniqueName}
+                        value={isMainPageEntry(entry) ? mainPageName : entry.uniqueName}
                         onChange={e => {
                             const v = e.target.value;
                             if (v.trim()) {
@@ -772,7 +773,8 @@ export class PagePowerEditor extends ConfigGeneric<ConfigGenericProps & PagePowe
                         slotProps={{
                             input: { sx: { backgroundColor: 'transparent', px: 1, fontWeight: 600, width: '50%' } },
                         }}
-                        disabled={!this.state.alive}
+                        disabled={!this.state.alive || isMainPageEntry(entry)}
+                        helperText={isMainPageEntry(entry) ? this.getText('page_name_main_locked') : undefined}
                     />
                 </Box>
                 <TextField

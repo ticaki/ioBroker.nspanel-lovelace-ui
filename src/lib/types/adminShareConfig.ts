@@ -93,10 +93,24 @@ export interface PanelListEntry {
 }
 
 // Shared types for admin UI (typo: file name uses 'Shard')
+/**
+ * uniqueID and navigation node name of the panel start page.
+ *
+ * Shared between adapter and admin, therefore defined in this file: it is the only module both
+ * sides import from.
+ */
+export const mainPageName = 'main';
+
 export interface PageConfigBaseFields {
     hidden?: boolean;
     alwaysOn?: 'none' | 'always' | 'action' | 'ignore';
     navigationAssignment?: NavigationAssignmentList;
+    /**
+     * Marks this page as the start page of the panels it is assigned to. The adapter publishes it
+     * under the reserved id `main` and it replaces a start page coming from the script. Only one
+     * page may carry this flag per panel.
+     */
+    isMainPage?: boolean;
 }
 
 export type UnlockEntry = {
@@ -360,6 +374,20 @@ export type NavigationAssignment = {
 export type NavigationAssignmentList = NavigationAssignment[];
 export type PageConfigEntry = QREntry | UnlockEntry | ScreensaverEntry | TrashEntry | MenuEntry | PowerEntry;
 export type PageConfig = QREntry | UnlockEntry | ScreensaverEntry | TrashEntry | MenuEntry | PowerEntry;
+
+/**
+ * Whether an admin page entry is flagged as the start page of its assigned panels.
+ *
+ * Screensaver entries cannot be a start page and therefore do not carry the flag. The stored
+ * `uniqueName` is never changed by the flag - the adapter publishes the page under
+ * {@link mainPageName} and the admin only overlays the displayed name.
+ *
+ * @param entry Admin page configuration entry.
+ * @returns True if the entry is the start page.
+ */
+export function isMainPageEntry(entry: PageConfig | PageConfigEntry): boolean {
+    return 'isMainPage' in entry && !!entry.isMainPage;
+}
 
 export type PanelStatus =
     | 'offline'

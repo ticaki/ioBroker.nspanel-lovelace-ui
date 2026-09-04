@@ -19,13 +19,13 @@ var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: tru
 var default_pages_exports = {};
 __export(default_pages_exports, {
   getDefaultMainPage: () => getDefaultMainPage,
-  mainPageName: () => mainPageName
+  mainPageName: () => import_adminShareConfig.mainPageName
 });
 module.exports = __toCommonJS(default_pages_exports);
-const mainPageName = "main";
+var import_adminShareConfig = require("../types/adminShareConfig");
 function getDefaultMainPage(headline) {
   return {
-    uniqueID: mainPageName,
+    uniqueID: import_adminShareConfig.mainPageName,
     dpInit: "",
     alwaysOn: "none",
     hidden: false,
