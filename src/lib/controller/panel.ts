@@ -39,6 +39,8 @@ import { PageChartBar } from '../pages/pageChartBar';
 import { PageChartLine } from '../pages/pageChartLine';
 import { PageThermo2 } from '../pages/pageThermo2';
 import { AdminConfiguration } from '../configuration/admin';
+import { ensureMainPage } from '../configuration/main-page';
+import { mainPageName } from '../const/default-pages';
 import type { NSPanel } from '../types/NSPanel';
 
 export interface panelConfigPartial extends Partial<panelConfigTop> {
@@ -329,6 +331,17 @@ export class Panel extends BaseClass {
     }
     async preInit(options: panelConfigPartial): Promise<void> {
         options.pages = options.pages || [];
+        options.navigation = options.navigation || [];
+
+        // Guarantee a start page before the admin pages are merged, so the precedence is
+        // script main -> default main -> admin main (the admin overrides whatever is here).
+        const ensured = ensureMainPage(options, this.friendlyName || this.name);
+        if (ensured.pageAdded || ensured.navigationAdded) {
+            this.log.info(
+                `No page '${mainPageName}' in the script configuration - a default start page was added. A page named '${mainPageName}' in the admin configuration replaces it.`,
+            );
+        }
+
         const admin = new AdminConfiguration(this.adapter);
         await admin.processentrys(options);
         options.pages = options.pages.filter(b => {
@@ -1252,14 +1265,14 @@ export class Panel extends BaseClass {
                 case 'mainNavigationPoint': {
                     const v = state.val;
                     if (typeof v === 'string') {
-                        this.navigation.setMainPageByName(v ? v : 'main');
-                        await this.library.writedp(`panels.${this.name}.cmd.mainNavigationPoint`, v ? v : 'main');
+                        this.navigation.setMainPageByName(v ? v : mainPageName);
+                        await this.library.writedp(`panels.${this.name}.cmd.mainNavigationPoint`, v ? v : mainPageName);
                     }
                     break;
                 }
                 case 'goToNavigationPoint': {
                     if (typeof state.val === 'string') {
-                        await this.navigation.setTargetPageByName(state.val ? String(state.val) : 'main');
+                        await this.navigation.setTargetPageByName(state.val ? String(state.val) : mainPageName);
                     }
                     break;
                 }

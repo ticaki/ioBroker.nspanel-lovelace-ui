@@ -219,7 +219,7 @@ const config: ScriptConfig.Config = {
 };
 ```
 
-**Wichtig**: Die erste Seite in `pages` sollte den `uniqueName` "main" haben (oder darauf verlinken), da dies als Startseite verwendet wird.
+**Wichtig**: Die erste Seite in `pages` sollte den `uniqueName` "main" haben (oder darauf verlinken), da dies als Startseite verwendet wird. Fehlt sie, ergänzt der Adapter eine leere Hauptseite; eine im Admin angelegte Seite `main` überschreibt die Hauptseite aus dem Skript.
 
 ### 3. Navigation in subPages
 
@@ -557,7 +557,7 @@ const globalPagesConfig: ScriptConfig.globalPagesConfig = {
 
 1. **Eindeutige uniqueNames**: Jede Seite im Global Script muss einen eindeutigen `uniqueName` haben.
 
-2. **Hauptseite "main"**: Die erste Seite sollte den `uniqueName` "main" haben oder darauf verlinken.
+2. **Hauptseite "main"**: Die erste Seite sollte den `uniqueName` "main" haben oder darauf verlinken. Ohne sie nutzt der Adapter eine automatisch angelegte, leere Hauptseite.
 
 3. **Global Script zuerst**: Das Global Script muss ausgeführt werden, bevor Local Scripts darauf zugreifen können.
 

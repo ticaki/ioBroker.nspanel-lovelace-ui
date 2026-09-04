@@ -58,6 +58,8 @@ export interface PageConfigLayoutProps {
     navigationPanelProps: any;
     /** Konfigurierte Panels für den Panel-Filter */
     panels?: AdminPanelConfig[];
+    /** Seitennamen, die der Adapter bereits kennt (Skript- und Systemseiten) */
+    pagesList?: string[];
 }
 
 interface PageConfigLayoutState {
@@ -169,6 +171,11 @@ export class PageConfigLayout extends React.Component<PageConfigLayoutProps, Pag
         const { selectedPanelFilter } = this.state;
         const panels: AdminPanelConfig[] = this.props.panels ?? [];
         const uniqueNames = Array.from(new Set(entries.map(e => e.uniqueName))).filter(Boolean);
+        const newName = this.state.newName.trim();
+        // Ein Name, den der Adapter schon kennt, der aber noch keine Admin-Seite ist, gehört zur
+        // Skriptkonfiguration - die Admin-Seite überschreibt sie dann (gilt auch für 'main').
+        const overridesExistingPage =
+            !!newName && !uniqueNames.includes(newName) && (this.props.pagesList ?? []).includes(newName);
 
         // Filter entries by selected card type
         const cardFilteredEntries =
@@ -370,6 +377,14 @@ export class PageConfigLayout extends React.Component<PageConfigLayoutProps, Pag
                                     +
                                 </Button>
                             </Box>
+                            {overridesExistingPage && (
+                                <Typography
+                                    variant="caption"
+                                    sx={{ display: 'block', mt: 0.5, px: 1, color: 'warning.main' }}
+                                >
+                                    {this.getText('page_overrides_script_page')}
+                                </Typography>
+                            )}
                         </Paper>
                     )}
                     {/* Pages list */}

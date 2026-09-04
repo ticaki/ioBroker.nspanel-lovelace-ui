@@ -56,6 +56,8 @@ var import_pageChartBar = require("../pages/pageChartBar");
 var import_pageChartLine = require("../pages/pageChartLine");
 var import_pageThermo2 = require("../pages/pageThermo2");
 var import_admin = require("../configuration/admin");
+var import_main_page = require("../configuration/main-page");
+var import_default_pages = require("../const/default-pages");
 const DefaultOptions = {
   format: {
     weekday: "short",
@@ -302,6 +304,13 @@ class Panel extends import_library.BaseClass {
   }
   async preInit(options) {
     options.pages = options.pages || [];
+    options.navigation = options.navigation || [];
+    const ensured = (0, import_main_page.ensureMainPage)(options, this.friendlyName || this.name);
+    if (ensured.pageAdded || ensured.navigationAdded) {
+      this.log.info(
+        `No page '${import_default_pages.mainPageName}' in the script configuration - a default start page was added. A page named '${import_default_pages.mainPageName}' in the admin configuration replaces it.`
+      );
+    }
     const admin = new import_admin.AdminConfiguration(this.adapter);
     await admin.processentrys(options);
     options.pages = options.pages.filter((b) => {
@@ -1102,14 +1111,14 @@ class Panel extends import_library.BaseClass {
         case "mainNavigationPoint": {
           const v = state.val;
           if (typeof v === "string") {
-            this.navigation.setMainPageByName(v ? v : "main");
-            await this.library.writedp(`panels.${this.name}.cmd.mainNavigationPoint`, v ? v : "main");
+            this.navigation.setMainPageByName(v ? v : import_default_pages.mainPageName);
+            await this.library.writedp(`panels.${this.name}.cmd.mainNavigationPoint`, v ? v : import_default_pages.mainPageName);
           }
           break;
         }
         case "goToNavigationPoint": {
           if (typeof state.val === "string") {
-            await this.navigation.setTargetPageByName(state.val ? String(state.val) : "main");
+            await this.navigation.setTargetPageByName(state.val ? String(state.val) : import_default_pages.mainPageName);
           }
           break;
         }

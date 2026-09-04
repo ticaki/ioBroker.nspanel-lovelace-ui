@@ -157,6 +157,15 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
     Placeholder for the next version (at the beginning of the line):
     ### **WORK IN PROGRESS**
 -->
+### **WORK IN PROGRESS**
+- (ticaki) the start page `main` can now be defined in the admin – a page named `main` overrides the one from the configuration script
+- (ticaki) if neither the script nor the admin provides a page named `main`, the adapter now adds an empty default start page instead of leaving the navigation without a start page
+- (ticaki) navigation: a page replaced by the admin configuration keeps the position and the links of the page it replaces, so the navigation ring and the service access stay intact
+- (ticaki) navigation: links pointing to `main` are resolved against the effective start page instead of dangling
+- (ticaki) an admin page no longer gets a home or parent link to itself
+- (ticaki) fixed: a `cardQR`, `cardAlarm` or `cardUnlock` page in the script configuration aborted the conversion of all following pages – these card types are now skipped with a warning and the remaining pages are converted
+- (ticaki) fixed: the state `mainNavigationPoint` was not translated because of a wrong translation key
+
 ### 1.0.1 (2026-09-01)
 - (tt-tom17) cardChart (line): the x-axis no longer uses a fixed 24 h window, it now follows the configured hours range
 - (tt-tom17) admin: the trash page now shows a status line after an .ics upload, including the number of appointments found
