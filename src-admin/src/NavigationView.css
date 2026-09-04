@@ -35,7 +35,9 @@
 }
 
 .edge-target .react-flow__edge-path,
-.edge-target .custom-edge-path {
+.edge-target .custom-edge-path,
+.edge-target-long-press .react-flow__edge-path,
+.edge-target-long-press .custom-edge-path {
   stroke-dasharray: 4 4;
 }
 
@@ -64,7 +66,17 @@
   cursor: move;
 }
 
-/* Farbmuster der Seitenherkunft in der Legende */
+/* Ein Knoten, der für einen Datenpunkt steht - gestrichelt, weil er keine Seite ist */
+.node-box.node-state-ref {
+  border-style: dashed;
+  max-width: 200px;
+}
+.node-box.node-state-ref .node-label {
+  font-size: 11px;
+  overflow-wrap: anywhere;
+}
+
+/* Farbmuster der Knotenarten in der Legende */
 .legend-node {
   width: 20px;
   height: 11px;
@@ -73,6 +85,9 @@
   border: 2px solid var(--node-border, #ccc);
   border-radius: 3px;
   background: var(--node-bg, #868686ff);
+}
+.legend-node-state-ref {
+  border-style: dashed;
 }
 
 /* Label in der Node: zeigt bewegbaren Cursor */

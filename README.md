@@ -163,6 +163,9 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
 - (ticaki) navigation flow: nodes are coloured by origin - script pages as before, admin pages green, system pages yellow
 - (ticaki) navigation flow: the page info of an admin page links to its page configuration
 - (ticaki) navigation flow: hovering a connection highlights it, clicking a page highlights all of its connections
+- (ticaki) navigation flow: a page reached by a long press (`targetPageLongPress`) is now shown as a connection of its own; only the short press was drawn before
+- (ticaki) navigation flow: a navigation target read from a state gets a node of its own, named after that state - the page it leads to is only known while the panel runs
+- (ticaki) navigation flow: the page info now starts with the page name and its headline
 - (ticaki) fixed the page configuration of a cardTrash page not opening when the entry carries no waste types yet
 - (ticaki) a panel no longer needs a page named `main` in the configuration script - without one the adapter adds an empty start page, so a panel can be set up in the admin alone (script version 0.21.1)
 - (ticaki) admin: the navigation assignment now marks a navigation target that does not exist on an assigned panel

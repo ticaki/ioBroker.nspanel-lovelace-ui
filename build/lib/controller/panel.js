@@ -58,6 +58,7 @@ var import_pageThermo2 = require("../pages/pageThermo2");
 var import_admin = require("../configuration/admin");
 var import_main_page = require("../configuration/main-page");
 var import_page_origin = require("../configuration/page-origin");
+var import_page_targets = require("../configuration/page-targets");
 var import_default_pages = require("../const/default-pages");
 const DefaultOptions = {
   format: {
@@ -70,6 +71,10 @@ const DefaultOptions = {
   locale: "de-DE",
   pages: []
 };
+function readConstString(data, field) {
+  const value = data && field in data ? data[field] : void 0;
+  return value && value.type === "const" && typeof value.constVal === "string" ? value.constVal : void 0;
+}
 class Panel extends import_library.BaseClass {
   loopTimeout;
   pages = [];
@@ -2414,7 +2419,7 @@ ${this.info.tasmota.onlineVersion}`;
     return void 0;
   }
   async getNavigationArrayForFlow() {
-    var _a, _b;
+    var _a, _b, _c, _d, _e, _f;
     const res = {
       panelName: this.name,
       friendlyName: this.friendlyName,
@@ -2426,6 +2431,7 @@ ${this.info.tasmota.onlineVersion}`;
       navMapFromConfig = o.native.navigationMap;
     }
     const db = this.navigation.getDatabase();
+    const stateRefEntries = /* @__PURE__ */ new Map();
     for (const nav of db) {
       if (!nav || !nav.page) {
         continue;
@@ -2451,7 +2457,8 @@ ${this.info.tasmota.onlineVersion}`;
         const n = db[nav.left.double];
         parent = n != null && n.page ? n.page.name : void 0;
       }
-      let pageInfo = { card: "cardGrid", alwaysOn: "none" };
+      const headline = readConstString((_a = nav.page.config) == null ? void 0 : _a.data, "headline");
+      let pageInfo = { card: "cardGrid", alwaysOn: "none", headline };
       if (globals.isPageMenuConfig(nav.page.config)) {
         pageInfo = {
           ...pageInfo,
@@ -2474,7 +2481,7 @@ ${this.info.tasmota.onlineVersion}`;
           alwaysOn: nav.page.alwaysOn
         };
       }
-      const origin = (_a = this.pageOrigins.get(nav.page.name)) != null ? _a : "script";
+      const origin = (_b = this.pageOrigins.get(nav.page.name)) != null ? _b : "script";
       const navMap = {
         label: nav.page ? nav.page.name : "",
         page: nav.page ? nav.page.name : "",
@@ -2487,29 +2494,34 @@ ${this.info.tasmota.onlineVersion}`;
         origin,
         adminPageName: origin === "admin" ? this.getAdminPageName(nav.page.name) : void 0
       };
-      let targetPages = [];
-      if (nav.page.pageItemConfig) {
-        for (const item of nav.page.pageItemConfig) {
-          if (item && item.data && "setNavi" in item.data) {
-            const n = item.data.setNavi;
-            if (n && n.type === "const" && typeof n.constVal === "string") {
-              targetPages.push(n.constVal);
-            }
-          }
+      const targetSources = [...((_c = nav.page.pageItemConfig) != null ? _c : []).map((item) => item == null ? void 0 : item.data), (_d = nav.page.config) == null ? void 0 : _d.data];
+      const short = (0, import_page_targets.collectNavigationTargets)(targetSources, "setNavi");
+      const long = (0, import_page_targets.collectNavigationTargets)(targetSources, "setNaviLongPress");
+      for (const dp of [...short.stateRefs, ...long.stateRefs]) {
+        const id = adminShareConfig.stateRefNodeId(dp);
+        if (!stateRefEntries.has(id)) {
+          stateRefEntries.set(id, {
+            page: id,
+            nodeType: "stateRef",
+            stateId: dp,
+            label: adminShareConfig.shortStateLabel(dp),
+            position: (_f = (_e = navMapFromConfig == null ? void 0 : navMapFromConfig.find((a) => a.name === id)) == null ? void 0 : _e.position) != null ? _f : void 0
+          });
         }
       }
-      if (((_b = nav.page.config) == null ? void 0 : _b.data) && "setNavi" in nav.page.config.data) {
-        const n = nav.page.config.data.setNavi;
-        if (n && n.type === "const" && typeof n.constVal === "string") {
-          targetPages.push(n.constVal);
-        }
-      }
+      const targetPages = [...short.pages, ...short.stateRefs.map(adminShareConfig.stateRefNodeId)];
       if (targetPages.length) {
-        targetPages = Array.from(new Set(targetPages));
         navMap.targetPages = targetPages;
+      }
+      const targetPagesLongPress = [...long.pages, ...long.stateRefs.map(adminShareConfig.stateRefNodeId)].filter(
+        (t) => !targetPages.includes(t)
+      );
+      if (targetPagesLongPress.length) {
+        navMap.targetPagesLongPress = targetPagesLongPress;
       }
       res.navigationMap.push(navMap);
     }
+    res.navigationMap.push(...stateRefEntries.values());
     return res;
   }
   static getPage(config, that) {

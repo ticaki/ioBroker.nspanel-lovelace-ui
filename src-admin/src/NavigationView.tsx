@@ -15,7 +15,7 @@ import {
 const ADAPTER_NAME = 'nspanel-lovelace-ui';
 
 /** Kantenarten des Navigationsgraphen */
-type EdgeKind = 'default' | 'prev' | 'next' | 'prevNext' | 'home' | 'parent' | 'target';
+type EdgeKind = 'default' | 'prev' | 'next' | 'prevNext' | 'home' | 'parent' | 'target' | 'targetLongPress';
 
 /** Feste Farben der Kantenarten - Basis für Legende, Handles, Marker und Kanten */
 const EDGE_COLOR_HEX: Record<EdgeKind, string> = {
@@ -26,6 +26,7 @@ const EDGE_COLOR_HEX: Record<EdgeKind, string> = {
     home: '#fbc02d',
     parent: '#d32f2f',
     target: '#43a047',
+    targetLongPress: '#fb8c00', // langer Druck auf ein Seitenelement
 };
 
 /** CSS-Variablen der Kantenfarben - erlauben ein Override über das Theme */
@@ -37,6 +38,7 @@ const EDGE_COLOR_VAR: Record<EdgeKind, string> = {
     home: '--edge-home',
     parent: '--edge-parent',
     target: '--edge-target',
+    targetLongPress: '--edge-target-long-press',
 };
 
 /**
@@ -44,30 +46,51 @@ const EDGE_COLOR_VAR: Record<EdgeKind, string> = {
  * Rahmenfarbe und als abgeschwächter Hintergrund, damit die Beschriftung in hellem wie dunklem
  * Theme lesbar bleibt. Seiten aus dem Konfigurationsskript behalten das Aussehen des Themes.
  */
-const ORIGIN_COLOR_HEX: Record<Exclude<PageOrigin, 'script'>, string> = {
+const NODE_COLOR_HEX: Record<Exclude<NodeStyle, 'script'>, string> = {
     admin: '#43a047', // grün
     system: '#f9a825', // gelb
+    stateRef: '#546e7a', // blaugrau - kein Seiten-, sondern ein Datenpunkt-Knoten
 };
 
-/** CSS-Variablen je Herkunft - vom ThemeVarsProvider passend zum Theme gefüllt */
-const ORIGIN_STYLE_VAR: Record<PageOrigin, { bg: string; border: string }> = {
+/**
+ * Aussehen eines Knotens: die Herkunft der Seite, oder `stateRef` für einen Knoten, der für einen
+ * Datenpunkt steht statt für eine Seite.
+ */
+type NodeStyle = PageOrigin | 'stateRef';
+
+/** CSS-Variablen je Knotenart - vom ThemeVarsProvider passend zum Theme gefüllt */
+const NODE_STYLE_VAR: Record<NodeStyle, { bg: string; border: string }> = {
     script: { bg: '--node-bg', border: '--node-border' },
     admin: { bg: '--node-admin-bg', border: '--node-admin-border' },
     system: { bg: '--node-system-bg', border: '--node-system-border' },
+    stateRef: { bg: '--node-state-ref-bg', border: '--node-state-ref-border' },
 };
 
-/** Alle Herkünfte in der Reihenfolge der Legende */
-const PAGE_ORIGINS: PageOrigin[] = ['script', 'admin', 'system'];
+/** Alle Knotenarten in der Reihenfolge der Legende */
+const NODE_STYLES: NodeStyle[] = ['script', 'admin', 'system', 'stateRef'];
 
-/** Übersetzungsschlüssel der Herkunft für die Legende */
-const ORIGIN_LABEL_KEY: Record<PageOrigin, string> = {
+/** Übersetzungsschlüssel der Knotenarten für die Legende */
+const NODE_STYLE_LABEL_KEY: Record<NodeStyle, string> = {
     script: 'nav_legend_origin_script',
     admin: 'nav_legend_origin_admin',
     system: 'nav_legend_origin_system',
+    stateRef: 'nav_legend_state_ref',
 };
 
+/**
+ * Knotenart eines Eintrags - ein Datenpunkt-Knoten steht für keine Seite und hat daher keine Herkunft
+ *
+ * @param entry Eintrag der Navigationskarte
+ */
+function nodeStyleOf(entry: NavigationMapEntry | undefined): NodeStyle {
+    if (entry?.nodeType === 'stateRef') {
+        return 'stateRef';
+    }
+    return entry?.origin ?? 'script';
+}
+
 /** Kantenarten mit fester Farbe - unabhängig vom Admin-Theme */
-const STATIC_EDGE_KINDS: EdgeKind[] = ['prev', 'next', 'prevNext', 'home', 'parent', 'target'];
+const STATIC_EDGE_KINDS: EdgeKind[] = ['prev', 'next', 'prevNext', 'home', 'parent', 'target', 'targetLongPress'];
 
 /** Zuordnung Handle -> Kantenart, für die Einfärbung der Handles am Knoten */
 const HANDLE_EDGE_KIND: Record<string, EdgeKind> = {
@@ -478,20 +501,27 @@ function mapNavigationMapToFlow(navigationMap: NavigationMap): FlowData {
                 className: 'edge-parent',
             });
         }
-        // targetPages: von a1 zu a2, von Mitte rechts zu Mitte links
-        if (Array.isArray(entry.targetPages)) {
-            for (const target of entry.targetPages) {
+        // targetPages: von a1 zu a2, von Mitte rechts zu Mitte links.
+        // Kurzer und langer Druck auf ein Seitenelement führen zu je eigenen Zielen.
+        for (const [kind, targets] of [
+            ['target', entry.targetPages],
+            ['targetLongPress', entry.targetPagesLongPress],
+        ] as [EdgeKind, string[] | undefined][]) {
+            if (!Array.isArray(targets)) {
+                continue;
+            }
+            for (const target of targets) {
                 if (target && typeof target === 'string' && pages.has(target)) {
                     edges.push({
-                        id: `target-${entry.page}-${target}`,
+                        id: `${kind}-${entry.page}-${target}`,
                         source: entry.page,
                         target: target,
                         sourceHandle: 'targetRight',
                         targetHandle: 'targetLeft',
                         label: '',
-                        style: { strokeWidth: 2, strokeDasharray: '4 4', stroke: edgeColor('target') },
-                        data: { isTarget: true, navType: 'target' },
-                        className: 'edge-target',
+                        style: { strokeWidth: 2, strokeDasharray: '4 4', stroke: edgeColor(kind) },
+                        data: { isTarget: true, navType: kind },
+                        className: kind === 'target' ? 'edge-target' : 'edge-target-long-press',
                     });
                 }
             }
@@ -918,9 +948,36 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
         this.setState({ showSystemPages: checked });
     }
 
+    /**
+     * Content of the info panel for a node.
+     *
+     * A page is shown with its name first, then its headline and the rest of the page info. A node
+     * standing for a state carries only that state - the page it leads to is not known here.
+     *
+     * @param entry Entry of the clicked node.
+     */
+    private buildInfoData(entry: NavigationMapEntry | undefined): Record<string, any> | null {
+        if (!entry) {
+            return null;
+        }
+        if (entry.nodeType === 'stateRef') {
+            return { state_id: entry.stateId ?? entry.page };
+        }
+        // The headline is part of pageInfo but belongs next to the name, so it is pulled forward
+        const { headline, ...rest } = entry.pageInfo ?? {};
+        return {
+            uniqueName: entry.page,
+            ...(headline ? { headline } : {}),
+            ...rest,
+        };
+    }
+
     onNodeClick(_event: any, node: any): void {
-        const pageInfo = node?.data?.entry?.pageInfo ?? null;
-        this.setState({ infoPanelOpen: true, infoData: pageInfo, infoNodeId: node.id });
+        this.setState({
+            infoPanelOpen: true,
+            infoData: this.buildInfoData(node?.data?.entry),
+            infoNodeId: node.id,
+        });
     }
 
     onPaneClick(): void {
@@ -1101,12 +1158,11 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
             this.setState(state => {
                 const newNodes = applyNodeChanges(changes, state.nodes);
                 const moved = newNodes.find(n => n.id === movedId);
-                const pageInfo = moved?.data?.entry?.pageInfo ?? null;
                 return {
                     nodes: newNodes,
                     dirty: true,
                     infoPanelOpen: true,
-                    infoData: pageInfo,
+                    infoData: this.buildInfoData(moved?.data?.entry),
                     infoNodeId: movedId,
                 };
             });
@@ -1148,6 +1204,7 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
             { kind: 'home', labelKey: 'nav_legend_home', dash: '8 8' },
             { kind: 'parent', labelKey: 'nav_legend_parent' },
             { kind: 'target', labelKey: 'nav_legend_target', dash: '4 4' },
+            { kind: 'targetLongPress', labelKey: 'nav_legend_target_long_press', dash: '4 4' },
         ];
         return (
             <Box sx={{ width: '100%', p: 2, position: 'relative' }}>
@@ -1220,23 +1277,23 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
                         orientation="vertical"
                         flexItem
                     />
-                    {PAGE_ORIGINS.map(origin => (
+                    {NODE_STYLES.map(style => (
                         <Box
-                            key={origin}
+                            key={style}
                             sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}
                         >
                             <span
-                                className="legend-node"
+                                className={style === 'stateRef' ? 'legend-node legend-node-state-ref' : 'legend-node'}
                                 style={{
-                                    background: `var(${ORIGIN_STYLE_VAR[origin].bg})`,
-                                    borderColor: `var(${ORIGIN_STYLE_VAR[origin].border})`,
+                                    background: `var(${NODE_STYLE_VAR[style].bg})`,
+                                    borderColor: `var(${NODE_STYLE_VAR[style].border})`,
                                 }}
                             />
                             <Typography
                                 variant="caption"
                                 sx={{ whiteSpace: 'nowrap' }}
                             >
-                                {I18n.t(ORIGIN_LABEL_KEY[origin])}
+                                {I18n.t(NODE_STYLE_LABEL_KEY[style])}
                             </Typography>
                         </Box>
                     ))}
@@ -1297,6 +1354,10 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
                                     />
                                     <EdgeArrowMarkers
                                         kind="target"
+                                        size={10}
+                                    />
+                                    <EdgeArrowMarkers
+                                        kind="targetLongPress"
                                         size={10}
                                     />
                                     <EdgeArrowMarkers
@@ -1366,27 +1427,31 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
                                             targetRight: false,
                                             targetLeft: false,
                                         };
-                                        // Handles an beidseitigen prev/next-Verbindungen bekommen deren Farbe
-                                        const bidiHandles: Record<string, boolean> = {};
+                                        // Ein Handle bekommt die Farbe der Kante, die es benutzt - so
+                                        // stimmen auch beidseitige und Long-Press-Verbindungen
+                                        const handleKind: Record<string, EdgeKind> = {};
                                         for (const edge of edges) {
-                                            const bidi = !!edge.data?.bidirectional;
-                                            if (edge.source === id && edge.sourceHandle) {
-                                                handleTypes[edge.sourceHandle] = true;
-                                                if (bidi) {
-                                                    bidiHandles[edge.sourceHandle] = true;
+                                            const kind = edge.data?.navType;
+                                            const mark = (handleId: string | undefined): void => {
+                                                if (!handleId) {
+                                                    return;
                                                 }
+                                                handleTypes[handleId] = true;
+                                                if (kind && !handleKind[handleId]) {
+                                                    handleKind[handleId] = kind;
+                                                }
+                                            };
+                                            if (edge.source === id) {
+                                                mark(edge.sourceHandle);
                                             }
-                                            if (edge.target === id && edge.targetHandle) {
-                                                handleTypes[edge.targetHandle] = true;
-                                                if (bidi) {
-                                                    bidiHandles[edge.targetHandle] = true;
-                                                }
+                                            if (edge.target === id) {
+                                                mark(edge.targetHandle);
                                             }
                                         }
                                         const handleColor = (handleId: string): string =>
-                                            bidiHandles[handleId]
-                                                ? EDGE_COLOR_HEX.prevNext
-                                                : EDGE_COLOR_HEX[HANDLE_EDGE_KIND[handleId] ?? 'default'];
+                                            EDGE_COLOR_HEX[
+                                                handleKind[handleId] ?? HANDLE_EDGE_KIND[handleId] ?? 'default'
+                                            ];
                                         // Fallback-Title (native) für pageInfo bauen
                                         let _pageInfoTooltip: string | undefined;
                                         const pageInfo = data.entry?.pageInfo;
@@ -1410,15 +1475,19 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
                                         }
                                         // kept for later use by external scripts; avoid unused-variable lint
                                         void _pageInfoTooltip;
-                                        const origin: PageOrigin = data.entry?.origin ?? 'script';
-                                        const originVars = ORIGIN_STYLE_VAR[origin];
+                                        const entry: NavigationMapEntry | undefined = data.entry;
+                                        const style = nodeStyleOf(entry);
+                                        const vars = NODE_STYLE_VAR[style];
                                         return (
                                             <Box
-                                                className="node-box"
+                                                className={
+                                                    style === 'stateRef' ? 'node-box node-state-ref' : 'node-box'
+                                                }
                                                 style={{
-                                                    background: `var(${originVars.bg})`,
-                                                    borderColor: `var(${originVars.border})`,
+                                                    background: `var(${vars.bg})`,
+                                                    borderColor: `var(${vars.border})`,
                                                 }}
+                                                title={entry?.stateId}
                                             >
                                                 {/* prev: oben */}
                                                 {handleTypes.prev && (
@@ -1579,13 +1648,13 @@ export function ThemeVarsProvider({ children }: { children: React.ReactNode }): 
         // Herkunftsfarben: kräftiger Rahmen, nur leicht getönte Fläche. Im dunklen Theme darf die
         // Tönung stärker sein, sonst verschwindet sie im dunklen Untergrund.
         const tint = theme.palette.mode === 'dark' ? 0.32 : 0.18;
-        for (const origin of PAGE_ORIGINS) {
-            if (origin === 'script') {
+        for (const style of NODE_STYLES) {
+            if (style === 'script') {
                 continue;
             }
-            const color = ORIGIN_COLOR_HEX[origin];
-            root.style.setProperty(ORIGIN_STYLE_VAR[origin].border, color);
-            root.style.setProperty(ORIGIN_STYLE_VAR[origin].bg, alpha(color, tint));
+            const color = NODE_COLOR_HEX[style];
+            root.style.setProperty(NODE_STYLE_VAR[style].border, color);
+            root.style.setProperty(NODE_STYLE_VAR[style].bg, alpha(color, tint));
         }
         // Kantenfarben (Primärfarbe als Default für Kanten)
         root.style.setProperty(EDGE_COLOR_VAR.default, theme.palette.primary.main || EDGE_COLOR_HEX.default);

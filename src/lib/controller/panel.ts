@@ -41,6 +41,7 @@ import { PageThermo2 } from '../pages/pageThermo2';
 import { AdminConfiguration } from '../configuration/admin';
 import { ensureMainPage } from '../configuration/main-page';
 import { PageOriginTracker } from '../configuration/page-origin';
+import { collectNavigationTargets } from '../configuration/page-targets';
 import { mainPageName } from '../const/default-pages';
 import type { NSPanel } from '../types/NSPanel';
 
@@ -81,6 +82,20 @@ type panelConfigTop = {
     dimLow: number;
     dimHigh: number;
 };
+
+/**
+ * Constant string of a configuration field, `undefined` when it is read from a state.
+ *
+ * Not every card carries every field, so the field is looked up instead of accessed directly.
+ *
+ * @param data Configuration object, may be missing.
+ * @param field Field to read.
+ * @returns The constant value, if there is one.
+ */
+function readConstString(data: Record<string, any> | undefined | null, field: string): string | undefined {
+    const value = data && field in data ? data[field] : undefined;
+    return value && value.type === 'const' && typeof value.constVal === 'string' ? value.constVal : undefined;
+}
 
 export class Panel extends BaseClass {
     private loopTimeout: ioBroker.Timeout | undefined;
@@ -2646,6 +2661,8 @@ export class Panel extends BaseClass {
             navMapFromConfig = o.native.navigationMap;
         }
         const db = this.navigation.getDatabase();
+        // Nodes for states a navigation target is read from, collected across all pages
+        const stateRefEntries = new Map<string, NavigationMapEntry>();
         for (const nav of db) {
             if (!nav || !nav.page) {
                 continue;
@@ -2671,7 +2688,9 @@ export class Panel extends BaseClass {
                 const n = db[nav.left.double];
                 parent = n != null && n.page ? n.page.name : undefined;
             }
-            let pageInfo: PageMenuConfigInfo = { card: 'cardGrid', alwaysOn: 'none' };
+            // The headline is only known when it is a constant - otherwise it is read from a state
+            const headline = readConstString(nav.page.config?.data, 'headline');
+            let pageInfo: PageMenuConfigInfo = { card: 'cardGrid', alwaysOn: 'none', headline };
             if (globals.isPageMenuConfig(nav.page.config)) {
                 pageInfo = {
                     ...pageInfo,
@@ -2709,29 +2728,39 @@ export class Panel extends BaseClass {
                 origin,
                 adminPageName: origin === 'admin' ? this.getAdminPageName(nav.page.name) : undefined,
             };
-            let targetPages: string[] = [];
-            if (nav.page.pageItemConfig) {
-                for (const item of nav.page.pageItemConfig) {
-                    if (item && item.data && 'setNavi' in item.data) {
-                        const n = item.data.setNavi;
-                        if (n && n.type === 'const' && typeof n.constVal === 'string') {
-                            targetPages.push(n.constVal);
-                        }
-                    }
+            // A page item leads to another page on a short press (`targetPage` in the script) and to
+            // a second one on a long press (`targetPageLongPress`); the page itself can carry both too.
+            const targetSources = [...(nav.page.pageItemConfig ?? []).map(item => item?.data), nav.page.config?.data];
+            const short = collectNavigationTargets(targetSources, 'setNavi');
+            const long = collectNavigationTargets(targetSources, 'setNaviLongPress');
+            // A target read from a state gets a node of its own, named after that state: the page it
+            // will lead to is not known here, but where it comes from is worth showing.
+            for (const dp of [...short.stateRefs, ...long.stateRefs]) {
+                const id = adminShareConfig.stateRefNodeId(dp);
+                if (!stateRefEntries.has(id)) {
+                    stateRefEntries.set(id, {
+                        page: id,
+                        nodeType: 'stateRef',
+                        stateId: dp,
+                        label: adminShareConfig.shortStateLabel(dp),
+                        position: navMapFromConfig?.find(a => a.name === id)?.position ?? undefined,
+                    });
                 }
             }
-            if (nav.page.config?.data && 'setNavi' in nav.page.config.data) {
-                const n = nav.page.config.data.setNavi;
-                if (n && n.type === 'const' && typeof n.constVal === 'string') {
-                    targetPages.push(n.constVal);
-                }
-            }
+            const targetPages = [...short.pages, ...short.stateRefs.map(adminShareConfig.stateRefNodeId)];
             if (targetPages.length) {
-                targetPages = Array.from(new Set(targetPages));
                 navMap.targetPages = targetPages;
+            }
+            // A target reachable on both presses is reported as a short press only - it is drawn once
+            const targetPagesLongPress = [...long.pages, ...long.stateRefs.map(adminShareConfig.stateRefNodeId)].filter(
+                t => !targetPages.includes(t),
+            );
+            if (targetPagesLongPress.length) {
+                navMap.targetPagesLongPress = targetPagesLongPress;
             }
             res.navigationMap.push(navMap);
         }
+        res.navigationMap.push(...stateRefEntries.values());
 
         return res;
     }

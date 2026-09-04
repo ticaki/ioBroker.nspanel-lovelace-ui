@@ -37,6 +37,8 @@ __export(adminShareConfig_exports, {
   panelStatusTranslationKeys: () => panelStatusTranslationKeys,
   requiredScriptDataPoints: () => requiredScriptDataPoints,
   reversePanelStatusStates: () => reversePanelStatusStates,
+  shortStateLabel: () => shortStateLabel,
+  stateRefNodeId: () => stateRefNodeId,
   trashItemCount: () => trashItemCount
 });
 module.exports = __toCommonJS(adminShareConfig_exports);
@@ -47,6 +49,13 @@ const SENDTO_GET_PANELS_COMMAND = "getPanels";
 const SENDTO_GET_PAGES_COMMAND = "getPagesForPanel";
 const SENDTO_GET_PAGES_All_COMMAND = "getAllPages";
 const ADAPTER_NAME = "nspanel-lovelace-ui";
+function stateRefNodeId(dp) {
+  return `dp:${dp}`;
+}
+function shortStateLabel(dp) {
+  const parts = dp.split(".");
+  return parts.length <= 2 ? dp : `\u2026${parts.slice(-2).join(".")}`;
+}
 const mainPageName = "main";
 function emptyChannelValueConfig(valueStateId = "") {
   return { valueStateId, unit: "", prefix: "", suffix: "", dateFormat: "" };
@@ -827,6 +836,8 @@ const CHANNEL_ROLES_LIST = Object.keys(requiredScriptDataPoints);
   panelStatusTranslationKeys,
   requiredScriptDataPoints,
   reversePanelStatusStates,
+  shortStateLabel,
+  stateRefNodeId,
   trashItemCount
 });
 //# sourceMappingURL=adminShareConfig.js.map

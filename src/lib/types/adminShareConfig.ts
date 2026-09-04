@@ -28,6 +28,8 @@ export type AdminCardTypes =
 // Typ für pageInfo bei PageMenuConfig (siehe Panel)
 export interface PageMenuConfigInfo {
     card: AdminCardTypes;
+    /** Headline of the page, only set when it is a constant in the configuration */
+    headline?: string;
     alwaysOn?: string;
     scrollPresentation?: string;
     scrollType?: string;
@@ -81,13 +83,47 @@ export type NavigationPositionsMap = { name: string; position: { x: number; y: n
  */
 export type PageOrigin = 'script' | 'admin' | 'system';
 
+/**
+ * Node id for a state a navigation target is read from.
+ *
+ * The node stands for the state, not for a page - which page the target names is only known while
+ * the panel runs. The prefix keeps it apart from the page ids that come from the configuration.
+ *
+ * @param dp State id the target is read from.
+ * @returns The node id.
+ */
+export function stateRefNodeId(dp: string): string {
+    return `dp:${dp}`;
+}
+
+/**
+ * Shortened state id for the node caption - the full id is shown in the page info.
+ *
+ * @param dp State id.
+ * @returns The last two segments, prefixed with an ellipsis when something was cut off.
+ */
+export function shortStateLabel(dp: string): string {
+    const parts = dp.split('.');
+    return parts.length <= 2 ? dp : `…${parts.slice(-2).join('.')}`;
+}
+
 export interface NavigationMapEntry {
     page: string;
+    /**
+     * What the node stands for: a page of the panel, or a state a navigation target is read from.
+     * Missing means a page.
+     */
+    nodeType?: 'page' | 'stateRef';
+    /** Full state id, set for `nodeType === 'stateRef'` only. */
+    stateId?: string;
     next?: string;
     prev?: string;
     home?: string;
     parent?: string;
+    /** Pages a page item of this page navigates to on a short press */
     targetPages?: string[];
+    /** Pages a page item of this page navigates to on a long press */
+    targetPagesLongPress?: string[];
     label?: string;
     position?: { x: number; y: number } | null;
     pageInfo?: PageMenuConfigInfo;
