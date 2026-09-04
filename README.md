@@ -158,18 +158,14 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
     ### **WORK IN PROGRESS**
 -->
 ### **WORK IN PROGRESS**
-- (ticaki) the start page can now be defined in the admin: a checkbox marks any admin page as start page, it is published as `main` and replaces the start page from the configuration script
-- (ticaki) admin: the name `main` can no longer be entered by hand – the start page is set with that checkbox, so its checks cannot be bypassed
-- (ticaki) admin: a page marked as start page keeps its own name in the list and is marked with `(main)`; its name field is locked and panel assignment and navigation stay fixed as long as the mark is set
-- (ticaki) admin: the navigation assignment marks navigation targets that do not exist on an assigned panel
-- (ticaki) if neither the script nor the admin provides a page named `main`, the adapter now adds an empty default start page instead of leaving the navigation without a start page
-- (ticaki) a configuration script without any page (only the screensaver) is no longer reported as an error – the pages can come from the admin configuration alone
-- (ticaki) fixed: a panel without its own start page could adopt the start page of another panel, because the pages of all panels are merged into every panel
-- (ticaki) navigation: a page replaced by the admin configuration keeps the position and the links of the page it replaces, so the navigation ring and the service access stay intact
-- (ticaki) navigation: links pointing to `main` are resolved against the effective start page instead of dangling
-- (ticaki) an admin page no longer gets a home or parent link to itself
-- (ticaki) fixed: a `cardQR`, `cardAlarm` or `cardUnlock` page in the script configuration aborted the conversion of all following pages – these card types are now skipped with a warning and the remaining pages are converted
-- (ticaki) fixed: the state `mainNavigationPoint` was not translated because of a wrong translation key
+- (ticaki) the start page can now be set in the admin: a checkbox marks any admin page as start page and it replaces the one from the configuration script. The page keeps its own name and is marked with `(main)`
+- (ticaki) a panel no longer needs a page named `main` in the configuration script - without one the adapter adds an empty start page, so a panel can be set up in the admin alone
+- (ticaki) admin: the navigation assignment now marks a navigation target that does not exist on an assigned panel
+- (ticaki) fixed: replacing a script page from the admin tore the navigation apart and could cut off the access to the service pages
+- (ticaki) fixed: a panel without its own start page could show the start page of another panel
+- (ticaki) fixed: after sending the configuration script the reloaded panel lost the pages of all other panels until the adapter was restarted
+- (ticaki) fixed: a `cardQR`, `cardAlarm` or `cardUnlock` page in the configuration script stopped all following pages from being created
+- (ticaki) fixed: the state `mainNavigationPoint` was not translated
 
 ### 1.0.1 (2026-09-01)
 - (tt-tom17) cardChart (line): the x-axis no longer uses a fixed 24 h window, it now follows the configured hours range

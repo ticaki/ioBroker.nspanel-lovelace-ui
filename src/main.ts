@@ -941,7 +941,26 @@ class NspanelLovelaceUi extends utils.Adapter {
                                 //try {
 
                                 if (r.panelConfig) {
-                                    const arr = await ConfigManager.getConfig(this, [r.panelConfig]);
+                                    // Merge with the stored configuration of the other panels, the
+                                    // same way the adapter start does. Without it the reloaded
+                                    // panel would lose the pages of all other panels and could no
+                                    // longer navigate to them.
+                                    const others: Partial<panelConfigPartial>[] = [];
+                                    const instanceObj = await this.getForeignObjectAsync(this.namespace);
+                                    const stored = instanceObj?.native?.scriptConfig;
+                                    if (Array.isArray(stored)) {
+                                        for (const item of stored as Partial<panelConfigPartial>[]) {
+                                            if (
+                                                item &&
+                                                item.topic &&
+                                                item.topic !== r.panelConfig.topic &&
+                                                this.config.panels.findIndex(a => a.topic === item.topic) !== -1
+                                            ) {
+                                                others.push(item);
+                                            }
+                                        }
+                                    }
+                                    const arr = await ConfigManager.getConfig(this, [r.panelConfig, ...others]);
                                     if (arr && arr.length > 0) {
                                         const config = arr[0];
                                         if (this.controller && config) {
