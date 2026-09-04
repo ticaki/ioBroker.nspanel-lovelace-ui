@@ -802,7 +802,9 @@ class NavigationAssignmentPanel extends ConfigGeneric<
             if (other.uniqueName === this.props.uniqueName) {
                 continue;
             }
-            if (!('isMainPage' in other) || !other.isMainPage) {
+            // Auch Alteintraege, die woertlich 'main' heissen, belegen die Startseite eines Panels.
+            const otherIsMain = ('isMainPage' in other && !!other.isMainPage) || other.uniqueName === mainPageName;
+            if (!otherIsMain) {
                 continue;
             }
             const conflict = this.getCoveredTopics(other.navigationAssignment).filter(t => mineSet.has(t));
