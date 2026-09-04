@@ -59,6 +59,7 @@ var import_admin = require("../configuration/admin");
 var import_main_page = require("../configuration/main-page");
 var import_page_origin = require("../configuration/page-origin");
 var import_page_targets = require("../configuration/page-targets");
+var import_page_states = require("../configuration/page-states");
 var import_default_pages = require("../const/default-pages");
 const DefaultOptions = {
   format: {
@@ -2432,6 +2433,26 @@ ${this.info.tasmota.onlineVersion}`;
     }
     const db = this.navigation.getDatabase();
     const stateRefEntries = /* @__PURE__ */ new Map();
+    const addStateNode = (state) => {
+      var _a2, _b2;
+      const nodeId = adminShareConfig.stateRefNodeId(state.id);
+      const known = stateRefEntries.get(nodeId);
+      if (known) {
+        known.isChannel = known.isChannel || state.isChannel;
+        known.stateInfo = (0, import_page_states.mergeStateInfo)(known.stateInfo, state);
+        return nodeId;
+      }
+      stateRefEntries.set(nodeId, {
+        page: nodeId,
+        nodeType: "stateRef",
+        stateId: state.id,
+        isChannel: state.isChannel,
+        stateInfo: (0, import_page_states.mergeStateInfo)(void 0, state),
+        label: adminShareConfig.shortStateLabel(state.id),
+        position: (_b2 = (_a2 = navMapFromConfig == null ? void 0 : navMapFromConfig.find((a) => a.name === nodeId)) == null ? void 0 : _a2.position) != null ? _b2 : void 0
+      });
+      return nodeId;
+    };
     for (const nav of db) {
       if (!nav || !nav.page) {
         continue;
@@ -2498,16 +2519,7 @@ ${this.info.tasmota.onlineVersion}`;
       const short = (0, import_page_targets.collectNavigationTargets)(targetSources, "setNavi");
       const long = (0, import_page_targets.collectNavigationTargets)(targetSources, "setNaviLongPress");
       for (const dp of [...short.stateRefs, ...long.stateRefs]) {
-        const id = adminShareConfig.stateRefNodeId(dp);
-        if (!stateRefEntries.has(id)) {
-          stateRefEntries.set(id, {
-            page: id,
-            nodeType: "stateRef",
-            stateId: dp,
-            label: adminShareConfig.shortStateLabel(dp),
-            position: (_f = (_e = navMapFromConfig == null ? void 0 : navMapFromConfig.find((a) => a.name === id)) == null ? void 0 : _e.position) != null ? _f : void 0
-          });
-        }
+        addStateNode((0, import_page_states.emptyStateNode)(dp, false));
       }
       const targetPages = [...short.pages, ...short.stateRefs.map(adminShareConfig.stateRefNodeId)];
       if (targetPages.length) {
@@ -2518,6 +2530,16 @@ ${this.info.tasmota.onlineVersion}`;
       );
       if (targetPagesLongPress.length) {
         navMap.targetPagesLongPress = targetPagesLongPress;
+      }
+      const stateSources = [
+        ...((_e = nav.page.pageItemConfig) != null ? _e : []).map(
+          (item) => item ? { data: item.data, role: item.role, type: item.type } : void 0
+        ),
+        { data: (_f = nav.page.config) == null ? void 0 : _f.data, type: nav.page.card }
+      ];
+      const usedStates = (0, import_page_states.collectPageStates)(stateSources).map((state) => addStateNode(state));
+      if (usedStates.length) {
+        navMap.usedStates = usedStates;
       }
       res.navigationMap.push(navMap);
     }

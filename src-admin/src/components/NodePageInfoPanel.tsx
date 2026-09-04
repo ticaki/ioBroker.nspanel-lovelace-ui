@@ -9,6 +9,8 @@ export interface NodePageInfoPanelProps {
     sx?: any;
     /** Opens the page configuration; only set for pages coming from the admin */
     onOpenPageConfig?: () => void;
+    /** Icons to show next to a field, as SVG markup using `currentColor`, by field name */
+    iconSvgs?: Record<string, string[]>;
 }
 
 /**
@@ -17,7 +19,7 @@ export interface NodePageInfoPanelProps {
  * @param props Panel state, page info and optionally the jump to the page configuration
  */
 export default function NodePageInfoPanel(props: NodePageInfoPanelProps): React.ReactElement {
-    const { open, data, title, sx, onOpenPageConfig } = props;
+    const { open, data, title, sx, onOpenPageConfig, iconSvgs } = props;
     // place under header / controls (approx)
     const topPx = 64;
 
@@ -53,7 +55,7 @@ export default function NodePageInfoPanel(props: NodePageInfoPanelProps): React.
                     Object.entries(data).map(([k, v]) => (
                         <Box
                             key={k}
-                            sx={{ mb: 0.5 }}
+                            sx={{ mb: 0.5, display: 'flex', alignItems: 'center', gap: 0.5, flexWrap: 'wrap' }}
                         >
                             <Typography
                                 component="div"
@@ -61,6 +63,20 @@ export default function NodePageInfoPanel(props: NodePageInfoPanelProps): React.
                             >
                                 <strong>{I18n.t(k)}</strong>: {String(v)}
                             </Typography>
+                            {iconSvgs?.[k]?.map((svg, index) => (
+                                <Box
+                                    key={`${k}-${index}`}
+                                    component="span"
+                                    aria-hidden="true"
+                                    // Statisches Markup aus der mitgelieferten Icon-Liste
+                                    dangerouslySetInnerHTML={{ __html: svg }}
+                                    sx={{
+                                        color: 'text.primary',
+                                        display: 'inline-flex',
+                                        '& svg': { width: 18, height: 18, display: 'block' },
+                                    }}
+                                />
+                            ))}
                         </Box>
                     ))
                 ) : (

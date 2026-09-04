@@ -42,6 +42,7 @@ import { AdminConfiguration } from '../configuration/admin';
 import { ensureMainPage } from '../configuration/main-page';
 import { PageOriginTracker } from '../configuration/page-origin';
 import { collectNavigationTargets } from '../configuration/page-targets';
+import { collectPageStates, emptyStateNode, mergeStateInfo, type PageStateNode } from '../configuration/page-states';
 import { mainPageName } from '../const/default-pages';
 import type { NSPanel } from '../types/NSPanel';
 
@@ -2661,8 +2662,28 @@ export class Panel extends BaseClass {
             navMapFromConfig = o.native.navigationMap;
         }
         const db = this.navigation.getDatabase();
-        // Nodes for states a navigation target is read from, collected across all pages
+        // Nodes for states - both those a navigation target is read from and those a page works
+        // with. Collected across all pages, a state used twice becomes one node.
         const stateRefEntries = new Map<string, NavigationMapEntry>();
+        const addStateNode = (state: PageStateNode): string => {
+            const nodeId = adminShareConfig.stateRefNodeId(state.id);
+            const known = stateRefEntries.get(nodeId);
+            if (known) {
+                known.isChannel = known.isChannel || state.isChannel;
+                known.stateInfo = mergeStateInfo(known.stateInfo, state);
+                return nodeId;
+            }
+            stateRefEntries.set(nodeId, {
+                page: nodeId,
+                nodeType: 'stateRef',
+                stateId: state.id,
+                isChannel: state.isChannel,
+                stateInfo: mergeStateInfo(undefined, state),
+                label: adminShareConfig.shortStateLabel(state.id),
+                position: navMapFromConfig?.find(a => a.name === nodeId)?.position ?? undefined,
+            });
+            return nodeId;
+        };
         for (const nav of db) {
             if (!nav || !nav.page) {
                 continue;
@@ -2736,16 +2757,7 @@ export class Panel extends BaseClass {
             // A target read from a state gets a node of its own, named after that state: the page it
             // will lead to is not known here, but where it comes from is worth showing.
             for (const dp of [...short.stateRefs, ...long.stateRefs]) {
-                const id = adminShareConfig.stateRefNodeId(dp);
-                if (!stateRefEntries.has(id)) {
-                    stateRefEntries.set(id, {
-                        page: id,
-                        nodeType: 'stateRef',
-                        stateId: dp,
-                        label: adminShareConfig.shortStateLabel(dp),
-                        position: navMapFromConfig?.find(a => a.name === id)?.position ?? undefined,
-                    });
-                }
+                addStateNode(emptyStateNode(dp, false));
             }
             const targetPages = [...short.pages, ...short.stateRefs.map(adminShareConfig.stateRefNodeId)];
             if (targetPages.length) {
@@ -2757,6 +2769,18 @@ export class Panel extends BaseClass {
             );
             if (targetPagesLongPress.length) {
                 navMap.targetPagesLongPress = targetPagesLongPress;
+            }
+            // States and channels the page works with - shown in the flow on demand. How the panel
+            // uses them (role and type of the item) travels with them.
+            const stateSources = [
+                ...(nav.page.pageItemConfig ?? []).map(item =>
+                    item ? { data: item.data, role: item.role, type: item.type } : undefined,
+                ),
+                { data: nav.page.config?.data, type: nav.page.card },
+            ];
+            const usedStates = collectPageStates(stateSources).map(state => addStateNode(state));
+            if (usedStates.length) {
+                navMap.usedStates = usedStates;
             }
             res.navigationMap.push(navMap);
         }

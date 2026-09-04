@@ -66,13 +66,17 @@
   cursor: move;
 }
 
-/* Ein Knoten, der für einen Datenpunkt steht - gestrichelt, weil er keine Seite ist */
+/* Ein Knoten, der für einen Datenpunkt oder Channel steht - gestrichelt, weil er keine Seite ist.
+   Er hat nur einen Andockpunkt und darf daher deutlich flacher und kleiner sein als eine Seite. */
 .node-box.node-state-ref {
   border-style: dashed;
-  max-width: 200px;
+  padding: 2px 6px;
+  min-width: 60px;
+  max-width: 190px;
 }
 .node-box.node-state-ref .node-label {
-  font-size: 11px;
+  font-size: 10px;
+  line-height: 1.3;
   overflow-wrap: anywhere;
 }
 

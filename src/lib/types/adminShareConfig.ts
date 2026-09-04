@@ -107,6 +107,22 @@ export function shortStateLabel(dp: string): string {
     return parts.length <= 2 ? dp : `…${parts.slice(-2).join('.')}`;
 }
 
+/** How a panel works with a state or channel. */
+export interface StateNodeInfo {
+    /** Roles of the page items using it, e.g. `button` or `shutter`. */
+    roles: string[];
+    /** Types of those page items, e.g. `button` or `switch`. */
+    types: string[];
+    /** States used below a channel, relative to it - empty for a single state. */
+    states: string[];
+    /** Captions the page items give it. */
+    headlines: string[];
+    /** Icons shown while the value is true. */
+    iconsTrue: string[];
+    /** Icons shown while the value is false. */
+    iconsFalse: string[];
+}
+
 export interface NavigationMapEntry {
     page: string;
     /**
@@ -114,8 +130,14 @@ export interface NavigationMapEntry {
      * Missing means a page.
      */
     nodeType?: 'page' | 'stateRef';
-    /** Full state id, set for `nodeType === 'stateRef'` only. */
+    /** Full state or channel id, set for `nodeType === 'stateRef'` only. */
     stateId?: string;
+    /** True when `stateId` names a channel rather than a single state. */
+    isChannel?: boolean;
+    /** How the panel works with this state or channel, set for `nodeType === 'stateRef'` only. */
+    stateInfo?: StateNodeInfo;
+    /** States and channels this page reads its values from, as node ids. */
+    usedStates?: string[];
     next?: string;
     prev?: string;
     home?: string;

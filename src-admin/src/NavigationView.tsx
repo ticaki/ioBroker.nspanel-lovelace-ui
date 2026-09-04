@@ -1,5 +1,6 @@
 // Konstanten für Adapter-Kommunikation
 import './NavigationView.css';
+import iconList from './icons.json';
 import type {
     NavigationMapEntry,
     NavigationMap,
@@ -14,8 +15,35 @@ import {
 
 const ADAPTER_NAME = 'nspanel-lovelace-ui';
 
+/** Icons nach Namen - die Liste steckt ohnehin im Bundle, die Zuordnung wird einmalig aufgebaut */
+let iconsByName: Map<string, string> | undefined;
+
+/**
+ * SVG eines Icons, eingefärbt über `currentColor`.
+ *
+ * Die mitgelieferten Icons haben eine feste Füllfarbe und wären im dunklen Theme nicht zu sehen.
+ * Wie im Icon-Auswahlfeld wird die Füllung daher auf die Textfarbe umgestellt.
+ *
+ * @param name Icon-Name aus der Seitenkonfiguration.
+ * @returns Das SVG-Markup, oder `undefined` wenn es das Icon nicht gibt.
+ */
+function iconSvg(name: string): string | undefined {
+    if (!iconsByName) {
+        const all: { name: string; base64: string }[] = Array.isArray(iconList) ? iconList : [];
+        iconsByName = new Map(all.map(icon => [icon.name, icon.base64]));
+    }
+    const base64 = iconsByName.get(name);
+    if (!base64) {
+        return undefined;
+    }
+    return atob(base64.replace(/^data:image\/svg\+xml;base64,/, '')).replace(
+        /<svg([^>]*)>/,
+        '<svg$1 fill="currentColor">',
+    );
+}
+
 /** Kantenarten des Navigationsgraphen */
-type EdgeKind = 'default' | 'prev' | 'next' | 'prevNext' | 'home' | 'parent' | 'target' | 'targetLongPress';
+type EdgeKind = 'default' | 'prev' | 'next' | 'prevNext' | 'home' | 'parent' | 'target' | 'targetLongPress' | 'state';
 
 /** Feste Farben der Kantenarten - Basis für Legende, Handles, Marker und Kanten */
 const EDGE_COLOR_HEX: Record<EdgeKind, string> = {
@@ -27,6 +55,7 @@ const EDGE_COLOR_HEX: Record<EdgeKind, string> = {
     parent: '#d32f2f',
     target: '#43a047',
     targetLongPress: '#fb8c00', // langer Druck auf ein Seitenelement
+    state: '#546e7a', // Datenpunkt oder Channel, den die Seite nutzt
 };
 
 /** CSS-Variablen der Kantenfarben - erlauben ein Override über das Theme */
@@ -39,6 +68,7 @@ const EDGE_COLOR_VAR: Record<EdgeKind, string> = {
     parent: '--edge-parent',
     target: '--edge-target',
     targetLongPress: '--edge-target-long-press',
+    state: '--edge-state',
 };
 
 /**
@@ -90,7 +120,16 @@ function nodeStyleOf(entry: NavigationMapEntry | undefined): NodeStyle {
 }
 
 /** Kantenarten mit fester Farbe - unabhängig vom Admin-Theme */
-const STATIC_EDGE_KINDS: EdgeKind[] = ['prev', 'next', 'prevNext', 'home', 'parent', 'target', 'targetLongPress'];
+const STATIC_EDGE_KINDS: EdgeKind[] = [
+    'prev',
+    'next',
+    'prevNext',
+    'home',
+    'parent',
+    'target',
+    'targetLongPress',
+    'state',
+];
 
 /** Zuordnung Handle -> Kantenart, für die Einfärbung der Handles am Knoten */
 const HANDLE_EDGE_KIND: Record<string, EdgeKind> = {
@@ -502,10 +541,12 @@ function mapNavigationMapToFlow(navigationMap: NavigationMap): FlowData {
             });
         }
         // targetPages: von a1 zu a2, von Mitte rechts zu Mitte links.
-        // Kurzer und langer Druck auf ein Seitenelement führen zu je eigenen Zielen.
+        // Kurzer und langer Druck auf ein Seitenelement führen zu je eigenen Zielen; dazu die
+        // Datenpunkte und Channels, aus denen die Seite ihre Werte liest.
         for (const [kind, targets] of [
             ['target', entry.targetPages],
             ['targetLongPress', entry.targetPagesLongPress],
+            ['state', entry.usedStates],
         ] as [EdgeKind, string[] | undefined][]) {
             if (!Array.isArray(targets)) {
                 continue;
@@ -519,15 +560,78 @@ function mapNavigationMapToFlow(navigationMap: NavigationMap): FlowData {
                         sourceHandle: 'targetRight',
                         targetHandle: 'targetLeft',
                         label: '',
-                        style: { strokeWidth: 2, strokeDasharray: '4 4', stroke: edgeColor(kind) },
+                        style: {
+                            strokeWidth: kind === 'state' ? 1 : 2,
+                            strokeDasharray: kind === 'state' ? '2 3' : '4 4',
+                            stroke: edgeColor(kind),
+                        },
                         data: { isTarget: true, navType: kind },
-                        className: kind === 'target' ? 'edge-target' : 'edge-target-long-press',
+                        className: `edge-${kind === 'targetLongPress' ? 'target-long-press' : kind}`,
                     });
                 }
             }
         }
     }
     return { nodes, edges };
+}
+
+/** Abstand der Datenpunkt-Knoten rechts neben ihrer Seite */
+const STATE_NODE_OFFSET_X = 320;
+
+/** Vertikaler Abstand mehrerer Datenpunkt-Knoten derselben Seite */
+const STATE_NODE_SPACING_Y = 46;
+
+/**
+ * Legt die Datenpunkt-Knoten neben die Seite, die sie nutzt.
+ *
+ * Betroffen sind nur Knoten ohne gespeicherte Position, also die, die zum ersten Mal eingeblendet
+ * werden. Alle anderen Knoten - besonders die Seiten - bleiben unangetastet.
+ *
+ * @param nodes Aktuelle Knoten der Ansicht.
+ * @returns Die Knoten mit den ergänzten Positionen und ob überhaupt etwas platziert wurde.
+ */
+function placeStateNodes(nodes: FlowNode[]): { nodes: FlowNode[]; moved: boolean } {
+    const byId = new Map(nodes.map(n => [n.id, n]));
+    const isStateNode = (id: string): boolean => byId.get(id)?.data.entry?.nodeType === 'stateRef';
+    // Seite, die einen Datenpunkt-Knoten als erste nutzt - an ihr wird er ausgerichtet
+    const owner = new Map<string, string>();
+    for (const node of nodes) {
+        const entry = node.data.entry;
+        if (!entry || entry.nodeType === 'stateRef') {
+            continue;
+        }
+        const links = [
+            ...(entry.usedStates ?? []),
+            ...(entry.targetPages ?? []),
+            ...(entry.targetPagesLongPress ?? []),
+        ];
+        for (const id of links) {
+            if (!owner.has(id) && isStateNode(id)) {
+                owner.set(id, node.id);
+            }
+        }
+    }
+
+    const slots = new Map<string, number>();
+    let moved = false;
+    const placed = nodes.map(node => {
+        const entry = node.data.entry;
+        if (!entry || entry.nodeType !== 'stateRef' || entry.position) {
+            return node;
+        }
+        const ownerId = owner.get(node.id);
+        const anchor = ownerId ? byId.get(ownerId)?.position : undefined;
+        if (!ownerId || !anchor) {
+            return node;
+        }
+        const slot = slots.get(ownerId) ?? 0;
+        slots.set(ownerId, slot + 1);
+        const position = { x: anchor.x + STATE_NODE_OFFSET_X, y: anchor.y + slot * STATE_NODE_SPACING_Y };
+        moved = true;
+        // Die Position wandert auch in den Eintrag, sonst würde erneutes Einblenden neu platzieren
+        return { ...node, position, data: { ...node.data, entry: { ...entry, position } } };
+    });
+    return { nodes: placed, moved };
 }
 
 // Compute a simple automatic layout: find the 'main' node (page === 'main' or first entry)
@@ -807,6 +911,7 @@ interface NavigationViewInternalState extends NavigationViewState {
     confirmAutoLayoutOpen?: boolean;
     isTouchDevice?: boolean;
     showSystemPages: boolean;
+    showStates: boolean;
 }
 
 class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInternalState> {
@@ -897,7 +1002,9 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
             infoData: null,
             infoNodeId: undefined,
             showSystemPages: false,
+            showStates: false,
         };
+        this.handleShowStatesChange = this.handleShowStatesChange.bind(this);
         this.checkAlive = this.checkAlive.bind(this);
         this.fetchNavigation = this.fetchNavigation.bind(this);
         this.handlePanelChange = this.handlePanelChange.bind(this);
@@ -949,6 +1056,60 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
     }
 
     /**
+     * Turns the state nodes on or off.
+     *
+     * On the first time they are shown they have no position yet, so they are placed next to the
+     * page that uses them. The pages themselves are left where they are - only the new nodes move.
+     *
+     * @param _event Unused change event.
+     * @param checked Whether the state nodes should be shown.
+     */
+    handleShowStatesChange(_event: React.ChangeEvent<HTMLInputElement>, checked: boolean): void {
+        if (!checked) {
+            this.setState({ showStates: false });
+            return;
+        }
+        this.setState(state => {
+            const placed = placeStateNodes(state.nodes);
+            return { showStates: true, nodes: placed.nodes, dirty: state.dirty || placed.moved };
+        });
+    }
+
+    /**
+     * Icon markup of the info panel, by field. An icon set in the configuration is shown as itself,
+     * not only by name.
+     */
+    private getInfoIcons(): Record<string, string[]> | undefined {
+        const data = this.state.infoData;
+        if (!data) {
+            return undefined;
+        }
+        const result: Record<string, string[]> = {};
+        for (const field of ['icon_true', 'icon_false']) {
+            const names = typeof data[field] === 'string' ? data[field].split(', ') : [];
+            const svgs = names
+                .map((name: string) => iconSvg(name))
+                .filter((svg: string | undefined): svg is string => !!svg);
+            if (svgs.length) {
+                result[field] = svgs;
+            }
+        }
+        return Object.keys(result).length ? result : undefined;
+    }
+
+    /**
+     * Title of the info panel - a state node is not a page, so it must not say so.
+     */
+    private getInfoTitle(): string {
+        const { infoNodeId, nodes } = this.state;
+        const entry = infoNodeId ? nodes.find(n => n.id === infoNodeId)?.data.entry : undefined;
+        if (entry?.nodeType !== 'stateRef') {
+            return I18n.t('Page Info');
+        }
+        return entry.isChannel ? I18n.t('channel_info') : I18n.t('state_info');
+    }
+
+    /**
      * Content of the info panel for a node.
      *
      * A page is shown with its name first, then its headline and the rest of the page info. A node
@@ -961,7 +1122,28 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
             return null;
         }
         if (entry.nodeType === 'stateRef') {
-            return { state_id: entry.stateId ?? entry.page };
+            const id = entry.stateId ?? entry.page;
+            const info = entry.stateInfo;
+            const list = (values: string[] | undefined): string | undefined =>
+                values?.length ? values.join(', ') : undefined;
+            // Nur gesetzte Angaben zeigen - eine leere Zeile sagt nichts aus
+            // Der Schalter 'Wert statt Icon' schlägt sich in der Rolle des Elements nieder
+            const displayKey = info?.roles.includes('textNotIcon')
+                ? 'value_display_value'
+                : info?.roles.includes('iconNotText')
+                  ? 'value_display_icon'
+                  : undefined;
+            const fields: Record<string, string | undefined> = {
+                [entry.isChannel ? 'channel_id' : 'state_id']: id,
+                headline: list(info?.headlines),
+                value_display: displayKey ? I18n.t(displayKey) : undefined,
+                role: list(info?.roles),
+                itemType: list(info?.types),
+                icon_true: list(info?.iconsTrue),
+                icon_false: list(info?.iconsFalse),
+                used_states: list(info?.states),
+            };
+            return Object.fromEntries(Object.entries(fields).filter(([, value]) => value !== undefined));
         }
         // The headline is part of pageInfo but belongs next to the name, so it is pulled forward
         const { headline, ...rest } = entry.pageInfo ?? {};
@@ -1187,10 +1369,14 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
     }
 
     render(): string | React.ReactElement | null {
-        const { alive, loading, panelList, selectedPanel, nodes, edges, noData, showSystemPages } = this.state;
+        const { alive, loading, panelList, selectedPanel, nodes, edges, noData, showSystemPages, showStates } =
+            this.state;
         // Filter system pages (starting with ///) unless showSystemPages is true; ///unlock is always shown
         const isSystemPage = (id: string): boolean => id.startsWith('///') && id !== '///unlock';
-        const visibleNodes = showSystemPages ? nodes : nodes.filter(n => !isSystemPage(n.id));
+        const isStateNode = (node: FlowNode): boolean => node.data.entry?.nodeType === 'stateRef';
+        const visibleNodes = nodes.filter(
+            n => (showSystemPages || !isSystemPage(n.id)) && (showStates || !isStateNode(n)),
+        );
         const visibleNodeIds = new Set(visibleNodes.map(n => n.id));
         // remove dangling edges that reference missing nodes (safety for stale state)
         const safeEdges = (edges || []).filter(e => visibleNodeIds.has(e.source) && visibleNodeIds.has(e.target));
@@ -1205,6 +1391,7 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
             { kind: 'parent', labelKey: 'nav_legend_parent' },
             { kind: 'target', labelKey: 'nav_legend_target', dash: '4 4' },
             { kind: 'targetLongPress', labelKey: 'nav_legend_target_long_press', dash: '4 4' },
+            { kind: 'state', labelKey: 'nav_legend_state_edge', dash: '2 3' },
         ];
         return (
             <Box sx={{ width: '100%', p: 2, position: 'relative' }}>
@@ -1220,6 +1407,16 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
                             />
                         }
                         label={I18n.t('show_system_pages')}
+                    />
+                    <FormControlLabel
+                        control={
+                            <Checkbox
+                                checked={showStates}
+                                onChange={this.handleShowStatesChange}
+                                size="small"
+                            />
+                        }
+                        label={I18n.t('show_states')}
                     />
                     <Button
                         variant="outlined"
@@ -1359,6 +1556,10 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
                                     <EdgeArrowMarkers
                                         kind="targetLongPress"
                                         size={10}
+                                    />
+                                    <EdgeArrowMarkers
+                                        kind="state"
+                                        size={8}
                                     />
                                     <EdgeArrowMarkers
                                         kind="next"
@@ -1596,7 +1797,9 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
                             </ReactFlow>
                             <NodePageInfoPanel
                                 open={!!this.state.infoPanelOpen}
+                                title={this.getInfoTitle()}
                                 data={this.state.infoData}
+                                iconSvgs={this.getInfoIcons()}
                                 onOpenPageConfig={
                                     this.getInfoAdminPageName() ? this.openPageConfigForInfoNode : undefined
                                 }
