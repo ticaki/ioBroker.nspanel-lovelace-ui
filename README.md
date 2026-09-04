@@ -164,6 +164,7 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
 - (ticaki) admin: the navigation assignment marks navigation targets that do not exist on an assigned panel
 - (ticaki) if neither the script nor the admin provides a page named `main`, the adapter now adds an empty default start page instead of leaving the navigation without a start page
 - (ticaki) a configuration script without any page (only the screensaver) is no longer reported as an error – the pages can come from the admin configuration alone
+- (ticaki) fixed: a panel without its own start page could adopt the start page of another panel, because the pages of all panels are merged into every panel
 - (ticaki) navigation: a page replaced by the admin configuration keeps the position and the links of the page it replaces, so the navigation ring and the service access stay intact
 - (ticaki) navigation: links pointing to `main` are resolved against the effective start page instead of dangling
 - (ticaki) an admin page no longer gets a home or parent link to itself

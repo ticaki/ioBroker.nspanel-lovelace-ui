@@ -35,15 +35,22 @@ type MainPageTarget = {
  */
 export function ensureMainPage(option: MainPageTarget, headline: string): EnsureMainPageResult {
     const result: EnsureMainPageResult = { pageAdded: false, navigationAdded: false };
+    const hasNode = option.navigation.some(a => a && a.name === mainPageName);
 
-    if (!option.pages.some(a => a && a.uniqueID === mainPageName)) {
-        option.pages.push(getDefaultMainPage(headline));
-        result.pageAdded = true;
-    }
-
-    if (option.navigation.some(a => a && a.name === mainPageName)) {
+    if (hasNode) {
+        // The panel has its own start page node - only the page may be missing.
+        if (!option.pages.some(a => a && a.uniqueID === mainPageName)) {
+            option.pages.push(getDefaultMainPage(headline));
+            result.pageAdded = true;
+        }
         return result;
     }
+
+    // No node: a page with that id can only come from another panel, merged in by
+    // ConfigManager.getConfig(). Do not adopt it as start page - and never end up with two.
+    option.pages = option.pages.filter(a => !a || a.uniqueID !== mainPageName);
+    option.pages.push(getDefaultMainPage(headline));
+    result.pageAdded = true;
 
     const mainNode: NavigationItemConfig = { name: mainPageName, page: mainPageName };
     const first = option.navigation.find(a => a != null);

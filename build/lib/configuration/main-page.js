@@ -26,13 +26,17 @@ const serviceNodeName = "///service";
 function ensureMainPage(option, headline) {
   var _a, _b, _c;
   const result = { pageAdded: false, navigationAdded: false };
-  if (!option.pages.some((a) => a && a.uniqueID === import_default_pages.mainPageName)) {
-    option.pages.push((0, import_default_pages.getDefaultMainPage)(headline));
-    result.pageAdded = true;
-  }
-  if (option.navigation.some((a) => a && a.name === import_default_pages.mainPageName)) {
+  const hasNode = option.navigation.some((a) => a && a.name === import_default_pages.mainPageName);
+  if (hasNode) {
+    if (!option.pages.some((a) => a && a.uniqueID === import_default_pages.mainPageName)) {
+      option.pages.push((0, import_default_pages.getDefaultMainPage)(headline));
+      result.pageAdded = true;
+    }
     return result;
   }
+  option.pages = option.pages.filter((a) => !a || a.uniqueID !== import_default_pages.mainPageName);
+  option.pages.push((0, import_default_pages.getDefaultMainPage)(headline));
+  result.pageAdded = true;
   const mainNode = { name: import_default_pages.mainPageName, page: import_default_pages.mainPageName };
   const first = option.navigation.find((a) => a != null);
   if (!first) {

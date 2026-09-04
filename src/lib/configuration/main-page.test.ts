@@ -122,13 +122,16 @@ describe('lib/configuration/main-page', () => {
             expect(option.navigation.map(a => a?.name)).to.deep.equal([mainPageName, 'kitchen']);
         });
 
-        it('adds only the missing half when a page exists without a navigation node', () => {
+        it('replaces a start page that has no navigation node - it belongs to another panel', () => {
+            // ConfigManager.getConfig() merges the pages of all panels into every panel, so a page
+            // named like the start page can be present without this panel owning it.
             const option = { pages: [page(mainPageName), page('kitchen')], navigation: ring('kitchen') };
 
             const result = ensureMainPage(option, 'Panel');
 
-            expect(result).to.deep.equal({ pageAdded: false, navigationAdded: true });
-            expect(option.pages.map(a => a.uniqueID)).to.deep.equal([mainPageName, 'kitchen']);
+            expect(result).to.deep.equal({ pageAdded: true, navigationAdded: true });
+            expect(option.pages.filter(a => a.uniqueID === mainPageName).length, 'no duplicate').to.equal(1);
+            expect(option.pages.map(a => a.uniqueID)).to.deep.equal(['kitchen', mainPageName]);
             expect(option.navigation.map(a => a?.name)).to.deep.equal([mainPageName, 'kitchen']);
         });
     });

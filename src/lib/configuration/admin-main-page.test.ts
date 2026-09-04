@@ -143,3 +143,31 @@ describe('lib/configuration - script without any page', () => {
         expect(node?.right?.double).to.equal(mainPageName);
     });
 });
+
+describe('lib/configuration - pages merged from another panel', () => {
+    /** A page named like the start page, merged in from another panel by ConfigManager.getConfig(). */
+    function foreignMainPage(): PageBase {
+        return {
+            uniqueID: mainPageName,
+            dpInit: '',
+            alwaysOn: 'none',
+            config: { card: 'cardGrid', data: { headline: { type: 'const', constVal: 'Fremdes Panel' } } },
+            pageItems: [],
+        } as unknown as PageBase;
+    }
+
+    it('does not adopt the start page of another panel', async () => {
+        const option: any = {
+            name: 'test',
+            topic: panelTopic,
+            pages: [screensaverPage(), foreignMainPage()],
+            navigation: [],
+        };
+        ensureMainPage(option, 'Testpanel');
+
+        const mainPages = option.pages.filter((p: PageBase) => p.uniqueID === mainPageName);
+        expect(mainPages.length, 'exactly one start page').to.equal(1);
+        expect(mainPages[0].config).to.not.have.nested.property('data.headline.constVal', 'Fremdes Panel');
+        expect(mainPages[0].config).to.have.nested.property('data.headline.constVal', 'Testpanel');
+    });
+});
