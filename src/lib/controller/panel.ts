@@ -40,6 +40,7 @@ import { PageChartLine } from '../pages/pageChartLine';
 import { PageThermo2 } from '../pages/pageThermo2';
 import { AdminConfiguration } from '../configuration/admin';
 import { ensureMainPage } from '../configuration/main-page';
+import { PageOriginTracker } from '../configuration/page-origin';
 import { mainPageName } from '../const/default-pages';
 import type { NSPanel } from '../types/NSPanel';
 
@@ -84,6 +85,8 @@ type panelConfigTop = {
 export class Panel extends BaseClass {
     private loopTimeout: ioBroker.Timeout | undefined;
     private pages: (Page | undefined)[] = [];
+    /** Origin per page id, collected in preInit and reported to the admin navigation view */
+    private readonly pageOrigins = new PageOriginTracker();
     private _activePage: Page | undefined = undefined;
     private data: Record<string, any> = {};
     private blockStartup: ioBroker.Timeout | undefined = null;
@@ -333,9 +336,14 @@ export class Panel extends BaseClass {
         options.pages = options.pages || [];
         options.navigation = options.navigation || [];
 
+        // Record where each page came from - the admin navigation view colours its nodes by it.
+        this.pageOrigins.classify(options.pages, 'script');
+
         // Guarantee a start page before the admin pages are merged, so the precedence is
         // script main -> default main -> admin main (the admin overrides whatever is here).
         const ensured = ensureMainPage(options, this.friendlyName || this.name);
+        // A generated default start page belongs to the adapter, not to the script.
+        this.pageOrigins.classify(options.pages, 'system');
         if (ensured.pageAdded || ensured.navigationAdded) {
             this.log.info(
                 `No page '${mainPageName}' in the script configuration - a default start page was added. A page named '${mainPageName}' in the admin configuration replaces it.`,
@@ -344,6 +352,7 @@ export class Panel extends BaseClass {
 
         const admin = new AdminConfiguration(this.adapter);
         await admin.processentrys(options);
+        this.pageOrigins.classify(options.pages, 'admin');
         options.pages = options.pages.filter(b => {
             if (
                 b.config?.card === 'screensaver' ||
@@ -360,6 +369,7 @@ export class Panel extends BaseClass {
         this.info.internal.pageCount = options.pages.length;
         this.info.internal.servicePageCount = systemPages.length;
         options.pages = options.pages.concat(systemPages);
+        this.pageOrigins.classify(options.pages, 'system');
         options.navigation = (options.navigation || []).concat(systemNavigation);
 
         let scsFound = 0;
@@ -2600,6 +2610,30 @@ export class Panel extends BaseClass {
         await this.adapter.setObject(`panels.${this.name}`, o);
     };
 
+    /**
+     * `uniqueName` of the admin entry a published page belongs to.
+     *
+     * Usually both are identical. A page flagged as start page is published under the reserved id
+     * `main` while its admin entry keeps its own name, so that case is resolved via the flag.
+     *
+     * @param pageId Page id as used in the navigation
+     */
+    private getAdminPageName(pageId: string): string | undefined {
+        const entries = this.adapter.config.pageConfig;
+        if (!Array.isArray(entries)) {
+            return undefined;
+        }
+        const direct = entries.find(e => e && e.uniqueName === pageId);
+        if (direct) {
+            return direct.uniqueName;
+        }
+        if (pageId === mainPageName) {
+            const main = entries.find(e => e && adminShareConfig.isMainPageEntry(e));
+            return main ? main.uniqueName : undefined;
+        }
+        return undefined;
+    }
+
     async getNavigationArrayForFlow(): Promise<PanelListEntry> {
         const res: PanelListEntry = {
             panelName: this.name,
@@ -2662,6 +2696,7 @@ export class Panel extends BaseClass {
                 } as PageMenuConfigInfo;
             }
 
+            const origin = this.pageOrigins.get(nav.page.name) ?? 'script';
             const navMap: NavigationMapEntry = {
                 label: nav.page ? nav.page.name : '',
                 page: nav.page ? nav.page.name : '',
@@ -2671,6 +2706,8 @@ export class Panel extends BaseClass {
                 parent,
                 position: pPos ? pPos.position : undefined,
                 pageInfo,
+                origin,
+                adminPageName: origin === 'admin' ? this.getAdminPageName(nav.page.name) : undefined,
             };
             let targetPages: string[] = [];
             if (nav.page.pageItemConfig) {

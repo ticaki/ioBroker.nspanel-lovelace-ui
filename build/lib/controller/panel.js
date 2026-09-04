@@ -57,6 +57,7 @@ var import_pageChartLine = require("../pages/pageChartLine");
 var import_pageThermo2 = require("../pages/pageThermo2");
 var import_admin = require("../configuration/admin");
 var import_main_page = require("../configuration/main-page");
+var import_page_origin = require("../configuration/page-origin");
 var import_default_pages = require("../const/default-pages");
 const DefaultOptions = {
   format: {
@@ -72,6 +73,8 @@ const DefaultOptions = {
 class Panel extends import_library.BaseClass {
   loopTimeout;
   pages = [];
+  /** Origin per page id, collected in preInit and reported to the admin navigation view */
+  pageOrigins = new import_page_origin.PageOriginTracker();
   _activePage = void 0;
   data = {};
   blockStartup = null;
@@ -305,7 +308,9 @@ class Panel extends import_library.BaseClass {
   async preInit(options) {
     options.pages = options.pages || [];
     options.navigation = options.navigation || [];
+    this.pageOrigins.classify(options.pages, "script");
     const ensured = (0, import_main_page.ensureMainPage)(options, this.friendlyName || this.name);
+    this.pageOrigins.classify(options.pages, "system");
     if (ensured.pageAdded || ensured.navigationAdded) {
       this.log.info(
         `No page '${import_default_pages.mainPageName}' in the script configuration - a default start page was added. A page named '${import_default_pages.mainPageName}' in the admin configuration replaces it.`
@@ -313,6 +318,7 @@ class Panel extends import_library.BaseClass {
     }
     const admin = new import_admin.AdminConfiguration(this.adapter);
     await admin.processentrys(options);
+    this.pageOrigins.classify(options.pages, "admin");
     options.pages = options.pages.filter((b) => {
       var _a, _b, _c;
       if (((_a = b.config) == null ? void 0 : _a.card) === "screensaver" || ((_b = b.config) == null ? void 0 : _b.card) === "screensaver2" || ((_c = b.config) == null ? void 0 : _c.card) === "screensaver3") {
@@ -326,6 +332,7 @@ class Panel extends import_library.BaseClass {
     this.info.internal.pageCount = options.pages.length;
     this.info.internal.servicePageCount = import_system_templates.systemPages.length;
     options.pages = options.pages.concat(import_system_templates.systemPages);
+    this.pageOrigins.classify(options.pages, "system");
     options.navigation = (options.navigation || []).concat(import_system_templates.systemNavigation);
     let scsFound = 0;
     for (let a = 0; a < options.pages.length; a++) {
@@ -2383,8 +2390,31 @@ ${this.info.tasmota.onlineVersion}`;
     o.native.navigationMap = map;
     await this.adapter.setObject(`panels.${this.name}`, o);
   };
+  /**
+   * `uniqueName` of the admin entry a published page belongs to.
+   *
+   * Usually both are identical. A page flagged as start page is published under the reserved id
+   * `main` while its admin entry keeps its own name, so that case is resolved via the flag.
+   *
+   * @param pageId Page id as used in the navigation
+   */
+  getAdminPageName(pageId) {
+    const entries = this.adapter.config.pageConfig;
+    if (!Array.isArray(entries)) {
+      return void 0;
+    }
+    const direct = entries.find((e) => e && e.uniqueName === pageId);
+    if (direct) {
+      return direct.uniqueName;
+    }
+    if (pageId === import_default_pages.mainPageName) {
+      const main = entries.find((e) => e && adminShareConfig.isMainPageEntry(e));
+      return main ? main.uniqueName : void 0;
+    }
+    return void 0;
+  }
   async getNavigationArrayForFlow() {
-    var _a;
+    var _a, _b;
     const res = {
       panelName: this.name,
       friendlyName: this.friendlyName,
@@ -2444,6 +2474,7 @@ ${this.info.tasmota.onlineVersion}`;
           alwaysOn: nav.page.alwaysOn
         };
       }
+      const origin = (_a = this.pageOrigins.get(nav.page.name)) != null ? _a : "script";
       const navMap = {
         label: nav.page ? nav.page.name : "",
         page: nav.page ? nav.page.name : "",
@@ -2452,7 +2483,9 @@ ${this.info.tasmota.onlineVersion}`;
         home,
         parent,
         position: pPos ? pPos.position : void 0,
-        pageInfo
+        pageInfo,
+        origin,
+        adminPageName: origin === "admin" ? this.getAdminPageName(nav.page.name) : void 0
       };
       let targetPages = [];
       if (nav.page.pageItemConfig) {
@@ -2465,7 +2498,7 @@ ${this.info.tasmota.onlineVersion}`;
           }
         }
       }
-      if (((_a = nav.page.config) == null ? void 0 : _a.data) && "setNavi" in nav.page.config.data) {
+      if (((_b = nav.page.config) == null ? void 0 : _b.data) && "setNavi" in nav.page.config.data) {
         const n = nav.page.config.data.setNavi;
         if (n && n.type === "const" && typeof n.constVal === "string") {
           targetPages.push(n.constVal);

@@ -159,7 +159,12 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
 -->
 ### **WORK IN PROGRESS**
 - (ticaki) the start page can now be set in the admin: a checkbox marks any admin page as start page and it replaces the one from the configuration script. The page keeps its own name and is marked with `(main)`
-- (ticaki) a panel no longer needs a page named `main` in the configuration script - without one the adapter adds an empty start page, so a panel can be set up in the admin alone
+- (ticaki) navigation flow: pages linked with `next` and `prev` in both directions are drawn as one edge with two arrowheads and its own colour; the legend is translated
+- (ticaki) navigation flow: nodes are coloured by origin - script pages as before, admin pages green, system pages yellow
+- (ticaki) navigation flow: the page info of an admin page links to its page configuration
+- (ticaki) navigation flow: hovering a connection highlights it, clicking a page highlights all of its connections
+- (ticaki) fixed the page configuration of a cardTrash page not opening when the entry carries no waste types yet
+- (ticaki) a panel no longer needs a page named `main` in the configuration script - without one the adapter adds an empty start page, so a panel can be set up in the admin alone (script version 0.21.1)
 - (ticaki) admin: the navigation assignment now marks a navigation target that does not exist on an assigned panel
 - (ticaki) fixed: replacing a script page from the admin tore the navigation apart and could cut off the access to the service pages
 - (ticaki) fixed: a panel without its own start page could show the start page of another panel

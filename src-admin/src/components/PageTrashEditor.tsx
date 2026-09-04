@@ -26,8 +26,8 @@ import { ConfigGeneric, type ConfigGenericProps, type ConfigGenericState } from 
 import type { IobTheme, ThemeType, ThemeName } from '@iobroker/gui-components';
 import { EntitySelector } from './EntitySelector';
 import IconSelect from '../IconSelect';
-import type { TrashEntry } from '../../../src/lib/types/adminShareConfig';
-import { isMainPageEntry } from '../../../src/lib/types/adminShareConfig';
+import type { TrashEntry, TrashItem } from '../../../src/lib/types/adminShareConfig';
+import { isMainPageEntry, normalizeTrashItems } from '../../../src/lib/types/adminShareConfig';
 
 export interface PageTrashEditorProps {
     entry: TrashEntry;
@@ -211,7 +211,7 @@ export class PageTrashEditor extends ConfigGeneric<ConfigGenericProps & PageTras
         const updated = { ...entry };
 
         // Verteile auf die items im Array
-        updated.items = entry.items.map((item, index) => ({
+        updated.items = normalizeTrashItems(entry.items).map((item, index) => ({
             ...item,
             textTrash: selectedEvents[index] || '',
         }));
@@ -223,9 +223,9 @@ export class PageTrashEditor extends ConfigGeneric<ConfigGenericProps & PageTras
         this.setState({ selectedEvents: [], uploadedEvents: [], uploadStatus: null });
     };
 
-    private handleItemChange(index: number, field: keyof (typeof this.props.entry.items)[0], value: string): void {
+    private handleItemChange(index: number, field: keyof TrashItem, value: string): void {
         const updated = { ...this.props.entry };
-        updated.items = [...updated.items];
+        updated.items = normalizeTrashItems(updated.items);
         updated.items[index] = { ...updated.items[index], [field]: value };
         this.props.onEntryChange(updated);
     }
@@ -579,7 +579,7 @@ export class PageTrashEditor extends ConfigGeneric<ConfigGenericProps & PageTras
 
                 {/* Trash entry fields (color, icon, trash name, custom name) */}
                 <Box sx={{ mb: 2 }}>
-                    {entry.items.map((item, index) => (
+                    {normalizeTrashItems(entry.items).map((item, index) => (
                         <Box
                             key={`${entry.uniqueName}-${index}`}
                             sx={{

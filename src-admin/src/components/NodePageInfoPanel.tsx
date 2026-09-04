@@ -1,5 +1,5 @@
 import React from 'react';
-import { Paper, Box, Typography } from '@mui/material';
+import { Paper, Box, Button, Typography } from '@mui/material';
 import { I18n } from '@iobroker/gui-components';
 
 export interface NodePageInfoPanelProps {
@@ -7,9 +7,17 @@ export interface NodePageInfoPanelProps {
     data?: Record<string, any> | null;
     title?: string;
     sx?: any;
+    /** Opens the page configuration; only set for pages coming from the admin */
+    onOpenPageConfig?: () => void;
 }
 
-export default function NodePageInfoPanel({ open, data, title, sx }: NodePageInfoPanelProps): React.ReactElement {
+/**
+ * Info panel shown next to the navigation flow
+ *
+ * @param props Panel state, page info and optionally the jump to the page configuration
+ */
+export default function NodePageInfoPanel(props: NodePageInfoPanelProps): React.ReactElement {
+    const { open, data, title, sx, onOpenPageConfig } = props;
     // place under header / controls (approx)
     const topPx = 64;
 
@@ -64,6 +72,19 @@ export default function NodePageInfoPanel({ open, data, title, sx }: NodePageInf
                     </Typography>
                 )}
             </Box>
+            {onOpenPageConfig ? (
+                // The panel itself is click-through, the button must not be
+                <Box sx={{ mt: 1, pointerEvents: 'auto' }}>
+                    <Button
+                        variant="outlined"
+                        size="small"
+                        fullWidth
+                        onClick={onOpenPageConfig}
+                    >
+                        {I18n.t('nav_open_page_config')}
+                    </Button>
+                </Box>
+            ) : null}
         </Paper>
     );
 }

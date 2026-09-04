@@ -31,11 +31,13 @@ __export(adminShareConfig_exports, {
   isMainPageEntry: () => isMainPageEntry,
   mainPageName: () => mainPageName,
   normalizeChannelId: () => normalizeChannelId,
+  normalizeTrashItems: () => normalizeTrashItems,
   panelStatusColors: () => panelStatusColors,
   panelStatusStates: () => panelStatusStates,
   panelStatusTranslationKeys: () => panelStatusTranslationKeys,
   requiredScriptDataPoints: () => requiredScriptDataPoints,
-  reversePanelStatusStates: () => reversePanelStatusStates
+  reversePanelStatusStates: () => reversePanelStatusStates,
+  trashItemCount: () => trashItemCount
 });
 module.exports = __toCommonJS(adminShareConfig_exports);
 const ALL_PANELS_SPECIAL_ID = "///ALL_PANELS_SPECIAL";
@@ -76,6 +78,21 @@ function emptyPowerSlot() {
     entityHeadline: "",
     useColorScale: false
   };
+}
+const trashItemCount = 6;
+const trashItemColors = ["#3c3fff", "#fffd77", "#d2d2d2", "#de8900", "#d2d2d2", "#d2d2d2"];
+function normalizeTrashItems(items) {
+  const stored = Array.isArray(items) ? items : [];
+  return Array.from({ length: trashItemCount }, (_, i) => {
+    var _a, _b, _c, _d;
+    const item = stored.length > i ? stored[i] : {};
+    return {
+      textTrash: (_a = item.textTrash) != null ? _a : "",
+      customTrash: (_b = item.customTrash) != null ? _b : "",
+      iconColor: (_c = item.iconColor) != null ? _c : trashItemColors[i],
+      icon: (_d = item.icon) != null ? _d : ""
+    };
+  });
 }
 function isMainPageEntry(entry) {
   return "isMainPage" in entry && !!entry.isMainPage;
@@ -804,10 +821,12 @@ const CHANNEL_ROLES_LIST = Object.keys(requiredScriptDataPoints);
   isMainPageEntry,
   mainPageName,
   normalizeChannelId,
+  normalizeTrashItems,
   panelStatusColors,
   panelStatusStates,
   panelStatusTranslationKeys,
   requiredScriptDataPoints,
-  reversePanelStatusStates
+  reversePanelStatusStates,
+  trashItemCount
 });
 //# sourceMappingURL=adminShareConfig.js.map

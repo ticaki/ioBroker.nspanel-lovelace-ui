@@ -12,7 +12,9 @@ import type {
 import {
     ADAPTER_NAME,
     emptyPowerSlot,
+    isMainPageEntry,
     mainPageName,
+    normalizeTrashItems,
     SENDTO_GET_PAGES_All_COMMAND,
 } from '../../src/lib/types/adminShareConfig';
 import { PageConfigLayout, type PageCardType } from './components/PageConfigLayout';
@@ -21,6 +23,7 @@ import { PageMenuEditor } from './components/PageMenuEditor';
 import { PagePowerEditor } from './components/PagePowerEditor';
 import { PageQREditor } from './components/PageQREditor';
 import { PageTrashEditor } from './components/PageTrashEditor';
+import { takeRequestedPageConfig } from './pageConfigLink';
 
 interface PageConfigManagerState extends ConfigGenericState {
     entries: PageConfigEntry[];
@@ -40,10 +43,14 @@ class PageConfigManager extends ConfigGeneric<ConfigGenericProps & { theme?: any
     constructor(props: ConfigGenericProps & { theme?: any }) {
         super(props);
         const saved = ConfigGeneric.getValue(props.data, props.attr);
+        const entries: PageConfigEntry[] = Array.isArray(saved) ? (saved as PageConfigEntry[]) : [];
+        // A page requested from the navigation flow is preselected - it may have been deleted
+        // meanwhile, then the list opens as usual.
+        const requested = takeRequestedPageConfig();
         this.state = {
             ...(this.state as ConfigGenericState),
-            entries: Array.isArray(saved) ? (saved as PageConfigEntry[]) : [],
-            selected: '',
+            entries,
+            selected: requested && entries.some(e => e.uniqueName === requested) ? requested : '',
             selectedCardType: 'all', // Default: alle anzeigen
             pagesList: [],
             alive: false,
@@ -325,14 +332,7 @@ class PageConfigManager extends ConfigGeneric<ConfigGenericProps & { theme?: any
                 trashImport: true, // Default: Import from iCal Adapter
                 trashState: '',
                 trashFile: '',
-                items: [
-                    { textTrash: '', customTrash: '', iconColor: '#3c3fff', icon: '' },
-                    { textTrash: '', customTrash: '', iconColor: '#fffd77', icon: '' },
-                    { textTrash: '', customTrash: '', iconColor: '#d2d2d2', icon: '' },
-                    { textTrash: '', customTrash: '', iconColor: '#de8900', icon: '' },
-                    { textTrash: '', customTrash: '', iconColor: '#d2d2d2', icon: '' },
-                    { textTrash: '', customTrash: '', iconColor: '#d2d2d2', icon: '' },
-                ],
+                items: normalizeTrashItems(undefined),
             };
         } else if (cardType === 'cardPower') {
             newEntry = {
@@ -590,6 +590,9 @@ class PageConfigManager extends ConfigGeneric<ConfigGenericProps & { theme?: any
                               hidden: (currentEntry as any).hidden,
                               alwaysOn: (currentEntry as any).alwaysOn,
                               navigationAssignment: (currentEntry as any).navigationAssignment,
+                              // Ohne dieses Feld bleibt die Startseiten-Checkbox immer leer und eine
+                              // gesetzte Startseite lässt sich nicht wieder abwählen.
+                              isMainPage: isMainPageEntry(currentEntry),
                           }
                         : undefined,
                     onCommonFieldsChange: currentEntry

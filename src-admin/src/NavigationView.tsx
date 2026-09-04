@@ -3,6 +3,7 @@ import './NavigationView.css';
 import type {
     NavigationMapEntry,
     NavigationMap,
+    PageOrigin,
     PanelListEntry,
     NavigationSavePayload,
 } from '../../src/lib/types/adminShareConfig';
@@ -12,6 +13,82 @@ import {
 } from '../../src/lib/types/adminShareConfig';
 
 const ADAPTER_NAME = 'nspanel-lovelace-ui';
+
+/** Kantenarten des Navigationsgraphen */
+type EdgeKind = 'default' | 'prev' | 'next' | 'prevNext' | 'home' | 'parent' | 'target';
+
+/** Feste Farben der Kantenarten - Basis für Legende, Handles, Marker und Kanten */
+const EDGE_COLOR_HEX: Record<EdgeKind, string> = {
+    default: '#1976d2',
+    prev: '#6676d2',
+    next: '#19c3d2',
+    prevNext: '#9c27b0', // beidseitige prev/next-Verbindung
+    home: '#fbc02d',
+    parent: '#d32f2f',
+    target: '#43a047',
+};
+
+/** CSS-Variablen der Kantenfarben - erlauben ein Override über das Theme */
+const EDGE_COLOR_VAR: Record<EdgeKind, string> = {
+    default: '--edge-color',
+    prev: '--edge-prev',
+    next: '--edge-next',
+    prevNext: '--edge-prev-next',
+    home: '--edge-home',
+    parent: '--edge-parent',
+    target: '--edge-target',
+};
+
+/**
+ * Basisfarbe je Seitenherkunft. Sie wird nicht direkt gezeichnet: der Knoten bekommt sie als
+ * Rahmenfarbe und als abgeschwächter Hintergrund, damit die Beschriftung in hellem wie dunklem
+ * Theme lesbar bleibt. Seiten aus dem Konfigurationsskript behalten das Aussehen des Themes.
+ */
+const ORIGIN_COLOR_HEX: Record<Exclude<PageOrigin, 'script'>, string> = {
+    admin: '#43a047', // grün
+    system: '#f9a825', // gelb
+};
+
+/** CSS-Variablen je Herkunft - vom ThemeVarsProvider passend zum Theme gefüllt */
+const ORIGIN_STYLE_VAR: Record<PageOrigin, { bg: string; border: string }> = {
+    script: { bg: '--node-bg', border: '--node-border' },
+    admin: { bg: '--node-admin-bg', border: '--node-admin-border' },
+    system: { bg: '--node-system-bg', border: '--node-system-border' },
+};
+
+/** Alle Herkünfte in der Reihenfolge der Legende */
+const PAGE_ORIGINS: PageOrigin[] = ['script', 'admin', 'system'];
+
+/** Übersetzungsschlüssel der Herkunft für die Legende */
+const ORIGIN_LABEL_KEY: Record<PageOrigin, string> = {
+    script: 'nav_legend_origin_script',
+    admin: 'nav_legend_origin_admin',
+    system: 'nav_legend_origin_system',
+};
+
+/** Kantenarten mit fester Farbe - unabhängig vom Admin-Theme */
+const STATIC_EDGE_KINDS: EdgeKind[] = ['prev', 'next', 'prevNext', 'home', 'parent', 'target'];
+
+/** Zuordnung Handle -> Kantenart, für die Einfärbung der Handles am Knoten */
+const HANDLE_EDGE_KIND: Record<string, EdgeKind> = {
+    prev: 'prev',
+    next: 'next',
+    homeTopLeft: 'home',
+    homeTopRight: 'home',
+    parentBottomLeft: 'parent',
+    parentBottomRight: 'parent',
+    targetRight: 'target',
+    targetLeft: 'target',
+};
+
+/**
+ * Farbe einer Kantenart als CSS-Ausdruck mit Hex-Fallback
+ *
+ * @param kind Kantenart
+ */
+function edgeColor(kind: EdgeKind): string {
+    return `var(${EDGE_COLOR_VAR[kind]}, ${EDGE_COLOR_HEX[kind]})`;
+}
 // Typ für das Rückgabeobjekt der mapNavigationMapToFlow-Funktion
 interface FlowData {
     nodes: FlowNode[];
@@ -34,7 +111,8 @@ interface FlowEdge {
     targetHandle?: string;
     label: string;
     style: { strokeWidth: number; strokeDasharray?: string; stroke?: string };
-    data?: { isTarget: boolean; navType?: string };
+    data?: { isTarget: boolean; navType?: EdgeKind; bidirectional?: boolean; highlighted?: boolean };
+    className?: string;
 }
 // State-Interface für die NavigationView-Klasse
 interface NavigationViewState extends ConfigGenericState {
@@ -59,10 +137,21 @@ import {
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import type { SelectChangeEvent } from '@mui/material';
-import { Select, MenuItem, Box, Button, Typography, CircularProgress, Checkbox, FormControlLabel } from '@mui/material';
+import {
+    Select,
+    MenuItem,
+    Box,
+    Button,
+    Divider,
+    Typography,
+    CircularProgress,
+    Checkbox,
+    FormControlLabel,
+} from '@mui/material';
 import NodePageInfoPanel from './components/NodePageInfoPanel';
+import { openPageConfig } from './pageConfigLink';
 import ConfirmDialog from './components/ConfirmDialog';
-import { useTheme } from '@mui/material/styles';
+import { alpha, useTheme } from '@mui/material/styles';
 import { hierarchy, tree } from 'd3-hierarchy';
 import React, { useEffect } from 'react';
 import { ConfigGeneric, type ConfigGenericProps, type ConfigGenericState } from '@iobroker/json-config';
@@ -76,18 +165,27 @@ type NavigationPanelConfig = {
 };
 
 /** Edge type of this view - `@xyflow/react` types `data` as `Record<string, unknown>` */
-type CustomEdgeType = Edge<{ isTarget?: boolean; navType?: string }>;
+type CustomEdgeType = Edge<{
+    isTarget?: boolean;
+    navType?: EdgeKind;
+    bidirectional?: boolean;
+    /** Set while the page at either end is selected - the edge is drawn like on hover */
+    highlighted?: boolean;
+}>;
 
 function CustomEdge(props: EdgeProps<CustomEdgeType>): React.ReactElement {
     const [edgePath] = getBezierPath(props);
     const navType = props.data?.navType ?? '';
     const isTarget = !!props.data?.isTarget;
+    const bidirectional = !!props.data?.bidirectional;
+    const highlighted = !!props.data?.highlighted;
     const markerId = navType || (isTarget ? 'target' : 'default');
 
-    const tooltip = `${navType}: ${props.source} → ${props.target}`;
+    // Beidseitige Verbindungen bekommen einen Doppelpfeil statt zweier deckungsgleicher Kanten
+    const tooltip = `${navType}: ${props.source} ${bidirectional ? '↔' : '→'} ${props.target}`;
 
     // stroke is passed via style on the FlowEdge (mapNavigationMapToFlow)
-    const stroke = props.style?.stroke ?? 'var(--edge-color, #1976d2)';
+    const stroke = props.style?.stroke ?? edgeColor('default');
     const dash = props.style?.strokeDasharray;
 
     // Touch event handler für Edge-Tooltips (nur Touch, kein Click/Hover)
@@ -113,35 +211,141 @@ function CustomEdge(props: EdgeProps<CustomEdgeType>): React.ReactElement {
         }
     };
 
+    const strokeWidth = typeof props.style?.strokeWidth === 'number' ? props.style.strokeWidth : 2;
+
     return (
-        <>
+        <g className={`custom-edge${highlighted ? ' custom-edge-highlighted' : ''}`}>
+            {/* Schein in der Farbe der Kante - hebt sie hervor, ohne die Farbe zu wechseln */}
+            <path
+                d={edgePath}
+                strokeWidth={strokeWidth + 6}
+                fill="none"
+                className="custom-edge-halo"
+                style={{ stroke }}
+            />
             <path
                 id={props.id}
                 d={edgePath}
-                strokeWidth={props.style?.strokeWidth ?? 2}
+                strokeWidth={strokeWidth}
                 fill="none"
                 strokeDasharray={dash}
                 markerEnd={`url(#arrow-${markerId})`}
+                markerStart={bidirectional ? `url(#arrow-${markerId}-start)` : undefined}
                 className="react-flow__edge-path custom-edge-path"
                 style={{ stroke }}
+            />
+            {/* Unsichtbare Trefferfläche: die 2px-Linie allein ist kaum zu treffen */}
+            <path
+                d={edgePath}
+                strokeWidth={18}
+                fill="none"
+                stroke="transparent"
+                className="custom-edge-hit"
                 onTouchStart={handleTouchStart}
             />
             <title>{tooltip}</title>
+        </g>
+    );
+}
+
+interface EdgeArrowMarkersProps {
+    kind: EdgeKind;
+    size: number;
+    /** zusätzlich den rückwärts gedrehten Marker für den Kantenanfang erzeugen */
+    bidirectional?: boolean;
+}
+
+/**
+ * Pfeilspitzen-Marker einer Kantenart
+ *
+ * @param props Kantenart, Größe und ob ein Marker für den Kantenanfang benötigt wird
+ */
+function EdgeArrowMarkers(props: EdgeArrowMarkersProps): React.ReactElement {
+    const { kind, size, bidirectional } = props;
+    const fill = edgeColor(kind);
+    const tip = `M0,0 L${size},${size / 2} L0,${size} z`;
+    return (
+        <>
+            <marker
+                id={`arrow-${kind}`}
+                markerWidth={size}
+                markerHeight={size}
+                refX={size}
+                refY={size / 2}
+                orient="auto"
+                markerUnits="strokeWidth"
+            >
+                <path
+                    d={tip}
+                    fill={fill}
+                />
+            </marker>
+            {bidirectional ? (
+                <marker
+                    id={`arrow-${kind}-start`}
+                    markerWidth={size}
+                    markerHeight={size}
+                    refX={size}
+                    refY={size / 2}
+                    orient="auto-start-reverse"
+                    markerUnits="strokeWidth"
+                >
+                    <path
+                        d={tip}
+                        fill={fill}
+                    />
+                </marker>
+            ) : null}
         </>
+    );
+}
+
+interface LegendEdgePreviewProps {
+    color: string;
+    dash?: string;
+    /** Pfeilspitze auch am linken Ende zeichnen */
+    bidirectional?: boolean;
+}
+
+/**
+ * Vorschau einer Kantenart für die Legende - Linie mit Pfeilspitze(n)
+ *
+ * @param props Farbe, Strichmuster und ob die Kante beidseitig gilt
+ */
+function LegendEdgePreview(props: LegendEdgePreviewProps): React.ReactElement {
+    const { color, dash, bidirectional } = props;
+    return (
+        <svg
+            width={30}
+            height={10}
+            aria-hidden="true"
+            style={{ flex: '0 0 auto' }}
+        >
+            <line
+                x1={bidirectional ? 7 : 1}
+                y1={5}
+                x2={24}
+                y2={5}
+                stroke={color}
+                strokeWidth={2}
+                strokeDasharray={dash}
+            />
+            <path
+                d="M24,1 L29,5 L24,9 z"
+                fill={color}
+            />
+            {bidirectional ? (
+                <path
+                    d="M7,1 L2,5 L7,9 z"
+                    fill={color}
+                />
+            ) : null}
+        </svg>
     );
 }
 
 // Hilfsfunktion für die Umwandlung der NavigationMap in React Flow Nodes/Edges
 function mapNavigationMapToFlow(navigationMap: NavigationMap): FlowData {
-    const edgeColors: Record<string, string> = {
-        // Fallback-Werte, CSS-Variablen werden in der UI gesetzt
-        // next/prev erhalten eigene Variablen, fallen aber auf --edge-color zurück
-        prev: 'var(--edge-prev, var(--edge-color, #6676d2))',
-        next: 'var(--edge-next, var(--edge-color, #19c3d2))',
-        home: 'var(--edge-home, #fbc02d)', // gelb
-        parent: 'var(--edge-parent, #d32f2f)', // rot
-        target: 'var(--edge-target, #43a047)', // grün für targetPages
-    };
     const nodes: FlowNode[] = navigationMap.map((entry: NavigationMapEntry, idx: number) => {
         let position: { x: number; y: number };
         if (entry.position && typeof entry.position.x === 'number' && typeof entry.position.y === 'number') {
@@ -164,34 +368,87 @@ function mapNavigationMapToFlow(navigationMap: NavigationMap): FlowData {
     });
     const edges: FlowEdge[] = [];
     const pages = new Set(navigationMap.map(e => e.page));
+    const entryByPage = new Map<string, NavigationMapEntry>(navigationMap.map(e => [e.page, e]));
+    // Bereits als Doppelpfeil gezeichnete prev/next-Paare (Schlüssel unabhängig von der Richtung)
+    const drawnPairs = new Set<string>();
+    const pairKey = (a: string, b: string): string => (a < b ? `${a}\u0000${b}` : `${b}\u0000${a}`);
+    /**
+     * true, wenn `a.next === b` und `b.prev === a` - die Verbindung gilt dann in beide Richtungen
+     *
+     * @param a Seite, deren `next` geprüft wird
+     * @param b Seite, deren `prev` geprüft wird
+     */
+    const isReciprocal = (a: string, b: string): boolean => {
+        if (a === b) {
+            return false;
+        }
+        const from = entryByPage.get(a);
+        const to = entryByPage.get(b);
+        return from?.next === b && to?.prev === a;
+    };
+    /**
+     * Doppelpfeil-Kante von `a` (next-Handle) nach `b` (prev-Handle); jedes Paar wird nur einmal gezeichnet
+     *
+     * @param a Seite mit dem `next`-Verweis
+     * @param b Seite mit dem `prev`-Verweis
+     */
+    const pushBidirectional = (a: string, b: string): void => {
+        const key = pairKey(a, b);
+        if (drawnPairs.has(key)) {
+            return;
+        }
+        drawnPairs.add(key);
+        edges.push({
+            id: `nav-${a}-${b}-prevnext`,
+            source: a,
+            target: b,
+            sourceHandle: 'next',
+            targetHandle: 'prev',
+            label: '',
+            style: { strokeWidth: 2, stroke: edgeColor('prevNext') },
+            data: { isTarget: false, navType: 'prevNext', bidirectional: true },
+            className: 'edge-prev-next',
+        });
+    };
+
     for (const entry of navigationMap) {
         // next: von a1.next zu a2.prev
         if (entry.next && typeof entry.next === 'string' && pages.has(entry.next)) {
-            edges.push({
-                id: `nav-${entry.page}-${entry.next}-next`,
-                source: entry.page,
-                target: entry.next,
-                sourceHandle: 'next',
-                targetHandle: 'prev',
-                label: '',
-                style: { strokeWidth: 2, stroke: edgeColors.next },
-                data: { isTarget: false, navType: 'next' },
-                className: 'edge-next',
-            } as any);
+            if (isReciprocal(entry.page, entry.next)) {
+                // a.next === b und b.prev === a: eine Kante mit zwei Pfeilenden statt zweier deckungsgleicher
+                pushBidirectional(entry.page, entry.next);
+            } else {
+                edges.push({
+                    id: `nav-${entry.page}-${entry.next}-next`,
+                    source: entry.page,
+                    target: entry.next,
+                    sourceHandle: 'next',
+                    targetHandle: 'prev',
+                    label: '',
+                    style: { strokeWidth: 2, stroke: edgeColor('next') },
+                    data: { isTarget: false, navType: 'next' },
+                    className: 'edge-next',
+                });
+            }
         }
         // prev: von a1.prev zu a2.next
         if (entry.prev && typeof entry.prev === 'string' && pages.has(entry.prev)) {
-            edges.push({
-                id: `nav-${entry.page}-${entry.prev}-prev`,
-                source: entry.page,
-                target: entry.prev,
-                sourceHandle: 'prev',
-                targetHandle: 'next',
-                label: '',
-                style: { strokeWidth: 2, stroke: edgeColors.prev },
-                data: { isTarget: false, navType: 'prev' },
-                className: 'edge-prev',
-            } as any);
+            if (isReciprocal(entry.prev, entry.page)) {
+                // Gegenstück zur obigen next-Kante - wird als ein Doppelpfeil gezeichnet
+                pushBidirectional(entry.prev, entry.page);
+            } else {
+                edges.push({
+                    id: `nav-${entry.page}-${entry.prev}-prev`,
+                    source: entry.page,
+                    target: entry.prev,
+                    sourceHandle: 'prev',
+                    targetHandle: 'next',
+                    label: '',
+                    style: { strokeWidth: 2, stroke: edgeColor('prev') },
+                    data: { isTarget: false, navType: 'prev' },
+                    className: 'edge-prev',
+                });
+            }
         }
         // home: von a1.home (links oben) zu a2 (rechts oben)
         if (entry.home && typeof entry.home === 'string' && pages.has(entry.home)) {
@@ -202,10 +459,10 @@ function mapNavigationMapToFlow(navigationMap: NavigationMap): FlowData {
                 sourceHandle: 'homeTopLeft',
                 targetHandle: 'homeTopRight',
                 label: '',
-                style: { strokeWidth: 2, strokeDasharray: '8 8', stroke: edgeColors.home },
+                style: { strokeWidth: 2, strokeDasharray: '8 8', stroke: edgeColor('home') },
                 data: { isTarget: false, navType: 'home' },
                 className: 'edge-home',
-            } as any);
+            });
         }
         // parent: von a1.parent (links unten) zu a2 (rechts unten)
         if (entry.parent && typeof entry.parent === 'string' && pages.has(entry.parent)) {
@@ -216,10 +473,10 @@ function mapNavigationMapToFlow(navigationMap: NavigationMap): FlowData {
                 sourceHandle: 'parentBottomLeft',
                 targetHandle: 'parentBottomRight',
                 label: '',
-                style: { strokeWidth: 2, stroke: edgeColors.parent },
+                style: { strokeWidth: 2, stroke: edgeColor('parent') },
                 data: { isTarget: false, navType: 'parent' },
                 className: 'edge-parent',
-            } as any);
+            });
         }
         // targetPages: von a1 zu a2, von Mitte rechts zu Mitte links
         if (Array.isArray(entry.targetPages)) {
@@ -232,10 +489,10 @@ function mapNavigationMapToFlow(navigationMap: NavigationMap): FlowData {
                         sourceHandle: 'targetRight',
                         targetHandle: 'targetLeft',
                         label: '',
-                        style: { strokeWidth: 2, strokeDasharray: '4 4', stroke: edgeColors.target },
+                        style: { strokeWidth: 2, strokeDasharray: '4 4', stroke: edgeColor('target') },
                         data: { isTarget: true, navType: 'target' },
                         className: 'edge-target',
-                    } as any);
+                    });
                 }
             }
         }
@@ -670,6 +927,33 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
         this.setState({ infoPanelOpen: false, infoData: null, infoNodeId: undefined });
     }
 
+    /**
+     * `uniqueName` of the admin entry behind the node the info panel currently shows.
+     *
+     * Only pages coming from the admin have one - for script and system pages there is nothing to
+     * jump to.
+     */
+    private getInfoAdminPageName(): string | undefined {
+        const { infoNodeId, nodes } = this.state;
+        if (!infoNodeId) {
+            return undefined;
+        }
+        return nodes.find(n => n.id === infoNodeId)?.data.entry?.adminPageName;
+    }
+
+    /** Saves pending changes and opens the page configuration of the selected admin page */
+    private openPageConfigForInfoNode = (): void => {
+        const adminPageName = this.getInfoAdminPageName();
+        if (!adminPageName) {
+            return;
+        }
+        // The other tab remounts this view, so unsaved node positions would be lost
+        if (this.state.dirty) {
+            void this.saveNavigation();
+        }
+        openPageConfig(adminPageName);
+    };
+
     // eslint-disable-next-line @typescript-eslint/require-await
     async componentDidMount(): Promise<void> {
         this.checkAlive();
@@ -854,13 +1138,16 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
         const visibleNodeIds = new Set(visibleNodes.map(n => n.id));
         // remove dangling edges that reference missing nodes (safety for stale state)
         const safeEdges = (edges || []).filter(e => visibleNodeIds.has(e.source) && visibleNodeIds.has(e.target));
+        // Clicking a page highlights all of its connections - same look as hovering one
+        const selectedNodeId = this.state.infoPanelOpen ? this.state.infoNodeId : undefined;
         // Legende für die Kantenarten
-        const legend = [
-            { label: 'prev', color: '#6676d2', dash: false },
-            { label: 'next', color: '#19c3d2', dash: false },
-            { label: 'home', color: '#fbc02d', dash: true },
-            { label: 'parent', color: '#d32f2f', dash: false },
-            { label: 'target', color: '#43a047', dash: true },
+        const legend: { kind: EdgeKind; labelKey: string; dash?: string; bidirectional?: boolean }[] = [
+            { kind: 'prevNext', labelKey: 'nav_legend_prev_next', bidirectional: true },
+            { kind: 'next', labelKey: 'nav_legend_next' },
+            { kind: 'prev', labelKey: 'nav_legend_prev' },
+            { kind: 'home', labelKey: 'nav_legend_home', dash: '8 8' },
+            { kind: 'parent', labelKey: 'nav_legend_parent' },
+            { kind: 'target', labelKey: 'nav_legend_target', dash: '4 4' },
         ];
         return (
             <Box sx={{ width: '100%', p: 2, position: 'relative' }}>
@@ -900,26 +1187,57 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
                     </Typography>
                 </Box>
                 {/* Legende */}
-                <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
+                {/* Kantenarten und Seitenherkunft - die Herkunft nutzt die Farben der Knoten */}
+                <Box
+                    sx={{
+                        display: 'flex',
+                        flexWrap: 'wrap',
+                        alignItems: 'center',
+                        columnGap: 1.5,
+                        rowGap: 0.5,
+                        mb: 1,
+                    }}
+                >
                     {legend.map(item => (
                         <Box
-                            key={item.label}
-                            sx={{ display: 'flex', alignItems: 'center', gap: 1 }}
+                            key={item.kind}
+                            sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}
+                        >
+                            <LegendEdgePreview
+                                color={EDGE_COLOR_HEX[item.kind]}
+                                dash={item.dash}
+                                bidirectional={item.bidirectional}
+                            />
+                            <Typography
+                                variant="caption"
+                                sx={{ whiteSpace: 'nowrap' }}
+                            >
+                                {I18n.t(item.labelKey)}
+                            </Typography>
+                        </Box>
+                    ))}
+                    <Divider
+                        orientation="vertical"
+                        flexItem
+                    />
+                    {PAGE_ORIGINS.map(origin => (
+                        <Box
+                            key={origin}
+                            sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}
                         >
                             <span
-                                className="legend-span"
+                                className="legend-node"
                                 style={{
-                                    // For solid items show the color; for dashed items show a colored dash-pattern
-                                    background: item.dash ? 'transparent' : item.color,
-                                    backgroundColor: item.dash ? 'transparent' : item.color,
-                                    // choose dash length: home uses 8/8, others (e.g. target) use 4/4 to match edges
-                                    backgroundImage: item.dash
-                                        ? `repeating-linear-gradient(90deg, ${item.color} 0 ${item.label === 'home' ? 8 : 4}px, transparent ${item.label === 'home' ? 8 : 4}px ${item.label === 'home' ? 16 : 8}px)`
-                                        : undefined,
-                                    borderBottom: item.dash ? `2px dashed ${item.color}` : undefined,
+                                    background: `var(${ORIGIN_STYLE_VAR[origin].bg})`,
+                                    borderColor: `var(${ORIGIN_STYLE_VAR[origin].border})`,
                                 }}
                             />
-                            <Typography variant="body2">{item.label}</Typography>
+                            <Typography
+                                variant="caption"
+                                sx={{ whiteSpace: 'nowrap' }}
+                            >
+                                {I18n.t(ORIGIN_LABEL_KEY[origin])}
+                            </Typography>
                         </Box>
                     ))}
                 </Box>
@@ -973,90 +1291,35 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
                                 aria-hidden="true"
                             >
                                 <defs>
-                                    <marker
-                                        id="arrow-default"
-                                        markerWidth="8"
-                                        markerHeight="8"
-                                        refX="8"
-                                        refY="4"
-                                        orient="auto"
-                                        markerUnits="strokeWidth"
-                                    >
-                                        <path
-                                            d="M0,0 L8,4 L0,8 z"
-                                            fill="var(--edge-color, #1976d2)"
-                                        />
-                                    </marker>
-                                    <marker
-                                        id="arrow-target"
-                                        markerWidth="10"
-                                        markerHeight="10"
-                                        refX="10"
-                                        refY="5"
-                                        orient="auto"
-                                        markerUnits="strokeWidth"
-                                    >
-                                        <path
-                                            d="M0,0 L10,5 L0,10 z"
-                                            fill="var(--edge-target, #43a047)"
-                                        />
-                                    </marker>
-                                    <marker
-                                        id="arrow-next"
-                                        markerWidth="8"
-                                        markerHeight="8"
-                                        refX="8"
-                                        refY="4"
-                                        orient="auto"
-                                        markerUnits="strokeWidth"
-                                    >
-                                        <path
-                                            d="M0,0 L8,4 L0,8 z"
-                                            fill="var(--edge-next, #19c3d2)"
-                                        />
-                                    </marker>
-                                    <marker
-                                        id="arrow-prev"
-                                        markerWidth="8"
-                                        markerHeight="8"
-                                        refX="8"
-                                        refY="4"
-                                        orient="auto"
-                                        markerUnits="strokeWidth"
-                                    >
-                                        <path
-                                            d="M0,0 L8,4 L0,8 z"
-                                            fill="var(--edge-prev, #6676d2)"
-                                        />
-                                    </marker>
-                                    <marker
-                                        id="arrow-home"
-                                        markerWidth="8"
-                                        markerHeight="8"
-                                        refX="8"
-                                        refY="4"
-                                        orient="auto"
-                                        markerUnits="strokeWidth"
-                                    >
-                                        <path
-                                            d="M0,0 L8,4 L0,8 z"
-                                            fill="var(--edge-home, #fbc02d)"
-                                        />
-                                    </marker>
-                                    <marker
-                                        id="arrow-parent"
-                                        markerWidth="8"
-                                        markerHeight="8"
-                                        refX="8"
-                                        refY="4"
-                                        orient="auto"
-                                        markerUnits="strokeWidth"
-                                    >
-                                        <path
-                                            d="M0,0 L8,4 L0,8 z"
-                                            fill="var(--edge-parent, #d32f2f)"
-                                        />
-                                    </marker>
+                                    <EdgeArrowMarkers
+                                        kind="default"
+                                        size={8}
+                                    />
+                                    <EdgeArrowMarkers
+                                        kind="target"
+                                        size={10}
+                                    />
+                                    <EdgeArrowMarkers
+                                        kind="next"
+                                        size={8}
+                                    />
+                                    <EdgeArrowMarkers
+                                        kind="prev"
+                                        size={8}
+                                    />
+                                    <EdgeArrowMarkers
+                                        kind="prevNext"
+                                        size={8}
+                                        bidirectional
+                                    />
+                                    <EdgeArrowMarkers
+                                        kind="home"
+                                        size={8}
+                                    />
+                                    <EdgeArrowMarkers
+                                        kind="parent"
+                                        size={8}
+                                    />
                                 </defs>
                             </svg>
                             <ConfirmDialog
@@ -1080,7 +1343,17 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
                                 onPaneClick={this.onPaneClick}
                                 onEdgesChange={this.onEdgesChange}
                                 edgeTypes={{ custom: CustomEdge }}
-                                edges={safeEdges.map(e => ({ ...e, type: 'custom' }))}
+                                edges={safeEdges.map(e => ({
+                                    ...e,
+                                    type: 'custom',
+                                    data: {
+                                        isTarget: !!e.data?.isTarget,
+                                        ...e.data,
+                                        highlighted:
+                                            !!selectedNodeId &&
+                                            (e.source === selectedNodeId || e.target === selectedNodeId),
+                                    },
+                                }))}
                                 nodeTypes={{
                                     custom: ({ id, data }: any) => {
                                         const handleTypes: Record<string, boolean> = {
@@ -1093,14 +1366,27 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
                                             targetRight: false,
                                             targetLeft: false,
                                         };
+                                        // Handles an beidseitigen prev/next-Verbindungen bekommen deren Farbe
+                                        const bidiHandles: Record<string, boolean> = {};
                                         for (const edge of edges) {
+                                            const bidi = !!edge.data?.bidirectional;
                                             if (edge.source === id && edge.sourceHandle) {
                                                 handleTypes[edge.sourceHandle] = true;
+                                                if (bidi) {
+                                                    bidiHandles[edge.sourceHandle] = true;
+                                                }
                                             }
                                             if (edge.target === id && edge.targetHandle) {
                                                 handleTypes[edge.targetHandle] = true;
+                                                if (bidi) {
+                                                    bidiHandles[edge.targetHandle] = true;
+                                                }
                                             }
                                         }
+                                        const handleColor = (handleId: string): string =>
+                                            bidiHandles[handleId]
+                                                ? EDGE_COLOR_HEX.prevNext
+                                                : EDGE_COLOR_HEX[HANDLE_EDGE_KIND[handleId] ?? 'default'];
                                         // Fallback-Title (native) für pageInfo bauen
                                         let _pageInfoTooltip: string | undefined;
                                         const pageInfo = data.entry?.pageInfo;
@@ -1124,15 +1410,23 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
                                         }
                                         // kept for later use by external scripts; avoid unused-variable lint
                                         void _pageInfoTooltip;
+                                        const origin: PageOrigin = data.entry?.origin ?? 'script';
+                                        const originVars = ORIGIN_STYLE_VAR[origin];
                                         return (
-                                            <Box className="node-box">
+                                            <Box
+                                                className="node-box"
+                                                style={{
+                                                    background: `var(${originVars.bg})`,
+                                                    borderColor: `var(${originVars.border})`,
+                                                }}
+                                            >
                                                 {/* prev: oben */}
                                                 {handleTypes.prev && (
                                                     <Handle
                                                         type="target"
                                                         position={Position.Top}
                                                         id="prev"
-                                                        style={{ background: '#6676d2' }}
+                                                        style={{ background: handleColor('prev') }}
                                                     />
                                                 )}
                                                 {handleTypes.prev && (
@@ -1140,7 +1434,7 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
                                                         type="source"
                                                         position={Position.Top}
                                                         id="prev"
-                                                        style={{ background: '#6676d2' }}
+                                                        style={{ background: handleColor('prev') }}
                                                     />
                                                 )}
                                                 {/* next: unten */}
@@ -1149,7 +1443,7 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
                                                         type="target"
                                                         position={Position.Bottom}
                                                         id="next"
-                                                        style={{ background: '#19c3d2' }}
+                                                        style={{ background: handleColor('next') }}
                                                     />
                                                 )}
                                                 {handleTypes.next && (
@@ -1157,7 +1451,7 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
                                                         type="source"
                                                         position={Position.Bottom}
                                                         id="next"
-                                                        style={{ background: '#19c3d2' }}
+                                                        style={{ background: handleColor('next') }}
                                                     />
                                                 )}
                                                 {/* home: links oben (source), rechts oben (target) */}
@@ -1167,7 +1461,7 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
                                                         position={Position.Left}
                                                         id="homeTopLeft"
                                                         className="homeTopLeft"
-                                                        style={{ background: '#fbc02d' }}
+                                                        style={{ background: handleColor('homeTopLeft') }}
                                                     />
                                                 )}
                                                 {handleTypes.homeTopRight && (
@@ -1176,7 +1470,7 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
                                                         position={Position.Right}
                                                         id="homeTopRight"
                                                         className="homeTopRight"
-                                                        style={{ background: '#fbc02d' }}
+                                                        style={{ background: handleColor('homeTopRight') }}
                                                     />
                                                 )}
                                                 {/* parent: links unten (source), rechts unten (target) */}
@@ -1186,7 +1480,7 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
                                                         position={Position.Left}
                                                         id="parentBottomLeft"
                                                         className="parentBottomLeft"
-                                                        style={{ background: '#d32f2f' }}
+                                                        style={{ background: handleColor('parentBottomLeft') }}
                                                     />
                                                 )}
                                                 {handleTypes.parentBottomRight && (
@@ -1195,7 +1489,7 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
                                                         position={Position.Right}
                                                         id="parentBottomRight"
                                                         className="parentBottomRight"
-                                                        style={{ background: '#d32f2f' }}
+                                                        style={{ background: handleColor('parentBottomRight') }}
                                                     />
                                                 )}
                                                 {/* targetPages: rechts Mitte (source), links Mitte (target) */}
@@ -1204,7 +1498,7 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
                                                         type="source"
                                                         position={Position.Right}
                                                         id="targetRight"
-                                                        style={{ background: '#888', top: '50%' }}
+                                                        style={{ background: handleColor('targetRight'), top: '50%' }}
                                                     />
                                                 )}
                                                 {handleTypes.targetLeft && (
@@ -1212,7 +1506,7 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
                                                         type="target"
                                                         position={Position.Left}
                                                         id="targetLeft"
-                                                        style={{ background: '#888', top: '50%' }}
+                                                        style={{ background: handleColor('targetLeft'), top: '50%' }}
                                                     />
                                                 )}
                                                 <Typography
@@ -1234,6 +1528,9 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
                             <NodePageInfoPanel
                                 open={!!this.state.infoPanelOpen}
                                 data={this.state.infoData}
+                                onOpenPageConfig={
+                                    this.getInfoAdminPageName() ? this.openPageConfigForInfoNode : undefined
+                                }
                             />
                         </div>
                     </>
@@ -1278,14 +1575,24 @@ export function ThemeVarsProvider({ children }: { children: React.ReactNode }): 
         // Node Hintergrund/Text
         root.style.setProperty('--node-bg', theme.palette.background.paper || '#fff');
         root.style.setProperty('--node-text', theme.palette.text.primary || '#000');
+        root.style.setProperty('--node-border', theme.palette.divider || '#ccc');
+        // Herkunftsfarben: kräftiger Rahmen, nur leicht getönte Fläche. Im dunklen Theme darf die
+        // Tönung stärker sein, sonst verschwindet sie im dunklen Untergrund.
+        const tint = theme.palette.mode === 'dark' ? 0.32 : 0.18;
+        for (const origin of PAGE_ORIGINS) {
+            if (origin === 'script') {
+                continue;
+            }
+            const color = ORIGIN_COLOR_HEX[origin];
+            root.style.setProperty(ORIGIN_STYLE_VAR[origin].border, color);
+            root.style.setProperty(ORIGIN_STYLE_VAR[origin].bg, alpha(color, tint));
+        }
         // Kantenfarben (Primärfarbe als Default für Kanten)
-        root.style.setProperty('--edge-color', theme.palette.primary.main || '#1976d2');
-        // next/prev sollen KEINE Theme-Farben verwenden — feste Farben
-        root.style.setProperty('--edge-next', '#19c3d2');
-        root.style.setProperty('--edge-prev', '#6676d2');
-        root.style.setProperty('--edge-home', '#fbc02d');
-        root.style.setProperty('--edge-parent', '#d32f2f');
-        root.style.setProperty('--edge-target', '#43a047');
+        root.style.setProperty(EDGE_COLOR_VAR.default, theme.palette.primary.main || EDGE_COLOR_HEX.default);
+        // Die Kantenarten sollen KEINE Theme-Farben verwenden — feste Farben
+        for (const kind of STATIC_EDGE_KINDS) {
+            root.style.setProperty(EDGE_COLOR_VAR[kind], EDGE_COLOR_HEX[kind]);
+        }
     }, [theme]);
     return <>{children}</>;
 }

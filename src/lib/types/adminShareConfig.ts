@@ -72,6 +72,15 @@ export interface NavigationSavePayload {
 export type NavigationPositionsMap = { name: string; position: { x: number; y: number } };
 // Gemeinsame Typen für Navigation (Panel + Admin UI)
 
+/**
+ * Where a page of a panel comes from:
+ *
+ * - `script` - delivered by the configuration script
+ * - `admin` - defined in the admin page list (also when it replaces a page of the same name)
+ * - `system` - service page of the adapter or the generated default start page
+ */
+export type PageOrigin = 'script' | 'admin' | 'system';
+
 export interface NavigationMapEntry {
     page: string;
     next?: string;
@@ -82,6 +91,15 @@ export interface NavigationMapEntry {
     label?: string;
     position?: { x: number; y: number } | null;
     pageInfo?: PageMenuConfigInfo;
+    /** Origin of the page, used by the admin to colour the node */
+    origin?: PageOrigin;
+    /**
+     * `uniqueName` of the admin entry this page was created from. Only set for pages with
+     * `origin === 'admin'` and it may differ from `page`: a start page is published under the
+     * reserved id `main` while its admin entry keeps its own name. The admin uses it to jump to
+     * the page configuration.
+     */
+    adminPageName?: string;
 }
 
 export type NavigationMap = NavigationMapEntry[];
@@ -347,6 +365,35 @@ export type TrashItem = {
     iconColor: string;
     icon: string;
 };
+
+/** Number of waste types a cardTrash entry holds - the card cannot show more. */
+export const trashItemCount = 6;
+
+/** Icon colours of a fresh cardTrash entry, one per waste type. */
+const trashItemColors: string[] = ['#3c3fff', '#fffd77', '#d2d2d2', '#de8900', '#d2d2d2', '#d2d2d2'];
+
+/**
+ * The {@link trashItemCount} items of a cardTrash entry, filled up with defaults.
+ *
+ * Entries written before the single fields per waste type became an array carry no `items` at all,
+ * and a shortened list can be left behind by a hand edited configuration. Both would otherwise
+ * break every consumer of `items`.
+ *
+ * @param items Stored items, may be missing or too short.
+ * @returns Exactly {@link trashItemCount} items.
+ */
+export function normalizeTrashItems(items: TrashItem[] | undefined): TrashItem[] {
+    const stored = Array.isArray(items) ? items : [];
+    return Array.from({ length: trashItemCount }, (_, i) => {
+        const item: Partial<TrashItem> = stored.length > i ? stored[i] : {};
+        return {
+            textTrash: item.textTrash ?? '',
+            customTrash: item.customTrash ?? '',
+            iconColor: item.iconColor ?? trashItemColors[i],
+            icon: item.icon ?? '',
+        };
+    });
+}
 
 export type TrashEntry = {
     card: 'cardTrash';

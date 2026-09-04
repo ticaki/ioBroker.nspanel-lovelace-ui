@@ -1,12 +1,5 @@
 /* NavigationView zusätzliche Styles */
 
-.legend-span {
-  width: 24px;
-  height: 4px;
-  display: inline-block;
-  border-radius: 2px;
-}
-
 .reactflow-container {
   width: 100%;
   height: 700px;
@@ -16,9 +9,31 @@
 .custom-edge-path {
   transition: stroke 150ms, stroke-width 120ms;
 }
-.custom-edge-path:hover {
-  stroke-width: 3 !important;
+
+/* Trefferflaeche: die schmale Linie allein laesst sich kaum treffen.
+   `pointer-events: stroke` ist noetig, weil react-flow sonst nur sichtbare Striche beruecksichtigt. */
+.custom-edge-hit {
+  pointer-events: stroke;
+  cursor: pointer;
 }
+
+/* Hervorhebung bei Hover und fuer die Verbindungen der angeklickten Seite:
+   breiterer Strich plus ein Schein in derselben Farbe - die Farbe selbst bleibt erhalten. */
+.custom-edge-halo {
+  stroke-opacity: 0;
+  stroke-linecap: round;
+  pointer-events: none;
+  transition: stroke-opacity 150ms;
+}
+.custom-edge:hover .custom-edge-halo,
+.custom-edge-highlighted .custom-edge-halo {
+  stroke-opacity: 0.3;
+}
+.custom-edge:hover .custom-edge-path,
+.custom-edge-highlighted .custom-edge-path {
+  stroke-width: 3;
+}
+
 .edge-target .react-flow__edge-path,
 .edge-target .custom-edge-path {
   stroke-dasharray: 4 4;
@@ -37,15 +52,27 @@
   white-space: nowrap;
 }
 
+/* Rahmen- und Hintergrundfarbe kommen je nach Seitenherkunft per inline style */
 .node-box {
   padding: 8px;
-  border: 1px solid #ccc;
+  border: 2px solid var(--node-border, #ccc);
   border-radius: 4px;
   background: var(--node-bg, #868686ff);
   min-width: 80px;
   text-align: center;
   position: relative;
   cursor: move;
+}
+
+/* Farbmuster der Seitenherkunft in der Legende */
+.legend-node {
+  width: 20px;
+  height: 11px;
+  flex: 0 0 auto;
+  display: inline-block;
+  border: 2px solid var(--node-border, #ccc);
+  border-radius: 3px;
+  background: var(--node-bg, #868686ff);
 }
 
 /* Label in der Node: zeigt bewegbaren Cursor */

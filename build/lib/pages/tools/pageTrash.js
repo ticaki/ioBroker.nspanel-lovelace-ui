@@ -34,10 +34,12 @@ __export(pageTrash_exports, {
 module.exports = __toCommonJS(pageTrash_exports);
 var import_Color = require("../../const/Color");
 var import_node_ical = __toESM(require("node-ical"));
+var import_adminShareConfig = require("../../types/adminShareConfig");
 async function getTrashDataFromState(trashJSON, entry) {
   var _a;
   const items = [];
   const countItems = (_a = entry.countItems) != null ? _a : 6;
+  const trashItems = (0, import_adminShareConfig.normalizeTrashItems)(entry.items);
   try {
     let trashData;
     if (typeof trashJSON === "string") {
@@ -57,7 +59,7 @@ async function getTrashDataFromState(trashJSON, entry) {
       const result = getTrashItem(
         { start: trashObject._date, summary: trashObject.event },
         countItems,
-        entry.items
+        trashItems
       );
       if (result) {
         items.push(result);
@@ -76,6 +78,7 @@ async function getTrashDataFromFile(entry, adapter) {
   const items = [];
   const trashFile = entry.trashFile;
   const countItems = (_a = entry.countItems) != null ? _a : 6;
+  const trashItems = (0, import_adminShareConfig.normalizeTrashItems)(entry.items);
   try {
     if (!await adapter.fileExistsAsync(adapter.namespace, trashFile)) {
       return { messages: items, error: `File ${trashFile} does not exist in ioBroker files` };
@@ -98,7 +101,7 @@ async function getTrashDataFromFile(entry, adapter) {
     });
     for (const event of arrayData) {
       if (event.type === "VEVENT") {
-        const result = getTrashItem(event, countItems, entry.items);
+        const result = getTrashItem(event, countItems, trashItems);
         if (result) {
           items.push(result);
         }
