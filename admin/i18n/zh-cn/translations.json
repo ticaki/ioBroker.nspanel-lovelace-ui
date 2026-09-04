@@ -424,7 +424,7 @@
     "pagePowerdata": "PAGEPOPPOR的参数",
     "pageQRdata": "PAGEQR的数据",
     "pageQRselType": "QR类型的选择",
-    "page_name_main_locked": "该页面为起始页时名称被锁定，原名称仍会保存。",
+    "page_name_main_locked": "起始页 - 以 id“main”发布。标记生效期间名称被锁定，原名称保持不变地保存。",
     "page_name_main_reserved": "“main”为保留名称 - 请通过导航分配中的复选框设置起始页。",
     "page_overrides_script_page": "该名称已作为面板页面存在 - 管理界面的页面将覆盖它。",
     "page_type": "页面类型",

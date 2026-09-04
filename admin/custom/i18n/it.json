@@ -424,7 +424,7 @@
     "pagePowerdata": "Parametri per PagePower",
     "pageQRdata": "Dati per Pageqr",
     "pageQRselType": "Selezione del tipo QR",
-    "page_name_main_locked": "Nome bloccato finché questa pagina è la pagina iniziale. Il nome originale resta memorizzato.",
+    "page_name_main_locked": "Pagina iniziale - pubblicata con l'id \"main\". Nome bloccato finché il contrassegno è attivo; resta memorizzato invariato.",
     "page_name_main_reserved": "'main' è riservato - imposta la pagina iniziale con la casella nell'assegnazione della navigazione.",
     "page_overrides_script_page": "Questo nome esiste già come pagina del pannello - la pagina dell'admin la sostituisce.",
     "page_type": "Tipo di pagina",

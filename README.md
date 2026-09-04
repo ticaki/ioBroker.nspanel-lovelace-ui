@@ -160,7 +160,7 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
 ### **WORK IN PROGRESS**
 - (ticaki) the start page can now be defined in the admin: a checkbox marks any admin page as start page, it is published as `main` and replaces the start page from the configuration script
 - (ticaki) admin: the name `main` can no longer be entered by hand – the start page is set with that checkbox, so its checks cannot be bypassed
-- (ticaki) admin: a page marked as start page shows `main` as its name while keeping its original name stored; panel assignment and navigation are locked as long as the mark is set
+- (ticaki) admin: a page marked as start page keeps its own name in the list and is marked with `(main)`; its name field is locked and panel assignment and navigation stay fixed as long as the mark is set
 - (ticaki) admin: the navigation assignment marks navigation targets that do not exist on an assigned panel
 - (ticaki) if neither the script nor the admin provides a page named `main`, the adapter now adds an empty default start page instead of leaving the navigation without a start page
 - (ticaki) navigation: a page replaced by the admin configuration keeps the position and the links of the page it replaces, so the navigation ring and the service access stay intact

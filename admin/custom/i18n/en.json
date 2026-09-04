@@ -428,7 +428,7 @@
     "pagePowerdata": "Parameters for PagePower",
     "pageQRdata": "Data for PageQR",
     "pageQRselType": "Selection of QR type",
-    "page_name_main_locked": "Name locked while this page is the start page. The original name stays stored.",
+    "page_name_main_locked": "Start page - published under the id \"main\". Name locked while the mark is set; it stays stored unchanged.",
     "page_name_main_reserved": "'main' is reserved - set the start page with the checkbox in the navigation assignment.",
     "page_overrides_script_page": "This name already exists as a panel page - the admin page overrides it.",
     "page_type": "Page Type",

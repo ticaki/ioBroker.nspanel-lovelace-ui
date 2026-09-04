@@ -34,7 +34,7 @@ import {
     type PowerHomeBotConfig,
     emptyPowerSlot,
 } from '../../../src/lib/types/adminShareConfig';
-import { isMainPageEntry, mainPageName } from '../../../src/lib/types/adminShareConfig';
+import { isMainPageEntry } from '../../../src/lib/types/adminShareConfig';
 
 const ICONS_LIST: { name: string; base64: string }[] = Array.isArray(iconsJson) ? iconsJson : [];
 
@@ -763,7 +763,7 @@ export class PagePowerEditor extends ConfigGeneric<ConfigGenericProps & PagePowe
                         fullWidth
                         variant="standard"
                         label={this.getText('unique_label')}
-                        value={isMainPageEntry(entry) ? mainPageName : entry.uniqueName}
+                        value={entry.uniqueName}
                         onChange={e => {
                             const v = e.target.value;
                             if (v.trim()) {

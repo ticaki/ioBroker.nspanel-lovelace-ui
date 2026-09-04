@@ -424,7 +424,7 @@
     "pagePowerdata": "Parametry dla PagePower",
     "pageQRdata": "Dane dla pageqr",
     "pageQRselType": "Wybór typu QR",
-    "page_name_main_locked": "Nazwa zablokowana, dopóki ta strona jest stroną startową. Pierwotna nazwa pozostaje zapisana.",
+    "page_name_main_locked": "Strona startowa - publikowana pod id „main”. Nazwa zablokowana, dopóki zaznaczenie jest aktywne; pozostaje zapisana bez zmian.",
     "page_name_main_reserved": "„main” jest zarezerwowane - stronę startową ustawia się polem wyboru w przypisaniu nawigacji.",
     "page_overrides_script_page": "Ta nazwa już istnieje jako strona panelu — strona z admina ją nadpisze.",
     "page_type": "Typ strony",

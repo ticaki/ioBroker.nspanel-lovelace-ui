@@ -424,7 +424,7 @@
     "pagePowerdata": "Paramètres pour PagePower",
     "pageQRdata": "Données pour PageQr",
     "pageQRselType": "Sélection du type QR",
-    "page_name_main_locked": "Nom verrouillé tant que cette page est la page de démarrage. Le nom d'origine est conservé.",
+    "page_name_main_locked": "Page de démarrage - publiée sous l’id « main ». Nom verrouillé tant que la marque est active ; il reste enregistré tel quel.",
     "page_name_main_reserved": "« main » est réservé - définissez la page de démarrage avec la case à cocher dans l'attribution de navigation.",
     "page_overrides_script_page": "Ce nom existe déjà comme page du panneau - la page de l'admin la remplace.",
     "page_type": "Type de page",

@@ -428,7 +428,7 @@
     "pagePowerdata": "Daten für PagePower",
     "pageQRdata": "Daten für PageQR",
     "pageQRselType": "Auswahl des QR-Typs",
-    "page_name_main_locked": "Name gesperrt, solange die Seite Startseite ist. Der ursprüngliche Name bleibt gespeichert.",
+    "page_name_main_locked": "Startseite – wird unter der ID „main“ veröffentlicht. Name gesperrt, solange die Markierung gesetzt ist; er bleibt unverändert gespeichert.",
     "page_name_main_reserved": "„main“ ist reserviert – die Startseite wird über die Checkbox in der Navigationszuweisung gesetzt.",
     "page_overrides_script_page": "Dieser Name existiert bereits als Panel-Seite – die Admin-Seite überschreibt sie.",
     "page_type": "Seitentyp",

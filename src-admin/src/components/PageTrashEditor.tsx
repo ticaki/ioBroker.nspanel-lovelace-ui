@@ -27,7 +27,7 @@ import type { IobTheme, ThemeType, ThemeName } from '@iobroker/gui-components';
 import { EntitySelector } from './EntitySelector';
 import IconSelect from '../IconSelect';
 import type { TrashEntry } from '../../../src/lib/types/adminShareConfig';
-import { isMainPageEntry, mainPageName } from '../../../src/lib/types/adminShareConfig';
+import { isMainPageEntry } from '../../../src/lib/types/adminShareConfig';
 
 export interface PageTrashEditorProps {
     entry: TrashEntry;
@@ -303,7 +303,7 @@ export class PageTrashEditor extends ConfigGeneric<ConfigGenericProps & PageTras
                         variant="standard"
                         type="text"
                         label={this.getText('unique_label')}
-                        value={isMainPageEntry(entry) ? mainPageName : entry.uniqueName}
+                        value={entry.uniqueName}
                         disabled={!alive || isMainPageEntry(entry)}
                         onChange={e => {
                             const newUniqueName = e.target.value;

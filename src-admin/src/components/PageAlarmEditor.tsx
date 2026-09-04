@@ -16,7 +16,7 @@ import {
 import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
 import { type UnlockEntry, ADAPTER_NAME } from '../../../src/lib/types/adminShareConfig';
-import { isMainPageEntry, mainPageName } from '../../../src/lib/types/adminShareConfig';
+import { isMainPageEntry } from '../../../src/lib/types/adminShareConfig';
 
 export interface PageAlarmEditorProps {
     entry: UnlockEntry;
@@ -108,7 +108,7 @@ export class PageAlarmEditor extends React.Component<PageAlarmEditorProps, PageA
                         variant="standard"
                         type="text"
                         label={this.getText('unique_label')}
-                        value={isMainPageEntry(entry) ? mainPageName : entry.uniqueName}
+                        value={entry.uniqueName}
                         onChange={e => {
                             const newUniqueName = e.target.value;
                             if (newUniqueName.trim()) {

@@ -33,7 +33,7 @@ import {
     ADAPTER_NAME,
     ALL_PANELS_SPECIAL_ID,
 } from '../../../src/lib/types/adminShareConfig';
-import { isMainPageEntry, mainPageName } from '../../../src/lib/types/adminShareConfig';
+import { isMainPageEntry } from '../../../src/lib/types/adminShareConfig';
 import ChannelConfigDialog from './ChannelConfigDialog';
 import icons from '../icons.json';
 import { I18n, type IobTheme, type ThemeName, type ThemeType } from '@iobroker/gui-components';
@@ -989,7 +989,7 @@ export class PageMenuEditor extends ConfigGeneric<ConfigGenericProps & PageMenuE
                         variant="standard"
                         type="text"
                         label={this.getText('unique_label')}
-                        value={isMainPageEntry(entry) ? mainPageName : entry.uniqueName}
+                        value={entry.uniqueName}
                         onChange={e => {
                             const newUniqueName = e.target.value;
                             if (newUniqueName.trim()) {

@@ -20,19 +20,24 @@ import type {
     PageConfigEntry,
     AdminPanelConfig,
 } from '../../../src/lib/types/adminShareConfig';
-import { ADAPTER_NAME, ALL_PANELS_SPECIAL_ID, mainPageName } from '../../../src/lib/types/adminShareConfig';
+import {
+    ADAPTER_NAME,
+    ALL_PANELS_SPECIAL_ID,
+    isMainPageEntry,
+    mainPageName,
+} from '../../../src/lib/types/adminShareConfig';
 
 /**
- * Name under which an entry is shown while it is flagged as start page.
+ * Name under which an entry is shown in the page list.
  *
- * The stored uniqueName is kept untouched - only the display is overlaid, so unchecking the
- * flag brings the original name back.
+ * The stored uniqueName is kept untouched and stays visible; a page flagged as start page only
+ * gets the reserved id appended as a marker, so several pages stay distinguishable.
  *
  * @param entry Admin page configuration entry.
- * @returns The name to display.
+ * @returns The name to display, e.g. `Hauptseite1 (main)`.
  */
 export function getDisplayName(entry: PageConfigEntry): string {
-    return 'isMainPage' in entry && entry.isMainPage ? mainPageName : entry.uniqueName;
+    return isMainPageEntry(entry) ? `${entry.uniqueName} (${mainPageName})` : entry.uniqueName;
 }
 
 export type PageCardType =

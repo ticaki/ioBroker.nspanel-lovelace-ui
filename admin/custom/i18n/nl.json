@@ -424,7 +424,7 @@
     "pagePowerdata": "Parameters voor PagePower",
     "pageQRdata": "Gegevens voor PageQR",
     "pageQRselType": "Selectie van QR -type",
-    "page_name_main_locked": "Naam vergrendeld zolang deze pagina de startpagina is. De originele naam blijft bewaard.",
+    "page_name_main_locked": "Startpagina - wordt gepubliceerd onder de id \"main\". Naam vergrendeld zolang de markering staat; hij blijft ongewijzigd bewaard.",
     "page_name_main_reserved": "'main' is gereserveerd - stel de startpagina in met het vinkje in de navigatietoewijzing.",
     "page_overrides_script_page": "Deze naam bestaat al als paneelpagina - de adminpagina overschrijft deze.",
     "page_type": "Paginatype",
