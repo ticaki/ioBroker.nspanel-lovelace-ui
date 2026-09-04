@@ -563,8 +563,12 @@ export class ConfigManager extends BaseClass {
             messages.push(`No pages found! This needs to be fixed!`);
             this.log.error(messages[messages.length - 1]);
         } else if (panelConfig.navigation.length === 0) {
-            messages.push(`No navigation items found! This needs to be fixed!`);
-            this.log.error(messages[messages.length - 1]);
+            // Valid setup: the panel can be configured entirely in the admin. The adapter adds a
+            // default start page, the admin pages are merged afterwards.
+            messages.push(
+                `No navigation items found in the script configuration! Pages from the admin configuration are used.`,
+            );
+            this.log.info(messages[messages.length - 1]);
         } else if (panelConfig.navigation.findIndex(item => item && item.name === mainPageName) === -1) {
             // Not an error any more: the adapter adds a default start page and the admin
             // configuration may provide one as well.
