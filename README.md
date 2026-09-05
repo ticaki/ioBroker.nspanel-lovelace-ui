@@ -158,6 +158,8 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
     ### **WORK IN PROGRESS**
 -->
 ### **WORK IN PROGRESS**
+- (ticaki) fix: passwords no longer reach the log in plain text - the mqtt password of a panel setup and the tasmota admin password of a device url are masked now
+- (ticaki) fix: setting a panel up failed with `the message from the admin is incomplete` when the internal mqtt server had never been switched on. The log also names the missing fields now
 - (ticaki) fix: the timezone dropdown froze the browser and is a searchable field now. The chosen zone also reaches the panel at last - it was never sent, and the field showed a different zone than the one picked
 - (ticaki) fix: setting a panel up ended with `Invalid response from adapter` and did not store the panel. It runs as three steps now and shows how far it got
 - (ticaki) fix: a switched off panel was marked as such in english and german only, and hard to tell from an offline one

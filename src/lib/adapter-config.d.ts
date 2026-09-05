@@ -17,6 +17,7 @@ declare global {
             mqttUsername: string;
             mqttIp: string;
             mqttPort: number;
+            internalServerIp: string;
             Testconfig2: Partial<Panel.panelConfigPartial>[];
             timezone: string;
             useBetaTFT: boolean;

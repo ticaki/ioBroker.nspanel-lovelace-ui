@@ -194,6 +194,8 @@
     "mqttUsername": "",
     "mqttIp": "",
     "mqttPort": 0,
+    "mqttServer": false,
+    "internalServerIp": "",
     "panels": [],
     "pageQRpwd1": "",
     "pageQRpwd2": "",
