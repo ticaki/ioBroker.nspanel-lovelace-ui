@@ -4,6 +4,7 @@ import {
     Alert,
     //Checkbox,
     //FormControlLabel,
+    Autocomplete,
     Box,
     Select,
     TextField,
@@ -25,7 +26,7 @@ import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import ConfigIP from './components/ConfigIP';
 import { PanelStatusBadge } from './components/PanelStatusBadge';
-import { tasmotaTimeZones } from './tasmotaTimeZones';
+import { resolveTasmotaTimeZone, uniqueTasmotaTimeZones, type TasmotaTimeZone } from './tasmotaTimeZones';
 
 interface PanelConfig {
     id?: string;
@@ -35,21 +36,42 @@ interface PanelConfig {
     model?: string;
 }
 
-interface TimezoneEntity {
-    value: string;
-    label: string;
+/** Antwort eines der drei Einrichtungsschritte, siehe `runInitStep` */
+interface InitStepAnswer {
+    /** Übersetzungsschlüssel des Fehlers, wenn der Schritt fehlgeschlagen ist */
+    error?: string;
+    /** Übersetzungsschlüssel des Meilensteins */
+    result?: string;
+    /** Nummer des Schritts */
+    step?: number;
+    /** nur der letzte Schritt liefert die Panelliste */
+    native?: { panels?: PanelConfig[] };
+    /** true, wenn die Konfiguration gespeichert werden soll */
+    saveConfig?: boolean;
+}
+
+/**
+ * Prüft, ob die Antwort des Adapters die erwartete Form hat.
+ *
+ * @param value - die Antwort aus `sendTo`
+ * @returns true, wenn es ein Objekt ist - bei einem Timeout ist es der String `timeout`
+ */
+function isInitStepAnswer(value: unknown): value is InitStepAnswer {
+    return !!value && typeof value === 'object';
 }
 
 interface PagePanelOverviewState extends ConfigGenericState {
     // Define any additional state properties if needed
-    timezoneEntities?: TimezoneEntity[];
-    loadingTimezone?: boolean;
-    lastTimezoneLoad?: number;
+    // Aktuelle Eingabe im Zeitzonen-Autocomplete und die dazu passenden Treffer
+    timezoneInput: string;
+    filteredTimezones: TasmotaTimeZone[];
     // State for alive status of the adapter
     alive: boolean;
     // State for confirmation dialog
     showConfirm: boolean;
     processing: boolean;
+    // Meilenstein des zuletzt abgeschlossenen Einrichtungsschritts
+    progressMessage: string;
 
     error: string | null;
     panels: PanelConfig[];
@@ -81,13 +103,14 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
 
     constructor(props: ConfigGenericProps & { theme?: any }) {
         super(props);
+        // Gespeichert wird der Name der Zeitzone; ältere Konfigurationen halten den Tasmota-Befehl
+        const timezone = resolveTasmotaTimeZone(props.data.timezone ?? '')?.label ?? '';
         this.state = {
             ...this.state,
             alive: false,
-            timezoneEntities: [],
-            lastTimezoneLoad: 0,
             showConfirm: false,
             processing: false,
+            progressMessage: '',
             error: null,
             panels: [],
             showDeleteConfirm: false,
@@ -100,7 +123,9 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
             localTasmotaIP: props.data._tasmotaIP ?? '',
             localTasmotaName: props.data._tasmotaName ?? '',
             localTasmotaTopic: props.data._tasmotaTopic ?? '',
-            localTimezone: props.data.timezone ?? '',
+            localTimezone: timezone,
+            timezoneInput: timezone,
+            filteredTimezones: PagePanelOverview.filterTimezones(''),
             showMessageConfirm: false,
         };
     }
@@ -141,11 +166,6 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
 
             // Subscribe to alive state changes
             await this.props.oContext.socket.subscribeState(aliveStateId, this.onAliveChanged);
-
-            // Timezone-Entities vorladen, wenn bereits ein Wert gesetzt ist
-            if (this.props.data.timezone) {
-                void this.loadTimezoneEntities();
-            }
         } catch (error) {
             console.error('[PagePanelOverview] Failed to get alive state or subscribe:', error);
             this.setState({ alive: false, error: String(error) });
@@ -170,8 +190,8 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
 
     // Synchronisiert props.data.timezone → localTimezone, sobald der Wert über Props hereinkommt
     componentDidUpdate(prevProps: ConfigGenericProps & { theme?: any }): void {
-        const prevTz = prevProps.data?.timezone ?? '';
-        const nextTz = this.props.data?.timezone ?? '';
+        const prevTz = resolveTasmotaTimeZone(prevProps.data?.timezone ?? '')?.label ?? '';
+        const nextTz = resolveTasmotaTimeZone(this.props.data?.timezone ?? '')?.label ?? '';
         // Sync wenn sich der Prop-Wert ändert ODER wenn localTimezone noch leer ist
         // aber bereits ein Wert vorhanden ist (In-Place-Mutation von props.data)
         if (
@@ -179,7 +199,7 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
             this.state.localTimezone !== nextTz &&
             nextTz !== ''
         ) {
-            this.setState({ localTimezone: nextTz });
+            this.setState({ localTimezone: nextTz, timezoneInput: nextTz });
         }
     }
 
@@ -260,26 +280,20 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
         }));
     };
 
-    // Lade Timezone-Entities
-    loadTimezoneEntities(): void {
-        if (!this.state.alive) {
-            return;
+    /**
+     * Reduziert die 562 Zeitzonen auf die Treffer zur Eingabe.
+     *
+     * Ohne Begrenzung baut MUI alle Einträge auf einmal auf – das legte den Browser lahm.
+     *
+     * @param input - der aktuelle Text im Eingabefeld
+     * @returns höchstens 100 passende Zeitzonen
+     */
+    private static filterTimezones(input: string): TasmotaTimeZone[] {
+        const q = (input || '').toLowerCase();
+        if (!q) {
+            return uniqueTasmotaTimeZones.slice(0, 100);
         }
-        try {
-            this.setState({
-                timezoneEntities: tasmotaTimeZones,
-                loadingTimezone: false,
-            });
-        } catch (e) {
-            console.error('[PagePanelOverview] Failed to load timezone entities', {
-                error: e,
-            });
-            this.setState({
-                timezoneEntities: [],
-                loadingTimezone: false,
-                error: String(e),
-            });
-        }
+        return uniqueTasmotaTimeZones.filter(tz => tz.label.toLowerCase().includes(q)).slice(0, 100);
     }
     // Generische Handler-Funktion für Checkbox-Änderungen
     private handleCheckboxChange =
@@ -401,10 +415,60 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
     private handleConfirmClose = (): void => {
         this.setState({ showConfirm: false });
     };
+    /**
+     * Führt einen der drei Einrichtungsschritte aus.
+     *
+     * Der Admin verwirft jede sendTo-Antwort, die länger als 30 Sekunden braucht, und ruft den
+     * Callback dann mit dem String `timeout` auf. Die Einrichtung dauert insgesamt rund 40
+     * Sekunden, deshalb ist sie auf drei Aufrufe verteilt, die nacheinander laufen.
+     *
+     * @param command - der sendTo-Befehl des Schritts
+     * @param payload - die Daten des Formulars
+     * @returns die Antwort des Adapters oder null, wenn der Schritt fehlgeschlagen ist
+     */
+    private async runInitStep(command: string, payload: Record<string, unknown>): Promise<InitStepAnswer | null> {
+        const result = await this.props.oContext.socket.sendTo(
+            `${this.adapterName}.${this.instance}`,
+            command,
+            payload,
+        );
+
+        if (result === 'timeout') {
+            this.setState({ processing: false, progressMessage: '', error: this.getText('sendToStepTimeout') });
+            return null;
+        }
+
+        if (!isInitStepAnswer(result)) {
+            this.setState({
+                processing: false,
+                progressMessage: '',
+                error: this.getText('sendToInvalidResponse'),
+            });
+            return null;
+        }
+
+        const answer = result;
+        if (answer.error) {
+            const errorMessage = this.getText(answer.error) || answer.error;
+            this.setState({
+                processing: false,
+                progressMessage: '',
+                error: errorMessage,
+                showMessageConfirm: answer.error === 'sendToNoInternetAccess',
+            });
+            return null;
+        }
+
+        // Meilenstein des Schritts anzeigen
+        if (answer.result) {
+            this.setState({ progressMessage: this.getText(answer.result) || answer.result });
+        }
+        return answer;
+    }
+
     // Startet die Initialisierung nach Bestätigung
     private handleConfirmStart = async (): Promise<void> => {
-        console.log('[PagePanelOverview] === INIT START ===');
-        this.setState({ showConfirm: false, processing: true, error: null });
+        this.setState({ showConfirm: false, processing: true, error: null, progressMessage: '' });
 
         try {
             const payload = {
@@ -421,78 +485,40 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
                 model: this.props.data._nsPanelModel || 'eu',
             };
 
-            console.log('[PagePanelOverview] Sending payload:', payload);
-
-            const result = await this.props.oContext.socket.sendTo(
-                `${this.adapterName}.${this.instance}`,
-                'nsPanelInit',
-                payload,
-            );
-
-            console.log('[PagePanelOverview] Received result:', result);
-
-            // Prüfe Callback-Ergebnis
-            if (result && typeof result === 'object') {
-                if ('error' in result && result.error) {
-                    // Fehler aufgetreten
-                    console.error('[PagePanelOverview] Error from adapter:', result.error);
-                    const errorMessage = this.getText(String(result.error)) || String(result.error);
-                    this.setState({
-                        processing: false,
-                        error: errorMessage,
-                    });
-                    if (result.error == 'sendToNoInternetAccess') {
-                        this.setState({
-                            showMessageConfirm: true,
-                            error: `${errorMessage}`,
-                        });
-                    }
+            // Die drei Schritte laufen nacheinander, jeder meldet seinen Meilenstein
+            for (const command of ['nsPanelInitStep1', 'nsPanelInitStep2']) {
+                if (!(await this.runInitStep(command, payload))) {
                     return;
                 }
+            }
 
-                if ('native' in result && result.native && 'saveConfig' in result && result.saveConfig) {
-                    // Erfolg - zeige Bestätigungsdialog
-                    const native = result.native as Record<string, any>;
-                    console.log('[PagePanelOverview] Success! Native data:', native);
+            const last = await this.runInitStep('nsPanelInitStep3', payload);
+            if (!last) {
+                return;
+            }
 
-                    if (native.panels && Array.isArray(native.panels)) {
-                        const successKey = 'result' in result ? String(result.result) : 'sendToNSPanelInitDataSuccess';
-                        console.log('[PagePanelOverview] Success message key:', successKey);
-                        const successMessage = this.getText(successKey) || successKey;
-
-                        this.setState({
-                            processing: false,
-                            showSuccessConfirm: true,
-                            successMessage: successMessage,
-                            pendingPanels: native.panels,
-                        });
-                    } else {
-                        console.error('[PagePanelOverview] No panels in native data');
-                        this.setState({
-                            processing: false,
-                            error: 'No panels data received',
-                        });
-                    }
-                } else {
-                    // Unerwartetes Ergebnis
-                    console.error('[PagePanelOverview] Unexpected response structure:', result);
-                    this.setState({
-                        processing: false,
-                        error: 'Unexpected response from adapter',
-                    });
-                }
-            } else {
-                // Kein gültiges Result-Objekt
-                console.error('[PagePanelOverview] Invalid result object:', result);
+            const panels = last.native?.panels;
+            if (!panels || !Array.isArray(panels)) {
                 this.setState({
                     processing: false,
-                    error: 'Invalid response from adapter',
+                    progressMessage: '',
+                    error: this.getText('sendToNoPanelData'),
                 });
+                return;
             }
-        } catch (error) {
-            console.error('[PagePanelOverview] Init failed with exception:', error);
+
+            const successKey = last.result ?? 'sendToNSPanelInitDataSuccess';
             this.setState({
                 processing: false,
+                progressMessage: '',
+                showSuccessConfirm: true,
+                successMessage: this.getText(successKey) || successKey,
+                pendingPanels: panels,
+            });
+        } catch (error) {
+            this.setState({
+                processing: false,
+                progressMessage: '',
                 error: String(error),
             });
         }
@@ -705,15 +731,14 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
         const panels: PanelConfig[] = data.panels || [];
         const {
             alive,
-            loadingTimezone,
             error,
             showConfirm,
             showDeleteConfirm,
             showSuccessConfirm,
             panelToDelete,
             successMessage,
-            timezoneEntities,
             processing,
+            progressMessage,
             showMessageConfirm,
         } = this.state;
 
@@ -846,52 +871,41 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
                             <MenuItem value="us-p">{this.getText('us-p-Version')}</MenuItem>
                         </Select>
                     </FormControl>
-                    {/* Timezone Select - wird nur angezeigt, wenn die Daten geladen wurden oder gerade geladen werden */}
-                    <FormControl
-                        sx={{ m: 1, minWidth: 200 }}
+                    {/* Zeitzone: Autocomplete statt Select – 562 MenuItems auf einmal frieren den Browser ein */}
+                    <Autocomplete
+                        sx={{ m: 1, minWidth: 240 }}
                         size="small"
-                        disabled={!alive || loadingTimezone}
-                        variant="standard"
-                    >
-                        <InputLabel id="timezone-label">{this.getText('timezone')}</InputLabel>
-                        <Select
-                            labelId="timezone-label"
-                            id="timezone-select"
-                            value={this.state.localTimezone}
-                            label={this.getText('timezone')}
-                            onOpen={() => {
-                                // Lade Daten wenn Select geöffnet wird
-                                void this.loadTimezoneEntities();
-                            }}
-                            onChange={(event: SelectChangeEvent<string>) => {
-                                const value = event.target.value;
-                                this.setState({ localTimezone: value });
-                                void this.onChange('timezone', value).then(() => this.forceUpdate());
-                            }}
-                        >
-                            {/* Fallback-MenuItem: zeigt den aktuellen Wert an, solange Entities noch nicht geladen sind */}
-                            {this.state.localTimezone &&
-                                !(timezoneEntities || []).some(e => e.value === this.state.localTimezone) && (
-                                    <MenuItem value={this.state.localTimezone}>{this.state.localTimezone}</MenuItem>
-                                )}
-                            {loadingTimezone && (
-                                <MenuItem
-                                    disabled
-                                    value=""
-                                >
-                                    <CircularProgress size={16} />
-                                </MenuItem>
-                            )}
-                            {(timezoneEntities || []).map(entity => (
-                                <MenuItem
-                                    key={entity.value || entity.label}
-                                    value={entity.value}
-                                >
-                                    {entity.label}
-                                </MenuItem>
-                            ))}
-                        </Select>
-                    </FormControl>
+                        disabled={!alive}
+                        options={this.state.filteredTimezones}
+                        // interne Filterung aus: die Liste wird bei jeder Eingabe selbst begrenzt
+                        filterOptions={opts => opts}
+                        getOptionLabel={option => option.label}
+                        isOptionEqualToValue={(option, value) => option.label === value.label}
+                        value={uniqueTasmotaTimeZones.find(tz => tz.label === this.state.localTimezone) ?? null}
+                        inputValue={this.state.timezoneInput}
+                        onInputChange={(_, newInput) => {
+                            this.setState({
+                                timezoneInput: newInput,
+                                filteredTimezones: PagePanelOverview.filterTimezones(newInput),
+                            });
+                        }}
+                        onChange={(_, newValue) => {
+                            const label = newValue?.label ?? '';
+                            this.setState({
+                                localTimezone: label,
+                                timezoneInput: label,
+                                filteredTimezones: PagePanelOverview.filterTimezones(label),
+                            });
+                            void this.onChange('timezone', label).then(() => this.forceUpdate());
+                        }}
+                        renderInput={params => (
+                            <TextField
+                                {...params}
+                                variant="standard"
+                                label={this.getText('timezone')}
+                            />
+                        )}
+                    />
                 </Box>
                 {/* Error Alert */}
                 {error && (
@@ -919,6 +933,16 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
                         this.getText('nsPanelInit')
                     )}
                 </Button>
+
+                {/* Meilenstein des laufenden Einrichtungsschritts */}
+                {processing && progressMessage && (
+                    <Alert
+                        severity="info"
+                        sx={{ mt: 1 }}
+                    >
+                        {progressMessage}
+                    </Alert>
+                )}
 
                 {/* Panels as Boxes */}
                 <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>

@@ -526,7 +526,8 @@ export const panelStatusColors: Record<PanelStatus, string> = {
     flashing: '#FFC107',
     setup: '#d99800',
     error: '#F44336',
-    deactivated: '#607D8B',
+    // Violett: der einzige Status, den der Anwender selbst setzt - hebt sich von allen anderen ab
+    deactivated: '#AB47BC',
 };
 
 export const panelStatusTranslationKeys: Record<PanelStatus, string> = {

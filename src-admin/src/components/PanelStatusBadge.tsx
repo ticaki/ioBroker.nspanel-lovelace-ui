@@ -1,5 +1,5 @@
 import React from 'react';
-import { Chip, Tooltip, CircularProgress } from '@mui/material';
+import { Chip, Tooltip, CircularProgress, alpha } from '@mui/material';
 import { Circle as CircleIcon } from '@mui/icons-material';
 import {
     panelStatusStates,
@@ -184,7 +184,9 @@ export class PanelStatusBadge extends React.Component<PanelStatusBadgeProps, Pan
 
         const color = panelStatusColors[effectiveStatus];
         const label = this.getStatusLabel(effectiveStatus);
-        console.log(`[PanelStatusBadge] Rendering status: ${effectiveStatus} with color ${color}`);
+        // Ausgeschaltet ist der einzige Status, den der Anwender selbst setzt - er bekommt eine
+        // hinterlegte Fläche und einen kräftigeren Rand, damit er sich von den übrigen abhebt.
+        const isDeactivated = effectiveStatus === 'deactivated';
 
         const chipelement = (
             <Chip
@@ -196,6 +198,13 @@ export class PanelStatusBadge extends React.Component<PanelStatusBadgeProps, Pan
                 sx={{
                     maxWidth: maxWidth,
                     borderColor: color,
+                    ...(isDeactivated
+                        ? {
+                              borderWidth: 2,
+                              fontWeight: 600,
+                              backgroundColor: alpha(color, 0.16),
+                          }
+                        : {}),
                     '& .MuiChip-label': {
                         color: color,
                     },

@@ -158,6 +158,12 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
     ### **WORK IN PROGRESS**
 -->
 ### **WORK IN PROGRESS**
+- (ticaki) fix: the status of a panel switched off with `cmd.activated` was only translated in english and german, every other language showed the raw key
+- (ticaki) the status of a switched off panel now stands out from the others - its own colour, a stronger border and a tinted background, and in german it reads `Ausgeschaltet`
+- (ticaki) fix: setting a panel up reported `Invalid response from adapter` and did not store the panel. The admin discards every answer that takes longer than 30 seconds, the setup takes about 40. It now runs as three steps that report their milestone, and each step stays well below the limit
+- (ticaki) fix: the timezone dropdown froze the browser - it built all 693 entries at once, 632 of them with a duplicate react key. It is a searchable field now that shows at most 100 matches
+- (ticaki) fix: the timezone was never sent to the panel - the admin stored the tasmota command while the adapter looks the entry up by its name. The name is stored from now on, existing configurations keep working
+- (ticaki) fix: the timezone field showed a different zone than the selected one, because up to 56 zones share one tasmota command
 - (ticaki) the start page can now be set in the admin: a checkbox marks any admin page as start page and it replaces the one from the configuration script. The page keeps its own name and is marked with `(main)`
 - (ticaki) navigation flow: pages linked with `next` and `prev` in both directions are drawn as one edge with two arrowheads and its own colour; the legend is translated
 - (ticaki) navigation flow: nodes are coloured by origin - script pages as before, admin pages green, system pages yellow

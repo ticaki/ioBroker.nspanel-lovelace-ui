@@ -5470,9 +5470,19 @@ export const tasmotaTimeZones = [
     },
 ];
 
+/**
+ * Returns the Tasmota command for a configured time zone.
+ *
+ * @param label - the time zone label, e.g. `Europe/Berlin`. Configurations written by the admin
+ * up to version 1.0.1 hold the Tasmota command itself; such a value is accepted unchanged.
+ * @returns the Tasmota command or an empty string if the value belongs to no known time zone
+ */
 export function getTasmotaTimeZone(label: string): string {
     const tz = tasmotaTimeZones.find(tz => tz.label === label);
-    return tz ? tz.value : '';
+    if (tz) {
+        return tz.value;
+    }
+    return tasmotaTimeZones.some(tz => tz.value === label) ? label : '';
 }
 
 export const weatherEntities = ['brightsky', 'openweathermap', 'pirate-weather', 'accuweather'] as const;
