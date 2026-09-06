@@ -178,6 +178,24 @@ export interface PanelListEntry {
  */
 export const mainPageName = 'main';
 
+/**
+ * Navigation node name of the service entry point.
+ *
+ * The service entry point carries two different names: the navigation *node* is called
+ * `///service`, the *page* behind it is called {@link servicePageName}. The adapter resolves
+ * navigation targets against node names, the admin dropdowns however offer page names - so both
+ * values have to be known on both sides.
+ */
+export const serviceNodeName = '///service';
+
+/**
+ * Page name (uniqueID) of the service page reached through {@link serviceNodeName}.
+ *
+ * This is the name the admin UI offers in its navigation dropdowns. It has to be mapped onto
+ * {@link serviceNodeName} before it is used as a navigation target.
+ */
+export const servicePageName = '///unlock';
+
 export interface PageConfigBaseFields {
     hidden?: boolean;
     alwaysOn?: 'none' | 'always' | 'action' | 'ignore';

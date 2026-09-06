@@ -33,8 +33,15 @@ __export(admin_exports, {
 module.exports = __toCommonJS(admin_exports);
 var import_default_pages = require("../const/default-pages");
 var import_library = require("../controller/library");
+var import_system_templates = require("../templates/system-templates");
 var ShareConfig = __toESM(require("../types/adminShareConfig"));
 var import_function_and_const = require("../types/function-and-const");
+const systemNavigationNodeNames = new Set(
+  import_system_templates.systemNavigation.filter((node) => node != null).map((node) => node.name)
+);
+function resolveNavigationTarget(name) {
+  return name === ShareConfig.servicePageName ? ShareConfig.serviceNodeName : name;
+}
 function shallowDescribe(value) {
   if (value === null) {
     return "null";
@@ -342,10 +349,10 @@ Stack: ${stack}`
       }
       const nav = {
         ...navigation,
-        prev: resolveTarget(navigation.prev),
-        next: resolveTarget(navigation.next),
-        home: resolveTarget(navigation.home),
-        parent: resolveTarget(navigation.parent)
+        prev: resolveNavigationTarget(resolveTarget(navigation.prev)),
+        next: resolveNavigationTarget(resolveTarget(navigation.next)),
+        home: resolveNavigationTarget(resolveTarget(navigation.home)),
+        parent: resolveNavigationTarget(resolveTarget(navigation.parent))
       };
       if (nav.home === newPage.uniqueID) {
         this.log.warn(`Page '${newPage.uniqueID}' has a home link to itself! Removed!`);
@@ -462,11 +469,12 @@ Stack: ${stack}`
         }
       }
     }
+    const isUnresolved = (target) => target !== void 0 && !systemNavigationNodeNames.has(target) && !option.navigation.find((b) => (b == null ? void 0 : b.name) === target);
     for (const pending of pendingNavs) {
-      if (pending.prev !== void 0 && !option.navigation.find((b) => (b == null ? void 0 : b.name) === pending.prev)) {
+      if (isUnresolved(pending.prev)) {
         this.log.warn(`Navigation unresolved for '${pending.pageId}': prev page '${pending.prev}' not found.`);
       }
-      if (pending.next !== void 0 && !option.navigation.find((b) => (b == null ? void 0 : b.name) === pending.next)) {
+      if (isUnresolved(pending.next)) {
         this.log.warn(`Navigation unresolved for '${pending.pageId}': next page '${pending.next}' not found.`);
       }
     }

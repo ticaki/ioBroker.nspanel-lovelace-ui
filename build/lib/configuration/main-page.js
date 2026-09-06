@@ -22,7 +22,7 @@ __export(main_page_exports, {
 });
 module.exports = __toCommonJS(main_page_exports);
 var import_default_pages = require("../const/default-pages");
-const serviceNodeName = "///service";
+var import_adminShareConfig = require("../types/adminShareConfig");
 function ensureMainPage(option, headline) {
   var _a, _b, _c;
   const result = { pageAdded: false, navigationAdded: false };
@@ -40,12 +40,12 @@ function ensureMainPage(option, headline) {
   const mainNode = { name: import_default_pages.mainPageName, page: import_default_pages.mainPageName };
   const first = option.navigation.find((a) => a != null);
   if (!first) {
-    mainNode.left = { single: serviceNodeName };
-    mainNode.right = { single: serviceNodeName };
+    mainNode.left = { single: import_adminShareConfig.serviceNodeName };
+    mainNode.right = { single: import_adminShareConfig.serviceNodeName };
   } else {
     mainNode.right = { single: first.name };
-    if (((_a = first.left) == null ? void 0 : _a.single) === serviceNodeName) {
-      mainNode.left = { single: serviceNodeName };
+    if (((_a = first.left) == null ? void 0 : _a.single) === import_adminShareConfig.serviceNodeName) {
+      mainNode.left = { single: import_adminShareConfig.serviceNodeName };
       first.left = { single: import_default_pages.mainPageName };
     } else {
       if (!((_b = first.left) == null ? void 0 : _b.single)) {
@@ -53,9 +53,9 @@ function ensureMainPage(option, headline) {
       }
       if (!option.navigation.some((a) => {
         var _a2;
-        return a && ((_a2 = a.left) == null ? void 0 : _a2.single) === serviceNodeName;
+        return a && ((_a2 = a.left) == null ? void 0 : _a2.single) === import_adminShareConfig.serviceNodeName;
       })) {
-        mainNode.left = { single: serviceNodeName };
+        mainNode.left = { single: import_adminShareConfig.serviceNodeName };
       }
     }
   }
