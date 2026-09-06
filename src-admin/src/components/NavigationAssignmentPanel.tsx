@@ -90,7 +90,23 @@ interface NavigationAssignmentPanelState extends ConfigGenericState {
     pendingDelete?: string;
     // active tab index
     activeTab?: number;
+    // show system pages (///-prefixed) in the prev/next/parent/home dropdowns; ///unlock is always shown regardless
+    showSystemPages: boolean;
 }
+
+/**
+ * Checks whether a page name is a system page.
+ *
+ * System pages carry the `///` prefix (e.g. `///settings`). `///unlock` is exempt from this check
+ * and always treated as a regular, selectable page.
+ *
+ * @param name Page name to check.
+ * @returns `true` if the name is a system page other than `///unlock`.
+ */
+function isSystemPage(name: string): boolean {
+    return name.startsWith('///') && name !== '///unlock';
+}
+
 /**
  * Reusable navigation assignment side panel (class-based)
  * - transparent background
@@ -130,6 +146,7 @@ class NavigationAssignmentPanel extends ConfigGeneric<
             lastLoadTime: {},
             focusReceived: {},
             activeTab: 0,
+            showSystemPages: false,
         };
     }
 
@@ -723,6 +740,24 @@ class NavigationAssignmentPanel extends ConfigGeneric<
     };
 
     /**
+     * Filters the pages selectable in the prev/next/parent/home dropdowns.
+     *
+     * System pages (see {@link isSystemPage}) are hidden unless `showSystemPages` is enabled. An
+     * already selected value is always kept in the list, even if it is a system page - otherwise
+     * MUI would show the select as empty and the value would get lost on the next change.
+     *
+     * @param pages All pages known for the currently selected panel.
+     * @param currentValue Value currently assigned to the dropdown, if any.
+     * @returns Pages selectable in the dropdown.
+     */
+    private getSelectablePages(pages: string[], currentValue?: string): string[] {
+        return pages.filter(
+            (p: string) =>
+                p !== this.props.uniqueName && (this.state.showSystemPages || !isSystemPage(p) || p === currentValue),
+        );
+    }
+
+    /**
      * Lookup map: panelTopic → { id, friendlyName, panelTopic }
      * Provides a quick association between a panel's topic string, its unique
      * config id and its human-readable name/friendlyName.
@@ -748,6 +783,10 @@ class NavigationAssignmentPanel extends ConfigGeneric<
 
     handleTabChange = (_: React.SyntheticEvent, newValue: number): void => {
         this.setState({ activeTab: newValue });
+    };
+
+    handleShowSystemPagesChange = (_event: React.ChangeEvent<HTMLInputElement>, checked: boolean): void => {
+        this.setState({ showSystemPages: checked });
     };
 
     /**
@@ -1520,16 +1559,17 @@ class NavigationAssignmentPanel extends ConfigGeneric<
                                                     <em>{I18n.t('select_panel_first')}</em>
                                                 )}
                                             </MenuItem>
-                                            {pages
-                                                .filter((p: string) => p !== this.props.uniqueName)
-                                                .map((p: string) => (
-                                                    <MenuItem
-                                                        key={`prev-${p}`}
-                                                        value={p}
-                                                    >
-                                                        {p}
-                                                    </MenuItem>
-                                                ))}
+                                            {this.getSelectablePages(
+                                                pages,
+                                                this.getNavValue(this.state.selectedAddedTopic, 'prev'),
+                                            ).map((p: string) => (
+                                                <MenuItem
+                                                    key={`prev-${p}`}
+                                                    value={p}
+                                                >
+                                                    {p}
+                                                </MenuItem>
+                                            ))}
                                         </Select>
                                     </Box>
                                     <Box>
@@ -1583,18 +1623,17 @@ class NavigationAssignmentPanel extends ConfigGeneric<
                                                     <em>{I18n.t('select_panel_first')}</em>
                                                 )}
                                             </MenuItem>
-                                            {pages
-                                                .filter(
-                                                    (p: string) => p !== this.props.uniqueName && !p.startsWith('///'),
-                                                )
-                                                .map((p: string) => (
-                                                    <MenuItem
-                                                        key={`next-${p}`}
-                                                        value={p}
-                                                    >
-                                                        {p}
-                                                    </MenuItem>
-                                                ))}
+                                            {this.getSelectablePages(
+                                                pages,
+                                                this.getNavValue(this.state.selectedAddedTopic, 'next'),
+                                            ).map((p: string) => (
+                                                <MenuItem
+                                                    key={`next-${p}`}
+                                                    value={p}
+                                                >
+                                                    {p}
+                                                </MenuItem>
+                                            ))}
                                         </Select>
                                     </Box>
                                     <Box>
@@ -1638,16 +1677,17 @@ class NavigationAssignmentPanel extends ConfigGeneric<
                                             }
                                         >
                                             <MenuItem value="">{<em>—</em>}</MenuItem>
-                                            {pages
-                                                .filter((p: string) => p !== this.props.uniqueName)
-                                                .map((p: string) => (
-                                                    <MenuItem
-                                                        key={`parent-${p}`}
-                                                        value={p}
-                                                    >
-                                                        {p}
-                                                    </MenuItem>
-                                                ))}
+                                            {this.getSelectablePages(
+                                                pages,
+                                                this.getNavValue(this.state.selectedAddedTopic, 'parent'),
+                                            ).map((p: string) => (
+                                                <MenuItem
+                                                    key={`parent-${p}`}
+                                                    value={p}
+                                                >
+                                                    {p}
+                                                </MenuItem>
+                                            ))}
                                         </Select>
                                     </Box>
                                     <Box>
@@ -1691,18 +1731,29 @@ class NavigationAssignmentPanel extends ConfigGeneric<
                                             }
                                         >
                                             <MenuItem value="">{<em>—</em>}</MenuItem>
-                                            {pages
-                                                .filter((p: string) => p !== this.props.uniqueName)
-                                                .map((p: string) => (
-                                                    <MenuItem
-                                                        key={`home-${p}`}
-                                                        value={p}
-                                                    >
-                                                        {p}
-                                                    </MenuItem>
-                                                ))}
+                                            {this.getSelectablePages(
+                                                pages,
+                                                this.getNavValue(this.state.selectedAddedTopic, 'home'),
+                                            ).map((p: string) => (
+                                                <MenuItem
+                                                    key={`home-${p}`}
+                                                    value={p}
+                                                >
+                                                    {p}
+                                                </MenuItem>
+                                            ))}
                                         </Select>
                                     </Box>
+                                    <FormControlLabel
+                                        control={
+                                            <Checkbox
+                                                checked={this.state.showSystemPages}
+                                                onChange={this.handleShowSystemPagesChange}
+                                                size="small"
+                                            />
+                                        }
+                                        label={I18n.t('show_system_pages')}
+                                    />
                                     <Divider sx={{ my: 1 }} />
                                 </Box>
                             )}
