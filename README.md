@@ -158,29 +158,22 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
     ### **WORK IN PROGRESS**
 -->
 ### **WORK IN PROGRESS**
-- (ticaki) fix: a coloured panel card of the maintenance and panel info tabs was hard to read - in a dark theme a panel marked with `Check!` got a light beige card while the text stayed white, and in the new light theme its input fields were framed in almost white. Such a card keeps its signal colour and is drawn with dark text and readable frames in every theme now. The icons of the icon picker were unreadable in the `blue` theme for the same reason and follow the theme correctly now
-- (ticaki) fix: passwords no longer reach the log in plain text - the mqtt password of a panel setup and the tasmota admin password of a device url are masked now
-- (ticaki) fix: setting a panel up failed with `the message from the admin is incomplete` when the internal mqtt server had never been switched on. The log also names the missing fields now
-- (ticaki) fix: the timezone dropdown froze the browser and is a searchable field now. The chosen zone also reaches the panel at last - it was never sent, and the field showed a different zone than the one picked
-- (ticaki) fix: setting a panel up ended with `Invalid response from adapter` and did not store the panel. It runs as three steps now and shows how far it got
+- (ticaki) fix: a panel card marked with `Check!` was hard to read - white text on the beige card in the dark themes, almost invisible input frames in the new light one. The icons of the icon picker were invisible in the `blue` theme
+- (ticaki) fix: passwords no longer reach the log in plain text
+- (ticaki) fix: setting a panel up failed with `Invalid response from adapter` or `the message from the admin is incomplete`. It runs as three steps now and shows how far it got
+- (ticaki) fix: the timezone dropdown froze the browser, is a searchable field now, and the chosen zone reaches the panel at last
 - (ticaki) fix: a switched off panel was marked as such in english and german only, and hard to tell from an offline one
-- (ticaki) the start page can now be set in the admin: a checkbox marks any admin page as start page and it replaces the one from the configuration script. The page keeps its own name and is marked with `(main)`
-- (ticaki) navigation flow: pages linked with `next` and `prev` in both directions are drawn as one edge with two arrowheads and its own colour; the legend is translated
-- (ticaki) navigation flow: nodes are coloured by origin - script pages as before, admin pages green, system pages yellow
-- (ticaki) navigation flow: the page info of an admin page links to its page configuration
-- (ticaki) navigation flow: hovering a connection highlights it, clicking a page highlights all of its connections
-- (ticaki) navigation flow: a page reached by a long press (`targetPageLongPress`) is now shown as a connection of its own; only the short press was drawn before
-- (ticaki) navigation flow: a navigation target read from a state gets a node of its own, named after that state - the page it leads to is only known while the panel runs
-- (ticaki) navigation flow: an option shows the states and channels each page works with as nodes of their own - one per page item, folded into its channel where the item reads a whole one. They are placed next to their page the first time they are shown, the pages keep their positions
-- (ticaki) navigation flow: the info panel of such a node is titled channel or state info and lists the caption, whether the item shows the value instead of the icon, the role, the item type, the icons for true and false - drawn as icons - and the states used below a channel
-- (ticaki) navigation flow: the page info now starts with the page name and its headline
-- (ticaki) fixed the page configuration of a cardTrash page not opening when the entry carries no waste types yet
-- (ticaki) a panel no longer needs a page named `main` in the configuration script - without one the adapter adds an empty start page, so a panel can be set up in the admin alone (script version 0.21.1)
-- (ticaki) admin: the navigation assignment now marks a navigation target that does not exist on an assigned panel
+- (ticaki) the start page can now be set in the admin: a checkbox marks any admin page as start page, it replaces the one from the configuration script and is marked with `(main)`
+- (ticaki) a panel no longer needs a page named `main` in the configuration script, so it can be set up in the admin alone (script version 0.21.1)
+- (ticaki) navigation flow: nodes are coloured by origin, pages linked with `next` and `prev` share one edge, a long press target and a navigation target read from a state get a connection of their own, and hovering or clicking highlights what belongs together
+- (ticaki) navigation flow: an option shows the states and channels each page works with as nodes of their own, with an info panel listing what a page item makes of them
+- (ticaki) navigation flow: the page info starts with the page name and its headline and links to the page configuration of an admin page
+- (ticaki) admin: the navigation assignment marks a navigation target that does not exist on an assigned panel
 - (ticaki) fixed: replacing a script page from the admin tore the navigation apart and could cut off the access to the service pages
 - (ticaki) fixed: a panel without its own start page could show the start page of another panel
 - (ticaki) fixed: after sending the configuration script the reloaded panel lost the pages of all other panels until the adapter was restarted
 - (ticaki) fixed: a `cardQR`, `cardAlarm` or `cardUnlock` page in the configuration script stopped all following pages from being created
+- (ticaki) fixed: the page configuration of a cardTrash page did not open when the entry carries no waste types yet
 - (ticaki) fixed: the state `mainNavigationPoint` was not translated
 
 ### 1.0.1 (2026-09-01)
