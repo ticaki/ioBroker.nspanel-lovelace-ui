@@ -158,6 +158,7 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
     ### **WORK IN PROGRESS**
 -->
 ### **WORK IN PROGRESS**
+- (ticaki) fix: a coloured panel card of the maintenance and panel info tabs was hard to read - in a dark theme a panel marked with `Check!` got a light beige card while the text stayed white, and in the new light theme its input fields were framed in almost white. Such a card keeps its signal colour and is drawn with dark text and readable frames in every theme now. The icons of the icon picker were unreadable in the `blue` theme for the same reason and follow the theme correctly now
 - (ticaki) fix: passwords no longer reach the log in plain text - the mqtt password of a panel setup and the tasmota admin password of a device url are masked now
 - (ticaki) fix: setting a panel up failed with `the message from the admin is incomplete` when the internal mqtt server had never been switched on. The log also names the missing fields now
 - (ticaki) fix: the timezone dropdown froze the browser and is a searchable field now. The chosen zone also reaches the panel at last - it was never sent, and the field showed a different zone than the one picked

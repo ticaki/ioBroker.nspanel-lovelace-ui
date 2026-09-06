@@ -35,6 +35,7 @@ import {
     emptyPowerSlot,
 } from '../../../src/lib/types/adminShareConfig';
 import { isMainPageEntry } from '../../../src/lib/types/adminShareConfig';
+import { isDarkTheme } from '../themeUtils';
 
 const ICONS_LIST: { name: string; base64: string }[] = Array.isArray(iconsJson) ? iconsJson : [];
 
@@ -202,7 +203,7 @@ export class PagePowerEditor extends ConfigGeneric<ConfigGenericProps & PagePowe
         const label = data.entityHeadline || fallbackLabel;
         const empty = !data.state && !data.entityHeadline && !data.icon;
         const iconSvg = getIconSvgHtml(data.icon);
-        const isDark = this.props.themeName === 'dark';
+        const isDark = isDarkTheme(this.props);
         const isDragOver = this.state.dragOver === slot;
 
         return (
@@ -289,7 +290,7 @@ export class PagePowerEditor extends ConfigGeneric<ConfigGenericProps & PagePowe
     private renderHomeTopPaper(): React.JSX.Element {
         const data = this.props.entry.homeTop ?? {};
         const empty = !data.state;
-        const isDark = this.props.themeName === 'dark';
+        const isDark = isDarkTheme(this.props);
 
         return (
             <Paper
@@ -332,7 +333,7 @@ export class PagePowerEditor extends ConfigGeneric<ConfigGenericProps & PagePowe
         const data = this.props.entry.homeBot ?? {};
         const isInternal = !!data.selInternalCalculation;
         const empty = !data.state && !isInternal;
-        const isDark = this.props.themeName === 'dark';
+        const isDark = isDarkTheme(this.props);
 
         return (
             <Paper
@@ -744,17 +745,7 @@ export class PagePowerEditor extends ConfigGeneric<ConfigGenericProps & PagePowe
     renderItem(_error: boolean, _disabled: boolean): React.JSX.Element {
         const entry = this.props.entry;
         const { editing } = this.state;
-        const isDark = this.props.themeName === 'dark';
-        console.log(
-            'Rendering PagePowerEditor, alive:',
-            this.state.alive,
-            'entry:',
-            entry,
-            'editing:',
-            editing,
-            'isDark:',
-            isDark,
-        );
+        const isDark = isDarkTheme(this.props);
 
         return (
             <Box>

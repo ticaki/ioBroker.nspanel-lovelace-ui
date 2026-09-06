@@ -31,6 +31,7 @@ var import_icon_mapping = require("./lib/const/icon_mapping");
 var definition = __toESM(require("./lib/const/definition"));
 var import_config_manager = require("./lib/classes/config-manager");
 var import_readme = require("./lib/tools/readme");
+var import_redact = require("./lib/tools/redact");
 var import_node_url = require("node:url");
 var fs = __toESM(require("node:fs"));
 var import_Color = require("./lib/const/Color");
@@ -550,7 +551,7 @@ class NspanelLovelaceUi extends utils.Adapter {
   async onMessage(obj) {
     var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N;
     if (typeof obj === "object" && obj.message !== void 0 && obj.command) {
-      this.log.debug(JSON.stringify(obj));
+      this.log.debug((0, import_redact.stringifyForLog)(obj));
       if (obj.command === "tftInstallSendToMQTT") {
         if (obj.message.online === "no") {
           obj.command = "tftInstallSendTo";
@@ -1030,7 +1031,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                   break;
                 }
                 const url = `http://${obj.message.tasmotaIP}/cm?${this.config.useTasmotaAdmin ? `user=admin&password=${this.config.tasmotaAdminPassword}` : ``}&cmnd=Backlog ${cmnd}`;
-                this.log.debug(url);
+                this.log.debug((0, import_redact.redactSecretsInText)(url));
                 await this.fetch(url);
                 if (obj.callback) {
                   this.sendTo(obj.from, obj.command, [], obj.callback);
@@ -1309,7 +1310,7 @@ class NspanelLovelaceUi extends utils.Adapter {
             if (obj.message.tasmotaIP) {
               try {
                 const url = `http://${obj.message.tasmotaIP}/cm?${this.config.useTasmotaAdmin ? `user=admin&password=${this.config.tasmotaAdminPassword}` : ``}&cmnd=Restart 1`;
-                this.log.debug(url);
+                this.log.debug((0, import_redact.redactSecretsInText)(url));
                 await this.fetch(url);
                 if (obj.callback) {
                   this.sendTo(obj.from, obj.command, [], obj.callback);
@@ -1855,12 +1856,22 @@ class NspanelLovelaceUi extends utils.Adapter {
   async nsPanelInitStep1(obj) {
     var _a, _b;
     const msg = obj.message;
-    if (!(msg == null ? void 0 : msg.tasmotaIP) || !(msg.mqttIp || msg.internalServerIp) || msg.mqttServer == null || !msg.mqttPort || !msg.mqttUsername || !msg.mqttPassword || !msg.tasmotaTopic) {
-      this.log.warn("nsPanelInit: the message from the admin is incomplete!");
+    const useInternalServer = !((msg == null ? void 0 : msg.mqttServer) == null || msg.mqttServer === false || msg.mqttServer === "false");
+    const missing = [];
+    for (const field of ["tasmotaIP", "tasmotaName", "tasmotaTopic", "mqttPort", "mqttUsername", "mqttPassword"]) {
+      if (!(msg == null ? void 0 : msg[field])) {
+        missing.push(field);
+      }
+    }
+    if (useInternalServer ? !(msg == null ? void 0 : msg.internalServerIp) : !(msg == null ? void 0 : msg.mqttIp)) {
+      missing.push(useInternalServer ? "internalServerIp" : "mqttIp");
+    }
+    if (missing.length > 0) {
+      this.log.warn(`nsPanelInit: the message from the admin is missing: ${missing.join(", ")}!`);
       this.answerMessage(obj, { error: "sendToAnyError" });
       return;
     }
-    msg.mqttServer = !(msg.mqttServer == "false" || !msg.mqttServer);
+    msg.mqttServer = useInternalServer;
     const topic = msg.tasmotaTopic;
     let panel = void 0;
     try {
@@ -1888,9 +1899,7 @@ class NspanelLovelaceUi extends utils.Adapter {
         void panel.setStatus("setup");
       }
       let u = new import_node_url.URL(this.getTasmotaCommandUrl(msg.tasmotaIP, `status 5`));
-      this.log.debug(
-        `Requesting tasmota status 5 with url: ${u.href.replace(/password=[^&]*/g, "password=***")}`
-      );
+      this.log.debug(`Requesting tasmota status 5 with url: ${(0, import_redact.redactSecretsInText)(u.href)}`);
       const r = await this.fetch(u.href);
       this.log.debug(`Response from tasmota status 5: ${JSON.stringify(r)}`);
       if (!(0, import_function_and_const.isTasmotaStatusNet)(r) || !r || !r.StatusNET || !r.StatusNET.Mac) {
@@ -2029,7 +2038,7 @@ class NspanelLovelaceUi extends utils.Adapter {
           const version = msg.useBetaTFT ? versionsJson[`berry-beta`].split("_")[0] : versionsJson.berry.split("_")[0];
           let url = this.getBerryInstallUrl(msg.tasmotaIP, version);
           this.log.info(`Installing berry on tasmota with IP ${msg.tasmotaIP}, name ${msg.tasmotaName}.`);
-          this.log.debug(`URL: ${url.replace(/password=[^&]*/g, "password=***")}`);
+          this.log.debug(`URL: ${(0, import_redact.redactSecretsInText)(url)}`);
           await this.fetch(url);
           try {
             this.mqttClient && await this.mqttClient.waitTasmotaUrlFetch(topic, 5e3);
@@ -2127,7 +2136,7 @@ class NspanelLovelaceUi extends utils.Adapter {
    */
   logNsPanelInitError(step, tasmotaIP, e) {
     var _a;
-    const stack = e instanceof Error ? (_a = e.stack) != null ? _a : e.message : String(e);
+    const stack = (0, import_redact.redactSecretsInText)(e instanceof Error ? (_a = e.stack) != null ? _a : e.message : String(e));
     this.log.error(
       `Error in nsPanelInit step ${step} while sending config to tasmota (${tasmotaIP != null ? tasmotaIP : "unknown IP"}): ${stack}`
     );

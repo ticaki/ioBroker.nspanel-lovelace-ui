@@ -3,6 +3,7 @@ import icons from './icons.json';
 import { Autocomplete, TextField, Box, Typography, Grid } from '@mui/material';
 import { ConfigGeneric, type ConfigGenericProps, type ConfigGenericState } from '@iobroker/json-config';
 import type { IobTheme } from '@iobroker/gui-components';
+import { isDarkTheme } from './themeUtils';
 
 interface IconSelectState extends ConfigGenericState {
     test: string;
@@ -51,7 +52,7 @@ class IconSelect extends ConfigGeneric<IconSelectProps, IconSelectState> {
 
     renderItem(_error: string, _disabled: boolean, _defaultValue?: unknown): React.JSX.Element {
         const icons = this.state.icons;
-        const themeName = this.props.themeName || undefined;
+        const iconColor = isDarkTheme(this.props) ? '#ffffff' : '#000000';
         const filteredIcons = this.state.filteredIcons;
 
         return (
@@ -102,7 +103,7 @@ class IconSelect extends ConfigGeneric<IconSelectProps, IconSelectState> {
                                         width: 24,
                                         height: 24,
                                         marginRight: 8,
-                                        color: themeName ? (themeName === 'dark' ? '#ffffff' : '#000000') : '#09f23fc1',
+                                        color: iconColor,
                                     }}
                                     dangerouslySetInnerHTML={{
                                         __html: atob(
@@ -132,11 +133,7 @@ class IconSelect extends ConfigGeneric<IconSelectProps, IconSelectState> {
                                                         width: 24,
                                                         height: 24,
                                                         marginRight: 8,
-                                                        color: themeName
-                                                            ? themeName === 'dark'
-                                                                ? '#ffffff'
-                                                                : '#000000'
-                                                            : '#09f23fc1',
+                                                        color: iconColor,
                                                     }}
                                                     dangerouslySetInnerHTML={{
                                                         __html: atob(
