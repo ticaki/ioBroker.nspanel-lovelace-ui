@@ -536,6 +536,7 @@
     "sendToStepTimeout": "适配器在 30 秒内没有响应，设置仍在后台继续 — 请查看适配器日志",
     "short": "短的",
     "show_states": "显示状态点",
+    "show_system_pages": "显示系统页面",
     "shutter": "快门",
     "shutterClosedIsZero": "0的位置显示为完全闭合（最大扩展）。",
     "speakerList": "扬声器清单",

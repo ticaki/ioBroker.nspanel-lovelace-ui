@@ -536,6 +536,7 @@
     "sendToStepTimeout": "L'adattatore non ha risposto entro 30 secondi, la configurazione prosegue in background - vedere il log dell'adattatore",
     "short": "corto",
     "show_states": "Mostra gli stati",
+    "show_system_pages": "Mostra le pagine di sistema",
     "shutter": "Otturatore",
     "shutterClosedIsZero": "La posizione di 0 viene visualizzata come completamente chiusa (al massimo esteso).",
     "speakerList": "Elenco degli altoparlanti",

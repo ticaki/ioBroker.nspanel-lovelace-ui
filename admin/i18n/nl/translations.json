@@ -536,6 +536,7 @@
     "sendToStepTimeout": "De adapter antwoordde niet binnen 30 seconden, de installatie loopt op de achtergrond door - zie het adapterlogboek",
     "short": "kort",
     "show_states": "States tonen",
+    "show_system_pages": "Systeempagina's tonen",
     "shutter": "Luik",
     "shutterClosedIsZero": "De positie van 0 wordt weergegeven als volledig gesloten (maximaal verlengd).",
     "speakerList": "Speakerslijst",

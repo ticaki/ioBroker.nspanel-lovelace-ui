@@ -536,6 +536,7 @@
     "sendToStepTimeout": "El adaptador no respondió en 30 segundos, la configuración continúa en segundo plano: consulte el registro del adaptador",
     "short": "corto",
     "show_states": "Mostrar estados",
+    "show_system_pages": "Mostrar páginas del sistema",
     "shutter": "Obturador",
     "shutterClosedIsZero": "La posición de 0 se muestra como completamente cerrada (se extiende al máximo).",
     "speakerList": "Lista de altavoces",

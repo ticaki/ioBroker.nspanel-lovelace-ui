@@ -536,6 +536,7 @@
     "sendToStepTimeout": "Adapter nie odpowiedział w ciągu 30 sekund, konfiguracja działa dalej w tle - zobacz dziennik adaptera",
     "short": "krótki",
     "show_states": "Pokaż stany",
+    "show_system_pages": "Pokaż strony systemowe",
     "shutter": "Migawka",
     "shutterClosedIsZero": "Pozycja 0 jest wyświetlana jako w pełni zamknięta (maksymalnie rozszerzona).",
     "speakerList": "Lista głośników",

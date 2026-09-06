@@ -15,6 +15,43 @@ import {
 
 const ADAPTER_NAME = 'nspanel-lovelace-ui';
 
+/** Key under which the last selected panel of the "Navigation Flow" tab is remembered. */
+const SELECTED_PANEL_STORAGE_KEY = `${ADAPTER_NAME}.navigationFlow.selectedPanel`;
+
+/**
+ * Reads the last selected panel name of the "Navigation Flow" tab from `window.localStorage`.
+ *
+ * Wrapped in try/catch: `localStorage` can throw (e.g. in the browser's private mode), which must
+ * not break the admin page.
+ *
+ * @returns The stored panel name, or `undefined` if none is stored or storage is unavailable
+ */
+function readStoredSelectedPanel(): string | undefined {
+    try {
+        return window.localStorage.getItem(SELECTED_PANEL_STORAGE_KEY) || undefined;
+    } catch {
+        return undefined;
+    }
+}
+
+/**
+ * Persists the selected panel name of the "Navigation Flow" tab to `window.localStorage`, so the
+ * choice survives reload, tab close and browser restart.
+ *
+ * Wrapped in try/catch: errors (e.g. private mode) are swallowed - remembering the selection is a
+ * convenience and must not break the admin page.
+ *
+ * @param panelName Name of the panel currently selected
+ * @returns Nothing
+ */
+function storeSelectedPanel(panelName: string): void {
+    try {
+        window.localStorage.setItem(SELECTED_PANEL_STORAGE_KEY, panelName);
+    } catch {
+        // Private mode or blocked storage - the selection then just isn't remembered
+    }
+}
+
 /** Icons nach Namen - die Liste steckt ohnehin im Bundle, die Zuordnung wird einmalig aufgebaut */
 let iconsByName: Map<string, string> | undefined;
 
@@ -1248,6 +1285,35 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
             this.aliveTimeout = setTimeout(this.checkAlive, 5000);
         }
     }
+
+    /**
+     * Derives the `navigationMap`/`nodes`/`edges` state slice for a panel list entry.
+     *
+     * Shared by {@link fetchNavigation} and {@link handlePanelChange} so both compute the flow
+     * from a `PanelListEntry` the same way.
+     *
+     * @param entry Panel list entry to derive the flow from, or `undefined` if none was found
+     * @returns The `navigationMap`, `nodes` and `edges` to apply to the state
+     */
+    private deriveFlowState(entry: PanelListEntry | undefined): {
+        navigationMap: NavigationMap | null;
+        nodes: FlowNode[];
+        edges: FlowEdge[];
+    } {
+        let nodes: FlowNode[] = [];
+        let edges: FlowEdge[] = [];
+        if (entry && entry.navigationMap) {
+            const flow = mapNavigationMapToFlow(entry.navigationMap);
+            nodes = flow.nodes;
+            edges = flow.edges;
+        }
+        return {
+            navigationMap: entry ? entry.navigationMap : null,
+            nodes,
+            edges,
+        };
+    }
+
     fetchNavigation(): void {
         this.setState({ loading: true, noData: false });
         const instance = this.props.oContext.instance ?? '0';
@@ -1272,29 +1338,27 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
                 clearTimeout(timeout);
                 this.setState({ loading: false });
                 if (res && Array.isArray(res.result)) {
-                    const firstPanel = res.result[0]?.panelName || '';
-                    const firstMap = res.result[0]?.navigationMap || null;
-                    // Debug entfernt
-                    let nodes: FlowNode[] = [];
-                    let edges: FlowEdge[] = [];
-                    if (firstMap) {
-                        const flow = mapNavigationMapToFlow(firstMap);
-                        nodes = flow.nodes;
-                        edges = flow.edges;
-                    }
                     // PanelList mit friendlyName übernehmen
                     const panelList: PanelListEntry[] = res.result.map(p => ({
                         panelName: p.panelName,
                         friendlyName: p.friendlyName || p.panelName,
                         navigationMap: p.navigationMap,
                     }));
+                    // Zuletzt gewähltes Panel bevorzugen, falls es noch existiert - sonst wie bisher das erste
+                    const storedPanelName = readStoredSelectedPanel();
+                    const storedEntry = storedPanelName
+                        ? panelList.find(p => p.panelName === storedPanelName)
+                        : undefined;
+                    const selectedEntry = storedEntry || panelList[0];
+                    const selectedPanel = selectedEntry?.panelName || '';
+                    const flowState = this.deriveFlowState(selectedEntry);
                     // Debug entfernt
                     this.setState({
                         panelList,
-                        selectedPanel: firstPanel,
-                        navigationMap: firstMap,
-                        nodes,
-                        edges,
+                        selectedPanel,
+                        navigationMap: flowState.navigationMap,
+                        nodes: flowState.nodes,
+                        edges: flowState.edges,
                         noData: false,
                         dirty: false,
                     });
@@ -1319,18 +1383,13 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
         const panelName = event.target.value;
         const found = this.state.panelList.find(p => p.panelName === panelName);
         // console.log('[NavigationView] Panel gewechselt:', panelName, found);
-        let nodes: FlowNode[] = [];
-        let edges: FlowEdge[] = [];
-        if (found && found.navigationMap) {
-            const flow = mapNavigationMapToFlow(found.navigationMap);
-            nodes = flow.nodes;
-            edges = flow.edges;
-        }
+        storeSelectedPanel(panelName);
+        const flowState = this.deriveFlowState(found);
         this.setState({
             selectedPanel: panelName,
-            navigationMap: found ? found.navigationMap : null,
-            nodes,
-            edges,
+            navigationMap: flowState.navigationMap,
+            nodes: flowState.nodes,
+            edges: flowState.edges,
             dirty: false,
         });
     }

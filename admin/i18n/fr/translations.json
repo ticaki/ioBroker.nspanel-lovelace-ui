@@ -536,6 +536,7 @@
     "sendToStepTimeout": "L'adaptateur n'a pas répondu en 30 secondes, la configuration se poursuit en arrière-plan - voir le journal de l'adaptateur",
     "short": "court",
     "show_states": "Afficher les états",
+    "show_system_pages": "Afficher les pages système",
     "shutter": "Obturateur",
     "shutterClosedIsZero": "La position de 0 est affichée comme entièrement fermée (étendues au maximum).",
     "speakerList": "Liste des conférenciers",
