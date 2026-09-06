@@ -156,6 +156,10 @@ export class ConfigManager extends BaseClass {
 
         // start configuration
 
+        // Pages this panel receives from the global script configuration. Reported to the panel so
+        // the admin can tell them apart from the pages of the panel script itself.
+        const globalPageIds = new Set<string>();
+
         {
             const navigationAdjustRun = (
                 oldUniqueName: string | undefined,
@@ -332,6 +336,9 @@ export class ConfigManager extends BaseClass {
                                 if (page.heading) {
                                     config.pages[i].heading = page.heading;
                                 }
+                                if (config.pages[i].uniqueName) {
+                                    globalPageIds.add(config.pages[i].uniqueName);
+                                }
                             } else {
                                 config.pages.splice(i, 1);
                                 const msg = `Global page with uniqueName ${page.globalLink} not found!`;
@@ -382,6 +389,9 @@ export class ConfigManager extends BaseClass {
                                 if (page.heading) {
                                     config.subPages[i].heading = page.heading;
                                 }
+                                if (config.subPages[i].uniqueName) {
+                                    globalPageIds.add(config.subPages[i].uniqueName);
+                                }
                             } else {
                                 config.subPages.splice(i, 1);
                                 const msg = `Global page with uniqueName ${page.globalLink} not found!`;
@@ -393,6 +403,11 @@ export class ConfigManager extends BaseClass {
 
                     for (const index of Array.from(removeGlobalPageIndexs).sort((a, b) => b - a)) {
                         globalConfig.subPages.splice(index, 1);
+                    }
+                    for (const page of globalConfig.subPages || []) {
+                        if (page && page.uniqueName) {
+                            globalPageIds.add(page.uniqueName);
+                        }
                     }
                     config.subPages = config.subPages.concat(globalConfig.subPages || []);
 
@@ -533,6 +548,11 @@ export class ConfigManager extends BaseClass {
         }
 
         ({ panelConfig, messages } = await this.getPageConfig(config, panelConfig, messages));
+
+        // Only report ids that really ended up as a page of this panel.
+        panelConfig.globalPageIds = panelConfig.pages
+            .filter(page => page && page.uniqueID && globalPageIds.has(page.uniqueID))
+            .map(page => page.uniqueID);
 
         // merge both navigations. Remove duplicates from panelConfig.navigation
         const nav1 = config.navigation as NavigationItemConfig[];

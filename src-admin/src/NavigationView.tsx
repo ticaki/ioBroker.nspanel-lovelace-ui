@@ -77,6 +77,7 @@ const EDGE_COLOR_VAR: Record<EdgeKind, string> = {
  * Theme lesbar bleibt. Seiten aus dem Konfigurationsskript behalten das Aussehen des Themes.
  */
 const NODE_COLOR_HEX: Record<Exclude<NodeStyle, 'script'>, string> = {
+    global: '#8e24aa', // violett - Seite aus der globalen Skript-Konfiguration
     admin: '#43a047', // grün
     system: '#f9a825', // gelb
     stateRef: '#546e7a', // blaugrau - kein Seiten-, sondern ein Datenpunkt-Knoten
@@ -91,17 +92,19 @@ type NodeStyle = PageOrigin | 'stateRef';
 /** CSS-Variablen je Knotenart - vom ThemeVarsProvider passend zum Theme gefüllt */
 const NODE_STYLE_VAR: Record<NodeStyle, { bg: string; border: string }> = {
     script: { bg: '--node-bg', border: '--node-border' },
+    global: { bg: '--node-global-bg', border: '--node-global-border' },
     admin: { bg: '--node-admin-bg', border: '--node-admin-border' },
     system: { bg: '--node-system-bg', border: '--node-system-border' },
     stateRef: { bg: '--node-state-ref-bg', border: '--node-state-ref-border' },
 };
 
 /** Alle Knotenarten in der Reihenfolge der Legende */
-const NODE_STYLES: NodeStyle[] = ['script', 'admin', 'system', 'stateRef'];
+const NODE_STYLES: NodeStyle[] = ['script', 'global', 'admin', 'system', 'stateRef'];
 
 /** Übersetzungsschlüssel der Knotenarten für die Legende */
 const NODE_STYLE_LABEL_KEY: Record<NodeStyle, string> = {
     script: 'nav_legend_origin_script',
+    global: 'nav_legend_origin_global',
     admin: 'nav_legend_origin_admin',
     system: 'nav_legend_origin_system',
     stateRef: 'nav_legend_state_ref',

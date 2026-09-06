@@ -376,6 +376,7 @@
     "nav_legend_home": "home（主页）",
     "nav_legend_next": "next（下一页）",
     "nav_legend_origin_admin": "来自管理界面配置的页面",
+    "nav_legend_origin_global": "来自全局脚本配置的页面",
     "nav_legend_origin_script": "来自配置脚本的页面",
     "nav_legend_origin_system": "系统页面 / 默认主页",
     "nav_legend_parent": "parent（上级页面）",

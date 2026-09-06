@@ -35,6 +35,30 @@ export class PageOriginTracker {
     }
 
     /**
+     * Assigns `origin` to the pages named in `ids`, skipping everything already classified.
+     *
+     * Used for origins that are not tied to a phase of `Panel.preInit()` but reported by the
+     * configuration converter, like the pages a panel receives from the global script config.
+     *
+     * @param pages Current page list of the panel configuration
+     * @param ids Page ids that belong to `origin`
+     * @param origin Origin to record for those pages
+     */
+    classifyIds(pages: readonly (PageBase | undefined | null)[], ids: readonly string[], origin: PageOrigin): void {
+        if (ids.length === 0) {
+            return;
+        }
+        const wanted = new Set(ids);
+        for (const page of pages) {
+            if (!page || this.classified.has(page) || !page.uniqueID || !wanted.has(page.uniqueID)) {
+                continue;
+            }
+            this.classified.add(page);
+            this.origins.set(page.uniqueID, origin);
+        }
+    }
+
+    /**
      * Origin of a page.
      *
      * @param pageId Page id as used in the navigation

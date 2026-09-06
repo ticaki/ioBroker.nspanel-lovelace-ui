@@ -77,11 +77,12 @@ export type NavigationPositionsMap = { name: string; position: { x: number; y: n
 /**
  * Where a page of a panel comes from:
  *
- * - `script` - delivered by the configuration script
+ * - `script` - delivered by the configuration script of this panel
+ * - `global` - delivered by the global script configuration, which every panel receives
  * - `admin` - defined in the admin page list (also when it replaces a page of the same name)
  * - `system` - service page of the adapter or the generated default start page
  */
-export type PageOrigin = 'script' | 'admin' | 'system';
+export type PageOrigin = 'script' | 'global' | 'admin' | 'system';
 
 /**
  * Node id for a state a navigation target is read from.

@@ -376,6 +376,7 @@
     "nav_legend_home": "home (startpagina)",
     "nav_legend_next": "next (volgende pagina)",
     "nav_legend_origin_admin": "pagina uit de admin-configuratie",
+    "nav_legend_origin_global": "pagina uit de globale scriptconfiguratie",
     "nav_legend_origin_script": "pagina uit het configuratiescript",
     "nav_legend_origin_system": "servicepagina / standaard startpagina",
     "nav_legend_parent": "parent (bovenliggende pagina)",

@@ -376,6 +376,7 @@
     "nav_legend_home": "home (главная страница)",
     "nav_legend_next": "next (следующая страница)",
     "nav_legend_origin_admin": "страница из конфигурации админки",
+    "nav_legend_origin_global": "страница из глобальной конфигурации скрипта",
     "nav_legend_origin_script": "страница из скрипта конфигурации",
     "nav_legend_origin_system": "служебная страница / стандартная главная страница",
     "nav_legend_parent": "parent (родительская страница)",

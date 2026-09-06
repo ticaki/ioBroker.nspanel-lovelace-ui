@@ -376,6 +376,7 @@
     "nav_legend_home": "home (головна сторінка)",
     "nav_legend_next": "next (наступна сторінка)",
     "nav_legend_origin_admin": "сторінка з конфігурації адмінки",
+    "nav_legend_origin_global": "сторінка з глобальної конфігурації скрипта",
     "nav_legend_origin_script": "сторінка зі скрипта конфігурації",
     "nav_legend_origin_system": "службова сторінка / стандартна головна сторінка",
     "nav_legend_parent": "parent (батьківська сторінка)",

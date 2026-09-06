@@ -377,6 +377,7 @@
     "nav_legend_home": "home (home page)",
     "nav_legend_next": "next (next page)",
     "nav_legend_origin_admin": "page from the admin configuration",
+    "nav_legend_origin_global": "page from the global script configuration",
     "nav_legend_origin_script": "page from the configuration script",
     "nav_legend_origin_system": "service page / default start page",
     "nav_legend_parent": "parent (parent page)",
