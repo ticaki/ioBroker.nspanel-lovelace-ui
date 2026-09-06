@@ -18,6 +18,10 @@ export interface PageStateNode {
     iconsTrue: string[];
     /** Icons shown while the value is false. */
     iconsFalse: string[];
+    /** States the icons shown while the value is true are read from. */
+    iconStatesTrue: string[];
+    /** States the icons shown while the value is false are read from. */
+    iconStatesFalse: string[];
 }
 
 /** Shortest path that still names something specific: adapter, instance and one segment. */
@@ -57,6 +61,23 @@ function constOf(field: unknown): string | undefined {
 }
 
 /**
+ * State a configuration field reads its value from, `undefined` when it carries a constant.
+ *
+ * The counterpart of {@link constOf}: what is not known upfront is known at runtime, and where it
+ * comes from is worth showing - the panel displays the value of that state.
+ *
+ * @param field Field of a page item configuration.
+ * @returns The state id, if the field is read from one.
+ */
+function stateOf(field: unknown): string | undefined {
+    if (!field || typeof field !== 'object') {
+        return undefined;
+    }
+    const item = field as { type?: unknown; dp?: unknown };
+    return item.type !== 'const' && typeof item.dp === 'string' && item.dp ? item.dp : undefined;
+}
+
+/**
  * Longest path all ids share, cut at a segment boundary.
  *
  * @param ids State ids, at least one.
@@ -84,7 +105,18 @@ function commonChannel(ids: string[]): string {
  * @returns The node.
  */
 export function emptyStateNode(id: string, isChannel: boolean): PageStateNode {
-    return { id, isChannel, roles: [], types: [], states: [], headlines: [], iconsTrue: [], iconsFalse: [] };
+    return {
+        id,
+        isChannel,
+        roles: [],
+        types: [],
+        states: [],
+        headlines: [],
+        iconsTrue: [],
+        iconsFalse: [],
+        iconStatesTrue: [],
+        iconStatesFalse: [],
+    };
 }
 
 /** A page item as far as this module cares: its data plus how the panel uses it. */
@@ -127,8 +159,11 @@ export function collectPageStates(sources: readonly (PageStateSource | undefined
         addTo(node.roles, source.role);
         addTo(node.types, source.type);
         addTo(node.headlines, constOf(source.data?.headline));
+        // A constant icon is known by name; one read from a state is known by that state
         addTo(node.iconsTrue, constOf(source.data?.icon?.true?.value));
         addTo(node.iconsFalse, constOf(source.data?.icon?.false?.value));
+        addTo(node.iconStatesTrue, stateOf(source.data?.icon?.true?.value));
+        addTo(node.iconStatesFalse, stateOf(source.data?.icon?.false?.value));
         for (const state of used) {
             addTo(node.states, state);
         }
@@ -176,27 +211,30 @@ export function collectPageStates(sources: readonly (PageStateSource | undefined
  * @returns The merged information.
  */
 export function mergeStateInfo(known: StateNodeInfo | undefined, state: PageStateNode): StateNodeInfo {
-    const merged: StateNodeInfo = {
-        roles: [...(known?.roles ?? [])],
-        types: [...(known?.types ?? [])],
-        states: [...(known?.states ?? [])],
-        headlines: [...(known?.headlines ?? [])],
-        iconsTrue: [...(known?.iconsTrue ?? [])],
-        iconsFalse: [...(known?.iconsFalse ?? [])],
-    };
-    for (const [target, values] of [
-        [merged.roles, state.roles],
-        [merged.types, state.types],
-        [merged.states, state.states],
-        [merged.headlines, state.headlines],
-        [merged.iconsTrue, state.iconsTrue],
-        [merged.iconsFalse, state.iconsFalse],
-    ] as [string[], string[]][]) {
-        for (const value of values) {
+    /**
+     * What was known plus what the item adds, each value once.
+     *
+     * @param before Values collected so far - missing in data written by an older version.
+     * @param added Values of the item being added.
+     * @returns The union, in the order the values were found.
+     */
+    const union = (before: string[] | undefined, added: string[]): string[] => {
+        const target = [...(before ?? [])];
+        for (const value of added) {
             if (value && !target.includes(value)) {
                 target.push(value);
             }
         }
-    }
-    return merged;
+        return target;
+    };
+    return {
+        roles: union(known?.roles, state.roles),
+        types: union(known?.types, state.types),
+        states: union(known?.states, state.states),
+        headlines: union(known?.headlines, state.headlines),
+        iconsTrue: union(known?.iconsTrue, state.iconsTrue),
+        iconsFalse: union(known?.iconsFalse, state.iconsFalse),
+        iconStatesTrue: union(known?.iconStatesTrue, state.iconStatesTrue),
+        iconStatesFalse: union(known?.iconStatesFalse, state.iconStatesFalse),
+    };
 }

@@ -948,6 +948,8 @@ interface NavigationViewInternalState extends NavigationViewState {
     infoPanelOpen?: boolean;
     infoData?: Record<string, any> | null;
     infoNodeId?: string | undefined;
+    /** Current values of the states the icons of the info panel are read from, by state id. */
+    infoIconValues?: Record<string, string>;
     confirmAutoLayoutOpen?: boolean;
     isTouchDevice?: boolean;
     showSystemPages: boolean;
@@ -956,6 +958,9 @@ interface NavigationViewInternalState extends NavigationViewState {
 
 class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInternalState> {
     private autosaveInterval?: NodeJS.Timeout;
+
+    /** Node the icons of the info panel are being read for, or were read for - each node once. */
+    private iconValuesLoadedFor?: string;
 
     // Schnelles Speichern beim Tabwechsel/Schließen über Beacon (kein await möglich)
     private saveNavigationBeacon = (): void => {
@@ -1138,11 +1143,108 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
     }
 
     /**
+     * Entry a node of the flow stands for.
+     *
+     * @param nodeId Id of the node, `undefined` when none is selected.
+     * @returns The entry, or `undefined` when the node is unknown.
+     */
+    private entryOfNode(nodeId: string | undefined): NavigationMapEntry | undefined {
+        return nodeId ? this.state.nodes.find(n => n.id === nodeId)?.data.entry : undefined;
+    }
+
+    /**
+     * States the icons of the info panel are read from, by field of the panel.
+     *
+     * Only fields whose icon comes from a state are listed - a constant icon is known by name and
+     * needs no explanation.
+     *
+     * @returns The state ids per field, or `undefined` when no icon is read from a state.
+     */
+    private getInfoIconStates(): Record<string, string[]> | undefined {
+        const entry = this.entryOfNode(this.state.infoNodeId);
+        const info = entry?.nodeType === 'stateRef' ? entry.stateInfo : undefined;
+        const fields: [string, string[] | undefined][] = [
+            ['icon_true', info?.iconStatesTrue],
+            ['icon_false', info?.iconStatesFalse],
+        ];
+        const result: Record<string, string[]> = {};
+        for (const [field, ids] of fields) {
+            if (ids?.length) {
+                result[field] = ids;
+            }
+        }
+        return Object.keys(result).length ? result : undefined;
+    }
+
+    /**
+     * Hint next to an icon row naming where that icon comes from, by field of the panel.
+     *
+     * The row shows what the panel shows: the current value of the state. The hint says which state
+     * that is, by its last segment - the full id is listed among the used states anyway.
+     *
+     * @returns The hint per field, or `undefined` when no icon is read from a state.
+     */
+    private getInfoIconHints(): Record<string, string> | undefined {
+        const states = this.getInfoIconStates();
+        if (!states) {
+            return undefined;
+        }
+        const hints: Record<string, string> = {};
+        for (const [field, ids] of Object.entries(states)) {
+            const names = ids.map(id => id.split('.').pop() || id);
+            hints[field] = I18n.t('icon_from_state').replace('%s', names.join(', '));
+        }
+        return hints;
+    }
+
+    /**
+     * Reads the icons the panel currently displays into the info panel.
+     *
+     * A constant icon is known upfront, one read from a state is whatever that state holds right
+     * now. Those values are fetched after the panel opened, so a click never waits for them, and
+     * are dropped when another node was selected in the meantime. Each node is read once - dragging
+     * a node keeps firing change events and must not fire a request with each of them.
+     *
+     * @param nodeId Node the icons are read for.
+     * @returns Nothing; the info panel is updated once the values are known.
+     */
+    private async loadInfoIconValues(nodeId: string): Promise<void> {
+        if (this.iconValuesLoadedFor === nodeId) {
+            return;
+        }
+        this.iconValuesLoadedFor = nodeId;
+        const entry = this.entryOfNode(nodeId);
+        const info = entry?.nodeType === 'stateRef' ? entry.stateInfo : undefined;
+        const ids = [...(info?.iconStatesTrue ?? []), ...(info?.iconStatesFalse ?? [])];
+        const socket = this.props.oContext.socket;
+        if (!ids.length || !socket || typeof socket.getState !== 'function') {
+            return;
+        }
+        const values = Object.fromEntries(
+            await Promise.all(
+                ids.map(async (id): Promise<[string, string]> => {
+                    try {
+                        const value = (await socket.getState(id))?.val;
+                        return [id, value === null || value === undefined ? '' : String(value)];
+                    } catch {
+                        // Den Datenpunkt gibt es nicht (mehr) - dann zeigt das Panel auch kein Icon
+                        return [id, ''];
+                    }
+                }),
+            ),
+        );
+        // Zwischenzeitlich wurde ein anderer Knoten angeklickt - das Ergebnis ist überholt
+        if (this.state.infoNodeId !== nodeId) {
+            return;
+        }
+        this.setState({ infoData: this.buildInfoData(entry, values), infoIconValues: values });
+    }
+
+    /**
      * Title of the info panel - a state node is not a page, so it must not say so.
      */
     private getInfoTitle(): string {
-        const { infoNodeId, nodes } = this.state;
-        const entry = infoNodeId ? nodes.find(n => n.id === infoNodeId)?.data.entry : undefined;
+        const entry = this.entryOfNode(this.state.infoNodeId);
         if (entry?.nodeType !== 'stateRef') {
             return I18n.t('Page Info');
         }
@@ -1156,8 +1258,13 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
      * standing for a state carries only that state - the page it leads to is not known here.
      *
      * @param entry Entry of the clicked node.
+     * @param iconValues Current values of the states the icons are read from, by state id.
+     * `undefined` while they are still being read.
      */
-    private buildInfoData(entry: NavigationMapEntry | undefined): Record<string, any> | null {
+    private buildInfoData(
+        entry: NavigationMapEntry | undefined,
+        iconValues?: Record<string, string>,
+    ): Record<string, any> | null {
         if (!entry) {
             return null;
         }
@@ -1166,6 +1273,38 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
             const info = entry.stateInfo;
             const list = (values: string[] | undefined): string | undefined =>
                 values?.length ? values.join(', ') : undefined;
+            /**
+             * The icons of one field: the constants of the configuration, plus what the states the
+             * other icons are read from hold right now - that is what the panel displays.
+             *
+             * A state holding nothing means the panel shows no icon; saying so beats an empty line,
+             * which would look like a fault. Without an icon at all there is nothing to explain and
+             * the row stays away.
+             *
+             * @param constIcons Icons set as a constant.
+             * @param iconStates States the remaining icons are read from.
+             * @returns The text of the row, or `undefined` when there is no row.
+             */
+            const iconRow = (
+                constIcons: string[] | undefined,
+                iconStates: string[] | undefined,
+            ): string | undefined => {
+                const names = [...(constIcons ?? [])];
+                for (const stateId of iconStates ?? []) {
+                    const value = iconValues?.[stateId];
+                    if (value) {
+                        names.push(value);
+                    }
+                }
+                if (names.length) {
+                    return names.join(', ');
+                }
+                if (!iconStates?.length) {
+                    return undefined;
+                }
+                // Solange die Werte gelesen werden, bleibt die Zeile leer statt "leer" zu behaupten
+                return iconValues ? I18n.t('icon_value_empty') : '';
+            };
             // Nur gesetzte Angaben zeigen - eine leere Zeile sagt nichts aus
             // Der Schalter 'Wert statt Icon' schlägt sich in der Rolle des Elements nieder
             const displayKey = info?.roles.includes('textNotIcon')
@@ -1179,8 +1318,8 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
                 value_display: displayKey ? I18n.t(displayKey) : undefined,
                 role: list(info?.roles),
                 itemType: list(info?.types),
-                icon_true: list(info?.iconsTrue),
-                icon_false: list(info?.iconsFalse),
+                icon_true: iconRow(info?.iconsTrue, info?.iconStatesTrue),
+                icon_false: iconRow(info?.iconsFalse, info?.iconStatesFalse),
                 used_states: list(info?.states),
             };
             return Object.fromEntries(Object.entries(fields).filter(([, value]) => value !== undefined));
@@ -1195,15 +1334,25 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
     }
 
     onNodeClick(_event: any, node: any): void {
+        const nodeId: unknown = node?.id;
+        // Ein Klick liest die Werte neu - sie koennen sich seit dem letzten Blick geaendert haben.
+        // Die Sperre bleibt dem Ziehen vorbehalten, das dieselbe Auswahl dutzendfach meldet.
+        this.iconValuesLoadedFor = undefined;
         this.setState({
             infoPanelOpen: true,
             infoData: this.buildInfoData(node?.data?.entry),
             infoNodeId: node.id,
+            infoIconValues: undefined,
         });
+        // Icons aus Datenpunkten werden nachgereicht - der Klick soll nicht darauf warten
+        if (typeof nodeId === 'string') {
+            void this.loadInfoIconValues(nodeId);
+        }
     }
 
     onPaneClick(): void {
-        this.setState({ infoPanelOpen: false, infoData: null, infoNodeId: undefined });
+        this.iconValuesLoadedFor = undefined;
+        this.setState({ infoPanelOpen: false, infoData: null, infoNodeId: undefined, infoIconValues: undefined });
     }
 
     /**
@@ -1402,14 +1551,20 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
             this.setState(state => {
                 const newNodes = applyNodeChanges(changes, state.nodes);
                 const moved = newNodes.find(n => n.id === movedId);
+                // Die gelesenen Icons gehören zum bisherigen Knoten, nicht zu einem anderen
+                const iconValues = movedId === state.infoNodeId ? state.infoIconValues : undefined;
                 return {
                     nodes: newNodes,
                     dirty: true,
                     infoPanelOpen: true,
-                    infoData: this.buildInfoData(moved?.data?.entry),
+                    infoData: this.buildInfoData(moved?.data?.entry, iconValues),
                     infoNodeId: movedId,
+                    infoIconValues: iconValues,
                 };
             });
+            if (typeof movedId === 'string') {
+                void this.loadInfoIconValues(movedId);
+            }
         } else {
             this.setState(state => ({
                 nodes: applyNodeChanges(changes, state.nodes),
@@ -1862,6 +2017,7 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
                                 title={this.getInfoTitle()}
                                 data={this.state.infoData}
                                 iconSvgs={this.getInfoIcons()}
+                                hints={this.getInfoIconHints()}
                                 onOpenPageConfig={
                                     this.getInfoAdminPageName() ? this.openPageConfigForInfoNode : undefined
                                 }

@@ -122,6 +122,10 @@ export interface StateNodeInfo {
     iconsTrue: string[];
     /** Icons shown while the value is false. */
     iconsFalse: string[];
+    /** States the icons shown while the value is true are read from - missing in older data. */
+    iconStatesTrue?: string[];
+    /** States the icons shown while the value is false are read from - missing in older data. */
+    iconStatesFalse?: string[];
 }
 
 export interface NavigationMapEntry {
