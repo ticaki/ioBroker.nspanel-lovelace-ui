@@ -21,6 +21,8 @@ import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import CancelIcon from '@mui/icons-material/Cancel';
 import { type IobTheme, type ThemeName, type ThemeType } from '@iobroker/gui-components';
 import { PanelStatusBadge } from './components/PanelStatusBadge';
+import { ThemeProvider } from '@mui/material/styles';
+import { getLightSurfaceTheme } from './themeUtils';
 
 interface PanelinfoInfo {
     _Headline: string;
@@ -874,32 +876,34 @@ class TabPanelinfo extends ConfigGeneric<ConfigGenericProps & PanelinfoProps, Pa
     private getPanelCardStyle(panel: PanelinfoInfo): {
         backgroundColor: string;
         borderColor: string;
+        /** true, wenn die Karte eine helle Signalfarbe trägt und ihr Inhalt hell gethemt werden muss */
+        lightSurface: boolean;
     } {
-        // Use state.themeName which is updated via interval
-        console.log(`[Panelinfo] themeType: ${this.props.themeType}, themeName: ${this.props.themeName}`);
-        const isDark = this.props.themeName === 'dark';
-
         if (!this.state.alive) {
             return {
-                backgroundColor: isDark ? grey[800] : grey[300],
-                borderColor: isDark ? grey[700] : grey[400],
+                backgroundColor: grey[300],
+                borderColor: grey[400],
+                lightSurface: true,
             };
         }
         if (panel._flashing) {
             return {
-                backgroundColor: isDark ? yellow[900] : yellow[100],
-                borderColor: isDark ? yellow[700] : yellow[400],
+                backgroundColor: yellow[100],
+                borderColor: yellow[400],
+                lightSurface: true,
             };
         }
         if (panel._check) {
             return {
-                backgroundColor: isDark ? orange[900] : orange[100],
+                backgroundColor: orange[100],
                 borderColor: orange[700],
+                lightSurface: true,
             };
         }
         return {
             backgroundColor: 'transparent',
             borderColor: 'primary',
+            lightSurface: false,
         };
     }
 
@@ -925,7 +929,7 @@ class TabPanelinfo extends ConfigGeneric<ConfigGenericProps & PanelinfoProps, Pa
                     {panelsInfo.map((panel, index) => {
                         const cardStyle = this.getPanelCardStyle(panel);
                         const panelConfig = panelsConfig.find(p => p.topic === panel._topic);
-                        return (
+                        const card = (
                             <Box
                                 key={panel._id || index}
                                 sx={{
@@ -935,6 +939,9 @@ class TabPanelinfo extends ConfigGeneric<ConfigGenericProps & PanelinfoProps, Pa
                                     border: 3,
                                     borderColor: cardStyle.borderColor,
                                     backgroundColor: cardStyle.backgroundColor,
+                                    // Überschrift, Schalterbeschriftungen und Icons erben ihre Farbe -
+                                    // ohne diese Angabe blieben sie in einem dunklen Theme weiß
+                                    color: 'text.primary',
                                     opacity: !alive ? 0.6 : 1,
                                     p: 2,
                                     borderRadius: 1,
@@ -1001,6 +1008,18 @@ class TabPanelinfo extends ConfigGeneric<ConfigGenericProps & PanelinfoProps, Pa
                                     {this.getText('openTasmotaConsole')}
                                 </Button>
                             </Box>
+                        );
+                        // Eine eingefärbte Karte trägt in jedem Theme dieselbe helle Signalfarbe -
+                        // ihr Inhalt wird deshalb unabhängig vom Theme hell gethemt.
+                        return cardStyle.lightSurface ? (
+                            <ThemeProvider
+                                key={panel._id || index}
+                                theme={getLightSurfaceTheme(this.props.theme, cardStyle.backgroundColor)}
+                            >
+                                {card}
+                            </ThemeProvider>
+                        ) : (
+                            card
                         );
                     })}
                 </Box>

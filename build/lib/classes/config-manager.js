@@ -34,6 +34,7 @@ module.exports = __toCommonJS(config_manager_exports);
 var import_Color = require("../const/Color");
 var configManagerConst = __toESM(require("../const/config-manager-const"));
 var import_page_item_defaults = require("../const/page-item-defaults");
+var import_default_pages = require("../const/default-pages");
 var import_states_controller = require("../controller/states-controller");
 var import_pagePower = require("../pages/pagePower");
 var import_pageChart = require("../pages/pageChart");
@@ -434,7 +435,7 @@ class ConfigManager extends import_library.BaseClass {
       }
       const nav = panelConfig.navigation;
       if (nav && nav.length > 0) {
-        const index = nav.findIndex((item) => item.name === "main");
+        const index = nav.findIndex((item) => item.name === import_default_pages.mainPageName);
         if (index !== -1) {
           const item = nav.splice(index, 1)[0];
           nav.unshift(item);
@@ -513,11 +514,15 @@ class ConfigManager extends import_library.BaseClass {
       messages.push(`No pages found! This needs to be fixed!`);
       this.log.error(messages[messages.length - 1]);
     } else if (panelConfig.navigation.length === 0) {
-      messages.push(`No navigation items found! This needs to be fixed!`);
-      this.log.error(messages[messages.length - 1]);
-    } else if (panelConfig.navigation.findIndex((item) => item && item.name === "main") === -1) {
-      messages.push(`No entry found for \u2018main\u2019 in the navigation!`);
-      this.log.warn(messages[messages.length - 1]);
+      messages.push(
+        `No navigation items found in the script configuration! Pages from the admin configuration are used.`
+      );
+      this.log.info(messages[messages.length - 1]);
+    } else if (panelConfig.navigation.findIndex((item) => item && item.name === import_default_pages.mainPageName) === -1) {
+      messages.push(
+        `No entry found for '${import_default_pages.mainPageName}' in the navigation! A default start page is used unless the admin configuration provides one.`
+      );
+      this.log.info(messages[messages.length - 1]);
     }
     const obj = await this.adapter.getForeignObjectAsync(this.adapter.namespace);
     if (obj && !this.dontWrite) {
@@ -612,14 +617,20 @@ class ConfigManager extends import_library.BaseClass {
           this.log.error(messages[messages.length - 1]);
           continue;
         }
+        if (page.type === "cardQR" || page.type === "cardAlarm" || page.type === "cardUnlock") {
+          const msg = `Page: ${page.uniqueName} with card type ${page.type} is only supported in the admin configuration! Skipped!`;
+          messages.push(msg);
+          this.log.warn(msg);
+          continue;
+        }
         if ((config.subPages || []).includes(page)) {
           const left = page.prev || page.parent || void 0;
           let right = page.next || page.home || void 0;
           if (!left && !right) {
-            const msg = `Page: ${page.uniqueName} dont have any navigation! Node 'main' provisionally added as home!`;
+            const msg = `Page: ${page.uniqueName} dont have any navigation! Node '${import_default_pages.mainPageName}' provisionally added as home!`;
             messages.push(msg);
             this.log.warn(msg);
-            page.home = "main";
+            page.home = import_default_pages.mainPageName;
             right = page.home;
           }
           if (left || right) {
@@ -631,9 +642,6 @@ class ConfigManager extends import_library.BaseClass {
             };
             panelConfig.navigation.push(navItem);
           }
-        }
-        if (page.type === "cardQR" || page.type === "cardAlarm" || page.type === "cardUnlock") {
-          return { panelConfig, messages };
         }
         let gridItem = {
           dpInit: "",

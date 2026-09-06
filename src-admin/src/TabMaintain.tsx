@@ -18,6 +18,8 @@ import {
 import { grey, orange, blue, yellow } from '@mui/material/colors';
 import { type IobTheme, type ThemeName, type ThemeType } from '@iobroker/gui-components';
 import { PanelStatusBadge } from './components/PanelStatusBadge';
+import { ThemeProvider } from '@mui/material/styles';
+import { getLightSurfaceTheme } from './themeUtils';
 
 interface MaintainPanelInfo {
     _Headline: string;
@@ -504,18 +506,17 @@ class MaintainPanel extends ConfigGeneric<ConfigGenericProps & MaintainPanelProp
     private getPanelCardStyle(panel: MaintainPanelInfo): {
         backgroundColor: string;
         borderColor: string;
+        /** true, wenn die Karte eine helle Signalfarbe trägt und ihr Inhalt hell gethemt werden muss */
+        lightSurface: boolean;
         buttonTasmotaColor: string;
         buttonTftColor: string;
         buttonScriptColor: string;
     } {
-        // Use state.themeName which is updated via interval
-        console.log(`[Maintain] themeType: ${this.props.themeType}, themeName: ${this.props.themeName}`);
-        const isDark = this.props.themeName === 'dark';
-
         if (!this.state.alive) {
             return {
-                backgroundColor: isDark ? grey[800] : grey[300],
-                borderColor: isDark ? grey[700] : grey[400],
+                backgroundColor: grey[300],
+                borderColor: grey[400],
+                lightSurface: true,
                 buttonTasmotaColor: 'primary',
                 buttonTftColor: 'primary',
                 buttonScriptColor: 'primary',
@@ -523,8 +524,9 @@ class MaintainPanel extends ConfigGeneric<ConfigGenericProps & MaintainPanelProp
         }
         if (panel._flashing) {
             return {
-                backgroundColor: isDark ? yellow[900] : yellow[100],
-                borderColor: isDark ? yellow[700] : yellow[400],
+                backgroundColor: yellow[100],
+                borderColor: yellow[400],
+                lightSurface: true,
                 buttonTasmotaColor: 'primary',
                 buttonTftColor: 'primary',
                 buttonScriptColor: 'primary',
@@ -541,18 +543,18 @@ class MaintainPanel extends ConfigGeneric<ConfigGenericProps & MaintainPanelProp
         } */
         if (panel._check) {
             return {
-                backgroundColor: isDark ? orange[900] : orange[100],
+                backgroundColor: orange[100],
                 borderColor: orange[700],
+                lightSurface: true,
                 buttonTasmotaColor: panel._check_tasmota ? blue[600] : blue[200],
                 buttonTftColor: panel._check_tft ? blue[600] : blue[200],
                 buttonScriptColor: panel._check_script ? blue[600] : blue[200],
             };
         }
         return {
-            // backgroundColor: isDark ? green[900] : green[100],
-            // borderColor: green[700],
             backgroundColor: 'transparent',
             borderColor: 'primary',
+            lightSurface: false,
             buttonTasmotaColor: 'primary',
             buttonTftColor: 'primary',
             buttonScriptColor: 'primary',
@@ -617,7 +619,7 @@ class MaintainPanel extends ConfigGeneric<ConfigGenericProps & MaintainPanelProp
                     {panelsInfo.map((panel, index) => {
                         const cardStyle = this.getPanelCardStyle(panel);
                         const panelConfig = panelsConfig.find(p => p.topic === panel._topic);
-                        return (
+                        const card = (
                             <Box
                                 key={panel._id || index}
                                 sx={{
@@ -627,6 +629,9 @@ class MaintainPanel extends ConfigGeneric<ConfigGenericProps & MaintainPanelProp
                                     border: 3,
                                     borderColor: cardStyle.borderColor,
                                     backgroundColor: cardStyle.backgroundColor,
+                                    // Überschrift, Schalterbeschriftungen und Icons erben ihre Farbe -
+                                    // ohne diese Angabe blieben sie in einem dunklen Theme weiß
+                                    color: 'text.primary',
                                     opacity: !alive ? 0.6 : 1,
                                     p: 2,
                                     borderRadius: 1,
@@ -800,6 +805,18 @@ class MaintainPanel extends ConfigGeneric<ConfigGenericProps & MaintainPanelProp
                                     </Button>
                                 </Box>
                             </Box>
+                        );
+                        // Eine eingefärbte Karte trägt in jedem Theme dieselbe helle Signalfarbe -
+                        // ihr Inhalt wird deshalb unabhängig vom Theme hell gethemt.
+                        return cardStyle.lightSurface ? (
+                            <ThemeProvider
+                                key={panel._id || index}
+                                theme={getLightSurfaceTheme(this.props.theme, cardStyle.backgroundColor)}
+                            >
+                                {card}
+                            </ThemeProvider>
+                        ) : (
+                            card
                         );
                     })}
                 </Box>

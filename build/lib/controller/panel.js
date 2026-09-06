@@ -56,6 +56,11 @@ var import_pageChartBar = require("../pages/pageChartBar");
 var import_pageChartLine = require("../pages/pageChartLine");
 var import_pageThermo2 = require("../pages/pageThermo2");
 var import_admin = require("../configuration/admin");
+var import_main_page = require("../configuration/main-page");
+var import_page_origin = require("../configuration/page-origin");
+var import_page_targets = require("../configuration/page-targets");
+var import_page_states = require("../configuration/page-states");
+var import_default_pages = require("../const/default-pages");
 const DefaultOptions = {
   format: {
     weekday: "short",
@@ -67,9 +72,15 @@ const DefaultOptions = {
   locale: "de-DE",
   pages: []
 };
+function readConstString(data, field) {
+  const value = data && field in data ? data[field] : void 0;
+  return value && value.type === "const" && typeof value.constVal === "string" ? value.constVal : void 0;
+}
 class Panel extends import_library.BaseClass {
   loopTimeout;
   pages = [];
+  /** Origin per page id, collected in preInit and reported to the admin navigation view */
+  pageOrigins = new import_page_origin.PageOriginTracker();
   _activePage = void 0;
   data = {};
   blockStartup = null;
@@ -302,8 +313,18 @@ class Panel extends import_library.BaseClass {
   }
   async preInit(options) {
     options.pages = options.pages || [];
+    options.navigation = options.navigation || [];
+    this.pageOrigins.classify(options.pages, "script");
+    const ensured = (0, import_main_page.ensureMainPage)(options, this.friendlyName || this.name);
+    this.pageOrigins.classify(options.pages, "system");
+    if (ensured.pageAdded || ensured.navigationAdded) {
+      this.log.info(
+        `No page '${import_default_pages.mainPageName}' in the script configuration - a default start page was added. A page named '${import_default_pages.mainPageName}' in the admin configuration replaces it.`
+      );
+    }
     const admin = new import_admin.AdminConfiguration(this.adapter);
     await admin.processentrys(options);
+    this.pageOrigins.classify(options.pages, "admin");
     options.pages = options.pages.filter((b) => {
       var _a, _b, _c;
       if (((_a = b.config) == null ? void 0 : _a.card) === "screensaver" || ((_b = b.config) == null ? void 0 : _b.card) === "screensaver2" || ((_c = b.config) == null ? void 0 : _c.card) === "screensaver3") {
@@ -317,6 +338,7 @@ class Panel extends import_library.BaseClass {
     this.info.internal.pageCount = options.pages.length;
     this.info.internal.servicePageCount = import_system_templates.systemPages.length;
     options.pages = options.pages.concat(import_system_templates.systemPages);
+    this.pageOrigins.classify(options.pages, "system");
     options.navigation = (options.navigation || []).concat(import_system_templates.systemNavigation);
     let scsFound = 0;
     for (let a = 0; a < options.pages.length; a++) {
@@ -1102,14 +1124,14 @@ class Panel extends import_library.BaseClass {
         case "mainNavigationPoint": {
           const v = state.val;
           if (typeof v === "string") {
-            this.navigation.setMainPageByName(v ? v : "main");
-            await this.library.writedp(`panels.${this.name}.cmd.mainNavigationPoint`, v ? v : "main");
+            this.navigation.setMainPageByName(v ? v : import_default_pages.mainPageName);
+            await this.library.writedp(`panels.${this.name}.cmd.mainNavigationPoint`, v ? v : import_default_pages.mainPageName);
           }
           break;
         }
         case "goToNavigationPoint": {
           if (typeof state.val === "string") {
-            await this.navigation.setTargetPageByName(state.val ? String(state.val) : "main");
+            await this.navigation.setTargetPageByName(state.val ? String(state.val) : import_default_pages.mainPageName);
           }
           break;
         }
@@ -2374,8 +2396,31 @@ ${this.info.tasmota.onlineVersion}`;
     o.native.navigationMap = map;
     await this.adapter.setObject(`panels.${this.name}`, o);
   };
+  /**
+   * `uniqueName` of the admin entry a published page belongs to.
+   *
+   * Usually both are identical. A page flagged as start page is published under the reserved id
+   * `main` while its admin entry keeps its own name, so that case is resolved via the flag.
+   *
+   * @param pageId Page id as used in the navigation
+   */
+  getAdminPageName(pageId) {
+    const entries = this.adapter.config.pageConfig;
+    if (!Array.isArray(entries)) {
+      return void 0;
+    }
+    const direct = entries.find((e) => e && e.uniqueName === pageId);
+    if (direct) {
+      return direct.uniqueName;
+    }
+    if (pageId === import_default_pages.mainPageName) {
+      const main = entries.find((e) => e && adminShareConfig.isMainPageEntry(e));
+      return main ? main.uniqueName : void 0;
+    }
+    return void 0;
+  }
   async getNavigationArrayForFlow() {
-    var _a;
+    var _a, _b, _c, _d, _e, _f;
     const res = {
       panelName: this.name,
       friendlyName: this.friendlyName,
@@ -2387,6 +2432,27 @@ ${this.info.tasmota.onlineVersion}`;
       navMapFromConfig = o.native.navigationMap;
     }
     const db = this.navigation.getDatabase();
+    const stateRefEntries = /* @__PURE__ */ new Map();
+    const addStateNode = (state) => {
+      var _a2, _b2;
+      const nodeId = adminShareConfig.stateRefNodeId(state.id);
+      const known = stateRefEntries.get(nodeId);
+      if (known) {
+        known.isChannel = known.isChannel || state.isChannel;
+        known.stateInfo = (0, import_page_states.mergeStateInfo)(known.stateInfo, state);
+        return nodeId;
+      }
+      stateRefEntries.set(nodeId, {
+        page: nodeId,
+        nodeType: "stateRef",
+        stateId: state.id,
+        isChannel: state.isChannel,
+        stateInfo: (0, import_page_states.mergeStateInfo)(void 0, state),
+        label: adminShareConfig.shortStateLabel(state.id),
+        position: (_b2 = (_a2 = navMapFromConfig == null ? void 0 : navMapFromConfig.find((a) => a.name === nodeId)) == null ? void 0 : _a2.position) != null ? _b2 : void 0
+      });
+      return nodeId;
+    };
     for (const nav of db) {
       if (!nav || !nav.page) {
         continue;
@@ -2412,7 +2478,8 @@ ${this.info.tasmota.onlineVersion}`;
         const n = db[nav.left.double];
         parent = n != null && n.page ? n.page.name : void 0;
       }
-      let pageInfo = { card: "cardGrid", alwaysOn: "none" };
+      const headline = readConstString((_a = nav.page.config) == null ? void 0 : _a.data, "headline");
+      let pageInfo = { card: "cardGrid", alwaysOn: "none", headline };
       if (globals.isPageMenuConfig(nav.page.config)) {
         pageInfo = {
           ...pageInfo,
@@ -2435,6 +2502,7 @@ ${this.info.tasmota.onlineVersion}`;
           alwaysOn: nav.page.alwaysOn
         };
       }
+      const origin = (_b = this.pageOrigins.get(nav.page.name)) != null ? _b : "script";
       const navMap = {
         label: nav.page ? nav.page.name : "",
         page: nav.page ? nav.page.name : "",
@@ -2443,31 +2511,39 @@ ${this.info.tasmota.onlineVersion}`;
         home,
         parent,
         position: pPos ? pPos.position : void 0,
-        pageInfo
+        pageInfo,
+        origin,
+        adminPageName: origin === "admin" ? this.getAdminPageName(nav.page.name) : void 0
       };
-      let targetPages = [];
-      if (nav.page.pageItemConfig) {
-        for (const item of nav.page.pageItemConfig) {
-          if (item && item.data && "setNavi" in item.data) {
-            const n = item.data.setNavi;
-            if (n && n.type === "const" && typeof n.constVal === "string") {
-              targetPages.push(n.constVal);
-            }
-          }
-        }
+      const targetSources = [...((_c = nav.page.pageItemConfig) != null ? _c : []).map((item) => item == null ? void 0 : item.data), (_d = nav.page.config) == null ? void 0 : _d.data];
+      const short = (0, import_page_targets.collectNavigationTargets)(targetSources, "setNavi");
+      const long = (0, import_page_targets.collectNavigationTargets)(targetSources, "setNaviLongPress");
+      for (const dp of [...short.stateRefs, ...long.stateRefs]) {
+        addStateNode((0, import_page_states.emptyStateNode)(dp, false));
       }
-      if (((_a = nav.page.config) == null ? void 0 : _a.data) && "setNavi" in nav.page.config.data) {
-        const n = nav.page.config.data.setNavi;
-        if (n && n.type === "const" && typeof n.constVal === "string") {
-          targetPages.push(n.constVal);
-        }
-      }
+      const targetPages = [...short.pages, ...short.stateRefs.map(adminShareConfig.stateRefNodeId)];
       if (targetPages.length) {
-        targetPages = Array.from(new Set(targetPages));
         navMap.targetPages = targetPages;
+      }
+      const targetPagesLongPress = [...long.pages, ...long.stateRefs.map(adminShareConfig.stateRefNodeId)].filter(
+        (t) => !targetPages.includes(t)
+      );
+      if (targetPagesLongPress.length) {
+        navMap.targetPagesLongPress = targetPagesLongPress;
+      }
+      const stateSources = [
+        ...((_e = nav.page.pageItemConfig) != null ? _e : []).map(
+          (item) => item ? { data: item.data, role: item.role, type: item.type } : void 0
+        ),
+        { data: (_f = nav.page.config) == null ? void 0 : _f.data, type: nav.page.card }
+      ];
+      const usedStates = (0, import_page_states.collectPageStates)(stateSources).map((state) => addStateNode(state));
+      if (usedStates.length) {
+        navMap.usedStates = usedStates;
       }
       res.navigationMap.push(navMap);
     }
+    res.navigationMap.push(...stateRefEntries.values());
     return res;
   }
   static getPage(config, that) {

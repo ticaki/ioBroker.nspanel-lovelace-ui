@@ -1,6 +1,7 @@
 import { Color, type RGB } from '../const/Color';
 import * as configManagerConst from '../const/config-manager-const';
 import { pageItemDefaults } from '../const/page-item-defaults';
+import { mainPageName } from '../const/default-pages';
 import type { panelConfigPartial } from '../controller/panel';
 import { StatesControler } from '../controller/states-controller';
 import { PagePower } from '../pages/pagePower';
@@ -478,7 +479,7 @@ export class ConfigManager extends BaseClass {
             }
             const nav = panelConfig.navigation;
             if (nav && nav.length > 0) {
-                const index = nav.findIndex(item => item!.name === 'main');
+                const index = nav.findIndex(item => item!.name === mainPageName);
                 if (index !== -1) {
                     const item = nav.splice(index, 1)[0];
                     nav.unshift(item);
@@ -562,11 +563,19 @@ export class ConfigManager extends BaseClass {
             messages.push(`No pages found! This needs to be fixed!`);
             this.log.error(messages[messages.length - 1]);
         } else if (panelConfig.navigation.length === 0) {
-            messages.push(`No navigation items found! This needs to be fixed!`);
-            this.log.error(messages[messages.length - 1]);
-        } else if (panelConfig.navigation.findIndex(item => item && item.name === 'main') === -1) {
-            messages.push(`No entry found for ‘main’ in the navigation!`);
-            this.log.warn(messages[messages.length - 1]);
+            // Valid setup: the panel can be configured entirely in the admin. The adapter adds a
+            // default start page, the admin pages are merged afterwards.
+            messages.push(
+                `No navigation items found in the script configuration! Pages from the admin configuration are used.`,
+            );
+            this.log.info(messages[messages.length - 1]);
+        } else if (panelConfig.navigation.findIndex(item => item && item.name === mainPageName) === -1) {
+            // Not an error any more: the adapter adds a default start page and the admin
+            // configuration may provide one as well.
+            messages.push(
+                `No entry found for '${mainPageName}' in the navigation! A default start page is used unless the admin configuration provides one.`,
+            );
+            this.log.info(messages[messages.length - 1]);
         }
 
         const obj = await this.adapter.getForeignObjectAsync(this.adapter.namespace);
@@ -702,14 +711,23 @@ export class ConfigManager extends BaseClass {
                     continue;
                 }
 
+                if (page.type === 'cardQR' || page.type === 'cardAlarm' || page.type === 'cardUnlock') {
+                    // Not supported in the script configuration - use the admin configuration for
+                    // these cards. Skip the page without a navigation entry, but keep converting
+                    // the remaining pages.
+                    const msg = `Page: ${page.uniqueName} with card type ${page.type} is only supported in the admin configuration! Skipped!`;
+                    messages.push(msg);
+                    this.log.warn(msg);
+                    continue;
+                }
                 if ((config.subPages || []).includes(page)) {
                     const left = page.prev || page.parent || undefined;
                     let right = page.next || page.home || undefined;
                     if (!left && !right) {
-                        const msg = `Page: ${page.uniqueName} dont have any navigation! Node 'main' provisionally added as home!`;
+                        const msg = `Page: ${page.uniqueName} dont have any navigation! Node '${mainPageName}' provisionally added as home!`;
                         messages.push(msg);
                         this.log.warn(msg);
-                        page.home = 'main';
+                        page.home = mainPageName;
                         right = page.home;
                     }
                     if (left || right) {
@@ -721,9 +739,6 @@ export class ConfigManager extends BaseClass {
                         };
                         panelConfig.navigation.push(navItem);
                     }
-                }
-                if (page.type === 'cardQR' || page.type === 'cardAlarm' || page.type === 'cardUnlock') {
-                    return { panelConfig, messages };
                 }
 
                 let gridItem: pages.PageBase = {

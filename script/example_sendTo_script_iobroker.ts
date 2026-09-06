@@ -38,7 +38,8 @@ async function configuration (): Promise<void> {
 
     // Beispiel Hauptseite / Mainpage
     // Diese Seite ist die Hauptseite, sie wird immer als erstes angezeigt und hat den uniqueName 'main'.
-    // uniqueName 'main' muß mindestens einmal vorkommen, damit die Navigation funktioniert.
+    // uniqueName 'main' sollte einmal vorkommen. Fehlt die Seite, legt der Adapter selbst eine
+    // leere Hauptseite an; eine im Admin unter 'main' angelegte Seite überschreibt diese hier.
     const Hauptseite: ScriptConfig.PageGrid = {
         type: 'cardGrid',
         uniqueName: 'main',
@@ -118,7 +119,7 @@ async function configuration (): Promise<void> {
         defaultBackgroundColor: HMIDark,
         weatherAddDefaultItems: false,
 
-        // Als Gedankenstütze, die Hauptseite muß main heißen!
+        // Als Gedankenstütze, die Hauptseite sollte main heißen!
         //panelName: 'NSPanel', //unique name for the panel
 
 
@@ -683,7 +684,7 @@ async function configuration (): Promise<void> {
 }
 
 
-const version = '0.21.0';
+const version = '0.21.1';
 const HMIOff = {red: 68, green: 115, blue: 158};     // Blue-Off - Original Entity Off
 const HMIOn = {red: 3, green: 169, blue: 244};     // Blue-On
 const HMIDark = {red: 29, green: 29, blue: 29};     // Original Background Color

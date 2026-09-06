@@ -16,6 +16,7 @@ import {
 import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
 import { type UnlockEntry, ADAPTER_NAME } from '../../../src/lib/types/adminShareConfig';
+import { isMainPageEntry } from '../../../src/lib/types/adminShareConfig';
 
 export interface PageAlarmEditorProps {
     entry: UnlockEntry;
@@ -124,7 +125,8 @@ export class PageAlarmEditor extends React.Component<PageAlarmEditorProps, PageA
                                 },
                             },
                         }}
-                        disabled={!this.state.alive}
+                        disabled={!this.state.alive || isMainPageEntry(entry)}
+                        helperText={isMainPageEntry(entry) ? this.getText('page_name_main_locked') : undefined}
                     />
                 </Box>
 

@@ -1,4 +1,5 @@
-import type { NavigationItemConfig } from '../classes/navigation';
+import type { NavigationItemConfig, NavigationItemConfigNonNull } from '../classes/navigation';
+import { mainPageName } from '../const/default-pages';
 import { BaseClass } from '../controller/library';
 import type { panelConfigPartial } from '../controller/panel';
 import * as ShareConfig from '../types/adminShareConfig';
@@ -76,6 +77,14 @@ export class AdminConfiguration extends BaseClass {
     private async createPagesFromConfig(option: panelConfigPartial): Promise<PendingNavEntry[]> {
         const entries = this.pageConfig;
         const pendingNavs: PendingNavEntry[] = [];
+
+        // Pages flagged as start page are published under the reserved id. Navigation targets that
+        // still use the name from the admin list are translated to that id.
+        const mainAliases = new Set(
+            entries.filter(e => ShareConfig.isMainPageEntry(e) && e.uniqueName !== mainPageName).map(e => e.uniqueName),
+        );
+        const resolveTarget = (target: string | undefined): string | undefined =>
+            target !== undefined && mainAliases.has(target) ? mainPageName : target;
 
         for (const entry of entries) {
             if (!entry.navigationAssignment || !entry.card) {
@@ -305,44 +314,57 @@ export class AdminConfiguration extends BaseClass {
                 }
             }
 
-            // Check for duplicate page name
-            if (!this.adapter.config.adminOverridesScriptPages) {
+            if (ShareConfig.isMainPageEntry(entry)) {
+                // Publish the page as the start page of this panel.
+                newPage.uniqueID = mainPageName;
+            }
+
+            // Check for duplicate page name. The start page may always be replaced by an admin
+            // page - being able to define it here is the whole point of it. Any other page needs
+            // the global override flag.
+            const overrideExisting = this.adapter.config.adminOverridesScriptPages || newPage.uniqueID === mainPageName;
+
+            // Position and links of the replaced navigation node, reused for the new node below.
+            let replacedIndex = -1;
+            let replacedNav: NavigationItemConfigNonNull | undefined;
+
+            if (!overrideExisting) {
                 if (option.pages.find((a: PageBase) => a.uniqueID === newPage.uniqueID)) {
                     this.log.warn(`Page with name ${newPage.uniqueID} already exists, skipping!`);
                     continue;
                 }
             } else {
-                // Remove existing page and navigation entries for this page name to allow overrides
+                // Remove the existing page and take out its navigation node. The node is
+                // re-created below under the same name and at the same position, so links of
+                // other nodes stay valid - resetting them would tear the navigation ring apart.
+                const pageCount = option.pages.length;
                 option.pages = option.pages.filter((a: PageBase) => a.uniqueID !== newPage.uniqueID);
-                option.navigation = option.navigation.filter(
-                    (b: NavigationItemConfig | null) => b && b.name !== newPage.uniqueID,
-                );
-                option.navigation.forEach((b: NavigationItemConfig | null) => {
-                    if (b) {
-                        if (this.pageConfig.find(e => e.uniqueName === b.name)) {
-                            // Don't reset navigation entries for pages defined in admin config
-                        } else {
-                            if (b.left?.single === newPage.uniqueID) {
-                                b.left.single = undefined;
-                            }
-                            if (b.right?.single === newPage.uniqueID) {
-                                b.right.single = undefined;
-                            }
-                        }
-                    }
-                });
+                if (option.pages.length !== pageCount) {
+                    this.log.info(`Page '${newPage.uniqueID}' is overridden by the admin configuration.`);
+                }
+                replacedIndex = option.navigation.findIndex(b => b && b.name === newPage.uniqueID);
+                if (replacedIndex !== -1) {
+                    replacedNav = option.navigation[replacedIndex] ?? undefined;
+                    option.navigation.splice(replacedIndex, 1);
+                }
             }
 
             option.pages.push(newPage);
 
-            // Build stub navigation entry; chain links are resolved in applyPendingNavigations
+            // Build stub navigation entry; chain links are resolved in applyPendingNavigations.
+            // Links of a replaced node are inherited so the surrounding chain survives; an
+            // explicit prev/next/home/parent from the admin config overwrites them below.
             const navigationEntry: NavigationItemConfig = {
                 name: newPage.uniqueID,
                 page: newPage.uniqueID,
-                right: { single: undefined, double: undefined },
-                left: { single: undefined, double: undefined },
+                right: { single: replacedNav?.right?.single, double: replacedNav?.right?.double },
+                left: { single: replacedNav?.left?.single, double: replacedNav?.left?.double },
             };
-            option.navigation.push(navigationEntry);
+            if (replacedIndex !== -1) {
+                option.navigation.splice(replacedIndex, 0, navigationEntry);
+            } else {
+                option.navigation.push(navigationEntry);
+            }
 
             const navigation = navAssign.navigation;
             if (!navigation) {
@@ -350,9 +372,25 @@ export class AdminConfiguration extends BaseClass {
             }
 
             // Apply home/parent immediately – no chain dependency
-            const nav = { ...navigation };
-            if (!nav.prev && !nav.next && !nav.home && !nav.parent) {
-                nav.home = 'main';
+            const nav = {
+                ...navigation,
+                prev: resolveTarget(navigation.prev),
+                next: resolveTarget(navigation.next),
+                home: resolveTarget(navigation.home),
+                parent: resolveTarget(navigation.parent),
+            };
+            // A page must not link to itself - that would dead-end the navigation.
+            if (nav.home === newPage.uniqueID) {
+                this.log.warn(`Page '${newPage.uniqueID}' has a home link to itself! Removed!`);
+                nav.home = undefined;
+            }
+            if (nav.parent === newPage.uniqueID) {
+                this.log.warn(`Page '${newPage.uniqueID}' has a parent link to itself! Removed!`);
+                nav.parent = undefined;
+            }
+            // The start page itself gets no home link - it is the home.
+            if (!nav.prev && !nav.next && !nav.home && !nav.parent && newPage.uniqueID !== mainPageName) {
+                nav.home = mainPageName;
             }
             if (nav.home) {
                 navigationEntry.right!.double = nav.home;

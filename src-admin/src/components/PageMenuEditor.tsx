@@ -33,6 +33,7 @@ import {
     ADAPTER_NAME,
     ALL_PANELS_SPECIAL_ID,
 } from '../../../src/lib/types/adminShareConfig';
+import { isMainPageEntry } from '../../../src/lib/types/adminShareConfig';
 import ChannelConfigDialog from './ChannelConfigDialog';
 import icons from '../icons.json';
 import { I18n, type IobTheme, type ThemeName, type ThemeType } from '@iobroker/gui-components';
@@ -998,7 +999,8 @@ export class PageMenuEditor extends ConfigGeneric<ConfigGenericProps & PageMenuE
                         slotProps={{
                             input: { sx: { backgroundColor: 'transparent', px: 1, fontWeight: 600, width: '50%' } },
                         }}
-                        disabled={!this.state.alive}
+                        disabled={!this.state.alive || isMainPageEntry(entry)}
+                        helperText={isMainPageEntry(entry) ? this.getText('page_name_main_locked') : undefined}
                     />
                 </Box>
 

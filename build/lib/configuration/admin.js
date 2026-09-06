@@ -31,6 +31,7 @@ __export(admin_exports, {
   AdminConfiguration: () => AdminConfiguration
 });
 module.exports = __toCommonJS(admin_exports);
+var import_default_pages = require("../const/default-pages");
 var import_library = require("../controller/library");
 var ShareConfig = __toESM(require("../types/adminShareConfig"));
 var import_function_and_const = require("../types/function-and-const");
@@ -95,9 +96,13 @@ Stack: ${stack}`
    * @param option - Panel configuration partial
    */
   async createPagesFromConfig(option) {
-    var _a, _b;
+    var _a, _b, _c, _d, _e, _f, _g;
     const entries = this.pageConfig;
     const pendingNavs = [];
+    const mainAliases = new Set(
+      entries.filter((e) => ShareConfig.isMainPageEntry(e) && e.uniqueName !== import_default_pages.mainPageName).map((e) => e.uniqueName)
+    );
+    const resolveTarget = (target) => target !== void 0 && mainAliases.has(target) ? import_default_pages.mainPageName : target;
     for (const entry of entries) {
       if (!entry.navigationAssignment || !entry.card) {
         continue;
@@ -296,46 +301,62 @@ Stack: ${stack}`
           continue;
         }
       }
-      if (!this.adapter.config.adminOverridesScriptPages) {
+      if (ShareConfig.isMainPageEntry(entry)) {
+        newPage.uniqueID = import_default_pages.mainPageName;
+      }
+      const overrideExisting = this.adapter.config.adminOverridesScriptPages || newPage.uniqueID === import_default_pages.mainPageName;
+      let replacedIndex = -1;
+      let replacedNav;
+      if (!overrideExisting) {
         if (option.pages.find((a) => a.uniqueID === newPage.uniqueID)) {
           this.log.warn(`Page with name ${newPage.uniqueID} already exists, skipping!`);
           continue;
         }
       } else {
+        const pageCount = option.pages.length;
         option.pages = option.pages.filter((a) => a.uniqueID !== newPage.uniqueID);
-        option.navigation = option.navigation.filter(
-          (b) => b && b.name !== newPage.uniqueID
-        );
-        option.navigation.forEach((b) => {
-          var _a2, _b2;
-          if (b) {
-            if (this.pageConfig.find((e) => e.uniqueName === b.name)) {
-            } else {
-              if (((_a2 = b.left) == null ? void 0 : _a2.single) === newPage.uniqueID) {
-                b.left.single = void 0;
-              }
-              if (((_b2 = b.right) == null ? void 0 : _b2.single) === newPage.uniqueID) {
-                b.right.single = void 0;
-              }
-            }
-          }
-        });
+        if (option.pages.length !== pageCount) {
+          this.log.info(`Page '${newPage.uniqueID}' is overridden by the admin configuration.`);
+        }
+        replacedIndex = option.navigation.findIndex((b) => b && b.name === newPage.uniqueID);
+        if (replacedIndex !== -1) {
+          replacedNav = (_c = option.navigation[replacedIndex]) != null ? _c : void 0;
+          option.navigation.splice(replacedIndex, 1);
+        }
       }
       option.pages.push(newPage);
       const navigationEntry = {
         name: newPage.uniqueID,
         page: newPage.uniqueID,
-        right: { single: void 0, double: void 0 },
-        left: { single: void 0, double: void 0 }
+        right: { single: (_d = replacedNav == null ? void 0 : replacedNav.right) == null ? void 0 : _d.single, double: (_e = replacedNav == null ? void 0 : replacedNav.right) == null ? void 0 : _e.double },
+        left: { single: (_f = replacedNav == null ? void 0 : replacedNav.left) == null ? void 0 : _f.single, double: (_g = replacedNav == null ? void 0 : replacedNav.left) == null ? void 0 : _g.double }
       };
-      option.navigation.push(navigationEntry);
+      if (replacedIndex !== -1) {
+        option.navigation.splice(replacedIndex, 0, navigationEntry);
+      } else {
+        option.navigation.push(navigationEntry);
+      }
       const navigation = navAssign.navigation;
       if (!navigation) {
         continue;
       }
-      const nav = { ...navigation };
-      if (!nav.prev && !nav.next && !nav.home && !nav.parent) {
-        nav.home = "main";
+      const nav = {
+        ...navigation,
+        prev: resolveTarget(navigation.prev),
+        next: resolveTarget(navigation.next),
+        home: resolveTarget(navigation.home),
+        parent: resolveTarget(navigation.parent)
+      };
+      if (nav.home === newPage.uniqueID) {
+        this.log.warn(`Page '${newPage.uniqueID}' has a home link to itself! Removed!`);
+        nav.home = void 0;
+      }
+      if (nav.parent === newPage.uniqueID) {
+        this.log.warn(`Page '${newPage.uniqueID}' has a parent link to itself! Removed!`);
+        nav.parent = void 0;
+      }
+      if (!nav.prev && !nav.next && !nav.home && !nav.parent && newPage.uniqueID !== import_default_pages.mainPageName) {
+        nav.home = import_default_pages.mainPageName;
       }
       if (nav.home) {
         navigationEntry.right.double = nav.home;

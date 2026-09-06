@@ -28,6 +28,8 @@ export type AdminCardTypes =
 // Typ für pageInfo bei PageMenuConfig (siehe Panel)
 export interface PageMenuConfigInfo {
     card: AdminCardTypes;
+    /** Headline of the page, only set when it is a constant in the configuration */
+    headline?: string;
     alwaysOn?: string;
     scrollPresentation?: string;
     scrollType?: string;
@@ -72,16 +74,90 @@ export interface NavigationSavePayload {
 export type NavigationPositionsMap = { name: string; position: { x: number; y: number } };
 // Gemeinsame Typen für Navigation (Panel + Admin UI)
 
+/**
+ * Where a page of a panel comes from:
+ *
+ * - `script` - delivered by the configuration script
+ * - `admin` - defined in the admin page list (also when it replaces a page of the same name)
+ * - `system` - service page of the adapter or the generated default start page
+ */
+export type PageOrigin = 'script' | 'admin' | 'system';
+
+/**
+ * Node id for a state a navigation target is read from.
+ *
+ * The node stands for the state, not for a page - which page the target names is only known while
+ * the panel runs. The prefix keeps it apart from the page ids that come from the configuration.
+ *
+ * @param dp State id the target is read from.
+ * @returns The node id.
+ */
+export function stateRefNodeId(dp: string): string {
+    return `dp:${dp}`;
+}
+
+/**
+ * Shortened state id for the node caption - the full id is shown in the page info.
+ *
+ * @param dp State id.
+ * @returns The last two segments, prefixed with an ellipsis when something was cut off.
+ */
+export function shortStateLabel(dp: string): string {
+    const parts = dp.split('.');
+    return parts.length <= 2 ? dp : `…${parts.slice(-2).join('.')}`;
+}
+
+/** How a panel works with a state or channel. */
+export interface StateNodeInfo {
+    /** Roles of the page items using it, e.g. `button` or `shutter`. */
+    roles: string[];
+    /** Types of those page items, e.g. `button` or `switch`. */
+    types: string[];
+    /** States used below a channel, relative to it - empty for a single state. */
+    states: string[];
+    /** Captions the page items give it. */
+    headlines: string[];
+    /** Icons shown while the value is true. */
+    iconsTrue: string[];
+    /** Icons shown while the value is false. */
+    iconsFalse: string[];
+}
+
 export interface NavigationMapEntry {
     page: string;
+    /**
+     * What the node stands for: a page of the panel, or a state a navigation target is read from.
+     * Missing means a page.
+     */
+    nodeType?: 'page' | 'stateRef';
+    /** Full state or channel id, set for `nodeType === 'stateRef'` only. */
+    stateId?: string;
+    /** True when `stateId` names a channel rather than a single state. */
+    isChannel?: boolean;
+    /** How the panel works with this state or channel, set for `nodeType === 'stateRef'` only. */
+    stateInfo?: StateNodeInfo;
+    /** States and channels this page reads its values from, as node ids. */
+    usedStates?: string[];
     next?: string;
     prev?: string;
     home?: string;
     parent?: string;
+    /** Pages a page item of this page navigates to on a short press */
     targetPages?: string[];
+    /** Pages a page item of this page navigates to on a long press */
+    targetPagesLongPress?: string[];
     label?: string;
     position?: { x: number; y: number } | null;
     pageInfo?: PageMenuConfigInfo;
+    /** Origin of the page, used by the admin to colour the node */
+    origin?: PageOrigin;
+    /**
+     * `uniqueName` of the admin entry this page was created from. Only set for pages with
+     * `origin === 'admin'` and it may differ from `page`: a start page is published under the
+     * reserved id `main` while its admin entry keeps its own name. The admin uses it to jump to
+     * the page configuration.
+     */
+    adminPageName?: string;
 }
 
 export type NavigationMap = NavigationMapEntry[];
@@ -93,10 +169,24 @@ export interface PanelListEntry {
 }
 
 // Shared types for admin UI (typo: file name uses 'Shard')
+/**
+ * uniqueID and navigation node name of the panel start page.
+ *
+ * Shared between adapter and admin, therefore defined in this file: it is the only module both
+ * sides import from.
+ */
+export const mainPageName = 'main';
+
 export interface PageConfigBaseFields {
     hidden?: boolean;
     alwaysOn?: 'none' | 'always' | 'action' | 'ignore';
     navigationAssignment?: NavigationAssignmentList;
+    /**
+     * Marks this page as the start page of the panels it is assigned to. The adapter publishes it
+     * under the reserved id `main` and it replaces a start page coming from the script. Only one
+     * page may carry this flag per panel.
+     */
+    isMainPage?: boolean;
 }
 
 export type UnlockEntry = {
@@ -334,6 +424,35 @@ export type TrashItem = {
     icon: string;
 };
 
+/** Number of waste types a cardTrash entry holds - the card cannot show more. */
+export const trashItemCount = 6;
+
+/** Icon colours of a fresh cardTrash entry, one per waste type. */
+const trashItemColors: string[] = ['#3c3fff', '#fffd77', '#d2d2d2', '#de8900', '#d2d2d2', '#d2d2d2'];
+
+/**
+ * The {@link trashItemCount} items of a cardTrash entry, filled up with defaults.
+ *
+ * Entries written before the single fields per waste type became an array carry no `items` at all,
+ * and a shortened list can be left behind by a hand edited configuration. Both would otherwise
+ * break every consumer of `items`.
+ *
+ * @param items Stored items, may be missing or too short.
+ * @returns Exactly {@link trashItemCount} items.
+ */
+export function normalizeTrashItems(items: TrashItem[] | undefined): TrashItem[] {
+    const stored = Array.isArray(items) ? items : [];
+    return Array.from({ length: trashItemCount }, (_, i) => {
+        const item: Partial<TrashItem> = stored.length > i ? stored[i] : {};
+        return {
+            textTrash: item.textTrash ?? '',
+            customTrash: item.customTrash ?? '',
+            iconColor: item.iconColor ?? trashItemColors[i],
+            icon: item.icon ?? '',
+        };
+    });
+}
+
 export type TrashEntry = {
     card: 'cardTrash';
     uniqueName: string;
@@ -360,6 +479,20 @@ export type NavigationAssignment = {
 export type NavigationAssignmentList = NavigationAssignment[];
 export type PageConfigEntry = QREntry | UnlockEntry | ScreensaverEntry | TrashEntry | MenuEntry | PowerEntry;
 export type PageConfig = QREntry | UnlockEntry | ScreensaverEntry | TrashEntry | MenuEntry | PowerEntry;
+
+/**
+ * Whether an admin page entry is flagged as the start page of its assigned panels.
+ *
+ * Screensaver entries cannot be a start page and therefore do not carry the flag. The stored
+ * `uniqueName` is never changed by the flag - the adapter publishes the page under
+ * {@link mainPageName} and the admin only overlays the displayed name.
+ *
+ * @param entry Admin page configuration entry.
+ * @returns True if the entry is the start page.
+ */
+export function isMainPageEntry(entry: PageConfig | PageConfigEntry): boolean {
+    return 'isMainPage' in entry && !!entry.isMainPage;
+}
 
 export type PanelStatus =
     | 'offline'
@@ -393,7 +526,8 @@ export const panelStatusColors: Record<PanelStatus, string> = {
     flashing: '#FFC107',
     setup: '#d99800',
     error: '#F44336',
-    deactivated: '#607D8B',
+    // Violett: der einzige Status, den der Anwender selbst setzt - hebt sich von allen anderen ab
+    deactivated: '#AB47BC',
 };
 
 export const panelStatusTranslationKeys: Record<PanelStatus, string> = {

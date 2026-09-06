@@ -3,6 +3,8 @@ import { Color } from '../../const/Color';
 import type { CalendarComponent, VEvent } from 'node-ical';
 import iCal from 'node-ical';
 import { type AdapterClassDefinition } from '../../controller/library';
+import type { TrashItem } from '../../types/adminShareConfig';
+import { normalizeTrashItems } from '../../types/adminShareConfig';
 
 interface ItemObject {
     icon: string;
@@ -17,19 +19,14 @@ type TrashEntry = {
     items: TrashItem[];
 };
 
-type TrashItem = {
-    textTrash: string;
-    customTrash: string;
-    iconColor: string;
-    icon: string;
-};
-
 export async function getTrashDataFromState(
     trashJSON: any,
     entry: TrashEntry,
 ): Promise<{ messages: ItemObject[]; error?: any }> {
     const items: ItemObject[] = [];
     const countItems = entry.countItems ?? 6;
+    // Entries written before `items` existed carry none, a hand edited config may have too few
+    const trashItems = normalizeTrashItems(entry.items);
 
     try {
         // Parse trashJSON wenn es ein String ist
@@ -54,7 +51,7 @@ export async function getTrashDataFromState(
             const result = getTrashItem(
                 { start: trashObject._date, summary: trashObject.event },
                 countItems,
-                entry.items,
+                trashItems,
             );
 
             if (result) {
@@ -79,6 +76,8 @@ export async function getTrashDataFromFile(
     const items: ItemObject[] = [];
     const trashFile = entry.trashFile;
     const countItems = entry.countItems ?? 6;
+    // Entries written before `items` existed carry none, a hand edited config may have too few
+    const trashItems = normalizeTrashItems(entry.items);
 
     try {
         // Prüfe ob Datei existiert
@@ -116,7 +115,7 @@ export async function getTrashDataFromFile(
         // Iteriere über Events
         for (const event of arrayData) {
             if (event.type === 'VEVENT') {
-                const result = getTrashItem(event, countItems, entry.items);
+                const result = getTrashItem(event, countItems, trashItems);
                 if (result) {
                     items.push(result);
                 }

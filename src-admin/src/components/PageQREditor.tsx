@@ -17,6 +17,7 @@ import {
 import { Visibility, VisibilityOff } from '@mui/icons-material';
 import { EntitySelector } from './EntitySelector';
 import { type QREntry, ADAPTER_NAME } from '../../../src/lib/types/adminShareConfig';
+import { isMainPageEntry } from '../../../src/lib/types/adminShareConfig';
 import { ConfigGeneric, type ConfigGenericProps, type ConfigGenericState } from '@iobroker/json-config';
 
 export interface PageQREditorProps {
@@ -126,7 +127,8 @@ export class PageQREditor extends ConfigGeneric<ConfigGenericProps & PageQREdito
                                 },
                             },
                         }}
-                        disabled={!this.state.alive}
+                        disabled={!this.state.alive || isMainPageEntry(entry)}
+                        helperText={isMainPageEntry(entry) ? this.getText('page_name_main_locked') : undefined}
                     />
                 </Box>
 

@@ -28,12 +28,18 @@ __export(adminShareConfig_exports, {
   SENDTO_GET_PANEL_NAVIGATION_COMMAND: () => SENDTO_GET_PANEL_NAVIGATION_COMMAND,
   emptyChannelValueConfig: () => emptyChannelValueConfig,
   emptyPowerSlot: () => emptyPowerSlot,
+  isMainPageEntry: () => isMainPageEntry,
+  mainPageName: () => mainPageName,
   normalizeChannelId: () => normalizeChannelId,
+  normalizeTrashItems: () => normalizeTrashItems,
   panelStatusColors: () => panelStatusColors,
   panelStatusStates: () => panelStatusStates,
   panelStatusTranslationKeys: () => panelStatusTranslationKeys,
   requiredScriptDataPoints: () => requiredScriptDataPoints,
-  reversePanelStatusStates: () => reversePanelStatusStates
+  reversePanelStatusStates: () => reversePanelStatusStates,
+  shortStateLabel: () => shortStateLabel,
+  stateRefNodeId: () => stateRefNodeId,
+  trashItemCount: () => trashItemCount
 });
 module.exports = __toCommonJS(adminShareConfig_exports);
 const ALL_PANELS_SPECIAL_ID = "///ALL_PANELS_SPECIAL";
@@ -43,6 +49,14 @@ const SENDTO_GET_PANELS_COMMAND = "getPanels";
 const SENDTO_GET_PAGES_COMMAND = "getPagesForPanel";
 const SENDTO_GET_PAGES_All_COMMAND = "getAllPages";
 const ADAPTER_NAME = "nspanel-lovelace-ui";
+function stateRefNodeId(dp) {
+  return `dp:${dp}`;
+}
+function shortStateLabel(dp) {
+  const parts = dp.split(".");
+  return parts.length <= 2 ? dp : `\u2026${parts.slice(-2).join(".")}`;
+}
+const mainPageName = "main";
 function emptyChannelValueConfig(valueStateId = "") {
   return { valueStateId, unit: "", prefix: "", suffix: "", dateFormat: "" };
 }
@@ -74,6 +88,24 @@ function emptyPowerSlot() {
     useColorScale: false
   };
 }
+const trashItemCount = 6;
+const trashItemColors = ["#3c3fff", "#fffd77", "#d2d2d2", "#de8900", "#d2d2d2", "#d2d2d2"];
+function normalizeTrashItems(items) {
+  const stored = Array.isArray(items) ? items : [];
+  return Array.from({ length: trashItemCount }, (_, i) => {
+    var _a, _b, _c, _d;
+    const item = stored.length > i ? stored[i] : {};
+    return {
+      textTrash: (_a = item.textTrash) != null ? _a : "",
+      customTrash: (_b = item.customTrash) != null ? _b : "",
+      iconColor: (_c = item.iconColor) != null ? _c : trashItemColors[i],
+      icon: (_d = item.icon) != null ? _d : ""
+    };
+  });
+}
+function isMainPageEntry(entry) {
+  return "isMainPage" in entry && !!entry.isMainPage;
+}
 const panelStatusStates = {
   0: "offline",
   // Panel ist offline, keine belegbare Verbindung zum Adapter
@@ -103,7 +135,8 @@ const panelStatusColors = {
   flashing: "#FFC107",
   setup: "#d99800",
   error: "#F44336",
-  deactivated: "#607D8B"
+  // Violett: der einzige Status, den der Anwender selbst setzt - hebt sich von allen anderen ab
+  deactivated: "#AB47BC"
 };
 const panelStatusTranslationKeys = {
   offline: "Panel_status_offline",
@@ -795,11 +828,17 @@ const CHANNEL_ROLES_LIST = Object.keys(requiredScriptDataPoints);
   SENDTO_GET_PANEL_NAVIGATION_COMMAND,
   emptyChannelValueConfig,
   emptyPowerSlot,
+  isMainPageEntry,
+  mainPageName,
   normalizeChannelId,
+  normalizeTrashItems,
   panelStatusColors,
   panelStatusStates,
   panelStatusTranslationKeys,
   requiredScriptDataPoints,
-  reversePanelStatusStates
+  reversePanelStatusStates,
+  shortStateLabel,
+  stateRefNodeId,
+  trashItemCount
 });
 //# sourceMappingURL=adminShareConfig.js.map
