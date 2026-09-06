@@ -1,7 +1,7 @@
 {
   "common": {
     "name": "nspanel-lovelace-ui",
-    "version": "1.0.1",
+    "version": "1.1.0",
     "news": {
       "1.1.0": {
         "en": "a panel card marked with Check! was unreadable in the dark themes and had almost invisible input frames in the new light one\npasswords no longer reach the log in plain text\nsetting a panel up failed with Invalid response from adapter or the message from the admin is incomplete, it runs as three steps now and shows how far it got\nthe timezone dropdown froze the browser, is a searchable field now, and the chosen zone reaches the panel at last\na switched off panel was marked as such in english and german only, and hard to tell from an offline one\nthe start page can now be set in the admin, it replaces the one from the configuration script and is marked with (main)\na panel no longer needs a page named main in the configuration script, so it can be set up in the admin alone (script version 0.21.1)\nnavigation flow: nodes are coloured by origin, pages linked with next and prev share one edge, long press and state based targets get a connection of their own, and hovering or clicking highlights what belongs together\nnavigation flow: an option shows the states and channels each page works with, together with an info panel for them\nnavigation flow: the page info starts with the page name and its headline and links to the page configuration of an admin page\nadmin: the navigation assignment marks a navigation target that does not exist on an assigned panel\nreplacing a script page from the admin tore the navigation apart and could cut off the access to the service pages\na panel without its own start page could show the start page of another panel\nafter sending the configuration script the reloaded panel lost the pages of all other panels until the adapter was restarted\na cardQR, cardAlarm or cardUnlock page in the configuration script stopped all following pages from being created\nthe page configuration of a cardTrash page did not open when the entry carries no waste types yet\nthe state mainNavigationPoint was not translated",
@@ -93,19 +93,6 @@
         "pl": "Za każdym razem, gdy panel był ponownie uruchomiony po wysłaniu skryptu, model zawsze był ustawiany na 'u'",
         "uk": "Після того, як було відправлено панель, модель завжди була встановлена до 'eu'",
         "zh-cn": "每当剧本发送后面板重新启动时,模型总是被设定为“eu”"
-      },
-      "0.17.4": {
-        "en": "fixed: admin navigation pages were incorrectly linked\nimproved: selection of custom button IDs\nfixed: ChannelConfigDialog footer cut off on small laptop screens (save/color buttons unreachable)",
-        "de": "fixed: Admin-Navigationsseiten waren falsch verknüpft\nimproved: Auswahl benutzerdefinierter Tasten-IDs\nfixed: ChannelConfigDialog unten auf kleinen Laptop-Bildschirmen abgeschnitten (Speichern/Farb-Schaltflächen nicht erreichbar)",
-        "ru": "fixed: страницы навигации администратора были неправильно связаны\nimproved: выбор пользовательских идентификаторов кнопок\nfixed: нижняя часть ChannelConfigDialog обрезана на небольших экранах ноутбуков (кнопки сохранения/цвета недоступны)",
-        "pt": "fixed: as páginas de navegação do admin estavam incorretamente vinculadas\nimproved: seleção de IDs de botões personalizados\nfixed: rodapé do ChannelConfigDialog cortado em telas de laptop pequenas (botões salvar/cor não acessíveis)",
-        "nl": "fixed: admin-navigatiepagina's waren onjuist gekoppeld\nimproved: selectie van aangepaste knop-ID's\nfixed: onderkant van ChannelConfigDialog afgesneden op kleine laptopschermen (opslaan/kleurenknoppen niet bereikbaar)",
-        "fr": "fixed: les pages de navigation admin étaient incorrectement liées\nimproved: sélection des identifiants de boutons personnalisés\nfixed: bas du ChannelConfigDialog tronqué sur les petits écrans de laptop (boutons enregistrer/couleur inaccessibles)",
-        "it": "fixed: le pagine di navigazione admin erano collegate in modo errato\nimproved: selezione degli ID dei pulsanti personalizzati\nfixed: parte inferiore di ChannelConfigDialog troncata su schermi piccoli di laptop (pulsanti salva/colore non raggiungibili)",
-        "es": "fixed: las páginas de navegación del admin estaban vinculadas incorrectamente\nimproved: selección de IDs de botones personalizados\nfixed: parte inferior de ChannelConfigDialog cortada en pantallas de laptop pequeñas (botones guardar/color no accesibles)",
-        "pl": "fixed: strony nawigacji administratora były nieprawidłowo połączone\nimproved: wybór niestandardowych identyfikatorów przycisków\nfixed: dolna część ChannelConfigDialog odcięta na małych ekranach laptopów (przyciski zapisz/kolor niedostępne)",
-        "uk": "fixed: сторінки навігації адміністратора були неправильно пов'язані\nimproved: вибір ідентифікаторів користувацьких кнопок\nfixed: нижня частина ChannelConfigDialog обрізана на невеликих екранах ноутбуків (кнопки збереження/кольору недоступні)",
-        "zh-cn": "fixed: 管理员导航页面链接不正确\nimproved: 自定义按钮ID的选择\nfixed: ChannelConfigDialog底部在小型笔记本电脑屏幕上被截断（保存/颜色按钮无法访问）"
       }
     },
     "titleLang": {

@@ -157,7 +157,7 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
     Placeholder for the next version (at the beginning of the line):
     ### **WORK IN PROGRESS**
 -->
-### **WORK IN PROGRESS**
+### 1.1.0 (2026-09-06)
 - (ticaki) fix: a panel card marked with `Check!` was hard to read - white text on the beige card in the dark themes, almost invisible input frames in the new light one. The icons of the icon picker were invisible in the `blue` theme
 - (ticaki) fix: passwords no longer reach the log in plain text
 - (ticaki) fix: setting a panel up failed with `Invalid response from adapter` or `the message from the admin is incomplete`. It runs as three steps now and shows how far it got
