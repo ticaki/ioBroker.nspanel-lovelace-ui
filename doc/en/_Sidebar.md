@@ -19,7 +19,6 @@
 - *(General)* iA  
 - *(NSPanel Settings)* iA  
 - *(Maintain)* iA  
-- *(Navigation Overview)* iA  
 - *(Developer)* iA  
 
 **Configuration Script**  
