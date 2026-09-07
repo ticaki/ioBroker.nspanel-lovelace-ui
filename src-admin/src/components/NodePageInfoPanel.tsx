@@ -11,6 +11,8 @@ export interface NodePageInfoPanelProps {
     onOpenPageConfig?: () => void;
     /** Icons to show next to a field, as SVG markup using `currentColor`, by field name */
     iconSvgs?: Record<string, string[]>;
+    /** Note to show behind the value of a field, e.g. where it is read from, by field name */
+    hints?: Record<string, string>;
 }
 
 /**
@@ -19,7 +21,7 @@ export interface NodePageInfoPanelProps {
  * @param props Panel state, page info and optionally the jump to the page configuration
  */
 export default function NodePageInfoPanel(props: NodePageInfoPanelProps): React.ReactElement {
-    const { open, data, title, sx, onOpenPageConfig, iconSvgs } = props;
+    const { open, data, title, sx, onOpenPageConfig, iconSvgs, hints } = props;
     // place under header / controls (approx)
     const topPx = 64;
 
@@ -77,6 +79,15 @@ export default function NodePageInfoPanel(props: NodePageInfoPanelProps): React.
                                     }}
                                 />
                             ))}
+                            {hints?.[k] ? (
+                                <Typography
+                                    component="span"
+                                    variant="caption"
+                                    color="text.secondary"
+                                >
+                                    {hints[k]}
+                                </Typography>
+                            ) : null}
                         </Box>
                     ))
                 ) : (

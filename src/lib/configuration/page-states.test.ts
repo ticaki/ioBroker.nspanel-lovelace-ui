@@ -163,4 +163,14 @@ describe('lib/configuration - page item settings', () => {
         expect(states[0].iconsTrue, 'no icon name is known upfront').to.deep.equal([]);
         expect(states[0].iconsFalse).to.deep.equal(['lightbulb-outline']);
     });
+
+    it('reports the state an icon is read from', () => {
+        const item = lightButton();
+        item.data.icon.true.value = { type: 'triggered', dp: 'some.icon.state' };
+
+        const states = collectPageStates([item]);
+
+        expect(states[0].iconStatesTrue).to.deep.equal(['some.icon.state']);
+        expect(states[0].iconStatesFalse, 'a constant icon is read from nowhere').to.deep.equal([]);
+    });
 });
