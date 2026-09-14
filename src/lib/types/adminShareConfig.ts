@@ -122,6 +122,10 @@ export interface StateNodeInfo {
     iconsTrue: string[];
     /** Icons shown while the value is false. */
     iconsFalse: string[];
+    /** States the icons shown while the value is true are read from - missing in older data. */
+    iconStatesTrue?: string[];
+    /** States the icons shown while the value is false are read from - missing in older data. */
+    iconStatesFalse?: string[];
 }
 
 export interface NavigationMapEntry {
@@ -177,6 +181,24 @@ export interface PanelListEntry {
  * sides import from.
  */
 export const mainPageName = 'main';
+
+/**
+ * Navigation node name of the service entry point.
+ *
+ * The service entry point carries two different names: the navigation *node* is called
+ * `///service`, the *page* behind it is called {@link servicePageName}. The adapter resolves
+ * navigation targets against node names, the admin dropdowns however offer page names - so both
+ * values have to be known on both sides.
+ */
+export const serviceNodeName = '///service';
+
+/**
+ * Page name (uniqueID) of the service page reached through {@link serviceNodeName}.
+ *
+ * This is the name the admin UI offers in its navigation dropdowns. It has to be mapped onto
+ * {@link serviceNodeName} before it is used as a navigation target.
+ */
+export const servicePageName = '///unlock';
 
 export interface PageConfigBaseFields {
     hidden?: boolean;
