@@ -89,7 +89,12 @@ function emptyPowerSlot() {
     valueDecimal: 0,
     valueUnit: "W",
     entityHeadline: "",
-    useColorScale: false
+    useColorScale: false,
+    minColorScale: 0,
+    maxColorScale: 1e4,
+    bestColorScale: 0,
+    minSpeedScale: 0,
+    maxSpeedScale: 1e4
   };
 }
 const trashItemCount = 6;

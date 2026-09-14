@@ -743,9 +743,16 @@ function mapPowerTargetUnit(unit: string | undefined): number | undefined {
  * Build the per-slot data block for cardPower from a PowerSlotConfig.
  * Mirrors the structure produced by PagePower.getPowerPageConfig() for one slot.
  *
+ * The React editor only stores a scale bound once the user has typed into its field; a slot whose
+ * bounds were never touched carries no minColorScale/maxColorScale/bestColorScale at all. The scale
+ * is therefore built from the same defaults the classic jsonConfig accordion materialises (0 / 10000 / 0)
+ * whenever useColorScale is set, instead of silently leaving the icon white.
+ *
+ * Exported for the unit test only.
+ *
  * @param slot Per-slot configuration from the React PowerEntry
  */
-function buildPowerSlotData(slot: ShareConfig.PowerSlotConfig | undefined): any {
+export function buildPowerSlotData(slot: ShareConfig.PowerSlotConfig | undefined): any {
     const s = slot ?? {};
     const stateId = (s.state || '').trim();
     const useColorScale = !!s.useColorScale;
@@ -759,13 +766,13 @@ function buildPowerSlotData(slot: ShareConfig.PowerSlotConfig | undefined): any 
         },
         false: undefined,
     };
-    if (useColorScale && typeof s.minColorScale === 'number' && typeof s.maxColorScale === 'number') {
+    if (useColorScale) {
         icon.scale = {
             type: 'const',
             constVal: {
-                val_min: s.minColorScale,
-                val_max: s.maxColorScale,
-                val_best: typeof s.bestColorScale === 'number' ? s.bestColorScale : s.minColorScale,
+                val_min: s.minColorScale ?? 0,
+                val_max: s.maxColorScale ?? 10_000,
+                val_best: s.bestColorScale ?? 0,
                 mode: 'triGrad',
             },
         };
