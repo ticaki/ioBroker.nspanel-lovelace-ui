@@ -148,7 +148,7 @@
     "auto_layout_confirm_reorder": "Reordenar: aplicar diseño",
     "auto_layout_confirm_text": "El diseño automático sobrescribirá las posiciones de los nodos guardados. Cancelar para mantener las posiciones actuales o Reordenar para aplicar el diseño automático.",
     "auto_layout_confirm_title": "¿Reordenar la navegación?",
-    "bass": "Bajo",
+    "bass": "Graves",
     "berryInstallSendTo": "Instalar controlador de bayas",
     "berryTool": "Instalar controlador de bayas",
     "big": "grande",
@@ -309,7 +309,7 @@
     "downgradeAvailable": "Downgrade recomendado",
     "editPanel": "Editar panel",
     "entityHeadline": "Titular de la entidad",
-    "equalizer": "Igualada",
+    "equalizer": "Ecualizador",
     "eu-Version": "Paisaje de la UE",
     "favoriteList": "Lista de favoritos",
     "fixBrokenCommonTypes": "Arreglar tipos comunes rotos",
@@ -614,7 +614,7 @@
     "trash_text_field_4": "Basura tipo 4",
     "trash_text_field_5": "Basura tipo 5",
     "trash_text_field_6": "Basura tipo 6",
-    "treble": "Triplicar",
+    "treble": "Agudos",
     "tropical": "Tropical",
     "uniqueName": "Nombre de la página",
     "unique_label": "Identificación única",
@@ -691,5 +691,6 @@
     "wlanhidden": "wifi oculto",
     "wlantype": "Cifrado wifi",
     "writeTasmotaTele": "Escribir datos de telemetría de Tasmota",
-    "writeTasmotaTeleHint": "Cuando está habilitado, los datos de telemetría del panel se almacenarán en los puntos de datos (paneles/XXXXX/info/tasmota/sts...)."
+    "writeTasmotaTeleHint": "Cuando está habilitado, los datos de telemetría del panel se almacenarán en los puntos de datos (paneles/XXXXX/info/tasmota/sts...).",
+    "power": "Encendido"
 }
