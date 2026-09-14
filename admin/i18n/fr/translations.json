@@ -10,7 +10,7 @@
     "Charging": "Chargement",
     "Charging Error": "Erreur de charge",
     "Cleaning": "Nettoyage",
-    "Clear": "Clair",
+    "Clear": "Non détecté",
     "Clear all": "Tout effacer",
     "Color": "Couleur",
     "Color brightness": "Luminosité des couleurs",
@@ -148,7 +148,7 @@
     "auto_layout_confirm_reorder": "Réorganiser — appliquer la mise en page",
     "auto_layout_confirm_text": "La mise en page automatique écrasera les positions des nœuds enregistrées. Annuler pour conserver les positions actuelles ou Réorganiser pour appliquer la mise en page automatique.",
     "auto_layout_confirm_title": "Réorganiser la navigation ?",
-    "bass": "Basse",
+    "bass": "Graves",
     "berryInstallSendTo": "Installer Berry Driver",
     "berryTool": "Installer Berry Driver",
     "big": "grand",
@@ -614,7 +614,7 @@
     "trash_text_field_4": "Poubelle de type 4",
     "trash_text_field_5": "Poubelle de type 5",
     "trash_text_field_6": "Poubelle de type 6",
-    "treble": "Tripler",
+    "treble": "Aigus",
     "tropical": "Tropical",
     "uniqueName": "Nom de la page",
     "unique_label": "Identifiant unique",
@@ -691,5 +691,6 @@
     "wlanhidden": "wifi caché",
     "wlantype": "Cryptage WiFi",
     "writeTasmotaTele": "Écrire les données de télémétrie Tasmota",
-    "writeTasmotaTeleHint": "Lorsqu'elle est activée, les données de télémétrie du panneau seront stockées dans les points de données (panels/XXXXX/info/tasmota/sts....)."
+    "writeTasmotaTeleHint": "Lorsqu'elle est activée, les données de télémétrie du panneau seront stockées dans les points de données (panels/XXXXX/info/tasmota/sts....).",
+    "power": "Alimentation"
 }

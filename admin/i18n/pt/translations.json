@@ -10,7 +10,7 @@
     "Charging": "Carregando",
     "Charging Error": "Erro de carregamento",
     "Cleaning": "Limpeza",
-    "Clear": "Claro",
+    "Clear": "Não detectado",
     "Clear all": "Limpar tudo",
     "Color": "Cor",
     "Color brightness": "Brilho de cor",
@@ -148,7 +148,7 @@
     "auto_layout_confirm_reorder": "Reordenar – aplicar layout",
     "auto_layout_confirm_text": "O layout automático substituirá as posições dos nós salvas. Cancele para manter as posições atuais ou Reordene para aplicar o layout automático.",
     "auto_layout_confirm_title": "Reordenar a navegação?",
-    "bass": "Baixo",
+    "bass": "Graves",
     "berryInstallSendTo": "Instale o driver da baga",
     "berryTool": "Instale o driver da baga",
     "big": "grande",
@@ -614,7 +614,7 @@
     "trash_text_field_4": "Lixo tipo 4",
     "trash_text_field_5": "Lixo tipo 5",
     "trash_text_field_6": "Lixo tipo 6",
-    "treble": "Agudo",
+    "treble": "Agudos",
     "tropical": "Tropical",
     "uniqueName": "Nome da página",
     "unique_label": "ID exclusivo",
@@ -691,5 +691,6 @@
     "wlanhidden": "wifi oculto",
     "wlantype": "Criptografia WiFi",
     "writeTasmotaTele": "Gravar dados de telemetria Tasmota",
-    "writeTasmotaTeleHint": "Quando habilitado, os dados de telemetria do painel serão armazenados nos pontos de dados (painéis/XXXXX/info/tasmota/sts....)."
+    "writeTasmotaTeleHint": "Quando habilitado, os dados de telemetria do painel serão armazenados nos pontos de dados (painéis/XXXXX/info/tasmota/sts....).",
+    "power": "Ligar/desligar"
 }

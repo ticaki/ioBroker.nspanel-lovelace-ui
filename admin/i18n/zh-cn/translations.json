@@ -10,7 +10,7 @@
     "Charging": "收费",
     "Charging Error": "充电错误",
     "Cleaning": "打扫",
-    "Clear": "清除",
+    "Clear": "未检测到",
     "Clear all": "全部清除",
     "Color": "颜色",
     "Color brightness": "颜色亮度",
@@ -691,5 +691,6 @@
     "wlanhidden": "隐藏的wifi",
     "wlantype": "WiFi加密",
     "writeTasmotaTele": "写入 Tasmota 遥测数据",
-    "writeTasmotaTeleHint": "启用后，面板的遥测数据将存储在数据点（panels/XXXXX/info/tasmota/sts....）中。"
+    "writeTasmotaTeleHint": "启用后，面板的遥测数据将存储在数据点（panels/XXXXX/info/tasmota/sts....）中。",
+    "power": "电源"
 }
