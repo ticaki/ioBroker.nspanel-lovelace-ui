@@ -43,6 +43,13 @@ function constOf(field) {
   const item = field;
   return item.type === "const" && typeof item.constVal === "string" ? item.constVal : void 0;
 }
+function stateOf(field) {
+  if (!field || typeof field !== "object") {
+    return void 0;
+  }
+  const item = field;
+  return item.type !== "const" && typeof item.dp === "string" && item.dp ? item.dp : void 0;
+}
 function commonChannel(ids) {
   const segments = ids[0].split(".");
   let shared = segments.length;
@@ -57,7 +64,18 @@ function commonChannel(ids) {
   return shared >= minChannelSegments ? segments.slice(0, shared).join(".") : "";
 }
 function emptyStateNode(id, isChannel) {
-  return { id, isChannel, roles: [], types: [], states: [], headlines: [], iconsTrue: [], iconsFalse: [] };
+  return {
+    id,
+    isChannel,
+    roles: [],
+    types: [],
+    states: [],
+    headlines: [],
+    iconsTrue: [],
+    iconsFalse: [],
+    iconStatesTrue: [],
+    iconStatesFalse: []
+  };
 }
 function collectPageStates(sources) {
   const nodes = /* @__PURE__ */ new Map();
@@ -67,7 +85,7 @@ function collectPageStates(sources) {
     }
   };
   const add = (id, isChannel, source, used) => {
-    var _a, _b, _c, _d, _e, _f, _g;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m;
     let node = nodes.get(id);
     if (!node) {
       node = emptyStateNode(id, isChannel);
@@ -79,6 +97,8 @@ function collectPageStates(sources) {
     addTo(node.headlines, constOf((_a = source.data) == null ? void 0 : _a.headline));
     addTo(node.iconsTrue, constOf((_d = (_c = (_b = source.data) == null ? void 0 : _b.icon) == null ? void 0 : _c.true) == null ? void 0 : _d.value));
     addTo(node.iconsFalse, constOf((_g = (_f = (_e = source.data) == null ? void 0 : _e.icon) == null ? void 0 : _f.false) == null ? void 0 : _g.value));
+    addTo(node.iconStatesTrue, stateOf((_j = (_i = (_h = source.data) == null ? void 0 : _h.icon) == null ? void 0 : _i.true) == null ? void 0 : _j.value));
+    addTo(node.iconStatesFalse, stateOf((_m = (_l = (_k = source.data) == null ? void 0 : _k.icon) == null ? void 0 : _l.false) == null ? void 0 : _m.value));
     for (const state of used) {
       addTo(node.states, state);
     }
@@ -114,30 +134,25 @@ function collectPageStates(sources) {
   return [...nodes.values()];
 }
 function mergeStateInfo(known, state) {
-  var _a, _b, _c, _d, _e, _f;
-  const merged = {
-    roles: [...(_a = known == null ? void 0 : known.roles) != null ? _a : []],
-    types: [...(_b = known == null ? void 0 : known.types) != null ? _b : []],
-    states: [...(_c = known == null ? void 0 : known.states) != null ? _c : []],
-    headlines: [...(_d = known == null ? void 0 : known.headlines) != null ? _d : []],
-    iconsTrue: [...(_e = known == null ? void 0 : known.iconsTrue) != null ? _e : []],
-    iconsFalse: [...(_f = known == null ? void 0 : known.iconsFalse) != null ? _f : []]
-  };
-  for (const [target, values] of [
-    [merged.roles, state.roles],
-    [merged.types, state.types],
-    [merged.states, state.states],
-    [merged.headlines, state.headlines],
-    [merged.iconsTrue, state.iconsTrue],
-    [merged.iconsFalse, state.iconsFalse]
-  ]) {
-    for (const value of values) {
+  const union = (before, added) => {
+    const target = [...before != null ? before : []];
+    for (const value of added) {
       if (value && !target.includes(value)) {
         target.push(value);
       }
     }
-  }
-  return merged;
+    return target;
+  };
+  return {
+    roles: union(known == null ? void 0 : known.roles, state.roles),
+    types: union(known == null ? void 0 : known.types, state.types),
+    states: union(known == null ? void 0 : known.states, state.states),
+    headlines: union(known == null ? void 0 : known.headlines, state.headlines),
+    iconsTrue: union(known == null ? void 0 : known.iconsTrue, state.iconsTrue),
+    iconsFalse: union(known == null ? void 0 : known.iconsFalse, state.iconsFalse),
+    iconStatesTrue: union(known == null ? void 0 : known.iconStatesTrue, state.iconStatesTrue),
+    iconStatesFalse: union(known == null ? void 0 : known.iconStatesFalse, state.iconStatesFalse)
+  };
 }
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {

@@ -2,6 +2,7 @@ import type { NavigationItemConfig, NavigationItemConfigNonNull } from '../class
 import { mainPageName } from '../const/default-pages';
 import { BaseClass } from '../controller/library';
 import type { panelConfigPartial } from '../controller/panel';
+import { systemNavigation } from '../templates/system-templates';
 import * as ShareConfig from '../types/adminShareConfig';
 import { exhaustiveCheck } from '../types/function-and-const';
 import type { NspanelLovelaceUi } from '../types/NspanelLovelaceUi';
@@ -13,6 +14,32 @@ type PendingNavEntry = {
     prev: string | undefined;
     next: string | undefined;
 };
+
+/**
+ * Names of the navigation nodes contributed by the system templates.
+ *
+ * They are appended to `option.navigation` only after the admin configuration has been processed
+ * (`Panel` concatenates `systemNavigation` after `processentrys()`), so a reference to one of them
+ * cannot be found in `option.navigation` yet - it is valid nonetheless.
+ */
+const systemNavigationNodeNames: ReadonlySet<string> = new Set(
+    systemNavigation.filter((node): node is NavigationItemConfigNonNull => node != null).map(node => node.name),
+);
+
+/**
+ * Maps a navigation target coming from the admin configuration onto the name the adapter resolves
+ * against.
+ *
+ * The admin dropdowns are built from page names, the adapter however looks up navigation *nodes*.
+ * The service entry point is the one place where the two differ: its page is named
+ * `///unlock`, its navigation node `///service`. Everything else passes through unchanged.
+ *
+ * @param name Navigation target as stored by the admin, may be undefined.
+ * @returns The navigation node name to use, or `undefined` if no target was given.
+ */
+function resolveNavigationTarget(name: string | undefined): string | undefined {
+    return name === ShareConfig.servicePageName ? ShareConfig.serviceNodeName : name;
+}
 
 function shallowDescribe(value: unknown): string {
     if (value === null) {
@@ -374,10 +401,10 @@ export class AdminConfiguration extends BaseClass {
             // Apply home/parent immediately – no chain dependency
             const nav = {
                 ...navigation,
-                prev: resolveTarget(navigation.prev),
-                next: resolveTarget(navigation.next),
-                home: resolveTarget(navigation.home),
-                parent: resolveTarget(navigation.parent),
+                prev: resolveNavigationTarget(resolveTarget(navigation.prev)),
+                next: resolveNavigationTarget(resolveTarget(navigation.next)),
+                home: resolveNavigationTarget(resolveTarget(navigation.home)),
+                parent: resolveNavigationTarget(resolveTarget(navigation.parent)),
             };
             // A page must not link to itself - that would dead-end the navigation.
             if (nav.home === newPage.uniqueID) {
@@ -518,12 +545,18 @@ export class AdminConfiguration extends BaseClass {
             }
         }
 
-        // Log unresolved references
+        // Log unresolved references. System nodes are not part of option.navigation yet, a
+        // reference to one of them is valid and must not be reported.
+        const isUnresolved = (target: string | undefined): target is string =>
+            target !== undefined &&
+            !systemNavigationNodeNames.has(target) &&
+            !option.navigation.find(b => b?.name === target);
+
         for (const pending of pendingNavs) {
-            if (pending.prev !== undefined && !option.navigation.find(b => b?.name === pending.prev)) {
+            if (isUnresolved(pending.prev)) {
                 this.log.warn(`Navigation unresolved for '${pending.pageId}': prev page '${pending.prev}' not found.`);
             }
-            if (pending.next !== undefined && !option.navigation.find(b => b?.name === pending.next)) {
+            if (isUnresolved(pending.next)) {
                 this.log.warn(`Navigation unresolved for '${pending.pageId}': next page '${pending.next}' not found.`);
             }
         }

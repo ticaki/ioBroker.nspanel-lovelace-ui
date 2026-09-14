@@ -62,6 +62,11 @@ export interface panelConfigPartial extends Partial<panelConfigTop> {
     updated: boolean;
     scriptVersion?: string;
     model?: Types.NSpanelModel;
+    /**
+     * Pages that come from the global script configuration instead of the script of this panel.
+     * Filled by the config manager, used to record the origin of those pages.
+     */
+    globalPageIds?: string[];
 }
 
 const DefaultOptions = {
@@ -353,6 +358,8 @@ export class Panel extends BaseClass {
         options.navigation = options.navigation || [];
 
         // Record where each page came from - the admin navigation view colours its nodes by it.
+        // Pages of the global script configuration first, everything else left is panel script.
+        this.pageOrigins.classifyIds(options.pages, options.globalPageIds ?? [], 'global');
         this.pageOrigins.classify(options.pages, 'script');
 
         // Guarantee a start page before the admin pages are merged, so the precedence is
@@ -369,6 +376,14 @@ export class Panel extends BaseClass {
         const admin = new AdminConfiguration(this.adapter);
         await admin.processentrys(options);
         this.pageOrigins.classify(options.pages, 'admin');
+
+        if (this.pageOrigins.get(mainPageName) === 'global') {
+            // A global page named 'main' is a valid way to share one start page across panels, but
+            // it silently takes the place of the panel start page - so say where it comes from.
+            this.log.info(
+                `Start page '${mainPageName}' comes from the global script configuration, not from the script of this panel.`,
+            );
+        }
         options.pages = options.pages.filter(b => {
             if (
                 b.config?.card === 'screensaver' ||

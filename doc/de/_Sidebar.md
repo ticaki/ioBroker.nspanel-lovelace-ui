@@ -20,7 +20,6 @@
 - [General](General) iA  
 - [NSPanelsetting](NSPanelsetting) iA  
 - [Maintain](Maintain) iA  
-- [Navigation Overview](Navigation) iA  
 - [Developer](Developer) iA  
   
 **Konfiguratiosscript**

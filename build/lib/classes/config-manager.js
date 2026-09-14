@@ -157,6 +157,7 @@ class ConfigManager extends import_library.BaseClass {
         `Panel for Topic: ${config.panelTopic} name: ${panelItem.name} Script version ${config.version} is correct!`
       );
     }
+    const globalPageIds = /* @__PURE__ */ new Set();
     {
       const navigationAdjustRun = (oldUniqueName, newUniqueName, pages, renamedPages, maxRun = 3, indexRun = 0, runPrefix = "") => {
         if (!oldUniqueName || !newUniqueName || oldUniqueName === newUniqueName) {
@@ -315,6 +316,9 @@ class ConfigManager extends import_library.BaseClass {
                 if (page.heading) {
                   config.pages[i].heading = page.heading;
                 }
+                if (config.pages[i].uniqueName) {
+                  globalPageIds.add(config.pages[i].uniqueName);
+                }
               } else {
                 config.pages.splice(i, 1);
                 const msg = `Global page with uniqueName ${page.globalLink} not found!`;
@@ -360,6 +364,9 @@ class ConfigManager extends import_library.BaseClass {
                 if (page.heading) {
                   config.subPages[i].heading = page.heading;
                 }
+                if (config.subPages[i].uniqueName) {
+                  globalPageIds.add(config.subPages[i].uniqueName);
+                }
               } else {
                 config.subPages.splice(i, 1);
                 const msg = `Global page with uniqueName ${page.globalLink} not found!`;
@@ -370,6 +377,11 @@ class ConfigManager extends import_library.BaseClass {
           }
           for (const index of Array.from(removeGlobalPageIndexs).sort((a, b) => b - a)) {
             globalConfig.subPages.splice(index, 1);
+          }
+          for (const page of globalConfig.subPages || []) {
+            if (page && page.uniqueName) {
+              globalPageIds.add(page.uniqueName);
+            }
           }
           config.subPages = config.subPages.concat(globalConfig.subPages || []);
           config.navigation = (config.navigation || []).concat(globalConfig.navigation || []);
@@ -488,6 +500,7 @@ class ConfigManager extends import_library.BaseClass {
       return { messages, panelConfig: void 0 };
     }
     ({ panelConfig, messages } = await this.getPageConfig(config, panelConfig, messages));
+    panelConfig.globalPageIds = panelConfig.pages.filter((page) => page && page.uniqueID && globalPageIds.has(page.uniqueID)).map((page) => page.uniqueID);
     const nav1 = config.navigation;
     const nav2 = panelConfig.navigation;
     if (nav1 != null && (0, import_navigation.isNavigationItemConfigArray)(nav1) && (0, import_navigation.isNavigationItemConfigArray)(nav2)) {
