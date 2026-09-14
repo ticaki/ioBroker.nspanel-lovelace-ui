@@ -469,12 +469,6 @@ class Controller extends Library.BaseClass {
     panel.friendlyName = this.adapter.config.panels[index].name;
     panel.controller = this;
     panel.scriptName = panel.scriptName || "missing";
-    const o = await this.adapter.getForeignObjectAsync(this.adapter.namespace);
-    if ((panel == null ? void 0 : panel.topic) && o && o.native && o.native.navigation) {
-      if (o.native.navigation[panel.topic] && o.native.navigation[panel.topic].useNavigation) {
-        panel.navigation = o.native.navigation[panel.topic].data;
-      }
-    }
     const newPanel = await Panel.Panel.create(this.adapter, panel);
     if (await newPanel.isValid()) {
       await newPanel.init();

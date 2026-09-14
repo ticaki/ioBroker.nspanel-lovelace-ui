@@ -37,6 +37,8 @@ __export(adminShareConfig_exports, {
   panelStatusTranslationKeys: () => panelStatusTranslationKeys,
   requiredScriptDataPoints: () => requiredScriptDataPoints,
   reversePanelStatusStates: () => reversePanelStatusStates,
+  serviceNodeName: () => serviceNodeName,
+  servicePageName: () => servicePageName,
   shortStateLabel: () => shortStateLabel,
   stateRefNodeId: () => stateRefNodeId,
   trashItemCount: () => trashItemCount
@@ -57,6 +59,8 @@ function shortStateLabel(dp) {
   return parts.length <= 2 ? dp : `\u2026${parts.slice(-2).join(".")}`;
 }
 const mainPageName = "main";
+const serviceNodeName = "///service";
+const servicePageName = "///unlock";
 function emptyChannelValueConfig(valueStateId = "") {
   return { valueStateId, unit: "", prefix: "", suffix: "", dateFormat: "" };
 }
@@ -85,7 +89,12 @@ function emptyPowerSlot() {
     valueDecimal: 0,
     valueUnit: "W",
     entityHeadline: "",
-    useColorScale: false
+    useColorScale: false,
+    minColorScale: 0,
+    maxColorScale: 1e4,
+    bestColorScale: 0,
+    minSpeedScale: 0,
+    maxSpeedScale: 1e4
   };
 }
 const trashItemCount = 6;
@@ -837,6 +846,8 @@ const CHANNEL_ROLES_LIST = Object.keys(requiredScriptDataPoints);
   panelStatusTranslationKeys,
   requiredScriptDataPoints,
   reversePanelStatusStates,
+  serviceNodeName,
+  servicePageName,
   shortStateLabel,
   stateRefNodeId,
   trashItemCount

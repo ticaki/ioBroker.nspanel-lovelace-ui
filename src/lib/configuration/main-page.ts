@@ -1,9 +1,7 @@
 import type { NavigationItemConfig } from '../classes/navigation';
 import { getDefaultMainPage, mainPageName } from '../const/default-pages';
+import { serviceNodeName } from '../types/adminShareConfig';
 import type { PageBase } from '../types/pages';
-
-/** Navigation node name of the service entry point added by the config manager. */
-const serviceNodeName = '///service';
 
 /** Result of {@link ensureMainPage}, used for logging by the caller. */
 export type EnsureMainPageResult = {
