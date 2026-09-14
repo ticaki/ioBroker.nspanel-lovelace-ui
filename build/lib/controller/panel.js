@@ -312,8 +312,10 @@ class Panel extends import_library.BaseClass {
     this.statesControler.clearObjectDatabase();
   }
   async preInit(options) {
+    var _a;
     options.pages = options.pages || [];
     options.navigation = options.navigation || [];
+    this.pageOrigins.classifyIds(options.pages, (_a = options.globalPageIds) != null ? _a : [], "global");
     this.pageOrigins.classify(options.pages, "script");
     const ensured = (0, import_main_page.ensureMainPage)(options, this.friendlyName || this.name);
     this.pageOrigins.classify(options.pages, "system");
@@ -325,9 +327,14 @@ class Panel extends import_library.BaseClass {
     const admin = new import_admin.AdminConfiguration(this.adapter);
     await admin.processentrys(options);
     this.pageOrigins.classify(options.pages, "admin");
+    if (this.pageOrigins.get(import_default_pages.mainPageName) === "global") {
+      this.log.info(
+        `Start page '${import_default_pages.mainPageName}' comes from the global script configuration, not from the script of this panel.`
+      );
+    }
     options.pages = options.pages.filter((b) => {
-      var _a, _b, _c;
-      if (((_a = b.config) == null ? void 0 : _a.card) === "screensaver" || ((_b = b.config) == null ? void 0 : _b.card) === "screensaver2" || ((_c = b.config) == null ? void 0 : _c.card) === "screensaver3") {
+      var _a2, _b, _c;
+      if (((_a2 = b.config) == null ? void 0 : _a2.card) === "screensaver" || ((_b = b.config) == null ? void 0 : _b.card) === "screensaver2" || ((_c = b.config) == null ? void 0 : _c.card) === "screensaver3") {
         return true;
       }
       if (options.navigation.find((c) => c && c.name === b.uniqueID)) {

@@ -77,11 +77,12 @@ export type NavigationPositionsMap = { name: string; position: { x: number; y: n
 /**
  * Where a page of a panel comes from:
  *
- * - `script` - delivered by the configuration script
+ * - `script` - delivered by the configuration script of this panel
+ * - `global` - delivered by the global script configuration, which every panel receives
  * - `admin` - defined in the admin page list (also when it replaces a page of the same name)
  * - `system` - service page of the adapter or the generated default start page
  */
-export type PageOrigin = 'script' | 'admin' | 'system';
+export type PageOrigin = 'script' | 'global' | 'admin' | 'system';
 
 /**
  * Node id for a state a navigation target is read from.
@@ -121,6 +122,10 @@ export interface StateNodeInfo {
     iconsTrue: string[];
     /** Icons shown while the value is false. */
     iconsFalse: string[];
+    /** States the icons shown while the value is true are read from - missing in older data. */
+    iconStatesTrue?: string[];
+    /** States the icons shown while the value is false are read from - missing in older data. */
+    iconStatesFalse?: string[];
 }
 
 export interface NavigationMapEntry {
@@ -176,6 +181,24 @@ export interface PanelListEntry {
  * sides import from.
  */
 export const mainPageName = 'main';
+
+/**
+ * Navigation node name of the service entry point.
+ *
+ * The service entry point carries two different names: the navigation *node* is called
+ * `///service`, the *page* behind it is called {@link servicePageName}. The adapter resolves
+ * navigation targets against node names, the admin dropdowns however offer page names - so both
+ * values have to be known on both sides.
+ */
+export const serviceNodeName = '///service';
+
+/**
+ * Page name (uniqueID) of the service page reached through {@link serviceNodeName}.
+ *
+ * This is the name the admin UI offers in its navigation dropdowns. It has to be mapped onto
+ * {@link serviceNodeName} before it is used as a navigation target.
+ */
+export const servicePageName = '///unlock';
 
 export interface PageConfigBaseFields {
     hidden?: boolean;
@@ -404,7 +427,15 @@ export type PowerEntry = {
     homeBot: PowerHomeBotConfig;
 } & PageConfigBaseFields;
 
-/** Empty default for a power slot — used when adding a new cardPower entry. */
+/**
+ * Empty default for a power slot — used when adding a new cardPower entry.
+ *
+ * The scale bounds are stored explicitly, with the defaults of the classic jsonConfig accordion
+ * (0 / 10000 / 0 for the color scale, 0 / 10000 for the speed scale). The editor only writes a bound
+ * once it was typed in, so without these defaults a slot keeps the bounds it displays out of its stored data.
+ *
+ * @returns A slot with every field the editor shows.
+ */
 export function emptyPowerSlot(): PowerSlotConfig {
     return {
         icon: '',
@@ -414,6 +445,11 @@ export function emptyPowerSlot(): PowerSlotConfig {
         valueUnit: 'W',
         entityHeadline: '',
         useColorScale: false,
+        minColorScale: 0,
+        maxColorScale: 10_000,
+        bestColorScale: 0,
+        minSpeedScale: 0,
+        maxSpeedScale: 10_000,
     };
 }
 

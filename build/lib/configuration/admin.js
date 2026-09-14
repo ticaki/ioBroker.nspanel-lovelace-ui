@@ -28,13 +28,21 @@ var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__ge
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 var admin_exports = {};
 __export(admin_exports, {
-  AdminConfiguration: () => AdminConfiguration
+  AdminConfiguration: () => AdminConfiguration,
+  buildPowerSlotData: () => buildPowerSlotData
 });
 module.exports = __toCommonJS(admin_exports);
 var import_default_pages = require("../const/default-pages");
 var import_library = require("../controller/library");
+var import_system_templates = require("../templates/system-templates");
 var ShareConfig = __toESM(require("../types/adminShareConfig"));
 var import_function_and_const = require("../types/function-and-const");
+const systemNavigationNodeNames = new Set(
+  import_system_templates.systemNavigation.filter((node) => node != null).map((node) => node.name)
+);
+function resolveNavigationTarget(name) {
+  return name === ShareConfig.servicePageName ? ShareConfig.serviceNodeName : name;
+}
 function shallowDescribe(value) {
   if (value === null) {
     return "null";
@@ -342,10 +350,10 @@ Stack: ${stack}`
       }
       const nav = {
         ...navigation,
-        prev: resolveTarget(navigation.prev),
-        next: resolveTarget(navigation.next),
-        home: resolveTarget(navigation.home),
-        parent: resolveTarget(navigation.parent)
+        prev: resolveNavigationTarget(resolveTarget(navigation.prev)),
+        next: resolveNavigationTarget(resolveTarget(navigation.next)),
+        home: resolveNavigationTarget(resolveTarget(navigation.home)),
+        parent: resolveNavigationTarget(resolveTarget(navigation.parent))
       };
       if (nav.home === newPage.uniqueID) {
         this.log.warn(`Page '${newPage.uniqueID}' has a home link to itself! Removed!`);
@@ -462,11 +470,12 @@ Stack: ${stack}`
         }
       }
     }
+    const isUnresolved = (target) => target !== void 0 && !systemNavigationNodeNames.has(target) && !option.navigation.find((b) => (b == null ? void 0 : b.name) === target);
     for (const pending of pendingNavs) {
-      if (pending.prev !== void 0 && !option.navigation.find((b) => (b == null ? void 0 : b.name) === pending.prev)) {
+      if (isUnresolved(pending.prev)) {
         this.log.warn(`Navigation unresolved for '${pending.pageId}': prev page '${pending.prev}' not found.`);
       }
-      if (pending.next !== void 0 && !option.navigation.find((b) => (b == null ? void 0 : b.name) === pending.next)) {
+      if (isUnresolved(pending.next)) {
         this.log.warn(`Navigation unresolved for '${pending.pageId}': next page '${pending.next}' not found.`);
       }
     }
@@ -608,7 +617,7 @@ function mapPowerTargetUnit(unit) {
   }
 }
 function buildPowerSlotData(slot) {
-  var _a, _b, _c;
+  var _a, _b, _c, _d, _e, _f;
   const s = slot != null ? slot : {};
   const stateId = (s.state || "").trim();
   const useColorScale = !!s.useColorScale;
@@ -621,26 +630,26 @@ function buildPowerSlotData(slot) {
     },
     false: void 0
   };
-  if (useColorScale && typeof s.minColorScale === "number" && typeof s.maxColorScale === "number") {
+  if (useColorScale) {
     icon.scale = {
       type: "const",
       constVal: {
-        val_min: s.minColorScale,
-        val_max: s.maxColorScale,
-        val_best: typeof s.bestColorScale === "number" ? s.bestColorScale : s.minColorScale,
+        val_min: (_a = s.minColorScale) != null ? _a : 0,
+        val_max: (_b = s.maxColorScale) != null ? _b : 1e4,
+        val_best: (_c = s.bestColorScale) != null ? _c : 0,
         mode: "triGrad"
       }
     };
   }
   const value = stateId ? {
     value: { type: "triggered", dp: stateId },
-    decimal: { type: "const", constVal: (_a = s.valueDecimal) != null ? _a : 0 },
+    decimal: { type: "const", constVal: (_d = s.valueDecimal) != null ? _d : 0 },
     unit: { type: "const", constVal: unitSuffix }
   } : void 0;
   const speed = stateId ? {
     value: { type: "triggered", dp: stateId },
-    minScale: { type: "const", constVal: (_b = s.minSpeedScale) != null ? _b : 0 },
-    maxScale: { type: "const", constVal: (_c = s.maxSpeedScale) != null ? _c : 1e4 },
+    minScale: { type: "const", constVal: (_e = s.minSpeedScale) != null ? _e : 0 },
+    maxScale: { type: "const", constVal: (_f = s.maxSpeedScale) != null ? _f : 1e4 },
     negate: { type: "const", constVal: !!s.reverse }
   } : void 0;
   const targetUnit = mapPowerTargetUnit(s.valueUnit);
@@ -832,6 +841,7 @@ function dataForcardTrash(entry) {
 }
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
-  AdminConfiguration
+  AdminConfiguration,
+  buildPowerSlotData
 });
 //# sourceMappingURL=admin.js.map
