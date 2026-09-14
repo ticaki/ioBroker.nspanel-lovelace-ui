@@ -158,6 +158,7 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
     ### **WORK IN PROGRESS**
 -->
 ### **WORK IN PROGRESS**
+- (tt-tom17) fix: a cardPower page created in the admin tab showed white icons although the color scale was switched on. The scale was only built when both its lower and its upper bound had been typed in; a bound that was left at its displayed default was never stored. The defaults of the classic accordion (0 / 10000 / 0) apply now
 - (tt-tom17) the expert tab `Navigation Overview` has been removed. It never made it into productive use; the navigation of a panel is configured in its script or in the `Navigation Flow` tab
 - (ticaki) a page named `main` in the global script configuration is used as start page of every panel that has none of its own. That is unchanged, but it is now logged and the navigation view of the admin marks such pages as `page from the global script configuration`
 - (tt-tom17) admin: the navigation assignment panel can show system pages (the `///`-prefixed ones) in the prev/next/parent/home dropdowns via a new checkbox; `///unlock` is always listed
