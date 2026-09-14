@@ -427,7 +427,15 @@ export type PowerEntry = {
     homeBot: PowerHomeBotConfig;
 } & PageConfigBaseFields;
 
-/** Empty default for a power slot — used when adding a new cardPower entry. */
+/**
+ * Empty default for a power slot — used when adding a new cardPower entry.
+ *
+ * The scale bounds are stored explicitly, with the defaults of the classic jsonConfig accordion
+ * (0 / 10000 / 0 for the color scale, 0 / 10000 for the speed scale). The editor only writes a bound
+ * once it was typed in, so without these defaults a slot keeps the bounds it displays out of its stored data.
+ *
+ * @returns A slot with every field the editor shows.
+ */
 export function emptyPowerSlot(): PowerSlotConfig {
     return {
         icon: '',
@@ -437,6 +445,11 @@ export function emptyPowerSlot(): PowerSlotConfig {
         valueUnit: 'W',
         entityHeadline: '',
         useColorScale: false,
+        minColorScale: 0,
+        maxColorScale: 10_000,
+        bestColorScale: 0,
+        minSpeedScale: 0,
+        maxSpeedScale: 10_000,
     };
 }
 
