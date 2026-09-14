@@ -148,7 +148,7 @@
     "auto_layout_confirm_reorder": "Opnieuw ordenen - lay-out toepassen",
     "auto_layout_confirm_text": "Automatische lay-out overschrijft opgeslagen knooppuntposities. Annuleer om de huidige posities te behouden of Herschik om automatische lay-out toe te passen.",
     "auto_layout_confirm_title": "Navigatie opnieuw ordenen?",
-    "bass": "Bas",
+    "bass": "Lage tonen",
     "berryInstallSendTo": "Installeer Berry Driver",
     "berryTool": "Installeer Berry Driver",
     "big": "groot",
@@ -309,7 +309,7 @@
     "downgradeAvailable": "Downgrade aanbevolen",
     "editPanel": "Paneel bewerken",
     "entityHeadline": "Entiteit kop",
-    "equalizer": "Gelijkmaker",
+    "equalizer": "Equalizer",
     "eu-Version": "EU-Landscape",
     "favoriteList": "Favorietenlijst",
     "fixBrokenCommonTypes": "Repareer gebroken gemeenschappelijke types",
@@ -614,7 +614,7 @@
     "trash_text_field_4": "Afvaltype 4",
     "trash_text_field_5": "Afvaltype 5",
     "trash_text_field_6": "Afvaltype 6",
-    "treble": "Drievoudig",
+    "treble": "Hoge tonen",
     "tropical": "Tropisch",
     "uniqueName": "Paginanaam",
     "unique_label": "Unieke ID",
@@ -691,5 +691,6 @@
     "wlanhidden": "verborgen wifi",
     "wlantype": "Wifi -codering",
     "writeTasmotaTele": "Schrijf Tasmota-telemetriegegevens",
-    "writeTasmotaTeleHint": "Indien ingeschakeld, worden de telemetriegegevens van het paneel opgeslagen in de datapunten (panels/XXXXX/info/tasmota/sts....)."
+    "writeTasmotaTeleHint": "Indien ingeschakeld, worden de telemetriegegevens van het paneel opgeslagen in de datapunten (panels/XXXXX/info/tasmota/sts....).",
+    "power": "Aan/uit"
 }
