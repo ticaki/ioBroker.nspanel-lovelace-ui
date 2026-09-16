@@ -156,6 +156,8 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
 <!--
     Placeholder for the next version (at the beginning of the line):
     ### **WORK IN PROGRESS**
+- (tt-tom17) fix: the popup of a select item with a configured mode list showed the raw value of ACTUAL (the index) as current mode instead of the list entry, so no entry was marked; the entry is looked up by index now, `label?value` entries by their value
+- (tt-tom17) fix: selecting an entry of a mode list configured for a select item wrote the index into the read-only ACTUAL state (Forbidden write attempts on a read-only state); the writeable SET state is used now, light items are unaffected because both point to inSel_Alias
 -->
 ### **WORK IN PROGRESS**
 - (tt-tom17) admin: the timezone field of the panel setup sits in the same row and has the same width as the other fields again

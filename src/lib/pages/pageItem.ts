@@ -2954,10 +2954,16 @@ export class PageItem extends BaseTriggeredPage {
                 item.entityInSel &&
                 item.entityInSel.value
             ) {
-                if (item.entityInSel.value?.common?.type === 'number') {
-                    await item.entityInSel.value.setState(parseInt(sList.states[parseInt(value)]));
+                // write to the SET state when there is a writeable one (role select: ACTUAL is read-only),
+                // otherwise to value – for the light roles both are the same datapoint (inSel_Alias)
+                const target =
+                    item.entityInSel.set && item.entityInSel.set.writeable
+                        ? item.entityInSel.set
+                        : item.entityInSel.value;
+                if (target.common?.type === 'number') {
+                    await target.setState(parseInt(sList.states[parseInt(value)]));
                 } else {
-                    await item.entityInSel.value.setState(sList.states[parseInt(value)]);
+                    await target.setState(sList.states[parseInt(value)]);
                 }
                 return true;
             }
@@ -3292,20 +3298,29 @@ export class PageItem extends BaseTriggeredPage {
                 list.states = [];
                 const v = await valueList?.getObject();
                 if (v && Array.isArray(v) && v.every(ve => typeof ve === 'string')) {
+                    // current raw value of the state: the index for plain entries, the value part for "label?value"
                     const value = await tools.getValueEntryString(entityInSel);
                     for (let a = 0; a < v.length; a++) {
                         const arr = v[a].split('?');
                         if (arr.length >= 2) {
                             list.list.push(this.library.getTranslation(arr[0]));
                             list.states.push(String(arr[1]));
-                            list.value = list.value || (v[a][1] === value ? v[a][0] : list.value);
+                            if (!list.value && value !== null && String(arr[1]) === value) {
+                                list.value = arr[0];
+                            }
                         } else {
                             list.list.push(this.library.getTranslation(v[a]));
                             list.states.push(String(a));
+                            if (!list.value && value !== null && String(a) === value) {
+                                list.value = v[a];
+                            }
                         }
                     }
                 }
-                list.value = (await tools.getValueEntryString(entityInSel)) || undefined;
+                // no entry matched (e.g. a device wrote a foreign text): show the raw value
+                if (!list.value) {
+                    list.value = (await tools.getValueEntryString(entityInSel)) || undefined;
+                }
             }
         } else {
             list.list = [];

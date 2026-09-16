@@ -2547,7 +2547,7 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
    * 'flip': Liest den State mit ID ein, negiert den Wert und schreibt ihn wieder zurück. string, number, boolean möglich.
    */
   async setListCommand(entry, value) {
-    var _a, _b, _c, _d, _e, _f, _g;
+    var _a, _b, _c, _d, _e, _f;
     const item = entry.data;
     if (!item || !("entityInSel" in item)) {
       return false;
@@ -2594,10 +2594,11 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
           }
         }
       } else if (sList.states !== void 0 && sList.states[parseInt(value)] !== void 0 && item.entityInSel && item.entityInSel.value) {
-        if (((_g = (_f = item.entityInSel.value) == null ? void 0 : _f.common) == null ? void 0 : _g.type) === "number") {
-          await item.entityInSel.value.setState(parseInt(sList.states[parseInt(value)]));
+        const target = item.entityInSel.set && item.entityInSel.set.writeable ? item.entityInSel.set : item.entityInSel.value;
+        if (((_f = target.common) == null ? void 0 : _f.type) === "number") {
+          await target.setState(parseInt(sList.states[parseInt(value)]));
         } else {
-          await item.entityInSel.value.setState(sList.states[parseInt(value)]);
+          await target.setState(sList.states[parseInt(value)]);
         }
         return true;
       }
@@ -2901,14 +2902,21 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
             if (arr.length >= 2) {
               list.list.push(this.library.getTranslation(arr[0]));
               list.states.push(String(arr[1]));
-              list.value = list.value || (v[a][1] === value ? v[a][0] : list.value);
+              if (!list.value && value !== null && String(arr[1]) === value) {
+                list.value = arr[0];
+              }
             } else {
               list.list.push(this.library.getTranslation(v[a]));
               list.states.push(String(a));
+              if (!list.value && value !== null && String(a) === value) {
+                list.value = v[a];
+              }
             }
           }
         }
-        list.value = await tools.getValueEntryString(entityInSel) || void 0;
+        if (!list.value) {
+          list.value = await tools.getValueEntryString(entityInSel) || void 0;
+        }
       }
     } else {
       list.list = [];
