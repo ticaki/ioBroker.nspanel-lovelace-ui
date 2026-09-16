@@ -158,6 +158,7 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
     ### **WORK IN PROGRESS**
 -->
 ### **WORK IN PROGRESS**
+- (tt-tom17) admin: the timezone field of the panel setup sits in the same row and has the same width as the other fields again
 - (tt-tom17) admin: light items with the roles rgbSingle, rgb, ct and hue get a `Mode list` dialog in the item editor to configure `inSel_Alias` (a writable string state) and `modeList` (one entry per line). The dialog checks the state, warns about `?` in entries, about more than 48 entries and about lists longer than 900 characters, and can take the list from the state's `common.states` (a state with own `common.states` is listed by the adapter directly from them, the mode list is only a fallback)
 
 ### 1.1.1 (2026-09-16)
