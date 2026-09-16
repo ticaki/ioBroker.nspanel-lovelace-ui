@@ -287,6 +287,7 @@
     "channelModeListDialog_modeList": "Modes (un par ligne)",
     "channelModeListDialog_modeListHint": "Les lignes vides sont ignorées. L’adaptateur joint les entrées par « ? » pour le panneau, un « ? » ne doit donc pas figurer dans une entrée. Au maximum 48 entrées et 900 caractères (sauts de ligne insérés par l’adaptateur inclus) parviennent au panneau.",
     "channelModeListDialog_save": "Appliquer",
+    "channelModeListDialog_selectInfo": "Rôle select : l’adaptateur utilise le point de données %s du canal. Sans liste de modes, il la construit à partir de ses common.states (ou de ceux de la cible de l’alias) ; avec une liste de modes, le panneau affiche ces entrées et écrit l’index lors de la sélection.",
     "channelModeListDialog_statesInfo": "Le point de données a ses propres common.states – l’adaptateur construit la liste du panneau directement à partir d’eux ; la liste des modes ne sert que de solution de repli.",
     "channelModeListDialog_takeFromStates": "Reprendre la liste du point de données",
     "channelModeListDialog_takeFromStatesNoAlias": "Sélectionnez d'abord un point de données de sélection.",

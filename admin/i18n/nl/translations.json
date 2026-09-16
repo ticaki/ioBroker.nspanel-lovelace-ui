@@ -287,6 +287,7 @@
     "channelModeListDialog_modeList": "Modi (één per regel)",
     "channelModeListDialog_modeListHint": "Lege regels worden genegeerd. De adapter voegt de items voor het paneel samen met \"?\", daarom mag \"?\" niet binnen een item staan. Hoogstens 48 items en 900 tekens (inclusief de door de adapter ingevoegde regeleinden) bereiken het paneel.",
     "channelModeListDialog_save": "Overnemen",
+    "channelModeListDialog_selectInfo": "Rol select: de adapter gebruikt het datapunt %s van het kanaal. Zonder moduslijst bouwt hij de lijst uit zijn common.states (of die van het aliasdoel); met een moduslijst toont het paneel deze items en schrijft bij selectie de index.",
     "channelModeListDialog_statesInfo": "Het datapunt heeft eigen common.states – de adapter bouwt de lijst op het paneel daar rechtstreeks uit; de moduslijst dient alleen als fallback.",
     "channelModeListDialog_takeFromStates": "Lijst uit datapunt overnemen",
     "channelModeListDialog_takeFromStatesNoAlias": "Kies eerst een selectie-datapunt.",

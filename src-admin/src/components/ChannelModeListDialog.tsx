@@ -64,6 +64,10 @@ export interface ChannelModeListDialogProps {
     theme?: any;
     themeType?: ThemeType;
     onSave?: (config: ChannelModeListConfig) => void;
+    /** false: no selection state field (role select) – the adapter uses the channel's SET state instead */
+    showAlias?: boolean;
+    /** Id whose common.states feed "take list from datapoint" when showAlias is false (e.g. <channel>.SET) */
+    statesSourceId?: string;
 }
 
 /** Result of the inSel_Alias datapoint check. */
@@ -127,7 +131,48 @@ class ChannelModeListDialog extends React.Component<ChannelModeListDialogProps, 
             aliasStates: undefined,
             confirmOpen: false,
         });
-        void this.startCheck(alias);
+        if (this.props.showAlias === false) {
+            void this.loadStatesFrom(this.props.statesSourceId ?? '');
+        } else {
+            void this.startCheck(alias);
+        }
+    }
+
+    /**
+     * Loads common.states for "take list from datapoint" when the dialog has no alias field (role select):
+     * like the adapter it reads the channel's SET state and, without states there, the alias target.
+     *
+     * @param id Datapoint id (e.g. <channel>.SET)
+     */
+    private async loadStatesFrom(id: string): Promise<void> {
+        const { socket } = this.props;
+        const seq = ++this.checkSequence;
+        if (!id || !socket) {
+            return;
+        }
+        let states: ChannelModeListDialogState['aliasStates'] = undefined;
+        try {
+            const obj: ioBroker.Object | null | undefined = await (socket.getObject(id) as Promise<
+                ioBroker.Object | null | undefined
+            >);
+            if (obj?.type === 'state') {
+                states = obj.common.states;
+                const aliasId = obj.common.alias?.id;
+                const aliasTarget = typeof aliasId === 'string' ? aliasId : aliasId?.read;
+                if (!states && aliasTarget) {
+                    const target: ioBroker.Object | null | undefined = await (socket.getObject(aliasTarget) as Promise<
+                        ioBroker.Object | null | undefined
+                    >);
+                    states = target?.type === 'state' ? target.common.states : undefined;
+                }
+            }
+        } catch {
+            states = undefined;
+        }
+        if (seq !== this.checkSequence) {
+            return;
+        }
+        this.setState({ aliasStates: states });
     }
 
     /**
@@ -265,7 +310,7 @@ class ChannelModeListDialog extends React.Component<ChannelModeListDialogProps, 
         const alias = this.state.inSelAlias.trim();
         const list = this.parseModeList(this.state.modeListText);
         this.props.onSave?.({
-            inSel_Alias: alias !== '' ? alias : undefined,
+            inSel_Alias: this.props.showAlias !== false && alias !== '' ? alias : undefined,
             modeList: list.length > 0 ? list : undefined,
         });
         this.setState({ open: false, confirmOpen: false });
@@ -273,7 +318,7 @@ class ChannelModeListDialog extends React.Component<ChannelModeListDialogProps, 
 
     private handleSave = async (): Promise<void> => {
         const alias = this.state.inSelAlias.trim();
-        if (alias === '') {
+        if (this.props.showAlias === false || alias === '') {
             this.commit();
             return;
         }
@@ -332,7 +377,7 @@ class ChannelModeListDialog extends React.Component<ChannelModeListDialogProps, 
     }
 
     render(): React.JSX.Element {
-        const { socket, theme, themeType } = this.props;
+        const { socket, theme, themeType, showAlias, statesSourceId } = this.props;
         const { open, inSelAlias, modeListText, aliasStatus, aliasStates, confirmOpen } = this.state;
 
         const list = this.parseModeList(modeListText);
@@ -342,10 +387,9 @@ class ChannelModeListDialog extends React.Component<ChannelModeListDialogProps, 
         const tooMany = list.length > MODE_LIST_MAX_ENTRIES;
         const statesList = this.statesToList(aliasStates);
         const canTakeFromStates = aliasStatus !== 'checking' && statesList.length > 0;
-        const takeTooltip =
-            inSelAlias.trim() === ''
-                ? I18n.t('channelModeListDialog_takeFromStatesNoAlias')
-                : I18n.t('channelModeListDialog_takeFromStatesNoStates');
+        const takeTooltip = (showAlias === false ? !statesSourceId : inSelAlias.trim() === '')
+            ? I18n.t('channelModeListDialog_takeFromStatesNoAlias')
+            : I18n.t('channelModeListDialog_takeFromStatesNoStates');
 
         return (
             <>
@@ -374,32 +418,41 @@ class ChannelModeListDialog extends React.Component<ChannelModeListDialogProps, 
                                 gap: 2,
                             }}
                         >
-                            {/* inSel_Alias */}
-                            <Box>
-                                <EntitySelector
-                                    label={I18n.t('channelModeListDialog_alias')}
-                                    value={inSelAlias}
-                                    onChange={this.handleAliasChange}
-                                    onCommit={this.handleAliasCommit}
-                                    socket={socket}
-                                    theme={theme}
-                                    themeType={themeType ?? 'light'}
-                                    dialogName="channelModeListDialogAlias"
-                                    filterFunc={(obj: ioBroker.Object): boolean =>
-                                        obj?.type === 'state' && obj.common?.type === 'string'
-                                    }
-                                />
-                                <Typography
-                                    variant="caption"
-                                    sx={{ color: 'text.secondary' }}
-                                >
-                                    {I18n.t('channelModeListDialog_aliasHint')}
-                                </Typography>
-                            </Box>
-                            {this.renderAliasStatus()}
-                            {/* Datenpunkt hat eigene common.states – der Adapter baut die Liste daraus, modeList ist nur Fallback */}
-                            {aliasStatus !== 'checking' && statesList.length > 0 && (
-                                <Alert severity="info">{I18n.t('channelModeListDialog_statesInfo')}</Alert>
+                            {showAlias === false && (
+                                <Alert severity="info">
+                                    {I18n.t('channelModeListDialog_selectInfo', statesSourceId ?? '')}
+                                </Alert>
+                            )}
+                            {showAlias !== false && (
+                                <>
+                                    {/* inSel_Alias */}
+                                    <Box>
+                                        <EntitySelector
+                                            label={I18n.t('channelModeListDialog_alias')}
+                                            value={inSelAlias}
+                                            onChange={this.handleAliasChange}
+                                            onCommit={this.handleAliasCommit}
+                                            socket={socket}
+                                            theme={theme}
+                                            themeType={themeType ?? 'light'}
+                                            dialogName="channelModeListDialogAlias"
+                                            filterFunc={(obj: ioBroker.Object): boolean =>
+                                                obj?.type === 'state' && obj.common?.type === 'string'
+                                            }
+                                        />
+                                        <Typography
+                                            variant="caption"
+                                            sx={{ color: 'text.secondary' }}
+                                        >
+                                            {I18n.t('channelModeListDialog_aliasHint')}
+                                        </Typography>
+                                    </Box>
+                                    {this.renderAliasStatus()}
+                                    {/* Datenpunkt hat eigene common.states – der Adapter baut die Liste daraus, modeList ist nur Fallback */}
+                                    {aliasStatus !== 'checking' && statesList.length > 0 && (
+                                        <Alert severity="info">{I18n.t('channelModeListDialog_statesInfo')}</Alert>
+                                    )}
+                                </>
                             )}
 
                             {/* modeList */}

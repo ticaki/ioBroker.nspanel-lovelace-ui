@@ -288,6 +288,7 @@
     "channelModeListDialog_modeList": "Modes (one per line)",
     "channelModeListDialog_modeListHint": "Blank lines are discarded. The adapter joins the entries with \"?\" for the panel, so \"?\" must not be used inside an entry. At most 48 entries and 900 characters (line breaks the adapter inserts included) reach the panel.",
     "channelModeListDialog_save": "Apply",
+    "channelModeListDialog_selectInfo": "Role select: the adapter uses the channel's state %s. Without a mode list it builds the list from its common.states (or those of the alias target); with a mode list the panel shows these entries and writes the index on selection.",
     "channelModeListDialog_statesInfo": "The datapoint has its own common.states – the adapter builds the list on the panel directly from them; the mode list only serves as a fallback.",
     "channelModeListDialog_takeFromStates": "Take list from datapoint",
     "channelModeListDialog_takeFromStatesNoAlias": "Select a selection datapoint first.",

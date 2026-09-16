@@ -287,6 +287,7 @@
     "channelModeListDialog_modeList": "Modos (um por linha)",
     "channelModeListDialog_modeListHint": "As linhas vazias são descartadas. O adaptador une as entradas com \"?\" para o painel, pelo que \"?\" não deve ser usado dentro de uma entrada. No máximo chegam ao painel 48 entradas e 900 caracteres (incluindo as quebras de linha inseridas pelo adaptador).",
     "channelModeListDialog_save": "Aplicar",
+    "channelModeListDialog_selectInfo": "Função select: o adaptador usa o ponto de dados %s do canal. Sem lista de modos constrói a lista a partir dos seus common.states (ou dos do destino do alias); com lista de modos o painel mostra estas entradas e grava o índice ao selecionar.",
     "channelModeListDialog_statesInfo": "O ponto de dados tem common.states próprios – o adaptador constrói a lista no painel diretamente a partir deles; a lista de modos serve apenas de recurso.",
     "channelModeListDialog_takeFromStates": "Obter a lista do ponto de dados",
     "channelModeListDialog_takeFromStatesNoAlias": "Selecione primeiro um ponto de dados de seleção.",

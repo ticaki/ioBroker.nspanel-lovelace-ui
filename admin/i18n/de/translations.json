@@ -288,6 +288,7 @@
     "channelModeListDialog_modeList": "Modi (einer pro Zeile)",
     "channelModeListDialog_modeListHint": "Leerzeilen werden verworfen. Der Adapter verbindet die Einträge für das Panel mit „?“, deshalb darf „?“ nicht innerhalb eines Eintrags stehen. Höchstens 48 Einträge und 900 Zeichen (inklusive der vom Adapter eingefügten Zeilenumbrüche) erreichen das Panel.",
     "channelModeListDialog_save": "Übernehmen",
+    "channelModeListDialog_selectInfo": "Rolle select: Der Adapter nutzt den Datenpunkt %s des Kanals. Ohne Modusliste bildet er die Liste aus dessen common.states (oder denen des Alias-Ziels); mit Modusliste zeigt das Panel diese Einträge und schreibt beim Auswählen den Index.",
     "channelModeListDialog_statesInfo": "Der Datenpunkt hat eigene common.states – der Adapter bildet die Liste am Panel direkt daraus; die Modusliste dient nur als Fallback.",
     "channelModeListDialog_takeFromStates": "Liste aus Datenpunkt übernehmen",
     "channelModeListDialog_takeFromStatesNoAlias": "Zuerst einen Auswahl-Datenpunkt wählen.",

@@ -287,6 +287,7 @@
     "channelModeListDialog_modeList": "模式（每行一个）",
     "channelModeListDialog_modeListHint": "空行将被丢弃。适配器用\"?\"连接条目发送给面板，因此条目内不得使用\"?\"。最多 48 个条目和 900 个字符（含适配器插入的换行）会到达面板。",
     "channelModeListDialog_save": "应用",
+    "channelModeListDialog_selectInfo": "角色 select：适配器使用通道的数据点 %s。没有模式列表时，它根据该数据点的 common.states（或别名目标的）生成列表；有模式列表时，面板显示这些条目并在选择时写入索引。",
     "channelModeListDialog_statesInfo": "该数据点有自己的 common.states，适配器会直接据此在面板上生成列表；模式列表仅作为备用。",
     "channelModeListDialog_takeFromStates": "从数据点获取列表",
     "channelModeListDialog_takeFromStatesNoAlias": "请先选择一个选择数据点。",

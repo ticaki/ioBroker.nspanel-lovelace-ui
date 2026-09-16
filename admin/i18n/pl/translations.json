@@ -287,6 +287,7 @@
     "channelModeListDialog_modeList": "Tryby (jeden w wierszu)",
     "channelModeListDialog_modeListHint": "Puste wiersze są pomijane. Adapter łączy wpisy dla panelu znakiem „?“, dlatego „?“ nie może występować wewnątrz wpisu. Do panelu trafia najwyżej 48 wpisów i 900 znaków (łącznie z podziałami wierszy wstawianymi przez adapter).",
     "channelModeListDialog_save": "Zastosuj",
+    "channelModeListDialog_selectInfo": "Rola select: adapter używa punktu danych %s kanału. Bez listy trybów buduje listę z jego common.states (lub z celu aliasu); z listą trybów panel pokazuje te wpisy i przy wyborze zapisuje indeks.",
     "channelModeListDialog_statesInfo": "Punkt danych ma własne common.states – adapter buduje listę na panelu bezpośrednio z nich; lista trybów służy tylko jako rozwiązanie zapasowe.",
     "channelModeListDialog_takeFromStates": "Pobierz listę z punktu danych",
     "channelModeListDialog_takeFromStatesNoAlias": "Najpierw wybierz punkt danych wyboru.",

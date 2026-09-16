@@ -52,8 +52,11 @@ import ChannelColorDialog from './ChannelColorDialog';
 import ChannelModeListDialog from './ChannelModeListDialog';
 import FormatListBulletedIcon from '@mui/icons-material/FormatListBulleted';
 
-/** Channel roles for which the adapter evaluates `inSel_Alias` / `modeList` (config-manager.ts). */
-const MODE_LIST_ROLES: readonly string[] = ['rgbSingle', 'rgb', 'ct', 'hue'];
+/**
+ * Channel roles for which the adapter evaluates `modeList` (config-manager.ts): the light roles also use
+ * `inSel_Alias`, role `select` takes the list only and selects through the channel's SET state.
+ */
+const MODE_LIST_ROLES: readonly string[] = ['rgbSingle', 'rgb', 'ct', 'hue', 'select'];
 
 export type { AdminPageItemConfig as PageItemConfig };
 
@@ -1381,6 +1384,11 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
         const modeListVisible =
             channelRole !== null && MODE_LIST_ROLES.includes(channelRole) && channelIdValid && !isCustom && !nativeMode;
         const longPressEnabled = channelRole === 'button' || isCustom || isNavigation;
+        /** Buttons turn green (theme palette "success", works in light and dark mode) once their settings hold data */
+        const colorConfigured =
+            this.state.trueColor !== '' || this.state.falseColor !== '' || this.state.scale !== undefined;
+        const modeListConfigured =
+            (channelRole !== 'select' && !!this.state.inSel_Alias) || (this.state.modeList?.length ?? 0) > 0;
 
         console.log(
             `[ChannelConfigDialog] render: channelId=${channelId.valueStateId}, channelExists=${channelExists}, channelRole=${channelRole}, roleIsValid=${roleIsValid}, datapointErrors=${this.state.datapointErrors.join(',')}, datapointDuplicates=${this.state.datapointDuplicates.join(',')}, nativeMode=${nativeMode}, nativeJsonValid=${nativeJsonValid}, hasDatapointProblems=${hasDatapointProblems}, hasProblems=${this.state.hasProblems}, errorSaveDetails=${errorSaveDetails} standardCanSave=${standardCanSave}, canSave=${canSave} fieldsDisabled=${fieldsDisabled}, longPressEnabled=${longPressEnabled}, channelIdValid=${channelIdValid}`,
@@ -1948,6 +1956,7 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                                     <Button
                                         size="small"
                                         variant="outlined"
+                                        color={colorConfigured ? 'success' : 'primary'}
                                         onClick={this.handleColorOpen}
                                         startIcon={<PaletteIcon />}
                                         fullWidth
@@ -1959,6 +1968,7 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                                     <Button
                                         size="small"
                                         variant="outlined"
+                                        color={modeListConfigured ? 'success' : 'primary'}
                                         onClick={this.handleModeListOpen}
                                         startIcon={<FormatListBulletedIcon />}
                                         fullWidth
@@ -2029,6 +2039,10 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                     socket={socket}
                     theme={theme}
                     themeType={themeType}
+                    showAlias={this.state.channelRole !== 'select'}
+                    statesSourceId={
+                        this.state.channelRole === 'select' ? `${this.state.channelId.valueStateId}.SET` : undefined
+                    }
                     onSave={this.handleModeListSave}
                 />
                 {/* Channel-ID Konfigurationsdialog – Auswahl per Channel-Rolle-Filter */}
