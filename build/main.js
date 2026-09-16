@@ -2106,7 +2106,7 @@ class NspanelLovelaceUi extends utils.Adapter {
     }
   }
   async convertAdminPageItemToPageItemConfig(preItem, prePage, messages) {
-    var _a, _b, _c, _d;
+    var _a, _b, _c, _d, _e;
     let error = void 0;
     let pageItem = void 0;
     if (preItem && prePage) {
@@ -2173,6 +2173,8 @@ class NspanelLovelaceUi extends utils.Adapter {
           item.suffixValue = ((_c = preItem.channelId) == null ? void 0 : _c.prefix) ? preItem.channelId.prefix : void 0;
           item.unit = ((_d = preItem.channelId) == null ? void 0 : _d.unit) ? preItem.channelId.unit : void 0;
           item.useValue = preItem.useValue;
+          item.inSel_Alias = preItem.inSel_Alias || void 0;
+          item.modeList = ((_e = preItem.modeList) == null ? void 0 : _e.length) ? preItem.modeList : void 0;
         }
       }
       const page = {

@@ -332,6 +332,13 @@ export type AdminPageItemConfig = {
     scale?: IconScaleElement;
     /** Value-display configuration (prefix / unit / suffix / dateFormat) */
     valueEntry?: ChannelValueConfig;
+    /**
+     * Light items (roles rgbSingle, rgb, ct, hue): writable string state the selected mode is written to.
+     * Ignored by the adapter when the state does not exist or is not of type string.
+     */
+    inSel_Alias?: string;
+    /** Light items (roles rgbSingle, rgb, ct, hue): selectable modes, sent to the panel joined with '?' (max. 900 chars) */
+    modeList?: string[];
     /** Native-Modus: Item wird direkt als NSPanel.PageItemDataItemsOptions übergeben */
     useNative?: boolean;
     /** Rohe NSPanel.PageItemDataItemsOptions-Konfiguration (nur wenn useNative=true) */
@@ -1252,6 +1259,9 @@ export type ChannelRole = keyof typeof requiredScriptDataPoints;
 export type IconScaleElement = IconColorElement | IconSelectElement;
 
 export type ChannelColorConfig = Pick<AdminPageItemConfig, 'trueColor' | 'falseColor' | 'scale'>;
+
+/** Mode list of a light item (roles rgbSingle, rgb, ct, hue): selection state + selectable entries. */
+export type ChannelModeListConfig = Pick<AdminPageItemConfig, 'inSel_Alias' | 'modeList'>;
 
 export type IconSelectElement = {
     valIcon_min: number;

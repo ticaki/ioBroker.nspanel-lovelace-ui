@@ -2517,6 +2517,8 @@ class NspanelLovelaceUi extends utils.Adapter {
                     item.suffixValue = preItem.channelId?.prefix ? preItem.channelId.prefix : undefined;
                     item.unit = preItem.channelId?.unit ? preItem.channelId.unit : undefined;
                     item.useValue = preItem.useValue;
+                    item.inSel_Alias = preItem.inSel_Alias || undefined;
+                    item.modeList = preItem.modeList?.length ? preItem.modeList : undefined;
                 }
             }
 
