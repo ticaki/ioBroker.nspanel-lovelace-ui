@@ -157,7 +157,7 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
     Placeholder for the next version (at the beginning of the line):
     ### **WORK IN PROGRESS**
 -->
-### **WORK IN PROGRESS**
+### 1.1.1 (2026-09-16)
 - (tt-tom17) fix: a cardPower page created in the admin tab showed white icons although the color scale was switched on. The scale was only built when both its lower and its upper bound had been typed in; a bound that was left at its displayed default was never stored. The defaults of the classic accordion (0 / 10000 / 0) apply now
 - (tt-tom17) admin: a newly added power slot of a cardPower page stores its color and speed scale bounds explicitly (0 / 10000 / 0 and 0 / 10000), the same way the classic accordion did, instead of only displaying them
 - (tt-tom17) the expert tab `Navigation Overview` has been removed. It never made it into productive use; the navigation of a panel is configured in its script or in the `Navigation Flow` tab
