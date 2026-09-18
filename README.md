@@ -157,6 +157,12 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
     Placeholder for the next version (at the beginning of the line):
     ### **WORK IN PROGRESS**
 -->
+### **WORK IN PROGRESS**
+
+- (ticaki) Increased the pause between two display messages after an ack from 100 ms to 250 ms to prevent the Nextion serial buffer from overflowing during bursts
+- (ticaki) Screensaver: weatherUpdate/color bursts are sent at most every 3 seconds; triggers arriving earlier are merged into one deferred update (time/date updates are not affected)
+- (ticaki) A Nextion serial buffer overflow (0x24) is now logged as warning; if the panel stops acknowledging messages afterwards, tasmota is restarted automatically (at most every 2 minutes) instead of looping in "wait for connection"
+
 ### 1.1.1 (2026-09-16)
 - (tt-tom17) fix: a cardPower page created in the admin tab showed white icons although the color scale was switched on. The scale was only built when both its lower and its upper bound had been typed in; a bound that was left at its displayed default was never stored. The defaults of the classic accordion (0 / 10000 / 0) apply now
 - (tt-tom17) admin: a newly added power slot of a cardPower page stores its color and speed scale bounds explicitly (0 / 10000 / 0 and 0 / 10000), the same way the classic accordion did, instead of only displaying them
