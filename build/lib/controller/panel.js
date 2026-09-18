@@ -90,6 +90,9 @@ class Panel extends import_library.BaseClass {
   buttonBackFlipTimeout = {};
   blockTouchEventsForMs = 200;
   // ms
+  /** Timestamp of the last Nextion 0x24 (serial buffer overflow) reported by the display, 0 if none */
+  nextionBufferOverflowTs = 0;
+  lastAutoRestartTs = 0;
   lastSendTypeDate = 0;
   isBuzzerAllowed = true;
   options;
@@ -1001,6 +1004,18 @@ class Panel extends import_library.BaseClass {
           await this.library.writedp(`panels.${this.name}.cmd.tempOffset`, parseFloat(msg.tempOffset), def);
           this.log.debug(`Received tempOffset ${msg.tempOffset} from panel, write to state.`);
           return;
+        } else if ("nextion" in msg && typeof msg.nextion === "string") {
+          const codes = msg.nextion.replace(/^bytes\('|'\)$/g, "").split("FFFFFF");
+          if (codes.includes("24")) {
+            const now = Date.now();
+            if (now - this.nextionBufferOverflowTs > 6e4) {
+              this.log.warn(
+                "Display reports a serial buffer overflow (0x24) - frames are being dropped by the Nextion!"
+              );
+            }
+            this.nextionBufferOverflowTs = now;
+          }
+          return;
         } else if ("nlui_driver_version" in msg) {
           this.info.nspanel.berryDriverVersion = parseInt(msg.nlui_driver_version);
           await this.library.writedp(
@@ -1502,6 +1517,31 @@ class Panel extends import_library.BaseClass {
   };
   requestStatusTasmota() {
     this.sendToTasmota(`${this.topic}/cmnd/STATUS0`, "");
+  }
+  /**
+   * Called when the panel is set offline because the display stopped acknowledging messages.
+   * If the display reported a serial buffer overflow (0x24) shortly before, only a tasmota restart
+   * gets it back - so trigger one (at most every 2 minutes).
+   *
+   * @returns true if a restart was triggered
+   */
+  handleLostMessages() {
+    const now = Date.now();
+    if (this.unload || this.adapter.unload || this.flashing) {
+      return false;
+    }
+    if (now - this.nextionBufferOverflowTs > 12e4) {
+      return false;
+    }
+    if (now - this.lastAutoRestartTs < 12e4) {
+      this.log.debug("Buffer overflow persists but last automatic restart was less than 2 minutes ago - skip");
+      return false;
+    }
+    this.lastAutoRestartTs = now;
+    this.nextionBufferOverflowTs = 0;
+    this.log.warn("Display buffer overflow (0x24) and no acknowledgement from the panel - restarting tasmota!");
+    this.sendToTasmota(`${this.topic}/cmnd/Restart`, "1");
+    return true;
   }
   async delete() {
     var _a;

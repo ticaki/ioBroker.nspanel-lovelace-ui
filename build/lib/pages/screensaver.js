@@ -83,6 +83,8 @@ const _Screensaver = class _Screensaver extends import_Page.Page {
     __publicField(this, "screensaverSwipe", false);
     __publicField(this, "_infoIcon", "");
     __publicField(this, "timeoutRotation");
+    __publicField(this, "lastUpdateTs", 0);
+    __publicField(this, "updateThrottle");
     __publicField(this, "headingNotification", "");
     __publicField(this, "textNotification", "");
     __publicField(this, "customNotification", false);
@@ -357,11 +359,25 @@ const _Screensaver = class _Screensaver extends import_Page.Page {
    * Update the screensaver view with data for selected places and refresh status icons.
    * - Prepends an empty payload to 'alternate' if it contains entries
    * - Sends a 'weatherUpdate' payload with concatenated place arrays
+   * - At most one update every 3 s: triggers arriving earlier are merged into one deferred update.
+   *   Nothing is sent without a trigger, and time/date updates are not affected.
    */
   async update() {
     if (!this.visibility) {
       return;
     }
+    const now = Date.now();
+    const wait = this.lastUpdateTs + _Screensaver.minUpdateInterval - now;
+    if (wait > 0) {
+      if (!this.updateThrottle && !this.unload && !this.adapter.unload) {
+        this.updateThrottle = this.adapter.setTimeout(() => {
+          this.updateThrottle = void 0;
+          void this.update();
+        }, wait);
+      }
+      return;
+    }
+    this.lastUpdateTs = now;
     await super.update();
     const message = await this.getData(["left", "bottom", "indicator", "alternate", "favorit"]);
     if (message === null) {
@@ -393,6 +409,7 @@ const _Screensaver = class _Screensaver extends import_Page.Page {
   async onVisibilityChange(v) {
     this.step = 0;
     if (v) {
+      this.lastUpdateTs = 0;
       this.sendType();
       await this.HandleTime();
       await this.restartRotationLoop();
@@ -566,6 +583,9 @@ const _Screensaver = class _Screensaver extends import_Page.Page {
     if (this.timeoutRotation) {
       this.adapter.clearTimeout(this.timeoutRotation);
     }
+    if (this.updateThrottle) {
+      this.adapter.clearTimeout(this.updateThrottle);
+    }
     if (this.blockButtons) {
       this.adapter.clearTimeout(this.blockButtons);
     }
@@ -650,6 +670,8 @@ sendNotify_fn = function(enabled, heading = "", text = "") {
   const msg = this.activeNotification ? tools.getPayloadRemoveTilde("notify", heading, text) : tools.getPayload("notify", "", "");
   this.sendToPanel(msg, false);
 };
+/** Minimum pause between two weatherUpdate/color bursts - protects the Nextion serial buffer */
+__publicField(_Screensaver, "minUpdateInterval", 3e3);
 let Screensaver = _Screensaver;
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
