@@ -157,11 +157,9 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
     Placeholder for the next version (at the beginning of the line):
     ### **WORK IN PROGRESS**
 -->
-### **WORK IN PROGRESS**
+### 1.1.2 (2026-09-18)
 
-- (ticaki) Increased the pause between two display messages after an ack from 100 ms to 250 ms to prevent the Nextion serial buffer from overflowing during bursts
-- (ticaki) Screensaver: weatherUpdate/color bursts are sent at most every 3 seconds; triggers arriving earlier are merged into one deferred update (time/date updates are not affected)
-- (ticaki) A Nextion serial buffer overflow (0x24) is now logged as warning; if the panel stops acknowledging messages afterwards, tasmota is restarted automatically (at most every 2 minutes) instead of looping in "wait for connection"
+- (ticaki) fix: a panel could get stuck in "wait for connection" after a WiFi drop or a burst of screensaver updates, because the display's serial buffer overflowed. The adapter now spaces out messages to the display, sends screensaver updates at most every 3 seconds, and restarts tasmota automatically when the display reports an overflow
 
 ### 1.1.1 (2026-09-16)
 - (tt-tom17) fix: a cardPower page created in the admin tab showed white icons although the color scale was switched on. The scale was only built when both its lower and its upper bound had been typed in; a bound that was left at its displayed default was never stored. The defaults of the classic accordion (0 / 10000 / 0) apply now
