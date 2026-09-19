@@ -5,7 +5,7 @@
     "Battery": "Batteria",
     "Brightness": "Luminosità",
     "COOL": "Freddo",
-    "Cancel": "Cancellare",
+    "Cancel": "Annulla",
     "Cancel1": "Cancellare",
     "Charging": "In carica",
     "Charging Error": "Errore di ricarica",
@@ -122,7 +122,7 @@
     "StateObjects.tempOffset": "Compensazione della temperatura",
     "StateObjects.uptime": "Tempo di attività",
     "Success": "Successo",
-    "Sun": "Sole",
+    "Sun": "Dom",
     "Temperature": "Temperatura",
     "Unknown": "Sconosciuto",
     "Updating": "Aggiornamento",
@@ -148,7 +148,7 @@
     "auto_layout_confirm_reorder": "Riordina: applica il layout",
     "auto_layout_confirm_text": "Il layout automatico sovrascriverà le posizioni dei nodi salvate. Annulla per mantenere le posizioni correnti o Riordina per applicare il layout automatico.",
     "auto_layout_confirm_title": "Riordinare la navigazione?",
-    "bass": "Basso",
+    "bass": "Bassi",
     "berryInstallSendTo": "Installa driver di bacche",
     "berryTool": "Installa driver di bacche",
     "big": "grande",
@@ -642,7 +642,7 @@
     "trash_text_field_4": "Tipo di spazzatura 4",
     "trash_text_field_5": "Tipo di spazzatura 5",
     "trash_text_field_6": "Tipo di spazzatura 6",
-    "treble": "Acuti",
+    "treble": "Alti",
     "tropical": "Tropicale",
     "uniqueName": "Nome della pagina",
     "unique_label": "ID univoco",
@@ -719,5 +719,6 @@
     "wlanhidden": "Wifi nascosto",
     "wlantype": "Crittografia WiFi",
     "writeTasmotaTele": "Scrivi i dati di telemetria Tasmota",
-    "writeTasmotaTeleHint": "Se abilitato, i dati di telemetria del pannello verranno memorizzati nei punti dati (pannelli/XXXXX/info/tasmota/sts....)."
+    "writeTasmotaTeleHint": "Se abilitato, i dati di telemetria del pannello verranno memorizzati nei punti dati (pannelli/XXXXX/info/tasmota/sts....).",
+    "power": "Accensione"
 }

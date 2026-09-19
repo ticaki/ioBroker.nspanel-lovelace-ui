@@ -122,7 +122,7 @@
     "StateObjects.tempOffset": "Przesunięcie temperatury",
     "StateObjects.uptime": "Czas aktu",
     "Success": "Sukces",
-    "Sun": "Słoneczny",
+    "Sun": "Nie",
     "Temperature": "Temperatura",
     "Unknown": "Nieznany",
     "Updating": "Aktualizowanie",
@@ -148,7 +148,7 @@
     "auto_layout_confirm_reorder": "Zmień kolejność — zastosuj układ",
     "auto_layout_confirm_text": "Automatyczny układ zastąpi zapisane pozycje węzłów. Anuluj, aby zachować bieżące pozycje, lub Zmień kolejność, aby zastosować układ automatyczny.",
     "auto_layout_confirm_title": "Zmienić kolejność nawigacji?",
-    "bass": "Bas",
+    "bass": "Tony niskie",
     "berryInstallSendTo": "Zainstaluj sterownik Berry",
     "berryTool": "Zainstaluj sterownik Berry",
     "big": "duży",
@@ -337,7 +337,7 @@
     "downgradeAvailable": "Zalecany downgrade",
     "editPanel": "Edytuj panel",
     "entityHeadline": "Nagłówek bytu",
-    "equalizer": "Wyrównywacz",
+    "equalizer": "Korektor",
     "eu-Version": "Eu-Landscape",
     "favoriteList": "Lista ulubionych",
     "fixBrokenCommonTypes": "Napraw zepsuty wspólne typy",
@@ -642,7 +642,7 @@
     "trash_text_field_4": "Rodzaj śmieci 4",
     "trash_text_field_5": "Rodzaj śmieci 5",
     "trash_text_field_6": "Rodzaj śmieci 6",
-    "treble": "Potroić",
+    "treble": "Tony wysokie",
     "tropical": "Tropikalny",
     "uniqueName": "Nazwa strony",
     "unique_label": "Unikalny identyfikator",
@@ -719,5 +719,6 @@
     "wlanhidden": "Ukryte Wi -Fi",
     "wlantype": "Szyfrowanie Wi -Fi",
     "writeTasmotaTele": "Zapisz dane telemetryczne Tasmota",
-    "writeTasmotaTeleHint": "Po włączeniu dane telemetryczne panelu będą przechowywane w punktach danych (panels/XXXXX/info/tasmota/sts....)."
+    "writeTasmotaTeleHint": "Po włączeniu dane telemetryczne panelu będą przechowywane w punktach danych (panels/XXXXX/info/tasmota/sts....).",
+    "power": "Zasilanie"
 }
