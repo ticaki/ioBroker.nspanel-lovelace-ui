@@ -34,7 +34,7 @@
 - *(Introduction)* iA  
 - *(Page QR)* iA  
 - *(Page Power)* iA  
-- *(Page Chart)* iA  
+- [Page Chart](PageChart)
 - *(Page Alarm)* iA  
 - *(Page Media)* iA  
 - *(Page Thermo2)* iA  
