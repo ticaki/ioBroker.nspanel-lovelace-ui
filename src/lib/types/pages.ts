@@ -354,14 +354,14 @@ type PageChartConfig = {
     headline: string;
     text: string;
     color: NSPanel.ColorEntryTypeBooleanStandard;
-    ticks: string;
-    value: string;
-    entity1: NSPanel.ValueEntryType;
+    ticks: string; // script source: state with the y-axis ticks (array)
+    value: string; // script source: state with the chart values
+    /** DB source: JSON string of ChartDetailsExternal (instance, state, hours, maxTicks, factor, maxLabels) */
+    dbData?: string;
 };
 
 export type cardChartDataItemOptions = {
     card: Extract<AdminCardTypes, 'cardChart' | 'cardLChart'>;
-    index: number;
     data: ChangeTypeOfKeys<PageChartConfig, NSPanel.DataItemsOptions | undefined>;
 };
 export type cardChartDataItems = {

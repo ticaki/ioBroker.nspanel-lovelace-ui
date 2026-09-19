@@ -225,6 +225,50 @@ export class AdminConfiguration extends BaseClass {
                     this.log.debug(`Generated trash 1page for '${entry.uniqueName}'`);
                     break;
                 }
+
+                case 'cardChart': {
+                    if (!isAlwaysOnMode(entry.alwaysOn)) {
+                        entry.alwaysOn = 'none';
+                    }
+                    const dbData: ShareConfig.ChartDetailsExternal | undefined =
+                        entry.selInstanceDataSource === 1
+                            ? {
+                                  instance: entry.selInstance || '',
+                                  state: entry.setStateForDB || '',
+                                  hours: entry.rangeHours ?? ShareConfig.chartDefaults.rangeHours,
+                                  maxTicks: entry.maxXAxisTicks ?? ShareConfig.chartDefaults.maxXAxisTicks,
+                                  factor: entry.factorCardChart ?? ShareConfig.chartDefaults.factorCardChart,
+                                  maxLabels: entry.maxXAxisLabels ?? ShareConfig.chartDefaults.maxXAxisLabels,
+                              }
+                            : undefined;
+                    newPage = {
+                        uniqueID: entry.uniqueName,
+                        hidden: !!entry.hidden,
+                        alwaysOn: entry.alwaysOn,
+                        dpInit: '',
+                        config: {
+                            card: entry.selChartType || ShareConfig.chartDefaults.selChartType,
+                            data: {
+                                headline: { type: 'const', constVal: entry.headline || 'Page Chart' },
+                                text: { type: 'const', constVal: entry.txtLabelYAchse || '' },
+                                color: {
+                                    true: {
+                                        color: {
+                                            type: 'const',
+                                            constVal: entry.chartColor || ShareConfig.chartDefaults.chartColor,
+                                        },
+                                    },
+                                },
+                                ticks: { type: 'triggered', dp: entry.setStateForTicks || '' },
+                                value: { type: 'triggered', dp: entry.setStateForValues || entry.setStateForDB || '' },
+                                dbData: dbData ? { type: 'const', constVal: JSON.stringify(dbData) } : undefined,
+                            },
+                        },
+                        pageItems: [],
+                    };
+                    break;
+                }
+
                 case 'cardPower': {
                     if (!isAlwaysOnMode(entry.alwaysOn)) {
                         entry.alwaysOn = 'none';
