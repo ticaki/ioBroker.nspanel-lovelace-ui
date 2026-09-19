@@ -22,6 +22,7 @@ __export(pageChartLine_exports, {
 });
 module.exports = __toCommonJS(pageChartLine_exports);
 var import_pageChart = require("./pageChart");
+var import_chart_scale = require("./chart-scale");
 class PageChartLine extends import_pageChart.PageChart {
   constructor(config, options) {
     super(config, options);
@@ -49,6 +50,7 @@ class PageChartLine extends import_pageChart.PageChart {
   }
   // Eventuelles überschreiben der getChartData-Methode
   async getChartDataDB(ticksChart = ["~"], valuesChart = "~") {
+    let factor = 1;
     if (this.dbDetails) {
       const items = this.dbDetails;
       const hoursRangeFromNow = items.hours || 24;
@@ -59,7 +61,6 @@ class PageChartLine extends import_pageChart.PageChart {
       const xAxisTicksInterval = maxXAxisTicks > 0 ? maxXAxisTicks * 60 : 60;
       const xAxisLabelInterval = maxXAxisLabels > 0 ? maxXAxisLabels * 60 : 120;
       const maxX = hoursRangeFromNow * 60;
-      const tempScale = [];
       try {
         const dbDaten = await this.getDataFromDB(stateValue, hoursRangeFromNow, instance, {
           aggregate: "average",
@@ -70,19 +71,19 @@ class PageChartLine extends import_pageChart.PageChart {
           date.setSeconds(0, 0);
           const ts = Math.round(date.getTime() / 1e3);
           const tsStart = ts - hoursRangeFromNow * 3600;
-          const list = [];
+          const points = [];
           for (const entry of dbDaten) {
             if (entry.val == null) {
               continue;
             }
             const pos = Math.round((entry.ts / 1e3 - tsStart) / 60);
             if (pos >= 0 && pos <= maxX) {
-              const value = Math.round(Number(entry.val) * 10);
-              list.push(`${pos}:${value}`);
-              tempScale.push(value);
+              points.push({ pos, value: Math.round(Number(entry.val) * 10) });
             }
           }
-          const coordinates = list.join("~");
+          const scale = (0, import_chart_scale.buildLineScale)(points.map((p) => p.value));
+          factor = scale.factor;
+          const coordinates = points.map((p, i) => `${p.pos}:${scale.values[i]}`).join("~");
           const ticksAndLabelsList = [];
           for (let x = tsStart, i = 0; x < ts; x += xAxisTicksInterval * 60, i += xAxisTicksInterval) {
             if (i % xAxisLabelInterval) {
@@ -104,23 +105,11 @@ class PageChartLine extends import_pageChart.PageChart {
           valuesChart = `${ticksAndLabels}~${coordinates}`;
           this.log.debug(`Ticks & Label: ${ticksAndLabels}`);
           this.log.debug(`Coordinates: ${coordinates}`);
-          if (tempScale.length > 0) {
-            const rawMax = Math.max(...tempScale);
-            const rawMin = Math.min(...tempScale);
-            const roundedMin = Math.floor(rawMin / 10) * 10;
-            const roundedMax = Math.ceil(rawMax / 10) * 10;
-            const span = Math.max(roundedMax - roundedMin, 10);
-            const interval = Math.max(Number((span / 5).toFixed()), 10);
+          if (scale.ticks.length > 0) {
             this.log.debug(
-              `Scale Min: ${roundedMin} (raw ${rawMin}), Max: ${roundedMax} (raw ${rawMax}) interval: ${interval}`
+              `Scale: factor ${factor}, ticks ${scale.ticks[0]} \u2026 ${scale.ticks[scale.ticks.length - 1]} (${scale.ticks.length})`
             );
-            const tempTickChart = [];
-            let currentTick = roundedMin - interval * 2;
-            while (currentTick < roundedMax + interval) {
-              tempTickChart.push(String(currentTick));
-              currentTick += interval;
-            }
-            ticksChart = tempTickChart;
+            ticksChart = scale.ticks.map(String);
           }
         } else {
           this.log.warn(`No data found for state ${stateValue} in the last ${hoursRangeFromNow} hours`);
@@ -129,7 +118,7 @@ class PageChartLine extends import_pageChart.PageChart {
         this.log.error(`Error fetching data from DB: ${error}`);
       }
     }
-    return { ticksChart, valuesChart };
+    return { ticksChart, valuesChart, factor };
   }
 }
 // Annotate the CommonJS export names for ESM import in node:

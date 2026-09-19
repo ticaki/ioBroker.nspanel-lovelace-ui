@@ -29,6 +29,7 @@ var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: tru
 var admin_exports = {};
 __export(admin_exports, {
   AdminConfiguration: () => AdminConfiguration,
+  buildChartPageConfig: () => buildChartPageConfig,
   buildPowerSlotData: () => buildPowerSlotData
 });
 module.exports = __toCommonJS(admin_exports);
@@ -104,7 +105,7 @@ Stack: ${stack}`
    * @param option - Panel configuration partial
    */
   async createPagesFromConfig(option) {
-    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k;
+    var _a, _b, _c, _d, _e, _f, _g;
     const entries = this.pageConfig;
     const pendingNavs = [];
     const mainAliases = new Set(
@@ -202,37 +203,12 @@ Stack: ${stack}`
           if (!isAlwaysOnMode(entry.alwaysOn)) {
             entry.alwaysOn = "none";
           }
-          const dbData = entry.selInstanceDataSource === 1 ? {
-            instance: entry.selInstance || "",
-            state: entry.setStateForDB || "",
-            hours: (_a = entry.rangeHours) != null ? _a : ShareConfig.chartDefaults.rangeHours,
-            maxTicks: (_b = entry.maxXAxisTicks) != null ? _b : ShareConfig.chartDefaults.maxXAxisTicks,
-            factor: (_c = entry.factorCardChart) != null ? _c : ShareConfig.chartDefaults.factorCardChart,
-            maxLabels: (_d = entry.maxXAxisLabels) != null ? _d : ShareConfig.chartDefaults.maxXAxisLabels
-          } : void 0;
           newPage = {
             uniqueID: entry.uniqueName,
             hidden: !!entry.hidden,
             alwaysOn: entry.alwaysOn,
             dpInit: "",
-            config: {
-              card: entry.selChartType || ShareConfig.chartDefaults.selChartType,
-              data: {
-                headline: { type: "const", constVal: entry.headline || "Page Chart" },
-                text: { type: "const", constVal: entry.txtLabelYAchse || "" },
-                color: {
-                  true: {
-                    color: {
-                      type: "const",
-                      constVal: entry.chartColor || ShareConfig.chartDefaults.chartColor
-                    }
-                  }
-                },
-                ticks: { type: "triggered", dp: entry.setStateForTicks || "" },
-                value: { type: "triggered", dp: entry.setStateForValues || entry.setStateForDB || "" },
-                dbData: dbData ? { type: "const", constVal: JSON.stringify(dbData) } : void 0
-              }
-            },
+            config: buildChartPageConfig(entry),
             pageItems: []
           };
           break;
@@ -284,7 +260,7 @@ Stack: ${stack}`
                 []
               );
               if (!result.error && result.pageItem) {
-                newPage.pageItems = (_e = newPage.pageItems) != null ? _e : [];
+                newPage.pageItems = (_a = newPage.pageItems) != null ? _a : [];
                 newPage.pageItems.unshift(result.pageItem);
               } else if (result.error) {
                 this.log.warn(
@@ -332,7 +308,7 @@ Stack: ${stack}`
                 []
               );
               if (!result.error && result.pageItem) {
-                newPage.pageItems = (_f = newPage.pageItems) != null ? _f : [];
+                newPage.pageItems = (_b = newPage.pageItems) != null ? _b : [];
                 newPage.pageItems.unshift(result.pageItem);
               } else if (result.error) {
                 this.log.warn(
@@ -367,7 +343,7 @@ Stack: ${stack}`
         }
         replacedIndex = option.navigation.findIndex((b) => b && b.name === newPage.uniqueID);
         if (replacedIndex !== -1) {
-          replacedNav = (_g = option.navigation[replacedIndex]) != null ? _g : void 0;
+          replacedNav = (_c = option.navigation[replacedIndex]) != null ? _c : void 0;
           option.navigation.splice(replacedIndex, 1);
         }
       }
@@ -375,8 +351,8 @@ Stack: ${stack}`
       const navigationEntry = {
         name: newPage.uniqueID,
         page: newPage.uniqueID,
-        right: { single: (_h = replacedNav == null ? void 0 : replacedNav.right) == null ? void 0 : _h.single, double: (_i = replacedNav == null ? void 0 : replacedNav.right) == null ? void 0 : _i.double },
-        left: { single: (_j = replacedNav == null ? void 0 : replacedNav.left) == null ? void 0 : _j.single, double: (_k = replacedNav == null ? void 0 : replacedNav.left) == null ? void 0 : _k.double }
+        right: { single: (_d = replacedNav == null ? void 0 : replacedNav.right) == null ? void 0 : _d.single, double: (_e = replacedNav == null ? void 0 : replacedNav.right) == null ? void 0 : _e.double },
+        left: { single: (_f = replacedNav == null ? void 0 : replacedNav.left) == null ? void 0 : _f.single, double: (_g = replacedNav == null ? void 0 : replacedNav.left) == null ? void 0 : _g.double }
       };
       if (replacedIndex !== -1) {
         option.navigation.splice(replacedIndex, 0, navigationEntry);
@@ -630,6 +606,29 @@ Stack: ${stack}`
     return result;
   }
 }
+function buildChartPageConfig(entry) {
+  var _a, _b, _c, _d;
+  const d = ShareConfig.chartDefaults;
+  const dbData = entry.selInstanceDataSource === 1 ? {
+    instance: entry.selInstance || "",
+    state: entry.setStateForDB || "",
+    hours: (_a = entry.rangeHours) != null ? _a : d.rangeHours,
+    maxTicks: (_b = entry.maxXAxisTicks) != null ? _b : d.maxXAxisTicks,
+    factor: (_c = entry.factorCardChart) != null ? _c : d.factorCardChart,
+    maxLabels: (_d = entry.maxXAxisLabels) != null ? _d : d.maxXAxisLabels
+  } : void 0;
+  return {
+    card: entry.selChartType || d.selChartType,
+    data: {
+      headline: { type: "const", constVal: entry.headline || "Page Chart" },
+      text: { type: "const", constVal: entry.txtLabelYAchse || "" },
+      color: { true: { color: { type: "const", constVal: entry.chartColor || d.chartColor } } },
+      ticks: { type: "triggered", dp: entry.setStateForTicks || "" },
+      value: { type: "triggered", dp: entry.setStateForValues || entry.setStateForDB || "" },
+      dbData: dbData ? { type: "const", constVal: JSON.stringify(dbData) } : void 0
+    }
+  };
+}
 function isAlwaysOnMode(F) {
   const R = F;
   switch (R) {
@@ -881,6 +880,7 @@ function dataForcardTrash(entry) {
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
   AdminConfiguration,
+  buildChartPageConfig,
   buildPowerSlotData
 });
 //# sourceMappingURL=admin.js.map

@@ -78,10 +78,11 @@ class PageChart extends import_Page.Page {
     message.value = "~";
     if (this.items) {
       const items = this.items;
-      const { valuesChart, ticksChart } = await this.getChartData();
+      const { valuesChart, ticksChart, factor } = await this.getChartData();
       message.headline = (_a = items.data.headline && await items.data.headline.getTranslatedString()) != null ? _a : this.name;
       message.color = await (0, import_tools.getIconEntryColor)(items.data.color, true, import_Color.Color.White);
-      message.text = (_b = items.data.text && await items.data.text.getString()) != null ? _b : "";
+      const text = (_b = items.data.text && await items.data.text.getString()) != null ? _b : "";
+      message.text = factor && factor > 1 ? `${text} x${factor}`.trim() : text;
       message.value = valuesChart;
       message.ticks = ticksChart;
     }
