@@ -1,4 +1,5 @@
-import { isChartDetailsExternal, PageChart } from './pageChart';
+import { isChartDetailsExternal, PageChart, type ChartData } from './pageChart';
+import { buildLineScale } from './chart-scale';
 import { type PageInterface } from '../classes/PageInterface';
 import type * as pages from '../types/pages';
 
@@ -37,10 +38,8 @@ export class PageChartLine extends PageChart {
     }
 
     // Eventuelles überschreiben der getChartData-Methode
-    async getChartDataDB(
-        ticksChart: string[] = ['~'],
-        valuesChart = '~',
-    ): Promise<{ ticksChart: string[]; valuesChart: string }> {
+    async getChartDataDB(ticksChart: string[] = ['~'], valuesChart = '~'): Promise<ChartData> {
+        let factor = 1;
         if (this.dbDetails) {
             const items = this.dbDetails;
 
@@ -54,8 +53,6 @@ export class PageChartLine extends PageChart {
             const xAxisLabelInterval = maxXAxisLabels > 0 ? maxXAxisLabels * 60 : 120; // Intervall in Minuten zwischen den X-Achsen-Beschriftungen (z.B. 120 für 1 Beschriftung pro 2 Stunden)
             const maxX = hoursRangeFromNow * 60; // 24h = 1440min
 
-            const tempScale: number[] = [];
-
             try {
                 // averages on a 5-minute grid (24 h = 288 points), capped at 500 — spread over the whole window
                 const dbDaten = await this.getDataFromDB(stateValue, hoursRangeFromNow, instance, {
@@ -68,21 +65,21 @@ export class PageChartLine extends PageChart {
                     const ts = Math.round(date.getTime() / 1000);
                     const tsStart = ts - hoursRangeFromNow * 3600;
 
-                    // Schritt 1: Koordinaten direkt aus DB-Daten berechnen
-                    const list: string[] = [];
+                    // Schritt 1: Koordinaten direkt aus DB-Daten berechnen (x10, das Panel teilt wieder durch 10)
+                    const points: { pos: number; value: number }[] = [];
                     for (const entry of dbDaten) {
                         if (entry.val == null) {
                             continue;
                         }
                         const pos = Math.round((entry.ts / 1000 - tsStart) / 60);
                         if (pos >= 0 && pos <= maxX) {
-                            // panel shows value / 10 (100 -> 10.0): keep one decimal by scaling here
-                            const value = Math.round(Number(entry.val) * 10);
-                            list.push(`${pos}:${value}`);
-                            tempScale.push(value);
+                            points.push({ pos, value: Math.round(Number(entry.val) * 10) });
                         }
                     }
-                    const coordinates = list.join('~');
+                    // the panel prints a tick with at most two characters: scale large values down (see chart-scale.ts)
+                    const scale = buildLineScale(points.map(p => p.value));
+                    factor = scale.factor;
+                    const coordinates = points.map((p, i) => `${p.pos}:${scale.values[i]}`).join('~');
 
                     // Schritt 2: Ticks und Labels passend zur Zeitspanne erstellen
                     const ticksAndLabelsList: (string | number)[] = [];
@@ -111,29 +108,12 @@ export class PageChartLine extends PageChart {
                     this.log.debug(`Ticks & Label: ${ticksAndLabels}`);
                     this.log.debug(`Coordinates: ${coordinates}`);
 
-                    // create ticks y axis
-                    if (tempScale.length > 0) {
-                        // Round min down to nearest 10 and max up to nearest 10
-                        const rawMax = Math.max(...tempScale);
-                        const rawMin = Math.min(...tempScale);
-                        const roundedMin = Math.floor(rawMin / 10) * 10;
-                        const roundedMax = Math.ceil(rawMax / 10) * 10;
-
-                        // ensure at least a minimal span to avoid zero interval
-                        const span = Math.max(roundedMax - roundedMin, 10);
-                        const interval = Math.max(Number((span / 5).toFixed()), 10);
-
+                    // Schritt 3: Y-Ticks aus den (skalierten) Werten
+                    if (scale.ticks.length > 0) {
                         this.log.debug(
-                            `Scale Min: ${roundedMin} (raw ${rawMin}), Max: ${roundedMax} (raw ${rawMax}) interval: ${interval}`,
+                            `Scale: factor ${factor}, ticks ${scale.ticks[0]} … ${scale.ticks[scale.ticks.length - 1]} (${scale.ticks.length})`,
                         );
-                        const tempTickChart: string[] = [];
-                        let currentTick = roundedMin - interval * 2;
-                        while (currentTick < roundedMax + interval) {
-                            // ticks are already in the x10 space of the values
-                            tempTickChart.push(String(currentTick));
-                            currentTick += interval;
-                        }
-                        ticksChart = tempTickChart;
+                        ticksChart = scale.ticks.map(String);
                     }
                 } else {
                     this.log.warn(`No data found for state ${stateValue} in the last ${hoursRangeFromNow} hours`);
@@ -143,6 +123,6 @@ export class PageChartLine extends PageChart {
             }
         }
 
-        return { ticksChart, valuesChart };
+        return { ticksChart, valuesChart, factor };
     }
 }

@@ -28,7 +28,9 @@ Im Tab `PageConfig` links auf das PLUS klicken, als Typ `Diagramm` wählen und e
 
 Die Felder sind nur bedienbar, solange die Adapterinstanz läuft. Sichtbarkeit (`Seite ausblenden`), `alwaysOn` und die Navigation werden wie bei allen Seiten im Bereich Navigation/Panel-Zuordnung gesetzt.
 
-Der Adapter holt die Daten beim Balkendiagramm als einen Mittelwert pro Stunde, beim Liniendiagramm als Mittelwerte im 5-Minuten-Raster (höchstens 500 Punkte), jeweils über den eingestellten Zeitraum. Werte im Liniendiagramm behalten eine Nachkommastelle.
+Der Adapter holt die Daten beim Balkendiagramm als einen Mittelwert pro Stunde, beim Liniendiagramm als Mittelwerte im 5-Minuten-Raster (höchstens 500 Punkte), jeweils über den eingestellten Zeitraum.
+
+Das Panel zeigt an der Y-Achse ganze Zahlen mit höchstens zwei Stellen. Beim Balkendiagramm sorgt der Wertefaktor dafür, dass große Werte passen; beim Liniendiagramm wählt der Adapter den Faktor automatisch (10, 100, …) und hängt ihn an die Y-Achsen-Beschriftung an, z. B. `W x10` — die Achse zeigt dann `10 … 15` für 100 … 150 W.
 
 ## Klassisch: Tab `PageChart` und Konfig-Script
 

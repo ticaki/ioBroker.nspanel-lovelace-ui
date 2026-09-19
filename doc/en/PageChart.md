@@ -28,7 +28,9 @@ In the `PageConfig` tab click the PLUS on the left, choose the type `Chart` and 
 
 The fields can only be edited while the adapter instance is running. Visibility (`hide page`), `alwaysOn` and the navigation are set like for every page in the navigation / panel assignment section.
 
-The adapter fetches the data as one average per hour for the bar chart and as averages on a 5-minute grid (at most 500 points) for the line chart, each over the configured range. Line values keep one decimal.
+The adapter fetches the data as one average per hour for the bar chart and as averages on a 5-minute grid (at most 500 points) for the line chart, each over the configured range.
+
+The panel prints integer y-axis ticks with at most two characters. The bar chart uses the manual factor to keep large values readable; the line chart chooses the factor automatically (10, 100, …) and appends it to the y-axis label, e.g. `W x10` — the axis then reads `10 … 15` for 100 … 150 W.
 
 ## Classic: tab `PageChart` and configuration script
 

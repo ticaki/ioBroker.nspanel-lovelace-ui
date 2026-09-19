@@ -17,6 +17,14 @@ const PageChartMessageDefault: pages.PageChartMessage = {
     value: '', //Werte x Achse
 };
 
+/** what a chart page sends: y ticks and the value string, both in the x10 space of the panel */
+export type ChartData = {
+    ticksChart: string[];
+    valuesChart: string;
+    /** the values were divided by this factor (line chart, automatic); 1 or undefined = untouched */
+    factor?: number;
+};
+
 export class PageChart extends Page {
     items: pages.cardChartDataItems | undefined;
     protected dbDetails?: ChartDetailsExternal;
@@ -59,11 +67,13 @@ export class PageChart extends Page {
 
         if (this.items) {
             const items = this.items;
-            const { valuesChart, ticksChart } = await this.getChartData();
+            const { valuesChart, ticksChart, factor } = await this.getChartData();
 
             message.headline = (items.data.headline && (await items.data.headline.getTranslatedString())) ?? this.name;
             message.color = await getIconEntryColor(items.data.color, true, Color.White);
-            message.text = (items.data.text && (await items.data.text.getString())) ?? '';
+            const text = (items.data.text && (await items.data.text.getString())) ?? '';
+            // the y-axis label carries the automatic factor, e.g. "W x10"
+            message.text = factor && factor > 1 ? `${text} x${factor}`.trim() : text;
             message.value = valuesChart;
             message.ticks = ticksChart;
         }
@@ -152,10 +162,7 @@ export class PageChart extends Page {
     }
 
     // Überschreiben der getChartData-Methode
-    async getChartData(
-        ticksChart: string[] = ['~'],
-        valuesChart = '~',
-    ): Promise<{ ticksChart: string[]; valuesChart: string }> {
+    async getChartData(ticksChart: string[] = ['~'], valuesChart = '~'): Promise<ChartData> {
         // oldScriptVersion bleibt unverändert
         if (this.items) {
             const items = this.items;
@@ -172,10 +179,7 @@ export class PageChart extends Page {
         return { ticksChart, valuesChart };
     }
 
-    async getChartDataDB(
-        ticksChart: string[] = ['~'],
-        valuesChart = '~',
-    ): Promise<{ ticksChart: string[]; valuesChart: string }> {
+    async getChartDataDB(ticksChart: string[] = ['~'], valuesChart = '~'): Promise<ChartData> {
         this.log.warn('getChartDataDB not implemented in base PageChart class');
         return { ticksChart, valuesChart };
     }

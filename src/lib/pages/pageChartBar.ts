@@ -1,6 +1,6 @@
 import { type PageInterface } from '../classes/PageInterface';
 import type * as pages from '../types/pages';
-import { isChartDetailsExternal, PageChart } from './pageChart';
+import { isChartDetailsExternal, PageChart, type ChartData } from './pageChart';
 
 /**
  * Klasse zur Darstellung von Balkendiagrammen (Bar Charts)
@@ -58,10 +58,7 @@ export class PageChartBar extends PageChart {
      * @param valuesChart - String mit den Diagrammwerten (Standard: '~')
      * @returns Objekt mit ticksChart (Y-Achsen-Ticks) und valuesChart (Datenpunkte mit optionalen Zeitangaben)
      */
-    async getChartDataDB(
-        ticksChart: string[] = ['~'],
-        valuesChart = '~',
-    ): Promise<{ ticksChart: string[]; valuesChart: string }> {
+    async getChartDataDB(ticksChart: string[] = ['~'], valuesChart = '~'): Promise<ChartData> {
         if (this.dbDetails) {
             const items = this.dbDetails;
 
