@@ -6,7 +6,7 @@ import { systemNavigation } from '../templates/system-templates';
 import * as ShareConfig from '../types/adminShareConfig';
 import { exhaustiveCheck } from '../types/function-and-const';
 import type { NspanelLovelaceUi } from '../types/NspanelLovelaceUi';
-import type { PageBase } from '../types/pages';
+import type { PageBase, cardChartDataItemOptions } from '../types/pages';
 import type { AlwaysOnMode } from '../types/types';
 
 type PendingNavEntry = {
@@ -230,40 +230,12 @@ export class AdminConfiguration extends BaseClass {
                     if (!isAlwaysOnMode(entry.alwaysOn)) {
                         entry.alwaysOn = 'none';
                     }
-                    const dbData: ShareConfig.ChartDetailsExternal | undefined =
-                        entry.selInstanceDataSource === 1
-                            ? {
-                                  instance: entry.selInstance || '',
-                                  state: entry.setStateForDB || '',
-                                  hours: entry.rangeHours ?? ShareConfig.chartDefaults.rangeHours,
-                                  maxTicks: entry.maxXAxisTicks ?? ShareConfig.chartDefaults.maxXAxisTicks,
-                                  factor: entry.factorCardChart ?? ShareConfig.chartDefaults.factorCardChart,
-                                  maxLabels: entry.maxXAxisLabels ?? ShareConfig.chartDefaults.maxXAxisLabels,
-                              }
-                            : undefined;
                     newPage = {
                         uniqueID: entry.uniqueName,
                         hidden: !!entry.hidden,
                         alwaysOn: entry.alwaysOn,
                         dpInit: '',
-                        config: {
-                            card: entry.selChartType || ShareConfig.chartDefaults.selChartType,
-                            data: {
-                                headline: { type: 'const', constVal: entry.headline || 'Page Chart' },
-                                text: { type: 'const', constVal: entry.txtLabelYAchse || '' },
-                                color: {
-                                    true: {
-                                        color: {
-                                            type: 'const',
-                                            constVal: entry.chartColor || ShareConfig.chartDefaults.chartColor,
-                                        },
-                                    },
-                                },
-                                ticks: { type: 'triggered', dp: entry.setStateForTicks || '' },
-                                value: { type: 'triggered', dp: entry.setStateForValues || entry.setStateForDB || '' },
-                                dbData: dbData ? { type: 'const', constVal: JSON.stringify(dbData) } : undefined,
-                            },
-                        },
+                        config: buildChartPageConfig(entry),
                         pageItems: [],
                     };
                     break;
@@ -749,6 +721,39 @@ export class AdminConfiguration extends BaseClass {
 
         return result;
     }
+}
+
+/**
+ * Page config of a chart page from a PageConfig entry. The DB source travels as JSON in the
+ * const item `dbData` (see ChartDetailsExternal); the script source only uses `ticks` and `value`.
+ * The classic table path (PageChart.getChartPageConfig) builds the same shape.
+ *
+ * @param entry chart entry as stored by the PageConfig editor
+ */
+export function buildChartPageConfig(entry: ShareConfig.ChartEntry): cardChartDataItemOptions {
+    const d = ShareConfig.chartDefaults;
+    const dbData: ShareConfig.ChartDetailsExternal | undefined =
+        entry.selInstanceDataSource === 1
+            ? {
+                  instance: entry.selInstance || '',
+                  state: entry.setStateForDB || '',
+                  hours: entry.rangeHours ?? d.rangeHours,
+                  maxTicks: entry.maxXAxisTicks ?? d.maxXAxisTicks,
+                  factor: entry.factorCardChart ?? d.factorCardChart,
+                  maxLabels: entry.maxXAxisLabels ?? d.maxXAxisLabels,
+              }
+            : undefined;
+    return {
+        card: entry.selChartType || d.selChartType,
+        data: {
+            headline: { type: 'const', constVal: entry.headline || 'Page Chart' },
+            text: { type: 'const', constVal: entry.txtLabelYAchse || '' },
+            color: { true: { color: { type: 'const', constVal: entry.chartColor || d.chartColor } } },
+            ticks: { type: 'triggered', dp: entry.setStateForTicks || '' },
+            value: { type: 'triggered', dp: entry.setStateForValues || entry.setStateForDB || '' },
+            dbData: dbData ? { type: 'const', constVal: JSON.stringify(dbData) } : undefined,
+        },
+    };
 }
 
 function isAlwaysOnMode(F: any): F is AlwaysOnMode {
