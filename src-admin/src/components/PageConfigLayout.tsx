@@ -43,6 +43,7 @@ export function getDisplayName(entry: PageConfigEntry): string {
 export type PageCardType =
     | Extract<
           AdminCardTypes,
+          | 'cardChart'
           | 'cardAlarm'
           | 'cardQR'
           | 'cardPower'
@@ -335,6 +336,7 @@ export class PageConfigLayout extends React.Component<PageConfigLayoutProps, Pag
                                 <MenuItem value="cardQR">{this.getText('page_type_qr')}</MenuItem>
                                 <MenuItem value="cardPower">{this.getText('page_type_power')}</MenuItem>
                                 <MenuItem value="cardTrash">{this.getText('page_type_trash')}</MenuItem>
+                                <MenuItem value="cardChart">{this.getText('page_type_chart')}</MenuItem>
                             </Select>
                         </FormControl>
                     </Paper>
