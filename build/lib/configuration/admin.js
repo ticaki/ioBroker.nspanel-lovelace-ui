@@ -104,7 +104,7 @@ Stack: ${stack}`
    * @param option - Panel configuration partial
    */
   async createPagesFromConfig(option) {
-    var _a, _b, _c, _d, _e, _f, _g;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k;
     const entries = this.pageConfig;
     const pendingNavs = [];
     const mainAliases = new Set(
@@ -198,6 +198,45 @@ Stack: ${stack}`
           this.log.debug(`Generated trash 1page for '${entry.uniqueName}'`);
           break;
         }
+        case "cardChart": {
+          if (!isAlwaysOnMode(entry.alwaysOn)) {
+            entry.alwaysOn = "none";
+          }
+          const dbData = entry.selInstanceDataSource === 1 ? {
+            instance: entry.selInstance || "",
+            state: entry.setStateForDB || "",
+            hours: (_a = entry.rangeHours) != null ? _a : ShareConfig.chartDefaults.rangeHours,
+            maxTicks: (_b = entry.maxXAxisTicks) != null ? _b : ShareConfig.chartDefaults.maxXAxisTicks,
+            factor: (_c = entry.factorCardChart) != null ? _c : ShareConfig.chartDefaults.factorCardChart,
+            maxLabels: (_d = entry.maxXAxisLabels) != null ? _d : ShareConfig.chartDefaults.maxXAxisLabels
+          } : void 0;
+          newPage = {
+            uniqueID: entry.uniqueName,
+            hidden: !!entry.hidden,
+            alwaysOn: entry.alwaysOn,
+            dpInit: "",
+            config: {
+              card: entry.selChartType || ShareConfig.chartDefaults.selChartType,
+              data: {
+                headline: { type: "const", constVal: entry.headline || "Page Chart" },
+                text: { type: "const", constVal: entry.txtLabelYAchse || "" },
+                color: {
+                  true: {
+                    color: {
+                      type: "const",
+                      constVal: entry.chartColor || ShareConfig.chartDefaults.chartColor
+                    }
+                  }
+                },
+                ticks: { type: "triggered", dp: entry.setStateForTicks || "" },
+                value: { type: "triggered", dp: entry.setStateForValues || entry.setStateForDB || "" },
+                dbData: dbData ? { type: "const", constVal: JSON.stringify(dbData) } : void 0
+              }
+            },
+            pageItems: []
+          };
+          break;
+        }
         case "cardPower": {
           if (!isAlwaysOnMode(entry.alwaysOn)) {
             entry.alwaysOn = "none";
@@ -245,7 +284,7 @@ Stack: ${stack}`
                 []
               );
               if (!result.error && result.pageItem) {
-                newPage.pageItems = (_a = newPage.pageItems) != null ? _a : [];
+                newPage.pageItems = (_e = newPage.pageItems) != null ? _e : [];
                 newPage.pageItems.unshift(result.pageItem);
               } else if (result.error) {
                 this.log.warn(
@@ -293,7 +332,7 @@ Stack: ${stack}`
                 []
               );
               if (!result.error && result.pageItem) {
-                newPage.pageItems = (_b = newPage.pageItems) != null ? _b : [];
+                newPage.pageItems = (_f = newPage.pageItems) != null ? _f : [];
                 newPage.pageItems.unshift(result.pageItem);
               } else if (result.error) {
                 this.log.warn(
@@ -328,7 +367,7 @@ Stack: ${stack}`
         }
         replacedIndex = option.navigation.findIndex((b) => b && b.name === newPage.uniqueID);
         if (replacedIndex !== -1) {
-          replacedNav = (_c = option.navigation[replacedIndex]) != null ? _c : void 0;
+          replacedNav = (_g = option.navigation[replacedIndex]) != null ? _g : void 0;
           option.navigation.splice(replacedIndex, 1);
         }
       }
@@ -336,8 +375,8 @@ Stack: ${stack}`
       const navigationEntry = {
         name: newPage.uniqueID,
         page: newPage.uniqueID,
-        right: { single: (_d = replacedNav == null ? void 0 : replacedNav.right) == null ? void 0 : _d.single, double: (_e = replacedNav == null ? void 0 : replacedNav.right) == null ? void 0 : _e.double },
-        left: { single: (_f = replacedNav == null ? void 0 : replacedNav.left) == null ? void 0 : _f.single, double: (_g = replacedNav == null ? void 0 : replacedNav.left) == null ? void 0 : _g.double }
+        right: { single: (_h = replacedNav == null ? void 0 : replacedNav.right) == null ? void 0 : _h.single, double: (_i = replacedNav == null ? void 0 : replacedNav.right) == null ? void 0 : _i.double },
+        left: { single: (_j = replacedNav == null ? void 0 : replacedNav.left) == null ? void 0 : _j.single, double: (_k = replacedNav == null ? void 0 : replacedNav.left) == null ? void 0 : _k.double }
       };
       if (replacedIndex !== -1) {
         option.navigation.splice(replacedIndex, 0, navigationEntry);
