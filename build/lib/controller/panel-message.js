@@ -86,7 +86,7 @@ class PanelSend extends import_library.BaseClass {
               this.log.debug(`Receive ack for ${JSON.stringify(oldMessage)}`);
             }
           }
-          this.messageTimeout = this.adapter.setTimeout(this.sendMessageLoop, 100);
+          this.messageTimeout = this.adapter.setTimeout(this.sendMessageLoop, 250);
         } else {
           if (this.adapter.config.additionalLog) {
             this.log.info(
@@ -148,7 +148,9 @@ class PanelSend extends import_library.BaseClass {
           this.log.error(`Losing ${this.losingMessageCount} messages - set panel offline!`);
         }
         this.panel.isOnline = false;
-        if (this.panel.status !== "flashing") {
+        if (this.panel.handleLostMessages()) {
+          await this.panel.setStatus("offline");
+        } else if (this.panel.status !== "flashing") {
           try {
             await this.adapter.fetch(`http://${this.panel.info.tasmota.net.IPAddress}/cm?`, void 0, 500);
           } catch {
