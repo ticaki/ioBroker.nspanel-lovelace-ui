@@ -82,7 +82,8 @@ export class PanelSend extends BaseClass {
                         }
                     }
 
-                    this.messageTimeout = this.adapter.setTimeout(this.sendMessageLoop, 100);
+                    // Give the Nextion time to render the previous frame before the next one hits its 1024-byte buffer
+                    this.messageTimeout = this.adapter.setTimeout(this.sendMessageLoop, 250);
                 } else {
                     if (this.adapter.config.additionalLog) {
                         this.log.info(
@@ -154,7 +155,9 @@ export class PanelSend extends BaseClass {
                     this.log.error(`Losing ${this.losingMessageCount} messages - set panel offline!`);
                 }
                 this.panel.isOnline = false;
-                if (this.panel.status !== 'flashing') {
+                if (this.panel.handleLostMessages()) {
+                    await this.panel.setStatus('offline');
+                } else if (this.panel.status !== 'flashing') {
                     try {
                         await this.adapter.fetch(`http://${this.panel.info.tasmota.net.IPAddress}/cm?`, undefined, 500);
                     } catch {

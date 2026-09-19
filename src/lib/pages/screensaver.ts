@@ -24,6 +24,10 @@ export class Screensaver extends Page {
     public screensaverSwipe: boolean = false;
     private _infoIcon: any = '';
     private timeoutRotation: ioBroker.Timeout | undefined = undefined;
+    /** Minimum pause between two weatherUpdate/color bursts - protects the Nextion serial buffer */
+    private static readonly minUpdateInterval = 3000;
+    private lastUpdateTs: number = 0;
+    private updateThrottle: ioBroker.Timeout | undefined = undefined;
     public headingNotification: string = '';
     public textNotification: string = '';
     public customNotification: boolean = false;
@@ -330,11 +334,25 @@ export class Screensaver extends Page {
      * Update the screensaver view with data for selected places and refresh status icons.
      * - Prepends an empty payload to 'alternate' if it contains entries
      * - Sends a 'weatherUpdate' payload with concatenated place arrays
+     * - At most one update every 3 s: triggers arriving earlier are merged into one deferred update.
+     *   Nothing is sent without a trigger, and time/date updates are not affected.
      */
     async update(): Promise<void> {
         if (!this.visibility) {
             return;
         }
+        const now = Date.now();
+        const wait = this.lastUpdateTs + Screensaver.minUpdateInterval - now;
+        if (wait > 0) {
+            if (!this.updateThrottle && !this.unload && !this.adapter.unload) {
+                this.updateThrottle = this.adapter.setTimeout(() => {
+                    this.updateThrottle = undefined;
+                    void this.update();
+                }, wait);
+            }
+            return;
+        }
+        this.lastUpdateTs = now;
         await super.update();
 
         const message = await this.getData(['left', 'bottom', 'indicator', 'alternate', 'favorit']);
@@ -405,6 +423,8 @@ export class Screensaver extends Page {
         //await super.onVisibilityChange(v);
         this.step = 0;
         if (v) {
+            // a freshly shown screensaver must be rendered immediately
+            this.lastUpdateTs = 0;
             this.sendType();
             //await this.update();
             await this.HandleTime();
@@ -671,6 +691,9 @@ export class Screensaver extends Page {
         await super.delete();
         if (this.timeoutRotation) {
             this.adapter.clearTimeout(this.timeoutRotation);
+        }
+        if (this.updateThrottle) {
+            this.adapter.clearTimeout(this.updateThrottle);
         }
         if (this.blockButtons) {
             this.adapter.clearTimeout(this.blockButtons);

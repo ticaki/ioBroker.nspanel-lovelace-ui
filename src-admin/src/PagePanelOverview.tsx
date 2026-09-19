@@ -871,9 +871,10 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
                             <MenuItem value="us-p">{this.getText('us-p-Version')}</MenuItem>
                         </Select>
                     </FormControl>
-                    {/* Zeitzone: Autocomplete statt Select – 562 MenuItems auf einmal frieren den Browser ein */}
+                    {/* Zeitzone: Autocomplete statt Select – 562 MenuItems auf einmal frieren den Browser ein.
+                        Root ist ein Block-Div, deshalb inline-flex wie TextField/FormControl, sonst rutscht das Feld in eine eigene Zeile */}
                     <Autocomplete
-                        sx={{ m: 1, minWidth: 240 }}
+                        sx={{ m: 1, minWidth: 200, display: 'inline-flex', verticalAlign: 'top' }}
                         size="small"
                         disabled={!alive}
                         options={this.state.filteredTimezones}
