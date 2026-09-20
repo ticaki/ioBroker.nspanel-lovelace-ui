@@ -51,6 +51,38 @@ function shortInstanceId(id: string | undefined): string {
     return (id ?? '').replace(/^system\.adapter\./, '');
 }
 
+/**
+ * script source: every state, like the classic table (no `common.read` check, many script states lack it)
+ *
+ * @param obj object from the browser
+ */
+function isState(obj: ioBroker.Object): boolean {
+    return !!(obj && obj.type === 'state');
+}
+
+/**
+ * DB source: only states with logging enabled for the chosen instance,
+ * e.g. `influxdb.0` → `common.custom['influxdb.0'].enabled`.
+ * Without a chosen instance: any enabled logging of a DB adapter.
+ *
+ * @param instance short instance id (`influxdb.0`) or ''
+ */
+function loggedByInstance(instance: string): (obj: ioBroker.Object) => boolean {
+    return (obj: ioBroker.Object): boolean => {
+        if (!obj || obj.type !== 'state') {
+            return false;
+        }
+        const custom = obj.common?.custom as Record<string, { enabled?: boolean } | undefined> | undefined;
+        if (!custom) {
+            return false;
+        }
+        if (instance) {
+            return !!custom[instance]?.enabled;
+        }
+        return Object.keys(custom).some(key => DB_ADAPTERS.includes(key.split('.')[0]) && !!custom[key]?.enabled);
+    };
+}
+
 export class PageChartEditor extends ConfigGeneric<ConfigGenericProps & PageChartEditorProps, PageChartEditorState> {
     constructor(props: ConfigGenericProps & PageChartEditorProps) {
         super(props);
@@ -171,6 +203,7 @@ export class PageChartEditor extends ConfigGeneric<ConfigGenericProps & PageChar
         field: 'setStateForTicks' | 'setStateForValues' | 'setStateForDB',
         labelKey: string,
         dialogName: string,
+        filterFunc: (obj: ioBroker.Object) => boolean,
     ): React.JSX.Element {
         const { entry, oContext, theme } = this.props;
         const themeType = oContext?.themeType ?? (theme?.palette?.mode || 'light');
@@ -186,9 +219,7 @@ export class PageChartEditor extends ConfigGeneric<ConfigGenericProps & PageChar
                     theme={theme}
                     themeType={themeType}
                     dialogName={dialogName}
-                    filterFunc={(obj: ioBroker.Object) => {
-                        return !!(obj && obj.type === 'state' && obj.common && obj.common.read);
-                    }}
+                    filterFunc={filterFunc}
                     disabled={!this.state.alive}
                 />
             </Box>
@@ -375,11 +406,19 @@ export class PageChartEditor extends ConfigGeneric<ConfigGenericProps & PageChar
                 )}
 
                 {/* Script source: states for ticks and values */}
-                {!useDb && this.renderStateSelector('setStateForTicks', 'chart_StateTicks', 'selectStateTicks')}
-                {!useDb && this.renderStateSelector('setStateForValues', 'chart_StateValues', 'selectStateValues')}
+                {!useDb &&
+                    this.renderStateSelector('setStateForTicks', 'chart_StateTicks', 'selectStateTicks', isState)}
+                {!useDb &&
+                    this.renderStateSelector('setStateForValues', 'chart_StateValues', 'selectStateValues', isState)}
 
-                {/* DB source: logged state */}
-                {useDb && this.renderStateSelector('setStateForDB', 'chart_StateDB', 'selectStateDB')}
+                {/* DB source: only states logged by the selected instance (any DB instance if none is chosen) */}
+                {useDb &&
+                    this.renderStateSelector(
+                        'setStateForDB',
+                        'chart_StateDB',
+                        'selectStateDB',
+                        loggedByInstance(selectedInstance),
+                    )}
 
                 {/* Y-axis label */}
                 <TextField
