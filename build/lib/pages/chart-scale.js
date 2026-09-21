@@ -19,25 +19,34 @@ var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: tru
 var chart_scale_exports = {};
 __export(chart_scale_exports, {
   buildLineScale: () => buildLineScale,
+  niceStep: () => niceStep,
   ticksFor: () => ticksFor
 });
 module.exports = __toCommonJS(chart_scale_exports);
 const TICK_MIN = -99;
 const TICK_MAX = 999;
 const MAX_FACTOR = 1e6;
+const NICE_STEPS = [10, 20, 50, 100, 200, 500, 1e3, 2e3, 5e3, 1e4];
+function niceStep(span) {
+  var _a;
+  const raw = Math.max(span, 10) / 5;
+  return (_a = NICE_STEPS.find((step) => step >= raw)) != null ? _a : NICE_STEPS[NICE_STEPS.length - 1];
+}
 function ticksFor(values) {
   if (values.length === 0) {
     return [];
   }
   const rawMax = Math.max(...values);
   const rawMin = Math.min(...values);
-  const roundedMin = Math.floor(rawMin / 10) * 10;
-  const roundedMax = Math.ceil(rawMax / 10) * 10;
-  const span = Math.max(roundedMax - roundedMin, 10);
-  const interval = Math.max(Number((span / 5).toFixed()), 10);
+  const step = niceStep(rawMax - rawMin);
+  const lo = Math.floor(rawMin / step) * step;
+  const hi = Math.ceil(rawMax / step) * step;
   const ticks = [];
-  for (let tick = roundedMin - interval * 2; tick < roundedMax + interval; tick += interval) {
+  for (let tick = lo; tick <= hi; tick += step) {
     ticks.push(tick);
+  }
+  if (ticks.length < 2) {
+    ticks.push(lo + step);
   }
   return ticks;
 }
@@ -55,6 +64,7 @@ function buildLineScale(values) {
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
   buildLineScale,
+  niceStep,
   ticksFor
 });
 //# sourceMappingURL=chart-scale.js.map
