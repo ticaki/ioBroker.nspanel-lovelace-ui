@@ -30,7 +30,7 @@ The fields can only be edited while the adapter instance is running. Visibility 
 
 The adapter fetches the data as one average per hour for the bar chart and as averages on a 5-minute grid (at most 500 points) for the line chart, each over the configured range.
 
-The panel prints integer y-axis ticks with at most two characters. The bar chart uses the manual factor to keep large values readable; the line chart chooses the factor automatically (10, 100, …) and appends it to the y-axis label, e.g. `W x10` — the axis then reads `10 … 15` for 100 … 150 W.
+The panel prints integer y-axis ticks with at most two characters. The bar chart uses the manual factor to keep large values readable; the line chart chooses the factor automatically (10, 100, …) and appends it to the y-axis label, e.g. `W x10` — the axis then reads `10 … 15` for 100 … 150 W. The adapter places the y-ticks in round steps (1, 2, 5, 10 …) from the minimum to the maximum of the data. More ticks do not help: the panel spans the y-axis exactly over the data and shows only the ticks inside that range — there is no way to add headroom above or below the curve through the scale (this also applies to the script version).
 
 ## Classic: tab `PageChart` and configuration script
 
