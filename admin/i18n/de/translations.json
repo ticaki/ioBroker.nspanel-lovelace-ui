@@ -330,7 +330,7 @@
     "credential_hint": "Verwaltet unter Admin → Systemeinstellungen → Zugangsdaten. Ein gewählter Eintrag ersetzt die Felder darunter.",
     "credential_load_error": "Die Liste der Zugangsdaten konnte nicht geladen werden",
     "credential_missing": "Der gewählte Eintrag existiert nicht mehr – die Felder darunter werden verwendet",
-    "credential_mqtt": "MQTT-Zugang aus den zentralen Zugangsdaten",
+    "credential_mqtt": "MQTT-Zugang aus den zentralen Zugangsdaten (nur externer Broker)",
     "credential_none": "Hier eingeben (Felder darunter)",
     "credential_qr": "WLAN-Passwort aus den zentralen Zugangsdaten",
     "credential_tasmota": "Tasmota-WebUI-Passwort aus den zentralen Zugangsdaten",

@@ -170,8 +170,9 @@ class PageMQTTSetting extends ConfigGeneric<ConfigGenericProps & { theme?: any }
         const mqttPort = localMqttPort !== undefined ? localMqttPort : (data.mqttPort ?? '');
         const mqttUsername = localMqttUsername !== undefined ? localMqttUsername : (data.mqttUsername ?? '');
         const mqttPassword = localMqttPassword !== undefined ? localMqttPassword : (data.mqttPassword ?? '');
-        // a selected central credential replaces the login fields - they stay visible but locked
-        const mqttFromCredential = !!data.mqttCredentialId;
+        // a selected central credential replaces the login fields - they stay visible but locked;
+        // the internal server keeps its generated login, so the credential only counts for an external broker
+        const mqttFromCredential = !!data.mqttCredentialId && !data.mqttServer;
         const tasmotaFromCredential = !!data.tasmotaCredentialId;
 
         // Gemeinsame Styles für alle Boxen
@@ -241,7 +242,7 @@ class PageMQTTSetting extends ConfigGeneric<ConfigGenericProps & { theme?: any }
                             sx={{ m: 1, maxWidth: '300px' }}
                         />
                     </Box>
-                    {/* Zentrale Zugangsdaten: der Adapter liest Login und Passwort aus dem Credential */}
+                    {/* Zentrale Zugangsdaten (nur externer Broker): der Adapter liest Login und Passwort aus dem Credential */}
                     <Box sx={{ display: 'flex', width: '100%' }}>
                         <CredentialSelect
                             socket={this.props.oContext.socket}
@@ -249,7 +250,7 @@ class PageMQTTSetting extends ConfigGeneric<ConfigGenericProps & { theme?: any }
                             getText={key => this.getText(key)}
                             value={data.mqttCredentialId ?? ''}
                             onChange={id => void this.onChange('mqttCredentialId', id)}
-                            disabled={!alive}
+                            disabled={!alive || data.mqttServer}
                             sx={{ m: 1, minWidth: '300px', maxWidth: '616px', flexGrow: 1 }}
                         />
                     </Box>

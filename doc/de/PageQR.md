@@ -31,10 +31,10 @@ Beim Typ Wifi stehen folgende Felder zusätzlich zur Verfügung.
 > [!Note]  
 >Das Password wird verschlüsselt im Adapter gespeichert  
 
-- **WLAN-Passwort aus den zentralen Zugangsdaten** -> Alternativ zum Passwortfeld kann ein Eintrag aus den zentralen Zugangsdaten des Admin gewählt werden (Admin → Systemeinstellungen → Zugangsdaten; Typ `Schlüssel` oder `Login & Passwort`, beim zweiten zählt das Passwort). In der Instanz liegt dann nur noch die ID des Eintrags, das Passwort selbst liest und entschlüsselt der Adapter beim Start. Ein gewählter Eintrag ersetzt das Passwortfeld (es wird gesperrt); ohne Auswahl gilt weiterhin das Feld. Wird der Eintrag im Admin geändert oder gelöscht, startet der Adapter neu.
+- **WLAN-Passwort aus den zentralen Zugangsdaten** -> Alternativ zum Passwortfeld kann ein Eintrag aus den zentralen Zugangsdaten des Admin gewählt werden (Admin → Systemeinstellungen → Zugangsdaten; Typ `Schlüssel` oder `Login & Passwort`, beim zweiten zählt das Passwort). In der Instanz liegt dann nur noch die ID des Eintrags, das Passwort selbst liest und entschlüsselt der Adapter beim Start. Ein gewählter Eintrag ersetzt das Passwortfeld (es wird gesperrt); ohne Auswahl gilt weiterhin das Feld. Wird der Eintrag im Admin geändert oder gelöscht, meldet der Adapter das im Log; die Änderung greift nach einem Neustart.
 
 > [!Note]  
-> Dasselbe gibt es im Tab `MQTT` für den MQTT-Zugang (Eintrag vom Typ `Login & Passwort`) und für das Tasmota-WebUI-Passwort. Derselbe Eintrag lässt sich in Skripten über `SECRETS.<Name>` nutzen.
+> Dasselbe gibt es im Tab `MQTT` für den Zugang zu einem externen MQTT-Broker (Eintrag vom Typ `Login & Passwort`; der interne Server behält seinen erzeugten Zugang) und für das Tasmota-WebUI-Passwort. Derselbe Eintrag lässt sich in Skripten über `SECRETS.<Name>` nutzen.
   
 - **Wlan Passwort verstecken** -> damit wird das Password auf der Seite im Panel ausgeblendet, befindet sich aber trozdem im QR Code  
 - **Schalter/State** -> hier kann ein Datenpunkt vom Typ boolean eingetragen werden bzw. mit den kleinen Button rechts ausgewählt werden.  

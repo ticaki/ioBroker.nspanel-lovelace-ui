@@ -392,8 +392,8 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
             !!localTasmotaName &&
             (!!data.mqttServer || !!data.mqttIp) &&
             !!data.mqttPort &&
-            // the login comes either from the fields or from a central credential (resolved by the adapter)
-            ((!!data.mqttUsername && !!data.mqttPassword) || !!data.mqttCredentialId) &&
+            // the login comes either from the fields or, for an external broker, from a central credential (resolved by the adapter)
+            ((!!data.mqttUsername && !!data.mqttPassword) || (!data.mqttServer && !!data.mqttCredentialId)) &&
             (!data.mqttServer || (!!data.internalServerIp && this.isValidCompleteIp(data.internalServerIp)))
         );
     }

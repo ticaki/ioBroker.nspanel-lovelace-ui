@@ -329,7 +329,7 @@
     "credential_hint": "Geridas em Admin → Definições do sistema → Credenciais. Uma entrada selecionada substitui os campos abaixo.",
     "credential_load_error": "Não foi possível carregar a lista de credenciais",
     "credential_missing": "A credencial selecionada já não existe - são usados os campos abaixo",
-    "credential_mqtt": "Acesso MQTT a partir das credenciais centrais",
+    "credential_mqtt": "Acesso MQTT a partir das credenciais centrais (apenas broker externo)",
     "credential_none": "Introduzir aqui (campos abaixo)",
     "credential_qr": "Palavra-passe Wifi a partir das credenciais centrais",
     "credential_tasmota": "Palavra-passe da WebUI Tasmota a partir das credenciais centrais",
