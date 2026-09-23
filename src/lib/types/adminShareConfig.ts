@@ -361,6 +361,8 @@ export type QREntry = {
     wlanhidden: boolean;
     wlantype?: 'nopass' | 'WPA' | 'WPA2' | 'WPA3' | 'WEP';
     qrPass?: string;
+    /** id of a central credential (system.credentials.<name>) holding the wifi password; empty = qrPass is used */
+    qrCredentialId?: string;
     pwdhidden: boolean;
     setState: string;
     uniqueName: string;

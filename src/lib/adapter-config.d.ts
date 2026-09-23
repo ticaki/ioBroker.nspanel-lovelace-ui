@@ -15,6 +15,8 @@ declare global {
             mqttServer: boolean;
             mqttPassword: string;
             mqttUsername: string;
+            /** id of a central credential (system.credentials.<name>, form login & password); empty = use mqttUsername/mqttPassword */
+            mqttCredentialId: string;
             mqttIp: string;
             mqttPort: number;
             internalServerIp: string;
@@ -41,6 +43,8 @@ declare global {
             useTasmotaAdmin: boolean;
             tasmotaAdmin: string;
             tasmotaAdminPassword: string;
+            /** id of a central credential holding the Tasmota WebUI password; empty = use tasmotaAdminPassword */
+            tasmotaCredentialId: string;
             panels: {name: string, topic: string, id: string, ip: string, model: NSpanelModel}[];
             pw1: string;
 
@@ -278,6 +282,8 @@ declare global {
                 wlanhidden: boolean;
                 wlantype?: 'nopass' | 'WPA' | 'WPA2' | 'WPA3' | 'WEP';
                 qrPass?: string;
+                /** id of a central credential holding the wifi password; empty = use qrPass */
+                qrCredentialId?: string;
                 pwdhidden: boolean;
                 setState: string;
                 hidden?: boolean;

@@ -192,6 +192,7 @@
     "tftUrl": "http://nspanel.de",
     "mqttPassword": "",
     "mqttUsername": "",
+    "mqttCredentialId": "",
     "mqttIp": "",
     "mqttPort": 0,
     "mqttServer": false,
@@ -203,6 +204,7 @@
     "pageQRssid": "",
     "pw1": "",
     "tasmotaAdminPassword": "",
+    "tasmotaCredentialId": "",
     "useBetaTFT": false,
     "shutterClosedIsZero": false,
     "colorStates": [
