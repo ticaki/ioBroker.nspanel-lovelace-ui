@@ -11,6 +11,7 @@ import {
     InputAdornment,
 } from '@mui/material';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
+import { CredentialSelect } from './components/CredentialSelect';
 
 interface PageMQTTSettingState extends ConfigGenericState {
     // Define any additional state properties if needed
@@ -169,6 +170,9 @@ class PageMQTTSetting extends ConfigGeneric<ConfigGenericProps & { theme?: any }
         const mqttPort = localMqttPort !== undefined ? localMqttPort : (data.mqttPort ?? '');
         const mqttUsername = localMqttUsername !== undefined ? localMqttUsername : (data.mqttUsername ?? '');
         const mqttPassword = localMqttPassword !== undefined ? localMqttPassword : (data.mqttPassword ?? '');
+        // a selected central credential replaces the login fields - they stay visible but locked
+        const mqttFromCredential = !!data.mqttCredentialId;
+        const tasmotaFromCredential = !!data.tasmotaCredentialId;
 
         // Gemeinsame Styles für alle Boxen
         const boxStyle = {
@@ -209,7 +213,7 @@ class PageMQTTSetting extends ConfigGeneric<ConfigGenericProps & { theme?: any }
                         variant="contained"
                         color="primary"
                         onClick={this.handleGetRandomMqttCredentials}
-                        disabled={!alive || !data.mqttServer}
+                        disabled={!alive || !data.mqttServer || mqttFromCredential}
                     >
                         {this.getText('getRandomMqttCredentials')}
                     </Button>
@@ -237,14 +241,26 @@ class PageMQTTSetting extends ConfigGeneric<ConfigGenericProps & { theme?: any }
                             sx={{ m: 1, maxWidth: '300px' }}
                         />
                     </Box>
+                    {/* Zentrale Zugangsdaten: der Adapter liest Login und Passwort aus dem Credential */}
                     <Box sx={{ display: 'flex', width: '100%' }}>
-                        {/* Benutzername-Feld mit readOnly, wenn mqttServer aktiviert ist */}
+                        <CredentialSelect
+                            socket={this.props.oContext.socket}
+                            label={this.getText('credential_mqtt')}
+                            getText={key => this.getText(key)}
+                            value={data.mqttCredentialId ?? ''}
+                            onChange={id => void this.onChange('mqttCredentialId', id)}
+                            disabled={!alive}
+                            sx={{ m: 1, minWidth: '300px', maxWidth: '616px', flexGrow: 1 }}
+                        />
+                    </Box>
+                    <Box sx={{ display: 'flex', width: '100%' }}>
+                        {/* Benutzername-Feld mit readOnly, wenn mqttServer aktiviert ist oder ein Credential gewählt wurde */}
                         <TextField
                             variant="standard"
                             label={this.getText('mqttUser')}
                             value={mqttUsername}
                             onChange={this.handleTextChange('mqttUsername')}
-                            disabled={!alive || data.mqttServer}
+                            disabled={!alive || data.mqttServer || mqttFromCredential}
                             sx={{ m: 1, maxWidth: '300px' }}
                         />
                         {/* Passwortfeld mit Sichtbarkeit */}
@@ -254,7 +270,7 @@ class PageMQTTSetting extends ConfigGeneric<ConfigGenericProps & { theme?: any }
                             type={showPassword ? 'text' : 'password'}
                             value={mqttPassword}
                             onChange={this.handleTextChange('mqttPassword')}
-                            disabled={!alive || data.mqttServer}
+                            disabled={!alive || data.mqttServer || mqttFromCredential}
                             sx={{ m: 1, maxWidth: '300px' }}
                             slotProps={{
                                 input: {
@@ -262,7 +278,7 @@ class PageMQTTSetting extends ConfigGeneric<ConfigGenericProps & { theme?: any }
                                         <InputAdornment position="end">
                                             <IconButton
                                                 onClick={this.handleToggleVisibility}
-                                                disabled={!alive || data.mqttServer}
+                                                disabled={!alive || data.mqttServer || mqttFromCredential}
                                                 edge="end"
                                                 size="small"
                                             >
@@ -294,13 +310,24 @@ class PageMQTTSetting extends ConfigGeneric<ConfigGenericProps & { theme?: any }
                         label={this.getText('useTasmotaAdmin')}
                     />
                     {data.useTasmotaAdmin && (
+                        <CredentialSelect
+                            socket={this.props.oContext.socket}
+                            label={this.getText('credential_tasmota')}
+                            getText={key => this.getText(key)}
+                            value={data.tasmotaCredentialId ?? ''}
+                            onChange={id => void this.onChange('tasmotaCredentialId', id)}
+                            disabled={!alive}
+                            sx={{ m: 1, minWidth: '300px', maxWidth: '616px' }}
+                        />
+                    )}
+                    {data.useTasmotaAdmin && (
                         <TextField
                             variant="standard"
                             label={this.getText('tasmotaAdminPassword')}
                             type={showPassword ? 'text' : 'password'}
-                            value={data.tasmotaAdminPassword}
-                            onChange={value => this.onChange('tasmotaAdminPassword', value)}
-                            disabled={!alive}
+                            value={data.tasmotaAdminPassword ?? ''}
+                            onChange={e => void this.onChange('tasmotaAdminPassword', e.target.value)}
+                            disabled={!alive || tasmotaFromCredential}
                             sx={{ m: 1, maxWidth: '300px' }}
                             slotProps={{
                                 input: {
@@ -308,7 +335,7 @@ class PageMQTTSetting extends ConfigGeneric<ConfigGenericProps & { theme?: any }
                                         <InputAdornment position="end">
                                             <IconButton
                                                 onClick={this.handleToggleVisibility}
-                                                disabled={!alive}
+                                                disabled={!alive || tasmotaFromCredential}
                                                 edge="end"
                                                 size="small"
                                             >

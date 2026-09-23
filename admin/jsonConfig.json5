@@ -5,7 +5,7 @@
         "_tabMaintain": {
             "type": "panel",
             "label": "Maintain",
-            "hidden": "(!data.mqttServer && !data.mqttIp ) || !data.mqttPort || !data.mqttUsername || !data.mqttPassword || !data.panels || !data.panels.length",
+            "hidden": "(!data.mqttServer && !data.mqttIp ) || !data.mqttPort || (!data.mqttCredentialId && (!data.mqttUsername || !data.mqttPassword)) || !data.panels || !data.panels.length",
             "items": {
                 "pageGlobalSettings": {
                     "type": "custom",
@@ -22,7 +22,7 @@
         "_pageGlobalSettings": {
             "type": "panel",
             "label": "Global Settings",
-            "hidden": "(!data.mqttServer && !data.mqttIp ) || !data.mqttPort || !data.mqttUsername || !data.mqttPassword || !data.panels || !data.panels.length",
+            "hidden": "(!data.mqttServer && !data.mqttIp ) || !data.mqttPort || (!data.mqttCredentialId && (!data.mqttUsername || !data.mqttPassword)) || !data.panels || !data.panels.length",
             "items": {
                 "pageGlobalSettings": {
                     "type": "custom",
@@ -39,7 +39,7 @@
         "colorThemen": {
             "type": "panel",
             "label": "colorTheme",
-            "hidden": "(!data.mqttServer && !data.mqttIp ) || !data.mqttPort || !data.mqttUsername || !data.mqttPassword || data.colorTheme !== 5",
+            "hidden": "(!data.mqttServer && !data.mqttIp ) || !data.mqttPort || (!data.mqttCredentialId && (!data.mqttUsername || !data.mqttPassword)) || data.colorTheme !== 5",
             "items": {
                 "_openLinkWikiColorThemes": {
                     "type": "staticLink",
@@ -895,7 +895,7 @@
         "pagePower": {
             "type": "panel",
             "label": "Page Power",
-            "hidden": "(!data.mqttServer && !data.mqttIp ) || !data.mqttPort || !data.mqttUsername || !data.mqttPassword || !data.panels || !data.panels.length",
+            "hidden": "(!data.mqttServer && !data.mqttIp ) || !data.mqttPort || (!data.mqttCredentialId && (!data.mqttUsername || !data.mqttPassword)) || !data.panels || !data.panels.length",
             "items": {
                 "pagePowerdataErr": {
                     "type": "staticText",
@@ -2466,7 +2466,7 @@
         "pageChart": {
             "type": "panel",
             "label": "Page Chart",
-            "hidden": "(!data.mqttServer && !data.mqttIp ) || !data.mqttPort || !data.mqttUsername || !data.mqttPassword || !data.panels || !data.panels.length",
+            "hidden": "(!data.mqttServer && !data.mqttIp ) || !data.mqttPort || (!data.mqttCredentialId && (!data.mqttUsername || !data.mqttPassword)) || !data.panels || !data.panels.length",
             "items": {
                 "pageChartdataErr": {
                     "type": "staticText",
@@ -2753,7 +2753,7 @@
         "_pageConfig": {
             "type": "panel",
             "label": "PageConfig",
-            "hidden": "(!data.mqttServer && !data.mqttIp ) || !data.mqttPort || !data.mqttUsername || !data.mqttPassword || !data.panels || !data.panels.length",
+            "hidden": "(!data.mqttServer && !data.mqttIp ) || !data.mqttPort || (!data.mqttCredentialId && (!data.mqttUsername || !data.mqttPassword)) || !data.panels || !data.panels.length",
             "items": {
                 "pageConfig": {
                     "type": "custom",
@@ -2771,7 +2771,7 @@
             "type": "panel",
             "label": "tasmotaTools",
             "expertMode": true,
-            "hidden": "(!data.mqttServer && !data.mqttIp ) || !data.mqttPort || !data.mqttUsername || !data.mqttPassword || !data.panels || !data.panels.length",
+            "hidden": "(!data.mqttServer && !data.mqttIp ) || !data.mqttPort || (!data.mqttCredentialId && (!data.mqttUsername || !data.mqttPassword)) || !data.panels || !data.panels.length",
             "items": {
                 "_openLinkWikiTasmotaTools": {
                     "type": "staticLink",
@@ -2913,7 +2913,7 @@
         "_overview": {
             "type": "panel",
             "label": "nsPanelSettings",
-            "hidden": "(!data.mqttServer && !data.mqttIp ) || !data.mqttPort || !data.mqttUsername || !data.mqttPassword",
+            "hidden": "(!data.mqttServer && !data.mqttIp ) || !data.mqttPort || (!data.mqttCredentialId && (!data.mqttUsername || !data.mqttPassword))",
             "items": {
                 "pagePanelOverview": {
                     "type": "custom",
