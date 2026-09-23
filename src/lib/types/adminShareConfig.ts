@@ -460,6 +460,78 @@ export function emptyPowerSlot(): PowerSlotConfig {
     };
 }
 
+// Chart Entry for pageChart configuration (the diagram type lives in selChartType, card is always 'cardChart')
+export type ChartEntry = {
+    card: Extract<AdminCardTypes, 'cardChart'>;
+    uniqueName: string;
+    headline?: string;
+    chartColor?: string;
+    txtLabelYAchse?: string;
+
+    selChartType?: 'cardChart' | 'cardLChart';
+    selInstanceDataSource?: number; // 0 = script, 1 = DB adapter
+    // oldScriptVersion
+    setStateForTicks?: string;
+    setStateForValues?: string;
+    // db Version
+    selInstance?: string; // Instance ID for DB adapter
+    setStateForDB?: string;
+    rangeHours?: number;
+    maxXAxisTicks?: number;
+    factorCardChart?: number; // 1, 10, 100, 1000
+    maxXAxisLabels?: number;
+} & PageConfigBaseFields;
+
+export type ChartDetailsExternal = {
+    instance: string; // Instance ID for DB adapter
+    state: string;
+    hours?: number;
+    maxTicks?: number;
+    factor?: number; // 1, 10, 100, 1000
+    maxLabels?: number;
+};
+
+/**
+ * Defaults of a chart page — the single source for the PageConfig editor, handleAdd,
+ * admin.ts and the classic table path (getChartPageConfig). Display and storage stay identical.
+ */
+export const chartDefaults = {
+    chartColor: '#FFFF00',
+    selChartType: 'cardChart' as 'cardChart' | 'cardLChart',
+    selInstanceDataSource: 0,
+    rangeHours: 24,
+    maxXAxisTicks: 2,
+    factorCardChart: 1,
+    maxXAxisLabels: 4,
+};
+
+/**
+ * Creates a fresh chart entry with all fields set explicitly (same pattern as emptyPowerSlot).
+ *
+ * @param uniqueName unique page name
+ */
+export function emptyChartEntry(uniqueName: string): ChartEntry {
+    return {
+        card: 'cardChart',
+        uniqueName,
+        headline: uniqueName,
+        chartColor: chartDefaults.chartColor,
+        txtLabelYAchse: '',
+        selChartType: chartDefaults.selChartType,
+        selInstanceDataSource: chartDefaults.selInstanceDataSource,
+        setStateForTicks: '',
+        setStateForValues: '',
+        selInstance: '',
+        setStateForDB: '',
+        rangeHours: chartDefaults.rangeHours,
+        maxXAxisTicks: chartDefaults.maxXAxisTicks,
+        factorCardChart: chartDefaults.factorCardChart,
+        maxXAxisLabels: chartDefaults.maxXAxisLabels,
+        hidden: false,
+        alwaysOn: 'none',
+    };
+}
+
 export type TrashItem = {
     textTrash: string;
     customTrash: string;
@@ -520,8 +592,15 @@ export type NavigationAssignment = {
 };
 
 export type NavigationAssignmentList = NavigationAssignment[];
-export type PageConfigEntry = QREntry | UnlockEntry | ScreensaverEntry | TrashEntry | MenuEntry | PowerEntry;
-export type PageConfig = QREntry | UnlockEntry | ScreensaverEntry | TrashEntry | MenuEntry | PowerEntry;
+export type PageConfigEntry =
+    | QREntry
+    | UnlockEntry
+    | ScreensaverEntry
+    | TrashEntry
+    | ChartEntry
+    | MenuEntry
+    | PowerEntry;
+export type PageConfig = QREntry | UnlockEntry | ScreensaverEntry | TrashEntry | ChartEntry | MenuEntry | PowerEntry;
 
 /**
  * Whether an admin page entry is flagged as the start page of its assigned panels.

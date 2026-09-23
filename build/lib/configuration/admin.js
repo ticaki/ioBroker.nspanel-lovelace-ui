@@ -29,6 +29,7 @@ var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: tru
 var admin_exports = {};
 __export(admin_exports, {
   AdminConfiguration: () => AdminConfiguration,
+  buildChartPageConfig: () => buildChartPageConfig,
   buildPowerSlotData: () => buildPowerSlotData
 });
 module.exports = __toCommonJS(admin_exports);
@@ -196,6 +197,20 @@ Stack: ${stack}`
           }
           newPage = dataForcardTrash(entry);
           this.log.debug(`Generated trash 1page for '${entry.uniqueName}'`);
+          break;
+        }
+        case "cardChart": {
+          if (!isAlwaysOnMode(entry.alwaysOn)) {
+            entry.alwaysOn = "none";
+          }
+          newPage = {
+            uniqueID: entry.uniqueName,
+            hidden: !!entry.hidden,
+            alwaysOn: entry.alwaysOn,
+            dpInit: "",
+            config: buildChartPageConfig(entry),
+            pageItems: []
+          };
           break;
         }
         case "cardPower": {
@@ -591,6 +606,29 @@ Stack: ${stack}`
     return result;
   }
 }
+function buildChartPageConfig(entry) {
+  var _a, _b, _c, _d;
+  const d = ShareConfig.chartDefaults;
+  const dbData = entry.selInstanceDataSource === 1 ? {
+    instance: entry.selInstance || "",
+    state: entry.setStateForDB || "",
+    hours: (_a = entry.rangeHours) != null ? _a : d.rangeHours,
+    maxTicks: (_b = entry.maxXAxisTicks) != null ? _b : d.maxXAxisTicks,
+    factor: (_c = entry.factorCardChart) != null ? _c : d.factorCardChart,
+    maxLabels: (_d = entry.maxXAxisLabels) != null ? _d : d.maxXAxisLabels
+  } : void 0;
+  return {
+    card: entry.selChartType || d.selChartType,
+    data: {
+      headline: { type: "const", constVal: entry.headline || "Page Chart" },
+      text: { type: "const", constVal: entry.txtLabelYAchse || "" },
+      color: { true: { color: { type: "const", constVal: entry.chartColor || d.chartColor } } },
+      ticks: { type: "triggered", dp: entry.setStateForTicks || "" },
+      value: { type: "triggered", dp: entry.setStateForValues || entry.setStateForDB || "" },
+      dbData: dbData ? { type: "const", constVal: JSON.stringify(dbData) } : void 0
+    }
+  };
+}
 function isAlwaysOnMode(F) {
   const R = F;
   switch (R) {
@@ -842,6 +880,7 @@ function dataForcardTrash(entry) {
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
   AdminConfiguration,
+  buildChartPageConfig,
   buildPowerSlotData
 });
 //# sourceMappingURL=admin.js.map
