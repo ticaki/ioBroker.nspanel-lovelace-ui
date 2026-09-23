@@ -329,7 +329,7 @@
     "credential_hint": "在 管理 → 系统设置 → 凭据 中管理。选定的条目会替代下方字段。",
     "credential_load_error": "无法加载凭据列表",
     "credential_missing": "所选凭据已不存在 - 将使用下方字段",
-    "credential_mqtt": "来自中央凭据的 MQTT 登录",
+    "credential_mqtt": "来自中央凭据的 MQTT 登录（仅限外部 broker）",
     "credential_none": "在此输入（下方字段）",
     "credential_qr": "来自中央凭据的 Wifi 密码",
     "credential_tasmota": "来自中央凭据的 Tasmota WebUI 密码",

@@ -545,15 +545,16 @@ class NspanelLovelaceUi extends utils.Adapter {
    * Replaces the login fields of the instance settings by the values of the selected central
    * credentials (Admin → System settings → Credentials) - in memory only, the stored
    * configuration stays untouched - and subscribes to those credentials, so a change in the
-   * admin restarts the adapter with the new values.
+   * admin is reported in the log (it takes effect with the next restart).
    *
    * Every field keeps its legacy value if no credential is selected or the credential cannot be
-   * read, so existing configurations run unchanged.
+   * read, so existing configurations run unchanged. The internal MQTT server always uses the
+   * generated login of the instance settings - a credential only applies to an external broker.
    */
   async applyCredentials() {
     var _a;
     const ids = /* @__PURE__ */ new Set();
-    if ((0, import_credentials.isCredentialId)(this.config.mqttCredentialId)) {
+    if (!this.config.mqttServer && (0, import_credentials.isCredentialId)(this.config.mqttCredentialId)) {
       ids.add(this.config.mqttCredentialId);
       const mqtt = await (0, import_credentials.resolveLogin)(
         this,
@@ -595,6 +596,7 @@ class NspanelLovelaceUi extends utils.Adapter {
   }
   /**
    * Is called if a subscribed object changes - only the central credentials are subscribed.
+   * The change is only reported; whether the adapter should apply it by itself is still open.
    *
    * @param id   The id of the object that changed
    * @param obj  The new object, null if it was deleted
@@ -603,10 +605,9 @@ class NspanelLovelaceUi extends utils.Adapter {
     if (this.unload || !this.watchedCredentialIds.has(id)) {
       return;
     }
-    this.log.info(
-      obj ? `Credential "${id}" changed - restarting the adapter to apply it` : `Credential "${id}" was deleted - restarting the adapter, the fields of the instance settings are used instead`
+    this.log.warn(
+      obj ? `Credential "${id}" changed - restart the adapter to apply the new values` : `Credential "${id}" was deleted - after a restart the fields of the instance settings are used instead`
     );
-    this.restart();
   }
   /**
    * Is called if a subscribed state changes
@@ -1769,7 +1770,7 @@ class NspanelLovelaceUi extends utils.Adapter {
     var _a, _b;
     const msg = obj.message;
     const useInternalServer = !((msg == null ? void 0 : msg.mqttServer) == null || msg.mqttServer === false || msg.mqttServer === "false");
-    if ((0, import_credentials.isCredentialId)(msg == null ? void 0 : msg.mqttCredentialId)) {
+    if (!useInternalServer && (0, import_credentials.isCredentialId)(msg == null ? void 0 : msg.mqttCredentialId)) {
       const mqtt = await (0, import_credentials.resolveLogin)(this, msg.mqttCredentialId, msg.mqttUsername, msg.mqttPassword);
       if (mqtt.source === "credential") {
         msg.mqttUsername = mqtt.login;

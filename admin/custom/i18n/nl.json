@@ -329,7 +329,7 @@
     "credential_hint": "Beheerd onder Admin → Systeeminstellingen → Inloggegevens. Een gekozen item vervangt de velden hieronder.",
     "credential_load_error": "De lijst met inloggegevens kon niet worden geladen",
     "credential_missing": "Het gekozen item bestaat niet meer - de velden hieronder worden gebruikt",
-    "credential_mqtt": "MQTT-toegang uit de centrale inloggegevens",
+    "credential_mqtt": "MQTT-toegang uit de centrale inloggegevens (alleen externe broker)",
     "credential_none": "Hier invoeren (velden hieronder)",
     "credential_qr": "Wifi-wachtwoord uit de centrale inloggegevens",
     "credential_tasmota": "Tasmota WebUI-wachtwoord uit de centrale inloggegevens",
