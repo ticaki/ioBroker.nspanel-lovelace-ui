@@ -29,7 +29,7 @@
         "@types/react-dom": "^19.2.4",
         "@vitejs/plugin-react": "^6.0.5",
         "@xyflow/react": "^12.11.3",
-        "baseline-browser-mapping": "^2.10.43",
+        "baseline-browser-mapping": "^2.11.21",
         "react": "^19.2.8",
         "react-dom": "^19.2.8",
         "tsx": "^4.21.0",
