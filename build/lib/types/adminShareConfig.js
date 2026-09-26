@@ -455,7 +455,7 @@ const requiredScriptDataPoints = {
     description: "T\xFCrschloss",
     data: {
       ACTUAL: {
-        role: ["state"],
+        role: ["state", "sensor.lock"],
         type: "boolean",
         required: false,
         writeable: false,
