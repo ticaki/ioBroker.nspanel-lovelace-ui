@@ -151,7 +151,7 @@
 ### lock
 | Channel role | State ID | common.type | common.role | required | common.write | description |
 | :---: | :--- | :--- | :--- | :---: | :---: | :--- |
-| **lock** | ~~ACTUAL~~ | boolean | state |  |  |  |
+| **lock** | ~~ACTUAL~~ | boolean | state, sensor.lock |  |  |  |
 | " | ~~OPEN~~ | boolean | button |  | X |  |
 | " | ~~SET~~ | boolean | switch.lock | X | X |  |
 
