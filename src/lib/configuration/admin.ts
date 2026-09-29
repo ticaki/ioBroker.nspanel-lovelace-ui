@@ -5,6 +5,7 @@ import type { panelConfigPartial } from '../controller/panel';
 import { systemNavigation } from '../templates/system-templates';
 import * as ShareConfig from '../types/adminShareConfig';
 import { exhaustiveCheck } from '../types/function-and-const';
+import { resolveSecret } from '../credentials';
 import type { NspanelLovelaceUi } from '../types/NspanelLovelaceUi';
 import type { PageBase, cardChartDataItemOptions } from '../types/pages';
 import type { AlwaysOnMode } from '../types/types';
@@ -195,6 +196,13 @@ export class AdminConfiguration extends BaseClass {
                     if (!isAlwaysOnMode(entry.alwaysOn)) {
                         entry.alwaysOn = 'none';
                     }
+                    // the password may live in a central credential, the entry then only holds its id
+                    const qrPassword = await resolveSecret(this.adapter, entry.qrCredentialId, entry.qrPass);
+                    if (qrPassword.source === 'credential') {
+                        this.log.debug(
+                            `QR page '${entry.uniqueName}': password taken from credential "${qrPassword.name}"`,
+                        );
+                    }
                     newPage = {
                         uniqueID: entry.uniqueName,
                         hidden: !!entry.hidden,
@@ -208,7 +216,7 @@ export class AdminConfiguration extends BaseClass {
                                 ssidUrlTel: { type: 'const', constVal: entry.ssidUrlTel || '' },
                                 wlantype: { type: 'const', constVal: entry.wlantype || 'WPA' },
                                 wlanhidden: { type: 'const', constVal: !!entry.wlanhidden || false },
-                                password: { type: 'const', constVal: entry.qrPass || '' },
+                                password: { type: 'const', constVal: qrPassword.secret },
                                 pwdhidden: { type: 'const', constVal: !!entry.pwdhidden || false },
                                 setState: entry.setState ? { type: 'triggered', dp: entry.setState } : undefined,
                             },

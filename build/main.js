@@ -32,6 +32,7 @@ var definition = __toESM(require("./lib/const/definition"));
 var import_config_manager = require("./lib/classes/config-manager");
 var import_readme = require("./lib/tools/readme");
 var import_redact = require("./lib/tools/redact");
+var import_credentials = require("./lib/credentials");
 var import_node_url = require("node:url");
 var fs = __toESM(require("node:fs"));
 var import_Color = require("./lib/const/Color");
@@ -60,6 +61,8 @@ class NspanelLovelaceUi extends utils.Adapter {
   versionJson = void 0;
   /** Zwischenstände der dreistufigen Panel-Einrichtung, nach Topic */
   nsPanelInitSessions = /* @__PURE__ */ new Map();
+  /** Zentrale Credentials, die diese Instanz benutzt - eine Änderung daran startet den Adapter neu */
+  watchedCredentialIds = /* @__PURE__ */ new Set();
   constructor(options = {}) {
     super({
       ...options,
@@ -69,6 +72,7 @@ class NspanelLovelaceUi extends utils.Adapter {
     this.library = new import_library.Library(this);
     this.on("ready", this.onReady.bind(this));
     this.on("stateChange", this.onStateChange.bind(this));
+    this.on("objectChange", this.onObjectChange.bind(this));
     this.on("message", this.onMessage.bind(this));
     this.on("unload", this.onUnload.bind(this));
   }
@@ -186,6 +190,7 @@ class NspanelLovelaceUi extends utils.Adapter {
       );
       this.config.weatherEntity = "";
     }
+    await this.applyCredentials();
     let pauseAdapter = false;
     this.mainConfiguration = [];
     const obj = await this.getForeignObjectAsync(this.namespace);
@@ -489,6 +494,13 @@ class NspanelLovelaceUi extends utils.Adapter {
     try {
       this.unload = true;
       this.nsPanelInitSessions.clear();
+      for (const id of this.watchedCredentialIds) {
+        try {
+          await this.unsubscribeForeignObjectsAsync(id);
+        } catch {
+        }
+      }
+      this.watchedCredentialIds.clear();
       if (this.timeoutAdmin) {
         this.clearTimeout(this.timeoutAdmin);
       }
@@ -528,6 +540,74 @@ class NspanelLovelaceUi extends utils.Adapter {
     } catch {
       callback();
     }
+  }
+  /**
+   * Replaces the login fields of the instance settings by the values of the selected central
+   * credentials (Admin → System settings → Credentials) - in memory only, the stored
+   * configuration stays untouched - and subscribes to those credentials, so a change in the
+   * admin is reported in the log (it takes effect with the next restart).
+   *
+   * Every field keeps its legacy value if no credential is selected or the credential cannot be
+   * read, so existing configurations run unchanged. The internal MQTT server always uses the
+   * generated login of the instance settings - a credential only applies to an external broker.
+   */
+  async applyCredentials() {
+    var _a;
+    const ids = /* @__PURE__ */ new Set();
+    if (!this.config.mqttServer && (0, import_credentials.isCredentialId)(this.config.mqttCredentialId)) {
+      ids.add(this.config.mqttCredentialId);
+      const mqtt = await (0, import_credentials.resolveLogin)(
+        this,
+        this.config.mqttCredentialId,
+        this.config.mqttUsername,
+        this.config.mqttPassword
+      );
+      if (mqtt.source === "credential") {
+        this.config.mqttUsername = mqtt.login;
+        this.config.mqttPassword = mqtt.password;
+        this.log.info(`MQTT login taken from credential "${mqtt.name}"`);
+      }
+    }
+    if (this.config.useTasmotaAdmin && (0, import_credentials.isCredentialId)(this.config.tasmotaCredentialId)) {
+      ids.add(this.config.tasmotaCredentialId);
+      const tasmota = await (0, import_credentials.resolveSecret)(
+        this,
+        this.config.tasmotaCredentialId,
+        this.config.tasmotaAdminPassword
+      );
+      if (tasmota.source === "credential") {
+        this.config.tasmotaAdminPassword = tasmota.secret;
+        this.log.info(`Tasmota WebUI password taken from credential "${tasmota.name}"`);
+      }
+    }
+    for (const entry of (_a = this.config.pageConfig) != null ? _a : []) {
+      if (entry.card === "cardQR" && (0, import_credentials.isCredentialId)(entry.qrCredentialId)) {
+        ids.add(entry.qrCredentialId);
+      }
+    }
+    for (const id of ids) {
+      try {
+        await this.subscribeForeignObjectsAsync(id);
+        this.watchedCredentialIds.add(id);
+      } catch (e) {
+        this.log.warn(`Cannot watch credential "${id}": ${e instanceof Error ? e.message : String(e)}`);
+      }
+    }
+  }
+  /**
+   * Is called if a subscribed object changes - only the central credentials are subscribed.
+   * The change is only reported; whether the adapter should apply it by itself is still open.
+   *
+   * @param id   The id of the object that changed
+   * @param obj  The new object, null if it was deleted
+   */
+  onObjectChange(id, obj) {
+    if (this.unload || !this.watchedCredentialIds.has(id)) {
+      return;
+    }
+    this.log.warn(
+      obj ? `Credential "${id}" changed - restart the adapter to apply the new values` : `Credential "${id}" was deleted - after a restart the fields of the instance settings are used instead`
+    );
   }
   /**
    * Is called if a subscribed state changes
@@ -1690,6 +1770,13 @@ class NspanelLovelaceUi extends utils.Adapter {
     var _a, _b;
     const msg = obj.message;
     const useInternalServer = !((msg == null ? void 0 : msg.mqttServer) == null || msg.mqttServer === false || msg.mqttServer === "false");
+    if (!useInternalServer && (0, import_credentials.isCredentialId)(msg == null ? void 0 : msg.mqttCredentialId)) {
+      const mqtt = await (0, import_credentials.resolveLogin)(this, msg.mqttCredentialId, msg.mqttUsername, msg.mqttPassword);
+      if (mqtt.source === "credential") {
+        msg.mqttUsername = mqtt.login;
+        msg.mqttPassword = mqtt.password;
+      }
+    }
     const missing = [];
     for (const field of ["tasmotaIP", "tasmotaName", "tasmotaTopic", "mqttPort", "mqttUsername", "mqttPassword"]) {
       if (!(msg == null ? void 0 : msg[field])) {
