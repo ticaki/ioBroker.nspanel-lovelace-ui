@@ -1,5 +1,7 @@
 import type { NavigationItemConfig, NavigationItemConfigNonNull } from '../classes/navigation';
+import { ConfigManager } from '../classes/config-manager';
 import { mainPageName } from '../const/default-pages';
+import { PageThermo2 } from '../pages/pageThermo2';
 import { BaseClass } from '../controller/library';
 import type { panelConfigPartial } from '../controller/panel';
 import { systemNavigation } from '../templates/system-templates';
@@ -92,6 +94,65 @@ export class AdminConfiguration extends BaseClass {
             );
         }
         return option;
+    }
+
+    /**
+     * Builds the runtime page of a cardThermo2 entry.
+     *
+     * The entry is turned into the script form and handed to the code the script configuration
+     * uses (`PageThermo2.getPage`), so alias resolution, mode list and the generated mode /
+     * automatic / manual buttons are identical on both paths. The page items of the entry are
+     * appended afterwards with their heat-circuit filter; trailing empty slots are dropped, inner
+     * ones become placeholders like on the menu pages.
+     *
+     * @param entry Thermo2 entry as stored by the PageConfig editor.
+     * @param alwaysOn Validated always-on mode of the entry.
+     * @returns The page for the panel configuration; without a usable circuit it has no data.
+     */
+    private async buildThermo2Page(entry: ShareConfig.Thermo2Entry, alwaysOn: AlwaysOnMode): Promise<PageBase> {
+        let gridItem = {
+            uniqueID: entry.uniqueName,
+            hidden: !!entry.hidden,
+            alwaysOn,
+            dpInit: '',
+            config: {
+                card: 'cardThermo2',
+                scrollType: 'page',
+                scrollPresentation: 'classic',
+                data: { headline: { type: 'const', constVal: entry.uniqueName } },
+                index: 0,
+            },
+            pageItems: [],
+        } as PageBase;
+        const messages: string[] = [];
+        const manager = new ConfigManager(this.adapter);
+        ({ gridItem } = await PageThermo2.getPage(manager, buildThermo2ScriptPage(entry), gridItem, messages));
+        for (const msg of messages) {
+            // getPage has already logged the finding, keep the summary at debug level
+            this.log.debug(`cardThermo2 '${entry.uniqueName}': ${msg}`);
+        }
+
+        const items = entry.pageItems ?? [];
+        const lastFilled = items.reduceRight<number>((acc, v, i) => (acc === -1 && v != null ? i : acc), -1);
+        for (let index = 0; index <= lastFilled; index++) {
+            const stored = items[index];
+            const item: ShareConfig.AdminPageItemConfig = stored
+                ? { ...stored, channelId: ShareConfig.normalizeChannelId(stored.channelId) }
+                : { channelId: ShareConfig.emptyChannelValueConfig('empty') };
+            const result = await this.adapter.convertAdminPageItemToPageItemConfig(
+                item,
+                { card: 'cardThermo2', uniqueName: entry.uniqueName },
+                [],
+            );
+            if (!result.error && result.pageItem) {
+                gridItem.pageItems = gridItem.pageItems ?? [];
+                gridItem.pageItems.push(result.pageItem);
+            } else if (result.error) {
+                this.log.warn(`Error processing page item ${index} for page '${entry.uniqueName}': ${result.error}`);
+            }
+        }
+        this.log.debug(`Generated cardThermo2 page for '${entry.uniqueName}'`);
+        return gridItem;
     }
 
     /**
@@ -247,6 +308,13 @@ export class AdminConfiguration extends BaseClass {
                     }
                     newPage = dataForCardPower(entry, this.adapter);
                     this.log.debug(`Generated cardPower page for '${entry.uniqueName}'`);
+                    break;
+                }
+                case 'cardThermo2': {
+                    if (!isAlwaysOnMode(entry.alwaysOn)) {
+                        entry.alwaysOn = 'none';
+                    }
+                    newPage = await this.buildThermo2Page(entry, entry.alwaysOn);
                     break;
                 }
                 case 'cardGrid':
@@ -730,6 +798,54 @@ export class AdminConfiguration extends BaseClass {
  *
  * @param entry chart entry as stored by the PageConfig editor
  */
+/**
+ * A limit of a heat circuit as the adapter expects it: a positive number, anything else is left
+ * to the adapter default (the editor stores what was typed, an empty field is undefined).
+ *
+ * @param value Stored limit.
+ * @returns The number or undefined.
+ */
+function thermo2Limit(value: unknown): number | undefined {
+    return typeof value === 'number' && Number.isFinite(value) && value > 0 ? value : undefined;
+}
+
+/**
+ * Turns a thermo2 entry into the script form of the page (`thermoItems` with alias channels).
+ *
+ * Circuits without a channel are skipped, headline and channel are trimmed, an empty headline is
+ * left out so the adapter takes the common.name of the channel. The page items are not part of
+ * the result - they are converted separately with their filter.
+ *
+ * @param entry Thermo2 entry as stored by the PageConfig editor.
+ * @returns The page in the form of the script configuration.
+ */
+export function buildThermo2ScriptPage(entry: ShareConfig.Thermo2Entry): ScriptConfig.PageThermo2 {
+    const thermoItems: ScriptConfig.PageThermo2Item[] = [];
+    for (const circuit of entry.thermoItems ?? []) {
+        const id = typeof circuit?.channelId === 'string' ? circuit.channelId.trim() : '';
+        if (!id) {
+            continue;
+        }
+        const name = typeof circuit.name === 'string' ? circuit.name.trim() : '';
+        thermoItems.push({
+            id,
+            name: name || undefined,
+            minValue: thermo2Limit(circuit.minValue),
+            maxValue: thermo2Limit(circuit.maxValue),
+            stepValue: thermo2Limit(circuit.stepValue),
+            power: '',
+            unit: '',
+        });
+    }
+    return {
+        type: 'cardThermo2',
+        uniqueName: entry.uniqueName,
+        heading: '',
+        thermoItems,
+        items: [],
+    };
+}
+
 export function buildChartPageConfig(entry: ShareConfig.ChartEntry): cardChartDataItemOptions {
     const d = ShareConfig.chartDefaults;
     const dbData: ShareConfig.ChartDetailsExternal | undefined =
