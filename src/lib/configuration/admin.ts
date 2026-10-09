@@ -1,5 +1,6 @@
 import type { NavigationItemConfig, NavigationItemConfigNonNull } from '../classes/navigation';
 import { ConfigManager } from '../classes/config-manager';
+import { Color } from '../const/Color';
 import { mainPageName } from '../const/default-pages';
 import { PageThermo2 } from '../pages/pageThermo2';
 import { BaseClass } from '../controller/library';
@@ -810,11 +811,45 @@ function thermo2Limit(value: unknown): number | undefined {
 }
 
 /**
- * Turns a thermo2 entry into the script form of the page (`thermoItems` with alias channels).
+ * Trimmed text of a stored field, undefined when empty.
  *
- * Circuits without a channel are skipped, headline and channel are trimmed, an empty headline is
- * left out so the adapter takes the common.name of the channel. The page items are not part of
- * the result - they are converted separately with their filter.
+ * @param value Stored text.
+ */
+function thermo2Text(value: unknown): string | undefined {
+    const text = typeof value === 'string' ? value.trim() : '';
+    return text || undefined;
+}
+
+/**
+ * Icon name of a stored field for the script item (the editor only offers names of the icon list).
+ *
+ * @param value Stored icon name.
+ */
+function thermo2Icon(value: unknown): AllIcons | undefined {
+    return thermo2Text(value) as AllIcons | undefined;
+}
+
+/**
+ * '#rrggbb' of the editor as the RGB object of the script; invalid or empty = undefined (adapter default).
+ *
+ * @param value Stored color.
+ */
+function thermo2Rgb(value: unknown): ScriptConfig.RGB | undefined {
+    const text = thermo2Text(value);
+    if (!text || !/^#[0-9a-f]{6}$/i.test(text)) {
+        return undefined;
+    }
+    const c = Color.ConvertHexToRgb(text);
+    return { red: c.r, green: c.g, blue: c.b };
+}
+
+/**
+ * Turns a thermo2 entry into the script form of the page (`thermoItems` + `sortOrder`).
+ *
+ * A circuit becomes the alias form (`id`) or the data point form (`set`, `thermoId1`, ...)
+ * depending on its source; circuits without channel or without set/actual state are skipped,
+ * texts are trimmed, empty optional fields are left out so the adapter takes its defaults. The
+ * page items are not part of the result - they are converted separately with their filter.
  *
  * @param entry Thermo2 entry as stored by the PageConfig editor.
  * @returns The page in the form of the script configuration.
@@ -822,27 +857,67 @@ function thermo2Limit(value: unknown): number | undefined {
 export function buildThermo2ScriptPage(entry: ShareConfig.Thermo2Entry): ScriptConfig.PageThermo2 {
     const thermoItems: ScriptConfig.PageThermo2Item[] = [];
     for (const circuit of entry.thermoItems ?? []) {
-        const id = typeof circuit?.channelId === 'string' ? circuit.channelId.trim() : '';
-        if (!id) {
+        if (!circuit) {
             continue;
         }
-        const name = typeof circuit.name === 'string' ? circuit.name.trim() : '';
-        thermoItems.push({
-            id,
-            name: name || undefined,
+        const modeList = Array.isArray(circuit.modeList)
+            ? circuit.modeList.map(m => (typeof m === 'string' ? m.trim() : '')).filter(m => !!m)
+            : [];
+        const common = {
+            name: thermo2Text(circuit.name),
             minValue: thermo2Limit(circuit.minValue),
             maxValue: thermo2Limit(circuit.maxValue),
             stepValue: thermo2Limit(circuit.stepValue),
+            icon: thermo2Icon(circuit.icon),
+            onColor: thermo2Rgb(circuit.onColor),
+            unit: thermo2Text(circuit.unit) ?? '',
+            icon2: thermo2Icon(circuit.icon2),
+            onColor2: thermo2Rgb(circuit.onColor2),
+            unit2: thermo2Text(circuit.unit2),
+            iconHeatCycle: thermo2Icon(circuit.iconHeatCycle),
+            iconHeatCycleOnColor: thermo2Rgb(circuit.iconHeatCycleOnColor),
+            iconHeatCycleOffColor: thermo2Rgb(circuit.iconHeatCycleOffColor),
+            modeList: modeList.length ? modeList : undefined,
             power: '',
-            unit: '',
+        };
+        if (circuit.source === 'states') {
+            const set = thermo2Text(circuit.setState);
+            const actual = thermo2Text(circuit.actualState);
+            if (!set || !actual) {
+                continue;
+            }
+            thermoItems.push({
+                ...common,
+                set,
+                thermoId1: actual,
+                thermoId2: thermo2Text(circuit.humidityState),
+                modeId: thermo2Text(circuit.modeState),
+            });
+            continue;
+        }
+        const id = thermo2Text(circuit.channelId);
+        if (!id) {
+            continue;
+        }
+        thermoItems.push({
+            ...common,
+            id,
+            name2: thermo2Text(circuit.name2),
+            iconHeatCycle2: thermo2Icon(circuit.iconHeatCycle2),
+            iconHeatCycleOnColor2: thermo2Rgb(circuit.iconHeatCycleOnColor2),
+            iconHeatCycleOffColor2: thermo2Rgb(circuit.iconHeatCycleOffColor2),
         });
     }
+    const sortOrder = ShareConfig.thermo2SortOrders.includes(entry.sortOrder as ShareConfig.Thermo2SortOrder)
+        ? entry.sortOrder
+        : undefined;
     return {
         type: 'cardThermo2',
         uniqueName: entry.uniqueName,
         heading: '',
         thermoItems,
         items: [],
+        sortOrder,
     };
 }
 

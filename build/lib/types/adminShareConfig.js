@@ -47,6 +47,7 @@ __export(adminShareConfig_exports, {
   stateRefNodeId: () => stateRefNodeId,
   thermo2Defaults: () => thermo2Defaults,
   thermo2MaxCircuits: () => thermo2MaxCircuits,
+  thermo2SortOrders: () => thermo2SortOrders,
   trashItemCount: () => trashItemCount
 });
 module.exports = __toCommonJS(adminShareConfig_exports);
@@ -133,14 +134,26 @@ function emptyChartEntry(uniqueName) {
     alwaysOn: "none"
   };
 }
+const thermo2SortOrders = ["V", "H", "HM", "VM", "HB", "VB"];
 const thermo2MaxCircuits = 8;
 const thermo2Defaults = {
   minValue: 15,
   maxValue: 28,
-  stepValue: 0.5
+  stepValue: 0.5,
+  unit: "\xB0C",
+  unit2: "%",
+  icon: "thermometer",
+  icon2: "water-percent",
+  onColor: "#00ff00",
+  onColor2: "#ff00ff",
+  iconHeatCycleOnColor: "#00ff00",
+  iconHeatCycleOffColor: "#888888",
+  iconHeatCycleOnColor2: "#0000ff",
+  iconHeatCycleOffColor2: "#50508c",
+  modeList: ["OFF", "AUTO", "COOL", "HEAT", "ECO", "FAN", "DRY"]
 };
 function emptyThermo2Circuit() {
-  return { channelId: "", name: "" };
+  return { source: "alias", channelId: "", name: "" };
 }
 function emptyThermo2Entry(uniqueName) {
   return {
@@ -148,6 +161,7 @@ function emptyThermo2Entry(uniqueName) {
     uniqueName,
     thermoItems: [emptyThermo2Circuit()],
     pageItems: [],
+    sortOrder: "V",
     hidden: false,
     alwaysOn: "none"
   };
@@ -911,6 +925,7 @@ const CHANNEL_ROLES_LIST = Object.keys(requiredScriptDataPoints);
   stateRefNodeId,
   thermo2Defaults,
   thermo2MaxCircuits,
+  thermo2SortOrders,
   trashItemCount
 });
 //# sourceMappingURL=adminShareConfig.js.map

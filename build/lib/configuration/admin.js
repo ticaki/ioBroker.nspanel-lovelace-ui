@@ -35,6 +35,7 @@ __export(admin_exports, {
 });
 module.exports = __toCommonJS(admin_exports);
 var import_config_manager = require("../classes/config-manager");
+var import_Color = require("../const/Color");
 var import_default_pages = require("../const/default-pages");
 var import_pageThermo2 = require("../pages/pageThermo2");
 var import_library = require("../controller/library");
@@ -674,31 +675,82 @@ Stack: ${stack}`
 function thermo2Limit(value) {
   return typeof value === "number" && Number.isFinite(value) && value > 0 ? value : void 0;
 }
+function thermo2Text(value) {
+  const text = typeof value === "string" ? value.trim() : "";
+  return text || void 0;
+}
+function thermo2Icon(value) {
+  return thermo2Text(value);
+}
+function thermo2Rgb(value) {
+  const text = thermo2Text(value);
+  if (!text || !/^#[0-9a-f]{6}$/i.test(text)) {
+    return void 0;
+  }
+  const c = import_Color.Color.ConvertHexToRgb(text);
+  return { red: c.r, green: c.g, blue: c.b };
+}
 function buildThermo2ScriptPage(entry) {
-  var _a;
+  var _a, _b;
   const thermoItems = [];
   for (const circuit of (_a = entry.thermoItems) != null ? _a : []) {
-    const id = typeof (circuit == null ? void 0 : circuit.channelId) === "string" ? circuit.channelId.trim() : "";
-    if (!id) {
+    if (!circuit) {
       continue;
     }
-    const name = typeof circuit.name === "string" ? circuit.name.trim() : "";
-    thermoItems.push({
-      id,
-      name: name || void 0,
+    const modeList = Array.isArray(circuit.modeList) ? circuit.modeList.map((m) => typeof m === "string" ? m.trim() : "").filter((m) => !!m) : [];
+    const common = {
+      name: thermo2Text(circuit.name),
       minValue: thermo2Limit(circuit.minValue),
       maxValue: thermo2Limit(circuit.maxValue),
       stepValue: thermo2Limit(circuit.stepValue),
-      power: "",
-      unit: ""
+      icon: thermo2Icon(circuit.icon),
+      onColor: thermo2Rgb(circuit.onColor),
+      unit: (_b = thermo2Text(circuit.unit)) != null ? _b : "",
+      icon2: thermo2Icon(circuit.icon2),
+      onColor2: thermo2Rgb(circuit.onColor2),
+      unit2: thermo2Text(circuit.unit2),
+      iconHeatCycle: thermo2Icon(circuit.iconHeatCycle),
+      iconHeatCycleOnColor: thermo2Rgb(circuit.iconHeatCycleOnColor),
+      iconHeatCycleOffColor: thermo2Rgb(circuit.iconHeatCycleOffColor),
+      modeList: modeList.length ? modeList : void 0,
+      power: ""
+    };
+    if (circuit.source === "states") {
+      const set = thermo2Text(circuit.setState);
+      const actual = thermo2Text(circuit.actualState);
+      if (!set || !actual) {
+        continue;
+      }
+      thermoItems.push({
+        ...common,
+        set,
+        thermoId1: actual,
+        thermoId2: thermo2Text(circuit.humidityState),
+        modeId: thermo2Text(circuit.modeState)
+      });
+      continue;
+    }
+    const id = thermo2Text(circuit.channelId);
+    if (!id) {
+      continue;
+    }
+    thermoItems.push({
+      ...common,
+      id,
+      name2: thermo2Text(circuit.name2),
+      iconHeatCycle2: thermo2Icon(circuit.iconHeatCycle2),
+      iconHeatCycleOnColor2: thermo2Rgb(circuit.iconHeatCycleOnColor2),
+      iconHeatCycleOffColor2: thermo2Rgb(circuit.iconHeatCycleOffColor2)
     });
   }
+  const sortOrder = ShareConfig.thermo2SortOrders.includes(entry.sortOrder) ? entry.sortOrder : void 0;
   return {
     type: "cardThermo2",
     uniqueName: entry.uniqueName,
     heading: "",
     thermoItems,
-    items: []
+    items: [],
+    sortOrder
   };
 }
 function buildChartPageConfig(entry) {
