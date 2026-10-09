@@ -62,6 +62,7 @@ import {
     emptyThermo2Circuit,
     isMainPageEntry,
     normalizeChannelId,
+    emptyChannelValueConfig,
     requiredScriptDataPoints,
 } from '../../../src/lib/types/adminShareConfig';
 
@@ -133,7 +134,30 @@ type ExpandedCircuit = { stored: number; cooling: boolean; label: string };
 type SlotContent =
     | { kind: 'selector'; icon: string; label: string; active: boolean }
     | { kind: 'auto'; icon: string; label: string }
-    | { kind: 'item'; icon: string; label: string; index: number; filter: number | undefined };
+    | { kind: 'item'; icon: string; label: string; index: number; filter: number | undefined }
+    /** an empty slot the user keeps on purpose (stored as placeholder item, config-manager type `empty`) */
+    | { kind: 'gap'; index: number; filter: number | undefined };
+
+/** channel id of a placeholder item (config-manager turns it into an empty slot) */
+const GAP_ID = 'empty';
+
+/**
+ * placeholder item = reserved empty slot
+ *
+ * @param item stored item
+ */
+function isGapItem(item: AdminPageItemConfig | undefined | null): boolean {
+    return !!item && !item.useNative && normalizeChannelId(item.channelId).valueStateId === GAP_ID;
+}
+
+/**
+ * a placeholder item for one circuit (or all)
+ *
+ * @param filter expanded circuit index, undefined = all circuits
+ */
+function gapItem(filter: number | undefined): AdminPageItemConfig {
+    return { channelId: emptyChannelValueConfig(GAP_ID), filter };
+}
 
 interface PageThermo2EditorState extends ConfigGenericState {
     alive: boolean;
@@ -149,6 +173,10 @@ interface PageThermo2EditorState extends ConfigGenericState {
     page: number;
     /** index into pageItems while the item dialog is open; equal to the length when adding */
     editingIndex: number | null;
+    /** placeholders to insert before a new item so that it lands on the clicked slot */
+    pendingGaps: number;
+    /** drop target under the dragged item: s<storedIndex> or f<visiblePos> */
+    dragOverKey: string | null;
     /** open settings dialog */
     dialog: DialogKind | null;
     /** copy of the circuit while a dialog is open */
@@ -317,6 +345,8 @@ export class PageThermo2Editor extends ConfigGeneric<
             tab: 0,
             page: 0,
             editingIndex: null,
+            pendingGaps: 0,
+            dragOverKey: null,
             dialog: null,
             draft: null,
         };
@@ -571,10 +601,16 @@ export class PageThermo2Editor extends ConfigGeneric<
         }
         (this.props.entry.pageItems ?? []).forEach((item, index) => {
             if (!item) {
+                // hole in the array: the adapter sends an empty slot for every circuit
+                out.push({ kind: 'gap', index, filter: undefined });
                 return;
             }
             const filter = typeof item.filter === 'number' ? item.filter : undefined;
             if (filter !== undefined && filter !== cur.expandedIndex) {
+                return;
+            }
+            if (isGapItem(item)) {
+                out.push({ kind: 'gap', index, filter });
                 return;
             }
             const channelId = normalizeChannelId(item.channelId).valueStateId;
@@ -771,34 +807,272 @@ export class PageThermo2Editor extends ConfigGeneric<
     // ---------- items ----------
 
     private updateItems(pageItems: (AdminPageItemConfig | undefined)[]): void {
+        // trailing empty slots carry no position - the adapter drops them as well
+        while (
+            pageItems.length &&
+            (pageItems[pageItems.length - 1] == null || isGapItem(pageItems[pageItems.length - 1]))
+        ) {
+            pageItems.pop();
+        }
         this.props.onEntryChange({ ...this.props.entry, pageItems });
     }
 
-    private openItem(index: number, filter?: number): void {
+    /**
+     * opens the item dialog
+     *
+     * @param index stored index (length = new item)
+     * @param filter preset circuit of a new item
+     * @param pendingGaps placeholders to insert before a new item (free slot further back was clicked)
+     */
+    private openItem(index: number, filter?: number, pendingGaps = 0): void {
         const items = this.props.entry.pageItems ?? [];
-        const item = items[index] ?? (filter !== undefined ? ({ filter } as Partial<AdminPageItemConfig>) : undefined);
-        this.setState({ editingIndex: index });
+        const stored = items[index];
+        const item =
+            stored && !isGapItem(stored)
+                ? stored
+                : filter !== undefined
+                  ? ({ filter } as Partial<AdminPageItemConfig>)
+                  : undefined;
+        this.setState({ editingIndex: index, pendingGaps });
         this.dialogRef.current?.openWith(item, true);
     }
 
     private handleItemSave = (config: AdminPageItemConfig): void => {
-        const { editingIndex } = this.state;
+        const { editingIndex, pendingGaps } = this.state;
         if (editingIndex === null) {
             return;
         }
         const pageItems = [...(this.props.entry.pageItems ?? [])];
-        while (pageItems.length <= editingIndex) {
-            pageItems.push(undefined);
+        if (editingIndex >= pageItems.length && pendingGaps > 0) {
+            const filter = typeof config.filter === 'number' ? config.filter : undefined;
+            for (let i = 0; i < pendingGaps; i++) {
+                pageItems.push(gapItem(filter));
+            }
+            pageItems.push(config);
+        } else {
+            while (pageItems.length <= editingIndex) {
+                pageItems.push(undefined);
+            }
+            pageItems[editingIndex] = config;
         }
-        pageItems[editingIndex] = config;
-        this.setState({ editingIndex: null });
+        this.setState({ editingIndex: null, pendingGaps: 0 });
         this.updateItems(pageItems);
     };
 
+    /**
+     * an item leaves its slot empty (the items behind keep their places); an empty slot is removed
+     *
+     * @param index stored index
+     */
     private deleteItem(index: number): void {
         const pageItems = [...(this.props.entry.pageItems ?? [])];
-        pageItems.splice(index, 1);
+        const item = pageItems[index];
+        if (item && !isGapItem(item)) {
+            pageItems[index] = gapItem(typeof item.filter === 'number' ? item.filter : undefined);
+        } else {
+            pageItems.splice(index, 1);
+        }
         this.updateItems(pageItems);
+    }
+
+    /**
+     * number of leading slots the adapter fills itself (selectors, generated buttons)
+     *
+     * @param visible
+     */
+    private prefixLength(visible: SlotContent[]): number {
+        return visible.filter(v => v.kind !== 'item' && v.kind !== 'gap').length;
+    }
+
+    /**
+     * stored indices that show up for a circuit (items and empty slots), in stored order
+     *
+     * @param pageItems stored items
+     * @param expandedIndex circuit
+     */
+    private visibleItemIndices(pageItems: (AdminPageItemConfig | undefined)[], expandedIndex: number): number[] {
+        const out: number[] = [];
+        pageItems.forEach((item, index) => {
+            const filter = item && typeof item.filter === 'number' ? item.filter : undefined;
+            if (!item || filter === undefined || filter === expandedIndex) {
+                out.push(index);
+            }
+        });
+        return out;
+    }
+
+    /**
+     * new item on a free slot: the slots before it get placeholders when the item is saved
+     *
+     * @param visiblePos position of the clicked slot in the visible list of the circuit
+     * @param visible visible list
+     * @param cur current circuit
+     */
+    private addItemAt(
+        visiblePos: number,
+        visible: SlotContent[],
+        cur: NonNullable<ReturnType<PageThermo2Editor['current']>>,
+    ): void {
+        const pageItems = this.props.entry.pageItems ?? [];
+        const have = this.visibleItemIndices(pageItems, cur.expandedIndex).length;
+        const wanted = visiblePos - this.prefixLength(visible);
+        this.openItem(pageItems.length, cur.expandedIndex, Math.max(0, wanted - have));
+    }
+
+    /**
+     * moves a stored item onto a free slot; placeholders fill the slots in between
+     *
+     * @param index stored index of the item
+     * @param visiblePos position of the free slot in the visible list
+     * @param visible visible list
+     * @param cur current circuit
+     */
+    private placeAtVisible(
+        index: number,
+        visiblePos: number,
+        visible: SlotContent[],
+        cur: NonNullable<ReturnType<PageThermo2Editor['current']>>,
+    ): void {
+        const pageItems = [...(this.props.entry.pageItems ?? [])];
+        const moved = pageItems[index];
+        if (!moved) {
+            return;
+        }
+        pageItems.splice(index, 1);
+        const wanted = visiblePos - this.prefixLength(visible);
+        let have = this.visibleItemIndices(pageItems, cur.expandedIndex).length;
+        while (have < wanted) {
+            pageItems.push(gapItem(cur.expandedIndex));
+            have++;
+        }
+        pageItems.push(moved);
+        this.updateItems(pageItems);
+    }
+
+    // ---------- drag & drop (as in PageMenuEditor) ----------
+
+    private dragSource: number | null = null;
+
+    private onDragStart(index: number, e: React.DragEvent): void {
+        this.dragSource = index;
+        e.dataTransfer.effectAllowed = 'move';
+        e.dataTransfer.setData('text/plain', String(index));
+    }
+
+    private onDragOver(key: string, e: React.DragEvent): void {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'move';
+        if (this.state.dragOverKey !== key) {
+            this.setState({ dragOverKey: key });
+        }
+    }
+
+    private onDragLeave = (): void => {
+        this.setState({ dragOverKey: null });
+    };
+
+    private onDragEnd = (): void => {
+        this.dragSource = null;
+        this.setState({ dragOverKey: null });
+    };
+
+    /**
+     * drop on an item or empty slot: the two change places
+     *
+     * @param target
+     * @param e
+     */
+    private onDropStored(target: number, e: React.DragEvent): void {
+        e.preventDefault();
+        const src = this.dragSource;
+        this.onDragEnd();
+        if (src === null || src === target) {
+            return;
+        }
+        const pageItems = [...(this.props.entry.pageItems ?? [])];
+        [pageItems[src], pageItems[target]] = [pageItems[target], pageItems[src]];
+        this.updateItems(pageItems);
+    }
+
+    /**
+     * drop on a free slot further back
+     *
+     * @param visiblePos
+     * @param visible
+     * @param cur
+     * @param e
+     */
+    private onDropFree(
+        visiblePos: number,
+        visible: SlotContent[],
+        cur: NonNullable<ReturnType<PageThermo2Editor['current']>>,
+        e: React.DragEvent,
+    ): void {
+        e.preventDefault();
+        const src = this.dragSource;
+        this.onDragEnd();
+        if (src === null) {
+            return;
+        }
+        this.placeAtVisible(src, visiblePos, visible, cur);
+    }
+
+    /**
+     * hover actions of an item or empty slot: move earlier/later, delete
+     *
+     * @param index stored index
+     * @param visible visible list
+     */
+    private renderActions(index: number, visible: SlotContent[]): React.JSX.Element {
+        const movable = visible.filter(v => v.kind === 'item' || v.kind === 'gap');
+        const vpos = movable.findIndex(v => (v.kind === 'item' || v.kind === 'gap') && v.index === index);
+        return (
+            <Box
+                className="t2-actions"
+                sx={{
+                    display: 'none',
+                    position: 'absolute',
+                    bottom: 0,
+                    left: 0,
+                    right: 0,
+                    justifyContent: 'center',
+                    backgroundColor: 'rgba(0,0,0,0.7)',
+                }}
+            >
+                <IconButton
+                    size="small"
+                    sx={{ color: '#fff', p: 0.25 }}
+                    disabled={vpos <= 0}
+                    onClick={e => {
+                        e.stopPropagation();
+                        this.moveItem(index, -1, visible);
+                    }}
+                >
+                    <ChevronLeftIcon sx={{ fontSize: 16 }} />
+                </IconButton>
+                <IconButton
+                    size="small"
+                    sx={{ color: '#fff', p: 0.25 }}
+                    disabled={vpos >= movable.length - 1}
+                    onClick={e => {
+                        e.stopPropagation();
+                        this.moveItem(index, 1, visible);
+                    }}
+                >
+                    <ChevronRightIcon sx={{ fontSize: 16 }} />
+                </IconButton>
+                <IconButton
+                    size="small"
+                    sx={{ color: '#f66', p: 0.25 }}
+                    onClick={e => {
+                        e.stopPropagation();
+                        this.deleteItem(index);
+                    }}
+                >
+                    <DeleteIcon sx={{ fontSize: 16 }} />
+                </IconButton>
+            </Box>
+        );
     }
 
     /**
@@ -809,7 +1083,9 @@ export class PageThermo2Editor extends ConfigGeneric<
      * @param visible the visible items of the current circuit
      */
     private moveItem(index: number, delta: -1 | 1, visible: SlotContent[]): void {
-        const itemsVisible = visible.filter((v): v is Extract<SlotContent, { kind: 'item' }> => v.kind === 'item');
+        const itemsVisible = visible.filter(
+            (v): v is Extract<SlotContent, { kind: 'item' | 'gap' }> => v.kind === 'item' || v.kind === 'gap',
+        );
         const pos = itemsVisible.findIndex(v => v.index === index);
         const neighbour = itemsVisible[pos + delta];
         if (pos < 0 || !neighbour) {
@@ -1243,6 +1519,7 @@ export class PageThermo2Editor extends ConfigGeneric<
      * @param visible all visible items (for moving)
      * @param cur current circuit
      * @param notSent name of the sort order with which the adapter does not send this slot
+     * @param visiblePos position of the slot in the visible list of the circuit (drop target, new item)
      */
     private renderSlot(
         slot: number,
@@ -1250,8 +1527,9 @@ export class PageThermo2Editor extends ConfigGeneric<
         visible: SlotContent[],
         cur: NonNullable<ReturnType<PageThermo2Editor['current']>>,
         notSent?: string,
+        visiblePos = -1,
     ): React.JSX.Element {
-        const { alive } = this.state;
+        const { alive, dragOverKey } = this.state;
         const left = slot < 4;
         const row = slot % 4;
         const pos =
@@ -1278,11 +1556,12 @@ export class PageThermo2Editor extends ConfigGeneric<
             textAlign: 'center' as const,
         };
         if (notSent) {
-            const src = content ? iconSrc(content.icon) : '';
+            const shown = content && content.kind !== 'gap' ? content : undefined;
+            const src = shown ? iconSrc(shown.icon) : '';
             return (
                 <Tooltip
                     key={slot}
-                    title={`${this.getText('thermo2_slotNotSorted').replace('%s', notSent)}${content ? ` · ${content.label}` : ''}`}
+                    title={`${this.getText('thermo2_slotNotSorted').replace('%s', notSent)}${shown ? ` · ${shown.label}` : ''}`}
                 >
                     <Box sx={{ ...pos, ...base, opacity: 0.35, cursor: 'default' }}>
                         {src ? (
@@ -1298,7 +1577,8 @@ export class PageThermo2Editor extends ConfigGeneric<
             );
         }
         if (!content) {
-            const canAdd = alive && cur.expandedIndex >= 0;
+            const canAdd = alive && cur.expandedIndex >= 0 && visiblePos >= 0;
+            const over = dragOverKey === `f${visiblePos}`;
             return (
                 <Tooltip
                     key={slot}
@@ -1309,16 +1589,47 @@ export class PageThermo2Editor extends ConfigGeneric<
                             ...pos,
                             ...base,
                             cursor: canAdd ? 'pointer' : 'default',
-                            opacity: 0.6,
+                            opacity: over ? 1 : 0.6,
+                            borderColor: over ? '#fff' : 'rgba(255,255,255,0.25)',
+                            backgroundColor: over ? 'rgba(255,255,255,0.1)' : undefined,
                             '&:hover': canAdd ? { borderColor: '#fff', opacity: 1 } : {},
                         }}
-                        onClick={
-                            canAdd
-                                ? () => this.openItem((this.props.entry.pageItems ?? []).length, cur.expandedIndex)
-                                : undefined
-                        }
+                        onClick={canAdd ? () => this.addItemAt(visiblePos, visible, cur) : undefined}
+                        onDragOver={canAdd ? e => this.onDragOver(`f${visiblePos}`, e) : undefined}
+                        onDragLeave={this.onDragLeave}
+                        onDrop={canAdd ? e => this.onDropFree(visiblePos, visible, cur, e) : undefined}
                     >
                         <AddIcon sx={{ fontSize: 18, color: '#888' }} />
+                    </Box>
+                </Tooltip>
+            );
+        }
+        if (content.kind === 'gap') {
+            const key = `s${content.index}`;
+            return (
+                <Tooltip
+                    key={slot}
+                    title={this.getText('thermo2_gapSlot')}
+                >
+                    <Box
+                        sx={{
+                            ...pos,
+                            ...base,
+                            borderColor: dragOverKey === key ? '#fff' : 'rgba(255,255,255,0.5)',
+                            backgroundColor: dragOverKey === key ? 'rgba(255,255,255,0.1)' : undefined,
+                            cursor: alive ? 'pointer' : 'default',
+                            '&:hover .t2-actions': { display: 'flex' },
+                        }}
+                        onClick={alive ? () => this.openItem(content.index, content.filter) : undefined}
+                        draggable={alive}
+                        onDragStart={alive ? e => this.onDragStart(content.index, e) : undefined}
+                        onDragEnd={this.onDragEnd}
+                        onDragOver={alive ? e => this.onDragOver(key, e) : undefined}
+                        onDragLeave={this.onDragLeave}
+                        onDrop={alive ? e => this.onDropStored(content.index, e) : undefined}
+                    >
+                        <Typography sx={{ fontSize: 26, color: '#777', lineHeight: 1 }}>·</Typography>
+                        {this.renderActions(content.index, visible)}
                     </Box>
                 </Tooltip>
             );
@@ -1359,8 +1670,7 @@ export class PageThermo2Editor extends ConfigGeneric<
                 </Tooltip>
             );
         }
-        const itemsVisible = visible.filter(v => v.kind === 'item');
-        const vpos = itemsVisible.findIndex(v => v.kind === 'item' && v.index === content.index);
+        const itemKey = `s${content.index}`;
         return (
             <Tooltip
                 key={slot}
@@ -1376,11 +1686,18 @@ export class PageThermo2Editor extends ConfigGeneric<
                         ...base,
                         borderStyle: 'solid',
                         borderWidth: 3,
-                        borderColor: content.filter === undefined ? '#8ab4f8' : '#7cd992',
+                        borderColor:
+                            dragOverKey === itemKey ? '#fff' : content.filter === undefined ? '#8ab4f8' : '#7cd992',
                         cursor: alive ? 'pointer' : 'default',
                         '&:hover .t2-actions': { display: 'flex' },
                     }}
                     onClick={alive ? () => this.openItem(content.index) : undefined}
+                    draggable={alive}
+                    onDragStart={alive ? e => this.onDragStart(content.index, e) : undefined}
+                    onDragEnd={this.onDragEnd}
+                    onDragOver={alive ? e => this.onDragOver(itemKey, e) : undefined}
+                    onDragLeave={this.onDragLeave}
+                    onDrop={alive ? e => this.onDropStored(content.index, e) : undefined}
                 >
                     {icon}
                     <Box
@@ -1394,51 +1711,7 @@ export class PageThermo2Editor extends ConfigGeneric<
                     >
                         {content.label}
                     </Box>
-                    <Box
-                        className="t2-actions"
-                        sx={{
-                            display: 'none',
-                            position: 'absolute',
-                            bottom: 0,
-                            left: 0,
-                            right: 0,
-                            justifyContent: 'center',
-                            backgroundColor: 'rgba(0,0,0,0.7)',
-                        }}
-                    >
-                        <IconButton
-                            size="small"
-                            sx={{ color: '#fff', p: 0.25 }}
-                            disabled={vpos <= 0}
-                            onClick={e => {
-                                e.stopPropagation();
-                                this.moveItem(content.index, -1, visible);
-                            }}
-                        >
-                            <ChevronLeftIcon sx={{ fontSize: 16 }} />
-                        </IconButton>
-                        <IconButton
-                            size="small"
-                            sx={{ color: '#fff', p: 0.25 }}
-                            disabled={vpos >= itemsVisible.length - 1}
-                            onClick={e => {
-                                e.stopPropagation();
-                                this.moveItem(content.index, 1, visible);
-                            }}
-                        >
-                            <ChevronRightIcon sx={{ fontSize: 16 }} />
-                        </IconButton>
-                        <IconButton
-                            size="small"
-                            sx={{ color: '#f66', p: 0.25 }}
-                            onClick={e => {
-                                e.stopPropagation();
-                                this.deleteItem(content.index);
-                            }}
-                        >
-                            <DeleteIcon sx={{ fontSize: 16 }} />
-                        </IconButton>
-                    </Box>
+                    {this.renderActions(content.index, visible)}
                 </Box>
             </Tooltip>
         );
@@ -1645,6 +1918,7 @@ export class PageThermo2Editor extends ConfigGeneric<
                             visible,
                             cur,
                             visibleIndex < 0 ? sortOrder : undefined,
+                            page * SLOTS + (visibleIndex < 0 ? slot : visibleIndex),
                         ),
                     )}
 
@@ -1864,7 +2138,7 @@ export class PageThermo2Editor extends ConfigGeneric<
                     color="text.secondary"
                     sx={{ display: 'block', mt: 1 }}
                 >
-                    {this.getText('thermo2_panelHint')}
+                    {this.getText('thermo2_panelHint')} {this.getText('thermo2_moveHint')}
                 </Typography>
 
                 {this.renderDialog()}
