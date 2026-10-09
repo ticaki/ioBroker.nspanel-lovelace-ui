@@ -592,19 +592,41 @@ export class PageThermo2Editor extends ConfigGeneric<
         this.props.onEntryChange({ ...this.props.entry, thermoItems });
     }
 
+    /** opens the circuit dialog for a new circuit; it is stored with "Apply" only, so cancel leaves nothing behind */
     private handleCircuitAdd = (): void => {
-        const thermoItems = [...(this.props.entry.thermoItems ?? [])];
-        if (thermoItems.length >= thermo2MaxCircuits) {
+        if ((this.props.entry.thermoItems ?? []).length >= thermo2MaxCircuits) {
             return;
         }
-        thermoItems.push(emptyThermo2Circuit());
-        this.updateCircuits(thermoItems);
-        this.setState({
-            tab: this.expanded().length,
-            draft: { ...thermoItems[thermoItems.length - 1] },
-            dialog: 'circuit',
-        });
-        this.draftStored = thermoItems.length - 1;
+        this.draftStored = -1;
+        this.setState({ draft: emptyThermo2Circuit(), dialog: 'circuit' });
+    };
+
+    /**
+     * a circuit may be applied: an alias channel with a circuit role (object loaded), or the set and
+     * actual data points - this keeps circuits without data source out of the configuration
+     *
+     * @param c circuit draft
+     */
+    private circuitPlausible(c: Thermo2CircuitConfig): boolean {
+        if (c.source === 'states') {
+            return this.circuitUsable(c);
+        }
+        const id = (c.channelId ?? '').trim();
+        const role = id ? this.state.roles[id] : undefined;
+        return !!id && typeof role === 'string' && CIRCUIT_ROLES.includes(role);
+    }
+
+    /** removes the circuits without data source (older configurations); the items keep their circuits */
+    private removeUnusableCircuits = (): void => {
+        const oldItems = this.props.entry.thermoItems ?? [];
+        const keep = oldItems.map(c => !!c && this.circuitUsable(c));
+        const thermoItems = oldItems.filter((_c, i) => keep[i]);
+        const newIndex: number[] = [];
+        let n = 0;
+        keep.forEach(k => newIndex.push(k ? n++ : -1));
+        const pageItems = this.remapItems(oldItems, thermoItems, st => newIndex[st] ?? -1);
+        this.props.onEntryChange({ ...this.props.entry, thermoItems, pageItems });
+        this.setState({ tab: 0, page: 0 });
     };
 
     /** stored index the open dialog belongs to */
@@ -628,10 +650,23 @@ export class PageThermo2Editor extends ConfigGeneric<
         if (!draft) {
             return;
         }
+        if (this.state.dialog === 'circuit' && !this.circuitPlausible(draft)) {
+            return;
+        }
         const thermoItems = [...(this.props.entry.thermoItems ?? [])];
-        thermoItems[this.draftStored] = draft;
+        const isNew = this.draftStored < 0;
+        if (isNew) {
+            thermoItems.push(draft);
+        } else {
+            thermoItems[this.draftStored] = draft;
+        }
         this.updateCircuits(thermoItems);
-        this.setState({ dialog: null, draft: null });
+        if (isNew) {
+            const tab = this.expandedOf(thermoItems).findIndex(e => e.stored === thermoItems.length - 1);
+            this.setState({ dialog: null, draft: null, tab: Math.max(0, tab), page: 0 });
+        } else {
+            this.setState({ dialog: null, draft: null });
+        }
     };
 
     /**
@@ -670,10 +705,11 @@ export class PageThermo2Editor extends ConfigGeneric<
     private deleteCurrentCircuit = (): void => {
         const oldItems = this.props.entry.thermoItems ?? [];
         const del = this.draftStored;
-        const thermoItems = oldItems.filter((_c, i) => i !== del);
-        if (thermoItems.length === 0) {
-            thermoItems.push(emptyThermo2Circuit());
+        if (del < 0) {
+            this.setState({ dialog: null, draft: null });
+            return;
         }
+        const thermoItems = oldItems.filter((_c, i) => i !== del);
         const pageItems = this.remapItems(oldItems, thermoItems, s => (s === del ? -1 : s > del ? s - 1 : s));
         this.props.onEntryChange({ ...this.props.entry, thermoItems, pageItems });
         this.setState({ dialog: null, draft: null, tab: 0 });
@@ -1003,33 +1039,43 @@ export class PageThermo2Editor extends ConfigGeneric<
                         )}
                         {this.renderTextField('name', 'thermo2_name', id ? this.state.objectNames[id] || '' : '')}
                         {isAir && this.renderTextField('name2', 'thermo2_name2', 'COOLING')}
-                        <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
-                            <Button
-                                size="small"
-                                startIcon={<ChevronLeftIcon />}
-                                disabled={this.draftStored === 0}
-                                onClick={() => this.moveCurrentCircuit(-1)}
+                        {!this.circuitPlausible(draft) && (
+                            <Alert
+                                severity="info"
+                                sx={{ mb: 2 }}
                             >
-                                {this.getText('thermo2_moveLeft')}
-                            </Button>
-                            <Button
-                                size="small"
-                                endIcon={<ChevronRightIcon />}
-                                disabled={this.draftStored >= count - 1}
-                                onClick={() => this.moveCurrentCircuit(1)}
-                            >
-                                {this.getText('thermo2_moveRight')}
-                            </Button>
-                            <Box sx={{ flex: 1 }} />
-                            <Button
-                                size="small"
-                                color="error"
-                                startIcon={<DeleteIcon />}
-                                onClick={this.deleteCurrentCircuit}
-                            >
-                                {this.getText('thermo2_removeCircuit')}
-                            </Button>
-                        </Box>
+                                {this.getText('thermo2_applyBlocked')}
+                            </Alert>
+                        )}
+                        {this.draftStored >= 0 && (
+                            <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+                                <Button
+                                    size="small"
+                                    startIcon={<ChevronLeftIcon />}
+                                    disabled={this.draftStored === 0}
+                                    onClick={() => this.moveCurrentCircuit(-1)}
+                                >
+                                    {this.getText('thermo2_moveLeft')}
+                                </Button>
+                                <Button
+                                    size="small"
+                                    endIcon={<ChevronRightIcon />}
+                                    disabled={this.draftStored >= count - 1}
+                                    onClick={() => this.moveCurrentCircuit(1)}
+                                >
+                                    {this.getText('thermo2_moveRight')}
+                                </Button>
+                                <Box sx={{ flex: 1 }} />
+                                <Button
+                                    size="small"
+                                    color="error"
+                                    startIcon={<DeleteIcon />}
+                                    onClick={this.deleteCurrentCircuit}
+                                >
+                                    {this.getText('thermo2_removeCircuit')}
+                                </Button>
+                            </Box>
+                        )}
                     </Box>
                 );
                 break;
@@ -1157,6 +1203,7 @@ export class PageThermo2Editor extends ConfigGeneric<
                     <Button onClick={this.closeDialog}>{this.getText('thermo2_cancel')}</Button>
                     <Button
                         variant="contained"
+                        disabled={dialog === 'circuit' && !this.circuitPlausible(draft)}
                         onClick={this.applyDialog}
                     >
                         {this.getText('thermo2_apply')}
@@ -1622,6 +1669,7 @@ export class PageThermo2Editor extends ConfigGeneric<
         const { alive } = this.state;
         const expanded = this.expanded();
         const thermoItems = entry.thermoItems ?? [];
+        const unusable = thermoItems.filter(c => !c || !this.circuitUsable(c)).length;
         const tab = Math.min(this.state.tab, Math.max(0, expanded.length - 1));
         const labels = this.circuitLabels();
 
@@ -1699,6 +1747,24 @@ export class PageThermo2Editor extends ConfigGeneric<
                         </span>
                     </Tooltip>
                 </Box>
+                {unusable > 0 && (
+                    <Alert
+                        severity="warning"
+                        sx={{ mb: 1.5 }}
+                        action={
+                            <Button
+                                size="small"
+                                color="inherit"
+                                disabled={!alive}
+                                onClick={this.removeUnusableCircuits}
+                            >
+                                {this.getText('thermo2_removeUnusable')}
+                            </Button>
+                        }
+                    >
+                        {this.getText('thermo2_unusableCircuits').replace('%s', String(unusable))}
+                    </Alert>
+                )}
                 {expanded.length === 0 && (
                     <Alert
                         severity="info"
@@ -1707,7 +1773,9 @@ export class PageThermo2Editor extends ConfigGeneric<
                             <Button
                                 size="small"
                                 disabled={!alive}
-                                onClick={() => this.openDialog('circuit')}
+                                onClick={() =>
+                                    thermoItems.length ? this.openDialog('circuit') : this.handleCircuitAdd()
+                                }
                             >
                                 {this.getText('thermo2_dialogCircuit')}
                             </Button>

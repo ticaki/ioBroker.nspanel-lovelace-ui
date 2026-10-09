@@ -645,7 +645,7 @@ export function emptyThermo2Entry(uniqueName: string): Thermo2Entry {
     return {
         card: 'cardThermo2',
         uniqueName,
-        thermoItems: [emptyThermo2Circuit()],
+        thermoItems: [],
         pageItems: [],
         sortOrder: 'V',
         hidden: false,
