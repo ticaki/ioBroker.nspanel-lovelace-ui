@@ -75,6 +75,8 @@ If an older configuration contains circuits without data source, the editor flag
 
 Click the **big number** in the ring.
 
+![Set temperature](../Pictures/PageThermo2/admin-06-solltemperatur.png)
+
 - **Minimum / maximum temperature** and **step** of the set temperature. Empty fields = adapter defaults (15 / 28 / 0.5).
 - With the option *Values in tenths* in the NSPanel settings the values are given in tenths (25 = 2.5 °C) – exactly like in the script.
 
@@ -113,6 +115,10 @@ With more than one circuit the selector slots (①, ② …) take the first plac
 - **Free slots between items** are saved (as empty items per circuit) and shown as empty places on the panel. Free slots at the end are dropped.
 - **Paging:** more than nine entries spread over several pages; the page number is at the bottom left of the panel mock, on the panel the arrow at the top right pages.
 
+The item dialog with the field **Heat circuit** (preset to the selected circuit):
+
+![Item dialog](../Pictures/PageThermo2/admin-12-item-dialog.png)
+
 ![Dragging](../Pictures/PageThermo2/admin-11-ziehen.png)
 
 Note on items for *all heat circuits*: their slot may differ per circuit because every circuit has a different number of generated buttons in front. The editor always shows the layout of the selected circuit.
@@ -120,6 +126,8 @@ Note on items for *all heat circuits*: their slot may differ per circuit because
 ## 9. Order of the slots
 
 Select **Order of the slots** below the panel (`sortOrder` in the script):
+
+![Order of the slots](../Pictures/PageThermo2/admin-13-anordnung.png)
 
 | Value | Layout |
 |---|---|

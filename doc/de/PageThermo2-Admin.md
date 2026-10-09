@@ -75,6 +75,8 @@ Enthält eine ältere Konfiguration Heizkreise ohne Datenquelle, meldet der Edit
 
 Klick auf die **große Zahl** im Ring.
 
+![Solltemperatur](../Pictures/PageThermo2/admin-06-solltemperatur.png)
+
 - **Minimale / Maximale Temperatur** und **Schrittweite** der Solltemperatur. Leere Felder = Vorgabe des Adapters (15 / 28 / 0,5).
 - Mit der Option *Werte in Zehnteln* in den NSPanel-Einstellungen werden die Werte in Zehnteln angegeben (25 = 2,5 °C) – genau wie im Skript.
 
@@ -113,6 +115,10 @@ Bei mehr als einem Heizkreis belegen die Auswahlflächen (①, ② …) die erst
 - **Freie Flächen zwischen Items** werden mitgespeichert (als leere Items je Heizkreis) und auf dem Panel als leere Plätze angezeigt. Freie Flächen am Ende werden verworfen.
 - **Blättern:** Mehr als neun Einträge verteilen sich auf mehrere Seiten; die Seitenzahl steht unten links im Panel, auf dem Panel blättert der Pfeil rechts oben.
 
+Der Item-Dialog mit dem Feld **Heizkreis** (vorbelegt mit dem gerade gewählten Heizkreis):
+
+![Item-Dialog](../Pictures/PageThermo2/admin-12-item-dialog.png)
+
 ![Ziehen](../Pictures/PageThermo2/admin-11-ziehen.png)
 
 Hinweis zu Items für *alle Heizkreise*: Ihre Fläche kann je Heizkreis unterschiedlich sein, weil jeder Heizkreis unterschiedlich viele vom Adapter erzeugte Buttons davor hat. Der Editor zeigt immer die Belegung des gewählten Heizkreises.
@@ -120,6 +126,8 @@ Hinweis zu Items für *alle Heizkreise*: Ihre Fläche kann je Heizkreis untersch
 ## 9. Anordnung der Flächen
 
 Auswahlfeld **Anordnung der Flächen** unter dem Panel (`sortOrder` im Skript):
+
+![Anordnung der Flächen](../Pictures/PageThermo2/admin-13-anordnung.png)
 
 | Wert | Belegung |
 |---|---|
