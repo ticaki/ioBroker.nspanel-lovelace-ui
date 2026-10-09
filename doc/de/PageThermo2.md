@@ -8,6 +8,7 @@ Struktur:
 - [Aussehen](#aussehen)
 - [Feature](#feature)
 - [Probleme](#bekannte-probleme)
+- [Konfiguration im Admin (Tab PageConfig)](#konfiguration-im-admin-tab-pageconfig)
 - [Konfiguration](#konfiguration)
     - [Alias](#alias)
     - [Direkt über Datenpunkte](#direkt-über-datenpunkte)
@@ -28,6 +29,15 @@ Struktur:
 ### Bekannte Probleme
 - leichtes Flackern auf Grund der hübschen Optik - das wird bleiben
 - Mode und Modeset könnten noch inkonsequent sein - in arbeit
+
+### Konfiguration im Admin (Tab PageConfig)
+Eine Thermo2-Seite kann auch ohne Skript im Tab `PageConfig` angelegt werden: links das PLUS, Typ `Thermostat (Thermo2)`, eindeutiger Seitenname (`uniqueName`). Der Editor zeigt:
+
+- **Heizkreise** (bis zu 8, Reihenfolge per Pfeile): je Heizkreis der **Thermostat-Channel** (Alias mit der Rolle `thermostat` oder `airCondition`, siehe [Tabelle](ALIAS)), die **Überschrift** (leer = `common.name` des Channels) und **minimale / maximale Temperatur** sowie **Schrittweite** (leer = 15 / 28 / 0,5). Die Grenzwerte werden wie im Skript gelesen – mit der Option *Werte in Zehnteln* in den NSPanel-Einstellungen teilt der Adapter sie durch 10. Hat der Channel eine andere Rolle oder gibt es das Objekt nicht, zeigt der Editor eine Warnung.
+- **PageItems**: dieselben Items wie auf den Menü-Seiten (Channel, Navigation, Icons, Farben …), angelegt über den bekannten Item-Dialog. Neu im Dialog ist das Feld **Heizkreis**: damit wird das Item nur bei diesem Heizkreis gezeigt (entspricht `filter` im Skript); *alle Heizkreise* = immer sichtbar. Eine `airCondition` zählt dabei doppelt (Heizen / Kühlen), die Liste im Dialog zählt das bereits mit.
+- Navigation, Zuweisung zu Panels, *Startseite*, *hidden* und *alwaysOn* wie bei den anderen Seitentypen im Bereich Panel.
+
+Im Adapter läuft die Admin-Seite durch denselben Code wie die Skript-Seite (`PageThermo2.getPage`): Alias-Auflösung, `modeList` aus `common.states`, die automatisch erzeugten Mode-/Auto-/Manuell-Buttons und die Filter-Indizes sind identisch. Die übrigen Skript-Optionen (Icons, Farben, Einheiten, `modeList`, direkte Datenpunkte `set`/`thermoId1`/`thermoId2`/`modeId`, `sortOrder`) sind im Admin noch nicht einstellbar – dafür weiterhin das Skript.
 
 ### Konfiguration
 Eine komplette Seite sieht im Skript z.B. so aus 

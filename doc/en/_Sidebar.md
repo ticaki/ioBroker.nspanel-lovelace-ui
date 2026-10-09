@@ -37,7 +37,7 @@
 - [Page Chart](PageChart)
 - *(Page Alarm)* iA  
 - *(Page Media)* iA  
-- *(Page Thermo2)* iA  
+- [Page Thermo2](PageThermo2)
  
 **Developer**  
 - *(Developer Templates)* iA  
