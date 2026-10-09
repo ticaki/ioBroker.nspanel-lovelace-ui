@@ -2,11 +2,12 @@
  * Editor for thermostat pages (cardThermo2) in the PageConfig tab.
  *
  * The page is drawn like the panel shows it: headline, the ring with the three value lines and the
- * mode text, eight slots around it. Every area opens a dialog with the settings of that area
+ * mode text, nine slots around it (four left, four right, one between - and +). Every area opens a
+ * dialog with the settings of that area
  * (ConfigGeneric pattern of PageChartEditor: alive-gated fields, main-page lock). The slots are
  * filled the way the adapter does it at runtime (pageThermo2.ts): selector icons of the circuits
  * when there is more than one, then the buttons the adapter generates from the alias states, then
- * the configured items of the circuit, eight per page in the stored sort order.
+ * the configured items of the circuit, nine per page in the stored sort order.
  */
 import React from 'react';
 import {
@@ -80,32 +81,37 @@ export interface PageThermo2EditorProps {
 /** channel roles the adapter accepts for a heat circuit (pageThermo2.ts getPage) */
 const CIRCUIT_ROLES: readonly string[] = ['thermostat', 'airCondition'];
 
-/** slots per page on the panel (pageThermo2.ts maxItems) */
-const SLOTS = 8;
+/** slots per page on the panel (pageMenu.ts maxItems of cardThermo2): 0-3 left, 4-7 right, 8 between - and + */
+const SLOTS = 9;
 
-/** slot i shows visible item SORT[order][i] (pageThermo2.ts update) */
+/**
+ * slot i shows visible item SORT[order][i] (pageThermo2.ts update). With a sort order other than `V`
+ * the adapter sorts eight entries only, slot 8 is not sent (-1).
+ */
 const SORT: Record<Thermo2SortOrder, number[]> = {
-    V: [0, 1, 2, 3, 4, 5, 6, 7],
-    H: [0, 4, 1, 5, 2, 6, 3, 7],
-    HM: [1, 5, 2, 6, 0, 4, 3, 7],
-    VM: [3, 0, 1, 2, 7, 4, 5, 6],
-    HB: [0, 5, 7, 2, 1, 4, 6, 3],
-    VB: [0, 4, 5, 1, 2, 6, 7, 3],
+    V: [0, 1, 2, 3, 4, 5, 6, 7, 8],
+    H: [0, 4, 1, 5, 2, 6, 3, 7, -1],
+    HM: [1, 5, 2, 6, 0, 4, 3, 7, -1],
+    VM: [3, 0, 1, 2, 7, 4, 5, 6, -1],
+    HB: [0, 5, 7, 2, 1, 4, 6, 3, -1],
+    VB: [0, 4, 5, 1, 2, 6, 7, 3, -1],
 };
 
-/** buttons the adapter generates from the alias states, in the order of pageThermo2.ts getPage */
+/**
+ * buttons the adapter generates from the alias states, in the order and with the icons of
+ * pageThermo2.ts getPage (indicators: the icon of the inactive state, as the panel shows it mostly)
+ */
 const AUTO_STATES: readonly [string, string][] = [
-    ['POWER', 'power'],
-    ['BOOST', 'fire'],
-    ['WINDOWOPEN', 'window-open-variant'],
+    ['POWER', 'power-standby'],
+    ['BOOST', 'fast-forward-60'],
+    ['WINDOWOPEN', 'window-closed-variant'],
     ['PARTY', 'party-popper'],
-    ['MAINTAIN', 'wrench'],
-    ['UNREACH', 'lan-disconnect'],
-    ['MAINTAIN', 'wrench'],
-    ['LOWBAT', 'battery-low'],
-    ['ERROR', 'alert-circle-outline'],
-    ['VACATION', 'beach'],
-    ['WORKING', 'cog'],
+    ['MAINTAIN', 'account-wrench'],
+    ['UNREACH', 'wifi'],
+    ['LOWBAT', 'battery-high'],
+    ['ERROR', 'alert-circle'],
+    ['VACATION', 'palm-tree'],
+    ['WORKING', 'briefcase-check'],
 ];
 
 type DialogKind = 'circuit' | 'limits' | 'display' | 'mode' | 'heat';
@@ -1112,29 +1118,34 @@ export class PageThermo2Editor extends ConfigGeneric<
     // ---------- rendering: the panel ----------
 
     /**
-     * one of the eight slots around the ring
+     * one of the nine slots around the ring
      *
-     * @param slot slot number 0-7 (0-3 left column, 4-7 right column)
+     * @param slot slot number 0-8 (0-3 left column, 4-7 right column, 8 between - and +)
      * @param content what the panel shows there
      * @param visible all visible items (for moving)
      * @param cur current circuit
+     * @param notSent name of the sort order with which the adapter does not send this slot
      */
     private renderSlot(
         slot: number,
         content: SlotContent | undefined,
         visible: SlotContent[],
         cur: NonNullable<ReturnType<PageThermo2Editor['current']>>,
+        notSent?: string,
     ): React.JSX.Element {
         const { alive } = this.state;
         const left = slot < 4;
         const row = slot % 4;
-        const pos = {
-            position: 'absolute' as const,
-            top: `${15 + row * 19.5}%`,
-            [left ? 'left' : 'right']: '2%',
-            width: '15%',
-            height: '17%',
-        };
+        const pos =
+            slot === 8
+                ? { position: 'absolute' as const, bottom: '4%', left: '44%', width: '12%', height: '13%' }
+                : {
+                      position: 'absolute' as const,
+                      top: `${15 + row * 19.5}%`,
+                      [left ? 'left' : 'right']: '2%',
+                      width: '15%',
+                      height: '17%',
+                  };
         const base = {
             display: 'flex',
             flexDirection: 'column' as const,
@@ -1148,6 +1159,26 @@ export class PageThermo2Editor extends ConfigGeneric<
             lineHeight: 1.1,
             textAlign: 'center' as const,
         };
+        if (notSent) {
+            const src = content ? iconSrc(content.icon) : '';
+            return (
+                <Tooltip
+                    key={slot}
+                    title={`${this.getText('thermo2_slotNotSorted').replace('%s', notSent)}${content ? ` · ${content.label}` : ''}`}
+                >
+                    <Box sx={{ ...pos, ...base, opacity: 0.35, cursor: 'default' }}>
+                        {src ? (
+                            <img
+                                src={src}
+                                alt=""
+                                style={{ width: 22, height: 22, filter: 'invert(1)' }}
+                            />
+                        ) : null}
+                        <LockIcon sx={{ fontSize: 11, color: '#777', position: 'absolute', top: 2, right: 2 }} />
+                    </Box>
+                </Tooltip>
+            );
+        }
         if (!content) {
             const canAdd = alive && cur.expandedIndex >= 0;
             return (
@@ -1348,7 +1379,9 @@ export class PageThermo2Editor extends ConfigGeneric<
         // one free slot is always reachable, so a page item can be added when the slots are taken
         const pages = Math.max(1, Math.ceil((visible.length + 1) / SLOTS));
         const page = Math.min(this.state.page, pages - 1);
-        const order = SORT[entry.sortOrder && thermo2SortOrders.includes(entry.sortOrder) ? entry.sortOrder : 'V'];
+        const sortOrder: Thermo2SortOrder =
+            entry.sortOrder && thermo2SortOrders.includes(entry.sortOrder) ? entry.sortOrder : 'V';
+        const order = SORT[sortOrder];
         const pageItems = visible.slice(page * SLOTS, page * SLOTS + SLOTS);
         const c = cur?.circuit;
         const headline = cur
@@ -1478,42 +1511,24 @@ export class PageThermo2Editor extends ConfigGeneric<
                     'mode',
                     <span>{mode}</span>,
                 )}
-                {/* - / + and the status icon between them (fixed by the panel) */}
+                {/* - / + (fixed by the panel), slot 8 lies between them */}
                 <RemoveCircleOutlineIcon
                     sx={{ position: 'absolute', bottom: '6%', left: '33%', color: '#fff', fontSize: 30 }}
                 />
                 <AddCircleOutlineIcon
                     sx={{ position: 'absolute', bottom: '6%', right: '33%', color: '#fff', fontSize: 30 }}
                 />
-                <Tooltip title={this.getText('thermo2_powerSlot')}>
-                    <Box
-                        sx={{
-                            position: 'absolute',
-                            bottom: '7%',
-                            left: '46%',
-                            width: '8%',
-                            height: '9%',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                        }}
-                    >
-                        {iconSrc('battery') ? (
-                            <img
-                                src={iconSrc('battery')}
-                                alt=""
-                                style={{
-                                    width: 20,
-                                    height: 20,
-                                    filter: 'invert(0.5) sepia(1) saturate(5) hue-rotate(80deg)',
-                                }}
-                            />
-                        ) : null}
-                    </Box>
-                </Tooltip>
-
-                {/* the eight slots */}
-                {cur && order.map((visibleIndex, slot) => this.renderSlot(slot, pageItems[visibleIndex], visible, cur))}
+                {/* the nine slots; -1 = slot the adapter does not send with this sort order */}
+                {cur &&
+                    order.map((visibleIndex, slot) =>
+                        this.renderSlot(
+                            slot,
+                            pageItems[visibleIndex < 0 ? slot : visibleIndex],
+                            visible,
+                            cur,
+                            visibleIndex < 0 ? sortOrder : undefined,
+                        ),
+                    )}
 
                 {/* paging */}
                 {pages > 1 && (
