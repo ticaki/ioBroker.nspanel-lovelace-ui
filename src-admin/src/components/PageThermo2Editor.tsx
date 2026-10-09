@@ -244,7 +244,7 @@ function foundKeys(channelRole: string, states: ioBroker.Object[]): string[] {
     const def = (
         requiredScriptDataPoints as unknown as Record<
             string,
-            { data: Record<string, { role?: string | string[]; type?: string | string[] }> }
+            { data: Record<string, { role?: string | string[]; type?: string | string[]; useKey?: boolean }> }
         >
     )[channelRole];
     if (!def) {
@@ -255,6 +255,10 @@ function foundKeys(channelRole: string, states: ioBroker.Object[]): string[] {
         const roles = Array.isArray(want.role) ? want.role : want.role ? [want.role] : [];
         const types = Array.isArray(want.type) ? want.type : want.type ? [want.type] : [];
         const hit = states.some(st => {
+            // useKey: the adapter takes only the data point named exactly like the key (searchDatapointsForItems)
+            if (want.useKey && String(st._id).split('.').pop() !== key) {
+                return false;
+            }
             const role = String(st.common?.role ?? '');
             const type = String(st.common?.type ?? '');
             return (roles.length === 0 || roles.includes(role)) && (types.length === 0 || types.includes(type));
