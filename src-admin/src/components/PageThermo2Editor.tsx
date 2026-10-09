@@ -370,7 +370,11 @@ export class PageThermo2Editor extends ConfigGeneric<
     }
 
     /** roles, names and child states of the circuit channels, names of items that are not loaded yet */
-    private async loadObjects(): Promise<void> {
+    /**
+     * @param extraIds channel ids to load in addition (a channel just selected in the circuit dialog -
+     * the draft in the state is not updated yet when the selector commits)
+     */
+    private async loadObjects(extraIds: string[] = []): Promise<void> {
         const socket = this.props.oContext?.socket;
         if (!socket) {
             return;
@@ -382,6 +386,11 @@ export class PageThermo2Editor extends ConfigGeneric<
         const draftId = draft && draft.source !== 'states' ? (draft.channelId ?? '').trim() : '';
         if (draftId) {
             circuits.add(draftId);
+        }
+        for (const id of extraIds) {
+            if (id) {
+                circuits.add(id);
+            }
         }
         const wanted = new Set<string>(circuits);
         for (const item of this.props.entry.pageItems ?? []) {
@@ -436,7 +445,7 @@ export class PageThermo2Editor extends ConfigGeneric<
         }
         if (!(trimmed in this.state.roles)) {
             // not loaded yet (e.g. just selected for a new circuit) - load it
-            void this.loadObjects();
+            void this.loadObjects([trimmed]);
             return;
         }
         const roles = { ...this.state.roles };
@@ -445,7 +454,7 @@ export class PageThermo2Editor extends ConfigGeneric<
         delete roles[trimmed];
         delete objectNames[trimmed];
         delete childKeys[trimmed];
-        this.setState({ roles, objectNames, childKeys }, () => void this.loadObjects());
+        this.setState({ roles, objectNames, childKeys }, () => void this.loadObjects([trimmed]));
     }
 
     /**
