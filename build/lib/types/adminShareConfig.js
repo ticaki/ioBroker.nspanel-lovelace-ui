@@ -30,6 +30,8 @@ __export(adminShareConfig_exports, {
   emptyChannelValueConfig: () => emptyChannelValueConfig,
   emptyChartEntry: () => emptyChartEntry,
   emptyPowerSlot: () => emptyPowerSlot,
+  emptyThermo2Circuit: () => emptyThermo2Circuit,
+  emptyThermo2Entry: () => emptyThermo2Entry,
   isMainPageEntry: () => isMainPageEntry,
   mainPageName: () => mainPageName,
   normalizeChannelId: () => normalizeChannelId,
@@ -43,6 +45,8 @@ __export(adminShareConfig_exports, {
   servicePageName: () => servicePageName,
   shortStateLabel: () => shortStateLabel,
   stateRefNodeId: () => stateRefNodeId,
+  thermo2Defaults: () => thermo2Defaults,
+  thermo2MaxCircuits: () => thermo2MaxCircuits,
   trashItemCount: () => trashItemCount
 });
 module.exports = __toCommonJS(adminShareConfig_exports);
@@ -125,6 +129,25 @@ function emptyChartEntry(uniqueName) {
     maxXAxisTicks: chartDefaults.maxXAxisTicks,
     factorCardChart: chartDefaults.factorCardChart,
     maxXAxisLabels: chartDefaults.maxXAxisLabels,
+    hidden: false,
+    alwaysOn: "none"
+  };
+}
+const thermo2MaxCircuits = 8;
+const thermo2Defaults = {
+  minValue: 15,
+  maxValue: 28,
+  stepValue: 0.5
+};
+function emptyThermo2Circuit() {
+  return { channelId: "", name: "" };
+}
+function emptyThermo2Entry(uniqueName) {
+  return {
+    card: "cardThermo2",
+    uniqueName,
+    thermoItems: [emptyThermo2Circuit()],
+    pageItems: [],
     hidden: false,
     alwaysOn: "none"
   };
@@ -871,6 +894,8 @@ const CHANNEL_ROLES_LIST = Object.keys(requiredScriptDataPoints);
   emptyChannelValueConfig,
   emptyChartEntry,
   emptyPowerSlot,
+  emptyThermo2Circuit,
+  emptyThermo2Entry,
   isMainPageEntry,
   mainPageName,
   normalizeChannelId,
@@ -884,6 +909,8 @@ const CHANNEL_ROLES_LIST = Object.keys(requiredScriptDataPoints);
   servicePageName,
   shortStateLabel,
   stateRefNodeId,
+  thermo2Defaults,
+  thermo2MaxCircuits,
   trashItemCount
 });
 //# sourceMappingURL=adminShareConfig.js.map
