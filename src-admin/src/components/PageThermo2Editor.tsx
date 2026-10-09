@@ -468,8 +468,17 @@ export class PageThermo2Editor extends ConfigGeneric<
      * channel takes two places (heating and cooling); the index is the `filter` value of the items
      */
     private expanded(): ExpandedCircuit[] {
+        return this.expandedOf(this.props.entry.thermoItems ?? []);
+    }
+
+    /**
+     * the expanded circuits of a given list of stored circuits
+     *
+     * @param thermoItems stored circuits
+     */
+    private expandedOf(thermoItems: Thermo2CircuitConfig[]): ExpandedCircuit[] {
         const out: ExpandedCircuit[] = [];
-        (this.props.entry.thermoItems ?? []).forEach((circuit, stored) => {
+        thermoItems.forEach((circuit, stored) => {
             if (!circuit || !this.circuitUsable(circuit)) {
                 return;
             }
@@ -625,25 +634,63 @@ export class PageThermo2Editor extends ConfigGeneric<
         this.setState({ dialog: null, draft: null });
     };
 
+    /**
+     * page items after a change of the stored circuits: `filter` follows its circuit, items bound only
+     * to a removed circuit are dropped. `filter` is the expanded index, so the mapping goes through
+     * stored index + cooling half.
+     *
+     * @param oldItems circuits before the change
+     * @param newItems circuits after the change
+     * @param storedMap old stored index to new stored index, -1 = removed
+     */
+    private remapItems(
+        oldItems: Thermo2CircuitConfig[],
+        newItems: Thermo2CircuitConfig[],
+        storedMap: (stored: number) => number,
+    ): NonNullable<Thermo2Entry['pageItems']> {
+        const before = this.expandedOf(oldItems);
+        const after = this.expandedOf(newItems);
+        const out: NonNullable<Thermo2Entry['pageItems']> = [];
+        for (const item of this.props.entry.pageItems ?? []) {
+            if (!item || typeof item.filter !== 'number' || !before[item.filter]) {
+                out.push(item);
+                continue;
+            }
+            const e = before[item.filter];
+            const stored = storedMap(e.stored);
+            if (stored < 0) {
+                continue;
+            }
+            const filter = after.findIndex(a => a.stored === stored && a.cooling === e.cooling);
+            out.push(filter >= 0 ? { ...item, filter } : item);
+        }
+        return out;
+    }
+
     private deleteCurrentCircuit = (): void => {
-        const thermoItems = [...(this.props.entry.thermoItems ?? [])];
-        thermoItems.splice(this.draftStored, 1);
+        const oldItems = this.props.entry.thermoItems ?? [];
+        const del = this.draftStored;
+        const thermoItems = oldItems.filter((_c, i) => i !== del);
         if (thermoItems.length === 0) {
             thermoItems.push(emptyThermo2Circuit());
         }
-        this.updateCircuits(thermoItems);
+        const pageItems = this.remapItems(oldItems, thermoItems, s => (s === del ? -1 : s > del ? s - 1 : s));
+        this.props.onEntryChange({ ...this.props.entry, thermoItems, pageItems });
         this.setState({ dialog: null, draft: null, tab: 0 });
     };
 
     private moveCurrentCircuit(delta: -1 | 1): void {
-        const thermoItems = [...(this.props.entry.thermoItems ?? [])];
-        const target = this.draftStored + delta;
-        if (target < 0 || target >= thermoItems.length) {
+        const oldItems = this.props.entry.thermoItems ?? [];
+        const from = this.draftStored;
+        const target = from + delta;
+        if (target < 0 || target >= oldItems.length) {
             return;
         }
-        [thermoItems[this.draftStored], thermoItems[target]] = [thermoItems[target], thermoItems[this.draftStored]];
+        const thermoItems = [...oldItems];
+        [thermoItems[from], thermoItems[target]] = [thermoItems[target], thermoItems[from]];
+        const pageItems = this.remapItems(oldItems, thermoItems, s => (s === from ? target : s === target ? from : s));
         this.draftStored = target;
-        this.updateCircuits(thermoItems);
+        this.props.onEntryChange({ ...this.props.entry, thermoItems, pageItems });
         this.setState({ tab: Math.max(0, this.state.tab + delta) });
     }
 
