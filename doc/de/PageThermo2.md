@@ -8,7 +8,6 @@ Struktur:
 - [Aussehen](#aussehen)
 - [Feature](#feature)
 - [Probleme](#bekannte-probleme)
-- [Konfiguration im Admin (Tab PageConfig)](#konfiguration-im-admin-tab-pageconfig)
 - [Konfiguration](#konfiguration)
     - [Alias](#alias)
     - [Direkt über Datenpunkte](#direkt-über-datenpunkte)
@@ -29,20 +28,6 @@ Struktur:
 ### Bekannte Probleme
 - leichtes Flackern auf Grund der hübschen Optik - das wird bleiben
 - Mode und Modeset könnten noch inkonsequent sein - in arbeit
-
-### Konfiguration im Admin (Tab PageConfig)
-Eine Thermo2-Seite kann auch ohne Skript im Tab `PageConfig` angelegt werden: links das PLUS, Typ `Thermostat (Thermo2)`, eindeutiger Seitenname (`uniqueName`). Der Editor zeigt die Seite so, wie das Panel sie darstellt — die Einstellungen öffnen sich per Klick auf die jeweilige Stelle:
-
-- **Reiter über dem Panel** = die Heizkreise (bis zu 8, `+` legt einen neuen an). Ein `airCondition`-Channel ergibt zwei Reiter (Heizen/Kühlen), genau wie auf dem Panel.
-- **Überschrift** → Dialog *Heizkreis*: Datenquelle **Alias-Channel** (Rolle `thermostat` oder `airCondition`, siehe [Tabelle](ALIAS); der Editor zeigt die Rolle und welche Buttons der Adapter aus dem Alias erzeugen wird) **oder einzelne Datenpunkte** (Solltemperatur `set`, Ist-Temperatur `thermoId1`, Luftfeuchte `thermoId2`, Modus `modeId`), Überschrift (leer = `common.name`), Kühl-Überschrift (`name2`), Reihenfolge, Entfernen.
-- **Solltemperatur (große Zahl)** → *Solltemperatur*: `minValue`, `maxValue`, `stepValue` (leer = 15 / 28 / 0,5; mit *Werte in Zehnteln* in den NSPanel-Einstellungen in Zehnteln).
-- **Ist-Temperatur- und Luftfeuchte-Zeile** → *Anzeige der Werte*: `icon`/`onColor`/`unit` und `icon2`/`onColor2`/`unit2`, jeweils mit „Standard“-Reset.
-- **Modustext** → *Modusanzeige*: `modeList`, ein Eintrag je Zeile (leer = `common.states` des Datenpunkts, sonst die Liste des Adapters).
-- **Button „Heizkreis-Symbol“** → `iconHeatCycle` mit Farben (bei airCondition zusätzlich die `…2`-Variante für den Kühlkreis).
-- **Die neun Flächen um den Ring** (die neunte zwischen − und +) sind die PageItems in der echten Belegung: bei mehr als einem Heizkreis zuerst die Auswahlflächen ①②…, dann die vom Adapter aus dem Alias erzeugten Buttons (Schloss, nicht änderbar), dann die konfigurierten Items — grüner Rahmen = nur dieser Heizkreis, blauer Rahmen = alle Heizkreise. Freie Fläche oder „PageItem hinzufügen“ öffnet den bekannten Item-Dialog, dort steht das Feld **Heizkreis** (entspricht `filter`). Wird ein Heizkreis entfernt, werden die nur an ihn gebundenen Items mitgelöscht; beim Verschieben eines Heizkreises wandern seine Items mit. *Übernehmen* im Heizkreis-Dialog ist erst möglich, wenn die Datenquelle plausibel ist (Alias-Channel mit passender Rolle bzw. Soll- und Ist-Datenpunkt) – ein neuer Heizkreis entsteht erst damit; Heizkreise ohne Datenquelle aus älteren Konfigurationen meldet der Editor mit einem Knopf zum Entfernen. Beim Überfahren eines Items erscheinen Pfeile zum Verschieben und das Löschen; Items lassen sich auch **ziehen** – auf einen belegten Platz (Tausch) oder auf eine freie Fläche weiter hinten, die Plätze dazwischen bleiben frei (im Adapter leere Items je Heizkreis). Ein gelöschtes Item hinterlässt eine freie Fläche (wie auf den Menüseiten). Mehr als neun Einträge werden geblättert, die **Anordnung der Flächen** ist `sortOrder`.
-- Navigation, Zuweisung zu Panels, *Startseite*, *hidden* und *alwaysOn* wie bei den anderen Seitentypen im Bereich Panel.
-
-Im Adapter läuft die Admin-Seite durch denselben Code wie die Skript-Seite (`PageThermo2.getPage`): Alias-Auflösung, `modeList`, die erzeugten Mode-/Auto-/Manuell-Buttons und die Filter-Indizes sind identisch.
 
 ### Konfiguration
 Eine komplette Seite sieht im Skript z.B. so aus 
