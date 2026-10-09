@@ -177,6 +177,8 @@ interface PageThermo2EditorState extends ConfigGenericState {
     pendingGaps: number;
     /** drop target under the dragged item: s<storedIndex> or f<visiblePos> */
     dragOverKey: string | null;
+    /** stored index of the item being dragged (drawn transparent like in PageMenuEditor) */
+    dragSource: number | null;
     /** open settings dialog */
     dialog: DialogKind | null;
     /** copy of the circuit while a dialog is open */
@@ -347,6 +349,7 @@ export class PageThermo2Editor extends ConfigGeneric<
             editingIndex: null,
             pendingGaps: 0,
             dragOverKey: null,
+            dragSource: null,
             dialog: null,
             draft: null,
         };
@@ -957,6 +960,7 @@ export class PageThermo2Editor extends ConfigGeneric<
         this.dragSource = index;
         e.dataTransfer.effectAllowed = 'move';
         e.dataTransfer.setData('text/plain', String(index));
+        this.setState({ dragSource: index });
     }
 
     private onDragOver(key: string, e: React.DragEvent): void {
@@ -973,7 +977,7 @@ export class PageThermo2Editor extends ConfigGeneric<
 
     private onDragEnd = (): void => {
         this.dragSource = null;
-        this.setState({ dragOverKey: null });
+        this.setState({ dragOverKey: null, dragSource: null });
     };
 
     /**
@@ -1529,7 +1533,7 @@ export class PageThermo2Editor extends ConfigGeneric<
         notSent?: string,
         visiblePos = -1,
     ): React.JSX.Element {
-        const { alive, dragOverKey } = this.state;
+        const { alive, dragOverKey, dragSource } = this.state;
         const left = slot < 4;
         const row = slot % 4;
         const pos =
@@ -1590,8 +1594,9 @@ export class PageThermo2Editor extends ConfigGeneric<
                             ...base,
                             cursor: canAdd ? 'pointer' : 'default',
                             opacity: over ? 1 : 0.6,
-                            borderColor: over ? '#fff' : 'rgba(255,255,255,0.25)',
-                            backgroundColor: over ? 'rgba(255,255,255,0.1)' : undefined,
+                            border: over ? '2px dashed #4da3ff' : '1px dashed rgba(255,255,255,0.25)',
+                            backgroundColor: over ? 'rgba(77,163,255,0.15)' : undefined,
+                            transition: 'border-color 0.15s, background-color 0.15s',
                             '&:hover': canAdd ? { borderColor: '#fff', opacity: 1 } : {},
                         }}
                         onClick={canAdd ? () => this.addItemAt(visiblePos, visible, cur) : undefined}
@@ -1605,31 +1610,31 @@ export class PageThermo2Editor extends ConfigGeneric<
             );
         }
         if (content.kind === 'gap') {
+            // an empty slot kept on purpose looks like any free slot (PageMenuEditor): click fills it, drops land here
             const key = `s${content.index}`;
+            const over = dragOverKey === key;
             return (
                 <Tooltip
                     key={slot}
-                    title={this.getText('thermo2_gapSlot')}
+                    title={alive ? this.getText('thermo2_emptySlotHint') : ''}
                 >
                     <Box
                         sx={{
                             ...pos,
                             ...base,
-                            borderColor: dragOverKey === key ? '#fff' : 'rgba(255,255,255,0.5)',
-                            backgroundColor: dragOverKey === key ? 'rgba(255,255,255,0.1)' : undefined,
                             cursor: alive ? 'pointer' : 'default',
-                            '&:hover .t2-actions': { display: 'flex' },
+                            opacity: over ? 1 : 0.6,
+                            border: over ? '2px dashed #4da3ff' : '1px dashed rgba(255,255,255,0.25)',
+                            backgroundColor: over ? 'rgba(77,163,255,0.15)' : undefined,
+                            transition: 'border-color 0.15s, background-color 0.15s',
+                            '&:hover': alive ? { borderColor: '#fff', opacity: 1 } : {},
                         }}
                         onClick={alive ? () => this.openItem(content.index, content.filter) : undefined}
-                        draggable={alive}
-                        onDragStart={alive ? e => this.onDragStart(content.index, e) : undefined}
-                        onDragEnd={this.onDragEnd}
                         onDragOver={alive ? e => this.onDragOver(key, e) : undefined}
                         onDragLeave={this.onDragLeave}
                         onDrop={alive ? e => this.onDropStored(content.index, e) : undefined}
                     >
-                        <Typography sx={{ fontSize: 26, color: '#777', lineHeight: 1 }}>·</Typography>
-                        {this.renderActions(content.index, visible)}
+                        <AddIcon sx={{ fontSize: 18, color: '#888' }} />
                     </Box>
                 </Tooltip>
             );
@@ -1686,9 +1691,11 @@ export class PageThermo2Editor extends ConfigGeneric<
                         ...base,
                         borderStyle: 'solid',
                         borderWidth: 3,
-                        borderColor:
-                            dragOverKey === itemKey ? '#fff' : content.filter === undefined ? '#8ab4f8' : '#7cd992',
-                        cursor: alive ? 'pointer' : 'default',
+                        borderColor: content.filter === undefined ? '#8ab4f8' : '#7cd992',
+                        outline: dragOverKey === itemKey ? '2px solid #4da3ff' : 'none',
+                        opacity: dragSource === content.index ? 0.4 : 1,
+                        cursor: alive ? (dragSource === content.index ? 'grabbing' : 'grab') : 'default',
+                        transition: 'opacity 0.15s, outline 0.1s',
                         '&:hover .t2-actions': { display: 'flex' },
                     }}
                     onClick={alive ? () => this.openItem(content.index) : undefined}
