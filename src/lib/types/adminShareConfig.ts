@@ -343,6 +343,12 @@ export type AdminPageItemConfig = {
     useNative?: boolean;
     /** Rohe NSPanel.PageItemDataItemsOptions-Konfiguration (nur wenn useNative=true) */
     native?: any;
+    /**
+     * cardThermo2 only: 0-based index of the heat circuit the item belongs to, the item is shown
+     * while that circuit is selected. Undefined = shown for every circuit. An airCondition channel
+     * counts as two circuits (heating and cooling), see the wiki page PageThermo2.
+     */
+    filter?: number;
 };
 
 export type MenuEntry = {
@@ -532,6 +538,72 @@ export function emptyChartEntry(uniqueName: string): ChartEntry {
     };
 }
 
+/**
+ * One heat circuit of a cardThermo2 page. The editor covers the alias channel (role thermostat
+ * or airCondition, resolved by the adapter exactly like the script `id`), the headline and the
+ * temperature limits. The remaining script options (icons, colors, units, modeList, direct data
+ * points) are not editable in the admin yet.
+ */
+export type Thermo2CircuitConfig = {
+    /** channel, device or folder with common.role thermostat or airCondition */
+    channelId: string;
+    /** headline of the circuit; empty = common.name of the channel */
+    name?: string;
+    /** lower limit of the set temperature; empty = adapter default */
+    minValue?: number;
+    /** upper limit of the set temperature; empty = adapter default */
+    maxValue?: number;
+    /** step of the +/- buttons; empty = adapter default */
+    stepValue?: number;
+};
+
+/** the panel shows at most eight circuits (an airCondition channel takes two) */
+export const thermo2MaxCircuits = 8;
+
+/**
+ * Defaults the adapter applies when a limit is left empty (pageThermo2.ts). Shown as placeholders
+ * in the editor; with the option `defaultValueCardThermo` the adapter divides stored values by 10.
+ */
+export const thermo2Defaults = {
+    minValue: 15,
+    maxValue: 28,
+    stepValue: 0.5,
+};
+
+export type Thermo2Entry = {
+    card: Extract<AdminCardTypes, 'cardThermo2'>;
+    uniqueName: string;
+    /** heat circuits in display order, at least one with a channel is required */
+    thermoItems: Thermo2CircuitConfig[];
+    /** page items shown around the circuit; `filter` of an item binds it to one circuit */
+    pageItems: (AdminPageItemConfig | undefined)[];
+} & PageConfigBaseFields;
+
+/**
+ * Empty heat circuit - used when adding a circuit in the editor.
+ *
+ * @returns A circuit without channel and headline, limits left to the adapter defaults.
+ */
+export function emptyThermo2Circuit(): Thermo2CircuitConfig {
+    return { channelId: '', name: '' };
+}
+
+/**
+ * Creates a fresh thermo2 entry with one empty circuit (same pattern as emptyChartEntry).
+ *
+ * @param uniqueName unique page name
+ */
+export function emptyThermo2Entry(uniqueName: string): Thermo2Entry {
+    return {
+        card: 'cardThermo2',
+        uniqueName,
+        thermoItems: [emptyThermo2Circuit()],
+        pageItems: [],
+        hidden: false,
+        alwaysOn: 'none',
+    };
+}
+
 export type TrashItem = {
     textTrash: string;
     customTrash: string;
@@ -599,8 +671,17 @@ export type PageConfigEntry =
     | TrashEntry
     | ChartEntry
     | MenuEntry
-    | PowerEntry;
-export type PageConfig = QREntry | UnlockEntry | ScreensaverEntry | TrashEntry | ChartEntry | MenuEntry | PowerEntry;
+    | PowerEntry
+    | Thermo2Entry;
+export type PageConfig =
+    | QREntry
+    | UnlockEntry
+    | ScreensaverEntry
+    | TrashEntry
+    | ChartEntry
+    | MenuEntry
+    | PowerEntry
+    | Thermo2Entry;
 
 /**
  * Whether an admin page entry is flagged as the start page of its assigned panels.
