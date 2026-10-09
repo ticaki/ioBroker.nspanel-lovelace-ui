@@ -14,6 +14,12 @@ interface EntitySelectorProps {
     dialogName: string;
     filterFunc?: (obj: ioBroker.Object) => boolean;
     /**
+     * Object types the SelectID shows and lets select (default of the dialog: states only).
+     * Needed when channels or devices are to be picked: without it the browser hides every
+     * non-state node even if filterFunc keeps it.
+     */
+    types?: ioBroker.ObjectType[];
+    /**
      * Wird nach der Auswahl im SelectID-Dialog aufgerufen und erlaubt die
      * gewählte ID zu transformieren (z. B. auf den übergeordneten Channel kürzen).
      * Rückwärtskompatibel – ohne Prop wird die ID unverändert übernommen.
@@ -49,6 +55,7 @@ export class EntitySelector extends React.Component<EntitySelectorProps, EntityS
             themeType,
             dialogName,
             filterFunc,
+            types,
             onTransformSelectedId,
             disabled,
         } = this.props;
@@ -98,6 +105,7 @@ export class EntitySelector extends React.Component<EntitySelectorProps, EntityS
                             }}
                             onClose={() => this.setState({ showSelectDialog: false })}
                             filterFunc={filterFunc ?? ((obj: ioBroker.Object): boolean => !!(obj?.type === 'state'))}
+                            types={types}
                             dialogName={dialogName}
                             theme={theme}
                             themeType={themeType}

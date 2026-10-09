@@ -37,4 +37,4 @@ const __mfImport = (src) =>
   if (__mfReactServerModuleCache?.pendingShareLoads) {
     await Promise.all(__mfReactServerModuleCache.pendingShareLoads);
   }
-})().then(() => __mfImport("./index-DC_1gCLW.js"));
+})().then(() => __mfImport("./index-Cwmva-VK.js"));

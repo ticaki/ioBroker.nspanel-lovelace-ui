@@ -180,12 +180,11 @@ function iconSrc(name: string): string {
  *
  * @param obj object from the browser
  */
+/** object types a circuit channel may have (also the `types` of the SelectID, which shows states only by default) */
+const CIRCUIT_OBJECT_TYPES: ioBroker.ObjectType[] = ['channel', 'device', 'folder'];
+
 function isCircuitObject(obj: ioBroker.Object): boolean {
-    return (
-        !!obj &&
-        (obj.type === 'channel' || obj.type === 'device' || obj.type === 'folder') &&
-        CIRCUIT_ROLES.includes(String(obj.common?.role ?? ''))
-    );
+    return !!obj && CIRCUIT_OBJECT_TYPES.includes(obj.type) && CIRCUIT_ROLES.includes(String(obj.common?.role ?? ''));
 }
 
 /**
@@ -920,6 +919,7 @@ export class PageThermo2Editor extends ConfigGeneric<
                                     themeType={themeType}
                                     dialogName="selectThermo2Channel"
                                     filterFunc={isCircuitObject}
+                                    types={CIRCUIT_OBJECT_TYPES}
                                 />
                                 {problem && (
                                     <Alert
