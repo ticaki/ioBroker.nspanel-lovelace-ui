@@ -377,6 +377,12 @@ export class PageThermo2Editor extends ConfigGeneric<
         }
         const lang: string = (I18n as any).getLanguage?.() ?? 'en';
         const circuits = new Set<string>(this.circuitIds());
+        // the channel of an open circuit dialog is not stored yet, but its role decides the plausibility
+        const draft = this.state.draft;
+        const draftId = draft && draft.source !== 'states' ? (draft.channelId ?? '').trim() : '';
+        if (draftId) {
+            circuits.add(draftId);
+        }
         const wanted = new Set<string>(circuits);
         for (const item of this.props.entry.pageItems ?? []) {
             const id = normalizeChannelId(item?.channelId).valueStateId;
@@ -425,7 +431,12 @@ export class PageThermo2Editor extends ConfigGeneric<
      */
     private forgetObject(id: string): void {
         const trimmed = id.trim();
-        if (!trimmed || !(trimmed in this.state.roles)) {
+        if (!trimmed) {
+            return;
+        }
+        if (!(trimmed in this.state.roles)) {
+            // not loaded yet (e.g. just selected for a new circuit) - load it
+            void this.loadObjects();
             return;
         }
         const roles = { ...this.state.roles };
