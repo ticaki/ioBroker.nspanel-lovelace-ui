@@ -26,7 +26,9 @@ __export(adminShareConfig_exports, {
   SENDTO_GET_PAGES_COMMAND: () => SENDTO_GET_PAGES_COMMAND,
   SENDTO_GET_PANELS_COMMAND: () => SENDTO_GET_PANELS_COMMAND,
   SENDTO_GET_PANEL_NAVIGATION_COMMAND: () => SENDTO_GET_PANEL_NAVIGATION_COMMAND,
+  chartDefaults: () => chartDefaults,
   emptyChannelValueConfig: () => emptyChannelValueConfig,
+  emptyChartEntry: () => emptyChartEntry,
   emptyPowerSlot: () => emptyPowerSlot,
   isMainPageEntry: () => isMainPageEntry,
   mainPageName: () => mainPageName,
@@ -95,6 +97,36 @@ function emptyPowerSlot() {
     bestColorScale: 0,
     minSpeedScale: 0,
     maxSpeedScale: 1e4
+  };
+}
+const chartDefaults = {
+  chartColor: "#FFFF00",
+  selChartType: "cardChart",
+  selInstanceDataSource: 0,
+  rangeHours: 24,
+  maxXAxisTicks: 2,
+  factorCardChart: 1,
+  maxXAxisLabels: 4
+};
+function emptyChartEntry(uniqueName) {
+  return {
+    card: "cardChart",
+    uniqueName,
+    headline: uniqueName,
+    chartColor: chartDefaults.chartColor,
+    txtLabelYAchse: "",
+    selChartType: chartDefaults.selChartType,
+    selInstanceDataSource: chartDefaults.selInstanceDataSource,
+    setStateForTicks: "",
+    setStateForValues: "",
+    selInstance: "",
+    setStateForDB: "",
+    rangeHours: chartDefaults.rangeHours,
+    maxXAxisTicks: chartDefaults.maxXAxisTicks,
+    factorCardChart: chartDefaults.factorCardChart,
+    maxXAxisLabels: chartDefaults.maxXAxisLabels,
+    hidden: false,
+    alwaysOn: "none"
   };
 }
 const trashItemCount = 6;
@@ -423,7 +455,7 @@ const requiredScriptDataPoints = {
     description: "T\xFCrschloss",
     data: {
       ACTUAL: {
-        role: ["state"],
+        role: ["state", "sensor.lock"],
         type: "boolean",
         required: false,
         writeable: false,
@@ -835,7 +867,9 @@ const CHANNEL_ROLES_LIST = Object.keys(requiredScriptDataPoints);
   SENDTO_GET_PAGES_COMMAND,
   SENDTO_GET_PANELS_COMMAND,
   SENDTO_GET_PANEL_NAVIGATION_COMMAND,
+  chartDefaults,
   emptyChannelValueConfig,
+  emptyChartEntry,
   emptyPowerSlot,
   isMainPageEntry,
   mainPageName,

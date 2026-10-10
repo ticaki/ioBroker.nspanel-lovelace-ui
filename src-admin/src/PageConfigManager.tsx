@@ -11,6 +11,7 @@ import type {
 } from '../../src/lib/types/adminShareConfig';
 import {
     ADAPTER_NAME,
+    emptyChartEntry,
     emptyPowerSlot,
     isMainPageEntry,
     mainPageName,
@@ -24,6 +25,7 @@ import { PagePowerEditor } from './components/PagePowerEditor';
 import { PageQREditor } from './components/PageQREditor';
 import { PageTrashEditor } from './components/PageTrashEditor';
 import { takeRequestedPageConfig } from './pageConfigLink';
+import { PageChartEditor } from './components/PageChartEditor';
 
 interface PageConfigManagerState extends ConfigGenericState {
     entries: PageConfigEntry[];
@@ -354,6 +356,8 @@ class PageConfigManager extends ConfigGeneric<ConfigGenericProps & { theme?: any
                     selPowerSupply: [],
                 },
             } satisfies PowerEntry;
+        } else if (cardType === 'cardChart') {
+            newEntry = emptyChartEntry(name);
         } else if (
             cardType === 'pageMenu' ||
             cardType === 'cardGrid' ||
@@ -549,6 +553,20 @@ class PageConfigManager extends ConfigGeneric<ConfigGenericProps & { theme?: any
                     onUniqueNameChange={this.handleUniqueNameChange}
                     theme={this.props.theme}
                     themeType={this.props.oContext?.themeType}
+                />
+            );
+        }
+
+        if (currentEntry.card === 'cardChart') {
+            return (
+                <PageChartEditor
+                    {...this.props}
+                    entry={currentEntry}
+                    onEntryChange={this.handleEntryChange}
+                    onUniqueNameChange={this.handleUniqueNameChange}
+                    getText={key => this.getText(key)}
+                    oContext={this.props.oContext}
+                    theme={this.props.theme}
                 />
             );
         }
