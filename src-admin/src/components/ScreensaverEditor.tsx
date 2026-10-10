@@ -361,21 +361,14 @@ export class ScreensaverEditor extends React.Component<ScreensaverEditorProps, S
         return m === 'us-p' || m === 'us-l' ? m : 'eu';
     }
 
-    /**
-     * model the places are drawn for: the first assigned panel; without an assignment the model all
-     * configured panels share (eu when they differ or no panel is configured)
-     */
+    /** model the places are drawn for: the first assigned panel */
     private model(): ScreensaverPanelModel {
         const first = (this.props.entry.panels ?? []).map(t => this.panelOf(t)).find(p => !!p);
-        if (first) {
-            return this.modelOf(first);
-        }
-        const models = new Set(this.panels().map(p => this.modelOf(p)));
-        return models.size === 1 ? [...models][0] : 'eu';
+        return this.modelOf(first);
     }
 
-    /** whether the model comes from an assigned panel (otherwise from the configured panels) */
-    private modelFromAssignment(): boolean {
+    /** at least one assigned panel exists in the configuration - the mock is drawn only then */
+    private hasPanel(): boolean {
         return (this.props.entry.panels ?? []).some(t => !!this.panelOf(t));
     }
 
@@ -1418,9 +1411,9 @@ export class ScreensaverEditor extends React.Component<ScreensaverEditorProps, S
                     {' · '}
                     {this.getText('screensaver_card_is').replace('%s', screensaverCardOfMode(entry.mode))}
                     {' · '}
-                    {this.getText(
-                        this.modelFromAssignment() ? 'screensaver_model_is' : 'screensaver_model_is_configured',
-                    ).replace('%s', this.model())}
+                    {this.hasPanel()
+                        ? this.getText('screensaver_model_is').replace('%s', this.model())
+                        : this.getText('screensaver_model_pending')}
                 </Typography>
                 {selected.length === 0 && (
                     <Alert
@@ -1457,7 +1450,8 @@ export class ScreensaverEditor extends React.Component<ScreensaverEditorProps, S
 
     render(): React.JSX.Element {
         const { entry, oContext, theme, alive } = this.props;
-        const overflow = this.overflow();
+        const hasPanel = this.hasPanel();
+        const overflow = hasPanel ? this.overflow() : [];
         return (
             <Box>
                 {this.renderHeader()}
@@ -1486,14 +1480,16 @@ export class ScreensaverEditor extends React.Component<ScreensaverEditorProps, S
                             )}
                     </Alert>
                 )}
-                {this.renderPanel()}
-                <Typography
-                    variant="caption"
-                    color="text.secondary"
-                    sx={{ display: 'block', mt: 1 }}
-                >
-                    {this.getText('screensaver_panelHint')}
-                </Typography>
+                {hasPanel && this.renderPanel()}
+                {hasPanel && (
+                    <Typography
+                        variant="caption"
+                        color="text.secondary"
+                        sx={{ display: 'block', mt: 1 }}
+                    >
+                        {this.getText('screensaver_panelHint')}
+                    </Typography>
+                )}
                 <Alert
                     severity="info"
                     sx={{ mt: 1.5 }}

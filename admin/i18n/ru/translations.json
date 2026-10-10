@@ -583,7 +583,7 @@
     "screensaver_mode_easyview": "Easyview",
     "screensaver_mode_standard": "Стандарт",
     "screensaver_model_is": "места для модели %s",
-    "screensaver_model_is_configured": "места для модели %s (настроенных панелей)",
+    "screensaver_model_pending": "места появятся, как только выбрана панель",
     "screensaver_month": "Месяц",
     "screensaver_mricon": "Значок состояния %s",
     "screensaver_mricon_decimals": "Знаков после запятой",
