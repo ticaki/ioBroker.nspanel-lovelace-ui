@@ -602,6 +602,7 @@
     "screensaver_item_iconOn": "Ikona (wł. / wartość)",
     "screensaver_item_iconSelectKept": "%s ikon(y) wg zakresu wartości z konfiguracji skryptu zostają zachowane",
     "screensaver_item_icons": "Ikona",
+    "screensaver_item_pickState": "wybierz stan – pola zależą od jego typu",
     "screensaver_item_preview_true": "wł.",
     "screensaver_item_state": "Stan",
     "screensaver_item_stateInfo": "Nazwa: %s · typ: %s · jednostka: %s",

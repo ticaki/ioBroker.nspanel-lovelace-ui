@@ -626,6 +626,7 @@
     "screensaver_item_iconOn": "Symbol (an / Wert)",
     "screensaver_item_iconSelectKept": "%s Icon(s) je Wertebereich aus der Skript-Konfiguration bleiben erhalten",
     "screensaver_item_icons": "Symbol",
+    "screensaver_item_pickState": "Datenpunkt wählen – die Felder richten sich nach seinem Typ",
     "screensaver_item_preview_true": "an",
     "screensaver_item_state": "Datenpunkt",
     "screensaver_item_stateInfo": "Name: %s · Typ: %s · Einheit: %s",

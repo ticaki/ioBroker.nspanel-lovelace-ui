@@ -602,6 +602,7 @@
     "screensaver_item_iconOn": "图标（开 / 数值）",
     "screensaver_item_iconSelectKept": "保留脚本配置中的 %s 个按数值范围的图标",
     "screensaver_item_icons": "图标",
+    "screensaver_item_pickState": "选择状态——字段取决于其类型",
     "screensaver_item_preview_true": "开",
     "screensaver_item_state": "状态",
     "screensaver_item_stateInfo": "名称：%s · 类型：%s · 单位：%s",

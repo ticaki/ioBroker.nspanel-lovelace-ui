@@ -1095,11 +1095,7 @@ export class ScreensaverEditor extends React.Component<ScreensaverEditorProps, S
                     data-ss={key}
                 >
                     {src ? (
-                        <img
-                            src={src}
-                            alt={icon}
-                            style={{ width: big ? 34 : 22, height: big ? 34 : 22, filter: 'invert(1)' }}
-                        />
+                        ScreensaverItemDialog.coloredIcon(src, big ? 34 : 22, item.colorOn || '#ffffff')
                     ) : (
                         <Typography sx={{ fontSize: 10, color: '#bbb' }}>{icon || '·'}</Typography>
                     )}

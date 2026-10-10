@@ -66,6 +66,7 @@ interface ScreensaverItemDialogState {
     objType: string | null | undefined;
     objUnit: string;
     objName: string;
+    objRole: string;
     colorMode: 'fixed' | 'scale';
 }
 
@@ -139,6 +140,7 @@ export class ScreensaverItemDialog extends React.Component<ScreensaverItemDialog
             objType: undefined,
             objUnit: '',
             objName: '',
+            objRole: '',
             colorMode: 'fixed',
         };
     }
@@ -168,7 +170,7 @@ export class ScreensaverItemDialog extends React.Component<ScreensaverItemDialog
     private async loadObject(id: string): Promise<void> {
         const trimmed = id.trim();
         if (!trimmed) {
-            this.setState({ objType: undefined, objUnit: '', objName: '' });
+            this.setState({ objType: undefined, objUnit: '', objName: '', objRole: '' });
             return;
         }
         try {
@@ -180,9 +182,10 @@ export class ScreensaverItemDialog extends React.Component<ScreensaverItemDialog
                 objType: obj ? String(obj.common?.type ?? '') : null,
                 objUnit: obj ? String(obj.common?.unit ?? '') : '',
                 objName: objectName(obj, this.lang()),
+                objRole: obj ? String(obj.common?.role ?? '') : '',
             });
         } catch {
-            this.setState({ objType: null, objUnit: '', objName: '' });
+            this.setState({ objType: null, objUnit: '', objName: '', objRole: '' });
         }
     }
 
@@ -213,6 +216,22 @@ export class ScreensaverItemDialog extends React.Component<ScreensaverItemDialog
         } else {
             delete draft.colorScale;
         }
+        const kind = this.kind();
+        if (kind !== 'boolean') {
+            delete draft.iconOff;
+            delete draft.colorOff;
+            delete draft.textOn;
+            delete draft.textOff;
+        }
+        if (kind !== 'number') {
+            delete draft.unit;
+            delete draft.factor;
+            delete draft.decimals;
+            delete draft.colorScale;
+        }
+        if (kind !== 'date') {
+            delete draft.dateFormat;
+        }
         const fields = screensaverItemFields(this.props.area);
         if (!fields.headline) {
             delete draft.headline;
@@ -237,6 +256,24 @@ export class ScreensaverItemDialog extends React.Component<ScreensaverItemDialog
         }
         this.props.onSave(draft);
     };
+
+    /** what the state holds - decides which fields make sense */
+    private kind(): 'unknown' | 'boolean' | 'number' | 'date' | 'other' {
+        const { objType, objRole } = this.state;
+        if (typeof objType !== 'string') {
+            return 'unknown';
+        }
+        if (objType === 'boolean') {
+            return 'boolean';
+        }
+        if (/date|time/i.test(objRole)) {
+            return 'date';
+        }
+        if (objType === 'number') {
+            return 'number';
+        }
+        return 'other';
+    }
 
     // ---------- fields ----------
 
@@ -367,6 +404,19 @@ export class ScreensaverItemDialog extends React.Component<ScreensaverItemDialog
 
     private renderColorSection(): React.JSX.Element {
         const { draft, colorMode } = this.state;
+        const kind = this.kind();
+        if (kind !== 'number') {
+            return (
+                <Box sx={{ display: 'flex', gap: 3, flexWrap: 'wrap', mb: 1 }}>
+                    {this.renderColorField(
+                        'colorOn',
+                        kind === 'boolean' ? 'screensaver_item_colorOn' : 'screensaver_item_color',
+                        DEFAULT_ON,
+                    )}
+                    {kind === 'boolean' && this.renderColorField('colorOff', 'screensaver_item_colorOff', DEFAULT_OFF)}
+                </Box>
+            );
+        }
         return (
             <Box sx={{ mb: 2 }}>
                 <FormControl component="fieldset">
@@ -385,18 +435,12 @@ export class ScreensaverItemDialog extends React.Component<ScreensaverItemDialog
                             value="scale"
                             control={<Radio />}
                             label={this.getText('screensaver_item_colorScale')}
-                            disabled={
-                                this.state.objType !== undefined &&
-                                this.state.objType !== null &&
-                                this.state.objType !== 'number'
-                            }
                         />
                     </RadioGroup>
                 </FormControl>
                 {colorMode === 'fixed' ? (
                     <Box sx={{ display: 'flex', gap: 3, flexWrap: 'wrap' }}>
-                        {this.renderColorField('colorOn', 'screensaver_item_colorOn', DEFAULT_ON)}
-                        {this.renderColorField('colorOff', 'screensaver_item_colorOff', DEFAULT_OFF)}
+                        {this.renderColorField('colorOn', 'screensaver_item_color', DEFAULT_ON)}
                     </Box>
                 ) : (
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
@@ -499,22 +543,62 @@ export class ScreensaverItemDialog extends React.Component<ScreensaverItemDialog
         );
     }
 
+    /**
+     * an icon in a color: the icon is a mask, the color the fill
+     *
+     * @param src base64 icon
+     * @param size pixels
+     * @param color css color
+     */
+    static coloredIcon(src: string, size: number, color: string): React.JSX.Element {
+        return (
+            <Box
+                sx={{
+                    width: size,
+                    height: size,
+                    flexShrink: 0,
+                    backgroundColor: color,
+                    maskImage: `url(${src})`,
+                    maskSize: 'contain',
+                    maskRepeat: 'no-repeat',
+                    maskPosition: 'center',
+                    WebkitMaskImage: `url(${src})`,
+                    WebkitMaskSize: 'contain',
+                    WebkitMaskRepeat: 'no-repeat',
+                    WebkitMaskPosition: 'center',
+                }}
+            />
+        );
+    }
+
     /** the item as the place shows it */
     private renderPreview(): React.JSX.Element {
-        const { draft, objUnit, objName, objType } = this.state;
+        const { draft, objUnit, objName } = this.state;
         const fields = screensaverItemFields(this.props.area);
+        const kind = this.kind();
         const big = this.props.area === 'favorit';
         const src = iconSrc(draft.iconOn);
         const unit = draft.unit ?? objUnit;
-        let value: string;
-        if (objType === 'boolean') {
-            value = draft.textOn || this.getText('screensaver_item_preview_true');
-        } else if (objType === 'string' || draft.dateFormat) {
-            value = draft.dateFormat || 'Text';
-        } else {
-            const sample = 23.456 * (draft.factor ?? 1);
-            value = `${sample.toFixed(draft.decimals ?? 1)}${unit ? ` ${unit}` : ''}`;
+        let value = '';
+        switch (kind) {
+            case 'boolean':
+                value = draft.textOn || this.getText('screensaver_item_preview_true');
+                break;
+            case 'date':
+                value = draft.dateFormat || 'DD.MM. HH:mm';
+                break;
+            case 'number': {
+                const sample = 23.456 * (draft.factor ?? 1);
+                value = `${sample.toFixed(draft.decimals ?? 1)}${unit ? ` ${unit}` : ''}`;
+                break;
+            }
+            case 'other':
+                value = 'Text';
+                break;
+            default:
+                value = '';
         }
+        const size = big ? 44 : 28;
         return (
             <Box
                 sx={{
@@ -549,26 +633,11 @@ export class ScreensaverItemDialog extends React.Component<ScreensaverItemDialog
                     </Box>
                 )}
                 {src ? (
-                    <img
-                        src={src}
-                        alt=""
-                        style={{
-                            width: big ? 44 : 28,
-                            height: big ? 44 : 28,
-                            filter: 'invert(1)',
-                        }}
-                    />
+                    ScreensaverItemDialog.coloredIcon(src, size, draft.colorOn || DEFAULT_ON)
                 ) : (
-                    <Box
-                        sx={{
-                            width: big ? 44 : 28,
-                            height: big ? 44 : 28,
-                            borderRadius: '50%',
-                            border: '1px dashed #666',
-                        }}
-                    />
+                    <Box sx={{ width: size, height: size, borderRadius: '50%', border: '1px dashed #666' }} />
                 )}
-                {fields.value && <Box sx={{ color: draft.colorOn || DEFAULT_ON }}>{value}</Box>}
+                {fields.value && kind !== 'unknown' && <Box>{value}</Box>}
             </Box>
         );
     }
@@ -577,8 +646,8 @@ export class ScreensaverItemDialog extends React.Component<ScreensaverItemDialog
         const { open, area, index, count, item } = this.props;
         const { draft, objType, objUnit, objName } = this.state;
         const fields = screensaverItemFields(area);
-        const isNumber = objType === 'number';
-        const isBoolean = objType === 'boolean';
+        const kind = this.kind();
+        const known = kind !== 'unknown';
         return (
             <Dialog
                 open={open}
@@ -612,7 +681,7 @@ export class ScreensaverItemDialog extends React.Component<ScreensaverItemDialog
                                     {this.getText('screensaver_item_stateMissing').replace('%s', draft.state)}
                                 </Alert>
                             )}
-                            {typeof objType === 'string' && (
+                            {known && (
                                 <Typography
                                     variant="caption"
                                     color="text.secondary"
@@ -624,25 +693,42 @@ export class ScreensaverItemDialog extends React.Component<ScreensaverItemDialog
                                         .replace('%s', objUnit || '-')}
                                 </Typography>
                             )}
-                            {fields.headline &&
+                            {!known && objType !== null && (
+                                <Typography
+                                    variant="caption"
+                                    color="text.secondary"
+                                    sx={{ display: 'block', mb: 2 }}
+                                >
+                                    {this.getText('screensaver_item_pickState')}
+                                </Typography>
+                            )}
+                            {known &&
+                                fields.headline &&
                                 this.renderText('headline', 'screensaver_item_headline', objName, { minWidth: 300 })}
                         </Box>
                         {this.renderPreview()}
                     </Box>
 
-                    <Typography
-                        variant="subtitle2"
-                        sx={{ mb: 1 }}
-                    >
-                        {this.getText('screensaver_item_icons')}
-                    </Typography>
-                    <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', mb: 2 }}>
-                        {this.renderIconField('iconOn', 'screensaver_item_iconOn')}
-                        {this.renderIconField('iconOff', 'screensaver_item_iconOff')}
-                    </Box>
-                    {this.renderColorSection()}
+                    {known && (
+                        <>
+                            <Typography
+                                variant="subtitle2"
+                                sx={{ mb: 1 }}
+                            >
+                                {this.getText('screensaver_item_icons')}
+                            </Typography>
+                            <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', mb: 2 }}>
+                                {this.renderIconField(
+                                    'iconOn',
+                                    kind === 'boolean' ? 'screensaver_item_iconOn' : 'screensaver_item_icons',
+                                )}
+                                {kind === 'boolean' && this.renderIconField('iconOff', 'screensaver_item_iconOff')}
+                            </Box>
+                            {this.renderColorSection()}
+                        </>
+                    )}
 
-                    {fields.value && (
+                    {known && fields.value && (kind === 'number' || kind === 'date') && (
                         <Box sx={{ mb: 1 }}>
                             <Typography
                                 variant="subtitle2"
@@ -651,37 +737,41 @@ export class ScreensaverItemDialog extends React.Component<ScreensaverItemDialog
                                 {this.getText('screensaver_item_value')}
                             </Typography>
                             <Box sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'flex-end' }}>
-                                {this.renderText('unit', 'screensaver_item_unit', objUnit, { minWidth: 120 })}
-                                <TextField
-                                    variant="standard"
-                                    type="number"
-                                    label={this.getText('screensaver_item_factor')}
-                                    value={draft.factor ?? ''}
-                                    placeholder="1"
-                                    onChange={e => this.setNumber('factor', e.target.value)}
-                                    slotProps={{ inputLabel: { shrink: true }, htmlInput: { step: 'any' } }}
-                                    sx={{ mb: 2, mr: 2, width: 120 }}
-                                    disabled={isBoolean}
-                                />
-                                <TextField
-                                    variant="standard"
-                                    type="number"
-                                    label={this.getText('screensaver_item_decimals')}
-                                    value={draft.decimals ?? ''}
-                                    placeholder="1"
-                                    onChange={e => this.setNumber('decimals', e.target.value)}
-                                    slotProps={{ inputLabel: { shrink: true }, htmlInput: { min: 0, max: 5 } }}
-                                    sx={{ mb: 2, mr: 2, width: 140 }}
-                                    disabled={isBoolean}
-                                />
-                                {this.renderText('dateFormat', 'screensaver_item_dateFormat', 'DD.MM. HH:mm', {
-                                    minWidth: 160,
-                                })}
+                                {kind === 'number' &&
+                                    this.renderText('unit', 'screensaver_item_unit', objUnit, { minWidth: 120 })}
+                                {kind === 'number' && (
+                                    <TextField
+                                        variant="standard"
+                                        type="number"
+                                        label={this.getText('screensaver_item_factor')}
+                                        value={draft.factor ?? ''}
+                                        placeholder="1"
+                                        onChange={e => this.setNumber('factor', e.target.value)}
+                                        slotProps={{ inputLabel: { shrink: true }, htmlInput: { step: 'any' } }}
+                                        sx={{ mb: 2, mr: 2, width: 120 }}
+                                    />
+                                )}
+                                {kind === 'number' && (
+                                    <TextField
+                                        variant="standard"
+                                        type="number"
+                                        label={this.getText('screensaver_item_decimals')}
+                                        value={draft.decimals ?? ''}
+                                        placeholder="1"
+                                        onChange={e => this.setNumber('decimals', e.target.value)}
+                                        slotProps={{ inputLabel: { shrink: true }, htmlInput: { min: 0, max: 5 } }}
+                                        sx={{ mb: 2, mr: 2, width: 140 }}
+                                    />
+                                )}
+                                {kind === 'date' &&
+                                    this.renderText('dateFormat', 'screensaver_item_dateFormat', 'DD.MM. HH:mm', {
+                                        minWidth: 200,
+                                    })}
                             </Box>
                         </Box>
                     )}
 
-                    {fields.text && (
+                    {known && fields.text && kind === 'boolean' && (
                         <Box sx={{ mb: 1 }}>
                             <Typography
                                 variant="subtitle2"
@@ -696,9 +786,9 @@ export class ScreensaverItemDialog extends React.Component<ScreensaverItemDialog
                         </Box>
                     )}
 
-                    {fields.action && this.renderActionSection()}
+                    {known && fields.action && this.renderActionSection()}
 
-                    {this.props.expertMode && (
+                    {known && this.props.expertMode && (
                         <Box sx={{ mb: 1 }}>
                             <Typography
                                 variant="subtitle2"
@@ -717,7 +807,7 @@ export class ScreensaverItemDialog extends React.Component<ScreensaverItemDialog
                             })}
                         </Box>
                     )}
-                    {isNumber && draft.iconSelect?.length ? (
+                    {kind === 'number' && draft.iconSelect?.length ? (
                         <Typography
                             variant="caption"
                             color="text.secondary"
