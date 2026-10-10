@@ -3,6 +3,19 @@
     "name": "nspanel-lovelace-ui",
     "version": "1.1.2",
     "news": {
+      "1.2.0": {
+        "en": "Admin: chart pages are configured in the PageConfig tab\nAdmin: mode lists for light/select items\nFix: lock accepts sensor.lock as ACTUAL role\nFix: select items with a mode list show the right entry and write to SET",
+        "de": "Admin: Chart-Seiten werden im PageConfig-Tab konfiguriert\nAdmin: Modus-Listen für Licht-/Select-Items\nFix: lock akzeptiert sensor.lock als ACTUAL-Rolle\nFix: Select-Items mit Modus-Liste zeigen den richtigen Eintrag und schreiben in SET",
+        "ru": "Админ: страницы графиков настраиваются во вкладке PageConfig\nАдмин: списки режимов для элементов light/select\nИсправление: lock принимает sensor.lock как роль ACTUAL\nИсправление: select-элементы со списком режимов показывают правильную запись и пишут в SET",
+        "pt": "Admin: páginas de gráficos são configuradas na aba PageConfig\nAdmin: listas de modos para itens light/select\nCorreção: lock aceita sensor.lock como função ACTUAL\nCorreção: itens select com lista de modos mostram a entrada correta e escrevem em SET",
+        "nl": "Admin: grafiekpagina's worden in het PageConfig-tabblad geconfigureerd\nAdmin: moduslijsten voor light/select-items\nFix: lock accepteert sensor.lock als ACTUAL-rol\nFix: select-items met moduslijst tonen het juiste item en schrijven naar SET",
+        "fr": "Admin : les pages de graphiques se configurent dans l'onglet PageConfig\nAdmin : listes de modes pour les éléments light/select\nCorrectif : lock accepte sensor.lock comme rôle ACTUAL\nCorrectif : les éléments select avec liste de modes affichent la bonne entrée et écrivent dans SET",
+        "it": "Admin: le pagine grafico si configurano nella scheda PageConfig\nAdmin: elenchi di modalità per gli elementi light/select\nCorrezione: lock accetta sensor.lock come ruolo ACTUAL\nCorrezione: gli elementi select con elenco di modalità mostrano la voce corretta e scrivono in SET",
+        "es": "Admin: las páginas de gráficos se configuran en la pestaña PageConfig\nAdmin: listas de modos para elementos light/select\nCorrección: lock acepta sensor.lock como rol ACTUAL\nCorrección: los elementos select con lista de modos muestran la entrada correcta y escriben en SET",
+        "pl": "Admin: strony wykresów konfiguruje się w zakładce PageConfig\nAdmin: listy trybów dla elementów light/select\nPoprawka: lock akceptuje sensor.lock jako rolę ACTUAL\nPoprawka: elementy select z listą trybów pokazują właściwy wpis i zapisują do SET",
+        "uk": "Адмін: сторінки графіків налаштовуються у вкладці PageConfig\nАдмін: списки режимів для елементів light/select\nВиправлення: lock приймає sensor.lock як роль ACTUAL\nВиправлення: select-елементи зі списком режимів показують правильний запис і пишуть у SET",
+        "zh-cn": "管理界面：图表页面在 PageConfig 标签页中配置\n管理界面：light/select 项目的模式列表\n修复：lock 接受 sensor.lock 作为 ACTUAL 角色\n修复：带模式列表的 select 项目显示正确条目并写入 SET"
+      },
       "1.1.2": {
         "en": "a panel could get stuck in wait for connection after a WiFi drop or a burst of screensaver updates because the serial buffer of the display overflowed, the adapter now spaces out messages to the display, sends screensaver updates at most every 3 seconds and restarts tasmota automatically when the display reports an overflow",
         "de": "Ein Panel konnte nach einem WLAN-Abbruch oder einer Flut von Screensaver-Updates in wait for connection hängen bleiben, weil der serielle Puffer des Displays überlief, der Adapter schickt Nachrichten an das Display jetzt mit Abstand, sendet Screensaver-Updates höchstens alle 3 Sekunden und startet Tasmota automatisch neu, wenn das Display einen Überlauf meldet",
