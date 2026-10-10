@@ -44,6 +44,7 @@ __export(adminShareConfig_exports, {
   reversePanelStatusStates: () => reversePanelStatusStates,
   screensaverAreas: () => screensaverAreas,
   screensaverCardOfMode: () => screensaverCardOfMode,
+  screensaverDateFormats: () => screensaverDateFormats,
   screensaverItemFields: () => screensaverItemFields,
   screensaverMaxEntries: () => screensaverMaxEntries,
   screensaverModes: () => screensaverModes,
@@ -126,6 +127,21 @@ function screensaverCardOfMode(mode) {
       return "screensaver";
   }
 }
+const screensaverDateFormats = [
+  { key: "dateFormatShort", options: { dateStyle: "short" } },
+  { key: "dateFormatYearMonthDay", options: { year: "numeric", month: "2-digit", day: "2-digit" } },
+  { key: "dateFormatDayShortMonthYear", options: { day: "2-digit", month: "short", year: "numeric" } },
+  {
+    key: "dateFormatWeekdayShortDate",
+    options: { weekday: "short", day: "2-digit", month: "2-digit", year: "numeric" }
+  },
+  { key: "timeFormat24", options: { hour: "2-digit", minute: "2-digit", hour12: false } },
+  {
+    key: "screensaver_item_dateTimeShort",
+    options: { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" }
+  },
+  { key: "screensaver_item_dateTimeFull", options: { dateStyle: "short", timeStyle: "short" } }
+];
 function screensaverItemFields(area) {
   return {
     headline: area === "bottom",
@@ -1001,6 +1017,7 @@ const CHANNEL_ROLES_LIST = Object.keys(requiredScriptDataPoints);
   reversePanelStatusStates,
   screensaverAreas,
   screensaverCardOfMode,
+  screensaverDateFormats,
   screensaverItemFields,
   screensaverMaxEntries,
   screensaverModes,
