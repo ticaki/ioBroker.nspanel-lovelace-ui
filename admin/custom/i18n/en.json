@@ -607,7 +607,7 @@
     "screensaver_mode_easyview": "Easyview",
     "screensaver_mode_standard": "Standard",
     "screensaver_model_is": "places for model %s",
-    "screensaver_model_is_configured": "places for model %s (of the configured panels)",
+    "screensaver_model_pending": "the places are drawn as soon as a panel is chosen",
     "screensaver_month": "Month",
     "screensaver_mricon": "Status icon %s",
     "screensaver_mricon_decimals": "Decimals",

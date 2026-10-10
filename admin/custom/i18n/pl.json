@@ -583,7 +583,7 @@
     "screensaver_mode_easyview": "Easyview",
     "screensaver_mode_standard": "Standard",
     "screensaver_model_is": "miejsca dla modelu %s",
-    "screensaver_model_is_configured": "miejsca dla modelu %s (skonfigurowanych paneli)",
+    "screensaver_model_pending": "miejsca pojawią się po wybraniu panelu",
     "screensaver_month": "Miesiąc",
     "screensaver_mricon": "Ikona stanu %s",
     "screensaver_mricon_decimals": "Miejsca dziesiętne",

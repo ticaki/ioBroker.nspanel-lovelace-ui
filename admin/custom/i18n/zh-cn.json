@@ -583,7 +583,7 @@
     "screensaver_mode_easyview": "Easyview",
     "screensaver_mode_standard": "标准",
     "screensaver_model_is": "型号 %s 的位置",
-    "screensaver_model_is_configured": "型号 %s 的位置（来自已配置的面板）",
+    "screensaver_model_pending": "选择面板后即显示位置",
     "screensaver_month": "月",
     "screensaver_mricon": "状态图标 %s",
     "screensaver_mricon_decimals": "小数位",
