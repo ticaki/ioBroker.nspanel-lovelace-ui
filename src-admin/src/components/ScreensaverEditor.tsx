@@ -41,6 +41,7 @@ import { EntitySelector } from './EntitySelector';
 import ChannelConfigDialog from './ChannelConfigDialog';
 import IconSelect from '../IconSelect';
 import icons from '../icons.json';
+import { getPageItemDefaultsByRole, getPageNaviItemDefaultsByRole } from '../../../src/lib/const/page-item-defaults';
 import {
     type AdminPageItemConfig,
     type AdminPanelConfig,
@@ -174,6 +175,26 @@ function iconSrc(name: string | undefined): string {
  */
 function isState(obj: ioBroker.Object): boolean {
     return !!obj && obj.type === 'state';
+}
+
+/**
+ * icon of an item on the mock: the configured one, else the default of its role (PageThermo2Editor)
+ *
+ * @param item stored item
+ */
+function itemIcon(item: AdminPageItemConfig): string {
+    if (item.trueIcon) {
+        return item.trueIcon;
+    }
+    const role = item.role ?? '';
+    if (item.isNavigation) {
+        const d = getPageNaviItemDefaultsByRole(role);
+        if (d) {
+            return d.iconOn;
+        }
+    }
+    const d = getPageItemDefaultsByRole(role);
+    return d ? d.iconOn : '';
 }
 
 /**
@@ -889,6 +910,7 @@ export class ScreensaverEditor extends React.Component<ScreensaverEditorProps, S
                         ...sx,
                     }}
                     onClick={enabled ? () => this.openDialog(kind) : undefined}
+                    data-ss={key}
                 >
                     {children}
                 </Box>
@@ -944,13 +966,15 @@ export class ScreensaverEditor extends React.Component<ScreensaverEditorProps, S
                         onDragOver={alive ? e => this.onDragOver(ref, e) : undefined}
                         onDragLeave={this.onDragLeave}
                         onDrop={alive ? e => this.onDrop(ref, e) : undefined}
+                        data-ss={key}
                     >
                         <AddIcon sx={{ fontSize: big ? 26 : 18, color: '#888' }} />
                     </Box>
                 </Tooltip>
             );
         }
-        const src = iconSrc(item.trueIcon);
+        const icon = itemIcon(item);
+        const src = iconSrc(icon);
         const label = itemLabel(item);
         const dragging = !!dragSource && this.slotKey(dragSource) === key;
         return (
@@ -976,15 +1000,16 @@ export class ScreensaverEditor extends React.Component<ScreensaverEditorProps, S
                     onDragOver={alive ? e => this.onDragOver(ref, e) : undefined}
                     onDragLeave={this.onDragLeave}
                     onDrop={alive ? e => this.onDrop(ref, e) : undefined}
+                    data-ss={key}
                 >
                     {src ? (
                         <img
                             src={src}
-                            alt={item.trueIcon}
+                            alt={icon}
                             style={{ width: big ? 34 : 22, height: big ? 34 : 22, filter: 'invert(1)' }}
                         />
                     ) : (
-                        <Typography sx={{ fontSize: 10, color: '#bbb' }}>{item.trueIcon || '·'}</Typography>
+                        <Typography sx={{ fontSize: 10, color: '#bbb' }}>{icon || '·'}</Typography>
                     )}
                     <Box
                         sx={{
@@ -1151,6 +1176,7 @@ export class ScreensaverEditor extends React.Component<ScreensaverEditorProps, S
                         disabled={!this.props.alive}
                         onClick={() => this.openDialog('options')}
                         sx={{ position: 'absolute', right: '1%', bottom: '1%', color: '#777', zIndex: 1 }}
+                        data-ss="options"
                     >
                         <SettingsIcon sx={{ fontSize: 18 }} />
                     </IconButton>
@@ -1196,6 +1222,7 @@ export class ScreensaverEditor extends React.Component<ScreensaverEditorProps, S
                     >
                         <InputLabel>{this.getText('screensaver_mode')}</InputLabel>
                         <Select
+                            data-ss="mode"
                             value={entry.mode}
                             onChange={e => {
                                 const mode = e.target.value;
@@ -1219,6 +1246,7 @@ export class ScreensaverEditor extends React.Component<ScreensaverEditorProps, S
                     >
                         <InputLabel>{this.getText('screensaver_panels')}</InputLabel>
                         <Select
+                            data-ss="panels"
                             multiple
                             value={selected}
                             onChange={e => {
