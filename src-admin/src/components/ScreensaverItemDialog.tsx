@@ -48,6 +48,8 @@ export interface ScreensaverItemDialogProps {
     /** place within the area (0-based) and number of places */
     index: number;
     count: number;
+    /** the place shows icon and text side by side */
+    inline?: boolean;
     /** stored item, undefined = new */
     item: ScreensaverItemConfig | undefined;
     onClose: () => void;
@@ -675,19 +677,20 @@ export class ScreensaverItemDialog extends React.Component<ScreensaverItemDialog
                 value = '';
         }
         const size = big ? 44 : 28;
+        const inline = !!this.props.inline;
         return (
             <Box
                 sx={{
-                    width: big ? 150 : 120,
-                    minHeight: big ? 110 : 90,
+                    width: inline ? 200 : big ? 150 : 120,
+                    minHeight: inline ? 60 : big ? 110 : 90,
                     backgroundColor: '#000',
                     borderRadius: 1,
                     border: '4px solid #222',
                     display: 'flex',
-                    flexDirection: 'column',
+                    flexDirection: inline ? 'row' : 'column',
                     alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: 0.5,
+                    justifyContent: inline ? 'flex-start' : 'center',
+                    gap: inline ? 1.5 : 0.5,
                     color: '#ddd',
                     fontSize: 12,
                     p: 1,

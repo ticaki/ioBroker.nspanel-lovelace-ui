@@ -1011,12 +1011,24 @@ export class ScreensaverEditor extends React.Component<ScreensaverEditorProps, S
     }
 
     /**
+     * icon and text side by side (the panel draws the left rows, the alternate line and a favorit in a
+     * wide line that way), otherwise the icon above the text
+     *
+     * @param area area of the place
+     * @param box area box of the layout
+     */
+    private inlineSlot(area: ScreensaverArea, box: AreaBox): boolean {
+        return area === 'left' || area === 'alternate' || (area === 'favorit' && box.direction === 'row');
+    }
+
+    /**
      * one place of an area: an item (drag, click = edit, hover = remove) or a free place (click = add)
      *
      * @param ref place
      * @param big favorit place: larger icon
+     * @param inline icon and text side by side
      */
-    private renderSlot(ref: SlotRef, big: boolean): React.JSX.Element {
+    private renderSlot(ref: SlotRef, big: boolean, inline: boolean): React.JSX.Element {
         const { alive } = this.props;
         const { dragOverKey, dragSource } = this.state;
         const key = this.slotKey(ref);
@@ -1027,12 +1039,13 @@ export class ScreensaverEditor extends React.Component<ScreensaverEditorProps, S
             minWidth: 0,
             minHeight: 0,
             display: 'flex',
-            flexDirection: 'column' as const,
+            flexDirection: inline ? ('row' as const) : ('column' as const),
             alignItems: 'center',
-            justifyContent: 'center',
-            gap: 0.25,
+            justifyContent: inline ? 'flex-start' : 'center',
+            gap: inline ? 1 : 0.25,
+            px: inline ? 1 : 0,
             borderRadius: 1,
-            fontSize: 11,
+            fontSize: inline ? 13 : 11,
             color: '#ddd',
             position: 'relative' as const,
             boxSizing: 'border-box' as const,
@@ -1152,7 +1165,7 @@ export class ScreensaverEditor extends React.Component<ScreensaverEditorProps, S
         }
         const slots: React.JSX.Element[] = [];
         for (let i = 0; i < count; i++) {
-            slots.push(this.renderSlot({ area, index: i }, area === 'favorit'));
+            slots.push(this.renderSlot({ area, index: i }, area === 'favorit', this.inlineSlot(area, box)));
         }
         return (
             <Tooltip
@@ -1486,6 +1499,19 @@ export class ScreensaverEditor extends React.Component<ScreensaverEditorProps, S
                     area={editing?.area ?? 'bottom'}
                     index={editing?.index ?? 0}
                     count={editing ? this.limit(editing.area) : 0}
+                    inline={
+                        !!editing &&
+                        this.inlineSlot(
+                            editing.area,
+                            this.layout().areas[editing.area] ?? {
+                                direction: 'column',
+                                top: '0',
+                                left: '0',
+                                width: '0',
+                                height: '0',
+                            },
+                        )
+                    }
                     item={editing ? this.item(editing) : undefined}
                     onClose={() => this.setState({ editing: null })}
                     onSave={this.handleItemSave}
