@@ -607,6 +607,7 @@
     "screensaver_mode_easyview": "Easyview",
     "screensaver_mode_standard": "Standard",
     "screensaver_model_is": "Plätze für Modell %s",
+    "screensaver_model_is_configured": "Plätze für Modell %s (der konfigurierten Panels)",
     "screensaver_month": "Monat",
     "screensaver_mricon": "Statussymbol %s",
     "screensaver_mricon_decimals": "Nachkommastellen",

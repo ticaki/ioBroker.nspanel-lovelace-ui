@@ -361,10 +361,22 @@ export class ScreensaverEditor extends React.Component<ScreensaverEditorProps, S
         return m === 'us-p' || m === 'us-l' ? m : 'eu';
     }
 
-    /** model the places are drawn for: the first assigned panel */
+    /**
+     * model the places are drawn for: the first assigned panel; without an assignment the model all
+     * configured panels share (eu when they differ or no panel is configured)
+     */
     private model(): ScreensaverPanelModel {
         const first = (this.props.entry.panels ?? []).map(t => this.panelOf(t)).find(p => !!p);
-        return this.modelOf(first);
+        if (first) {
+            return this.modelOf(first);
+        }
+        const models = new Set(this.panels().map(p => this.modelOf(p)));
+        return models.size === 1 ? [...models][0] : 'eu';
+    }
+
+    /** whether the model comes from an assigned panel (otherwise from the configured panels) */
+    private modelFromAssignment(): boolean {
+        return (this.props.entry.panels ?? []).some(t => !!this.panelOf(t));
     }
 
     /** models of the assigned panels when they differ */
@@ -1406,7 +1418,9 @@ export class ScreensaverEditor extends React.Component<ScreensaverEditorProps, S
                     {' · '}
                     {this.getText('screensaver_card_is').replace('%s', screensaverCardOfMode(entry.mode))}
                     {' · '}
-                    {this.getText('screensaver_model_is').replace('%s', this.model())}
+                    {this.getText(
+                        this.modelFromAssignment() ? 'screensaver_model_is' : 'screensaver_model_is_configured',
+                    ).replace('%s', this.model())}
                 </Typography>
                 {selected.length === 0 && (
                     <Alert
