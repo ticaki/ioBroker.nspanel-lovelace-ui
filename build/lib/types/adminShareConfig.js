@@ -44,6 +44,7 @@ __export(adminShareConfig_exports, {
   reversePanelStatusStates: () => reversePanelStatusStates,
   screensaverAreas: () => screensaverAreas,
   screensaverCardOfMode: () => screensaverCardOfMode,
+  screensaverItemFields: () => screensaverItemFields,
   screensaverMaxEntries: () => screensaverMaxEntries,
   screensaverModes: () => screensaverModes,
   screensaverSlotLimits: () => screensaverSlotLimits,
@@ -124,6 +125,14 @@ function screensaverCardOfMode(mode) {
     default:
       return "screensaver";
   }
+}
+function screensaverItemFields(area) {
+  return {
+    headline: area === "bottom",
+    value: area !== "indicator",
+    text: area !== "indicator",
+    action: area === "indicator"
+  };
 }
 function emptyScreensaverEntry(name, mode = "standard") {
   return {
@@ -992,6 +1001,7 @@ const CHANNEL_ROLES_LIST = Object.keys(requiredScriptDataPoints);
   reversePanelStatusStates,
   screensaverAreas,
   screensaverCardOfMode,
+  screensaverItemFields,
   screensaverMaxEntries,
   screensaverModes,
   screensaverSlotLimits,
