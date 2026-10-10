@@ -2643,11 +2643,18 @@ export class ConfigManager extends BaseClass {
                                 dpInit: entry2.useKey ? expectedAltId : `${dpInit}.`,
                                 role: entry2.role,
                                 enums: '',
-                                regexp: entry.useKey ? new RegExp(`\\.${alternate}$`) : undefined,
+                                regexp: entry2.useKey ? new RegExp(`\\.${alternate}$`) : undefined,
                                 triggered: entry.trigger,
                                 writeable: entry2.writeable,
                                 commonType: entry.type,
                             });
+                        }
+                        if (result[role][dp2]) {
+                            messages.push(
+                                `Optional: ${String(dp)}: ${dpInit}, channel role: ${role} - not found, using ${String(alternate)} instead` +
+                                    ` (searching for type: ${JSON.stringify(entry.type)}, role: ${JSON.stringify(entry.role)})`,
+                            );
+                            this.log.info(messages[messages.length - 1]);
                         }
                     }
 

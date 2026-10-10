@@ -102,6 +102,7 @@ export type StateRole =
     | 'media.title'
     | 'sensor.door'
     | 'sensor.light'
+    | 'sensor.lock'
     | 'sensor.motion'
     | 'sensor.open'
     | 'sensor.window'
