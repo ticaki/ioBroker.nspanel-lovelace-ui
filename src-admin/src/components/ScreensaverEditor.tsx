@@ -38,19 +38,17 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import SettingsIcon from '@mui/icons-material/Settings';
 import ClearIcon from '@mui/icons-material/Clear';
 import { EntitySelector } from './EntitySelector';
-import ChannelConfigDialog from './ChannelConfigDialog';
+import { ScreensaverItemDialog } from './ScreensaverItemDialog';
 import IconSelect from '../IconSelect';
 import icons from '../icons.json';
-import { getPageItemDefaultsByRole, getPageNaviItemDefaultsByRole } from '../../../src/lib/const/page-item-defaults';
 import {
-    type AdminPageItemConfig,
+    type ScreensaverItemConfig,
     type AdminPanelConfig,
     type ScreensaverArea,
     type ScreensaverEntry,
     type ScreensaverMode,
     type ScreensaverMrIconConfig,
     type ScreensaverPanelModel,
-    normalizeChannelId,
     screensaverAreas,
     screensaverCardOfMode,
     screensaverMaxEntries,
@@ -275,36 +273,24 @@ function isState(obj: ioBroker.Object): boolean {
 }
 
 /**
- * icon of an item on the mock: the configured one, else the default of its role (PageThermo2Editor)
+ * icon of an item on the mock: the "on" icon, else the first icon of the icon list
  *
  * @param item stored item
  */
-function itemIcon(item: AdminPageItemConfig): string {
-    if (item.trueIcon) {
-        return item.trueIcon;
-    }
-    const role = item.role ?? '';
-    if (item.isNavigation) {
-        const d = getPageNaviItemDefaultsByRole(role);
-        if (d) {
-            return d.iconOn;
-        }
-    }
-    const d = getPageItemDefaultsByRole(role);
-    return d ? d.iconOn : '';
+function itemIcon(item: ScreensaverItemConfig): string {
+    return item.iconOn || item.iconSelect?.[0]?.icon || '';
 }
 
 /**
- * short label of an item for a place of the mock
+ * short label of an item for a place of the mock: headline, else the last part of the state id
  *
  * @param item stored item
  */
-function itemLabel(item: AdminPageItemConfig): string {
-    if (item.name) {
-        return item.name;
+function itemLabel(item: ScreensaverItemConfig): string {
+    if (item.headline) {
+        return item.headline;
     }
-    const id = normalizeChannelId(item.channelId).valueStateId;
-    return id ? id.split('.').pop() || id : '?';
+    return item.state ? item.state.split('.').pop() || item.state : '?';
 }
 
 const EMPTY_COMMON: ioBroker.InstanceCommon = {} as ioBroker.InstanceCommon;
@@ -322,8 +308,6 @@ interface ScreensaverEditorState {
 }
 
 export class ScreensaverEditor extends React.Component<ScreensaverEditorProps, ScreensaverEditorState> {
-    private dialogRef = React.createRef<ChannelConfigDialog>();
-
     constructor(props: ScreensaverEditorProps) {
         super(props);
         this.state = {
@@ -403,7 +387,7 @@ export class ScreensaverEditor extends React.Component<ScreensaverEditorProps, S
         return screensaverMaxEntries(this.props.entry.mode, area, this.model());
     }
 
-    private item(ref: SlotRef): AdminPageItemConfig | undefined {
+    private item(ref: SlotRef): ScreensaverItemConfig | undefined {
         const { entry } = this.props;
         if (ref.area === 'favorit' || ref.area === 'alternate') {
             return ref.index === 0 ? (entry[ref.area] ?? undefined) : undefined;
@@ -420,7 +404,7 @@ export class ScreensaverEditor extends React.Component<ScreensaverEditorProps, S
      */
     private withItem(
         ref: SlotRef,
-        item: AdminPageItemConfig | undefined,
+        item: ScreensaverItemConfig | undefined,
         base: ScreensaverEntry = this.props.entry,
     ): ScreensaverEntry {
         if (ref.area === 'favorit' || ref.area === 'alternate') {
@@ -483,12 +467,10 @@ export class ScreensaverEditor extends React.Component<ScreensaverEditorProps, S
     };
 
     private openItem(ref: SlotRef): void {
-        const item = this.item(ref);
         this.setState({ editing: ref });
-        this.dialogRef.current?.openWith(item, true);
     }
 
-    private handleItemSave = (config: AdminPageItemConfig): void => {
+    private handleItemSave = (config: ScreensaverItemConfig): void => {
         const { editing } = this.state;
         if (!editing) {
             return;
@@ -498,6 +480,9 @@ export class ScreensaverEditor extends React.Component<ScreensaverEditorProps, S
     };
 
     private deleteItem(ref: SlotRef): void {
+        if (this.state.editing && this.slotKey(this.state.editing) === this.slotKey(ref)) {
+            this.setState({ editing: null });
+        }
         this.props.onEntryChange(this.withItem(ref, undefined));
     }
 
@@ -1093,7 +1078,7 @@ export class ScreensaverEditor extends React.Component<ScreensaverEditorProps, S
                     sx={{
                         ...base,
                         border: '2px solid',
-                        borderColor: item.trueColor || '#8ab4f8',
+                        borderColor: item.colorOn || '#8ab4f8',
                         outline: over ? '2px solid #4da3ff' : 'none',
                         opacity: dragging ? 0.4 : 1,
                         cursor: alive ? (dragging ? 'grabbing' : 'grab') : 'default',
@@ -1449,7 +1434,8 @@ export class ScreensaverEditor extends React.Component<ScreensaverEditorProps, S
     }
 
     render(): React.JSX.Element {
-        const { entry, oContext, theme, alive } = this.props;
+        const { oContext, theme, alive } = this.props;
+        const { editing } = this.state;
         const hasPanel = this.hasPanel();
         const overflow = hasPanel ? this.overflow() : [];
         return (
@@ -1499,19 +1485,21 @@ export class ScreensaverEditor extends React.Component<ScreensaverEditorProps, S
 
                 {this.renderDialog()}
 
-                {/* ChannelConfigDialog - without trigger button, opened through the ref */}
-                <ChannelConfigDialog
-                    ref={this.dialogRef}
-                    socket={oContext?.socket}
-                    theme={theme}
-                    themeType={oContext?.themeType}
+                <ScreensaverItemDialog
+                    open={!!editing}
+                    area={editing?.area ?? 'bottom'}
+                    index={editing?.index ?? 0}
+                    count={editing ? this.limit(editing.area) : 0}
+                    item={editing ? this.item(editing) : undefined}
+                    onClose={() => this.setState({ editing: null })}
+                    onSave={this.handleItemSave}
+                    onDelete={() => editing && this.deleteItem(editing)}
+                    getText={key => this.getText(key)}
                     oContext={oContext}
+                    theme={theme}
+                    themeName={this.props.themeName}
                     expertMode={this.props.expertMode ?? false}
                     pagesList={this.props.pagesList ?? []}
-                    currentPageName={entry.name}
-                    currentPageCard={screensaverCardOfMode(entry.mode)}
-                    hideTriggerButton
-                    onSave={this.handleItemSave}
                 />
             </Box>
         );

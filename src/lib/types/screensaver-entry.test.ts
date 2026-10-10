@@ -3,6 +3,7 @@ import {
     emptyScreensaverEntry,
     screensaverAreas,
     screensaverCardOfMode,
+    screensaverItemFields,
     screensaverMaxEntries,
     screensaverModes,
     screensaverSlotLimits,
@@ -57,6 +58,23 @@ describe('lib/types - screensaver entry (admin tab)', () => {
         expect(entry.favorit).to.equal(undefined);
         expect(entry.rotationTime).to.equal(0);
         expect(emptyScreensaverEntry('x', 'advanced').mode).to.equal('advanced');
+    });
+
+    it('shows the fields of a place the panel uses there', () => {
+        expect(screensaverItemFields('bottom')).to.deep.equal({
+            headline: true,
+            value: true,
+            text: true,
+            action: false,
+        });
+        expect(screensaverItemFields('left').headline).to.equal(false);
+        expect(screensaverItemFields('favorit').value).to.equal(true);
+        expect(screensaverItemFields('indicator')).to.deep.equal({
+            headline: false,
+            value: false,
+            text: false,
+            action: true,
+        });
     });
 
     it('returns a fresh object on every call', () => {

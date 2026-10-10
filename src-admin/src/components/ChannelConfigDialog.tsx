@@ -41,7 +41,6 @@ import type {
     AdminPageItemConfig,
     MenuEntry,
     Thermo2Entry,
-    ScreensaverCard,
     ChannelValueConfig,
     ChannelColorConfig,
     ChannelModeListConfig,
@@ -80,7 +79,7 @@ type ChannelConfigDialogProps = {
     /** Name der aktuellen Seite – wird aus der Zielseiten-Auswahl gefiltert */
     currentPageName?: string;
     /** Card-Typ der aktuellen Seite – wird für CheckPageItemConfig benötigt */
-    currentPageCard?: MenuEntry['card'] | Thermo2Entry['card'] | ScreensaverCard;
+    currentPageCard?: MenuEntry['card'] | Thermo2Entry['card'];
     /** cardThermo2: Bezeichnungen der Heizkreise (Index = filter); gesetzt → Heizkreis-Auswahl sichtbar */
     heatCircuits?: string[];
     onSave?: (config: AdminPageItemConfig) => void;

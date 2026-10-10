@@ -343,6 +343,67 @@ export type ScreensaverMrIconConfig = {
     iconSelect?: { value: string; icon: string }[];
 };
 
+/** what an indicator does when it is pressed (ScreensaverEntityButton / ...Switch / ...NaviToPage of the script) */
+export type ScreensaverItemAction = {
+    kind: 'button' | 'switch' | 'navigate';
+    /** state written on press (button: true, switch: toggled) */
+    state?: string;
+    /** page opened on press */
+    page?: string;
+};
+
+/**
+ * an item on a place of the screensaver - one state, mapped 1:1 to a ScreenSaverElement of the script
+ * (config-manager getEntityData); which fields the panel shows depends on the area ({@link screensaverItemFields})
+ */
+export type ScreensaverItemConfig = {
+    /** the state (ScreensaverEntity) */
+    state: string;
+    /** text above the icon, bottom area only (ScreensaverEntityText); empty = name of the state */
+    headline?: string;
+    iconOn?: string;
+    iconOff?: string;
+    /** icon per value range of a number state (ScreensaverEntityIconSelect): icon up to `value` */
+    iconSelect?: { value: number; icon: string }[];
+    /** fixed colors as #rrggbb (ScreensaverEntityOnColor / OffColor) */
+    colorOn?: string;
+    colorOff?: string;
+    /** color scale instead of fixed colors (ScreensaverEntityIconColor) */
+    colorScale?: IconColorElement;
+    /** empty = unit of the state */
+    unit?: string;
+    factor?: number;
+    decimals?: number;
+    /** format of a date/time value (ScreensaverEntityDateFormat), e.g. "DD.MM. HH:mm" */
+    dateFormat?: string;
+    /** text shown instead of the value while the state is true / false */
+    textOn?: string;
+    textOff?: string;
+    /** indicator area only */
+    action?: ScreensaverItemAction;
+    /** state that hides the item while false (ScreensaverEntityEnabled) */
+    enabled?: string;
+    /** expression over `val` that hides the item while false (ScreensaverEntityVisibleCondition) */
+    visibleCondition?: string;
+};
+
+export type ScreensaverItemField = 'headline' | 'value' | 'text' | 'action';
+
+/**
+ * Fields the panel uses on a place: bottom shows a headline, icon and value; left, favorit and
+ * alternate icon and value; an indicator the icon only - and it can act as a button.
+ *
+ * @param area area of the screensaver
+ */
+export function screensaverItemFields(area: ScreensaverArea): Record<ScreensaverItemField, boolean> {
+    return {
+        headline: area === 'bottom',
+        value: area !== 'indicator',
+        text: area !== 'indicator',
+        action: area === 'indicator',
+    };
+}
+
 export type ScreensaverEntry = {
     /** name shown in the list, unique within the table */
     name: string;
@@ -350,12 +411,12 @@ export type ScreensaverEntry = {
     mode: ScreensaverMode;
     /** topics of the panels using this screensaver (multi select, no "all panels") */
     panels: string[];
-    favorit?: AdminPageItemConfig;
-    alternate?: AdminPageItemConfig;
+    favorit?: ScreensaverItemConfig;
+    alternate?: ScreensaverItemConfig;
     /** items of the areas in panel order, gaps are kept as undefined */
-    left: (AdminPageItemConfig | undefined)[];
-    bottom: (AdminPageItemConfig | undefined)[];
-    indicator: (AdminPageItemConfig | undefined)[];
+    left: (ScreensaverItemConfig | undefined)[];
+    bottom: (ScreensaverItemConfig | undefined)[];
+    indicator: (ScreensaverItemConfig | undefined)[];
     mrIcon1?: ScreensaverMrIconConfig;
     mrIcon2?: ScreensaverMrIconConfig;
     /** 12h or 24h clock, undefined = adapter default (24h) */
