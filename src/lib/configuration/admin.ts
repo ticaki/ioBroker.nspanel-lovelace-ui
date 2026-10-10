@@ -421,7 +421,11 @@ export class AdminConfiguration extends BaseClass {
                     break;
                 }
                 default: {
-                    this.log.warn(`Unsupported card type '${entry.card}' for page '${entry.uniqueName}', skipping!`);
+                    // every card of the union has a case above - this only guards data of an older or newer admin
+                    const unknown = entry as { card?: string; uniqueName?: string };
+                    this.log.warn(
+                        `Unsupported card type '${unknown.card}' for page '${unknown.uniqueName}', skipping!`,
+                    );
                     continue;
                 }
             }

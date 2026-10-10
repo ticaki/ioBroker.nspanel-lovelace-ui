@@ -231,27 +231,166 @@ export type UnlockEntry = {
     uniqueName: string;
 } & PageConfigBaseFields;
 
-export type PageItemButtonEntry = {
-    type: 'text' | 'button';
-    headline?: string;
-    modeScr?: 'left' | 'bottom' | 'indicator' | 'favorit' | 'alternate';
-    data: any; // TODO: Should be NSPanel.PageItemButton but causes type resolution issues in admin
+// ---------------------------------------------------------------------------------------------
+// Screensaver - own admin tab, stored in `native.screensaverConfig` (not part of pageConfig: a
+// screensaver is no navigable page, every panel shows exactly one)
+// ---------------------------------------------------------------------------------------------
+
+/**
+ * the four screensaver versions of the panel; `standard` and `alternate` share the card `screensaver`.
+ * Same values as ScreensaverModeType in types.ts - declared here because that file must not become part
+ * of the admin bundle (a test checks that both stay equal).
+ */
+export type ScreensaverMode = 'standard' | 'alternate' | 'advanced' | 'easyview';
+export const screensaverModes: readonly ScreensaverMode[] = ['standard', 'alternate', 'advanced', 'easyview'];
+
+export type ScreensaverCard = Extract<AdminCardTypes, 'screensaver' | 'screensaver2' | 'screensaver3'>;
+
+/** areas of the screensaver that take page items (mricon, time, date and notify have their own dialogs) */
+export type ScreensaverArea = 'favorit' | 'alternate' | 'left' | 'bottom' | 'indicator';
+export const screensaverAreas: readonly ScreensaverArea[] = ['favorit', 'alternate', 'left', 'bottom', 'indicator'];
+
+/** panel models that change the number of places (ScreenSaverConst in definition.ts); same values as NSpanelModel in types.ts */
+export type ScreensaverPanelModel = 'eu' | 'us-p' | 'us-l';
+
+/** maximum number of items per area, mode and panel model - copy of ScreenSaverConst (definition.ts), kept equal by a test */
+export const screensaverSlotLimits: Record<
+    ScreensaverMode,
+    Record<ScreensaverArea | 'mricon', { eu: number; 'us-p'?: number; 'us-l'?: number }>
+> = {
+    standard: {
+        favorit: { eu: 1 },
+        alternate: { eu: 0 },
+        left: { eu: 0 },
+        bottom: { eu: 4 },
+        indicator: { eu: 0 },
+        mricon: { eu: 2 },
+    },
+    alternate: {
+        favorit: { eu: 1 },
+        alternate: { eu: 1 },
+        left: { eu: 0 },
+        bottom: { eu: 3 },
+        indicator: { eu: 0 },
+        mricon: { eu: 2 },
+    },
+    advanced: {
+        favorit: { eu: 1 },
+        alternate: { eu: 0 },
+        left: { eu: 3 },
+        bottom: { eu: 6 },
+        indicator: { eu: 5 },
+        mricon: { eu: 2 },
+    },
+    easyview: {
+        favorit: { eu: 1 },
+        alternate: { eu: 0 },
+        left: { eu: 0 },
+        bottom: { eu: 3, 'us-p': 4, 'us-l': 3 },
+        indicator: { eu: 0 },
+        mricon: { eu: 2 },
+    },
 };
 
-// Screensaver types
+/**
+ * Number of places an area offers on a panel.
+ *
+ * @param mode screensaver version
+ * @param area area of the screensaver
+ * @param model panel model, falls back to the eu value
+ * @returns maximum number of items
+ */
+export function screensaverMaxEntries(
+    mode: ScreensaverMode,
+    area: ScreensaverArea | 'mricon',
+    model: ScreensaverPanelModel = 'eu',
+): number {
+    const limit = screensaverSlotLimits[mode][area];
+    return limit[model] ?? limit.eu;
+}
+
+/**
+ * Card the adapter uses for a screensaver version (screensaver.ts).
+ *
+ * @param mode screensaver version
+ * @returns card type
+ */
+export function screensaverCardOfMode(mode: ScreensaverMode): ScreensaverCard {
+    switch (mode) {
+        case 'advanced':
+            return 'screensaver2';
+        case 'easyview':
+            return 'screensaver3';
+        default:
+            return 'screensaver';
+    }
+}
+
+/** the two small status icons at the top right of the screensaver (mrIcon1ScreensaverEntity / mrIcon2ScreensaverEntity of the script) */
+export type ScreensaverMrIconConfig = {
+    /** state the icon follows, empty = icon not used */
+    entity?: string;
+    iconOn?: string;
+    iconOff?: string;
+    /** colors as #rrggbb */
+    onColor?: string;
+    offColor?: string;
+    /** state whose value is printed next to the icon */
+    value?: string;
+    valueDecimals?: number;
+    valueUnit?: string;
+    /** icon per value, replaces iconOn/iconOff */
+    iconSelect?: { value: string; icon: string }[];
+};
+
 export type ScreensaverEntry = {
-    card: Extract<AdminCardTypes, 'screensaver' | 'screensaver2' | 'screensaver3'>; // Use the card type from AdminCardTypes
-    uniqueName: string;
+    /** name shown in the list, unique within the table */
+    name: string;
+    /** screensaver version, the card follows from it ({@link screensaverCardOfMode}) */
+    mode: ScreensaverMode;
+    /** topics of the panels using this screensaver (multi select, no "all panels") */
+    panels: string[];
+    favorit?: AdminPageItemConfig;
+    alternate?: AdminPageItemConfig;
+    /** items of the areas in panel order, gaps are kept as undefined */
+    left: (AdminPageItemConfig | undefined)[];
+    bottom: (AdminPageItemConfig | undefined)[];
+    indicator: (AdminPageItemConfig | undefined)[];
+    mrIcon1?: ScreensaverMrIconConfig;
+    mrIcon2?: ScreensaverMrIconConfig;
+    /** 12h or 24h clock, undefined = adapter default (24h) */
     clockFormat?: '12h' | '24h';
-    dateFormat?: string; // JavaScript date format string
-    timeFormat?: string; // JavaScript time format string
-    customDateFormat?: string; // Custom date format when dateFormat is 'custom'
-    pageItems?: PageItemButtonEntry[];
-    navigation?: NavigationAssignmentList;
-    navigationAssignment?: NavigationAssignmentList;
+    /** date format overrides, undefined = global settings of the instance (config-manager getScreensaverConfig) */
+    weekdayFormat?: 'short' | 'long';
+    monthFormat?: 'long' | 'short' | '2-digit';
+    yearFormat?: 'numeric' | '2-digit';
+    /** seconds between the pages of an area with more items than places, 0 = off */
+    rotationTime?: number;
+    screensaverSwipe?: boolean;
+    screensaverIndicatorButtons?: boolean;
 };
 
-export type ScreensaverEntries = ScreensaverEntry[];
+export type ScreensaverConfig = ScreensaverEntry[];
+
+/**
+ * Creates a fresh screensaver entry without items.
+ *
+ * @param name unique name
+ * @param mode screensaver version, default 'standard'
+ */
+export function emptyScreensaverEntry(name: string, mode: ScreensaverMode = 'standard'): ScreensaverEntry {
+    return {
+        name,
+        mode,
+        panels: [],
+        left: [],
+        bottom: [],
+        indicator: [],
+        rotationTime: 0,
+        screensaverSwipe: false,
+        screensaverIndicatorButtons: false,
+    };
+}
 
 /**
  * Configuration for the "value display" dialog – mirrors the inputs of
@@ -713,29 +852,13 @@ export type NavigationAssignment = {
 };
 
 export type NavigationAssignmentList = NavigationAssignment[];
-export type PageConfigEntry =
-    | QREntry
-    | UnlockEntry
-    | ScreensaverEntry
-    | TrashEntry
-    | ChartEntry
-    | MenuEntry
-    | PowerEntry
-    | Thermo2Entry;
-export type PageConfig =
-    | QREntry
-    | UnlockEntry
-    | ScreensaverEntry
-    | TrashEntry
-    | ChartEntry
-    | MenuEntry
-    | PowerEntry
-    | Thermo2Entry;
+export type PageConfigEntry = QREntry | UnlockEntry | TrashEntry | ChartEntry | MenuEntry | PowerEntry | Thermo2Entry;
+export type PageConfig = QREntry | UnlockEntry | TrashEntry | ChartEntry | MenuEntry | PowerEntry | Thermo2Entry;
 
 /**
  * Whether an admin page entry is flagged as the start page of its assigned panels.
  *
- * Screensaver entries cannot be a start page and therefore do not carry the flag. The stored
+ * Screensavers live in their own table (`screensaverConfig`) and can never be a start page. The stored
  * `uniqueName` is never changed by the flag - the adapter publishes the page under
  * {@link mainPageName} and the admin only overlays the displayed name.
  *

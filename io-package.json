@@ -301,7 +301,8 @@
         "colMediaOnOffColor": "#ffffff"
       }
     ],
-    "adminOverridesScriptPages": false
+    "adminOverridesScriptPages": false,
+    "screensaverConfig": []
   },
   "objects": [],
   "instanceObjects": [
