@@ -583,6 +583,7 @@
     "screensaver_mode_easyview": "Easyview",
     "screensaver_mode_standard": "Standard",
     "screensaver_model_is": "emplacements pour le modèle %s",
+    "screensaver_model_is_configured": "emplacements pour le modèle %s (des panneaux configurés)",
     "screensaver_month": "Mois",
     "screensaver_mricon": "Icône d’état %s",
     "screensaver_mricon_decimals": "Décimales",

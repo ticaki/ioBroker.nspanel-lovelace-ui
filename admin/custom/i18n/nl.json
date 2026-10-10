@@ -583,6 +583,7 @@
     "screensaver_mode_easyview": "Easyview",
     "screensaver_mode_standard": "Standaard",
     "screensaver_model_is": "plaatsen voor model %s",
+    "screensaver_model_is_configured": "plaatsen voor model %s (van de geconfigureerde panelen)",
     "screensaver_month": "Maand",
     "screensaver_mricon": "Statuspictogram %s",
     "screensaver_mricon_decimals": "Decimalen",
