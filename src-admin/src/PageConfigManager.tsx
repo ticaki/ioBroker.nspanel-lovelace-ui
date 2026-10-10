@@ -12,6 +12,7 @@ import type {
 import {
     ADAPTER_NAME,
     emptyChartEntry,
+    emptyThermo2Entry,
     emptyPowerSlot,
     isMainPageEntry,
     mainPageName,
@@ -26,6 +27,7 @@ import { PageQREditor } from './components/PageQREditor';
 import { PageTrashEditor } from './components/PageTrashEditor';
 import { takeRequestedPageConfig } from './pageConfigLink';
 import { PageChartEditor } from './components/PageChartEditor';
+import { PageThermo2Editor } from './components/PageThermo2Editor';
 
 interface PageConfigManagerState extends ConfigGenericState {
     entries: PageConfigEntry[];
@@ -358,6 +360,8 @@ class PageConfigManager extends ConfigGeneric<ConfigGenericProps & { theme?: any
             } satisfies PowerEntry;
         } else if (cardType === 'cardChart') {
             newEntry = emptyChartEntry(name);
+        } else if (cardType === 'cardThermo2') {
+            newEntry = emptyThermo2Entry(name);
         } else if (
             cardType === 'pageMenu' ||
             cardType === 'cardGrid' ||
@@ -567,6 +571,22 @@ class PageConfigManager extends ConfigGeneric<ConfigGenericProps & { theme?: any
                     getText={key => this.getText(key)}
                     oContext={this.props.oContext}
                     theme={this.props.theme}
+                />
+            );
+        }
+
+        if (currentEntry.card === 'cardThermo2') {
+            return (
+                <PageThermo2Editor
+                    {...this.props}
+                    entry={currentEntry}
+                    onEntryChange={this.handleEntryChange}
+                    onUniqueNameChange={this.handleUniqueNameChange}
+                    getText={key => this.getText(key)}
+                    oContext={this.props.oContext}
+                    theme={this.props.theme}
+                    expertMode={this.props.expertMode ?? false}
+                    pagesList={pagesList}
                 />
             );
         }

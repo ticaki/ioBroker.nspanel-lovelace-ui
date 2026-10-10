@@ -2175,6 +2175,7 @@ class NspanelLovelaceUi extends utils.Adapter {
           item.useValue = preItem.useValue;
           item.inSel_Alias = preItem.inSel_Alias || void 0;
           item.modeList = ((_e = preItem.modeList) == null ? void 0 : _e.length) ? preItem.modeList : void 0;
+          item.filter = typeof preItem.filter === "number" ? preItem.filter : void 0;
         }
       }
       const page = {
