@@ -81,8 +81,12 @@ type SlotRef = { area: ScreensaverArea; index: number };
 
 /** a box of the mock in percent of the panel */
 type Pct = { top: string; left: string; width: string; height: string };
-type AreaBox = Pct & { direction: 'row' | 'column' };
+/** an item area: places in a row, a column or a grid with `columns` per row */
+type AreaBox = Pct & { direction: 'row' | 'column'; columns?: number };
 type Layout = {
+    /** width : height of the panel */
+    aspect: string;
+    maxWidth: number;
     time: Pct & { fontSize: number };
     date: Pct;
     separator?: { top: string; left: string; width: string };
@@ -91,62 +95,155 @@ type Layout = {
     areas: Partial<Record<ScreensaverArea, AreaBox>>;
 };
 
-/** geometry of the four versions as the panel draws them (doc/Pictures/screensaver/*.png) */
-const LAYOUTS: Record<ScreensaverMode, Layout> = {
+/** the two panel shapes: eu and us-l are landscape, us-p is portrait */
+type LayoutModel = 'eu' | 'us-p';
+
+/**
+ * geometry of the four versions as the panel draws them - landscape from doc/Pictures/screensaver/*.png,
+ * portrait (us-p) from photos of a US panel; the portrait `alternate` layout is derived from `standard`
+ */
+const LAYOUTS: Record<ScreensaverMode, Record<LayoutModel, Layout>> = {
     standard: {
-        mricon: [
-            { top: '3%', left: '2%', width: '11%', height: '15%' },
-            { top: '3%', left: '87%', width: '11%', height: '15%' },
-        ],
-        time: { top: '12%', left: '18%', width: '64%', height: '40%', fontSize: 58 },
-        date: { top: '54%', left: '8%', width: '84%', height: '12%' },
-        separator: { top: '68%', left: '10%', width: '80%' },
-        areas: {
-            favorit: { top: '70%', left: '2%', width: '28%', height: '28%', direction: 'column' },
-            bottom: { top: '70%', left: '31%', width: '67%', height: '28%', direction: 'row' },
+        eu: {
+            aspect: '3 / 2',
+            maxWidth: 720,
+            mricon: [
+                { top: '3%', left: '2%', width: '11%', height: '15%' },
+                { top: '3%', left: '87%', width: '11%', height: '15%' },
+            ],
+            time: { top: '12%', left: '18%', width: '64%', height: '40%', fontSize: 58 },
+            date: { top: '54%', left: '8%', width: '84%', height: '12%' },
+            separator: { top: '68%', left: '10%', width: '80%' },
+            areas: {
+                favorit: { top: '70%', left: '2%', width: '28%', height: '28%', direction: 'column' },
+                bottom: { top: '70%', left: '31%', width: '67%', height: '28%', direction: 'row' },
+            },
+        },
+        'us-p': {
+            aspect: '2 / 3',
+            maxWidth: 440,
+            mricon: [
+                { top: '48%', left: '1%', width: '10%', height: '7%' },
+                { top: '48%', left: '89%', width: '10%', height: '7%' },
+            ],
+            time: { top: '2%', left: '5%', width: '90%', height: '24%', fontSize: 64 },
+            date: { top: '40%', left: '10%', width: '80%', height: '7%' },
+            separator: { top: '51%', left: '17%', width: '66%' },
+            areas: {
+                favorit: { top: '53%', left: '15%', width: '70%', height: '24%', direction: 'column' },
+                bottom: { top: '79%', left: '2%', width: '96%', height: '19%', direction: 'row' },
+            },
         },
     },
     alternate: {
-        mricon: [
-            { top: '3%', left: '2%', width: '11%', height: '15%' },
-            { top: '3%', left: '87%', width: '11%', height: '15%' },
-        ],
-        time: { top: '12%', left: '18%', width: '64%', height: '40%', fontSize: 58 },
-        date: { top: '54%', left: '8%', width: '84%', height: '12%' },
-        separator: { top: '68%', left: '10%', width: '80%' },
-        areas: {
-            favorit: { top: '70%', left: '2%', width: '46%', height: '14%', direction: 'row' },
-            alternate: { top: '85%', left: '2%', width: '46%', height: '13%', direction: 'row' },
-            bottom: { top: '70%', left: '50%', width: '48%', height: '28%', direction: 'row' },
+        eu: {
+            aspect: '3 / 2',
+            maxWidth: 720,
+            mricon: [
+                { top: '3%', left: '2%', width: '11%', height: '15%' },
+                { top: '3%', left: '87%', width: '11%', height: '15%' },
+            ],
+            time: { top: '12%', left: '18%', width: '64%', height: '40%', fontSize: 58 },
+            date: { top: '54%', left: '8%', width: '84%', height: '12%' },
+            separator: { top: '68%', left: '10%', width: '80%' },
+            areas: {
+                favorit: { top: '70%', left: '2%', width: '46%', height: '14%', direction: 'row' },
+                alternate: { top: '85%', left: '2%', width: '46%', height: '13%', direction: 'row' },
+                bottom: { top: '70%', left: '50%', width: '48%', height: '28%', direction: 'row' },
+            },
+        },
+        'us-p': {
+            aspect: '2 / 3',
+            maxWidth: 440,
+            mricon: [
+                { top: '48%', left: '1%', width: '10%', height: '7%' },
+                { top: '48%', left: '89%', width: '10%', height: '7%' },
+            ],
+            time: { top: '2%', left: '5%', width: '90%', height: '24%', fontSize: 64 },
+            date: { top: '40%', left: '10%', width: '80%', height: '7%' },
+            separator: { top: '51%', left: '17%', width: '66%' },
+            areas: {
+                favorit: { top: '53%', left: '15%', width: '70%', height: '12%', direction: 'row' },
+                alternate: { top: '66%', left: '15%', width: '70%', height: '11%', direction: 'row' },
+                bottom: { top: '79%', left: '2%', width: '96%', height: '19%', direction: 'row' },
+            },
         },
     },
     advanced: {
-        mricon: [
-            { top: '85%', left: '22%', width: '22%', height: '13%' },
-            { top: '85%', left: '56%', width: '22%', height: '13%' },
-        ],
-        time: { top: '2%', left: '60%', width: '38%', height: '22%', fontSize: 40 },
-        date: { top: '24%', left: '52%', width: '46%', height: '10%' },
-        areas: {
-            favorit: { top: '2%', left: '2%', width: '34%', height: '22%', direction: 'row' },
-            left: { top: '25%', left: '2%', width: '34%', height: '30%', direction: 'column' },
-            indicator: { top: '36%', left: '37%', width: '61%', height: '19%', direction: 'row' },
-            bottom: { top: '56%', left: '2%', width: '96%', height: '28%', direction: 'row' },
+        eu: {
+            aspect: '3 / 2',
+            maxWidth: 720,
+            mricon: [
+                { top: '85%', left: '22%', width: '22%', height: '13%' },
+                { top: '85%', left: '56%', width: '22%', height: '13%' },
+            ],
+            time: { top: '2%', left: '60%', width: '38%', height: '22%', fontSize: 40 },
+            date: { top: '24%', left: '52%', width: '46%', height: '10%' },
+            areas: {
+                favorit: { top: '2%', left: '2%', width: '34%', height: '22%', direction: 'row' },
+                left: { top: '25%', left: '2%', width: '34%', height: '30%', direction: 'column' },
+                indicator: { top: '36%', left: '37%', width: '61%', height: '19%', direction: 'row' },
+                bottom: { top: '56%', left: '2%', width: '96%', height: '28%', direction: 'row' },
+            },
+        },
+        'us-p': {
+            aspect: '2 / 3',
+            maxWidth: 440,
+            mricon: [
+                { top: '91%', left: '17%', width: '14%', height: '6%' },
+                { top: '91%', left: '66%', width: '14%', height: '6%' },
+            ],
+            time: { top: '3%', left: '50%', width: '48%', height: '13%', fontSize: 54 },
+            date: { top: '17%', left: '55%', width: '43%', height: '5%' },
+            areas: {
+                favorit: { top: '3%', left: '4%', width: '40%', height: '22%', direction: 'column' },
+                left: { top: '32%', left: '4%', width: '70%', height: '20%', direction: 'column' },
+                indicator: { top: '32%', left: '80%', width: '17%', height: '58%', direction: 'column' },
+                bottom: { top: '54%', left: '4%', width: '74%', height: '35%', direction: 'row', columns: 3 },
+            },
         },
     },
     easyview: {
-        mricon: [
-            { top: '3%', left: '2%', width: '11%', height: '15%' },
-            { top: '3%', left: '87%', width: '11%', height: '15%' },
-        ],
-        time: { top: '4%', left: '10%', width: '80%', height: '42%', fontSize: 64 },
-        date: { top: '46%', left: '5%', width: '90%', height: '12%' },
-        separator: { top: '60%', left: '10%', width: '80%' },
-        areas: {
-            bottom: { top: '62%', left: '2%', width: '96%', height: '36%', direction: 'row' },
+        eu: {
+            aspect: '3 / 2',
+            maxWidth: 720,
+            mricon: [
+                { top: '3%', left: '2%', width: '11%', height: '15%' },
+                { top: '3%', left: '87%', width: '11%', height: '15%' },
+            ],
+            time: { top: '4%', left: '10%', width: '80%', height: '42%', fontSize: 64 },
+            date: { top: '46%', left: '5%', width: '90%', height: '12%' },
+            separator: { top: '60%', left: '10%', width: '80%' },
+            areas: {
+                bottom: { top: '62%', left: '2%', width: '96%', height: '36%', direction: 'row' },
+            },
+        },
+        'us-p': {
+            aspect: '2 / 3',
+            maxWidth: 440,
+            mricon: [
+                { top: '33%', left: '1%', width: '9%', height: '5%' },
+                { top: '33%', left: '90%', width: '9%', height: '5%' },
+            ],
+            time: { top: '2%', left: '5%', width: '90%', height: '22%', fontSize: 72 },
+            date: { top: '27%', left: '10%', width: '80%', height: '7%' },
+            separator: { top: '36%', left: '6%', width: '88%' },
+            areas: {
+                bottom: { top: '38%', left: '4%', width: '92%', height: '60%', direction: 'row', columns: 2 },
+            },
         },
     },
 };
+
+/**
+ * layout of a version for a panel model - the US landscape panel draws like the eu one
+ *
+ * @param mode screensaver version
+ * @param model panel model
+ */
+function layoutOf(mode: ScreensaverMode, model: ScreensaverPanelModel): Layout {
+    return LAYOUTS[mode][model === 'us-p' ? 'us-p' : 'eu'];
+}
 
 let iconMap: Map<string, string> | null = null;
 
@@ -292,6 +389,11 @@ export class ScreensaverEditor extends React.Component<ScreensaverEditorProps, S
 
     // ---------- items ----------
 
+    /** layout of the chosen version for the model of the first assigned panel */
+    private layout(): Layout {
+        return layoutOf(this.props.entry.mode, this.model());
+    }
+
     private limit(area: ScreensaverArea): number {
         return screensaverMaxEntries(this.props.entry.mode, area, this.model());
     }
@@ -341,7 +443,7 @@ export class ScreensaverEditor extends React.Component<ScreensaverEditorProps, S
         const { entry } = this.props;
         const out: { area: ScreensaverArea; count: number }[] = [];
         for (const area of screensaverAreas) {
-            const limit = LAYOUTS[entry.mode].areas[area] ? this.limit(area) : 0;
+            const limit = this.layout().areas[area] ? this.limit(area) : 0;
             let count = 0;
             if (area === 'favorit' || area === 'alternate') {
                 count = entry[area] && limit === 0 ? 1 : 0;
@@ -359,7 +461,7 @@ export class ScreensaverEditor extends React.Component<ScreensaverEditorProps, S
         const { entry } = this.props;
         let out: ScreensaverEntry = { ...entry };
         for (const area of screensaverAreas) {
-            const limit = LAYOUTS[entry.mode].areas[area] ? this.limit(area) : 0;
+            const limit = this.layout().areas[area] ? this.limit(area) : 0;
             if (area === 'favorit' || area === 'alternate') {
                 if (limit === 0) {
                     delete out[area];
@@ -1079,7 +1181,9 @@ export class ScreensaverEditor extends React.Component<ScreensaverEditorProps, S
                         left: box.left,
                         width: box.width,
                         height: box.height,
-                        display: 'flex',
+                        display: box.columns ? 'grid' : 'flex',
+                        gridTemplateColumns: box.columns ? `repeat(${box.columns}, 1fr)` : undefined,
+                        gridAutoRows: box.columns ? '1fr' : undefined,
                         flexDirection: box.direction,
                         gap: 0.5,
                         p: 0.5,
@@ -1121,14 +1225,14 @@ export class ScreensaverEditor extends React.Component<ScreensaverEditorProps, S
 
     private renderPanel(): React.JSX.Element {
         const { entry } = this.props;
-        const layout = LAYOUTS[entry.mode];
+        const layout = this.layout();
         return (
             <Box
                 sx={{
                     position: 'relative',
                     width: '100%',
-                    maxWidth: 720,
-                    aspectRatio: '3 / 2',
+                    maxWidth: layout.maxWidth,
+                    aspectRatio: layout.aspect,
                     backgroundColor: '#000',
                     borderRadius: 2,
                     border: '6px solid #222',
