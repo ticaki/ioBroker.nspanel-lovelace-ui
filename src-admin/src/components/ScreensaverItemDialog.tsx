@@ -38,6 +38,7 @@ import {
     type ScreensaverItemAction,
     type ScreensaverItemConfig,
     type IconColorElement,
+    screensaverDateFormats,
     screensaverItemFields,
 } from '../../../src/lib/types/adminShareConfig';
 
@@ -377,7 +378,7 @@ export class ScreensaverItemDialog extends React.Component<ScreensaverItemDialog
     }
 
     private renderText(
-        field: 'headline' | 'unit' | 'dateFormat' | 'textOn' | 'textOff' | 'visibleCondition',
+        field: 'headline' | 'unit' | 'textOn' | 'textOff' | 'visibleCondition',
         labelKey: string,
         placeholder = '',
         sx: Record<string, unknown> = {},
@@ -394,6 +395,81 @@ export class ScreensaverItemDialog extends React.Component<ScreensaverItemDialog
                 slotProps={{ inputLabel: { shrink: true } }}
                 sx={{ mb: 2, mr: 2, minWidth: 200, ...sx }}
             />
+        );
+    }
+
+    /**
+     * the item's date format as text for the preview
+     *
+     * @param options Intl options, undefined = adapter default
+     */
+    private dateSample(options: Intl.DateTimeFormatOptions | undefined): string {
+        try {
+            return new Date().toLocaleString(this.lang(), options ?? { dateStyle: 'short' });
+        } catch {
+            return '?';
+        }
+    }
+
+    /** date format: a list of Intl presets, in expert mode also free JSON */
+    private renderDateFormat(): React.JSX.Element {
+        const current = this.state.draft.dateFormat;
+        const json = current ? JSON.stringify(current) : '';
+        const preset = screensaverDateFormats.findIndex(p => JSON.stringify(p.options) === json);
+        const value = current ? (preset >= 0 ? String(preset) : 'custom') : '';
+        return (
+            <Box sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'flex-end', gap: 2 }}>
+                <FormControl
+                    variant="standard"
+                    sx={{ minWidth: 260, mb: 2 }}
+                >
+                    <InputLabel shrink>{this.getText('screensaver_item_dateFormat')}</InputLabel>
+                    <Select
+                        value={value}
+                        displayEmpty
+                        onChange={e => {
+                            const v = String(e.target.value);
+                            if (v === '' || v === 'custom') {
+                                this.set('dateFormat', v === '' ? undefined : (current ?? { dateStyle: 'short' }));
+                            } else {
+                                this.set('dateFormat', { ...screensaverDateFormats[Number(v)].options });
+                            }
+                        }}
+                    >
+                        <MenuItem value="">{this.getText('screensaver_item_dateFormatDefault')}</MenuItem>
+                        {screensaverDateFormats.map((p, i) => (
+                            <MenuItem
+                                key={p.key}
+                                value={String(i)}
+                            >
+                                {this.getText(p.key)} – {this.dateSample(p.options)}
+                            </MenuItem>
+                        ))}
+                        {this.props.expertMode && (
+                            <MenuItem value="custom">{this.getText('screensaver_item_dateFormatCustom')}</MenuItem>
+                        )}
+                    </Select>
+                </FormControl>
+                {this.props.expertMode && value === 'custom' && (
+                    <TextField
+                        variant="standard"
+                        type="text"
+                        autoComplete="off"
+                        label="Intl.DateTimeFormatOptions (JSON)"
+                        defaultValue={json}
+                        onBlur={e => {
+                            try {
+                                const parsed = JSON.parse(e.target.value) as Intl.DateTimeFormatOptions;
+                                this.set('dateFormat', parsed);
+                            } catch {
+                                // keep the previous value
+                            }
+                        }}
+                        slotProps={{ inputLabel: { shrink: true } }}
+                        sx={{ mb: 2, minWidth: 320 }}
+                    />
+                )}
+            </Box>
         );
     }
 
@@ -585,7 +661,7 @@ export class ScreensaverItemDialog extends React.Component<ScreensaverItemDialog
                 value = draft.textOn || this.getText('screensaver_item_preview_true');
                 break;
             case 'date':
-                value = draft.dateFormat || 'DD.MM. HH:mm';
+                value = this.dateSample(draft.dateFormat);
                 break;
             case 'number': {
                 const sample = 23.456 * (draft.factor ?? 1);
@@ -763,10 +839,7 @@ export class ScreensaverItemDialog extends React.Component<ScreensaverItemDialog
                                         sx={{ mb: 2, mr: 2, width: 140 }}
                                     />
                                 )}
-                                {kind === 'date' &&
-                                    this.renderText('dateFormat', 'screensaver_item_dateFormat', 'DD.MM. HH:mm', {
-                                        minWidth: 200,
-                                    })}
+                                {kind === 'date' && this.renderDateFormat()}
                             </Box>
                         </Box>
                     )}

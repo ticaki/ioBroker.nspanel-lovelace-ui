@@ -374,8 +374,8 @@ export type ScreensaverItemConfig = {
     unit?: string;
     factor?: number;
     decimals?: number;
-    /** format of a date/time value (ScreensaverEntityDateFormat), e.g. "DD.MM. HH:mm" */
-    dateFormat?: string;
+    /** format of a date/time value (ScreensaverEntityDateFormat) - options of Intl.DateTimeFormat, e.g. { dateStyle: 'short' } */
+    dateFormat?: Intl.DateTimeFormatOptions;
     /** text shown instead of the value while the state is true / false */
     textOn?: string;
     textOff?: string;
@@ -388,6 +388,23 @@ export type ScreensaverItemConfig = {
 };
 
 export type ScreensaverItemField = 'headline' | 'value' | 'text' | 'action';
+
+/** date formats the item dialog offers (ScreensaverEntityDateFormat); the key is the i18n label */
+export const screensaverDateFormats: readonly { key: string; options: Intl.DateTimeFormatOptions }[] = [
+    { key: 'dateFormatShort', options: { dateStyle: 'short' } },
+    { key: 'dateFormatYearMonthDay', options: { year: 'numeric', month: '2-digit', day: '2-digit' } },
+    { key: 'dateFormatDayShortMonthYear', options: { day: '2-digit', month: 'short', year: 'numeric' } },
+    {
+        key: 'dateFormatWeekdayShortDate',
+        options: { weekday: 'short', day: '2-digit', month: '2-digit', year: 'numeric' },
+    },
+    { key: 'timeFormat24', options: { hour: '2-digit', minute: '2-digit', hour12: false } },
+    {
+        key: 'screensaver_item_dateTimeShort',
+        options: { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' },
+    },
+    { key: 'screensaver_item_dateTimeFull', options: { dateStyle: 'short', timeStyle: 'short' } },
+];
 
 /**
  * Fields the panel uses on a place: bottom shows a headline, icon and value; left, favorit and
