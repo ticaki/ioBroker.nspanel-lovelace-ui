@@ -2,7 +2,7 @@ import IconSelect from './IconSelect';
 import IconOverview from './IconOverview';
 import NavigationView from './NavigationView';
 import PageConfigManager from './PageConfigManager';
-import ScreensaverPage from './ScreensaverPage';
+import ScreensaverConfigManager from './ScreensaverConfigManager';
 import PageGlobalSettings from './PageGlobalSettings';
 import TabMaintain from './TabMaintain';
 import TabPanelinfo from './TabPanelinfo';
@@ -15,7 +15,7 @@ export default {
     IconSelect,
     IconOverview,
     PageConfigManager,
-    ScreensaverPage,
+    ScreensaverConfigManager,
     PageGlobalSettings,
     TabMaintain,
     TabPanelinfo,
