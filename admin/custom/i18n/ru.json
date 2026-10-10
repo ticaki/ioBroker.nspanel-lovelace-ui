@@ -602,6 +602,7 @@
     "screensaver_item_iconOn": "Значок (вкл / значение)",
     "screensaver_item_iconSelectKept": "%s значок(ов) по диапазонам значений из скрипта сохранены",
     "screensaver_item_icons": "Значок",
+    "screensaver_item_pickState": "выберите состояние — поля зависят от его типа",
     "screensaver_item_preview_true": "вкл",
     "screensaver_item_state": "Состояние",
     "screensaver_item_stateInfo": "Имя: %s · тип: %s · единица: %s",

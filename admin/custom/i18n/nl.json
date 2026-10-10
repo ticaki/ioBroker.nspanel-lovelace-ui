@@ -602,6 +602,7 @@
     "screensaver_item_iconOn": "Pictogram (aan / waarde)",
     "screensaver_item_iconSelectKept": "%s pictogram(men) per waardebereik uit de scriptconfiguratie blijven behouden",
     "screensaver_item_icons": "Pictogram",
+    "screensaver_item_pickState": "kies een status – de velden volgen het type",
     "screensaver_item_preview_true": "aan",
     "screensaver_item_state": "Status",
     "screensaver_item_stateInfo": "Naam: %s · type: %s · eenheid: %s",

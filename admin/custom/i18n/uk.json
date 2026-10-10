@@ -602,6 +602,7 @@
     "screensaver_item_iconOn": "Значок (увімк / значення)",
     "screensaver_item_iconSelectKept": "%s значок(ів) за діапазонами значень зі скрипту збережено",
     "screensaver_item_icons": "Значок",
+    "screensaver_item_pickState": "виберіть стан — поля залежать від його типу",
     "screensaver_item_preview_true": "увімк",
     "screensaver_item_state": "Стан",
     "screensaver_item_stateInfo": "Назва: %s · тип: %s · одиниця: %s",

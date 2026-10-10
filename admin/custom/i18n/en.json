@@ -626,6 +626,7 @@
     "screensaver_item_iconOn": "Icon (on / value)",
     "screensaver_item_iconSelectKept": "%s icon(s) per value range are kept from the script configuration",
     "screensaver_item_icons": "Icon",
+    "screensaver_item_pickState": "choose a state - the fields follow its type",
     "screensaver_item_preview_true": "on",
     "screensaver_item_state": "State",
     "screensaver_item_stateInfo": "Name: %s · type: %s · unit: %s",

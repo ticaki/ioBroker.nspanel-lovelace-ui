@@ -602,6 +602,7 @@
     "screensaver_item_iconOn": "Ícone (ligado / valor)",
     "screensaver_item_iconSelectKept": "%s ícone(s) por intervalo de valores da configuração do script são mantidos",
     "screensaver_item_icons": "Ícone",
+    "screensaver_item_pickState": "escolha um estado – os campos dependem do seu tipo",
     "screensaver_item_preview_true": "ligado",
     "screensaver_item_state": "Estado",
     "screensaver_item_stateInfo": "Nome: %s · tipo: %s · unidade: %s",
