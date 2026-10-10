@@ -386,7 +386,10 @@ Stack: ${stack}`
           break;
         }
         default: {
-          this.log.warn(`Unsupported card type '${entry.card}' for page '${entry.uniqueName}', skipping!`);
+          const unknown = entry;
+          this.log.warn(
+            `Unsupported card type '${unknown.card}' for page '${unknown.uniqueName}', skipping!`
+          );
           continue;
         }
       }

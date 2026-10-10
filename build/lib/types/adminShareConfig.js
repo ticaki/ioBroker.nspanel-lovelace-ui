@@ -30,6 +30,7 @@ __export(adminShareConfig_exports, {
   emptyChannelValueConfig: () => emptyChannelValueConfig,
   emptyChartEntry: () => emptyChartEntry,
   emptyPowerSlot: () => emptyPowerSlot,
+  emptyScreensaverEntry: () => emptyScreensaverEntry,
   emptyThermo2Circuit: () => emptyThermo2Circuit,
   emptyThermo2Entry: () => emptyThermo2Entry,
   isMainPageEntry: () => isMainPageEntry,
@@ -41,6 +42,11 @@ __export(adminShareConfig_exports, {
   panelStatusTranslationKeys: () => panelStatusTranslationKeys,
   requiredScriptDataPoints: () => requiredScriptDataPoints,
   reversePanelStatusStates: () => reversePanelStatusStates,
+  screensaverAreas: () => screensaverAreas,
+  screensaverCardOfMode: () => screensaverCardOfMode,
+  screensaverMaxEntries: () => screensaverMaxEntries,
+  screensaverModes: () => screensaverModes,
+  screensaverSlotLimits: () => screensaverSlotLimits,
   serviceNodeName: () => serviceNodeName,
   servicePageName: () => servicePageName,
   shortStateLabel: () => shortStateLabel,
@@ -68,6 +74,70 @@ function shortStateLabel(dp) {
 const mainPageName = "main";
 const serviceNodeName = "///service";
 const servicePageName = "///unlock";
+const screensaverModes = ["standard", "alternate", "advanced", "easyview"];
+const screensaverAreas = ["favorit", "alternate", "left", "bottom", "indicator"];
+const screensaverSlotLimits = {
+  standard: {
+    favorit: { eu: 1 },
+    alternate: { eu: 0 },
+    left: { eu: 0 },
+    bottom: { eu: 4 },
+    indicator: { eu: 0 },
+    mricon: { eu: 2 }
+  },
+  alternate: {
+    favorit: { eu: 1 },
+    alternate: { eu: 1 },
+    left: { eu: 0 },
+    bottom: { eu: 3 },
+    indicator: { eu: 0 },
+    mricon: { eu: 2 }
+  },
+  advanced: {
+    favorit: { eu: 1 },
+    alternate: { eu: 0 },
+    left: { eu: 3 },
+    bottom: { eu: 6 },
+    indicator: { eu: 5 },
+    mricon: { eu: 2 }
+  },
+  easyview: {
+    favorit: { eu: 1 },
+    alternate: { eu: 0 },
+    left: { eu: 0 },
+    bottom: { eu: 3, "us-p": 4, "us-l": 3 },
+    indicator: { eu: 0 },
+    mricon: { eu: 2 }
+  }
+};
+function screensaverMaxEntries(mode, area, model = "eu") {
+  var _a;
+  const limit = screensaverSlotLimits[mode][area];
+  return (_a = limit[model]) != null ? _a : limit.eu;
+}
+function screensaverCardOfMode(mode) {
+  switch (mode) {
+    case "advanced":
+      return "screensaver2";
+    case "easyview":
+      return "screensaver3";
+    default:
+      return "screensaver";
+  }
+}
+function emptyScreensaverEntry(name, mode = "standard") {
+  return {
+    name,
+    mode,
+    panels: [],
+    left: [],
+    bottom: [],
+    indicator: [],
+    rotationTime: 0,
+    screensaverSwipe: false,
+    screensaverIndicatorButtons: false
+  };
+}
 function emptyChannelValueConfig(valueStateId = "") {
   return { valueStateId, unit: "", prefix: "", suffix: "", dateFormat: "" };
 }
@@ -908,6 +978,7 @@ const CHANNEL_ROLES_LIST = Object.keys(requiredScriptDataPoints);
   emptyChannelValueConfig,
   emptyChartEntry,
   emptyPowerSlot,
+  emptyScreensaverEntry,
   emptyThermo2Circuit,
   emptyThermo2Entry,
   isMainPageEntry,
@@ -919,6 +990,11 @@ const CHANNEL_ROLES_LIST = Object.keys(requiredScriptDataPoints);
   panelStatusTranslationKeys,
   requiredScriptDataPoints,
   reversePanelStatusStates,
+  screensaverAreas,
+  screensaverCardOfMode,
+  screensaverMaxEntries,
+  screensaverModes,
+  screensaverSlotLimits,
   serviceNodeName,
   servicePageName,
   shortStateLabel,
