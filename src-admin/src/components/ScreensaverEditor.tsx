@@ -329,6 +329,8 @@ interface ScreensaverEditorState {
     editing: SlotRef | null;
     dragSource: SlotRef | null;
     dragOverKey: string | null;
+    /** scroll state of the bottom area while weather items make it scroll (own scroll bar, see renderScrollBar) */
+    bottomScroll: { pos: number; size: number; client: number } | null;
 }
 
 export class ScreensaverEditor extends React.Component<ScreensaverEditorProps, ScreensaverEditorState> {
@@ -341,11 +343,129 @@ export class ScreensaverEditor extends React.Component<ScreensaverEditorProps, S
             editing: null,
             dragSource: null,
             dragOverKey: null,
+            bottomScroll: null,
         };
+    }
+
+    componentDidMount(): void {
+        window.addEventListener('resize', this.syncBottomScroll);
+        this.syncBottomScroll();
+    }
+
+    componentDidUpdate(): void {
+        this.syncBottomScroll();
+    }
+
+    componentWillUnmount(): void {
+        window.removeEventListener('resize', this.syncBottomScroll);
     }
 
     private getText(key: string): string {
         return this.props.getText(key);
+    }
+
+    // ---------- own scroll bar of the bottom area ----------
+
+    /** the scrolling bottom area (only rendered while weather items are appended) */
+    private bottomRef = React.createRef<HTMLDivElement>();
+
+    /** reads the scroll state of the bottom area into the state - once per change only */
+    private syncBottomScroll = (): void => {
+        const el = this.bottomRef.current;
+        const cur = this.state.bottomScroll;
+        if (!el) {
+            if (cur) {
+                this.setState({ bottomScroll: null });
+            }
+            return;
+        }
+        const vertical = el.dataset.axis === 'y';
+        const info = vertical
+            ? { pos: el.scrollTop, size: el.scrollHeight, client: el.clientHeight }
+            : { pos: el.scrollLeft, size: el.scrollWidth, client: el.clientWidth };
+        if (!cur || cur.pos !== info.pos || cur.size !== info.size || cur.client !== info.client) {
+            this.setState({ bottomScroll: info });
+        }
+    };
+
+    private scrollBottomTo(pos: number, relative = false): void {
+        const el = this.bottomRef.current;
+        if (!el) {
+            return;
+        }
+        if (el.dataset.axis === 'y') {
+            el.scrollTop = relative ? el.scrollTop + pos : pos;
+        } else {
+            el.scrollLeft = relative ? el.scrollLeft + pos : pos;
+        }
+    }
+
+    /**
+     * Scroll bar drawn by the editor: Safari and Firefox on macOS show overlay scroll bars only while
+     * scrolling, so the native bar is hidden and this one is always visible. Click on the track jumps,
+     * the thumb drags.
+     *
+     * @param vertical the area scrolls vertically (portrait layouts with grid columns)
+     */
+    private renderScrollBar(vertical: boolean): React.JSX.Element {
+        const info = this.state.bottomScroll;
+        const thickness = 8;
+        const base = {
+            position: 'relative' as const,
+            flexShrink: 0,
+            borderRadius: thickness / 2,
+            ...(vertical ? { width: thickness, alignSelf: 'stretch' } : { height: thickness }),
+        };
+        if (!info || info.size <= info.client + 1) {
+            return <Box sx={base} />;
+        }
+        const frac = Math.max(info.client / info.size, 0.08);
+        const start = Math.min(info.pos / info.size, 1 - frac);
+        const onTrack = (e: React.MouseEvent<HTMLDivElement>): void => {
+            const r = e.currentTarget.getBoundingClientRect();
+            const rel = vertical ? (e.clientY - r.top) / r.height : (e.clientX - r.left) / r.width;
+            this.scrollBottomTo(rel * info.size - info.client / 2);
+        };
+        const onThumb = (e: React.MouseEvent<HTMLDivElement>): void => {
+            e.stopPropagation();
+            e.preventDefault();
+            const track = e.currentTarget.parentElement;
+            const trackLen = track ? (vertical ? track.clientHeight : track.clientWidth) : 1;
+            let last = vertical ? e.clientY : e.clientX;
+            const move = (ev: MouseEvent): void => {
+                const now = vertical ? ev.clientY : ev.clientX;
+                this.scrollBottomTo(((now - last) * info.size) / trackLen, true);
+                last = now;
+            };
+            const up = (): void => {
+                document.removeEventListener('mousemove', move);
+                document.removeEventListener('mouseup', up);
+            };
+            document.addEventListener('mousemove', move);
+            document.addEventListener('mouseup', up);
+        };
+        return (
+            <Box
+                sx={{ ...base, backgroundColor: 'rgba(255,255,255,0.18)', cursor: 'pointer' }}
+                onMouseDown={onTrack}
+                data-ss="bottom-scrollbar"
+            >
+                <Box
+                    sx={{
+                        position: 'absolute',
+                        borderRadius: thickness / 2,
+                        backgroundColor: '#bbb',
+                        cursor: 'grab',
+                        '&:hover': { backgroundColor: '#eee' },
+                        ...(vertical
+                            ? { top: `${start * 100}%`, height: `${frac * 100}%`, left: 0, right: 0 }
+                            : { left: `${start * 100}%`, width: `${frac * 100}%`, top: 0, bottom: 0 }),
+                    }}
+                    onMouseDown={onThumb}
+                    data-ss="bottom-scrollbar-thumb"
+                />
+            </Box>
+        );
     }
 
     // ---------- panels and model ----------
@@ -1228,21 +1348,46 @@ export class ScreensaverEditor extends React.Component<ScreensaverEditorProps, S
         for (let i = split; i < count; i++) {
             slots.push(place(i));
         }
-        // a classic, always visible scroll bar: the webkit pseudo elements for Chrome/Safari (Chrome drops
-        // them as soon as scrollbar-width is set), the standard properties for Firefox only
-        const scroll = weather.length
-            ? ({
-                  overflowX: box.columns ? 'hidden' : 'auto',
-                  overflowY: box.columns ? 'auto' : 'hidden',
-                  '&::-webkit-scrollbar': { height: 8, width: 8 },
-                  '&::-webkit-scrollbar-track': { backgroundColor: '#333', borderRadius: 4 },
-                  '&::-webkit-scrollbar-thumb': { backgroundColor: '#999', borderRadius: 4 },
-                  '@supports not selector(::-webkit-scrollbar)': {
-                      scrollbarWidth: 'thin',
-                      scrollbarColor: '#999 #333',
-                  },
-              } as const)
-            : {};
+        const inner = {
+            display: box.columns ? 'grid' : 'flex',
+            gridTemplateColumns: box.columns ? `repeat(${box.columns}, 1fr)` : undefined,
+            gridAutoRows: box.columns
+                ? weather.length
+                    ? `calc((100% - ${(rows - 1) * 4}px) / ${rows})`
+                    : '1fr'
+                : undefined,
+            flexDirection: box.direction,
+            gap: 0.5,
+            p: 0.5,
+            boxSizing: 'border-box' as const,
+            borderRadius: 1,
+            border: '1px solid rgba(255,255,255,0.08)',
+        };
+        const outer = {
+            position: 'absolute' as const,
+            top: box.top,
+            left: box.left,
+            width: box.width,
+            height: box.height,
+        };
+        if (!weather.length) {
+            return (
+                <Tooltip
+                    key={area}
+                    title={this.getText(`screensaver_area_${area}`)}
+                    placement="top"
+                >
+                    <Box
+                        sx={{ ...outer, ...inner }}
+                        data-ss={`area-${area}`}
+                    >
+                        {slots}
+                    </Box>
+                </Tooltip>
+            );
+        }
+        // the area scrolls (native bar hidden, own one drawn next to it - renderScrollBar)
+        const vertical = !!box.columns;
         return (
             <Tooltip
                 key={area}
@@ -1251,29 +1396,33 @@ export class ScreensaverEditor extends React.Component<ScreensaverEditorProps, S
             >
                 <Box
                     sx={{
-                        position: 'absolute',
-                        top: box.top,
-                        left: box.left,
-                        width: box.width,
-                        height: box.height,
-                        display: box.columns ? 'grid' : 'flex',
-                        gridTemplateColumns: box.columns ? `repeat(${box.columns}, 1fr)` : undefined,
-                        gridAutoRows: box.columns
-                            ? weather.length
-                                ? `calc((100% - ${(rows - 1) * 4}px) / ${rows})`
-                                : '1fr'
-                            : undefined,
-                        flexDirection: box.direction,
-                        gap: 0.5,
-                        p: 0.5,
+                        ...outer,
+                        display: 'flex',
+                        flexDirection: vertical ? 'row' : 'column',
+                        gap: 0.25,
                         boxSizing: 'border-box',
-                        borderRadius: 1,
-                        border: '1px solid rgba(255,255,255,0.08)',
-                        ...scroll,
                     }}
-                    data-ss={`area-${area}`}
+                    data-ss={`area-${area}-scroll`}
                 >
-                    {slots}
+                    <Box
+                        ref={this.bottomRef}
+                        data-axis={vertical ? 'y' : 'x'}
+                        onScroll={this.syncBottomScroll}
+                        sx={{
+                            ...inner,
+                            flex: 1,
+                            minWidth: 0,
+                            minHeight: 0,
+                            overflowX: vertical ? 'hidden' : 'auto',
+                            overflowY: vertical ? 'auto' : 'hidden',
+                            scrollbarWidth: 'none',
+                            '&::-webkit-scrollbar': { display: 'none' },
+                        }}
+                        data-ss={`area-${area}`}
+                    >
+                        {slots}
+                    </Box>
+                    {this.renderScrollBar(vertical)}
                 </Box>
             </Tooltip>
         );
@@ -1799,7 +1948,7 @@ export class ScreensaverEditor extends React.Component<ScreensaverEditorProps, S
                             >
                                 {this.getText('screensaver_panelHint')}
                             </Typography>
-                            {weatherBottom > 0 && (
+                            {weatherBottom > 0 && this.ownBottom() + weatherBottom > this.limit('bottom') && (
                                 <Typography
                                     variant="caption"
                                     color="text.secondary"
