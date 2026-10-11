@@ -1214,21 +1214,33 @@ export class ScreensaverEditor extends React.Component<ScreensaverEditorProps, S
         const rows = box.columns ? Math.ceil(count / box.columns) : 1;
         const fixed = weather.length && !box.columns ? `calc((100% - ${(count - 1) * 4}px) / ${count})` : undefined;
         const slots: React.JSX.Element[] = [];
-        for (let i = 0; i < count; i++) {
-            slots.push(this.renderSlot({ area, index: i }, area === 'favorit', this.inlineSlot(area, box), fixed));
+        const place = (i: number): React.JSX.Element =>
+            this.renderSlot({ area, index: i }, area === 'favorit', this.inlineSlot(area, box), fixed);
+        // the weather items follow the last own item (the adapter appends them to the list of items),
+        // the free places come after them
+        const split = weather.length ? this.lastOwnBottom() : count;
+        for (let i = 0; i < split; i++) {
+            slots.push(place(i));
         }
         for (const key of weather) {
             slots.push(this.renderWeatherSlot(key, fixed));
         }
+        for (let i = split; i < count; i++) {
+            slots.push(place(i));
+        }
+        // a classic, always visible scroll bar: the webkit pseudo elements for Chrome/Safari (Chrome drops
+        // them as soon as scrollbar-width is set), the standard properties for Firefox only
         const scroll = weather.length
             ? ({
                   overflowX: box.columns ? 'hidden' : 'auto',
                   overflowY: box.columns ? 'auto' : 'hidden',
-                  scrollbarWidth: 'thin',
-                  scrollbarColor: '#888 #222',
-                  '&::-webkit-scrollbar': { height: 6, width: 6 },
-                  '&::-webkit-scrollbar-track': { backgroundColor: '#222' },
-                  '&::-webkit-scrollbar-thumb': { backgroundColor: '#888', borderRadius: 3 },
+                  '&::-webkit-scrollbar': { height: 8, width: 8 },
+                  '&::-webkit-scrollbar-track': { backgroundColor: '#333', borderRadius: 4 },
+                  '&::-webkit-scrollbar-thumb': { backgroundColor: '#999', borderRadius: 4 },
+                  '@supports not selector(::-webkit-scrollbar)': {
+                      scrollbarWidth: 'thin',
+                      scrollbarColor: '#999 #333',
+                  },
               } as const)
             : {};
         return (
@@ -1303,6 +1315,18 @@ export class ScreensaverEditor extends React.Component<ScreensaverEditorProps, S
     /** weather items the adapter appends to the bottom area, in its order */
     private weatherKeys(): ScreensaverWeatherItemKey[] {
         return screensaverWeatherItemsOn(this.props.entry.weatherAddDefaultItems, this.weatherEntity());
+    }
+
+    /** number of bottom places up to and including the last own item (within the places of the version) */
+    private lastOwnBottom(): number {
+        const limit = this.limit('bottom');
+        return (this.props.entry.bottom ?? []).reduce((n, it, i) => (it && i < limit ? i + 1 : n), 0);
+    }
+
+    /** own items of the bottom area within the places of the version */
+    private ownBottom(): number {
+        const limit = this.limit('bottom');
+        return (this.props.entry.bottom ?? []).filter((it, i) => !!it && i < limit).length;
     }
 
     /** the favorit place shows the current weather: adapter known and no own item */
@@ -1782,7 +1806,7 @@ export class ScreensaverEditor extends React.Component<ScreensaverEditorProps, S
                                     sx={{ display: 'block', mt: 0.5 }}
                                 >
                                     {this.getText('screensaver_weather_scrollHint')
-                                        .replace('%s', String(this.limit('bottom') + weatherBottom))
+                                        .replace('%s', String(this.ownBottom() + weatherBottom))
                                         .replace('%s', String(this.limit('bottom')))}
                                 </Typography>
                             )}
