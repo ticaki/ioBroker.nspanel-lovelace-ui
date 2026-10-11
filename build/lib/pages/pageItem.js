@@ -2730,6 +2730,53 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
     }
     return false;
   }
+  /**
+   * Requests the saved playlists of a squeezeboxrpc instance from the Logitech Media Server.
+   *
+   * @param inst - adapter instance, e.g. `squeezeboxrpc.0`
+   * @returns list of playlists with id and name, empty on error
+   */
+  async getSqueezeboxPlaylists(inst) {
+    const result = [];
+    let response;
+    try {
+      response = await this.adapter.sendToAsync(
+        inst,
+        "cmdGeneral",
+        { playerid: "", cmdArray: ["playlists", "0", "999", "tags:u"] },
+        { timeout: 3e3 }
+      );
+    } catch (e) {
+      this.log.warn(`Squeezebox playlists from ${inst} failed: ${String(e)}`);
+      return result;
+    }
+    const getLoop = (data) => {
+      if (!data || typeof data !== "object") {
+        return void 0;
+      }
+      if ("playlists_loop" in data) {
+        return data.playlists_loop;
+      }
+      if ("result" in data) {
+        return getLoop(data.result);
+      }
+      return void 0;
+    };
+    const loop = getLoop(response);
+    if (!Array.isArray(loop)) {
+      this.log.debug(`Squeezebox playlists from ${inst}: no playlists in response ${JSON.stringify(response)}`);
+      return result;
+    }
+    for (const entry of loop) {
+      if (entry && typeof entry === "object" && "id" in entry && "playlist" in entry) {
+        const name = typeof entry.playlist === "string" ? entry.playlist : "";
+        if (name && entry.id != null) {
+          result.push({ id: String(entry.id), name });
+        }
+      }
+    }
+    return result;
+  }
   async getListFromStates(entityInSel, valueList, role, valueList2 = void 0, force = false) {
     var _a, _b, _c, _d, _e, _f, _g, _h;
     const list = {};
@@ -2820,6 +2867,23 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
             list.states.push(fav.id);
           }
           list.value = "";
+        }
+      } else if (role === "squeezebox-playlist") {
+        const dp = "dp" in entityInSel.value.options ? entityInSel.value.options.dp : "";
+        const inst = (dp || "").split(".").slice(0, 2).join(".");
+        if (inst) {
+          const filterRaw = valueList ? await valueList.getObject() : null;
+          const filter = Array.isArray(filterRaw) && filterRaw.length > 0 ? filterRaw.filter((f) => typeof f === "string") : null;
+          list.list = [];
+          list.states = [];
+          list.value = "";
+          for (const playlist of await this.getSqueezeboxPlaylists(inst)) {
+            if (filter && !filter.includes(playlist.name)) {
+              continue;
+            }
+            list.list.push(playlist.name);
+            list.states.push(playlist.id);
+          }
         }
       } else if (role === "spotify-speaker" || role === "spotify-playlist") {
         if (entityInSel.value.options.dp) {

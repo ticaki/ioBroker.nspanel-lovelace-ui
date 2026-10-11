@@ -48,7 +48,7 @@ const pageMediaTest1: PageType = {
 | `colorMediaTitle` | Farbe für die Titel‑Zeile | s. Farbe |
 | `speakerList` | Liste erlaubter/angezeigter Lautsprecher | **Sonos/Spotify:** Auswahl ohne Liste → keine Speaker. **Andere:** Whitelist (leer = alle) |
 | `favoriteList` | **Whitelist** für Favoriten‑Playlists | Leer oder nicht gesetzt = zeige alle. **Squeezebox:** Namen wie in `Favorites.*.Name` |
-| `playList` | Liste verfügbarer Playlists | **Alexa/Spotify:** aus Adapter. **Sonos:** nutzergeneriert (Adapter kann sie nicht einlesen) |
+| `playList` | Liste verfügbarer Playlists | **Alexa/Spotify:** aus Adapter. **Sonos:** nutzergeneriert (Adapter kann sie nicht einlesen). **Squeezebox:** Whitelist der gespeicherten LMS-Playlists (leer = alle) |
 | `minValue` | Minimale Lautstärke (Panel) | Mapping auf Geräte‑Skala |
 | `maxValue` | Maximale Lautstärke (Panel) | Mapping auf Geräte‑Skala |
 | `itemsColorOn` | On‑Farbe für einzelne Standard‑PageItems | pro Item überschreibbar (s. unten) |
@@ -122,6 +122,7 @@ Die Seite gehört zu einem **Raum-Player** (`media.id`). Ist der Player Teil ein
 - **Ein/Aus** schaltet `Power` des Players.
 - **Logo:** Seek-Slider über die Titellänge (`Time`/`Duration` → `cmdGoTime`).
 - **Favoriten:** werden zur Laufzeit aus `squeezeboxrpc.X.Favorites.*` gelesen (nur abspielbare Einträge, Unterordner werden nicht angezeigt) und über `cmdPlayFavorite` gestartet.
+- **Playlisten:** die gespeicherten Playlisten werden beim Öffnen per `sendTo` vom LMS abgefragt und über `cmdGeneral` (`playlistcontrol cmd:load`) gestartet. `playList` wirkt als Whitelist.
 - **Trackliste:** aktuelle Wiedergabeliste aus `Players.<NAME>.Playlist`, Sprung über `PlaylistCurrentIndex`.
 - Bei Stummschaltung zeigt der Lautstärkeregler 0.
 

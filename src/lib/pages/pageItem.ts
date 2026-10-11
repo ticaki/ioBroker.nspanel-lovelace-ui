@@ -3105,6 +3105,54 @@ export class PageItem extends BaseTriggeredPage {
         }
         return false;
     }
+    /**
+     * Requests the saved playlists of a squeezeboxrpc instance from the Logitech Media Server.
+     *
+     * @param inst - adapter instance, e.g. `squeezeboxrpc.0`
+     * @returns list of playlists with id and name, empty on error
+     */
+    async getSqueezeboxPlaylists(inst: string): Promise<{ id: string; name: string }[]> {
+        const result: { id: string; name: string }[] = [];
+        let response: unknown;
+        try {
+            response = await this.adapter.sendToAsync(
+                inst,
+                'cmdGeneral',
+                { playerid: '', cmdArray: ['playlists', '0', '999', 'tags:u'] },
+                { timeout: 3000 },
+            );
+        } catch (e) {
+            this.log.warn(`Squeezebox playlists from ${inst} failed: ${String(e)}`);
+            return result;
+        }
+        const getLoop = (data: unknown): unknown => {
+            if (!data || typeof data !== 'object') {
+                return undefined;
+            }
+            if ('playlists_loop' in data) {
+                return data.playlists_loop;
+            }
+            if ('result' in data) {
+                return getLoop(data.result);
+            }
+            return undefined;
+        };
+        const loop = getLoop(response);
+        if (!Array.isArray(loop)) {
+            this.log.debug(`Squeezebox playlists from ${inst}: no playlists in response ${JSON.stringify(response)}`);
+            return result;
+        }
+        for (const entry of loop) {
+            if (entry && typeof entry === 'object' && 'id' in entry && 'playlist' in entry) {
+                const name = typeof entry.playlist === 'string' ? entry.playlist : '';
+                if (name && entry.id != null) {
+                    result.push({ id: String(entry.id), name });
+                }
+            }
+        }
+        return result;
+    }
+
     async getListFromStates(
         entityInSel: ChangeTypeOfKeys<NSPanel.ValueEntryType, Dataitem | undefined> | undefined,
         valueList: Dataitem | undefined,
@@ -3213,6 +3261,27 @@ export class PageItem extends BaseTriggeredPage {
                         list.states.push(fav.id);
                     }
                     list.value = '';
+                }
+            } else if (role === 'squeezebox-playlist') {
+                // Squeezebox saved playlists - requested from the LMS via sendTo
+                const dp = 'dp' in entityInSel.value.options ? entityInSel.value.options.dp : '';
+                const inst = (dp || '').split('.').slice(0, 2).join('.');
+                if (inst) {
+                    const filterRaw = valueList ? await valueList.getObject() : null;
+                    const filter =
+                        Array.isArray(filterRaw) && filterRaw.length > 0
+                            ? filterRaw.filter((f): f is string => typeof f === 'string')
+                            : null;
+                    list.list = [];
+                    list.states = [];
+                    list.value = '';
+                    for (const playlist of await this.getSqueezeboxPlaylists(inst)) {
+                        if (filter && !filter.includes(playlist.name)) {
+                            continue;
+                        }
+                        list.list.push(playlist.name);
+                        list.states.push(playlist.id);
+                    }
                 }
             } else if (role === 'spotify-speaker' || role === 'spotify-playlist') {
                 // Spotify Speaker

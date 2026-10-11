@@ -100,6 +100,7 @@ describe('lib/pages/tools - getPageSqueezebox', () => {
         const roles = (res.gridItem.pageItems ?? []).map(p => ('role' in p ? p.role : undefined));
         expect(roles).to.include('SqueezeboxSpeaker');
         expect(roles).to.include('squeezebox-favorites');
+        expect(roles).to.include('squeezebox-playlist');
         expect(roles).to.include('spotify-tracklist');
         expect(roles).to.include('repeatValue');
     });

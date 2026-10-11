@@ -156,6 +156,7 @@ export type DeviceRole =
     | 'alexa-playlist'
     | 'alexa-speaker'
     | 'squeezebox-favorites'
+    | 'squeezebox-playlist'
     | '2values'
     | '2valuesIsValue'
     | '4values'

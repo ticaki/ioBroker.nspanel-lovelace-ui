@@ -1180,7 +1180,7 @@ declare namespace ScriptConfig {
          * List of available playlists.
          * - Alexa & Spotify: contains the playlists provided by the adapter.
          * - Sonos: contains user-defined playlists, since Sonos playlists cannot be read by the adapter.
-         * - Squeezebox: not supported yet.
+         * - Squeezebox: read from the LMS, the list here is a whitelist (empty = all).
          */
         playList?: string[];
         equalizerList?: string[];
