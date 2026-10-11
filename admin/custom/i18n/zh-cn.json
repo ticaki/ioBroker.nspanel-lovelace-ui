@@ -577,6 +577,7 @@
     "screensaver_format_short": "短",
     "screensaver_headline": "标题",
     "screensaver_indicatorButtons": "指示器用作按钮",
+    "screensaver_indicator_legend": "指示器边框：灰色 = 无按键，红色 = 按钮，绿色 = 开关，蓝色 = 打开页面",
     "screensaver_item_action": "按下时的操作",
     "screensaver_item_action_button": "按钮（写入 true）",
     "screensaver_item_action_buttonState": "按下时写入的状态",

@@ -601,6 +601,7 @@
     "screensaver_format_short": "short",
     "screensaver_headline": "Headline",
     "screensaver_indicatorButtons": "Indicators act as buttons",
+    "screensaver_indicator_legend": "Frame of the indicators: grey = no key, red = button, green = switch, blue = open page",
     "screensaver_item_action": "Action on press",
     "screensaver_item_action_button": "button (writes true)",
     "screensaver_item_action_buttonState": "State written on press",

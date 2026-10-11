@@ -577,6 +577,7 @@
     "screensaver_format_short": "breve",
     "screensaver_headline": "Titolo",
     "screensaver_indicatorButtons": "Gli indicatori agiscono come pulsanti",
+    "screensaver_indicator_legend": "Cornice degli indicatori: grigio = nessun tasto, rosso = pulsante, verde = interruttore, blu = apri pagina",
     "screensaver_item_action": "Azione alla pressione",
     "screensaver_item_action_button": "pulsante (scrive true)",
     "screensaver_item_action_buttonState": "Stato scritto alla pressione",

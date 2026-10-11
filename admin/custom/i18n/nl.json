@@ -577,6 +577,7 @@
     "screensaver_format_short": "kort",
     "screensaver_headline": "Kop",
     "screensaver_indicatorButtons": "Indicatoren werken als knoppen",
+    "screensaver_indicator_legend": "Rand van de indicatoren: grijs = geen toets, rood = knop, groen = schakelaar, blauw = pagina openen",
     "screensaver_item_action": "Actie bij indrukken",
     "screensaver_item_action_button": "knop (schrijft true)",
     "screensaver_item_action_buttonState": "Status geschreven bij indrukken",

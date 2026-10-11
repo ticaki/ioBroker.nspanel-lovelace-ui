@@ -577,6 +577,7 @@
     "screensaver_format_short": "krótki",
     "screensaver_headline": "Nagłówek",
     "screensaver_indicatorButtons": "Wskaźniki działają jak przyciski",
+    "screensaver_indicator_legend": "Ramka wskaźników: szara = brak przycisku, czerwona = przycisk, zielona = przełącznik, niebieska = otwórz stronę",
     "screensaver_item_action": "Akcja po naciśnięciu",
     "screensaver_item_action_button": "przycisk (zapisuje true)",
     "screensaver_item_action_buttonState": "Stan zapisywany po naciśnięciu",
