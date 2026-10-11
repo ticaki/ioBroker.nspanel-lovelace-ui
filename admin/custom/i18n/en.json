@@ -611,6 +611,7 @@
     "screensaver_item_action_page": "Page",
     "screensaver_item_action_switch": "switch (toggles)",
     "screensaver_item_action_switchState": "State toggled on press",
+    "screensaver_item_adapterOnly": "only objects of the adapter %s are offered",
     "screensaver_item_color": "Color",
     "screensaver_item_colorFixed": "fixed colors",
     "screensaver_item_colorOff": "Color off",

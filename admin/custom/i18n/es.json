@@ -587,6 +587,7 @@
     "screensaver_item_action_page": "Página",
     "screensaver_item_action_switch": "interruptor (alterna)",
     "screensaver_item_action_switchState": "Estado alternado al pulsar",
+    "screensaver_item_adapterOnly": "solo se ofrecen objetos del adaptador %s",
     "screensaver_item_color": "Color",
     "screensaver_item_colorFixed": "colores fijos",
     "screensaver_item_colorOff": "Color apagado",

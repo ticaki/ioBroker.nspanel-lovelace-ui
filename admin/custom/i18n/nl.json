@@ -587,6 +587,7 @@
     "screensaver_item_action_page": "Pagina",
     "screensaver_item_action_switch": "schakelaar (wisselt)",
     "screensaver_item_action_switchState": "Status gewisseld bij indrukken",
+    "screensaver_item_adapterOnly": "alleen objecten van de adapter %s worden aangeboden",
     "screensaver_item_color": "Kleur",
     "screensaver_item_colorFixed": "vaste kleuren",
     "screensaver_item_colorOff": "Kleur uit",
