@@ -113,16 +113,19 @@ function isState(obj: ioBroker.Object): boolean {
     return !!obj && obj.type === 'state';
 }
 
-/** object types the template picker shows - everything, the dialog only warns about a single state (like Thermo2) */
-const TEMPLATE_OBJECT_TYPES: ioBroker.ObjectType[] = ['state', 'channel', 'device', 'folder'];
+/**
+ * object types a template with `need: 'channel'` works on - like the heat circuit picker of the Thermo2
+ * editor: the SelectID needs them as `types`, otherwise it shows states only, plus the filter
+ */
+const TEMPLATE_OBJECT_TYPES: ioBroker.ObjectType[] = ['channel', 'device', 'folder'];
 
 /**
- * any object - the template picker does not filter
+ * channel, device or folder - the object a template searches its states in
  *
  * @param obj object from the browser
  */
-function isAnyObject(obj: ioBroker.Object): boolean {
-    return !!obj;
+function isChannelLike(obj: ioBroker.Object): boolean {
+    return !!obj && TEMPLATE_OBJECT_TYPES.includes(obj.type);
 }
 
 /**
@@ -470,7 +473,7 @@ export class ScreensaverItemDialog extends React.Component<ScreensaverItemDialog
                                 void this.loadObject(v);
                             },
                             'dpInit',
-                            isAnyObject,
+                            isChannelLike,
                             TEMPLATE_OBJECT_TYPES,
                         )}
                         {selected.looksFor.length > 0 && (
