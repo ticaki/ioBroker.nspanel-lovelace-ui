@@ -425,7 +425,64 @@ async function getPageSqueezebox(configManager, page, gridItem, messages, justCh
       }
     });
   }
-  if (((_o = page.media.deactivateDefaultItems) == null ? void 0 : _o.trackList) !== true) {
+  if (!((_o = page.media.deactivateDefaultItems) == null ? void 0 : _o.clock)) {
+    gridItem.pageItems.push({
+      template: "text.clock",
+      dpInit: "",
+      data: {
+        icon: {
+          true: {
+            color: ((_p = page.media.itemsColorOn) == null ? void 0 : _p.clock) ? await configManager.getIconColor((_q = page.media.itemsColorOn) == null ? void 0 : _q.clock) : void 0
+          }
+        }
+      }
+    });
+  }
+  if (page.media.volumePresets) {
+    gridItem.pageItems.push({
+      role: "",
+      type: "input_sel",
+      dpInit: "",
+      data: {
+        icon: {
+          true: {
+            value: { type: "const", constVal: "volume-source" },
+            color: await configManager.getIconColor(
+              (_r = page.media.itemsColorOn) == null ? void 0 : _r.volumePresets,
+              import_Color.Color.activated
+            )
+          }
+        },
+        entityInSel: {
+          value: {
+            mode: "auto",
+            type: "state",
+            role: ["level.volume"],
+            scale: { min: (_s = page.media.minValue) != null ? _s : 0, max: (_t = page.media.maxValue) != null ? _t : 100 },
+            regexp: /\.Volume$/,
+            dp: ""
+          },
+          set: {
+            mode: "auto",
+            type: "state",
+            role: ["level.volume"],
+            scale: { min: (_u = page.media.minValue) != null ? _u : 0, max: (_v = page.media.maxValue) != null ? _v : 100 },
+            regexp: /\.Volume$/,
+            dp: ""
+          }
+        },
+        valueList: {
+          type: "const",
+          constVal: JSON.stringify(page.media.volumePresets || [])
+        },
+        headline: {
+          type: "const",
+          constVal: "volumePresets"
+        }
+      }
+    });
+  }
+  if (((_w = page.media.deactivateDefaultItems) == null ? void 0 : _w.trackList) !== true) {
     gridItem.pageItems.push({
       role: "spotify-tracklist",
       type: "input_sel",
@@ -434,7 +491,7 @@ async function getPageSqueezebox(configManager, page, gridItem, messages, justCh
         icon: {
           true: {
             value: { type: "const", constVal: "animation-play-outline" },
-            color: await configManager.getIconColor((_p = page.media.itemsColorOn) == null ? void 0 : _p.playList, import_Color.Color.activated)
+            color: await configManager.getIconColor((_x = page.media.itemsColorOn) == null ? void 0 : _x.playList, import_Color.Color.activated)
           }
         },
         entityInSel: {
@@ -489,9 +546,9 @@ async function getPageSqueezebox(configManager, page, gridItem, messages, justCh
       }
     });
   }
-  if (!((_q = page.media.deactivateDefaultItems) == null ? void 0 : _q.repeat)) {
-    const tempOn = await configManager.getIconColor((_r = page.media.itemsColorOn) == null ? void 0 : _r.repeat);
-    const tempOff = await configManager.getIconColor((_s = page.media.itemsColorOff) == null ? void 0 : _s.repeat);
+  if (!((_y = page.media.deactivateDefaultItems) == null ? void 0 : _y.repeat)) {
+    const tempOn = await configManager.getIconColor((_z = page.media.itemsColorOn) == null ? void 0 : _z.repeat);
+    const tempOff = await configManager.getIconColor((_A = page.media.itemsColorOff) == null ? void 0 : _A.repeat);
     let colorOn;
     let colorOff;
     if (tempOn && tempOn.type === "const" && import_Color.Color.isRGB(tempOn.constVal)) {
@@ -570,63 +627,6 @@ async function getPageSqueezebox(configManager, page, gridItem, messages, justCh
                             }
                             return 0;`
           }
-        }
-      }
-    });
-  }
-  if (!((_t = page.media.deactivateDefaultItems) == null ? void 0 : _t.clock)) {
-    gridItem.pageItems.push({
-      template: "text.clock",
-      dpInit: "",
-      data: {
-        icon: {
-          true: {
-            color: ((_u = page.media.itemsColorOn) == null ? void 0 : _u.clock) ? await configManager.getIconColor((_v = page.media.itemsColorOn) == null ? void 0 : _v.clock) : void 0
-          }
-        }
-      }
-    });
-  }
-  if (page.media.volumePresets) {
-    gridItem.pageItems.push({
-      role: "",
-      type: "input_sel",
-      dpInit: "",
-      data: {
-        icon: {
-          true: {
-            value: { type: "const", constVal: "volume-source" },
-            color: await configManager.getIconColor(
-              (_w = page.media.itemsColorOn) == null ? void 0 : _w.volumePresets,
-              import_Color.Color.activated
-            )
-          }
-        },
-        entityInSel: {
-          value: {
-            mode: "auto",
-            type: "state",
-            role: ["level.volume"],
-            scale: { min: (_x = page.media.minValue) != null ? _x : 0, max: (_y = page.media.maxValue) != null ? _y : 100 },
-            regexp: /\.Volume$/,
-            dp: ""
-          },
-          set: {
-            mode: "auto",
-            type: "state",
-            role: ["level.volume"],
-            scale: { min: (_z = page.media.minValue) != null ? _z : 0, max: (_A = page.media.maxValue) != null ? _A : 100 },
-            regexp: /\.Volume$/,
-            dp: ""
-          }
-        },
-        valueList: {
-          type: "const",
-          constVal: JSON.stringify(page.media.volumePresets || [])
-        },
-        headline: {
-          type: "const",
-          constVal: "volumePresets"
         }
       }
     });

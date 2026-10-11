@@ -449,6 +449,70 @@ export async function getPageSqueezebox(
         });
     }
 
+    // time
+    if (!page.media.deactivateDefaultItems?.clock) {
+        gridItem.pageItems.push({
+            template: 'text.clock',
+            dpInit: '',
+            data: {
+                icon: {
+                    true: {
+                        color: page.media.itemsColorOn?.clock
+                            ? await configManager.getIconColor(page.media.itemsColorOn?.clock)
+                            : undefined,
+                    },
+                },
+            },
+        });
+    }
+
+    if (page.media.volumePresets) {
+        gridItem.pageItems.push({
+            role: '',
+            type: 'input_sel',
+            dpInit: '',
+
+            data: {
+                icon: {
+                    true: {
+                        value: { type: 'const', constVal: 'volume-source' },
+                        color: await configManager.getIconColor(
+                            page.media.itemsColorOn?.volumePresets,
+                            Color.activated,
+                        ),
+                    },
+                },
+                entityInSel: {
+                    value: {
+                        mode: 'auto',
+                        type: 'state',
+                        role: ['level.volume'],
+                        scale: { min: page.media.minValue ?? 0, max: page.media.maxValue ?? 100 },
+                        regexp: /\.Volume$/,
+                        dp: '',
+                    },
+                    set: {
+                        mode: 'auto',
+                        type: 'state',
+                        role: ['level.volume'],
+                        scale: { min: page.media.minValue ?? 0, max: page.media.maxValue ?? 100 },
+                        regexp: /\.Volume$/,
+                        dp: '',
+                    },
+                },
+                valueList: {
+                    type: 'const',
+                    constVal: JSON.stringify(page.media.volumePresets || []),
+                },
+
+                headline: {
+                    type: 'const',
+                    constVal: 'volumePresets',
+                },
+            },
+        });
+    }
+
     // tracklist - current queue as JSON array, PlaylistCurrentIndex is a 0-based string
     if (page.media.deactivateDefaultItems?.trackList !== true) {
         gridItem.pageItems.push({
@@ -601,70 +665,6 @@ export async function getPageSqueezebox(
                             }
                             return 0;`,
                     },
-                },
-            },
-        });
-    }
-
-    // time
-    if (!page.media.deactivateDefaultItems?.clock) {
-        gridItem.pageItems.push({
-            template: 'text.clock',
-            dpInit: '',
-            data: {
-                icon: {
-                    true: {
-                        color: page.media.itemsColorOn?.clock
-                            ? await configManager.getIconColor(page.media.itemsColorOn?.clock)
-                            : undefined,
-                    },
-                },
-            },
-        });
-    }
-
-    if (page.media.volumePresets) {
-        gridItem.pageItems.push({
-            role: '',
-            type: 'input_sel',
-            dpInit: '',
-
-            data: {
-                icon: {
-                    true: {
-                        value: { type: 'const', constVal: 'volume-source' },
-                        color: await configManager.getIconColor(
-                            page.media.itemsColorOn?.volumePresets,
-                            Color.activated,
-                        ),
-                    },
-                },
-                entityInSel: {
-                    value: {
-                        mode: 'auto',
-                        type: 'state',
-                        role: ['level.volume'],
-                        scale: { min: page.media.minValue ?? 0, max: page.media.maxValue ?? 100 },
-                        regexp: /\.Volume$/,
-                        dp: '',
-                    },
-                    set: {
-                        mode: 'auto',
-                        type: 'state',
-                        role: ['level.volume'],
-                        scale: { min: page.media.minValue ?? 0, max: page.media.maxValue ?? 100 },
-                        regexp: /\.Volume$/,
-                        dp: '',
-                    },
-                },
-                valueList: {
-                    type: 'const',
-                    constVal: JSON.stringify(page.media.volumePresets || []),
-                },
-
-                headline: {
-                    type: 'const',
-                    constVal: 'volumePresets',
                 },
             },
         });
