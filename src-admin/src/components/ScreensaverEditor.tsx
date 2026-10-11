@@ -749,7 +749,7 @@ export class ScreensaverEditor extends React.Component<ScreensaverEditorProps, S
                 variant="standard"
                 sx={{ minWidth: 200, mr: 2, mb: 2 }}
             >
-                <InputLabel>{this.getText(labelKey)}</InputLabel>
+                <InputLabel shrink>{this.getText(labelKey)}</InputLabel>
                 <Select
                     value={value}
                     displayEmpty
