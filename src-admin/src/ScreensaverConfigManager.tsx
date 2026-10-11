@@ -26,6 +26,7 @@ import type { AdminPanelConfig, ScreensaverEntry, ScreensaverMode } from '../../
 import {
     ADAPTER_NAME,
     SENDTO_GET_PAGES_All_COMMAND,
+    SENDTO_GET_WEATHER_ENTITY_COMMAND,
     emptyScreensaverEntry,
     screensaverModes,
 } from '../../src/lib/types/adminShareConfig';
@@ -38,6 +39,8 @@ interface ScreensaverConfigManagerState extends ConfigGenericState {
     confirmDeleteName: string | null;
     alive: boolean;
     pagesList: string[];
+    /** installed instances of the supported weather adapters, undefined until the adapter answered */
+    weatherEntities?: { value: string; label: string }[];
 }
 
 const PAGES_RETRY_MS = 3000;
@@ -78,6 +81,7 @@ class ScreensaverConfigManager extends ConfigGeneric<
             await this.props.oContext.socket.subscribeState(this.aliveStateId(), this.onAliveChanged);
             if (alive) {
                 void this.loadPagesList();
+                void this.loadWeatherEntities();
             }
         } catch (error) {
             console.error('[ScreensaverConfig] alive state failed:', error);
@@ -96,6 +100,9 @@ class ScreensaverConfigManager extends ConfigGeneric<
         const alive = state ? !!state.val : false;
         if (alive !== this.state.alive) {
             this.setState({ alive } as ScreensaverConfigManagerState);
+            if (alive && !this.state.weatherEntities) {
+                void this.loadWeatherEntities();
+            }
             if (alive && this.state.pagesList.length === 0) {
                 void this.loadPagesList();
             }
@@ -131,6 +138,32 @@ class ScreensaverConfigManager extends ConfigGeneric<
             return;
         }
         this.setState({ pagesList: Array.from(new Set(list)) } as ScreensaverConfigManagerState);
+    }
+
+    /** installed instances of the supported weather adapters (main.ts getWeatherEntity, like the global settings page) */
+    private async loadWeatherEntities(): Promise<void> {
+        if (!this.state.alive) {
+            return;
+        }
+        const instance = this.props.oContext.instance ?? '0';
+        try {
+            const raw = await this.props.oContext.socket.sendTo(
+                `${ADAPTER_NAME}.${instance}`,
+                SENDTO_GET_WEATHER_ENTITY_COMMAND,
+                {},
+            );
+            const list: { value: string; label: string }[] = Array.isArray(raw)
+                ? raw
+                : Array.isArray(raw?.result)
+                  ? raw.result
+                  : [];
+            // the first entry of the adapter is "custom" (no instance) - the editor has its own choices for that
+            this.setState({
+                weatherEntities: list.filter(e => e && typeof e.value === 'string' && e.value !== ''),
+            } as ScreensaverConfigManagerState);
+        } catch (e) {
+            console.warn('[ScreensaverConfig] getWeatherEntity failed', e);
+        }
     }
 
     private save(entries: ScreensaverEntry[]): void {
@@ -412,6 +445,8 @@ class ScreensaverConfigManager extends ConfigGeneric<
                 alive={alive}
                 expertMode={this.props.expertMode ?? false}
                 pagesList={pagesList}
+                weatherEntities={this.state.weatherEntities}
+                globalWeatherEntity={typeof data.weatherEntity === 'string' ? data.weatherEntity : ''}
             />
         );
     }

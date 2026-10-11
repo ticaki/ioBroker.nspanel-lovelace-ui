@@ -47,6 +47,8 @@ export const SENDTO_GET_PANELS_COMMAND = 'getPanels';
 // SendTo command to request the list of pages for a given panel
 export const SENDTO_GET_PAGES_COMMAND = 'getPagesForPanel';
 export const SENDTO_GET_PAGES_All_COMMAND = 'getAllPages';
+/** sendTo command of main.ts: installed instances of the supported weather adapters ({ value, label }[], first entry = none) */
+export const SENDTO_GET_WEATHER_ENTITY_COMMAND = 'getWeatherEntity';
 // Central adapter name constant for admin <-> adapter sendTo calls
 export const ADAPTER_NAME = 'nspanel-lovelace-ui';
 // Expected response when asking the adapter for panels
@@ -442,6 +444,14 @@ export type ScreensaverEntry = {
     weekdayFormat?: 'short' | 'long';
     monthFormat?: 'long' | 'short' | '2-digit';
     yearFormat?: 'numeric' | '2-digit';
+    /**
+     * weather adapter instance, e.g. 'pirate-weather.0' (ScriptConfig.weatherEntity); undefined = global setting of
+     * the instance (native.weatherEntity), '' = no weather. The favorit shows the current weather while no own item
+     * is placed there, the chosen items are appended to the bottom area (config-manager getScreensaverConfig).
+     */
+    weatherEntity?: string;
+    /** default weather items appended to the bottom area (ScriptConfig.weatherAddDefaultItems), only keys set to true count */
+    weatherAddDefaultItems?: ScreensaverWeatherItems;
     /** seconds between the pages of an area with more items than places, 0 = off */
     rotationTime?: number;
     screensaverSwipe?: boolean;
@@ -449,6 +459,72 @@ export type ScreensaverEntry = {
 };
 
 export type ScreensaverConfig = ScreensaverEntry[];
+
+/** weather adapters getScreensaverConfig knows (definition.ts weatherEntities) */
+export const screensaverWeatherAdapters = ['accuweather', 'openweathermap', 'pirate-weather', 'brightsky'] as const;
+export type ScreensaverWeatherAdapter = (typeof screensaverWeatherAdapters)[number];
+
+/**
+ * Default weather items of the bottom area in the order getScreensaverConfig appends them
+ * (ScriptConfig.WeatherAddDefaultItemsJson).
+ */
+export const screensaverWeatherItemKeys = [
+    'sunriseSet',
+    'forecastDay1',
+    'forecastDay2',
+    'forecastDay3',
+    'forecastDay4',
+    'forecastDay5',
+    'forecastDay6',
+    'windSpeed',
+    'windGust',
+    'windDirection',
+    'uvIndex',
+    'solar',
+] as const;
+export type ScreensaverWeatherItemKey = (typeof screensaverWeatherItemKeys)[number];
+export type ScreensaverWeatherItems = Partial<Record<ScreensaverWeatherItemKey, boolean>>;
+
+const weatherDays = ['forecastDay1', 'forecastDay2', 'forecastDay3', 'forecastDay4', 'forecastDay5'] as const;
+const weatherWind = ['windSpeed', 'windGust', 'windDirection'] as const;
+
+/** items each adapter offers - keys of other adapters are ignored by getScreensaverConfig (screensaver-entry.test.ts guards the table) */
+export const screensaverWeatherItemsOfAdapter: Record<ScreensaverWeatherAdapter, readonly ScreensaverWeatherItemKey[]> =
+    {
+        accuweather: ['sunriseSet', ...weatherDays, ...weatherWind, 'uvIndex'],
+        openweathermap: ['sunriseSet', ...weatherDays, 'forecastDay6', ...weatherWind],
+        'pirate-weather': ['sunriseSet', ...weatherDays, 'forecastDay6', ...weatherWind, 'uvIndex'],
+        brightsky: ['sunriseSet', ...weatherDays, 'forecastDay6', ...weatherWind, 'solar'],
+    };
+
+/**
+ * Weather adapter of an instance id.
+ *
+ * @param entity instance, e.g. 'pirate-weather.0' (also with trailing dot or state path)
+ * @returns adapter or undefined for none / unsupported
+ */
+export function screensaverWeatherAdapterOf(entity: string | undefined): ScreensaverWeatherAdapter | undefined {
+    const prefix = (entity ?? '').split('.')[0];
+    return screensaverWeatherAdapters.find(a => a === prefix);
+}
+
+/**
+ * Items an entry adds to the bottom area, in the order the adapter appends them.
+ *
+ * @param items chosen items of the entry
+ * @param entity weather instance that applies
+ * @returns ordered keys, empty for no / unsupported adapter
+ */
+export function screensaverWeatherItemsOn(
+    items: ScreensaverWeatherItems | undefined,
+    entity: string | undefined,
+): ScreensaverWeatherItemKey[] {
+    const adapter = screensaverWeatherAdapterOf(entity);
+    if (!adapter || !items) {
+        return [];
+    }
+    return screensaverWeatherItemsOfAdapter[adapter].filter(k => items[k] === true);
+}
 
 /**
  * Creates a fresh screensaver entry without items.

@@ -1,4 +1,6 @@
 import { expect } from 'chai';
+import fs from 'node:fs';
+import path from 'node:path';
 import {
     emptyScreensaverEntry,
     screensaverAreas,
@@ -7,10 +9,15 @@ import {
     screensaverMaxEntries,
     screensaverModes,
     screensaverSlotLimits,
+    screensaverWeatherAdapterOf,
+    screensaverWeatherAdapters,
+    screensaverWeatherItemKeys,
+    screensaverWeatherItemsOfAdapter,
+    screensaverWeatherItemsOn,
 } from './adminShareConfig';
-import { ScreenSaverConst } from '../const/definition';
+import { ScreenSaverConst, weatherEntities } from '../const/definition';
 import type { NSpanelModel, ScreensaverModeType } from './types';
-import type { ScreensaverMode, ScreensaverPanelModel } from './adminShareConfig';
+import type { ScreensaverMode, ScreensaverPanelModel, ScreensaverWeatherItemKey } from './adminShareConfig';
 
 // adminShareConfig.ts must not import types.ts (admin bundle) - these assignments fail to compile
 // as soon as the literal unions drift apart in either direction.
@@ -18,7 +25,10 @@ const modeToAdapter: ScreensaverModeType = 'standard';
 const modeToAdmin: ScreensaverMode = 'standard';
 const modelToAdapter: NSpanelModel = 'eu';
 const modelToAdmin: ScreensaverPanelModel = 'eu';
-void [modeToAdapter, modeToAdmin, modelToAdapter, modelToAdmin];
+const weatherKeyAdmin: ScreensaverWeatherItemKey = screensaverWeatherItemKeys[0];
+const weatherKeyToAdapter: keyof ScriptConfig.WeatherAddDefaultItemsJson = weatherKeyAdmin;
+const weatherKeyToAdmin: ScreensaverWeatherItemKey = weatherKeyToAdapter;
+void [modeToAdapter, modeToAdmin, modelToAdapter, modelToAdmin, weatherKeyToAdapter, weatherKeyToAdmin];
 
 describe('lib/types - screensaver entry (admin tab)', () => {
     it('keeps the slot limits equal to ScreenSaverConst of the adapter', () => {
@@ -82,5 +92,60 @@ describe('lib/types - screensaver entry (admin tab)', () => {
         const b = emptyScreensaverEntry('a');
         expect(a).to.not.equal(b);
         expect(a.bottom).to.not.equal(b.bottom);
+    });
+});
+
+describe('lib/types - screensaver weather (admin tab)', () => {
+    it('knows the weather adapters of definition.ts', () => {
+        expect([...screensaverWeatherAdapters].sort()).to.deep.equal([...weatherEntities].sort());
+        expect(screensaverWeatherAdapterOf('pirate-weather.1.weather.')).to.equal('pirate-weather');
+        expect(screensaverWeatherAdapterOf('daswetter.0')).to.equal(undefined);
+        expect(screensaverWeatherAdapterOf('')).to.equal(undefined);
+        expect(screensaverWeatherAdapterOf(undefined)).to.equal(undefined);
+    });
+
+    it('offers per adapter exactly the items getScreensaverConfig appends, in its order', () => {
+        // The admin bundle cannot import the config-manager, so the table is copied - this reads the
+        // weather block of getScreensaverConfig and compares the want('key') calls of every branch.
+        const src = fs.readFileSync(path.resolve('src/lib/classes/config-manager.ts'), 'utf8');
+        const start = src.indexOf('if (config.weatherEntity) {');
+        const end = src.indexOf('// Check for unsupported weather adapter', start);
+        expect(start).to.be.greaterThan(-1);
+        expect(end).to.be.greaterThan(start);
+        const block = src.slice(start, end);
+        const re = /startsWith\('([a-z-]+)\.'\)|want\('([A-Za-z0-9]+)'\)/g;
+        const found: Record<string, string[]> = {};
+        let current = '';
+        let m: RegExpExecArray | null;
+        while ((m = re.exec(block))) {
+            if (m[1]) {
+                current = m[1];
+                found[current] = [];
+            } else if (current) {
+                found[current].push(m[2]);
+            }
+        }
+        expect(Object.keys(found).sort()).to.deep.equal([...screensaverWeatherAdapters].sort());
+        for (const adapter of screensaverWeatherAdapters) {
+            expect(found[adapter], adapter).to.deep.equal([...screensaverWeatherItemsOfAdapter[adapter]]);
+            for (const key of found[adapter]) {
+                expect(screensaverWeatherItemKeys, `${adapter}/${key}`).to.include(key);
+            }
+        }
+    });
+
+    it('lists the chosen items in adapter order and drops keys the adapter has not', () => {
+        expect(
+            screensaverWeatherItemsOn({ solar: true, sunriseSet: true, uvIndex: true }, 'brightsky.0'),
+        ).to.deep.equal(['sunriseSet', 'solar']);
+        expect(screensaverWeatherItemsOn({ forecastDay6: true, forecastDay1: true }, 'accuweather.0')).to.deep.equal([
+            'forecastDay1',
+        ]);
+        expect(screensaverWeatherItemsOn({ sunriseSet: false, windSpeed: true }, 'openweathermap.2')).to.deep.equal([
+            'windSpeed',
+        ]);
+        expect(screensaverWeatherItemsOn({ sunriseSet: true }, '')).to.deep.equal([]);
+        expect(screensaverWeatherItemsOn({ sunriseSet: true }, 'daswetter.0')).to.deep.equal([]);
+        expect(screensaverWeatherItemsOn(undefined, 'brightsky.0')).to.deep.equal([]);
     });
 });

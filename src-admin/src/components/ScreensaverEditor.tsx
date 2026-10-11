@@ -21,6 +21,7 @@ import {
     DialogTitle,
     FormControl,
     FormControlLabel,
+    FormGroup,
     FormLabel,
     IconButton,
     InputLabel,
@@ -49,11 +50,30 @@ import {
     type ScreensaverMode,
     type ScreensaverMrIconConfig,
     type ScreensaverPanelModel,
+    type ScreensaverWeatherItemKey,
     screensaverAreas,
     screensaverCardOfMode,
     screensaverMaxEntries,
     screensaverModes,
+    screensaverWeatherAdapterOf,
+    screensaverWeatherItemsOfAdapter,
+    screensaverWeatherItemsOn,
 } from '../../../src/lib/types/adminShareConfig';
+
+/** select value for "weather instance of the global settings" (entry.weatherEntity undefined) */
+const WEATHER_GLOBAL = '__global__';
+/** icons of the weather placeholders in the mock */
+const WEATHER_ICONS: Record<string, string> = {
+    favorit: 'weather-partly-cloudy',
+    sunriseSet: 'weather-sunset',
+    forecastDay: 'weather-cloudy',
+    windSpeed: 'weather-windy',
+    windGust: 'weather-windy-variant',
+    windDirection: 'compass',
+    uvIndex: 'white-balance-sunny',
+    solar: 'solar-power',
+};
+const WEATHER_COLOR = '#8ab4f8';
 
 export interface ScreensaverEditorProps {
     entry: ScreensaverEntry;
@@ -72,6 +92,10 @@ export interface ScreensaverEditorProps {
     expertMode?: boolean;
     /** pages the adapter knows - navigation targets in the item dialog */
     pagesList?: string[];
+    /** installed instances of the supported weather adapters, undefined while unknown (adapter offline) */
+    weatherEntities?: { value: string; label: string }[];
+    /** native.weatherEntity of the instance - applies while the entry has no own value */
+    globalWeatherEntity?: string;
 }
 
 type DialogKind = 'mricon1' | 'mricon2' | 'time' | 'date' | 'options';
@@ -1027,15 +1051,17 @@ export class ScreensaverEditor extends React.Component<ScreensaverEditorProps, S
      * @param ref place
      * @param big favorit place: larger icon
      * @param inline icon and text side by side
+     * @param fixed flex basis while the area scrolls (weather items appended)
      */
-    private renderSlot(ref: SlotRef, big: boolean, inline: boolean): React.JSX.Element {
+    private renderSlot(ref: SlotRef, big: boolean, inline: boolean, fixed?: string): React.JSX.Element {
         const { alive } = this.props;
         const { dragOverKey, dragSource } = this.state;
         const key = this.slotKey(ref);
         const item = this.item(ref);
         const over = dragOverKey === key;
+        const weatherHere = ref.area === 'favorit' && ref.index === 0 && this.weatherFavorit();
         const base = {
-            flex: 1,
+            flex: fixed ? `0 0 ${fixed}` : 1,
             minWidth: 0,
             minHeight: 0,
             display: 'flex',
@@ -1055,14 +1081,22 @@ export class ScreensaverEditor extends React.Component<ScreensaverEditorProps, S
             return (
                 <Tooltip
                     key={key}
-                    title={alive ? this.getText('screensaver_slot_free') : ''}
+                    title={
+                        alive
+                            ? this.getText(weatherHere ? 'screensaver_weather_favorit_hint' : 'screensaver_slot_free')
+                            : ''
+                    }
                 >
                     <Box
                         sx={{
                             ...base,
                             cursor: alive ? 'pointer' : 'default',
-                            opacity: over ? 1 : 0.6,
-                            border: over ? '2px dashed #4da3ff' : '1px dashed rgba(255,255,255,0.3)',
+                            opacity: over || weatherHere ? 1 : 0.6,
+                            border: over
+                                ? '2px dashed #4da3ff'
+                                : weatherHere
+                                  ? '1px solid rgba(138,180,248,0.45)'
+                                  : '1px dashed rgba(255,255,255,0.3)',
                             backgroundColor: over ? 'rgba(77,163,255,0.15)' : undefined,
                             transition: 'border-color 0.15s, background-color 0.15s',
                             '&:hover': alive ? { borderColor: '#fff', opacity: 1 } : {},
@@ -1073,7 +1107,18 @@ export class ScreensaverEditor extends React.Component<ScreensaverEditorProps, S
                         onDrop={alive ? e => this.onDrop(ref, e) : undefined}
                         data-ss={key}
                     >
-                        <AddIcon sx={{ fontSize: big ? 26 : 18, color: '#888' }} />
+                        {weatherHere ? (
+                            <>
+                                {ScreensaverItemDialog.coloredIcon(
+                                    iconSrc(WEATHER_ICONS.favorit),
+                                    big ? 34 : 22,
+                                    WEATHER_COLOR,
+                                )}
+                                <Box sx={{ fontSize: 11, color: '#bbb' }}>{this.getText('screensaver_weather')}</Box>
+                            </>
+                        ) : (
+                            <AddIcon sx={{ fontSize: big ? 26 : 18, color: '#888' }} />
+                        )}
                     </Box>
                 </Tooltip>
             );
@@ -1163,10 +1208,29 @@ export class ScreensaverEditor extends React.Component<ScreensaverEditorProps, S
         if (count <= 0) {
             return null;
         }
+        // weather items are appended behind the places (getScreensaverConfig): the places keep their
+        // size and the area scrolls - like the panel pages through them
+        const weather = area === 'bottom' ? this.weatherKeys() : [];
+        const rows = box.columns ? Math.ceil(count / box.columns) : 1;
+        const fixed = weather.length && !box.columns ? `calc((100% - ${(count - 1) * 4}px) / ${count})` : undefined;
         const slots: React.JSX.Element[] = [];
         for (let i = 0; i < count; i++) {
-            slots.push(this.renderSlot({ area, index: i }, area === 'favorit', this.inlineSlot(area, box)));
+            slots.push(this.renderSlot({ area, index: i }, area === 'favorit', this.inlineSlot(area, box), fixed));
         }
+        for (const key of weather) {
+            slots.push(this.renderWeatherSlot(key, fixed));
+        }
+        const scroll = weather.length
+            ? ({
+                  overflowX: box.columns ? 'hidden' : 'auto',
+                  overflowY: box.columns ? 'auto' : 'hidden',
+                  scrollbarWidth: 'thin',
+                  scrollbarColor: '#888 #222',
+                  '&::-webkit-scrollbar': { height: 6, width: 6 },
+                  '&::-webkit-scrollbar-track': { backgroundColor: '#222' },
+                  '&::-webkit-scrollbar-thumb': { backgroundColor: '#888', borderRadius: 3 },
+              } as const)
+            : {};
         return (
             <Tooltip
                 key={area}
@@ -1182,14 +1246,20 @@ export class ScreensaverEditor extends React.Component<ScreensaverEditorProps, S
                         height: box.height,
                         display: box.columns ? 'grid' : 'flex',
                         gridTemplateColumns: box.columns ? `repeat(${box.columns}, 1fr)` : undefined,
-                        gridAutoRows: box.columns ? '1fr' : undefined,
+                        gridAutoRows: box.columns
+                            ? weather.length
+                                ? `calc((100% - ${(rows - 1) * 4}px) / ${rows})`
+                                : '1fr'
+                            : undefined,
                         flexDirection: box.direction,
                         gap: 0.5,
                         p: 0.5,
                         boxSizing: 'border-box',
                         borderRadius: 1,
                         border: '1px solid rgba(255,255,255,0.08)',
+                        ...scroll,
                     }}
+                    data-ss={`area-${area}`}
                 >
                     {slots}
                 </Box>
@@ -1219,6 +1289,224 @@ export class ScreensaverEditor extends React.Component<ScreensaverEditorProps, S
                         : this.getText('screensaver_mricon_short').replace('%s', which === 'mrIcon1' ? '1' : '2')}
                 </Typography>
             ),
+        );
+    }
+
+    // ---------- weather ----------
+
+    /** weather instance that applies: the entry's own value, else the global setting; '' = none */
+    private weatherEntity(): string {
+        const { entry, globalWeatherEntity } = this.props;
+        return entry.weatherEntity === undefined ? (globalWeatherEntity ?? '') : entry.weatherEntity;
+    }
+
+    /** weather items the adapter appends to the bottom area, in its order */
+    private weatherKeys(): ScreensaverWeatherItemKey[] {
+        return screensaverWeatherItemsOn(this.props.entry.weatherAddDefaultItems, this.weatherEntity());
+    }
+
+    /** the favorit place shows the current weather: adapter known and no own item */
+    private weatherFavorit(): boolean {
+        return !!screensaverWeatherAdapterOf(this.weatherEntity()) && !this.props.entry.favorit;
+    }
+
+    private weatherLabel(key: ScreensaverWeatherItemKey, short = false): string {
+        const day = /^forecastDay(\d)$/.exec(key);
+        const prefix = short ? 'screensaver_weather_short_' : 'screensaver_weather_';
+        return day ? this.getText(`${prefix}forecastDay`).replace('%s', day[1]) : this.getText(`${prefix}${key}`);
+    }
+
+    private setWeatherEntity(value: string): void {
+        const out = { ...this.props.entry };
+        if (value === WEATHER_GLOBAL) {
+            delete out.weatherEntity;
+        } else {
+            out.weatherEntity = value;
+        }
+        this.props.onEntryChange(out);
+    }
+
+    private toggleWeatherItem(key: ScreensaverWeatherItemKey, on: boolean): void {
+        const out = { ...this.props.entry };
+        const items = { ...(out.weatherAddDefaultItems ?? {}) };
+        if (on) {
+            items[key] = true;
+        } else {
+            delete items[key];
+        }
+        if (Object.keys(items).length) {
+            out.weatherAddDefaultItems = items;
+        } else {
+            delete out.weatherAddDefaultItems;
+        }
+        this.props.onEntryChange(out);
+    }
+
+    /** the weather settings next to the panel: instance and the extra items of the bottom area */
+    private renderWeatherBox(): React.JSX.Element {
+        const { entry, alive, weatherEntities, globalWeatherEntity = '' } = this.props;
+        const own = entry.weatherEntity;
+        const value = own === undefined ? WEATHER_GLOBAL : own;
+        const effective = this.weatherEntity();
+        const adapter = screensaverWeatherAdapterOf(effective);
+        const installed = weatherEntities ?? [];
+        const missing = own && !installed.some(e => e.value === own) ? own : '';
+        const chosen = entry.weatherAddDefaultItems ?? {};
+        return (
+            <Box
+                sx={{ flex: '1 1 260px', minWidth: 240, maxWidth: 380 }}
+                data-ss="weather"
+            >
+                <Typography
+                    variant="subtitle1"
+                    sx={{ mb: 1 }}
+                >
+                    {this.getText('screensaver_weather')}
+                </Typography>
+                <FormControl
+                    variant="standard"
+                    fullWidth
+                    disabled={!alive}
+                >
+                    <InputLabel shrink>{this.getText('screensaver_weather_entity')}</InputLabel>
+                    <Select
+                        value={value}
+                        displayEmpty
+                        onChange={e => this.setWeatherEntity(String(e.target.value))}
+                        data-ss="weather-entity"
+                    >
+                        <MenuItem value={WEATHER_GLOBAL}>
+                            {this.getText('screensaver_weather_global').replace(
+                                '%s',
+                                globalWeatherEntity || this.getText('screensaver_weather_global_none'),
+                            )}
+                        </MenuItem>
+                        <MenuItem value="">{this.getText('screensaver_weather_none')}</MenuItem>
+                        {installed.map(e => (
+                            <MenuItem
+                                key={e.value}
+                                value={e.value}
+                            >
+                                {e.label}
+                            </MenuItem>
+                        ))}
+                        {missing && <MenuItem value={missing}>{missing}</MenuItem>}
+                    </Select>
+                </FormControl>
+                <Typography
+                    variant="caption"
+                    color="text.secondary"
+                    sx={{ display: 'block', mt: 1 }}
+                >
+                    {this.getText('screensaver_weather_hint')}
+                </Typography>
+                {weatherEntities && installed.length === 0 && (
+                    <Alert
+                        severity="info"
+                        sx={{ mt: 1 }}
+                    >
+                        {this.getText('screensaver_weather_noInstances')}
+                    </Alert>
+                )}
+                {weatherEntities && missing && (
+                    <Alert
+                        severity="warning"
+                        sx={{ mt: 1 }}
+                    >
+                        {this.getText('screensaver_weather_missing').replace('%s', missing)}
+                    </Alert>
+                )}
+                {effective && !adapter && (
+                    <Alert
+                        severity="warning"
+                        sx={{ mt: 1 }}
+                    >
+                        {this.getText('screensaver_weather_unsupported').replace('%s', effective.split('.')[0])}
+                    </Alert>
+                )}
+                {adapter && (
+                    <FormControl
+                        component="fieldset"
+                        sx={{ mt: 1.5 }}
+                        disabled={!alive}
+                    >
+                        <FormLabel
+                            component="legend"
+                            sx={{ fontSize: 13 }}
+                        >
+                            {this.getText('screensaver_weather_items')}
+                        </FormLabel>
+                        <FormGroup>
+                            {screensaverWeatherItemsOfAdapter[adapter].map(key => (
+                                <FormControlLabel
+                                    key={key}
+                                    control={
+                                        <Checkbox
+                                            size="small"
+                                            checked={chosen[key] === true}
+                                            onChange={e => this.toggleWeatherItem(key, e.target.checked)}
+                                        />
+                                    }
+                                    label={this.weatherLabel(key)}
+                                    sx={{ my: -0.5 }}
+                                    data-ss={`weather-${key}`}
+                                />
+                            ))}
+                        </FormGroup>
+                    </FormControl>
+                )}
+            </Box>
+        );
+    }
+
+    /**
+     * a weather item of the bottom area as the adapter appends it - not editable here
+     *
+     * @param key item
+     * @param fixed flex basis while the area scrolls
+     */
+    private renderWeatherSlot(key: ScreensaverWeatherItemKey, fixed?: string): React.JSX.Element {
+        const src = iconSrc(WEATHER_ICONS[key.startsWith('forecastDay') ? 'forecastDay' : key]);
+        return (
+            <Tooltip
+                key={`weather-${key}`}
+                title={`${this.getText('screensaver_weather')}: ${this.weatherLabel(key)}`}
+            >
+                <Box
+                    sx={{
+                        flex: fixed ? `0 0 ${fixed}` : 1,
+                        minWidth: 0,
+                        minHeight: 0,
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: 0.25,
+                        borderRadius: 1,
+                        fontSize: 11,
+                        color: '#bbb',
+                        boxSizing: 'border-box',
+                        overflow: 'hidden',
+                        border: '1px solid rgba(138,180,248,0.45)',
+                        backgroundColor: 'rgba(138,180,248,0.08)',
+                        cursor: 'default',
+                    }}
+                    data-ss={`weather-slot-${key}`}
+                >
+                    {src ? ScreensaverItemDialog.coloredIcon(src, 22, WEATHER_COLOR) : null}
+                    <Box
+                        sx={{
+                            px: 0.5,
+                            maxWidth: '100%',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            whiteSpace: 'nowrap',
+                        }}
+                    >
+                        {this.weatherLabel(key, true)}
+                    </Box>
+                </Box>
+            </Tooltip>
         );
     }
 
@@ -1447,6 +1735,7 @@ export class ScreensaverEditor extends React.Component<ScreensaverEditorProps, S
         const { editing } = this.state;
         const hasPanel = this.hasPanel();
         const overflow = hasPanel ? this.overflow() : [];
+        const weatherBottom = hasPanel && this.layout().areas.bottom ? this.weatherKeys().length : 0;
         return (
             <Box>
                 {this.renderHeader()}
@@ -1475,15 +1764,31 @@ export class ScreensaverEditor extends React.Component<ScreensaverEditorProps, S
                             )}
                     </Alert>
                 )}
-                {hasPanel && this.renderPanel()}
                 {hasPanel && (
-                    <Typography
-                        variant="caption"
-                        color="text.secondary"
-                        sx={{ display: 'block', mt: 1 }}
-                    >
-                        {this.getText('screensaver_panelHint')}
-                    </Typography>
+                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, alignItems: 'flex-start' }}>
+                        <Box sx={{ flex: '1 1 420px', minWidth: 0, maxWidth: this.layout().maxWidth }}>
+                            {this.renderPanel()}
+                            <Typography
+                                variant="caption"
+                                color="text.secondary"
+                                sx={{ display: 'block', mt: 1 }}
+                            >
+                                {this.getText('screensaver_panelHint')}
+                            </Typography>
+                            {weatherBottom > 0 && (
+                                <Typography
+                                    variant="caption"
+                                    color="text.secondary"
+                                    sx={{ display: 'block', mt: 0.5 }}
+                                >
+                                    {this.getText('screensaver_weather_scrollHint')
+                                        .replace('%s', String(this.limit('bottom') + weatherBottom))
+                                        .replace('%s', String(this.limit('bottom')))}
+                                </Typography>
+                            )}
+                        </Box>
+                        {this.renderWeatherBox()}
+                    </Box>
                 )}
                 <Alert
                     severity="info"
