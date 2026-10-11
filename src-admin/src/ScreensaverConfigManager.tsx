@@ -9,11 +9,12 @@ import DeleteOutlineIcon from '@mui/icons-material/DeleteOutlineOutlined';
 import { ConfigGeneric, type ConfigGenericProps, type ConfigGenericState } from '@iobroker/json-config';
 import ConfirmDialog from './components/ConfirmDialog';
 import { ScreensaverEditor } from './components/ScreensaverEditor';
-import type { AdminPanelConfig, ScreensaverEntry } from '../../src/lib/types/adminShareConfig';
+import type { AdminPanelConfig, ScreensaverEntry, ScreensaverTemplateInfo } from '../../src/lib/types/adminShareConfig';
 import {
     ADAPTER_NAME,
     SENDTO_GET_PAGES_All_COMMAND,
     SENDTO_GET_WEATHER_ENTITY_COMMAND,
+    SENDTO_GET_SCREENSAVER_TEMPLATES_COMMAND,
     emptyScreensaverEntry,
 } from '../../src/lib/types/adminShareConfig';
 
@@ -26,6 +27,8 @@ interface ScreensaverConfigManagerState extends ConfigGenericState {
     pagesList: string[];
     /** installed instances of the supported weather adapters, undefined until the adapter answered */
     weatherEntities?: { value: string; label: string }[];
+    /** page item templates of the adapter (item dialog, source "template"), undefined until the adapter answered */
+    templates?: ScreensaverTemplateInfo[];
 }
 
 const PAGES_RETRY_MS = 3000;
@@ -66,6 +69,7 @@ class ScreensaverConfigManager extends ConfigGeneric<
             if (alive) {
                 void this.loadPagesList();
                 void this.loadWeatherEntities();
+                void this.loadTemplates();
             }
         } catch (error) {
             console.error('[ScreensaverConfig] alive state failed:', error);
@@ -86,6 +90,7 @@ class ScreensaverConfigManager extends ConfigGeneric<
             this.setState({ alive } as ScreensaverConfigManagerState);
             if (alive && !this.state.weatherEntities) {
                 void this.loadWeatherEntities();
+                void this.loadTemplates();
             }
             if (alive && this.state.pagesList.length === 0) {
                 void this.loadPagesList();
@@ -122,6 +127,31 @@ class ScreensaverConfigManager extends ConfigGeneric<
             return;
         }
         this.setState({ pagesList: Array.from(new Set(list)) } as ScreensaverConfigManagerState);
+    }
+
+    /** page item templates the adapter knows (main.ts getScreensaverTemplates) - the admin must not import them */
+    private async loadTemplates(): Promise<void> {
+        if (!this.state.alive) {
+            return;
+        }
+        const instance = this.props.oContext.instance ?? '0';
+        try {
+            const raw = await this.props.oContext.socket.sendTo(
+                `${ADAPTER_NAME}.${instance}`,
+                SENDTO_GET_SCREENSAVER_TEMPLATES_COMMAND,
+                {},
+            );
+            const list: ScreensaverTemplateInfo[] = Array.isArray(raw)
+                ? raw
+                : Array.isArray(raw?.result)
+                  ? raw.result
+                  : [];
+            this.setState({
+                templates: list.filter(t => t && typeof t.name === 'string' && t.name !== ''),
+            } as ScreensaverConfigManagerState);
+        } catch (e) {
+            console.warn('[ScreensaverConfig] getScreensaverTemplates failed', e);
+        }
     }
 
     /** installed instances of the supported weather adapters (main.ts getWeatherEntity, like the global settings page) */
@@ -406,6 +436,7 @@ class ScreensaverConfigManager extends ConfigGeneric<
                 expertMode={this.props.expertMode ?? false}
                 pagesList={pagesList}
                 weatherEntities={this.state.weatherEntities}
+                templates={this.state.templates}
                 globalWeatherEntity={typeof data.weatherEntity === 'string' ? data.weatherEntity : ''}
             />
         );

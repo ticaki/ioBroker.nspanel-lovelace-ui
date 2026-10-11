@@ -26,6 +26,7 @@ __export(adminShareConfig_exports, {
   SENDTO_GET_PAGES_COMMAND: () => SENDTO_GET_PAGES_COMMAND,
   SENDTO_GET_PANELS_COMMAND: () => SENDTO_GET_PANELS_COMMAND,
   SENDTO_GET_PANEL_NAVIGATION_COMMAND: () => SENDTO_GET_PANEL_NAVIGATION_COMMAND,
+  SENDTO_GET_SCREENSAVER_TEMPLATES_COMMAND: () => SENDTO_GET_SCREENSAVER_TEMPLATES_COMMAND,
   SENDTO_GET_WEATHER_ENTITY_COMMAND: () => SENDTO_GET_WEATHER_ENTITY_COMMAND,
   chartDefaults: () => chartDefaults,
   emptyChannelValueConfig: () => emptyChannelValueConfig,
@@ -47,6 +48,7 @@ __export(adminShareConfig_exports, {
   screensaverCardOfMode: () => screensaverCardOfMode,
   screensaverDateFormats: () => screensaverDateFormats,
   screensaverItemFields: () => screensaverItemFields,
+  screensaverItemSource: () => screensaverItemSource,
   screensaverMaxEntries: () => screensaverMaxEntries,
   screensaverModes: () => screensaverModes,
   screensaverSlotLimits: () => screensaverSlotLimits,
@@ -72,6 +74,7 @@ const SENDTO_GET_PANELS_COMMAND = "getPanels";
 const SENDTO_GET_PAGES_COMMAND = "getPagesForPanel";
 const SENDTO_GET_PAGES_All_COMMAND = "getAllPages";
 const SENDTO_GET_WEATHER_ENTITY_COMMAND = "getWeatherEntity";
+const SENDTO_GET_SCREENSAVER_TEMPLATES_COMMAND = "getScreensaverTemplates";
 const ADAPTER_NAME = "nspanel-lovelace-ui";
 function stateRefNodeId(dp) {
   return `dp:${dp}`;
@@ -133,6 +136,9 @@ function screensaverCardOfMode(mode) {
     default:
       return "screensaver";
   }
+}
+function screensaverItemSource(item) {
+  return (item == null ? void 0 : item.template) ? "template" : "state";
 }
 const screensaverDateFormats = [
   { key: "dateFormatShort", options: { dateStyle: "short" } },
@@ -1040,6 +1046,7 @@ const CHANNEL_ROLES_LIST = Object.keys(requiredScriptDataPoints);
   SENDTO_GET_PAGES_COMMAND,
   SENDTO_GET_PANELS_COMMAND,
   SENDTO_GET_PANEL_NAVIGATION_COMMAND,
+  SENDTO_GET_SCREENSAVER_TEMPLATES_COMMAND,
   SENDTO_GET_WEATHER_ENTITY_COMMAND,
   chartDefaults,
   emptyChannelValueConfig,
@@ -1061,6 +1068,7 @@ const CHANNEL_ROLES_LIST = Object.keys(requiredScriptDataPoints);
   screensaverCardOfMode,
   screensaverDateFormats,
   screensaverItemFields,
+  screensaverItemSource,
   screensaverMaxEntries,
   screensaverModes,
   screensaverSlotLimits,

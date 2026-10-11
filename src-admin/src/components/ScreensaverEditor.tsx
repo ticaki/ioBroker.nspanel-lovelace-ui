@@ -44,6 +44,7 @@ import IconSelect from '../IconSelect';
 import icons from '../icons.json';
 import {
     type ScreensaverItemConfig,
+    type ScreensaverTemplateInfo,
     type AdminPanelConfig,
     type ScreensaverArea,
     type ScreensaverEntry,
@@ -103,6 +104,8 @@ export interface ScreensaverEditorProps {
     weatherEntities?: { value: string; label: string }[];
     /** native.weatherEntity of the instance - applies while the entry has no own value */
     globalWeatherEntity?: string;
+    /** page item templates the adapter knows (item dialog), undefined while unknown (adapter offline) */
+    templates?: ScreensaverTemplateInfo[];
 }
 
 type DialogKind = 'mricon1' | 'mricon2' | 'time' | 'date' | 'options';
@@ -2034,6 +2037,7 @@ export class ScreensaverEditor extends React.Component<ScreensaverEditorProps, S
                     themeName={this.props.themeName}
                     expertMode={this.props.expertMode ?? false}
                     pagesList={this.props.pagesList ?? []}
+                    templates={this.props.templates}
                 />
             </Box>
         );

@@ -49,6 +49,8 @@ export const SENDTO_GET_PAGES_COMMAND = 'getPagesForPanel';
 export const SENDTO_GET_PAGES_All_COMMAND = 'getAllPages';
 /** sendTo command of main.ts: installed instances of the supported weather adapters ({ value, label }[], first entry = none) */
 export const SENDTO_GET_WEATHER_ENTITY_COMMAND = 'getWeatherEntity';
+/** admin tab screensaver: the page item templates (`pageItemTemplates`) with type, role and adapter */
+export const SENDTO_GET_SCREENSAVER_TEMPLATES_COMMAND = 'getScreensaverTemplates';
 // Central adapter name constant for admin <-> adapter sendTo calls
 export const ADAPTER_NAME = 'nspanel-lovelace-ui';
 // Expected response when asking the adapter for panels
@@ -359,8 +361,14 @@ export type ScreensaverItemAction = {
  * (config-manager getEntityData); which fields the panel shows depends on the area ({@link screensaverItemFields})
  */
 export type ScreensaverItemConfig = {
-    /** the state (ScreensaverEntity) */
+    /** the state (ScreensaverEntity); for a template item the object the template works on (`dpInit`) */
     state: string;
+    /**
+     * name of a page item template (`pageItemTemplates`, e.g. `text.window.isOpen`) - the item becomes a
+     * ScreenSaverElement of type `template` with `dpInit` = `state`; the icon, color, text and value fields
+     * below do not apply, the template brings its own
+     */
+    template?: string;
     /** text above the icon, bottom area only (ScreensaverEntityText); empty = name of the state */
     headline?: string;
     iconOn?: string;
@@ -390,6 +398,23 @@ export type ScreensaverItemConfig = {
 };
 
 export type ScreensaverItemField = 'headline' | 'value' | 'text' | 'action';
+
+/** what an item is built from: one state with its own fields or a page item template */
+export type ScreensaverItemSource = 'state' | 'template';
+
+/**
+ * source of an item - template as soon as a template name is set
+ *
+ * @param item stored item, undefined = new
+ */
+export function screensaverItemSource(
+    item: Pick<ScreensaverItemConfig, 'template'> | undefined,
+): ScreensaverItemSource {
+    return item?.template ? 'template' : 'state';
+}
+
+/** a page item template as the adapter reports it (main.ts, getScreensaverTemplates) */
+export type ScreensaverTemplateInfo = { name: string; type: string; role: string; adapter: string };
 
 /** date formats the item dialog offers (ScreensaverEntityDateFormat); the key is the i18n label */
 export const screensaverDateFormats: readonly { key: string; options: Intl.DateTimeFormatOptions }[] = [

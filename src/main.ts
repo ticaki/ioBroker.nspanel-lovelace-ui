@@ -3,6 +3,7 @@ import {
     SAVE_PANEL_NAVIGATION_COMMAND,
     SENDTO_GET_PAGES_COMMAND,
     SENDTO_GET_PANELS_COMMAND,
+    SENDTO_GET_SCREENSAVER_TEMPLATES_COMMAND,
     SENDTO_GET_PAGES_All_COMMAND,
     ALL_PANELS_SPECIAL_ID,
 } from './lib/types/adminShareConfig';
@@ -22,6 +23,7 @@ import { Controller } from './lib/controller/controller';
 import { Icons } from './lib/const/icon_mapping';
 import * as definition from './lib/const/definition';
 import { ConfigManager } from './lib/classes/config-manager';
+import { pageItemTemplates } from './lib/templates/templateArray';
 import type { Panel, panelConfigPartial } from './lib/controller/panel';
 import { generateAliasDocumentation } from './lib/tools/readme';
 import { redactSecretsInText, stringifyForLog } from './lib/tools/redact';
@@ -832,6 +834,24 @@ class NspanelLovelaceUi extends utils.Adapter {
                             result ? result : [{ label: 'Not available', value: '' }],
                             obj.callback,
                         );
+                    }
+                    break;
+                }
+                case SENDTO_GET_SCREENSAVER_TEMPLATES_COMMAND: {
+                    // the admin bundle must not import the templates (colord, adapter types) - the screensaver tab asks here
+                    const result = Object.entries(
+                        pageItemTemplates as Record<string, NSPanel.PageItemOptionsTemplate | undefined>,
+                    )
+                        .filter(([, t]) => !!t)
+                        .map(([name, t]) => ({
+                            name,
+                            type: String(t?.type ?? ''),
+                            role: String(t?.role ?? ''),
+                            adapter: String(t?.adapter ?? ''),
+                        }))
+                        .sort((a, b) => a.name.localeCompare(b.name));
+                    if (obj.callback) {
+                        this.sendTo(obj.from, obj.command, result, obj.callback);
                     }
                     break;
                 }

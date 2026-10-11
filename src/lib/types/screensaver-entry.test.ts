@@ -6,6 +6,7 @@ import {
     screensaverAreas,
     screensaverCardOfMode,
     screensaverItemFields,
+    screensaverItemSource,
     screensaverMaxEntries,
     screensaverModes,
     screensaverSlotLimits,
@@ -17,7 +18,13 @@ import {
 } from './adminShareConfig';
 import { ScreenSaverConst, weatherEntities } from '../const/definition';
 import type { NSpanelModel, ScreensaverModeType } from './types';
-import type { ScreensaverMode, ScreensaverPanelModel, ScreensaverWeatherItemKey } from './adminShareConfig';
+import type {
+    ScreensaverItemConfig,
+    ScreensaverMode,
+    ScreensaverPanelModel,
+    ScreensaverWeatherItemKey,
+} from './adminShareConfig';
+import { pageItemTemplates } from '../templates/templateArray';
 
 // adminShareConfig.ts must not import types.ts (admin bundle) - these assignments fail to compile
 // as soon as the literal unions drift apart in either direction.
@@ -29,6 +36,18 @@ const weatherKeyAdmin: ScreensaverWeatherItemKey = screensaverWeatherItemKeys[0]
 const weatherKeyToAdapter: keyof ScriptConfig.WeatherAddDefaultItemsJson = weatherKeyAdmin;
 const weatherKeyToAdmin: ScreensaverWeatherItemKey = weatherKeyToAdapter;
 void [modeToAdapter, modeToAdmin, modelToAdapter, modelToAdmin, weatherKeyToAdapter, weatherKeyToAdmin];
+
+// a template item of the admin is a ScreenSaverElement of type template: `state` is the `dpInit`
+const templateItem: ScreensaverItemConfig = { state: 'alias.0.window', template: 'text.window.isOpen' };
+const templateToScript: ScriptConfig.ScreenSaverElement = {
+    type: 'template',
+    template: templateItem.template ?? '',
+    dpInit: templateItem.state,
+    modeScr: 'bottom',
+    enabled: templateItem.enabled,
+    visibleCondition: templateItem.visibleCondition,
+};
+void templateToScript;
 
 describe('lib/types - screensaver entry (admin tab)', () => {
     it('keeps the slot limits equal to ScreenSaverConst of the adapter', () => {
@@ -92,6 +111,24 @@ describe('lib/types - screensaver entry (admin tab)', () => {
         const b = emptyScreensaverEntry('a');
         expect(a).to.not.equal(b);
         expect(a.bottom).to.not.equal(b.bottom);
+    });
+});
+
+describe('lib/types - screensaver item source (admin tab)', () => {
+    it('tells a template item from a state item', () => {
+        expect(screensaverItemSource(undefined)).to.equal('state');
+        const stateItem: ScreensaverItemConfig = { state: 'x' };
+        expect(screensaverItemSource(stateItem)).to.equal('state');
+        expect(screensaverItemSource({ template: '' })).to.equal('state');
+        expect(screensaverItemSource({ template: 'text.window.isOpen' })).to.equal('template');
+    });
+
+    it('can group every page item template by the part before the first dot (item dialog)', () => {
+        const names = Object.keys(pageItemTemplates);
+        expect(names.length).to.be.greaterThan(0);
+        for (const name of names) {
+            expect(name, name).to.match(/^[A-Za-z]+\.[A-Za-z0-9_.-]+$/);
+        }
     });
 });
 

@@ -7,6 +7,7 @@
 import React from 'react';
 import {
     Alert,
+    Autocomplete,
     Box,
     Button,
     Dialog,
@@ -38,8 +39,11 @@ import {
     type ScreensaverItemAction,
     type ScreensaverItemConfig,
     type IconColorElement,
+    type ScreensaverItemSource,
+    type ScreensaverTemplateInfo,
     screensaverDateFormats,
     screensaverItemFields,
+    screensaverItemSource,
 } from '../../../src/lib/types/adminShareConfig';
 
 export interface ScreensaverItemDialogProps {
@@ -61,6 +65,8 @@ export interface ScreensaverItemDialogProps {
     themeName?: any;
     expertMode?: boolean;
     pagesList?: string[];
+    /** page item templates of the adapter, undefined while unknown (adapter offline) */
+    templates?: ScreensaverTemplateInfo[];
 }
 
 interface ScreensaverItemDialogState {
@@ -71,6 +77,8 @@ interface ScreensaverItemDialogState {
     objName: string;
     objRole: string;
     colorMode: 'fixed' | 'scale';
+    /** radio at the top: one state with own fields or a page item template */
+    source: ScreensaverItemSource;
 }
 
 let iconMap: Map<string, string> | null = null;
@@ -100,6 +108,15 @@ function iconSrc(name: string | undefined): string {
  */
 function isState(obj: ioBroker.Object): boolean {
     return !!obj && obj.type === 'state';
+}
+
+/**
+ * objects a template works on: the channel, alias or device it reads its states from - or a single state
+ *
+ * @param obj object from the browser
+ */
+function isTemplateTarget(obj: ioBroker.Object): boolean {
+    return !!obj && (obj.type === 'state' || obj.type === 'channel' || obj.type === 'device' || obj.type === 'folder');
 }
 
 /**
@@ -145,15 +162,28 @@ export class ScreensaverItemDialog extends React.Component<ScreensaverItemDialog
             objName: '',
             objRole: '',
             colorMode: 'fixed',
+            source: 'state',
         };
     }
 
     componentDidUpdate(prev: ScreensaverItemDialogProps): void {
         if (this.props.open && !prev.open) {
             const draft: ScreensaverItemConfig = this.props.item ? structuredClone(this.props.item) : { state: '' };
-            this.setState({ draft, colorMode: draft.colorScale ? 'scale' : 'fixed', objType: undefined }, () => {
-                void this.loadObject(draft.state);
-            });
+            if (typeof draft.state !== 'string') {
+                // an item stored without a state (older or hand-edited config) must not crash the tab
+                draft.state = '';
+            }
+            this.setState(
+                {
+                    draft,
+                    colorMode: draft.colorScale ? 'scale' : 'fixed',
+                    objType: undefined,
+                    source: screensaverItemSource(draft),
+                },
+                () => {
+                    void this.loadObject(draft.state);
+                },
+            );
         }
     }
 
@@ -213,6 +243,22 @@ export class ScreensaverItemDialog extends React.Component<ScreensaverItemDialog
             return;
         }
         draft.state = draft.state.trim();
+        if (this.state.source === 'template') {
+            // the template brings icon, colors and texts - only what the script's template element knows is kept
+            if (!draft.template) {
+                return;
+            }
+            const kept: ScreensaverItemConfig = { state: draft.state, template: draft.template };
+            if (draft.enabled) {
+                kept.enabled = draft.enabled;
+            }
+            if (draft.visibleCondition) {
+                kept.visibleCondition = draft.visibleCondition;
+            }
+            this.props.onSave(kept);
+            return;
+        }
+        delete draft.template;
         if (this.state.colorMode === 'scale') {
             delete draft.colorOn;
             delete draft.colorOff;
@@ -276,6 +322,134 @@ export class ScreensaverItemDialog extends React.Component<ScreensaverItemDialog
             return 'number';
         }
         return 'other';
+    }
+
+    private setSource(source: ScreensaverItemSource): void {
+        const draft = { ...this.state.draft };
+        if (source === 'state') {
+            delete draft.template;
+        }
+        this.setState({ source, draft });
+    }
+
+    /** radio at the top: state (own fields) or template */
+    private renderSourceSwitch(): React.JSX.Element {
+        return (
+            <FormControl
+                component="fieldset"
+                sx={{ mb: 1 }}
+            >
+                <FormLabel
+                    component="legend"
+                    sx={{ fontSize: 12 }}
+                >
+                    {this.getText('screensaver_item_source')}
+                </FormLabel>
+                <RadioGroup
+                    row
+                    value={this.state.source}
+                    onChange={e => this.setSource(e.target.value as ScreensaverItemSource)}
+                    data-ss="source"
+                >
+                    <FormControlLabel
+                        value="state"
+                        control={<Radio size="small" />}
+                        label={this.getText('screensaver_item_source_state')}
+                    />
+                    <FormControlLabel
+                        value="template"
+                        control={<Radio size="small" />}
+                        label={this.getText('screensaver_item_source_template')}
+                    />
+                </RadioGroup>
+            </FormControl>
+        );
+    }
+
+    /** template mode: the template (list of the adapter) and the object it works on */
+    private renderTemplateFields(): React.JSX.Element {
+        const { draft, objType, objName } = this.state;
+        const templates = this.props.templates;
+        const selected: ScreensaverTemplateInfo | null =
+            templates?.find(t => t.name === draft.template) ??
+            (draft.template ? { name: draft.template, type: '', role: '', adapter: '' } : null);
+        return (
+            <Box sx={{ mb: 2 }}>
+                {templates === undefined && (
+                    <Alert
+                        severity="info"
+                        sx={{ mb: 2 }}
+                    >
+                        {this.getText('screensaver_item_templatesPending')}
+                    </Alert>
+                )}
+                <Autocomplete
+                    options={templates ?? (selected ? [selected] : [])}
+                    value={selected}
+                    groupBy={o => o.name.split('.')[0]}
+                    getOptionLabel={o => o.name}
+                    isOptionEqualToValue={(a, b) => a.name === b.name}
+                    onChange={(_e, v) => this.set('template', v?.name)}
+                    renderInput={params => (
+                        <TextField
+                            {...params}
+                            variant="standard"
+                            label={this.getText('screensaver_item_template')}
+                        />
+                    )}
+                    sx={{ mb: 2, maxWidth: 480 }}
+                    data-ss="template"
+                />
+                {selected && (selected.type || selected.role || selected.adapter) && (
+                    <Typography
+                        variant="caption"
+                        color="text.secondary"
+                        sx={{ display: 'block', mb: 2 }}
+                    >
+                        {this.getText('screensaver_item_templateInfo')
+                            .replace('%s', selected.type || '-')
+                            .replace('%s', selected.role || '-')
+                            .replace('%s', selected.adapter || '-')}
+                    </Typography>
+                )}
+                {!draft.template && (
+                    <Typography
+                        variant="caption"
+                        color="text.secondary"
+                        sx={{ display: 'block', mb: 2 }}
+                    >
+                        {this.getText('screensaver_item_pickTemplate')}
+                    </Typography>
+                )}
+                {this.renderStateField(
+                    this.getText('screensaver_item_dpInit'),
+                    draft.state,
+                    (v: string) => {
+                        this.set('state', v);
+                        void this.loadObject(v);
+                    },
+                    'dpInit',
+                    isTemplateTarget,
+                )}
+                {objType === null && (
+                    <Alert
+                        severity="warning"
+                        sx={{ mb: 2 }}
+                    >
+                        {this.getText('screensaver_item_stateMissing').replace('%s', draft.state)}
+                    </Alert>
+                )}
+                {typeof objType === 'string' && (
+                    <Typography
+                        variant="caption"
+                        color="text.secondary"
+                        sx={{ display: 'block' }}
+                    >
+                        {this.getText('screensaver_item_dpInitInfo').replace('%s', objName || '-')}
+                    </Typography>
+                )}
+            </Box>
+        );
     }
 
     // ---------- fields ----------
@@ -726,7 +900,10 @@ export class ScreensaverItemDialog extends React.Component<ScreensaverItemDialog
         const { draft, objType, objUnit, objName } = this.state;
         const fields = screensaverItemFields(area);
         const kind = this.kind();
-        const known = kind !== 'unknown';
+        const template = this.state.source === 'template';
+        // state mode: the fields follow the type of the state; template mode: the template defines the look
+        const known = !template && kind !== 'unknown';
+        const visibility = template ? !!draft.state.trim() : known;
         return (
             <Dialog
                 open={open}
@@ -741,52 +918,59 @@ export class ScreensaverItemDialog extends React.Component<ScreensaverItemDialog
                         .replace('%s', String(count))}
                 </DialogTitle>
                 <DialogContent dividers>
-                    <Box sx={{ display: 'flex', gap: 3, alignItems: 'flex-start' }}>
-                        <Box sx={{ flex: 1, minWidth: 0 }}>
-                            {this.renderStateField(
-                                this.getText('screensaver_item_state'),
-                                draft.state,
-                                (v: string) => {
-                                    this.set('state', v);
-                                    void this.loadObject(v);
-                                },
-                                'state',
-                            )}
-                            {objType === null && (
-                                <Alert
-                                    severity="warning"
-                                    sx={{ mb: 2 }}
-                                >
-                                    {this.getText('screensaver_item_stateMissing').replace('%s', draft.state)}
-                                </Alert>
-                            )}
-                            {known && (
-                                <Typography
-                                    variant="caption"
-                                    color="text.secondary"
-                                    sx={{ display: 'block', mb: 2 }}
-                                >
-                                    {this.getText('screensaver_item_stateInfo')
-                                        .replace('%s', objName || '-')
-                                        .replace('%s', objType || '-')
-                                        .replace('%s', objUnit || '-')}
-                                </Typography>
-                            )}
-                            {!known && objType !== null && (
-                                <Typography
-                                    variant="caption"
-                                    color="text.secondary"
-                                    sx={{ display: 'block', mb: 2 }}
-                                >
-                                    {this.getText('screensaver_item_pickState')}
-                                </Typography>
-                            )}
-                            {known &&
-                                fields.headline &&
-                                this.renderText('headline', 'screensaver_item_headline', objName, { minWidth: 300 })}
+                    {this.renderSourceSwitch()}
+                    {template ? (
+                        this.renderTemplateFields()
+                    ) : (
+                        <Box sx={{ display: 'flex', gap: 3, alignItems: 'flex-start' }}>
+                            <Box sx={{ flex: 1, minWidth: 0 }}>
+                                {this.renderStateField(
+                                    this.getText('screensaver_item_state'),
+                                    draft.state,
+                                    (v: string) => {
+                                        this.set('state', v);
+                                        void this.loadObject(v);
+                                    },
+                                    'state',
+                                )}
+                                {objType === null && (
+                                    <Alert
+                                        severity="warning"
+                                        sx={{ mb: 2 }}
+                                    >
+                                        {this.getText('screensaver_item_stateMissing').replace('%s', draft.state)}
+                                    </Alert>
+                                )}
+                                {known && (
+                                    <Typography
+                                        variant="caption"
+                                        color="text.secondary"
+                                        sx={{ display: 'block', mb: 2 }}
+                                    >
+                                        {this.getText('screensaver_item_stateInfo')
+                                            .replace('%s', objName || '-')
+                                            .replace('%s', objType || '-')
+                                            .replace('%s', objUnit || '-')}
+                                    </Typography>
+                                )}
+                                {!known && objType !== null && (
+                                    <Typography
+                                        variant="caption"
+                                        color="text.secondary"
+                                        sx={{ display: 'block', mb: 2 }}
+                                    >
+                                        {this.getText('screensaver_item_pickState')}
+                                    </Typography>
+                                )}
+                                {known &&
+                                    fields.headline &&
+                                    this.renderText('headline', 'screensaver_item_headline', objName, {
+                                        minWidth: 300,
+                                    })}
+                            </Box>
+                            {this.renderPreview()}
                         </Box>
-                        {this.renderPreview()}
-                    </Box>
+                    )}
 
                     {known && (
                         <>
@@ -864,7 +1048,7 @@ export class ScreensaverItemDialog extends React.Component<ScreensaverItemDialog
 
                     {known && fields.action && this.renderActionSection()}
 
-                    {known && this.props.expertMode && (
+                    {visibility && this.props.expertMode && (
                         <Box sx={{ mb: 1 }}>
                             <Typography
                                 variant="subtitle2"
@@ -883,7 +1067,7 @@ export class ScreensaverItemDialog extends React.Component<ScreensaverItemDialog
                             })}
                         </Box>
                     )}
-                    {kind === 'number' && draft.iconSelect?.length ? (
+                    {known && kind === 'number' && draft.iconSelect?.length ? (
                         <Typography
                             variant="caption"
                             color="text.secondary"
@@ -909,7 +1093,7 @@ export class ScreensaverItemDialog extends React.Component<ScreensaverItemDialog
                     <Button onClick={this.props.onClose}>{this.getText('Cancel1')}</Button>
                     <Button
                         variant="contained"
-                        disabled={!draft.state.trim()}
+                        disabled={!draft.state.trim() || (template && !draft.template)}
                         onClick={this.apply}
                     >
                         {this.getText('screensaver_apply')}
