@@ -577,6 +577,7 @@
     "screensaver_format_short": "кратко",
     "screensaver_headline": "Заголовок",
     "screensaver_indicatorButtons": "Индикаторы работают как кнопки",
+    "screensaver_indicator_legend": "Рамка индикаторов: серая = без кнопки, красная = кнопка, зелёная = переключатель, синяя = открыть страницу",
     "screensaver_item_action": "Действие при нажатии",
     "screensaver_item_action_button": "кнопка (пишет true)",
     "screensaver_item_action_buttonState": "Состояние, записываемое при нажатии",

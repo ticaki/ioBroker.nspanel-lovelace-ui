@@ -577,6 +577,7 @@
     "screensaver_format_short": "court",
     "screensaver_headline": "Titre",
     "screensaver_indicatorButtons": "Les indicateurs servent de boutons",
+    "screensaver_indicator_legend": "Cadre des indicateurs : gris = pas de touche, rouge = bouton, vert = interrupteur, bleu = ouvrir la page",
     "screensaver_item_action": "Action à l’appui",
     "screensaver_item_action_button": "bouton (écrit true)",
     "screensaver_item_action_buttonState": "État écrit à l’appui",

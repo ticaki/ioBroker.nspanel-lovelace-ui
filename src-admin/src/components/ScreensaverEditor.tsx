@@ -74,6 +74,13 @@ const WEATHER_ICONS: Record<string, string> = {
     solar: 'solar-power',
 };
 const WEATHER_COLOR = '#8ab4f8';
+/** frame of an indicator by what its key does - grey = no key (no action or the option is off) */
+const INDICATOR_COLORS: Record<'none' | 'button' | 'switch' | 'navigate', string> = {
+    none: '#888',
+    button: '#e53935',
+    switch: '#43a047',
+    navigate: '#1e88e5',
+};
 
 export interface ScreensaverEditorProps {
     entry: ScreensaverEntry;
@@ -1247,16 +1254,26 @@ export class ScreensaverEditor extends React.Component<ScreensaverEditorProps, S
         const src = iconSrc(icon);
         const label = itemLabel(item);
         const dragging = !!dragSource && this.slotKey(dragSource) === key;
+        // indicators: the frame tells what the key does
+        const action =
+            ref.area === 'indicator'
+                ? this.props.entry.screensaverIndicatorButtons && item.action?.kind
+                    ? item.action.kind
+                    : 'none'
+                : undefined;
+        const title = action
+            ? `${this.getText('screensaver_slot_item').replace('%s', label)} · ${this.getText(`screensaver_item_action_${action}`)}`
+            : this.getText('screensaver_slot_item').replace('%s', label);
         return (
             <Tooltip
                 key={key}
-                title={this.getText('screensaver_slot_item').replace('%s', label)}
+                title={title}
             >
                 <Box
                     sx={{
                         ...base,
                         border: '2px solid',
-                        borderColor: item.colorOn || '#8ab4f8',
+                        borderColor: action ? INDICATOR_COLORS[action] : item.colorOn || '#8ab4f8',
                         outline: over ? '2px solid #4da3ff' : 'none',
                         opacity: dragging ? 0.4 : 1,
                         cursor: alive ? (dragging ? 'grabbing' : 'grab') : 'default',
@@ -1956,6 +1973,15 @@ export class ScreensaverEditor extends React.Component<ScreensaverEditorProps, S
                             >
                                 {this.getText('screensaver_panelHint')}
                             </Typography>
+                            {this.layout().areas.indicator && (
+                                <Typography
+                                    variant="caption"
+                                    color="text.secondary"
+                                    sx={{ display: 'block', mt: 0.5 }}
+                                >
+                                    {this.getText('screensaver_indicator_legend')}
+                                </Typography>
+                            )}
                             {weatherBottom > 0 && this.ownBottom() + weatherBottom > this.limit('bottom') && (
                                 <Typography
                                     variant="caption"

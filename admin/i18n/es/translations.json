@@ -577,6 +577,7 @@
     "screensaver_format_short": "corto",
     "screensaver_headline": "Titular",
     "screensaver_indicatorButtons": "Los indicadores actúan como botones",
+    "screensaver_indicator_legend": "Marco de los indicadores: gris = sin tecla, rojo = botón, verde = interruptor, azul = abrir página",
     "screensaver_item_action": "Acción al pulsar",
     "screensaver_item_action_button": "botón (escribe true)",
     "screensaver_item_action_buttonState": "Estado escrito al pulsar",

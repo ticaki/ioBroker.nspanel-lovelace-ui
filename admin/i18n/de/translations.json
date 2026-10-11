@@ -601,6 +601,7 @@
     "screensaver_format_short": "kurz",
     "screensaver_headline": "Überschrift",
     "screensaver_indicatorButtons": "Indikatoren wirken als Tasten",
+    "screensaver_indicator_legend": "Rahmen der Indikatoren: grau = keine Taste, rot = Taste, grün = Schalter, blau = Seite öffnen",
     "screensaver_item_action": "Aktion beim Drücken",
     "screensaver_item_action_button": "Taste (schreibt true)",
     "screensaver_item_action_buttonState": "Datenpunkt, der beim Drücken geschrieben wird",
