@@ -41,6 +41,7 @@ import {
     type IconColorElement,
     type ScreensaverItemSource,
     type ScreensaverTemplateInfo,
+    type ScreensaverTemplateNeed,
     screensaverDateFormats,
     screensaverItemFields,
     screensaverItemSource,
@@ -76,6 +77,8 @@ interface ScreensaverItemDialogState {
     objUnit: string;
     objName: string;
     objRole: string;
+    /** type of the object (state, channel, ...) - the template dialog warns about a state */
+    objKind: string;
     colorMode: 'fixed' | 'scale';
     /** radio at the top: one state with own fields or a page item template */
     source: ScreensaverItemSource;
@@ -111,12 +114,12 @@ function isState(obj: ioBroker.Object): boolean {
 }
 
 /**
- * objects a template works on: the channel, alias or device it reads its states from - or a single state
+ * objects a template searches its states in: channel, alias, device or folder (never a single state)
  *
  * @param obj object from the browser
  */
-function isTemplateTarget(obj: ioBroker.Object): boolean {
-    return !!obj && (obj.type === 'state' || obj.type === 'channel' || obj.type === 'device' || obj.type === 'folder');
+function isChannelLike(obj: ioBroker.Object): boolean {
+    return !!obj && (obj.type === 'channel' || obj.type === 'device' || obj.type === 'folder');
 }
 
 /**
@@ -161,6 +164,7 @@ export class ScreensaverItemDialog extends React.Component<ScreensaverItemDialog
             objUnit: '',
             objName: '',
             objRole: '',
+            objKind: '',
             colorMode: 'fixed',
             source: 'state',
         };
@@ -203,7 +207,7 @@ export class ScreensaverItemDialog extends React.Component<ScreensaverItemDialog
     private async loadObject(id: string): Promise<void> {
         const trimmed = id.trim();
         if (!trimmed) {
-            this.setState({ objType: undefined, objUnit: '', objName: '', objRole: '' });
+            this.setState({ objType: undefined, objUnit: '', objName: '', objRole: '', objKind: '' });
             return;
         }
         try {
@@ -216,9 +220,10 @@ export class ScreensaverItemDialog extends React.Component<ScreensaverItemDialog
                 objUnit: obj ? String(obj.common?.unit ?? '') : '',
                 objName: objectName(obj, this.lang()),
                 objRole: obj ? String(obj.common?.role ?? '') : '',
+                objKind: obj ? String(obj.type ?? '') : '',
             });
         } catch {
-            this.setState({ objType: null, objUnit: '', objName: '', objRole: '' });
+            this.setState({ objType: null, objUnit: '', objName: '', objRole: '', objKind: '' });
         }
     }
 
@@ -239,13 +244,10 @@ export class ScreensaverItemDialog extends React.Component<ScreensaverItemDialog
 
     private apply = (): void => {
         const draft = { ...this.state.draft };
-        if (!draft.state.trim()) {
-            return;
-        }
-        draft.state = draft.state.trim();
+        draft.state = (draft.state ?? '').trim();
         if (this.state.source === 'template') {
             // the template brings icon, colors and texts - only what the script's template element knows is kept
-            if (!draft.template) {
+            if (!draft.template || (this.templateNeed() === 'channel' && !draft.state)) {
                 return;
             }
             const kept: ScreensaverItemConfig = { state: draft.state, template: draft.template };
@@ -256,6 +258,9 @@ export class ScreensaverItemDialog extends React.Component<ScreensaverItemDialog
                 kept.visibleCondition = draft.visibleCondition;
             }
             this.props.onSave(kept);
+            return;
+        }
+        if (!draft.state) {
             return;
         }
         delete draft.template;
@@ -366,13 +371,34 @@ export class ScreensaverItemDialog extends React.Component<ScreensaverItemDialog
         );
     }
 
-    /** template mode: the template (list of the adapter) and the object it works on */
+    /** the chosen template as the adapter describes it; unknown name = channel assumed */
+    private selectedTemplate(): ScreensaverTemplateInfo | null {
+        const name = this.state.draft.template;
+        if (!name) {
+            return null;
+        }
+        return (
+            this.props.templates?.find(t => t.name === name) ?? {
+                name,
+                type: '',
+                role: '',
+                adapter: '',
+                need: 'channel',
+                looksFor: [],
+            }
+        );
+    }
+
+    private templateNeed(): ScreensaverTemplateNeed {
+        return this.selectedTemplate()?.need ?? 'channel';
+    }
+
+    /** template mode: the template (list of the adapter) and - if it searches states - the channel it works on */
     private renderTemplateFields(): React.JSX.Element {
-        const { draft, objType, objName } = this.state;
+        const { draft, objType, objName, objKind } = this.state;
         const templates = this.props.templates;
-        const selected: ScreensaverTemplateInfo | null =
-            templates?.find(t => t.name === draft.template) ??
-            (draft.template ? { name: draft.template, type: '', role: '', adapter: '' } : null);
+        const selected = this.selectedTemplate();
+        const need = selected?.need ?? 'channel';
         return (
             <Box sx={{ mb: 2 }}>
                 {templates === undefined && (
@@ -412,7 +438,7 @@ export class ScreensaverItemDialog extends React.Component<ScreensaverItemDialog
                             .replace('%s', selected.adapter || '-')}
                     </Typography>
                 )}
-                {!draft.template && (
+                {!selected && (
                     <Typography
                         variant="caption"
                         color="text.secondary"
@@ -421,32 +447,65 @@ export class ScreensaverItemDialog extends React.Component<ScreensaverItemDialog
                         {this.getText('screensaver_item_pickTemplate')}
                     </Typography>
                 )}
-                {this.renderStateField(
-                    this.getText('screensaver_item_dpInit'),
-                    draft.state,
-                    (v: string) => {
-                        this.set('state', v);
-                        void this.loadObject(v);
-                    },
-                    'dpInit',
-                    isTemplateTarget,
-                )}
-                {objType === null && (
-                    <Alert
-                        severity="warning"
-                        sx={{ mb: 2 }}
-                    >
-                        {this.getText('screensaver_item_stateMissing').replace('%s', draft.state)}
-                    </Alert>
-                )}
-                {typeof objType === 'string' && (
+                {selected && need === 'none' && (
                     <Typography
                         variant="caption"
                         color="text.secondary"
-                        sx={{ display: 'block' }}
+                        sx={{ display: 'block', mb: 2 }}
+                        data-ss="template-noobject"
                     >
-                        {this.getText('screensaver_item_dpInitInfo').replace('%s', objName || '-')}
+                        {this.getText('screensaver_item_dpInit_none')}
                     </Typography>
+                )}
+                {selected && need === 'channel' && (
+                    <>
+                        {this.renderStateField(
+                            this.getText('screensaver_item_dpInit_channel'),
+                            draft.state,
+                            (v: string) => {
+                                this.set('state', v);
+                                void this.loadObject(v);
+                            },
+                            'dpInit',
+                            isChannelLike,
+                        )}
+                        {selected.looksFor.length > 0 && (
+                            <Typography
+                                variant="caption"
+                                color="text.secondary"
+                                sx={{ display: 'block', mb: 1 }}
+                                data-ss="template-looksfor"
+                            >
+                                {this.getText('screensaver_item_looksFor').replace('%s', selected.looksFor.join(', '))}
+                            </Typography>
+                        )}
+                        {objType === null && (
+                            <Alert
+                                severity="warning"
+                                sx={{ mb: 2 }}
+                            >
+                                {this.getText('screensaver_item_stateMissing').replace('%s', draft.state)}
+                            </Alert>
+                        )}
+                        {objKind === 'state' && (
+                            <Alert
+                                severity="warning"
+                                sx={{ mb: 2 }}
+                                data-ss="template-isstate"
+                            >
+                                {this.getText('screensaver_item_dpInitIsState')}
+                            </Alert>
+                        )}
+                        {typeof objType === 'string' && objKind !== 'state' && (
+                            <Typography
+                                variant="caption"
+                                color="text.secondary"
+                                sx={{ display: 'block' }}
+                            >
+                                {this.getText('screensaver_item_dpInitInfo').replace('%s', objName || '-')}
+                            </Typography>
+                        )}
+                    </>
                 )}
             </Box>
         );
@@ -903,7 +962,9 @@ export class ScreensaverItemDialog extends React.Component<ScreensaverItemDialog
         const template = this.state.source === 'template';
         // state mode: the fields follow the type of the state; template mode: the template defines the look
         const known = !template && kind !== 'unknown';
-        const visibility = template ? !!draft.state.trim() : known;
+        const visibility = template
+            ? !!draft.template && (this.templateNeed() === 'none' || !!draft.state.trim())
+            : known;
         return (
             <Dialog
                 open={open}
@@ -1093,7 +1154,11 @@ export class ScreensaverItemDialog extends React.Component<ScreensaverItemDialog
                     <Button onClick={this.props.onClose}>{this.getText('Cancel1')}</Button>
                     <Button
                         variant="contained"
-                        disabled={!draft.state.trim() || (template && !draft.template)}
+                        disabled={
+                            template
+                                ? !draft.template || (this.templateNeed() === 'channel' && !draft.state.trim())
+                                : !draft.state.trim()
+                        }
                         onClick={this.apply}
                     >
                         {this.getText('screensaver_apply')}

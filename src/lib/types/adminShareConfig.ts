@@ -413,8 +413,23 @@ export function screensaverItemSource(
     return item?.template ? 'template' : 'state';
 }
 
-/** a page item template as the adapter reports it (main.ts, getScreensaverTemplates) */
-export type ScreensaverTemplateInfo = { name: string; type: string; role: string; adapter: string };
+/**
+ * a page item template as the adapter reports it (main.ts, getScreensaverTemplates)
+ *
+ * `need` tells what the item dialog has to ask for: `channel` - the template searches its states below
+ * the object (`mode: 'auto'`, relative ids), `none` - the template works without an object (clock, wlan).
+ * `looksFor` lists the ids or roles it searches for (hint in the dialog).
+ */
+export type ScreensaverTemplateInfo = {
+    name: string;
+    type: string;
+    role: string;
+    adapter: string;
+    need: ScreensaverTemplateNeed;
+    looksFor: string[];
+};
+
+export type ScreensaverTemplateNeed = 'channel' | 'none';
 
 /** date formats the item dialog offers (ScreensaverEntityDateFormat); the key is the i18n label */
 export const screensaverDateFormats: readonly { key: string; options: Intl.DateTimeFormatOptions }[] = [

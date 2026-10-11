@@ -23,7 +23,7 @@ import { Controller } from './lib/controller/controller';
 import { Icons } from './lib/const/icon_mapping';
 import * as definition from './lib/const/definition';
 import { ConfigManager } from './lib/classes/config-manager';
-import { pageItemTemplates } from './lib/templates/templateArray';
+import { screensaverTemplateInfos } from './lib/templates/template-info';
 import type { Panel, panelConfigPartial } from './lib/controller/panel';
 import { generateAliasDocumentation } from './lib/tools/readme';
 import { redactSecretsInText, stringifyForLog } from './lib/tools/redact';
@@ -839,17 +839,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                 }
                 case SENDTO_GET_SCREENSAVER_TEMPLATES_COMMAND: {
                     // the admin bundle must not import the templates (colord, adapter types) - the screensaver tab asks here
-                    const result = Object.entries(
-                        pageItemTemplates as Record<string, NSPanel.PageItemOptionsTemplate | undefined>,
-                    )
-                        .filter(([, t]) => !!t)
-                        .map(([name, t]) => ({
-                            name,
-                            type: String(t?.type ?? ''),
-                            role: String(t?.role ?? ''),
-                            adapter: String(t?.adapter ?? ''),
-                        }))
-                        .sort((a, b) => a.name.localeCompare(b.name));
+                    const result = screensaverTemplateInfos();
                     if (obj.callback) {
                         this.sendTo(obj.from, obj.command, result, obj.callback);
                     }

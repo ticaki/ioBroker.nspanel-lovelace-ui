@@ -324,7 +324,11 @@ function itemLabel(item: ScreensaverItemConfig): string {
     if (item.headline) {
         return item.headline;
     }
-    return item.state ? item.state.split('.').pop() || item.state : '?';
+    if (item.state) {
+        return item.state.split('.').pop() || item.state;
+    }
+    // a template without an object (clock, wlan): the last part of the template name
+    return item.template ? item.template.split('.').pop() || item.template : '?';
 }
 
 const EMPTY_COMMON: ioBroker.InstanceCommon = {} as ioBroker.InstanceCommon;
