@@ -1,7 +1,7 @@
 # Mediaplayer (cardMedia)
 
 **Stand:** 11.06.2025  
-**Unterstützte Adapter:** `spotify-premium`, `alexa2`, `mpd`, `sonos`
+**Unterstützte Adapter:** `spotify-premium`, `alexa2`, `mpd`, `sonos`, `squeezeboxrpc`
 
 Die Karte **`cardMedia`** zeigt einen Mediaplayer mit Titel/Artist, Play/Pause, Lautstärke u.v.m. an. Je nach Adapter werden unterschiedliche Funktionen automatisch erkannt (z. B. Playlisten, Shuffle, Seek).
 
@@ -26,6 +26,7 @@ const pageMediaTest1: PageType = {
 - **spotify**: `spotify-premium.0`
 - **mpd**: `mpd.0`
 - **sonos**: `sonos.0.root.192_168_178_209`
+- **squeezeboxrpc**: `squeezeboxrpc.0.Players.<PLAYERNAME>` (Name wie im Objektbaum, z. B. `K_che` für „Küche“)
 
 > **Hinweis:** Gibst du nur den Adapternamen ohne Instanznummer an (z. B. `spotify`), wird automatisch die **kleinste vorhandene Instanz** verwendet.
 
@@ -46,7 +47,7 @@ const pageMediaTest1: PageType = {
 | `colorMediaArtist` | Farbe für die Artist‑Zeile | s. Farbe |
 | `colorMediaTitle` | Farbe für die Titel‑Zeile | s. Farbe |
 | `speakerList` | Liste erlaubter/angezeigter Lautsprecher | **Sonos/Spotify:** Auswahl ohne Liste → keine Speaker. **Andere:** Whitelist (leer = alle) |
-| `favoriteList` | **Whitelist** für Favoriten‑Playlists | Leer oder nicht gesetzt = zeige alle |
+| `favoriteList` | **Whitelist** für Favoriten‑Playlists | Leer oder nicht gesetzt = zeige alle. **Squeezebox:** Namen wie in `Favorites.*.Name` |
 | `playList` | Liste verfügbarer Playlists | **Alexa/Spotify:** aus Adapter. **Sonos:** nutzergeneriert (Adapter kann sie nicht einlesen) |
 | `minValue` | Minimale Lautstärke (Panel) | Mapping auf Geräte‑Skala |
 | `maxValue` | Maximale Lautstärke (Panel) | Mapping auf Geräte‑Skala |
@@ -105,6 +106,32 @@ media: {
   id: 'mpd.0',
   minValue: 5,   // Panel lässt nicht unter 5
   maxValue: 80,  // und nicht über 80
+}
+```
+
+---
+
+## Squeezebox (`squeezeboxrpc`)
+
+Die Seite gehört zu einem **Raum-Player** (`media.id`). Ist der Player Teil einer Sync-Gruppe, steuert die Seite automatisch den **Master** der Gruppe (wie bei Sonos der Koordinator).
+
+- **Speaker-Liste:** öffnet ein Grid mit allen Playern (bzw. denen aus `speakerList`). Antippen schaltet einen Raum zur Gruppe dazu bzw. nimmt ihn heraus, der Slider regelt die Lautstärke des jeweiligen Raums.
+- **Gruppenlautstärke:** Ist eine Gruppe aktiv, wird eine Änderung am Hauptregler (z. B. +2) auf **jeden** Player der Gruppe addiert (begrenzt auf 0–100). Die Abstände zwischen den Räumen bleiben erhalten, solange kein Raum an 0 oder 100 anstößt.
+- **Shuffle** schaltet reihum: aus → Titel → Alben.
+- **Repeat** schaltet reihum: aus → Playlist → Titel.
+- **Ein/Aus** schaltet `Power` des Players.
+- **Logo:** Seek-Slider über die Titellänge (`Time`/`Duration` → `cmdGoTime`).
+- **Favoriten:** werden zur Laufzeit aus `squeezeboxrpc.X.Favorites.*` gelesen (nur abspielbare Einträge, Unterordner werden nicht angezeigt) und über `cmdPlayFavorite` gestartet.
+- **Trackliste:** aktuelle Wiedergabeliste aus `Players.<NAME>.Playlist`, Sprung über `PlaylistCurrentIndex`.
+- Bei Stummschaltung zeigt der Lautstärkeregler 0.
+
+**Voraussetzungen im squeezeboxrpc-Adapter:** „Favoriten laden“ und „Playlist-Informationen bereitstellen“ aktivieren. Empfohlen ist außerdem die Telnet-Signalisierung (`usetelnet`), sonst kommen Titel- und Listenänderungen erst mit bis zu ~10 s Verzögerung an.
+
+```ts
+media: {
+  id: 'squeezeboxrpc.0.Players.Wohnzimmer',
+  speakerList: ['Wohnzimmer', 'Küche', 'Bad'], // optional: nur diese Räume im Grid
+  favoriteList: ['Radio: Deutschlandfunk'],   // optional: Whitelist
 }
 ```
 

@@ -445,6 +445,7 @@ declare namespace ScriptConfig {
     export type PageMediaItem = {
         /**
          * The media dp to use, most a folder, device or channel. Not a state.
+         * - squeezeboxrpc: `squeezeboxrpc.0.Players.<name>`
          */
         id: string;
         name?: string;
@@ -477,6 +478,7 @@ declare namespace ScriptConfig {
          * List of available playlists.
          * - Alexa & Spotify: contains the playlists provided by the adapter.
          * - Sonos: contains user-defined playlists, since Sonos playlists cannot be read by the adapter.
+         * - Squeezebox: not supported yet.
          */
         playList?: string[];
         equalizerList?: string[];

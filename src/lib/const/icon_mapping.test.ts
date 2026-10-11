@@ -4,11 +4,12 @@ import { Icons } from './icon_mapping';
 describe('lib/const/icon_mapping', () => {
     describe('Icons.GetIcon', () => {
         it('returns the mapped value for a known logo icon', () => {
-            // The 4 non-empty mappings at the end of iconMap are media-service logos
+            // The non-empty mappings at the end of iconMap are media-service logos
             expect(Icons.GetIcon('logo-alexa')).to.equal('logo-alexa');
             expect(Icons.GetIcon('logo-spotify')).to.equal('logo-spotify');
             expect(Icons.GetIcon('logo-sonos')).to.equal('logo-sonos');
             expect(Icons.GetIcon('logo-mpd')).to.equal('logo-mpd');
+            expect(Icons.GetIcon('logo-dlna')).to.equal('logo-dlna');
         });
         it('returns a single-character glyph for known material-design icons', () => {
             // Most icons map to a single Private-Use-Area codepoint of the icon font
@@ -57,6 +58,7 @@ describe('lib/const/icon_mapping', () => {
             expect(Icons.iconMap.has('logo-mpd')).to.equal(true);
             expect(Icons.iconMap.has('logo-sonos')).to.equal(true);
             expect(Icons.iconMap.has('logo-spotify')).to.equal(true);
+            expect(Icons.iconMap.has('logo-dlna')).to.equal(true);
         });
         it('has a substantial number of entries (sanity check)', () => {
             // Guards against accidental clearing of the icon table.

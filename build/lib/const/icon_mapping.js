@@ -6923,7 +6923,8 @@ class Icons {
     ["logo-alexa", "logo-alexa"],
     ["logo-mpd", "logo-mpd"],
     ["logo-spotify", "logo-spotify"],
-    ["logo-sonos", "logo-sonos"]
+    ["logo-sonos", "logo-sonos"],
+    ["logo-dlna", "logo-dlna"]
   ]);
   static GetIcon(ma_name) {
     return Icons.GetIconWithType(ma_name);

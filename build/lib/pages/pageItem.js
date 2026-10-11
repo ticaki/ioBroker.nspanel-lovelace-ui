@@ -1810,7 +1810,7 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
             }
             break;
           }
-          if (entry.role === "SonosSpeaker") {
+          if (entry.role === "SonosSpeaker" || entry.role === "SqueezeboxSpeaker") {
             if (!this.parent || !(((_g = this.parent.config) == null ? void 0 : _g.card) === "cardMedia")) {
               break;
             }
@@ -2731,7 +2731,7 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
     return false;
   }
   async getListFromStates(entityInSel, valueList, role, valueList2 = void 0, force = false) {
-    var _a, _b, _c, _d, _e, _f;
+    var _a, _b, _c, _d, _e, _f, _g, _h;
     const list = {};
     if (entityInSel && entityInSel.value) {
       if (role === "alexa-speaker") {
@@ -2782,6 +2782,45 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
           }
         }
         this.log.debug(`Alexa Playlist list: finish`);
+      } else if (role === "squeezebox-favorites") {
+        const dp = "dp" in entityInSel.value.options ? entityInSel.value.options.dp : "";
+        const inst = (dp || "").split(".").slice(0, 2).join(".");
+        if (inst) {
+          const filterRaw = valueList ? await valueList.getObject() : null;
+          const filter = Array.isArray(filterRaw) && filterRaw.length > 0 ? filterRaw.filter((f) => typeof f === "string") : null;
+          const states = await this.adapter.getForeignStatesAsync(`${inst}.Favorites.*`);
+          const favorites = {};
+          for (const id in states) {
+            const parts = id.split(".");
+            if (parts.length !== 5) {
+              continue;
+            }
+            const key = parts[3];
+            const prop = parts[4];
+            const val = (_e = states[id]) == null ? void 0 : _e.val;
+            favorites[key] = (_f = favorites[key]) != null ? _f : {};
+            if (prop === "Name" && typeof val === "string") {
+              favorites[key].name = val;
+            } else if (prop === "id" && val != null) {
+              favorites[key].id = String(val);
+            } else if (prop === "isaudio") {
+              favorites[key].isaudio = val === 1 || val === "1" || val === true;
+            }
+          }
+          list.list = [];
+          list.states = [];
+          for (const fav of Object.values(favorites)) {
+            if (!fav.isaudio || !fav.name || !fav.id) {
+              continue;
+            }
+            if (filter && !filter.includes(fav.name)) {
+              continue;
+            }
+            list.list.push(fav.name);
+            list.states.push(fav.id);
+          }
+          list.value = "";
+        }
       } else if (role === "spotify-speaker" || role === "spotify-playlist") {
         if (entityInSel.value.options.dp) {
           const o = await entityInSel.value.getCommonStates(force);
@@ -2824,7 +2863,7 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
             }
           }
         }
-      } else if (["string", "number"].indexOf((_e = entityInSel.value.type) != null ? _e : "") !== -1 && (await entityInSel.value.getCommonStates(force) || valueList2 != null)) {
+      } else if (["string", "number"].indexOf((_g = entityInSel.value.type) != null ? _g : "") !== -1 && (await entityInSel.value.getCommonStates(force) || valueList2 != null)) {
         let states = null;
         const value = await tools.getValueEntryString(entityInSel);
         switch (role) {
@@ -2891,7 +2930,7 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
             }
           }
         }
-      } else if (["string", "number"].indexOf((_f = entityInSel.value.type) != null ? _f : "") !== -1 && valueList) {
+      } else if (["string", "number"].indexOf((_h = entityInSel.value.type) != null ? _h : "") !== -1 && valueList) {
         list.list = [];
         list.states = [];
         const v = await (valueList == null ? void 0 : valueList.getObject());

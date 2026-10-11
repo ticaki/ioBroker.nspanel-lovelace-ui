@@ -2073,7 +2073,7 @@ export class PageItem extends BaseTriggeredPage {
                         }
                         break;
                     }
-                    if (entry.role === 'SonosSpeaker') {
+                    if (entry.role === 'SonosSpeaker' || entry.role === 'SqueezeboxSpeaker') {
                         if (!this.parent || !(this.parent.config?.card === 'cardMedia')) {
                             break;
                         }
@@ -3171,6 +3171,49 @@ export class PageItem extends BaseTriggeredPage {
                     }
                 }
                 this.log.debug(`Alexa Playlist list: finish`);
+            } else if (role === 'squeezebox-favorites') {
+                // Squeezebox favorites from squeezeboxrpc.X.Favorites.<id>.*
+                const dp = 'dp' in entityInSel.value.options ? entityInSel.value.options.dp : '';
+                const inst = (dp || '').split('.').slice(0, 2).join('.');
+                if (inst) {
+                    const filterRaw = valueList ? await valueList.getObject() : null;
+                    const filter =
+                        Array.isArray(filterRaw) && filterRaw.length > 0
+                            ? filterRaw.filter((f): f is string => typeof f === 'string')
+                            : null;
+                    const states = await this.adapter.getForeignStatesAsync(`${inst}.Favorites.*`);
+                    const favorites: Record<string, { name?: string; id?: string; isaudio?: boolean }> = {};
+                    for (const id in states) {
+                        const parts = id.split('.');
+                        if (parts.length !== 5) {
+                            continue;
+                        }
+                        const key = parts[3];
+                        const prop = parts[4];
+                        const val = states[id]?.val;
+                        favorites[key] = favorites[key] ?? {};
+                        if (prop === 'Name' && typeof val === 'string') {
+                            favorites[key].name = val;
+                        } else if (prop === 'id' && val != null) {
+                            favorites[key].id = String(val);
+                        } else if (prop === 'isaudio') {
+                            favorites[key].isaudio = val === 1 || val === '1' || val === true;
+                        }
+                    }
+                    list.list = [];
+                    list.states = [];
+                    for (const fav of Object.values(favorites)) {
+                        if (!fav.isaudio || !fav.name || !fav.id) {
+                            continue;
+                        }
+                        if (filter && !filter.includes(fav.name)) {
+                            continue;
+                        }
+                        list.list.push(fav.name);
+                        list.states.push(fav.id);
+                    }
+                    list.value = '';
+                }
             } else if (role === 'spotify-speaker' || role === 'spotify-playlist') {
                 // Spotify Speaker
                 if (entityInSel.value.options.dp) {
