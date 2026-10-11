@@ -26,6 +26,7 @@ __export(adminShareConfig_exports, {
   SENDTO_GET_PAGES_COMMAND: () => SENDTO_GET_PAGES_COMMAND,
   SENDTO_GET_PANELS_COMMAND: () => SENDTO_GET_PANELS_COMMAND,
   SENDTO_GET_PANEL_NAVIGATION_COMMAND: () => SENDTO_GET_PANEL_NAVIGATION_COMMAND,
+  SENDTO_GET_WEATHER_ENTITY_COMMAND: () => SENDTO_GET_WEATHER_ENTITY_COMMAND,
   chartDefaults: () => chartDefaults,
   emptyChannelValueConfig: () => emptyChannelValueConfig,
   emptyChartEntry: () => emptyChartEntry,
@@ -49,6 +50,11 @@ __export(adminShareConfig_exports, {
   screensaverMaxEntries: () => screensaverMaxEntries,
   screensaverModes: () => screensaverModes,
   screensaverSlotLimits: () => screensaverSlotLimits,
+  screensaverWeatherAdapterOf: () => screensaverWeatherAdapterOf,
+  screensaverWeatherAdapters: () => screensaverWeatherAdapters,
+  screensaverWeatherItemKeys: () => screensaverWeatherItemKeys,
+  screensaverWeatherItemsOfAdapter: () => screensaverWeatherItemsOfAdapter,
+  screensaverWeatherItemsOn: () => screensaverWeatherItemsOn,
   serviceNodeName: () => serviceNodeName,
   servicePageName: () => servicePageName,
   shortStateLabel: () => shortStateLabel,
@@ -65,6 +71,7 @@ const SAVE_PANEL_NAVIGATION_COMMAND = "savePanelNavigation";
 const SENDTO_GET_PANELS_COMMAND = "getPanels";
 const SENDTO_GET_PAGES_COMMAND = "getPagesForPanel";
 const SENDTO_GET_PAGES_All_COMMAND = "getAllPages";
+const SENDTO_GET_WEATHER_ENTITY_COMMAND = "getWeatherEntity";
 const ADAPTER_NAME = "nspanel-lovelace-ui";
 function stateRefNodeId(dp) {
   return `dp:${dp}`;
@@ -149,6 +156,40 @@ function screensaverItemFields(area) {
     text: area !== "indicator",
     action: area === "indicator"
   };
+}
+const screensaverWeatherAdapters = ["accuweather", "openweathermap", "pirate-weather", "brightsky"];
+const screensaverWeatherItemKeys = [
+  "sunriseSet",
+  "forecastDay1",
+  "forecastDay2",
+  "forecastDay3",
+  "forecastDay4",
+  "forecastDay5",
+  "forecastDay6",
+  "windSpeed",
+  "windGust",
+  "windDirection",
+  "uvIndex",
+  "solar"
+];
+const weatherDays = ["forecastDay1", "forecastDay2", "forecastDay3", "forecastDay4", "forecastDay5"];
+const weatherWind = ["windSpeed", "windGust", "windDirection"];
+const screensaverWeatherItemsOfAdapter = {
+  accuweather: ["sunriseSet", ...weatherDays, ...weatherWind, "uvIndex"],
+  openweathermap: ["sunriseSet", ...weatherDays, "forecastDay6", ...weatherWind],
+  "pirate-weather": ["sunriseSet", ...weatherDays, "forecastDay6", ...weatherWind, "uvIndex"],
+  brightsky: ["sunriseSet", ...weatherDays, "forecastDay6", ...weatherWind, "solar"]
+};
+function screensaverWeatherAdapterOf(entity) {
+  const prefix = (entity != null ? entity : "").split(".")[0];
+  return screensaverWeatherAdapters.find((a) => a === prefix);
+}
+function screensaverWeatherItemsOn(items, entity) {
+  const adapter = screensaverWeatherAdapterOf(entity);
+  if (!adapter || !items) {
+    return [];
+  }
+  return screensaverWeatherItemsOfAdapter[adapter].filter((k) => items[k] === true);
 }
 function emptyScreensaverEntry(name, mode = "standard") {
   return {
@@ -999,6 +1040,7 @@ const CHANNEL_ROLES_LIST = Object.keys(requiredScriptDataPoints);
   SENDTO_GET_PAGES_COMMAND,
   SENDTO_GET_PANELS_COMMAND,
   SENDTO_GET_PANEL_NAVIGATION_COMMAND,
+  SENDTO_GET_WEATHER_ENTITY_COMMAND,
   chartDefaults,
   emptyChannelValueConfig,
   emptyChartEntry,
@@ -1022,6 +1064,11 @@ const CHANNEL_ROLES_LIST = Object.keys(requiredScriptDataPoints);
   screensaverMaxEntries,
   screensaverModes,
   screensaverSlotLimits,
+  screensaverWeatherAdapterOf,
+  screensaverWeatherAdapters,
+  screensaverWeatherItemKeys,
+  screensaverWeatherItemsOfAdapter,
+  screensaverWeatherItemsOn,
   serviceNodeName,
   servicePageName,
   shortStateLabel,
