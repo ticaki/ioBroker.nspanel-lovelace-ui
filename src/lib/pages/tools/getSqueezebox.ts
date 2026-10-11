@@ -64,7 +64,7 @@ export async function getPageSqueezebox(
                     text: { true: { type: 'const', constVal: 'media.seek' } },
                     icon: {
                         true: {
-                            value: { type: 'const', constVal: 'logo-dlna' },
+                            value: { type: 'const', constVal: 'logo-dnla' },
                             color: { type: 'const', constVal: { r: 250, b: 250, g: 0 } },
                         },
                     },

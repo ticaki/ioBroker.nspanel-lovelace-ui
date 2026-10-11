@@ -9,7 +9,7 @@ describe('lib/const/icon_mapping', () => {
             expect(Icons.GetIcon('logo-spotify')).to.equal('logo-spotify');
             expect(Icons.GetIcon('logo-sonos')).to.equal('logo-sonos');
             expect(Icons.GetIcon('logo-mpd')).to.equal('logo-mpd');
-            expect(Icons.GetIcon('logo-dlna')).to.equal('logo-dlna');
+            expect(Icons.GetIcon('logo-dnla')).to.equal('logo-dnla');
         });
         it('returns a single-character glyph for known material-design icons', () => {
             // Most icons map to a single Private-Use-Area codepoint of the icon font
@@ -58,7 +58,7 @@ describe('lib/const/icon_mapping', () => {
             expect(Icons.iconMap.has('logo-mpd')).to.equal(true);
             expect(Icons.iconMap.has('logo-sonos')).to.equal(true);
             expect(Icons.iconMap.has('logo-spotify')).to.equal(true);
-            expect(Icons.iconMap.has('logo-dlna')).to.equal(true);
+            expect(Icons.iconMap.has('logo-dnla')).to.equal(true);
         });
         it('has a substantial number of entries (sanity check)', () => {
             // Guards against accidental clearing of the icon table.
