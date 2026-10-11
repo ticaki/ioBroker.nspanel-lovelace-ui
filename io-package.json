@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "nspanel-lovelace-ui",
-    "version": "1.1.2",
+    "version": "1.2.0",
     "news": {
+      "1.2.0": {
+        "en": "Admin: chart pages are configured in the PageConfig tab\nAdmin: mode lists for light/select items\nFix: lock accepts sensor.lock as ACTUAL role\nFix: select items with a mode list show the right entry and write to SET\nFix: line chart scales large values automatically",
+        "de": "Admin: Chart-Seiten werden im PageConfig-Tab konfiguriert\nAdmin: Modus-Listen für Licht-/Select-Items\nFix: lock akzeptiert sensor.lock als ACTUAL-Rolle\nFix: Select-Items mit Modus-Liste zeigen den richtigen Eintrag und schreiben in SET\nFix: Liniendiagramm skaliert große Werte automatisch",
+        "ru": "Админ: страницы графиков настраиваются во вкладке PageConfig\nАдмин: списки режимов для элементов light/select\nИсправление: lock принимает sensor.lock как роль ACTUAL\nИсправление: select-элементы со списком режимов показывают правильную запись и пишут в SET\nИсправление: линейный график автоматически масштабирует большие значения",
+        "pt": "Admin: páginas de gráficos são configuradas na aba PageConfig\nAdmin: listas de modos para itens light/select\nCorreção: lock aceita sensor.lock como função ACTUAL\nCorreção: itens select com lista de modos mostram a entrada correta e escrevem em SET\nCorreção: o gráfico de linhas dimensiona valores grandes automaticamente",
+        "nl": "Admin: grafiekpagina's worden in het PageConfig-tabblad geconfigureerd\nAdmin: moduslijsten voor light/select-items\nFix: lock accepteert sensor.lock als ACTUAL-rol\nFix: select-items met moduslijst tonen het juiste item en schrijven naar SET\nFix: lijngrafiek schaalt grote waarden automatisch",
+        "fr": "Admin : les pages de graphiques se configurent dans l'onglet PageConfig\nAdmin : listes de modes pour les éléments light/select\nCorrectif : lock accepte sensor.lock comme rôle ACTUAL\nCorrectif : les éléments select avec liste de modes affichent la bonne entrée et écrivent dans SET\nCorrectif : le graphique linéaire met automatiquement à l'échelle les grandes valeurs",
+        "it": "Admin: le pagine grafico si configurano nella scheda PageConfig\nAdmin: elenchi di modalità per gli elementi light/select\nCorrezione: lock accetta sensor.lock come ruolo ACTUAL\nCorrezione: gli elementi select con elenco di modalità mostrano la voce corretta e scrivono in SET\nCorrezione: il grafico a linee scala automaticamente i valori grandi",
+        "es": "Admin: las páginas de gráficos se configuran en la pestaña PageConfig\nAdmin: listas de modos para elementos light/select\nCorrección: lock acepta sensor.lock como rol ACTUAL\nCorrección: los elementos select con lista de modos muestran la entrada correcta y escriben en SET\nCorrección: el gráfico de líneas escala automáticamente los valores grandes",
+        "pl": "Admin: strony wykresów konfiguruje się w zakładce PageConfig\nAdmin: listy trybów dla elementów light/select\nPoprawka: lock akceptuje sensor.lock jako rolę ACTUAL\nPoprawka: elementy select z listą trybów pokazują właściwy wpis i zapisują do SET\nPoprawka: wykres liniowy automatycznie skaluje duże wartości",
+        "uk": "Адмін: сторінки графіків налаштовуються у вкладці PageConfig\nАдмін: списки режимів для елементів light/select\nВиправлення: lock приймає sensor.lock як роль ACTUAL\nВиправлення: select-елементи зі списком режимів показують правильний запис і пишуть у SET\nВиправлення: лінійний графік автоматично масштабує великі значення",
+        "zh-cn": "管理界面：图表页面在 PageConfig 标签页中配置\n管理界面：light/select 项目的模式列表\n修复：lock 接受 sensor.lock 作为 ACTUAL 角色\n修复：带模式列表的 select 项目显示正确条目并写入 SET\n修复：折线图自动缩放较大的数值"
+      },
       "1.1.2": {
         "en": "a panel could get stuck in wait for connection after a WiFi drop or a burst of screensaver updates because the serial buffer of the display overflowed, the adapter now spaces out messages to the display, sends screensaver updates at most every 3 seconds and restarts tasmota automatically when the display reports an overflow",
         "de": "Ein Panel konnte nach einem WLAN-Abbruch oder einer Flut von Screensaver-Updates in wait for connection hängen bleiben, weil der serielle Puffer des Displays überlief, der Adapter schickt Nachrichten an das Display jetzt mit Abstand, sendet Screensaver-Updates höchstens alle 3 Sekunden und startet Tasmota automatisch neu, wenn das Display einen Überlauf meldet",
@@ -80,19 +93,6 @@
         "pl": "stałe: Nie można odczytać właściwości nieokreślone (czytanie 'trim')",
         "uk": "фіксована: Не можна прочитати властивості невизначеного (читання 'trim')",
         "zh-cn": "固定: 无法读取未定义的属性( 正在读取“ trim ”)"
-      },
-      "0.17.7": {
-        "en": "Added `panels.{id}.cmd.activated` state to enable/disable a panel; toggle visible in TabMaintain and TabPanelinfo admin UI\nFixed `textSize`/`fontSize` value `0` being rejected by the admin and ignored in some cases",
-        "de": "Hinzugefügt `panels.{id}.cmd.activated` Zustand, um ein Panel zu aktivieren / zu deaktivieren; toggle sichtbar in TabMaintain und TabPanelinfo admin UI\nFixed `textSize`/`fontSize` Wert `0` wird vom Admin abgelehnt und zusätzlich `textSize`/`fontSize` wurde in einigen Fällen vom Pageitem ignoriert.",
-        "ru": "Добавлено состояние «panels.{id}.cmd.activated» для включения/отключения панели; переключатель, видимый в интерфейсе администратора TabMaintain и TabPanelinfo\nИсправленное значение «textSize» / «fontSize» «0» отклоняется администратором и в некоторых случаях игнорируется",
-        "pt": "Adicionado o estado `panels.{id}.cmd.activated` para activar/desactivar um painel; comutar visível no TabMaintain e TabPanelinfo admin UI\nFixo `textSize`/`fontSize` valor `0` sendo rejeitado pelo administrador e ignorado em alguns casos",
-        "nl": "Toegevoegde \nVaste tekstMaat",
-        "fr": "Ajout de l'état `panels.{id}.cmd.activated` pour activer/désactiver un panneau; basculer visible dans TabMaintain et TabPanelinfo admin UI\nCorrection `textSize`/`fontSize` valeur `0` étant rejetée par l'administrateur et ignorée dans certains cas",
-        "it": "Aggiunto `panels.{id}.cmd.activated` stato per attivare/disattivare un pannello; attivare visibile in TabMaintain e TabPanelinfo admin UI\nFisso `textSize`/`fontSize` valore `0` essere respinto dall'amministratore e ignorato in alcuni casi",
-        "es": "Añadido `panels.{id}.cmd.activated` estado para habilitar/desactivar un panel; cambiar visible en TabMaintain y TabPanelinfo admin UI\nFijo `textSize`/`fontSize` valor `0` siendo rechazado por el administrador e ignorado en algunos casos",
-        "pl": "Dodano 'panele. {id} .cmd.activated' stan, aby włączyć / wyłączyć panel; przełączanie widoczne w Interfejsie administratora TabMainten i TabPanelinfo\nNaprawiono, że 'textSize' / 'fontSize' wartość '0' jest odrzucana przez admin i ignorowana w niektórych przypadkach",
-        "uk": "Додано `panels.{id}.cmd.activated` стан, щоб увімкнути/вимкнути панель; окуляри видимі в TabMaintain і TabPanelinfo admin UI\nВиправлено `textSize`/`fontSize` значення `0` відхилений адміністратором і ігнорується в деяких випадках",
-        "zh-cn": "添加了“ panels.{id}.cmd.activated”状态以启用/损坏面板;切换可见于 TabMaintain 和 TabPanelinfo admin UI\n固定的`文本化'/`fontSize ' 值`0 ' 被行政当局拒绝,在某些情况下被忽略"
       }
     },
     "titleLang": {
