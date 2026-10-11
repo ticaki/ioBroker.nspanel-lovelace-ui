@@ -1739,10 +1739,18 @@ export class ScreensaverEditor extends React.Component<ScreensaverEditorProps, S
                         size="small"
                         disabled={!this.props.alive}
                         onClick={() => this.openDialog('options')}
-                        sx={{ position: 'absolute', right: '1%', bottom: '1%', color: '#777', zIndex: 1 }}
+                        sx={{
+                            position: 'absolute',
+                            right: '1%',
+                            bottom: '1%',
+                            color: '#fff',
+                            zIndex: 1,
+                            backgroundColor: 'rgba(0,0,0,0.6)',
+                            '&:hover': { backgroundColor: 'rgba(255,255,255,0.2)' },
+                        }}
                         data-ss="options"
                     >
-                        <SettingsIcon sx={{ fontSize: 18 }} />
+                        <SettingsIcon sx={{ fontSize: 26 }} />
                     </IconButton>
                 </Tooltip>
             </Box>
