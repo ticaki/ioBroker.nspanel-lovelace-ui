@@ -4600,6 +4600,10 @@ export class ConfigManager extends BaseClass {
     async getScreensaverConfig(
         config: ScriptConfig.Config,
         messages: string[] = [],
+        options: {
+            /** the weather entity of `config` is final - the global weatherEntity of the instance does not replace it (admin screensaver) */
+            weatherEntityFixed?: boolean;
+        } = {},
     ): Promise<{ configArray: pages.PageBase; messages: string[] }> {
         let pageItems: NSPanel.PageItemDataItemsOptions[] = [];
 
@@ -4731,7 +4735,7 @@ export class ConfigManager extends BaseClass {
             pageItems.push(...arr);
         }
         // if weatherEntity is set, add alot weather data to screensaver :)
-        if (this.adapter.config.weatherEntity) {
+        if (this.adapter.config.weatherEntity && !options.weatherEntityFixed) {
             config.weatherEntity = this.adapter.config.weatherEntity;
         }
         if (config.weatherEntity) {

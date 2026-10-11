@@ -727,7 +727,8 @@ class Panel extends import_library.BaseClass {
     const scs = this.pages.filter(
       (a) => a && (a.card === "screensaver" || a.card === "screensaver2" || a.card === "screensaver3")
     );
-    if (currentScreensaver && currentScreensaver.val != null) {
+    const adminScreensaver = !!this.screenSaver && this.pageOrigins.get(this.screenSaver.name) === "admin";
+    if (currentScreensaver && currentScreensaver.val != null && !adminScreensaver) {
       if (scs && scs[0]) {
         this.screenSaver = scs[0];
         if (globals.isScreenSaverModeAsNumber(currentScreensaver.val)) {
@@ -742,7 +743,9 @@ class Panel extends import_library.BaseClass {
     );
     state = this.library.readdb(`panels.${this.name}.cmd.screenSaver.rotationTime`);
     let temp = 0;
-    if (state && typeof state.val === "number") {
+    if (adminScreensaver && this.screenSaver) {
+      temp = this.screenSaver.rotationTime / 1e3;
+    } else if (state && typeof state.val === "number") {
       temp = state.val === 0 ? state.val : state.val < 3 ? 3 : state.val > 3600 ? 3600 : state.val;
       if (this.screenSaver) {
         this.screenSaver.rotationTime = temp * 1e3;

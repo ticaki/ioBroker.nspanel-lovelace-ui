@@ -3817,7 +3817,7 @@ class ConfigManager extends import_library.BaseClass {
     }
     return { itemConfig: void 0, messages };
   }
-  async getScreensaverConfig(config, messages = []) {
+  async getScreensaverConfig(config, messages = [], options = {}) {
     var _a, _b, _c, _d, _e, _f;
     let pageItems = [];
     const loadElementSection = async (items, mode, errorLabel) => {
@@ -3925,7 +3925,7 @@ class ConfigManager extends import_library.BaseClass {
       }
       pageItems.push(...arr);
     }
-    if (this.adapter.config.weatherEntity) {
+    if (this.adapter.config.weatherEntity && !options.weatherEntityFixed) {
       config.weatherEntity = this.adapter.config.weatherEntity;
     }
     if (config.weatherEntity) {

@@ -2008,7 +2008,7 @@ export class ScreensaverEditor extends React.Component<ScreensaverEditorProps, S
                     severity="info"
                     sx={{ mt: 1.5 }}
                 >
-                    {this.getText('screensaver_phase1')}
+                    {this.getText('screensaver_adapterNote')}
                 </Alert>
 
                 {this.renderDialog()}

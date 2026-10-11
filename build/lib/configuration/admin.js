@@ -35,6 +35,7 @@ __export(admin_exports, {
 });
 module.exports = __toCommonJS(admin_exports);
 var import_config_manager = require("../classes/config-manager");
+var import_admin_screensaver = require("./admin-screensaver");
 var import_Color = require("../const/Color");
 var import_default_pages = require("../const/default-pages");
 var import_pageThermo2 = require("../pages/pageThermo2");
@@ -90,6 +91,7 @@ class AdminConfiguration extends import_library.BaseClass {
     try {
       const pendingNavs = await this.createPagesFromConfig(option);
       this.applyPendingNavigations(option, pendingNavs);
+      await this.processScreensaver(option);
     } catch (error) {
       const msg = error instanceof Error ? error.message : String(error);
       const stack = error instanceof Error ? (_a = error.stack) != null ? _a : "no stack" : "no stack";
@@ -100,6 +102,54 @@ Stack: ${stack}`
       );
     }
     return option;
+  }
+  /**
+   * Replaces the screensaver of the script with the one configured in the admin tab "Screensaver"
+   * when an entry lists the topic of the panel. The entry is turned into the script form and handed
+   * to `ConfigManager.getScreensaverConfig()`, so items, templates and weather are resolved exactly
+   * like on the script path; version, rotation time, swipe, indicator buttons and the clock / date
+   * formats of the entry are applied afterwards. Without an entry nothing changes.
+   *
+   * @param option - Panel configuration partial (pages of the script already inside)
+   */
+  async processScreensaver(option) {
+    const { entry, others } = (0, import_admin_screensaver.findScreensaverEntry)(this.adapter.config.screensaverConfig, option.topic);
+    if (!entry) {
+      return;
+    }
+    if (others.length > 0) {
+      this.log.warn(
+        `Panel '${option.name}' (${option.topic}) is listed in several screensavers (${[entry.name, ...others].join(", ")}) - '${entry.name}' is used`
+      );
+    }
+    const lang = this.adapter.language || "en";
+    const headlines = {};
+    for (const id of (0, import_admin_screensaver.screensaverHeadlineStates)(entry)) {
+      try {
+        headlines[id] = (0, import_admin_screensaver.objectNameOf)(await this.adapter.getForeignObjectAsync(id), lang);
+      } catch {
+        headlines[id] = "";
+      }
+    }
+    const manager = new import_config_manager.ConfigManager(this.adapter);
+    const result = await manager.getScreensaverConfig(
+      (0, import_admin_screensaver.buildScreensaverScriptConfig)(entry, option.topic, headlines),
+      [],
+      {
+        weatherEntityFixed: entry.weatherEntity !== void 0
+      }
+    );
+    for (const msg of result.messages) {
+      this.log.debug(`Screensaver '${entry.name}': ${msg}`);
+    }
+    const page = result.configArray;
+    (0, import_admin_screensaver.applyScreensaverEntry)(page, entry);
+    const scriptPages = option.pages.filter((p) => (0, import_admin_screensaver.isScreensaverPage)(p)).length;
+    option.pages = option.pages.filter((p) => !(0, import_admin_screensaver.isScreensaverPage)(p));
+    option.pages.push(page);
+    this.log.info(
+      `Screensaver '${entry.name}' (${entry.mode}) from the admin configuration ${scriptPages > 0 ? "replaces the script screensaver of" : "is used by"} panel '${option.name}'`
+    );
   }
   /**
    * Builds the runtime page of a cardThermo2 entry.
