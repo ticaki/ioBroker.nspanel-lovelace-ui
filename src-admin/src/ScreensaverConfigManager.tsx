@@ -4,38 +4,23 @@
  * screensaver is no page: no navigation, no start page, exactly one per panel).
  */
 import React from 'react';
-import {
-    Box,
-    Button,
-    Divider,
-    FormControl,
-    IconButton,
-    InputLabel,
-    MenuItem,
-    Paper,
-    Select,
-    TextField,
-    Tooltip,
-    Typography,
-} from '@mui/material';
+import { Box, Button, Divider, IconButton, Paper, TextField, Tooltip, Typography } from '@mui/material';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutlineOutlined';
 import { ConfigGeneric, type ConfigGenericProps, type ConfigGenericState } from '@iobroker/json-config';
 import ConfirmDialog from './components/ConfirmDialog';
 import { ScreensaverEditor } from './components/ScreensaverEditor';
-import type { AdminPanelConfig, ScreensaverEntry, ScreensaverMode } from '../../src/lib/types/adminShareConfig';
+import type { AdminPanelConfig, ScreensaverEntry } from '../../src/lib/types/adminShareConfig';
 import {
     ADAPTER_NAME,
     SENDTO_GET_PAGES_All_COMMAND,
     SENDTO_GET_WEATHER_ENTITY_COMMAND,
     emptyScreensaverEntry,
-    screensaverModes,
 } from '../../src/lib/types/adminShareConfig';
 
 interface ScreensaverConfigManagerState extends ConfigGenericState {
     entries: ScreensaverEntry[];
     selected: string;
     newName: string;
-    newMode: ScreensaverMode;
     confirmDeleteName: string | null;
     alive: boolean;
     pagesList: string[];
@@ -60,7 +45,6 @@ class ScreensaverConfigManager extends ConfigGeneric<
             entries,
             selected: entries[0]?.name ?? '',
             newName: '',
-            newMode: 'standard',
             confirmDeleteName: null,
             alive: false,
             pagesList: [],
@@ -176,7 +160,7 @@ class ScreensaverConfigManager extends ConfigGeneric<
         if (!name || this.state.entries.some(e => e.name === name)) {
             return;
         }
-        const entries = [...this.state.entries, emptyScreensaverEntry(name, this.state.newMode)];
+        const entries = [...this.state.entries, emptyScreensaverEntry(name, 'standard')];
         this.save(entries);
         this.setState({ selected: name, newName: '' } as ScreensaverConfigManagerState);
     };
@@ -219,7 +203,7 @@ class ScreensaverConfigManager extends ConfigGeneric<
     }
 
     private renderList(): React.JSX.Element {
-        const { entries, selected, newName, newMode, alive } = this.state;
+        const { entries, selected, newName, alive } = this.state;
         const nameTaken = entries.some(e => e.name === newName.trim());
         return (
             <Box
@@ -241,47 +225,23 @@ class ScreensaverConfigManager extends ConfigGeneric<
                     sx={{ p: 0, backgroundColor: 'transparent' }}
                     elevation={0}
                 >
-                    <TextField
-                        fullWidth
-                        disabled={!alive}
-                        variant="standard"
-                        label={this.getText('screensaver_new')}
-                        value={newName}
-                        onChange={e => this.setState({ newName: e.target.value } as ScreensaverConfigManagerState)}
-                        onKeyDown={e => {
-                            if (e.key === 'Enter') {
-                                this.handleAdd();
-                            }
-                        }}
-                        error={nameTaken}
-                        helperText={nameTaken ? this.getText('screensaver_name_exists') : undefined}
-                        slotProps={{ input: { sx: { px: 1 } } }}
-                    />
-                    <Box sx={{ display: 'flex', gap: 1, alignItems: 'flex-end', mt: 1 }}>
-                        <FormControl
-                            variant="standard"
-                            sx={{ flex: 1 }}
+                    <Box sx={{ display: 'flex', gap: 1, alignItems: 'flex-end' }}>
+                        <TextField
+                            fullWidth
                             disabled={!alive}
-                        >
-                            <InputLabel>{this.getText('screensaver_mode')}</InputLabel>
-                            <Select
-                                value={newMode}
-                                onChange={e =>
-                                    this.setState({
-                                        newMode: e.target.value,
-                                    } as ScreensaverConfigManagerState)
+                            variant="standard"
+                            label={this.getText('screensaver_new')}
+                            value={newName}
+                            onChange={e => this.setState({ newName: e.target.value } as ScreensaverConfigManagerState)}
+                            onKeyDown={e => {
+                                if (e.key === 'Enter') {
+                                    this.handleAdd();
                                 }
-                            >
-                                {screensaverModes.map(m => (
-                                    <MenuItem
-                                        key={m}
-                                        value={m}
-                                    >
-                                        {this.getText(`screensaver_mode_${m}`)}
-                                    </MenuItem>
-                                ))}
-                            </Select>
-                        </FormControl>
+                            }}
+                            error={nameTaken}
+                            helperText={nameTaken ? this.getText('screensaver_name_exists') : undefined}
+                            slotProps={{ input: { sx: { px: 1 } } }}
+                        />
                         <Button
                             size="small"
                             variant="contained"
