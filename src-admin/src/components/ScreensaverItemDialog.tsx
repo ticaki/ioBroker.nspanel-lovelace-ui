@@ -113,13 +113,16 @@ function isState(obj: ioBroker.Object): boolean {
     return !!obj && obj.type === 'state';
 }
 
+/** object types the template picker shows - everything, the dialog only warns about a single state (like Thermo2) */
+const TEMPLATE_OBJECT_TYPES: ioBroker.ObjectType[] = ['state', 'channel', 'device', 'folder'];
+
 /**
- * objects a template searches its states in: channel, alias, device or folder (never a single state)
+ * any object - the template picker does not filter
  *
  * @param obj object from the browser
  */
-function isChannelLike(obj: ioBroker.Object): boolean {
-    return !!obj && (obj.type === 'channel' || obj.type === 'device' || obj.type === 'folder');
+function isAnyObject(obj: ioBroker.Object): boolean {
+    return !!obj;
 }
 
 /**
@@ -467,7 +470,8 @@ export class ScreensaverItemDialog extends React.Component<ScreensaverItemDialog
                                 void this.loadObject(v);
                             },
                             'dpInit',
-                            isChannelLike,
+                            isAnyObject,
+                            TEMPLATE_OBJECT_TYPES,
                         )}
                         {selected.looksFor.length > 0 && (
                             <Typography
@@ -519,6 +523,7 @@ export class ScreensaverItemDialog extends React.Component<ScreensaverItemDialog
         onChange: (v: string) => void,
         name: string,
         filter: (obj: ioBroker.Object) => boolean = isState,
+        types?: ioBroker.ObjectType[],
     ): React.JSX.Element {
         const { oContext, theme } = this.props;
         const themeType = oContext?.themeType ?? (theme?.palette?.mode || 'light');
@@ -533,6 +538,7 @@ export class ScreensaverItemDialog extends React.Component<ScreensaverItemDialog
                     themeType={themeType}
                     dialogName={`selectScreensaverItem_${name}`}
                     filterFunc={filter}
+                    types={types}
                 />
             </Box>
         );
