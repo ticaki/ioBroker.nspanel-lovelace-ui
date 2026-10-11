@@ -129,6 +129,29 @@ function isChannelLike(obj: ioBroker.Object): boolean {
 }
 
 /**
+ * Option: restrict the picker of an adapter-bound template (`adapter` of the template, e.g. `pirate-weather`,
+ * `roborock.0.Devices`) to the objects of that adapter. Prepared on 11.10.2026, NOT active yet (Tom): some
+ * templates carry only a convention there (`0_userdata.0` for the shelly templates) and the filter would hide
+ * real hits. Switch to `true` to activate - the caption `screensaver_item_adapterOnly` comes with it.
+ */
+const TEMPLATE_ADAPTER_FILTER = false;
+
+/**
+ * filter of the object picker for a template: channel-like objects, with the adapter option only those of
+ * the template's adapter
+ *
+ * @param template the chosen template, null = none yet
+ */
+function templateObjectFilter(template: ScreensaverTemplateInfo | null): (obj: ioBroker.Object) => boolean {
+    const adapter = TEMPLATE_ADAPTER_FILTER ? (template?.adapter ?? '').trim() : '';
+    if (!adapter) {
+        return isChannelLike;
+    }
+    const prefix = adapter.endsWith('.') ? adapter : `${adapter}.`;
+    return (obj: ioBroker.Object): boolean => isChannelLike(obj) && (obj._id === adapter || obj._id.startsWith(prefix));
+}
+
+/**
  * writable states (button, switch of an indicator)
  *
  * @param obj object from the browser
@@ -473,8 +496,17 @@ export class ScreensaverItemDialog extends React.Component<ScreensaverItemDialog
                                 void this.loadObject(v);
                             },
                             'dpInit',
-                            isChannelLike,
+                            templateObjectFilter(selected),
                             TEMPLATE_OBJECT_TYPES,
+                        )}
+                        {TEMPLATE_ADAPTER_FILTER && selected.adapter && (
+                            <Typography
+                                variant="caption"
+                                color="text.secondary"
+                                sx={{ display: 'block', mb: 1 }}
+                            >
+                                {this.getText('screensaver_item_adapterOnly').replace('%s', selected.adapter)}
+                            </Typography>
                         )}
                         {selected.looksFor.length > 0 && (
                             <Typography
