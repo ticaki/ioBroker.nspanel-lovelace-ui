@@ -30,6 +30,8 @@ __export(adminShareConfig_exports, {
   emptyChannelValueConfig: () => emptyChannelValueConfig,
   emptyChartEntry: () => emptyChartEntry,
   emptyPowerSlot: () => emptyPowerSlot,
+  emptyThermo2Circuit: () => emptyThermo2Circuit,
+  emptyThermo2Entry: () => emptyThermo2Entry,
   isMainPageEntry: () => isMainPageEntry,
   mainPageName: () => mainPageName,
   normalizeChannelId: () => normalizeChannelId,
@@ -43,6 +45,9 @@ __export(adminShareConfig_exports, {
   servicePageName: () => servicePageName,
   shortStateLabel: () => shortStateLabel,
   stateRefNodeId: () => stateRefNodeId,
+  thermo2Defaults: () => thermo2Defaults,
+  thermo2MaxCircuits: () => thermo2MaxCircuits,
+  thermo2SortOrders: () => thermo2SortOrders,
   trashItemCount: () => trashItemCount
 });
 module.exports = __toCommonJS(adminShareConfig_exports);
@@ -125,6 +130,38 @@ function emptyChartEntry(uniqueName) {
     maxXAxisTicks: chartDefaults.maxXAxisTicks,
     factorCardChart: chartDefaults.factorCardChart,
     maxXAxisLabels: chartDefaults.maxXAxisLabels,
+    hidden: false,
+    alwaysOn: "none"
+  };
+}
+const thermo2SortOrders = ["V", "H", "HM", "VM", "HB", "VB"];
+const thermo2MaxCircuits = 8;
+const thermo2Defaults = {
+  minValue: 15,
+  maxValue: 28,
+  stepValue: 0.5,
+  unit: "\xB0C",
+  unit2: "%",
+  icon: "thermometer",
+  icon2: "water-percent",
+  onColor: "#00ff00",
+  onColor2: "#ff00ff",
+  iconHeatCycleOnColor: "#00ff00",
+  iconHeatCycleOffColor: "#888888",
+  iconHeatCycleOnColor2: "#0000ff",
+  iconHeatCycleOffColor2: "#50508c",
+  modeList: ["OFF", "AUTO", "COOL", "HEAT", "ECO", "FAN", "DRY"]
+};
+function emptyThermo2Circuit() {
+  return { source: "alias", channelId: "", name: "" };
+}
+function emptyThermo2Entry(uniqueName) {
+  return {
+    card: "cardThermo2",
+    uniqueName,
+    thermoItems: [],
+    pageItems: [],
+    sortOrder: "V",
     hidden: false,
     alwaysOn: "none"
   };
@@ -871,6 +908,8 @@ const CHANNEL_ROLES_LIST = Object.keys(requiredScriptDataPoints);
   emptyChannelValueConfig,
   emptyChartEntry,
   emptyPowerSlot,
+  emptyThermo2Circuit,
+  emptyThermo2Entry,
   isMainPageEntry,
   mainPageName,
   normalizeChannelId,
@@ -884,6 +923,9 @@ const CHANNEL_ROLES_LIST = Object.keys(requiredScriptDataPoints);
   servicePageName,
   shortStateLabel,
   stateRefNodeId,
+  thermo2Defaults,
+  thermo2MaxCircuits,
+  thermo2SortOrders,
   trashItemCount
 });
 //# sourceMappingURL=adminShareConfig.js.map
