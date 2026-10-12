@@ -380,6 +380,8 @@ export type ScreensaverItemConfig = {
     colorOff?: string;
     /** color scale instead of fixed colors (ScreensaverEntityIconColor) */
     colorScale?: IconColorElement;
+    /** state whose value is the color (ScreensaverEntityIconColor as id): #rrggbb, {r,g,b} or a decimal number */
+    colorState?: string;
     /** empty = unit of the state */
     unit?: string;
     factor?: number;

@@ -85,7 +85,9 @@ interface ScreensaverItemDialogState {
     objKind: string;
     /** the state of a button / switch action: type and common.write; null = not found, undefined = not checked */
     actionObj: { kind: string; write: boolean } | null | undefined;
-    colorMode: 'fixed' | 'scale';
+    /** the state the color comes from: type; null = not found, undefined = not checked */
+    colorObj: { kind: string } | null | undefined;
+    colorMode: 'fixed' | 'scale' | 'state';
     /** radio at the top: one state with own fields or a page item template */
     source: ScreensaverItemSource;
 }
@@ -202,6 +204,7 @@ export class ScreensaverItemDialog extends React.Component<ScreensaverItemDialog
             channelRole: '',
             objKind: '',
             actionObj: undefined,
+            colorObj: undefined,
             colorMode: 'fixed',
             source: 'state',
         };
@@ -217,14 +220,16 @@ export class ScreensaverItemDialog extends React.Component<ScreensaverItemDialog
             this.setState(
                 {
                     draft,
-                    colorMode: draft.colorScale ? 'scale' : 'fixed',
+                    colorMode: draft.colorScale ? 'scale' : draft.colorState ? 'state' : 'fixed',
                     objType: undefined,
                     actionObj: undefined,
+                    colorObj: undefined,
                     source: screensaverItemSource(draft),
                 },
                 () => {
                     void this.loadObject(draft.state);
                     void this.loadActionObject(draft.action?.state);
+                    void this.loadColorObject(draft.colorState);
                 },
             );
         }
@@ -320,6 +325,28 @@ export class ScreensaverItemDialog extends React.Component<ScreensaverItemDialog
         }
     }
 
+    /**
+     * reads the type of the state the color comes from
+     *
+     * @param id state id, empty = nothing to check
+     */
+    private async loadColorObject(id: string | undefined): Promise<void> {
+        const trimmed = (id ?? '').trim();
+        if (!trimmed) {
+            this.setState({ colorObj: undefined });
+            return;
+        }
+        try {
+            const obj: ioBroker.Object | null | undefined = await this.props.oContext?.socket?.getObject(trimmed);
+            if ((this.state.draft.colorState ?? '').trim() !== trimmed) {
+                return;
+            }
+            this.setState({ colorObj: obj ? { kind: String(obj.type ?? '') } : null });
+        } catch {
+            this.setState({ colorObj: null });
+        }
+    }
+
     /** default icons and colors of the role of the state - state items only */
     private roleDefaults(): PageItemRoleDefaults | null {
         return this.state.objKind === 'state'
@@ -348,6 +375,12 @@ export class ScreensaverItemDialog extends React.Component<ScreensaverItemDialog
         }
         if (this.iconMissing()) {
             return true;
+        }
+        if (this.state.colorMode === 'state') {
+            const { colorObj } = this.state;
+            if (!draft.colorState?.trim() || !colorObj || colorObj.kind !== 'state') {
+                return true;
+            }
         }
         const action = draft.action;
         if (
@@ -433,11 +466,20 @@ export class ScreensaverItemDialog extends React.Component<ScreensaverItemDialog
             return;
         }
         delete draft.template;
-        if (this.state.colorMode === 'scale') {
-            delete draft.colorOn;
-            delete draft.colorOff;
-        } else {
-            delete draft.colorScale;
+        switch (this.state.colorMode) {
+            case 'scale':
+                delete draft.colorOn;
+                delete draft.colorOff;
+                delete draft.colorState;
+                break;
+            case 'state':
+                delete draft.colorOn;
+                delete draft.colorOff;
+                delete draft.colorScale;
+                break;
+            default:
+                delete draft.colorScale;
+                delete draft.colorState;
         }
         const kind = this.kind();
         if (kind !== 'boolean') {
@@ -894,45 +936,102 @@ export class ScreensaverItemDialog extends React.Component<ScreensaverItemDialog
         return `${scale.val_min} … ${scale.val_max}${best} (${scale.mode ?? 'mixed'})`;
     }
 
+    /** the state the color comes from, with the hint on the value format and the warning if it is no state */
+    private renderColorStateField(): React.JSX.Element {
+        const { draft, colorObj } = this.state;
+        const id = (draft.colorState ?? '').trim();
+        let warning: string | null = null;
+        if (id && colorObj === null) {
+            warning = this.getText('screensaver_item_stateMissing').replace('%s', id);
+        } else if (id && colorObj && colorObj.kind !== 'state') {
+            warning = this.getText('screensaver_item_notState')
+                .replace('%s', id)
+                .replace('%s', colorObj.kind || '-');
+        }
+        return (
+            <Box>
+                {this.renderStateField(
+                    this.getText('screensaver_item_colorStateId'),
+                    draft.colorState ?? '',
+                    v => {
+                        this.set('colorState', v);
+                        void this.loadColorObject(v);
+                    },
+                    'colorState',
+                )}
+                {warning && (
+                    <Alert
+                        severity="warning"
+                        sx={{ mb: 2 }}
+                        data-ss="color-state-warning"
+                    >
+                        {warning}
+                    </Alert>
+                )}
+                <Typography
+                    variant="caption"
+                    color="text.secondary"
+                    sx={{ display: 'block', mb: 1 }}
+                >
+                    {this.getText('screensaver_item_colorStateHint')}
+                </Typography>
+            </Box>
+        );
+    }
+
     private renderColorSection(): React.JSX.Element {
         const { draft, colorMode } = this.state;
         const kind = this.kind();
-        if (kind !== 'number') {
-            return (
-                <Box sx={{ display: 'flex', gap: 3, flexWrap: 'wrap', mb: 1 }}>
-                    {this.renderColorField(
-                        'colorOn',
-                        kind === 'boolean' ? 'screensaver_item_colorOn' : 'screensaver_item_color',
-                        DEFAULT_ON,
-                    )}
-                    {kind === 'boolean' && this.renderColorField('colorOff', 'screensaver_item_colorOff', DEFAULT_OFF)}
-                </Box>
-            );
-        }
+        const mode = colorMode === 'scale' && kind !== 'number' ? 'fixed' : colorMode;
         return (
             <Box sx={{ mb: 2 }}>
                 <FormControl component="fieldset">
                     <FormLabel component="legend">{this.getText('screensaver_item_color')}</FormLabel>
                     <RadioGroup
                         row
-                        value={colorMode}
-                        onChange={e => this.setState({ colorMode: e.target.value === 'scale' ? 'scale' : 'fixed' })}
+                        value={mode}
+                        onChange={e =>
+                            this.setState({
+                                colorMode:
+                                    e.target.value === 'scale'
+                                        ? 'scale'
+                                        : e.target.value === 'state'
+                                          ? 'state'
+                                          : 'fixed',
+                            })
+                        }
                     >
                         <FormControlLabel
                             value="fixed"
                             control={<Radio />}
                             label={this.getText('screensaver_item_colorFixed')}
                         />
+                        {kind === 'number' && (
+                            <FormControlLabel
+                                value="scale"
+                                control={<Radio />}
+                                label={this.getText('screensaver_item_colorScale')}
+                            />
+                        )}
                         <FormControlLabel
-                            value="scale"
+                            value="state"
                             control={<Radio />}
-                            label={this.getText('screensaver_item_colorScale')}
+                            label={this.getText('screensaver_item_colorState')}
+                            data-ss="color-state"
                         />
                     </RadioGroup>
                 </FormControl>
-                {colorMode === 'fixed' ? (
+                {mode === 'state' ? (
+                    this.renderColorStateField()
+                ) : mode === 'fixed' ? (
                     <Box sx={{ display: 'flex', gap: 3, flexWrap: 'wrap' }}>
-                        {this.renderColorField('colorOn', 'screensaver_item_color', DEFAULT_ON)}
+                        {this.renderColorField(
+                            'colorOn',
+                            kind === 'boolean' ? 'screensaver_item_colorOn' : 'screensaver_item_color',
+                            DEFAULT_ON,
+                        )}
+                        {kind === 'boolean' &&
+                            this.renderColorField('colorOff', 'screensaver_item_colorOff', DEFAULT_OFF)}
                     </Box>
                 ) : (
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>

@@ -123,6 +123,8 @@ function screensaverItemToScript(item, area, info = {}) {
   }
   if (item.colorScale) {
     element.ScreensaverEntityIconColor = item.colorScale;
+  } else if (item.colorState) {
+    element.ScreensaverEntityIconColor = item.colorState;
   }
   if ((_f = item.iconSelect) == null ? void 0 : _f.length) {
     element.ScreensaverEntityIconSelect = item.iconSelect.map((s) => ({ icon: s.icon, value: s.value }));

@@ -141,6 +141,21 @@ describe('lib/configuration - admin screensaver (entry -> script configuration)'
         ).to.include({ ScreensaverEntityIconOn: null });
     });
 
+    it('passes a color state as ScreensaverEntityIconColor, a scale wins over it', () => {
+        expect(screensaverItemToScript({ state: 'a', iconOn: 'x', colorState: 'u.0.color' }, 'left')).to.include({
+            ScreensaverEntityIconColor: 'u.0.color',
+        });
+        const scale = { mode: 'mixed' as const, val_min: 0, val_max: 10 };
+        expect(
+            (
+                screensaverItemToScript(
+                    { state: 'a', iconOn: 'x', colorState: 'u.0.color', colorScale: scale },
+                    'left',
+                ) as { ScreensaverEntityIconColor?: unknown }
+            ).ScreensaverEntityIconColor,
+        ).to.deep.equal(scale);
+    });
+
     it('maps the indicator actions to button, switch and page - on the indicator only', () => {
         const button = screensaverItemToScript({ state: 'a', action: { kind: 'button', state: 'b' } }, 'indicator');
         expect(button).to.include({ ScreensaverEntityButton: 'b' });
