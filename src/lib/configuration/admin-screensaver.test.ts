@@ -8,8 +8,9 @@ import {
     hexToScriptRGB,
     isScreensaverPage,
     objectNameOf,
-    screensaverHeadlineStates,
+    screensaverFallbackIcon,
     screensaverItemToScript,
+    screensaverStateIds,
     screensaverMrIconToScript,
 } from './admin-screensaver';
 import type * as pages from '../types/pages';
@@ -81,16 +82,52 @@ describe('lib/configuration - admin screensaver (entry -> script configuration)'
     });
 
     it('uses the name of the state when the headline is empty and leaves optional fields away', () => {
-        const element = screensaverItemToScript({ state: 'alias.0.Fenster.ACTUAL' }, 'bottom', 'Fenster');
+        const element = screensaverItemToScript({ state: 'alias.0.Fenster.ACTUAL', iconOn: 'window-open' }, 'bottom', {
+            name: 'Fenster',
+        });
         expect(element).to.deep.equal({
             type: 'script',
             ScreensaverEntity: 'alias.0.Fenster.ACTUAL',
             ScreensaverEntityText: 'Fenster',
-            ScreensaverEntityIconOn: null,
+            ScreensaverEntityIconOn: 'window-open',
             ScreensaverEntityIconOff: null,
             ScreensaverEntityOnText: null,
             ScreensaverEntityOffText: null,
         });
+    });
+
+    it('takes the default icons of the role when the item has none, the fallback icon without a known role', () => {
+        // state role of a datapoint
+        expect(screensaverItemToScript({ state: 'h' }, 'bottom', { role: 'value.humidity' })).to.include({
+            ScreensaverEntityIconOn: 'water-percent',
+            ScreensaverEntityIconOff: 'water-off',
+        });
+        expect(screensaverItemToScript({ state: 'l' }, 'left', { role: 'switch.light' })).to.include({
+            ScreensaverEntityIconOn: 'lightbulb',
+            ScreensaverEntityIconOff: 'lightbulb-outline',
+        });
+        // channel role still counts
+        expect(screensaverItemToScript({ state: 'd' }, 'indicator', { role: 'door' })).to.include({
+            ScreensaverEntityIconOn: 'door-open',
+            ScreensaverEntityIconOff: 'door-closed',
+        });
+        // unknown role, no role at all
+        expect(screensaverItemToScript({ state: 'x' }, 'bottom', { role: 'value.power' })).to.include({
+            ScreensaverEntityIconOn: screensaverFallbackIcon,
+            ScreensaverEntityIconOff: null,
+        });
+        expect(screensaverItemToScript({ state: 'x' }, 'bottom')).to.include({
+            ScreensaverEntityIconOn: screensaverFallbackIcon,
+        });
+        // own icons win, an icon list needs no default
+        expect(
+            screensaverItemToScript({ state: 'h', iconOn: 'water' }, 'bottom', { role: 'value.humidity' }),
+        ).to.include({ ScreensaverEntityIconOn: 'water', ScreensaverEntityIconOff: null });
+        expect(
+            screensaverItemToScript({ state: 'h', iconSelect: [{ value: 1, icon: 'a' }] }, 'bottom', {
+                role: 'value.humidity',
+            }),
+        ).to.include({ ScreensaverEntityIconOn: null });
     });
 
     it('maps the indicator actions to button, switch and page - on the indicator only', () => {
@@ -166,7 +203,9 @@ describe('lib/configuration - admin screensaver (entry -> script configuration)'
             weatherAddDefaultItems: { sunriseSet: true },
             screensaverSwipe: true,
         };
-        const config = buildScreensaverScriptConfig(entry, 'NSPanel_1', { b1: 'Unten eins' });
+        const config = buildScreensaverScriptConfig(entry, 'NSPanel_1', {
+            b1: { name: 'Unten eins', role: 'value.humidity' },
+        });
         expect(config.panelTopic).to.equal('NSPanel_1');
         expect(config.scriptName).to.equal('admin.screensaver.Wohnzimmer');
         expect(config.weatherEntity).to.equal('pirate-weather.0');
@@ -190,13 +229,13 @@ describe('lib/configuration - admin screensaver (entry -> script configuration)'
         expect(config.pages).to.deep.equal([]);
     });
 
-    it('lists the states whose name replaces a missing headline', () => {
+    it('lists the states of the state items once, templates excluded', () => {
         const entry: ScreensaverEntry = {
             ...emptyScreensaverEntry('x', 'standard'),
             bottom: [{ state: 'a' }, { state: 'b', headline: 'B' }, { state: 'c', template: 't' }, { state: 'a' }],
             left: [{ state: 'd' }],
         };
-        expect(screensaverHeadlineStates(entry)).to.deep.equal(['d', 'a']);
+        expect(screensaverStateIds(entry)).to.deep.equal(['d', 'a', 'b']);
     });
 
     it('picks the first entry of a panel and names the others', () => {

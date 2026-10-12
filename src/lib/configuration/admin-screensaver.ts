@@ -2,12 +2,22 @@ import { screensaverCardOfMode } from '../types/adminShareConfig';
 import type { ScreensaverEntry, ScreensaverItemConfig, ScreensaverMrIconConfig } from '../types/adminShareConfig';
 import type * as pages from '../types/pages';
 import { Color } from '../const/Color';
+import { getScreensaverItemDefaultsByRole } from '../const/page-item-defaults';
 
 /** areas of the screensaver whose items the entry stores (the script names of the arrays follow) */
 export type ScreensaverScriptArea = 'favorit' | 'alternate' | 'left' | 'bottom' | 'indicator';
 
 /** id the admin screensaver page gets - the script page is `scr`; the panel tells both apart by their origin */
 export const adminScreensaverPageId = 'scr-admin';
+
+/** icon of an item that has none and whose role knows no default - the panel cannot draw an item without icon */
+export const screensaverFallbackIcon = 'help-circle-outline';
+
+/**
+ * what the adapter knows about the state of an item: its name stands in for a missing headline, its
+ * role picks the default icons when the item has none ({@link getScreensaverItemDefaultsByRole})
+ */
+export type ScreensaverStateInfo = { name?: string; role?: string };
 
 /**
  * `#rrggbb` of the admin dialogs as the RGB object of the script configuration
@@ -41,15 +51,15 @@ export function objectNameOf(obj: ioBroker.Object | null | undefined, lang: stri
 }
 
 /**
- * ids of the states whose name stands in for a missing headline (the item dialog promises
- * "empty = name of the state")
+ * ids of the states of the state items (templates excluded) - the adapter reads their name (headline
+ * fallback, the item dialog promises "empty = name of the state") and role (default icons)
  *
  * @param entry screensaver entry of the admin
  */
-export function screensaverHeadlineStates(entry: ScreensaverEntry): string[] {
+export function screensaverStateIds(entry: ScreensaverEntry): string[] {
     const ids = new Set<string>();
     for (const item of allItems(entry)) {
-        if (item && !item.template && !item.headline && item.state) {
+        if (item && !item.template && item.state) {
             ids.add(item.state);
         }
     }
@@ -65,14 +75,17 @@ function allItems(entry: ScreensaverEntry): (ScreensaverItemConfig | undefined)[
  * becomes the template element (`dpInit` = the object), a state item the script element with the
  * fields of the item dialog.
  *
+ * An item without icons gets the default icons of the role of its state, without a known role the
+ * {@link screensaverFallbackIcon} - the panel cannot draw an item without icon.
+ *
  * @param item stored item
  * @param area area of the screensaver (modeScr of a template element; the action fields only count on an indicator)
- * @param headlineFallback text when the item has no headline, e.g. the name of the state
+ * @param info name and role of the state as the adapter read them
  */
 export function screensaverItemToScript(
     item: ScreensaverItemConfig,
     area: ScreensaverScriptArea,
-    headlineFallback: string = '',
+    info: ScreensaverStateInfo = {},
 ): ScriptConfig.ScreenSaverElement {
     if (item.template) {
         const element: ScriptConfig.ScreenSaverElement = {
@@ -89,12 +102,19 @@ export function screensaverItemToScript(
         }
         return element;
     }
+    let iconOn = item.iconOn || null;
+    let iconOff = item.iconOff || null;
+    if (!iconOn && !item.iconSelect?.length) {
+        const defaults = info.role ? getScreensaverItemDefaultsByRole(info.role) : null;
+        iconOn = defaults?.iconOn || screensaverFallbackIcon;
+        iconOff = iconOff || defaults?.iconOff || null;
+    }
     const element: ScriptConfig.ScreenSaverElement = {
         type: 'script',
         ScreensaverEntity: item.state,
-        ScreensaverEntityText: item.headline || headlineFallback,
-        ScreensaverEntityIconOn: item.iconOn ?? null,
-        ScreensaverEntityIconOff: item.iconOff ?? null,
+        ScreensaverEntityText: item.headline || info.name || '',
+        ScreensaverEntityIconOn: iconOn,
+        ScreensaverEntityIconOff: iconOff,
         ScreensaverEntityOnText: item.textOn ?? null,
         ScreensaverEntityOffText: item.textOff ?? null,
     };
@@ -185,18 +205,18 @@ export function screensaverMrIconToScript(
  *
  * @param entry screensaver entry of the admin
  * @param panelTopic topic of the panel the configuration is built for
- * @param headlines names of states for items without a headline ({@link screensaverHeadlineStates})
+ * @param states name and role of the states of the items ({@link screensaverStateIds})
  */
 export function buildScreensaverScriptConfig(
     entry: ScreensaverEntry,
     panelTopic: string,
-    headlines: Record<string, string> = {},
+    states: Record<string, ScreensaverStateInfo> = {},
 ): ScriptConfig.Config {
     const convert = (
         item: ScreensaverItemConfig | undefined,
         area: ScreensaverScriptArea,
     ): ScriptConfig.ScreenSaverElement | undefined =>
-        item ? screensaverItemToScript(item, area, headlines[item.state] ?? '') : undefined;
+        item ? screensaverItemToScript(item, area, states[item.state] ?? {}) : undefined;
     const present = (list: (ScriptConfig.ScreenSaverElement | undefined)[]): ScriptConfig.ScreenSaverElement[] =>
         list.filter((e): e is ScriptConfig.ScreenSaverElement => !!e);
 

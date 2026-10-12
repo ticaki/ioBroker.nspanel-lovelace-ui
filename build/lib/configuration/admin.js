@@ -113,6 +113,7 @@ Stack: ${stack}`
    * @param option - Panel configuration partial (pages of the script already inside)
    */
   async processScreensaver(option) {
+    var _a;
     const { entry, others } = (0, import_admin_screensaver.findScreensaverEntry)(this.adapter.config.screensaverConfig, option.topic);
     if (!entry) {
       return;
@@ -123,17 +124,21 @@ Stack: ${stack}`
       );
     }
     const lang = this.adapter.language || "en";
-    const headlines = {};
-    for (const id of (0, import_admin_screensaver.screensaverHeadlineStates)(entry)) {
+    const states = {};
+    for (const id of (0, import_admin_screensaver.screensaverStateIds)(entry)) {
       try {
-        headlines[id] = (0, import_admin_screensaver.objectNameOf)(await this.adapter.getForeignObjectAsync(id), lang);
+        const obj = await this.adapter.getForeignObjectAsync(id);
+        states[id] = {
+          name: (0, import_admin_screensaver.objectNameOf)(obj, lang),
+          role: typeof ((_a = obj == null ? void 0 : obj.common) == null ? void 0 : _a.role) === "string" ? obj.common.role : ""
+        };
       } catch {
-        headlines[id] = "";
+        states[id] = {};
       }
     }
     const manager = new import_config_manager.ConfigManager(this.adapter);
     const result = await manager.getScreensaverConfig(
-      (0, import_admin_screensaver.buildScreensaverScriptConfig)(entry, option.topic, headlines),
+      (0, import_admin_screensaver.buildScreensaverScriptConfig)(entry, option.topic, states),
       [],
       {
         weatherEntityFixed: entry.weatherEntity !== void 0

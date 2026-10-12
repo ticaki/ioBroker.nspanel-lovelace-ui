@@ -6,7 +6,8 @@ import {
     findScreensaverEntry,
     isScreensaverPage,
     objectNameOf,
-    screensaverHeadlineStates,
+    screensaverStateIds,
+    type ScreensaverStateInfo,
 } from './admin-screensaver';
 import { Color } from '../const/Color';
 import { mainPageName } from '../const/default-pages';
@@ -126,17 +127,21 @@ export class AdminConfiguration extends BaseClass {
             );
         }
         const lang = this.adapter.language || 'en';
-        const headlines: Record<string, string> = {};
-        for (const id of screensaverHeadlineStates(entry)) {
+        const states: Record<string, ScreensaverStateInfo> = {};
+        for (const id of screensaverStateIds(entry)) {
             try {
-                headlines[id] = objectNameOf(await this.adapter.getForeignObjectAsync(id), lang);
+                const obj = await this.adapter.getForeignObjectAsync(id);
+                states[id] = {
+                    name: objectNameOf(obj, lang),
+                    role: typeof obj?.common?.role === 'string' ? obj.common.role : '',
+                };
             } catch {
-                headlines[id] = '';
+                states[id] = {};
             }
         }
         const manager = new ConfigManager(this.adapter);
         const result = await manager.getScreensaverConfig(
-            buildScreensaverScriptConfig(entry, option.topic, headlines),
+            buildScreensaverScriptConfig(entry, option.topic, states),
             [],
             {
                 weatherEntityFixed: entry.weatherEntity !== undefined,

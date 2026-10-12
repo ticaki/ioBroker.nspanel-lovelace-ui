@@ -46,6 +46,7 @@ import {
     screensaverItemFields,
     screensaverItemSource,
 } from '../../../src/lib/types/adminShareConfig';
+import { getScreensaverItemDefaultsByRole, type PageItemRoleDefaults } from '../../../src/lib/const/page-item-defaults';
 
 export interface ScreensaverItemDialogProps {
     open: boolean;
@@ -79,6 +80,8 @@ interface ScreensaverItemDialogState {
     objRole: string;
     /** type of the object (state, channel, ...) - the template dialog warns about a state */
     objKind: string;
+    /** the state of a button / switch action: type and common.write; null = not found, undefined = not checked */
+    actionObj: { kind: string; write: boolean } | null | undefined;
     colorMode: 'fixed' | 'scale';
     /** radio at the top: one state with own fields or a page item template */
     source: ScreensaverItemSource;
@@ -194,6 +197,7 @@ export class ScreensaverItemDialog extends React.Component<ScreensaverItemDialog
             objName: '',
             objRole: '',
             objKind: '',
+            actionObj: undefined,
             colorMode: 'fixed',
             source: 'state',
         };
@@ -211,10 +215,12 @@ export class ScreensaverItemDialog extends React.Component<ScreensaverItemDialog
                     draft,
                     colorMode: draft.colorScale ? 'scale' : 'fixed',
                     objType: undefined,
+                    actionObj: undefined,
                     source: screensaverItemSource(draft),
                 },
                 () => {
                     void this.loadObject(draft.state);
+                    void this.loadActionObject(draft.action?.state);
                 },
             );
         }
@@ -244,16 +250,129 @@ export class ScreensaverItemDialog extends React.Component<ScreensaverItemDialog
             if (this.state.draft.state.trim() !== trimmed) {
                 return;
             }
-            this.setState({
-                objType: obj ? String(obj.common?.type ?? '') : null,
-                objUnit: obj ? String(obj.common?.unit ?? '') : '',
-                objName: objectName(obj, this.lang()),
-                objRole: obj ? String(obj.common?.role ?? '') : '',
-                objKind: obj ? String(obj.type ?? '') : '',
+            const objRole = obj ? String(obj.common?.role ?? '') : '';
+            const objKind = obj ? String(obj.type ?? '') : '';
+            // a state item without icons starts with the default icons of its role (the panel cannot draw
+            // an item without icon) - an icon list needs none
+            const defaults = objKind === 'state' ? getScreensaverItemDefaultsByRole(objRole) : null;
+            this.setState(prev => {
+                const draft = { ...prev.draft };
+                if (defaults && !draft.iconOn && !draft.iconSelect?.length) {
+                    draft.iconOn = defaults.iconOn;
+                    if (!draft.iconOff && defaults.iconOff && obj?.common?.type === 'boolean') {
+                        draft.iconOff = defaults.iconOff;
+                    }
+                }
+                return {
+                    draft,
+                    objType: obj ? String(obj.common?.type ?? '') : null,
+                    objUnit: obj ? String(obj.common?.unit ?? '') : '',
+                    objName: objectName(obj, this.lang()),
+                    objRole,
+                    objKind,
+                };
             });
         } catch {
             this.setState({ objType: null, objUnit: '', objName: '', objRole: '', objKind: '' });
         }
+    }
+
+    /**
+     * reads type and common.write of the state a button / switch action writes to
+     *
+     * @param id state id, empty = nothing to check
+     */
+    private async loadActionObject(id: string | undefined): Promise<void> {
+        const trimmed = (id ?? '').trim();
+        if (!trimmed) {
+            this.setState({ actionObj: undefined });
+            return;
+        }
+        try {
+            const obj: ioBroker.Object | null | undefined = await this.props.oContext?.socket?.getObject(trimmed);
+            if ((this.state.draft.action?.state ?? '').trim() !== trimmed) {
+                return;
+            }
+            this.setState({
+                actionObj: obj ? { kind: String(obj.type ?? ''), write: obj.common?.write === true } : null,
+            });
+        } catch {
+            this.setState({ actionObj: null });
+        }
+    }
+
+    /** default icons and colors of the role of the state - state items only */
+    private roleDefaults(): PageItemRoleDefaults | null {
+        return this.state.objKind === 'state' ? getScreensaverItemDefaultsByRole(this.state.objRole) : null;
+    }
+
+    /** a state item needs an icon (or an icon list) - the panel cannot draw an item without */
+    private iconMissing(): boolean {
+        const { draft } = this.state;
+        return this.state.source === 'state' && this.kind() !== 'unknown' && !draft.iconOn && !draft.iconSelect?.length;
+    }
+
+    /**
+     * why the item cannot be applied yet: the state of a state item must exist and be a state with an
+     * icon, the state of a button / switch action must exist and be writable; a template needs its
+     * name and - if it searches states - its object
+     */
+    private blocked(): boolean {
+        const { draft, objType, objKind, actionObj } = this.state;
+        if (this.state.source === 'template') {
+            return !draft.template || (this.templateNeed() === 'channel' && !draft.state.trim());
+        }
+        if (!draft.state.trim() || objType === undefined || objType === null || objKind !== 'state') {
+            return true;
+        }
+        if (this.iconMissing()) {
+            return true;
+        }
+        const action = draft.action;
+        if (
+            screensaverItemFields(this.props.area).action &&
+            action &&
+            (action.kind === 'button' || action.kind === 'switch') &&
+            action.state?.trim()
+        ) {
+            return !actionObj || actionObj.kind !== 'state' || !actionObj.write;
+        }
+        return false;
+    }
+
+    /**
+     * the warning of a button / switch action whose state is missing, no state or read-only
+     *
+     * @param action action of the item
+     */
+    private renderActionStateWarning(action: ScreensaverItemAction): React.JSX.Element | null {
+        const id = (action.state ?? '').trim();
+        const { actionObj } = this.state;
+        if (!id || actionObj === undefined) {
+            return null;
+        }
+        let text: string | null = null;
+        if (actionObj === null) {
+            text = this.getText('screensaver_item_stateMissing').replace('%s', id);
+        } else if (actionObj.kind !== 'state') {
+            text = this.getText('screensaver_item_notState')
+                .replace('%s', id)
+                .replace('%s', actionObj.kind || '-');
+        } else if (!actionObj.write) {
+            text = this.getText('screensaver_item_actionNotWritable').replace('%s', id);
+        }
+        if (!text) {
+            return null;
+        }
+        return (
+            <Alert
+                severity="warning"
+                sx={{ mb: 2 }}
+                data-ss="action-state-warning"
+            >
+                {text}
+            </Alert>
+        );
     }
 
     private set<K extends keyof ScreensaverItemConfig>(field: K, value: ScreensaverItemConfig[K]): void {
@@ -342,8 +461,8 @@ export class ScreensaverItemDialog extends React.Component<ScreensaverItemDialog
 
     /** what the state holds - decides which fields make sense */
     private kind(): 'unknown' | 'boolean' | 'number' | 'date' | 'other' {
-        const { objType, objRole } = this.state;
-        if (typeof objType !== 'string') {
+        const { objType, objRole, objKind } = this.state;
+        if (typeof objType !== 'string' || objKind !== 'state') {
             return 'unknown';
         }
         if (objType === 'boolean') {
@@ -858,11 +977,15 @@ export class ScreensaverItemDialog extends React.Component<ScreensaverItemDialog
                                   : 'screensaver_item_action_switchState',
                           ),
                           action.state ?? '',
-                          v => this.set('action', { ...action, state: v }),
+                          v => {
+                              this.set('action', { ...action, state: v });
+                              void this.loadActionObject(v);
+                          },
                           'action',
                           isWritableState,
                       )
                     : null}
+                {(kind === 'button' || kind === 'switch') && this.renderActionStateWarning(action)}
                 {kind === 'navigate' && (
                     <FormControl
                         variant="standard"
@@ -997,10 +1120,12 @@ export class ScreensaverItemDialog extends React.Component<ScreensaverItemDialog
 
     render(): React.JSX.Element {
         const { open, area, index, count, item } = this.props;
-        const { draft, objType, objUnit, objName } = this.state;
+        const { draft, objType, objUnit, objName, objRole, objKind } = this.state;
         const fields = screensaverItemFields(area);
         const kind = this.kind();
         const template = this.state.source === 'template';
+        const roleDefaults = this.roleDefaults();
+        const iconMissing = this.iconMissing();
         // state mode: the fields follow the type of the state; template mode: the template defines the look
         const known = !template && kind !== 'unknown';
         const visibility = template
@@ -1043,16 +1168,45 @@ export class ScreensaverItemDialog extends React.Component<ScreensaverItemDialog
                                         {this.getText('screensaver_item_stateMissing').replace('%s', draft.state)}
                                     </Alert>
                                 )}
+                                {typeof objType === 'string' && objKind !== 'state' && (
+                                    <Alert
+                                        severity="warning"
+                                        sx={{ mb: 2 }}
+                                        data-ss="state-notstate"
+                                    >
+                                        {this.getText('screensaver_item_notState')
+                                            .replace('%s', draft.state)
+                                            .replace('%s', objKind || '-')}
+                                    </Alert>
+                                )}
                                 {known && (
                                     <Typography
                                         variant="caption"
                                         color="text.secondary"
-                                        sx={{ display: 'block', mb: 2 }}
+                                        sx={{ display: 'block' }}
                                     >
                                         {this.getText('screensaver_item_stateInfo')
                                             .replace('%s', objName || '-')
                                             .replace('%s', objType || '-')
                                             .replace('%s', objUnit || '-')}
+                                    </Typography>
+                                )}
+                                {known && (
+                                    <Typography
+                                        variant="caption"
+                                        color="text.secondary"
+                                        sx={{ display: 'block', mb: 2 }}
+                                        data-ss="state-role"
+                                    >
+                                        {roleDefaults
+                                            ? this.getText('screensaver_item_roleInfo')
+                                                  .replace('%s', objRole || '-')
+                                                  .replace('%s', roleDefaults.iconOn || '-')
+                                                  .replace('%s', roleDefaults.iconOff || '-')
+                                            : this.getText('screensaver_item_roleNoDefault').replace(
+                                                  '%s',
+                                                  objRole || '-',
+                                              )}
                                     </Typography>
                                 )}
                                 {!known && objType !== null && (
@@ -1089,6 +1243,15 @@ export class ScreensaverItemDialog extends React.Component<ScreensaverItemDialog
                                 )}
                                 {kind === 'boolean' && this.renderIconField('iconOff', 'screensaver_item_iconOff')}
                             </Box>
+                            {iconMissing && (
+                                <Alert
+                                    severity="warning"
+                                    sx={{ mb: 2 }}
+                                    data-ss="icon-required"
+                                >
+                                    {this.getText('screensaver_item_iconRequired')}
+                                </Alert>
+                            )}
                             {this.renderColorSection()}
                         </>
                     )}
@@ -1195,11 +1358,7 @@ export class ScreensaverItemDialog extends React.Component<ScreensaverItemDialog
                     <Button onClick={this.props.onClose}>{this.getText('Cancel1')}</Button>
                     <Button
                         variant="contained"
-                        disabled={
-                            template
-                                ? !draft.template || (this.templateNeed() === 'channel' && !draft.state.trim())
-                                : !draft.state.trim()
-                        }
+                        disabled={this.blocked()}
                         onClick={this.apply}
                     >
                         {this.getText('screensaver_apply')}
@@ -1211,7 +1370,7 @@ export class ScreensaverItemDialog extends React.Component<ScreensaverItemDialog
                     socket={this.props.oContext?.socket}
                     channelRole={null}
                     isNavigation={false}
-                    roleDefaults={null}
+                    roleDefaults={roleDefaults}
                     trueColor={draft.colorOn ?? DEFAULT_ON}
                     falseColor={draft.colorOff ?? DEFAULT_OFF}
                     onSave={cfg => {
