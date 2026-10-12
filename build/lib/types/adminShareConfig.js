@@ -46,6 +46,7 @@ __export(adminShareConfig_exports, {
   reversePanelStatusStates: () => reversePanelStatusStates,
   screensaverAreas: () => screensaverAreas,
   screensaverCardOfMode: () => screensaverCardOfMode,
+  screensaverChannelIdOf: () => screensaverChannelIdOf,
   screensaverDateFormats: () => screensaverDateFormats,
   screensaverItemFields: () => screensaverItemFields,
   screensaverItemSource: () => screensaverItemSource,
@@ -136,6 +137,10 @@ function screensaverCardOfMode(mode) {
     default:
       return "screensaver";
   }
+}
+function screensaverChannelIdOf(stateId) {
+  const parts = stateId.split(".");
+  return parts.length > 3 ? parts.slice(0, -1).join(".") : "";
 }
 function screensaverItemSource(item) {
   return (item == null ? void 0 : item.template) ? "template" : "state";
@@ -1066,6 +1071,7 @@ const CHANNEL_ROLES_LIST = Object.keys(requiredScriptDataPoints);
   reversePanelStatusStates,
   screensaverAreas,
   screensaverCardOfMode,
+  screensaverChannelIdOf,
   screensaverDateFormats,
   screensaverItemFields,
   screensaverItemSource,

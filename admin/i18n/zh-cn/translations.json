@@ -590,6 +590,7 @@
     "screensaver_item_action_switch": "开关（切换）",
     "screensaver_item_action_switchState": "按下时切换的状态",
     "screensaver_item_adapterOnly": "仅提供适配器 %s 的对象",
+    "screensaver_item_channelRole": "通道：%s",
     "screensaver_item_color": "颜色",
     "screensaver_item_colorFixed": "固定颜色",
     "screensaver_item_colorOff": "关颜色",

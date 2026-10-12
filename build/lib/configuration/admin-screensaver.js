@@ -69,7 +69,7 @@ function allItems(entry) {
   return [entry.favorit, entry.alternate, ...(_a = entry.left) != null ? _a : [], ...(_b = entry.bottom) != null ? _b : [], ...(_c = entry.indicator) != null ? _c : []];
 }
 function screensaverItemToScript(item, area, info = {}) {
-  var _a, _b, _c, _d, _e;
+  var _a, _b, _c, _d, _e, _f;
   if (item.template) {
     const element2 = {
       type: "template",
@@ -88,7 +88,7 @@ function screensaverItemToScript(item, area, info = {}) {
   let iconOn = item.iconOn || null;
   let iconOff = item.iconOff || null;
   if (!iconOn && !((_b = item.iconSelect) == null ? void 0 : _b.length)) {
-    const defaults = info.role ? (0, import_page_item_defaults.getScreensaverItemDefaultsByRole)(info.role) : null;
+    const defaults = info.role || info.channelRole ? (0, import_page_item_defaults.getScreensaverItemDefaultsByRole)((_c = info.role) != null ? _c : "", info.channelRole) : null;
     iconOn = (defaults == null ? void 0 : defaults.iconOn) || screensaverFallbackIcon;
     iconOff = iconOff || (defaults == null ? void 0 : defaults.iconOff) || null;
   }
@@ -98,8 +98,8 @@ function screensaverItemToScript(item, area, info = {}) {
     ScreensaverEntityText: item.headline || info.name || "",
     ScreensaverEntityIconOn: iconOn,
     ScreensaverEntityIconOff: iconOff,
-    ScreensaverEntityOnText: (_c = item.textOn) != null ? _c : null,
-    ScreensaverEntityOffText: (_d = item.textOff) != null ? _d : null
+    ScreensaverEntityOnText: (_d = item.textOn) != null ? _d : null,
+    ScreensaverEntityOffText: (_e = item.textOff) != null ? _e : null
   };
   if (item.unit !== void 0) {
     element.ScreensaverEntityUnitText = item.unit;
@@ -124,7 +124,7 @@ function screensaverItemToScript(item, area, info = {}) {
   if (item.colorScale) {
     element.ScreensaverEntityIconColor = item.colorScale;
   }
-  if ((_e = item.iconSelect) == null ? void 0 : _e.length) {
+  if ((_f = item.iconSelect) == null ? void 0 : _f.length) {
     element.ScreensaverEntityIconSelect = item.iconSelect.map((s) => ({ icon: s.icon, value: s.value }));
   }
   if (item.enabled) {

@@ -629,13 +629,16 @@ const STATE_ROLE_KEY: Partial<Record<string, keyof typeof pageItemDefaults>> = {
 };
 
 /**
- * Returns the default icon/color entry for the role of a state the screensaver item of the admin
- * shows, or `null` if neither the state roles nor the channel roles know it.
+ * Returns the default icon/color entry of a state the screensaver item of the admin shows, or `null`
+ * if no role is known. Like the page menu editor the role of the channel / device the state belongs
+ * to counts first (a `light` channel gives the bulb also for its `.ACTUAL`), the role of the state
+ * itself is the fallback.
  *
  * @param role common.role of the state (e.g. 'value.humidity', 'switch.light', 'light')
+ * @param channelRole common.role of the channel / device above the state (e.g. 'light', 'humidity')
  */
-export function getScreensaverItemDefaultsByRole(role: string): PageItemRoleDefaults | null {
-    const key = ITEM_ROLE_KEY[role] ?? STATE_ROLE_KEY[role];
+export function getScreensaverItemDefaultsByRole(role: string, channelRole?: string): PageItemRoleDefaults | null {
+    const key = (channelRole ? ITEM_ROLE_KEY[channelRole] : undefined) ?? ITEM_ROLE_KEY[role] ?? STATE_ROLE_KEY[role];
     return key != null ? pageItemDefaults[key] : null;
 }
 

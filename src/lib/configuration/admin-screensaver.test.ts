@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import { emptyScreensaverEntry, type ScreensaverEntry } from '../types/adminShareConfig';
+import { emptyScreensaverEntry, screensaverChannelIdOf, type ScreensaverEntry } from '../types/adminShareConfig';
 import {
     adminScreensaverPageId,
     applyScreensaverEntry,
@@ -110,6 +110,17 @@ describe('lib/configuration - admin screensaver (entry -> script configuration)'
         expect(screensaverItemToScript({ state: 'd' }, 'indicator', { role: 'door' })).to.include({
             ScreensaverEntityIconOn: 'door-open',
             ScreensaverEntityIconOff: 'door-closed',
+        });
+        // the role of the channel above the state wins (like the page menu editor), the state role is the fallback
+        expect(screensaverItemToScript({ state: 'l' }, 'left', { role: 'switch', channelRole: 'light' })).to.include({
+            ScreensaverEntityIconOn: 'lightbulb',
+            ScreensaverEntityIconOff: 'lightbulb-outline',
+        });
+        expect(
+            screensaverItemToScript({ state: 'h' }, 'left', { role: 'value.humidity', channelRole: 'folder-ish' }),
+        ).to.include({ ScreensaverEntityIconOn: 'water-percent' });
+        expect(screensaverItemToScript({ state: 'x' }, 'left', { channelRole: 'gate' })).to.include({
+            ScreensaverEntityIconOn: 'garage-open',
         });
         // unknown role, no role at all
         expect(screensaverItemToScript({ state: 'x' }, 'bottom', { role: 'value.power' })).to.include({
@@ -227,6 +238,13 @@ describe('lib/configuration - admin screensaver (entry -> script configuration)'
         expect(config.notifyScreensaverEntity).to.equal(undefined);
         expect(config.advancedOptions).to.deep.equal({ screensaverSwipe: true, screensaverIndicatorButtons: false });
         expect(config.pages).to.deep.equal([]);
+    });
+
+    it('names the channel above a state', () => {
+        expect(screensaverChannelIdOf('alias.0.Licht.ACTUAL')).to.equal('alias.0.Licht');
+        expect(screensaverChannelIdOf('hm-rpc.0.ABC.1.STATE')).to.equal('hm-rpc.0.ABC.1');
+        expect(screensaverChannelIdOf('alias.0.state')).to.equal('');
+        expect(screensaverChannelIdOf('')).to.equal('');
     });
 
     it('lists the states of the state items once, templates excluded', () => {

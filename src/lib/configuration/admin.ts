@@ -16,6 +16,7 @@ import { BaseClass } from '../controller/library';
 import type { panelConfigPartial } from '../controller/panel';
 import { systemNavigation } from '../templates/system-templates';
 import * as ShareConfig from '../types/adminShareConfig';
+import { screensaverChannelIdOf } from '../types/adminShareConfig';
 import { exhaustiveCheck } from '../types/function-and-const';
 import type { NspanelLovelaceUi } from '../types/NspanelLovelaceUi';
 import type { PageBase, cardChartDataItemOptions } from '../types/pages';
@@ -131,9 +132,16 @@ export class AdminConfiguration extends BaseClass {
         for (const id of screensaverStateIds(entry)) {
             try {
                 const obj = await this.adapter.getForeignObjectAsync(id);
+                const channelId = screensaverChannelIdOf(id);
+                const channel = channelId ? await this.adapter.getForeignObjectAsync(channelId) : null;
                 states[id] = {
                     name: objectNameOf(obj, lang),
                     role: typeof obj?.common?.role === 'string' ? obj.common.role : '',
+                    channelRole:
+                        (channel?.type === 'channel' || channel?.type === 'device') &&
+                        typeof channel.common?.role === 'string'
+                            ? channel.common.role
+                            : '',
                 };
             } catch {
                 states[id] = {};

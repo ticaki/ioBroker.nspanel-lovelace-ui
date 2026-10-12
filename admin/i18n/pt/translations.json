@@ -590,6 +590,7 @@
     "screensaver_item_action_switch": "interruptor (alterna)",
     "screensaver_item_action_switchState": "Estado alternado ao premir",
     "screensaver_item_adapterOnly": "só são oferecidos objetos do adaptador %s",
+    "screensaver_item_channelRole": "canal: %s",
     "screensaver_item_color": "Cor",
     "screensaver_item_colorFixed": "cores fixas",
     "screensaver_item_colorOff": "Cor desligado",

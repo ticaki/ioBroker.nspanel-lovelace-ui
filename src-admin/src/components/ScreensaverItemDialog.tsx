@@ -42,6 +42,7 @@ import {
     type ScreensaverItemSource,
     type ScreensaverTemplateInfo,
     type ScreensaverTemplateNeed,
+    screensaverChannelIdOf,
     screensaverDateFormats,
     screensaverItemFields,
     screensaverItemSource,
@@ -78,6 +79,8 @@ interface ScreensaverItemDialogState {
     objUnit: string;
     objName: string;
     objRole: string;
+    /** common.role of the channel / device above the state - counts first for the default icons */
+    channelRole: string;
     /** type of the object (state, channel, ...) - the template dialog warns about a state */
     objKind: string;
     /** the state of a button / switch action: type and common.write; null = not found, undefined = not checked */
@@ -196,6 +199,7 @@ export class ScreensaverItemDialog extends React.Component<ScreensaverItemDialog
             objUnit: '',
             objName: '',
             objRole: '',
+            channelRole: '',
             objKind: '',
             actionObj: undefined,
             colorMode: 'fixed',
@@ -242,19 +246,33 @@ export class ScreensaverItemDialog extends React.Component<ScreensaverItemDialog
     private async loadObject(id: string): Promise<void> {
         const trimmed = id.trim();
         if (!trimmed) {
-            this.setState({ objType: undefined, objUnit: '', objName: '', objRole: '', objKind: '' });
+            this.setState({ objType: undefined, objUnit: '', objName: '', objRole: '', channelRole: '', objKind: '' });
             return;
         }
         try {
             const obj: ioBroker.Object | null | undefined = await this.props.oContext?.socket?.getObject(trimmed);
+            const objKind = obj ? String(obj.type ?? '') : '';
+            // the channel / device above a state - its role counts first for the default icons
+            let channelRole = '';
+            const channelId = objKind === 'state' ? screensaverChannelIdOf(trimmed) : '';
+            if (channelId) {
+                try {
+                    const channel: ioBroker.Object | null | undefined =
+                        await this.props.oContext?.socket?.getObject(channelId);
+                    if (channel && (channel.type === 'channel' || channel.type === 'device')) {
+                        channelRole = String(channel.common?.role ?? '');
+                    }
+                } catch {
+                    channelRole = '';
+                }
+            }
             if (this.state.draft.state.trim() !== trimmed) {
                 return;
             }
             const objRole = obj ? String(obj.common?.role ?? '') : '';
-            const objKind = obj ? String(obj.type ?? '') : '';
             // a state item without icons starts with the default icons of its role (the panel cannot draw
             // an item without icon) - an icon list needs none
-            const defaults = objKind === 'state' ? getScreensaverItemDefaultsByRole(objRole) : null;
+            const defaults = objKind === 'state' ? getScreensaverItemDefaultsByRole(objRole, channelRole) : null;
             this.setState(prev => {
                 const draft = { ...prev.draft };
                 if (defaults && !draft.iconOn && !draft.iconSelect?.length) {
@@ -269,11 +287,12 @@ export class ScreensaverItemDialog extends React.Component<ScreensaverItemDialog
                     objUnit: obj ? String(obj.common?.unit ?? '') : '',
                     objName: objectName(obj, this.lang()),
                     objRole,
+                    channelRole,
                     objKind,
                 };
             });
         } catch {
-            this.setState({ objType: null, objUnit: '', objName: '', objRole: '', objKind: '' });
+            this.setState({ objType: null, objUnit: '', objName: '', objRole: '', channelRole: '', objKind: '' });
         }
     }
 
@@ -303,7 +322,9 @@ export class ScreensaverItemDialog extends React.Component<ScreensaverItemDialog
 
     /** default icons and colors of the role of the state - state items only */
     private roleDefaults(): PageItemRoleDefaults | null {
-        return this.state.objKind === 'state' ? getScreensaverItemDefaultsByRole(this.state.objRole) : null;
+        return this.state.objKind === 'state'
+            ? getScreensaverItemDefaultsByRole(this.state.objRole, this.state.channelRole)
+            : null;
     }
 
     /** a state item needs an icon (or an icon list) - the panel cannot draw an item without */
@@ -1120,7 +1141,10 @@ export class ScreensaverItemDialog extends React.Component<ScreensaverItemDialog
 
     render(): React.JSX.Element {
         const { open, area, index, count, item } = this.props;
-        const { draft, objType, objUnit, objName, objRole, objKind } = this.state;
+        const { draft, objType, objUnit, objName, objRole, channelRole, objKind } = this.state;
+        const roleText = channelRole
+            ? `${objRole || '-'} (${this.getText('screensaver_item_channelRole').replace('%s', channelRole)})`
+            : objRole || '-';
         const fields = screensaverItemFields(area);
         const kind = this.kind();
         const template = this.state.source === 'template';
@@ -1200,13 +1224,10 @@ export class ScreensaverItemDialog extends React.Component<ScreensaverItemDialog
                                     >
                                         {roleDefaults
                                             ? this.getText('screensaver_item_roleInfo')
-                                                  .replace('%s', objRole || '-')
+                                                  .replace('%s', roleText)
                                                   .replace('%s', roleDefaults.iconOn || '-')
                                                   .replace('%s', roleDefaults.iconOff || '-')
-                                            : this.getText('screensaver_item_roleNoDefault').replace(
-                                                  '%s',
-                                                  objRole || '-',
-                                              )}
+                                            : this.getText('screensaver_item_roleNoDefault').replace('%s', roleText)}
                                     </Typography>
                                 )}
                                 {!known && objType !== null && (

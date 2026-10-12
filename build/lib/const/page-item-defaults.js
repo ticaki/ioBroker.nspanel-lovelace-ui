@@ -556,9 +556,9 @@ const STATE_ROLE_KEY = {
   "button.start": "button",
   "button.stop": "button"
 };
-function getScreensaverItemDefaultsByRole(role) {
-  var _a;
-  const key = (_a = ITEM_ROLE_KEY[role]) != null ? _a : STATE_ROLE_KEY[role];
+function getScreensaverItemDefaultsByRole(role, channelRole) {
+  var _a, _b;
+  const key = (_b = (_a = channelRole ? ITEM_ROLE_KEY[channelRole] : void 0) != null ? _a : ITEM_ROLE_KEY[role]) != null ? _b : STATE_ROLE_KEY[role];
   return key != null ? pageItemDefaults[key] : null;
 }
 const NAVI_ROLE_KEY = {

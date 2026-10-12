@@ -399,6 +399,18 @@ export type ScreensaverItemConfig = {
 
 export type ScreensaverItemField = 'headline' | 'value' | 'text' | 'action';
 
+/**
+ * id of the channel / device a state belongs to - the object above it; '' when the state sits directly
+ * below the instance (`adapter.0.state`) or the id is no state id. Its role counts first for the
+ * default icons of a screensaver item (like the page menu editor works on channels).
+ *
+ * @param stateId id of the state
+ */
+export function screensaverChannelIdOf(stateId: string): string {
+    const parts = stateId.split('.');
+    return parts.length > 3 ? parts.slice(0, -1).join('.') : '';
+}
+
 /** what an item is built from: one state with its own fields or a page item template */
 export type ScreensaverItemSource = 'state' | 'template';
 

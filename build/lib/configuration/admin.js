@@ -42,6 +42,7 @@ var import_pageThermo2 = require("../pages/pageThermo2");
 var import_library = require("../controller/library");
 var import_system_templates = require("../templates/system-templates");
 var ShareConfig = __toESM(require("../types/adminShareConfig"));
+var import_adminShareConfig = require("../types/adminShareConfig");
 var import_function_and_const = require("../types/function-and-const");
 const systemNavigationNodeNames = new Set(
   import_system_templates.systemNavigation.filter((node) => node != null).map((node) => node.name)
@@ -113,7 +114,7 @@ Stack: ${stack}`
    * @param option - Panel configuration partial (pages of the script already inside)
    */
   async processScreensaver(option) {
-    var _a;
+    var _a, _b;
     const { entry, others } = (0, import_admin_screensaver.findScreensaverEntry)(this.adapter.config.screensaverConfig, option.topic);
     if (!entry) {
       return;
@@ -128,9 +129,12 @@ Stack: ${stack}`
     for (const id of (0, import_admin_screensaver.screensaverStateIds)(entry)) {
       try {
         const obj = await this.adapter.getForeignObjectAsync(id);
+        const channelId = (0, import_adminShareConfig.screensaverChannelIdOf)(id);
+        const channel = channelId ? await this.adapter.getForeignObjectAsync(channelId) : null;
         states[id] = {
           name: (0, import_admin_screensaver.objectNameOf)(obj, lang),
-          role: typeof ((_a = obj == null ? void 0 : obj.common) == null ? void 0 : _a.role) === "string" ? obj.common.role : ""
+          role: typeof ((_a = obj == null ? void 0 : obj.common) == null ? void 0 : _a.role) === "string" ? obj.common.role : "",
+          channelRole: ((channel == null ? void 0 : channel.type) === "channel" || (channel == null ? void 0 : channel.type) === "device") && typeof ((_b = channel.common) == null ? void 0 : _b.role) === "string" ? channel.common.role : ""
         };
       } catch {
         states[id] = {};

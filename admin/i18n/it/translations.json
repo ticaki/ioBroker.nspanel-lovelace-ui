@@ -590,6 +590,7 @@
     "screensaver_item_action_switch": "interruttore (alterna)",
     "screensaver_item_action_switchState": "Stato alternato alla pressione",
     "screensaver_item_adapterOnly": "vengono offerti solo gli oggetti dell'adattatore %s",
+    "screensaver_item_channelRole": "canale: %s",
     "screensaver_item_color": "Colore",
     "screensaver_item_colorFixed": "colori fissi",
     "screensaver_item_colorOff": "Colore off",

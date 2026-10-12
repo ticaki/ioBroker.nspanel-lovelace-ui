@@ -14,10 +14,11 @@ export const adminScreensaverPageId = 'scr-admin';
 export const screensaverFallbackIcon = 'help-circle-outline';
 
 /**
- * what the adapter knows about the state of an item: its name stands in for a missing headline, its
- * role picks the default icons when the item has none ({@link getScreensaverItemDefaultsByRole})
+ * what the adapter knows about the state of an item: its name stands in for a missing headline, the
+ * role of its channel and its own role pick the default icons when the item has none
+ * ({@link getScreensaverItemDefaultsByRole})
  */
-export type ScreensaverStateInfo = { name?: string; role?: string };
+export type ScreensaverStateInfo = { name?: string; role?: string; channelRole?: string };
 
 /**
  * `#rrggbb` of the admin dialogs as the RGB object of the script configuration
@@ -105,7 +106,8 @@ export function screensaverItemToScript(
     let iconOn = item.iconOn || null;
     let iconOff = item.iconOff || null;
     if (!iconOn && !item.iconSelect?.length) {
-        const defaults = info.role ? getScreensaverItemDefaultsByRole(info.role) : null;
+        const defaults =
+            info.role || info.channelRole ? getScreensaverItemDefaultsByRole(info.role ?? '', info.channelRole) : null;
         iconOn = defaults?.iconOn || screensaverFallbackIcon;
         iconOff = iconOff || defaults?.iconOff || null;
     }
