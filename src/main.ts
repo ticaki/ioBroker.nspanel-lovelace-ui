@@ -2519,6 +2519,8 @@ class NspanelLovelaceUi extends utils.Adapter {
                     item.useValue = preItem.useValue;
                     item.inSel_Alias = preItem.inSel_Alias || undefined;
                     item.modeList = preItem.modeList?.length ? preItem.modeList : undefined;
+                    // cardThermo2: heat circuit the item belongs to (page items only, not custom items)
+                    item.filter = typeof preItem.filter === 'number' ? preItem.filter : undefined;
                 }
             }
 

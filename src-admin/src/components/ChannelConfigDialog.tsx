@@ -15,6 +15,9 @@ import {
     Autocomplete,
     CircularProgress,
     Tooltip,
+    InputLabel,
+    Select,
+    MenuItem,
 } from '@mui/material';
 import { Color, type RGB } from '../../../src/lib/const/Color';
 import {
@@ -37,6 +40,7 @@ import type {
     IconScaleElement,
     AdminPageItemConfig,
     MenuEntry,
+    Thermo2Entry,
     ChannelValueConfig,
     ChannelColorConfig,
     ChannelModeListConfig,
@@ -75,7 +79,9 @@ type ChannelConfigDialogProps = {
     /** Name der aktuellen Seite – wird aus der Zielseiten-Auswahl gefiltert */
     currentPageName?: string;
     /** Card-Typ der aktuellen Seite – wird für CheckPageItemConfig benötigt */
-    currentPageCard?: MenuEntry['card'];
+    currentPageCard?: MenuEntry['card'] | Thermo2Entry['card'];
+    /** cardThermo2: Bezeichnungen der Heizkreise (Index = filter); gesetzt → Heizkreis-Auswahl sichtbar */
+    heatCircuits?: string[];
     onSave?: (config: AdminPageItemConfig) => void;
     /** Vorausgefüllte Channel-ID für Testzwecke */
     initialChannelId?: string;
@@ -154,6 +160,8 @@ interface ChannelConfigDialogState {
     colorFieldDisabled: boolean;
     /** Selection state for the mode list of light items (undefined = not configured) */
     inSel_Alias: string | undefined;
+    /** cardThermo2: Heizkreis des Items (0-basiert); undefined = bei jedem Heizkreis sichtbar */
+    filter: number | undefined;
     /** Mode list of light items (undefined = not configured) */
     modeList: string[] | undefined;
 }
@@ -233,6 +241,7 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
             adapterColorTheme: 0,
             inSel_Alias: undefined,
             modeList: undefined,
+            filter: undefined,
         };
     }
 
@@ -327,6 +336,7 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
             inSel_Alias:
                 typeof data?.inSel_Alias === 'string' && data.inSel_Alias !== '' ? data.inSel_Alias : undefined,
             modeList: Array.isArray(data?.modeList) && data.modeList.length > 0 ? data.modeList : undefined,
+            filter: typeof data?.filter === 'number' ? data.filter : undefined,
         });
         if (this.props.pagesList && this.props.pagesList.length > 0) {
             this.setState({ availablePages: this.sortPages(this.props.pagesList) });
@@ -475,6 +485,7 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
             textSize,
             inSel_Alias,
             modeList,
+            filter,
         } = this.state;
         if (this.state.nativeMode) {
             try {
@@ -496,6 +507,7 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                     scale,
                     inSel_Alias,
                     modeList,
+                    filter,
                     role: channelRole ?? undefined,
                     useNative: true,
                     native: parsed,
@@ -522,6 +534,7 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
             scale,
             inSel_Alias,
             modeList,
+            filter,
             valueEntry: this.state.valueEntry,
         };
     }
@@ -1766,6 +1779,32 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                                 </Box>
                                 {/* useValue Checkbox + TextSize */}
                                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flexWrap: 'wrap' }}>
+                                    {this.props.heatCircuits && this.props.heatCircuits.length > 0 && (
+                                        <FormControl
+                                            variant="standard"
+                                            sx={{ minWidth: 220 }}
+                                            disabled={fieldsDisabled}
+                                        >
+                                            <InputLabel>{I18n.t('thermo2_circuitLabel')}</InputLabel>
+                                            <Select
+                                                value={this.state.filter === undefined ? '' : String(this.state.filter)}
+                                                onChange={e => {
+                                                    const raw = String(e.target.value);
+                                                    this.setState({ filter: raw === '' ? undefined : Number(raw) });
+                                                }}
+                                            >
+                                                <MenuItem value="">{I18n.t('thermo2_circuitAll')}</MenuItem>
+                                                {this.props.heatCircuits.map((label, i) => (
+                                                    <MenuItem
+                                                        key={i}
+                                                        value={String(i)}
+                                                    >
+                                                        {`${i + 1}: ${label}`}
+                                                    </MenuItem>
+                                                ))}
+                                            </Select>
+                                        </FormControl>
+                                    )}
                                     {this.state.isGridCard && (
                                         <Tooltip
                                             title={
