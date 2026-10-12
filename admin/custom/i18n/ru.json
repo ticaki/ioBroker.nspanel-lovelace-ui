@@ -590,6 +590,7 @@
     "screensaver_item_action_switch": "переключатель (меняет)",
     "screensaver_item_action_switchState": "Состояние, переключаемое при нажатии",
     "screensaver_item_adapterOnly": "предлагаются только объекты адаптера %s",
+    "screensaver_item_channelRole": "канал: %s",
     "screensaver_item_color": "Цвет",
     "screensaver_item_colorFixed": "постоянные цвета",
     "screensaver_item_colorOff": "Цвет выкл",

@@ -614,6 +614,7 @@
     "screensaver_item_action_switch": "Schalter (wechselt)",
     "screensaver_item_action_switchState": "Datenpunkt, der beim Drücken wechselt",
     "screensaver_item_adapterOnly": "es werden nur Objekte des Adapters %s angeboten",
+    "screensaver_item_channelRole": "Kanal: %s",
     "screensaver_item_color": "Farbe",
     "screensaver_item_colorFixed": "feste Farben",
     "screensaver_item_colorOff": "Farbe aus",

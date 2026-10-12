@@ -590,6 +590,7 @@
     "screensaver_item_action_switch": "перемикач (змінює)",
     "screensaver_item_action_switchState": "Стан, що перемикається при натисканні",
     "screensaver_item_adapterOnly": "пропонуються лише об'єкти адаптера %s",
+    "screensaver_item_channelRole": "канал: %s",
     "screensaver_item_color": "Колір",
     "screensaver_item_colorFixed": "сталі кольори",
     "screensaver_item_colorOff": "Колір вимк",

@@ -590,6 +590,7 @@
     "screensaver_item_action_switch": "przełącznik (zmienia)",
     "screensaver_item_action_switchState": "Stan przełączany po naciśnięciu",
     "screensaver_item_adapterOnly": "oferowane są tylko obiekty adaptera %s",
+    "screensaver_item_channelRole": "kanał: %s",
     "screensaver_item_color": "Kolor",
     "screensaver_item_colorFixed": "stałe kolory",
     "screensaver_item_colorOff": "Kolor wył.",

@@ -590,6 +590,7 @@
     "screensaver_item_action_switch": "interrupteur (bascule)",
     "screensaver_item_action_switchState": "État basculé à l’appui",
     "screensaver_item_adapterOnly": "seuls les objets de l'adaptateur %s sont proposés",
+    "screensaver_item_channelRole": "canal : %s",
     "screensaver_item_color": "Couleur",
     "screensaver_item_colorFixed": "couleurs fixes",
     "screensaver_item_colorOff": "Couleur off",
