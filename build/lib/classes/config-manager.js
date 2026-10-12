@@ -4835,13 +4835,27 @@ class ConfigManager extends import_library.BaseClass {
         }
       };
     }
-    if (entity.ScreensaverEntityOnText) {
-      result.data.text = { true: await this.getFieldAsDataItemConfig(entity.ScreensaverEntityOnText) };
-    } else if (entity.ScreensaverEntityText) {
+    if (entity.ScreensaverEntityText) {
       result.data.text = { true: await this.getFieldAsDataItemConfig(entity.ScreensaverEntityText) };
     }
-    if (entity.ScreensaverEntityOffText) {
-      result.data.text = { false: await this.getFieldAsDataItemConfig(entity.ScreensaverEntityOffText) };
+    if (dataType === "boolean" && (entity.ScreensaverEntityOnText || entity.ScreensaverEntityOffText)) {
+      const value = result.data.entity2.value;
+      if (value && value.type !== "const") {
+        const onText = entity.ScreensaverEntityOnText ? JSON.stringify(entity.ScreensaverEntityOnText) : "val";
+        const offText = entity.ScreensaverEntityOffText ? JSON.stringify(entity.ScreensaverEntityOffText) : "val";
+        result.data.entity2.value = { ...value, read: `return val ? ${onText} : ${offText};` };
+      }
+    } else if (entity.ScreensaverEntityOnText || entity.ScreensaverEntityOffText) {
+      const text = {
+        ...result.data.text
+      };
+      if (entity.ScreensaverEntityOnText) {
+        text.true = await this.getFieldAsDataItemConfig(entity.ScreensaverEntityOnText);
+      }
+      if (entity.ScreensaverEntityOffText) {
+        text.false = await this.getFieldAsDataItemConfig(entity.ScreensaverEntityOffText);
+      }
+      result.data.text = text;
     }
     result.fillIfBelowMin = !("ScreensaverEntityFillIfBelowMin" in entity && entity.ScreensaverEntityFillIfBelowMin != null) || entity.ScreensaverEntityFillIfBelowMin;
     if (isScreensaverPageItemDataItemsOptions(result)) {

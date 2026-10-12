@@ -5757,14 +5757,32 @@ export class ConfigManager extends BaseClass {
             };
         }
 
-        if (entity.ScreensaverEntityOnText) {
-            result.data.text = { true: await this.getFieldAsDataItemConfig(entity.ScreensaverEntityOnText) };
-        } else if (entity.ScreensaverEntityText) {
+        // headline of the item (the bottom places show it)
+        if (entity.ScreensaverEntityText) {
             result.data.text = { true: await this.getFieldAsDataItemConfig(entity.ScreensaverEntityText) };
         }
-
-        if (entity.ScreensaverEntityOffText) {
-            result.data.text = { false: await this.getFieldAsDataItemConfig(entity.ScreensaverEntityOffText) };
+        if (dataType === 'boolean' && (entity.ScreensaverEntityOnText || entity.ScreensaverEntityOffText)) {
+            // on / off text of a boolean state: shown instead of "true" / "false" as the value of the item
+            const value = result.data.entity2.value;
+            if (value && value.type !== 'const') {
+                const onText = entity.ScreensaverEntityOnText ? JSON.stringify(entity.ScreensaverEntityOnText) : 'val';
+                const offText = entity.ScreensaverEntityOffText
+                    ? JSON.stringify(entity.ScreensaverEntityOffText)
+                    : 'val';
+                result.data.entity2.value = { ...value, read: `return val ? ${onText} : ${offText};` };
+            }
+        } else if (entity.ScreensaverEntityOnText || entity.ScreensaverEntityOffText) {
+            // on / off text of other states: headline while the value is truthy / falsy (both kept)
+            const text: { true?: NSPanel.DataItemsOptions; false?: NSPanel.DataItemsOptions } = {
+                ...(result.data.text as { true?: NSPanel.DataItemsOptions; false?: NSPanel.DataItemsOptions }),
+            };
+            if (entity.ScreensaverEntityOnText) {
+                text.true = await this.getFieldAsDataItemConfig(entity.ScreensaverEntityOnText);
+            }
+            if (entity.ScreensaverEntityOffText) {
+                text.false = await this.getFieldAsDataItemConfig(entity.ScreensaverEntityOffText);
+            }
+            result.data.text = text;
         }
 
         result.fillIfBelowMin =
