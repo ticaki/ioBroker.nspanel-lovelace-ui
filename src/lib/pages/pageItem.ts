@@ -2073,7 +2073,7 @@ export class PageItem extends BaseTriggeredPage {
                         }
                         break;
                     }
-                    if (entry.role === 'SonosSpeaker') {
+                    if (entry.role === 'SonosSpeaker' || entry.role === 'SqueezeboxSpeaker') {
                         if (!this.parent || !(this.parent.config?.card === 'cardMedia')) {
                             break;
                         }
@@ -3105,6 +3105,54 @@ export class PageItem extends BaseTriggeredPage {
         }
         return false;
     }
+    /**
+     * Requests the saved playlists of a squeezeboxrpc instance from the Logitech Media Server.
+     *
+     * @param inst - adapter instance, e.g. `squeezeboxrpc.0`
+     * @returns list of playlists with id and name, empty on error
+     */
+    async getSqueezeboxPlaylists(inst: string): Promise<{ id: string; name: string }[]> {
+        const result: { id: string; name: string }[] = [];
+        let response: unknown;
+        try {
+            response = await this.adapter.sendToAsync(
+                inst,
+                'cmdGeneral',
+                { playerid: '', cmdArray: ['playlists', '0', '999', 'tags:u'] },
+                { timeout: 3000 },
+            );
+        } catch (e) {
+            this.log.warn(`Squeezebox playlists from ${inst} failed: ${String(e)}`);
+            return result;
+        }
+        const getLoop = (data: unknown): unknown => {
+            if (!data || typeof data !== 'object') {
+                return undefined;
+            }
+            if ('playlists_loop' in data) {
+                return data.playlists_loop;
+            }
+            if ('result' in data) {
+                return getLoop(data.result);
+            }
+            return undefined;
+        };
+        const loop = getLoop(response);
+        if (!Array.isArray(loop)) {
+            this.log.debug(`Squeezebox playlists from ${inst}: no playlists in response ${JSON.stringify(response)}`);
+            return result;
+        }
+        for (const entry of loop) {
+            if (entry && typeof entry === 'object' && 'id' in entry && 'playlist' in entry) {
+                const name = typeof entry.playlist === 'string' ? entry.playlist : '';
+                if (name && entry.id != null) {
+                    result.push({ id: String(entry.id), name });
+                }
+            }
+        }
+        return result;
+    }
+
     async getListFromStates(
         entityInSel: ChangeTypeOfKeys<NSPanel.ValueEntryType, Dataitem | undefined> | undefined,
         valueList: Dataitem | undefined,
@@ -3171,6 +3219,70 @@ export class PageItem extends BaseTriggeredPage {
                     }
                 }
                 this.log.debug(`Alexa Playlist list: finish`);
+            } else if (role === 'squeezebox-favorites') {
+                // Squeezebox favorites from squeezeboxrpc.X.Favorites.<id>.*
+                const dp = 'dp' in entityInSel.value.options ? entityInSel.value.options.dp : '';
+                const inst = (dp || '').split('.').slice(0, 2).join('.');
+                if (inst) {
+                    const filterRaw = valueList ? await valueList.getObject() : null;
+                    const filter =
+                        Array.isArray(filterRaw) && filterRaw.length > 0
+                            ? filterRaw.filter((f): f is string => typeof f === 'string')
+                            : null;
+                    const states = await this.adapter.getForeignStatesAsync(`${inst}.Favorites.*`);
+                    const favorites: Record<string, { name?: string; id?: string; isaudio?: boolean }> = {};
+                    for (const id in states) {
+                        const parts = id.split('.');
+                        if (parts.length !== 5) {
+                            continue;
+                        }
+                        const key = parts[3];
+                        const prop = parts[4];
+                        const val = states[id]?.val;
+                        favorites[key] = favorites[key] ?? {};
+                        if (prop === 'Name' && typeof val === 'string') {
+                            favorites[key].name = val;
+                        } else if (prop === 'id' && val != null) {
+                            favorites[key].id = String(val);
+                        } else if (prop === 'isaudio') {
+                            favorites[key].isaudio = val === 1 || val === '1' || val === true;
+                        }
+                    }
+                    list.list = [];
+                    list.states = [];
+                    for (const fav of Object.values(favorites)) {
+                        if (!fav.isaudio || !fav.name || !fav.id) {
+                            continue;
+                        }
+                        if (filter && !filter.includes(fav.name)) {
+                            continue;
+                        }
+                        list.list.push(fav.name);
+                        list.states.push(fav.id);
+                    }
+                    list.value = '';
+                }
+            } else if (role === 'squeezebox-playlist') {
+                // Squeezebox saved playlists - requested from the LMS via sendTo
+                const dp = 'dp' in entityInSel.value.options ? entityInSel.value.options.dp : '';
+                const inst = (dp || '').split('.').slice(0, 2).join('.');
+                if (inst) {
+                    const filterRaw = valueList ? await valueList.getObject() : null;
+                    const filter =
+                        Array.isArray(filterRaw) && filterRaw.length > 0
+                            ? filterRaw.filter((f): f is string => typeof f === 'string')
+                            : null;
+                    list.list = [];
+                    list.states = [];
+                    list.value = '';
+                    for (const playlist of await this.getSqueezeboxPlaylists(inst)) {
+                        if (filter && !filter.includes(playlist.name)) {
+                            continue;
+                        }
+                        list.list.push(playlist.name);
+                        list.states.push(playlist.id);
+                    }
+                }
             } else if (role === 'spotify-speaker' || role === 'spotify-playlist') {
                 // Spotify Speaker
                 if (entityInSel.value.options.dp) {

@@ -684,7 +684,7 @@ async function configuration (): Promise<void> {
 }
 
 
-const version = '0.21.1';
+const version = '0.21.2';
 const HMIOff = {red: 68, green: 115, blue: 158};     // Blue-Off - Original Entity Off
 const HMIOn = {red: 3, green: 169, blue: 244};     // Blue-On
 const HMIDark = {red: 29, green: 29, blue: 29};     // Original Background Color
@@ -1146,6 +1146,7 @@ declare namespace ScriptConfig {
     export type PageMediaItem = {
         /**
          * The media dp to use, most a folder, device or channel. Not a state.
+         * - squeezeboxrpc: `squeezeboxrpc.0.Players.<name>`
          */
         id: string;
         name?: string;
@@ -1179,6 +1180,7 @@ declare namespace ScriptConfig {
          * List of available playlists.
          * - Alexa & Spotify: contains the playlists provided by the adapter.
          * - Sonos: contains user-defined playlists, since Sonos playlists cannot be read by the adapter.
+         * - Squeezebox: read from the LMS, the list here is a whitelist (empty = all).
          */
         playList?: string[];
         equalizerList?: string[];
