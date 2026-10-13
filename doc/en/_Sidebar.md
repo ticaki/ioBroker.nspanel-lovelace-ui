@@ -29,6 +29,7 @@
 
 **Screensaver**  
 - *(Introduction)* iA  
+- [Screensaver (Admin)](Screensaver-Admin)  
 
 **Standard Pages**  
 - *(Introduction)* iA  
