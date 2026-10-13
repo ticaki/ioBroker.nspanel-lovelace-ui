@@ -5762,15 +5762,17 @@ export class ConfigManager extends BaseClass {
             result.data.text = { true: await this.getFieldAsDataItemConfig(entity.ScreensaverEntityText) };
         }
         if (dataType === 'boolean' && (entity.ScreensaverEntityOnText || entity.ScreensaverEntityOffText)) {
-            // on / off text of a boolean state: shown instead of "true" / "false" as the value of the item
-            const value = result.data.entity2.value;
-            if (value && value.type !== 'const') {
-                const onText = entity.ScreensaverEntityOnText ? JSON.stringify(entity.ScreensaverEntityOnText) : 'val';
-                const offText = entity.ScreensaverEntityOffText
-                    ? JSON.stringify(entity.ScreensaverEntityOffText)
-                    : 'val';
-                result.data.entity2.value = { ...value, read: `return val ? ${onText} : ${offText};` };
-            }
+            // on / off text of a boolean state - a text or a state holding it - shown instead of "true" /
+            // "false": the display value (entity2) steps back, text1 takes over (page item: value ?? text1)
+            delete result.data.entity2.value;
+            result.data.text1 = {
+                true: entity.ScreensaverEntityOnText
+                    ? await this.getFieldAsDataItemConfig(entity.ScreensaverEntityOnText)
+                    : { type: 'const', constVal: 'true' },
+                false: entity.ScreensaverEntityOffText
+                    ? await this.getFieldAsDataItemConfig(entity.ScreensaverEntityOffText)
+                    : { type: 'const', constVal: 'false' },
+            };
         } else if (entity.ScreensaverEntityOnText || entity.ScreensaverEntityOffText) {
             // on / off text of other states: headline while the value is truthy / falsy (both kept)
             const text: { true?: NSPanel.DataItemsOptions; false?: NSPanel.DataItemsOptions } = {

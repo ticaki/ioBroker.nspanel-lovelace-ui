@@ -4839,12 +4839,11 @@ class ConfigManager extends import_library.BaseClass {
       result.data.text = { true: await this.getFieldAsDataItemConfig(entity.ScreensaverEntityText) };
     }
     if (dataType === "boolean" && (entity.ScreensaverEntityOnText || entity.ScreensaverEntityOffText)) {
-      const value = result.data.entity2.value;
-      if (value && value.type !== "const") {
-        const onText = entity.ScreensaverEntityOnText ? JSON.stringify(entity.ScreensaverEntityOnText) : "val";
-        const offText = entity.ScreensaverEntityOffText ? JSON.stringify(entity.ScreensaverEntityOffText) : "val";
-        result.data.entity2.value = { ...value, read: `return val ? ${onText} : ${offText};` };
-      }
+      delete result.data.entity2.value;
+      result.data.text1 = {
+        true: entity.ScreensaverEntityOnText ? await this.getFieldAsDataItemConfig(entity.ScreensaverEntityOnText) : { type: "const", constVal: "true" },
+        false: entity.ScreensaverEntityOffText ? await this.getFieldAsDataItemConfig(entity.ScreensaverEntityOffText) : { type: "const", constVal: "false" }
+      };
     } else if (entity.ScreensaverEntityOnText || entity.ScreensaverEntityOffText) {
       const text = {
         ...result.data.text
