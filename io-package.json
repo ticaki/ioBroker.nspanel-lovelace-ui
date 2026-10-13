@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "nspanel-lovelace-ui",
-    "version": "1.2.0",
+    "version": "1.3.0",
     "news": {
+      "1.3.0": {
+        "en": "cardMedia: support for the squeezeboxrpc adapter (Logitech Media Server)\nAdmin: thermostat pages (cardThermo2) are configured in the PageConfig tab\nFix: MAINTAIN indicator of cardThermo2 was added twice\nFix: origin of a page main in the panel script was reported wrong",
+        "de": "cardMedia: Unterstützung für den squeezeboxrpc-Adapter (Logitech Media Server)\nAdmin: Thermostat-Seiten (cardThermo2) werden im PageConfig-Tab konfiguriert\nFix: MAINTAIN-Anzeige von cardThermo2 wurde doppelt hinzugefügt\nFix: Herkunft einer Seite main im Panel-Skript wurde falsch gemeldet",
+        "ru": "cardMedia: поддержка адаптера squeezeboxrpc (Logitech Media Server)\nАдмин: страницы термостата (cardThermo2) настраиваются во вкладке PageConfig\nИсправление: индикатор MAINTAIN в cardThermo2 добавлялся дважды\nИсправление: неверно сообщалось происхождение страницы main в скрипте панели",
+        "pt": "cardMedia: suporte para o adaptador squeezeboxrpc (Logitech Media Server)\nAdmin: páginas de termostato (cardThermo2) são configuradas na aba PageConfig\nCorreção: o indicador MAINTAIN do cardThermo2 era adicionado duas vezes\nCorreção: a origem de uma página main no script do painel era informada incorretamente",
+        "nl": "cardMedia: ondersteuning voor de squeezeboxrpc-adapter (Logitech Media Server)\nAdmin: thermostaatpagina's (cardThermo2) worden in het PageConfig-tabblad geconfigureerd\nFix: MAINTAIN-indicator van cardThermo2 werd twee keer toegevoegd\nFix: herkomst van een pagina main in het panelscript werd verkeerd gemeld",
+        "fr": "cardMedia : prise en charge de l'adaptateur squeezeboxrpc (Logitech Media Server)\nAdmin : les pages de thermostat (cardThermo2) se configurent dans l'onglet PageConfig\nCorrection : l'indicateur MAINTAIN de cardThermo2 était ajouté deux fois\nCorrection : l'origine d'une page main dans le script du panneau était signalée de manière erronée",
+        "it": "cardMedia: supporto per l'adattatore squeezeboxrpc (Logitech Media Server)\nAdmin: le pagine termostato (cardThermo2) si configurano nella scheda PageConfig\nCorrezione: l'indicatore MAINTAIN di cardThermo2 veniva aggiunto due volte\nCorrezione: l'origine di una pagina main nello script del pannello veniva segnalata in modo errato",
+        "es": "cardMedia: soporte para el adaptador squeezeboxrpc (Logitech Media Server)\nAdmin: las páginas de termostato (cardThermo2) se configuran en la pestaña PageConfig\nCorrección: el indicador MAINTAIN de cardThermo2 se añadía dos veces\nCorrección: el origen de una página main en el script del panel se indicaba incorrectamente",
+        "pl": "cardMedia: obsługa adaptera squeezeboxrpc (Logitech Media Server)\nAdmin: strony termostatu (cardThermo2) konfiguruje się w zakładce PageConfig\nPoprawka: wskaźnik MAINTAIN w cardThermo2 był dodawany dwukrotnie\nPoprawka: pochodzenie strony main w skrypcie panelu było zgłaszane błędnie",
+        "uk": "cardMedia: підтримка адаптера squeezeboxrpc (Logitech Media Server)\nАдмін: сторінки термостата (cardThermo2) налаштовуються у вкладці PageConfig\nВиправлення: індикатор MAINTAIN у cardThermo2 додавався двічі\nВиправлення: походження сторінки main у скрипті панелі повідомлялося неправильно",
+        "zh-cn": "cardMedia：支持 squeezeboxrpc 适配器（Logitech Media Server）\n管理界面：恒温器页面（cardThermo2）可在 PageConfig 选项卡中配置\n修复：cardThermo2 的 MAINTAIN 指示器被重复添加\n修复：面板脚本中 main 页面的来源报告错误"
+      },
       "1.2.0": {
         "en": "Admin: chart pages are configured in the PageConfig tab\nAdmin: mode lists for light/select items\nFix: lock accepts sensor.lock as ACTUAL role\nFix: select items with a mode list show the right entry and write to SET\nFix: line chart scales large values automatically",
         "de": "Admin: Chart-Seiten werden im PageConfig-Tab konfiguriert\nAdmin: Modus-Listen für Licht-/Select-Items\nFix: lock akzeptiert sensor.lock als ACTUAL-Rolle\nFix: Select-Items mit Modus-Liste zeigen den richtigen Eintrag und schreiben in SET\nFix: Liniendiagramm skaliert große Werte automatisch",
@@ -80,19 +93,6 @@
         "pl": "BREAKING: adapter wymaga teraz node.js >= 22\nBREAKING: interfejs administracyjny przeniesiony na React 19 / MUI 9, wymaga admin 8.0.0 lub nowszego\nkonfiguracja cardPower przeniesiona do nowej zakładki konfiguracji stron opartej na react\nadmin: przyciski poprzedni/następny w panelu przypisania nawigacji były zamienione\ndodano generację 11 sterownika berry (beta), automatyczna aktualizacja sterownika berry została usunięta",
         "uk": "BREAKING: адаптер тепер потребує node.js >= 22\nBREAKING: інтерфейс адміністратора переведено на React 19 / MUI 9, потребує admin 8.0.0 або новіший\nналаштування cardPower перенесено на нову вкладку конфігурації сторінок на react\nадмін: кнопки «назад»/«вперед» на панелі призначення навігації були переплутані\nдодано покоління 11 драйвера berry (бета), автоматичне оновлення драйвера berry видалено",
         "zh-cn": "BREAKING: 适配器现在需要 node.js >= 22\nBREAKING: 管理界面迁移到 React 19 / MUI 9，需要 admin 8.0.0 或更高版本\ncardPower 配置迁移到新的基于 react 的页面配置选项卡\n管理界面：导航分配面板中的上一个/下一个按钮曾被调换\n新增 berry 驱动第 11 代（测试版），已移除 berry 驱动的自动更新"
-      },
-      "0.17.8": {
-        "en": "fixed: Cannot read properties of undefined (reading 'trim')",
-        "de": "fix: Kann keine Eigenschaften von undefiniert lesen (lesen 'trim')",
-        "ru": "фиксированный: не может считывать свойства неопределенного (чтение строки)",
-        "pt": "fixo: Não é possível ler as propriedades indefinidas (lendo 'trim')",
-        "nl": "vast: Kan eigenschappen van ongedefinieerde niet lezen (lezen van 'trim')",
-        "fr": "corrigé: Impossible de lire les propriétés non définies (lecture de 'trim')",
-        "it": "fisso: non possono leggere le proprietà di non definito (leggendo 'trim')",
-        "es": "fijo: No se pueden leer propiedades indefinidas (leer 'trim')",
-        "pl": "stałe: Nie można odczytać właściwości nieokreślone (czytanie 'trim')",
-        "uk": "фіксована: Не можна прочитати властивості невизначеного (читання 'trim')",
-        "zh-cn": "固定: 无法读取未定义的属性( 正在读取“ trim ”)"
       }
     },
     "titleLang": {
