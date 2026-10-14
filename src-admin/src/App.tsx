@@ -36,6 +36,9 @@ import esLocal from './i18n/es.json';
 import plLocal from './i18n/pl.json';
 import ukLocal from './i18n/uk.json';
 import zhCNLocal from './i18n/zh-cn.json';
+import { installLabelHover } from './labelHover';
+
+installLabelHover();
 
 const styles: Record<string, any> = {
     app: (theme: IobTheme): React.CSSProperties => ({

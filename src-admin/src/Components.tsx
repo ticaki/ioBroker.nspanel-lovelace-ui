@@ -9,6 +9,9 @@ import TabPanelinfo from './TabPanelinfo';
 import PageMQTTSetting from './PageMQTTSetting';
 import PagePanelOverview from './PagePanelOverview';
 import { ChannelConfigDialogJsonConfig } from './components/ChannelConfigDialog';
+import { installLabelHover } from './labelHover';
+
+installLabelHover();
 
 export default {
     NavigationView,

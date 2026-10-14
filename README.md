@@ -165,6 +165,7 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
 - (ticaki) admin: page configuration - the panel filter option `All pages` is now called `All panels` and is shown when selected; new page type `Main pages` lists all pages flagged as main page (no new pages can be created there)
 - (ticaki) admin: screensaver item dialog - icon per value range of a number state (`ScreensaverEntityIconSelect`) can be edited via the button `Icon per value…` (expert mode; visible without expert mode as soon as a list exists), the list is shown next to the button and can be removed there
 - (ticaki) fix: `ScreensaverEntityIconSelect` never showed the icon with the lowest value - values up to the lowest value got the icon of the second lowest
+- (ticaki) admin: a field label cut off with `…` shows its full text while the mouse is over it
 
 ### 1.3.0 (2026-10-13)
 - (ticaki) cardMedia: support for the squeezeboxrpc adapter (Logitech Media Server) – media id `squeezeboxrpc.X.Players.<name>`; speaker grid to sync other rooms (control follows the sync master), group volume changes every member by the same amount, 3-step shuffle, seek via logo, favorites, saved playlists (requested from the LMS) and current playlist
