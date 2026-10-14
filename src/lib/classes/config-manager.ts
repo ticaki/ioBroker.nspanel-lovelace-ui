@@ -405,7 +405,12 @@ export class ConfigManager extends BaseClass {
                         globalConfig.subPages.splice(index, 1);
                     }
                     for (const page of globalConfig.subPages || []) {
-                        if (page && page.uniqueName) {
+                        // a page of the panel script with the same name wins (see filter below) - not global
+                        if (
+                            page &&
+                            page.uniqueName &&
+                            config.pages.findIndex(p => p && p.uniqueName === page.uniqueName) === -1
+                        ) {
                             globalPageIds.add(page.uniqueName);
                         }
                     }

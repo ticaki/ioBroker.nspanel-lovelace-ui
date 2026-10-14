@@ -515,6 +515,7 @@ declare namespace ScriptConfig {
     export type PageMediaItem = {
         /**
          * The media dp to use, most a folder, device or channel. Not a state.
+         * - squeezeboxrpc: `squeezeboxrpc.0.Players.<name>`
          */
         id: string;
         name?: string;
@@ -548,6 +549,7 @@ declare namespace ScriptConfig {
          * List of available playlists.
          * - Alexa & Spotify: contains the playlists provided by the adapter.
          * - Sonos: contains user-defined playlists, since Sonos playlists cannot be read by the adapter.
+         * - Squeezebox: read from the LMS, the list here is a whitelist (empty = all).
          */
         playList?: string[];
         equalizerList?: string[];
@@ -901,10 +903,40 @@ declare namespace ScriptConfig {
             ScreensaverEntityIconSelect?: {icon: string; value: number}[] | null;
         } & {
             /**
+             * Optional state ID that controls whether the ScreensaverEntity is visible.
+             *
+             * - The state must exist, otherwise the configuration is rejected.
+             * - Without `ScreensaverEntityVisibleCondition` the value of this state is used directly
+             *   (truthy → shown, falsy → hidden).
+             * - With `ScreensaverEntityVisibleCondition` the condition is evaluated against the value
+             *   of **this** state (`val` = value of `ScreensaverEntityEnabled`, not of `ScreensaverEntity`).
+             *
+             * Example: show the free space in GB only when the raid usage is above 98 %,
+             * otherwise show the usage in % (second entity with the inverted condition):
+             * ```ts
+             * {
+             *     type: 'script',
+             *     ScreensaverEntityEnabled: '0_userdata.0.ZFS.pve4.ubs-raid1', // usage in %
+             *     ScreensaverEntityVisibleCondition: "!isNaN(val) && val > 98",
+             *     ScreensaverEntity: '0_userdata.0.ZFS.pve4.ubs-raid1_frei_gb', // displayed value
+             *     ScreensaverEntityUnitText: 'GB',
+             * },
+             * {
+             *     type: 'script',
+             *     ScreensaverEntityVisibleCondition: "!(!isNaN(val) && val > 98)",
+             *     ScreensaverEntity: '0_userdata.0.ZFS.pve4.ubs-raid1', // val = this state
+             *     ScreensaverEntityUnitText: '%',
+             * },
+             * ```
+             */
+            ScreensaverEntityEnabled?: string;
+            /**
              * Optional condition that determines whether a ScreensaverEntity should be visible.
              *
-             * - If `undefined`, the entity is always shown (`true`).
+             * - If `undefined`, the entity is always shown (`true`) — or, if `ScreensaverEntityEnabled`
+             *   is set, its state value decides.
              * - If provided, the adapter prepends `return` to the string and evaluates it.
+             *   `val` is the value of `ScreensaverEntityEnabled` if set, otherwise of `ScreensaverEntity`.
              *   The result must be a boolean:
              *   - `true` → the entity is shown.
              *   - `false` → the entity is hidden.
@@ -914,7 +946,6 @@ declare namespace ScriptConfig {
              * ScreensaverEntityVisibleCondition: "val.length > 0 && val !== 'OFF'"
              * ```
              */
-            ScreensaverEntityEnabled?: string;
             ScreensaverEntityVisibleCondition?: string;
         }
 
