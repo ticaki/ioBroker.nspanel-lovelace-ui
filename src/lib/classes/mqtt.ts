@@ -23,6 +23,43 @@ export type callbackMessageType = (topic: string, message: string) => Promise<vo
  */
 export type callbackConnectType = () => Promise<void>;
 
+/**
+ * Does the subscription `filter` receive every message `other` receives?
+ * Both are MQTT topic filters (`+` one level, `#` the rest including the parent level).
+ *
+ * @param filter the possibly broader filter
+ * @param other the filter that may be covered
+ * @returns true if `filter` covers `other`
+ */
+export function mqttFilterCovers(filter: string, other: string): boolean {
+    const a = filter.split('/');
+    const b = other.split('/');
+    for (let i = 0; i < a.length; i++) {
+        if (a[i] === '#') {
+            return true;
+        }
+        if (i >= b.length || b[i] === '#') {
+            return false;
+        }
+        if (a[i] !== '+' && a[i] !== b[i]) {
+            return false;
+        }
+    }
+    return a.length === b.length;
+}
+
+/**
+ * The broker-side subscriptions needed for the given filters: filters covered by another one are dropped.
+ * Overlapping subscriptions make brokers like mosquitto 2 deliver a message once per matching subscription.
+ *
+ * @param filters the filters handlers are registered for
+ * @returns the distinct filters not covered by another one
+ */
+export function minimalMqttFilters(filters: string[]): string[] {
+    const distinct = [...new Set(filters)];
+    return distinct.filter(f => !distinct.some(o => o !== f && mqttFilterCovers(o, f)));
+}
+
 // RSA-Schlüsselpaar erzeugen (4096 Bit für hohe Sicherheit)
 
 export class MQTTClientClass extends BaseClass {
@@ -34,6 +71,8 @@ export class MQTTClientClass extends BaseClass {
 
     // Flat registry of subscriptions (topic + callback)
     private subscriptDB: { topic: string; callback: callbackMessageType }[] = [];
+    // Filters subscribed at the broker - never two overlapping ones, see minimalMqttFilters()
+    private brokerTopics = new Set<string>();
 
     _onConnect?: { timeout: ioBroker.Timeout | undefined; callback: (timeout: ioBroker.Timeout | undefined) => void };
     _onDisconnect?: {
@@ -146,15 +185,14 @@ export class MQTTClientClass extends BaseClass {
                         this.removeSubscriptionEntry(rem.topic, rem.callback);
                         const after = this.countCallbacks(rem.topic);
 
-                        if (after === 0) {
-                            // No remaining callbacks for this topic -> broker unsubscribe
-                            this.unsubscribe(rem.topic); // keeps external log text and behavior of unsubscribe()
-                        } else if (this.adapter.config.debugLogMqtt) {
+                        if (after > 0 && this.adapter.config.debugLogMqtt) {
                             this.log.debug(
                                 `MQTT keep subscription: topic="${rem.topic}" still has ${after}/${before} handler(s)`,
                             );
                         }
                     }
+                    // No remaining callbacks for a topic -> broker unsubscribe
+                    this.updateBrokerSubscriptions();
                 }
             };
             void _helper(topic, message);
@@ -293,8 +331,7 @@ export class MQTTClientClass extends BaseClass {
             this.subscriptDB.splice(index, 1);
             const count = this.countCallbacks(topic);
             if (count === 0) {
-                this.log.debug(`unsubscribe from: ${topic}`);
-                this.client.unsubscribe(topic);
+                this.updateBrokerSubscriptions();
             } else if (this.adapter.config.debugLogMqtt) {
                 this.log.debug(`keep subscription: topic="${topic}" still has ${count} handler(s)`);
             }
@@ -306,13 +343,11 @@ export class MQTTClientClass extends BaseClass {
         for (const rem of toRemove) {
             this.removeSubscriptionEntry(rem.topic, rem.callback);
             const count = this.countCallbacks(rem.topic);
-            if (count === 0) {
-                this.log.debug(`unsubscribe from: ${rem.topic}`);
-                this.client.unsubscribe(rem.topic);
-            } else if (this.adapter.config.debugLogMqtt) {
+            if (count > 0 && this.adapter.config.debugLogMqtt) {
                 this.log.debug(`keep subscription: topic="${rem.topic}" still has ${count} handler(s)`);
             }
         }
+        this.updateBrokerSubscriptions();
     }
 
     async subscribe(topic: string, callback: callbackMessageType): Promise<void> {
@@ -328,11 +363,66 @@ export class MQTTClientClass extends BaseClass {
         this.subscriptDB.push({ topic, callback });
 
         if (firstOnTopic) {
-            this.log.debug(`subscribe to: ${topic}`);
-            await this.client.subscribeAsync(topic, { qos: 1 });
+            await this.syncBrokerSubscriptions();
         } else if (this.adapter.config.debugLogMqtt) {
             const count = this.countCallbacks(topic);
             this.log.debug(`added handler for topic="${topic}" (handlers on topic: ${count})`);
+        }
+    }
+
+    /** Fire-and-forget variant of syncBrokerSubscriptions() for the removal paths. */
+    private updateBrokerSubscriptions(): void {
+        this.syncBrokerSubscriptions().catch(e =>
+            this.log.warn(`MQTT subscription update failed: ${e instanceof Error ? e.message : String(e)}`),
+        );
+    }
+
+    /**
+     * Bring the broker-side subscriptions in line with the registered handlers.
+     * A filter covered by another one is not subscribed (its handlers get the messages of the covering
+     * subscription), so every message arrives exactly once. A covering filter is subscribed before the
+     * ones it replaces are unsubscribed - no message gets lost in between.
+     */
+    private async syncBrokerSubscriptions(): Promise<void> {
+        const wanted = new Set(minimalMqttFilters(this.subscriptDB.map(m => m.topic)));
+        const toSubscribe = [...wanted].filter(t => !this.brokerTopics.has(t));
+        const toUnsubscribe = [...this.brokerTopics].filter(t => !wanted.has(t));
+        for (const t of toSubscribe) {
+            this.brokerTopics.add(t);
+        }
+        for (const t of toUnsubscribe) {
+            this.brokerTopics.delete(t);
+        }
+        try {
+            await Promise.all(
+                toSubscribe.map(t => {
+                    this.log.debug(`subscribe to: ${t}`);
+                    return this.client.subscribeAsync(t, { qos: 1 });
+                }),
+            );
+        } catch (e) {
+            // keep the old subscriptions - the next sync tries again
+            for (const t of toSubscribe) {
+                this.brokerTopics.delete(t);
+            }
+            for (const t of toUnsubscribe) {
+                this.brokerTopics.add(t);
+            }
+            throw e;
+        }
+        for (const t of toUnsubscribe) {
+            // a later sync may have taken the filter back in the meantime
+            if (!this.brokerTopics.has(t)) {
+                this.log.debug(`unsubscribe from: ${t}`);
+                this.client.unsubscribe(t);
+            }
+        }
+        if (this.adapter.config.debugLogMqtt && toSubscribe.length + toUnsubscribe.length > 0) {
+            for (const t of new Set(this.subscriptDB.map(m => m.topic))) {
+                if (!wanted.has(t)) {
+                    this.log.debug(`topic="${t}" is covered by another subscription - no own broker subscription`);
+                }
+            }
         }
     }
 
