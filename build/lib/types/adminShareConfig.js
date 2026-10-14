@@ -26,10 +26,13 @@ __export(adminShareConfig_exports, {
   SENDTO_GET_PAGES_COMMAND: () => SENDTO_GET_PAGES_COMMAND,
   SENDTO_GET_PANELS_COMMAND: () => SENDTO_GET_PANELS_COMMAND,
   SENDTO_GET_PANEL_NAVIGATION_COMMAND: () => SENDTO_GET_PANEL_NAVIGATION_COMMAND,
+  SENDTO_GET_SCREENSAVER_TEMPLATES_COMMAND: () => SENDTO_GET_SCREENSAVER_TEMPLATES_COMMAND,
+  SENDTO_GET_WEATHER_ENTITY_COMMAND: () => SENDTO_GET_WEATHER_ENTITY_COMMAND,
   chartDefaults: () => chartDefaults,
   emptyChannelValueConfig: () => emptyChannelValueConfig,
   emptyChartEntry: () => emptyChartEntry,
   emptyPowerSlot: () => emptyPowerSlot,
+  emptyScreensaverEntry: () => emptyScreensaverEntry,
   emptyThermo2Circuit: () => emptyThermo2Circuit,
   emptyThermo2Entry: () => emptyThermo2Entry,
   isMainPageEntry: () => isMainPageEntry,
@@ -41,6 +44,20 @@ __export(adminShareConfig_exports, {
   panelStatusTranslationKeys: () => panelStatusTranslationKeys,
   requiredScriptDataPoints: () => requiredScriptDataPoints,
   reversePanelStatusStates: () => reversePanelStatusStates,
+  screensaverAreas: () => screensaverAreas,
+  screensaverCardOfMode: () => screensaverCardOfMode,
+  screensaverChannelIdOf: () => screensaverChannelIdOf,
+  screensaverDateFormats: () => screensaverDateFormats,
+  screensaverItemFields: () => screensaverItemFields,
+  screensaverItemSource: () => screensaverItemSource,
+  screensaverMaxEntries: () => screensaverMaxEntries,
+  screensaverModes: () => screensaverModes,
+  screensaverSlotLimits: () => screensaverSlotLimits,
+  screensaverWeatherAdapterOf: () => screensaverWeatherAdapterOf,
+  screensaverWeatherAdapters: () => screensaverWeatherAdapters,
+  screensaverWeatherItemKeys: () => screensaverWeatherItemKeys,
+  screensaverWeatherItemsOfAdapter: () => screensaverWeatherItemsOfAdapter,
+  screensaverWeatherItemsOn: () => screensaverWeatherItemsOn,
   serviceNodeName: () => serviceNodeName,
   servicePageName: () => servicePageName,
   shortStateLabel: () => shortStateLabel,
@@ -57,6 +74,8 @@ const SAVE_PANEL_NAVIGATION_COMMAND = "savePanelNavigation";
 const SENDTO_GET_PANELS_COMMAND = "getPanels";
 const SENDTO_GET_PAGES_COMMAND = "getPagesForPanel";
 const SENDTO_GET_PAGES_All_COMMAND = "getAllPages";
+const SENDTO_GET_WEATHER_ENTITY_COMMAND = "getWeatherEntity";
+const SENDTO_GET_SCREENSAVER_TEMPLATES_COMMAND = "getScreensaverTemplates";
 const ADAPTER_NAME = "nspanel-lovelace-ui";
 function stateRefNodeId(dp) {
   return `dp:${dp}`;
@@ -68,6 +87,134 @@ function shortStateLabel(dp) {
 const mainPageName = "main";
 const serviceNodeName = "///service";
 const servicePageName = "///unlock";
+const screensaverModes = ["standard", "alternate", "advanced", "easyview"];
+const screensaverAreas = ["favorit", "alternate", "left", "bottom", "indicator"];
+const screensaverSlotLimits = {
+  standard: {
+    favorit: { eu: 1 },
+    alternate: { eu: 0 },
+    left: { eu: 0 },
+    bottom: { eu: 4 },
+    indicator: { eu: 0 },
+    mricon: { eu: 2 }
+  },
+  alternate: {
+    favorit: { eu: 1 },
+    alternate: { eu: 1 },
+    left: { eu: 0 },
+    bottom: { eu: 3 },
+    indicator: { eu: 0 },
+    mricon: { eu: 2 }
+  },
+  advanced: {
+    favorit: { eu: 1 },
+    alternate: { eu: 0 },
+    left: { eu: 3 },
+    bottom: { eu: 6 },
+    indicator: { eu: 5 },
+    mricon: { eu: 2 }
+  },
+  easyview: {
+    favorit: { eu: 1 },
+    alternate: { eu: 0 },
+    left: { eu: 0 },
+    bottom: { eu: 3, "us-p": 4, "us-l": 3 },
+    indicator: { eu: 0 },
+    mricon: { eu: 2 }
+  }
+};
+function screensaverMaxEntries(mode, area, model = "eu") {
+  var _a;
+  const limit = screensaverSlotLimits[mode][area];
+  return (_a = limit[model]) != null ? _a : limit.eu;
+}
+function screensaverCardOfMode(mode) {
+  switch (mode) {
+    case "advanced":
+      return "screensaver2";
+    case "easyview":
+      return "screensaver3";
+    default:
+      return "screensaver";
+  }
+}
+function screensaverChannelIdOf(stateId) {
+  const parts = stateId.split(".");
+  return parts.length > 3 ? parts.slice(0, -1).join(".") : "";
+}
+function screensaverItemSource(item) {
+  return (item == null ? void 0 : item.template) ? "template" : "state";
+}
+const screensaverDateFormats = [
+  { key: "dateFormatShort", options: { dateStyle: "short" } },
+  { key: "dateFormatYearMonthDay", options: { year: "numeric", month: "2-digit", day: "2-digit" } },
+  { key: "dateFormatDayShortMonthYear", options: { day: "2-digit", month: "short", year: "numeric" } },
+  {
+    key: "dateFormatWeekdayShortDate",
+    options: { weekday: "short", day: "2-digit", month: "2-digit", year: "numeric" }
+  },
+  { key: "timeFormat24", options: { hour: "2-digit", minute: "2-digit", hour12: false } },
+  {
+    key: "screensaver_item_dateTimeShort",
+    options: { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" }
+  },
+  { key: "screensaver_item_dateTimeFull", options: { dateStyle: "short", timeStyle: "short" } }
+];
+function screensaverItemFields(area) {
+  return {
+    headline: area === "bottom",
+    value: area !== "indicator",
+    text: area !== "indicator",
+    action: area === "indicator"
+  };
+}
+const screensaverWeatherAdapters = ["accuweather", "openweathermap", "pirate-weather", "brightsky"];
+const screensaverWeatherItemKeys = [
+  "sunriseSet",
+  "forecastDay1",
+  "forecastDay2",
+  "forecastDay3",
+  "forecastDay4",
+  "forecastDay5",
+  "forecastDay6",
+  "windSpeed",
+  "windGust",
+  "windDirection",
+  "uvIndex",
+  "solar"
+];
+const weatherDays = ["forecastDay1", "forecastDay2", "forecastDay3", "forecastDay4", "forecastDay5"];
+const weatherWind = ["windSpeed", "windGust", "windDirection"];
+const screensaverWeatherItemsOfAdapter = {
+  accuweather: ["sunriseSet", ...weatherDays, ...weatherWind, "uvIndex"],
+  openweathermap: ["sunriseSet", ...weatherDays, "forecastDay6", ...weatherWind],
+  "pirate-weather": ["sunriseSet", ...weatherDays, "forecastDay6", ...weatherWind, "uvIndex"],
+  brightsky: ["sunriseSet", ...weatherDays, "forecastDay6", ...weatherWind, "solar"]
+};
+function screensaverWeatherAdapterOf(entity) {
+  const prefix = (entity != null ? entity : "").split(".")[0];
+  return screensaverWeatherAdapters.find((a) => a === prefix);
+}
+function screensaverWeatherItemsOn(items, entity) {
+  const adapter = screensaverWeatherAdapterOf(entity);
+  if (!adapter || !items) {
+    return [];
+  }
+  return screensaverWeatherItemsOfAdapter[adapter].filter((k) => items[k] === true);
+}
+function emptyScreensaverEntry(name, mode = "standard") {
+  return {
+    name,
+    mode,
+    panels: [],
+    left: [],
+    bottom: [],
+    indicator: [],
+    rotationTime: 0,
+    screensaverSwipe: false,
+    screensaverIndicatorButtons: false
+  };
+}
 function emptyChannelValueConfig(valueStateId = "") {
   return { valueStateId, unit: "", prefix: "", suffix: "", dateFormat: "" };
 }
@@ -904,10 +1051,13 @@ const CHANNEL_ROLES_LIST = Object.keys(requiredScriptDataPoints);
   SENDTO_GET_PAGES_COMMAND,
   SENDTO_GET_PANELS_COMMAND,
   SENDTO_GET_PANEL_NAVIGATION_COMMAND,
+  SENDTO_GET_SCREENSAVER_TEMPLATES_COMMAND,
+  SENDTO_GET_WEATHER_ENTITY_COMMAND,
   chartDefaults,
   emptyChannelValueConfig,
   emptyChartEntry,
   emptyPowerSlot,
+  emptyScreensaverEntry,
   emptyThermo2Circuit,
   emptyThermo2Entry,
   isMainPageEntry,
@@ -919,6 +1069,20 @@ const CHANNEL_ROLES_LIST = Object.keys(requiredScriptDataPoints);
   panelStatusTranslationKeys,
   requiredScriptDataPoints,
   reversePanelStatusStates,
+  screensaverAreas,
+  screensaverCardOfMode,
+  screensaverChannelIdOf,
+  screensaverDateFormats,
+  screensaverItemFields,
+  screensaverItemSource,
+  screensaverMaxEntries,
+  screensaverModes,
+  screensaverSlotLimits,
+  screensaverWeatherAdapterOf,
+  screensaverWeatherAdapters,
+  screensaverWeatherItemKeys,
+  screensaverWeatherItemsOfAdapter,
+  screensaverWeatherItemsOn,
   serviceNodeName,
   servicePageName,
   shortStateLabel,

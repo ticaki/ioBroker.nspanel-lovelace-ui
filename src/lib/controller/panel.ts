@@ -824,7 +824,10 @@ export class Panel extends BaseClass {
         const scs: Page[] = this.pages.filter(
             a => a && (a.card === 'screensaver' || a.card === 'screensaver2' || a.card === 'screensaver3'),
         ) as Page[];
-        if (currentScreensaver && currentScreensaver.val != null) {
+        // a screensaver from the admin tab defines version and rotation time itself - the stored states follow it,
+        // the script screensaver keeps taking both from the states (they are the way to change them)
+        const adminScreensaver = !!this.screenSaver && this.pageOrigins.get(this.screenSaver.name) === 'admin';
+        if (currentScreensaver && currentScreensaver.val != null && !adminScreensaver) {
             if (scs && scs[0]) {
                 this.screenSaver = scs[0] as Screensaver;
                 if (globals.isScreenSaverModeAsNumber(currentScreensaver.val)) {
@@ -839,7 +842,9 @@ export class Panel extends BaseClass {
         );
         state = this.library.readdb(`panels.${this.name}.cmd.screenSaver.rotationTime`);
         let temp: any = 0;
-        if (state && typeof state.val === 'number') {
+        if (adminScreensaver && this.screenSaver) {
+            temp = this.screenSaver.rotationTime / 1000;
+        } else if (state && typeof state.val === 'number') {
             temp = state.val === 0 ? state.val : state.val < 3 ? 3 : state.val > 3600 ? 3600 : state.val;
             if (this.screenSaver) {
                 this.screenSaver.rotationTime = temp * 1000;

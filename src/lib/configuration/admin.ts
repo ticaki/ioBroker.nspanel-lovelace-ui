@@ -1,5 +1,14 @@
 import type { NavigationItemConfig, NavigationItemConfigNonNull } from '../classes/navigation';
 import { ConfigManager } from '../classes/config-manager';
+import {
+    applyScreensaverEntry,
+    buildScreensaverScriptConfig,
+    findScreensaverEntry,
+    isScreensaverPage,
+    objectNameOf,
+    screensaverStateIds,
+    type ScreensaverStateInfo,
+} from './admin-screensaver';
 import { Color } from '../const/Color';
 import { mainPageName } from '../const/default-pages';
 import { PageThermo2 } from '../pages/pageThermo2';
@@ -7,6 +16,7 @@ import { BaseClass } from '../controller/library';
 import type { panelConfigPartial } from '../controller/panel';
 import { systemNavigation } from '../templates/system-templates';
 import * as ShareConfig from '../types/adminShareConfig';
+import { screensaverChannelIdOf } from '../types/adminShareConfig';
 import { exhaustiveCheck } from '../types/function-and-const';
 import type { NspanelLovelaceUi } from '../types/NspanelLovelaceUi';
 import type { PageBase, cardChartDataItemOptions } from '../types/pages';
@@ -87,6 +97,7 @@ export class AdminConfiguration extends BaseClass {
         try {
             const pendingNavs = await this.createPagesFromConfig(option);
             this.applyPendingNavigations(option, pendingNavs);
+            await this.processScreensaver(option);
         } catch (error) {
             const msg = error instanceof Error ? error.message : String(error);
             const stack = error instanceof Error ? (error.stack ?? 'no stack') : 'no stack';
@@ -95,6 +106,67 @@ export class AdminConfiguration extends BaseClass {
             );
         }
         return option;
+    }
+
+    /**
+     * Replaces the screensaver of the script with the one configured in the admin tab "Screensaver"
+     * when an entry lists the topic of the panel. The entry is turned into the script form and handed
+     * to `ConfigManager.getScreensaverConfig()`, so items, templates and weather are resolved exactly
+     * like on the script path; version, rotation time, swipe, indicator buttons and the clock / date
+     * formats of the entry are applied afterwards. Without an entry nothing changes.
+     *
+     * @param option - Panel configuration partial (pages of the script already inside)
+     */
+    private async processScreensaver(option: panelConfigPartial): Promise<void> {
+        const { entry, others } = findScreensaverEntry(this.adapter.config.screensaverConfig, option.topic);
+        if (!entry) {
+            return;
+        }
+        if (others.length > 0) {
+            this.log.warn(
+                `Panel '${option.name}' (${option.topic}) is listed in several screensavers (${[entry.name, ...others].join(', ')}) - '${entry.name}' is used`,
+            );
+        }
+        const lang = this.adapter.language || 'en';
+        const states: Record<string, ScreensaverStateInfo> = {};
+        for (const id of screensaverStateIds(entry)) {
+            try {
+                const obj = await this.adapter.getForeignObjectAsync(id);
+                const channelId = screensaverChannelIdOf(id);
+                const channel = channelId ? await this.adapter.getForeignObjectAsync(channelId) : null;
+                states[id] = {
+                    name: objectNameOf(obj, lang),
+                    role: typeof obj?.common?.role === 'string' ? obj.common.role : '',
+                    channelRole:
+                        (channel?.type === 'channel' || channel?.type === 'device') &&
+                        typeof channel.common?.role === 'string'
+                            ? channel.common.role
+                            : '',
+                };
+            } catch {
+                states[id] = {};
+            }
+        }
+        const manager = new ConfigManager(this.adapter);
+        const result = await manager.getScreensaverConfig(
+            buildScreensaverScriptConfig(entry, option.topic, states),
+            [],
+            {
+                weatherEntityFixed: entry.weatherEntity !== undefined,
+            },
+        );
+        for (const msg of result.messages) {
+            // getScreensaverConfig has already logged the finding
+            this.log.debug(`Screensaver '${entry.name}': ${msg}`);
+        }
+        const page = result.configArray;
+        applyScreensaverEntry(page, entry);
+        const scriptPages = option.pages.filter(p => isScreensaverPage(p)).length;
+        option.pages = option.pages.filter(p => !isScreensaverPage(p));
+        option.pages.push(page);
+        this.log.info(
+            `Screensaver '${entry.name}' (${entry.mode}) from the admin configuration ${scriptPages > 0 ? 'replaces the script screensaver of' : 'is used by'} panel '${option.name}'`,
+        );
     }
 
     /**
@@ -421,7 +493,11 @@ export class AdminConfiguration extends BaseClass {
                     break;
                 }
                 default: {
-                    this.log.warn(`Unsupported card type '${entry.card}' for page '${entry.uniqueName}', skipping!`);
+                    // every card of the union has a case above - this only guards data of an older or newer admin
+                    const unknown = entry as { card?: string; uniqueName?: string };
+                    this.log.warn(
+                        `Unsupported card type '${unknown.card}' for page '${unknown.uniqueName}', skipping!`,
+                    );
                     continue;
                 }
             }

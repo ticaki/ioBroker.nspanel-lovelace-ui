@@ -31,6 +31,7 @@
 
 **Screensaver**  
 - [Einleitung](screensaver)   
+- [Screensaver – Admin](Screensaver-Admin)  
 
 **Standard Pages**  
 - [Einleitung](Pages)  

@@ -3,6 +3,19 @@
     "name": "nspanel-lovelace-ui",
     "version": "1.3.0",
     "news": {
+      "1.4.0": {
+        "en": "Admin: new tab Screensaver - configure the screensaver without script\nAdmin: page configuration - panel filter 'All panels' and new page type 'Main pages'\nAdmin: cut-off field labels show their full text on mouse over",
+        "de": "Admin: neuer Tab Screensaver - Bildschirmschoner ohne Skript konfigurieren\nAdmin: Seitenkonfiguration - Panel-Filter 'Alle Panels' und neuer Seitentyp 'Hauptseiten'\nAdmin: gekürzte Feldbeschriftungen zeigen beim Überfahren mit der Maus den vollen Text",
+        "ru": "Админ: новая вкладка Screensaver - настройка заставки без скрипта\nАдмин: настройка страниц - фильтр панелей 'Все панели' и новый тип страниц 'Главные страницы'\nАдмин: обрезанные подписи полей показывают полный текст при наведении мыши",
+        "pt": "Admin: nova aba Screensaver - configurar o protetor de ecrã sem script\nAdmin: configuração de páginas - filtro de painéis 'Todos os painéis' e novo tipo de página 'Páginas principais'\nAdmin: rótulos de campos cortados mostram o texto completo ao passar o rato",
+        "nl": "Admin: nieuw tabblad Screensaver - de schermbeveiliging zonder script configureren\nAdmin: paginaconfiguratie - panelfilter 'Alle panels' en nieuw paginatype 'Hoofdpagina's'\nAdmin: afgekapte veldlabels tonen bij muisaanwijzing de volledige tekst",
+        "fr": "Admin : nouvel onglet Screensaver - configurer l'économiseur d'écran sans script\nAdmin : configuration des pages - filtre de panneaux 'Tous les panneaux' et nouveau type de page 'Pages principales'\nAdmin : les libellés de champ tronqués affichent leur texte complet au survol de la souris",
+        "it": "Admin: nuova scheda Screensaver - configurare lo screensaver senza script\nAdmin: configurazione pagine - filtro pannelli 'Tutti i pannelli' e nuovo tipo di pagina 'Pagine principali'\nAdmin: le etichette dei campi troncate mostrano il testo completo al passaggio del mouse",
+        "es": "Admin: nueva pestaña Screensaver - configurar el salvapantallas sin script\nAdmin: configuración de páginas - filtro de paneles 'Todos los paneles' y nuevo tipo de página 'Páginas principales'\nAdmin: las etiquetas de campo recortadas muestran el texto completo al pasar el ratón",
+        "pl": "Admin: nowa karta Screensaver - konfiguracja wygaszacza ekranu bez skryptu\nAdmin: konfiguracja stron - filtr paneli 'Wszystkie panele' i nowy typ strony 'Strony główne'\nAdmin: obcięte etykiety pól pokazują pełny tekst po najechaniu myszą",
+        "uk": "Адмін: нова вкладка Screensaver - налаштування заставки без скрипта\nАдмін: налаштування сторінок - фільтр панелей 'Усі панелі' та новий тип сторінок 'Головні сторінки'\nАдмін: обрізані підписи полів показують повний текст під час наведення миші",
+        "zh-cn": "管理：新增 Screensaver 选项卡 - 无需脚本即可配置屏保\n管理：页面配置 - 面板筛选“所有面板”和新页面类型“主页面”\n管理：被截断的字段标签在鼠标悬停时显示完整文本"
+      },
       "1.3.0": {
         "en": "cardMedia: support for the squeezeboxrpc adapter (Logitech Media Server)\nAdmin: thermostat pages (cardThermo2) are configured in the PageConfig tab\nFix: MAINTAIN indicator of cardThermo2 was added twice\nFix: origin of a page main in the panel script was reported wrong",
         "de": "cardMedia: Unterstützung für den squeezeboxrpc-Adapter (Logitech Media Server)\nAdmin: Thermostat-Seiten (cardThermo2) werden im PageConfig-Tab konfiguriert\nFix: MAINTAIN-Anzeige von cardThermo2 wurde doppelt hinzugefügt\nFix: Herkunft einer Seite main im Panel-Skript wurde falsch gemeldet",
@@ -301,7 +314,8 @@
         "colMediaOnOffColor": "#ffffff"
       }
     ],
-    "adminOverridesScriptPages": false
+    "adminOverridesScriptPages": false,
+    "screensaverConfig": []
   },
   "objects": [],
   "instanceObjects": [

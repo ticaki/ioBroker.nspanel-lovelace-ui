@@ -2767,6 +2767,22 @@
                 }
             }
         },
+        "_screensaver": {
+            "type": "panel",
+            "label": "Screensaver",
+            "hidden": "(!data.mqttServer && !data.mqttIp ) || !data.mqttPort || !data.mqttUsername || !data.mqttPassword || !data.panels || !data.panels.length",
+            "items": {
+                "screensaverConfig": {
+                    "type": "custom",
+                    "guiApi": 2,
+                    "i18n": true,
+                    "url": "custom/customComponents.js",
+                    "name": "AdminComponentTemplateSet/Components/ScreensaverConfigManager",
+                    "bundlerType": "module",
+                    "xs": 12
+                }
+            }
+        },
         "tasmotaTools": {
             "type": "panel",
             "label": "tasmotaTools",
@@ -3158,22 +3174,6 @@
             }
         },
 
-        /*"ScreensaverPage": {
-            "type": "panel",
-            "label": "ScreensaverPage",
-            "items": {
-                "ScreensaverPageConfig": {
-                    "type": "custom",
-                    "guiApi": 2,
-                    "i18n": true,
-                    "url": "custom/customComponents.js",
-                    "name": "AdminComponentTemplateSet/Components/ScreensaverPage",
-                    "bundlerType": "module",
-                    "xs": 12
-                    //"label": "test"
-                }
-            }
-        },*/
         "iconOverview": {
             "type": "panel",
             "label": "iconOverview",

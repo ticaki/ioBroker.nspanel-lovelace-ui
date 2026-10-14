@@ -30,6 +30,7 @@ var import_controller = require("./lib/controller/controller");
 var import_icon_mapping = require("./lib/const/icon_mapping");
 var definition = __toESM(require("./lib/const/definition"));
 var import_config_manager = require("./lib/classes/config-manager");
+var import_template_info = require("./lib/templates/template-info");
 var import_readme = require("./lib/tools/readme");
 var import_redact = require("./lib/tools/redact");
 var import_node_url = require("node:url");
@@ -699,6 +700,13 @@ class NspanelLovelaceUi extends utils.Adapter {
               result ? result : [{ label: "Not available", value: "" }],
               obj.callback
             );
+          }
+          break;
+        }
+        case import_adminShareConfig.SENDTO_GET_SCREENSAVER_TEMPLATES_COMMAND: {
+          const result = (0, import_template_info.screensaverTemplateInfos)();
+          if (obj.callback) {
+            this.sendTo(obj.from, obj.command, result, obj.callback);
           }
           break;
         }
