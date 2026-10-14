@@ -98,7 +98,11 @@ Dritte Möglichkeit *Farbe aus Datenpunkt*: ein State, dessen Wert die Farbe ist
 
 **Text statt Wert** (boolean): Statt `true`/`false` zeigt das Panel den Text bei wahr bzw. falsch. In jedes Feld kann auch die **ID eines Datenpunkts** – dann wird dessen Wert gezeigt. Ein leeres Feld lässt den Rohwert stehen.
 
-**Sichtbarkeit** (Expertenmodus): ein Datenpunkt, der das Item bei `false` ausblendet, und optional eine Bedingung über `val` (wie `ScreensaverEntityEnabled` / `ScreensaverEntityVisibleCondition` im Skript).
+**Sichtbarkeit** (Expertenmodus): ein Datenpunkt, der das Item bei `false` ausblendet, und optional eine Bedingung über `val` (wie `ScreensaverEntityEnabled` / `ScreensaverEntityVisibleCondition` im Skript). `val` ist der Wert des Item-Datenpunkts – `val > 0` zeigt das Item also nur bei positiven Werten.
+
+![Item-Dialog im Expertenmodus](../Pictures/screensaverAdmin/admin-16-item-expertenmodus.png)
+
+Das Bild zeigt denselben Favoriten mit eingeschaltetem Expertenmodus (Symbol unten links in der Admin-Leiste): der Knopf **Icon je Wert…** sitzt unter dem Symbolfeld, unten stehen Sichtbarkeits-Datenpunkt und Bedingung. Ohne Expertenmodus fehlen beide Blöcke – eine gespeicherte Icon-Liste bleibt trotzdem sichtbar.
 
 **Item entfernen** links unten löscht das Item vom Platz.
 
