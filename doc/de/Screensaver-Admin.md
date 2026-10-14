@@ -70,7 +70,7 @@ Klick auf einen freien Platz öffnet den Item-Dialog, Klick auf ein belegtes Ite
 | Typ des Datenpunkts | Felder |
 |---|---|
 | **boolean** | Symbol an / aus, Farbe an / aus, Text bei wahr / falsch |
-| **number** | Symbol, feste Farbe oder Farbskala nach Wert, Einheit (leer = vom Datenpunkt), Faktor, Nachkommastellen |
+| **number** | Symbol (Expertenmodus: auch eine Icon-Liste je Wertebereich), feste Farbe oder Farbskala nach Wert, Einheit (leer = vom Datenpunkt), Faktor, Nachkommastellen |
 | Datum/Zeit (Rolle `date`/`time`) | Symbol, Farbe, Datumsformat (`Intl.DateTimeFormat`-Optionen, Vorgaben zur Auswahl, Expertenmodus: eigenes JSON) |
 | sonst (string …) | Symbol, Farbe |
 
@@ -86,9 +86,23 @@ Dritte Möglichkeit *Farbe aus Datenpunkt*: ein State, dessen Wert die Farbe ist
 
 ![Farbe aus Datenpunkt](../Pictures/screensaverAdmin/admin-06-item-farbe-datenpunkt.png)
 
+**Icon je Wertebereich** (nur Zahlen): Statt eines festen Symbols kann eine Liste „bis Wert → Symbol“ hinterlegt werden – das Panel wechselt das Icon dann mit dem Wert. Der Knopf **Icon je Wert…** steht im **Expertenmodus** unter dem Symbolfeld; eine bereits gespeicherte Liste wird mit ihren Symbolen auch ohne Expertenmodus angezeigt und lässt sich dort über den Papierkorb wieder entfernen.
+
+![Icon je Wertebereich](../Pictures/screensaverAdmin/admin-15-item-icon-wertebereich.png)
+
+- Jede Zeile besteht aus **bis Wert** und einem **Symbol**. Ein Icon gilt **bis einschließlich** seines Werts, oberhalb des höchsten Werts bleibt dessen Icon stehen. Im Bild: bis 5 `snowflake-thermometer`, bis 18 `thermometer-low`, bis 24 `thermometer`, darüber `thermometer-high` – 23,5 °C zeigt also das mittlere Symbol (siehe Vorschau).
+- **Eintrag hinzufügen** hängt eine Zeile an, der Papierkorb rechts entfernt sie. **Nach Wert sortieren** ordnet die Liste nur für die Übersicht – auf die Reihenfolge kommt es nicht an, der Adapter sortiert selbst.
+- **Übernehmen** bleibt gesperrt, solange eine angefangene Zeile unvollständig ist (jede Zeile braucht eine Zahl **und** ein Symbol); kommt ein Wert doppelt vor, meldet der Dialog es – wirksam ist dann nur einer der Einträge. Eine leere Liste löscht die Einstellung.
+- Die Liste **ersetzt das Symbol** aus dem Feld darüber. Farbe bzw. Farbskala, Einheit, Faktor und Nachkommastellen gelten unverändert weiter.
+- Im Skript entspricht das `ScreensaverEntityIconSelect`; der Adapter macht daraus dieselbe Lesefunktion wie auf dem Skript-Weg, das Ergebnis auf dem Panel ist also identisch.
+
 **Text statt Wert** (boolean): Statt `true`/`false` zeigt das Panel den Text bei wahr bzw. falsch. In jedes Feld kann auch die **ID eines Datenpunkts** – dann wird dessen Wert gezeigt. Ein leeres Feld lässt den Rohwert stehen.
 
-**Sichtbarkeit** (Expertenmodus): ein Datenpunkt, der das Item bei `false` ausblendet, und optional eine Bedingung über `val` (wie `ScreensaverEntityEnabled` / `ScreensaverEntityVisibleCondition` im Skript).
+**Sichtbarkeit** (Expertenmodus): ein Datenpunkt, der das Item bei `false` ausblendet, und optional eine Bedingung über `val` (wie `ScreensaverEntityEnabled` / `ScreensaverEntityVisibleCondition` im Skript). `val` ist der Wert des Item-Datenpunkts – `val > 0` zeigt das Item also nur bei positiven Werten.
+
+![Item-Dialog im Expertenmodus](../Pictures/screensaverAdmin/admin-16-item-expertenmodus.png)
+
+Das Bild zeigt denselben Favoriten mit eingeschaltetem Expertenmodus (Symbol unten links in der Admin-Leiste): der Knopf **Icon je Wert…** sitzt unter dem Symbolfeld, unten stehen Sichtbarkeits-Datenpunkt und Bedingung. Ohne Expertenmodus fehlen beide Blöcke – eine gespeicherte Icon-Liste bleibt trotzdem sichtbar.
 
 **Item entfernen** links unten löscht das Item vom Platz.
 
@@ -174,6 +188,7 @@ Screensaver 'Wohnzimmer' (advanced) from the admin configuration replaces the sc
 - **Alles ausgegraut:** Die Instanz läuft nicht. Der Editor ist nur bei laufender Instanz bedienbar, die Template-Liste kommt vom laufenden Adapter.
 - **Keine Plätze im Panelbild:** Noch kein Panel gewählt.
 - **Übernehmen bleibt gesperrt:** Datenpunkt fehlt oder ist kein Datenpunkt (Kanal gewählt?), kein Symbol, bei Taste/Schalter kein beschreibbarer Datenpunkt, bei „Farbe aus Datenpunkt“ kein gültiger State – der Dialog nennt den Grund in einer gelben Zeile.
+- **Das Symbol wechselt nicht mit dem Wert:** Eine Icon-Liste gibt es nur für Zahlen-Datenpunkte, und jedes Icon gilt bis einschließlich seines Werts – oberhalb des höchsten Werts bleibt dessen Symbol stehen. Doppelte Werte meldet der Dialog, wirksam ist dann nur einer.
 - **Falsches Symbol vorbelegt:** Die Rolle des Kanals über dem Datenpunkt zählt zuerst – einfach das Symbol ändern.
 - **Panel zeigt den Skript-Screensaver:** Das Panel steht in keinem Eintrag, oder es steht in einem zweiten Eintrag weiter unten (der erste gewinnt) – siehe Log.
 - **Items fehlen nach einem Versionswechsel:** Sie liegen in Bereichen, die die Version nicht hat (Meldung oben im Editor); Version zurückstellen oder **Entfernen**.
