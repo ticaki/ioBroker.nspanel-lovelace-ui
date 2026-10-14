@@ -416,6 +416,7 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
             if (value === null) {
               value = true;
             }
+            const showIcon = entry.role === "2values" ? true : value;
             if (entry.role === "text.states") {
               const key = value ? "true" : "false";
               const dataitem = ((_E = item.text) == null ? void 0 : _E[key]) ? (0, import_data_item.isDataItem)(item.text[key]) ? item.text[key] : item.text[key].value : null;
@@ -428,7 +429,7 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
               }
             } else {
               message.displayName = this.library.getTranslation(
-                (_G = await tools.getEntryTextOnOff(item.text, !!value)) != null ? _G : ""
+                (_G = await tools.getEntryTextOnOff(item.text, !!showIcon)) != null ? _G : ""
               );
             }
             if (entry.type === "switch") {
@@ -449,7 +450,7 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
                   if (val1 !== null && val2 !== null) {
                     message.optionalValue = String(val1) + (unit1 != null ? unit1 : "") + String(val2) + (unit2 != null ? unit2 : "");
                     if (typeof value === "number") {
-                      value = val1 + val2 / 2;
+                      value = (val1 + val2) / 2;
                     }
                   }
                   break;
@@ -483,14 +484,14 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
                 }
               }
             }
-            message.icon = await tools.getIconEntryValue(item.icon, value, "home");
+            message.icon = await tools.getIconEntryValue(item.icon, showIcon, "home");
             switch (entry.role) {
               case "textNotIcon": {
-                message.icon = (_K = await tools.getIconEntryValue(item.icon, value, "", null, true)) != null ? _K : "";
+                message.icon = (_K = await tools.getIconEntryValue(item.icon, showIcon, "", null, true)) != null ? _K : "";
                 break;
               }
               case "iconNotText": {
-                message.icon = (_L = await tools.getIconEntryValue(item.icon, value, "", null, false)) != null ? _L : "";
+                message.icon = (_L = await tools.getIconEntryValue(item.icon, showIcon, "", null, false)) != null ? _L : "";
                 break;
               }
               case "battery": {
@@ -499,14 +500,14 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
                 break;
               }
               case "combined": {
-                message.icon = (_O = await tools.getIconEntryValue(item.icon, value, "", null, false)) != null ? _O : "";
-                message.icon += (_P = await tools.getIconEntryValue(item.icon, value, "", null, true)) != null ? _P : "";
+                message.icon = (_O = await tools.getIconEntryValue(item.icon, showIcon, "", null, false)) != null ? _O : "";
+                message.icon += (_P = await tools.getIconEntryValue(item.icon, showIcon, "", null, true)) != null ? _P : "";
                 break;
               }
               default: {
                 message.icon = (_R = await tools.getIconEntryValue(
                   item.icon,
-                  !!value,
+                  !!showIcon,
                   "",
                   null,
                   (_Q = !(0, import_function_and_const.isCardEntitiesType)(this.parent.card) && !this.parent.card.startsWith("screens")) != null ? _Q : false

@@ -495,6 +495,8 @@ export class PageItem extends BaseTriggeredPage {
                         if (value === null) {
                             value = true;
                         }
+                        // 2values: entity1 / the mean decide the color only - 0 must not switch icon and text to false
+                        const showIcon = entry.role === '2values' ? true : value;
                         if (entry.role === 'text.states') {
                             const key = value ? 'true' : 'false';
                             const dataitem = item.text?.[key]
@@ -511,7 +513,7 @@ export class PageItem extends BaseTriggeredPage {
                             }
                         } else {
                             message.displayName = this.library.getTranslation(
-                                (await tools.getEntryTextOnOff(item.text, !!value)) ?? '',
+                                (await tools.getEntryTextOnOff(item.text, !!showIcon)) ?? '',
                             );
                         }
                         if (entry.type === 'switch') {
@@ -537,7 +539,7 @@ export class PageItem extends BaseTriggeredPage {
                                         message.optionalValue =
                                             String(val1) + (unit1 ?? '') + String(val2) + (unit2 ?? '');
                                         if (typeof value === 'number') {
-                                            value = val1 + val2 / 2;
+                                            value = (val1 + val2) / 2;
                                         }
                                     }
 
@@ -589,15 +591,17 @@ export class PageItem extends BaseTriggeredPage {
                             entry.type = 'switch';
                         }*/
 
-                        message.icon = await tools.getIconEntryValue(item.icon, value, 'home');
+                        message.icon = await tools.getIconEntryValue(item.icon, showIcon, 'home');
                         switch (entry.role) {
                             case 'textNotIcon': {
-                                message.icon = (await tools.getIconEntryValue(item.icon, value, '', null, true)) ?? '';
+                                message.icon =
+                                    (await tools.getIconEntryValue(item.icon, showIcon, '', null, true)) ?? '';
 
                                 break;
                             }
                             case 'iconNotText': {
-                                message.icon = (await tools.getIconEntryValue(item.icon, value, '', null, false)) ?? '';
+                                message.icon =
+                                    (await tools.getIconEntryValue(item.icon, showIcon, '', null, false)) ?? '';
                                 break;
                             }
                             case 'battery': {
@@ -607,15 +611,17 @@ export class PageItem extends BaseTriggeredPage {
                                 break;
                             }
                             case 'combined': {
-                                message.icon = (await tools.getIconEntryValue(item.icon, value, '', null, false)) ?? '';
-                                message.icon += (await tools.getIconEntryValue(item.icon, value, '', null, true)) ?? '';
+                                message.icon =
+                                    (await tools.getIconEntryValue(item.icon, showIcon, '', null, false)) ?? '';
+                                message.icon +=
+                                    (await tools.getIconEntryValue(item.icon, showIcon, '', null, true)) ?? '';
                                 break;
                             }
                             default: {
                                 message.icon =
                                     (await tools.getIconEntryValue(
                                         item.icon,
-                                        !!value,
+                                        !!showIcon,
                                         '',
                                         null,
                                         (!isCardEntitiesType(this.parent.card) &&
