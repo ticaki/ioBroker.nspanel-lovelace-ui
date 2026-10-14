@@ -55,10 +55,42 @@ export type PageCardType =
           | 'cardSchedule'
       >
     | 'all'
+    | 'mainPages' // Filter: alle Seiten mit isMainPage, kein eigener Kartentyp
     | 'cardTrash'
     | 'pageMenu'; // 'pageMenu' = Gruppe für alle Menu-Kartentypen
 
 const MENU_CARD_TYPES: ReadonlyArray<string> = ['cardGrid', 'cardGrid2', 'cardGrid3', 'cardEntities', 'cardSchedule'];
+
+/**
+ * Whether new pages can be created for the given page type selection.
+ * 'all' and 'mainPages' are pure filters without a concrete card type.
+ *
+ * @param cardType Selected page type.
+ * @returns true if the selection maps to a concrete card type.
+ */
+export function canCreateForCardType(cardType: PageCardType): boolean {
+    return cardType !== 'all' && cardType !== 'mainPages';
+}
+
+/**
+ * Filters entries by the selected page type.
+ *
+ * @param entries Admin page configuration entries.
+ * @param cardType Selected page type.
+ * @returns The matching entries.
+ */
+export function filterEntriesByCardType(entries: PageConfigEntry[], cardType: PageCardType): PageConfigEntry[] {
+    switch (cardType) {
+        case 'all':
+            return entries;
+        case 'mainPages':
+            return entries.filter(e => isMainPageEntry(e));
+        case 'pageMenu':
+            return entries.filter(e => MENU_CARD_TYPES.includes(e.card));
+        default:
+            return entries.filter(e => e.card === cardType);
+    }
+}
 
 /** Sonderwert für den Panel-Filter: Seiten ohne Zuweisung */
 const PANEL_FILTER_UNASSIGNED = '___UNASSIGNED___';
@@ -147,7 +179,7 @@ export class PageConfigLayout extends React.Component<PageConfigLayoutProps, Pag
 
     private handleAdd = (): void => {
         const name = this.state.newName.trim();
-        if (!name || this.props.selectedCardType === 'all') {
+        if (!name || !canCreateForCardType(this.props.selectedCardType)) {
             return;
         }
         this.props.onAdd(name, this.props.selectedCardType);
@@ -204,12 +236,7 @@ export class PageConfigLayout extends React.Component<PageConfigLayoutProps, Pag
             (this.props.pagesList ?? []).includes(newName);
 
         // Filter entries by selected card type
-        const cardFilteredEntries =
-            selectedCardType === 'all'
-                ? entries
-                : selectedCardType === 'pageMenu'
-                  ? entries.filter(e => MENU_CARD_TYPES.includes(e.card))
-                  : entries.filter(e => e.card === selectedCardType);
+        const cardFilteredEntries = filterEntriesByCardType(entries, selectedCardType);
 
         // Filter additionally by selected panel
         const filteredEntries =
@@ -234,7 +261,7 @@ export class PageConfigLayout extends React.Component<PageConfigLayoutProps, Pag
 
         const currentEntry = entries.find(e => e.uniqueName === selected);
         const currentAssignments = currentEntry?.navigationAssignment || [];
-        const docUrl = `https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/wiki/${encodeURIComponent(selectedCardType === 'all' ? (currentEntry?.card ? currentEntry.card : 'PageConfig') : selectedCardType)}`;
+        const docUrl = `https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/wiki/${encodeURIComponent(!canCreateForCardType(selectedCardType) ? (currentEntry?.card ? currentEntry.card : 'PageConfig') : selectedCardType)}`;
         return (
             <Box
                 sx={{
@@ -277,6 +304,7 @@ export class PageConfigLayout extends React.Component<PageConfigLayoutProps, Pag
                                 </Typography>
                                 <Select
                                     value={selectedPanelFilter}
+                                    displayEmpty
                                     onChange={e => {
                                         this.setState({ selectedPanelFilter: e.target.value });
                                     }}
@@ -332,6 +360,7 @@ export class PageConfigLayout extends React.Component<PageConfigLayoutProps, Pag
                                 }}
                             >
                                 <MenuItem value="all">{this.getText('page_type_all')}</MenuItem>
+                                <MenuItem value="mainPages">{this.getText('page_type_mainPages')}</MenuItem>
                                 <MenuItem value="pageMenu">{this.getText('page_type_pageMenu')}</MenuItem>
                                 <MenuItem value="cardAlarm">{this.getText('page_type_alarm')}</MenuItem>
                                 <MenuItem value="cardQR">{this.getText('page_type_qr')}</MenuItem>
@@ -353,8 +382,8 @@ export class PageConfigLayout extends React.Component<PageConfigLayoutProps, Pag
                     >
                         {this.getText('pages')}
                     </Typography>
-                    {/* Add new page - nur anzeigen wenn nicht 'all' ausgewählt */}
-                    {selectedCardType !== 'all' && (
+                    {/* Add new page - nur anzeigen wenn ein konkreter Kartentyp ausgewählt ist */}
+                    {canCreateForCardType(selectedCardType) && (
                         <Paper
                             sx={{ p: 0, backgroundColor: 'transparent' }}
                             elevation={0}

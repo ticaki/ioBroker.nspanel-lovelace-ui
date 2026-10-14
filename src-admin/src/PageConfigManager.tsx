@@ -19,7 +19,12 @@ import {
     normalizeTrashItems,
     SENDTO_GET_PAGES_All_COMMAND,
 } from '../../src/lib/types/adminShareConfig';
-import { PageConfigLayout, type PageCardType } from './components/PageConfigLayout';
+import {
+    PageConfigLayout,
+    canCreateForCardType,
+    filterEntriesByCardType,
+    type PageCardType,
+} from './components/PageConfigLayout';
 import { PageAlarmEditor } from './components/PageAlarmEditor';
 import { PageMenuEditor } from './components/PageMenuEditor';
 import { PagePowerEditor } from './components/PagePowerEditor';
@@ -292,7 +297,7 @@ class PageConfigManager extends ConfigGeneric<ConfigGenericProps & { theme?: any
     }
 
     private handleAdd = (name: string, cardType: PageCardType): void => {
-        if (cardType === 'all') {
+        if (!canCreateForCardType(cardType)) {
             return; // Sollte nicht vorkommen (Button ist disabled)
         }
         if (name.trim() === mainPageName) {
@@ -391,14 +396,7 @@ class PageConfigManager extends ConfigGeneric<ConfigGenericProps & { theme?: any
         this.setState({ entries: updated } as PageConfigManagerState);
         void this.onChange(this.props.attr, updated);
 
-        const MENU_TYPES = ['cardGrid', 'cardGrid2', 'cardGrid3', 'cardEntities', 'cardSchedule'];
-        const { selectedCardType } = this.state;
-        const filteredAfterDelete =
-            selectedCardType === 'all'
-                ? updated
-                : selectedCardType === 'pageMenu'
-                  ? updated.filter(e => MENU_TYPES.includes(e.card))
-                  : updated.filter(e => e.card === selectedCardType);
+        const filteredAfterDelete = filterEntriesByCardType(updated, this.state.selectedCardType);
 
         const newSelected = filteredAfterDelete.length > 0 ? filteredAfterDelete[0].uniqueName : '';
         this.setState({ selected: newSelected } as PageConfigManagerState);
@@ -434,13 +432,7 @@ class PageConfigManager extends ConfigGeneric<ConfigGenericProps & { theme?: any
 
     private handleCardTypeChange = (cardType: PageCardType): void => {
         // Beim Wechsel des Card-Typs: filtere Einträge und wähle ersten passenden aus
-        const MENU_TYPES = ['cardGrid', 'cardGrid2', 'cardGrid3', 'cardEntities', 'cardSchedule'];
-        const filteredEntries =
-            cardType === 'all'
-                ? this.state.entries
-                : cardType === 'pageMenu'
-                  ? this.state.entries.filter(e => MENU_TYPES.includes(e.card))
-                  : this.state.entries.filter(e => e.card === cardType);
+        const filteredEntries = filterEntriesByCardType(this.state.entries, cardType);
         const newSelected = filteredEntries.length > 0 ? filteredEntries[0].uniqueName : '';
         this.setState({ selectedCardType: cardType, selected: newSelected } as PageConfigManagerState);
     };
