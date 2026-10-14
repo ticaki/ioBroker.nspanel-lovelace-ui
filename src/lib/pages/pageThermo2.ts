@@ -1032,29 +1032,6 @@ export class PageThermo2 extends PageMenu {
                     },
                 });
             }
-            if (foundedStates[role].MAINTAIN) {
-                gridItem.pageItems.push({
-                    role: 'indicator',
-                    type: 'button',
-                    filter: filterIndex,
-                    dpInit: '',
-                    data: {
-                        icon: {
-                            true: {
-                                value: { type: 'const', constVal: 'account-wrench' },
-                                color: { type: 'const', constVal: Color.true },
-                            },
-                            false: {
-                                value: { type: 'const', constVal: 'account-wrench' },
-                                color: { type: 'const', constVal: Color.deactivated },
-                            },
-                        },
-                        entity1: {
-                            value: foundedStates[role].MAINTAIN,
-                        },
-                    },
-                });
-            }
             if (foundedStates[role].LOWBAT) {
                 gridItem.pageItems.push({
                     role: 'indicator',

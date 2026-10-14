@@ -2772,3 +2772,37 @@ export const tasmotaTimeZones = [
         value: 'Timezone +0:00',
     },
 ];
+
+export interface TasmotaTimeZone {
+    label: string;
+    value: string;
+}
+
+/**
+ * The list above holds 693 entries, but only 562 different labels - 131 entries are exact
+ * duplicates. Deduplicated by label and sorted, so a label identifies an entry uniquely.
+ */
+export const uniqueTasmotaTimeZones: TasmotaTimeZone[] = Array.from(
+    new Map(tasmotaTimeZones.map((tz): [string, TasmotaTimeZone] => [tz.label, tz])).values(),
+).sort((a, b) => a.label.localeCompare(b.label));
+
+/**
+ * Resolves a value stored in the configuration to a time zone entry.
+ *
+ * The adapter expects the label (`getTasmotaTimeZone()` looks it up by label). Up to version
+ * 1.0.1 the admin wrote the Tasmota command instead; that command belongs to up to 56 labels,
+ * so the alphabetically first one is used to at least show something reproducible.
+ *
+ * @param stored - the value read from the configuration
+ * @returns the matching entry or null if the value belongs to no time zone
+ */
+export function resolveTasmotaTimeZone(stored: string): TasmotaTimeZone | null {
+    if (!stored) {
+        return null;
+    }
+    return (
+        uniqueTasmotaTimeZones.find(tz => tz.label === stored) ??
+        uniqueTasmotaTimeZones.find(tz => tz.value === stored) ??
+        null
+    );
+}

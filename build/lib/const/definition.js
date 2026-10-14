@@ -5354,7 +5354,10 @@ const tasmotaTimeZones = [
 ];
 function getTasmotaTimeZone(label) {
   const tz = tasmotaTimeZones.find((tz2) => tz2.label === label);
-  return tz ? tz.value : "";
+  if (tz) {
+    return tz.value;
+  }
+  return tasmotaTimeZones.some((tz2) => tz2.value === label) ? label : "";
 }
 const weatherEntities = ["brightsky", "openweathermap", "pirate-weather", "accuweather"];
 function isDimConfigKey(key) {

@@ -34,6 +34,7 @@ module.exports = __toCommonJS(config_manager_exports);
 var import_Color = require("../const/Color");
 var configManagerConst = __toESM(require("../const/config-manager-const"));
 var import_page_item_defaults = require("../const/page-item-defaults");
+var import_default_pages = require("../const/default-pages");
 var import_states_controller = require("../controller/states-controller");
 var import_pagePower = require("../pages/pagePower");
 var import_pageChart = require("../pages/pageChart");
@@ -156,6 +157,7 @@ class ConfigManager extends import_library.BaseClass {
         `Panel for Topic: ${config.panelTopic} name: ${panelItem.name} Script version ${config.version} is correct!`
       );
     }
+    const globalPageIds = /* @__PURE__ */ new Set();
     {
       const navigationAdjustRun = (oldUniqueName, newUniqueName, pages, renamedPages, maxRun = 3, indexRun = 0, runPrefix = "") => {
         if (!oldUniqueName || !newUniqueName || oldUniqueName === newUniqueName) {
@@ -314,6 +316,9 @@ class ConfigManager extends import_library.BaseClass {
                 if (page.heading) {
                   config.pages[i].heading = page.heading;
                 }
+                if (config.pages[i].uniqueName) {
+                  globalPageIds.add(config.pages[i].uniqueName);
+                }
               } else {
                 config.pages.splice(i, 1);
                 const msg = `Global page with uniqueName ${page.globalLink} not found!`;
@@ -359,6 +364,9 @@ class ConfigManager extends import_library.BaseClass {
                 if (page.heading) {
                   config.subPages[i].heading = page.heading;
                 }
+                if (config.subPages[i].uniqueName) {
+                  globalPageIds.add(config.subPages[i].uniqueName);
+                }
               } else {
                 config.subPages.splice(i, 1);
                 const msg = `Global page with uniqueName ${page.globalLink} not found!`;
@@ -369,6 +377,11 @@ class ConfigManager extends import_library.BaseClass {
           }
           for (const index of Array.from(removeGlobalPageIndexs).sort((a, b) => b - a)) {
             globalConfig.subPages.splice(index, 1);
+          }
+          for (const page of globalConfig.subPages || []) {
+            if (page && page.uniqueName && config.pages.findIndex((p) => p && p.uniqueName === page.uniqueName) === -1) {
+              globalPageIds.add(page.uniqueName);
+            }
           }
           config.subPages = config.subPages.concat(globalConfig.subPages || []);
           config.navigation = (config.navigation || []).concat(globalConfig.navigation || []);
@@ -434,7 +447,7 @@ class ConfigManager extends import_library.BaseClass {
       }
       const nav = panelConfig.navigation;
       if (nav && nav.length > 0) {
-        const index = nav.findIndex((item) => item.name === "main");
+        const index = nav.findIndex((item) => item.name === import_default_pages.mainPageName);
         if (index !== -1) {
           const item = nav.splice(index, 1)[0];
           nav.unshift(item);
@@ -487,6 +500,7 @@ class ConfigManager extends import_library.BaseClass {
       return { messages, panelConfig: void 0 };
     }
     ({ panelConfig, messages } = await this.getPageConfig(config, panelConfig, messages));
+    panelConfig.globalPageIds = panelConfig.pages.filter((page) => page && page.uniqueID && globalPageIds.has(page.uniqueID)).map((page) => page.uniqueID);
     const nav1 = config.navigation;
     const nav2 = panelConfig.navigation;
     if (nav1 != null && (0, import_navigation.isNavigationItemConfigArray)(nav1) && (0, import_navigation.isNavigationItemConfigArray)(nav2)) {
@@ -513,11 +527,15 @@ class ConfigManager extends import_library.BaseClass {
       messages.push(`No pages found! This needs to be fixed!`);
       this.log.error(messages[messages.length - 1]);
     } else if (panelConfig.navigation.length === 0) {
-      messages.push(`No navigation items found! This needs to be fixed!`);
-      this.log.error(messages[messages.length - 1]);
-    } else if (panelConfig.navigation.findIndex((item) => item && item.name === "main") === -1) {
-      messages.push(`No entry found for \u2018main\u2019 in the navigation!`);
-      this.log.warn(messages[messages.length - 1]);
+      messages.push(
+        `No navigation items found in the script configuration! Pages from the admin configuration are used.`
+      );
+      this.log.info(messages[messages.length - 1]);
+    } else if (panelConfig.navigation.findIndex((item) => item && item.name === import_default_pages.mainPageName) === -1) {
+      messages.push(
+        `No entry found for '${import_default_pages.mainPageName}' in the navigation! A default start page is used unless the admin configuration provides one.`
+      );
+      this.log.info(messages[messages.length - 1]);
     }
     const obj = await this.adapter.getForeignObjectAsync(this.adapter.namespace);
     if (obj && !this.dontWrite) {
@@ -612,14 +630,20 @@ class ConfigManager extends import_library.BaseClass {
           this.log.error(messages[messages.length - 1]);
           continue;
         }
+        if (page.type === "cardQR" || page.type === "cardAlarm" || page.type === "cardUnlock") {
+          const msg = `Page: ${page.uniqueName} with card type ${page.type} is only supported in the admin configuration! Skipped!`;
+          messages.push(msg);
+          this.log.warn(msg);
+          continue;
+        }
         if ((config.subPages || []).includes(page)) {
           const left = page.prev || page.parent || void 0;
           let right = page.next || page.home || void 0;
           if (!left && !right) {
-            const msg = `Page: ${page.uniqueName} dont have any navigation! Node 'main' provisionally added as home!`;
+            const msg = `Page: ${page.uniqueName} dont have any navigation! Node '${import_default_pages.mainPageName}' provisionally added as home!`;
             messages.push(msg);
             this.log.warn(msg);
-            page.home = "main";
+            page.home = import_default_pages.mainPageName;
             right = page.home;
           }
           if (left || right) {
@@ -631,9 +655,6 @@ class ConfigManager extends import_library.BaseClass {
             };
             panelConfig.navigation.push(navItem);
           }
-        }
-        if (page.type === "cardQR" || page.type === "cardAlarm" || page.type === "cardUnlock") {
-          return { panelConfig, messages };
         }
         let gridItem = {
           dpInit: "",
@@ -2254,11 +2275,17 @@ class ConfigManager extends import_library.BaseClass {
                 dpInit: entry2.useKey ? expectedAltId : `${dpInit}.`,
                 role: entry2.role,
                 enums: "",
-                regexp: entry.useKey ? new RegExp(`\\.${alternate}$`) : void 0,
+                regexp: entry2.useKey ? new RegExp(`\\.${alternate}$`) : void 0,
                 triggered: entry.trigger,
                 writeable: entry2.writeable,
                 commonType: entry.type
               });
+            }
+            if (result[role][dp2]) {
+              messages.push(
+                `Optional: ${String(dp)}: ${dpInit}, channel role: ${role} - not found, using ${String(alternate)} instead (searching for type: ${JSON.stringify(entry.type)}, role: ${JSON.stringify(entry.role)})`
+              );
+              this.log.info(messages[messages.length - 1]);
             }
           }
           if (!result[role][dp2]) {
@@ -3790,7 +3817,7 @@ class ConfigManager extends import_library.BaseClass {
     }
     return { itemConfig: void 0, messages };
   }
-  async getScreensaverConfig(config, messages = []) {
+  async getScreensaverConfig(config, messages = [], options = {}) {
     var _a, _b, _c, _d, _e, _f;
     let pageItems = [];
     const loadElementSection = async (items, mode, errorLabel) => {
@@ -3898,7 +3925,7 @@ class ConfigManager extends import_library.BaseClass {
       }
       pageItems.push(...arr);
     }
-    if (this.adapter.config.weatherEntity) {
+    if (this.adapter.config.weatherEntity && !options.weatherEntityFixed) {
       config.weatherEntity = this.adapter.config.weatherEntity;
     }
     if (config.weatherEntity) {
@@ -4769,7 +4796,7 @@ class ConfigManager extends import_library.BaseClass {
         entity.ScreensaverEntityIconSelect.sort((a, b) => a.value - b.value);
         obj2.read = `
                     const items = [${entity.ScreensaverEntityIconSelect.map((item) => `{val: ${item.value}, icon: "${item.icon}"}`).join(", ")}];
-                    for (let i = 1; i < items.length; i++) {
+                    for (let i = 0; i < items.length; i++) {
                         if (val <= items[i].val) {return items[i].icon;}
                     }
                     return items[items.length - 1].icon;`;
@@ -4808,13 +4835,26 @@ class ConfigManager extends import_library.BaseClass {
         }
       };
     }
-    if (entity.ScreensaverEntityOnText) {
-      result.data.text = { true: await this.getFieldAsDataItemConfig(entity.ScreensaverEntityOnText) };
-    } else if (entity.ScreensaverEntityText) {
+    if (entity.ScreensaverEntityText) {
       result.data.text = { true: await this.getFieldAsDataItemConfig(entity.ScreensaverEntityText) };
     }
-    if (entity.ScreensaverEntityOffText) {
-      result.data.text = { false: await this.getFieldAsDataItemConfig(entity.ScreensaverEntityOffText) };
+    if (dataType === "boolean" && (entity.ScreensaverEntityOnText || entity.ScreensaverEntityOffText)) {
+      delete result.data.entity2.value;
+      result.data.text1 = {
+        true: entity.ScreensaverEntityOnText ? await this.getFieldAsDataItemConfig(entity.ScreensaverEntityOnText) : { type: "const", constVal: "true" },
+        false: entity.ScreensaverEntityOffText ? await this.getFieldAsDataItemConfig(entity.ScreensaverEntityOffText) : { type: "const", constVal: "false" }
+      };
+    } else if (entity.ScreensaverEntityOnText || entity.ScreensaverEntityOffText) {
+      const text = {
+        ...result.data.text
+      };
+      if (entity.ScreensaverEntityOnText) {
+        text.true = await this.getFieldAsDataItemConfig(entity.ScreensaverEntityOnText);
+      }
+      if (entity.ScreensaverEntityOffText) {
+        text.false = await this.getFieldAsDataItemConfig(entity.ScreensaverEntityOffText);
+      }
+      result.data.text = text;
     }
     result.fillIfBelowMin = !("ScreensaverEntityFillIfBelowMin" in entity && entity.ScreensaverEntityFillIfBelowMin != null) || entity.ScreensaverEntityFillIfBelowMin;
     if (isScreensaverPageItemDataItemsOptions(result)) {

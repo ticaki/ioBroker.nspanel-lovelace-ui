@@ -1,8 +1,9 @@
 import React from 'react';
 import icons from './icons.json';
 import { Autocomplete, TextField, Box, Typography, Grid } from '@mui/material';
-import { withTheme } from '@mui/styles';
 import { ConfigGeneric, type ConfigGenericProps, type ConfigGenericState } from '@iobroker/json-config';
+import type { IobTheme } from '@iobroker/gui-components';
+import { isDarkTheme } from './themeUtils';
 
 interface IconSelectState extends ConfigGenericState {
     test: string;
@@ -12,10 +13,13 @@ interface IconSelectState extends ConfigGenericState {
     filteredIcons: { name: string; base64: string }[];
 }
 
-class IconSelect extends ConfigGeneric<ConfigGenericProps & { themeName?: any }, IconSelectState> {
-    constructor(props: ConfigGenericProps & { themeName?: any }) {
+/** `theme` is injected at runtime by the json-config custom component wrapper */
+type IconSelectProps = ConfigGenericProps & { theme?: IobTheme };
+
+class IconSelect extends ConfigGeneric<IconSelectProps, IconSelectState> {
+    constructor(props: IconSelectProps) {
         super(props);
-        const savedValue = ConfigGeneric.getValue(props.data, props.attr!);
+        const savedValue = ConfigGeneric.getValue(props.data, props.attr);
         const allIcons = Array.isArray(icons) ? icons : [];
         const initialInput = typeof savedValue === 'string' ? savedValue : '';
 
@@ -48,7 +52,7 @@ class IconSelect extends ConfigGeneric<ConfigGenericProps & { themeName?: any },
 
     renderItem(_error: string, _disabled: boolean, _defaultValue?: unknown): React.JSX.Element {
         const icons = this.state.icons;
-        const themeName = this.props.themeName || undefined;
+        const iconColor = isDarkTheme(this.props) ? '#ffffff' : '#000000';
         const filteredIcons = this.state.filteredIcons;
 
         return (
@@ -56,10 +60,7 @@ class IconSelect extends ConfigGeneric<ConfigGenericProps & { themeName?: any },
                 container
                 spacing={2}
             >
-                <Grid
-                    item
-                    xs={12}
-                >
+                <Grid size={12}>
                     <Autocomplete
                         options={filteredIcons}
                         // disable internal filtering: we provide a refreshed list on every input change
@@ -89,7 +90,7 @@ class IconSelect extends ConfigGeneric<ConfigGenericProps & { themeName?: any },
                                 inputValue: newInput,
                                 filteredIcons: newFilteredIcons,
                             });
-                            void this.onChange(this.props.attr!, newInput);
+                            void this.onChange(this.props.attr, newInput);
                         }}
                         renderOption={(props, option) => (
                             <Box
@@ -102,7 +103,7 @@ class IconSelect extends ConfigGeneric<ConfigGenericProps & { themeName?: any },
                                         width: 24,
                                         height: 24,
                                         marginRight: 8,
-                                        color: themeName ? (themeName === 'dark' ? '#ffffff' : '#000000') : '#09f23fc1',
+                                        color: iconColor,
                                     }}
                                     dangerouslySetInnerHTML={{
                                         __html: atob(
@@ -121,31 +122,30 @@ class IconSelect extends ConfigGeneric<ConfigGenericProps & { themeName?: any },
                                     label={this.getText(
                                         this.props.schema.label || this.props.attr || 'Symbol auswählen',
                                     )}
-                                    InputProps={{
-                                        ...params.InputProps,
-                                        startAdornment: selectedIcon ? (
-                                            <span
-                                                style={{
-                                                    display: 'inline-flex',
-                                                    width: 24,
-                                                    height: 24,
-                                                    marginRight: 8,
-                                                    color: themeName
-                                                        ? themeName === 'dark'
-                                                            ? '#ffffff'
-                                                            : '#000000'
-                                                        : '#09f23fc1',
-                                                }}
-                                                dangerouslySetInnerHTML={{
-                                                    __html: atob(
-                                                        selectedIcon.base64.replace(
-                                                            /^data:image\/svg\+xml;base64,/,
-                                                            '',
-                                                        ),
-                                                    ).replace(/<svg([^>]*)>/, '<svg$1 fill="currentColor">'),
-                                                }}
-                                            />
-                                        ) : null,
+                                    slotProps={{
+                                        ...params.slotProps,
+                                        input: {
+                                            ...params.slotProps.input,
+                                            startAdornment: selectedIcon ? (
+                                                <span
+                                                    style={{
+                                                        display: 'inline-flex',
+                                                        width: 24,
+                                                        height: 24,
+                                                        marginRight: 8,
+                                                        color: iconColor,
+                                                    }}
+                                                    dangerouslySetInnerHTML={{
+                                                        __html: atob(
+                                                            selectedIcon.base64.replace(
+                                                                /^data:image\/svg\+xml;base64,/,
+                                                                '',
+                                                            ),
+                                                        ).replace(/<svg([^>]*)>/, '<svg$1 fill="currentColor">'),
+                                                    }}
+                                                />
+                                            ) : null,
+                                        },
                                     }}
                                     style={{ width: '100%' }}
                                 />
@@ -164,7 +164,7 @@ class IconSelect extends ConfigGeneric<ConfigGenericProps & { themeName?: any },
                                     iconValue: currentInput || null,
                                     filteredIcons: this.filterIcons(this.state.icons, currentInput),
                                 });
-                                void this.onChange(this.props.attr!, currentInput);
+                                void this.onChange(this.props.attr, currentInput);
                             }
                         }}
                         disableClearable={false}
@@ -176,4 +176,4 @@ class IconSelect extends ConfigGeneric<ConfigGenericProps & { themeName?: any },
     }
 }
 
-export default withTheme(IconSelect);
+export default IconSelect;

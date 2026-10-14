@@ -310,6 +310,104 @@ export async function handleCardRole(
             }
             return result;
         }
+        case 'SqueezeboxSpeaker': {
+            const _tempArr = _options?.cardRoleList;
+            if (!((!_tempArr || Array.isArray(_tempArr)) && page && page.directParentPage)) {
+                return null;
+            }
+            if (
+                page.directParentPage.card !== 'cardMedia' ||
+                (page.directParentPage as PageMedia).currentItem == null
+            ) {
+                break;
+            }
+            // identifier is the sync master (or the configured player if not synced)
+            const identifier = `${(page.directParentPage as PageMedia).currentItem?.ident}`;
+            const searchPath = identifier.split('.').slice(0, 3).join('.');
+            const view = await adapter.getObjectViewAsync('system', 'device', {
+                startkey: `${searchPath}.`,
+                endkey: `${searchPath}${String.fromCharCode(0xff_fd)}`,
+            });
+            const macs = await adapter.getForeignStatesAsync(`${searchPath}.*.PlayerID`);
+            const speakers: { name: string; id: string; mac: string }[] = [];
+            if (view && view.rows) {
+                for (const row of view.rows) {
+                    if (!row || !row.id || row.id.split('.').length !== 4) {
+                        continue;
+                    }
+                    const name = getStringFromStringOrTranslated(adapter, row.value.common.name);
+                    const mac = macs[`${row.id}.PlayerID`]?.val;
+                    if (typeof mac !== 'string' || !mac) {
+                        continue;
+                    }
+                    if (_tempArr && _tempArr.length > 0 && !_tempArr.includes(name)) {
+                        continue;
+                    }
+                    speakers.push({ name, id: row.id, mac });
+                }
+            }
+            speakers.sort((a, b) => a.name.localeCompare(b.name));
+
+            const result: NSPanel.PageItemDataItemsOptions[] = [];
+            for (const speaker of speakers) {
+                const isMaster = speaker.id === identifier;
+                result.push({
+                    role: 'volume.mute',
+                    type: 'light',
+                    dpInit: '',
+                    data: {
+                        entity1: {
+                            value: {
+                                type: 'triggered',
+                                dp: `${identifier}.SyncSlaves`,
+                                read: isMaster
+                                    ? `return true;`
+                                    : `
+                                            if (typeof val === 'string') {
+                                                const t = val.split(',').map(s => s.trim());
+                                                return t.includes('${speaker.mac}');
+                                            };
+                                            return false;`,
+                            },
+                        },
+                        headline: { type: 'const', constVal: speaker.name },
+                        dimmer: {
+                            value: {
+                                type: 'triggered',
+                                dp: `${speaker.id}.Volume`,
+                                // LMS reports a negative volume while muted
+                                read: `return typeof val === 'number' && val < 0 ? 0 : val;`,
+                            },
+                            minScale: { type: 'const', constVal: _options?.min ?? 0 },
+                            maxScale: { type: 'const', constVal: _options?.max ?? 100 },
+                        },
+                        icon: {
+                            true: {
+                                value: { type: 'const', constVal: 'speaker' },
+                                color: { type: 'const', constVal: Color.on },
+                            },
+                            false: {
+                                value: { type: 'const', constVal: 'speaker' },
+                                color: { type: 'const', constVal: Color.off },
+                            },
+                        },
+                        // add to the group of the master
+                        setValue1: {
+                            type: 'state',
+                            dp: `${identifier}.cmdGeneral`,
+                            write: `return '"sync","${speaker.mac}"';`,
+                        },
+                        // remove the speaker from its group
+                        setValue2: {
+                            type: 'state',
+                            dp: `${speaker.id}.cmdGeneral`,
+                            write: `return '"sync","-"';`,
+                        },
+                    },
+                });
+            }
+            return result;
+        }
         default: {
             exhaustiveCheck(cardRole);
             return null;

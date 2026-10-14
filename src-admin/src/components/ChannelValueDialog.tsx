@@ -11,7 +11,7 @@ import {
     Paper,
     Divider,
 } from '@mui/material';
-import { I18n } from '@iobroker/adapter-react-v5';
+import { I18n, type ThemeType } from '@iobroker/gui-components';
 import { EntitySelector } from './EntitySelector';
 import type { ChannelValueConfig } from '../../../src/lib/types/adminShareConfig';
 
@@ -51,7 +51,7 @@ type ChannelValueDialogFeatures = {
 type ChannelValueDialogProps = {
     socket: any;
     theme: any;
-    themeType?: string;
+    themeType?: ThemeType;
     onSave?: (config: ChannelValueConfig) => void;
     /** Called when the user clicks the delete button – parent should clear valueEntry */
     onDelete?: () => void;
@@ -123,7 +123,7 @@ function tryParseDateFormatOptions(json: string): Intl.DateTimeFormatOptions | n
         }
         // Probe: apply to a test date to validate option keys
         new Date(0).toLocaleString('en-US', opts as Intl.DateTimeFormatOptions);
-        return opts as Intl.DateTimeFormatOptions;
+        return opts;
     } catch {
         return null;
     }
@@ -287,7 +287,7 @@ class ChannelValueDialog extends React.Component<ChannelValueDialogProps, Channe
                 ioBroker.Object | null | undefined
             >);
             if (obj?.type === 'state') {
-                const stateObj = obj as ioBroker.StateObject;
+                const stateObj = obj;
                 const t = stateObj.common.type;
                 const vt: 'string' | 'number' | 'boolean' | null =
                     t === 'number' ? 'number' : t === 'string' ? 'string' : t === 'boolean' ? 'boolean' : null;
@@ -366,7 +366,7 @@ class ChannelValueDialog extends React.Component<ChannelValueDialogProps, Channe
             if (parsedOpts !== null) {
                 // For numbers treat as Unix-ms timestamp; for strings try ISO date parsing (new Date)
                 const isValidTimestamp = typeof mainValue === 'number' && mainValue >= 0;
-                const d = isValidTimestamp ? new Date(mainValue as number) : new Date(String(mainValue));
+                const d = isValidTimestamp ? new Date(mainValue) : new Date(String(mainValue));
                 if (!isNaN(d.getTime())) {
                     try {
                         mainResolved = d.toLocaleString(dateLocal, parsedOpts);
@@ -410,7 +410,7 @@ class ChannelValueDialog extends React.Component<ChannelValueDialogProps, Channe
         if (obj.type !== 'state') {
             return false;
         }
-        const st = obj as ioBroker.StateObject;
+        const st = obj;
         return st.common.type === 'string' || st.common.type === 'number';
     };
 
@@ -424,7 +424,7 @@ class ChannelValueDialog extends React.Component<ChannelValueDialogProps, Channe
         if (obj.type !== 'state') {
             return false;
         }
-        const st = obj as ioBroker.StateObject;
+        const st = obj;
         const allowed = this.props.valueStateTypes ?? ['number', 'string'];
         return (allowed as string[]).includes(st.common.type);
     };

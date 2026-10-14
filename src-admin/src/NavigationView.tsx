@@ -1,8 +1,10 @@
 // Konstanten für Adapter-Kommunikation
 import './NavigationView.css';
+import iconList from './icons.json';
 import type {
     NavigationMapEntry,
     NavigationMap,
+    PageOrigin,
     PanelListEntry,
     NavigationSavePayload,
 } from '../../src/lib/types/adminShareConfig';
@@ -12,6 +14,183 @@ import {
 } from '../../src/lib/types/adminShareConfig';
 
 const ADAPTER_NAME = 'nspanel-lovelace-ui';
+
+/** Key under which the last selected panel of the "Navigation Flow" tab is remembered. */
+const SELECTED_PANEL_STORAGE_KEY = `${ADAPTER_NAME}.navigationFlow.selectedPanel`;
+
+/**
+ * Reads the last selected panel name of the "Navigation Flow" tab from `window.localStorage`.
+ *
+ * Wrapped in try/catch: `localStorage` can throw (e.g. in the browser's private mode), which must
+ * not break the admin page.
+ *
+ * @returns The stored panel name, or `undefined` if none is stored or storage is unavailable
+ */
+function readStoredSelectedPanel(): string | undefined {
+    try {
+        return window.localStorage.getItem(SELECTED_PANEL_STORAGE_KEY) || undefined;
+    } catch {
+        return undefined;
+    }
+}
+
+/**
+ * Persists the selected panel name of the "Navigation Flow" tab to `window.localStorage`, so the
+ * choice survives reload, tab close and browser restart.
+ *
+ * Wrapped in try/catch: errors (e.g. private mode) are swallowed - remembering the selection is a
+ * convenience and must not break the admin page.
+ *
+ * @param panelName Name of the panel currently selected
+ * @returns Nothing
+ */
+function storeSelectedPanel(panelName: string): void {
+    try {
+        window.localStorage.setItem(SELECTED_PANEL_STORAGE_KEY, panelName);
+    } catch {
+        // Private mode or blocked storage - the selection then just isn't remembered
+    }
+}
+
+/** Icons nach Namen - die Liste steckt ohnehin im Bundle, die Zuordnung wird einmalig aufgebaut */
+let iconsByName: Map<string, string> | undefined;
+
+/**
+ * SVG eines Icons, eingefärbt über `currentColor`.
+ *
+ * Die mitgelieferten Icons haben eine feste Füllfarbe und wären im dunklen Theme nicht zu sehen.
+ * Wie im Icon-Auswahlfeld wird die Füllung daher auf die Textfarbe umgestellt.
+ *
+ * @param name Icon-Name aus der Seitenkonfiguration.
+ * @returns Das SVG-Markup, oder `undefined` wenn es das Icon nicht gibt.
+ */
+function iconSvg(name: string): string | undefined {
+    if (!iconsByName) {
+        const all: { name: string; base64: string }[] = Array.isArray(iconList) ? iconList : [];
+        iconsByName = new Map(all.map(icon => [icon.name, icon.base64]));
+    }
+    const base64 = iconsByName.get(name);
+    if (!base64) {
+        return undefined;
+    }
+    return atob(base64.replace(/^data:image\/svg\+xml;base64,/, '')).replace(
+        /<svg([^>]*)>/,
+        '<svg$1 fill="currentColor">',
+    );
+}
+
+/** Kantenarten des Navigationsgraphen */
+type EdgeKind = 'default' | 'prev' | 'next' | 'prevNext' | 'home' | 'parent' | 'target' | 'targetLongPress' | 'state';
+
+/** Feste Farben der Kantenarten - Basis für Legende, Handles, Marker und Kanten */
+const EDGE_COLOR_HEX: Record<EdgeKind, string> = {
+    default: '#1976d2',
+    prev: '#6676d2',
+    next: '#19c3d2',
+    prevNext: '#9c27b0', // beidseitige prev/next-Verbindung
+    home: '#fbc02d',
+    parent: '#d32f2f',
+    target: '#43a047',
+    targetLongPress: '#fb8c00', // langer Druck auf ein Seitenelement
+    state: '#546e7a', // Datenpunkt oder Channel, den die Seite nutzt
+};
+
+/** CSS-Variablen der Kantenfarben - erlauben ein Override über das Theme */
+const EDGE_COLOR_VAR: Record<EdgeKind, string> = {
+    default: '--edge-color',
+    prev: '--edge-prev',
+    next: '--edge-next',
+    prevNext: '--edge-prev-next',
+    home: '--edge-home',
+    parent: '--edge-parent',
+    target: '--edge-target',
+    targetLongPress: '--edge-target-long-press',
+    state: '--edge-state',
+};
+
+/**
+ * Basisfarbe je Seitenherkunft. Sie wird nicht direkt gezeichnet: der Knoten bekommt sie als
+ * Rahmenfarbe und als abgeschwächter Hintergrund, damit die Beschriftung in hellem wie dunklem
+ * Theme lesbar bleibt. Seiten aus dem Konfigurationsskript behalten das Aussehen des Themes.
+ */
+const NODE_COLOR_HEX: Record<Exclude<NodeStyle, 'script'>, string> = {
+    global: '#8e24aa', // violett - Seite aus der globalen Skript-Konfiguration
+    admin: '#43a047', // grün
+    system: '#f9a825', // gelb
+    stateRef: '#546e7a', // blaugrau - kein Seiten-, sondern ein Datenpunkt-Knoten
+};
+
+/**
+ * Aussehen eines Knotens: die Herkunft der Seite, oder `stateRef` für einen Knoten, der für einen
+ * Datenpunkt steht statt für eine Seite.
+ */
+type NodeStyle = PageOrigin | 'stateRef';
+
+/** CSS-Variablen je Knotenart - vom ThemeVarsProvider passend zum Theme gefüllt */
+const NODE_STYLE_VAR: Record<NodeStyle, { bg: string; border: string }> = {
+    script: { bg: '--node-bg', border: '--node-border' },
+    global: { bg: '--node-global-bg', border: '--node-global-border' },
+    admin: { bg: '--node-admin-bg', border: '--node-admin-border' },
+    system: { bg: '--node-system-bg', border: '--node-system-border' },
+    stateRef: { bg: '--node-state-ref-bg', border: '--node-state-ref-border' },
+};
+
+/** Alle Knotenarten in der Reihenfolge der Legende */
+const NODE_STYLES: NodeStyle[] = ['script', 'global', 'admin', 'system', 'stateRef'];
+
+/** Übersetzungsschlüssel der Knotenarten für die Legende */
+const NODE_STYLE_LABEL_KEY: Record<NodeStyle, string> = {
+    script: 'nav_legend_origin_script',
+    global: 'nav_legend_origin_global',
+    admin: 'nav_legend_origin_admin',
+    system: 'nav_legend_origin_system',
+    stateRef: 'nav_legend_state_ref',
+};
+
+/**
+ * Knotenart eines Eintrags - ein Datenpunkt-Knoten steht für keine Seite und hat daher keine Herkunft
+ *
+ * @param entry Eintrag der Navigationskarte
+ */
+function nodeStyleOf(entry: NavigationMapEntry | undefined): NodeStyle {
+    if (entry?.nodeType === 'stateRef') {
+        return 'stateRef';
+    }
+    return entry?.origin ?? 'script';
+}
+
+/** Kantenarten mit fester Farbe - unabhängig vom Admin-Theme */
+const STATIC_EDGE_KINDS: EdgeKind[] = [
+    'prev',
+    'next',
+    'prevNext',
+    'home',
+    'parent',
+    'target',
+    'targetLongPress',
+    'state',
+];
+
+/** Zuordnung Handle -> Kantenart, für die Einfärbung der Handles am Knoten */
+const HANDLE_EDGE_KIND: Record<string, EdgeKind> = {
+    prev: 'prev',
+    next: 'next',
+    homeTopLeft: 'home',
+    homeTopRight: 'home',
+    parentBottomLeft: 'parent',
+    parentBottomRight: 'parent',
+    targetRight: 'target',
+    targetLeft: 'target',
+};
+
+/**
+ * Farbe einer Kantenart als CSS-Ausdruck mit Hex-Fallback
+ *
+ * @param kind Kantenart
+ */
+function edgeColor(kind: EdgeKind): string {
+    return `var(${EDGE_COLOR_VAR[kind]}, ${EDGE_COLOR_HEX[kind]})`;
+}
 // Typ für das Rückgabeobjekt der mapNavigationMapToFlow-Funktion
 interface FlowData {
     nodes: FlowNode[];
@@ -34,7 +213,8 @@ interface FlowEdge {
     targetHandle?: string;
     label: string;
     style: { strokeWidth: number; strokeDasharray?: string; stroke?: string };
-    data?: { isTarget: boolean; navType?: string };
+    data?: { isTarget: boolean; navType?: EdgeKind; bidirectional?: boolean; highlighted?: boolean };
+    className?: string;
 }
 // State-Interface für die NavigationView-Klasse
 interface NavigationViewState extends ConfigGenericState {
@@ -46,8 +226,9 @@ interface NavigationViewState extends ConfigGenericState {
     noData?: boolean;
 }
 // React import consolidated below with hooks
-import type { EdgeProps } from 'reactflow';
-import ReactFlow, {
+import type { Edge, EdgeProps } from '@xyflow/react';
+import {
+    ReactFlow,
     Background,
     Controls,
     Handle,
@@ -55,17 +236,28 @@ import ReactFlow, {
     applyNodeChanges,
     applyEdgeChanges,
     getBezierPath,
-} from 'reactflow';
-import 'reactflow/dist/style.css';
+} from '@xyflow/react';
+import '@xyflow/react/dist/style.css';
 import type { SelectChangeEvent } from '@mui/material';
-import { Select, MenuItem, Box, Button, Typography, CircularProgress, Checkbox, FormControlLabel } from '@mui/material';
+import {
+    Select,
+    MenuItem,
+    Box,
+    Button,
+    Divider,
+    Typography,
+    CircularProgress,
+    Checkbox,
+    FormControlLabel,
+} from '@mui/material';
 import NodePageInfoPanel from './components/NodePageInfoPanel';
+import { openPageConfig } from './pageConfigLink';
 import ConfirmDialog from './components/ConfirmDialog';
-import { useTheme } from '@mui/material/styles';
+import { alpha, useTheme } from '@mui/material/styles';
 import { hierarchy, tree } from 'd3-hierarchy';
 import React, { useEffect } from 'react';
 import { ConfigGeneric, type ConfigGenericProps, type ConfigGenericState } from '@iobroker/json-config';
-import { I18n } from '@iobroker/adapter-react-v5';
+import { I18n } from '@iobroker/gui-components';
 // Typdefinitionen für panelConfig (vereinfachte Annahme)
 // Siehe zentrale Typen in src/lib/types/navigation.ts
 type NavigationPanelConfig = {
@@ -74,16 +266,28 @@ type NavigationPanelConfig = {
     navigationMap: NavigationMap;
 };
 
-function CustomEdge(props: EdgeProps): React.ReactElement {
+/** Edge type of this view - `@xyflow/react` types `data` as `Record<string, unknown>` */
+type CustomEdgeType = Edge<{
+    isTarget?: boolean;
+    navType?: EdgeKind;
+    bidirectional?: boolean;
+    /** Set while the page at either end is selected - the edge is drawn like on hover */
+    highlighted?: boolean;
+}>;
+
+function CustomEdge(props: EdgeProps<CustomEdgeType>): React.ReactElement {
     const [edgePath] = getBezierPath(props);
-    const navType = String(props.data?.navType ?? '');
+    const navType = props.data?.navType ?? '';
     const isTarget = !!props.data?.isTarget;
+    const bidirectional = !!props.data?.bidirectional;
+    const highlighted = !!props.data?.highlighted;
     const markerId = navType || (isTarget ? 'target' : 'default');
 
-    const tooltip = `${props.data?.navType ?? ''}: ${props.source} → ${props.target}`;
+    // Beidseitige Verbindungen bekommen einen Doppelpfeil statt zweier deckungsgleicher Kanten
+    const tooltip = `${navType}: ${props.source} ${bidirectional ? '↔' : '→'} ${props.target}`;
 
     // stroke is passed via style on the FlowEdge (mapNavigationMapToFlow)
-    const stroke = props.style?.stroke ?? 'var(--edge-color, #1976d2)';
+    const stroke = props.style?.stroke ?? edgeColor('default');
     const dash = props.style?.strokeDasharray;
 
     // Touch event handler für Edge-Tooltips (nur Touch, kein Click/Hover)
@@ -109,35 +313,141 @@ function CustomEdge(props: EdgeProps): React.ReactElement {
         }
     };
 
+    const strokeWidth = typeof props.style?.strokeWidth === 'number' ? props.style.strokeWidth : 2;
+
     return (
-        <>
+        <g className={`custom-edge${highlighted ? ' custom-edge-highlighted' : ''}`}>
+            {/* Schein in der Farbe der Kante - hebt sie hervor, ohne die Farbe zu wechseln */}
+            <path
+                d={edgePath}
+                strokeWidth={strokeWidth + 6}
+                fill="none"
+                className="custom-edge-halo"
+                style={{ stroke }}
+            />
             <path
                 id={props.id}
                 d={edgePath}
-                strokeWidth={props.style?.strokeWidth ?? 2}
+                strokeWidth={strokeWidth}
                 fill="none"
                 strokeDasharray={dash}
                 markerEnd={`url(#arrow-${markerId})`}
+                markerStart={bidirectional ? `url(#arrow-${markerId}-start)` : undefined}
                 className="react-flow__edge-path custom-edge-path"
                 style={{ stroke }}
+            />
+            {/* Unsichtbare Trefferfläche: die 2px-Linie allein ist kaum zu treffen */}
+            <path
+                d={edgePath}
+                strokeWidth={18}
+                fill="none"
+                stroke="transparent"
+                className="custom-edge-hit"
                 onTouchStart={handleTouchStart}
             />
             <title>{tooltip}</title>
+        </g>
+    );
+}
+
+interface EdgeArrowMarkersProps {
+    kind: EdgeKind;
+    size: number;
+    /** zusätzlich den rückwärts gedrehten Marker für den Kantenanfang erzeugen */
+    bidirectional?: boolean;
+}
+
+/**
+ * Pfeilspitzen-Marker einer Kantenart
+ *
+ * @param props Kantenart, Größe und ob ein Marker für den Kantenanfang benötigt wird
+ */
+function EdgeArrowMarkers(props: EdgeArrowMarkersProps): React.ReactElement {
+    const { kind, size, bidirectional } = props;
+    const fill = edgeColor(kind);
+    const tip = `M0,0 L${size},${size / 2} L0,${size} z`;
+    return (
+        <>
+            <marker
+                id={`arrow-${kind}`}
+                markerWidth={size}
+                markerHeight={size}
+                refX={size}
+                refY={size / 2}
+                orient="auto"
+                markerUnits="strokeWidth"
+            >
+                <path
+                    d={tip}
+                    fill={fill}
+                />
+            </marker>
+            {bidirectional ? (
+                <marker
+                    id={`arrow-${kind}-start`}
+                    markerWidth={size}
+                    markerHeight={size}
+                    refX={size}
+                    refY={size / 2}
+                    orient="auto-start-reverse"
+                    markerUnits="strokeWidth"
+                >
+                    <path
+                        d={tip}
+                        fill={fill}
+                    />
+                </marker>
+            ) : null}
         </>
+    );
+}
+
+interface LegendEdgePreviewProps {
+    color: string;
+    dash?: string;
+    /** Pfeilspitze auch am linken Ende zeichnen */
+    bidirectional?: boolean;
+}
+
+/**
+ * Vorschau einer Kantenart für die Legende - Linie mit Pfeilspitze(n)
+ *
+ * @param props Farbe, Strichmuster und ob die Kante beidseitig gilt
+ */
+function LegendEdgePreview(props: LegendEdgePreviewProps): React.ReactElement {
+    const { color, dash, bidirectional } = props;
+    return (
+        <svg
+            width={30}
+            height={10}
+            aria-hidden="true"
+            style={{ flex: '0 0 auto' }}
+        >
+            <line
+                x1={bidirectional ? 7 : 1}
+                y1={5}
+                x2={24}
+                y2={5}
+                stroke={color}
+                strokeWidth={2}
+                strokeDasharray={dash}
+            />
+            <path
+                d="M24,1 L29,5 L24,9 z"
+                fill={color}
+            />
+            {bidirectional ? (
+                <path
+                    d="M7,1 L2,5 L7,9 z"
+                    fill={color}
+                />
+            ) : null}
+        </svg>
     );
 }
 
 // Hilfsfunktion für die Umwandlung der NavigationMap in React Flow Nodes/Edges
 function mapNavigationMapToFlow(navigationMap: NavigationMap): FlowData {
-    const edgeColors: Record<string, string> = {
-        // Fallback-Werte, CSS-Variablen werden in der UI gesetzt
-        // next/prev erhalten eigene Variablen, fallen aber auf --edge-color zurück
-        prev: 'var(--edge-prev, var(--edge-color, #6676d2))',
-        next: 'var(--edge-next, var(--edge-color, #19c3d2))',
-        home: 'var(--edge-home, #fbc02d)', // gelb
-        parent: 'var(--edge-parent, #d32f2f)', // rot
-        target: 'var(--edge-target, #43a047)', // grün für targetPages
-    };
     const nodes: FlowNode[] = navigationMap.map((entry: NavigationMapEntry, idx: number) => {
         let position: { x: number; y: number };
         if (entry.position && typeof entry.position.x === 'number' && typeof entry.position.y === 'number') {
@@ -160,34 +470,87 @@ function mapNavigationMapToFlow(navigationMap: NavigationMap): FlowData {
     });
     const edges: FlowEdge[] = [];
     const pages = new Set(navigationMap.map(e => e.page));
+    const entryByPage = new Map<string, NavigationMapEntry>(navigationMap.map(e => [e.page, e]));
+    // Bereits als Doppelpfeil gezeichnete prev/next-Paare (Schlüssel unabhängig von der Richtung)
+    const drawnPairs = new Set<string>();
+    const pairKey = (a: string, b: string): string => (a < b ? `${a}\u0000${b}` : `${b}\u0000${a}`);
+    /**
+     * true, wenn `a.next === b` und `b.prev === a` - die Verbindung gilt dann in beide Richtungen
+     *
+     * @param a Seite, deren `next` geprüft wird
+     * @param b Seite, deren `prev` geprüft wird
+     */
+    const isReciprocal = (a: string, b: string): boolean => {
+        if (a === b) {
+            return false;
+        }
+        const from = entryByPage.get(a);
+        const to = entryByPage.get(b);
+        return from?.next === b && to?.prev === a;
+    };
+    /**
+     * Doppelpfeil-Kante von `a` (next-Handle) nach `b` (prev-Handle); jedes Paar wird nur einmal gezeichnet
+     *
+     * @param a Seite mit dem `next`-Verweis
+     * @param b Seite mit dem `prev`-Verweis
+     */
+    const pushBidirectional = (a: string, b: string): void => {
+        const key = pairKey(a, b);
+        if (drawnPairs.has(key)) {
+            return;
+        }
+        drawnPairs.add(key);
+        edges.push({
+            id: `nav-${a}-${b}-prevnext`,
+            source: a,
+            target: b,
+            sourceHandle: 'next',
+            targetHandle: 'prev',
+            label: '',
+            style: { strokeWidth: 2, stroke: edgeColor('prevNext') },
+            data: { isTarget: false, navType: 'prevNext', bidirectional: true },
+            className: 'edge-prev-next',
+        });
+    };
+
     for (const entry of navigationMap) {
         // next: von a1.next zu a2.prev
         if (entry.next && typeof entry.next === 'string' && pages.has(entry.next)) {
-            edges.push({
-                id: `nav-${entry.page}-${entry.next}-next`,
-                source: entry.page,
-                target: entry.next,
-                sourceHandle: 'next',
-                targetHandle: 'prev',
-                label: '',
-                style: { strokeWidth: 2, stroke: edgeColors.next },
-                data: { isTarget: false, navType: 'next' },
-                className: 'edge-next',
-            } as any);
+            if (isReciprocal(entry.page, entry.next)) {
+                // a.next === b und b.prev === a: eine Kante mit zwei Pfeilenden statt zweier deckungsgleicher
+                pushBidirectional(entry.page, entry.next);
+            } else {
+                edges.push({
+                    id: `nav-${entry.page}-${entry.next}-next`,
+                    source: entry.page,
+                    target: entry.next,
+                    sourceHandle: 'next',
+                    targetHandle: 'prev',
+                    label: '',
+                    style: { strokeWidth: 2, stroke: edgeColor('next') },
+                    data: { isTarget: false, navType: 'next' },
+                    className: 'edge-next',
+                });
+            }
         }
         // prev: von a1.prev zu a2.next
         if (entry.prev && typeof entry.prev === 'string' && pages.has(entry.prev)) {
-            edges.push({
-                id: `nav-${entry.page}-${entry.prev}-prev`,
-                source: entry.page,
-                target: entry.prev,
-                sourceHandle: 'prev',
-                targetHandle: 'next',
-                label: '',
-                style: { strokeWidth: 2, stroke: edgeColors.prev },
-                data: { isTarget: false, navType: 'prev' },
-                className: 'edge-prev',
-            } as any);
+            if (isReciprocal(entry.prev, entry.page)) {
+                // Gegenstück zur obigen next-Kante - wird als ein Doppelpfeil gezeichnet
+                pushBidirectional(entry.prev, entry.page);
+            } else {
+                edges.push({
+                    id: `nav-${entry.page}-${entry.prev}-prev`,
+                    source: entry.page,
+                    target: entry.prev,
+                    sourceHandle: 'prev',
+                    targetHandle: 'next',
+                    label: '',
+                    style: { strokeWidth: 2, stroke: edgeColor('prev') },
+                    data: { isTarget: false, navType: 'prev' },
+                    className: 'edge-prev',
+                });
+            }
         }
         // home: von a1.home (links oben) zu a2 (rechts oben)
         if (entry.home && typeof entry.home === 'string' && pages.has(entry.home)) {
@@ -198,10 +561,10 @@ function mapNavigationMapToFlow(navigationMap: NavigationMap): FlowData {
                 sourceHandle: 'homeTopLeft',
                 targetHandle: 'homeTopRight',
                 label: '',
-                style: { strokeWidth: 2, strokeDasharray: '8 8', stroke: edgeColors.home },
+                style: { strokeWidth: 2, strokeDasharray: '8 8', stroke: edgeColor('home') },
                 data: { isTarget: false, navType: 'home' },
                 className: 'edge-home',
-            } as any);
+            });
         }
         // parent: von a1.parent (links unten) zu a2 (rechts unten)
         if (entry.parent && typeof entry.parent === 'string' && pages.has(entry.parent)) {
@@ -212,31 +575,103 @@ function mapNavigationMapToFlow(navigationMap: NavigationMap): FlowData {
                 sourceHandle: 'parentBottomLeft',
                 targetHandle: 'parentBottomRight',
                 label: '',
-                style: { strokeWidth: 2, stroke: edgeColors.parent },
+                style: { strokeWidth: 2, stroke: edgeColor('parent') },
                 data: { isTarget: false, navType: 'parent' },
                 className: 'edge-parent',
-            } as any);
+            });
         }
-        // targetPages: von a1 zu a2, von Mitte rechts zu Mitte links
-        if (Array.isArray(entry.targetPages)) {
-            for (const target of entry.targetPages) {
+        // targetPages: von a1 zu a2, von Mitte rechts zu Mitte links.
+        // Kurzer und langer Druck auf ein Seitenelement führen zu je eigenen Zielen; dazu die
+        // Datenpunkte und Channels, aus denen die Seite ihre Werte liest.
+        for (const [kind, targets] of [
+            ['target', entry.targetPages],
+            ['targetLongPress', entry.targetPagesLongPress],
+            ['state', entry.usedStates],
+        ] as [EdgeKind, string[] | undefined][]) {
+            if (!Array.isArray(targets)) {
+                continue;
+            }
+            for (const target of targets) {
                 if (target && typeof target === 'string' && pages.has(target)) {
                     edges.push({
-                        id: `target-${entry.page}-${target}`,
+                        id: `${kind}-${entry.page}-${target}`,
                         source: entry.page,
                         target: target,
                         sourceHandle: 'targetRight',
                         targetHandle: 'targetLeft',
                         label: '',
-                        style: { strokeWidth: 2, strokeDasharray: '4 4', stroke: edgeColors.target },
-                        data: { isTarget: true, navType: 'target' },
-                        className: 'edge-target',
-                    } as any);
+                        style: {
+                            strokeWidth: kind === 'state' ? 1 : 2,
+                            strokeDasharray: kind === 'state' ? '2 3' : '4 4',
+                            stroke: edgeColor(kind),
+                        },
+                        data: { isTarget: true, navType: kind },
+                        className: `edge-${kind === 'targetLongPress' ? 'target-long-press' : kind}`,
+                    });
                 }
             }
         }
     }
     return { nodes, edges };
+}
+
+/** Abstand der Datenpunkt-Knoten rechts neben ihrer Seite */
+const STATE_NODE_OFFSET_X = 320;
+
+/** Vertikaler Abstand mehrerer Datenpunkt-Knoten derselben Seite */
+const STATE_NODE_SPACING_Y = 46;
+
+/**
+ * Legt die Datenpunkt-Knoten neben die Seite, die sie nutzt.
+ *
+ * Betroffen sind nur Knoten ohne gespeicherte Position, also die, die zum ersten Mal eingeblendet
+ * werden. Alle anderen Knoten - besonders die Seiten - bleiben unangetastet.
+ *
+ * @param nodes Aktuelle Knoten der Ansicht.
+ * @returns Die Knoten mit den ergänzten Positionen und ob überhaupt etwas platziert wurde.
+ */
+function placeStateNodes(nodes: FlowNode[]): { nodes: FlowNode[]; moved: boolean } {
+    const byId = new Map(nodes.map(n => [n.id, n]));
+    const isStateNode = (id: string): boolean => byId.get(id)?.data.entry?.nodeType === 'stateRef';
+    // Seite, die einen Datenpunkt-Knoten als erste nutzt - an ihr wird er ausgerichtet
+    const owner = new Map<string, string>();
+    for (const node of nodes) {
+        const entry = node.data.entry;
+        if (!entry || entry.nodeType === 'stateRef') {
+            continue;
+        }
+        const links = [
+            ...(entry.usedStates ?? []),
+            ...(entry.targetPages ?? []),
+            ...(entry.targetPagesLongPress ?? []),
+        ];
+        for (const id of links) {
+            if (!owner.has(id) && isStateNode(id)) {
+                owner.set(id, node.id);
+            }
+        }
+    }
+
+    const slots = new Map<string, number>();
+    let moved = false;
+    const placed = nodes.map(node => {
+        const entry = node.data.entry;
+        if (!entry || entry.nodeType !== 'stateRef' || entry.position) {
+            return node;
+        }
+        const ownerId = owner.get(node.id);
+        const anchor = ownerId ? byId.get(ownerId)?.position : undefined;
+        if (!ownerId || !anchor) {
+            return node;
+        }
+        const slot = slots.get(ownerId) ?? 0;
+        slots.set(ownerId, slot + 1);
+        const position = { x: anchor.x + STATE_NODE_OFFSET_X, y: anchor.y + slot * STATE_NODE_SPACING_Y };
+        moved = true;
+        // Die Position wandert auch in den Eintrag, sonst würde erneutes Einblenden neu platzieren
+        return { ...node, position, data: { ...node.data, entry: { ...entry, position } } };
+    });
+    return { nodes: placed, moved };
 }
 
 // Compute a simple automatic layout: find the 'main' node (page === 'main' or first entry)
@@ -513,13 +948,19 @@ interface NavigationViewInternalState extends NavigationViewState {
     infoPanelOpen?: boolean;
     infoData?: Record<string, any> | null;
     infoNodeId?: string | undefined;
+    /** Current values of the states the icons of the info panel are read from, by state id. */
+    infoIconValues?: Record<string, string>;
     confirmAutoLayoutOpen?: boolean;
     isTouchDevice?: boolean;
     showSystemPages: boolean;
+    showStates: boolean;
 }
 
 class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInternalState> {
     private autosaveInterval?: NodeJS.Timeout;
+
+    /** Node the icons of the info panel are being read for, or were read for - each node once. */
+    private iconValuesLoadedFor?: string;
 
     // Schnelles Speichern beim Tabwechsel/Schließen über Beacon (kein await möglich)
     private saveNavigationBeacon = (): void => {
@@ -606,7 +1047,9 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
             infoData: null,
             infoNodeId: undefined,
             showSystemPages: false,
+            showStates: false,
         };
+        this.handleShowStatesChange = this.handleShowStatesChange.bind(this);
         this.checkAlive = this.checkAlive.bind(this);
         this.fetchNavigation = this.fetchNavigation.bind(this);
         this.handlePanelChange = this.handlePanelChange.bind(this);
@@ -636,15 +1079,12 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
             return;
         }
         // remove position field from entries (works on local copy)
-        const cleaned = nav.map(
-            e =>
-                ({
-                    ...e,
-                    position: undefined,
-                }) as NavigationMapEntry,
-        );
+        const cleaned = nav.map(e => ({
+            ...e,
+            position: undefined,
+        }));
         // compute positions and apply
-        const positions = computeAutoLayout(cleaned as NavigationMap);
+        const positions = computeAutoLayout(cleaned);
         const newNodes: FlowNode[] = cleaned.map(entry => ({
             id: entry.page,
             data: { label: entry.label || entry.page, entry },
@@ -652,7 +1092,7 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
             type: 'custom',
             draggable: true,
         }));
-        const flow = mapNavigationMapToFlow(cleaned as NavigationMap);
+        const flow = mapNavigationMapToFlow(cleaned);
         this.setState({ nodes: newNodes, edges: flow.edges, dirty: true, confirmAutoLayoutOpen: false } as any);
     }
 
@@ -660,16 +1100,290 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
         this.setState({ showSystemPages: checked });
     }
 
+    /**
+     * Turns the state nodes on or off.
+     *
+     * On the first time they are shown they have no position yet, so they are placed next to the
+     * page that uses them. The pages themselves are left where they are - only the new nodes move.
+     *
+     * @param _event Unused change event.
+     * @param checked Whether the state nodes should be shown.
+     */
+    handleShowStatesChange(_event: React.ChangeEvent<HTMLInputElement>, checked: boolean): void {
+        if (!checked) {
+            this.setState({ showStates: false });
+            return;
+        }
+        this.setState(state => {
+            const placed = placeStateNodes(state.nodes);
+            return { showStates: true, nodes: placed.nodes, dirty: state.dirty || placed.moved };
+        });
+    }
+
+    /**
+     * Icon markup of the info panel, by field. An icon set in the configuration is shown as itself,
+     * not only by name.
+     */
+    private getInfoIcons(): Record<string, string[]> | undefined {
+        const data = this.state.infoData;
+        if (!data) {
+            return undefined;
+        }
+        const result: Record<string, string[]> = {};
+        for (const field of ['icon_true', 'icon_false']) {
+            const names = typeof data[field] === 'string' ? data[field].split(', ') : [];
+            const svgs = names
+                .map((name: string) => iconSvg(name))
+                .filter((svg: string | undefined): svg is string => !!svg);
+            if (svgs.length) {
+                result[field] = svgs;
+            }
+        }
+        return Object.keys(result).length ? result : undefined;
+    }
+
+    /**
+     * Entry a node of the flow stands for.
+     *
+     * @param nodeId Id of the node, `undefined` when none is selected.
+     * @returns The entry, or `undefined` when the node is unknown.
+     */
+    private entryOfNode(nodeId: string | undefined): NavigationMapEntry | undefined {
+        return nodeId ? this.state.nodes.find(n => n.id === nodeId)?.data.entry : undefined;
+    }
+
+    /**
+     * States the icons of the info panel are read from, by field of the panel.
+     *
+     * Only fields whose icon comes from a state are listed - a constant icon is known by name and
+     * needs no explanation.
+     *
+     * @returns The state ids per field, or `undefined` when no icon is read from a state.
+     */
+    private getInfoIconStates(): Record<string, string[]> | undefined {
+        const entry = this.entryOfNode(this.state.infoNodeId);
+        const info = entry?.nodeType === 'stateRef' ? entry.stateInfo : undefined;
+        const fields: [string, string[] | undefined][] = [
+            ['icon_true', info?.iconStatesTrue],
+            ['icon_false', info?.iconStatesFalse],
+        ];
+        const result: Record<string, string[]> = {};
+        for (const [field, ids] of fields) {
+            if (ids?.length) {
+                result[field] = ids;
+            }
+        }
+        return Object.keys(result).length ? result : undefined;
+    }
+
+    /**
+     * Hint next to an icon row naming where that icon comes from, by field of the panel.
+     *
+     * The row shows what the panel shows: the current value of the state. The hint says which state
+     * that is, by its last segment - the full id is listed among the used states anyway.
+     *
+     * @returns The hint per field, or `undefined` when no icon is read from a state.
+     */
+    private getInfoIconHints(): Record<string, string> | undefined {
+        const states = this.getInfoIconStates();
+        if (!states) {
+            return undefined;
+        }
+        const hints: Record<string, string> = {};
+        for (const [field, ids] of Object.entries(states)) {
+            const names = ids.map(id => id.split('.').pop() || id);
+            hints[field] = I18n.t('icon_from_state').replace('%s', names.join(', '));
+        }
+        return hints;
+    }
+
+    /**
+     * Reads the icons the panel currently displays into the info panel.
+     *
+     * A constant icon is known upfront, one read from a state is whatever that state holds right
+     * now. Those values are fetched after the panel opened, so a click never waits for them, and
+     * are dropped when another node was selected in the meantime. Each node is read once - dragging
+     * a node keeps firing change events and must not fire a request with each of them.
+     *
+     * @param nodeId Node the icons are read for.
+     * @returns Nothing; the info panel is updated once the values are known.
+     */
+    private async loadInfoIconValues(nodeId: string): Promise<void> {
+        if (this.iconValuesLoadedFor === nodeId) {
+            return;
+        }
+        this.iconValuesLoadedFor = nodeId;
+        const entry = this.entryOfNode(nodeId);
+        const info = entry?.nodeType === 'stateRef' ? entry.stateInfo : undefined;
+        const ids = [...(info?.iconStatesTrue ?? []), ...(info?.iconStatesFalse ?? [])];
+        const socket = this.props.oContext.socket;
+        if (!ids.length || !socket || typeof socket.getState !== 'function') {
+            return;
+        }
+        const values = Object.fromEntries(
+            await Promise.all(
+                ids.map(async (id): Promise<[string, string]> => {
+                    try {
+                        const value = (await socket.getState(id))?.val;
+                        return [id, value === null || value === undefined ? '' : String(value)];
+                    } catch {
+                        // Den Datenpunkt gibt es nicht (mehr) - dann zeigt das Panel auch kein Icon
+                        return [id, ''];
+                    }
+                }),
+            ),
+        );
+        // Zwischenzeitlich wurde ein anderer Knoten angeklickt - das Ergebnis ist überholt
+        if (this.state.infoNodeId !== nodeId) {
+            return;
+        }
+        this.setState({ infoData: this.buildInfoData(entry, values), infoIconValues: values });
+    }
+
+    /**
+     * Title of the info panel - a state node is not a page, so it must not say so.
+     */
+    private getInfoTitle(): string {
+        const entry = this.entryOfNode(this.state.infoNodeId);
+        if (entry?.nodeType !== 'stateRef') {
+            return I18n.t('Page Info');
+        }
+        return entry.isChannel ? I18n.t('channel_info') : I18n.t('state_info');
+    }
+
+    /**
+     * Content of the info panel for a node.
+     *
+     * A page is shown with its name first, then its headline and the rest of the page info. A node
+     * standing for a state carries only that state - the page it leads to is not known here.
+     *
+     * @param entry Entry of the clicked node.
+     * @param iconValues Current values of the states the icons are read from, by state id.
+     * `undefined` while they are still being read.
+     */
+    private buildInfoData(
+        entry: NavigationMapEntry | undefined,
+        iconValues?: Record<string, string>,
+    ): Record<string, any> | null {
+        if (!entry) {
+            return null;
+        }
+        if (entry.nodeType === 'stateRef') {
+            const id = entry.stateId ?? entry.page;
+            const info = entry.stateInfo;
+            const list = (values: string[] | undefined): string | undefined =>
+                values?.length ? values.join(', ') : undefined;
+            /**
+             * The icons of one field: the constants of the configuration, plus what the states the
+             * other icons are read from hold right now - that is what the panel displays.
+             *
+             * A state holding nothing means the panel shows no icon; saying so beats an empty line,
+             * which would look like a fault. Without an icon at all there is nothing to explain and
+             * the row stays away.
+             *
+             * @param constIcons Icons set as a constant.
+             * @param iconStates States the remaining icons are read from.
+             * @returns The text of the row, or `undefined` when there is no row.
+             */
+            const iconRow = (
+                constIcons: string[] | undefined,
+                iconStates: string[] | undefined,
+            ): string | undefined => {
+                const names = [...(constIcons ?? [])];
+                for (const stateId of iconStates ?? []) {
+                    const value = iconValues?.[stateId];
+                    if (value) {
+                        names.push(value);
+                    }
+                }
+                if (names.length) {
+                    return names.join(', ');
+                }
+                if (!iconStates?.length) {
+                    return undefined;
+                }
+                // Solange die Werte gelesen werden, bleibt die Zeile leer statt "leer" zu behaupten
+                return iconValues ? I18n.t('icon_value_empty') : '';
+            };
+            // Nur gesetzte Angaben zeigen - eine leere Zeile sagt nichts aus
+            // Der Schalter 'Wert statt Icon' schlägt sich in der Rolle des Elements nieder
+            const displayKey = info?.roles.includes('textNotIcon')
+                ? 'value_display_value'
+                : info?.roles.includes('iconNotText')
+                  ? 'value_display_icon'
+                  : undefined;
+            const fields: Record<string, string | undefined> = {
+                [entry.isChannel ? 'channel_id' : 'state_id']: id,
+                headline: list(info?.headlines),
+                value_display: displayKey ? I18n.t(displayKey) : undefined,
+                role: list(info?.roles),
+                itemType: list(info?.types),
+                icon_true: iconRow(info?.iconsTrue, info?.iconStatesTrue),
+                icon_false: iconRow(info?.iconsFalse, info?.iconStatesFalse),
+                used_states: list(info?.states),
+            };
+            return Object.fromEntries(Object.entries(fields).filter(([, value]) => value !== undefined));
+        }
+        // The headline is part of pageInfo but belongs next to the name, so it is pulled forward
+        const { headline, ...rest } = entry.pageInfo ?? {};
+        return {
+            uniqueName: entry.page,
+            ...(headline ? { headline } : {}),
+            ...rest,
+        };
+    }
+
     onNodeClick(_event: any, node: any): void {
-        const pageInfo = node?.data?.entry?.pageInfo ?? null;
-        this.setState({ infoPanelOpen: true, infoData: pageInfo, infoNodeId: node.id });
+        const nodeId: unknown = node?.id;
+        // Ein Klick liest die Werte neu - sie koennen sich seit dem letzten Blick geaendert haben.
+        // Die Sperre bleibt dem Ziehen vorbehalten, das dieselbe Auswahl dutzendfach meldet.
+        this.iconValuesLoadedFor = undefined;
+        this.setState({
+            infoPanelOpen: true,
+            infoData: this.buildInfoData(node?.data?.entry),
+            infoNodeId: node.id,
+            infoIconValues: undefined,
+        });
+        // Icons aus Datenpunkten werden nachgereicht - der Klick soll nicht darauf warten
+        if (typeof nodeId === 'string') {
+            void this.loadInfoIconValues(nodeId);
+        }
     }
 
     onPaneClick(): void {
-        this.setState({ infoPanelOpen: false, infoData: null, infoNodeId: undefined });
+        this.iconValuesLoadedFor = undefined;
+        this.setState({ infoPanelOpen: false, infoData: null, infoNodeId: undefined, infoIconValues: undefined });
     }
 
-    componentDidMount(): void {
+    /**
+     * `uniqueName` of the admin entry behind the node the info panel currently shows.
+     *
+     * Only pages coming from the admin have one - for script and system pages there is nothing to
+     * jump to.
+     */
+    private getInfoAdminPageName(): string | undefined {
+        const { infoNodeId, nodes } = this.state;
+        if (!infoNodeId) {
+            return undefined;
+        }
+        return nodes.find(n => n.id === infoNodeId)?.data.entry?.adminPageName;
+    }
+
+    /** Saves pending changes and opens the page configuration of the selected admin page */
+    private openPageConfigForInfoNode = (): void => {
+        const adminPageName = this.getInfoAdminPageName();
+        if (!adminPageName) {
+            return;
+        }
+        // The other tab remounts this view, so unsaved node positions would be lost
+        if (this.state.dirty) {
+            void this.saveNavigation();
+        }
+        openPageConfig(adminPageName);
+    };
+
+    // eslint-disable-next-line @typescript-eslint/require-await
+    async componentDidMount(): Promise<void> {
         this.checkAlive();
         this.fetchNavigation();
         // Autosave-Intervall starten
@@ -720,6 +1434,35 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
             this.aliveTimeout = setTimeout(this.checkAlive, 5000);
         }
     }
+
+    /**
+     * Derives the `navigationMap`/`nodes`/`edges` state slice for a panel list entry.
+     *
+     * Shared by {@link fetchNavigation} and {@link handlePanelChange} so both compute the flow
+     * from a `PanelListEntry` the same way.
+     *
+     * @param entry Panel list entry to derive the flow from, or `undefined` if none was found
+     * @returns The `navigationMap`, `nodes` and `edges` to apply to the state
+     */
+    private deriveFlowState(entry: PanelListEntry | undefined): {
+        navigationMap: NavigationMap | null;
+        nodes: FlowNode[];
+        edges: FlowEdge[];
+    } {
+        let nodes: FlowNode[] = [];
+        let edges: FlowEdge[] = [];
+        if (entry && entry.navigationMap) {
+            const flow = mapNavigationMapToFlow(entry.navigationMap);
+            nodes = flow.nodes;
+            edges = flow.edges;
+        }
+        return {
+            navigationMap: entry ? entry.navigationMap : null,
+            nodes,
+            edges,
+        };
+    }
+
     fetchNavigation(): void {
         this.setState({ loading: true, noData: false });
         const instance = this.props.oContext.instance ?? '0';
@@ -744,29 +1487,27 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
                 clearTimeout(timeout);
                 this.setState({ loading: false });
                 if (res && Array.isArray(res.result)) {
-                    const firstPanel = res.result[0]?.panelName || '';
-                    const firstMap = res.result[0]?.navigationMap || null;
-                    // Debug entfernt
-                    let nodes: FlowNode[] = [];
-                    let edges: FlowEdge[] = [];
-                    if (firstMap) {
-                        const flow = mapNavigationMapToFlow(firstMap);
-                        nodes = flow.nodes;
-                        edges = flow.edges;
-                    }
                     // PanelList mit friendlyName übernehmen
                     const panelList: PanelListEntry[] = res.result.map(p => ({
                         panelName: p.panelName,
                         friendlyName: p.friendlyName || p.panelName,
                         navigationMap: p.navigationMap,
                     }));
+                    // Zuletzt gewähltes Panel bevorzugen, falls es noch existiert - sonst wie bisher das erste
+                    const storedPanelName = readStoredSelectedPanel();
+                    const storedEntry = storedPanelName
+                        ? panelList.find(p => p.panelName === storedPanelName)
+                        : undefined;
+                    const selectedEntry = storedEntry || panelList[0];
+                    const selectedPanel = selectedEntry?.panelName || '';
+                    const flowState = this.deriveFlowState(selectedEntry);
                     // Debug entfernt
                     this.setState({
                         panelList,
-                        selectedPanel: firstPanel,
-                        navigationMap: firstMap,
-                        nodes,
-                        edges,
+                        selectedPanel,
+                        navigationMap: flowState.navigationMap,
+                        nodes: flowState.nodes,
+                        edges: flowState.edges,
                         noData: false,
                         dirty: false,
                     });
@@ -791,18 +1532,13 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
         const panelName = event.target.value;
         const found = this.state.panelList.find(p => p.panelName === panelName);
         // console.log('[NavigationView] Panel gewechselt:', panelName, found);
-        let nodes: FlowNode[] = [];
-        let edges: FlowEdge[] = [];
-        if (found && found.navigationMap) {
-            const flow = mapNavigationMapToFlow(found.navigationMap);
-            nodes = flow.nodes;
-            edges = flow.edges;
-        }
+        storeSelectedPanel(panelName);
+        const flowState = this.deriveFlowState(found);
         this.setState({
             selectedPanel: panelName,
-            navigationMap: found ? found.navigationMap : null,
-            nodes,
-            edges,
+            navigationMap: flowState.navigationMap,
+            nodes: flowState.nodes,
+            edges: flowState.edges,
             dirty: false,
         });
     }
@@ -813,20 +1549,25 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
             const posChange = changes.find(c => c.type === 'position');
             const movedId = posChange?.id;
             this.setState(state => {
-                const newNodes = applyNodeChanges(changes, state.nodes) as FlowNode[];
+                const newNodes = applyNodeChanges(changes, state.nodes);
                 const moved = newNodes.find(n => n.id === movedId);
-                const pageInfo = moved?.data?.entry?.pageInfo ?? null;
+                // Die gelesenen Icons gehören zum bisherigen Knoten, nicht zu einem anderen
+                const iconValues = movedId === state.infoNodeId ? state.infoIconValues : undefined;
                 return {
                     nodes: newNodes,
                     dirty: true,
                     infoPanelOpen: true,
-                    infoData: pageInfo,
+                    infoData: this.buildInfoData(moved?.data?.entry, iconValues),
                     infoNodeId: movedId,
-                } as any;
+                    infoIconValues: iconValues,
+                };
             });
+            if (typeof movedId === 'string') {
+                void this.loadInfoIconValues(movedId);
+            }
         } else {
             this.setState(state => ({
-                nodes: applyNodeChanges(changes, state.nodes) as FlowNode[],
+                nodes: applyNodeChanges(changes, state.nodes),
             }));
         }
     }
@@ -834,31 +1575,40 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
     onEdgesChange(changes: any[]): void {
         if (changes.some(change => change.type === 'position')) {
             this.setState(state => ({
-                edges: applyEdgeChanges(changes, state.edges) as FlowEdge[],
+                edges: applyEdgeChanges(changes, state.edges),
                 dirty: true,
             }));
         } else {
             this.setState(state => ({
-                edges: applyEdgeChanges(changes, state.edges) as FlowEdge[],
+                edges: applyEdgeChanges(changes, state.edges),
             }));
         }
     }
 
     render(): string | React.ReactElement | null {
-        const { alive, loading, panelList, selectedPanel, nodes, edges, noData, showSystemPages } = this.state;
+        const { alive, loading, panelList, selectedPanel, nodes, edges, noData, showSystemPages, showStates } =
+            this.state;
         // Filter system pages (starting with ///) unless showSystemPages is true; ///unlock is always shown
         const isSystemPage = (id: string): boolean => id.startsWith('///') && id !== '///unlock';
-        const visibleNodes = showSystemPages ? nodes : nodes.filter(n => !isSystemPage(n.id));
+        const isStateNode = (node: FlowNode): boolean => node.data.entry?.nodeType === 'stateRef';
+        const visibleNodes = nodes.filter(
+            n => (showSystemPages || !isSystemPage(n.id)) && (showStates || !isStateNode(n)),
+        );
         const visibleNodeIds = new Set(visibleNodes.map(n => n.id));
         // remove dangling edges that reference missing nodes (safety for stale state)
         const safeEdges = (edges || []).filter(e => visibleNodeIds.has(e.source) && visibleNodeIds.has(e.target));
+        // Clicking a page highlights all of its connections - same look as hovering one
+        const selectedNodeId = this.state.infoPanelOpen ? this.state.infoNodeId : undefined;
         // Legende für die Kantenarten
-        const legend = [
-            { label: 'prev', color: '#6676d2', dash: false },
-            { label: 'next', color: '#19c3d2', dash: false },
-            { label: 'home', color: '#fbc02d', dash: true },
-            { label: 'parent', color: '#d32f2f', dash: false },
-            { label: 'target', color: '#43a047', dash: true },
+        const legend: { kind: EdgeKind; labelKey: string; dash?: string; bidirectional?: boolean }[] = [
+            { kind: 'prevNext', labelKey: 'nav_legend_prev_next', bidirectional: true },
+            { kind: 'next', labelKey: 'nav_legend_next' },
+            { kind: 'prev', labelKey: 'nav_legend_prev' },
+            { kind: 'home', labelKey: 'nav_legend_home', dash: '8 8' },
+            { kind: 'parent', labelKey: 'nav_legend_parent' },
+            { kind: 'target', labelKey: 'nav_legend_target', dash: '4 4' },
+            { kind: 'targetLongPress', labelKey: 'nav_legend_target_long_press', dash: '4 4' },
+            { kind: 'state', labelKey: 'nav_legend_state_edge', dash: '2 3' },
         ];
         return (
             <Box sx={{ width: '100%', p: 2, position: 'relative' }}>
@@ -874,6 +1624,16 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
                             />
                         }
                         label={I18n.t('show_system_pages')}
+                    />
+                    <FormControlLabel
+                        control={
+                            <Checkbox
+                                checked={showStates}
+                                onChange={this.handleShowStatesChange}
+                                size="small"
+                            />
+                        }
+                        label={I18n.t('show_states')}
                     />
                     <Button
                         variant="outlined"
@@ -898,26 +1658,57 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
                     </Typography>
                 </Box>
                 {/* Legende */}
-                <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
+                {/* Kantenarten und Seitenherkunft - die Herkunft nutzt die Farben der Knoten */}
+                <Box
+                    sx={{
+                        display: 'flex',
+                        flexWrap: 'wrap',
+                        alignItems: 'center',
+                        columnGap: 1.5,
+                        rowGap: 0.5,
+                        mb: 1,
+                    }}
+                >
                     {legend.map(item => (
                         <Box
-                            key={item.label}
-                            sx={{ display: 'flex', alignItems: 'center', gap: 1 }}
+                            key={item.kind}
+                            sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}
+                        >
+                            <LegendEdgePreview
+                                color={EDGE_COLOR_HEX[item.kind]}
+                                dash={item.dash}
+                                bidirectional={item.bidirectional}
+                            />
+                            <Typography
+                                variant="caption"
+                                sx={{ whiteSpace: 'nowrap' }}
+                            >
+                                {I18n.t(item.labelKey)}
+                            </Typography>
+                        </Box>
+                    ))}
+                    <Divider
+                        orientation="vertical"
+                        flexItem
+                    />
+                    {NODE_STYLES.map(style => (
+                        <Box
+                            key={style}
+                            sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}
                         >
                             <span
-                                className="legend-span"
+                                className={style === 'stateRef' ? 'legend-node legend-node-state-ref' : 'legend-node'}
                                 style={{
-                                    // For solid items show the color; for dashed items show a colored dash-pattern
-                                    background: item.dash ? 'transparent' : item.color,
-                                    backgroundColor: item.dash ? 'transparent' : item.color,
-                                    // choose dash length: home uses 8/8, others (e.g. target) use 4/4 to match edges
-                                    backgroundImage: item.dash
-                                        ? `repeating-linear-gradient(90deg, ${item.color} 0 ${item.label === 'home' ? 8 : 4}px, transparent ${item.label === 'home' ? 8 : 4}px ${item.label === 'home' ? 16 : 8}px)`
-                                        : undefined,
-                                    borderBottom: item.dash ? `2px dashed ${item.color}` : undefined,
+                                    background: `var(${NODE_STYLE_VAR[style].bg})`,
+                                    borderColor: `var(${NODE_STYLE_VAR[style].border})`,
                                 }}
                             />
-                            <Typography variant="body2">{item.label}</Typography>
+                            <Typography
+                                variant="caption"
+                                sx={{ whiteSpace: 'nowrap' }}
+                            >
+                                {I18n.t(NODE_STYLE_LABEL_KEY[style])}
+                            </Typography>
                         </Box>
                     ))}
                 </Box>
@@ -971,90 +1762,43 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
                                 aria-hidden="true"
                             >
                                 <defs>
-                                    <marker
-                                        id="arrow-default"
-                                        markerWidth="8"
-                                        markerHeight="8"
-                                        refX="8"
-                                        refY="4"
-                                        orient="auto"
-                                        markerUnits="strokeWidth"
-                                    >
-                                        <path
-                                            d="M0,0 L8,4 L0,8 z"
-                                            fill="var(--edge-color, #1976d2)"
-                                        />
-                                    </marker>
-                                    <marker
-                                        id="arrow-target"
-                                        markerWidth="10"
-                                        markerHeight="10"
-                                        refX="10"
-                                        refY="5"
-                                        orient="auto"
-                                        markerUnits="strokeWidth"
-                                    >
-                                        <path
-                                            d="M0,0 L10,5 L0,10 z"
-                                            fill="var(--edge-target, #43a047)"
-                                        />
-                                    </marker>
-                                    <marker
-                                        id="arrow-next"
-                                        markerWidth="8"
-                                        markerHeight="8"
-                                        refX="8"
-                                        refY="4"
-                                        orient="auto"
-                                        markerUnits="strokeWidth"
-                                    >
-                                        <path
-                                            d="M0,0 L8,4 L0,8 z"
-                                            fill="var(--edge-next, #19c3d2)"
-                                        />
-                                    </marker>
-                                    <marker
-                                        id="arrow-prev"
-                                        markerWidth="8"
-                                        markerHeight="8"
-                                        refX="8"
-                                        refY="4"
-                                        orient="auto"
-                                        markerUnits="strokeWidth"
-                                    >
-                                        <path
-                                            d="M0,0 L8,4 L0,8 z"
-                                            fill="var(--edge-prev, #6676d2)"
-                                        />
-                                    </marker>
-                                    <marker
-                                        id="arrow-home"
-                                        markerWidth="8"
-                                        markerHeight="8"
-                                        refX="8"
-                                        refY="4"
-                                        orient="auto"
-                                        markerUnits="strokeWidth"
-                                    >
-                                        <path
-                                            d="M0,0 L8,4 L0,8 z"
-                                            fill="var(--edge-home, #fbc02d)"
-                                        />
-                                    </marker>
-                                    <marker
-                                        id="arrow-parent"
-                                        markerWidth="8"
-                                        markerHeight="8"
-                                        refX="8"
-                                        refY="4"
-                                        orient="auto"
-                                        markerUnits="strokeWidth"
-                                    >
-                                        <path
-                                            d="M0,0 L8,4 L0,8 z"
-                                            fill="var(--edge-parent, #d32f2f)"
-                                        />
-                                    </marker>
+                                    <EdgeArrowMarkers
+                                        kind="default"
+                                        size={8}
+                                    />
+                                    <EdgeArrowMarkers
+                                        kind="target"
+                                        size={10}
+                                    />
+                                    <EdgeArrowMarkers
+                                        kind="targetLongPress"
+                                        size={10}
+                                    />
+                                    <EdgeArrowMarkers
+                                        kind="state"
+                                        size={8}
+                                    />
+                                    <EdgeArrowMarkers
+                                        kind="next"
+                                        size={8}
+                                    />
+                                    <EdgeArrowMarkers
+                                        kind="prev"
+                                        size={8}
+                                    />
+                                    <EdgeArrowMarkers
+                                        kind="prevNext"
+                                        size={8}
+                                        bidirectional
+                                    />
+                                    <EdgeArrowMarkers
+                                        kind="home"
+                                        size={8}
+                                    />
+                                    <EdgeArrowMarkers
+                                        kind="parent"
+                                        size={8}
+                                    />
                                 </defs>
                             </svg>
                             <ConfirmDialog
@@ -1078,7 +1822,17 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
                                 onPaneClick={this.onPaneClick}
                                 onEdgesChange={this.onEdgesChange}
                                 edgeTypes={{ custom: CustomEdge }}
-                                edges={safeEdges.map(e => ({ ...e, type: 'custom' }))}
+                                edges={safeEdges.map(e => ({
+                                    ...e,
+                                    type: 'custom',
+                                    data: {
+                                        isTarget: !!e.data?.isTarget,
+                                        ...e.data,
+                                        highlighted:
+                                            !!selectedNodeId &&
+                                            (e.source === selectedNodeId || e.target === selectedNodeId),
+                                    },
+                                }))}
                                 nodeTypes={{
                                     custom: ({ id, data }: any) => {
                                         const handleTypes: Record<string, boolean> = {
@@ -1091,14 +1845,31 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
                                             targetRight: false,
                                             targetLeft: false,
                                         };
+                                        // Ein Handle bekommt die Farbe der Kante, die es benutzt - so
+                                        // stimmen auch beidseitige und Long-Press-Verbindungen
+                                        const handleKind: Record<string, EdgeKind> = {};
                                         for (const edge of edges) {
-                                            if (edge.source === id && edge.sourceHandle) {
-                                                handleTypes[edge.sourceHandle] = true;
+                                            const kind = edge.data?.navType;
+                                            const mark = (handleId: string | undefined): void => {
+                                                if (!handleId) {
+                                                    return;
+                                                }
+                                                handleTypes[handleId] = true;
+                                                if (kind && !handleKind[handleId]) {
+                                                    handleKind[handleId] = kind;
+                                                }
+                                            };
+                                            if (edge.source === id) {
+                                                mark(edge.sourceHandle);
                                             }
-                                            if (edge.target === id && edge.targetHandle) {
-                                                handleTypes[edge.targetHandle] = true;
+                                            if (edge.target === id) {
+                                                mark(edge.targetHandle);
                                             }
                                         }
+                                        const handleColor = (handleId: string): string =>
+                                            EDGE_COLOR_HEX[
+                                                handleKind[handleId] ?? HANDLE_EDGE_KIND[handleId] ?? 'default'
+                                            ];
                                         // Fallback-Title (native) für pageInfo bauen
                                         let _pageInfoTooltip: string | undefined;
                                         const pageInfo = data.entry?.pageInfo;
@@ -1122,15 +1893,27 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
                                         }
                                         // kept for later use by external scripts; avoid unused-variable lint
                                         void _pageInfoTooltip;
+                                        const entry: NavigationMapEntry | undefined = data.entry;
+                                        const style = nodeStyleOf(entry);
+                                        const vars = NODE_STYLE_VAR[style];
                                         return (
-                                            <Box className="node-box">
+                                            <Box
+                                                className={
+                                                    style === 'stateRef' ? 'node-box node-state-ref' : 'node-box'
+                                                }
+                                                style={{
+                                                    background: `var(${vars.bg})`,
+                                                    borderColor: `var(${vars.border})`,
+                                                }}
+                                                title={entry?.stateId}
+                                            >
                                                 {/* prev: oben */}
                                                 {handleTypes.prev && (
                                                     <Handle
                                                         type="target"
                                                         position={Position.Top}
                                                         id="prev"
-                                                        style={{ background: '#6676d2' }}
+                                                        style={{ background: handleColor('prev') }}
                                                     />
                                                 )}
                                                 {handleTypes.prev && (
@@ -1138,7 +1921,7 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
                                                         type="source"
                                                         position={Position.Top}
                                                         id="prev"
-                                                        style={{ background: '#6676d2' }}
+                                                        style={{ background: handleColor('prev') }}
                                                     />
                                                 )}
                                                 {/* next: unten */}
@@ -1147,7 +1930,7 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
                                                         type="target"
                                                         position={Position.Bottom}
                                                         id="next"
-                                                        style={{ background: '#19c3d2' }}
+                                                        style={{ background: handleColor('next') }}
                                                     />
                                                 )}
                                                 {handleTypes.next && (
@@ -1155,7 +1938,7 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
                                                         type="source"
                                                         position={Position.Bottom}
                                                         id="next"
-                                                        style={{ background: '#19c3d2' }}
+                                                        style={{ background: handleColor('next') }}
                                                     />
                                                 )}
                                                 {/* home: links oben (source), rechts oben (target) */}
@@ -1165,7 +1948,7 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
                                                         position={Position.Left}
                                                         id="homeTopLeft"
                                                         className="homeTopLeft"
-                                                        style={{ background: '#fbc02d' }}
+                                                        style={{ background: handleColor('homeTopLeft') }}
                                                     />
                                                 )}
                                                 {handleTypes.homeTopRight && (
@@ -1174,7 +1957,7 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
                                                         position={Position.Right}
                                                         id="homeTopRight"
                                                         className="homeTopRight"
-                                                        style={{ background: '#fbc02d' }}
+                                                        style={{ background: handleColor('homeTopRight') }}
                                                     />
                                                 )}
                                                 {/* parent: links unten (source), rechts unten (target) */}
@@ -1184,7 +1967,7 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
                                                         position={Position.Left}
                                                         id="parentBottomLeft"
                                                         className="parentBottomLeft"
-                                                        style={{ background: '#d32f2f' }}
+                                                        style={{ background: handleColor('parentBottomLeft') }}
                                                     />
                                                 )}
                                                 {handleTypes.parentBottomRight && (
@@ -1193,7 +1976,7 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
                                                         position={Position.Right}
                                                         id="parentBottomRight"
                                                         className="parentBottomRight"
-                                                        style={{ background: '#d32f2f' }}
+                                                        style={{ background: handleColor('parentBottomRight') }}
                                                     />
                                                 )}
                                                 {/* targetPages: rechts Mitte (source), links Mitte (target) */}
@@ -1202,7 +1985,7 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
                                                         type="source"
                                                         position={Position.Right}
                                                         id="targetRight"
-                                                        style={{ background: '#888', top: '50%' }}
+                                                        style={{ background: handleColor('targetRight'), top: '50%' }}
                                                     />
                                                 )}
                                                 {handleTypes.targetLeft && (
@@ -1210,7 +1993,7 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
                                                         type="target"
                                                         position={Position.Left}
                                                         id="targetLeft"
-                                                        style={{ background: '#888', top: '50%' }}
+                                                        style={{ background: handleColor('targetLeft'), top: '50%' }}
                                                     />
                                                 )}
                                                 <Typography
@@ -1231,7 +2014,13 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
                             </ReactFlow>
                             <NodePageInfoPanel
                                 open={!!this.state.infoPanelOpen}
+                                title={this.getInfoTitle()}
                                 data={this.state.infoData}
+                                iconSvgs={this.getInfoIcons()}
+                                hints={this.getInfoIconHints()}
+                                onOpenPageConfig={
+                                    this.getInfoAdminPageName() ? this.openPageConfigForInfoNode : undefined
+                                }
                             />
                         </div>
                     </>
@@ -1276,14 +2065,24 @@ export function ThemeVarsProvider({ children }: { children: React.ReactNode }): 
         // Node Hintergrund/Text
         root.style.setProperty('--node-bg', theme.palette.background.paper || '#fff');
         root.style.setProperty('--node-text', theme.palette.text.primary || '#000');
+        root.style.setProperty('--node-border', theme.palette.divider || '#ccc');
+        // Herkunftsfarben: kräftiger Rahmen, nur leicht getönte Fläche. Im dunklen Theme darf die
+        // Tönung stärker sein, sonst verschwindet sie im dunklen Untergrund.
+        const tint = theme.palette.mode === 'dark' ? 0.32 : 0.18;
+        for (const style of NODE_STYLES) {
+            if (style === 'script') {
+                continue;
+            }
+            const color = NODE_COLOR_HEX[style];
+            root.style.setProperty(NODE_STYLE_VAR[style].border, color);
+            root.style.setProperty(NODE_STYLE_VAR[style].bg, alpha(color, tint));
+        }
         // Kantenfarben (Primärfarbe als Default für Kanten)
-        root.style.setProperty('--edge-color', theme.palette.primary.main || '#1976d2');
-        // next/prev sollen KEINE Theme-Farben verwenden — feste Farben
-        root.style.setProperty('--edge-next', '#19c3d2');
-        root.style.setProperty('--edge-prev', '#6676d2');
-        root.style.setProperty('--edge-home', '#fbc02d');
-        root.style.setProperty('--edge-parent', '#d32f2f');
-        root.style.setProperty('--edge-target', '#43a047');
+        root.style.setProperty(EDGE_COLOR_VAR.default, theme.palette.primary.main || EDGE_COLOR_HEX.default);
+        // Die Kantenarten sollen KEINE Theme-Farben verwenden — feste Farben
+        for (const kind of STATIC_EDGE_KINDS) {
+            root.style.setProperty(EDGE_COLOR_VAR[kind], EDGE_COLOR_HEX[kind]);
+        }
     }, [theme]);
     return <>{children}</>;
 }
@@ -1293,7 +2092,7 @@ export default function WrappedNavigationView(props: ConfigGenericProps): React.
         <ThemeVarsProvider>
             {/* eslint-disable-next-line @typescript-eslint/ban-ts-comment */}
             {/* @ts-ignore allow passing through ConfigGenericProps to class component */}
-            <NavigationView {...(props as any)} />
+            <NavigationView {...props} />
         </ThemeVarsProvider>
     );
 }

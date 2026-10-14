@@ -1,5 +1,7 @@
 import React from 'react';
 import {
+    Alert,
+    type AlertColor,
     Box,
     TextField,
     FormControl,
@@ -21,10 +23,11 @@ import {
 } from '@mui/material';
 import { Upload as UploadIcon, SearchOutlined as SearchIcon } from '@mui/icons-material';
 import { ConfigGeneric, type ConfigGenericProps, type ConfigGenericState } from '@iobroker/json-config';
-import type { IobTheme, ThemeType, ThemeName } from '@iobroker/adapter-react-v5';
+import type { IobTheme, ThemeType, ThemeName } from '@iobroker/gui-components';
 import { EntitySelector } from './EntitySelector';
 import IconSelect from '../IconSelect';
-import type { TrashEntry } from '../../../src/lib/types/adminShareConfig';
+import type { TrashEntry, TrashItem } from '../../../src/lib/types/adminShareConfig';
+import { isMainPageEntry, normalizeTrashItems } from '../../../src/lib/types/adminShareConfig';
 
 export interface PageTrashEditorProps {
     entry: TrashEntry;
@@ -41,6 +44,7 @@ interface PageTrashEditorState extends ConfigGenericState {
     uploadedEvents: Array<{ summary: string }>;
     selectedEvents: string[];
     alive: boolean;
+    uploadStatus: { severity: AlertColor; message: string } | null;
 }
 
 export class PageTrashEditor extends ConfigGeneric<ConfigGenericProps & PageTrashEditorProps, PageTrashEditorState> {
@@ -54,6 +58,7 @@ export class PageTrashEditor extends ConfigGeneric<ConfigGenericProps & PageTras
             uploadedEvents: [],
             selectedEvents: [],
             alive: false,
+            uploadStatus: null,
         };
     }
 
@@ -103,6 +108,9 @@ export class PageTrashEditor extends ConfigGeneric<ConfigGenericProps & PageTras
             return;
         }
 
+        // Statuszeile des vorigen Uploads verwerfen
+        this.setState({ uploadStatus: null });
+
         try {
             const { oContext } = this.props;
             const reader = new FileReader();
@@ -126,13 +134,14 @@ export class PageTrashEditor extends ConfigGeneric<ConfigGenericProps & PageTras
                     );
 
                     if (result?.success) {
-                        console.log('ICS-Datei erfolgreich hochgeladen:', result.path);
                         // Speichere relativen Pfad im Entry
                         this.handleFieldChange('trashFile', result.path);
-                        // Speichere Events im State
-                        if (result.events && Array.isArray(result.events)) {
-                            this.setState({ uploadedEvents: result.events });
-                        }
+                        // Speichere Events im State und melde das Ergebnis im Formular
+                        const events = Array.isArray(result.events) ? result.events : [];
+                        this.setState({
+                            uploadedEvents: events,
+                            uploadStatus: this.buildUploadStatus(file.name, events.length),
+                        });
                     } else {
                         throw new Error(result?.error);
                     }
@@ -159,6 +168,20 @@ export class PageTrashEditor extends ConfigGeneric<ConfigGenericProps & PageTras
             alert(`Upload failed: ${error.message}`);
         }
     };
+
+    private buildUploadStatus(fileName: string, count: number): { severity: AlertColor; message: string } {
+        if (!count) {
+            return {
+                severity: 'warning',
+                message: this.getText('trash_ics_upload_no_events').replace('%s', fileName),
+            };
+        }
+
+        return {
+            severity: 'success',
+            message: this.getText('trash_ics_upload_success').replace('%s', fileName).replace('%d', String(count)),
+        };
+    }
 
     private handleUploadClick = (): void => {
         this.fileInputRef.current?.click();
@@ -188,7 +211,7 @@ export class PageTrashEditor extends ConfigGeneric<ConfigGenericProps & PageTras
         const updated = { ...entry };
 
         // Verteile auf die items im Array
-        updated.items = entry.items.map((item, index) => ({
+        updated.items = normalizeTrashItems(entry.items).map((item, index) => ({
             ...item,
             textTrash: selectedEvents[index] || '',
         }));
@@ -197,18 +220,18 @@ export class PageTrashEditor extends ConfigGeneric<ConfigGenericProps & PageTras
         this.props.onEntryChange(updated);
 
         // Auswahl zurücksetzen
-        this.setState({ selectedEvents: [], uploadedEvents: [] });
+        this.setState({ selectedEvents: [], uploadedEvents: [], uploadStatus: null });
     };
 
-    private handleItemChange(index: number, field: keyof (typeof this.props.entry.items)[0], value: string): void {
+    private handleItemChange(index: number, field: keyof TrashItem, value: string): void {
         const updated = { ...this.props.entry };
-        updated.items = [...updated.items];
+        updated.items = normalizeTrashItems(updated.items);
         updated.items[index] = { ...updated.items[index], [field]: value };
         this.props.onEntryChange(updated);
     }
 
-    private getIconValueFromChange(attrOrData: string | Record<string, any>, value?: unknown): string {
-        if (typeof attrOrData === 'string') {
+    private getIconValueFromChange(attrOrData: string | Record<string, any> | undefined, value?: unknown): string {
+        if (typeof attrOrData !== 'object' || attrOrData === null) {
             return typeof value === 'string' ? value : '';
         }
 
@@ -281,7 +304,7 @@ export class PageTrashEditor extends ConfigGeneric<ConfigGenericProps & PageTras
                         type="text"
                         label={this.getText('unique_label')}
                         value={entry.uniqueName}
-                        disabled={!alive}
+                        disabled={!alive || isMainPageEntry(entry)}
                         onChange={e => {
                             const newUniqueName = e.target.value;
                             if (newUniqueName.trim()) {
@@ -298,6 +321,7 @@ export class PageTrashEditor extends ConfigGeneric<ConfigGenericProps & PageTras
                                 },
                             },
                         }}
+                        helperText={isMainPageEntry(entry) ? this.getText('page_name_main_locked') : undefined}
                     />
                 </Box>
 
@@ -361,7 +385,7 @@ export class PageTrashEditor extends ConfigGeneric<ConfigGenericProps & PageTras
                                 const value = e.target.value === 'true';
                                 this.handleFieldChange('trashImport', value);
                                 // Lösche die Events beim Wechsel der Import-Option
-                                this.setState({ uploadedEvents: [] });
+                                this.setState({ uploadedEvents: [], uploadStatus: null });
                             }}
                         >
                             <FormControlLabel
@@ -495,6 +519,15 @@ export class PageTrashEditor extends ConfigGeneric<ConfigGenericProps & PageTras
                             style={{ display: 'none' }}
                             onChange={this.handleFileSelect}
                         />
+                        {this.state.uploadStatus ? (
+                            <Alert
+                                severity={this.state.uploadStatus.severity}
+                                onClose={() => this.setState({ uploadStatus: null })}
+                                sx={{ mt: 2 }}
+                            >
+                                {this.state.uploadStatus.message}
+                            </Alert>
+                        ) : null}
                         {this.state.uploadedEvents.length > 0 && (
                             <Box sx={{ mt: 2 }}>
                                 <FormLabel>{this.getText('trash_select_events')}</FormLabel>
@@ -546,7 +579,7 @@ export class PageTrashEditor extends ConfigGeneric<ConfigGenericProps & PageTras
 
                 {/* Trash entry fields (color, icon, trash name, custom name) */}
                 <Box sx={{ mb: 2 }}>
-                    {entry.items.map((item, index) => (
+                    {normalizeTrashItems(entry.items).map((item, index) => (
                         <Box
                             key={`${entry.uniqueName}-${index}`}
                             sx={{
