@@ -70,7 +70,7 @@ A click on a free place opens the item dialog, a click on an occupied item edits
 | Type of the state | Fields |
 |---|---|
 | **boolean** | icon on / off, color on / off, text while true / false |
-| **number** | icon, fixed color or color scale by value, unit (empty = of the state), factor, decimals |
+| **number** | icon (expert mode: an icon list per value range too), fixed color or color scale by value, unit (empty = of the state), factor, decimals |
 | date/time (role `date`/`time`) | icon, color, date format (`Intl.DateTimeFormat` options, presets to choose from, expert mode: own JSON) |
 | other (string …) | icon, color |
 
@@ -85,6 +85,16 @@ Depending on the place fields are added or dropped: **Bottom** has the **headlin
 Third choice *color from a state*: a state whose value is the color – `#rrggbb`, `{"r":…,"g":…,"b":…}` (also as JSON string) or a decimal number. On an on/off state it applies to "on", "off" takes the default color. The state must exist and be a state.
 
 ![Color from a state](../Pictures/screensaverAdmin/admin-06-item-farbe-datenpunkt.png)
+
+**Icon per value range** (numbers only): Instead of one fixed icon the item can hold a list "up to value → icon" – the panel then changes the icon with the value. The button **Icon per value…** sits below the icon field in **expert mode**; a list that is already stored is shown with its icons without expert mode too and can be dropped there with the trash button.
+
+![Icon per value range](../Pictures/screensaverAdmin/admin-15-item-icon-wertebereich.png)
+
+- Every row holds an **up to value** and an **icon**. An icon applies **up to and including** its value, above the highest value its icon stays. In the picture: up to 5 `snowflake-thermometer`, up to 18 `thermometer-low`, up to 24 `thermometer`, above that `thermometer-high` – so 23.5 °C shows the middle icon (see the preview).
+- **Add entry** appends a row, the trash button on the right removes it. **Sort by value** only tidies the list up – the order does not matter, the adapter sorts the list itself.
+- **Apply** stays disabled while a started row is incomplete (every row needs a number **and** an icon); a value used twice is reported – only one of those entries takes effect. An empty list removes the setting.
+- The list **replaces the icon** of the field above. Color or color scale, unit, factor and decimals keep working as before.
+- In the script this is `ScreensaverEntityIconSelect`; the adapter builds the same read function as on the script path, so the result on the panel is identical.
 
 **Text instead of value** (boolean): Instead of `true`/`false` the panel shows the text for true or false. Each field may also hold the **id of a state** – then its value is shown. An empty field keeps the raw value.
 
@@ -174,6 +184,7 @@ Screensaver 'Wohnzimmer' (advanced) from the admin configuration replaces the sc
 - **Everything greyed out:** The instance is not running. The editor works with a running instance only, the template list comes from the running adapter.
 - **No places in the panel picture:** No panel chosen yet.
 - **Apply stays disabled:** state missing or no state (channel chosen?), no icon, no writable state for button/switch, no valid state for "color from a state" – the dialog names the reason in a yellow line.
+- **The icon does not change with the value:** An icon list exists for number states only, and every icon applies up to and including its value – above the highest value its icon stays. Duplicate values are reported by the dialog, only one of them takes effect.
 - **Wrong icon preset:** The role of the channel above the state counts first – just change the icon.
 - **Panel shows the script screensaver:** The panel is in no entry, or it is in a second entry further down (the first wins) – see the log.
 - **Items missing after a version change:** They lie in areas the version does not have (message at the top of the editor); switch the version back or **Remove**.
