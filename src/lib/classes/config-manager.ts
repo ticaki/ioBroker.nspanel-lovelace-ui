@@ -1,6 +1,7 @@
 import { Color, type RGB } from '../const/Color';
 import * as configManagerConst from '../const/config-manager-const';
 import { pageItemDefaults } from '../const/page-item-defaults';
+import { mainPageName } from '../const/default-pages';
 import type { panelConfigPartial } from '../controller/panel';
 import { StatesControler } from '../controller/states-controller';
 import { PagePower } from '../pages/pagePower';
@@ -154,6 +155,10 @@ export class ConfigManager extends BaseClass {
         }
 
         // start configuration
+
+        // Pages this panel receives from the global script configuration. Reported to the panel so
+        // the admin can tell them apart from the pages of the panel script itself.
+        const globalPageIds = new Set<string>();
 
         {
             const navigationAdjustRun = (
@@ -331,6 +336,9 @@ export class ConfigManager extends BaseClass {
                                 if (page.heading) {
                                     config.pages[i].heading = page.heading;
                                 }
+                                if (config.pages[i].uniqueName) {
+                                    globalPageIds.add(config.pages[i].uniqueName);
+                                }
                             } else {
                                 config.pages.splice(i, 1);
                                 const msg = `Global page with uniqueName ${page.globalLink} not found!`;
@@ -381,6 +389,9 @@ export class ConfigManager extends BaseClass {
                                 if (page.heading) {
                                     config.subPages[i].heading = page.heading;
                                 }
+                                if (config.subPages[i].uniqueName) {
+                                    globalPageIds.add(config.subPages[i].uniqueName);
+                                }
                             } else {
                                 config.subPages.splice(i, 1);
                                 const msg = `Global page with uniqueName ${page.globalLink} not found!`;
@@ -392,6 +403,16 @@ export class ConfigManager extends BaseClass {
 
                     for (const index of Array.from(removeGlobalPageIndexs).sort((a, b) => b - a)) {
                         globalConfig.subPages.splice(index, 1);
+                    }
+                    for (const page of globalConfig.subPages || []) {
+                        // a page of the panel script with the same name wins (see filter below) - not global
+                        if (
+                            page &&
+                            page.uniqueName &&
+                            config.pages.findIndex(p => p && p.uniqueName === page.uniqueName) === -1
+                        ) {
+                            globalPageIds.add(page.uniqueName);
+                        }
                     }
                     config.subPages = config.subPages.concat(globalConfig.subPages || []);
 
@@ -478,7 +499,7 @@ export class ConfigManager extends BaseClass {
             }
             const nav = panelConfig.navigation;
             if (nav && nav.length > 0) {
-                const index = nav.findIndex(item => item!.name === 'main');
+                const index = nav.findIndex(item => item!.name === mainPageName);
                 if (index !== -1) {
                     const item = nav.splice(index, 1)[0];
                     nav.unshift(item);
@@ -533,6 +554,11 @@ export class ConfigManager extends BaseClass {
 
         ({ panelConfig, messages } = await this.getPageConfig(config, panelConfig, messages));
 
+        // Only report ids that really ended up as a page of this panel.
+        panelConfig.globalPageIds = panelConfig.pages
+            .filter(page => page && page.uniqueID && globalPageIds.has(page.uniqueID))
+            .map(page => page.uniqueID);
+
         // merge both navigations. Remove duplicates from panelConfig.navigation
         const nav1 = config.navigation as NavigationItemConfig[];
         const nav2 = panelConfig.navigation;
@@ -562,11 +588,19 @@ export class ConfigManager extends BaseClass {
             messages.push(`No pages found! This needs to be fixed!`);
             this.log.error(messages[messages.length - 1]);
         } else if (panelConfig.navigation.length === 0) {
-            messages.push(`No navigation items found! This needs to be fixed!`);
-            this.log.error(messages[messages.length - 1]);
-        } else if (panelConfig.navigation.findIndex(item => item && item.name === 'main') === -1) {
-            messages.push(`No entry found for ‘main’ in the navigation!`);
-            this.log.warn(messages[messages.length - 1]);
+            // Valid setup: the panel can be configured entirely in the admin. The adapter adds a
+            // default start page, the admin pages are merged afterwards.
+            messages.push(
+                `No navigation items found in the script configuration! Pages from the admin configuration are used.`,
+            );
+            this.log.info(messages[messages.length - 1]);
+        } else if (panelConfig.navigation.findIndex(item => item && item.name === mainPageName) === -1) {
+            // Not an error any more: the adapter adds a default start page and the admin
+            // configuration may provide one as well.
+            messages.push(
+                `No entry found for '${mainPageName}' in the navigation! A default start page is used unless the admin configuration provides one.`,
+            );
+            this.log.info(messages[messages.length - 1]);
         }
 
         const obj = await this.adapter.getForeignObjectAsync(this.adapter.namespace);
@@ -702,14 +736,23 @@ export class ConfigManager extends BaseClass {
                     continue;
                 }
 
+                if (page.type === 'cardQR' || page.type === 'cardAlarm' || page.type === 'cardUnlock') {
+                    // Not supported in the script configuration - use the admin configuration for
+                    // these cards. Skip the page without a navigation entry, but keep converting
+                    // the remaining pages.
+                    const msg = `Page: ${page.uniqueName} with card type ${page.type} is only supported in the admin configuration! Skipped!`;
+                    messages.push(msg);
+                    this.log.warn(msg);
+                    continue;
+                }
                 if ((config.subPages || []).includes(page)) {
                     const left = page.prev || page.parent || undefined;
                     let right = page.next || page.home || undefined;
                     if (!left && !right) {
-                        const msg = `Page: ${page.uniqueName} dont have any navigation! Node 'main' provisionally added as home!`;
+                        const msg = `Page: ${page.uniqueName} dont have any navigation! Node '${mainPageName}' provisionally added as home!`;
                         messages.push(msg);
                         this.log.warn(msg);
-                        page.home = 'main';
+                        page.home = mainPageName;
                         right = page.home;
                     }
                     if (left || right) {
@@ -721,9 +764,6 @@ export class ConfigManager extends BaseClass {
                         };
                         panelConfig.navigation.push(navItem);
                     }
-                }
-                if (page.type === 'cardQR' || page.type === 'cardAlarm' || page.type === 'cardUnlock') {
-                    return { panelConfig, messages };
                 }
 
                 let gridItem: pages.PageBase = {
@@ -2608,11 +2648,18 @@ export class ConfigManager extends BaseClass {
                                 dpInit: entry2.useKey ? expectedAltId : `${dpInit}.`,
                                 role: entry2.role,
                                 enums: '',
-                                regexp: entry.useKey ? new RegExp(`\\.${alternate}$`) : undefined,
+                                regexp: entry2.useKey ? new RegExp(`\\.${alternate}$`) : undefined,
                                 triggered: entry.trigger,
                                 writeable: entry2.writeable,
                                 commonType: entry.type,
                             });
+                        }
+                        if (result[role][dp2]) {
+                            messages.push(
+                                `Optional: ${String(dp)}: ${dpInit}, channel role: ${role} - not found, using ${String(alternate)} instead` +
+                                    ` (searching for type: ${JSON.stringify(entry.type)}, role: ${JSON.stringify(entry.role)})`,
+                            );
+                            this.log.info(messages[messages.length - 1]);
                         }
                     }
 
@@ -4558,6 +4605,10 @@ export class ConfigManager extends BaseClass {
     async getScreensaverConfig(
         config: ScriptConfig.Config,
         messages: string[] = [],
+        options: {
+            /** the weather entity of `config` is final - the global weatherEntity of the instance does not replace it (admin screensaver) */
+            weatherEntityFixed?: boolean;
+        } = {},
     ): Promise<{ configArray: pages.PageBase; messages: string[] }> {
         let pageItems: NSPanel.PageItemDataItemsOptions[] = [];
 
@@ -4689,7 +4740,7 @@ export class ConfigManager extends BaseClass {
             pageItems.push(...arr);
         }
         // if weatherEntity is set, add alot weather data to screensaver :)
-        if (this.adapter.config.weatherEntity) {
+        if (this.adapter.config.weatherEntity && !options.weatherEntityFixed) {
             config.weatherEntity = this.adapter.config.weatherEntity;
         }
         if (config.weatherEntity) {
@@ -5669,7 +5720,7 @@ export class ConfigManager extends BaseClass {
                 // read function for icon selection
                 obj.read = `
                     const items = [${entity.ScreensaverEntityIconSelect.map(item => `{val: ${item.value}, icon: "${item.icon}"}`).join(', ')}];
-                    for (let i = 1; i < items.length; i++) {
+                    for (let i = 0; i < items.length; i++) {
                         if (val <= items[i].val) {return items[i].icon;}
                     }
                     return items[items.length - 1].icon;`;
@@ -5711,14 +5762,34 @@ export class ConfigManager extends BaseClass {
             };
         }
 
-        if (entity.ScreensaverEntityOnText) {
-            result.data.text = { true: await this.getFieldAsDataItemConfig(entity.ScreensaverEntityOnText) };
-        } else if (entity.ScreensaverEntityText) {
+        // headline of the item (the bottom places show it)
+        if (entity.ScreensaverEntityText) {
             result.data.text = { true: await this.getFieldAsDataItemConfig(entity.ScreensaverEntityText) };
         }
-
-        if (entity.ScreensaverEntityOffText) {
-            result.data.text = { false: await this.getFieldAsDataItemConfig(entity.ScreensaverEntityOffText) };
+        if (dataType === 'boolean' && (entity.ScreensaverEntityOnText || entity.ScreensaverEntityOffText)) {
+            // on / off text of a boolean state - a text or a state holding it - shown instead of "true" /
+            // "false": the display value (entity2) steps back, text1 takes over (page item: value ?? text1)
+            delete result.data.entity2.value;
+            result.data.text1 = {
+                true: entity.ScreensaverEntityOnText
+                    ? await this.getFieldAsDataItemConfig(entity.ScreensaverEntityOnText)
+                    : { type: 'const', constVal: 'true' },
+                false: entity.ScreensaverEntityOffText
+                    ? await this.getFieldAsDataItemConfig(entity.ScreensaverEntityOffText)
+                    : { type: 'const', constVal: 'false' },
+            };
+        } else if (entity.ScreensaverEntityOnText || entity.ScreensaverEntityOffText) {
+            // on / off text of other states: headline while the value is truthy / falsy (both kept)
+            const text: { true?: NSPanel.DataItemsOptions; false?: NSPanel.DataItemsOptions } = {
+                ...(result.data.text as { true?: NSPanel.DataItemsOptions; false?: NSPanel.DataItemsOptions }),
+            };
+            if (entity.ScreensaverEntityOnText) {
+                text.true = await this.getFieldAsDataItemConfig(entity.ScreensaverEntityOnText);
+            }
+            if (entity.ScreensaverEntityOffText) {
+                text.false = await this.getFieldAsDataItemConfig(entity.ScreensaverEntityOffText);
+            }
+            result.data.text = text;
         }
 
         result.fillIfBelowMin =

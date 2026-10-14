@@ -9,6 +9,7 @@
             "items": {
                 "pageGlobalSettings": {
                     "type": "custom",
+                    "guiApi": 2,
                     "i18n": true,
                     "url": "custom/customComponents.js",
                     "name": "AdminComponentTemplateSet/Components/TabMaintain",
@@ -25,6 +26,7 @@
             "items": {
                 "pageGlobalSettings": {
                     "type": "custom",
+                    "guiApi": 2,
                     "i18n": true,
                     "url": "custom/customComponents.js",
                     "name": "AdminComponentTemplateSet/Components/PageGlobalSettings",
@@ -997,6 +999,7 @@
                         {
                             "attr": "power1_icon",                         
                             "type": "custom",
+                            "guiApi": 2,
                             "i18n": true,
                             "url": "custom/customComponents.js",
                             "name": "AdminComponentTemplateSet/Components/IconSelect",
@@ -1206,6 +1209,7 @@
                         {
                             "attr": "power2_icon",                         
                             "type": "custom",
+                            "guiApi": 2,
                             "i18n": true,
                             "url": "custom/customComponents.js",
                             "name": "AdminComponentTemplateSet/Components/IconSelect",
@@ -1413,6 +1417,7 @@
                         {
                             "attr": "power3_icon",                         
                             "type": "custom",
+                            "guiApi": 2,
                             "i18n": true,
                             "url": "custom/customComponents.js",
                             "name": "AdminComponentTemplateSet/Components/IconSelect",
@@ -1620,6 +1625,7 @@
                         {
                             "attr": "power4_icon",                         
                             "type": "custom",
+                            "guiApi": 2,
                             "i18n": true,
                             "url": "custom/customComponents.js",
                             "name": "AdminComponentTemplateSet/Components/IconSelect",
@@ -1827,6 +1833,7 @@
                         {
                             "attr": "power5_icon",                         
                             "type": "custom",
+                            "guiApi": 2,
                             "i18n": true,
                             "url": "custom/customComponents.js",
                             "name": "AdminComponentTemplateSet/Components/IconSelect",
@@ -2034,6 +2041,7 @@
                         {
                             "attr": "power6_icon",                         
                             "type": "custom",
+                            "guiApi": 2,
                             "i18n": true,
                             "url": "custom/customComponents.js",
                             "name": "AdminComponentTemplateSet/Components/IconSelect",
@@ -2749,12 +2757,29 @@
             "items": {
                 "pageConfig": {
                     "type": "custom",
+                    "guiApi": 2,
                     "i18n": true,
                     "url": "custom/customComponents.js",
                     "name": "AdminComponentTemplateSet/Components/PageConfigManager",
                     "bundlerType": "module",
                     "xs": 12
                     //"label": "test"
+                }
+            }
+        },
+        "_screensaver": {
+            "type": "panel",
+            "label": "Screensaver",
+            "hidden": "(!data.mqttServer && !data.mqttIp ) || !data.mqttPort || !data.mqttUsername || !data.mqttPassword || !data.panels || !data.panels.length",
+            "items": {
+                "screensaverConfig": {
+                    "type": "custom",
+                    "guiApi": 2,
+                    "i18n": true,
+                    "url": "custom/customComponents.js",
+                    "name": "AdminComponentTemplateSet/Components/ScreensaverConfigManager",
+                    "bundlerType": "module",
+                    "xs": 12
                 }
             }
         },
@@ -2908,6 +2933,7 @@
             "items": {
                 "pagePanelOverview": {
                     "type": "custom",
+                    "guiApi": 2,
                     "i18n": true,
                     "url": "custom/customComponents.js",
                     "name": "AdminComponentTemplateSet/Components/PagePanelOverview",
@@ -2923,181 +2949,13 @@
             "items": {
                 "pageMQTTSetting": {
                     "type": "custom",
+                    "guiApi": 2,
                     "i18n": true,
                     "url": "custom/customComponents.js",
                     "name": "AdminComponentTemplateSet/Components/PageMQTTSetting",
                     "bundlerType": "module",
                     "xs": 12
                     //"label": "test"
-                }
-            }
-        },
-        "NavigationOverview": {
-            "type": "panel",
-            "label": "Navigation Overview",
-            "expertMode": true,
-            "hidden": "(!data.mqttServer && !data.mqttIp ) || !data.mqttPort || !data.mqttUsername || !data.mqttPassword || !data.panels || !data.panels.length",
-            "items": {
-                "_selectPanel": {
-                    "type": "selectSendTo",
-                    "command": "selectPanel",
-                    "data": {
-                        "id": "panel"
-                    },
-                    "label": "selectPanel",
-                    "newLine": true,
-                    "xs": 12,
-                    "sm": 12,
-                    "md": 12,
-                    "lg": 12,
-                    "xl": 12
-                },
-                "_useNavigation": {
-                    "type": "checkbox",
-                    "label": "useNavigation",
-                    "default": false,
-                    "newLine": true,
-                    "xs": 12,
-                    "sm": 12,
-                    "md": 12,
-                    "lg": 12,
-                    "xl": 12
-                },
-                "_loadNavigationOverview": {
-                    "type": "sendTo",
-                    "label": "_loadNavigationOverview",
-                    "jsonData": "{\"panel\": \"${data._selectPanel}\"}",
-                    "command": "_loadNavigationOverview",
-                    "variant": "contained",
-                    "useNative": true,
-                    "xs": 12,
-                    "sm": 12,
-                    "md": 6,
-                    "lg": 4,
-                    "xl": 4
-                },
-                "_saveNavigationOverview": {
-                    "type": "sendTo",
-                    "label": "_saveNavigationOverview",
-                    "command": "_saveNavigationOverview",
-                    "jsonData": "{\"panel\": \"${data._selectPanel}\", \"table\": ${JSON.stringify(data._NavigationOverviewTable)}, \"useNavigation\": \"${data._useNavigation}\"}",
-                    "variant": "contained",
-                    "disabled": "if (!data._NavigationOverviewTable) return true; for (let i = 0; i < data._NavigationOverviewTable.length; i++) { if (!data._NavigationOverviewTable[i].name || !data._NavigationOverviewTable[i].page  || !(data._NavigationOverviewTable[i].left1 || data._NavigationOverviewTable[i].left2|| data._NavigationOverviewTable[i].right1|| data._NavigationOverviewTable[i].right2)) return true; };  return false;",
-                    "xs": 12,
-                    "sm": 12,
-                    "md": 6,
-                    "lg": 4,
-                    "xl": 4
-                },
-                "_clearNavigationOverview": {
-                    "type": "sendTo",
-                    "label": "_clearNavigationOverview",
-                    "command": "_clearNavigationOverview",
-                    "jsonData": "{\"panel\": \"${data._selectPanel}\", \"table\": ${JSON.stringify(data._NavigationOverviewTable)}, \"useNavigation\": \"${data._useNavigation}\"}",
-                    "variant": "contained",
-                    "useNative": true,
-                    "xs": 12,
-                    "sm": 12,
-                    "md": 6,
-                    "lg": 4,
-                    "xl": 4
-                },
-                "_configFrom": {
-                    "type": "text",
-                    "label": "configFrom",
-                    "text": "",
-                    "readOnly": true,
-                    "style": {
-                        "color": "red"
-                    },
-                    "xs": 12,
-                    "sm": 12,
-                    "md": 6,
-                    "lg": 4,
-                    "xl": 4
-                },
-                "_changeTagForUpdate": {
-                    "type": "staticText",
-                    "text": "goToOtherTabAfterChangeOfNavID",
-                    "style": {
-                        "color": "red"
-                    },
-                    "newLine": true,
-                    "xs": 12,
-                    "sm": 12,
-                    "md": 6,
-                    "lg": 4,
-                    "xl": 4
-                },
-                "_NavigationOverviewTable": {
-                    "type": "table",
-                    "label": "navigationOverview",
-                    "newLine": true,
-                    "export": true,
-                    "import": true,
-                    "uniqueColumns": [
-                        "name"
-                    ],
-                    "xs": 12,
-                    "sm": 12,
-                    "md": 12,
-                    "lg": 12,
-                    "xl": 12,
-                    "items": [
-                        {
-                            "type": "text",
-                            "attr": "name",
-                            "label": "navId",
-                            "validator": "data.name",
-                            "doNotSave": true,
-                            "width": "16%"
-                        },
-                        {
-                            "type": "selectSendTo",
-                            "command": "selectPanel",
-                            "jsonData": "{\"id\": \"uniqueID\",\"panel\": \"${globalData._selectPanel}\"}",
-                            "attr": "page",
-                            "validator": "data.page",
-                            "label": "uniqueID",
-                            "width": "16%"
-                        },
-                        {
-                            "type": "autocompleteSendTo",
-                            "command": "selectPanel",
-                            "jsonData": "{\"id\": \"navigationNames\", \"name\": \"${data.name}\", \"table\": ${JSON.stringify(globalData._NavigationOverviewTable)}}",
-                            "attr": "left1",
-                            "validator": "data.left1 || data.left2 || data.right1 || data.right2",
-                            "label": "prev",
-                            "width": "16%"
-                        },
-                        {
-                            "type": "autocompleteSendTo",
-                            "command": "selectPanel",
-                            "jsonData": "{\"id\": \"navigationNames\", \"name\": \"${data.name}\", \"table\": ${JSON.stringify(globalData._NavigationOverviewTable)}}",
-                            "validator": "data.left1 || data.left2 || data.right1 || data.right2",
-                            "attr": "left2",
-                            "label": "parent",
-                            "width": "16%"
-                        },
-                        {
-                            "type": "autocompleteSendTo",
-                            "command": "selectPanel",
-                            "jsonData": "{\"id\": \"navigationNames\", \"name\": \"${data.name}\", \"table\": ${JSON.stringify(globalData._NavigationOverviewTable)}}",
-                            "validator": "data.left1 || data.left2 || data.right1 || data.right2",
-                            "attr": "right1",
-                            "label": "next",
-                            "width": "16%"
-                        },
-                        {
-                            "type": "autocompleteSendTo",
-                            "command": "selectPanel",
-                            "jsonData": "{\"id\": \"navigationNames\", \"name\": \"${data.name}\", \"table\": ${JSON.stringify(globalData._NavigationOverviewTable)}}",
-                            "validator": "data.left1 || data.left2 || data.right1 || data.right2",
-                            "attr": "right2",
-                            "label": "home",
-                            "width": "16%"
-                        }
-                    ]
                 }
             }
         },
@@ -3264,6 +3122,7 @@
                 },
                 "myCustomAttribute": {
                     "type": "custom",
+                    "guiApi": 2,
                     "i18n": true,
                     "url": "custom/customComponents.js",
                     "name": "AdminComponentTemplateSet/Components/IconSelect",
@@ -3288,6 +3147,7 @@
                 },
                 "_channelConfigDialog": {
                     "type": "custom",
+                    "guiApi": 2,
                     "i18n": true,
                     "url": "custom/customComponents.js",
                     "name": "AdminComponentTemplateSet/Components/ChannelConfigDialog",
@@ -3303,6 +3163,7 @@
             "items": {
                 "_myCustomAttribute": {
                     "type": "custom",
+                    "guiApi": 2,
                     "i18n": true,
                     "url": "custom/customComponents.js",
                     "name": "AdminComponentTemplateSet/Components/NavigationView",
@@ -3313,21 +3174,6 @@
             }
         },
 
-        /*"ScreensaverPage": {
-            "type": "panel",
-            "label": "ScreensaverPage",
-            "items": {
-                "ScreensaverPageConfig": {
-                    "type": "custom",
-                    "i18n": true,
-                    "url": "custom/customComponents.js",
-                    "name": "AdminComponentTemplateSet/Components/ScreensaverPage",
-                    "bundlerType": "module",
-                    "xs": 12
-                    //"label": "test"
-                }
-            }
-        },*/
         "iconOverview": {
             "type": "panel",
             "label": "iconOverview",
@@ -3355,6 +3201,7 @@
                 },
                 "_iconGrid": {
                     "type": "custom",
+                    "guiApi": 2,
                     "i18n": true,
                     "url": "custom/customComponents.js",
                     "name": "AdminComponentTemplateSet/Components/IconOverview",

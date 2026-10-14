@@ -14,7 +14,6 @@ jobs:
           # using the `org/team_slug` or `/team_slug` syntax to add git team as reviewers
           reviewers: |
             tt-tom17
-            Armilar
             ticaki
           skipKeywords: wip, draft
           numberOfReviewers: 0

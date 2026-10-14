@@ -21,23 +21,25 @@ import {
     Tabs,
     Tab,
 } from '@mui/material';
-import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
+import DeleteOutlineIcon from '@mui/icons-material/DeleteOutlineOutlined';
 import NavigationIcon from '@mui/icons-material/Navigation';
 import SettingsIcon from '@mui/icons-material/Settings';
 import ExtensionIcon from '@mui/icons-material/Extension';
 import Tooltip from '@mui/material/Tooltip';
 import { ConfigGeneric, type ConfigGenericProps, type ConfigGenericState } from '@iobroker/json-config';
-import { I18n } from '@iobroker/adapter-react-v5';
+import { I18n } from '@iobroker/gui-components';
 import type {
     PanelInfo,
     NavigationAssignmentList,
     NavigationAssignment,
     PageConfigBaseFields,
+    PageConfigEntry,
 } from '../../../src/lib/types/adminShareConfig';
 import {
     // SENDTO_GET_PANELS_COMMAND,
     ADAPTER_NAME,
     ALL_PANELS_SPECIAL_ID,
+    mainPageName,
 } from '../../../src/lib/types/adminShareConfig';
 
 // Special panel ID that the adapter will treat specially when present in assignments
@@ -60,6 +62,8 @@ type NavigationAssignmentPanelProps = {
     onCommonFieldsChange?: (fields: Partial<PageConfigBaseFields>) => void;
     /** Vom übergeordneten PageConfigManager bereitgestellt – navigationNodes pro panelTopic */
     panelPagesMap?: Record<string, string[]>;
+    /** Alle Admin-Seiten, für die Startseiten- und Zielprüfung */
+    allEntries?: PageConfigEntry[];
 };
 
 interface NavigationAssignmentPanelState extends ConfigGenericState {
@@ -86,7 +90,23 @@ interface NavigationAssignmentPanelState extends ConfigGenericState {
     pendingDelete?: string;
     // active tab index
     activeTab?: number;
+    // show system pages (///-prefixed) in the prev/next/parent/home dropdowns; ///unlock is always shown regardless
+    showSystemPages: boolean;
 }
+
+/**
+ * Checks whether a page name is a system page.
+ *
+ * System pages carry the `///` prefix (e.g. `///settings`). `///unlock` is exempt from this check
+ * and always treated as a regular, selectable page.
+ *
+ * @param name Page name to check.
+ * @returns `true` if the name is a system page other than `///unlock`.
+ */
+function isSystemPage(name: string): boolean {
+    return name.startsWith('///') && name !== '///unlock';
+}
+
 /**
  * Reusable navigation assignment side panel (class-based)
  * - transparent background
@@ -126,6 +146,7 @@ class NavigationAssignmentPanel extends ConfigGeneric<
             lastLoadTime: {},
             focusReceived: {},
             activeTab: 0,
+            showSystemPages: false,
         };
     }
 
@@ -146,7 +167,7 @@ class NavigationAssignmentPanel extends ConfigGeneric<
     }
 
     async componentDidMount(): Promise<void> {
-        super.componentDidMount();
+        void super.componentDidMount();
 
         // Get initial alive state and subscribe to changes
         if (this.props.oContext && this.props.oContext.socket) {
@@ -422,7 +443,7 @@ class NavigationAssignmentPanel extends ConfigGeneric<
         let panel = available.find(p => p.panelTopic === selectedTopic);
         // if the special ALL id was chosen, create a synthetic panel entry
         if (!panel && selectedTopic === ALL_PANELS_SPECIAL_ID) {
-            panel = { panelTopic: ALL_PANELS_SPECIAL_ID, friendlyName: `(${I18n.t('all') || 'All'})` } as PanelInfo;
+            panel = { panelTopic: ALL_PANELS_SPECIAL_ID, friendlyName: `(${I18n.t('all') || 'All'})` };
         }
         if (!panel) {
             return;
@@ -719,6 +740,24 @@ class NavigationAssignmentPanel extends ConfigGeneric<
     };
 
     /**
+     * Filters the pages selectable in the prev/next/parent/home dropdowns.
+     *
+     * System pages (see {@link isSystemPage}) are hidden unless `showSystemPages` is enabled. An
+     * already selected value is always kept in the list, even if it is a system page - otherwise
+     * MUI would show the select as empty and the value would get lost on the next change.
+     *
+     * @param pages All pages known for the currently selected panel.
+     * @param currentValue Value currently assigned to the dropdown, if any.
+     * @returns Pages selectable in the dropdown.
+     */
+    private getSelectablePages(pages: string[], currentValue?: string): string[] {
+        return pages.filter(
+            (p: string) =>
+                p !== this.props.uniqueName && (this.state.showSystemPages || !isSystemPage(p) || p === currentValue),
+        );
+    }
+
+    /**
      * Lookup map: panelTopic → { id, friendlyName, panelTopic }
      * Provides a quick association between a panel's topic string, its unique
      * config id and its human-readable name/friendlyName.
@@ -746,6 +785,122 @@ class NavigationAssignmentPanel extends ConfigGeneric<
         this.setState({ activeTab: newValue });
     };
 
+    handleShowSystemPagesChange = (_event: React.ChangeEvent<HTMLInputElement>, checked: boolean): void => {
+        this.setState({ showSystemPages: checked });
+    };
+
+    /**
+     * Panel-Topics, die eine Zuweisungsliste tatsächlich abdeckt.
+     *
+     * ALL_PANELS deckt alle bekannten Panels ab, abzüglich der Panels, die per eigenem Eintrag
+     * ohne Navigation ausdrücklich ausgenommen sind.
+     *
+     * @param assignments Zuweisungsliste einer Admin-Seite.
+     * @returns Liste der abgedeckten Panel-Topics.
+     */
+    private getCoveredTopics(assignments: NavigationAssignmentList | undefined): string[] {
+        if (!assignments || assignments.length === 0) {
+            return [];
+        }
+        const all = assignments.find(a => a.topic === ALL_PANELS_SPECIAL_ID);
+        if (all) {
+            const excluded = new Set(
+                assignments.filter(a => a.topic !== ALL_PANELS_SPECIAL_ID && !a.navigation).map(a => a.topic),
+            );
+            return this.state.available.map(p => p.panelTopic).filter(t => !!t && !excluded.has(t));
+        }
+        return assignments.filter(a => a.topic !== ALL_PANELS_SPECIAL_ID).map(a => a.topic);
+    }
+
+    /**
+     * Anzeigename eines Panels anhand seines Topics.
+     *
+     * @param topic Panel-Topic.
+     * @returns Freundlicher Name oder das Topic selbst.
+     */
+    private getPanelLabel(topic: string): string {
+        const panel = this.state.available.find(p => p.panelTopic === topic);
+        return panel?.friendlyName || topic;
+    }
+
+    /**
+     * Zustand der Startseiten-Checkbox inklusive Begründung, falls sie gesperrt ist.
+     *
+     * @returns Ob die Checkbox gesperrt ist und warum.
+     */
+    private getMainPageCheckboxState(): { disabled: boolean; reason: string } {
+        if (!this.state.alive) {
+            return { disabled: true, reason: I18n.t('main_page_disabled_offline') };
+        }
+        const mine = this.getCoveredTopics(this.state.assignments);
+        if (mine.length === 0) {
+            return { disabled: true, reason: I18n.t('main_page_disabled_no_panel') };
+        }
+        const mineSet = new Set(mine);
+        for (const other of this.props.allEntries ?? []) {
+            if (other.uniqueName === this.props.uniqueName) {
+                continue;
+            }
+            // Auch Alteintraege, die woertlich 'main' heissen, belegen die Startseite eines Panels.
+            const otherIsMain = ('isMainPage' in other && !!other.isMainPage) || other.uniqueName === mainPageName;
+            if (!otherIsMain) {
+                continue;
+            }
+            const conflict = this.getCoveredTopics(other.navigationAssignment).filter(t => mineSet.has(t));
+            if (conflict.length > 0) {
+                return {
+                    disabled: true,
+                    reason: I18n.t('main_page_disabled_conflict')
+                        .replace('%s', other.uniqueName)
+                        .replace('%p', conflict.map(t => this.getPanelLabel(t)).join(', ')),
+                };
+            }
+        }
+        return { disabled: false, reason: I18n.t('main_page_hint') };
+    }
+
+    /**
+     * Prüft, ob ein Navigationsziel auf einem Panel überhaupt existiert.
+     *
+     * Bekannt sind die vom Adapter gemeldeten Seiten des Panels sowie alle Admin-Seiten, die
+     * diesem Panel zugewiesen sind. Liegen für ein Panel keine Daten vor, wird nicht gewarnt.
+     *
+     * @param panelTopic Panel-Topic.
+     * @param target Name des Navigationsziels.
+     * @returns True, wenn das Ziel auf dem Panel verfügbar ist oder nicht beurteilt werden kann.
+     */
+    private isTargetAvailableOnPanel(panelTopic: string, target: string): boolean {
+        const known = this.props.panelPagesMap?.[panelTopic];
+        if (!known || known.length === 0) {
+            return true; // keine Daten - keine Aussage
+        }
+        if (known.includes(target)) {
+            return true;
+        }
+        for (const entry of this.props.allEntries ?? []) {
+            if (!this.getCoveredTopics(entry.navigationAssignment).includes(panelTopic)) {
+                continue;
+            }
+            const isMain = 'isMainPage' in entry && !!entry.isMainPage;
+            if (entry.uniqueName === target || (isMain && target === mainPageName)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Panels, auf denen ein Navigationsziel fehlt.
+     *
+     * @param rowTopic Topic der Zuweisungszeile (auch ALL_PANELS).
+     * @param target Name des Navigationsziels.
+     * @returns Anzeigenamen der Panels ohne dieses Ziel.
+     */
+    private getPanelsMissingTarget(rowTopic: string, target: string): string[] {
+        const topics = rowTopic === ALL_PANELS_SPECIAL_ID ? this.getCoveredTopics(this.state.assignments) : [rowTopic];
+        return topics.filter(t => !this.isTargetAvailableOnPanel(t, target)).map(t => this.getPanelLabel(t));
+    }
+
     private handleCommonFieldChange(field: keyof PageConfigBaseFields, value: any): void {
         if (this.props.onCommonFieldsChange) {
             this.props.onCommonFieldsChange({ [field]: value });
@@ -767,8 +922,38 @@ class NavigationAssignmentPanel extends ConfigGeneric<
             );
         }
 
+        const mainState = this.getMainPageCheckboxState();
+        const isMain = 'isMainPage' in commonFields && !!commonFields.isMainPage;
+
         return (
             <Box sx={{ mt: 2, pt: 2, borderTop: '1px solid', borderColor: 'divider' }}>
+                {/* Startseite (main) */}
+                <Box sx={{ mb: 2 }}>
+                    <Tooltip title={mainState.reason}>
+                        <Box sx={{ display: 'inline-block' }}>
+                            <FormControlLabel
+                                control={
+                                    <Checkbox
+                                        checked={isMain}
+                                        onChange={(_e, checked) => {
+                                            this.handleCommonFieldChange('isMainPage', checked);
+                                        }}
+                                        disabled={mainState.disabled && !isMain}
+                                    />
+                                }
+                                label={I18n.t('main_page_label')}
+                            />
+                        </Box>
+                    </Tooltip>
+                    <Typography
+                        variant="caption"
+                        color={mainState.disabled && !isMain ? 'warning.main' : 'text.secondary'}
+                        sx={{ display: 'block', ml: 4 }}
+                    >
+                        {mainState.reason}
+                    </Typography>
+                </Box>
+
                 {/* Hidden Checkbox */}
                 <Box sx={{ mb: 2 }}>
                     <FormControlLabel
@@ -801,10 +986,7 @@ class NavigationAssignmentPanel extends ConfigGeneric<
                             row
                             value={commonFields.alwaysOn || 'none'}
                             onChange={(_e, val) => {
-                                this.handleCommonFieldChange(
-                                    'alwaysOn',
-                                    val as 'none' | 'always' | 'action' | 'ignore',
-                                );
+                                this.handleCommonFieldChange('alwaysOn', val);
                             }}
                         >
                             <FormControlLabel
@@ -837,6 +1019,9 @@ class NavigationAssignmentPanel extends ConfigGeneric<
             : [];
         // Strikte Bedingung: Panel darf nur geöffnet sein, wenn eine Card ausgewählt ist
         const shouldBeCollapsed = isCollapsed || !this.props.uniqueName;
+        // Ist die Seite als Startseite markiert, liegen Panelzuweisung und Navigation fest:
+        // die Startseite erbt die Navigation der Seite, die sie ersetzt.
+        const lockAssignment = !!this.props.commonFields?.isMainPage;
 
         return (
             <Box
@@ -1090,6 +1275,14 @@ class NavigationAssignmentPanel extends ConfigGeneric<
 
                     {activeTab === 0 && (
                         <>
+                            {lockAssignment && (
+                                <Typography
+                                    variant="caption"
+                                    sx={{ display: 'block', mb: 1, color: 'warning.main' }}
+                                >
+                                    {I18n.t('main_page_locks_assignment')}
+                                </Typography>
+                            )}
                             {/* controls: select + add button */}
                             <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', mb: 1 }}>
                                 <Select
@@ -1100,7 +1293,7 @@ class NavigationAssignmentPanel extends ConfigGeneric<
                                         void this.loadPanels();
                                     }}
                                     onChange={e => this.setState({ selectedTopic: String(e.target.value) })}
-                                    disabled={!this.state.alive}
+                                    disabled={!this.state.alive || lockAssignment}
                                     sx={{
                                         flex: 1,
                                         backgroundColor: 'transparent',
@@ -1139,7 +1332,7 @@ class NavigationAssignmentPanel extends ConfigGeneric<
                                     variant="contained"
                                     sx={{ minWidth: 32, padding: '4px 8px' }}
                                     onClick={this.doAddSelected}
-                                    disabled={!this.state.selectedTopic || !this.state.alive}
+                                    disabled={!this.state.selectedTopic || !this.state.alive || lockAssignment}
                                 >
                                     +
                                 </Button>
@@ -1175,13 +1368,18 @@ class NavigationAssignmentPanel extends ConfigGeneric<
                                                                     }}
                                                                     secondaryAction={
                                                                         <IconButton
-                                                                            disabled={!this.state.alive}
+                                                                            disabled={
+                                                                                !this.state.alive || lockAssignment
+                                                                            }
                                                                             className="delete-icon"
                                                                             edge="end"
                                                                             aria-label="delete"
                                                                             size="small"
                                                                             onClick={e => {
-                                                                                if (!this.state.alive) {
+                                                                                if (
+                                                                                    !this.state.alive ||
+                                                                                    lockAssignment
+                                                                                ) {
                                                                                     return;
                                                                                 }
                                                                                 e.stopPropagation();
@@ -1340,6 +1538,7 @@ class NavigationAssignmentPanel extends ConfigGeneric<
                                             sx={{ width: '100%' }}
                                             disabled={
                                                 !this.state.alive ||
+                                                lockAssignment ||
                                                 (this.state.selectedAddedTopic
                                                     ? this.state.isLoading[this.state.selectedAddedTopic] || false
                                                     : false)
@@ -1360,16 +1559,17 @@ class NavigationAssignmentPanel extends ConfigGeneric<
                                                     <em>{I18n.t('select_panel_first')}</em>
                                                 )}
                                             </MenuItem>
-                                            {pages
-                                                .filter((p: string) => p !== this.props.uniqueName)
-                                                .map((p: string) => (
-                                                    <MenuItem
-                                                        key={`prev-${p}`}
-                                                        value={p}
-                                                    >
-                                                        {p}
-                                                    </MenuItem>
-                                                ))}
+                                            {this.getSelectablePages(
+                                                pages,
+                                                this.getNavValue(this.state.selectedAddedTopic, 'prev'),
+                                            ).map((p: string) => (
+                                                <MenuItem
+                                                    key={`prev-${p}`}
+                                                    value={p}
+                                                >
+                                                    {p}
+                                                </MenuItem>
+                                            ))}
                                         </Select>
                                     </Box>
                                     <Box>
@@ -1402,6 +1602,7 @@ class NavigationAssignmentPanel extends ConfigGeneric<
                                             sx={{ width: '100%' }}
                                             disabled={
                                                 !this.state.alive ||
+                                                lockAssignment ||
                                                 (this.state.selectedAddedTopic
                                                     ? this.state.isLoading[this.state.selectedAddedTopic] || false
                                                     : false)
@@ -1422,18 +1623,17 @@ class NavigationAssignmentPanel extends ConfigGeneric<
                                                     <em>{I18n.t('select_panel_first')}</em>
                                                 )}
                                             </MenuItem>
-                                            {pages
-                                                .filter(
-                                                    (p: string) => p !== this.props.uniqueName && !p.startsWith('///'),
-                                                )
-                                                .map((p: string) => (
-                                                    <MenuItem
-                                                        key={`next-${p}`}
-                                                        value={p}
-                                                    >
-                                                        {p}
-                                                    </MenuItem>
-                                                ))}
+                                            {this.getSelectablePages(
+                                                pages,
+                                                this.getNavValue(this.state.selectedAddedTopic, 'next'),
+                                            ).map((p: string) => (
+                                                <MenuItem
+                                                    key={`next-${p}`}
+                                                    value={p}
+                                                >
+                                                    {p}
+                                                </MenuItem>
+                                            ))}
                                         </Select>
                                     </Box>
                                     <Box>
@@ -1462,6 +1662,7 @@ class NavigationAssignmentPanel extends ConfigGeneric<
                                             sx={{ width: '100%' }}
                                             disabled={
                                                 !this.state.alive ||
+                                                lockAssignment ||
                                                 (this.state.selectedAddedTopic
                                                     ? this.state.isLoading[this.state.selectedAddedTopic] || false
                                                     : false)
@@ -1476,16 +1677,17 @@ class NavigationAssignmentPanel extends ConfigGeneric<
                                             }
                                         >
                                             <MenuItem value="">{<em>—</em>}</MenuItem>
-                                            {pages
-                                                .filter((p: string) => p !== this.props.uniqueName)
-                                                .map((p: string) => (
-                                                    <MenuItem
-                                                        key={`parent-${p}`}
-                                                        value={p}
-                                                    >
-                                                        {p}
-                                                    </MenuItem>
-                                                ))}
+                                            {this.getSelectablePages(
+                                                pages,
+                                                this.getNavValue(this.state.selectedAddedTopic, 'parent'),
+                                            ).map((p: string) => (
+                                                <MenuItem
+                                                    key={`parent-${p}`}
+                                                    value={p}
+                                                >
+                                                    {p}
+                                                </MenuItem>
+                                            ))}
                                         </Select>
                                     </Box>
                                     <Box>
@@ -1514,6 +1716,7 @@ class NavigationAssignmentPanel extends ConfigGeneric<
                                             sx={{ width: '100%' }}
                                             disabled={
                                                 !this.state.alive ||
+                                                lockAssignment ||
                                                 (this.state.selectedAddedTopic
                                                     ? this.state.isLoading[this.state.selectedAddedTopic] || false
                                                     : false)
@@ -1528,18 +1731,29 @@ class NavigationAssignmentPanel extends ConfigGeneric<
                                             }
                                         >
                                             <MenuItem value="">{<em>—</em>}</MenuItem>
-                                            {pages
-                                                .filter((p: string) => p !== this.props.uniqueName)
-                                                .map((p: string) => (
-                                                    <MenuItem
-                                                        key={`home-${p}`}
-                                                        value={p}
-                                                    >
-                                                        {p}
-                                                    </MenuItem>
-                                                ))}
+                                            {this.getSelectablePages(
+                                                pages,
+                                                this.getNavValue(this.state.selectedAddedTopic, 'home'),
+                                            ).map((p: string) => (
+                                                <MenuItem
+                                                    key={`home-${p}`}
+                                                    value={p}
+                                                >
+                                                    {p}
+                                                </MenuItem>
+                                            ))}
                                         </Select>
                                     </Box>
+                                    <FormControlLabel
+                                        control={
+                                            <Checkbox
+                                                checked={this.state.showSystemPages}
+                                                onChange={this.handleShowSystemPagesChange}
+                                                size="small"
+                                            />
+                                        }
+                                        label={I18n.t('show_system_pages')}
+                                    />
                                     <Divider sx={{ my: 1 }} />
                                 </Box>
                             )}
@@ -1602,6 +1816,9 @@ class NavigationAssignmentPanel extends ConfigGeneric<
                                               >
                                                   {(['prev', 'next', 'parent', 'home'] as const).map((field, idx) => {
                                                       const val = this.getNavValue(topic, field);
+                                                      const missing = val
+                                                          ? this.getPanelsMissingTarget(topic, val)
+                                                          : [];
                                                       return (
                                                           <React.Fragment key={`${topic}-${field}`}>
                                                               <Box
@@ -1617,9 +1834,25 @@ class NavigationAssignmentPanel extends ConfigGeneric<
                                                                   >
                                                                       {I18n.t(field) || field}
                                                                   </Typography>
-                                                                  <Typography variant="body2">
-                                                                      {val || <em>—</em>}
-                                                                  </Typography>
+                                                                  {missing.length > 0 ? (
+                                                                      <Tooltip
+                                                                          title={I18n.t('nav_target_missing')
+                                                                              .replace('%s', val)
+                                                                              .replace('%p', missing.join(', '))}
+                                                                      >
+                                                                          <Typography
+                                                                              variant="body2"
+                                                                              color="warning.main"
+                                                                              sx={{ fontWeight: 600 }}
+                                                                          >
+                                                                              {val} ⚠
+                                                                          </Typography>
+                                                                      </Tooltip>
+                                                                  ) : (
+                                                                      <Typography variant="body2">
+                                                                          {val || <em>—</em>}
+                                                                      </Typography>
+                                                                  )}
                                                               </Box>
                                                               {idx < 3 && (
                                                                   <Divider

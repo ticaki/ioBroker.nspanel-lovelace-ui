@@ -1,6 +1,7 @@
 // This file extends the AdapterConfig type from "@types/iobroker"
 
 import {NSpanelModel} from "./types/types";
+import type { ScreensaverEntry } from "./types/adminShareConfig";
 
 // Augment the globally declared type ioBroker.AdapterConfig
 declare global {
@@ -17,6 +18,7 @@ declare global {
             mqttUsername: string;
             mqttIp: string;
             mqttPort: number;
+            internalServerIp: string;
             Testconfig2: Partial<Panel.panelConfigPartial>[];
             timezone: string;
             useBetaTFT: boolean;
@@ -246,7 +248,13 @@ declare global {
                 colMediaTitleOff: string;
                 colMediaOnOffColor: string;
             }[];
+
+            /** screensavers configured in the admin tab "Screensaver" (own table, not part of pageConfig) */
+            screensaverConfig: ScreensaverEntry[];
+
             pageUnlockConfig: any
+            pageQRConfig: any[];
+
             pageConfig: ({
                 card: 'cardAlarm'; // Card type - will be extended with more types
                 alarmType?: string; // e.g. 'alarm' | 'unlock' (only for cardAlarm)
@@ -297,9 +305,26 @@ declare global {
                 alwaysOn?: 'none' | 'always' | 'action' | 'ignore';
                 uniqueName: string;
                 navigationAssignment?: navigationAssignment[];
+            }|{
+                card: 'cardChart';
+                headline: string;
+                chartColor: string;
+                selChartType: 'cardChart' | 'cardLChart';
+                selInstanceDataSource: 0 | 1;
+                selInstance: string;
+                setStateForTicks: string;
+                setStateForValues: string;
+                setStateForDB: string;
+                txtLabelYAchse: string;
+                rangeHours: number;
+                maxXAxisTicks: number;
+                factorCardChart: number;
+                maxXAxisLabels: number;
+                uniqueName: string;
+                hidden?: boolean;
+                alwaysOn?: 'none' | 'always' | 'action' | 'ignore';
+                navigationAssignment?: navigationAssignment[]
             })[];
-
-            pageQRConfig: any[];
         }
     }
 }

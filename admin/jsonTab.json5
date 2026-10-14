@@ -9,6 +9,7 @@
             "items": {
                 "pageGlobalSettings": {
                     "type": "custom",
+                    "guiApi": 2,
                     "i18n": true,
                     "url": "custom/customComponents.js",
                     "name": "AdminComponentTemplateSet/Components/TabPanelinfo",

@@ -28,6 +28,7 @@ var import_Color = require("../const/Color");
 var import_icon_mapping = require("../const/icon_mapping");
 var import_tools = require("../const/tools");
 var import_definition = require("../const/definition");
+var import_default_pages = require("../const/default-pages");
 function isNavigationItemConfigArray(a) {
   if (!a) {
     return false;
@@ -70,7 +71,7 @@ class Navigation extends import_library.BaseClass {
   panel;
   database = [];
   navigationConfig;
-  mainPage = "main";
+  mainPage = import_default_pages.mainPageName;
   _currentItem = 0;
   initDone = false;
   infityCounter = 0;
@@ -107,14 +108,21 @@ class Navigation extends import_library.BaseClass {
     let serviceRight = "";
     let serviceID = null;
     this.navigationConfig.sort((a, b) => {
-      if (a.name === "main") {
+      if (a.name === b.name) {
+        return 0;
+      }
+      if (a.name === import_default_pages.mainPageName) {
         return -1;
       }
-      if (b.name === "main") {
+      if (b.name === import_default_pages.mainPageName) {
         return 1;
       }
       return a.name.localeCompare(b.name);
     });
+    const effectiveMain = this.getMainNodeName();
+    if (this.mainPage === import_default_pages.mainPageName && effectiveMain !== import_default_pages.mainPageName) {
+      this.mainPage = effectiveMain;
+    }
     for (let a = 0; a < this.navigationConfig.length; a++) {
       const c = this.navigationConfig[a];
       if (!c) {
@@ -164,7 +172,10 @@ class Navigation extends import_library.BaseClass {
           if (!r2) {
             continue;
           }
-          const found = this.navigationConfig.find((entry) => entry && entry.name === r2);
+          let found = this.navigationConfig.find((entry) => entry && entry.name === r2);
+          if (!found && r2 === import_default_pages.mainPageName && effectiveMain !== import_default_pages.mainPageName) {
+            found = this.navigationConfig.find((entry) => entry && entry.name === effectiveMain);
+          }
           if (found) {
             const idx = this.navigationConfig.indexOf(found);
             i[nk][nk2] = idx;
@@ -392,10 +403,25 @@ class Navigation extends import_library.BaseClass {
   getCurrentMainPoint() {
     const index = this.navigationConfig.findIndex((a) => a && a.name === this.mainPage);
     if (index === -1) {
-      return "main";
+      return this.getMainNodeName();
     }
     const item = this.navigationConfig[index];
-    return item ? item.name : "main";
+    return item ? item.name : this.getMainNodeName();
+  }
+  /**
+   * Name of the node that acts as start page.
+   *
+   * Prefers the node named {@link mainPageName}; if the configuration has none, the first
+   * regular (non service) node is used so that links to the start page stay resolvable.
+   *
+   * @returns Name of the start page node.
+   */
+  getMainNodeName() {
+    if (this.navigationConfig.some((a) => a && a.name === import_default_pages.mainPageName)) {
+      return import_default_pages.mainPageName;
+    }
+    const first = this.navigationConfig.find((a) => a && !a.name.startsWith("///"));
+    return first ? first.name : import_default_pages.mainPageName;
   }
   getCurrentMainPage() {
     var _a, _b, _c;
@@ -412,6 +438,10 @@ class Navigation extends import_library.BaseClass {
     const page = this.database[this.currentItem];
     if (page == null) {
       const index = this.database.findIndex((a) => a && a.page !== null);
+      if (index === -1) {
+        this.log.error("No valid page found in navigation database.");
+        return void 0;
+      }
       return this.database[index].page;
     }
     return page.page;

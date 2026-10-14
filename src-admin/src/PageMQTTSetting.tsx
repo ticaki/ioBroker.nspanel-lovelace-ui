@@ -1,5 +1,4 @@
 import React from 'react';
-import { withTheme } from '@mui/styles';
 import { ConfigGeneric, type ConfigGenericProps, type ConfigGenericState } from '@iobroker/json-config';
 import {
     Checkbox,
@@ -55,7 +54,7 @@ class PageMQTTSetting extends ConfigGeneric<ConfigGenericProps & { theme?: any }
     }
 
     async componentDidMount(): Promise<void> {
-        super.componentDidMount();
+        void super.componentDidMount();
 
         // Get initial alive state and subscribe to changes
         const aliveStateId = `system.adapter.${this.adapterName}.${this.instance}.alive`;
@@ -184,11 +183,7 @@ class PageMQTTSetting extends ConfigGeneric<ConfigGenericProps & { theme?: any }
         return (
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                 {/* MQTT Server Enable Checkbox */}
-                <Box
-                    sx={boxStyle}
-                    display={'flex'}
-                    flexDirection={'column'}
-                >
+                <Box sx={{ ...boxStyle, display: 'flex', flexDirection: 'column' }}>
                     <FormControlLabel
                         sx={{ mb: 0 }}
                         control={
@@ -220,10 +215,7 @@ class PageMQTTSetting extends ConfigGeneric<ConfigGenericProps & { theme?: any }
                     </Button>
                 </Box>
                 {/* MQTT Connection Settings */}
-                <Box
-                    sx={boxStyle}
-                    flexDirection={'column'}
-                >
+                <Box sx={{ ...boxStyle, flexDirection: 'column' }}>
                     <Box sx={{ display: 'flex', width: '100%' }}>
                         {/* IP-Feld mit readOnly, wenn mqttServer aktiviert ist */}
                         <TextField
@@ -334,4 +326,4 @@ class PageMQTTSetting extends ConfigGeneric<ConfigGenericProps & { theme?: any }
     }
 }
 
-export default withTheme(PageMQTTSetting);
+export default PageMQTTSetting;

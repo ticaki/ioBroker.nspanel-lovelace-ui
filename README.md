@@ -158,8 +158,68 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
     ### **WORK IN PROGRESS**
 -->
 ### **WORK IN PROGRESS**
-- (ticaki) cardPower admin: drag & drop between slots now works (missing dataTransfer.setData prevented Firefox/Safari from starting the drag)
-- (copilot) Adapter requires node.js >= 22 now
+- (tt-tom17) admin: new tab `Screensaver` - configure the screensaver without script: version (standard / alternate / advanced / easyview), the panels that use it, every place of the card with its own dialog (state or page item template, icons incl. icon per value range, colors, value, text, indicator action), MR icons, clock and date format, weather instance, rotation time, swipe and indicator buttons. The entry replaces the screensaver of the script for the listed panels. Documentation `doc/de|en/Screensaver-Admin.md`
+- (ticaki) admin: page configuration - panel filter `All panels` and new page type `Main pages`; a field label cut off with `…` shows its full text on mouse over
+
+### 1.3.0 (2026-10-13)
+- (ticaki) cardMedia: support for the squeezeboxrpc adapter (Logitech Media Server) – media id `squeezeboxrpc.X.Players.<name>`; speaker grid to sync other rooms (control follows the sync master), group volume changes every member by the same amount, 3-step shuffle, seek via logo, favorites, saved playlists (requested from the LMS) and current playlist
+- (ticaki) fix: a page `main` in the panel script was reported as coming from the global script configuration when the global configuration also has a page `main` (log message and colour in the admin navigation view); the page of the panel script was used, only its origin was wrong
+- (tt-tom17) admin: thermostat pages (`cardThermo2`) can be created in the PageConfig tab like the other page types. The editor draws the page like the panel: tabs for up to eight heat circuits (an airCondition channel gives two), a click on the headline, the set temperature, the value lines or the mode text opens the settings of that spot (alias channel or single data points, headline, min/max/step, icons, colors, units, mode list, circuit icon), the nine slots around the ring (the ninth between - and +) show the real order of the panel - selector slots, the buttons the adapter generates from the alias, then the configured items, each bound to one heat circuit or to all (new field `Heat circuit` in the item dialog, `filter` of the script), with paging and the `sortOrder` of the slots. The admin page goes through the same code as the script page (`PageThermo2.getPage`), so the result on the panel is identical
+- (tt-tom17) fix: the MAINTAIN indicator of `cardThermo2` was added twice to the page items
+
+### 1.2.0 (2026-10-11)
+- (tt-tom17) fix: the item role `lock` accepts `sensor.lock` as role of the ACTUAL state in addition to `state`; before, an ACTUAL state with `sensor.lock` was skipped and the item silently showed the SET state instead. The log now reports when a channel falls back to its alternate state (e.g. ACTUAL → SET)
+- (tt-tom17) admin: chart pages (column and line) can be created in the PageConfig tab like the other page types; the page gets its own editor with chart type, color, data source (script states or a history/sql/influxdb instance), range, factor, x-axis ticks and labels. The classic way (script page plus the `Page Chart` tab) keeps working, both share one code path in the adapter. The DB instance is stored in the short form (`influxdb.0`); the alive check accepts both forms. The history query now asks for averages (bar: one per hour, line: 5-minute grid) instead of raw values, the x-axis is computed from the time stamps, line values keep one decimal
+- (tt-tom17) fix: the line chart scales large values automatically — the panel prints a y-axis tick with at most two characters, so 152 W used to show up as "15"; values are now divided by 10, 100, … until the ticks fit and the y-axis label shows the factor (e.g. `W x10`). The y-ticks use round 1-2-5 steps from the minimum to the maximum of the data; the former two extra ticks below the minimum are gone — the panel never showed them, but they forced the factor on a winter day (-5 … 3 °C ended up as `°C x10`)
+- (tt-tom17) admin: the timezone field of the panel setup sits in the same row and has the same width as the other fields again
+- (tt-tom17) admin: light items with the roles rgbSingle, rgb, ct and hue get a `Mode list` dialog in the item editor to configure `inSel_Alias` (a writable string state) and `modeList` (one entry per line); items with the role select get the same dialog with the list only, they select through the channel's SET state and, without a list, the adapter uses its common.states. The dialog checks the state, warns about `?` in entries, about more than 48 entries and about lists longer than 900 characters, and can take the list from the state's `common.states` (a state with own `common.states` is listed by the adapter directly from them, the mode list is only a fallback); the `Color Settings` and `Mode list` buttons turn green once they hold data
+- (tt-tom17) fix: the popup of a select item with a configured mode list showed the raw value of ACTUAL (the index) as current mode instead of the list entry, so no entry was marked; the entry is looked up by index now, `label?value` entries by their value
+- (tt-tom17) fix: selecting an entry of a mode list configured for a select item wrote the index into the read-only ACTUAL state (Forbidden write attempts on a read-only state); the writeable SET state is used now, light items are unaffected because both point to inSel_Alias
+
+### 1.1.2 (2026-09-18)
+
+- (ticaki) fix: a panel could get stuck in "wait for connection" after a WiFi drop or a burst of screensaver updates, because the display's serial buffer overflowed. The adapter now spaces out messages to the display, sends screensaver updates at most every 3 seconds, and restarts tasmota automatically when the display reports an overflow
+
+### 1.1.1 (2026-09-16)
+- (tt-tom17) fix: a cardPower page created in the admin tab showed white icons although the color scale was switched on. The scale was only built when both its lower and its upper bound had been typed in; a bound that was left at its displayed default was never stored. The defaults of the classic accordion (0 / 10000 / 0) apply now
+- (tt-tom17) admin: a newly added power slot of a cardPower page stores its color and speed scale bounds explicitly (0 / 10000 / 0 and 0 / 10000), the same way the classic accordion did, instead of only displaying them
+- (tt-tom17) the expert tab `Navigation Overview` has been removed. It never made it into productive use; the navigation of a panel is configured in its script or in the `Navigation Flow` tab
+- (ticaki) a page named `main` in the global script configuration is used as start page of every panel that has none of its own. That is unchanged, but it is now logged and the navigation view of the admin marks such pages as `page from the global script configuration`
+- (tt-tom17) admin: the navigation assignment panel can show system pages (the `///`-prefixed ones) in the prev/next/parent/home dropdowns via a new checkbox; `///unlock` is always listed
+- (tt-tom17) admin: the navigation flow tab remembers the last selected panel and restores it on reload, instead of always jumping back to the first one
+- (tt-tom17) fix: the info panel of the navigation flow left the icon row out whenever the icon was read from a state instead of being set as a constant. It now shows the icon the panel really displays - the current value of that state, together with a hint which state it comes from, or `empty` when the state holds nothing
+- (tt-tom17) fix: setting the prev or next of a page to the service page `///unlock` in the admin had no effect. The dropdowns offer page names, the adapter resolves navigation node names, and the service entry point is the one place where the two differ - it is mapped now
+
+### 1.1.0 (2026-09-06)
+- (ticaki) fix: a panel card marked with `Check!` was hard to read - white text on the beige card in the dark themes, almost invisible input frames in the new light one. The icons of the icon picker were invisible in the `blue` theme
+- (ticaki) fix: passwords no longer reach the log in plain text
+- (ticaki) fix: setting a panel up failed with `Invalid response from adapter` or `the message from the admin is incomplete`. It runs as three steps now and shows how far it got
+- (ticaki) fix: the timezone dropdown froze the browser, is a searchable field now, and the chosen zone reaches the panel at last
+- (ticaki) fix: a switched off panel was marked as such in english and german only, and hard to tell from an offline one
+- (ticaki) the start page can now be set in the admin: a checkbox marks any admin page as start page, it replaces the one from the configuration script and is marked with `(main)`
+- (ticaki) a panel no longer needs a page named `main` in the configuration script, so it can be set up in the admin alone (script version 0.21.1)
+- (ticaki) navigation flow: nodes are coloured by origin, pages linked with `next` and `prev` share one edge, a long press target and a navigation target read from a state get a connection of their own, and hovering or clicking highlights what belongs together
+- (ticaki) navigation flow: an option shows the states and channels each page works with as nodes of their own, with an info panel listing what a page item makes of them
+- (ticaki) navigation flow: the page info starts with the page name and its headline and links to the page configuration of an admin page
+- (ticaki) admin: the navigation assignment marks a navigation target that does not exist on an assigned panel
+- (ticaki) fixed: replacing a script page from the admin tore the navigation apart and could cut off the access to the service pages
+- (ticaki) fixed: a panel without its own start page could show the start page of another panel
+- (ticaki) fixed: after sending the configuration script the reloaded panel lost the pages of all other panels until the adapter was restarted
+- (ticaki) fixed: a `cardQR`, `cardAlarm` or `cardUnlock` page in the configuration script stopped all following pages from being created
+- (ticaki) fixed: the page configuration of a cardTrash page did not open when the entry carries no waste types yet
+- (ticaki) fixed: the state `mainNavigationPoint` was not translated
+
+### 1.0.1 (2026-09-01)
+- (tt-tom17) cardChart (line): the x-axis no longer uses a fixed 24 h window, it now follows the configured hours range
+- (tt-tom17) admin: the trash page now shows a status line after an .ics upload, including the number of appointments found
+- (ticaki) admin: fixed the target page selection in the page item dialog – the dropdown stayed empty and could crash the page config tab (`null is not an object (evaluating 'x.current.removeAttribute')`)
+
+### 1.0.0 (2026-08-18)
+- (copilot) **BREAKING:** Adapter requires node.js >= 22 now
+- (GermanBluefox) **BREAKING:** Admin UI migrated to React 19 / MUI 9 / `@iobroker/gui-components` – requires admin 8.0.0 or newer
+- (ticaki) cardPower configuration migrated to the new react based page config tab
+- (ticaki) admin: previous/next buttons in the navigation assignment panel were swapped
+- (ticaki) berry driver generation 11 added (beta), the automatic berry driver update was removed
 
 ### 0.17.8 (2026-04-25)
 - (ticaki) fixed: Cannot read properties of undefined (reading 'trim')

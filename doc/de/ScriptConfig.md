@@ -49,7 +49,7 @@ Es gibt in dem Script drei Bereiche:
   
 Die Konfiguration der Seiten gleich fast der wie im Panel-Script. Es gibt ein paar wichtige Punkte die sich von dem Panel_Script unterscheiden.  
 - Jede Seite braucht die Eigenschaft `uniqueName` -> Das ist ein eindeutiger Name für die Seite.   
-- Die Hauptseite muß als `uniqueName` **main** haben  
+- Die Hauptseite sollte als `uniqueName` **main** haben. Fehlt sie, legt der Adapter selbst eine leere Hauptseite an; eine im Admin unter `main` angelegte Seite überschreibt die Hauptseite aus dem Skript.  
 - `next`, `prev`, `home`, `parent` müssen **Strings** sein, die auf einen der `uniqueName` verweist.
 - Seiten die in `pages` eingetragen werden, werden im Kreis miteinander verlinkt, alle anderen Seiten die verwendet werden sollen müssen in `subPages` aufgeführt sein. 
 - Die erste Zeile hat sich auch etwas geändert. Aus `let main: Pagetype ={` wird `const main: ScriptConfig.PageGrid = {` Die Page hinter `ScriptConfig` gleicht dem type `cardxxx`. Hier im Beispiel PageGrid = cardGrid.  

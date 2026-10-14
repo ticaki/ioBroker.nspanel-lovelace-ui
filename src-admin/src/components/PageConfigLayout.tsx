@@ -11,7 +11,7 @@ import {
     MenuItem,
     FormControl,
 } from '@mui/material';
-import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
+import DeleteOutlineIcon from '@mui/icons-material/DeleteOutlineOutlined';
 import ConfirmDialog from './ConfirmDialog';
 import NavigationAssignmentPanel from './NavigationAssignmentPanel';
 import type {
@@ -20,11 +20,31 @@ import type {
     PageConfigEntry,
     AdminPanelConfig,
 } from '../../../src/lib/types/adminShareConfig';
-import { ADAPTER_NAME, ALL_PANELS_SPECIAL_ID } from '../../../src/lib/types/adminShareConfig';
+import {
+    ADAPTER_NAME,
+    ALL_PANELS_SPECIAL_ID,
+    isMainPageEntry,
+    mainPageName,
+} from '../../../src/lib/types/adminShareConfig';
+
+/**
+ * Name under which an entry is shown in the page list.
+ *
+ * The stored uniqueName is kept untouched and stays visible; a page flagged as start page only
+ * gets the reserved id appended as a marker, so several pages stay distinguishable.
+ *
+ * @param entry Admin page configuration entry.
+ * @returns The name to display, e.g. `Hauptseite1 (main)`.
+ */
+export function getDisplayName(entry: PageConfigEntry): string {
+    return isMainPageEntry(entry) ? `${entry.uniqueName} (${mainPageName})` : entry.uniqueName;
+}
 
 export type PageCardType =
     | Extract<
           AdminCardTypes,
+          | 'cardChart'
+          | 'cardThermo2'
           | 'cardAlarm'
           | 'cardQR'
           | 'cardPower'
@@ -35,10 +55,42 @@ export type PageCardType =
           | 'cardSchedule'
       >
     | 'all'
+    | 'mainPages' // Filter: alle Seiten mit isMainPage, kein eigener Kartentyp
     | 'cardTrash'
     | 'pageMenu'; // 'pageMenu' = Gruppe für alle Menu-Kartentypen
 
 const MENU_CARD_TYPES: ReadonlyArray<string> = ['cardGrid', 'cardGrid2', 'cardGrid3', 'cardEntities', 'cardSchedule'];
+
+/**
+ * Whether new pages can be created for the given page type selection.
+ * 'all' and 'mainPages' are pure filters without a concrete card type.
+ *
+ * @param cardType Selected page type.
+ * @returns true if the selection maps to a concrete card type.
+ */
+export function canCreateForCardType(cardType: PageCardType): boolean {
+    return cardType !== 'all' && cardType !== 'mainPages';
+}
+
+/**
+ * Filters entries by the selected page type.
+ *
+ * @param entries Admin page configuration entries.
+ * @param cardType Selected page type.
+ * @returns The matching entries.
+ */
+export function filterEntriesByCardType(entries: PageConfigEntry[], cardType: PageCardType): PageConfigEntry[] {
+    switch (cardType) {
+        case 'all':
+            return entries;
+        case 'mainPages':
+            return entries.filter(e => isMainPageEntry(e));
+        case 'pageMenu':
+            return entries.filter(e => MENU_CARD_TYPES.includes(e.card));
+        default:
+            return entries.filter(e => e.card === cardType);
+    }
+}
 
 /** Sonderwert für den Panel-Filter: Seiten ohne Zuweisung */
 const PANEL_FILTER_UNASSIGNED = '___UNASSIGNED___';
@@ -58,6 +110,8 @@ export interface PageConfigLayoutProps {
     navigationPanelProps: any;
     /** Konfigurierte Panels für den Panel-Filter */
     panels?: AdminPanelConfig[];
+    /** Seitennamen, die der Adapter bereits kennt (Skript- und Systemseiten) */
+    pagesList?: string[];
 }
 
 interface PageConfigLayoutState {
@@ -125,7 +179,7 @@ export class PageConfigLayout extends React.Component<PageConfigLayoutProps, Pag
 
     private handleAdd = (): void => {
         const name = this.state.newName.trim();
-        if (!name || this.props.selectedCardType === 'all') {
+        if (!name || !canCreateForCardType(this.props.selectedCardType)) {
             return;
         }
         this.props.onAdd(name, this.props.selectedCardType);
@@ -169,14 +223,20 @@ export class PageConfigLayout extends React.Component<PageConfigLayoutProps, Pag
         const { selectedPanelFilter } = this.state;
         const panels: AdminPanelConfig[] = this.props.panels ?? [];
         const uniqueNames = Array.from(new Set(entries.map(e => e.uniqueName))).filter(Boolean);
+        const newName = this.state.newName.trim();
+        // 'main' darf nicht von Hand vergeben werden - die Startseite wird ausschliesslich ueber
+        // die Checkbox in der Navigationszuweisung gesetzt, sonst laufen deren Pruefungen ins Leere.
+        const newNameIsReserved = newName === mainPageName;
+        // Ein Name, den der Adapter schon kennt, der aber noch keine Admin-Seite ist, gehoert zur
+        // Skriptkonfiguration - die Admin-Seite ueberschreibt sie dann.
+        const overridesExistingPage =
+            !!newName &&
+            !newNameIsReserved &&
+            !uniqueNames.includes(newName) &&
+            (this.props.pagesList ?? []).includes(newName);
 
         // Filter entries by selected card type
-        const cardFilteredEntries =
-            selectedCardType === 'all'
-                ? entries
-                : selectedCardType === 'pageMenu'
-                  ? entries.filter(e => MENU_CARD_TYPES.includes(e.card))
-                  : entries.filter(e => e.card === selectedCardType);
+        const cardFilteredEntries = filterEntriesByCardType(entries, selectedCardType);
 
         // Filter additionally by selected panel
         const filteredEntries =
@@ -201,7 +261,7 @@ export class PageConfigLayout extends React.Component<PageConfigLayoutProps, Pag
 
         const currentEntry = entries.find(e => e.uniqueName === selected);
         const currentAssignments = currentEntry?.navigationAssignment || [];
-        const docUrl = `https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/wiki/${encodeURIComponent(selectedCardType === 'all' ? (currentEntry?.card ? currentEntry.card : 'PageConfig') : selectedCardType)}`;
+        const docUrl = `https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/wiki/${encodeURIComponent(!canCreateForCardType(selectedCardType) ? (currentEntry?.card ? currentEntry.card : 'PageConfig') : selectedCardType)}`;
         return (
             <Box
                 sx={{
@@ -244,6 +304,7 @@ export class PageConfigLayout extends React.Component<PageConfigLayoutProps, Pag
                                 </Typography>
                                 <Select
                                     value={selectedPanelFilter}
+                                    displayEmpty
                                     onChange={e => {
                                         this.setState({ selectedPanelFilter: e.target.value });
                                     }}
@@ -291,7 +352,7 @@ export class PageConfigLayout extends React.Component<PageConfigLayoutProps, Pag
                                 disabled={!this.state.alive}
                                 value={selectedCardType}
                                 onChange={e => {
-                                    onCardTypeChange(e.target.value as PageCardType);
+                                    onCardTypeChange(e.target.value);
                                 }}
                                 sx={{
                                     backgroundColor: 'transparent',
@@ -299,11 +360,14 @@ export class PageConfigLayout extends React.Component<PageConfigLayoutProps, Pag
                                 }}
                             >
                                 <MenuItem value="all">{this.getText('page_type_all')}</MenuItem>
+                                <MenuItem value="mainPages">{this.getText('page_type_mainPages')}</MenuItem>
                                 <MenuItem value="pageMenu">{this.getText('page_type_pageMenu')}</MenuItem>
                                 <MenuItem value="cardAlarm">{this.getText('page_type_alarm')}</MenuItem>
                                 <MenuItem value="cardQR">{this.getText('page_type_qr')}</MenuItem>
                                 <MenuItem value="cardPower">{this.getText('page_type_power')}</MenuItem>
                                 <MenuItem value="cardTrash">{this.getText('page_type_trash')}</MenuItem>
+                                <MenuItem value="cardChart">{this.getText('page_type_chart')}</MenuItem>
+                                <MenuItem value="cardThermo2">{this.getText('page_type_thermo2')}</MenuItem>
                             </Select>
                         </FormControl>
                     </Paper>
@@ -318,8 +382,8 @@ export class PageConfigLayout extends React.Component<PageConfigLayoutProps, Pag
                     >
                         {this.getText('pages')}
                     </Typography>
-                    {/* Add new page - nur anzeigen wenn nicht 'all' ausgewählt */}
-                    {selectedCardType !== 'all' && (
+                    {/* Add new page - nur anzeigen wenn ein konkreter Kartentyp ausgewählt ist */}
+                    {canCreateForCardType(selectedCardType) && (
                         <Paper
                             sx={{ p: 0, backgroundColor: 'transparent' }}
                             elevation={0}
@@ -335,8 +399,8 @@ export class PageConfigLayout extends React.Component<PageConfigLayoutProps, Pag
                                     }}
                                     variant="standard"
                                     placeholder={this.getText('New item')}
-                                    InputProps={{
-                                        sx: { backgroundColor: 'transparent', px: 1 },
+                                    slotProps={{
+                                        input: { sx: { backgroundColor: 'transparent', px: 1 } },
                                     }}
                                     sx={{
                                         flex: 1,
@@ -363,13 +427,30 @@ export class PageConfigLayout extends React.Component<PageConfigLayoutProps, Pag
                                     onClick={this.handleAdd}
                                     disabled={
                                         !this.state.alive ||
-                                        !this.state.newName.trim() ||
-                                        uniqueNames.includes(this.state.newName.trim())
+                                        !newName ||
+                                        newNameIsReserved ||
+                                        uniqueNames.includes(newName)
                                     }
                                 >
                                     +
                                 </Button>
                             </Box>
+                            {newNameIsReserved && (
+                                <Typography
+                                    variant="caption"
+                                    sx={{ display: 'block', mt: 0.5, px: 1, color: 'warning.main' }}
+                                >
+                                    {this.getText('page_name_main_reserved')}
+                                </Typography>
+                            )}
+                            {overridesExistingPage && (
+                                <Typography
+                                    variant="caption"
+                                    sx={{ display: 'block', mt: 0.5, px: 1, color: 'warning.main' }}
+                                >
+                                    {this.getText('page_overrides_script_page')}
+                                </Typography>
+                            )}
                         </Paper>
                     )}
                     {/* Pages list */}
@@ -409,7 +490,10 @@ export class PageConfigLayout extends React.Component<PageConfigLayoutProps, Pag
                                         variant="body2"
                                         sx={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis' }}
                                     >
-                                        {name}
+                                        {(() => {
+                                            const entry = entries.find(e => e.uniqueName === name);
+                                            return entry ? getDisplayName(entry) : name;
+                                        })()}
                                     </Typography>
                                     <IconButton
                                         disabled={!this.state.alive}
