@@ -39,6 +39,11 @@ import { PageChartBar } from '../pages/pageChartBar';
 import { PageChartLine } from '../pages/pageChartLine';
 import { PageThermo2 } from '../pages/pageThermo2';
 import { AdminConfiguration } from '../configuration/admin';
+import { ensureMainPage } from '../configuration/main-page';
+import { PageOriginTracker } from '../configuration/page-origin';
+import { collectNavigationTargets } from '../configuration/page-targets';
+import { collectPageStates, emptyStateNode, mergeStateInfo, type PageStateNode } from '../configuration/page-states';
+import { mainPageName } from '../const/default-pages';
 import type { NSPanel } from '../types/NSPanel';
 
 export interface panelConfigPartial extends Partial<panelConfigTop> {
@@ -57,6 +62,11 @@ export interface panelConfigPartial extends Partial<panelConfigTop> {
     updated: boolean;
     scriptVersion?: string;
     model?: Types.NSpanelModel;
+    /**
+     * Pages that come from the global script configuration instead of the script of this panel.
+     * Filled by the config manager, used to record the origin of those pages.
+     */
+    globalPageIds?: string[];
 }
 
 const DefaultOptions = {
@@ -79,9 +89,25 @@ type panelConfigTop = {
     dimHigh: number;
 };
 
+/**
+ * Constant string of a configuration field, `undefined` when it is read from a state.
+ *
+ * Not every card carries every field, so the field is looked up instead of accessed directly.
+ *
+ * @param data Configuration object, may be missing.
+ * @param field Field to read.
+ * @returns The constant value, if there is one.
+ */
+function readConstString(data: Record<string, any> | undefined | null, field: string): string | undefined {
+    const value = data && field in data ? data[field] : undefined;
+    return value && value.type === 'const' && typeof value.constVal === 'string' ? value.constVal : undefined;
+}
+
 export class Panel extends BaseClass {
     private loopTimeout: ioBroker.Timeout | undefined;
     private pages: (Page | undefined)[] = [];
+    /** Origin per page id, collected in preInit and reported to the admin navigation view */
+    private readonly pageOrigins = new PageOriginTracker();
     private _activePage: Page | undefined = undefined;
     private data: Record<string, any> = {};
     private blockStartup: ioBroker.Timeout | undefined = null;
@@ -91,6 +117,9 @@ export class Panel extends BaseClass {
     private buttonBackFlipTimeout: { left?: ioBroker.Timeout | undefined; right?: ioBroker.Timeout | undefined } = {};
 
     public blockTouchEventsForMs: number = 200; // ms
+    /** Timestamp of the last Nextion 0x24 (serial buffer overflow) reported by the display, 0 if none */
+    private nextionBufferOverflowTs: number = 0;
+    private lastAutoRestartTs: number = 0;
     public lastSendTypeDate: number = 0;
     public isBuzzerAllowed: boolean = true;
     options: panelConfigPartial;
@@ -329,8 +358,35 @@ export class Panel extends BaseClass {
     }
     async preInit(options: panelConfigPartial): Promise<void> {
         options.pages = options.pages || [];
+        options.navigation = options.navigation || [];
+
+        // Record where each page came from - the admin navigation view colours its nodes by it.
+        // Pages of the global script configuration first, everything else left is panel script.
+        this.pageOrigins.classifyIds(options.pages, options.globalPageIds ?? [], 'global');
+        this.pageOrigins.classify(options.pages, 'script');
+
+        // Guarantee a start page before the admin pages are merged, so the precedence is
+        // script main -> default main -> admin main (the admin overrides whatever is here).
+        const ensured = ensureMainPage(options, this.friendlyName || this.name);
+        // A generated default start page belongs to the adapter, not to the script.
+        this.pageOrigins.classify(options.pages, 'system');
+        if (ensured.pageAdded || ensured.navigationAdded) {
+            this.log.info(
+                `No page '${mainPageName}' in the script configuration - a default start page was added. A page named '${mainPageName}' in the admin configuration replaces it.`,
+            );
+        }
+
         const admin = new AdminConfiguration(this.adapter);
         await admin.processentrys(options);
+        this.pageOrigins.classify(options.pages, 'admin');
+
+        if (this.pageOrigins.get(mainPageName) === 'global') {
+            // A global page named 'main' is a valid way to share one start page across panels, but
+            // it silently takes the place of the panel start page - so say where it comes from.
+            this.log.info(
+                `Start page '${mainPageName}' comes from the global script configuration, not from the script of this panel.`,
+            );
+        }
         options.pages = options.pages.filter(b => {
             if (
                 b.config?.card === 'screensaver' ||
@@ -347,6 +403,7 @@ export class Panel extends BaseClass {
         this.info.internal.pageCount = options.pages.length;
         this.info.internal.servicePageCount = systemPages.length;
         options.pages = options.pages.concat(systemPages);
+        this.pageOrigins.classify(options.pages, 'system');
         options.navigation = (options.navigation || []).concat(systemNavigation);
 
         let scsFound = 0;
@@ -767,7 +824,10 @@ export class Panel extends BaseClass {
         const scs: Page[] = this.pages.filter(
             a => a && (a.card === 'screensaver' || a.card === 'screensaver2' || a.card === 'screensaver3'),
         ) as Page[];
-        if (currentScreensaver && currentScreensaver.val != null) {
+        // a screensaver from the admin tab defines version and rotation time itself - the stored states follow it,
+        // the script screensaver keeps taking both from the states (they are the way to change them)
+        const adminScreensaver = !!this.screenSaver && this.pageOrigins.get(this.screenSaver.name) === 'admin';
+        if (currentScreensaver && currentScreensaver.val != null && !adminScreensaver) {
             if (scs && scs[0]) {
                 this.screenSaver = scs[0] as Screensaver;
                 if (globals.isScreenSaverModeAsNumber(currentScreensaver.val)) {
@@ -782,7 +842,9 @@ export class Panel extends BaseClass {
         );
         state = this.library.readdb(`panels.${this.name}.cmd.screenSaver.rotationTime`);
         let temp: any = 0;
-        if (state && typeof state.val === 'number') {
+        if (adminScreensaver && this.screenSaver) {
+            temp = this.screenSaver.rotationTime / 1000;
+        } else if (state && typeof state.val === 'number') {
             temp = state.val === 0 ? state.val : state.val < 3 ? 3 : state.val > 3600 ? 3600 : state.val;
             if (this.screenSaver) {
                 this.screenSaver.rotationTime = temp * 1000;
@@ -1079,6 +1141,20 @@ export class Panel extends BaseClass {
                     await this.library.writedp(`panels.${this.name}.cmd.tempOffset`, parseFloat(msg.tempOffset), def);
                     this.log.debug(`Received tempOffset ${msg.tempOffset} from panel, write to state.`);
                     return;
+                } else if ('nextion' in msg && typeof msg.nextion === 'string') {
+                    // Raw Nextion return codes forwarded by the berry driver, e.g. "bytes('24')" or "bytes('24FFFFFF24')".
+                    // 0x24 = serial buffer overflow: the display drops every frame until tasmota is restarted.
+                    const codes = msg.nextion.replace(/^bytes\('|'\)$/g, '').split('FFFFFF');
+                    if (codes.includes('24')) {
+                        const now = Date.now();
+                        if (now - this.nextionBufferOverflowTs > 60_000) {
+                            this.log.warn(
+                                'Display reports a serial buffer overflow (0x24) - frames are being dropped by the Nextion!',
+                            );
+                        }
+                        this.nextionBufferOverflowTs = now;
+                    }
+                    return;
                 } else if ('nlui_driver_version' in msg) {
                     this.info.nspanel.berryDriverVersion = parseInt(msg.nlui_driver_version);
                     await this.library.writedp(
@@ -1252,14 +1328,14 @@ export class Panel extends BaseClass {
                 case 'mainNavigationPoint': {
                     const v = state.val;
                     if (typeof v === 'string') {
-                        this.navigation.setMainPageByName(v ? v : 'main');
-                        await this.library.writedp(`panels.${this.name}.cmd.mainNavigationPoint`, v ? v : 'main');
+                        this.navigation.setMainPageByName(v ? v : mainPageName);
+                        await this.library.writedp(`panels.${this.name}.cmd.mainNavigationPoint`, v ? v : mainPageName);
                     }
                     break;
                 }
                 case 'goToNavigationPoint': {
                     if (typeof state.val === 'string') {
-                        await this.navigation.setTargetPageByName(state.val ? String(state.val) : 'main');
+                        await this.navigation.setTargetPageByName(state.val ? String(state.val) : mainPageName);
                     }
                     break;
                 }
@@ -1659,6 +1735,32 @@ export class Panel extends BaseClass {
 
     requestStatusTasmota(): void {
         this.sendToTasmota(`${this.topic}/cmnd/STATUS0`, '');
+    }
+
+    /**
+     * Called when the panel is set offline because the display stopped acknowledging messages.
+     * If the display reported a serial buffer overflow (0x24) shortly before, only a tasmota restart
+     * gets it back - so trigger one (at most every 2 minutes).
+     *
+     * @returns true if a restart was triggered
+     */
+    handleLostMessages(): boolean {
+        const now = Date.now();
+        if (this.unload || this.adapter.unload || this.flashing) {
+            return false;
+        }
+        if (now - this.nextionBufferOverflowTs > 120_000) {
+            return false;
+        }
+        if (now - this.lastAutoRestartTs < 120_000) {
+            this.log.debug('Buffer overflow persists but last automatic restart was less than 2 minutes ago - skip');
+            return false;
+        }
+        this.lastAutoRestartTs = now;
+        this.nextionBufferOverflowTs = 0;
+        this.log.warn('Display buffer overflow (0x24) and no acknowledgement from the panel - restarting tasmota!');
+        this.sendToTasmota(`${this.topic}/cmnd/Restart`, '1');
+        return true;
     }
 
     async delete(): Promise<void> {
@@ -2587,6 +2689,30 @@ export class Panel extends BaseClass {
         await this.adapter.setObject(`panels.${this.name}`, o);
     };
 
+    /**
+     * `uniqueName` of the admin entry a published page belongs to.
+     *
+     * Usually both are identical. A page flagged as start page is published under the reserved id
+     * `main` while its admin entry keeps its own name, so that case is resolved via the flag.
+     *
+     * @param pageId Page id as used in the navigation
+     */
+    private getAdminPageName(pageId: string): string | undefined {
+        const entries = this.adapter.config.pageConfig;
+        if (!Array.isArray(entries)) {
+            return undefined;
+        }
+        const direct = entries.find(e => e && e.uniqueName === pageId);
+        if (direct) {
+            return direct.uniqueName;
+        }
+        if (pageId === mainPageName) {
+            const main = entries.find(e => e && adminShareConfig.isMainPageEntry(e));
+            return main ? main.uniqueName : undefined;
+        }
+        return undefined;
+    }
+
     async getNavigationArrayForFlow(): Promise<PanelListEntry> {
         const res: PanelListEntry = {
             panelName: this.name,
@@ -2599,6 +2725,28 @@ export class Panel extends BaseClass {
             navMapFromConfig = o.native.navigationMap;
         }
         const db = this.navigation.getDatabase();
+        // Nodes for states - both those a navigation target is read from and those a page works
+        // with. Collected across all pages, a state used twice becomes one node.
+        const stateRefEntries = new Map<string, NavigationMapEntry>();
+        const addStateNode = (state: PageStateNode): string => {
+            const nodeId = adminShareConfig.stateRefNodeId(state.id);
+            const known = stateRefEntries.get(nodeId);
+            if (known) {
+                known.isChannel = known.isChannel || state.isChannel;
+                known.stateInfo = mergeStateInfo(known.stateInfo, state);
+                return nodeId;
+            }
+            stateRefEntries.set(nodeId, {
+                page: nodeId,
+                nodeType: 'stateRef',
+                stateId: state.id,
+                isChannel: state.isChannel,
+                stateInfo: mergeStateInfo(undefined, state),
+                label: adminShareConfig.shortStateLabel(state.id),
+                position: navMapFromConfig?.find(a => a.name === nodeId)?.position ?? undefined,
+            });
+            return nodeId;
+        };
         for (const nav of db) {
             if (!nav || !nav.page) {
                 continue;
@@ -2624,7 +2772,9 @@ export class Panel extends BaseClass {
                 const n = db[nav.left.double];
                 parent = n != null && n.page ? n.page.name : undefined;
             }
-            let pageInfo: PageMenuConfigInfo = { card: 'cardGrid', alwaysOn: 'none' };
+            // The headline is only known when it is a constant - otherwise it is read from a state
+            const headline = readConstString(nav.page.config?.data, 'headline');
+            let pageInfo: PageMenuConfigInfo = { card: 'cardGrid', alwaysOn: 'none', headline };
             if (globals.isPageMenuConfig(nav.page.config)) {
                 pageInfo = {
                     ...pageInfo,
@@ -2649,6 +2799,7 @@ export class Panel extends BaseClass {
                 } as PageMenuConfigInfo;
             }
 
+            const origin = this.pageOrigins.get(nav.page.name) ?? 'script';
             const navMap: NavigationMapEntry = {
                 label: nav.page ? nav.page.name : '',
                 page: nav.page ? nav.page.name : '',
@@ -2658,30 +2809,45 @@ export class Panel extends BaseClass {
                 parent,
                 position: pPos ? pPos.position : undefined,
                 pageInfo,
+                origin,
+                adminPageName: origin === 'admin' ? this.getAdminPageName(nav.page.name) : undefined,
             };
-            let targetPages: string[] = [];
-            if (nav.page.pageItemConfig) {
-                for (const item of nav.page.pageItemConfig) {
-                    if (item && item.data && 'setNavi' in item.data) {
-                        const n = item.data.setNavi;
-                        if (n && n.type === 'const' && typeof n.constVal === 'string') {
-                            targetPages.push(n.constVal);
-                        }
-                    }
-                }
+            // A page item leads to another page on a short press (`targetPage` in the script) and to
+            // a second one on a long press (`targetPageLongPress`); the page itself can carry both too.
+            const targetSources = [...(nav.page.pageItemConfig ?? []).map(item => item?.data), nav.page.config?.data];
+            const short = collectNavigationTargets(targetSources, 'setNavi');
+            const long = collectNavigationTargets(targetSources, 'setNaviLongPress');
+            // A target read from a state gets a node of its own, named after that state: the page it
+            // will lead to is not known here, but where it comes from is worth showing.
+            for (const dp of [...short.stateRefs, ...long.stateRefs]) {
+                addStateNode(emptyStateNode(dp, false));
             }
-            if (nav.page.config?.data && 'setNavi' in nav.page.config.data) {
-                const n = nav.page.config.data.setNavi;
-                if (n && n.type === 'const' && typeof n.constVal === 'string') {
-                    targetPages.push(n.constVal);
-                }
-            }
+            const targetPages = [...short.pages, ...short.stateRefs.map(adminShareConfig.stateRefNodeId)];
             if (targetPages.length) {
-                targetPages = Array.from(new Set(targetPages));
                 navMap.targetPages = targetPages;
+            }
+            // A target reachable on both presses is reported as a short press only - it is drawn once
+            const targetPagesLongPress = [...long.pages, ...long.stateRefs.map(adminShareConfig.stateRefNodeId)].filter(
+                t => !targetPages.includes(t),
+            );
+            if (targetPagesLongPress.length) {
+                navMap.targetPagesLongPress = targetPagesLongPress;
+            }
+            // States and channels the page works with - shown in the flow on demand. How the panel
+            // uses them (role and type of the item) travels with them.
+            const stateSources = [
+                ...(nav.page.pageItemConfig ?? []).map(item =>
+                    item ? { data: item.data, role: item.role, type: item.type } : undefined,
+                ),
+                { data: nav.page.config?.data, type: nav.page.card },
+            ];
+            const usedStates = collectPageStates(stateSources).map(state => addStateNode(state));
+            if (usedStates.length) {
+                navMap.usedStates = usedStates;
             }
             res.navigationMap.push(navMap);
         }
+        res.navigationMap.push(...stateRefEntries.values());
 
         return res;
     }

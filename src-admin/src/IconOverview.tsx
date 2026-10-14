@@ -44,20 +44,22 @@ const IconOverview: React.FC = () => {
                     variant="outlined"
                     size="small"
                     sx={{ mb: 2, width: 300 }}
-                    InputProps={{
-                        endAdornment: filter ? (
-                            <InputAdornment position="end">
-                                <IconButton
-                                    size="small"
-                                    onClick={() => {
-                                        setFilter('');
-                                        setShowFilter(false);
-                                    }}
-                                >
-                                    <ClearIcon />
-                                </IconButton>
-                            </InputAdornment>
-                        ) : null,
+                    slotProps={{
+                        input: {
+                            endAdornment: filter ? (
+                                <InputAdornment position="end">
+                                    <IconButton
+                                        size="small"
+                                        onClick={() => {
+                                            setFilter('');
+                                            setShowFilter(false);
+                                        }}
+                                    >
+                                        <ClearIcon />
+                                    </IconButton>
+                                </InputAdornment>
+                            ) : null,
+                        },
                     }}
                 />
             )}
@@ -68,19 +70,16 @@ const IconOverview: React.FC = () => {
                 {filteredIcons.map(icon => (
                     <Grid
                         key={icon.name}
-                        item
-                        xs={4}
-                        sm={3}
-                        md={2}
-                        lg={1}
-                        xl={1}
+                        size={{ xs: 4, sm: 3, md: 2, lg: 1, xl: 1 }}
                         sx={{ minWidth: 80, maxWidth: 120, flexBasis: 0 }}
                     >
                         <Box
-                            display="flex"
-                            flexDirection="column"
-                            alignItems="center"
-                            sx={{ cursor: 'pointer' }}
+                            sx={{
+                                display: 'flex',
+                                flexDirection: 'column',
+                                alignItems: 'center',
+                                cursor: 'pointer',
+                            }}
                             onClick={() => {
                                 void navigator.clipboard.writeText(icon.name);
                                 setSnackbar({ open: true, label: icon.name });

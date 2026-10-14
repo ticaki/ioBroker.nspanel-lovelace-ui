@@ -1,6 +1,8 @@
 import type { NavigationItemConfig } from '../classes/navigation';
 import type { PageBase } from '../types/pages';
 import { Color } from '../const/Color';
+import { mainPageName } from '../const/default-pages';
+import { serviceNodeName, servicePageName } from '../types/adminShareConfig';
 
 const popupNotification: PageBase = {
     dpInit: '',
@@ -110,7 +112,7 @@ const AdapterInformation: PageBase = {
 };
 
 const ServiceUnlock: PageBase = {
-    uniqueID: '///unlock',
+    uniqueID: servicePageName,
     alwaysOn: 'always',
     dpInit: '',
     pageItems: [],
@@ -1386,14 +1388,16 @@ export const systemPages: PageBase[] = [
 ];
 export const systemNavigation: NavigationItemConfig[] = [
     {
-        name: '///service',
-        page: '///unlock',
-        left: { single: 'main' },
+        name: serviceNodeName,
+        page: servicePageName,
+        // Overwritten at runtime by Navigation.init() with the node that points here.
+        left: { single: mainPageName },
     },
     {
         name: '///Overview',
         page: '///Overview',
-        right: { double: 'main' },
+        // Home button - resolved against the effective start page by Navigation.init().
+        right: { double: mainPageName },
         optional: 'notifications',
     },
     {

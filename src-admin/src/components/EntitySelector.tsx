@@ -1,6 +1,6 @@
 import React from 'react';
 import { Box, Typography, TextField, Button } from '@mui/material';
-import { SelectID } from '@iobroker/adapter-react-v5';
+import { SelectID, type ThemeType } from '@iobroker/gui-components';
 
 interface EntitySelectorProps {
     label: string;
@@ -10,9 +10,15 @@ interface EntitySelectorProps {
     onCommit?: (value: string) => void;
     socket: any;
     theme: any;
-    themeType: string;
+    themeType: ThemeType;
     dialogName: string;
     filterFunc?: (obj: ioBroker.Object) => boolean;
+    /**
+     * Object types the SelectID shows and lets select (default of the dialog: states only).
+     * Needed when channels or devices are to be picked: without it the browser hides every
+     * non-state node even if filterFunc keeps it.
+     */
+    types?: ioBroker.ObjectType[];
     /**
      * Wird nach der Auswahl im SelectID-Dialog aufgerufen und erlaubt die
      * gewählte ID zu transformieren (z. B. auf den übergeordneten Channel kürzen).
@@ -49,6 +55,7 @@ export class EntitySelector extends React.Component<EntitySelectorProps, EntityS
             themeType,
             dialogName,
             filterFunc,
+            types,
             onTransformSelectedId,
             disabled,
         } = this.props;
@@ -98,6 +105,7 @@ export class EntitySelector extends React.Component<EntitySelectorProps, EntityS
                             }}
                             onClose={() => this.setState({ showSelectDialog: false })}
                             filterFunc={filterFunc ?? ((obj: ioBroker.Object): boolean => !!(obj?.type === 'state'))}
+                            types={types}
                             dialogName={dialogName}
                             theme={theme}
                             themeType={themeType}

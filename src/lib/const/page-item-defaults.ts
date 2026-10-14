@@ -586,6 +586,62 @@ const ITEM_ROLE_KEY: Partial<Record<string, keyof typeof pageItemDefaults>> = {
     media: 'mediaNav',
 } as const;
 
+/**
+ * Maps the role of a single state (common.role of a datapoint) to the key in {@link pageItemDefaults} -
+ * the screensaver items of the admin work on states, not on channels, so the common state roles get
+ * the icons of the matching channel role. Channel roles ({@link ITEM_ROLE_KEY}) count as well.
+ */
+const STATE_ROLE_KEY: Partial<Record<string, keyof typeof pageItemDefaults>> = {
+    switch: 'socket',
+    'switch.power': 'socket',
+    'switch.light': 'light',
+    'switch.lock': 'lock',
+    'switch.lock.door': 'lock',
+    'switch.lock.window': 'lock',
+    'sensor.lock': 'lock',
+    'indicator.lock': 'lock',
+    'level.dimmer': 'dimmer',
+    'level.brightness': 'dimmer',
+    'level.color.temperature': 'ct',
+    'level.color.rgb': 'rgb',
+    'level.color.hue': 'hue',
+    'level.blind': 'blind',
+    'value.blind': 'blind',
+    'level.temperature': 'thermostat',
+    'sensor.motion': 'motion',
+    'indicator.motion': 'motion',
+    'sensor.door': 'door',
+    'indicator.door': 'door',
+    'sensor.window': 'window',
+    'indicator.window': 'window',
+    'sensor.alarm': 'warning',
+    'sensor.alarm.fire': 'warning',
+    'sensor.alarm.flood': 'warning',
+    'sensor.alarm.secure': 'warning',
+    'indicator.alarm': 'warning',
+    'indicator.alarm.fire': 'warning',
+    'indicator.alarm.flood': 'warning',
+    'indicator.alarm.secure': 'warning',
+    'indicator.maintenance': 'warning',
+    'button.press': 'button',
+    'button.start': 'button',
+    'button.stop': 'button',
+};
+
+/**
+ * Returns the default icon/color entry of a state the screensaver item of the admin shows, or `null`
+ * if no role is known. Like the page menu editor the role of the channel / device the state belongs
+ * to counts first (a `light` channel gives the bulb also for its `.ACTUAL`), the role of the state
+ * itself is the fallback.
+ *
+ * @param role common.role of the state (e.g. 'value.humidity', 'switch.light', 'light')
+ * @param channelRole common.role of the channel / device above the state (e.g. 'light', 'humidity')
+ */
+export function getScreensaverItemDefaultsByRole(role: string, channelRole?: string): PageItemRoleDefaults | null {
+    const key = (channelRole ? ITEM_ROLE_KEY[channelRole] : undefined) ?? ITEM_ROLE_KEY[role] ?? STATE_ROLE_KEY[role];
+    return key != null ? pageItemDefaults[key] : null;
+}
+
 /** Maps a channel role to the key in {@link pageNaviItemDefaults} (navigation=true). */
 const NAVI_ROLE_KEY: Partial<Record<string, keyof typeof pageNaviItemDefaults>> = {
     socket: 'socket',

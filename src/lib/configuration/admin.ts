@@ -1,10 +1,25 @@
-import type { NavigationItemConfig } from '../classes/navigation';
+import type { NavigationItemConfig, NavigationItemConfigNonNull } from '../classes/navigation';
+import { ConfigManager } from '../classes/config-manager';
+import {
+    applyScreensaverEntry,
+    buildScreensaverScriptConfig,
+    findScreensaverEntry,
+    isScreensaverPage,
+    objectNameOf,
+    screensaverStateIds,
+    type ScreensaverStateInfo,
+} from './admin-screensaver';
+import { Color } from '../const/Color';
+import { mainPageName } from '../const/default-pages';
+import { PageThermo2 } from '../pages/pageThermo2';
 import { BaseClass } from '../controller/library';
 import type { panelConfigPartial } from '../controller/panel';
+import { systemNavigation } from '../templates/system-templates';
 import * as ShareConfig from '../types/adminShareConfig';
+import { screensaverChannelIdOf } from '../types/adminShareConfig';
 import { exhaustiveCheck } from '../types/function-and-const';
 import type { NspanelLovelaceUi } from '../types/NspanelLovelaceUi';
-import type { PageBase } from '../types/pages';
+import type { PageBase, cardChartDataItemOptions } from '../types/pages';
 import type { AlwaysOnMode } from '../types/types';
 
 type PendingNavEntry = {
@@ -12,6 +27,32 @@ type PendingNavEntry = {
     prev: string | undefined;
     next: string | undefined;
 };
+
+/**
+ * Names of the navigation nodes contributed by the system templates.
+ *
+ * They are appended to `option.navigation` only after the admin configuration has been processed
+ * (`Panel` concatenates `systemNavigation` after `processentrys()`), so a reference to one of them
+ * cannot be found in `option.navigation` yet - it is valid nonetheless.
+ */
+const systemNavigationNodeNames: ReadonlySet<string> = new Set(
+    systemNavigation.filter((node): node is NavigationItemConfigNonNull => node != null).map(node => node.name),
+);
+
+/**
+ * Maps a navigation target coming from the admin configuration onto the name the adapter resolves
+ * against.
+ *
+ * The admin dropdowns are built from page names, the adapter however looks up navigation *nodes*.
+ * The service entry point is the one place where the two differ: its page is named
+ * `///unlock`, its navigation node `///service`. Everything else passes through unchanged.
+ *
+ * @param name Navigation target as stored by the admin, may be undefined.
+ * @returns The navigation node name to use, or `undefined` if no target was given.
+ */
+function resolveNavigationTarget(name: string | undefined): string | undefined {
+    return name === ShareConfig.servicePageName ? ShareConfig.serviceNodeName : name;
+}
 
 function shallowDescribe(value: unknown): string {
     if (value === null) {
@@ -56,6 +97,7 @@ export class AdminConfiguration extends BaseClass {
         try {
             const pendingNavs = await this.createPagesFromConfig(option);
             this.applyPendingNavigations(option, pendingNavs);
+            await this.processScreensaver(option);
         } catch (error) {
             const msg = error instanceof Error ? error.message : String(error);
             const stack = error instanceof Error ? (error.stack ?? 'no stack') : 'no stack';
@@ -64,6 +106,126 @@ export class AdminConfiguration extends BaseClass {
             );
         }
         return option;
+    }
+
+    /**
+     * Replaces the screensaver of the script with the one configured in the admin tab "Screensaver"
+     * when an entry lists the topic of the panel. The entry is turned into the script form and handed
+     * to `ConfigManager.getScreensaverConfig()`, so items, templates and weather are resolved exactly
+     * like on the script path; version, rotation time, swipe, indicator buttons and the clock / date
+     * formats of the entry are applied afterwards. Without an entry nothing changes.
+     *
+     * @param option - Panel configuration partial (pages of the script already inside)
+     */
+    private async processScreensaver(option: panelConfigPartial): Promise<void> {
+        const { entry, others } = findScreensaverEntry(this.adapter.config.screensaverConfig, option.topic);
+        if (!entry) {
+            return;
+        }
+        if (others.length > 0) {
+            this.log.warn(
+                `Panel '${option.name}' (${option.topic}) is listed in several screensavers (${[entry.name, ...others].join(', ')}) - '${entry.name}' is used`,
+            );
+        }
+        const lang = this.adapter.language || 'en';
+        const states: Record<string, ScreensaverStateInfo> = {};
+        for (const id of screensaverStateIds(entry)) {
+            try {
+                const obj = await this.adapter.getForeignObjectAsync(id);
+                const channelId = screensaverChannelIdOf(id);
+                const channel = channelId ? await this.adapter.getForeignObjectAsync(channelId) : null;
+                states[id] = {
+                    name: objectNameOf(obj, lang),
+                    role: typeof obj?.common?.role === 'string' ? obj.common.role : '',
+                    channelRole:
+                        (channel?.type === 'channel' || channel?.type === 'device') &&
+                        typeof channel.common?.role === 'string'
+                            ? channel.common.role
+                            : '',
+                };
+            } catch {
+                states[id] = {};
+            }
+        }
+        const manager = new ConfigManager(this.adapter);
+        const result = await manager.getScreensaverConfig(
+            buildScreensaverScriptConfig(entry, option.topic, states),
+            [],
+            {
+                weatherEntityFixed: entry.weatherEntity !== undefined,
+            },
+        );
+        for (const msg of result.messages) {
+            // getScreensaverConfig has already logged the finding
+            this.log.debug(`Screensaver '${entry.name}': ${msg}`);
+        }
+        const page = result.configArray;
+        applyScreensaverEntry(page, entry);
+        const scriptPages = option.pages.filter(p => isScreensaverPage(p)).length;
+        option.pages = option.pages.filter(p => !isScreensaverPage(p));
+        option.pages.push(page);
+        this.log.info(
+            `Screensaver '${entry.name}' (${entry.mode}) from the admin configuration ${scriptPages > 0 ? 'replaces the script screensaver of' : 'is used by'} panel '${option.name}'`,
+        );
+    }
+
+    /**
+     * Builds the runtime page of a cardThermo2 entry.
+     *
+     * The entry is turned into the script form and handed to the code the script configuration
+     * uses (`PageThermo2.getPage`), so alias resolution, mode list and the generated mode /
+     * automatic / manual buttons are identical on both paths. The page items of the entry are
+     * appended afterwards with their heat-circuit filter; trailing empty slots are dropped, inner
+     * ones become placeholders like on the menu pages.
+     *
+     * @param entry Thermo2 entry as stored by the PageConfig editor.
+     * @param alwaysOn Validated always-on mode of the entry.
+     * @returns The page for the panel configuration; without a usable circuit it has no data.
+     */
+    private async buildThermo2Page(entry: ShareConfig.Thermo2Entry, alwaysOn: AlwaysOnMode): Promise<PageBase> {
+        let gridItem = {
+            uniqueID: entry.uniqueName,
+            hidden: !!entry.hidden,
+            alwaysOn,
+            dpInit: '',
+            config: {
+                card: 'cardThermo2',
+                scrollType: 'page',
+                scrollPresentation: 'classic',
+                data: { headline: { type: 'const', constVal: entry.uniqueName } },
+                index: 0,
+            },
+            pageItems: [],
+        } as PageBase;
+        const messages: string[] = [];
+        const manager = new ConfigManager(this.adapter);
+        ({ gridItem } = await PageThermo2.getPage(manager, buildThermo2ScriptPage(entry), gridItem, messages));
+        for (const msg of messages) {
+            // getPage has already logged the finding, keep the summary at debug level
+            this.log.debug(`cardThermo2 '${entry.uniqueName}': ${msg}`);
+        }
+
+        const items = entry.pageItems ?? [];
+        const lastFilled = items.reduceRight<number>((acc, v, i) => (acc === -1 && v != null ? i : acc), -1);
+        for (let index = 0; index <= lastFilled; index++) {
+            const stored = items[index];
+            const item: ShareConfig.AdminPageItemConfig = stored
+                ? { ...stored, channelId: ShareConfig.normalizeChannelId(stored.channelId) }
+                : { channelId: ShareConfig.emptyChannelValueConfig('empty') };
+            const result = await this.adapter.convertAdminPageItemToPageItemConfig(
+                item,
+                { card: 'cardThermo2', uniqueName: entry.uniqueName },
+                [],
+            );
+            if (!result.error && result.pageItem) {
+                gridItem.pageItems = gridItem.pageItems ?? [];
+                gridItem.pageItems.push(result.pageItem);
+            } else if (result.error) {
+                this.log.warn(`Error processing page item ${index} for page '${entry.uniqueName}': ${result.error}`);
+            }
+        }
+        this.log.debug(`Generated cardThermo2 page for '${entry.uniqueName}'`);
+        return gridItem;
     }
 
     /**
@@ -76,6 +238,14 @@ export class AdminConfiguration extends BaseClass {
     private async createPagesFromConfig(option: panelConfigPartial): Promise<PendingNavEntry[]> {
         const entries = this.pageConfig;
         const pendingNavs: PendingNavEntry[] = [];
+
+        // Pages flagged as start page are published under the reserved id. Navigation targets that
+        // still use the name from the admin list are translated to that id.
+        const mainAliases = new Set(
+            entries.filter(e => ShareConfig.isMainPageEntry(e) && e.uniqueName !== mainPageName).map(e => e.uniqueName),
+        );
+        const resolveTarget = (target: string | undefined): string | undefined =>
+            target !== undefined && mainAliases.has(target) ? mainPageName : target;
 
         for (const entry of entries) {
             if (!entry.navigationAssignment || !entry.card) {
@@ -189,12 +359,35 @@ export class AdminConfiguration extends BaseClass {
                     this.log.debug(`Generated trash 1page for '${entry.uniqueName}'`);
                     break;
                 }
+
+                case 'cardChart': {
+                    if (!isAlwaysOnMode(entry.alwaysOn)) {
+                        entry.alwaysOn = 'none';
+                    }
+                    newPage = {
+                        uniqueID: entry.uniqueName,
+                        hidden: !!entry.hidden,
+                        alwaysOn: entry.alwaysOn,
+                        dpInit: '',
+                        config: buildChartPageConfig(entry),
+                        pageItems: [],
+                    };
+                    break;
+                }
+
                 case 'cardPower': {
                     if (!isAlwaysOnMode(entry.alwaysOn)) {
                         entry.alwaysOn = 'none';
                     }
                     newPage = dataForCardPower(entry, this.adapter);
                     this.log.debug(`Generated cardPower page for '${entry.uniqueName}'`);
+                    break;
+                }
+                case 'cardThermo2': {
+                    if (!isAlwaysOnMode(entry.alwaysOn)) {
+                        entry.alwaysOn = 'none';
+                    }
+                    newPage = await this.buildThermo2Page(entry, entry.alwaysOn);
                     break;
                 }
                 case 'cardGrid':
@@ -300,49 +493,66 @@ export class AdminConfiguration extends BaseClass {
                     break;
                 }
                 default: {
-                    this.log.warn(`Unsupported card type '${entry.card}' for page '${entry.uniqueName}', skipping!`);
+                    // every card of the union has a case above - this only guards data of an older or newer admin
+                    const unknown = entry as { card?: string; uniqueName?: string };
+                    this.log.warn(
+                        `Unsupported card type '${unknown.card}' for page '${unknown.uniqueName}', skipping!`,
+                    );
                     continue;
                 }
             }
 
-            // Check for duplicate page name
-            if (!this.adapter.config.adminOverridesScriptPages) {
+            if (ShareConfig.isMainPageEntry(entry)) {
+                // Publish the page as the start page of this panel.
+                newPage.uniqueID = mainPageName;
+            }
+
+            // Check for duplicate page name. The start page may always be replaced by an admin
+            // page - being able to define it here is the whole point of it. Any other page needs
+            // the global override flag.
+            const overrideExisting = this.adapter.config.adminOverridesScriptPages || newPage.uniqueID === mainPageName;
+
+            // Position and links of the replaced navigation node, reused for the new node below.
+            let replacedIndex = -1;
+            let replacedNav: NavigationItemConfigNonNull | undefined;
+
+            if (!overrideExisting) {
                 if (option.pages.find((a: PageBase) => a.uniqueID === newPage.uniqueID)) {
                     this.log.warn(`Page with name ${newPage.uniqueID} already exists, skipping!`);
                     continue;
                 }
             } else {
-                // Remove existing page and navigation entries for this page name to allow overrides
+                // Remove the existing page and take out its navigation node. The node is
+                // re-created below under the same name and at the same position, so links of
+                // other nodes stay valid - resetting them would tear the navigation ring apart.
+                const pageCount = option.pages.length;
                 option.pages = option.pages.filter((a: PageBase) => a.uniqueID !== newPage.uniqueID);
-                option.navigation = option.navigation.filter(
-                    (b: NavigationItemConfig | null) => b && b.name !== newPage.uniqueID,
-                );
-                option.navigation.forEach((b: NavigationItemConfig | null) => {
-                    if (b) {
-                        if (this.pageConfig.find(e => e.uniqueName === b.name)) {
-                            // Don't reset navigation entries for pages defined in admin config
-                        } else {
-                            if (b.left?.single === newPage.uniqueID) {
-                                b.left.single = undefined;
-                            }
-                            if (b.right?.single === newPage.uniqueID) {
-                                b.right.single = undefined;
-                            }
-                        }
-                    }
-                });
+                if (option.pages.length !== pageCount) {
+                    this.log.info(`Page '${newPage.uniqueID}' is overridden by the admin configuration.`);
+                }
+                replacedIndex = option.navigation.findIndex(b => b && b.name === newPage.uniqueID);
+                if (replacedIndex !== -1) {
+                    replacedNav = option.navigation[replacedIndex] ?? undefined;
+                    option.navigation.splice(replacedIndex, 1);
+                }
             }
 
             option.pages.push(newPage);
 
-            // Build stub navigation entry; chain links are resolved in applyPendingNavigations
+            // Build stub navigation entry; chain links are resolved in applyPendingNavigations.
+            // Links of a replaced node are inherited so the surrounding chain survives; an
+            // explicit prev/next/home/parent from the admin config overwrites them below.
             const navigationEntry: NavigationItemConfig = {
                 name: newPage.uniqueID,
                 page: newPage.uniqueID,
-                right: { single: undefined, double: undefined },
-                left: { single: undefined, double: undefined },
+                right: { single: replacedNav?.right?.single, double: replacedNav?.right?.double },
+                left: { single: replacedNav?.left?.single, double: replacedNav?.left?.double },
             };
-            option.navigation.push(navigationEntry);
+            if (replacedIndex !== -1) {
+                option.navigation.splice(replacedIndex, 0, navigationEntry);
+            } else {
+                option.navigation.push(navigationEntry);
+            }
 
             const navigation = navAssign.navigation;
             if (!navigation) {
@@ -350,9 +560,25 @@ export class AdminConfiguration extends BaseClass {
             }
 
             // Apply home/parent immediately – no chain dependency
-            const nav = { ...navigation };
-            if (!nav.prev && !nav.next && !nav.home && !nav.parent) {
-                nav.home = 'main';
+            const nav = {
+                ...navigation,
+                prev: resolveNavigationTarget(resolveTarget(navigation.prev)),
+                next: resolveNavigationTarget(resolveTarget(navigation.next)),
+                home: resolveNavigationTarget(resolveTarget(navigation.home)),
+                parent: resolveNavigationTarget(resolveTarget(navigation.parent)),
+            };
+            // A page must not link to itself - that would dead-end the navigation.
+            if (nav.home === newPage.uniqueID) {
+                this.log.warn(`Page '${newPage.uniqueID}' has a home link to itself! Removed!`);
+                nav.home = undefined;
+            }
+            if (nav.parent === newPage.uniqueID) {
+                this.log.warn(`Page '${newPage.uniqueID}' has a parent link to itself! Removed!`);
+                nav.parent = undefined;
+            }
+            // The start page itself gets no home link - it is the home.
+            if (!nav.prev && !nav.next && !nav.home && !nav.parent && newPage.uniqueID !== mainPageName) {
+                nav.home = mainPageName;
             }
             if (nav.home) {
                 navigationEntry.right!.double = nav.home;
@@ -480,12 +706,18 @@ export class AdminConfiguration extends BaseClass {
             }
         }
 
-        // Log unresolved references
+        // Log unresolved references. System nodes are not part of option.navigation yet, a
+        // reference to one of them is valid and must not be reported.
+        const isUnresolved = (target: string | undefined): target is string =>
+            target !== undefined &&
+            !systemNavigationNodeNames.has(target) &&
+            !option.navigation.find(b => b?.name === target);
+
         for (const pending of pendingNavs) {
-            if (pending.prev !== undefined && !option.navigation.find(b => b?.name === pending.prev)) {
+            if (isUnresolved(pending.prev)) {
                 this.log.warn(`Navigation unresolved for '${pending.pageId}': prev page '${pending.prev}' not found.`);
             }
-            if (pending.next !== undefined && !option.navigation.find(b => b?.name === pending.next)) {
+            if (isUnresolved(pending.next)) {
                 this.log.warn(`Navigation unresolved for '${pending.pageId}': next page '${pending.next}' not found.`);
             }
         }
@@ -636,6 +868,161 @@ export class AdminConfiguration extends BaseClass {
     }
 }
 
+/**
+ * Page config of a chart page from a PageConfig entry. The DB source travels as JSON in the
+ * const item `dbData` (see ChartDetailsExternal); the script source only uses `ticks` and `value`.
+ * The classic table path (PageChart.getChartPageConfig) builds the same shape.
+ *
+ * @param entry chart entry as stored by the PageConfig editor
+ */
+/**
+ * A limit of a heat circuit as the adapter expects it: a positive number, anything else is left
+ * to the adapter default (the editor stores what was typed, an empty field is undefined).
+ *
+ * @param value Stored limit.
+ * @returns The number or undefined.
+ */
+function thermo2Limit(value: unknown): number | undefined {
+    return typeof value === 'number' && Number.isFinite(value) && value > 0 ? value : undefined;
+}
+
+/**
+ * Trimmed text of a stored field, undefined when empty.
+ *
+ * @param value Stored text.
+ */
+function thermo2Text(value: unknown): string | undefined {
+    const text = typeof value === 'string' ? value.trim() : '';
+    return text || undefined;
+}
+
+/**
+ * Icon name of a stored field for the script item (the editor only offers names of the icon list).
+ *
+ * @param value Stored icon name.
+ */
+function thermo2Icon(value: unknown): AllIcons | undefined {
+    return thermo2Text(value) as AllIcons | undefined;
+}
+
+/**
+ * '#rrggbb' of the editor as the RGB object of the script; invalid or empty = undefined (adapter default).
+ *
+ * @param value Stored color.
+ */
+function thermo2Rgb(value: unknown): ScriptConfig.RGB | undefined {
+    const text = thermo2Text(value);
+    if (!text || !/^#[0-9a-f]{6}$/i.test(text)) {
+        return undefined;
+    }
+    const c = Color.ConvertHexToRgb(text);
+    return { red: c.r, green: c.g, blue: c.b };
+}
+
+/**
+ * Turns a thermo2 entry into the script form of the page (`thermoItems` + `sortOrder`).
+ *
+ * A circuit becomes the alias form (`id`) or the data point form (`set`, `thermoId1`, ...)
+ * depending on its source; circuits without channel or without set/actual state are skipped,
+ * texts are trimmed, empty optional fields are left out so the adapter takes its defaults. The
+ * page items are not part of the result - they are converted separately with their filter.
+ *
+ * @param entry Thermo2 entry as stored by the PageConfig editor.
+ * @returns The page in the form of the script configuration.
+ */
+export function buildThermo2ScriptPage(entry: ShareConfig.Thermo2Entry): ScriptConfig.PageThermo2 {
+    const thermoItems: ScriptConfig.PageThermo2Item[] = [];
+    for (const circuit of entry.thermoItems ?? []) {
+        if (!circuit) {
+            continue;
+        }
+        const modeList = Array.isArray(circuit.modeList)
+            ? circuit.modeList.map(m => (typeof m === 'string' ? m.trim() : '')).filter(m => !!m)
+            : [];
+        const common = {
+            name: thermo2Text(circuit.name),
+            minValue: thermo2Limit(circuit.minValue),
+            maxValue: thermo2Limit(circuit.maxValue),
+            stepValue: thermo2Limit(circuit.stepValue),
+            icon: thermo2Icon(circuit.icon),
+            onColor: thermo2Rgb(circuit.onColor),
+            unit: thermo2Text(circuit.unit) ?? '',
+            icon2: thermo2Icon(circuit.icon2),
+            onColor2: thermo2Rgb(circuit.onColor2),
+            unit2: thermo2Text(circuit.unit2),
+            iconHeatCycle: thermo2Icon(circuit.iconHeatCycle),
+            iconHeatCycleOnColor: thermo2Rgb(circuit.iconHeatCycleOnColor),
+            iconHeatCycleOffColor: thermo2Rgb(circuit.iconHeatCycleOffColor),
+            modeList: modeList.length ? modeList : undefined,
+            power: '',
+        };
+        if (circuit.source === 'states') {
+            const set = thermo2Text(circuit.setState);
+            const actual = thermo2Text(circuit.actualState);
+            if (!set || !actual) {
+                continue;
+            }
+            thermoItems.push({
+                ...common,
+                set,
+                thermoId1: actual,
+                thermoId2: thermo2Text(circuit.humidityState),
+                modeId: thermo2Text(circuit.modeState),
+            });
+            continue;
+        }
+        const id = thermo2Text(circuit.channelId);
+        if (!id) {
+            continue;
+        }
+        thermoItems.push({
+            ...common,
+            id,
+            name2: thermo2Text(circuit.name2),
+            iconHeatCycle2: thermo2Icon(circuit.iconHeatCycle2),
+            iconHeatCycleOnColor2: thermo2Rgb(circuit.iconHeatCycleOnColor2),
+            iconHeatCycleOffColor2: thermo2Rgb(circuit.iconHeatCycleOffColor2),
+        });
+    }
+    const sortOrder = ShareConfig.thermo2SortOrders.includes(entry.sortOrder as ShareConfig.Thermo2SortOrder)
+        ? entry.sortOrder
+        : undefined;
+    return {
+        type: 'cardThermo2',
+        uniqueName: entry.uniqueName,
+        heading: '',
+        thermoItems,
+        items: [],
+        sortOrder,
+    };
+}
+
+export function buildChartPageConfig(entry: ShareConfig.ChartEntry): cardChartDataItemOptions {
+    const d = ShareConfig.chartDefaults;
+    const dbData: ShareConfig.ChartDetailsExternal | undefined =
+        entry.selInstanceDataSource === 1
+            ? {
+                  instance: entry.selInstance || '',
+                  state: entry.setStateForDB || '',
+                  hours: entry.rangeHours ?? d.rangeHours,
+                  maxTicks: entry.maxXAxisTicks ?? d.maxXAxisTicks,
+                  factor: entry.factorCardChart ?? d.factorCardChart,
+                  maxLabels: entry.maxXAxisLabels ?? d.maxXAxisLabels,
+              }
+            : undefined;
+    return {
+        card: entry.selChartType || d.selChartType,
+        data: {
+            headline: { type: 'const', constVal: entry.headline || 'Page Chart' },
+            text: { type: 'const', constVal: entry.txtLabelYAchse || '' },
+            color: { true: { color: { type: 'const', constVal: entry.chartColor || d.chartColor } } },
+            ticks: { type: 'triggered', dp: entry.setStateForTicks || '' },
+            value: { type: 'triggered', dp: entry.setStateForValues || entry.setStateForDB || '' },
+            dbData: dbData ? { type: 'const', constVal: JSON.stringify(dbData) } : undefined,
+        },
+    };
+}
+
 function isAlwaysOnMode(F: any): F is AlwaysOnMode {
     const R = F as AlwaysOnMode;
     switch (R) {
@@ -672,9 +1059,16 @@ function mapPowerTargetUnit(unit: string | undefined): number | undefined {
  * Build the per-slot data block for cardPower from a PowerSlotConfig.
  * Mirrors the structure produced by PagePower.getPowerPageConfig() for one slot.
  *
+ * The React editor only stores a scale bound once the user has typed into its field; a slot whose
+ * bounds were never touched carries no minColorScale/maxColorScale/bestColorScale at all. The scale
+ * is therefore built from the same defaults the classic jsonConfig accordion materialises (0 / 10000 / 0)
+ * whenever useColorScale is set, instead of silently leaving the icon white.
+ *
+ * Exported for the unit test only.
+ *
  * @param slot Per-slot configuration from the React PowerEntry
  */
-function buildPowerSlotData(slot: ShareConfig.PowerSlotConfig | undefined): any {
+export function buildPowerSlotData(slot: ShareConfig.PowerSlotConfig | undefined): any {
     const s = slot ?? {};
     const stateId = (s.state || '').trim();
     const useColorScale = !!s.useColorScale;
@@ -688,13 +1082,13 @@ function buildPowerSlotData(slot: ShareConfig.PowerSlotConfig | undefined): any 
         },
         false: undefined,
     };
-    if (useColorScale && typeof s.minColorScale === 'number' && typeof s.maxColorScale === 'number') {
+    if (useColorScale) {
         icon.scale = {
             type: 'const',
             constVal: {
-                val_min: s.minColorScale,
-                val_max: s.maxColorScale,
-                val_best: typeof s.bestColorScale === 'number' ? s.bestColorScale : s.minColorScale,
+                val_min: s.minColorScale ?? 0,
+                val_max: s.maxColorScale ?? 10_000,
+                val_best: s.bestColorScale ?? 0,
                 mode: 'triGrad',
             },
         };

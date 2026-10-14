@@ -5,6 +5,7 @@ import { Icons } from '../const/icon_mapping';
 import type { Page } from './Page';
 import { getPayload, getPayloadRemoveTilde } from '../const/tools';
 import { genericStateObjects } from '../const/definition';
+import { mainPageName } from '../const/default-pages';
 type optionalActionsType = 'notifications';
 export type NavigationItemConfig = {
     name: string;
@@ -90,7 +91,7 @@ export class Navigation extends BaseClass {
     panel: Panel;
     private database: NavigationItem[] = [];
     private navigationConfig: NavigationItemConfigNonNull[];
-    private mainPage = 'main';
+    private mainPage: string = mainPageName;
     private _currentItem: number = 0;
     private initDone = false;
     private infityCounter = 0;
@@ -131,14 +132,24 @@ export class Navigation extends BaseClass {
 
         // Sortiere so, dass "main" zuerst kommt
         this.navigationConfig.sort((a, b) => {
-            if (a.name === 'main') {
+            if (a.name === b.name) {
+                return 0;
+            }
+            if (a.name === mainPageName) {
                 return -1;
             }
-            if (b.name === 'main') {
+            if (b.name === mainPageName) {
                 return 1;
             }
             return a.name.localeCompare(b.name);
         });
+
+        // Determine the effective start page. Links pointing to "main" must not dangle, so a
+        // configuration without such a node falls back to the first regular navigation node.
+        const effectiveMain = this.getMainNodeName();
+        if (this.mainPage === mainPageName && effectiveMain !== mainPageName) {
+            this.mainPage = effectiveMain;
+        }
 
         // Erzeuge Datenbank-Einträge
         for (let a = 0; a < this.navigationConfig.length; a++) {
@@ -199,7 +210,12 @@ export class Navigation extends BaseClass {
                         continue;
                     }
 
-                    const found = this.navigationConfig.find(entry => entry && entry.name === r2);
+                    let found = this.navigationConfig.find(entry => entry && entry.name === r2);
+                    if (!found && r2 === mainPageName && effectiveMain !== mainPageName) {
+                        // Hard coded links to the start page (e.g. the service pages) are
+                        // redirected to the node that actually acts as start page.
+                        found = this.navigationConfig.find(entry => entry && entry.name === effectiveMain);
+                    }
                     if (found) {
                         const idx = this.navigationConfig.indexOf(found);
                         i[nk][nk2] = idx;
@@ -446,10 +462,26 @@ export class Navigation extends BaseClass {
     getCurrentMainPoint(): string {
         const index = this.navigationConfig.findIndex(a => a && a.name === this.mainPage);
         if (index === -1) {
-            return 'main';
+            return this.getMainNodeName();
         }
         const item = this.navigationConfig[index];
-        return item ? item.name : 'main';
+        return item ? item.name : this.getMainNodeName();
+    }
+
+    /**
+     * Name of the node that acts as start page.
+     *
+     * Prefers the node named {@link mainPageName}; if the configuration has none, the first
+     * regular (non service) node is used so that links to the start page stay resolvable.
+     *
+     * @returns Name of the start page node.
+     */
+    private getMainNodeName(): string {
+        if (this.navigationConfig.some(a => a && a.name === mainPageName)) {
+            return mainPageName;
+        }
+        const first = this.navigationConfig.find(a => a && !a.name.startsWith('///'));
+        return first ? first.name : mainPageName;
     }
     getCurrentMainPage(): Page | undefined {
         const index = this.navigationConfig.findIndex(a => a && a.name === this.mainPage);
@@ -461,10 +493,14 @@ export class Navigation extends BaseClass {
         }
         return this.database[index]?.page;
     }
-    getCurrentPage(): Page {
+    getCurrentPage(): Page | undefined {
         const page = this.database[this.currentItem];
         if (page == null) {
             const index = this.database.findIndex(a => a && a.page !== null);
+            if (index === -1) {
+                this.log.error('No valid page found in navigation database.');
+                return undefined;
+            }
             return this.database[index]!.page;
         }
         return page.page;

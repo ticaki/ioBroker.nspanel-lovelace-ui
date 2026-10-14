@@ -40,15 +40,20 @@ class ConfigIP extends ConfigGeneric<ConfigIPProps, ConfigIPState> {
         };
     }
 
-    componentDidMount(): void {
-        super.componentDidMount();
+    async componentDidMount(): Promise<void> {
+        await super.componentDidMount();
         void this.loadIPs();
     }
 
     private async loadIPs(): Promise<void> {
         try {
+            const host = this.props.common?.host;
+            if (typeof host !== 'string') {
+                this.setState({ isLoading: false });
+                return;
+            }
             const socket = this.props.oContext.socket;
-            let ips = await socket.getHostByIp(this.props.common.host);
+            let ips = await socket.getHostByIp(host);
             console.log('IPs loaded:', ips);
 
             // Filter based on schema options

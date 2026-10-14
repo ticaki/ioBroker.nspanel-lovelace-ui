@@ -1,6 +1,5 @@
 import React from 'react';
 import { Box, Typography } from '@mui/material';
-import { withTheme } from '@mui/styles';
 import { ConfigGeneric, type ConfigGenericProps, type ConfigGenericState } from '@iobroker/json-config';
 import type {
     PageConfigEntry,
@@ -10,13 +9,30 @@ import type {
     AdminPanelConfig,
     PowerEntry,
 } from '../../src/lib/types/adminShareConfig';
-import { ADAPTER_NAME, emptyPowerSlot, SENDTO_GET_PAGES_All_COMMAND } from '../../src/lib/types/adminShareConfig';
-import { PageConfigLayout, type PageCardType } from './components/PageConfigLayout';
+import {
+    ADAPTER_NAME,
+    emptyChartEntry,
+    emptyThermo2Entry,
+    emptyPowerSlot,
+    isMainPageEntry,
+    mainPageName,
+    normalizeTrashItems,
+    SENDTO_GET_PAGES_All_COMMAND,
+} from '../../src/lib/types/adminShareConfig';
+import {
+    PageConfigLayout,
+    canCreateForCardType,
+    filterEntriesByCardType,
+    type PageCardType,
+} from './components/PageConfigLayout';
 import { PageAlarmEditor } from './components/PageAlarmEditor';
 import { PageMenuEditor } from './components/PageMenuEditor';
 import { PagePowerEditor } from './components/PagePowerEditor';
 import { PageQREditor } from './components/PageQREditor';
 import { PageTrashEditor } from './components/PageTrashEditor';
+import { takeRequestedPageConfig } from './pageConfigLink';
+import { PageChartEditor } from './components/PageChartEditor';
+import { PageThermo2Editor } from './components/PageThermo2Editor';
 
 interface PageConfigManagerState extends ConfigGenericState {
     entries: PageConfigEntry[];
@@ -35,17 +51,21 @@ class PageConfigManager extends ConfigGeneric<ConfigGenericProps & { theme?: any
 
     constructor(props: ConfigGenericProps & { theme?: any }) {
         super(props);
-        const saved = ConfigGeneric.getValue(props.data, props.attr!);
+        const saved = ConfigGeneric.getValue(props.data, props.attr);
+        const entries: PageConfigEntry[] = Array.isArray(saved) ? (saved as PageConfigEntry[]) : [];
+        // A page requested from the navigation flow is preselected - it may have been deleted
+        // meanwhile, then the list opens as usual.
+        const requested = takeRequestedPageConfig();
         this.state = {
             ...(this.state as ConfigGenericState),
-            entries: Array.isArray(saved) ? (saved as PageConfigEntry[]) : [],
-            selected: '',
+            entries,
+            selected: requested && entries.some(e => e.uniqueName === requested) ? requested : '',
             selectedCardType: 'all', // Default: alle anzeigen
             pagesList: [],
             alive: false,
             pagesRetryCount: 0,
             panelPagesMap: {},
-        } as PageConfigManagerState;
+        };
     }
 
     componentWillUnmount(): void {
@@ -68,7 +88,7 @@ class PageConfigManager extends ConfigGeneric<ConfigGenericProps & { theme?: any
     }
 
     async componentDidMount(): Promise<void> {
-        super.componentDidMount();
+        void super.componentDidMount();
 
         const instance = this.props.oContext.instance ?? '0';
         const aliveStateId = `system.adapter.${ADAPTER_NAME}.${instance}.alive`;
@@ -118,12 +138,9 @@ class PageConfigManager extends ConfigGeneric<ConfigGenericProps & { theme?: any
         if (!panel?.topic) {
             return;
         }
-        this.setState(
-            prev =>
-                ({
-                    panelPagesMap: { ...prev.panelPagesMap, [panel.topic!]: nodes },
-                }) as PageConfigManagerState,
-        );
+        this.setState(prev => ({
+            panelPagesMap: { ...prev.panelPagesMap, [panel.topic!]: nodes },
+        }));
     };
 
     /**
@@ -163,12 +180,9 @@ class PageConfigManager extends ConfigGeneric<ConfigGenericProps & { theme?: any
                         : [];
                     const panel = panels.find(p => p.id && `${ADAPTER_NAME}.${instance}.panels.${p.id}` === id);
                     if (panel?.topic) {
-                        this.setState(
-                            prev =>
-                                ({
-                                    panelPagesMap: { ...prev.panelPagesMap, [panel.topic!]: nodes },
-                                }) as PageConfigManagerState,
-                        );
+                        this.setState(prev => ({
+                            panelPagesMap: { ...prev.panelPagesMap, [panel.topic!]: nodes },
+                        }));
                     }
                 } catch (e) {
                     console.warn(`[PageConfigManager] subscribeObject/getObject failed for ${id}`, e);
@@ -283,8 +297,11 @@ class PageConfigManager extends ConfigGeneric<ConfigGenericProps & { theme?: any
     }
 
     private handleAdd = (name: string, cardType: PageCardType): void => {
-        if (cardType === 'all') {
+        if (!canCreateForCardType(cardType)) {
             return; // Sollte nicht vorkommen (Button ist disabled)
+        }
+        if (name.trim() === mainPageName) {
+            return; // Reservierter Name - Button ist disabled, hier nur zur Sicherheit
         }
 
         let newEntry: PageConfigEntry;
@@ -324,14 +341,7 @@ class PageConfigManager extends ConfigGeneric<ConfigGenericProps & { theme?: any
                 trashImport: true, // Default: Import from iCal Adapter
                 trashState: '',
                 trashFile: '',
-                items: [
-                    { textTrash: '', customTrash: '', iconColor: '#3c3fff', icon: '' },
-                    { textTrash: '', customTrash: '', iconColor: '#fffd77', icon: '' },
-                    { textTrash: '', customTrash: '', iconColor: '#d2d2d2', icon: '' },
-                    { textTrash: '', customTrash: '', iconColor: '#de8900', icon: '' },
-                    { textTrash: '', customTrash: '', iconColor: '#d2d2d2', icon: '' },
-                    { textTrash: '', customTrash: '', iconColor: '#d2d2d2', icon: '' },
-                ],
+                items: normalizeTrashItems(undefined),
             };
         } else if (cardType === 'cardPower') {
             newEntry = {
@@ -353,6 +363,10 @@ class PageConfigManager extends ConfigGeneric<ConfigGenericProps & { theme?: any
                     selPowerSupply: [],
                 },
             } satisfies PowerEntry;
+        } else if (cardType === 'cardChart') {
+            newEntry = emptyChartEntry(name);
+        } else if (cardType === 'cardThermo2') {
+            newEntry = emptyThermo2Entry(name);
         } else if (
             cardType === 'pageMenu' ||
             cardType === 'cardGrid' ||
@@ -374,22 +388,15 @@ class PageConfigManager extends ConfigGeneric<ConfigGenericProps & { theme?: any
 
         const updated = [...this.state.entries, newEntry];
         this.setState({ entries: updated } as PageConfigManagerState);
-        void this.onChange(this.props.attr!, updated);
+        void this.onChange(this.props.attr, updated);
     };
 
     private handleDelete = (name: string): void => {
         const updated = this.state.entries.filter(e => e.uniqueName !== name);
         this.setState({ entries: updated } as PageConfigManagerState);
-        void this.onChange(this.props.attr!, updated);
+        void this.onChange(this.props.attr, updated);
 
-        const MENU_TYPES = ['cardGrid', 'cardGrid2', 'cardGrid3', 'cardEntities', 'cardSchedule'];
-        const { selectedCardType } = this.state;
-        const filteredAfterDelete =
-            selectedCardType === 'all'
-                ? updated
-                : selectedCardType === 'pageMenu'
-                  ? updated.filter(e => MENU_TYPES.includes(e.card))
-                  : updated.filter(e => e.card === selectedCardType);
+        const filteredAfterDelete = filterEntriesByCardType(updated, this.state.selectedCardType);
 
         const newSelected = filteredAfterDelete.length > 0 ? filteredAfterDelete[0].uniqueName : '';
         this.setState({ selected: newSelected } as PageConfigManagerState);
@@ -400,33 +407,32 @@ class PageConfigManager extends ConfigGeneric<ConfigGenericProps & { theme?: any
             it.uniqueName === uniqueName ? { ...it, navigationAssignment: assignments } : it,
         );
         this.setState({ entries: updated } as PageConfigManagerState);
-        void this.onChange(this.props.attr!, updated);
+        void this.onChange(this.props.attr, updated);
     };
 
     private handleEntryChange = (updatedEntry: PageConfigEntry): void => {
         const updated = this.state.entries.map(it => (it.uniqueName === updatedEntry.uniqueName ? updatedEntry : it));
         this.setState({ entries: updated } as PageConfigManagerState);
-        void this.onChange(this.props.attr!, updated);
+        void this.onChange(this.props.attr, updated);
     };
 
     private handleUniqueNameChange = (oldName: string, newName: string): void => {
         if (!newName.trim()) {
             return;
         }
+        // 'main' is reserved: the start page is set via the checkbox in the navigation assignment,
+        // otherwise its checks could be bypassed by renaming a page afterwards.
+        if (newName.trim() === mainPageName) {
+            return;
+        }
         const updated = this.state.entries.map(it => (it.uniqueName === oldName ? { ...it, uniqueName: newName } : it));
         this.setState({ entries: updated, selected: newName } as PageConfigManagerState);
-        void this.onChange(this.props.attr!, updated);
+        void this.onChange(this.props.attr, updated);
     };
 
     private handleCardTypeChange = (cardType: PageCardType): void => {
         // Beim Wechsel des Card-Typs: filtere Einträge und wähle ersten passenden aus
-        const MENU_TYPES = ['cardGrid', 'cardGrid2', 'cardGrid3', 'cardEntities', 'cardSchedule'];
-        const filteredEntries =
-            cardType === 'all'
-                ? this.state.entries
-                : cardType === 'pageMenu'
-                  ? this.state.entries.filter(e => MENU_TYPES.includes(e.card))
-                  : this.state.entries.filter(e => e.card === cardType);
+        const filteredEntries = filterEntriesByCardType(this.state.entries, cardType);
         const newSelected = filteredEntries.length > 0 ? filteredEntries[0].uniqueName : '';
         this.setState({ selectedCardType: cardType, selected: newSelected } as PageConfigManagerState);
     };
@@ -434,7 +440,7 @@ class PageConfigManager extends ConfigGeneric<ConfigGenericProps & { theme?: any
     private handleCommonFieldsChange = (uniqueName: string, fields: Partial<PageConfigBaseFields>): void => {
         const updated = this.state.entries.map(it => (it.uniqueName === uniqueName ? { ...it, ...fields } : it));
         this.setState({ entries: updated } as PageConfigManagerState);
-        void this.onChange(this.props.attr!, updated);
+        void this.onChange(this.props.attr, updated);
     };
 
     private renderMiddlePanel(): React.JSX.Element {
@@ -547,6 +553,36 @@ class PageConfigManager extends ConfigGeneric<ConfigGenericProps & { theme?: any
             );
         }
 
+        if (currentEntry.card === 'cardChart') {
+            return (
+                <PageChartEditor
+                    {...this.props}
+                    entry={currentEntry}
+                    onEntryChange={this.handleEntryChange}
+                    onUniqueNameChange={this.handleUniqueNameChange}
+                    getText={key => this.getText(key)}
+                    oContext={this.props.oContext}
+                    theme={this.props.theme}
+                />
+            );
+        }
+
+        if (currentEntry.card === 'cardThermo2') {
+            return (
+                <PageThermo2Editor
+                    {...this.props}
+                    entry={currentEntry}
+                    onEntryChange={this.handleEntryChange}
+                    onUniqueNameChange={this.handleUniqueNameChange}
+                    getText={key => this.getText(key)}
+                    oContext={this.props.oContext}
+                    theme={this.props.theme}
+                    expertMode={this.props.expertMode ?? false}
+                    pagesList={pagesList}
+                />
+            );
+        }
+
         return (
             <Typography variant="body2">
                 {currentEntry.card} - {this.getText('coming_soon')}
@@ -570,18 +606,23 @@ class PageConfigManager extends ConfigGeneric<ConfigGenericProps & { theme?: any
                 oContext={this.props.oContext}
                 getText={(key: string) => this.getText(key)}
                 panels={Array.isArray(this.props.data?.panels) ? this.props.data.panels : []}
+                pagesList={this.state.pagesList}
                 navigationPanelProps={{
                     ...this.props,
                     data: this.props.data,
                     onChange: this.props.onChange,
                     onError: this.props.onError,
                     panelPagesMap: this.state.panelPagesMap,
+                    allEntries: this.state.entries,
                     // Gemeinsame Felder für aktuellen Eintrag
                     commonFields: currentEntry
                         ? {
                               hidden: (currentEntry as any).hidden,
                               alwaysOn: (currentEntry as any).alwaysOn,
                               navigationAssignment: (currentEntry as any).navigationAssignment,
+                              // Ohne dieses Feld bleibt die Startseiten-Checkbox immer leer und eine
+                              // gesetzte Startseite lässt sich nicht wieder abwählen.
+                              isMainPage: isMainPageEntry(currentEntry),
                           }
                         : undefined,
                     onCommonFieldsChange: currentEntry
@@ -597,4 +638,4 @@ class PageConfigManager extends ConfigGeneric<ConfigGenericProps & { theme?: any
     }
 }
 
-export default withTheme(PageConfigManager);
+export default PageConfigManager;

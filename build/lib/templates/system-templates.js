@@ -23,6 +23,8 @@ __export(system_templates_exports, {
 });
 module.exports = __toCommonJS(system_templates_exports);
 var import_Color = require("../const/Color");
+var import_default_pages = require("../const/default-pages");
+var import_adminShareConfig = require("../types/adminShareConfig");
 const popupNotification = {
   dpInit: "",
   alwaysOn: "ignore",
@@ -126,7 +128,7 @@ const AdapterInformation = {
   items: void 0
 };
 const ServiceUnlock = {
-  uniqueID: "///unlock",
+  uniqueID: import_adminShareConfig.servicePageName,
   alwaysOn: "always",
   dpInit: "",
   pageItems: [],
@@ -1354,14 +1356,16 @@ const systemPages = [
 ];
 const systemNavigation = [
   {
-    name: "///service",
-    page: "///unlock",
-    left: { single: "main" }
+    name: import_adminShareConfig.serviceNodeName,
+    page: import_adminShareConfig.servicePageName,
+    // Overwritten at runtime by Navigation.init() with the node that points here.
+    left: { single: import_default_pages.mainPageName }
   },
   {
     name: "///Overview",
     page: "///Overview",
-    right: { double: "main" },
+    // Home button - resolved against the effective start page by Navigation.init().
+    right: { double: import_default_pages.mainPageName },
     optional: "notifications"
   },
   {

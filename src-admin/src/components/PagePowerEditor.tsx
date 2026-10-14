@@ -22,7 +22,7 @@ import HomeIcon from '@mui/icons-material/Home';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import { ConfigGeneric, type ConfigGenericProps, type ConfigGenericState } from '@iobroker/json-config';
-import type { IobTheme, ThemeType, ThemeName } from '@iobroker/adapter-react-v5';
+import type { IobTheme, ThemeType, ThemeName } from '@iobroker/gui-components';
 import { EntitySelector } from './EntitySelector';
 import IconSelect from '../IconSelect';
 import iconsJson from '../icons.json';
@@ -34,6 +34,8 @@ import {
     type PowerHomeBotConfig,
     emptyPowerSlot,
 } from '../../../src/lib/types/adminShareConfig';
+import { isMainPageEntry } from '../../../src/lib/types/adminShareConfig';
+import { isDarkTheme } from '../themeUtils';
 
 const ICONS_LIST: { name: string; base64: string }[] = Array.isArray(iconsJson) ? iconsJson : [];
 
@@ -134,7 +136,7 @@ export class PagePowerEditor extends ConfigGeneric<ConfigGenericProps & PagePowe
 
     private updateSlot(slot: SlotKey, patch: Partial<PowerSlotConfig>): void {
         const current = this.props.entry[slot] ?? emptyPowerSlot();
-        this.updateEntry({ [slot]: { ...current, ...patch } } as Partial<PowerEntry>);
+        this.updateEntry({ [slot]: { ...current, ...patch } });
     }
 
     private updateHomeTop(patch: Partial<PowerHomeTopConfig>): void {
@@ -149,7 +151,7 @@ export class PagePowerEditor extends ConfigGeneric<ConfigGenericProps & PagePowe
 
     private clearSlot(slot: SlotKey, e: React.MouseEvent): void {
         e.stopPropagation();
-        this.updateEntry({ [slot]: emptyPowerSlot() } as Partial<PowerEntry>);
+        this.updateEntry({ [slot]: emptyPowerSlot() });
     }
 
     private onDragStart(slot: SlotKey, e: React.DragEvent): void {
@@ -185,7 +187,7 @@ export class PagePowerEditor extends ConfigGeneric<ConfigGenericProps & PagePowe
         const entry = this.props.entry;
         const fromData = entry[dragFrom] ?? emptyPowerSlot();
         const toData = entry[targetSlot] ?? emptyPowerSlot();
-        this.updateEntry({ [dragFrom]: toData, [targetSlot]: fromData } as Partial<PowerEntry>);
+        this.updateEntry({ [dragFrom]: toData, [targetSlot]: fromData });
     }
 
     private onDragEnd(): void {
@@ -201,7 +203,7 @@ export class PagePowerEditor extends ConfigGeneric<ConfigGenericProps & PagePowe
         const label = data.entityHeadline || fallbackLabel;
         const empty = !data.state && !data.entityHeadline && !data.icon;
         const iconSvg = getIconSvgHtml(data.icon);
-        const isDark = this.props.themeName === 'dark';
+        const isDark = isDarkTheme(this.props);
         const isDragOver = this.state.dragOver === slot;
 
         return (
@@ -288,7 +290,7 @@ export class PagePowerEditor extends ConfigGeneric<ConfigGenericProps & PagePowe
     private renderHomeTopPaper(): React.JSX.Element {
         const data = this.props.entry.homeTop ?? {};
         const empty = !data.state;
-        const isDark = this.props.themeName === 'dark';
+        const isDark = isDarkTheme(this.props);
 
         return (
             <Paper
@@ -331,7 +333,7 @@ export class PagePowerEditor extends ConfigGeneric<ConfigGenericProps & PagePowe
         const data = this.props.entry.homeBot ?? {};
         const isInternal = !!data.selInternalCalculation;
         const empty = !data.state && !isInternal;
-        const isDark = this.props.themeName === 'dark';
+        const isDark = isDarkTheme(this.props);
 
         return (
             <Paper
@@ -414,17 +416,17 @@ export class PagePowerEditor extends ConfigGeneric<ConfigGenericProps & PagePowe
                             }}
                             custom
                             onChange={(
-                                attrOrData: string | Record<string, any>,
+                                attrOrData: string | Record<string, any> | undefined,
                                 val?: unknown,
                                 cb?: () => void,
                             ): void => {
                                 const newIcon =
-                                    typeof attrOrData === 'string'
-                                        ? typeof val === 'string'
-                                            ? val
+                                    typeof attrOrData === 'object' && attrOrData !== null
+                                        ? typeof attrOrData.icon === 'string'
+                                            ? attrOrData.icon
                                             : ''
-                                        : typeof attrOrData.icon === 'string'
-                                          ? attrOrData.icon
+                                        : typeof val === 'string'
+                                          ? val
                                           : '';
                                 this.updateSlot(slot, { icon: newIcon });
                                 if (cb) {
@@ -743,17 +745,7 @@ export class PagePowerEditor extends ConfigGeneric<ConfigGenericProps & PagePowe
     renderItem(_error: boolean, _disabled: boolean): React.JSX.Element {
         const entry = this.props.entry;
         const { editing } = this.state;
-        const isDark = this.props.themeName === 'dark';
-        console.log(
-            'Rendering PagePowerEditor, alive:',
-            this.state.alive,
-            'entry:',
-            entry,
-            'editing:',
-            editing,
-            'isDark:',
-            isDark,
-        );
+        const isDark = isDarkTheme(this.props);
 
         return (
             <Box>
@@ -772,7 +764,8 @@ export class PagePowerEditor extends ConfigGeneric<ConfigGenericProps & PagePowe
                         slotProps={{
                             input: { sx: { backgroundColor: 'transparent', px: 1, fontWeight: 600, width: '50%' } },
                         }}
-                        disabled={!this.state.alive}
+                        disabled={!this.state.alive || isMainPageEntry(entry)}
+                        helperText={isMainPageEntry(entry) ? this.getText('page_name_main_locked') : undefined}
                     />
                 </Box>
                 <TextField
