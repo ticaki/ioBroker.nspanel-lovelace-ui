@@ -684,7 +684,7 @@ async function configuration (): Promise<void> {
 }
 
 
-const version = '0.21.2';
+const version = '0.21.3';
 const HMIOff = {red: 68, green: 115, blue: 158};     // Blue-Off - Original Entity Off
 const HMIOn = {red: 3, green: 169, blue: 244};     // Blue-On
 const HMIDark = {red: 29, green: 29, blue: 29};     // Original Background Color
@@ -1642,10 +1642,40 @@ declare namespace ScriptConfig {
             ScreensaverEntityIconSelect?: {icon: string; value: number}[] | null;
         } & {
             /**
+             * Optional state ID that controls whether the ScreensaverEntity is visible.
+             *
+             * - The state must exist, otherwise the configuration is rejected.
+             * - Without `ScreensaverEntityVisibleCondition` the value of this state is used directly
+             *   (truthy → shown, falsy → hidden).
+             * - With `ScreensaverEntityVisibleCondition` the condition is evaluated against the value
+             *   of **this** state (`val` = value of `ScreensaverEntityEnabled`, not of `ScreensaverEntity`).
+             *
+             * Example: show the free space in GB only when the raid usage is above 98 %,
+             * otherwise show the usage in % (second entity with the inverted condition):
+             * ```ts
+             * {
+             *     type: 'script',
+             *     ScreensaverEntityEnabled: '0_userdata.0.ZFS.pve4.ubs-raid1', // usage in %
+             *     ScreensaverEntityVisibleCondition: "!isNaN(val) && val > 98",
+             *     ScreensaverEntity: '0_userdata.0.ZFS.pve4.ubs-raid1_frei_gb', // displayed value
+             *     ScreensaverEntityUnitText: 'GB',
+             * },
+             * {
+             *     type: 'script',
+             *     ScreensaverEntityVisibleCondition: "!(!isNaN(val) && val > 98)",
+             *     ScreensaverEntity: '0_userdata.0.ZFS.pve4.ubs-raid1', // val = this state
+             *     ScreensaverEntityUnitText: '%',
+             * },
+             * ```
+             */
+            ScreensaverEntityEnabled?: string;
+            /**
              * Optional condition that determines whether a ScreensaverEntity should be visible.
              *
-             * - If `undefined`, the entity is always shown (`true`).
+             * - If `undefined`, the entity is always shown (`true`) — or, if `ScreensaverEntityEnabled`
+             *   is set, its state value decides.
              * - If provided, the adapter prepends `return` to the string and evaluates it.
+             *   `val` is the value of `ScreensaverEntityEnabled` if set, otherwise of `ScreensaverEntity`.
              *   The result must be a boolean:
              *   - `true` → the entity is shown.
              *   - `false` → the entity is hidden.
@@ -1655,7 +1685,6 @@ declare namespace ScriptConfig {
              * ScreensaverEntityVisibleCondition: "val.length > 0 && val !== 'OFF'"
              * ```
              */
-            ScreensaverEntityEnabled?: string;
             ScreensaverEntityVisibleCondition?: string;
             // default true if not defined
             ScreensaverEntityFillIfBelowMin?: boolean;
