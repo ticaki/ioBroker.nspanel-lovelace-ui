@@ -405,7 +405,12 @@ export class ConfigManager extends BaseClass {
                         globalConfig.subPages.splice(index, 1);
                     }
                     for (const page of globalConfig.subPages || []) {
-                        if (page && page.uniqueName) {
+                        // a page of the panel script with the same name wins (see filter below) - not global
+                        if (
+                            page &&
+                            page.uniqueName &&
+                            config.pages.findIndex(p => p && p.uniqueName === page.uniqueName) === -1
+                        ) {
                             globalPageIds.add(page.uniqueName);
                         }
                     }
@@ -4600,6 +4605,10 @@ export class ConfigManager extends BaseClass {
     async getScreensaverConfig(
         config: ScriptConfig.Config,
         messages: string[] = [],
+        options: {
+            /** the weather entity of `config` is final - the global weatherEntity of the instance does not replace it (admin screensaver) */
+            weatherEntityFixed?: boolean;
+        } = {},
     ): Promise<{ configArray: pages.PageBase; messages: string[] }> {
         let pageItems: NSPanel.PageItemDataItemsOptions[] = [];
 
@@ -4731,7 +4740,7 @@ export class ConfigManager extends BaseClass {
             pageItems.push(...arr);
         }
         // if weatherEntity is set, add alot weather data to screensaver :)
-        if (this.adapter.config.weatherEntity) {
+        if (this.adapter.config.weatherEntity && !options.weatherEntityFixed) {
             config.weatherEntity = this.adapter.config.weatherEntity;
         }
         if (config.weatherEntity) {
@@ -5711,7 +5720,7 @@ export class ConfigManager extends BaseClass {
                 // read function for icon selection
                 obj.read = `
                     const items = [${entity.ScreensaverEntityIconSelect.map(item => `{val: ${item.value}, icon: "${item.icon}"}`).join(', ')}];
-                    for (let i = 1; i < items.length; i++) {
+                    for (let i = 0; i < items.length; i++) {
                         if (val <= items[i].val) {return items[i].icon;}
                     }
                     return items[items.length - 1].icon;`;
@@ -5753,14 +5762,34 @@ export class ConfigManager extends BaseClass {
             };
         }
 
-        if (entity.ScreensaverEntityOnText) {
-            result.data.text = { true: await this.getFieldAsDataItemConfig(entity.ScreensaverEntityOnText) };
-        } else if (entity.ScreensaverEntityText) {
+        // headline of the item (the bottom places show it)
+        if (entity.ScreensaverEntityText) {
             result.data.text = { true: await this.getFieldAsDataItemConfig(entity.ScreensaverEntityText) };
         }
-
-        if (entity.ScreensaverEntityOffText) {
-            result.data.text = { false: await this.getFieldAsDataItemConfig(entity.ScreensaverEntityOffText) };
+        if (dataType === 'boolean' && (entity.ScreensaverEntityOnText || entity.ScreensaverEntityOffText)) {
+            // on / off text of a boolean state - a text or a state holding it - shown instead of "true" /
+            // "false": the display value (entity2) steps back, text1 takes over (page item: value ?? text1)
+            delete result.data.entity2.value;
+            result.data.text1 = {
+                true: entity.ScreensaverEntityOnText
+                    ? await this.getFieldAsDataItemConfig(entity.ScreensaverEntityOnText)
+                    : { type: 'const', constVal: 'true' },
+                false: entity.ScreensaverEntityOffText
+                    ? await this.getFieldAsDataItemConfig(entity.ScreensaverEntityOffText)
+                    : { type: 'const', constVal: 'false' },
+            };
+        } else if (entity.ScreensaverEntityOnText || entity.ScreensaverEntityOffText) {
+            // on / off text of other states: headline while the value is truthy / falsy (both kept)
+            const text: { true?: NSPanel.DataItemsOptions; false?: NSPanel.DataItemsOptions } = {
+                ...(result.data.text as { true?: NSPanel.DataItemsOptions; false?: NSPanel.DataItemsOptions }),
+            };
+            if (entity.ScreensaverEntityOnText) {
+                text.true = await this.getFieldAsDataItemConfig(entity.ScreensaverEntityOnText);
+            }
+            if (entity.ScreensaverEntityOffText) {
+                text.false = await this.getFieldAsDataItemConfig(entity.ScreensaverEntityOffText);
+            }
+            result.data.text = text;
         }
 
         result.fillIfBelowMin =

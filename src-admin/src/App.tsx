@@ -17,7 +17,7 @@ import IconSelect from './IconSelect';
 import IconOverview from './IconOverview';
 import NavigationView from './NavigationView';
 import PageConfigManager from './PageConfigManager';
-import ScreensaverPage from './ScreensaverPage';
+import ScreensaverConfigManager from './ScreensaverConfigManager';
 import PageGlobalSettings from './PageGlobalSettings';
 import TabMaintain from './TabMaintain';
 import TabPanelinfo from './TabPanelinfo';
@@ -36,6 +36,9 @@ import esLocal from './i18n/es.json';
 import plLocal from './i18n/pl.json';
 import ukLocal from './i18n/uk.json';
 import zhCNLocal from './i18n/zh-cn.json';
+import { installLabelHover } from './labelHover';
+
+installLabelHover();
 
 const styles: Record<string, any> = {
     app: (theme: IobTheme): React.CSSProperties => ({
@@ -195,15 +198,15 @@ class App extends GenericApp<GenericAppProps, AppState> {
                 ),
             },
             {
-                label: 'ScreensaverPage',
+                label: 'Screensaver',
                 content: (
-                    <ScreensaverPage
+                    <ScreensaverConfigManager
                         {...commonProps}
-                        attr="screensaver"
+                        attr="screensaverConfig"
                         schema={{
                             url: '',
                             i18n: true,
-                            name: 'AdminComponentEasyAccessSet/Components/ScreensaverPage',
+                            name: 'AdminComponentEasyAccessSet/Components/ScreensaverConfigManager',
                             type: 'custom',
                         }}
                     />

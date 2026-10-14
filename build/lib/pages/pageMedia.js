@@ -43,7 +43,11 @@ var import_getSpotify = require("./tools/getSpotify");
 var import_getAlexa = require("./tools/getAlexa");
 var import_getMpd = require("./tools/getMpd");
 var import_getSonos = require("./tools/getSonos");
+var import_getSqueezebox = require("./tools/getSqueezebox");
 var import_pageItem = require("./pageItem");
+function isMediaServiceName(name) {
+  return name === "alexa2" || name === "spotify-premium" || name === "mpd" || name === "sonos" || name === "squeezeboxrpc" || name === "";
+}
 const PageMediaMessageDefault = {
   event: "entityUpd",
   headline: "",
@@ -71,6 +75,10 @@ class PageMedia extends import_pageMenu.PageMenu {
   originalName = "";
   playerName = "";
   serviceName = "";
+  /**
+   * squeezeboxrpc: map of player MAC (PlayerID) to player device path
+   */
+  squeezeboxPlayers = {};
   itemAtCreate = [];
   playerNameList = {};
   updateViewTimeout = null;
@@ -92,7 +100,7 @@ class PageMedia extends import_pageMenu.PageMenu {
     this.minUpdateInterval = 1800;
   }
   async init() {
-    var _a, _b, _c, _d, _e, _f;
+    var _a, _b, _c, _d, _e, _f, _g;
     if (((_a = this.config) == null ? void 0 : _a.card) === "cardMedia") {
       const i = await this.createMainItems(this.config, this.enums, this.dpInit);
       i.ident = (_b = this.config.ident) != null ? _b : "";
@@ -101,7 +109,7 @@ class PageMedia extends import_pageMenu.PageMenu {
       const o = id ? await this.controller.adapter.getForeignObjectAsync(id) : null;
       this.originalName = (o == null ? void 0 : o.common) && ((_d = o.common) == null ? void 0 : _d.name) && (typeof o.common.name === "object" ? o.common.name.de || o.common.name.en : (_e = o == null ? void 0 : o.common) == null ? void 0 : _e.name) || "";
       const arr = typeof this.config.ident === "string" ? this.config.ident.split(".") : [];
-      this.serviceName = arr[0];
+      this.serviceName = isMediaServiceName(arr[0]) ? arr[0] : "";
       switch (this.serviceName) {
         case "alexa2":
         case "spotify-premium":
@@ -124,9 +132,27 @@ class PageMedia extends import_pageMenu.PageMenu {
             this.currentPlayer = arr.length >= 4 ? arr.slice(0, 4).join(".") : "";
           }
           break;
+        case "squeezeboxrpc":
+          {
+            const dp = arr.length >= 4 ? `${arr.slice(0, 4).join(".")}.SyncMaster` : "";
+            this.coordinator = (_g = await import_data_item.Dataitem.create(
+              this.adapter,
+              {
+                name: `${this.id}-coordinator`,
+                type: "triggered",
+                dp,
+                writeable: false
+              },
+              this,
+              this.basePanel.statesControler
+            )) != null ? _g : void 0;
+            this.currentPlayer = arr.length >= 4 ? arr.slice(0, 4).join(".") : "";
+            await this.loadSqueezeboxPlayers();
+          }
+          break;
         default:
           this.log.warn(
-            `Media page ${this.name} with id ${this.config.ident} is not supported - only alexa2, spotify-premium, mpd, and sonos!`
+            `Media page ${this.name} with id ${this.config.ident} is not supported - only alexa2, spotify-premium, mpd, sonos and squeezeboxrpc!`
           );
           break;
       }
@@ -201,14 +227,14 @@ class PageMedia extends import_pageMenu.PageMenu {
           }
         }
         this.playerNameList[dp] = name;
-        const reg = tools.getRegExp(`/^${dp.split(".").join("\\.")}/`) || dp;
+        const reg = tools.getRegExp(`/^${dp.split(".").join("\\.")}\\./`) || dp;
         this.items.push(await this.createMainItems(this.config, "", reg));
         index = this.items.length - 1;
         this.items[index].ident = dp;
         newOne = true;
       }
     }
-    if (this.serviceName === "sonos") {
+    if (this.serviceName === "sonos" || this.serviceName === "squeezeboxrpc") {
       if (this.pageItems) {
         for (const item of this.pageItems) {
           item && await item.delete();
@@ -221,7 +247,10 @@ class PageMedia extends import_pageMenu.PageMenu {
           pi.push(
             await this.initPageItems(
               pageitem,
-              tools.getRegExp(this.items[index].ident || "", { startsWith: true }) || ""
+              tools.getRegExp(
+                this.serviceName === "squeezeboxrpc" ? `${this.items[index].ident}.` : this.items[index].ident || "",
+                { startsWith: true }
+              ) || ""
             )
           );
         }
@@ -230,7 +259,7 @@ class PageMedia extends import_pageMenu.PageMenu {
           /*,this.items[index].ident || ''*/
         );
       }
-      if (index === 0) {
+      if (this.serviceName === "sonos" && index === 0) {
         if (this.items.length > 1) {
           let hackDP = `${this.items[0].ident}.favorites_list`;
           const s = await this.adapter.getForeignStateAsync(hackDP);
@@ -261,7 +290,7 @@ class PageMedia extends import_pageMenu.PageMenu {
     await this.update();
   }
   async update() {
-    var _a, _b, _c, _d, _e;
+    var _a, _b, _c, _d;
     if (!this.visibility || this.sleep) {
       return;
     }
@@ -273,14 +302,11 @@ class PageMedia extends import_pageMenu.PageMenu {
       this.updateViewTimeout = null;
       await this.update();
     }, 5e3);
-    if (this.serviceName === "sonos" && this.coordinator) {
-      const v = await ((_a = this.coordinator) == null ? void 0 : _a.getString());
-      if (v) {
-        const ident = this.config.ident ? this.config.ident.split(".").slice(0, 3).concat([v]).join(".") : "";
-        if (ident && ident !== this.currentPlayer) {
-          await this.updateCurrentPlayer(ident, this.playerNameList[ident] || "");
-          return;
-        }
+    if (this.coordinator) {
+      const ident = await this.getCoordinatorIdent();
+      if (ident && ident !== this.currentPlayer) {
+        await this.updateCurrentPlayer(ident, this.playerNameList[ident] || "");
+        return;
       }
     }
     let index = this.items.findIndex((i) => i.ident === this.currentPlayer);
@@ -322,6 +348,9 @@ class PageMedia extends import_pageMenu.PageMenu {
             case "sonos":
               suffix = "Sonos";
               break;
+            case "squeezeboxrpc":
+              suffix = "Squeezebox";
+              break;
             default:
               suffix = first;
               break;
@@ -341,7 +370,7 @@ class PageMedia extends import_pageMenu.PageMenu {
       }
     }
     {
-      const v = await ((_b = item.data.station) == null ? void 0 : _b.getString());
+      const v = await ((_a = item.data.station) == null ? void 0 : _a.getString());
       if (v != null && isPlaying) {
         station = v;
       }
@@ -399,7 +428,7 @@ class PageMedia extends import_pageMenu.PageMenu {
       this.artistPos = nextPos;
     }
     message.shuffle_icon = "";
-    if ((_d = (_c = item.data.shuffle) == null ? void 0 : _c.value) == null ? void 0 : _d.type) {
+    if ((_c = (_b = item.data.shuffle) == null ? void 0 : _b.value) == null ? void 0 : _c.type) {
       let value = null;
       if (!station && (!item.data.shuffle.enabled || await item.data.shuffle.enabled.getBoolean() === true)) {
         switch (item.data.shuffle.value.type) {
@@ -411,6 +440,15 @@ class PageMedia extends import_pageMenu.PageMenu {
             break;
           }
           case "number":
+            if (this.serviceName === "squeezeboxrpc") {
+              const n = await item.data.shuffle.value.getNumber();
+              value = n === null ? null : n !== 0;
+              if (n === 2) {
+                message.shuffle_icon = "album";
+              }
+              break;
+            }
+          // falls through
           case "boolean": {
             value = await item.data.shuffle.value.getBoolean();
             break;
@@ -420,11 +458,11 @@ class PageMedia extends import_pageMenu.PageMenu {
           }
         }
       }
-      if (value !== null) {
+      if (value !== null && !message.shuffle_icon) {
         message.shuffle_icon = value ? "shuffle-variant" : "shuffle-disabled";
       }
     }
-    if (await ((_e = item.data.useGroupVolume) == null ? void 0 : _e.getBoolean()) && item.data.volumeGroup) {
+    if (await ((_d = item.data.useGroupVolume) == null ? void 0 : _d.getBoolean()) && item.data.volumeGroup) {
       const v = await tools.getScaledNumber(item.data.volumeGroup);
       if (v !== null) {
         this.config.filterType = "volumeGroup";
@@ -477,8 +515,12 @@ class PageMedia extends import_pageMenu.PageMenu {
         message.artistColor = v;
       }
     }
+    const power = item.data.power ? await item.data.power.getBoolean() : null;
+    if (power !== null) {
+      message.onoffbuttonColor = power ? "65535" : "1374";
+    }
     if (item.data.onOffColor) {
-      const v = await tools.getIconEntryColor(item.data.onOffColor, isPlaying, import_Color.Color.mediaOnOffColor);
+      const v = await tools.getIconEntryColor(item.data.onOffColor, power != null ? power : isPlaying, import_Color.Color.mediaOnOffColor);
       message.onoffbuttonColor = v !== null ? v : "disable";
     }
     if (item.logoItem) {
@@ -546,14 +588,10 @@ class PageMedia extends import_pageMenu.PageMenu {
     );
   }
   onStateTrigger = async (dp, from) => {
-    var _a, _b;
-    if (from === this && dp === ((_a = this.coordinator) == null ? void 0 : _a.options.dp)) {
-      const v = await ((_b = this.coordinator) == null ? void 0 : _b.getString());
-      if (v) {
-        const ident = this.config.ident ? this.config.ident.split(".").slice(0, 3).concat([v]).join(".") : "";
-        if (ident && ident !== this.currentPlayer) {
-          await this.updateCurrentPlayer(ident, "");
-        }
+    if (from === this && this.coordinator && dp === this.coordinator.options.dp) {
+      const ident = await this.getCoordinatorIdent();
+      if (ident && ident !== this.currentPlayer) {
+        await this.updateCurrentPlayer(ident, "");
       }
     }
     await this.update();
@@ -565,7 +603,7 @@ class PageMedia extends import_pageMenu.PageMenu {
     this.artistPos = 0;
   }
   async onButtonEvent(event) {
-    var _a, _b, _c, _d, _e;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k;
     if (!this.getVisibility() || this.sleep) {
       return;
     }
@@ -600,9 +638,13 @@ class PageMedia extends import_pageMenu.PageMenu {
         break;
       }
       case "media-shuffle": {
-        if ((_b = (_a = items.data.shuffle) == null ? void 0 : _a.set) == null ? void 0 : _b.writeable) {
+        if (this.serviceName === "squeezeboxrpc" && ((_a = items.data.shuffle) == null ? void 0 : _a.value) && items.data.shuffle.value.type === "number") {
+          const target = ((_b = items.data.shuffle.set) == null ? void 0 : _b.writeable) ? items.data.shuffle.set : items.data.shuffle.value;
+          const v = (_c = await items.data.shuffle.value.getNumber()) != null ? _c : 0;
+          await target.setState((v + 1) % 3);
+        } else if ((_e = (_d = items.data.shuffle) == null ? void 0 : _d.set) == null ? void 0 : _e.writeable) {
           await items.data.shuffle.set.setStateFlip();
-        } else if ((_d = (_c = items.data.shuffle) == null ? void 0 : _c.value) == null ? void 0 : _d.writeable) {
+        } else if ((_g = (_f = items.data.shuffle) == null ? void 0 : _f.value) == null ? void 0 : _g.writeable) {
           await items.data.shuffle.value.setStateFlip();
         } else {
           this.log.error(`Missing shuffle controller. Report to dev`);
@@ -611,9 +653,11 @@ class PageMedia extends import_pageMenu.PageMenu {
       }
       case "volumeSlider": {
         this.blockUpdateUntilTime = new Date((/* @__PURE__ */ new Date()).getTime() + 1500);
-        if (await ((_e = items.data.useGroupVolume) == null ? void 0 : _e.getBoolean()) && items.data.volumeGroup) {
+        if (await ((_h = items.data.useGroupVolume) == null ? void 0 : _h.getBoolean()) && items.data.volumeGroup) {
           const v = parseInt(event.opt);
           await tools.setScaledNumber(items.data.volumeGroup, v);
+        } else if (this.serviceName === "squeezeboxrpc" && items.data.volume && await ((_i = items.data.useGroupVolume) == null ? void 0 : _i.getBoolean())) {
+          await this.setSqueezeboxGroupVolume(items, parseInt(event.opt));
         } else if (items.data.volume) {
           const v = parseInt(event.opt);
           await tools.setScaledNumber(items.data.volume, v);
@@ -650,6 +694,11 @@ class PageMedia extends import_pageMenu.PageMenu {
         break;
       }
       case "media-OnOff": {
+        if ((_j = items.data.power) == null ? void 0 : _j.writeable) {
+          const power = (_k = await items.data.power.getBoolean()) != null ? _k : false;
+          await items.data.power.setState(!power);
+          break;
+        }
         const onoff = await this.isPlaying();
         if (items.data.mediaState) {
           if (items.data.mediaState.writeable) {
@@ -738,7 +787,10 @@ class PageMedia extends import_pageMenu.PageMenu {
     if (page.media.id.startsWith("sonos.")) {
       return await (0, import_getSonos.getPageSonos)(configManager, page, gridItem, messages, justCheck);
     }
-    const msg = `${page.uniqueName}: Media page id ${page.media.id} is not supported - only alexa2, spotify-premium, mpd, and sonos!`;
+    if (page.media.id.startsWith("squeezeboxrpc.")) {
+      return await (0, import_getSqueezebox.getPageSqueezebox)(configManager, page, gridItem, messages, justCheck);
+    }
+    const msg = `${page.uniqueName}: Media page id ${page.media.id} is not supported - only alexa2, spotify-premium, mpd, sonos and squeezeboxrpc!`;
     messages.push(msg);
     adapter.log.warn(msg);
     return { gridItem, messages };
@@ -800,10 +852,105 @@ class PageMedia extends import_pageMenu.PageMenu {
       this.sendToPanel(msg, false);
     }
   }
+  /**
+   * Resolves the device path of the group coordinator/master for the configured player.
+   *
+   * @returns The device path to control, or '' if unknown.
+   */
+  async getCoordinatorIdent() {
+    var _a;
+    if (!this.coordinator || !this.config.ident) {
+      return "";
+    }
+    const v = await this.coordinator.getString();
+    switch (this.serviceName) {
+      case "sonos":
+        return v ? this.config.ident.split(".").slice(0, 3).concat([v]).join(".") : "";
+      case "squeezeboxrpc": {
+        const own = this.config.ident.split(".").slice(0, 4).join(".");
+        const mac = (v != null ? v : "").trim();
+        if (!mac) {
+          return own;
+        }
+        if (!this.squeezeboxPlayers[mac]) {
+          await this.loadSqueezeboxPlayers();
+        }
+        return (_a = this.squeezeboxPlayers[mac]) != null ? _a : own;
+      }
+    }
+    return "";
+  }
+  /**
+   * Reads PlayerID (MAC) of all squeezeboxrpc players of the configured instance.
+   */
+  async loadSqueezeboxPlayers() {
+    var _a, _b;
+    const inst = ((_a = this.config.ident) != null ? _a : "").split(".").slice(0, 2).join(".");
+    if (!inst) {
+      return;
+    }
+    const states = await this.adapter.getForeignStatesAsync(`${inst}.Players.*.PlayerID`);
+    const result = {};
+    for (const id in states) {
+      const val = (_b = states[id]) == null ? void 0 : _b.val;
+      if (typeof val === "string" && val) {
+        result[val] = id.split(".").slice(0, -1).join(".");
+      }
+    }
+    this.squeezeboxPlayers = result;
+  }
+  /**
+   * Sets the volume of a squeezebox sync group. The change of the master volume is added
+   * to every sync member (clamped to 0..100), so the relative levels stay untouched.
+   *
+   * @param item - current media item (group master)
+   * @param value - slider value 0..100
+   */
+  async setSqueezeboxGroupVolume(item, value) {
+    var _a, _b, _c, _d;
+    if (!item.data.volume || !item.ident) {
+      return;
+    }
+    const scale = (_c = (_a = item.data.volume.set) == null ? void 0 : _a.options.scale) != null ? _c : (_b = item.data.volume.value) == null ? void 0 : _b.options.scale;
+    const newRaw = Math.round(scale ? import_Color.Color.scale(value, 0, 100, scale.min, (_d = scale.max) != null ? _d : 100) : value);
+    const masterState = await this.adapter.getForeignStateAsync(`${item.ident}.Volume`);
+    const oldRaw = typeof (masterState == null ? void 0 : masterState.val) === "number" ? Math.max(0, masterState.val) : newRaw;
+    const delta = newRaw - oldRaw;
+    await tools.setScaledNumber(item.data.volume, value);
+    if (delta === 0) {
+      return;
+    }
+    const slaves = await this.adapter.getForeignStateAsync(`${item.ident}.SyncSlaves`);
+    if (typeof (slaves == null ? void 0 : slaves.val) !== "string" || !slaves.val.trim()) {
+      return;
+    }
+    for (const mac of slaves.val.split(",").map((s) => s.trim())) {
+      if (!mac) {
+        continue;
+      }
+      if (!this.squeezeboxPlayers[mac]) {
+        await this.loadSqueezeboxPlayers();
+      }
+      const path = this.squeezeboxPlayers[mac];
+      if (!path || path === item.ident) {
+        continue;
+      }
+      const state = await this.adapter.getForeignStateAsync(`${path}.Volume`);
+      if (typeof (state == null ? void 0 : state.val) !== "number") {
+        continue;
+      }
+      const current = Math.max(0, state.val);
+      const next = Math.min(100, Math.max(0, Math.round(current + delta)));
+      if (next !== current) {
+        await this.adapter.setForeignStateAsync(`${path}.Volume`, next, false);
+      }
+    }
+  }
   getdpInitForChild() {
     var _a, _b;
     switch (this.serviceName) {
       case "sonos":
+      case "squeezeboxrpc":
         return (_b = (_a = this.currentItem) == null ? void 0 : _a.ident) != null ? _b : "";
       case "alexa2":
       case "spotify-premium":

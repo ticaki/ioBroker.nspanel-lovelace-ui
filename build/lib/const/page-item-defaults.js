@@ -20,6 +20,7 @@ var page_item_defaults_exports = {};
 __export(page_item_defaults_exports, {
   getPageItemDefaultsByRole: () => getPageItemDefaultsByRole,
   getPageNaviItemDefaultsByRole: () => getPageNaviItemDefaultsByRole,
+  getScreensaverItemDefaultsByRole: () => getScreensaverItemDefaultsByRole,
   pageItemDefaults: () => pageItemDefaults,
   pageNaviItemDefaults: () => pageNaviItemDefaults
 });
@@ -519,6 +520,47 @@ const ITEM_ROLE_KEY = {
   "level.mode.fan": "fan",
   media: "mediaNav"
 };
+const STATE_ROLE_KEY = {
+  switch: "socket",
+  "switch.power": "socket",
+  "switch.light": "light",
+  "switch.lock": "lock",
+  "switch.lock.door": "lock",
+  "switch.lock.window": "lock",
+  "sensor.lock": "lock",
+  "indicator.lock": "lock",
+  "level.dimmer": "dimmer",
+  "level.brightness": "dimmer",
+  "level.color.temperature": "ct",
+  "level.color.rgb": "rgb",
+  "level.color.hue": "hue",
+  "level.blind": "blind",
+  "value.blind": "blind",
+  "level.temperature": "thermostat",
+  "sensor.motion": "motion",
+  "indicator.motion": "motion",
+  "sensor.door": "door",
+  "indicator.door": "door",
+  "sensor.window": "window",
+  "indicator.window": "window",
+  "sensor.alarm": "warning",
+  "sensor.alarm.fire": "warning",
+  "sensor.alarm.flood": "warning",
+  "sensor.alarm.secure": "warning",
+  "indicator.alarm": "warning",
+  "indicator.alarm.fire": "warning",
+  "indicator.alarm.flood": "warning",
+  "indicator.alarm.secure": "warning",
+  "indicator.maintenance": "warning",
+  "button.press": "button",
+  "button.start": "button",
+  "button.stop": "button"
+};
+function getScreensaverItemDefaultsByRole(role, channelRole) {
+  var _a, _b;
+  const key = (_b = (_a = channelRole ? ITEM_ROLE_KEY[channelRole] : void 0) != null ? _a : ITEM_ROLE_KEY[role]) != null ? _b : STATE_ROLE_KEY[role];
+  return key != null ? pageItemDefaults[key] : null;
+}
 const NAVI_ROLE_KEY = {
   socket: "socket",
   light: "light",
@@ -562,6 +604,7 @@ function getPageNaviItemDefaultsByRole(role) {
 0 && (module.exports = {
   getPageItemDefaultsByRole,
   getPageNaviItemDefaultsByRole,
+  getScreensaverItemDefaultsByRole,
   pageItemDefaults,
   pageNaviItemDefaults
 });
