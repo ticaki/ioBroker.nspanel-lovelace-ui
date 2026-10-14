@@ -15,6 +15,9 @@ import {
     Autocomplete,
     CircularProgress,
     Tooltip,
+    InputLabel,
+    Select,
+    MenuItem,
 } from '@mui/material';
 import { Color, type RGB } from '../../../src/lib/const/Color';
 import {
@@ -37,8 +40,10 @@ import type {
     IconScaleElement,
     AdminPageItemConfig,
     MenuEntry,
+    Thermo2Entry,
     ChannelValueConfig,
     ChannelColorConfig,
+    ChannelModeListConfig,
 } from '../../../src/lib/types/adminShareConfig';
 import {
     ADAPTER_NAME,
@@ -48,6 +53,14 @@ import {
     normalizeChannelId,
 } from '../../../src/lib/types/adminShareConfig';
 import ChannelColorDialog from './ChannelColorDialog';
+import ChannelModeListDialog from './ChannelModeListDialog';
+import FormatListBulletedIcon from '@mui/icons-material/FormatListBulleted';
+
+/**
+ * Channel roles for which the adapter evaluates `modeList` (config-manager.ts): the light roles also use
+ * `inSel_Alias`, role `select` takes the list only and selects through the channel's SET state.
+ */
+const MODE_LIST_ROLES: readonly string[] = ['rgbSingle', 'rgb', 'ct', 'hue', 'select'];
 
 export type { AdminPageItemConfig as PageItemConfig };
 
@@ -66,7 +79,9 @@ type ChannelConfigDialogProps = {
     /** Name der aktuellen Seite – wird aus der Zielseiten-Auswahl gefiltert */
     currentPageName?: string;
     /** Card-Typ der aktuellen Seite – wird für CheckPageItemConfig benötigt */
-    currentPageCard?: MenuEntry['card'];
+    currentPageCard?: MenuEntry['card'] | Thermo2Entry['card'];
+    /** cardThermo2: Bezeichnungen der Heizkreise (Index = filter); gesetzt → Heizkreis-Auswahl sichtbar */
+    heatCircuits?: string[];
     onSave?: (config: AdminPageItemConfig) => void;
     /** Vorausgefüllte Channel-ID für Testzwecke */
     initialChannelId?: string;
@@ -143,6 +158,12 @@ interface ChannelConfigDialogState {
     scale?: IconScaleElement;
     hasProblems: boolean;
     colorFieldDisabled: boolean;
+    /** Selection state for the mode list of light items (undefined = not configured) */
+    inSel_Alias: string | undefined;
+    /** cardThermo2: Heizkreis des Items (0-basiert); undefined = bei jedem Heizkreis sichtbar */
+    filter: number | undefined;
+    /** Mode list of light items (undefined = not configured) */
+    modeList: string[] | undefined;
 }
 
 /** Minimales leeres ioBroker.InstanceCommon für ConfigGeneric-Komponenten */
@@ -161,6 +182,7 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
     private valueEntryDialogRef = React.createRef<ChannelValueDialog>();
     private valueEntryDialogMain = React.createRef<ChannelValueDialog>();
     private colorDialogRef = React.createRef<ChannelColorDialog>();
+    private modeListDialogRef = React.createRef<ChannelModeListDialog>();
     private static iconMap: Map<string, string> | null = null;
 
     private static getIconBase64(name: string): string {
@@ -217,6 +239,9 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
             textSize: undefined,
             colorFieldDisabled: false,
             adapterColorTheme: 0,
+            inSel_Alias: undefined,
+            modeList: undefined,
+            filter: undefined,
         };
     }
 
@@ -308,6 +333,10 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
             colorFieldDisabled: false,
             isGridCard: isGridCard ?? false,
             hasProblems: false,
+            inSel_Alias:
+                typeof data?.inSel_Alias === 'string' && data.inSel_Alias !== '' ? data.inSel_Alias : undefined,
+            modeList: Array.isArray(data?.modeList) && data.modeList.length > 0 ? data.modeList : undefined,
+            filter: typeof data?.filter === 'number' ? data.filter : undefined,
         });
         if (this.props.pagesList && this.props.pagesList.length > 0) {
             this.setState({ availablePages: this.sortPages(this.props.pagesList) });
@@ -336,6 +365,20 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
             trueColor: this.state.trueColor,
             falseColor: this.state.falseColor,
             scale: this.state.scale,
+        });
+    };
+
+    private handleModeListOpen = (): void => {
+        this.modeListDialogRef.current?.openWith({
+            inSel_Alias: this.state.inSel_Alias,
+            modeList: this.state.modeList,
+        });
+    };
+
+    private handleModeListSave = (config: ChannelModeListConfig): void => {
+        this.setState({
+            inSel_Alias: config.inSel_Alias,
+            modeList: config.modeList,
         });
     };
 
@@ -440,6 +483,9 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
             useValue,
             scale,
             textSize,
+            inSel_Alias,
+            modeList,
+            filter,
         } = this.state;
         if (this.state.nativeMode) {
             try {
@@ -459,6 +505,9 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                     useValue,
                     textSize,
                     scale,
+                    inSel_Alias,
+                    modeList,
+                    filter,
                     role: channelRole ?? undefined,
                     useNative: true,
                     native: parsed,
@@ -483,6 +532,9 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
             textSize,
             useValue,
             scale,
+            inSel_Alias,
+            modeList,
+            filter,
             valueEntry: this.state.valueEntry,
         };
     }
@@ -1338,7 +1390,18 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
         const fieldsDisabled = !standardCanSave;
 
         const internColorFieldsDisabled = !channelIdValid || isCustom || nativeMode || colorFieldDisabled;
+        /**
+         * Modusliste nur für die Licht-Rollen, die der Adapter dafür auswertet. Bewusst OHNE `colorFieldDisabled`:
+         * diese Rollen haben `type: 'boolean'` in den Page-Item-Defaults, der Farb-Button ist für sie gesperrt.
+         */
+        const modeListVisible =
+            channelRole !== null && MODE_LIST_ROLES.includes(channelRole) && channelIdValid && !isCustom && !nativeMode;
         const longPressEnabled = channelRole === 'button' || isCustom || isNavigation;
+        /** Buttons turn green (theme palette "success", works in light and dark mode) once their settings hold data */
+        const colorConfigured =
+            this.state.trueColor !== '' || this.state.falseColor !== '' || this.state.scale !== undefined;
+        const modeListConfigured =
+            (channelRole !== 'select' && !!this.state.inSel_Alias) || (this.state.modeList?.length ?? 0) > 0;
 
         console.log(
             `[ChannelConfigDialog] render: channelId=${channelId.valueStateId}, channelExists=${channelExists}, channelRole=${channelRole}, roleIsValid=${roleIsValid}, datapointErrors=${this.state.datapointErrors.join(',')}, datapointDuplicates=${this.state.datapointDuplicates.join(',')}, nativeMode=${nativeMode}, nativeJsonValid=${nativeJsonValid}, hasDatapointProblems=${hasDatapointProblems}, hasProblems=${this.state.hasProblems}, errorSaveDetails=${errorSaveDetails} standardCanSave=${standardCanSave}, canSave=${canSave} fieldsDisabled=${fieldsDisabled}, longPressEnabled=${longPressEnabled}, channelIdValid=${channelIdValid}`,
@@ -1716,6 +1779,32 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                                 </Box>
                                 {/* useValue Checkbox + TextSize */}
                                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flexWrap: 'wrap' }}>
+                                    {this.props.heatCircuits && this.props.heatCircuits.length > 0 && (
+                                        <FormControl
+                                            variant="standard"
+                                            sx={{ minWidth: 220 }}
+                                            disabled={fieldsDisabled}
+                                        >
+                                            <InputLabel>{I18n.t('thermo2_circuitLabel')}</InputLabel>
+                                            <Select
+                                                value={this.state.filter === undefined ? '' : String(this.state.filter)}
+                                                onChange={e => {
+                                                    const raw = String(e.target.value);
+                                                    this.setState({ filter: raw === '' ? undefined : Number(raw) });
+                                                }}
+                                            >
+                                                <MenuItem value="">{I18n.t('thermo2_circuitAll')}</MenuItem>
+                                                {this.props.heatCircuits.map((label, i) => (
+                                                    <MenuItem
+                                                        key={i}
+                                                        value={String(i)}
+                                                    >
+                                                        {`${i + 1}: ${label}`}
+                                                    </MenuItem>
+                                                ))}
+                                            </Select>
+                                        </FormControl>
+                                    )}
                                     {this.state.isGridCard && (
                                         <Tooltip
                                             title={
@@ -1899,18 +1988,33 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                     </DialogContent>
 
                     <DialogActions sx={{ flexDirection: 'column', alignItems: 'stretch', gap: 1, px: 2, pb: 2 }}>
-                        {/* Color-Button in eigener Zeile, wenn nicht im Native-Modus */}
-                        {!internColorFieldsDisabled && (
-                            <Box>
-                                <Button
-                                    size="small"
-                                    variant="outlined"
-                                    onClick={this.handleColorOpen}
-                                    startIcon={<PaletteIcon />}
-                                    fullWidth
-                                >
-                                    {I18n.t('channelConfigDialog_colorSettings')}
-                                </Button>
+                        {/* Color-Button (+ Modusliste bei Licht-Rollen) in eigener Zeile, wenn nicht im Native-Modus */}
+                        {(!internColorFieldsDisabled || modeListVisible) && (
+                            <Box sx={{ display: 'flex', gap: 1 }}>
+                                {!internColorFieldsDisabled && (
+                                    <Button
+                                        size="small"
+                                        variant="outlined"
+                                        color={colorConfigured ? 'success' : 'primary'}
+                                        onClick={this.handleColorOpen}
+                                        startIcon={<PaletteIcon />}
+                                        fullWidth
+                                    >
+                                        {I18n.t('channelConfigDialog_colorSettings')}
+                                    </Button>
+                                )}
+                                {modeListVisible && (
+                                    <Button
+                                        size="small"
+                                        variant="outlined"
+                                        color={modeListConfigured ? 'success' : 'primary'}
+                                        onClick={this.handleModeListOpen}
+                                        startIcon={<FormatListBulletedIcon />}
+                                        fullWidth
+                                    >
+                                        {I18n.t('channelConfigDialog_modeListSettings')}
+                                    </Button>
+                                )}
                             </Box>
                         )}
                         {/* Untere Zeile: Native-Toggle links, Abbrechen + Speichern rechts */}
@@ -1967,6 +2071,18 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                     trueColor={this.state.trueColor}
                     falseColor={this.state.falseColor}
                     onSave={this.handleColorSave}
+                />
+                {/* Modusliste (inSel_Alias / modeList) für Licht-Rollen */}
+                <ChannelModeListDialog
+                    ref={this.modeListDialogRef}
+                    socket={socket}
+                    theme={theme}
+                    themeType={themeType}
+                    showAlias={this.state.channelRole !== 'select'}
+                    statesSourceId={
+                        this.state.channelRole === 'select' ? `${this.state.channelId.valueStateId}.SET` : undefined
+                    }
+                    onSave={this.handleModeListSave}
                 />
                 {/* Channel-ID Konfigurationsdialog – Auswahl per Channel-Rolle-Filter */}
                 <ChannelValueDialog

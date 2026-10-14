@@ -117,6 +117,9 @@ export class Panel extends BaseClass {
     private buttonBackFlipTimeout: { left?: ioBroker.Timeout | undefined; right?: ioBroker.Timeout | undefined } = {};
 
     public blockTouchEventsForMs: number = 200; // ms
+    /** Timestamp of the last Nextion 0x24 (serial buffer overflow) reported by the display, 0 if none */
+    private nextionBufferOverflowTs: number = 0;
+    private lastAutoRestartTs: number = 0;
     public lastSendTypeDate: number = 0;
     public isBuzzerAllowed: boolean = true;
     options: panelConfigPartial;
@@ -821,7 +824,10 @@ export class Panel extends BaseClass {
         const scs: Page[] = this.pages.filter(
             a => a && (a.card === 'screensaver' || a.card === 'screensaver2' || a.card === 'screensaver3'),
         ) as Page[];
-        if (currentScreensaver && currentScreensaver.val != null) {
+        // a screensaver from the admin tab defines version and rotation time itself - the stored states follow it,
+        // the script screensaver keeps taking both from the states (they are the way to change them)
+        const adminScreensaver = !!this.screenSaver && this.pageOrigins.get(this.screenSaver.name) === 'admin';
+        if (currentScreensaver && currentScreensaver.val != null && !adminScreensaver) {
             if (scs && scs[0]) {
                 this.screenSaver = scs[0] as Screensaver;
                 if (globals.isScreenSaverModeAsNumber(currentScreensaver.val)) {
@@ -836,7 +842,9 @@ export class Panel extends BaseClass {
         );
         state = this.library.readdb(`panels.${this.name}.cmd.screenSaver.rotationTime`);
         let temp: any = 0;
-        if (state && typeof state.val === 'number') {
+        if (adminScreensaver && this.screenSaver) {
+            temp = this.screenSaver.rotationTime / 1000;
+        } else if (state && typeof state.val === 'number') {
             temp = state.val === 0 ? state.val : state.val < 3 ? 3 : state.val > 3600 ? 3600 : state.val;
             if (this.screenSaver) {
                 this.screenSaver.rotationTime = temp * 1000;
@@ -1132,6 +1140,20 @@ export class Panel extends BaseClass {
                     }
                     await this.library.writedp(`panels.${this.name}.cmd.tempOffset`, parseFloat(msg.tempOffset), def);
                     this.log.debug(`Received tempOffset ${msg.tempOffset} from panel, write to state.`);
+                    return;
+                } else if ('nextion' in msg && typeof msg.nextion === 'string') {
+                    // Raw Nextion return codes forwarded by the berry driver, e.g. "bytes('24')" or "bytes('24FFFFFF24')".
+                    // 0x24 = serial buffer overflow: the display drops every frame until tasmota is restarted.
+                    const codes = msg.nextion.replace(/^bytes\('|'\)$/g, '').split('FFFFFF');
+                    if (codes.includes('24')) {
+                        const now = Date.now();
+                        if (now - this.nextionBufferOverflowTs > 60_000) {
+                            this.log.warn(
+                                'Display reports a serial buffer overflow (0x24) - frames are being dropped by the Nextion!',
+                            );
+                        }
+                        this.nextionBufferOverflowTs = now;
+                    }
                     return;
                 } else if ('nlui_driver_version' in msg) {
                     this.info.nspanel.berryDriverVersion = parseInt(msg.nlui_driver_version);
@@ -1713,6 +1735,32 @@ export class Panel extends BaseClass {
 
     requestStatusTasmota(): void {
         this.sendToTasmota(`${this.topic}/cmnd/STATUS0`, '');
+    }
+
+    /**
+     * Called when the panel is set offline because the display stopped acknowledging messages.
+     * If the display reported a serial buffer overflow (0x24) shortly before, only a tasmota restart
+     * gets it back - so trigger one (at most every 2 minutes).
+     *
+     * @returns true if a restart was triggered
+     */
+    handleLostMessages(): boolean {
+        const now = Date.now();
+        if (this.unload || this.adapter.unload || this.flashing) {
+            return false;
+        }
+        if (now - this.nextionBufferOverflowTs > 120_000) {
+            return false;
+        }
+        if (now - this.lastAutoRestartTs < 120_000) {
+            this.log.debug('Buffer overflow persists but last automatic restart was less than 2 minutes ago - skip');
+            return false;
+        }
+        this.lastAutoRestartTs = now;
+        this.nextionBufferOverflowTs = 0;
+        this.log.warn('Display buffer overflow (0x24) and no acknowledgement from the panel - restarting tasmota!');
+        this.sendToTasmota(`${this.topic}/cmnd/Restart`, '1');
+        return true;
     }
 
     async delete(): Promise<void> {
