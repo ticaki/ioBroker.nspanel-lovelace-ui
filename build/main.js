@@ -30,6 +30,7 @@ var import_controller = require("./lib/controller/controller");
 var import_icon_mapping = require("./lib/const/icon_mapping");
 var definition = __toESM(require("./lib/const/definition"));
 var import_config_manager = require("./lib/classes/config-manager");
+var import_template_info = require("./lib/templates/template-info");
 var import_readme = require("./lib/tools/readme");
 var import_redact = require("./lib/tools/redact");
 var import_node_url = require("node:url");
@@ -699,6 +700,13 @@ class NspanelLovelaceUi extends utils.Adapter {
               result ? result : [{ label: "Not available", value: "" }],
               obj.callback
             );
+          }
+          break;
+        }
+        case import_adminShareConfig.SENDTO_GET_SCREENSAVER_TEMPLATES_COMMAND: {
+          const result = (0, import_template_info.screensaverTemplateInfos)();
+          if (obj.callback) {
+            this.sendTo(obj.from, obj.command, result, obj.callback);
           }
           break;
         }
@@ -2106,7 +2114,7 @@ class NspanelLovelaceUi extends utils.Adapter {
     }
   }
   async convertAdminPageItemToPageItemConfig(preItem, prePage, messages) {
-    var _a, _b, _c, _d;
+    var _a, _b, _c, _d, _e;
     let error = void 0;
     let pageItem = void 0;
     if (preItem && prePage) {
@@ -2173,6 +2181,9 @@ class NspanelLovelaceUi extends utils.Adapter {
           item.suffixValue = ((_c = preItem.channelId) == null ? void 0 : _c.prefix) ? preItem.channelId.prefix : void 0;
           item.unit = ((_d = preItem.channelId) == null ? void 0 : _d.unit) ? preItem.channelId.unit : void 0;
           item.useValue = preItem.useValue;
+          item.inSel_Alias = preItem.inSel_Alias || void 0;
+          item.modeList = ((_e = preItem.modeList) == null ? void 0 : _e.length) ? preItem.modeList : void 0;
+          item.filter = typeof preItem.filter === "number" ? preItem.filter : void 0;
         }
       }
       const page = {

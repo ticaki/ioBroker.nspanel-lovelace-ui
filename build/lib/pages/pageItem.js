@@ -1810,7 +1810,7 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
             }
             break;
           }
-          if (entry.role === "SonosSpeaker") {
+          if (entry.role === "SonosSpeaker" || entry.role === "SqueezeboxSpeaker") {
             if (!this.parent || !(((_g = this.parent.config) == null ? void 0 : _g.card) === "cardMedia")) {
               break;
             }
@@ -2547,7 +2547,7 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
    * 'flip': Liest den State mit ID ein, negiert den Wert und schreibt ihn wieder zurück. string, number, boolean möglich.
    */
   async setListCommand(entry, value) {
-    var _a, _b, _c, _d, _e, _f, _g;
+    var _a, _b, _c, _d, _e, _f;
     const item = entry.data;
     if (!item || !("entityInSel" in item)) {
       return false;
@@ -2594,10 +2594,11 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
           }
         }
       } else if (sList.states !== void 0 && sList.states[parseInt(value)] !== void 0 && item.entityInSel && item.entityInSel.value) {
-        if (((_g = (_f = item.entityInSel.value) == null ? void 0 : _f.common) == null ? void 0 : _g.type) === "number") {
-          await item.entityInSel.value.setState(parseInt(sList.states[parseInt(value)]));
+        const target = item.entityInSel.set && item.entityInSel.set.writeable ? item.entityInSel.set : item.entityInSel.value;
+        if (((_f = target.common) == null ? void 0 : _f.type) === "number") {
+          await target.setState(parseInt(sList.states[parseInt(value)]));
         } else {
-          await item.entityInSel.value.setState(sList.states[parseInt(value)]);
+          await target.setState(sList.states[parseInt(value)]);
         }
         return true;
       }
@@ -2729,8 +2730,55 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
     }
     return false;
   }
+  /**
+   * Requests the saved playlists of a squeezeboxrpc instance from the Logitech Media Server.
+   *
+   * @param inst - adapter instance, e.g. `squeezeboxrpc.0`
+   * @returns list of playlists with id and name, empty on error
+   */
+  async getSqueezeboxPlaylists(inst) {
+    const result = [];
+    let response;
+    try {
+      response = await this.adapter.sendToAsync(
+        inst,
+        "cmdGeneral",
+        { playerid: "", cmdArray: ["playlists", "0", "999", "tags:u"] },
+        { timeout: 3e3 }
+      );
+    } catch (e) {
+      this.log.warn(`Squeezebox playlists from ${inst} failed: ${String(e)}`);
+      return result;
+    }
+    const getLoop = (data) => {
+      if (!data || typeof data !== "object") {
+        return void 0;
+      }
+      if ("playlists_loop" in data) {
+        return data.playlists_loop;
+      }
+      if ("result" in data) {
+        return getLoop(data.result);
+      }
+      return void 0;
+    };
+    const loop = getLoop(response);
+    if (!Array.isArray(loop)) {
+      this.log.debug(`Squeezebox playlists from ${inst}: no playlists in response ${JSON.stringify(response)}`);
+      return result;
+    }
+    for (const entry of loop) {
+      if (entry && typeof entry === "object" && "id" in entry && "playlist" in entry) {
+        const name = typeof entry.playlist === "string" ? entry.playlist : "";
+        if (name && entry.id != null) {
+          result.push({ id: String(entry.id), name });
+        }
+      }
+    }
+    return result;
+  }
   async getListFromStates(entityInSel, valueList, role, valueList2 = void 0, force = false) {
-    var _a, _b, _c, _d, _e, _f;
+    var _a, _b, _c, _d, _e, _f, _g, _h;
     const list = {};
     if (entityInSel && entityInSel.value) {
       if (role === "alexa-speaker") {
@@ -2781,6 +2829,62 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
           }
         }
         this.log.debug(`Alexa Playlist list: finish`);
+      } else if (role === "squeezebox-favorites") {
+        const dp = "dp" in entityInSel.value.options ? entityInSel.value.options.dp : "";
+        const inst = (dp || "").split(".").slice(0, 2).join(".");
+        if (inst) {
+          const filterRaw = valueList ? await valueList.getObject() : null;
+          const filter = Array.isArray(filterRaw) && filterRaw.length > 0 ? filterRaw.filter((f) => typeof f === "string") : null;
+          const states = await this.adapter.getForeignStatesAsync(`${inst}.Favorites.*`);
+          const favorites = {};
+          for (const id in states) {
+            const parts = id.split(".");
+            if (parts.length !== 5) {
+              continue;
+            }
+            const key = parts[3];
+            const prop = parts[4];
+            const val = (_e = states[id]) == null ? void 0 : _e.val;
+            favorites[key] = (_f = favorites[key]) != null ? _f : {};
+            if (prop === "Name" && typeof val === "string") {
+              favorites[key].name = val;
+            } else if (prop === "id" && val != null) {
+              favorites[key].id = String(val);
+            } else if (prop === "isaudio") {
+              favorites[key].isaudio = val === 1 || val === "1" || val === true;
+            }
+          }
+          list.list = [];
+          list.states = [];
+          for (const fav of Object.values(favorites)) {
+            if (!fav.isaudio || !fav.name || !fav.id) {
+              continue;
+            }
+            if (filter && !filter.includes(fav.name)) {
+              continue;
+            }
+            list.list.push(fav.name);
+            list.states.push(fav.id);
+          }
+          list.value = "";
+        }
+      } else if (role === "squeezebox-playlist") {
+        const dp = "dp" in entityInSel.value.options ? entityInSel.value.options.dp : "";
+        const inst = (dp || "").split(".").slice(0, 2).join(".");
+        if (inst) {
+          const filterRaw = valueList ? await valueList.getObject() : null;
+          const filter = Array.isArray(filterRaw) && filterRaw.length > 0 ? filterRaw.filter((f) => typeof f === "string") : null;
+          list.list = [];
+          list.states = [];
+          list.value = "";
+          for (const playlist of await this.getSqueezeboxPlaylists(inst)) {
+            if (filter && !filter.includes(playlist.name)) {
+              continue;
+            }
+            list.list.push(playlist.name);
+            list.states.push(playlist.id);
+          }
+        }
       } else if (role === "spotify-speaker" || role === "spotify-playlist") {
         if (entityInSel.value.options.dp) {
           const o = await entityInSel.value.getCommonStates(force);
@@ -2823,7 +2927,7 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
             }
           }
         }
-      } else if (["string", "number"].indexOf((_e = entityInSel.value.type) != null ? _e : "") !== -1 && (await entityInSel.value.getCommonStates(force) || valueList2 != null)) {
+      } else if (["string", "number"].indexOf((_g = entityInSel.value.type) != null ? _g : "") !== -1 && (await entityInSel.value.getCommonStates(force) || valueList2 != null)) {
         let states = null;
         const value = await tools.getValueEntryString(entityInSel);
         switch (role) {
@@ -2890,7 +2994,7 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
             }
           }
         }
-      } else if (["string", "number"].indexOf((_f = entityInSel.value.type) != null ? _f : "") !== -1 && valueList) {
+      } else if (["string", "number"].indexOf((_h = entityInSel.value.type) != null ? _h : "") !== -1 && valueList) {
         list.list = [];
         list.states = [];
         const v = await (valueList == null ? void 0 : valueList.getObject());
@@ -2901,14 +3005,21 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
             if (arr.length >= 2) {
               list.list.push(this.library.getTranslation(arr[0]));
               list.states.push(String(arr[1]));
-              list.value = list.value || (v[a][1] === value ? v[a][0] : list.value);
+              if (!list.value && value !== null && String(arr[1]) === value) {
+                list.value = arr[0];
+              }
             } else {
               list.list.push(this.library.getTranslation(v[a]));
               list.states.push(String(a));
+              if (!list.value && value !== null && String(a) === value) {
+                list.value = v[a];
+              }
             }
           }
         }
-        list.value = await tools.getValueEntryString(entityInSel) || void 0;
+        if (!list.value) {
+          list.value = await tools.getValueEntryString(entityInSel) || void 0;
+        }
       }
     } else {
       list.list = [];

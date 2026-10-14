@@ -379,7 +379,7 @@ class ConfigManager extends import_library.BaseClass {
             globalConfig.subPages.splice(index, 1);
           }
           for (const page of globalConfig.subPages || []) {
-            if (page && page.uniqueName) {
+            if (page && page.uniqueName && config.pages.findIndex((p) => p && p.uniqueName === page.uniqueName) === -1) {
               globalPageIds.add(page.uniqueName);
             }
           }
@@ -2275,11 +2275,17 @@ class ConfigManager extends import_library.BaseClass {
                 dpInit: entry2.useKey ? expectedAltId : `${dpInit}.`,
                 role: entry2.role,
                 enums: "",
-                regexp: entry.useKey ? new RegExp(`\\.${alternate}$`) : void 0,
+                regexp: entry2.useKey ? new RegExp(`\\.${alternate}$`) : void 0,
                 triggered: entry.trigger,
                 writeable: entry2.writeable,
                 commonType: entry.type
               });
+            }
+            if (result[role][dp2]) {
+              messages.push(
+                `Optional: ${String(dp)}: ${dpInit}, channel role: ${role} - not found, using ${String(alternate)} instead (searching for type: ${JSON.stringify(entry.type)}, role: ${JSON.stringify(entry.role)})`
+              );
+              this.log.info(messages[messages.length - 1]);
             }
           }
           if (!result[role][dp2]) {
@@ -3811,7 +3817,7 @@ class ConfigManager extends import_library.BaseClass {
     }
     return { itemConfig: void 0, messages };
   }
-  async getScreensaverConfig(config, messages = []) {
+  async getScreensaverConfig(config, messages = [], options = {}) {
     var _a, _b, _c, _d, _e, _f;
     let pageItems = [];
     const loadElementSection = async (items, mode, errorLabel) => {
@@ -3919,7 +3925,7 @@ class ConfigManager extends import_library.BaseClass {
       }
       pageItems.push(...arr);
     }
-    if (this.adapter.config.weatherEntity) {
+    if (this.adapter.config.weatherEntity && !options.weatherEntityFixed) {
       config.weatherEntity = this.adapter.config.weatherEntity;
     }
     if (config.weatherEntity) {
@@ -4790,7 +4796,7 @@ class ConfigManager extends import_library.BaseClass {
         entity.ScreensaverEntityIconSelect.sort((a, b) => a.value - b.value);
         obj2.read = `
                     const items = [${entity.ScreensaverEntityIconSelect.map((item) => `{val: ${item.value}, icon: "${item.icon}"}`).join(", ")}];
-                    for (let i = 1; i < items.length; i++) {
+                    for (let i = 0; i < items.length; i++) {
                         if (val <= items[i].val) {return items[i].icon;}
                     }
                     return items[items.length - 1].icon;`;
@@ -4829,13 +4835,26 @@ class ConfigManager extends import_library.BaseClass {
         }
       };
     }
-    if (entity.ScreensaverEntityOnText) {
-      result.data.text = { true: await this.getFieldAsDataItemConfig(entity.ScreensaverEntityOnText) };
-    } else if (entity.ScreensaverEntityText) {
+    if (entity.ScreensaverEntityText) {
       result.data.text = { true: await this.getFieldAsDataItemConfig(entity.ScreensaverEntityText) };
     }
-    if (entity.ScreensaverEntityOffText) {
-      result.data.text = { false: await this.getFieldAsDataItemConfig(entity.ScreensaverEntityOffText) };
+    if (dataType === "boolean" && (entity.ScreensaverEntityOnText || entity.ScreensaverEntityOffText)) {
+      delete result.data.entity2.value;
+      result.data.text1 = {
+        true: entity.ScreensaverEntityOnText ? await this.getFieldAsDataItemConfig(entity.ScreensaverEntityOnText) : { type: "const", constVal: "true" },
+        false: entity.ScreensaverEntityOffText ? await this.getFieldAsDataItemConfig(entity.ScreensaverEntityOffText) : { type: "const", constVal: "false" }
+      };
+    } else if (entity.ScreensaverEntityOnText || entity.ScreensaverEntityOffText) {
+      const text = {
+        ...result.data.text
+      };
+      if (entity.ScreensaverEntityOnText) {
+        text.true = await this.getFieldAsDataItemConfig(entity.ScreensaverEntityOnText);
+      }
+      if (entity.ScreensaverEntityOffText) {
+        text.false = await this.getFieldAsDataItemConfig(entity.ScreensaverEntityOffText);
+      }
+      result.data.text = text;
     }
     result.fillIfBelowMin = !("ScreensaverEntityFillIfBelowMin" in entity && entity.ScreensaverEntityFillIfBelowMin != null) || entity.ScreensaverEntityFillIfBelowMin;
     if (isScreensaverPageItemDataItemsOptions(result)) {
