@@ -157,7 +157,7 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
     Placeholder for the next version (at the beginning of the line):
     ### **WORK IN PROGRESS**
 -->
-### **WORK IN PROGRESS**
+### 1.4.0 (2026-10-14)
 - (tt-tom17) admin: new tab `Screensaver` - configure the screensaver without script: version (standard / alternate / advanced / easyview), the panels that use it, every place of the card with its own dialog (state or page item template, icons incl. icon per value range, colors, value, text, indicator action), MR icons, clock and date format, weather instance, rotation time, swipe and indicator buttons. The entry replaces the screensaver of the script for the listed panels. Documentation `doc/de|en/Screensaver-Admin.md`
 - (ticaki) admin: page configuration - panel filter `All panels` and new page type `Main pages`; a field label cut off with `…` shows its full text on mouse over
 
