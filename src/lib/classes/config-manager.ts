@@ -5720,7 +5720,7 @@ export class ConfigManager extends BaseClass {
                 // read function for icon selection
                 obj.read = `
                     const items = [${entity.ScreensaverEntityIconSelect.map(item => `{val: ${item.value}, icon: "${item.icon}"}`).join(', ')}];
-                    for (let i = 1; i < items.length; i++) {
+                    for (let i = 0; i < items.length; i++) {
                         if (val <= items[i].val) {return items[i].icon;}
                     }
                     return items[items.length - 1].icon;`;

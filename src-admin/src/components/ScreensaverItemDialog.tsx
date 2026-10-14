@@ -30,8 +30,10 @@ import {
 import ClearIcon from '@mui/icons-material/Clear';
 import DeleteIcon from '@mui/icons-material/Delete';
 import PaletteIcon from '@mui/icons-material/Palette';
+import TuneIcon from '@mui/icons-material/Tune';
 import { EntitySelector } from './EntitySelector';
 import ChannelColorDialog from './ChannelColorDialog';
+import ScreensaverIconSelectDialog from './ScreensaverIconSelectDialog';
 import IconSelect from '../IconSelect';
 import icons from '../icons.json';
 import {
@@ -192,6 +194,7 @@ const DEFAULT_OFF = '#888888';
 
 export class ScreensaverItemDialog extends React.Component<ScreensaverItemDialogProps, ScreensaverItemDialogState> {
     private colorDialogRef = React.createRef<ChannelColorDialog>();
+    private iconSelectDialogRef = React.createRef<ScreensaverIconSelectDialog>();
 
     constructor(props: ScreensaverItemDialogProps) {
         super(props);
@@ -493,6 +496,8 @@ export class ScreensaverItemDialog extends React.Component<ScreensaverItemDialog
             delete draft.factor;
             delete draft.decimals;
             delete draft.colorScale;
+            // the adapter evaluates the icon list for number states only
+            delete draft.iconSelect;
         }
         if (kind !== 'date') {
             delete draft.dateFormat;
@@ -1139,6 +1144,77 @@ export class ScreensaverItemDialog extends React.Component<ScreensaverItemDialog
     }
 
     /**
+     * the icon of the icon list for a value - like the adapter: the first entry (ascending) whose value is
+     * not below the value, above the highest value the last entry
+     *
+     * @param list icon list of the item
+     * @param value value of the state
+     */
+    static iconForValue(list: { value: number; icon: string }[], value: number): string {
+        const sorted = [...list].sort((a, b) => a.value - b.value);
+        return (sorted.find(e => value <= e.value) ?? sorted[sorted.length - 1])?.icon ?? '';
+    }
+
+    /**
+     * icon per value range of a number state: in expert mode a button opens the list, an existing list is
+     * shown (and can be removed) without expert mode too
+     */
+    private renderIconSelectSection(): React.JSX.Element | null {
+        const list = this.state.draft.iconSelect;
+        if (!list?.length && !this.props.expertMode) {
+            return null;
+        }
+        return (
+            <Box
+                sx={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 1, mb: 2 }}
+                data-ss="iconselect"
+            >
+                <Button
+                    size="small"
+                    variant="outlined"
+                    startIcon={<TuneIcon />}
+                    onClick={() => this.iconSelectDialogRef.current?.openWith(list)}
+                >
+                    {this.getText('screensaver_iconSelect_edit')}
+                </Button>
+                {list?.length ? (
+                    <>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                            {[...list]
+                                .sort((a, b) => b.value - a.value)
+                                .map(e => (
+                                    <Tooltip
+                                        key={`${e.value}-${e.icon}`}
+                                        title={`≤ ${e.value}: ${e.icon}`}
+                                    >
+                                        <Box>
+                                            {ScreensaverItemDialog.coloredIcon(iconSrc(e.icon), 20, 'text.secondary')}
+                                        </Box>
+                                    </Tooltip>
+                                ))}
+                        </Box>
+                        <Typography
+                            variant="caption"
+                            color="text.secondary"
+                        >
+                            {this.getText('screensaver_iconSelect_summary').replace('%s', String(list.length))}
+                        </Typography>
+                        <Tooltip title={this.getText('screensaver_iconSelect_delete')}>
+                            <IconButton
+                                size="small"
+                                onClick={() => this.set('iconSelect', undefined)}
+                                data-ss="iconselect-delete"
+                            >
+                                <DeleteIcon fontSize="small" />
+                            </IconButton>
+                        </Tooltip>
+                    </>
+                ) : null}
+            </Box>
+        );
+    }
+
+    /**
      * an icon in a color: the icon is a mask, the color the fill
      *
      * @param src base64 icon
@@ -1172,8 +1248,13 @@ export class ScreensaverItemDialog extends React.Component<ScreensaverItemDialog
         const fields = screensaverItemFields(this.props.area);
         const kind = this.kind();
         const big = this.props.area === 'favorit';
-        const src = iconSrc(draft.iconOn);
         const unit = draft.unit ?? objUnit;
+        const sample = 23.456 * (draft.factor ?? 1);
+        const src = iconSrc(
+            kind === 'number' && draft.iconSelect?.length
+                ? ScreensaverItemDialog.iconForValue(draft.iconSelect, sample)
+                : draft.iconOn,
+        );
         let value = '';
         switch (kind) {
             case 'boolean':
@@ -1183,7 +1264,6 @@ export class ScreensaverItemDialog extends React.Component<ScreensaverItemDialog
                 value = this.dateSample(draft.dateFormat);
                 break;
             case 'number': {
-                const sample = 23.456 * (draft.factor ?? 1);
                 value = `${sample.toFixed(draft.decimals ?? 1)}${unit ? ` ${unit}` : ''}`;
                 break;
             }
@@ -1363,6 +1443,7 @@ export class ScreensaverItemDialog extends React.Component<ScreensaverItemDialog
                                 )}
                                 {kind === 'boolean' && this.renderIconField('iconOff', 'screensaver_item_iconOff')}
                             </Box>
+                            {kind === 'number' && this.renderIconSelectSection()}
                             {iconMissing && (
                                 <Alert
                                     severity="warning"
@@ -1452,17 +1533,6 @@ export class ScreensaverItemDialog extends React.Component<ScreensaverItemDialog
                             })}
                         </Box>
                     )}
-                    {known && kind === 'number' && draft.iconSelect?.length ? (
-                        <Typography
-                            variant="caption"
-                            color="text.secondary"
-                        >
-                            {this.getText('screensaver_item_iconSelectKept').replace(
-                                '%s',
-                                String(draft.iconSelect.length),
-                            )}
-                        </Typography>
-                    ) : null}
                 </DialogContent>
                 <DialogActions>
                     {item && (
@@ -1485,6 +1555,13 @@ export class ScreensaverItemDialog extends React.Component<ScreensaverItemDialog
                     </Button>
                 </DialogActions>
 
+                <ScreensaverIconSelectDialog
+                    ref={this.iconSelectDialogRef}
+                    getText={this.props.getText}
+                    oContext={this.props.oContext}
+                    themeName={this.props.themeName}
+                    onSave={list => this.set('iconSelect', list)}
+                />
                 <ChannelColorDialog
                     ref={this.colorDialogRef}
                     socket={this.props.oContext?.socket}
