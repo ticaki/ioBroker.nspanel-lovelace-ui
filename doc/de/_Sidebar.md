@@ -2,56 +2,67 @@
 ![SOnOFFLogo](../Pictures/SOnOffLogo.png)   
 # [Adapter - Home](Home)  
 ## TFT Release: v5.0.0  
-[![tftrelase](https://img.shields.io/github/release/ticaki/iobroker.nspanel-lovelace-ui.svg)](https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/tree/main/HMI)  Link funktioniert -> logo falsch
+[![tftrelase](https://img.shields.io/github/release/ticaki/iobroker.nspanel-lovelace-ui.svg)](https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/tree/main/HMI)
 ---
 ## Adapter Version  
 [![npm](https://img.shields.io/npm/v/iobroker.nspanel-lovelace-ui.svg)](https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/releases) ![Number of Installations](https://iobroker.live/badges/nspanel-lovelace-ui-installed.svg)
-  
-  
-**Einleitung**  
-- [Funktionsübersicht]()  
-  
+
+**Einstieg**  
+- [Funktionsübersicht](User-NSPanel-Funktionalität)  
+
 **Basisinstallation**  
 - [NSPanel flashen](NSPanel-flashen)  
 - [Adapterinstallation](Adapter-Installation)  
 - [NSPanel Emulator](NSPanel-Nextion-Editor)  
 
-**Adapter Admin**
+**Adapter Admin**  
 - [General](General) iA  
 - [NSPanelsetting](NSPanelsetting) iA  
 - [Maintain](Maintain) iA  
 - [Developer](Developer) iA  
-  
-**Konfiguratiosscript**
-- [Einleitung](ScriptConfig) iA
-- [Grundlagen Seitenerstellung](ScriptConfig#seiten-konfiguration)  
-- [Global Pages & Global Link](GlobalPages)
-- [PageItems erstellen](ScriptConfig#pageitems) iA  
-- [Screensaver](ScriptConfig#screensaver) iA  
+- Panel-Übersicht *(folgt)*  
+
+**Seiten im Admin anlegen**  
+- PageConfig – Übersicht *(folgt)*  
+- Menü-Seite *(folgt)*  
+- Alarm *(folgt)*  
+- QR-Code *(folgt)*  
+- Energie *(folgt)*  
+- Verlaufsdiagramm *(folgt)*  
+- Papierkorb *(folgt)*  
+- [Thermostat](PageThermo2-Admin)  
+- Wiederkehrende Dialoge *(folgt)*  
 
 **Screensaver**  
-- [Einleitung](screensaver)   
+- [Einleitung](screensaver)  
 - [Screensaver – Admin](Screensaver-Admin)  
+
+**Konfigurationsscript**  
+- [Einleitung](ScriptConfig) iA  
+- [Grundlagen Seitenerstellung](ScriptConfig#seiten-konfiguration)  
+- [Global Pages & Global Link](GlobalPages)  
+- [PageItems erstellen](ScriptConfig#pageitems) iA  
+- [Screensaver im Skript](ScriptConfig#screensaver) iA  
 
 **Standard Pages**  
 - [Einleitung](Pages)  
 - [Page QR](PageQR)  
 - [Page Power](PagePower)  
-- [Page Chart](PageChart)
-- [Page Alarm](PageAlarm) iA
-- [Page Media](PageMedia)   
-- [Page Thermo2](PageThermo2) 
-- [Page Thermo2 – Admin](PageThermo2-Admin)  
-  
+- [Page Chart](PageChart)  
+- [Page Alarm](PageAlarm) iA  
+- [Page Media](PageMedia)  
+- [Page Thermo2](PageThermo2)  
+- [Popups](pagePopup)  
+- [Statussymbole](PanelStatusBadge)  
+
 **Developer**  
 - [Developer Templates](Developer-Templates)  
-- [Developer News (Latest)](Developer-News-(Latest))
-- [Developer Readme](Developer-Readme)
-- [Alias Table](ALIAS)
- - [Color Themes](colorTheme)
-  
-**FAQ**  
+- [Developer News (Latest)](<Developer-News-(Latest)>)  
+- [Developer Readme](Developer-Readme)  
+- [Alias Table](ALIAS)  
+- [Color Themes](colorTheme)  
 
 **Finde uns**  
 [![iobrokerLogo](../Pictures/iobrokerLogo.png)](https://forum.iobroker.net/topic/80055/alphatest-nspanel-lovelace-ui-v0-1-1)  
- 
+
+*iA = in Arbeit · (folgt) = Seite entsteht noch*

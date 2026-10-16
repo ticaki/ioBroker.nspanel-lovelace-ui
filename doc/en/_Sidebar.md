@@ -2,55 +2,64 @@
 ![SOnOFFLogo](../Pictures/SOnOffLogo.png)   
 # [Adapter - Home](Home)  
 ## TFT Release: v5.0.0  
-[![tftrelase](https://img.shields.io/github/release/ticaki/iobroker.nspanel-lovelace-ui.svg)](https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/tree/main/HMI)  Link funktioniert -> logo falsch
+[![tftrelase](https://img.shields.io/github/release/ticaki/iobroker.nspanel-lovelace-ui.svg)](https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/tree/main/HMI)
 ---
 ## Adapter Version  
 [![npm](https://img.shields.io/npm/v/iobroker.nspanel-lovelace-ui.svg)](https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/releases) ![Number of Installations](https://iobroker.live/badges/nspanel-lovelace-ui-installed.svg)
 
-**Introduction**  
-- *(Overview pending)*  
+**Getting started**  
+- [Feature overview](User-NSPanel-Funktionalität)  
 
-**Basic Installation**  
-- *(Flash Panel)* iA  
-- *(Adapter Installation)* iA  
-- *(NSPanel Emulator)* iA  
+**Basic installation**  
+- Flashing the NSPanel *(to come)*  
+- Adapter installation *(to come)*  
+- NSPanel emulator *(to come)*  
 
-**Adapter Admin**  
-- *(General)* iA  
-- *(NSPanel Settings)* iA  
-- *(Maintain)* iA  
-- *(Developer)* iA  
+**Adapter admin**  
+- General iA  
+- NSPanel settings iA  
+- Maintain iA  
+- Developer iA  
+- Panel overview *(to come)*  
 
-**Configuration Script**  
-- *(Introduction)* iA  
-- *(Page Basics)* iA  
-- *(Create PageItems)* iA  
-- *(Screensaver)* iA  
+**Creating pages in the admin**  
+- PageConfig – overview *(to come)*  
+- Menu page *(to come)*  
+- Alarm *(to come)*  
+- QR code *(to come)*  
+- Power *(to come)*  
+- Chart *(to come)*  
+- Trash *(to come)*  
+- [Thermostat](PageThermo2-Admin)  
+- Recurring dialogs *(to come)*  
 
 **Screensaver**  
-- *(Introduction)* iA  
-- [Screensaver (Admin)](Screensaver-Admin)  
+- Introduction *(to come)*  
+- [Screensaver – admin](Screensaver-Admin)  
 
-**Standard Pages**  
-- *(Introduction)* iA  
-- *(Page QR)* iA  
-- *(Page Power)* iA  
-- [Page Chart](PageChart)
-- *(Page Alarm)* iA  
-- *(Page Media)* iA  
-- *(Page Thermo2)* iA  
-- [Page Thermo2 (Admin)](PageThermo2-Admin)
- 
+**Configuration script**  
+- Introduction *(to come)*  
+- [Global pages & global link](GlobalPages)  
+
+**Standard pages**  
+- Introduction *(to come)*  
+- QR code *(to come)*  
+- Power *(to come)*  
+- [Chart](PageChart)  
+- Alarm *(to come)*  
+- Media *(to come)*  
+- Thermostat *(to come)*  
+- Popups *(to come)*  
+- Status badges *(to come)*  
+
 **Developer**  
-- *(Developer Templates)* iA  
-- *(Developer News (Latest))* iA  
-- *(Developer Readme)* iA  
-- *(Alias Table)* iA  
-- [Color Themes](colorTheme)  
+- Developer templates *(to come)*  
+- Developer news (latest) *(to come)*  
+- Developer readme *(to come)*  
+- Alias table *(to come)*  
+- [Color themes](colorTheme)  
 
-**FAQ**  
-- *(Coming soon)*  
+**Find us**  
+[![iobrokerLogo](../Pictures/iobrokerLogo.png)](https://forum.iobroker.net/topic/80055/alphatest-nspanel-lovelace-ui-v0-1-1)  
 
-**Community**  
-[ioBroker Forum](https://forum.iobroker.net/topic/80055/alphatest-nspanel-lovelace-ui-v0-1-1)
-
+*iA = work in progress · (to come) = page is still being written*
