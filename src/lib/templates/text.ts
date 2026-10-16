@@ -1,6 +1,77 @@
 import { Color } from '../const/Color';
 import type { TemplateItems } from '../types/types';
 
+/**
+ * Brightsky delivers ready-to-use MDI names in `icon_special`.
+ * Unknown names fall back to `alert-circle-outline`.
+ */
+const brightskyIconRead = `
+    switch (val) {
+        case 'weather-cloudy':
+        case 'weather-fog':
+        case 'weather-hail':
+        case 'weather-hazy':
+        case 'weather-lightning':
+        case 'weather-lightning-rainy':
+        case 'weather-night':
+        case 'weather-night-partly-cloudy':
+        case 'weather-partly-cloudy':
+        case 'weather-partly-rainy':
+        case 'weather-partly-snowy':
+        case 'weather-partly-snowy-rainy':
+        case 'weather-pouring':
+        case 'weather-rainy':
+        case 'weather-snowy':
+        case 'weather-snowy-heavy':
+        case 'weather-snowy-rainy':
+        case 'weather-sunny':
+        case 'weather-tornado':
+        case 'weather-windy':
+        case 'weather-windy-variant':
+            return val;
+        default:
+            return 'alert-circle-outline';
+    }`;
+
+const brightskyIconColorRead = `
+    switch (val) {
+        case 'weather-cloudy':
+            return Color.cloudy;
+        case 'weather-fog':
+        case 'weather-hazy':
+            return Color.fog;
+        case 'weather-hail':
+            return Color.hail;
+        case 'weather-lightning':
+            return Color.lightning;
+        case 'weather-night':
+            return Color.clearNight;
+        case 'weather-partly-cloudy':
+        case 'weather-night-partly-cloudy':
+            return Color.partlyCloudy;
+        case 'weather-pouring':
+            return Color.pouring;
+        case 'weather-partly-rainy':
+        case 'weather-lightning-rainy':
+        case 'weather-rainy':
+            return Color.rainy;
+        case 'weather-partly-snowy':
+        case 'weather-snowy':
+        case 'weather-snowy-heavy':
+            return Color.snowy;
+        case 'weather-partly-snowy-rainy':
+        case 'weather-snowy-rainy':
+            return Color.snowyRainy;
+        case 'weather-sunny':
+            return Color.sunny;
+        case 'weather-tornado':
+        case 'weather-windy':
+        case 'weather-windy-variant':
+            return Color.windy;
+        default:
+            return Color.White;
+    }`;
+
 export const textTemplates: TemplateItems = {
     'text.clock': {
         role: 'text',
@@ -2648,6 +2719,7 @@ export const textTemplates: TemplateItems = {
                         regexp: /(?<!\b(day|night))\.icon_special$/,
                         mode: 'auto',
                         dp: '',
+                        read: brightskyIconRead,
                     },
                     color: {
                         type: 'triggered',
@@ -2655,44 +2727,7 @@ export const textTemplates: TemplateItems = {
                         regexp: /(?<!\b(day|night))\.icon_special$/,
                         mode: 'auto',
                         dp: '',
-                        read: `
-                            switch (val) {
-                                case 'weather-cloudy':
-                                    return Color.cloudy; // cloudy
-                                case 'weather-fog':
-                                    return Color.fog;
-                                case 'weather-hail':
-                                    return Color.hail;
-                                case 'weather-lightning': // T-Storms
-                                    return Color.lightning;
-                                case 'weather-night':
-                                    return Color.clearNight;
-                                case 'weather-partly-cloudy':
-                                case 'weather-night-partly-cloudy':
-                                    return Color.partlyCloudy;
-                                case 'weather-pouring':
-                                    return Color.pouring;
-                                case 'weather-partly-rainy':
-                                case 'weather-lightning-rainy':
-                                case 'weather-rainy':
-                                    return Color.rainy;
-                                case 'weather-partly-snowy':
-                                case 'weather-snowy-rainy':
-                                case 'weather-snowy-heavy':
-                                case 'weather-partly-snowy':
-                                case 'weather-partly-snowy':
-                                    return Color.snowy
-                                case 'weather-partly-snowy-rainy':
-                                    return Color.snowyRainy;
-                                case 'weather-sunny':
-                                    return Color.sunny;
-                                case 'weather-tornado':
-                                case 'weather-windy':
-                                case 'weather-windy-variant':
-                                    return Color.windy;
-                                default:
-                                    return Color.Red;
-                            }`,
+                        read: brightskyIconColorRead,
                     },
                 },
                 false: { value: undefined, color: undefined },
@@ -2766,149 +2801,19 @@ export const textTemplates: TemplateItems = {
                 true: {
                     value: {
                         type: 'state',
-                        role: 'weather.icon.name',
-                        regexp: /(?<!\b(day|night))\.icon$/,
+                        role: '',
+                        regexp: /(?<!\b(day|night))\.icon_special$/,
                         mode: 'auto',
                         dp: '',
-                        /**
-                         * How to use
-                         * this run its own this. U dont have accress to variables that no definied for this.
-                         * Color: in a import of color.ts
-                         * val: is the incoming value - raw
-                         *
-                         * The best thing is to write the function with () => { here }. Then remove the () => {}
-                         * and convert it into a template literal, using ``. A return is mandatory.
-                         */
-                        read: `
-                            switch (val) {
-                                case 'cloudy':
-                                case 'mostly-cloudy-day':
-                                case 'mostly-cloudy-night':
-                                    return 'weather-cloudy';
-                                case 'fog':
-                                case 'mist':
-                                case 'smoke':
-                                    return 'weather-fog';
-                                case 'hail':
-                                    return 'weather-hail';
-                                case 'haze':
-                                    return 'weather-hazy'
-                                case 'thunderstorm':
-                                    return 'weather-lightning';
-                                case 'possible-precipitation-day':
-                                case 'possible-precipitation-night':
-                                    return 'weather-lightning-rainy';
-                                case 'clear-night':
-                                case 'mostly-clear-night':
-                                    return 'weather-night';
-                                case 'partly-cloudy-night':
-                                    return 'weather-night-partly-cloudy';
-                                case 'mostly-cloudy-day':
-                                case 'partly-cloudy-day':
-                                    return 'weather-partly-cloudy';
-                                case 'possible-rain-day':
-                                case 'possible-rain-night':
-                                    return 'weather-partly-rainy';
-                                case 'possible-snow-night':
-                                case 'possible-snow-day':
-                                    return 'weather-partly-snowy';
-                                case 'possible-sleet-day':
-                                case 'possible-sleet-night':
-                                    return 'weather-partly-snowy-rainy';
-                                case 'rain':
-                                case 'heavy-rain':
-                                case 'precipitation':
-                                    return 'weather-pouring';
-                                case 'drizzle':
-                                case 'light-rain':
-                                    return 'weather-rainy';
-                                case 'light-snow':
-                                case 'snow':
-                                    return 'weather-snowy';
-                                case 'heavy-sleet':
-                                case 'heavy-snow':
-                                case 'flurries':
-                                    return 'weather-snowy-heavy';
-                                case 'sleet':
-                                case 'light-sleet':
-                                case 'very-light-sleet':
-                                    return 'weather-snowy-rainy';
-                                case 'clear-day':
-                                case 'mostly-clear-day':
-                                    return 'weather-sunny';
-                                case 'dangerous-wind':
-                                    return 'weather-tornado';
-                                case 'wind':
-                                    return 'weather-windy';
-                                case 'breezy':
-                                    return 'weather-windy-variant';
-                                default:
-                                    return 'alert-circle-outline';
-                            }`,
+                        read: brightskyIconRead,
                     },
                     color: {
                         type: 'triggered',
-                        role: 'weather.icon.name',
-                        regexp: /(?<!\b(day|night))\.icon$/,
+                        role: '',
+                        regexp: /(?<!\b(day|night))\.icon_special$/,
                         mode: 'auto',
                         dp: '',
-                        read: `
-                            switch (val) {
-                                case 'cloudy':
-                                case 'mostly-cloudy-day':
-                                case 'mostly-cloudy-night':
-                                    return Color.cloudy; // cloudy
-                                case 'fog':
-                                case 'mist':
-                                case 'haze':
-                                case 'smoke':
-                                    return Color.fog;
-                                case 'hail':
-                                    return Color.hail;
-                                case 'thunderstorm': // T-Storms
-                                    return Color.lightning;
-                                case 'clear-night':
-                                case 'mostly-clear-night':
-                                    return Color.clearNight;
-                                case 'partly-cloudy-day':
-                                    return Color.partlyCloudy;
-                                case 'partly-cloudy-night':
-                                    return Color.partlyCloudy;
-                                case 'rain':
-                                case 'heavy-rain':
-                                case 'precipitation':
-                                    return Color.pouring;
-                                case 'possible-rain-day':
-                                case 'possible-rain-night':
-                                case 'possible-precipitation-night':
-                                case 'possible-precipitation-day':
-                                case 'drizzle':
-                                case 'light-rain':
-                                    return Color.rainy;
-                                case 'light-snow':
-                                case 'snow':
-                                case 'heavy-sleet':
-                                case 'heavy-snow':
-                                case 'flurries':
-                                case 'possible-snow-day':
-                                case 'possible-snow-night':
-                                case 'possible-sleet-day':
-                                case 'possible-sleet-night':
-                                    return Color.snowy
-                                case 'sleet':
-                                case 'light-sleet':
-                                case 'very-light-sleet':
-                                    return Color.snowyRainy;
-                                case 'clear-day':
-                                case 'mostly-clear-day':
-                                    return Color.sunny;
-                                case 'dangerous-wind':
-                                case 'breezy':
-                                case 'wind':
-                                    return Color.windy;
-                                default:
-                                    return Color.White;
-                            }`,
+                        read: brightskyIconColorRead,
                     },
                 },
                 false: { value: undefined, color: undefined },

@@ -4,12 +4,31 @@ import { BaseClass, type AdapterClassDefinition } from './library';
 import type { MQTTClientClass, callbackMessageType } from '../classes/mqtt';
 import type { Panel } from './panel';
 
+type QueuedMessage = {
+    payload: string;
+    opt?: IClientPublishOptions;
+    ackForType: boolean;
+    /** how often the message was handed to tasmota - 0 = not sent yet */
+    sent: number;
+    /** 'Done' answers received while waiting for the renderCurrentPage ack of this message */
+    done: number;
+};
+
+/** How long 'Done' answers of a message sent more than once are expected after its ack (ms) */
+const STALE_DONE_WINDOW = 1000;
+
 /**
  * Übernimmt das senden von Payloads an die mqtt Klasse - delay zwischen einzelnen Messages
  * 1 * pro Klasse Panel
  */
 export class PanelSend extends BaseClass {
-    private messageDb: { payload: string; opt?: IClientPublishOptions; ackForType: boolean }[] = [];
+    private messageDb: QueuedMessage[] = [];
+    /**
+     * 'Done' answers still expected for already acknowledged messages (sent more than once).
+     * They must not acknowledge the next message - the count only holds until staleDoneUntil.
+     */
+    private staleDone = 0;
+    private staleDoneUntil = 0;
     private messageDbTasmota: { topic: string; payload: string; opt?: IClientPublishOptions }[] = [];
 
     private messageTimeout: ioBroker.Timeout | undefined;
@@ -48,6 +67,7 @@ export class PanelSend extends BaseClass {
         this.messageTimeout = undefined;
         this.losingMessageCount = 0;
         this._losingDelay = 1000;
+        this.staleDone = 0;
     }
     onMessage: callbackMessageType = async (topic: string, message: string) => {
         if (this.unload || this.adapter.unload) {
@@ -61,12 +81,34 @@ export class PanelSend extends BaseClass {
         }
         try {
             const msg = JSON.parse(message);
-            const ackForType = this.messageDb[0] && this.messageDb[0].ackForType;
+            const head = this.messageDb[0];
+            const ackForType = head && head.ackForType;
             if (msg) {
+                if (msg.CustomSend === 'Done' && this.staleDone > 0) {
+                    // answer to an earlier transmission of an already acknowledged message
+                    const stale = Date.now() <= this.staleDoneUntil;
+                    this.staleDone = stale ? this.staleDone - 1 : 0;
+                    if (stale) {
+                        if (this.adapter.config.debugLogMqtt) {
+                            this.log.debug(`Ignore late 'Done' of an already acknowledged message`);
+                        }
+                        return;
+                    }
+                }
                 if (
                     (ackForType && msg.CustomSend === 'renderCurrentPage') ||
                     (!ackForType && msg.CustomSend === 'Done')
                 ) {
+                    // a duplicate ack (mqtt qos 1, overlapping subscriptions) must not acknowledge
+                    // the next message before it has even been sent - it would be lost silently
+                    if (!head || head.sent === 0) {
+                        if (this.adapter.config.debugLogMqtt) {
+                            this.log.debug(
+                                `Ignore '${msg.CustomSend}' - ${head ? `${JSON.stringify(head)} not sent yet` : 'queue is empty'}`,
+                            );
+                        }
+                        return;
+                    }
                     if (this.messageTimeout) {
                         this.adapter.clearTimeout(this.messageTimeout);
                     }
@@ -74,6 +116,14 @@ export class PanelSend extends BaseClass {
                     this._losingDelay = 1000;
                     const oldMessage = this.messageDb.shift();
                     if (oldMessage) {
+                        // every transmission is answered with 'Done' - the ones still on their way belong to this message
+                        const expected = oldMessage.sent - (oldMessage.ackForType ? oldMessage.done : 1);
+                        if (expected > 0) {
+                            this.staleDone = expected;
+                            this.staleDoneUntil = Date.now() + STALE_DONE_WINDOW;
+                        } else {
+                            this.staleDone = 0;
+                        }
                         if (oldMessage.payload === 'pageType~pageStartup') {
                             this.messageDb = [];
                         }
@@ -85,6 +135,9 @@ export class PanelSend extends BaseClass {
                     // Give the Nextion time to render the previous frame before the next one hits its 1024-byte buffer
                     this.messageTimeout = this.adapter.setTimeout(this.sendMessageLoop, 250);
                 } else {
+                    if (ackForType && head.sent > 0 && msg.CustomSend === 'Done') {
+                        head.done++;
+                    }
                     if (this.adapter.config.additionalLog) {
                         this.log.info(
                             `1: ${!(ackForType && msg.CustomSend === 'renderCurrentPage')} 2: ${!(!ackForType && msg.CustomSend === 'Done')} msg: ${msg.CustomSend}`,
@@ -122,7 +175,7 @@ export class PanelSend extends BaseClass {
         if (force === true) {
             this.resetMessageDB();
         }
-        this.messageDb.push({ payload: payload, opt: opt, ackForType: ackForType });
+        this.messageDb.push({ payload: payload, opt: opt, ackForType: ackForType, sent: 0, done: 0 });
         if (this.messageTimeout === undefined) {
             void this.sendMessageLoop();
         }
@@ -176,6 +229,7 @@ export class PanelSend extends BaseClass {
         if (!this.adapter.unload) {
             this.messageTimeout = this.adapter.setTimeout(this.sendMessageLoop, this.losingDelay);
         }
+        msg.sent++;
         this.addMessageTasmota(this.topic, msg.payload, msg.opt);
     };
 

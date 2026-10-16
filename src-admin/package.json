@@ -24,7 +24,7 @@
         "@originjs/vite-plugin-federation": "^1.4.1",
         "@types/d3-hierarchy": "^3.1.7",
         "@types/lodash": "^4.17.24",
-        "@types/node": "^25.6.0",
+        "@types/node": "^25.9.4",
         "@types/react": "^19.2.18",
         "@types/react-dom": "^19.2.4",
         "@vitejs/plugin-react": "^6.0.5",
@@ -32,7 +32,7 @@
         "baseline-browser-mapping": "^2.10.43",
         "react": "^19.2.8",
         "react-dom": "^19.2.8",
-        "tsx": "^4.21.0",
+        "tsx": "^4.23.15",
         "typescript": "^5.9.3",
         "vite": "^8.2.1",
         "vite-plugin-commonjs": "^0.10.4"

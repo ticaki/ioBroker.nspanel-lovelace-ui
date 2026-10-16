@@ -29,7 +29,9 @@ var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: tru
 var mqtt_exports = {};
 __export(mqtt_exports, {
   MQTTClientClass: () => MQTTClientClass,
-  MQTTServerClass: () => MQTTServerClass
+  MQTTServerClass: () => MQTTServerClass,
+  minimalMqttFilters: () => minimalMqttFilters,
+  mqttFilterCovers: () => mqttFilterCovers
 });
 module.exports = __toCommonJS(mqtt_exports);
 var import_mqtt = __toESM(require("mqtt"));
@@ -40,6 +42,26 @@ var import_library = require("../controller/library");
 var import_aedes = require("aedes");
 var import_node_crypto = require("node:crypto");
 var forge = __toESM(require("node-forge"));
+function mqttFilterCovers(filter, other) {
+  const a = filter.split("/");
+  const b = other.split("/");
+  for (let i = 0; i < a.length; i++) {
+    if (a[i] === "#") {
+      return true;
+    }
+    if (i >= b.length || b[i] === "#") {
+      return false;
+    }
+    if (a[i] !== "+" && a[i] !== b[i]) {
+      return false;
+    }
+  }
+  return a.length === b.length;
+}
+function minimalMqttFilters(filters) {
+  const distinct = [...new Set(filters)];
+  return distinct.filter((f) => !distinct.some((o) => o !== f && mqttFilterCovers(o, f)));
+}
 class MQTTClientClass extends import_library.BaseClass {
   client;
   data = {};
@@ -48,6 +70,8 @@ class MQTTClientClass extends import_library.BaseClass {
   clientId;
   // Flat registry of subscriptions (topic + callback)
   subscriptDB = [];
+  // Filters subscribed at the broker - never two overlapping ones, see minimalMqttFilters()
+  brokerTopics = /* @__PURE__ */ new Set();
   _onConnect;
   _onDisconnect;
   constructor(adapter, ip, port, username, password, tls, callback) {
@@ -117,14 +141,13 @@ class MQTTClientClass extends import_library.BaseClass {
             const before = this.countCallbacks(rem.topic);
             this.removeSubscriptionEntry(rem.topic, rem.callback);
             const after = this.countCallbacks(rem.topic);
-            if (after === 0) {
-              this.unsubscribe(rem.topic);
-            } else if (this.adapter.config.debugLogMqtt) {
+            if (after > 0 && this.adapter.config.debugLogMqtt) {
               this.log.debug(
                 `MQTT keep subscription: topic="${rem.topic}" still has ${after}/${before} handler(s)`
               );
             }
           }
+          this.updateBrokerSubscriptions();
         }
       };
       void _helper(topic, message);
@@ -239,8 +262,7 @@ class MQTTClientClass extends import_library.BaseClass {
       this.subscriptDB.splice(index, 1);
       const count = this.countCallbacks(topic);
       if (count === 0) {
-        this.log.debug(`unsubscribe from: ${topic}`);
-        this.client.unsubscribe(topic);
+        this.updateBrokerSubscriptions();
       } else if (this.adapter.config.debugLogMqtt) {
         this.log.debug(`keep subscription: topic="${topic}" still has ${count} handler(s)`);
       }
@@ -251,13 +273,11 @@ class MQTTClientClass extends import_library.BaseClass {
     for (const rem of toRemove) {
       this.removeSubscriptionEntry(rem.topic, rem.callback);
       const count = this.countCallbacks(rem.topic);
-      if (count === 0) {
-        this.log.debug(`unsubscribe from: ${rem.topic}`);
-        this.client.unsubscribe(rem.topic);
-      } else if (this.adapter.config.debugLogMqtt) {
+      if (count > 0 && this.adapter.config.debugLogMqtt) {
         this.log.debug(`keep subscription: topic="${rem.topic}" still has ${count} handler(s)`);
       }
     }
+    this.updateBrokerSubscriptions();
   }
   async subscribe(topic, callback) {
     if (this.subscriptDB.findIndex((m) => m.topic === topic && m.callback === callback) !== -1) {
@@ -269,11 +289,62 @@ class MQTTClientClass extends import_library.BaseClass {
     const firstOnTopic = this.subscriptDB.findIndex((m) => m.topic === topic) === -1;
     this.subscriptDB.push({ topic, callback });
     if (firstOnTopic) {
-      this.log.debug(`subscribe to: ${topic}`);
-      await this.client.subscribeAsync(topic, { qos: 1 });
+      await this.syncBrokerSubscriptions();
     } else if (this.adapter.config.debugLogMqtt) {
       const count = this.countCallbacks(topic);
       this.log.debug(`added handler for topic="${topic}" (handlers on topic: ${count})`);
+    }
+  }
+  /** Fire-and-forget variant of syncBrokerSubscriptions() for the removal paths. */
+  updateBrokerSubscriptions() {
+    this.syncBrokerSubscriptions().catch(
+      (e) => this.log.warn(`MQTT subscription update failed: ${e instanceof Error ? e.message : String(e)}`)
+    );
+  }
+  /**
+   * Bring the broker-side subscriptions in line with the registered handlers.
+   * A filter covered by another one is not subscribed (its handlers get the messages of the covering
+   * subscription), so every message arrives exactly once. A covering filter is subscribed before the
+   * ones it replaces are unsubscribed - no message gets lost in between.
+   */
+  async syncBrokerSubscriptions() {
+    const wanted = new Set(minimalMqttFilters(this.subscriptDB.map((m) => m.topic)));
+    const toSubscribe = [...wanted].filter((t) => !this.brokerTopics.has(t));
+    const toUnsubscribe = [...this.brokerTopics].filter((t) => !wanted.has(t));
+    for (const t of toSubscribe) {
+      this.brokerTopics.add(t);
+    }
+    for (const t of toUnsubscribe) {
+      this.brokerTopics.delete(t);
+    }
+    try {
+      await Promise.all(
+        toSubscribe.map((t) => {
+          this.log.debug(`subscribe to: ${t}`);
+          return this.client.subscribeAsync(t, { qos: 1 });
+        })
+      );
+    } catch (e) {
+      for (const t of toSubscribe) {
+        this.brokerTopics.delete(t);
+      }
+      for (const t of toUnsubscribe) {
+        this.brokerTopics.add(t);
+      }
+      throw e;
+    }
+    for (const t of toUnsubscribe) {
+      if (!this.brokerTopics.has(t)) {
+        this.log.debug(`unsubscribe from: ${t}`);
+        this.client.unsubscribe(t);
+      }
+    }
+    if (this.adapter.config.debugLogMqtt && toSubscribe.length + toUnsubscribe.length > 0) {
+      for (const t of new Set(this.subscriptDB.map((m) => m.topic))) {
+        if (!wanted.has(t)) {
+          this.log.debug(`topic="${t}" is covered by another subscription - no own broker subscription`);
+        }
+      }
     }
   }
   async destroy() {
@@ -482,6 +553,8 @@ class MQTTServerClass extends import_library.BaseClass {
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
   MQTTClientClass,
-  MQTTServerClass
+  MQTTServerClass,
+  minimalMqttFilters,
+  mqttFilterCovers
 });
 //# sourceMappingURL=mqtt.js.map

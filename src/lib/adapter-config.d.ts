@@ -1,6 +1,7 @@
 // This file extends the AdapterConfig type from "@types/iobroker"
 
 import {NSpanelModel} from "./types/types";
+import type { ScreensaverEntry } from "./types/adminShareConfig";
 
 // Augment the globally declared type ioBroker.AdapterConfig
 declare global {
@@ -251,6 +252,9 @@ declare global {
                 colMediaTitleOff: string;
                 colMediaOnOffColor: string;
             }[];
+
+            /** screensavers configured in the admin tab "Screensaver" (own table, not part of pageConfig) */
+            screensaverConfig: ScreensaverEntry[];
 
             pageUnlockConfig: any
             pageQRConfig: any[];

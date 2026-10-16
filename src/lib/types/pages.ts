@@ -4,7 +4,7 @@ import { type PageItem } from '../pages/pageItem';
 import type { AdminCardTypes } from './adminShareConfig';
 import type { NSPanel } from './NSPanel';
 
-export type CardRole = 'AdapterConnection' | 'AdapterStopped' | 'AdapterUpdates' | 'SonosSpeaker';
+export type CardRole = 'AdapterConnection' | 'AdapterStopped' | 'AdapterUpdates' | 'SonosSpeaker' | 'SqueezeboxSpeaker';
 
 export type cardEntitiesTypes = Extract<AdminCardTypes, 'cardEntities' | 'cardSchedule'>;
 export type cardGridTypes = Extract<
@@ -102,6 +102,7 @@ export type StateRole =
     | 'media.title'
     | 'sensor.door'
     | 'sensor.light'
+    | 'sensor.lock'
     | 'sensor.motion'
     | 'sensor.open'
     | 'sensor.window'
@@ -154,6 +155,8 @@ export type DeviceRole =
     | 'spotify-speaker'
     | 'alexa-playlist'
     | 'alexa-speaker'
+    | 'squeezebox-favorites'
+    | 'squeezebox-playlist'
     | '2values'
     | '2valuesIsValue'
     | '4values'
@@ -604,6 +607,8 @@ export type PageMediaBaseConfig = {
     forward?: string;
     backward?: string;
     coordinator?: boolean;
+    /** power state of the player, toggled by the on/off button if present */
+    power?: boolean;
 };
 
 type PageGridBaseConfig = {

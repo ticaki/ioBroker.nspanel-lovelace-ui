@@ -416,6 +416,7 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
             if (value === null) {
               value = true;
             }
+            const showIcon = entry.role === "2values" ? true : value;
             if (entry.role === "text.states") {
               const key = value ? "true" : "false";
               const dataitem = ((_E = item.text) == null ? void 0 : _E[key]) ? (0, import_data_item.isDataItem)(item.text[key]) ? item.text[key] : item.text[key].value : null;
@@ -428,7 +429,7 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
               }
             } else {
               message.displayName = this.library.getTranslation(
-                (_G = await tools.getEntryTextOnOff(item.text, !!value)) != null ? _G : ""
+                (_G = await tools.getEntryTextOnOff(item.text, !!showIcon)) != null ? _G : ""
               );
             }
             if (entry.type === "switch") {
@@ -449,7 +450,7 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
                   if (val1 !== null && val2 !== null) {
                     message.optionalValue = String(val1) + (unit1 != null ? unit1 : "") + String(val2) + (unit2 != null ? unit2 : "");
                     if (typeof value === "number") {
-                      value = val1 + val2 / 2;
+                      value = (val1 + val2) / 2;
                     }
                   }
                   break;
@@ -483,14 +484,14 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
                 }
               }
             }
-            message.icon = await tools.getIconEntryValue(item.icon, value, "home");
+            message.icon = await tools.getIconEntryValue(item.icon, showIcon, "home");
             switch (entry.role) {
               case "textNotIcon": {
-                message.icon = (_K = await tools.getIconEntryValue(item.icon, value, "", null, true)) != null ? _K : "";
+                message.icon = (_K = await tools.getIconEntryValue(item.icon, showIcon, "", null, true)) != null ? _K : "";
                 break;
               }
               case "iconNotText": {
-                message.icon = (_L = await tools.getIconEntryValue(item.icon, value, "", null, false)) != null ? _L : "";
+                message.icon = (_L = await tools.getIconEntryValue(item.icon, showIcon, "", null, false)) != null ? _L : "";
                 break;
               }
               case "battery": {
@@ -499,14 +500,14 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
                 break;
               }
               case "combined": {
-                message.icon = (_O = await tools.getIconEntryValue(item.icon, value, "", null, false)) != null ? _O : "";
-                message.icon += (_P = await tools.getIconEntryValue(item.icon, value, "", null, true)) != null ? _P : "";
+                message.icon = (_O = await tools.getIconEntryValue(item.icon, showIcon, "", null, false)) != null ? _O : "";
+                message.icon += (_P = await tools.getIconEntryValue(item.icon, showIcon, "", null, true)) != null ? _P : "";
                 break;
               }
               default: {
                 message.icon = (_R = await tools.getIconEntryValue(
                   item.icon,
-                  !!value,
+                  !!showIcon,
                   "",
                   null,
                   (_Q = !(0, import_function_and_const.isCardEntitiesType)(this.parent.card) && !this.parent.card.startsWith("screens")) != null ? _Q : false
@@ -1810,7 +1811,7 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
             }
             break;
           }
-          if (entry.role === "SonosSpeaker") {
+          if (entry.role === "SonosSpeaker" || entry.role === "SqueezeboxSpeaker") {
             if (!this.parent || !(((_g = this.parent.config) == null ? void 0 : _g.card) === "cardMedia")) {
               break;
             }
@@ -2730,8 +2731,55 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
     }
     return false;
   }
+  /**
+   * Requests the saved playlists of a squeezeboxrpc instance from the Logitech Media Server.
+   *
+   * @param inst - adapter instance, e.g. `squeezeboxrpc.0`
+   * @returns list of playlists with id and name, empty on error
+   */
+  async getSqueezeboxPlaylists(inst) {
+    const result = [];
+    let response;
+    try {
+      response = await this.adapter.sendToAsync(
+        inst,
+        "cmdGeneral",
+        { playerid: "", cmdArray: ["playlists", "0", "999", "tags:u"] },
+        { timeout: 3e3 }
+      );
+    } catch (e) {
+      this.log.warn(`Squeezebox playlists from ${inst} failed: ${String(e)}`);
+      return result;
+    }
+    const getLoop = (data) => {
+      if (!data || typeof data !== "object") {
+        return void 0;
+      }
+      if ("playlists_loop" in data) {
+        return data.playlists_loop;
+      }
+      if ("result" in data) {
+        return getLoop(data.result);
+      }
+      return void 0;
+    };
+    const loop = getLoop(response);
+    if (!Array.isArray(loop)) {
+      this.log.debug(`Squeezebox playlists from ${inst}: no playlists in response ${JSON.stringify(response)}`);
+      return result;
+    }
+    for (const entry of loop) {
+      if (entry && typeof entry === "object" && "id" in entry && "playlist" in entry) {
+        const name = typeof entry.playlist === "string" ? entry.playlist : "";
+        if (name && entry.id != null) {
+          result.push({ id: String(entry.id), name });
+        }
+      }
+    }
+    return result;
+  }
   async getListFromStates(entityInSel, valueList, role, valueList2 = void 0, force = false) {
-    var _a, _b, _c, _d, _e, _f;
+    var _a, _b, _c, _d, _e, _f, _g, _h;
     const list = {};
     if (entityInSel && entityInSel.value) {
       if (role === "alexa-speaker") {
@@ -2782,6 +2830,62 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
           }
         }
         this.log.debug(`Alexa Playlist list: finish`);
+      } else if (role === "squeezebox-favorites") {
+        const dp = "dp" in entityInSel.value.options ? entityInSel.value.options.dp : "";
+        const inst = (dp || "").split(".").slice(0, 2).join(".");
+        if (inst) {
+          const filterRaw = valueList ? await valueList.getObject() : null;
+          const filter = Array.isArray(filterRaw) && filterRaw.length > 0 ? filterRaw.filter((f) => typeof f === "string") : null;
+          const states = await this.adapter.getForeignStatesAsync(`${inst}.Favorites.*`);
+          const favorites = {};
+          for (const id in states) {
+            const parts = id.split(".");
+            if (parts.length !== 5) {
+              continue;
+            }
+            const key = parts[3];
+            const prop = parts[4];
+            const val = (_e = states[id]) == null ? void 0 : _e.val;
+            favorites[key] = (_f = favorites[key]) != null ? _f : {};
+            if (prop === "Name" && typeof val === "string") {
+              favorites[key].name = val;
+            } else if (prop === "id" && val != null) {
+              favorites[key].id = String(val);
+            } else if (prop === "isaudio") {
+              favorites[key].isaudio = val === 1 || val === "1" || val === true;
+            }
+          }
+          list.list = [];
+          list.states = [];
+          for (const fav of Object.values(favorites)) {
+            if (!fav.isaudio || !fav.name || !fav.id) {
+              continue;
+            }
+            if (filter && !filter.includes(fav.name)) {
+              continue;
+            }
+            list.list.push(fav.name);
+            list.states.push(fav.id);
+          }
+          list.value = "";
+        }
+      } else if (role === "squeezebox-playlist") {
+        const dp = "dp" in entityInSel.value.options ? entityInSel.value.options.dp : "";
+        const inst = (dp || "").split(".").slice(0, 2).join(".");
+        if (inst) {
+          const filterRaw = valueList ? await valueList.getObject() : null;
+          const filter = Array.isArray(filterRaw) && filterRaw.length > 0 ? filterRaw.filter((f) => typeof f === "string") : null;
+          list.list = [];
+          list.states = [];
+          list.value = "";
+          for (const playlist of await this.getSqueezeboxPlaylists(inst)) {
+            if (filter && !filter.includes(playlist.name)) {
+              continue;
+            }
+            list.list.push(playlist.name);
+            list.states.push(playlist.id);
+          }
+        }
       } else if (role === "spotify-speaker" || role === "spotify-playlist") {
         if (entityInSel.value.options.dp) {
           const o = await entityInSel.value.getCommonStates(force);
@@ -2824,7 +2928,7 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
             }
           }
         }
-      } else if (["string", "number"].indexOf((_e = entityInSel.value.type) != null ? _e : "") !== -1 && (await entityInSel.value.getCommonStates(force) || valueList2 != null)) {
+      } else if (["string", "number"].indexOf((_g = entityInSel.value.type) != null ? _g : "") !== -1 && (await entityInSel.value.getCommonStates(force) || valueList2 != null)) {
         let states = null;
         const value = await tools.getValueEntryString(entityInSel);
         switch (role) {
@@ -2891,7 +2995,7 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
             }
           }
         }
-      } else if (["string", "number"].indexOf((_f = entityInSel.value.type) != null ? _f : "") !== -1 && valueList) {
+      } else if (["string", "number"].indexOf((_h = entityInSel.value.type) != null ? _h : "") !== -1 && valueList) {
         list.list = [];
         list.states = [];
         const v = await (valueList == null ? void 0 : valueList.getObject());

@@ -30,15 +30,20 @@ var admin_exports = {};
 __export(admin_exports, {
   AdminConfiguration: () => AdminConfiguration,
   buildChartPageConfig: () => buildChartPageConfig,
-  buildPowerSlotData: () => buildPowerSlotData
+  buildPowerSlotData: () => buildPowerSlotData,
+  buildThermo2ScriptPage: () => buildThermo2ScriptPage
 });
 module.exports = __toCommonJS(admin_exports);
+var import_config_manager = require("../classes/config-manager");
+var import_admin_screensaver = require("./admin-screensaver");
+var import_Color = require("../const/Color");
 var import_default_pages = require("../const/default-pages");
+var import_pageThermo2 = require("../pages/pageThermo2");
 var import_library = require("../controller/library");
 var import_system_templates = require("../templates/system-templates");
 var ShareConfig = __toESM(require("../types/adminShareConfig"));
+var import_adminShareConfig = require("../types/adminShareConfig");
 var import_function_and_const = require("../types/function-and-const");
-var import_credentials = require("../credentials");
 const systemNavigationNodeNames = new Set(
   import_system_templates.systemNavigation.filter((node) => node != null).map((node) => node.name)
 );
@@ -87,6 +92,7 @@ class AdminConfiguration extends import_library.BaseClass {
     try {
       const pendingNavs = await this.createPagesFromConfig(option);
       this.applyPendingNavigations(option, pendingNavs);
+      await this.processScreensaver(option);
     } catch (error) {
       const msg = error instanceof Error ? error.message : String(error);
       const stack = error instanceof Error ? (_a = error.stack) != null ? _a : "no stack" : "no stack";
@@ -97,6 +103,117 @@ Stack: ${stack}`
       );
     }
     return option;
+  }
+  /**
+   * Replaces the screensaver of the script with the one configured in the admin tab "Screensaver"
+   * when an entry lists the topic of the panel. The entry is turned into the script form and handed
+   * to `ConfigManager.getScreensaverConfig()`, so items, templates and weather are resolved exactly
+   * like on the script path; version, rotation time, swipe, indicator buttons and the clock / date
+   * formats of the entry are applied afterwards. Without an entry nothing changes.
+   *
+   * @param option - Panel configuration partial (pages of the script already inside)
+   */
+  async processScreensaver(option) {
+    var _a, _b;
+    const { entry, others } = (0, import_admin_screensaver.findScreensaverEntry)(this.adapter.config.screensaverConfig, option.topic);
+    if (!entry) {
+      return;
+    }
+    if (others.length > 0) {
+      this.log.warn(
+        `Panel '${option.name}' (${option.topic}) is listed in several screensavers (${[entry.name, ...others].join(", ")}) - '${entry.name}' is used`
+      );
+    }
+    const lang = this.adapter.language || "en";
+    const states = {};
+    for (const id of (0, import_admin_screensaver.screensaverStateIds)(entry)) {
+      try {
+        const obj = await this.adapter.getForeignObjectAsync(id);
+        const channelId = (0, import_adminShareConfig.screensaverChannelIdOf)(id);
+        const channel = channelId ? await this.adapter.getForeignObjectAsync(channelId) : null;
+        states[id] = {
+          name: (0, import_admin_screensaver.objectNameOf)(obj, lang),
+          role: typeof ((_a = obj == null ? void 0 : obj.common) == null ? void 0 : _a.role) === "string" ? obj.common.role : "",
+          channelRole: ((channel == null ? void 0 : channel.type) === "channel" || (channel == null ? void 0 : channel.type) === "device") && typeof ((_b = channel.common) == null ? void 0 : _b.role) === "string" ? channel.common.role : ""
+        };
+      } catch {
+        states[id] = {};
+      }
+    }
+    const manager = new import_config_manager.ConfigManager(this.adapter);
+    const result = await manager.getScreensaverConfig(
+      (0, import_admin_screensaver.buildScreensaverScriptConfig)(entry, option.topic, states),
+      [],
+      {
+        weatherEntityFixed: entry.weatherEntity !== void 0
+      }
+    );
+    for (const msg of result.messages) {
+      this.log.debug(`Screensaver '${entry.name}': ${msg}`);
+    }
+    const page = result.configArray;
+    (0, import_admin_screensaver.applyScreensaverEntry)(page, entry);
+    const scriptPages = option.pages.filter((p) => (0, import_admin_screensaver.isScreensaverPage)(p)).length;
+    option.pages = option.pages.filter((p) => !(0, import_admin_screensaver.isScreensaverPage)(p));
+    option.pages.push(page);
+    this.log.info(
+      `Screensaver '${entry.name}' (${entry.mode}) from the admin configuration ${scriptPages > 0 ? "replaces the script screensaver of" : "is used by"} panel '${option.name}'`
+    );
+  }
+  /**
+   * Builds the runtime page of a cardThermo2 entry.
+   *
+   * The entry is turned into the script form and handed to the code the script configuration
+   * uses (`PageThermo2.getPage`), so alias resolution, mode list and the generated mode /
+   * automatic / manual buttons are identical on both paths. The page items of the entry are
+   * appended afterwards with their heat-circuit filter; trailing empty slots are dropped, inner
+   * ones become placeholders like on the menu pages.
+   *
+   * @param entry Thermo2 entry as stored by the PageConfig editor.
+   * @param alwaysOn Validated always-on mode of the entry.
+   * @returns The page for the panel configuration; without a usable circuit it has no data.
+   */
+  async buildThermo2Page(entry, alwaysOn) {
+    var _a, _b;
+    let gridItem = {
+      uniqueID: entry.uniqueName,
+      hidden: !!entry.hidden,
+      alwaysOn,
+      dpInit: "",
+      config: {
+        card: "cardThermo2",
+        scrollType: "page",
+        scrollPresentation: "classic",
+        data: { headline: { type: "const", constVal: entry.uniqueName } },
+        index: 0
+      },
+      pageItems: []
+    };
+    const messages = [];
+    const manager = new import_config_manager.ConfigManager(this.adapter);
+    ({ gridItem } = await import_pageThermo2.PageThermo2.getPage(manager, buildThermo2ScriptPage(entry), gridItem, messages));
+    for (const msg of messages) {
+      this.log.debug(`cardThermo2 '${entry.uniqueName}': ${msg}`);
+    }
+    const items = (_a = entry.pageItems) != null ? _a : [];
+    const lastFilled = items.reduceRight((acc, v, i) => acc === -1 && v != null ? i : acc, -1);
+    for (let index = 0; index <= lastFilled; index++) {
+      const stored = items[index];
+      const item = stored ? { ...stored, channelId: ShareConfig.normalizeChannelId(stored.channelId) } : { channelId: ShareConfig.emptyChannelValueConfig("empty") };
+      const result = await this.adapter.convertAdminPageItemToPageItemConfig(
+        item,
+        { card: "cardThermo2", uniqueName: entry.uniqueName },
+        []
+      );
+      if (!result.error && result.pageItem) {
+        gridItem.pageItems = (_b = gridItem.pageItems) != null ? _b : [];
+        gridItem.pageItems.push(result.pageItem);
+      } else if (result.error) {
+        this.log.warn(`Error processing page item ${index} for page '${entry.uniqueName}': ${result.error}`);
+      }
+    }
+    this.log.debug(`Generated cardThermo2 page for '${entry.uniqueName}'`);
+    return gridItem;
   }
   /**
    * Phase 1: create all pages from admin config, push stub navigation entries, and collect
@@ -170,12 +287,6 @@ Stack: ${stack}`
           if (!isAlwaysOnMode(entry.alwaysOn)) {
             entry.alwaysOn = "none";
           }
-          const qrPassword = await (0, import_credentials.resolveSecret)(this.adapter, entry.qrCredentialId, entry.qrPass);
-          if (qrPassword.source === "credential") {
-            this.log.debug(
-              `QR page '${entry.uniqueName}': password taken from credential "${qrPassword.name}"`
-            );
-          }
           newPage = {
             uniqueID: entry.uniqueName,
             hidden: !!entry.hidden,
@@ -189,7 +300,7 @@ Stack: ${stack}`
                 ssidUrlTel: { type: "const", constVal: entry.ssidUrlTel || "" },
                 wlantype: { type: "const", constVal: entry.wlantype || "WPA" },
                 wlanhidden: { type: "const", constVal: !!entry.wlanhidden || false },
-                password: { type: "const", constVal: qrPassword.secret },
+                password: { type: "const", constVal: entry.qrPass || "" },
                 pwdhidden: { type: "const", constVal: !!entry.pwdhidden || false },
                 setState: entry.setState ? { type: "triggered", dp: entry.setState } : void 0
               }
@@ -226,6 +337,13 @@ Stack: ${stack}`
           }
           newPage = dataForCardPower(entry, this.adapter);
           this.log.debug(`Generated cardPower page for '${entry.uniqueName}'`);
+          break;
+        }
+        case "cardThermo2": {
+          if (!isAlwaysOnMode(entry.alwaysOn)) {
+            entry.alwaysOn = "none";
+          }
+          newPage = await this.buildThermo2Page(entry, entry.alwaysOn);
           break;
         }
         case "cardGrid":
@@ -327,7 +445,10 @@ Stack: ${stack}`
           break;
         }
         default: {
-          this.log.warn(`Unsupported card type '${entry.card}' for page '${entry.uniqueName}', skipping!`);
+          const unknown = entry;
+          this.log.warn(
+            `Unsupported card type '${unknown.card}' for page '${unknown.uniqueName}', skipping!`
+          );
           continue;
         }
       }
@@ -613,6 +734,87 @@ Stack: ${stack}`
     return result;
   }
 }
+function thermo2Limit(value) {
+  return typeof value === "number" && Number.isFinite(value) && value > 0 ? value : void 0;
+}
+function thermo2Text(value) {
+  const text = typeof value === "string" ? value.trim() : "";
+  return text || void 0;
+}
+function thermo2Icon(value) {
+  return thermo2Text(value);
+}
+function thermo2Rgb(value) {
+  const text = thermo2Text(value);
+  if (!text || !/^#[0-9a-f]{6}$/i.test(text)) {
+    return void 0;
+  }
+  const c = import_Color.Color.ConvertHexToRgb(text);
+  return { red: c.r, green: c.g, blue: c.b };
+}
+function buildThermo2ScriptPage(entry) {
+  var _a, _b;
+  const thermoItems = [];
+  for (const circuit of (_a = entry.thermoItems) != null ? _a : []) {
+    if (!circuit) {
+      continue;
+    }
+    const modeList = Array.isArray(circuit.modeList) ? circuit.modeList.map((m) => typeof m === "string" ? m.trim() : "").filter((m) => !!m) : [];
+    const common = {
+      name: thermo2Text(circuit.name),
+      minValue: thermo2Limit(circuit.minValue),
+      maxValue: thermo2Limit(circuit.maxValue),
+      stepValue: thermo2Limit(circuit.stepValue),
+      icon: thermo2Icon(circuit.icon),
+      onColor: thermo2Rgb(circuit.onColor),
+      unit: (_b = thermo2Text(circuit.unit)) != null ? _b : "",
+      icon2: thermo2Icon(circuit.icon2),
+      onColor2: thermo2Rgb(circuit.onColor2),
+      unit2: thermo2Text(circuit.unit2),
+      iconHeatCycle: thermo2Icon(circuit.iconHeatCycle),
+      iconHeatCycleOnColor: thermo2Rgb(circuit.iconHeatCycleOnColor),
+      iconHeatCycleOffColor: thermo2Rgb(circuit.iconHeatCycleOffColor),
+      modeList: modeList.length ? modeList : void 0,
+      power: ""
+    };
+    if (circuit.source === "states") {
+      const set = thermo2Text(circuit.setState);
+      const actual = thermo2Text(circuit.actualState);
+      if (!set || !actual) {
+        continue;
+      }
+      thermoItems.push({
+        ...common,
+        set,
+        thermoId1: actual,
+        thermoId2: thermo2Text(circuit.humidityState),
+        modeId: thermo2Text(circuit.modeState)
+      });
+      continue;
+    }
+    const id = thermo2Text(circuit.channelId);
+    if (!id) {
+      continue;
+    }
+    thermoItems.push({
+      ...common,
+      id,
+      name2: thermo2Text(circuit.name2),
+      iconHeatCycle2: thermo2Icon(circuit.iconHeatCycle2),
+      iconHeatCycleOnColor2: thermo2Rgb(circuit.iconHeatCycleOnColor2),
+      iconHeatCycleOffColor2: thermo2Rgb(circuit.iconHeatCycleOffColor2)
+    });
+  }
+  const sortOrder = ShareConfig.thermo2SortOrders.includes(entry.sortOrder) ? entry.sortOrder : void 0;
+  return {
+    type: "cardThermo2",
+    uniqueName: entry.uniqueName,
+    heading: "",
+    thermoItems,
+    items: [],
+    sortOrder
+  };
+}
 function buildChartPageConfig(entry) {
   var _a, _b, _c, _d;
   const d = ShareConfig.chartDefaults;
@@ -888,6 +1090,7 @@ function dataForcardTrash(entry) {
 0 && (module.exports = {
   AdminConfiguration,
   buildChartPageConfig,
-  buildPowerSlotData
+  buildPowerSlotData,
+  buildThermo2ScriptPage
 });
 //# sourceMappingURL=admin.js.map

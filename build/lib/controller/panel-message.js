@@ -23,8 +23,15 @@ __export(panel_message_exports, {
 module.exports = __toCommonJS(panel_message_exports);
 var import_definition = require("../const/definition");
 var import_library = require("./library");
+const STALE_DONE_WINDOW = 1e3;
 class PanelSend extends import_library.BaseClass {
   messageDb = [];
+  /**
+   * 'Done' answers still expected for already acknowledged messages (sent more than once).
+   * They must not acknowledge the next message - the count only holds until staleDoneUntil.
+   */
+  staleDone = 0;
+  staleDoneUntil = 0;
   messageDbTasmota = [];
   messageTimeout;
   messageTimeoutTasmota;
@@ -56,6 +63,7 @@ class PanelSend extends import_library.BaseClass {
     this.messageTimeout = void 0;
     this.losingMessageCount = 0;
     this._losingDelay = 1e3;
+    this.staleDone = 0;
   }
   onMessage = async (topic, message) => {
     if (this.unload || this.adapter.unload) {
@@ -69,9 +77,28 @@ class PanelSend extends import_library.BaseClass {
     }
     try {
       const msg = JSON.parse(message);
-      const ackForType = this.messageDb[0] && this.messageDb[0].ackForType;
+      const head = this.messageDb[0];
+      const ackForType = head && head.ackForType;
       if (msg) {
+        if (msg.CustomSend === "Done" && this.staleDone > 0) {
+          const stale = Date.now() <= this.staleDoneUntil;
+          this.staleDone = stale ? this.staleDone - 1 : 0;
+          if (stale) {
+            if (this.adapter.config.debugLogMqtt) {
+              this.log.debug(`Ignore late 'Done' of an already acknowledged message`);
+            }
+            return;
+          }
+        }
         if (ackForType && msg.CustomSend === "renderCurrentPage" || !ackForType && msg.CustomSend === "Done") {
+          if (!head || head.sent === 0) {
+            if (this.adapter.config.debugLogMqtt) {
+              this.log.debug(
+                `Ignore '${msg.CustomSend}' - ${head ? `${JSON.stringify(head)} not sent yet` : "queue is empty"}`
+              );
+            }
+            return;
+          }
           if (this.messageTimeout) {
             this.adapter.clearTimeout(this.messageTimeout);
           }
@@ -79,6 +106,13 @@ class PanelSend extends import_library.BaseClass {
           this._losingDelay = 1e3;
           const oldMessage = this.messageDb.shift();
           if (oldMessage) {
+            const expected = oldMessage.sent - (oldMessage.ackForType ? oldMessage.done : 1);
+            if (expected > 0) {
+              this.staleDone = expected;
+              this.staleDoneUntil = Date.now() + STALE_DONE_WINDOW;
+            } else {
+              this.staleDone = 0;
+            }
             if (oldMessage.payload === "pageType~pageStartup") {
               this.messageDb = [];
             }
@@ -88,6 +122,9 @@ class PanelSend extends import_library.BaseClass {
           }
           this.messageTimeout = this.adapter.setTimeout(this.sendMessageLoop, 250);
         } else {
+          if (ackForType && head.sent > 0 && msg.CustomSend === "Done") {
+            head.done++;
+          }
           if (this.adapter.config.additionalLog) {
             this.log.info(
               `1: ${!(ackForType && msg.CustomSend === "renderCurrentPage")} 2: ${!(!ackForType && msg.CustomSend === "Done")} msg: ${msg.CustomSend}`
@@ -116,7 +153,7 @@ class PanelSend extends import_library.BaseClass {
     if (force === true) {
       this.resetMessageDB();
     }
-    this.messageDb.push({ payload, opt, ackForType });
+    this.messageDb.push({ payload, opt, ackForType, sent: 0, done: 0 });
     if (this.messageTimeout === void 0) {
       void this.sendMessageLoop();
     }
@@ -168,6 +205,7 @@ class PanelSend extends import_library.BaseClass {
     if (!this.adapter.unload) {
       this.messageTimeout = this.adapter.setTimeout(this.sendMessageLoop, this.losingDelay);
     }
+    msg.sent++;
     this.addMessageTasmota(this.topic, msg.payload, msg.opt);
   };
   addMessageTasmota = (topic, payload, opt) => {

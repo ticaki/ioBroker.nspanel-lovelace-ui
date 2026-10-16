@@ -73,7 +73,7 @@ const _Screensaver = class _Screensaver extends import_Page.Page {
       }
     }
     options.alwaysOn = "none";
-    super(config, options);
+    super(config, options, true);
     __privateAdd(this, _Screensaver_instances);
     __publicField(this, "items");
     __publicField(this, "step", 0);

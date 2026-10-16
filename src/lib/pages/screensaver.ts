@@ -62,7 +62,8 @@ export class Screensaver extends Page {
             }
         }
         options.alwaysOn = 'none';
-        super(config, options);
+        // flag the page as screensaver - the page items ask for it (indicator buttons option)
+        super(config, options, true);
         this.screensaverIndicatorButtons = options.config.screensaverIndicatorButtons ?? false;
         this.screensaverSwipe = options.config.screensaverSwipe ?? false;
         this.rotationTime =

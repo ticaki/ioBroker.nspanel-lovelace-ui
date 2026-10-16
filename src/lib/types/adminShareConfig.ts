@@ -47,6 +47,10 @@ export const SENDTO_GET_PANELS_COMMAND = 'getPanels';
 // SendTo command to request the list of pages for a given panel
 export const SENDTO_GET_PAGES_COMMAND = 'getPagesForPanel';
 export const SENDTO_GET_PAGES_All_COMMAND = 'getAllPages';
+/** sendTo command of main.ts: installed instances of the supported weather adapters ({ value, label }[], first entry = none) */
+export const SENDTO_GET_WEATHER_ENTITY_COMMAND = 'getWeatherEntity';
+/** admin tab screensaver: the page item templates (`pageItemTemplates`) with type, role and adapter */
+export const SENDTO_GET_SCREENSAVER_TEMPLATES_COMMAND = 'getScreensaverTemplates';
 // Central adapter name constant for admin <-> adapter sendTo calls
 export const ADAPTER_NAME = 'nspanel-lovelace-ui';
 // Expected response when asking the adapter for panels
@@ -231,27 +235,370 @@ export type UnlockEntry = {
     uniqueName: string;
 } & PageConfigBaseFields;
 
-export type PageItemButtonEntry = {
-    type: 'text' | 'button';
+// ---------------------------------------------------------------------------------------------
+// Screensaver - own admin tab, stored in `native.screensaverConfig` (not part of pageConfig: a
+// screensaver is no navigable page, every panel shows exactly one)
+// ---------------------------------------------------------------------------------------------
+
+/**
+ * the four screensaver versions of the panel; `standard` and `alternate` share the card `screensaver`.
+ * Same values as ScreensaverModeType in types.ts - declared here because that file must not become part
+ * of the admin bundle (a test checks that both stay equal).
+ */
+export type ScreensaverMode = 'standard' | 'alternate' | 'advanced' | 'easyview';
+export const screensaverModes: readonly ScreensaverMode[] = ['standard', 'alternate', 'advanced', 'easyview'];
+
+export type ScreensaverCard = Extract<AdminCardTypes, 'screensaver' | 'screensaver2' | 'screensaver3'>;
+
+/** areas of the screensaver that take page items (mricon, time, date and notify have their own dialogs) */
+export type ScreensaverArea = 'favorit' | 'alternate' | 'left' | 'bottom' | 'indicator';
+export const screensaverAreas: readonly ScreensaverArea[] = ['favorit', 'alternate', 'left', 'bottom', 'indicator'];
+
+/** panel models that change the number of places (ScreenSaverConst in definition.ts); same values as NSpanelModel in types.ts */
+export type ScreensaverPanelModel = 'eu' | 'us-p' | 'us-l';
+
+/** maximum number of items per area, mode and panel model - copy of ScreenSaverConst (definition.ts), kept equal by a test */
+export const screensaverSlotLimits: Record<
+    ScreensaverMode,
+    Record<ScreensaverArea | 'mricon', { eu: number; 'us-p'?: number; 'us-l'?: number }>
+> = {
+    standard: {
+        favorit: { eu: 1 },
+        alternate: { eu: 0 },
+        left: { eu: 0 },
+        bottom: { eu: 4 },
+        indicator: { eu: 0 },
+        mricon: { eu: 2 },
+    },
+    alternate: {
+        favorit: { eu: 1 },
+        alternate: { eu: 1 },
+        left: { eu: 0 },
+        bottom: { eu: 3 },
+        indicator: { eu: 0 },
+        mricon: { eu: 2 },
+    },
+    advanced: {
+        favorit: { eu: 1 },
+        alternate: { eu: 0 },
+        left: { eu: 3 },
+        bottom: { eu: 6 },
+        indicator: { eu: 5 },
+        mricon: { eu: 2 },
+    },
+    easyview: {
+        favorit: { eu: 1 },
+        alternate: { eu: 0 },
+        left: { eu: 0 },
+        bottom: { eu: 3, 'us-p': 4, 'us-l': 3 },
+        indicator: { eu: 0 },
+        mricon: { eu: 2 },
+    },
+};
+
+/**
+ * Number of places an area offers on a panel.
+ *
+ * @param mode screensaver version
+ * @param area area of the screensaver
+ * @param model panel model, falls back to the eu value
+ * @returns maximum number of items
+ */
+export function screensaverMaxEntries(
+    mode: ScreensaverMode,
+    area: ScreensaverArea | 'mricon',
+    model: ScreensaverPanelModel = 'eu',
+): number {
+    const limit = screensaverSlotLimits[mode][area];
+    return limit[model] ?? limit.eu;
+}
+
+/**
+ * Card the adapter uses for a screensaver version (screensaver.ts).
+ *
+ * @param mode screensaver version
+ * @returns card type
+ */
+export function screensaverCardOfMode(mode: ScreensaverMode): ScreensaverCard {
+    switch (mode) {
+        case 'advanced':
+            return 'screensaver2';
+        case 'easyview':
+            return 'screensaver3';
+        default:
+            return 'screensaver';
+    }
+}
+
+/** the two small status icons at the top right of the screensaver (mrIcon1ScreensaverEntity / mrIcon2ScreensaverEntity of the script) */
+export type ScreensaverMrIconConfig = {
+    /** state the icon follows, empty = icon not used */
+    entity?: string;
+    iconOn?: string;
+    iconOff?: string;
+    /** colors as #rrggbb */
+    onColor?: string;
+    offColor?: string;
+    /** state whose value is printed next to the icon */
+    value?: string;
+    valueDecimals?: number;
+    valueUnit?: string;
+    /** icon per value, replaces iconOn/iconOff */
+    iconSelect?: { value: string; icon: string }[];
+};
+
+/** what an indicator does when it is pressed (ScreensaverEntityButton / ...Switch / ...NaviToPage of the script) */
+export type ScreensaverItemAction = {
+    kind: 'button' | 'switch' | 'navigate';
+    /** state written on press (button: true, switch: toggled) */
+    state?: string;
+    /** page opened on press */
+    page?: string;
+};
+
+/**
+ * an item on a place of the screensaver - one state, mapped 1:1 to a ScreenSaverElement of the script
+ * (config-manager getEntityData); which fields the panel shows depends on the area ({@link screensaverItemFields})
+ */
+export type ScreensaverItemConfig = {
+    /** the state (ScreensaverEntity); for a template item the object the template works on (`dpInit`) */
+    state: string;
+    /**
+     * name of a page item template (`pageItemTemplates`, e.g. `text.window.isOpen`) - the item becomes a
+     * ScreenSaverElement of type `template` with `dpInit` = `state`; the icon, color, text and value fields
+     * below do not apply, the template brings its own
+     */
+    template?: string;
+    /** text above the icon, bottom area only (ScreensaverEntityText); empty = name of the state */
     headline?: string;
-    modeScr?: 'left' | 'bottom' | 'indicator' | 'favorit' | 'alternate';
-    data: any; // TODO: Should be NSPanel.PageItemButton but causes type resolution issues in admin
+    iconOn?: string;
+    iconOff?: string;
+    /** icon per value range of a number state (ScreensaverEntityIconSelect): icon up to `value` */
+    iconSelect?: { value: number; icon: string }[];
+    /** fixed colors as #rrggbb (ScreensaverEntityOnColor / OffColor) */
+    colorOn?: string;
+    colorOff?: string;
+    /** color scale instead of fixed colors (ScreensaverEntityIconColor) */
+    colorScale?: IconColorElement;
+    /** state whose value is the color (ScreensaverEntityIconColor as id): #rrggbb, {r,g,b} or a decimal number */
+    colorState?: string;
+    /** empty = unit of the state */
+    unit?: string;
+    factor?: number;
+    decimals?: number;
+    /** format of a date/time value (ScreensaverEntityDateFormat) - options of Intl.DateTimeFormat, e.g. { dateStyle: 'short' } */
+    dateFormat?: Intl.DateTimeFormatOptions;
+    /** text shown instead of the value while the state is true / false */
+    textOn?: string;
+    textOff?: string;
+    /** indicator area only */
+    action?: ScreensaverItemAction;
+    /** state that hides the item while false (ScreensaverEntityEnabled) */
+    enabled?: string;
+    /** expression over `val` that hides the item while false (ScreensaverEntityVisibleCondition) */
+    visibleCondition?: string;
 };
 
-// Screensaver types
+export type ScreensaverItemField = 'headline' | 'value' | 'text' | 'action';
+
+/**
+ * id of the channel / device a state belongs to - the object above it; '' when the state sits directly
+ * below the instance (`adapter.0.state`) or the id is no state id. Its role counts first for the
+ * default icons of a screensaver item (like the page menu editor works on channels).
+ *
+ * @param stateId id of the state
+ */
+export function screensaverChannelIdOf(stateId: string): string {
+    const parts = stateId.split('.');
+    return parts.length > 3 ? parts.slice(0, -1).join('.') : '';
+}
+
+/** what an item is built from: one state with its own fields or a page item template */
+export type ScreensaverItemSource = 'state' | 'template';
+
+/**
+ * source of an item - template as soon as a template name is set
+ *
+ * @param item stored item, undefined = new
+ */
+export function screensaverItemSource(
+    item: Pick<ScreensaverItemConfig, 'template'> | undefined,
+): ScreensaverItemSource {
+    return item?.template ? 'template' : 'state';
+}
+
+/**
+ * a page item template as the adapter reports it (main.ts, getScreensaverTemplates)
+ *
+ * `need` tells what the item dialog has to ask for: `channel` - the template searches its states below
+ * the object (`mode: 'auto'`, relative ids), `none` - the template works without an object (clock, wlan).
+ * `looksFor` lists the ids or roles it searches for (hint in the dialog).
+ */
+export type ScreensaverTemplateInfo = {
+    name: string;
+    type: string;
+    role: string;
+    adapter: string;
+    need: ScreensaverTemplateNeed;
+    looksFor: string[];
+};
+
+export type ScreensaverTemplateNeed = 'channel' | 'none';
+
+/** date formats the item dialog offers (ScreensaverEntityDateFormat); the key is the i18n label */
+export const screensaverDateFormats: readonly { key: string; options: Intl.DateTimeFormatOptions }[] = [
+    { key: 'dateFormatShort', options: { dateStyle: 'short' } },
+    { key: 'dateFormatYearMonthDay', options: { year: 'numeric', month: '2-digit', day: '2-digit' } },
+    { key: 'dateFormatDayShortMonthYear', options: { day: '2-digit', month: 'short', year: 'numeric' } },
+    {
+        key: 'dateFormatWeekdayShortDate',
+        options: { weekday: 'short', day: '2-digit', month: '2-digit', year: 'numeric' },
+    },
+    { key: 'timeFormat24', options: { hour: '2-digit', minute: '2-digit', hour12: false } },
+    {
+        key: 'screensaver_item_dateTimeShort',
+        options: { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' },
+    },
+    { key: 'screensaver_item_dateTimeFull', options: { dateStyle: 'short', timeStyle: 'short' } },
+];
+
+/**
+ * Fields the panel uses on a place: bottom shows a headline, icon and value; left, favorit and
+ * alternate icon and value; an indicator the icon only - and it can act as a button.
+ *
+ * @param area area of the screensaver
+ */
+export function screensaverItemFields(area: ScreensaverArea): Record<ScreensaverItemField, boolean> {
+    return {
+        headline: area === 'bottom',
+        value: area !== 'indicator',
+        text: area !== 'indicator',
+        action: area === 'indicator',
+    };
+}
+
 export type ScreensaverEntry = {
-    card: Extract<AdminCardTypes, 'screensaver' | 'screensaver2' | 'screensaver3'>; // Use the card type from AdminCardTypes
-    uniqueName: string;
+    /** name shown in the list, unique within the table */
+    name: string;
+    /** screensaver version, the card follows from it ({@link screensaverCardOfMode}) */
+    mode: ScreensaverMode;
+    /** topics of the panels using this screensaver (multi select, no "all panels") */
+    panels: string[];
+    favorit?: ScreensaverItemConfig;
+    alternate?: ScreensaverItemConfig;
+    /** items of the areas in panel order, gaps are kept as undefined */
+    left: (ScreensaverItemConfig | undefined)[];
+    bottom: (ScreensaverItemConfig | undefined)[];
+    indicator: (ScreensaverItemConfig | undefined)[];
+    mrIcon1?: ScreensaverMrIconConfig;
+    mrIcon2?: ScreensaverMrIconConfig;
+    /** 12h or 24h clock, undefined = adapter default (24h) */
     clockFormat?: '12h' | '24h';
-    dateFormat?: string; // JavaScript date format string
-    timeFormat?: string; // JavaScript time format string
-    customDateFormat?: string; // Custom date format when dateFormat is 'custom'
-    pageItems?: PageItemButtonEntry[];
-    navigation?: NavigationAssignmentList;
-    navigationAssignment?: NavigationAssignmentList;
+    /** date format overrides, undefined = global settings of the instance (config-manager getScreensaverConfig) */
+    weekdayFormat?: 'short' | 'long';
+    monthFormat?: 'long' | 'short' | '2-digit';
+    yearFormat?: 'numeric' | '2-digit';
+    /**
+     * weather adapter instance, e.g. 'pirate-weather.0' (ScriptConfig.weatherEntity); undefined = global setting of
+     * the instance (native.weatherEntity), '' = no weather. The favorit shows the current weather while no own item
+     * is placed there, the chosen items are appended to the bottom area (config-manager getScreensaverConfig).
+     */
+    weatherEntity?: string;
+    /** default weather items appended to the bottom area (ScriptConfig.weatherAddDefaultItems), only keys set to true count */
+    weatherAddDefaultItems?: ScreensaverWeatherItems;
+    /** seconds between the pages of an area with more items than places, 0 = off */
+    rotationTime?: number;
+    screensaverSwipe?: boolean;
+    screensaverIndicatorButtons?: boolean;
 };
 
-export type ScreensaverEntries = ScreensaverEntry[];
+export type ScreensaverConfig = ScreensaverEntry[];
+
+/** weather adapters getScreensaverConfig knows (definition.ts weatherEntities) */
+export const screensaverWeatherAdapters = ['accuweather', 'openweathermap', 'pirate-weather', 'brightsky'] as const;
+export type ScreensaverWeatherAdapter = (typeof screensaverWeatherAdapters)[number];
+
+/**
+ * Default weather items of the bottom area in the order getScreensaverConfig appends them
+ * (ScriptConfig.WeatherAddDefaultItemsJson).
+ */
+export const screensaverWeatherItemKeys = [
+    'sunriseSet',
+    'forecastDay1',
+    'forecastDay2',
+    'forecastDay3',
+    'forecastDay4',
+    'forecastDay5',
+    'forecastDay6',
+    'windSpeed',
+    'windGust',
+    'windDirection',
+    'uvIndex',
+    'solar',
+] as const;
+export type ScreensaverWeatherItemKey = (typeof screensaverWeatherItemKeys)[number];
+export type ScreensaverWeatherItems = Partial<Record<ScreensaverWeatherItemKey, boolean>>;
+
+const weatherDays = ['forecastDay1', 'forecastDay2', 'forecastDay3', 'forecastDay4', 'forecastDay5'] as const;
+const weatherWind = ['windSpeed', 'windGust', 'windDirection'] as const;
+
+/** items each adapter offers - keys of other adapters are ignored by getScreensaverConfig (screensaver-entry.test.ts guards the table) */
+export const screensaverWeatherItemsOfAdapter: Record<ScreensaverWeatherAdapter, readonly ScreensaverWeatherItemKey[]> =
+    {
+        accuweather: ['sunriseSet', ...weatherDays, ...weatherWind, 'uvIndex'],
+        openweathermap: ['sunriseSet', ...weatherDays, 'forecastDay6', ...weatherWind],
+        'pirate-weather': ['sunriseSet', ...weatherDays, 'forecastDay6', ...weatherWind, 'uvIndex'],
+        brightsky: ['sunriseSet', ...weatherDays, 'forecastDay6', ...weatherWind, 'solar'],
+    };
+
+/**
+ * Weather adapter of an instance id.
+ *
+ * @param entity instance, e.g. 'pirate-weather.0' (also with trailing dot or state path)
+ * @returns adapter or undefined for none / unsupported
+ */
+export function screensaverWeatherAdapterOf(entity: string | undefined): ScreensaverWeatherAdapter | undefined {
+    const prefix = (entity ?? '').split('.')[0];
+    return screensaverWeatherAdapters.find(a => a === prefix);
+}
+
+/**
+ * Items an entry adds to the bottom area, in the order the adapter appends them.
+ *
+ * @param items chosen items of the entry
+ * @param entity weather instance that applies
+ * @returns ordered keys, empty for no / unsupported adapter
+ */
+export function screensaverWeatherItemsOn(
+    items: ScreensaverWeatherItems | undefined,
+    entity: string | undefined,
+): ScreensaverWeatherItemKey[] {
+    const adapter = screensaverWeatherAdapterOf(entity);
+    if (!adapter || !items) {
+        return [];
+    }
+    return screensaverWeatherItemsOfAdapter[adapter].filter(k => items[k] === true);
+}
+
+/**
+ * Creates a fresh screensaver entry without items.
+ *
+ * @param name unique name
+ * @param mode screensaver version, default 'standard'
+ */
+export function emptyScreensaverEntry(name: string, mode: ScreensaverMode = 'standard'): ScreensaverEntry {
+    return {
+        name,
+        mode,
+        panels: [],
+        left: [],
+        bottom: [],
+        indicator: [],
+        rotationTime: 0,
+        screensaverSwipe: false,
+        screensaverIndicatorButtons: false,
+    };
+}
 
 /**
  * Configuration for the "value display" dialog – mirrors the inputs of
@@ -343,6 +690,12 @@ export type AdminPageItemConfig = {
     useNative?: boolean;
     /** Rohe NSPanel.PageItemDataItemsOptions-Konfiguration (nur wenn useNative=true) */
     native?: any;
+    /**
+     * cardThermo2 only: 0-based index of the heat circuit the item belongs to, the item is shown
+     * while that circuit is selected. Undefined = shown for every circuit. An airCondition channel
+     * counts as two circuits (heating and cooling), see the wiki page PageThermo2.
+     */
+    filter?: number;
 };
 
 export type MenuEntry = {
@@ -534,6 +887,121 @@ export function emptyChartEntry(uniqueName: string): ChartEntry {
     };
 }
 
+/** where a heat circuit takes its states from: an alias channel (script `id`) or single data points */
+export type Thermo2CircuitSource = 'alias' | 'states';
+
+/**
+ * One heat circuit of a cardThermo2 page - the fields of the script `thermoItems` entry.
+ * Colors are stored as '#rrggbb' like the item colors and converted to RGB for the adapter.
+ */
+export type Thermo2CircuitConfig = {
+    /** default 'alias' */
+    source?: Thermo2CircuitSource;
+    /** alias: channel, device or folder with common.role thermostat or airCondition */
+    channelId: string;
+    /** states: writable set temperature (script `set`) */
+    setState?: string;
+    /** states: actual temperature (script `thermoId1`) */
+    actualState?: string;
+    /** states: humidity (script `thermoId2`) */
+    humidityState?: string;
+    /** states: mode, number with common.states or a string (script `modeId`) */
+    modeState?: string;
+    /** headline of the circuit; empty = common.name of the channel */
+    name?: string;
+    /** airCondition only: headline of the cooling circuit */
+    name2?: string;
+    /** lower limit of the set temperature; empty = adapter default */
+    minValue?: number;
+    /** upper limit of the set temperature; empty = adapter default */
+    maxValue?: number;
+    /** step of the +/- buttons; empty = adapter default */
+    stepValue?: number;
+    /** line 1 (actual temperature): icon, color, unit (the unit is used for the set temperature too) */
+    icon?: string;
+    onColor?: string;
+    unit?: string;
+    /** line 3 (humidity): icon, color, unit */
+    icon2?: string;
+    onColor2?: string;
+    unit2?: string;
+    /** icon of the circuit on the selector slots (shown when there is more than one circuit) and its colors */
+    iconHeatCycle?: string;
+    iconHeatCycleOnColor?: string;
+    iconHeatCycleOffColor?: string;
+    /** airCondition only: selector icon and colors of the cooling circuit */
+    iconHeatCycle2?: string;
+    iconHeatCycleOnColor2?: string;
+    iconHeatCycleOffColor2?: string;
+    /** texts of the mode state, index = value; empty = common.states of the state or the adapter list */
+    modeList?: string[];
+};
+
+/** order of the eight slots around the ring (pageThermo2.ts) */
+export type Thermo2SortOrder = 'V' | 'H' | 'HM' | 'VM' | 'HB' | 'VB';
+export const thermo2SortOrders: readonly Thermo2SortOrder[] = ['V', 'H', 'HM', 'VM', 'HB', 'VB'];
+
+/** the panel shows at most eight circuits (an airCondition channel takes two) */
+export const thermo2MaxCircuits = 8;
+
+/**
+ * Defaults the adapter applies when a field is left empty (pageThermo2.ts). Shown as placeholders
+ * in the editor; with the option `defaultValueCardThermo` the adapter divides stored limits by 10.
+ */
+export const thermo2Defaults = {
+    minValue: 15,
+    maxValue: 28,
+    stepValue: 0.5,
+    unit: '°C',
+    unit2: '%',
+    icon: 'thermometer',
+    icon2: 'water-percent',
+    onColor: '#00ff00',
+    onColor2: '#ff00ff',
+    iconHeatCycleOnColor: '#00ff00',
+    iconHeatCycleOffColor: '#888888',
+    iconHeatCycleOnColor2: '#0000ff',
+    iconHeatCycleOffColor2: '#50508c',
+    modeList: ['OFF', 'AUTO', 'COOL', 'HEAT', 'ECO', 'FAN', 'DRY'],
+};
+
+export type Thermo2Entry = {
+    card: Extract<AdminCardTypes, 'cardThermo2'>;
+    uniqueName: string;
+    /** heat circuits in display order, at least one with a channel is required */
+    thermoItems: Thermo2CircuitConfig[];
+    /** page items shown around the ring; `filter` of an item binds it to one circuit */
+    pageItems: (AdminPageItemConfig | undefined)[];
+    /** order of the slots, default 'V' */
+    sortOrder?: Thermo2SortOrder;
+} & PageConfigBaseFields;
+
+/**
+ * Empty heat circuit - used when adding a circuit in the editor.
+ *
+ * @returns A circuit without channel and headline, everything else left to the adapter defaults.
+ */
+export function emptyThermo2Circuit(): Thermo2CircuitConfig {
+    return { source: 'alias', channelId: '', name: '' };
+}
+
+/**
+ * Creates a fresh thermo2 entry with one empty circuit (same pattern as emptyChartEntry).
+ *
+ * @param uniqueName unique page name
+ */
+export function emptyThermo2Entry(uniqueName: string): Thermo2Entry {
+    return {
+        card: 'cardThermo2',
+        uniqueName,
+        thermoItems: [],
+        pageItems: [],
+        sortOrder: 'V',
+        hidden: false,
+        alwaysOn: 'none',
+    };
+}
+
 export type TrashItem = {
     textTrash: string;
     customTrash: string;
@@ -594,20 +1062,13 @@ export type NavigationAssignment = {
 };
 
 export type NavigationAssignmentList = NavigationAssignment[];
-export type PageConfigEntry =
-    | QREntry
-    | UnlockEntry
-    | ScreensaverEntry
-    | TrashEntry
-    | ChartEntry
-    | MenuEntry
-    | PowerEntry;
-export type PageConfig = QREntry | UnlockEntry | ScreensaverEntry | TrashEntry | ChartEntry | MenuEntry | PowerEntry;
+export type PageConfigEntry = QREntry | UnlockEntry | TrashEntry | ChartEntry | MenuEntry | PowerEntry | Thermo2Entry;
+export type PageConfig = QREntry | UnlockEntry | TrashEntry | ChartEntry | MenuEntry | PowerEntry | Thermo2Entry;
 
 /**
  * Whether an admin page entry is flagged as the start page of its assigned panels.
  *
- * Screensaver entries cannot be a start page and therefore do not carry the flag. The stored
+ * Screensavers live in their own table (`screensaverConfig`) and can never be a start page. The stored
  * `uniqueName` is never changed by the flag - the adapter publishes the page under
  * {@link mainPageName} and the admin only overlays the displayed name.
  *
@@ -932,7 +1393,7 @@ export const requiredScriptDataPoints = {
         description: 'Türschloss',
         data: {
             ACTUAL: {
-                role: ['state'],
+                role: ['state', 'sensor.lock'],
                 type: 'boolean',
                 required: false,
                 writeable: false,

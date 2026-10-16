@@ -29,6 +29,7 @@
 
 **Screensaver**  
 - *(Introduction)* iA  
+- [Screensaver (Admin)](Screensaver-Admin)  
 
 **Standard Pages**  
 - *(Introduction)* iA  
@@ -38,6 +39,7 @@
 - *(Page Alarm)* iA  
 - *(Page Media)* iA  
 - *(Page Thermo2)* iA  
+- [Page Thermo2 (Admin)](PageThermo2-Admin)
  
 **Developer**  
 - *(Developer Templates)* iA  

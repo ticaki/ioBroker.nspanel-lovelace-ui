@@ -6903,6 +6903,7 @@ export class Icons {
         ['logo-mpd', 'logo-mpd'],
         ['logo-spotify', 'logo-spotify'],
         ['logo-sonos', 'logo-sonos'],
+        ['logo-dnla', 'logo-dnla'],
     ]);
 
     static GetIcon(ma_name: string): string {
