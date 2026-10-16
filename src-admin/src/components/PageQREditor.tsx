@@ -16,6 +16,7 @@ import {
 } from '@mui/material';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
 import { EntitySelector } from './EntitySelector';
+import { CredentialSelect } from './CredentialSelect';
 import { type QREntry, ADAPTER_NAME } from '../../../src/lib/types/adminShareConfig';
 import { isMainPageEntry } from '../../../src/lib/types/adminShareConfig';
 import { ConfigGeneric, type ConfigGenericProps, type ConfigGenericState } from '@iobroker/json-config';
@@ -245,7 +246,24 @@ export class PageQREditor extends ConfigGeneric<ConfigGenericProps & PageQREdito
                             </Select>
                         </FormControl>
 
-                        {/* Password field */}
+                        {/* Central credential: the adapter reads the password from it, the entry only stores the id */}
+                        {entry.wlantype !== 'nopass' && (
+                            <Box sx={{ mb: 2 }}>
+                                <CredentialSelect
+                                    socket={oContext.socket}
+                                    label={this.getText('credential_qr')}
+                                    getText={key => this.getText(key)}
+                                    value={entry.qrCredentialId ?? ''}
+                                    onChange={id => {
+                                        this.handleFieldChange('qrCredentialId', id);
+                                    }}
+                                    disabled={!this.state.alive}
+                                    sx={{ minWidth: 240, maxWidth: 600 }}
+                                />
+                            </Box>
+                        )}
+
+                        {/* Password field - locked while a credential is selected */}
                         {entry.wlantype !== 'nopass' && (
                             <TextField
                                 fullWidth
@@ -275,7 +293,7 @@ export class PageQREditor extends ConfigGeneric<ConfigGenericProps & PageQREdito
                                     },
                                 }}
                                 sx={{ mb: 2 }}
-                                disabled={!this.state.alive}
+                                disabled={!this.state.alive || !!entry.qrCredentialId}
                             />
                         )}
 
