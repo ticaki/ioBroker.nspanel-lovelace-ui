@@ -1,6 +1,7 @@
 # Panelinfo
 
-Der Adapter bringt einen **eigenen Eintrag in der linken Seitenleiste des Admin** mit — unter dem Adaptersymbol, unterhalb von „Dateien" und „Konfig-Manager". Er öffnet den Tab **Panelinfo**: eine Kachel je Panel mit den wichtigsten Werten, und zwar nicht nur zum Ansehen, sondern auch zum Bedienen.
+Der Adapter bringt einen **eigenen Eintrag in der linken Seitenleiste des Admin** mit — unter dem Adaptersymbol.  
+Er öffnet den Tab **Panelinfo**: eine Kachel je Panel mit den wichtigsten Werten, und zwar nicht nur zum Ansehen, sondern auch zum Bedienen.
 
 <img alt="Panelinfo mit der Kachel eines Panels" src="../Pictures/panelinfo/panelinfo-01-kachel.png" width="100%"/>
 

@@ -1,6 +1,7 @@
 # Panel info
 
-The adapter adds its **own entry to the admin sidebar** — under the adapter icon, below "files" and "config manager". It opens the **Panel info** tab: one card per panel with the values that matter, and not just to look at but to operate.
+The adapter adds its **own entry to the admin sidebar** — under the adapter icon.  
+It opens the **Panel info** tab: one card per panel with the values that matter, and not just to look at but to operate.
 
 <img alt="Panel info with the card of a panel" src="../Pictures/panelinfo/panelinfo-01-kachel.png" width="100%"/>
 
