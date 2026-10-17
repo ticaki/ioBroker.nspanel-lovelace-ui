@@ -1,6 +1,6 @@
 # Navigation Flow
 
-Dieser Tab zeichnet die **Navigation eines Panels als Graph**: Jede Seite ist ein Knoten, jede Verbindung zwischen zwei Seiten eine Kante. Damit lässt sich auf einen Blick prüfen, ob die Seiten so zusammenhängen, wie es gedacht war — und woher jede Seite kommt.
+Dieser Tab zeichnet die **Navigation eines Panels als Graph**: Jede Seite ist ein Knoten, jede Verbindung zwischen zwei Seiten eine Linie. Damit lässt sich auf einen Blick prüfen, ob die Seiten so zusammenhängen, wie es gedacht war — und woher jede Seite kommt.
 
 <img alt="Navigation Flow mit Legende und Graph" src="../Pictures/naviFlow/naviflow-01-graph.png" width="100%"/>
 
@@ -18,7 +18,7 @@ Dieser Tab zeichnet die **Navigation eines Panels als Graph**: Jede Seite ist ei
 
 ## Die Legende lesen
 
-Die **Farbe der Kante** sagt, wie zwei Seiten zusammenhängen: beidseitig (prev + next), nur vorwärts, nur rückwärts, Sprung zur Startseite, zur übergeordneten Seite, zu einer Zielseite, beim langen Druck — und als feine Linie die Datenpunkte einer Seite.
+Die **Farbe der Linie** sagt, wie zwei Seiten zusammenhängen: beidseitig (prev + next), nur vorwärts, nur rückwärts, Sprung zur Startseite, zur übergeordneten Seite, zu einer Zielseite, beim langen Druck — und ganz dünn gezeichnet die Datenpunkte einer Seite.
 
 Der **Rahmen eines Knotens** sagt, woher die Seite stammt: aus dem Konfigurationsskript, aus der globalen Skript-Konfiguration, aus der **Admin-Konfiguration**, als Systemseite oder als Datenpunkt eines Ziels. Gerade diese Unterscheidung hilft bei der Frage „warum sieht das Panel anders aus als im Skript beschrieben" — eine Admin-Seite ersetzt die gleichnamige Skriptseite.
 
