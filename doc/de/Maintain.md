@@ -21,7 +21,7 @@ Vor dem Tasmota- und dem TFT-Update fragt der Admin sicherheitshalber nach und n
 
 ## Was beim Skript-Update erhalten bleibt
 
-Das Skript hat eine Markierungszeile mit dem Text `END STOP END STOP END - No more configuration - END STOP END STOP END`. **Alles oberhalb davon wird ersetzt, alles darunter bleibt stehen** — eigene Ergänzungen überleben ein Update also, solange sie unterhalb der Markierung stehen. ⚠️ Wer die Markierung aus dem Skript entfernt, kann es nicht mehr aktualisieren: Das Update bricht dann mit einer Fehlermeldung ab.
+Das Skript hat eine Markierungszeile mit dem Text `END STOP END STOP END - No more configuration - END STOP END STOP END`. **Alles unterhalb davon wird ersetzt, alles darüber bleibt stehen** — eigene Ergänzungen überleben ein Update also, solange sie oberhalb der Markierung stehen. ⚠️ Wer die Markierung aus dem Skript entfernt, kann es nicht mehr aktualisieren: Das Update bricht dann mit einer Fehlermeldung ab.
 
 ## Wenn ein Knopf grau bleibt
 

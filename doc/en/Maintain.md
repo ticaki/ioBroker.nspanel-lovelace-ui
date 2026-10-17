@@ -21,7 +21,7 @@ Before the Tasmota and the TFT update the admin asks for confirmation and mentio
 
 ## What survives a script update
 
-The script contains a marker line reading `END STOP END STOP END - No more configuration - END STOP END STOP END`. **Everything above it is replaced, everything below it stays** — your own additions survive an update as long as they live below the marker. ⚠️ Removing the marker makes the script un-updatable: the update then stops with an error.
+The script contains a marker line reading `END STOP END STOP END - No more configuration - END STOP END STOP END`. **Everything below it is replaced, everything above it stays** — your own additions survive an update as long as they live above the marker. ⚠️ Removing the marker makes the script un-updatable: the update then stops with an error.
 
 ## When a button stays grey
 
