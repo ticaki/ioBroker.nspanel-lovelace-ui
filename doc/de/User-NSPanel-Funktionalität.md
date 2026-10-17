@@ -69,16 +69,21 @@ Popups öffnen sich aus einer Seite heraus und bedienen ein einzelnes Gerät im 
 
 Im Ruhezustand zeigt das Panel einen Bildschirmschoner mit Uhrzeit, Datum, Wetter und frei belegbaren Werteplätzen, dazu Statussymbole und Indikator-Tasten. Es gibt mehrere Versionen mit unterschiedlicher Aufteilung (Standard, Alternativ, Advanced, EasyView). Einrichten geht im Admin ([Screensaver – Admin](Screensaver-Admin)) oder im Skript ([Screensaver](screensaver)).
 
-## 7. Zwei Wege der Konfiguration
+## 7. Konfiguration im Admin — und wann das Skript
+
+**Der Admin ist der Weg:** Alle Seiten und der Bildschirmschoner werden dort angelegt, mit Vorschau des Panels, gespeichert wird in der Instanz.
+
+Das **Konfigurationsskript** bleibt für **erfahrene Nutzer** und **besondere Konstellationen** — also für Fälle, die sich im Admin nicht abbilden lassen. Wer neu anfängt, braucht es nicht.
 
 | | Admin | Konfigurationsskript |
 |---|---|---|
+| Für wen | alle | erfahrene Nutzer |
 | Aufwand | klicken, mit Vorschau des Panels | JavaScript schreiben |
-| Umfang | Seiten mit festem Aufbau, Bildschirmschoner, Panel-Grundeinstellungen | alles, auch frei aufgebaute Seiten |
+| Umfang | alle Seiten, Bildschirmschoner, Panel-Grundeinstellungen | Sonderfälle jenseits des Admins |
 | Ablage | in der Instanz | im Skript |
-| Zusammenspiel | ersetzt für die genannten Panels die gleichnamige Skriptseite | gilt für alles, was der Admin nicht abdeckt |
+| Zusammenspiel | gilt für die aufgeführten Panels | greift dort, wo keine Admin-Seite existiert |
 
-Beide Wege lassen sich mischen. Wer neu anfängt, kommt mit dem Admin schneller zu einem laufenden Panel; wer besondere Seiten braucht, greift zum Skript.
+> **Was im Admin fehlt, gehört gemeldet.** Lässt sich etwas dort nicht einstellen, ist das ein Fall für das Entwicklerteam ([Issue](https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/issues)) — nicht für einen Umweg über das Skript.
 
 ## 8. Hardware-Tasten, Relais und Summer
 

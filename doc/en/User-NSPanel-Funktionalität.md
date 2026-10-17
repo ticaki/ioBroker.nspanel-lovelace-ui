@@ -69,16 +69,21 @@ Popups open from within a page and control a single device in detail: `popupLigh
 
 When idle, the panel shows a screensaver with time, date, weather and freely assignable value slots, plus status badges and indicator buttons. Several versions with different layouts exist (standard, alternate, advanced, easyview). It can be set up in the admin ([screensaver – admin](Screensaver-Admin)) or in the script.
 
-## 7. Two ways to configure it
+## 7. Configuration in the admin — and when the script
+
+**The admin is the way to go:** every page and the screensaver are created there, with a preview of the panel, and stored in the instance.
+
+The **configuration script** remains for **experienced users** and **special cases** — situations that cannot be expressed in the admin. If you are starting out, you do not need it.
 
 | | Admin | Configuration script |
 |---|---|---|
+| For whom | everyone | experienced users |
 | Effort | clicking, with a preview of the panel | writing JavaScript |
-| Scope | pages with a fixed layout, screensaver, basic panel settings | everything, including freely built pages |
+| Scope | all pages, screensaver, basic panel settings | special cases beyond the admin |
 | Stored in | the instance | the script |
-| Interaction | replaces the script page of the same name for the listed panels | covers everything the admin does not |
+| Interaction | applies to the panels listed | steps in where no admin page exists |
 
-Both ways can be combined. If you are starting out, the admin gets you to a running panel faster; if you need special pages, reach for the script.
+> **Anything missing in the admin should be reported.** If a setting cannot be made there, it is a case for the development team ([issue](https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/issues)) — not a reason to detour through the script.
 
 ## 8. Hardware buttons, relays and buzzer
 

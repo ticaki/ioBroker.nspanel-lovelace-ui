@@ -68,9 +68,10 @@ Every sub-step can be followed in the instance **log**. Once it is done, the pan
 ## 5. After the initialisation
 
 - The **Maintain** tab shows the installed **Tasmota version**, **TFT version** and **script version** per panel, each with a button to update; *update scripts for all panels* does them in one go. These buttons are also the way to reinstall the Berry driver or the TFT firmware later.
-- Create pages: either in the admin ([standard pages](Pages)) or in the configuration script.
+- Create pages — **in the admin** ([standard pages](Pages)). Every page type has an editor there.
 - Set up the screensaver: [screensaver – admin](Screensaver-Admin).
-- Example script to get started: [example_sendTo_script_iobroker.ts](https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/blob/main/script/example_sendTo_script_iobroker.ts).
+- The configuration script is only needed by **experienced users in special cases**; as a starting example there is [example_sendTo_script_iobroker.ts](https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/blob/main/script/example_sendTo_script_iobroker.ts).
+- **If a setting is missing in the admin, please report it to the development team** ([issue](https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/issues)).
 
 ## 6. When it does not work
 

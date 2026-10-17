@@ -1,8 +1,8 @@
 # Standard Pages – Einleitung
 
-Ein Teil der Seiten hat einen **festen Aufbau**: Wie die Elemente auf dem Panel liegen, gibt die Karte vor, frei ist nur, welche Datenpunkte sie zeigt und wie sie beschriftet sind. Genau diese Seiten lassen sich im **Admin** anlegen — im Konfigurationsskript steht dann nur noch ein Verweis darauf, oder man lässt das Skript für diese Seite ganz weg.
+**Alle Seiten werden im Admin angelegt.** Ein Teil von ihnen hat dabei einen **festen Aufbau**: Wie die Elemente auf dem Panel liegen, gibt die Karte vor, frei ist nur, welche Datenpunkte sie zeigt und wie sie beschriftet sind. Für jede dieser Karten gibt es im Admin einen eigenen Editor, der die Seite so zeichnet, wie das Panel sie später anzeigt.
 
-Seiten mit freiem Aufbau (Menü- und Listenseiten mit beliebigen Items) sind im [Konfigurationsskript](ScriptConfig) beschrieben.
+Das [Konfigurationsskript](ScriptConfig) ist der Weg für **erfahrene Nutzer in besonderen Konstellationen** — für den normalen Betrieb wird es nicht gebraucht. **Lässt sich etwas im Admin nicht einstellen, bitte beim Entwicklerteam melden** ([Issue](https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/issues)), statt es im Skript zu umgehen.
 
 ## Welche Seite wo konfiguriert wird
 
@@ -14,7 +14,7 @@ Seiten mit freiem Aufbau (Menü- und Listenseiten mit beliebigen Items) sind im 
 | QR-Code | WLAN-Zugang als QR-Code | [Page QR](PageQR) | *(folgt)* |
 | Alarm | Alarmanlage mit PIN und Zuständen | [Page Alarm](PageAlarm) | *(folgt)* |
 | Papierkorb | Abfuhrtermine | *(folgt)* | *(folgt)* |
-| Menüseite | Fliesen- oder Listenübersicht | [Konfigurationsskript](ScriptConfig) | *(folgt)* |
+| Menüseite | Fliesen- oder Listenübersicht mit frei gewählten Items | *(folgt)* | *(folgt)* |
 
 ## Was dabei zu beachten ist
 

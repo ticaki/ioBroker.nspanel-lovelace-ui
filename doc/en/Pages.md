@@ -1,8 +1,8 @@
 # Standard pages – introduction
 
-Some pages have a **fixed layout**: the card decides where things sit on the panel, and all you choose is which states it shows and how they are labelled. These are exactly the pages that can be created in the **admin** — the configuration script then only refers to them, or can leave them out entirely.
+**Every page is created in the admin.** Some of them have a **fixed layout**: the card decides where things sit on the panel, and all you choose is which states it shows and how they are labelled. Each of these cards has its own editor in the admin that draws the page the way the panel will show it.
 
-Pages with a free layout (menu and list pages with arbitrary items) are described in the configuration script documentation.
+The configuration script is the route for **experienced users in special cases** — normal operation does not need it. **If something cannot be set in the admin, please report it to the development team** ([issue](https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/issues)) instead of working around it in the script.
 
 ## Where each page is configured
 
@@ -14,7 +14,7 @@ Pages with a free layout (menu and list pages with arbitrary items) are describe
 | QR code | Wi-Fi access as a QR code | Page QR | *(to come)* |
 | Alarm | Alarm system with PIN and states | Page Alarm | *(to come)* |
 | Trash | Waste collection dates | *(to come)* | *(to come)* |
-| Menu page | Tile or list overview | Configuration script | *(to come)* |
+| Menu page | Tile or list overview with freely chosen items | *(to come)* | *(to come)* |
 
 ## Things to keep in mind
 

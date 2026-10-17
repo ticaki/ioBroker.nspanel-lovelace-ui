@@ -20,10 +20,13 @@ New to the adapter? Start with the [feature overview](User-NSPanel-Funktionalit�
 | 4 | Create pages — in the admin or in the configuration script | [Pages in the admin](PageThermo2-Admin) · Configuration script |
 | 5 | Set up the screensaver | [Screensaver – admin](Screensaver-Admin) |
 
-## Two ways to configure the panel
+## Configuration happens in the admin
 
-- **In the admin.** Pages with a fixed layout (thermostat, power, chart, QR code, alarm, trash, menu pages) and the screensaver can be created in the instance settings. The editor draws the panel the way it will look later and stores the result in the instance.
-- **In the configuration script.** The classic route through a JavaScript inside ioBroker. It can do everything, but takes more effort. Both ways can be combined: what is configured in the admin replaces the matching page of the script.
+**Every page can be created in the admin** — menu pages, thermostat, power, chart, QR code, alarm, trash and the screensaver. The editor draws the panel the way it will look later and stores the result in the instance. This is the route the documentation describes.
+
+The **configuration script** (a JavaScript inside ioBroker) still exists, but it is not where you start: it is meant for **experienced users** and for **special cases** the admin does not cover.
+
+> **Missing a setting in the admin?** That is not a reason to fall back to the script — please report it to the development team as an [issue](https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/issues).
 
 ## When something does not work
 
