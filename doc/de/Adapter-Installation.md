@@ -29,7 +29,7 @@ Instanz-Einstellungen → Tab **MQTT-Server Einstellungen**.
 - **Eigener MQTT-Server des Adapters** (empfohlen): Haken setzen und auf **Fülle automatisch MQTT-Anmeldeinformationen und Port aus** klicken. Der Adapter sucht einen freien Port, damit es keinen Streit mit anderen Adaptern gibt (Shelly, Sonoff …). Bei der späteren Initialisierung werden **alle** MQTT-Einstellungen im Tasmota überschrieben und auf diesen Server gezogen.
 - **Externer Broker** (Mosquitto oder MQTT-Adapter): die vier Felder selbst ausfüllen.
   - *IP zum externen MQTT-Server* — beim MQTT-Adapter die IP des ioBroker-Hosts.
-  - *MQTT-Port* — darf nicht schon von einem anderen Dienst belegt sein.
+  - *MQTT-Port* — der Port, auf dem der externe Broker lauscht: bei Mosquitto in der Regel 1883, beim MQTT-Adapter der dort eingestellte Port.
   - *MQTT-Benutzername* und *MQTT-Passwort* — damit meldet sich das Panel am Broker an.
 - **Tasmota WebUI-Passwort verwenden**: nur nötig, wenn die Weboberfläche des Panels durch ein Passwort geschützt ist. Der Adapter braucht diesen Zugang, um den Berry-Treiber zu installieren.
 

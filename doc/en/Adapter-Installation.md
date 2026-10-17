@@ -29,7 +29,7 @@ Instance settings → tab **MQTT server settings**.
 - **The adapter's own MQTT server** (recommended): tick the box and press **fill in the MQTT credentials and port automatically**. The adapter picks a free port so it does not clash with other adapters (Shelly, Sonoff …). During the later initialisation **all** MQTT settings in Tasmota are overwritten and pointed at this server.
 - **External broker** (Mosquitto or the MQTT adapter): fill in the four fields yourself.
   - *IP of the external MQTT server* — with the MQTT adapter, the IP of the ioBroker host.
-  - *MQTT port* — must not already be taken by another service.
+  - *MQTT port* — the port the external broker listens on: usually 1883 with Mosquitto, or whatever is configured in the MQTT adapter.
   - *MQTT user name* and *MQTT password* — the panel uses them to log in to the broker.
 - **Use the Tasmota WebUI password**: only needed if the panel's web interface is password protected. The adapter needs that access to install the Berry driver.
 
