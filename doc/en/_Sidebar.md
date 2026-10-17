@@ -23,6 +23,7 @@
 - [Navigation flow](naviFlow)  
 - [Icon overview](symbolOverview)  
 - [Tasmota tools](tasmotatools) 🔒  
+- [Panel info](Panelinfo)  
 - [Developer](Developer) 🔒  
 
 **Creating pages in the admin**  
@@ -53,14 +54,14 @@
 - Media *(to come)*  
 - Thermostat *(to come)*  
 - Popups *(to come)*  
-- Status badges *(to come)*  
 
 **Developer**  
 - Developer templates *(to come)*  
 - Developer news (latest) *(to come)*  
 - Developer readme *(to come)*  
 - Alias table *(to come)*  
-- [Color themes](colorTheme)  
+- [Colour themes](colorTheme)  
+- [PanelStatusBadge (component)](PanelStatusBadge)  
 
 **Find us**  
 [![iobrokerLogo](../Pictures/iobrokerLogo.png)](https://forum.iobroker.net/topic/80055/alphatest-nspanel-lovelace-ui-v0-1-1)  
