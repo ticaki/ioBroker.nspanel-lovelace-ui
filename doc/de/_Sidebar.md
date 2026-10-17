@@ -16,11 +16,14 @@
 - [NSPanel Emulator](NSPanel-Nextion-Editor)  
 
 **Adapter Admin**  
-- [General](General) iA  
-- [NSPanelsetting](NSPanelsetting) iA  
-- [Maintain](Maintain) iA  
-- [Developer](Developer) iA  
-- Panel-Übersicht *(folgt)*  
+- [MQTT-Server Einstellungen](General)  
+- [Nspanel-Einstellungen](NSPanelsetting)  
+- [Global Settings](globelSettings)  
+- [Maintain](Maintain)  
+- [Navigation Flow](naviFlow)  
+- [Symbolübersicht](symbolOverview)  
+- [Tasmota-Tools](tasmotatools) 🔒  
+- [Developer](Developer) 🔒  
 
 **Seiten im Admin anlegen**  
 - PageConfig – Übersicht *(folgt)*  
@@ -65,4 +68,4 @@
 **Finde uns**  
 [![iobrokerLogo](../Pictures/iobrokerLogo.png)](https://forum.iobroker.net/topic/80055/alphatest-nspanel-lovelace-ui-v0-1-1)  
 
-*iA = in Arbeit · (folgt) = Seite entsteht noch*
+*iA = in Arbeit · (folgt) = Seite entsteht noch · 🔒 = nur im Expertenmodus sichtbar*

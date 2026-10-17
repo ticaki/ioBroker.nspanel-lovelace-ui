@@ -16,11 +16,14 @@
 - NSPanel emulator *(to come)*  
 
 **Adapter admin**  
-- General iA  
-- NSPanel settings iA  
-- Maintain iA  
-- Developer iA  
-- Panel overview *(to come)*  
+- [MQTT server settings](General)  
+- [NSPanel settings](NSPanelsetting)  
+- [Global settings](globelSettings)  
+- [Maintain](Maintain)  
+- [Navigation flow](naviFlow)  
+- [Icon overview](symbolOverview)  
+- [Tasmota tools](tasmotatools) 🔒  
+- [Developer](Developer) 🔒  
 
 **Creating pages in the admin**  
 - PageConfig – overview *(to come)*  
@@ -62,4 +65,4 @@
 **Find us**  
 [![iobrokerLogo](../Pictures/iobrokerLogo.png)](https://forum.iobroker.net/topic/80055/alphatest-nspanel-lovelace-ui-v0-1-1)  
 
-*iA = work in progress · (to come) = page is still being written*
+*iA = work in progress · (to come) = page is still being written · 🔒 = only visible in expert mode*

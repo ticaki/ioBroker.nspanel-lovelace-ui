@@ -45,13 +45,14 @@ Im Bereich **Nspanel-Initialisierung** ausfüllen:
 
 | Feld | Bedeutung |
 |---|---|
+| *IP von ioBroker* | erscheint **nur**, wenn der eingebaute MQTT-Server genutzt wird: die Adresse, unter der das Panel den ioBroker erreicht |
 | *IP des Panel* | die feste IP des Panels im Netz |
 | *Panelname (eindeutig)* | frei wählbar, taucht später als Name des Skripts und der Datenpunkte auf |
 | *MQTT-Topic (eindeutig)* | das Topic, unter dem das Panel sendet und lauscht |
 | *Nspanel Hardwaremodel* | EU-Querformat, US-Hochformat oder US-Querformat |
 | *Zeitzone* | Zeitzone des Panels |
 
-Dann den Knopf **Nspanel-Initialisierung** drücken. Nach dem Durchlauf erscheint das Panel als Karte in der Liste darunter — mit Verbindungsstatus, MAC-Adresse, IP, Topic und Modell, dazu ein Stift zum Bearbeiten, ein Papierkorb zum Löschen und **Tasmota-Konsole öffnen** für den direkten Sprung in die Weboberfläche des Panels.
+Dann den Knopf **Nspanel-Initialisierung** drücken und die Rückfrage bestätigen. ⚠️ **Am Ende erscheint ein Dialog mit „Speichern" und „Stornieren" — erst „Speichern" übernimmt das Panel in die Konfiguration.** Danach erscheint es als Karte in der Liste darunter — mit Verbindungsstatus, MAC-Adresse, IP, Topic und Modell, dazu ein Stift zum Bearbeiten, ein Papierkorb zum Löschen und **Tasmota-Konsole öffnen** für den direkten Sprung in die Weboberfläche des Panels.
 
 ## 4. Was die Initialisierung tut
 
@@ -84,6 +85,7 @@ Im **Log** der Instanz lässt sich jeder Teilschritt mitlesen. Ist alles durch, 
 | Meldung *TFT-Firmware-Version konnte nicht online ermittelt werden* | Der **Adapter** selbst kommt nicht an die Versionsliste (Internet oder Proxy auf dem ioBroker-Host). |
 | Der Adapter kommt nicht an die Tasmota-Oberfläche | Im Tab *MQTT-Server Einstellungen* **Tasmota WebUI-Passwort verwenden** einschalten und das Passwort hinterlegen. |
 | TFT-Firmware soll eine Testversion sein | Im Tab *Global Settings* gibt es den Schalter für die **Beta-TFT**. Nur für Tests, im Normalbetrieb aus lassen. |
-| Versionen im Tab *Maintain* bleiben auf `???` | Das Panel antwortet nicht über MQTT — Verbindung, Topic und Stromversorgung prüfen. |
+| Versionen im Tab *Maintain* bleiben auf `???` | Das Panel antwortet nicht über MQTT — Verbindung, Topic und Stromversorgung prüfen. Nach einem Adapterstart dauert es einen Moment, bis die Werte da sind. |
+| Ein Panel soll ganz weg | Papierkorb auf der Panel-Karte entfernt den Eintrag aus der Konfiguration. Das Gerät selbst behält seine Tasmota-Einstellungen — soll es wirklich leer sein, hilft nur der Werksreset aus den *tasmotaTools* (Expertenmodus). |
 
 Bei Fragen: [ioBroker-Forum](https://forum.iobroker.net/topic/80055/alphatest-nspanel-lovelace-ui-v0-1-1) oder [GitHub Issues](https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/issues).

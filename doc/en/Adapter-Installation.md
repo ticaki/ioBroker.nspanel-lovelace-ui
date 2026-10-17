@@ -45,13 +45,14 @@ Fill in the **NSPanel initialisation** section:
 
 | Field | Meaning |
 |---|---|
+| *IP of ioBroker* | shown **only** when the built-in MQTT server is used: the address under which the panel reaches ioBroker |
 | *IP of the panel* | the panel's fixed IP on the network |
 | *Panel name (unique)* | free to choose, later used for the script and the states |
 | *MQTT topic (unique)* | the topic the panel publishes and listens on |
 | *NSPanel hardware model* | EU landscape, US portrait or US landscape |
 | *Time zone* | the panel's time zone |
 
-Then press **NSPanel initialisation**. When it has finished, the panel appears as a card in the list below — with connection state, MAC address, IP, topic and model, plus a pencil to edit, a bin to delete and **open Tasmota console** to jump straight into the panel's web interface.
+Then press **NSPanel initialisation** and confirm the prompt. ⚠️ **At the end a dialog with "save" and "cancel" appears — only "save" adds the panel to the configuration.** After that it appears as a card in the list below — with connection state, MAC address, IP, topic and model, plus a pencil to edit, a bin to delete and **open Tasmota console** to jump straight into the panel's web interface.
 
 ## 4. What the initialisation does
 
@@ -84,6 +85,7 @@ Every sub-step can be followed in the instance **log**. Once it is done, the pan
 | Message *TFT firmware version could not be determined online* | The **adapter** itself cannot reach the version list (internet or proxy on the ioBroker host). |
 | The adapter cannot reach the Tasmota interface | Enable **use the Tasmota WebUI password** in the *MQTT server settings* tab and store the password. |
 | You want a test build of the TFT firmware | The *Global settings* tab has the **beta TFT** switch. For testing only, leave it off in normal operation. |
-| Versions in the *Maintain* tab stay at `???` | The panel is not answering over MQTT — check the connection, the topic and the power supply. |
+| Versions in the *Maintain* tab stay at `???` | The panel is not answering over MQTT — check the connection, the topic and the power supply. After an adapter start it takes a moment for the values to arrive. |
+| A panel should be removed completely | The bin on the panel card removes the entry from the configuration. The device itself keeps its Tasmota settings — to really wipe it, use the factory reset in *tasmotaTools* (expert mode). |
 
 Questions: [ioBroker forum](https://forum.iobroker.net/topic/80055/alphatest-nspanel-lovelace-ui-v0-1-1) or [GitHub issues](https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/issues).
