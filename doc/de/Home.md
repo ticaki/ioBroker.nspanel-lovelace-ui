@@ -14,10 +14,11 @@ Wer den Adapter noch nicht kennt, fängt bei der [Funktionsübersicht](User-NSPa
 
 | Schritt | Was zu tun ist | Seite |
 |---|---|---|
-| 1 | Tasmota auf das Panel bringen und die TFT-Firmware aufspielen | [NSPanel flashen](NSPanel-flashen) |
-| 2 | Adapter installieren und die Instanz mit dem MQTT-Broker verbinden | [Adapterinstallation](Adapter-Installation) |
-| 3 | Seiten anlegen — im Admin oder im Konfigurationsskript | [Seiten im Admin](PageThermo2-Admin) · [Konfigurationsskript](ScriptConfig) |
-| 4 | Bildschirmschoner einrichten | [Screensaver – Admin](Screensaver-Admin) · [Screensaver im Skript](screensaver) |
+| 1 | **Nur Tasmota** auf das Panel flashen — Berry-Treiber und TFT-Firmware kommen später vom Adapter, nicht von Hand | [NSPanel flashen](NSPanel-flashen) |
+| 2 | Adapter installieren und die MQTT-Verbindung einstellen | [Adapterinstallation](Adapter-Installation) |
+| 3 | Panel anlegen und **NSPanel-Initialisierung** starten: der Adapter schiebt die Tasmota-Einstellungen aufs Panel, installiert den **Berry-Treiber** und die **TFT-Firmware** (dauert rund 10 Minuten) | [Adapterinstallation](Adapter-Installation) |
+| 4 | Seiten anlegen — im Admin oder im Konfigurationsskript | [Seiten im Admin](PageThermo2-Admin) · [Konfigurationsskript](ScriptConfig) |
+| 5 | Bildschirmschoner einrichten | [Screensaver – Admin](Screensaver-Admin) · [Screensaver im Skript](screensaver) |
 
 ## Zwei Wege, das Panel zu konfigurieren
 

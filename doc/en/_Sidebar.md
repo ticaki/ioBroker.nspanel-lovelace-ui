@@ -12,7 +12,7 @@
 
 **Basic installation**  
 - Flashing the NSPanel *(to come)*  
-- Adapter installation *(to come)*  
+- [Adapter installation](Adapter-Installation)  
 - NSPanel emulator *(to come)*  
 
 **Adapter admin**  

@@ -87,7 +87,7 @@ The panel's two buttons and the relays behind them are freely assignable — the
 ## 9. What you need
 
 - a SONOFF NSPanel (EU or US version),
-- Tasmota on the panel and this project's TFT firmware,
+- Tasmota on the panel — the adapter installs the Berry driver and the TFT firmware itself,
 - an MQTT broker reachable by both ioBroker and the panel,
 - the adapter itself,
 - a weather source as an adapter instance if you want weather on the screensaver.

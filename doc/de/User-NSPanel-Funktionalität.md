@@ -87,7 +87,7 @@ Die beiden Tasten des Panels und die dahinterliegenden Relais sind frei belegbar
 ## 9. Was man dafür braucht
 
 - ein SONOFF NSPanel (EU- oder US-Ausführung),
-- Tasmota auf dem Panel und die TFT-Firmware dieses Projekts ([NSPanel flashen](NSPanel-flashen)),
+- Tasmota auf dem Panel ([NSPanel flashen](NSPanel-flashen)) — Berry-Treiber und TFT-Firmware installiert der Adapter selbst,
 - einen MQTT-Broker, den ioBroker und Panel erreichen,
 - den Adapter selbst ([Adapterinstallation](Adapter-Installation)),
 - für Wetter im Bildschirmschoner eine Wetterquelle als Adapterinstanz.
