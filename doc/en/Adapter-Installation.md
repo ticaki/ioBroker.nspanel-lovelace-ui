@@ -55,16 +55,15 @@ Then press **NSPanel initialisation**. When it has finished, the panel appears a
 
 ## 4. What the initialisation does
 
-The run takes about **ten minutes**, most of it for the TFT firmware. The adapter goes through these steps:
+The admin reports the progress in **three steps**; the whole run takes about **ten minutes**, most of it for the TFT firmware.
 
-1. **Set up Tasmota** — MQTT credentials and the required Tasmota options are written, the panel restarts.
-2. **Check internet access** — the panel must reach `raw.githubusercontent.com`; the adapter waits for the ping result.
-3. **Install the Berry driver** — an existing `autoexec.be` is moved aside (`autoexec.old`), then Tasmota downloads the matching version itself (`UrlFetch`), followed by a restart.
-4. **Upload the TFT firmware** — through the Tasmota command `FlashNextionAdv0` the panel fetches the `.tft` file for its model. This is the long part.
-5. **Create and start the scripts** — the panel script and the global script are created in the JavaScript adapter.
-6. **Restart the adapter and activate the panel.**
+| Message | What happens behind it |
+|---|---|
+| **Step 1 of 3 done: MQTT credentials transferred, the panel has restarted** | The adapter writes the MQTT credentials into Tasmota and restarts it. |
+| **Step 2 of 3 done: basic settings and time zone transferred** | The remaining Tasmota options and the chosen time zone go to the panel. |
+| **Panel initialised successfully** (step 3) | The long one: fetch the version list, **check the panel's internet access** (it must reach `raw.githubusercontent.com`), **install the Berry driver** (the existing `autoexec.be` is kept as `autoexec.old`, Tasmota downloads the matching version itself via `UrlFetch`, followed by a restart), **upload the TFT firmware** (`FlashNextionAdv0` with the `.tft` file for the model), **create and start the scripts**, activate the panel. |
 
-Every step can be followed in the instance **log**. Once it is done, the panel shows the screensaver.
+Every sub-step can be followed in the instance **log**. Once it is done, the panel shows the screensaver.
 
 ## 5. After the initialisation
 
@@ -80,6 +79,8 @@ Every step can be followed in the instance **log**. Once it is done, the panel s
 | The panel does not connect to the broker | It was attached to another host before → run `reset 4` on the Tasmota console, then initialise again. |
 | No connection after restoring an ioBroker backup | Delete the panels from the configuration and create them again (the TLS certificates are regenerated). |
 | The installation stalls at the Berry driver | The panel has no internet access (DNS, firewall, guest Wi-Fi) — the adapter checks this beforehand with a ping to `raw.githubusercontent.com`. |
+| Message *no download confirmation from Tasmota after the Berry install* | Tasmota did not fetch the file — check internet access and, with a protected WebUI, the stored password, then repeat step 3. |
+| Message *TFT firmware version could not be determined online* | The **adapter** itself cannot reach the version list (internet or proxy on the ioBroker host). |
 | The adapter cannot reach the Tasmota interface | Enable **use the Tasmota WebUI password** in the *MQTT server settings* tab and store the password. |
 | You want a test build of the TFT firmware | The *Global settings* tab has the **beta TFT** switch. For testing only, leave it off in normal operation. |
 | Versions in the *Maintain* tab stay at `???` | The panel is not answering over MQTT — check the connection, the topic and the power supply. |

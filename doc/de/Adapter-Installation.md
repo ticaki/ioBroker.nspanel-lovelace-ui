@@ -55,16 +55,15 @@ Dann den Knopf **Nspanel-Initialisierung** drücken. Nach dem Durchlauf erschein
 
 ## 4. Was die Initialisierung tut
 
-Der Durchlauf dauert insgesamt **rund zehn Minuten**, das meiste davon entfällt auf die TFT-Firmware. Der Adapter arbeitet dabei folgende Schritte ab:
+Der Admin meldet den Fortschritt in **drei Schritten**, der ganze Durchlauf dauert **rund zehn Minuten** — das meiste davon entfällt auf die TFT-Firmware.
 
-1. **Tasmota einrichten** — MQTT-Zugangsdaten und die nötigen Tasmota-Optionen werden gesetzt, das Panel startet neu.
-2. **Internetzugang prüfen** — das Panel muss `raw.githubusercontent.com` erreichen; der Adapter wartet auf die Antwort des Ping-Befehls.
-3. **Berry-Treiber installieren** — eine vorhandene `autoexec.be` wird zur Seite gelegt (`autoexec.old`), dann lädt Tasmota die passende Version selbst herunter (`UrlFetch`), danach folgt ein Neustart.
-4. **TFT-Firmware aufspielen** — über den Tasmota-Befehl `FlashNextionAdv0` lädt das Panel die zu seinem Modell passende `.tft`-Datei. Das ist der lange Teil.
-5. **Skripte anlegen und starten** — Panel-Skript und globales Skript werden im JavaScript-Adapter erzeugt.
-6. **Adapter neu starten und Panel aktivieren.**
+| Meldung | Was dahinter passiert |
+|---|---|
+| **Schritt 1 von 3 erledigt: MQTT-Zugang übertragen, das Panel ist neu gestartet** | Der Adapter schreibt die MQTT-Zugangsdaten in das Tasmota und startet es neu. |
+| **Schritt 2 von 3 erledigt: Grundeinstellungen und Zeitzone übertragen** | Die übrigen Tasmota-Optionen und die gewählte Zeitzone gehen auf das Panel. |
+| **Panel wurde erfolgreich initialisiert** (Schritt 3) | Der lange Schritt: Versionsliste holen, **Internetzugang des Panels prüfen** (es muss `raw.githubusercontent.com` erreichen), **Berry-Treiber installieren** (die vorhandene `autoexec.be` wird als `autoexec.old` gesichert, Tasmota lädt die passende Version per `UrlFetch` selbst herunter, danach Neustart), **TFT-Firmware aufspielen** (`FlashNextionAdv0` mit der zum Modell passenden `.tft`-Datei), **Skripte anlegen und starten**, Panel aktivieren. |
 
-Im **Log** der Instanz lässt sich jeder dieser Schritte mitlesen. Ist alles durch, zeigt das Panel den Bildschirmschoner.
+Im **Log** der Instanz lässt sich jeder Teilschritt mitlesen. Ist alles durch, zeigt das Panel den Bildschirmschoner.
 
 ## 5. Nach der Initialisierung
 
@@ -80,6 +79,8 @@ Im **Log** der Instanz lässt sich jeder dieser Schritte mitlesen. Ist alles dur
 | Panel verbindet sich nicht mit dem Broker | Das Panel hing vorher an einem anderen Host → `reset 4` auf der Tasmota-Konsole, danach neu initialisieren. |
 | Nach einem ioBroker-Backup bleibt die Verbindung aus | Panels aus der Konfiguration löschen und neu anlegen (TLS-Zertifikate werden neu erzeugt). |
 | Die Installation bleibt beim Berry-Treiber stehen | Das Panel kommt nicht ins Internet (DNS, Firewall, Gast-WLAN) — der Adapter prüft das vorher mit einem Ping auf `raw.githubusercontent.com`. |
+| Meldung *Keine Download-Bestätigung von Tasmota nach der Berry-Installation erhalten* | Tasmota hat die Datei nicht geholt — Internetzugang und, bei geschütztem WebUI, das hinterlegte Passwort prüfen, dann Schritt 3 wiederholen. |
+| Meldung *TFT-Firmware-Version konnte nicht online ermittelt werden* | Der **Adapter** selbst kommt nicht an die Versionsliste (Internet oder Proxy auf dem ioBroker-Host). |
 | Der Adapter kommt nicht an die Tasmota-Oberfläche | Im Tab *MQTT-Server Einstellungen* **Tasmota WebUI-Passwort verwenden** einschalten und das Passwort hinterlegen. |
 | TFT-Firmware soll eine Testversion sein | Im Tab *Global Settings* gibt es den Schalter für die **Beta-TFT**. Nur für Tests, im Normalbetrieb aus lassen. |
 | Versionen im Tab *Maintain* bleiben auf `???` | Das Panel antwortet nicht über MQTT — Verbindung, Topic und Stromversorgung prüfen. |

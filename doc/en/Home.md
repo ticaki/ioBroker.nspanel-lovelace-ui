@@ -16,7 +16,7 @@ New to the adapter? Start with the [feature overview](User-NSPanel-Funktionalit�
 |---|---|---|
 | 1 | Flash **Tasmota only** onto the panel — the Berry driver and the TFT firmware come from the adapter later, not by hand | Flashing the NSPanel |
 | 2 | Install the adapter and set up the MQTT connection | [Adapter installation](Adapter-Installation) |
-| 3 | Create the panel and run **NSPanel initialisation**: the adapter pushes the Tasmota settings to the panel and installs the **Berry driver** and the **TFT firmware** (takes about 10 minutes) | [Adapter installation](Adapter-Installation) |
+| 3 | Create the panel and run **NSPanel initialisation**: the adapter reports three steps while it pushes the Tasmota settings to the panel and installs the **Berry driver** and the **TFT firmware** (takes about 10 minutes) | [Adapter installation](Adapter-Installation) |
 | 4 | Create pages — in the admin or in the configuration script | [Pages in the admin](PageThermo2-Admin) · Configuration script |
 | 5 | Set up the screensaver | [Screensaver – admin](Screensaver-Admin) |
 
