@@ -27,7 +27,7 @@
 - [Developer](Developer) 🔒  
 
 **Creating pages in the admin**  
-- PageConfig – overview *(to come)*  
+- [PageConfig – overview](PageConfig)  
 - Menu page *(to come)*  
 - Alarm *(to come)*  
 - QR code *(to come)*  

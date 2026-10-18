@@ -27,7 +27,7 @@
 - [Developer](Developer) 🔒  
 
 **Seiten im Admin anlegen**  
-- PageConfig – Übersicht *(folgt)*  
+- [PageConfig – Übersicht](PageConfig)  
 - Menü-Seite *(folgt)*  
 - Alarm *(folgt)*  
 - QR-Code *(folgt)*  
