@@ -42,13 +42,15 @@ The page type filters the list **and** determines what a click on **+** creates.
 
 <img alt="Creating a new page with a page type selected" src="../Pictures/pageConfig/pageconfig-04-seite-anlegen.png" width="100%"/>
 
-**Create:** pick a page type, enter a name in the *New page* field, press **+**. The name is the unique ID of the page; it is used in the navigation targets and in the configuration script.
+**Create:** pick a page type, enter a name in the *New page* field, press **+**. The name is the unique ID of the page: it is how other pages address it in their navigation targets, and how a `navigate` command on a button jumps to it.
 
 - `main` is reserved and will be rejected — the start page is made with the marker, not with the name.
 - A name already in use cannot be created, the button stays disabled.
-- If the name matches a page that already comes from the configuration script, a note points it out: the admin page then **replaces** the script page of the same name.
+- If the name matches a page that already comes from the configuration script, a note points it out: the admin page then **replaces** the script page of the same name. (A configuration script addresses its pages by that same name — which is why a clash is noticed at all.)
 
 **Rename:** not in the list, but in the editor via the *Unique ID* field. On the start page it is locked while the marker is set.
+
+> ⚠️ **Renaming does not carry the navigation along.** Every *prev*, *next*, *parent* and *home* **of other pages** that pointed at the old name stays as it was and then leads nowhere — the same goes for a `navigate` command on a button and for a reference from the configuration script. After renaming, set every connection to this page again; the [Navigation flow](naviFlow) tab shows which ones they are. And unlike creating, renaming does **not reject a name already in use** — the ID then exists twice. When in doubt it is safer to create the page anew than to rename it.
 
 **Order:** the list is always sorted alphabetically; there is no manual order, and none is needed — what the panel shows follows from the navigation, not from the position in the list.
 

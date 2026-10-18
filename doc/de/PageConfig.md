@@ -42,13 +42,15 @@ Der Seitentyp filtert die Liste **und** bestimmt, was ein Klick auf **+** anlegt
 
 <img alt="Neue Seite anlegen bei gewähltem Seitentyp" src="../Pictures/pageConfig/pageconfig-04-seite-anlegen.png" width="100%"/>
 
-**Anlegen:** Seitentyp wählen, im Feld *Neue Seite* einen Namen eintragen, **+** drücken. Der Name ist die eindeutige ID der Seite; er wird in den Navigationszielen und im Konfigurationsskript verwendet.
+**Anlegen:** Seitentyp wählen, im Feld *Neue Seite* einen Namen eintragen, **+** drücken. Der Name ist die eindeutige ID der Seite: Unter ihm sprechen die anderen Seiten sie in ihren Navigationszielen an, und unter ihm wird sie in einem `navigate`-Befehl eines Buttons angesprungen.
 
 - `main` ist reserviert und wird abgewiesen — die Startseite entsteht über die Markierung, nicht über den Namen.
 - Ein bereits vergebener Name lässt sich nicht anlegen, der Knopf bleibt gesperrt.
-- Trägt der Name eine Seite, die schon aus dem Konfigurationsskript kommt, weist ein Hinweis darauf hin: Die Admin-Seite **ersetzt** dann die gleichnamige Skriptseite.
+- Trägt der Name eine Seite, die schon aus dem Konfigurationsskript kommt, weist ein Hinweis darauf hin: Die Admin-Seite **ersetzt** dann die gleichnamige Skriptseite. (Auch ein Konfigurationsskript spricht seine Seiten über diesen Namen an — deshalb fällt eine Namensgleichheit überhaupt auf.)
 
 **Umbenennen:** nicht in der Liste, sondern im Editor über das Feld *Eindeutige ID*. Bei der Startseite ist es gesperrt, solange die Markierung gesetzt ist.
+
+> ⚠️ **Umbenennen zieht die Navigation nicht mit.** Jedes *prev*, *next*, *parent* und *home* **anderer Seiten**, das auf den alten Namen zeigte, bleibt unverändert stehen und läuft danach ins Leere — ebenso ein `navigate`-Befehl in einem Button und ein Verweis aus dem Konfigurationsskript. Nach dem Umbenennen deshalb alle Verbindungen zu dieser Seite noch einmal setzen; welche das sind, zeigt der Tab [Navigation Flow](naviFlow). Und anders als beim Anlegen wird beim Umbenennen ein **bereits vergebener Name nicht abgewiesen** — dann gibt es die ID zweimal. Im Zweifel ist es sicherer, die Seite neu anzulegen, als sie umzubenennen.
 
 **Reihenfolge:** Die Liste ist immer alphabetisch sortiert; eine eigene Reihenfolge gibt es nicht und ist auch nicht nötig — was das Panel anzeigt, ergibt sich aus der Navigation, nicht aus der Listenposition.
 
