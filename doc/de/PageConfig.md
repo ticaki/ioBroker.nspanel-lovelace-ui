@@ -54,7 +54,7 @@ Der Seitentyp filtert die Liste **und** bestimmt, was ein Klick auf **+** anlegt
 
 **Reihenfolge:** Die Liste ist immer alphabetisch sortiert; eine eigene Reihenfolge gibt es nicht und ist auch nicht nötig — was das Panel anzeigt, ergibt sich aus der Navigation, nicht aus der Listenposition.
 
-**Kopieren:** Eine ganze Seite lässt sich nicht duplizieren. Nur innerhalb einer Menü-Seite können einzelne PageItems kopiert werden.
+**Kopieren:** Eine ganze Seite lässt sich nicht duplizieren — wohl aber **einzelne PageItems einer Menü-Seite**: Rechtsklick auf die Fläche, *Element kopieren*, Rechtsklick auf die Zielfläche, *Element einfügen*. Das geht auch von einer Menü-Seite in eine andere. Die Einzelheiten stehen auf der Seite zur Menü-Seite *(folgt)*.
 
 **Löschen:** über das Papierkorb-Symbol in der Zeile, mit Rückfrage.
 
