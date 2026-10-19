@@ -29,8 +29,8 @@
 **Seiten im Admin anlegen**  
 - [PageConfig – Übersicht](PageConfig)  
 - Menü-Seite *(folgt)*  
-- Alarm *(folgt)*  
-- QR-Code *(folgt)*  
+- [Alarm und Entsperrseite](PageAlarm-Admin)  
+- [QR-Code](PageQR-Admin)  
 - Energie *(folgt)*  
 - Verlaufsdiagramm *(folgt)*  
 - Abfall *(folgt)*  
@@ -53,7 +53,7 @@
 - [Page QR](PageQR)  
 - [Page Power](PagePower)  
 - [Page Chart](PageChart)  
-- [Page Alarm](PageAlarm) iA  
+- [Page Alarm](PageAlarm)  
 - [Page Media](PageMedia)  
 - [Page Thermo2](PageThermo2)  
 - [Popups](pagePopup)  

@@ -115,8 +115,8 @@ One exception: assigning a panel writes the page name to the panel straight away
 The settings of the individual cards have pages of their own:
 
 - Menu page *(to come)*
-- Alarm and unlock page *(to come)*
-- QR code *(to come)*
+- [Alarm and unlock page](PageAlarm-Admin)
+- [QR code](PageQR-Admin)
 - Power *(to come)*
 - Chart *(to come)*
 - Trash *(to come)*

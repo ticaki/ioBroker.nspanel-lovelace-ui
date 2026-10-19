@@ -115,8 +115,8 @@ Eine Ausnahme: Das Zuweisen eines Panels trägt den Seitennamen sofort beim Pane
 Die Einstellungen der einzelnen Karten stehen auf eigenen Seiten:
 
 - Menü-Seite *(folgt)*
-- Alarm und Entsperrseite *(folgt)*
-- QR-Code *(folgt)*
+- [Alarm und Entsperrseite](PageAlarm-Admin)
+- [QR-Code](PageQR-Admin)
 - Energie *(folgt)*
 - Verlaufsdiagramm *(folgt)*
 - Abfall *(folgt)*

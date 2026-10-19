@@ -29,8 +29,8 @@
 **Creating pages in the admin**  
 - [PageConfig – overview](PageConfig)  
 - Menu page *(to come)*  
-- Alarm *(to come)*  
-- QR code *(to come)*  
+- [Alarm and unlock](PageAlarm-Admin)  
+- [QR code](PageQR-Admin)  
 - Power *(to come)*  
 - Chart *(to come)*  
 - Trash *(to come)*  
@@ -50,7 +50,7 @@
 - QR code *(to come)*  
 - Power *(to come)*  
 - [Chart](PageChart)  
-- Alarm *(to come)*  
+- [Alarm](PageAlarm)  
 - Media *(to come)*  
 - Thermostat *(to come)*  
 - Popups *(to come)*  
