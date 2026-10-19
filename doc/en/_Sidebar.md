@@ -28,7 +28,7 @@
 
 **Creating pages in the admin**  
 - [PageConfig – overview](PageConfig)  
-- Menu page *(to come)*  
+- [Menu page](PageMenu-Admin)  
 - [Alarm and unlock](PageAlarm-Admin)  
 - [QR code](PageQR-Admin)  
 - [Power](PagePower-Admin)  

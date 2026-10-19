@@ -28,7 +28,7 @@
 
 **Seiten im Admin anlegen**  
 - [PageConfig – Übersicht](PageConfig)  
-- Menü-Seite *(folgt)*  
+- [Menü-Seite](PageMenu-Admin)  
 - [Alarm und Entsperrseite](PageAlarm-Admin)  
 - [QR-Code](PageQR-Admin)  
 - [Energie](PagePower-Admin)  

@@ -54,7 +54,7 @@ The page type filters the list **and** determines what a click on **+** creates.
 
 **Order:** the list is always sorted alphabetically; there is no manual order, and none is needed — what the panel shows follows from the navigation, not from the position in the list.
 
-**Copy:** a whole page cannot be duplicated — but **single page items of a menu page** can: right-click the cell, *copy item*, right-click the target cell, *paste item*. This also works from one menu page into another. The details are on the menu page documentation *(to come)*.
+**Copy:** a whole page cannot be duplicated — but **single page items of a menu page** can: right-click the cell, *copy item*, right-click the target cell, *paste item*. This also works from one menu page into another. The details — including what the clipboard belongs to and what gets overwritten when pasting — are under [Menu page](PageMenu-Admin#5-copying-and-pasting-tiles).
 
 **Delete:** via the bin icon in the row, with a confirmation.
 
@@ -114,7 +114,7 @@ One exception: assigning a panel writes the page name to the panel straight away
 
 The settings of the individual cards have pages of their own:
 
-- Menu page *(to come)*
+- [Menu page](PageMenu-Admin)
 - [Alarm and unlock page](PageAlarm-Admin)
 - [QR code](PageQR-Admin)
 - [Power](PagePower-Admin)

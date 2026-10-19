@@ -2,7 +2,22 @@
 
 The thermostat page `cardThermo2` can be created without a script: tab **PageConfig**, page type **Thermostat (Thermo2)**. The editor draws the page the way the panel shows it – every spot of the card can be clicked and opens the matching settings. In the adapter the admin page goes through the same code as the script page, so the result on the panel is identical.
 
-The script configuration (structure, alias roles, data points, `modeList`, `sortOrder` …) is described on the German page [Page Thermo2](https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/wiki/PageThermo2). This page covers the admin only.
+**Which states a heating circuit needs** — this applies no matter how the page is created:
+
+- The data source is a channel with the role **`thermostat`** or **`airCondition`**. An
+  `airCondition` channel yields **two** heating circuits (heating and cooling) and therefore two tabs
+  in the editor.
+- **Only `SET` is required**, the writable setpoint. Everything else is optional: `ACTUAL` (actual
+  temperature), `HUMIDITY`, `MODE` or `MODESET` (operating mode), `POWER`, `BOOST`,
+  `WINDOWOPEN`, `LOWBAT`, `UNREACH`. If one of them is missing, the adapter simply leaves that
+  spot empty.
+- **Not evaluated by `cardThermo2`** are `ERROR`, `MAINTAIN`, `PARTY`, `USERICON`,
+  `VACATION` and `WORKING` — they may sit in the channel but will not show on the panel.
+- The full table of all roles is in the [Alias Table](https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/wiki/ALIAS).
+
+What the same page looks like **in the configuration script** is shown on
+[Page Thermo2](https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/wiki/PageThermo2) — as a code
+reference for experienced users in special cases, not as a second way to set it up.
 
 Contents:
 - [Creating the page](#1-creating-the-page)

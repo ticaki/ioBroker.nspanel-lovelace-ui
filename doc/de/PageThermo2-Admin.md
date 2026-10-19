@@ -2,7 +2,19 @@
 
 Die Thermostat-Seite `cardThermo2` lässt sich ohne Skript im Admin anlegen: Tab **PageConfig**, Seitentyp **Thermostat (Thermo2)**. Der Editor zeichnet die Seite so, wie das Panel sie zeigt – jede Stelle der Karte ist anklickbar und öffnet die passenden Einstellungen. Im Adapter läuft die Admin-Seite durch denselben Code wie die Skript-Seite, das Ergebnis auf dem Panel ist identisch.
 
-Die Skript-Konfiguration (Aufbau, Alias-Rollen, Datenpunkte, `modeList`, `sortOrder` …) steht unter [Page Thermo2](PageThermo2). Diese Seite beschreibt nur den Weg über den Admin.
+**Welche Datenpunkte ein Heizkreis braucht** — das gilt unabhängig davon, wie die Seite entsteht:
+
+- Als Datenquelle dient ein Kanal mit der Rolle **`thermostat`** oder **`airCondition`**. Ein
+  `airCondition`-Kanal ergibt **zwei** Heizkreise (Heizen und Kühlen) und damit zwei Tabs im Editor.
+- **Pflicht ist allein `SET`**, die beschreibbare Solltemperatur. Alles andere ist optional:
+  `ACTUAL` (Isttemperatur), `HUMIDITY`, `MODE` bzw. `MODESET` (Betriebsart), `POWER`, `BOOST`,
+  `WINDOWOPEN`, `LOWBAT`, `UNREACH`. Fehlt einer davon, lässt der Adapter die Stelle einfach frei.
+- **Von `cardThermo2` nicht ausgewertet** werden `ERROR`, `MAINTAIN`, `PARTY`, `USERICON`,
+  `VACATION` und `WORKING` — sie dürfen im Kanal stehen, erscheinen am Panel aber nicht.
+- Die vollständige Tabelle aller Rollen steht unter [Alias Table](ALIAS).
+
+Wie dieselbe Seite **im Konfigurationsskript** aussieht, zeigt [Page Thermo2](PageThermo2) — als
+Code-Referenz für erfahrene Nutzer in besonderen Fällen, nicht als zweiter Einrichtungsweg.
 
 Inhalt:
 - [Seite anlegen](#1-seite-anlegen)
