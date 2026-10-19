@@ -4,7 +4,12 @@ Die PageChart ermöglicht zwei Darstellungen: Balken (`cardChart`) und Linie (`c
 
 <img alt='Linechart' src= '../Pictures/pageChart/Linechart.png'> <img alt= 'Balkenchart' src='../Pictures/pageChart/Balkenchart.png'>
 
-Eine Chart-Seite kann auf zwei Wegen angelegt werden — beide liefern dasselbe Ergebnis am Panel:
+> **Der Weg über den Admin steht auf einer eigenen Seite:** [Diagramm-Seite – Konfiguration im Admin](PageChart-Admin).
+> Dort ist der Editor vollständig beschrieben — alle Felder, die Grenzen des Panels und die
+> Stellen, an denen die Oberfläche in die Irre führt. **Der Admin ist der vorgesehene Weg.**
+> Diese Seite hier bleibt für die **Konfiguration per Skript** und für bestehende Installationen stehen.
+
+Angelegt werden kann eine Chart-Seite auf zwei Wegen:
 
 1. **Tab `PageConfig`** (empfohlen): Seite mit dem Typ `Diagramm` anlegen, alles im Editor einstellen, Navigation im Panel-Bereich zuweisen. Kein Script nötig.
 2. **Klassisch**: Tab `PageChart` plus ein Verweis im Konfig-Script (siehe unten).

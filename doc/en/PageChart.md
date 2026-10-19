@@ -4,7 +4,12 @@ The PageChart offers two views: bars (`cardChart`) and a line (`cardLChart`). Th
 
 <img alt='Linechart' src= '../Pictures/pageChart/Linechart.png'> <img alt= 'Balkenchart' src='../Pictures/pageChart/Balkenchart.png'>
 
-A chart page can be created in two ways — both give the same result on the panel:
+> **The way through the admin has a page of its own:** [Chart page – configuration in the admin](PageChart-Admin).
+> It describes the editor in full — every field, the limits of the panel and the places where the
+> interface is misleading. **The admin is the intended way.**
+> This page here remains for the **configuration by script** and for existing installations.
+
+A chart page can be created in two ways:
 
 1. **Tab `PageConfig`** (recommended): create a page of type `Chart`, configure everything in the editor, assign the navigation in the panel section. No script needed.
 2. **Classic**: tab `PageChart` plus a reference in the configuration script (see below).

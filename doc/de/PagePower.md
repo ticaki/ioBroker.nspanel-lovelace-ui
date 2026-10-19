@@ -6,6 +6,12 @@
     + [Home ](#home)    
 + [Verweis im Konifg Script](#verweis-im-konfig-script)   
 
+> **Der Weg über den Admin steht auf einer eigenen Seite:** [Energie-Seite – Konfiguration im Admin](PagePower-Admin).
+> Dort ist der Editor vollständig beschrieben — alle Felder, die Grenzen des Panels und die
+> Stellen, an denen die Oberfläche in die Irre führt. **Der Admin ist der vorgesehene Weg.**
+> Diese Seite hier bleibt für die **Konfiguration per Skript** und für bestehende Installationen stehen.
+
+
  Die Page Power ermöglicht bis zu 6 Verbraucher / Erzeuger darzustellen und zu verrechnen. Sie soll die Stromverteilung in eurem Smarthome abbilden. Icons, Farbverläufe, Geschwidigkeit der Flußrichtung sowie die Flußrichtung selbst lassen sich hier einstellen. Die Einstellmöglichkeiten erklären wir an einem Beispiel. Ihr könnt mehrere dieser Seiten erstellen. Auf welchem Panel ihr diese dann nutzt, entscheidet ihr im Konfig-Script des jeweiligen Panels.  
   
 ---

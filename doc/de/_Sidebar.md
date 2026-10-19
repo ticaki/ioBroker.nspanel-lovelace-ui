@@ -31,9 +31,9 @@
 - Menü-Seite *(folgt)*  
 - [Alarm und Entsperrseite](PageAlarm-Admin)  
 - [QR-Code](PageQR-Admin)  
-- Energie *(folgt)*  
-- Verlaufsdiagramm *(folgt)*  
-- Abfall *(folgt)*  
+- [Energie](PagePower-Admin)  
+- [Verlaufsdiagramm](PageChart-Admin)  
+- [Abfall](PageTrash-Admin)  
 - [Thermostat](PageThermo2-Admin)  
 - [Wiederkehrende Dialoge](PageConfig-Dialoge)  
 

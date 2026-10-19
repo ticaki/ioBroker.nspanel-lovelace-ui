@@ -117,9 +117,9 @@ The settings of the individual cards have pages of their own:
 - Menu page *(to come)*
 - [Alarm and unlock page](PageAlarm-Admin)
 - [QR code](PageQR-Admin)
-- Power *(to come)*
-- Chart *(to come)*
-- Trash *(to come)*
+- [Power](PagePower-Admin)
+- [Chart](PageChart-Admin)
+- [Trash](PageTrash-Admin)
 - [Thermostat](PageThermo2-Admin)
 - [Recurring dialogs](PageConfig-Dialoge)
 
