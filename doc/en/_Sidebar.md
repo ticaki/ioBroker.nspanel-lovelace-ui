@@ -35,7 +35,7 @@
 - Chart *(to come)*  
 - Trash *(to come)*  
 - [Thermostat](PageThermo2-Admin)  
-- Recurring dialogs *(to come)*  
+- [Recurring dialogs](PageConfig-Dialoge)  
 
 **Screensaver**  
 - Introduction *(to come)*  

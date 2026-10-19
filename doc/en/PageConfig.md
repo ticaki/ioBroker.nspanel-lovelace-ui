@@ -121,6 +121,6 @@ The settings of the individual cards have pages of their own:
 - Chart *(to come)*
 - Trash *(to come)*
 - [Thermostat](PageThermo2-Admin)
-- Recurring dialogs *(to come)*
+- [Recurring dialogs](PageConfig-Dialoge)
 
 The **unlock page** is not a page type of its own: it is made from an alarm page whose editor is switched from *alarm* to the *unlock* mode, together with the target to jump to after the correct PIN.

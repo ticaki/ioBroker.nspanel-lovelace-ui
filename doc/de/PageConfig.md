@@ -119,8 +119,8 @@ Die Einstellungen der einzelnen Karten stehen auf eigenen Seiten:
 - QR-Code *(folgt)*
 - Energie *(folgt)*
 - Verlaufsdiagramm *(folgt)*
-- Papierkorb *(folgt)*
+- Abfall *(folgt)*
 - [Thermostat](PageThermo2-Admin)
-- Wiederkehrende Dialoge *(folgt)*
+- [Wiederkehrende Dialoge](PageConfig-Dialoge)
 
 Die **Entsperrseite** ist kein eigener Seitentyp: Sie entsteht aus einer Alarm-Seite, bei der im Editor statt *Alarm* die Betriebsart *Unlock* gewählt wird; dazu kommt das Ziel, auf das nach der richtigen PIN gesprungen wird.

@@ -33,9 +33,9 @@
 - QR-Code *(folgt)*  
 - Energie *(folgt)*  
 - Verlaufsdiagramm *(folgt)*  
-- Papierkorb *(folgt)*  
+- Abfall *(folgt)*  
 - [Thermostat](PageThermo2-Admin)  
-- Wiederkehrende Dialoge *(folgt)*  
+- [Wiederkehrende Dialoge](PageConfig-Dialoge)  
 
 **Screensaver**  
 - [Einleitung](screensaver)  
