@@ -162,6 +162,8 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
 - (ticaki) panel: a repeated acknowledgement from tasmota (bad wifi, mqtt broker like mosquitto 2) no longer drops the next message - e.g. screensaver colors and weather updates got lost
 - (ticaki) mqtt: no overlapping subscriptions at the broker anymore, so every message arrives only once
 - (ticaki) templates: brightsky bottom items show the hourly weather icon again (brightsky sets role `text` on `hourly.xx.icon`), unknown weather icons fall back to `alert-circle-outline`
+- (tt-tom17) admin: the MQTT login of an external broker, the Tasmota WebUI password and the wifi password of a QR page can come from the central credentials (Admin → System settings → Credentials). Optional - without a selection the fields keep working as before. Only the id is stored; changed values restart the adapter, renaming a credential does not
+- (tt-tom17) fix: the Tasmota WebUI password field of the MQTT settings stored the change event instead of the typed text
 
 ### 1.4.0 (2026-10-14)
 - (tt-tom17) admin: new tab `Screensaver` - configure the screensaver without script: version (standard / alternate / advanced / easyview), the panels that use it, every place of the card with its own dialog (state or page item template, icons incl. icon per value range, colors, value, text, indicator action), MR icons, clock and date format, weather instance, rotation time, swipe and indicator buttons. The entry replaces the screensaver of the script for the listed panels. Documentation `doc/de|en/Screensaver-Admin.md`
