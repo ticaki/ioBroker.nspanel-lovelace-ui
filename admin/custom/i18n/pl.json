@@ -330,7 +330,7 @@
     "credential_load_error": "Nie udało się wczytać listy danych logowania",
     "credential_missing": "Wybrany wpis już nie istnieje - używane są pola poniżej",
     "credential_mqtt": "Dostęp MQTT z centralnych danych logowania (tylko zewnętrzny broker)",
-    "credential_none": "Wpisz tutaj (pola poniżej)",
+    "credential_none": "Użyj pola login / hasło",
     "credential_qr": "Hasło Wifi z centralnych danych logowania",
     "credential_tasmota": "Hasło WebUI Tasmota z centralnych danych logowania",
     "crossfade": "Krzyżowanie",

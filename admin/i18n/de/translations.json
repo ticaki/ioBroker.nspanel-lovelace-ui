@@ -331,7 +331,7 @@
     "credential_load_error": "Die Liste der Zugangsdaten konnte nicht geladen werden",
     "credential_missing": "Der gewählte Eintrag existiert nicht mehr – die Felder darunter werden verwendet",
     "credential_mqtt": "MQTT-Zugang aus den zentralen Zugangsdaten (nur externer Broker)",
-    "credential_none": "Hier eingeben (Felder darunter)",
+    "credential_none": "Login / Passwort-Feld nutzen",
     "credential_qr": "WLAN-Passwort aus den zentralen Zugangsdaten",
     "credential_tasmota": "Tasmota-WebUI-Passwort aus den zentralen Zugangsdaten",
     "crossfade": "Crossfade",

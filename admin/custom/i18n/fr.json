@@ -330,7 +330,7 @@
     "credential_load_error": "La liste des identifiants n'a pas pu être chargée",
     "credential_missing": "L'identifiant sélectionné n'existe plus - les champs ci-dessous sont utilisés",
     "credential_mqtt": "Accès MQTT depuis les identifiants centraux (broker externe uniquement)",
-    "credential_none": "Saisir ici (champs ci-dessous)",
+    "credential_none": "Utiliser le champ identifiant / mot de passe",
     "credential_qr": "Mot de passe Wifi depuis les identifiants centraux",
     "credential_tasmota": "Mot de passe WebUI Tasmota depuis les identifiants centraux",
     "crossfade": "Falsification",

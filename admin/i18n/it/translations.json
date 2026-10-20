@@ -330,7 +330,7 @@
     "credential_load_error": "Impossibile caricare l'elenco delle credenziali",
     "credential_missing": "La credenziale selezionata non esiste più: vengono usati i campi sottostanti",
     "credential_mqtt": "Accesso MQTT dalle credenziali centrali (solo broker esterno)",
-    "credential_none": "Inserire qui (campi sottostanti)",
+    "credential_none": "Usa il campo login / password",
     "credential_qr": "Password Wifi dalle credenziali centrali",
     "credential_tasmota": "Password WebUI Tasmota dalle credenziali centrali",
     "crossfade": "Crossfade",
