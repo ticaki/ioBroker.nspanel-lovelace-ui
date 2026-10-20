@@ -80,6 +80,10 @@ Was dieser Datenpunkt **wirklich** bewirkt, steht so nicht in der Oberfläche:
 - **Die Passwortzeile verschwindet damit**, denn es gibt nur diese eine Zeile. Wer Schalter *und* Passwortanzeige möchte, kann das auf dieser Karte nicht haben.
 - Der QR-Code selbst bleibt unverändert sichtbar — auch wenn das Netz gerade aus ist.
 
+Links die Karte **ohne** Schalter, rechts **mit**: Die zweite Zeile trägt einmal das Passwort und einmal die Schaltfläche — beides zugleich geht nicht.
+
+<img alt='WLAN-Karte mit Passwortzeile' src='../Pictures/pageQR/panelPageQRWifiPW.png' height='230'> <img alt='WLAN-Karte mit Schalter statt Passwortzeile' src='../Pictures/pageQR/panelPageQRWifiSwitch.png' height='230'>
+
 ## 6. Was auf dem Panel erscheint
 
 Die Karte ist fest aufgebaut: Überschrift, QR-Code, darunter **genau zwei Zeilen**.
@@ -88,6 +92,10 @@ Die Karte ist fest aufgebaut: Überschrift, QR-Code, darunter **genau zwei Zeile
 |---|---|
 | **1** | Symbol und Beschriftung je Typ — Freitext: `qrcode-scan` ohne Beschriftung · WLAN: `wifi` mit „SSID" · URL: `web` mit „URL / Website" · Telefon: `phone` mit „Telephone". Als Wert steht der eingetragene Inhalt. |
 | **2** | Ohne Schalter: Symbol `key-wireless` (nur bei WLAN) mit „Password" und dem Passwort als Wert — leer, wenn *Passwort verbergen* gesetzt ist. Mit Schalter: die Schaltfläche aus [Abschnitt 5](#5-das-wlan-per-schalter-freigeben). |
+
+Dieselbe Karte als Telefonnummer und als Internetadresse:
+
+<img alt='QR-Karte mit Telefonnummer' src='../Pictures/pageQR/panelPageQRTelefon.png' height='230'> <img alt='QR-Karte mit Internetadresse' src='../Pictures/pageQR/panelPageQRURL.png' height='230'>
 
 > Die Beschriftungen dieser beiden Zeilen — „SSID", „Password", „URL / Website", „Telephone", „WlanOn", „WlanOff" — sind im Adapter **fest englisch** hinterlegt und werden nicht übersetzt. Auf einem deutschen Panel steht dort also „Password", nicht „Passwort".
 

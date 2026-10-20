@@ -80,6 +80,10 @@ What this state **really** does is not stated in the interface:
 - **The password line disappears with it**, because there is only this one line. If you want the switch *and* the password display, this card cannot do both.
 - The QR code itself stays visible unchanged — even while the network is off.
 
+On the left the card **without** a switch, on the right **with** one: the second line carries either the password or the button — not both.
+
+<img alt='WLAN-Karte mit Passwortzeile' src='../Pictures/pageQR/panelPageQRWifiPW.png' height='230'> <img alt='WLAN-Karte mit Schalter statt Passwortzeile' src='../Pictures/pageQR/panelPageQRWifiSwitch.png' height='230'>
+
 ## 6. What appears on the panel
 
 The card has a fixed layout: headline, QR code, and below it **exactly two lines**.
@@ -88,6 +92,10 @@ The card has a fixed layout: headline, QR code, and below it **exactly two lines
 |---|---|
 | **1** | Icon and label per type — Free Text: `qrcode-scan` without a label · WiFi: `wifi` with „SSID" · URL: `web` with „URL / Website" · Phone: `phone` with „Telephone". The value is the content you entered. |
 | **2** | Without a switch: icon `key-wireless` (WiFi only) with „Password" and the password as the value — empty when *Hide Password* is set. With a switch: the button from [section 5](#5-enabling-the-wifi-with-a-switch). |
+
+The same card as a phone number and as a web address:
+
+<img alt='QR-Karte mit Telefonnummer' src='../Pictures/pageQR/panelPageQRTelefon.png' height='230'> <img alt='QR-Karte mit Internetadresse' src='../Pictures/pageQR/panelPageQRURL.png' height='230'>
 
 > The labels of these two lines — „SSID", „Password", „URL / Website", „Telephone", „WlanOn", „WlanOff" — are hard-coded **in English** in the adapter and are not translated.
 

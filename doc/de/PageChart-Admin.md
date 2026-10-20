@@ -38,6 +38,10 @@ Unter **Diagrammtyp** stehen zwei Möglichkeiten, und die Wahl entscheidet mehr 
 
 Faustregel: **Säulen** für Tages- oder Stundensummen (Verbrauch je Stunde), **Linie** für einen Verlauf (Temperatur).
 
+<img alt='Liniendiagramm am Panel' src='../Pictures/pageChart/Linechart.png' height='230'> <img alt='Säulendiagramm am Panel' src='../Pictures/pageChart/Balkenchart.png' height='230'>
+
+An den beiden Bildern lassen sich die Unterschiede ablesen: Das **Liniendiagramm** (links) spannt die Y-Achse über die Daten — hier 11 bis 22 °C. Das **Säulendiagramm** (rechts) beginnt immer bei **0** und zeigt je Stunde eine Säule. Beide Achsenbeschriftungen bleiben **zweistellig**, das ist die Grenze des Panels (siehe [Abschnitt 6](#6-die-y-achse-und-die-zwei-zeichen-regel)). Und an den Zeitangaben sieht man die Einteilung: links alle vier Stunden, rechts an jeder durch sechs teilbaren Uhrzeit.
+
 ## 3. Datenaufbereitung: Datenbank oder Skript
 
 Die Auswahl **Datenaufbereitung** ist die eigentliche Weiche:

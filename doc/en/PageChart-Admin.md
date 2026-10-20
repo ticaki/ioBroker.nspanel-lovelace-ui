@@ -38,6 +38,10 @@ Under **Chart type** there are two choices, and that choice decides more than ju
 
 Rule of thumb: **columns** for daily or hourly totals (consumption per hour), **line** for a progression (temperature).
 
+<img alt='Liniendiagramm am Panel' src='../Pictures/pageChart/Linechart.png' height='230'> <img alt='Säulendiagramm am Panel' src='../Pictures/pageChart/Balkenchart.png' height='230'>
+
+The two pictures show the differences: the **line chart** (left) spans the y-axis across the data — here 11 to 22 °C. The **column chart** (right) always starts at **0** and shows one column per hour. Both axis labels stay **two digits**, which is the limit of the panel (see [section 6](#6-the-y-axis-and-the-two-character-rule)). And the time labels show the spacing: every four hours on the left, at every hour divisible by six on the right.
+
 ## 3. Data formatting: database or script
 
 The **Data formatting** choice is the actual switch:
