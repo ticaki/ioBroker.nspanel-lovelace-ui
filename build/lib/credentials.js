@@ -28,11 +28,13 @@ var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__ge
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 var credentials_exports = {};
 __export(credentials_exports, {
+  fingerprintCredential: () => fingerprintCredential,
   isCredentialId: () => isCredentialId,
   resolveLogin: () => resolveLogin,
   resolveSecret: () => resolveSecret
 });
 module.exports = __toCommonJS(credentials_exports);
+var import_node_crypto = require("node:crypto");
 var Credentials = __toESM(require("@iobroker/adapter-core/credentials"));
 function isCredentialId(id) {
   return typeof id === "string" && id.startsWith(Credentials.CREDENTIALS_PREFIX) && id.length > Credentials.CREDENTIALS_PREFIX.length;
@@ -49,6 +51,19 @@ async function readCredential(adapter, id) {
     adapter.log.warn(`Cannot read credential "${id}": ${e instanceof Error ? e.message : String(e)}`);
     return void 0;
   }
+}
+async function fingerprintCredential(adapter, id) {
+  const cred = await readCredential(adapter, id);
+  if (!cred) {
+    return void 0;
+  }
+  const hash = (0, import_node_crypto.createHash)("sha256");
+  hash.update(asText(cred.values.login));
+  hash.update("\0");
+  hash.update(asText(cred.values.password));
+  hash.update("\0");
+  hash.update(asText(cred.values.key));
+  return hash.digest("hex");
 }
 async function resolveLogin(adapter, credentialId, legacyLogin, legacyPassword) {
   if (isCredentialId(credentialId)) {
@@ -90,6 +105,7 @@ async function resolveSecret(adapter, credentialId, legacySecret) {
 }
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
+  fingerprintCredential,
   isCredentialId,
   resolveLogin,
   resolveSecret
