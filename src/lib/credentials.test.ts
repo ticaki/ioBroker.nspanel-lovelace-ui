@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import { isCredentialId, resolveLogin, resolveSecret } from './credentials';
+import { fingerprintCredential, isCredentialId, resolveLogin, resolveSecret } from './credentials';
 
 type FakeAdapter = ioBroker.Adapter & { warnings: string[] };
 
@@ -128,5 +128,79 @@ describe('lib/credentials - resolveSecret', () => {
         const r = await resolveSecret(adapter, 'system.credentials.wifi', 'legacy');
         expect(r).to.deep.equal({ source: 'legacy', secret: 'legacy' });
         expect(adapter.warnings[0]).to.include('is empty');
+    });
+});
+
+describe('lib/credentials - fingerprintCredential', () => {
+    it('is stable for unchanged values', async () => {
+        const adapter = fakeAdapter({ 'system.credentials.mqtt': loginCredential('iob', 'enc:s3cret') });
+        const first = await fingerprintCredential(adapter, 'system.credentials.mqtt');
+        const second = await fingerprintCredential(adapter, 'system.credentials.mqtt');
+        expect(first).to.be.a('string');
+        expect(second).to.equal(first);
+    });
+
+    it('does not change when only the display name changes', async () => {
+        const before = loginCredential('iob', 'enc:s3cret');
+        const first = await fingerprintCredential(
+            fakeAdapter({ 'system.credentials.mqtt': before }),
+            'system.credentials.mqtt',
+        );
+        const renamed = loginCredential('iob', 'enc:s3cret');
+        (renamed.common as Record<string, unknown>).name = 'Broker im Keller';
+        const second = await fingerprintCredential(
+            fakeAdapter({ 'system.credentials.mqtt': renamed }),
+            'system.credentials.mqtt',
+        );
+        expect(second).to.equal(first);
+    });
+
+    it('changes when the password changes', async () => {
+        const first = await fingerprintCredential(
+            fakeAdapter({ 'system.credentials.mqtt': loginCredential('iob', 'enc:s3cret') }),
+            'system.credentials.mqtt',
+        );
+        const second = await fingerprintCredential(
+            fakeAdapter({ 'system.credentials.mqtt': loginCredential('iob', 'enc:other') }),
+            'system.credentials.mqtt',
+        );
+        expect(second).to.not.equal(first);
+    });
+
+    it('changes when the login changes', async () => {
+        const first = await fingerprintCredential(
+            fakeAdapter({ 'system.credentials.mqtt': loginCredential('iob', 'enc:s3cret') }),
+            'system.credentials.mqtt',
+        );
+        const second = await fingerprintCredential(
+            fakeAdapter({ 'system.credentials.mqtt': loginCredential('other', 'enc:s3cret') }),
+            'system.credentials.mqtt',
+        );
+        expect(second).to.not.equal(first);
+    });
+
+    it('tells a login credential apart from a key credential with the same secret', async () => {
+        const login = await fingerprintCredential(
+            fakeAdapter({ 'system.credentials.x': loginCredential('', 'enc:same') }),
+            'system.credentials.x',
+        );
+        const key = await fingerprintCredential(
+            fakeAdapter({ 'system.credentials.x': keyCredential('enc:same') }),
+            'system.credentials.x',
+        );
+        expect(login).to.not.equal(key);
+    });
+
+    it('returns undefined when the credential is gone or cannot be decrypted', async () => {
+        expect(await fingerprintCredential(fakeAdapter({}), 'system.credentials.mqtt')).to.equal(undefined);
+        const broken = fakeAdapter({ 'system.credentials.mqtt': loginCredential('iob', 'garbage') });
+        expect(await fingerprintCredential(broken, 'system.credentials.mqtt')).to.equal(undefined);
+    });
+
+    it('never puts the secret into the fingerprint or the log', async () => {
+        const adapter = fakeAdapter({ 'system.credentials.mqtt': loginCredential('iob', 'enc:s3cret') });
+        const fp = await fingerprintCredential(adapter, 'system.credentials.mqtt');
+        expect(fp).to.not.include('s3cret');
+        expect(JSON.stringify(adapter.warnings)).to.not.include('s3cret');
     });
 });

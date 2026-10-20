@@ -7,6 +7,7 @@
  * legacy field of the instance settings, so configurations without a credential id keep working
  * exactly as before.
  */
+import { createHash } from 'node:crypto';
 import * as Credentials from '@iobroker/adapter-core/credentials';
 
 /** Where a resolved value came from. */
@@ -69,6 +70,32 @@ async function readCredential(
         adapter.log.warn(`Cannot read credential "${id}": ${e instanceof Error ? e.message : String(e)}`);
         return undefined;
     }
+}
+
+/**
+ * Builds a fingerprint of the values of a credential so that a later change can be detected
+ * without keeping the values themselves in memory.
+ *
+ * Only the three fields that are actually used are hashed. Renaming a credential or giving it
+ * another icon therefore does **not** change the fingerprint - that is the point of this function,
+ * because the admin fires an object change for those edits as well.
+ *
+ * @param adapter - the adapter instance
+ * @param id - the credential id
+ * @returns a hex digest, or undefined if the credential cannot be read
+ */
+export async function fingerprintCredential(adapter: ioBroker.Adapter, id: string): Promise<string | undefined> {
+    const cred = await readCredential(adapter, id);
+    if (!cred) {
+        return undefined;
+    }
+    const hash = createHash('sha256');
+    hash.update(asText(cred.values.login));
+    hash.update('\u0000');
+    hash.update(asText(cred.values.password));
+    hash.update('\u0000');
+    hash.update(asText(cred.values.key));
+    return hash.digest('hex');
 }
 
 /**

@@ -27,7 +27,7 @@ import { screensaverTemplateInfos } from './lib/templates/template-info';
 import type { Panel, panelConfigPartial } from './lib/controller/panel';
 import { generateAliasDocumentation } from './lib/tools/readme';
 import { redactSecretsInText, stringifyForLog } from './lib/tools/redact';
-import { isCredentialId, resolveLogin, resolveSecret } from './lib/credentials';
+import { fingerprintCredential, isCredentialId, resolveLogin, resolveSecret } from './lib/credentials';
 import { URL } from 'node:url';
 import type * as pages from './lib/types/pages';
 import * as fs from 'node:fs';
@@ -86,8 +86,14 @@ class NspanelLovelaceUi extends utils.Adapter {
     public versionJson: { data: Record<string, string>; timestamp: number } | undefined = undefined;
     /** Zwischenstände der dreistufigen Panel-Einrichtung, nach Topic */
     private nsPanelInitSessions: Map<string, NsPanelInitSession> = new Map();
-    /** Zentrale Credentials, die diese Instanz benutzt - eine Änderung daran startet den Adapter neu */
-    private watchedCredentialIds: Set<string> = new Set();
+    /** Zentrale Credentials dieser Instanz: Id -> Fingerabdruck der Werte beim letzten Auflösen */
+    private watchedCredentials: Map<string, string | undefined> = new Map();
+    /** Credentials, deren Änderung noch zu prüfen ist - siehe onObjectChange */
+    private pendingCredentialChecks: Set<string> = new Set();
+    /** Entprellung der Credential-Prüfung */
+    private credentialCheckTimer: ioBroker.Timeout | undefined;
+    /** Wartezeit der Entprellung in ms - mehrere Speicherklicks im Admin ergeben so eine Prüfung */
+    private static readonly CREDENTIAL_CHECK_DELAY_MS = 2500;
     public constructor(options: Partial<utils.AdapterOptions> = {}) {
         super({
             ...options,
@@ -616,14 +622,19 @@ class NspanelLovelaceUi extends utils.Adapter {
         try {
             this.unload = true;
             this.nsPanelInitSessions.clear();
-            for (const id of this.watchedCredentialIds) {
+            if (this.credentialCheckTimer) {
+                this.clearTimeout(this.credentialCheckTimer);
+                this.credentialCheckTimer = undefined;
+            }
+            this.pendingCredentialChecks.clear();
+            for (const id of this.watchedCredentials.keys()) {
                 try {
                     await this.unsubscribeForeignObjectsAsync(id);
                 } catch {
                     // ignore - the process ends anyway
                 }
             }
-            this.watchedCredentialIds.clear();
+            this.watchedCredentials.clear();
             if (this.timeoutAdmin) {
                 this.clearTimeout(this.timeoutAdmin);
             }
@@ -718,7 +729,9 @@ class NspanelLovelaceUi extends utils.Adapter {
         for (const id of ids) {
             try {
                 await this.subscribeForeignObjectsAsync(id);
-                this.watchedCredentialIds.add(id);
+                // Fingerabdruck merken, damit onObjectChange eine echte Wertänderung von einer
+                // Umbenennung unterscheiden kann
+                this.watchedCredentials.set(id, await fingerprintCredential(this, id));
             } catch (e: unknown) {
                 this.log.warn(`Cannot watch credential "${id}": ${e instanceof Error ? e.message : String(e)}`);
             }
@@ -727,20 +740,73 @@ class NspanelLovelaceUi extends utils.Adapter {
 
     /**
      * Is called if a subscribed object changes - only the central credentials are subscribed.
-     * The change is only reported; whether the adapter should apply it by itself is still open.
+     *
+     * A deletion is only reported: the adapter keeps running with the values it read at startup,
+     * and after the next restart the fields of the instance settings apply again. A change is
+     * checked - but not immediately, because the admin fires an event for every edit and saving a
+     * credential can produce several of them. See checkCredentialChanges.
      *
      * @param id   The id of the object that changed
      * @param obj  The new object, null if it was deleted
      */
     private onObjectChange(id: string, obj: ioBroker.Object | null | undefined): void {
-        if (this.unload || !this.watchedCredentialIds.has(id)) {
+        if (this.unload || !this.watchedCredentials.has(id)) {
             return;
         }
-        this.log.warn(
-            obj
-                ? `Credential "${id}" changed - restart the adapter to apply the new values`
-                : `Credential "${id}" was deleted - after a restart the fields of the instance settings are used instead`,
-        );
+        if (!obj) {
+            this.log.warn(
+                `Credential "${id}" was deleted - after a restart the fields of the instance settings are used instead`,
+            );
+            return;
+        }
+        this.pendingCredentialChecks.add(id);
+        if (this.credentialCheckTimer) {
+            this.clearTimeout(this.credentialCheckTimer);
+        }
+        this.credentialCheckTimer = this.setTimeout(() => {
+            this.credentialCheckTimer = undefined;
+            void this.checkCredentialChanges();
+        }, NspanelLovelaceUi.CREDENTIAL_CHECK_DELAY_MS);
+    }
+
+    /**
+     * Checks the credentials that reported a change and restarts the adapter if one of them really
+     * carries other values now.
+     *
+     * The adapter reads its credentials once at startup and keeps the values in memory, so a new
+     * password only takes effect after a restart. Restarting on every object change would be
+     * annoying though: renaming a credential or changing its icon fires the same event. Therefore
+     * the values are compared by fingerprint, and only a real change restarts the adapter.
+     *
+     * A credential that cannot be read at this moment (deleted, or encrypted with another system
+     * secret) does not restart anything - it keeps its previous fingerprint and is reported by
+     * resolveLogin/resolveSecret on the next start.
+     */
+    private async checkCredentialChanges(): Promise<void> {
+        const ids = [...this.pendingCredentialChecks];
+        this.pendingCredentialChecks.clear();
+        for (const id of ids) {
+            if (this.unload || !this.watchedCredentials.has(id)) {
+                return;
+            }
+            const current = await fingerprintCredential(this, id);
+            if (current === undefined) {
+                continue;
+            }
+            const previous = this.watchedCredentials.get(id);
+            if (previous === undefined) {
+                // beim Start nicht lesbar gewesen, jetzt schon - merken, aber nicht neu starten
+                this.watchedCredentials.set(id, current);
+                continue;
+            }
+            if (current !== previous) {
+                this.watchedCredentials.set(id, current);
+                this.log.info(`Credential "${id}" has new values - restarting the adapter to apply them`);
+                this.restart();
+                return;
+            }
+            this.log.debug(`Credential "${id}" changed, but its values are the same - no restart`);
+        }
     }
 
     /**
