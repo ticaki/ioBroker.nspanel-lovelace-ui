@@ -90,6 +90,8 @@ class Panel extends import_library.BaseClass {
   buttonBackFlipTimeout = {};
   blockTouchEventsForMs = 200;
   // ms
+  blockScreensaverTouchEventsForMs = 500;
+  // ms
   /** Timestamp of the last Nextion 0x24 (serial buffer overflow) reported by the display, 0 if none */
   nextionBufferOverflowTs = 0;
   lastAutoRestartTs = 0;
@@ -1763,9 +1765,9 @@ class Panel extends import_library.BaseClass {
             break;
           }
           if (this.screenSaverDoubleClick && parseInt(event.opt) > 1 || !this.screenSaverDoubleClick) {
-            if (this.lastSendTypeDate + this.blockTouchEventsForMs > Date.now()) {
+            if (this.lastSendTypeDate + this.blockScreensaverTouchEventsForMs > Date.now()) {
               this.log.debug(
-                `Ignore event because of blockTouchEventsForMs ${this.blockTouchEventsForMs}ms`
+                `Ignore event because of blockScreensaverTouchEventsForMs ${this.blockScreensaverTouchEventsForMs}ms`
               );
               break;
             }
