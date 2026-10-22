@@ -41,11 +41,14 @@ interface ScreensaverNotifyListDialogState {
 }
 
 /**
- * short label of a notification: headline, text or the first state
+ * short label of a notification: its name, otherwise headline, text or the first state
  *
  * @param notify the notification
  */
 function notifyLabel(notify: ScreensaverNotifyConfig): string {
+    if (notify.name?.trim()) {
+        return notify.name.trim();
+    }
     const parts = [notify.headlinePrefix, notify.headline, notify.headlineUnit].filter(p => !!p);
     return parts.join(' ').trim() || notify.text || notify.enabled[0] || '?';
 }

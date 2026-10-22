@@ -303,6 +303,7 @@ describe('lib/configuration - admin screensaver (entry -> script configuration)'
         expect((all as { Enabled: string[] }).Enabled).to.deep.equal(['a', 'b']);
         expect(screensaverNotifyToScript({ enabled: ['a'], buzzer: ' 1,2,3 ' })).to.include({ buzzer: '1,2,3' });
         expect(screensaverNotifyToScript({ enabled: ['a'], buzzer: '' })).to.not.have.property('buzzer');
+        expect(screensaverNotifyToScript({ enabled: ['a'], name: 'Sturm' })).to.not.have.property('name');
         expect(screensaverNotifyToScript({ enabled: [' '] })).to.equal(undefined);
         expect(screensaverNotifyToScript(undefined)).to.equal(undefined);
     });

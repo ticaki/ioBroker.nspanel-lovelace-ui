@@ -28,8 +28,14 @@ import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
 import type { ThemeType } from '@iobroker/gui-components';
 import { EntitySelector } from './EntitySelector';
+import { ScreensaverItemDialog, iconSrc } from './ScreensaverItemDialog';
 import IconSelect from '../IconSelect';
-import { type ScreensaverNotifyConfig, screensaverNotifyDefaultBuzzer } from '../../../src/lib/types/adminShareConfig';
+import {
+    type ScreensaverNotifyConfig,
+    formatEntryNumber,
+    screensaverNotifyDefaultBuzzer,
+    screensaverNotifyLines,
+} from '../../../src/lib/types/adminShareConfig';
 
 export interface ScreensaverNotifyDialogProps {
     getText: (key: string) => string;
@@ -47,6 +53,19 @@ type BuzzerMode = 'off' | 'default' | 'custom';
 /** text fields of a notification: fixed text or state id */
 type NotifyTextField = 'headline' | 'headlinePrefix' | 'headlineUnit' | 'text' | 'textPrefix' | 'textSuffix';
 
+/** a field that names a state: its value as the panel prints it and its unit */
+type PreviewState = { value: string; unit: string };
+
+/** the text fields of the preview */
+const PREVIEW_FIELDS: NotifyTextField[] = [
+    'headlinePrefix',
+    'headline',
+    'headlineUnit',
+    'textPrefix',
+    'text',
+    'textSuffix',
+];
+
 interface ScreensaverNotifyDialogState {
     open: boolean;
     /** true while a new notification is edited (title) */
@@ -57,6 +76,8 @@ interface ScreensaverNotifyDialogState {
     buzzerMode: BuzzerMode;
     /** own tone sequence, kept while switching the mode */
     buzzerSequence: string;
+    /** looked up field values: the state, null = no state (fixed text) */
+    lookup: Record<string, PreviewState | null>;
 }
 
 const EMPTY_COMMON: ioBroker.InstanceCommon = {} as ioBroker.InstanceCommon;
@@ -68,6 +89,18 @@ const EMPTY_COMMON: ioBroker.InstanceCommon = {} as ioBroker.InstanceCommon;
  */
 function isState(obj: ioBroker.Object): boolean {
     return !!obj && obj.type === 'state';
+}
+
+/**
+ * a state value as the panel prints it (tools getValueEntryString)
+ *
+ * @param val value of the state
+ */
+function previewValue(val: ioBroker.StateValue | undefined): string {
+    if (val === null || val === undefined) {
+        return '';
+    }
+    return typeof val === 'number' ? formatEntryNumber(val) : String(val);
 }
 
 /**
@@ -95,7 +128,72 @@ export default class ScreensaverNotifyDialog extends React.Component<
             priority: '',
             buzzerMode: 'off',
             buzzerSequence: '',
+            lookup: {},
         };
+    }
+
+    private lookupTimer: ReturnType<typeof setTimeout> | null = null;
+
+    componentDidUpdate(_prevProps: ScreensaverNotifyDialogProps, prevState: ScreensaverNotifyDialogState): void {
+        if (this.state.open && (prevState.draft !== this.state.draft || !prevState.open)) {
+            // typed ids: look up once the typing pauses
+            if (this.lookupTimer) {
+                clearTimeout(this.lookupTimer);
+            }
+            this.lookupTimer = setTimeout(() => {
+                this.lookupTimer = null;
+                void this.lookupFields();
+            }, 400);
+        }
+    }
+
+    componentWillUnmount(): void {
+        if (this.lookupTimer) {
+            clearTimeout(this.lookupTimer);
+        }
+    }
+
+    /** reads value and unit of the fields that name a state - like the adapter, which checks the state exists */
+    private async lookupFields(): Promise<void> {
+        const socket = this.props.oContext?.socket;
+        if (!socket) {
+            return;
+        }
+        const ids = new Set<string>();
+        for (const field of PREVIEW_FIELDS) {
+            const id = (this.state.draft[field] ?? '').trim();
+            if (id && !(id in this.state.lookup)) {
+                ids.add(id);
+            }
+        }
+        const found: Record<string, PreviewState | null> = {};
+        for (const id of ids) {
+            try {
+                const obj: ioBroker.Object | null | undefined = await socket.getObject(id);
+                if (obj?.type === 'state') {
+                    const state: ioBroker.State | null | undefined = await socket.getState(id);
+                    found[id] = { value: previewValue(state?.val), unit: String(obj.common?.unit ?? '') };
+                } else {
+                    found[id] = null;
+                }
+            } catch {
+                found[id] = null;
+            }
+        }
+        if (Object.keys(found).length) {
+            this.setState(prev => ({ lookup: { ...prev.lookup, ...found } }));
+        }
+    }
+
+    /**
+     * a text field as the panel prints it: the value of the state it names, otherwise the text
+     *
+     * @param field the field
+     */
+    private resolved(field: NotifyTextField): string {
+        const raw = this.state.draft[field] ?? '';
+        const state = this.state.lookup[raw.trim()];
+        return state ? state.value : raw;
     }
 
     /**
@@ -114,6 +212,8 @@ export default class ScreensaverNotifyDialog extends React.Component<
             priority: typeof draft.priority === 'number' ? String(draft.priority) : '',
             buzzerMode: buzzerModeOf(draft.buzzer),
             buzzerSequence: typeof draft.buzzer === 'string' ? draft.buzzer : '',
+            // values may have changed since the last opening
+            lookup: {},
         });
     }
 
@@ -146,6 +246,20 @@ export default class ScreensaverNotifyDialog extends React.Component<
     };
 
     /** at least one state shows the notification */
+    /** the text line has a text - prefix and suffix are dropped by the adapter without one */
+    private hasText(): boolean {
+        return !!this.state.draft.text?.trim();
+    }
+
+    /** something the panel can show: the text, or any part of the headline (the adapter shows a headline line for both) */
+    private hasContent(): boolean {
+        const { draft } = this.state;
+        return (
+            this.hasText() ||
+            [draft.headline, draft.headlinePrefix, draft.headlineUnit, draft.headlineIcon].some(v => !!v?.trim())
+        );
+    }
+
     private hasEnabled(): boolean {
         return this.state.draft.enabled.some(e => e.trim() !== '');
     }
@@ -163,7 +277,8 @@ export default class ScreensaverNotifyDialog extends React.Component<
     private apply = (): void => {
         const { draft, priority, buzzerMode, buzzerSequence } = this.state;
         const out: ScreensaverNotifyConfig = { enabled: draft.enabled.map(e => e.trim()).filter(e => !!e) };
-        const texts: (NotifyTextField | 'headlineIcon' | 'visibleCondition')[] = [
+        const texts: (NotifyTextField | 'name' | 'headlineIcon' | 'visibleCondition')[] = [
+            'name',
             'headline',
             'headlinePrefix',
             'headlineUnit',
@@ -173,10 +288,11 @@ export default class ScreensaverNotifyDialog extends React.Component<
             'textSuffix',
             'visibleCondition',
         ];
+        const withText = this.hasText();
         for (const field of texts) {
             const value = draft[field];
-            if (value) {
-                out[field] = field === 'visibleCondition' ? value.trim() : value;
+            if (value && (withText || (field !== 'textPrefix' && field !== 'textSuffix'))) {
+                out[field] = field === 'visibleCondition' || field === 'name' ? value.trim() : value;
             }
         }
         if (priority.trim() !== '') {
@@ -204,7 +320,7 @@ export default class ScreensaverNotifyDialog extends React.Component<
         return oContext?.themeType ?? (theme?.palette?.mode || 'light');
     }
 
-    private renderTextField(field: NotifyTextField, labelKey: string): React.JSX.Element {
+    private renderTextField(field: NotifyTextField, labelKey: string, disabled: boolean = false): React.JSX.Element {
         const { oContext, theme } = this.props;
         return (
             <Box sx={{ flex: 1, minWidth: 220 }}>
@@ -217,6 +333,7 @@ export default class ScreensaverNotifyDialog extends React.Component<
                     themeType={this.themeType()}
                     dialogName={`selectScreensaverNotify_${field}`}
                     filterFunc={isState}
+                    disabled={disabled}
                 />
             </Box>
         );
@@ -274,9 +391,55 @@ export default class ScreensaverNotifyDialog extends React.Component<
         );
     }
 
+    /** the notification as the panel shows it, with the current values of the states */
+    private renderPreview(): React.JSX.Element {
+        const { draft, lookup } = this.state;
+        const headlineState = lookup[(draft.headline ?? '').trim()];
+        const lines = screensaverNotifyLines({
+            headlinePrefix: this.resolved('headlinePrefix'),
+            headline: this.resolved('headline'),
+            // without an own unit the adapter takes the unit of the headline state
+            headlineUnit: draft.headlineUnit ? this.resolved('headlineUnit') : (headlineState?.unit ?? ''),
+            textPrefix: this.resolved('textPrefix'),
+            text: this.resolved('text'),
+            textSuffix: this.resolved('textSuffix'),
+        });
+        const src = iconSrc(draft.headlineIcon);
+        return (
+            <Box sx={{ mb: 1 }}>
+                <Typography
+                    variant="caption"
+                    color="text.secondary"
+                >
+                    {this.getText('screensaver_preview')}
+                </Typography>
+                <Box
+                    sx={{
+                        backgroundColor: '#000',
+                        color: '#fff',
+                        borderRadius: 1,
+                        border: '4px solid #222',
+                        p: 1.5,
+                        maxWidth: 480,
+                        minHeight: 64,
+                        fontFamily: 'Roboto, sans-serif',
+                    }}
+                    data-ss="notify-preview"
+                >
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, fontSize: 18, fontWeight: 500 }}>
+                        {src && ScreensaverItemDialog.coloredIcon(src, 22, '#fff')}
+                        <span>{lines.heading}</span>
+                    </Box>
+                    <Box sx={{ fontSize: 15, mt: 0.5, whiteSpace: 'pre-wrap', color: '#ddd' }}>{lines.text}</Box>
+                </Box>
+            </Box>
+        );
+    }
+
     private renderContent(): React.JSX.Element {
         return (
             <Box>
+                {this.renderPreview()}
                 {this.renderSectionTitle('screensaver_notify_content')}
                 <Typography
                     variant="caption"
@@ -291,11 +454,29 @@ export default class ScreensaverNotifyDialog extends React.Component<
                     {this.renderTextField('headlineUnit', 'screensaver_notify_headlineUnit')}
                 </Box>
                 <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
-                    {this.renderTextField('textPrefix', 'screensaver_notify_textPrefix')}
+                    {this.renderTextField('textPrefix', 'screensaver_notify_textPrefix', !this.hasText())}
                     {this.renderTextField('text', 'screensaver_notify_text')}
-                    {this.renderTextField('textSuffix', 'screensaver_notify_textSuffix')}
+                    {this.renderTextField('textSuffix', 'screensaver_notify_textSuffix', !this.hasText())}
                 </Box>
+                {!this.hasText() && (
+                    <Typography
+                        variant="caption"
+                        color="text.secondary"
+                        sx={{ display: 'block' }}
+                    >
+                        {this.getText('screensaver_notify_needText')}
+                    </Typography>
+                )}
                 <Box sx={{ maxWidth: 360, mt: 1 }}>{this.renderIconField()}</Box>
+                {!this.hasContent() && (
+                    <Alert
+                        severity="warning"
+                        sx={{ mt: 1 }}
+                        data-ss="notify-nocontent"
+                    >
+                        {this.getText('screensaver_notify_needContent')}
+                    </Alert>
+                )}
             </Box>
         );
     }
@@ -475,7 +656,7 @@ export default class ScreensaverNotifyDialog extends React.Component<
     }
 
     render(): React.JSX.Element {
-        const blocked = !this.hasEnabled() || this.invalidPriority() || this.invalidBuzzer();
+        const blocked = !this.hasEnabled() || !this.hasContent() || this.invalidPriority() || this.invalidBuzzer();
         return (
             <Dialog
                 open={this.state.open}
@@ -487,6 +668,18 @@ export default class ScreensaverNotifyDialog extends React.Component<
                     {this.getText(this.state.isNew ? 'screensaver_notify_new' : 'screensaver_notify_editTitle')}
                 </DialogTitle>
                 <DialogContent dividers>
+                    <TextField
+                        variant="standard"
+                        autoComplete="off"
+                        label={this.getText('screensaver_notify_name')}
+                        value={this.state.draft.name ?? ''}
+                        onChange={e => this.set('name', e.target.value)}
+                        helperText={this.getText('screensaver_notify_nameHint')}
+                        slotProps={{ inputLabel: { shrink: true } }}
+                        sx={{ mb: 2, maxWidth: 480 }}
+                        fullWidth
+                        data-ss="notify-name"
+                    />
                     {this.renderContent()}
                     {this.renderCondition()}
                     {this.renderDismiss()}

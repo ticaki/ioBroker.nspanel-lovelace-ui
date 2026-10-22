@@ -5,6 +5,7 @@ import { Icons } from './icon_mapping';
 import type { ChangeTypeOfKeys } from '../types/pages';
 import * as globals from '../types/function-and-const';
 import type { NSPanel } from '../types/NSPanel';
+import { formatEntryNumber } from '../types/adminShareConfig';
 
 export const messageItemDefault: NSPanel.MessageItem = {
     type: 'input_sel',
@@ -700,17 +701,7 @@ export async function getValueEntryString(
             }
         } else {
             const d = ('decimal' in i && i.decimal && (await i.decimal.getNumber())) ?? null;
-            if (d !== null && d !== false) {
-                res = nval.toLocaleString((format && format.local) ?? 'de-DE', {
-                    minimumFractionDigits: d,
-                    maximumFractionDigits: d,
-                    useGrouping: false,
-                });
-            } else {
-                res = nval.toLocaleString((format && format.local) ?? 'de-DE', {
-                    useGrouping: false,
-                });
-            }
+            res = formatEntryNumber(nval, (format && format.local) ?? 'de-DE', d !== null && d !== false ? d : null);
         }
 
         res = prefix + res + unit + suffix;

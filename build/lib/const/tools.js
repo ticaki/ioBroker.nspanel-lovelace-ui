@@ -80,6 +80,7 @@ var import_data_item = require("../controller/data-item");
 var import_Color = require("../const/Color");
 var import_icon_mapping = require("./icon_mapping");
 var globals = __toESM(require("../types/function-and-const"));
+var import_adminShareConfig = require("../types/adminShareConfig");
 const messageItemDefault = {
   type: "input_sel",
   intNameEntity: "",
@@ -620,7 +621,7 @@ async function getValueEntryBoolean(i) {
   return null;
 }
 async function getValueEntryString(i, v = null) {
-  var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k;
+  var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j;
   if (!i || !i.value) {
     return null;
   }
@@ -641,17 +642,7 @@ async function getValueEntryString(i, v = null) {
       }
     } else {
       const d = (_i = "decimal" in i && i.decimal && await i.decimal.getNumber()) != null ? _i : null;
-      if (d !== null && d !== false) {
-        res2 = nval.toLocaleString((_j = format && format.local) != null ? _j : "de-DE", {
-          minimumFractionDigits: d,
-          maximumFractionDigits: d,
-          useGrouping: false
-        });
-      } else {
-        res2 = nval.toLocaleString((_k = format && format.local) != null ? _k : "de-DE", {
-          useGrouping: false
-        });
-      }
+      res2 = (0, import_adminShareConfig.formatEntryNumber)(nval, (_j = format && format.local) != null ? _j : "de-DE", d !== null && d !== false ? d : null);
     }
     res2 = prefix + res2 + unit + suffix;
     return res2;

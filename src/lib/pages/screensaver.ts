@@ -14,6 +14,7 @@ import type { PageInterface } from '../classes/PageInterface';
 import type { BaseTriggeredPage } from '../classes/baseClassPage';
 import { Color, type RGB } from '../const/Color';
 import type { NSPanel } from '../types/NSPanel';
+import { screensaverNotifyLines } from '../types/adminShareConfig';
 
 export class Screensaver extends Page {
     items: undefined;
@@ -588,10 +589,9 @@ export class Screensaver extends Page {
             .filter(n => n[4] !== '' || n[5] !== '')
             .map(n => {
                 const s = n[5].split('<sp!it>');
-                const text = n[4];
+                const { heading, text } = screensaverNotifyLines({ icon: n[2], headline: s[0], text: n[4] });
                 const prio = !isNaN(parseInt(s[1], 10)) ? parseInt(s[1], 10) : 99;
                 const buzzer = s[2];
-                const heading = `${n[2]} ${s[0]}`.trim();
                 const id = n[1];
                 return { heading, text, prio, id, buzzer };
             })

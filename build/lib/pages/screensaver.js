@@ -46,6 +46,7 @@ var import_Page = require("../classes/Page");
 var tools = __toESM(require("../const/tools"));
 var import_pageItem = require("./pageItem");
 var import_Color = require("../const/Color");
+var import_adminShareConfig = require("../types/adminShareConfig");
 var _Screensaver_instances, sendNotify_fn;
 const _Screensaver = class _Screensaver extends import_Page.Page {
   //readonly mode: Types.ScreensaverModeType = 'standard';
@@ -488,10 +489,9 @@ const _Screensaver = class _Screensaver extends import_Page.Page {
     }
     const notifyList = message.options.notify.map((n) => n.split("~")).filter((n) => n[4] !== "" || n[5] !== "").map((n) => {
       const s = n[5].split("<sp!it>");
-      const text = n[4];
+      const { heading, text } = (0, import_adminShareConfig.screensaverNotifyLines)({ icon: n[2], headline: s[0], text: n[4] });
       const prio = !isNaN(parseInt(s[1], 10)) ? parseInt(s[1], 10) : 99;
       const buzzer = s[2];
-      const heading = `${n[2]} ${s[0]}`.trim();
       const id = n[1];
       return { heading, text, prio, id, buzzer };
     }).sort((a, b) => a.prio === b.prio ? 0 : a.prio > b.prio ? 1 : -1);

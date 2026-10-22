@@ -35,6 +35,7 @@ __export(adminShareConfig_exports, {
   emptyScreensaverEntry: () => emptyScreensaverEntry,
   emptyThermo2Circuit: () => emptyThermo2Circuit,
   emptyThermo2Entry: () => emptyThermo2Entry,
+  formatEntryNumber: () => formatEntryNumber,
   isMainPageEntry: () => isMainPageEntry,
   mainPageName: () => mainPageName,
   normalizeChannelId: () => normalizeChannelId,
@@ -53,6 +54,7 @@ __export(adminShareConfig_exports, {
   screensaverMaxEntries: () => screensaverMaxEntries,
   screensaverModes: () => screensaverModes,
   screensaverNotifyDefaultBuzzer: () => screensaverNotifyDefaultBuzzer,
+  screensaverNotifyLines: () => screensaverNotifyLines,
   screensaverSlotLimits: () => screensaverSlotLimits,
   screensaverWeatherAdapterOf: () => screensaverWeatherAdapterOf,
   screensaverWeatherAdapters: () => screensaverWeatherAdapters,
@@ -170,6 +172,24 @@ function screensaverItemFields(area) {
   };
 }
 const screensaverNotifyDefaultBuzzer = "1,2,3,0xF54";
+function formatEntryNumber(value, locale = "de-DE", decimals = null) {
+  if (decimals !== null) {
+    return value.toLocaleString(locale, {
+      minimumFractionDigits: decimals,
+      maximumFractionDigits: decimals,
+      useGrouping: false
+    });
+  }
+  return value.toLocaleString(locale, { useGrouping: false });
+}
+function screensaverNotifyLines(parts) {
+  var _a, _b, _c, _d, _e, _f;
+  const headline = `${(_a = parts.headlinePrefix) != null ? _a : ""}${(_b = parts.headline) != null ? _b : ""}${(_c = parts.headlineUnit) != null ? _c : ""}`;
+  return {
+    heading: `${(_d = parts.icon) != null ? _d : ""} ${headline}`.trim(),
+    text: parts.text ? `${(_e = parts.textPrefix) != null ? _e : ""}${parts.text}${(_f = parts.textSuffix) != null ? _f : ""}` : ""
+  };
+}
 const screensaverWeatherAdapters = ["accuweather", "openweathermap", "pirate-weather", "brightsky"];
 const screensaverWeatherItemKeys = [
   "sunriseSet",
@@ -1062,6 +1082,7 @@ const CHANNEL_ROLES_LIST = Object.keys(requiredScriptDataPoints);
   emptyScreensaverEntry,
   emptyThermo2Circuit,
   emptyThermo2Entry,
+  formatEntryNumber,
   isMainPageEntry,
   mainPageName,
   normalizeChannelId,
@@ -1080,6 +1101,7 @@ const CHANNEL_ROLES_LIST = Object.keys(requiredScriptDataPoints);
   screensaverMaxEntries,
   screensaverModes,
   screensaverNotifyDefaultBuzzer,
+  screensaverNotifyLines,
   screensaverSlotLimits,
   screensaverWeatherAdapterOf,
   screensaverWeatherAdapters,

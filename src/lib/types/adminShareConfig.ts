@@ -486,6 +486,8 @@ export const screensaverNotifyDefaultBuzzer = '1,2,3,0xF54';
  * by the existence of the state). The panel shows the enabled notification with the lowest priority number.
  */
 export type ScreensaverNotifyConfig = {
+    /** label in the notification list of the admin only - not sent to the panel */
+    name?: string;
     /** states that switch the notification on - several: all of them must be on; empty = notification not used */
     enabled: string[];
     /** condition on the value `val` of each enabled state, e.g. `val >= 3`; empty = the state as boolean */
@@ -507,6 +509,51 @@ export type ScreensaverNotifyConfig = {
     /** buzzer when shown: true = {@link screensaverNotifyDefaultBuzzer}, a string = own tone sequence */
     buzzer?: boolean | string;
 };
+
+/**
+ * a number as the panel prints a value (tools getValueEntryString): without grouping, with fixed decimals when given
+ *
+ * @param value the number
+ * @param locale locale of the format, default de-DE like the adapter
+ * @param decimals fixed number of decimals, null = as many as the number has
+ */
+export function formatEntryNumber(value: number, locale: string = 'de-DE', decimals: number | null = null): string {
+    if (decimals !== null) {
+        return value.toLocaleString(locale, {
+            minimumFractionDigits: decimals,
+            maximumFractionDigits: decimals,
+            useGrouping: false,
+        });
+    }
+    return value.toLocaleString(locale, { useGrouping: false });
+}
+
+/** parts of the two lines of a notification - each already resolved to the text the panel prints */
+export type ScreensaverNotifyLineParts = {
+    /** icon in front of the headline (the glyph on the panel, empty in the admin preview) */
+    icon?: string;
+    headlinePrefix?: string;
+    headline?: string;
+    headlineUnit?: string;
+    textPrefix?: string;
+    text?: string;
+    textSuffix?: string;
+};
+
+/**
+ * The two lines of a screensaver notification as the panel shows them - shared by the screensaver
+ * (HandleNotification, whose page item already joined prefix, value and unit) and the admin preview.
+ * heading: icon, a space, prefix + headline + unit, trimmed; text: prefix + text + suffix, empty without a text.
+ *
+ * @param parts the resolved parts
+ */
+export function screensaverNotifyLines(parts: ScreensaverNotifyLineParts): { heading: string; text: string } {
+    const headline = `${parts.headlinePrefix ?? ''}${parts.headline ?? ''}${parts.headlineUnit ?? ''}`;
+    return {
+        heading: `${parts.icon ?? ''} ${headline}`.trim(),
+        text: parts.text ? `${parts.textPrefix ?? ''}${parts.text}${parts.textSuffix ?? ''}` : '',
+    };
+}
 
 export type ScreensaverEntry = {
     /** name shown in the list, unique within the table */
