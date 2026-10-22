@@ -135,9 +135,11 @@ export class CredentialSelect extends React.Component<CredentialSelectProps, Cre
                 disabled={disabled}
                 error={missing || loadError}
             >
-                <InputLabel>{label}</InputLabel>
+                <InputLabel shrink>{label}</InputLabel>
                 <Select
                     value={current}
+                    // without displayEmpty MUI shows nothing for the empty value - the first entry would stay invisible
+                    displayEmpty
                     onOpen={() => void this.load()}
                     onChange={e => this.props.onChange(String(e.target.value ?? ''))}
                 >

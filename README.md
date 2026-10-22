@@ -162,6 +162,8 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
 - (ticaki) template text.battery.bydhvs: charging icon is now shown when the battery is charging (negative power)
 - (ticaki) admin screensaver: notifications (bell next to the gear) - headline, text, states with condition, priority, dismiss group and buzzer
 - (ticaki) admin screensaver: one notification list shared by all screensavers - a checkbox switches a notification on per screensaver (switched on ones first, then by priority)
+- (tt-tom17) admin: the credential selection (MQTT, Tasmota WebUI, wifi password of a QR page) shows its default `use login / password field` again instead of an empty field
+- (tt-tom17) admin: global settings - the weather instance is visible again; the list of instances is loaded when the page opens and not only when the field is opened, and a stored instance stays visible even if its adapter is gone
 
 ### 1.5.0 (2026-10-20)
 - (ticaki) screensaver: weather forecast items (2 values) no longer lose icon and weekday when the temperature is 0°
