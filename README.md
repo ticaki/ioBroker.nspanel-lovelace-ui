@@ -160,6 +160,7 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
 ### **WORK IN PROGRESS**
 - (ticaki) panel: tapping the screensaver several times no longer ends in a black page - a resent page got its pageType but no content
 - (ticaki) template text.battery.bydhvs: charging icon is now shown when the battery is charging (negative power)
+- (ticaki) admin screensaver: notifications (bell next to the gear) - headline, text, states with condition, priority, dismiss group and buzzer
 
 ### 1.5.0 (2026-10-20)
 - (ticaki) screensaver: weather forecast items (2 values) no longer lose icon and weekday when the temperature is 0°

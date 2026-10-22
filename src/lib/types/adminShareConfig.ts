@@ -477,6 +477,37 @@ export function screensaverItemFields(area: ScreensaverArea): Record<Screensaver
     };
 }
 
+/** tone sequence the panel plays for a notification with `buzzer: true` (config-manager getNotifyEntityData) */
+export const screensaverNotifyDefaultBuzzer = '1,2,3,0xF54';
+
+/**
+ * a notification of the screensaver - notifyScreensaverEntity of the script (config-manager getNotifyEntityData).
+ * Headline, text and their parts are a fixed text or the id of a state whose value is shown (the adapter decides
+ * by the existence of the state). The panel shows the enabled notification with the lowest priority number.
+ */
+export type ScreensaverNotifyConfig = {
+    /** states that switch the notification on - several: all of them must be on; empty = notification not used */
+    enabled: string[];
+    /** condition on the value `val` of each enabled state, e.g. `val >= 3`; empty = the state as boolean */
+    visibleCondition?: string;
+    headline?: string;
+    headlinePrefix?: string;
+    headlineUnit?: string;
+    /** icon in front of the headline */
+    headlineIcon?: string;
+    text?: string;
+    textPrefix?: string;
+    textSuffix?: string;
+    /** lower number = higher priority, undefined = 99 */
+    priority?: number;
+    /** a tap hides the notification until its enabled state switches off and on again */
+    dismissible?: boolean;
+    /** notifications with the same id are hidden together (all panels) */
+    dismissibleId?: string;
+    /** buzzer when shown: true = {@link screensaverNotifyDefaultBuzzer}, a string = own tone sequence */
+    buzzer?: boolean | string;
+};
+
 export type ScreensaverEntry = {
     /** name shown in the list, unique within the table */
     name: string;
@@ -492,6 +523,8 @@ export type ScreensaverEntry = {
     indicator: (ScreensaverItemConfig | undefined)[];
     mrIcon1?: ScreensaverMrIconConfig;
     mrIcon2?: ScreensaverMrIconConfig;
+    /** notifications of the screensaver, undefined = none */
+    notify?: ScreensaverNotifyConfig[];
     /** 12h or 24h clock, undefined = adapter default (24h) */
     clockFormat?: '12h' | '24h';
     /** date format overrides, undefined = global settings of the instance (config-manager getScreensaverConfig) */

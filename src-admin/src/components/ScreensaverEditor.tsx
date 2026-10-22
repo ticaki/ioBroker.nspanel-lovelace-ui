@@ -11,6 +11,7 @@
 import React from 'react';
 import {
     Alert,
+    Badge,
     Box,
     Button,
     Checkbox,
@@ -37,9 +38,11 @@ import {
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
 import SettingsIcon from '@mui/icons-material/Settings';
+import NotificationsIcon from '@mui/icons-material/Notifications';
 import ClearIcon from '@mui/icons-material/Clear';
 import { EntitySelector } from './EntitySelector';
 import { ScreensaverItemDialog } from './ScreensaverItemDialog';
+import ScreensaverNotifyListDialog from './ScreensaverNotifyListDialog';
 import IconSelect from '../IconSelect';
 import icons from '../icons.json';
 import {
@@ -377,6 +380,8 @@ export class ScreensaverEditor extends React.Component<ScreensaverEditorProps, S
     private getText(key: string): string {
         return this.props.getText(key);
     }
+
+    private notifyRef = React.createRef<ScreensaverNotifyListDialog>();
 
     // ---------- own scroll bar of the bottom area ----------
 
@@ -1757,6 +1762,31 @@ export class ScreensaverEditor extends React.Component<ScreensaverEditorProps, S
                     const box = layout.areas[area];
                     return box ? this.renderAreaSlots(area, box) : null;
                 })}
+                {/* bell → notifications */}
+                <Tooltip title={this.props.alive ? this.getText('screensaver_notify_hint') : ''}>
+                    <IconButton
+                        size="small"
+                        disabled={!this.props.alive}
+                        onClick={() => this.notifyRef.current?.openWith(entry.notify)}
+                        sx={{
+                            position: 'absolute',
+                            right: 'calc(1% + 46px)',
+                            bottom: '1%',
+                            color: '#fff',
+                            zIndex: 1,
+                            backgroundColor: 'rgba(0,0,0,0.6)',
+                            '&:hover': { backgroundColor: 'rgba(255,255,255,0.2)' },
+                        }}
+                        data-ss="notify"
+                    >
+                        <Badge
+                            badgeContent={entry.notify?.length ?? 0}
+                            color="primary"
+                        >
+                            <NotificationsIcon sx={{ fontSize: 26 }} />
+                        </Badge>
+                    </IconButton>
+                </Tooltip>
                 {/* gear → options */}
                 <Tooltip title={this.props.alive ? this.getText('screensaver_options_hint') : ''}>
                     <IconButton
@@ -2012,6 +2042,23 @@ export class ScreensaverEditor extends React.Component<ScreensaverEditorProps, S
                 </Alert>
 
                 {this.renderDialog()}
+
+                <ScreensaverNotifyListDialog
+                    ref={this.notifyRef}
+                    getText={key => this.getText(key)}
+                    oContext={oContext}
+                    theme={theme}
+                    themeName={this.props.themeName}
+                    onSave={list => {
+                        const out: ScreensaverEntry = { ...this.props.entry };
+                        if (list) {
+                            out.notify = list;
+                        } else {
+                            delete out.notify;
+                        }
+                        this.props.onEntryChange(out);
+                    }}
+                />
 
                 <ScreensaverItemDialog
                     open={!!editing}

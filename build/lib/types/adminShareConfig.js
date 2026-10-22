@@ -52,6 +52,7 @@ __export(adminShareConfig_exports, {
   screensaverItemSource: () => screensaverItemSource,
   screensaverMaxEntries: () => screensaverMaxEntries,
   screensaverModes: () => screensaverModes,
+  screensaverNotifyDefaultBuzzer: () => screensaverNotifyDefaultBuzzer,
   screensaverSlotLimits: () => screensaverSlotLimits,
   screensaverWeatherAdapterOf: () => screensaverWeatherAdapterOf,
   screensaverWeatherAdapters: () => screensaverWeatherAdapters,
@@ -168,6 +169,7 @@ function screensaverItemFields(area) {
     action: area === "indicator"
   };
 }
+const screensaverNotifyDefaultBuzzer = "1,2,3,0xF54";
 const screensaverWeatherAdapters = ["accuweather", "openweathermap", "pirate-weather", "brightsky"];
 const screensaverWeatherItemKeys = [
   "sunriseSet",
@@ -1077,6 +1079,7 @@ const CHANNEL_ROLES_LIST = Object.keys(requiredScriptDataPoints);
   screensaverItemSource,
   screensaverMaxEntries,
   screensaverModes,
+  screensaverNotifyDefaultBuzzer,
   screensaverSlotLimits,
   screensaverWeatherAdapterOf,
   screensaverWeatherAdapters,

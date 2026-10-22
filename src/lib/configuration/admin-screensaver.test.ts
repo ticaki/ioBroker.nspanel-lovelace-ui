@@ -12,6 +12,7 @@ import {
     screensaverItemToScript,
     screensaverStateIds,
     screensaverMrIconToScript,
+    screensaverNotifyToScript,
 } from './admin-screensaver';
 import type * as pages from '../types/pages';
 
@@ -250,9 +251,69 @@ describe('lib/configuration - admin screensaver (entry -> script configuration)'
         expect(config.indicatorScreensaverEntity[0]).to.include({ ScreensaverEntitySwitch: 'i1s' });
         expect(config.mrIcon1ScreensaverEntity).to.include({ ScreensaverEntity: 'm1' });
         expect(config.mrIcon2ScreensaverEntity).to.equal(undefined);
-        expect(config.notifyScreensaverEntity).to.equal(undefined);
+        expect(config.notifyScreensaverEntity).to.deep.equal([]);
         expect(config.advancedOptions).to.deep.equal({ screensaverSwipe: true, screensaverIndicatorButtons: false });
         expect(config.pages).to.deep.equal([]);
+    });
+
+    it('turns a notification into the notify element of the script', () => {
+        expect(
+            screensaverNotifyToScript({
+                enabled: ['weather-warnings.0.alerts.storm.level'],
+                visibleCondition: ' val >= 3 ',
+                headline: 'Wetterwarnung',
+                text: 'weather-warnings.0.alerts.storm.headline',
+                priority: 5,
+                dismissible: true,
+                dismissibleId: 'WetterEvent',
+            }),
+        ).to.deep.equal({
+            type: 'script',
+            Priority: 5,
+            Headline: 'Wetterwarnung',
+            Text: 'weather-warnings.0.alerts.storm.headline',
+            Enabled: 'weather-warnings.0.alerts.storm.level',
+            VisibleCondition: 'val >= 3',
+            isDismissiblePerEvent: true,
+            dismissibleIDGlobal: 'WetterEvent',
+        });
+        const all = screensaverNotifyToScript({
+            enabled: ['a', ' ', 'b'],
+            headlinePrefix: 'Hoch: ',
+            headlineUnit: '°C',
+            headlineIcon: 'alert',
+            textPrefix: '>',
+            textSuffix: '<',
+            dismissibleId: 'ignored without dismissible',
+            buzzer: true,
+        });
+        expect(all).to.include({
+            Priority: 99,
+            Headline: '',
+            Text: '',
+            HeadlinePrefix: 'Hoch: ',
+            HeadlineUnit: '°C',
+            HeadlineIcon: 'alert',
+            TextPrefix: '>',
+            TextSuffix: '<',
+            buzzer: true,
+        });
+        expect(all).to.not.have.property('dismissibleIDGlobal');
+        expect(all).to.not.have.property('VisibleCondition');
+        expect((all as { Enabled: string[] }).Enabled).to.deep.equal(['a', 'b']);
+        expect(screensaverNotifyToScript({ enabled: ['a'], buzzer: ' 1,2,3 ' })).to.include({ buzzer: '1,2,3' });
+        expect(screensaverNotifyToScript({ enabled: ['a'], buzzer: '' })).to.not.have.property('buzzer');
+        expect(screensaverNotifyToScript({ enabled: [' '] })).to.equal(undefined);
+        expect(screensaverNotifyToScript(undefined)).to.equal(undefined);
+    });
+
+    it('takes the notifications with an enabled state into the script configuration', () => {
+        const entry: ScreensaverEntry = {
+            ...emptyScreensaverEntry('n', 'standard'),
+            notify: [{ enabled: ['x'], headline: 'X' }, { enabled: [] }, { enabled: ['y'], priority: 1 }],
+        };
+        const config = buildScreensaverScriptConfig(entry, 'NSPanel_1');
+        expect(config.notifyScreensaverEntity?.map(n => (n as { Enabled: string }).Enabled)).to.deep.equal(['x', 'y']);
     });
 
     it('names the channel above a state', () => {

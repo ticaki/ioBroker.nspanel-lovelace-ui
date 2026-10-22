@@ -28,6 +28,7 @@ __export(admin_screensaver_exports, {
   screensaverFallbackIcon: () => screensaverFallbackIcon,
   screensaverItemToScript: () => screensaverItemToScript,
   screensaverMrIconToScript: () => screensaverMrIconToScript,
+  screensaverNotifyToScript: () => screensaverNotifyToScript,
   screensaverStateIds: () => screensaverStateIds
 });
 module.exports = __toCommonJS(admin_screensaver_exports);
@@ -169,8 +170,49 @@ function screensaverMrIconToScript(cfg) {
   };
   return element;
 }
+function screensaverNotifyToScript(cfg) {
+  var _a, _b, _c, _d, _e;
+  const enabled = ((_a = cfg == null ? void 0 : cfg.enabled) != null ? _a : []).map((e) => e.trim()).filter((e) => !!e);
+  if (!cfg || enabled.length === 0) {
+    return void 0;
+  }
+  const condition = (_b = cfg.visibleCondition) == null ? void 0 : _b.trim();
+  const element = {
+    type: "script",
+    Priority: typeof cfg.priority === "number" ? cfg.priority : 99,
+    Headline: (_c = cfg.headline) != null ? _c : "",
+    Text: (_d = cfg.text) != null ? _d : "",
+    Enabled: enabled.length === 1 ? enabled[0] : enabled,
+    ...condition ? { VisibleCondition: condition } : {}
+  };
+  if (cfg.headlinePrefix) {
+    element.HeadlinePrefix = cfg.headlinePrefix;
+  }
+  if (cfg.headlineUnit) {
+    element.HeadlineUnit = cfg.headlineUnit;
+  }
+  if (cfg.headlineIcon) {
+    element.HeadlineIcon = cfg.headlineIcon;
+  }
+  if (cfg.textPrefix) {
+    element.TextPrefix = cfg.textPrefix;
+  }
+  if (cfg.textSuffix) {
+    element.TextSuffix = cfg.textSuffix;
+  }
+  if (cfg.dismissible) {
+    element.isDismissiblePerEvent = true;
+    if ((_e = cfg.dismissibleId) == null ? void 0 : _e.trim()) {
+      element.dismissibleIDGlobal = cfg.dismissibleId.trim();
+    }
+  }
+  if (cfg.buzzer === true || typeof cfg.buzzer === "string" && cfg.buzzer.trim()) {
+    element.buzzer = cfg.buzzer === true ? true : String(cfg.buzzer).trim();
+  }
+  return element;
+}
 function buildScreensaverScriptConfig(entry, panelTopic, states = {}) {
-  var _a, _b, _c;
+  var _a, _b, _c, _d;
   const convert = (item, area) => {
     var _a2;
     return item ? screensaverItemToScript(item, area, (_a2 = states[item.state]) != null ? _a2 : {}) : void 0;
@@ -193,7 +235,7 @@ function buildScreensaverScriptConfig(entry, panelTopic, states = {}) {
     indicatorScreensaverEntity: ((_c = entry.indicator) != null ? _c : []).map((i) => convert(i, "indicator")),
     mrIcon1ScreensaverEntity: screensaverMrIconToScript(entry.mrIcon1),
     mrIcon2ScreensaverEntity: screensaverMrIconToScript(entry.mrIcon2),
-    notifyScreensaverEntity: void 0,
+    notifyScreensaverEntity: ((_d = entry.notify) != null ? _d : []).map((n) => screensaverNotifyToScript(n)).filter((n) => !!n),
     // the colors the adapter resolves from its global settings (config manager getIconColor)
     defaultOnColor: import_Color.Color.on,
     defaultOffColor: import_Color.Color.off,
@@ -260,6 +302,7 @@ function isScreensaverPage(page) {
   screensaverFallbackIcon,
   screensaverItemToScript,
   screensaverMrIconToScript,
+  screensaverNotifyToScript,
   screensaverStateIds
 });
 //# sourceMappingURL=admin-screensaver.js.map
