@@ -1,5 +1,11 @@
 import { expect } from 'chai';
-import { emptyScreensaverEntry, screensaverChannelIdOf, type ScreensaverEntry } from '../types/adminShareConfig';
+import {
+    emptyScreensaverEntry,
+    migrateScreensaverNotify,
+    screensaverChannelIdOf,
+    type ScreensaverEntry,
+    type ScreensaverNotifyConfig,
+} from '../types/adminShareConfig';
 import {
     adminScreensaverPageId,
     applyScreensaverEntry,
@@ -12,6 +18,7 @@ import {
     screensaverItemToScript,
     screensaverStateIds,
     screensaverMrIconToScript,
+    screensaverNotifyToScript,
 } from './admin-screensaver';
 import type * as pages from '../types/pages';
 
@@ -250,9 +257,94 @@ describe('lib/configuration - admin screensaver (entry -> script configuration)'
         expect(config.indicatorScreensaverEntity[0]).to.include({ ScreensaverEntitySwitch: 'i1s' });
         expect(config.mrIcon1ScreensaverEntity).to.include({ ScreensaverEntity: 'm1' });
         expect(config.mrIcon2ScreensaverEntity).to.equal(undefined);
-        expect(config.notifyScreensaverEntity).to.equal(undefined);
+        expect(config.notifyScreensaverEntity).to.deep.equal([]);
         expect(config.advancedOptions).to.deep.equal({ screensaverSwipe: true, screensaverIndicatorButtons: false });
         expect(config.pages).to.deep.equal([]);
+    });
+
+    it('turns a notification into the notify element of the script', () => {
+        expect(
+            screensaverNotifyToScript({
+                enabled: ['weather-warnings.0.alerts.storm.level'],
+                visibleCondition: ' val >= 3 ',
+                headline: 'Wetterwarnung',
+                text: 'weather-warnings.0.alerts.storm.headline',
+                priority: 5,
+                dismissible: true,
+                dismissibleId: 'WetterEvent',
+            }),
+        ).to.deep.equal({
+            type: 'script',
+            Priority: 5,
+            Headline: 'Wetterwarnung',
+            Text: 'weather-warnings.0.alerts.storm.headline',
+            Enabled: 'weather-warnings.0.alerts.storm.level',
+            VisibleCondition: 'val >= 3',
+            isDismissiblePerEvent: true,
+            dismissibleIDGlobal: 'WetterEvent',
+        });
+        const all = screensaverNotifyToScript({
+            enabled: ['a', ' ', 'b'],
+            headlinePrefix: 'Hoch: ',
+            headlineUnit: '°C',
+            headlineIcon: 'alert',
+            textPrefix: '>',
+            textSuffix: '<',
+            dismissibleId: 'ignored without dismissible',
+            buzzer: true,
+        });
+        expect(all).to.include({
+            Priority: 99,
+            Headline: '',
+            Text: '',
+            HeadlinePrefix: 'Hoch: ',
+            HeadlineUnit: '°C',
+            HeadlineIcon: 'alert',
+            TextPrefix: '>',
+            TextSuffix: '<',
+            buzzer: true,
+        });
+        expect(all).to.not.have.property('dismissibleIDGlobal');
+        expect(all).to.not.have.property('VisibleCondition');
+        expect((all as { Enabled: string[] }).Enabled).to.deep.equal(['a', 'b']);
+        expect(screensaverNotifyToScript({ enabled: ['a'], buzzer: ' 1,2,3 ' })).to.include({ buzzer: '1,2,3' });
+        expect(screensaverNotifyToScript({ enabled: ['a'], buzzer: '' })).to.not.have.property('buzzer');
+        expect(screensaverNotifyToScript({ enabled: ['a'], name: 'Sturm' })).to.not.have.property('name');
+        expect(screensaverNotifyToScript({ enabled: [' '] })).to.equal(undefined);
+        expect(screensaverNotifyToScript(undefined)).to.equal(undefined);
+    });
+
+    it('takes the notifications the entry switched on with an enabled state into the script configuration', () => {
+        const list: ScreensaverNotifyConfig[] = [
+            { id: 'a', enabled: ['x'], headline: 'X' },
+            { id: 'b', enabled: [] },
+            { id: 'c', enabled: ['z'] },
+            { id: 'd', enabled: ['y'], priority: 1 },
+        ];
+        const entry: ScreensaverEntry = {
+            ...emptyScreensaverEntry('n', 'standard'),
+            notify: ['d', 'b', 'a', 'unknown'],
+        };
+        const config = buildScreensaverScriptConfig(entry, 'NSPanel_1', {}, list);
+        expect(config.notifyScreensaverEntity?.map(n => (n as { Enabled: string }).Enabled)).to.deep.equal(['x', 'y']);
+        expect(buildScreensaverScriptConfig(entry, 'NSPanel_1').notifyScreensaverEntity).to.deep.equal([]);
+    });
+
+    it('moves notifications stored in the entries into the shared list', () => {
+        const legacy = {
+            ...emptyScreensaverEntry('old', 'standard'),
+            notify: [{ enabled: ['x'], headline: 'X' }, { enabled: ['y'] }],
+        } as unknown as ScreensaverEntry;
+        const current: ScreensaverEntry = { ...emptyScreensaverEntry('new', 'standard'), notify: ['k'] };
+        const shared: ScreensaverNotifyConfig[] = [{ id: 'k', enabled: ['k'] }];
+        const result = migrateScreensaverNotify([legacy, current], shared);
+        expect(result.changed).to.equal(true);
+        expect(result.list).to.have.length(3);
+        expect(new Set(result.list.map(n => n.id)).size).to.equal(3);
+        expect(result.entries[0].notify).to.deep.equal([result.list[1].id, result.list[2].id]);
+        expect(result.list[1]).to.include({ headline: 'X' });
+        expect(result.entries[1]).to.equal(current);
+        expect(migrateScreensaverNotify([current], shared).changed).to.equal(false);
     });
 
     it('names the channel above a state', () => {

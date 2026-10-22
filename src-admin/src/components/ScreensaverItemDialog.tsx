@@ -101,7 +101,7 @@ let iconMap: Map<string, string> | null = null;
  *
  * @param name icon name
  */
-function iconSrc(name: string | undefined): string {
+export function iconSrc(name: string | undefined): string {
     if (!name) {
         return '';
     }

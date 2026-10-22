@@ -81,8 +81,10 @@ class PageGlobalSettings extends ConfigGeneric<ConfigGenericProps & { theme?: an
             await this.props.oContext.socket.subscribeState(aliveStateId, this.onAliveChanged);
 
             // If adapter is alive, start loading pages
+            // `alive` of the state is still the old value here - setState works only after the render,
+            // so the local value has to be handed over, otherwise the load aborts every time
             if (isAlive) {
-                await this.loadWeatherEntities(false);
+                await this.loadWeatherEntities(false, isAlive);
             }
         } catch (error) {
             console.error('[PageGlobalSettings] Failed to get alive state or subscribe:', error);
@@ -97,12 +99,16 @@ class PageGlobalSettings extends ConfigGeneric<ConfigGenericProps & { theme?: an
 
         if (wasAlive !== isAlive) {
             this.setState({ alive: isAlive });
+            // the adapter started in the meantime - fetch the list that could not be loaded before
+            if (isAlive) {
+                void this.loadWeatherEntities(true, isAlive);
+            }
         }
     };
 
     // Lade Wetter-Entities
-    async loadWeatherEntities(forceReload = false): Promise<void> {
-        if (!this.state.alive) {
+    async loadWeatherEntities(forceReload = false, isAlive = this.state.alive): Promise<void> {
+        if (!isAlive) {
             return;
         }
 
@@ -124,8 +130,9 @@ class PageGlobalSettings extends ConfigGeneric<ConfigGenericProps & { theme?: an
             };
 
             try {
+                // the adapter walks all instance objects for this - 2 s was too tight on slow hosts
                 const timeoutPromise = new Promise<never>((_, reject) => {
-                    setTimeout(() => reject(new Error('sendTo timeout after 2 seconds')), 2000);
+                    setTimeout(() => reject(new Error('sendTo timeout after 5 seconds')), 5000);
                 });
 
                 const sendToPromise = this.props.oContext.socket.sendTo(target, 'getWeatherEntity', payload);
@@ -223,6 +230,10 @@ class PageGlobalSettings extends ConfigGeneric<ConfigGenericProps & { theme?: an
         const pw1 = data.pw1 ?? '';
         const rememberLastSite = data.rememberLastSite ?? false;
         const weatherEntity = data.weatherEntity ?? '';
+        const weatherEntities = this.state.weatherEntities ?? [];
+        // keep a stored instance visible even if it is not in the list (adapter removed, list not loaded yet)
+        const weatherMissing =
+            weatherEntity && !weatherEntities.some(entity => entity.value === weatherEntity) ? weatherEntity : '';
         // const writeTasmotaTele = data.writeTasmotaTele ?? false;
 
         // Expert Mode from props (provided by json-config system)
@@ -329,12 +340,20 @@ class PageGlobalSettings extends ConfigGeneric<ConfigGenericProps & { theme?: an
                         size="small"
                         disabled={!alive}
                     >
-                        <InputLabel id="weather-entity-label">{this.getText('weatherEntityLabel')}</InputLabel>
+                        <InputLabel
+                            id="weather-entity-label"
+                            shrink
+                        >
+                            {this.getText('weatherEntityLabel')}
+                        </InputLabel>
                         <Select
                             labelId="weather-entity-label"
                             id="weather-entity-select"
                             value={weatherEntity}
                             label={this.getText('weatherEntityLabel')}
+                            // the first entry of the list carries the empty value - without displayEmpty MUI
+                            // shows nothing for it, neither as default nor after it has been selected
+                            displayEmpty
                             onOpen={() => {
                                 // Lade Daten wenn Select geöffnet wird
                                 void this.loadWeatherEntities(true);
@@ -345,12 +364,12 @@ class PageGlobalSettings extends ConfigGeneric<ConfigGenericProps & { theme?: an
                             {this.state.loadingWeather && (
                                 <MenuItem
                                     disabled
-                                    value=""
+                                    value="__loading__"
                                 >
                                     <CircularProgress size={16} />
                                 </MenuItem>
                             )}
-                            {(this.state.weatherEntities || []).map(entity => (
+                            {weatherEntities.map(entity => (
                                 <MenuItem
                                     key={entity.value || entity.label}
                                     value={entity.value}
@@ -358,6 +377,7 @@ class PageGlobalSettings extends ConfigGeneric<ConfigGenericProps & { theme?: an
                                     {entity.label}
                                 </MenuItem>
                             ))}
+                            {weatherMissing && <MenuItem value={weatherMissing}>{weatherMissing}</MenuItem>}
                         </Select>
                     </FormControl>
                 </Box>

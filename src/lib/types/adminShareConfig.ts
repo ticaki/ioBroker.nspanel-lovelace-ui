@@ -477,6 +477,154 @@ export function screensaverItemFields(area: ScreensaverArea): Record<Screensaver
     };
 }
 
+/** tone sequence the panel plays for a notification with `buzzer: true` (config-manager getNotifyEntityData) */
+export const screensaverNotifyDefaultBuzzer = '1,2,3,0xF54';
+
+/**
+ * a notification of the screensaver - notifyScreensaverEntity of the script (config-manager getNotifyEntityData).
+ * Headline, text and their parts are a fixed text or the id of a state whose value is shown (the adapter decides
+ * by the existence of the state). The panel shows the enabled notification with the lowest priority number.
+ *
+ * All screensavers share one list (`native.screensaverNotify`), a screensaver switches notifications on by
+ * their id ({@link ScreensaverEntry.notify}).
+ */
+export type ScreensaverNotifyConfig = {
+    /** unique within the list, referenced by {@link ScreensaverEntry.notify} */
+    id: string;
+    /** label in the notification list of the admin only - not sent to the panel */
+    name?: string;
+    /** states that switch the notification on - several: all of them must be on; empty = notification not used */
+    enabled: string[];
+    /** condition on the value `val` of each enabled state, e.g. `val >= 3`; empty = the state as boolean */
+    visibleCondition?: string;
+    headline?: string;
+    headlinePrefix?: string;
+    headlineUnit?: string;
+    /** icon in front of the headline */
+    headlineIcon?: string;
+    text?: string;
+    textPrefix?: string;
+    textSuffix?: string;
+    /** lower number = higher priority, undefined = 99 */
+    priority?: number;
+    /** a tap hides the notification until its enabled state switches off and on again */
+    dismissible?: boolean;
+    /** notifications with the same id are hidden together (all panels) */
+    dismissibleId?: string;
+    /** buzzer when shown: true = {@link screensaverNotifyDefaultBuzzer}, a string = own tone sequence */
+    buzzer?: boolean | string;
+};
+
+/**
+ * a number as the panel prints a value (tools getValueEntryString): without grouping, with fixed decimals when given
+ *
+ * @param value the number
+ * @param locale locale of the format, default de-DE like the adapter
+ * @param decimals fixed number of decimals, null = as many as the number has
+ */
+export function formatEntryNumber(value: number, locale: string = 'de-DE', decimals: number | null = null): string {
+    if (decimals !== null) {
+        return value.toLocaleString(locale, {
+            minimumFractionDigits: decimals,
+            maximumFractionDigits: decimals,
+            useGrouping: false,
+        });
+    }
+    return value.toLocaleString(locale, { useGrouping: false });
+}
+
+/** parts of the two lines of a notification - each already resolved to the text the panel prints */
+export type ScreensaverNotifyLineParts = {
+    /** icon in front of the headline (the glyph on the panel, empty in the admin preview) */
+    icon?: string;
+    headlinePrefix?: string;
+    headline?: string;
+    headlineUnit?: string;
+    textPrefix?: string;
+    text?: string;
+    textSuffix?: string;
+};
+
+/**
+ * The two lines of a screensaver notification as the panel shows them - shared by the screensaver
+ * (HandleNotification, whose page item already joined prefix, value and unit) and the admin preview.
+ * heading: icon, a space, prefix + headline + unit, trimmed; text: prefix + text + suffix, empty without a text.
+ *
+ * @param parts the resolved parts
+ */
+export function screensaverNotifyLines(parts: ScreensaverNotifyLineParts): { heading: string; text: string } {
+    const headline = `${parts.headlinePrefix ?? ''}${parts.headline ?? ''}${parts.headlineUnit ?? ''}`;
+    return {
+        heading: `${parts.icon ?? ''} ${headline}`.trim(),
+        text: parts.text ? `${parts.textPrefix ?? ''}${parts.text}${parts.textSuffix ?? ''}` : '',
+    };
+}
+
+/**
+ * a new id for the shared notification list
+ *
+ * @param existing the list the id must be unique in
+ */
+export function newScreensaverNotifyId(existing: readonly ScreensaverNotifyConfig[]): string {
+    const used = new Set(existing.map(n => n.id));
+    let id = '';
+    do {
+        id = `n${Date.now().toString(36)}${Math.floor(Math.random() * 1296)
+            .toString(36)
+            .padStart(2, '0')}`;
+    } while (used.has(id));
+    return id;
+}
+
+/**
+ * the notifications a screensaver uses, in the order of the shared list
+ *
+ * @param entry screensaver entry
+ * @param list shared notification list (`native.screensaverNotify`)
+ */
+export function screensaverNotifyOfEntry(
+    entry: ScreensaverEntry,
+    list: readonly ScreensaverNotifyConfig[] | undefined,
+): ScreensaverNotifyConfig[] {
+    const ids = new Set((entry.notify ?? []).filter(id => typeof id === 'string'));
+    return (list ?? []).filter(n => n && ids.has(n.id));
+}
+
+/**
+ * Moves notifications stored inside the entries (first version of the feature: `notify` was a list of
+ * notifications per screensaver) into the shared list; the entries keep their ids.
+ *
+ * @param entries screensaver table
+ * @param list shared notification list
+ * @returns the converted table and list, changed = something was moved
+ */
+export function migrateScreensaverNotify(
+    entries: readonly ScreensaverEntry[],
+    list: readonly ScreensaverNotifyConfig[],
+): { entries: ScreensaverEntry[]; list: ScreensaverNotifyConfig[]; changed: boolean } {
+    const out = [...list];
+    let changed = false;
+    const converted = entries.map(entry => {
+        const raw: unknown[] = Array.isArray(entry.notify) ? entry.notify : [];
+        if (raw.every(n => typeof n === 'string')) {
+            return entry;
+        }
+        changed = true;
+        const ids: string[] = [];
+        for (const n of raw) {
+            if (typeof n === 'string') {
+                ids.push(n);
+            } else if (n && typeof n === 'object' && Array.isArray((n as { enabled?: unknown }).enabled)) {
+                const id = newScreensaverNotifyId(out);
+                out.push({ ...(n as Omit<ScreensaverNotifyConfig, 'id'>), id });
+                ids.push(id);
+            }
+        }
+        return { ...entry, notify: ids.length ? ids : undefined };
+    });
+    return { entries: converted, list: out, changed };
+}
+
 export type ScreensaverEntry = {
     /** name shown in the list, unique within the table */
     name: string;
@@ -492,6 +640,8 @@ export type ScreensaverEntry = {
     indicator: (ScreensaverItemConfig | undefined)[];
     mrIcon1?: ScreensaverMrIconConfig;
     mrIcon2?: ScreensaverMrIconConfig;
+    /** ids of the notifications of the shared list (`native.screensaverNotify`) this screensaver uses, undefined = none */
+    notify?: string[];
     /** 12h or 24h clock, undefined = adapter default (24h) */
     clockFormat?: '12h' | '24h';
     /** date format overrides, undefined = global settings of the instance (config-manager getScreensaverConfig) */
@@ -714,6 +864,8 @@ export type QREntry = {
     wlanhidden: boolean;
     wlantype?: 'nopass' | 'WPA' | 'WPA2' | 'WPA3' | 'WEP';
     qrPass?: string;
+    /** id of a central credential (system.credentials.<name>) holding the wifi password; empty = qrPass is used */
+    qrCredentialId?: string;
     pwdhidden: boolean;
     setState: string;
     uniqueName: string;

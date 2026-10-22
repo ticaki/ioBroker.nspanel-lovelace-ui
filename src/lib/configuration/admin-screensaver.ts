@@ -1,5 +1,10 @@
-import { screensaverCardOfMode } from '../types/adminShareConfig';
-import type { ScreensaverEntry, ScreensaverItemConfig, ScreensaverMrIconConfig } from '../types/adminShareConfig';
+import { screensaverCardOfMode, screensaverNotifyOfEntry } from '../types/adminShareConfig';
+import type {
+    ScreensaverEntry,
+    ScreensaverItemConfig,
+    ScreensaverMrIconConfig,
+    ScreensaverNotifyConfig,
+} from '../types/adminShareConfig';
 import type * as pages from '../types/pages';
 import { Color } from '../const/Color';
 import { getScreensaverItemDefaultsByRole } from '../const/page-item-defaults';
@@ -202,6 +207,55 @@ export function screensaverMrIconToScript(
 }
 
 /**
+ * notification of the admin as the script element; undefined when it has no enabled state (the config
+ * manager rejects a notification without one)
+ *
+ * @param cfg stored notification
+ */
+export function screensaverNotifyToScript(
+    cfg: Omit<ScreensaverNotifyConfig, 'id'> | undefined,
+): ScriptConfig.ScreenSaverNotifyElement | undefined {
+    const enabled = (cfg?.enabled ?? []).map(e => e.trim()).filter(e => !!e);
+    if (!cfg || enabled.length === 0) {
+        return undefined;
+    }
+    const condition = cfg.visibleCondition?.trim();
+    const element: ScriptConfig.ScreenSaverNotifyElement = {
+        type: 'script',
+        Priority: typeof cfg.priority === 'number' ? cfg.priority : 99,
+        Headline: cfg.headline ?? '',
+        Text: cfg.text ?? '',
+        Enabled: enabled.length === 1 ? enabled[0] : enabled,
+        ...(condition ? { VisibleCondition: condition } : {}),
+    };
+    if (cfg.headlinePrefix) {
+        element.HeadlinePrefix = cfg.headlinePrefix;
+    }
+    if (cfg.headlineUnit) {
+        element.HeadlineUnit = cfg.headlineUnit;
+    }
+    if (cfg.headlineIcon) {
+        element.HeadlineIcon = cfg.headlineIcon;
+    }
+    if (cfg.textPrefix) {
+        element.TextPrefix = cfg.textPrefix;
+    }
+    if (cfg.textSuffix) {
+        element.TextSuffix = cfg.textSuffix;
+    }
+    if (cfg.dismissible) {
+        element.isDismissiblePerEvent = true;
+        if (cfg.dismissibleId?.trim()) {
+            element.dismissibleIDGlobal = cfg.dismissibleId.trim();
+        }
+    }
+    if (cfg.buzzer === true || (typeof cfg.buzzer === 'string' && cfg.buzzer.trim())) {
+        element.buzzer = cfg.buzzer === true ? true : String(cfg.buzzer).trim();
+    }
+    return element;
+}
+
+/**
  * The screensaver part of a script configuration built from an admin entry - the input of
  * `ConfigManager.getScreensaverConfig()`, so both ways share one code path.
  *
@@ -211,11 +265,13 @@ export function screensaverMrIconToScript(
  * @param entry screensaver entry of the admin
  * @param panelTopic topic of the panel the configuration is built for
  * @param states name and role of the states of the items ({@link screensaverStateIds})
+ * @param notifyList shared notification list (`native.screensaverNotify`), the entry uses some of them by id
  */
 export function buildScreensaverScriptConfig(
     entry: ScreensaverEntry,
     panelTopic: string,
     states: Record<string, ScreensaverStateInfo> = {},
+    notifyList: readonly ScreensaverNotifyConfig[] = [],
 ): ScriptConfig.Config {
     const convert = (
         item: ScreensaverItemConfig | undefined,
@@ -242,7 +298,9 @@ export function buildScreensaverScriptConfig(
         indicatorScreensaverEntity: (entry.indicator ?? []).map(i => convert(i, 'indicator')),
         mrIcon1ScreensaverEntity: screensaverMrIconToScript(entry.mrIcon1),
         mrIcon2ScreensaverEntity: screensaverMrIconToScript(entry.mrIcon2),
-        notifyScreensaverEntity: undefined,
+        notifyScreensaverEntity: screensaverNotifyOfEntry(entry, notifyList)
+            .map(n => screensaverNotifyToScript(n))
+            .filter((n): n is ScriptConfig.ScreenSaverNotifyElement => !!n),
         // the colors the adapter resolves from its global settings (config manager getIconColor)
         defaultOnColor: Color.on,
         defaultOffColor: Color.off,

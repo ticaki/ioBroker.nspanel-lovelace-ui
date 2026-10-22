@@ -1,7 +1,7 @@
 // This file extends the AdapterConfig type from "@types/iobroker"
 
 import {NSpanelModel} from "./types/types";
-import type { ScreensaverEntry } from "./types/adminShareConfig";
+import type { ScreensaverEntry, ScreensaverNotifyConfig } from "./types/adminShareConfig";
 
 // Augment the globally declared type ioBroker.AdapterConfig
 declare global {
@@ -16,6 +16,8 @@ declare global {
             mqttServer: boolean;
             mqttPassword: string;
             mqttUsername: string;
+            /** id of a central credential (system.credentials.<name>, form login & password); empty = use mqttUsername/mqttPassword */
+            mqttCredentialId: string;
             mqttIp: string;
             mqttPort: number;
             internalServerIp: string;
@@ -42,6 +44,8 @@ declare global {
             useTasmotaAdmin: boolean;
             tasmotaAdmin: string;
             tasmotaAdminPassword: string;
+            /** id of a central credential holding the Tasmota WebUI password; empty = use tasmotaAdminPassword */
+            tasmotaCredentialId: string;
             panels: {name: string, topic: string, id: string, ip: string, model: NSpanelModel}[];
             pw1: string;
 
@@ -251,6 +255,8 @@ declare global {
 
             /** screensavers configured in the admin tab "Screensaver" (own table, not part of pageConfig) */
             screensaverConfig: ScreensaverEntry[];
+            /** notifications shared by all screensavers, an entry uses them by id (ScreensaverEntry.notify) */
+            screensaverNotify: ScreensaverNotifyConfig[];
 
             pageUnlockConfig: any
             pageQRConfig: any[];
@@ -282,6 +288,8 @@ declare global {
                 wlanhidden: boolean;
                 wlantype?: 'nopass' | 'WPA' | 'WPA2' | 'WPA3' | 'WEP';
                 qrPass?: string;
+                /** id of a central credential holding the wifi password; empty = use qrPass */
+                qrCredentialId?: string;
                 pwdhidden: boolean;
                 setState: string;
                 hidden?: boolean;

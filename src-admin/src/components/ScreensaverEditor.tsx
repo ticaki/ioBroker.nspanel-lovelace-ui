@@ -11,6 +11,7 @@
 import React from 'react';
 import {
     Alert,
+    Badge,
     Box,
     Button,
     Checkbox,
@@ -37,9 +38,11 @@ import {
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
 import SettingsIcon from '@mui/icons-material/Settings';
+import NotificationsIcon from '@mui/icons-material/Notifications';
 import ClearIcon from '@mui/icons-material/Clear';
 import { EntitySelector } from './EntitySelector';
 import { ScreensaverItemDialog } from './ScreensaverItemDialog';
+import ScreensaverNotifyListDialog from './ScreensaverNotifyListDialog';
 import IconSelect from '../IconSelect';
 import icons from '../icons.json';
 import {
@@ -50,12 +53,14 @@ import {
     type ScreensaverEntry,
     type ScreensaverMode,
     type ScreensaverMrIconConfig,
+    type ScreensaverNotifyConfig,
     type ScreensaverPanelModel,
     type ScreensaverWeatherItemKey,
     screensaverAreas,
     screensaverCardOfMode,
     screensaverMaxEntries,
     screensaverModes,
+    screensaverNotifyOfEntry,
     screensaverWeatherAdapterOf,
     screensaverWeatherItemsOfAdapter,
     screensaverWeatherItemsOn,
@@ -91,6 +96,10 @@ export interface ScreensaverEditorProps {
     /** global date settings of the instance, shown as the preview of "global setting" */
     globalFormats?: { weekdayFormat?: boolean; monthFormat?: number; yearFormat?: boolean };
     onEntryChange: (updated: ScreensaverEntry) => void;
+    /** notifications shared by all screensavers, the entry uses some of them by id */
+    notifyList: ScreensaverNotifyConfig[];
+    /** the notification dialog was applied: the entry with its notification ids and the edited shared list */
+    onNotifyChange: (updated: ScreensaverEntry, notifyList: ScreensaverNotifyConfig[]) => void;
     onNameChange: (oldName: string, newName: string) => void;
     getText: (key: string) => string;
     oContext: any;
@@ -377,6 +386,8 @@ export class ScreensaverEditor extends React.Component<ScreensaverEditorProps, S
     private getText(key: string): string {
         return this.props.getText(key);
     }
+
+    private notifyRef = React.createRef<ScreensaverNotifyListDialog>();
 
     // ---------- own scroll bar of the bottom area ----------
 
@@ -1757,6 +1768,31 @@ export class ScreensaverEditor extends React.Component<ScreensaverEditorProps, S
                     const box = layout.areas[area];
                     return box ? this.renderAreaSlots(area, box) : null;
                 })}
+                {/* bell → notifications */}
+                <Tooltip title={this.props.alive ? this.getText('screensaver_notify_hint') : ''}>
+                    <IconButton
+                        size="small"
+                        disabled={!this.props.alive}
+                        onClick={() => this.notifyRef.current?.openWith(this.props.notifyList, entry.notify)}
+                        sx={{
+                            position: 'absolute',
+                            right: 'calc(1% + 46px)',
+                            bottom: '1%',
+                            color: '#fff',
+                            zIndex: 1,
+                            backgroundColor: 'rgba(0,0,0,0.6)',
+                            '&:hover': { backgroundColor: 'rgba(255,255,255,0.2)' },
+                        }}
+                        data-ss="notify"
+                    >
+                        <Badge
+                            badgeContent={screensaverNotifyOfEntry(entry, this.props.notifyList).length}
+                            color="primary"
+                        >
+                            <NotificationsIcon sx={{ fontSize: 26 }} />
+                        </Badge>
+                    </IconButton>
+                </Tooltip>
                 {/* gear → options */}
                 <Tooltip title={this.props.alive ? this.getText('screensaver_options_hint') : ''}>
                     <IconButton
@@ -2012,6 +2048,25 @@ export class ScreensaverEditor extends React.Component<ScreensaverEditorProps, S
                 </Alert>
 
                 {this.renderDialog()}
+
+                <ScreensaverNotifyListDialog
+                    ref={this.notifyRef}
+                    getText={key => this.getText(key)}
+                    oContext={oContext}
+                    theme={theme}
+                    themeName={this.props.themeName}
+                    entry={this.props.entry}
+                    entries={this.props.entries}
+                    onSave={(list, ids) => {
+                        const out: ScreensaverEntry = { ...this.props.entry };
+                        if (ids.length) {
+                            out.notify = ids;
+                        } else {
+                            delete out.notify;
+                        }
+                        this.props.onNotifyChange(out, list);
+                    }}
+                />
 
                 <ScreensaverItemDialog
                     open={!!editing}

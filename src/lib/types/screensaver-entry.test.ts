@@ -3,6 +3,8 @@ import fs from 'node:fs';
 import path from 'node:path';
 import {
     emptyScreensaverEntry,
+    formatEntryNumber,
+    screensaverNotifyLines,
     screensaverAreas,
     screensaverCardOfMode,
     screensaverItemFields,
@@ -184,5 +186,33 @@ describe('lib/types - screensaver weather (admin tab)', () => {
         expect(screensaverWeatherItemsOn({ sunriseSet: true }, '')).to.deep.equal([]);
         expect(screensaverWeatherItemsOn({ sunriseSet: true }, 'daswetter.0')).to.deep.equal([]);
         expect(screensaverWeatherItemsOn(undefined, 'brightsky.0')).to.deep.equal([]);
+    });
+
+    it('prints numbers like the panel: no grouping, fixed decimals when given', () => {
+        expect(formatEntryNumber(1234.5)).to.equal('1234,5');
+        expect(formatEntryNumber(1234.5, 'en-US')).to.equal('1234.5');
+        expect(formatEntryNumber(3, 'de-DE', 2)).to.equal('3,00');
+        expect(formatEntryNumber(2.456, 'de-DE', 0)).to.equal('2');
+    });
+
+    it('joins the two lines of a notification', () => {
+        expect(
+            screensaverNotifyLines({
+                icon: 'X',
+                headlinePrefix: 'Hoch: ',
+                headline: '25',
+                headlineUnit: '°C',
+                textPrefix: '[',
+                text: 'Sturm',
+                textSuffix: ']',
+            }),
+        ).to.deep.equal({ heading: 'X Hoch: 25°C', text: '[Sturm]' });
+        // the screensaver passes the lines its page item joined already
+        expect(screensaverNotifyLines({ icon: '', headline: 'Wetterwarnung', text: 'Orkan' })).to.deep.equal({
+            heading: 'Wetterwarnung',
+            text: 'Orkan',
+        });
+        // prefix and suffix of the text need a text
+        expect(screensaverNotifyLines({ textPrefix: '[', textSuffix: ']' })).to.deep.equal({ heading: '', text: '' });
     });
 });

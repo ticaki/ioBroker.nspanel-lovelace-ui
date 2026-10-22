@@ -82,6 +82,29 @@ describe('lib/controller/panel-message - PanelSend ack handling', () => {
         expect(published).to.deep.equal(['a']);
     });
 
+    it('a resent pageType keeps its content although the same content is still queued', async () => {
+        // multiple taps on the screensaver: main is sent, then sent again while the first one is still queued
+        send.addMessage('pageType~cardGrid2', true);
+        send.addMessage('entityUpd~main', false);
+        send.addMessage('pageType~cardGrid2', true);
+        send.addMessage('entityUpd~main', false);
+        send.addMessage('entityUpd~main', false);
+        await clock.tickAsync(20);
+        for (let i = 0; i < 2; i++) {
+            await done();
+            await render();
+            await clock.tickAsync(300);
+            await done();
+            await clock.tickAsync(300);
+        }
+        expect(published).to.deep.equal([
+            'pageType~cardGrid2',
+            'entityUpd~main',
+            'pageType~cardGrid2',
+            'entityUpd~main',
+        ]);
+    });
+
     it('pageType waits for renderCurrentPage, its Done does not ack the next message', async () => {
         send.addMessage('pageType~screensaver', true);
         send.addMessage('time', false);

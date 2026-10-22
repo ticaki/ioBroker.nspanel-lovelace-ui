@@ -486,7 +486,8 @@ class MaintainPanel extends ConfigGeneric<ConfigGenericProps & MaintainPanelProp
         const data = this.props.data;
         const hasValidIp = panel._ip && /^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$/.test(panel._ip);
         const hasValidTopic = panel._topic && /^[a-zA-Z][\w/]+$/.test(panel._topic);
-        const hasValidData = data.mqttPort && data.mqttUsername && data.mqttPassword;
+        const hasValidData =
+            data.mqttPort && ((data.mqttUsername && data.mqttPassword) || (!data.mqttServer && data.mqttCredentialId));
         const hasValidServer = data.mqttServer
             ? data.internalServerIp &&
               /^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$/.test(data.internalServerIp) &&

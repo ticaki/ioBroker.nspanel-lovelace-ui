@@ -158,10 +158,20 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
     ### **WORK IN PROGRESS**
 -->
 ### **WORK IN PROGRESS**
+- (ticaki) panel: tapping the screensaver several times no longer ends in a black page - a resent page got its pageType but no content
+- (ticaki) template text.battery.bydhvs: charging icon is now shown when the battery is charging (negative power)
+- (ticaki) admin screensaver: notifications (bell next to the gear) - headline, text, states with condition, priority, dismiss group and buzzer
+- (ticaki) admin screensaver: one notification list shared by all screensavers - a checkbox switches a notification on per screensaver (switched on ones first, then by priority)
+- (tt-tom17) admin: the credential selection (MQTT, Tasmota WebUI, wifi password of a QR page) shows its default `use login / password field` again instead of an empty field
+- (tt-tom17) admin: global settings - the weather instance is visible again; the list of instances is loaded when the page opens and not only when the field is opened, and a stored instance stays visible even if its adapter is gone
+
+### 1.5.0 (2026-10-20)
 - (ticaki) screensaver: weather forecast items (2 values) no longer lose icon and weekday when the temperature is 0°
 - (ticaki) panel: a repeated acknowledgement from tasmota (bad wifi, mqtt broker like mosquitto 2) no longer drops the next message - e.g. screensaver colors and weather updates got lost
 - (ticaki) mqtt: no overlapping subscriptions at the broker anymore, so every message arrives only once
 - (ticaki) templates: brightsky bottom items show the hourly weather icon again (brightsky sets role `text` on `hourly.xx.icon`), unknown weather icons fall back to `alert-circle-outline`
+- (tt-tom17) admin: the MQTT login of an external broker, the Tasmota WebUI password and the wifi password of a QR page can come from the central credentials (Admin → System settings → Credentials). Optional - without a selection the fields keep working as before. Only the id is stored; changed values restart the adapter, renaming a credential does not
+- (tt-tom17) fix: the Tasmota WebUI password field of the MQTT settings stored the change event instead of the typed text
 
 ### 1.4.0 (2026-10-14)
 - (tt-tom17) admin: new tab `Screensaver` - configure the screensaver without script: version (standard / alternate / advanced / easyview), the panels that use it, every place of the card with its own dialog (state or page item template, icons incl. icon per value range, colors, value, text, indicator action), MR icons, clock and date format, weather instance, rotation time, swipe and indicator buttons. The entry replaces the screensaver of the script for the listed panels. Documentation `doc/de|en/Screensaver-Admin.md`

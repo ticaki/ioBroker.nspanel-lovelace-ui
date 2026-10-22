@@ -392,8 +392,8 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
             !!localTasmotaName &&
             (!!data.mqttServer || !!data.mqttIp) &&
             !!data.mqttPort &&
-            !!data.mqttUsername &&
-            !!data.mqttPassword &&
+            // the login comes either from the fields or, for an external broker, from a central credential (resolved by the adapter)
+            ((!!data.mqttUsername && !!data.mqttPassword) || (!data.mqttServer && !!data.mqttCredentialId)) &&
             (!data.mqttServer || (!!data.internalServerIp && this.isValidCompleteIp(data.internalServerIp)))
         );
     }
@@ -480,6 +480,7 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
                 mqttPort: this.props.data.mqttPort,
                 mqttUsername: this.props.data.mqttUsername,
                 mqttPassword: this.props.data.mqttPassword,
+                mqttCredentialId: this.props.data.mqttCredentialId,
                 internalServerIp: this.props.data.internalServerIp,
                 useBetaTFT: this.props.data.useBetaTFT,
                 model: this.props.data._nsPanelModel || 'eu',
