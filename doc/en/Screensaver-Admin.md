@@ -15,8 +15,9 @@ Contents:
 - [Time and date](#8-time-and-date)
 - [Weather](#9-weather)
 - [Options: rotation, swipe, indicator buttons](#10-options-rotation-swipe-indicator-buttons)
-- [Saving – what the adapter does with it](#11-saving--what-the-adapter-does-with-it)
-- [If something does not look as expected](#12-if-something-does-not-look-as-expected)
+- [Notifications](#11-notifications)
+- [Saving – what the adapter does with it](#12-saving--what-the-adapter-does-with-it)
+- [If something does not look as expected](#13-if-something-does-not-look-as-expected)
 
 ## 1. Creating a screensaver
 
@@ -39,6 +40,7 @@ The bin on a list entry deletes it (with confirmation). Below the list the **pan
 | **Time**, **Date** | Click opens the dialog for 12h/24h or the date format. |
 | **Two icons at the bottom** | The status icons (`mrIcon1`, `mrIcon2`), click opens their dialog; grey = not used. |
 | **Gear** | Options: rotation time, swipe gestures, indicator buttons. |
+| **Bell** | The notifications that cover the screensaver – see [Notifications](#11-notifications). The number next to it tells how many are switched on for this screensaver. Needs a running instance. |
 | **Weather** (right) | Weather adapter and its additional items, see [Weather](#9-weather). |
 | **Frames of the indicators** | grey = no button, red = button, green = switch, blue = open page (see [Indicators](#6-indicators-and-buttons)). |
 
@@ -170,7 +172,17 @@ The gear in the panel picture opens the options:
 - **Swipe gestures on the screensaver** (`screensaverSwipe`).
 - **Indicators act as buttons** (`screensaverIndicatorButtons`) – required for the actions of [Indicators](#6-indicators-and-buttons).
 
-## 11. Saving – what the adapter does with it
+## 11. Notifications
+
+The **bell** next to the gear opens the notifications: two lines that cover the screensaver while a datapoint is “on” – a headline with an icon and a text below it.
+
+- All screensavers share **one common list**. The checkbox **Show on this screensaver** decides where a notification appears; editing and deleting affect every screensaver that uses it.
+- The panel shows **one** notification at a time – the one with the lowest priority number.
+- The number at the bell tells how many notifications are switched on for this screensaver.
+
+> Everything else – content, conditions, priority, dismissing and the buzzer – has its own page: [Notifications](Screensaver-Notify).
+
+## 12. Saving – what the adapter does with it
 
 **Save** or **Save and close** at the bottom; the instance restarts. On start the adapter looks for the first entry that lists the topic of each panel and builds the screensaver from it – through the same path as the script. The log then says e.g.:
 
@@ -181,10 +193,11 @@ Screensaver 'Wohnzimmer' (advanced) from the admin configuration replaces the sc
 - The screensaver of the script is replaced for this panel; panels without an entry keep it.
 - Version and rotation time come from the entry; the states `panels.<panel>.cmd.screenSaver.layout` and `…rotationTime` follow it (they do not overwrite the entry).
 - An item without icon gets the default icons of its role, without a known role `help-circle-outline` – the dialog does not let it through without icon anyway.
-- The stored form lies in `native.screensaverConfig` of the instance (one object per entry).
+- The stored form lies in `native.screensaverConfig` of the instance (one object per entry). The **notifications** are kept separately in `native.screensaverNotify`; the entry only remembers the ids of those that are to appear on it.
 
-## 12. If something does not look as expected
+## 13. If something does not look as expected
 
+- **The Screensaver tab is missing:** It appears once the MQTT settings are complete. When the login comes from the central credentials, the tab was hidden by mistake up to version 1.5.0 – see [PR #810](https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/pull/810).
 - **Everything greyed out:** The instance is not running. The editor works with a running instance only, the template list comes from the running adapter.
 - **No places in the panel picture:** No panel chosen yet.
 - **Apply stays disabled:** state missing or no state (channel chosen?), no icon, no writable state for button/switch, no valid state for "color from a state" – the dialog names the reason in a yellow line.
@@ -193,3 +206,4 @@ Screensaver 'Wohnzimmer' (advanced) from the admin configuration replaces the sc
 - **Panel shows the script screensaver:** The panel is in no entry, or it is in a second entry further down (the first wins) – see the log.
 - **Items missing after a version change:** They lie in areas the version does not have (message at the top of the editor); switch the version back or **Remove**.
 - **Indicator does not react to its action:** Enable the option **Indicators act as buttons**.
+- **A message covers the screensaver:** That is a notification – which one and why is explained under [Notifications](Screensaver-Notify#9-if-something-does-not-look-as-expected).

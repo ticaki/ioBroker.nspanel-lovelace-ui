@@ -40,6 +40,7 @@
 **Screensaver**  
 - Introduction *(to come)*  
 - [Screensaver – admin](Screensaver-Admin)  
+- [Notifications](Screensaver-Notify)  
 
 **Configuration script**  
 - Introduction *(to come)*  

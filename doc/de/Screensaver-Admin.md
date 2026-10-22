@@ -15,8 +15,9 @@ Inhalt:
 - [Uhrzeit und Datum](#8-uhrzeit-und-datum)
 - [Wetter](#9-wetter)
 - [Optionen: Rotation, Wischen, Indikator-Tasten](#10-optionen-rotation-wischen-indikator-tasten)
-- [Speichern – was der Adapter daraus macht](#11-speichern--was-der-adapter-daraus-macht)
-- [Wenn etwas nicht wie erwartet aussieht](#12-wenn-etwas-nicht-wie-erwartet-aussieht)
+- [Benachrichtigungen](#11-benachrichtigungen)
+- [Speichern – was der Adapter daraus macht](#12-speichern--was-der-adapter-daraus-macht)
+- [Wenn etwas nicht wie erwartet aussieht](#13-wenn-etwas-nicht-wie-erwartet-aussieht)
 
 ## 1. Bildschirmschoner anlegen
 
@@ -39,6 +40,7 @@ Der Papierkorb am Listeneintrag löscht ihn (mit Rückfrage). Unter der Liste st
 | **Uhrzeit**, **Datum** | Klick öffnet den Dialog für 12h/24h bzw. das Datumsformat. |
 | **Zwei Symbole unten** | Die Statussymbole (`mrIcon1`, `mrIcon2`), Klick öffnet ihren Dialog; grau = nicht belegt. |
 | **Zahnrad** | Optionen: Rotationszeit, Wischgesten, Indikator-Tasten. |
+| **Glocke** | Die Benachrichtigungen, die sich über den Bildschirmschoner legen – siehe [Benachrichtigungen](#11-benachrichtigungen). Die Zahl daran nennt, wie viele auf diesem Bildschirmschoner eingeschaltet sind. Nur bei laufender Instanz bedienbar. |
 | **Wetter** (rechts) | Wetter-Adapter und seine Zusatz-Items, siehe [Wetter](#9-wetter). |
 | **Rahmen der Indikatoren** | grau = keine Taste, rot = Taste, grün = Schalter, blau = Seite öffnen (siehe [Indikatoren](#6-indikatoren-und-tasten)). |
 
@@ -170,7 +172,17 @@ Das Zahnrad im Panelbild öffnet die Optionen:
 - **Wischgesten auf dem Bildschirmschoner** (`screensaverSwipe`).
 - **Indikatoren wirken als Tasten** (`screensaverIndicatorButtons`) – Voraussetzung für die Aktionen aus [Indikatoren](#6-indikatoren-und-tasten).
 
-## 11. Speichern – was der Adapter daraus macht
+## 11. Benachrichtigungen
+
+Die **Glocke** neben dem Zahnrad öffnet die Benachrichtigungen: zwei Zeilen, die sich über den Bildschirmschoner legen, solange ein Datenpunkt „an“ ist – Überschrift mit Symbol und darunter ein Text.
+
+- Alle Bildschirmschoner teilen sich **eine gemeinsame Liste**. Das Häkchen **Auf diesem Bildschirmschoner anzeigen** entscheidet, wo eine Benachrichtigung erscheint; Bearbeiten und Löschen wirken auf alle, die sie nutzen.
+- Das Panel zeigt immer nur **eine** Meldung – die mit der kleinsten Prioritätszahl.
+- Die Zahl an der Glocke nennt, wie viele Benachrichtigungen auf diesem Bildschirmschoner eingeschaltet sind.
+
+> Alles Weitere – Inhalt, Bedingungen, Priorität, Quittieren und Summer – steht auf der eigenen Seite [Benachrichtigungen](Screensaver-Notify).
+
+## 12. Speichern – was der Adapter daraus macht
 
 Unten **Speichern** bzw. **Speichern und schließen**; die Instanz startet neu. Beim Start sucht der Adapter für jedes Panel den ersten Eintrag, der sein Topic enthält, und baut daraus den Bildschirmschoner – über denselben Weg wie das Skript. Im Log steht dann z. B.:
 
@@ -181,10 +193,11 @@ Screensaver 'Wohnzimmer' (advanced) from the admin configuration replaces the sc
 - Der Bildschirmschoner des Skripts wird für dieses Panel ersetzt; Panels ohne Eintrag behalten ihn.
 - Version und Rotationszeit kommen aus dem Eintrag; die States `panels.<Panel>.cmd.screenSaver.layout` und `…rotationTime` folgen ihm (sie überschreiben den Eintrag nicht).
 - Ein Item ohne Symbol bekommt die Standardsymbole seiner Rolle, ohne bekannte Rolle `help-circle-outline` – der Dialog lässt es allerdings gar nicht erst ohne Symbol zu.
-- Die gespeicherte Form liegt unter `native.screensaverConfig` der Instanz (ein Objekt je Eintrag).
+- Die gespeicherte Form liegt unter `native.screensaverConfig` der Instanz (ein Objekt je Eintrag). Die **Benachrichtigungen** stehen getrennt davon unter `native.screensaverNotify`; der Eintrag merkt sich nur die IDs derjenigen, die auf ihm erscheinen sollen.
 
-## 12. Wenn etwas nicht wie erwartet aussieht
+## 13. Wenn etwas nicht wie erwartet aussieht
 
+- **Der Tab Screensaver fehlt:** Er erscheint erst, wenn die MQTT-Einstellungen vollständig sind. Kommt der Login aus den zentralen Zugangsdaten, war der Tab bis Version 1.5.0 fälschlich ausgeblendet – siehe [PR #810](https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/pull/810).
 - **Alles ausgegraut:** Die Instanz läuft nicht. Der Editor ist nur bei laufender Instanz bedienbar, die Template-Liste kommt vom laufenden Adapter.
 - **Keine Plätze im Panelbild:** Noch kein Panel gewählt.
 - **Übernehmen bleibt gesperrt:** Datenpunkt fehlt oder ist kein Datenpunkt (Kanal gewählt?), kein Symbol, bei Taste/Schalter kein beschreibbarer Datenpunkt, bei „Farbe aus Datenpunkt“ kein gültiger State – der Dialog nennt den Grund in einer gelben Zeile.
@@ -193,3 +206,4 @@ Screensaver 'Wohnzimmer' (advanced) from the admin configuration replaces the sc
 - **Panel zeigt den Skript-Screensaver:** Das Panel steht in keinem Eintrag, oder es steht in einem zweiten Eintrag weiter unten (der erste gewinnt) – siehe Log.
 - **Items fehlen nach einem Versionswechsel:** Sie liegen in Bereichen, die die Version nicht hat (Meldung oben im Editor); Version zurückstellen oder **Entfernen**.
 - **Indikator reagiert nicht auf die Aktion:** Option **Indikatoren wirken als Tasten** einschalten.
+- **Eine Meldung liegt über dem Bildschirmschoner:** Das ist eine Benachrichtigung – welche und warum, steht unter [Benachrichtigungen](Screensaver-Notify#9-wenn-etwas-nicht-wie-erwartet-aussieht).

@@ -40,6 +40,7 @@
 **Screensaver**  
 - [Einleitung](screensaver)  
 - [Screensaver – Admin](Screensaver-Admin)  
+- [Benachrichtigungen](Screensaver-Notify)  
 
 **Konfigurationsscript**  
 - [Einleitung](ScriptConfig) iA  
