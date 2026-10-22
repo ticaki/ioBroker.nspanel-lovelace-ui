@@ -117,6 +117,7 @@ export class Panel extends BaseClass {
     private buttonBackFlipTimeout: { left?: ioBroker.Timeout | undefined; right?: ioBroker.Timeout | undefined } = {};
 
     public blockTouchEventsForMs: number = 200; // ms
+    public blockScreensaverTouchEventsForMs: number = 500; // ms
     /** Timestamp of the last Nextion 0x24 (serial buffer overflow) reported by the display, 0 if none */
     private nextionBufferOverflowTs: number = 0;
     private lastAutoRestartTs: number = 0;
@@ -1991,9 +1992,9 @@ export class Panel extends BaseClass {
                         break;
                     }
                     if ((this.screenSaverDoubleClick && parseInt(event.opt) > 1) || !this.screenSaverDoubleClick) {
-                        if (this.lastSendTypeDate + this.blockTouchEventsForMs > Date.now()) {
+                        if (this.lastSendTypeDate + this.blockScreensaverTouchEventsForMs > Date.now()) {
                             this.log.debug(
-                                `Ignore event because of blockTouchEventsForMs ${this.blockTouchEventsForMs}ms`,
+                                `Ignore event because of blockScreensaverTouchEventsForMs ${this.blockScreensaverTouchEventsForMs}ms`,
                             );
                             break;
                         }

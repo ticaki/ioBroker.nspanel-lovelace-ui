@@ -44,6 +44,7 @@ var import_system_templates = require("../templates/system-templates");
 var ShareConfig = __toESM(require("../types/adminShareConfig"));
 var import_adminShareConfig = require("../types/adminShareConfig");
 var import_function_and_const = require("../types/function-and-const");
+var import_credentials = require("../credentials");
 const systemNavigationNodeNames = new Set(
   import_system_templates.systemNavigation.filter((node) => node != null).map((node) => node.name)
 );
@@ -287,6 +288,12 @@ Stack: ${stack}`
           if (!isAlwaysOnMode(entry.alwaysOn)) {
             entry.alwaysOn = "none";
           }
+          const qrPassword = await (0, import_credentials.resolveSecret)(this.adapter, entry.qrCredentialId, entry.qrPass);
+          if (qrPassword.source === "credential") {
+            this.log.debug(
+              `QR page '${entry.uniqueName}': password taken from credential "${qrPassword.name}"`
+            );
+          }
           newPage = {
             uniqueID: entry.uniqueName,
             hidden: !!entry.hidden,
@@ -300,7 +307,7 @@ Stack: ${stack}`
                 ssidUrlTel: { type: "const", constVal: entry.ssidUrlTel || "" },
                 wlantype: { type: "const", constVal: entry.wlantype || "WPA" },
                 wlanhidden: { type: "const", constVal: !!entry.wlanhidden || false },
-                password: { type: "const", constVal: entry.qrPass || "" },
+                password: { type: "const", constVal: qrPassword.secret },
                 pwdhidden: { type: "const", constVal: !!entry.pwdhidden || false },
                 setState: entry.setState ? { type: "triggered", dp: entry.setState } : void 0
               }
