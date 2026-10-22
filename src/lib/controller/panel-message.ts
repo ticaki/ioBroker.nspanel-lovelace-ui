@@ -156,10 +156,13 @@ export class PanelSend extends BaseClass {
         force?: boolean,
         opt?: IClientPublishOptions,
     ): void => {
+        // a pageType clears the page on the panel - only messages queued after the last pageType are real
+        // duplicates, otherwise a resent pageType~X would be left without its content (black page)
+        const lastPageType = this.messageDb.findLastIndex(a => a.payload.startsWith('pageType~'));
         if (
             this.messageTimeout !== undefined &&
             this.messageDb.length > 0 &&
-            this.messageDb.some(a => a.payload === payload && a.opt === opt)
+            this.messageDb.slice(lastPageType + 1).some(a => a.payload === payload && a.opt === opt)
         ) {
             if (this.adapter.config.debugLogMqtt) {
                 this.log.debug(`Message ${payload} is already in queue - skip adding`);

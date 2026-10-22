@@ -2770,7 +2770,7 @@
         "_screensaver": {
             "type": "panel",
             "label": "Screensaver",
-            "hidden": "(!data.mqttServer && !data.mqttIp ) || !data.mqttPort || !data.mqttUsername || !data.mqttPassword || !data.panels || !data.panels.length",
+            "hidden": "(!data.mqttServer && !data.mqttIp ) || !data.mqttPort || ((data.mqttServer || !data.mqttCredentialId) && (!data.mqttUsername || !data.mqttPassword)) || !data.panels || !data.panels.length",
             "items": {
                 "screensaverConfig": {
                     "type": "custom",

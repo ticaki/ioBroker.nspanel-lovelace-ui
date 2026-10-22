@@ -158,6 +158,10 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
     ### **WORK IN PROGRESS**
 -->
 ### **WORK IN PROGRESS**
+- (ticaki) panel: tapping the screensaver several times no longer ends in a black page - a resent page got its pageType but no content
+- (ticaki) template text.battery.bydhvs: charging icon is now shown when the battery is charging (negative power)
+
+### 1.5.0 (2026-10-20)
 - (ticaki) screensaver: weather forecast items (2 values) no longer lose icon and weekday when the temperature is 0°
 - (ticaki) panel: a repeated acknowledgement from tasmota (bad wifi, mqtt broker like mosquitto 2) no longer drops the next message - e.g. screensaver colors and weather updates got lost
 - (ticaki) mqtt: no overlapping subscriptions at the broker anymore, so every message arrives only once

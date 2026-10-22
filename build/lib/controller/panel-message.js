@@ -138,7 +138,8 @@ class PanelSend extends import_library.BaseClass {
   };
   addMessage = (payload, ackForType, force, opt) => {
     var _a;
-    if (this.messageTimeout !== void 0 && this.messageDb.length > 0 && this.messageDb.some((a) => a.payload === payload && a.opt === opt)) {
+    const lastPageType = this.messageDb.findLastIndex((a) => a.payload.startsWith("pageType~"));
+    if (this.messageTimeout !== void 0 && this.messageDb.length > 0 && this.messageDb.slice(lastPageType + 1).some((a) => a.payload === payload && a.opt === opt)) {
       if (this.adapter.config.debugLogMqtt) {
         this.log.debug(`Message ${payload} is already in queue - skip adding`);
       }
