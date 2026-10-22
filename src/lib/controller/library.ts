@@ -602,6 +602,21 @@ export class Library extends BaseClass {
         return this.stateDataBase[this.cleandp(dp)];
     }
 
+    /**
+     * Tells whether a panel may be used, based on `panels.<id>.cmd.activated`.
+     *
+     * The single place that answers this question - the controller asks before a panel is created,
+     * the adapter before it talks to the hardware. A missing datapoint counts as activated, so a
+     * fresh installation starts every panel.
+     *
+     * @param panelId - id of the panel, the part between `panels.` and the next dot
+     * @returns false only when the datapoint exists and holds false
+     */
+    isPanelActivated(panelId: string): boolean {
+        const state = this.readdb(`panels.${panelId}.cmd.activated`);
+        return !(state && state.val === false);
+    }
+
     setdb(
         dp: string,
         type: ioBroker.ObjectType | LibraryStateVal,
