@@ -1,4 +1,4 @@
-import { screensaverCardOfMode } from '../types/adminShareConfig';
+import { screensaverCardOfMode, screensaverNotifyOfEntry } from '../types/adminShareConfig';
 import type {
     ScreensaverEntry,
     ScreensaverItemConfig,
@@ -213,7 +213,7 @@ export function screensaverMrIconToScript(
  * @param cfg stored notification
  */
 export function screensaverNotifyToScript(
-    cfg: ScreensaverNotifyConfig | undefined,
+    cfg: Omit<ScreensaverNotifyConfig, 'id'> | undefined,
 ): ScriptConfig.ScreenSaverNotifyElement | undefined {
     const enabled = (cfg?.enabled ?? []).map(e => e.trim()).filter(e => !!e);
     if (!cfg || enabled.length === 0) {
@@ -265,11 +265,13 @@ export function screensaverNotifyToScript(
  * @param entry screensaver entry of the admin
  * @param panelTopic topic of the panel the configuration is built for
  * @param states name and role of the states of the items ({@link screensaverStateIds})
+ * @param notifyList shared notification list (`native.screensaverNotify`), the entry uses some of them by id
  */
 export function buildScreensaverScriptConfig(
     entry: ScreensaverEntry,
     panelTopic: string,
     states: Record<string, ScreensaverStateInfo> = {},
+    notifyList: readonly ScreensaverNotifyConfig[] = [],
 ): ScriptConfig.Config {
     const convert = (
         item: ScreensaverItemConfig | undefined,
@@ -296,7 +298,7 @@ export function buildScreensaverScriptConfig(
         indicatorScreensaverEntity: (entry.indicator ?? []).map(i => convert(i, 'indicator')),
         mrIcon1ScreensaverEntity: screensaverMrIconToScript(entry.mrIcon1),
         mrIcon2ScreensaverEntity: screensaverMrIconToScript(entry.mrIcon2),
-        notifyScreensaverEntity: (entry.notify ?? [])
+        notifyScreensaverEntity: screensaverNotifyOfEntry(entry, notifyList)
             .map(n => screensaverNotifyToScript(n))
             .filter((n): n is ScriptConfig.ScreenSaverNotifyElement => !!n),
         // the colors the adapter resolves from its global settings (config manager getIconColor)

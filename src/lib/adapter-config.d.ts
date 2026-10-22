@@ -1,7 +1,7 @@
 // This file extends the AdapterConfig type from "@types/iobroker"
 
 import {NSpanelModel} from "./types/types";
-import type { ScreensaverEntry } from "./types/adminShareConfig";
+import type { ScreensaverEntry, ScreensaverNotifyConfig } from "./types/adminShareConfig";
 
 // Augment the globally declared type ioBroker.AdapterConfig
 declare global {
@@ -255,6 +255,8 @@ declare global {
 
             /** screensavers configured in the admin tab "Screensaver" (own table, not part of pageConfig) */
             screensaverConfig: ScreensaverEntry[];
+            /** notifications shared by all screensavers, an entry uses them by id (ScreensaverEntry.notify) */
+            screensaverNotify: ScreensaverNotifyConfig[];
 
             pageUnlockConfig: any
             pageQRConfig: any[];

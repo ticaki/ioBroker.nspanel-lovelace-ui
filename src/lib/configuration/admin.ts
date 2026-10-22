@@ -150,7 +150,7 @@ export class AdminConfiguration extends BaseClass {
         }
         const manager = new ConfigManager(this.adapter);
         const result = await manager.getScreensaverConfig(
-            buildScreensaverScriptConfig(entry, option.topic, states),
+            buildScreensaverScriptConfig(entry, option.topic, states, this.adapter.config.screensaverNotify ?? []),
             [],
             {
                 weatherEntityFixed: entry.weatherEntity !== undefined,

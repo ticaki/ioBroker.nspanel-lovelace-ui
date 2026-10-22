@@ -115,7 +115,7 @@ Stack: ${stack}`
    * @param option - Panel configuration partial (pages of the script already inside)
    */
   async processScreensaver(option) {
-    var _a, _b;
+    var _a, _b, _c;
     const { entry, others } = (0, import_admin_screensaver.findScreensaverEntry)(this.adapter.config.screensaverConfig, option.topic);
     if (!entry) {
       return;
@@ -143,7 +143,7 @@ Stack: ${stack}`
     }
     const manager = new import_config_manager.ConfigManager(this.adapter);
     const result = await manager.getScreensaverConfig(
-      (0, import_admin_screensaver.buildScreensaverScriptConfig)(entry, option.topic, states),
+      (0, import_admin_screensaver.buildScreensaverScriptConfig)(entry, option.topic, states, (_c = this.adapter.config.screensaverNotify) != null ? _c : []),
       [],
       {
         weatherEntityFixed: entry.weatherEntity !== void 0

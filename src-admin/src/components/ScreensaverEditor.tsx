@@ -53,12 +53,14 @@ import {
     type ScreensaverEntry,
     type ScreensaverMode,
     type ScreensaverMrIconConfig,
+    type ScreensaverNotifyConfig,
     type ScreensaverPanelModel,
     type ScreensaverWeatherItemKey,
     screensaverAreas,
     screensaverCardOfMode,
     screensaverMaxEntries,
     screensaverModes,
+    screensaverNotifyOfEntry,
     screensaverWeatherAdapterOf,
     screensaverWeatherItemsOfAdapter,
     screensaverWeatherItemsOn,
@@ -94,6 +96,10 @@ export interface ScreensaverEditorProps {
     /** global date settings of the instance, shown as the preview of "global setting" */
     globalFormats?: { weekdayFormat?: boolean; monthFormat?: number; yearFormat?: boolean };
     onEntryChange: (updated: ScreensaverEntry) => void;
+    /** notifications shared by all screensavers, the entry uses some of them by id */
+    notifyList: ScreensaverNotifyConfig[];
+    /** the notification dialog was applied: the entry with its notification ids and the edited shared list */
+    onNotifyChange: (updated: ScreensaverEntry, notifyList: ScreensaverNotifyConfig[]) => void;
     onNameChange: (oldName: string, newName: string) => void;
     getText: (key: string) => string;
     oContext: any;
@@ -1767,7 +1773,7 @@ export class ScreensaverEditor extends React.Component<ScreensaverEditorProps, S
                     <IconButton
                         size="small"
                         disabled={!this.props.alive}
-                        onClick={() => this.notifyRef.current?.openWith(entry.notify)}
+                        onClick={() => this.notifyRef.current?.openWith(this.props.notifyList, entry.notify)}
                         sx={{
                             position: 'absolute',
                             right: 'calc(1% + 46px)',
@@ -1780,7 +1786,7 @@ export class ScreensaverEditor extends React.Component<ScreensaverEditorProps, S
                         data-ss="notify"
                     >
                         <Badge
-                            badgeContent={entry.notify?.length ?? 0}
+                            badgeContent={screensaverNotifyOfEntry(entry, this.props.notifyList).length}
                             color="primary"
                         >
                             <NotificationsIcon sx={{ fontSize: 26 }} />
@@ -2049,14 +2055,16 @@ export class ScreensaverEditor extends React.Component<ScreensaverEditorProps, S
                     oContext={oContext}
                     theme={theme}
                     themeName={this.props.themeName}
-                    onSave={list => {
+                    entry={this.props.entry}
+                    entries={this.props.entries}
+                    onSave={(list, ids) => {
                         const out: ScreensaverEntry = { ...this.props.entry };
-                        if (list) {
-                            out.notify = list;
+                        if (ids.length) {
+                            out.notify = ids;
                         } else {
                             delete out.notify;
                         }
-                        this.props.onEntryChange(out);
+                        this.props.onNotifyChange(out, list);
                     }}
                 />
 

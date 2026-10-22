@@ -484,8 +484,13 @@ export const screensaverNotifyDefaultBuzzer = '1,2,3,0xF54';
  * a notification of the screensaver - notifyScreensaverEntity of the script (config-manager getNotifyEntityData).
  * Headline, text and their parts are a fixed text or the id of a state whose value is shown (the adapter decides
  * by the existence of the state). The panel shows the enabled notification with the lowest priority number.
+ *
+ * All screensavers share one list (`native.screensaverNotify`), a screensaver switches notifications on by
+ * their id ({@link ScreensaverEntry.notify}).
  */
 export type ScreensaverNotifyConfig = {
+    /** unique within the list, referenced by {@link ScreensaverEntry.notify} */
+    id: string;
     /** label in the notification list of the admin only - not sent to the panel */
     name?: string;
     /** states that switch the notification on - several: all of them must be on; empty = notification not used */
@@ -555,6 +560,71 @@ export function screensaverNotifyLines(parts: ScreensaverNotifyLineParts): { hea
     };
 }
 
+/**
+ * a new id for the shared notification list
+ *
+ * @param existing the list the id must be unique in
+ */
+export function newScreensaverNotifyId(existing: readonly ScreensaverNotifyConfig[]): string {
+    const used = new Set(existing.map(n => n.id));
+    let id = '';
+    do {
+        id = `n${Date.now().toString(36)}${Math.floor(Math.random() * 1296)
+            .toString(36)
+            .padStart(2, '0')}`;
+    } while (used.has(id));
+    return id;
+}
+
+/**
+ * the notifications a screensaver uses, in the order of the shared list
+ *
+ * @param entry screensaver entry
+ * @param list shared notification list (`native.screensaverNotify`)
+ */
+export function screensaverNotifyOfEntry(
+    entry: ScreensaverEntry,
+    list: readonly ScreensaverNotifyConfig[] | undefined,
+): ScreensaverNotifyConfig[] {
+    const ids = new Set((entry.notify ?? []).filter(id => typeof id === 'string'));
+    return (list ?? []).filter(n => n && ids.has(n.id));
+}
+
+/**
+ * Moves notifications stored inside the entries (first version of the feature: `notify` was a list of
+ * notifications per screensaver) into the shared list; the entries keep their ids.
+ *
+ * @param entries screensaver table
+ * @param list shared notification list
+ * @returns the converted table and list, changed = something was moved
+ */
+export function migrateScreensaverNotify(
+    entries: readonly ScreensaverEntry[],
+    list: readonly ScreensaverNotifyConfig[],
+): { entries: ScreensaverEntry[]; list: ScreensaverNotifyConfig[]; changed: boolean } {
+    const out = [...list];
+    let changed = false;
+    const converted = entries.map(entry => {
+        const raw: unknown[] = Array.isArray(entry.notify) ? entry.notify : [];
+        if (raw.every(n => typeof n === 'string')) {
+            return entry;
+        }
+        changed = true;
+        const ids: string[] = [];
+        for (const n of raw) {
+            if (typeof n === 'string') {
+                ids.push(n);
+            } else if (n && typeof n === 'object' && Array.isArray((n as { enabled?: unknown }).enabled)) {
+                const id = newScreensaverNotifyId(out);
+                out.push({ ...(n as Omit<ScreensaverNotifyConfig, 'id'>), id });
+                ids.push(id);
+            }
+        }
+        return { ...entry, notify: ids.length ? ids : undefined };
+    });
+    return { entries: converted, list: out, changed };
+}
+
 export type ScreensaverEntry = {
     /** name shown in the list, unique within the table */
     name: string;
@@ -570,8 +640,8 @@ export type ScreensaverEntry = {
     indicator: (ScreensaverItemConfig | undefined)[];
     mrIcon1?: ScreensaverMrIconConfig;
     mrIcon2?: ScreensaverMrIconConfig;
-    /** notifications of the screensaver, undefined = none */
-    notify?: ScreensaverNotifyConfig[];
+    /** ids of the notifications of the shared list (`native.screensaverNotify`) this screensaver uses, undefined = none */
+    notify?: string[];
     /** 12h or 24h clock, undefined = adapter default (24h) */
     clockFormat?: '12h' | '24h';
     /** date format overrides, undefined = global settings of the instance (config-manager getScreensaverConfig) */

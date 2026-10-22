@@ -38,6 +38,8 @@ __export(adminShareConfig_exports, {
   formatEntryNumber: () => formatEntryNumber,
   isMainPageEntry: () => isMainPageEntry,
   mainPageName: () => mainPageName,
+  migrateScreensaverNotify: () => migrateScreensaverNotify,
+  newScreensaverNotifyId: () => newScreensaverNotifyId,
   normalizeChannelId: () => normalizeChannelId,
   normalizeTrashItems: () => normalizeTrashItems,
   panelStatusColors: () => panelStatusColors,
@@ -55,6 +57,7 @@ __export(adminShareConfig_exports, {
   screensaverModes: () => screensaverModes,
   screensaverNotifyDefaultBuzzer: () => screensaverNotifyDefaultBuzzer,
   screensaverNotifyLines: () => screensaverNotifyLines,
+  screensaverNotifyOfEntry: () => screensaverNotifyOfEntry,
   screensaverSlotLimits: () => screensaverSlotLimits,
   screensaverWeatherAdapterOf: () => screensaverWeatherAdapterOf,
   screensaverWeatherAdapters: () => screensaverWeatherAdapters,
@@ -189,6 +192,42 @@ function screensaverNotifyLines(parts) {
     heading: `${(_d = parts.icon) != null ? _d : ""} ${headline}`.trim(),
     text: parts.text ? `${(_e = parts.textPrefix) != null ? _e : ""}${parts.text}${(_f = parts.textSuffix) != null ? _f : ""}` : ""
   };
+}
+function newScreensaverNotifyId(existing) {
+  const used = new Set(existing.map((n) => n.id));
+  let id = "";
+  do {
+    id = `n${Date.now().toString(36)}${Math.floor(Math.random() * 1296).toString(36).padStart(2, "0")}`;
+  } while (used.has(id));
+  return id;
+}
+function screensaverNotifyOfEntry(entry, list) {
+  var _a;
+  const ids = new Set(((_a = entry.notify) != null ? _a : []).filter((id) => typeof id === "string"));
+  return (list != null ? list : []).filter((n) => n && ids.has(n.id));
+}
+function migrateScreensaverNotify(entries, list) {
+  const out = [...list];
+  let changed = false;
+  const converted = entries.map((entry) => {
+    const raw = Array.isArray(entry.notify) ? entry.notify : [];
+    if (raw.every((n) => typeof n === "string")) {
+      return entry;
+    }
+    changed = true;
+    const ids = [];
+    for (const n of raw) {
+      if (typeof n === "string") {
+        ids.push(n);
+      } else if (n && typeof n === "object" && Array.isArray(n.enabled)) {
+        const id = newScreensaverNotifyId(out);
+        out.push({ ...n, id });
+        ids.push(id);
+      }
+    }
+    return { ...entry, notify: ids.length ? ids : void 0 };
+  });
+  return { entries: converted, list: out, changed };
 }
 const screensaverWeatherAdapters = ["accuweather", "openweathermap", "pirate-weather", "brightsky"];
 const screensaverWeatherItemKeys = [
@@ -1085,6 +1124,8 @@ const CHANNEL_ROLES_LIST = Object.keys(requiredScriptDataPoints);
   formatEntryNumber,
   isMainPageEntry,
   mainPageName,
+  migrateScreensaverNotify,
+  newScreensaverNotifyId,
   normalizeChannelId,
   normalizeTrashItems,
   panelStatusColors,
@@ -1102,6 +1143,7 @@ const CHANNEL_ROLES_LIST = Object.keys(requiredScriptDataPoints);
   screensaverModes,
   screensaverNotifyDefaultBuzzer,
   screensaverNotifyLines,
+  screensaverNotifyOfEntry,
   screensaverSlotLimits,
   screensaverWeatherAdapterOf,
   screensaverWeatherAdapters,

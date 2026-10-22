@@ -211,8 +211,8 @@ function screensaverNotifyToScript(cfg) {
   }
   return element;
 }
-function buildScreensaverScriptConfig(entry, panelTopic, states = {}) {
-  var _a, _b, _c, _d;
+function buildScreensaverScriptConfig(entry, panelTopic, states = {}, notifyList = []) {
+  var _a, _b, _c;
   const convert = (item, area) => {
     var _a2;
     return item ? screensaverItemToScript(item, area, (_a2 = states[item.state]) != null ? _a2 : {}) : void 0;
@@ -235,7 +235,7 @@ function buildScreensaverScriptConfig(entry, panelTopic, states = {}) {
     indicatorScreensaverEntity: ((_c = entry.indicator) != null ? _c : []).map((i) => convert(i, "indicator")),
     mrIcon1ScreensaverEntity: screensaverMrIconToScript(entry.mrIcon1),
     mrIcon2ScreensaverEntity: screensaverMrIconToScript(entry.mrIcon2),
-    notifyScreensaverEntity: ((_d = entry.notify) != null ? _d : []).map((n) => screensaverNotifyToScript(n)).filter((n) => !!n),
+    notifyScreensaverEntity: (0, import_adminShareConfig.screensaverNotifyOfEntry)(entry, notifyList).map((n) => screensaverNotifyToScript(n)).filter((n) => !!n),
     // the colors the adapter resolves from its global settings (config manager getIconColor)
     defaultOnColor: import_Color.Color.on,
     defaultOffColor: import_Color.Color.off,

@@ -44,7 +44,9 @@ export interface ScreensaverNotifyDialogProps {
     themeName?: any;
     /** group ids of the other notifications - offered in the dismiss group field */
     knownIds: string[];
-    /** the edited notification */
+    /** other screensavers that use the edited notification - changes apply to them too */
+    sharedWith: string[];
+    /** the edited notification - a new one keeps the empty id, the list assigns one */
     onSave: (notify: ScreensaverNotifyConfig) => void;
 }
 
@@ -124,7 +126,7 @@ export default class ScreensaverNotifyDialog extends React.Component<
         this.state = {
             open: false,
             isNew: true,
-            draft: { enabled: [''] },
+            draft: { id: '', enabled: [''] },
             priority: '',
             buzzerMode: 'off',
             buzzerSequence: '',
@@ -204,7 +206,7 @@ export default class ScreensaverNotifyDialog extends React.Component<
     public openWith(notify: ScreensaverNotifyConfig | undefined): void {
         const draft: ScreensaverNotifyConfig = notify
             ? { ...notify, enabled: notify.enabled.length ? [...notify.enabled] : [''] }
-            : { enabled: [''] };
+            : { id: '', enabled: [''] };
         this.setState({
             open: true,
             isNew: !notify,
@@ -276,7 +278,10 @@ export default class ScreensaverNotifyDialog extends React.Component<
     /** the draft as stored: empty fields dropped, priority and buzzer from their inputs */
     private apply = (): void => {
         const { draft, priority, buzzerMode, buzzerSequence } = this.state;
-        const out: ScreensaverNotifyConfig = { enabled: draft.enabled.map(e => e.trim()).filter(e => !!e) };
+        const out: ScreensaverNotifyConfig = {
+            id: draft.id,
+            enabled: draft.enabled.map(e => e.trim()).filter(e => !!e),
+        };
         const texts: (NotifyTextField | 'name' | 'headlineIcon' | 'visibleCondition')[] = [
             'name',
             'headline',
@@ -668,6 +673,17 @@ export default class ScreensaverNotifyDialog extends React.Component<
                     {this.getText(this.state.isNew ? 'screensaver_notify_new' : 'screensaver_notify_editTitle')}
                 </DialogTitle>
                 <DialogContent dividers>
+                    {this.props.sharedWith.length > 0 && (
+                        <Alert
+                            severity="warning"
+                            sx={{ mb: 2 }}
+                        >
+                            {this.getText('screensaver_notify_sharedEdit').replace(
+                                '%s',
+                                this.props.sharedWith.join(', '),
+                            )}
+                        </Alert>
+                    )}
                     <TextField
                         variant="standard"
                         autoComplete="off"

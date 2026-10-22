@@ -9,8 +9,14 @@ import DeleteOutlineIcon from '@mui/icons-material/DeleteOutlineOutlined';
 import { ConfigGeneric, type ConfigGenericProps, type ConfigGenericState } from '@iobroker/json-config';
 import ConfirmDialog from './components/ConfirmDialog';
 import { ScreensaverEditor } from './components/ScreensaverEditor';
-import type { AdminPanelConfig, ScreensaverEntry, ScreensaverTemplateInfo } from '../../src/lib/types/adminShareConfig';
+import type {
+    AdminPanelConfig,
+    ScreensaverEntry,
+    ScreensaverNotifyConfig,
+    ScreensaverTemplateInfo,
+} from '../../src/lib/types/adminShareConfig';
 import {
+    migrateScreensaverNotify,
     ADAPTER_NAME,
     SENDTO_GET_PAGES_All_COMMAND,
     SENDTO_GET_WEATHER_ENTITY_COMMAND,
@@ -20,6 +26,8 @@ import {
 
 interface ScreensaverConfigManagerState extends ConfigGenericState {
     entries: ScreensaverEntry[];
+    /** notifications shared by all screensavers (native.screensaverNotify) */
+    notifyList: ScreensaverNotifyConfig[];
     selected: string;
     newName: string;
     confirmDeleteName: string | null;
@@ -33,19 +41,31 @@ interface ScreensaverConfigManagerState extends ConfigGenericState {
 
 const PAGES_RETRY_MS = 3000;
 
+/** attribute of the shared notification list in native */
+const NOTIFY_ATTR = 'screensaverNotify';
+
 class ScreensaverConfigManager extends ConfigGeneric<
     ConfigGenericProps & { theme?: any },
     ScreensaverConfigManagerState
 > {
     private pagesRetryTimeout?: NodeJS.Timeout;
+    /** notifications of the first version were moved out of the entries - the list is saved with the next change */
+    private notifyMigrated = false;
 
     constructor(props: ConfigGenericProps & { theme?: any }) {
         super(props);
         const saved = ConfigGeneric.getValue(props.data, props.attr);
-        const entries: ScreensaverEntry[] = Array.isArray(saved) ? (saved as ScreensaverEntry[]) : [];
+        const savedNotify = ConfigGeneric.getValue(props.data, NOTIFY_ATTR);
+        const migrated = migrateScreensaverNotify(
+            Array.isArray(saved) ? (saved as ScreensaverEntry[]) : [],
+            Array.isArray(savedNotify) ? (savedNotify as ScreensaverNotifyConfig[]) : [],
+        );
+        this.notifyMigrated = migrated.changed;
+        const entries = migrated.entries;
         this.state = {
             ...(this.state as ConfigGenericState),
             entries,
+            notifyList: migrated.list,
             selected: entries[0]?.name ?? '',
             newName: '',
             confirmDeleteName: null,
@@ -182,8 +202,55 @@ class ScreensaverConfigManager extends ConfigGeneric<
 
     private save(entries: ScreensaverEntry[]): void {
         this.setState({ entries } as ScreensaverConfigManagerState);
-        void this.onChange(this.props.attr, entries);
+        void this.saveAsync(entries, this.notifyMigrated ? this.state.notifyList : undefined);
     }
+
+    /**
+     * stores the table and - when given - the shared notification list in one change: onChange copies the data
+     * of the props, a second call right after the first would drop the first value
+     *
+     * @param entries screensaver table
+     * @param notifyList shared notification list, undefined = unchanged
+     */
+    private async saveAsync(entries: ScreensaverEntry[], notifyList?: ScreensaverNotifyConfig[]): Promise<void> {
+        if (!notifyList) {
+            await this.onChange(this.props.attr, entries);
+            return;
+        }
+        this.notifyMigrated = false;
+        const data = JSON.parse(JSON.stringify(this.props.data ?? {}));
+        ConfigGeneric.setValue(data, this.props.attr, entries);
+        ConfigGeneric.setValue(data, NOTIFY_ATTR, notifyList);
+        await new Promise<void>(resolve => this.props.onChange(data, undefined, resolve));
+    }
+
+    /**
+     * the notification dialog of a screensaver was applied: the shared list and the notifications the entry uses;
+     * ids of deleted notifications are removed from all entries
+     *
+     * @param updated the entry with its notification ids
+     * @param notifyList the edited shared list
+     */
+    private handleNotifyChange = (updated: ScreensaverEntry, notifyList: ScreensaverNotifyConfig[]): void => {
+        const known = new Set(notifyList.map(n => n.id));
+        const entries = this.state.entries.map(e => {
+            const source = e.name === updated.name ? updated : e;
+            if (!source.notify) {
+                return source;
+            }
+            const notify = source.notify.filter(id => known.has(id));
+            if (notify.length === source.notify.length) {
+                return source;
+            }
+            const out: ScreensaverEntry = { ...source, notify };
+            if (!notify.length) {
+                delete out.notify;
+            }
+            return out;
+        });
+        this.setState({ entries, notifyList } as ScreensaverConfigManagerState);
+        void this.saveAsync(entries, notifyList);
+    };
 
     private handleAdd = (): void => {
         const name = this.state.newName.trim();
@@ -427,6 +494,8 @@ class ScreensaverConfigManager extends ConfigGeneric<
                     yearFormat: data.yearFormat,
                 }}
                 onEntryChange={this.handleEntryChange}
+                notifyList={this.state.notifyList}
+                onNotifyChange={this.handleNotifyChange}
                 onNameChange={this.handleNameChange}
                 getText={key => this.getText(key)}
                 oContext={this.props.oContext}
