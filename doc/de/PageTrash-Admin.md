@@ -32,6 +32,8 @@ Die Auswahl über die Zahl der Terminzeilen trägt in der Oberfläche die Beschr
 
 Die Zahl entscheidet auch über die Darstellung: Bei **vier** Terminen ist mehr Platz je Zeile (langer Wochentag, Datum vierstellig im Jahr), bei **sechs** wird es knapper (kurzer Wochentag, zweistelliges Jahr).
 
+> **Eine eigene Abfall-Karte gibt es nicht.** Der Adapter baut aus dem Eintrag eine gewöhnliche Listenseite — bei vier Terminen eine `cardEntities`, bei sechs eine `cardSchedule`, beide über die Vorlage `entities.waste-calendar`. Deshalb lässt sich eine Abfall-Seite auch nicht im Konfigurationsskript anlegen: den Kartentyp `cardTrash` kennt nur der Admin.
+
 ## 3. Woher die Termine kommen
 ![Editor der Abfall-Seite](../Pictures/pageTrash/trash-01-editor.png)
 

@@ -52,7 +52,6 @@
 - [Page Power](PagePower)  
 - [Page Chart](PageChart)  
 - [Page Alarm](PageAlarm)  
-- [Page Trash](PageTrash)  
 - [Page Media](PageMedia)  
 - [Page Thermo2](PageThermo2)  
 - [Popups](pagePopup)  

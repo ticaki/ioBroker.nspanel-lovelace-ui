@@ -32,6 +32,8 @@ The selection for the number of date lines carries the label **„Layout"** in t
 
 The number also decides the presentation: with **four** dates there is more room per line (long weekday, four-digit year), with **six** it gets tighter (short weekday, two-digit year).
 
+> **There is no waste card of its own.** From the entry the adapter builds an ordinary list page — a `cardEntities` for four dates, a `cardSchedule` for six, both through the template `entities.waste-calendar`. That is also why a waste page cannot be created in the configuration script: the card type `cardTrash` exists in the admin only.
+
 ## 3. Where the dates come from
 ![Editor of the waste page](../Pictures/pageTrash/trash-01-editor.png)
 
