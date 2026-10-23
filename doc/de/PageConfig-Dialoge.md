@@ -191,4 +191,6 @@ Titel *Modusliste (inSel_Alias / modeList)*. Damit bekommt ein Pageitem eine **A
 
 Sind schon vorher Datenpunkte als fehlend oder doppelt erkannt, heißt der Knopf nicht *Speichern*, sondern **Details…** und ist orange — er führt direkt in dieses Fenster.
 
+> **Ein fehlendes Objekt ist etwas anderes als ein fehlender Datenpunkt.** Steht unter dem Kanalfeld *Objekt nicht in ioBroker gefunden*, sperrt der Dialog alle Felder außer der ID, und der Knopf heißt zwar **Details…**, bleibt aber **grau und ohne Funktion** (er ist derselbe Knopf wie *Speichern* und braucht einen existierenden Kanal). Der einzige Weg aus diesem Zustand ist, die ID richtigzustellen — oder **Abbrechen**.
+
 > **Läuft der Adapter nicht**, ist keine Prüfung möglich; der Dialog speichert dann ohne sie. Dass eine Seite ohne Beanstandung durchgeht, heißt bei gestopptem Adapter also nichts. Im Tab PageConfig ist der Editor bei gestopptem Adapter ohnehin ausgegraut (siehe [PageConfig – Übersicht](PageConfig)).

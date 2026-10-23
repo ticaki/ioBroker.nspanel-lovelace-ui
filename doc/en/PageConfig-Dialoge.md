@@ -191,4 +191,6 @@ Title *Mode list (inSel_Alias / modeList)*. This gives a pageitem a **selection 
 
 If states were already detected as missing or duplicated, the button is not called *Save* but **Details…** and is orange — it leads straight into that window.
 
+> **A missing object is not the same as a missing state.** If the channel field says *object not found in ioBroker*, the dialog locks every field except the ID, and while the button is labelled **Details…** it stays **grey and does nothing** (it is the same button as *Save* and needs an existing channel). The only way out is to correct the ID — or **Cancel**.
+
 > **If the adapter is not running**, no check is possible; the dialog then saves without one. So a page passing without complaint means nothing while the adapter is stopped. In the PageConfig tab the editor is greyed out with a stopped adapter anyway (see [PageConfig – Overview](PageConfig)).
