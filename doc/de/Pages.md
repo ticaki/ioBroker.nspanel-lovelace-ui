@@ -8,7 +8,7 @@ Das [Konfigurationsskript](ScriptConfig) ist der Weg für **erfahrene Nutzer in 
 
 | Seite | Wofür sie da ist | Was am Panel ankommt | Anlegen im Admin |
 |---|---|---|---|
-| Menüseite | Fliesen- oder Listenübersicht mit frei gewählten Items | *(folgt)* | [Menü-Seite](PageMenu-Admin) |
+| Menüseite | Fliesen- oder Listenübersicht mit frei gewählten Items | Grundlagen im [Konfigurationsskript](ScriptConfig#seiten-konfiguration) | [Menü-Seite](PageMenu-Admin) |
 | Thermostat | Heizung und Klima, bis zu acht Heizkreise | [Page Thermo2](PageThermo2) | [Thermostat](PageThermo2-Admin) |
 | Energie | Energiefluss mit Quellen und Verbrauchern | [Page Power](PagePower) | [Energie](PagePower-Admin) |
 | Verlaufsdiagramm | Verlauf aus der History | [Page Chart](PageChart) | [Verlaufsdiagramm](PageChart-Admin) |

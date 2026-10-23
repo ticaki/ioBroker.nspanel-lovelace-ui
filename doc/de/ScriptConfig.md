@@ -128,13 +128,14 @@ Zusätzlich gibt es das **automatische Blättern**. Dabei muss der Parameter `sc
 
 ---  
 
-Dann gibt es noch die Standard Seiten PageQR, PageChart, PagePower und PageAlarm. Sie haben eine einfache Config, da sie in der WebUI des Adapter konfiguriert werden. Der `uniqueName` muss dabei dem in der Adapter-config entsprechen. Bei der PageChart muss zum `uniqueName` auch der card`type` passen.  Mehr zu diesen Thema in den [speziellen Wiki Seiten.](Pages)
-```typescript
-    const wlandaten: ScriptConfig.PageQR = {
-        uniqueName: 'wlandaten',
-        type: 'cardQR'
-    };
+Dann gibt es noch die Standard Seiten PageChart und PagePower. Sie haben eine einfache Config, da sie im Admin konfiguriert werden; das Skript verweist nur darauf. Der `uniqueName` muss dabei dem im Admin entsprechen. Bei der PageChart muss zum `uniqueName` auch der card`type` passen. Mehr zu diesem Thema in den [speziellen Wiki Seiten.](Pages)
 
+> **PageQR, PageAlarm und die Entsperrseite lassen sich aus dem Skript nicht ansprechen.** Der Adapter
+> überspringt `cardQR`, `cardAlarm` und `cardUnlock` aus einer Skript-Konfiguration ausdrücklich
+> („is only supported in the admin configuration! Skipped!") — die Seite entfällt dann samt
+> Navigationseintrag. Diese drei gibt es **nur** im Admin, siehe [QR-Code](PageQR-Admin) und
+> [Alarm und Entsperrseite](PageAlarm-Admin).
+```typescript
     const stromChart: ScriptConfig.PageChart = {
         uniqueName: 'strom',
         type: 'cardChart' // Balkenchart
@@ -376,7 +377,7 @@ Beim Farbscalieren `colorScale` gibt es diese unteren Zusatzoptionen
 * 'cie': the target colour is achieved by mixing according to the CIE colour table. 
 * 'hue': the target colour is calculated by scaling via colour, saturation and brightness.
 */
-mode?: 'mixed' | 'hue' | 'cie';
+mode?: 'mixed' | 'hue' | 'cie' | 'triGrad' | 'triGradAnchor' | 'quadriGrad' | 'quadriGradAnchor';
 /**
 * The logarithm scaling to max, min or leave undefined for linear scaling.
 */

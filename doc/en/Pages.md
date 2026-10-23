@@ -8,7 +8,7 @@ The configuration script is the route for **experienced users in special cases**
 
 | Page | What it is for | What arrives on the panel | Create in the admin |
 |---|---|---|---|
-| Menu page | Tile or list overview with freely chosen items | *(to come)* | [Menu page](PageMenu-Admin) |
+| Menu page | Tile or list overview with freely chosen items | basics in the [configuration script](ScriptConfig#seiten-konfiguration) | [Menu page](PageMenu-Admin) |
 | Thermostat | Heating and climate, up to eight heat circuits | [Page Thermo2](PageThermo2) | [Thermostat](PageThermo2-Admin) |
 | Power | Energy flow with sources and consumers | [Page Power](PagePower) | [Power](PagePower-Admin) |
 | Chart | History chart | [Page Chart](PageChart) | [Chart](PageChart-Admin) |
