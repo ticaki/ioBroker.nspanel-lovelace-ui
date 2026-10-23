@@ -1,156 +1,230 @@
 # Page Thermo2
 
-The thermostat page handles up to eight heat circuits on one card and takes your own page items on top.
+The PageThermo has been given a new design and extra functions. It can now handle several heat circuits
+and, on top of the thermostat's states, take ordinary page items — which makes its configuration a good
+deal more open.
 
-> **It is configured in the admin.** Every field, the heat circuit dialog, the object picker and the
-> arrangement of the tiles are described on
-> [Thermostat – configuration in the admin](PageThermo2-Admin). This page describes **what arrives on the
-> panel** and the **second way** through the configuration script.
+> **The page is configured in the admin**, in the *PageConfig* tab:
+> [Thermostat – configuration in the admin](PageThermo2-Admin). The editor, the heat circuit dialog and
+> every field are described there, with pictures. **This page describes the second way: the configuration
+> by script** — and what of it arrives on the panel.
 
-<img alt='Thermo2 with states' src='../Pictures/PageThermo2/Thermo2MitDatenpunkten.png'>
+## Configuring PageThermo2 in the adapter
 
-## What arrives on the panel
+This differs from the script configuration, hence a complete description.
 
-The target temperature sits in the middle with **−** and **+**, and the tiles surround it. Seven fields
-are fixed and filled by the adapter itself:
+Structure:
+- [Appearance](#appearance)
+- [Features](#features)
+- [Known problems](#known-problems)
+- [Configuration](#configuration)
+    - [Alias](#alias)
+    - [States directly](#states-directly)
+    - [Shared options](#shared-properties)
+- [Page item extension](#page-item-extension)
 
-| Place | Content |
-|---|---|
-| Line 1 | Icon, current temperature and unit |
-| Line 3 | Icon, humidity and unit |
-| between − and + | the **mode text** (`OFF`, `AUTO`, `HEAT` …, translated) |
+### Appearance
 
-On top of that come the **eight page items** around it — four on the left, four on the right. More items
-than slots can be configured; the panel then pages through them.
+<img alt='Thermo2WithDP' src='../Pictures/PageThermo2/Thermo2MitDatenpunkten.png'>
 
-> **The editor in the admin offers nine slots, eight arrive on the panel.** When building the page the
-> adapter cuts the list down to eight entries (`pageThermo2.ts`, `maxItems = 8`), while the editor counts
-> on nine. The ninth slot — the one between − and + — is in fact the fixed mode display. An item placed
-> there in the editor never shows up on the panel.
+### Features
 
-The order of the eight tiles is set by `sortOrder`: `V` (default, vertical: 1–4 left, 5–8 right), `H`
-(horizontal), plus `HM`, `VM`, `HB` and `VB` as alternative patterns.
+- up to 8 heat circuits (e.g. heating/air conditioning, or kitchen/living room/…) — more are discarded with a warning („only 8 are supported")
+- any number of page items (with paging); **eight arrive on the panel per page** — four on the left, four on the right
+- the order of those eight tiles is set by `sortOrder`: `V` (default, vertical), `H` (horizontal), plus `HM`, `VM`, `HB` and `VB`
+- page items can be tied to a heat circuit (items generated automatically always belong to one when there are several circuits)
+- headlines are per heat circuit
+- the lines above and below the setpoint are freely definable with icon, value and unit
 
-Every heat circuit has its **own headline**; the panel pages between the circuits. More than eight heat
-circuits are discarded with a warning („only 8 are supported").
+> **The place between − and + is not a page item.** The mode text sits there permanently. The editor in the
+> admin does offer nine slots per page, but the adapter only sends eight page items (`pageThermo2.ts`,
+> `maxItems = 8`) — an item in the ninth slot never reaches the panel, and the paging in the editor runs
+> against the paging on the panel.
 
-## The second way: the configuration script
+### Known problems
+- slight flickering because of the pretty looks – that will stay
+- MODE and MODESET may still be inconsistent – work in progress
+
+### Configuration
 
 A complete page looks like this in the script:
 
 ```typescript
-const ThermoNew: PageType = {
-    type: 'cardThermo2',
-    uniqueName: 'main',
-    heading: 'not shown',   // the headline comes per heat circuit from `name`
-    thermoItems: [
-        { name: 'Living room', id: '0_userdata.0.Devices.Thermostat' },
-    ],
-    items: [
-        { id: 'alias.0.Light.lights.Device_1', filter: 0 },
-        { id: 'alias.0.NSPanel.general.shutter', filter: 1 },
-    ],
-};
+    const ThermoNew: PageType = {
+        type: 'cardThermo2',
+        uniqueName: 'main',
+        heading: 'does not matter, it is not shown',
+        thermoItems: [
+            { name: 'test1', id: '0_userdata.0.Devices.Thermostat' },
+            { name: 'test2', modeList: ['off', 'broken', 'wrong'], modeId: '0_userdata.0.Devices.Thermostat.MODE', iconHeatCycle: 'home', iconHeatCycleOffColor: Red, thermoId1: '0_userdata.0.Devices.Thermostat.ACTUAL', set: '0_userdata.0.Devices.Thermostat.SET', thermoId2: '0_userdata.0.Devices.Thermostat.HUMIDITY' }],
+        items: [
+            { id: 'alias.0.Light.lights.Device_1', filter: 0 },
+            { id: 'alias.0.Light.lights.Device_2', filter: 0 },
+            { id: '0_userdata.0.Devices.dimmer' },
+            { id: 'alias.0.NSPanel.general.hue' },
+            { navigate: true, targetPage: 'timetable' },
+            { id: 'alias.0.NSPanel.general.shutter', filter: 1 },
+            ],
+    }
 ```
 
-`heading` is **not shown** on this card — the headline comes from the heat circuit's `name`, or from the
-channel's `common.name`. `scrollType` and `scrollPresentation` have no effect here either; the card always
-pages.
+#### Alias
 
-### Either an alias …
+As usual, aliases can be used (see the [table](ALIAS)). The channel has to carry the role **thermostat**
+or **airCondition**; any other role is rejected. The role **airCondition** creates 2 heat circuits — the
+second one uses **`SET2`**; without that state the cooling circuit disappears. It is set up through
+`name2`, `iconHeatCycle2`, `iconHeatCycleOnColor2` and `iconHeatCycleOffColor2`. Many of the optional
+states are included and are added as page items belonging to the circuit. Please report missing ones.
 
 ```typescript
-thermoItems: [
-    {
-        name: 'This is the headline',
-        id: '0_userdata.0.Devices.Thermostat', // channel, device or folder
-    },
-],
+    const Thermo2New: PageType = {
+        type: 'cardThermo2',
+        uniqueName: 'page name for internal use – mandatory',
+        heading: 'does not matter, it is not shown',
+        thermoItems: [
+            {
+                name: 'This is the headline',
+                id: '0_userdata.0.Devices.Thermostat', // this is the channel, device or folder
+            },
+        ],
+        items: [],
+    }
 ```
 
-The channel has to carry the role **`thermostat`** or **`airCondition`** (see the [alias table](ALIAS));
-any other role is rejected with an error and the entry is removed.
+- `thermoItems` holds objects (`{}`) describing the heat circuits, at least one (a list/array)
+  - `id` is the channel (string)
+  - `name` is the headline shown (string). Without it the adapter looks at the channel's `common.name`.
+  - `name2` is the headline used for an `airCondition`
+  - `iconHeatCycle2`: overrides the number icon in the page items (around the ring) **for airCondition only**
+  - `iconHeatCycleOnColor2`: overrides the colour for „active" in the page items **for airCondition only**
+  - `iconHeatCycleOffColor2`: overrides the colour for „inactive" in the page items **for airCondition only**
 
-An **`airCondition` channel yields two heat circuits** — heating and cooling. The second one uses `SET2`,
-`name2`, `iconHeatCycle2`, `iconHeatCycleOnColor2` and `iconHeatCycleOffColor2`. **Without `SET2` the
-cooling circuit disappears**, because a circuit without a writeable setpoint is skipped.
+The state **MODE** has changed, so please read [modeList](#modelist) below.
 
-### … or states directly
+#### States directly
 
-The two cannot be mixed, but the states may well belong to an existing channel:
+This cannot be mixed with an alias, but it may of course point at the states of an existing channel.
 
 ```typescript
-thermoItems: [
-    {
-        name: 'This is the headline',
-        set: '0_userdata.0.…Thermostat.SET',        // setpoint, mandatory
-        thermoId1: '0_userdata.0.…Thermostat.ACTUAL',   // upper value line, mandatory
-        thermoId2: '0_userdata.0.…Thermostat.HUMIDITY', // lower value line
-        modeId: '0_userdata.0.…Thermostat.MODE',        // mode text
-    },
-],
+const Thermo2New: PageType = {
+        type: 'cardThermo2',
+        uniqueName: 'page name for internal use – mandatory',
+        heading: 'does not matter, it is not shown',
+        thermoItems: [
+            {
+                name: 'This is the headline',
+                set: '0_userdata.0.Devices.Thermostat.SET',        // the setpoint of the heating
+                thermoId1: '0_userdata.0.Devices.Thermostat.ACTUAL',   // current room temperature (upper value)
+                thermoId2: '0_userdata.0.Devices.Thermostat.HUMIDITY', // current humidity (lower value)
+                modeId: '0_userdata.0.Devices.Thermostat.MODE',        // text field below the values
+            }
+        ],
+        items: [],
+    }
 ```
 
-> **`set` must exist and be writeable.** Otherwise the adapter skips the whole heat circuit and writes to
-> the log: *invalid SET datapoint. Not exists or not writeable!* The same goes for `thermoId1`; states
-> given for `thermoId2` and `modeId` that do not exist are reported as well.
+- `thermoItems` holds objects (`{}`) describing the heat circuits, at least one (a list/array)
+  - `name` is the headline shown (string)
+  - `set` is the setpoint of the heating — **it has to exist and be writeable**, otherwise the adapter skips the whole heat circuit and reports *invalid SET datapoint. Not exists or not writeable!*
+  - `thermoId1` current room temperature (upper value in the display)
+  - `thermoId2` current humidity (lower value in the display)
+  - `modeId` see the description of `modeList` below
 
-### Shared fields
+#### Shared properties
 
 <img alt='Thermo2_1' src='../Pictures/PageThermo2/Thermo2_1.png'>
 <img alt='Thermo2_2' src='../Pictures/PageThermo2/Thermo2_2.png'>
 
-| Field | Meaning |
-|---|---|
-| `icon`, `onColor` | Icon and colour of the first value line (temperature) |
-| `icon2`, `onColor2` | the same for the third line (humidity) |
-| `unit` | Unit — **in the script it covers both value lines**; `unit2` only works in the admin configuration |
-| `iconHeatCycle`, `iconHeatCycleOnColor`, `iconHeatCycleOffColor` | Icon and colours of the heat circuit tile |
-| `minValue`, `maxValue`, `stepValue` | Limits and step of the setpoint (defaults 15, 28 and 0.5) |
-| `power` | State for on/off. If it exists it wins; otherwise the adapter derives the state from `MODESET` or `modeId`. |
-| `modeList` | your own labels for the modes, see below |
+These are the properties that can be given in addition to `name`, `id` or `name`, `set`, and what they
+mean:
 
-`power` and `unit` are **not optional** in the type — anyone compiling the examples has to supply both.
+```typescript
+        icon?: AllIcons | '';
+        icon2?: AllIcons | '';
+        iconHeatCycle?: AllIcons | '';
+        iconHeatCycleOnColor?: RGB;
+        iconHeatCycleOffColor?: RGB;
+        name?: string;
+        minValue?: number;
+        maxValue?: number;
+        stepValue?: number;
+        power: string;   // not optional
+        unit: string;    // not optional
+        unit2?: string;
+        onColor?: RGB;
+        onColor2?: RGB;
+        modeList?: string[];
+```
 
-Whether a 10 in the state means 1 °C or 10 °C is set once in the admin under *Nspanel settings* (script
-compatibility).
+**icon:** overrides the default icon of the 1st text line (temperature)
+**onColor:** overrides the colour of the 1st text line (temperature)
+**unit:** overrides the unit — **in the script for both value lines** (temperature and humidity)
+
+**icon2:** as above for line 3 (humidity)
+**onColor2:** as above for line 3 (humidity)
+**unit2:** overrides the unit of the 3rd text line (humidity) — **works in the admin configuration only**, the script route does not read the field
+
+**iconHeatCycle:** overrides the number icon in the page items (around the ring)
+**iconHeatCycleOnColor:** overrides the colour for „active" in the page items
+**iconHeatCycleOffColor:** overrides the colour for „inactive" in the page items
+
+**minValue:** lowest setpoint that can be dialled in (default: 15) *the admin decides whether 10 means 1 °C or 10 °C*
+**maxValue:** highest setpoint (default: 28) *set in the admin*
+**stepValue:** step for +/−. A 0.1 means steps of 0.1 (default: 0.5) *set in the admin*
+
+**power:** state for on/off. **If it exists it takes precedence**; without it the adapter derives the
+state from `MODESET` or `modeId` (a 0 there means „off").
+
+*set in the admin*: on the page `Nspanel settings`, right at the bottom, there is an option whether you
+want it compatible with the script or natural.
 
 ### modeList
 
-`modeId`, `MODE` and `MODESET` all work the same way: a number picks the text from a list. The default
-list is
+**modeList:** this is probably not final yet and needs a good deal more text :)
+`modeId`, `MODE` and `MODESET` all work the same way. The state should be of type `number` and may use
+`common.states` in its object – then those `common.states` act as the `modeList`.
 
+**Which list wins depends on the route:** with an **alias**, the state's `common.states` count first, then
+`modeList`, finally the default list. With **states given directly** it is the other way round:
+`modeList` first, then `common.states`, then the default list.
+
+Default mode list
 ```typescript
 ['OFF', 'AUTO', 'COOL', 'HEAT', 'ECO', 'FAN', 'DRY']
 ```
+A 0 in the state shows `OFF`, a 3 shows `HEAT` (the texts are translated). The same applies when the
+`common.states` of the state say so, and likewise for the modeList.
 
-and it is translated. A 0 in the state therefore shows *OFF*, a 3 shows *HEAT*.
-
-**Which list wins depends on the route:**
-
-| Route | Order |
-|---|---|
-| Alias | the state's `common.states` **first**, then `modeList`, finally the default list |
-| States directly | `modeList` **first**, then `common.states`, finally the default list |
-
+In a script, adapted to your region, it then looks like this:
 ```typescript
 modeList: ["Off", "Auto", "Cool", "Heat", "Eco", "Fan", "Dry"],
 ```
 
-If `MODE` is not given, `MODESET` takes its place.
+In the alias the two states are called **`MODE`** (role `value.mode.thermostat`, read-only) and
+**`MODESET`** (role `level.mode.thermostat`, writeable) — states named *TargetMode* or *CurrentMode* do
+not exist. If `MODE` is not given, `MODESET` takes its place.
 
-### Page items and heat circuits
+> A `MODE` of type `string` is provided for but hardly ever takes effect: the adapter checks the type of
+> the **channel object** instead of the mode state, and channels usually have no type at all.
+
+### Page item extension
+
+For page items there is a property that currently only matters for cardThermo2:
 
 ```typescript
-items: [
-    { id: 'alias.0.Light.lights.Device_1', filter: 0 },
+items:[
+    {id: 'alias.0.Light.lights.Device_1', filter: 0},
 ],
 ```
 
-`filter` ties a page item to a heat circuit, counted from 0. **Inserting an `airCondition` channel shifts
-the index of every following circuit by one**, because it turns into two.
+`filter`: if it is defined, the page item is only shown while the corresponding heat circuit is active.
+Counting starts at 0 (number). **If an airCondition is added through `id`, the index of everything after
+it goes up by one.**
 
-Free slots can be created with **placeholders**: `{ id: 'delete' }` or `{ id: 'empty' }`.
+The adapter now also supports placeholder page items — defined through `id:'delete'` or `id:'empty'`.
 
-> Placeholders ignore `filter` — they appear in **every** heat circuit. A gap built for one circuit is
+> **Placeholders ignore `filter`.** They appear in **every** heat circuit — a gap built for one circuit is
 > therefore built into all of them.
+
+Closing remark – the roles for airCondition may still change; they seem to differ from thermostat, so
+better check the alias table.
