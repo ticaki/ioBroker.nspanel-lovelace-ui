@@ -18,6 +18,10 @@ Inhalt:
 - [Wenn etwas nicht wie erwartet aussieht](#9-wenn-etwas-nicht-wie-erwartet-aussieht)
 
 ## 1. Die Liste
+![Die Glocke im Editor, mit der Zahl der aktiven Meldungen](../Pictures/screensaverAdmin/admin-01-ueberblick.png)
+
+![Die gemeinsame Liste der Benachrichtigungen](../Pictures/screensaverAdmin/notify-01-liste.png)
+
 
 Die Glocke sitzt im Panelbild unten rechts, links vom Zahnrad. Die kleine Zahl daran nennt, wie viele Benachrichtigungen auf **diesem** Bildschirmschoner eingeschaltet sind. Sie ist nur bedienbar, solange die Instanz läuft.
 
@@ -39,6 +43,8 @@ Unten legt **Benachrichtigung hinzufügen** eine neue an.
 > ⚠️ **Bearbeiten und Löschen wirken auf alle Bildschirmschoner**, die dieselbe Benachrichtigung nutzen. Beim Bearbeiten weist der Dialog darauf hin, beim Löschen fragt er nach – aber nur, wenn die Benachrichtigung tatsächlich mehrfach verwendet wird. Wer eine Meldung nur für ein Panel ändern will, **dupliziert** sie zuerst.
 
 ## 2. Inhalt: Überschrift und Text
+![Der Editor mit der Vorschau](../Pictures/screensaverAdmin/notify-02-editor.png)
+
 
 Der Abschnitt **Inhalt** füllt die zwei Zeilen, die das Panel anzeigt:
 
@@ -56,6 +62,8 @@ Der Abschnitt **Inhalt** füllt die zwei Zeilen, die das Panel anzeigt:
 > ⚠️ Ob ein Feld als Text oder als Datenpunkt gilt, entscheidet allein, **ob es die ID wirklich gibt**. Ein Tippfehler in der ID landet unbemerkt als Text auf dem Panel; gewarnt wird nicht. Die [Vorschau](#7-vorschau-und-was-der-dialog-prüft) ist die Probe aufs Exempel: Steht dort der Wert, wurde die ID erkannt.
 
 ## 3. Wann anzeigen: Datenpunkte und Bedingung
+![Datenpunkte, Bedingung, Priorität, Quittieren und Summer](../Pictures/screensaverAdmin/notify-03-editor-unten.png)
+
 
 | Feld | Wirkung |
 |---|---|

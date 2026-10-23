@@ -18,6 +18,10 @@ Contents:
 - [If something does not look as expected](#9-if-something-does-not-look-as-expected)
 
 ## 1. The list
+![The bell in the editor, with the number of active messages](../Pictures/screensaverAdmin/admin-01-ueberblick.png)
+
+![The shared list of notifications](../Pictures/screensaverAdmin/notify-01-liste.png)
+
 
 The bell sits in the panel image at the bottom right, left of the gear. The small number on it tells how many notifications are switched on for **this** screensaver. It only works while the instance is running.
 
@@ -39,6 +43,8 @@ At the bottom, **Add notification** creates a new one.
 > ⚠️ **Editing and deleting affect every screensaver** that uses the same notification. The dialog says so when editing, and asks before deleting – but only when the notification really is used more than once. To change a message for one panel only, **duplicate** it first.
 
 ## 2. Content: headline and text
+![The editor with the preview](../Pictures/screensaverAdmin/notify-02-editor.png)
+
 
 The **content** section fills the two lines the panel displays:
 
@@ -56,6 +62,8 @@ The **content** section fills the two lines the panel displays:
 > ⚠️ Whether a field counts as text or as a datapoint depends solely on **whether the id actually exists**. A typo in an id silently ends up as text on the panel; there is no warning. The [preview](#7-preview-and-what-the-dialog-checks) is the proof: if the value appears there, the id was recognised.
 
 ## 3. When to show: datapoints and condition
+![States, condition, priority, acknowledge and buzzer](../Pictures/screensaverAdmin/notify-03-editor-unten.png)
+
 
 | Field | Effect |
 |---|---|
