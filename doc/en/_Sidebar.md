@@ -55,8 +55,7 @@
 - [Page Trash](PageTrash)  
 - Media *(to come)*  
 - Thermostat *(to come)*  
-- Popups *(to come)*  
-
+- [Popups](pagePopup)  
 **Developer**  
 - Developer templates *(to come)*  
 - Developer news (latest) *(to come)*  
