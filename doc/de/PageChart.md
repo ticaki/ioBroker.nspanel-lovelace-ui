@@ -23,31 +23,3 @@ An der Y-Achse zeigt das Panel **ganze Zahlen mit höchstens zwei Zeichen**. Bei
 > **Luft über oder unter der Kurve gibt es nicht.** Das Panel spannt die Y-Achse genau über die Daten und
 > zeigt nur die Striche, die in diesen Bereich fallen. Mehr Ticks zu setzen hilft nicht — das gilt auch
 > für die Skriptversion.
-
-## Zweiter Weg: der alte Tab *Page Chart* plus Skript
-
-Neben dem Editor im Tab *PageConfig* gibt es weiterhin den älteren Tab **Page Chart**. Eine dort angelegte
-Seite erscheint **nicht von selbst** auf einem Panel: Sie braucht einen Eintrag im Konfigurationsskript mit
-demselben `uniqueName` — und der Kartentyp muss zur dort gewählten Darstellung passen.
-
-```typescript
-// Liniendiagramm
-const temperatur: ScriptConfig.PageChart = {
-    uniqueName: 'temperatur',
-    type: 'cardLChart',
-};
-
-// Balkendiagramm
-const stromChart: ScriptConfig.PageChart = {
-    uniqueName: 'strom',
-    type: 'cardChart',
-};
-```
-
-Eingetragen wird der Name hinter `const` unter `pages` beziehungsweise `subPages`. Der Adapter sucht den
-`uniqueName` in der Tabelle des alten Tabs (`pageChartdata`); findet er ihn nicht, meldet er
-*No pageChartdata found for …* und lässt die Seite weg.
-
-> **Für Seiten aus dem Tab *PageConfig* gilt das nicht.** Die baut der Admin selbst und weist sie dem Panel
-> direkt zu — dort ist **kein Skripteintrag nötig**, und ein Verweis aus dem Skript findet eine solche Seite
-> auch gar nicht. Für neue Seiten ist der Weg über *PageConfig* der richtige; die Felder sind dieselben.

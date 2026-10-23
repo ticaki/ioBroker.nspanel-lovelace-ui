@@ -128,35 +128,16 @@ Zusätzlich gibt es das **automatische Blättern**. Dabei muss der Parameter `sc
 
 ---  
 
-Dann gibt es noch die Standard Seiten PageChart und PagePower. Sie haben eine einfache Config, weil die Felder in den **alten Tabs** *Page Chart* und *Page Power* stehen; das Skript verweist nur darauf. Der `uniqueName` muss dabei dem Eintrag in diesem Tab entsprechen. Bei der PageChart muss zum `uniqueName` auch der card`type` passen. Mehr zu diesem Thema in den [speziellen Wiki Seiten.](Pages)
+Die Seitentypen **Diagramm, Energie, QR-Code, Alarm und Entsperren** sowie **Abfall** werden im Admin im
+Tab *PageConfig* eingerichtet und dort direkt einem Panel zugewiesen. Sie brauchen **keinen Eintrag im
+Konfigurationsskript** — QR, Alarm und Entsperren würde der Adapter aus einer Skript-Konfiguration sogar
+ausdrücklich verwerfen („is only supported in the admin configuration! Skipped!").
 
-> **Dieser Verweis greift nur bei den alten Tabs.** Der Adapter sucht den `uniqueName` in `pagePowerdata`
-> beziehungsweise `pageChartdata` — den Tabellen der Tabs *Page Power* und *Page Chart*. Eine Seite, die im
-> **Tab PageConfig** angelegt wurde, steht dort nicht: Sie wird vom Admin selbst gebaut und dem Panel direkt
-> zugewiesen und braucht **gar keinen Skripteintrag**. Ein Verweis darauf läuft ins Leere und endet mit
-> *No pagePowerdata found for …*.
+**Thermostat** (`cardThermo2`) und **Medien** (`cardMedia`) bleiben dagegen Sache des Skripts: Der
+Thermostat lässt sich auf beiden Wegen einrichten, die Medienseite **ausschließlich** im Skript — der Admin
+kennt diesen Seitentyp nicht. Beschrieben sind alle auf den [Seiten zu den Karten](Pages).
 
-> **PageQR, PageAlarm und die Entsperrseite lassen sich aus dem Skript nicht ansprechen.** Der Adapter
-> überspringt `cardQR`, `cardAlarm` und `cardUnlock` aus einer Skript-Konfiguration ausdrücklich
-> („is only supported in the admin configuration! Skipped!") — die Seite entfällt dann samt
-> Navigationseintrag. Diese drei gibt es **nur** im Admin, siehe [QR-Code](PageQR-Admin) und
-> [Alarm und Entsperrseite](PageAlarm-Admin).
-```typescript
-    const stromChart: ScriptConfig.PageChart = {
-        uniqueName: 'strom',
-        type: 'cardChart' // Balkenchart
-    };
-
-    const temperatur: ScriptConfig.PageChart = {
-        uniqueName: 'temperatur',
-        type: 'cardLChart' // Linienchart
-    };
-
-    const powerGrid: ScriptConfig.PagePower ={
-        uniqueName: 'powerpage',
-        type: 'cardPower'
-    };
-```  
+---
 
 ## PageItems    
 Die PageItems gleichen die vom Script, wobei der Adapter vieles aus den Objekten Channel und State auslesen kann. Deshalb reicht beim Adapter nur der Parameter `id` aus, um das pageItem zu erstellen. Vorausgesetzt der Channel und die States darunter sind richtig eingestellt, was die Rollen betrifft bzw. min/max oder der Type (number/string/usw.).  
