@@ -105,7 +105,7 @@ Internally the adapter always keeps up to six dates ready; with the „4" settin
 
 ## 8. When the dates are refreshed
 
-> The dates are fetched when the adapter starts and after that **once per hour**. So after a change to the configuration the card may keep showing the old dates for up to an hour. If you do not want to wait, restart the instance.
+> The dates are fetched when the adapter starts and after that **every six hours** — the hourly loop asks for them on the full hours 0, 6, 12 and 18 (`controller.ts`, `hourNow % 6 === 0`). So after a change to the configuration, or a new date in the calendar, the card may keep showing the old state for up to six hours. If you do not want to wait, restart the instance.
 
 ## 9. Panel assignment and navigation
 

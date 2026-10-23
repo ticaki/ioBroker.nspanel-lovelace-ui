@@ -38,20 +38,21 @@
 - [Recurring dialogs](PageConfig-Dialoge)  
 
 **Screensaver**  
-- Introduction *(to come)*  
+- [Introduction](Pages)  
 - [Screensaver – admin](Screensaver-Admin)  
 - [Notifications](Screensaver-Notify)  
 
 **Configuration script**  
-- Introduction *(to come)*  
+- [Introduction](Pages)  
 - [Global pages & global link](GlobalPages)  
 
 **Standard pages**  
 - Introduction *(to come)*  
-- QR code *(to come)*  
+- [Page QR](PageQR)  
 - Power *(to come)*  
 - [Chart](PageChart)  
-- [Alarm](PageAlarm)  
+- [Page Alarm](PageAlarm)  
+- [Page Trash](PageTrash)  
 - Media *(to come)*  
 - Thermostat *(to come)*  
 - Popups *(to come)*  

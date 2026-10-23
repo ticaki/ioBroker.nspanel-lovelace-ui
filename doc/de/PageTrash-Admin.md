@@ -105,7 +105,7 @@ Der Adapter hält intern immer bis zu sechs Termine bereit; bei der Einstellung 
 
 ## 8. Wann die Termine aktualisiert werden
 
-> Die Termine werden beim Start des Adapters geholt und danach **einmal pro Stunde**. Nach einer Änderung an der Konfiguration kann die Karte also bis zu einer Stunde lang noch die alten Termine zeigen. Wer nicht warten will, startet die Instanz neu.
+> Die Termine werden beim Start des Adapters geholt und danach **alle sechs Stunden** — die Stundenschleife fragt sie zu den vollen Stunden 0, 6, 12 und 18 Uhr ab (`controller.ts`, `hourNow % 6 === 0`). Nach einer Änderung an der Konfiguration oder einem neuen Termin im Kalender kann die Karte also bis zu sechs Stunden lang den alten Stand zeigen. Wer nicht warten will, startet die Instanz neu.
 
 ## 9. Panel-Zuweisung und Navigation
 
