@@ -1,70 +1,46 @@
 # PageChart
 
-The PageChart offers two views: bars (`cardChart`) and a line (`cardLChart`). The data comes either from two states that a script prepares (scale and values, as with the old NSPanel script) or directly from a database adapter. SQL, InfluxDB (V2) and History are supported.
+The chart page shows a history — either as **bars** (`cardChart`) or as a **line** (`cardLChart`).
 
 <img alt='Linechart' src= '../Pictures/pageChart/Linechart.png'> <img alt= 'Balkenchart' src='../Pictures/pageChart/Balkenchart.png'>
 
-> **The way through the admin has a page of its own:** [Chart page – configuration in the admin](PageChart-Admin).
-> It describes the editor in full — every field, the limits of the panel and the places where the
-> interface is misleading. **The admin is the intended way.**
-> This page here remains for the **configuration by script** and for existing installations.
+> **It is configured in the admin**, in the *PageConfig* tab: [Chart page – configuration in the
+> admin](PageChart-Admin). Every field is there — chart type, colour, the two ways of preparing the data,
+> range and axis divisions. This page describes **what arrives on the panel** and the **second way**
+> through the configuration script.
 
-A chart page can be created in two ways:
+## What arrives on the panel
 
-1. **Tab `PageConfig`** (recommended): create a page of type `Chart`, configure everything in the editor, assign the navigation in the panel section. No script needed.
-2. **Classic**: tab `PageChart` plus a reference in the configuration script (see below).
+The adapter fetches the data over the configured range: for the **bar chart** one average per hour, for
+the **line chart** averages on a 5-minute grid and at most 500 points.
 
-## Creating a chart in the `PageConfig` tab
+On the y-axis the panel prints **integers with at most two characters**. For the bar chart the *factor*
+keeps large values readable; for the line chart the adapter picks the factor itself (10, 100, …) and
+appends it to the axis label — 100 … 150 W then reads `W x10` with the axis showing `10 … 15`.
 
-In the `PageConfig` tab click the PLUS on the left, choose the type `Chart` and enter a unique page name (`uniqueName`, it must be unique across the whole panel). The editor then shows:
+> **There is no headroom above or below the curve.** The panel spans the y-axis exactly over the data and
+> only shows the ticks that fall inside it. Adding more ticks does not help — this holds for the script
+> version as well.
 
-1. **Chart type**: column chart or line chart.
-2. **Headline** of the page.
-3. **Color** of the line or the bars.
-4. **Data formatting**:
-    - **Script version** → scale and values are prepared externally (schema of the NSPanel script). Only the two states `Data point for ticks` and `Data point for values` are needed. The wiki of the NSPanel script has example JavaScripts that read a database and write the prepared data into these states.
-    - **Database adapter** → choose a running instance of `sql`, `influxdb` or `history` under `data source` (stored in the short form, e.g. `influxdb.0`). Under `data point for values from the database` choose the state that is logged by this instance. In addition:
-        - `Range in hours` — how far back from now (default 24),
-        - `X-axis ticks` (line only) — every how many hours a tick is drawn on the x-axis (default 2),
-        - `Factor for card chart` (bar only) — divides large values so they fit the display,
-        - `X-axis labels` — every how many hours a time label is written to the x-axis (default 4).
-      An empty number field means: the adapter uses the default.
-5. **Y-axis label**, e.g. the unit.
+## Second way: the configuration script
 
-The fields can only be edited while the adapter instance is running. Visibility (`hide page`), `alwaysOn` and the navigation are set like for every page in the navigation / panel assignment section.
-
-The adapter fetches the data as one average per hour for the bar chart and as averages on a 5-minute grid (at most 500 points) for the line chart, each over the configured range.
-
-The panel prints integer y-axis ticks with at most two characters. The bar chart uses the manual factor to keep large values readable; the line chart chooses the factor automatically (10, 100, …) and appends it to the y-axis label, e.g. `W x10` — the axis then reads `10 … 15` for 100 … 150 W. The adapter places the y-ticks in round steps (1, 2, 5, 10 …) from the minimum to the maximum of the data. More ticks do not help: the panel spans the y-axis exactly over the data and shows only the ticks inside that range — there is no way to add headroom above or below the curve through the scale (this also applies to the script version).
-
-## Classic: tab `PageChart` and configuration script
-
-<img alt='Chartallg' src='../Pictures/pageChart/pageChartallg.png'>
-
-The tab `PageChart` holds the settings. Click the PLUS to create a new page; the fields of the page appear (see picture above).
-1. First set the page name; it must be unique across the whole panel. It is the ID of the page and identical to the `uniqueName`. The name is also shown in the grey bar, so several pages are easy to tell apart.
-2. Set the headline of the page.
-3. With `alwaysOnDisplay` checked the page stays visible and does not fall back to the screensaver automatically. To activate the screensaver again, switch to another page.
-4. `hide page` removes the page from the navigation when `hide Page` is active on the service page `System`.
-5. The color field sets the color of the line/bars.
-6. Choose the type, barChart -> bars and lineChart -> line
-<img alt='chartTyp' src='../Pictures/pageChart/pageChartType.png'>
-7. Data source `oldScriptVersion` or `dbAdapter` — the fields mean the same as in the `PageConfig` tab above
-<img alt= 'AdapterInstanz' src='../Pictures/pageChart/pageChartAdapter.png'>
-8. The label of the y-axis, e.g. the unit
-
-The page is then referenced in the configuration script; the `uniqueName` must match the page name in the tab:
+A chart page that exists in the admin can be addressed from a script; the `uniqueName` has to match:
 
 ```typescript
 // line chart
-    const temperatur: ScriptConfig.PageChart = {
-        uniqueName: 'temperatur',
-        type: 'cardLChart'
-    }
+const temperature: ScriptConfig.PageChart = {
+    uniqueName: 'temperature',
+    type: 'cardLChart',
+};
 
 // bar chart
-    const stromChart: ScriptConfig.PageChart = {
-        uniqueName: 'strom',
-        type: 'cardChart'
-    };
+const powerChart: ScriptConfig.PageChart = {
+    uniqueName: 'power',
+    type: 'cardChart',
+};
 ```
+
+The name behind `const` is then listed under `pages` or `subPages`.
+
+> The old **`PageChart`** tab is still there but is being replaced by the editor in the *PageConfig* tab.
+> For new pages the route through *PageConfig* is the right one; the fields are the same.
