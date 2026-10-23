@@ -25,6 +25,8 @@ The name is the unique ID of the page — other pages address it by that name in
 > **Every field is greyed out while the instance is not running.** The editor queries the adapter live; with a stopped adapter nothing can be entered and nothing can be created. The interface gives no explanation for this — the greyed-out form is the only hint.
 
 ## 2. QR code type
+![QR code type URL](../Pictures/pageQR/qradmin-02-url.png)
+
 
 Four radio buttons decide **what** the code contains. Which fields appear below depends on it:
 
@@ -51,6 +53,8 @@ Two things the adapter does with the content, worth knowing when a code does not
 - **Special characters in the WiFi code are not escaped.** If the SSID or password contains a `;`, `:`, `,` or `\`, that breaks the structure of the `WIFI:` code and the scanner reads nonsense. If your password contains such characters, the QR card is not an option for it.
 
 ## 4. WiFi: encryption, password, hidden network
+![Wi-Fi with encryption, central credentials and hidden network](../Pictures/pageQR/qradmin-01-wlan.png)
+
 
 These four fields only appear for the type **WiFi**.
 

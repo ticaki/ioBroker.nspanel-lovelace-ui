@@ -54,6 +54,8 @@ Die Auswahl **Datenaufbereitung** ist die eigentliche Weiche:
 > Die Beschriftungen sind hier **vertauscht und verwirrend**: Die Auswahl heißt *Datenaufbereitung*, entscheidet aber über die **Datenquelle**; das Feld darunter heißt *Datenquelle*, meint aber die **Instanz des Datenbankadapters**. Beim Lesen also auf die Funktion achten, nicht auf den Namen.
 
 ## 4. Weg A: Daten aus einem Verlaufsadapter
+![Daten aus einem Verlaufsadapter](../Pictures/pageChart/chartadmin-01-datenbank.png)
+
 
 Bei **Datenbankadapter** erscheinen zwei Felder.
 
@@ -74,6 +76,8 @@ Der Adapter fragt die Daten als Mittelwerte ab (`getHistory` mit `aggregate: ave
 > Das Feld zeigt `1`, `0,1`, `0,01`, `0,001` — gemeint ist ein **Teiler**: `0,001` bedeutet „durch 1000", also Watt → Kilowatt. Ein Tooltip fehlt, die Richtung ist aus der Beschriftung nicht zu erraten.
 
 ## 5. Weg B: Daten aus eigenen Datenpunkten
+![Daten aus eigenen Datenpunkten](../Pictures/pageChart/chartadmin-02-skript.png)
+
 
 Bei **Skriptversion** erscheinen zwei andere Felder. Hier rechnet der Adapter **nichts** — er reicht durch, was in den Datenpunkten steht. Entsprechend musst du das Panel-Format selbst erzeugen:
 

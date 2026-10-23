@@ -54,6 +54,8 @@ The **Data formatting** choice is the actual switch:
 > The labels here are **swapped and confusing**: the choice is called *Data formatting* but decides the **data source**; the field below it is called *data source* but means the **instance of the database adapter**. So read for the function, not the name.
 
 ## 4. Way A: data from a history adapter
+![Data from a history adapter](../Pictures/pageChart/chartadmin-01-datenbank.png)
+
 
 With **Database adapter** two fields appear.
 
@@ -74,6 +76,8 @@ The adapter requests the data as averages (`getHistory` with `aggregate: average
 > The field shows `1`, `0.1`, `0.01`, `0.001` — what is meant is a **divisor**: `0.001` means „divide by 1000", so watts → kilowatts. There is no tooltip and the direction cannot be guessed from the label.
 
 ## 5. Way B: data from your own states
+![Data from own states](../Pictures/pageChart/chartadmin-02-skript.png)
+
 
 With **Script version** two different fields appear. Here the adapter computes **nothing** — it passes on whatever is in the states. So you have to produce the panel format yourself:
 

@@ -33,6 +33,8 @@ The selection for the number of date lines carries the label **„Layout"** in t
 The number also decides the presentation: with **four** dates there is more room per line (long weekday, four-digit year), with **six** it gets tighter (short weekday, two-digit year).
 
 ## 3. Where the dates come from
+![Editor of the waste page](../Pictures/pageTrash/trash-01-editor.png)
+
 
 Under **Import type** there are two ways:
 
@@ -64,6 +66,8 @@ For the card to show anything, it has to know **which event name belongs to whic
 > Error messages of this search appear as small notice windows and are **partly German, partly English**, hard-coded — regardless of the language of the admin.
 
 ## 5. The six waste types
+![The six waste types with colour, icon and name](../Pictures/pageTrash/trash-02-abfallarten.png)
+
 
 Below that are **six identically built blocks**, one per type of waste:
 

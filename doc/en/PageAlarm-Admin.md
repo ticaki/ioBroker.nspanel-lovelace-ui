@@ -25,6 +25,8 @@ Contents:
 > As with every card type the fields are locked while the instance is not running.
 
 ## 2. Operating mode: alarm or unlock
+![Editor of the alarm page](../Pictures/pageAlarm/alarm-01-editor.png)
+
 
 Right below the ID sits **Type** with two choices:
 
@@ -108,6 +110,8 @@ The checkbox moves the status states of the page from `panels.<panel>.alarm.<pag
 With only one panel, leave it off. Note: after switching it, the states live **somewhere else** — scripts and visualisations pointing at them have to be adjusted.
 
 ## 8. The unlock page and its target
+![Unlock mode with the field for the target page](../Pictures/pageAlarm/alarm-02-entsperren.png)
+
 
 In the **Unlock** mode all buttons fall away. The card shows a lock (`lock-remove`), a pad and the label „unlock". After the correct PIN it jumps to the configured target.
 

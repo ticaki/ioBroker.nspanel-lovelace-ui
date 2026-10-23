@@ -16,12 +16,16 @@ Contents:
 - [The configuration check when saving](#6-the-configuration-check-when-saving)
 
 ## 1. Pageitem Configuration
+![Page item configuration](../Pictures/pageConfigDialoge/dialoge-01-pageitem.png)
+
 
 This is the dialog behind every single tile of a card. It opens with a **click on the tile** in the editor — on a menu page one of the fields, on the thermostat page one of the nine tiles around the setpoint. Clicking a free tile creates a new pageitem, clicking an occupied one opens the existing one.
 
 At the top, next to the title *Pageitem Configuration*, you can see what you are dealing with: the **role** of the selected channel (`role=dimmer`, `role=socket` …), or *no channel selected*, or *Object not found in ioBroker*.
 
 ### What a pageitem should show: the three basic cases
+
+![Page item as navigation to another page](../Pictures/pageConfigDialoge/dialoge-02-navigation.png)
 
 Two checkboxes at the head of the dialog decide which kind of element you get:
 
@@ -34,6 +38,9 @@ Two checkboxes at the head of the dialog decide which kind of element you get:
 With *Is a navigation* ticked, the field **Target page** appears. It lists the pages this panel knows, but it also accepts a freely typed name — handy for a page that does not exist yet, and also the place where a typo goes unnoticed.
 
 ### The ioBroker channel and its check marks
+
+![Check mark and plain text next to the channel field](../Pictures/pageConfigDialoge/dialoge-07-pruefzeichen.png)
+
 
 The field is called **ioBroker Channel**, for a custom button **ioBroker State** instead. The picker behind „…" only offers objects that suit the selected card type.
 
@@ -50,6 +57,7 @@ Below the field there is one more line in plain words: *ok (role=…)* when ever
 The gear icon to the right of the field opens the [Value Display Configuration](#3-value-display-configuration) **for the channel ID itself**. You rarely need that — it is the way to turn a channel into a composed value.
 
 ### Name and value display
+
 
 **Name** is the label of the tile on the panel. If the field stays empty, the helper text below shows what happens instead: either *Suggestion: …* (the name the adapter would derive from the channel) or *Default name will be used*.
 
@@ -77,7 +85,7 @@ Below that there are two identically built columns: **Condition is true** and **
 
 That way a page you never styled still looks coherent: every gap is filled by the adapter from role and colour theme.
 
-### The two buttons at the foot
+### The buttons at the foot
 
 | Button | Effect |
 |---|---|
@@ -86,6 +94,8 @@ That way a page you never styled still looks coherent: every gap is filled by th
 
 Both turn **green** as soon as something is configured behind them. So the colour of the button tells you whether it is worth looking inside.
 
+**As a rule only one of the two is there.** For the light roles `rgbSingle`, `rgb`, `ct` and `hue` the colour button is disabled — the default of these page items is `type: 'boolean'`, so a colour across a value range makes no sense; the mode list remains. For every other role it is the other way round: only **Color Settings**. In native mode both disappear.
+
 ### Native (expert mode only)
 
 At the bottom left, in expert mode, sits the **Native** toggle. It replaces the whole dialog with the raw JSON of the pageitem. That is the emergency exit for settings that have no interface yet — not the normal way. With invalid JSON, **Save** stays disabled and the error message appears below the field.
@@ -93,6 +103,8 @@ At the bottom left, in expert mode, sits the **Native** toggle. It replaces the 
 > If the dialog is missing something the pageitem would need, the right way is a report to the development team — not a workaround in native mode or in the configuration script: <https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/issues>
 
 ## 2. Picking an object: text field and „…"
+![Object selection, pre-filtered to the matching objects](../Pictures/pageConfigDialoge/dialoge-03-objektauswahl.png)
+
 
 Wherever an ioBroker ID is needed, you find the same pair: a **text field** and next to it the **…** button.
 
@@ -102,20 +114,24 @@ Wherever an ioBroker ID is needed, you find the same pair: a **text field** and 
 The value is taken over when you **leave the field** or press **Enter** — only then does the admin check the ID. If you type and click *Apply* right away, the click itself triggers the check; the dialog waits for it instead of swallowing the click.
 
 ## 3. Value Display Configuration
+![Value display configuration with preview](../Pictures/pageConfigDialoge/dialoge-04-wertanzeige.png)
+
 
 This dialog (title *Value Display Configuration*) builds **one** text from several parts, and that is what the panel shows. It sits behind every „…" button next to a name field and behind the value rows of the thermostat page.
+
+**The dialog does not show the same fields everywhere.** At the **name field** of a page item you get value source, prefix, suffix and the **preview** — **unit** and **date format** are missing there. Behind the **gear next to the channel ID** it is the other way round: there you get **unit** and **date format**, but no preview, and the value source itself is read-only. The picture above shows the call from the name field.
 
 | Field | Meaning |
 |---|---|
 | **Value Source / Value State ID** | The state whose value is shown. If this is not a state but plain text, the text is shown. Below it you see the **detected type** (`number`, `string`, `boolean`) — which further fields appear depends on it. |
-| **Unit** | Numbers only. Is **filled in automatically** from the state's `common.unit` as soon as you select it. |
+| **Unit** | Numbers only — and only at the gear next to the channel ID. Is **filled in automatically** from the state's `common.unit` as soon as you select it. |
 | **Prefix** | Text **before** the value — or a state whose value is put in front. |
 | **Suffix** | The same **after** the value. |
 | **Preview** | Continuously shows the result with the **real current value**. States in prefix and suffix are resolved. |
 
 > The unit appears in the preview **for numbers only**. With a string as the value source it is neither shown nor passed to the panel — if you need a unit there, put it into the suffix.
 
-**Date Format** (its own box, for numbers and strings): this turns a timestamp into a readable date.
+**Date Format** (its own box, for numbers and strings — likewise only at the gear next to the channel ID): this turns a timestamp into a readable date.
 
 - **Locale** — e.g. `de-DE`. Pre-filled from the browser.
 - **Format options (JSON)** — the options of `Intl.DateTimeFormat`, e.g. `{"dateStyle": "short"}`. The field is **checked immediately**: invalid JSON turns it red. Leaving it empty switches date formatting off.
@@ -124,6 +140,8 @@ This dialog (title *Value Display Configuration*) builds **one** text from sever
 **Delete** (bottom left, only where the calling editor offers it) removes the value display again.
 
 ## 4. Color Options
+![Colour options with colour preview](../Pictures/pageConfigDialoge/dialoge-05-farboptionen.png)
+
 
 Title *Color Options*. This turns a numeric value into a colour — an icon that runs from blue to red the warmer the reading gets.
 
@@ -139,6 +157,8 @@ Title *Color Options*. This turns a numeric value into a colour — an icon that
 Below sits a **colour preview**: a table of values over coloured cells, computed with exactly the same function that later determines the colour on the panel. Minimum, maximum and the best value are printed bold. The preview only appears once more than 1 lies between min and max.
 
 ## 5. Mode list
+![Mode list with check and counter](../Pictures/pageConfigDialoge/dialoge-06-modusliste.png)
+
 
 Title *Mode list (inSel_Alias / modeList)*. This gives a pageitem a **selection list** on the panel — the light scenes of an RGB lamp, for example. The dialog applies to the roles `rgbSingle`, `rgb`, `ct`, `hue` and `select`.
 

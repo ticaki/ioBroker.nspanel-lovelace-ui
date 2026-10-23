@@ -23,6 +23,8 @@ Inhalt:
 **Überschrift** ist die Kopfzeile am Panel; leer zeigt das Panel den Seitennamen.
 
 ## 2. Das Raster: sechs Flächen um das Haus
+![Das Raster: sechs Flächen um das Haus](../Pictures/pagePower/poweradmin-01-raster.png)
+
 
 Der Editor bildet die Karte als **Raster von drei mal drei** ab: links drei Flächen, rechts drei Flächen, in der Mitte oben **Haus oben**, in der Mitte das Haussymbol und darunter **Haus unten**.
 
@@ -36,6 +38,8 @@ Der Editor bildet die Karte als **Raster von drei mal drei** ab: links drei Flä
 > Das Ziehen funktioniert nur mit einem Zeigegerät und nur, wenn die Instanz läuft.
 
 ## 3. Einen Fluss einrichten
+![Dialog eines Leistungs-Slots](../Pictures/pagePower/poweradmin-02-slot.png)
+
 
 Im Dialog *Leistungs-Slot bearbeiten*:
 
@@ -57,6 +61,8 @@ Derselbe Datenpunkt versorgt **Wert und Animation** zugleich.
 > Die drei Dialoge dieser Seite haben nur **„schließen"**, kein Abbrechen: Jede Eingabe wirkt sofort auf die Seite. Und anders als die Hauptmaske bleiben die Felder **auch bei gestoppter Instanz** bedienbar — ein Unterschied, der leicht in die Irre führt.
 
 ## 4. Farbe nach Wert: die Farbskala
+![Farbskala: die Felder erscheinen erst mit dem Haken](../Pictures/pagePower/poweradmin-03-farbskala.png)
+
 
 Mit **Farbe vom Wert abhängig** färbt sich das Symbol je nach Leistung ein — grün bei viel Ertrag, rot bei viel Bezug. Dann erscheinen drei Felder:
 

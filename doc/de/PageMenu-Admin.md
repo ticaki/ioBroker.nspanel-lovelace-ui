@@ -23,6 +23,8 @@ Inhalt:
 > Das Feld **Eindeutige ID** verwirft eine **leere** Eingabe und den reservierten Namen `main` **stillschweigend**: Weil das Feld seinen Wert aus der Konfiguration bezieht, erscheinen die getippten Zeichen einfach nicht. Das sieht nach einem Fehler aus, ist aber Absicht. Zum Umbenennen und seinen Fallstricken siehe [PageConfig – Übersicht](PageConfig#seiten-anlegen-umbenennen-löschen).
 
 ## 2. Die fünf Varianten
+![Editor einer Menü-Seite mit den fünf Varianten](../Pictures/pageMenu/menu-01-editor.png)
+
 
 Unter **Kartentyp** stehen sie in zwei Gruppen:
 
@@ -43,6 +45,8 @@ Unter **Kartentyp** stehen sie in zwei Gruppen:
 **Grid2 und das Panelmodell:** Die Variante gibt es nur, wenn alle zugewiesenen Panels dasselbe Modell haben. Bei gemischten Modellen ist sie gesperrt, und ein bereits gesetztes Grid2 wird **selbsttätig auf Grid zurückgestellt** — ein Hinweis erklärt das, solange der Konflikt besteht. Ohne Panel-Zuweisung rechnet der Editor mit 8 Feldern; weist man später ein us-p-Panel zu, werden daraus 9.
 
 > **Bei *Entities* unterschlägt der Editor auf einem us-p-Panel eine Zeile.** Er rechnet immer mit vier Zeilen, das Panel zeigt dort aber **fünf**. Die fünfte ist im Editor nur über eine zusätzliche Seite und Blättern erreichbar. Bei Grid2 ist die Modellabhängigkeit eingebaut, bei Entities nicht.
+
+![Variante Entities: Zeilen statt Kacheln](../Pictures/pageMenu/menu-02-liste.png)
 
 ## 3. Flächen belegen
 
@@ -88,6 +92,8 @@ Was man dazu wissen muss:
 - **Der Kartentyp wird beim Einfügen nicht geprüft.** Eine auf einem Grid kopierte Fläche nimmt ihre Grid-Einstellungen (Textgröße, *Wert statt Icon*, langer Druck) mit auf eine Entities- oder Schedule-Zeile, wo sie nichts bewirken.
 
 ## 6. Mehr Einträge: Seiten und Blättern
+![Zweite Seite und der Scroll-Modus](../Pictures/pageMenu/menu-03-scrollmodus.png)
+
 
 Mehr Einträge als Felder? Dann entstehen **weitere Seiten**, durch die das Panel blättert.
 

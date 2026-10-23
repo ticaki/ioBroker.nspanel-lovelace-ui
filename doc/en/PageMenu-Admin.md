@@ -23,6 +23,8 @@ Contents:
 > The **Unique ID** field discards an **empty** entry and the reserved name `main` **silently**: because the field takes its value from the configuration, the characters you type simply do not appear. That looks like a bug but is intended. For renaming and its pitfalls see [PageConfig – Overview](PageConfig#creating-renaming-and-deleting-pages).
 
 ## 2. The five variants
+![Editor of a menu page with the five variants](../Pictures/pageMenu/menu-01-editor.png)
+
 
 Under **Card type** they sit in two groups:
 
@@ -43,6 +45,8 @@ Under **Card type** they sit in two groups:
 **Grid2 and the panel model:** the variant is only available when all assigned panels are of the same model. With mixed models it is disabled, and a Grid2 already set is **reset to Grid automatically** — a notice explains that while the conflict lasts. Without a panel assignment the editor assumes 8 slots; assign a us-p panel later and it becomes 9.
 
 > **With *Entities* the editor swallows one row on a us-p panel.** It always assumes four rows, but the panel shows **five** there. The fifth is only reachable in the editor through an extra page and paging. For Grid2 the model dependency is built in, for Entities it is not.
+
+![Entities variant: rows instead of tiles](../Pictures/pageMenu/menu-02-liste.png)
 
 ## 3. Filling the tiles
 
@@ -88,6 +92,8 @@ What you need to know:
 - **The card type is not checked when pasting.** A tile copied on a grid carries its grid settings (text size, *use value instead of icon*, long press) onto an Entities or Schedule row, where they have no effect.
 
 ## 6. More entries: pages and paging
+![Second page and the scroll mode](../Pictures/pageMenu/menu-03-scrollmodus.png)
+
 
 More entries than slots? Then **further pages** are created, and the panel pages through them.
 

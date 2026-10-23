@@ -25,6 +25,8 @@ Inhalt:
 > Wie bei allen Kartentypen sind die Felder gesperrt, solange die Instanz nicht läuft.
 
 ## 2. Betriebsart: Alarm oder Entsperren
+![Editor der Alarm-Seite](../Pictures/pageAlarm/alarm-01-editor.png)
+
 
 Direkt unter der ID steht **Typ** mit zwei Möglichkeiten:
 
@@ -108,6 +110,8 @@ Der Haken verlegt die Statusdatenpunkte der Seite von `panels.<panel>.alarm.<sei
 Wer nur ein Panel hat, lässt den Haken aus. Zu beachten: Nach dem Umstellen liegen die Datenpunkte **an einem anderen Ort** — Skripte und Visualisierungen, die darauf zeigen, müssen nachgezogen werden.
 
 ## 8. Die Entsperrseite und ihr Sprungziel
+![Betriebsart Entsperren mit dem Feld für die Zielseite](../Pictures/pageAlarm/alarm-02-entsperren.png)
+
 
 Bei der Betriebsart **Entsperren** fallen alle Schaltflächen weg. Die Karte zeigt ein Schloss (`lock-remove`), eine Tastatur und die Beschriftung „entsperren". Nach der richtigen PIN springt sie auf das eingestellte Ziel.
 

@@ -16,12 +16,16 @@ Inhalt:
 - [Die Konfigurationsprüfung beim Speichern](#6-die-konfigurationsprüfung-beim-speichern)
 
 ## 1. Pageitem-Konfiguration
+![Pageitem-Konfiguration](../Pictures/pageConfigDialoge/dialoge-01-pageitem.png)
+
 
 Das ist der Dialog, der hinter jeder einzelnen Fläche einer Karte steckt. Geöffnet wird er durch **Klick auf die Fläche** im Editor — auf einer Menü-Seite also auf eines der Felder, auf der Thermostat-Seite auf eine der neun Flächen rings um die Solltemperatur. Eine freie Fläche legt dabei ein neues Pageitem an, eine belegte öffnet das vorhandene.
 
 Oben neben dem Titel *Pageitem-Konfiguration* steht, womit man es zu tun hat: die **Rolle** des gewählten Kanals (`role=dimmer`, `role=socket` …), oder *kein Channel ausgewählt*, oder *Objekt nicht in ioBroker gefunden*.
 
 ### Was ein Pageitem anzeigen soll: die drei Grundfälle
+
+![Pageitem als Navigation auf eine andere Seite](../Pictures/pageConfigDialoge/dialoge-02-navigation.png)
 
 Zwei Haken am Kopf des Dialogs entscheiden, welche Art von Element entsteht:
 
@@ -34,6 +38,9 @@ Zwei Haken am Kopf des Dialogs entscheiden, welche Art von Element entsteht:
 Ist *Ist eine Navigation* gesetzt, erscheint das Feld **Zielseite**. Es listet die Seiten auf, die dieses Panel kennt, nimmt aber auch einen frei getippten Namen an — praktisch für eine Seite, die erst noch entsteht, aber auch die Stelle, an der ein Tippfehler unbemerkt bleibt.
 
 ### Der ioBroker-Kanal und seine Prüfzeichen
+
+![Prüfzeichen und Klartext am Kanalfeld](../Pictures/pageConfigDialoge/dialoge-07-pruefzeichen.png)
+
 
 Das Feld heißt **ioBroker-Kanal**, beim benutzerdefinierten Knopf dagegen **ioBroker-Datenpunkt**. Die Auswahl über „…" zeigt nur Objekte, die zum gewählten Kartentyp passen.
 
@@ -50,6 +57,7 @@ Unter dem Feld steht zusätzlich eine Zeile Klartext: *ok (role=…)* wenn alles
 Das Zahnrad rechts neben dem Feld öffnet die [Wertanzeige-Konfiguration](#3-wertanzeige-konfiguration) **für die Kanal-ID selbst**. Das braucht man selten — es ist der Weg, aus einem Kanal einen zusammengesetzten Wert zu machen.
 
 ### Name und Wertanzeige
+
 
 **Name** ist die Beschriftung der Fläche am Panel. Bleibt das Feld leer, zeigt der Hilfstext darunter, was stattdessen passiert: entweder *Vorschlag: …* (der Name, den der Adapter aus dem Kanal ableiten würde) oder *Standardname wird verwendet*.
 
@@ -77,7 +85,7 @@ Darunter stehen zwei gleich aufgebaute Spalten: **Bedingung ist wahr** und **Bed
 
 So bleibt eine Seite, an der man nichts einstellt, trotzdem stimmig: Jede Lücke füllt der Adapter aus Rolle und Farbthema.
 
-### Die beiden Knöpfe am Fuß
+### Die Knöpfe am Fuß
 
 | Knopf | Wirkung |
 |---|---|
@@ -86,6 +94,8 @@ So bleibt eine Seite, an der man nichts einstellt, trotzdem stimmig: Jede Lücke
 
 Beide werden **grün**, sobald dahinter etwas eingestellt ist. So sieht man an der Farbe des Knopfes, ob es sich lohnt hineinzuschauen.
 
+**In der Regel steht nur einer der beiden da.** Bei den Lichtrollen `rgbSingle`, `rgb`, `ct` und `hue` ist der Farbknopf gesperrt — die Vorgabe dieser Pageitems ist `type: 'boolean'`, eine Farbe über einen Wertebereich ergibt dort keinen Sinn; es bleibt die Modusliste. Bei allen anderen Rollen ist es umgekehrt: nur **Farbeinstellungen**. Im Native-Modus verschwinden beide.
+
 ### Native (nur im Expertenmodus)
 
 Links unten sitzt im Expertenmodus der Umschalter **Native**. Er ersetzt den ganzen Dialog durch das rohe JSON des Pageitems. Das ist der Notausgang für Einstellungen, für die es noch keine Oberfläche gibt — nicht der normale Weg. Bei ungültigem JSON bleibt **Speichern** gesperrt und die Fehlermeldung steht unter dem Feld.
@@ -93,6 +103,8 @@ Links unten sitzt im Expertenmodus der Umschalter **Native**. Er ersetzt den gan
 > Fehlt im Dialog etwas, das das Pageitem können müsste, ist der richtige Weg eine Meldung an das Entwicklerteam — nicht der Umbau im Native-Modus oder im Konfigurationsskript: <https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/issues>
 
 ## 2. Die Objektauswahl: Textfeld und „…"
+![Objektauswahl, auf passende Objekte vorgefiltert](../Pictures/pageConfigDialoge/dialoge-03-objektauswahl.png)
+
 
 Überall, wo eine ioBroker-ID gebraucht wird, steht dasselbe Paar: ein **Textfeld** und daneben der Knopf **…**.
 
@@ -102,20 +114,24 @@ Links unten sitzt im Expertenmodus der Umschalter **Native**. Er ersetzt den gan
 Übernommen wird der Wert beim **Verlassen des Feldes** oder mit **Enter** — erst dann prüft der Admin die ID. Wer tippt und sofort auf *Übernehmen* klickt, löst die Prüfung mit dem Klick aus; der Dialog wartet sie ab, statt den Klick zu verschlucken.
 
 ## 3. Wertanzeige-Konfiguration
+![Wertanzeige-Konfiguration mit Vorschau](../Pictures/pageConfigDialoge/dialoge-04-wertanzeige.png)
+
 
 Dieser Dialog (Titel *Wertanzeige-Konfiguration*) baut aus mehreren Teilen **einen** Text, den das Panel anzeigt. Er steckt hinter jedem „…"-Knopf an einem Namensfeld und hinter den Wertzeilen der Thermostat-Seite.
+
+**Der Dialog zeigt nicht an jeder Stelle dieselben Felder.** Am **Namensfeld** eines Pageitems stehen Wertquelle, Präfix, Suffix und die **Vorschau** — **Einheit** und **Datumsformat** fehlen dort. Hinter dem **Zahnrad an der Kanal-ID** ist es umgekehrt: dort gibt es **Einheit** und **Datumsformat**, dafür keine Vorschau, und die Wertquelle selbst ist schreibgeschützt. Das Bild oben zeigt den Aufruf am Namensfeld.
 
 | Feld | Bedeutung |
 |---|---|
 | **Wertquelle / Wert-State-ID** | Der Datenpunkt, dessen Wert angezeigt wird. Steht hier kein Datenpunkt, sondern Text, wird der Text angezeigt. Darunter steht der **erkannte Typ** (`number`, `string`, `boolean`) — an ihm hängt, welche weiteren Felder erscheinen. |
-| **Einheit** | Nur bei Zahlen. Wird aus `common.unit` des Datenpunkts **automatisch vorbelegt**, sobald man ihn auswählt. |
+| **Einheit** | Nur bei Zahlen — und nur am Zahnrad der Kanal-ID. Wird aus `common.unit` des Datenpunkts **automatisch vorbelegt**, sobald man ihn auswählt. |
 | **Präfix** | Text **vor** dem Wert — oder ein Datenpunkt, dessen Wert davor gesetzt wird. |
 | **Suffix** | Dasselbe **hinter** dem Wert. |
 | **Vorschau** | Zeigt laufend das Ergebnis mit dem **echten aktuellen Wert**. Datenpunkte in Präfix und Suffix werden dabei aufgelöst. |
 
 > Die Einheit erscheint in der Vorschau **nur bei Zahlen**. Bei einer Zeichenkette als Wertquelle wird sie weder angezeigt noch ans Panel gegeben — wer dort eine Einheit braucht, schreibt sie ins Suffix.
 
-**Datumsformat** (eigener Kasten, bei Zahlen und Zeichenketten): Damit wird aus einem Zeitstempel ein lesbares Datum.
+**Datumsformat** (eigener Kasten, bei Zahlen und Zeichenketten — ebenfalls nur am Zahnrad der Kanal-ID): Damit wird aus einem Zeitstempel ein lesbares Datum.
 
 - **Sprachraum (Locale)** — z. B. `de-DE`. Wird aus dem Browser vorbelegt.
 - **Formatoptionen (JSON)** — die Optionen von `Intl.DateTimeFormat`, z. B. `{"dateStyle": "short"}`. Das Feld wird **sofort geprüft**: Ungültiges JSON färbt es rot. Leer lassen schaltet die Datumsformatierung ab.
@@ -124,6 +140,8 @@ Dieser Dialog (Titel *Wertanzeige-Konfiguration*) baut aus mehreren Teilen **ein
 **Löschen** (links unten, nur wo der aufrufende Editor es vorsieht) entfernt die Wertanzeige wieder.
 
 ## 4. Farboptionen
+![Farboptionen mit Farbvorschau](../Pictures/pageConfigDialoge/dialoge-05-farboptionen.png)
+
 
 Titel *Farboptionen*. Hier wird aus einem Zahlenwert eine Farbe — ein Symbol, das von Blau nach Rot läuft, je wärmer der Messwert ist.
 
@@ -139,6 +157,8 @@ Titel *Farboptionen*. Hier wird aus einem Zahlenwert eine Farbe — ein Symbol, 
 Darunter liegt eine **Farbvorschau**: eine Tabelle mit Zahlenwerten über farbigen Feldern, gerechnet mit genau derselben Funktion, die später am Panel die Farbe bestimmt. Minimum, Maximum und der Bestwert stehen fett. Die Vorschau erscheint erst, wenn zwischen Min und Max mehr als 1 liegt.
 
 ## 5. Modusliste
+![Modusliste mit Prüfung und Zähler](../Pictures/pageConfigDialoge/dialoge-06-modusliste.png)
+
 
 Titel *Modusliste (inSel_Alias / modeList)*. Damit bekommt ein Pageitem eine **Auswahlliste** am Panel — etwa die Lichtszenen einer RGB-Lampe. Der Dialog gilt für die Rollen `rgbSingle`, `rgb`, `ct`, `hue` und `select`.
 

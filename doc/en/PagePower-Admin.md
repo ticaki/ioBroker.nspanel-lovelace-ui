@@ -23,6 +23,8 @@ Contents:
 **Headline** is the header line on the panel; empty shows the page name.
 
 ## 2. The grid: six tiles around the house
+![The grid: six slots around the house](../Pictures/pagePower/poweradmin-01-raster.png)
+
 
 The editor shows the card as a **three-by-three grid**: three tiles on the left, three on the right, in the middle at the top **Home top**, in the centre the house icon and below it **Home bottom**.
 
@@ -36,6 +38,8 @@ The editor shows the card as a **three-by-three grid**: three tiles on the left,
 > Dragging only works with a pointing device and only while the instance is running.
 
 ## 3. Setting up a flow
+![Dialog of a power slot](../Pictures/pagePower/poweradmin-02-slot.png)
+
 
 In the *Edit power slot* dialog:
 
@@ -57,6 +61,8 @@ The same state feeds **value and animation** at once.
 > The three dialogs of this page only have **„close"**, no cancel: every entry takes effect on the page immediately. And unlike the main form, the fields stay usable **even with a stopped instance** — a difference that easily misleads.
 
 ## 4. Colour by value: the colour scale
+![Colour scale: the fields appear only with the checkbox](../Pictures/pagePower/poweradmin-03-farbskala.png)
+
 
 With **Color depends on value** the icon is tinted according to the power — green for a good yield, red for heavy draw. Three fields then appear:
 

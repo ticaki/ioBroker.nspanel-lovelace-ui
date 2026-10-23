@@ -25,6 +25,8 @@ Der Name ist die eindeutige ID der Seite — unter ihm sprechen andere Seiten si
 > **Alle Felder sind ausgegraut, wenn die Instanz nicht läuft.** Der Editor fragt den Adapter live ab; bei gestopptem Adapter lässt sich nichts eintragen und auch nichts anlegen. Einen erklärenden Hinweis dazu gibt die Oberfläche nicht — das ausgegraute Formular ist der einzige Hinweis.
 
 ## 2. QR-Code-Typ
+![QR-Code-Typ URL](../Pictures/pageQR/qradmin-02-url.png)
+
 
 Vier Schaltflächen entscheiden, **was** der Code enthält. Davon hängt ab, welche Felder darunter erscheinen:
 
@@ -51,6 +53,8 @@ Zwei Dinge, die der Adapter mit dem Inhalt macht und die man wissen muss, wenn e
 - **Sonderzeichen im WLAN-Code werden nicht geschützt.** Enthält SSID oder Passwort ein `;`, `:`, `,` oder `\`, bricht das die Struktur des `WIFI:`-Codes, und der Scanner liest Unsinn. Wer solche Zeichen im Passwort hat, muss die QR-Karte dafür abschreiben.
 
 ## 4. WLAN: Verschlüsselung, Passwort, verstecktes Netz
+![WLAN mit Verschlüsselung, zentralen Zugangsdaten und verstecktem Netz](../Pictures/pageQR/qradmin-01-wlan.png)
+
 
 Diese vier Felder erscheinen nur beim Typ **WLAN**.
 

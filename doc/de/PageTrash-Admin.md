@@ -33,6 +33,8 @@ Die Auswahl über die Zahl der Terminzeilen trägt in der Oberfläche die Beschr
 Die Zahl entscheidet auch über die Darstellung: Bei **vier** Terminen ist mehr Platz je Zeile (langer Wochentag, Datum vierstellig im Jahr), bei **sechs** wird es knapper (kurzer Wochentag, zweistelliges Jahr).
 
 ## 3. Woher die Termine kommen
+![Editor der Abfall-Seite](../Pictures/pageTrash/trash-01-editor.png)
+
 
 Unter **Importtyp** stehen zwei Wege:
 
@@ -64,6 +66,8 @@ Damit die Karte etwas anzeigen kann, muss sie wissen, **welcher Ereignisname zu 
 > Fehlermeldungen dieser Suche erscheinen als kleine Hinweisfenster und sind **teils deutsch, teils englisch** fest eingebaut — unabhängig von der Sprache des Admins.
 
 ## 5. Die sechs Abfallarten
+![Die sechs Abfallarten mit Farbe, Symbol und Namen](../Pictures/pageTrash/trash-02-abfallarten.png)
+
 
 Darunter stehen **sechs gleich aufgebaute Blöcke**, einer je Abfallart:
 
