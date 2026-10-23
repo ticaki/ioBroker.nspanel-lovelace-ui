@@ -22,9 +22,11 @@ appends it to the axis label — 100 … 150 W then reads `W x10` with the axis 
 > only shows the ticks that fall inside it. Adding more ticks does not help — this holds for the script
 > version as well.
 
-## Second way: the configuration script
+## Second way: the old *Page Chart* tab plus a script
 
-A chart page that exists in the admin can be addressed from a script; the `uniqueName` has to match:
+Next to the editor in the *PageConfig* tab the older tab **Page Chart** still exists. A page created there
+does **not** appear on a panel by itself: it needs an entry in the configuration script carrying the same
+`uniqueName` — and the card type has to match the presentation chosen there.
 
 ```typescript
 // line chart
@@ -40,7 +42,10 @@ const powerChart: ScriptConfig.PageChart = {
 };
 ```
 
-The name behind `const` is then listed under `pages` or `subPages`.
+The name behind `const` is then listed under `pages` or `subPages`. The adapter looks the `uniqueName` up
+in the table of the old tab (`pageChartdata`); if it is not there, it reports *No pageChartdata found for …*
+and drops the page.
 
-> The old **`PageChart`** tab is still there but is being replaced by the editor in the *PageConfig* tab.
-> For new pages the route through *PageConfig* is the right one; the fields are the same.
+> **This does not apply to pages from the *PageConfig* tab.** Those the admin builds itself and assigns to
+> the panel directly — **no script entry is needed**, and a reference from a script would not even find such
+> a page. For new pages the route through *PageConfig* is the right one; the fields are the same.

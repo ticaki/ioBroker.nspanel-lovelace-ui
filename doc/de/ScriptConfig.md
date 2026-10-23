@@ -128,7 +128,13 @@ Zusätzlich gibt es das **automatische Blättern**. Dabei muss der Parameter `sc
 
 ---  
 
-Dann gibt es noch die Standard Seiten PageChart und PagePower. Sie haben eine einfache Config, da sie im Admin konfiguriert werden; das Skript verweist nur darauf. Der `uniqueName` muss dabei dem im Admin entsprechen. Bei der PageChart muss zum `uniqueName` auch der card`type` passen. Mehr zu diesem Thema in den [speziellen Wiki Seiten.](Pages)
+Dann gibt es noch die Standard Seiten PageChart und PagePower. Sie haben eine einfache Config, weil die Felder in den **alten Tabs** *Page Chart* und *Page Power* stehen; das Skript verweist nur darauf. Der `uniqueName` muss dabei dem Eintrag in diesem Tab entsprechen. Bei der PageChart muss zum `uniqueName` auch der card`type` passen. Mehr zu diesem Thema in den [speziellen Wiki Seiten.](Pages)
+
+> **Dieser Verweis greift nur bei den alten Tabs.** Der Adapter sucht den `uniqueName` in `pagePowerdata`
+> beziehungsweise `pageChartdata` — den Tabellen der Tabs *Page Power* und *Page Chart*. Eine Seite, die im
+> **Tab PageConfig** angelegt wurde, steht dort nicht: Sie wird vom Admin selbst gebaut und dem Panel direkt
+> zugewiesen und braucht **gar keinen Skripteintrag**. Ein Verweis darauf läuft ins Leere und endet mit
+> *No pagePowerdata found for …*.
 
 > **PageQR, PageAlarm und die Entsperrseite lassen sich aus dem Skript nicht ansprechen.** Der Adapter
 > überspringt `cardQR`, `cardAlarm` und `cardUnlock` aus einer Skript-Konfiguration ausdrücklich

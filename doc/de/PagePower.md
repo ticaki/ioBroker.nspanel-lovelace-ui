@@ -23,10 +23,11 @@ je größer die Leistung ist, und das Symbol kann seine Farbe nach dem Wert wech
 
 <img alt='Haus mit den beiden Werten' src='../Pictures/pagePower/pagePowerHome.png'>
 
-## Zweiter Weg: das Konfigurationsskript
+## Zweiter Weg: der alte Tab *Page Power* plus Skript
 
-Das Skript kann eine Energie-Seite ansprechen, die im Admin angelegt ist — der `uniqueName` muss dafür
-übereinstimmen:
+Neben dem Editor im Tab *PageConfig* gibt es weiterhin den älteren Tab **Page Power**. Eine dort angelegte
+Seite erscheint **nicht von selbst** auf einem Panel: Sie braucht einen Eintrag im Konfigurationsskript mit
+demselben `uniqueName`.
 
 ```typescript
 // als Hauptseite unter pages
@@ -49,5 +50,10 @@ pages: [powerGrid],
 subPages: [energieAnzeige],
 ```
 
-> Erst im Admin einrichten, dann das Skript anpassen und neu starten. Welche Felder es gibt, steht auf der
-> [Admin-Seite](PagePower-Admin) — diese Seite hier wiederholt sie bewusst nicht.
+Der Adapter sucht den `uniqueName` in der Tabelle des alten Tabs (`pagePowerdata`). Findet er ihn nicht,
+meldet er *No pagePowerdata found for …* und lässt die Seite weg.
+
+> **Für Seiten aus dem Tab *PageConfig* gilt das nicht.** Die baut der Admin selbst und weist sie dem Panel
+> direkt zu — dort ist **kein Skripteintrag nötig**, und ein Verweis aus dem Skript findet eine solche Seite
+> auch gar nicht: Er sucht nur in der Tabelle des alten Tabs. Welche Felder es gibt, steht auf der
+> [Admin-Seite](PagePower-Admin).

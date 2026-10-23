@@ -24,10 +24,11 @@ An der Y-Achse zeigt das Panel **ganze Zahlen mit höchstens zwei Zeichen**. Bei
 > zeigt nur die Striche, die in diesen Bereich fallen. Mehr Ticks zu setzen hilft nicht — das gilt auch
 > für die Skriptversion.
 
-## Zweiter Weg: das Konfigurationsskript
+## Zweiter Weg: der alte Tab *Page Chart* plus Skript
 
-Eine Diagrammseite, die im Admin angelegt ist, lässt sich aus dem Skript ansprechen; der `uniqueName` muss
-übereinstimmen:
+Neben dem Editor im Tab *PageConfig* gibt es weiterhin den älteren Tab **Page Chart**. Eine dort angelegte
+Seite erscheint **nicht von selbst** auf einem Panel: Sie braucht einen Eintrag im Konfigurationsskript mit
+demselben `uniqueName` — und der Kartentyp muss zur dort gewählten Darstellung passen.
 
 ```typescript
 // Liniendiagramm
@@ -43,7 +44,10 @@ const stromChart: ScriptConfig.PageChart = {
 };
 ```
 
-Eingetragen wird der Name hinter `const` unter `pages` beziehungsweise `subPages`.
+Eingetragen wird der Name hinter `const` unter `pages` beziehungsweise `subPages`. Der Adapter sucht den
+`uniqueName` in der Tabelle des alten Tabs (`pageChartdata`); findet er ihn nicht, meldet er
+*No pageChartdata found for …* und lässt die Seite weg.
 
-> Der alte Tab **`PageChart`** ist weiterhin vorhanden, wird aber vom Editor im Tab *PageConfig* abgelöst.
-> Für neue Seiten ist der Weg über *PageConfig* der richtige; die Felder sind dieselben.
+> **Für Seiten aus dem Tab *PageConfig* gilt das nicht.** Die baut der Admin selbst und weist sie dem Panel
+> direkt zu — dort ist **kein Skripteintrag nötig**, und ein Verweis aus dem Skript findet eine solche Seite
+> auch gar nicht. Für neue Seiten ist der Weg über *PageConfig* der richtige; die Felder sind dieselben.

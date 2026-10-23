@@ -22,9 +22,11 @@ and the icon can change its colour with the value.
 
 <img alt='The house with its two values' src='../Pictures/pagePower/pagePowerHome.png'>
 
-## Second way: the configuration script
+## Second way: the old *Page Power* tab plus a script
 
-A script can address a power page that exists in the admin — the `uniqueName` has to match:
+Next to the editor in the *PageConfig* tab the older tab **Page Power** still exists. A page created there
+does **not** appear on a panel by itself: it needs an entry in the configuration script carrying the same
+`uniqueName`.
 
 ```typescript
 // as a main page under pages
@@ -47,5 +49,10 @@ pages: [powerGrid],
 subPages: [energyDisplay],
 ```
 
-> Set it up in the admin first, then adjust the script and restart it. Which fields exist is described on
-> the [admin page](PagePower-Admin) — this page deliberately does not repeat them.
+The adapter looks the `uniqueName` up in the table of the old tab (`pagePowerdata`). If it is not there,
+it reports *No pagePowerdata found for …* and drops the page.
+
+> **This does not apply to pages from the *PageConfig* tab.** Those the admin builds itself and assigns to
+> the panel directly — **no script entry is needed**, and a reference from a script would not even find
+> such a page: it only searches the table of the old tab. Which fields exist is described on the
+> [admin page](PagePower-Admin).
