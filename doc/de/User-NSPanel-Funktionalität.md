@@ -63,7 +63,9 @@ Zwei Karten sind laut Projekt-README noch in Arbeit: `cardLChart2` und das Farbw
 
 ## 5. Popups
 
-Popups öffnen sich aus einer Seite heraus und bedienen ein einzelnes Gerät im Detail: `popupLight` und `popupLight2` (Helligkeit, Farbe, Farbtemperatur), `popupShutter` und `popupShutter2` (Rollläden, Lamellen), `popupThermo` (Thermostat), `popupFan` (Lüfter), `popupInSel` (Auswahllisten), `popupTimer`, `popupSlider` und `popupNotify` (Meldungen). Beschrieben sind sie unter [Popups](pagePopup).
+Popups öffnen sich aus einer Seite heraus und bedienen ein einzelnes Gerät im Detail: `popupLight` und `popupLightNew` (Helligkeit, Farbe, Farbtemperatur), `popupShutter` und `popupShutter2` (Rollläden, Lamellen), `popupThermo` (Thermostat), `popupFan` (Lüfter), `popupInSel` (Auswahllisten), `popupTimer` und `popupSlider`. Welche Fassung der Adapter nimmt, entscheidet er selbst — die neue, außer beim Rollladen mit Lamellen.
+
+Davon zu trennen ist das **Meldungs-Popup** (`popupNotify`): keine Detailansicht eines Geräts, sondern eine Systemseite, die eine Nachricht über alles andere legt. Sie wird über Datenpunkte oder `sendTo` gesteuert und ist unter [Popups](pagePopup) beschrieben.
 
 ## 6. Bildschirmschoner
 

@@ -63,7 +63,9 @@ Two items are still in progress according to the project README: `cardLChart2` a
 
 ## 5. Popups
 
-Popups open from within a page and control a single device in detail: `popupLight` and `popupLight2` (brightness, colour, colour temperature), `popupShutter` and `popupShutter2` (shutters, slats), `popupThermo` (thermostat), `popupFan` (fan), `popupInSel` (selection lists), `popupTimer`, `popupSlider` and `popupNotify` (messages).
+Popups open from within a page and control a single device in detail: `popupLight` and `popupLightNew` (brightness, colour, colour temperature), `popupShutter` and `popupShutter2` (shutters, slats), `popupThermo` (thermostat), `popupFan` (fan), `popupInSel` (selection lists), `popupTimer` and `popupSlider`. Which variant is used is decided by the adapter itself — the new one, except for a shutter with slats.
+
+A different thing altogether is the **notification popup** (`popupNotify`): not a detail view of a device but a system page that puts a message on top of everything else. It is driven by states or `sendTo` and described under [Popups](pagePopup).
 
 ## 6. Screensaver
 

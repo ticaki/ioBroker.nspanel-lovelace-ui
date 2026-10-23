@@ -6,18 +6,20 @@ The configuration script is the route for **experienced users in special cases**
 
 ## Where each page is configured
 
-| Page | What it is for | Card description | Create in the admin |
+| Page | What it is for | What arrives on the panel | Create in the admin |
 |---|---|---|---|
-| Thermostat | Heating and climate, up to eight heat circuits | Page Thermo2 | [Thermostat](PageThermo2-Admin) |
-| Power | Energy flow with sources and consumers | Page Power | *(to come)* |
-| Chart | History chart | [Page Chart](PageChart) | *(to come)* |
-| QR code | Wi-Fi access as a QR code | Page QR | *(to come)* |
-| Alarm | Alarm system with PIN and states | Page Alarm | *(to come)* |
-| Trash | Waste collection dates | *(to come)* | *(to come)* |
-| Menu page | Tile or list overview with freely chosen items | *(to come)* | *(to come)* |
+| Menu page | Tile or list overview with freely chosen items | *(to come)* | [Menu page](PageMenu-Admin) |
+| Thermostat | Heating and climate, up to eight heat circuits | [Page Thermo2](PageThermo2) | [Thermostat](PageThermo2-Admin) |
+| Power | Energy flow with sources and consumers | [Page Power](PagePower) | [Power](PagePower-Admin) |
+| Chart | History chart | [Page Chart](PageChart) | [Chart](PageChart-Admin) |
+| QR code | Wi-Fi access, a phone number or an address as a QR code | [Page QR](PageQR) | [QR code](PageQR-Admin) |
+| Alarm | Alarm system with PIN and states | [Page Alarm](PageAlarm) | [Alarm and unlock page](PageAlarm-Admin) |
+| Trash | Waste collection dates | [Page Trash](PageTrash) | [Trash](PageTrash-Admin) |
+| Media | Music and playlists | [Page Media](PageMedia) | *(to come)* |
 
 ## Things to keep in mind
 
+- **Three page types exist in the admin only.** A configuration script cannot create the QR, alarm/unlock and waste pages — it rejects them explicitly („is only supported in the admin configuration! Skipped!") and skips them, navigation entry included.
 - **One page, one source.** Once a page exists in the admin, the admin entry is what counts for the panels listed there. A page of the same name in the script is no longer used for those panels.
 - **States come through alias channels.** The cards expect specific roles; the alias table lists them. The editor in the admin checks them while you pick a channel.
 - **Unlock is not a page of its own** any more — it is configured together with the pages in the admin.
