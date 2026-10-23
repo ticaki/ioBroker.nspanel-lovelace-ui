@@ -15,7 +15,7 @@ The configuration script is the route for **experienced users in special cases**
 | QR code | Wi-Fi access, a phone number or an address as a QR code | [Page QR](PageQR) | [QR code](PageQR-Admin) |
 | Alarm | Alarm system with PIN and states | [Page Alarm](PageAlarm) | [Alarm and unlock page](PageAlarm-Admin) |
 | Trash | Waste collection dates | [Page Trash](PageTrash) | [Trash](PageTrash-Admin) |
-| Media | Music and playlists | [Page Media](PageMedia) | *(to come)* |
+| Media | Music and playlists | [Page Media](PageMedia) | **not in the admin** — script only |
 
 ## Things to keep in mind
 

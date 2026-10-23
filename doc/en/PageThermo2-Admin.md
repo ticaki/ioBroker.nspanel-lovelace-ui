@@ -52,8 +52,8 @@ Contents:
 | **Line 1** (thermometer, actual temperature) and **line 3** (drop, humidity) | Click → dialog *Display of the values* (icon, color, unit). |
 | **Big number** (set temperature) | Click → dialog *Set temperature* (minimum, maximum, step). |
 | **Mode text** (e.g. MANUAL) | Click → dialog *Mode display* (mode texts). |
-| **Nine slots** | The page items in the real order of the panel: four on the left, four on the right, the ninth between − and +. Dashed = free, lock = taken by the adapter (circuit selectors and the buttons generated from the alias), green border = item for this circuit only, blue border = item for all circuits. |
-| **Page x/y** with arrows | More than nine entries are paged – like on the panel. |
+| **The slots** | The page items in the order of the panel: four on the left, four on the right — and a ninth between − and + that the editor offers on top. **Only the eight side slots reach the panel** (see the box below the table). Dashed = free, lock = taken by the adapter (circuit selectors and the buttons generated from the alias), green border = item for this circuit only, blue border = item for all circuits. |
+| **Page x/y** with arrows | Further entries are paged. The editor counts nine slots per page, the panel eight. |
 | **Order of the slots** | The sort order of the slots (`sortOrder`), see [Order](#9-order-of-the-slots). |
 | **Add page item** | New item for the selected circuit (same as clicking a free slot). |
 | **Heat circuit icon** | Dialog for icon and colors of the circuit selector slots. |
@@ -128,7 +128,7 @@ With more than one circuit the selector slots (①, ② …) take the first plac
 - **Moving:** hovering shows arrows (one slot left/right) and the trash. Items can also be **dragged** – onto a taken slot (the two swap) or onto a free slot further back (the slots in between stay free). While dragging the item is semi-transparent and the target is highlighted.
 - **Deleting:** the trash removes the item; its slot stays free, the other items keep their places.
 - **Free slots between items** are saved (as empty items per circuit) and shown as empty places on the panel. Free slots at the end are dropped.
-- **Paging:** more than nine entries spread over several pages; the page number is at the bottom left of the panel mock, on the panel the arrow at the top right pages.
+- **Paging:** further entries spread over several pages; the page number is at the bottom left of the panel mock, on the panel the arrow at the top right pages. The editor fills nine slots per page, the panel shows eight.
 
 The item dialog with the field **Heat circuit** (preset to the selected circuit):
 
@@ -153,7 +153,9 @@ Select **Order of the slots** below the panel (`sortOrder` in the script):
 | **HB** – horizontal, bottom first | |
 | **VB** – vertical, bottom first | |
 
-The editor draws the slots in the chosen order. With any value other than **V** the adapter sorts the eight side slots only – the ninth (between − and +) stays empty; the editor draws it dimmed with a hint.
+The editor draws the slots in the chosen order.
+
+> **The ninth slot never reaches the panel.** When building the page the adapter cuts the list down to **eight** items (`pageThermo2.ts`, `maxItems = 8`), whatever the order is; the place between − and + carries the fixed mode display. The editor, on the other hand, counts on nine slots per page — a ninth slot filled there stays invisible on the panel and shifts the paging against the panel as well.
 
 ## 10. Saving, panel assignment, navigation
 
@@ -164,5 +166,5 @@ The editor draws the slots in the chosen order. With any value other than **V** 
 
 - **Everything greyed out:** the instance is not running. The editor can be used with a running instance only.
 - **A button is missing on the panel although the data point exists:** for `VACATION` and `USERICON` the adapter does not search by role but for the data point with **exactly this name** below the channel (e.g. `….VACATION`, not `….Vacation`). The preview in the heat circuit dialog shows only the buttons the adapter really generates.
-- **Items appear elsewhere than in the editor:** check whether the item is bound to *all heat circuits* (see the note in [Page items](#8-page-items-adding-moving-free-slots)) and whether the order is not **V** (ninth slot).
+- **Items appear elsewhere than in the editor, or not at all:** check whether the item is bound to *all heat circuits* (see the note in [Page items](#8-page-items-adding-moving-free-slots)) and whether it sits in the **ninth slot** of a page — that one does not reach the panel.
 - **The page shows nothing:** at least one heat circuit with a data source is needed.

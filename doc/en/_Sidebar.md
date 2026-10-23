@@ -49,12 +49,12 @@
 **Standard pages**  
 - Introduction *(to come)*  
 - [Page QR](PageQR)  
-- Power *(to come)*  
-- [Chart](PageChart)  
+- [Page Power](PagePower)  
+- [Page Chart](PageChart)  
 - [Page Alarm](PageAlarm)  
 - [Page Trash](PageTrash)  
-- Media *(to come)*  
-- Thermostat *(to come)*  
+- [Page Media](PageMedia)  
+- [Page Thermo2](PageThermo2)  
 - [Popups](pagePopup)  
 **Developer**  
 - Developer templates *(to come)*  

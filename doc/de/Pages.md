@@ -15,7 +15,7 @@ Das [Konfigurationsskript](ScriptConfig) ist der Weg für **erfahrene Nutzer in 
 | QR-Code | WLAN-Zugang, Telefonnummer oder Adresse als QR-Code | [Page QR](PageQR) | [QR-Code](PageQR-Admin) |
 | Alarm | Alarmanlage mit PIN und Zuständen | [Page Alarm](PageAlarm) | [Alarm und Entsperrseite](PageAlarm-Admin) |
 | Abfall | Abfuhrtermine | [Page Trash](PageTrash) | [Abfall](PageTrash-Admin) |
-| Medien | Musik und Wiedergabelisten | [Page Media](PageMedia) | *(folgt)* |
+| Medien | Musik und Wiedergabelisten | [Page Media](PageMedia) | **nicht im Admin** — nur im Skript |
 
 ## Was dabei zu beachten ist
 

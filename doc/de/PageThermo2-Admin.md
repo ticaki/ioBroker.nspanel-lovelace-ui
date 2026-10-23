@@ -49,8 +49,8 @@ Die Felder **Panel-Filter** und **Seitentyp** über der Liste filtern nur die An
 | **Zeile 1** (Thermometer, Ist-Temperatur) und **Zeile 3** (Tropfen, Luftfeuchte) | Klick → Dialog *Anzeige der Werte* (Symbol, Farbe, Einheit). |
 | **Große Zahl** (Solltemperatur) | Klick → Dialog *Solltemperatur* (Minimum, Maximum, Schrittweite). |
 | **Modustext** (z. B. MANUAL) | Klick → Dialog *Modusanzeige* (Modustexte). |
-| **Neun Flächen** | Die PageItems der Seite in der echten Reihenfolge des Panels: vier links, vier rechts, die neunte zwischen − und +. Gestrichelt = frei, Schloss = vom Adapter belegt (Heizkreis-Auswahl und die aus dem Alias erzeugten Buttons), grüner Rahmen = Item nur für diesen Heizkreis, blauer Rahmen = Item für alle Heizkreise. |
-| **Seite x/y** mit Pfeilen | Mehr als neun Einträge werden geblättert – wie auf dem Panel. |
+| **Die Flächen** | Die PageItems der Seite in der Reihenfolge des Panels: vier links, vier rechts — und eine neunte zwischen − und +, die der Editor zusätzlich anbietet. **Am Panel kommen nur die acht seitlichen an** (siehe Kasten unter der Tabelle). Gestrichelt = frei, Schloss = vom Adapter belegt (Heizkreis-Auswahl und die aus dem Alias erzeugten Buttons), grüner Rahmen = Item nur für diesen Heizkreis, blauer Rahmen = Item für alle Heizkreise. |
+| **Seite x/y** mit Pfeilen | Mehr Einträge werden geblättert. Der Editor rechnet dabei mit neun Plätzen je Seite, das Panel mit acht. |
 | **Anordnung der Flächen** | Die Sortierung der Flächen (`sortOrder`), siehe [Anordnung](#9-anordnung-der-flächen). |
 | **PageItem hinzufügen** | Neues Item für den gewählten Heizkreis (gleichbedeutend mit dem Klick auf eine freie Fläche). |
 | **Heizkreis-Symbol** | Dialog für Symbol und Farben der Heizkreis-Auswahlflächen. |
@@ -125,7 +125,7 @@ Bei mehr als einem Heizkreis belegen die Auswahlflächen (①, ② …) die erst
 - **Verschieben:** Beim Überfahren erscheinen Pfeile (eine Fläche nach links/rechts) und der Papierkorb. Items lassen sich außerdem **ziehen** – auf eine belegte Fläche (die beiden tauschen) oder auf eine freie Fläche weiter hinten (die Flächen dazwischen bleiben frei). Während des Ziehens wird das Item halbtransparent, das Ziel hervorgehoben.
 - **Löschen:** Der Papierkorb löscht das Item; seine Fläche bleibt frei, die übrigen Items behalten ihre Plätze.
 - **Freie Flächen zwischen Items** werden mitgespeichert (als leere Items je Heizkreis) und auf dem Panel als leere Plätze angezeigt. Freie Flächen am Ende werden verworfen.
-- **Blättern:** Mehr als neun Einträge verteilen sich auf mehrere Seiten; die Seitenzahl steht unten links im Panel, auf dem Panel blättert der Pfeil rechts oben.
+- **Blättern:** Mehr Einträge verteilen sich auf mehrere Seiten; die Seitenzahl steht unten links im Panel, auf dem Panel blättert der Pfeil rechts oben. Der Editor füllt je Seite neun Plätze, das Panel zeigt acht.
 
 Der Item-Dialog mit dem Feld **Heizkreis** (vorbelegt mit dem gerade gewählten Heizkreis):
 
@@ -150,7 +150,9 @@ Auswahlfeld **Anordnung der Flächen** unter dem Panel (`sortOrder` im Skript):
 | **HB** – waagerecht, unten zuerst | |
 | **VB** – senkrecht, unten zuerst | |
 
-Der Editor zeichnet die Flächen in der gewählten Anordnung. Bei allen Werten außer **V** sortiert der Adapter nur die acht seitlichen Flächen – die neunte (zwischen − und +) bleibt dann leer; der Editor zeigt sie gedimmt mit einem Hinweis.
+Der Editor zeichnet die Flächen in der gewählten Anordnung.
+
+> **Die neunte Fläche erreicht das Panel nie.** Der Adapter schneidet die Liste beim Bauen der Seite auf **acht** Items zu (`pageThermo2.ts`, `maxItems = 8`), unabhängig von der Anordnung; der Platz zwischen − und + trägt die feste Modusanzeige. Der Editor rechnet dagegen mit neun Plätzen je Seite — ein dort belegter neunter Platz bleibt am Panel unsichtbar und verschiebt zusätzlich die Blätterung gegenüber dem Panel.
 
 ## 10. Speichern, Panel-Zuweisung, Navigation
 
@@ -161,5 +163,5 @@ Der Editor zeichnet die Flächen in der gewählten Anordnung. Bei allen Werten a
 
 - **Alles ausgegraut:** Die Instanz läuft nicht. Der Editor ist nur bei laufender Instanz bedienbar.
 - **Ein Button fehlt auf dem Panel, obwohl der Datenpunkt existiert:** Für `VACATION` und `USERICON` sucht der Adapter nicht nach der Rolle, sondern nach dem Datenpunkt mit **genau diesem Namen** unter dem Channel (z. B. `….VACATION`, nicht `….Vacation`). Die Vorschau im Heizkreis-Dialog zeigt nur die Buttons, die der Adapter wirklich erzeugt.
-- **Items erscheinen an anderer Stelle als im Editor:** Prüfen, ob das Item an *alle Heizkreise* gebunden ist (siehe Hinweis in [PageItems](#8-pageitems-anlegen-verschieben-freie-flächen)) und ob die Anordnung ungleich **V** ist (neunte Fläche).
+- **Items erscheinen an anderer Stelle als im Editor oder gar nicht:** Prüfen, ob das Item an *alle Heizkreise* gebunden ist (siehe Hinweis in [PageItems](#8-pageitems-anlegen-verschieben-freie-flächen)) und ob es auf dem **neunten Platz** einer Seite liegt — der kommt am Panel nicht an.
 - **Die Seite zeigt nichts an:** Mindestens ein Heizkreis mit Datenquelle ist nötig.
