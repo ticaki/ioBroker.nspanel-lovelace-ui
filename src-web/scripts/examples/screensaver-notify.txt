@@ -1,0 +1,12 @@
+# Screensaver, advanced layout with a notification (wiki: screensaverNotify.png)
+# Payloads as the adapter sends them (src/lib/pages/screensaver.ts), icons are HMI font glyphs.
+# dimmode standby is 100 here so the screenshot can be compared with the wiki picture (the adapter sends e.g. 10).
+timeout~20
+dimmode~100~100~6371~65535~1
+pageType~screensaver2
+time~16:34~
+date~Sonntag, 21. Sept. 2025
+weatherUpdate~~~~65504~~7.5 °C~~~~65504~~21.4°C~~~~32495~~594 W~~~~2016~~Heute~~~~52810~Regen~07:25~~~~32495~Wind~3.1m/s~~~~32495~Böen~4.3m/s~~~~65535~Windr.~NNO~~~~32495~Feuchte~73.0%~~~~32495~UV~1~~3?10~~63488~~~~3?11~~32495~~~~3?12~~32495~~~~3?13~~32495~~~~3?14~~32495~~
+color~6371~65535~65363~54938~65535~54938~54938~54938~54938~54938~54938~54938~54938~54938~65363~1374
+statusUpdate~~1374~~1374~~
+notify~Hohe Zahl: 10~Im Datenpunkt steht die Zahl 10. Bis dahin kannst du nicht zählen. Frag deine Mama!

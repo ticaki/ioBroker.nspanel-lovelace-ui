@@ -54,6 +54,10 @@ class Controller extends Library.BaseClass {
     availableTasmotaFirmwareVersion: ""
   };
   systemNotification;
+  /** Resolves when init() has created the internal states and all configured panels */
+  initPromise;
+  /** Owner of the web panels - set by the web server, removes clones with their real panel */
+  virtualPanelManager;
   constructor(adapter, options) {
     super(adapter, options.name);
     switch (this.adapter.config.colorTheme) {
@@ -88,7 +92,7 @@ class Controller extends Library.BaseClass {
     if (this.adapter.mqttServer) {
       this.adapter.mqttServer.controller = this;
     }
-    void this.init(options.panels);
+    this.initPromise = this.init(options.panels);
     this.log.debug(`${this.name} created`);
   }
   minuteLoop = async () => {
@@ -492,7 +496,61 @@ class Controller extends Library.BaseClass {
     } else {
       this.log.error(`Panel ${panel.topic} not found`);
     }
+    if (!panel.isVirtual && this.virtualPanelManager) {
+      await this.virtualPanelManager.removeClonesOf(panel.topic);
+    }
   };
+  /**
+   * The configuration a web panel is cloned from, looked up by the topic of the real panel
+   * or, as a fallback, by its id (the cleaned MAC) from the admin panel table.
+   *
+   * @param topicOrId topic or id of the real panel
+   * @returns the configuration as handed to the controller, or undefined
+   */
+  getPanelConfig(topicOrId) {
+    var _a;
+    let config = this.options.panels.find((p) => p && p.topic === topicOrId);
+    if (!config) {
+      const topic = (_a = this.adapter.config.panels.find((p) => p.id === topicOrId)) == null ? void 0 : _a.topic;
+      config = topic ? this.options.panels.find((p) => p && p.topic === topic) : void 0;
+    }
+    return config;
+  }
+  /**
+   * Create a web panel: a clone of a real panel with its own message channel.
+   * Unlike addPanel the topic is not checked against the admin panel table - the clone
+   * carries a topic of its own (`<topic>/web/<session>`).
+   *
+   * @param config clone of the real panel's configuration, name/topic/friendlyName already set
+   * @param channel the in-process channel to the browser
+   * @returns the panel, or undefined if the configuration is invalid
+   */
+  async addVirtualPanel(config, channel) {
+    await this.initPromise;
+    if (this.unload || !config.topic || !config.name) {
+      return void 0;
+    }
+    if (this.panels.some((p) => p.topic === config.topic)) {
+      this.log.error(`Web panel ${config.name} with topic ${config.topic} already exists`);
+      return void 0;
+    }
+    config.kind = "web";
+    config.channel = channel;
+    config.controller = this;
+    config.scriptName = config.scriptName || "missing";
+    const newPanel = await Panel.Panel.create(this.adapter, config);
+    if (await newPanel.isValid()) {
+      await newPanel.init();
+      this.panels.push(newPanel);
+      newPanel.initDone = true;
+      this.log.debug(`Web panel ${newPanel.name} created`);
+      return newPanel;
+    }
+    await newPanel.setStatus("error");
+    await newPanel.delete();
+    this.log.error(`Web panel ${config.name} has a invalid configuration.`);
+    return void 0;
+  }
   mqttClientConnected = (id) => {
     if (id === this.mqttClient.clientId) {
       return true;
@@ -539,6 +597,9 @@ class Controller extends Library.BaseClass {
     }
     if (this.systemNotification) {
       await this.systemNotification.delete();
+    }
+    if (this.virtualPanelManager) {
+      await this.virtualPanelManager.deleteAll();
     }
     if (this.statesControler) {
       await this.statesControler.delete();

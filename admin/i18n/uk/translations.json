@@ -1042,5 +1042,10 @@
     "wlanhidden": "прихований wifi",
     "wlantype": "Шифрування Wi -Fi",
     "writeTasmotaTele": "Записати дані телеметрії Tasmota",
-    "writeTasmotaTeleHint": "Якщо ввімкнено, телеметричні дані панелі зберігатимуться в точках даних (panels/XXXXX/info/tasmota/sts....)."
+    "writeTasmotaTeleHint": "Якщо ввімкнено, телеметричні дані панелі зберігатимуться в точках даних (panels/XXXXX/info/tasmota/sts....).",
+    "webPanelSetting": "Веб-панелі",
+    "webPanelInfo": "Показує інтерфейс панелі у браузері: http://<хост ioBroker>:<порт>/<topic панелі>. Браузер поводиться як додаткова NSPanel з тією самою конфігурацією.",
+    "webEnabled": "Увімкнути веб-панелі",
+    "webPort": "Порт веб-панелей",
+    "webBind": "Адреса прив'язки (0.0.0.0 = усі інтерфейси)"
 }

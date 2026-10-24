@@ -27,6 +27,8 @@ var import_library = require("./lib/controller/library");
 var import_register = require("source-map-support/register");
 var MQTT = __toESM(require("./lib/classes/mqtt"));
 var import_controller = require("./lib/controller/controller");
+var import_virtual_panel_manager = require("./lib/web/virtual-panel-manager");
+var import_web_server = require("./lib/web/web-server");
 var import_icon_mapping = require("./lib/const/icon_mapping");
 var definition = __toESM(require("./lib/const/definition"));
 var import_config_manager = require("./lib/classes/config-manager");
@@ -47,6 +49,8 @@ class NspanelLovelaceUi extends utils.Adapter {
   mqttClient;
   mqttServer;
   controller;
+  /** HTTP/WebSocket server of the web panels, undefined when disabled */
+  webServer;
   unload = false;
   testSuccessful = true;
   timeoutAdmin;
@@ -433,9 +437,32 @@ class NspanelLovelaceUi extends utils.Adapter {
         name: "controller",
         panels: structuredClone(this.mainConfiguration)
       });
+      await this.startWebServer(this.controller);
     } catch (e) {
       this.testSuccessful = false;
       this.log.error(`Error onReady: ${e}`);
+    }
+  }
+  /**
+   * Start the HTTP/WebSocket server of the web panels (browser shows the panel UI).
+   *
+   * @param controller the controller owning the panels
+   */
+  async startWebServer(controller) {
+    if (!this.config.webEnabled) {
+      this.log.debug("Web panels are disabled");
+      return;
+    }
+    const manager = new import_virtual_panel_manager.VirtualPanelManager(this, controller);
+    this.webServer = new import_web_server.WebServer(this, manager, {
+      port: Number(this.config.webPort) || 8090,
+      bind: this.config.webBind || "0.0.0.0",
+      wwwPath: import_node_path.default.join(__dirname, "..", "www")
+    });
+    if (!await this.webServer.start()) {
+      await this.webServer.delete();
+      await manager.delete();
+      this.webServer = void 0;
     }
   }
   onMqttConnect = async () => {
@@ -539,6 +566,10 @@ class NspanelLovelaceUi extends utils.Adapter {
           this.clearInterval(a);
         }
       });
+      if (this.webServer) {
+        await this.webServer.delete();
+        this.webServer = void 0;
+      }
       if (this.controller) {
         await this.controller.delete();
       }

@@ -21,6 +21,10 @@ declare global {
             mqttIp: string;
             mqttPort: number;
             internalServerIp: string;
+            /** web panels: HTTP/WebSocket server that shows the panel UI in a browser */
+            webEnabled: boolean;
+            webPort: number;
+            webBind: string;
             Testconfig2: Partial<Panel.panelConfigPartial>[];
             timezone: string;
             useBetaTFT: boolean;

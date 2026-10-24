@@ -158,6 +158,9 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
     ### **WORK IN PROGRESS**
 -->
 ### **WORK IN PROGRESS**
+- (ticaki) web panels: the panel UI can be shown in a web browser via http://<host>:8090/<topic> - a clone of the panel with its own navigation, no Tasmota needed (new admin tab "Web panels")
+
+### 1.6.0 (2026-10-24)
 - (ticaki) panel: tapping the screensaver several times no longer ends in a black page - a resent page got its pageType but no content
 - (ticaki) template text.battery.bydhvs: charging icon is now shown when the battery is charging (negative power)
 - (ticaki) admin screensaver: notifications (bell next to the gear) - headline, text, states with condition, priority, dismiss group and buzzer

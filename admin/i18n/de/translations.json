@@ -1067,5 +1067,10 @@
     "wlantype": "Wlan Verschlüsselung",
     "writeTasmotaTele": "Tasmota Telemetriedaten schreiben",
     "writeTasmotaTeleHint": "Wenn aktiviert, werden die Telemetriedaten des Panels in den Datenpunkten gespeichert. (panels/XXXXX/info/tasmota/sts....)",
-    "writeable": "beschreibbar"
+    "writeable": "beschreibbar",
+    "webPanelSetting": "Web-Panels",
+    "webPanelInfo": "Zeigt die Panel-Oberfläche im Webbrowser: http://<ioBroker-Host>:<Port>/<Topic des Panels>. Der Browser verhält sich wie ein zusätzliches NSPanel mit derselben Konfiguration.",
+    "webEnabled": "Web-Panels aktivieren",
+    "webPort": "Port der Web-Panels",
+    "webBind": "Bind-Adresse (0.0.0.0 = alle Schnittstellen)"
 }

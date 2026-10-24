@@ -1,0 +1,3 @@
+# cardAlarm after a wrong PIN: locked for 2^n seconds, numpad disabled, key-alert icon flashing
+pageType~cardAlarm
+entityUpd~Alarm~button~bSubPrev~~65535~~~button~bSubNext~~65535~~~alarm.haus~gesperrt für~~ 4 s~~~~~~旅~63488~disable~enable

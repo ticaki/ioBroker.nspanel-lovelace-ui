@@ -1,0 +1,3 @@
+# popupLight: dimmer with colour temperature only (no colour wheel)
+pageType~popupLight~Kueche~light.kitchen
+entityUpdateDetail~light.kitchen~~65504~1~100~70~disable~Farbe~Temperatur~Helligkeit~disable

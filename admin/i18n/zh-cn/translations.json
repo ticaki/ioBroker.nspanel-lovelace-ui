@@ -1042,5 +1042,10 @@
     "wlanhidden": "隐藏的wifi",
     "wlantype": "WiFi加密",
     "writeTasmotaTele": "写入 Tasmota 遥测数据",
-    "writeTasmotaTeleHint": "启用后，面板的遥测数据将存储在数据点（panels/XXXXX/info/tasmota/sts....）中。"
+    "writeTasmotaTeleHint": "启用后，面板的遥测数据将存储在数据点（panels/XXXXX/info/tasmota/sts....）中。",
+    "webPanelSetting": "Web 面板",
+    "webPanelInfo": "在浏览器中显示面板界面：http://<ioBroker 主机>:<端口>/<面板的 topic>。浏览器的行为与具有相同配置的附加 NSPanel 一致。",
+    "webEnabled": "启用 Web 面板",
+    "webPort": "Web 面板端口",
+    "webBind": "绑定地址（0.0.0.0 = 所有接口）"
 }

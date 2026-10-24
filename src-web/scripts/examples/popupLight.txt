@@ -1,0 +1,3 @@
+# popupLight: colour light with dimmer and colour temperature (getDetailPayload 2Sliders)
+pageType~popupLight~Schreibtischlampe~light.desk
+entityUpdateDetail~light.desk~~64512~1~75~40~enable~Farbe~Temperatur~Helligkeit~disable

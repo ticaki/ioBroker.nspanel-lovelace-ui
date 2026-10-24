@@ -1042,5 +1042,10 @@
     "wlanhidden": "Ukryte Wi -Fi",
     "wlantype": "Szyfrowanie Wi -Fi",
     "writeTasmotaTele": "Zapisz dane telemetryczne Tasmota",
-    "writeTasmotaTeleHint": "Po włączeniu dane telemetryczne panelu będą przechowywane w punktach danych (panels/XXXXX/info/tasmota/sts....)."
+    "writeTasmotaTeleHint": "Po włączeniu dane telemetryczne panelu będą przechowywane w punktach danych (panels/XXXXX/info/tasmota/sts....).",
+    "webPanelSetting": "Panele web",
+    "webPanelInfo": "Pokazuje interfejs panelu w przeglądarce: http://<host ioBroker>:<port>/<topic panelu>. Przeglądarka zachowuje się jak dodatkowy NSPanel z tą samą konfiguracją.",
+    "webEnabled": "Włącz panele web",
+    "webPort": "Port paneli web",
+    "webBind": "Adres nasłuchu (0.0.0.0 = wszystkie interfejsy)"
 }

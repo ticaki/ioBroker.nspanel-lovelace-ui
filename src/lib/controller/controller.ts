@@ -12,6 +12,8 @@ import type { PageAlarm } from '../pages/pageAlarm';
 import type { AlarmStates, PagePopupDataDetails } from '../types/pages';
 import { getTrashDataFromFile, getTrashDataFromState } from '../pages/tools/pageTrash';
 import * as definition from '../const/definition';
+import type { PanelChannel } from '../classes/panel-channel';
+import type { VirtualPanelManager } from '../web/virtual-panel-manager';
 
 /**
  * Controller Class
@@ -34,6 +36,10 @@ export class Controller extends Library.BaseClass {
     };
 
     systemNotification: SystemNotifications;
+    /** Resolves when init() has created the internal states and all configured panels */
+    readonly initPromise: Promise<void>;
+    /** Owner of the web panels - set by the web server, removes clones with their real panel */
+    virtualPanelManager: VirtualPanelManager | undefined;
 
     constructor(
         adapter: Library.AdapterClassDefinition,
@@ -73,7 +79,7 @@ export class Controller extends Library.BaseClass {
         if (this.adapter.mqttServer) {
             this.adapter.mqttServer.controller = this;
         }
-        void this.init(options.panels);
+        this.initPromise = this.init(options.panels);
         this.log.debug(`${this.name} created`);
     }
 
@@ -513,7 +519,65 @@ export class Controller extends Library.BaseClass {
         } else {
             this.log.error(`Panel ${panel.topic} not found`);
         }
+        if (!panel.isVirtual && this.virtualPanelManager) {
+            await this.virtualPanelManager.removeClonesOf(panel.topic);
+        }
     };
+
+    /**
+     * The configuration a web panel is cloned from, looked up by the topic of the real panel
+     * or, as a fallback, by its id (the cleaned MAC) from the admin panel table.
+     *
+     * @param topicOrId topic or id of the real panel
+     * @returns the configuration as handed to the controller, or undefined
+     */
+    getPanelConfig(topicOrId: string): Partial<Panel.panelConfigPartial> | undefined {
+        let config = this.options.panels.find(p => p && p.topic === topicOrId);
+        if (!config) {
+            const topic = this.adapter.config.panels.find(p => p.id === topicOrId)?.topic;
+            config = topic ? this.options.panels.find(p => p && p.topic === topic) : undefined;
+        }
+        return config;
+    }
+
+    /**
+     * Create a web panel: a clone of a real panel with its own message channel.
+     * Unlike addPanel the topic is not checked against the admin panel table - the clone
+     * carries a topic of its own (`<topic>/web/<session>`).
+     *
+     * @param config clone of the real panel's configuration, name/topic/friendlyName already set
+     * @param channel the in-process channel to the browser
+     * @returns the panel, or undefined if the configuration is invalid
+     */
+    async addVirtualPanel(
+        config: Partial<Panel.panelConfigPartial>,
+        channel: PanelChannel,
+    ): Promise<Panel.Panel | undefined> {
+        await this.initPromise;
+        if (this.unload || !config.topic || !config.name) {
+            return undefined;
+        }
+        if (this.panels.some(p => p.topic === config.topic)) {
+            this.log.error(`Web panel ${config.name} with topic ${config.topic} already exists`);
+            return undefined;
+        }
+        config.kind = 'web';
+        config.channel = channel;
+        config.controller = this;
+        config.scriptName = config.scriptName || 'missing';
+        const newPanel = await Panel.Panel.create(this.adapter, config as Panel.panelConfigPartial);
+        if (await newPanel.isValid()) {
+            await newPanel.init();
+            this.panels.push(newPanel);
+            newPanel.initDone = true;
+            this.log.debug(`Web panel ${newPanel.name} created`);
+            return newPanel;
+        }
+        await newPanel.setStatus('error');
+        await newPanel.delete();
+        this.log.error(`Web panel ${config.name} has a invalid configuration.`);
+        return undefined;
+    }
 
     mqttClientConnected = (id: string): boolean | undefined => {
         if (id === this.mqttClient.clientId) {
@@ -565,6 +629,9 @@ export class Controller extends Library.BaseClass {
         }
         if (this.systemNotification) {
             await this.systemNotification.delete();
+        }
+        if (this.virtualPanelManager) {
+            await this.virtualPanelManager.deleteAll();
         }
         if (this.statesControler) {
             await this.statesControler.delete();

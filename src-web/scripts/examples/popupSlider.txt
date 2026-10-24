@@ -1,0 +1,3 @@
+# popupSlider: two of three sliders visible (getDetailPayload popupSlider)
+pageType~popupSlider~Lautstaerke~number.volume
+entityUpdateDetail~number.volume~Lautstaerke~~~35~0~100~~1~enable~Bass~~~-2~-10~10~0~0.5~enable~~~~~~~~~disable

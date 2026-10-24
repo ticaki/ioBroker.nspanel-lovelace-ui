@@ -1,0 +1,3 @@
+# cardThermo2 with two heat cycles (numeric icons left), empty slots and power off (mode entity optional value 0)
+pageType~cardThermo2
+entityUpd~HK1~button~bSubPrev~~1055~~~button~bSubNext~~1055~~~hk~240~150~280~5~°C~1~text~hk.0~~2016~~~text~hk.1~215~2016~~~text~hk.2~°C~2016~~~text~hk.3~~63519~~~text~hk.4~455~63519~~~text~hk.5~%~63519~~~text~hk.6~OFF~65363~~0~button~hk?0~~2016~~1~button~hk?1~~35921~~1~~~~~~~~~~~~~button~hk?4~~35921~~1~~~~~~~~~~~~~~~~~~

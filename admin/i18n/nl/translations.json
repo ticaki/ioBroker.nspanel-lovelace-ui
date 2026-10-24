@@ -1042,5 +1042,10 @@
     "wlanhidden": "verborgen wifi",
     "wlantype": "Wifi -codering",
     "writeTasmotaTele": "Schrijf Tasmota-telemetriegegevens",
-    "writeTasmotaTeleHint": "Indien ingeschakeld, worden de telemetriegegevens van het paneel opgeslagen in de datapunten (panels/XXXXX/info/tasmota/sts....)."
+    "writeTasmotaTeleHint": "Indien ingeschakeld, worden de telemetriegegevens van het paneel opgeslagen in de datapunten (panels/XXXXX/info/tasmota/sts....).",
+    "webPanelSetting": "Webpanelen",
+    "webPanelInfo": "Toont de paneelinterface in een webbrowser: http://<ioBroker-host>:<poort>/<topic van het paneel>. De browser gedraagt zich als een extra NSPanel met dezelfde configuratie.",
+    "webEnabled": "Webpanelen inschakelen",
+    "webPort": "Poort van de webpanelen",
+    "webBind": "Bind-adres (0.0.0.0 = alle interfaces)"
 }

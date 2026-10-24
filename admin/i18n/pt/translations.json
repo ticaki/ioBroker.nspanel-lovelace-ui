@@ -1042,5 +1042,10 @@
     "wlanhidden": "wifi oculto",
     "wlantype": "Criptografia WiFi",
     "writeTasmotaTele": "Gravar dados de telemetria Tasmota",
-    "writeTasmotaTeleHint": "Quando habilitado, os dados de telemetria do painel serão armazenados nos pontos de dados (painéis/XXXXX/info/tasmota/sts....)."
+    "writeTasmotaTeleHint": "Quando habilitado, os dados de telemetria do painel serão armazenados nos pontos de dados (painéis/XXXXX/info/tasmota/sts....).",
+    "webPanelSetting": "Painéis web",
+    "webPanelInfo": "Mostra a interface do painel num navegador: http://<host ioBroker>:<porta>/<topic do painel>. O navegador comporta-se como um NSPanel adicional com a mesma configuração.",
+    "webEnabled": "Ativar painéis web",
+    "webPort": "Porta dos painéis web",
+    "webBind": "Endereço de ligação (0.0.0.0 = todas as interfaces)"
 }

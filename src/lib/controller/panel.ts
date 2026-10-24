@@ -13,6 +13,7 @@ import * as globals from '../types/function-and-const';
 import type { Controller } from './controller';
 import { BaseClass, type AdapterClassDefinition } from './library';
 import type { callbackMessageType } from '../classes/mqtt';
+import type { PanelChannel } from '../classes/panel-channel';
 import * as definition from '../const/definition';
 import * as adminShareConfig from '../types/adminShareConfig';
 import { type Page, type PageConfigAll } from '../classes/Page';
@@ -67,6 +68,12 @@ export interface panelConfigPartial extends Partial<panelConfigTop> {
      * Filled by the config manager, used to record the origin of those pages.
      */
     globalPageIds?: string[];
+    /** 'tasmota' (default) for a real NSPanel, 'web' for a panel shown in a browser */
+    kind?: 'tasmota' | 'web';
+    /** Message channel to the panel - the MQTT client when missing */
+    channel?: PanelChannel;
+    /** Web panel only: topic of the real panel this one is a clone of */
+    sourceTopic?: string;
 }
 
 const DefaultOptions = {
@@ -137,6 +144,8 @@ export class Panel extends BaseClass {
     readonly format: Partial<Intl.DateTimeFormatOptions>;
     readonly controller: Controller;
     readonly topic: string;
+    /** Message channel to the panel: MQTT for a real NSPanel, in-process for a web panel */
+    readonly channel: PanelChannel;
     readonly reivCallbacks: callbackMessageType[] = [];
     readonly panelSend: PanelSend;
     readonly statesControler: StatesControler;
@@ -323,11 +332,17 @@ export class Panel extends BaseClass {
         return result;
     }
 
+    /** A web panel: shown in a browser, no Tasmota behind it */
+    get isVirtual(): boolean {
+        return this.options.kind === 'web';
+    }
+
     constructor(adapter: AdapterClassDefinition, options: panelConfigPartial) {
         super(adapter, options.name, options.friendlyName ?? options.name);
+        this.channel = options.channel ?? options.controller.mqttClient;
         this.panelSend = new PanelSend(adapter, {
             name: `${this.friendlyName}-SendClass`,
-            mqttClient: options.controller.mqttClient,
+            channel: this.channel,
             topic: options.topic,
             panel: this,
         });
@@ -345,7 +360,19 @@ export class Panel extends BaseClass {
             this.sendToPanelClass = this.panelSend.addMessage;
         }
         if (typeof this.panelSend.addMessageTasmota === 'function') {
-            this.sendToTasmota = this.panelSend.addMessageTasmota;
+            if (options.kind === 'web') {
+                // no Tasmota behind a web panel - only the buzzer is simulated by the browser
+                const send = this.panelSend.addMessageTasmota;
+                this.sendToTasmota = (topic: string, payload: string, opt?: IClientPublishOptions): void => {
+                    if (topic.endsWith('/cmnd/Buzzer')) {
+                        send(topic, payload, opt);
+                    } else if (this.adapter.config.debugLogMqtt) {
+                        this.log.debug(`Skip tasmota command ${topic} for web panel`);
+                    }
+                };
+            } else {
+                this.sendToTasmota = this.panelSend.addMessageTasmota;
+            }
         }
         this.info.nspanel.scriptVersion = options.scriptVersion || 'unknown';
         this.info.tasmota.onlineVersion = this.controller.globalPanelInfo.availableTasmotaFirmwareVersion;
@@ -527,8 +554,8 @@ export class Panel extends BaseClass {
             return;
         }
         this.log.debug(`Panel ${this.name} is initialised!`);
-        await this.controller.mqttClient.subscribe(`${this.topic}/tele/#`, this.onMessage);
-        await this.controller.mqttClient.subscribe(`${this.topic}/stat/#`, this.onMessage);
+        await this.channel.subscribe(`${this.topic}/tele/#`, this.onMessage);
+        await this.channel.subscribe(`${this.topic}/stat/#`, this.onMessage);
         this.log.info(`Setting panel to offline until first message!`);
         this.isOnline = false;
         const channelObj = structuredClone(definition.genericStateObjects.panel.panels._channel);
@@ -1296,6 +1323,9 @@ export class Panel extends BaseClass {
     };
 
     sendRules(): void {
+        if (this.isVirtual) {
+            return;
+        }
         this.sendToTasmota(
             `${this.topic}/cmnd/Rule3`,
             `ON CustomSend DO RuleTimer3 140 ENDON ON Rules#Timer=3 DO CustomSend pageType~pageStartup ENDON${
@@ -1747,7 +1777,7 @@ export class Panel extends BaseClass {
      */
     handleLostMessages(): boolean {
         const now = Date.now();
-        if (this.unload || this.adapter.unload || this.flashing) {
+        if (this.unload || this.adapter.unload || this.flashing || this.isVirtual) {
             return false;
         }
         if (now - this.nextionBufferOverflowTs > 120_000) {
@@ -1795,7 +1825,7 @@ export class Panel extends BaseClass {
             }
         }
         await this.panelSend.delete();
-        this.controller.mqttClient.removeByFunction(this.onMessage);
+        this.channel.removeByFunction(this.onMessage);
         await this.statesControler.deletePageLoop(this.onInternalCommand);
         this.persistentPageItems = {};
         this.pages = [];
@@ -1819,6 +1849,18 @@ export class Panel extends BaseClass {
     }
 
     async writeInfo(): Promise<void> {
+        if (this.isVirtual) {
+            // a web panel has no firmware to update and no Tasmota - only the nspanel and internal part is written
+            this.info.nspanel.onlineVersion = this.info.nspanel.displayVersion;
+            const { tasmota: _tasmota, ...info } = this.info;
+            await this.library.writeFromJson(
+                `panels.${this.name}.info`,
+                'panel.panels.info',
+                structuredClone(definition.genericStateObjects),
+                info,
+            );
+            return;
+        }
         this.info.tasmota.onlineVersion = this.controller.globalPanelInfo.availableTasmotaFirmwareVersion;
         const modelSuffix = this.info.nspanel.model == 'eu' ? '' : `-${this.info.nspanel.model}`;
         const key = this.adapter.config.useBetaTFT ? `tft${modelSuffix}-beta` : `tft${modelSuffix}`;
@@ -1867,7 +1909,10 @@ export class Panel extends BaseClass {
                 }, 10_000);
                 this.isOnline = true;
                 this.info.nspanel.displayVersion = event.opt;
-                if (this.info.nspanel.model !== event.action) {
+                if (this.isVirtual) {
+                    // no Tasmota status will ever arrive - the startup event is the connection
+                    await this.setStatus('connected');
+                } else if (this.info.nspanel.model !== event.action) {
                     this.log.error(
                         `Model missmatch! Config model is ${this.info.nspanel.model} but panel send ${event.action}. Check your config!`,
                     );
@@ -1876,13 +1921,15 @@ export class Panel extends BaseClass {
                     return;
                 }
 
-                this.requestStatusTasmota();
-                this.sendToTasmota(`${this.topic}/cmnd/POWER1`, '');
-                this.sendToTasmota(`${this.topic}/cmnd/POWER2`, '');
-                this.sendToTasmota(`${this.topic}/cmnd/GetDriverVersion`, '');
-                this.sendRules();
-                // wait 0.1s to have tasmota time to be ready
-                await this.adapter.delay(100);
+                if (!this.isVirtual) {
+                    this.requestStatusTasmota();
+                    this.sendToTasmota(`${this.topic}/cmnd/POWER1`, '');
+                    this.sendToTasmota(`${this.topic}/cmnd/POWER2`, '');
+                    this.sendToTasmota(`${this.topic}/cmnd/GetDriverVersion`, '');
+                    this.sendRules();
+                    // wait 0.1s to have tasmota time to be ready
+                    await this.adapter.delay(100);
+                }
                 await this.writeInfo();
 
                 this.sendDimmode();
@@ -2145,7 +2192,7 @@ export class Panel extends BaseClass {
     };
 
     _sendtempOffsetToPanel(value: number): void {
-        if (this.unload || this.adapter.unload || !this.isOnline) {
+        if (this.unload || this.adapter.unload || !this.isOnline || this.isVirtual) {
             return;
         }
         value = Math.max(-12.6, Math.min(12.6, value));
@@ -2372,6 +2419,10 @@ export class Panel extends BaseClass {
                     break;
                 }
                 case 'cmd/TasmotaRestart': {
+                    if (this.isVirtual) {
+                        this.log.info('A web panel has no Tasmota to restart');
+                        break;
+                    }
                     this.sendToTasmota(`${this.topic}/cmnd/Restart`, '1');
                     this.log.info('Going offline because of Tasmota restart!');
                     this.isOnline = false;

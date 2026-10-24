@@ -1,0 +1,3 @@
+# popupFan: switch, speed 0-5 and preset modes (getDetailPayload popupFan)
+pageType~popupFan~Ventilator~fan.living
+entityUpdateDetail~fan.living~~1024~1~2~5~Stufe~Auto~Aus?Niedrig?Mittel?Hoch?Auto

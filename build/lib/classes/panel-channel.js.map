@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["../../../src/lib/classes/panel-channel.ts"],
+  "sourcesContent": ["import type { IClientPublishOptions } from 'mqtt';\nimport type { callbackMessageType } from './mqtt';\n\n/**\n * Message channel between the adapter and one panel.\n *\n * A real NSPanel talks over MQTT (`MQTTClientClass`), a web panel over an in-process\n * channel (`VirtualPanelChannel`). Topics keep the Tasmota layout\n * (`<topic>/cmnd/\u2026`, `<topic>/stat/\u2026`, `<topic>/tele/\u2026`) so the panel logic does not\n * care which transport is behind it.\n */\nexport interface PanelChannel {\n    publish(topic: string, message: string, opt?: IClientPublishOptions): Promise<void>;\n    subscribe(topic: string, callback: callbackMessageType): Promise<void>;\n    unsubscribe(topic: string): void;\n    removeByFunction(callback: callbackMessageType): void;\n}\n"],
+  "mappings": ";;;;;;;;;;;;;;AAAA;AAAA;",
+  "names": []
+}

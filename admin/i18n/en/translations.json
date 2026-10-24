@@ -1067,5 +1067,10 @@
     "wlantype": "Wifi encryption",
     "writeTasmotaTele": "Write Tasmota telemetry data",
     "writeTasmotaTeleHint": "When enabled, the telemetry data of the panel will be stored in the data points (panels/XXXXX/info/tasmota/sts....).",
-    "writeable": "writeable"
+    "writeable": "writeable",
+    "webPanelSetting": "Web panels",
+    "webPanelInfo": "Shows the panel UI in a web browser: http://<ioBroker host>:<port>/<topic of the panel>. The browser behaves like an additional NSPanel with the same configuration.",
+    "webEnabled": "Enable web panels",
+    "webPort": "Web panel port",
+    "webBind": "Bind address (0.0.0.0 = all interfaces)"
 }

@@ -1,0 +1,3 @@
+# popupShutter: position and tilt (getDetailPayload popupShutter)
+pageType~popupShutter~Terrasse~shutter.terrace
+entityUpdateDetail~shutter.terrace~65~Rollo offen~Position~~~~~enable~enable~enable~Lamellen~~~~enable~enable~disable~100

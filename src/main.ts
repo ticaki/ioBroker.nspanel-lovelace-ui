@@ -20,6 +20,8 @@ import 'source-map-support/register';
 
 import * as MQTT from './lib/classes/mqtt';
 import { Controller } from './lib/controller/controller';
+import { VirtualPanelManager } from './lib/web/virtual-panel-manager';
+import { WebServer } from './lib/web/web-server';
 import { Icons } from './lib/const/icon_mapping';
 import * as definition from './lib/const/definition';
 import { ConfigManager } from './lib/classes/config-manager';
@@ -67,6 +69,8 @@ class NspanelLovelaceUi extends utils.Adapter {
     mqttClient: MQTT.MQTTClientClass | undefined;
     mqttServer: MQTT.MQTTServerClass | undefined;
     controller: Controller | undefined;
+    /** HTTP/WebSocket server of the web panels, undefined when disabled */
+    webServer: WebServer | undefined;
     unload: boolean = false;
     testSuccessful: boolean = true;
     timeoutAdmin: ioBroker.Timeout | undefined;
@@ -537,6 +541,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                 name: 'controller',
                 panels: structuredClone(this.mainConfiguration),
             });
+            await this.startWebServer(this.controller);
 
             /*setInterval(() => {
                 this.log.debug(
@@ -546,6 +551,29 @@ class NspanelLovelaceUi extends utils.Adapter {
         } catch (e: any) {
             this.testSuccessful = false;
             this.log.error(`Error onReady: ${e}`);
+        }
+    }
+
+    /**
+     * Start the HTTP/WebSocket server of the web panels (browser shows the panel UI).
+     *
+     * @param controller the controller owning the panels
+     */
+    private async startWebServer(controller: Controller): Promise<void> {
+        if (!this.config.webEnabled) {
+            this.log.debug('Web panels are disabled');
+            return;
+        }
+        const manager = new VirtualPanelManager(this, controller);
+        this.webServer = new WebServer(this, manager, {
+            port: Number(this.config.webPort) || 8090,
+            bind: this.config.webBind || '0.0.0.0',
+            wwwPath: path.join(__dirname, '..', 'www'),
+        });
+        if (!(await this.webServer.start())) {
+            await this.webServer.delete();
+            await manager.delete();
+            this.webServer = undefined;
         }
     }
 
@@ -663,6 +691,10 @@ class NspanelLovelaceUi extends utils.Adapter {
                     this.clearInterval(a);
                 }
             });
+            if (this.webServer) {
+                await this.webServer.delete();
+                this.webServer = undefined;
+            }
             if (this.controller) {
                 await this.controller.delete();
             }

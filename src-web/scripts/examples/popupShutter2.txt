@@ -1,0 +1,3 @@
+# popupShutter2: window graphic, up/stop/down and three extra buttons (getDetailPayload popupShutter2)
+pageType~popupShutter2~Wohnzimmer~shutter2.living
+entityUpdateDetail~shutter2.living~40~Rollo faehrt~Position~~~~~enable~enable~enable~~63488~enable~~2016~enable~~65504~disable~shutter~1
