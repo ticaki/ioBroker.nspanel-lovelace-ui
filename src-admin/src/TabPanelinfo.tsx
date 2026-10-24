@@ -19,6 +19,8 @@ import { grey, orange, yellow } from '@mui/material/colors';
 import SettingsOutlinedIcon from '@mui/icons-material/SettingsOutlined';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import CancelIcon from '@mui/icons-material/Cancel';
+import OpenInNewIcon from '@mui/icons-material/OpenInNew';
+import { openWebPanel, resolveWebPanelHost } from './webPanelUrl';
 import { type IobTheme, type ThemeName, type ThemeType } from '@iobroker/gui-components';
 import { PanelStatusBadge } from './components/PanelStatusBadge';
 import { ThemeProvider } from '@mui/material/styles';
@@ -48,6 +50,8 @@ interface PanelStateData {
 }
 
 interface PanelinfoState extends ConfigGenericState {
+    /** host the web panel server of the instance is reached on */
+    webPanelHost: string;
     panelsInfo: PanelinfoInfo[];
     loading: boolean;
     error: string | null;
@@ -172,6 +176,11 @@ class TabPanelinfo extends ConfigGeneric<ConfigGenericProps & PanelinfoProps, Pa
     async componentDidMount(): Promise<void> {
         void super.componentDidMount();
         this._isMounted = true;
+        void resolveWebPanelHost(this.props.oContext.socket, this.adapterName, this.instance).then(host => {
+            if (this._isMounted) {
+                this.setState({ webPanelHost: host });
+            }
+        });
 
         // Get initial alive state and subscribe to changes
         const aliveStateId = `system.adapter.${this.adapterName}.${this.instance}.alive`;
@@ -967,6 +976,22 @@ class TabPanelinfo extends ConfigGeneric<ConfigGenericProps & PanelinfoProps, Pa
                                             alive={alive}
                                         />
                                     </Box>
+                                    {this.props.data.webEnabled !== false && panel._topic ? (
+                                        <IconButton
+                                            size="small"
+                                            color="primary"
+                                            onClick={(): void =>
+                                                openWebPanel(
+                                                    this.state.webPanelHost,
+                                                    this.props.data.webPort,
+                                                    panel._topic,
+                                                )
+                                            }
+                                            title={this.getText('openWebPanel')}
+                                        >
+                                            <OpenInNewIcon />
+                                        </IconButton>
+                                    ) : null}
                                     <IconButton
                                         size="small"
                                         color={panel._check ? 'primary' : 'default'}

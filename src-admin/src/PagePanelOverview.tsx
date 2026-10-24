@@ -24,6 +24,8 @@ import {
 } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
+import OpenInNewIcon from '@mui/icons-material/OpenInNew';
+import { openWebPanel, resolveWebPanelHost } from './webPanelUrl';
 import ConfigIP from './components/ConfigIP';
 import { PanelStatusBadge } from './components/PanelStatusBadge';
 import { resolveTasmotaTimeZone, uniqueTasmotaTimeZones, type TasmotaTimeZone } from './tasmotaTimeZones';
@@ -61,6 +63,8 @@ function isInitStepAnswer(value: unknown): value is InitStepAnswer {
 }
 
 interface PagePanelOverviewState extends ConfigGenericState {
+    /** host the web panel server of the instance is reached on */
+    webPanelHost: string;
     // Define any additional state properties if needed
     // Aktuelle Eingabe im Zeitzonen-Autocomplete und die dazu passenden Treffer
     timezoneInput: string;
@@ -155,6 +159,9 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
     // Lade Timezone-Entities beim Mounten und abonniere Alive-Status
     async componentDidMount(): Promise<void> {
         void super.componentDidMount();
+        void resolveWebPanelHost(this.props.oContext.socket, this.adapterName, this.instance).then(host =>
+            this.setState({ webPanelHost: host }),
+        );
 
         // Get initial alive state and subscribe to changes
         const aliveStateId = `system.adapter.${this.adapterName}.${this.instance}.alive`;
@@ -978,6 +985,22 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
                                         )}
                                     </Box>
                                     {/* Right side: Action buttons */}
+                                    {this.props.data.webEnabled !== false && panel.topic ? (
+                                        <IconButton
+                                            size="small"
+                                            color="primary"
+                                            onClick={(): void =>
+                                                openWebPanel(
+                                                    this.state.webPanelHost,
+                                                    this.props.data.webPort,
+                                                    panel.topic ?? '',
+                                                )
+                                            }
+                                            title={this.getText('openWebPanel')}
+                                        >
+                                            <OpenInNewIcon />
+                                        </IconButton>
+                                    ) : null}
                                     <IconButton
                                         size="small"
                                         color="primary"

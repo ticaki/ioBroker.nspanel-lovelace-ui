@@ -159,6 +159,7 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
 -->
 ### **WORK IN PROGRESS**
 - (ticaki) web panels: the panel UI can be shown in a web browser via http://<host>:8090/<topic> - a clone of the panel with its own navigation, no Tasmota needed (new admin tab "Web panels")
+- (ticaki) admin: a button opens the web panel of a panel in a new tab (Maintain, panel settings and panel info)
 
 ### 1.6.0 (2026-10-24)
 - (ticaki) panel: tapping the screensaver several times no longer ends in a black page - a resent page got its pageType but no content

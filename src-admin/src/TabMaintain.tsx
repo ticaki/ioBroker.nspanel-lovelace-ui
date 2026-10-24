@@ -14,12 +14,15 @@ import {
     DialogActions,
     FormControlLabel,
     Switch,
+    IconButton,
 } from '@mui/material';
 import { grey, orange, blue, yellow } from '@mui/material/colors';
+import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import { type IobTheme, type ThemeName, type ThemeType } from '@iobroker/gui-components';
 import { PanelStatusBadge } from './components/PanelStatusBadge';
 import { ThemeProvider } from '@mui/material/styles';
 import { getLightSurfaceTheme } from './themeUtils';
+import { openWebPanel, resolveWebPanelHost } from './webPanelUrl';
 
 interface MaintainPanelInfo {
     _Headline: string;
@@ -54,6 +57,8 @@ interface MaintainPanelState extends ConfigGenericState {
     alive?: boolean;
     /** Map panelId → cmd.activated value */
     activatedMap: Record<string, boolean>;
+    /** host the web panel server of the instance is reached on */
+    webPanelHost: string;
 }
 
 // Daten die aus der config kommen, also die props.data
@@ -91,6 +96,7 @@ class MaintainPanel extends ConfigGeneric<ConfigGenericProps & MaintainPanelProp
             processingPanel: null,
             alive: false,
             activatedMap: {},
+            webPanelHost: window.location.hostname,
         };
     }
 
@@ -137,6 +143,11 @@ class MaintainPanel extends ConfigGeneric<ConfigGenericProps & MaintainPanelProp
     async componentDidMount(): Promise<void> {
         void super.componentDidMount();
         this._isMounted = true;
+        void resolveWebPanelHost(this.props.oContext.socket, this.adapterName, this.instance).then(host => {
+            if (this._isMounted) {
+                this.setState({ webPanelHost: host });
+            }
+        });
 
         // Get initial alive state and subscribe to changes
         try {
@@ -640,14 +651,33 @@ class MaintainPanel extends ConfigGeneric<ConfigGenericProps & MaintainPanelProp
                             >
                                 {/* Panel Name and Status Badge */}
                                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, mb: 2 }}>
-                                    <Typography
-                                        variant="h6"
-                                        sx={{
-                                            fontWeight: panel._check ? 'bold' : 'normal',
-                                        }}
-                                    >
-                                        {panel._Headline}
-                                    </Typography>
+                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                        <Typography
+                                            variant="h6"
+                                            sx={{
+                                                fontWeight: panel._check ? 'bold' : 'normal',
+                                                flex: 1,
+                                            }}
+                                        >
+                                            {panel._Headline}
+                                        </Typography>
+                                        {this.props.data.webEnabled !== false && panel._topic ? (
+                                            <IconButton
+                                                size="small"
+                                                color="primary"
+                                                onClick={(): void =>
+                                                    openWebPanel(
+                                                        this.state.webPanelHost,
+                                                        this.props.data.webPort,
+                                                        panel._topic,
+                                                    )
+                                                }
+                                                title={this.getText('openWebPanel')}
+                                            >
+                                                <OpenInNewIcon />
+                                            </IconButton>
+                                        ) : null}
+                                    </Box>
                                     <PanelStatusBadge
                                         panelId={panelConfig?.id || panel._id}
                                         oContext={this.props.oContext}
