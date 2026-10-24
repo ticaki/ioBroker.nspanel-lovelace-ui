@@ -1898,8 +1898,18 @@ export class Panel extends BaseClass {
 
         switch (event.method) {
             case 'startup': {
-                if (this.blockStartup || !this.initDone) {
+                if (!this.initDone) {
                     return;
+                }
+                // a display repeats the startup event every few seconds while it shows the startup
+                // page - only the first one counts. A browser reloads at will, so a web panel
+                // takes every startup event (the page is rendered again).
+                if (this.blockStartup) {
+                    if (!this.isVirtual) {
+                        return;
+                    }
+                    this.adapter.clearTimeout(this.blockStartup);
+                    this.blockStartup = null;
                 }
                 if (this.unload || this.adapter.unload) {
                     return;

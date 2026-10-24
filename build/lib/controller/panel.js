@@ -1671,8 +1671,15 @@ class Panel extends import_library.BaseClass {
     }
     switch (event.method) {
       case "startup": {
-        if (this.blockStartup || !this.initDone) {
+        if (!this.initDone) {
           return;
+        }
+        if (this.blockStartup) {
+          if (!this.isVirtual) {
+            return;
+          }
+          this.adapter.clearTimeout(this.blockStartup);
+          this.blockStartup = null;
         }
         if (this.unload || this.adapter.unload) {
           return;
