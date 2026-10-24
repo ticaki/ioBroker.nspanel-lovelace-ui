@@ -12,6 +12,23 @@ export const WEB_PANEL_GRACE_MS = 24 * 60 * 60 * 1000;
 export const WEB_PANEL_MAX_SESSIONS = 8;
 /** session ids a browser may bring along (`?session=`), anything else gets a server generated one */
 const SESSION_ID_PATTERN = /^[A-Za-z0-9_-]{8,64}$/;
+/**
+ * Settings (relative to `panels.<name>.`) a clone takes over from the real panel when it is created.
+ * Hardware (relays, temperature offset), commands (buzzer, goTo…) and popups stay out.
+ */
+const CLONED_SETTINGS = [
+    'cmd.screenSaver.layout',
+    'cmd.screenSaver.rotationTime',
+    'cmd.screenSaver.timeout',
+    'cmd.screenSaver.doubleClick',
+    'cmd.screenSaver.infoIcon',
+    'cmd.dim',
+    'cmd.detachLeft',
+    'cmd.detachRight',
+    'cmd.hideCards',
+    'cmd.isBuzzerAllowed',
+    'cmd.mainNavigationPoint',
+] as const;
 /** Display version reported to the adapter when no TFT version is known */
 const WEB_PANEL_FALLBACK_TFT_VERSION = '1.0.0';
 
@@ -203,6 +220,35 @@ export class VirtualPanelManager extends BaseClass {
         await super.delete();
     }
 
+    /**
+     * A panel reads some of its settings from its own states when it starts (screensaver
+     * layout, rotation, dim values, detached buttons, …) - the user may have changed them at
+     * runtime. A clone starts with the current values of the real panel, so it looks like
+     * the real display; the states it does not get stay at the defaults of the adapter.
+     *
+     * @param realName name (states tree) of the real panel
+     * @param cloneName name (states tree) of the clone
+     */
+    private async copySettings(realName: string, cloneName: string): Promise<void> {
+        const prefix = `panels.${realName}.`;
+        const states = this.library.getStates(`^${prefix.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}cmd\\.`);
+        for (const dp of Object.keys(states)) {
+            const relative = dp.slice(prefix.length);
+            if (!CLONED_SETTINGS.some(s => relative === s || relative.startsWith(`${s}.`))) {
+                continue;
+            }
+            const node = states[dp];
+            if (!node || node.val === undefined || !node.obj || node.obj.type !== 'state') {
+                continue;
+            }
+            try {
+                await this.library.writedp(`panels.${cloneName}.${relative}`, node.val, structuredClone(node.obj));
+            } catch (e) {
+                this.log.debug(`Could not copy ${dp} to ${cloneName}: ${String(e)}`);
+            }
+        }
+    }
+
     private async createSession(
         source: Partial<panelConfigPartial>,
         client: SessionClient,
@@ -239,6 +285,7 @@ export class VirtualPanelManager extends BaseClass {
             const s = this.sessions.get(sessionId);
             s?.client?.send({ t: 'buzzer', p: payload });
         });
+        await this.copySettings(id, config.name);
         const panel = await this.controller.addVirtualPanel(config, channel);
         if (!panel) {
             await channel.delete();
