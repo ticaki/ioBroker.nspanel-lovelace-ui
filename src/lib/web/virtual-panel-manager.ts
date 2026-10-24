@@ -10,6 +10,8 @@ import type { ClientFrame, ServerFrame } from './web-protocol';
 export const WEB_PANEL_GRACE_MS = 24 * 60 * 60 * 1000;
 /** Web panels per real panel - each holds its own states tree `panels.<id>_web<n>` */
 export const WEB_PANEL_MAX_SESSIONS = 8;
+/** session ids a browser may bring along (`?session=`), anything else gets a server generated one */
+const SESSION_ID_PATTERN = /^[A-Za-z0-9_-]{8,64}$/;
 /** Display version reported to the adapter when no TFT version is known */
 const WEB_PANEL_FALLBACK_TFT_VERSION = '1.0.0';
 
@@ -117,7 +119,7 @@ export class VirtualPanelManager extends BaseClass {
             session.client = client;
             this.log.debug(`Session ${session.id} bound again to ${session.panel.name}`);
         } else {
-            session = await this.createSession(source, client);
+            session = await this.createSession(source, client, sessionId);
             if (!session) {
                 client.send({ t: 'bye', reason: 'no free slot' });
                 client.close('no free slot');
@@ -204,6 +206,7 @@ export class VirtualPanelManager extends BaseClass {
     private async createSession(
         source: Partial<panelConfigPartial>,
         client: SessionClient,
+        requestedId?: string,
     ): Promise<WebPanelSession | undefined> {
         const sourceTopic = source.topic!;
         const slot = this.freeSlot(sourceTopic);
@@ -214,7 +217,12 @@ export class VirtualPanelManager extends BaseClass {
         const id =
             this.adapter.config.panels.find(p => p.topic === sourceTopic)?.id ?? this.library.cleandp(sourceTopic);
         const realName = this.adapter.config.panels.find(p => p.topic === sourceTopic)?.name ?? sourceTopic;
-        const sessionId = randomUUID();
+        // the browser keeps its id in localStorage - using it lets a reload (or a reconnect after an
+        // adapter restart) bind to the same session instead of occupying a new slot
+        const sessionId =
+            requestedId && SESSION_ID_PATTERN.test(requestedId) && !this.sessions.has(requestedId)
+                ? requestedId
+                : randomUUID();
         const { channel: _channel, controller: _controller, ...plain } = source;
         const config = structuredClone(plain) as Partial<panelConfigPartial>;
         config.name = slot === 1 ? `${id}_web` : `${id}_web${slot}`;

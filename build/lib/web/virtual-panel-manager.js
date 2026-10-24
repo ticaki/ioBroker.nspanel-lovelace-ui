@@ -28,6 +28,7 @@ var import_library = require("../controller/library");
 var import_virtual_panel_channel = require("./virtual-panel-channel");
 const WEB_PANEL_GRACE_MS = 24 * 60 * 60 * 1e3;
 const WEB_PANEL_MAX_SESSIONS = 8;
+const SESSION_ID_PATTERN = /^[A-Za-z0-9_-]{8,64}$/;
 const WEB_PANEL_FALLBACK_TFT_VERSION = "1.0.0";
 class VirtualPanelManager extends import_library.BaseClass {
   controller;
@@ -100,7 +101,7 @@ class VirtualPanelManager extends import_library.BaseClass {
       session.client = client;
       this.log.debug(`Session ${session.id} bound again to ${session.panel.name}`);
     } else {
-      session = await this.createSession(source, client);
+      session = await this.createSession(source, client, sessionId);
       if (!session) {
         client.send({ t: "bye", reason: "no free slot" });
         client.close("no free slot");
@@ -178,7 +179,7 @@ class VirtualPanelManager extends import_library.BaseClass {
     }
     await super.delete();
   }
-  async createSession(source, client) {
+  async createSession(source, client, requestedId) {
     var _a, _b, _c, _d;
     const sourceTopic = source.topic;
     const slot = this.freeSlot(sourceTopic);
@@ -188,7 +189,7 @@ class VirtualPanelManager extends import_library.BaseClass {
     }
     const id = (_b = (_a = this.adapter.config.panels.find((p) => p.topic === sourceTopic)) == null ? void 0 : _a.id) != null ? _b : this.library.cleandp(sourceTopic);
     const realName = (_d = (_c = this.adapter.config.panels.find((p) => p.topic === sourceTopic)) == null ? void 0 : _c.name) != null ? _d : sourceTopic;
-    const sessionId = (0, import_node_crypto.randomUUID)();
+    const sessionId = requestedId && SESSION_ID_PATTERN.test(requestedId) && !this.sessions.has(requestedId) ? requestedId : (0, import_node_crypto.randomUUID)();
     const { channel: _channel, controller: _controller, ...plain } = source;
     const config = structuredClone(plain);
     config.name = slot === 1 ? `${id}_web` : `${id}_web${slot}`;
