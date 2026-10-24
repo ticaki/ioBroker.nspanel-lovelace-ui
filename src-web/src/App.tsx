@@ -65,12 +65,18 @@ class MockTransport implements PanelTransport {
     }
 }
 
+/**
+ * The topic (or id) of the panel is the whole path: Tasmota topics may contain slashes
+ * (`nspanel/ns_panel6`), so `/nspanel/ns_panel6` and `/nspanel%2Fns_panel6` both work.
+ *
+ * @param location the page location
+ */
 export function topicFromLocation(location: Location = window.location): string {
-    const first = location.pathname.split('/').filter(p => p !== '')[0] ?? '';
+    const path = location.pathname.replace(/^\/+/, '').replace(/\/+$/, '');
     try {
-        return decodeURIComponent(first);
+        return decodeURIComponent(path);
     } catch {
-        return first;
+        return path;
     }
 }
 
