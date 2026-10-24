@@ -560,7 +560,8 @@ class NspanelLovelaceUi extends utils.Adapter {
      * @param controller the controller owning the panels
      */
     private async startWebServer(controller: Controller): Promise<void> {
-        if (!this.config.webEnabled) {
+        // an instance created before this option exists has no value yet - enabled by default
+        if (this.config.webEnabled === false) {
             this.log.debug('Web panels are disabled');
             return;
         }
