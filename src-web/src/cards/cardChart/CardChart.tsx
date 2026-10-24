@@ -187,7 +187,15 @@ export class CardChart extends React.Component<CardProps<ChartModel>, CardChartS
                     width={width}
                     height={height}
                     viewBox={`0 0 ${width} ${height}`}
-                    style={{ position: 'absolute', left: 0, top: 0, shapeRendering: 'crispEdges' }}
+                    // the svg spans the whole stage and would swallow the touches of the title bar
+                    // below it - only the plot area reacts
+                    style={{
+                        position: 'absolute',
+                        left: 0,
+                        top: 0,
+                        shapeRendering: 'crispEdges',
+                        pointerEvents: 'none',
+                    }}
                 >
                     {layout.primitives.map((p, i) => this.renderPrimitive(p, i, textColor))}
                     {highlight.map((p, i) => this.renderPrimitive(p, i, textColor))}
@@ -214,7 +222,7 @@ export class CardChart extends React.Component<CardProps<ChartModel>, CardChartS
                         width={PLOT.w}
                         height={PLOT.h}
                         fill="transparent"
-                        style={{ cursor: model.kind === 'bar' ? 'pointer' : 'default' }}
+                        style={{ cursor: model.kind === 'bar' ? 'pointer' : 'default', pointerEvents: 'auto' }}
                         onClick={this.onPlotClick}
                     />
                 </svg>
