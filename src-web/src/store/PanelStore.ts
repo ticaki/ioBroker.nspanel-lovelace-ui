@@ -301,9 +301,18 @@ export class PanelStore {
         this.page = { ...this.page, model: next };
     }
 
-    /** Brightness (0-100) the display shows right now */
+    /**
+     * Brightness (0-100) the display shows right now, relative to its active level: the
+     * active backlight value (often 60-80 %) is what the user perceives as "normal", so
+     * only the screensaver dims - by the ratio standby/active.
+     */
     get brightness(): number {
-        return this.global.sleeping ? this.global.dim.standby : this.global.dim.active;
+        if (!this.global.sleeping) {
+            return 100;
+        }
+        const { standby, active } = this.global.dim;
+        const ratio = standby / Math.max(active, 1);
+        return Math.max(0, Math.min(100, Math.round(ratio * 100)));
     }
 
     private restartSleepTimer(): void {

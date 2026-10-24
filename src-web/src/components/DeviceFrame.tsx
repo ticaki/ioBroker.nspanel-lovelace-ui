@@ -76,9 +76,14 @@ export class DeviceFrame extends React.Component<DeviceFrameProps, DeviceFrameSt
     /** css filter that mimics the dimmed display: brightness and contrast go down together */
     static dimFilter(brightness: number): string {
         const b = Math.max(0, Math.min(100, brightness)) / 100;
-        // 100 -> full, 20 -> dark but readable, 0 -> black
-        const bright = 0.05 + 0.95 * b;
-        const contrast = 0.6 + 0.4 * b;
+        if (b >= 1) {
+            return 'none';
+        }
+        // perceived brightness of a backlight is roughly the square root of its level:
+        // 100 -> full, 20 -> dark but readable, 0 -> almost black
+        const v = Math.sqrt(b);
+        const bright = 0.08 + 0.92 * v;
+        const contrast = 0.7 + 0.3 * v;
         return `brightness(${bright.toFixed(3)}) contrast(${contrast.toFixed(3)})`;
     }
 
