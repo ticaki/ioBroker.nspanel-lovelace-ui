@@ -1,7 +1,7 @@
 import React from 'react';
 import { Icon } from '../../../components/Icon';
 import { theme } from '../../../style/theme';
-import { splitIconField, type NumberOptions, type ShutterOptions } from './entityTypes';
+import { NEXTION_FONT_SIZE, splitIconField, type NumberOptions, type ShutterOptions } from './entityTypes';
 import { Pressable } from './Pressable';
 
 export interface EntityIconProps {
@@ -24,8 +24,11 @@ export interface EntityIconProps {
 export class EntityIcon extends React.Component<EntityIconProps> {
     render(): React.JSX.Element {
         const { icon, color, size, onPress, onLongPress, style } = this.props;
-        const { glyph, text } = splitIconField(icon);
-        const textSize = this.props.textSize ?? Math.round(size * 0.6);
+        const { glyph, text, font } = splitIconField(icon);
+        // a font from the item option fontSize replaces the card's sizes for glyph and text
+        const fontSize = font !== undefined ? NEXTION_FONT_SIZE[font] : undefined;
+        const glyphSize = fontSize ?? size;
+        const textSize = fontSize ?? this.props.textSize ?? Math.round(size * 0.6);
         return (
             <Pressable
                 data-role="icon"
@@ -47,7 +50,7 @@ export class EntityIcon extends React.Component<EntityIconProps> {
                 {glyph !== undefined ? (
                     <Icon
                         glyph={glyph}
-                        size={size}
+                        size={glyphSize}
                         color={color}
                     />
                 ) : null}

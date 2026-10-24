@@ -96,15 +96,27 @@ export interface IconField {
     glyph: string | undefined;
     /** text after the glyph (role `combined`) or the whole field (role `textNotIcon`) */
     text: string;
+    /** Nextion font 0-5 from a trailing `¬<n>` (item option `fontSize`), undefined without one */
+    font?: number;
 }
 
 /**
+ * Pixel size of the Nextion fonts 0-5 (wiki ScriptConfig `fontSize`): 0 = 24 text, 1 = 32 icons,
+ * 2 = 32 text, 3 = 48 icons, 4 = 80 icons, 5 = 128 ascii
+ */
+export const NEXTION_FONT_SIZE: readonly number[] = [24, 32, 32, 48, 80, 128];
+
+/**
  * Splits the icon field: the adapter can send a glyph, plain text (a value shown instead of an
- * icon) or a glyph followed by text (role `combined`).
+ * icon) or a glyph followed by text (role `combined`), each optionally followed by `¬<font>`.
  *
  * @param icon the field
  */
 export function splitIconField(icon: string): IconField {
+    const sized = /¬([0-5])$/.exec(icon);
+    if (sized) {
+        return { ...splitIconField(icon.slice(0, sized.index)), font: Number(sized[1]) };
+    }
     if (icon === '') {
         return { glyph: undefined, text: '' };
     }

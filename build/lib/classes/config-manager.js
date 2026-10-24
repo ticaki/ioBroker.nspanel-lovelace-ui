@@ -2218,7 +2218,7 @@ class ConfigManager extends import_library.BaseClass {
     if (item.fontSize != null && ((_l = itemConfig.data) == null ? void 0 : _l.icon)) {
       itemConfig.data.icon = {
         ...itemConfig.data.icon,
-        textSize: item.fontSize ? { type: "const", constVal: item.fontSize } : void 0
+        textSize: { type: "const", constVal: item.fontSize }
       };
     }
     if (item.filter != null) {
@@ -3797,7 +3797,7 @@ class ConfigManager extends import_library.BaseClass {
         if (item.fontSize != null && ((_D = itemConfig == null ? void 0 : itemConfig.data) == null ? void 0 : _D.icon)) {
           itemConfig.data.icon = {
             ...itemConfig.data.icon,
-            textSize: item.fontSize ? { type: "const", constVal: item.fontSize } : void 0
+            textSize: { type: "const", constVal: item.fontSize }
           };
         }
         if (item.enabled === false && itemConfig) {

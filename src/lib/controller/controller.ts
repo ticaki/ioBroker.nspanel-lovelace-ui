@@ -484,6 +484,9 @@ export class Controller extends Library.BaseClass {
             return false;
         }
 
+        // keep the configuration before it is bound to this controller: a reload by a script
+        // configuration replaces it, and web panels and re-activations are built from it
+        const pristine = structuredClone(panel);
         panel.name = this.adapter.config.panels[index].id;
         const state = this.library.readdb(`panels.${panel.name}.cmd.activated`);
         if (state && state.val === false) {
@@ -500,6 +503,12 @@ export class Controller extends Library.BaseClass {
 
             this.panels.push(newPanel);
             newPanel.initDone = true;
+            const known = this.options.panels.findIndex(p => p && p.topic === pristine.topic);
+            if (known === -1) {
+                this.options.panels.push(pristine);
+            } else {
+                this.options.panels[known] = pristine;
+            }
             this.log.debug(`Panel ${newPanel.name} created`);
             return true;
         }

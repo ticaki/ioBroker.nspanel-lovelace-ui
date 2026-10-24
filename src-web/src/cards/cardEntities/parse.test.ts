@@ -118,6 +118,14 @@ describe('entity helpers', () => {
         expect(splitIconField('21.5')).toEqual({ glyph: '', text: '21.5' });
     });
 
+    it('reads the font of the item option fontSize from a trailing ¬<n>', () => {
+        expect(splitIconField('21.4°C¬3')).toEqual({ glyph: undefined, text: '21.4°C', font: 3 });
+        expect(splitIconField('48 %¬0')).toEqual({ glyph: undefined, text: '48 %', font: 0 });
+        expect(splitIconField('¬4')).toEqual({ glyph: undefined, text: '', font: 4 });
+        // only 0-5 are fonts
+        expect(splitIconField('a¬9')).toEqual({ glyph: undefined, text: 'a¬9' });
+    });
+
     it('shows a value on cardGrid3 only when optionalValue is a text', () => {
         const base = { id: 'x', icon: '', iconColor: 0, displayName: 'n' };
         expect(gridValueText({ ...base, type: 'text', optionalValue: '15.6 °C' })).toBe('15.6 °C');

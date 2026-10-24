@@ -1,70 +1,56 @@
 # Web-Panel: Referenzbilder
 
-Grundlage: Wiki-Klon `~/ioBroker.nspanel-lovelace-ui.wiki/Pictures` (Stand 2026-04-10) und
-`doc/Pictures` im Repo. Als Vorlage taugen nur **Aufnahmen des Panels selbst** (ca. 480×320
-oder ein Vielfaches davon), keine Admin-Screenshots.
+Stand: 2026-10-25
 
-## Vorhanden (Panel-Aufnahmen)
+## Referenz: Aufnahmen vom Nextion-Emulator (eu)
 
-| Seite | Datei(en) im Wiki | Anmerkung |
-| --- | --- | --- |
-| Startseite | `Pictures/Panel_mit_logo.png` | mit Gehäuse, Startlogo |
-| screensaver (Standard) | `Pictures/screensaver/screensaverStd.png` | |
-| screensaver (Alternativ) | `Pictures/screensaver/screensaverAlt.png` | |
-| screensaver2 (Advanced) | `Pictures/screensaver/screensaverAdv.png` | mit Bereichs-Beschriftung |
-| screensaver3 (EasyView) | `Pictures/screensaver/screensaverEasy.png` | |
-| Screensaver mit Benachrichtigung | `Pictures/screensaver/screensaverNotify.png` | |
-| cardMedia | `Pictures/pageMedia/spotify.png`, `alexa.png`, `alexa2.png`, `equalizer.png`, `playlist.png`, `speaker.png`, `tracklist.png` | gut abgedeckt |
-| cardThermo2 | `Pictures/PageThermo2/Thermo2_1.png`, `Thermo2_2.png`, `Thermo2MitDatenpunkten.png` | |
-| cardQR | `Pictures/pageQR/panelPageQRTelefon.png`, `panelPageQRURL.png`, `panelPageQRWifiPW.png`, `panelPageQRWifiSwitch.png` | |
-| cardChart / cardLChart | `Pictures/pageChart/Balkenchart.png`, `Linechart.png` | |
-| cardTrash | `Pictures/pageTrash/panel-ansicht-4.png`, `panel-ansicht-6.png` | |
-| Symbolübersicht | `Pictures/symbolOverview/symbolOverview.png` | Icon-Referenz |
+Ordner: `/mnt/projekte/nspanel emu/` (Samba-Freigabe `//samba.kiemen.com/projekte`), 41 Bilder,
+aufgenommen am 2026-10-24 mit dem Panel `emu` (Topic `emu_topic`). Das ist die echte
+HMI-Darstellung und damit die maßgebliche Vorlage für das Web-Panel (eu). Die Bilder sind
+ca. 470×320, teils mit grauem Rand bzw. rotem Balken des Emulator-Fensters.
 
-Unklar (vermutlich Admin-Screenshots, bitte prüfen): `Pictures/pagePower/*.png`,
-`Pictures/PagePopup/pagePopup_*.png`.
+Erzeugt mit `doc/web-panel/emu-pictures-config.ts` (Seiten) und
+`doc/web-panel/emu-pictures-helper.js` (Screensaver-Zustände, Popups) - siehe `PLAN.md`,
+Abschnitt Testumgebung.
 
-## Fehlend (bitte nachreichen)
+| Bereich | Dateien |
+| --- | --- |
+| cardEntities | `cardEntities-1-light-switch-shutter-number.png`, `cardEntities-2-text-button-inputsel-timer.png` |
+| cardGrid | `cardGrid.png` (6 Kacheln), `cardGrid-3-tiles.png` |
+| cardGrid2 | `cardGrid2.png` (8 Kacheln), `cardGrid2-usp-subpage.png` (Unterseite, Pfeil runter) |
+| cardGrid3 | `cardGrid3-icons.png` (ohne useValue), `cardGrid3-usevalue-default-font.png` (useValue ohne fontSize), `cardGrid3-usevalue-fonts-0-3.png`, `cardGrid3-usevalue-fonts-4-5.png` (fontSize 0-5, Font 5 an der Kachel abgeschnitten, Icon in Font 3) |
+| cardThermo | `cardThermo.png` |
+| cardSchedule | `cardSchedule.png` |
+| cardChart | `cardChart.png` |
+| cardPower | `cardPower.png` - Achtung: die grauen Kästen um die Navigationspfeile sind ein Zwischenzustand (Adapter-Neustart während der Aufnahme), richtig sind türkise Pfeile wie auf den anderen Seiten |
+| cardAlarm | `cardAlarm.png` (unscharf, „disarm“) |
+| cardUnlock | `cardUnlock.png`, `cardUnlock-lockicon.png` |
+| popupLight | `popupLight-switch-only.png`, `popupLight-dimmer.png`, `popupLight-ct.png`, `popupLight-hue-ct.png`, `popupLight-hue-colorwheel.png` |
+| popupShutter | `popupShutter-tilt.png` (mit Lamellen), `popupShutter2.png` |
+| popupFan | `popupFan.png` |
+| popupSlider | `popupSlider-1-slider.png`, `popupSlider-3-slider.png` |
+| popupInSel | `popupInSel.png` |
+| popupThermo | `popupThermo.png` |
+| popupTimer | `popupTimer-running.png`, `popupTimer-edit-minutes.png`, `popupTimer-edit-seconds.png` |
+| popupNotify | `popupNotify-information-textsize3.png` (ohne Buttons, langer Text), `popupNotify-acknowledge-3buttons-textsize3.png` |
+| Screensaver Standard | `screensaver-standard-statusicons.png` (Status-Icons links/rechts oben), `screensaver-standard-infoicon.png` (Info-Icon unter der Uhrzeit) |
+| Screensaver Alternativ | `screensaver-alternate-infoicon.png`, `screensaver-alternate-infoicon-dimmed.png` (gedimmt), `screensaver-alternate-notify.png` (Benachrichtigung) |
+| Screensaver Advanced | `screensaver2-advanced-infoicon.png` |
+| Screensaver EasyView | `screensaver3-easyview-infoicon.png` |
 
-Ideal: Screenshot oder Foto des Displays, möglichst frontal, pro Zustand ein Bild.
+Ältere Wiki-Bilder (`~/ioBroker.nspanel-lovelace-ui.wiki/Pictures`, Stand 2026-04-10) bleiben
+Referenz für cardMedia (`pageMedia/*`), cardThermo2 (`PageThermo2/*`), cardQR (`pageQR/*`),
+cardLChart (`pageChart/Linechart.png`), cardTrash (`pageTrash/*`) und die Symbolübersicht.
 
-### Karten
+## Fehlend
 
-- [ ] **cardEntities** (Liste mit 4 Zeilen; je ein Beispiel mit light, switch, shutter, number, text, button, input_sel)
-- [ ] **cardGrid** (6 Kacheln)
-- [ ] **cardGrid2** (8 Kacheln)
-- [ ] **cardGrid3** (Variante mit Wertanzeige)
-- [ ] **cardThermo** (altes Thermostat, nicht Thermo2)
-- [ ] **cardAlarm** (scharf / unscharf / Eingabe des Codes)
-- [ ] **cardSchedule**
-- [ ] **cardUnlock** (PIN-Eingabe)
-- [ ] **cardPower** (Energiefluss-Seite, Panel-Ansicht)
-- [ ] **cardMedia** mit Lautstärke-Popup / ohne Logo (falls abweichend)
+- [ ] **cardAlarm scharf geschaltet** (nur der unscharfe Zustand ist vorhanden)
+- [ ] **cardMedia mit Lautstärke-Popup** - braucht einen echten Player (z. B. Media-Seite von ns_panel6)
+- [ ] **Startlogo als Video/GIF** - wird nachgereicht, bis dahin Provisorium
+- [ ] **us-p** (Hochformat) und **us-l** - Screensaver und je eine Karte, braucht ein Panel dieses Modells
+- [ ] **popupNotify mit anderen Textgrößen** (vorhanden ist nur textSize 3, der Standard)
 
-### Popups
+Nicht nötig bzw. nicht möglich:
 
-- [ ] **popupLight** (Helligkeit, Farbtemperatur, Farbrad)
-- [ ] **popupLightNew**
-- [ ] **popupShutter** und **popupShutter2** (Position / Lamellen)
-- [ ] **popupFan**
-- [ ] **popupSlider**
-- [ ] **popupThermo** (Modusauswahl)
-- [ ] **popupInSel** (Auswahl-Liste)
-- [ ] **popupTimer**
-- [ ] **popupNotify** und **popupNotify2** (mit und ohne Buttons, langer Text)
-
-### Screensaver-Zustände
-
-- [ ] Standard-Screensaver mit **Status-Icons** (`statusUpdate`) links/rechts unten
-- [ ] Screensaver mit **Glocke** neben der Uhrzeit (`time~HH:MM~<icon>`)
-
-Gedimmter Screensaver: kein Bild nötig, Vorgabe ist Helligkeit **und** Kontrast herunterregeln.
-
-### Startseite
-
-- [ ] **Startlogo als Video/GIF/Bildershow** (wird nachgereicht; bis dahin zeigt die Startseite ein Provisorium)
-
-### Modelle
-
-- [ ] **us-p** (Hochformat) Screensaver und eine Karte
-- [ ] **us-l** Screensaver und eine Karte, falls abweichend von eu
+- `popupLightNew` und `popupNotify2` sendet der Adapter nie.
+- Gedimmter Screensaver: Vorgabe ist Helligkeit und Kontrast herunterregeln (ein Beispiel liegt trotzdem vor).

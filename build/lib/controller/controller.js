@@ -464,6 +464,7 @@ class Controller extends Library.BaseClass {
       this.adapter.log.error(`Panel ${panel.name} with topic ${panel.topic} not found in config`);
       return false;
     }
+    const pristine = structuredClone(panel);
     panel.name = this.adapter.config.panels[index].id;
     const state = this.library.readdb(`panels.${panel.name}.cmd.activated`);
     if (state && state.val === false) {
@@ -478,6 +479,12 @@ class Controller extends Library.BaseClass {
       await newPanel.init();
       this.panels.push(newPanel);
       newPanel.initDone = true;
+      const known = this.options.panels.findIndex((p) => p && p.topic === pristine.topic);
+      if (known === -1) {
+        this.options.panels.push(pristine);
+      } else {
+        this.options.panels[known] = pristine;
+      }
       this.log.debug(`Panel ${newPanel.name} created`);
       return true;
     }
