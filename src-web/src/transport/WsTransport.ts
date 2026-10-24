@@ -9,6 +9,25 @@ const RECONNECT_MAX_MS = 30_000;
 /** The parts of `window.location` the url builder needs */
 export type LocationLike = Pick<Location, 'protocol' | 'host'>;
 
+/**
+ * A random id. `crypto.randomUUID` exists only in secure contexts (https, localhost) -
+ * the web panel usually runs over plain http in the LAN, so fall back to `getRandomValues`.
+ */
+export function randomId(): string {
+    if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+        return crypto.randomUUID();
+    }
+    const bytes = new Uint8Array(16);
+    if (typeof crypto !== 'undefined' && typeof crypto.getRandomValues === 'function') {
+        crypto.getRandomValues(bytes);
+    } else {
+        for (let i = 0; i < bytes.length; i++) {
+            bytes[i] = Math.floor(Math.random() * 256);
+        }
+    }
+    return Array.from(bytes, b => b.toString(16).padStart(2, '0')).join('');
+}
+
 /** Session id of this browser, kept in localStorage so a reload binds to the same virtual panel */
 export function sessionId(): string {
     try {
@@ -16,11 +35,11 @@ export function sessionId(): string {
         if (stored) {
             return stored;
         }
-        const fresh = crypto.randomUUID();
+        const fresh = randomId();
         localStorage.setItem(SESSION_KEY, fresh);
         return fresh;
     } catch {
-        return crypto.randomUUID();
+        return randomId();
     }
 }
 
