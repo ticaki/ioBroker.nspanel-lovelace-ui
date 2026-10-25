@@ -1057,6 +1057,8 @@
     "webFidoNoKeys": "Aucune clé de sécurité enregistrée. Enregistrez-en une sur la page du panneau web /auth/fido/register (lien dans la liste des panneaux).",
     "webFidoRefresh": "Actualiser",
     "webFidoRequirements": "Conditions : (1) HTTPS doit être activé pour les panneaux web, (2) le panneau web doit être ouvert via un nom d’hôte (DNS), pas via une adresse IP, (3) le navigateur doit faire confiance au certificat - un certificat auto-signé fonctionne s’il est installé comme approuvé dans le navigateur ou le système.",
+    "webHost": "Nom d'hôte pour les liens",
+    "webHostHelp": "Nom d'hôte ou adresse par laquelle les navigateurs atteignent le serveur des panneaux web (pour les liens dans l'admin et l'aperçu de l'adresse). Vide = détection automatique. Avec HTTPS/FIDO2, saisissez le nom figurant dans le certificat.",
     "webPanelAdd": "Ajouter un panneau web",
     "webPanelAddText": "Un panneau web affiche l'interface du panneau dans un navigateur sans matériel NSPanel. Il se configure comme un vrai panneau via son topic ; le topic est aussi son adresse : http(s)://<host>:<port>/<topic>.",
     "webPanelAddress": "Adresse",

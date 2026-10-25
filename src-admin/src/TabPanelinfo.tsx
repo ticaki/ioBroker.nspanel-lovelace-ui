@@ -21,7 +21,14 @@ import SettingsOutlinedIcon from '@mui/icons-material/SettingsOutlined';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import CancelIcon from '@mui/icons-material/Cancel';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
-import { openWebPanel, resolveWebPanelHost, webPinOf, webSecureOf } from './webPanelUrl';
+import {
+    defaultWebLinkSettings,
+    loadWebLinkSettings,
+    openWebPanel,
+    webHostOf,
+    webLinkSettingsOf,
+    type WebLinkSettings,
+} from './webPanelUrl';
 import { type IobTheme, type ThemeName, type ThemeType } from '@iobroker/gui-components';
 import { PanelStatusBadge } from './components/PanelStatusBadge';
 import { ThemeProvider } from '@mui/material/styles';
@@ -51,8 +58,8 @@ interface PanelStateData {
 }
 
 interface PanelinfoState extends ConfigGenericState {
-    /** host the web panel server of the instance is reached on */
-    webPanelHost: string;
+    /** host, port, https, PIN of the web panel server of the instance (see `loadWebLinkSettings`) */
+    webLink: WebLinkSettings;
     panelsInfo: PanelinfoInfo[];
     loading: boolean;
     error: string | null;
@@ -130,7 +137,33 @@ class TabPanelinfo extends ConfigGeneric<ConfigGenericProps & PanelinfoProps, Pa
             error: null,
             alive: false,
             panelStates: {},
+            webLink: webLinkSettingsOf(props.data, defaultWebLinkSettings()),
         };
+    }
+
+    /**
+     * Link settings for the web panels: the (possibly unsaved) instance configuration in
+     * `props.data` wins, the loaded settings fill in what the admin tab does not get in `props.data`.
+     */
+    private webLink(): WebLinkSettings {
+        return webLinkSettingsOf(this.props.data, this.state.webLink);
+    }
+
+    private loadWebLink(): void {
+        void loadWebLinkSettings(this.props.oContext.socket, this.adapterName, this.instance, this.props.data).then(
+            settings => {
+                if (this._isMounted) {
+                    this.setState({ webLink: settings });
+                }
+            },
+        );
+    }
+
+    componentDidUpdate(prevProps: ConfigGenericProps & PanelinfoProps): void {
+        // a changed host name in the instance configuration re-resolves the host of the links
+        if (webHostOf(prevProps.data) !== webHostOf(this.props.data)) {
+            this.loadWebLink();
+        }
     }
 
     async componentWillUnmount(): Promise<void> {
@@ -187,11 +220,7 @@ class TabPanelinfo extends ConfigGeneric<ConfigGenericProps & PanelinfoProps, Pa
     async componentDidMount(): Promise<void> {
         void super.componentDidMount();
         this._isMounted = true;
-        void resolveWebPanelHost(this.props.oContext.socket, this.adapterName, this.instance).then(host => {
-            if (this._isMounted) {
-                this.setState({ webPanelHost: host });
-            }
-        });
+        this.loadWebLink();
 
         // Get initial alive state and subscribe to changes
         const aliveStateId = `system.adapter.${this.adapterName}.${this.instance}.alive`;
@@ -929,6 +958,7 @@ class TabPanelinfo extends ConfigGeneric<ConfigGenericProps & PanelinfoProps, Pa
 
     renderItem(_error: string, _disabled: boolean, _defaultValue?: unknown): React.JSX.Element {
         const panelsConfig: PanelConfig[] = this.panelsConfig;
+        const webLink = this.webLink();
         const { panelsInfo, error, alive, panelStates } = this.state;
 
         return (
@@ -999,19 +1029,11 @@ class TabPanelinfo extends ConfigGeneric<ConfigGenericProps & PanelinfoProps, Pa
                                             variant="outlined"
                                         />
                                     ) : null}
-                                    {this.props.data.webEnabled !== false && panel._topic ? (
+                                    {webLink.enabled && panel._topic ? (
                                         <IconButton
                                             size="small"
                                             color="primary"
-                                            onClick={(): void =>
-                                                openWebPanel(
-                                                    this.state.webPanelHost,
-                                                    this.props.data.webPort,
-                                                    panel._topic,
-                                                    webPinOf(this.props.data),
-                                                    webSecureOf(this.props.data),
-                                                )
-                                            }
+                                            onClick={(): void => openWebPanel(webLink, panel._topic)}
                                             title={this.getText('openWebPanel')}
                                         >
                                             <OpenInNewIcon />

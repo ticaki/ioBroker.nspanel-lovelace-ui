@@ -1057,6 +1057,8 @@
     "webFidoNoKeys": "尚未注册安全密钥。请在网页面板页面 /auth/fido/register 上注册（面板列表中有链接）。",
     "webFidoRefresh": "刷新",
     "webFidoRequirements": "前提条件：(1) 必须为网页面板启用 HTTPS，(2) 必须通过主机名（DNS）而不是 IP 地址打开网页面板，(3) 浏览器必须信任该证书 - 自签名证书在浏览器或系统中被设为可信后也可以使用。",
+    "webHost": "链接使用的主机名",
+    "webHostHelp": "浏览器访问网页面板服务器所用的主机名或地址（用于管理界面中的链接和地址预览）。留空 = 自动检测。使用 HTTPS/FIDO2 时请填写证书中的名称。",
     "webPanelAdd": "添加网页面板",
     "webPanelAddText": "网页面板无需 NSPanel 硬件即可在浏览器中显示面板界面。它像真实面板一样通过其 topic 进行配置；topic 同时也是其地址：http(s)://<host>:<port>/<topic>。",
     "webPanelAddress": "地址",

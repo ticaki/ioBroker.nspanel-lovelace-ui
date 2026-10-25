@@ -1057,6 +1057,8 @@
     "webFidoNoKeys": "Nog geen beveiligingssleutel geregistreerd. Registreer er een op de webpaneelpagina /auth/fido/register (link in de paneellijst).",
     "webFidoRefresh": "Vernieuwen",
     "webFidoRequirements": "Voorwaarden: (1) HTTPS moet voor de webpanelen ingeschakeld zijn, (2) het webpaneel moet via een hostnaam (DNS) geopend worden, niet via een IP-adres, (3) de browser moet het certificaat vertrouwen - een zelfondertekend certificaat werkt als het in de browser of het systeem als vertrouwd is geïnstalleerd.",
+    "webHost": "Hostnaam voor de links",
+    "webHostHelp": "Hostnaam of adres waarmee browsers de webpanelserver bereiken (voor de links in de admin en de adresvoorvertoning). Leeg = automatisch bepalen. Bij HTTPS/FIDO2 de naam uit het certificaat invullen.",
     "webPanelAdd": "Webpaneel toevoegen",
     "webPanelAddText": "Een webpaneel toont de paneelinterface in een browser zonder NSPanel-hardware. Het wordt zoals een echt paneel via zijn topic geconfigureerd; het topic is ook zijn adres: http(s)://<host>:<port>/<topic>.",
     "webPanelAddress": "Adres",

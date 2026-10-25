@@ -1057,6 +1057,8 @@
     "webFidoNoKeys": "Nie zarejestrowano jeszcze klucza bezpieczeństwa. Zarejestruj go na stronie panelu webowego /auth/fido/register (link na liście paneli).",
     "webFidoRefresh": "Odśwież",
     "webFidoRequirements": "Wymagania: (1) HTTPS musi być włączone dla paneli webowych, (2) panel webowy musi być otwierany przez nazwę hosta (DNS), nie przez adres IP, (3) przeglądarka musi ufać certyfikatowi - certyfikat samopodpisany działa, jeśli jest zainstalowany jako zaufany w przeglądarce lub systemie.",
+    "webHost": "Nazwa hosta dla linków",
+    "webHostHelp": "Nazwa hosta lub adres, pod którym przeglądarki osiągają serwer paneli webowych (dla linków w adminie i podglądu adresu). Puste = wykryj automatycznie. Przy HTTPS/FIDO2 wpisz nazwę z certyfikatu.",
     "webPanelAdd": "Dodaj panel webowy",
     "webPanelAddText": "Panel webowy pokazuje interfejs panelu w przeglądarce bez sprzętu NSPanel. Konfiguruje się go jak prawdziwy panel przez jego topic; topic jest też jego adresem: http(s)://<host>:<port>/<topic>.",
     "webPanelAddress": "Adres",

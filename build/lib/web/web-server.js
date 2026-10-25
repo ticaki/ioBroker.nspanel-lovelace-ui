@@ -702,6 +702,11 @@ class WebServer extends import_library.BaseClass {
     res.end(body);
   }
   displayHost() {
+    var _a;
+    const host = (_a = this.options.host) == null ? void 0 : _a.trim();
+    if (host) {
+      return host;
+    }
     return this.options.bind && this.options.bind !== "0.0.0.0" && this.options.bind !== "::" ? this.options.bind : "<host>";
   }
   indexPage() {

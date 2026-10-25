@@ -25,6 +25,8 @@ declare global {
             webEnabled: boolean;
             webPort: number;
             webBind: string;
+            /** host name (or address) browsers reach the web panel server on - used for the links in the admin; '' = detected automatically */
+            webHost: string;
             /** global PIN of the web panels, '' = no protection (encrypted, decrypted by the js-controller) */
             webPin: string;
             /** serve the web panels over HTTPS/WSS with the ioBroker certificates below */

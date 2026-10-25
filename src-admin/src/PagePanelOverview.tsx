@@ -27,7 +27,15 @@ import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import AddIcon from '@mui/icons-material/Add';
-import { openWebPanel, resolveWebPanelHost, webPanelUrl, webPinOf, webSecureOf } from './webPanelUrl';
+import {
+    defaultWebLinkSettings,
+    loadWebLinkSettings,
+    openWebPanel,
+    webHostOf,
+    webLinkSettingsOf,
+    webPanelUrl,
+    type WebLinkSettings,
+} from './webPanelUrl';
 import ConfigIP from './components/ConfigIP';
 import { PanelStatusBadge } from './components/PanelStatusBadge';
 import { resolveTasmotaTimeZone, uniqueTasmotaTimeZones, type TasmotaTimeZone } from './tasmotaTimeZones';
@@ -112,8 +120,8 @@ function isInitStepAnswer(value: unknown): value is InitStepAnswer {
 }
 
 interface PagePanelOverviewState extends ConfigGenericState {
-    /** host the web panel server of the instance is reached on */
-    webPanelHost: string;
+    /** host, port, https, PIN of the web panel server of the instance (see `loadWebLinkSettings`) */
+    webLink: WebLinkSettings;
     // Define any additional state properties if needed
     // Aktuelle Eingabe im Zeitzonen-Autocomplete und die dazu passenden Treffer
     timezoneInput: string;
@@ -183,7 +191,22 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
             filteredTimezones: PagePanelOverview.filterTimezones(''),
             showMessageConfirm: false,
             webPanelDialog: closedWebPanelDialog,
+            webLink: webLinkSettingsOf(props.data, defaultWebLinkSettings()),
         };
+    }
+
+    /**
+     * Link settings for the web panels: the (possibly unsaved) instance configuration in
+     * `props.data` wins, the loaded settings fill in the host.
+     */
+    private webLink(): WebLinkSettings {
+        return webLinkSettingsOf(this.props.data, this.state.webLink);
+    }
+
+    private loadWebLink(): void {
+        void loadWebLinkSettings(this.props.oContext.socket, this.adapterName, this.instance, this.props.data).then(
+            settings => this.setState({ webLink: settings }),
+        );
     }
     // Bereinige Ressourcen und Abonnements beim Unmounten
     componentWillUnmount(): void {
@@ -211,9 +234,7 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
     // Lade Timezone-Entities beim Mounten und abonniere Alive-Status
     async componentDidMount(): Promise<void> {
         void super.componentDidMount();
-        void resolveWebPanelHost(this.props.oContext.socket, this.adapterName, this.instance).then(host =>
-            this.setState({ webPanelHost: host }),
-        );
+        this.loadWebLink();
 
         // Get initial alive state and subscribe to changes
         const aliveStateId = `system.adapter.${this.adapterName}.${this.instance}.alive`;
@@ -249,6 +270,10 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
 
     // Synchronisiert props.data.timezone → localTimezone, sobald der Wert über Props hereinkommt
     componentDidUpdate(prevProps: ConfigGenericProps & { theme?: any }): void {
+        // a changed host name in the instance configuration re-resolves the host of the links
+        if (webHostOf(prevProps.data) !== webHostOf(this.props.data)) {
+            this.loadWebLink();
+        }
         const prevTz = resolveTasmotaTimeZone(prevProps.data?.timezone ?? '')?.label ?? '';
         const nextTz = resolveTasmotaTimeZone(this.props.data?.timezone ?? '')?.label ?? '';
         // Sync wenn sich der Prop-Wert ändert ODER wenn localTimezone noch leer ist
@@ -698,8 +723,8 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
      * @returns the address for display
      */
     private webPanelAddressPreview(topic: string): string {
-        const host = this.state.webPanelHost || window.location.hostname;
-        const base = webPanelUrl(host, this.props.data.webPort, '', undefined, webSecureOf(this.props.data));
+        const link = this.webLink();
+        const base = webPanelUrl(link.host || window.location.hostname, link.port, '', undefined, link.secure);
         return `${base}${topic || '<topic>'}`;
     }
 
@@ -883,6 +908,7 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
     renderItem(_error: string, _disabled: boolean, _defaultValue?: unknown): React.JSX.Element {
         // Expert Mode from props (provided by json-config system)
         //const isExpertMode = this.props.expertMode ?? false;
+        const webLink = this.webLink();
 
         // Lade Werte aus this.props.data (hier werden die Config-Werte gespeichert)
         const data = this.props.data || {};
@@ -1097,7 +1123,7 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
                     </Button>
                     {/* a web panel is a pure config entry - no adapter interaction, so it does not need alive;
                         it only makes sense while the web server is enabled */}
-                    {this.props.data.webEnabled !== false ? (
+                    {webLink.enabled ? (
                         <Button
                             variant="outlined"
                             startIcon={<AddIcon />}
@@ -1163,19 +1189,11 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
                                         )}
                                     </Box>
                                     {/* Right side: Action buttons */}
-                                    {this.props.data.webEnabled !== false && panel.topic ? (
+                                    {webLink.enabled && panel.topic ? (
                                         <IconButton
                                             size="small"
                                             color="primary"
-                                            onClick={(): void =>
-                                                openWebPanel(
-                                                    this.state.webPanelHost,
-                                                    this.props.data.webPort,
-                                                    panel.topic ?? '',
-                                                    webPinOf(this.props.data),
-                                                    webSecureOf(this.props.data),
-                                                )
-                                            }
+                                            onClick={(): void => openWebPanel(webLink, panel.topic ?? '')}
                                             title={this.getText('openWebPanel')}
                                         >
                                             <OpenInNewIcon />

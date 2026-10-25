@@ -3004,6 +3004,19 @@
                     "lg": 3,
                     "xl": 2
                 },
+                "webHost": {
+                    "type": "text",
+                    "label": "webHost",
+                    "help": "webHostHelp",
+                    "default": "",
+                    "trim": true,
+                    "disabled": "!data.webEnabled",
+                    "xs": 12,
+                    "sm": 6,
+                    "md": 4,
+                    "lg": 3,
+                    "xl": 2
+                },
                 "webPin": {
                     "type": "password",
                     "label": "webPin",

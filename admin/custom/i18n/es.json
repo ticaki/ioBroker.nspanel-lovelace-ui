@@ -1057,6 +1057,8 @@
     "webFidoNoKeys": "Aún no hay ninguna llave de seguridad registrada. Regístrela en la página del panel web /auth/fido/register (enlace en la lista de paneles).",
     "webFidoRefresh": "Actualizar",
     "webFidoRequirements": "Requisitos: (1) HTTPS debe estar activado para los paneles web, (2) el panel web debe abrirse mediante un nombre de host (DNS), no mediante una dirección IP, (3) el navegador debe confiar en el certificado - un certificado autofirmado funciona si está instalado como de confianza en el navegador o el sistema.",
+    "webHost": "Nombre de host para los enlaces",
+    "webHostHelp": "Nombre de host o dirección con la que los navegadores alcanzan el servidor de paneles web (para los enlaces en el admin y la vista previa de la dirección). Vacío = detectar automáticamente. Con HTTPS/FIDO2 introduzca el nombre del certificado.",
     "webPanelAdd": "Añadir panel web",
     "webPanelAddText": "Un panel web muestra la interfaz del panel en un navegador sin hardware NSPanel. Se configura como un panel real a través de su topic; el topic es también su dirección: http(s)://<host>:<port>/<topic>.",
     "webPanelAddress": "Dirección",

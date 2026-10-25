@@ -143,6 +143,7 @@ Node `http` plus `ws`. Admin-Felder (`admin/jsonConfig.json5`, `io-package.json`
 | `webEnabled` | boolean | `true` |
 | `webPort` | number | `8090` |
 | `webBind` | string | `0.0.0.0` |
+| `webHost` | string – Hostname/Adresse für die Admin-Links und das Start-Log, `''` = automatisch (siehe 2.5.2 „Host der Admin-Links“) | `''` |
 | `webPin` | string (password, `protectedNative` + `encryptedNative`) | `''` |
 | `webSecure` | boolean – HTTPS/WSS mit ioBroker-Zertifikaten (siehe 2.5.2) | `false` |
 | `webCertPublic` | string (`certificate`-Auswahl, Name in `system.certificates`) | `defaultPublic` |
@@ -227,6 +228,24 @@ kein Schutz (Warn-Log beim Start). Ablauf:
   relativ (`/<topic>`), übernimmt also das Protokoll der Seite.
 - **Selbstsigniert:** Browser warnen einmalig (Standard-Zertifikate von ioBroker). Für echte
   Zertifikate die in den ioBroker-Systemeinstellungen hinterlegten Namen wählen.
+- **Host der Admin-Links (`resolveWebPanelHost`, src-admin `webPanelUrl.ts`):** mit HTTPS muss der
+  Link den Namen aus dem Zertifikat tragen (und FIDO2 braucht einen DNS-Namen), eine IP reicht
+  nicht. Reihenfolge: (1) `webHost` der Instanz, wenn gesetzt – im Konfig-Dialog gilt die noch
+  ungespeicherte Eingabe sofort (`props.data`); (2) der Admin ist unter einem DNS-Namen geöffnet
+  (`window.location.hostname` ist keine IPv4/IPv6, nicht `localhost`) **und** die Admin-Instanz,
+  die diese Seite ausliefert (`system.adapter.admin.*` mit `native.port` = Port der Seite, leer =
+  80/443), läuft auf demselben `common.host` wie die nspanel-Instanz → der Name der Adresszeile
+  bleibt; (3) sonst wie bisher: gleicher Hostname, Adresse in `system.host.<host>.common.address`
+  oder die erste brauchbare IPv4 des Hosts. Das Backend nutzt `webHost` nur für das Start-Log
+  (`displayHost()`); die RP-ID für FIDO2 bleibt der Host-Header der Anfrage.
+- **Link-Einstellungen im Admin-Seitentab:** `TabPanelinfo` läuft auch als Admin-Tab
+  (`jsonTab.json5`), dort enthält `props.data` keine Instanz-Konfiguration. `loadWebLinkSettings()`
+  liefert deshalb `{ host, port, secure, pin, enabled }` – aus `props.data`, wenn vorhanden (PIN
+  entschlüsselt), sonst aus `native` des Instanz-Objekts (PIN dort verschlüsselt → `''`, der
+  Browser zeigt einmalig die PIN-Seite). `webLinkSettingsOf(props.data, state)` legt beim Rendern
+  die aktuellen Werte des Konfig-Dialogs über den geladenen Stand, so dass Änderungen an
+  `webSecure`/`webPort`/`webPin`/`webHost` sofort in Links und Adress-Vorschau wirken; eine
+  Änderung von `webHost` löst das erneute Auflösen des Hosts aus (`componentDidUpdate`).
 - **Entscheidung Zertifikatsauswahl (`certificate` statt `certCollection`):** `@iobroker/json-config`
   9.0.20 im Repo kennt `certificate`, `certificates` und `certCollection`. Gewählt sind drei Felder
   vom Typ `certificate`; die Auswahl filtert dort nach dem Attributnamen (`*Public*`, `*Private*`,

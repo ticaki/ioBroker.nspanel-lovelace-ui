@@ -287,6 +287,21 @@ describe('lib/web/web-server - https', () => {
             await s.stop();
         }
     });
+
+    it('logs the configured host name (webHost) instead of the bind address', async () => {
+        const adapter = fakeAdapter();
+        const port = await freePort();
+        const s = server('', { port, host: ' panels.example.org ' }, adapter);
+        try {
+            expect(await s.start()).to.equal(true);
+            const started = adapter.logged.find(l => l.level === 'info' && l.msg.includes('Web panels available at'));
+            expect(started?.msg).to.equal(
+                `[WebServer] Web panels available at http://panels.example.org:${port}/<topic>`,
+            );
+        } finally {
+            await s.stop();
+        }
+    });
 });
 
 /**

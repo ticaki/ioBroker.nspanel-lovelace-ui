@@ -54,6 +54,11 @@ const CONTENT_TYPES: Record<string, string> = {
 export type WebServerOptions = {
     port: number;
     bind: string;
+    /**
+     * host name (or address) browsers reach the server on (`webHost`) - only for the start log, the
+     * links are built in the admin; '' = derived from `bind`
+     */
+    host?: string;
     /** directory with the built frontend (index.html, assets/…) */
     wwwPath: string;
     /** global PIN of the web panels, '' = no protection */
@@ -791,6 +796,10 @@ export class WebServer extends BaseClass {
     }
 
     private displayHost(): string {
+        const host = this.options.host?.trim();
+        if (host) {
+            return host;
+        }
         return this.options.bind && this.options.bind !== '0.0.0.0' && this.options.bind !== '::'
             ? this.options.bind
             : '<host>';

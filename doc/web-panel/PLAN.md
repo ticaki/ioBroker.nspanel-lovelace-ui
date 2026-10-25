@@ -21,7 +21,7 @@ Seitenlogik doppelt gebaut wird.
 | Instanzen | **Geändert 2026-10-25:** ein Web-Panel **pro Endpoint**, keine Browser-Sitzungen mehr. Alle Browser auf demselben Endpoint zeigen dasselbe Panel synchron. Der Klon eines echten Panels teilt sich den Objektbaum `panels.<id>` mit dem Original (keine `_web`-Bäume mehr, alte werden beim Start gelöscht). |
 | Eigenständige Web-Panels | **2026-10-25:** Panel-Tabelle im Admin bekommt Einträge mit `kind: 'web'` (Name, Topic, Modell, ohne IP/MAC), konfigurierbar wie ein echtes Panel über das Topic. |
 | PIN | **2026-10-25:** eine globale PIN (`webPin`) für alle Web-Panels, auch Klone. Einmalige Abfrage pro Browser (Cookie), Admin-Links übergeben die PIN per `?pin=`, sonst erscheint die PIN-Seite. Leere PIN = offen. |
-| URL | `http://<host>:<port>/<topic>`; die MAC-ID aus der Panel-Tabelle wird als Fallback akzeptiert. |
+| URL | `http://<host>:<port>/<topic>`; die MAC-ID aus der Panel-Tabelle wird als Fallback akzeptiert. **2026-10-25:** `webHost` legt den Hostnamen für die Admin-Links fest (leer = automatisch; der DNS-Name des Admins bleibt, wenn Admin und Adapter auf demselben ioBroker-Host laufen), Admin-Seitentab nutzt https/Port/PIN der Instanz (ARCHITECTURE.md 2.5.2). |
 | FIDO2 | **2026-10-25:** `webFido` erlaubt Sicherheitsschlüssel/Passkeys (WebAuthn, `@simplewebauthn/server`) statt PIN – nur mit HTTPS, Hostname statt IP, vertrauenswürdiges Zertifikat. Registrierung auf `/auth/fido/register` (mit PIN-Token), Button auf der PIN-Seite, Schlüssel in `web.fidoCredentials`, Verwaltung im Admin (`WebFidoKeys`, `webFidoList`/`webFidoDelete`). Details ARCHITECTURE.md 2.5.3. |
 | HTTPS | **2026-10-25:** optional (`webSecure`) mit den ioBroker-Zertifikaten (`webCertPublic`/`webCertPrivate`/`webCertChained`, Typ `certificate`, kein `certCollection`). Derselbe Server spricht dann HTTPS und WSS, das PIN-Cookie ist `Secure`. Fehlende/ungültige Zertifikate: Fehler-Log und Web-Panels aus, kein Rückfall auf HTTP. |
 | Tasmota | Relais, Sensoren, tempOffset, Restart, Rules, Status-Abfragen entfallen. Der **Buzzer wird simuliert** (Web Audio). Die beiden Hardware-Taster werden als Bildschirm-Buttons angeboten und verhalten sich wie detached Buttons. |
@@ -139,6 +139,9 @@ Verbleibende, bekannte Abweichungen:
 - Laufschrift der Interpretzeile in cardMedia ragt links heraus.
 - ~~**HTTPS**~~ erledigt 2026-10-25: `webSecure` + ioBroker-Zertifikate (ARCHITECTURE.md 2.5.2).
   Offen bleibt nur `certCollection` (Let’s Encrypt über acme) – siehe Entscheidung dort.
+- ~~**Admin-Links bei HTTPS**~~ erledigt 2026-10-25: Links zeigten die IPv4 statt des DNS-Namens
+  (Zertifikat passt nicht, FIDO2 unmöglich) und im Admin-Seitentab `http://` ohne PIN →
+  `webHost` + `resolveWebPanelHost`/`loadWebLinkSettings` (ARCHITECTURE.md 2.5.2).
 - us-p/us-l-Layouts, Startvideo (`www/startup/startup.mp4`), Admin-Vorschau als iframe
   (Phase 5, Mixed Content).
 

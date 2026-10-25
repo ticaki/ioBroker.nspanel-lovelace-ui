@@ -612,6 +612,7 @@ class NspanelLovelaceUi extends utils.Adapter {
         this.webServer = new WebServer(this, manager, {
             port: Number(this.config.webPort) || 8090,
             bind: this.config.webBind || '0.0.0.0',
+            host: typeof this.config.webHost === 'string' ? this.config.webHost.trim() : '',
             wwwPath: path.join(__dirname, '..', 'www'),
             // a PIN typed as digits may arrive as a number
             pin: this.config.webPin == null ? '' : String(this.config.webPin).trim(),
