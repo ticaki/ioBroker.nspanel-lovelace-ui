@@ -156,6 +156,8 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
 <!--
     Placeholder for the next version (at the beginning of the line):
     ### **WORK IN PROGRESS**
+-->
+### 1.7.0 (2026-10-25)
 - (ticaki) web panels: the panel UI in a web browser via http://<host>:8090/<topic>, no Tasmota needed - one web panel per address, all browsers on it stay in sync (new admin tab "Web panels")
 - (ticaki) web panels: a real panel can be opened in the browser - the clone navigates on its own and shares the states tree `panels.<id>` with the panel
 - (ticaki) web panels: standalone web panels without hardware - "Add web panel" in the panel overview (name, topic, model), configured by topic like a real panel
