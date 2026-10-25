@@ -6,7 +6,9 @@ import type { CardProps } from '../CardContract';
 import { popupEntityId, popupHeaderIconColor, popupTitle } from '../popupSlider/fields';
 import { CloseButton, HEADER_ICON_SIZE, POPUP_FONT_SIZE, PopupHeader, TAP_SIZE } from '../popupSlider/PopupHeader';
 import { Slider } from '../popupSlider/Slider';
-import type { ButtonTriple, PopupShutterModel } from './parse';
+import { coveredPercent, shownPercent, type ButtonTriple, type PopupShutterModel } from './parse';
+import shutterClosedPicture from './shutter-closed.png';
+import windowOpenPicture from './window-open.png';
 
 /** geometry of `popupShutter` on the HMI (stage pixels) */
 const SHUTTER = {
@@ -97,14 +99,16 @@ export class PopupShutter extends React.Component<CardProps<PopupShutterModel>> 
         this.props.press(this.id, action);
     };
 
-    /** the covered part of the window in percent (0 = open) */
+    /** the covered part of the window in percent (0 = open, 100 = closed), see `coveredPercent` */
     private get covered(): number {
-        const { model } = this.props;
-        const pos = Math.max(0, Math.min(100, model.position ?? 0));
-        return model.closedIsZero ? 100 - pos : pos;
+        return coveredPercent(this.props.model.position ?? 0);
     }
 
-    /** a tap on the window picture of popupShutter2 moves the shutter to that height */
+    /**
+     * A tap on the window picture of popupShutter2 moves the shutter to that height. The HMI
+     * reports `100 - hPosition.val` = the covered part, the adapter turns that into the state
+     * (`positionSlider` in `pageItem.ts` inverts it when `shutterClosedIsZero` is set).
+     */
     private readonly onWindowTap = (e: React.PointerEvent<HTMLDivElement>): void => {
         const el = this.windowRef.current;
         if (!el || this.props.model.position === undefined) {
@@ -112,8 +116,7 @@ export class PopupShutter extends React.Component<CardProps<PopupShutterModel>> 
         }
         const rect = el.getBoundingClientRect();
         const ratio = Math.max(0, Math.min(1, (e.clientY - rect.top) / rect.height));
-        const covered = Math.round(ratio * 100);
-        this.props.press(this.id, 'positionSlider', this.props.model.closedIsZero ? 100 - covered : covered);
+        this.props.press(this.id, 'positionSlider', Math.round(ratio * 100));
     };
 
     private renderTriple(
@@ -256,11 +259,15 @@ export class PopupShutter extends React.Component<CardProps<PopupShutterModel>> 
         );
     }
 
-    /** the window picture of popupShutter2: housing at the top, lamellae over the covered part */
+    /**
+     * The window picture of popupShutter2, the two pictures of the HMI (`hPosition` is a
+     * vertical slider with crop images): the open window as background, the picture of the
+     * closed shutter cropped from the top down to the covered part. Both pictures carry the
+     * housing at the top, so 0 % still shows it.
+     */
     private renderWindow(): React.JSX.Element {
         const { left, top, width, height } = SHUTTER2.window;
         const covered = this.covered;
-        const housing = 14;
         const canMove = this.props.model.position !== undefined;
         return (
             <div
@@ -274,62 +281,25 @@ export class PopupShutter extends React.Component<CardProps<PopupShutterModel>> 
                     top,
                     width,
                     height,
-                    boxSizing: 'border-box',
-                    border: '2px solid #c4c4c4',
-                    background: 'linear-gradient(180deg, #8fa6bd 0%, #6f8ba8 100%)',
+                    backgroundImage: `url(${windowOpenPicture})`,
+                    backgroundSize: `${width}px ${height}px`,
                     overflow: 'hidden',
                     cursor: canMove ? 'pointer' : 'default',
                     touchAction: 'none',
                 }}
             >
-                {/* window cross */}
                 <div
-                    style={{
-                        position: 'absolute',
-                        left: '50%',
-                        top: 0,
-                        bottom: 0,
-                        width: 3,
-                        marginLeft: -1.5,
-                        background: '#d8d8d8',
-                    }}
-                />
-                <div
-                    style={{
-                        position: 'absolute',
-                        top: '50%',
-                        left: 0,
-                        right: 0,
-                        height: 3,
-                        marginTop: -1.5,
-                        background: '#d8d8d8',
-                    }}
-                />
-                {/* the shutter covers the window from the top */}
-                <div
+                    data-shutter-cover=""
                     style={{
                         position: 'absolute',
                         left: 0,
-                        right: 0,
                         top: 0,
-                        height: `calc(${housing}px + ${covered}% - ${(covered * housing) / 100}px)`,
-                        background:
-                            'repeating-linear-gradient(180deg, #d4d4d4 0px, #d4d4d4 4px, #a8a8a8 4px, #a8a8a8 6px)',
-                        borderBottom: '3px solid #9a9a9a',
-                        boxSizing: 'border-box',
-                    }}
-                />
-                {/* housing */}
-                <div
-                    style={{
-                        position: 'absolute',
-                        left: 0,
-                        right: 0,
-                        top: 0,
-                        height: housing,
-                        background: 'linear-gradient(180deg, #e8e8e8 0%, #bcbcbc 100%)',
-                        borderBottom: '1px solid #8a8a8a',
-                        boxSizing: 'border-box',
+                        width,
+                        height: `${covered}%`,
+                        backgroundImage: `url(${shutterClosedPicture})`,
+                        backgroundSize: `${width}px ${height}px`,
+                        backgroundPosition: 'top left',
+                        transition: 'height 0.3s ease-out',
                     }}
                 />
             </div>
@@ -374,7 +344,7 @@ export class PopupShutter extends React.Component<CardProps<PopupShutterModel>> 
                         textAlign: 'center',
                     }}
                 >
-                    {model.position !== undefined ? `${model.position}%` : ''}
+                    {model.position !== undefined ? `${shownPercent(model.position, model.closedIsZero)}%` : ''}
                 </div>
                 {model.extra.map((b, i) => (
                     <IconButton

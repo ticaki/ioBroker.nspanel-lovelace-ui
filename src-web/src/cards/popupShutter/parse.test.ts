@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { DEFAULT_ICONS, initial, parseEntityUpd, parseEntityUpdateDetail } from './parse';
+import { DEFAULT_ICONS, coveredPercent, initial, parseEntityUpd, parseEntityUpdateDetail, shownPercent } from './parse';
 
 const UP = '\u{F005D}';
 const STOP = '\u{F04DB}';
@@ -90,6 +90,23 @@ describe('popupShutter2', () => {
         expect(m.extra.map(b => b.icon)).toEqual([...DEFAULT_ICONS.extra]);
         expect(m.extra.map(b => b.enabled)).toEqual([false, false, false]);
         expect(m.closedIsZero).toBe(true);
+    });
+
+    it('draws the covered part from pos1 no matter how shutterClosedIsZero is set', () => {
+        // pos1 is always the closed percent: getDetailPayload inverts the state when the option is set
+        expect(coveredPercent(0)).toBe(0);
+        expect(coveredPercent(60)).toBe(60);
+        expect(coveredPercent(100)).toBe(100);
+        expect(coveredPercent(140)).toBe(100);
+        expect(coveredPercent(-3)).toBe(0);
+    });
+
+    it('prints the percentage like the HMI: closed percent, open percent with shutterClosedIsZero', () => {
+        // HMI: zeroIsClosed == 0 -> 100 - hPosition.val, else hPosition.val (hPosition.val = 100 - pos1)
+        expect(shownPercent(60, false)).toBe(60);
+        expect(shownPercent(60, true)).toBe(40);
+        expect(shownPercent(0, true)).toBe(100);
+        expect(shownPercent(100, true)).toBe(0);
     });
 
     it('treats missing extra buttons as disabled', () => {

@@ -20,7 +20,11 @@ export interface ExtraButton {
 
 export interface PopupShutterModel {
     entityName: string;
-    /** position slider 0-100 (`popupShutter`: 100 = open, `popupShutter2`: 100 = closed); undefined = no slider */
+    /**
+     * position slider 0-100, undefined = no slider. `popupShutter`: 100 = open.
+     * `popupShutter2`: the adapter always sends the covered part (100 = closed), no matter how
+     * `shutterClosedIsZero` is set - see {@link coveredPercent} and {@link shownPercent}.
+     */
     position: number | undefined;
     /** second row text (state, e.g. "open") */
     text: string;
@@ -70,6 +74,31 @@ export function initial(): PopupShutterModel {
         closedIsZero: false,
         received: false,
     };
+}
+
+/**
+ * `popupShutter2`: the part of the window the shutter covers, 0 = open, 100 = closed. The
+ * adapter sends `pos1` as "closed percent" (`getDetailPayload` inverts the state when
+ * `shutterClosedIsZero` is set), the HMI sets its vertical slider to `100 - pos1` and crops
+ * the picture of the closed shutter from the top down to that height.
+ *
+ * @param position `position` of the model
+ */
+export function coveredPercent(position: number): number {
+    return Math.max(0, Math.min(100, Math.round(position)));
+}
+
+/**
+ * `popupShutter2`: the percentage printed below the window. The HMI shows the covered part
+ * (`100 - hPosition.val`) unless `shutterClosedIsZero` is set, then the open part - in both
+ * cases the number equals the value of the state.
+ *
+ * @param position `position` of the model
+ * @param closedIsZero `closedIsZero` of the model
+ */
+export function shownPercent(position: number, closedIsZero: boolean): number {
+    const covered = coveredPercent(position);
+    return closedIsZero ? 100 - covered : covered;
 }
 
 /** Popups get no `entityUpd`, the model stays */
