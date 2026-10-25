@@ -1,0 +1,4 @@
+# usp (emulator picture cardGrid2-usp-subpage.png): subpage with two tiles, arrow down right
+pageType~cardGrid2
+entityUpd~usp~button~bSubPrev~~2047~~~button~bSubNext~~17~~~text~7?0~~11338~4~4~shutter2~7?1~~2047~Blind~|||enable|enable|enable~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+@sleep 300

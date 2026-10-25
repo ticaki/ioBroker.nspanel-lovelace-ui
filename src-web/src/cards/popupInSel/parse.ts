@@ -41,9 +41,9 @@ export function initial(): PopupInSelModel {
     };
 }
 
-/** `\r\n` of the adapter and the literal `\r\n` of example files -> `\n` */
+/** `\r\n` of the adapter and the literal `\r\n` of example files -> `\n`; trailing breaks are dropped */
 export function normalizeEntry(text: string): string {
-    return text.replaceAll('\\r\\n', '\n').replaceAll('\r\n', '\n').replaceAll('\r', '\n');
+    return text.replaceAll('\\r\\n', '\n').replaceAll('\r\n', '\n').replaceAll('\r', '\n').replace(/\n+$/, '');
 }
 
 /** Splits the `?` separated list of the adapter, an empty field is an empty list */

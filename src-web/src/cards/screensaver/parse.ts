@@ -132,10 +132,10 @@ export function parseStatusUpdate(args: string[]): [StatusIcon, StatusIcon] {
     ];
 }
 
-/** `notify~heading~text`; both empty = clear the notification */
+/** `notify~heading~text`; both empty = clear the notification. Line breaks of the text (`\r\n`) are kept. */
 export function parseNotify(args: string[]): ScreensaverNotify | undefined {
     const heading = field(args, 0);
-    const text = field(args, 1);
+    const text = field(args, 1).replace(/\r\n?/g, '\n');
     return heading === '' && text === '' ? undefined : { heading, text };
 }
 

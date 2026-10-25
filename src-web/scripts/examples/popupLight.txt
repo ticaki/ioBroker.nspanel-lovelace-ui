@@ -1,3 +1,5 @@
-# popupLight: colour light with dimmer and colour temperature (getDetailPayload 2Sliders)
-pageType~popupLight~Schreibtischlampe~light.desk
-entityUpdateDetail~light.desk~~64512~1~75~40~enable~Farbe~Temperatur~Helligkeit~disable
+# popupLight: colour light (emu scene "Hue", popupLight-hue-colorwheel.png / popupLight-hue-ct.png):
+# switch, brightness slider and colour wheel; the palette icon switches to the colour temperature slider.
+# pageArgs: id, title (the HMI centres it and shows no icon), icon
+pageType~popupLight~alias.0.Hue~Hue~
+entityUpdateDetail~alias.0.Hue~~35690~1~50~42~enable~Farbe~Temperatur~Helligkeit~disable

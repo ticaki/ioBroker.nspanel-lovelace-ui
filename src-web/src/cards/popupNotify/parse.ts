@@ -41,9 +41,30 @@ export interface PopupNotifyModel {
 
 /** Font ids of the HMI (`fontIdText`) -> size in stage pixels */
 const FONT_SIZES: Readonly<Record<number, number>> = { 0: 24, 1: 32, 2: 32, 3: 48, 4: 80, 5: 128 };
+/** lines the adapter fits into the text box per font (`maxLineCount` in `pagePopup.ts`) */
+const MAX_LINES: Readonly<Record<number, number>> = { 0: 7, 1: 5, 2: 5, 3: 4, 4: 2, 5: 1 };
 
+/** Height of the Nextion font of a font id (24, 32, 32, 48, 80, 128), unknown ids -> 24 */
 export function fontSize(font: number): number {
     return FONT_SIZES[font] ?? 24;
+}
+
+/** Line height of the text box in stage pixels (the Nextion font height) */
+export function lineHeight(font: number): number {
+    return fontSize(font);
+}
+
+/**
+ * CSS font size that gives the cap height of the Nextion font (26 px for the 48 px font
+ * on the HMI pictures): three quarters of the font height.
+ */
+export function cssFontSize(font: number): number {
+    return Math.round(fontSize(font) * 0.75);
+}
+
+/** Lines the adapter sends at most for a font (longer texts are rotated every 3 s) */
+export function maxLines(font: number): number {
+    return MAX_LINES[font] ?? 7;
 }
 
 export function initial(): PopupNotifyModel {

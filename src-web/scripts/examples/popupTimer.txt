@@ -1,4 +1,6 @@
-# popupTimer: paused countdown (role timer, value > 0): continue + clear buttons, not editable.
-# pageArgs: entity name, icon glyph (timer), title.
-pageType~popupTimer~0?3~~Timer
-entityUpdateDetail~0?3~~2016~0?3~5~30~0~begin~~clear~Weiter~~Löschen
+# popupTimer: running countdown (role timer): stop (pause) + clear buttons, not editable
+# (emu scene "Countdown", popupTimer-running.png). pageArgs: id, title, icon glyph; the clock at the
+# bottom left is the global time.
+time~23:20
+pageType~popupTimer~alias.0.Timer~Timer~
+entityUpdateDetail~alias.0.Timer~~29582~alias.0.Timer~0~0~0~~pause~clear~~stop~clear

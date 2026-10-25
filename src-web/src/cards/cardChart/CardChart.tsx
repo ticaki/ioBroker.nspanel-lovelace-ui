@@ -3,7 +3,7 @@ import { TitleBar } from '../../components/TitleBar';
 import { color565ToCss } from '../../protocol/color';
 import { stageSize, theme } from '../../style/theme';
 import type { CardProps } from '../CardContract';
-import { barAt, highlightBar, layoutChart, PLOT, type ChartLayout, type Primitive } from './layout';
+import { barAt, highlightBar, layoutChart, plotFor, type ChartLayout, type Primitive } from './layout';
 import type { ChartModel } from './parse';
 
 interface CardChartState {
@@ -137,12 +137,13 @@ export class CardChart extends React.Component<CardProps<ChartModel>, CardChartS
         if (!bar) {
             return null;
         }
+        const plot = plotFor(model.kind);
         const value = (Math.abs(bar.value) / 10).toFixed(1);
         return (
             <text
                 data-chart-value=""
-                x={PLOT.x + PLOT.w - 4}
-                y={PLOT.y + 10}
+                x={plot.x + plot.w - 4}
+                y={plot.y + 10}
                 fill={textColor}
                 fontSize={20}
                 fontFamily={theme.fontFamily}
@@ -160,6 +161,7 @@ export class CardChart extends React.Component<CardProps<ChartModel>, CardChartS
         const { width, height } = stageSize(global.model);
         const textColor = color565ToCss(global.dim.text, theme.foreground);
         const background = color565ToCss(global.dim.background, theme.background);
+        const plot = plotFor(model.kind);
         const layout: ChartLayout = model.received ? layoutChart(model) : { primitives: [], bar: undefined };
         const highlight =
             layout.bar && this.state.selected !== -1 ? highlightBar(model, layout.bar, this.state.selected) : [];
@@ -202,8 +204,8 @@ export class CardChart extends React.Component<CardProps<ChartModel>, CardChartS
                     {model.received && model.noData ? (
                         <text
                             data-chart-nodata=""
-                            x={PLOT.x + 65 + (PLOT.w - 65) / 2}
-                            y={PLOT.y + (PLOT.h - 24) / 2}
+                            x={plot.x + 65 + (plot.w - 65) / 2}
+                            y={plot.y + (plot.h - 24) / 2}
                             fill={textColor}
                             fontSize={24}
                             fontFamily={theme.fontFamily}
@@ -217,10 +219,10 @@ export class CardChart extends React.Component<CardProps<ChartModel>, CardChartS
                     {this.renderValueBox(model, textColor, background)}
                     <rect
                         data-chart-plot=""
-                        x={PLOT.x}
-                        y={PLOT.y}
-                        width={PLOT.w}
-                        height={PLOT.h}
+                        x={plot.x}
+                        y={plot.y}
+                        width={plot.w}
+                        height={plot.h}
                         fill="transparent"
                         style={{ cursor: model.kind === 'bar' ? 'pointer' : 'default', pointerEvents: 'auto' }}
                         onClick={this.onPlotClick}

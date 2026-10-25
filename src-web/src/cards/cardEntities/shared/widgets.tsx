@@ -1,17 +1,17 @@
 import React from 'react';
 import { Icon } from '../../../components/Icon';
 import { theme } from '../../../style/theme';
-import { NEXTION_FONT_SIZE, splitIconField, type NumberOptions, type ShutterOptions } from './entityTypes';
+import { nextionFont, splitIconField, type NumberOptions, type ShutterOptions } from './entityTypes';
 import { Pressable } from './Pressable';
 
 export interface EntityIconProps {
-    /** the icon field of the entity (glyph, text or glyph + text) */
+    /** the icon field of the entity (glyph, text or glyph + text, optionally `¬<font>`) */
     icon: string;
     color: string;
-    /** size of a glyph icon in stage pixels */
-    size: number;
-    /** font size of a text icon, `size * 0.6` by default */
-    textSize?: number;
+    /** Nextion font (0-5) the HMI uses for the element when the field carries no `¬<font>` */
+    font: number;
+    /** scales glyph and text (compact rows of cardSchedule) */
+    scale?: number;
     onPress?: () => void;
     onLongPress?: () => void;
     style?: React.CSSProperties;
@@ -19,16 +19,17 @@ export interface EntityIconProps {
 
 /**
  * The icon of an entity: a glyph, a text value (role `textNotIcon`, e.g. `15.6`) or both
- * (role `combined`). Text is drawn in the icon colour.
+ * (role `combined`), drawn in the icon colour with the metrics of the Nextion font. The line
+ * box is as high as the font size (`lineHeight: 1`), a glyph is centred on it; a text that is
+ * wider than the box starts at its left edge and is cut at the right like on the HMI.
  */
 export class EntityIcon extends React.Component<EntityIconProps> {
     render(): React.JSX.Element {
-        const { icon, color, size, onPress, onLongPress, style } = this.props;
+        const { icon, color, onPress, onLongPress, style, scale = 1 } = this.props;
         const { glyph, text, font } = splitIconField(icon);
-        // a font from the item option fontSize replaces the card's sizes for glyph and text
-        const fontSize = font !== undefined ? NEXTION_FONT_SIZE[font] : undefined;
-        const glyphSize = fontSize ?? size;
-        const textSize = fontSize ?? this.props.textSize ?? Math.round(size * 0.6);
+        const nf = nextionFont(font, this.props.font);
+        const fontSize = Math.round(nf.fontSize * scale);
+        const iconSize = Math.round(nf.iconSize * scale);
         return (
             <Pressable
                 data-role="icon"
@@ -37,24 +38,25 @@ export class EntityIcon extends React.Component<EntityIconProps> {
                 style={{
                     display: 'flex',
                     alignItems: 'center',
-                    justifyContent: 'center',
+                    justifyContent: 'safe center',
                     gap: 2,
                     color,
-                    fontSize: textSize,
-                    fontWeight: 500,
+                    fontSize,
+                    fontWeight: nf.fontWeight,
                     lineHeight: 1,
                     whiteSpace: 'nowrap',
+                    overflow: 'hidden',
                     ...style,
                 }}
             >
                 {glyph !== undefined ? (
                     <Icon
                         glyph={glyph}
-                        size={glyphSize}
+                        size={iconSize}
                         color={color}
                     />
                 ) : null}
-                {text !== '' ? <span>{text}</span> : null}
+                {text !== '' ? <span style={{ flex: '0 0 auto' }}>{text}</span> : null}
             </Pressable>
         );
     }
@@ -64,15 +66,19 @@ export interface ToggleProps {
     on: boolean;
     /** called with the new state */
     onChange: (on: boolean) => void;
+    /** width of the control, 45 px on the HMI */
     width?: number;
 }
 
-/** The on/off switch at the right of a light/switch/fan row */
+/**
+ * The on/off switch at the right of a light/switch/fan row: a slim pill with a round knob
+ * that carries an `O` (off, grey) or `I` (on, blue), as the HMI draws it.
+ */
 export class Toggle extends React.Component<ToggleProps> {
     render(): React.JSX.Element {
-        const { on, onChange, width = 52 } = this.props;
-        const height = Math.round(width / 2);
-        const knob = height - 4;
+        const { on, onChange, width = 45 } = this.props;
+        const knob = Math.round(width * (25 / 45));
+        const track = Math.round(width * (17 / 45));
         return (
             <Pressable
                 data-role="toggle"
@@ -80,26 +86,42 @@ export class Toggle extends React.Component<ToggleProps> {
                 onPress={(): void => onChange(!on)}
                 style={{
                     width,
-                    height,
-                    borderRadius: height / 2,
-                    background: on ? 'rgba(26, 143, 227, 0.45)' : '#3a3a3a',
+                    height: knob,
                     position: 'relative',
                     flex: '0 0 auto',
-                    transition: 'background 0.15s',
                 }}
             >
                 <div
                     style={{
                         position: 'absolute',
-                        top: 2,
-                        left: on ? width - knob - 2 : 2,
+                        left: 0,
+                        right: 0,
+                        top: (knob - track) / 2,
+                        height: track,
+                        borderRadius: track / 2,
+                        background: on ? theme.toggleOnTrack : theme.toggleOffTrack,
+                        transition: 'background 0.15s',
+                    }}
+                />
+                <div
+                    style={{
+                        position: 'absolute',
+                        top: 0,
+                        left: on ? width - knob : 0,
                         width: knob,
                         height: knob,
                         borderRadius: knob / 2,
-                        background: on ? theme.accent : theme.muted,
+                        background: on ? theme.accent : theme.toggleOffKnob,
+                        color: on ? '#d0d0d0' : theme.toggleOffTrack,
+                        fontSize: Math.round(knob * 0.6),
+                        fontWeight: 700,
+                        lineHeight: `${knob}px`,
+                        textAlign: 'center',
                         transition: 'left 0.15s',
                     }}
-                />
+                >
+                    {on ? 'I' : 'O'}
+                </div>
             </Pressable>
         );
     }
@@ -108,15 +130,17 @@ export class Toggle extends React.Component<ToggleProps> {
 export interface ShutterButtonsProps {
     options: ShutterOptions;
     onAction: (action: 'up' | 'stop' | 'down') => void;
+    /** size of the icons (32 px Nextion font = 29 px) */
     size?: number;
+    /** width of one button cell, the HMI spaces the icons 51.5 px apart */
+    cell?: number;
 }
 
 /** The up / stop / down buttons of a shutter row */
 export class ShutterButtons extends React.Component<ShutterButtonsProps> {
     private renderButton(action: 'up' | 'stop' | 'down'): React.JSX.Element {
-        const { options, onAction, size = 30 } = this.props;
+        const { options, onAction, size = 29, cell = 51.5 } = this.props;
         const button = options[action];
-        const cell = size + 20;
         return (
             <Pressable
                 key={action}
@@ -158,7 +182,10 @@ export interface NumberSliderProps {
     options: NumberOptions;
     /** called once when the finger is lifted */
     onChange: (value: number) => void;
+    /** length of the track, 94 px on the HMI */
     width?: number;
+    /** font size of the value right of the track */
+    fontSize?: number;
 }
 
 interface NumberSliderState {
@@ -166,7 +193,10 @@ interface NumberSliderState {
     dragValue: number | undefined;
 }
 
-/** The horizontal slider of a number row; sends `number-set` when released */
+/**
+ * The horizontal slider of a number row: a thin blue line with a round knob, the value as
+ * text right of it (24 px Nextion font). Sends `number-set` when released.
+ */
 export class NumberSlider extends React.Component<NumberSliderProps, NumberSliderState> {
     private readonly trackRef = React.createRef<HTMLDivElement>();
 
@@ -210,18 +240,19 @@ export class NumberSlider extends React.Component<NumberSliderProps, NumberSlide
     };
 
     render(): React.JSX.Element {
-        const { options, width = 190 } = this.props;
+        const { options, width = 94, fontSize = 18 } = this.props;
         const value = this.state.dragValue ?? options.value;
         const ratio = (value - options.min) / (options.max - options.min);
-        const knob = 22;
-        const trackHeight = 6;
+        const knob = 13;
+        const trackHeight = 3;
+        // the touch area is taller than the drawn line
+        const hit = 30;
         return (
             <div
                 data-role="slider"
                 data-pressable=""
-                style={{ display: 'flex', alignItems: 'center', gap: 10, flex: '0 0 auto' }}
+                style={{ display: 'flex', alignItems: 'center', gap: 8, flex: '0 0 auto' }}
             >
-                <span style={{ fontSize: 16, color: theme.muted, minWidth: 34, textAlign: 'right' }}>{value}</span>
                 <div
                     ref={this.trackRef}
                     onPointerDown={this.onPointerDown}
@@ -230,7 +261,7 @@ export class NumberSlider extends React.Component<NumberSliderProps, NumberSlide
                     onPointerCancel={(): void => this.setState({ dragValue: undefined })}
                     style={{
                         width,
-                        height: knob + 8,
+                        height: hit,
                         position: 'relative',
                         touchAction: 'none',
                         cursor: 'pointer',
@@ -241,28 +272,16 @@ export class NumberSlider extends React.Component<NumberSliderProps, NumberSlide
                             position: 'absolute',
                             left: 0,
                             right: 0,
-                            top: (knob + 8 - trackHeight) / 2,
+                            top: (hit - trackHeight) / 2,
                             height: trackHeight,
-                            borderRadius: trackHeight / 2,
-                            background: '#4a4a4a',
-                        }}
-                    />
-                    <div
-                        style={{
-                            position: 'absolute',
-                            left: 0,
-                            width: `${ratio * 100}%`,
-                            top: (knob + 8 - trackHeight) / 2,
-                            height: trackHeight,
-                            borderRadius: trackHeight / 2,
                             background: theme.accent,
                         }}
                     />
                     <div
                         style={{
                             position: 'absolute',
-                            top: 4,
-                            left: `calc(${ratio * 100}% - ${knob / 2}px)`,
+                            top: (hit - knob) / 2,
+                            left: `calc(${ratio * 100}% - ${(ratio * knob).toFixed(1)}px)`,
                             width: knob,
                             height: knob,
                             borderRadius: knob / 2,
@@ -270,6 +289,12 @@ export class NumberSlider extends React.Component<NumberSliderProps, NumberSlide
                         }}
                     />
                 </div>
+                <span
+                    data-role="value"
+                    style={{ fontSize, lineHeight: 1, minWidth: 44, whiteSpace: 'nowrap' }}
+                >
+                    {this.state.dragValue ?? options.text}
+                </span>
             </div>
         );
     }
@@ -279,15 +304,15 @@ export interface TextButtonProps {
     text: string;
     onPress: () => void;
     onLongPress?: () => void;
-    /** draw a frame around the text (button) or only the text (input_sel, timer) */
-    framed?: boolean;
+    /** css colour of the text; the HMI draws button and input_sel in its blue, the timer in white */
+    color?: string;
     fontSize?: number;
 }
 
 /** A text at the right of a row that can be pressed (button, input_sel, timer) */
 export class TextButton extends React.Component<TextButtonProps> {
     render(): React.JSX.Element {
-        const { text, onPress, onLongPress, framed = false, fontSize = 20 } = this.props;
+        const { text, onPress, onLongPress, color = theme.foreground, fontSize = 18 } = this.props;
         return (
             <Pressable
                 data-role="text-button"
@@ -296,13 +321,11 @@ export class TextButton extends React.Component<TextButtonProps> {
                 style={{
                     fontSize,
                     lineHeight: 1,
-                    padding: framed ? '7px 16px' : '7px 4px',
-                    border: framed ? `2px solid ${theme.foreground}` : undefined,
-                    borderRadius: 8,
-                    maxWidth: 220,
+                    color,
+                    padding: '8px 0',
+                    maxWidth: 240,
                     whiteSpace: 'nowrap',
                     overflow: 'hidden',
-                    textOverflow: 'ellipsis',
                     flex: '0 0 auto',
                 }}
             >

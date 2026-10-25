@@ -1,4 +1,6 @@
 import type { ParseContext } from '../CardContract';
+import { color565ToCss } from '../../protocol/color';
+import { theme } from '../../style/theme';
 
 /**
  * Helpers for the `entityUpdateDetail~…` payloads of the popups. The adapter marks
@@ -46,9 +48,32 @@ export function popupEntityId(ctx: ParseContext, entityName: string): string {
     return ctx.pageArgs[0] !== undefined && ctx.pageArgs[0] !== '' ? ctx.pageArgs[0] : entityName;
 }
 
-/** The title of the popup: the name from the page arguments (`[id, title, icon]`), else the entity name */
+/** The title of the popup: the name from the page arguments (`[id, title, icon, iconColor]`), else the entity name */
 export function popupTitle(ctx: ParseContext, entityName: string): string {
     return ctx.pageArgs[1] !== undefined && ctx.pageArgs[1] !== '' ? ctx.pageArgs[1] : entityName;
+}
+
+/**
+ * The RGB565 colour of the entity the popup was opened from (`pageArgs[3]`, set by
+ * `openPopup`); `undefined` when the popup was opened without one (raw `pageOpenDetail`,
+ * `pageType` of the adapter).
+ */
+export function popupIconColor565(ctx: ParseContext): number | undefined {
+    return optionalNumber(ctx.pageArgs[3]);
+}
+
+/**
+ * The css colour of the head icon of a popup. The HMI draws it in the colour the entity had
+ * on the previous page; a popup whose detail payload carries its own icon colour shows that
+ * one (`payloadColor`, wins), the others fall back to the page arguments, then to the
+ * foreground.
+ *
+ * @param ctx the page context (`pageArgs[3]` = RGB565 of the entity)
+ * @param payloadColor RGB565 colour of the `entityUpdateDetail` payload, if the popup has one
+ */
+export function popupHeaderIconColor(ctx: ParseContext, payloadColor?: number): string {
+    const color = payloadColor ?? popupIconColor565(ctx);
+    return color !== undefined ? color565ToCss(color) : theme.foreground;
 }
 
 /** Clamps `value` to `min..max` and snaps it to `step` (relative to `min`) */

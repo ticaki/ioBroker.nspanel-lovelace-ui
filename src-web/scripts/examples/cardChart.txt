@@ -1,5 +1,5 @@
-# cardChart (bar chart) - 24 hourly values like PageChartBar.getChartDataDB builds them
-# (x10 values, label every 6 hours, colour 46500 = the yellow-green of the wiki picture)
+# cardChart (bar chart) - the scene of the emulator picture cardChart.png: 22 daily values
+# (x10), a label every 7 days, ticks 25:50:85 (the HMI cuts "2.5" to "2." and "8.5" to "8.")
 dimmode~20~100~0~65535
 pageType~cardChart
-entityUpd~Strom~button~bSubPrev~~65535~~~button~bSubNext~~65535~~~46500~W~20:40:60:80:100~25~25~25~25~25~35^6:00~22~20~20~15~17~5^12:00~1~2~3~5~88^18:00~66~50~98~45~25~30^0:00~25
+entityUpd~chart~button~bSubPrev~~1592~~~button~bSubNext~~1592~~~46500~~25:50:85~60^19~10~92~30~65~70~72~44^26~80~76~72~78~92~15~30^2~62~23~10~97~10~88~80^9

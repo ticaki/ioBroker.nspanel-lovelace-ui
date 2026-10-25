@@ -110,6 +110,24 @@ export function parseEntityUpd(args: string[], _prev: CardPowerModel, _ctx: Pars
     return { title, navigation, home, slots };
 }
 
+/**
+ * The HMI shows the two values of the house in two lines: the number and the unit
+ * (`0` / `W`). The adapter sends `<value> <unit>`, so the text is split at its last space.
+ *
+ * @param value the value as sent
+ */
+export function homeLines(value: string): string[] {
+    const text = value.trim();
+    if (text === '') {
+        return [];
+    }
+    const at = text.lastIndexOf(' ');
+    if (at <= 0) {
+        return [text];
+    }
+    return [text.slice(0, at).trimEnd(), text.slice(at + 1)];
+}
+
 /** the power card has no popups */
 export function parseEntityUpdateDetail(
     _args: string[],

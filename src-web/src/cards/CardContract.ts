@@ -19,10 +19,11 @@ export interface CardProps<M> {
     press: (id: string, action: string, value?: string | number) => void;
     /**
      * Opens a popup the way the real display does: switches to the popup page locally
-     * (`pageArgs` = `[id, title, icon]`) and sends `event,pageOpenDetail,<popup>,<id>`; the
-     * adapter answers with `entityUpdateDetail~…`. `bExit` returns to the card.
+     * (`pageArgs` = `[id, title, icon, iconColor]`, `iconColor` = RGB565 of the entity as string,
+     * empty when none) and sends `event,pageOpenDetail,<popup>,<id>`; the adapter answers with
+     * `entityUpdateDetail~…`. `bExit` returns to the card.
      */
-    openPopup: (popup: string, id: string, title?: string, icon?: string) => void;
+    openPopup: (popup: string, id: string, title?: string, icon?: string, iconColor?: number) => void;
 }
 
 export interface CardModule<M> {

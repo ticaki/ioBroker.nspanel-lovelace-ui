@@ -16,7 +16,7 @@ export interface EntityListProps {
     compact?: boolean;
     send: (event: string) => void;
     press: (id: string, action: string, value?: string | number) => void;
-    openPopup: (popup: string, id: string, title?: string, icon?: string) => void;
+    openPopup: (popup: string, id: string, title?: string, icon?: string, iconColor?: number) => void;
 }
 
 /** Title bar plus the entity rows of cardEntities / cardSchedule */
@@ -45,6 +45,7 @@ export class EntityList extends React.Component<EntityListProps> {
                 <TitleBar
                     title={model.title}
                     navigation={model.navigation}
+                    model={global.model}
                     press={press}
                 />
                 <div

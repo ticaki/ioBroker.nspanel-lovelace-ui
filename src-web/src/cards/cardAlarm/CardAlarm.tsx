@@ -17,21 +17,31 @@ const KEYS: readonly (readonly string[])[] = [
     ['', '0', 'CLR'],
 ];
 
-/** x centre of the three numpad columns (stage pixels) */
-const KEY_COLUMNS = [65, 160, 255] as const;
+/*
+ * Geometry measured on the emulator pictures of the HMI (480x320, stage pixels).
+ */
+
+/** x centre of the three numpad columns */
+const KEY_COLUMNS = [62, 154, 246] as const;
 /** y centre of the four numpad rows / action buttons */
-const KEY_ROWS = [118, 177, 236, 292] as const;
+const KEY_ROWS = [118, 176, 234, 290] as const;
 const KEY_WIDTH = 80;
 const KEY_HEIGHT = 50;
+/** the digits are drawn in the 32 px Nextion font (digit height 17 px) */
+const KEY_FONT = 24;
 
-/** area of the action buttons on the right side */
+/** area of the action buttons on the right side, the text is centred at x 367 */
 const BUTTON_LEFT = 300;
-const BUTTON_WIDTH = 176;
+const BUTTON_WIDTH = 134;
+const BUTTON_FONT = 17;
 
-/** the PIN field in the title bar */
-const PIN_BOX = { left: 90, top: 12, width: 210, height: 48 } as const;
-/** status icon right of the PIN field */
-const STATUS_ICON = { left: 322, top: 16, size: 40 } as const;
+/**
+ * The text field of the title bar: it shows the title and, while digits are entered, the
+ * code as asterisks. It is centred at x 177 between the left navigation icon and the status icon.
+ */
+const TITLE_BOX = { left: 60, width: 234 } as const;
+/** status icon right of the text field, centred at x 331 */
+const STATUS_ICON = { center: 331, size: 44 } as const;
 /** optional button in the bottom left corner */
 const CORNER = { left: 12, top: 268, size: 40 } as const;
 
@@ -41,8 +51,8 @@ interface CardAlarmState {
 }
 
 /**
- * `cardAlarm` / `cardUnlock`: a numpad on the left, the entered PIN in a field at the top,
- * the status icon next to it and up to four action buttons on the right. An action
+ * `cardAlarm` / `cardUnlock`: a numpad on the left, the title (or the entered PIN) in the
+ * text field of the title bar, the status icon next to it and up to four action buttons on the right. An action
  * button sends `event,buttonPress2,<id>,<action>,<pin>`; digits and CLR are local.
  */
 export class CardAlarm extends React.Component<CardProps<CardAlarmModel>, CardAlarmState> {
@@ -101,7 +111,7 @@ export class CardAlarm extends React.Component<CardProps<CardAlarmModel>, CardAl
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
-                            fontSize: 26,
+                            fontSize: KEY_FONT,
                             color: enabled ? theme.accent : theme.muted,
                         }}
                     >
@@ -133,7 +143,9 @@ export class CardAlarm extends React.Component<CardProps<CardAlarmModel>, CardAl
                         height: KEY_HEIGHT,
                         display: 'flex',
                         alignItems: 'center',
-                        fontSize: 17,
+                        justifyContent: 'center',
+                        textAlign: 'center',
+                        fontSize: BUTTON_FONT,
                         lineHeight: '21px',
                         color: active ? theme.accent : theme.foreground,
                         overflow: 'hidden',
@@ -171,25 +183,24 @@ export class CardAlarm extends React.Component<CardProps<CardAlarmModel>, CardAl
                 />
                 <div
                     data-pin=""
+                    data-pin-length={this.state.pin.length}
                     style={{
                         position: 'absolute',
-                        left: PIN_BOX.left,
-                        top: PIN_BOX.top,
-                        width: PIN_BOX.width,
-                        height: PIN_BOX.height,
-                        background: '#2b2b2b',
-                        borderRadius: 2,
+                        left: TITLE_BOX.left,
+                        top: theme.titleBarCenter - theme.titleBarHeight / 2,
+                        width: TITLE_BOX.width,
+                        height: theme.titleBarHeight,
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
-                        fontSize: 26,
-                        letterSpacing: 4,
+                        fontSize: theme.titleFontSize,
+                        letterSpacing: this.state.pin === '' ? undefined : 4,
                         color: theme.foreground,
                         overflow: 'hidden',
                         whiteSpace: 'nowrap',
                     }}
                 >
-                    {'*'.repeat(this.state.pin.length)}
+                    {this.state.pin === '' ? model.title : '*'.repeat(this.state.pin.length)}
                 </div>
                 {model.icon !== '' ? (
                     <div
@@ -197,8 +208,8 @@ export class CardAlarm extends React.Component<CardProps<CardAlarmModel>, CardAl
                         data-flashing={model.flashing ? '' : undefined}
                         style={{
                             position: 'absolute',
-                            left: STATUS_ICON.left,
-                            top: STATUS_ICON.top,
+                            left: STATUS_ICON.center - STATUS_ICON.size / 2,
+                            top: theme.titleBarCenter - STATUS_ICON.size / 2,
                             width: STATUS_ICON.size,
                             height: STATUS_ICON.size,
                             animation: model.flashing ? 'alarmFlash 1s step-end infinite' : undefined,

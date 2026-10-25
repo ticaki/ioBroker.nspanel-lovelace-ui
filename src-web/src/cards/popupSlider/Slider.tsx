@@ -38,7 +38,8 @@ interface SliderState {
 }
 
 /**
- * A slider in the style of the HMI: thin track, round knob. Touch and mouse via pointer
+ * A slider in the style of the HMI: thin track (4 px, blue up to the knob, grey behind it),
+ * round knob of 14 px. Touch and mouse via pointer
  * events; the value is reported with `onCommit` on release only, like the real display.
  * Works inside the CSS-scaled stage because only ratios of the bounding box are used.
  */
@@ -52,7 +53,7 @@ export class Slider extends React.Component<SliderProps, SliderState> {
     }
 
     private get knobSize(): number {
-        return this.props.knobSize ?? 16;
+        return this.props.knobSize ?? 14;
     }
 
     private get thickness(): number {
@@ -146,7 +147,8 @@ export class Slider extends React.Component<SliderProps, SliderState> {
         const centre = knob / 2 + fromStart * (length - knob);
         const fillColor = disabled ? theme.muted : (this.props.fill ?? theme.accent);
         const knobColor = disabled ? theme.muted : (this.props.knobColor ?? theme.accent);
-        const trackBg = this.props.track ?? (disabled ? '#3a3a3a' : '#4a4a4a');
+        // the HMI draws the empty part of the track light grey
+        const trackBg = this.props.track ?? (disabled ? '#4a4a4a' : theme.muted);
         const cross = Math.max(knob, thickness) + 8;
         const rootStyle: React.CSSProperties = {
             position: 'relative',
@@ -160,24 +162,25 @@ export class Slider extends React.Component<SliderProps, SliderState> {
             ? {
                   position: 'absolute',
                   left: (cross - thickness) / 2,
-                  top: knob / 2,
+                  top: 0,
                   width: thickness,
-                  height: length - knob,
+                  height: length,
                   borderRadius: thickness / 2,
                   background: trackBg,
               }
             : {
                   position: 'absolute',
                   top: (cross - thickness) / 2,
-                  left: knob / 2,
+                  left: 0,
                   height: thickness,
-                  width: length - knob,
+                  width: length,
                   borderRadius: thickness / 2,
                   background: trackBg,
               };
         // the fill goes from the minimum end to the knob
         const minAtStart = vertical === reverse;
-        const fillLength = Math.max(0, minAtStart ? centre - knob / 2 : length - knob / 2 - centre);
+        // the track runs over the whole length like on the HMI, the knob centre stays inside it
+        const fillLength = Math.max(0, minAtStart ? centre : length - centre);
         const fillStyle: React.CSSProperties | undefined =
             this.props.track !== undefined
                 ? undefined
@@ -185,7 +188,7 @@ export class Slider extends React.Component<SliderProps, SliderState> {
                   ? {
                         position: 'absolute',
                         left: (cross - thickness) / 2,
-                        top: minAtStart ? knob / 2 : centre,
+                        top: minAtStart ? 0 : centre,
                         width: thickness,
                         height: fillLength,
                         borderRadius: thickness / 2,
@@ -194,7 +197,7 @@ export class Slider extends React.Component<SliderProps, SliderState> {
                   : {
                         position: 'absolute',
                         top: (cross - thickness) / 2,
-                        left: minAtStart ? knob / 2 : centre,
+                        left: minAtStart ? 0 : centre,
                         height: thickness,
                         width: fillLength,
                         borderRadius: thickness / 2,
@@ -206,7 +209,6 @@ export class Slider extends React.Component<SliderProps, SliderState> {
             height: knob,
             borderRadius: '50%',
             background: knobColor,
-            boxShadow: '0 0 0 2px rgba(0,0,0,0.6)',
             left: vertical ? (cross - knob) / 2 : centre - knob / 2,
             top: vertical ? centre - knob / 2 : (cross - knob) / 2,
         };

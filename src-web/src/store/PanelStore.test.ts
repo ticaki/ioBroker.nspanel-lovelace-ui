@@ -31,7 +31,7 @@ function makeStore(): { store: PanelStore; sent: string[]; log: string[] } {
     const store = new PanelStore({
         registry,
         recv: p => sent.push(`recv:${p}`),
-        ack: () => sent.push('ack'),
+        ack: seq => sent.push(seq === undefined ? 'ack' : `ack:${seq}`),
         log: m => log.push(m),
     });
     return { store, sent, log };
@@ -80,6 +80,14 @@ describe('PanelStore', () => {
         store.dispatch('pageType~pageStartup');
         expect(sent).toEqual(['ack', 'recv:event,startup,55,us-p,1.0.0']);
         expect(store.getSnapshot().page.pageType).toBe('pageStartup');
+    });
+
+    it('acks a numbered frame with its seq', () => {
+        const { store, sent } = makeStore();
+        store.dispatch('pageType~cardGrid', 17);
+        store.dispatch('time~12:00', 18);
+        store.dispatch('time~12:01');
+        expect(sent).toEqual(['ack:17', 'recv:event,renderCurrentPage,cardGrid', 'ack:18', 'ack']);
     });
 
     it('acks unknown commands and pages and logs them', () => {
@@ -165,7 +173,7 @@ describe('PanelStore', () => {
         expect(sent).toEqual(['recv:event,pageOpenDetail,popupLight,light.x']);
         let page = store.getSnapshot().page;
         expect(page.pageType).toBe('popupLight');
-        expect(page.pageArgs).toEqual(['light.x', 'Lamp', '']);
+        expect(page.pageArgs).toEqual(['light.x', 'Lamp', '', '']);
         // the detail payload goes to the popup, not to the card
         store.dispatch('entityUpdateDetail~light.x~~65535~1~50~disable~disable');
         expect(store.getSnapshot().page.pageType).toBe('popupLight');
@@ -181,7 +189,7 @@ describe('PanelStore', () => {
         store.dispatch('pageType~cardGrid');
         store.send('event,pageOpenDetail,popupInSel,sel.x');
         expect(store.getSnapshot().page.pageType).toBe('popupInSel');
-        expect(store.getSnapshot().page.pageArgs).toEqual(['sel.x', '', '']);
+        expect(store.getSnapshot().page.pageArgs).toEqual(['sel.x', '', '', '']);
         store.send('event,pageOpenDetail,popupInSel,sel.x,bModeNext,2');
         expect(store.getSnapshot().page.pageType).toBe('popupInSel');
         expect(sent.filter(s => s.includes('pageOpenDetail')).length).toBe(2);
@@ -189,6 +197,124 @@ describe('PanelStore', () => {
         store.dispatch('pageType~screensaver');
         store.press('popupInSel', 'bExit');
         expect(store.getSnapshot().page.pageType).toBe('screensaver');
+    });
+
+    it('stores the icon colour of the entity as pageArgs[3]', () => {
+        const { store } = makeStore();
+        store.dispatch('pageType~cardGrid');
+        store.openPopup('popupSlider', 'number.x', 'Zahl', '\u{F0374}', 2047);
+        expect(store.getSnapshot().page.pageArgs).toEqual(['number.x', 'Zahl', '\u{F0374}', '2047']);
+        store.press('number.x', 'bExit');
+        // no colour -> empty field, the popups fall back to the foreground
+        store.openPopup('popupShutter2', 'shutter.x', 'Rollladen', '\u{F011B}');
+        expect(store.getSnapshot().page.pageArgs).toEqual(['shutter.x', 'Rollladen', '\u{F011B}', '']);
+        store.press('shutter.x', 'bExit');
+        store.openPopup('popupShutter2', 'shutter.x', 'Rollladen', '\u{F011B}', Number.NaN);
+        expect(store.getSnapshot().page.pageArgs[3]).toBe('');
+    });
+
+    describe('screensaver wake and re-dim', () => {
+        function sleepingStore(timeout = 20): ReturnType<typeof makeStore> {
+            const made = makeStore();
+            made.store.dispatch('dimmode~10~100~6371~65535~1');
+            made.store.dispatch(`timeout~${timeout}`);
+            made.store.dispatch('pageType~screensaver');
+            made.sent.length = 0;
+            return made;
+        }
+
+        it('starts dimmed and is woken by a tap, which is sent as a normal screensaver press', () => {
+            const { store, sent } = sleepingStore();
+            expect(store.getSnapshot().global.sleeping).toBe(true);
+            expect(store.getSnapshot().global.awake).toBe(false);
+            expect(store.brightness).toBe(10);
+            store.press('screensaver', 'bExit', 1);
+            expect(sent).toEqual(['recv:event,buttonPress2,screensaver,bExit,1']);
+            expect(store.getSnapshot().global.awake).toBe(true);
+            expect(store.brightness).toBe(100);
+        });
+
+        it('is woken by a swipe as well', () => {
+            const { store } = sleepingStore();
+            store.press('screensaver', 'swipeLeft');
+            expect(store.getSnapshot().global.awake).toBe(true);
+            expect(store.brightness).toBe(100);
+        });
+
+        it('dims again after the timeout without sending anything', () => {
+            const { store, sent } = sleepingStore(20);
+            store.press('screensaver', 'bExit', 1);
+            sent.length = 0;
+            vi.advanceTimersByTime(19_999);
+            expect(store.brightness).toBe(100);
+            vi.advanceTimersByTime(1);
+            expect(store.getSnapshot().global.awake).toBe(false);
+            expect(store.brightness).toBe(10);
+            expect(sent).toEqual([]);
+        });
+
+        it('restarts the re-dim timer with every interaction', () => {
+            const { store } = sleepingStore(20);
+            store.press('screensaver', 'bExit', 1);
+            vi.advanceTimersByTime(15_000);
+            store.press('light.x', 'button');
+            vi.advanceTimersByTime(15_000);
+            expect(store.brightness).toBe(100);
+            // a touch of the stage (pointer down) counts too
+            store.touch();
+            vi.advanceTimersByTime(19_000);
+            expect(store.brightness).toBe(100);
+            vi.advanceTimersByTime(1_000);
+            expect(store.brightness).toBe(10);
+        });
+
+        it('a touch alone does not wake the dimmed screensaver, the event of the gesture does', () => {
+            const { store } = sleepingStore();
+            store.touch();
+            expect(store.getSnapshot().global.awake).toBe(false);
+            store.press('screensaver', 'bExit', 1);
+            expect(store.getSnapshot().global.awake).toBe(true);
+        });
+
+        it('never dims again with timeout 0', () => {
+            const { store } = sleepingStore(0);
+            store.press('screensaver', 'bExit', 1);
+            vi.advanceTimersByTime(3_600_000);
+            expect(store.getSnapshot().global.awake).toBe(true);
+            expect(store.brightness).toBe(100);
+            expect(vi.getTimerCount()).toBe(0);
+        });
+
+        it('takes a new timeout while awake', () => {
+            const { store } = sleepingStore(20);
+            store.press('screensaver', 'bExit', 1);
+            store.dispatch('timeout~5');
+            vi.advanceTimersByTime(5_000);
+            expect(store.brightness).toBe(10);
+        });
+
+        it('leaves the awake state and the timer behind on a page change', () => {
+            const { store } = sleepingStore(20);
+            store.press('screensaver', 'bExit', 1);
+            store.dispatch('pageType~cardGrid');
+            expect(store.getSnapshot().global.sleeping).toBe(false);
+            expect(store.getSnapshot().global.awake).toBe(false);
+            expect(store.brightness).toBe(100);
+            // only the sleep timer of the card is left
+            expect(vi.getTimerCount()).toBe(1);
+            store.dispatch('pageType~screensaver');
+            expect(store.getSnapshot().global.awake).toBe(false);
+            expect(store.brightness).toBe(10);
+            expect(vi.getTimerCount()).toBe(0);
+        });
+
+        it('clears the re-dim timer on destroy', () => {
+            const { store } = sleepingStore(20);
+            store.press('screensaver', 'bExit', 1);
+            expect(vi.getTimerCount()).toBe(1);
+            store.destroy();
+            expect(vi.getTimerCount()).toBe(0);
+        });
     });
 
     it('closes a popup with bExit on timeout and leaves popupNotify alone', () => {

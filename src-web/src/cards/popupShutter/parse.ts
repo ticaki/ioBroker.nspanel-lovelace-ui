@@ -77,11 +77,31 @@ export function parseEntityUpd(_args: string[], prev: PopupShutterModel, _ctx: P
     return prev;
 }
 
-function triple(args: string[], iconOffset: number, statusOffset: number): ButtonTriple {
+/**
+ * The adapter sends no icons for the buttons (the fields are empty on the emulator), the
+ * HMI draws its own: arrow-up / stop / arrow-down for the position, arrow-top-right /
+ * stop / arrow-bottom-left for the tilt and window-shutter-open / fraction-one-half /
+ * window-shutter for the three extra buttons of popupShutter2.
+ */
+export const DEFAULT_ICONS = {
+    /** arrow-up, stop, arrow-down (glyphs of `icon_mapping.ts`) */
+    position: ['\u{e05c}', '\u{e4da}', '\u{e044}'] as const,
+    /** arrow-top-right, stop, arrow-bottom-left */
+    tilt: ['\u{e05b}', '\u{e4da}', '\u{e041}'] as const,
+    /** window-shutter-open, fraction-one-half, window-shutter */
+    extra: ['\u{f11d}', '\u{f991}', '\u{f11b}'] as const,
+};
+
+function triple(
+    args: string[],
+    iconOffset: number,
+    statusOffset: number,
+    defaults: readonly [string, string, string],
+): ButtonTriple {
     const icons: [string, string, string] = [
-        field(args, iconOffset),
-        field(args, iconOffset + 1),
-        field(args, iconOffset + 2),
+        field(args, iconOffset) || defaults[0],
+        field(args, iconOffset + 1) || defaults[1],
+        field(args, iconOffset + 2) || defaults[2],
     ];
     return {
         icons,
@@ -115,18 +135,22 @@ export function parseEntityUpdateDetail(
         text: field(args, 2),
         positionLabel: field(args, 3),
         icon: field(args, 4),
-        buttons: triple(args, 5, 8),
+        buttons: triple(args, 5, 8, DEFAULT_ICONS.position),
         received: true,
     };
     if (ctx.pageType === 'popupShutter2') {
-        const extra = (o: number): ExtraButton => ({
-            icon: field(args, o),
+        const extra = (o: number, fallback: string): ExtraButton => ({
+            icon: field(args, o) || fallback,
             color: optionalColor(args[o + 1]),
-            enabled: isEnabled(args[o + 2]) && field(args, o) !== '',
+            enabled: isEnabled(args[o + 2]),
         });
         return {
             ...base,
-            extra: [extra(11), extra(14), extra(17)],
+            extra: [
+                extra(11, DEFAULT_ICONS.extra[0]),
+                extra(14, DEFAULT_ICONS.extra[1]),
+                extra(17, DEFAULT_ICONS.extra[2]),
+            ],
             shutterType: field(args, 20) || 'shutter',
             closedIsZero: field(args, 21) === '1',
         };
@@ -134,7 +158,7 @@ export function parseEntityUpdateDetail(
     return {
         ...base,
         tiltLabel: field(args, 11),
-        tiltButtons: triple(args, 12, 15),
+        tiltButtons: triple(args, 12, 15, DEFAULT_ICONS.tilt),
         tilt: optionalNumber(args[18]),
     };
 }

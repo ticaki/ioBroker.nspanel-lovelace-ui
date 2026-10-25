@@ -10,7 +10,11 @@
  * Needs a running `npm start` (vite dev server) or `vite preview` on the port and the
  * globally installed puppeteer (`npm i -g puppeteer`). One payload per line, empty lines
  * and lines starting with # are skipped. A line `@sleep <ms>` waits, `@touch` triggers a
- * touch on the stage (resets the screensaver timeout, enables audio).
+ * touch on the stage (resets the screensaver timeout, enables audio), `@click <selector>`
+ * taps the first element matching the css selector inside the stage (e.g. a tile or the
+ * icon of an entity row - the frontend then opens the popup itself with the entity colour,
+ * the payload lines after it play the answer of the adapter). `\r` and `\n` in a payload
+ * stand for the line breaks the adapter sends (e.g. in `notify~…`).
  */
 import { createRequire } from 'node:module';
 import { execSync } from 'node:child_process';
@@ -68,6 +72,15 @@ try {
     for (const line of lines) {
         if (line.startsWith('@sleep')) {
             await new Promise(r => setTimeout(r, Number(line.split(/\s+/)[1] ?? '100')));
+        } else if (line.startsWith('@click ')) {
+            const selector = line.slice('@click '.length).trim();
+            const handle = await page.$(`[data-stage] ${selector}`);
+            if (!handle) {
+                throw new Error(`@click: no element for ${selector}`);
+            }
+            // a real pointer sequence: Pressable listens to pointerdown/pointerup
+            await handle.click();
+            await new Promise(r => setTimeout(r, 100));
         } else if (line === '@touch') {
             await page.evaluate(() => {
                 document
@@ -75,7 +88,7 @@ try {
                     ?.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }));
             });
         } else {
-            await page.evaluate(raw => window.__panel.dispatch(raw), line);
+            await page.evaluate(raw => window.__panel.dispatch(raw), line.replace(/\\r/g, '\r').replace(/\\n/g, '\n'));
         }
     }
     await new Promise(r => setTimeout(r, waitMs));

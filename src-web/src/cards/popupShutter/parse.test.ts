@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { initial, parseEntityUpd, parseEntityUpdateDetail } from './parse';
+import { DEFAULT_ICONS, initial, parseEntityUpd, parseEntityUpdateDetail } from './parse';
 
 const UP = '\u{F005D}';
 const STOP = '\u{F04DB}';
@@ -53,6 +53,16 @@ describe('popupShutter', () => {
         const m = initial();
         expect(parseEntityUpd(['x'], m, ctx)).toBe(m);
     });
+
+    it('uses the icons of the HMI when the adapter sends none (emu recording)', () => {
+        const payload = 'entityUpdateDetail~4?2~52~~~~~~~enable~enable~enable~~~~~enable~enable~enable~49';
+        const m = parseEntityUpdateDetail(args(payload), initial(), ctx);
+        expect(m.buttons.icons).toEqual([...DEFAULT_ICONS.position]);
+        expect(m.buttons.enabled).toEqual([true, true, true]);
+        expect(m.tiltButtons.icons).toEqual([...DEFAULT_ICONS.tilt]);
+        expect(m.tilt).toBe(49);
+        expect(m.positionLabel).toBe('');
+    });
 });
 
 describe('popupShutter2', () => {
@@ -72,6 +82,14 @@ describe('popupShutter2', () => {
         expect(m.shutterType).toBe('shutter');
         expect(m.closedIsZero).toBe(true);
         expect(m.tilt).toBeUndefined();
+    });
+
+    it('shows the default icons of the HMI for disabled extra buttons (emu recording)', () => {
+        const payload = 'entityUpdateDetail~4?3~60~~~~~~~enable~enable~enable~~~disable~~~disable~~~disable~shutter~1';
+        const m = parseEntityUpdateDetail(args(payload), initial(), ctx);
+        expect(m.extra.map(b => b.icon)).toEqual([...DEFAULT_ICONS.extra]);
+        expect(m.extra.map(b => b.enabled)).toEqual([false, false, false]);
+        expect(m.closedIsZero).toBe(true);
     });
 
     it('treats missing extra buttons as disabled', () => {

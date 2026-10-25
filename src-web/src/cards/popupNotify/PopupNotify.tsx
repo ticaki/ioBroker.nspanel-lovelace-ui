@@ -3,18 +3,22 @@ import { Icon } from '../../components/Icon';
 import { color565ToCss } from '../../protocol/color';
 import { theme } from '../../style/theme';
 import type { CardProps } from '../CardContract';
-import { fontSize, type NotifyButton, type PopupNotifyModel } from './parse';
+import { CloseButton } from '../popupSlider/PopupHeader';
+import { cssFontSize, lineHeight, maxLines, type NotifyButton, type PopupNotifyModel } from './parse';
 
-/** height of the heading row with the X */
-const HEAD_HEIGHT = 64;
-/** height of the button row at the bottom */
-const BUTTON_HEIGHT = 56;
-const MARGIN_X = 24;
-const ICON_SIZE = 96;
+/** geometry of the HMI (stage pixels) */
+const HEADING = { left: 24, centerY: 42, fontSize: 24 };
+const ICON = { centerX: 76, centerY: 152, size: 64 };
+/** the text box: next to the icon, from the left margin without one */
+const TEXT = { top: 74, leftWithIcon: 138, left: 24, right: 424 };
+/** three buttons of 160 px, the text left aligned like on the HMI */
+const BUTTON = { width: 160, centerY: 285, height: 44, paddingLeft: 25, fontSize: 24 };
 
 /**
- * The notification popup: heading (coloured), the X, a multi line text (font id of the
- * HMI, optional icon at the left) and up to three buttons at the bottom.
+ * The notification popup like the HMI: small heading at the top left (coloured), the X,
+ * the icon at the left, the text in the font of the payload (up to the line count the
+ * adapter uses for that font; longer texts are rotated by the adapter) and up to three
+ * buttons at the bottom.
  *
  * Events: X -> `event,buttonPress2,popupNotify,bExit`; buttons ->
  * `event,buttonPress2,<id>,notifyAction,button1|button2|button3`. The timeout of the
@@ -78,12 +82,18 @@ export class PopupNotify extends React.Component<CardProps<PopupNotifyModel>> {
                 key={index}
                 data-button={`button${index + 1}`}
                 style={{
-                    flex: '1 1 0',
+                    position: 'absolute',
+                    left: index * BUTTON.width,
+                    width: BUTTON.width,
+                    top: BUTTON.centerY - BUTTON.height / 2,
+                    height: BUTTON.height,
+                    boxSizing: 'border-box',
+                    paddingLeft: BUTTON.paddingLeft,
+                    paddingRight: 4,
                     display: 'flex',
                     alignItems: 'center',
-                    justifyContent: 'center',
                     color: color565ToCss(button.color),
-                    fontSize: 28,
+                    fontSize: BUTTON.fontSize,
                     whiteSpace: 'nowrap',
                     overflow: 'hidden',
                     textOverflow: 'ellipsis',
@@ -104,9 +114,9 @@ export class PopupNotify extends React.Component<CardProps<PopupNotifyModel>> {
 
     render(): React.JSX.Element {
         const { model, ctx } = this.props;
-        const size = fontSize(model.font);
         const hasIcon = model.icon !== '';
-        const textColor = color565ToCss(model.textColor);
+        const size = cssFontSize(model.font);
+        const line = lineHeight(model.font);
         return (
             <div
                 data-page={ctx.pageType}
@@ -117,14 +127,13 @@ export class PopupNotify extends React.Component<CardProps<PopupNotifyModel>> {
                     data-heading=""
                     style={{
                         position: 'absolute',
-                        top: 0,
-                        left: MARGIN_X,
-                        right: HEAD_HEIGHT,
-                        height: HEAD_HEIGHT,
-                        display: 'flex',
-                        alignItems: 'center',
+                        top: HEADING.centerY - 16,
+                        left: HEADING.left,
+                        right: 90,
+                        height: 32,
+                        lineHeight: '32px',
                         color: color565ToCss(model.headingColor),
-                        fontSize: 28,
+                        fontSize: HEADING.fontSize,
                         whiteSpace: 'nowrap',
                         overflow: 'hidden',
                         textOverflow: 'ellipsis',
@@ -132,36 +141,16 @@ export class PopupNotify extends React.Component<CardProps<PopupNotifyModel>> {
                 >
                     {model.heading}
                 </div>
-                <div
-                    data-close=""
-                    style={{
-                        position: 'absolute',
-                        top: 8,
-                        right: 8,
-                        width: 48,
-                        height: 48,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        cursor: 'pointer',
-                    }}
-                    onClick={this.exit}
-                >
-                    <Icon
-                        name="close"
-                        size={32}
-                        color={theme.foreground}
-                    />
-                </div>
+                <CloseButton onClose={this.exit} />
                 {hasIcon ? (
                     <div
                         data-icon=""
                         style={{
                             position: 'absolute',
-                            left: MARGIN_X,
-                            top: HEAD_HEIGHT,
-                            bottom: BUTTON_HEIGHT,
-                            width: ICON_SIZE,
+                            left: ICON.centerX - ICON.size / 2,
+                            top: ICON.centerY - ICON.size / 2,
+                            width: ICON.size,
+                            height: ICON.size,
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
@@ -169,7 +158,7 @@ export class PopupNotify extends React.Component<CardProps<PopupNotifyModel>> {
                     >
                         <Icon
                             glyph={model.icon}
-                            size={ICON_SIZE}
+                            size={ICON.size}
                             color={color565ToCss(model.iconColor)}
                         />
                     </div>
@@ -178,16 +167,13 @@ export class PopupNotify extends React.Component<CardProps<PopupNotifyModel>> {
                     data-text=""
                     style={{
                         position: 'absolute',
-                        left: hasIcon ? MARGIN_X + ICON_SIZE + 20 : MARGIN_X,
-                        right: MARGIN_X,
-                        top: HEAD_HEIGHT,
-                        bottom: BUTTON_HEIGHT,
-                        display: 'flex',
-                        flexDirection: 'column',
-                        justifyContent: hasIcon ? 'center' : 'flex-start',
-                        color: textColor,
+                        left: hasIcon ? TEXT.leftWithIcon : TEXT.left,
+                        width: TEXT.right - (hasIcon ? TEXT.leftWithIcon : TEXT.left),
+                        top: TEXT.top,
+                        height: line * maxLines(model.font),
+                        color: color565ToCss(model.textColor),
                         fontSize: size,
-                        lineHeight: `${Math.round(size * 1.2)}px`,
+                        lineHeight: `${line}px`,
                         whiteSpace: 'pre-wrap',
                         overflowWrap: 'anywhere',
                         overflow: 'hidden',
@@ -195,20 +181,7 @@ export class PopupNotify extends React.Component<CardProps<PopupNotifyModel>> {
                 >
                     {model.text}
                 </div>
-                <div
-                    data-buttons=""
-                    style={{
-                        position: 'absolute',
-                        left: MARGIN_X,
-                        right: MARGIN_X,
-                        bottom: 0,
-                        height: BUTTON_HEIGHT,
-                        display: 'flex',
-                        alignItems: 'stretch',
-                    }}
-                >
-                    {model.buttons.map((b, i) => this.renderButton(b, i))}
-                </div>
+                <div data-buttons="">{model.buttons.map((b, i) => this.renderButton(b, i))}</div>
             </div>
         );
     }

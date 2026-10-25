@@ -3,11 +3,11 @@ import { Icon } from '../../components/Icon';
 import { color565ToCss, color565ToRgb } from '../../protocol/color';
 import { theme } from '../../style/theme';
 import type { CardProps } from '../CardContract';
-import { popupEntityId, popupTitle } from '../popupSlider/fields';
-import { PopupHeader, POPUP_HEADER_HEIGHT } from '../popupSlider/PopupHeader';
-import { Slider } from '../popupSlider/Slider';
+import { popupEntityId, popupIconColor565, popupTitle } from '../popupSlider/fields';
+import { PopupHeader, TAP_SIZE } from '../popupSlider/PopupHeader';
 import { Toggle } from '../popupSlider/Toggle';
 import { ColorWheel, WHEEL_SIZE } from './ColorWheel';
+import { LightSlider } from './LightSlider';
 import type { PopupLightModel } from './parse';
 
 interface PopupLightState {
@@ -15,14 +15,26 @@ interface PopupLightState {
     showWheel: boolean;
 }
 
-const LEFT = 20;
-const SLIDER_LENGTH = 380;
-/** 0 = cold (blue) … 100 = warm (orange), see `getSliderCTFromValue` in the adapter */
-const CT_TRACK = 'linear-gradient(90deg, #7fb2ff 0%, #ffffff 50%, #ffb347 100%)';
+/** positions of the HMI (stage pixels) */
+const TOGGLE_POS = { left: 16, top: 90 };
+const PALETTE_CENTER = { x: 38, y: 172 };
+const EFFECTS_CENTER = { x: 38, y: 240 };
+const BRIGHTNESS_POS = { left: 88, top: 64 };
+const CT_POS = { left: 262, top: 64 };
+const WHEEL_CENTER = { x: 313, y: 185 };
+/**
+ * Colour temperature slider: 0 (cold) at the bottom, 100 (warm) at the top like
+ * `getSliderCTFromValue`; the picture of the HMI runs from a cool grey-blue at the top
+ * to orange and red at the bottom.
+ */
+const CT_TRACK = 'linear-gradient(180deg, #aeb6c8 0%, #c4b9ac 35%, #cf9a5c 65%, #d46a10 88%, #e02000 100%)';
 
 /**
  * `popupLight` / `popupLightNew`: switch, brightness slider, colour temperature slider and
- * colour wheel, each only when the adapter enabled it. Events:
+ * colour wheel, each only when the adapter enabled it. Layout like the HMI: the title is
+ * centred, the switch sits at the left, the sliders are vertical (100 x 240) and the
+ * colour wheel (160 px) replaces the colour temperature slider; the palette icon below
+ * the switch toggles between both. Events:
  * `OnOff,1|0`, `brightnessSlider,<0-100>`, `colorTempSlider,<0-100>`, `colorWheel,x|y|160`,
  * `bExit` for the X and `pageOpenDetail,popupInSel,<id>` for the effect list button.
  */
@@ -36,58 +48,36 @@ export class PopupLight extends React.Component<CardProps<PopupLightModel>, Popu
         return popupEntityId(this.props.ctx, this.props.model.entityName);
     }
 
-    private renderLabel(text: string, top: number, left = LEFT): React.JSX.Element {
-        return (
-            <div
-                style={{
-                    position: 'absolute',
-                    left,
-                    top,
-                    fontSize: 18,
-                    lineHeight: '24px',
-                    color: theme.foreground,
-                    whiteSpace: 'nowrap',
-                }}
-            >
-                {text}
-            </div>
-        );
-    }
-
-    private renderSliderRow(
-        name: string,
+    private renderIconButton(
+        key: string,
+        dataAttr: string,
+        centre: { x: number; y: number },
         iconName: string,
-        top: number,
-        value: number,
-        onCommit: (v: number) => void,
-        track?: string,
+        color: string,
+        onClick: (() => void) | undefined,
     ): React.JSX.Element {
+        const attrs: Record<string, string> = { [dataAttr]: '' };
         return (
             <div
+                key={key}
+                {...attrs}
+                onClick={onClick}
                 style={{
                     position: 'absolute',
-                    left: LEFT,
-                    top,
+                    left: centre.x - TAP_SIZE / 2,
+                    top: centre.y - TAP_SIZE / 2,
+                    width: TAP_SIZE,
+                    height: TAP_SIZE,
                     display: 'flex',
                     alignItems: 'center',
-                    gap: 12,
+                    justifyContent: 'center',
+                    cursor: onClick ? 'pointer' : 'default',
                 }}
             >
                 <Icon
                     name={iconName}
-                    size={28}
-                    color={theme.foreground}
-                />
-                <Slider
-                    name={name}
-                    value={value}
-                    min={0}
-                    max={100}
-                    length={SLIDER_LENGTH}
-                    track={track}
-                    trackThickness={track ? 10 : 4}
-                    knobColor={track ? '#ffffff' : undefined}
-                    onCommit={onCommit}
+                    size={26}
+                    color={color}
                 />
             </div>
         );
@@ -96,43 +86,18 @@ export class PopupLight extends React.Component<CardProps<PopupLightModel>, Popu
     render(): React.JSX.Element {
         const { model, ctx, press } = this.props;
         const id = this.id;
-        const color = model.color !== undefined ? color565ToCss(model.color) : theme.foreground;
+        const sliderColor = model.color !== undefined ? color565ToCss(model.color) : undefined;
         const hasCt = model.colorTemp !== undefined;
         const hasBrightness = model.brightness !== undefined;
         const wheel = model.hueMode && (this.state.showWheel || !hasCt);
         const canSwitchView = model.hueMode && hasCt;
         const elements: React.JSX.Element[] = [];
 
-        // row below the header: colour label + palette (left), effect list and switch (right)
-        const rowTop = POPUP_HEADER_HEIGHT + 10;
-        if (model.hueMode) {
-            elements.push(
-                <div
-                    key="color"
-                    style={{ position: 'absolute', left: LEFT, top: rowTop, display: 'flex', alignItems: 'center' }}
-                >
-                    <span style={{ fontSize: 18, color: theme.foreground, marginRight: 16 }}>{model.colorLabel}</span>
-                    <div
-                        data-palette=""
-                        onClick={
-                            canSwitchView ? (): void => this.setState({ showWheel: !this.state.showWheel }) : undefined
-                        }
-                        style={{ cursor: canSwitchView ? 'pointer' : 'default', display: 'flex' }}
-                    >
-                        <Icon
-                            name="palette"
-                            size={28}
-                            color={wheel || !canSwitchView ? theme.foreground : theme.accent}
-                        />
-                    </div>
-                </div>,
-            );
-        }
         if (model.power !== undefined) {
             elements.push(
                 <div
                     key="power"
-                    style={{ position: 'absolute', right: LEFT, top: rowTop - 2 }}
+                    style={{ position: 'absolute', left: TOGGLE_POS.left, top: TOGGLE_POS.top }}
                 >
                     <Toggle
                         name="power"
@@ -142,41 +107,61 @@ export class PopupLight extends React.Component<CardProps<PopupLightModel>, Popu
                 </div>,
             );
         }
+        if (model.hueMode) {
+            elements.push(
+                this.renderIconButton(
+                    'palette',
+                    'data-palette',
+                    PALETTE_CENTER,
+                    'palette',
+                    theme.foreground,
+                    canSwitchView ? (): void => this.setState({ showWheel: !this.state.showWheel }) : undefined,
+                ),
+            );
+        }
         if (model.effectList) {
             elements.push(
+                this.renderIconButton(
+                    'effects',
+                    'data-effects',
+                    EFFECTS_CENTER,
+                    'playlist-play',
+                    theme.foreground,
+                    () =>
+                        this.props.openPopup(
+                            'popupInSel',
+                            id,
+                            popupTitle(ctx, model.entityName),
+                            model.icon,
+                            model.color ?? popupIconColor565(ctx),
+                        ),
+                ),
+            );
+        }
+        if (hasBrightness) {
+            elements.push(
                 <div
-                    key="effects"
-                    data-effects=""
-                    onClick={(): void =>
-                        this.props.openPopup('popupInSel', id, popupTitle(ctx, model.entityName), model.icon)
-                    }
-                    style={{
-                        position: 'absolute',
-                        right: LEFT + 76,
-                        top: rowTop - 6,
-                        width: 40,
-                        height: 40,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        cursor: 'pointer',
-                    }}
+                    key="brightness"
+                    style={{ position: 'absolute', left: BRIGHTNESS_POS.left, top: BRIGHTNESS_POS.top }}
                 >
-                    <Icon
-                        name="playlist-play"
-                        size={30}
-                        color={theme.foreground}
+                    <LightSlider
+                        name="brightness"
+                        value={model.brightness ?? 0}
+                        fill={sliderColor}
+                        onCommit={(v): void => press(id, 'brightnessSlider', v)}
                     />
                 </div>,
             );
         }
-
         if (wheel) {
-            const wheelTop = POPUP_HEADER_HEIGHT + 4;
             elements.push(
                 <div
                     key="wheel"
-                    style={{ position: 'absolute', left: (480 - WHEEL_SIZE) / 2, top: wheelTop }}
+                    style={{
+                        position: 'absolute',
+                        left: WHEEL_CENTER.x - WHEEL_SIZE / 2,
+                        top: WHEEL_CENTER.y - WHEEL_SIZE / 2,
+                    }}
                 >
                     <ColorWheel
                         color={model.color !== undefined ? color565ToRgb(model.color) : undefined}
@@ -184,39 +169,20 @@ export class PopupLight extends React.Component<CardProps<PopupLightModel>, Popu
                     />
                 </div>,
             );
-            if (hasBrightness) {
-                const top = wheelTop + WHEEL_SIZE + 6;
-                elements.push(this.renderLabel(model.brightnessLabel, top));
-                elements.push(
-                    this.renderSliderRow('brightness', 'brightness-6', top + 28, model.brightness ?? 0, v =>
-                        press(id, 'brightnessSlider', v),
-                    ),
-                );
-            }
-        } else {
-            let top = POPUP_HEADER_HEIGHT + (model.hueMode || model.power !== undefined ? 50 : 10);
-            if (hasCt) {
-                elements.push(this.renderLabel(model.colorTempLabel, top));
-                elements.push(
-                    this.renderSliderRow(
-                        'colorTemp',
-                        'thermometer',
-                        top + 30,
-                        model.colorTemp ?? 0,
-                        v => press(id, 'colorTempSlider', v),
-                        CT_TRACK,
-                    ),
-                );
-                top += 86;
-            }
-            if (hasBrightness) {
-                elements.push(this.renderLabel(model.brightnessLabel, top));
-                elements.push(
-                    this.renderSliderRow('brightness', 'brightness-6', top + 30, model.brightness ?? 0, v =>
-                        press(id, 'brightnessSlider', v),
-                    ),
-                );
-            }
+        } else if (hasCt) {
+            elements.push(
+                <div
+                    key="colorTemp"
+                    style={{ position: 'absolute', left: CT_POS.left, top: CT_POS.top }}
+                >
+                    <LightSlider
+                        name="colorTemp"
+                        value={model.colorTemp ?? 0}
+                        track={CT_TRACK}
+                        onCommit={(v): void => press(id, 'colorTempSlider', v)}
+                    />
+                </div>,
+            );
         }
 
         return (
@@ -226,13 +192,10 @@ export class PopupLight extends React.Component<CardProps<PopupLightModel>, Popu
             >
                 <PopupHeader
                     title={popupTitle(ctx, model.entityName)}
-                    icon={model.icon}
-                    iconColor={color}
+                    titleAlign="center"
                     onClose={(): void => press(id, 'bExit')}
                 />
-                {elements.map((el, i) => (
-                    <React.Fragment key={el.key ?? i}>{el}</React.Fragment>
-                ))}
+                {elements}
             </div>
         );
     }

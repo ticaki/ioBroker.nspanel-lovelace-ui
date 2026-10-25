@@ -3,34 +3,60 @@ import { Icon } from '../../components/Icon';
 import { color565ToCss } from '../../protocol/color';
 import { theme } from '../../style/theme';
 import type { CardProps } from '../CardContract';
-import { popupEntityId, popupTitle } from '../popupSlider/fields';
-import { PopupHeader, POPUP_HEADER_HEIGHT } from '../popupSlider/PopupHeader';
+import { popupEntityId, popupHeaderIconColor, popupTitle } from '../popupSlider/fields';
+import { PopupHeader, POPUP_FONT_SIZE, TAP_SIZE } from '../popupSlider/PopupHeader';
 import { Slider } from '../popupSlider/Slider';
 import { Toggle } from '../popupSlider/Toggle';
 import type { PopupFanModel } from './parse';
 
 interface PopupFanState {
-    /** the mode list is open */
-    listOpen: boolean;
+    /** page of the mode buttons (6 per page) */
+    page: number;
 }
 
-const LEFT = 20;
-const SLIDER_LENGTH = 380;
+/** geometry of the HMI (stage pixels) */
+const TOGGLE_POS = { left: 373, top: 92 };
+const SPEED_LABEL = { left: 43, centerY: 120 };
+const SLIDER = { left: 50, length: 320, centerY: 160 };
+/** the mode buttons use the 3 x n grid of the HMI (columns of 124 px from x 8, rows of 63 px) */
+const MODE_COLUMNS = 3;
+const MODE_COLUMN_LEFT = 8;
+const MODE_COLUMN_WIDTH = 124;
+const MODE_ROW_CENTER_Y = 238;
+const MODE_ROW_PITCH = 63;
+const MODE_ROWS = 2;
+const MODES_PER_PAGE = MODE_COLUMNS * MODE_ROWS;
+const NEXT_CENTER = { x: 440, y: MODE_ROW_CENTER_Y };
+/** RGB565 of the selected mode on the HMI (`bMode.pco=1374`) */
+const SELECTED_COLOR = color565ToCss(1374);
 
-/** The adapter formats list texts with `\r\n` as line break */
+/** The adapter formats list texts with `\r\n` as line break (`formatInSelText` appends one) */
 function modeText(text: string): string {
-    return text.replace(/\r\n/g, '\n');
+    return text
+        .replace(/\\r\\n/g, '\n')
+        .replace(/\r\n/g, '\n')
+        .replace(/\n+$/, '');
 }
 
 /**
- * `popupFan`: switch, speed slider (`number-set,<0..max>`) and the mode selection
- * (`mode-preset_modes,<index>`); the list of modes opens over the content like the
- * dropdown of the HMI.
+ * `popupFan`: switch at the right, speed slider (`number-set,<0..max>`) with its label
+ * and the modes as text buttons in the 3 column grid of the HMI (`mode-preset_modes,<index>`);
+ * more than six modes are paged with the arrow at the right.
  */
 export class PopupFan extends React.Component<CardProps<PopupFanModel>, PopupFanState> {
     constructor(props: CardProps<PopupFanModel>) {
         super(props);
-        this.state = { listOpen: false };
+        this.state = { page: 0 };
+    }
+
+    componentDidUpdate(prevProps: CardProps<PopupFanModel>): void {
+        const { modes } = this.props.model;
+        if (modes.length !== prevProps.model.modes.length) {
+            const pages = Math.max(1, Math.ceil(modes.length / MODES_PER_PAGE));
+            if (this.state.page >= pages) {
+                this.setState({ page: 0 });
+            }
+        }
     }
 
     private get id(): string {
@@ -38,72 +64,85 @@ export class PopupFan extends React.Component<CardProps<PopupFanModel>, PopupFan
     }
 
     private selectMode(index: number): void {
-        this.setState({ listOpen: false });
         this.props.press(this.id, 'mode-preset_modes', index);
     }
 
-    private renderList(): React.JSX.Element {
+    private renderModes(): React.JSX.Element[] {
         const { modes, mode } = this.props.model;
-        const columns = modes.length > 6 ? 3 : 2;
-        return (
-            <div
-                data-modelist=""
-                style={{
-                    position: 'absolute',
-                    left: 0,
-                    right: 0,
-                    top: POPUP_HEADER_HEIGHT,
-                    bottom: 0,
-                    background: theme.background,
-                    overflowY: 'auto',
-                    padding: `4px ${LEFT}px`,
-                    boxSizing: 'border-box',
-                    display: 'grid',
-                    gridTemplateColumns: `repeat(${columns}, 1fr)`,
-                    gap: 8,
-                    alignContent: 'start',
-                }}
-            >
-                {modes.map((m, i) => {
-                    const active = m === mode;
-                    return (
-                        <div
-                            key={i}
-                            data-mode={i}
-                            data-active={active ? '1' : '0'}
-                            onClick={(): void => this.selectMode(i)}
-                            style={{
-                                minHeight: 44,
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                textAlign: 'center',
-                                fontSize: 17,
-                                lineHeight: '20px',
-                                whiteSpace: 'pre-line',
-                                color: active ? theme.accent : theme.foreground,
-                                border: `1px solid ${active ? theme.accent : '#555'}`,
-                                borderRadius: 6,
-                                cursor: 'pointer',
-                                padding: '2px 6px',
-                                boxSizing: 'border-box',
-                            }}
-                        >
-                            {modeText(m)}
-                        </div>
-                    );
-                })}
-            </div>
-        );
+        const pages = Math.max(1, Math.ceil(modes.length / MODES_PER_PAGE));
+        const page = Math.min(this.state.page, pages - 1);
+        const start = page * MODES_PER_PAGE;
+        const elements = modes.slice(start, start + MODES_PER_PAGE).map((m, slot) => {
+            const index = start + slot;
+            const active = m === mode;
+            const col = slot % MODE_COLUMNS;
+            const row = Math.floor(slot / MODE_COLUMNS);
+            return (
+                <div
+                    key={index}
+                    data-mode={index}
+                    data-active={active ? '1' : '0'}
+                    onClick={(): void => this.selectMode(index)}
+                    style={{
+                        position: 'absolute',
+                        left: MODE_COLUMN_LEFT + col * MODE_COLUMN_WIDTH,
+                        width: MODE_COLUMN_WIDTH,
+                        top: MODE_ROW_CENTER_Y + row * MODE_ROW_PITCH - MODE_ROW_PITCH / 2,
+                        height: MODE_ROW_PITCH,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        textAlign: 'center',
+                        fontSize: POPUP_FONT_SIZE,
+                        lineHeight: '22px',
+                        whiteSpace: 'pre-line',
+                        overflow: 'hidden',
+                        color: active ? SELECTED_COLOR : theme.foreground,
+                        cursor: 'pointer',
+                        padding: '0 4px',
+                        boxSizing: 'border-box',
+                    }}
+                >
+                    {modeText(m)}
+                </div>
+            );
+        });
+        if (pages > 1) {
+            elements.push(
+                <div
+                    key="next"
+                    data-next=""
+                    title={`${page + 1}/${pages}`}
+                    onClick={(): void => this.setState({ page: (page + 1) % pages })}
+                    style={{
+                        position: 'absolute',
+                        left: NEXT_CENTER.x - TAP_SIZE / 2,
+                        top: NEXT_CENTER.y - TAP_SIZE / 2,
+                        width: TAP_SIZE,
+                        height: TAP_SIZE,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        cursor: 'pointer',
+                    }}
+                >
+                    <Icon
+                        name="chevron-right"
+                        size={36}
+                        color={theme.foreground}
+                    />
+                </div>,
+            );
+        }
+        return elements;
     }
 
     render(): React.JSX.Element {
         const { model, ctx, press } = this.props;
         const id = this.id;
-        const iconColor = model.iconColor !== undefined ? color565ToCss(model.iconColor) : theme.foreground;
-        const rowTop = POPUP_HEADER_HEIGHT + 10;
-        const speedTop = rowTop + 44;
-        const modeTop = model.speed !== undefined ? speedTop + 76 : speedTop;
+        // the payload colour wins (the adapter sends the on/off colour of the entity); `disable`
+        // or no payload yet: the colour of the tapped entity, then the foreground
+        const iconColor = popupHeaderIconColor(ctx, model.iconColor);
         return (
             <div
                 data-page={ctx.pageType}
@@ -111,12 +150,12 @@ export class PopupFan extends React.Component<CardProps<PopupFanModel>, PopupFan
             >
                 <PopupHeader
                     title={popupTitle(ctx, model.entityName)}
-                    icon={model.icon}
+                    icon={model.icon || ctx.pageArgs[2] || ''}
                     iconColor={iconColor}
                     onClose={(): void => press(id, 'bExit')}
                 />
                 {model.power !== undefined ? (
-                    <div style={{ position: 'absolute', right: LEFT, top: rowTop }}>
+                    <div style={{ position: 'absolute', left: TOGGLE_POS.left, top: TOGGLE_POS.top }}>
                         <Toggle
                             name="power"
                             on={model.power}
@@ -129,85 +168,33 @@ export class PopupFan extends React.Component<CardProps<PopupFanModel>, PopupFan
                         <div
                             style={{
                                 position: 'absolute',
-                                left: LEFT,
-                                top: speedTop,
-                                fontSize: 18,
+                                left: SPEED_LABEL.left,
+                                top: SPEED_LABEL.centerY - 12,
+                                width: TOGGLE_POS.left - SPEED_LABEL.left - 8,
+                                height: 24,
                                 lineHeight: '24px',
+                                fontSize: POPUP_FONT_SIZE,
                                 color: theme.foreground,
+                                whiteSpace: 'nowrap',
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis',
                             }}
                         >
                             {model.speedLabel}
                         </div>
-                        <div
-                            style={{
-                                position: 'absolute',
-                                left: LEFT,
-                                top: speedTop + 28,
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: 12,
-                            }}
-                        >
-                            <Icon
-                                name="fan"
-                                size={28}
-                                color={theme.foreground}
-                            />
+                        <div style={{ position: 'absolute', left: SLIDER.left, top: SLIDER.centerY - 11 }}>
                             <Slider
                                 name="speed"
                                 value={model.speed}
                                 min={0}
                                 max={model.speedMax > 0 ? model.speedMax : 100}
-                                length={SLIDER_LENGTH - 60}
+                                length={SLIDER.length}
                                 onCommit={(v): void => press(id, 'number-set', v)}
                             />
-                            <div
-                                data-speed=""
-                                style={{ width: 48, textAlign: 'right', fontSize: 20, color: theme.foreground }}
-                            >
-                                {model.speed}
-                            </div>
                         </div>
                     </>
                 ) : null}
-                {model.modes.length > 0 ? (
-                    <div
-                        data-modebutton=""
-                        onClick={(): void => this.setState({ listOpen: true })}
-                        style={{
-                            position: 'absolute',
-                            left: LEFT,
-                            right: LEFT,
-                            top: modeTop,
-                            height: 48,
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'space-between',
-                            boxSizing: 'border-box',
-                            padding: '0 12px 0 16px',
-                            border: '1px solid #555',
-                            borderRadius: 6,
-                            cursor: 'pointer',
-                        }}
-                    >
-                        <span
-                            style={{
-                                fontSize: 18,
-                                color: theme.foreground,
-                                whiteSpace: 'pre-line',
-                                lineHeight: '20px',
-                            }}
-                        >
-                            {modeText(model.mode)}
-                        </span>
-                        <Icon
-                            name="menu-down"
-                            size={28}
-                            color={theme.foreground}
-                        />
-                    </div>
-                ) : null}
-                {this.state.listOpen ? this.renderList() : null}
+                {this.renderModes()}
             </div>
         );
     }

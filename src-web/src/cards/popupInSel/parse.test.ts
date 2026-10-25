@@ -3,6 +3,7 @@ import {
     ENTRIES_PER_PAGE,
     handleCommand,
     initial,
+    normalizeEntry,
     pageCount,
     pageEntries,
     parseEntityUpdateDetail,
@@ -42,6 +43,17 @@ describe('popupInSel', () => {
         expect(pageEntries(m, 2).map(e => e.index)).toEqual([24, 25, 26, 27, 28, 29]);
         expect(pageEntries(m, 1)[0]).toEqual({ index: 12, text: 'e12' });
         expect(pageCount(parseEntityUpdateDetail2(['x', '', '', 'T', '', ''], m, ctx))).toBe(1);
+    });
+
+    it('drops the trailing CR LF of the entries (formatInSelText, emu recording)', () => {
+        const m = parseEntityUpdateDetail2(
+            ['4?6', '', '2016', 'Auswahl', 'Komfort\r\n', 'Aus\r\n?Eco\r\n?Komfort\r\n?Boost\r\n'],
+            initial(),
+            ctx,
+        );
+        expect(m.list).toEqual(['Aus', 'Eco', 'Komfort', 'Boost']);
+        expect(m.current).toBe('Komfort');
+        expect(normalizeEntry('Echo Spot\r\nBuero\r\n')).toBe('Echo Spot\nBuero');
     });
 
     it('uses the pageArgs as fallback for entity name and icon', () => {

@@ -94,9 +94,10 @@ describe('entity helpers', () => {
     });
 
     it('parses number options and clamps the value', () => {
-        expect(parseNumberOptions('35|0|100')).toEqual({ value: 35, min: 0, max: 100 });
-        expect(parseNumberOptions('150|10|100')).toEqual({ value: 100, min: 10, max: 100 });
-        expect(parseNumberOptions('')).toEqual({ value: 0, min: 0, max: 100 });
+        expect(parseNumberOptions('35|0|100')).toEqual({ value: 35, min: 0, max: 100, text: '35' });
+        // the knob stops at max, the text shows the value as sent (like the HMI)
+        expect(parseNumberOptions('150|10|100')).toEqual({ value: 100, min: 10, max: 100, text: '150' });
+        expect(parseNumberOptions('')).toEqual({ value: 0, min: 0, max: 100, text: '' });
         expect(parseNumberOptions('5|5|5').max).toBeGreaterThan(5);
     });
 

@@ -1,0 +1,4 @@
+# recorded on the emu panel (tile Jalousie): event,pageOpenDetail,popupShutter,4?2 - no icons, no texts:
+# the HMI draws its own arrows and takes name and icon from the tapped entity
+pageType~popupShutter~4?2~Jalousie~
+entityUpdateDetail~4?2~52~~~~~~~enable~enable~enable~~~~~enable~enable~enable~49

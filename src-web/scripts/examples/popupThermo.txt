@@ -1,4 +1,4 @@
-# popupThermo: PageThermo.onPopupRequest with two mode rows (third row missing = ~~~), fan icon.
-# pageArgs: page id, icon glyph, title (the HMI has no title field, the title is a web addition).
-pageType~popupThermo~thermo~~Wohnzimmer
-entityUpdateDetail~thermo~~11487~Modus~0?1~Heizen~Aus?Heizen?Kühlen?Auto~Preset~0?2~Komfort~Eco?Komfort?Boost?Nacht?Urlaub~~~~~
+# popupThermo: PageThermo.onPopupRequest with one mode row (emu scene "Thermostat", popupThermo.png).
+# pageArgs: page id, title, icon glyph (the adapter sends no icon in the payload).
+pageType~popupThermo~thermo~Thermostat~
+entityUpdateDetail~thermo~~9308~Wohnzimmer~0?1~Auto~Auto?MANUAL~~~~~~~~

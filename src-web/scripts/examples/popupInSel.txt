@@ -1,5 +1,4 @@
-# popupInSel: alexa speaker list of cardMedia (PageItem.getDetailPayload type insel).
-# pageArgs: entity name, icon glyph (speaker), title fallback. The adapter sends CR LF inside the
-# entries (formatInSelText); the literal \r\n is accepted by the parser for example files.
-pageType~popupInSel~0?2~
-entityUpdateDetail2~0?2~~1374~Lautsprecher~Echo Spot\r\nBuero~Esszimmer\r\nAlexa?Heimkino?Esszimmer?Echo Dot\r\nGästezimmer?Echo Spot\r\nBuero?Terrasse\r\n(Sonos)?Überall?Echo 4\r\nGartenhaus 2
+# popupInSel: input_select with four options (emu scene "Auswahl", popupInSel.png).
+# pageArgs: id, title, icon glyph; the adapter sends the icon colour as field 2 of entityUpdateDetail2.
+pageType~popupInSel~alias.0.Select~Auswahl~
+entityUpdateDetail2~alias.0.Select~~63488~Auswahl~Aus~Aus?Eco?Komfort?Boost

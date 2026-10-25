@@ -1,0 +1,4 @@
+# Popups (emulator picture cardGrid2.png): 4x2 tiles
+pageType~cardGrid2
+entityUpd~Popups~button~bSubPrev~~2047~~~button~bSubNext~~2047~~~light~4?0~~35657~Hue~1~light~4?1~~54278~Farbtemp.~1~shutter~4?2~~2047~Jalousie~|||enable|enable|enable~shutter2~4?3~~2047~Rollladen~|||enable|enable|enable~fan~4?4~~2016~Ventilator~1~number~4?5~~2047~Slider~35|0|100~input_sel~4?6~~63488~Auswahl~Komfort~timer~4?7~~63488~Timer~00:05:00
+@sleep 300

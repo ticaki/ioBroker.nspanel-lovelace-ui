@@ -130,6 +130,8 @@ export class ColorWheel extends React.Component<ColorWheelProps> {
                     cursor: 'pointer',
                     touchAction: 'none',
                     flex: '0 0 auto',
+                    // the HMI draws a thin light ring around the wheel
+                    boxShadow: '0 0 0 1.5px rgba(255,255,255,0.8)',
                     // clockwise from the right: red, magenta, blue, cyan, green, yellow = hue decreasing,
                     // which is the counter-clockwise hue of pos_to_color
                     background:

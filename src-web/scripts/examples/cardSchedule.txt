@@ -1,4 +1,5 @@
-# cardSchedule: 6 text rows (cardTrash as PageSchedule sends it)
+# cardSchedule - the scene of the emulator picture cardSchedule.png: 6 text rows
+# (long values are cut by the HMI: "geschlossen" -> "geschlo")
 pageType~cardSchedule
-entityUpd~Testabfall~button~bSubPrev~~65535~~~button~bSubNext~~65535~~~text~4?1?0~~9022~Papier~03.02.26~text~4?1?1~~65351~Gelbe Tonne~03.02.26~text~4?1?2~~41667~Biomüll~06.02.26~text~4?1?3~~38066~Müll~10.02.26~text~4?1?4~~41667~Biomüll~20.02.26~text~4?1?5~~65351~Gelbe Tonne~24.02.26
+entityUpd~Zeitplan~button~bSubPrev~~1592~~~button~bSubNext~~1592~~~text~4?1?0~~63488~Feuchte~1%~text~4?1?1~~2016~4~0%~text~4?1?2~~63488~auf~geschlossen~text~4?1?3~~2016~zu~geöffnet~text~4?1?4~~1087~Bewegung~motion~text~4?1?5~~1087~Temperatur~0°C
 @sleep 300

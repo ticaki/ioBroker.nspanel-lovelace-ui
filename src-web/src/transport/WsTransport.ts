@@ -2,76 +2,72 @@ import type { ClientFrame, ConnectionStatus, HelloFrame } from '../protocol/type
 import { isServerFrame } from '../protocol/types';
 import type { PanelTransport } from './Transport';
 
-const SESSION_KEY = 'nspanel-web-session';
+/** localStorage key of the session id older frontends kept - sessions no longer exist */
+const LEGACY_SESSION_KEY = 'nspanel-web-session';
+/** route the frontend asks before a reconnect: 204 = authorized, 401 = PIN page needed */
+export const AUTH_CHECK_PATH = '/auth/check';
 const RECONNECT_MIN_MS = 1000;
 const RECONNECT_MAX_MS = 30_000;
 
 /** The parts of `window.location` the url builder needs */
 export type LocationLike = Pick<Location, 'protocol' | 'host'>;
 
-/**
- * A random id. `crypto.randomUUID` exists only in secure contexts (https, localhost) -
- * the web panel usually runs over plain http in the LAN, so fall back to `getRandomValues`.
- */
-export function randomId(): string {
-    if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
-        return crypto.randomUUID();
-    }
-    const bytes = new Uint8Array(16);
-    if (typeof crypto !== 'undefined' && typeof crypto.getRandomValues === 'function') {
-        crypto.getRandomValues(bytes);
-    } else {
-        for (let i = 0; i < bytes.length; i++) {
-            bytes[i] = Math.floor(Math.random() * 256);
-        }
-    }
-    return Array.from(bytes, b => b.toString(16).padStart(2, '0')).join('');
+/** result of the auth check before a reconnect */
+export type AuthCheck = 'ok' | 'unauthorized' | 'unreachable';
+
+export interface WsTransportOptions {
+    location?: LocationLike;
+    /** `GET /auth/check` - replaceable for tests, defaults to the global `fetch` */
+    fetch?: (url: string, init: RequestInit) => Promise<{ status: number }>;
+    /** reloads the page so the server can show the PIN page, defaults to `location.reload()` */
+    reload?: () => void;
 }
 
-/** Session id of this browser, kept in localStorage so a reload binds to the same virtual panel */
-export function sessionId(): string {
+/** Removes the session id of older frontends, nothing else is stored */
+export function forgetLegacySession(): void {
     try {
-        const stored = localStorage.getItem(SESSION_KEY);
-        if (stored) {
-            return stored;
-        }
-        const fresh = randomId();
-        localStorage.setItem(SESSION_KEY, fresh);
-        return fresh;
+        localStorage.removeItem(LEGACY_SESSION_KEY);
     } catch {
-        return randomId();
+        // storage blocked - nothing to forget
     }
 }
 
-/** `ws(s)://<host>/ws/<topic>?session=<id>` next to the page */
-export function websocketUrl(topic: string, session: string, location: LocationLike = window.location): string {
+/** `ws(s)://<host>/ws/<topic>` next to the page */
+export function websocketUrl(topic: string, location: LocationLike = window.location): string {
     const proto = location.protocol === 'https:' ? 'wss:' : 'ws:';
-    return `${proto}//${location.host}/ws/${encodeURIComponent(topic)}?session=${encodeURIComponent(session)}`;
+    return `${proto}//${location.host}/ws/${encodeURIComponent(topic)}`;
 }
 
 /**
  * Websocket connection to the adapter (frames of doc/web-panel/ARCHITECTURE.md 2.6).
- * A dropped connection is reopened with the same session (backoff 1 s … 30 s), a `bye`
- * frame ends the session for good.
+ * A dropped connection is reopened (backoff 1 s … 30 s) after `GET /auth/check` passed;
+ * a 401 there means the PIN cookie is gone and the page reloads to show the PIN page.
+ * A `bye` frame ends the connection for good.
  */
 export class WsTransport implements PanelTransport {
     private readonly url: string;
+    private readonly fetchFn: WsTransportOptions['fetch'];
+    private readonly reload: () => void;
     private socket: WebSocket | undefined;
     private reconnectDelay = RECONNECT_MIN_MS;
     private reconnectTimer: ReturnType<typeof setTimeout> | undefined;
+    private checkingAuth = false;
     private stopped = true;
     private byeReason: string | undefined;
     private helloCb: ((hello: HelloFrame) => void) | undefined;
-    private commandCb: ((payload: string) => void) | undefined;
+    private commandCb: ((payload: string, seq: number | undefined) => void) | undefined;
     private buzzerCb: ((payload: string) => void) | undefined;
     private statusCb: ((status: ConnectionStatus) => void) | undefined;
     private byeCb: ((reason: string) => void) | undefined;
 
-    constructor(topic: string, session: string = sessionId(), location: LocationLike = window.location) {
-        this.url = websocketUrl(topic, session, location);
+    constructor(topic: string, options: WsTransportOptions = {}) {
+        forgetLegacySession();
+        this.url = websocketUrl(topic, options.location ?? window.location);
+        this.fetchFn = options.fetch ?? (typeof fetch === 'function' ? (url, init) => fetch(url, init) : undefined);
+        this.reload = options.reload ?? ((): void => window.location.reload());
     }
 
-    /** reason of the `bye` frame that ended the session, undefined while the session is alive */
+    /** reason of the `bye` frame that ended the connection, undefined while it is alive */
     get endedBy(): string | undefined {
         return this.byeReason;
     }
@@ -84,10 +80,7 @@ export class WsTransport implements PanelTransport {
 
     disconnect(): void {
         this.stopped = true;
-        if (this.reconnectTimer) {
-            clearTimeout(this.reconnectTimer);
-            this.reconnectTimer = undefined;
-        }
+        this.clearReconnectTimer();
         this.socket?.close();
         this.socket = undefined;
     }
@@ -95,7 +88,7 @@ export class WsTransport implements PanelTransport {
     onHello(cb: (hello: HelloFrame) => void): void {
         this.helloCb = cb;
     }
-    onCommand(cb: (payload: string) => void): void {
+    onCommand(cb: (payload: string, seq: number | undefined) => void): void {
         this.commandCb = cb;
     }
     onBuzzer(cb: (payload: string) => void): void {
@@ -108,8 +101,8 @@ export class WsTransport implements PanelTransport {
         this.byeCb = cb;
     }
 
-    ack(): void {
-        this.sendFrame({ t: 'ack' });
+    ack(seq: number | undefined): void {
+        this.sendFrame(seq === undefined ? { t: 'ack' } : { t: 'ack', seq });
     }
 
     recv(payload: string): void {
@@ -119,6 +112,13 @@ export class WsTransport implements PanelTransport {
     private sendFrame(frame: ClientFrame): void {
         if (this.socket && this.socket.readyState === WebSocket.OPEN) {
             this.socket.send(JSON.stringify(frame));
+        }
+    }
+
+    private clearReconnectTimer(): void {
+        if (this.reconnectTimer) {
+            clearTimeout(this.reconnectTimer);
+            this.reconnectTimer = undefined;
         }
     }
 
@@ -163,20 +163,17 @@ export class WsTransport implements PanelTransport {
                 this.helloCb?.(parsed);
                 break;
             case 'cmd':
-                this.commandCb?.(parsed.p);
+                this.commandCb?.(parsed.p, parsed.seq);
                 break;
             case 'buzzer':
                 this.buzzerCb?.(parsed.p);
                 break;
             case 'bye': {
-                // the session is over - no reconnect, the page has to be reloaded
+                // the connection is over - no reconnect, the page has to be reloaded
                 const reason = typeof parsed.reason === 'string' && parsed.reason !== '' ? parsed.reason : 'unknown';
                 this.byeReason = reason;
                 this.stopped = true;
-                if (this.reconnectTimer) {
-                    clearTimeout(this.reconnectTimer);
-                    this.reconnectTimer = undefined;
-                }
+                this.clearReconnectTimer();
                 this.byeCb?.(reason);
                 this.socket?.close();
                 break;
@@ -185,14 +182,46 @@ export class WsTransport implements PanelTransport {
     }
 
     private scheduleReconnect(): void {
-        if (this.stopped || this.reconnectTimer) {
+        if (this.stopped || this.reconnectTimer || this.checkingAuth) {
             return;
         }
         const delay = this.reconnectDelay;
         this.reconnectDelay = Math.min(RECONNECT_MAX_MS, this.reconnectDelay * 2);
         this.reconnectTimer = setTimeout(() => {
             this.reconnectTimer = undefined;
-            this.open();
+            void this.reconnect();
         }, delay);
+    }
+
+    /**
+     * A browser does not see the http status of a refused websocket upgrade, so the PIN
+     * is checked over http first: 401 means the PIN page has to be shown (reload), a
+     * network error means the adapter is down and the backoff simply continues.
+     */
+    private async reconnect(): Promise<void> {
+        this.checkingAuth = true;
+        const auth = await this.checkAuth();
+        this.checkingAuth = false;
+        if (this.stopped) {
+            return;
+        }
+        if (auth === 'unauthorized') {
+            this.stopped = true;
+            this.reload();
+            return;
+        }
+        this.open();
+    }
+
+    private async checkAuth(): Promise<AuthCheck> {
+        if (!this.fetchFn) {
+            return 'unreachable';
+        }
+        try {
+            const res = await this.fetchFn(AUTH_CHECK_PATH, { credentials: 'same-origin', cache: 'no-store' });
+            return res.status === 401 ? 'unauthorized' : 'ok';
+        } catch {
+            return 'unreachable';
+        }
     }
 }

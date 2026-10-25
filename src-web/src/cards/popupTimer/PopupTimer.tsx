@@ -3,14 +3,32 @@ import { Icon } from '../../components/Icon';
 import { color565ToCss } from '../../protocol/color';
 import { theme } from '../../style/theme';
 import type { CardProps } from '../CardContract';
+import { popupHeaderIconColor } from '../popupSlider/fields';
+import { POPUP_FONT_SIZE, PopupHeader } from '../popupSlider/PopupHeader';
 import { clampTime, pad2, type PopupTimerModel, type TimerButton } from './parse';
 
-const HEAD_HEIGHT = 60;
-const BUTTON_HEIGHT = 56;
 /** RGB565 of the number being edited in the HMI (`n1.pco=63488`) */
 const EDIT_COLOR = color565ToCss(63488);
 /** the +/- steps of the HMI (bZ1..bZ4) */
 const STEPS = [1, 5, 10, 15] as const;
+
+/** geometry of the HMI (stage pixels) */
+const DIGIT_BOX = { top: 66, width: 132, height: 111, minutesLeft: 76, secondsLeft: 241 };
+const DIGIT_FONT_SIZE = 120;
+const DIGIT_COLOR = '#ffffff';
+const BOX_COLOR = '#1e1e1e';
+/** the colon is drawn as two squares */
+const COLON = { left: 218, size: 14, tops: [107, 154] as const };
+/** the three action buttons: centres at x 84/222/360, y 224 */
+const ACTION_CENTERS_X = [84, 222, 360] as const;
+const ACTION_CENTER_Y = 224;
+const ACTION_WIDTH = 138;
+/** edit mode: four columns with an up box, the step label and a down box */
+const STEP_CENTERS_X = [188, 257, 326, 395] as const;
+const STEP_BOX = { size: 50, upTop: 187, downTop: 260 };
+const STEP_LABEL_CENTER_Y = 251;
+/** the current time at the bottom left */
+const CLOCK = { left: 13, centerY: 294, fontSize: 36 };
 
 type EditField = 'minutes' | 'seconds' | undefined;
 
@@ -22,10 +40,10 @@ interface PopupTimerState {
 }
 
 /**
- * The timer popup: icon and X at the top, `MM:SS` in the middle and up to three action
- * buttons at the bottom. When `editable`, a tap on minutes or seconds marks the number
- * (red) and shows +/- 1, 5, 10, 15 instead of the buttons; a second tap finishes the
- * edit and sends the new time.
+ * The timer popup: icon, title and X at the top, `MM:SS` in two dark boxes, up to three
+ * action buttons below and the time at the bottom left, like the HMI. When `editable`, a
+ * tap on minutes or seconds marks the number (red) and shows the +/- 1, 5, 10, 15 columns
+ * instead of the buttons; a second tap finishes the edit and sends the new time.
  *
  * Events: button -> `event,buttonPress2,<id>,timer-<action>`; end of an edit ->
  * `event,buttonPress2,<id>,timer-start,00:<m>:<s>`; X -> `event,buttonPress2,popupTimer,bExit`.
@@ -84,9 +102,21 @@ export class PopupTimer extends React.Component<CardProps<PopupTimerModel>, Popu
             <div
                 data-field={fieldName}
                 style={{
-                    color: editing ? EDIT_COLOR : theme.foreground,
+                    position: 'absolute',
+                    left: fieldName === 'minutes' ? DIGIT_BOX.minutesLeft : DIGIT_BOX.secondsLeft,
+                    top: DIGIT_BOX.top,
+                    width: DIGIT_BOX.width,
+                    height: DIGIT_BOX.height,
+                    background: BOX_COLOR,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: DIGIT_FONT_SIZE,
+                    lineHeight: `${DIGIT_BOX.height}px`,
+                    fontWeight: 400,
+                    color: editing ? EDIT_COLOR : DIGIT_COLOR,
                     cursor: this.props.model.editable ? 'pointer' : 'default',
-                    padding: '0 6px',
+                    userSelect: 'none',
                 }}
                 onClick={(): void => this.toggleEdit(fieldName)}
             >
@@ -95,55 +125,83 @@ export class PopupTimer extends React.Component<CardProps<PopupTimerModel>, Popu
         );
     }
 
-    private renderStepButton(delta: number): React.JSX.Element {
-        return (
+    private renderStepColumn(step: number, index: number): React.JSX.Element {
+        const cx = STEP_CENTERS_X[index] ?? 0;
+        const box = (delta: number, top: number): React.JSX.Element => (
             <div
-                key={delta}
                 data-step={delta}
+                onClick={(): void => this.step(delta)}
                 style={{
-                    flex: '1 1 0',
-                    height: 44,
+                    position: 'absolute',
+                    left: cx - STEP_BOX.size / 2,
+                    top,
+                    width: STEP_BOX.size,
+                    height: STEP_BOX.size,
+                    background: BOX_COLOR,
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    color: theme.foreground,
-                    fontSize: 24,
                     cursor: 'pointer',
                 }}
-                onClick={(): void => this.step(delta)}
             >
                 <Icon
-                    name={delta > 0 ? 'plus' : 'minus'}
-                    size={22}
+                    name={delta > 0 ? 'chevron-up' : 'chevron-down'}
+                    size={34}
                     color={theme.foreground}
                 />
-                <span style={{ marginLeft: 2 }}>{Math.abs(delta)}</span>
             </div>
+        );
+        return (
+            <React.Fragment key={step}>
+                {box(step, STEP_BOX.upTop)}
+                <div
+                    style={{
+                        position: 'absolute',
+                        left: cx - STEP_BOX.size / 2 - 8,
+                        width: STEP_BOX.size + 16,
+                        top: STEP_LABEL_CENTER_Y - 11,
+                        height: 22,
+                        lineHeight: '22px',
+                        textAlign: 'center',
+                        fontSize: 16,
+                        color: theme.foreground,
+                        whiteSpace: 'nowrap',
+                    }}
+                >
+                    {`+/- ${step}`}
+                </div>
+                {box(-step, STEP_BOX.downTop)}
+            </React.Fragment>
         );
     }
 
     private renderActionButton(button: TimerButton, index: number): React.JSX.Element {
         const visible = button.action !== '';
         const disabled = button.action === 'disable';
+        const cx = ACTION_CENTERS_X[index] ?? 0;
         return (
             <div
                 key={index}
                 data-button={`b${index + 1}`}
                 style={{
-                    flex: '1 1 0',
+                    position: 'absolute',
+                    left: cx - ACTION_WIDTH / 2,
+                    width: ACTION_WIDTH,
+                    top: ACTION_CENTER_Y - 22,
+                    height: 44,
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    color: disabled ? theme.muted : theme.foreground,
-                    fontSize: 26,
+                    color: disabled ? theme.muted : theme.accent,
+                    fontSize: POPUP_FONT_SIZE,
                     whiteSpace: 'nowrap',
                     overflow: 'hidden',
                     textOverflow: 'ellipsis',
-                    cursor: visible ? 'pointer' : 'default',
+                    cursor: visible && !disabled ? 'pointer' : 'default',
                     visibility: visible ? 'visible' : 'hidden',
                 }}
                 onClick={
-                    visible
+                    visible && !disabled
                         ? (): void => this.props.press(this.props.model.entityName, `timer-${button.action}`)
                         : undefined
                 }
@@ -154,7 +212,7 @@ export class PopupTimer extends React.Component<CardProps<PopupTimerModel>, Popu
     }
 
     render(): React.JSX.Element {
-        const { model, ctx } = this.props;
+        const { model, ctx, global } = this.props;
         const title = ctx.pageArgs[1] ?? '';
         const editing = this.state.edit !== undefined;
         return (
@@ -162,122 +220,51 @@ export class PopupTimer extends React.Component<CardProps<PopupTimerModel>, Popu
                 data-page={ctx.pageType}
                 style={{ position: 'absolute', inset: 0, background: theme.background, overflow: 'hidden' }}
             >
-                <div
-                    data-head=""
-                    style={{
-                        position: 'absolute',
-                        top: 0,
-                        left: 0,
-                        right: 0,
-                        height: HEAD_HEIGHT,
-                        display: 'flex',
-                        alignItems: 'center',
-                        paddingLeft: 16,
-                    }}
-                >
-                    <div
-                        style={{
-                            width: 48,
-                            height: 48,
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                        }}
-                    >
-                        <Icon
-                            glyph={model.icon || undefined}
-                            name={model.icon ? undefined : 'timer-outline'}
-                            size={36}
-                            color={color565ToCss(model.iconColor)}
-                        />
-                    </div>
-                    <div
-                        style={{
-                            flex: '1 1 auto',
-                            marginLeft: 36,
-                            color: theme.foreground,
-                            fontSize: 26,
-                            whiteSpace: 'nowrap',
-                            overflow: 'hidden',
-                            textOverflow: 'ellipsis',
-                        }}
-                    >
-                        {title}
-                    </div>
-                    <div
-                        data-close=""
-                        style={{
-                            width: 48,
-                            height: 48,
-                            marginRight: 8,
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            cursor: 'pointer',
-                        }}
-                        onClick={this.close}
-                    >
-                        <Icon
-                            name="close"
-                            size={32}
-                            color={theme.foreground}
-                        />
-                    </div>
-                </div>
-                <div
-                    data-time=""
-                    style={{
-                        position: 'absolute',
-                        left: 0,
-                        right: 0,
-                        top: HEAD_HEIGHT + 10,
-                        height: 110,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        fontSize: 96,
-                        lineHeight: '110px',
-                        fontWeight: 300,
-                        letterSpacing: 2,
-                    }}
-                >
+                <PopupHeader
+                    title={title}
+                    icon={model.icon || ''}
+                    // the payload carries the icon colour: it wins; until it arrives the colour of the
+                    // tapped entity (pageArgs[3])
+                    iconColor={popupHeaderIconColor(ctx, model.updates > 0 ? model.iconColor : undefined)}
+                    onClose={this.close}
+                />
+                <div data-time="">
                     {this.renderNumber('minutes')}
-                    <div style={{ color: theme.foreground, padding: '0 2px 8px' }}>:</div>
+                    {COLON.tops.map(top => (
+                        <div
+                            key={top}
+                            style={{
+                                position: 'absolute',
+                                left: COLON.left,
+                                top,
+                                width: COLON.size,
+                                height: COLON.size,
+                                background: DIGIT_COLOR,
+                            }}
+                        />
+                    ))}
                     {this.renderNumber('seconds')}
                 </div>
                 {editing ? (
-                    <div
-                        data-steps=""
-                        style={{
-                            position: 'absolute',
-                            left: 24,
-                            right: 24,
-                            top: HEAD_HEIGHT + 130,
-                            bottom: 8,
-                            display: 'flex',
-                            flexDirection: 'column',
-                            justifyContent: 'center',
-                        }}
-                    >
-                        <div style={{ display: 'flex' }}>{STEPS.map(s => this.renderStepButton(s))}</div>
-                        <div style={{ display: 'flex' }}>{STEPS.map(s => this.renderStepButton(-s))}</div>
-                    </div>
+                    <div data-steps="">{STEPS.map((s, i) => this.renderStepColumn(s, i))}</div>
                 ) : (
-                    <div
-                        data-buttons=""
-                        style={{
-                            position: 'absolute',
-                            left: 24,
-                            right: 24,
-                            bottom: 0,
-                            height: BUTTON_HEIGHT,
-                            display: 'flex',
-                            alignItems: 'stretch',
-                        }}
-                    >
-                        {model.buttons.map((b, i) => this.renderActionButton(b, i))}
-                    </div>
+                    <div data-buttons="">{model.buttons.map((b, i) => this.renderActionButton(b, i))}</div>
                 )}
+                <div
+                    data-clock=""
+                    style={{
+                        position: 'absolute',
+                        left: CLOCK.left,
+                        top: CLOCK.centerY - 22,
+                        height: 44,
+                        lineHeight: '44px',
+                        fontSize: CLOCK.fontSize,
+                        color: theme.foreground,
+                        whiteSpace: 'nowrap',
+                    }}
+                >
+                    {global.time}
+                </div>
             </div>
         );
     }

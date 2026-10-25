@@ -78,6 +78,8 @@ describe('screensaver parse', () => {
         });
         expect(parseNotify(['', ''])).toBeUndefined();
         expect(parseNotify(['Nur Titel', ''])).toEqual({ heading: 'Nur Titel', text: '' });
+        // the adapter sends the line breaks of the state as CR LF
+        expect(parseNotify(['Müllabfuhr', 'Zeile 1\r\nZeile 2\rZeile 3'])?.text).toBe('Zeile 1\nZeile 2\nZeile 3');
     });
 
     it('handleCommand updates only its own part of the model', () => {

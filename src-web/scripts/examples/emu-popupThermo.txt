@@ -1,0 +1,3 @@
+# recorded on the emu panel (cardThermo 'Thermostat', page id 7): event,pageOpenDetail,popupThermo,7
+pageType~popupThermo~7~Thermostat~
+entityUpdateDetail~7~~11487~Wohnzimmer~7?11~Auto\r\n~Auto\r\n?MANUAL\r\n~~~~~~~~~

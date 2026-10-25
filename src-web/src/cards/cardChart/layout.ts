@@ -7,7 +7,7 @@ import { leadingInt } from './parse';
  * left to right and truncates divisions - `idiv` and the explicit parentheses below keep that.
  */
 
-/** The hotspot `m0` the HMI draws into, measured on 480x320 screenshots of the panel */
+/** The hotspot `m0` the HMI draws into, measured on 480x320 pictures of the panel */
 export interface PlotArea {
     x: number;
     y: number;
@@ -15,7 +15,18 @@ export interface PlotArea {
     h: number;
 }
 
+/** hotspot of `cardLChart` (wiki picture `pageChart/Linechart.png`) */
 export const PLOT: PlotArea = { x: 20, y: 90, w: 410, h: 220 };
+/**
+ * hotspot of `cardChart` (emulator picture `cardChart.png`): the axis is at x 63, the
+ * first bar starts at x 73, the top of the axis is at y 75; the base line is at 286 like the line chart
+ */
+export const PLOT_BAR: PlotArea = { x: 8, y: 75, w: 433, h: 235 };
+
+/** the plot area of a chart kind */
+export function plotFor(kind: 'bar' | 'line'): PlotArea {
+    return kind === 'bar' ? PLOT_BAR : PLOT;
+}
 
 /** the grey of axes and ticks (`14823`) */
 export const AXIS_COLOR = 14823;
@@ -85,7 +96,10 @@ export function formatTick(tick: number): string {
     return text;
 }
 
-/** rough widths of the small font, used to cut the text like the 20 px box of the HMI does */
+/**
+ * Advance widths of the small font of the HMI (a digit is 10 px, measured on the emulator picture),
+ * used to cut the text like the 20 px box does: `2.5` becomes `2.`, `15` fits
+ */
 function charWidth(ch: string): number {
     if (ch === '.') {
         return 4;
@@ -93,7 +107,7 @@ function charWidth(ch: string): number {
     if (ch === '-') {
         return 6;
     }
-    return 8;
+    return 10;
 }
 
 /** Keeps the leading characters that fit into `width` pixels */
@@ -162,7 +176,7 @@ function yAxisLabel(plot: PlotArea, label: string, step: number, width: number):
  * @param model the parsed page
  * @param plot the plot area
  */
-export function layoutBar(model: ChartModel, plot: PlotArea = PLOT): ChartLayout {
+export function layoutBar(model: ChartModel, plot: PlotArea = PLOT_BAR): ChartLayout {
     const out: Primitive[] = [];
     const n = model.bars.length;
     let max = 0;
@@ -253,7 +267,7 @@ export function layoutBar(model: ChartModel, plot: PlotArea = PLOT): ChartLayout
  * @param count number of bars
  * @param plot the plot area
  */
-export function barAt(geometry: BarGeometry, touchX: number, count: number, plot: PlotArea = PLOT): number {
+export function barAt(geometry: BarGeometry, touchX: number, count: number, plot: PlotArea = PLOT_BAR): number {
     const units = idiv((Math.trunc(touchX) - plot.x - 65) * 100, geometry.unit);
     if (units < 0 || units % 5 >= 4) {
         return -1;
@@ -425,6 +439,6 @@ export function layoutLine(model: ChartModel, plot: PlotArea = PLOT): ChartLayou
     return { primitives: out, bar: undefined };
 }
 
-export function layoutChart(model: ChartModel, plot: PlotArea = PLOT): ChartLayout {
+export function layoutChart(model: ChartModel, plot: PlotArea = plotFor(model.kind)): ChartLayout {
     return model.kind === 'line' ? layoutLine(model, plot) : layoutBar(model, plot);
 }

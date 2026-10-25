@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import glyphMap from '../../icons/glyph-map.json';
-import { clampSpeed, handleCommand, initial, parseEntityUpd, parseEntityUpdateDetail } from './parse';
+import { clampSpeed, homeLines, handleCommand, initial, parseEntityUpd, parseEntityUpdateDetail } from './parse';
 
 const glyphByName: Record<string, string> = Object.fromEntries(Object.entries(glyphMap).map(([g, n]) => [n, g]));
 const HOME = glyphByName.home;
@@ -87,5 +87,13 @@ describe('cardPower', () => {
         const m = initial();
         expect(parseEntityUpdateDetail(['x'], m, ctx)).toBeUndefined();
         expect(handleCommand('color', ['1'], m, ctx)).toBeUndefined();
+    });
+
+    it('splits a house value into number and unit like the two lines of the HMI', () => {
+        expect(homeLines('350 W')).toEqual(['350', 'W']);
+        expect(homeLines('1.2 kW')).toEqual(['1.2', 'kW']);
+        expect(homeLines('12 345 kWh')).toEqual(['12 345', 'kWh']);
+        expect(homeLines('42')).toEqual(['42']);
+        expect(homeLines('  ')).toEqual([]);
     });
 });

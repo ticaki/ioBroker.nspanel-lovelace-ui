@@ -1,4 +1,5 @@
-# cardAlarm as sent by src/lib/pages/pageAlarm.ts (alarmType alarm, status armed):
+# cardAlarm as sent by src/lib/pages/pageAlarm.ts - the scene of the emulator picture cardAlarm.png
+# (alarmType alarm, disarmed: one button, shield-home icon):
 # entityUpd~title~[nav left]~[nav right]~id~label1~action1~…~label4~action4~icon~iconColor~numpad~flashing
 pageType~cardAlarm
-entityUpd~Alarm~button~bSubPrev~~65535~~~button~bSubNext~~65535~~~alarm.haus~Deaktivieren - Zuhause~D1~Deaktivieren - Unterwegs~D2~Deaktivieren - Nacht~D3~Deaktiviere Urlaub~D4~~63488~enable~disable
+entityUpd~alarm~button~bSubPrev~~1592~~~button~bSubNext~~1592~~~alarm.haus~disarm~D1~~~~~~~~63488~enable~disable

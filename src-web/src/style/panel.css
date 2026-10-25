@@ -1,3 +1,7 @@
+/* The HMI font: Noto Sans (NotoSans-Regular for the Nextion fonts 0-3, NotoSans-Bold for 4-5) */
+@import '@fontsource/noto-sans/400.css';
+@import '@fontsource/noto-sans/700.css';
+
 html,
 body,
 #root {
@@ -8,7 +12,7 @@ body,
     background: #000;
     color: #fff;
     overflow: hidden;
-    font-family: 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+    font-family: 'Noto Sans', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
     -webkit-font-smoothing: antialiased;
     -webkit-tap-highlight-color: transparent;
 }

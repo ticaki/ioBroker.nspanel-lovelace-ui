@@ -34,6 +34,34 @@ describe('popupThermo', () => {
         expect(pageModes(m.rows[2], 0)).toEqual([]);
     });
 
+    it('drops the trailing CR LF of the modes (emu recording)', () => {
+        const m = parseEntityUpdateDetail(
+            [
+                '7',
+                '',
+                '11487',
+                'Wohnzimmer',
+                '7?11',
+                'Auto\r\n',
+                'Auto\r\n?MANUAL\r\n',
+                '',
+                '',
+                '',
+                '',
+                '',
+                '',
+                '',
+                '',
+                '',
+            ],
+            initial(),
+            ctx,
+        );
+        expect(m.rows.filter(r => r.list.length > 0)).toHaveLength(1);
+        expect(m.rows[0]?.list).toEqual(['Auto', 'MANUAL']);
+        expect(m.rows[0]?.current).toBe('Auto');
+    });
+
     it('falls back to the pageArgs for id and icon and ignores other commands', () => {
         const m = parseEntityUpdateDetail(['', '', '', 'A', '0?0', 'x', 'x?y'], initial(), {
             pageType: 'popupThermo',

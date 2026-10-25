@@ -32,8 +32,8 @@ export interface StoreOptions {
     registry: Readonly<Record<string, AnyCardModule>>;
     /** sends a display event (`event,…`) */
     recv: (payload: string) => void;
-    /** acknowledges a command (`Done`) */
-    ack: () => void;
+    /** acknowledges a command (`Done`) with the `seq` of its frame (undefined: unnumbered frame) */
+    ack: (seq: number | undefined) => void;
     /** log unknown commands */
     log?: (message: string) => void;
     /** timer functions, replaceable for tests */
@@ -58,6 +58,7 @@ export function initialGlobalState(model: PanelModel = 'eu'): GlobalState {
         timeout: 0,
         dim: { standby: 20, active: 100, background: 0, text: 65535 },
         sleeping: false,
+        awake: false,
     };
 }
 
@@ -77,6 +78,8 @@ export class PanelStore {
     private cardPage: PageState | undefined = undefined;
     private version = 0;
     private sleepTimer: unknown = undefined;
+    /** re-dims the woken screensaver after `timeout` seconds (`global.awake` -> false) */
+    private dimTimer: unknown = undefined;
     private snapshot: StoreSnapshot;
 
     constructor(options: StoreOptions, model: PanelModel = 'eu') {
@@ -128,23 +131,23 @@ export class PanelStore {
         }
     }
 
-    /** sends `event,buttonPress2,<id>,<action>[,<value>]` and counts as touch */
+    /** sends `event,buttonPress2,<id>,<action>[,<value>]`, wakes the screensaver and counts as touch */
     readonly press = (id: string, action: string, value?: string | number): void => {
-        this.touch();
+        this.wake();
         if (action === 'bExit') {
             this.leavePopup();
         }
         this.options.recv(buttonPress2(id, action, value));
     };
 
-    /** sends a raw display event and counts as touch */
+    /** sends a raw display event, wakes the screensaver and counts as touch */
     readonly send = (event: string): void => {
-        this.touch();
+        this.wake();
         if (event.startsWith(POPUP_EVENT_PREFIX)) {
             // a raw popup request of a card: switch like the display does, without a title
             const [popup = '', id = ''] = event.slice(POPUP_EVENT_PREFIX.length).split(',');
             if (popup !== this.page.pageType) {
-                this.showPopup(popup, [id, '', '']);
+                this.showPopup(popup, [id, '', '', '']);
             }
         } else if (/^event,buttonPress2,[^,]*,bExit(,|$)/.test(event)) {
             this.leavePopup();
@@ -161,10 +164,13 @@ export class PanelStore {
      * @param id entity id the popup answers with
      * @param title title shown in the popup header (display name of the entity)
      * @param icon icon glyph of the entity
+     * @param iconColor RGB565 colour of the entity icon - the HMI draws the head icon of the
+     *   popup in the colour the item had on the previous page (`pageArgs[3]`, as string)
      */
-    readonly openPopup = (popup: string, id: string, title = '', icon = ''): void => {
-        this.touch();
-        this.showPopup(popup, [id, title, icon]);
+    readonly openPopup = (popup: string, id: string, title = '', icon = '', iconColor?: number): void => {
+        this.wake();
+        const color = iconColor !== undefined && Number.isFinite(iconColor) ? String(iconColor) : '';
+        this.showPopup(popup, [id, title, icon, color]);
         this.options.recv(pageOpenDetailEvent(popup, id));
     };
 
@@ -186,15 +192,49 @@ export class PanelStore {
         }
         this.page = this.cardPage;
         this.cardPage = undefined;
-        this.global = { ...this.global, sleeping: isScreensaverPage(this.page.pageType) };
+        this.setSleeping(isScreensaverPage(this.page.pageType));
         this.restartSleepTimer();
         this.commit();
     }
 
-    /** any user interaction - restarts the screensaver timeout */
+    /**
+     * Any touch of the stage (pointer down) - restarts the running timeout: the sleep
+     * timer on a card, the re-dim timer of a woken screensaver. It does not wake a dimmed
+     * screensaver by itself: the event the gesture ends with does (`press`/`send`), so a
+     * card can still read `global.awake` as it was when the gesture started.
+     */
     readonly touch = (): void => {
+        if (this.global.sleeping) {
+            if (this.global.awake) {
+                this.restartDimTimer();
+            }
+            return;
+        }
         this.restartSleepTimer();
     };
+
+    /**
+     * A tap or swipe in the screensaver: the display is woken (full brightness) and dims
+     * again after `timeout` seconds without interaction (0 = stays bright), like the real
+     * display does locally. Outside the screensaver it is a plain touch.
+     */
+    private wake(): void {
+        if (!this.global.sleeping) {
+            this.restartSleepTimer();
+            return;
+        }
+        if (!this.global.awake) {
+            this.global = { ...this.global, awake: true };
+            this.commit();
+        }
+        this.restartDimTimer();
+    }
+
+    /** enters or leaves the screensaver state; the screensaver always starts dimmed */
+    private setSleeping(sleeping: boolean): void {
+        this.clearDimTimer();
+        this.global = { ...this.global, sleeping, awake: false };
+    }
 
     private ctx(): ParseContext {
         return { pageType: this.page.pageType, pageArgs: this.page.pageArgs };
@@ -207,17 +247,18 @@ export class PanelStore {
             // a page sent by the adapter replaces whatever a local popup would return to
             this.cardPage = undefined;
         }
-        this.global = { ...this.global, sleeping: isScreensaverPage(pageType) };
+        this.setSleeping(isScreensaverPage(pageType));
         this.restartSleepTimer();
     }
 
     /**
-     * Processes one `cmd` frame, acknowledges it and sends the follow-up events the
-     * display would send.
+     * Processes one `cmd` frame, acknowledges it with its `seq` and sends the follow-up
+     * events the display would send.
      *
      * @param payload the CustomSend payload
+     * @param seq running number of the frame, echoed in the ack (mock mode sends none)
      */
-    dispatch(payload: string): void {
+    dispatch(payload: string, seq?: number): void {
         const { cmd, args } = parseCommand(payload);
         let renderAck: string | undefined;
         let startup = false;
@@ -245,6 +286,10 @@ export class PanelStore {
             case 'timeout':
                 this.global = { ...this.global, timeout: toNumber(args[0], 0) };
                 this.restartSleepTimer();
+                if (this.global.awake) {
+                    // the adapter sends the new re-dim time when it enters the screensaver
+                    this.restartDimTimer();
+                }
                 break;
             case 'dimmode':
                 this.global = {
@@ -278,7 +323,7 @@ export class PanelStore {
                 break;
         }
         this.commit();
-        this.options.ack();
+        this.options.ack(seq);
         if (renderAck) {
             this.options.recv(renderAck);
         }
@@ -304,10 +349,11 @@ export class PanelStore {
     /**
      * Brightness (0-100) the display shows right now, relative to its active level: the
      * active backlight value (often 60-80 %) is what the user perceives as "normal", so
-     * only the screensaver dims - by the ratio standby/active.
+     * only the dimmed screensaver dims - by the ratio standby/active. A woken screensaver
+     * (`global.awake`) is as bright as a card.
      */
     get brightness(): number {
-        if (!this.global.sleeping) {
+        if (!this.global.sleeping || this.global.awake) {
             return 100;
         }
         const { standby, active } = this.global.dim;
@@ -315,12 +361,44 @@ export class PanelStore {
         return Math.max(0, Math.min(100, Math.round(ratio * 100)));
     }
 
-    private restartSleepTimer(): void {
+    private clearTimer(handle: unknown): void {
         const clear =
             this.options.clearTimeout ?? ((h: unknown): void => clearTimeout(h as ReturnType<typeof setTimeout>));
-        const set = this.options.setTimeout ?? ((fn: () => void, ms: number): unknown => setTimeout(fn, ms));
+        clear(handle);
+    }
+
+    private setTimer(fn: () => void, ms: number): unknown {
+        const set = this.options.setTimeout ?? ((f: () => void, m: number): unknown => setTimeout(f, m));
+        return set(fn, ms);
+    }
+
+    private clearDimTimer(): void {
+        if (this.dimTimer !== undefined) {
+            this.clearTimer(this.dimTimer);
+            this.dimTimer = undefined;
+        }
+    }
+
+    /** (re)starts the re-dim of a woken screensaver; `timeout` 0 = never dims again */
+    private restartDimTimer(): void {
+        this.clearDimTimer();
+        if (this.global.timeout <= 0 || !this.global.sleeping || !this.global.awake) {
+            return;
+        }
+        this.dimTimer = this.setTimer(() => {
+            this.dimTimer = undefined;
+            if (!this.global.sleeping || !this.global.awake) {
+                return;
+            }
+            // the display dims locally, nothing is sent
+            this.global = { ...this.global, awake: false };
+            this.commit();
+        }, this.global.timeout * 1000);
+    }
+
+    private restartSleepTimer(): void {
         if (this.sleepTimer !== undefined) {
-            clear(this.sleepTimer);
+            this.clearTimer(this.sleepTimer);
             this.sleepTimer = undefined;
         }
         if (
@@ -331,7 +409,7 @@ export class PanelStore {
         ) {
             return;
         }
-        this.sleepTimer = set(() => {
+        this.sleepTimer = this.setTimer(() => {
             this.sleepTimer = undefined;
             if (isPopupPage(this.page.pageType)) {
                 // a popup closes on timeout (the HMI sends bExit, not sleepReached)
@@ -346,11 +424,10 @@ export class PanelStore {
 
     destroy(): void {
         if (this.sleepTimer !== undefined) {
-            (this.options.clearTimeout ?? ((h: unknown): void => clearTimeout(h as ReturnType<typeof setTimeout>)))(
-                this.sleepTimer,
-            );
+            this.clearTimer(this.sleepTimer);
             this.sleepTimer = undefined;
         }
+        this.clearDimTimer();
         this.listeners.clear();
     }
 }

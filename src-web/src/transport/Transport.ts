@@ -8,16 +8,21 @@ export interface PanelTransport {
     connect(): void;
     disconnect(): void;
     onHello(cb: (hello: HelloFrame) => void): void;
-    onCommand(cb: (payload: string) => void): void;
+    /**
+     * a `cmd` frame: the CustomSend payload and its running number `seq`, which the
+     * display hands back in `ack(seq)` once the frame is processed (`seq` is undefined
+     * only with an outdated backend that numbers nothing)
+     */
+    onCommand(cb: (payload: string, seq: number | undefined) => void): void;
     onBuzzer(cb: (payload: string) => void): void;
     onStatus(cb: (status: ConnectionStatus) => void): void;
     /**
-     * the server ended the session for good (`unknown panel`, `no free slot`, `replaced`,
-     * `panel removed`, `shutdown`) - no automatic reconnect afterwards
+     * the server ended the connection for good (`unknown panel`, `panel removed`,
+     * `shutdown`) - no automatic reconnect afterwards
      */
     onBye(cb: (reason: string) => void): void;
-    /** acknowledges the last command (`Done`) */
-    ack(): void;
+    /** acknowledges the command with this `seq` (`Done`) */
+    ack(seq: number | undefined): void;
     /** sends a display event (`event,…`) */
     recv(payload: string): void;
 }

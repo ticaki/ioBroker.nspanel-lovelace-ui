@@ -70,9 +70,12 @@ export function parseShutterOptions(optionalValue: string): ShutterOptions {
 }
 
 export interface NumberOptions {
+    /** the value clamped to `min`..`max` (position of the knob) */
     value: number;
     min: number;
     max: number;
+    /** the value as the adapter sent it, the HMI shows it unchanged next to the slider */
+    text: string;
 }
 
 /**
@@ -88,7 +91,7 @@ export function parseNumberOptions(optionalValue: string): NumberOptions {
         max = min + 1;
     }
     const value = Math.min(max, Math.max(min, toNumber(parts[0], min)));
-    return { value, min, max };
+    return { value, min, max, text: parts[0] ?? '' };
 }
 
 export interface IconField {
@@ -100,11 +103,44 @@ export interface IconField {
     font?: number;
 }
 
+/** Metrics of a Nextion font of the HMI, in stage pixels */
+export interface NextionFont {
+    /** css font size of text: Noto Sans with a cap height of 0.714 em matches the pictures */
+    fontSize: number;
+    /** css size of a MDI glyph: the icons fill about 0.9 of the Nextion line height */
+    iconSize: number;
+    fontWeight: 400 | 700;
+}
+
 /**
- * Pixel size of the Nextion fonts 0-5 (wiki ScriptConfig `fontSize`): 0 = 24 text, 1 = 32 icons,
- * 2 = 32 text, 3 = 48 icons, 4 = 80 icons, 5 = 128 ascii
+ * The Nextion fonts 0-5 of the HMI (`fontSize` of a script item, `¬<n>` in the icon field):
+ * 0 = 24 px text (noto-sans-24), 1 = 32 px icons and text (NotoSans-Regular), 2 = 32 px text
+ * (noto-sans-32), 3 = 48 px icons and text, 4 = 80 px bold icons and text (NotoSans-Bold),
+ * 5 = 128 px bold, ascii only. The Nextion size is the line height of the bitmap font; the
+ * css sizes were measured on the emulator pictures (cap heights 13, 18, 17, 26, 43, 67 px).
  */
-export const NEXTION_FONT_SIZE: readonly number[] = [24, 32, 32, 48, 80, 128];
+export const NEXTION_FONTS: readonly NextionFont[] = [
+    { fontSize: 18, iconSize: 22, fontWeight: 400 },
+    { fontSize: 25, iconSize: 29, fontWeight: 400 },
+    { fontSize: 24, iconSize: 29, fontWeight: 400 },
+    { fontSize: 36, iconSize: 43, fontWeight: 400 },
+    { fontSize: 60, iconSize: 70, fontWeight: 700 },
+    { fontSize: 94, iconSize: 112, fontWeight: 700 },
+];
+
+/** css font size of text in the Nextion fonts 0-5 */
+export const NEXTION_FONT_SIZE: readonly number[] = NEXTION_FONTS.map(f => f.fontSize);
+
+/**
+ * The metrics of a Nextion font.
+ *
+ * @param font the font from the icon field (`¬<n>`), undefined when the field has none
+ * @param fallback the font the HMI uses for the element without a `¬<n>`
+ */
+export function nextionFont(font: number | undefined, fallback: number): NextionFont {
+    const index = font !== undefined && font >= 0 && font < NEXTION_FONTS.length ? font : fallback;
+    return NEXTION_FONTS[index] ?? NEXTION_FONTS[1];
+}
 
 /**
  * Splits the icon field: the adapter can send a glyph, plain text (a value shown instead of an
@@ -127,7 +163,13 @@ export function splitIconField(icon: string): IconField {
     return { glyph: undefined, text: icon };
 }
 
-/** The `optionalValue` shown as text on a grid tile (cardGrid3), empty when it is a state flag */
+/**
+ * The `optionalValue` of a grid tile as text, empty when it is a state flag. The HMI does not
+ * show it on the tiles (cardGrid3 draws the value in the icon field, `useValue`); kept for
+ * tooltips and tests.
+ *
+ * @param entity the tile
+ */
 export function gridValueText(entity: Entity6): string {
     switch (entity.type) {
         case 'number':

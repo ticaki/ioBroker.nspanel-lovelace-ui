@@ -1,3 +1,3 @@
-# popupSlider: two of three sliders visible (getDetailPayload popupSlider)
-pageType~popupSlider~Lautstaerke~number.volume
-entityUpdateDetail~number.volume~Lautstaerke~~~35~0~100~~1~enable~Bass~~~-2~-10~10~0~0.5~enable~~~~~~~~~disable
+# popupSlider: three sliders (emu scene "Slider", popupSlider-3-slider.png); the icon comes from pageArgs[2]
+pageType~popupSlider~alias.0.Slider~Slider~
+entityUpdateDetail~alias.0.Slider~Slider 1~~~50~0~100~~1~enable~Slider 2~~~100~0~100~~1~enable~Slider 3~~~100~0~100~~1~enable

@@ -1,5 +1,13 @@
 import { describe, expect, it } from 'vitest';
-import { optionalBoolean, optionalNumber, popupEntityId, popupTitle, snapToStep } from './fields';
+import {
+    optionalBoolean,
+    optionalNumber,
+    popupEntityId,
+    popupHeaderIconColor,
+    popupIconColor565,
+    popupTitle,
+    snapToStep,
+} from './fields';
 import { initial, parseEntityUpd, parseEntityUpdateDetail } from './parse';
 
 const ctx = { pageType: 'popupSlider', pageArgs: ['number.volume', 'Lautstärke'] };
@@ -76,6 +84,19 @@ describe('popup field helpers', () => {
         expect(popupTitle(ctx, 'fallback')).toBe('Lautstärke');
         expect(popupEntityId({ pageType: 'popupSlider', pageArgs: [] }, 'fallback')).toBe('fallback');
         expect(popupTitle({ pageType: 'popupSlider', pageArgs: [] }, 'fallback')).toBe('fallback');
+    });
+
+    it('takes the head icon colour from pageArgs[3], the payload colour wins', () => {
+        const withColor = { pageType: 'popupSlider', pageArgs: ['number.volume', 'Lautstärke', '\u{F0374}', '2047'] };
+        expect(popupIconColor565(withColor)).toBe(2047);
+        expect(popupIconColor565(ctx)).toBeUndefined();
+        expect(popupIconColor565({ pageType: 'popupSlider', pageArgs: ['x', '', '', ''] })).toBeUndefined();
+        // 2047 = pure cyan
+        expect(popupHeaderIconColor(withColor)).toBe('rgb(0, 255, 255)');
+        // a popup with its own colour in the payload shows that one
+        expect(popupHeaderIconColor(withColor, 63488)).toBe('rgb(255, 0, 0)');
+        // nothing known: foreground
+        expect(popupHeaderIconColor(ctx)).toBe('#ffffff');
     });
 
     it('snaps to the step inside the range', () => {

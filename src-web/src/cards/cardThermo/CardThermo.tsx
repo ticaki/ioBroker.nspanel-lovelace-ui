@@ -19,14 +19,54 @@ interface CardThermoState {
     dst2: number | undefined;
 }
 
-const LABEL_COLOR = '#d0d0d0';
 const INACTIVE_COLOR = theme.muted;
 
+/*
+ * Geometry measured on the emulator picture of the HMI (480x320, stage pixels).
+ */
+
+/** the two text boxes on the left: label and value centred in a column 0..140 */
+const TEXT_BOX = { left: 0, width: 140, fontSize: 17, lineHeight: 20 } as const;
+/** tops of label 1, value 1, label 2, value 2 */
+const TEXT_TOPS = [90, 124, 159, 192] as const;
+
+/** y centre of the target temperature and its arrows */
+const TARGET_Y = 163;
+/** single target: x centre of the digits, arrow down left of it, arrow up right of it */
+const TARGET_X = 277;
+const ARROW_DOWN_X = 173;
+const ARROW_UP_X = 401;
+/** the chevrons of the HMI are big: 33 px wide */
+const ARROW_SIZE = 68;
+const ARROW_HIT = 72;
+const DIGITS_FONT = 62;
+const UNIT_FONT = 18;
+
+/** two targets (heat/cool): x centres of the two groups, each with its own arrows */
+const DUAL_X = [228, 390] as const;
+const DUAL_ARROW_OFFSET = 68;
+const DUAL_ARROW_SIZE = 40;
+const DUAL_DIGITS_FONT = 32;
+const DUAL_UNIT_FONT = 13;
+/** compact: the digits move left so that digits and unit together are centred */
+const DUAL_DIGITS_SHIFT = -8;
+
+/** the three dots of the detail button (opens popupThermo), centred under the digits */
+const DETAIL = { x: 278, y: 224, size: 42, hit: 48 } as const;
+
+/** 8 fixed slots of 54 px for the hvac mode icons, 8 px from the left edge */
+const ACTION_LEFT = 8;
+const ACTION_CELL = 54;
+const ACTION_TOP = 252;
+const ACTION_HEIGHT = 56;
+const ACTION_ICON_SIZE = 44;
+
 /**
- * cardThermo: the classic thermostat. Left two text boxes (label + value, e.g. `Currently`
- * and `State`), a large target temperature with up/down buttons in the centre right (two
- * of them with `temp2`), up to 8 hvac mode icons in the bottom row and an optional detail
- * button that opens `popupThermo`.
+ * cardThermo: the classic thermostat. Two text boxes on the left (label + value, e.g.
+ * `Currently` and `State`), a large target temperature in the centre right with the arrow
+ * down left of it and the arrow up right of it (two smaller groups with `temp2`), the
+ * detail button (three dots) below the digits and 8 fixed slots for the hvac mode icons
+ * in the bottom row.
  */
 export class CardThermo extends React.Component<CardProps<CardThermoModel>, CardThermoState> {
     state: CardThermoState = { dst: undefined, dst2: undefined };
@@ -95,59 +135,47 @@ export class CardThermo extends React.Component<CardProps<CardThermoModel>, Card
         this.props.openPopup('popupThermo', this.props.model.id, this.props.model.title);
     };
 
-    private renderTextBox(label: string, value: string, top: number): React.JSX.Element {
+    /** one line of the left column, centred like the text boxes of the HMI */
+    private renderText(text: string, top: number, key: string): React.JSX.Element {
         return (
-            <div style={{ position: 'absolute', left: 16, top, width: 160 }}>
-                <div
-                    style={{
-                        fontSize: 18,
-                        color: LABEL_COLOR,
-                        whiteSpace: 'nowrap',
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
-                    }}
-                >
-                    {label}
-                </div>
-                <div
-                    style={{
-                        fontSize: 22,
-                        color: theme.foreground,
-                        paddingLeft: 12,
-                        marginTop: 2,
-                        whiteSpace: 'nowrap',
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
-                    }}
-                >
-                    {value}
-                </div>
+            <div
+                key={key}
+                data-thermo-text={key}
+                style={{
+                    position: 'absolute',
+                    left: TEXT_BOX.left,
+                    top,
+                    width: TEXT_BOX.width,
+                    fontSize: TEXT_BOX.fontSize,
+                    lineHeight: `${TEXT_BOX.lineHeight}px`,
+                    textAlign: 'center',
+                    color: theme.foreground,
+                    whiteSpace: 'nowrap',
+                    overflow: 'hidden',
+                }}
+            >
+                {text}
             </div>
         );
     }
 
-    /**
-     * A target temperature with the up/down buttons around it.
-     *
-     * @param which 1 = `dstTemp` (`btUp`/`btDown`), 2 = `temp2` (`bUp2`/`bDown2`)
-     * @param centerX x of the column centre in stage pixels
-     * @param compact smaller digits when two targets share the width
-     */
-    private renderTarget(which: 1 | 2, centerX: number, compact: boolean): React.JSX.Element {
-        const value = which === 1 ? this.dst : this.dst2;
-        const { unit } = this.props.model;
-        const width = compact ? 128 : 180;
-        const fontSize = compact ? 48 : 60;
-        const button = (direction: 1 | -1, top: number): React.JSX.Element => (
+    private renderArrow(
+        which: 1 | 2,
+        direction: 1 | -1,
+        centerX: number,
+        size: number,
+        hit: number,
+    ): React.JSX.Element {
+        return (
             <div
                 data-pressable=""
                 data-thermo-button={`${which}${direction > 0 ? 'up' : 'down'}`}
                 style={{
                     position: 'absolute',
-                    left: (width - 48) / 2,
-                    top,
-                    width: 48,
-                    height: 36,
+                    left: centerX - hit / 2,
+                    top: TARGET_Y - hit / 2,
+                    width: hit,
+                    height: hit,
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
@@ -156,59 +184,106 @@ export class CardThermo extends React.Component<CardProps<CardThermoModel>, Card
             >
                 <Icon
                     name={direction > 0 ? 'chevron-up' : 'chevron-down'}
-                    size={34}
+                    size={size}
                     color={theme.foreground}
                 />
             </div>
         );
+    }
+
+    /**
+     * A target temperature: the digits centred at `centerX`, the unit top aligned right of them,
+     * the arrow down left and the arrow up right of the group.
+     *
+     * @param which 1 = `dstTemp` (`btUp`/`btDown`), 2 = `temp2` (`bUp2`/`bDown2`)
+     * @param centerX x of the digits' centre in stage pixels
+     * @param arrows x centres of the arrow down and the arrow up
+     * @param compact smaller digits when two targets share the width
+     */
+    private renderTarget(
+        which: 1 | 2,
+        centerX: number,
+        arrows: readonly [number, number],
+        compact: boolean,
+    ): React.JSX.Element {
+        const value = which === 1 ? this.dst : this.dst2;
+        const { unit } = this.props.model;
+        const digitsFont = compact ? DUAL_DIGITS_FONT : DIGITS_FONT;
+        const unitFont = compact ? DUAL_UNIT_FONT : UNIT_FONT;
+        const arrowSize = compact ? DUAL_ARROW_SIZE : ARROW_SIZE;
+        const arrowHit = compact ? DUAL_ARROW_SIZE + 8 : ARROW_HIT;
+        const height = Math.round(digitsFont * 1.15);
         return (
-            <div style={{ position: 'absolute', left: centerX - width / 2, top: 64, width, height: 176 }}>
-                {button(1, 0)}
+            <React.Fragment key={which}>
+                {this.renderArrow(which, -1, arrows[0], arrowSize, arrowHit)}
                 <div
+                    data-thermo-target={which}
                     style={{
                         position: 'absolute',
-                        left: 0,
-                        right: 0,
-                        top: 38,
-                        height: 100,
+                        left: centerX + (compact ? DUAL_DIGITS_SHIFT : 0),
+                        top: TARGET_Y - height / 2,
+                        width: 0,
+                        height,
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
+                        overflow: 'visible',
                     }}
                 >
-                    <span style={{ fontSize, fontWeight: 500, lineHeight: 1, color: theme.foreground }}>
-                        {formatTenths(value)}
-                    </span>
                     <span
                         style={{
-                            fontSize: compact ? 16 : 20,
+                            fontSize: digitsFont,
+                            // the big digits of the HMI are bold
+                            fontWeight: 700,
+                            lineHeight: 1,
                             color: theme.foreground,
-                            alignSelf: 'flex-start',
-                            marginTop: compact ? 18 : 16,
-                            marginLeft: 4,
+                            whiteSpace: 'nowrap',
+                            position: 'relative',
                         }}
                     >
-                        {unit}
+                        {formatTenths(value)}
+                        <span
+                            data-thermo-unit=""
+                            style={{
+                                position: 'absolute',
+                                left: '100%',
+                                top: compact ? 2 : 4,
+                                marginLeft: compact ? 3 : 6,
+                                fontSize: unitFont,
+                                fontWeight: 400,
+                                lineHeight: 1,
+                                whiteSpace: 'nowrap',
+                            }}
+                        >
+                            {unit}
+                        </span>
                     </span>
                 </div>
-                {button(-1, 140)}
-            </div>
+                {this.renderArrow(which, 1, arrows[1], arrowSize, arrowHit)}
+            </React.Fragment>
         );
     }
 
     private renderActions(actions: ThermoAction[]): React.JSX.Element {
-        const cell = 56;
-        const left = (480 - cell * actions.length) / 2;
         return (
-            <div style={{ position: 'absolute', left, top: 248, height: 56, display: 'flex' }}>
+            <div
+                data-thermo-actions=""
+                style={{
+                    position: 'absolute',
+                    left: ACTION_LEFT,
+                    top: ACTION_TOP,
+                    height: ACTION_HEIGHT,
+                    display: 'flex',
+                }}
+            >
                 {actions.map((action, i) => (
                     <div
                         key={i}
                         data-pressable={action.icon === '' ? undefined : ''}
                         data-thermo-action={i}
                         style={{
-                            width: cell,
-                            height: 56,
+                            width: ACTION_CELL,
+                            height: ACTION_HEIGHT,
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
@@ -218,7 +293,7 @@ export class CardThermo extends React.Component<CardProps<CardThermoModel>, Card
                     >
                         <Icon
                             glyph={action.icon}
-                            size={38}
+                            size={ACTION_ICON_SIZE}
                             color={action.active ? color565ToCss(action.color) : INACTIVE_COLOR}
                         />
                     </div>
@@ -247,26 +322,25 @@ export class CardThermo extends React.Component<CardProps<CardThermoModel>, Card
                     navigation={model.navigation}
                     press={press}
                 />
-                {this.renderTextBox(model.curTempLabel, model.currentTemp, 70)}
-                {this.renderTextBox(model.stateLabel, model.status, 150)}
-                {dual ? (
-                    <>
-                        {this.renderTarget(1, 240, true)}
-                        {this.renderTarget(2, 372, true)}
-                    </>
-                ) : (
-                    this.renderTarget(1, 300, false)
-                )}
+                {this.renderText(model.curTempLabel, TEXT_TOPS[0], 'label1')}
+                {this.renderText(model.currentTemp, TEXT_TOPS[1], 'value1')}
+                {this.renderText(model.stateLabel, TEXT_TOPS[2], 'label2')}
+                {this.renderText(model.status, TEXT_TOPS[3], 'value2')}
+                {dual
+                    ? DUAL_X.map((x, i) =>
+                          this.renderTarget(i === 0 ? 1 : 2, x, [x - DUAL_ARROW_OFFSET, x + DUAL_ARROW_OFFSET], true),
+                      )
+                    : this.renderTarget(1, TARGET_X, [ARROW_DOWN_X, ARROW_UP_X], false)}
                 {model.detail ? (
                     <div
                         data-pressable=""
                         data-thermo-detail=""
                         style={{
                             position: 'absolute',
-                            right: 2,
-                            top: 100,
-                            width: 44,
-                            height: 44,
+                            left: DETAIL.x - DETAIL.hit / 2,
+                            top: DETAIL.y - DETAIL.hit / 2,
+                            width: DETAIL.hit,
+                            height: DETAIL.hit,
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
@@ -275,7 +349,7 @@ export class CardThermo extends React.Component<CardProps<CardThermoModel>, Card
                     >
                         <Icon
                             name="dots-vertical"
-                            size={32}
+                            size={DETAIL.size}
                             color={theme.foreground}
                         />
                     </div>

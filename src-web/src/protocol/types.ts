@@ -61,6 +61,12 @@ export interface GlobalState {
     dim: DimState;
     /** true while a screensaver page is shown */
     sleeping: boolean;
+    /**
+     * true while the screensaver is woken by a touch (full brightness); false when it is
+     * dimmed. Always false outside the screensaver. A tap on an indicator icon only counts
+     * as an indicator press while awake.
+     */
+    awake: boolean;
 }
 
 export interface ParsedCommand {
@@ -72,19 +78,31 @@ export interface ParsedCommand {
 
 export type ConnectionStatus = 'connecting' | 'open' | 'closed';
 
+/** kind of a web panel: clone of a hardware panel or a standalone web panel */
+export type WebPanelKind = 'clone' | 'web';
+
+export function isWebPanelKind(value: unknown): value is WebPanelKind {
+    return value === 'clone' || value === 'web';
+}
+
 /** server -> client frames (see doc/web-panel/ARCHITECTURE.md 2.6) */
 export interface HelloFrame {
     t: 'hello';
-    session: string;
     model: PanelModel;
+    /** topic of the endpoint (hardware panel or standalone web panel) */
     topic: string;
+    /** name of the panel (= id) */
     name: string;
     friendlyName: string;
+    /** known TFT version of the model, `1.0.0` if unknown */
     tftVersion: string;
+    kind: WebPanelKind;
 }
 export interface CmdFrame {
     t: 'cmd';
     p: string;
+    /** running number, echoed in the `ack`; missing only with an outdated backend */
+    seq?: number;
 }
 export interface BuzzerFrame {
     t: 'buzzer';
@@ -92,6 +110,7 @@ export interface BuzzerFrame {
 }
 export interface ByeFrame {
     t: 'bye';
+    /** `unknown panel`, `panel removed`, `shutdown` */
     reason: string;
 }
 export type ServerFrame = HelloFrame | CmdFrame | BuzzerFrame | ByeFrame;
@@ -99,6 +118,8 @@ export type ServerFrame = HelloFrame | CmdFrame | BuzzerFrame | ByeFrame;
 /** client -> server frames */
 export interface AckFrame {
     t: 'ack';
+    /** `seq` of the acknowledged `cmd` frame */
+    seq?: number;
 }
 export interface RecvFrame {
     t: 'recv';
@@ -110,11 +131,12 @@ export function isServerFrame(value: unknown): value is ServerFrame {
     if (!value || typeof value !== 'object' || !('t' in value)) {
         return false;
     }
-    const frame = value as { t: unknown; p?: unknown; model?: unknown; reason?: unknown };
+    const frame = value as { t: unknown; p?: unknown; seq?: unknown; model?: unknown; kind?: unknown };
     switch (frame.t) {
         case 'hello':
-            return isPanelModel(frame.model);
+            return isPanelModel(frame.model) && isWebPanelKind(frame.kind);
         case 'cmd':
+            return typeof frame.p === 'string' && (frame.seq === undefined || typeof frame.seq === 'number');
         case 'buzzer':
             return typeof frame.p === 'string';
         case 'bye':

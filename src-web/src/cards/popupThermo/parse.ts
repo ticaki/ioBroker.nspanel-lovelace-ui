@@ -37,9 +37,9 @@ export function initial(): PopupThermoModel {
     return { entityName: '', icon: '', iconColor: 65535, rows: [], received: false };
 }
 
-/** `\r\n` of the adapter (`formatInSelText`) and the literal `\r\n` of example files -> `\n` */
+/** `\r\n` of the adapter (`formatInSelText`) and the literal `\r\n` of example files -> `\n`; trailing breaks are dropped */
 export function normalizeEntry(text: string): string {
-    return text.replaceAll('\\r\\n', '\n').replaceAll('\r\n', '\n').replaceAll('\r', '\n');
+    return text.replaceAll('\\r\\n', '\n').replaceAll('\r\n', '\n').replaceAll('\r', '\n').replace(/\n+$/, '');
 }
 
 export function splitList(list: string): string[] {

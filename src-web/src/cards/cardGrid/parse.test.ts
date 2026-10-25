@@ -39,9 +39,14 @@ describe('cardGrid parse', () => {
     });
 
     it('lays the tiles out as 3x2, 4x2 (us-p 3x3) and 2x2', () => {
-        expect(gridLayout('cardGrid', 'eu')).toMatchObject({ columns: 3, rows: 2, showValue: false });
-        expect(gridLayout('cardGrid2', 'eu')).toMatchObject({ columns: 4, rows: 2 });
+        expect(gridLayout('cardGrid', 'eu')).toMatchObject({ columns: 3, rows: 2, columnWidth: 147, rowHeight: 119 });
+        expect(gridLayout('cardGrid2', 'eu')).toMatchObject({ columns: 4, rows: 2, columnWidth: 112 });
         expect(gridLayout('cardGrid2', 'us-p')).toMatchObject({ columns: 3, rows: 3 });
-        expect(gridLayout('cardGrid3', 'eu')).toMatchObject({ columns: 2, rows: 2, showValue: true });
+        expect(gridLayout('cardGrid3', 'eu')).toMatchObject({
+            columns: 2,
+            rows: 2,
+            columnWidth: 223,
+            nameFontSize: 24,
+        });
     });
 });

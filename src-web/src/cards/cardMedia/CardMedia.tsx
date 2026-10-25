@@ -131,7 +131,7 @@ export class CardMedia extends React.Component<CardProps<CardMediaModel>> {
             return;
         }
         if ('popup' in event) {
-            this.props.openPopup(event.popup, event.id, entity.displayName, entity.icon);
+            this.props.openPopup(event.popup, event.id, entity.displayName, entity.icon, entity.iconColor);
         } else {
             this.props.press(event.id, event.action, event.value);
         }

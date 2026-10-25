@@ -11,6 +11,7 @@ import {
     layoutLine,
     lineRange,
     PLOT,
+    PLOT_BAR,
     type Primitive,
 } from './layout';
 import { darkColor565, initial, leadingInt, parseEntityUpd } from './parse';
@@ -144,7 +145,8 @@ describe('cardChart layout helpers', () => {
     it('cuts a label to the 20 px box: 1520 is printed as 15', () => {
         expect(fitText('152', 20)).toBe('15');
         expect(fitText('15', 20)).toBe('15');
-        expect(fitText('2.5', 20)).toBe('2.5');
+        expect(fitText('2.5', 20)).toBe('2.'); // the emulator shows `2.` for the tick 25
+        expect(fitText('-5', 20)).toBe('-5');
     });
 });
 
@@ -155,19 +157,19 @@ describe('cardChart bar layout', () => {
 
     it('uses the unit geometry of the HMI for 24 bars', () => {
         expect(layout.bar).toBeDefined();
-        expect(layout.bar?.unit).toBe(289); // (410-65)*100/119
-        expect(layout.bar?.left).toBe(8500);
+        expect(layout.bar?.unit).toBe(309); // (433-65)*100/119
+        expect(layout.bar?.left).toBe(7300);
         expect(layout.bar?.bottom).toBe(286);
         expect(layout.bar?.max).toBe(98);
         expect(layout.bar?.yUnit).toBe(2); // 196/98
     });
 
-    it('places the bars where the panel does (first bar at 86, last right edge 428)', () => {
+    it('places the bars where the panel does (first bar at 73, last right edge 440)', () => {
         const f = fills(layout.primitives);
         expect(f).toHaveLength(24);
-        expect(f[0]).toMatchObject({ x: 86, w: 11, y: 286 - 50 + 1, h: 49, color: model.colorDark });
+        expect(f[0]).toMatchObject({ x: 74, w: 12, y: 286 - 50 + 1, h: 49, color: model.colorDark });
         const last = f[f.length - 1];
-        expect(last.x).toBe(418);
+        expect(last.x).toBe(429);
         // tallest bar (98) fills the plot: top at 286 - 196 = 90
         expect(f[19]).toMatchObject({ y: 91, h: 195 });
     });
@@ -175,9 +177,9 @@ describe('cardChart bar layout', () => {
     it('draws labels and dashed grid lines under every 6th bar', () => {
         const labels = texts(layout.primitives).filter(t => !t.rotated && t.text.includes(':'));
         expect(labels.map(t => t.text)).toEqual(['6:00', '12:00', '18:00', '0:00']);
-        // centre of bar 5 = (289*2 + 5*5*289 + 8500) / 100 = 163
-        expect(labels[0]).toMatchObject({ x: 163 - 24, w: 48, y: 288, h: 22, align: 'center' });
-        const grid = lines(layout.primitives).filter(l => l.x1 === 163 && l.x1 === l.x2 && l.y1 >= 90);
+        // centre of bar 5 = (309*2 + 5*5*309 + 7300) / 100 = 156
+        expect(labels[0]).toMatchObject({ x: 156 - 24, w: 48, y: 288, h: 22, align: 'center' });
+        const grid = lines(layout.primitives).filter(l => l.x1 === 156 && l.x1 === l.x2 && l.y1 >= 75);
         expect(grid.length).toBeGreaterThan(15);
         // the top of bar 5 (35 -> 70 px) is at 216: dashes inside the bar are light, above grey
         expect(grid.filter(l => l.y1 >= 216).every(l => l.color === model.color)).toBe(true);
@@ -185,7 +187,7 @@ describe('cardChart bar layout', () => {
     });
 
     it('draws only the ticks up to the maximum, labelled in units', () => {
-        const ticks = texts(layout.primitives).filter(t => t.x === PLOT.x + 28);
+        const ticks = texts(layout.primitives).filter(t => t.x === PLOT_BAR.x + 28);
         expect(ticks.map(t => t.text)).toEqual(['2', '4', '6', '8']);
         // tick 20 -> 40 px above the base line, box centred there
         expect(ticks[0]).toMatchObject({ y: 286 - 40 - 10, w: 20, h: 20, align: 'right' });
@@ -194,7 +196,7 @@ describe('cardChart bar layout', () => {
     it('draws the y-axis label rotated, bottom to top', () => {
         const label = texts(layout.primitives).filter(t => t.rotated);
         expect(label.map(t => t.text)).toEqual(['W']);
-        expect(label[0]).toMatchObject({ x: PLOT.x, y: 90 + 92, w: 30 });
+        expect(label[0]).toMatchObject({ x: PLOT_BAR.x, y: 75 + 99, w: 30 });
     });
 
     it('a zero value is a base line in the dark colour', () => {
@@ -210,14 +212,14 @@ describe('cardChart bar layout', () => {
         if (!geometry) {
             throw new Error('no bar geometry');
         }
-        expect(barAt(geometry, 90, 24)).toBe(0);
-        expect(barAt(geometry, 84, 24)).toBe(0); // 1 px left of the first bar still truncates to unit 0
-        expect(barAt(geometry, 80, 24)).toBe(-1); // left of the first bar
-        expect(barAt(geometry, 97, 24)).toBe(-1); // the gap after bar 0 (units 4)
-        expect(barAt(geometry, 425, 24)).toBe(23);
-        expect(barAt(geometry, 425, 3)).toBe(-1);
+        expect(barAt(geometry, 78, 24)).toBe(0);
+        expect(barAt(geometry, 72, 24)).toBe(0); // 1 px left of the first bar still truncates to unit 0
+        expect(barAt(geometry, 69, 24)).toBe(-1); // left of the first bar
+        expect(barAt(geometry, 86, 24)).toBe(-1); // the gap after bar 0 (units 4)
+        expect(barAt(geometry, 430, 24)).toBe(23);
+        expect(barAt(geometry, 430, 3)).toBe(-1);
         expect(highlightBar(model, geometry, 0)).toEqual([
-            { kind: 'fill', x: 86, y: 237, w: 11, h: 49, color: model.color },
+            { kind: 'fill', x: 74, y: 237, w: 12, h: 49, color: model.color },
         ]);
     });
 });

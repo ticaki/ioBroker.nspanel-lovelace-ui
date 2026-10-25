@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { fontSize, handleCommand, initial, parseEntityUpdateDetail } from './parse';
+import { cssFontSize, fontSize, handleCommand, initial, lineHeight, maxLines, parseEntityUpdateDetail } from './parse';
 
 const ctx = { pageType: 'popupNotify', pageArgs: [] };
 
@@ -70,5 +70,8 @@ describe('popupNotify', () => {
 
     it('maps the font ids of the HMI', () => {
         expect([0, 1, 2, 3, 4, 5, 9].map(fontSize)).toEqual([24, 32, 32, 48, 80, 128, 24]);
+        expect([0, 3, 5].map(lineHeight)).toEqual([24, 48, 128]);
+        expect([0, 1, 3, 4, 5].map(cssFontSize)).toEqual([18, 24, 36, 60, 96]);
+        expect([0, 1, 2, 3, 4, 5, 9].map(maxLines)).toEqual([7, 5, 5, 4, 2, 1, 7]);
     });
 });

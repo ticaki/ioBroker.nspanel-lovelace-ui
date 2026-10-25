@@ -7,7 +7,7 @@ export interface DeviceFrameProps {
     /** brightness the display shows right now (0-100) */
     brightness: number;
     status: ConnectionStatus;
-    /** reason of the `bye` frame that ended the session - shown instead of the status, no retry */
+    /** reason of the `bye` frame that ended the connection - shown instead of the status, no retry */
     byeReason?: string;
     /** called on every touch/click on the stage, resets the screensaver timeout */
     onTouch: () => void;
@@ -29,22 +29,18 @@ const TEXT: Record<'de' | 'en', Record<ConnectionStatus, string>> = {
 const BYE_TEXT: Record<'de' | 'en', Record<string, string>> = {
     de: {
         'unknown panel': 'Unbekanntes Panel: die Adresse passt zu keinem Panel des Adapters.',
-        'no free slot': 'Kein freier Platz: zu viele Web-Panels sind geöffnet.',
-        replaced: 'Diese Sitzung wurde von einem anderen Browser übernommen.',
         'panel removed': 'Das Panel wurde aus dem Adapter entfernt.',
         shutdown: 'Der Adapter wurde beendet.',
     },
     en: {
         'unknown panel': 'Unknown panel: the address matches no panel of the adapter.',
-        'no free slot': 'No free slot: too many web panels are open.',
-        replaced: 'This session was taken over by another browser.',
         'panel removed': 'The panel was removed from the adapter.',
         shutdown: 'The adapter was stopped.',
     },
 };
 const RELOAD_TEXT: Record<'de' | 'en', string> = {
-    de: 'Sitzung beendet, Seite neu laden.',
-    en: 'Session ended, reload the page.',
+    de: 'Verbindung beendet, Seite neu laden.',
+    en: 'Connection ended, reload the page.',
 };
 
 function language(): 'de' | 'en' {

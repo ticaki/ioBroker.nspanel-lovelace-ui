@@ -3,12 +3,21 @@ import { Icon } from '../../components/Icon';
 import { color565ToCss } from '../../protocol/color';
 import { theme } from '../../style/theme';
 import type { CardProps } from '../CardContract';
+import { popupHeaderIconColor } from '../popupSlider/fields';
+import { POPUP_FONT_SIZE, PopupHeader, TAP_SIZE } from '../popupSlider/PopupHeader';
 import { pageCount, pageModes, ROW_COUNT, type PopupThermoModel, type ThermoModeRow } from './parse';
 
-const HEAD_HEIGHT = 60;
-const ROW_HEIGHT = 80;
-const HEADING_WIDTH = 120;
-const NEXT_WIDTH = 44;
+/**
+ * geometry of the HMI (stage pixels): per row the heading at the left (y 84) and the
+ * three mode buttons in the 3 column grid below it (y 118); rows of 80 px
+ */
+const ROW_PITCH = 80;
+const HEADING = { left: 11, centerY: 84 };
+const MODES_CENTER_Y = 118;
+const COLUMN_LEFT = 8;
+const COLUMN_WIDTH = 124;
+const MODE_HEIGHT = 44;
+const NEXT_CENTER_X = 440;
 /** RGB565 of the selected mode in the HMI (`bMode.pco=1374`) */
 const SELECTED_COLOR = color565ToCss(1374);
 
@@ -18,9 +27,9 @@ interface PopupThermoState {
 }
 
 /**
- * The mode popup of cardThermo: icon and X at the top, up to three rows with a heading
- * and three mode buttons each, an arrow at the end pages through longer lists (local,
- * like `bModeNext` of the HMI). Rows without modes are hidden.
+ * The mode popup of cardThermo: icon, title and X at the top, up to three rows with a
+ * heading and three mode buttons each, an arrow at the end pages through longer lists
+ * (local, like `bModeNext` of the HMI). Rows without modes are hidden.
  *
  * Events: mode -> `event,buttonPress2,<pageId>,mode-<type>,<index>`;
  * X -> `event,buttonPress2,popupThermo,bExit`.
@@ -73,30 +82,28 @@ export class PopupThermo extends React.Component<CardProps<PopupThermoModel>, Po
         const page = this.state.pages[rowIndex] ?? 0;
         const modes = pageModes(row, page);
         const pages = pageCount(row);
+        const top = rowIndex * ROW_PITCH;
         return (
             <div
                 key={rowIndex}
                 data-row={rowIndex}
-                style={{
-                    position: 'absolute',
-                    left: 12,
-                    right: 12,
-                    top: HEAD_HEIGHT + rowIndex * ROW_HEIGHT,
-                    height: ROW_HEIGHT,
-                    display: 'flex',
-                    alignItems: 'center',
-                }}
+                // the first row spans the header: only the modes and the page button take the
+                // touches, the X stays reachable
+                style={{ position: 'absolute', left: 0, right: 0, top, height: ROW_PITCH, pointerEvents: 'none' }}
             >
                 <div
                     style={{
-                        width: HEADING_WIDTH,
-                        flex: '0 0 auto',
+                        position: 'absolute',
+                        left: HEADING.left,
+                        right: 20,
+                        top: HEADING.centerY - 12,
+                        height: 24,
+                        lineHeight: '24px',
                         color: theme.foreground,
-                        fontSize: 22,
+                        fontSize: POPUP_FONT_SIZE,
                         whiteSpace: 'nowrap',
                         overflow: 'hidden',
                         textOverflow: 'ellipsis',
-                        paddingLeft: 4,
                     }}
                 >
                     {row.heading}
@@ -109,19 +116,24 @@ export class PopupThermo extends React.Component<CardProps<PopupThermoModel>, Po
                             key={slot}
                             data-mode={mode?.index}
                             style={{
-                                flex: '1 1 0',
-                                height: 56,
+                                position: 'absolute',
+                                left: COLUMN_LEFT + slot * COLUMN_WIDTH,
+                                width: COLUMN_WIDTH,
+                                top: MODES_CENTER_Y - MODE_HEIGHT / 2,
+                                height: MODE_HEIGHT,
                                 display: 'flex',
                                 alignItems: 'center',
                                 justifyContent: 'center',
                                 textAlign: 'center',
                                 color: selected ? SELECTED_COLOR : theme.foreground,
-                                fontSize: 22,
-                                lineHeight: '26px',
+                                fontSize: POPUP_FONT_SIZE,
+                                lineHeight: '22px',
                                 whiteSpace: 'pre-line',
                                 overflow: 'hidden',
                                 cursor: mode ? 'pointer' : 'default',
                                 padding: '0 4px',
+                                boxSizing: 'border-box',
+                                pointerEvents: 'auto',
                             }}
                             onClick={mode ? (): void => this.select(row, mode.index) : undefined}
                         >
@@ -129,26 +141,30 @@ export class PopupThermo extends React.Component<CardProps<PopupThermoModel>, Po
                         </div>
                     );
                 })}
-                <div
-                    data-next={pages > 1 ? rowIndex : undefined}
-                    style={{
-                        width: NEXT_WIDTH,
-                        height: 56,
-                        flex: '0 0 auto',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        cursor: pages > 1 ? 'pointer' : 'default',
-                        visibility: pages > 1 ? 'visible' : 'hidden',
-                    }}
-                    onClick={pages > 1 ? (): void => this.nextPage(rowIndex) : undefined}
-                >
-                    <Icon
-                        name="chevron-right"
-                        size={40}
-                        color={theme.foreground}
-                    />
-                </div>
+                {pages > 1 ? (
+                    <div
+                        data-next={rowIndex}
+                        style={{
+                            position: 'absolute',
+                            left: NEXT_CENTER_X - TAP_SIZE / 2,
+                            top: MODES_CENTER_Y - TAP_SIZE / 2,
+                            width: TAP_SIZE,
+                            height: TAP_SIZE,
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            cursor: 'pointer',
+                            pointerEvents: 'auto',
+                        }}
+                        onClick={(): void => this.nextPage(rowIndex)}
+                    >
+                        <Icon
+                            name="chevron-right"
+                            size={36}
+                            color={theme.foreground}
+                        />
+                    </div>
+                ) : null}
             </div>
         );
     }
@@ -161,68 +177,14 @@ export class PopupThermo extends React.Component<CardProps<PopupThermoModel>, Po
                 data-page={ctx.pageType}
                 style={{ position: 'absolute', inset: 0, background: theme.background, overflow: 'hidden' }}
             >
-                <div
-                    data-head=""
-                    style={{
-                        position: 'absolute',
-                        top: 0,
-                        left: 0,
-                        right: 0,
-                        height: HEAD_HEIGHT,
-                        display: 'flex',
-                        alignItems: 'center',
-                        paddingLeft: 16,
-                    }}
-                >
-                    <div
-                        style={{
-                            width: 48,
-                            height: 48,
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                        }}
-                    >
-                        <Icon
-                            glyph={model.icon || undefined}
-                            name={model.icon ? undefined : 'thermostat'}
-                            size={36}
-                            color={color565ToCss(model.iconColor)}
-                        />
-                    </div>
-                    <div
-                        style={{
-                            flex: '1 1 auto',
-                            marginLeft: 36,
-                            color: theme.foreground,
-                            fontSize: 26,
-                            whiteSpace: 'nowrap',
-                            overflow: 'hidden',
-                            textOverflow: 'ellipsis',
-                        }}
-                    >
-                        {title}
-                    </div>
-                    <div
-                        data-close=""
-                        style={{
-                            width: 48,
-                            height: 48,
-                            marginRight: 8,
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            cursor: 'pointer',
-                        }}
-                        onClick={this.close}
-                    >
-                        <Icon
-                            name="close"
-                            size={32}
-                            color={theme.foreground}
-                        />
-                    </div>
-                </div>
+                <PopupHeader
+                    title={title}
+                    icon={model.icon || ''}
+                    // the payload carries the icon colour: it wins; until it arrives the colour of the
+                    // tapped entity (pageArgs[3])
+                    iconColor={popupHeaderIconColor(ctx, model.received ? model.iconColor : undefined)}
+                    onClose={this.close}
+                />
                 {model.rows.map((row, i) => this.renderRow(row, i))}
             </div>
         );

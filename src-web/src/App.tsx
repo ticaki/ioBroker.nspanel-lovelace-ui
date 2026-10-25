@@ -11,9 +11,9 @@ import type { PanelTransport } from './transport/Transport';
 import { WsTransport } from './transport/WsTransport';
 
 export interface MockPanel {
-    /** feeds one raw CustomSend payload into the store */
-    dispatch: (raw: string) => void;
-    /** every event / ack the frontend sent, in order (`ack` or `event,…`) */
+    /** feeds one raw CustomSend payload into the store (`seq` optional, the mock records acks without it) */
+    dispatch: (raw: string, seq?: number) => void;
+    /** every event / ack the frontend sent, in order (`ack` or `event,…`) - acks stay the plain string `ack` */
     sent: string[];
     hello: HelloFrame;
 }
@@ -35,7 +35,7 @@ export interface AppProps {
 
 interface AppState {
     status: ConnectionStatus;
-    /** reason of the `bye` frame that ended the session, undefined while it is alive */
+    /** reason of the `bye` frame that ended the connection, undefined while it is alive */
     byeReason: string | undefined;
     hello: HelloFrame | undefined;
     snapshot: StoreSnapshot;
@@ -58,6 +58,7 @@ class MockTransport implements PanelTransport {
     }
     onBye(): void {}
     ack(): void {
+        // the seq is not recorded: screenshot.mjs and the card workers compare against the plain string
         this.sent.push('ack');
     }
     recv(payload: string): void {
@@ -104,7 +105,7 @@ export class App extends React.Component<AppProps, AppState> {
         this.store = new PanelStore({
             registry,
             recv: payload => this.transport.recv(payload),
-            ack: () => this.transport.ack(),
+            ack: seq => this.transport.ack(seq),
             log: message => console.debug(`[panel] ${message}`),
         });
         this.state = {
@@ -117,15 +118,15 @@ export class App extends React.Component<AppProps, AppState> {
         if (props.mock && transport instanceof MockTransport) {
             const hello: HelloFrame = {
                 t: 'hello',
-                session: 'mock',
                 model: props.mockModel ?? 'eu',
                 topic: props.topic,
                 name: 'mock',
                 friendlyName: 'Mock panel',
                 tftVersion: '5.1.1',
+                kind: 'web',
             };
             window.__panel = {
-                dispatch: (raw: string): void => this.store.dispatch(raw),
+                dispatch: (raw: string, seq?: number): void => this.store.dispatch(raw, seq),
                 sent: transport.sent,
                 hello,
             };
@@ -138,7 +139,7 @@ export class App extends React.Component<AppProps, AppState> {
         this.transport.onStatus(status => this.setState({ status }));
         this.transport.onHello(hello => this.onHello(hello));
         this.transport.onBye(reason => this.setState({ byeReason: reason }));
-        this.transport.onCommand(payload => this.store.dispatch(payload));
+        this.transport.onCommand((payload, seq) => this.store.dispatch(payload, seq));
         this.transport.onBuzzer(payload => this.buzzer.play(payload));
         void loadIconPaths().then(() => this.setState({ iconsLoaded: true }));
         this.transport.connect();
