@@ -1,0 +1,4 @@
+# Grid 6 (emulator picture cardGrid.png): 3x2 tiles
+pageType~cardGrid
+entityUpd~Grid 6~button~bSubPrev~~2047~~~button~bSubNext~~2047~~~light2~3?0~~16904~Licht_aus~0~light~3?1~~52857~Dimmer~1~light~3?2~~54278~Farbtemp.~1~light~3?3~~35657~Hue~1~shutter2~3?4~~2047~Rollladen~|||enable|enable|enable~switch~3?5~~1375~Steckd. ein~1
+@sleep 300

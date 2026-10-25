@@ -119,7 +119,9 @@ export class AdminConfiguration extends BaseClass {
      * @param option - Panel configuration partial (pages of the script already inside)
      */
     private async processScreensaver(option: panelConfigPartial): Promise<void> {
-        const { entry, others } = findScreensaverEntry(this.adapter.config.screensaverConfig, option.topic);
+        // a web panel is a clone - the admin entries list the topic of the real panel
+        const topic = option.sourceTopic ?? option.topic;
+        const { entry, others } = findScreensaverEntry(this.adapter.config.screensaverConfig, topic);
         if (!entry) {
             return;
         }
@@ -150,7 +152,7 @@ export class AdminConfiguration extends BaseClass {
         }
         const manager = new ConfigManager(this.adapter);
         const result = await manager.getScreensaverConfig(
-            buildScreensaverScriptConfig(entry, option.topic, states, this.adapter.config.screensaverNotify ?? []),
+            buildScreensaverScriptConfig(entry, topic, states, this.adapter.config.screensaverNotify ?? []),
             [],
             {
                 weatherEntityFixed: entry.weatherEntity !== undefined,
@@ -258,8 +260,10 @@ export class AdminConfiguration extends BaseClass {
                 a => a.topic === ShareConfig.ALL_PANELS_SPECIAL_ID,
             );
 
-            // Second pass: Check for this specific panel's assignment
-            const panelAssignment = entry.navigationAssignment.find(a => a.topic === option.topic);
+            // Second pass: Check for this specific panel's assignment (a web panel clone uses the
+            // topic of the real panel it was cloned from)
+            const panelTopic = option.sourceTopic ?? option.topic;
+            const panelAssignment = entry.navigationAssignment.find(a => a.topic === panelTopic);
 
             // Determine which assignment to use
             let navAssign:

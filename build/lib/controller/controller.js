@@ -54,6 +54,10 @@ class Controller extends Library.BaseClass {
     availableTasmotaFirmwareVersion: ""
   };
   systemNotification;
+  /** Resolves when init() has created the internal states and all configured panels */
+  initPromise;
+  /** Owner of the web panels - set by the web server, removes clones with their real panel */
+  virtualPanelManager;
   constructor(adapter, options) {
     super(adapter, options.name);
     switch (this.adapter.config.colorTheme) {
@@ -88,7 +92,10 @@ class Controller extends Library.BaseClass {
     if (this.adapter.mqttServer) {
       this.adapter.mqttServer.controller = this;
     }
-    void this.init(options.panels);
+    if (options.createVirtualPanelManager) {
+      this.virtualPanelManager = options.createVirtualPanelManager(this);
+    }
+    this.initPromise = this.init(options.panels);
     this.log.debug(`${this.name} created`);
   }
   minuteLoop = async () => {
@@ -164,15 +171,16 @@ class Controller extends Library.BaseClass {
     );
   };
   onLibraryStateChange = async (id, state) => {
-    var _a;
+    var _a, _b;
     if (!id.startsWith("panels.") || state.ack) {
       return;
     }
     const endsWith = id.split(".").slice(-2).join(".");
     switch (endsWith) {
       case "cmd.activated": {
+        const name = id.split(".").slice(1, -2).join(".");
         if (state.val === true) {
-          const panel = this.panels.find((p) => p.name === id.split(".").slice(1, -2).join("."));
+          const panel = this.panels.find((p) => p.name === name);
           if (panel) {
             break;
           }
@@ -183,7 +191,7 @@ class Controller extends Library.BaseClass {
             await this.addPanel(structuredClone(panelConfig));
           }
         } else if (state.val === false) {
-          const panel = this.panels.find((p) => p.name === id.split(".").slice(1, -2).join("."));
+          const panel = (_b = this.panels.find((p) => p.name === name && !p.isVirtual)) != null ? _b : this.panels.find((p) => p.name === name);
           if (panel) {
             await this.removePanel(panel);
           }
@@ -460,6 +468,7 @@ class Controller extends Library.BaseClass {
       this.adapter.log.error(`Panel ${panel.name} with topic ${panel.topic} not found in config`);
       return false;
     }
+    const pristine = structuredClone(panel);
     panel.name = this.adapter.config.panels[index].id;
     const state = this.library.readdb(`panels.${panel.name}.cmd.activated`);
     if (state && state.val === false) {
@@ -469,9 +478,23 @@ class Controller extends Library.BaseClass {
     panel.friendlyName = this.adapter.config.panels[index].name;
     panel.controller = this;
     panel.scriptName = panel.scriptName || "missing";
+    if (this.adapter.config.panels[index].kind === "web") {
+      if (!this.virtualPanelManager) {
+        this.log.warn(`Web panel ${panel.friendlyName} (${panel.topic}) skipped - web panels are disabled`);
+        return false;
+      }
+      panel.kind = "web";
+      panel.channel = this.virtualPanelManager.channelFor(this.adapter.config.panels[index].topic);
+    }
     const newPanel = await Panel.Panel.create(this.adapter, panel);
     if (await newPanel.isValid()) {
       await newPanel.init();
+      const known = this.options.panels.findIndex((p) => p && p.topic === pristine.topic);
+      if (known === -1) {
+        this.options.panels.push(pristine);
+      } else {
+        this.options.panels[known] = pristine;
+      }
       this.panels.push(newPanel);
       newPanel.initDone = true;
       this.log.debug(`Panel ${newPanel.name} created`);
@@ -492,12 +515,67 @@ class Controller extends Library.BaseClass {
     } else {
       this.log.error(`Panel ${panel.topic} not found`);
     }
+    if (!panel.isVirtual && this.virtualPanelManager) {
+      await this.virtualPanelManager.removeClonesOf(panel.topic);
+    }
   };
+  /**
+   * The configuration of a panel of the admin table (hardware or standalone web panel), looked
+   * up by its topic or, as a fallback, by its id. A web clone is built from it.
+   *
+   * @param topicOrId topic or id of the panel
+   * @returns the configuration as handed to the controller, or undefined
+   */
+  getPanelConfig(topicOrId) {
+    var _a;
+    let config = this.options.panels.find((p) => p && p.topic === topicOrId);
+    if (!config) {
+      const topic = (_a = this.adapter.config.panels.find((p) => p.id === topicOrId)) == null ? void 0 : _a.topic;
+      config = topic ? this.options.panels.find((p) => p && p.topic === topic) : void 0;
+    }
+    return config;
+  }
+  /**
+   * Create a web clone of a hardware panel with its own message channel.
+   * Unlike addPanel the topic is not checked against the admin panel table - the clone
+   * carries a topic of its own (`<topic>/web`) and shares the states tree of the hardware
+   * panel (`name` = id of the hardware panel).
+   *
+   * @param config clone of the real panel's configuration, name/topic/friendlyName/sourceTopic already set
+   * @param channel the in-process channel to the browser
+   * @returns the panel, or undefined if the configuration is invalid
+   */
+  async addVirtualPanel(config, channel) {
+    await this.initPromise;
+    if (this.unload || !config.topic || !config.name) {
+      return void 0;
+    }
+    if (this.panels.some((p) => p.topic === config.topic)) {
+      this.log.error(`Web panel ${config.name} with topic ${config.topic} already exists`);
+      return void 0;
+    }
+    config.kind = "web";
+    config.channel = channel;
+    config.controller = this;
+    config.scriptName = config.scriptName || "missing";
+    const newPanel = await Panel.Panel.create(this.adapter, config);
+    if (await newPanel.isValid()) {
+      await newPanel.init();
+      this.panels.push(newPanel);
+      newPanel.initDone = true;
+      this.log.debug(`Web panel ${newPanel.name} created`);
+      return newPanel;
+    }
+    await newPanel.setStatus("error");
+    await newPanel.delete();
+    this.log.error(`Web panel ${config.name} has a invalid configuration.`);
+    return void 0;
+  }
   mqttClientConnected = (id) => {
     if (id === this.mqttClient.clientId) {
       return true;
     }
-    const index = this.panels.findIndex((p) => id.startsWith(this.library.cleandp(p.friendlyName)));
+    const index = this.panels.findIndex((p) => !p.isVirtual && id.startsWith(this.library.cleandp(p.friendlyName)));
     if (index !== -1) {
       void this.panels[index].setStatus("connected");
       if (this.panels[index].initDone) {
@@ -539,6 +617,9 @@ class Controller extends Library.BaseClass {
     }
     if (this.systemNotification) {
       await this.systemNotification.delete();
+    }
+    if (this.virtualPanelManager) {
+      await this.virtualPanelManager.deleteAll();
     }
     if (this.statesControler) {
       await this.statesControler.delete();
@@ -600,10 +681,11 @@ class Controller extends Library.BaseClass {
         panels.push(panel);
       }
     }
-    temp.global = details.global && panels.length > 1;
-    for (const panel of panels) {
+    const names = [...new Set(panels.map((p) => p.name))];
+    temp.global = details.global && names.length > 1;
+    for (const name of names) {
       await this.statesControler.setInternalState(
-        `${panel.name}/cmd/popupNotificationCustom`,
+        `${name}/cmd/popupNotificationCustom`,
         JSON.stringify(details),
         false
       );

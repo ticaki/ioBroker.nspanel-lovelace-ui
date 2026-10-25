@@ -1,0 +1,4 @@
+# popupShutter: position and tilt (emu scene "Jalousie", popupShutter-tilt.png). The adapter never
+# fills text2 (field 2); pos1text (field 3) is the name of the entity and is shown next to the icon.
+pageType~popupShutter~alias.0.NSPanel.allgemein.shutter~Jalousie~
+entityUpdateDetail~alias.0.NSPanel.allgemein.shutter~50~~Jalousie~~~~~enable~enable~enable~~~~~enable~enable~enable~50

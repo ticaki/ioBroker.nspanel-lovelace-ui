@@ -1,0 +1,20 @@
+# Recorded 2026-10-25 from the dev-server adapter (web clone of the panel emu, ws://…/ws/emu_topic):
+# cardEntities, then event,sleepReached -> alternate screensaver (the adapter sends 6 entities, the last two empty).
+# dimmode standby raised to 100 for screenshots (the adapter sent dimmode~15~80~0~53247).
+dimmode~100~80~0~53247
+pageType~cardEntities
+entityUpd~Entities 1~button~bSubPrev~~2047~~~button~bSubNext~~2047~~~light2~1?0~~16904~Licht_aus~0~switch~1?1~~13039~Steckd. ein~0~shutter2~1?2~~2047~Rollladen~|||enable|enable|enable~number~1?3~~2047~Zahl~3776|0|100
+timeout~30
+date~So., 25. Oktober 26
+time~00:27
+timeout~2
+pageType~screensaver
+time~00:27
+weatherUpdate~~~~17299~~13,1°C~~~~65504~Sonne~~~~~64512~Wind~2,4m/s~~~~64512~Böen~3,9m/s~~~~~~~~~~~~
+color~2147~53247~2047~54938~65535~34431~34431~34431~34431~34431~34431~34431~34431~16904~2047~2047
+statusUpdate~~17299~~17299~~
+timeout~30
+statusUpdate~~65222~~17299~~
+statusUpdate~~65222~~65222~~
+statusUpdate~~17299~~65222~~
+statusUpdate~~17299~~17299~~

@@ -19,14 +19,14 @@ function setup(): { send: PanelSend; published: string[] } {
         setTimeout: (fn: () => void, ms: number) => setTimeout(fn, ms),
         clearTimeout: (t: ReturnType<typeof setTimeout>) => clearTimeout(t),
     };
-    const mqttClient: any = {
+    const channel: any = {
         subscribe: async (): Promise<void> => undefined,
         unsubscribe: noop,
         publish: async (_topic: string, payload: string): Promise<void> => {
             published.push(payload);
         },
     };
-    const send = new PanelSend(adapter, { name: 'test', mqttClient, topic: TOPIC, panel: { isOnline: true } as any });
+    const send = new PanelSend(adapter, { name: 'test', channel, topic: TOPIC, panel: { isOnline: true } as any });
     return { send, published };
 }
 

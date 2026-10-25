@@ -27,6 +27,10 @@ var import_library = require("./lib/controller/library");
 var import_register = require("source-map-support/register");
 var MQTT = __toESM(require("./lib/classes/mqtt"));
 var import_controller = require("./lib/controller/controller");
+var import_virtual_panel_manager = require("./lib/web/virtual-panel-manager");
+var import_web_server = require("./lib/web/web-server");
+var import_fido = require("./lib/web/fido");
+var import_fido_store = require("./lib/web/fido-store");
 var import_icon_mapping = require("./lib/const/icon_mapping");
 var definition = __toESM(require("./lib/const/definition"));
 var import_config_manager = require("./lib/classes/config-manager");
@@ -47,6 +51,10 @@ class NspanelLovelaceUi extends utils.Adapter {
   mqttClient;
   mqttServer;
   controller;
+  /** HTTP/WebSocket server of the web panels, undefined when disabled */
+  webServer;
+  /** registered FIDO2 keys of the web panels (loaded on demand) */
+  fidoStore;
   unload = false;
   testSuccessful = true;
   timeoutAdmin;
@@ -306,6 +314,7 @@ class NspanelLovelaceUi extends utils.Adapter {
       await this.library.init();
       const states = await this.getStatesAsync("*");
       await this.library.initStates(states);
+      await (0, import_virtual_panel_manager.removeLegacyWebPanelTrees)(this);
       this.mqttClient = new MQTT.MQTTClientClass(
         this,
         this.config.mqttIp,
@@ -327,7 +336,7 @@ class NspanelLovelaceUi extends utils.Adapter {
       await this.onMqttConnect();
       await this.delay(1e3);
       for (const id in states) {
-        if (id.endsWith(".info.isOnline")) {
+        if (id.endsWith(".info.isOnline") && !(0, import_virtual_panel_manager.legacyWebPanelTree)(id.replace(`${this.namespace}.`, ""))) {
           await this.library.writedp(id, false, definition.genericStateObjects.panel.panels.info.isOnline);
         }
       }
@@ -428,14 +437,117 @@ class NspanelLovelaceUi extends utils.Adapter {
       }
       const mem = process.memoryUsage().heapUsed / 1024;
       this.log.debug(String(`${mem}k`));
+      const webEnabled = this.config.webEnabled !== false;
       this.controller = new import_controller.Controller(this, {
         mqttClient: this.mqttClient,
         name: "controller",
-        panels: structuredClone(this.mainConfiguration)
+        panels: structuredClone(this.mainConfiguration),
+        // standalone web panels take their channel from the manager while the controller creates the panels
+        createVirtualPanelManager: webEnabled ? (c) => new import_virtual_panel_manager.VirtualPanelManager(this, c) : void 0
       });
+      await this.startWebServer(this.controller);
     } catch (e) {
       this.testSuccessful = false;
       this.log.error(`Error onReady: ${e}`);
+    }
+  }
+  /**
+   * Start the HTTP/WebSocket server of the web panels (browser shows the panel UI).
+   *
+   * @param controller the controller owning the panels
+   */
+  async startWebServer(controller) {
+    var _a;
+    const manager = controller.virtualPanelManager;
+    if (!manager) {
+      this.log.debug("Web panels are disabled");
+      return;
+    }
+    let secret = "";
+    try {
+      const systemConfig = await this.getForeignObjectAsync("system.config");
+      secret = typeof ((_a = systemConfig == null ? void 0 : systemConfig.native) == null ? void 0 : _a.secret) === "string" ? systemConfig.native.secret : "";
+    } catch {
+    }
+    if (!secret) {
+      this.log.warn("system.config has no secret - the PIN token of the web panels uses a fallback key");
+      secret = this.namespace;
+    }
+    let tls;
+    if (this.config.webSecure) {
+      tls = await this.loadWebCertificates();
+      if (!tls) {
+        return;
+      }
+    }
+    let fido;
+    if (this.config.webFido) {
+      if (!tls) {
+        this.log.info("Web panels: FIDO2 needs HTTPS - disabled");
+      } else {
+        const store = await this.getFidoStore();
+        fido = new import_fido.FidoService({ rpName: "NSPanel Lovelace UI", store, log: this.log });
+        this.log.info(
+          `Web panels: FIDO2 login enabled (${store.list().length} security key(s) registered, register at /auth/fido/register)`
+        );
+      }
+    }
+    this.webServer = new import_web_server.WebServer(this, manager, {
+      port: Number(this.config.webPort) || 8090,
+      bind: this.config.webBind || "0.0.0.0",
+      host: typeof this.config.webHost === "string" ? this.config.webHost.trim() : "",
+      wwwPath: import_node_path.default.join(__dirname, "..", "www"),
+      // a PIN typed as digits may arrive as a number
+      pin: this.config.webPin == null ? "" : String(this.config.webPin).trim(),
+      secret,
+      tls,
+      fido
+    });
+    if (!await this.webServer.start()) {
+      await this.webServer.delete();
+      this.webServer = void 0;
+    }
+  }
+  /**
+   * The FIDO2 credential store, loaded from `web.fidoCredentials` on first use.
+   *
+   * @returns the store
+   */
+  async getFidoStore() {
+    if (!this.fidoStore) {
+      this.fidoStore = new import_fido_store.FidoCredentialStore(this);
+    }
+    if (!this.fidoStore.isLoaded) {
+      await this.fidoStore.load();
+    }
+    return this.fidoStore;
+  }
+  /**
+   * Load the ioBroker certificates (`system.certificates`) selected for the web panels.
+   *
+   * @returns key, cert and chain - undefined (with an error log) if they are missing or empty
+   */
+  async loadWebCertificates() {
+    const publicName = String(this.config.webCertPublic || "").trim();
+    const privateName = String(this.config.webCertPrivate || "").trim();
+    const chainedName = String(this.config.webCertChained || "").trim();
+    if (!publicName || !privateName) {
+      this.log.error(
+        "Web panels: HTTPS is enabled but no public/private certificate is selected - web panels are disabled"
+      );
+      return void 0;
+    }
+    try {
+      const [certs] = await this.getCertificatesAsync(publicName, privateName, chainedName || void 0);
+      if (!certs || !certs.key || !certs.cert) {
+        throw new Error("certificate or key is empty");
+      }
+      return { key: certs.key, cert: certs.cert, ca: certs.ca };
+    } catch (e) {
+      this.log.error(
+        `Web panels: cannot load the certificates "${publicName}"/"${privateName}"${chainedName ? `/"${chainedName}"` : ""} from system.certificates: ${e instanceof Error ? e.message : String(e)} - web panels are disabled`
+      );
+      return void 0;
     }
   }
   onMqttConnect = async () => {
@@ -457,7 +569,7 @@ class NspanelLovelaceUi extends utils.Adapter {
       }
     };
     for (const tasmota of this.config.panels) {
-      if (tasmota && tasmota.ip) {
+      if (tasmota && tasmota.ip && tasmota.kind !== "web") {
         void _helper(tasmota);
       }
     }
@@ -541,6 +653,10 @@ class NspanelLovelaceUi extends utils.Adapter {
       });
       if (this.controller) {
         await this.controller.delete();
+      }
+      if (this.webServer) {
+        await this.webServer.delete();
+        this.webServer = void 0;
       }
       if (this.mqttClient) {
         await this.mqttClient.destroy();
@@ -694,7 +810,7 @@ class NspanelLovelaceUi extends utils.Adapter {
   //  * Using this method requires "common.messagebox" property to be set to true in io-package.json
   //  */
   async onMessage(obj) {
-    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _A, _B, _C, _D, _E, _F;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _A, _B, _C, _D, _E, _F, _G, _H;
     if (typeof obj === "object" && obj.message !== void 0 && obj.command) {
       this.log.debug((0, import_redact.stringifyForLog)(obj));
       if (obj.command === "tftInstallSendToMQTT") {
@@ -781,7 +897,7 @@ class NspanelLovelaceUi extends utils.Adapter {
           const names = [];
           if ((_d = this.controller) == null ? void 0 : _d.panels) {
             for (const p of this.controller.panels) {
-              if (p) {
+              if (p && !p.isClone) {
                 names.push({ panelTopic: p.topic, friendlyName: p.friendlyName || p.name });
               }
             }
@@ -794,7 +910,7 @@ class NspanelLovelaceUi extends utils.Adapter {
         case import_adminShareConfig.SAVE_PANEL_NAVIGATION_COMMAND: {
           if (obj.message && ((_e = this.controller) == null ? void 0 : _e.panels)) {
             const data = obj.message;
-            const panel = this.controller.panels.find((a) => a.name === data.panelName);
+            const panel = (_f = this.controller.panels.find((a) => a.name === data.panelName && !a.isClone)) != null ? _f : this.controller.panels.find((a) => a.name === data.panelName);
             if (panel) {
               await panel.saveNavigationMapDeprecated(data.pages);
             }
@@ -806,9 +922,9 @@ class NspanelLovelaceUi extends utils.Adapter {
         }
         case import_adminShareConfig.SENDTO_GET_PANEL_NAVIGATION_COMMAND: {
           const nav = [];
-          if ((_f = this.controller) == null ? void 0 : _f.panels) {
+          if ((_g = this.controller) == null ? void 0 : _g.panels) {
             for (const p of this.controller.panels) {
-              if (p) {
+              if (p && !p.isClone) {
                 nav.push(await p.getNavigationArrayForFlow());
               }
             }
@@ -955,7 +1071,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                 if (r.panelConfig) {
                   const others = [];
                   const instanceObj = await this.getForeignObjectAsync(this.namespace);
-                  const stored = (_g = instanceObj == null ? void 0 : instanceObj.native) == null ? void 0 : _g.scriptConfig;
+                  const stored = (_h = instanceObj == null ? void 0 : instanceObj.native) == null ? void 0 : _h.scriptConfig;
                   if (Array.isArray(stored)) {
                     for (const item of stored) {
                       if (item && item.topic && item.topic !== r.panelConfig.topic && this.config.panels.findIndex((a) => a.topic === item.topic) !== -1) {
@@ -1072,7 +1188,7 @@ class NspanelLovelaceUi extends utils.Adapter {
           break;
         }
         case "setPopupNotification": {
-          if (((_i = (_h = this.controller) == null ? void 0 : _h.panels) == null ? void 0 : _i.some((p) => p.status === "online")) && obj.message) {
+          if (((_j = (_i = this.controller) == null ? void 0 : _i.panels) == null ? void 0 : _j.some((p) => p.status === "online")) && obj.message) {
             await this.controller.setPopupNotification(obj.message);
             if (obj.callback) {
               this.sendTo(obj.from, obj.command, [], obj.callback);
@@ -1090,9 +1206,55 @@ class NspanelLovelaceUi extends utils.Adapter {
           }
           break;
         }
+        case "webFidoList": {
+          try {
+            const store = await this.getFidoStore();
+            if (obj.callback) {
+              this.sendTo(
+                obj.from,
+                obj.command,
+                {
+                  credentials: store.summaries(),
+                  active: ((_k = this.webServer) == null ? void 0 : _k.fido) !== void 0,
+                  configured: !!this.config.webFido,
+                  secure: !!this.config.webSecure
+                },
+                obj.callback
+              );
+            }
+          } catch (e) {
+            if (obj.callback) {
+              this.sendTo(obj.from, obj.command, { error: String(e) }, obj.callback);
+            }
+          }
+          break;
+        }
+        case "webFidoDelete": {
+          const id = typeof obj.message === "object" && obj.message && typeof obj.message.id === "string" ? obj.message.id : "";
+          try {
+            const store = await this.getFidoStore();
+            const removed = id ? await store.remove(id) : false;
+            if (removed) {
+              this.log.info("Web panels: a FIDO2 security key was removed via the admin");
+            }
+            if (obj.callback) {
+              this.sendTo(
+                obj.from,
+                obj.command,
+                { ok: removed, credentials: store.summaries() },
+                obj.callback
+              );
+            }
+          } catch (e) {
+            if (obj.callback) {
+              this.sendTo(obj.from, obj.command, { error: String(e) }, obj.callback);
+            }
+          }
+          break;
+        }
         case "getTasmotaDevices": {
           if (this.config.panels) {
-            const devices = this.config.panels.map((a) => {
+            const devices = this.config.panels.filter((a) => a && a.kind !== "web").map((a) => {
               return { label: `${a.ip} (${a.name})`, value: a.ip };
             });
             if (obj.callback) {
@@ -1223,7 +1385,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                   }
                   break;
                 }
-                if ((_j = this.controller) == null ? void 0 : _j.panels) {
+                if ((_l = this.controller) == null ? void 0 : _l.panels) {
                   const index = this.controller.panels.findIndex((a) => a.topic === obj.message.topic);
                   if (index !== -1) {
                     const panel = this.controller.panels[index];
@@ -1354,6 +1516,9 @@ class NspanelLovelaceUi extends utils.Adapter {
           const version = vTemp[1] ? vTemp[1] : "";
           for (let a = 0; a < this.config.panels.length; a++) {
             const panel = this.config.panels[a];
+            if (!panel || panel.kind === "web") {
+              continue;
+            }
             const state = this.library.readdb(`panels.${panel.id}.info.nspanel.firmwareUpdate`);
             if (state && typeof state.val === "number" && state.val < 100) {
               flashingObj[panel.id] = `${flashingText}: ${state.val}%`;
@@ -1372,12 +1537,15 @@ class NspanelLovelaceUi extends utils.Adapter {
             }
             return 0;
           };
-          if ((_k = this.controller) == null ? void 0 : _k.panels) {
+          if ((_m = this.controller) == null ? void 0 : _m.panels) {
             const updateText = this.library.getTranslation("updateAvailable");
             const downgradeText = this.library.getTranslation("downgradeAvailable");
             const checkText = this.library.getTranslation("check!");
             const temp = [];
             for (const a of this.controller.panels) {
+              if (a.isClone) {
+                continue;
+              }
               let check = false;
               let check_tasmota = false;
               let check_tft = false;
@@ -1391,7 +1559,7 @@ class NspanelLovelaceUi extends utils.Adapter {
               );
               const o = await this.getForeignObjectAsync(scriptId);
               if (o) {
-                const temp2 = (_m = (_l = o.common.source.match(/const.version.+'(\d+\.\d+\.\d+)';/)) == null ? void 0 : _l[1]) != null ? _m : "";
+                const temp2 = (_o = (_n = o.common.source.match(/const.version.+'(\d+\.\d+\.\d+)';/)) == null ? void 0 : _n[1]) != null ? _o : "";
                 if (temp2 !== version) {
                   check = true;
                   check_script = true;
@@ -1401,13 +1569,13 @@ class NspanelLovelaceUi extends utils.Adapter {
                 }
               }
               if (a.info) {
-                if ((_n = a.info.tasmota) == null ? void 0 : _n.firmwareversion) {
+                if ((_p = a.info.tasmota) == null ? void 0 : _p.firmwareversion) {
                   const temp2 = a.info.tasmota.firmwareversion.match(/([0-9]+\.[0-9]+\.[0-9]+)/);
                   if (temp2 && temp2[1]) {
                     tv = `${temp2[1]}`;
                   }
                 }
-                if (((_o = a.info.tasmota) == null ? void 0 : _o.onlineVersion) && tv) {
+                if (((_q = a.info.tasmota) == null ? void 0 : _q.onlineVersion) && tv) {
                   const temp2 = a.info.tasmota.onlineVersion.match(/([0-9]+\.[0-9]+\.[0-9]+)/);
                   if (temp2 && temp2[1]) {
                     const cmp = compareSemver(temp2[1], tv);
@@ -1422,13 +1590,13 @@ class NspanelLovelaceUi extends utils.Adapter {
                   }
                 }
                 tv = tv ? `v${tv}` : "";
-                if ((_p = a.info.nspanel) == null ? void 0 : _p.displayVersion) {
+                if ((_r = a.info.nspanel) == null ? void 0 : _r.displayVersion) {
                   const temp2 = a.info.nspanel.displayVersion.match(/([0-9]+\.[0-9]+\.[0-9]+)/);
                   if (temp2 && temp2[1]) {
                     nv = `${temp2[1]}`;
                   }
                 }
-                if (((_q = a.info.nspanel) == null ? void 0 : _q.onlineVersion) && nv) {
+                if (((_s = a.info.nspanel) == null ? void 0 : _s.onlineVersion) && nv) {
                   const temp2 = a.info.nspanel.onlineVersion.match(/([0-9]+\.[0-9]+\.[0-9]+)/);
                   if (temp2 && temp2[1]) {
                     const cmp = compareSemver(temp2[1], nv);
@@ -1457,15 +1625,15 @@ class NspanelLovelaceUi extends utils.Adapter {
                 _check_script: check_script,
                 _Headline: `${a.friendlyName} (${ft ? ft : `${check ? checkText : `${a.isOnline ? "online" : a.flashing ? `flashing` : "offline"}`}`})`,
                 _name: a.friendlyName,
-                _ip: ((_t = (_s = (_r = a.info) == null ? void 0 : _r.tasmota) == null ? void 0 : _s.net) == null ? void 0 : _t.IPAddress) ? a.info.tasmota.net.IPAddress : "offline - waiting",
+                _ip: a.isVirtual ? "" : ((_v = (_u = (_t = a.info) == null ? void 0 : _t.tasmota) == null ? void 0 : _u.net) == null ? void 0 : _v.IPAddress) ? a.info.tasmota.net.IPAddress : "offline - waiting",
                 _online: a.isOnline && a.initDone ? "yes" : "no",
                 _flashing: a.flashing,
                 _topic: a.topic,
-                _id: ((_w = (_v = (_u = a.info) == null ? void 0 : _u.tasmota) == null ? void 0 : _v.net) == null ? void 0 : _w.Mac) ? a.info.tasmota.net.Mac : "",
+                _id: ((_y = (_x = (_w = a.info) == null ? void 0 : _w.tasmota) == null ? void 0 : _x.net) == null ? void 0 : _y.Mac) ? a.info.tasmota.net.Mac : "",
                 _tftVersion: nv ? nv : "???",
                 _tasmotaVersion: tv ? tv : "???",
                 _ScriptVersion: sv ? `v${sv}` : "???",
-                _nsPanelModel: ((_y = (_x = a.info) == null ? void 0 : _x.nspanel) == null ? void 0 : _y.model) ? a.info.nspanel.model == "eu" ? "" : a.info.nspanel.model : ""
+                _nsPanelModel: a.isVirtual ? a.info.nspanel.model : ((_A = (_z = a.info) == null ? void 0 : _z.nspanel) == null ? void 0 : _A.model) ? a.info.nspanel.model == "eu" ? "" : a.info.nspanel.model : ""
               });
             }
             result = result.concat(temp);
@@ -1483,7 +1651,7 @@ class NspanelLovelaceUi extends utils.Adapter {
               );
               const o = await this.getForeignObjectAsync(scriptId);
               if (o) {
-                const temp3 = (_A = (_z = o.common.source.match(/const.version.+'(\d+\.\d+\.\d+)';/)) == null ? void 0 : _z[1]) != null ? _A : "";
+                const temp3 = (_C = (_B = o.common.source.match(/const.version.+'(\d+\.\d+\.\d+)';/)) == null ? void 0 : _B[1]) != null ? _C : "";
                 if (temp3 !== version) {
                   sv = temp3 ? temp3 : version;
                 }
@@ -1553,7 +1721,7 @@ class NspanelLovelaceUi extends utils.Adapter {
           const result = await this.getVersionsJson();
           if (result && "tasmota" in result && typeof result.tasmota === "string") {
             const cmnd = `OtaUrl http://ota.tasmota.com/tasmota32/release-${result.tasmota.trim()}/tasmota32-${language.toUpperCase()}.bin; Upgrade 1`;
-            if ((_B = this.controller) == null ? void 0 : _B.panels) {
+            if ((_D = this.controller) == null ? void 0 : _D.panels) {
               const index = this.controller.panels.findIndex((a) => a.topic === obj.message.topic);
               if (index !== -1) {
                 const panel = this.controller.panels[index];
@@ -1598,7 +1766,7 @@ class NspanelLovelaceUi extends utils.Adapter {
           break;
         }
         case "screensaverNotify": {
-          if (((_C = obj.message) == null ? void 0 : _C.panel) && ((_D = this.controller) == null ? void 0 : _D.panels)) {
+          if (((_E = obj.message) == null ? void 0 : _E.panel) && ((_F = this.controller) == null ? void 0 : _F.panels)) {
             const panel = this.controller.panels.find((a) => a.topic === obj.message.topic);
             if (panel == null ? void 0 : panel.screenSaver) {
               if (typeof obj.message.heading === "string") {
@@ -1634,7 +1802,7 @@ class NspanelLovelaceUi extends utils.Adapter {
           break;
         }
         case "buzzer": {
-          if (((_E = obj.message) == null ? void 0 : _E.panel) && ((_F = this.controller) == null ? void 0 : _F.panels)) {
+          if (((_G = obj.message) == null ? void 0 : _G.panel) && ((_H = this.controller) == null ? void 0 : _H.panels)) {
             const panel = this.controller.panels.find((a) => a.topic === obj.message.panel);
             if (panel && typeof obj.message.command === "string" && obj.message.command.trim()) {
               await panel.statesControler.setInternalState(

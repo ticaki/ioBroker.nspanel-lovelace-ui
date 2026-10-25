@@ -1,0 +1,5 @@
+# cardChart (bar chart) - the scene of the emulator picture cardChart.png: 22 daily values
+# (x10), a label every 7 days, ticks 25:50:85 (the HMI cuts "2.5" to "2." and "8.5" to "8.")
+dimmode~20~100~0~65535
+pageType~cardChart
+entityUpd~chart~button~bSubPrev~~1592~~~button~bSubNext~~1592~~~46500~~25:50:85~60^19~10~92~30~65~70~72~44^26~80~76~72~78~92~15~30^2~62~23~10~97~10~88~80^9

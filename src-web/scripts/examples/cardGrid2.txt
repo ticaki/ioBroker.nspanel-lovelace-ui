@@ -1,0 +1,4 @@
+# cardGrid2: 4x2 tiles, last one is the "more" arrow of scrollPresentation arrow
+pageType~cardGrid2
+entityUpd~Wohnzimmer~button~bSubPrev~~65535~~~button~bSubNext~~65535~~~switch~2?1?0~~65222~Decke~1~switch~2?1?1~~17299~Stehlampe~0~shutter~2?1?2~~65535~Rollo~|||enable|enable|enable~fan~2?1?3~~17299~Lüfter~0~text~2?1?4~21.5~9406~Temperatur~21.5 °C~number~2?1?5~~65222~Volume~35|0|100~button~2?1?6~~65535~TV an~1~button~2?1?7-NextPageArrow~~65351~more~1
+@sleep 300

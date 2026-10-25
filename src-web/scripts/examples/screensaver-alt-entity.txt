@@ -1,0 +1,10 @@
+# Screensaver, alternate layout with an alternate entity (wiki: screensaverAlt.png): favorit icon left,
+# value right of it, the alternate entity below - no emulator picture of this state yet.
+timeout~20
+dimmode~100~100~2147~53247~1
+pageType~screensaver
+time~11:42
+date~Mo., 8. Januar 2024
+weatherUpdate~~~~21130~~0 °C~~~~65535~Außen~Aus~~~~32495~Wind~6.1m/s~~~~32495~Böen~8.9m/s~~~~~~~~~~52810~~78.0%
+color~2147~53247~2047~54938~65535~34431~34431~34431~34431~34431~34431~34431~34431~16904~2047~2047
+statusUpdate~~65504~~2016~~

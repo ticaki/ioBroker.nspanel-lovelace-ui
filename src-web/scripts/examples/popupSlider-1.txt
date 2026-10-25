@@ -1,0 +1,3 @@
+# popupSlider: one slider at its maximum (emu scene "Zahl" of cardEntities, popupSlider-1-slider.png)
+pageType~popupSlider~alias.0.Tests.Schieberegler~Zahl~
+entityUpdateDetail~alias.0.Tests.Schieberegler~Slider 1~~~3776~0~3776~~1~enable~~~~~~~~~disable~~~~~~~~~disable

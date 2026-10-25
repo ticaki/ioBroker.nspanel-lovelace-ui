@@ -1,0 +1,12 @@
+# Screensaver, standard layout with both status icons on
+# Scene of the emulator picture screensaver-standard-statusicons.png (doc/web-panel/MISSING_PICTURES.md); payloads as the adapter
+# sends them to the panel "emu" (src/lib/pages/screensaver.ts), icons are HMI font glyphs.
+# dimmode standby is 100 here so the screenshot can be compared with the picture (the adapter sends e.g. 15).
+timeout~20
+dimmode~100~100~2147~53247~1
+pageType~screensaver
+time~23:16
+date~Sa., 24. Oktober 26
+weatherUpdate~~~~17299~~13,1°C~~~~65504~Sonne~~~~~64512~Wind~2,4m/s~~~~64512~Böen~3,9m/s~~~~65535~Windr.~NO
+color~2147~53247~2047~54938~65535~34431~34431~34431~34431~34431~34431~34431~34431~16904~2047~2047
+statusUpdate~~65222~~65222~~

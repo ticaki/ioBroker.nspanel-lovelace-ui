@@ -1,0 +1,3 @@
+# popupFan: switch, speed 0-5 and three preset modes (emu scene "Ventilator", popupFan.png)
+pageType~popupFan~alias.0.Ventilator~Ventilator~
+entityUpdateDetail~alias.0.Ventilator~~2016~1~2~5~Speed~Auto~Auto?Nacht?Turbo

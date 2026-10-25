@@ -1,0 +1,5 @@
+# Entities 1 (emulator picture cardEntities-1-light-switch-shutter-number.png): light2, switch, shutter2, number
+# payload recorded from the dev-server adapter (panel emu), switch set to on like on the picture
+pageType~cardEntities
+entityUpd~Entities 1~button~bSubPrev~~2047~~~button~bSubNext~~2047~~~light2~1?0~~16904~Licht_aus~0~switch~1?1~~13039~Steckd. ein~1~shutter2~1?2~~2047~Rollladen~|||enable|enable|enable~number~1?3~~2047~Zahl~3776|0|100
+@sleep 300

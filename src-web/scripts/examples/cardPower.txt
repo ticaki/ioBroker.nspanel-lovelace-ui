@@ -1,0 +1,5 @@
+# cardPower as sent by src/lib/pages/pagePower.ts:
+# entityUpd~title~[nav left]~[nav right]~[~~homeIcon~homeColor~homeName~valueBottom~]~[~~~~~valueTop~]~6 x [~~icon~color~name~value~speed]
+# speed -120…120: positive = flow towards the house, negative = away from it, 0 = no dot
+pageType~cardPower
+entityUpd~Energie~button~bSubPrev~~65535~~~button~bSubNext~~65535~~~~~~65535~~1.2 kW~~~~~~~350 W~~~~~65504~~3.5 kW~-80~~~~2047~~7.2 kW~60~~~~1024~~45 %~20~~~~63488~~2.1 kW~60~~~既~65535~Heizung~0.8 kW~10~~~~~~~

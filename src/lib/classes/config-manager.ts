@@ -2578,7 +2578,7 @@ export class ConfigManager extends BaseClass {
         if (item.fontSize != null && itemConfig.data?.icon) {
             itemConfig.data.icon = {
                 ...itemConfig.data.icon,
-                textSize: item.fontSize ? { type: 'const', constVal: item.fontSize } : undefined,
+                textSize: { type: 'const', constVal: item.fontSize },
             };
         }
 
@@ -4581,7 +4581,7 @@ export class ConfigManager extends BaseClass {
                 if (item.fontSize != null && itemConfig?.data?.icon) {
                     itemConfig.data.icon = {
                         ...itemConfig.data.icon,
-                        textSize: item.fontSize ? { type: 'const', constVal: item.fontSize } : undefined,
+                        textSize: { type: 'const', constVal: item.fontSize },
                     };
                 }
                 if (item.enabled === false && itemConfig) {

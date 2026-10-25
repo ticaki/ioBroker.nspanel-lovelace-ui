@@ -3,6 +3,19 @@
     "name": "nspanel-lovelace-ui",
     "version": "1.6.0",
     "news": {
+      "1.7.0": {
+        "en": "Web panels: the panel UI in a web browser (port 8090), as a clone of a real panel or standalone without hardware\nWeb panels: optional PIN, HTTPS and FIDO2 security key, look of the HMI\nAdmin: new tab \"Web panels\", buttons open the web panel of a panel\nFix: screensaver indicator buttons work again (screensaver as first page, indicators not acting as buttons)\nFix: an offline panel gets the startup page offered every 5 s again\nFix: script config fontSize 0 on a grid item is no longer ignored",
+        "de": "Web-Panels: die Panel-Oberfläche im Webbrowser (Port 8090), als Klon eines echten Panels oder eigenständig ohne Hardware\nWeb-Panels: optionale PIN, HTTPS und FIDO2-Sicherheitsschlüssel, Optik der HMI\nAdmin: neuer Tab \"Web-Panels\", Schaltflächen öffnen das Web-Panel eines Panels\nFix: Indikator-Schaltflächen des Bildschirmschoners funktionieren wieder (Bildschirmschoner als erste Seite, Indikatoren nicht als Schaltflächen)\nFix: einem Offline-Panel wird wieder alle 5 s die Startseite angeboten\nFix: Script-Konfiguration fontSize 0 an einem Grid-Element wird nicht mehr ignoriert",
+        "ru": "Веб-панели: интерфейс панели в веб-браузере (порт 8090), как клон реальной панели или самостоятельно без оборудования\nВеб-панели: необязательный PIN-код, HTTPS и ключ безопасности FIDO2, внешний вид HMI\nАдмин: новая вкладка \"Веб-панели\", кнопки открывают веб-панель панели\nИсправлено: кнопки-индикаторы заставки снова работают (заставка как первая страница, индикаторы не работают как кнопки)\nИсправлено: офлайн-панели снова каждые 5 с предлагается стартовая страница\nИсправлено: fontSize 0 у элемента сетки в конфигурации скрипта больше не игнорируется",
+        "pt": "Painéis web: a interface do painel num navegador web (porta 8090), como clone de um painel real ou independente sem hardware\nPainéis web: PIN opcional, HTTPS e chave de segurança FIDO2, aparência do HMI\nAdmin: novo separador \"Painéis web\", botões abrem o painel web de um painel\nCorreção: os botões indicadores do protetor de ecrã funcionam novamente (protetor de ecrã como primeira página, indicadores sem função de botão)\nCorreção: um painel offline volta a receber a página de arranque a cada 5 s\nCorreção: fontSize 0 num item de grelha na configuração do script já não é ignorado",
+        "nl": "Webpanelen: de paneelinterface in een webbrowser (poort 8090), als kloon van een echt paneel of zelfstandig zonder hardware\nWebpanelen: optionele pincode, HTTPS en FIDO2-beveiligingssleutel, uiterlijk van de HMI\nAdmin: nieuw tabblad \"Webpanelen\", knoppen openen het webpaneel van een paneel\nFix: de indicatorknoppen van de screensaver werken weer (screensaver als eerste pagina, indicatoren niet als knoppen)\nFix: een offline paneel krijgt weer elke 5 s de startpagina aangeboden\nFix: fontSize 0 op een rasteritem in de scriptconfiguratie wordt niet langer genegeerd",
+        "fr": "Panneaux web : l'interface du panneau dans un navigateur web (port 8090), comme clone d'un panneau réel ou autonome sans matériel\nPanneaux web : code PIN optionnel, HTTPS et clé de sécurité FIDO2, apparence de l'IHM\nAdmin : nouvel onglet \"Panneaux web\", des boutons ouvrent le panneau web d'un panneau\nCorrection : les boutons indicateurs de l'économiseur d'écran fonctionnent à nouveau (économiseur d'écran en première page, indicateurs sans fonction de bouton)\nCorrection : un panneau hors ligne se voit de nouveau proposer la page de démarrage toutes les 5 s\nCorrection : fontSize 0 sur un élément de grille dans la configuration du script n'est plus ignoré",
+        "it": "Pannelli web: l'interfaccia del pannello in un browser web (porta 8090), come clone di un pannello reale o autonomo senza hardware\nPannelli web: PIN opzionale, HTTPS e chiave di sicurezza FIDO2, aspetto dell'HMI\nAdmin: nuova scheda \"Pannelli web\", i pulsanti aprono il pannello web di un pannello\nCorrezione: i pulsanti indicatori dello screensaver funzionano di nuovo (screensaver come prima pagina, indicatori non usati come pulsanti)\nCorrezione: a un pannello offline viene di nuovo offerta la pagina di avvio ogni 5 s\nCorrezione: fontSize 0 su un elemento della griglia nella configurazione dello script non viene più ignorato",
+        "es": "Paneles web: la interfaz del panel en un navegador web (puerto 8090), como clon de un panel real o independiente sin hardware\nPaneles web: PIN opcional, HTTPS y llave de seguridad FIDO2, aspecto del HMI\nAdmin: nueva pestaña \"Paneles web\", botones abren el panel web de un panel\nCorrección: los botones indicadores del salvapantallas vuelven a funcionar (salvapantallas como primera página, indicadores sin función de botón)\nCorrección: a un panel sin conexión se le vuelve a ofrecer la página de inicio cada 5 s\nCorrección: fontSize 0 en un elemento de cuadrícula de la configuración del script ya no se ignora",
+        "pl": "Panele webowe: interfejs panelu w przeglądarce internetowej (port 8090), jako klon prawdziwego panelu lub samodzielnie bez sprzętu\nPanele webowe: opcjonalny PIN, HTTPS i klucz bezpieczeństwa FIDO2, wygląd HMI\nAdmin: nowa karta \"Panele webowe\", przyciski otwierają panel webowy danego panelu\nPoprawka: przyciski wskaźników wygaszacza ekranu znów działają (wygaszacz jako pierwsza strona, wskaźniki nie działające jako przyciski)\nPoprawka: panel offline znów co 5 s otrzymuje stronę startową\nPoprawka: fontSize 0 w elemencie siatki w konfiguracji skryptu nie jest już ignorowany",
+        "uk": "Веб-панелі: інтерфейс панелі у веб-браузері (порт 8090), як клон реальної панелі або самостійно без обладнання\nВеб-панелі: необов'язковий PIN-код, HTTPS і ключ безпеки FIDO2, вигляд HMI\nАдмін: нова вкладка \"Веб-панелі\", кнопки відкривають веб-панель панелі\nВиправлено: кнопки-індикатори заставки знову працюють (заставка як перша сторінка, індикатори не працюють як кнопки)\nВиправлено: офлайн-панелі знову кожні 5 с пропонується стартова сторінка\nВиправлено: fontSize 0 у елемента сітки в конфігурації скрипта більше не ігнорується",
+        "zh-cn": "Web 面板：在网页浏览器中显示面板界面（端口 8090），可作为真实面板的克隆，也可独立运行无需硬件\nWeb 面板：可选 PIN、HTTPS 和 FIDO2 安全密钥，采用 HMI 外观\n管理：新增“Web 面板”标签页，按钮可打开面板的 Web 面板\n修复：屏保指示按钮恢复正常（屏保为第一页、指示器不作为按钮时）\n修复：离线面板再次每 5 秒收到启动页面\n修复：脚本配置中网格项的 fontSize 0 不再被忽略"
+      },
       "1.6.0": {
         "en": "Admin: screensaver notifications with headline, text, states with condition, priority, dismiss group and buzzer - one list shared by all screensavers\nFix: tapping the screensaver several times no longer ends in a black page\nFix: template text.battery.bydhvs shows the charging icon while charging\nFix: credential selection shows its default again\nFix: the weather instance in the global settings is visible again",
         "de": "Admin: Screensaver-Benachrichtigungen mit Überschrift, Text, Datenpunkten mit Bedingung, Priorität, Quittier-Gruppe und Summer - eine gemeinsame Liste für alle Screensaver\nFix: mehrfaches Tippen auf den Screensaver endet nicht mehr in einer schwarzen Seite\nFix: Vorlage text.battery.bydhvs zeigt beim Laden das Lade-Icon\nFix: die Auswahl der Zugangsdaten zeigt wieder ihren Standardwert\nFix: die Wetter-Instanz in den globalen Einstellungen ist wieder sichtbar",
@@ -175,7 +188,8 @@
     "pageQRpwd2",
     "pageQRpwd3",
     "tasmotaAdminPassword",
-    "pw1"
+    "pw1",
+    "webPin"
   ],
   "encryptedNative": [
     "mqttPassword",
@@ -184,7 +198,8 @@
     "pageQRpwd2",
     "pageQRpwd3",
     "tasmotaAdminPassword",
-    "pw1"
+    "pw1",
+    "webPin"
   ],
   "native": {
     "versionJsonUrl": "https://raw.githubusercontent.com/ticaki/ioBroker.nspanel-lovelace-ui/main/json/version.json",
@@ -197,6 +212,16 @@
     "mqttPort": 0,
     "mqttServer": false,
     "internalServerIp": "",
+    "webEnabled": true,
+    "webPort": 8090,
+    "webBind": "0.0.0.0",
+    "webHost": "",
+    "webPin": "",
+    "webSecure": false,
+    "webCertPublic": "defaultPublic",
+    "webCertPrivate": "defaultPrivate",
+    "webCertChained": "",
+    "webFido": false,
     "panels": [],
     "pageQRpwd1": "",
     "pageQRpwd2": "",

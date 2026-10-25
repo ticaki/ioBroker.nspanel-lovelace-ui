@@ -30,6 +30,8 @@ export default [
             'doc',
             'admin/custom/',
             'src-admin/',
+            'src-web/',
+            'www/',
         ]
     },
 

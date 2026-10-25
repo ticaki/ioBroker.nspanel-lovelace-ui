@@ -1,0 +1,3 @@
+# recorded on the emu panel (cardGrid2 'Popups', tile Hue): event,pageOpenDetail,popupLight,4?0
+pageType~popupLight~4?0~Hue~
+entityUpdateDetail~4?0~~52528~1~70~58~enable~Farbe~Farbtemperatur~Helligkeit~disable

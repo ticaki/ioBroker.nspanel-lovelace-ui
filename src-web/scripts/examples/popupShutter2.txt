@@ -1,0 +1,4 @@
+# popupShutter2: window picture, up/stop/down at the left and three extra buttons at the right
+# (emu scene "Rollladen", popupShutter2.png); shutterClosedIsZero = 1, pos1 = 1 = 1 % covered (almost open, the HMI prints 99 %)
+pageType~popupShutter2~alias.0.Blind~Rollladen~
+entityUpdateDetail~alias.0.Blind~1~~Rollladen~~~~~enable~enable~enable~~65535~enable~撚~65535~enable~~65535~enable~shutter~1

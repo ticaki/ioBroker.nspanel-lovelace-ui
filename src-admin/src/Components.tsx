@@ -8,6 +8,7 @@ import TabMaintain from './TabMaintain';
 import TabPanelinfo from './TabPanelinfo';
 import PageMQTTSetting from './PageMQTTSetting';
 import PagePanelOverview from './PagePanelOverview';
+import WebFidoKeys from './WebFidoKeys';
 import { ChannelConfigDialogJsonConfig } from './components/ChannelConfigDialog';
 import { installLabelHover } from './labelHover';
 
@@ -24,5 +25,6 @@ export default {
     TabPanelinfo,
     PageMQTTSetting,
     PagePanelOverview,
+    WebFidoKeys,
     ChannelConfigDialog: ChannelConfigDialogJsonConfig,
 };

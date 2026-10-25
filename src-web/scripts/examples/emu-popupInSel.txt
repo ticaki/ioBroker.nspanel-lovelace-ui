@@ -1,0 +1,3 @@
+# recorded on the emu panel (tile Auswahl): event,pageOpenDetail,popupInSel,4?6 (entries end with CR LF)
+pageType~popupInSel~4?6~Auswahl~
+entityUpdateDetail2~4?6~~2016~Auswahl~Komfort\r\n~Aus\r\n?Eco\r\n?Komfort\r\n?Boost\r\n
