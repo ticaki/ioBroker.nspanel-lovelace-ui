@@ -33,7 +33,7 @@ function parseClientFrame(raw) {
   }
   const frame = data;
   if (frame.t === "ack") {
-    return { t: "ack" };
+    return typeof frame.seq === "number" && Number.isInteger(frame.seq) ? { t: "ack", seq: frame.seq } : { t: "ack" };
   }
   if (frame.t === "recv" && typeof frame.p === "string" && frame.p) {
     return { t: "recv", p: frame.p };

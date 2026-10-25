@@ -3003,6 +3003,101 @@
                     "md": 4,
                     "lg": 3,
                     "xl": 2
+                },
+                "webPin": {
+                    "type": "password",
+                    "label": "webPin",
+                    "help": "webPinHelp",
+                    "repeat": false,
+                    "visible": true,
+                    "default": "",
+                    "disabled": "!data.webEnabled",
+                    "newLine": true,
+                    "xs": 12,
+                    "sm": 6,
+                    "md": 4,
+                    "lg": 3,
+                    "xl": 2
+                },
+                "webSecure": {
+                    "type": "checkbox",
+                    "label": "webSecure",
+                    "help": "webSecureHelp",
+                    "default": false,
+                    "disabled": "!data.webEnabled",
+                    "newLine": true,
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 4,
+                    "xl": 3
+                },
+                // the certificate select filters by the attribute name: *public*, *private*, *chained*
+                "webCertPublic": {
+                    "type": "certificate",
+                    "label": "webCertPublic",
+                    "default": "defaultPublic",
+                    "disabled": "!data.webSecure || !data.webEnabled",
+                    "newLine": true,
+                    "xs": 12,
+                    "sm": 6,
+                    "md": 4,
+                    "lg": 3,
+                    "xl": 2
+                },
+                "webCertPrivate": {
+                    "type": "certificate",
+                    "label": "webCertPrivate",
+                    "default": "defaultPrivate",
+                    "disabled": "!data.webSecure || !data.webEnabled",
+                    "xs": 12,
+                    "sm": 6,
+                    "md": 4,
+                    "lg": 3,
+                    "xl": 2
+                },
+                "webCertChained": {
+                    "type": "certificate",
+                    "label": "webCertChained",
+                    "help": "webCertChainedHelp",
+                    "default": "",
+                    "disabled": "!data.webSecure || !data.webEnabled",
+                    "xs": 12,
+                    "sm": 6,
+                    "md": 4,
+                    "lg": 3,
+                    "xl": 2
+                },
+                "webFido": {
+                    "type": "checkbox",
+                    "label": "webFido",
+                    "help": "webFidoHelp",
+                    "default": false,
+                    "disabled": "!data.webEnabled || !data.webSecure",
+                    "newLine": true,
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 4,
+                    "xl": 3
+                },
+                "_webFidoRequirements": {
+                    "type": "staticText",
+                    "text": "webFidoRequirements",
+                    "hidden": "!data.webFido",
+                    "newLine": true,
+                    "xs": 12
+                },
+                "_webFidoKeys": {
+                    "type": "custom",
+                    "guiApi": 2,
+                    "i18n": true,
+                    "url": "custom/customComponents.js",
+                    "name": "AdminComponentTemplateSet/Components/WebFidoKeys",
+                    "bundlerType": "module",
+                    "hidden": "!data.webFido",
+                    "newLine": true,
+                    "xs": 12
                 }
             }
         },

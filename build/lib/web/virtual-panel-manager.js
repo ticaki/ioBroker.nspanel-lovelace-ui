@@ -20,42 +20,66 @@ var virtual_panel_manager_exports = {};
 __export(virtual_panel_manager_exports, {
   VirtualPanelManager: () => VirtualPanelManager,
   WEB_PANEL_GRACE_MS: () => WEB_PANEL_GRACE_MS,
-  WEB_PANEL_MAX_SESSIONS: () => WEB_PANEL_MAX_SESSIONS
+  legacyWebPanelTree: () => legacyWebPanelTree,
+  removeLegacyWebPanelTrees: () => removeLegacyWebPanelTrees
 });
 module.exports = __toCommonJS(virtual_panel_manager_exports);
-var import_node_crypto = require("node:crypto");
 var import_library = require("../controller/library");
 var import_virtual_panel_channel = require("./virtual-panel-channel");
 const WEB_PANEL_GRACE_MS = 24 * 60 * 60 * 1e3;
-const WEB_PANEL_MAX_SESSIONS = 8;
-const SESSION_ID_PATTERN = /^[A-Za-z0-9_-]{8,64}$/;
-const CLONED_SETTINGS = [
-  "cmd.screenSaver.layout",
-  "cmd.screenSaver.rotationTime",
-  "cmd.screenSaver.timeout",
-  "cmd.screenSaver.doubleClick",
-  "cmd.screenSaver.infoIcon",
-  "cmd.dim",
-  "cmd.detachLeft",
-  "cmd.detachRight",
-  "cmd.hideCards",
-  "cmd.isBuzzerAllowed",
-  "cmd.mainNavigationPoint"
-];
+const MAX_PENDING_ACKS = 256;
 const WEB_PANEL_FALLBACK_TFT_VERSION = "1.0.0";
+const LEGACY_WEB_TREE = /^(panels\.[^.]+_web[2-9]?)(\.|$)/;
+function legacyWebPanelTree(id) {
+  var _a;
+  return (_a = LEGACY_WEB_TREE.exec(id)) == null ? void 0 : _a[1];
+}
+async function removeLegacyWebPanelTrees(adapter) {
+  var _a;
+  const prefix = `${adapter.namespace}.panels.`;
+  let count = 0;
+  try {
+    const list = await adapter.getObjectListAsync({ startkey: prefix, endkey: `${prefix}\u9999` });
+    const trees = /* @__PURE__ */ new Set();
+    for (const row of (_a = list == null ? void 0 : list.rows) != null ? _a : []) {
+      const id = row.id.startsWith(`${adapter.namespace}.`) ? row.id.slice(adapter.namespace.length + 1) : row.id;
+      const tree = legacyWebPanelTree(id);
+      if (tree) {
+        trees.add(tree);
+      }
+    }
+    for (const tree of trees) {
+      await adapter.library.cleanUpTree([], [`${tree}.`], 2);
+      await adapter.delObjectAsync(tree, { recursive: true });
+      count++;
+    }
+  } catch (e) {
+    adapter.log.warn(`Could not remove old web panel object trees: ${String(e)}`);
+  }
+  if (count > 0) {
+    adapter.log.info(`Removed ${count} object tree(s) of former web panels (panels.*_web*)`);
+  }
+  return count;
+}
 class VirtualPanelManager extends import_library.BaseClass {
   controller;
-  sessions = /* @__PURE__ */ new Map();
+  /** endpoint topic -> web panel */
+  entries = /* @__PURE__ */ new Map();
   constructor(adapter, controller) {
     super(adapter, "WebPanels");
     this.controller = controller;
     controller.virtualPanelManager = this;
   }
-  /** Real panels a browser can connect to */
+  /** Hardware panels and standalone web panels a browser can connect to */
   listPanels() {
+    var _a, _b;
     const result = [];
     for (const p of this.adapter.config.panels) {
-      if (!p || !p.topic || !this.controller.getPanelConfig(p.topic)) {
+      if (!p || !p.topic) {
+        continue;
+      }
+      const kind = p.kind === "web" ? "web" : "tasmota";
+      if (kind === "tasmota" && !this.controller.getPanelConfig(p.topic)) {
         continue;
       }
       result.push({
@@ -63,126 +87,184 @@ class VirtualPanelManager extends import_library.BaseClass {
         id: p.id,
         name: p.name,
         model: p.model || "eu",
-        sessions: [...this.sessions.values()].filter((s) => s.sourceTopic === p.topic).length
+        kind,
+        clients: (_b = (_a = this.entries.get(p.topic)) == null ? void 0 : _a.clients.size) != null ? _b : 0
       });
     }
     return result;
   }
   /**
-   * Is there a real panel for this topic or id?
+   * Is there an endpoint for this topic or id?
    *
-   * @param topicOrId topic or id of the real panel
-   * @returns true if a web panel can be created for it
+   * @param topicOrId topic or id of a hardware panel or a standalone web panel
+   * @returns true if a browser can connect to it
    */
   hasPanel(topicOrId) {
-    return this.controller.getPanelConfig(topicOrId) !== void 0;
+    return this.resolve(topicOrId) !== void 0;
   }
   /**
-   * Bind a browser to a web panel: an existing session (same id, same real panel) is taken
-   * over, otherwise a new clone is created. Sends the hello frame on success.
+   * The channel of a standalone web panel - created on first use, the controller hands it to
+   * the panel. The same channel is kept when the panel is reloaded, so connected browsers
+   * stay connected.
    *
-   * @param topicOrId topic or id of the real panel
-   * @param sessionId session id the browser remembered, undefined for a new one
-   * @param client the browser side
-   * @returns the session, undefined if no panel could be bound (client is told why and closed)
+   * @param topic topic of the web panel (admin table)
+   * @returns the channel
    */
-  async attach(topicOrId, sessionId, client) {
-    if (this.unload) {
+  channelFor(topic) {
+    return this.channelForEntry(topic).channel;
+  }
+  /**
+   * Connect a browser to the web panel of an endpoint. A clone is created on the first
+   * connection. Sends the hello frame on success.
+   *
+   * @param topicOrId topic or id of a hardware panel or a standalone web panel
+   * @param client the browser side
+   * @returns the web panel, undefined if the browser could not be connected (it was told why
+   * with `bye`, or just closed so it tries again when the panel is not running right now)
+   */
+  async attach(topicOrId, client) {
+    if (this.unload || this.adapter.unload) {
+      client.send({ t: "bye", reason: "shutdown" });
       client.close("shutdown");
       return void 0;
     }
-    const source = this.controller.getPanelConfig(topicOrId);
-    if (!source || !source.topic) {
+    const target = this.resolve(topicOrId);
+    if (!target) {
       this.log.warn(`No panel for '${topicOrId}'`);
       client.send({ t: "bye", reason: "unknown panel" });
       client.close("unknown panel");
       return void 0;
     }
-    let session = sessionId ? this.sessions.get(sessionId) : void 0;
-    if (session && session.sourceTopic !== source.topic) {
-      session = void 0;
-    }
-    if (session) {
-      if (session.graceTimer) {
-        this.adapter.clearTimeout(session.graceTimer);
-        session.graceTimer = void 0;
+    let entry;
+    let panel;
+    if (target.kind === "web") {
+      entry = this.channelForEntry(target.topic);
+      panel = this.controller.panels.find((p) => p.isVirtual && p.topic === target.topic);
+      if (!panel) {
+        this.log.debug(`Web panel ${target.topic} is not running - browser closed`);
+        client.close("panel not running");
+        return void 0;
       }
-      if (session.client && session.client !== client) {
-        session.client.send({ t: "bye", reason: "replaced" });
-        session.client.close("replaced");
-      }
-      session.client = client;
-      this.log.debug(`Session ${session.id} bound again to ${session.panel.name}`);
     } else {
-      session = await this.createSession(source, client, sessionId);
-      if (!session) {
-        client.send({ t: "bye", reason: "no free slot" });
-        client.close("no free slot");
+      const real = this.controller.panels.find((p) => !p.isVirtual && p.topic === target.topic);
+      if (!real) {
+        this.log.debug(`Panel ${target.topic} is not running - browser closed`);
+        client.close("panel not running");
+        return void 0;
+      }
+      entry = this.entries.get(target.topic);
+      if (!entry) {
+        entry = await this.createClone(target.topic, target.id, target.name);
+        if (!entry) {
+          client.send({ t: "bye", reason: "unknown panel" });
+          client.close("unknown panel");
+          return void 0;
+        }
+      }
+      panel = this.panelOf(entry);
+      if (!panel) {
+        client.send({ t: "bye", reason: "unknown panel" });
+        client.close("unknown panel");
         return void 0;
       }
     }
+    if (entry.graceTimer) {
+      this.adapter.clearTimeout(entry.graceTimer);
+      entry.graceTimer = void 0;
+    }
+    if (entry.clients.size === 0) {
+      panel.panelSend.resetMessageDB();
+    }
+    entry.clients.add(client);
     client.send({
       t: "hello",
-      session: session.id,
-      model: session.panel.info.nspanel.model,
-      topic: source.topic,
-      name: session.panel.name,
-      friendlyName: session.panel.friendlyName,
-      tftVersion: this.tftVersion(session.panel.info.nspanel.model)
+      model: panel.info.nspanel.model,
+      topic: target.topic,
+      name: panel.name,
+      friendlyName: panel.friendlyName,
+      tftVersion: this.tftVersion(panel.info.nspanel.model),
+      kind: entry.kind
     });
-    return session;
+    this.log.debug(`Browser connected to ${panel.friendlyName} (${entry.clients.size} connected)`);
+    return entry;
   }
   /**
-   * The browser went away - keep the panel for the grace period.
+   * A browser went away. A clone without browsers is removed after the grace period.
    *
-   * @param session the session
-   * @param client the client that closed, ignored if the session was already taken over
+   * @param entry the web panel
+   * @param client the browser that closed
    */
-  detach(session, client) {
-    if (session.client !== client) {
+  detach(entry, client) {
+    if (!entry.clients.delete(client)) {
       return;
     }
-    session.client = void 0;
-    session.disconnectedAt = Date.now();
-    if (this.unload || this.adapter.unload) {
+    if (entry.clients.size > 0 || this.unload || this.adapter.unload) {
       return;
     }
-    session.graceTimer = this.adapter.setTimeout(() => {
-      void this.removeSession(session, "grace period over");
+    const panel = this.panelOf(entry);
+    if (panel && !panel.unload && panel.isOnline) {
+      this.log.info(`No browser left on ${panel.friendlyName} - offline`);
+      panel.isOnline = false;
+    }
+    if (entry.kind !== "clone") {
+      return;
+    }
+    if (entry.graceTimer) {
+      this.adapter.clearTimeout(entry.graceTimer);
+    }
+    entry.graceTimer = this.adapter.setTimeout(() => {
+      entry.graceTimer = void 0;
+      void this.removeEntry(entry, "grace period over", false);
     }, WEB_PANEL_GRACE_MS);
-    this.log.debug(`Session ${session.id} disconnected - ${session.panel.name} kept for reconnect`);
+    this.log.debug(
+      `Last browser of ${entry.topic} disconnected - clone kept for ${WEB_PANEL_GRACE_MS / 36e5} h`
+    );
   }
   /**
-   * A frame from the browser.
+   * A frame from a browser. `ack` with a `seq` is passed on once per `seq` (the first browser
+   * wins), `ack` without `seq` always, `recv` always.
    *
-   * @param session the session
+   * @param entry the web panel
    * @param frame the parsed frame
    */
-  async onClientFrame(session, frame) {
-    if (session.channel.unload) {
+  async onClientFrame(entry, frame) {
+    if (entry.channel.unload) {
       return;
     }
-    if (frame.t === "ack") {
-      await session.channel.injectAck();
-    } else {
-      await session.channel.injectReceive(frame.p);
+    if (frame.t === "recv") {
+      await entry.channel.injectReceive(frame.p);
+      return;
     }
+    if (frame.seq === void 0) {
+      await entry.channel.injectAck();
+      return;
+    }
+    const index = entry.pending.indexOf(frame.seq);
+    if (index === -1) {
+      if (this.adapter.config.debugLogMqtt) {
+        this.log.debug(`Ignore repeated ack ${frame.seq} for ${entry.topic}`);
+      }
+      return;
+    }
+    entry.pending.splice(index, 1);
+    await entry.channel.injectAck();
   }
   /**
-   * Remove all web panels of a real panel.
+   * Remove the clone of a hardware panel (the panel is removed or reloaded). Connected
+   * browsers are closed without `bye`, so they connect again and get a fresh clone.
    *
-   * @param topic topic of the real panel
+   * @param topic topic of the hardware panel
    */
   async removeClonesOf(topic) {
-    for (const session of [...this.sessions.values()]) {
-      if (session.sourceTopic === topic) {
-        await this.removeSession(session, "panel removed");
-      }
+    const entry = this.entries.get(topic);
+    if (entry && entry.kind === "clone") {
+      await this.removeEntry(entry, "panel removed", false);
     }
   }
+  /** Remove every web panel and tell the browsers goodbye (adapter stops) */
   async deleteAll() {
-    for (const session of [...this.sessions.values()]) {
-      await this.removeSession(session, "shutdown");
+    for (const entry of [...this.entries.values()]) {
+      await this.removeEntry(entry, "shutdown", true);
     }
   }
   async delete() {
@@ -193,118 +275,129 @@ class VirtualPanelManager extends import_library.BaseClass {
     await super.delete();
   }
   /**
-   * A panel reads some of its settings from its own states when it starts (screensaver
-   * layout, rotation, dim values, detached buttons, …) - the user may have changed them at
-   * runtime. A clone starts with the current values of the real panel, so it looks like
-   * the real display; the states it does not get stay at the defaults of the adapter.
+   * Endpoint of a topic or id from the admin panel table.
    *
-   * @param realName name (states tree) of the real panel
-   * @param cloneName name (states tree) of the clone
+   * @param topicOrId topic or id
+   * @returns the table entry with its kind, undefined if unknown or (hardware) without configuration
    */
-  async copySettings(realName, cloneName) {
-    const prefix = `panels.${realName}.`;
-    const states = this.library.getStates(`^${prefix.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}cmd\\.`);
-    for (const dp of Object.keys(states)) {
-      const relative = dp.slice(prefix.length);
-      if (!CLONED_SETTINGS.some((s) => relative === s || relative.startsWith(`${s}.`))) {
-        continue;
-      }
-      const node = states[dp];
-      if (!node || node.val === void 0 || !node.obj || node.obj.type !== "state") {
-        continue;
-      }
-      try {
-        await this.library.writedp(`panels.${cloneName}.${relative}`, node.val, structuredClone(node.obj));
-      } catch (e) {
-        this.log.debug(`Could not copy ${dp} to ${cloneName}: ${String(e)}`);
-      }
-    }
-  }
-  async createSession(source, client, requestedId) {
-    var _a, _b, _c, _d;
-    const sourceTopic = source.topic;
-    const slot = this.freeSlot(sourceTopic);
-    if (slot === void 0) {
-      this.log.warn(`No free web panel slot for ${sourceTopic} (max ${WEB_PANEL_MAX_SESSIONS})`);
+  resolve(topicOrId) {
+    var _a;
+    if (!topicOrId) {
       return void 0;
     }
-    const id = (_b = (_a = this.adapter.config.panels.find((p) => p.topic === sourceTopic)) == null ? void 0 : _a.id) != null ? _b : this.library.cleandp(sourceTopic);
-    const realName = (_d = (_c = this.adapter.config.panels.find((p) => p.topic === sourceTopic)) == null ? void 0 : _c.name) != null ? _d : sourceTopic;
-    const sessionId = requestedId && SESSION_ID_PATTERN.test(requestedId) && !this.sessions.has(requestedId) ? requestedId : (0, import_node_crypto.randomUUID)();
-    const { channel: _channel, controller: _controller, ...plain } = source;
-    const config = structuredClone(plain);
-    config.name = slot === 1 ? `${id}_web` : `${id}_web${slot}`;
-    config.friendlyName = slot === 1 ? `${realName} (Web)` : `${realName} (Web ${slot})`;
-    config.topic = `${sourceTopic}/web/${sessionId}`;
-    config.sourceTopic = sourceTopic;
-    config.kind = "web";
-    const channel = new import_virtual_panel_channel.VirtualPanelChannel(this.adapter, config.topic, `${config.friendlyName}-Channel`);
+    const row = (_a = this.adapter.config.panels.find((p) => p && p.topic === topicOrId)) != null ? _a : this.adapter.config.panels.find((p) => p && p.id === topicOrId);
+    if (!row || !row.topic) {
+      return void 0;
+    }
+    if (row.kind === "web") {
+      return { topic: row.topic, id: row.id, name: row.name, kind: "web" };
+    }
+    if (!this.controller.getPanelConfig(row.topic)) {
+      return void 0;
+    }
+    return { topic: row.topic, id: row.id, name: row.name, kind: "clone" };
+  }
+  channelForEntry(topic) {
+    let entry = this.entries.get(topic);
+    if (!entry) {
+      entry = this.createEntry(topic, "web", topic);
+    }
+    return entry;
+  }
+  createEntry(topic, kind, channelTopic) {
+    const channel = new import_virtual_panel_channel.VirtualPanelChannel(this.adapter, channelTopic, `WebChannel-${topic}`);
+    const entry = {
+      topic,
+      kind,
+      channel,
+      clients: /* @__PURE__ */ new Set(),
+      seq: 0,
+      pending: [],
+      graceTimer: void 0
+    };
     channel.onCommand((payload) => {
-      var _a2;
-      const s = this.sessions.get(sessionId);
-      (_a2 = s == null ? void 0 : s.client) == null ? void 0 : _a2.send({ t: "cmd", p: payload });
+      entry.seq++;
+      entry.pending.push(entry.seq);
+      if (entry.pending.length > MAX_PENDING_ACKS) {
+        entry.pending.splice(0, entry.pending.length - MAX_PENDING_ACKS);
+      }
+      for (const c of entry.clients) {
+        c.send({ t: "cmd", p: payload, seq: entry.seq });
+      }
     });
     channel.onBuzzer((payload) => {
-      var _a2;
-      const s = this.sessions.get(sessionId);
-      (_a2 = s == null ? void 0 : s.client) == null ? void 0 : _a2.send({ t: "buzzer", p: payload });
+      for (const c of entry.clients) {
+        c.send({ t: "buzzer", p: payload });
+      }
     });
-    await this.copySettings(id, config.name);
-    const panel = await this.controller.addVirtualPanel(config, channel);
-    if (!panel) {
-      await channel.delete();
-      return void 0;
-    }
-    const session = {
-      id: sessionId,
-      sourceTopic,
-      slot,
-      panel,
-      channel,
-      client,
-      graceTimer: void 0,
-      disconnectedAt: 0
-    };
-    this.sessions.set(sessionId, session);
-    this.log.info(`Web panel ${panel.name} created for ${sourceTopic}`);
-    return session;
+    this.entries.set(topic, entry);
+    return entry;
   }
   /**
-   * Lowest free slot; if all are taken, the slot of the longest disconnected session is freed.
+   * Create the clone of a hardware panel: same configuration, same states tree (`name` = id of
+   * the hardware panel), own topic `<topic>/web` and an in-process channel.
    *
-   * @param sourceTopic topic of the real panel
-   * @returns the slot, undefined if every slot has a connected browser
+   * @param topic topic of the hardware panel
+   * @param id id of the hardware panel (admin table)
+   * @param name name of the hardware panel (admin table)
+   * @returns the entry, undefined if the panel could not be created
    */
-  freeSlot(sourceTopic) {
-    const used = [...this.sessions.values()].filter((s) => s.sourceTopic === sourceTopic);
-    for (let slot = 1; slot <= WEB_PANEL_MAX_SESSIONS; slot++) {
-      if (!used.some((s) => s.slot === slot)) {
-        return slot;
-      }
-    }
-    const idle = used.filter((s) => !s.client).sort((a, b) => a.disconnectedAt - b.disconnectedAt).shift();
-    if (!idle) {
+  async createClone(topic, id, name) {
+    var _a;
+    const source = this.controller.getPanelConfig(topic);
+    if (!source) {
       return void 0;
     }
-    void this.removeSession(idle, "slot needed");
-    return idle.slot;
+    const { channel: _channel, controller: _controller, ...plain } = source;
+    const config = structuredClone(plain);
+    config.name = id || this.library.cleandp(topic);
+    config.friendlyName = `${name || topic} (Web)`;
+    config.topic = `${topic}/web`;
+    config.sourceTopic = topic;
+    config.kind = "web";
+    config.model = ((_a = this.adapter.config.panels.find((p) => p.topic === topic)) == null ? void 0 : _a.model) || config.model || "eu";
+    const entry = this.createEntry(topic, "clone", config.topic);
+    const panel = await this.controller.addVirtualPanel(config, entry.channel);
+    if (!panel) {
+      this.entries.delete(topic);
+      await entry.channel.delete();
+      return void 0;
+    }
+    this.log.info(`Web panel ${config.friendlyName} created for ${topic}`);
+    return entry;
   }
-  async removeSession(session, reason) {
-    if (!this.sessions.delete(session.id)) {
+  async removeEntry(entry, reason, bye) {
+    if (!this.entries.delete(entry.topic)) {
       return;
     }
-    if (session.graceTimer) {
-      this.adapter.clearTimeout(session.graceTimer);
-      session.graceTimer = void 0;
+    if (entry.graceTimer) {
+      this.adapter.clearTimeout(entry.graceTimer);
+      entry.graceTimer = void 0;
     }
-    if (session.client) {
-      session.client.send({ t: "bye", reason });
-      session.client.close(reason);
-      session.client = void 0;
+    for (const c of entry.clients) {
+      if (bye) {
+        c.send({ t: "bye", reason });
+      }
+      c.close(reason);
     }
-    await this.controller.removePanel(session.panel);
-    await session.channel.delete();
-    this.log.info(`Web panel ${session.panel.name} removed (${reason})`);
+    entry.clients.clear();
+    if (entry.kind === "clone") {
+      const panel = this.panelOf(entry);
+      if (panel) {
+        await this.controller.removePanel(panel);
+      }
+      this.log.info(`Web panel of ${entry.topic} removed (${reason})`);
+    }
+    await entry.channel.delete();
+  }
+  /**
+   * The panel instance that talks through the channel of this entry.
+   *
+   * @param entry the web panel
+   * @returns the panel, undefined while it is not (or no longer) created
+   */
+  panelOf(entry) {
+    return this.controller.panels.find((p) => p.isVirtual && p.topic === entry.channel.topic);
   }
   tftVersion(model) {
     const suffix = model === "eu" ? "" : `-${model}`;
@@ -316,6 +409,7 @@ class VirtualPanelManager extends import_library.BaseClass {
 0 && (module.exports = {
   VirtualPanelManager,
   WEB_PANEL_GRACE_MS,
-  WEB_PANEL_MAX_SESSIONS
+  legacyWebPanelTree,
+  removeLegacyWebPanelTrees
 });
 //# sourceMappingURL=virtual-panel-manager.js.map

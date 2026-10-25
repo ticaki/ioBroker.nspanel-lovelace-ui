@@ -262,6 +262,9 @@ class Panel extends import_library.BaseClass {
       }
       if (shouldUpdate) {
         this._status = val;
+        if (this.isClone) {
+          return;
+        }
         await this.library.writedp(
           `panels.${this.name}.status`,
           adminShareConfig.reversePanelStatusStates(val),
@@ -291,6 +294,13 @@ class Panel extends import_library.BaseClass {
   /** A web panel: shown in a browser, no Tasmota behind it */
   get isVirtual() {
     return this.options.kind === "web";
+  }
+  /**
+   * A web clone of a hardware panel: shares the states tree `panels.<name>` with it, so it
+   * writes no `info.*`/`status` states and deletes nothing of the tree.
+   */
+  get isClone() {
+    return this.isVirtual && !!this.options.sourceTopic;
   }
   constructor(adapter, options) {
     var _a, _b, _c;
@@ -497,10 +507,12 @@ class Panel extends import_library.BaseClass {
       tasmotaName: this.friendlyName,
       name: this.name
     };
-    if (await this.adapter.getStateAsync(`panels.${this.name}.cmd.dim.delay`)) {
-      await this.adapter.delObjectAsync(`panels.${this.name}.cmd.dim.delay`);
+    if (!this.isClone) {
+      if (await this.adapter.getStateAsync(`panels.${this.name}.cmd.dim.delay`)) {
+        await this.adapter.delObjectAsync(`panels.${this.name}.cmd.dim.delay`);
+      }
+      await this.library.writedp(`panels.${this.name}`, void 0, channelObj);
     }
-    await this.library.writedp(`panels.${this.name}`, void 0, channelObj);
     await this.library.writedp(
       `panels.${this.name}.cmd`,
       void 0,
@@ -697,14 +709,19 @@ class Panel extends import_library.BaseClass {
       !!val,
       definition.genericStateObjects.panel.panels.cmd.screenSaver.activateNotification
     );
-    state = this.library.readdb(`panels.${this.name}.info.nspanel.firmwareUpdate`);
-    await this.library.writedp(
-      `panels.${this.name}.info.nspanel.firmwareUpdate`,
-      state && typeof state.val === "number" ? state.val >= 99 ? 100 : state.val : void 0,
-      definition.genericStateObjects.panel.panels.info.nspanel.firmwareUpdate
-    );
+    if (!this.isClone) {
+      state = this.library.readdb(`panels.${this.name}.info.nspanel.firmwareUpdate`);
+      await this.library.writedp(
+        `panels.${this.name}.info.nspanel.firmwareUpdate`,
+        state && typeof state.val === "number" ? state.val >= 99 ? 100 : state.val : void 0,
+        definition.genericStateObjects.panel.panels.info.nspanel.firmwareUpdate
+      );
+    }
     for (const id in definition.InternalStates.panel) {
       const obj = definition.InternalStates.panel[id];
+      if (this.isClone && this.statesControler.existsState(`${this.name}/${id}`)) {
+        continue;
+      }
       await this.statesControler.setInternalState(
         `${this.name}/${id}`,
         obj.val,
@@ -907,6 +924,9 @@ class Panel extends import_library.BaseClass {
     return this._activePage;
   }
   async handleButtonsForDetach() {
+    if (this.isClone) {
+      return;
+    }
     if (this.detach.left || this.detach.right) {
       await this.library.writedp(
         `panels.${this.name}.cmd.buttons`,
@@ -943,11 +963,13 @@ class Panel extends import_library.BaseClass {
       return;
     }
     if (s !== this._isOnline) {
-      void this.library.writedp(
-        `panels.${this.name}.info.isOnline`,
-        s,
-        definition.genericStateObjects.panel.panels.info.isOnline
-      );
+      if (!this.isClone) {
+        void this.library.writedp(
+          `panels.${this.name}.info.isOnline`,
+          s,
+          definition.genericStateObjects.panel.panels.info.isOnline
+        );
+      }
       if (s) {
         this._isOnline = s;
         this.log.info("is online!");
@@ -1539,7 +1561,9 @@ class Panel extends import_library.BaseClass {
     if (this.unload || this.adapter.unload) {
       return;
     }
-    this.loopTimeout = this.adapter.setTimeout(() => this.loop, t);
+    this.loopTimeout = this.adapter.setTimeout(() => {
+      this.loop();
+    }, t);
   };
   requestStatusTasmota() {
     this.sendToTasmota(`${this.topic}/cmnd/STATUS0`, "");
@@ -1587,11 +1611,13 @@ class Panel extends import_library.BaseClass {
     if (this.loopTimeout) {
       this.adapter.clearTimeout(this.loopTimeout);
     }
-    await this.library.writedp(
-      `panels.${this.name}.info.isOnline`,
-      false,
-      definition.genericStateObjects.panel.panels.info.isOnline
-    );
+    if (!this.isClone) {
+      await this.library.writedp(
+        `panels.${this.name}.info.isOnline`,
+        false,
+        definition.genericStateObjects.panel.panels.info.isOnline
+      );
+    }
     await this.navigation.delete();
     await ((_a = this.screenSaver) == null ? void 0 : _a.delete());
     this.screenSaver = void 0;
@@ -1627,6 +1653,11 @@ class Panel extends import_library.BaseClass {
     var _a;
     if (this.isVirtual) {
       this.info.nspanel.onlineVersion = this.info.nspanel.displayVersion;
+    }
+    if (this.isClone) {
+      return;
+    }
+    if (this.isVirtual) {
       const { tasmota: _tasmota, ...info } = this.info;
       await this.library.writeFromJson(
         `panels.${this.name}.info`,
@@ -1968,6 +1999,13 @@ class Panel extends import_library.BaseClass {
     var _a, _b, _c;
     if (!id.startsWith(this.name)) {
       return null;
+    }
+    if (state && !this.isVirtual) {
+      for (const clone of this.controller.panels) {
+        if (clone !== this && clone.isClone && clone.name === this.name && !clone.unload) {
+          void clone.onInternalCommand(id, state);
+        }
+      }
     }
     const token = id.replace(`${this.name}/`, "");
     if (state && !state.ack && state.val != null) {

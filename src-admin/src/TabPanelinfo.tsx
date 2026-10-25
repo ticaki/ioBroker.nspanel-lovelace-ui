@@ -14,13 +14,14 @@ import {
     InputLabel,
     InputAdornment,
     IconButton,
+    Chip,
 } from '@mui/material';
 import { grey, orange, yellow } from '@mui/material/colors';
 import SettingsOutlinedIcon from '@mui/icons-material/SettingsOutlined';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import CancelIcon from '@mui/icons-material/Cancel';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
-import { openWebPanel, resolveWebPanelHost } from './webPanelUrl';
+import { openWebPanel, resolveWebPanelHost, webPinOf, webSecureOf } from './webPanelUrl';
 import { type IobTheme, type ThemeName, type ThemeType } from '@iobroker/gui-components';
 import { PanelStatusBadge } from './components/PanelStatusBadge';
 import { ThemeProvider } from '@mui/material/styles';
@@ -66,6 +67,8 @@ interface PanelConfig {
     name?: string;
     topic?: string;
     model?: string;
+    /** missing = tasmota; a web panel has no hardware behind it */
+    kind?: 'tasmota' | 'web';
 }
 
 // Hier können weitere States hinzugefügt werden, die angezeigt bzw. gesteuert werden sollen
@@ -82,6 +85,14 @@ const displayStates = [
     'info.tasmota.sts.Wifi.Signal',
     'info.internal.scriptName',
 ];
+
+/** States, die es nur mit Tasmota gibt - ein Web-Panel (kind 'web') zeigt sie nicht */
+const tasmotaOnlyStates: ReadonlySet<string> = new Set([
+    'cmd.tempOffset',
+    'info.tasmota.sensors.ANALOG.Temperature1',
+    'info.tasmota.sts.Wifi.Signal',
+    'info.nspanel.firmwareUpdate',
+]);
 
 // Optionale States mit bedingter Anzeige (z.B. nur für Tasmota-Modelle)
 interface OptionalDisplayState {
@@ -938,6 +949,10 @@ class TabPanelinfo extends ConfigGeneric<ConfigGenericProps & PanelinfoProps, Pa
                     {panelsInfo.map((panel, index) => {
                         const cardStyle = this.getPanelCardStyle(panel);
                         const panelConfig = panelsConfig.find(p => p.topic === panel._topic);
+                        // a web panel has no Tasmota: no sensors, no wifi signal, no firmware, no console
+                        const isWebPanel = panelConfig?.kind === 'web';
+                        const isShown = (statePath: string): boolean =>
+                            !isWebPanel || !tasmotaOnlyStates.has(statePath);
                         const card = (
                             <Box
                                 key={panel._id || index}
@@ -976,6 +991,14 @@ class TabPanelinfo extends ConfigGeneric<ConfigGenericProps & PanelinfoProps, Pa
                                             alive={alive}
                                         />
                                     </Box>
+                                    {isWebPanel ? (
+                                        <Chip
+                                            label={this.getText('webPanelKind')}
+                                            size="small"
+                                            color="info"
+                                            variant="outlined"
+                                        />
+                                    ) : null}
                                     {this.props.data.webEnabled !== false && panel._topic ? (
                                         <IconButton
                                             size="small"
@@ -985,6 +1008,8 @@ class TabPanelinfo extends ConfigGeneric<ConfigGenericProps & PanelinfoProps, Pa
                                                     this.state.webPanelHost,
                                                     this.props.data.webPort,
                                                     panel._topic,
+                                                    webPinOf(this.props.data),
+                                                    webSecureOf(this.props.data),
                                                 )
                                             }
                                             title={this.getText('openWebPanel')}
@@ -1006,15 +1031,19 @@ class TabPanelinfo extends ConfigGeneric<ConfigGenericProps & PanelinfoProps, Pa
                                 {/* Panel States */}
                                 {panelStates[panelConfig?.id || panel._id] && (
                                     <Box sx={{ mb: 2, display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-                                        {displayStates.map(statePath =>
-                                            this.renderStateControl(panelConfig?.id || panel._id, statePath),
-                                        )}
+                                        {displayStates
+                                            .filter(isShown)
+                                            .map(statePath =>
+                                                this.renderStateControl(panelConfig?.id || panel._id, statePath),
+                                            )}
                                         {optionalDisplayStates
-                                            .filter(optState =>
-                                                this.shouldDisplayOptionalState(
-                                                    panelConfig?.id || panel._id,
-                                                    optState.id,
-                                                ),
+                                            .filter(
+                                                optState =>
+                                                    isShown(optState.id) &&
+                                                    this.shouldDisplayOptionalState(
+                                                        panelConfig?.id || panel._id,
+                                                        optState.id,
+                                                    ),
                                             )
                                             .map(optState =>
                                                 this.renderStateControl(panelConfig?.id || panel._id, optState.id),
@@ -1023,15 +1052,17 @@ class TabPanelinfo extends ConfigGeneric<ConfigGenericProps & PanelinfoProps, Pa
                                 )}
 
                                 {/* Console Button */}
-                                <Button
-                                    variant="contained"
-                                    fullWidth
-                                    onClick={() => this.handleOpenTasmotaConsole(panelConfig)}
-                                    disabled={!panelConfig?.ip || !alive}
-                                    size="small"
-                                >
-                                    {this.getText('openTasmotaConsole')}
-                                </Button>
+                                {isWebPanel ? null : (
+                                    <Button
+                                        variant="contained"
+                                        fullWidth
+                                        onClick={() => this.handleOpenTasmotaConsole(panelConfig)}
+                                        disabled={!panelConfig?.ip || !alive}
+                                        size="small"
+                                    >
+                                        {this.getText('openTasmotaConsole')}
+                                    </Button>
+                                )}
                             </Box>
                         );
                         // Eine eingefärbte Karte trägt in jedem Theme dieselbe helle Signalfarbe -

@@ -301,6 +301,10 @@ export class Panel extends BaseClass {
 
                 if (shouldUpdate) {
                     this._status = val;
+                    if (this.isClone) {
+                        // the status state belongs to the hardware panel
+                        return;
+                    }
                     await this.library.writedp(
                         `panels.${this.name}.status`,
                         adminShareConfig.reversePanelStatusStates(val),
@@ -335,6 +339,14 @@ export class Panel extends BaseClass {
     /** A web panel: shown in a browser, no Tasmota behind it */
     get isVirtual(): boolean {
         return this.options.kind === 'web';
+    }
+
+    /**
+     * A web clone of a hardware panel: shares the states tree `panels.<name>` with it, so it
+     * writes no `info.*`/`status` states and deletes nothing of the tree.
+     */
+    get isClone(): boolean {
+        return this.isVirtual && !!this.options.sourceTopic;
     }
 
     constructor(adapter: AdapterClassDefinition, options: panelConfigPartial) {
@@ -567,12 +579,14 @@ export class Panel extends BaseClass {
             name: this.name,
         };
 
-        // remove unused dim states
-        if (await this.adapter.getStateAsync(`panels.${this.name}.cmd.dim.delay`)) {
-            await this.adapter.delObjectAsync(`panels.${this.name}.cmd.dim.delay`);
+        if (!this.isClone) {
+            // remove unused dim states
+            if (await this.adapter.getStateAsync(`panels.${this.name}.cmd.dim.delay`)) {
+                await this.adapter.delObjectAsync(`panels.${this.name}.cmd.dim.delay`);
+            }
+            // a clone shares the tree of its hardware panel - the device object (topic, name) stays as it is
+            await this.library.writedp(`panels.${this.name}`, undefined, channelObj);
         }
-
-        await this.library.writedp(`panels.${this.name}`, undefined, channelObj);
         await this.library.writedp(
             `panels.${this.name}.cmd`,
             undefined,
@@ -791,14 +805,21 @@ export class Panel extends BaseClass {
             definition.genericStateObjects.panel.panels.cmd.screenSaver.activateNotification,
         );
 
-        state = this.library.readdb(`panels.${this.name}.info.nspanel.firmwareUpdate`);
-        await this.library.writedp(
-            `panels.${this.name}.info.nspanel.firmwareUpdate`,
-            state && typeof state.val === 'number' ? (state.val >= 99 ? 100 : state.val) : undefined,
-            definition.genericStateObjects.panel.panels.info.nspanel.firmwareUpdate,
-        );
+        if (!this.isClone) {
+            state = this.library.readdb(`panels.${this.name}.info.nspanel.firmwareUpdate`);
+            await this.library.writedp(
+                `panels.${this.name}.info.nspanel.firmwareUpdate`,
+                state && typeof state.val === 'number' ? (state.val >= 99 ? 100 : state.val) : undefined,
+                definition.genericStateObjects.panel.panels.info.nspanel.firmwareUpdate,
+            );
+        }
         for (const id in definition.InternalStates.panel) {
             const obj = definition.InternalStates.panel[id as keyof typeof definition.InternalStates.panel];
+            if (this.isClone && this.statesControler.existsState(`${this.name}/${id}`)) {
+                // the hardware panel owns the internal states `<name>/…` and forwards the commands
+                // to its clone (see onInternalCommand) - setting them again would fire them
+                continue;
+            }
             await this.statesControler.setInternalState(
                 `${this.name}/${id}`,
                 obj.val,
@@ -1047,6 +1068,10 @@ export class Panel extends BaseClass {
     }
 
     async handleButtonsForDetach(): Promise<void> {
+        if (this.isClone) {
+            // the hardware panel keeps the tree in shape, a clone deletes nothing of it
+            return;
+        }
         if (this.detach.left || this.detach.right) {
             await this.library.writedp(
                 `panels.${this.name}.cmd.buttons`,
@@ -1084,11 +1109,13 @@ export class Panel extends BaseClass {
             return;
         }
         if (s !== this._isOnline) {
-            void this.library.writedp(
-                `panels.${this.name}.info.isOnline`,
-                s,
-                definition.genericStateObjects.panel.panels.info.isOnline,
-            );
+            if (!this.isClone) {
+                void this.library.writedp(
+                    `panels.${this.name}.info.isOnline`,
+                    s,
+                    definition.genericStateObjects.panel.panels.info.isOnline,
+                );
+            }
             if (s) {
                 this._isOnline = s;
                 this.log.info('is online!');
@@ -1761,7 +1788,11 @@ export class Panel extends BaseClass {
         if (this.unload || this.adapter.unload) {
             return;
         }
-        this.loopTimeout = this.adapter.setTimeout(() => this.loop, t);
+        // offline: offer `pageType~pageStartup` every 5 s until the panel answers with its startup event
+        // (a web panel has no Tasmota rule that repeats the startup page); online: tidy the pages now and then
+        this.loopTimeout = this.adapter.setTimeout(() => {
+            this.loop();
+        }, t);
     };
 
     requestStatusTasmota(): void {
@@ -1811,11 +1842,13 @@ export class Panel extends BaseClass {
         if (this.loopTimeout) {
             this.adapter.clearTimeout(this.loopTimeout);
         }
-        await this.library.writedp(
-            `panels.${this.name}.info.isOnline`,
-            false,
-            definition.genericStateObjects.panel.panels.info.isOnline,
-        );
+        if (!this.isClone) {
+            await this.library.writedp(
+                `panels.${this.name}.info.isOnline`,
+                false,
+                definition.genericStateObjects.panel.panels.info.isOnline,
+            );
+        }
         await this.navigation.delete();
         await this.screenSaver?.delete();
         this.screenSaver = undefined;
@@ -1850,8 +1883,15 @@ export class Panel extends BaseClass {
 
     async writeInfo(): Promise<void> {
         if (this.isVirtual) {
-            // a web panel has no firmware to update and no Tasmota - only the nspanel and internal part is written
+            // a web panel has no firmware to update
             this.info.nspanel.onlineVersion = this.info.nspanel.displayVersion;
+        }
+        if (this.isClone) {
+            // info.* belongs to the hardware panel
+            return;
+        }
+        if (this.isVirtual) {
+            // a web panel has no Tasmota - only the nspanel and internal part is written
             const { tasmota: _tasmota, ...info } = this.info;
             await this.library.writeFromJson(
                 `panels.${this.name}.info`,
@@ -2220,6 +2260,15 @@ export class Panel extends BaseClass {
     onInternalCommand = async (id: string, state: Types.nsPanelState | undefined): Promise<Types.nsPanelStateVal> => {
         if (!id.startsWith(this.name)) {
             return null;
+        }
+        if (state && !this.isVirtual) {
+            // the internal states `<name>/…` are registered once per name - a web clone of this
+            // panel shares them, so it gets every command too
+            for (const clone of this.controller.panels) {
+                if (clone !== this && clone.isClone && clone.name === this.name && !clone.unload) {
+                    void clone.onInternalCommand(id, state);
+                }
+            }
         }
         const token: NSPanel.PanelInternalCommand = id.replace(`${this.name}/`, '') as NSPanel.PanelInternalCommand;
         if (state && !state.ack && state.val != null) {

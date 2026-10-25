@@ -525,7 +525,9 @@ export class Screensaver extends Page {
             return;
         }
         let icon = `${this.infoIcon ? `~${Icons.GetIcon(this.infoIcon)}` : ''}`;
-        if (this.basePanel.info.nspanel.displayVersion === '0.0.0') {
+        if (this.basePanel.isVirtual) {
+            // a web panel has no TFT firmware - no development and no update symbol
+        } else if (this.basePanel.info.nspanel.displayVersion === '0.0.0') {
             // only for development firmware
             if (!this.adapter.config.hideDeveloperSymbols) {
                 icon = `~${Icons.GetIcon('cog-refresh-outline')}`;
@@ -663,8 +665,37 @@ export class Screensaver extends Page {
         return false;
     }
 
+    /**
+     * A tap on a screensaver item (`event,buttonPress2,<page>?<n>,button`) is handled by
+     * {@link onButtonEvent} alone: it writes `buttons.indicator-N` and runs the command of the item
+     * once. The base implementation would run the command here already - with the option
+     * "indicators act as buttons" off that navigates to the main page before the panel reaches
+     * `onButtonEvent` of this page (the indicator state was never written), with the option on the
+     * command ran twice (a switch was flipped back at once). Everything else (popups) stays as is.
+     *
+     * @param id item id
+     * @param popup popup type
+     * @param action button action
+     * @param value value of the action
+     * @param event the incoming event
+     */
+    public async onPopupRequest(
+        id: number | string,
+        popup: Types.PopupType | undefined,
+        // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
+        action: Types.ButtonActionType | undefined | string,
+        value: string | undefined,
+        event: Types.IncomingEvent | null = null,
+    ): Promise<void> {
+        if (action === 'button') {
+            return;
+        }
+        await super.onPopupRequest(id, popup, action, value, event);
+    }
+
     async onButtonEvent(event: Types.IncomingEvent): Promise<void> {
-        if (event.page && event.id && this.pageItems && this.pageItems[event.id as any]) {
+        // page is the index of the page in the configuration - 0 is a valid page (screensaver first)
+        if (event.page !== undefined && event.id && this.pageItems && this.pageItems[event.id as any]) {
             if (this.blockButtons) {
                 return;
             }

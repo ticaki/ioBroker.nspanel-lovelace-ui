@@ -428,17 +428,7 @@ ${message.text}`;
             }
           }
           if (entry == null ? void 0 : entry.global) {
-            const panels = this.basePanel.controller.panels;
-            for (const panel of panels) {
-              if (panel === this.basePanel || panel.unload) {
-                continue;
-              }
-              await this.basePanel.statesControler.setInternalState(
-                `${panel.name}/cmd/popupNotificationCustom`,
-                JSON.stringify({ id: entry.id, priority: -1 }),
-                false
-              );
-            }
+            await this.removeGlobalNotifications(entry);
           }
           this.log.debug(
             `Popup notify '${this.name}' button3 pressed, remaining entries: ${this.detailsArray.length}`
@@ -497,13 +487,16 @@ ${message.text}`;
   }
   async removeGlobalNotifications(entry) {
     if (entry == null ? void 0 : entry.global) {
-      const panels = this.basePanel.controller.panels;
-      for (const panel of panels) {
-        if (panel === this.basePanel || panel.unload) {
+      const names = /* @__PURE__ */ new Set();
+      for (const panel of this.basePanel.controller.panels) {
+        if (panel.unload || panel.name === this.basePanel.name) {
           continue;
         }
+        names.add(panel.name);
+      }
+      for (const name of names) {
         await this.basePanel.statesControler.setInternalState(
-          `${panel.name}/cmd/popupNotificationCustom`,
+          `${name}/cmd/popupNotificationCustom`,
           JSON.stringify({ id: entry.id, priority: -1 }),
           false
         );

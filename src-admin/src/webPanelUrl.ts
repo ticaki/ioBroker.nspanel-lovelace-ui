@@ -65,17 +65,22 @@ export async function resolveWebPanelHost(
 }
 
 /**
- * `http://<host>:<port>/<topic>` - always plain http, the web panel server has no TLS. A new tab
- * is not subject to mixed content rules, so this also works from an https admin.
+ * `http(s)://<host>:<port>/<topic>` - https when the instance serves the web panels with the
+ * ioBroker certificates (`webSecure`), otherwise plain http. A new tab is not subject to mixed
+ * content rules, so a plain http link also works from an https admin.
  *
  * @param host host name or address of the adapter host
  * @param port `webPort` of the instance, falls back to 8090
  * @param topic topic (or id) of the panel, may contain slashes
+ * @param pin `webPin` of the instance; when set it is passed as `?pin=` so the user does not have
+ * to type it - the server removes it from the address bar again with a redirect
+ * @param secure `webSecure` of the instance - true = https
  */
-export function webPanelUrl(host: string, port: unknown, topic: string): string {
+export function webPanelUrl(host: string, port: unknown, topic: string, pin?: string, secure?: boolean): string {
     const p = Number(port) || WEB_PANEL_DEFAULT_PORT;
     const h = host.includes(':') && !host.startsWith('[') ? `[${host}]` : host;
-    return `http://${h}:${p}/${encodeURIComponent(topic)}`;
+    const query = pin ? `?pin=${encodeURIComponent(pin)}` : '';
+    return `${secure ? 'https' : 'http'}://${h}:${p}/${encodeURIComponent(topic)}${query}`;
 }
 
 /**
@@ -84,7 +89,37 @@ export function webPanelUrl(host: string, port: unknown, topic: string): string 
  * @param host host name or address of the adapter host (see `resolveWebPanelHost`)
  * @param port `webPort` of the instance
  * @param topic topic of the panel
+ * @param pin `webPin` of the instance (plain text), empty = none
+ * @param secure `webSecure` of the instance - true = https (see `webSecureOf`)
  */
-export function openWebPanel(host: string, port: unknown, topic: string): void {
-    window.open(webPanelUrl(host, port, topic), '_blank', 'noopener');
+export function openWebPanel(host: string, port: unknown, topic: string, pin?: string, secure?: boolean): void {
+    window.open(webPanelUrl(host, port, topic, pin, secure), '_blank', 'noopener');
+}
+
+/**
+ * `webSecure` of the instance: does the web panel server speak https?
+ *
+ * @param data `props.data` of the config component
+ * @returns true only when the flag is set
+ */
+export function webSecureOf(data: unknown): boolean {
+    if (typeof data !== 'object' || data === null || !('webSecure' in data)) {
+        return false;
+    }
+    return (data as Record<string, unknown>).webSecure === true;
+}
+
+/**
+ * `webPin` of the instance in plain text for the links of the admin pages.
+ *
+ * Inside the instance configuration `props.data` holds the decrypted value. A still encrypted
+ * value (`$/aes-192-cbc:…`, as it is stored in `encryptedNative`) is useless for the URL and is
+ * treated as "no PIN" - the user then gets the PIN page of the web panel once per browser.
+ *
+ * @param data `props.data` of the config component
+ * @returns the PIN, empty when none is set or usable
+ */
+export function webPinOf(data: unknown): string {
+    const pin = readString(data, 'webPin') ?? '';
+    return pin.startsWith('$/') ? '' : pin;
 }

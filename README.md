@@ -158,9 +158,18 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
     ### **WORK IN PROGRESS**
 -->
 ### **WORK IN PROGRESS**
+- (ticaki) screensaver: the indicator buttons (and the state `buttons.indicator-N`) work again when the screensaver is the first page of the configuration
+- (ticaki) screensaver: a tap on an indicator sets `buttons.indicator-N` again when the indicators do not act as buttons (the page changed before the state was written), and the command of the indicator runs once instead of twice (a switch was flipped back at once)
+- (ticaki) a panel that is offline gets the startup page offered every 5 s again (the panel loop never rescheduled itself)
 - (ticaki) web panels: the panel UI can be shown in a web browser via http://<host>:8090/<topic> - a clone of the panel with its own navigation, no Tasmota needed (new admin tab "Web panels")
 - (ticaki) admin: a button opens the web panel of a panel in a new tab (Maintain, panel settings and panel info)
 - (ticaki) script config: `fontSize: 0` on a grid item is no longer ignored
+- (ticaki) web panels: one web panel per endpoint instead of one per browser - all browsers on the same address show the same panel in sync; the clone of a real panel shares the states tree `panels.<id>` with it (old `panels.<id>_web*` trees are removed on start)
+- (ticaki) web panels: standalone web panels without a hardware panel - add them in the panel overview ("Add web panel": name, topic, model), configure them like a real panel by topic
+- (ticaki) web panels: optional PIN (`webPin` in the web panel settings) protects all web panels - asked once per browser, links from the admin pass it along
+- (ticaki) web panels: look aligned with the HMI (emulator pictures) - Noto Sans as font, Nextion font sizes 0-5, title bar, grids, entities, thermo, power, schedule, chart, alarm/unlock, all popups and the four screensaver layouts
+- (ticaki) Web panels can be served over HTTPS with the ioBroker certificates (`webSecure` plus certificate selection in the web panel settings)
+- (ticaki) web panels: a FIDO2 security key can be used instead of the PIN (HTTPS only)
 
 ### 1.6.0 (2026-10-24)
 - (ticaki) panel: tapping the screensaver several times no longer ends in a black page - a resent page got its pageType but no content

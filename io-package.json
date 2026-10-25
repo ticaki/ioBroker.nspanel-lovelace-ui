@@ -175,7 +175,8 @@
     "pageQRpwd2",
     "pageQRpwd3",
     "tasmotaAdminPassword",
-    "pw1"
+    "pw1",
+    "webPin"
   ],
   "encryptedNative": [
     "mqttPassword",
@@ -184,7 +185,8 @@
     "pageQRpwd2",
     "pageQRpwd3",
     "tasmotaAdminPassword",
-    "pw1"
+    "pw1",
+    "webPin"
   ],
   "native": {
     "versionJsonUrl": "https://raw.githubusercontent.com/ticaki/ioBroker.nspanel-lovelace-ui/main/json/version.json",
@@ -200,6 +202,12 @@
     "webEnabled": true,
     "webPort": 8090,
     "webBind": "0.0.0.0",
+    "webPin": "",
+    "webSecure": false,
+    "webCertPublic": "defaultPublic",
+    "webCertPrivate": "defaultPrivate",
+    "webCertChained": "",
+    "webFido": false,
     "panels": [],
     "pageQRpwd1": "",
     "pageQRpwd2": "",

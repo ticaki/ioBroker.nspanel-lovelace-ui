@@ -21,11 +21,13 @@ import {
     DialogTitle,
     FormControl,
     IconButton,
+    Chip,
 } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
-import { openWebPanel, resolveWebPanelHost } from './webPanelUrl';
+import AddIcon from '@mui/icons-material/Add';
+import { openWebPanel, resolveWebPanelHost, webPanelUrl, webPinOf, webSecureOf } from './webPanelUrl';
 import ConfigIP from './components/ConfigIP';
 import { PanelStatusBadge } from './components/PanelStatusBadge';
 import { resolveTasmotaTimeZone, uniqueTasmotaTimeZones, type TasmotaTimeZone } from './tasmotaTimeZones';
@@ -36,7 +38,54 @@ interface PanelConfig {
     name?: string;
     topic?: string;
     model?: string;
+    /** missing = tasmota; a web panel (`kind: 'web'`) has no hardware behind it */
+    kind?: 'tasmota' | 'web';
 }
+
+/** the three hardware models a panel (and a web panel) can have */
+const panelModels = ['eu', 'us-l', 'us-p'] as const;
+type PanelModel = (typeof panelModels)[number];
+
+function isPanelModel(value: unknown): value is PanelModel {
+    return typeof value === 'string' && (panelModels as readonly string[]).includes(value);
+}
+
+/**
+ * The topic of a web panel becomes its URL path (`http(s)://<host>:<port>/<topic>`): letters, digits,
+ * `_`, `-` and `/` as separator between non-empty segments.
+ */
+const WEB_PANEL_TOPIC_PATTERN = /^[A-Za-z0-9_-]+(\/[A-Za-z0-9_-]+)*$/;
+
+/** first path segments the web server uses itself, see `web-server.ts` */
+const WEB_PANEL_RESERVED_SEGMENTS: ReadonlySet<string> = new Set(['assets', 'fonts', 'icons', 'auth', 'ws']);
+
+/**
+ * `web_` + 12 random lower-case hex characters, unique within the given panels.
+ *
+ * @param panels existing panels, their ids are avoided
+ */
+function newWebPanelId(panels: PanelConfig[]): string {
+    const bytes = new Uint8Array(6);
+    for (;;) {
+        crypto.getRandomValues(bytes);
+        const id = `web_${Array.from(bytes, b => b.toString(16).padStart(2, '0')).join('')}`;
+        if (!panels.some(p => p.id === id)) {
+            return id;
+        }
+    }
+}
+
+/** form of the dialog that creates or edits a web panel */
+interface WebPanelDialogState {
+    open: boolean;
+    /** id of the web panel being edited, null = a new one */
+    editId: string | null;
+    name: string;
+    topic: string;
+    model: PanelModel;
+}
+
+const closedWebPanelDialog: WebPanelDialogState = { open: false, editId: null, name: '', topic: '', model: 'eu' };
 
 /** Antwort eines der drei Einrichtungsschritte, siehe `runInitStep` */
 interface InitStepAnswer {
@@ -97,6 +146,8 @@ interface PagePanelOverviewState extends ConfigGenericState {
     localTimezone: string;
     // State für Message Dialog
     showMessageConfirm: boolean;
+    /** dialog to create or edit a web panel (kind 'web') */
+    webPanelDialog: WebPanelDialogState;
 }
 
 class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any }, PagePanelOverviewState> {
@@ -131,6 +182,7 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
             timezoneInput: timezone,
             filteredTimezones: PagePanelOverview.filterTimezones(''),
             showMessageConfirm: false,
+            webPanelDialog: closedWebPanelDialog,
         };
     }
     // Bereinige Ressourcen und Abonnements beim Unmounten
@@ -619,9 +671,108 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
         }
     }
 
+    // ---- Web panels (kind 'web'): no hardware, created and edited in a dialog ----
+
+    /**
+     * Opens the dialog, empty for a new web panel or filled with the values of an existing one.
+     *
+     * @param panel the web panel to edit, undefined = create a new one
+     */
+    private handleWebPanelDialogOpen = (panel?: PanelConfig): void => {
+        this.setState({
+            webPanelDialog: {
+                open: true,
+                editId: panel?.id ?? null,
+                name: panel?.name ?? '',
+                topic: panel?.topic ?? '',
+                model: isPanelModel(panel?.model) ? panel.model : 'eu',
+            },
+        });
+    };
+
+    /**
+     * The address a browser opens the web panel with: protocol (`webSecure`), host and port of the
+     * instance plus the topic as typed (placeholder `<topic>` while empty).
+     *
+     * @param topic topic from the dialog
+     * @returns the address for display
+     */
+    private webPanelAddressPreview(topic: string): string {
+        const host = this.state.webPanelHost || window.location.hostname;
+        const base = webPanelUrl(host, this.props.data.webPort, '', undefined, webSecureOf(this.props.data));
+        return `${base}${topic || '<topic>'}`;
+    }
+
+    private handleWebPanelDialogClose = (): void => {
+        this.setState({ webPanelDialog: closedWebPanelDialog });
+    };
+
+    private handleWebPanelFieldChange =
+        (key: 'name' | 'topic') =>
+        (event: React.ChangeEvent<HTMLInputElement>): void => {
+            const value = event.target.value;
+            this.setState(prev => ({ webPanelDialog: { ...prev.webPanelDialog, [key]: value } }));
+        };
+
+    private handleWebPanelModelChange = (event: SelectChangeEvent<string>): void => {
+        const value = event.target.value;
+        if (isPanelModel(value)) {
+            this.setState(prev => ({ webPanelDialog: { ...prev.webPanelDialog, model: value } }));
+        }
+    };
+
+    /**
+     * Validates the topic of the dialog.
+     *
+     * @returns translation key of the error, null when the topic is fine
+     */
+    private webPanelTopicError(): string | null {
+        const { topic, editId } = this.state.webPanelDialog;
+        const trimmed = topic.trim();
+        if (trimmed === '') {
+            return 'webPanelTopicRequired';
+        }
+        if (!WEB_PANEL_TOPIC_PATTERN.test(trimmed)) {
+            return 'webPanelTopicInvalid';
+        }
+        if (WEB_PANEL_RESERVED_SEGMENTS.has(trimmed.split('/')[0].toLowerCase())) {
+            return 'webPanelTopicReserved';
+        }
+        const panels: PanelConfig[] = this.props.data.panels || [];
+        if (panels.some(p => p.topic === trimmed && p.id !== editId)) {
+            return 'webPanelTopicDuplicate';
+        }
+        return null;
+    }
+
+    private isWebPanelDialogValid(): boolean {
+        return this.state.webPanelDialog.name.trim() !== '' && this.webPanelTopicError() === null;
+    }
+
+    /** appends a new web panel to the table or updates the edited one, then hands the table to the admin */
+    private handleWebPanelSave = (): void => {
+        if (!this.isWebPanelDialogValid()) {
+            return;
+        }
+        const { editId, name, topic, model } = this.state.webPanelDialog;
+        const panels: PanelConfig[] = this.props.data.panels || [];
+        const values = { name: name.trim(), topic: topic.trim(), model };
+        const updatedPanels =
+            editId === null
+                ? [...panels, { ...values, kind: 'web' as const, id: newWebPanelId(panels), ip: '' }]
+                : panels.map(p => (p.id === editId ? { ...p, ...values, kind: 'web' as const } : p));
+
+        void this.onChange('panels', updatedPanels).then(() => this.forceUpdate());
+        this.setState({ webPanelDialog: closedWebPanelDialog });
+    };
+
     // Handler zum Bearbeiten eines Panels - kopiert Daten in die Initialisierungsbox
     private handleEditPanel = (panel: PanelConfig): void => {
         console.log('Editing panel:', panel);
+        if (panel.kind === 'web') {
+            this.handleWebPanelDialogOpen(panel);
+            return;
+        }
         if (!this.state.alive) {
             return;
         }
@@ -748,7 +899,9 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
             processing,
             progressMessage,
             showMessageConfirm,
+            webPanelDialog,
         } = this.state;
+        const webPanelTopicError = this.webPanelTopicError();
 
         // Setze Standardwert für _nsPanelModel, falls nicht vorhanden (EU als Standard)
         const panelModel = data._nsPanelModel || 'eu';
@@ -926,22 +1079,36 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
                         {error}
                     </Alert>
                 )}
-                {/* Init/Update Button */}
-                <Button
-                    variant="contained"
-                    fullWidth
-                    onClick={this.handleInitClick}
-                    disabled={!alive || !this.isFormValid() || processing}
-                    sx={{ mt: 2 }}
-                >
-                    {processing ? (
-                        <CircularProgress size={24} />
-                    ) : isUpdate ? (
-                        this.getText('nsPanelUpdate')
-                    ) : (
-                        this.getText('nsPanelInit')
-                    )}
-                </Button>
+                {/* Init/Update Button + Web panel button */}
+                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, mt: 2 }}>
+                    <Button
+                        variant="contained"
+                        onClick={this.handleInitClick}
+                        disabled={!alive || !this.isFormValid() || processing}
+                        sx={{ flex: '1 1 0', minWidth: 200 }}
+                    >
+                        {processing ? (
+                            <CircularProgress size={24} />
+                        ) : isUpdate ? (
+                            this.getText('nsPanelUpdate')
+                        ) : (
+                            this.getText('nsPanelInit')
+                        )}
+                    </Button>
+                    {/* a web panel is a pure config entry - no adapter interaction, so it does not need alive;
+                        it only makes sense while the web server is enabled */}
+                    {this.props.data.webEnabled !== false ? (
+                        <Button
+                            variant="outlined"
+                            startIcon={<AddIcon />}
+                            onClick={(): void => this.handleWebPanelDialogOpen()}
+                            disabled={processing}
+                            sx={{ flex: '1 1 0', minWidth: 200 }}
+                        >
+                            {this.getText('webPanelAdd')}
+                        </Button>
+                    ) : null}
+                </Box>
 
                 {/* Meilenstein des laufenden Einrichtungsschritts */}
                 {processing && progressMessage && (
@@ -956,6 +1123,7 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
                 {/* Panels as Boxes */}
                 <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
                     {panels.map((panel, index) => {
+                        const isWebPanel = panel.kind === 'web';
                         return (
                             <Box
                                 key={panel.id || index}
@@ -973,7 +1141,17 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
                                 <Box sx={{ display: 'flex', alignItems: 'center', mb: 2, gap: 1 }}>
                                     {/* Left side: Name and Badge vertically stacked */}
                                     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, flex: 1 }}>
-                                        <Typography variant="h6">{panel.name}</Typography>
+                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                            <Typography variant="h6">{panel.name}</Typography>
+                                            {isWebPanel ? (
+                                                <Chip
+                                                    label={this.getText('webPanelKind')}
+                                                    size="small"
+                                                    color="info"
+                                                    variant="outlined"
+                                                />
+                                            ) : null}
+                                        </Box>
                                         {panel.id && (
                                             <PanelStatusBadge
                                                 panelId={panel.id}
@@ -994,6 +1172,8 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
                                                     this.state.webPanelHost,
                                                     this.props.data.webPort,
                                                     panel.topic ?? '',
+                                                    webPinOf(this.props.data),
+                                                    webSecureOf(this.props.data),
                                                 )
                                             }
                                             title={this.getText('openWebPanel')}
@@ -1005,7 +1185,7 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
                                         size="small"
                                         color="primary"
                                         onClick={() => this.handleEditPanel(panel)}
-                                        disabled={!alive}
+                                        disabled={!alive && !isWebPanel}
                                         title={this.getText('editPanel')}
                                     >
                                         <EditIcon />
@@ -1023,10 +1203,10 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
 
                                 {/* Version Info with Flexbox */}
                                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-                                    {/* mac */}
+                                    {/* mac (hardware) or generated id (web panel) */}
                                     <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, alignItems: 'center' }}>
                                         <TextField
-                                            label={this.getText('macAdressOfPanel')}
+                                            label={this.getText(isWebPanel ? 'webPanelId' : 'macAdressOfPanel')}
                                             value={panel.id}
                                             slotProps={{ input: { readOnly: true } }}
                                             size="small"
@@ -1034,16 +1214,18 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
                                         />
                                     </Box>
 
-                                    {/* ip - Address */}
-                                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, alignItems: 'center' }}>
-                                        <TextField
-                                            label={this.getText('ipFromPanel')}
-                                            value={panel.ip}
-                                            slotProps={{ input: { readOnly: true } }}
-                                            size="small"
-                                            sx={{ flex: '1 1 250px', minWidth: 200, maxWidth: 300 }}
-                                        />
-                                    </Box>
+                                    {/* ip - Address (a web panel has none) */}
+                                    {isWebPanel ? null : (
+                                        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, alignItems: 'center' }}>
+                                            <TextField
+                                                label={this.getText('ipFromPanel')}
+                                                value={panel.ip}
+                                                slotProps={{ input: { readOnly: true } }}
+                                                size="small"
+                                                sx={{ flex: '1 1 250px', minWidth: 200, maxWidth: 300 }}
+                                            />
+                                        </Box>
+                                    )}
 
                                     {/* topic */}
                                     <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, alignItems: 'center' }}>
@@ -1067,17 +1249,19 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
                                         />
                                     </Box>
 
-                                    {/* Console Button */}
-                                    <Button
-                                        variant="contained"
-                                        fullWidth
-                                        onClick={() => this.handleOpenTasmotaConsole(panel)}
-                                        disabled={!panel.ip || !alive}
-                                        size="small"
-                                        sx={{ mt: 1 }}
-                                    >
-                                        {this.getText('openTasmotaConsole')}
-                                    </Button>
+                                    {/* Console Button (Tasmota only) */}
+                                    {isWebPanel ? null : (
+                                        <Button
+                                            variant="contained"
+                                            fullWidth
+                                            onClick={() => this.handleOpenTasmotaConsole(panel)}
+                                            disabled={!panel.ip || !alive}
+                                            size="small"
+                                            sx={{ mt: 1 }}
+                                        >
+                                            {this.getText('openTasmotaConsole')}
+                                        </Button>
+                                    )}
                                 </Box>
                             </Box>
                         );
@@ -1149,6 +1333,84 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
                             variant="contained"
                             color="primary"
                             autoFocus
+                        >
+                            {this.getText('Save')}
+                        </Button>
+                    </DialogActions>
+                </Dialog>
+
+                {/* Web panel create/edit dialog */}
+                <Dialog
+                    open={webPanelDialog.open}
+                    onClose={this.handleWebPanelDialogClose}
+                    fullWidth
+                    maxWidth="xs"
+                >
+                    <DialogTitle>
+                        {webPanelDialog.editId === null ? this.getText('webPanelAdd') : this.getText('webPanelEdit')}
+                    </DialogTitle>
+                    <DialogContent>
+                        <DialogContentText sx={{ mb: 1 }}>{this.getText('webPanelAddText')}</DialogContentText>
+                        {/* live preview of the address: protocol and port follow the web panel settings */}
+                        <Typography
+                            variant="body2"
+                            sx={{ mb: 2, wordBreak: 'break-all' }}
+                        >
+                            {this.getText('webPanelAddress')}:{' '}
+                            <code>{this.webPanelAddressPreview(webPanelDialog.topic)}</code>
+                        </Typography>
+                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                            <TextField
+                                autoFocus
+                                size="small"
+                                variant="standard"
+                                label={this.getText('panelName')}
+                                value={webPanelDialog.name}
+                                onChange={this.handleWebPanelFieldChange('name')}
+                                error={webPanelDialog.name !== '' && webPanelDialog.name.trim() === ''}
+                            />
+                            <TextField
+                                size="small"
+                                variant="standard"
+                                label={this.getText('webPanelTopic')}
+                                value={webPanelDialog.topic}
+                                onChange={this.handleWebPanelFieldChange('topic')}
+                                error={webPanelDialog.topic !== '' && webPanelTopicError !== null}
+                                helperText={
+                                    webPanelDialog.topic !== '' && webPanelTopicError !== null
+                                        ? this.getText(webPanelTopicError)
+                                        : this.getText('webPanelTopicHelp')
+                                }
+                            />
+                            <FormControl
+                                size="small"
+                                variant="standard"
+                            >
+                                <InputLabel id="webpanel-model-label">{this.getText('nsPanelModel')}</InputLabel>
+                                <Select
+                                    labelId="webpanel-model-label"
+                                    label={this.getText('nsPanelModel')}
+                                    value={webPanelDialog.model}
+                                    onChange={this.handleWebPanelModelChange}
+                                >
+                                    {panelModels.map(model => (
+                                        <MenuItem
+                                            key={model}
+                                            value={model}
+                                        >
+                                            {this.getText(`${model}-Version`)}
+                                        </MenuItem>
+                                    ))}
+                                </Select>
+                            </FormControl>
+                        </Box>
+                    </DialogContent>
+                    <DialogActions>
+                        <Button onClick={this.handleWebPanelDialogClose}>{this.getText('Cancel')}</Button>
+                        <Button
+                            onClick={this.handleWebPanelSave}
+                            variant="contained"
+                            disabled={!this.isWebPanelDialogValid()}
                         >
                             {this.getText('Save')}
                         </Button>

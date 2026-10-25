@@ -5,27 +5,32 @@ import type { NSpanelModel } from '../types/types';
  * One JSON object per message.
  */
 
+/** 'clone' = web view of a hardware panel, 'web' = standalone web panel of the admin panel table */
+export type WebPanelKind = 'clone' | 'web';
+
 export type HelloFrame = {
     t: 'hello';
-    session: string;
     model: NSpanelModel;
+    /** topic of the endpoint: the hardware panel or the standalone web panel */
     topic: string;
+    /** name of the panel (= its id, the states tree `panels.<name>`) */
     name: string;
     friendlyName: string;
     tftVersion: string;
+    kind: WebPanelKind;
 };
 
 export type ServerFrame =
     | HelloFrame
-    /** CustomSend payload, unchanged */
-    | { t: 'cmd'; p: string }
+    /** CustomSend payload, unchanged; `seq` is acknowledged by the client */
+    | { t: 'cmd'; p: string; seq: number }
     /** Tasmota buzzer argument, unchanged */
     | { t: 'buzzer'; p: string }
     | { t: 'bye'; reason: string };
 
 export type ClientFrame =
-    /** acknowledgement of a cmd frame - becomes stat/RESULT {"CustomSend":"Done"} */
-    | { t: 'ack' }
+    /** acknowledgement of a cmd frame - becomes stat/RESULT {"CustomSend":"Done"} once per seq */
+    | { t: 'ack'; seq?: number }
     /** event of the display - becomes tele/RESULT {"CustomRecv": p} */
     | { t: 'recv'; p: string };
 
@@ -45,9 +50,11 @@ export function parseClientFrame(raw: string): ClientFrame | undefined {
     if (!data || typeof data !== 'object' || !('t' in data)) {
         return undefined;
     }
-    const frame = data as { t: unknown; p?: unknown };
+    const frame = data as { t: unknown; p?: unknown; seq?: unknown };
     if (frame.t === 'ack') {
-        return { t: 'ack' };
+        return typeof frame.seq === 'number' && Number.isInteger(frame.seq)
+            ? { t: 'ack', seq: frame.seq }
+            : { t: 'ack' };
     }
     if (frame.t === 'recv' && typeof frame.p === 'string' && frame.p) {
         return { t: 'recv', p: frame.p };

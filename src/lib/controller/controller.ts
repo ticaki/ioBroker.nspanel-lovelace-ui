@@ -15,6 +15,14 @@ import * as definition from '../const/definition';
 import type { PanelChannel } from '../classes/panel-channel';
 import type { VirtualPanelManager } from '../web/virtual-panel-manager';
 
+export type ControllerOptions = {
+    mqttClient: MQTT.MQTTClientClass;
+    name: string;
+    panels: Partial<Panel.panelConfigPartial>[];
+    /** creates the owner of the web panels; missing = web panels disabled */
+    createVirtualPanelManager?: (controller: Controller) => VirtualPanelManager;
+};
+
 /**
  * Controller Class
  */
@@ -26,7 +34,7 @@ export class Controller extends Library.BaseClass {
     private dateUpdateTimeout: ioBroker.Timeout | undefined;
     private dailyIntervalTimeout: ioBroker.Interval | undefined;
     private dataCache: Record<string, { time: number; data: any }> = {};
-    private options: { mqttClient: MQTT.MQTTClientClass; name: string; panels: Partial<Panel.panelConfigPartial>[] };
+    private options: ControllerOptions;
     public globalPanelInfo: {
         availableTftFirmwareVersion: { [key: string]: string };
         availableTasmotaFirmwareVersion: string;
@@ -41,10 +49,7 @@ export class Controller extends Library.BaseClass {
     /** Owner of the web panels - set by the web server, removes clones with their real panel */
     virtualPanelManager: VirtualPanelManager | undefined;
 
-    constructor(
-        adapter: Library.AdapterClassDefinition,
-        options: { mqttClient: MQTT.MQTTClientClass; name: string; panels: Partial<Panel.panelConfigPartial>[] },
-    ) {
+    constructor(adapter: Library.AdapterClassDefinition, options: ControllerOptions) {
         super(adapter, options.name);
         switch (this.adapter.config.colorTheme) {
             case 1:
@@ -78,6 +83,11 @@ export class Controller extends Library.BaseClass {
         this.options = options;
         if (this.adapter.mqttServer) {
             this.adapter.mqttServer.controller = this;
+        }
+        // the manager must exist before init() creates the panels: standalone web panels take
+        // their channel from it
+        if (options.createVirtualPanelManager) {
+            this.virtualPanelManager = options.createVirtualPanelManager(this);
         }
         this.initPromise = this.init(options.panels);
         this.log.debug(`${this.name} created`);
@@ -181,8 +191,9 @@ export class Controller extends Library.BaseClass {
         const endsWith = id.split('.').slice(-2).join('.');
         switch (endsWith) {
             case 'cmd.activated': {
+                const name = id.split('.').slice(1, -2).join('.');
                 if (state.val === true) {
-                    const panel = this.panels.find(p => p.name === id.split('.').slice(1, -2).join('.'));
+                    const panel = this.panels.find(p => p.name === name);
                     if (panel) {
                         break;
                     }
@@ -193,7 +204,11 @@ export class Controller extends Library.BaseClass {
                         await this.addPanel(structuredClone(panelConfig));
                     }
                 } else if (state.val === false) {
-                    const panel = this.panels.find(p => p.name === id.split('.').slice(1, -2).join('.'));
+                    // a web clone shares the name of its hardware panel - deactivate the hardware
+                    // panel, its clone goes with it
+                    const panel =
+                        this.panels.find(p => p.name === name && !p.isVirtual) ??
+                        this.panels.find(p => p.name === name);
                     if (panel) {
                         await this.removePanel(panel);
                     }
@@ -496,19 +511,30 @@ export class Controller extends Library.BaseClass {
         panel.friendlyName = this.adapter.config.panels[index].name;
         panel.controller = this;
         panel.scriptName = panel.scriptName || 'missing';
+        if (this.adapter.config.panels[index].kind === 'web') {
+            // a standalone web panel: no Tasmota, the browsers talk through the channel of the manager
+            if (!this.virtualPanelManager) {
+                this.log.warn(`Web panel ${panel.friendlyName} (${panel.topic}) skipped - web panels are disabled`);
+                return false;
+            }
+            panel.kind = 'web';
+            panel.channel = this.virtualPanelManager.channelFor(this.adapter.config.panels[index].topic);
+        }
 
         const newPanel = await Panel.Panel.create(this.adapter, panel as Panel.panelConfigPartial);
         if (await newPanel.isValid()) {
             await newPanel.init();
 
-            this.panels.push(newPanel);
-            newPanel.initDone = true;
+            // remember the configuration before the panel is visible: a web clone created right
+            // after is built from it
             const known = this.options.panels.findIndex(p => p && p.topic === pristine.topic);
             if (known === -1) {
                 this.options.panels.push(pristine);
             } else {
                 this.options.panels[known] = pristine;
             }
+            this.panels.push(newPanel);
+            newPanel.initDone = true;
             this.log.debug(`Panel ${newPanel.name} created`);
             return true;
         }
@@ -534,10 +560,10 @@ export class Controller extends Library.BaseClass {
     };
 
     /**
-     * The configuration a web panel is cloned from, looked up by the topic of the real panel
-     * or, as a fallback, by its id (the cleaned MAC) from the admin panel table.
+     * The configuration of a panel of the admin table (hardware or standalone web panel), looked
+     * up by its topic or, as a fallback, by its id. A web clone is built from it.
      *
-     * @param topicOrId topic or id of the real panel
+     * @param topicOrId topic or id of the panel
      * @returns the configuration as handed to the controller, or undefined
      */
     getPanelConfig(topicOrId: string): Partial<Panel.panelConfigPartial> | undefined {
@@ -550,11 +576,12 @@ export class Controller extends Library.BaseClass {
     }
 
     /**
-     * Create a web panel: a clone of a real panel with its own message channel.
+     * Create a web clone of a hardware panel with its own message channel.
      * Unlike addPanel the topic is not checked against the admin panel table - the clone
-     * carries a topic of its own (`<topic>/web/<session>`).
+     * carries a topic of its own (`<topic>/web`) and shares the states tree of the hardware
+     * panel (`name` = id of the hardware panel).
      *
-     * @param config clone of the real panel's configuration, name/topic/friendlyName already set
+     * @param config clone of the real panel's configuration, name/topic/friendlyName/sourceTopic already set
      * @param channel the in-process channel to the browser
      * @returns the panel, or undefined if the configuration is invalid
      */
@@ -592,7 +619,7 @@ export class Controller extends Library.BaseClass {
         if (id === this.mqttClient.clientId) {
             return true;
         }
-        const index = this.panels.findIndex(p => id.startsWith(this.library.cleandp(p.friendlyName)));
+        const index = this.panels.findIndex(p => !p.isVirtual && id.startsWith(this.library.cleandp(p.friendlyName)));
         if (index !== -1) {
             void this.panels[index].setStatus('connected');
             if (this.panels[index].initDone) {
@@ -731,10 +758,12 @@ export class Controller extends Library.BaseClass {
                 panels.push(panel);
             }
         }
-        temp.global = details.global && panels.length > 1;
-        for (const panel of panels) {
+        // a web clone shares name and internal states with its hardware panel - once per name
+        const names = [...new Set(panels.map(p => p.name))];
+        temp.global = details.global && names.length > 1;
+        for (const name of names) {
             await this.statesControler.setInternalState(
-                `${panel.name}/cmd/popupNotificationCustom`,
+                `${name}/cmd/popupNotificationCustom`,
                 JSON.stringify(details),
                 false,
             );

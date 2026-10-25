@@ -1,64 +1,110 @@
-import { randomUUID } from 'node:crypto';
 import type { Controller } from '../controller/controller';
 import { BaseClass, type AdapterClassDefinition } from '../controller/library';
 import type { Panel, panelConfigPartial } from '../controller/panel';
 import type { NSpanelModel } from '../types/types';
 import { VirtualPanelChannel } from './virtual-panel-channel';
-import type { ClientFrame, ServerFrame } from './web-protocol';
+import type { ClientFrame, ServerFrame, WebPanelKind } from './web-protocol';
 
-/** A web panel survives a lost connection this long and is bound again by its session id */
+/** A clone of a hardware panel is removed after this long without a connected browser */
 export const WEB_PANEL_GRACE_MS = 24 * 60 * 60 * 1000;
-/** Web panels per real panel - each holds its own states tree `panels.<id>_web<n>` */
-export const WEB_PANEL_MAX_SESSIONS = 8;
-/** session ids a browser may bring along (`?session=`), anything else gets a server generated one */
-const SESSION_ID_PATTERN = /^[A-Za-z0-9_-]{8,64}$/;
-/**
- * Settings (relative to `panels.<name>.`) a clone takes over from the real panel when it is created.
- * Hardware (relays, temperature offset), commands (buzzer, goTo…) and popups stay out.
- */
-const CLONED_SETTINGS = [
-    'cmd.screenSaver.layout',
-    'cmd.screenSaver.rotationTime',
-    'cmd.screenSaver.timeout',
-    'cmd.screenSaver.doubleClick',
-    'cmd.screenSaver.infoIcon',
-    'cmd.dim',
-    'cmd.detachLeft',
-    'cmd.detachRight',
-    'cmd.hideCards',
-    'cmd.isBuzzerAllowed',
-    'cmd.mainNavigationPoint',
-] as const;
+/** `seq` numbers waiting for an ack are kept up to this count (nobody acks when no browser is connected) */
+const MAX_PENDING_ACKS = 256;
 /** Display version reported to the adapter when no TFT version is known */
 const WEB_PANEL_FALLBACK_TFT_VERSION = '1.0.0';
+/** Object trees of former web panels (one tree per browser session): `panels.<id>_web`, `panels.<id>_web2` … `_web9` */
+const LEGACY_WEB_TREE = /^(panels\.[^.]+_web[2-9]?)(\.|$)/;
 
-/** The browser side of a session as seen by the manager (a WebSocket in production) */
-export interface SessionClient {
+/**
+ * Is this object id (relative to the instance) part of a tree a former web panel left behind?
+ *
+ * @param id object id without the instance namespace, e.g. `panels.D4_8A_FC_9F_64_60_web2.info.isOnline`
+ * @returns the root of the tree (`panels.<id>_web<n>`), undefined if the id belongs to something else
+ */
+export function legacyWebPanelTree(id: string): string | undefined {
+    return LEGACY_WEB_TREE.exec(id)?.[1];
+}
+
+/** The browser side of a connection as seen by the manager (a WebSocket in production) */
+export interface WebClient {
     send(frame: ServerFrame): void;
+    /** close the connection without a `bye` frame - the browser connects again */
     close(reason: string): void;
 }
 
-export type WebPanelSession = {
-    id: string;
-    /** topic of the real panel this one is cloned from */
-    sourceTopic: string;
-    /** 1-based slot, decides the name: slot 1 -> `<id>_web`, slot 2 -> `<id>_web2`, ... */
-    slot: number;
-    panel: Panel;
+/** One web panel = one endpoint (`/<topic>`), shared by every browser that opens it */
+export type WebPanelEntry = {
+    /** topic of the endpoint: the hardware panel (clone) or the standalone web panel */
+    topic: string;
+    kind: WebPanelKind;
     channel: VirtualPanelChannel;
-    client: SessionClient | undefined;
+    clients: Set<WebClient>;
+    /** last `seq` sent with a cmd frame */
+    seq: number;
+    /** `seq` numbers sent and not yet acknowledged, oldest first */
+    pending: number[];
+    /** clone only: removal after the grace period without a browser */
     graceTimer: ioBroker.Timeout | undefined;
-    disconnectedAt: number;
 };
 
-export type WebPanelListEntry = { topic: string; id: string; name: string; model: NSpanelModel; sessions: number };
+export type WebPanelListEntry = {
+    topic: string;
+    id: string;
+    name: string;
+    model: NSpanelModel;
+    kind: 'tasmota' | 'web';
+    /** connected browsers */
+    clients: number;
+};
 
 /**
- * Creates, binds and removes web panels (clones of real panels) - one per browser session.
+ * Deletes the object trees former web panels left behind (`panels.<id>_web`, `panels.<id>_web<n>`).
+ * A clone shares the tree of its hardware panel now, so those trees are dead.
+ *
+ * @param adapter the adapter
+ * @returns number of trees removed
+ */
+export async function removeLegacyWebPanelTrees(adapter: AdapterClassDefinition): Promise<number> {
+    const prefix = `${adapter.namespace}.panels.`;
+    let count = 0;
+    try {
+        // every object (device, channel, state) - a tree may have lost its device object already
+        const list = await adapter.getObjectListAsync({ startkey: prefix, endkey: `${prefix}香` });
+        const trees = new Set<string>();
+        for (const row of list?.rows ?? []) {
+            const id = row.id.startsWith(`${adapter.namespace}.`) ? row.id.slice(adapter.namespace.length + 1) : row.id;
+            const tree = legacyWebPanelTree(id);
+            if (tree) {
+                trees.add(tree);
+            }
+        }
+        for (const tree of trees) {
+            // forget the states, then remove the whole tree
+            await adapter.library.cleanUpTree([], [`${tree}.`], 2);
+            await adapter.delObjectAsync(tree, { recursive: true });
+            count++;
+        }
+    } catch (e) {
+        adapter.log.warn(`Could not remove old web panel object trees: ${String(e)}`);
+    }
+    if (count > 0) {
+        adapter.log.info(`Removed ${count} object tree(s) of former web panels (panels.*_web*)`);
+    }
+    return count;
+}
+
+/**
+ * Owns the web panels: one panel per endpoint, shared by all browsers that open it.
+ *
+ * - Clone of a hardware panel (`/<topic>` of a panel of the admin table): created on the first
+ *   browser connection, shares the states tree `panels.<id>` with the hardware panel, removed
+ *   after `WEB_PANEL_GRACE_MS` without a browser or together with the hardware panel.
+ * - Standalone web panel (table entry with `kind: 'web'`): created by the controller at start
+ *   like a hardware panel, with the channel from `channelFor()`.
  */
 export class VirtualPanelManager extends BaseClass {
     private readonly controller: Controller;
-    private sessions: Map<string, WebPanelSession> = new Map();
+    /** endpoint topic -> web panel */
+    private entries: Map<string, WebPanelEntry> = new Map();
 
     constructor(adapter: AdapterClassDefinition, controller: Controller) {
         super(adapter, 'WebPanels');
@@ -66,11 +112,15 @@ export class VirtualPanelManager extends BaseClass {
         controller.virtualPanelManager = this;
     }
 
-    /** Real panels a browser can connect to */
+    /** Hardware panels and standalone web panels a browser can connect to */
     listPanels(): WebPanelListEntry[] {
         const result: WebPanelListEntry[] = [];
         for (const p of this.adapter.config.panels) {
-            if (!p || !p.topic || !this.controller.getPanelConfig(p.topic)) {
+            if (!p || !p.topic) {
+                continue;
+            }
+            const kind = p.kind === 'web' ? 'web' : 'tasmota';
+            if (kind === 'tasmota' && !this.controller.getPanelConfig(p.topic)) {
                 continue;
             }
             result.push({
@@ -78,137 +128,197 @@ export class VirtualPanelManager extends BaseClass {
                 id: p.id,
                 name: p.name,
                 model: p.model || 'eu',
-                sessions: [...this.sessions.values()].filter(s => s.sourceTopic === p.topic).length,
+                kind,
+                clients: this.entries.get(p.topic)?.clients.size ?? 0,
             });
         }
         return result;
     }
 
     /**
-     * Is there a real panel for this topic or id?
+     * Is there an endpoint for this topic or id?
      *
-     * @param topicOrId topic or id of the real panel
-     * @returns true if a web panel can be created for it
+     * @param topicOrId topic or id of a hardware panel or a standalone web panel
+     * @returns true if a browser can connect to it
      */
     hasPanel(topicOrId: string): boolean {
-        return this.controller.getPanelConfig(topicOrId) !== undefined;
+        return this.resolve(topicOrId) !== undefined;
     }
 
     /**
-     * Bind a browser to a web panel: an existing session (same id, same real panel) is taken
-     * over, otherwise a new clone is created. Sends the hello frame on success.
+     * The channel of a standalone web panel - created on first use, the controller hands it to
+     * the panel. The same channel is kept when the panel is reloaded, so connected browsers
+     * stay connected.
      *
-     * @param topicOrId topic or id of the real panel
-     * @param sessionId session id the browser remembered, undefined for a new one
-     * @param client the browser side
-     * @returns the session, undefined if no panel could be bound (client is told why and closed)
+     * @param topic topic of the web panel (admin table)
+     * @returns the channel
      */
-    async attach(
-        topicOrId: string,
-        sessionId: string | undefined,
-        client: SessionClient,
-    ): Promise<WebPanelSession | undefined> {
-        if (this.unload) {
+    channelFor(topic: string): VirtualPanelChannel {
+        return this.channelForEntry(topic).channel;
+    }
+
+    /**
+     * Connect a browser to the web panel of an endpoint. A clone is created on the first
+     * connection. Sends the hello frame on success.
+     *
+     * @param topicOrId topic or id of a hardware panel or a standalone web panel
+     * @param client the browser side
+     * @returns the web panel, undefined if the browser could not be connected (it was told why
+     * with `bye`, or just closed so it tries again when the panel is not running right now)
+     */
+    async attach(topicOrId: string, client: WebClient): Promise<WebPanelEntry | undefined> {
+        if (this.unload || this.adapter.unload) {
+            client.send({ t: 'bye', reason: 'shutdown' });
             client.close('shutdown');
             return undefined;
         }
-        const source = this.controller.getPanelConfig(topicOrId);
-        if (!source || !source.topic) {
+        const target = this.resolve(topicOrId);
+        if (!target) {
             this.log.warn(`No panel for '${topicOrId}'`);
             client.send({ t: 'bye', reason: 'unknown panel' });
             client.close('unknown panel');
             return undefined;
         }
-
-        let session = sessionId ? this.sessions.get(sessionId) : undefined;
-        if (session && session.sourceTopic !== source.topic) {
-            session = undefined;
-        }
-        if (session) {
-            if (session.graceTimer) {
-                this.adapter.clearTimeout(session.graceTimer);
-                session.graceTimer = undefined;
+        let entry: WebPanelEntry | undefined;
+        let panel: Panel | undefined;
+        if (target.kind === 'web') {
+            entry = this.channelForEntry(target.topic);
+            panel = this.controller.panels.find(p => p.isVirtual && p.topic === target.topic);
+            if (!panel) {
+                // deactivated or not (yet) created - the browser tries again later
+                this.log.debug(`Web panel ${target.topic} is not running - browser closed`);
+                client.close('panel not running');
+                return undefined;
             }
-            if (session.client && session.client !== client) {
-                session.client.send({ t: 'bye', reason: 'replaced' });
-                session.client.close('replaced');
-            }
-            session.client = client;
-            this.log.debug(`Session ${session.id} bound again to ${session.panel.name}`);
         } else {
-            session = await this.createSession(source, client, sessionId);
-            if (!session) {
-                client.send({ t: 'bye', reason: 'no free slot' });
-                client.close('no free slot');
+            const real = this.controller.panels.find(p => !p.isVirtual && p.topic === target.topic);
+            if (!real) {
+                // the hardware panel is being reloaded or is deactivated - the browser tries again later
+                this.log.debug(`Panel ${target.topic} is not running - browser closed`);
+                client.close('panel not running');
+                return undefined;
+            }
+            entry = this.entries.get(target.topic);
+            if (!entry) {
+                entry = await this.createClone(target.topic, target.id, target.name);
+                if (!entry) {
+                    client.send({ t: 'bye', reason: 'unknown panel' });
+                    client.close('unknown panel');
+                    return undefined;
+                }
+            }
+            panel = this.panelOf(entry);
+            if (!panel) {
+                client.send({ t: 'bye', reason: 'unknown panel' });
+                client.close('unknown panel');
                 return undefined;
             }
         }
+        if (entry.graceTimer) {
+            this.adapter.clearTimeout(entry.graceTimer);
+            entry.graceTimer = undefined;
+        }
+        if (entry.clients.size === 0) {
+            // nobody acknowledged while no browser was connected - drop the stalled queue so the
+            // startup of this browser is answered right away
+            panel.panelSend.resetMessageDB();
+        }
+        entry.clients.add(client);
         client.send({
             t: 'hello',
-            session: session.id,
-            model: session.panel.info.nspanel.model,
-            topic: source.topic,
-            name: session.panel.name,
-            friendlyName: session.panel.friendlyName,
-            tftVersion: this.tftVersion(session.panel.info.nspanel.model),
+            model: panel.info.nspanel.model,
+            topic: target.topic,
+            name: panel.name,
+            friendlyName: panel.friendlyName,
+            tftVersion: this.tftVersion(panel.info.nspanel.model),
+            kind: entry.kind,
         });
-        return session;
+        this.log.debug(`Browser connected to ${panel.friendlyName} (${entry.clients.size} connected)`);
+        return entry;
     }
 
     /**
-     * The browser went away - keep the panel for the grace period.
+     * A browser went away. A clone without browsers is removed after the grace period.
      *
-     * @param session the session
-     * @param client the client that closed, ignored if the session was already taken over
+     * @param entry the web panel
+     * @param client the browser that closed
      */
-    detach(session: WebPanelSession, client: SessionClient): void {
-        if (session.client !== client) {
+    detach(entry: WebPanelEntry, client: WebClient): void {
+        if (!entry.clients.delete(client)) {
             return;
         }
-        session.client = undefined;
-        session.disconnectedAt = Date.now();
-        if (this.unload || this.adapter.unload) {
+        if (entry.clients.size > 0 || this.unload || this.adapter.unload) {
             return;
         }
-        session.graceTimer = this.adapter.setTimeout(() => {
-            void this.removeSession(session, 'grace period over');
+        // without a browser the panel is offline like a switched off display: the send queue is
+        // dropped and the panel offers `pageType~pageStartup` to the next browser right away
+        const panel = this.panelOf(entry);
+        if (panel && !panel.unload && panel.isOnline) {
+            this.log.info(`No browser left on ${panel.friendlyName} - offline`);
+            panel.isOnline = false;
+        }
+        if (entry.kind !== 'clone') {
+            return;
+        }
+        if (entry.graceTimer) {
+            this.adapter.clearTimeout(entry.graceTimer);
+        }
+        entry.graceTimer = this.adapter.setTimeout(() => {
+            entry.graceTimer = undefined;
+            void this.removeEntry(entry, 'grace period over', false);
         }, WEB_PANEL_GRACE_MS);
-        this.log.debug(`Session ${session.id} disconnected - ${session.panel.name} kept for reconnect`);
+        this.log.debug(
+            `Last browser of ${entry.topic} disconnected - clone kept for ${WEB_PANEL_GRACE_MS / 3_600_000} h`,
+        );
     }
 
     /**
-     * A frame from the browser.
+     * A frame from a browser. `ack` with a `seq` is passed on once per `seq` (the first browser
+     * wins), `ack` without `seq` always, `recv` always.
      *
-     * @param session the session
+     * @param entry the web panel
      * @param frame the parsed frame
      */
-    async onClientFrame(session: WebPanelSession, frame: ClientFrame): Promise<void> {
-        if (session.channel.unload) {
+    async onClientFrame(entry: WebPanelEntry, frame: ClientFrame): Promise<void> {
+        if (entry.channel.unload) {
             return;
         }
-        if (frame.t === 'ack') {
-            await session.channel.injectAck();
-        } else {
-            await session.channel.injectReceive(frame.p);
+        if (frame.t === 'recv') {
+            await entry.channel.injectReceive(frame.p);
+            return;
         }
+        if (frame.seq === undefined) {
+            await entry.channel.injectAck();
+            return;
+        }
+        const index = entry.pending.indexOf(frame.seq);
+        if (index === -1) {
+            if (this.adapter.config.debugLogMqtt) {
+                this.log.debug(`Ignore repeated ack ${frame.seq} for ${entry.topic}`);
+            }
+            return;
+        }
+        entry.pending.splice(index, 1);
+        await entry.channel.injectAck();
     }
 
     /**
-     * Remove all web panels of a real panel.
+     * Remove the clone of a hardware panel (the panel is removed or reloaded). Connected
+     * browsers are closed without `bye`, so they connect again and get a fresh clone.
      *
-     * @param topic topic of the real panel
+     * @param topic topic of the hardware panel
      */
     async removeClonesOf(topic: string): Promise<void> {
-        for (const session of [...this.sessions.values()]) {
-            if (session.sourceTopic === topic) {
-                await this.removeSession(session, 'panel removed');
-            }
+        const entry = this.entries.get(topic);
+        if (entry && entry.kind === 'clone') {
+            await this.removeEntry(entry, 'panel removed', false);
         }
     }
 
+    /** Remove every web panel and tell the browsers goodbye (adapter stops) */
     async deleteAll(): Promise<void> {
-        for (const session of [...this.sessions.values()]) {
-            await this.removeSession(session, 'shutdown');
+        for (const entry of [...this.entries.values()]) {
+            await this.removeEntry(entry, 'shutdown', true);
         }
     }
 
@@ -221,132 +331,134 @@ export class VirtualPanelManager extends BaseClass {
     }
 
     /**
-     * A panel reads some of its settings from its own states when it starts (screensaver
-     * layout, rotation, dim values, detached buttons, …) - the user may have changed them at
-     * runtime. A clone starts with the current values of the real panel, so it looks like
-     * the real display; the states it does not get stay at the defaults of the adapter.
+     * Endpoint of a topic or id from the admin panel table.
      *
-     * @param realName name (states tree) of the real panel
-     * @param cloneName name (states tree) of the clone
+     * @param topicOrId topic or id
+     * @returns the table entry with its kind, undefined if unknown or (hardware) without configuration
      */
-    private async copySettings(realName: string, cloneName: string): Promise<void> {
-        const prefix = `panels.${realName}.`;
-        const states = this.library.getStates(`^${prefix.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}cmd\\.`);
-        for (const dp of Object.keys(states)) {
-            const relative = dp.slice(prefix.length);
-            if (!CLONED_SETTINGS.some(s => relative === s || relative.startsWith(`${s}.`))) {
-                continue;
-            }
-            const node = states[dp];
-            if (!node || node.val === undefined || !node.obj || node.obj.type !== 'state') {
-                continue;
-            }
-            try {
-                await this.library.writedp(`panels.${cloneName}.${relative}`, node.val, structuredClone(node.obj));
-            } catch (e) {
-                this.log.debug(`Could not copy ${dp} to ${cloneName}: ${String(e)}`);
-            }
+    private resolve(topicOrId: string): { topic: string; id: string; name: string; kind: WebPanelKind } | undefined {
+        if (!topicOrId) {
+            return undefined;
         }
+        const row =
+            this.adapter.config.panels.find(p => p && p.topic === topicOrId) ??
+            this.adapter.config.panels.find(p => p && p.id === topicOrId);
+        if (!row || !row.topic) {
+            return undefined;
+        }
+        if (row.kind === 'web') {
+            return { topic: row.topic, id: row.id, name: row.name, kind: 'web' };
+        }
+        if (!this.controller.getPanelConfig(row.topic)) {
+            return undefined;
+        }
+        return { topic: row.topic, id: row.id, name: row.name, kind: 'clone' };
     }
 
-    private async createSession(
-        source: Partial<panelConfigPartial>,
-        client: SessionClient,
-        requestedId?: string,
-    ): Promise<WebPanelSession | undefined> {
-        const sourceTopic = source.topic!;
-        const slot = this.freeSlot(sourceTopic);
-        if (slot === undefined) {
-            this.log.warn(`No free web panel slot for ${sourceTopic} (max ${WEB_PANEL_MAX_SESSIONS})`);
-            return undefined;
+    private channelForEntry(topic: string): WebPanelEntry {
+        let entry = this.entries.get(topic);
+        if (!entry) {
+            entry = this.createEntry(topic, 'web', topic);
         }
-        const id =
-            this.adapter.config.panels.find(p => p.topic === sourceTopic)?.id ?? this.library.cleandp(sourceTopic);
-        const realName = this.adapter.config.panels.find(p => p.topic === sourceTopic)?.name ?? sourceTopic;
-        // the browser keeps its id in localStorage - using it lets a reload (or a reconnect after an
-        // adapter restart) bind to the same session instead of occupying a new slot
-        const sessionId =
-            requestedId && SESSION_ID_PATTERN.test(requestedId) && !this.sessions.has(requestedId)
-                ? requestedId
-                : randomUUID();
-        const { channel: _channel, controller: _controller, ...plain } = source;
-        const config = structuredClone(plain) as Partial<panelConfigPartial>;
-        config.name = slot === 1 ? `${id}_web` : `${id}_web${slot}`;
-        config.friendlyName = slot === 1 ? `${realName} (Web)` : `${realName} (Web ${slot})`;
-        config.topic = `${sourceTopic}/web/${sessionId}`;
-        config.sourceTopic = sourceTopic;
-        config.kind = 'web';
-        const channel = new VirtualPanelChannel(this.adapter, config.topic, `${config.friendlyName}-Channel`);
+        return entry;
+    }
+
+    private createEntry(topic: string, kind: WebPanelKind, channelTopic: string): WebPanelEntry {
+        const channel = new VirtualPanelChannel(this.adapter, channelTopic, `WebChannel-${topic}`);
+        const entry: WebPanelEntry = {
+            topic,
+            kind,
+            channel,
+            clients: new Set(),
+            seq: 0,
+            pending: [],
+            graceTimer: undefined,
+        };
         channel.onCommand(payload => {
-            const s = this.sessions.get(sessionId);
-            s?.client?.send({ t: 'cmd', p: payload });
+            entry.seq++;
+            entry.pending.push(entry.seq);
+            if (entry.pending.length > MAX_PENDING_ACKS) {
+                entry.pending.splice(0, entry.pending.length - MAX_PENDING_ACKS);
+            }
+            for (const c of entry.clients) {
+                c.send({ t: 'cmd', p: payload, seq: entry.seq });
+            }
         });
         channel.onBuzzer(payload => {
-            const s = this.sessions.get(sessionId);
-            s?.client?.send({ t: 'buzzer', p: payload });
+            for (const c of entry.clients) {
+                c.send({ t: 'buzzer', p: payload });
+            }
         });
-        await this.copySettings(id, config.name);
-        const panel = await this.controller.addVirtualPanel(config, channel);
-        if (!panel) {
-            await channel.delete();
-            return undefined;
-        }
-        const session: WebPanelSession = {
-            id: sessionId,
-            sourceTopic,
-            slot,
-            panel,
-            channel,
-            client,
-            graceTimer: undefined,
-            disconnectedAt: 0,
-        };
-        this.sessions.set(sessionId, session);
-        this.log.info(`Web panel ${panel.name} created for ${sourceTopic}`);
-        return session;
+        this.entries.set(topic, entry);
+        return entry;
     }
 
     /**
-     * Lowest free slot; if all are taken, the slot of the longest disconnected session is freed.
+     * Create the clone of a hardware panel: same configuration, same states tree (`name` = id of
+     * the hardware panel), own topic `<topic>/web` and an in-process channel.
      *
-     * @param sourceTopic topic of the real panel
-     * @returns the slot, undefined if every slot has a connected browser
+     * @param topic topic of the hardware panel
+     * @param id id of the hardware panel (admin table)
+     * @param name name of the hardware panel (admin table)
+     * @returns the entry, undefined if the panel could not be created
      */
-    private freeSlot(sourceTopic: string): number | undefined {
-        const used = [...this.sessions.values()].filter(s => s.sourceTopic === sourceTopic);
-        for (let slot = 1; slot <= WEB_PANEL_MAX_SESSIONS; slot++) {
-            if (!used.some(s => s.slot === slot)) {
-                return slot;
-            }
-        }
-        const idle = used
-            .filter(s => !s.client)
-            .sort((a, b) => a.disconnectedAt - b.disconnectedAt)
-            .shift();
-        if (!idle) {
+    private async createClone(topic: string, id: string, name: string): Promise<WebPanelEntry | undefined> {
+        const source = this.controller.getPanelConfig(topic);
+        if (!source) {
             return undefined;
         }
-        // the slot is reused right away - remove synchronously from the map, the panel goes in the background
-        void this.removeSession(idle, 'slot needed');
-        return idle.slot;
+        const { channel: _channel, controller: _controller, ...plain } = source;
+        const config = structuredClone(plain) as Partial<panelConfigPartial>;
+        config.name = id || this.library.cleandp(topic);
+        config.friendlyName = `${name || topic} (Web)`;
+        config.topic = `${topic}/web`;
+        config.sourceTopic = topic;
+        config.kind = 'web';
+        config.model = this.adapter.config.panels.find(p => p.topic === topic)?.model || config.model || 'eu';
+        const entry = this.createEntry(topic, 'clone', config.topic);
+        const panel = await this.controller.addVirtualPanel(config, entry.channel);
+        if (!panel) {
+            this.entries.delete(topic);
+            await entry.channel.delete();
+            return undefined;
+        }
+        this.log.info(`Web panel ${config.friendlyName} created for ${topic}`);
+        return entry;
     }
 
-    private async removeSession(session: WebPanelSession, reason: string): Promise<void> {
-        if (!this.sessions.delete(session.id)) {
+    private async removeEntry(entry: WebPanelEntry, reason: string, bye: boolean): Promise<void> {
+        if (!this.entries.delete(entry.topic)) {
             return;
         }
-        if (session.graceTimer) {
-            this.adapter.clearTimeout(session.graceTimer);
-            session.graceTimer = undefined;
+        if (entry.graceTimer) {
+            this.adapter.clearTimeout(entry.graceTimer);
+            entry.graceTimer = undefined;
         }
-        if (session.client) {
-            session.client.send({ t: 'bye', reason });
-            session.client.close(reason);
-            session.client = undefined;
+        for (const c of entry.clients) {
+            if (bye) {
+                c.send({ t: 'bye', reason });
+            }
+            c.close(reason);
         }
-        await this.controller.removePanel(session.panel);
-        await session.channel.delete();
-        this.log.info(`Web panel ${session.panel.name} removed (${reason})`);
+        entry.clients.clear();
+        if (entry.kind === 'clone') {
+            const panel = this.panelOf(entry);
+            if (panel) {
+                await this.controller.removePanel(panel);
+            }
+            this.log.info(`Web panel of ${entry.topic} removed (${reason})`);
+        }
+        await entry.channel.delete();
+    }
+
+    /**
+     * The panel instance that talks through the channel of this entry.
+     *
+     * @param entry the web panel
+     * @returns the panel, undefined while it is not (or no longer) created
+     */
+    private panelOf(entry: WebPanelEntry): Panel | undefined {
+        return this.controller.panels.find(p => p.isVirtual && p.topic === entry.channel.topic);
     }
 
     private tftVersion(model: NSpanelModel): string {
