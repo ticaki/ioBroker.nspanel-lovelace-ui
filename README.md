@@ -170,6 +170,7 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
 - (ticaki) web panels: look aligned with the HMI (emulator pictures) - Noto Sans as font, Nextion font sizes 0-5, title bar, grids, entities, thermo, power, schedule, chart, alarm/unlock, all popups and the four screensaver layouts
 - (ticaki) Web panels can be served over HTTPS with the ioBroker certificates (`webSecure` plus certificate selection in the web panel settings)
 - (ticaki) web panels: a FIDO2 security key can be used instead of the PIN (HTTPS only)
+- (ticaki) web panels: a lost connection to the adapter is shown unmistakably (greyed out page, notice in the middle), the browser reconnects after an adapter restart on its own
 
 ### 1.6.0 (2026-10-24)
 - (ticaki) panel: tapping the screensaver several times no longer ends in a black page - a resent page got its pageType but no content

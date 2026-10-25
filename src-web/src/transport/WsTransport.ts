@@ -42,7 +42,8 @@ export function websocketUrl(topic: string, location: LocationLike = window.loca
  * Websocket connection to the adapter (frames of doc/web-panel/ARCHITECTURE.md 2.6).
  * A dropped connection is reopened (backoff 1 s … 30 s) after `GET /auth/check` passed;
  * a 401 there means the PIN cookie is gone and the page reloads to show the PIN page.
- * A `bye` frame ends the connection for good.
+ * A `bye` frame ends the connection for good - except `shutdown`: the adapter restarts
+ * (configuration change, update), so the normal reconnect backoff keeps running.
  */
 export class WsTransport implements PanelTransport {
     private readonly url: string;
@@ -131,6 +132,7 @@ export class WsTransport implements PanelTransport {
         this.socket = socket;
         socket.onopen = (): void => {
             this.reconnectDelay = RECONNECT_MIN_MS;
+            this.byeReason = undefined;
             this.statusCb?.('open');
         };
         socket.onmessage = (ev: MessageEvent): void => {
@@ -169,11 +171,14 @@ export class WsTransport implements PanelTransport {
                 this.buzzerCb?.(parsed.p);
                 break;
             case 'bye': {
-                // the connection is over - no reconnect, the page has to be reloaded
                 const reason = typeof parsed.reason === 'string' && parsed.reason !== '' ? parsed.reason : 'unknown';
                 this.byeReason = reason;
-                this.stopped = true;
-                this.clearReconnectTimer();
+                if (reason !== 'shutdown') {
+                    // the connection is over - no reconnect, the page has to be reloaded
+                    this.stopped = true;
+                    this.clearReconnectTimer();
+                }
+                // `shutdown`: the adapter restarts - the close below starts the usual backoff
                 this.byeCb?.(reason);
                 this.socket?.close();
                 break;

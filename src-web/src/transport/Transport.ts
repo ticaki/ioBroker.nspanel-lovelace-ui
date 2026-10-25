@@ -17,8 +17,9 @@ export interface PanelTransport {
     onBuzzer(cb: (payload: string) => void): void;
     onStatus(cb: (status: ConnectionStatus) => void): void;
     /**
-     * the server ended the connection for good (`unknown panel`, `panel removed`,
-     * `shutdown`) - no automatic reconnect afterwards
+     * the server ended the connection: `unknown panel` and `panel removed` are final (no
+     * automatic reconnect, the page has to be reloaded), `shutdown` means the adapter
+     * restarts and the transport reconnects on its own with the usual backoff
      */
     onBye(cb: (reason: string) => void): void;
     /** acknowledges the command with this `seq` (`Done`) */

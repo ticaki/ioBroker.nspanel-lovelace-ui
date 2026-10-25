@@ -786,12 +786,14 @@ class NspanelLovelaceUi extends utils.Adapter {
                     this.clearInterval(a);
                 }
             });
+            // the controller first: it says `bye shutdown` to the browsers of the web panels,
+            // which only arrives while the web server still has their sockets
+            if (this.controller) {
+                await this.controller.delete();
+            }
             if (this.webServer) {
                 await this.webServer.delete();
                 this.webServer = undefined;
-            }
-            if (this.controller) {
-                await this.controller.delete();
             }
             if (this.mqttClient) {
                 await this.mqttClient.destroy();

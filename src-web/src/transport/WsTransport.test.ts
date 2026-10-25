@@ -233,4 +233,36 @@ describe('WsTransport', () => {
         vi.advanceTimersByTime(120_000);
         expect(FakeWebSocket.instances.length).toBe(1);
     });
+
+    it('keeps reconnecting after bye shutdown - the adapter restarts', async () => {
+        const h = make(204);
+        h.transport.connect();
+        const first = FakeWebSocket.instances[0];
+        first.open();
+        first.message({ t: 'bye', reason: 'shutdown' });
+        expect(h.events).toEqual(['bye:shutdown']);
+        expect(first.readyState).toBe(FakeWebSocket.CLOSED);
+        expect(h.transport.endedBy).toBe('shutdown');
+        expect(h.status).toEqual(['connecting', 'open', 'closed']);
+        // the usual backoff: pin check after 1 s, then a new socket
+        vi.advanceTimersByTime(1000);
+        expect(h.checks).toEqual([AUTH_CHECK_PATH]);
+        await settle();
+        expect(FakeWebSocket.instances.length).toBe(2);
+        const second = FakeWebSocket.instances[1];
+        second.open();
+        expect(h.transport.endedBy).toBe(undefined);
+        expect(h.status).toEqual(['connecting', 'open', 'closed', 'connecting', 'open']);
+        second.message({
+            t: 'hello',
+            model: 'eu',
+            topic: 't',
+            name: 'n',
+            friendlyName: 'f',
+            tftVersion: '1.0.0',
+            kind: 'clone',
+        });
+        expect(h.events).toEqual(['bye:shutdown', 'hello:eu:1.0.0:clone']);
+        h.transport.disconnect();
+    });
 });

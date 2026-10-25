@@ -650,12 +650,12 @@ class NspanelLovelaceUi extends utils.Adapter {
           this.clearInterval(a);
         }
       });
+      if (this.controller) {
+        await this.controller.delete();
+      }
       if (this.webServer) {
         await this.webServer.delete();
         this.webServer = void 0;
-      }
-      if (this.controller) {
-        await this.controller.delete();
       }
       if (this.mqttClient) {
         await this.mqttClient.destroy();

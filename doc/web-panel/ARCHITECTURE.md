@@ -344,10 +344,22 @@ Pflichten des Clients (identisch zum echten Display):
    nicht quittiert wurden, und schickt dann alle 5 s `pageType~pageStartup`, bis das
    Startup-Event kommt (so verhält sich auch die echte HMI, die auf der Startseite das
    Event wiederholt).
-6. `bye` beendet die Verbindung endgültig (`reason`: `unknown panel`, `panel removed`,
-   `shutdown`). Der Client zeigt den Grund an und verbindet nicht automatisch neu. Bei
-   einem Verbindungsabbruch ohne `bye` verbindet er neu (Backoff 1 s … 30 s); bei
-   Ablehnung des Upgrades mit 401 lädt er die Seite neu (PIN-Seite).
+6. `bye` beendet die Verbindung (`reason`: `unknown panel`, `panel removed`, `shutdown`).
+   `unknown panel` und `panel removed` sind endgültig: der Client zeigt den Grund mit
+   „Seite neu laden" und verbindet nicht automatisch neu. `shutdown` ist **nicht**
+   endgültig – der Adapter wird regelmäßig neu gestartet (Konfig-Änderung im Admin), der
+   Client zeigt „Adapter beendet – warte auf Neustart" und läuft in den normalen
+   Reconnect-Backoff (1 s … 30 s), bis das nächste `hello` kommt. Damit das `bye shutdown`
+   die Browser erreicht, räumt `onUnload` erst den Controller (→ `VirtualPanelManager.
+   deleteAll()`) und dann den Web-Server ab. Bei einem Verbindungsabbruch ohne `bye`
+   verbindet der Client ebenfalls neu; bei Ablehnung des Upgrades mit 401 lädt er die
+   Seite neu (PIN-Seite).
+7. Offline-Overlay: sobald die Verbindung nicht `open` ist (oder ein `bye` kam), legt
+   `DeviceFrame` ein Overlay über die ganze Stage (entsättigt/abgedunkelt, Kasten mit
+   MDI-Icon und Text de/en, `data-overlay`, `data-status`/`data-bye` wie bisher). Es wird
+   erst nach 500 ms sichtbar, damit der erste Verbindungsaufbau nicht flackert; Tipps
+   erreichen die Seite nicht mehr, die Hardware-Buttons sind deaktiviert. Nach dem
+   nächsten `hello` verschwindet es.
 
 ## 3. Frontend (`src-web/`)
 
@@ -557,7 +569,7 @@ export interface PanelTransport {
     onCommand(cb: (payload: string, seq: number | undefined) => void): void;
     onBuzzer(cb: (payload: string) => void): void;
     onStatus(cb: (status: 'connecting' | 'open' | 'closed') => void): void;
-    /** Sitzung vom Server endgültig beendet (`bye`), kein Reconnect */
+    /** Sitzung vom Server beendet (`bye`); `shutdown` → Reconnect-Backoff, sonst endgültig */
     onBye(cb: (reason: string) => void): void;
     /** quittiert den Frame mit dieser seq (ohne seq: {t:'ack'} wie früher) */
     ack(seq: number | undefined): void;
