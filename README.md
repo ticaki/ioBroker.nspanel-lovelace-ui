@@ -164,6 +164,8 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
 - (ticaki) web panels: the panel UI can be shown in a web browser via http://<host>:8090/<topic> - a clone of the panel with its own navigation, no Tasmota needed (new admin tab "Web panels")
 - (ticaki) admin: a button opens the web panel of a panel in a new tab (Maintain, panel settings and panel info)
 - (ticaki) web panel: configurable host name for the links (webHost), admin tab links use https/port/PIN of the instance, DNS name of the admin is kept when adapter and admin run on the same host
+- (ticaki) web panel: the startup page plays the boot animation of the HMI (splash with the title, then "waiting for content") instead of a placeholder logo
+- (ticaki) web panel: the window picture of popupShutter2 uses the pictures of the HMI and opens with the position (it stayed closed when `shutterClosedIsZero` was set), the percentage and a tap on the picture follow the HMI
 - (ticaki) script config: `fontSize: 0` on a grid item is no longer ignored
 - (ticaki) web panels: one web panel per endpoint instead of one per browser - all browsers on the same address show the same panel in sync; the clone of a real panel shares the states tree `panels.<id>` with it (old `panels.<id>_web*` trees are removed on start)
 - (ticaki) web panels: standalone web panels without a hardware panel - add them in the panel overview ("Add web panel": name, topic, model), configure them like a real panel by topic

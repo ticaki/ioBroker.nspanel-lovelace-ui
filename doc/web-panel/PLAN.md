@@ -142,8 +142,9 @@ Verbleibende, bekannte Abweichungen:
 - ~~**Admin-Links bei HTTPS**~~ erledigt 2026-10-25: Links zeigten die IPv4 statt des DNS-Namens
   (Zertifikat passt nicht, FIDO2 unmöglich) und im Admin-Seitentab `http://` ohne PIN →
   `webHost` + `resolveWebPanelHost`/`loadWebLinkSettings` (ARCHITECTURE.md 2.5.2).
-- us-p/us-l-Layouts, Startvideo (`www/startup/startup.mp4`), Admin-Vorschau als iframe
-  (Phase 5, Mixed Content).
+- ~~Startvideo~~ erledigt 2026-10-25: die Startseite spielt die Boot-Animation der HMI
+  (Frames und Banner aus den HMI-Dateien, `components/startup/`), kein `www/startup/` mehr.
+- us-p/us-l-Layouts, Admin-Vorschau als iframe (Phase 5, Mixed Content).
 
 ## Testumgebung
 

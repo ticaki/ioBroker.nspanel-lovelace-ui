@@ -416,7 +416,8 @@ src-web/
     components/Icon.tsx           # Glyphe -> MDI-SVG
     components/DeviceFrame.tsx    # 480x320 Bühne, CSS-Skalierung, Dim-Overlay, Hardware-Buttons
     components/TitleBar.tsx       # Navigation links/rechts + Titel (gemeinsam für Karten)
-    components/StartupPage.tsx
+    components/StartupPage.tsx    # Boot-Animation der HMI (pageSplash/pageStartup)
+    components/startup/           # sequence.ts (Takt/Banner), pictures.ts, Frames als WebP
     audio/buzzer.ts               # Tasmota-Buzzer-Argument -> Web Audio
     icons/glyph-map.json  icons/mdi-paths.json   # generiert
     style/theme.ts  style/panel.css

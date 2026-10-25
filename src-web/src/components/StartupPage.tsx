@@ -1,108 +1,100 @@
 import React from 'react';
+import type { PanelModel } from '../protocol/types';
+import { startupPictures, type Rect, type StartupPictures } from './startup/pictures';
+import { bannerAt, FRAME_INTERVAL_MS, frameIndex, lastDistinctTick } from './startup/sequence';
 
 export interface StartupPageProps {
-    /**
-     * Media shown while the panel starts. The real panel plays a video / gif / slideshow,
-     * the material is provided later and put into `www/startup/` - until then the
-     * placeholder logo is shown. Supported: `.mp4`/`.webm` (video, muted loop), everything
-     * else as image.
-     */
-    mediaUrl?: string;
+    /** the display model, decides the pictures and their places */
+    model: PanelModel;
 }
 
 interface StartupPageState {
-    mediaFailed: boolean;
+    /** ticks of the 200 ms timer since the page opened */
+    tick: number;
 }
 
-/** Default location of the startup media, checked by the browser; missing file -> placeholder */
-export const STARTUP_MEDIA_URL = '/startup/startup.mp4';
-
 /**
- * The page the display shows after boot before the adapter sends the first `pageType`.
+ * The page the display shows after boot before the adapter sends the first `pageType`: the
+ * boot animation of the HMI (`pageSplash` followed by `pageStartup`, see `startup/sequence.ts`).
  */
 export class StartupPage extends React.Component<StartupPageProps, StartupPageState> {
+    private timer: number | undefined;
+    private preloaded: HTMLImageElement[] = [];
+
     constructor(props: StartupPageProps) {
         super(props);
-        this.state = { mediaFailed: false };
+        this.state = { tick: 0 };
     }
 
-    private readonly onMediaError = (): void => {
-        this.setState({ mediaFailed: true });
+    componentDidMount(): void {
+        this.preload(startupPictures(this.props.model));
+        this.timer = window.setInterval(this.onTick, FRAME_INTERVAL_MS);
+    }
+
+    componentDidUpdate(prev: StartupPageProps): void {
+        if (prev.model !== this.props.model) {
+            this.preload(startupPictures(this.props.model));
+        }
+    }
+
+    componentWillUnmount(): void {
+        if (this.timer !== undefined) {
+            window.clearInterval(this.timer);
+            this.timer = undefined;
+        }
+        this.preloaded = [];
+    }
+
+    /** keeps every frame decoded so the loop does not stutter on the first run */
+    private preload(pictures: StartupPictures): void {
+        this.preloaded = [...pictures.frames, ...Object.values(pictures.banners)].map(src => {
+            const img = new Image();
+            img.src = src;
+            return img;
+        });
+    }
+
+    private readonly onTick = (): void => {
+        this.setState(s => {
+            // the loop goes on forever, the counter only has to grow until the last banner change
+            const next = s.tick + 1;
+            const wrap = lastDistinctTick();
+            return { tick: next > wrap ? wrap + ((next - wrap) % wrap || 0) : next };
+        });
     };
 
-    private renderMedia(url: string): React.JSX.Element {
-        const style: React.CSSProperties = { width: '100%', height: '100%', objectFit: 'contain' };
-        if (/\.(mp4|webm|ogv)(\?|$)/i.test(url)) {
-            return (
-                <video
-                    src={url}
-                    style={style}
-                    autoPlay
-                    muted
-                    loop
-                    playsInline
-                    onError={this.onMediaError}
-                />
-            );
-        }
+    private renderPicture(src: string, rect: Rect, name: string, value: string | number): React.JSX.Element {
         return (
             <img
-                src={url}
-                style={style}
+                src={src}
                 alt=""
-                onError={this.onMediaError}
+                draggable={false}
+                {...{ [`data-startup-${name}`]: value }}
+                style={{
+                    position: 'absolute',
+                    left: rect.x,
+                    top: rect.y,
+                    width: rect.w,
+                    height: rect.h,
+                    userSelect: 'none',
+                    pointerEvents: 'none',
+                }}
             />
         );
     }
 
-    private renderPlaceholder(): React.JSX.Element {
-        // provisional logo: a power symbol in the ioBroker blues on a light background
-        return (
-            <svg
-                viewBox="0 0 120 120"
-                width={150}
-                height={150}
-                aria-label="startup"
-            >
-                <circle
-                    cx="60"
-                    cy="60"
-                    r="42"
-                    fill="none"
-                    stroke="#164477"
-                    strokeWidth="14"
-                    strokeLinecap="round"
-                    strokeDasharray="210 60"
-                    transform="rotate(-242 60 60)"
-                />
-                <rect
-                    x="51"
-                    y="18"
-                    width="18"
-                    height="52"
-                    rx="4"
-                    fill="#3399cc"
-                />
-            </svg>
-        );
-    }
-
     render(): React.JSX.Element {
-        const url = this.props.mediaUrl;
-        const showMedia = url !== undefined && url !== '' && !this.state.mediaFailed;
+        const pictures = startupPictures(this.props.model);
+        const { tick } = this.state;
+        const frame = frameIndex(tick);
+        const banner = bannerAt(tick);
         return (
             <div
                 data-page="pageStartup"
-                style={{
-                    position: 'absolute',
-                    inset: 0,
-                    background: showMedia ? '#000' : '#e6e6e6',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                }}
+                style={{ position: 'absolute', inset: 0, background: '#000' }}
             >
-                {showMedia ? this.renderMedia(url) : this.renderPlaceholder()}
+                {this.renderPicture(pictures.frames[frame] ?? '', pictures.picture, 'frame', frame)}
+                {this.renderPicture(pictures.banners[banner], pictures.banner, 'banner', banner)}
             </div>
         );
     }
