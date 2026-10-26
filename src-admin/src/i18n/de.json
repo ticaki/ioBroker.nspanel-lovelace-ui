@@ -1,3 +1,26 @@
 {
-    
+    "webPanelAdd": "Web-Panel hinzufügen",
+    "webFidoCreated": "Registriert",
+    "webFidoDelete": "Schlüssel entfernen",
+    "webFidoDeleteConfirm": "Diesen Sicherheitsschlüssel entfernen?",
+    "webFidoInactive": "FIDO2 ist in der laufenden Instanz nicht aktiv (braucht HTTPS und die gespeicherte, aktivierte Option).",
+    "webFidoKeyName": "Name",
+    "webFidoKeys": "Registrierte Sicherheitsschlüssel",
+    "webFidoLastUsed": "Zuletzt benutzt",
+    "webFidoLoadError": "Sicherheitsschlüssel konnten nicht geladen werden - läuft die Instanz?",
+    "webFidoNever": "nie",
+    "webFidoNoKeys": "Noch kein Sicherheitsschlüssel registriert. Registrieren auf der Web-Panel-Seite /auth/fido/register (Link in der Panel-Liste).",
+    "webFidoRefresh": "Aktualisieren",
+    "webPanelAddress": "Adresse",
+    "webPanelAddText": "Ein Web-Panel zeigt die Panel-Oberfläche im Browser, ohne NSPanel-Hardware. Es wird wie ein echtes Panel über sein Topic konfiguriert; das Topic ist zugleich die Adresse: http(s)://<host>:<port>/<topic>.",
+    "webPanelEdit": "Web-Panel bearbeiten",
+    "webPanelId": "ID des Web-Panels",
+    "webPanelKind": "Web",
+    "webPanelNoTasmotaMaintain": "Ein Web-Panel hat keine Tasmota-Firmware und kein TFT-Display, hier gibt es nichts zu flashen. Nur das Skript gilt.",
+    "webPanelTopic": "Topic (eindeutig, wird zum URL-Pfad)",
+    "webPanelTopicDuplicate": "Dieses Topic wird schon von einem anderen Panel benutzt",
+    "webPanelTopicHelp": "Buchstaben, Ziffern, _ und -, / als Trenner",
+    "webPanelTopicInvalid": "Erlaubt sind nur Buchstaben, Ziffern, _, - und /",
+    "webPanelTopicRequired": "Das Topic darf nicht leer sein",
+    "webPanelTopicReserved": "Dieser Pfad wird vom Web-Server selbst benutzt"
 }

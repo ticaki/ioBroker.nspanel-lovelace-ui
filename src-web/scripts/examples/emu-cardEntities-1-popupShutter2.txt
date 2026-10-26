@@ -1,0 +1,9 @@
+# popupShutter2 opened from the icon of the row "Rollladen" of Entities 1 (icon window-shutter, colour 2047 =
+# cyan): the frontend opens the popup itself (event,pageOpenDetail,popupShutter2,1?2) and
+# draws the head icon in the colour of the row like the HMI (emu picture popupShutter2.png)
+pageType~cardEntities
+entityUpd~Entities 1~button~bSubPrev~~2047~~~button~bSubNext~~2047~~~light2~1?0~~16904~Licht_aus~0~switch~1?1~~13039~Steckd. ein~1~shutter2~1?2~~2047~Rollladen~|||enable|enable|enable~number~1?3~~2047~Zahl~3776|0|100
+@sleep 300
+@click [data-row][data-id="1?2"] [data-role="icon"]
+entityUpdateDetail~1?2~1~~Rollladen~~~~~enable~enable~enable~~65535~enable~撚~65535~enable~~65535~enable~shutter~1
+@sleep 300

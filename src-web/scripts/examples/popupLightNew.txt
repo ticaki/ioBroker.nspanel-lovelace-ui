@@ -1,0 +1,3 @@
+# popupLightNew: same payload, effect list enabled (last field)
+pageType~popupLightNew~light.ceiling~Deckenlicht~
+entityUpdateDetail~light.ceiling~~2016~1~60~disable~enable~Farbe~Temperatur~Helligkeit~enable

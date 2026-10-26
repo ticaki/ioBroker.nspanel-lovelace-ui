@@ -1,0 +1,4 @@
+# recorded on the emu panel (tile Ventilator): event,pageOpenDetail,popupFan,4?4; the mode texts end
+# with CR LF (formatInSelText), written as the literal \r\n here
+pageType~popupFan~4?4~Ventilator~
+entityUpdateDetail~4?4~~2016~1~2~100~Speed~Nacht\r\n~Auto\r\n?Nacht\r\n?Turbo\r\n

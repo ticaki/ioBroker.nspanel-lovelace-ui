@@ -1,0 +1,3 @@
+# recorded on the emu panel (tile Slider): event,pageOpenDetail,popupSlider,4?5
+pageType~popupSlider~4?5~Slider~
+entityUpdateDetail~4?5~Slider 1~~~30~0~100~~1~enable~Slider 2~~~60~0~100~~1~enable~Slider 3~~~90~0~100~~1~enable

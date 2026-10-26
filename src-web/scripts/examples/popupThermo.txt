@@ -1,0 +1,4 @@
+# popupThermo: PageThermo.onPopupRequest with one mode row (emu scene "Thermostat", popupThermo.png).
+# pageArgs: page id, title, icon glyph (the adapter sends no icon in the payload).
+pageType~popupThermo~thermo~Thermostat~
+entityUpdateDetail~thermo~~9308~Wohnzimmer~0?1~Auto~Auto?MANUAL~~~~~~~~

@@ -436,7 +436,8 @@ const _Screensaver = class _Screensaver extends import_Page.Page {
       return;
     }
     let icon = `${this.infoIcon ? `~${import_icon_mapping.Icons.GetIcon(this.infoIcon)}` : ""}`;
-    if (this.basePanel.info.nspanel.displayVersion === "0.0.0") {
+    if (this.basePanel.isVirtual) {
+    } else if (this.basePanel.info.nspanel.displayVersion === "0.0.0") {
       if (!this.adapter.config.hideDeveloperSymbols) {
         icon = `~${import_icon_mapping.Icons.GetIcon("cog-refresh-outline")}`;
       }
@@ -554,8 +555,28 @@ const _Screensaver = class _Screensaver extends import_Page.Page {
     }
     return false;
   }
+  /**
+   * A tap on a screensaver item (`event,buttonPress2,<page>?<n>,button`) is handled by
+   * {@link onButtonEvent} alone: it writes `buttons.indicator-N` and runs the command of the item
+   * once. The base implementation would run the command here already - with the option
+   * "indicators act as buttons" off that navigates to the main page before the panel reaches
+   * `onButtonEvent` of this page (the indicator state was never written), with the option on the
+   * command ran twice (a switch was flipped back at once). Everything else (popups) stays as is.
+   *
+   * @param id item id
+   * @param popup popup type
+   * @param action button action
+   * @param value value of the action
+   * @param event the incoming event
+   */
+  async onPopupRequest(id, popup, action, value, event = null) {
+    if (action === "button") {
+      return;
+    }
+    await super.onPopupRequest(id, popup, action, value, event);
+  }
   async onButtonEvent(event) {
-    if (event.page && event.id && this.pageItems && this.pageItems[event.id]) {
+    if (event.page !== void 0 && event.id && this.pageItems && this.pageItems[event.id]) {
       if (this.blockButtons) {
         return;
       }

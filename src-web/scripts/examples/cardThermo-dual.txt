@@ -1,0 +1,3 @@
+# cardThermo with two targets (heat/cool, field temp2) and the next-page arrow in the last slot
+pageType~cardThermo
+entityUpd~Klima~button~bSubPrev~~1055~~~button~bSubNext~~1055~~~thermoAC~24.0 °C~200~Kühlen~100~350~10~~33808~1~thermoAC?1~~1055~1~thermoAC?2~~64512~1~thermoAC?3~~2016~1~thermoAC?4~~65504~1~thermoAC?5~~2016~1~thermoAC?6~~65535~1~thermoAC?7~~52785~1~thermoAC?0~Currently~State~~°C~260~1

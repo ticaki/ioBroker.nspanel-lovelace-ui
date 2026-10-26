@@ -1,0 +1,4 @@
+# cardUnlock - the scene of the emulator picture cardUnlock.png: the adapter sends pageType~cardAlarm
+# for it (PageAlarm with alarmType unlock), pageType~cardUnlock is rendered the same way. One button U1, no icon.
+pageType~cardUnlock
+entityUpd~Unlock1~button~bSubPrev~~1592~~~button~bSubNext~~1592~~~unlock.haustuer~entsperren~U1~~~~~~~~63488~enable~enable

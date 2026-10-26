@@ -1,1 +1,26 @@
-{}
+{
+    "webPanelAdd": "Add web panel",
+    "webFidoCreated": "Registered",
+    "webFidoDelete": "Remove key",
+    "webFidoDeleteConfirm": "Remove this security key?",
+    "webFidoInactive": "FIDO2 is not active in the running instance (needs HTTPS and the option enabled and saved).",
+    "webFidoKeyName": "Name",
+    "webFidoKeys": "Registered security keys",
+    "webFidoLastUsed": "Last used",
+    "webFidoLoadError": "Could not load the security keys - is the instance running?",
+    "webFidoNever": "never",
+    "webFidoNoKeys": "No security key registered yet. Register one on the web panel page /auth/fido/register (link on the panel list).",
+    "webFidoRefresh": "Refresh",
+    "webPanelAddress": "Address",
+    "webPanelAddText": "A web panel shows the panel UI in a browser without NSPanel hardware. It is configured like a real panel via its topic; the topic is also its address: http(s)://<host>:<port>/<topic>.",
+    "webPanelEdit": "Edit web panel",
+    "webPanelId": "ID of the web panel",
+    "webPanelKind": "Web",
+    "webPanelNoTasmotaMaintain": "A web panel has no Tasmota firmware and no TFT display, there is nothing to flash. Only the script applies.",
+    "webPanelTopic": "Topic (unique, becomes the URL path)",
+    "webPanelTopicDuplicate": "This topic is already used by another panel",
+    "webPanelTopicHelp": "Letters, digits, _ and -, / as separator",
+    "webPanelTopicInvalid": "Only letters, digits, _, - and / are allowed",
+    "webPanelTopicRequired": "The topic must not be empty",
+    "webPanelTopicReserved": "This path is used by the web server itself"
+}

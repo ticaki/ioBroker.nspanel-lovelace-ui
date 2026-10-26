@@ -1,0 +1,5 @@
+# cardThermo2 as PageThermo2.getMessage() sends it: title, nav, name~dstTemp~min~max~step~unit~1,
+# 7 info entities (text~<name>.<i>~<value>~<colour>~~[power]) and 8 page items (4 left, 4 right)
+pageType~cardThermo2
+entityUpd~Bad~button~bSubPrev~~1055~~~button~bSubNext~~1055~~~bad~285~150~300~5~°C~1~text~bad.0~~2016~~~text~bad.1~240~2016~~~text~bad.2~°C~2016~~~text~bad.3~~63519~~~text~bad.4~300~63519~~~text~bad.5~%~63519~~~text~bad.6~MANUAL~65363~~1~button~bad?0~~63488~~1~button~bad?1~~35921~~1~button~bad?2~~35921~~1~button~bad?3~~63488~~1~button~bad?4~~35921~~1~button~bad?5~~35921~~1~button~bad?6~~2016~~1~button~bad?7~~35921~~1~button~bad?8~~2016~~1
+time~12:26

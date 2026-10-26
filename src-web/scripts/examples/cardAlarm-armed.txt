@@ -1,0 +1,3 @@
+# cardAlarm with four buttons (status armed, four disarm modes)
+pageType~cardAlarm
+entityUpd~Alarm~button~bSubPrev~~1592~~~button~bSubNext~~1592~~~alarm.haus~Deaktivieren - Zuhause~D1~Deaktivieren - Unterwegs~D2~Deaktivieren - Nacht~D3~Deaktiviere Urlaub~D4~~63488~enable~disable

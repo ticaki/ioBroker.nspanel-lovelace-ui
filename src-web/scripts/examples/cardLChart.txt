@@ -1,0 +1,5 @@
+# cardLChart (line chart) - 24 h of temperatures like PageChartLine.getChartDataDB builds them:
+# x in minutes, 5 minute grid reduced here, x ticks every 2 h, labels every 4 h, y ticks from chart-scale.ts
+dimmode~20~100~0~65535
+pageType~cardLChart
+entityUpd~Außentemperatur~button~bSubPrev~~65535~~~button~bSubNext~~65535~~~46500~°C~100:150:200:250~0^02:00+120+240^06:00+360+480^10:00+600+720^14:00+840+960^18:00+1080+1200^22:00+1320+1390^01:10~0:136~60:133~120:130~180:125~240:120~300:112~360:118~420:135~480:150~540:165~600:185~660:183~720:200~780:210~840:220~900:215~960:200~1020:195~1080:175~1140:170~1200:135~1260:140~1320:145~1380:145~1440:145

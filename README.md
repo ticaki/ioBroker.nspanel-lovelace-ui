@@ -157,7 +157,20 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
     Placeholder for the next version (at the beginning of the line):
     ### **WORK IN PROGRESS**
 -->
-### **WORK IN PROGRESS**
+### 1.7.0 (2026-10-25)
+- (ticaki) web panels: the panel UI in a web browser via http://<host>:8090/<topic>, no Tasmota needed - one web panel per address, all browsers on it stay in sync (new admin tab "Web panels")
+- (ticaki) web panels: a real panel can be opened in the browser - the clone navigates on its own and shares the states tree `panels.<id>` with the panel
+- (ticaki) web panels: standalone web panels without hardware - "Add web panel" in the panel overview (name, topic, model), configured by topic like a real panel
+- (ticaki) web panels: optional PIN (`webPin`) for all web panels, asked once per browser; HTTPS with the ioBroker certificates (`webSecure`); a FIDO2 security key can replace the PIN (HTTPS only)
+- (ticaki) web panels: look of the HMI - Noto Sans, Nextion font sizes, all page types, popups, the four screensaver layouts and the boot animation
+- (ticaki) web panels: a lost connection to the adapter is shown (greyed out page), the browser reconnects after an adapter restart on its own
+- (ticaki) admin: a button opens the web panel of a panel in a new tab (Maintain, panel settings, panel info), the host name of the links is configurable (`webHost`)
+- (ticaki) screensaver: the indicator buttons (and the state `buttons.indicator-N`) work again when the screensaver is the first page of the configuration
+- (ticaki) screensaver: a tap on an indicator sets `buttons.indicator-N` again when the indicators do not act as buttons, and the command of the indicator runs once instead of twice (a switch was flipped back at once)
+- (ticaki) a panel that is offline gets the startup page offered every 5 s again (the panel loop never rescheduled itself)
+- (ticaki) script config: `fontSize: 0` on a grid item is no longer ignored
+
+### 1.6.0 (2026-10-24)
 - (ticaki) panel: tapping the screensaver several times no longer ends in a black page - a resent page got its pageType but no content
 - (ticaki) template text.battery.bydhvs: charging icon is now shown when the battery is charging (negative power)
 - (ticaki) admin screensaver: notifications (bell next to the gear) - headline, text, states with condition, priority, dismiss group and buzzer

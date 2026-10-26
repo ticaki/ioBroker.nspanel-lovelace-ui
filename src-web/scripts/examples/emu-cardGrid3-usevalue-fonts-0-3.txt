@@ -1,0 +1,4 @@
+# Werte 1 (emulator picture cardGrid3-usevalue-fonts-0-3.png): useValue with fontSize 0-3
+pageType~cardGrid3
+entityUpd~Werte 1 (Font 0-3)~button~bSubPrev~~2047~~~button~bSubNext~~2047~~~text~5?0~21,4°C¬0~1375~Font 0~21.4~text~5?1~48%¬1~1375~Font 1~48~text~5?2~30%¬2~2047~Font 2~30~text~5?3~35%¬3~1375~Font 3~35
+@sleep 300

@@ -1,0 +1,4 @@
+# Admin-Seiten (emulator picture cardGrid-3-tiles.png): cardGrid with three navigation tiles
+pageType~cardGrid
+entityUpd~Admin-Seiten~button~bSubPrev~~2047~~~button~bSubNext~~2047~~~button~navigate.Unlock1~~2047~Unlock~1~button~navigate.alarm~~2047~Alarm~1~button~navigate.chart~~2047~Chart~1~~~~~~~~~~~~~~~~~~
+@sleep 300

@@ -1,0 +1,4 @@
+# Entities 2 (emulator picture cardEntities-2-text-button-inputsel-timer.png): text, button, input_sel, timer
+pageType~cardEntities
+entityUpd~Entities 2~button~bSubPrev~~2047~~~button~bSubNext~~2047~~~text~2?0~~11338~4~0%~button~2?1~~2047~drücken~drücken~input_sel~2?2~~63488~Auswahl~0~timer~2?3~~63488~Timer~22:00:15
+@sleep 300

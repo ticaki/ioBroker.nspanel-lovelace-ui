@@ -14,12 +14,23 @@ import {
     DialogActions,
     FormControlLabel,
     Switch,
+    IconButton,
+    Chip,
 } from '@mui/material';
 import { grey, orange, blue, yellow } from '@mui/material/colors';
+import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import { type IobTheme, type ThemeName, type ThemeType } from '@iobroker/gui-components';
 import { PanelStatusBadge } from './components/PanelStatusBadge';
 import { ThemeProvider } from '@mui/material/styles';
 import { getLightSurfaceTheme } from './themeUtils';
+import {
+    defaultWebLinkSettings,
+    loadWebLinkSettings,
+    openWebPanel,
+    webHostOf,
+    webLinkSettingsOf,
+    type WebLinkSettings,
+} from './webPanelUrl';
 
 interface MaintainPanelInfo {
     _Headline: string;
@@ -54,6 +65,8 @@ interface MaintainPanelState extends ConfigGenericState {
     alive?: boolean;
     /** Map panelId → cmd.activated value */
     activatedMap: Record<string, boolean>;
+    /** host, port, https, PIN of the web panel server of the instance (see `loadWebLinkSettings`) */
+    webLink: WebLinkSettings;
 }
 
 // Daten die aus der config kommen, also die props.data
@@ -63,6 +76,8 @@ interface PanelConfig {
     name: string;
     topic: string;
     model: string;
+    /** missing = tasmota; a web panel has no hardware behind it */
+    kind?: 'tasmota' | 'web';
 }
 
 interface ConfirmDialogState {
@@ -91,7 +106,33 @@ class MaintainPanel extends ConfigGeneric<ConfigGenericProps & MaintainPanelProp
             processingPanel: null,
             alive: false,
             activatedMap: {},
+            webLink: webLinkSettingsOf(props.data, defaultWebLinkSettings()),
         };
+    }
+
+    /**
+     * Link settings for the web panels: the (possibly unsaved) instance configuration in
+     * `props.data` wins, the loaded settings fill in what is not in `props.data`.
+     */
+    private webLink(): WebLinkSettings {
+        return webLinkSettingsOf(this.props.data, this.state.webLink);
+    }
+
+    private loadWebLink(): void {
+        void loadWebLinkSettings(this.props.oContext.socket, this.adapterName, this.instance, this.props.data).then(
+            settings => {
+                if (this._isMounted) {
+                    this.setState({ webLink: settings });
+                }
+            },
+        );
+    }
+
+    componentDidUpdate(prevProps: ConfigGenericProps): void {
+        // a changed host name in the instance configuration re-resolves the host of the links
+        if (webHostOf(prevProps.data) !== webHostOf(this.props.data)) {
+            this.loadWebLink();
+        }
     }
 
     async componentWillUnmount(): Promise<void> {
@@ -137,6 +178,7 @@ class MaintainPanel extends ConfigGeneric<ConfigGenericProps & MaintainPanelProp
     async componentDidMount(): Promise<void> {
         void super.componentDidMount();
         this._isMounted = true;
+        this.loadWebLink();
 
         // Get initial alive state and subscribe to changes
         try {
@@ -566,6 +608,7 @@ class MaintainPanel extends ConfigGeneric<ConfigGenericProps & MaintainPanelProp
         // Expert Mode from props (provided by json-config system)
         //const isExpertMode = this.props.expertMode ?? false;
         const panelsConfig: PanelConfig[] = this.panelsConfig;
+        const webLink = this.webLink();
         const { panelsInfo, error, processingPanel, alive } = this.state;
         const confirmDialog = this.confirmDialog;
         const anyScriptNeedsUpdate = panelsInfo.some(p => p._check_script);
@@ -620,6 +663,8 @@ class MaintainPanel extends ConfigGeneric<ConfigGenericProps & MaintainPanelProp
                     {panelsInfo.map((panel, index) => {
                         const cardStyle = this.getPanelCardStyle(panel);
                         const panelConfig = panelsConfig.find(p => p.topic === panel._topic);
+                        // a web panel has no Tasmota: no firmware, no TFT flash, no console
+                        const isWebPanel = panelConfig?.kind === 'web';
                         const card = (
                             <Box
                                 key={panel._id || index}
@@ -640,14 +685,35 @@ class MaintainPanel extends ConfigGeneric<ConfigGenericProps & MaintainPanelProp
                             >
                                 {/* Panel Name and Status Badge */}
                                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, mb: 2 }}>
-                                    <Typography
-                                        variant="h6"
-                                        sx={{
-                                            fontWeight: panel._check ? 'bold' : 'normal',
-                                        }}
-                                    >
-                                        {panel._Headline}
-                                    </Typography>
+                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                        <Typography
+                                            variant="h6"
+                                            sx={{
+                                                fontWeight: panel._check ? 'bold' : 'normal',
+                                                flex: 1,
+                                            }}
+                                        >
+                                            {panel._Headline}
+                                        </Typography>
+                                        {isWebPanel ? (
+                                            <Chip
+                                                label={this.getText('webPanelKind')}
+                                                size="small"
+                                                color="info"
+                                                variant="outlined"
+                                            />
+                                        ) : null}
+                                        {webLink.enabled && panel._topic ? (
+                                            <IconButton
+                                                size="small"
+                                                color="primary"
+                                                onClick={(): void => openWebPanel(webLink, panel._topic)}
+                                                title={this.getText('openWebPanel')}
+                                            >
+                                                <OpenInNewIcon />
+                                            </IconButton>
+                                        ) : null}
+                                    </Box>
                                     <PanelStatusBadge
                                         panelId={panelConfig?.id || panel._id}
                                         oContext={this.props.oContext}
@@ -676,83 +742,96 @@ class MaintainPanel extends ConfigGeneric<ConfigGenericProps & MaintainPanelProp
 
                                 {/* Version Info with Flexbox */}
                                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-                                    {/* Tasmota */}
-                                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, alignItems: 'center' }}>
-                                        <TextField
-                                            label={this.getText('vTasmota')}
-                                            value={panel._tasmotaVersion}
-                                            slotProps={{ input: { readOnly: true } }}
-                                            size="small"
-                                            sx={{ flex: '1 1 250px', minWidth: 200, maxWidth: 300 }}
-                                        />
-                                        <Button
-                                            variant="contained"
-                                            onClick={() => this.handleTasmotaUpdate(panel)}
-                                            disabled={
-                                                !this.isPanelUpdateable(panel) ||
-                                                processingPanel === panel._name ||
-                                                !alive
-                                            }
-                                            size="small"
-                                            sx={{
-                                                flex: '0 0 auto',
-                                                minWidth: 200,
-                                                ...(cardStyle.buttonTasmotaColor !== 'primary' && {
-                                                    backgroundColor: cardStyle.buttonTasmotaColor,
-                                                    '&:hover': {
-                                                        backgroundColor: cardStyle.buttonTasmotaColor,
-                                                        filter: 'brightness(0.9)',
-                                                    },
-                                                }),
-                                            }}
+                                    {/* Web panel: no firmware to maintain */}
+                                    {isWebPanel ? (
+                                        <Alert
+                                            severity="info"
+                                            sx={{ maxWidth: 460 }}
                                         >
-                                            {processingPanel === panel._name ? (
-                                                <CircularProgress size={20} />
-                                            ) : (
-                                                this.getText('tasmotaUpdate')
-                                            )}
-                                        </Button>
-                                    </Box>
+                                            {this.getText('webPanelNoTasmotaMaintain')}
+                                        </Alert>
+                                    ) : null}
+                                    {/* Tasmota */}
+                                    {isWebPanel ? null : (
+                                        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, alignItems: 'center' }}>
+                                            <TextField
+                                                label={this.getText('vTasmota')}
+                                                value={panel._tasmotaVersion}
+                                                slotProps={{ input: { readOnly: true } }}
+                                                size="small"
+                                                sx={{ flex: '1 1 250px', minWidth: 200, maxWidth: 300 }}
+                                            />
+                                            <Button
+                                                variant="contained"
+                                                onClick={() => this.handleTasmotaUpdate(panel)}
+                                                disabled={
+                                                    !this.isPanelUpdateable(panel) ||
+                                                    processingPanel === panel._name ||
+                                                    !alive
+                                                }
+                                                size="small"
+                                                sx={{
+                                                    flex: '0 0 auto',
+                                                    minWidth: 200,
+                                                    ...(cardStyle.buttonTasmotaColor !== 'primary' && {
+                                                        backgroundColor: cardStyle.buttonTasmotaColor,
+                                                        '&:hover': {
+                                                            backgroundColor: cardStyle.buttonTasmotaColor,
+                                                            filter: 'brightness(0.9)',
+                                                        },
+                                                    }),
+                                                }}
+                                            >
+                                                {processingPanel === panel._name ? (
+                                                    <CircularProgress size={20} />
+                                                ) : (
+                                                    this.getText('tasmotaUpdate')
+                                                )}
+                                            </Button>
+                                        </Box>
+                                    )}
 
                                     {/* TFT */}
-                                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, alignItems: 'center' }}>
-                                        <TextField
-                                            label={this.getText('vTFT')}
-                                            value={panel._tftVersion}
-                                            slotProps={{ input: { readOnly: true } }}
-                                            size="small"
-                                            sx={{ flex: '1 1 250px', minWidth: 200, maxWidth: 300 }}
-                                        />
-                                        <Button
-                                            variant="contained"
-                                            onClick={() => this.handleTftInstall(panel)}
-                                            disabled={
-                                                panel._online === 'no' ||
-                                                panel._flashing ||
-                                                !panel._ip ||
-                                                processingPanel === panel._name ||
-                                                !alive
-                                            }
-                                            size="small"
-                                            sx={{
-                                                flex: '0 0 auto',
-                                                minWidth: 200,
-                                                ...(cardStyle.buttonTftColor !== 'primary' && {
-                                                    backgroundColor: cardStyle.buttonTftColor,
-                                                    '&:hover': {
+                                    {isWebPanel ? null : (
+                                        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, alignItems: 'center' }}>
+                                            <TextField
+                                                label={this.getText('vTFT')}
+                                                value={panel._tftVersion}
+                                                slotProps={{ input: { readOnly: true } }}
+                                                size="small"
+                                                sx={{ flex: '1 1 250px', minWidth: 200, maxWidth: 300 }}
+                                            />
+                                            <Button
+                                                variant="contained"
+                                                onClick={() => this.handleTftInstall(panel)}
+                                                disabled={
+                                                    panel._online === 'no' ||
+                                                    panel._flashing ||
+                                                    !panel._ip ||
+                                                    processingPanel === panel._name ||
+                                                    !alive
+                                                }
+                                                size="small"
+                                                sx={{
+                                                    flex: '0 0 auto',
+                                                    minWidth: 200,
+                                                    ...(cardStyle.buttonTftColor !== 'primary' && {
                                                         backgroundColor: cardStyle.buttonTftColor,
-                                                        filter: 'brightness(0.9)',
-                                                    },
-                                                }),
-                                            }}
-                                        >
-                                            {processingPanel === panel._name ? (
-                                                <CircularProgress size={20} />
-                                            ) : (
-                                                this.getText('tftInstallSendToMQTT')
-                                            )}
-                                        </Button>
-                                    </Box>
+                                                        '&:hover': {
+                                                            backgroundColor: cardStyle.buttonTftColor,
+                                                            filter: 'brightness(0.9)',
+                                                        },
+                                                    }),
+                                                }}
+                                            >
+                                                {processingPanel === panel._name ? (
+                                                    <CircularProgress size={20} />
+                                                ) : (
+                                                    this.getText('tftInstallSendToMQTT')
+                                                )}
+                                            </Button>
+                                        </Box>
+                                    )}
 
                                     {/* Script */}
                                     <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, alignItems: 'center' }}>
@@ -794,16 +873,18 @@ class MaintainPanel extends ConfigGeneric<ConfigGenericProps & MaintainPanelProp
                                     </Box>
 
                                     {/* Console Button */}
-                                    <Button
-                                        variant="contained"
-                                        fullWidth
-                                        onClick={() => this.handleOpenTasmotaConsole(panelConfig)}
-                                        disabled={!panelConfig?.ip || !alive}
-                                        size="small"
-                                        sx={{ mt: 1 }}
-                                    >
-                                        {this.getText('openTasmotaConsole')}
-                                    </Button>
+                                    {isWebPanel ? null : (
+                                        <Button
+                                            variant="contained"
+                                            fullWidth
+                                            onClick={() => this.handleOpenTasmotaConsole(panelConfig)}
+                                            disabled={!panelConfig?.ip || !alive}
+                                            size="small"
+                                            sx={{ mt: 1 }}
+                                        >
+                                            {this.getText('openTasmotaConsole')}
+                                        </Button>
+                                    )}
                                 </Box>
                             </Box>
                         );

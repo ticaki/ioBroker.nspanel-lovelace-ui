@@ -1,0 +1,4 @@
+# recorded on the emu panel (tile Rollladen): event,pageOpenDetail,popupShutter2,4?3 - the three extra
+# buttons are disabled, the HMI still shows its default icons
+pageType~popupShutter2~4?3~Rollladen~
+entityUpdateDetail~4?3~60~~~~~~~enable~enable~enable~~~disable~~~disable~~~disable~shutter~1

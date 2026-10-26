@@ -1,0 +1,5 @@
+# cardChart (bar chart) - 24 hourly values like PageChartBar.getChartDataDB builds them
+# (x10 values, label every 6 hours, colour 46500 = the yellow-green of the wiki picture)
+dimmode~20~100~0~65535
+pageType~cardChart
+entityUpd~Strom~button~bSubPrev~~1592~~~button~bSubNext~~1592~~~46500~W~20:40:60:80:100~25~25~25~25~25~35^6:00~22~20~20~15~17~5^12:00~1~2~3~5~88^18:00~66~50~98~45~25~30^0:00~25

@@ -1,0 +1,3 @@
+# popupLight: dimmer without colours (emu scene "Dimmer", popupLight-dimmer.png)
+pageType~popupLight~alias.0.Dimmer~Dimmer~
+entityUpdateDetail~alias.0.Dimmer~~65535~1~76~disable~disable~Farbe~Temperatur~Helligkeit~disable

@@ -1,0 +1,3 @@
+# cardUnlock after a wrong PIN - the scene of the emulator picture cardUnlock-lockicon.png: lock-remove icon
+pageType~cardUnlock
+entityUpd~Unlock1~button~bSubPrev~~1592~~~button~bSubNext~~1592~~~unlock.haustuer~entsperren~U1~~~~~~~~49602~enable~disable

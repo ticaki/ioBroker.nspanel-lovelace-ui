@@ -1,0 +1,4 @@
+# recorded on the emu panel (tile Timer, stopped and editable): event,pageOpenDetail,popupTimer,4?7
+time~23:20
+pageType~popupTimer~4?7~Timer~
+entityUpdateDetail~4?7~~35921~4?7~0~0~1~begin~~clear~start~~clear

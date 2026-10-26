@@ -1,0 +1,3 @@
+# recorded on the emu panel (tile Farbtemp.): event,pageOpenDetail,popupLight,4?1
+pageType~popupLight~4?1~Farbtemp.~
+entityUpdateDetail~4?1~~56654~1~80~70~disable~~Farbtemperatur~Helligkeit~disable

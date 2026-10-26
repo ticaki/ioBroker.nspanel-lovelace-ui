@@ -35,7 +35,7 @@ class PanelSend extends import_library.BaseClass {
   messageDbTasmota = [];
   messageTimeout;
   messageTimeoutTasmota;
-  mqttClient;
+  channel;
   topic = "";
   configTopic = "";
   losingMessageCount = 0;
@@ -49,8 +49,8 @@ class PanelSend extends import_library.BaseClass {
   }
   constructor(adapter, config) {
     super(adapter, config.name);
-    this.mqttClient = config.mqttClient;
-    void this.mqttClient.subscribe(`${config.topic}/stat/RESULT`, this.onMessage);
+    this.channel = config.channel;
+    void this.channel.subscribe(`${config.topic}/stat/RESULT`, this.onMessage);
     this.configTopic = config.topic;
     this.topic = config.topic + import_definition.SendTopicAppendix;
     this.panel = config.panel;
@@ -186,7 +186,9 @@ class PanelSend extends import_library.BaseClass {
           this.log.error(`Losing ${this.losingMessageCount} messages - set panel offline!`);
         }
         this.panel.isOnline = false;
-        if (this.panel.handleLostMessages()) {
+        if (this.panel.isVirtual) {
+          await this.panel.setStatus("offline");
+        } else if (this.panel.handleLostMessages()) {
           await this.panel.setStatus("offline");
         } else if (this.panel.status !== "flashing") {
           try {
@@ -240,7 +242,7 @@ class PanelSend extends import_library.BaseClass {
     this.log.debug(`send payload: ${JSON.stringify(msg)} to panel.`);
     this.messageTimeoutTasmota = true;
     try {
-      await this.mqttClient.publish(msg.topic, msg.payload, { ...(_a = msg.opt) != null ? _a : {}, qos: 1 });
+      await this.channel.publish(msg.topic, msg.payload, { ...(_a = msg.opt) != null ? _a : {}, qos: 1 });
     } catch (e) {
       this.log.warn(`MQTT publish failed: ${e.message}`);
       this.messageDbTasmota.unshift(msg);
@@ -253,7 +255,7 @@ class PanelSend extends import_library.BaseClass {
   };
   async delete() {
     await super.delete();
-    this.mqttClient.unsubscribe(`${this.configTopic}/stat/RESULT`);
+    this.channel.unsubscribe(`${this.configTopic}/stat/RESULT`);
     if (this.messageTimeout) {
       this.adapter.clearTimeout(this.messageTimeout);
     }

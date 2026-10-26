@@ -1,0 +1,10 @@
+# popupSlider opened from the cardGrid2 tile "Slider" (icon plus-minus-variant, colour 2047 = cyan): the frontend
+# opens the popup itself (event,pageOpenDetail,popupSlider,4?5) and draws the head icon in
+# the colour of the tile like the HMI (emu picture popupSlider-1-slider.png); the second line
+# after the click is the answer of the adapter
+pageType~cardGrid2
+entityUpd~Popups~button~bSubPrev~~2047~~~button~bSubNext~~2047~~~light~4?0~~35657~Hue~1~light~4?1~~54278~Farbtemp.~1~shutter~4?2~~2047~Jalousie~|||enable|enable|enable~shutter2~4?3~~2047~Rollladen~|||enable|enable|enable~fan~4?4~~2016~Ventilator~1~number~4?5~~2047~Slider~35|0|100~input_sel~4?6~~63488~Auswahl~Komfort~timer~4?7~~63488~Timer~00:05:00
+@sleep 300
+@click [data-role="tile"][data-id="4?5"]
+entityUpdateDetail~4?5~Slider 1~~~30~0~100~~1~enable~Slider 2~~~60~0~100~~1~enable~Slider 3~~~90~0~100~~1~enable
+@sleep 300

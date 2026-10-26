@@ -1,0 +1,5 @@
+# Startup page - what the display shows before the adapter sends the first pageType.
+# One CustomSend payload per line; @sleep <ms> waits, @touch touches the stage.
+pageType~pageStartup
+time~12:26
+date~Mo., 27. Feb. 2023
