@@ -40,6 +40,7 @@ var import_tools = require("../const/tools");
 var import_Color = require("../const/Color");
 var import_pageTrash = require("../pages/tools/pageTrash");
 var definition = __toESM(require("../const/definition"));
+var adminShareConfig = __toESM(require("../types/adminShareConfig"));
 class Controller extends Library.BaseClass {
   mqttClient;
   statesControler;
@@ -195,9 +196,10 @@ class Controller extends Library.BaseClass {
           if (panel) {
             await this.removePanel(panel);
           }
+          await this.setDeactivatedStatus(name);
         }
         await this.library.writedp(
-          `panels.${this.name}.cmd.activated`,
+          `panels.${name}.cmd.activated`,
           !!state.val,
           definition.genericStateObjects.panel.panels.cmd.activated
         );
@@ -455,6 +457,26 @@ class Controller extends Library.BaseClass {
     await this.getTrashDaten(true);
     this.log.info(`${this.panels.length} Panels initialized`);
   }
+  /**
+   * Marks a panel as switched off in the states the admin reads.
+   *
+   * Without this the panel keeps the status of the previous run - usually `connected` - and the
+   * panel overview would show a panel as running that was never started.
+   *
+   * @param panelId - id of the panel, the part between `panels.` and the next dot
+   */
+  setDeactivatedStatus = async (panelId) => {
+    await this.library.writedp(
+      `panels.${panelId}.status`,
+      adminShareConfig.reversePanelStatusStates("deactivated"),
+      definition.genericStateObjects.panel.panels.status
+    );
+    await this.library.writedp(
+      `panels.${panelId}.info.isOnline`,
+      false,
+      definition.genericStateObjects.panel.panels.info.isOnline
+    );
+  };
   addPanel = async (panel) => {
     let index = this.panels.findIndex((p) => p.topic === panel.topic);
     if (index !== -1) {
@@ -470,12 +492,12 @@ class Controller extends Library.BaseClass {
     }
     const pristine = structuredClone(panel);
     panel.name = this.adapter.config.panels[index].id;
-    const state = this.library.readdb(`panels.${panel.name}.cmd.activated`);
-    if (state && state.val === false) {
-      this.log.info(`Panel ${panel.name} is deactivated, skipping initialization.`);
+    panel.friendlyName = this.adapter.config.panels[index].name;
+    if (!this.library.isPanelActivated(panel.name)) {
+      this.log.info(`Panel ${panel.friendlyName} (${panel.name}) is deactivated, skipping initialization.`);
+      await this.setDeactivatedStatus(panel.name);
       return false;
     }
-    panel.friendlyName = this.adapter.config.panels[index].name;
     panel.controller = this;
     panel.scriptName = panel.scriptName || "missing";
     if (this.adapter.config.panels[index].kind === "web") {
