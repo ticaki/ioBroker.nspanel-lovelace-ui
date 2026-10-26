@@ -157,6 +157,12 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
     Placeholder for the next version (at the beginning of the line):
     ### **WORK IN PROGRESS**
 -->
+### **WORK IN PROGRESS**
+- (tt-tom17) a panel switched off via `panels.<id>.cmd.activated` is now left alone at adapter start - it no longer receives a restart request over http
+- (tt-tom17) a switched off panel reports the status `deactivated` instead of keeping the status of the previous run, so the panel overview no longer shows it as running
+- (tt-tom17) switching `cmd.activated` is confirmed at the panel again - the acknowledgement went to `panels.controller.cmd.activated` before
+- (tt-tom17) `cmd.hideCards` keeps its stored value at adapter start - it was overwritten with the value of `cmd.activated`
+
 ### 1.7.0 (2026-10-25)
 - (ticaki) web panels: the panel UI in a web browser via http://<host>:8090/<topic>, no Tasmota needed - one web panel per address, all browsers on it stay in sync (new admin tab "Web panels")
 - (ticaki) web panels: a real panel can be opened in the browser - the clone navigates on its own and shares the states tree `panels.<id>` with the panel
@@ -177,10 +183,6 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
 - (ticaki) admin screensaver: one notification list shared by all screensavers - a checkbox switches a notification on per screensaver (switched on ones first, then by priority)
 - (tt-tom17) admin: the credential selection (MQTT, Tasmota WebUI, wifi password of a QR page) shows its default `use login / password field` again instead of an empty field
 - (tt-tom17) admin: global settings - the weather instance is visible again; the list of instances is loaded when the page opens and not only when the field is opened, and a stored instance stays visible even if its adapter is gone
-- (tt-tom17) a panel switched off via `panels.<id>.cmd.activated` is now left alone at adapter start - it no longer receives a restart request over http
-- (tt-tom17) a switched off panel reports the status `deactivated` instead of keeping the status of the previous run, so the panel overview no longer shows it as running
-- (tt-tom17) switching `cmd.activated` is confirmed at the panel again - the acknowledgement went to `panels.controller.cmd.activated` before
-- (tt-tom17) `cmd.hideCards` keeps its stored value at adapter start - it was overwritten with the value of `cmd.activated`
 
 ### 1.5.0 (2026-10-20)
 - (ticaki) screensaver: weather forecast items (2 values) no longer lose icon and weekday when the temperature is 0°
