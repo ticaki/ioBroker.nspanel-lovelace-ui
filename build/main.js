@@ -569,9 +569,14 @@ class NspanelLovelaceUi extends utils.Adapter {
       }
     };
     for (const tasmota of this.config.panels) {
-      if (tasmota && tasmota.ip && tasmota.kind !== "web") {
-        void _helper(tasmota);
+      if (!tasmota || !tasmota.ip || tasmota.kind === "web") {
+        continue;
       }
+      if (!this.library.isPanelActivated(tasmota.id)) {
+        this.log.debug(`Panel ${tasmota.id} is deactivated, no restart request sent.`);
+        continue;
+      }
+      void _helper(tasmota);
     }
     await this.setState("info.connection", true, true);
   };

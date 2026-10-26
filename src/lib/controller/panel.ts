@@ -701,24 +701,12 @@ export class Panel extends BaseClass {
                 definition.genericStateObjects.panel.panels.buttons.screensaverGesture,
             );
         }
+        // a panel only gets here when it is activated - confirm the datapoint, keep a stored value
         state = this.library.readdb(`panels.${this.name}.cmd.activated`);
-        if (state && state.val != null) {
-            await this.library.writedp(
-                `panels.${this.name}.cmd.activated`,
-                true,
-                definition.genericStateObjects.panel.panels.cmd.activated,
-            );
-        } else {
-            await this.library.writedp(
-                `panels.${this.name}.cmd.activated`,
-                true,
-                definition.genericStateObjects.panel.panels.cmd.activated,
-            );
-        }
         await this.library.writedp(
-            `panels.${this.name}.cmd.hideCards`,
-            !!state?.val,
-            definition.genericStateObjects.panel.panels.cmd.hideCards,
+            `panels.${this.name}.cmd.activated`,
+            state && state.val != null ? !!state.val : true,
+            definition.genericStateObjects.panel.panels.cmd.activated,
         );
 
         state = this.library.readdb(`panels.${this.name}.cmd.hideCards`);

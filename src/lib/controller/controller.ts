@@ -12,6 +12,7 @@ import type { PageAlarm } from '../pages/pageAlarm';
 import type { AlarmStates, PagePopupDataDetails } from '../types/pages';
 import { getTrashDataFromFile, getTrashDataFromState } from '../pages/tools/pageTrash';
 import * as definition from '../const/definition';
+import * as adminShareConfig from '../types/adminShareConfig';
 import type { PanelChannel } from '../classes/panel-channel';
 import type { VirtualPanelManager } from '../web/virtual-panel-manager';
 
@@ -212,9 +213,11 @@ export class Controller extends Library.BaseClass {
                     if (panel) {
                         await this.removePanel(panel);
                     }
+                    await this.setDeactivatedStatus(name);
                 }
+                // confirm the value at the panel the user switched - not at the controller
                 await this.library.writedp(
-                    `panels.${this.name}.cmd.activated`,
+                    `panels.${name}.cmd.activated`,
                     !!state.val,
                     definition.genericStateObjects.panel.panels.cmd.activated,
                 );
@@ -485,6 +488,27 @@ export class Controller extends Library.BaseClass {
         this.log.info(`${this.panels.length} Panels initialized`);
     }
 
+    /**
+     * Marks a panel as switched off in the states the admin reads.
+     *
+     * Without this the panel keeps the status of the previous run - usually `connected` - and the
+     * panel overview would show a panel as running that was never started.
+     *
+     * @param panelId - id of the panel, the part between `panels.` and the next dot
+     */
+    setDeactivatedStatus = async (panelId: string): Promise<void> => {
+        await this.library.writedp(
+            `panels.${panelId}.status`,
+            adminShareConfig.reversePanelStatusStates('deactivated'),
+            definition.genericStateObjects.panel.panels.status,
+        );
+        await this.library.writedp(
+            `panels.${panelId}.info.isOnline`,
+            false,
+            definition.genericStateObjects.panel.panels.info.isOnline,
+        );
+    };
+
     addPanel = async (panel: Partial<Panel.panelConfigPartial>): Promise<boolean> => {
         let index = this.panels.findIndex(p => p.topic === panel.topic);
         if (index !== -1) {
@@ -503,12 +527,12 @@ export class Controller extends Library.BaseClass {
         // configuration replaces it, and web panels and re-activations are built from it
         const pristine = structuredClone(panel);
         panel.name = this.adapter.config.panels[index].id;
-        const state = this.library.readdb(`panels.${panel.name}.cmd.activated`);
-        if (state && state.val === false) {
-            this.log.info(`Panel ${panel.name} is deactivated, skipping initialization.`);
+        panel.friendlyName = this.adapter.config.panels[index].name;
+        if (!this.library.isPanelActivated(panel.name)) {
+            this.log.info(`Panel ${panel.friendlyName} (${panel.name}) is deactivated, skipping initialization.`);
+            await this.setDeactivatedStatus(panel.name);
             return false;
         }
-        panel.friendlyName = this.adapter.config.panels[index].name;
         panel.controller = this;
         panel.scriptName = panel.scriptName || 'missing';
         if (this.adapter.config.panels[index].kind === 'web') {
