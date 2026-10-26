@@ -1,0 +1,8 @@
+# cardThermo - the scene of the emulator picture cardThermo.png (PageThermo.getMessage()):
+# title, nav left/right, intNameEntity~currentTemp~dstTemp~status~minTemp~maxTemp~tempStep,
+# 8 x (icon~iconColorActive~buttonState~intName), tCurTempLbl~tStateLbl~tALbl~tCF~temp2~btDetail
+# (the two text boxes on the left show label/value pairs, here temperature and humidity)
+pageType~cardThermo
+entityUpd~Thermostat~button~bSubPrev~~1592~~~button~bSubNext~~1592~~~thermoWZ~12,0°C~435~30%~50~300~5~~1592~0~thermoWZ?0~~1592~0~thermoWZ?1~~1592~1~thermoWZ?2~列~1592~0~thermoWZ?3~~1592~0~thermoWZ?4~~1087~1~thermoWZ?5~~1592~0~thermoWZ?6~~55302~1~thermoWZ?7~Temperatur~Feuchte~~°C~~0
+time~12:26
+date~Mo., 27. Feb. 2023

@@ -1,0 +1,4 @@
+# cardEntities: number slider, button, input_sel and timer rows
+pageType~cardEntities
+entityUpd~Steuerung~button~bSubPrev~~65535~~~button~bSubNext~~65535~~~number~0?2?0~~65222~Lautstärke~35|0|100~button~0?2?1~~65222~Szene Abend~PRESS~input_sel~0?2?2~~17299~Modus~Komfort~timer~0?2?3~~65535~Eieruhr~00:05:00
+@sleep 300

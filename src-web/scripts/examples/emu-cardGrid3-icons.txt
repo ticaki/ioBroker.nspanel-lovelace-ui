@@ -1,0 +1,4 @@
+# Werte (emulator picture cardGrid3-icons.png): cardGrid3 without useValue
+pageType~cardGrid3
+entityUpd~Werte~button~bSubPrev~~2047~~~button~bSubNext~~2047~~~text~5?0~並~57994~Temperatur~21.4~text~5?1~~57994~Feuchte~48~text~5?2~~57994~auf~auf~text~5?3~~15055~Lautstärke~35
+@sleep 300

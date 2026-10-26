@@ -14,11 +14,21 @@ import {
     InputLabel,
     InputAdornment,
     IconButton,
+    Chip,
 } from '@mui/material';
 import { grey, orange, yellow } from '@mui/material/colors';
 import SettingsOutlinedIcon from '@mui/icons-material/SettingsOutlined';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import CancelIcon from '@mui/icons-material/Cancel';
+import OpenInNewIcon from '@mui/icons-material/OpenInNew';
+import {
+    defaultWebLinkSettings,
+    loadWebLinkSettings,
+    openWebPanel,
+    webHostOf,
+    webLinkSettingsOf,
+    type WebLinkSettings,
+} from './webPanelUrl';
 import { type IobTheme, type ThemeName, type ThemeType } from '@iobroker/gui-components';
 import { PanelStatusBadge } from './components/PanelStatusBadge';
 import { ThemeProvider } from '@mui/material/styles';
@@ -48,6 +58,8 @@ interface PanelStateData {
 }
 
 interface PanelinfoState extends ConfigGenericState {
+    /** host, port, https, PIN of the web panel server of the instance (see `loadWebLinkSettings`) */
+    webLink: WebLinkSettings;
     panelsInfo: PanelinfoInfo[];
     loading: boolean;
     error: string | null;
@@ -62,6 +74,8 @@ interface PanelConfig {
     name?: string;
     topic?: string;
     model?: string;
+    /** missing = tasmota; a web panel has no hardware behind it */
+    kind?: 'tasmota' | 'web';
 }
 
 // Hier können weitere States hinzugefügt werden, die angezeigt bzw. gesteuert werden sollen
@@ -78,6 +92,14 @@ const displayStates = [
     'info.tasmota.sts.Wifi.Signal',
     'info.internal.scriptName',
 ];
+
+/** States, die es nur mit Tasmota gibt - ein Web-Panel (kind 'web') zeigt sie nicht */
+const tasmotaOnlyStates: ReadonlySet<string> = new Set([
+    'cmd.tempOffset',
+    'info.tasmota.sensors.ANALOG.Temperature1',
+    'info.tasmota.sts.Wifi.Signal',
+    'info.nspanel.firmwareUpdate',
+]);
 
 // Optionale States mit bedingter Anzeige (z.B. nur für Tasmota-Modelle)
 interface OptionalDisplayState {
@@ -115,7 +137,33 @@ class TabPanelinfo extends ConfigGeneric<ConfigGenericProps & PanelinfoProps, Pa
             error: null,
             alive: false,
             panelStates: {},
+            webLink: webLinkSettingsOf(props.data, defaultWebLinkSettings()),
         };
+    }
+
+    /**
+     * Link settings for the web panels: the (possibly unsaved) instance configuration in
+     * `props.data` wins, the loaded settings fill in what the admin tab does not get in `props.data`.
+     */
+    private webLink(): WebLinkSettings {
+        return webLinkSettingsOf(this.props.data, this.state.webLink);
+    }
+
+    private loadWebLink(): void {
+        void loadWebLinkSettings(this.props.oContext.socket, this.adapterName, this.instance, this.props.data).then(
+            settings => {
+                if (this._isMounted) {
+                    this.setState({ webLink: settings });
+                }
+            },
+        );
+    }
+
+    componentDidUpdate(prevProps: ConfigGenericProps & PanelinfoProps): void {
+        // a changed host name in the instance configuration re-resolves the host of the links
+        if (webHostOf(prevProps.data) !== webHostOf(this.props.data)) {
+            this.loadWebLink();
+        }
     }
 
     async componentWillUnmount(): Promise<void> {
@@ -172,6 +220,7 @@ class TabPanelinfo extends ConfigGeneric<ConfigGenericProps & PanelinfoProps, Pa
     async componentDidMount(): Promise<void> {
         void super.componentDidMount();
         this._isMounted = true;
+        this.loadWebLink();
 
         // Get initial alive state and subscribe to changes
         const aliveStateId = `system.adapter.${this.adapterName}.${this.instance}.alive`;
@@ -909,6 +958,7 @@ class TabPanelinfo extends ConfigGeneric<ConfigGenericProps & PanelinfoProps, Pa
 
     renderItem(_error: string, _disabled: boolean, _defaultValue?: unknown): React.JSX.Element {
         const panelsConfig: PanelConfig[] = this.panelsConfig;
+        const webLink = this.webLink();
         const { panelsInfo, error, alive, panelStates } = this.state;
 
         return (
@@ -929,6 +979,10 @@ class TabPanelinfo extends ConfigGeneric<ConfigGenericProps & PanelinfoProps, Pa
                     {panelsInfo.map((panel, index) => {
                         const cardStyle = this.getPanelCardStyle(panel);
                         const panelConfig = panelsConfig.find(p => p.topic === panel._topic);
+                        // a web panel has no Tasmota: no sensors, no wifi signal, no firmware, no console
+                        const isWebPanel = panelConfig?.kind === 'web';
+                        const isShown = (statePath: string): boolean =>
+                            !isWebPanel || !tasmotaOnlyStates.has(statePath);
                         const card = (
                             <Box
                                 key={panel._id || index}
@@ -967,6 +1021,24 @@ class TabPanelinfo extends ConfigGeneric<ConfigGenericProps & PanelinfoProps, Pa
                                             alive={alive}
                                         />
                                     </Box>
+                                    {isWebPanel ? (
+                                        <Chip
+                                            label={this.getText('webPanelKind')}
+                                            size="small"
+                                            color="info"
+                                            variant="outlined"
+                                        />
+                                    ) : null}
+                                    {webLink.enabled && panel._topic ? (
+                                        <IconButton
+                                            size="small"
+                                            color="primary"
+                                            onClick={(): void => openWebPanel(webLink, panel._topic)}
+                                            title={this.getText('openWebPanel')}
+                                        >
+                                            <OpenInNewIcon />
+                                        </IconButton>
+                                    ) : null}
                                     <IconButton
                                         size="small"
                                         color={panel._check ? 'primary' : 'default'}
@@ -981,15 +1053,19 @@ class TabPanelinfo extends ConfigGeneric<ConfigGenericProps & PanelinfoProps, Pa
                                 {/* Panel States */}
                                 {panelStates[panelConfig?.id || panel._id] && (
                                     <Box sx={{ mb: 2, display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-                                        {displayStates.map(statePath =>
-                                            this.renderStateControl(panelConfig?.id || panel._id, statePath),
-                                        )}
+                                        {displayStates
+                                            .filter(isShown)
+                                            .map(statePath =>
+                                                this.renderStateControl(panelConfig?.id || panel._id, statePath),
+                                            )}
                                         {optionalDisplayStates
-                                            .filter(optState =>
-                                                this.shouldDisplayOptionalState(
-                                                    panelConfig?.id || panel._id,
-                                                    optState.id,
-                                                ),
+                                            .filter(
+                                                optState =>
+                                                    isShown(optState.id) &&
+                                                    this.shouldDisplayOptionalState(
+                                                        panelConfig?.id || panel._id,
+                                                        optState.id,
+                                                    ),
                                             )
                                             .map(optState =>
                                                 this.renderStateControl(panelConfig?.id || panel._id, optState.id),
@@ -998,15 +1074,17 @@ class TabPanelinfo extends ConfigGeneric<ConfigGenericProps & PanelinfoProps, Pa
                                 )}
 
                                 {/* Console Button */}
-                                <Button
-                                    variant="contained"
-                                    fullWidth
-                                    onClick={() => this.handleOpenTasmotaConsole(panelConfig)}
-                                    disabled={!panelConfig?.ip || !alive}
-                                    size="small"
-                                >
-                                    {this.getText('openTasmotaConsole')}
-                                </Button>
+                                {isWebPanel ? null : (
+                                    <Button
+                                        variant="contained"
+                                        fullWidth
+                                        onClick={() => this.handleOpenTasmotaConsole(panelConfig)}
+                                        disabled={!panelConfig?.ip || !alive}
+                                        size="small"
+                                    >
+                                        {this.getText('openTasmotaConsole')}
+                                    </Button>
+                                )}
                             </Box>
                         );
                         // Eine eingefärbte Karte trägt in jedem Theme dieselbe helle Signalfarbe -

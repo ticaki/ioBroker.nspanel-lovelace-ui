@@ -1,0 +1,5 @@
+# popupTimer: stopped timer, editable (a tap on the minutes or seconds shows the +/- columns,
+# popupTimer-edit-minutes.png / popupTimer-edit-seconds.png)
+time~23:20
+pageType~popupTimer~alias.0.Timer~Timer~
+entityUpdateDetail~alias.0.Timer~~29582~alias.0.Timer~0~0~1~begin~~clear~start~~clear

@@ -1,0 +1,5 @@
+# popupNotify: information with icon, long text in font 3 (48 px, 4 lines), no buttons
+# (emu-pictures-helper.js SCHRITT 'popupInfo', popupNotify-information-textsize3.png).
+# The adapter rotates longer texts every 3 s and sends the current 4 lines.
+pageType~popupNotify
+entityUpdateDetail~popupNotify~Information~65535~~65535~~65535~~65535~Dies ist ein langer Benachrichtigungstext, der über mehrere Zeilen umbrechen soll, damit man sieht, wie das Panel lange Texte setzt und wo es sie abschneidet. Noch ein Satz, damit es wirklich lang wird.~65535~0~3~~65535

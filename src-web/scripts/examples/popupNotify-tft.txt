@@ -1,0 +1,5 @@
+# popupNotify (TFT update dialog): information with three buttons (PagePopup.getMessage), font 0, no icon.
+# The real adapter sends CR LF inside the text; example files are one payload per line,
+# so the literal \r\n is used here (the parser accepts both).
+pageType~popupNotify
+entityUpdateDetail~popupNotify~TFT-Firmware Update~65504~Nein~63488~Später~65504~Ja~2016~30.05.2022 14:35:39\r\n\r\nEs ist eine neue Version der TFT-Firmware verfügbar\r\n\r\nInstallierte Version: 35\r\nVerfügbare Version: 36~65535~0~0~~65535

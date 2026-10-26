@@ -115,8 +115,9 @@ Stack: ${stack}`
    * @param option - Panel configuration partial (pages of the script already inside)
    */
   async processScreensaver(option) {
-    var _a, _b, _c;
-    const { entry, others } = (0, import_admin_screensaver.findScreensaverEntry)(this.adapter.config.screensaverConfig, option.topic);
+    var _a, _b, _c, _d;
+    const topic = (_a = option.sourceTopic) != null ? _a : option.topic;
+    const { entry, others } = (0, import_admin_screensaver.findScreensaverEntry)(this.adapter.config.screensaverConfig, topic);
     if (!entry) {
       return;
     }
@@ -134,8 +135,8 @@ Stack: ${stack}`
         const channel = channelId ? await this.adapter.getForeignObjectAsync(channelId) : null;
         states[id] = {
           name: (0, import_admin_screensaver.objectNameOf)(obj, lang),
-          role: typeof ((_a = obj == null ? void 0 : obj.common) == null ? void 0 : _a.role) === "string" ? obj.common.role : "",
-          channelRole: ((channel == null ? void 0 : channel.type) === "channel" || (channel == null ? void 0 : channel.type) === "device") && typeof ((_b = channel.common) == null ? void 0 : _b.role) === "string" ? channel.common.role : ""
+          role: typeof ((_b = obj == null ? void 0 : obj.common) == null ? void 0 : _b.role) === "string" ? obj.common.role : "",
+          channelRole: ((channel == null ? void 0 : channel.type) === "channel" || (channel == null ? void 0 : channel.type) === "device") && typeof ((_c = channel.common) == null ? void 0 : _c.role) === "string" ? channel.common.role : ""
         };
       } catch {
         states[id] = {};
@@ -143,7 +144,7 @@ Stack: ${stack}`
     }
     const manager = new import_config_manager.ConfigManager(this.adapter);
     const result = await manager.getScreensaverConfig(
-      (0, import_admin_screensaver.buildScreensaverScriptConfig)(entry, option.topic, states, (_c = this.adapter.config.screensaverNotify) != null ? _c : []),
+      (0, import_admin_screensaver.buildScreensaverScriptConfig)(entry, topic, states, (_d = this.adapter.config.screensaverNotify) != null ? _d : []),
       [],
       {
         weatherEntityFixed: entry.weatherEntity !== void 0
@@ -224,7 +225,7 @@ Stack: ${stack}`
    * @param option - Panel configuration partial
    */
   async createPagesFromConfig(option) {
-    var _a, _b, _c, _d, _e, _f, _g;
+    var _a, _b, _c, _d, _e, _f, _g, _h;
     const entries = this.pageConfig;
     const pendingNavs = [];
     const mainAliases = new Set(
@@ -238,7 +239,8 @@ Stack: ${stack}`
       const allPanelsAssignment = entry.navigationAssignment.find(
         (a) => a.topic === ShareConfig.ALL_PANELS_SPECIAL_ID
       );
-      const panelAssignment = entry.navigationAssignment.find((a) => a.topic === option.topic);
+      const panelTopic = (_a = option.sourceTopic) != null ? _a : option.topic;
+      const panelAssignment = entry.navigationAssignment.find((a) => a.topic === panelTopic);
       let navAssign;
       if (panelAssignment) {
         if (!panelAssignment.navigation && allPanelsAssignment) {
@@ -392,7 +394,7 @@ Stack: ${stack}`
                 []
               );
               if (!result.error && result.pageItem) {
-                newPage.pageItems = (_a = newPage.pageItems) != null ? _a : [];
+                newPage.pageItems = (_b = newPage.pageItems) != null ? _b : [];
                 newPage.pageItems.unshift(result.pageItem);
               } else if (result.error) {
                 this.log.warn(
@@ -440,7 +442,7 @@ Stack: ${stack}`
                 []
               );
               if (!result.error && result.pageItem) {
-                newPage.pageItems = (_b = newPage.pageItems) != null ? _b : [];
+                newPage.pageItems = (_c = newPage.pageItems) != null ? _c : [];
                 newPage.pageItems.unshift(result.pageItem);
               } else if (result.error) {
                 this.log.warn(
@@ -478,7 +480,7 @@ Stack: ${stack}`
         }
         replacedIndex = option.navigation.findIndex((b) => b && b.name === newPage.uniqueID);
         if (replacedIndex !== -1) {
-          replacedNav = (_c = option.navigation[replacedIndex]) != null ? _c : void 0;
+          replacedNav = (_d = option.navigation[replacedIndex]) != null ? _d : void 0;
           option.navigation.splice(replacedIndex, 1);
         }
       }
@@ -486,8 +488,8 @@ Stack: ${stack}`
       const navigationEntry = {
         name: newPage.uniqueID,
         page: newPage.uniqueID,
-        right: { single: (_d = replacedNav == null ? void 0 : replacedNav.right) == null ? void 0 : _d.single, double: (_e = replacedNav == null ? void 0 : replacedNav.right) == null ? void 0 : _e.double },
-        left: { single: (_f = replacedNav == null ? void 0 : replacedNav.left) == null ? void 0 : _f.single, double: (_g = replacedNav == null ? void 0 : replacedNav.left) == null ? void 0 : _g.double }
+        right: { single: (_e = replacedNav == null ? void 0 : replacedNav.right) == null ? void 0 : _e.single, double: (_f = replacedNav == null ? void 0 : replacedNav.right) == null ? void 0 : _f.double },
+        left: { single: (_g = replacedNav == null ? void 0 : replacedNav.left) == null ? void 0 : _g.single, double: (_h = replacedNav == null ? void 0 : replacedNav.left) == null ? void 0 : _h.double }
       };
       if (replacedIndex !== -1) {
         option.navigation.splice(replacedIndex, 0, navigationEntry);

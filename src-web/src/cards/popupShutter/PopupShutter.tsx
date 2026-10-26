@@ -1,0 +1,376 @@
+import React from 'react';
+import { Icon } from '../../components/Icon';
+import { color565ToCss } from '../../protocol/color';
+import { theme } from '../../style/theme';
+import type { CardProps } from '../CardContract';
+import { popupEntityId, popupHeaderIconColor, popupTitle } from '../popupSlider/fields';
+import { CloseButton, HEADER_ICON_SIZE, POPUP_FONT_SIZE, PopupHeader, TAP_SIZE } from '../popupSlider/PopupHeader';
+import { Slider } from '../popupSlider/Slider';
+import { coveredPercent, shownPercent, type ButtonTriple, type PopupShutterModel } from './parse';
+import shutterClosedPicture from './shutter-closed.png';
+import windowOpenPicture from './window-open.png';
+
+/** geometry of `popupShutter` on the HMI (stage pixels) */
+const SHUTTER = {
+    iconCenter: { x: 34, y: 80 },
+    textLeft: 65,
+    textCenterY: 64,
+    buttonCentersX: [306, 358, 410] as const,
+    buttonsCenterY: 121,
+    sliderLeft: 70,
+    sliderLength: 320,
+    sliderCenterY: 173,
+    tiltButtonsCenterY: 231,
+    tiltSliderCenterY: 282,
+};
+
+/** geometry of `popupShutter2` on the HMI: buttons left and right of the window picture */
+const SHUTTER2 = {
+    leftButtonsCenterX: 46,
+    rightButtonsCenterX: 336,
+    buttonCentersY: [119, 181, 243] as const,
+    window: { left: 116, top: 99, width: 153, height: 151 },
+    percentCenterY: 278,
+};
+
+const BUTTON_ICON_SIZE = HEADER_ICON_SIZE;
+
+interface IconButtonProps {
+    glyph: string;
+    enabled: boolean;
+    size: number;
+    color?: string;
+    action: string;
+    centre: { x: number; y: number };
+    onPress: (action: string) => void;
+}
+
+/** A square icon button at a fixed centre; disabled buttons are grey and ignore taps */
+class IconButton extends React.Component<IconButtonProps> {
+    render(): React.JSX.Element {
+        const { glyph, enabled, size, action, centre, onPress } = this.props;
+        const color = enabled ? (this.props.color ?? theme.foreground) : theme.muted;
+        return (
+            <div
+                data-button={action}
+                data-enabled={enabled ? '1' : '0'}
+                onClick={enabled ? (): void => onPress(action) : undefined}
+                style={{
+                    position: 'absolute',
+                    left: centre.x - TAP_SIZE / 2,
+                    top: centre.y - TAP_SIZE / 2,
+                    width: TAP_SIZE,
+                    height: TAP_SIZE,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    cursor: enabled ? 'pointer' : 'default',
+                }}
+            >
+                {glyph ? (
+                    <Icon
+                        glyph={glyph}
+                        size={size}
+                        color={color}
+                    />
+                ) : null}
+            </div>
+        );
+    }
+}
+
+/**
+ * `popupShutter`: icon and name at the left (the adapter sends neither, both come from the
+ * tapped entity = page arguments), up/stop/down buttons and the position slider,
+ * plus the same row for the tilt (`tiltOpen`/`tiltStop`/`tiltClose`, `tiltSlider`) when
+ * the entity has one. The HMI shows no title in the head and no slider labels.
+ * `popupShutter2`: up/stop/down at the left, the window picture in the middle (a tap sets
+ * the position, `positionSlider`), the percentage below it and up to three extra buttons
+ * (`button1Press`..`button3Press`) at the right.
+ */
+export class PopupShutter extends React.Component<CardProps<PopupShutterModel>> {
+    private readonly windowRef = React.createRef<HTMLDivElement>();
+
+    private get id(): string {
+        return popupEntityId(this.props.ctx, this.props.model.entityName);
+    }
+
+    private readonly onPress = (action: string): void => {
+        this.props.press(this.id, action);
+    };
+
+    /** the covered part of the window in percent (0 = open, 100 = closed), see `coveredPercent` */
+    private get covered(): number {
+        return coveredPercent(this.props.model.position ?? 0);
+    }
+
+    /**
+     * A tap on the window picture of popupShutter2 moves the shutter to that height. The HMI
+     * reports `100 - hPosition.val` = the covered part, the adapter turns that into the state
+     * (`positionSlider` in `pageItem.ts` inverts it when `shutterClosedIsZero` is set).
+     */
+    private readonly onWindowTap = (e: React.PointerEvent<HTMLDivElement>): void => {
+        const el = this.windowRef.current;
+        if (!el || this.props.model.position === undefined) {
+            return;
+        }
+        const rect = el.getBoundingClientRect();
+        const ratio = Math.max(0, Math.min(1, (e.clientY - rect.top) / rect.height));
+        this.props.press(this.id, 'positionSlider', Math.round(ratio * 100));
+    };
+
+    private renderTriple(
+        triple: ButtonTriple,
+        actions: [string, string, string],
+        centres: [{ x: number; y: number }, { x: number; y: number }, { x: number; y: number }],
+    ): React.JSX.Element[] {
+        return triple.icons.map((glyph, i) => (
+            <IconButton
+                key={actions[i]}
+                glyph={glyph}
+                enabled={triple.enabled[i]}
+                size={BUTTON_ICON_SIZE}
+                action={actions[i]}
+                centre={centres[i]}
+                onPress={this.onPress}
+            />
+        ));
+    }
+
+    private renderSlider(top: number, value: number, action: string): React.JSX.Element {
+        return (
+            <div
+                key={action}
+                data-block={action}
+                style={{ position: 'absolute', left: SHUTTER.sliderLeft, top: top - 11 }}
+            >
+                <Slider
+                    name={action}
+                    value={value}
+                    min={0}
+                    max={100}
+                    length={SHUTTER.sliderLength}
+                    onCommit={(v): void => this.props.press(this.id, action, v)}
+                />
+            </div>
+        );
+    }
+
+    private renderShutter(): React.JSX.Element {
+        const { model, ctx } = this.props;
+        const hasTilt = model.tilt !== undefined || model.tiltButtons.icons.some(i => i !== '');
+        const y = SHUTTER.buttonsCenterY;
+        const ty = SHUTTER.tiltButtonsCenterY;
+        const [x1, x2, x3] = SHUTTER.buttonCentersX;
+        // the HMI shows the text of the position row (the name of the entity) next to the icon
+        const text = model.positionLabel || popupTitle(ctx, model.entityName);
+        // the payload has an icon field but no colour: the icon is drawn in the colour of the
+        // tapped entity (pageArgs[3]) like on the HMI
+        const icon = model.icon || ctx.pageArgs[2] || '';
+        const iconColor = popupHeaderIconColor(ctx);
+        return (
+            <>
+                <CloseButton onClose={(): void => this.onPress('bExit')} />
+                <div
+                    style={{
+                        position: 'absolute',
+                        left: SHUTTER.iconCenter.x - TAP_SIZE / 2,
+                        top: SHUTTER.iconCenter.y - TAP_SIZE / 2,
+                        width: TAP_SIZE,
+                        height: TAP_SIZE,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                    }}
+                >
+                    {icon ? (
+                        <Icon
+                            glyph={icon}
+                            size={HEADER_ICON_SIZE}
+                            color={iconColor}
+                        />
+                    ) : null}
+                </div>
+                <div
+                    data-text=""
+                    style={{
+                        position: 'absolute',
+                        left: SHUTTER.textLeft,
+                        right: 480 - x1 + TAP_SIZE / 2,
+                        top: SHUTTER.textCenterY - 12,
+                        height: 24,
+                        lineHeight: '24px',
+                        fontSize: POPUP_FONT_SIZE,
+                        color: theme.foreground,
+                        whiteSpace: 'nowrap',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                    }}
+                >
+                    {text}
+                </div>
+                {model.text ? (
+                    <div
+                        data-state=""
+                        style={{
+                            position: 'absolute',
+                            left: SHUTTER.textLeft,
+                            right: 480 - x1 + TAP_SIZE / 2,
+                            top: SHUTTER.textCenterY + 14,
+                            height: 24,
+                            lineHeight: '24px',
+                            fontSize: POPUP_FONT_SIZE,
+                            color: theme.foreground,
+                            whiteSpace: 'nowrap',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                        }}
+                    >
+                        {model.text}
+                    </div>
+                ) : null}
+                {this.renderTriple(
+                    model.buttons,
+                    ['up', 'stop', 'down'],
+                    [
+                        { x: x1, y },
+                        { x: x2, y },
+                        { x: x3, y },
+                    ],
+                )}
+                {model.position !== undefined
+                    ? this.renderSlider(SHUTTER.sliderCenterY, model.position, 'positionSlider')
+                    : null}
+                {hasTilt
+                    ? this.renderTriple(
+                          model.tiltButtons,
+                          ['tiltOpen', 'tiltStop', 'tiltClose'],
+                          [
+                              { x: x1, y: ty },
+                              { x: x2, y: ty },
+                              { x: x3, y: ty },
+                          ],
+                      )
+                    : null}
+                {hasTilt && model.tilt !== undefined
+                    ? this.renderSlider(SHUTTER.tiltSliderCenterY, model.tilt, 'tiltSlider')
+                    : null}
+            </>
+        );
+    }
+
+    /**
+     * The window picture of popupShutter2, the two pictures of the HMI (`hPosition` is a
+     * vertical slider with crop images): the open window as background, the picture of the
+     * closed shutter cropped from the top down to the covered part. Both pictures carry the
+     * housing at the top, so 0 % still shows it.
+     */
+    private renderWindow(): React.JSX.Element {
+        const { left, top, width, height } = SHUTTER2.window;
+        const covered = this.covered;
+        const canMove = this.props.model.position !== undefined;
+        return (
+            <div
+                ref={this.windowRef}
+                data-window=""
+                data-shutter={covered}
+                onPointerUp={canMove ? this.onWindowTap : undefined}
+                style={{
+                    position: 'absolute',
+                    left,
+                    top,
+                    width,
+                    height,
+                    backgroundImage: `url(${windowOpenPicture})`,
+                    backgroundSize: `${width}px ${height}px`,
+                    overflow: 'hidden',
+                    cursor: canMove ? 'pointer' : 'default',
+                    touchAction: 'none',
+                }}
+            >
+                <div
+                    data-shutter-cover=""
+                    style={{
+                        position: 'absolute',
+                        left: 0,
+                        top: 0,
+                        width,
+                        height: `${covered}%`,
+                        backgroundImage: `url(${shutterClosedPicture})`,
+                        backgroundSize: `${width}px ${height}px`,
+                        backgroundPosition: 'top left',
+                        transition: 'height 0.3s ease-out',
+                    }}
+                />
+            </div>
+        );
+    }
+
+    private renderShutter2(): React.JSX.Element {
+        const { model, ctx } = this.props;
+        const lx = SHUTTER2.leftButtonsCenterX;
+        const rx = SHUTTER2.rightButtonsCenterX;
+        const [y1, y2, y3] = SHUTTER2.buttonCentersY;
+        return (
+            <>
+                {/* no colour in the payload (see renderShutter): the colour of the tapped entity */}
+                <PopupHeader
+                    title={model.positionLabel || popupTitle(ctx, model.entityName)}
+                    icon={model.icon || ctx.pageArgs[2] || ''}
+                    iconColor={popupHeaderIconColor(ctx)}
+                    onClose={(): void => this.onPress('bExit')}
+                />
+                {this.renderTriple(
+                    model.buttons,
+                    ['up', 'stop', 'down'],
+                    [
+                        { x: lx, y: y1 },
+                        { x: lx, y: y2 },
+                        { x: lx, y: y3 },
+                    ],
+                )}
+                {this.renderWindow()}
+                <div
+                    data-percent=""
+                    style={{
+                        position: 'absolute',
+                        left: SHUTTER2.window.left,
+                        width: SHUTTER2.window.width,
+                        top: SHUTTER2.percentCenterY - 12,
+                        height: 24,
+                        lineHeight: '24px',
+                        fontSize: POPUP_FONT_SIZE,
+                        color: theme.foreground,
+                        textAlign: 'center',
+                    }}
+                >
+                    {model.position !== undefined ? `${shownPercent(model.position, model.closedIsZero)}%` : ''}
+                </div>
+                {model.extra.map((b, i) => (
+                    <IconButton
+                        key={i}
+                        glyph={b.icon}
+                        enabled={b.enabled}
+                        size={BUTTON_ICON_SIZE}
+                        color={b.color !== undefined ? color565ToCss(b.color) : undefined}
+                        action={`button${i + 1}Press`}
+                        centre={{ x: rx, y: SHUTTER2.buttonCentersY[i] ?? y3 }}
+                        onPress={this.onPress}
+                    />
+                ))}
+            </>
+        );
+    }
+
+    render(): React.JSX.Element {
+        const { ctx } = this.props;
+        return (
+            <div
+                data-page={ctx.pageType}
+                style={{ position: 'absolute', inset: 0, background: theme.background, color: theme.foreground }}
+            >
+                {ctx.pageType === 'popupShutter2' ? this.renderShutter2() : this.renderShutter()}
+            </div>
+        );
+    }
+}

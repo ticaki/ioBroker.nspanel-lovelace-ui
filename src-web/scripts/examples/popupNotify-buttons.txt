@@ -1,0 +1,4 @@
+# popupNotify: acknowledge with icon and three buttons, font 3
+# (emu-pictures-helper.js SCHRITT 'popupButtons', popupNotify-acknowledge-3buttons-textsize3.png)
+pageType~popupNotify
+entityUpdateDetail~popupNotify~Haustür~65535~Ignorieren~65535~Später~65535~OK~65535~Die Haustür steht seit 10 Minuten offen.~65535~0~3~~65535

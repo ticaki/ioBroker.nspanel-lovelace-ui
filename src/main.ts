@@ -20,6 +20,10 @@ import 'source-map-support/register';
 
 import * as MQTT from './lib/classes/mqtt';
 import { Controller } from './lib/controller/controller';
+import { VirtualPanelManager, legacyWebPanelTree, removeLegacyWebPanelTrees } from './lib/web/virtual-panel-manager';
+import { WebServer, type WebServerTls } from './lib/web/web-server';
+import { FidoService } from './lib/web/fido';
+import { FidoCredentialStore } from './lib/web/fido-store';
 import { Icons } from './lib/const/icon_mapping';
 import * as definition from './lib/const/definition';
 import { ConfigManager } from './lib/classes/config-manager';
@@ -67,6 +71,10 @@ class NspanelLovelaceUi extends utils.Adapter {
     mqttClient: MQTT.MQTTClientClass | undefined;
     mqttServer: MQTT.MQTTServerClass | undefined;
     controller: Controller | undefined;
+    /** HTTP/WebSocket server of the web panels, undefined when disabled */
+    webServer: WebServer | undefined;
+    /** registered FIDO2 keys of the web panels (loaded on demand) */
+    private fidoStore: FidoCredentialStore | undefined;
     unload: boolean = false;
     testSuccessful: boolean = true;
     timeoutAdmin: ioBroker.Timeout | undefined;
@@ -371,6 +379,8 @@ class NspanelLovelaceUi extends utils.Adapter {
             await this.library.init();
             const states = await this.getStatesAsync('*');
             await this.library.initStates(states);
+            // web clones share the tree of their hardware panel now - the trees of former web panels are dead
+            await removeLegacyWebPanelTrees(this);
             this.mqttClient = new MQTT.MQTTClientClass(
                 this,
                 this.config.mqttIp,
@@ -393,7 +403,7 @@ class NspanelLovelaceUi extends utils.Adapter {
             await this.delay(1000);
             // set all .info.nspanel.isOnline to false
             for (const id in states) {
-                if (id.endsWith('.info.isOnline')) {
+                if (id.endsWith('.info.isOnline') && !legacyWebPanelTree(id.replace(`${this.namespace}.`, ''))) {
                     await this.library.writedp(id, false, definition.genericStateObjects.panel.panels.info.isOnline);
                 }
             }
@@ -532,11 +542,16 @@ class NspanelLovelaceUi extends utils.Adapter {
             }
             const mem = process.memoryUsage().heapUsed / 1024;
             this.log.debug(String(`${mem}k`));
+            // an instance created before this option exists has no value yet - enabled by default
+            const webEnabled = this.config.webEnabled !== false;
             this.controller = new Controller(this, {
                 mqttClient: this.mqttClient,
                 name: 'controller',
                 panels: structuredClone(this.mainConfiguration),
+                // standalone web panels take their channel from the manager while the controller creates the panels
+                createVirtualPanelManager: webEnabled ? c => new VirtualPanelManager(this, c) : undefined,
             });
+            await this.startWebServer(this.controller);
 
             /*setInterval(() => {
                 this.log.debug(
@@ -546,6 +561,115 @@ class NspanelLovelaceUi extends utils.Adapter {
         } catch (e: any) {
             this.testSuccessful = false;
             this.log.error(`Error onReady: ${e}`);
+        }
+    }
+
+    /**
+     * Start the HTTP/WebSocket server of the web panels (browser shows the panel UI).
+     *
+     * @param controller the controller owning the panels
+     */
+    private async startWebServer(controller: Controller): Promise<void> {
+        const manager = controller.virtualPanelManager;
+        if (!manager) {
+            this.log.debug('Web panels are disabled');
+            return;
+        }
+        // the PIN token is an HMAC with the instance secret - the same secret the credentials use
+        let secret = '';
+        try {
+            const systemConfig = await this.getForeignObjectAsync('system.config');
+            secret = typeof systemConfig?.native?.secret === 'string' ? systemConfig.native.secret : '';
+        } catch {
+            // handled below
+        }
+        if (!secret) {
+            this.log.warn('system.config has no secret - the PIN token of the web panels uses a fallback key');
+            secret = this.namespace;
+        }
+        // HTTPS: ioBroker certificates by name; missing or unreadable certificates disable the web
+        // panels - no silent fallback to plain http
+        let tls: WebServerTls | undefined;
+        if (this.config.webSecure) {
+            tls = await this.loadWebCertificates();
+            if (!tls) {
+                return;
+            }
+        }
+        // FIDO2 login only over HTTPS - browsers refuse WebAuthn on plain http anyway
+        let fido: FidoService | undefined;
+        if (this.config.webFido) {
+            if (!tls) {
+                this.log.info('Web panels: FIDO2 needs HTTPS - disabled');
+            } else {
+                const store = await this.getFidoStore();
+                fido = new FidoService({ rpName: 'NSPanel Lovelace UI', store, log: this.log });
+                this.log.info(
+                    `Web panels: FIDO2 login enabled (${store.list().length} security key(s) registered, register at /auth/fido/register)`,
+                );
+            }
+        }
+        this.webServer = new WebServer(this, manager, {
+            port: Number(this.config.webPort) || 8090,
+            bind: this.config.webBind || '0.0.0.0',
+            host: typeof this.config.webHost === 'string' ? this.config.webHost.trim() : '',
+            wwwPath: path.join(__dirname, '..', 'www'),
+            // a PIN typed as digits may arrive as a number
+            pin: this.config.webPin == null ? '' : String(this.config.webPin).trim(),
+            secret,
+            tls,
+            fido,
+        });
+        if (!(await this.webServer.start())) {
+            // the manager stays: the standalone web panels keep their channels, only no browser can reach them
+            await this.webServer.delete();
+            this.webServer = undefined;
+        }
+    }
+
+    /**
+     * The FIDO2 credential store, loaded from `web.fidoCredentials` on first use.
+     *
+     * @returns the store
+     */
+    private async getFidoStore(): Promise<FidoCredentialStore> {
+        if (!this.fidoStore) {
+            this.fidoStore = new FidoCredentialStore(this);
+        }
+        if (!this.fidoStore.isLoaded) {
+            await this.fidoStore.load();
+        }
+        return this.fidoStore;
+    }
+
+    /**
+     * Load the ioBroker certificates (`system.certificates`) selected for the web panels.
+     *
+     * @returns key, cert and chain - undefined (with an error log) if they are missing or empty
+     */
+    private async loadWebCertificates(): Promise<WebServerTls | undefined> {
+        const publicName = String(this.config.webCertPublic || '').trim();
+        const privateName = String(this.config.webCertPrivate || '').trim();
+        const chainedName = String(this.config.webCertChained || '').trim();
+        if (!publicName || !privateName) {
+            this.log.error(
+                'Web panels: HTTPS is enabled but no public/private certificate is selected - web panels are disabled',
+            );
+            return undefined;
+        }
+        try {
+            const [certs] = await this.getCertificatesAsync(publicName, privateName, chainedName || undefined);
+            if (!certs || !certs.key || !certs.cert) {
+                throw new Error('certificate or key is empty');
+            }
+            return { key: certs.key, cert: certs.cert, ca: certs.ca };
+        } catch (e) {
+            this.log.error(
+                `Web panels: cannot load the certificates "${publicName}"/"${privateName}"${chainedName ? `/"${chainedName}"` : ''} from system.certificates: ${
+                    e instanceof Error ? e.message : String(e)
+                } - web panels are disabled`,
+            );
+            return undefined;
         }
     }
 
@@ -570,9 +694,15 @@ class NspanelLovelaceUi extends utils.Adapter {
             }
         };
         for (const tasmota of this.config.panels) {
-            if (tasmota && tasmota.ip) {
-                void _helper(tasmota);
+            if (!tasmota || !tasmota.ip || tasmota.kind === 'web') {
+                continue;
             }
+            // a panel switched off via panels.<id>.cmd.activated must not be restarted either
+            if (!this.library.isPanelActivated(tasmota.id)) {
+                this.log.debug(`Panel ${tasmota.id} is deactivated, no restart request sent.`);
+                continue;
+            }
+            void _helper(tasmota);
         }
         await this.setState('info.connection', true, true);
     };
@@ -663,8 +793,14 @@ class NspanelLovelaceUi extends utils.Adapter {
                     this.clearInterval(a);
                 }
             });
+            // the controller first: it says `bye shutdown` to the browsers of the web panels,
+            // which only arrives while the web server still has their sockets
             if (this.controller) {
                 await this.controller.delete();
+            }
+            if (this.webServer) {
+                await this.webServer.delete();
+                this.webServer = undefined;
             }
             if (this.mqttClient) {
                 await this.mqttClient.destroy();
@@ -922,7 +1058,8 @@ class NspanelLovelaceUi extends utils.Adapter {
                     const names: PanelInfo[] = [];
                     if (this.controller?.panels) {
                         for (const p of this.controller.panels) {
-                            if (p) {
+                            // a web clone is the same panel as its hardware panel
+                            if (p && !p.isClone) {
                                 names.push({ panelTopic: p.topic, friendlyName: p.friendlyName || p.name });
                             }
                         }
@@ -935,7 +1072,9 @@ class NspanelLovelaceUi extends utils.Adapter {
                 case SAVE_PANEL_NAVIGATION_COMMAND: {
                     if (obj.message && this.controller?.panels) {
                         const data = obj.message as NavigationSavePayload;
-                        const panel = this.controller.panels.find(a => a.name === data.panelName);
+                        const panel =
+                            this.controller.panels.find(a => a.name === data.panelName && !a.isClone) ??
+                            this.controller.panels.find(a => a.name === data.panelName);
                         if (panel) {
                             await panel.saveNavigationMapDeprecated(data.pages);
                         }
@@ -950,7 +1089,7 @@ class NspanelLovelaceUi extends utils.Adapter {
 
                     if (this.controller?.panels) {
                         for (const p of this.controller.panels) {
-                            if (p) {
+                            if (p && !p.isClone) {
                                 nav.push(await p.getNavigationArrayForFlow());
                             }
                         }
@@ -1292,11 +1431,63 @@ class NspanelLovelaceUi extends utils.Adapter {
                     }
                     break;
                 }
+                case 'webFidoList': {
+                    // registered FIDO2 keys for the admin (public data only)
+                    try {
+                        const store = await this.getFidoStore();
+                        if (obj.callback) {
+                            this.sendTo(
+                                obj.from,
+                                obj.command,
+                                {
+                                    credentials: store.summaries(),
+                                    active: this.webServer?.fido !== undefined,
+                                    configured: !!this.config.webFido,
+                                    secure: !!this.config.webSecure,
+                                },
+                                obj.callback,
+                            );
+                        }
+                    } catch (e) {
+                        if (obj.callback) {
+                            this.sendTo(obj.from, obj.command, { error: String(e) }, obj.callback);
+                        }
+                    }
+                    break;
+                }
+                case 'webFidoDelete': {
+                    const id =
+                        typeof obj.message === 'object' && obj.message && typeof obj.message.id === 'string'
+                            ? obj.message.id
+                            : '';
+                    try {
+                        const store = await this.getFidoStore();
+                        const removed = id ? await store.remove(id) : false;
+                        if (removed) {
+                            this.log.info('Web panels: a FIDO2 security key was removed via the admin');
+                        }
+                        if (obj.callback) {
+                            this.sendTo(
+                                obj.from,
+                                obj.command,
+                                { ok: removed, credentials: store.summaries() },
+                                obj.callback,
+                            );
+                        }
+                    } catch (e) {
+                        if (obj.callback) {
+                            this.sendTo(obj.from, obj.command, { error: String(e) }, obj.callback);
+                        }
+                    }
+                    break;
+                }
                 case 'getTasmotaDevices': {
                     if (this.config.panels) {
-                        const devices = this.config.panels.map(a => {
-                            return { label: `${a.ip} (${a.name})`, value: a.ip };
-                        });
+                        const devices = this.config.panels
+                            .filter(a => a && a.kind !== 'web')
+                            .map(a => {
+                                return { label: `${a.ip} (${a.name})`, value: a.ip };
+                            });
                         if (obj.callback) {
                             this.sendTo(obj.from, obj.command, devices, obj.callback);
                         }
@@ -1587,6 +1778,9 @@ class NspanelLovelaceUi extends utils.Adapter {
 
                     for (let a = 0; a < this.config.panels.length; a++) {
                         const panel = this.config.panels[a];
+                        if (!panel || panel.kind === 'web') {
+                            continue;
+                        }
                         const state = this.library.readdb(`panels.${panel.id}.info.nspanel.firmwareUpdate`);
                         if (state && typeof state.val === 'number' && state.val < 100) {
                             flashingObj[panel.id] = `${flashingText}: ${state.val}%`;
@@ -1613,6 +1807,10 @@ class NspanelLovelaceUi extends utils.Adapter {
                         const checkText = this.library.getTranslation('check!');
                         const temp = [];
                         for (const a of this.controller.panels) {
+                            if (a.isClone) {
+                                // a web clone is the hardware panel seen in a browser - one row per panel
+                                continue;
+                            }
                             let check = false;
                             let check_tasmota = false;
                             let check_tft = false;
@@ -1693,9 +1891,11 @@ class NspanelLovelaceUi extends utils.Adapter {
                                 _check_script: check_script,
                                 _Headline: `${a.friendlyName} (${ft ? ft : `${check ? checkText : `${a.isOnline ? 'online' : a.flashing ? `flashing` : 'offline'}`}`})`,
                                 _name: a.friendlyName,
-                                _ip: a.info?.tasmota?.net?.IPAddress
-                                    ? a.info.tasmota.net.IPAddress
-                                    : 'offline - waiting',
+                                _ip: a.isVirtual
+                                    ? ''
+                                    : a.info?.tasmota?.net?.IPAddress
+                                      ? a.info.tasmota.net.IPAddress
+                                      : 'offline - waiting',
                                 _online: a.isOnline && a.initDone ? 'yes' : 'no',
                                 _flashing: a.flashing,
                                 _topic: a.topic,
@@ -1703,11 +1903,13 @@ class NspanelLovelaceUi extends utils.Adapter {
                                 _tftVersion: nv ? nv : '???',
                                 _tasmotaVersion: tv ? tv : '???',
                                 _ScriptVersion: sv ? `v${sv}` : '???',
-                                _nsPanelModel: a.info?.nspanel?.model
-                                    ? a.info.nspanel.model == 'eu'
-                                        ? ''
-                                        : a.info.nspanel.model
-                                    : '',
+                                _nsPanelModel: a.isVirtual
+                                    ? a.info.nspanel.model
+                                    : a.info?.nspanel?.model
+                                      ? a.info.nspanel.model == 'eu'
+                                          ? ''
+                                          : a.info.nspanel.model
+                                      : '',
                             });
                         }
                         result = result.concat(temp);

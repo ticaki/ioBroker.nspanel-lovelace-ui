@@ -1,0 +1,3 @@
+# popupLight: switch only (emu scene "Licht_aus", popupLight-switch-only.png)
+pageType~popupLight~alias.0.Light~Licht_aus~
+entityUpdateDetail~alias.0.Light~~65535~0~disable~disable~disable~Farbe~Temperatur~Helligkeit~disable

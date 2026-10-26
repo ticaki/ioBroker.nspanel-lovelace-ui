@@ -21,6 +21,22 @@ declare global {
             mqttIp: string;
             mqttPort: number;
             internalServerIp: string;
+            /** web panels: HTTP/WebSocket server that shows the panel UI in a browser */
+            webEnabled: boolean;
+            webPort: number;
+            webBind: string;
+            /** host name (or address) browsers reach the web panel server on - used for the links in the admin; '' = detected automatically */
+            webHost: string;
+            /** global PIN of the web panels, '' = no protection (encrypted, decrypted by the js-controller) */
+            webPin: string;
+            /** serve the web panels over HTTPS/WSS with the ioBroker certificates below */
+            webSecure: boolean;
+            /** names of the certificates in `system.certificates` (public, private, chain; chain may be '') */
+            webCertPublic: string;
+            webCertPrivate: string;
+            webCertChained: string;
+            /** FIDO2/WebAuthn security keys as login alternative to the PIN (needs webSecure) */
+            webFido: boolean;
             Testconfig2: Partial<Panel.panelConfigPartial>[];
             timezone: string;
             useBetaTFT: boolean;
@@ -46,7 +62,11 @@ declare global {
             tasmotaAdminPassword: string;
             /** id of a central credential holding the Tasmota WebUI password; empty = use tasmotaAdminPassword */
             tasmotaCredentialId: string;
-            panels: {name: string, topic: string, id: string, ip: string, model: NSpanelModel}[];
+            /**
+             * Admin panel table. `kind` missing = 'tasmota' (hardware NSPanel); 'web' = standalone
+             * web panel (id `web_<12 hex>`, no ip) shown only in a browser.
+             */
+            panels: {name: string, topic: string, id: string, ip: string, model: NSpanelModel, kind?: 'tasmota' | 'web'}[];
             pw1: string;
 
             // PagePower

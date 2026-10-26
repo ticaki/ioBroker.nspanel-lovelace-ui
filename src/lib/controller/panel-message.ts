@@ -1,7 +1,8 @@
 import type { IClientPublishOptions } from 'mqtt';
 import { SendTopicAppendix } from '../const/definition';
 import { BaseClass, type AdapterClassDefinition } from './library';
-import type { MQTTClientClass, callbackMessageType } from '../classes/mqtt';
+import type { callbackMessageType } from '../classes/mqtt';
+import type { PanelChannel } from '../classes/panel-channel';
 import type { Panel } from './panel';
 
 type QueuedMessage = {
@@ -33,7 +34,7 @@ export class PanelSend extends BaseClass {
 
     private messageTimeout: ioBroker.Timeout | undefined;
     private messageTimeoutTasmota: ioBroker.Timeout | true | undefined;
-    private mqttClient: MQTTClientClass;
+    private channel: PanelChannel;
     private topic: string = '';
     private configTopic: string = '';
     private losingMessageCount = 0;
@@ -49,11 +50,11 @@ export class PanelSend extends BaseClass {
     }
     constructor(
         adapter: AdapterClassDefinition,
-        config: { name: string; mqttClient: MQTTClientClass; topic: string; panel: Panel },
+        config: { name: string; channel: PanelChannel; topic: string; panel: Panel },
     ) {
         super(adapter, config.name);
-        this.mqttClient = config.mqttClient;
-        void this.mqttClient.subscribe(`${config.topic}/stat/RESULT`, this.onMessage);
+        this.channel = config.channel;
+        void this.channel.subscribe(`${config.topic}/stat/RESULT`, this.onMessage);
         this.configTopic = config.topic;
         this.topic = config.topic + SendTopicAppendix;
         this.panel = config.panel;
@@ -211,7 +212,10 @@ export class PanelSend extends BaseClass {
                     this.log.error(`Losing ${this.losingMessageCount} messages - set panel offline!`);
                 }
                 this.panel.isOnline = false;
-                if (this.panel.handleLostMessages()) {
+                if (this.panel.isVirtual) {
+                    // no Tasmota to ask - the browser simply stopped answering
+                    await this.panel.setStatus('offline');
+                } else if (this.panel.handleLostMessages()) {
                     await this.panel.setStatus('offline');
                 } else if (this.panel.status !== 'flashing') {
                     try {
@@ -273,7 +277,7 @@ export class PanelSend extends BaseClass {
         //}
         this.messageTimeoutTasmota = true;
         try {
-            await this.mqttClient.publish(msg.topic, msg.payload, { ...(msg.opt ?? {}), qos: 1 });
+            await this.channel.publish(msg.topic, msg.payload, { ...(msg.opt ?? {}), qos: 1 });
         } catch (e) {
             this.log.warn(`MQTT publish failed: ${(e as Error).message}`);
             // optional: Requeue
@@ -288,7 +292,7 @@ export class PanelSend extends BaseClass {
 
     async delete(): Promise<void> {
         await super.delete();
-        this.mqttClient.unsubscribe(`${this.configTopic}/stat/RESULT`);
+        this.channel.unsubscribe(`${this.configTopic}/stat/RESULT`);
         if (this.messageTimeout) {
             this.adapter.clearTimeout(this.messageTimeout);
         }
