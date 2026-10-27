@@ -22,5 +22,6 @@
     "webPanelTopicHelp": "Letters, digits, _ and -, / as separator",
     "webPanelTopicInvalid": "Only letters, digits, _, - and / are allowed",
     "webPanelTopicRequired": "The topic must not be empty",
-    "webPanelTopicReserved": "This path is used by the web server itself"
+    "webPanelTopicReserved": "This path is used by the web server itself",
+    "chart_script_navigation_hint": "Migrated from the old table \"Page Chart\": this page still gets its navigation from the script (page \"%s\"). This is deprecated - assign a navigation here and remove the page from the script."
 }

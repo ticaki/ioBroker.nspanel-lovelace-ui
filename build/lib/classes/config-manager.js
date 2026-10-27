@@ -38,6 +38,7 @@ var import_default_pages = require("../const/default-pages");
 var import_states_controller = require("../controller/states-controller");
 var import_pagePower = require("../pages/pagePower");
 var import_pageChart = require("../pages/pageChart");
+var import_adminShareConfig = require("../types/adminShareConfig");
 var import_readme = require("../tools/readme");
 var globals = __toESM(require("../types/function-and-const"));
 var import_function_and_const = require("../types/function-and-const");
@@ -567,7 +568,7 @@ class ConfigManager extends import_library.BaseClass {
     return { messages: messages.map((a) => a.replaceAll("Error: ", "")), panelConfig };
   }
   async getPageConfig(config, panelConfig, messages) {
-    var _a, _b, _c, _d, _e, _f, _g;
+    var _a, _b, _c, _d, _e, _f, _g, _h;
     if (panelConfig.pages === void 0) {
       panelConfig.pages = [];
     }
@@ -741,31 +742,28 @@ class ConfigManager extends import_library.BaseClass {
           }
         }
         if (page.type === "cardChart" || page.type === "cardLChart") {
-          if (!Array.isArray(this.adapter.config.pageChartdata)) {
-            messages.push(`No pageChart configured in Admin for ${page.uniqueName}`);
-            this.log.warn(messages[messages.length - 1]);
-            continue;
-          }
-          const index = this.adapter.config.pageChartdata.findIndex(
-            (item) => item.pageName === page.uniqueName
-          );
-          if (index === -1) {
-            messages.push(`No pageChartdata found for ${page.uniqueName}`);
-            this.log.warn(messages[messages.length - 1]);
-            continue;
-          }
-          try {
-            ({ gridItem, messages } = await import_pageChart.PageChart.getChartPageConfig(
-              this,
-              index,
-              gridItem,
-              messages,
-              page
-            ));
-          } catch (error) {
+          const entry = (0, import_adminShareConfig.findChartEntryForScript)((_h = this.adapter.config.pageConfig) != null ? _h : [], page.uniqueName);
+          if (entry && !(0, import_adminShareConfig.isScriptNavigatedChart)(entry)) {
             messages.push(
-              `Configuration error in page chart ${page.heading || "unknown"} with uniqueName ${page.uniqueName} - ${error}`
+              `Chart page ${page.uniqueName} gets its navigation in the admin (tab PageConfig) - remove it from the script. Skipped!`
             );
+            this.log.warn(messages[messages.length - 1]);
+            continue;
+          }
+          if (entry) {
+            messages.push(
+              `Chart page ${page.uniqueName}: the navigation from the script is deprecated - assign it in the admin (tab PageConfig, page ${entry.uniqueName}) and remove the page from the script.`
+            );
+            this.log.warn(messages[messages.length - 1]);
+            try {
+              gridItem = await import_pageChart.PageChart.getChartPageConfigFromEntry(this, entry, gridItem, page);
+            } catch (error) {
+              messages.push(`Configuration error in page chart ${page.uniqueName} - ${error}`);
+              this.log.warn(messages[messages.length - 1]);
+              continue;
+            }
+          } else {
+            messages.push(`No chart page ${page.uniqueName} found in the admin configuration`);
             this.log.warn(messages[messages.length - 1]);
             continue;
           }

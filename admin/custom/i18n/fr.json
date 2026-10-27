@@ -317,6 +317,7 @@
     "chart_XTicks": "Graduations de l’axe X",
     "chart_XTicksTooltip": "Intervalle en heures entre les graduations de l’axe X (p. ex. 2 pour une graduation toutes les 2 heures)",
     "chart_YAxis": "Libellé de l’axe Y",
+    "chart_script_navigation_hint": "Migrée depuis l'ancien tableau « Page Chart » : cette page reçoit encore sa navigation du script (page « %s »). C'est obsolète – attribuez ici une navigation et retirez la page du script.",
     "check!": "Vérifier!",
     "close": "fermer",
     "closed": "fermé",

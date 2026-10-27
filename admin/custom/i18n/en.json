@@ -318,6 +318,7 @@
     "chart_XTicks": "X-axis ticks",
     "chart_XTicksTooltip": "Interval in hours between X-axis ticks (e.g., 2 for a tick every 2 hours)",
     "chart_YAxis": "y-axis label",
+    "chart_script_navigation_hint": "Migrated from the old table \"Page Chart\": this page still gets its navigation from the script (page \"%s\"). This is deprecated - assign a navigation here and remove the page from the script.",
     "check!": "Check!",
     "close": "close",
     "closed": "closed",

@@ -158,6 +158,8 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
     ### **WORK IN PROGRESS**
 -->
 ### **WORK IN PROGRESS**
+- (ticaki) chart pages: the tab "Page Chart" is gone - its pages are moved into the page configuration (tab PageConfig) at adapter start and the old table is deleted; a name already used by another page gets the suffix `_chart`
+- (ticaki) chart pages: migrated pages keep their navigation from the script for now (deprecated, the editor shows a hint) until a navigation is assigned in the admin - script version 0.21.4 marks `ScriptConfig.PageChart` as deprecated
 - (tt-tom17) a panel switched off via `panels.<id>.cmd.activated` is now left alone at adapter start - it no longer receives a restart request over http
 - (tt-tom17) a switched off panel reports the status `deactivated` instead of keeping the status of the previous run, so the panel overview no longer shows it as running
 - (tt-tom17) switching `cmd.activated` is confirmed at the panel again - the acknowledgement went to `panels.controller.cmd.activated` before

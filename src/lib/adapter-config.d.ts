@@ -157,27 +157,6 @@ declare global {
                 power8_valueUnit: string,
             }[];
 
-            // PageChart
-            pageChartdata: {
-                pageName: string,
-                headline: string,
-                alwaysOnDisplay: boolean,
-                hiddenByTrigger: boolean,
-                chart_color: string,
-                selChartType: 'cardChart' | 'cardLChart',
-                selInstanceDataSource: 0 | 1,
-                selInstance: string,
-                setStateForTicks: string,
-                setStateForValues: string,
-                setStateForDB: string,
-                txtlabelYAchse: string,
-                rangeHours: number,
-                maxXAxisTicks: number,
-                factorCardChart: number,
-                maxXAxisLabels: number,
-            }[];
-
-
             additionalLog: boolean;
             debugLogMqtt: boolean;
             debugLogStates: boolean;
@@ -348,6 +327,8 @@ declare global {
                 maxXAxisTicks: number;
                 factorCardChart: number;
                 maxXAxisLabels: number;
+                scriptNavigation?: boolean;
+                scriptName?: string;
                 uniqueName: string;
                 hidden?: boolean;
                 alwaysOn?: 'none' | 'always' | 'action' | 'ignore';

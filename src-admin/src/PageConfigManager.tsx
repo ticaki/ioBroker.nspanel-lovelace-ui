@@ -11,6 +11,7 @@ import type {
 } from '../../src/lib/types/adminShareConfig';
 import {
     ADAPTER_NAME,
+    dropScriptNavigation,
     emptyChartEntry,
     emptyThermo2Entry,
     emptyPowerSlot,
@@ -404,7 +405,7 @@ class PageConfigManager extends ConfigGeneric<ConfigGenericProps & { theme?: any
 
     private handleAssign = (uniqueName: string, assignments: NavigationAssignmentList): void => {
         const updated = this.state.entries.map(it =>
-            it.uniqueName === uniqueName ? { ...it, navigationAssignment: assignments } : it,
+            it.uniqueName === uniqueName ? dropScriptNavigation({ ...it, navigationAssignment: assignments }) : it,
         );
         this.setState({ entries: updated } as PageConfigManagerState);
         void this.onChange(this.props.attr, updated);
@@ -438,7 +439,9 @@ class PageConfigManager extends ConfigGeneric<ConfigGenericProps & { theme?: any
     };
 
     private handleCommonFieldsChange = (uniqueName: string, fields: Partial<PageConfigBaseFields>): void => {
-        const updated = this.state.entries.map(it => (it.uniqueName === uniqueName ? { ...it, ...fields } : it));
+        const updated = this.state.entries.map(it =>
+            it.uniqueName === uniqueName ? dropScriptNavigation({ ...it, ...fields }) : it,
+        );
         this.setState({ entries: updated } as PageConfigManagerState);
         void this.onChange(this.props.attr, updated);
     };

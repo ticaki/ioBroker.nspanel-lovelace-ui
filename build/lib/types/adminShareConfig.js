@@ -29,15 +29,19 @@ __export(adminShareConfig_exports, {
   SENDTO_GET_SCREENSAVER_TEMPLATES_COMMAND: () => SENDTO_GET_SCREENSAVER_TEMPLATES_COMMAND,
   SENDTO_GET_WEATHER_ENTITY_COMMAND: () => SENDTO_GET_WEATHER_ENTITY_COMMAND,
   chartDefaults: () => chartDefaults,
+  dropScriptNavigation: () => dropScriptNavigation,
   emptyChannelValueConfig: () => emptyChannelValueConfig,
   emptyChartEntry: () => emptyChartEntry,
   emptyPowerSlot: () => emptyPowerSlot,
   emptyScreensaverEntry: () => emptyScreensaverEntry,
   emptyThermo2Circuit: () => emptyThermo2Circuit,
   emptyThermo2Entry: () => emptyThermo2Entry,
+  findChartEntryForScript: () => findChartEntryForScript,
   formatEntryNumber: () => formatEntryNumber,
   isMainPageEntry: () => isMainPageEntry,
+  isScriptNavigatedChart: () => isScriptNavigatedChart,
   mainPageName: () => mainPageName,
+  migrateLegacyCharts: () => migrateLegacyCharts,
   migrateScreensaverNotify: () => migrateScreensaverNotify,
   newScreensaverNotifyId: () => newScreensaverNotifyId,
   normalizeChannelId: () => normalizeChannelId,
@@ -341,6 +345,75 @@ function emptyChartEntry(uniqueName) {
     hidden: false,
     alwaysOn: "none"
   };
+}
+function isScriptNavigatedChart(entry) {
+  var _a;
+  return entry.card === "cardChart" && entry.scriptNavigation === true && !((_a = entry.navigationAssignment) == null ? void 0 : _a.length);
+}
+function findChartEntryForScript(entries, scriptPageName) {
+  var _a;
+  const charts = entries.filter((e) => !!e && e.card === "cardChart");
+  return (_a = charts.find((e) => {
+    var _a2;
+    return e.scriptNavigation === true && ((_a2 = e.scriptName) != null ? _a2 : e.uniqueName) === scriptPageName;
+  })) != null ? _a : charts.find((e) => e.uniqueName === scriptPageName);
+}
+function dropScriptNavigation(entry) {
+  var _a;
+  if (entry.card !== "cardChart" || !entry.scriptNavigation || !((_a = entry.navigationAssignment) == null ? void 0 : _a.length)) {
+    return entry;
+  }
+  const copy = { ...entry };
+  delete copy.scriptNavigation;
+  return copy;
+}
+function migrateLegacyCharts(rows, entries) {
+  var _a, _b, _c, _d, _e, _f;
+  const out = [...entries];
+  const messages = [];
+  let changed = false;
+  for (const row of rows != null ? rows : []) {
+    const name = typeof (row == null ? void 0 : row.pageName) === "string" ? row.pageName.trim() : "";
+    if (!name) {
+      continue;
+    }
+    if (out.some((e) => e.card === "cardChart" && e.scriptName === name)) {
+      continue;
+    }
+    let uniqueName = name;
+    for (let i = 1; out.some((e) => e.uniqueName === uniqueName); i++) {
+      uniqueName = `${name}_chart${i === 1 ? "" : i}`;
+    }
+    if (uniqueName !== name) {
+      messages.push(
+        `Chart page '${name}': the name is already used by another page, migrated as '${uniqueName}'. The script keeps using '${name}'.`
+      );
+    }
+    const d = chartDefaults;
+    out.push({
+      card: "cardChart",
+      uniqueName,
+      scriptName: name,
+      scriptNavigation: true,
+      headline: (_a = row.headline) != null ? _a : "",
+      chartColor: row.chart_color || d.chartColor,
+      txtLabelYAchse: (_b = row.txtlabelYAchse) != null ? _b : "",
+      selChartType: row.selChartType === "cardLChart" ? "cardLChart" : "cardChart",
+      selInstanceDataSource: row.selInstanceDataSource === 1 ? 1 : 0,
+      setStateForTicks: (_c = row.setStateForTicks) != null ? _c : "",
+      setStateForValues: (_d = row.setStateForValues) != null ? _d : "",
+      selInstance: (_e = row.selInstance) != null ? _e : "",
+      setStateForDB: (_f = row.setStateForDB) != null ? _f : "",
+      rangeHours: row.rangeHours || d.rangeHours,
+      maxXAxisTicks: row.maxXAxisTicks || d.maxXAxisTicks,
+      factorCardChart: row.factorCardChart || d.factorCardChart,
+      maxXAxisLabels: row.maxXAxisLabels || d.maxXAxisLabels,
+      hidden: !!row.hiddenByTrigger,
+      alwaysOn: row.alwaysOnDisplay ? "always" : "none"
+    });
+    changed = true;
+  }
+  return { entries: out, messages, changed };
 }
 const thermo2SortOrders = ["V", "H", "HM", "VM", "HB", "VB"];
 const thermo2MaxCircuits = 8;
@@ -1115,15 +1188,19 @@ const CHANNEL_ROLES_LIST = Object.keys(requiredScriptDataPoints);
   SENDTO_GET_SCREENSAVER_TEMPLATES_COMMAND,
   SENDTO_GET_WEATHER_ENTITY_COMMAND,
   chartDefaults,
+  dropScriptNavigation,
   emptyChannelValueConfig,
   emptyChartEntry,
   emptyPowerSlot,
   emptyScreensaverEntry,
   emptyThermo2Circuit,
   emptyThermo2Entry,
+  findChartEntryForScript,
   formatEntryNumber,
   isMainPageEntry,
+  isScriptNavigatedChart,
   mainPageName,
+  migrateLegacyCharts,
   migrateScreensaverNotify,
   newScreensaverNotifyId,
   normalizeChannelId,

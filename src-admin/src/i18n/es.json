@@ -120,5 +120,6 @@
     "webPanelTopicHelp": "Letras, dígitos, _ y -, / como separador",
     "webPanelTopicInvalid": "Solo se permiten letras, dígitos, _, - y /",
     "webPanelTopicRequired": "El topic no puede estar vacío",
-    "webPanelTopicReserved": "Esta ruta la usa el propio servidor web"
+    "webPanelTopicReserved": "Esta ruta la usa el propio servidor web",
+    "chart_script_navigation_hint": "Migrada desde la antigua tabla \"Page Chart\": esta página aún obtiene su navegación del script (página \"%s\"). Esto está obsoleto: asigne aquí una navegación y elimine la página del script."
 }

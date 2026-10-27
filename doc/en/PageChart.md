@@ -4,10 +4,7 @@ The PageChart offers two views: bars (`cardChart`) and a line (`cardLChart`). Th
 
 <img alt='Linechart' src= '../Pictures/pageChart/Linechart.png'> <img alt= 'Balkenchart' src='../Pictures/pageChart/Balkenchart.png'>
 
-A chart page can be created in two ways — both give the same result on the panel:
-
-1. **Tab `PageConfig`** (recommended): create a page of type `Chart`, configure everything in the editor, assign the navigation in the panel section. No script needed.
-2. **Classic**: tab `PageChart` plus a reference in the configuration script (see below).
+A chart page is created in the `PageConfig` tab as a page of type `Chart`: configure everything in the editor, assign the navigation in the panel section. No script needed. The former tab `PageChart` no longer exists — see [Migration of the old table](#migration-of-the-old-table-pagechart).
 
 ## Creating a chart in the `PageConfig` tab
 
@@ -32,34 +29,17 @@ The adapter fetches the data as one average per hour for the bar chart and as av
 
 The panel prints integer y-axis ticks with at most two characters. The bar chart uses the manual factor to keep large values readable; the line chart chooses the factor automatically (10, 100, …) and appends it to the y-axis label, e.g. `W x10` — the axis then reads `10 … 15` for 100 … 150 W. The adapter places the y-ticks in round steps (1, 2, 5, 10 …) from the minimum to the maximum of the data. More ticks do not help: the panel spans the y-axis exactly over the data and shows only the ticks inside that range — there is no way to add headroom above or below the curve through the scale (this also applies to the script version).
 
-## Classic: tab `PageChart` and configuration script
+## Migration of the old table `PageChart`
 
-<img alt='Chartallg' src='../Pictures/pageChart/pageChartallg.png'>
+Up to version 1.7 there was also the tab `PageChart`, whose pages got into the navigation through a reference in the configuration script. On the first start after the update the adapter moves all rows of that table into the `PageConfig` tab (type `Chart`) and deletes the old table. If a page name is already used there, the page gets the suffix `_chart` (warning in the log) — the script still finds it under its old name.
 
-The tab `PageChart` holds the settings. Click the PLUS to create a new page; the fields of the page appear (see picture above).
-1. First set the page name; it must be unique across the whole panel. It is the ID of the page and identical to the `uniqueName`. The name is also shown in the grey bar, so several pages are easy to tell apart.
-2. Set the headline of the page.
-3. With `alwaysOnDisplay` checked the page stays visible and does not fall back to the screensaver automatically. To activate the screensaver again, switch to another page.
-4. `hide page` removes the page from the navigation when `hide Page` is active on the service page `System`.
-5. The color field sets the color of the line/bars.
-6. Choose the type, barChart -> bars and lineChart -> line
-<img alt='chartTyp' src='../Pictures/pageChart/pageChartType.png'>
-7. Data source `oldScriptVersion` or `dbAdapter` — the fields mean the same as in the `PageConfig` tab above
-<img alt= 'AdapterInstanz' src='../Pictures/pageChart/pageChartAdapter.png'>
-8. The label of the y-axis, e.g. the unit
-
-The page is then referenced in the configuration script; the `uniqueName` must match the page name in the tab:
+For these pages the navigation keeps coming from the configuration script for now, the existing reference works unchanged:
 
 ```typescript
-// line chart
     const temperatur: ScriptConfig.PageChart = {
         uniqueName: 'temperatur',
         type: 'cardLChart'
-    }
-
-// bar chart
-    const stromChart: ScriptConfig.PageChart = {
-        uniqueName: 'strom',
-        type: 'cardChart'
     };
 ```
+
+This is a transition and deprecated: the editor shows a hint for such pages, the log a warning. As soon as the page has a navigation assigned in the `PageConfig` tab, that one applies; then remove the page from the script — otherwise it is skipped there with a warning.

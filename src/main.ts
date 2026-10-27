@@ -6,6 +6,7 @@ import {
     SENDTO_GET_SCREENSAVER_TEMPLATES_COMMAND,
     SENDTO_GET_PAGES_All_COMMAND,
     ALL_PANELS_SPECIAL_ID,
+    migrateLegacyCharts,
 } from './lib/types/adminShareConfig';
 /*
  * Created with @iobroker/create-adapter v2.5.0..
@@ -196,6 +197,26 @@ class NspanelLovelaceUi extends utils.Adapter {
                     native.pageConfig.push(temp);
                 });
                 delete native.pageQRdata;
+                change = true;
+            }
+            // old admin table "Page Chart": the pages move into pageConfig and keep their navigation
+            // from the script until one is assigned in the admin; the table is removed afterwards
+            if (native.pageChartdata !== undefined) {
+                const migrated = migrateLegacyCharts(
+                    Array.isArray(native.pageChartdata) ? native.pageChartdata : [],
+                    native.pageConfig,
+                );
+                for (const msg of migrated.messages) {
+                    this.log.warn(msg);
+                }
+                if (migrated.changed) {
+                    const count = migrated.entries.length - native.pageConfig.length;
+                    native.pageConfig = migrated.entries;
+                    this.log.info(
+                        `Moved ${count} chart page(s) from the table "Page Chart" to the page configuration.`,
+                    );
+                }
+                delete native.pageChartdata;
                 change = true;
             }
             if (!this.config.versionJsonUrl || !this.config.tftUrl || !this.config.berryUrl) {

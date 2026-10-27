@@ -6,6 +6,7 @@ import type { panelConfigPartial } from '../controller/panel';
 import { StatesControler } from '../controller/states-controller';
 import { PagePower } from '../pages/pagePower';
 import { PageChart } from '../pages/pageChart';
+import { findChartEntryForScript, isScriptNavigatedChart } from '../types/adminShareConfig';
 import { getStringOrArray } from '../tools/readme';
 import type { NspanelLovelaceUi } from '../types/NspanelLovelaceUi';
 import type * as pages from '../types/pages';
@@ -874,31 +875,28 @@ export class ConfigManager extends BaseClass {
                 }
                 // PageChart einlesen
                 if (page.type === 'cardChart' || page.type === 'cardLChart') {
-                    if (!Array.isArray(this.adapter.config.pageChartdata)) {
-                        messages.push(`No pageChart configured in Admin for ${page.uniqueName}`);
-                        this.log.warn(messages[messages.length - 1]);
-                        continue;
-                    }
-                    const index = this.adapter.config.pageChartdata.findIndex(
-                        item => item.pageName === page.uniqueName,
-                    );
-                    if (index === -1) {
-                        messages.push(`No pageChartdata found for ${page.uniqueName}`);
-                        this.log.warn(messages[messages.length - 1]);
-                        continue;
-                    }
-                    try {
-                        ({ gridItem, messages } = await PageChart.getChartPageConfig(
-                            this,
-                            index,
-                            gridItem,
-                            messages,
-                            page,
-                        ));
-                    } catch (error: any) {
+                    const entry = findChartEntryForScript(this.adapter.config.pageConfig ?? [], page.uniqueName);
+                    if (entry && !isScriptNavigatedChart(entry)) {
                         messages.push(
-                            `Configuration error in page chart ${page.heading || 'unknown'} with uniqueName ${page.uniqueName} - ${error}`,
+                            `Chart page ${page.uniqueName} gets its navigation in the admin (tab PageConfig) - remove it from the script. Skipped!`,
                         );
+                        this.log.warn(messages[messages.length - 1]);
+                        continue;
+                    }
+                    if (entry) {
+                        messages.push(
+                            `Chart page ${page.uniqueName}: the navigation from the script is deprecated - assign it in the admin (tab PageConfig, page ${entry.uniqueName}) and remove the page from the script.`,
+                        );
+                        this.log.warn(messages[messages.length - 1]);
+                        try {
+                            gridItem = await PageChart.getChartPageConfigFromEntry(this, entry, gridItem, page);
+                        } catch (error: any) {
+                            messages.push(`Configuration error in page chart ${page.uniqueName} - ${error}`);
+                            this.log.warn(messages[messages.length - 1]);
+                            continue;
+                        }
+                    } else {
+                        messages.push(`No chart page ${page.uniqueName} found in the admin configuration`);
                         this.log.warn(messages[messages.length - 1]);
                         continue;
                     }

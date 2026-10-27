@@ -120,5 +120,6 @@
     "webPanelTopicHelp": "Lettres, chiffres, _ et -, / comme séparateur",
     "webPanelTopicInvalid": "Seuls les lettres, chiffres, _, - et / sont autorisés",
     "webPanelTopicRequired": "Le topic ne doit pas être vide",
-    "webPanelTopicReserved": "Ce chemin est utilisé par le serveur web lui-même"
+    "webPanelTopicReserved": "Ce chemin est utilisé par le serveur web lui-même",
+    "chart_script_navigation_hint": "Migrée depuis l'ancien tableau « Page Chart » : cette page reçoit encore sa navigation du script (page « %s »). C'est obsolète – attribuez ici une navigation et retirez la page du script."
 }

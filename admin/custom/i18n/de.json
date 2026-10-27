@@ -318,6 +318,7 @@
     "chart_XTicks": "Einteilung X-Achse",
     "chart_XTicksTooltip": "Intervall in Stunden zwischen den X-Achsen-Ticks (z.B. 2 für alle 2 Stunden ein Tick)",
     "chart_YAxis": "Bezeichnung Y-Achse",
+    "chart_script_navigation_hint": "Aus der alten Tabelle „Page Chart“ übernommen: Diese Seite bekommt ihre Navigation noch aus dem Skript (Seite „%s“). Das ist veraltet – bitte hier eine Navigation zuweisen und die Seite aus dem Skript entfernen.",
     "check!": "Überprüfen!",
     "close": "schließen",
     "closed": "geschlossen",

@@ -3,7 +3,7 @@ import { Page } from '../classes/Page';
 import { type PageInterface } from '../classes/PageInterface';
 import { Color } from '../const/Color';
 import { getIconEntryColor, getPayload } from '../const/tools';
-import { chartDefaults, type ChartDetailsExternal } from '../types/adminShareConfig';
+import { chartDefaults, type ChartDetailsExternal, type ChartEntry } from '../types/adminShareConfig';
 import type * as pages from '../types/pages';
 import type { IncomingEvent } from '../types/types';
 
@@ -24,6 +24,39 @@ export type ChartData = {
     /** the values were divided by this factor (line chart, automatic); 1 or undefined = untouched */
     factor?: number;
 };
+
+/**
+ * Page config of a chart page from a PageConfig entry. The DB source travels as JSON in the
+ * const item `dbData` (see ChartDetailsExternal); the script source only uses `ticks` and `value`.
+ * Used by the admin pages (admin.ts) and by script pages that refer to a chart entry.
+ *
+ * @param entry chart entry as stored by the PageConfig editor
+ */
+export function buildChartPageConfig(entry: ChartEntry): pages.cardChartDataItemOptions {
+    const d = chartDefaults;
+    const dbData: ChartDetailsExternal | undefined =
+        entry.selInstanceDataSource === 1
+            ? {
+                  instance: entry.selInstance || '',
+                  state: entry.setStateForDB || '',
+                  hours: entry.rangeHours ?? d.rangeHours,
+                  maxTicks: entry.maxXAxisTicks ?? d.maxXAxisTicks,
+                  factor: entry.factorCardChart ?? d.factorCardChart,
+                  maxLabels: entry.maxXAxisLabels ?? d.maxXAxisLabels,
+              }
+            : undefined;
+    return {
+        card: entry.selChartType || d.selChartType,
+        data: {
+            headline: { type: 'const', constVal: entry.headline || 'Page Chart' },
+            text: { type: 'const', constVal: entry.txtLabelYAchse || '' },
+            color: { true: { color: { type: 'const', constVal: entry.chartColor || d.chartColor } } },
+            ticks: { type: 'triggered', dp: entry.setStateForTicks || '' },
+            value: { type: 'triggered', dp: entry.setStateForValues || entry.setStateForDB || '' },
+            dbData: dbData ? { type: 'const', constVal: JSON.stringify(dbData) } : undefined,
+        },
+    };
+}
 
 export class PageChart extends Page {
     items: pages.cardChartDataItems | undefined;
@@ -88,77 +121,34 @@ export class PageChart extends Page {
     }
 
     /**
-     * Classic path: a script page `type: 'cardChart' | 'cardLChart'` matched by `pageName` against the
-     * admin table `pageChartdata`. Produces the same page config as the PageConfig tab (see admin.ts),
-     * including the `dbData` item for the DB source, so both configuration ways share one code path.
+     * Script page `type: 'cardChart' | 'cardLChart'` that refers to a chart entry of the page config
+     * (deprecated transition after the migration of the table "Page Chart"): the entry delivers the
+     * content, the script the navigation. The page keeps the script name as id, so prev/next in the
+     * script still match even if the migration renamed the entry.
      *
-     * @param configManager the running ConfigManager (adapter access, state checks)
-     * @param index index of the matching entry in `adapter.config.pageChartdata`
+     * @param configManager the running ConfigManager
+     * @param entry chart entry of the page config
      * @param gridItem page base to extend
-     * @param messages collected configuration messages
      * @param page the script page definition
      */
-    static async getChartPageConfig(
+    static async getChartPageConfigFromEntry(
         configManager: ConfigManager,
-        index: number,
+        entry: ChartEntry,
         gridItem: pages.PageBase,
-        messages: string[],
         page: ScriptConfig.PageChart,
-    ): Promise<{ gridItem: pages.PageBase; messages: string[] }> {
-        const adapter = configManager.adapter;
-        const config = adapter.config.pageChartdata[index];
-        let stateExistValue = '';
-        let stateExistTicks = '';
-        if (config) {
-            const card = config.selChartType;
-            adapter.log.debug(`get pageconfig Card: ${card}`);
-            const useDb = config.selInstanceDataSource === 1;
-            if (useDb) {
-                // AdapterVersion
-                if (await configManager.existsState(config.setStateForDB)) {
-                    stateExistValue = config.setStateForDB;
-                }
-            } else {
-                // oldScriptVersion
-                if (await configManager.existsState(config.setStateForValues)) {
-                    stateExistValue = config.setStateForValues;
-                }
-            }
-            if (await configManager.existsState(config.setStateForTicks)) {
-                stateExistTicks = config.setStateForTicks;
-            }
-            const dbData: ChartDetailsExternal | undefined = useDb
-                ? {
-                      instance: config.selInstance || '',
-                      state: stateExistValue,
-                      hours: config.rangeHours || chartDefaults.rangeHours,
-                      maxTicks: config.maxXAxisTicks || chartDefaults.maxXAxisTicks,
-                      factor: config.factorCardChart || chartDefaults.factorCardChart,
-                      maxLabels: config.maxXAxisLabels || chartDefaults.maxXAxisLabels,
-                  }
-                : undefined;
-
-            gridItem = {
-                ...gridItem,
-                uniqueID: config.pageName,
-                alwaysOn: page.alwaysOnDisplay || config.alwaysOnDisplay ? 'always' : 'none',
-                hidden: page.hiddenByTrigger || config.hiddenByTrigger,
-                config: {
-                    card: card,
-                    data: {
-                        headline: await configManager.getFieldAsDataItemConfig(page.heading || config.headline || ''),
-                        text: { type: 'const', constVal: config.txtlabelYAchse || '' },
-                        color: { true: { color: { type: 'const', constVal: config.chart_color } } },
-                        ticks: { type: 'triggered', dp: stateExistTicks },
-                        value: { type: 'triggered', dp: stateExistValue },
-                        dbData: dbData ? { type: 'const', constVal: JSON.stringify(dbData) } : undefined,
-                    },
-                },
-                pageItems: [],
-            };
-            return { gridItem, messages };
+    ): Promise<pages.PageBase> {
+        const config = buildChartPageConfig(entry);
+        if (page.heading) {
+            config.data.headline = await configManager.getFieldAsDataItemConfig(page.heading);
         }
-        throw new Error('No config for cardChart found');
+        return {
+            ...gridItem,
+            uniqueID: page.uniqueName,
+            alwaysOn: page.alwaysOnDisplay ? 'always' : (entry.alwaysOn ?? 'none'),
+            hidden: !!(page.hiddenByTrigger || entry.hidden),
+            config,
+            pageItems: [],
+        };
     }
 
     // Überschreiben der getChartData-Methode

@@ -317,6 +317,7 @@
     "chart_XTicks": "Tacche dell’asse X",
     "chart_XTicksTooltip": "Intervallo in ore tra le tacche dell’asse X (ad es. 2 per una tacca ogni 2 ore)",
     "chart_YAxis": "Etichetta dell’asse Y",
+    "chart_script_navigation_hint": "Migrata dalla vecchia tabella \"Page Chart\": questa pagina riceve ancora la navigazione dallo script (pagina \"%s\"). È obsoleto: assegna qui una navigazione e rimuovi la pagina dallo script.",
     "check!": "Controllo!",
     "close": "vicino",
     "closed": "Chiuso",

@@ -29,7 +29,6 @@ var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: tru
 var admin_exports = {};
 __export(admin_exports, {
   AdminConfiguration: () => AdminConfiguration,
-  buildChartPageConfig: () => buildChartPageConfig,
   buildPowerSlotData: () => buildPowerSlotData,
   buildThermo2ScriptPage: () => buildThermo2ScriptPage
 });
@@ -45,6 +44,7 @@ var ShareConfig = __toESM(require("../types/adminShareConfig"));
 var import_adminShareConfig = require("../types/adminShareConfig");
 var import_function_and_const = require("../types/function-and-const");
 var import_credentials = require("../credentials");
+var import_pageChart = require("../pages/pageChart");
 const systemNavigationNodeNames = new Set(
   import_system_templates.systemNavigation.filter((node) => node != null).map((node) => node.name)
 );
@@ -335,7 +335,7 @@ Stack: ${stack}`
             hidden: !!entry.hidden,
             alwaysOn: entry.alwaysOn,
             dpInit: "",
-            config: buildChartPageConfig(entry),
+            config: (0, import_pageChart.buildChartPageConfig)(entry),
             pageItems: []
           };
           break;
@@ -824,29 +824,6 @@ function buildThermo2ScriptPage(entry) {
     sortOrder
   };
 }
-function buildChartPageConfig(entry) {
-  var _a, _b, _c, _d;
-  const d = ShareConfig.chartDefaults;
-  const dbData = entry.selInstanceDataSource === 1 ? {
-    instance: entry.selInstance || "",
-    state: entry.setStateForDB || "",
-    hours: (_a = entry.rangeHours) != null ? _a : d.rangeHours,
-    maxTicks: (_b = entry.maxXAxisTicks) != null ? _b : d.maxXAxisTicks,
-    factor: (_c = entry.factorCardChart) != null ? _c : d.factorCardChart,
-    maxLabels: (_d = entry.maxXAxisLabels) != null ? _d : d.maxXAxisLabels
-  } : void 0;
-  return {
-    card: entry.selChartType || d.selChartType,
-    data: {
-      headline: { type: "const", constVal: entry.headline || "Page Chart" },
-      text: { type: "const", constVal: entry.txtLabelYAchse || "" },
-      color: { true: { color: { type: "const", constVal: entry.chartColor || d.chartColor } } },
-      ticks: { type: "triggered", dp: entry.setStateForTicks || "" },
-      value: { type: "triggered", dp: entry.setStateForValues || entry.setStateForDB || "" },
-      dbData: dbData ? { type: "const", constVal: JSON.stringify(dbData) } : void 0
-    }
-  };
-}
 function isAlwaysOnMode(F) {
   const R = F;
   switch (R) {
@@ -1098,7 +1075,6 @@ function dataForcardTrash(entry) {
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
   AdminConfiguration,
-  buildChartPageConfig,
   buildPowerSlotData,
   buildThermo2ScriptPage
 });

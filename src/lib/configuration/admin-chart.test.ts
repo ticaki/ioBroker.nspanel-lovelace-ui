@@ -1,6 +1,16 @@
 import { expect } from 'chai';
-import { chartDefaults, emptyChartEntry, type ChartEntry } from '../types/adminShareConfig';
-import { buildChartPageConfig } from './admin';
+import {
+    chartDefaults,
+    dropScriptNavigation,
+    emptyChartEntry,
+    findChartEntryForScript,
+    isScriptNavigatedChart,
+    migrateLegacyCharts,
+    type ChartEntry,
+    type LegacyChartRow,
+    type PageConfigEntry,
+} from '../types/adminShareConfig';
+import { buildChartPageConfig } from '../pages/pageChart';
 
 /**
  * The query object the runtime reads from the const item dbData, if any.
@@ -102,5 +112,123 @@ describe('lib/configuration - buildChartPageConfig', () => {
         expect(entry.maxXAxisLabels).to.equal(chartDefaults.maxXAxisLabels);
         expect(entry.alwaysOn).to.equal('none');
         expect(entry.hidden).to.equal(false);
+    });
+});
+
+describe('lib/types/adminShareConfig - migration of the table "Page Chart"', () => {
+    const row: LegacyChartRow = {
+        pageName: 'heizung',
+        headline: 'Heizung',
+        alwaysOnDisplay: true,
+        hiddenByTrigger: false,
+        chart_color: '#00FF00',
+        selChartType: 'cardLChart',
+        selInstanceDataSource: 1,
+        selInstance: 'influxdb.0',
+        setStateForTicks: '',
+        setStateForValues: '',
+        setStateForDB: '0_userdata.0.power',
+        txtlabelYAchse: 'W',
+        rangeHours: 12,
+        maxXAxisTicks: 3,
+        factorCardChart: 10,
+        maxXAxisLabels: 6,
+    };
+    const qr: PageConfigEntry = {
+        card: 'cardQR',
+        uniqueName: 'heizung',
+        headline: 'QR',
+        ssidUrlTel: '',
+        setState: '',
+        wlanhidden: false,
+        pwdhidden: false,
+    };
+
+    it('maps the old field names and keeps the navigation in the script', () => {
+        const { entries, messages, changed } = migrateLegacyCharts([row], []);
+
+        expect(changed).to.equal(true);
+        expect(messages).to.deep.equal([]);
+        expect(entries).to.deep.equal([
+            {
+                card: 'cardChart',
+                uniqueName: 'heizung',
+                scriptName: 'heizung',
+                scriptNavigation: true,
+                headline: 'Heizung',
+                chartColor: '#00FF00',
+                txtLabelYAchse: 'W',
+                selChartType: 'cardLChart',
+                selInstanceDataSource: 1,
+                setStateForTicks: '',
+                setStateForValues: '',
+                selInstance: 'influxdb.0',
+                setStateForDB: '0_userdata.0.power',
+                rangeHours: 12,
+                maxXAxisTicks: 3,
+                factorCardChart: 10,
+                maxXAxisLabels: 6,
+                hidden: false,
+                alwaysOn: 'always',
+            },
+        ]);
+        expect(isScriptNavigatedChart(entries[0])).to.equal(true);
+    });
+
+    it('fills missing values with the chart defaults', () => {
+        const entry = migrateLegacyCharts([{ pageName: 'x' }], []).entries[0] as ChartEntry;
+
+        expect(entry.chartColor).to.equal(chartDefaults.chartColor);
+        expect(entry.selChartType).to.equal('cardChart');
+        expect(entry.selInstanceDataSource).to.equal(0);
+        expect(entry.rangeHours).to.equal(chartDefaults.rangeHours);
+        expect(entry.alwaysOn).to.equal('none');
+        expect(entry.hidden).to.equal(false);
+    });
+
+    it('renames on a name clash, warns and keeps the script name', () => {
+        const first = migrateLegacyCharts([row], [qr]);
+        const entry = first.entries[1] as ChartEntry;
+
+        expect(entry.uniqueName).to.equal('heizung_chart');
+        expect(entry.scriptName).to.equal('heizung');
+        expect(first.messages).to.have.length(1);
+        expect(first.messages[0]).to.contain('heizung_chart');
+
+        // a second clash counts up
+        const second = migrateLegacyCharts([{ ...row, pageName: 'heizung' }], [qr, { ...entry, scriptName: 'other' }]);
+        expect(second.entries[2].uniqueName).to.equal('heizung_chart2');
+    });
+
+    it('skips rows migrated before and rows without a name', () => {
+        const once = migrateLegacyCharts([row], []);
+        const twice = migrateLegacyCharts([row, { pageName: '  ' }], once.entries);
+
+        expect(twice.changed).to.equal(false);
+        expect(twice.entries).to.deep.equal(once.entries);
+        expect(migrateLegacyCharts(undefined, []).changed).to.equal(false);
+    });
+
+    it('finds the entry of a script page by its script name first', () => {
+        const migrated = migrateLegacyCharts([row], [qr]).entries;
+
+        expect(findChartEntryForScript(migrated, 'heizung')?.uniqueName).to.equal('heizung_chart');
+        expect(findChartEntryForScript(migrated, 'heizung_chart')?.uniqueName).to.equal('heizung_chart');
+        expect(findChartEntryForScript(migrated, 'nope')).to.equal(undefined);
+    });
+
+    it('ends the script navigation once the admin assigns one', () => {
+        const entry = migrateLegacyCharts([row], []).entries[0];
+
+        expect(dropScriptNavigation(entry)).to.equal(entry);
+        expect(dropScriptNavigation({ ...entry, navigationAssignment: [] })).to.deep.equal({
+            ...entry,
+            navigationAssignment: [],
+        });
+
+        const assigned = dropScriptNavigation({ ...entry, navigationAssignment: [{ topic: 'nspanel/x' }] });
+        expect(assigned).to.not.have.property('scriptNavigation');
+        expect((assigned as ChartEntry).scriptName).to.equal('heizung');
+        expect(isScriptNavigatedChart(assigned)).to.equal(false);
     });
 });

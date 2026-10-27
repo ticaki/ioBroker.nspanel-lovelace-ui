@@ -317,6 +317,7 @@
     "chart_XTicks": "Markeringen van de X-as",
     "chart_XTicksTooltip": "Interval in uren tussen de markeringen van de X-as (bijv. 2 voor elke 2 uur een markering)",
     "chart_YAxis": "Label van de Y-as",
+    "chart_script_navigation_hint": "Overgenomen uit de oude tabel \"Page Chart\": deze pagina krijgt haar navigatie nog uit het script (pagina \"%s\"). Dit is verouderd - wijs hier een navigatie toe en verwijder de pagina uit het script.",
     "check!": "Rekening!",
     "close": "dichtbij",
     "closed": "gesloten",
