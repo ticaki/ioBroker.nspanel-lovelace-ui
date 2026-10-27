@@ -32,9 +32,10 @@ const port = Number(arg('port', '4174'));
 const waitMs = Number(arg('wait', '700'));
 const scale = Number(arg('scale', '2'));
 const model = arg('model', 'eu');
-// viewport = stage in native size + hardware buttons below, so the stage renders at 1x
+// viewport = the whole device (glass around the stage, hardware buttons below) in native
+// size, so the stage renders at 1x - keep in sync with `deviceGeometry` in src/style/theme.ts
 const stage = model === 'us-p' ? { width: 320, height: 480 } : { width: 480, height: 320 };
-const HARDWARE_BUTTONS_HEIGHT = 48;
+const DEVICE = { padX: 28, padY: 40, buttonsHeight: 130 };
 if (!input) {
     console.error('usage: node scripts/screenshot.mjs --in commands.txt --out shot.png [--port 4174]');
     process.exit(2);
@@ -59,8 +60,8 @@ const browser = await puppeteer.launch({ headless: true, args: ['--no-sandbox'] 
 try {
     const page = await browser.newPage();
     await page.setViewport({
-        width: stage.width,
-        height: stage.height + HARDWARE_BUTTONS_HEIGHT,
+        width: stage.width + 2 * DEVICE.padX,
+        height: stage.height + 2 * DEVICE.padY + DEVICE.buttonsHeight,
         deviceScaleFactor: scale,
     });
     page.on('pageerror', err => console.error(`page error: ${err.message}`));

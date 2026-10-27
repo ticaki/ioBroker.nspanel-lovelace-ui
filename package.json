@@ -90,7 +90,7 @@
     "translate": "translate-adapter",
     "release": "release-script",
     "npm": "npm i && cd src-admin && npm i",
-    "build:admin": "cd src-admin && npm run build",
+    "build:admin": "npm run build:web && cd src-admin && npm run build",
     "build:web": "cd src-web && npm run build",
     "lint:web": "cd src-web && npm run lint",
     "test:web": "cd src-web && npm test",

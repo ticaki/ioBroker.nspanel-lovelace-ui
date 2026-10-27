@@ -1,6 +1,6 @@
 import React from 'react';
 import type { ConnectionStatus, PanelModel } from '../protocol/types';
-import { stageSize, theme } from '../style/theme';
+import { deviceGeometry, stageSize, theme } from '../style/theme';
 import { Icon } from './Icon';
 
 export interface DeviceFrameProps {
@@ -24,6 +24,8 @@ interface DeviceFrameState {
     viewportHeight: number;
     /** the offline overlay is visible (the connection is not open since `OVERLAY_DELAY_MS`) */
     overlay: boolean;
+    /** the hardware button the pointer holds down right now */
+    pressed?: 1 | 2;
 }
 
 /** the overlay waits this long, so the first connect does not flash it */
@@ -73,8 +75,9 @@ export function offlineNotice(status: ConnectionStatus, byeReason: string | unde
 }
 
 /**
- * The display of the panel: a stage in the native resolution, scaled to the viewport,
- * dimmed like the real display (brightness and contrast) and the two hardware buttons below.
+ * The panel: a stage in the native resolution behind the black glass and the two white
+ * hardware buttons below (like the eu device), scaled together to the viewport. The stage is
+ * dimmed like the real display (brightness and contrast).
  * Without a connection to the adapter the stage is greyed out behind an overlay that
  * says why, taps do not reach the page and the hardware buttons are disabled.
  */
@@ -164,14 +167,24 @@ export class DeviceFrame extends React.Component<DeviceFrameProps, DeviceFrameSt
         return dimFilter === 'none' ? offline : `${dimFilter} ${offline}`;
     }
 
+    private readonly onButtonDown = (button: 1 | 2): void => {
+        if (!DeviceFrame.isOffline(this.props)) {
+            this.setState({ pressed: button });
+        }
+    };
+
+    private readonly onButtonUp = (): void => {
+        if (this.state.pressed !== undefined) {
+            this.setState({ pressed: undefined });
+        }
+    };
+
     render(): React.JSX.Element {
         const { model, brightness, status, byeReason, children } = this.props;
         const { width, height } = stageSize(model);
         const { viewportWidth, viewportHeight } = this.state;
-        const buttons = theme.hardwareButtonsHeight;
-        const scale = Math.max(0.1, Math.min(viewportWidth / width, (viewportHeight - buttons) / height));
-        const scaledWidth = width * scale;
-        const scaledHeight = height * scale;
+        const device = deviceGeometry(model);
+        const scale = Math.max(0.1, Math.min(viewportWidth / device.width, viewportHeight / device.height));
         const lang = language();
         const offline = DeviceFrame.isOffline(this.props);
         const overlay = offline && this.state.overlay;
@@ -197,109 +210,140 @@ export class DeviceFrame extends React.Component<DeviceFrameProps, DeviceFrameSt
                     touchAction: 'manipulation',
                 }}
             >
-                <div style={{ width: scaledWidth, height: scaledHeight, position: 'relative', flex: '0 0 auto' }}>
+                <div
+                    style={{
+                        width: device.width * scale,
+                        height: device.height * scale,
+                        position: 'relative',
+                        flex: '0 0 auto',
+                    }}
+                >
                     <div
-                        data-stage=""
-                        onPointerDown={this.props.onTouch}
+                        data-device-body=""
                         style={{
                             position: 'absolute',
                             left: 0,
                             top: 0,
-                            width,
-                            height,
+                            width: device.width,
+                            height: device.height,
                             transform: `scale(${scale})`,
                             transformOrigin: '0 0',
-                            background: theme.background,
-                            color: theme.foreground,
-                            overflow: 'hidden',
-                            filter: overlay ? DeviceFrame.offlineFilter(stageFilter) : stageFilter,
-                            transition: 'filter 0.4s ease',
                         }}
                     >
-                        {children}
-                    </div>
-                    {offline ? (
-                        // in stage pixels like the page, so icon and text scale with the display;
-                        // present at once (it swallows the taps), visible after OVERLAY_DELAY_MS
                         <div
-                            data-overlay=""
+                            data-stage=""
+                            onPointerDown={this.props.onTouch}
+                            style={{
+                                position: 'absolute',
+                                left: device.padX,
+                                top: device.padY,
+                                width,
+                                height,
+                                background: theme.background,
+                                color: theme.foreground,
+                                overflow: 'hidden',
+                                filter: overlay ? DeviceFrame.offlineFilter(stageFilter) : stageFilter,
+                                transition: 'filter 0.4s ease',
+                            }}
+                        >
+                            {children}
+                        </div>
+                        {offline ? (
+                            // in stage pixels like the page, so icon and text scale with the display;
+                            // present at once (it swallows the taps), visible after OVERLAY_DELAY_MS
+                            <div
+                                data-overlay=""
+                                style={{
+                                    position: 'absolute',
+                                    left: device.padX,
+                                    top: device.padY,
+                                    width,
+                                    height,
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    background: 'rgba(0,0,0,0.55)',
+                                    opacity: overlay ? 1 : 0,
+                                    transition: 'opacity 0.3s ease',
+                                    pointerEvents: 'auto',
+                                    cursor: 'default',
+                                }}
+                            >
+                                <div
+                                    data-status={byeReason !== undefined ? 'bye' : status}
+                                    data-bye={byeReason}
+                                    style={{
+                                        display: 'flex',
+                                        flexDirection: 'column',
+                                        alignItems: 'center',
+                                        gap: 10,
+                                        maxWidth: Math.round(width * 0.8),
+                                        padding: '18px 24px',
+                                        borderRadius: 12,
+                                        background: 'rgba(20,20,20,0.92)',
+                                        border: `2px solid ${noticeColor}`,
+                                        boxShadow: '0 0 24px rgba(0,0,0,0.8)',
+                                        color: noticeColor,
+                                        fontSize: 16,
+                                        lineHeight: 1.3,
+                                        textAlign: 'center',
+                                    }}
+                                >
+                                    <Icon
+                                        name={final ? 'lan-disconnect' : 'wifi-off'}
+                                        size={56}
+                                        color={noticeColor}
+                                    />
+                                    <span>{notice}</span>
+                                </div>
+                            </div>
+                        ) : null}
+                        <div
+                            data-hardware-buttons=""
                             style={{
                                 position: 'absolute',
                                 left: 0,
-                                top: 0,
-                                width,
-                                height,
-                                transform: `scale(${scale})`,
-                                transformOrigin: '0 0',
+                                bottom: 0,
+                                width: device.width,
+                                height: device.buttonsHeight,
                                 display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                background: 'rgba(0,0,0,0.55)',
-                                opacity: overlay ? 1 : 0,
+                                gap: 2,
+                                boxSizing: 'border-box',
+                                border: `1px solid ${theme.hardwareButtonEdge}`,
+                                borderRadius: '0 0 10px 10px',
+                                background: theme.hardwareButtonEdge,
+                                overflow: 'hidden',
+                                opacity: offline ? 0.35 : 1,
                                 transition: 'opacity 0.3s ease',
-                                pointerEvents: 'auto',
-                                cursor: 'default',
                             }}
                         >
-                            <div
-                                data-status={byeReason !== undefined ? 'bye' : status}
-                                data-bye={byeReason}
-                                style={{
-                                    display: 'flex',
-                                    flexDirection: 'column',
-                                    alignItems: 'center',
-                                    gap: 10,
-                                    maxWidth: Math.round(width * 0.8),
-                                    padding: '18px 24px',
-                                    borderRadius: 12,
-                                    background: 'rgba(20,20,20,0.92)',
-                                    border: `2px solid ${noticeColor}`,
-                                    boxShadow: '0 0 24px rgba(0,0,0,0.8)',
-                                    color: noticeColor,
-                                    fontSize: 16,
-                                    lineHeight: 1.3,
-                                    textAlign: 'center',
-                                }}
-                            >
-                                <Icon
-                                    name={final ? 'lan-disconnect' : 'wifi-off'}
-                                    size={56}
-                                    color={noticeColor}
-                                />
-                                <span>{notice}</span>
-                            </div>
+                            {([1, 2] as const).map(button => {
+                                const pressed = this.state.pressed === button;
+                                return (
+                                    <div
+                                        key={button}
+                                        data-hardware-button={button}
+                                        aria-disabled={offline}
+                                        onClick={(): void => this.onHardwareButtonClick(button)}
+                                        onPointerDown={(): void => this.onButtonDown(button)}
+                                        onPointerUp={this.onButtonUp}
+                                        onPointerLeave={this.onButtonUp}
+                                        onPointerCancel={this.onButtonUp}
+                                        style={{
+                                            flex: '1 1 0',
+                                            background: pressed ? theme.hardwareButtonPressed : theme.hardwareButton,
+                                            // the edge of the glass casts a thin shadow on the buttons
+                                            boxShadow: pressed
+                                                ? 'inset 0 3px 8px rgba(0,0,0,0.25)'
+                                                : 'inset 0 4px 4px -2px rgba(0,0,0,0.35)',
+                                            cursor: offline ? 'default' : 'pointer',
+                                            transition: 'background 0.08s ease',
+                                        }}
+                                    />
+                                );
+                            })}
                         </div>
-                    ) : null}
-                </div>
-                <div
-                    data-hardware-buttons=""
-                    style={{
-                        width: scaledWidth,
-                        height: buttons,
-                        display: 'flex',
-                        gap: 6,
-                        padding: '6px 0 0 0',
-                        boxSizing: 'border-box',
-                        flex: '0 0 auto',
-                    }}
-                >
-                    {([1, 2] as const).map(button => (
-                        <div
-                            key={button}
-                            data-hardware-button={button}
-                            aria-disabled={offline}
-                            onClick={(): void => this.onHardwareButtonClick(button)}
-                            style={{
-                                flex: '1 1 0',
-                                borderRadius: 4,
-                                background: offline ? '#1a1a1a' : 'linear-gradient(#2b2b2b, #161616)',
-                                border: `1px solid ${offline ? '#262626' : '#3a3a3a'}`,
-                                cursor: offline ? 'default' : 'pointer',
-                                opacity: offline ? 0.5 : 1,
-                                transition: 'opacity 0.3s ease',
-                            }}
-                        />
-                    ))}
+                    </div>
                 </div>
             </div>
         );

@@ -20,7 +20,7 @@
 - Package manager: npm.
 - Build: 
   - `npm run build` (compiles TypeScript to `/build/`)
-  - `npm run build:admin` (builds React admin UI from `/src-admin/`)
+  - `npm run build:admin` (builds React admin UI from `/src-admin/` and the web panel from `/src-web/`)
   - `npm run build:all` (builds both and uploads to dev-server)
 - Test: `@iobroker/testing`, mocha/chai/sinon.
 - Lint/Format: ESLint + Prettier (keep semicolons, single quotes).
@@ -205,7 +205,7 @@ Notes
 ## CI & Scripts  
 - `npm test` → runs lint + unit tests.
 - `npm run build` → compiles TypeScript to `/build/` directory.
-- `npm run build:admin` → builds React admin UI from `/src-admin/`.
+- `npm run build:admin` → builds React admin UI from `/src-admin/` and the web panel from `/src-web/` (`npm run build:web` alone builds only the web panel).
 - `npm run build:all` → builds adapter + admin, uploads to dev-server.
 - `npm run lint` → ESLint with NSPanel-specific rules.
 - `npm run verify` → runs lint + build (good pre-commit check).

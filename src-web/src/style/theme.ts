@@ -10,6 +10,39 @@ export function stageSize(model: PanelModel): StageSize {
     return model === 'us-p' ? { width: 320, height: 480 } : { width: 480, height: 320 };
 }
 
+export interface DeviceGeometry {
+    /** black glass left and right of the display */
+    padX: number;
+    /** black glass above and below the display */
+    padY: number;
+    /** height of the two hardware buttons below the glass */
+    buttonsHeight: number;
+    /** size of the whole device (glass plus buttons) in stage pixels */
+    width: number;
+    height: number;
+}
+
+/**
+ * Geometry of the device around the display in stage pixels, taken from the photo of the
+ * eu panel (white housing, black glass, two white buttons below): the buttons are as wide
+ * as the glass and about 0.27 of the display width high.
+ *
+ * @param model the panel model
+ */
+export function deviceGeometry(model: PanelModel): DeviceGeometry {
+    const { width, height } = stageSize(model);
+    const padX = 28;
+    const padY = 40;
+    const buttonsHeight = 130;
+    return {
+        padX,
+        padY,
+        buttonsHeight,
+        width: width + 2 * padX,
+        height: height + 2 * padY + buttonsHeight,
+    };
+}
+
 /**
  * Width of the area the HMI lays its pages out in. On the eu display (480 px) the title is
  * centred at x 223, the tiles of the grids and the navigation icons are centred in the same
@@ -47,6 +80,10 @@ export const theme = {
     navIconCenter: 33,
     /** font size of the title (32 px Nextion font) */
     titleFontSize: 24,
-    /** area below the display with the two hardware buttons */
-    hardwareButtonsHeight: 48,
+    /** face of the white hardware buttons (eu panel) */
+    hardwareButton: '#f2f0f1',
+    /** the face while a button is pressed */
+    hardwareButtonPressed: '#d9d7d8',
+    /** gap between the two buttons and their outline */
+    hardwareButtonEdge: '#8e8c8d',
 } as const;
