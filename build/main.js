@@ -180,6 +180,24 @@ class NspanelLovelaceUi extends utils.Adapter {
         delete native.pageChartdata;
         change = true;
       }
+      if (native.pagePowerdata !== void 0) {
+        const migrated = (0, import_adminShareConfig.migrateLegacyPower)(
+          Array.isArray(native.pagePowerdata) ? native.pagePowerdata : [],
+          native.pageConfig
+        );
+        for (const msg of migrated.messages) {
+          this.log.warn(msg);
+        }
+        if (migrated.changed) {
+          const count = migrated.entries.length - native.pageConfig.length;
+          native.pageConfig = migrated.entries;
+          this.log.info(
+            `Moved ${count} power page(s) from the table "Page Power" to the page configuration.`
+          );
+        }
+        delete native.pagePowerdata;
+        change = true;
+      }
       if (!this.config.versionJsonUrl || !this.config.tftUrl || !this.config.berryUrl) {
         try {
           const iopackage = JSON.parse(

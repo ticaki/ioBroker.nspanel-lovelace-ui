@@ -1,5 +1,6 @@
 import React from 'react';
 import {
+    Alert,
     Box,
     Button,
     Checkbox,
@@ -34,7 +35,7 @@ import {
     type PowerHomeBotConfig,
     emptyPowerSlot,
 } from '../../../src/lib/types/adminShareConfig';
-import { isMainPageEntry } from '../../../src/lib/types/adminShareConfig';
+import { isMainPageEntry, isScriptNavigatedPower } from '../../../src/lib/types/adminShareConfig';
 import { isDarkTheme } from '../themeUtils';
 
 const ICONS_LIST: { name: string; base64: string }[] = Array.isArray(iconsJson) ? iconsJson : [];
@@ -780,6 +781,19 @@ export class PagePowerEditor extends ConfigGeneric<ConfigGenericProps & PagePowe
                     sx={{ mb: 2 }}
                     disabled={!this.state.alive}
                 />
+
+                {/* migrated from the table "Page Power": navigation still comes from the script */}
+                {isScriptNavigatedPower(entry) && (
+                    <Alert
+                        severity="warning"
+                        sx={{ mb: 2 }}
+                    >
+                        {this.getText('power_script_navigation_hint').replace(
+                            '%s',
+                            entry.scriptName ?? entry.uniqueName,
+                        )}
+                    </Alert>
+                )}
 
                 <Box
                     sx={{

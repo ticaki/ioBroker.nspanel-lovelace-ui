@@ -937,6 +937,16 @@ export type PowerEntry = {
     rightBottom: PowerSlotConfig;
     homeTop: PowerHomeTopConfig;
     homeBot: PowerHomeBotConfig;
+    /**
+     * Deprecated transition: the page was migrated from the old admin table "Page Power" and still
+     * gets its navigation from the script. Ends as soon as a navigation is assigned in the admin.
+     */
+    scriptNavigation?: boolean;
+    /**
+     * page name used in the script (`uniqueName` of the script page); set by the migration, differs from
+     * uniqueName if the entry was renamed. Stays after the switch to admin navigation.
+     */
+    scriptName?: string;
 } & PageConfigBaseFields;
 
 /**
@@ -1095,16 +1105,20 @@ export function findChartEntryForScript(
 }
 
 /**
- * Ends the script navigation of a migrated chart entry once it has a navigation in the admin.
- * `scriptName` stays as a record of where the entry came from.
+ * Ends the script navigation of a migrated chart or power entry once it has a navigation in the
+ * admin. `scriptName` stays as a record of where the entry came from.
  *
  * @param entry page config entry
  */
 export function dropScriptNavigation(entry: PageConfigEntry): PageConfigEntry {
-    if (entry.card !== 'cardChart' || !entry.scriptNavigation || !entry.navigationAssignment?.length) {
+    if (
+        (entry.card !== 'cardChart' && entry.card !== 'cardPower') ||
+        !entry.scriptNavigation ||
+        !entry.navigationAssignment?.length
+    ) {
         return entry;
     }
-    const copy: ChartEntry = { ...entry };
+    const copy: ChartEntry | PowerEntry = { ...entry };
     delete copy.scriptNavigation;
     return copy;
 }
@@ -1162,6 +1176,179 @@ export function migrateLegacyCharts(
             maxXAxisTicks: row.maxXAxisTicks || d.maxXAxisTicks,
             factorCardChart: row.factorCardChart || d.factorCardChart,
             maxXAxisLabels: row.maxXAxisLabels || d.maxXAxisLabels,
+            hidden: !!row.hiddenByTrigger,
+            alwaysOn: row.alwaysOnDisplay ? 'always' : 'none',
+        });
+        changed = true;
+    }
+    return { entries: out, messages, changed };
+}
+
+/** index of a power slot in the legacy field names `power1_*` … `power6_*` */
+type LegacyPowerSlotIndex = 1 | 2 | 3 | 4 | 5 | 6;
+
+/** the flat per-slot fields of one row of the old table, slots 1..6 */
+type LegacyPowerSlotFields = {
+    [K in LegacyPowerSlotIndex as
+        | `power${K}_icon`
+        | `power${K}_iconColor`
+        | `power${K}_state`
+        | `power${K}_valueUnit`
+        | `power${K}_entityHeadline`]?: string;
+} & {
+    [K in LegacyPowerSlotIndex as
+        | `power${K}_valueDecimal`
+        | `power${K}_minColorScale`
+        | `power${K}_maxColorScale`
+        | `power${K}_bestColorScale`
+        | `power${K}_minSpeedScale`
+        | `power${K}_maxSpeedScale`]?: number;
+} & {
+    [K in LegacyPowerSlotIndex as `power${K}_reverse` | `_power${K}_useColorScale`]?: boolean;
+};
+
+/**
+ * One row of the old admin table "Page Power" (`native.pagePowerdata`). `power7_*` is the value above
+ * the home icon, `power8_*` the one below it, `power1_*` … `power6_*` are the six slots around it.
+ */
+export type LegacyPowerRow = {
+    pageName: string;
+    headline?: string;
+    alwaysOnDisplay?: boolean;
+    hiddenByTrigger?: boolean;
+    power7_state?: string;
+    power7_valueDecimal?: number;
+    power7_valueUnit?: string;
+    power8_selInternalCalculation?: boolean;
+    power8_state?: string;
+    /** 1-based slot indices; the select stores an array, a single stored value is accepted as well */
+    power8_selPowerSupply?: number[] | number;
+    power8_valueDecimal?: number;
+    power8_valueUnit?: string;
+} & LegacyPowerSlotFields;
+
+/**
+ * Slot indices of the internal sum as the runtime expects them: whole numbers 1..6, anything else dropped.
+ *
+ * @param value `power8_selPowerSupply` of a legacy row
+ * @returns the valid slot indices
+ */
+function legacyPowerSupply(value: number[] | number | undefined): number[] {
+    const list = Array.isArray(value) ? value : value === undefined ? [] : [value];
+    return list.map(Number).filter(v => Number.isInteger(v) && v >= 1 && v <= 6);
+}
+
+/**
+ * One slot of a legacy row as the React editor stores it.
+ *
+ * @param row row of the old table
+ * @param i slot index 1..6
+ * @returns the slot configuration, missing fields filled from {@link emptyPowerSlot}
+ */
+function powerSlotFromLegacyRow(row: LegacyPowerRow, i: LegacyPowerSlotIndex): PowerSlotConfig {
+    const base = emptyPowerSlot();
+    return {
+        icon: row[`power${i}_icon`] ?? base.icon,
+        iconColor: row[`power${i}_iconColor`] ?? base.iconColor,
+        state: row[`power${i}_state`] ?? base.state,
+        valueDecimal: row[`power${i}_valueDecimal`] ?? base.valueDecimal,
+        valueUnit: row[`power${i}_valueUnit`] || base.valueUnit,
+        entityHeadline: row[`power${i}_entityHeadline`] ?? base.entityHeadline,
+        useColorScale: !!row[`_power${i}_useColorScale`],
+        minColorScale: row[`power${i}_minColorScale`] ?? base.minColorScale,
+        maxColorScale: row[`power${i}_maxColorScale`] ?? base.maxColorScale,
+        bestColorScale: row[`power${i}_bestColorScale`] ?? base.bestColorScale,
+        minSpeedScale: row[`power${i}_minSpeedScale`] ?? base.minSpeedScale,
+        maxSpeedScale: row[`power${i}_maxSpeedScale`] ?? base.maxSpeedScale,
+        reverse: !!row[`power${i}_reverse`],
+    };
+}
+
+/**
+ * True if the power entry still gets its navigation from the script (migrated, no admin navigation yet).
+ *
+ * @param entry page config entry
+ */
+export function isScriptNavigatedPower(entry: PageConfigEntry): entry is PowerEntry {
+    return entry.card === 'cardPower' && entry.scriptNavigation === true && !entry.navigationAssignment?.length;
+}
+
+/**
+ * Power entry a script page `cardPower` refers to: first a migrated entry whose script name matches,
+ * then any power entry with that uniqueName.
+ *
+ * @param entries page config
+ * @param scriptPageName uniqueName of the script page
+ */
+export function findPowerEntryForScript(
+    entries: readonly PageConfigEntry[],
+    scriptPageName: string,
+): PowerEntry | undefined {
+    const powers = entries.filter((e): e is PowerEntry => !!e && e.card === 'cardPower');
+    return (
+        powers.find(e => e.scriptNavigation === true && (e.scriptName ?? e.uniqueName) === scriptPageName) ??
+        powers.find(e => e.uniqueName === scriptPageName)
+    );
+}
+
+/**
+ * Moves the rows of the old admin table "Page Power" into the page config. The new entries keep their
+ * navigation in the script (`scriptNavigation`) until the user assigns one in the admin. A row whose name
+ * is already used by another entry gets a new name (`<name>_power`, `<name>_power2`, …); the script still
+ * finds it via `scriptName`. Rows migrated before are skipped.
+ *
+ * @param rows old table `native.pagePowerdata`
+ * @param entries page config `native.pageConfig`
+ * @returns the extended page config, the warnings for renamed rows, changed = something was added
+ */
+export function migrateLegacyPower(
+    rows: readonly LegacyPowerRow[] | undefined,
+    entries: readonly PageConfigEntry[],
+): { entries: PageConfigEntry[]; messages: string[]; changed: boolean } {
+    const out = [...entries];
+    const messages: string[] = [];
+    let changed = false;
+    for (const row of rows ?? []) {
+        const name = typeof row?.pageName === 'string' ? row.pageName.trim() : '';
+        if (!name) {
+            continue;
+        }
+        if (out.some(e => e.card === 'cardPower' && e.scriptName === name)) {
+            continue;
+        }
+        let uniqueName = name;
+        for (let i = 1; out.some(e => e.uniqueName === uniqueName); i++) {
+            uniqueName = `${name}_power${i === 1 ? '' : i}`;
+        }
+        if (uniqueName !== name) {
+            messages.push(
+                `Power page '${name}': the name is already used by another page, migrated as '${uniqueName}'. The script keeps using '${name}'.`,
+            );
+        }
+        out.push({
+            card: 'cardPower',
+            uniqueName,
+            scriptName: name,
+            scriptNavigation: true,
+            headline: row.headline ?? '',
+            leftTop: powerSlotFromLegacyRow(row, 1),
+            leftMiddle: powerSlotFromLegacyRow(row, 2),
+            leftBottom: powerSlotFromLegacyRow(row, 3),
+            rightTop: powerSlotFromLegacyRow(row, 4),
+            rightMiddle: powerSlotFromLegacyRow(row, 5),
+            rightBottom: powerSlotFromLegacyRow(row, 6),
+            homeTop: {
+                state: row.power7_state ?? '',
+                valueDecimal: row.power7_valueDecimal ?? 0,
+                valueUnit: row.power7_valueUnit || 'W',
+            },
+            homeBot: {
+                selInternalCalculation: !!row.power8_selInternalCalculation,
+                state: row.power8_state ?? '',
+                selPowerSupply: legacyPowerSupply(row.power8_selPowerSupply),
+                valueDecimal: row.power8_valueDecimal ?? 0,
+                valueUnit: row.power8_valueUnit || 'W',
+            },
             hidden: !!row.hiddenByTrigger,
             alwaysOn: row.alwaysOnDisplay ? 'always' : 'none',
         });

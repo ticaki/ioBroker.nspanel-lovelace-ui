@@ -423,7 +423,10 @@ export type QRButtonEvent = 'OnOff';
 
 export type cardPowerDataItemOptions = {
     card: Extract<AdminCardTypes, 'cardPower'>;
-    index: number;
+    /** home bottom shows the sum of the six slots instead of a state of its own */
+    internalCalculation?: boolean;
+    /** 1-based slot indices counted into the internal sum; the others count as 0 */
+    powerSupply?: number[];
     data: ChangeTypeOfKeys<PageGridPowerConfig, NSPanel.DataItemsOptions | undefined>;
 };
 export type cardPowerDataItems = {

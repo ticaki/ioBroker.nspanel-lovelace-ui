@@ -128,7 +128,7 @@ Zusätzlich gibt es das **automatische Blättern**. Dabei muss der Parameter `sc
 
 ---  
 
-Dann gibt es noch die Standard Seiten PageQR, PageChart, PagePower und PageAlarm. Sie haben eine einfache Config, da sie in der WebUI des Adapter konfiguriert werden. Der `uniqueName` muss dabei dem in der Adapter-config entsprechen. Chart-Seiten werden inzwischen komplett im Tab `PageConfig` angelegt; der Verweis im Script funktioniert nur noch für Seiten, die aus der alten Tabelle `PageChart` übernommen wurden, und ist veraltet (siehe [PageChart](PageChart)).  Mehr zu diesen Thema in den [speziellen Wiki Seiten.](Pages)
+Dann gibt es noch die Standard Seiten PageQR, PageChart, PagePower und PageAlarm. Sie haben eine einfache Config, da sie in der WebUI des Adapter konfiguriert werden. Der `uniqueName` muss dabei dem in der Adapter-config entsprechen. Chart- und Energie-Seiten werden inzwischen komplett im Tab `PageConfig` angelegt; der Verweis im Script funktioniert nur noch für Seiten, die aus den alten Tabellen `PageChart` bzw. `PagePower` übernommen wurden, und ist veraltet (siehe [PageChart](PageChart) und [PagePower](PagePower)).  Mehr zu diesen Thema in den [speziellen Wiki Seiten.](Pages)
 ```typescript
     const wlandaten: ScriptConfig.PageQR = {
         uniqueName: 'wlandaten',

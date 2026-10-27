@@ -686,7 +686,7 @@ async function configuration (): Promise<void> {
 }
 
 
-const version = '0.21.4';
+const version = '0.21.5';
 const HMIOff = {red: 68, green: 115, blue: 158};     // Blue-Off - Original Entity Off
 const HMIOn = {red: 3, green: 169, blue: 244};     // Blue-On
 const HMIDark = {red: 29, green: 29, blue: 29};     // Original Background Color
@@ -1090,6 +1090,10 @@ declare namespace ScriptConfig {
         type: 'cardQR';
     } & Omit<PageBaseType, 'useColor' | 'heading' | 'items'>;
 
+    /**
+     * @deprecated Power pages are configured in the admin (tab PageConfig) including their navigation. Only works
+     * for pages migrated from the old table "Page Power" that have no navigation in the admin yet.
+     */
     export type PagePower = {
         type: 'cardPower';
     } & Omit<PageBaseType, 'useColor' | 'heading' | 'items'>;

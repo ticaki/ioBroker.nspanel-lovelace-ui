@@ -121,5 +121,6 @@
     "webPanelTopicInvalid": "Alleen letters, cijfers, _, - en / zijn toegestaan",
     "webPanelTopicRequired": "Het topic mag niet leeg zijn",
     "webPanelTopicReserved": "Dit pad wordt door de webserver zelf gebruikt",
-    "chart_script_navigation_hint": "Overgenomen uit de oude tabel \"Page Chart\": deze pagina krijgt haar navigatie nog uit het script (pagina \"%s\"). Dit is verouderd - wijs hier een navigatie toe en verwijder de pagina uit het script."
+    "chart_script_navigation_hint": "Overgenomen uit de oude tabel \"Page Chart\": deze pagina krijgt haar navigatie nog uit het script (pagina \"%s\"). Dit is verouderd - wijs hier een navigatie toe en verwijder de pagina uit het script.",
+    "power_script_navigation_hint": "Overgenomen uit de oude tabel \"Page Power\": deze pagina krijgt haar navigatie nog uit het script (pagina \"%s\"). Dit is verouderd - wijs hier een navigatie toe en verwijder de pagina uit het script."
 }

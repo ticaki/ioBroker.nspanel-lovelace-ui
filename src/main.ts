@@ -7,6 +7,7 @@ import {
     SENDTO_GET_PAGES_All_COMMAND,
     ALL_PANELS_SPECIAL_ID,
     migrateLegacyCharts,
+    migrateLegacyPower,
 } from './lib/types/adminShareConfig';
 /*
  * Created with @iobroker/create-adapter v2.5.0..
@@ -217,6 +218,26 @@ class NspanelLovelaceUi extends utils.Adapter {
                     );
                 }
                 delete native.pageChartdata;
+                change = true;
+            }
+            // old admin table "Page Power": the pages move into pageConfig and keep their navigation
+            // from the script until one is assigned in the admin; the table is removed afterwards
+            if (native.pagePowerdata !== undefined) {
+                const migrated = migrateLegacyPower(
+                    Array.isArray(native.pagePowerdata) ? native.pagePowerdata : [],
+                    native.pageConfig,
+                );
+                for (const msg of migrated.messages) {
+                    this.log.warn(msg);
+                }
+                if (migrated.changed) {
+                    const count = migrated.entries.length - native.pageConfig.length;
+                    native.pageConfig = migrated.entries;
+                    this.log.info(
+                        `Moved ${count} power page(s) from the table "Page Power" to the page configuration.`,
+                    );
+                }
+                delete native.pagePowerdata;
                 change = true;
             }
             if (!this.config.versionJsonUrl || !this.config.tftUrl || !this.config.berryUrl) {

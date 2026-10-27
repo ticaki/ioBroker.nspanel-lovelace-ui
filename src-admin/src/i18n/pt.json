@@ -121,5 +121,6 @@
     "webPanelTopicInvalid": "Só são permitidos letras, dígitos, _, - e /",
     "webPanelTopicRequired": "O topic não pode estar vazio",
     "webPanelTopicReserved": "Este caminho é usado pelo próprio servidor web",
-    "chart_script_navigation_hint": "Migrada da antiga tabela \"Page Chart\": esta página ainda obtém a sua navegação do script (página \"%s\"). Isto está obsoleto - atribua aqui uma navegação e remova a página do script."
+    "chart_script_navigation_hint": "Migrada da antiga tabela \"Page Chart\": esta página ainda obtém a sua navegação do script (página \"%s\"). Isto está obsoleto - atribua aqui uma navegação e remova a página do script.",
+    "power_script_navigation_hint": "Migrada da antiga tabela \"Page Power\": esta página ainda obtém a sua navegação do script (página \"%s\"). Isto está obsoleto - atribua aqui uma navegação e remova a página do script."
 }

@@ -121,5 +121,6 @@
     "webPanelTopicInvalid": "Dozwolone są tylko litery, cyfry, _, - i /",
     "webPanelTopicRequired": "Topic nie może być pusty",
     "webPanelTopicReserved": "Ta ścieżka jest używana przez sam serwer web",
-    "chart_script_navigation_hint": "Przeniesiona ze starej tabeli \"Page Chart\": ta strona nadal otrzymuje nawigację ze skryptu (strona \"%s\"). Jest to przestarzałe – przypisz tutaj nawigację i usuń stronę ze skryptu."
+    "chart_script_navigation_hint": "Przeniesiona ze starej tabeli \"Page Chart\": ta strona nadal otrzymuje nawigację ze skryptu (strona \"%s\"). Jest to przestarzałe – przypisz tutaj nawigację i usuń stronę ze skryptu.",
+    "power_script_navigation_hint": "Przeniesiona ze starej tabeli \"Page Power\": ta strona nadal otrzymuje nawigację ze skryptu (strona \"%s\"). Jest to przestarzałe – przypisz tutaj nawigację i usuń stronę ze skryptu."
 }
