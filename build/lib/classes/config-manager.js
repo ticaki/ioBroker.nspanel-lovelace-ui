@@ -57,12 +57,47 @@ class ConfigManager extends import_library.BaseClass {
   colorDefault = import_Color.Color.Off;
   dontWrite = false;
   extraConfigLogging = false;
-  breakingVersion = "0.6.0";
+  static breakingVersion = "0.6.0";
   statesController;
   constructor(adapter, dontWrite = false) {
     super(adapter, "config-manager");
     this.dontWrite = dontWrite;
     this.statesController = new import_states_controller.StatesControler(adapter);
+  }
+  /**
+   * Version of the script template shipped with the adapter (`script/example_sendTo_script_iobroker.ts`).
+   *
+   * @returns the version, empty if the template is missing
+   */
+  static getTemplateScriptVersion() {
+    var _a;
+    const file = import_node_path.default.join(__dirname, "../../../script/example_sendTo_script_iobroker.ts");
+    if (!fs.existsSync(file)) {
+      return "";
+    }
+    const match = fs.readFileSync(file, "utf8").match(/const version = '(\d+\.\d+\.\d+)';/);
+    return (_a = match == null ? void 0 : match[1]) != null ? _a : "";
+  }
+  /**
+   * Script configuration for a panel without a script - the script template without its screensaver
+   * entries. Everything else comes from the admin configuration, which takes precedence anyway.
+   *
+   * @param panelTopic topic of the panel
+   * @returns a configuration that can be passed to {@link setScriptConfig}
+   */
+  static getDefaultScriptConfig(panelTopic) {
+    return {
+      ...configManagerConst.defaultConfig,
+      version: ConfigManager.getTemplateScriptVersion() || ConfigManager.breakingVersion,
+      scriptName: configManagerConst.defaultScriptName,
+      panelTopic,
+      defaultOnColor: { red: 253, green: 216, blue: 53 },
+      defaultOffColor: { red: 253, green: 128, blue: 0 },
+      defaultBackgroundColor: { red: 29, green: 29, blue: 29 },
+      weatherAddDefaultItems: false,
+      pages: [{ type: "cardGrid", uniqueName: import_default_pages.mainPageName, heading: "Die Leere", items: [] }],
+      subPages: []
+    };
   }
   /**
    * Sets the script configuration for the panel.
@@ -127,18 +162,13 @@ class ConfigManager extends import_library.BaseClass {
     }
     let messages = [];
     this.log.debug(`Start converting configuration for ${config.panelName || config.panelTopic}`);
-    let file = void 0;
-    if (fs.existsSync(import_node_path.default.join(__dirname, "../../../script"))) {
-      file = fs.readFileSync(import_node_path.default.join(__dirname, "../../../script/example_sendTo_script_iobroker.ts"), "utf8");
-    }
-    const vTemp = (file == null ? void 0 : file.match(/const version = '(\d+\.\d+\.\d+)';/)) || [];
-    const scriptVersion = vTemp[1] ? vTemp[1] : "";
+    const scriptVersion = ConfigManager.getTemplateScriptVersion();
     const version = (0, import_tools.getVersionAsNumber)(config.version);
     const requiredVersion = (0, import_tools.getVersionAsNumber)(scriptVersion);
-    const breakingVersion = (0, import_tools.getVersionAsNumber)(this.breakingVersion);
+    const breakingVersion = (0, import_tools.getVersionAsNumber)(ConfigManager.breakingVersion);
     if (version < breakingVersion) {
       messages.push(
-        `Update Script! Panel for Topic: ${config.panelTopic} - name: ${panelItem.name} Script version ${config.version} is too low! Aborted! Required version is >=${this.breakingVersion}!`
+        `Update Script! Panel for Topic: ${config.panelTopic} - name: ${panelItem.name} Script version ${config.version} is too low! Aborted! Required version is >=${ConfigManager.breakingVersion}!`
       );
       this.log.error(messages[messages.length - 1]);
       return { messages, panelConfig: void 0 };
