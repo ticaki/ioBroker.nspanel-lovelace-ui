@@ -1,6 +1,7 @@
 import { expect } from 'chai';
 import type { panelConfigPartial } from '../controller/panel';
 import type { PageBase } from '../types/pages';
+import { isConfig } from '../const/config-manager-const';
 import { ConfigManager } from './config-manager';
 
 /**
@@ -151,6 +152,34 @@ describe('lib/classes/config-manager - setScriptConfig with a global configurati
         expect(headline?.constVal).to.equal('local main');
         expect(panelConfig?.globalPageIds).to.not.include('main');
         expect(panelConfig?.globalPageIds).to.include('shared');
+        await manager.delete();
+    });
+});
+
+describe('lib/classes/config-manager - getDefaultScriptConfig', () => {
+    it('matches the version of the script template', () => {
+        const version = ConfigManager.getTemplateScriptVersion();
+        expect(version).to.match(/^\d+\.\d+\.\d+$/);
+        expect(ConfigManager.getDefaultScriptConfig('panel/a').version).to.equal(version);
+    });
+
+    it('is a valid script configuration with an empty main page and no screensaver entries', () => {
+        const config = ConfigManager.getDefaultScriptConfig('panel/a');
+        expect(isConfig(config, fakeAdapter(['panel/a']))).to.equal(true);
+        expect(config.panelTopic).to.equal('panel/a');
+        expect(config.pages).to.have.length(1);
+        expect(config.pages[0]).to.include({ type: 'cardGrid', uniqueName: 'main' });
+        expect(config.favoritScreensaverEntity).to.deep.equal([]);
+        expect(config.indicatorScreensaverEntity).to.deep.equal([]);
+    });
+
+    it('converts to a panel configuration with the main page and without version warnings', async () => {
+        const manager = new ConfigManager(fakeScriptAdapter(undefined), true);
+        const result = await manager.setScriptConfig(ConfigManager.getDefaultScriptConfig('panel/a'));
+
+        expect(result.panelConfig).to.not.equal(undefined);
+        expect(result.messages[0]).to.match(/^Panel .* is correct!$/);
+        expect((result.panelConfig?.pages ?? []).map(p => p.uniqueID)).to.include('main');
         await manager.delete();
     });
 });

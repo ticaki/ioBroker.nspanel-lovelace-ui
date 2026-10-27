@@ -24,6 +24,7 @@ __export(config_manager_const_exports, {
   checkPageBaseItemSimple: () => checkPageBaseItemSimple,
   checkedDatapoints: () => checkedDatapoints,
   defaultConfig: () => defaultConfig,
+  defaultScriptName: () => defaultScriptName,
   isButton: () => isButton,
   isConfig: () => isConfig,
   isGlobalConfig: () => isGlobalConfig,
@@ -131,6 +132,7 @@ function checkPageBaseItemSimple(F) {
   return F;
 }
 const arrayOfAllConfigRequiredFields = (0, import_function_and_const.arrayOfAll)();
+const defaultScriptName = "adapter default";
 const defaultConfig = {
   version: "0",
   panelTopic: "",
@@ -1040,6 +1042,7 @@ const requiredScriptDataPoints = {
   checkPageBaseItemSimple,
   checkedDatapoints,
   defaultConfig,
+  defaultScriptName,
   isButton,
   isConfig,
   isGlobalConfig,
