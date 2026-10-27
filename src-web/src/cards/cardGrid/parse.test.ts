@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { gridLayout } from './CardGrid';
+import { gridLayout, tileTouch } from './CardGrid';
 import { initial, parseEntityUpd } from './parse';
 
 const ctx = { pageType: 'cardGrid', pageArgs: [] };
@@ -48,5 +48,26 @@ describe('cardGrid parse', () => {
             columnWidth: 223,
             nameFontSize: 24,
         });
+    });
+
+    it('switches a tile on a short tap and opens its popup when it is held', () => {
+        // how the HMI behaves (checked against a real panel): a tap switches, holding opens the
+        // detail popup - a light tile must not send `buttonPress3`, the adapter would switch it
+        expect(tileTouch('light', false)).toEqual({ kind: 'press' });
+        expect(tileTouch('light', true)).toEqual({ kind: 'popup', popup: 'popupLight' });
+        expect(tileTouch('light2', true)).toEqual({ kind: 'popup', popup: 'popupLightNew' });
+        expect(tileTouch('fan', true)).toEqual({ kind: 'popup', popup: 'popupFan' });
+        expect(tileTouch('shutter', true)).toEqual({ kind: 'popup', popup: 'popupShutter' });
+        expect(tileTouch('shutter2', true)).toEqual({ kind: 'popup', popup: 'popupShutter2' });
+        expect(tileTouch('number', true)).toEqual({ kind: 'popup', popup: 'popupSlider' });
+        expect(tileTouch('input_sel', true)).toEqual({ kind: 'popup', popup: 'popupInSel' });
+        expect(tileTouch('timer', true)).toEqual({ kind: 'popup', popup: 'popupTimer' });
+    });
+
+    it('keeps the long press event for tiles without a popup', () => {
+        for (const type of ['switch', 'button', 'text', '']) {
+            expect(tileTouch(type, false)).toEqual({ kind: 'press' });
+            expect(tileTouch(type, true)).toEqual({ kind: 'longPress' });
+        }
     });
 });
