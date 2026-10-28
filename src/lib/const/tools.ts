@@ -6,6 +6,7 @@ import type { ChangeTypeOfKeys } from '../types/pages';
 import * as globals from '../types/function-and-const';
 import type { NSPanel } from '../types/NSPanel';
 import { formatEntryNumber } from '../types/adminShareConfig';
+import { getShutterIconByPosition, pageItemDefaults, SHUTTER_POSITION_ICON } from './page-item-defaults';
 
 export const messageItemDefault: NSPanel.MessageItem = {
     type: 'input_sel',
@@ -313,6 +314,16 @@ export async function getIconEntryValue(
         }
     }
     const icon = (i.true && i.true.value && (await i.true.value.getString())) || null;
+    if (icon === SHUTTER_POSITION_ICON) {
+        // blind without own icon: the icon follows the position (0 = closed, 100 = open)
+        const name =
+            typeof on === 'number'
+                ? getShutterIconByPosition(on)
+                : on
+                  ? pageItemDefaults.blind.iconOn
+                  : pageItemDefaults.blind.iconOff;
+        return Icons.GetIcon(name) + (textSize != null ? `¬${textSize}` : '');
+    }
     const scaleM = i.scale && (await i.scale.getObject());
 
     if (typeof on === 'boolean') {

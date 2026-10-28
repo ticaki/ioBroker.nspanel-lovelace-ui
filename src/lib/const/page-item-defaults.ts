@@ -696,3 +696,44 @@ export function getPageNaviItemDefaultsByRole(role: string): PageNaviItemRoleDef
     const key = NAVI_ROLE_KEY[role];
     return key != null ? pageNaviItemDefaults[key] : null;
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Shutter icon by position
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Placeholder for the "open" icon of a blind, set by the config manager when the user chose no icon
+ * of his own. It is not an icon: getIconEntryValue() replaces it with {@link getShutterIconByPosition}.
+ * The admin keeps showing iconOn / iconOff of {@link pageItemDefaults}.blind, these stay the icons of the
+ * end positions.
+ */
+export const SHUTTER_POSITION_ICON = 'shutter-icon-by-position';
+
+/** Up to this position (in %, 0 = closed) the blind counts as closed. */
+const SHUTTER_CLOSED_UP_TO = 5;
+/** From this position (in %, 100 = open) on the blind counts as open. */
+const SHUTTER_OPEN_FROM = 95;
+/** Icons for a blind closed by 25 / 50 / 75 % - named after the closed part. */
+const SHUTTER_STEP_ICONS = ['window-shutter-25', 'window-shutter-50', 'window-shutter-75'] as const;
+
+/**
+ * Returns the name of the blind icon for a position as the panel shows it: 0 = closed, 100 = open
+ * (after shutterClosedIsZero and the scale of the item are applied).
+ *
+ * 0-5 % gives the closed icon, 95-100 % the open icon, in between the nearest of
+ * window-shutter-25 / -50 / -75, named after the part of the blind that is closed.
+ *
+ * @param position position in %, 0 = closed, 100 = open
+ * @returns name of the icon
+ */
+export function getShutterIconByPosition(position: number): string {
+    if (!Number.isFinite(position) || position >= SHUTTER_OPEN_FROM) {
+        return pageItemDefaults.blind.iconOn;
+    }
+    if (position <= SHUTTER_CLOSED_UP_TO) {
+        return pageItemDefaults.blind.iconOff;
+    }
+    const closedSteps = Math.round((100 - position) / 25);
+    const index = Math.min(Math.max(closedSteps, 1), SHUTTER_STEP_ICONS.length) - 1;
+    return SHUTTER_STEP_ICONS[index];
+}

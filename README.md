@@ -173,6 +173,7 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
 - (ticaki) icons: updated to Material Design Icons 7.4.47 - 546 new icons (shown on the panel from TFT 6.0.2 on, older TFTs show nothing for them), new MDI names of renamed icons work as aliases; existing icons keep their glyph
 - (ticaki) icons: own icons `window-tilt-variant`, `window-open-hinged-variant` (window with muntins tilted / side hinged open, matching `window-closed-variant`) and `window-shutter-25`, `-50`, `-75` (roller shutter partly closed) - from TFT 6.0.2 on
 - (ticaki) HMI 6.0.2 (eu, us-p, us-l): the icon fonts 1, 3 and 4 contain the new icons; `HMI/tools/build_hmi.py` builds the icon fonts of a HMI from `script/icons.json`
+- (ticaki) blinds without an own icon show their position: `window-shutter` up to 5 %, `window-shutter-open` from 95 % on, in between the nearest of `window-shutter-75`, `-50`, `-25` (named after the closed part) - needs TFT 6.0.2; an icon set by the user is kept
 
 ### 1.7.0 (2026-10-25)
 - (ticaki) web panels: the panel UI in a web browser via http://<host>:8090/<topic>, no Tasmota needed - one web panel per address, all browsers on it stay in sync (new admin tab "Web panels")

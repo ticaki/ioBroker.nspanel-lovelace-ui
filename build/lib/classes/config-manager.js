@@ -2825,6 +2825,7 @@ class ConfigManager extends import_library.BaseClass {
             break;
           }
           case "blind": {
+            const blindIconOn = item.icon || (item.icon2 || item.icon3 || globals.isPartialIconSelectScaleElement(item.colorScale) ? import_page_item_defaults.pageItemDefaults.blind.iconOn : import_page_item_defaults.SHUTTER_POSITION_ICON);
             if (foundedStates[role].TILT_OPEN || foundedStates[role].TILT_CLOSE || foundedStates[role].TILT_STOP) {
               const tempItem = {
                 type: "shutter",
@@ -2832,10 +2833,7 @@ class ConfigManager extends import_library.BaseClass {
                 data: {
                   icon: {
                     true: {
-                      value: await this.getFieldAsDataItemConfig(
-                        item.icon || import_page_item_defaults.pageItemDefaults.blind.iconOn,
-                        true
-                      ),
+                      value: await this.getFieldAsDataItemConfig(blindIconOn, true),
                       color: await this.getIconColor(
                         item.onColor,
                         import_Color.Color[import_page_item_defaults.pageItemDefaults.blind.colorOn]
@@ -2901,10 +2899,7 @@ class ConfigManager extends import_library.BaseClass {
                 data: {
                   icon: {
                     true: {
-                      value: await this.getFieldAsDataItemConfig(
-                        item.icon || import_page_item_defaults.pageItemDefaults.blind.iconOn,
-                        true
-                      ),
+                      value: await this.getFieldAsDataItemConfig(blindIconOn, true),
                       color: await this.getIconColor(
                         item.onColor,
                         import_Color.Color[import_page_item_defaults.pageItemDefaults.blind.colorOn]
