@@ -115,6 +115,9 @@ export function checkPageBaseItemSimple(F: ScriptConfig.PageBaseItemSimple): Pag
 
 export const arrayOfAllConfigRequiredFields = arrayOfAll<keyof ScriptConfig.Config>();
 
+/** `scriptName` of the configuration used for panels without a script */
+export const defaultScriptName = 'adapter default';
+
 export const defaultConfig: ScriptConfig.Config = {
     version: '0',
     panelTopic: '',

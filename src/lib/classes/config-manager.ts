@@ -6,6 +6,7 @@ import type { panelConfigPartial } from '../controller/panel';
 import { StatesControler } from '../controller/states-controller';
 import { PagePower } from '../pages/pagePower';
 import { PageChart } from '../pages/pageChart';
+import { findChartEntryForScript, isScriptNavigatedChart } from '../types/adminShareConfig';
 import { getStringOrArray } from '../tools/readme';
 import type { NspanelLovelaceUi } from '../types/NspanelLovelaceUi';
 import type * as pages from '../types/pages';
@@ -29,13 +30,49 @@ export class ConfigManager extends BaseClass {
     dontWrite: boolean = false;
     extraConfigLogging: boolean = false;
 
-    readonly breakingVersion = '0.6.0';
+    static readonly breakingVersion = '0.6.0';
 
     statesController: StatesControler | undefined;
     constructor(adapter: NspanelLovelaceUi, dontWrite: boolean = false) {
         super(adapter, 'config-manager');
         this.dontWrite = dontWrite;
         this.statesController = new StatesControler(adapter);
+    }
+
+    /**
+     * Version of the script template shipped with the adapter (`script/example_sendTo_script_iobroker.ts`).
+     *
+     * @returns the version, empty if the template is missing
+     */
+    static getTemplateScriptVersion(): string {
+        const file = path.join(__dirname, '../../../script/example_sendTo_script_iobroker.ts');
+        if (!fs.existsSync(file)) {
+            return '';
+        }
+        const match = fs.readFileSync(file, 'utf8').match(/const version = '(\d+\.\d+\.\d+)';/);
+        return match?.[1] ?? '';
+    }
+
+    /**
+     * Script configuration for a panel without a script - the script template without its screensaver
+     * entries. Everything else comes from the admin configuration, which takes precedence anyway.
+     *
+     * @param panelTopic topic of the panel
+     * @returns a configuration that can be passed to {@link setScriptConfig}
+     */
+    static getDefaultScriptConfig(panelTopic: string): ScriptConfig.Config {
+        return {
+            ...configManagerConst.defaultConfig,
+            version: ConfigManager.getTemplateScriptVersion() || ConfigManager.breakingVersion,
+            scriptName: configManagerConst.defaultScriptName,
+            panelTopic,
+            defaultOnColor: { red: 253, green: 216, blue: 53 },
+            defaultOffColor: { red: 253, green: 128, blue: 0 },
+            defaultBackgroundColor: { red: 29, green: 29, blue: 29 },
+            weatherAddDefaultItems: false,
+            pages: [{ type: 'cardGrid', uniqueName: mainPageName, heading: 'Die Leere', items: [] }],
+            subPages: [],
+        };
     }
 
     /**
@@ -121,19 +158,14 @@ export class ConfigManager extends BaseClass {
         let messages: string[] = [];
 
         this.log.debug(`Start converting configuration for ${config.panelName || config.panelTopic}`);
-        let file = undefined;
-        if (fs.existsSync(path.join(__dirname, '../../../script'))) {
-            file = fs.readFileSync(path.join(__dirname, '../../../script/example_sendTo_script_iobroker.ts'), 'utf8');
-        }
-        const vTemp = file?.match(/const version = '(\d+\.\d+\.\d+)';/) || [];
-        const scriptVersion = vTemp[1] ? vTemp[1] : '';
+        const scriptVersion = ConfigManager.getTemplateScriptVersion();
         const version = getVersionAsNumber(config.version);
         const requiredVersion = getVersionAsNumber(scriptVersion);
-        const breakingVersion = getVersionAsNumber(this.breakingVersion);
+        const breakingVersion = getVersionAsNumber(ConfigManager.breakingVersion);
 
         if (version < breakingVersion) {
             messages.push(
-                `Update Script! Panel for Topic: ${config.panelTopic} - name: ${panelItem.name} Script version ${config.version} is too low! Aborted! Required version is >=${this.breakingVersion}!`,
+                `Update Script! Panel for Topic: ${config.panelTopic} - name: ${panelItem.name} Script version ${config.version} is too low! Aborted! Required version is >=${ConfigManager.breakingVersion}!`,
             );
             this.log.error(messages[messages.length - 1]);
             return { messages, panelConfig: undefined };
@@ -874,31 +906,28 @@ export class ConfigManager extends BaseClass {
                 }
                 // PageChart einlesen
                 if (page.type === 'cardChart' || page.type === 'cardLChart') {
-                    if (!Array.isArray(this.adapter.config.pageChartdata)) {
-                        messages.push(`No pageChart configured in Admin for ${page.uniqueName}`);
-                        this.log.warn(messages[messages.length - 1]);
-                        continue;
-                    }
-                    const index = this.adapter.config.pageChartdata.findIndex(
-                        item => item.pageName === page.uniqueName,
-                    );
-                    if (index === -1) {
-                        messages.push(`No pageChartdata found for ${page.uniqueName}`);
-                        this.log.warn(messages[messages.length - 1]);
-                        continue;
-                    }
-                    try {
-                        ({ gridItem, messages } = await PageChart.getChartPageConfig(
-                            this,
-                            index,
-                            gridItem,
-                            messages,
-                            page,
-                        ));
-                    } catch (error: any) {
+                    const entry = findChartEntryForScript(this.adapter.config.pageConfig ?? [], page.uniqueName);
+                    if (entry && !isScriptNavigatedChart(entry)) {
                         messages.push(
-                            `Configuration error in page chart ${page.heading || 'unknown'} with uniqueName ${page.uniqueName} - ${error}`,
+                            `Chart page ${page.uniqueName} gets its navigation in the admin (tab PageConfig) - remove it from the script. Skipped!`,
                         );
+                        this.log.warn(messages[messages.length - 1]);
+                        continue;
+                    }
+                    if (entry) {
+                        messages.push(
+                            `Chart page ${page.uniqueName}: the navigation from the script is deprecated - assign it in the admin (tab PageConfig, page ${entry.uniqueName}) and remove the page from the script.`,
+                        );
+                        this.log.warn(messages[messages.length - 1]);
+                        try {
+                            gridItem = await PageChart.getChartPageConfigFromEntry(this, entry, gridItem, page);
+                        } catch (error: any) {
+                            messages.push(`Configuration error in page chart ${page.uniqueName} - ${error}`);
+                            this.log.warn(messages[messages.length - 1]);
+                            continue;
+                        }
+                    } else {
+                        messages.push(`No chart page ${page.uniqueName} found in the admin configuration`);
                         this.log.warn(messages[messages.length - 1]);
                         continue;
                     }

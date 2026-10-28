@@ -38,6 +38,7 @@ var import_default_pages = require("../const/default-pages");
 var import_states_controller = require("../controller/states-controller");
 var import_pagePower = require("../pages/pagePower");
 var import_pageChart = require("../pages/pageChart");
+var import_adminShareConfig = require("../types/adminShareConfig");
 var import_readme = require("../tools/readme");
 var globals = __toESM(require("../types/function-and-const"));
 var import_function_and_const = require("../types/function-and-const");
@@ -56,12 +57,47 @@ class ConfigManager extends import_library.BaseClass {
   colorDefault = import_Color.Color.Off;
   dontWrite = false;
   extraConfigLogging = false;
-  breakingVersion = "0.6.0";
+  static breakingVersion = "0.6.0";
   statesController;
   constructor(adapter, dontWrite = false) {
     super(adapter, "config-manager");
     this.dontWrite = dontWrite;
     this.statesController = new import_states_controller.StatesControler(adapter);
+  }
+  /**
+   * Version of the script template shipped with the adapter (`script/example_sendTo_script_iobroker.ts`).
+   *
+   * @returns the version, empty if the template is missing
+   */
+  static getTemplateScriptVersion() {
+    var _a;
+    const file = import_node_path.default.join(__dirname, "../../../script/example_sendTo_script_iobroker.ts");
+    if (!fs.existsSync(file)) {
+      return "";
+    }
+    const match = fs.readFileSync(file, "utf8").match(/const version = '(\d+\.\d+\.\d+)';/);
+    return (_a = match == null ? void 0 : match[1]) != null ? _a : "";
+  }
+  /**
+   * Script configuration for a panel without a script - the script template without its screensaver
+   * entries. Everything else comes from the admin configuration, which takes precedence anyway.
+   *
+   * @param panelTopic topic of the panel
+   * @returns a configuration that can be passed to {@link setScriptConfig}
+   */
+  static getDefaultScriptConfig(panelTopic) {
+    return {
+      ...configManagerConst.defaultConfig,
+      version: ConfigManager.getTemplateScriptVersion() || ConfigManager.breakingVersion,
+      scriptName: configManagerConst.defaultScriptName,
+      panelTopic,
+      defaultOnColor: { red: 253, green: 216, blue: 53 },
+      defaultOffColor: { red: 253, green: 128, blue: 0 },
+      defaultBackgroundColor: { red: 29, green: 29, blue: 29 },
+      weatherAddDefaultItems: false,
+      pages: [{ type: "cardGrid", uniqueName: import_default_pages.mainPageName, heading: "Die Leere", items: [] }],
+      subPages: []
+    };
   }
   /**
    * Sets the script configuration for the panel.
@@ -126,18 +162,13 @@ class ConfigManager extends import_library.BaseClass {
     }
     let messages = [];
     this.log.debug(`Start converting configuration for ${config.panelName || config.panelTopic}`);
-    let file = void 0;
-    if (fs.existsSync(import_node_path.default.join(__dirname, "../../../script"))) {
-      file = fs.readFileSync(import_node_path.default.join(__dirname, "../../../script/example_sendTo_script_iobroker.ts"), "utf8");
-    }
-    const vTemp = (file == null ? void 0 : file.match(/const version = '(\d+\.\d+\.\d+)';/)) || [];
-    const scriptVersion = vTemp[1] ? vTemp[1] : "";
+    const scriptVersion = ConfigManager.getTemplateScriptVersion();
     const version = (0, import_tools.getVersionAsNumber)(config.version);
     const requiredVersion = (0, import_tools.getVersionAsNumber)(scriptVersion);
-    const breakingVersion = (0, import_tools.getVersionAsNumber)(this.breakingVersion);
+    const breakingVersion = (0, import_tools.getVersionAsNumber)(ConfigManager.breakingVersion);
     if (version < breakingVersion) {
       messages.push(
-        `Update Script! Panel for Topic: ${config.panelTopic} - name: ${panelItem.name} Script version ${config.version} is too low! Aborted! Required version is >=${this.breakingVersion}!`
+        `Update Script! Panel for Topic: ${config.panelTopic} - name: ${panelItem.name} Script version ${config.version} is too low! Aborted! Required version is >=${ConfigManager.breakingVersion}!`
       );
       this.log.error(messages[messages.length - 1]);
       return { messages, panelConfig: void 0 };
@@ -567,7 +598,7 @@ class ConfigManager extends import_library.BaseClass {
     return { messages: messages.map((a) => a.replaceAll("Error: ", "")), panelConfig };
   }
   async getPageConfig(config, panelConfig, messages) {
-    var _a, _b, _c, _d, _e, _f, _g;
+    var _a, _b, _c, _d, _e, _f, _g, _h;
     if (panelConfig.pages === void 0) {
       panelConfig.pages = [];
     }
@@ -741,31 +772,28 @@ class ConfigManager extends import_library.BaseClass {
           }
         }
         if (page.type === "cardChart" || page.type === "cardLChart") {
-          if (!Array.isArray(this.adapter.config.pageChartdata)) {
-            messages.push(`No pageChart configured in Admin for ${page.uniqueName}`);
-            this.log.warn(messages[messages.length - 1]);
-            continue;
-          }
-          const index = this.adapter.config.pageChartdata.findIndex(
-            (item) => item.pageName === page.uniqueName
-          );
-          if (index === -1) {
-            messages.push(`No pageChartdata found for ${page.uniqueName}`);
-            this.log.warn(messages[messages.length - 1]);
-            continue;
-          }
-          try {
-            ({ gridItem, messages } = await import_pageChart.PageChart.getChartPageConfig(
-              this,
-              index,
-              gridItem,
-              messages,
-              page
-            ));
-          } catch (error) {
+          const entry = (0, import_adminShareConfig.findChartEntryForScript)((_h = this.adapter.config.pageConfig) != null ? _h : [], page.uniqueName);
+          if (entry && !(0, import_adminShareConfig.isScriptNavigatedChart)(entry)) {
             messages.push(
-              `Configuration error in page chart ${page.heading || "unknown"} with uniqueName ${page.uniqueName} - ${error}`
+              `Chart page ${page.uniqueName} gets its navigation in the admin (tab PageConfig) - remove it from the script. Skipped!`
             );
+            this.log.warn(messages[messages.length - 1]);
+            continue;
+          }
+          if (entry) {
+            messages.push(
+              `Chart page ${page.uniqueName}: the navigation from the script is deprecated - assign it in the admin (tab PageConfig, page ${entry.uniqueName}) and remove the page from the script.`
+            );
+            this.log.warn(messages[messages.length - 1]);
+            try {
+              gridItem = await import_pageChart.PageChart.getChartPageConfigFromEntry(this, entry, gridItem, page);
+            } catch (error) {
+              messages.push(`Configuration error in page chart ${page.uniqueName} - ${error}`);
+              this.log.warn(messages[messages.length - 1]);
+              continue;
+            }
+          } else {
+            messages.push(`No chart page ${page.uniqueName} found in the admin configuration`);
             this.log.warn(messages[messages.length - 1]);
             continue;
           }

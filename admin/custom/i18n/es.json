@@ -317,6 +317,7 @@
     "chart_XTicks": "Marcas del eje X",
     "chart_XTicksTooltip": "Intervalo en horas entre las marcas del eje X (p. ej. 2 para una marca cada 2 horas)",
     "chart_YAxis": "Etiqueta del eje Y",
+    "chart_script_navigation_hint": "Migrada desde la antigua tabla \"Page Chart\": esta página aún obtiene su navegación del script (página \"%s\"). Esto está obsoleto: asigne aquí una navegación y elimine la página del script.",
     "check!": "¡Controlar!",
     "close": "cerca",
     "closed": "cerrado",

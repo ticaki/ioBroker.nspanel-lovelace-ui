@@ -95,7 +95,7 @@ class NspanelLovelaceUi extends utils.Adapter {
    * Is called when databases are connected and adapter received configuration.
    */
   async onReady() {
-    var _a, _b, _c, _d, _e, _f;
+    var _a, _b, _c, _d;
     if (this.config.deactivateDebugLog) {
       this.log.debug = (_msg) => {
       };
@@ -162,6 +162,24 @@ class NspanelLovelaceUi extends utils.Adapter {
         delete native.pageQRdata;
         change = true;
       }
+      if (native.pageChartdata !== void 0) {
+        const migrated = (0, import_adminShareConfig.migrateLegacyCharts)(
+          Array.isArray(native.pageChartdata) ? native.pageChartdata : [],
+          native.pageConfig
+        );
+        for (const msg of migrated.messages) {
+          this.log.warn(msg);
+        }
+        if (migrated.changed) {
+          const count = migrated.entries.length - native.pageConfig.length;
+          native.pageConfig = migrated.entries;
+          this.log.info(
+            `Moved ${count} chart page(s) from the table "Page Chart" to the page configuration.`
+          );
+        }
+        delete native.pageChartdata;
+        change = true;
+      }
       if (!this.config.versionJsonUrl || !this.config.tftUrl || !this.config.berryUrl) {
         try {
           const iopackage = JSON.parse(
@@ -211,66 +229,72 @@ class NspanelLovelaceUi extends utils.Adapter {
     const obj = await this.getForeignObjectAsync(this.namespace);
     if (obj && obj.native) {
       const config = [];
-      if (obj.native.scriptConfigRaw || obj.native.scriptConfig) {
-        const panelsText = (this.config.panels || []).map((a) => `[${a.name}#${a.topic}]`).join(", ");
-        const configsText = (_b = obj.native.scriptConfigRaw) == null ? void 0 : _b.map((a) => `${a.panelTopic}`).join(", ");
-        this.log.info(`Configured panels: name#topic -> ${panelsText}`);
-        this.log.info(`Found ${obj.native.scriptConfigRaw.length} script configs for topics: ${configsText}`);
-        this.log.info(
-          `Detailed configuration checks are suppressed here. Full validation output is only shown when the configuration script is sent to the adapter.`
-        );
-        const manager = new import_config_manager.ConfigManager(this, true);
-        manager.log.warn = function(_msg) {
-        };
-        for (const a of this.config.panels) {
-          if (!a || !a.topic) {
-            continue;
-          }
-          let usedConfig = null;
-          let rawFound = false;
-          let rawConversionFailed = false;
-          const raw = (_c = obj.native.scriptConfigRaw) == null ? void 0 : _c.find(
-            (b) => b.panelTopic === a.topic
-          );
-          if (raw) {
-            rawFound = true;
-            const c = await manager.setScriptConfig(raw);
-            if (c && c.messages && c.messages.length > 0) {
-              if (!c.messages[0].startsWith("Panel")) {
-                this.log.warn(c.messages[0]);
-              }
-            }
-            if (c && c.panelConfig) {
-              c.panelConfig.model = a.model || "eu";
-              config.push(c.panelConfig);
-              usedConfig = "raw";
-            } else {
-              rawConversionFailed = true;
+      const scriptConfigRaw = Array.isArray(obj.native.scriptConfigRaw) ? obj.native.scriptConfigRaw : [];
+      const scriptConfig = Array.isArray(obj.native.scriptConfig) ? obj.native.scriptConfig : [];
+      const panelsText = (this.config.panels || []).map((a) => `[${a.name}#${a.topic}]`).join(", ");
+      const configsText = scriptConfigRaw.map((a) => `${a.panelTopic}`).join(", ");
+      this.log.info(`Configured panels: name#topic -> ${panelsText}`);
+      this.log.info(`Found ${scriptConfigRaw.length} script configs for topics: ${configsText}`);
+      this.log.info(
+        `Detailed configuration checks are suppressed here. Full validation output is only shown when the configuration script is sent to the adapter.`
+      );
+      const manager = new import_config_manager.ConfigManager(this, true);
+      manager.log.warn = function(_msg) {
+      };
+      for (const a of this.config.panels || []) {
+        if (!a || !a.topic) {
+          continue;
+        }
+        let usedConfig = null;
+        let rawFound = false;
+        let rawConversionFailed = false;
+        const raw = scriptConfigRaw.find((b) => b.panelTopic === a.topic);
+        if (raw) {
+          rawFound = true;
+          const c = await manager.setScriptConfig(raw);
+          if (c && c.messages && c.messages.length > 0) {
+            if (!c.messages[0].startsWith("Panel")) {
+              this.log.warn(c.messages[0]);
             }
           }
-          if (!usedConfig) {
-            const conv = obj.native.scriptConfig.find(
-              (b) => b.topic === a.topic
-            );
-            if (conv) {
-              conv.model = a.model || "eu";
-              config.push(conv);
-              usedConfig = "converted";
-            }
-          }
-          if (!usedConfig) {
-            this.log.warn(`No script config found for ${a.topic}`);
-            await manager.delete();
-          } else if (usedConfig === "raw") {
-            this.log.debug(`Config for ${a.topic}: raw`);
+          if (c && c.panelConfig) {
+            c.panelConfig.model = a.model || "eu";
+            config.push(c.panelConfig);
+            usedConfig = "raw";
           } else {
-            if (rawFound && rawConversionFailed) {
-              this.log.warn(
-                `Config for ${a.topic}: converted (RAW conversion failed). Please update the configuration script and send it to the adapter again.`
-              );
-            } else {
-              this.log.warn(`Config for ${a.topic}: converted`);
-            }
+            rawConversionFailed = true;
+          }
+        }
+        if (!usedConfig) {
+          const conv = scriptConfig.find((b) => b.topic === a.topic);
+          if (conv) {
+            conv.model = a.model || "eu";
+            config.push(conv);
+            usedConfig = "converted";
+          }
+        }
+        if (!usedConfig && !rawFound) {
+          const c = await manager.setScriptConfig(import_config_manager.ConfigManager.getDefaultScriptConfig(a.topic));
+          if (c && c.panelConfig) {
+            c.panelConfig.model = a.model || "eu";
+            config.push(c.panelConfig);
+            usedConfig = "default";
+          }
+        }
+        if (!usedConfig) {
+          this.log.warn(`No usable config found for ${a.topic}`);
+          await manager.delete();
+        } else if (usedConfig === "raw") {
+          this.log.debug(`Config for ${a.topic}: raw`);
+        } else if (usedConfig === "default") {
+          this.log.info(`No script config for ${a.topic} - using the admin configuration only`);
+        } else {
+          if (rawFound && rawConversionFailed) {
+            this.log.warn(
+              `Config for ${a.topic}: converted (RAW conversion failed). Please update the configuration script and send it to the adapter again.`
+            );
+          } else {
+            this.log.warn(`Config for ${a.topic}: converted`);
           }
         }
       }
@@ -414,7 +438,7 @@ class NspanelLovelaceUi extends utils.Adapter {
               if (!("uniqueID" in p)) {
                 continue;
               }
-              if (((_d = p.config) == null ? void 0 : _d.card) === "screensaver" || ((_e = p.config) == null ? void 0 : _e.card) === "screensaver2" || ((_f = p.config) == null ? void 0 : _f.card) === "screensaver3") {
+              if (((_b = p.config) == null ? void 0 : _b.card) === "screensaver" || ((_c = p.config) == null ? void 0 : _c.card) === "screensaver2" || ((_d = p.config) == null ? void 0 : _d.card) === "screensaver3") {
                 p.uniqueID = `#${p.uniqueID}`;
               }
               if (names.indexOf(p.uniqueID) !== -1) {

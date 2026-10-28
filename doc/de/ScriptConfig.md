@@ -131,7 +131,9 @@ Zusätzlich gibt es das **automatische Blättern**. Dabei muss der Parameter `sc
 Die Seitentypen **Diagramm, Energie, QR-Code, Alarm und Entsperren** sowie **Abfall** werden im Admin im
 Tab *PageConfig* eingerichtet und dort direkt einem Panel zugewiesen. Sie brauchen **keinen Eintrag im
 Konfigurationsskript** — QR, Alarm und Entsperren würde der Adapter aus einer Skript-Konfiguration sogar
-ausdrücklich verwerfen („is only supported in the admin configuration! Skipped!").
+ausdrücklich verwerfen („is only supported in the admin configuration! Skipped!"). Einzige Ausnahme
+auf Zeit: Diagramm-Seiten, die beim Update aus dem alten Tab *PageChart* übernommen wurden, behalten ihren
+Skriptverweis, bis sie im Admin eine Navigation haben (siehe [PageChart](PageChart)).
 
 **Thermostat** (`cardThermo2`) und **Medien** (`cardMedia`) bleiben dagegen Sache des Skripts: Der
 Thermostat lässt sich auf beiden Wegen einrichten, die Medienseite **ausschließlich** im Skript — der Admin

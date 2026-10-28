@@ -985,6 +985,16 @@ export type ChartEntry = {
     maxXAxisTicks?: number;
     factorCardChart?: number; // 1, 10, 100, 1000
     maxXAxisLabels?: number;
+    /**
+     * Deprecated transition: the page was migrated from the old admin table "Page Chart" and still
+     * gets its navigation from the script. Ends as soon as a navigation is assigned in the admin.
+     */
+    scriptNavigation?: boolean;
+    /**
+     * page name used in the script (`uniqueName` of the script page); set by the migration, differs from
+     * uniqueName if the entry was renamed. Stays after the switch to admin navigation.
+     */
+    scriptName?: string;
 } & PageConfigBaseFields;
 
 export type ChartDetailsExternal = {
@@ -1035,6 +1045,129 @@ export function emptyChartEntry(uniqueName: string): ChartEntry {
         hidden: false,
         alwaysOn: 'none',
     };
+}
+
+/** one row of the old admin table "Page Chart" (`native.pageChartdata`) */
+export type LegacyChartRow = {
+    pageName: string;
+    headline?: string;
+    alwaysOnDisplay?: boolean;
+    hiddenByTrigger?: boolean;
+    chart_color?: string;
+    selChartType?: 'cardChart' | 'cardLChart';
+    selInstanceDataSource?: number;
+    selInstance?: string;
+    setStateForTicks?: string;
+    setStateForValues?: string;
+    setStateForDB?: string;
+    txtlabelYAchse?: string;
+    rangeHours?: number;
+    maxXAxisTicks?: number;
+    factorCardChart?: number;
+    maxXAxisLabels?: number;
+};
+
+/**
+ * True if the chart entry still gets its navigation from the script (migrated, no admin navigation yet).
+ *
+ * @param entry page config entry
+ */
+export function isScriptNavigatedChart(entry: PageConfigEntry): entry is ChartEntry {
+    return entry.card === 'cardChart' && entry.scriptNavigation === true && !entry.navigationAssignment?.length;
+}
+
+/**
+ * Chart entry a script page `cardChart`/`cardLChart` refers to: first a migrated entry whose script
+ * name matches, then any chart entry with that uniqueName.
+ *
+ * @param entries page config
+ * @param scriptPageName uniqueName of the script page
+ */
+export function findChartEntryForScript(
+    entries: readonly PageConfigEntry[],
+    scriptPageName: string,
+): ChartEntry | undefined {
+    const charts = entries.filter((e): e is ChartEntry => !!e && e.card === 'cardChart');
+    return (
+        charts.find(e => e.scriptNavigation === true && (e.scriptName ?? e.uniqueName) === scriptPageName) ??
+        charts.find(e => e.uniqueName === scriptPageName)
+    );
+}
+
+/**
+ * Ends the script navigation of a migrated chart entry once it has a navigation in the admin.
+ * `scriptName` stays as a record of where the entry came from.
+ *
+ * @param entry page config entry
+ */
+export function dropScriptNavigation(entry: PageConfigEntry): PageConfigEntry {
+    if (entry.card !== 'cardChart' || !entry.scriptNavigation || !entry.navigationAssignment?.length) {
+        return entry;
+    }
+    const copy: ChartEntry = { ...entry };
+    delete copy.scriptNavigation;
+    return copy;
+}
+
+/**
+ * Moves the rows of the old admin table "Page Chart" into the page config. The new entries keep their
+ * navigation in the script (`scriptNavigation`) until the user assigns one in the admin. A row whose name
+ * is already used by another entry gets a new name (`<name>_chart`, `<name>_chart2`, …); the script still
+ * finds it via `scriptName`. Rows migrated before are skipped.
+ *
+ * @param rows old table `native.pageChartdata`
+ * @param entries page config `native.pageConfig`
+ * @returns the extended page config, the warnings for renamed rows, changed = something was added
+ */
+export function migrateLegacyCharts(
+    rows: readonly LegacyChartRow[] | undefined,
+    entries: readonly PageConfigEntry[],
+): { entries: PageConfigEntry[]; messages: string[]; changed: boolean } {
+    const out = [...entries];
+    const messages: string[] = [];
+    let changed = false;
+    for (const row of rows ?? []) {
+        const name = typeof row?.pageName === 'string' ? row.pageName.trim() : '';
+        if (!name) {
+            continue;
+        }
+        if (out.some(e => e.card === 'cardChart' && e.scriptName === name)) {
+            continue;
+        }
+        let uniqueName = name;
+        for (let i = 1; out.some(e => e.uniqueName === uniqueName); i++) {
+            uniqueName = `${name}_chart${i === 1 ? '' : i}`;
+        }
+        if (uniqueName !== name) {
+            messages.push(
+                `Chart page '${name}': the name is already used by another page, migrated as '${uniqueName}'. The script keeps using '${name}'.`,
+            );
+        }
+        const d = chartDefaults;
+        out.push({
+            card: 'cardChart',
+            uniqueName,
+            scriptName: name,
+            scriptNavigation: true,
+            headline: row.headline ?? '',
+            chartColor: row.chart_color || d.chartColor,
+            txtLabelYAchse: row.txtlabelYAchse ?? '',
+            selChartType: row.selChartType === 'cardLChart' ? 'cardLChart' : 'cardChart',
+            selInstanceDataSource: row.selInstanceDataSource === 1 ? 1 : 0,
+            setStateForTicks: row.setStateForTicks ?? '',
+            setStateForValues: row.setStateForValues ?? '',
+            selInstance: row.selInstance ?? '',
+            setStateForDB: row.setStateForDB ?? '',
+            rangeHours: row.rangeHours || d.rangeHours,
+            maxXAxisTicks: row.maxXAxisTicks || d.maxXAxisTicks,
+            factorCardChart: row.factorCardChart || d.factorCardChart,
+            maxXAxisLabels: row.maxXAxisLabels || d.maxXAxisLabels,
+            hidden: !!row.hiddenByTrigger,
+            alwaysOn: row.alwaysOnDisplay ? 'always' : 'none',
+        });
+        changed = true;
+    }
+    return { entries: out, messages, changed };
 }
 
 /** where a heat circuit takes its states from: an alias channel (script `id`) or single data points */

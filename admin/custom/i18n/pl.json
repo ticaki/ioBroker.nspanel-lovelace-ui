@@ -317,6 +317,7 @@
     "chart_XTicks": "Podziałka osi X",
     "chart_XTicksTooltip": "Odstęp w godzinach między znacznikami osi X (np. 2 – znacznik co 2 godziny)",
     "chart_YAxis": "Etykieta osi Y",
+    "chart_script_navigation_hint": "Przeniesiona ze starej tabeli \"Page Chart\": ta strona nadal otrzymuje nawigację ze skryptu (strona \"%s\"). Jest to przestarzałe – przypisz tutaj nawigację i usuń stronę ze skryptu.",
     "check!": "Sprawdzać!",
     "close": "zamknąć",
     "closed": "Zamknięte",

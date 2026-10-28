@@ -7,8 +7,8 @@ Die Diagramm-Seite zeigt einen Verlauf — entweder als **Balken** (`cardChart`)
 
 > **Eingerichtet wird sie im Admin**, im Tab *PageConfig*: [Diagramm-Seite – Konfiguration im
 > Admin](PageChart-Admin). Dort stehen alle Felder — Diagrammtyp, Farbe, die beiden Wege der
-> Datenaufbereitung, Zeitraum und Achseneinteilung. Diese Seite beschreibt, **was am Panel ankommt**, und
-> den **zweiten Weg** über das Konfigurationsskript.
+> Datenaufbereitung, Zeitraum und Achseneinteilung. Diese Seite beschreibt, **was am Panel ankommt**, und was
+> beim Update mit dem früheren Tab *PageChart* geschieht.
 
 ## Was am Panel ankommt
 
@@ -23,3 +23,15 @@ An der Y-Achse zeigt das Panel **ganze Zahlen mit höchstens zwei Zeichen**. Bei
 > **Luft über oder unter der Kurve gibt es nicht.** Das Panel spannt die Y-Achse genau über die Daten und
 > zeigt nur die Striche, die in diesen Bereich fallen. Mehr Ticks zu setzen hilft nicht — das gilt auch
 > für die Skriptversion.
+
+## Nach dem Update: Übernahme der alten Tabelle
+
+Bis Version 1.7 gab es den eigenen Tab *PageChart*. Beim ersten Start nach dem Update übernimmt der Adapter
+alle Einträge daraus in den Tab *PageConfig* (Typ *Diagramm*) und löscht die alte Tabelle. Ist ein
+Seitenname dort schon vergeben, bekommt die Seite den Zusatz `_chart` (Warnung im Log).
+
+Die Navigation solcher übernommenen Seiten kommt **vorerst weiter aus dem Konfigurationsskript** — der
+bisherige Verweis mit `uniqueName` und `type: 'cardLChart'` bzw. `'cardChart'` funktioniert unverändert,
+auch bei umbenannten Seiten. Das ist eine Übergangslösung: Editor und Log weisen darauf hin. Sobald die Seite
+im Tab *PageConfig* eine Navigation hat, gilt diese; den Verweis dann aus dem Skript entfernen, sonst
+überspringt der Adapter ihn mit einer Warnung.

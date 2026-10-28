@@ -317,6 +317,7 @@
     "chart_XTicks": "X 轴刻度",
     "chart_XTicksTooltip": "X 轴刻度之间的间隔（小时），例如 2 表示每 2 小时一个刻度",
     "chart_YAxis": "Y 轴标签",
+    "chart_script_navigation_hint": "从旧表格“Page Chart”迁移：此页面的导航仍来自脚本（页面“%s”）。此方式已弃用 - 请在此处分配导航并从脚本中删除该页面。",
     "check!": "查看！",
     "close": "关闭",
     "closed": "关闭",

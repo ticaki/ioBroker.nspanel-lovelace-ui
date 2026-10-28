@@ -89,28 +89,61 @@ export function gridLayout(pageType: string, model: PanelModel): GridLayout {
     };
 }
 
+/** What a grid tile does when it is tapped or held */
+export type TileTouch =
+    /** switch the entity: `event,buttonPress2,<id>,button` */
+    | { kind: 'press' }
+    /** open the detail popup of the tile: `event,pageOpenDetail,<popup>,<id>` */
+    | { kind: 'popup'; popup: string }
+    /** long press of a tile without a popup: `event,buttonPress3,<id>,button` */
+    | { kind: 'longPress' };
+
+/**
+ * Touch of a grid tile, as the HMI does it (checked against a real panel on 2026-10-27):
+ * a **short tap always switches** - the adapter flips a light, switch, number or fan tile in
+ * `PageItem.onCommand`, `case 'button'`. **Holding** a tile opens the detail popup of its
+ * type, so a tile with a popup (light, light2, fan, shutter, shutter2, number, input_sel,
+ * timer) must never send the long press event: `PageItem.onCommandLongPress` only knows
+ * `button` and `switch`, and `Panel.convertToEvent` fills the popup field of an event only
+ * for `pageOpenDetail` - a `buttonPress3` of a light tile would fall through to
+ * `onCommand('button')` and switch the light instead of opening the popup.
+ *
+ * Tiles without a popup (switch, button, text) keep the long press event; the adapter maps it
+ * to `setNaviLongPress` or the `longPress` state.
+ *
+ * @param type entity type of the tile as it came in with `entityUpd`
+ * @param held true when the tile was held longer than `LONG_PRESS_MS`
+ * @returns what to do with the touch
+ */
+export function tileTouch(type: string, held: boolean): TileTouch {
+    if (!held) {
+        return { kind: 'press' };
+    }
+    const popup = popupForType(type);
+    return popup ? { kind: 'popup', popup } : { kind: 'longPress' };
+}
+
 /**
  * cardGrid / cardGrid2 / cardGrid3: tiles with icon and name. With `useValue` the adapter
  * sends the value in the icon field (optionally `¬<font>`), it takes the place of the icon;
  * the HMI shows no further value line.
  *
- * Touch (see `PageItem.onCommand` and `GeneratePopup`): a tile with a popup type (light,
- * light2, fan, shutter, shutter2, number, input_sel, timer) sends `event,pageOpenDetail,<popup>,<id>`,
- * every other tile (switch, button, text) sends `event,buttonPress2,<id>,button`; holding a tile
- * sends `event,buttonPress3,<id>,button`.
+ * Touch: see {@link tileTouch} - a short tap switches, holding opens the detail popup.
  */
 export class CardGrid extends React.Component<CardProps<CardGridModel>> {
-    private onTilePress(entity: Entity6): void {
-        const popup = popupForType(entity.type);
-        if (popup) {
-            this.props.openPopup(popup, entity.id, entity.displayName, entity.icon, entity.iconColor);
-        } else {
-            this.props.press(entity.id, 'button');
+    private onTileTouch(entity: Entity6, held: boolean): void {
+        const touch = tileTouch(entity.type, held);
+        switch (touch.kind) {
+            case 'popup':
+                this.props.openPopup(touch.popup, entity.id, entity.displayName, entity.icon, entity.iconColor);
+                break;
+            case 'longPress':
+                this.props.send(`event,buttonPress3,${entity.id},button`);
+                break;
+            default:
+                this.props.press(entity.id, 'button');
+                break;
         }
-    }
-
-    private onTileLongPress(entity: Entity6): void {
-        this.props.send(`event,buttonPress3,${entity.id},button`);
     }
 
     private renderTile(entity: Entity6, index: number, layout: GridLayout): React.JSX.Element {
@@ -136,8 +169,8 @@ export class CardGrid extends React.Component<CardProps<CardGridModel>> {
                 key={index}
                 data-role="tile"
                 data-id={entity.id}
-                onPress={(): void => this.onTilePress(entity)}
-                onLongPress={(): void => this.onTileLongPress(entity)}
+                onPress={(): void => this.onTileTouch(entity, false)}
+                onLongPress={(): void => this.onTileTouch(entity, true)}
                 style={{
                     position: 'absolute',
                     left,

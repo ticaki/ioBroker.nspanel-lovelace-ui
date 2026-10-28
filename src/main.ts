@@ -6,6 +6,7 @@ import {
     SENDTO_GET_SCREENSAVER_TEMPLATES_COMMAND,
     SENDTO_GET_PAGES_All_COMMAND,
     ALL_PANELS_SPECIAL_ID,
+    migrateLegacyCharts,
 } from './lib/types/adminShareConfig';
 /*
  * Created with @iobroker/create-adapter v2.5.0..
@@ -198,6 +199,26 @@ class NspanelLovelaceUi extends utils.Adapter {
                 delete native.pageQRdata;
                 change = true;
             }
+            // old admin table "Page Chart": the pages move into pageConfig and keep their navigation
+            // from the script until one is assigned in the admin; the table is removed afterwards
+            if (native.pageChartdata !== undefined) {
+                const migrated = migrateLegacyCharts(
+                    Array.isArray(native.pageChartdata) ? native.pageChartdata : [],
+                    native.pageConfig,
+                );
+                for (const msg of migrated.messages) {
+                    this.log.warn(msg);
+                }
+                if (migrated.changed) {
+                    const count = migrated.entries.length - native.pageConfig.length;
+                    native.pageConfig = migrated.entries;
+                    this.log.info(
+                        `Moved ${count} chart page(s) from the table "Page Chart" to the page configuration.`,
+                    );
+                }
+                delete native.pageChartdata;
+                change = true;
+            }
             if (!this.config.versionJsonUrl || !this.config.tftUrl || !this.config.berryUrl) {
                 try {
                     const iopackage = JSON.parse(
@@ -257,80 +278,88 @@ class NspanelLovelaceUi extends utils.Adapter {
         const obj = await this.getForeignObjectAsync(this.namespace);
         if (obj && obj.native) {
             const config = [];
-            if (obj.native.scriptConfigRaw || obj.native.scriptConfig) {
-                const panelsText = (this.config.panels || []).map(a => `[${a.name}#${a.topic}]`).join(', ');
-                const configsText = (obj.native.scriptConfigRaw as any[])?.map(a => `${a.panelTopic}`).join(', ');
+            const scriptConfigRaw: any[] = Array.isArray(obj.native.scriptConfigRaw) ? obj.native.scriptConfigRaw : [];
+            const scriptConfig: any[] = Array.isArray(obj.native.scriptConfig) ? obj.native.scriptConfig : [];
+            const panelsText = (this.config.panels || []).map(a => `[${a.name}#${a.topic}]`).join(', ');
+            const configsText = scriptConfigRaw.map(a => `${a.panelTopic}`).join(', ');
 
-                // Überblicks-Logs
-                this.log.info(`Configured panels: name#topic -> ${panelsText}`);
-                this.log.info(`Found ${obj.native.scriptConfigRaw.length} script configs for topics: ${configsText}`);
-                this.log.info(
-                    `Detailed configuration checks are suppressed here. Full validation output is only shown when the configuration script is sent to the adapter.`,
-                );
+            // Überblicks-Logs
+            this.log.info(`Configured panels: name#topic -> ${panelsText}`);
+            this.log.info(`Found ${scriptConfigRaw.length} script configs for topics: ${configsText}`);
+            this.log.info(
+                `Detailed configuration checks are suppressed here. Full validation output is only shown when the configuration script is sent to the adapter.`,
+            );
 
-                const manager = new ConfigManager(this, true);
-                manager.log.warn = function (_msg: string) {
-                    // silence ConfigManager warnings
-                };
+            const manager = new ConfigManager(this, true);
+            manager.log.warn = function (_msg: string) {
+                // silence ConfigManager warnings
+            };
 
-                for (const a of this.config.panels) {
-                    if (!a || !a.topic) {
-                        continue;
-                    }
+            for (const a of this.config.panels || []) {
+                if (!a || !a.topic) {
+                    continue;
+                }
 
-                    let usedConfig: 'raw' | 'converted' | null = null;
-                    let rawFound = false;
-                    let rawConversionFailed = false;
+                let usedConfig: 'raw' | 'converted' | 'default' | null = null;
+                let rawFound = false;
+                let rawConversionFailed = false;
 
-                    // 1) RAW versuchen
-                    const raw = (obj.native.scriptConfigRaw as any[])?.find(
-                        (b: { panelTopic: string }) => b.panelTopic === a.topic,
-                    );
-                    if (raw) {
-                        rawFound = true;
-                        const c = await manager.setScriptConfig(raw);
-                        if (c && c.messages && c.messages.length > 0) {
-                            if (!c.messages[0].startsWith('Panel')) {
-                                this.log.warn(c.messages[0]);
-                            }
-                        }
-                        if (c && c.panelConfig) {
-                            c.panelConfig.model = a.model || 'eu';
-                            config.push(c.panelConfig);
-                            usedConfig = 'raw';
-                        } else {
-                            rawConversionFailed = true; // RAW existiert, aber Umwandlung fehlgeschlagen
+                // 1) RAW versuchen
+                const raw = scriptConfigRaw.find((b: { panelTopic: string }) => b.panelTopic === a.topic);
+                if (raw) {
+                    rawFound = true;
+                    const c = await manager.setScriptConfig(raw);
+                    if (c && c.messages && c.messages.length > 0) {
+                        if (!c.messages[0].startsWith('Panel')) {
+                            this.log.warn(c.messages[0]);
                         }
                     }
-
-                    // 2) Fallback: converted
-                    if (!usedConfig) {
-                        const conv = (obj.native.scriptConfig as any[]).find(
-                            (b: { topic: string }) => b.topic === a.topic,
-                        );
-                        if (conv) {
-                            conv.model = a.model || 'eu';
-                            config.push(conv);
-                            usedConfig = 'converted';
-                        }
-                    }
-
-                    // 3) Ergebnis-Log pro Panel
-                    if (!usedConfig) {
-                        this.log.warn(`No script config found for ${a.topic}`);
-                        await manager.delete();
-                    } else if (usedConfig === 'raw') {
-                        this.log.debug(`Config for ${a.topic}: raw`);
+                    if (c && c.panelConfig) {
+                        c.panelConfig.model = a.model || 'eu';
+                        config.push(c.panelConfig);
+                        usedConfig = 'raw';
                     } else {
-                        // usedConfig === 'converted'
-                        if (rawFound && rawConversionFailed) {
-                            this.log.warn(
-                                `Config for ${a.topic}: converted (RAW conversion failed). ` +
-                                    `Please update the configuration script and send it to the adapter again.`,
-                            );
-                        } else {
-                            this.log.warn(`Config for ${a.topic}: converted`);
-                        }
+                        rawConversionFailed = true; // RAW existiert, aber Umwandlung fehlgeschlagen
+                    }
+                }
+
+                // 2) Fallback: converted
+                if (!usedConfig) {
+                    const conv = scriptConfig.find((b: { topic: string }) => b.topic === a.topic);
+                    if (conv) {
+                        conv.model = a.model || 'eu';
+                        config.push(conv);
+                        usedConfig = 'converted';
+                    }
+                }
+
+                // 3) Fallback: kein Skript - die Admin-Konfiguration reicht, das Skript-Template ohne Inhalt dient als Basis
+                if (!usedConfig && !rawFound) {
+                    const c = await manager.setScriptConfig(ConfigManager.getDefaultScriptConfig(a.topic));
+                    if (c && c.panelConfig) {
+                        c.panelConfig.model = a.model || 'eu';
+                        config.push(c.panelConfig);
+                        usedConfig = 'default';
+                    }
+                }
+
+                // 4) Ergebnis-Log pro Panel
+                if (!usedConfig) {
+                    this.log.warn(`No usable config found for ${a.topic}`);
+                    await manager.delete();
+                } else if (usedConfig === 'raw') {
+                    this.log.debug(`Config for ${a.topic}: raw`);
+                } else if (usedConfig === 'default') {
+                    this.log.info(`No script config for ${a.topic} - using the admin configuration only`);
+                } else {
+                    // usedConfig === 'converted'
+                    if (rawFound && rawConversionFailed) {
+                        this.log.warn(
+                            `Config for ${a.topic}: converted (RAW conversion failed). ` +
+                                `Please update the configuration script and send it to the adapter again.`,
+                        );
+                    } else {
+                        this.log.warn(`Config for ${a.topic}: converted`);
                     }
                 }
             }

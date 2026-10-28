@@ -22,5 +22,6 @@
     "webPanelTopicHelp": "Buchstaben, Ziffern, _ und -, / als Trenner",
     "webPanelTopicInvalid": "Erlaubt sind nur Buchstaben, Ziffern, _, - und /",
     "webPanelTopicRequired": "Das Topic darf nicht leer sein",
-    "webPanelTopicReserved": "Dieser Pfad wird vom Web-Server selbst benutzt"
+    "webPanelTopicReserved": "Dieser Pfad wird vom Web-Server selbst benutzt",
+    "chart_script_navigation_hint": "Aus der alten Tabelle „Page Chart“ übernommen: Diese Seite bekommt ihre Navigation noch aus dem Skript (Seite „%s“). Das ist veraltet – bitte hier eine Navigation zuweisen und die Seite aus dem Skript entfernen."
 }

@@ -20,7 +20,8 @@ import { screensaverChannelIdOf } from '../types/adminShareConfig';
 import { exhaustiveCheck } from '../types/function-and-const';
 import { resolveSecret } from '../credentials';
 import type { NspanelLovelaceUi } from '../types/NspanelLovelaceUi';
-import type { PageBase, cardChartDataItemOptions } from '../types/pages';
+import type { PageBase } from '../types/pages';
+import { buildChartPageConfig } from '../pages/pageChart';
 import type { AlwaysOnMode } from '../types/types';
 
 type PendingNavEntry = {
@@ -881,13 +882,6 @@ export class AdminConfiguration extends BaseClass {
 }
 
 /**
- * Page config of a chart page from a PageConfig entry. The DB source travels as JSON in the
- * const item `dbData` (see ChartDetailsExternal); the script source only uses `ticks` and `value`.
- * The classic table path (PageChart.getChartPageConfig) builds the same shape.
- *
- * @param entry chart entry as stored by the PageConfig editor
- */
-/**
  * A limit of a heat circuit as the adapter expects it: a positive number, anything else is left
  * to the adapter default (the editor stores what was typed, an empty field is undefined).
  *
@@ -1006,32 +1000,6 @@ export function buildThermo2ScriptPage(entry: ShareConfig.Thermo2Entry): ScriptC
         thermoItems,
         items: [],
         sortOrder,
-    };
-}
-
-export function buildChartPageConfig(entry: ShareConfig.ChartEntry): cardChartDataItemOptions {
-    const d = ShareConfig.chartDefaults;
-    const dbData: ShareConfig.ChartDetailsExternal | undefined =
-        entry.selInstanceDataSource === 1
-            ? {
-                  instance: entry.selInstance || '',
-                  state: entry.setStateForDB || '',
-                  hours: entry.rangeHours ?? d.rangeHours,
-                  maxTicks: entry.maxXAxisTicks ?? d.maxXAxisTicks,
-                  factor: entry.factorCardChart ?? d.factorCardChart,
-                  maxLabels: entry.maxXAxisLabels ?? d.maxXAxisLabels,
-              }
-            : undefined;
-    return {
-        card: entry.selChartType || d.selChartType,
-        data: {
-            headline: { type: 'const', constVal: entry.headline || 'Page Chart' },
-            text: { type: 'const', constVal: entry.txtLabelYAchse || '' },
-            color: { true: { color: { type: 'const', constVal: entry.chartColor || d.chartColor } } },
-            ticks: { type: 'triggered', dp: entry.setStateForTicks || '' },
-            value: { type: 'triggered', dp: entry.setStateForValues || entry.setStateForDB || '' },
-            dbData: dbData ? { type: 'const', constVal: JSON.stringify(dbData) } : undefined,
-        },
     };
 }
 

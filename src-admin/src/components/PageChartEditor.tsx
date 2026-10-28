@@ -5,6 +5,7 @@
  */
 import React from 'react';
 import {
+    Alert,
     Box,
     TextField,
     FormControl,
@@ -19,7 +20,13 @@ import {
 } from '@mui/material';
 import { ConfigGeneric, type ConfigGenericProps, type ConfigGenericState } from '@iobroker/json-config';
 import { EntitySelector } from './EntitySelector';
-import { type ChartEntry, ADAPTER_NAME, chartDefaults, isMainPageEntry } from '../../../src/lib/types/adminShareConfig';
+import {
+    type ChartEntry,
+    ADAPTER_NAME,
+    chartDefaults,
+    isMainPageEntry,
+    isScriptNavigatedChart,
+} from '../../../src/lib/types/adminShareConfig';
 
 export interface PageChartEditorProps {
     entry: ChartEntry;
@@ -272,6 +279,19 @@ export class PageChartEditor extends ConfigGeneric<ConfigGenericProps & PageChar
                         helperText={isMainPageEntry(entry) ? this.getText('page_name_main_locked') : undefined}
                     />
                 </Box>
+
+                {/* migrated from the table "Page Chart": navigation still comes from the script */}
+                {isScriptNavigatedChart(entry) && (
+                    <Alert
+                        severity="warning"
+                        sx={{ mb: 2 }}
+                    >
+                        {this.getText('chart_script_navigation_hint').replace(
+                            '%s',
+                            entry.scriptName ?? entry.uniqueName,
+                        )}
+                    </Alert>
+                )}
 
                 {/* Chart type */}
                 <Box sx={{ mb: 2 }}>

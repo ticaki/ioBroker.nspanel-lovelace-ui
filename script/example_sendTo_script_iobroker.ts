@@ -68,7 +68,9 @@ async function configuration (): Promise<void> {
         uniqueName: 'qrCode'
     }; */
 
-    // Konfiguration findet im Admin statt, uniqueName muß gleich dem namen in der Adminkonfiguration sein.
+    // Chart-Seiten werden im Admin (Tab PageConfig, Typ Diagramm) angelegt und dort in die Navigation eingehängt.
+    // VERALTET: Der Verweis im Skript wirkt nur noch für Seiten, die aus der alten Tabelle "Page Chart" übernommen
+    // wurden und im Admin noch keine Navigation haben. uniqueName = Seitenname der alten Tabelle.
 
     /* const chartHeizung: ScriptConfig.PageChart = {
         type: 'cardChart',
@@ -684,7 +686,7 @@ async function configuration (): Promise<void> {
 }
 
 
-const version = '0.21.3';
+const version = '0.21.4';
 const HMIOff = {red: 68, green: 115, blue: 158};     // Blue-Off - Original Entity Off
 const HMIOn = {red: 3, green: 169, blue: 244};     // Blue-On
 const HMIDark = {red: 29, green: 29, blue: 29};     // Original Background Color
@@ -1092,6 +1094,10 @@ declare namespace ScriptConfig {
         type: 'cardPower';
     } & Omit<PageBaseType, 'useColor' | 'heading' | 'items'>;
 
+    /**
+     * @deprecated Chart pages are configured in the admin (tab PageConfig) including their navigation. Only works
+     * for pages migrated from the old table "Page Chart" that have no navigation in the admin yet.
+     */
     export type PageChart = {
         type: 'cardChart' | 'cardLChart';
     } & Omit<PageBaseType, 'useColor' | 'heading' | 'items'>;
