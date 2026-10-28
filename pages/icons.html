@@ -93,7 +93,7 @@
         cursor: pointer;
         text-align: center;
     }
-    .icon[hidden] { display: none; }
+    .sentinel { grid-column: 1 / -1; height: 1px; }
     .icon:hover { border-color: var(--accent); }
     .icon svg { width: 44px; height: 44px; fill: var(--icon); }
     .name { font-size: 12px; word-break: break-all; }
@@ -196,56 +196,94 @@
         return svg;
     }
 
+    // cards are created in batches while scrolling - all 7474 svgs at once freeze some browsers
+    const BATCH = 240;
+    let matches = [];
+    let rendered = 0;
+    const sentinel = document.createElement('div');
+    sentinel.className = 'sentinel';
+    const observer = new IntersectionObserver(entries => {
+        if (entries.some(e => e.isIntersecting)) {
+            more();
+        }
+    }, { rootMargin: '800px' });
+
+    function cardOf(c) {
+        const i = c.icon;
+        const el = document.createElement('div');
+        el.className = 'icon';
+        el.appendChild(svgOf(i.d));
+        const name = document.createElement('div');
+        name.className = 'name';
+        name.textContent = i.n;
+        el.appendChild(name);
+        const meta = document.createElement('div');
+        meta.className = 'meta';
+        meta.textContent = `U+${i.h}`;
+        el.appendChild(meta);
+        el.title = [i.n, `U+${i.h}`, i.v ? `MDI ${i.v}` : '', c.others.length ? `${t.alias} ${c.others.join(', ')}` : '']
+            .filter(Boolean)
+            .join('\n');
+        if (c.own || c.isNew) {
+            const b = document.createElement('span');
+            b.className = `badge ${c.own ? 'own' : 'new'}`;
+            b.textContent = c.own ? t.own_badge : 'HMI 6';
+            el.appendChild(b);
+        }
+        el.addEventListener('click', () => copy(i.n));
+        return el;
+    }
+
+    function more() {
+        if (rendered >= matches.length) {
+            return;
+        }
+        const frag = document.createDocumentFragment();
+        for (const c of matches.slice(rendered, rendered + BATCH)) {
+            frag.appendChild(cardOf(c));
+        }
+        rendered = Math.min(rendered + BATCH, matches.length);
+        grid.insertBefore(frag, sentinel);
+        // observe again: reports the sentinel once more if it is still in reach after this batch
+        observer.unobserve(sentinel);
+        observer.observe(sentinel);
+    }
+
     function render(icons) {
         const byGlyph = new Map();
         for (const i of icons) {
             byGlyph.set(i.h, [...(byGlyph.get(i.h) || []), i.n]);
         }
-        const frag = document.createDocumentFragment();
         cards = icons.map(i => {
-            const isNew = parseInt(i.h, 16) >= FIRST_NEW_GLYPH;
-            const el = document.createElement('div');
-            el.className = 'icon';
-            el.appendChild(svgOf(i.d));
-            const name = document.createElement('div');
-            name.className = 'name';
-            name.textContent = i.n;
-            el.appendChild(name);
-            const meta = document.createElement('div');
-            meta.className = 'meta';
-            meta.textContent = `U+${i.h}`;
-            el.appendChild(meta);
             const others = byGlyph.get(i.h).filter(n => n !== i.n);
-            el.title = [i.n, `U+${i.h}`, i.v ? `MDI ${i.v}` : '', others.length ? `${t.alias} ${others.join(', ')}` : '']
-                .filter(Boolean)
-                .join('\n');
-            if (i.c || isNew) {
-                const b = document.createElement('span');
-                b.className = `badge ${i.c ? 'own' : 'new'}`;
-                b.textContent = i.c ? t.own_badge : 'HMI 6';
-                el.appendChild(b);
-            }
-            el.addEventListener('click', () => copy(i.n));
-            frag.appendChild(el);
-            return { el, key: `${i.n} ${others.join(' ')} ${i.h}`.toLowerCase(), isNew, own: !!i.c };
+            return {
+                icon: i,
+                others,
+                key: `${i.n} ${others.join(' ')} ${i.h}`.toLowerCase(),
+                isNew: parseInt(i.h, 16) >= FIRST_NEW_GLYPH,
+                own: !!i.c,
+            };
         });
-        grid.replaceChildren(frag);
         apply();
     }
 
     function apply() {
         const q = search.value.trim().toLowerCase().replace(/^u\+/, '');
-        let shown = 0;
-        for (const c of cards) {
-            const visible =
+        matches = cards.filter(
+            c =>
                 (filter === 'all' || (filter === 'new' && c.isNew) || (filter === 'own' && c.own)) &&
-                (!q || c.key.includes(q));
-            c.el.hidden = !visible;
-            if (visible) {
-                shown++;
-            }
-        }
-        count.textContent = t.count(shown);
+                (!q || c.key.includes(q)),
+        );
+        rendered = 0;
+        grid.replaceChildren(sentinel);
+        more();
+        count.textContent = t.count(matches.length);
+    }
+
+    let searchTimer;
+    function applyLater() {
+        clearTimeout(searchTimer);
+        searchTimer = setTimeout(apply, 150);
     }
 
     let toastTimer;
@@ -261,7 +299,7 @@
         }
     }
 
-    search.addEventListener('input', apply);
+    search.addEventListener('input', applyLater);
     document.querySelectorAll('[data-filter]').forEach(btn => {
         btn.addEventListener('click', () => {
             filter = btn.dataset.filter;
