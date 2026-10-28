@@ -316,6 +316,7 @@
       }
     ],
     "adminOverridesScriptPages": false,
+    "navigationOverrides": [],
     "screensaverConfig": [],
     "screensaverNotify": []
   },

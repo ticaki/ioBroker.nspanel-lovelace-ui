@@ -1,7 +1,7 @@
 // This file extends the AdapterConfig type from "@types/iobroker"
 
 import {NSpanelModel} from "./types/types";
-import type { ScreensaverEntry, ScreensaverNotifyConfig } from "./types/adminShareConfig";
+import type { NavigationOverride, ScreensaverEntry, ScreensaverNotifyConfig } from "./types/adminShareConfig";
 
 // Augment the globally declared type ioBroker.AdapterConfig
 declare global {
@@ -11,6 +11,8 @@ declare global {
             berryUrl: string;
             tftUrl: string;
             adminOverridesScriptPages: boolean;
+            /** navigation of script pages changed in the admin tab "Navigation Flow" - applied on top of the script at start */
+            navigationOverrides?: NavigationOverride[];
             rememberLastSite: boolean
             testCase: boolean;
             mqttServer: boolean;

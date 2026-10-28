@@ -21,6 +21,7 @@ import { PageThermo2 } from '../pages/pageThermo2';
 import { PageMedia } from '../pages/pageMedia';
 import { isPageItemDataItemsOptions } from '../types/type-pageItem';
 import { getVersionAsNumber } from '../const/tools';
+import { recordGeneratedPage } from '../configuration/navigation-overrides';
 
 export class ConfigManager extends BaseClass {
     //private test: ConfigManager.DeviceState;
@@ -954,6 +955,8 @@ export class ConfigManager extends BaseClass {
                                 temp.pageConfig.parent = page.uniqueName;
                                 scriptPages.push(temp.pageConfig);
                                 config.subPages.push(temp.pageConfig);
+                                // Generated from a page item - its navigation is read-only in the admin
+                                recordGeneratedPage(panelConfig, temp.pageConfig.uniqueName);
                             }
                         } catch (error: any) {
                             messages.push(

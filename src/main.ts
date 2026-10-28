@@ -37,6 +37,11 @@ import { URL } from 'node:url';
 import type * as pages from './lib/types/pages';
 import * as fs from 'node:fs';
 import type { NavigationItemConfig } from './lib/classes/navigation';
+import {
+    adminReplacedPageIds,
+    applyNavigationOverrides,
+    scriptLinksByPage,
+} from './lib/configuration/navigation-overrides';
 import { Color } from './lib/const/Color';
 import path from 'node:path';
 import { testScriptConfig } from './lib/const/test';
@@ -116,6 +121,69 @@ class NspanelLovelaceUi extends utils.Adapter {
         this.on('message', this.onMessage.bind(this));
         this.on('unload', this.onUnload.bind(this));
         // init some propertys so we dont need undefined checks
+    }
+
+    /**
+     * Applies the navigation overrides of the admin (`native.navigationOverrides`) to the script
+     * navigation of one panel, before the panel is created from it. What the script says is kept
+     * next to it, so the admin can show both and tell a changed script from the override.
+     *
+     * @param panelConfig Converted configuration of the panel - changed in place.
+     * @param panelTopic Topic of the panel.
+     */
+    private applyNavigationOverridesTo(panelConfig: Partial<panelConfigPartial>, panelTopic: string): void {
+        if (!Array.isArray(panelConfig.navigation)) {
+            return;
+        }
+        panelConfig.scriptNavigationLinks = scriptLinksByPage(panelConfig.navigation);
+        const overrides = Array.isArray(this.config.navigationOverrides) ? this.config.navigationOverrides : [];
+        if (overrides.length === 0) {
+            panelConfig.navigationOverrideStates = {};
+            return;
+        }
+        // The same rule admin.ts applies: such a script page is taken out again, an override for
+        // it would be lost silently
+        const replaced = adminReplacedPageIds(
+            Array.isArray(this.config.pageConfig) ? this.config.pageConfig : [],
+            panelTopic,
+            !!this.config.adminOverridesScriptPages,
+        );
+        const result = applyNavigationOverrides(
+            panelConfig.navigation,
+            overrides,
+            panelTopic,
+            panelConfig.generatedPageIds ?? [],
+            replaced,
+        );
+        panelConfig.navigation = result.navigation;
+        panelConfig.navigationOverrideStates = Object.fromEntries(result.states);
+        for (const item of result.skipped) {
+            const text = `navigation override for page ${item.page} of ${panelTopic} ignored: `;
+            switch (item.reason) {
+                case 'generated':
+                    this.log.warn(`${text}generated page`);
+                    break;
+                case 'replaced':
+                    this.log.warn(`${text}page is replaced by the admin configuration`);
+                    break;
+                case 'unsupported':
+                    this.log.warn(`${text}navigation node name differs from the page id`);
+                    break;
+                default:
+                    // The override was made from the flow, so the page existed - it is gone from the
+                    // script since (or the panel runs without one). Nothing is broken, the override
+                    // simply waits for the page to come back.
+                    this.log.info(`${text}page not found in the script configuration`);
+                    break;
+            }
+        }
+        for (const [page, state] of result.states) {
+            if (state.stale) {
+                this.log.info(
+                    `navigation override for page ${page} of ${panelTopic}: the script navigation changed since the override was made - check the navigation flow in the admin`,
+                );
+            }
+        }
     }
 
     /**
@@ -303,6 +371,9 @@ class NspanelLovelaceUi extends utils.Adapter {
                 let usedConfig: 'raw' | 'converted' | 'default' | null = null;
                 let rawFound = false;
                 let rawConversionFailed = false;
+                // The configuration chosen for this panel - gets the navigation overrides of the
+                // admin applied before it is used
+                let chosen: Partial<panelConfigPartial> | undefined;
 
                 // 1) RAW versuchen
                 const raw = scriptConfigRaw.find((b: { panelTopic: string }) => b.panelTopic === a.topic);
@@ -316,7 +387,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                     }
                     if (c && c.panelConfig) {
                         c.panelConfig.model = a.model || 'eu';
-                        config.push(c.panelConfig);
+                        chosen = c.panelConfig;
                         usedConfig = 'raw';
                     } else {
                         rawConversionFailed = true; // RAW existiert, aber Umwandlung fehlgeschlagen
@@ -328,7 +399,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                     const conv = scriptConfig.find((b: { topic: string }) => b.topic === a.topic);
                     if (conv) {
                         conv.model = a.model || 'eu';
-                        config.push(conv);
+                        chosen = conv;
                         usedConfig = 'converted';
                     }
                 }
@@ -338,9 +409,14 @@ class NspanelLovelaceUi extends utils.Adapter {
                     const c = await manager.setScriptConfig(ConfigManager.getDefaultScriptConfig(a.topic));
                     if (c && c.panelConfig) {
                         c.panelConfig.model = a.model || 'eu';
-                        config.push(c.panelConfig);
+                        chosen = c.panelConfig;
                         usedConfig = 'default';
                     }
+                }
+
+                if (chosen) {
+                    this.applyNavigationOverridesTo(chosen, a.topic);
+                    config.push(chosen);
                 }
 
                 // 4) Ergebnis-Log pro Panel
@@ -1312,6 +1388,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                                             }
                                         }
                                     }
+                                    this.applyNavigationOverridesTo(r.panelConfig, r.panelConfig.topic ?? '');
                                     const arr = await ConfigManager.getConfig(this, [r.panelConfig, ...others]);
                                     if (arr && arr.length > 0) {
                                         const config = arr[0];

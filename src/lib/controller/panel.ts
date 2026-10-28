@@ -1,5 +1,7 @@
 import type {
+    NavigationLinks,
     NavigationMapEntry,
+    NavigationOverrideState,
     NavigationPositionsMap,
     PageMenuConfigInfo,
     PanelListEntry,
@@ -68,6 +70,18 @@ export interface panelConfigPartial extends Partial<panelConfigTop> {
      * Filled by the config manager, used to record the origin of those pages.
      */
     globalPageIds?: string[];
+    /**
+     * Pages the config manager generated from a page item (e.g. `media-<id>` behind a media item).
+     * Their navigation is read-only in the admin, whatever the page item comes from.
+     */
+    generatedPageIds?: string[];
+    /**
+     * Links each script page carries according to the script configuration, before the navigation
+     * overrides of the admin were applied. Set by `main.ts`, reported with the navigation map.
+     */
+    scriptNavigationLinks?: Record<string, NavigationLinks>;
+    /** Navigation overrides of the admin that are in effect, by page. Set by `main.ts`. */
+    navigationOverrideStates?: Record<string, NavigationOverrideState>;
     /** 'tasmota' (default) for a real NSPanel, 'web' for a panel shown in a browser */
     kind?: 'tasmota' | 'web';
     /** Message channel to the panel - the MQTT client when missing */
@@ -2816,6 +2830,7 @@ export class Panel extends BaseClass {
         const res: PanelListEntry = {
             panelName: this.name,
             friendlyName: this.friendlyName,
+            panelTopic: this.topic,
             navigationMap: [],
         };
         const o = await this.adapter.getObjectAsync(`panels.${this.name}`);
@@ -2911,6 +2926,26 @@ export class Panel extends BaseClass {
                 origin,
                 adminPageName: origin === 'admin' ? this.getAdminPageName(nav.page.name) : undefined,
             };
+            // A page the config manager generated from a page item keeps its navigation whatever
+            // its origin - the admin shows it read-only
+            if (this.options.generatedPageIds?.includes(nav.page.name)) {
+                navMap.generated = true;
+            }
+            // Script pages carry what the script says and what the admin changed on top of it
+            if (origin === 'script' || origin === 'global') {
+                const scriptLinks = this.options.scriptNavigationLinks?.[nav.page.name];
+                if (scriptLinks) {
+                    navMap.scriptLinks = { ...scriptLinks };
+                }
+                const override = this.options.navigationOverrideStates?.[nav.page.name];
+                if (override) {
+                    navMap.override = {
+                        navigation: { ...override.navigation },
+                        scriptLinks: { ...override.scriptLinks },
+                        stale: override.stale,
+                    };
+                }
+            }
             // A page item leads to another page on a short press (`targetPage` in the script) and to
             // a second one on a long press (`targetPageLongPress`); the page itself can carry both too.
             const targetSources = [...(nav.page.pageItemConfig ?? []).map(item => item?.data), nav.page.config?.data];
