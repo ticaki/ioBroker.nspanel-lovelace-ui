@@ -16,6 +16,7 @@
  *  - src-admin/src/icons.json           (name, base64) - icon selection of the admin
  *  - src/lib/const/icon_mapping.ts      (the `iconMap` entries, logo entries are kept)
  *  - src/lib/types/icon-mapping.d.ts    (type `AllIcons`)
+ *  - script/example_sendTo_script_iobroker.ts (type `ScriptConfig.AllIcons`)
  *
  * The web panel picks the change up with `npm run gen:icons` in src-web (runs in its prebuild).
  * New glyphs need a TFT with the new icon fonts (HMI 6.0), older TFTs show nothing for them.
@@ -46,6 +47,7 @@ const iconsFile = path.join(root, 'script', 'icons.json');
 const adminIconsFile = path.join(root, 'src-admin', 'src', 'icons.json');
 const mappingFile = path.join(root, 'src', 'lib', 'const', 'icon_mapping.ts');
 const typesFile = path.join(root, 'src', 'lib', 'types', 'icon-mapping.d.ts');
+const scriptFile = path.join(root, 'script', 'example_sendTo_script_iobroker.ts');
 const mdiDir = path.join(root, 'src-web', 'node_modules', '@mdi', 'svg');
 
 /**
@@ -191,6 +193,21 @@ function main(): void {
     fs.writeFileSync(mappingFile, head + entries + source.slice(logos));
 
     fs.writeFileSync(typesFile, `type AllIcons =\n${list.map(i => `    | '${i.name}'\n`).join('')}    | '';\n`);
+
+    // the example script has its own copy of AllIcons (namespace ScriptConfig)
+    const script = fs.readFileSync(scriptFile, 'utf8');
+    const union = /( {4}export type AllIcons =\n)(?: {8}\| '[^']*'\n)+/.exec(script);
+    if (!union) {
+        throw new Error(`AllIcons not found in ${scriptFile}`);
+    }
+    fs.writeFileSync(
+        scriptFile,
+        script.slice(0, union.index) +
+            union[1] +
+            list.map(i => `        | '${i.name}'\n`).join('') +
+            `        | '';\n` +
+            script.slice(union.index + union[0].length).replace(/^ {8}\| '';\n/, ''),
+    );
 
     console.log(
         `icons (@mdi/svg ${mdiVersion}): ${list.length} total - ${updated} paths updated, ${kept} kept (not in MDI), ${aliases} aliases, ${added} new, ${moved} on reserved glyphs`,
