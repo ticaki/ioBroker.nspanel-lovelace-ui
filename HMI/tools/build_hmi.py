@@ -48,14 +48,13 @@ def main():
     project = Hmi(open(base, 'rb').read())
     files = {}
     for name, p in params.items():
-        idx = project.find(name)
-        font = Zi(project.files[idx])
+        font = Zi(project.files[name])
         width = font.chars[0xE000][0]
         todo = [g for g, d in glyphs.items() if g not in font.chars or old.get(f'{g:04X}') != d]
         chars = dict(font.chars)
         for g, px in zip(todo, render(width, font.h, p, [glyphs[g] for g in todo])):
             chars[g] = (width, 0, 0, encode(px))
-        files[idx] = font.build(chars)
+        files[name] = font.build(chars)
         print(f'{name} ({p["comment"]}): {font.cnt} -> {len(chars)} characters, {len(todo)} rendered')
 
     if release:
@@ -73,7 +72,8 @@ def main():
         print(f'release {value.decode()} -> {release}')
 
     out = project.build(files)
-    Hmi(out)  # parses again
+    check = Hmi(out)  # parses again, checks the directory checksums
+    check.check()  # page and main.HMI checksums
     open(target, 'wb').write(out)
     print(f'{target}: {len(project.d)} -> {len(out)} bytes')
 
