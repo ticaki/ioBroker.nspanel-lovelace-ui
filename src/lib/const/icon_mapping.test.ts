@@ -18,6 +18,17 @@ describe('lib/const/icon_mapping', () => {
             const lightbulb = Icons.GetIcon('lightbulb-on');
             expect(lightbulb).to.have.lengthOf(1);
         });
+        it('keeps the glyph of existing icons and maps new MDI icons by their codepoint', () => {
+            // glyph = MDI codepoint - 0xF0001 + 0xE000, existing glyphs never move
+            expect(Icons.GetIcon('account')).to.equal('\ue003');
+            expect(Icons.GetIcon('google-home')).to.equal('\ue823');
+            // new in MDI 7 (needs HMI 6.0)
+            expect(Icons.GetIcon('window-shutter-auto')).to.equal('\ufba2');
+            // renamed by MDI - alias on the same glyph
+            expect(Icons.GetIcon('lectern')).to.equal(Icons.GetIcon('lecturn'));
+            // MDI gave the codepoint of a removed icon to a new one - the new one has a reserved glyph
+            expect(Icons.GetIcon('pause-box')).to.not.equal(Icons.GetIcon('book-variant-multiple'));
+        });
         it('returns the input as fallback for unknown icons', () => {
             const garbage = 'definitely-not-an-icon-xyz-12345';
             expect(Icons.GetIcon(garbage)).to.equal(garbage);
