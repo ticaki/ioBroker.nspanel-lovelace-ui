@@ -126,3 +126,45 @@
   top: auto !important;
   transform: none !important;
 }
+
+/* Bearbeitungsmodus: Quell-Handles editierbarer Seiten sind groesser und zeigen, dass man ziehen kann */
+.node-box.node-editing .react-flow__handle.handle-edit-source {
+  width: 11px;
+  height: 11px;
+  cursor: crosshair;
+  border: 2px solid var(--node-bg, #fff);
+  z-index: 3;
+}
+
+/* Seite mit noch nicht gespeicherten Verweisen: gestrichelter Aussenrahmen plus Punkt rechts oben */
+.node-box.node-unsaved {
+  outline: 2px dashed var(--edge-color, #1976d2);
+  outline-offset: 3px;
+}
+.node-box .node-unsaved-marker {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--edge-color, #1976d2);
+  border: 2px solid var(--node-bg, #fff);
+  z-index: 4;
+}
+
+/* Editierbare Kante: Klick oeffnet das Menue */
+.edge-editable .custom-edge-hit {
+  cursor: context-menu;
+}
+
+/* Verweis, der nicht in der Konfiguration steht, sondern vom Adapter abgeleitet ist (Standard-Home,
+   Verkettung): blass und duenner, damit man sieht, was ein Entfernen wirklich bewirkt */
+.edge-derived .custom-edge-path {
+  stroke-opacity: 0.45;
+  stroke-width: 1.5;
+}
+.edge-derived:hover .custom-edge-path,
+.edge-derived.custom-edge-highlighted .custom-edge-path {
+  stroke-width: 2.5;
+}

@@ -2548,6 +2548,7 @@ ${this.info.tasmota.onlineVersion}`;
     const res = {
       panelName: this.name,
       friendlyName: this.friendlyName,
+      panelTopic: this.topic,
       navigationMap: []
     };
     const o = await this.adapter.getObjectAsync(`panels.${this.name}`);

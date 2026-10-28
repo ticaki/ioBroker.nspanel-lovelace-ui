@@ -158,6 +158,7 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
     ### **WORK IN PROGRESS**
 -->
 ### **WORK IN PROGRESS**
+- (ticaki) navigation flow: edit mode to create, change and remove the prev/next/home/parent links of admin pages by dragging connections between pages and clicking edges; the changes are written to the page configuration and saved with the admin save button
 - (ticaki) chart pages: the tab "Page Chart" is gone - its pages are moved into the page configuration (tab PageConfig) at adapter start and the old table is deleted; a name already used by another page gets the suffix `_chart`
 - (ticaki) chart pages: migrated pages keep their navigation from the script for now (deprecated, the editor shows a hint) until a navigation is assigned in the admin - script version 0.21.4 marks `ScriptConfig.PageChart` as deprecated
 - (tt-tom17) web panel: on a grid card a short tap on a tile switches it and holding the tile opens its detail popup, like on a real panel - a light tile with a colour role (rgb, rgbSingle, rgbThree, hue, ct, dimmer) opened the popup on a tap and was switched when held

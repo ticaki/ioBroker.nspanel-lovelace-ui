@@ -4,14 +4,43 @@ import iconList from './icons.json';
 import type {
     NavigationMapEntry,
     NavigationMap,
-    PageOrigin,
+    PageConfigEntry,
     PanelListEntry,
     NavigationSavePayload,
 } from '../../src/lib/types/adminShareConfig';
 import {
     SENDTO_GET_PANEL_NAVIGATION_COMMAND,
     SAVE_PANEL_NAVIGATION_COMMAND,
+    isMainPageEntry,
+    mainPageName,
 } from '../../src/lib/types/adminShareConfig';
+import {
+    applyNavigationOverlay,
+    assignmentSourceOf,
+    effectiveNavigation,
+    isNavigationApplied,
+    isNavigationLinkKind,
+    setNavigationLink,
+    type NavigationEditScope,
+    type NavigationLinkKind,
+} from '../../src/lib/types/navigationEdit';
+import {
+    EDGE_COLOR_HEX,
+    EDGE_COLOR_VAR,
+    LINK_HANDLES,
+    NODE_COLOR_HEX,
+    NODE_STYLE_LABEL_KEY,
+    NODE_STYLE_VAR,
+    NODE_STYLES,
+    SOURCE_HANDLE_KIND,
+    STATIC_EDGE_KINDS,
+    edgeColor,
+    type EdgeKind,
+    type FlowEdge,
+    type FlowNode,
+} from './navigationFlowConst';
+import NavigationFlowNode from './components/NavigationFlowNode';
+import NavigationScopeDialog from './components/NavigationScopeDialog';
 
 const ADAPTER_NAME = 'nspanel-lovelace-ui';
 
@@ -79,142 +108,10 @@ function iconSvg(name: string): string | undefined {
     );
 }
 
-/** Kantenarten des Navigationsgraphen */
-type EdgeKind = 'default' | 'prev' | 'next' | 'prevNext' | 'home' | 'parent' | 'target' | 'targetLongPress' | 'state';
-
-/** Feste Farben der Kantenarten - Basis für Legende, Handles, Marker und Kanten */
-const EDGE_COLOR_HEX: Record<EdgeKind, string> = {
-    default: '#1976d2',
-    prev: '#6676d2',
-    next: '#19c3d2',
-    prevNext: '#9c27b0', // beidseitige prev/next-Verbindung
-    home: '#fbc02d',
-    parent: '#d32f2f',
-    target: '#43a047',
-    targetLongPress: '#fb8c00', // langer Druck auf ein Seitenelement
-    state: '#546e7a', // Datenpunkt oder Channel, den die Seite nutzt
-};
-
-/** CSS-Variablen der Kantenfarben - erlauben ein Override über das Theme */
-const EDGE_COLOR_VAR: Record<EdgeKind, string> = {
-    default: '--edge-color',
-    prev: '--edge-prev',
-    next: '--edge-next',
-    prevNext: '--edge-prev-next',
-    home: '--edge-home',
-    parent: '--edge-parent',
-    target: '--edge-target',
-    targetLongPress: '--edge-target-long-press',
-    state: '--edge-state',
-};
-
-/**
- * Basisfarbe je Seitenherkunft. Sie wird nicht direkt gezeichnet: der Knoten bekommt sie als
- * Rahmenfarbe und als abgeschwächter Hintergrund, damit die Beschriftung in hellem wie dunklem
- * Theme lesbar bleibt. Seiten aus dem Konfigurationsskript behalten das Aussehen des Themes.
- */
-const NODE_COLOR_HEX: Record<Exclude<NodeStyle, 'script'>, string> = {
-    global: '#8e24aa', // violett - Seite aus der globalen Skript-Konfiguration
-    admin: '#43a047', // grün
-    system: '#f9a825', // gelb
-    stateRef: '#546e7a', // blaugrau - kein Seiten-, sondern ein Datenpunkt-Knoten
-};
-
-/**
- * Aussehen eines Knotens: die Herkunft der Seite, oder `stateRef` für einen Knoten, der für einen
- * Datenpunkt steht statt für eine Seite.
- */
-type NodeStyle = PageOrigin | 'stateRef';
-
-/** CSS-Variablen je Knotenart - vom ThemeVarsProvider passend zum Theme gefüllt */
-const NODE_STYLE_VAR: Record<NodeStyle, { bg: string; border: string }> = {
-    script: { bg: '--node-bg', border: '--node-border' },
-    global: { bg: '--node-global-bg', border: '--node-global-border' },
-    admin: { bg: '--node-admin-bg', border: '--node-admin-border' },
-    system: { bg: '--node-system-bg', border: '--node-system-border' },
-    stateRef: { bg: '--node-state-ref-bg', border: '--node-state-ref-border' },
-};
-
-/** Alle Knotenarten in der Reihenfolge der Legende */
-const NODE_STYLES: NodeStyle[] = ['script', 'global', 'admin', 'system', 'stateRef'];
-
-/** Übersetzungsschlüssel der Knotenarten für die Legende */
-const NODE_STYLE_LABEL_KEY: Record<NodeStyle, string> = {
-    script: 'nav_legend_origin_script',
-    global: 'nav_legend_origin_global',
-    admin: 'nav_legend_origin_admin',
-    system: 'nav_legend_origin_system',
-    stateRef: 'nav_legend_state_ref',
-};
-
-/**
- * Knotenart eines Eintrags - ein Datenpunkt-Knoten steht für keine Seite und hat daher keine Herkunft
- *
- * @param entry Eintrag der Navigationskarte
- */
-function nodeStyleOf(entry: NavigationMapEntry | undefined): NodeStyle {
-    if (entry?.nodeType === 'stateRef') {
-        return 'stateRef';
-    }
-    return entry?.origin ?? 'script';
-}
-
-/** Kantenarten mit fester Farbe - unabhängig vom Admin-Theme */
-const STATIC_EDGE_KINDS: EdgeKind[] = [
-    'prev',
-    'next',
-    'prevNext',
-    'home',
-    'parent',
-    'target',
-    'targetLongPress',
-    'state',
-];
-
-/** Zuordnung Handle -> Kantenart, für die Einfärbung der Handles am Knoten */
-const HANDLE_EDGE_KIND: Record<string, EdgeKind> = {
-    prev: 'prev',
-    next: 'next',
-    homeTopLeft: 'home',
-    homeTopRight: 'home',
-    parentBottomLeft: 'parent',
-    parentBottomRight: 'parent',
-    targetRight: 'target',
-    targetLeft: 'target',
-};
-
-/**
- * Farbe einer Kantenart als CSS-Ausdruck mit Hex-Fallback
- *
- * @param kind Kantenart
- */
-function edgeColor(kind: EdgeKind): string {
-    return `var(${EDGE_COLOR_VAR[kind]}, ${EDGE_COLOR_HEX[kind]})`;
-}
 // Typ für das Rückgabeobjekt der mapNavigationMapToFlow-Funktion
 interface FlowData {
     nodes: FlowNode[];
     edges: FlowEdge[];
-}
-// Typen für React Flow Nodes und Edges
-interface FlowNode {
-    id: string;
-    data: { label: string; entry?: NavigationMapEntry };
-    position: { x: number; y: number };
-    type?: string;
-    draggable?: boolean;
-}
-
-interface FlowEdge {
-    id: string;
-    source: string;
-    target: string;
-    sourceHandle?: string;
-    targetHandle?: string;
-    label: string;
-    style: { strokeWidth: number; strokeDasharray?: string; stroke?: string };
-    data?: { isTarget: boolean; navType?: EdgeKind; bidirectional?: boolean; highlighted?: boolean };
-    className?: string;
 }
 // State-Interface für die NavigationView-Klasse
 interface NavigationViewState extends ConfigGenericState {
@@ -226,22 +123,31 @@ interface NavigationViewState extends ConfigGenericState {
     noData?: boolean;
 }
 // React import consolidated below with hooks
-import type { Edge, EdgeProps } from '@xyflow/react';
+import type {
+    Connection,
+    Edge,
+    EdgeProps,
+    EdgeTypes,
+    FinalConnectionState,
+    NodeTypes,
+    OnConnectEnd,
+    OnReconnect,
+} from '@xyflow/react';
 import {
     ReactFlow,
     Background,
     Controls,
-    Handle,
-    Position,
+    ConnectionMode,
     applyNodeChanges,
-    applyEdgeChanges,
     getBezierPath,
+    useUpdateNodeInternals,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import type { SelectChangeEvent } from '@mui/material';
 import {
     Select,
     MenuItem,
+    Menu,
     Box,
     Button,
     Divider,
@@ -249,6 +155,8 @@ import {
     CircularProgress,
     Checkbox,
     FormControlLabel,
+    Alert,
+    Snackbar,
 } from '@mui/material';
 import NodePageInfoPanel from './components/NodePageInfoPanel';
 import { openPageConfig } from './pageConfigLink';
@@ -258,13 +166,42 @@ import { hierarchy, tree } from 'd3-hierarchy';
 import React, { useEffect } from 'react';
 import { ConfigGeneric, type ConfigGenericProps, type ConfigGenericState } from '@iobroker/json-config';
 import { I18n } from '@iobroker/gui-components';
-// Typdefinitionen für panelConfig (vereinfachte Annahme)
-// Siehe zentrale Typen in src/lib/types/navigation.ts
-type NavigationPanelConfig = {
-    panelName: string;
-    friendlyName: string;
-    navigationMap: NavigationMap;
-};
+/** A change of one navigation link, waiting for the user to pick the scope it is written to */
+interface PendingLinkChange {
+    /** Node the link starts at */
+    sourceNodeId: string;
+    /** `uniqueName` of the admin entry behind that node */
+    uniqueName: string;
+    panelTopic: string;
+    kind: NavigationLinkKind;
+    /** Node the link points to, `undefined` removes the link */
+    target: string | undefined;
+}
+
+/** One link in the menu of an edge */
+interface EdgeMenuItem {
+    source: string;
+    target: string;
+    kind: NavigationLinkKind;
+    /** The link is stored in the configuration of an admin page and can be removed */
+    removable: boolean;
+}
+
+/**
+ * Menu of a clicked edge, at the position of the click. It lists every link between the two
+ * pages in both directions - `a.next = b` and `b.prev = a` are drawn on top of each other.
+ */
+interface EdgeEditMenu {
+    x: number;
+    y: number;
+    items: EdgeMenuItem[];
+}
+
+/** Node types of the flow - defined once, React Flow re-mounts every node when the object changes */
+const NODE_TYPES: NodeTypes = { custom: NavigationFlowNode };
+
+/** Shared empty set, so a panel without touched nodes keeps the same identity between renders */
+const NO_TOUCHED: ReadonlySet<string> = new Set();
 
 /** Edge type of this view - `@xyflow/react` types `data` as `Record<string, unknown>` */
 type CustomEdgeType = Edge<{
@@ -349,6 +286,9 @@ function CustomEdge(props: EdgeProps<CustomEdgeType>): React.ReactElement {
         </g>
     );
 }
+
+/** Edge types of the flow - defined once like the node types */
+const EDGE_TYPES: EdgeTypes = { custom: CustomEdge };
 
 interface EdgeArrowMarkersProps {
     kind: EdgeKind;
@@ -446,8 +386,22 @@ function LegendEdgePreview(props: LegendEdgePreviewProps): React.ReactElement {
     );
 }
 
-// Hilfsfunktion für die Umwandlung der NavigationMap in React Flow Nodes/Edges
-function mapNavigationMapToFlow(navigationMap: NavigationMap): FlowData {
+interface MapToFlowOptions {
+    /**
+     * Draw a pair `a.next === b` and `b.prev === a` as one edge with two arrow heads. Off in edit
+     * mode, where every edge stands for exactly one link of the configuration.
+     */
+    mergeReciprocal?: boolean;
+}
+
+/**
+ * Builds the nodes and edges of the flow from a navigation map.
+ *
+ * @param navigationMap Navigation map of the panel.
+ * @param options See {@link MapToFlowOptions}; reciprocal prev/next pairs are merged by default.
+ */
+function mapNavigationMapToFlow(navigationMap: NavigationMap, options: MapToFlowOptions = {}): FlowData {
+    const mergeReciprocal = options.mergeReciprocal !== false;
     const nodes: FlowNode[] = navigationMap.map((entry: NavigationMapEntry, idx: number) => {
         let position: { x: number; y: number };
         if (entry.position && typeof entry.position.x === 'number' && typeof entry.position.y === 'number') {
@@ -481,7 +435,7 @@ function mapNavigationMapToFlow(navigationMap: NavigationMap): FlowData {
      * @param b Seite, deren `prev` geprüft wird
      */
     const isReciprocal = (a: string, b: string): boolean => {
-        if (a === b) {
+        if (!mergeReciprocal || a === b) {
             return false;
         }
         const from = entryByPage.get(a);
@@ -504,8 +458,8 @@ function mapNavigationMapToFlow(navigationMap: NavigationMap): FlowData {
             id: `nav-${a}-${b}-prevnext`,
             source: a,
             target: b,
-            sourceHandle: 'next',
-            targetHandle: 'prev',
+            sourceHandle: LINK_HANDLES.next.source,
+            targetHandle: LINK_HANDLES.next.target,
             label: '',
             style: { strokeWidth: 2, stroke: edgeColor('prevNext') },
             data: { isTarget: false, navType: 'prevNext', bidirectional: true },
@@ -524,8 +478,8 @@ function mapNavigationMapToFlow(navigationMap: NavigationMap): FlowData {
                     id: `nav-${entry.page}-${entry.next}-next`,
                     source: entry.page,
                     target: entry.next,
-                    sourceHandle: 'next',
-                    targetHandle: 'prev',
+                    sourceHandle: LINK_HANDLES.next.source,
+                    targetHandle: LINK_HANDLES.next.target,
                     label: '',
                     style: { strokeWidth: 2, stroke: edgeColor('next') },
                     data: { isTarget: false, navType: 'next' },
@@ -543,8 +497,8 @@ function mapNavigationMapToFlow(navigationMap: NavigationMap): FlowData {
                     id: `nav-${entry.page}-${entry.prev}-prev`,
                     source: entry.page,
                     target: entry.prev,
-                    sourceHandle: 'prev',
-                    targetHandle: 'next',
+                    sourceHandle: LINK_HANDLES.prev.source,
+                    targetHandle: LINK_HANDLES.prev.target,
                     label: '',
                     style: { strokeWidth: 2, stroke: edgeColor('prev') },
                     data: { isTarget: false, navType: 'prev' },
@@ -558,8 +512,8 @@ function mapNavigationMapToFlow(navigationMap: NavigationMap): FlowData {
                 id: `nav-${entry.page}-${entry.home}-home`,
                 source: entry.page,
                 target: entry.home,
-                sourceHandle: 'homeTopLeft',
-                targetHandle: 'homeTopRight',
+                sourceHandle: LINK_HANDLES.home.source,
+                targetHandle: LINK_HANDLES.home.target,
                 label: '',
                 style: { strokeWidth: 2, strokeDasharray: '8 8', stroke: edgeColor('home') },
                 data: { isTarget: false, navType: 'home' },
@@ -572,8 +526,8 @@ function mapNavigationMapToFlow(navigationMap: NavigationMap): FlowData {
                 id: `nav-${entry.page}-${entry.parent}-parent`,
                 source: entry.page,
                 target: entry.parent,
-                sourceHandle: 'parentBottomLeft',
-                targetHandle: 'parentBottomRight',
+                sourceHandle: LINK_HANDLES.parent.source,
+                targetHandle: LINK_HANDLES.parent.target,
                 label: '',
                 style: { strokeWidth: 2, stroke: edgeColor('parent') },
                 data: { isTarget: false, navType: 'parent' },
@@ -942,7 +896,6 @@ function computeAutoLayout(navigationMap: NavigationMap): Record<string, { x: nu
 
 interface NavigationViewInternalState extends NavigationViewState {
     nodes: FlowNode[];
-    edges: FlowEdge[];
     dirty?: boolean;
     noData?: boolean;
     infoPanelOpen?: boolean;
@@ -954,10 +907,56 @@ interface NavigationViewInternalState extends NavigationViewState {
     isTouchDevice?: boolean;
     showSystemPages: boolean;
     showStates: boolean;
+    /** Edit mode: links of admin pages can be drawn and removed */
+    editing: boolean;
+    /** Node ids whose links were changed but not saved yet, by panel name */
+    touched: Map<string, ReadonlySet<string>>;
+    editMenu?: EdgeEditMenu;
+    scopeDialog?: PendingLinkChange;
+    /** Translated warning shown in a snackbar, e.g. when a page cannot be edited */
+    notice?: string;
+    /** The adapter restarted and the navigation is being read again - the old view stays meanwhile */
+    restarting: boolean;
+    /**
+     * Bumped whenever handles appear or disappear without the node changing its size (edit mode,
+     * fresh data) - React Flow then re-measures the handles, see {@link NodeInternalsRefresher}.
+     */
+    internalsToken: number;
 }
 
 class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInternalState> {
     private autosaveInterval?: NodeJS.Timeout;
+
+    /** Timer of the restart phase: the first read after the adapter came back, or the next poll */
+    private restartTimeout?: NodeJS.Timeout;
+
+    /** End of the restart phase - polling stops here even without an answer */
+    private restartDeadline = 0;
+
+    /** Last alive value seen - the state may lag behind, the subscription must not */
+    private lastAlive = false;
+
+    /** Edges of the current map/config/edit mode, kept until one of the inputs changes */
+    private edgesCache?: {
+        map: NavigationMap;
+        pageConfig: PageConfigEntry[];
+        panelTopic: string | undefined;
+        touched: ReadonlySet<string>;
+        editing: boolean;
+        edges: FlowEdge[];
+    };
+
+    /** Nodes with the data of the edit mode added, kept per node until the node or that data changes */
+    private nodeCache = new Map<string, { source: FlowNode; key: string; node: FlowNode }>();
+
+    /**
+     * Scope the user picked for a page assigned to all panels, by `<panelTopic>|<uniqueName>` - so
+     * the question is asked once per page and session, not with every link.
+     */
+    private scopeChoice = new Map<string, NavigationEditScope>();
+
+    /** Set while `onConnect` applied a connection, so `onConnectEnd` does not apply it again */
+    private connectApplied = false;
 
     /** Node the icons of the info panel are being read for, or were read for - each node once. */
     private iconValuesLoadedFor?: string;
@@ -1029,8 +1028,6 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
             console.error('Fehler beim Speichern der Navigation:', e);
         }
     }
-    private aliveTimeout?: NodeJS.Timeout;
-
     constructor(props: ConfigGenericProps) {
         super(props);
         this.state = {
@@ -1041,20 +1038,21 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
             selectedPanel: '',
             navigationMap: null,
             nodes: [],
-            edges: [],
             dirty: false,
             infoPanelOpen: false,
             infoData: null,
             infoNodeId: undefined,
             showSystemPages: false,
             showStates: false,
+            editing: false,
+            touched: new Map(),
+            restarting: false,
+            internalsToken: 0,
         };
         this.handleShowStatesChange = this.handleShowStatesChange.bind(this);
-        this.checkAlive = this.checkAlive.bind(this);
         this.fetchNavigation = this.fetchNavigation.bind(this);
         this.handlePanelChange = this.handlePanelChange.bind(this);
         this.onNodesChange = this.onNodesChange.bind(this);
-        this.onEdgesChange = this.onEdgesChange.bind(this);
         this.onNodeClick = this.onNodeClick.bind(this);
         this.onPaneClick = this.onPaneClick.bind(this);
         this.saveNavigation = this.saveNavigation.bind(this);
@@ -1092,8 +1090,7 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
             type: 'custom',
             draggable: true,
         }));
-        const flow = mapNavigationMapToFlow(cleaned);
-        this.setState({ nodes: newNodes, edges: flow.edges, dirty: true, confirmAutoLayoutOpen: false } as any);
+        this.setState({ nodes: newNodes, dirty: true, confirmAutoLayoutOpen: false });
     }
 
     handleShowSystemPagesChange(_event: React.ChangeEvent<HTMLInputElement>, checked: boolean): void {
@@ -1384,7 +1381,7 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
 
     // eslint-disable-next-line @typescript-eslint/require-await
     async componentDidMount(): Promise<void> {
-        this.checkAlive();
+        void this.subscribeAlive();
         this.fetchNavigation();
         // Autosave-Intervall starten
         this.autosaveInterval = setInterval(() => {
@@ -1408,8 +1405,10 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
     }
 
     componentWillUnmount(): void {
-        if (this.aliveTimeout) {
-            clearTimeout(this.aliveTimeout);
+        this.clearRestartTimer();
+        const socket = this.props.oContext.socket;
+        if (socket && typeof socket.unsubscribeState === 'function') {
+            void socket.unsubscribeState(this.aliveStateId(), this.onAliveChanged);
         }
         if (this.autosaveInterval) {
             clearInterval(this.autosaveInterval);
@@ -1422,106 +1421,197 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
         }
     }
 
-    checkAlive(): void {
-        const instance = this.props.oContext.instance ?? '0';
+    private aliveStateId(): string {
+        return `system.adapter.${ADAPTER_NAME}.${this.props.oContext.instance ?? '0'}.alive`;
+    }
+
+    /**
+     * Reads the alive state once and subscribes to it - a poll would miss the short offline
+     * moment of a restart.
+     */
+    private async subscribeAlive(): Promise<void> {
         const socket = this.props.oContext.socket;
-        if (socket && typeof socket.getState === 'function') {
-            void socket.getState(`system.adapter.${ADAPTER_NAME}.${instance}.alive`).then(state => {
-                this.setState({ alive: !!state?.val });
-                this.aliveTimeout = setTimeout(this.checkAlive, 5000);
-            });
-        } else {
-            this.aliveTimeout = setTimeout(this.checkAlive, 5000);
+        if (!socket || typeof socket.getState !== 'function' || typeof socket.subscribeState !== 'function') {
+            return;
+        }
+        try {
+            const state = await socket.getState(this.aliveStateId());
+            this.lastAlive = !!state?.val;
+            this.setState({ alive: this.lastAlive });
+            await socket.subscribeState(this.aliveStateId(), this.onAliveChanged);
+        } catch (e) {
+            console.error('[NavigationView] Cannot read or subscribe the alive state:', e);
         }
     }
 
     /**
-     * Derives the `navigationMap`/`nodes`/`edges` state slice for a panel list entry.
+     * The adapter went offline or came back. Back after a restart (e.g. after "save" in the admin)
+     * its navigation is read again - see {@link startRestartReload}.
+     *
+     * @param _id State id, unused.
+     * @param state The alive state.
+     */
+    private onAliveChanged = (_id: string, state: ioBroker.State | null | undefined): void => {
+        const alive = !!state?.val;
+        const wasAlive = this.lastAlive;
+        this.lastAlive = alive;
+        if (alive !== this.state.alive) {
+            this.setState({ alive });
+        }
+        if (alive && !wasAlive) {
+            this.startRestartReload();
+        }
+    };
+
+    private clearRestartTimer(): void {
+        if (this.restartTimeout) {
+            clearTimeout(this.restartTimeout);
+            this.restartTimeout = undefined;
+        }
+    }
+
+    /**
+     * Starts the restart phase: the first read follows after 3 s, then every 2 s until the adapter
+     * answers with at least one panel or 60 s are over. The current view stays as it is meanwhile.
+     */
+    private startRestartReload(): void {
+        this.clearRestartTimer();
+        this.restartDeadline = Date.now() + 60000;
+        this.setState({ restarting: true });
+        this.restartTimeout = setTimeout(() => void this.pollAfterRestart(), 3000);
+    }
+
+    /** One read of the restart phase - see {@link startRestartReload} */
+    private async pollAfterRestart(): Promise<void> {
+        this.restartTimeout = undefined;
+        const panelList = await this.requestNavigation();
+        if (panelList?.length) {
+            this.setState({ restarting: false });
+            // The adapter answers before it finished building the navigation at times - when marks
+            // remain, one more read follows
+            this.applyPanelList(panelList, 7000);
+            return;
+        }
+        if (Date.now() < this.restartDeadline) {
+            this.restartTimeout = setTimeout(() => void this.pollAfterRestart(), 2000);
+            return;
+        }
+        this.setState({
+            restarting: false,
+            panelList: [],
+            selectedPanel: '',
+            navigationMap: null,
+            nodes: [],
+            noData: true,
+        });
+    }
+
+    /**
+     * Derives the `navigationMap`/`nodes` state slice for a panel list entry.
      *
      * Shared by {@link fetchNavigation} and {@link handlePanelChange} so both compute the flow
-     * from a `PanelListEntry` the same way.
+     * from a `PanelListEntry` the same way. The edges are not part of the state - they are derived
+     * from the map, the (unsaved) page configuration and the edit mode in {@link getFlowEdges}.
      *
      * @param entry Panel list entry to derive the flow from, or `undefined` if none was found
-     * @returns The `navigationMap`, `nodes` and `edges` to apply to the state
+     * @returns The `navigationMap` and `nodes` to apply to the state
      */
     private deriveFlowState(entry: PanelListEntry | undefined): {
         navigationMap: NavigationMap | null;
         nodes: FlowNode[];
-        edges: FlowEdge[];
     } {
-        let nodes: FlowNode[] = [];
-        let edges: FlowEdge[] = [];
-        if (entry && entry.navigationMap) {
-            const flow = mapNavigationMapToFlow(entry.navigationMap);
-            nodes = flow.nodes;
-            edges = flow.edges;
-        }
         return {
             navigationMap: entry ? entry.navigationMap : null,
-            nodes,
-            edges,
+            nodes: entry && entry.navigationMap ? mapNavigationMapToFlow(entry.navigationMap).nodes : [],
         };
     }
 
+    /** The "refresh" button: reads the navigation again, unsaved link changes stay */
+    private handleRefreshClick = (): void => {
+        this.fetchNavigation();
+    };
+
+    /**
+     * Asks the adapter for the navigation of all panels.
+     *
+     * @returns The panel list, or `undefined` when the adapter did not answer within 3 s or sent
+     * no list.
+     */
+    private requestNavigation(): Promise<PanelListEntry[] | undefined> {
+        const instance = this.props.oContext.instance ?? '0';
+        const request = this.props.oContext.socket
+            .sendTo(`${ADAPTER_NAME}.${instance}`, SENDTO_GET_PANEL_NAVIGATION_COMMAND, null)
+            .then((res: { result?: PanelListEntry[] }): PanelListEntry[] | undefined =>
+                res && Array.isArray(res.result) ? res.result : undefined,
+            )
+            .catch((): undefined => undefined);
+        const timeout = new Promise<undefined>(resolve => setTimeout(() => resolve(undefined), 3000));
+        return Promise.race([request, timeout]);
+    }
+
+    /**
+     * Takes a freshly read panel list into the state. Pages whose links the new data already
+     * reflects lose their unsaved mark, whoever triggered the read.
+     *
+     * @param result Panel list as the adapter sent it.
+     * @param retryIfTouchedMs When marks remain, read once more after this many milliseconds.
+     */
+    private applyPanelList(result: PanelListEntry[], retryIfTouchedMs?: number): void {
+        // PanelList mit friendlyName übernehmen; ein älterer Adapter liefert noch kein
+        // panelTopic - dann wird es aus der Panel-Tabelle der Instanz nachgeschlagen
+        const panelList: PanelListEntry[] = result.map(p => ({
+            panelName: p.panelName,
+            friendlyName: p.friendlyName || p.panelName,
+            panelTopic: p.panelTopic || this.lookupPanelTopic(p.panelName),
+            navigationMap: p.navigationMap,
+        }));
+        // Zuletzt gewähltes Panel bevorzugen, falls es noch existiert - sonst wie bisher das erste
+        const storedPanelName = readStoredSelectedPanel();
+        const storedEntry = storedPanelName ? panelList.find(p => p.panelName === storedPanelName) : undefined;
+        const selectedEntry = storedEntry || panelList[0];
+        const selectedPanel = selectedEntry?.panelName || '';
+        const flowState = this.deriveFlowState(selectedEntry);
+        this.setState(
+            state => ({
+                panelList,
+                selectedPanel,
+                navigationMap: flowState.navigationMap,
+                nodes: flowState.nodes,
+                noData: false,
+                dirty: false,
+                touched: this.reconcileTouched(state.touched, panelList),
+                editMenu: undefined,
+                internalsToken: state.internalsToken + 1,
+            }),
+            () => {
+                if (retryIfTouchedMs && [...this.state.touched.values()].some(set => set.size > 0)) {
+                    this.clearRestartTimer();
+                    this.restartTimeout = setTimeout(() => {
+                        this.restartTimeout = undefined;
+                        this.fetchNavigation();
+                    }, retryIfTouchedMs);
+                }
+            },
+        );
+    }
+
+    /** Reads the navigation of all panels from the adapter - at mount and on "refresh" */
     fetchNavigation(): void {
         this.setState({ loading: true, noData: false });
-        const instance = this.props.oContext.instance ?? '0';
-        let didRespond = false;
-        const timeout = setTimeout(() => {
-            if (!didRespond) {
+        void this.requestNavigation().then(result => {
+            this.setState({ loading: false });
+            if (result) {
+                this.applyPanelList(result);
+            } else {
                 this.setState({
-                    loading: false,
                     panelList: [],
                     selectedPanel: '',
                     navigationMap: null,
                     nodes: [],
-                    edges: [],
                     noData: true,
                 });
             }
-        }, 3000);
-        void this.props.oContext.socket
-            .sendTo(`${ADAPTER_NAME}.${instance}`, SENDTO_GET_PANEL_NAVIGATION_COMMAND, null)
-            .then((res: { result?: NavigationPanelConfig[] }) => {
-                didRespond = true;
-                clearTimeout(timeout);
-                this.setState({ loading: false });
-                if (res && Array.isArray(res.result)) {
-                    // PanelList mit friendlyName übernehmen
-                    const panelList: PanelListEntry[] = res.result.map(p => ({
-                        panelName: p.panelName,
-                        friendlyName: p.friendlyName || p.panelName,
-                        navigationMap: p.navigationMap,
-                    }));
-                    // Zuletzt gewähltes Panel bevorzugen, falls es noch existiert - sonst wie bisher das erste
-                    const storedPanelName = readStoredSelectedPanel();
-                    const storedEntry = storedPanelName
-                        ? panelList.find(p => p.panelName === storedPanelName)
-                        : undefined;
-                    const selectedEntry = storedEntry || panelList[0];
-                    const selectedPanel = selectedEntry?.panelName || '';
-                    const flowState = this.deriveFlowState(selectedEntry);
-                    // Debug entfernt
-                    this.setState({
-                        panelList,
-                        selectedPanel,
-                        navigationMap: flowState.navigationMap,
-                        nodes: flowState.nodes,
-                        edges: flowState.edges,
-                        noData: false,
-                        dirty: false,
-                    });
-                } else {
-                    this.setState({
-                        panelList: [],
-                        selectedPanel: '',
-                        navigationMap: null,
-                        nodes: [],
-                        edges: [],
-                        noData: true,
-                    });
-                }
-            });
+        });
     }
 
     handlePanelChange(event: SelectChangeEvent<string>, _child?: React.ReactNode): void {
@@ -1538,9 +1628,11 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
             selectedPanel: panelName,
             navigationMap: flowState.navigationMap,
             nodes: flowState.nodes,
-            edges: flowState.edges,
             dirty: false,
+            editMenu: undefined,
+            scopeDialog: undefined,
         });
+        this.setState(state => ({ internalsToken: state.internalsToken + 1 }));
     }
 
     onNodesChange(changes: any[]): void {
@@ -1572,27 +1664,565 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
         }
     }
 
-    onEdgesChange(changes: any[]): void {
-        if (changes.some(change => change.type === 'position')) {
-            this.setState(state => ({
-                edges: applyEdgeChanges(changes, state.edges),
-                dirty: true,
-            }));
-        } else {
-            this.setState(state => ({
-                edges: applyEdgeChanges(changes, state.edges),
-            }));
+    // ---------------------------------------------------------------------------------------------
+    // Edit mode: prev/next/home/parent of admin pages are set by drawing connections
+    // ---------------------------------------------------------------------------------------------
+
+    /**
+     * Drops the unsaved mark of every page whose links the freshly read navigation already
+     * reflects - the adapter restarted and applied the saved configuration.
+     *
+     * @param touched Marks by panel name.
+     * @param panelList The navigation just read.
+     * @returns The remaining marks.
+     */
+    private reconcileTouched(
+        touched: Map<string, ReadonlySet<string>>,
+        panelList: PanelListEntry[],
+    ): Map<string, ReadonlySet<string>> {
+        const pageConfig = this.getPageConfig();
+        const result = new Map<string, ReadonlySet<string>>();
+        for (const [panelName, pages] of touched) {
+            const panel = panelList.find(p => p.panelName === panelName);
+            if (!panel || !panel.panelTopic) {
+                result.set(panelName, pages);
+                continue;
+            }
+            const remaining = new Set(
+                [...pages].filter(
+                    page => !isNavigationApplied(panel.navigationMap, pageConfig, panel.panelTopic, page),
+                ),
+            );
+            if (remaining.size) {
+                result.set(panelName, remaining);
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Shows a translated warning in the snackbar.
+     *
+     * @param key Translation key.
+     */
+    private showNotice(key: string): void {
+        this.setState({ notice: I18n.t(key) });
+    }
+
+    private closeNotice = (): void => {
+        this.setState({ notice: undefined });
+    };
+
+    /** Page configuration of the instance as the admin holds it right now - unsaved changes included */
+    private getPageConfig(): PageConfigEntry[] {
+        const config: PageConfigEntry[] | undefined = this.props.data?.pageConfig;
+        return Array.isArray(config) ? config : [];
+    }
+
+    /**
+     * Topic of a panel from the panel table of the instance - fallback for an adapter that does not
+     * report `panelTopic` with the navigation yet.
+     *
+     * @param panelName Name of the panel as reported with the navigation.
+     * @returns The topic, or an empty string when the panel is not in the table.
+     */
+    private lookupPanelTopic(panelName: string): string {
+        const panels: { topic?: string; name?: string }[] | undefined = this.props.data?.panels;
+        if (!Array.isArray(panels)) {
+            return '';
+        }
+        const found = panels.find(
+            p => p && (p.name === panelName || p.topic === panelName || p.topic?.split('/').pop() === panelName),
+        );
+        return found?.topic ?? '';
+    }
+
+    /** Topic of the selected panel - the key its pages are assigned under */
+    private getSelectedPanelTopic(): string | undefined {
+        return this.state.panelList.find(p => p.panelName === this.state.selectedPanel)?.panelTopic || undefined;
+    }
+
+    /** Nodes of the selected panel whose links were changed but not saved yet */
+    private getTouched(): ReadonlySet<string> {
+        return this.state.touched.get(this.state.selectedPanel) ?? NO_TOUCHED;
+    }
+
+    /**
+     * A page whose links can be edited here: one created from the admin configuration. Script
+     * pages are display-only for now.
+     *
+     * @param entry Entry of the node.
+     */
+    private isEditableEntry(
+        entry: NavigationMapEntry | undefined,
+    ): entry is NavigationMapEntry & { adminPageName: string } {
+        return !!entry && entry.nodeType !== 'stateRef' && entry.origin === 'admin' && !!entry.adminPageName;
+    }
+
+    /**
+     * An edge that stands for one editable link: one of the four navigation links of an admin page.
+     *
+     * @param edge Edge of the flow.
+     */
+    private isEditableEdge(edge: FlowEdge): boolean {
+        return isNavigationLinkKind(edge.data?.navType) && this.isEditableEntry(this.entryOfNode(edge.source));
+    }
+
+    /**
+     * A node a link may point to: a page of the panel other than the source.
+     *
+     * @param sourceNodeId Node the link starts at.
+     * @param targetNodeId Node under the pointer, if any.
+     */
+    private isValidLinkTarget(sourceNodeId: string, targetNodeId: string | undefined): targetNodeId is string {
+        if (!targetNodeId || targetNodeId === sourceNodeId) {
+            return false;
+        }
+        const target = this.entryOfNode(targetNodeId);
+        return !!target && target.nodeType !== 'stateRef';
+    }
+
+    /**
+     * Whether a stored link target names the node shown in the flow. The start page is stored
+     * under the name of its entry but shown as `main`.
+     *
+     * @param stored Target as stored in the configuration.
+     * @param nodeId Node id in the flow.
+     */
+    private storedTargetIs(stored: string | undefined, nodeId: string | undefined): boolean {
+        if (!stored || !nodeId) {
+            return stored === nodeId;
+        }
+        if (stored === nodeId) {
+            return true;
+        }
+        return (
+            nodeId === mainPageName &&
+            this.getPageConfig().some(e => e && e.uniqueName === stored && isMainPageEntry(e))
+        );
+    }
+
+    /**
+     * Whether a link shown in the flow is stored in the configuration - only then it can be
+     * removed. A link the adapter derived (default home, prev/next chaining) is not.
+     *
+     * @param sourceNodeId Node the link starts at.
+     * @param kind Which link.
+     * @param target Node the link points to.
+     */
+    private isConfiguredLink(sourceNodeId: string, kind: NavigationLinkKind, target: string): boolean {
+        const entry = this.entryOfNode(sourceNodeId);
+        const panelTopic = this.getSelectedPanelTopic();
+        if (!this.isEditableEntry(entry) || !panelTopic) {
+            return false;
+        }
+        const configEntry = this.getPageConfig().find(e => e && e.uniqueName === entry.adminPageName);
+        const stored = configEntry ? effectiveNavigation(configEntry, panelTopic)?.[kind] : undefined;
+        return !!stored && this.storedTargetIs(stored, target);
+    }
+
+    /**
+     * Edges of the flow: the map the adapter reported, overlaid with the unsaved configuration of
+     * the touched pages. In edit mode every edge stands for one link of the configuration and the
+     * edges of admin pages can be dragged to another page.
+     *
+     * Derived, not kept in the state: it depends on the map, the page configuration of the admin,
+     * the touched pages and the edit mode, and every one of them changes elsewhere. The result is
+     * cached until one of the inputs changes, so dragging a node does not rebuild it.
+     */
+    private getFlowEdges(): FlowEdge[] {
+        const { navigationMap, editing } = this.state;
+        if (!navigationMap) {
+            return [];
+        }
+        const pageConfig = this.getPageConfig();
+        const panelTopic = this.getSelectedPanelTopic();
+        const touched = this.getTouched();
+        const cache = this.edgesCache;
+        if (
+            cache &&
+            cache.map === navigationMap &&
+            cache.pageConfig === pageConfig &&
+            cache.panelTopic === panelTopic &&
+            cache.touched === touched &&
+            cache.editing === editing
+        ) {
+            return cache.edges;
+        }
+        const map =
+            panelTopic && touched.size
+                ? applyNavigationOverlay(navigationMap, pageConfig, panelTopic, touched)
+                : navigationMap;
+        let edges = mapNavigationMapToFlow(map, { mergeReciprocal: !editing }).edges;
+        if (editing) {
+            // Only the target end of an editable edge can be dragged; every other edge says so
+            // explicitly, as an edge without the flag would inherit `edgesReconnectable`
+            edges = edges.map(edge => {
+                const kind = edge.data?.navType;
+                if (!isNavigationLinkKind(kind) || !this.isEditableEdge(edge)) {
+                    return { ...edge, reconnectable: false };
+                }
+                // A link the adapter derived (default home, chaining) is not in the configuration
+                // and drawn pale - removing the configured counterpart leaves it visible
+                const derived = !this.isConfiguredLink(edge.source, kind, edge.target);
+                return {
+                    ...edge,
+                    reconnectable: 'target',
+                    className: `${edge.className ?? ''} edge-editable${derived ? ' edge-derived' : ''}`.trim(),
+                };
+            });
+        }
+        this.edgesCache = { map: navigationMap, pageConfig, panelTopic, touched, editing, edges };
+        return edges;
+    }
+
+    /**
+     * Adds what the node component needs to know to each node: the handles an edge uses (and in
+     * which colour), the edit mode and whether the page has unsaved changes.
+     *
+     * A node keeps its identity as long as neither it nor that data changes - React Flow would
+     * otherwise re-adopt every node with every render, e.g. while one of them is dragged.
+     *
+     * @param nodes Nodes to show.
+     * @param edges All edges of the flow, hidden ones included - a hidden edge still marks its handle.
+     */
+    private decorateNodes(nodes: FlowNode[], edges: FlowEdge[]): FlowNode[] {
+        const { editing } = this.state;
+        const touched = this.getTouched();
+        // Ein Handle bekommt die Farbe der ersten Kante, die es benutzt - so stimmen auch
+        // beidseitige und Long-Press-Verbindungen
+        const usedByNode = new Map<string, Record<string, EdgeKind | undefined>>();
+        const mark = (nodeId: string, handleId: string | undefined, kind: EdgeKind | undefined): void => {
+            if (!handleId) {
+                return;
+            }
+            let used = usedByNode.get(nodeId);
+            if (!used) {
+                used = {};
+                usedByNode.set(nodeId, used);
+            }
+            if (!(handleId in used) || (kind && !used[handleId])) {
+                used[handleId] = kind;
+            }
+        };
+        for (const edge of edges) {
+            mark(edge.source, edge.sourceHandle, edge.data?.navType);
+            mark(edge.target, edge.targetHandle, edge.data?.navType);
+        }
+        return nodes.map(node => {
+            const used = usedByNode.get(node.id) ?? {};
+            const editable = editing && this.isEditableEntry(node.data.entry);
+            const unsaved = touched.has(node.id);
+            const key = [
+                editing,
+                editable,
+                unsaved,
+                ...Object.entries(used)
+                    .map(([id, kind]) => `${id}=${kind ?? ''}`)
+                    .sort(),
+            ].join('|');
+            const cached = this.nodeCache.get(node.id);
+            if (cached && cached.source === node && cached.key === key) {
+                return cached.node;
+            }
+            const decorated: FlowNode = {
+                ...node,
+                data: { ...node.data, usedHandles: used, editing, editable, unsaved },
+            };
+            this.nodeCache.set(node.id, { source: node, key, node: decorated });
+            return decorated;
+        });
+    }
+
+    private handleEditingChange = (_event: React.ChangeEvent<HTMLInputElement>, checked: boolean): void => {
+        this.setState(state => ({
+            editing: checked,
+            editMenu: undefined,
+            scopeDialog: undefined,
+            internalsToken: state.internalsToken + 1,
+        }));
+    };
+
+    /**
+     * Only a link of an admin page may be drawn, and only to another page of the panel.
+     *
+     * @param connection The connection being drawn, or an existing edge.
+     */
+    private isValidConnection = (connection: Edge | Connection): boolean => {
+        if (!this.state.editing) {
+            return false;
+        }
+        const kind = SOURCE_HANDLE_KIND[connection.sourceHandle ?? ''];
+        if (!kind || !this.isEditableEntry(this.entryOfNode(connection.source))) {
+            return false;
+        }
+        return this.isValidLinkTarget(connection.source, connection.target);
+    };
+
+    /**
+     * A connection was dropped on a handle: the source handle says which link is set.
+     *
+     * @param connection The finished connection.
+     */
+    private onConnect = (connection: Connection): void => {
+        if (!this.state.editing) {
+            return;
+        }
+        const kind = SOURCE_HANDLE_KIND[connection.sourceHandle ?? ''];
+        if (!kind || !this.isValidLinkTarget(connection.source, connection.target)) {
+            return;
+        }
+        this.connectApplied = true;
+        this.applyNavigationLink(connection.source, kind, connection.target);
+    };
+
+    /**
+     * A connection ended without a valid handle - e.g. on the body of a node. The node under the
+     * pointer is taken as target, so nobody has to hit the small handle.
+     *
+     * @param event Pointer event the connection ended with.
+     * @param connectionState Where the connection started and whether a handle took it.
+     */
+    private onConnectEnd: OnConnectEnd = (
+        event: MouseEvent | TouchEvent,
+        connectionState: FinalConnectionState,
+    ): void => {
+        const applied = this.connectApplied;
+        this.connectApplied = false;
+        if (!this.state.editing || applied || connectionState.isValid === true) {
+            return;
+        }
+        const sourceNodeId = connectionState.fromNode?.id;
+        const kind = SOURCE_HANDLE_KIND[connectionState.fromHandle?.id ?? ''];
+        if (!sourceNodeId || !kind) {
+            return;
+        }
+        const point = 'changedTouches' in event ? event.changedTouches[0] : event;
+        if (!point) {
+            return;
+        }
+        const nodeElement = document.elementFromPoint(point.clientX, point.clientY)?.closest('.react-flow__node');
+        const targetNodeId = nodeElement instanceof HTMLElement ? nodeElement.dataset.id : undefined;
+        if (!this.isValidLinkTarget(sourceNodeId, targetNodeId)) {
+            return;
+        }
+        this.applyNavigationLink(sourceNodeId, kind, targetNodeId);
+    };
+
+    /**
+     * The target end of an edge was dragged to another handle. A drop into the void leaves the
+     * edge as it is - a link is removed through its menu only.
+     *
+     * @param oldEdge The edge before the drag.
+     * @param connection Where it was dropped.
+     */
+    private onReconnect: OnReconnect = (oldEdge: Edge, connection: Connection): void => {
+        if (!this.state.editing) {
+            return;
+        }
+        const kind = oldEdge.data?.navType;
+        if (
+            !isNavigationLinkKind(kind) ||
+            connection.source !== oldEdge.source ||
+            !this.isEditableEntry(this.entryOfNode(oldEdge.source))
+        ) {
+            return;
+        }
+        if (connection.target === oldEdge.target || !this.isValidLinkTarget(connection.source, connection.target)) {
+            return;
+        }
+        this.connectApplied = true;
+        this.applyNavigationLink(connection.source, kind, connection.target);
+    };
+
+    /**
+     * Edit mode: a click on an editable edge opens its menu at the pointer.
+     *
+     * @param event The click.
+     * @param edge The clicked edge.
+     */
+    private onEdgeClick = (event: React.MouseEvent, edge: Edge): void => {
+        if (!this.state.editing) {
+            return;
+        }
+        if (!isNavigationLinkKind(edge.data?.navType) || !this.isEditableEntry(this.entryOfNode(edge.source))) {
+            return;
+        }
+        // a.next = b and b.prev = a lie on top of each other - the menu offers both
+        const pair = new Set([edge.source, edge.target]);
+        const items: EdgeMenuItem[] = [];
+        for (const other of this.getFlowEdges()) {
+            const kind = other.data?.navType;
+            if (!isNavigationLinkKind(kind) || !pair.has(other.source) || !pair.has(other.target)) {
+                continue;
+            }
+            items.push({
+                source: other.source,
+                target: other.target,
+                kind,
+                removable: this.isEditableEdge(other) && this.isConfiguredLink(other.source, kind, other.target),
+            });
+        }
+        this.setState({ editMenu: { x: event.clientX, y: event.clientY, items } });
+    };
+
+    private closeEditMenu = (): void => {
+        this.setState({ editMenu: undefined });
+    };
+
+    /**
+     * A removable entry of the edge menu was clicked - the entry carries its index in `data-index`.
+     *
+     * @param event The click.
+     */
+    private removeMenuLink = (event: React.MouseEvent<HTMLLIElement>): void => {
+        const index = Number(event.currentTarget.dataset.index);
+        const item = this.state.editMenu?.items[index];
+        this.setState({ editMenu: undefined });
+        if (item?.removable) {
+            this.applyNavigationLink(item.source, item.kind, undefined);
+        }
+    };
+
+    /**
+     * Sets or removes one navigation link of a page - every edit of the flow ends up here.
+     *
+     * Admin pages are written to the page configuration of the instance; the admin's save button
+     * takes it from there. A page assigned to all panels first asks which assignment to write to.
+     * Script pages are display-only for now - a later phase dispatches them from here.
+     *
+     * @param sourceNodeId Node the link starts at.
+     * @param kind Which link to set.
+     * @param target Node the link points to, `undefined` removes the link.
+     */
+    applyNavigationLink(sourceNodeId: string, kind: NavigationLinkKind, target: string | undefined): void {
+        const entry = this.entryOfNode(sourceNodeId);
+        if (!this.isEditableEntry(entry)) {
+            return;
+        }
+        const panelTopic = this.getSelectedPanelTopic();
+        const configEntry = this.getPageConfig().find(e => e && e.uniqueName === entry.adminPageName);
+        if (!panelTopic || !configEntry) {
+            this.showNotice('nav_edit_not_assigned');
+            return;
+        }
+        const change: PendingLinkChange = { sourceNodeId, uniqueName: entry.adminPageName, panelTopic, kind, target };
+        switch (assignmentSourceOf(configEntry, panelTopic)) {
+            case 'panel':
+                this.writeNavigationLink(change, 'panel');
+                break;
+            case 'all': {
+                const chosen = this.scopeChoice.get(`${panelTopic}|${change.uniqueName}`);
+                if (chosen) {
+                    this.writeNavigationLink(change, chosen);
+                } else {
+                    this.setState({ scopeDialog: change });
+                }
+                break;
+            }
+            default:
+                // Excluded or not assigned according to the unsaved configuration - the flow still
+                // shows the page from the last adapter start, there is no assignment to write to
+                this.showNotice('nav_edit_not_assigned');
+                break;
         }
     }
 
+    /**
+     * Writes a link change into the page configuration and marks the page as unsaved.
+     *
+     * @param change The link to set or remove.
+     * @param scope Which assignment row to write to.
+     */
+    private writeNavigationLink(change: PendingLinkChange, scope: NavigationEditScope): void {
+        const pageConfig = this.getPageConfig();
+        const configEntry = pageConfig.find(e => e && e.uniqueName === change.uniqueName);
+        if (!configEntry) {
+            return;
+        }
+        // Already stored that way - nothing to write, nothing to mark
+        const stored = effectiveNavigation(configEntry, change.panelTopic)?.[change.kind];
+        if (
+            assignmentSourceOf(configEntry, change.panelTopic) === scope &&
+            this.storedTargetIs(stored, change.target)
+        ) {
+            return;
+        }
+        const updated = setNavigationLink(
+            pageConfig,
+            change.uniqueName,
+            change.panelTopic,
+            change.kind,
+            change.target,
+            scope,
+        );
+        if (updated === pageConfig) {
+            return;
+        }
+        void this.onChange('pageConfig', updated);
+        this.setState(state => {
+            const touched = new Map(state.touched);
+            const forPanel = new Set(touched.get(state.selectedPanel) ?? []);
+            forPanel.add(change.sourceNodeId);
+            touched.set(state.selectedPanel, forPanel);
+            return { touched };
+        });
+    }
+
+    private handleScopeAll = (): void => {
+        this.resolveScope('all');
+    };
+
+    private handleScopePanel = (): void => {
+        this.resolveScope('panel');
+    };
+
+    private handleScopeCancel = (): void => {
+        this.setState({ scopeDialog: undefined });
+    };
+
+    /**
+     * The user picked where a change of a page assigned to all panels is written to. The choice is
+     * kept for the page, so the next link of it is written without asking again.
+     *
+     * @param scope The chosen assignment row.
+     */
+    private resolveScope(scope: NavigationEditScope): void {
+        const change = this.state.scopeDialog;
+        this.setState({ scopeDialog: undefined });
+        if (!change) {
+            return;
+        }
+        this.scopeChoice.set(`${change.panelTopic}|${change.uniqueName}`, scope);
+        this.writeNavigationLink(change, scope);
+    }
+
     render(): string | React.ReactElement | null {
-        const { alive, loading, panelList, selectedPanel, nodes, edges, noData, showSystemPages, showStates } =
-            this.state;
+        const {
+            alive,
+            loading,
+            panelList,
+            selectedPanel,
+            nodes,
+            noData,
+            showSystemPages,
+            showStates,
+            editing,
+            editMenu,
+            scopeDialog,
+            notice,
+            restarting,
+            internalsToken,
+        } = this.state;
+        const edges = this.getFlowEdges();
+        const touchedCount = this.getTouched().size;
+        const selectedPanelLabel = panelList.find(p => p.panelName === selectedPanel)?.friendlyName ?? selectedPanel;
         // Filter system pages (starting with ///) unless showSystemPages is true; ///unlock is always shown
         const isSystemPage = (id: string): boolean => id.startsWith('///') && id !== '///unlock';
         const isStateNode = (node: FlowNode): boolean => node.data.entry?.nodeType === 'stateRef';
-        const visibleNodes = nodes.filter(
-            n => (showSystemPages || !isSystemPage(n.id)) && (showStates || !isStateNode(n)),
+        const visibleNodes = this.decorateNodes(
+            nodes.filter(n => (showSystemPages || !isSystemPage(n.id)) && (showStates || !isStateNode(n))),
+            edges,
         );
         const visibleNodeIds = new Set(visibleNodes.map(n => n.id));
         // remove dangling edges that reference missing nodes (safety for stale state)
@@ -1635,9 +2265,20 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
                         }
                         label={I18n.t('show_states')}
                     />
+                    <FormControlLabel
+                        control={
+                            <Checkbox
+                                checked={editing}
+                                onChange={this.handleEditingChange}
+                                disabled={!this.state.navigationMap || !this.getSelectedPanelTopic()}
+                                size="small"
+                            />
+                        }
+                        label={I18n.t('nav_edit_mode')}
+                    />
                     <Button
                         variant="outlined"
-                        onClick={this.fetchNavigation}
+                        onClick={this.handleRefreshClick}
                         disabled={loading}
                     >
                         {I18n.t('refresh')}
@@ -1711,7 +2352,38 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
                             </Typography>
                         </Box>
                     ))}
+                    {editing ? (
+                        <>
+                            <Divider
+                                orientation="vertical"
+                                flexItem
+                            />
+                            <Typography
+                                variant="caption"
+                                color="text.secondary"
+                            >
+                                {I18n.t('nav_edit_legend_hint')}
+                            </Typography>
+                        </>
+                    ) : null}
                 </Box>
+                {touchedCount > 0 ? (
+                    <Alert
+                        severity="info"
+                        sx={{ mb: 1 }}
+                    >
+                        {I18n.t('nav_edit_unsaved_hint')}
+                    </Alert>
+                ) : null}
+                {restarting ? (
+                    <Alert
+                        severity="info"
+                        icon={<CircularProgress size={18} />}
+                        sx={{ mb: 1 }}
+                    >
+                        {I18n.t('nav_restart_waiting')}
+                    </Alert>
+                ) : null}
                 {loading ? (
                     <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: 200 }}>
                         <CircularProgress />
@@ -1817,11 +2489,12 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
                                 nodes={visibleNodes}
                                 fitView
                                 nodesDraggable={true}
+                                nodesConnectable={editing}
                                 onNodesChange={this.onNodesChange}
                                 onNodeClick={this.onNodeClick}
                                 onPaneClick={this.onPaneClick}
-                                onEdgesChange={this.onEdgesChange}
-                                edgeTypes={{ custom: CustomEdge }}
+                                nodeTypes={NODE_TYPES}
+                                edgeTypes={EDGE_TYPES}
                                 edges={safeEdges.map(e => ({
                                     ...e,
                                     type: 'custom',
@@ -1833,185 +2506,71 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
                                             (e.source === selectedNodeId || e.target === selectedNodeId),
                                     },
                                 }))}
-                                nodeTypes={{
-                                    custom: ({ id, data }: any) => {
-                                        const handleTypes: Record<string, boolean> = {
-                                            prev: false,
-                                            next: false,
-                                            homeTopLeft: false,
-                                            homeTopRight: false,
-                                            parentBottomLeft: false,
-                                            parentBottomRight: false,
-                                            targetRight: false,
-                                            targetLeft: false,
-                                        };
-                                        // Ein Handle bekommt die Farbe der Kante, die es benutzt - so
-                                        // stimmen auch beidseitige und Long-Press-Verbindungen
-                                        const handleKind: Record<string, EdgeKind> = {};
-                                        for (const edge of edges) {
-                                            const kind = edge.data?.navType;
-                                            const mark = (handleId: string | undefined): void => {
-                                                if (!handleId) {
-                                                    return;
-                                                }
-                                                handleTypes[handleId] = true;
-                                                if (kind && !handleKind[handleId]) {
-                                                    handleKind[handleId] = kind;
-                                                }
-                                            };
-                                            if (edge.source === id) {
-                                                mark(edge.sourceHandle);
-                                            }
-                                            if (edge.target === id) {
-                                                mark(edge.targetHandle);
-                                            }
-                                        }
-                                        const handleColor = (handleId: string): string =>
-                                            EDGE_COLOR_HEX[
-                                                handleKind[handleId] ?? HANDLE_EDGE_KIND[handleId] ?? 'default'
-                                            ];
-                                        // Fallback-Title (native) für pageInfo bauen
-                                        let _pageInfoTooltip: string | undefined;
-                                        const pageInfo = data.entry?.pageInfo;
-                                        if (pageInfo && typeof pageInfo === 'object') {
-                                            const entries = Object.entries(pageInfo).filter(
-                                                ([_key, value]) =>
-                                                    typeof value === 'string' || typeof value === 'number',
-                                            );
-                                            if (entries.length) {
-                                                _pageInfoTooltip = entries
-                                                    .map(
-                                                        ([key, value]) =>
-                                                            `${I18n.t(key)}: ${
-                                                                typeof value === 'string'
-                                                                    ? I18n.t(value)
-                                                                    : String(value)
-                                                            }`,
-                                                    )
-                                                    .join('\n');
-                                            }
-                                        }
-                                        // kept for later use by external scripts; avoid unused-variable lint
-                                        void _pageInfoTooltip;
-                                        const entry: NavigationMapEntry | undefined = data.entry;
-                                        const style = nodeStyleOf(entry);
-                                        const vars = NODE_STYLE_VAR[style];
-                                        return (
-                                            <Box
-                                                className={
-                                                    style === 'stateRef' ? 'node-box node-state-ref' : 'node-box'
-                                                }
-                                                style={{
-                                                    background: `var(${vars.bg})`,
-                                                    borderColor: `var(${vars.border})`,
-                                                }}
-                                                title={entry?.stateId}
-                                            >
-                                                {/* prev: oben */}
-                                                {handleTypes.prev && (
-                                                    <Handle
-                                                        type="target"
-                                                        position={Position.Top}
-                                                        id="prev"
-                                                        style={{ background: handleColor('prev') }}
-                                                    />
-                                                )}
-                                                {handleTypes.prev && (
-                                                    <Handle
-                                                        type="source"
-                                                        position={Position.Top}
-                                                        id="prev"
-                                                        style={{ background: handleColor('prev') }}
-                                                    />
-                                                )}
-                                                {/* next: unten */}
-                                                {handleTypes.next && (
-                                                    <Handle
-                                                        type="target"
-                                                        position={Position.Bottom}
-                                                        id="next"
-                                                        style={{ background: handleColor('next') }}
-                                                    />
-                                                )}
-                                                {handleTypes.next && (
-                                                    <Handle
-                                                        type="source"
-                                                        position={Position.Bottom}
-                                                        id="next"
-                                                        style={{ background: handleColor('next') }}
-                                                    />
-                                                )}
-                                                {/* home: links oben (source), rechts oben (target) */}
-                                                {handleTypes.homeTopLeft && (
-                                                    <Handle
-                                                        type="source"
-                                                        position={Position.Left}
-                                                        id="homeTopLeft"
-                                                        className="homeTopLeft"
-                                                        style={{ background: handleColor('homeTopLeft') }}
-                                                    />
-                                                )}
-                                                {handleTypes.homeTopRight && (
-                                                    <Handle
-                                                        type="target"
-                                                        position={Position.Right}
-                                                        id="homeTopRight"
-                                                        className="homeTopRight"
-                                                        style={{ background: handleColor('homeTopRight') }}
-                                                    />
-                                                )}
-                                                {/* parent: links unten (source), rechts unten (target) */}
-                                                {handleTypes.parentBottomLeft && (
-                                                    <Handle
-                                                        type="source"
-                                                        position={Position.Left}
-                                                        id="parentBottomLeft"
-                                                        className="parentBottomLeft"
-                                                        style={{ background: handleColor('parentBottomLeft') }}
-                                                    />
-                                                )}
-                                                {handleTypes.parentBottomRight && (
-                                                    <Handle
-                                                        type="target"
-                                                        position={Position.Right}
-                                                        id="parentBottomRight"
-                                                        className="parentBottomRight"
-                                                        style={{ background: handleColor('parentBottomRight') }}
-                                                    />
-                                                )}
-                                                {/* targetPages: rechts Mitte (source), links Mitte (target) */}
-                                                {handleTypes.targetRight && (
-                                                    <Handle
-                                                        type="source"
-                                                        position={Position.Right}
-                                                        id="targetRight"
-                                                        style={{ background: handleColor('targetRight'), top: '50%' }}
-                                                    />
-                                                )}
-                                                {handleTypes.targetLeft && (
-                                                    <Handle
-                                                        type="target"
-                                                        position={Position.Left}
-                                                        id="targetLeft"
-                                                        style={{ background: handleColor('targetLeft'), top: '50%' }}
-                                                    />
-                                                )}
-                                                <Typography
-                                                    variant="body2"
-                                                    color="text.primary"
-                                                    className="node-label"
-                                                    sx={{ position: 'relative', zIndex: 2, cursor: 'move' }}
-                                                >
-                                                    {data.label}
-                                                </Typography>
-                                            </Box>
-                                        );
-                                    },
-                                }}
+                                connectionMode={editing ? ConnectionMode.Loose : ConnectionMode.Strict}
+                                connectionRadius={30}
+                                isValidConnection={this.isValidConnection}
+                                onConnect={this.onConnect}
+                                onConnectEnd={this.onConnectEnd}
+                                edgesReconnectable={editing}
+                                onReconnect={this.onReconnect}
+                                onEdgeClick={this.onEdgeClick}
                             >
                                 <Controls />
                                 <Background gap={16} />
+                                <NodeInternalsRefresher
+                                    nodeIds={visibleNodes.map(n => n.id)}
+                                    token={internalsToken}
+                                />
                             </ReactFlow>
+                            <Menu
+                                open={!!editMenu}
+                                onClose={this.closeEditMenu}
+                                anchorReference="anchorPosition"
+                                anchorPosition={editMenu ? { top: editMenu.y, left: editMenu.x } : undefined}
+                            >
+                                {(editMenu?.items ?? []).map((item, index) =>
+                                    item.removable ? (
+                                        <MenuItem
+                                            key={`${item.kind}-${item.source}-${item.target}`}
+                                            data-index={index}
+                                            onClick={this.removeMenuLink}
+                                        >
+                                            {I18n.t('nav_edit_remove_link')
+                                                .replace('%k', item.kind)
+                                                .replace('%s', item.source)
+                                                .replace('%t', item.target)}
+                                        </MenuItem>
+                                    ) : (
+                                        <MenuItem
+                                            key={`${item.kind}-${item.source}-${item.target}`}
+                                            disabled
+                                        >
+                                            {`${item.kind}: ${item.source} → ${item.target} – ${I18n.t('nav_edit_link_derived')}`}
+                                        </MenuItem>
+                                    ),
+                                )}
+                            </Menu>
+                            <Snackbar
+                                open={!!notice}
+                                autoHideDuration={6000}
+                                onClose={this.closeNotice}
+                                anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+                            >
+                                <Alert
+                                    severity="warning"
+                                    onClose={this.closeNotice}
+                                >
+                                    {notice}
+                                </Alert>
+                            </Snackbar>
+                            <NavigationScopeDialog
+                                open={!!scopeDialog}
+                                pageName={scopeDialog?.uniqueName ?? ''}
+                                panelName={selectedPanelLabel}
+                                onAll={this.handleScopeAll}
+                                onPanel={this.handleScopePanel}
+                                onCancel={this.handleScopeCancel}
+                            />
                             <NodePageInfoPanel
                                 open={!!this.state.infoPanelOpen}
                                 title={this.getInfoTitle()}
@@ -2052,9 +2611,40 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
                 draggable: existing?.draggable ?? true,
             };
         });
-        const flow = mapNavigationMapToFlow(nav);
-        this.setState({ nodes: newNodes, edges: flow.edges, dirty: true } as any);
+        this.setState({ nodes: newNodes, dirty: true });
     }
+}
+
+interface NodeInternalsRefresherProps {
+    /** Nodes whose handles are re-measured */
+    nodeIds: string[];
+    /** Whenever this changes, the nodes are re-measured */
+    token: number | string;
+}
+
+/**
+ * Makes React Flow re-measure the handles of the nodes.
+ *
+ * Handles that appear or disappear without the node changing its size (edit mode on/off, fresh
+ * data) are not picked up by React Flow's ResizeObserver, and a connection cannot start from a
+ * handle it has not measured. `updateNodeInternals` exists only as the hook
+ * `useUpdateNodeInternals` (the store context is not exported, the instance of `onInit` has no
+ * such method), so this is - like {@link ThemeVarsProvider} - the one place a hook is used.
+ * It has to be a child of `<ReactFlow>`.
+ *
+ * @param props Node ids and the token that triggers the re-measure.
+ */
+function NodeInternalsRefresher(props: NodeInternalsRefresherProps): null {
+    const { nodeIds, token } = props;
+    const updateNodeInternals = useUpdateNodeInternals();
+    useEffect(() => {
+        // The new handles are in the DOM after this render, but their bounds are read in the next
+        // frame to be safe
+        const frame = requestAnimationFrame(() => updateNodeInternals(nodeIds));
+        return () => cancelAnimationFrame(frame);
+        // nodeIds changes identity with every render - the token alone decides when to re-measure
+    }, [token]);
+    return null;
 }
 
 // Optional: ThemeVarsProvider — setzt CSS-Variablen aus dem aktuellen MUI-Theme

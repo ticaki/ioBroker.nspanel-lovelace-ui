@@ -174,6 +174,12 @@ export type NavigationMap = NavigationMapEntry[];
 export interface PanelListEntry {
     panelName: string;
     friendlyName: string;
+    /**
+     * MQTT topic of the panel - the key its pages are assigned under in `pageConfig`
+     * (`navigationAssignment[].topic`). The admin needs it to edit the navigation of a page for
+     * exactly this panel.
+     */
+    panelTopic: string;
     navigationMap: NavigationMap;
 }
 
