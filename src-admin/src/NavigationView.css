@@ -168,3 +168,50 @@
 .edge-derived.custom-edge-highlighted .custom-edge-path {
   stroke-width: 2.5;
 }
+
+/* Marker am Knoten: Schloss (erzeugte Seite, Navigation nicht aenderbar) rechts oben, Stift
+   (Navigation im Admin ueberschrieben) links oben - der Punkt fuer "nicht gespeichert" bleibt
+   rechts oben, eine erzeugte Seite kann nie ungespeichert sein */
+.node-box .node-marker {
+  position: absolute;
+  top: -8px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--node-bg, #fff);
+  border: 1px solid var(--node-border, #ccc);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 4;
+  pointer-events: auto;
+}
+.node-box .node-marker-generated {
+  right: -8px;
+}
+.node-box .node-marker-override {
+  left: -8px;
+}
+.node-marker-icon {
+  font-size: 11px !important;
+  color: var(--node-text, inherit);
+}
+.node-marker-icon.node-marker-icon-stale {
+  color: #ed6c02;
+}
+/* Erzeugte Seite: Quell-Handles fehlen, der Rahmen ist gepunktet, damit man es auch ohne Marker sieht */
+.node-box.node-generated.node-editing {
+  border-style: dotted;
+}
+/* Marker in der Legende */
+.legend-marker {
+  width: 16px;
+  height: 16px;
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  border: 1px solid var(--node-border, #ccc);
+  background: var(--node-bg, #868686ff);
+}

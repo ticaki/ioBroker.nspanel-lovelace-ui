@@ -50,6 +50,7 @@ var import_pageThermo2 = require("../pages/pageThermo2");
 var import_pageMedia = require("../pages/pageMedia");
 var import_type_pageItem = require("../types/type-pageItem");
 var import_tools = require("../const/tools");
+var import_navigation_overrides = require("../configuration/navigation-overrides");
 class ConfigManager extends import_library.BaseClass {
   //private test: ConfigManager.DeviceState;
   //colorOn: RGB = Color.On;
@@ -818,6 +819,7 @@ class ConfigManager extends import_library.BaseClass {
                 temp.pageConfig.parent = page.uniqueName;
                 scriptPages.push(temp.pageConfig);
                 config.subPages.push(temp.pageConfig);
+                (0, import_navigation_overrides.recordGeneratedPage)(panelConfig, temp.pageConfig.uniqueName);
               }
             } catch (error) {
               messages.push(

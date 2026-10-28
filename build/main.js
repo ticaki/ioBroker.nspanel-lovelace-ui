@@ -40,6 +40,7 @@ var import_redact = require("./lib/tools/redact");
 var import_credentials = require("./lib/credentials");
 var import_node_url = require("node:url");
 var fs = __toESM(require("node:fs"));
+var import_navigation_overrides = require("./lib/configuration/navigation-overrides");
 var import_Color = require("./lib/const/Color");
 var import_node_path = __toESM(require("node:path"));
 var import_test = require("./lib/const/test");
@@ -90,6 +91,64 @@ class NspanelLovelaceUi extends utils.Adapter {
     this.on("objectChange", this.onObjectChange.bind(this));
     this.on("message", this.onMessage.bind(this));
     this.on("unload", this.onUnload.bind(this));
+  }
+  /**
+   * Applies the navigation overrides of the admin (`native.navigationOverrides`) to the script
+   * navigation of one panel, before the panel is created from it. What the script says is kept
+   * next to it, so the admin can show both and tell a changed script from the override.
+   *
+   * @param panelConfig Converted configuration of the panel - changed in place.
+   * @param panelTopic Topic of the panel.
+   */
+  applyNavigationOverridesTo(panelConfig, panelTopic) {
+    var _a;
+    if (!Array.isArray(panelConfig.navigation)) {
+      return;
+    }
+    panelConfig.scriptNavigationLinks = (0, import_navigation_overrides.scriptLinksByPage)(panelConfig.navigation);
+    const overrides = Array.isArray(this.config.navigationOverrides) ? this.config.navigationOverrides : [];
+    if (overrides.length === 0) {
+      panelConfig.navigationOverrideStates = {};
+      return;
+    }
+    const replaced = (0, import_navigation_overrides.adminReplacedPageIds)(
+      Array.isArray(this.config.pageConfig) ? this.config.pageConfig : [],
+      panelTopic,
+      !!this.config.adminOverridesScriptPages
+    );
+    const result = (0, import_navigation_overrides.applyNavigationOverrides)(
+      panelConfig.navigation,
+      overrides,
+      panelTopic,
+      (_a = panelConfig.generatedPageIds) != null ? _a : [],
+      replaced
+    );
+    panelConfig.navigation = result.navigation;
+    panelConfig.navigationOverrideStates = Object.fromEntries(result.states);
+    for (const item of result.skipped) {
+      const text = `navigation override for page ${item.page} of ${panelTopic} ignored: `;
+      switch (item.reason) {
+        case "generated":
+          this.log.warn(`${text}generated page`);
+          break;
+        case "replaced":
+          this.log.warn(`${text}page is replaced by the admin configuration`);
+          break;
+        case "unsupported":
+          this.log.warn(`${text}navigation node name differs from the page id`);
+          break;
+        default:
+          this.log.info(`${text}page not found in the script configuration`);
+          break;
+      }
+    }
+    for (const [page, state] of result.states) {
+      if (state.stale) {
+        this.log.info(
+          `navigation override for page ${page} of ${panelTopic}: the script navigation changed since the override was made - check the navigation flow in the admin`
+        );
+      }
+    }
   }
   /**
    * Is called when databases are connected and adapter received configuration.
@@ -248,6 +307,7 @@ class NspanelLovelaceUi extends utils.Adapter {
         let usedConfig = null;
         let rawFound = false;
         let rawConversionFailed = false;
+        let chosen;
         const raw = scriptConfigRaw.find((b) => b.panelTopic === a.topic);
         if (raw) {
           rawFound = true;
@@ -259,7 +319,7 @@ class NspanelLovelaceUi extends utils.Adapter {
           }
           if (c && c.panelConfig) {
             c.panelConfig.model = a.model || "eu";
-            config.push(c.panelConfig);
+            chosen = c.panelConfig;
             usedConfig = "raw";
           } else {
             rawConversionFailed = true;
@@ -269,7 +329,7 @@ class NspanelLovelaceUi extends utils.Adapter {
           const conv = scriptConfig.find((b) => b.topic === a.topic);
           if (conv) {
             conv.model = a.model || "eu";
-            config.push(conv);
+            chosen = conv;
             usedConfig = "converted";
           }
         }
@@ -277,9 +337,13 @@ class NspanelLovelaceUi extends utils.Adapter {
           const c = await manager.setScriptConfig(import_config_manager.ConfigManager.getDefaultScriptConfig(a.topic));
           if (c && c.panelConfig) {
             c.panelConfig.model = a.model || "eu";
-            config.push(c.panelConfig);
+            chosen = c.panelConfig;
             usedConfig = "default";
           }
+        }
+        if (chosen) {
+          this.applyNavigationOverridesTo(chosen, a.topic);
+          config.push(chosen);
         }
         if (!usedConfig) {
           this.log.warn(`No usable config found for ${a.topic}`);
@@ -839,7 +903,7 @@ class NspanelLovelaceUi extends utils.Adapter {
   //  * Using this method requires "common.messagebox" property to be set to true in io-package.json
   //  */
   async onMessage(obj) {
-    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _A, _B, _C, _D, _E, _F, _G, _H;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _A, _B, _C, _D, _E, _F, _G, _H, _I;
     if (typeof obj === "object" && obj.message !== void 0 && obj.command) {
       this.log.debug((0, import_redact.stringifyForLog)(obj));
       if (obj.command === "tftInstallSendToMQTT") {
@@ -1108,6 +1172,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                       }
                     }
                   }
+                  this.applyNavigationOverridesTo(r.panelConfig, (_i = r.panelConfig.topic) != null ? _i : "");
                   const arr = await import_config_manager.ConfigManager.getConfig(this, [r.panelConfig, ...others]);
                   if (arr && arr.length > 0) {
                     const config = arr[0];
@@ -1217,7 +1282,7 @@ class NspanelLovelaceUi extends utils.Adapter {
           break;
         }
         case "setPopupNotification": {
-          if (((_j = (_i = this.controller) == null ? void 0 : _i.panels) == null ? void 0 : _j.some((p) => p.status === "online")) && obj.message) {
+          if (((_k = (_j = this.controller) == null ? void 0 : _j.panels) == null ? void 0 : _k.some((p) => p.status === "online")) && obj.message) {
             await this.controller.setPopupNotification(obj.message);
             if (obj.callback) {
               this.sendTo(obj.from, obj.command, [], obj.callback);
@@ -1244,7 +1309,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                 obj.command,
                 {
                   credentials: store.summaries(),
-                  active: ((_k = this.webServer) == null ? void 0 : _k.fido) !== void 0,
+                  active: ((_l = this.webServer) == null ? void 0 : _l.fido) !== void 0,
                   configured: !!this.config.webFido,
                   secure: !!this.config.webSecure
                 },
@@ -1414,7 +1479,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                   }
                   break;
                 }
-                if ((_l = this.controller) == null ? void 0 : _l.panels) {
+                if ((_m = this.controller) == null ? void 0 : _m.panels) {
                   const index = this.controller.panels.findIndex((a) => a.topic === obj.message.topic);
                   if (index !== -1) {
                     const panel = this.controller.panels[index];
@@ -1566,7 +1631,7 @@ class NspanelLovelaceUi extends utils.Adapter {
             }
             return 0;
           };
-          if ((_m = this.controller) == null ? void 0 : _m.panels) {
+          if ((_n = this.controller) == null ? void 0 : _n.panels) {
             const updateText = this.library.getTranslation("updateAvailable");
             const downgradeText = this.library.getTranslation("downgradeAvailable");
             const checkText = this.library.getTranslation("check!");
@@ -1588,7 +1653,7 @@ class NspanelLovelaceUi extends utils.Adapter {
               );
               const o = await this.getForeignObjectAsync(scriptId);
               if (o) {
-                const temp2 = (_o = (_n = o.common.source.match(/const.version.+'(\d+\.\d+\.\d+)';/)) == null ? void 0 : _n[1]) != null ? _o : "";
+                const temp2 = (_p = (_o = o.common.source.match(/const.version.+'(\d+\.\d+\.\d+)';/)) == null ? void 0 : _o[1]) != null ? _p : "";
                 if (temp2 !== version) {
                   check = true;
                   check_script = true;
@@ -1598,13 +1663,13 @@ class NspanelLovelaceUi extends utils.Adapter {
                 }
               }
               if (a.info) {
-                if ((_p = a.info.tasmota) == null ? void 0 : _p.firmwareversion) {
+                if ((_q = a.info.tasmota) == null ? void 0 : _q.firmwareversion) {
                   const temp2 = a.info.tasmota.firmwareversion.match(/([0-9]+\.[0-9]+\.[0-9]+)/);
                   if (temp2 && temp2[1]) {
                     tv = `${temp2[1]}`;
                   }
                 }
-                if (((_q = a.info.tasmota) == null ? void 0 : _q.onlineVersion) && tv) {
+                if (((_r = a.info.tasmota) == null ? void 0 : _r.onlineVersion) && tv) {
                   const temp2 = a.info.tasmota.onlineVersion.match(/([0-9]+\.[0-9]+\.[0-9]+)/);
                   if (temp2 && temp2[1]) {
                     const cmp = compareSemver(temp2[1], tv);
@@ -1619,13 +1684,13 @@ class NspanelLovelaceUi extends utils.Adapter {
                   }
                 }
                 tv = tv ? `v${tv}` : "";
-                if ((_r = a.info.nspanel) == null ? void 0 : _r.displayVersion) {
+                if ((_s = a.info.nspanel) == null ? void 0 : _s.displayVersion) {
                   const temp2 = a.info.nspanel.displayVersion.match(/([0-9]+\.[0-9]+\.[0-9]+)/);
                   if (temp2 && temp2[1]) {
                     nv = `${temp2[1]}`;
                   }
                 }
-                if (((_s = a.info.nspanel) == null ? void 0 : _s.onlineVersion) && nv) {
+                if (((_t = a.info.nspanel) == null ? void 0 : _t.onlineVersion) && nv) {
                   const temp2 = a.info.nspanel.onlineVersion.match(/([0-9]+\.[0-9]+\.[0-9]+)/);
                   if (temp2 && temp2[1]) {
                     const cmp = compareSemver(temp2[1], nv);
@@ -1654,15 +1719,15 @@ class NspanelLovelaceUi extends utils.Adapter {
                 _check_script: check_script,
                 _Headline: `${a.friendlyName} (${ft ? ft : `${check ? checkText : `${a.isOnline ? "online" : a.flashing ? `flashing` : "offline"}`}`})`,
                 _name: a.friendlyName,
-                _ip: a.isVirtual ? "" : ((_v = (_u = (_t = a.info) == null ? void 0 : _t.tasmota) == null ? void 0 : _u.net) == null ? void 0 : _v.IPAddress) ? a.info.tasmota.net.IPAddress : "offline - waiting",
+                _ip: a.isVirtual ? "" : ((_w = (_v = (_u = a.info) == null ? void 0 : _u.tasmota) == null ? void 0 : _v.net) == null ? void 0 : _w.IPAddress) ? a.info.tasmota.net.IPAddress : "offline - waiting",
                 _online: a.isOnline && a.initDone ? "yes" : "no",
                 _flashing: a.flashing,
                 _topic: a.topic,
-                _id: ((_y = (_x = (_w = a.info) == null ? void 0 : _w.tasmota) == null ? void 0 : _x.net) == null ? void 0 : _y.Mac) ? a.info.tasmota.net.Mac : "",
+                _id: ((_z = (_y = (_x = a.info) == null ? void 0 : _x.tasmota) == null ? void 0 : _y.net) == null ? void 0 : _z.Mac) ? a.info.tasmota.net.Mac : "",
                 _tftVersion: nv ? nv : "???",
                 _tasmotaVersion: tv ? tv : "???",
                 _ScriptVersion: sv ? `v${sv}` : "???",
-                _nsPanelModel: a.isVirtual ? a.info.nspanel.model : ((_A = (_z = a.info) == null ? void 0 : _z.nspanel) == null ? void 0 : _A.model) ? a.info.nspanel.model == "eu" ? "" : a.info.nspanel.model : ""
+                _nsPanelModel: a.isVirtual ? a.info.nspanel.model : ((_B = (_A = a.info) == null ? void 0 : _A.nspanel) == null ? void 0 : _B.model) ? a.info.nspanel.model == "eu" ? "" : a.info.nspanel.model : ""
               });
             }
             result = result.concat(temp);
@@ -1680,7 +1745,7 @@ class NspanelLovelaceUi extends utils.Adapter {
               );
               const o = await this.getForeignObjectAsync(scriptId);
               if (o) {
-                const temp3 = (_C = (_B = o.common.source.match(/const.version.+'(\d+\.\d+\.\d+)';/)) == null ? void 0 : _B[1]) != null ? _C : "";
+                const temp3 = (_D = (_C = o.common.source.match(/const.version.+'(\d+\.\d+\.\d+)';/)) == null ? void 0 : _C[1]) != null ? _D : "";
                 if (temp3 !== version) {
                   sv = temp3 ? temp3 : version;
                 }
@@ -1750,7 +1815,7 @@ class NspanelLovelaceUi extends utils.Adapter {
           const result = await this.getVersionsJson();
           if (result && "tasmota" in result && typeof result.tasmota === "string") {
             const cmnd = `OtaUrl http://ota.tasmota.com/tasmota32/release-${result.tasmota.trim()}/tasmota32-${language.toUpperCase()}.bin; Upgrade 1`;
-            if ((_D = this.controller) == null ? void 0 : _D.panels) {
+            if ((_E = this.controller) == null ? void 0 : _E.panels) {
               const index = this.controller.panels.findIndex((a) => a.topic === obj.message.topic);
               if (index !== -1) {
                 const panel = this.controller.panels[index];
@@ -1795,7 +1860,7 @@ class NspanelLovelaceUi extends utils.Adapter {
           break;
         }
         case "screensaverNotify": {
-          if (((_E = obj.message) == null ? void 0 : _E.panel) && ((_F = this.controller) == null ? void 0 : _F.panels)) {
+          if (((_F = obj.message) == null ? void 0 : _F.panel) && ((_G = this.controller) == null ? void 0 : _G.panels)) {
             const panel = this.controller.panels.find((a) => a.topic === obj.message.topic);
             if (panel == null ? void 0 : panel.screenSaver) {
               if (typeof obj.message.heading === "string") {
@@ -1831,7 +1896,7 @@ class NspanelLovelaceUi extends utils.Adapter {
           break;
         }
         case "buzzer": {
-          if (((_G = obj.message) == null ? void 0 : _G.panel) && ((_H = this.controller) == null ? void 0 : _H.panels)) {
+          if (((_H = obj.message) == null ? void 0 : _H.panel) && ((_I = this.controller) == null ? void 0 : _I.panels)) {
             const panel = this.controller.panels.find((a) => a.topic === obj.message.panel);
             if (panel && typeof obj.message.command === "string" && obj.message.command.trim()) {
               await panel.statesControler.setInternalState(

@@ -2544,7 +2544,7 @@ ${this.info.tasmota.onlineVersion}`;
     return void 0;
   }
   async getNavigationArrayForFlow() {
-    var _a, _b, _c, _d, _e, _f;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _i;
     const res = {
       panelName: this.name,
       friendlyName: this.friendlyName,
@@ -2640,7 +2640,24 @@ ${this.info.tasmota.onlineVersion}`;
         origin,
         adminPageName: origin === "admin" ? this.getAdminPageName(nav.page.name) : void 0
       };
-      const targetSources = [...((_c = nav.page.pageItemConfig) != null ? _c : []).map((item) => item == null ? void 0 : item.data), (_d = nav.page.config) == null ? void 0 : _d.data];
+      if ((_c = this.options.generatedPageIds) == null ? void 0 : _c.includes(nav.page.name)) {
+        navMap.generated = true;
+      }
+      if (origin === "script" || origin === "global") {
+        const scriptLinks = (_d = this.options.scriptNavigationLinks) == null ? void 0 : _d[nav.page.name];
+        if (scriptLinks) {
+          navMap.scriptLinks = { ...scriptLinks };
+        }
+        const override = (_e = this.options.navigationOverrideStates) == null ? void 0 : _e[nav.page.name];
+        if (override) {
+          navMap.override = {
+            navigation: { ...override.navigation },
+            scriptLinks: { ...override.scriptLinks },
+            stale: override.stale
+          };
+        }
+      }
+      const targetSources = [...((_f = nav.page.pageItemConfig) != null ? _f : []).map((item) => item == null ? void 0 : item.data), (_g = nav.page.config) == null ? void 0 : _g.data];
       const short = (0, import_page_targets.collectNavigationTargets)(targetSources, "setNavi");
       const long = (0, import_page_targets.collectNavigationTargets)(targetSources, "setNaviLongPress");
       for (const dp of [...short.stateRefs, ...long.stateRefs]) {
@@ -2657,10 +2674,10 @@ ${this.info.tasmota.onlineVersion}`;
         navMap.targetPagesLongPress = targetPagesLongPress;
       }
       const stateSources = [
-        ...((_e = nav.page.pageItemConfig) != null ? _e : []).map(
+        ...((_h = nav.page.pageItemConfig) != null ? _h : []).map(
           (item) => item ? { data: item.data, role: item.role, type: item.type } : void 0
         ),
-        { data: (_f = nav.page.config) == null ? void 0 : _f.data, type: nav.page.card }
+        { data: (_i = nav.page.config) == null ? void 0 : _i.data, type: nav.page.card }
       ];
       const usedStates = (0, import_page_states.collectPageStates)(stateSources).map((state) => addStateNode(state));
       if (usedStates.length) {

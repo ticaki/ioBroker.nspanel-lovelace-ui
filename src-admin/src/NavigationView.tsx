@@ -2,8 +2,10 @@
 import './NavigationView.css';
 import iconList from './icons.json';
 import type {
+    NavigationLinks,
     NavigationMapEntry,
     NavigationMap,
+    NavigationOverride,
     PageConfigEntry,
     PanelListEntry,
     NavigationSavePayload,
@@ -15,12 +17,19 @@ import {
     mainPageName,
 } from '../../src/lib/types/adminShareConfig';
 import {
+    adapterDecidedLink,
     applyNavigationOverlay,
     assignmentSourceOf,
     effectiveNavigation,
+    effectiveScriptLinks,
     isNavigationApplied,
     isNavigationLinkKind,
+    isOverrideStale,
+    mergeNavigationOverride,
+    overrideOf,
+    removeNavigationOverride,
     setNavigationLink,
+    setOverrideLink,
     type NavigationEditScope,
     type NavigationLinkKind,
 } from '../../src/lib/types/navigationEdit';
@@ -39,8 +48,12 @@ import {
     type FlowEdge,
     type FlowNode,
 } from './navigationFlowConst';
-import NavigationFlowNode from './components/NavigationFlowNode';
+import NavigationFlowNode, { GeneratedPageMarker, OverrideMarker } from './components/NavigationFlowNode';
 import NavigationScopeDialog from './components/NavigationScopeDialog';
+import NavigationOverrideStaleDialog, {
+    type StaleOverrideDecision,
+    type StaleOverrideItem,
+} from './components/NavigationOverrideStaleDialog';
 
 const ADAPTER_NAME = 'nspanel-lovelace-ui';
 
@@ -195,6 +208,15 @@ interface EdgeEditMenu {
     x: number;
     y: number;
     items: EdgeMenuItem[];
+    /** Script pages among the two whose navigation is overridden - the override can be dropped */
+    restorable: string[];
+}
+
+/** Pages whose override is out of date, waiting for the user's decision */
+interface StaleOverrideDialogState {
+    panelName: string;
+    panelTopic: string;
+    items: StaleOverrideItem[];
 }
 
 /** Node types of the flow - defined once, React Flow re-mounts every node when the object changes */
@@ -202,6 +224,9 @@ const NODE_TYPES: NodeTypes = { custom: NavigationFlowNode };
 
 /** Shared empty set, so a panel without touched nodes keeps the same identity between renders */
 const NO_TOUCHED: ReadonlySet<string> = new Set();
+
+/** Stable empty override list - `getNavigationOverrides` returns it while the instance has none */
+const NO_OVERRIDES: NavigationOverride[] = [];
 
 /** Edge type of this view - `@xyflow/react` types `data` as `Record<string, unknown>` */
 type CustomEdgeType = Edge<{
@@ -913,6 +938,7 @@ interface NavigationViewInternalState extends NavigationViewState {
     touched: Map<string, ReadonlySet<string>>;
     editMenu?: EdgeEditMenu;
     scopeDialog?: PendingLinkChange;
+    staleDialog?: StaleOverrideDialogState;
     /** Translated warning shown in a snackbar, e.g. when a page cannot be edited */
     notice?: string;
     /** The adapter restarted and the navigation is being read again - the old view stays meanwhile */
@@ -940,11 +966,18 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
     private edgesCache?: {
         map: NavigationMap;
         pageConfig: PageConfigEntry[];
+        overrides: NavigationOverride[];
         panelTopic: string | undefined;
         touched: ReadonlySet<string>;
         editing: boolean;
         edges: FlowEdge[];
     };
+
+    /**
+     * Stale overrides the user already decided on (or postponed) in this session, by
+     * `<panelTopic>|<page>` - the question is asked once per page and session.
+     */
+    private staleDecided = new Set<string>();
 
     /** Nodes with the data of the edit mode added, kept per node until the node or that data changes */
     private nodeCache = new Map<string, { source: FlowNode; key: string; node: FlowNode }>();
@@ -1093,9 +1126,10 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
         this.setState({ nodes: newNodes, dirty: true, confirmAutoLayoutOpen: false });
     }
 
-    handleShowSystemPagesChange(_event: React.ChangeEvent<HTMLInputElement>, checked: boolean): void {
+    // Arrow function: the checkbox calls the handler without `this`
+    handleShowSystemPagesChange = (_event: React.ChangeEvent<HTMLInputElement>, checked: boolean): void => {
         this.setState({ showSystemPages: checked });
-    }
+    };
 
     /**
      * Turns the state nodes on or off.
@@ -1584,6 +1618,7 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
                 internalsToken: state.internalsToken + 1,
             }),
             () => {
+                this.checkStaleOverrides(selectedEntry);
                 if (retryIfTouchedMs && [...this.state.touched.values()].some(set => set.size > 0)) {
                     this.clearRestartTimer();
                     this.restartTimeout = setTimeout(() => {
@@ -1633,6 +1668,7 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
             scopeDialog: undefined,
         });
         this.setState(state => ({ internalsToken: state.internalsToken + 1 }));
+        this.checkStaleOverrides(found);
     }
 
     onNodesChange(changes: any[]): void {
@@ -1681,6 +1717,7 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
         panelList: PanelListEntry[],
     ): Map<string, ReadonlySet<string>> {
         const pageConfig = this.getPageConfig();
+        const overrides = this.getNavigationOverrides();
         const result = new Map<string, ReadonlySet<string>>();
         for (const [panelName, pages] of touched) {
             const panel = panelList.find(p => p.panelName === panelName);
@@ -1690,7 +1727,7 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
             }
             const remaining = new Set(
                 [...pages].filter(
-                    page => !isNavigationApplied(panel.navigationMap, pageConfig, panel.panelTopic, page),
+                    page => !isNavigationApplied(panel.navigationMap, pageConfig, panel.panelTopic, page, overrides),
                 ),
             );
             if (remaining.size) {
@@ -1717,6 +1754,12 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
     private getPageConfig(): PageConfigEntry[] {
         const config: PageConfigEntry[] | undefined = this.props.data?.pageConfig;
         return Array.isArray(config) ? config : [];
+    }
+
+    /** Navigation overrides of the script pages as the admin holds them right now - unsaved changes included */
+    private getNavigationOverrides(): NavigationOverride[] {
+        const overrides: NavigationOverride[] | undefined = this.props.data?.navigationOverrides;
+        return Array.isArray(overrides) ? overrides : NO_OVERRIDES;
     }
 
     /**
@@ -1748,15 +1791,49 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
     }
 
     /**
-     * A page whose links can be edited here: one created from the admin configuration. Script
-     * pages are display-only for now.
+     * A page created from the admin configuration - its links are written to `pageConfig`.
      *
      * @param entry Entry of the node.
      */
-    private isEditableEntry(
+    private isAdminEntry(
         entry: NavigationMapEntry | undefined,
     ): entry is NavigationMapEntry & { adminPageName: string } {
-        return !!entry && entry.nodeType !== 'stateRef' && entry.origin === 'admin' && !!entry.adminPageName;
+        return (
+            !!entry &&
+            entry.nodeType !== 'stateRef' &&
+            !entry.generated &&
+            entry.origin === 'admin' &&
+            !!entry.adminPageName
+        );
+    }
+
+    /**
+     * A page of the configuration script (of the panel or the global one) the adapter reported
+     * script links for - its links are written as an override to `navigationOverrides`. A page
+     * the adapter generated from a page item is read-only.
+     *
+     * @param entry Entry of the node.
+     */
+    private isScriptEntry(
+        entry: NavigationMapEntry | undefined,
+    ): entry is NavigationMapEntry & { scriptLinks: NavigationLinks } {
+        return (
+            !!entry &&
+            entry.nodeType !== 'stateRef' &&
+            !entry.generated &&
+            (entry.origin === 'script' || entry.origin === 'global') &&
+            !!entry.scriptLinks
+        );
+    }
+
+    /**
+     * A page whose links can be edited here: an admin page or a script page, but never a
+     * generated one.
+     *
+     * @param entry Entry of the node.
+     */
+    private isEditableEntry(entry: NavigationMapEntry | undefined): boolean {
+        return this.isAdminEntry(entry) || this.isScriptEntry(entry);
     }
 
     /**
@@ -1813,11 +1890,35 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
     private isConfiguredLink(sourceNodeId: string, kind: NavigationLinkKind, target: string): boolean {
         const entry = this.entryOfNode(sourceNodeId);
         const panelTopic = this.getSelectedPanelTopic();
-        if (!this.isEditableEntry(entry) || !panelTopic) {
+        const { navigationMap } = this.state;
+        if (!panelTopic || !navigationMap) {
             return false;
         }
-        const configEntry = this.getPageConfig().find(e => e && e.uniqueName === entry.adminPageName);
-        const stored = configEntry ? effectiveNavigation(configEntry, panelTopic)?.[kind] : undefined;
+        // The chaining of admin pages decides this link ahead of the configuration - removing the
+        // configured value here would bring the edge right back
+        if (
+            (kind === 'prev' || kind === 'next') &&
+            adapterDecidedLink(
+                navigationMap,
+                this.getPageConfig(),
+                panelTopic,
+                sourceNodeId,
+                kind,
+                this.getNavigationOverrides(),
+            )
+        ) {
+            return false;
+        }
+        let stored: string | undefined;
+        if (this.isAdminEntry(entry)) {
+            const configEntry = this.getPageConfig().find(e => e && e.uniqueName === entry.adminPageName);
+            stored = configEntry ? effectiveNavigation(configEntry, panelTopic)?.[kind] : undefined;
+        } else if (this.isScriptEntry(entry)) {
+            // The override when there is one, else the script - both are "configured"
+            stored = effectiveScriptLinks(entry, this.getNavigationOverrides(), panelTopic)?.[kind];
+        } else {
+            return false;
+        }
         return !!stored && this.storedTargetIs(stored, target);
     }
 
@@ -1836,6 +1937,7 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
             return [];
         }
         const pageConfig = this.getPageConfig();
+        const overrides = this.getNavigationOverrides();
         const panelTopic = this.getSelectedPanelTopic();
         const touched = this.getTouched();
         const cache = this.edgesCache;
@@ -1843,6 +1945,7 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
             cache &&
             cache.map === navigationMap &&
             cache.pageConfig === pageConfig &&
+            cache.overrides === overrides &&
             cache.panelTopic === panelTopic &&
             cache.touched === touched &&
             cache.editing === editing
@@ -1851,7 +1954,7 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
         }
         const map =
             panelTopic && touched.size
-                ? applyNavigationOverlay(navigationMap, pageConfig, panelTopic, touched)
+                ? applyNavigationOverlay(navigationMap, pageConfig, panelTopic, touched, overrides)
                 : navigationMap;
         let edges = mapNavigationMapToFlow(map, { mergeReciprocal: !editing }).edges;
         if (editing) {
@@ -1872,13 +1975,14 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
                 };
             });
         }
-        this.edgesCache = { map: navigationMap, pageConfig, panelTopic, touched, editing, edges };
+        this.edgesCache = { map: navigationMap, pageConfig, overrides, panelTopic, touched, editing, edges };
         return edges;
     }
 
     /**
      * Adds what the node component needs to know to each node: the handles an edge uses (and in
-     * which colour), the edit mode and whether the page has unsaved changes.
+     * which colour), the edit mode, whether the page has unsaved changes, whether it is generated
+     * and whether a navigation override of the admin exists for it (and is out of date).
      *
      * A node keeps its identity as long as neither it nor that data changes - React Flow would
      * otherwise re-adopt every node with every render, e.g. while one of them is dragged.
@@ -1889,6 +1993,8 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
     private decorateNodes(nodes: FlowNode[], edges: FlowEdge[]): FlowNode[] {
         const { editing } = this.state;
         const touched = this.getTouched();
+        const overrides = this.getNavigationOverrides();
+        const panelTopic = this.getSelectedPanelTopic();
         // Ein Handle bekommt die Farbe der ersten Kante, die es benutzt - so stimmen auch
         // beidseitige und Long-Press-Verbindungen
         const usedByNode = new Map<string, Record<string, EdgeKind | undefined>>();
@@ -1911,12 +2017,34 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
         }
         return nodes.map(node => {
             const used = usedByNode.get(node.id) ?? {};
-            const editable = editing && this.isEditableEntry(node.data.entry);
+            const entry = node.data.entry;
+            const editable = editing && this.isEditableEntry(entry);
             const unsaved = touched.has(node.id);
+            const generated = !!entry && entry.nodeType !== 'stateRef' && !!entry.generated;
+            // An override the admin holds right now (saved or not), compared with the script links
+            // the adapter reported - so the warning goes away as soon as the override is brought up
+            // to date here. What the adapter reported about its own override is the fallback only.
+            const scriptPage =
+                entry &&
+                entry.nodeType !== 'stateRef' &&
+                !entry.generated &&
+                (entry.origin === 'script' || entry.origin === 'global')
+                    ? entry
+                    : undefined;
+            const override = panelTopic && scriptPage ? overrideOf(overrides, panelTopic, node.id) : undefined;
+            let overrideState: 'active' | 'stale' | undefined;
+            if (override && scriptPage) {
+                const stale = scriptPage.scriptLinks
+                    ? isOverrideStale(override, scriptPage.scriptLinks)
+                    : !!scriptPage.override?.stale;
+                overrideState = stale ? 'stale' : 'active';
+            }
             const key = [
                 editing,
                 editable,
                 unsaved,
+                generated,
+                overrideState ?? '',
                 ...Object.entries(used)
                     .map(([id, kind]) => `${id}=${kind ?? ''}`)
                     .sort(),
@@ -1927,7 +2055,7 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
             }
             const decorated: FlowNode = {
                 ...node,
-                data: { ...node.data, usedHandles: used, editing, editable, unsaved },
+                data: { ...node.data, usedHandles: used, editing, editable, unsaved, generated, overrideState },
             };
             this.nodeCache.set(node.id, { source: node, key, node: decorated });
             return decorated;
@@ -2063,7 +2191,15 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
                 removable: this.isEditableEdge(other) && this.isConfiguredLink(other.source, kind, other.target),
             });
         }
-        this.setState({ editMenu: { x: event.clientX, y: event.clientY, items } });
+        // A script page with an override can go back to the script navigation
+        const panelTopic = this.getSelectedPanelTopic();
+        const overrides = this.getNavigationOverrides();
+        const restorable = panelTopic
+            ? [...pair].filter(
+                  page => this.isScriptEntry(this.entryOfNode(page)) && overrideOf(overrides, panelTopic, page),
+              )
+            : [];
+        this.setState({ editMenu: { x: event.clientX, y: event.clientY, items, restorable } });
     };
 
     private closeEditMenu = (): void => {
@@ -2085,11 +2221,60 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
     };
 
     /**
+     * "Restore script navigation" of the edge menu was clicked - the entry carries the page in
+     * `data-page`. The override of that page is dropped, the page follows the script again.
+     *
+     * @param event The click.
+     */
+    private restoreMenuScript = (event: React.MouseEvent<HTMLLIElement>): void => {
+        const page = event.currentTarget.dataset.page;
+        this.setState({ editMenu: undefined });
+        const panelTopic = this.getSelectedPanelTopic();
+        if (!page || !panelTopic) {
+            return;
+        }
+        const overrides = this.getNavigationOverrides();
+        const updated = removeNavigationOverride(overrides, panelTopic, page);
+        if (updated !== overrides) {
+            this.writeNavigationOverrides(updated, [page]);
+        }
+    };
+
+    /**
+     * Writes the overrides to the instance configuration and marks the pages as unsaved.
+     *
+     * @param updated The new override list.
+     * @param pages Node ids of the pages the change belongs to.
+     */
+    private writeNavigationOverrides(updated: readonly NavigationOverride[], pages: readonly string[]): void {
+        void this.onChange('navigationOverrides', updated);
+        this.markTouched(pages);
+    }
+
+    /**
+     * Marks pages of the selected panel as changed but not saved yet.
+     *
+     * @param pages Node ids of the pages.
+     */
+    private markTouched(pages: readonly string[]): void {
+        this.setState(state => {
+            const touched = new Map(state.touched);
+            const forPanel = new Set(touched.get(state.selectedPanel) ?? []);
+            for (const page of pages) {
+                forPanel.add(page);
+            }
+            touched.set(state.selectedPanel, forPanel);
+            return { touched };
+        });
+    }
+
+    /**
      * Sets or removes one navigation link of a page - every edit of the flow ends up here.
      *
      * Admin pages are written to the page configuration of the instance; the admin's save button
      * takes it from there. A page assigned to all panels first asks which assignment to write to.
-     * Script pages are display-only for now - a later phase dispatches them from here.
+     * Script pages get an override in `navigationOverrides`, which the adapter applies on top of
+     * the script at start. Generated pages cannot be edited.
      *
      * @param sourceNodeId Node the link starts at.
      * @param kind Which link to set.
@@ -2097,10 +2282,21 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
      */
     applyNavigationLink(sourceNodeId: string, kind: NavigationLinkKind, target: string | undefined): void {
         const entry = this.entryOfNode(sourceNodeId);
-        if (!this.isEditableEntry(entry)) {
+        const panelTopic = this.getSelectedPanelTopic();
+        if (this.isScriptEntry(entry)) {
+            if (!panelTopic) {
+                return;
+            }
+            const overrides = this.getNavigationOverrides();
+            const updated = setOverrideLink(overrides, panelTopic, entry.page, kind, target, entry.scriptLinks);
+            if (updated !== overrides) {
+                this.writeNavigationOverrides(updated, [sourceNodeId]);
+            }
             return;
         }
-        const panelTopic = this.getSelectedPanelTopic();
+        if (!this.isAdminEntry(entry)) {
+            return;
+        }
         const configEntry = this.getPageConfig().find(e => e && e.uniqueName === entry.adminPageName);
         if (!panelTopic || !configEntry) {
             this.showNotice('nav_edit_not_assigned');
@@ -2160,13 +2356,7 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
             return;
         }
         void this.onChange('pageConfig', updated);
-        this.setState(state => {
-            const touched = new Map(state.touched);
-            const forPanel = new Set(touched.get(state.selectedPanel) ?? []);
-            forPanel.add(change.sourceNodeId);
-            touched.set(state.selectedPanel, forPanel);
-            return { touched };
-        });
+        this.markTouched([change.sourceNodeId]);
     }
 
     private handleScopeAll = (): void => {
@@ -2197,6 +2387,94 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
         this.writeNavigationLink(change, scope);
     }
 
+    /**
+     * After a panel was loaded: when the adapter reports overrides whose script changed since
+     * (`override.stale`) and the user has not decided on them in this session, the question is
+     * asked. Only overrides the admin still holds count - one removed but not saved yet is gone.
+     *
+     * @param panel The panel just loaded or selected.
+     */
+    private checkStaleOverrides(panel: PanelListEntry | undefined): void {
+        if (!panel || !panel.panelTopic || this.state.staleDialog) {
+            return;
+        }
+        const overrides = this.getNavigationOverrides();
+        const items: StaleOverrideItem[] = [];
+        for (const entry of panel.navigationMap) {
+            if (!entry.override?.stale || !this.isScriptEntry(entry)) {
+                continue;
+            }
+            if (this.staleDecided.has(`${panel.panelTopic}|${entry.page}`)) {
+                continue;
+            }
+            const override = overrideOf(overrides, panel.panelTopic, entry.page);
+            if (!override) {
+                continue;
+            }
+            items.push({
+                page: entry.page,
+                then: { ...(override.scriptLinks ?? {}) },
+                now: { ...entry.scriptLinks },
+                mine: { ...(override.navigation ?? {}) },
+            });
+        }
+        if (items.length) {
+            this.setState({
+                staleDialog: { panelName: panel.friendlyName || panel.panelName, panelTopic: panel.panelTopic, items },
+            });
+        }
+    }
+
+    /**
+     * The user decided what happens with the stale overrides listed in the dialog - for all of
+     * them at once. Every decision but "later" rewrites the overrides and marks the pages as
+     * unsaved; "later" only keeps the question from coming back in this session.
+     *
+     * @param decision The choice.
+     */
+    private handleStaleDecision = (decision: StaleOverrideDecision): void => {
+        const dialog = this.state.staleDialog;
+        this.setState({ staleDialog: undefined });
+        if (!dialog) {
+            return;
+        }
+        for (const item of dialog.items) {
+            this.staleDecided.add(`${dialog.panelTopic}|${item.page}`);
+        }
+        if (decision === 'later') {
+            return;
+        }
+        let overrides: readonly NavigationOverride[] = this.getNavigationOverrides();
+        const before = overrides;
+        for (const item of dialog.items) {
+            const override = overrideOf(overrides, dialog.panelTopic, item.page);
+            if (!override) {
+                continue;
+            }
+            switch (decision) {
+                case 'merge':
+                    overrides = overrides.map(o =>
+                        o === override
+                            ? { ...o, navigation: mergeNavigationOverride(o, item.now), scriptLinks: { ...item.now } }
+                            : o,
+                    );
+                    break;
+                case 'keep':
+                    overrides = overrides.map(o => (o === override ? { ...o, scriptLinks: { ...item.now } } : o));
+                    break;
+                case 'script':
+                    overrides = removeNavigationOverride(overrides, dialog.panelTopic, item.page);
+                    break;
+            }
+        }
+        if (overrides !== before) {
+            this.writeNavigationOverrides(
+                overrides,
+                dialog.items.map(item => item.page),
+            );
+        }
+    };
+
     render(): string | React.ReactElement | null {
         const {
             alive,
@@ -2210,6 +2488,7 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
             editing,
             editMenu,
             scopeDialog,
+            staleDialog,
             notice,
             restarting,
             internalsToken,
@@ -2352,6 +2631,43 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
                             </Typography>
                         </Box>
                     ))}
+                    <Divider
+                        orientation="vertical"
+                        flexItem
+                    />
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                        <span className="legend-marker">
+                            <GeneratedPageMarker />
+                        </span>
+                        <Typography
+                            variant="caption"
+                            sx={{ whiteSpace: 'nowrap' }}
+                        >
+                            {I18n.t('nav_edit_legend_generated')}
+                        </Typography>
+                    </Box>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                        <span className="legend-marker">
+                            <OverrideMarker stale={false} />
+                        </span>
+                        <Typography
+                            variant="caption"
+                            sx={{ whiteSpace: 'nowrap' }}
+                        >
+                            {I18n.t('nav_edit_legend_override')}
+                        </Typography>
+                    </Box>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                        <span className="legend-marker">
+                            <OverrideMarker stale />
+                        </span>
+                        <Typography
+                            variant="caption"
+                            sx={{ whiteSpace: 'nowrap' }}
+                        >
+                            {I18n.t('nav_edit_legend_override_stale')}
+                        </Typography>
+                    </Box>
                     {editing ? (
                         <>
                             <Divider
@@ -2549,6 +2865,16 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
                                         </MenuItem>
                                     ),
                                 )}
+                                {editMenu?.restorable.length ? <Divider /> : null}
+                                {(editMenu?.restorable ?? []).map(page => (
+                                    <MenuItem
+                                        key={`restore-${page}`}
+                                        data-page={page}
+                                        onClick={this.restoreMenuScript}
+                                    >
+                                        {I18n.t('nav_edit_restore_script').replace('%s', page)}
+                                    </MenuItem>
+                                ))}
                             </Menu>
                             <Snackbar
                                 open={!!notice}
@@ -2570,6 +2896,12 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
                                 onAll={this.handleScopeAll}
                                 onPanel={this.handleScopePanel}
                                 onCancel={this.handleScopeCancel}
+                            />
+                            <NavigationOverrideStaleDialog
+                                open={!!staleDialog}
+                                panelName={staleDialog?.panelName ?? ''}
+                                items={staleDialog?.items ?? []}
+                                onDecide={this.handleStaleDecision}
                             />
                             <NodePageInfoPanel
                                 open={!!this.state.infoPanelOpen}

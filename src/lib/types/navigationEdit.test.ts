@@ -1,12 +1,24 @@
 import { expect } from 'chai';
-import { ALL_PANELS_SPECIAL_ID, type MenuEntry, type NavigationMap, type PageConfigEntry } from './adminShareConfig';
 import {
+    ALL_PANELS_SPECIAL_ID,
+    type MenuEntry,
+    type NavigationMap,
+    type NavigationMapEntry,
+    type NavigationOverride,
+    type PageConfigEntry,
+} from './adminShareConfig';
+import {
+    adapterDecidedLink,
     applyNavigationOverlay,
     assignmentSourceOf,
     effectiveNavigation,
+    effectiveScriptLinks,
     isNavigationApplied,
     isNavigationLinkKind,
+    overrideOf,
+    removeNavigationOverride,
     setNavigationLink,
+    setOverrideLink,
 } from './navigationEdit';
 
 const panelTopic = 'nspanel/panel1';
@@ -304,6 +316,7 @@ describe('lib/types/navigationEdit - applyNavigationOverlay', () => {
     it('keeps the counterpart of a prev/next the adapter derived', () => {
         // b.prev = a was derived by the adapter from a.next = b
         const entries: PageConfigEntry[] = [
+            gridEntry('start', [{ topic: panelTopic, navigation: { next: 'a' } }], true),
             gridEntry('a', [{ topic: panelTopic, navigation: { next: 'b' } }]),
             gridEntry('b', [{ topic: panelTopic, navigation: { home: 'main' } }]),
         ];
@@ -320,6 +333,7 @@ describe('lib/types/navigationEdit - applyNavigationOverlay', () => {
 
     it('drops a removed prev once the counterpart is gone as well', () => {
         const entries: PageConfigEntry[] = [
+            gridEntry('start', [{ topic: panelTopic, navigation: { next: 'a' } }], true),
             gridEntry('a', [{ topic: panelTopic, navigation: {} }]),
             gridEntry('b', [{ topic: panelTopic, navigation: {} }]),
         ];
@@ -327,16 +341,24 @@ describe('lib/types/navigationEdit - applyNavigationOverlay', () => {
         expect(result[2].prev).to.equal(undefined);
         expect(result[2].next).to.equal(undefined);
         expect(result[2].home).to.equal('main');
-        // a still gets its prev from main.next = a (main is not touched)
+        // a still gets its prev from main.next = a (main is not touched) - the default home comes
+        // on top of it, as the adapter decides on it before chaining
         expect(result[1].prev).to.equal('main');
         expect(result[1].next).to.equal(undefined);
-        expect(result[1].home).to.equal(undefined);
+        expect(result[1].home).to.equal('main');
     });
 
-    it('prefers the configured prev/next over a derived one', () => {
-        const entries: PageConfigEntry[] = [gridEntry('b', [{ topic: panelTopic, navigation: { prev: 'main' } }])];
+    it('lets the chaining of an admin counterpart win over the configured prev/next', () => {
+        // a (admin) has next = b: the adapter sets b.prev = a ahead of b's own prev
+        const entries: PageConfigEntry[] = [
+            gridEntry('a', [{ topic: panelTopic, navigation: { next: 'b' } }]),
+            gridEntry('b', [{ topic: panelTopic, navigation: { prev: 'main' } }]),
+        ];
         const result = applyNavigationOverlay(map, entries, panelTopic, new Set(['b']));
-        expect(result[2].prev).to.equal('main');
+        expect(result[2].prev).to.equal('a');
+        // without the counterpart the configured value is used
+        const alone: NavigationMap = map.filter(e => e.page !== 'a');
+        expect(applyNavigationOverlay(alone, entries, panelTopic, new Set(['b']))[1].prev).to.equal('main');
     });
 
     it('leaves pages alone that have no entry or are excluded on this panel', () => {
@@ -395,5 +417,336 @@ describe('lib/types/navigationEdit - isNavigationApplied', () => {
         expect(isNavigationApplied(map, entries, panelTopic, 'main')).to.equal(false);
         expect(isNavigationApplied(map, entries, panelTopic, 'a')).to.equal(false);
         expect(isNavigationApplied(map, entries, panelTopic, 'b')).to.equal(false);
+    });
+});
+
+/**
+ * A script page of the navigation map, with the links the adapter reports for it.
+ *
+ * @param page Node id.
+ * @param links Links as shown in the map.
+ * @param scriptLinks Links according to the script, defaults to `links`; `null` leaves them out.
+ * @param extra Further fields of the entry.
+ * @returns The entry.
+ */
+function scriptEntry(
+    page: string,
+    links: Pick<NavigationMapEntry, 'prev' | 'next' | 'home' | 'parent'>,
+    scriptLinks: NavigationOverride['scriptLinks'] | null = links,
+    extra: Partial<NavigationMapEntry> = {},
+): NavigationMapEntry {
+    return { page, origin: 'script', ...links, scriptLinks: scriptLinks ?? undefined, ...extra };
+}
+
+describe('lib/types/navigationEdit - adapterDecidedLink (splice rules of admin.ts)', () => {
+    // grid6 -> grid3 in the script; the admin page usp wants to sit right before grid3
+    const spliceMap = (): NavigationMap => [
+        { page: 'main', origin: 'script', next: 'grid6', scriptLinks: { next: 'grid6' } },
+        scriptEntry('grid6', { prev: 'main', next: 'grid3' }),
+        scriptEntry('grid3', { prev: 'grid6', home: 'main' }),
+        { page: 'usp', origin: 'admin', adminPageName: 'usp', next: 'grid3' },
+    ];
+
+    it('b) inserts an admin page without prev before the next of a page', () => {
+        const entries: PageConfigEntry[] = [gridEntry('usp', [{ topic: panelTopic, navigation: { next: 'grid3' } }])];
+        expect(adapterDecidedLink(spliceMap(), entries, panelTopic, 'grid6', 'next')).to.equal('usp');
+        // grid3.prev is the direct counterpart a)
+        expect(adapterDecidedLink(spliceMap(), entries, panelTopic, 'grid3', 'prev')).to.equal('usp');
+        const overlay = applyNavigationOverlay(spliceMap(), entries, panelTopic, new Set(['grid6'])).find(
+            e => e.page === 'grid6',
+        );
+        expect(overlay?.next).to.equal('usp');
+        // the adapter decides - the link is not compared, whatever the map shows
+        const spliced = spliceMap();
+        spliced[1] = scriptEntry('grid6', { prev: 'main', next: 'usp' }, { prev: 'main', next: 'grid3' });
+        expect(isNavigationApplied(spliced, entries, panelTopic, 'grid6')).to.equal(true);
+        expect(isNavigationApplied(spliceMap(), entries, panelTopic, 'grid6')).to.equal(true);
+        // an override that restores the script value stays "applied" as well
+        const overrides: NavigationOverride[] = [
+            {
+                panelTopic,
+                page: 'grid6',
+                navigation: { prev: 'main', next: 'grid3' },
+                scriptLinks: { prev: 'main', next: 'grid3' },
+            },
+        ];
+        expect(isNavigationApplied(spliced, entries, panelTopic, 'grid6', overrides)).to.equal(true);
+    });
+
+    it('b) does not apply to an admin page with a prev of its own - only a) counts for it', () => {
+        const entries: PageConfigEntry[] = [
+            gridEntry('usp', [{ topic: panelTopic, navigation: { prev: 'main', next: 'grid3' } }]),
+        ];
+        expect(adapterDecidedLink(spliceMap(), entries, panelTopic, 'grid6', 'next')).to.equal(undefined);
+        // a) still works: usp.prev = main decides main.next, usp.next = grid3 decides grid3.prev
+        expect(adapterDecidedLink(spliceMap(), entries, panelTopic, 'main', 'next')).to.equal('usp');
+        expect(adapterDecidedLink(spliceMap(), entries, panelTopic, 'grid3', 'prev')).to.equal('usp');
+    });
+
+    it('c) attaches a page to the end of an admin chain spliced after its prev', () => {
+        // q -> p in the script; admin pages o1, o2 want to follow q
+        const map: NavigationMap = [
+            { page: 'main', origin: 'script', next: 'q', scriptLinks: { next: 'q' } },
+            scriptEntry('q', { prev: 'main', next: 'p' }),
+            scriptEntry('p', { prev: 'q', home: 'main' }),
+            { page: 'o1', origin: 'admin', adminPageName: 'o1', prev: 'q' },
+            { page: 'o2', origin: 'admin', adminPageName: 'o2', prev: 'q' },
+        ];
+        const entries: PageConfigEntry[] = [
+            gridEntry('o1', [{ topic: panelTopic, navigation: { prev: 'q' } }]),
+            gridEntry('o2', [{ topic: panelTopic, navigation: { prev: 'q' } }]),
+        ];
+        expect(adapterDecidedLink(map, entries, panelTopic, 'p', 'prev')).to.equal('o2');
+        expect(adapterDecidedLink(map, entries, panelTopic, 'q', 'next')).to.equal('o1');
+        const p = applyNavigationOverlay(map, entries, panelTopic, new Set(['p'])).find(e => e.page === 'p');
+        expect(p?.prev).to.equal('o2');
+        expect(isNavigationApplied(map, entries, panelTopic, 'p')).to.equal(true);
+        // the last of the chain has a next of its own: the splice end is not wired
+        const withNext: PageConfigEntry[] = [
+            entries[0],
+            gridEntry('o2', [{ topic: panelTopic, navigation: { prev: 'q', next: 'main' } }]),
+        ];
+        expect(adapterDecidedLink(map, withNext, panelTopic, 'p', 'prev')).to.equal(undefined);
+        // q does not lead to p on its own: p is not the old neighbour, nothing is attached
+        const oneSided: NavigationMap = map.map(e => (e.page === 'q' ? scriptEntry('q', { prev: 'main' }) : e));
+        expect(adapterDecidedLink(oneSided, entries, panelTopic, 'p', 'prev')).to.equal(undefined);
+    });
+
+    it('ignores admin pages that are not assigned to the panel', () => {
+        const entries: PageConfigEntry[] = [gridEntry('usp', [{ topic: otherTopic, navigation: { next: 'grid3' } }])];
+        expect(adapterDecidedLink(spliceMap(), entries, panelTopic, 'grid6', 'next')).to.equal(undefined);
+        expect(adapterDecidedLink(spliceMap(), entries, panelTopic, 'grid3', 'prev')).to.equal(undefined);
+    });
+});
+
+describe('lib/types/navigationEdit - setOverrideLink / removeNavigationOverride / overrideOf', () => {
+    it('creates an override from the script links and keeps a snapshot of them', () => {
+        const overrides: NavigationOverride[] = [];
+        const updated = setOverrideLink(overrides, panelTopic, 'a', 'next', 'c', { prev: 'main', next: 'b' });
+        expect(updated).to.not.equal(overrides);
+        expect(overrides).to.deep.equal([]);
+        expect(updated).to.deep.equal([
+            {
+                panelTopic,
+                page: 'a',
+                navigation: { prev: 'main', next: 'c' },
+                scriptLinks: { prev: 'main', next: 'b' },
+            },
+        ]);
+        expect(overrideOf(updated, panelTopic, 'a')).to.equal(updated[0]);
+        expect(overrideOf(updated, otherTopic, 'a')).to.equal(undefined);
+    });
+
+    it('updates an existing override and leaves its snapshot alone', () => {
+        const overrides: NavigationOverride[] = [
+            { panelTopic, page: 'a', navigation: { next: 'c' }, scriptLinks: { next: 'b' } },
+            { panelTopic: otherTopic, page: 'a', navigation: { next: 'x' }, scriptLinks: { next: 'b' } },
+        ];
+        const updated = setOverrideLink(overrides, panelTopic, 'a', 'home', 'main', { next: 'b' });
+        expect(updated[0]).to.deep.equal({
+            panelTopic,
+            page: 'a',
+            navigation: { next: 'c', home: 'main' },
+            scriptLinks: { next: 'b' },
+        });
+        expect(updated[1]).to.equal(overrides[1]);
+        expect(overrides[0].navigation).to.deep.equal({ next: 'c' });
+    });
+
+    it('moves the snapshot on when a stale override is changed, and keeps it otherwise', () => {
+        const overrides: NavigationOverride[] = [
+            { panelTopic, page: 'a', navigation: { next: 'c' }, scriptLinks: { next: 'b' } },
+        ];
+        const stale = setOverrideLink(overrides, panelTopic, 'a', 'home', 'main', { next: 'z', parent: 'p' });
+        expect(stale[0]).to.deep.equal({
+            panelTopic,
+            page: 'a',
+            navigation: { next: 'c', home: 'main' },
+            scriptLinks: { next: 'z', parent: 'p' },
+        });
+        const fresh = setOverrideLink(overrides, panelTopic, 'a', 'home', 'main', { next: 'b' });
+        expect(fresh[0].scriptLinks).to.deep.equal({ next: 'b' });
+    });
+
+    it('removes a link with target undefined and is a no-op for self references and unchanged links', () => {
+        const overrides: NavigationOverride[] = [
+            { panelTopic, page: 'a', navigation: { next: 'c', home: 'main' }, scriptLinks: { next: 'b' } },
+        ];
+        expect(setOverrideLink(overrides, panelTopic, 'a', 'home', undefined, {})[0].navigation).to.deep.equal({
+            next: 'c',
+        });
+        expect(setOverrideLink(overrides, panelTopic, 'a', 'next', 'a', {})).to.equal(overrides);
+        expect(setOverrideLink(overrides, panelTopic, 'a', 'next', 'c', {})).to.equal(overrides);
+        expect(setOverrideLink(overrides, panelTopic, 'a', 'parent', undefined, {})).to.equal(overrides);
+        expect(setOverrideLink([], panelTopic, 'b', 'next', 'b', { next: 'c' })).to.deep.equal([]);
+    });
+
+    it('removes an override and returns the input when there is none', () => {
+        const overrides: NavigationOverride[] = [
+            { panelTopic, page: 'a', navigation: {}, scriptLinks: {} },
+            { panelTopic, page: 'b', navigation: {}, scriptLinks: {} },
+        ];
+        expect(removeNavigationOverride(overrides, panelTopic, 'a')).to.deep.equal([overrides[1]]);
+        expect(removeNavigationOverride(overrides, panelTopic, 'c')).to.equal(overrides);
+        expect(removeNavigationOverride(overrides, otherTopic, 'a')).to.equal(overrides);
+    });
+
+    it('effectiveScriptLinks prefers the override and refuses what cannot be edited', () => {
+        const overrides: NavigationOverride[] = [
+            { panelTopic, page: 'a', navigation: { next: 'c' }, scriptLinks: { next: 'b' } },
+        ];
+        expect(effectiveScriptLinks(scriptEntry('a', { next: 'b' }), overrides, panelTopic)).to.deep.equal({
+            next: 'c',
+        });
+        expect(effectiveScriptLinks(scriptEntry('a', { next: 'b' }), overrides, otherTopic)).to.deep.equal({
+            next: 'b',
+        });
+        expect(
+            effectiveScriptLinks(scriptEntry('a', { next: 'b' }, { next: 'b' }, { origin: 'global' }), [], panelTopic),
+        ).to.deep.equal({ next: 'b' });
+        expect(effectiveScriptLinks(scriptEntry('a', { next: 'b' }, null), [], panelTopic)).to.equal(undefined);
+        expect(
+            effectiveScriptLinks(
+                scriptEntry('a', { next: 'b' }, { next: 'b' }, { generated: true }),
+                overrides,
+                panelTopic,
+            ),
+        ).to.equal(undefined);
+        expect(
+            effectiveScriptLinks(scriptEntry('a', { next: 'b' }, { next: 'b' }, { origin: 'admin' }), [], panelTopic),
+        ).to.equal(undefined);
+    });
+});
+
+describe('lib/types/navigationEdit - overlay and applied check for script pages', () => {
+    const map = (): NavigationMap => [
+        { page: 'main', origin: 'script', next: 'a', scriptLinks: { next: 'a' } },
+        scriptEntry('a', { prev: 'main', next: 'b' }),
+        scriptEntry('b', { prev: 'a', home: 'main' }),
+        scriptEntry('media-1', { parent: 'a' }, { parent: 'a' }, { generated: true }),
+    ];
+
+    it('overlays the override of a touched script page and derives the counterpart', () => {
+        const overrides: NavigationOverride[] = [
+            {
+                panelTopic,
+                page: 'a',
+                navigation: { prev: 'main', next: 'main' },
+                scriptLinks: { prev: 'main', next: 'b' },
+            },
+        ];
+        const result = applyNavigationOverlay(map(), [], panelTopic, new Set(['a']), overrides);
+        expect(result.find(e => e.page === 'a')).to.include({ prev: 'main', next: 'main' });
+        // b is not touched - stays as the map says
+        expect(result.find(e => e.page === 'b')).to.include({ prev: 'a', home: 'main' });
+        // without an override the touched page shows the script links again (override removed)
+        const restored = applyNavigationOverlay(map(), [], panelTopic, new Set(['a']), []);
+        expect(restored.find(e => e.page === 'a')).to.include({ prev: 'main', next: 'b' });
+    });
+
+    it('leaves a generated page alone even when touched', () => {
+        const overrides: NavigationOverride[] = [
+            { panelTopic, page: 'media-1', navigation: { home: 'main' }, scriptLinks: { parent: 'a' } },
+        ];
+        const result = applyNavigationOverlay(map(), [], panelTopic, new Set(['media-1']), overrides);
+        expect(result.find(e => e.page === 'media-1')).to.deep.equal(map()[3]);
+    });
+
+    it('gives a touched script page without any link the default home', () => {
+        const overrides: NavigationOverride[] = [
+            { panelTopic, page: 'b', navigation: {}, scriptLinks: { prev: 'a', home: 'main' } },
+        ];
+        const result = applyNavigationOverlay(map(), [], panelTopic, new Set(['b']), overrides);
+        const b = result.find(e => e.page === 'b');
+        expect(b?.home).to.equal('main');
+        // a.next points at b, but a is a script page - only admin pages chain
+        expect(b?.prev).to.equal(undefined);
+        expect(b?.next).to.equal(undefined);
+    });
+
+    it('derives prev/next from an admin counterpart only', () => {
+        const withAdmin: NavigationMap = [
+            ...map(),
+            { page: 'x', origin: 'admin', adminPageName: 'x', prev: 'b' },
+            { page: 'y', origin: 'admin', adminPageName: 'y', next: 'b' },
+        ];
+        const entries: PageConfigEntry[] = [
+            gridEntry('x', [{ topic: panelTopic, navigation: { prev: 'b' } }]),
+            // y points at b only on another panel
+            gridEntry('y', [{ topic: otherTopic, navigation: { next: 'b' } }]),
+        ];
+        expect(adapterDecidedLink(withAdmin, entries, panelTopic, 'b', 'next')).to.equal('x');
+        expect(adapterDecidedLink(withAdmin, entries, panelTopic, 'b', 'prev')).to.equal(undefined);
+        const overrides: NavigationOverride[] = [{ panelTopic, page: 'b', navigation: {}, scriptLinks: { prev: 'a' } }];
+        const b = applyNavigationOverlay(withAdmin, entries, panelTopic, new Set(['b']), overrides).find(
+            e => e.page === 'b',
+        );
+        expect(b?.next).to.equal('x');
+        expect(b?.prev).to.equal(undefined);
+        // an admin page without an entry is not assigned to the panel - it has no say
+        const noEntry = applyNavigationOverlay(withAdmin, [], panelTopic, new Set(['b']), overrides).find(
+            e => e.page === 'b',
+        );
+        expect(noEntry?.next).to.equal(undefined);
+        expect(noEntry?.prev).to.equal(undefined);
+    });
+
+    it('lets the admin chaining win over a configured prev/next, for the overlay and the applied check', () => {
+        // admin page X with prev = S; S is a script page whose override says next = Y
+        const base = (): NavigationMap => [
+            ...map(),
+            scriptEntry('s', { home: 'main' }),
+            scriptEntry('y', { home: 'main' }),
+            { page: 'x', origin: 'admin', adminPageName: 'x', prev: 's' },
+        ];
+        const entries: PageConfigEntry[] = [gridEntry('x', [{ topic: panelTopic, navigation: { prev: 's' } }])];
+        const overrides: NavigationOverride[] = [
+            { panelTopic, page: 's', navigation: { next: 'y', home: 'main' }, scriptLinks: { home: 'main' } },
+        ];
+        const s = applyNavigationOverlay(base(), entries, panelTopic, new Set(['s']), overrides).find(
+            e => e.page === 's',
+        );
+        expect(s?.next).to.equal('x');
+        // the map shows what the adapter decided - the override counts as applied
+        const applied = base();
+        applied[5] = scriptEntry('s', { next: 'x', home: 'main' }, { home: 'main' });
+        expect(isNavigationApplied(applied, entries, panelTopic, 's', overrides)).to.equal(true);
+        // an admin page in the same situation
+        const adminMap: NavigationMap = [
+            ...base(),
+            { page: 'z', origin: 'admin', adminPageName: 'z', prev: 'x', home: 'main' },
+        ];
+        const adminEntries: PageConfigEntry[] = [
+            ...entries,
+            gridEntry('z', [{ topic: panelTopic, navigation: { prev: 's', home: 'main' } }]),
+            gridEntry('w', [{ topic: panelTopic, navigation: { next: 'z' } }]),
+        ];
+        adminMap.push({ page: 'w', origin: 'admin', adminPageName: 'w', next: 'z' });
+        const z = applyNavigationOverlay(adminMap, adminEntries, panelTopic, new Set(['z'])).find(e => e.page === 'z');
+        expect(z?.prev).to.equal('w');
+        expect(isNavigationApplied(adminMap, adminEntries, panelTopic, 'z')).to.equal(true);
+    });
+
+    it('isNavigationApplied compares the override with the map', () => {
+        const overrides: NavigationOverride[] = [
+            {
+                panelTopic,
+                page: 'a',
+                navigation: { prev: 'main', next: 'main' },
+                scriptLinks: { prev: 'main', next: 'b' },
+            },
+        ];
+        expect(isNavigationApplied(map(), [], panelTopic, 'a', overrides)).to.equal(false);
+        const applied = map();
+        applied[1] = scriptEntry('a', { prev: 'main', next: 'main' }, { prev: 'main', next: 'b' });
+        expect(isNavigationApplied(applied, [], panelTopic, 'a', overrides)).to.equal(true);
+        // override removed: applied once the map shows the script links again
+        expect(isNavigationApplied(applied, [], panelTopic, 'a', [])).to.equal(false);
+        expect(isNavigationApplied(map(), [], panelTopic, 'a', [])).to.equal(true);
+        // a link to a page the panel does not have is dropped by the adapter - counts as applied
+        const unknown: NavigationOverride[] = [
+            { panelTopic, page: 'a', navigation: { prev: 'main', next: 'b', home: 'nowhere' }, scriptLinks: {} },
+        ];
+        expect(isNavigationApplied(map(), [], panelTopic, 'a', unknown)).to.equal(true);
     });
 });

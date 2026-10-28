@@ -1,5 +1,7 @@
 import React from 'react';
 import { Box, Typography } from '@mui/material';
+import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
+import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import { Handle, Position, type Node, type NodeProps } from '@xyflow/react';
 import { I18n } from '@iobroker/gui-components';
 import type { NavigationLinkKind } from '../../../src/lib/types/navigationEdit';
@@ -44,11 +46,44 @@ function cornerClass(id: string): string | undefined {
 }
 
 /**
+ * Lock drawn on a generated page: its navigation cannot be changed, whatever the page item that
+ * generated it comes from. Shared with the legend.
+ */
+export class GeneratedPageMarker extends React.PureComponent {
+    render(): React.ReactElement {
+        return (
+            <LockOutlinedIcon
+                className="node-marker-icon"
+                titleAccess={I18n.t('nav_edit_generated_page')}
+            />
+        );
+    }
+}
+
+/**
+ * Pencil drawn on a script page whose navigation the admin overrides. In warning colour when
+ * the script changed since the override was made. Shared with the legend.
+ */
+export class OverrideMarker extends React.PureComponent<{ stale: boolean }> {
+    render(): React.ReactElement {
+        const { stale } = this.props;
+        return (
+            <EditOutlinedIcon
+                className={stale ? 'node-marker-icon node-marker-icon-stale' : 'node-marker-icon'}
+                titleAccess={I18n.t(stale ? 'nav_edit_override_stale' : 'nav_edit_override_active')}
+            />
+        );
+    }
+}
+
+/**
  * A page or state node of the navigation flow.
  *
  * Outside the edit mode only the handles an edge uses are drawn, in the colour of that edge. In
  * edit mode every page shows the target handles of the four links, so a connection can be dropped
  * on it, and an editable page also shows the four source handles to drag a connection from.
+ * A generated page carries a lock instead of source handles, a script page with a navigation
+ * override of the admin a pencil.
  */
 export default class NavigationFlowNode extends React.PureComponent<NodeProps<NavigationFlowNodeType>> {
     /**
@@ -135,8 +170,9 @@ export default class NavigationFlowNode extends React.PureComponent<NodeProps<Na
         const style = nodeStyleOf(entry);
         const vars = NODE_STYLE_VAR[style];
         const isPage = style !== 'stateRef';
+        const generated = isPage && !!data.generated;
         const editing = !!data.editing && isPage;
-        const editable = editing && !!data.editable;
+        const editable = editing && !!data.editable && !generated;
         const classes = ['node-box'];
         if (style === 'stateRef') {
             classes.push('node-state-ref');
@@ -146,6 +182,9 @@ export default class NavigationFlowNode extends React.PureComponent<NodeProps<Na
         }
         if (data.unsaved) {
             classes.push('node-unsaved');
+        }
+        if (generated) {
+            classes.push('node-generated');
         }
         return (
             <Box
@@ -184,6 +223,16 @@ export default class NavigationFlowNode extends React.PureComponent<NodeProps<Na
                         className="node-unsaved-marker"
                         title={I18n.t('nav_edit_unsaved_node')}
                     />
+                ) : null}
+                {generated ? (
+                    <span className="node-marker node-marker-generated">
+                        <GeneratedPageMarker />
+                    </span>
+                ) : null}
+                {!generated && data.overrideState ? (
+                    <span className="node-marker node-marker-override">
+                        <OverrideMarker stale={data.overrideState === 'stale'} />
+                    </span>
                 ) : null}
                 <Typography
                     variant="body2"
