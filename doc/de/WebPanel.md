@@ -26,6 +26,8 @@ Inhalt:
 Die Einstellungen stehen in den Instanz-Einstellungen im Tab **Web-Panels**. Oben zeigt der Tab, unter
 welcher Adresse die Panels erreichbar sind.
 
+<img alt="Tab Web-Panels in den Instanz-Einstellungen" src="../Pictures/webPanel/webpanel-01-tab.png" width="100%"/>
+
 | Feld | Bedeutung |
 |---|---|
 | **Web-Panels aktivieren** | Schaltet den Webserver ein. **Ab Werk eingeschaltet.** |
@@ -41,6 +43,9 @@ http://<ioBroker-Host>:8090/<Topic des Panels>
 ```
 
 Die Startseite `http://<ioBroker-Host>:8090/` listet alle Panels mit Modell und Anzahl verbundener Browser.
+
+<img alt="Startseite der Web-Panels mit drei Panels" src="../Pictures/webPanel/webpanel-04-startseite.png"/>
+
 Bequemer geht es aus dem Admin: Der Knopf **Web-Panel in neuem Tab öffnen** steht in der Panel-Übersicht
 (Tab *Nspanel-Einstellungen*), im Tab [Maintain](Maintain) und in der [Panelinfo](Panelinfo). Ist eine PIN
 gesetzt, meldet dieser Knopf den Browser gleich mit an.
@@ -51,6 +56,8 @@ gesetzt, meldet dieser Knopf den Browser gleich mit an.
 
 Dafür ist nichts einzurichten: Sind die Web-Panels eingeschaltet, ist **jedes** NSPanel unter seinem Topic
 erreichbar. Statt des Topics funktioniert auch die ID des Panels.
+
+<img alt="Ein NSPanel im Browser: Bildschirmschoner, darunter die Leisten der beiden Hardwaretasten" src="../Pictures/webPanel/webpanel-05-browser.png" width="100%"/>
 
 Wichtig zu wissen:
 
@@ -75,12 +82,17 @@ Wichtig zu wissen:
      braucht der Webserver selbst). Unter dem Feld zeigt der Dialog die fertige Adresse.
    - **Hardwaremodell** — EU-Querformat, US-Querformat oder US-Hochformat. Das bestimmt Format und
      Seitenverhältnis der Darstellung.
+
+   <img alt="Dialog Web-Panel hinzufügen mit Name, Topic, Hardwaremodell und Adressvorschau" src="../Pictures/webPanel/webpanel-02-hinzufuegen.png" width="100%"/>
+
 3. Mit **Speichern** übernehmen, dann die Instanz-Einstellungen speichern.
 
 Das Web-Panel bekommt automatisch eine ID der Form `web_` + 12 Zeichen und erscheint in der
 Panel-Übersicht mit dem Kennzeichen **Web**. Über den **Stift** lassen sich Name, Topic und Modell ändern —
 ein neues Topic ist auch eine neue Adresse. Gelöscht wird es über den **Papierkorb**; das geht nur, solange
 die Instanz läuft.
+
+<img alt="Panel-Übersicht mit zwei NSPanels und dem Web-Panel Tablet Küche" src="../Pictures/webPanel/webpanel-03-panelkarten.png" width="100%"/>
 
 **Seiten bekommt es wie jedes andere Panel:** Im Tab [PageConfig](PageConfig) taucht das Web-Panel in der
 Panel-Auswahl auf, Seiten und Navigation werden genauso zugewiesen. Ein Konfigurationsskript ist

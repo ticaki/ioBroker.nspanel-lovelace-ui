@@ -26,6 +26,8 @@ Contents:
 The settings are in the instance settings, tab **Web panels**. At the top the tab shows the address under
 which the panels can be reached.
 
+<img alt="Web panels tab in the instance settings" src="../Pictures/webPanel/webpanel-01-tab.png" width="100%"/>
+
 | Field | Meaning |
 |---|---|
 | **Enable web panels** | Switches the web server on. **On by default.** |
@@ -41,7 +43,11 @@ http://<ioBroker host>:8090/<topic of the panel>
 ```
 
 The start page `http://<ioBroker host>:8090/` lists all panels with model and number of connected
-browsers. It is easier from the admin: the button **Open web panel in a new tab** is in the panel overview
+browsers.
+
+<img alt="Start page of the web panels with three panels" src="../Pictures/webPanel/webpanel-04-startseite.png"/>
+
+It is easier from the admin: the button **Open web panel in a new tab** is in the panel overview
 (tab *NSPanel settings*), in the [Maintain](Maintain) tab and in [Panelinfo](Panelinfo). If a PIN is set,
 this button logs the browser in right away.
 
@@ -51,6 +57,8 @@ this button logs the browser in right away.
 
 Nothing to set up: when web panels are switched on, **every** NSPanel can be reached under its topic.
 The ID of the panel works instead of the topic as well.
+
+<img alt="An NSPanel in the browser: screensaver, below it the bars of the two hardware buttons" src="../Pictures/webPanel/webpanel-05-browser.png" width="100%"/>
 
 Good to know:
 
@@ -74,11 +82,16 @@ Good to know:
      uses them itself). Below the field the dialog shows the resulting address.
    - **Hardware model** — EU landscape, US landscape or US portrait. This sets format and aspect ratio of
      the display.
+
+   <img alt="Add web panel dialog with name, topic, hardware model and address preview" src="../Pictures/webPanel/webpanel-02-hinzufuegen.png" width="100%"/>
+
 3. Confirm with **Save**, then save the instance settings.
 
 The web panel gets an ID of the form `web_` + 12 characters automatically and appears in the panel overview
 with the label **Web**. The **pencil** changes name, topic and model — a new topic is also a new address.
 It is deleted with the **trash can**; this only works while the instance is running.
+
+<img alt="Panel overview with two NSPanels and the web panel Tablet Küche" src="../Pictures/webPanel/webpanel-03-panelkarten.png" width="100%"/>
 
 **It gets pages like any other panel:** in the [PageConfig](PageConfig) tab the web panel shows up in the
 panel selection, pages and navigation are assigned the same way. A configuration script is **not
