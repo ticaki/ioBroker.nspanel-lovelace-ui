@@ -122,6 +122,26 @@
         pointer-events: none;
     }
     .toast.show { opacity: 1; }
+    .busy {
+        position: fixed;
+        inset: 0;
+        z-index: 2;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        background: color-mix(in srgb, var(--bg) 55%, transparent);
+    }
+    .busy.show { display: flex; }
+    .busy::after {
+        content: '';
+        width: 40px;
+        height: 40px;
+        border: 4px solid var(--border);
+        border-top-color: var(--accent);
+        border-radius: 50%;
+        animation: spin .8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
 </style>
 </head>
 <body>
@@ -140,6 +160,7 @@
 </header>
 <main id="grid"></main>
 <div class="toast" id="toast"></div>
+<div class="busy show" id="busy" role="status"></div>
 <script>
     const texts = {
         en: {
@@ -180,6 +201,7 @@
     const grid = document.getElementById('grid');
     const count = document.getElementById('count');
     const toast = document.getElementById('toast');
+    const busy = document.getElementById('busy');
     count.textContent = t.loading;
 
     // glyphs from U+FAF0 on came with HMI 6 (MDI 7.4.47 and own icons)
@@ -197,7 +219,7 @@
     }
 
     // cards are created in batches while scrolling - all 7474 svgs at once freeze some browsers
-    const BATCH = 240;
+    const BATCH = 120;
     let matches = [];
     let rendered = 0;
     const sentinel = document.createElement('div');
@@ -264,10 +286,26 @@
                 own: !!i.c,
             };
         });
+        busy.classList.remove('show');
         apply();
     }
 
+    // shows the spinner, lets the browser paint it and runs the slow part afterwards
+    function withBusy(fn) {
+        busy.classList.add('show');
+        requestAnimationFrame(() =>
+            setTimeout(() => {
+                fn();
+                busy.classList.remove('show');
+            }, 0),
+        );
+    }
+
     function apply() {
+        withBusy(filterAndRender);
+    }
+
+    function filterAndRender() {
         const q = search.value.trim().toLowerCase().replace(/^u\+/, '');
         matches = cards.filter(
             c =>
@@ -316,6 +354,7 @@
         .then(r => r.json())
         .then(render)
         .catch(e => {
+            busy.classList.remove('show');
             count.textContent = String(e);
         });
 </script>
