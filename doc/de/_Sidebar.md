@@ -24,6 +24,7 @@
 - [Symbolübersicht](symbolOverview)  
 - [Tasmota-Tools](tasmotatools) 🔒  
 - [Panelinfo](Panelinfo)  
+- [Web-Panel](WebPanel)  
 - [Developer](Developer) 🔒  
 
 **Seiten im Admin anlegen**  

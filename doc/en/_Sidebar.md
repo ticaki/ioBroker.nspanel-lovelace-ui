@@ -24,6 +24,7 @@
 - [Icon overview](symbolOverview)  
 - [Tasmota tools](tasmotatools) 🔒  
 - [Panel info](Panelinfo)  
+- [Web panel](WebPanel)  
 - [Developer](Developer) 🔒  
 
 **Creating pages in the admin**  
