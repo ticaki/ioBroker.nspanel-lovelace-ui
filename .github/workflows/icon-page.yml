@@ -5,6 +5,8 @@ on:
   push:
     branches:
       - main
+      # until PR #815 (HMI 6.0.2) is merged
+      - feat/hmi-6-icons
     paths:
       - 'pages/**'
       - 'script/icons.json'
