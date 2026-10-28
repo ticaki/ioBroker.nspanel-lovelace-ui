@@ -29,6 +29,13 @@ describe('lib/const/icon_mapping', () => {
             // MDI gave the codepoint of a removed icon to a new one - the new one has a reserved glyph
             expect(Icons.GetIcon('pause-box')).to.not.equal(Icons.GetIcon('book-variant-multiple'));
         });
+        it('maps the own icons of script/custom-icons.json to their fixed glyphs', () => {
+            expect(Icons.GetIcon('window-tilt-variant')).to.equal('﵀');
+            expect(Icons.GetIcon('window-open-hinged-variant')).to.equal('﵁');
+            expect(Icons.GetIcon('window-shutter-25')).to.equal('﵂');
+            expect(Icons.GetIcon('window-shutter-50')).to.equal('﵃');
+            expect(Icons.GetIcon('window-shutter-75')).to.equal('﵄');
+        });
         it('returns the input as fallback for unknown icons', () => {
             const garbage = 'definitely-not-an-icon-xyz-12345';
             expect(Icons.GetIcon(garbage)).to.equal(garbage);

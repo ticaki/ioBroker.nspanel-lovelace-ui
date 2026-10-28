@@ -10,8 +10,10 @@
  *  - renamed icons: the MDI name of the codepoint is added as alias with the same glyph
  *  - new icons: added with the glyph of their MDI codepoint; if MDI gave that codepoint to a new icon
  *    while the panel still has the removed one there, the new icon gets a reserved glyph
+ *  - own icons from `script/custom-icons.json` (name, hex, data - svg path in a 24x24 viewBox) on their
+ *    fixed glyph in U+FD40..U+FD7F; an own icon wins over an MDI icon of the same name
  *
- * Writes:
+ * Reads `script/icons.json`, `script/custom-icons.json` and `@mdi/svg`, writes:
  *  - script/icons.json                  (name, data, hex, version, base64)
  *  - src-admin/src/icons.json           (name, base64) - icon selection of the admin
  *  - src/lib/const/icon_mapping.ts      (the `iconMap` entries, logo entries are kept)
@@ -35,6 +37,12 @@ interface IconEntry {
     base64: string;
 }
 
+interface CustomIcon {
+    name: string;
+    hex: string;
+    data: string;
+}
+
 interface MdiMeta {
     name: string;
     codepoint: string;
@@ -48,13 +56,16 @@ const adminIconsFile = path.join(root, 'src-admin', 'src', 'icons.json');
 const mappingFile = path.join(root, 'src', 'lib', 'const', 'icon_mapping.ts');
 const typesFile = path.join(root, 'src', 'lib', 'types', 'icon-mapping.d.ts');
 const scriptFile = path.join(root, 'script', 'example_sendTo_script_iobroker.ts');
+const customFile = path.join(root, 'script', 'custom-icons.json');
 const mdiDir = path.join(root, 'src-web', 'node_modules', '@mdi', 'svg');
 
 /**
- * Glyphs U+FD80..U+FDFF are reserved for MDI icons whose codepoint is taken by another icon of the panel
- * (MDI reused codepoints of removed brand icons). They are assigned from the top down.
- * MDI codepoints from there on are not used. U+FE00.. are variation selectors and specials.
+ * Glyphs U+FD40..U+FD7F are own icons (script/custom-icons.json), U+FD80..U+FDFF are reserved for MDI
+ * icons whose codepoint is taken by another icon of the panel (MDI reused codepoints of removed brand
+ * icons), assigned from the top down. MDI codepoints from U+FD40 on are not used.
+ * U+FE00.. are variation selectors and specials.
  */
+const FIRST_CUSTOM = 0xfd40;
 const FIRST_RESERVED = 0xfd80;
 const LAST_GLYPH = 0xfdff;
 
@@ -109,7 +120,7 @@ function main(): void {
      */
     const sameIcon = (icon: IconEntry): MdiMeta | undefined => {
         const glyph = parseInt(icon.hex, 16);
-        const m = glyph < FIRST_RESERVED ? mdiByGlyph.get(glyph) : undefined;
+        const m = glyph < FIRST_CUSTOM ? mdiByGlyph.get(glyph) : undefined;
         if (!m) {
             return undefined;
         }
@@ -141,7 +152,7 @@ function main(): void {
             continue;
         }
         const glyph = toGlyph(m.codepoint);
-        if (glyph < 0xe000 || glyph >= FIRST_RESERVED) {
+        if (glyph < 0xe000 || glyph >= FIRST_CUSTOM) {
             console.error(`skipped ${m.name}: glyph U+${hexOf(glyph)} out of range`);
             continue;
         }
@@ -167,6 +178,23 @@ function main(): void {
             console.log(`${m.name}: U+${hexOf(glyph)} is ${old.name} on the panel, moved to U+${hexOf(nextReserved)}`);
             moved++;
         }
+    }
+
+    // own icons on their fixed glyphs
+    const custom = JSON.parse(fs.readFileSync(customFile, 'utf8')) as CustomIcon[];
+    for (const c of custom) {
+        const glyph = parseInt(c.hex, 16);
+        if (!(glyph >= FIRST_CUSTOM && glyph < FIRST_RESERVED)) {
+            throw new Error(`own icon ${c.name}: glyph U+${c.hex} is not in U+FD40..U+FD7F`);
+        }
+        const other = [...result.values()].find(i => parseInt(i.hex, 16) === glyph && i.name !== c.name);
+        if (other) {
+            throw new Error(`own icon ${c.name}: glyph U+${c.hex} is used by ${other.name}`);
+        }
+        if (mdiByName.has(c.name)) {
+            console.error(`own icon ${c.name} replaces the MDI icon of the same name`);
+        }
+        result.set(c.name, entry(c.name, c.data, hexOf(glyph), 'custom'));
     }
 
     const list = [...result.values()].sort((a, b) => (a.name < b.name ? -1 : a.name > b.name ? 1 : 0));
@@ -210,7 +238,7 @@ function main(): void {
     );
 
     console.log(
-        `icons (@mdi/svg ${mdiVersion}): ${list.length} total - ${updated} paths updated, ${kept} kept (not in MDI), ${aliases} aliases, ${added} new, ${moved} on reserved glyphs`,
+        `icons (@mdi/svg ${mdiVersion} + ${custom.length} own): ${list.length} total - ${updated} paths updated, ${kept} kept (not in MDI), ${aliases} aliases, ${added} new, ${moved} on reserved glyphs`,
     );
 }
 
