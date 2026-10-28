@@ -170,7 +170,8 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
 - (tt-tom17) switching `cmd.activated` is confirmed at the panel again - the acknowledgement went to `panels.controller.cmd.activated` before
 - (tt-tom17) `cmd.hideCards` keeps its stored value at adapter start - it was overwritten with the value of `cmd.activated`
 - (ticaki) a configuration script is no longer required: a panel without a script starts with the admin configuration only (empty start page as fallback) instead of being skipped or pausing the adapter
-- (ticaki) icons: updated to Material Design Icons 7.4.47 - 546 new icons (shown on the panel from TFT 6.0 on, older TFTs show nothing for them), new MDI names of renamed icons work as aliases; existing icons keep their glyph
+- (ticaki) icons: updated to Material Design Icons 7.4.47 - 546 new icons (shown on the panel from TFT 6.0.1 on, older TFTs show nothing for them), new MDI names of renamed icons work as aliases; existing icons keep their glyph
+- (ticaki) HMI 6.0.1 (eu): the icon fonts 1, 3 and 4 contain the new icons; `HMI/tools/build_hmi.py` builds the icon fonts of a HMI from `script/icons.json`
 
 ### 1.7.0 (2026-10-25)
 - (ticaki) web panels: the panel UI in a web browser via http://<host>:8090/<topic>, no Tasmota needed - one web panel per address, all browsers on it stay in sync (new admin tab "Web panels")
