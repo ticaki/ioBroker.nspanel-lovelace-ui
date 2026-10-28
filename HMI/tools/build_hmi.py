@@ -1,12 +1,13 @@
 """Builds a HMI with the icons of script/icons.json in the icon fonts 1, 3 and 4.
 
-  python3 HMI/tools/build_hmi.py <base.HMI> <out.HMI> <icons of the base.json> <icons.json> [<old>:<new>]
+  python3 HMI/tools/build_hmi.py <base.HMI> <out.HMI> <icons of the base.json> <icons.json> [<old>[,<old>...]:<new>]
 
 <icons of the base.json> is script/icons.json of the version the base HMI was built with
 (e.g. `git show <commit>:script/icons.json`): glyphs whose drawing did not change keep the bytes of
 the base font, new and changed glyphs are rendered (Chrome canvas via puppeteer, render.mjs) with
 the parameters of params.json - they were fitted against the glyphs of the Nextion Editor.
-<old>:<new> replaces the release text of pageStartup.tRelease (same length only, e.g. 5.1.1:6.0.0).
+<old>:<new> replaces the release text of pageStartup.tRelease (same length only, e.g. 5.1.1:6.0.1);
+several old texts can be given separated by commas.
 
 Set PUPPETEER_PATH to a directory with node_modules/puppeteer (ending with /) if it is not
 resolvable from here, e.g. PUPPETEER_PATH=$(npm root -g)/
@@ -59,17 +60,15 @@ def main():
 
     if release:
         # pageStartup.tRelease: attribute record "txt" with the release
-        old_release, release = release.split(':')
-        key = b'\x15\x00\x00\x00txt' + b'\0' * 13 + old_release.encode()
-        hits = [(idx, data.find(key) + len(key) - len(old_release), old_release.encode())
-                for idx, data in project.files.items() if key in data]
-        if len(hits) != 1 or project.files[hits[0][0]].count(key) != 1 or len(old_release) != len(release):
-            raise SystemExit(f'release text {old_release} not found once: {hits}')
-        idx, pos, value = hits[0]
-        data = bytearray(files.get(idx, project.files[idx]))
-        data[pos:pos + len(release)] = release.encode()
-        files[idx] = bytes(data)
-        print(f'release {value.decode()} -> {release}')
+        old_releases, release = release.split(':')
+        for old_release in old_releases.split(','):
+            key = b'\x15\x00\x00\x00txt' + b'\0' * 13 + old_release.encode()
+            hits = [name for name, data in project.files.items() if key in files.get(name, data)]
+            data = files.get(hits[0], project.files[hits[0]]) if len(hits) == 1 else b''
+            if len(hits) != 1 or data.count(key) != 1 or len(old_release) != len(release):
+                raise SystemExit(f'release text {old_release} not found once: {hits}')
+            files[hits[0]] = data.replace(key, key[:-len(old_release)] + release.encode())
+            print(f'release {old_release} -> {release} ({hits[0]})')
 
     out = project.build(files)
     check = Hmi(out)  # parses again, checks the directory checksums
