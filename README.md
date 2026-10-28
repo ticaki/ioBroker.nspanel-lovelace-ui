@@ -158,6 +158,7 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
     ### **WORK IN PROGRESS**
 -->
 ### **WORK IN PROGRESS**
+- (ticaki) icon overview on GitHub Pages: all icons of the panel with name and glyph, searchable, marks the icons of HMI 6 and the own icons
 - (ticaki) navigation flow: edit mode to create, change and remove the prev/next/home/parent links of admin pages by dragging connections between pages and clicking edges; the changes are written to the page configuration and saved with the admin save button
 - (ticaki) navigation flow: the links of script pages (panel script and global script) can be edited as well - the change is stored as an override in the instance configuration (`navigationOverrides`) and applied on top of the script at every start, so it survives a resend of the script; the edge menu restores the script navigation of a page; a snapshot of the script links travels with the override, and when the script delivers other links later the tab asks once per session whether to merge, keep the own change or take over the script
 - (ticaki) navigation flow: pages the adapter generates from a page item (e.g. the media page behind a media item) are marked with a lock and stay read-only, whatever their page item comes from; a page with an override carries a pencil, in warning colour when the script changed since
