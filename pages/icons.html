@@ -1,0 +1,362 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NSPanel Icons</title>
+<style>
+    :root {
+        --bg: #f6f7f9;
+        --card: #ffffff;
+        --text: #1d2125;
+        --muted: #69707a;
+        --border: #dde1e6;
+        --accent: #0a7bd6;
+        --icon: #1d2125;
+        --badge-new: #d9efe1;
+        --badge-new-text: #1b6b3a;
+        --badge-own: #fdeccf;
+        --badge-own-text: #8a5300;
+    }
+    @media (prefers-color-scheme: dark) {
+        :root {
+            --bg: #15181c;
+            --card: #1f2329;
+            --text: #e6e9ed;
+            --muted: #98a0aa;
+            --border: #2f353d;
+            --accent: #4aa8f0;
+            --icon: #fdd835;
+            --badge-new: #1f3b2a;
+            --badge-new-text: #8ad3a6;
+            --badge-own: #45361c;
+            --badge-own-text: #f2c574;
+        }
+    }
+    * { box-sizing: border-box; }
+    body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--text);
+        font: 14px/1.4 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    }
+    header {
+        position: sticky;
+        top: 0;
+        z-index: 1;
+        background: var(--bg);
+        border-bottom: 1px solid var(--border);
+        padding: 12px 16px;
+    }
+    h1 { font-size: 18px; margin: 0 0 4px; }
+    .hint { color: var(--muted); margin: 0 0 10px; font-size: 13px; }
+    .controls { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+    input[type=search] {
+        flex: 1 1 240px;
+        padding: 8px 10px;
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        background: var(--card);
+        color: var(--text);
+        font: inherit;
+    }
+    .filters { display: flex; gap: 4px; }
+    .filters button {
+        padding: 7px 10px;
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        background: var(--card);
+        color: var(--text);
+        font: inherit;
+        cursor: pointer;
+    }
+    .filters button[aria-pressed=true] { border-color: var(--accent); color: var(--accent); }
+    .count { color: var(--muted); font-size: 13px; margin-left: auto; }
+    main {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(132px, 1fr));
+        gap: 8px;
+        padding: 12px 16px 32px;
+    }
+    .icon {
+        content-visibility: auto;
+        contain-intrinsic-size: 132px 124px;
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 4px;
+        padding: 12px 6px 8px;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        background: var(--card);
+        cursor: pointer;
+        text-align: center;
+    }
+    .sentinel { grid-column: 1 / -1; height: 1px; }
+    .icon:hover { border-color: var(--accent); }
+    .icon svg { width: 44px; height: 44px; fill: var(--icon); }
+    .name { font-size: 12px; word-break: break-all; }
+    .meta { font-size: 11px; color: var(--muted); font-family: ui-monospace, Menlo, Consolas, monospace; }
+    .badge {
+        position: absolute;
+        top: 4px;
+        right: 4px;
+        padding: 0 5px;
+        border-radius: 4px;
+        font-size: 10px;
+    }
+    .badge.new { background: var(--badge-new); color: var(--badge-new-text); }
+    .badge.own { background: var(--badge-own); color: var(--badge-own-text); }
+    .toast {
+        position: fixed;
+        bottom: 16px;
+        left: 50%;
+        transform: translateX(-50%);
+        padding: 8px 14px;
+        border-radius: 6px;
+        background: var(--text);
+        color: var(--bg);
+        opacity: 0;
+        transition: opacity .2s;
+        pointer-events: none;
+    }
+    .toast.show { opacity: 1; }
+    .busy {
+        position: fixed;
+        inset: 0;
+        z-index: 2;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        background: color-mix(in srgb, var(--bg) 55%, transparent);
+    }
+    .busy.show { display: flex; }
+    .busy::after {
+        content: '';
+        width: 40px;
+        height: 40px;
+        border: 4px solid var(--border);
+        border-top-color: var(--accent);
+        border-radius: 50%;
+        animation: spin .8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+<header>
+    <h1 data-t="title">NSPanel Lovelace UI – Icons</h1>
+    <p class="hint" data-t="hint"></p>
+    <div class="controls">
+        <input type="search" id="search" autocomplete="off">
+        <div class="filters">
+            <button type="button" data-filter="all" aria-pressed="true" data-t="all"></button>
+            <button type="button" data-filter="new" aria-pressed="false" data-t="new"></button>
+            <button type="button" data-filter="own" aria-pressed="false" data-t="own"></button>
+        </div>
+        <span class="count" id="count"></span>
+    </div>
+</header>
+<main id="grid"></main>
+<div class="toast" id="toast"></div>
+<div class="busy show" id="busy" role="status"></div>
+<script>
+    const texts = {
+        en: {
+            title: 'NSPanel Lovelace UI – Icons',
+            hint: 'All icons of the panel with name and glyph. Click an icon to copy its name. Icons marked "HMI 6" need a TFT 6.0.2 or newer.',
+            search: 'Search name or glyph (e.g. window or E59C)',
+            all: 'All',
+            new: 'New in HMI 6',
+            own: 'Own icons',
+            count: n => `${n} icons`,
+            copied: n => `copied: ${n}`,
+            alias: 'same glyph as',
+            own_badge: 'own',
+            loading: 'loading…',
+        },
+        de: {
+            title: 'NSPanel Lovelace UI – Icons',
+            hint: 'Alle Icons des Panels mit Name und Glyph. Klick auf ein Icon kopiert den Namen. Mit „HMI 6“ markierte Icons brauchen eine TFT ab 6.0.2.',
+            search: 'Name oder Glyph suchen (z. B. window oder E59C)',
+            all: 'Alle',
+            new: 'Neu in HMI 6',
+            own: 'Eigene Icons',
+            count: n => `${n} Icons`,
+            copied: n => `kopiert: ${n}`,
+            alias: 'gleicher Glyph wie',
+            own_badge: 'eigen',
+            loading: 'lädt …',
+        },
+    };
+    const lang = navigator.language.toLowerCase().startsWith('de') ? 'de' : 'en';
+    const t = texts[lang];
+    document.documentElement.lang = lang;
+    document.querySelectorAll('[data-t]').forEach(el => {
+        el.textContent = t[el.dataset.t];
+    });
+    const search = document.getElementById('search');
+    search.placeholder = t.search;
+    const grid = document.getElementById('grid');
+    const count = document.getElementById('count');
+    const toast = document.getElementById('toast');
+    const busy = document.getElementById('busy');
+    count.textContent = t.loading;
+
+    // glyphs from U+FAF0 on came with HMI 6 (MDI 7.4.47 and own icons)
+    const FIRST_NEW_GLYPH = 0xfaf0;
+    let filter = 'all';
+    let cards = [];
+
+    function svgOf(d) {
+        const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+        svg.setAttribute('viewBox', '0 0 24 24');
+        const p = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        p.setAttribute('d', d);
+        svg.appendChild(p);
+        return svg;
+    }
+
+    // cards are created in batches while scrolling - all 7474 svgs at once freeze some browsers
+    const BATCH = 120;
+    let matches = [];
+    let rendered = 0;
+    const sentinel = document.createElement('div');
+    sentinel.className = 'sentinel';
+    const observer = new IntersectionObserver(entries => {
+        if (entries.some(e => e.isIntersecting)) {
+            more();
+        }
+    }, { rootMargin: '800px' });
+
+    function cardOf(c) {
+        const i = c.icon;
+        const el = document.createElement('div');
+        el.className = 'icon';
+        el.appendChild(svgOf(i.d));
+        const name = document.createElement('div');
+        name.className = 'name';
+        name.textContent = i.n;
+        el.appendChild(name);
+        const meta = document.createElement('div');
+        meta.className = 'meta';
+        meta.textContent = `U+${i.h}`;
+        el.appendChild(meta);
+        el.title = [i.n, `U+${i.h}`, i.v ? `MDI ${i.v}` : '', c.others.length ? `${t.alias} ${c.others.join(', ')}` : '']
+            .filter(Boolean)
+            .join('\n');
+        if (c.own || c.isNew) {
+            const b = document.createElement('span');
+            b.className = `badge ${c.own ? 'own' : 'new'}`;
+            b.textContent = c.own ? t.own_badge : 'HMI 6';
+            el.appendChild(b);
+        }
+        el.addEventListener('click', () => copy(i.n));
+        return el;
+    }
+
+    function more() {
+        if (rendered >= matches.length) {
+            return;
+        }
+        const frag = document.createDocumentFragment();
+        for (const c of matches.slice(rendered, rendered + BATCH)) {
+            frag.appendChild(cardOf(c));
+        }
+        rendered = Math.min(rendered + BATCH, matches.length);
+        grid.insertBefore(frag, sentinel);
+        // observe again: reports the sentinel once more if it is still in reach after this batch
+        observer.unobserve(sentinel);
+        observer.observe(sentinel);
+    }
+
+    function render(icons) {
+        const byGlyph = new Map();
+        for (const i of icons) {
+            byGlyph.set(i.h, [...(byGlyph.get(i.h) || []), i.n]);
+        }
+        cards = icons.map(i => {
+            const others = byGlyph.get(i.h).filter(n => n !== i.n);
+            return {
+                icon: i,
+                others,
+                key: `${i.n} ${others.join(' ')} ${i.h}`.toLowerCase(),
+                isNew: parseInt(i.h, 16) >= FIRST_NEW_GLYPH,
+                own: !!i.c,
+            };
+        });
+        busy.classList.remove('show');
+        apply();
+    }
+
+    // shows the spinner, lets the browser paint it and runs the slow part afterwards
+    function withBusy(fn) {
+        busy.classList.add('show');
+        requestAnimationFrame(() =>
+            setTimeout(() => {
+                fn();
+                busy.classList.remove('show');
+            }, 0),
+        );
+    }
+
+    function apply() {
+        withBusy(filterAndRender);
+    }
+
+    function filterAndRender() {
+        const q = search.value.trim().toLowerCase().replace(/^u\+/, '');
+        matches = cards.filter(
+            c =>
+                (filter === 'all' || (filter === 'new' && c.isNew) || (filter === 'own' && c.own)) &&
+                (!q || c.key.includes(q)),
+        );
+        rendered = 0;
+        grid.replaceChildren(sentinel);
+        more();
+        count.textContent = t.count(matches.length);
+    }
+
+    let searchTimer;
+    function applyLater() {
+        clearTimeout(searchTimer);
+        searchTimer = setTimeout(apply, 150);
+    }
+
+    let toastTimer;
+    function copy(name) {
+        const done = () => {
+            toast.textContent = t.copied(name);
+            toast.classList.add('show');
+            clearTimeout(toastTimer);
+            toastTimer = setTimeout(() => toast.classList.remove('show'), 1200);
+        };
+        if (navigator.clipboard) {
+            navigator.clipboard.writeText(name).then(done, () => {});
+        }
+    }
+
+    search.addEventListener('input', applyLater);
+    document.querySelectorAll('[data-filter]').forEach(btn => {
+        btn.addEventListener('click', () => {
+            filter = btn.dataset.filter;
+            document.querySelectorAll('[data-filter]').forEach(b => b.setAttribute('aria-pressed', String(b === btn)));
+            apply();
+        });
+    });
+    const initial = new URLSearchParams(location.search).get('q');
+    if (initial) {
+        search.value = initial;
+    }
+
+    fetch('icons.json')
+        .then(r => r.json())
+        .then(render)
+        .catch(e => {
+            busy.classList.remove('show');
+            count.textContent = String(e);
+        });
+</script>
+</body>
+</html>
