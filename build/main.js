@@ -42,6 +42,7 @@ var import_credentials = require("./lib/credentials");
 var import_node_url = require("node:url");
 var fs = __toESM(require("node:fs"));
 var import_navigation_overrides = require("./lib/configuration/navigation-overrides");
+var import_panel_buttons = require("./lib/configuration/panel-buttons");
 var import_Color = require("./lib/const/Color");
 var import_node_path = __toESM(require("node:path"));
 var import_test = require("./lib/const/test");
@@ -149,6 +150,24 @@ class NspanelLovelaceUi extends utils.Adapter {
           `navigation override for page ${page} of ${panelTopic}: the script navigation changed since the override was made - check the navigation flow in the admin`
         );
       }
+    }
+  }
+  /**
+   * Applies the hardware button actions of the admin (`native.panels[].buttonLeft/buttonRight`)
+   * to the configuration of one panel, before the panel is created from it. A side configured in
+   * the admin wins over the configuration script, an untouched side keeps the script value.
+   *
+   * @param panelConfig Converted configuration of the panel - changed in place.
+   * @param item Panel entry of the admin table.
+   */
+  applyAdminButtonsTo(panelConfig, item) {
+    var _a;
+    const result = (0, import_panel_buttons.applyAdminButtons)(panelConfig.buttons, item);
+    panelConfig.buttons = result.buttons;
+    for (const side of result.invalid) {
+      this.log.warn(
+        `The ${side} hardware button of ${(_a = item == null ? void 0 : item.topic) != null ? _a : "?"} is configured wrongly in the admin - the configuration script decides`
+      );
     }
   }
   /**
@@ -343,6 +362,7 @@ class NspanelLovelaceUi extends utils.Adapter {
           }
         }
         if (chosen) {
+          this.applyAdminButtonsTo(chosen, a);
           this.applyNavigationOverridesTo(chosen, a.topic);
           config.push(chosen);
         }
@@ -1182,7 +1202,12 @@ class NspanelLovelaceUi extends utils.Adapter {
                       }
                     }
                   }
-                  this.applyNavigationOverridesTo(r.panelConfig, (_i = r.panelConfig.topic) != null ? _i : "");
+                  const panelTopic = (_i = r.panelConfig.topic) != null ? _i : "";
+                  this.applyAdminButtonsTo(
+                    r.panelConfig,
+                    this.config.panels.find((p) => p && p.topic === panelTopic)
+                  );
+                  this.applyNavigationOverridesTo(r.panelConfig, panelTopic);
                   const arr = await import_config_manager.ConfigManager.getConfig(this, [r.panelConfig, ...others]);
                   if (arr && arr.length > 0) {
                     const config = arr[0];
