@@ -72,6 +72,8 @@ export class Screensaver extends Page {
                 ? 3000
                 : options.config.rotationTime * 1000;
         this.neverDeactivateTrigger = true;
+        // time, date, notify ... are handled per source - a throttled time trigger must not get lost
+        this.replayTriggerPerSource = true;
     }
 
     async init(): Promise<void> {

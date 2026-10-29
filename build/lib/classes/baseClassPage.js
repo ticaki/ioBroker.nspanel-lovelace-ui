@@ -26,7 +26,13 @@ var import_library = require("../controller/library");
 var import_definition = require("../const/definition");
 class BaseTriggeredPage extends import_library.BaseClass {
   updateTimeout;
-  doUpdate = true;
+  /** triggers that arrived while updateTimeout was running: source -> last dp */
+  pendingTriggers = /* @__PURE__ */ new Map();
+  /**
+   * true: onStateTrigger depends on the source of a trigger (e.g. screensaver - time, date, notify),
+   * so a throttled trigger is replayed once per source. false: only the last trigger is replayed.
+   */
+  replayTriggerPerSource = false;
   minUpdateInterval;
   visibility = false;
   alwaysOn;
@@ -96,10 +102,7 @@ class BaseTriggeredPage extends import_library.BaseClass {
               return;
             }
             this.updateTimeout = void 0;
-            if (this.doUpdate) {
-              this.doUpdate = false;
-              await this.onStateTrigger(dp, from);
-            }
+            await this.runPendingTriggers();
           },
           this.blockUpdateUntilTime.getTime() - (/* @__PURE__ */ new Date()).getTime() + 20
         );
@@ -107,7 +110,11 @@ class BaseTriggeredPage extends import_library.BaseClass {
       this.blockUpdateUntilTime = null;
     }
     if (this.updateTimeout) {
-      this.doUpdate = true;
+      if (!this.replayTriggerPerSource) {
+        this.pendingTriggers.clear();
+      }
+      this.pendingTriggers.delete(from);
+      this.pendingTriggers.set(from, dp);
       return false;
     }
     if (this.minUpdateInterval > 0) {
@@ -116,7 +123,7 @@ class BaseTriggeredPage extends import_library.BaseClass {
           return;
         }
         this.updateTimeout = void 0;
-        if (this.doUpdate) {
+        if (this.pendingTriggers.size > 0) {
           if (this.alwaysOnState) {
             this.adapter.clearTimeout(this.alwaysOnState);
           }
@@ -131,8 +138,7 @@ class BaseTriggeredPage extends import_library.BaseClass {
               this.basePanel.timeout * 1e3 || 5e3
             );
           }
-          this.doUpdate = false;
-          await this.onStateTrigger(dp, from);
+          await this.runPendingTriggers();
         }
       }, this.minUpdateInterval);
     }
@@ -153,6 +159,16 @@ class BaseTriggeredPage extends import_library.BaseClass {
     await this.onStateTrigger(dp, from);
     return true;
   };
+  async runPendingTriggers() {
+    const pending = [...this.pendingTriggers];
+    this.pendingTriggers.clear();
+    for (const [from, dp] of pending) {
+      if (this.unload || this.adapter.unload) {
+        return;
+      }
+      await this.onStateTrigger(dp, from);
+    }
+  }
   async onStateTrigger(_dp, _from) {
     this.adapter.log.warn(
       `<- instance of [${Object.getPrototypeOf(this)}] is triggert but dont react or call super.onStateTrigger()`
@@ -163,6 +179,7 @@ class BaseTriggeredPage extends import_library.BaseClass {
       this.adapter.clearTimeout(this.updateTimeout);
       this.updateTimeout = void 0;
     }
+    this.pendingTriggers.clear();
   }
   async delete() {
     this.unload = true;
