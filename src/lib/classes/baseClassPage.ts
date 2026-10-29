@@ -15,7 +15,13 @@ import type { NSPanel } from '../types/NSPanel';
  */
 export class BaseTriggeredPage extends BaseClass {
     private updateTimeout: ioBroker.Timeout | undefined;
-    private doUpdate: boolean = true;
+    /** triggers that arrived while updateTimeout was running: source -> last dp */
+    private pendingTriggers: Map<BaseTriggeredPage, string> = new Map();
+    /**
+     * true: onStateTrigger depends on the source of a trigger (e.g. screensaver - time, date, notify),
+     * so a throttled trigger is replayed once per source. false: only the last trigger is replayed.
+     */
+    protected replayTriggerPerSource: boolean = false;
     protected minUpdateInterval: number;
     protected visibility: boolean = false;
     public alwaysOn: AlwaysOnMode;
@@ -113,10 +119,7 @@ export class BaseTriggeredPage extends BaseClass {
                             return;
                         }
                         this.updateTimeout = undefined;
-                        if (this.doUpdate) {
-                            this.doUpdate = false;
-                            await this.onStateTrigger(dp, from);
-                        }
+                        await this.runPendingTriggers();
                     },
                     this.blockUpdateUntilTime.getTime() - new Date().getTime() + 20,
                 );
@@ -124,7 +127,12 @@ export class BaseTriggeredPage extends BaseClass {
             this.blockUpdateUntilTime = null;
         }
         if (this.updateTimeout) {
-            this.doUpdate = true;
+            if (!this.replayTriggerPerSource) {
+                this.pendingTriggers.clear();
+            }
+            // re-insert so the replay order follows the arrival of the last trigger
+            this.pendingTriggers.delete(from);
+            this.pendingTriggers.set(from, dp);
             return false;
         }
 
@@ -134,7 +142,7 @@ export class BaseTriggeredPage extends BaseClass {
                     return;
                 }
                 this.updateTimeout = undefined;
-                if (this.doUpdate) {
+                if (this.pendingTriggers.size > 0) {
                     if (this.alwaysOnState) {
                         this.adapter.clearTimeout(this.alwaysOnState);
                     }
@@ -149,8 +157,7 @@ export class BaseTriggeredPage extends BaseClass {
                             this.basePanel.timeout * 1000 || 5000,
                         );
                     }
-                    this.doUpdate = false;
-                    await this.onStateTrigger(dp, from);
+                    await this.runPendingTriggers();
                 }
             }, this.minUpdateInterval);
         }
@@ -172,6 +179,17 @@ export class BaseTriggeredPage extends BaseClass {
         return true;
     };
 
+    private async runPendingTriggers(): Promise<void> {
+        const pending = [...this.pendingTriggers];
+        this.pendingTriggers.clear();
+        for (const [from, dp] of pending) {
+            if (this.unload || this.adapter.unload) {
+                return;
+            }
+            await this.onStateTrigger(dp, from);
+        }
+    }
+
     protected async onStateTrigger(_dp: string, _from: BaseTriggeredPage): Promise<void> {
         this.adapter.log.warn(
             `<- instance of [${Object.getPrototypeOf(this)}] is triggert but dont react or call super.onStateTrigger()`,
@@ -183,6 +201,7 @@ export class BaseTriggeredPage extends BaseClass {
             this.adapter.clearTimeout(this.updateTimeout);
             this.updateTimeout = undefined;
         }
+        this.pendingTriggers.clear();
     }
     async delete(): Promise<void> {
         this.unload = true;
