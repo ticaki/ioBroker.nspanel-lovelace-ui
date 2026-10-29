@@ -2323,3 +2323,82 @@ export type PageBaseItemSimple = {
 };
 
 export type Beispiel = Pick<PageBaseItemSimple, 'minValue' | 'maxValue' | 'stepValue'>;
+
+/**
+ * Action a hardware button of a panel triggers, as the admin stores it in
+ * `native.panels[].buttonLeft` / `native.panels[].buttonRight`.
+ *
+ * It is the serializable form of `ConfigButtonFunction` (`src/lib/types/types.ts`): there the state
+ * of a datapoint mode becomes a `Dataitem` once the panel resolved it, here it stays the id of the
+ * datapoint. The members mirror that type one by one so an entry can be handed over unchanged.
+ *
+ * `undefined` (field missing) means "not configured in the admin" - the value of the configuration
+ * script keeps its effect. `null` is a configured "no action".
+ */
+export type AdminButtonFunction =
+    | {
+          /** navigate to a navigation point of this panel */
+          mode: 'page';
+          /** name of the navigation point (`cmd.goToNavigationPoint` lists them all) */
+          page: string;
+      }
+    | {
+          /** flip a boolean datapoint */
+          mode: 'switch';
+          /** id of the datapoint */
+          state: string;
+      }
+    | {
+          /** set a datapoint to true */
+          mode: 'button';
+          /** id of the datapoint */
+          state: string;
+      }
+    | {
+          /** set a datapoint and flip it back after `delay` seconds */
+          mode: 'buttonOnDelayOff' | 'buttonOffDelayOn' | 'buttonDelayOn' | 'buttonDelayOff';
+          /** delay in seconds, see `ConfigButtonFunction`; missing = 0.25 s */
+          delay?: number;
+          /** id of the datapoint */
+          state: string;
+      }
+    | null;
+
+/** Modes of `AdminButtonFunction` in the order the admin dialog offers them. */
+export const ADMIN_BUTTON_MODES = [
+    'page',
+    'switch',
+    'button',
+    'buttonOnDelayOff',
+    'buttonOffDelayOn',
+    'buttonDelayOn',
+    'buttonDelayOff',
+] as const;
+
+/** Mode of a hardware button action. */
+export type AdminButtonMode = (typeof ADMIN_BUTTON_MODES)[number];
+
+/** Modes that need a datapoint instead of a page. */
+export const ADMIN_BUTTON_STATE_MODES: readonly AdminButtonMode[] = [
+    'switch',
+    'button',
+    'buttonOnDelayOff',
+    'buttonOffDelayOn',
+    'buttonDelayOn',
+    'buttonDelayOff',
+];
+
+/** Modes that flip the datapoint back after a delay. */
+export const ADMIN_BUTTON_DELAY_MODES: readonly AdminButtonMode[] = [
+    'buttonOnDelayOff',
+    'buttonOffDelayOn',
+    'buttonDelayOn',
+    'buttonDelayOff',
+];
+
+/** Delay the adapter uses when none is configured, in seconds (`panel.ts`: 250 ms). */
+export const ADMIN_BUTTON_DEFAULT_DELAY = 0.25;
+/** Smallest delay the adapter accepts, in seconds. */
+export const ADMIN_BUTTON_MIN_DELAY = 0.001;
+/** Largest delay the adapter accepts, in seconds (2^31-1 ms). */
+export const ADMIN_BUTTON_MAX_DELAY = 2_147_483;

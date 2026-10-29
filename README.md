@@ -158,6 +158,7 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
     ### **WORK IN PROGRESS**
 -->
 ### **WORK IN PROGRESS**
+- (tt-tom17) NSPanel settings: every panel tile has two buttons that configure what the hardware buttons below the display do - decoupling from the relay (`cmd.detachLeft`/`cmd.detachRight`) and the action itself: go to a navigation point, flip or set a datapoint, or set it and flip it back after a delay; a button configured here wins over `buttonLeft`/`buttonRight` of the configuration script, an untouched one keeps the script value
 - (ticaki) page configuration: new page type "Page link" - shows the content of another admin page under its own name with its own navigation, start page, hidden and always on; the headline falls back to the one of the linked page; the links of a page are listed below it and can be opened with a click
 - (ticaki) beta TFT for the EU panel is 6.0.2
 - (ticaki) web panel: the two hardware buttons below the display are 20px higher

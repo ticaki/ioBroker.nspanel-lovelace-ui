@@ -1,7 +1,7 @@
 // This file extends the AdapterConfig type from "@types/iobroker"
 
 import {NSpanelModel} from "./types/types";
-import type { NavigationOverride, PageLinkEntry, ScreensaverEntry, ScreensaverNotifyConfig } from "./types/adminShareConfig";
+import type { AdminButtonFunction, NavigationOverride, PageLinkEntry, ScreensaverEntry, ScreensaverNotifyConfig } from "./types/adminShareConfig";
 
 // Augment the globally declared type ioBroker.AdapterConfig
 declare global {
@@ -68,7 +68,18 @@ declare global {
              * Admin panel table. `kind` missing = 'tasmota' (hardware NSPanel); 'web' = standalone
              * web panel (id `web_<12 hex>`, no ip) shown only in a browser.
              */
-            panels: {name: string, topic: string, id: string, ip: string, model: NSpanelModel, kind?: 'tasmota' | 'web'}[];
+            panels: {
+                name: string,
+                topic: string,
+                id: string,
+                ip: string,
+                model: NSpanelModel,
+                kind?: 'tasmota' | 'web',
+                /** action of the left hardware button, configured in the panel tile; missing = the configuration script decides */
+                buttonLeft?: AdminButtonFunction,
+                /** action of the right hardware button, configured in the panel tile; missing = the configuration script decides */
+                buttonRight?: AdminButtonFunction,
+            }[];
             pw1: string;
 
             // PagePower
