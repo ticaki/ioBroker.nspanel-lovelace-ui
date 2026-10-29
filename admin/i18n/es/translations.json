@@ -531,7 +531,6 @@
     "pageQRselType": "Selección de tipo QR",
     "page_link_description": "Un enlace muestra el contenido de la página enlazada (elementos y todos los ajustes de la página) con su propio nombre. Navegación, página de inicio, oculto y siempre activo a la derecha solo se aplican al enlace; el contenido se modifica en la página enlazada.",
     "page_link_headline_hint": "Vacío = título de la página enlazada; si también está vacío, su nombre único",
-    "page_link_jump": "Abrir enlace",
     "page_link_open_target": "Abrir página enlazada",
     "page_link_target": "Página enlazada",
     "page_link_target_missing": "La página enlazada \"%s\" no existe (ya). El enlace no se muestra en el panel.",

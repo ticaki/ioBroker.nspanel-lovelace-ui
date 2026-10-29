@@ -534,7 +534,6 @@
     "pageQRselType": "Auswahl des QR-Typs",
     "page_link_description": "Eine Verknüpfung zeigt den Inhalt der verknüpften Seite (Seitenelemente und alle Seiteneinstellungen) unter eigenem Namen. Navigation, Startseite, Ausblenden und Always-On rechts gelten nur für die Verknüpfung - Änderungen am Inhalt erfolgen an der verknüpften Seite.",
     "page_link_headline_hint": "Leer = Überschrift der verknüpften Seite, ist die auch leer, deren eindeutiger Name",
-    "page_link_jump": "Verknüpfung öffnen",
     "page_link_open_target": "Verknüpfte Seite öffnen",
     "page_link_target": "Verknüpfte Seite",
     "page_link_target_missing": "Die verknüpfte Seite „%s“ existiert nicht (mehr). Die Verknüpfung wird auf dem Panel nicht angezeigt.",

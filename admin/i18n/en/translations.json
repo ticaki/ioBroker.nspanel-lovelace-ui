@@ -534,7 +534,6 @@
     "pageQRselType": "Selection of QR type",
     "page_link_description": "A link shows the content of the linked page (page items and all page settings) under its own name. Navigation, start page, hidden and always on on the right only apply to the link - changes to the content are made on the linked page.",
     "page_link_headline_hint": "Empty = headline of the linked page, if that is empty too its unique name",
-    "page_link_jump": "Open link",
     "page_link_open_target": "Open linked page",
     "page_link_target": "Linked page",
     "page_link_target_missing": "The linked page \"%s\" does not exist (anymore). The link is not shown on the panel.",

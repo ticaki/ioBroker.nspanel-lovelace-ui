@@ -531,7 +531,6 @@
     "pageQRselType": "Seleção do tipo QR",
     "page_link_description": "Uma ligação mostra o conteúdo da página ligada (elementos e todas as definições da página) com o seu próprio nome. Navegação, página inicial, oculto e sempre ativo à direita aplicam-se apenas à ligação; o conteúdo é alterado na página ligada.",
     "page_link_headline_hint": "Vazio = título da página ligada; se também estiver vazio, o seu nome único",
-    "page_link_jump": "Abrir ligação",
     "page_link_open_target": "Abrir página ligada",
     "page_link_target": "Página ligada",
     "page_link_target_missing": "A página ligada \"%s\" não existe (mais). A ligação não é mostrada no painel.",

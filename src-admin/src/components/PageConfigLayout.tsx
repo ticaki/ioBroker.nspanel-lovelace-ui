@@ -228,7 +228,6 @@ export class PageConfigLayout extends React.Component<PageConfigLayoutProps, Pag
         return (
             <Typography
                 variant="body2"
-                title={isLink && entry ? `→ ${entry.target || '?'}` : undefined}
                 sx={{
                     flex: 1,
                     overflow: 'hidden',
@@ -250,47 +249,47 @@ export class PageConfigLayout extends React.Component<PageConfigLayoutProps, Pag
     }
 
     /**
-     * Small clickable names of the page links that point to a page, shown below it in the list.
+     * Small clickable name of the linked page, shown below a page link in the list. A missing
+     * target is shown in warning colour and is not clickable.
      *
-     * @param name uniqueName of the page
-     * @param visibleEntries Entries left over by the filters - a link hidden by the panel filter resets it.
-     * @returns The links or null if the page has none.
+     * @param name uniqueName of the list entry
+     * @param visibleEntries Entries left over by the filters - a target hidden by a filter resets the panel filter.
+     * @returns The target line or null if the entry is no page link.
      */
-    private renderLinksOf(name: string, visibleEntries: PageConfigEntry[]): React.JSX.Element | null {
-        const links = this.props.entries
-            .filter(e => isPageLinkEntry(e) && e.target === name)
-            .map(e => e.uniqueName)
-            .sort((a, b) => a.localeCompare(b));
-        if (links.length === 0) {
+    private renderLinkTarget(name: string, visibleEntries: PageConfigEntry[]): React.JSX.Element | null {
+        const { entries } = this.props;
+        const entry = entries.find(e => e.uniqueName === name);
+        if (!entry || !isPageLinkEntry(entry)) {
             return null;
         }
+        const target = entry.target;
+        const broken = !!pageLinkProblem(entry, entries);
         return (
-            <Box sx={{ width: '100%', display: 'flex', flexWrap: 'wrap', gap: 0.5, pl: 1, mt: 0.25 }}>
-                {links.map(link => (
-                    <Typography
-                        key={link}
-                        variant="caption"
-                        title={this.getText('page_link_jump')}
-                        onClick={e => {
-                            e.stopPropagation();
-                            if (!visibleEntries.some(v => v.uniqueName === link)) {
-                                this.setState({ selectedPanelFilter: '' });
-                            }
-                            this.props.onSelectedChange(link);
-                        }}
-                        sx={{
-                            display: 'inline-flex',
-                            alignItems: 'center',
-                            gap: 0.25,
-                            color: 'primary.main',
-                            cursor: 'pointer',
-                            '&:hover': { textDecoration: 'underline' },
-                        }}
-                    >
-                        <LinkIcon sx={{ fontSize: '0.9rem' }} />
-                        {link}
-                    </Typography>
-                ))}
+            <Box sx={{ width: '100%', pl: 3.5, mt: 0.25 }}>
+                <Typography
+                    variant="caption"
+                    title={broken ? undefined : this.getText('page_link_open_target')}
+                    onClick={e => {
+                        e.stopPropagation();
+                        if (broken) {
+                            return;
+                        }
+                        if (!visibleEntries.some(v => v.uniqueName === target)) {
+                            this.setState({ selectedPanelFilter: '' });
+                        }
+                        this.props.onSelectedChange(target);
+                    }}
+                    sx={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: 0.25,
+                        color: broken ? 'warning.main' : 'primary.main',
+                        cursor: broken ? 'default' : 'pointer',
+                        '&:hover': broken ? {} : { textDecoration: 'underline' },
+                    }}
+                >
+                    → {target || '?'}
+                </Typography>
             </Box>
         );
     }
@@ -598,7 +597,7 @@ export class PageConfigLayout extends React.Component<PageConfigLayoutProps, Pag
                                     >
                                         <DeleteOutlineIcon fontSize="small" />
                                     </IconButton>
-                                    {this.renderLinksOf(name, filteredEntries)}
+                                    {this.renderLinkTarget(name, filteredEntries)}
                                 </Box>
                             ))
                         )}

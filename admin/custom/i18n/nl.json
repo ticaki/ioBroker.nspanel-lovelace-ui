@@ -531,7 +531,6 @@
     "pageQRselType": "Selectie van QR -type",
     "page_link_description": "Een koppeling toont de inhoud van de gekoppelde pagina (pagina-items en alle pagina-instellingen) onder een eigen naam. Navigatie, startpagina, verborgen en altijd aan rechts gelden alleen voor de koppeling - de inhoud wijzig je op de gekoppelde pagina.",
     "page_link_headline_hint": "Leeg = koptekst van de gekoppelde pagina, is die ook leeg, dan de unieke naam",
-    "page_link_jump": "Koppeling openen",
     "page_link_open_target": "Gekoppelde pagina openen",
     "page_link_target": "Gekoppelde pagina",
     "page_link_target_missing": "De gekoppelde pagina \"%s\" bestaat niet (meer). De koppeling wordt niet op het paneel getoond.",

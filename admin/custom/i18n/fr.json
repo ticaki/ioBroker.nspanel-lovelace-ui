@@ -531,7 +531,6 @@
     "pageQRselType": "Sélection du type QR",
     "page_link_description": "Un lien affiche le contenu de la page liée (éléments et tous les réglages de la page) sous son propre nom. La navigation, la page d’accueil, masqué et toujours actif à droite ne s’appliquent qu’au lien ; le contenu se modifie sur la page liée.",
     "page_link_headline_hint": "Vide = titre de la page liée ; s’il est vide aussi, son nom unique",
-    "page_link_jump": "Ouvrir le lien",
     "page_link_open_target": "Ouvrir la page liée",
     "page_link_target": "Page liée",
     "page_link_target_missing": "La page liée « %s » n’existe pas (plus). Le lien n’est pas affiché sur le panneau.",

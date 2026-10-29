@@ -531,7 +531,6 @@
     "pageQRselType": "Wybór typu QR",
     "page_link_description": "Łącze pokazuje zawartość połączonej strony (elementy i wszystkie ustawienia strony) pod własną nazwą. Nawigacja, strona startowa, ukrycie i zawsze włączone po prawej dotyczą tylko łącza – zawartość zmienia się na połączonej stronie.",
     "page_link_headline_hint": "Puste = nagłówek połączonej strony, jeśli też pusty – jej unikalna nazwa",
-    "page_link_jump": "Otwórz łącze",
     "page_link_open_target": "Otwórz połączoną stronę",
     "page_link_target": "Połączona strona",
     "page_link_target_missing": "Połączona strona „%s” nie istnieje (już). Łącze nie jest wyświetlane na panelu.",

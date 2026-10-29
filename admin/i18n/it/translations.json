@@ -531,7 +531,6 @@
     "pageQRselType": "Selezione del tipo QR",
     "page_link_description": "Un collegamento mostra il contenuto della pagina collegata (elementi e tutte le impostazioni della pagina) con un proprio nome. Navigazione, pagina iniziale, nascosto e sempre attivo a destra valgono solo per il collegamento; il contenuto si modifica nella pagina collegata.",
     "page_link_headline_hint": "Vuoto = titolo della pagina collegata; se anch’esso è vuoto, il suo nome univoco",
-    "page_link_jump": "Apri collegamento",
     "page_link_open_target": "Apri pagina collegata",
     "page_link_target": "Pagina collegata",
     "page_link_target_missing": "La pagina collegata \"%s\" non esiste (più). Il collegamento non viene mostrato sul pannello.",
