@@ -160,6 +160,7 @@ const _Screensaver = class _Screensaver extends import_Page.Page {
     this.screensaverSwipe = (_b = options.config.screensaverSwipe) != null ? _b : false;
     this.rotationTime = options.config.rotationTime !== 0 && options.config.rotationTime < 3 ? 3e3 : options.config.rotationTime * 1e3;
     this.neverDeactivateTrigger = true;
+    this.replayTriggerPerSource = true;
   }
   async init() {
     await super.init();
