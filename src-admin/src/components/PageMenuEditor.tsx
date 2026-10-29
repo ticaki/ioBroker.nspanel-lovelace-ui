@@ -958,7 +958,8 @@ export class PageMenuEditor extends ConfigGeneric<ConfigGenericProps & PageMenuE
 
         const baseSlots = entry.card === 'cardGrid2' ? grid2Slots : SLOT_COUNTS_BASE[entry.card];
         const isGridCard = ['cardGrid', 'cardGrid2', 'cardGrid3'].includes(entry.card);
-        const scrollPresentation = entry.scrollPresentation ?? 'arrow';
+        // adapter default is classic, the setting itself lives in the page details
+        const scrollPresentation = entry.scrollPresentation ?? 'classic';
         const potentialArrow = isGridCard && scrollPresentation === 'arrow';
         const pageItems = entry.pageItems ?? [];
 
@@ -978,7 +979,6 @@ export class PageMenuEditor extends ConfigGeneric<ConfigGenericProps & PageMenuE
         const totalPages = Math.max(basePagesFinal, totalPagesEst);
         const totalRealSlots = effectiveSlots * totalPages;
         const filledCount = pageItems.filter(p => p != null).length;
-        const showScrollRadio = isGridCard && totalPages > 1;
 
         return (
             <Box>
@@ -1106,39 +1106,6 @@ export class PageMenuEditor extends ConfigGeneric<ConfigGenericProps & PageMenuE
                         </Box>
                     </FormControl>
                 </Box>
-
-                {/* Scroll-Typ Auswahl (nur bei Grid und mehreren Seiten) */}
-                {showScrollRadio && (
-                    <Box sx={{ mb: 2 }}>
-                        <FormControl
-                            component="fieldset"
-                            disabled={!this.state.alive}
-                        >
-                            <FormLabel component="legend">{this.getText('pageMenu_scroll_type')}</FormLabel>
-                            <RadioGroup
-                                row
-                                value={scrollPresentation}
-                                onChange={(_e, val) => {
-                                    this.props.onEntryChange({
-                                        ...entry,
-                                        scrollPresentation: val as 'classic' | 'arrow',
-                                    });
-                                }}
-                            >
-                                <FormControlLabel
-                                    value="classic"
-                                    control={<Radio />}
-                                    label={this.getText('pageMenu_scroll_classic')}
-                                />
-                                <FormControlLabel
-                                    value="arrow"
-                                    control={<Radio />}
-                                    label={this.getText('pageMenu_scroll_arrow')}
-                                />
-                            </RadioGroup>
-                        </FormControl>
-                    </Box>
-                )}
 
                 {/* Items */}
                 <Paper

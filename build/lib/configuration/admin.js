@@ -29,6 +29,7 @@ var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: tru
 var admin_exports = {};
 __export(admin_exports, {
   AdminConfiguration: () => AdminConfiguration,
+  buildMediaScriptPage: () => buildMediaScriptPage,
   buildPowerSlotData: () => buildPowerSlotData,
   buildThermo2ScriptPage: () => buildThermo2ScriptPage
 });
@@ -38,6 +39,7 @@ var import_admin_screensaver = require("./admin-screensaver");
 var import_Color = require("../const/Color");
 var import_default_pages = require("../const/default-pages");
 var import_pageThermo2 = require("../pages/pageThermo2");
+var import_pageMedia = require("../pages/pageMedia");
 var import_library = require("../controller/library");
 var import_system_templates = require("../templates/system-templates");
 var ShareConfig = __toESM(require("../types/adminShareConfig"));
@@ -197,6 +199,7 @@ Stack: ${stack}`
       },
       pageItems: []
     };
+    applyScrollFields(gridItem, entry);
     const messages = [];
     const manager = new import_config_manager.ConfigManager(this.adapter);
     ({ gridItem } = await import_pageThermo2.PageThermo2.getPage(manager, buildThermo2ScriptPage(entry), gridItem, messages));
@@ -221,6 +224,60 @@ Stack: ${stack}`
       }
     }
     this.log.debug(`Generated cardThermo2 page for '${entry.uniqueName}'`);
+    return gridItem;
+  }
+  /**
+   * Builds the runtime page of a cardMedia entry.
+   *
+   * Same path as cardThermo2: the entry is turned into the script form and handed to
+   * `PageMedia.getPage`, which picks the backend and adds the standard items. The own page items
+   * of the entry are appended afterwards, so they follow the standard items in the bar.
+   *
+   * @param entry Media entry as stored by the PageConfig editor.
+   * @param alwaysOn Validated always-on mode of the entry.
+   * @returns The page for the panel configuration; with an unusable player it has no items.
+   */
+  async buildMediaPage(entry, alwaysOn) {
+    var _a, _b;
+    let gridItem = {
+      uniqueID: entry.uniqueName,
+      hidden: !!entry.hidden,
+      alwaysOn,
+      dpInit: "",
+      config: {
+        card: "cardMedia",
+        scrollType: "page",
+        scrollPresentation: "classic",
+        data: { headline: { type: "const", constVal: entry.headline || entry.uniqueName } },
+        index: 0
+      },
+      pageItems: []
+    };
+    applyScrollFields(gridItem, entry);
+    const messages = [];
+    const manager = new import_config_manager.ConfigManager(this.adapter);
+    ({ gridItem } = await import_pageMedia.PageMedia.getPage(manager, buildMediaScriptPage(entry), gridItem, messages));
+    for (const msg of messages) {
+      this.log.debug(`cardMedia '${entry.uniqueName}': ${msg}`);
+    }
+    const items = (_a = entry.pageItems) != null ? _a : [];
+    const lastFilled = items.reduceRight((acc, v, i) => acc === -1 && v != null ? i : acc, -1);
+    for (let index = 0; index <= lastFilled; index++) {
+      const stored = items[index];
+      const item = stored ? { ...stored, channelId: ShareConfig.normalizeChannelId(stored.channelId) } : { channelId: ShareConfig.emptyChannelValueConfig("empty") };
+      const result = await this.adapter.convertAdminPageItemToPageItemConfig(
+        item,
+        { card: "cardMedia", uniqueName: entry.uniqueName },
+        []
+      );
+      if (!result.error && result.pageItem) {
+        gridItem.pageItems = (_b = gridItem.pageItems) != null ? _b : [];
+        gridItem.pageItems.push(result.pageItem);
+      } else if (result.error) {
+        this.log.warn(`Error processing page item ${index} for page '${entry.uniqueName}': ${result.error}`);
+      }
+    }
+    this.log.debug(`Generated cardMedia page for '${entry.uniqueName}'`);
     return gridItem;
   }
   /**
@@ -361,6 +418,13 @@ Stack: ${stack}`
           newPage = await this.buildThermo2Page(entry, entry.alwaysOn);
           break;
         }
+        case "cardMedia": {
+          if (!isAlwaysOnMode(entry.alwaysOn)) {
+            entry.alwaysOn = "none";
+          }
+          newPage = await this.buildMediaPage(entry, entry.alwaysOn);
+          break;
+        }
         case "cardGrid":
         case "cardGrid2":
         case "cardGrid3": {
@@ -374,13 +438,13 @@ Stack: ${stack}`
             dpInit: "",
             config: {
               card: entry.card,
-              scrollPresentation: entry.scrollPresentation || "classic",
               data: {
                 headline: { type: "const", constVal: entry.headline || entry.uniqueName }
               }
             },
             pageItems: []
           };
+          applyScrollFields(newPage, entry);
           if (entry.pageItems) {
             let start = false;
             for (let index = entry.pageItems.length - 1; index >= 0; index--) {
@@ -429,6 +493,7 @@ Stack: ${stack}`
             },
             pageItems: []
           };
+          applyScrollFields(newPage, entry);
           if (entry.pageItems) {
             let start = false;
             for (let index = entry.pageItems.length - 1; index >= 0; index--) {
@@ -830,6 +895,87 @@ function buildThermo2ScriptPage(entry) {
     sortOrder
   };
 }
+function mediaVolume(value) {
+  return typeof value === "number" && Number.isFinite(value) && value >= 0 ? value : void 0;
+}
+function mediaList(list) {
+  if (!Array.isArray(list)) {
+    return void 0;
+  }
+  const names = [...new Set(list.map((n) => typeof n === "string" ? n.trim() : "").filter((n) => !!n))];
+  return names.length ? names : void 0;
+}
+function buildMediaScriptPage(entry) {
+  var _a, _b;
+  let minValue = mediaVolume(entry.minValue);
+  let maxValue = mediaVolume(entry.maxValue);
+  if (minValue !== void 0 && maxValue !== void 0 && minValue > maxValue) {
+    [minValue, maxValue] = [maxValue, minValue];
+  }
+  const low = minValue != null ? minValue : ShareConfig.mediaVolumeDefaults.minValue;
+  const high = maxValue != null ? maxValue : ShareConfig.mediaVolumeDefaults.maxValue;
+  const deactivateDefaultItems = {};
+  const itemsColorOn = {};
+  const itemsColorOff = {};
+  for (const [key, config] of Object.entries((_a = entry.toolbar) != null ? _a : {})) {
+    if (!config) {
+      continue;
+    }
+    const item = key;
+    if (config.enabled === false && item !== "volumePresets") {
+      deactivateDefaultItems[item] = true;
+    }
+    const on = thermo2Rgb(config.colorOn);
+    if (on) {
+      itemsColorOn[item] = on;
+    }
+    const off = thermo2Rgb(config.colorOff);
+    if (off && item !== "volumePresets") {
+      itemsColorOff[item] = off;
+    }
+  }
+  const volumePresets = (Array.isArray(entry.volumePresets) ? entry.volumePresets : []).filter((p) => p && thermo2Text(p.name) && typeof p.value === "number" && Number.isFinite(p.value)).map((p) => `${thermo2Text(p.name)}?${Math.round(Math.min(high, Math.max(low, p.value)))}`);
+  const media = {
+    id: (_b = thermo2Text(entry.mediaId)) != null ? _b : "",
+    name: thermo2Text(entry.name),
+    minValue,
+    maxValue,
+    colorMediaIcon: thermo2Rgb(entry.colorMediaIcon),
+    colorMediaArtist: thermo2Rgb(entry.colorMediaArtist),
+    colorMediaTitle: thermo2Rgb(entry.colorMediaTitle),
+    speakerList: mediaList(entry.speakerList),
+    playList: mediaList(entry.playList),
+    favoriteList: mediaList(entry.favoriteList),
+    volumePresets: volumePresets.length ? volumePresets : void 0,
+    deactivateDefaultItems: Object.keys(deactivateDefaultItems).length ? deactivateDefaultItems : void 0,
+    itemsColorOn: Object.keys(itemsColorOn).length ? itemsColorOn : void 0,
+    itemsColorOff: Object.keys(itemsColorOff).length ? itemsColorOff : void 0
+  };
+  for (const key of Object.keys(media)) {
+    if (media[key] === void 0) {
+      delete media[key];
+    }
+  }
+  return {
+    type: "cardMedia",
+    uniqueName: entry.uniqueName,
+    heading: "",
+    media,
+    items: []
+  };
+}
+function applyScrollFields(page, entry) {
+  const config = page.config;
+  if (!config || !ShareConfig.isScrollCard(config.card) || !(0, import_function_and_const.isPageMenuConfig)(config)) {
+    return;
+  }
+  const scroll = ShareConfig.normalizeScrollFields(entry, config.card);
+  config.scrollType = scroll.scrollType;
+  config.scrollPresentation = scroll.scrollPresentation;
+  if (scroll.scrollPresentation === "auto" && config.scrollPresentation === "auto") {
+    config.scrollAutoTiming = scroll.scrollAutoTiming;
+  }
+}
 function isAlwaysOnMode(F) {
   const R = F;
   switch (R) {
@@ -1081,6 +1227,7 @@ function dataForcardTrash(entry) {
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
   AdminConfiguration,
+  buildMediaScriptPage,
   buildPowerSlotData,
   buildThermo2ScriptPage
 });

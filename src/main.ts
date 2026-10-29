@@ -4,6 +4,7 @@ import {
     SENDTO_GET_PAGES_COMMAND,
     SENDTO_GET_PANELS_COMMAND,
     SENDTO_GET_SCREENSAVER_TEMPLATES_COMMAND,
+    SENDTO_GET_MEDIA_PLAYER_COMMAND,
     SENDTO_GET_PAGES_All_COMMAND,
     ALL_PANELS_SPECIAL_ID,
     migrateLegacyCharts,
@@ -29,6 +30,7 @@ import { Icons } from './lib/const/icon_mapping';
 import * as definition from './lib/const/definition';
 import { ConfigManager } from './lib/classes/config-manager';
 import { screensaverTemplateInfos } from './lib/templates/template-info';
+import { mediaPlayerInfo } from './lib/configuration/admin-media';
 import type { Panel, panelConfigPartial } from './lib/controller/panel';
 import { generateAliasDocumentation } from './lib/tools/readme';
 import { redactSecretsInText, stringifyForLog } from './lib/tools/redact';
@@ -1256,6 +1258,15 @@ class NspanelLovelaceUi extends utils.Adapter {
                             result ? result : [{ label: 'Not available', value: '' }],
                             obj.callback,
                         );
+                    }
+                    break;
+                }
+                case SENDTO_GET_MEDIA_PLAYER_COMMAND: {
+                    const message: unknown = obj.message;
+                    const id = message && typeof message === 'object' && 'id' in message ? message.id : undefined;
+                    const result = await mediaPlayerInfo(this, id);
+                    if (obj.callback) {
+                        this.sendTo(obj.from, obj.command, result, obj.callback);
                     }
                     break;
                 }

@@ -28,6 +28,7 @@ __export(adminShareConfig_exports, {
   ALL_PANELS_SPECIAL_ID: () => ALL_PANELS_SPECIAL_ID,
   CHANNEL_ROLES_LIST: () => CHANNEL_ROLES_LIST,
   SAVE_PANEL_NAVIGATION_COMMAND: () => SAVE_PANEL_NAVIGATION_COMMAND,
+  SENDTO_GET_MEDIA_PLAYER_COMMAND: () => SENDTO_GET_MEDIA_PLAYER_COMMAND,
   SENDTO_GET_PAGES_All_COMMAND: () => SENDTO_GET_PAGES_All_COMMAND,
   SENDTO_GET_PAGES_COMMAND: () => SENDTO_GET_PAGES_COMMAND,
   SENDTO_GET_PANELS_COMMAND: () => SENDTO_GET_PANELS_COMMAND,
@@ -38,6 +39,7 @@ __export(adminShareConfig_exports, {
   dropScriptNavigation: () => dropScriptNavigation,
   emptyChannelValueConfig: () => emptyChannelValueConfig,
   emptyChartEntry: () => emptyChartEntry,
+  emptyMediaEntry: () => emptyMediaEntry,
   emptyPowerSlot: () => emptyPowerSlot,
   emptyScreensaverEntry: () => emptyScreensaverEntry,
   emptyThermo2Circuit: () => emptyThermo2Circuit,
@@ -47,11 +49,19 @@ __export(adminShareConfig_exports, {
   isMainPageEntry: () => isMainPageEntry,
   isPageLinkEntry: () => isPageLinkEntry,
   isScriptNavigatedChart: () => isScriptNavigatedChart,
+  isScrollCard: () => isScrollCard,
   mainPageName: () => mainPageName,
+  mediaBackendFeatures: () => mediaBackendFeatures,
+  mediaBackendOf: () => mediaBackendOf,
+  mediaBackends: () => mediaBackends,
+  mediaListKinds: () => mediaListKinds,
+  mediaVisibleToolbarItems: () => mediaVisibleToolbarItems,
+  mediaVolumeDefaults: () => mediaVolumeDefaults,
   migrateLegacyCharts: () => migrateLegacyCharts,
   migrateScreensaverNotify: () => migrateScreensaverNotify,
   newScreensaverNotifyId: () => newScreensaverNotifyId,
   normalizeChannelId: () => normalizeChannelId,
+  normalizeScrollFields: () => normalizeScrollFields,
   normalizeTrashItems: () => normalizeTrashItems,
   pageLinkCard: () => pageLinkCard,
   pageLinkProblem: () => pageLinkProblem,
@@ -78,6 +88,9 @@ __export(adminShareConfig_exports, {
   screensaverWeatherItemKeys: () => screensaverWeatherItemKeys,
   screensaverWeatherItemsOfAdapter: () => screensaverWeatherItemsOfAdapter,
   screensaverWeatherItemsOn: () => screensaverWeatherItemsOn,
+  scrollAutoTimingDefault: () => scrollAutoTimingDefault,
+  scrollCards: () => scrollCards,
+  scrollHalfCards: () => scrollHalfCards,
   serviceNodeName: () => serviceNodeName,
   servicePageName: () => servicePageName,
   shortStateLabel: () => shortStateLabel,
@@ -310,6 +323,29 @@ function normalizeChannelId(raw) {
   }
   return emptyChannelValueConfig();
 }
+const scrollCards = [
+  "cardGrid",
+  "cardGrid2",
+  "cardGrid3",
+  "cardEntities",
+  "cardSchedule",
+  "cardThermo2",
+  "cardMedia"
+];
+const scrollHalfCards = ["cardGrid", "cardGrid2", "cardGrid3", "cardThermo2"];
+const scrollAutoTimingDefault = 15;
+function isScrollCard(card) {
+  return !!card && scrollCards.includes(card);
+}
+function normalizeScrollFields(entry, card) {
+  const presentation = entry.scrollPresentation === "arrow" || entry.scrollPresentation === "auto" ? entry.scrollPresentation : "classic";
+  const type = entry.scrollType === "half" && scrollHalfCards.includes(card) ? "half" : "page";
+  if (presentation !== "auto") {
+    return { scrollPresentation: presentation, scrollType: type };
+  }
+  const timing = typeof entry.scrollAutoTiming === "number" && Number.isFinite(entry.scrollAutoTiming) && entry.scrollAutoTiming > 0 ? entry.scrollAutoTiming : scrollAutoTimingDefault;
+  return { scrollPresentation: "auto", scrollType: type, scrollAutoTiming: timing };
+}
 function emptyPowerSlot() {
   return {
     icon: "",
@@ -456,6 +492,74 @@ function emptyThermo2Entry(uniqueName) {
     hidden: false,
     alwaysOn: "none"
   };
+}
+const mediaBackends = ["alexa2", "sonos", "spotify-premium", "mpd", "squeezeboxrpc"];
+const mediaListKinds = ["speakerList", "playList", "favoriteList"];
+const mediaBackendFeatures = {
+  alexa2: {
+    items: ["reminder", "online", "speakerList", "playList", "equalizer", "clock", "volumePresets", "repeat"],
+    colorOn: ["online", "speakerList", "playList", "equalizer", "clock", "volumePresets", "repeat"],
+    colorOff: ["reminder", "online", "speakerList", "repeat"],
+    titleColor: false
+  },
+  sonos: {
+    items: [
+      "online",
+      "speakerList",
+      "favoriteList",
+      "playList",
+      "clock",
+      "volumePresets",
+      "trackList",
+      "repeat",
+      "crossfade"
+    ],
+    colorOn: ["online", "speakerList", "favoriteList", "playList", "clock", "volumePresets", "repeat", "crossfade"],
+    colorOff: ["online", "speakerList", "repeat", "crossfade"],
+    titleColor: false
+  },
+  "spotify-premium": {
+    items: ["online", "speakerList", "playList", "trackList", "clock", "volumePresets", "repeat"],
+    colorOn: ["online", "speakerList", "playList", "clock", "volumePresets", "repeat"],
+    colorOff: ["online", "speakerList", "repeat"],
+    titleColor: false
+  },
+  mpd: {
+    items: ["online", "repeat", "clock", "volumePresets", "crossfade"],
+    colorOn: ["online", "repeat", "clock", "volumePresets"],
+    colorOff: ["online", "repeat"],
+    titleColor: false
+  },
+  squeezeboxrpc: {
+    items: ["online", "speakerList", "favoriteList", "playList", "clock", "volumePresets", "trackList", "repeat"],
+    colorOn: ["online", "speakerList", "favoriteList", "playList", "clock", "volumePresets", "repeat"],
+    colorOff: ["online", "speakerList", "repeat"],
+    titleColor: true
+  }
+};
+function mediaBackendOf(id) {
+  const name = (id != null ? id : "").trim().split(".")[0];
+  return mediaBackends.includes(name) ? name : void 0;
+}
+const mediaVolumeDefaults = { minValue: 0, maxValue: 100 };
+const SENDTO_GET_MEDIA_PLAYER_COMMAND = "getMediaPlayer";
+function emptyMediaEntry(uniqueName) {
+  return {
+    card: "cardMedia",
+    uniqueName,
+    mediaId: "",
+    pageItems: [],
+    hidden: false,
+    alwaysOn: "none"
+  };
+}
+function mediaVisibleToolbarItems(entry, backend) {
+  return mediaBackendFeatures[backend].items.filter(
+    (item) => {
+      var _a, _b, _c;
+      return item === "volumePresets" ? ((_a = entry.volumePresets) != null ? _a : []).length > 0 : ((_c = (_b = entry.toolbar) == null ? void 0 : _b[item]) == null ? void 0 : _c.enabled) !== false;
+    }
+  );
 }
 const trashItemCount = 6;
 const trashItemColors = ["#3c3fff", "#fffd77", "#d2d2d2", "#de8900", "#d2d2d2", "#d2d2d2"];
@@ -1269,6 +1373,7 @@ const ADMIN_BUTTON_MAX_DELAY = 2147483;
   ALL_PANELS_SPECIAL_ID,
   CHANNEL_ROLES_LIST,
   SAVE_PANEL_NAVIGATION_COMMAND,
+  SENDTO_GET_MEDIA_PLAYER_COMMAND,
   SENDTO_GET_PAGES_All_COMMAND,
   SENDTO_GET_PAGES_COMMAND,
   SENDTO_GET_PANELS_COMMAND,
@@ -1279,6 +1384,7 @@ const ADMIN_BUTTON_MAX_DELAY = 2147483;
   dropScriptNavigation,
   emptyChannelValueConfig,
   emptyChartEntry,
+  emptyMediaEntry,
   emptyPowerSlot,
   emptyScreensaverEntry,
   emptyThermo2Circuit,
@@ -1288,11 +1394,19 @@ const ADMIN_BUTTON_MAX_DELAY = 2147483;
   isMainPageEntry,
   isPageLinkEntry,
   isScriptNavigatedChart,
+  isScrollCard,
   mainPageName,
+  mediaBackendFeatures,
+  mediaBackendOf,
+  mediaBackends,
+  mediaListKinds,
+  mediaVisibleToolbarItems,
+  mediaVolumeDefaults,
   migrateLegacyCharts,
   migrateScreensaverNotify,
   newScreensaverNotifyId,
   normalizeChannelId,
+  normalizeScrollFields,
   normalizeTrashItems,
   pageLinkCard,
   pageLinkProblem,
@@ -1319,6 +1433,9 @@ const ADMIN_BUTTON_MAX_DELAY = 2147483;
   screensaverWeatherItemKeys,
   screensaverWeatherItemsOfAdapter,
   screensaverWeatherItemsOn,
+  scrollAutoTimingDefault,
+  scrollCards,
+  scrollHalfCards,
   serviceNodeName,
   servicePageName,
   shortStateLabel,

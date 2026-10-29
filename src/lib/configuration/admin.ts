@@ -12,12 +12,13 @@ import {
 import { Color } from '../const/Color';
 import { mainPageName } from '../const/default-pages';
 import { PageThermo2 } from '../pages/pageThermo2';
+import { PageMedia } from '../pages/pageMedia';
 import { BaseClass } from '../controller/library';
 import type { panelConfigPartial } from '../controller/panel';
 import { systemNavigation } from '../templates/system-templates';
 import * as ShareConfig from '../types/adminShareConfig';
 import { screensaverChannelIdOf } from '../types/adminShareConfig';
-import { exhaustiveCheck } from '../types/function-and-const';
+import { exhaustiveCheck, isPageMenuConfig } from '../types/function-and-const';
 import { resolveSecret } from '../credentials';
 import type { NspanelLovelaceUi } from '../types/NspanelLovelaceUi';
 import type { PageBase } from '../types/pages';
@@ -209,6 +210,7 @@ export class AdminConfiguration extends BaseClass {
             },
             pageItems: [],
         } as PageBase;
+        applyScrollFields(gridItem, entry);
         const messages: string[] = [];
         const manager = new ConfigManager(this.adapter);
         ({ gridItem } = await PageThermo2.getPage(manager, buildThermo2ScriptPage(entry), gridItem, messages));
@@ -237,6 +239,64 @@ export class AdminConfiguration extends BaseClass {
             }
         }
         this.log.debug(`Generated cardThermo2 page for '${entry.uniqueName}'`);
+        return gridItem;
+    }
+
+    /**
+     * Builds the runtime page of a cardMedia entry.
+     *
+     * Same path as cardThermo2: the entry is turned into the script form and handed to
+     * `PageMedia.getPage`, which picks the backend and adds the standard items. The own page items
+     * of the entry are appended afterwards, so they follow the standard items in the bar.
+     *
+     * @param entry Media entry as stored by the PageConfig editor.
+     * @param alwaysOn Validated always-on mode of the entry.
+     * @returns The page for the panel configuration; with an unusable player it has no items.
+     */
+    private async buildMediaPage(entry: ShareConfig.MediaEntry, alwaysOn: AlwaysOnMode): Promise<PageBase> {
+        let gridItem = {
+            uniqueID: entry.uniqueName,
+            hidden: !!entry.hidden,
+            alwaysOn,
+            dpInit: '',
+            config: {
+                card: 'cardMedia',
+                scrollType: 'page',
+                scrollPresentation: 'classic',
+                data: { headline: { type: 'const', constVal: entry.headline || entry.uniqueName } },
+                index: 0,
+            },
+            pageItems: [],
+        } as PageBase;
+        applyScrollFields(gridItem, entry);
+        const messages: string[] = [];
+        const manager = new ConfigManager(this.adapter);
+        ({ gridItem } = await PageMedia.getPage(manager, buildMediaScriptPage(entry), gridItem, messages));
+        for (const msg of messages) {
+            // getPage has already logged the finding, keep the summary at debug level
+            this.log.debug(`cardMedia '${entry.uniqueName}': ${msg}`);
+        }
+
+        const items = entry.pageItems ?? [];
+        const lastFilled = items.reduceRight<number>((acc, v, i) => (acc === -1 && v != null ? i : acc), -1);
+        for (let index = 0; index <= lastFilled; index++) {
+            const stored = items[index];
+            const item: ShareConfig.AdminPageItemConfig = stored
+                ? { ...stored, channelId: ShareConfig.normalizeChannelId(stored.channelId) }
+                : { channelId: ShareConfig.emptyChannelValueConfig('empty') };
+            const result = await this.adapter.convertAdminPageItemToPageItemConfig(
+                item,
+                { card: 'cardMedia', uniqueName: entry.uniqueName },
+                [],
+            );
+            if (!result.error && result.pageItem) {
+                gridItem.pageItems = gridItem.pageItems ?? [];
+                gridItem.pageItems.push(result.pageItem);
+            } else if (result.error) {
+                this.log.warn(`Error processing page item ${index} for page '${entry.uniqueName}': ${result.error}`);
+            }
+        }
+        this.log.debug(`Generated cardMedia page for '${entry.uniqueName}'`);
         return gridItem;
     }
 
@@ -411,6 +471,13 @@ export class AdminConfiguration extends BaseClass {
                     newPage = await this.buildThermo2Page(entry, entry.alwaysOn);
                     break;
                 }
+                case 'cardMedia': {
+                    if (!isAlwaysOnMode(entry.alwaysOn)) {
+                        entry.alwaysOn = 'none';
+                    }
+                    newPage = await this.buildMediaPage(entry, entry.alwaysOn);
+                    break;
+                }
                 case 'cardGrid':
                 case 'cardGrid2':
                 case 'cardGrid3': {
@@ -424,13 +491,13 @@ export class AdminConfiguration extends BaseClass {
                         dpInit: '',
                         config: {
                             card: entry.card,
-                            scrollPresentation: entry.scrollPresentation || 'classic',
                             data: {
                                 headline: { type: 'const', constVal: entry.headline || entry.uniqueName },
                             },
                         },
                         pageItems: [],
                     };
+                    applyScrollFields(newPage, entry);
 
                     if (entry.pageItems) {
                         let start = false;
@@ -481,6 +548,7 @@ export class AdminConfiguration extends BaseClass {
                         },
                         pageItems: [],
                     };
+                    applyScrollFields(newPage, entry);
 
                     if (entry.pageItems) {
                         let start = false;
@@ -1009,6 +1077,124 @@ export function buildThermo2ScriptPage(entry: ShareConfig.Thermo2Entry): ScriptC
         items: [],
         sortOrder,
     };
+}
+
+/**
+ * Stored volume limit, undefined when empty or not a number (adapter default).
+ *
+ * @param value Stored value.
+ */
+function mediaVolume(value: unknown): number | undefined {
+    return typeof value === 'number' && Number.isFinite(value) && value >= 0 ? value : undefined;
+}
+
+/**
+ * Clean list of names: trimmed, empty and repeated entries dropped.
+ *
+ * @param list Stored list, may be missing.
+ * @returns The list, undefined when nothing is left (adapter default).
+ */
+function mediaList(list: unknown): string[] | undefined {
+    if (!Array.isArray(list)) {
+        return undefined;
+    }
+    const names = [...new Set(list.map(n => (typeof n === 'string' ? n.trim() : '')).filter(n => !!n))];
+    return names.length ? names : undefined;
+}
+
+/**
+ * Turns a media entry into the script form of the page (`media` of `ScriptConfig.PageMedia`).
+ *
+ * The standard items become `deactivateDefaultItems` / `itemsColorOn` / `itemsColorOff`, colors
+ * the RGB objects of the script, the presets `name?value` strings clamped to the volume range.
+ * Empty fields are left out so the backend takes its defaults. The own page items are not part of
+ * the result - they are converted separately.
+ *
+ * @param entry Media entry as stored by the PageConfig editor.
+ * @returns The page in the form of the script configuration.
+ */
+export function buildMediaScriptPage(entry: ShareConfig.MediaEntry): ScriptConfig.PageMedia {
+    let minValue = mediaVolume(entry.minValue);
+    let maxValue = mediaVolume(entry.maxValue);
+    if (minValue !== undefined && maxValue !== undefined && minValue > maxValue) {
+        [minValue, maxValue] = [maxValue, minValue];
+    }
+    const low = minValue ?? ShareConfig.mediaVolumeDefaults.minValue;
+    const high = maxValue ?? ShareConfig.mediaVolumeDefaults.maxValue;
+
+    const deactivateDefaultItems: NonNullable<ScriptConfig.PageMediaItem['deactivateDefaultItems']> = {};
+    const itemsColorOn: NonNullable<ScriptConfig.PageMediaItem['itemsColorOn']> = {};
+    const itemsColorOff: NonNullable<ScriptConfig.PageMediaItem['itemsColorOff']> = {};
+    for (const [key, config] of Object.entries(entry.toolbar ?? {})) {
+        if (!config) {
+            continue;
+        }
+        const item = key as ShareConfig.MediaToolbarItem;
+        if (config.enabled === false && item !== 'volumePresets') {
+            deactivateDefaultItems[item] = true;
+        }
+        const on = thermo2Rgb(config.colorOn);
+        if (on) {
+            itemsColorOn[item] = on;
+        }
+        const off = thermo2Rgb(config.colorOff);
+        if (off && item !== 'volumePresets') {
+            itemsColorOff[item] = off;
+        }
+    }
+
+    const volumePresets = (Array.isArray(entry.volumePresets) ? entry.volumePresets : [])
+        .filter(p => p && thermo2Text(p.name) && typeof p.value === 'number' && Number.isFinite(p.value))
+        .map(p => `${thermo2Text(p.name)}?${Math.round(Math.min(high, Math.max(low, p.value)))}`);
+
+    const media: ScriptConfig.PageMediaItem = {
+        id: thermo2Text(entry.mediaId) ?? '',
+        name: thermo2Text(entry.name),
+        minValue,
+        maxValue,
+        colorMediaIcon: thermo2Rgb(entry.colorMediaIcon),
+        colorMediaArtist: thermo2Rgb(entry.colorMediaArtist),
+        colorMediaTitle: thermo2Rgb(entry.colorMediaTitle),
+        speakerList: mediaList(entry.speakerList),
+        playList: mediaList(entry.playList),
+        favoriteList: mediaList(entry.favoriteList),
+        volumePresets: volumePresets.length ? volumePresets : undefined,
+        deactivateDefaultItems: Object.keys(deactivateDefaultItems).length ? deactivateDefaultItems : undefined,
+        itemsColorOn: Object.keys(itemsColorOn).length ? itemsColorOn : undefined,
+        itemsColorOff: Object.keys(itemsColorOff).length ? itemsColorOff : undefined,
+    };
+    for (const key of Object.keys(media) as (keyof ScriptConfig.PageMediaItem)[]) {
+        if (media[key] === undefined) {
+            delete media[key];
+        }
+    }
+    return {
+        type: 'cardMedia',
+        uniqueName: entry.uniqueName,
+        heading: '',
+        media,
+        items: [],
+    };
+}
+
+/**
+ * Sets the scroll settings of an admin entry on a page built on PageMenu (same fields
+ * config-manager.ts sets from the script page). Other cards are left untouched.
+ *
+ * @param page Page under construction.
+ * @param entry Scroll fields of the admin entry.
+ */
+function applyScrollFields(page: PageBase, entry: ShareConfig.PageScrollFields): void {
+    const config = page.config;
+    if (!config || !ShareConfig.isScrollCard(config.card) || !isPageMenuConfig(config)) {
+        return;
+    }
+    const scroll = ShareConfig.normalizeScrollFields(entry, config.card);
+    config.scrollType = scroll.scrollType;
+    config.scrollPresentation = scroll.scrollPresentation;
+    if (scroll.scrollPresentation === 'auto' && config.scrollPresentation === 'auto') {
+        config.scrollAutoTiming = scroll.scrollAutoTiming;
+    }
 }
 
 function isAlwaysOnMode(F: any): F is AlwaysOnMode {
