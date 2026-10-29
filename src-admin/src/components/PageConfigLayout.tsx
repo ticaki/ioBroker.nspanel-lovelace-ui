@@ -12,6 +12,7 @@ import {
     FormControl,
 } from '@mui/material';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutlineOutlined';
+import LinkIcon from '@mui/icons-material/Link';
 import ConfirmDialog from './ConfirmDialog';
 import NavigationAssignmentPanel from './NavigationAssignmentPanel';
 import type {
@@ -24,7 +25,10 @@ import {
     ADAPTER_NAME,
     ALL_PANELS_SPECIAL_ID,
     isMainPageEntry,
+    isPageLinkEntry,
     mainPageName,
+    pageLinkCard,
+    pageLinkProblem,
 } from '../../../src/lib/types/adminShareConfig';
 
 /**
@@ -57,6 +61,7 @@ export type PageCardType =
     | 'all'
     | 'mainPages' // Filter: alle Seiten mit isMainPage, kein eigener Kartentyp
     | 'cardTrash'
+    | typeof pageLinkCard // Verknüpfung auf eine andere Admin-Seite
     | 'pageMenu'; // 'pageMenu' = Gruppe für alle Menu-Kartentypen
 
 const MENU_CARD_TYPES: ReadonlyArray<string> = ['cardGrid', 'cardGrid2', 'cardGrid3', 'cardEntities', 'cardSchedule'];
@@ -207,6 +212,88 @@ export class PageConfigLayout extends React.Component<PageConfigLayoutProps, Pag
     private handleDeleteCancel = (): void => {
         this.setState({ confirmDeleteOpen: false, confirmDeleteName: null });
     };
+
+    /**
+     * Name of a list entry; a page link gets a link icon in front, in warning colour if its target
+     * is missing.
+     *
+     * @param name uniqueName of the entry
+     * @returns The name element of the list row.
+     */
+    private renderEntryName(name: string): React.JSX.Element {
+        const { entries } = this.props;
+        const entry = entries.find(e => e.uniqueName === name);
+        const isLink = !!entry && isPageLinkEntry(entry);
+        const broken = !!entry && isPageLinkEntry(entry) && !!pageLinkProblem(entry, entries);
+        return (
+            <Typography
+                variant="body2"
+                title={isLink && entry ? `→ ${entry.target || '?'}` : undefined}
+                sx={{
+                    flex: 1,
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 0.5,
+                }}
+            >
+                {isLink && (
+                    <LinkIcon
+                        fontSize="small"
+                        color={broken ? 'warning' : 'action'}
+                    />
+                )}
+                {entry ? getDisplayName(entry) : name}
+            </Typography>
+        );
+    }
+
+    /**
+     * Small clickable names of the page links that point to a page, shown below it in the list.
+     *
+     * @param name uniqueName of the page
+     * @param visibleEntries Entries left over by the filters - a link hidden by the panel filter resets it.
+     * @returns The links or null if the page has none.
+     */
+    private renderLinksOf(name: string, visibleEntries: PageConfigEntry[]): React.JSX.Element | null {
+        const links = this.props.entries
+            .filter(e => isPageLinkEntry(e) && e.target === name)
+            .map(e => e.uniqueName)
+            .sort((a, b) => a.localeCompare(b));
+        if (links.length === 0) {
+            return null;
+        }
+        return (
+            <Box sx={{ width: '100%', display: 'flex', flexWrap: 'wrap', gap: 0.5, pl: 1, mt: 0.25 }}>
+                {links.map(link => (
+                    <Typography
+                        key={link}
+                        variant="caption"
+                        title={this.getText('page_link_jump')}
+                        onClick={e => {
+                            e.stopPropagation();
+                            if (!visibleEntries.some(v => v.uniqueName === link)) {
+                                this.setState({ selectedPanelFilter: '' });
+                            }
+                            this.props.onSelectedChange(link);
+                        }}
+                        sx={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: 0.25,
+                            color: 'primary.main',
+                            cursor: 'pointer',
+                            '&:hover': { textDecoration: 'underline' },
+                        }}
+                    >
+                        <LinkIcon sx={{ fontSize: '0.9rem' }} />
+                        {link}
+                    </Typography>
+                ))}
+            </Box>
+        );
+    }
 
     render(): React.JSX.Element {
         const {
@@ -368,6 +455,7 @@ export class PageConfigLayout extends React.Component<PageConfigLayoutProps, Pag
                                 <MenuItem value="cardTrash">{this.getText('page_type_trash')}</MenuItem>
                                 <MenuItem value="cardChart">{this.getText('page_type_chart')}</MenuItem>
                                 <MenuItem value="cardThermo2">{this.getText('page_type_thermo2')}</MenuItem>
+                                <MenuItem value={pageLinkCard}>{this.getText('page_type_pageLink')}</MenuItem>
                             </Select>
                         </FormControl>
                     </Paper>
@@ -479,6 +567,7 @@ export class PageConfigLayout extends React.Component<PageConfigLayoutProps, Pag
                                         backgroundColor: selected === name ? 'action.selected' : 'transparent',
                                         mb: 0.5,
                                         display: 'flex',
+                                        flexWrap: 'wrap',
                                         justifyContent: 'space-between',
                                         alignItems: 'center',
                                         '&:hover .delete-icon': {
@@ -486,15 +575,7 @@ export class PageConfigLayout extends React.Component<PageConfigLayoutProps, Pag
                                         },
                                     }}
                                 >
-                                    <Typography
-                                        variant="body2"
-                                        sx={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis' }}
-                                    >
-                                        {(() => {
-                                            const entry = entries.find(e => e.uniqueName === name);
-                                            return entry ? getDisplayName(entry) : name;
-                                        })()}
-                                    </Typography>
+                                    {this.renderEntryName(name)}
                                     <IconButton
                                         disabled={!this.state.alive}
                                         className="delete-icon"
@@ -517,6 +598,7 @@ export class PageConfigLayout extends React.Component<PageConfigLayoutProps, Pag
                                     >
                                         <DeleteOutlineIcon fontSize="small" />
                                     </IconButton>
+                                    {this.renderLinksOf(name, filteredEntries)}
                                 </Box>
                             ))
                         )}

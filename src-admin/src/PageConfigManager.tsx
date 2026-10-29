@@ -16,8 +16,10 @@ import {
     emptyThermo2Entry,
     emptyPowerSlot,
     isMainPageEntry,
+    isPageLinkEntry,
     mainPageName,
     normalizeTrashItems,
+    pageLinkCard,
     SENDTO_GET_PAGES_All_COMMAND,
 } from '../../src/lib/types/adminShareConfig';
 import {
@@ -34,6 +36,7 @@ import { PageTrashEditor } from './components/PageTrashEditor';
 import { takeRequestedPageConfig } from './pageConfigLink';
 import { PageChartEditor } from './components/PageChartEditor';
 import { PageThermo2Editor } from './components/PageThermo2Editor';
+import { PageLinkEditor } from './components/PageLinkEditor';
 
 interface PageConfigManagerState extends ConfigGenericState {
     entries: PageConfigEntry[];
@@ -368,6 +371,8 @@ class PageConfigManager extends ConfigGeneric<ConfigGenericProps & { theme?: any
             newEntry = emptyChartEntry(name);
         } else if (cardType === 'cardThermo2') {
             newEntry = emptyThermo2Entry(name);
+        } else if (cardType === pageLinkCard) {
+            newEntry = { card: pageLinkCard, uniqueName: name, headline: '', target: '' };
         } else if (
             cardType === 'pageMenu' ||
             cardType === 'cardGrid' ||
@@ -426,9 +431,33 @@ class PageConfigManager extends ConfigGeneric<ConfigGenericProps & { theme?: any
         if (newName.trim() === mainPageName) {
             return;
         }
-        const updated = this.state.entries.map(it => (it.uniqueName === oldName ? { ...it, uniqueName: newName } : it));
+        // links follow their renamed target
+        const updated = this.state.entries.map(it =>
+            it.uniqueName === oldName
+                ? { ...it, uniqueName: newName }
+                : isPageLinkEntry(it) && it.target === oldName
+                  ? { ...it, target: newName }
+                  : it,
+        );
         this.setState({ entries: updated, selected: newName } as PageConfigManagerState);
         void this.onChange(this.props.attr, updated);
+    };
+
+    /**
+     * Selects a page of the list. A page hidden by the page type filter switches the filter to
+     * all pages, otherwise the selection would not be visible.
+     *
+     * @param selected uniqueName of the page
+     */
+    private handleSelectPage = (selected: string): void => {
+        // a page that was just added is not in the state yet - it matches the current filter anyway
+        const known = this.state.entries.some(e => e.uniqueName === selected);
+        const visible =
+            !known ||
+            filterEntriesByCardType(this.state.entries, this.state.selectedCardType).some(
+                e => e.uniqueName === selected,
+            );
+        this.setState({ selected, ...(visible ? {} : { selectedCardType: 'all' }) } as PageConfigManagerState);
     };
 
     private handleCardTypeChange = (cardType: PageCardType): void => {
@@ -474,6 +503,20 @@ class PageConfigManager extends ConfigGeneric<ConfigGenericProps & { theme?: any
                 >
                     {this.getText('Entry not found')}
                 </Typography>
+            );
+        }
+
+        if (isPageLinkEntry(currentEntry)) {
+            return (
+                <PageLinkEditor
+                    entry={currentEntry}
+                    entries={entries}
+                    alive={this.state.alive}
+                    onEntryChange={this.handleEntryChange}
+                    onUniqueNameChange={this.handleUniqueNameChange}
+                    onSelectPage={this.handleSelectPage}
+                    getText={key => this.getText(key)}
+                />
             );
         }
 
@@ -601,7 +644,7 @@ class PageConfigManager extends ConfigGeneric<ConfigGenericProps & { theme?: any
                 entries={this.state.entries}
                 selected={this.state.selected}
                 selectedCardType={this.state.selectedCardType}
-                onSelectedChange={(selected: string) => this.setState({ selected } as PageConfigManagerState)}
+                onSelectedChange={this.handleSelectPage}
                 onCardTypeChange={this.handleCardTypeChange}
                 onAdd={this.handleAdd}
                 onDelete={this.handleDelete}

@@ -39,6 +39,7 @@ __export(adminShareConfig_exports, {
   findChartEntryForScript: () => findChartEntryForScript,
   formatEntryNumber: () => formatEntryNumber,
   isMainPageEntry: () => isMainPageEntry,
+  isPageLinkEntry: () => isPageLinkEntry,
   isScriptNavigatedChart: () => isScriptNavigatedChart,
   mainPageName: () => mainPageName,
   migrateLegacyCharts: () => migrateLegacyCharts,
@@ -46,10 +47,13 @@ __export(adminShareConfig_exports, {
   newScreensaverNotifyId: () => newScreensaverNotifyId,
   normalizeChannelId: () => normalizeChannelId,
   normalizeTrashItems: () => normalizeTrashItems,
+  pageLinkCard: () => pageLinkCard,
+  pageLinkProblem: () => pageLinkProblem,
   panelStatusColors: () => panelStatusColors,
   panelStatusStates: () => panelStatusStates,
   panelStatusTranslationKeys: () => panelStatusTranslationKeys,
   requiredScriptDataPoints: () => requiredScriptDataPoints,
+  resolvePageLinks: () => resolvePageLinks,
   reversePanelStatusStates: () => reversePanelStatusStates,
   screensaverAreas: () => screensaverAreas,
   screensaverCardOfMode: () => screensaverCardOfMode,
@@ -461,6 +465,52 @@ function normalizeTrashItems(items) {
       icon: (_d = item.icon) != null ? _d : ""
     };
   });
+}
+const pageLinkCard = "pageLink";
+function isPageLinkEntry(entry) {
+  return !!entry && entry.card === pageLinkCard;
+}
+function pageLinkProblem(link, entries) {
+  const target = link.target ? entries.find((e) => e && e.uniqueName === link.target) : void 0;
+  if (!target) {
+    return "missing";
+  }
+  return isPageLinkEntry(target) ? "link" : void 0;
+}
+function resolvePageLinks(entries) {
+  const result = [];
+  const unresolved = [];
+  for (const entry of entries) {
+    if (!entry) {
+      continue;
+    }
+    if (!isPageLinkEntry(entry)) {
+      result.push(entry);
+      continue;
+    }
+    const target = entries.find((e) => e && e.uniqueName === entry.target);
+    if (!target || isPageLinkEntry(target)) {
+      unresolved.push({
+        uniqueName: entry.uniqueName,
+        target: entry.target,
+        problem: target ? "link" : "missing"
+      });
+      continue;
+    }
+    const copy = structuredClone(target);
+    copy.uniqueName = entry.uniqueName;
+    copy.headline = entry.headline || target.headline || target.uniqueName;
+    copy.hidden = entry.hidden;
+    copy.alwaysOn = entry.alwaysOn;
+    copy.navigationAssignment = entry.navigationAssignment ? structuredClone(entry.navigationAssignment) : void 0;
+    copy.isMainPage = !!entry.isMainPage;
+    if (copy.card === "cardChart") {
+      copy.scriptNavigation = false;
+      delete copy.scriptName;
+    }
+    result.push(copy);
+  }
+  return { entries: result, unresolved };
 }
 function isMainPageEntry(entry) {
   return "isMainPage" in entry && !!entry.isMainPage;
@@ -1198,6 +1248,7 @@ const CHANNEL_ROLES_LIST = Object.keys(requiredScriptDataPoints);
   findChartEntryForScript,
   formatEntryNumber,
   isMainPageEntry,
+  isPageLinkEntry,
   isScriptNavigatedChart,
   mainPageName,
   migrateLegacyCharts,
@@ -1205,10 +1256,13 @@ const CHANNEL_ROLES_LIST = Object.keys(requiredScriptDataPoints);
   newScreensaverNotifyId,
   normalizeChannelId,
   normalizeTrashItems,
+  pageLinkCard,
+  pageLinkProblem,
   panelStatusColors,
   panelStatusStates,
   panelStatusTranslationKeys,
   requiredScriptDataPoints,
+  resolvePageLinks,
   reversePanelStatusStates,
   screensaverAreas,
   screensaverCardOfMode,

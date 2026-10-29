@@ -82,11 +82,19 @@ function shallowDescribe(value: unknown): string {
 }
 
 export class AdminConfiguration extends BaseClass {
-    private pageConfig: ShareConfig.PageConfig[] = [];
+    private pageConfig: ShareConfig.PageContentEntry[] = [];
     constructor(adapter: NspanelLovelaceUi) {
         super(adapter, 'AdminConfiguration');
         this.adapter = adapter;
-        this.pageConfig = this.adapter.config.pageConfig || [];
+        const resolved = ShareConfig.resolvePageLinks(this.adapter.config.pageConfig || []);
+        for (const link of resolved.unresolved) {
+            this.log.warn(
+                link.problem === 'link'
+                    ? `Page link '${link.uniqueName}' points to the page link '${link.target}', links of links are not supported - skipping!`
+                    : `Page link '${link.uniqueName}': target page '${link.target}' does not exist - skipping!`,
+            );
+        }
+        this.pageConfig = resolved.entries;
     }
 
     /**
@@ -196,7 +204,7 @@ export class AdminConfiguration extends BaseClass {
                 card: 'cardThermo2',
                 scrollType: 'page',
                 scrollPresentation: 'classic',
-                data: { headline: { type: 'const', constVal: entry.uniqueName } },
+                data: { headline: { type: 'const', constVal: entry.headline || entry.uniqueName } },
                 index: 0,
             },
             pageItems: [],

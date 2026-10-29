@@ -158,6 +158,7 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
     ### **WORK IN PROGRESS**
 -->
 ### **WORK IN PROGRESS**
+- (ticaki) page configuration: new page type "Page link" - shows the content of another admin page under its own name with its own navigation, start page, hidden and always on; the headline falls back to the one of the linked page; the links of a page are listed below it and can be opened with a click
 - (ticaki) beta TFT for the EU panel is 6.0.2
 - (ticaki) web panel: the two hardware buttons below the display are 20px higher
 - (ticaki) icon overview on GitHub Pages: all icons of the panel with name and glyph, searchable, marks the icons of HMI 6 and the own icons

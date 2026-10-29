@@ -1,7 +1,7 @@
 // This file extends the AdapterConfig type from "@types/iobroker"
 
 import {NSpanelModel} from "./types/types";
-import type { NavigationOverride, ScreensaverEntry, ScreensaverNotifyConfig } from "./types/adminShareConfig";
+import type { NavigationOverride, PageLinkEntry, ScreensaverEntry, ScreensaverNotifyConfig } from "./types/adminShareConfig";
 
 // Augment the globally declared type ioBroker.AdapterConfig
 declare global {
@@ -335,7 +335,7 @@ declare global {
                 hidden?: boolean;
                 alwaysOn?: 'none' | 'always' | 'action' | 'ignore';
                 navigationAssignment?: navigationAssignment[]
-            })[];
+            }|PageLinkEntry)[];
         }
     }
 }

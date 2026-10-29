@@ -1307,6 +1307,8 @@ export type Thermo2Entry = {
     pageItems: (AdminPageItemConfig | undefined)[];
     /** order of the slots, default 'V' */
     sortOrder?: Thermo2SortOrder;
+    /** headline of the page, empty = uniqueName (only set by a page link, the editor has no field) */
+    headline?: string;
 } & PageConfigBaseFields;
 
 /**
@@ -1395,8 +1397,115 @@ export type NavigationAssignment = {
 };
 
 export type NavigationAssignmentList = NavigationAssignment[];
-export type PageConfigEntry = QREntry | UnlockEntry | TrashEntry | ChartEntry | MenuEntry | PowerEntry | Thermo2Entry;
-export type PageConfig = QREntry | UnlockEntry | TrashEntry | ChartEntry | MenuEntry | PowerEntry | Thermo2Entry;
+/**
+ * Pseudo card of the admin: a page link shows the content of another admin page under its own
+ * name. Only the metadata (navigation, start page, hidden, alwaysOn) and the headline belong to the link, all
+ * other fields come from the target. The adapter replaces the link with a copy of the target
+ * before the pages are built ({@link resolvePageLinks}), so it never sees this card.
+ */
+export const pageLinkCard = 'pageLink';
+
+export type PageLinkEntry = {
+    card: typeof pageLinkCard;
+    uniqueName: string;
+    /** headline of the page, empty = headline of the target, if that is empty too its uniqueName */
+    headline?: string;
+    /** uniqueName of the linked admin page */
+    target: string;
+} & PageConfigBaseFields;
+
+export type PageConfigEntry =
+    | QREntry
+    | UnlockEntry
+    | TrashEntry
+    | ChartEntry
+    | MenuEntry
+    | PowerEntry
+    | Thermo2Entry
+    | PageLinkEntry;
+export type PageConfig = PageConfigEntry;
+/** a page entry with real content - everything but a page link */
+export type PageContentEntry = Exclude<PageConfigEntry, PageLinkEntry>;
+
+/**
+ * Whether an admin page entry is a page link.
+ *
+ * @param entry Admin page configuration entry.
+ * @returns True for a page link.
+ */
+export function isPageLinkEntry(entry: PageConfigEntry | undefined | null): entry is PageLinkEntry {
+    return !!entry && entry.card === pageLinkCard;
+}
+
+/**
+ * Why a page link cannot be resolved, undefined if it can.
+ *
+ * @param link The page link.
+ * @param entries All admin page entries.
+ * @returns 'missing' without a target or if it does not exist, 'link' if the target is a link itself.
+ */
+export function pageLinkProblem(
+    link: PageLinkEntry,
+    entries: readonly PageConfigEntry[],
+): 'missing' | 'link' | undefined {
+    const target = link.target ? entries.find(e => e && e.uniqueName === link.target) : undefined;
+    if (!target) {
+        return 'missing';
+    }
+    return isPageLinkEntry(target) ? 'link' : undefined;
+}
+
+/**
+ * Replaces every page link by a copy of its target page. The copy takes uniqueName, hidden,
+ * alwaysOn, navigation and the start page flag of the link; everything else (page items,
+ * card fields) comes from the target. Headline: the one of the link, else the one of the target,
+ * else the uniqueName of the target. Links whose target is missing or a link itself are
+ * dropped and reported.
+ *
+ * @param entries Admin page entries (`native.pageConfig`).
+ * @returns The entries without links and the links that could not be resolved.
+ */
+export function resolvePageLinks(entries: readonly PageConfigEntry[]): {
+    entries: PageContentEntry[];
+    unresolved: { uniqueName: string; target: string; problem: 'missing' | 'link' }[];
+} {
+    const result: PageContentEntry[] = [];
+    const unresolved: { uniqueName: string; target: string; problem: 'missing' | 'link' }[] = [];
+    for (const entry of entries) {
+        if (!entry) {
+            continue;
+        }
+        if (!isPageLinkEntry(entry)) {
+            result.push(entry);
+            continue;
+        }
+        const target = entries.find(e => e && e.uniqueName === entry.target);
+        if (!target || isPageLinkEntry(target)) {
+            unresolved.push({
+                uniqueName: entry.uniqueName,
+                target: entry.target,
+                problem: target ? 'link' : 'missing',
+            });
+            continue;
+        }
+        const copy: PageContentEntry = structuredClone(target);
+        copy.uniqueName = entry.uniqueName;
+        copy.headline = entry.headline || target.headline || target.uniqueName;
+        copy.hidden = entry.hidden;
+        copy.alwaysOn = entry.alwaysOn;
+        copy.navigationAssignment = entry.navigationAssignment
+            ? structuredClone(entry.navigationAssignment)
+            : undefined;
+        copy.isMainPage = !!entry.isMainPage;
+        if (copy.card === 'cardChart') {
+            // the script navigation belongs to the script page of the target, the link navigates on its own
+            copy.scriptNavigation = false;
+            delete copy.scriptName;
+        }
+        result.push(copy);
+    }
+    return { entries: result, unresolved };
+}
 
 /**
  * Whether an admin page entry is flagged as the start page of its assigned panels.
@@ -1408,7 +1517,7 @@ export type PageConfig = QREntry | UnlockEntry | TrashEntry | ChartEntry | MenuE
  * @param entry Admin page configuration entry.
  * @returns True if the entry is the start page.
  */
-export function isMainPageEntry(entry: PageConfig | PageConfigEntry): boolean {
+export function isMainPageEntry(entry: PageConfigEntry): boolean {
     return 'isMainPage' in entry && !!entry.isMainPage;
 }
 
