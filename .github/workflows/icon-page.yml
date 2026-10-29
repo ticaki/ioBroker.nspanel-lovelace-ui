@@ -1,0 +1,50 @@
+name: Icon page
+
+# Publishes the icon overview (pages/icons.html + script/icons.json) to GitHub Pages
+on:
+  push:
+    branches:
+      - main
+      # until PR #815 (HMI 6.0.2) is merged
+      - feat/hmi-6-icons
+    paths:
+      - 'pages/**'
+      - 'script/icons.json'
+      - 'script/custom-icons.json'
+      - 'script/build-icon-page.ts'
+      - '.github/workflows/icon-page.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Build icon page
+        run: npx -y tsx script/build-icon-page.ts _site
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v4
+        with:
+          path: _site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

@@ -81,6 +81,7 @@ var import_Color = require("../const/Color");
 var import_icon_mapping = require("./icon_mapping");
 var globals = __toESM(require("../types/function-and-const"));
 var import_adminShareConfig = require("../types/adminShareConfig");
+var import_page_item_defaults = require("./page-item-defaults");
 const messageItemDefault = {
   type: "input_sel",
   intNameEntity: "",
@@ -336,6 +337,10 @@ async function getIconEntryValue(i, on, def, defOff = null, getText = false) {
     }
   }
   const icon = i.true && i.true.value && await i.true.value.getString() || null;
+  if (icon === import_page_item_defaults.SHUTTER_POSITION_ICON) {
+    const name = typeof on === "number" ? (0, import_page_item_defaults.getShutterIconByPosition)(on) : on ? import_page_item_defaults.pageItemDefaults.blind.iconOn : import_page_item_defaults.pageItemDefaults.blind.iconOff;
+    return import_icon_mapping.Icons.GetIcon(name) + (textSize != null ? `\xAC${textSize}` : "");
+  }
   const scaleM = i.scale && await i.scale.getObject();
   if (typeof on === "boolean") {
     const scale = globals.isPartialIconSelectScaleElement(scaleM) ? scaleM : { valIcon_min: 0, valIcon_max: 1 };

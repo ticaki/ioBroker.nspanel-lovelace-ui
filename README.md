@@ -158,6 +158,11 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
     ### **WORK IN PROGRESS**
 -->
 ### **WORK IN PROGRESS**
+- (ticaki) icon overview on GitHub Pages: all icons of the panel with name and glyph, searchable, marks the icons of HMI 6 and the own icons
+- (ticaki) navigation flow: edit mode to create, change and remove the prev/next/home/parent links of admin pages by dragging connections between pages and clicking edges; the changes are written to the page configuration and saved with the admin save button
+- (ticaki) navigation flow: the links of script pages (panel script and global script) can be edited as well - the change is stored as an override in the instance configuration (`navigationOverrides`) and applied on top of the script at every start, so it survives a resend of the script; the edge menu restores the script navigation of a page; a snapshot of the script links travels with the override, and when the script delivers other links later the tab asks once per session whether to merge, keep the own change or take over the script
+- (ticaki) navigation flow: pages the adapter generates from a page item (e.g. the media page behind a media item) are marked with a lock and stay read-only, whatever their page item comes from; a page with an override carries a pencil, in warning colour when the script changed since
+- (ticaki) navigation flow: the checkbox "show system pages" works again - it threw an error and never showed the pages
 - (ticaki) chart pages: the tab "Page Chart" is gone - its pages are moved into the page configuration (tab PageConfig) at adapter start and the old table is deleted; a name already used by another page gets the suffix `_chart`
 - (ticaki) chart pages: migrated pages keep their navigation from the script for now (deprecated, the editor shows a hint) until a navigation is assigned in the admin - script version 0.21.4 marks `ScriptConfig.PageChart` as deprecated
 - (tt-tom17) web panel: on a grid card a short tap on a tile switches it and holding the tile opens its detail popup, like on a real panel - a light tile with a colour role (rgb, rgbSingle, rgbThree, hue, ct, dimmer) opened the popup on a tap and was switched when held
@@ -167,6 +172,10 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
 - (ticaki) screensaver: the time no longer stops when other values on the screensaver change often - a trigger arriving within the update throttle was replaced by the first one and the minute update of the clock got lost
 - (tt-tom17) `cmd.hideCards` keeps its stored value at adapter start - it was overwritten with the value of `cmd.activated`
 - (ticaki) a configuration script is no longer required: a panel without a script starts with the admin configuration only (empty start page as fallback) instead of being skipped or pausing the adapter
+- (ticaki) icons: updated to Material Design Icons 7.4.47 - 546 new icons (shown on the panel from TFT 6.0.2 on, older TFTs show nothing for them), new MDI names of renamed icons work as aliases; existing icons keep their glyph
+- (ticaki) icons: own icons `window-tilt-variant`, `window-open-hinged-variant` (window with muntins tilted / side hinged open, matching `window-closed-variant`) and `window-shutter-25`, `-50`, `-75` (roller shutter partly closed) - from TFT 6.0.2 on
+- (ticaki) HMI 6.0.2 (eu, us-p, us-l): the icon fonts 1, 3 and 4 contain the new icons; `HMI/tools/build_hmi.py` builds the icon fonts of a HMI from `script/icons.json`
+- (ticaki) blinds without an own icon show their position: `window-shutter` up to 5 %, `window-shutter-open` from 95 % on, in between the nearest of `window-shutter-75`, `-50`, `-25` (named after the closed part) - needs TFT 6.0.2; an icon set by the user is kept
 
 ### 1.7.0 (2026-10-25)
 - (ticaki) web panels: the panel UI in a web browser via http://<host>:8090/<topic>, no Tasmota needed - one web panel per address, all browsers on it stay in sync (new admin tab "Web panels")

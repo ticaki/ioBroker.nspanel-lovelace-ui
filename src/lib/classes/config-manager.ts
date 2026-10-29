@@ -1,6 +1,6 @@
 import { Color, type RGB } from '../const/Color';
 import * as configManagerConst from '../const/config-manager-const';
-import { pageItemDefaults } from '../const/page-item-defaults';
+import { pageItemDefaults, SHUTTER_POSITION_ICON } from '../const/page-item-defaults';
 import { mainPageName } from '../const/default-pages';
 import type { panelConfigPartial } from '../controller/panel';
 import { StatesControler } from '../controller/states-controller';
@@ -21,6 +21,7 @@ import { PageThermo2 } from '../pages/pageThermo2';
 import { PageMedia } from '../pages/pageMedia';
 import { isPageItemDataItemsOptions } from '../types/type-pageItem';
 import { getVersionAsNumber } from '../const/tools';
+import { recordGeneratedPage } from '../configuration/navigation-overrides';
 
 export class ConfigManager extends BaseClass {
     //private test: ConfigManager.DeviceState;
@@ -954,6 +955,8 @@ export class ConfigManager extends BaseClass {
                                 temp.pageConfig.parent = page.uniqueName;
                                 scriptPages.push(temp.pageConfig);
                                 config.subPages.push(temp.pageConfig);
+                                // Generated from a page item - its navigation is read-only in the admin
+                                recordGeneratedPage(panelConfig, temp.pageConfig.uniqueName);
                             }
                         } catch (error: any) {
                             messages.push(
@@ -3343,6 +3346,12 @@ export class ConfigManager extends BaseClass {
                         break;
                     }
                     case 'blind': {
+                        // Without an icon of his own the icon of the blind follows its position
+                        const blindIconOn =
+                            item.icon ||
+                            (item.icon2 || item.icon3 || globals.isPartialIconSelectScaleElement(item.colorScale)
+                                ? pageItemDefaults.blind.iconOn
+                                : SHUTTER_POSITION_ICON);
                         if (
                             foundedStates[role].TILT_OPEN ||
                             foundedStates[role].TILT_CLOSE ||
@@ -3354,10 +3363,7 @@ export class ConfigManager extends BaseClass {
                                 data: {
                                     icon: {
                                         true: {
-                                            value: await this.getFieldAsDataItemConfig(
-                                                item.icon || pageItemDefaults.blind.iconOn,
-                                                true,
-                                            ),
+                                            value: await this.getFieldAsDataItemConfig(blindIconOn, true),
                                             color: await this.getIconColor(
                                                 item.onColor,
                                                 Color[pageItemDefaults.blind.colorOn],
@@ -3448,10 +3454,7 @@ export class ConfigManager extends BaseClass {
                                 data: {
                                     icon: {
                                         true: {
-                                            value: await this.getFieldAsDataItemConfig(
-                                                item.icon || pageItemDefaults.blind.iconOn,
-                                                true,
-                                            ),
+                                            value: await this.getFieldAsDataItemConfig(blindIconOn, true),
                                             color: await this.getIconColor(
                                                 item.onColor,
                                                 Color[pageItemDefaults.blind.colorOn],

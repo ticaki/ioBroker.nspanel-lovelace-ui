@@ -18,9 +18,11 @@ var __copyProps = (to, from, except, desc) => {
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 var page_item_defaults_exports = {};
 __export(page_item_defaults_exports, {
+  SHUTTER_POSITION_ICON: () => SHUTTER_POSITION_ICON,
   getPageItemDefaultsByRole: () => getPageItemDefaultsByRole,
   getPageNaviItemDefaultsByRole: () => getPageNaviItemDefaultsByRole,
   getScreensaverItemDefaultsByRole: () => getScreensaverItemDefaultsByRole,
+  getShutterIconByPosition: () => getShutterIconByPosition,
   pageItemDefaults: () => pageItemDefaults,
   pageNaviItemDefaults: () => pageNaviItemDefaults
 });
@@ -600,11 +602,28 @@ function getPageNaviItemDefaultsByRole(role) {
   const key = NAVI_ROLE_KEY[role];
   return key != null ? pageNaviItemDefaults[key] : null;
 }
+const SHUTTER_POSITION_ICON = "shutter-icon-by-position";
+const SHUTTER_CLOSED_UP_TO = 5;
+const SHUTTER_OPEN_FROM = 95;
+const SHUTTER_STEP_ICONS = ["window-shutter-25", "window-shutter-50", "window-shutter-75"];
+function getShutterIconByPosition(position) {
+  if (!Number.isFinite(position) || position >= SHUTTER_OPEN_FROM) {
+    return pageItemDefaults.blind.iconOn;
+  }
+  if (position <= SHUTTER_CLOSED_UP_TO) {
+    return pageItemDefaults.blind.iconOff;
+  }
+  const closedSteps = Math.round((100 - position) / 25);
+  const index = Math.min(Math.max(closedSteps, 1), SHUTTER_STEP_ICONS.length) - 1;
+  return SHUTTER_STEP_ICONS[index];
+}
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
+  SHUTTER_POSITION_ICON,
   getPageItemDefaultsByRole,
   getPageNaviItemDefaultsByRole,
   getScreensaverItemDefaultsByRole,
+  getShutterIconByPosition,
   pageItemDefaults,
   pageNaviItemDefaults
 });

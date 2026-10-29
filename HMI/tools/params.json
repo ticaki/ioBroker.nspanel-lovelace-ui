@@ -1,0 +1,5 @@
+{
+    "4.zi": { "comment": "font 1 - NotoSans-Regular 32 px", "sx": 1.125, "sy": 1.135, "dx": -0.5, "dy": 3.75 },
+    "5.zi": { "comment": "font 3 - NotoSans-Regular 48 px", "sx": 1.7975, "sy": 1.795, "dx": -0.5938, "dy": 3.8125 },
+    "1.zi": { "comment": "font 4 - NotoSans-Bold 80 px", "sx": 2.7687, "sy": 2.7069, "dx": -0.7344, "dy": 0.3672 }
+}
