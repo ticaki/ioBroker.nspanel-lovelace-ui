@@ -19,6 +19,12 @@ var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: tru
 var adminShareConfig_exports = {};
 __export(adminShareConfig_exports, {
   ADAPTER_NAME: () => ADAPTER_NAME,
+  ADMIN_BUTTON_DEFAULT_DELAY: () => ADMIN_BUTTON_DEFAULT_DELAY,
+  ADMIN_BUTTON_DELAY_MODES: () => ADMIN_BUTTON_DELAY_MODES,
+  ADMIN_BUTTON_MAX_DELAY: () => ADMIN_BUTTON_MAX_DELAY,
+  ADMIN_BUTTON_MIN_DELAY: () => ADMIN_BUTTON_MIN_DELAY,
+  ADMIN_BUTTON_MODES: () => ADMIN_BUTTON_MODES,
+  ADMIN_BUTTON_STATE_MODES: () => ADMIN_BUTTON_STATE_MODES,
   ALL_PANELS_SPECIAL_ID: () => ALL_PANELS_SPECIAL_ID,
   CHANNEL_ROLES_LIST: () => CHANNEL_ROLES_LIST,
   SAVE_PANEL_NAVIGATION_COMMAND: () => SAVE_PANEL_NAVIGATION_COMMAND,
@@ -1329,9 +1335,41 @@ const requiredScriptDataPoints = {
   }
 };
 const CHANNEL_ROLES_LIST = Object.keys(requiredScriptDataPoints);
+const ADMIN_BUTTON_MODES = [
+  "page",
+  "switch",
+  "button",
+  "buttonOnDelayOff",
+  "buttonOffDelayOn",
+  "buttonDelayOn",
+  "buttonDelayOff"
+];
+const ADMIN_BUTTON_STATE_MODES = [
+  "switch",
+  "button",
+  "buttonOnDelayOff",
+  "buttonOffDelayOn",
+  "buttonDelayOn",
+  "buttonDelayOff"
+];
+const ADMIN_BUTTON_DELAY_MODES = [
+  "buttonOnDelayOff",
+  "buttonOffDelayOn",
+  "buttonDelayOn",
+  "buttonDelayOff"
+];
+const ADMIN_BUTTON_DEFAULT_DELAY = 0.25;
+const ADMIN_BUTTON_MIN_DELAY = 1e-3;
+const ADMIN_BUTTON_MAX_DELAY = 2147483;
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
   ADAPTER_NAME,
+  ADMIN_BUTTON_DEFAULT_DELAY,
+  ADMIN_BUTTON_DELAY_MODES,
+  ADMIN_BUTTON_MAX_DELAY,
+  ADMIN_BUTTON_MIN_DELAY,
+  ADMIN_BUTTON_MODES,
+  ADMIN_BUTTON_STATE_MODES,
   ALL_PANELS_SPECIAL_ID,
   CHANNEL_ROLES_LIST,
   SAVE_PANEL_NAVIGATION_COMMAND,
