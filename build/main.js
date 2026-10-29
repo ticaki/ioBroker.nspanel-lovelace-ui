@@ -35,6 +35,7 @@ var import_icon_mapping = require("./lib/const/icon_mapping");
 var definition = __toESM(require("./lib/const/definition"));
 var import_config_manager = require("./lib/classes/config-manager");
 var import_template_info = require("./lib/templates/template-info");
+var import_admin_media = require("./lib/configuration/admin-media");
 var import_readme = require("./lib/tools/readme");
 var import_redact = require("./lib/tools/redact");
 var import_credentials = require("./lib/credentials");
@@ -1053,6 +1054,15 @@ class NspanelLovelaceUi extends utils.Adapter {
               result ? result : [{ label: "Not available", value: "" }],
               obj.callback
             );
+          }
+          break;
+        }
+        case import_adminShareConfig.SENDTO_GET_MEDIA_PLAYER_COMMAND: {
+          const message = obj.message;
+          const id = message && typeof message === "object" && "id" in message ? message.id : void 0;
+          const result = await (0, import_admin_media.mediaPlayerInfo)(this, id);
+          if (obj.callback) {
+            this.sendTo(obj.from, obj.command, result, obj.callback);
           }
           break;
         }

@@ -898,13 +898,85 @@ export type AdminPageItemConfig = {
     filter?: number;
 };
 
+/**
+ * How a page with a list of page items pages through them (PageMenu of the adapter). Edited in the
+ * page details of the admin, see {@link isScrollCard}.
+ */
+export type PageScrollFields = {
+    /** `classic` = windowed paging, `arrow` = last slot is a paging arrow, `auto` = classic with automatic advance; default classic */
+    scrollPresentation?: 'classic' | 'arrow' | 'auto';
+    /** `classic`/`auto` only: scroll by a full or a half page ({@link scrollHalfCards}); default page */
+    scrollType?: 'page' | 'half';
+    /** `auto` only: seconds until the next page; default {@link scrollAutoTimingDefault} */
+    scrollAutoTiming?: number;
+};
+
+/** cards built on PageMenu - they take the {@link PageScrollFields} */
+export const scrollCards = [
+    'cardGrid',
+    'cardGrid2',
+    'cardGrid3',
+    'cardEntities',
+    'cardSchedule',
+    'cardThermo2',
+    'cardMedia',
+] as const;
+export type ScrollCard = (typeof scrollCards)[number];
+
+/** cards that can scroll by half a page - same list as CARD_MENU_HALF_PAGE_SCROLL_TYPES of the adapter */
+export const scrollHalfCards: readonly ScrollCard[] = ['cardGrid', 'cardGrid2', 'cardGrid3', 'cardThermo2'];
+
+/** seconds the adapter waits in the `auto` presentation when nothing is set */
+export const scrollAutoTimingDefault = 15;
+
+/**
+ * Whether a card takes the {@link PageScrollFields}.
+ *
+ * @param card Card of an admin page entry.
+ * @returns True for the cards built on PageMenu.
+ */
+export function isScrollCard(card: string | undefined): card is ScrollCard {
+    return !!card && (scrollCards as readonly string[]).includes(card);
+}
+
+/**
+ * The scroll settings of an entry as the adapter takes them, with the defaults filled in.
+ *
+ * @param entry Stored scroll fields, may be incomplete or come from an older version.
+ * @param card Card of the entry - `half` is reset to `page` where the card cannot do it.
+ * @returns Presentation, type and (for `auto` only) the timing.
+ */
+export function normalizeScrollFields(
+    entry: PageScrollFields,
+    card: ScrollCard,
+):
+    | { scrollPresentation: 'classic' | 'arrow'; scrollType: 'page' | 'half' }
+    | { scrollPresentation: 'auto'; scrollType: 'page' | 'half'; scrollAutoTiming: number } {
+    const presentation =
+        entry.scrollPresentation === 'arrow' || entry.scrollPresentation === 'auto'
+            ? entry.scrollPresentation
+            : 'classic';
+    const type = entry.scrollType === 'half' && scrollHalfCards.includes(card) ? 'half' : 'page';
+    if (presentation !== 'auto') {
+        return { scrollPresentation: presentation, scrollType: type };
+    }
+    // `auto` without timing would leave the adapter without an interval
+    const timing =
+        typeof entry.scrollAutoTiming === 'number' &&
+        Number.isFinite(entry.scrollAutoTiming) &&
+        entry.scrollAutoTiming > 0
+            ? entry.scrollAutoTiming
+            : scrollAutoTimingDefault;
+    return { scrollPresentation: 'auto', scrollType: type, scrollAutoTiming: timing };
+}
+
 export type MenuEntry = {
     card: Extract<AdminCardTypes, 'cardGrid' | 'cardGrid2' | 'cardGrid3' | 'cardEntities' | 'cardSchedule'>; // Supported card types - will be extended
     headline: string;
     pageItems: (AdminPageItemConfig | undefined)[];
-    scrollPresentation?: 'classic' | 'arrow';
     uniqueName: string;
-} & PageConfigBaseFields;
+} & PageScrollFields &
+    PageConfigBaseFields;
 
 export type QREntry = {
     card: Extract<AdminCardTypes, 'cardQR'>;
@@ -1309,7 +1381,8 @@ export type Thermo2Entry = {
     sortOrder?: Thermo2SortOrder;
     /** headline of the page, empty = uniqueName (only set by a page link, the editor has no field) */
     headline?: string;
-} & PageConfigBaseFields;
+} & PageScrollFields &
+    PageConfigBaseFields;
 
 /**
  * Empty heat circuit - used when adding a circuit in the editor.
@@ -1335,6 +1408,187 @@ export function emptyThermo2Entry(uniqueName: string): Thermo2Entry {
         hidden: false,
         alwaysOn: 'none',
     };
+}
+
+// ---------------------------------------------------------------------------------------------
+// cardMedia - media player page, converted into the script form `ScriptConfig.PageMedia`
+// ---------------------------------------------------------------------------------------------
+
+/** adapters cardMedia works with - the first segment of the player id */
+export const mediaBackends = ['alexa2', 'sonos', 'spotify-premium', 'mpd', 'squeezeboxrpc'] as const;
+export type MediaBackend = (typeof mediaBackends)[number];
+
+/** standard items of the bar at the bottom of the media page (`deactivateDefaultItems` / `itemsColorOn` of the script) */
+export type MediaToolbarItem =
+    | 'reminder'
+    | 'online'
+    | 'speakerList'
+    | 'favoriteList'
+    | 'playList'
+    | 'equalizer'
+    | 'clock'
+    | 'volumePresets'
+    | 'trackList'
+    | 'repeat'
+    | 'crossfade';
+
+/** standard items holding a list of names that is edited in the admin */
+export type MediaListKind = 'speakerList' | 'playList' | 'favoriteList';
+export const mediaListKinds: readonly MediaListKind[] = ['speakerList', 'playList', 'favoriteList'];
+
+/** What a backend of cardMedia supports - read from pages/tools/get<Backend>.ts, keep both in line. */
+export type MediaBackendFeatures = {
+    /** standard items in the order the adapter adds them to the bar */
+    items: readonly MediaToolbarItem[];
+    /** items whose color can be changed (itemsColorOn) */
+    colorOn: readonly MediaToolbarItem[];
+    /** items that have a second color for the off state (itemsColorOff) */
+    colorOff: readonly MediaToolbarItem[];
+    /** the title line takes its own color (colorMediaTitle) */
+    titleColor: boolean;
+};
+
+export const mediaBackendFeatures: Record<MediaBackend, MediaBackendFeatures> = {
+    alexa2: {
+        items: ['reminder', 'online', 'speakerList', 'playList', 'equalizer', 'clock', 'volumePresets', 'repeat'],
+        colorOn: ['online', 'speakerList', 'playList', 'equalizer', 'clock', 'volumePresets', 'repeat'],
+        colorOff: ['reminder', 'online', 'speakerList', 'repeat'],
+        titleColor: false,
+    },
+    sonos: {
+        items: [
+            'online',
+            'speakerList',
+            'favoriteList',
+            'playList',
+            'clock',
+            'volumePresets',
+            'trackList',
+            'repeat',
+            'crossfade',
+        ],
+        colorOn: ['online', 'speakerList', 'favoriteList', 'playList', 'clock', 'volumePresets', 'repeat', 'crossfade'],
+        colorOff: ['online', 'speakerList', 'repeat', 'crossfade'],
+        titleColor: false,
+    },
+    'spotify-premium': {
+        items: ['online', 'speakerList', 'playList', 'trackList', 'clock', 'volumePresets', 'repeat'],
+        colorOn: ['online', 'speakerList', 'playList', 'clock', 'volumePresets', 'repeat'],
+        colorOff: ['online', 'speakerList', 'repeat'],
+        titleColor: false,
+    },
+    mpd: {
+        items: ['online', 'repeat', 'clock', 'volumePresets', 'crossfade'],
+        colorOn: ['online', 'repeat', 'clock', 'volumePresets'],
+        colorOff: ['online', 'repeat'],
+        titleColor: false,
+    },
+    squeezeboxrpc: {
+        items: ['online', 'speakerList', 'favoriteList', 'playList', 'clock', 'volumePresets', 'trackList', 'repeat'],
+        colorOn: ['online', 'speakerList', 'favoriteList', 'playList', 'clock', 'volumePresets', 'repeat'],
+        colorOff: ['online', 'speakerList', 'repeat'],
+        titleColor: true,
+    },
+};
+
+/**
+ * Backend of a player id, taken from its first segment.
+ *
+ * @param id Player id, e.g. `sonos.0.root.192_168_1_20`.
+ * @returns The backend, undefined for an empty or unsupported id.
+ */
+export function mediaBackendOf(id: string | undefined): MediaBackend | undefined {
+    const name = (id ?? '').trim().split('.')[0];
+    return (mediaBackends as readonly string[]).includes(name) ? (name as MediaBackend) : undefined;
+}
+
+/** one standard item of the bar: switched off, or other colors than the adapter default (#rrggbb) */
+export type MediaToolbarConfig = {
+    /** false = item is not added (deactivateDefaultItems); volumePresets has no switch, it follows the preset list */
+    enabled?: boolean;
+    colorOn?: string;
+    colorOff?: string;
+};
+
+/** one volume preset, sent to the adapter as `name?value` */
+export type MediaVolumePreset = { name: string; value: number };
+
+/** volume range of the panel when the entry sets none */
+export const mediaVolumeDefaults = { minValue: 0, maxValue: 100 };
+
+/** answer of {@link SENDTO_GET_MEDIA_PLAYER_COMMAND} */
+export type MediaPlayerInfo = {
+    /** the adapter accepts the id */
+    ok: boolean;
+    backend?: MediaBackend;
+    /** findings of the check, empty when ok */
+    messages: string[];
+    /** names offered for the lists - empty when the adapter cannot read them */
+    options: Record<MediaListKind, string[]>;
+};
+
+/** sendTo of main.ts: checks a player id and reads the names for the lists ({ id } -> {@link MediaPlayerInfo}) */
+export const SENDTO_GET_MEDIA_PLAYER_COMMAND = 'getMediaPlayer';
+
+export type MediaEntry = {
+    card: Extract<AdminCardTypes, 'cardMedia'>;
+    uniqueName: string;
+    /** headline of the page, empty = uniqueName (only set by a page link, the panel shows the player name) */
+    headline?: string;
+    /** device, channel or folder of the player - not a state; the adapter name alone takes its lowest instance */
+    mediaId: string;
+    /** name of the player, empty = read from the adapter */
+    name?: string;
+    /** volume range of the panel slider */
+    minValue?: number;
+    maxValue?: number;
+    /** colors as #rrggbb, empty = adapter default */
+    colorMediaIcon?: string;
+    colorMediaArtist?: string;
+    /** squeezeboxrpc only */
+    colorMediaTitle?: string;
+    /** settings of the standard items, missing item = adapter default */
+    toolbar?: Partial<Record<MediaToolbarItem, MediaToolbarConfig>>;
+    speakerList?: string[];
+    playList?: string[];
+    favoriteList?: string[];
+    volumePresets?: MediaVolumePreset[];
+    /** own page items, shown after the standard items */
+    pageItems: (AdminPageItemConfig | undefined)[];
+} & PageScrollFields &
+    PageConfigBaseFields;
+
+/**
+ * Creates a fresh media entry without player.
+ *
+ * @param uniqueName unique page name
+ * @returns The entry, everything left to the adapter defaults.
+ */
+export function emptyMediaEntry(uniqueName: string): MediaEntry {
+    return {
+        card: 'cardMedia',
+        uniqueName,
+        mediaId: '',
+        pageItems: [],
+        hidden: false,
+        alwaysOn: 'none',
+    };
+}
+
+/**
+ * Standard items a media entry shows on the panel, in their order.
+ *
+ * The online item is only shown by the adapter while the player is offline, all others as long as
+ * they are not switched off; volumePresets needs at least one preset.
+ *
+ * @param entry Media entry.
+ * @param backend Backend of the player.
+ * @returns The visible standard items.
+ */
+export function mediaVisibleToolbarItems(entry: MediaEntry, backend: MediaBackend): MediaToolbarItem[] {
+    return mediaBackendFeatures[backend].items.filter(item =>
+        item === 'volumePresets' ? (entry.volumePresets ?? []).length > 0 : entry.toolbar?.[item]?.enabled !== false,
+    );
 }
 
 export type TrashItem = {
@@ -1422,6 +1676,7 @@ export type PageConfigEntry =
     | MenuEntry
     | PowerEntry
     | Thermo2Entry
+    | MediaEntry
     | PageLinkEntry;
 export type PageConfig = PageConfigEntry;
 /** a page entry with real content - everything but a page link */

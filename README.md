@@ -158,6 +158,8 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
     ### **WORK IN PROGRESS**
 -->
 ### **WORK IN PROGRESS**
+- (ticaki) page configuration: new page type "Media player" (cardMedia for alexa2, sonos, spotify-premium, mpd and squeezeboxrpc) - edited on a preview similar to the panel: player with check by the adapter, colors, volume range and presets, standard items of the player (switch off, colors, speaker/playlist/favorite lists with names offered by the adapter) and own page items
+- (ticaki) page configuration: the paging of menu, thermostat and media pages (classic, arrow, automatic with interval, full or half page) is set in the page details; the editor of the menu pages now assumes classic paging like the adapter
 - (ticaki) page configuration: new page type "Page link" - shows the content of another admin page under its own name with its own navigation, start page, hidden and always on; the headline falls back to the one of the linked page; the links of a page are listed below it and can be opened with a click
 - (ticaki) beta TFT for the EU panel is 6.0.2
 - (ticaki) web panel: the two hardware buttons below the display are 20px higher

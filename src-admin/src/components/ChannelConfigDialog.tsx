@@ -41,6 +41,7 @@ import type {
     AdminPageItemConfig,
     MenuEntry,
     Thermo2Entry,
+    MediaEntry,
     ChannelValueConfig,
     ChannelColorConfig,
     ChannelModeListConfig,
@@ -79,7 +80,7 @@ type ChannelConfigDialogProps = {
     /** Name der aktuellen Seite – wird aus der Zielseiten-Auswahl gefiltert */
     currentPageName?: string;
     /** Card-Typ der aktuellen Seite – wird für CheckPageItemConfig benötigt */
-    currentPageCard?: MenuEntry['card'] | Thermo2Entry['card'];
+    currentPageCard?: MenuEntry['card'] | Thermo2Entry['card'] | MediaEntry['card'];
     /** cardThermo2: Bezeichnungen der Heizkreise (Index = filter); gesetzt → Heizkreis-Auswahl sichtbar */
     heatCircuits?: string[];
     onSave?: (config: AdminPageItemConfig) => void;
