@@ -2594,7 +2594,7 @@ describe('lib/configuration - planScriptToAdmin: buttons', () => {
         const result = plan(
             baseConfig({
                 buttonLeft: { mode: 'switch', state: 'alias.0.Tests.button.SET' },
-                buttonRight: { mode: 'page', page: '' },
+                buttonRight: { mode: 'dance', state: 'alias.0.Tests.button.SET' },
             }),
             { panel: { name: panelName, topic, buttonLeft: null } },
         );
@@ -2605,11 +2605,64 @@ describe('lib/configuration - planScriptToAdmin: buttons', () => {
         ]);
         expect(result.clearButtonsInScript).to.deep.equal([]);
         expect(result.cleanedRaw.buttonLeft).to.deep.equal({ mode: 'switch', state: 'alias.0.Tests.button.SET' });
+        // a wrong type or a state id that ends with a dot is no empty button - still not valid
+        for (const button of [{ mode: 'switch', state: 5 }, { mode: 'switch', state: 'alias.0.' }, 'switch']) {
+            const invalid = plan(baseConfig({ buttonLeft: button }));
+            expect(invalid.plan.buttonsSkipped, JSON.stringify(button)).to.deep.equal([
+                { side: 'left', reason: 'buttonNotSupported', detail: 'not a valid button action' },
+            ]);
+        }
         const nothing = plan(
             baseConfig({ mrIcon1ScreensaverEntity: mrIcon(null), mrIcon2ScreensaverEntity: mrIcon(null) }),
         );
         expect(nothing.plan.buttonsSkipped).to.deep.equal([]);
         expect(nothing.plan.nothingToDo).to.equal(true);
+    });
+
+    it('treats the empty button of the template as not configured - nothing converted, nothing reported', () => {
+        // the config manager fails isButton for these, logs "wrong configured" and sets no action: same as null
+        const empty = [
+            [
+                { mode: 'switch', state: '' },
+                { mode: 'page', page: '' },
+            ],
+            [{ mode: 'button' }, { mode: 'page', page: null }],
+            [
+                { mode: 'buttonOnDelayOff', state: null },
+                { mode: 'buttonDelayOn', state: '' },
+            ],
+        ];
+        for (const [buttonLeft, buttonRight] of empty) {
+            const result = plan(
+                baseConfig({
+                    buttonLeft,
+                    buttonRight,
+                    mrIcon1ScreensaverEntity: mrIcon(null),
+                    mrIcon2ScreensaverEntity: mrIcon(null),
+                }),
+            );
+            const label = JSON.stringify([buttonLeft, buttonRight]);
+            expect(result.buttons, label).to.deep.equal({});
+            expect(result.plan.buttons, label).to.deep.equal({});
+            expect(result.plan.buttonsSkipped, label).to.deep.equal([]);
+            expect(result.clearButtonsInScript, label).to.deep.equal([]);
+            // the script is not touched without a take-over
+            expect(result.cleanedRaw.buttonLeft, label).to.deep.equal(buttonLeft);
+            expect(result.cleanedRaw.buttonRight, label).to.deep.equal(buttonRight);
+            expect(result.plan.nothingToDo, label).to.equal(true);
+        }
+        // an empty button on one side does not hide a real one on the other side
+        const mixed = plan(
+            baseConfig({
+                buttonLeft: { mode: 'switch', state: '' },
+                buttonRight: { mode: 'switch', state: 'alias.0.Tests.button.SET' },
+            }),
+        );
+        expect(mixed.buttons).to.deep.equal({ right: { mode: 'switch', state: 'alias.0.Tests.button.SET' } });
+        expect(mixed.plan.buttonsSkipped).to.deep.equal([]);
+        expect(mixed.clearButtonsInScript).to.deep.equal(['right']);
+        expect(mixed.cleanedRaw.buttonLeft).to.deep.equal({ mode: 'switch', state: '' });
+        expect(mixed.cleanedRaw.buttonRight).to.equal(null);
     });
 });
 

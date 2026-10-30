@@ -1324,12 +1324,29 @@ function emptyMrIcon() {
     ScreensaverEntityOffColor: { red: 0, green: 0, blue: 0 }
   };
 }
+const buttonModes = [
+  "page",
+  "switch",
+  "button",
+  "buttonOnDelayOff",
+  "buttonOffDelayOn",
+  "buttonDelayOn",
+  "buttonDelayOff"
+];
+function isEmptyButton(value) {
+  const mode = value.mode;
+  if (typeof mode !== "string" || !buttonModes.some((m) => m === mode)) {
+    return false;
+  }
+  const target = value[mode === "page" ? "page" : "state"];
+  return target === void 0 || target === null || target === "";
+}
 function convertButton(value) {
   const reason = "buttonNotSupported";
-  if (value === void 0 || value === null) {
+  if (value === void 0 || value === null || isDict(value) && isEmptyButton(value)) {
     return void 0;
   }
-  if (!(0, import_config_manager_const.isButton)(value) || !isDict(value)) {
+  if (!isDict(value) || !(0, import_config_manager_const.isButton)(value)) {
     throw new ConvertError(reason, "not a valid button action");
   }
   const mode = value.mode;

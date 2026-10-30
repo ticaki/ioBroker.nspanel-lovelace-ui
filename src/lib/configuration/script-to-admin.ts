@@ -1782,19 +1782,49 @@ function emptyMrIcon(): ScriptConfig.ScreenSaverMRElement {
  * buttons
  * ------------------------------------------------------------------------------------------- */
 
+/** the modes of a hardware button the config manager knows (`isButton`) */
+const buttonModes: readonly NonNullable<AdminButtonFunction>['mode'][] = [
+    'page',
+    'switch',
+    'button',
+    'buttonOnDelayOff',
+    'buttonOffDelayOn',
+    'buttonDelayOn',
+    'buttonDelayOff',
+];
+
+/**
+ * Whether a script button is the empty form of the template (`{ mode: 'switch', state: '' }`): a known
+ * mode whose target (`state`, for `page` the `page`) is empty, null or missing. The config manager
+ * rejects it in `isButton`, logs "Button ... wrong configured!" and sets no action - on the panel it is
+ * the same as no button at all.
+ *
+ * @param value `buttonLeft` / `buttonRight` of the script.
+ */
+function isEmptyButton(value: Dict): boolean {
+    const mode = value.mode;
+    if (typeof mode !== 'string' || !buttonModes.some(m => m === mode)) {
+        return false;
+    }
+    const target = value[mode === 'page' ? 'page' : 'state'];
+    return target === undefined || target === null || target === '';
+}
+
 /**
  * A hardware button of the script as the admin stores it - inverse of `applyAdminButtons`
  * (panel-buttons.ts): the admin entry is handed to the panel unchanged, so the script value has to be
- * a valid action already. Undefined for a script button without action.
+ * a valid action already. Undefined for a script button without action - `null`, `undefined` or the
+ * empty form of the template ({@link isEmptyButton}), which the panel treats the same way.
  *
  * @param value `buttonLeft` / `buttonRight` of the script.
  */
 function convertButton(value: unknown): AdminButtonFunction | undefined {
     const reason: ConvertSkipReason = 'buttonNotSupported';
-    if (value === undefined || value === null) {
+    if (value === undefined || value === null || (isDict(value) && isEmptyButton(value))) {
         return undefined;
     }
-    if (!isButton(value) || !isDict(value)) {
+    // isDict first: `isButton` uses `in` and throws for a primitive such as a plain string
+    if (!isDict(value) || !isButton(value)) {
         throw new ConvertError(reason, 'not a valid button action');
     }
     const mode = value.mode;
