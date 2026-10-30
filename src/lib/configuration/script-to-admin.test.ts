@@ -1922,7 +1922,7 @@ describe('lib/configuration - planScriptToAdmin: page items', () => {
         return plan(baseConfig({ subPages: [page({ type: 'cardGrid', uniqueName: 'p', heading: 'P', items })] }));
     }
 
-    it('is the inverse of convertAdminPageItemToPageItemConfig, prefix and suffix of the value swapped like there', () => {
+    it('is the inverse of convertAdminPageItemToPageItemConfig, prefix and suffix of the value kept in place', () => {
         const result = planItems([
             {
                 id: 'alias.0.NSPanel.allgemein.Temperatur',
@@ -1953,8 +1953,8 @@ describe('lib/configuration - planScriptToAdmin: page items', () => {
             channelId: {
                 valueStateId: 'alias.0.NSPanel.allgemein.Temperatur',
                 unit: '°C',
-                prefix: '>suf',
-                suffix: 'pre<',
+                prefix: 'pre<',
+                suffix: '>suf',
                 dateFormat: '',
             },
             name: 'Temp',
@@ -2139,6 +2139,42 @@ describe('lib/configuration - planScriptToAdmin: page items', () => {
             minValue: 0,
             maxValue: 100,
         });
+    });
+
+    it('the prefix of the value in the admin goes before the value, the suffix behind it (prefixValue / suffixValue)', async () => {
+        resetStatesController();
+        const logs: LogEntry[] = [];
+        const adapter = fakeAdapter(logs);
+        const result = await adapter.convertAdminPageItemToPageItemConfig(
+            {
+                channelId: {
+                    ...ShareConfig.emptyChannelValueConfig('alias.0.NSPanel.allgemein.Temperatur'),
+                    prefix: 'pre<',
+                    suffix: '>suf',
+                },
+            },
+            { card: 'cardEntities', uniqueName: 'p' },
+            [],
+        );
+        expect(result.error).to.equal(undefined);
+        const json = JSON.stringify(result.pageItem);
+        expect(json).to.include('"prefix":{"type":"const","constVal":"pre<"}');
+        expect(json).to.include('"suffix":{"type":"const","constVal":">suf"}');
+        // and the same on the script path, through the converter
+        await expectEquivalent(
+            baseConfig({
+                subPages: [
+                    page({
+                        type: 'cardEntities',
+                        uniqueName: 'e',
+                        heading: 'E',
+                        items: [
+                            { id: 'alias.0.NSPanel.allgemein.Temperatur', prefixValue: 'pre<', suffixValue: '>suf' },
+                        ],
+                    }),
+                ],
+            }),
+        );
     });
 
     it('useValueConditions, minValue and maxValue reach the runtime item over the admin path like over the script path', async () => {

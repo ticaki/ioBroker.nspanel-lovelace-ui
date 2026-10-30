@@ -286,8 +286,8 @@ function convertPageItem(item, where) {
   } else if (name !== void 0) {
     admin.name = name;
   }
-  channelId.prefix = (_a = str(item.suffixValue, reason, `${where}.suffixValue`)) != null ? _a : "";
-  channelId.suffix = (_b = str(item.prefixValue, reason, `${where}.prefixValue`)) != null ? _b : "";
+  channelId.prefix = (_a = str(item.prefixValue, reason, `${where}.prefixValue`)) != null ? _a : "";
+  channelId.suffix = (_b = str(item.suffixValue, reason, `${where}.suffixValue`)) != null ? _b : "";
   channelId.unit = (_c = str(item.unit, reason, `${where}.unit`)) != null ? _c : "";
   const fontSize = num(item.fontSize, reason, `${where}.fontSize`);
   if (fontSize !== void 0) {

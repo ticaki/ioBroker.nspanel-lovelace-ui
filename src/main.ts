@@ -3105,8 +3105,8 @@ class NspanelLovelaceUi extends utils.Adapter {
                         item.prefixName = preItem.valueEntry.prefix ? preItem.valueEntry.prefix : undefined;
                     }
 
-                    item.prefixValue = preItem.channelId?.suffix ? preItem.channelId.suffix : undefined;
-                    item.suffixValue = preItem.channelId?.prefix ? preItem.channelId.prefix : undefined;
+                    item.prefixValue = preItem.channelId?.prefix ? preItem.channelId.prefix : undefined;
+                    item.suffixValue = preItem.channelId?.suffix ? preItem.channelId.suffix : undefined;
                     item.unit = preItem.channelId?.unit ? preItem.channelId.unit : undefined;
                     item.useValue = preItem.useValue;
                     item.inSel_Alias = preItem.inSel_Alias || undefined;

@@ -489,10 +489,10 @@ function convertPageItem(item: Dict, where: string): AdminPageItemConfig {
     } else if (name !== undefined) {
         admin.name = name;
     }
-    // convertAdminPageItemToPageItemConfig swaps prefix and suffix of the channel - mirrored here so the
-    // runtime stays identical
-    channelId.prefix = str(item.suffixValue, reason, `${where}.suffixValue`) ?? '';
-    channelId.suffix = str(item.prefixValue, reason, `${where}.prefixValue`) ?? '';
+    // prefix and suffix of the value: convertAdminPageItemToPageItemConfig maps channelId.prefix to prefixValue
+    // and channelId.suffix to suffixValue
+    channelId.prefix = str(item.prefixValue, reason, `${where}.prefixValue`) ?? '';
+    channelId.suffix = str(item.suffixValue, reason, `${where}.suffixValue`) ?? '';
     channelId.unit = str(item.unit, reason, `${where}.unit`) ?? '';
 
     const fontSize = num(item.fontSize, reason, `${where}.fontSize`);
