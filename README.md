@@ -158,6 +158,7 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
     ### **WORK IN PROGRESS**
 -->
 ### **WORK IN PROGRESS**
+- (ticaki) navigation flow: new auto layout - pages as a tree from left to right (sub pages in the column next to the page that leads to them, prev/next chains vertical, large configurations in bands); by default only nodes without a position are placed, "rearrange everything" asks first; state nodes in an outer column; home links to main can be hidden (hidden by default from 60 pages); sub trees can be collapsed (service pages collapsed by default)
 - (ticaki) power pages: the tab "Page Power" is gone - its pages are moved into the page configuration (tab PageConfig) at adapter start and the old table is deleted; a name already used by another page gets the suffix `_power`; a value whose state has a unit (`common.unit`) takes that unit
 - (ticaki) power pages: migrated pages keep their navigation from the script for now (deprecated, the editor shows a hint) until a navigation is assigned in the admin - script version 0.21.6 marks `ScriptConfig.PagePower` as deprecated
 - (ticaki) page configuration: new page type "Media player" (cardMedia for alexa2, sonos, spotify-premium, mpd and squeezeboxrpc) - edited on a preview similar to the panel: player with check by the adapter, colors, volume range and presets, standard items of the player (switch off, colors, speaker/playlist/favorite lists with names offered by the adapter) and own page items

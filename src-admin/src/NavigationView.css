@@ -215,3 +215,38 @@
   border: 1px solid var(--node-border, #ccc);
   background: var(--node-bg, #868686ff);
 }
+
+/* Einklapp-Knopf rechts unten an Seiten mit Unterseiten; eingeklappt zeigt er "+N" (Anzahl der
+   ausgeblendeten Seiten). Unten Mitte sitzt der next-Anfasser, deshalb nach rechts versetzt. */
+.node-box .node-collapse {
+  position: absolute;
+  bottom: -9px;
+  right: 10px;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 3px;
+  border-radius: 8px;
+  background: var(--node-bg, #fff);
+  border: 1px solid var(--node-border, #ccc);
+  color: var(--node-text, inherit);
+  font-size: 10px;
+  line-height: 14px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 4;
+  opacity: 0.55;
+}
+.node-box:hover .node-collapse,
+.node-box .node-collapse.node-collapse-collapsed {
+  opacity: 1;
+}
+.node-box .node-collapse-icon {
+  font-size: 12px !important;
+}
+/* Kante in einen eingeklappten Unterbaum - zeigt auf die eingeklappte Seite */
+.edge-collapsed .custom-edge-path {
+  stroke-opacity: 0.6;
+}
