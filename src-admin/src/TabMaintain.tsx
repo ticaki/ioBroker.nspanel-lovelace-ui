@@ -19,8 +19,10 @@ import {
 } from '@mui/material';
 import { grey, orange, blue, yellow } from '@mui/material/colors';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
+import MoveDownIcon from '@mui/icons-material/MoveDown';
 import { type IobTheme, type ThemeName, type ThemeType } from '@iobroker/gui-components';
 import { PanelStatusBadge } from './components/PanelStatusBadge';
+import ConvertScriptDialog from './components/ConvertScriptDialog';
 import { ThemeProvider } from '@mui/material/styles';
 import { getLightSurfaceTheme } from './themeUtils';
 import {
@@ -95,6 +97,8 @@ class MaintainPanel extends ConfigGeneric<ConfigGenericProps & MaintainPanelProp
     private panelsConfig: PanelConfig[] = [];
     private _isMounted: boolean = false;
     private aliveStateId = `system.adapter.${this.adapterName}.${this.instance}.alive`;
+    /** dialog that takes the configuration of a panel's script over into the admin page configuration */
+    private convertDialogRef = React.createRef<ConvertScriptDialog>();
 
     constructor(props: ConfigGenericProps & MaintainPanelProps) {
         super(props);
@@ -479,6 +483,18 @@ class MaintainPanel extends ConfigGeneric<ConfigGenericProps & MaintainPanelProp
                 this.setState({ error: String(err), processingPanel: null });
             }
         }
+    }
+
+    /**
+     * opens the preview of the conversion script → admin for one panel
+     *
+     * @param panel row of the maintain table
+     */
+    private handleConvertScript(panel: MaintainPanelInfo): void {
+        if (!panel._topic) {
+            return;
+        }
+        this.convertDialogRef.current?.openWith(panel._topic, panel._name || panel._Headline);
     }
 
     private async handleUpdateAllScripts(): Promise<void> {
@@ -870,6 +886,16 @@ class MaintainPanel extends ConfigGeneric<ConfigGenericProps & MaintainPanelProp
                                                 this.getText('createScript')
                                             )}
                                         </Button>
+                                        <Button
+                                            variant="outlined"
+                                            startIcon={<MoveDownIcon />}
+                                            onClick={() => this.handleConvertScript(panel)}
+                                            disabled={!panel._topic || processingPanel === panel._name || !alive}
+                                            size="small"
+                                            sx={{ flex: '0 0 auto', minWidth: 200 }}
+                                        >
+                                            {this.getText('convertScript_button')}
+                                        </Button>
                                     </Box>
 
                                     {/* Console Button */}
@@ -902,6 +928,15 @@ class MaintainPanel extends ConfigGeneric<ConfigGenericProps & MaintainPanelProp
                         );
                     })}
                 </Box>
+
+                {/* Conversion of a panel's script into the admin page configuration */}
+                <ConvertScriptDialog
+                    ref={this.convertDialogRef}
+                    socket={this.props.oContext.socket}
+                    adapterName={this.adapterName}
+                    instance={this.instance}
+                    changed={this.props.changed}
+                />
 
                 {/* Confirmation Dialog */}
                 {confirmDialog && (

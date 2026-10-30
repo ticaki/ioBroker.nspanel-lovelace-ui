@@ -43,6 +43,7 @@ var import_node_url = require("node:url");
 var fs = __toESM(require("node:fs"));
 var import_navigation_overrides = require("./lib/configuration/navigation-overrides");
 var import_panel_buttons = require("./lib/configuration/panel-buttons");
+var import_script_to_admin_runner = require("./lib/configuration/script-to-admin-runner");
 var import_Color = require("./lib/const/Color");
 var import_node_path = __toESM(require("node:path"));
 var import_test = require("./lib/const/test");
@@ -174,7 +175,7 @@ class NspanelLovelaceUi extends utils.Adapter {
    * Is called when databases are connected and adapter received configuration.
    */
   async onReady() {
-    var _a, _b, _c, _d;
+    var _a, _b, _c, _d, _e;
     if (this.config.deactivateDebugLog) {
       this.log.debug = (_msg) => {
       };
@@ -299,9 +300,27 @@ class NspanelLovelaceUi extends utils.Adapter {
           this.log.error(`Error while reading io-package.json for default URLs: ${errorMessage}`);
         }
       }
+      const meta = await this.getForeignObjectAsync(this.namespace);
+      let parkedMeta;
+      const parkedList = Array.isArray((_a = meta == null ? void 0 : meta.native) == null ? void 0 : _a.pendingScriptConversion) ? meta.native.pendingScriptConversion : [];
+      if (meta && parkedList.length > 0) {
+        const parked = parkedList.filter(import_script_to_admin_runner.isPendingScriptConversion);
+        const topics = parked.map((p) => p.panelTopic).join(", ");
+        meta.native.pendingScriptConversion = [];
+        if ((0, import_script_to_admin_runner.applyPendingScriptConversions)(native, parked, this.log)) {
+          this.log.warn(
+            `Applied the parked script conversion of panel(s) ${topics} to the admin configuration`
+          );
+          parkedMeta = meta;
+          change = true;
+        } else {
+          this.log.info(`Parked script conversion of panel(s) ${topics}: everything is already in the admin`);
+          await this.setForeignObjectAsync(this.namespace, meta);
+        }
+      }
       if (change) {
         const uniquePages = /* @__PURE__ */ new Map();
-        for (const p of (_a = native.pageConfig) != null ? _a : []) {
+        for (const p of (_b = native.pageConfig) != null ? _b : []) {
           if (p == null ? void 0 : p.uniqueName) {
             if (uniquePages.has(p.uniqueName)) {
               this.log.warn(`Duplicate uniqueName '${p.uniqueName}' found in pageConfig!`);
@@ -312,6 +331,9 @@ class NspanelLovelaceUi extends utils.Adapter {
         }
         native.pageConfig = [...uniquePages.values()];
         await this.setForeignObject(`system.adapter.${this.namespace}`, o);
+        if (parkedMeta) {
+          await this.setForeignObjectAsync(this.namespace, parkedMeta);
+        }
         this.log.warn(`Updated configuration of ${this.namespace} to the latest version. Restart adapter!`);
         return;
       }
@@ -549,7 +571,7 @@ class NspanelLovelaceUi extends utils.Adapter {
               if (!("uniqueID" in p)) {
                 continue;
               }
-              if (((_b = p.config) == null ? void 0 : _b.card) === "screensaver" || ((_c = p.config) == null ? void 0 : _c.card) === "screensaver2" || ((_d = p.config) == null ? void 0 : _d.card) === "screensaver3") {
+              if (((_c = p.config) == null ? void 0 : _c.card) === "screensaver" || ((_d = p.config) == null ? void 0 : _d.card) === "screensaver2" || ((_e = p.config) == null ? void 0 : _e.card) === "screensaver3") {
                 p.uniqueID = `#${p.uniqueID}`;
               }
               if (names.indexOf(p.uniqueID) !== -1) {
@@ -1340,6 +1362,22 @@ class NspanelLovelaceUi extends utils.Adapter {
           if (obj.callback) {
             this.sendTo(obj.from, obj.command, "something when wrong", obj.callback);
           }
+          break;
+        }
+        case import_adminShareConfig.SENDTO_CONVERT_SCRIPT_COMMAND: {
+          const runner = new import_script_to_admin_runner.ScriptToAdminRunner({
+            adapter: this,
+            createConfigStore: () => new import_config_manager.ConfigManager(this),
+            screensaverMode: (topic) => {
+              var _a2, _b2, _c2;
+              return (_c2 = (_b2 = (_a2 = this.controller) == null ? void 0 : _a2.panels.find((p) => p && p.topic === topic)) == null ? void 0 : _b2.screenSaver) == null ? void 0 : _c2.mode;
+            }
+          });
+          await runner.run(obj.message, (answer) => {
+            if (obj.callback) {
+              this.sendTo(obj.from, obj.command, answer, obj.callback);
+            }
+          });
           break;
         }
         case "setPopupNotification": {

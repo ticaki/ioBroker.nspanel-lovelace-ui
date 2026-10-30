@@ -6,6 +6,7 @@ import {
     SENDTO_GET_SCREENSAVER_TEMPLATES_COMMAND,
     SENDTO_GET_MEDIA_PLAYER_COMMAND,
     SENDTO_GET_PAGES_All_COMMAND,
+    SENDTO_CONVERT_SCRIPT_COMMAND,
     ALL_PANELS_SPECIAL_ID,
     migrateLegacyCharts,
     migrateLegacyPower,
@@ -47,6 +48,11 @@ import {
     scriptLinksByPage,
 } from './lib/configuration/navigation-overrides';
 import { applyAdminButtons } from './lib/configuration/panel-buttons';
+import {
+    applyPendingScriptConversions,
+    isPendingScriptConversion,
+    ScriptToAdminRunner,
+} from './lib/configuration/script-to-admin-runner';
 import { Color } from './lib/const/Color';
 import path from 'node:path';
 import { testScriptConfig } from './lib/const/test';
@@ -357,6 +363,29 @@ class NspanelLovelaceUi extends utils.Adapter {
                 }
             }
 
+            // a script conversion (sendTo convertScriptToAdmin) the adapter did not finish: its admin part is
+            // parked in the meta object - applied here, the parked entry is removed after the instance write
+            const meta = await this.getForeignObjectAsync(this.namespace);
+            let parkedMeta: typeof meta;
+            const parkedList: unknown[] = Array.isArray(meta?.native?.pendingScriptConversion)
+                ? meta.native.pendingScriptConversion
+                : [];
+            if (meta && parkedList.length > 0) {
+                const parked = parkedList.filter(isPendingScriptConversion);
+                const topics = parked.map(p => p.panelTopic).join(', ');
+                meta.native.pendingScriptConversion = [];
+                if (applyPendingScriptConversions(native, parked, this.log)) {
+                    this.log.warn(
+                        `Applied the parked script conversion of panel(s) ${topics} to the admin configuration`,
+                    );
+                    parkedMeta = meta;
+                    change = true;
+                } else {
+                    this.log.info(`Parked script conversion of panel(s) ${topics}: everything is already in the admin`);
+                    await this.setForeignObjectAsync(this.namespace, meta);
+                }
+            }
+
             if (change) {
                 const uniquePages = new Map();
                 for (const p of native.pageConfig ?? []) {
@@ -370,6 +399,9 @@ class NspanelLovelaceUi extends utils.Adapter {
                 }
                 native.pageConfig = [...uniquePages.values()];
                 await this.setForeignObject(`system.adapter.${this.namespace}`, o);
+                if (parkedMeta) {
+                    await this.setForeignObjectAsync(this.namespace, parkedMeta);
+                }
                 this.log.warn(`Updated configuration of ${this.namespace} to the latest version. Restart adapter!`);
                 return;
             }
@@ -1585,6 +1617,22 @@ class NspanelLovelaceUi extends utils.Adapter {
                     if (obj.callback) {
                         this.sendTo(obj.from, obj.command, 'something when wrong', obj.callback);
                     }
+                    break;
+                }
+                case SENDTO_CONVERT_SCRIPT_COMMAND: {
+                    // conversion of a configuration script into the admin configuration (admin tab maintain);
+                    // the runner answers before it writes the instance object, that write restarts the adapter
+                    const runner = new ScriptToAdminRunner({
+                        adapter: this,
+                        createConfigStore: () => new ConfigManager(this),
+                        screensaverMode: topic =>
+                            this.controller?.panels.find(p => p && p.topic === topic)?.screenSaver?.mode,
+                    });
+                    await runner.run(obj.message, answer => {
+                        if (obj.callback) {
+                            this.sendTo(obj.from, obj.command, answer, obj.callback);
+                        }
+                    });
                     break;
                 }
                 case 'setPopupNotification': {

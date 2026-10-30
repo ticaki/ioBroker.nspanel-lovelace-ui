@@ -608,8 +608,25 @@ export class AdminConfiguration extends BaseClass {
 
             if (!overrideExisting) {
                 if (option.pages.find((a: PageBase) => a.uniqueID === newPage.uniqueID)) {
-                    this.log.warn(`Page with name ${newPage.uniqueID} already exists, skipping!`);
-                    continue;
+                    // A page with a navigation node belongs to this panel (own script, global
+                    // script) and wins. A page without one was merged in from the script of
+                    // another panel (ConfigManager.getConfig) - it would be dropped later anyway
+                    // (no node), so the admin page configured for this panel replaces it.
+                    // The screensaver and the pages generated from page items (media-<id>) carry no
+                    // node either but belong to this panel.
+                    const existing = option.pages.find((a: PageBase) => a.uniqueID === newPage.uniqueID);
+                    if (
+                        option.navigation.some(b => b && b.name === newPage.uniqueID) ||
+                        isScreensaverPage(existing) ||
+                        option.generatedPageIds?.includes(newPage.uniqueID)
+                    ) {
+                        this.log.warn(`Page with name ${newPage.uniqueID} already exists, skipping!`);
+                        continue;
+                    }
+                    this.log.info(
+                        `Page '${newPage.uniqueID}' of another panel's script is replaced by the admin page configured for this panel.`,
+                    );
+                    option.pages = option.pages.filter((a: PageBase) => a.uniqueID !== newPage.uniqueID);
                 }
             } else {
                 // Remove the existing page and take out its navigation node. The node is
@@ -719,6 +736,21 @@ export class AdminConfiguration extends BaseClass {
             pendingMap.set(p.pageId, p);
         }
 
+        // The first page that is no pending page when the `prev` links are followed from a page - the
+        // page the chain is spliced after.
+        const chainRoot = (pageId: string): string | undefined => {
+            const seen = new Set<string>();
+            let current = pendingMap.get(pageId);
+            while (current && current.prev !== undefined && !seen.has(current.pageId)) {
+                seen.add(current.pageId);
+                if (!pendingMap.has(current.prev)) {
+                    return current.prev;
+                }
+                current = pendingMap.get(current.prev);
+            }
+            return undefined;
+        };
+
         // Step 1: Apply each page's own explicit prev/next as direct left/right pointers
         for (const pending of pendingNavs) {
             const pageEntry = option.navigation.find(b => b?.name === pending.pageId);
@@ -730,6 +762,26 @@ export class AdminConfiguration extends BaseClass {
             }
             if (pending.next !== undefined) {
                 pageEntry.right = { ...(pageEntry.right ?? {}), single: pending.next };
+                // A page that names both neighbours sits between them. A successor that is no pending
+                // page (e.g. a page of the script) is only linked back by spliceChainAfter when it was the
+                // old right of the predecessor - not when the page is spliced in as part of a longer chain,
+                // so the back link is set here, but only when the successor still points at the root of
+                // the chain (or at nothing / a system node): a page used as a shortcut to a successor
+                // somewhere else in the ring leaves the successor's own predecessor in place. Pages with
+                // `next` only are handled in step 5.
+                if (pending.prev !== undefined && !pendingMap.has(pending.next)) {
+                    const nextEntry = option.navigation.find(b => b?.name === pending.next);
+                    const current = nextEntry?.left?.single;
+                    if (
+                        nextEntry &&
+                        (current === undefined ||
+                            current.startsWith('///') ||
+                            systemNavigationNodeNames.has(current) ||
+                            current === chainRoot(pending.pageId))
+                    ) {
+                        nextEntry.left = { ...(nextEntry.left ?? {}), single: pending.pageId };
+                    }
+                }
             }
         }
 

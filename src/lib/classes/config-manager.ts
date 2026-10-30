@@ -623,8 +623,10 @@ export class ConfigManager extends BaseClass {
         }
 
         if (panelConfig.pages.length === 0) {
-            messages.push(`No pages found! This needs to be fixed!`);
-            this.log.error(messages[messages.length - 1]);
+            // Valid setup since a script is optional: all pages may live in the admin (e.g. after the
+            // script was taken over into the admin). The adapter adds a default start page.
+            messages.push(`No pages in the script configuration! Pages from the admin configuration are used.`);
+            this.log.info(messages[messages.length - 1]);
         } else if (panelConfig.navigation.length === 0) {
             // Valid setup: the panel can be configured entirely in the admin. The adapter adds a
             // default start page, the admin pages are merged afterwards.

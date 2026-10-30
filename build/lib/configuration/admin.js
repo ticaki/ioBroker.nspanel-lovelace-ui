@@ -288,7 +288,7 @@ Stack: ${stack}`
    * @param option - Panel configuration partial
    */
   async createPagesFromConfig(option) {
-    var _a, _b, _c, _d, _e, _f, _g, _h;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _i;
     const entries = this.pageConfig;
     const pendingNavs = [];
     const mainAliases = new Set(
@@ -540,8 +540,15 @@ Stack: ${stack}`
       let replacedNav;
       if (!overrideExisting) {
         if (option.pages.find((a) => a.uniqueID === newPage.uniqueID)) {
-          this.log.warn(`Page with name ${newPage.uniqueID} already exists, skipping!`);
-          continue;
+          const existing = option.pages.find((a) => a.uniqueID === newPage.uniqueID);
+          if (option.navigation.some((b) => b && b.name === newPage.uniqueID) || (0, import_admin_screensaver.isScreensaverPage)(existing) || ((_d = option.generatedPageIds) == null ? void 0 : _d.includes(newPage.uniqueID))) {
+            this.log.warn(`Page with name ${newPage.uniqueID} already exists, skipping!`);
+            continue;
+          }
+          this.log.info(
+            `Page '${newPage.uniqueID}' of another panel's script is replaced by the admin page configured for this panel.`
+          );
+          option.pages = option.pages.filter((a) => a.uniqueID !== newPage.uniqueID);
         }
       } else {
         const pageCount = option.pages.length;
@@ -551,7 +558,7 @@ Stack: ${stack}`
         }
         replacedIndex = option.navigation.findIndex((b) => b && b.name === newPage.uniqueID);
         if (replacedIndex !== -1) {
-          replacedNav = (_d = option.navigation[replacedIndex]) != null ? _d : void 0;
+          replacedNav = (_e = option.navigation[replacedIndex]) != null ? _e : void 0;
           option.navigation.splice(replacedIndex, 1);
         }
       }
@@ -559,8 +566,8 @@ Stack: ${stack}`
       const navigationEntry = {
         name: newPage.uniqueID,
         page: newPage.uniqueID,
-        right: { single: (_e = replacedNav == null ? void 0 : replacedNav.right) == null ? void 0 : _e.single, double: (_f = replacedNav == null ? void 0 : replacedNav.right) == null ? void 0 : _f.double },
-        left: { single: (_g = replacedNav == null ? void 0 : replacedNav.left) == null ? void 0 : _g.single, double: (_h = replacedNav == null ? void 0 : replacedNav.left) == null ? void 0 : _h.double }
+        right: { single: (_f = replacedNav == null ? void 0 : replacedNav.right) == null ? void 0 : _f.single, double: (_g = replacedNav == null ? void 0 : replacedNav.right) == null ? void 0 : _g.double },
+        left: { single: (_h = replacedNav == null ? void 0 : replacedNav.left) == null ? void 0 : _h.single, double: (_i = replacedNav == null ? void 0 : replacedNav.left) == null ? void 0 : _i.double }
       };
       if (replacedIndex !== -1) {
         option.navigation.splice(replacedIndex, 0, navigationEntry);
@@ -624,7 +631,7 @@ Stack: ${stack}`
    * @param pendingNavs - Pending navigation entries collected in phase 1
    */
   applyPendingNavigations(option, pendingNavs) {
-    var _a, _b, _c, _d, _e, _f, _g, _h, _i;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k;
     if (!pendingNavs.length) {
       return;
     }
@@ -632,6 +639,18 @@ Stack: ${stack}`
     for (const p of pendingNavs) {
       pendingMap.set(p.pageId, p);
     }
+    const chainRoot = (pageId) => {
+      const seen = /* @__PURE__ */ new Set();
+      let current = pendingMap.get(pageId);
+      while (current && current.prev !== void 0 && !seen.has(current.pageId)) {
+        seen.add(current.pageId);
+        if (!pendingMap.has(current.prev)) {
+          return current.prev;
+        }
+        current = pendingMap.get(current.prev);
+      }
+      return void 0;
+    };
     for (const pending of pendingNavs) {
       const pageEntry = option.navigation.find((b) => (b == null ? void 0 : b.name) === pending.pageId);
       if (!pageEntry) {
@@ -642,12 +661,19 @@ Stack: ${stack}`
       }
       if (pending.next !== void 0) {
         pageEntry.right = { ...(_b = pageEntry.right) != null ? _b : {}, single: pending.next };
+        if (pending.prev !== void 0 && !pendingMap.has(pending.next)) {
+          const nextEntry = option.navigation.find((b) => (b == null ? void 0 : b.name) === pending.next);
+          const current = (_c = nextEntry == null ? void 0 : nextEntry.left) == null ? void 0 : _c.single;
+          if (nextEntry && (current === void 0 || current.startsWith("///") || systemNavigationNodeNames.has(current) || current === chainRoot(pending.pageId))) {
+            nextEntry.left = { ...(_d = nextEntry.left) != null ? _d : {}, single: pending.pageId };
+          }
+        }
       }
     }
     const byPrev = /* @__PURE__ */ new Map();
     for (const pending of pendingNavs) {
       if (pending.prev !== void 0) {
-        const list = (_c = byPrev.get(pending.prev)) != null ? _c : [];
+        const list = (_e = byPrev.get(pending.prev)) != null ? _e : [];
         list.push(pending.pageId);
         byPrev.set(pending.prev, list);
       }
@@ -683,13 +709,13 @@ Stack: ${stack}`
       if (!pageEntry) {
         continue;
       }
-      const oldLeft = (_d = nextEntry.left) == null ? void 0 : _d.single;
-      nextEntry.left = { ...(_e = nextEntry.left) != null ? _e : {}, single: pending.pageId };
-      if (oldLeft !== void 0 && oldLeft !== pending.pageId && !((_f = pageEntry.left) == null ? void 0 : _f.single)) {
-        pageEntry.left = { ...(_g = pageEntry.left) != null ? _g : {}, single: oldLeft };
+      const oldLeft = (_f = nextEntry.left) == null ? void 0 : _f.single;
+      nextEntry.left = { ...(_g = nextEntry.left) != null ? _g : {}, single: pending.pageId };
+      if (oldLeft !== void 0 && oldLeft !== pending.pageId && !((_h = pageEntry.left) == null ? void 0 : _h.single)) {
+        pageEntry.left = { ...(_i = pageEntry.left) != null ? _i : {}, single: oldLeft };
         const oldLeftEntry = option.navigation.find((b) => (b == null ? void 0 : b.name) === oldLeft);
-        if (((_h = oldLeftEntry == null ? void 0 : oldLeftEntry.right) == null ? void 0 : _h.single) === pending.next) {
-          oldLeftEntry.right = { ...(_i = oldLeftEntry.right) != null ? _i : {}, single: pending.pageId };
+        if (((_j = oldLeftEntry == null ? void 0 : oldLeftEntry.right) == null ? void 0 : _j.single) === pending.next) {
+          oldLeftEntry.right = { ...(_k = oldLeftEntry.right) != null ? _k : {}, single: pending.pageId };
         }
       }
     }

@@ -1,0 +1,2236 @@
+/**
+ * Conversion of a configuration script into the admin configuration (sendTo `convertScriptToAdmin`,
+ * work package 1: the pure planning step).
+ *
+ * The functions here are the inverse of the code that turns admin entries back into the script form at
+ * runtime: `convertAdminPageItemToPageItemConfig` (main.ts), `buildThermo2ScriptPage` /
+ * `buildMediaScriptPage` (admin.ts), `buildScreensaverScriptConfig` (admin-screensaver.ts) and
+ * `applyAdminButtons` (panel-buttons.ts). Everything those functions cannot produce is reported as not
+ * convertible - a page is only converted as a whole, so the panel behaves exactly as before.
+ *
+ * No I/O happens here: the caller hands in the raw script configuration (`native.scriptConfigRaw`) and
+ * the admin tables, and gets back the plan, the entries to create and the cleaned script configuration.
+ */
+import { isButton } from '../const/config-manager-const';
+import { mainPageName } from '../const/default-pages';
+import {
+    ALL_PANELS_SPECIAL_ID,
+    dropScriptNavigation,
+    emptyChannelValueConfig,
+    findChartEntryForScript,
+    findPowerEntryForScript,
+    isMainPageEntry,
+    isScriptNavigatedChart,
+    isScriptNavigatedPower,
+    newScreensaverNotifyId,
+    normalizeScrollFields,
+    screensaverWeatherItemKeys,
+    thermo2SortOrders,
+    type AdminButtonFunction,
+    type AdminPageItemConfig,
+    type ChannelValueConfig,
+    type ConvertPagePlan,
+    type ConvertScriptPlan,
+    type ConvertSkipReason,
+    type ConvertSkipped,
+    type IconColorElement,
+    type MediaEntry,
+    type MediaToolbarConfig,
+    type MediaToolbarItem,
+    type MediaVolumePreset,
+    type MenuEntry,
+    type NavigationLinks,
+    type PageConfigEntry,
+    type PageScrollFields,
+    type ScreensaverEntry,
+    type ScreensaverItemConfig,
+    type ScreensaverMode,
+    type ScreensaverMrIconConfig,
+    type ScreensaverNotifyConfig,
+    type ScreensaverWeatherItems,
+    type ScrollCard,
+    type Thermo2CircuitConfig,
+    type Thermo2Entry,
+    type Thermo2SortOrder,
+} from '../types/adminShareConfig';
+import { isIconColorScaleElement } from '../types/function-and-const';
+import { findScreensaverEntry } from './admin-screensaver';
+
+/** the panel entry of the admin (`native.panels[i]`) as far as the conversion needs it */
+export type ScriptToAdminPanel = {
+    name: string;
+    topic: string;
+    /** missing = not configured in the admin; `null` = configured "no action" */
+    buttonLeft?: AdminButtonFunction;
+    buttonRight?: AdminButtonFunction;
+};
+
+export type ScriptToAdminInput = {
+    /** `native.scriptConfigRaw` entry of the panel */
+    raw: ScriptConfig.Config;
+    panel: ScriptToAdminPanel;
+    pageConfig: readonly PageConfigEntry[];
+    screensaverConfig: readonly ScreensaverEntry[];
+    screensaverNotify: readonly ScreensaverNotifyConfig[];
+    /**
+     * `native.weatherEntity` of the instance. When set, the config manager replaces the weather entity of
+     * every script with it - the screensaver entry then leaves the field to the global setting as well.
+     */
+    instanceWeatherEntity?: string;
+    /**
+     * Screensaver version of the panel (stored state `cmd.screenSaver.layout`). Without it the version is
+     * taken from the areas the script uses: left or indicator items need `advanced`, an alternate item
+     * `alternate`, everything else `standard`.
+     */
+    screensaverMode?: ScreensaverMode;
+    /** whether the script object exists - filled in by the caller, the planner cannot know */
+    scriptFound?: boolean;
+    /** id generator for new notifications (tests), default {@link newScreensaverNotifyId} */
+    notifyIdFactory?: (existing: readonly ScreensaverNotifyConfig[]) => string;
+};
+
+export type ScriptToAdminResult = {
+    plan: ConvertScriptPlan;
+    /** entries to create */
+    newPages: PageConfigEntry[];
+    /** the complete page configuration after the conversion (creations and assigned navigations applied) */
+    updatedPages: PageConfigEntry[];
+    screensaverEntry?: ScreensaverEntry;
+    /** notifications to add to `native.screensaverNotify` */
+    newNotify: ScreensaverNotifyConfig[];
+    buttons: { left?: AdminButtonFunction; right?: AdminButtonFunction };
+    /** the script configuration without the converted and dead pages, the screensaver emptied, converted buttons null */
+    cleanedRaw: ScriptConfig.Config;
+    /** uniqueNames the script source has to lose (create, assignNavigation and removeReference) */
+    removedFromScript: string[];
+    clearScreensaverInScript: boolean;
+    clearButtonsInScript: ('left' | 'right')[];
+};
+
+/** thrown inside the converters, caught per page / screensaver / button */
+class ConvertError extends Error {
+    constructor(
+        readonly reason: ConvertSkipReason,
+        readonly detail: string,
+    ) {
+        super(`${reason}: ${detail}`);
+    }
+}
+
+type Dict = Record<string, unknown>;
+
+/**
+ * Whether a value is a plain object (not null, not an array).
+ *
+ * @param value Any value.
+ */
+function isDict(value: unknown): value is Dict {
+    return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+/**
+ * Rejects keys of an object that are neither mapped nor known to be without effect.
+ *
+ * @param obj Object of the script.
+ * @param mapped Keys the admin can express.
+ * @param ignored Keys the adapter never reads (dropped without notice).
+ * @param reason Reason to report.
+ * @param where Prefix of the detail, e.g. `items[2]`.
+ */
+function rejectUnknownKeys(
+    obj: Dict,
+    mapped: readonly string[],
+    ignored: readonly string[],
+    reason: ConvertSkipReason,
+    where: string,
+): void {
+    for (const key of Object.keys(obj)) {
+        if (obj[key] === undefined || mapped.includes(key) || ignored.includes(key)) {
+            continue;
+        }
+        throw new ConvertError(reason, `${where}.${key}: not available in the admin`);
+    }
+}
+
+/**
+ * The RGB object of the script as `#rrggbb`; undefined for a missing value.
+ *
+ * @param value Value of the script.
+ * @param reason Reason to report when it is no RGB object.
+ * @param where Field name for the detail.
+ */
+function rgbToHex(value: unknown, reason: ConvertSkipReason, where: string): string | undefined {
+    if (value === undefined || value === null) {
+        return undefined;
+    }
+    if (isDict(value)) {
+        const parts = [value.red, value.green, value.blue];
+        if (parts.every(p => typeof p === 'number' && Number.isInteger(p) && p >= 0 && p <= 255)) {
+            return `#${parts.map(p => (p as number).toString(16).padStart(2, '0')).join('')}`;
+        }
+    }
+    throw new ConvertError(reason, `${where}: only an RGB object {red, green, blue} can be converted`);
+}
+
+/**
+ * A string field of the script; undefined stays undefined.
+ *
+ * @param value Value of the script.
+ * @param reason Reason to report for another type.
+ * @param where Field name for the detail.
+ */
+function str(value: unknown, reason: ConvertSkipReason, where: string): string | undefined {
+    if (value === undefined || value === null) {
+        return undefined;
+    }
+    if (typeof value !== 'string') {
+        throw new ConvertError(reason, `${where}: expected a text`);
+    }
+    return value;
+}
+
+/**
+ * A text the admin builders trim: it has to be already trimmed, otherwise the panel would show something
+ * else. Empty text counts as missing (the builders leave it out as well).
+ *
+ * @param value Value of the script.
+ * @param reason Reason to report.
+ * @param where Field name for the detail.
+ */
+function trimmedText(value: unknown, reason: ConvertSkipReason, where: string): string | undefined {
+    const text = str(value, reason, where);
+    if (text === undefined || text === '') {
+        return undefined;
+    }
+    if (text.trim() !== text) {
+        throw new ConvertError(reason, `${where}: the admin trims the text`);
+    }
+    return text;
+}
+
+/**
+ * A number field of the script; undefined / null stay undefined.
+ *
+ * @param value Value of the script.
+ * @param reason Reason to report for another type.
+ * @param where Field name for the detail.
+ */
+function num(value: unknown, reason: ConvertSkipReason, where: string): number | undefined {
+    if (value === undefined || value === null) {
+        return undefined;
+    }
+    if (typeof value !== 'number' || !Number.isFinite(value)) {
+        throw new ConvertError(reason, `${where}: expected a number`);
+    }
+    return value;
+}
+
+/**
+ * A boolean field of the script; undefined / null stay undefined.
+ *
+ * @param value Value of the script.
+ * @param reason Reason to report for another type.
+ * @param where Field name for the detail.
+ */
+function bool(value: unknown, reason: ConvertSkipReason, where: string): boolean | undefined {
+    if (value === undefined || value === null) {
+        return undefined;
+    }
+    if (typeof value !== 'boolean') {
+        throw new ConvertError(reason, `${where}: expected true or false`);
+    }
+    return value;
+}
+
+/**
+ * The color scale of a script item as the admin stores it (`color_best` as {r,g,b}).
+ *
+ * `color_best` of a page item is rejected: the script form {red, green, blue} fails the guard of the
+ * config manager (the scale is dropped at runtime) and the admin form is turned back into exactly that
+ * form by main.ts - neither way keeps the behaviour. A screensaver item passes its scale through
+ * unchanged on both paths, there the color is converted.
+ *
+ * @param value Value of the script.
+ * @param reason Reason to report.
+ * @param where Field name for the detail.
+ * @param allowBest Convert `color_best` instead of rejecting it.
+ */
+function colorScaleToAdmin(
+    value: unknown,
+    reason: ConvertSkipReason,
+    where: string,
+    allowBest: boolean,
+): IconColorElement | undefined {
+    if (value === undefined || value === null) {
+        return undefined;
+    }
+    const scale = isDict(value) ? { ...value } : value;
+    const best = isDict(scale) ? scale.color_best : undefined;
+    if (isDict(scale)) {
+        delete scale.color_best;
+    }
+    if (!isIconColorScaleElement(scale)) {
+        throw new ConvertError(reason, `${where}: only a color scale {val_min, val_max, ...} can be converted`);
+    }
+    if (best === undefined || best === null) {
+        return scale;
+    }
+    if (!allowBest) {
+        throw new ConvertError(reason, `${where}.color_best: not available in the admin`);
+    }
+    const hex = rgbToHex(best, reason, `${where}.color_best`) ?? '#000000';
+    const r = parseInt(hex.substring(1, 3), 16);
+    const g = parseInt(hex.substring(3, 5), 16);
+    const b = parseInt(hex.substring(5, 7), 16);
+    return { ...scale, color_best: { r, g, b } };
+}
+
+/**
+ * Whether a text looks like the id of a state - the script path would read the state while the admin
+ * stores a constant.
+ *
+ * @param text Text of the script.
+ */
+function looksLikeStateId(text: string): boolean {
+    if (text === '///timeString') {
+        // the data item resolves this constant to the internal state on both paths
+        return false;
+    }
+    return text.startsWith('///') || /^[a-zA-Z0-9_-]+\.\d+\./.test(text);
+}
+
+/* ---------------------------------------------------------------------------------------------
+ * page items
+ * ------------------------------------------------------------------------------------------- */
+
+/** fields of a script page item `convertAdminPageItemToPageItemConfig` produces */
+const itemMappedKeys = [
+    'navigate',
+    'targetPage',
+    'id',
+    'type',
+    'icon',
+    'icon2',
+    'onColor',
+    'offColor',
+    'colorScale',
+    'targetPageLongPress',
+    'longPress',
+    'prefixName',
+    'suffixName',
+    'prefixValue',
+    'suffixValue',
+    'name',
+    'unit',
+    'modeList',
+    'useValue',
+    'inSel_Alias',
+    'fontSize',
+    'filter',
+] as const;
+
+/** fields of a script page item the config manager never reads - dropping them changes nothing */
+const itemIgnoredKeys = [
+    'uniqueName',
+    'popupVersion',
+    'useColor',
+    'interpolateColor',
+    'hidePassword',
+    'autoCreateALias',
+    'yAxis',
+    'yAxisTicks',
+    'xAxisDecorationId',
+    'monobutton',
+    'inSel_ChoiceState',
+    'iconArray',
+    'customIcons',
+    'actionStringArray',
+    'shutterType',
+    'alwaysOnDisplay',
+] as const;
+
+/** fields of a custom item (`type: 'custom'`) the admin passes on */
+const customItemMappedKeys = [
+    'type',
+    'id',
+    'navigate',
+    'targetPage',
+    'targetPageLongPress',
+    'longPress',
+    'icon',
+    'icon2',
+    'name',
+    'onColor',
+    'offColor',
+    'colorScale',
+] as const;
+
+/**
+ * Whether a script item stands for an empty place (`id: 'empty'` / `'delete'` without navigation).
+ *
+ * @param item Item of the script.
+ */
+function isEmptyPlace(item: Dict): boolean {
+    return !item.navigate && !('native' in item) && (item.id === 'empty' || item.id === 'delete');
+}
+
+/**
+ * One page item of the script as the admin stores it - the exact inverse of
+ * `convertAdminPageItemToPageItemConfig` (main.ts).
+ *
+ * @param item Item of the script.
+ * @param where Prefix for the detail, e.g. `items[2]`.
+ */
+function convertPageItem(item: Dict, where: string): AdminPageItemConfig {
+    const reason: ConvertSkipReason = 'itemNotSupported';
+    if ('native' in item) {
+        throw new ConvertError(reason, `${where}: native item`);
+    }
+    const custom = item.type === 'custom';
+    if (item.type !== undefined && item.type !== null && !custom) {
+        throw new ConvertError(reason, `${where}.type: unknown type`);
+    }
+    if (custom) {
+        rejectUnknownKeys(item, customItemMappedKeys, [], reason, where);
+    } else {
+        rejectUnknownKeys(item, itemMappedKeys, itemIgnoredKeys, reason, where);
+    }
+
+    const id = str(item.id, reason, `${where}.id`);
+    const navigate = item.navigate === true;
+    if (item.navigate !== undefined && item.navigate !== null && typeof item.navigate !== 'boolean') {
+        throw new ConvertError(reason, `${where}.navigate: expected true or false`);
+    }
+    const targetPage = str(item.targetPage, reason, `${where}.targetPage`);
+    if (navigate && !targetPage) {
+        throw new ConvertError(reason, `${where}: navigate without targetPage`);
+    }
+    if (!navigate && targetPage) {
+        throw new ConvertError(reason, `${where}.targetPage: only used with navigate: true`);
+    }
+    if (!navigate && !id) {
+        throw new ConvertError(reason, `${where}: id missing`);
+    }
+    if (!id && custom) {
+        throw new ConvertError(reason, `${where}: id missing`);
+    }
+
+    const channelId: ChannelValueConfig = {
+        valueStateId: id ?? '',
+        unit: '',
+        prefix: '',
+        suffix: '',
+        dateFormat: '',
+    };
+    const admin: AdminPageItemConfig = { channelId };
+    if (navigate) {
+        admin.isNavigation = true;
+        admin.targetPage = targetPage;
+    }
+    if (custom) {
+        admin.type = 'custom';
+    }
+    const icon = str(item.icon, reason, `${where}.icon`);
+    if (icon !== undefined) {
+        admin.trueIcon = icon;
+    }
+    const icon2 = str(item.icon2, reason, `${where}.icon2`);
+    if (icon2 !== undefined) {
+        admin.falseIcon = icon2;
+    }
+    const onColor = rgbToHex(item.onColor, reason, `${where}.onColor`);
+    if (onColor !== undefined) {
+        admin.trueColor = onColor;
+    }
+    const offColor = rgbToHex(item.offColor, reason, `${where}.offColor`);
+    if (offColor !== undefined) {
+        admin.falseColor = offColor;
+    }
+    const longPress = str(item.longPress, reason, `${where}.longPress`);
+    if (longPress !== undefined) {
+        admin.longPress = longPress;
+    }
+    const targetPageLongPress = str(item.targetPageLongPress, reason, `${where}.targetPageLongPress`);
+    if (targetPageLongPress !== undefined) {
+        admin.targetPageLongPress = targetPageLongPress;
+    }
+    const scale = colorScaleToAdmin(item.colorScale, reason, `${where}.colorScale`, false);
+    if (scale !== undefined) {
+        admin.scale = scale;
+    }
+    const name = str(item.name, reason, `${where}.name`);
+    if (custom) {
+        if (name !== undefined) {
+            admin.name = name;
+        }
+        return admin;
+    }
+
+    const prefixName = str(item.prefixName, reason, `${where}.prefixName`);
+    const suffixName = str(item.suffixName, reason, `${where}.suffixName`);
+    if (prefixName || suffixName) {
+        // the admin carries prefix and suffix of the name in the value entry - its state id becomes the name
+        admin.valueEntry = {
+            valueStateId: name ?? '',
+            unit: '',
+            prefix: prefixName ?? '',
+            suffix: suffixName ?? '',
+            dateFormat: '',
+        };
+    } else if (name !== undefined) {
+        admin.name = name;
+    }
+    // convertAdminPageItemToPageItemConfig swaps prefix and suffix of the channel - mirrored here so the
+    // runtime stays identical
+    channelId.prefix = str(item.suffixValue, reason, `${where}.suffixValue`) ?? '';
+    channelId.suffix = str(item.prefixValue, reason, `${where}.prefixValue`) ?? '';
+    channelId.unit = str(item.unit, reason, `${where}.unit`) ?? '';
+
+    const fontSize = num(item.fontSize, reason, `${where}.fontSize`);
+    if (fontSize !== undefined) {
+        if (![0, 1, 2, 3, 4, 5].includes(fontSize)) {
+            throw new ConvertError(reason, `${where}.fontSize: expected 0 to 5`);
+        }
+        admin.textSize = fontSize as AdminPageItemConfig['textSize'];
+    }
+    const useValue = bool(item.useValue, reason, `${where}.useValue`);
+    if (useValue !== undefined) {
+        admin.useValue = useValue;
+    }
+    const inSel = str(item.inSel_Alias, reason, `${where}.inSel_Alias`);
+    if (inSel !== undefined) {
+        admin.inSel_Alias = inSel;
+    }
+    if (item.modeList !== undefined && item.modeList !== null) {
+        const list = item.modeList;
+        if (!Array.isArray(list) || list.length === 0 || !list.every(m => typeof m === 'string')) {
+            throw new ConvertError(reason, `${where}.modeList: expected a list of texts with at least one entry`);
+        }
+        admin.modeList = [...list];
+    }
+    const filter = num(item.filter, reason, `${where}.filter`);
+    if (filter !== undefined) {
+        admin.filter = filter;
+    }
+    return admin;
+}
+
+/**
+ * Whether an admin item stands for an empty place (the explicit form a trailing empty place of the script
+ * keeps, see {@link convertPageItems}).
+ *
+ * @param item Item of the admin.
+ */
+function isEmptyAdminItem(item: AdminPageItemConfig): boolean {
+    const id = item.channelId.valueStateId;
+    return !item.isNavigation && !item.useNative && (id === 'empty' || id === 'delete');
+}
+
+/**
+ * Whether a script item is dropped by the config manager without taking a place: no id, no navigation
+ * and no native configuration (`getPageItemConfig` returns no item for it).
+ *
+ * @param item Item of the script.
+ */
+function isDroppedItem(item: Dict): boolean {
+    return !item.navigate && !('native' in item) && item.type !== 'custom' && !item.id;
+}
+
+/**
+ * The page items of a script page as the admin stores them.
+ *
+ * A `null` item of the script and an item without id and navigation are dropped - the config manager
+ * skips them, they take no place on the panel. `id: 'empty'` becomes an empty place (undefined); at the
+ * end of the list the admin drops empty places, so a trailing one stays an explicit item with the id
+ * `empty`.
+ *
+ * @param items Items of the script page.
+ */
+function convertPageItems(items: unknown): (AdminPageItemConfig | undefined)[] {
+    if (items === undefined || items === null) {
+        return [];
+    }
+    if (!Array.isArray(items)) {
+        throw new ConvertError('fieldNotSupported', 'items: expected a list');
+    }
+    const out: (AdminPageItemConfig | undefined)[] = [];
+    items.forEach((item: unknown, index) => {
+        if (item === null || item === undefined) {
+            return;
+        }
+        if (!isDict(item)) {
+            throw new ConvertError('itemNotSupported', `items[${index}]: expected an object`);
+        }
+        if (isEmptyPlace(item)) {
+            out.push(undefined);
+            return;
+        }
+        if (isDroppedItem(item)) {
+            return;
+        }
+        out.push(convertPageItem(item, `items[${index}]`));
+    });
+    for (let i = out.length - 1; i >= 0 && out[i] === undefined; i--) {
+        out[i] = { channelId: emptyChannelValueConfig('empty') };
+    }
+    return out;
+}
+
+/* ---------------------------------------------------------------------------------------------
+ * pages
+ * ------------------------------------------------------------------------------------------- */
+
+const pageMappedKeys = [
+    'type',
+    'uniqueName',
+    'heading',
+    'items',
+    'prev',
+    'next',
+    'home',
+    'parent',
+    'hiddenByTrigger',
+    'alwaysOnDisplay',
+] as const;
+/** fields of a script page the config manager does not read */
+const pageIgnoredKeys = ['useColor', 'subPage', 'filterType'] as const;
+const scrollKeys = ['scrollType', 'scrollPresentation', 'scrollAutoTiming'] as const;
+const navigationIconKeys = [
+    'prevIcon',
+    'prevIconColor',
+    'nextIcon',
+    'nextIconColor',
+    'homeIcon',
+    'homeIconColor',
+    'parentIcon',
+    'parentIconColor',
+] as const;
+
+type PageCommon = {
+    uniqueName: string;
+    headline: string;
+    hidden: boolean;
+    alwaysOn: 'none' | 'always' | 'action';
+    navigation: NavigationLinks;
+};
+
+/**
+ * Whether an admin entry creates a page for the panel (`createPagesFromConfig`): an assignment for the
+ * topic counts, or one for all panels unless the topic is excluded from it.
+ *
+ * @param entry Admin entry.
+ * @param topic Topic of the panel.
+ */
+function entryCoversPanel(entry: PageConfigEntry, topic: string): boolean {
+    const assignments = entry.navigationAssignment ?? [];
+    const all = assignments.find(a => a.topic === ALL_PANELS_SPECIAL_ID);
+    const own = assignments.find(a => a.topic === topic);
+    if (own) {
+        return !(!own.navigation && all);
+    }
+    return !!all;
+}
+
+/**
+ * The navigation of a script page in the admin form.
+ *
+ * A sub page carries its links itself; without any link the config manager gives it `home: main`. A
+ * page of `pages` gets its links from its position in the ring the config manager builds from the order
+ * of the list - its own link fields are ignored there; those links are filled in once every page of
+ * `pages` is classified ({@link ringLinks}), here they stay empty.
+ *
+ * @param page Page of the script.
+ * @param isSub The page comes from `subPages`.
+ */
+function pageNavigation(page: Dict, isSub: boolean): NavigationLinks {
+    const reason: ConvertSkipReason = 'fieldNotSupported';
+    for (const key of navigationIconKeys) {
+        if (page[key] !== undefined && page[key] !== null) {
+            throw new ConvertError(reason, `${key}: the admin has no navigation icons`);
+        }
+    }
+    if (!isSub) {
+        return {};
+    }
+    const links: NavigationLinks = {};
+    for (const key of ['prev', 'next', 'home', 'parent'] as const) {
+        const value = str(page[key], reason, key);
+        if (value) {
+            links[key] = value;
+        }
+    }
+    // the config manager takes `prev || parent` for the left and `next || home` for the right button -
+    // with a single-press link the double-press link of the same side has no effect
+    if (links.prev) {
+        delete links.parent;
+    }
+    if (links.next) {
+        delete links.home;
+    }
+    if (!links.prev && !links.next && !links.home && !links.parent) {
+        links.home = mainPageName;
+    }
+    return links;
+}
+
+/**
+ * The links of a converted page of `pages`, taken from the ring the config manager built: the
+ * surviving predecessor as `prev` - the admin splices the page after it and the successor's `prev`
+ * closes the chain - and the surviving successor as `next` only when that successor stays in the
+ * script: the script ring no longer knows the converted page, so the link forward has to be stated.
+ * A successor that is converted as well names the page as its `prev` itself; stating `next` there
+ * would break the chains of existing admin pages hooked between the two (`applyPendingNavigations`
+ * keeps an explicit `next` over the chain order). Without a start page in the script the first page
+ * follows the default `main` of the adapter.
+ *
+ * @param name Page of `pages`.
+ * @param ring Surviving pages of `pages` in navigation order (`main` first).
+ * @param staysInScript Whether a page of the ring stays in the script after the conversion.
+ */
+function ringLinks(name: string, ring: readonly string[], staysInScript: (name: string) => boolean): NavigationLinks {
+    const index = ring.indexOf(name);
+    const links: NavigationLinks = {};
+    if (index > 0) {
+        links.prev = ring[index - 1];
+    } else if (index === 0 && !ring.includes(mainPageName)) {
+        // a script without start page: the adapter puts its default `main` in front of the ring
+        // (ensureMainPage) - the first page has to stay behind it
+        links.prev = mainPageName;
+    }
+    const next = index === -1 ? undefined : ring[index + 1];
+    if (next !== undefined && staysInScript(next)) {
+        links.next = next;
+    }
+    return links;
+}
+
+/**
+ * The fields every convertible script page shares, checked and converted.
+ *
+ * @param page Page of the script.
+ * @param isSub The page comes from `subPages`.
+ */
+function pageCommon(page: Dict, isSub: boolean): PageCommon {
+    const reason: ConvertSkipReason = 'fieldNotSupported';
+    const uniqueName = String(page.uniqueName);
+    const heading = str(page.heading, reason, 'heading') ?? '';
+    if (!heading) {
+        throw new ConvertError(reason, 'heading: empty - the admin shows the uniqueName instead');
+    }
+    if (looksLikeStateId(heading)) {
+        throw new ConvertError(reason, 'heading: looks like a state id - the admin shows the text itself');
+    }
+    const hidden = bool(page.hiddenByTrigger, reason, 'hiddenByTrigger') ?? false;
+    let alwaysOn: PageCommon['alwaysOn'] = 'none';
+    const aod = page.alwaysOnDisplay;
+    if (aod === true) {
+        alwaysOn = 'always';
+    } else if (aod === 'action') {
+        alwaysOn = 'action';
+    } else if (aod !== undefined && aod !== null && aod !== false) {
+        throw new ConvertError(reason, 'alwaysOnDisplay: expected true, false or action');
+    }
+    return { uniqueName, headline: heading, hidden, alwaysOn, navigation: pageNavigation(page, isSub) };
+}
+
+/**
+ * The scroll fields of a script page as the admin stores them - the admin normalizes them per card, so
+ * values the card cannot take would change the behaviour and are rejected.
+ *
+ * @param page Page of the script.
+ * @param card Card of the admin entry.
+ */
+function scrollFields(page: Dict, card: ScrollCard): PageScrollFields {
+    const reason: ConvertSkipReason = 'fieldNotSupported';
+    const fields: PageScrollFields = {};
+    const type = page.scrollType;
+    if (type !== undefined && type !== null) {
+        if (type !== 'page' && type !== 'half') {
+            throw new ConvertError(reason, 'scrollType: expected page or half');
+        }
+        fields.scrollType = type;
+    }
+    const presentation = page.scrollPresentation;
+    if (presentation !== undefined && presentation !== null) {
+        if (presentation !== 'classic' && presentation !== 'arrow' && presentation !== 'auto') {
+            throw new ConvertError(reason, 'scrollPresentation: expected classic, arrow or auto');
+        }
+        fields.scrollPresentation = presentation;
+    }
+    const timing = num(page.scrollAutoTiming, reason, 'scrollAutoTiming');
+    if (timing !== undefined && fields.scrollPresentation === 'auto') {
+        fields.scrollAutoTiming = timing;
+    }
+    // what the config manager makes of the script page
+    const scriptType = fields.scrollType ?? 'page';
+    const scriptPresentation = fields.scrollPresentation ?? 'classic';
+    const scriptTiming = scriptPresentation === 'auto' ? fields.scrollAutoTiming || 15 : undefined;
+    const admin = normalizeScrollFields(fields, card);
+    if (admin.scrollType !== scriptType) {
+        throw new ConvertError(reason, `scrollType: ${scriptType} is not available for ${card} in the admin`);
+    }
+    if (admin.scrollPresentation !== scriptPresentation) {
+        throw new ConvertError(reason, `scrollPresentation: ${scriptPresentation} is not available in the admin`);
+    }
+    if (admin.scrollPresentation === 'auto' && admin.scrollAutoTiming !== scriptTiming) {
+        throw new ConvertError(reason, `scrollAutoTiming: ${String(scriptTiming)} is not available in the admin`);
+    }
+    return fields;
+}
+
+/**
+ * Admin entry of a menu page (cardGrid, cardGrid2, cardGrid3, cardEntities, cardSchedule).
+ *
+ * @param page Page of the script.
+ * @param common Converted common fields.
+ * @param topic Topic of the panel.
+ */
+function convertMenuPage(page: Dict, common: PageCommon, topic: string): MenuEntry {
+    rejectUnknownKeys(page, [...pageMappedKeys, ...scrollKeys], pageIgnoredKeys, 'fieldNotSupported', 'page');
+    const card = page.type as MenuEntry['card'];
+    return {
+        card,
+        uniqueName: common.uniqueName,
+        headline: common.headline,
+        pageItems: convertPageItems(page.items),
+        hidden: common.hidden,
+        alwaysOn: common.alwaysOn,
+        ...scrollFields(page, card),
+        navigationAssignment: [{ topic, navigation: common.navigation }],
+    };
+}
+
+const thermo2CommonKeys = [
+    'name',
+    'minValue',
+    'maxValue',
+    'stepValue',
+    'icon',
+    'onColor',
+    'unit',
+    'icon2',
+    'onColor2',
+    'unit2',
+    'iconHeatCycle',
+    'iconHeatCycleOnColor',
+    'iconHeatCycleOffColor',
+    'modeList',
+    'power',
+] as const;
+const thermo2AliasKeys = ['id', 'name2', 'iconHeatCycle2', 'iconHeatCycleOnColor2', 'iconHeatCycleOffColor2'] as const;
+const thermo2StateKeys = ['set', 'thermoId1', 'thermoId2', 'modeId'] as const;
+
+/**
+ * A limit of a heat circuit: the admin only passes positive numbers on, anything else becomes the
+ * adapter default.
+ *
+ * @param value Value of the script.
+ * @param where Field name for the detail.
+ */
+function thermo2LimitOf(value: unknown, where: string): number | undefined {
+    const n = num(value, 'fieldNotSupported', where);
+    if (n !== undefined && n <= 0) {
+        throw new ConvertError('fieldNotSupported', `${where}: the admin only takes positive numbers`);
+    }
+    return n;
+}
+
+/**
+ * One heat circuit of a script cardThermo2 page as the admin stores it - inverse of the circuit part of
+ * `buildThermo2ScriptPage` (admin.ts).
+ *
+ * @param item Circuit of the script.
+ * @param where Prefix for the detail.
+ */
+function convertThermo2Circuit(item: Dict, where: string): Thermo2CircuitConfig {
+    const reason: ConvertSkipReason = 'fieldNotSupported';
+    const alias = 'id' in item && item.id !== undefined;
+    rejectUnknownKeys(
+        item,
+        [...thermo2CommonKeys, ...(alias ? thermo2AliasKeys : thermo2StateKeys)],
+        [],
+        reason,
+        where,
+    );
+    const power = str(item.power, reason, `${where}.power`);
+    if (power) {
+        throw new ConvertError(reason, `${where}.power: the admin has no power state`);
+    }
+    const circuit: Thermo2CircuitConfig = { channelId: '' };
+    const set = (key: keyof Thermo2CircuitConfig, value: string | number | undefined): void => {
+        if (value !== undefined) {
+            (circuit as Record<string, unknown>)[key] = value;
+        }
+    };
+    set('name', trimmedText(item.name, reason, `${where}.name`));
+    set('minValue', thermo2LimitOf(item.minValue, `${where}.minValue`));
+    set('maxValue', thermo2LimitOf(item.maxValue, `${where}.maxValue`));
+    set('stepValue', thermo2LimitOf(item.stepValue, `${where}.stepValue`));
+    set('icon', trimmedText(item.icon, reason, `${where}.icon`));
+    set('onColor', rgbToHex(item.onColor, reason, `${where}.onColor`));
+    set('unit', trimmedText(item.unit, reason, `${where}.unit`));
+    set('icon2', trimmedText(item.icon2, reason, `${where}.icon2`));
+    set('onColor2', rgbToHex(item.onColor2, reason, `${where}.onColor2`));
+    set('unit2', trimmedText(item.unit2, reason, `${where}.unit2`));
+    set('iconHeatCycle', trimmedText(item.iconHeatCycle, reason, `${where}.iconHeatCycle`));
+    set('iconHeatCycleOnColor', rgbToHex(item.iconHeatCycleOnColor, reason, `${where}.iconHeatCycleOnColor`));
+    set('iconHeatCycleOffColor', rgbToHex(item.iconHeatCycleOffColor, reason, `${where}.iconHeatCycleOffColor`));
+    if (item.modeList !== undefined && item.modeList !== null) {
+        const list = item.modeList;
+        if (
+            !Array.isArray(list) ||
+            list.length === 0 ||
+            !list.every(m => typeof m === 'string' && m.trim() === m && m !== '')
+        ) {
+            throw new ConvertError(reason, `${where}.modeList: expected trimmed texts with at least one entry`);
+        }
+        circuit.modeList = [...(list as string[])];
+    }
+    if (alias) {
+        const id = trimmedText(item.id, reason, `${where}.id`);
+        if (!id) {
+            throw new ConvertError(reason, `${where}.id: empty`);
+        }
+        circuit.source = 'alias';
+        circuit.channelId = id;
+        set('name2', trimmedText(item.name2, reason, `${where}.name2`));
+        set('iconHeatCycle2', trimmedText(item.iconHeatCycle2, reason, `${where}.iconHeatCycle2`));
+        set('iconHeatCycleOnColor2', rgbToHex(item.iconHeatCycleOnColor2, reason, `${where}.iconHeatCycleOnColor2`));
+        set('iconHeatCycleOffColor2', rgbToHex(item.iconHeatCycleOffColor2, reason, `${where}.iconHeatCycleOffColor2`));
+        return circuit;
+    }
+    const setState = trimmedText(item.set, reason, `${where}.set`);
+    const actual = trimmedText(item.thermoId1, reason, `${where}.thermoId1`);
+    if (!setState || !actual) {
+        throw new ConvertError(reason, `${where}: set and thermoId1 are required`);
+    }
+    circuit.source = 'states';
+    circuit.setState = setState;
+    circuit.actualState = actual;
+    set('humidityState', trimmedText(item.thermoId2, reason, `${where}.thermoId2`));
+    set('modeState', trimmedText(item.modeId, reason, `${where}.modeId`));
+    return circuit;
+}
+
+/**
+ * Admin entry of a cardThermo2 page - inverse of `buildThermo2ScriptPage` (admin.ts).
+ *
+ * @param page Page of the script.
+ * @param common Converted common fields.
+ * @param topic Topic of the panel.
+ */
+function convertThermo2Page(page: Dict, common: PageCommon, topic: string): Thermo2Entry {
+    const reason: ConvertSkipReason = 'fieldNotSupported';
+    rejectUnknownKeys(
+        page,
+        [...pageMappedKeys, ...scrollKeys, 'thermoItems', 'sortOrder'],
+        pageIgnoredKeys,
+        reason,
+        'page',
+    );
+    const items = page.thermoItems;
+    if (!Array.isArray(items)) {
+        throw new ConvertError(reason, 'thermoItems: expected a list');
+    }
+    const thermoItems: Thermo2CircuitConfig[] = [];
+    items.forEach((item: unknown, index) => {
+        if (item === null || item === undefined) {
+            // the config manager logs the gap and skips it, the admin builder skips it as well
+            return;
+        }
+        if (!isDict(item)) {
+            throw new ConvertError(reason, `thermoItems[${index}]: expected an object`);
+        }
+        thermoItems.push(convertThermo2Circuit(item, `thermoItems[${index}]`));
+    });
+    const sortOrder = page.sortOrder;
+    if (sortOrder !== undefined && sortOrder !== null && !thermo2SortOrders.includes(sortOrder as Thermo2SortOrder)) {
+        throw new ConvertError(reason, 'sortOrder: unknown value');
+    }
+    const entry: Thermo2Entry = {
+        card: 'cardThermo2',
+        uniqueName: common.uniqueName,
+        headline: common.headline,
+        thermoItems,
+        pageItems: convertPageItems(page.items),
+        hidden: common.hidden,
+        alwaysOn: common.alwaysOn,
+        ...scrollFields(page, 'cardThermo2'),
+        navigationAssignment: [{ topic, navigation: common.navigation }],
+    };
+    if (sortOrder !== undefined && sortOrder !== null) {
+        entry.sortOrder = sortOrder as Thermo2SortOrder;
+    }
+    return entry;
+}
+
+const mediaMappedKeys = [
+    'id',
+    'name',
+    'colorMediaIcon',
+    'colorMediaArtist',
+    'colorMediaTitle',
+    'speakerList',
+    'volumePresets',
+    'favoriteList',
+    'playList',
+    'minValue',
+    'maxValue',
+    'itemsColorOn',
+    'itemsColorOff',
+    'deactivateDefaultItems',
+] as const;
+const mediaToolbarItems: readonly MediaToolbarItem[] = [
+    'reminder',
+    'online',
+    'speakerList',
+    'favoriteList',
+    'playList',
+    'equalizer',
+    'clock',
+    'volumePresets',
+    'trackList',
+    'repeat',
+    'crossfade',
+];
+
+/**
+ * A list of names of a media page: the admin builder trims, drops empty and repeated names - the list
+ * has to be clean already.
+ *
+ * @param value Value of the script.
+ * @param where Field name for the detail.
+ */
+function mediaNameList(value: unknown, where: string): string[] | undefined {
+    if (value === undefined || value === null) {
+        return undefined;
+    }
+    const reason: ConvertSkipReason = 'fieldNotSupported';
+    if (!Array.isArray(value) || value.length === 0) {
+        throw new ConvertError(reason, `${where}: expected a list with at least one name`);
+    }
+    const names = value as unknown[];
+    if (!names.every(n => typeof n === 'string' && n.trim() === n && n !== '')) {
+        throw new ConvertError(reason, `${where}: expected trimmed, non-empty names`);
+    }
+    if (new Set(names).size !== names.length) {
+        throw new ConvertError(reason, `${where}: repeated names`);
+    }
+    return [...(names as string[])];
+}
+
+/**
+ * Admin entry of a cardMedia page - inverse of `buildMediaScriptPage` (admin.ts).
+ *
+ * @param page Page of the script.
+ * @param common Converted common fields.
+ * @param topic Topic of the panel.
+ */
+function convertMediaPage(page: Dict, common: PageCommon, topic: string): MediaEntry {
+    const reason: ConvertSkipReason = 'fieldNotSupported';
+    rejectUnknownKeys(page, [...pageMappedKeys, ...scrollKeys, 'media'], pageIgnoredKeys, reason, 'page');
+    const media = page.media;
+    if (!isDict(media)) {
+        throw new ConvertError(reason, 'media: missing (a cardMedia page without the media object)');
+    }
+    rejectUnknownKeys(media, mediaMappedKeys, [], reason, 'media');
+    const mediaId = trimmedText(media.id, reason, 'media.id');
+    if (!mediaId) {
+        throw new ConvertError(reason, 'media.id: empty');
+    }
+    const entry: MediaEntry = {
+        card: 'cardMedia',
+        uniqueName: common.uniqueName,
+        headline: common.headline,
+        mediaId,
+        pageItems: convertPageItems(page.items),
+        hidden: common.hidden,
+        alwaysOn: common.alwaysOn,
+        ...scrollFields(page, 'cardMedia'),
+        navigationAssignment: [{ topic, navigation: common.navigation }],
+    };
+    const name = trimmedText(media.name, reason, 'media.name');
+    if (name !== undefined) {
+        entry.name = name;
+    }
+    const minValue = num(media.minValue, reason, 'media.minValue');
+    const maxValue = num(media.maxValue, reason, 'media.maxValue');
+    if ((minValue !== undefined && minValue < 0) || (maxValue !== undefined && maxValue < 0)) {
+        throw new ConvertError(reason, 'media.minValue/maxValue: the admin only takes values from 0');
+    }
+    if (minValue !== undefined && maxValue !== undefined && minValue > maxValue) {
+        throw new ConvertError(reason, 'media.minValue/maxValue: the admin swaps a reversed range');
+    }
+    if (minValue !== undefined) {
+        entry.minValue = minValue;
+    }
+    if (maxValue !== undefined) {
+        entry.maxValue = maxValue;
+    }
+    for (const key of ['colorMediaIcon', 'colorMediaArtist', 'colorMediaTitle'] as const) {
+        const hex = rgbToHex(media[key], reason, `media.${key}`);
+        if (hex !== undefined) {
+            entry[key] = hex;
+        }
+    }
+    for (const key of ['speakerList', 'playList', 'favoriteList'] as const) {
+        const list = mediaNameList(media[key], `media.${key}`);
+        if (list !== undefined) {
+            entry[key] = list;
+        }
+    }
+    if (media.volumePresets !== undefined && media.volumePresets !== null) {
+        const presets = media.volumePresets;
+        if (!Array.isArray(presets) || presets.length === 0) {
+            throw new ConvertError(reason, 'media.volumePresets: expected a list with at least one preset');
+        }
+        const low = minValue ?? 0;
+        const high = maxValue ?? 100;
+        const out: MediaVolumePreset[] = [];
+        for (const raw of presets as unknown[]) {
+            const preset = typeof raw === 'string' ? raw : '';
+            const match = /^(.*)\?(-?\d+(?:\.\d+)?)$/.exec(preset);
+            if (!match) {
+                throw new ConvertError(reason, `media.volumePresets: '${preset}' is not name?value`);
+            }
+            const presetName = match[1];
+            const value = Number(match[2]);
+            if (presetName.trim() !== presetName || !presetName) {
+                throw new ConvertError(reason, `media.volumePresets: '${preset}' - the admin trims the name`);
+            }
+            if (!Number.isInteger(value) || value < low || value > high) {
+                throw new ConvertError(
+                    reason,
+                    `media.volumePresets: '${preset}' - the admin rounds the value and keeps it between ${low} and ${high}`,
+                );
+            }
+            out.push({ name: presetName, value });
+        }
+        entry.volumePresets = out;
+    }
+    const toolbar: Partial<Record<MediaToolbarItem, MediaToolbarConfig>> = {};
+    const toolbarOf = (item: string, where: string): MediaToolbarConfig => {
+        if (!mediaToolbarItems.includes(item as MediaToolbarItem)) {
+            throw new ConvertError(reason, `${where}.${item}: unknown standard item`);
+        }
+        return (toolbar[item as MediaToolbarItem] ??= {});
+    };
+    if (media.deactivateDefaultItems !== undefined && media.deactivateDefaultItems !== null) {
+        const off = media.deactivateDefaultItems;
+        if (!isDict(off)) {
+            throw new ConvertError(reason, 'media.deactivateDefaultItems: expected an object');
+        }
+        for (const [item, value] of Object.entries(off)) {
+            if (value === undefined || value === null || value === false) {
+                continue;
+            }
+            if (value !== true || item === 'volumePresets') {
+                throw new ConvertError(reason, `media.deactivateDefaultItems.${item}: not available in the admin`);
+            }
+            toolbarOf(item, 'media.deactivateDefaultItems').enabled = false;
+        }
+    }
+    for (const [field, color] of [
+        ['itemsColorOn', 'colorOn'],
+        ['itemsColorOff', 'colorOff'],
+    ] as const) {
+        const colors = media[field];
+        if (colors === undefined || colors === null) {
+            continue;
+        }
+        if (!isDict(colors)) {
+            throw new ConvertError(reason, `media.${field}: expected an object`);
+        }
+        for (const [item, value] of Object.entries(colors)) {
+            const hex = rgbToHex(value, reason, `media.${field}.${item}`);
+            if (hex === undefined) {
+                continue;
+            }
+            if (field === 'itemsColorOff' && item === 'volumePresets') {
+                throw new ConvertError(reason, `media.${field}.${item}: not available in the admin`);
+            }
+            toolbarOf(item, `media.${field}`)[color] = hex;
+        }
+    }
+    if (Object.keys(toolbar).length) {
+        entry.toolbar = toolbar;
+    }
+    return entry;
+}
+
+/**
+ * A script cardPower / cardChart page that points at an existing admin entry: the page may only carry
+ * the navigation - anything else would change the page the panel shows.
+ *
+ * @param page Page of the script.
+ * @param entry The admin entry the page refers to.
+ */
+function checkReferencePage(page: Dict, entry: Extract<PageConfigEntry, { card: 'cardPower' | 'cardChart' }>): void {
+    const reason: ConvertSkipReason = 'fieldNotSupported';
+    rejectUnknownKeys(page, pageMappedKeys, pageIgnoredKeys, reason, 'page');
+    if (Array.isArray(page.items) && page.items.some(i => i !== null && i !== undefined)) {
+        throw new ConvertError(reason, 'items: the admin entry has no page items');
+    }
+    const heading = str(page.heading, reason, 'heading');
+    if (entry.card === 'cardChart' && heading && heading !== entry.headline) {
+        throw new ConvertError(reason, 'heading: differs from the headline of the admin entry');
+    }
+    if (page.hiddenByTrigger === true && !entry.hidden) {
+        throw new ConvertError(reason, 'hiddenByTrigger: the admin entry is not hidden');
+    }
+    const aod = page.alwaysOnDisplay;
+    const scriptAlways = entry.card === 'cardPower' ? aod === true : !!aod;
+    if (scriptAlways && entry.alwaysOn !== 'always') {
+        throw new ConvertError(reason, 'alwaysOnDisplay: the admin entry is not always on');
+    }
+}
+
+/* ---------------------------------------------------------------------------------------------
+ * screensaver
+ * ------------------------------------------------------------------------------------------- */
+
+type ScreensaverArea = 'favorit' | 'alternate' | 'left' | 'bottom' | 'indicator';
+
+const screensaverStateKeys = [
+    'type',
+    'ScreensaverEntity',
+    'ScreensaverEntityText',
+    'ScreensaverEntityFactor',
+    'ScreensaverEntityDecimalPlaces',
+    'ScreensaverEntityDateFormat',
+    'ScreensaverEntityIconOn',
+    'ScreensaverEntityIconOff',
+    'ScreensaverEntityUnitText',
+    'ScreensaverEntityIconColor',
+    'ScreensaverEntityOnColor',
+    'ScreensaverEntityOffColor',
+    'ScreensaverEntityOnText',
+    'ScreensaverEntityOffText',
+    'ScreensaverEntityNaviToPage',
+    'ScreensaverEntityButton',
+    'ScreensaverEntitySwitch',
+    'ScreensaverEntityIconSelect',
+    'ScreensaverEntityEnabled',
+    'ScreensaverEntityVisibleCondition',
+    'ScreensaverEntityFillIfBelowMin',
+] as const;
+const screensaverTemplateKeys = ['type', 'template', 'dpInit', 'modeScr', 'enabled', 'visibleCondition'] as const;
+
+/** the colors of the script the config manager falls back to for an item without own colors */
+type ScriptDefaultColors = { on?: string; off?: string };
+
+/**
+ * One screensaver element of the script as the admin stores it - inverse of `screensaverItemToScript`
+ * (admin-screensaver.ts).
+ *
+ * The admin builder adds what the script leaves open: a default icon by role, the state name as
+ * headline and the adapter default colors. To keep the panel unchanged, items without icon or headline
+ * are rejected and the default colors of the script are written into the item.
+ *
+ * @param element Element of the script.
+ * @param area Area of the screensaver.
+ * @param where Prefix for the detail.
+ * @param defaults `defaultOnColor` / `defaultOffColor` of the script as hex.
+ */
+function convertScreensaverItem(
+    element: Dict,
+    area: ScreensaverArea,
+    where: string,
+    defaults: ScriptDefaultColors,
+): ScreensaverItemConfig {
+    const reason: ConvertSkipReason = 'screensaverItemNotSupported';
+    if (element.type === 'native') {
+        throw new ConvertError(reason, `${where}: native element`);
+    }
+    if (element.type === 'template') {
+        rejectUnknownKeys(element, screensaverTemplateKeys, [], reason, where);
+        const template = str(element.template, reason, `${where}.template`);
+        if (!template) {
+            throw new ConvertError(reason, `${where}.template: empty`);
+        }
+        if (element.modeScr !== area) {
+            throw new ConvertError(
+                reason,
+                `${where}.modeScr: ${String(element.modeScr)} differs from the area ${area}`,
+            );
+        }
+        const item: ScreensaverItemConfig = { state: str(element.dpInit, reason, `${where}.dpInit`) ?? '', template };
+        if (element.enabled !== undefined && element.enabled !== null) {
+            if (typeof element.enabled !== 'string') {
+                throw new ConvertError(reason, `${where}.enabled: the admin takes one state id`);
+            }
+            if (element.enabled) {
+                item.enabled = element.enabled;
+            }
+        }
+        const condition = str(element.visibleCondition, reason, `${where}.visibleCondition`);
+        if (condition) {
+            item.visibleCondition = condition;
+        }
+        return item;
+    }
+    if (element.type !== 'script') {
+        throw new ConvertError(reason, `${where}.type: unknown type`);
+    }
+    rejectUnknownKeys(element, screensaverStateKeys, [], reason, where);
+    const item: ScreensaverItemConfig = {
+        state: str(element.ScreensaverEntity, reason, `${where}.ScreensaverEntity`) ?? '',
+    };
+    const headline = str(element.ScreensaverEntityText, reason, `${where}.ScreensaverEntityText`);
+    if (!headline) {
+        throw new ConvertError(reason, `${where}.ScreensaverEntityText: empty - the admin shows the name of the state`);
+    }
+    item.headline = headline;
+    const iconOn = str(element.ScreensaverEntityIconOn, reason, `${where}.ScreensaverEntityIconOn`);
+    const iconOff = str(element.ScreensaverEntityIconOff, reason, `${where}.ScreensaverEntityIconOff`);
+    const iconSelect = element.ScreensaverEntityIconSelect;
+    if (iconSelect !== undefined && iconSelect !== null) {
+        if (
+            !Array.isArray(iconSelect) ||
+            !iconSelect.every(s => isDict(s) && typeof s.icon === 'string' && typeof s.value === 'number')
+        ) {
+            throw new ConvertError(reason, `${where}.ScreensaverEntityIconSelect: expected a list of {icon, value}`);
+        }
+        item.iconSelect = (iconSelect as { icon: string; value: number }[]).map(s => ({
+            value: s.value,
+            icon: s.icon,
+        }));
+    }
+    if (!iconOn && !item.iconSelect?.length) {
+        throw new ConvertError(reason, `${where}.ScreensaverEntityIconOn: empty - the admin adds a default icon`);
+    }
+    if (iconOn) {
+        item.iconOn = iconOn;
+    }
+    if (iconOff) {
+        item.iconOff = iconOff;
+    }
+    const unit = str(element.ScreensaverEntityUnitText, reason, `${where}.ScreensaverEntityUnitText`);
+    if (unit !== undefined) {
+        item.unit = unit;
+    }
+    const factor = num(element.ScreensaverEntityFactor, reason, `${where}.ScreensaverEntityFactor`);
+    if (factor !== undefined) {
+        item.factor = factor;
+    }
+    const decimals = num(element.ScreensaverEntityDecimalPlaces, reason, `${where}.ScreensaverEntityDecimalPlaces`);
+    if (decimals !== undefined) {
+        item.decimals = decimals;
+    }
+    const dateFormat = element.ScreensaverEntityDateFormat;
+    if (dateFormat !== undefined && dateFormat !== null) {
+        if (!isDict(dateFormat)) {
+            throw new ConvertError(reason, `${where}.ScreensaverEntityDateFormat: expected an object`);
+        }
+        item.dateFormat = { ...(dateFormat as Intl.DateTimeFormatOptions) };
+    }
+    const textOn = str(element.ScreensaverEntityOnText, reason, `${where}.ScreensaverEntityOnText`);
+    if (textOn) {
+        item.textOn = textOn;
+    }
+    const textOff = str(element.ScreensaverEntityOffText, reason, `${where}.ScreensaverEntityOffText`);
+    if (textOff) {
+        item.textOff = textOff;
+    }
+
+    // colors: OnColor wins, then a fixed or state IconColor, then the script default; a scale is kept apart
+    const onColor = element.ScreensaverEntityOnColor;
+    if (typeof onColor === 'string') {
+        throw new ConvertError(reason, `${where}.ScreensaverEntityOnColor: the admin takes a fixed color only`);
+    }
+    let colorOn = rgbToHex(onColor, reason, `${where}.ScreensaverEntityOnColor`);
+    const iconColor = element.ScreensaverEntityIconColor;
+    if (iconColor !== undefined && iconColor !== null && iconColor !== '') {
+        if (isDict(iconColor) && (iconColor.val_min !== undefined || iconColor.val_max !== undefined)) {
+            // the config manager treats everything with val_min / val_max as scale
+            const scale = colorScaleToAdmin(iconColor, reason, `${where}.ScreensaverEntityIconColor`, true);
+            item.colorScale = scale;
+        } else if (typeof iconColor === 'string') {
+            if (!colorOn) {
+                item.colorState = iconColor;
+            }
+        } else if (!colorOn) {
+            colorOn = rgbToHex(iconColor, reason, `${where}.ScreensaverEntityIconColor`);
+        }
+    }
+    if (!colorOn && !item.colorState) {
+        colorOn = defaults.on;
+    }
+    if (colorOn) {
+        item.colorOn = colorOn;
+    }
+    const offColor = element.ScreensaverEntityOffColor;
+    if (offColor === null) {
+        throw new ConvertError(
+            reason,
+            `${where}.ScreensaverEntityOffColor: null (no off color) is not available in the admin`,
+        );
+    }
+    if (typeof offColor === 'string') {
+        throw new ConvertError(reason, `${where}.ScreensaverEntityOffColor: the admin takes a fixed color only`);
+    }
+    const colorOff = rgbToHex(offColor, reason, `${where}.ScreensaverEntityOffColor`) ?? defaults.off;
+    if (colorOff) {
+        item.colorOff = colorOff;
+    }
+
+    const enabled = element.ScreensaverEntityEnabled;
+    if (enabled !== undefined && enabled !== null) {
+        if (typeof enabled !== 'string') {
+            throw new ConvertError(reason, `${where}.ScreensaverEntityEnabled: expected a state id`);
+        }
+        if (enabled) {
+            item.enabled = enabled;
+        }
+    }
+    const condition = str(
+        element.ScreensaverEntityVisibleCondition,
+        reason,
+        `${where}.ScreensaverEntityVisibleCondition`,
+    );
+    if (condition) {
+        item.visibleCondition = condition;
+    }
+    const fill = element.ScreensaverEntityFillIfBelowMin;
+    if (fill !== undefined && fill !== null && fill !== true) {
+        throw new ConvertError(reason, `${where}.ScreensaverEntityFillIfBelowMin: not available in the admin`);
+    }
+    if (area === 'indicator') {
+        // the config manager takes the first of button, switch and page - the others have no effect
+        const button = str(element.ScreensaverEntityButton, reason, `${where}.ScreensaverEntityButton`);
+        const switchState = str(element.ScreensaverEntitySwitch, reason, `${where}.ScreensaverEntitySwitch`);
+        const navi = str(element.ScreensaverEntityNaviToPage, reason, `${where}.ScreensaverEntityNaviToPage`);
+        if (button) {
+            item.action = { kind: 'button', state: button };
+        } else if (switchState) {
+            item.action = { kind: 'switch', state: switchState };
+        } else if (navi) {
+            item.action = { kind: 'navigate', page: navi };
+        }
+    }
+    return item;
+}
+
+const mrIconKeys = [
+    'type',
+    'ScreensaverEntity',
+    'ScreensaverEntityIconOn',
+    'ScreensaverEntityIconSelect',
+    'ScreensaverEntityIconOff',
+    'ScreensaverEntityValue',
+    'ScreensaverEntityValueDecimalPlace',
+    'ScreensaverEntityValueUnit',
+    'ScreensaverEntityOnColor',
+    'ScreensaverEntityOffColor',
+] as const;
+
+/**
+ * A status icon of the script as the admin stores it - inverse of `screensaverMrIconToScript`
+ * (admin-screensaver.ts). Undefined when the script has no element, null for an element without state
+ * and value: the script still shows its off icon there while the admin shows nothing - the caller
+ * rejects it unless the whole screensaver is empty anyway.
+ *
+ * @param element Element of the script.
+ * @param where Prefix for the detail.
+ */
+function convertMrIcon(element: unknown, where: string): ScreensaverMrIconConfig | undefined | null {
+    const reason: ConvertSkipReason = 'screensaverItemNotSupported';
+    if (element === undefined || element === null) {
+        return undefined;
+    }
+    if (!isDict(element)) {
+        throw new ConvertError(reason, `${where}: expected an object`);
+    }
+    if (element.type !== 'script') {
+        throw new ConvertError(reason, `${where}: only script elements can be converted`);
+    }
+    rejectUnknownKeys(element, mrIconKeys, [], reason, where);
+    const entity = str(element.ScreensaverEntity, reason, `${where}.ScreensaverEntity`);
+    const value = str(element.ScreensaverEntityValue, reason, `${where}.ScreensaverEntityValue`);
+    if (!entity && !value) {
+        return null;
+    }
+    const cfg: ScreensaverMrIconConfig = {};
+    if (entity) {
+        cfg.entity = entity;
+    }
+    if (value) {
+        cfg.value = value;
+    }
+    const iconOn = str(element.ScreensaverEntityIconOn, reason, `${where}.ScreensaverEntityIconOn`);
+    if (iconOn) {
+        cfg.iconOn = iconOn;
+    }
+    const iconOff = str(element.ScreensaverEntityIconOff, reason, `${where}.ScreensaverEntityIconOff`);
+    if (iconOff) {
+        cfg.iconOff = iconOff;
+    }
+    const select = element.ScreensaverEntityIconSelect;
+    if (select !== undefined && select !== null) {
+        if (!isDict(select) || !Object.values(select).every(v => typeof v === 'string')) {
+            throw new ConvertError(reason, `${where}.ScreensaverEntityIconSelect: expected {value: icon}`);
+        }
+        const list = Object.entries(select).map(([v, icon]) => ({ value: v, icon: icon as string }));
+        if (list.length) {
+            cfg.iconSelect = list;
+        }
+    }
+    const decimals = num(
+        element.ScreensaverEntityValueDecimalPlace,
+        reason,
+        `${where}.ScreensaverEntityValueDecimalPlace`,
+    );
+    if (decimals !== undefined) {
+        cfg.valueDecimals = decimals;
+    }
+    const unit = str(element.ScreensaverEntityValueUnit, reason, `${where}.ScreensaverEntityValueUnit`);
+    if (unit) {
+        cfg.valueUnit = unit;
+    }
+    for (const [key, field] of [
+        ['ScreensaverEntityOnColor', 'onColor'],
+        ['ScreensaverEntityOffColor', 'offColor'],
+    ] as const) {
+        if (typeof element[key] === 'string') {
+            throw new ConvertError(reason, `${where}.${key}: the admin takes a fixed color only`);
+        }
+        const hex = rgbToHex(element[key], reason, `${where}.${key}`);
+        if (hex) {
+            cfg[field] = hex;
+        }
+    }
+    return cfg;
+}
+
+const notifyKeys = [
+    'type',
+    'Priority',
+    'Headline',
+    'HeadlinePrefix',
+    'HeadlineUnit',
+    'Text',
+    'TextSuffix',
+    'TextPrefix',
+    'HeadlineIcon',
+    'isDismissiblePerEvent',
+    'dismissibleIDGlobal',
+    'buzzer',
+    'Enabled',
+    'VisibleCondition',
+] as const;
+
+/**
+ * A notification of the script as the admin stores it (without id) - inverse of
+ * `screensaverNotifyToScript` (admin-screensaver.ts).
+ *
+ * @param element Element of the script.
+ * @param where Prefix for the detail.
+ */
+function convertNotify(element: unknown, where: string): Omit<ScreensaverNotifyConfig, 'id'> {
+    const reason: ConvertSkipReason = 'screensaverItemNotSupported';
+    if (!isDict(element)) {
+        throw new ConvertError(reason, `${where}: expected an object`);
+    }
+    if (element.type !== 'script') {
+        throw new ConvertError(reason, `${where}: only script elements can be converted`);
+    }
+    rejectUnknownKeys(element, notifyKeys, [], reason, where);
+    const rawEnabled = element.Enabled;
+    const enabled = Array.isArray(rawEnabled)
+        ? rawEnabled
+        : rawEnabled === undefined || rawEnabled === null
+          ? []
+          : [rawEnabled];
+    if (enabled.length === 0 || !enabled.every(e => typeof e === 'string' && e.trim() === e && e !== '')) {
+        throw new ConvertError(reason, `${where}.Enabled: expected one or more trimmed state ids`);
+    }
+    const cfg: Omit<ScreensaverNotifyConfig, 'id'> = { enabled: [...(enabled as string[])] };
+    const condition = trimmedText(element.VisibleCondition, reason, `${where}.VisibleCondition`);
+    if (condition) {
+        cfg.visibleCondition = condition;
+    }
+    const priority = num(element.Priority, reason, `${where}.Priority`);
+    if (priority !== undefined) {
+        cfg.priority = priority;
+    }
+    const headline = str(element.Headline, reason, `${where}.Headline`);
+    if (headline) {
+        cfg.headline = headline;
+    }
+    const text = str(element.Text, reason, `${where}.Text`);
+    if (text) {
+        cfg.text = text;
+    }
+    for (const [key, field] of [
+        ['HeadlinePrefix', 'headlinePrefix'],
+        ['HeadlineUnit', 'headlineUnit'],
+        ['HeadlineIcon', 'headlineIcon'],
+        ['TextPrefix', 'textPrefix'],
+        ['TextSuffix', 'textSuffix'],
+    ] as const) {
+        const value = str(element[key], reason, `${where}.${key}`);
+        if (value) {
+            cfg[field] = value;
+        }
+    }
+    const dismissible = bool(element.isDismissiblePerEvent, reason, `${where}.isDismissiblePerEvent`);
+    if (dismissible) {
+        cfg.dismissible = true;
+        // the global id only counts with isDismissiblePerEvent (config manager)
+        const globalId = trimmedText(element.dismissibleIDGlobal, reason, `${where}.dismissibleIDGlobal`);
+        if (globalId) {
+            cfg.dismissibleId = globalId;
+        }
+    }
+    const buzzer = element.buzzer;
+    if (buzzer === true) {
+        cfg.buzzer = true;
+    } else if (typeof buzzer === 'string' && buzzer.trim()) {
+        if (buzzer.trim() !== buzzer) {
+            throw new ConvertError(reason, `${where}.buzzer: the admin trims the tone sequence`);
+        }
+        cfg.buzzer = buzzer;
+    } else if (buzzer !== undefined && buzzer !== null && buzzer !== false && buzzer !== '') {
+        throw new ConvertError(reason, `${where}.buzzer: expected true or a tone sequence`);
+    }
+    return cfg;
+}
+
+/**
+ * The weather items of the script as the admin stores them: `true` means every item (the config manager
+ * only adds the ones the weather adapter offers, on both paths).
+ *
+ * @param value `weatherAddDefaultItems` of the script.
+ */
+function weatherItemsOf(value: unknown): ScreensaverWeatherItems | undefined {
+    if (value === true) {
+        return Object.fromEntries(screensaverWeatherItemKeys.map(k => [k, true]));
+    }
+    if (!isDict(value)) {
+        return undefined;
+    }
+    const items: ScreensaverWeatherItems = {};
+    for (const key of screensaverWeatherItemKeys) {
+        if (value[key] === true) {
+            items[key] = true;
+        }
+    }
+    return Object.keys(items).length ? items : undefined;
+}
+
+type ScreensaverResult =
+    | { entry: ScreensaverEntry; notify: ScreensaverNotifyConfig[] }
+    | { skipped: { reason: ConvertSkipReason; detail?: string } };
+
+/**
+ * The screensaver of the script as an admin entry - inverse of `buildScreensaverScriptConfig`
+ * (admin-screensaver.ts).
+ *
+ * @param input Input of the planner.
+ */
+function convertScreensaver(input: ScriptToAdminInput): ScreensaverResult {
+    const { raw, panel } = input;
+    if (findScreensaverEntry(input.screensaverConfig, panel.topic).entry) {
+        return { skipped: { reason: 'screensaverExists' } };
+    }
+    try {
+        const nativeItems = raw.nativePageItems;
+        if (Array.isArray(nativeItems) && nativeItems.length) {
+            throw new ConvertError('screensaverItemNotSupported', 'nativePageItems: not available in the admin');
+        }
+        const defaults: ScriptDefaultColors = {};
+        try {
+            defaults.on = rgbToHex(raw.defaultOnColor, 'screensaverItemNotSupported', 'defaultOnColor');
+            defaults.off = rgbToHex(raw.defaultOffColor, 'screensaverItemNotSupported', 'defaultOffColor');
+        } catch {
+            // no valid default colors: the config manager falls back to its own default, so does the admin
+        }
+        const area = (
+            name: ScreensaverArea,
+            list: unknown,
+            keepGaps: boolean,
+        ): (ScreensaverItemConfig | undefined)[] => {
+            if (list === undefined || list === null) {
+                return [];
+            }
+            if (!Array.isArray(list)) {
+                throw new ConvertError('screensaverItemNotSupported', `${name}: expected a list`);
+            }
+            const out: (ScreensaverItemConfig | undefined)[] = [];
+            list.forEach((element: unknown, index) => {
+                if (element === null || element === undefined) {
+                    if (keepGaps) {
+                        out.push(undefined);
+                    }
+                    return;
+                }
+                if (!isDict(element)) {
+                    throw new ConvertError('screensaverItemNotSupported', `${name}[${index}]: expected an object`);
+                }
+                out.push(convertScreensaverItem(element, name, `${name}[${index}]`, defaults));
+            });
+            return out;
+        };
+        const single = (name: 'favorit' | 'alternate', list: unknown): ScreensaverItemConfig | undefined => {
+            const items = area(name, list, false).filter((i): i is ScreensaverItemConfig => !!i);
+            if (items.length > 1) {
+                throw new ConvertError('screensaverItemNotSupported', `${name}: the admin takes one item`);
+            }
+            return items[0];
+        };
+        const favorit = single('favorit', raw.favoritScreensaverEntity);
+        const alternate = single('alternate', raw.alternateScreensaverEntity);
+        const left = area('left', raw.leftScreensaverEntity, true);
+        const bottom = area('bottom', raw.bottomScreensaverEntity, false);
+        const indicator = area('indicator', raw.indicatorScreensaverEntity, true);
+        const mrIcon1 = convertMrIcon(raw.mrIcon1ScreensaverEntity, 'mrIcon1ScreensaverEntity');
+        const mrIcon2 = convertMrIcon(raw.mrIcon2ScreensaverEntity, 'mrIcon2ScreensaverEntity');
+        const notifyList = raw.notifyScreensaverEntity;
+        const notify: ScreensaverNotifyConfig[] = [];
+        if (notifyList !== undefined && notifyList !== null) {
+            if (!Array.isArray(notifyList)) {
+                throw new ConvertError('screensaverItemNotSupported', 'notifyScreensaverEntity: expected a list');
+            }
+            const existing = [...input.screensaverNotify];
+            notifyList.forEach((element: unknown, index) => {
+                const cfg = convertNotify(element, `notifyScreensaverEntity[${index}]`);
+                const id = (input.notifyIdFactory ?? newScreensaverNotifyId)(existing);
+                const full: ScreensaverNotifyConfig = { id, name: `${panel.name} ${index + 1}`, ...cfg };
+                existing.push(full);
+                notify.push(full);
+            });
+        }
+        const present = (list: (ScreensaverItemConfig | undefined)[]): boolean => list.some(i => !!i);
+        if (
+            !favorit &&
+            !alternate &&
+            !present(left) &&
+            !present(bottom) &&
+            !present(indicator) &&
+            !mrIcon1 &&
+            !mrIcon2 &&
+            notify.length === 0
+        ) {
+            return { skipped: { reason: 'screensaverEmpty' } };
+        }
+        for (const [icon, where] of [
+            [mrIcon1, 'mrIcon1ScreensaverEntity'],
+            [mrIcon2, 'mrIcon2ScreensaverEntity'],
+        ] as const) {
+            if (icon === null) {
+                throw new ConvertError(
+                    'screensaverItemNotSupported',
+                    `${where}: without state and value - the script shows the off icon, the admin shows nothing`,
+                );
+            }
+        }
+        const mode: ScreensaverMode =
+            input.screensaverMode ??
+            (present(left) || present(indicator) ? 'advanced' : alternate ? 'alternate' : 'standard');
+        const entry: ScreensaverEntry = {
+            name: panel.name,
+            mode,
+            panels: [panel.topic],
+            left,
+            bottom,
+            indicator,
+            rotationTime: 0,
+            screensaverSwipe: !!raw.advancedOptions?.screensaverSwipe,
+            screensaverIndicatorButtons: !!raw.advancedOptions?.screensaverIndicatorButtons,
+        };
+        if (favorit) {
+            entry.favorit = favorit;
+        }
+        if (alternate) {
+            entry.alternate = alternate;
+        }
+        if (mrIcon1) {
+            entry.mrIcon1 = mrIcon1;
+        }
+        if (mrIcon2) {
+            entry.mrIcon2 = mrIcon2;
+        }
+        if (notify.length) {
+            entry.notify = notify.map(n => n.id);
+        }
+        // the global weather entity of the instance replaces the one of the script (config manager) - then
+        // the entry leaves the field to the global setting as well
+        if (!input.instanceWeatherEntity) {
+            entry.weatherEntity = typeof raw.weatherEntity === 'string' ? raw.weatherEntity : '';
+        }
+        const weatherItems = weatherItemsOf(raw.weatherAddDefaultItems);
+        if (weatherItems) {
+            entry.weatherAddDefaultItems = weatherItems;
+        }
+        return { entry, notify };
+    } catch (error) {
+        if (error instanceof ConvertError) {
+            return { skipped: { reason: error.reason, detail: error.detail } };
+        }
+        throw error;
+    }
+}
+
+/**
+ * The empty status icon of the script form (configManagerConst.defaultConfig) - the field is required
+ * by the config manager, so the cleaned script keeps it.
+ */
+function emptyMrIcon(): ScriptConfig.ScreenSaverMRElement {
+    return {
+        type: 'script',
+        ScreensaverEntity: null,
+        ScreensaverEntityIconOn: null,
+        ScreensaverEntityIconSelect: undefined,
+        ScreensaverEntityIconOff: null,
+        ScreensaverEntityValue: null,
+        ScreensaverEntityValueDecimalPlace: null,
+        ScreensaverEntityValueUnit: null,
+        ScreensaverEntityOnColor: { red: 0, green: 0, blue: 0 },
+        ScreensaverEntityOffColor: { red: 0, green: 0, blue: 0 },
+    };
+}
+
+/* ---------------------------------------------------------------------------------------------
+ * buttons
+ * ------------------------------------------------------------------------------------------- */
+
+/**
+ * A hardware button of the script as the admin stores it - inverse of `applyAdminButtons`
+ * (panel-buttons.ts): the admin entry is handed to the panel unchanged, so the script value has to be
+ * a valid action already. Undefined for a script button without action.
+ *
+ * @param value `buttonLeft` / `buttonRight` of the script.
+ */
+function convertButton(value: unknown): AdminButtonFunction | undefined {
+    const reason: ConvertSkipReason = 'buttonNotSupported';
+    if (value === undefined || value === null) {
+        return undefined;
+    }
+    if (!isButton(value) || !isDict(value)) {
+        throw new ConvertError(reason, 'not a valid button action');
+    }
+    const mode = value.mode;
+    if (mode === 'page') {
+        rejectUnknownKeys(value, ['mode', 'page'], [], reason, 'button');
+        return { mode, page: String(value.page) };
+    }
+    if (typeof value.state !== 'string') {
+        throw new ConvertError(reason, 'state: expected a state id');
+    }
+    if (mode === 'switch' || mode === 'button') {
+        rejectUnknownKeys(value, ['mode', 'state'], [], reason, 'button');
+        return { mode, state: value.state };
+    }
+    rejectUnknownKeys(value, ['mode', 'state', 'delay'], [], reason, 'button');
+    const delay = num(value.delay, reason, 'delay');
+    const action: AdminButtonFunction = {
+        mode: mode,
+        state: value.state,
+    };
+    if (delay !== undefined) {
+        action.delay = delay;
+    }
+    return action;
+}
+
+/* ---------------------------------------------------------------------------------------------
+ * the plan
+ * ------------------------------------------------------------------------------------------- */
+
+/**
+ * The navigation node name of a script page (what `setScriptConfig` puts into the ring).
+ *
+ * @param page Page of the script.
+ */
+function scriptPageId(page: unknown): string {
+    if (!isDict(page)) {
+        return '';
+    }
+    if (page.type === undefined) {
+        const native = page.native;
+        return isDict(native) && typeof native.uniqueID === 'string' ? native.uniqueID : '';
+    }
+    return typeof page.uniqueName === 'string' ? page.uniqueName : '';
+}
+
+/**
+ * Plans the conversion of the script configuration of one panel into the admin configuration.
+ *
+ * Pure: nothing is read or written, the result describes what the caller has to store. See the file
+ * header for the rules.
+ *
+ * @param input Script configuration of the panel and the admin tables.
+ */
+export function planScriptToAdmin(input: ScriptToAdminInput): ScriptToAdminResult {
+    const { raw, panel } = input;
+    const plan: ConvertScriptPlan = {
+        panelTopic: panel.topic,
+        panelName: panel.name,
+        scriptId: typeof raw.scriptName === 'string' ? raw.scriptName : '',
+        scriptFound: !!input.scriptFound,
+        pages: [],
+        skipped: [],
+        buttons: {},
+        buttonsSkipped: [],
+        nothingToDo: true,
+    };
+    const newPages: PageConfigEntry[] = [];
+    let updatedPages: PageConfigEntry[] = [...input.pageConfig];
+    const removedFromScript: string[] = [];
+    const removedPages = new Set<string>();
+    const removedSubPages = new Set<string>();
+    const remove = (uniqueName: string, isSub: boolean): void => {
+        removedFromScript.push(uniqueName);
+        (isSub ? removedSubPages : removedPages).add(uniqueName);
+    };
+    const usedNames = new Set(updatedPages.map(e => e.uniqueName));
+
+    const pages = Array.isArray(raw.pages) ? raw.pages : [];
+    const subPages = Array.isArray(raw.subPages) ? raw.subPages : [];
+    // the ring the config manager builds from `pages`: every page with a name, `main` first
+    const ring = pages.map(scriptPageId).filter(id => id !== '');
+    const mainIndex = ring.indexOf(mainPageName);
+    if (mainIndex > 0) {
+        ring.unshift(...ring.splice(mainIndex, 1));
+    }
+    const mainPageNames = new Set(pages.filter(p => isDict(p) && p.type !== undefined).map(scriptPageId));
+    // Pages of `pages` that are gone for this panel after the conversion: dead references (the admin entry
+    // creates no page for the panel) and references without admin entry. Everything else either stays in
+    // the script or becomes an admin page assigned to the panel.
+    const deadRing = new Set<string>();
+    for (const page of pages) {
+        if (!isDict(page) || typeof page.type !== 'string' || typeof page.uniqueName !== 'string') {
+            continue;
+        }
+        const type = page.type;
+        let entry: PageConfigEntry | undefined;
+        if (type === 'cardQR' || type === 'cardAlarm' || type === 'cardUnlock') {
+            entry = input.pageConfig.find(e => e.uniqueName === page.uniqueName);
+        } else if (type === 'cardPower' || type === 'cardChart' || type === 'cardLChart') {
+            entry =
+                type === 'cardPower'
+                    ? findPowerEntryForScript(input.pageConfig, page.uniqueName)
+                    : findChartEntryForScript(input.pageConfig, page.uniqueName);
+            if (entry && (type === 'cardPower' ? isScriptNavigatedPower(entry) : isScriptNavigatedChart(entry))) {
+                // gets the navigation of this panel (or stays in the script when that fails)
+                continue;
+            }
+        } else {
+            continue;
+        }
+        if (!entry || !entryCoversPanel(entry, panel.topic)) {
+            deadRing.add(page.uniqueName);
+        }
+    }
+    const survivingRing = ring.filter(name => !deadRing.has(name));
+    // an admin entry already publishes `main` for this panel: the entry named `main` or any start page
+    const mainPageCovered = input.pageConfig.some(
+        e => (e.uniqueName === mainPageName || isMainPageEntry(e)) && entryCoversPanel(e, panel.topic),
+    );
+    /** navigation assignment of every converted page of `pages`, by uniqueName - its links are set after the loop */
+    const ringAssignments = new Map<string, { topic: string; navigation?: NavigationLinks }>();
+    const explicitNavigation = new Set(
+        (Array.isArray(raw.navigation) ? raw.navigation : []).map(n => (isDict(n) ? String(n.name) : '')),
+    );
+
+    const skip = (uniqueName: string, type: string, reason: ConvertSkipReason, detail?: string): void => {
+        plan.skipped.push(detail === undefined ? { uniqueName, type, reason } : { uniqueName, type, reason, detail });
+    };
+
+    const handlePage = (page: unknown, isSub: boolean): void => {
+        if (page === null || page === undefined || !isDict(page)) {
+            return;
+        }
+        if ('globalLink' in page && page.globalLink) {
+            const name = typeof page.uniqueName === 'string' ? page.uniqueName : page.globalLink;
+            skip(
+                typeof name === 'string' ? name : '',
+                'globalLink',
+                'unsupportedPageType',
+                'page link of the global script',
+            );
+            return;
+        }
+        const type = page.type;
+        if (type === undefined) {
+            skip(scriptPageId(page), 'native', 'unsupportedPageType', 'native page');
+            return;
+        }
+        const typeName = typeof type === 'string' ? type : 'unknown';
+        const uniqueName = typeof page.uniqueName === 'string' ? page.uniqueName : '';
+        if (!uniqueName) {
+            skip('', typeName, 'fieldNotSupported', 'uniqueName missing');
+            return;
+        }
+        if (isSub && mainPageNames.has(uniqueName)) {
+            // the config manager drops a sub page whose name is used by a page of `pages`
+            skip(uniqueName, typeName, 'nameExists', 'a page of pages has the same name - the script ignores this one');
+            return;
+        }
+        if (typeName === 'cardQR' || typeName === 'cardAlarm' || typeName === 'cardUnlock') {
+            plan.pages.push({
+                uniqueName,
+                type: typeName,
+                card: typeName,
+                itemCount: 0,
+                navigation: {},
+                action: 'removeReference',
+                reason: 'adminOnly',
+            });
+            remove(uniqueName, isSub);
+            return;
+        }
+        if (typeName === 'cardPower' || typeName === 'cardChart' || typeName === 'cardLChart') {
+            const entry =
+                typeName === 'cardPower'
+                    ? findPowerEntryForScript(updatedPages, uniqueName)
+                    : findChartEntryForScript(updatedPages, uniqueName);
+            if (!entry) {
+                skip(uniqueName, typeName, 'adminEntryMissing', 'no admin entry with this name');
+                return;
+            }
+            const navigated = typeName === 'cardPower' ? isScriptNavigatedPower(entry) : isScriptNavigatedChart(entry);
+            if (!navigated) {
+                plan.pages.push({
+                    uniqueName,
+                    type: typeName,
+                    card: entry.card,
+                    itemCount: 0,
+                    navigation: {},
+                    action: 'removeReference',
+                    reason: 'adminAlreadyNavigated',
+                });
+                remove(uniqueName, isSub);
+                return;
+            }
+            try {
+                checkReferencePage(page, entry);
+                if (explicitNavigation.has(uniqueName)) {
+                    throw new ConvertError(
+                        'fieldNotSupported',
+                        'navigation: the script overrides the links of the page',
+                    );
+                }
+                const navigation = pageNavigation(page, isSub);
+                const assignment = { topic: panel.topic, navigation };
+                const assigned: PageConfigEntry = dropScriptNavigation({
+                    ...entry,
+                    navigationAssignment: [...(entry.navigationAssignment ?? []), assignment],
+                });
+                updatedPages = updatedPages.map(e => (e === entry ? assigned : e));
+                if (!isSub) {
+                    ringAssignments.set(uniqueName, assignment);
+                }
+                plan.pages.push({
+                    uniqueName,
+                    type: typeName,
+                    card: entry.card,
+                    itemCount: 0,
+                    navigation,
+                    action: 'assignNavigation',
+                });
+                remove(uniqueName, isSub);
+            } catch (error) {
+                if (error instanceof ConvertError) {
+                    skip(uniqueName, typeName, error.reason, error.detail);
+                    return;
+                }
+                throw error;
+            }
+            return;
+        }
+        if (typeName === 'cardThermo') {
+            skip(uniqueName, typeName, 'unsupportedPageType', 'classic thermo page');
+            return;
+        }
+        if (
+            typeName !== 'cardGrid' &&
+            typeName !== 'cardGrid2' &&
+            typeName !== 'cardGrid3' &&
+            typeName !== 'cardEntities' &&
+            typeName !== 'cardSchedule' &&
+            typeName !== 'cardThermo2' &&
+            typeName !== 'cardMedia'
+        ) {
+            skip(uniqueName, typeName, 'unsupportedPageType');
+            return;
+        }
+        // The start page: when the name `main` is taken by an entry that creates no page for this panel,
+        // the page is stored under its own name and published as `main` through `isMainPage`.
+        let storedAs: string | undefined;
+        if (usedNames.has(uniqueName)) {
+            if (uniqueName !== mainPageName || mainPageCovered) {
+                skip(uniqueName, typeName, 'nameExists');
+                return;
+            }
+            storedAs = `${mainPageName}_${panel.name.replace(/[^A-Za-z0-9_-]/g, '_')}`;
+            if (usedNames.has(storedAs)) {
+                skip(uniqueName, typeName, 'nameExists', `${storedAs} exists as well`);
+                return;
+            }
+        }
+        try {
+            if (explicitNavigation.has(uniqueName)) {
+                throw new ConvertError('fieldNotSupported', 'navigation: the script overrides the links of the page');
+            }
+            const common = pageCommon(page, isSub);
+            let entry: PageConfigEntry;
+            if (typeName === 'cardThermo2') {
+                entry = convertThermo2Page(page, common, panel.topic);
+            } else if (typeName === 'cardMedia') {
+                entry = convertMediaPage(page, common, panel.topic);
+            } else {
+                entry = convertMenuPage(page, common, panel.topic);
+            }
+            if (storedAs !== undefined) {
+                entry.uniqueName = storedAs;
+                entry.isMainPage = true;
+            }
+            newPages.push(entry);
+            updatedPages.push(entry);
+            usedNames.add(entry.uniqueName);
+            remove(uniqueName, isSub);
+            if (!isSub && entry.navigationAssignment) {
+                ringAssignments.set(uniqueName, entry.navigationAssignment[0]);
+            }
+            const planned: ConvertPagePlan = {
+                uniqueName,
+                type: typeName,
+                card: entry.card,
+                itemCount: ('pageItems' in entry ? entry.pageItems : []).filter(i => !!i && !isEmptyAdminItem(i))
+                    .length,
+                navigation: common.navigation,
+                action: 'create',
+            };
+            if (storedAs !== undefined) {
+                planned.storedAs = storedAs;
+            }
+            plan.pages.push(planned);
+        } catch (error) {
+            if (error instanceof ConvertError) {
+                skip(uniqueName, typeName, error.reason, error.detail);
+                return;
+            }
+            throw error;
+        }
+    };
+    for (const page of pages) {
+        handlePage(page, false);
+    }
+    // the links of the converted pages of `pages` - known only now that every page of the ring is classified
+    for (const [uniqueName, assignment] of ringAssignments) {
+        const links = ringLinks(uniqueName, survivingRing, name => !removedPages.has(name));
+        assignment.navigation = links;
+        const planned = plan.pages.find(p => p.uniqueName === uniqueName);
+        if (planned) {
+            planned.navigation = links;
+        }
+    }
+    for (const page of subPages) {
+        handlePage(page, true);
+    }
+
+    // screensaver
+    const screensaver = convertScreensaver(input);
+    let screensaverEntry: ScreensaverEntry | undefined;
+    let newNotify: ScreensaverNotifyConfig[] = [];
+    if ('skipped' in screensaver) {
+        plan.screensaverSkipped = screensaver.skipped;
+    } else {
+        screensaverEntry = screensaver.entry;
+        newNotify = screensaver.notify;
+        const entry = screensaver.entry;
+        const count = (list: (ScreensaverItemConfig | undefined)[]): number => list.filter(i => !!i).length;
+        plan.screensaver = {
+            name: entry.name,
+            mode: entry.mode,
+            itemCount:
+                (entry.favorit ? 1 : 0) +
+                (entry.alternate ? 1 : 0) +
+                count(entry.left) +
+                count(entry.bottom) +
+                count(entry.indicator) +
+                (entry.mrIcon1 ? 1 : 0) +
+                (entry.mrIcon2 ? 1 : 0),
+            notifyCount: newNotify.length,
+        };
+    }
+
+    // buttons
+    const buttons: ScriptToAdminResult['buttons'] = {};
+    const clearButtonsInScript: ('left' | 'right')[] = [];
+    for (const [side, scriptValue, adminValue] of [
+        ['left', raw.buttonLeft, panel.buttonLeft],
+        ['right', raw.buttonRight, panel.buttonRight],
+    ] as const) {
+        try {
+            const action = convertButton(scriptValue);
+            if (action === undefined) {
+                continue;
+            }
+            if (adminValue !== undefined) {
+                plan.buttonsSkipped.push({ side, reason: 'buttonConfigured' });
+                continue;
+            }
+            buttons[side] = action;
+            plan.buttons[side] = action;
+            clearButtonsInScript.push(side);
+        } catch (error) {
+            if (error instanceof ConvertError) {
+                plan.buttonsSkipped.push({ side, reason: error.reason, detail: error.detail });
+                continue;
+            }
+            throw error;
+        }
+    }
+
+    // the script configuration after the conversion
+    const cleanedRaw: ScriptConfig.Config = structuredClone(raw);
+    const keep =
+        (removed: Set<string>) =>
+        (page: unknown): boolean =>
+            !(isDict(page) && page.type !== undefined && removed.has(scriptPageId(page)));
+    cleanedRaw.pages = pages.filter(keep(removedPages));
+    cleanedRaw.subPages = subPages.filter(keep(removedSubPages));
+    const clearScreensaverInScript = !!screensaverEntry;
+    if (clearScreensaverInScript) {
+        cleanedRaw.favoritScreensaverEntity = [];
+        cleanedRaw.alternateScreensaverEntity = [];
+        cleanedRaw.leftScreensaverEntity = [];
+        cleanedRaw.bottomScreensaverEntity = [];
+        cleanedRaw.indicatorScreensaverEntity = [];
+        cleanedRaw.mrIcon1ScreensaverEntity = emptyMrIcon();
+        cleanedRaw.mrIcon2ScreensaverEntity = emptyMrIcon();
+        delete cleanedRaw.notifyScreensaverEntity;
+        cleanedRaw.weatherAddDefaultItems = false;
+        if (cleanedRaw.advancedOptions) {
+            cleanedRaw.advancedOptions = {
+                ...cleanedRaw.advancedOptions,
+                screensaverSwipe: false,
+                screensaverIndicatorButtons: false,
+            };
+        }
+    }
+    for (const side of clearButtonsInScript) {
+        cleanedRaw[side === 'left' ? 'buttonLeft' : 'buttonRight'] = null;
+    }
+
+    plan.nothingToDo =
+        plan.pages.length === 0 && !screensaverEntry && buttons.left === undefined && buttons.right === undefined;
+
+    return {
+        plan,
+        newPages,
+        updatedPages,
+        screensaverEntry,
+        newNotify,
+        buttons,
+        cleanedRaw,
+        removedFromScript,
+        clearScreensaverInScript,
+        clearButtonsInScript,
+    };
+}
+
+/** the page plans of a plan, for callers that only need a quick look (admin dialog) */
+export type { ConvertPagePlan, ConvertSkipped };

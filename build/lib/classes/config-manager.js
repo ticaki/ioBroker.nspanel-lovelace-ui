@@ -556,8 +556,8 @@ class ConfigManager extends import_library.BaseClass {
       this.log.warn(messages[messages.length - 1]);
     }
     if (panelConfig.pages.length === 0) {
-      messages.push(`No pages found! This needs to be fixed!`);
-      this.log.error(messages[messages.length - 1]);
+      messages.push(`No pages in the script configuration! Pages from the admin configuration are used.`);
+      this.log.info(messages[messages.length - 1]);
     } else if (panelConfig.navigation.length === 0) {
       messages.push(
         `No navigation items found in the script configuration! Pages from the admin configuration are used.`

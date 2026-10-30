@@ -1,0 +1,746 @@
+// Test fixture for src/lib/configuration/script-source.test.ts: trimmed copy of the user script
+// "script.js.nspanel-lovelace-ui_0.ns_panel4" exported from the dev-server; everything from "const version =" on (colours, type declarations) is cut off.
+
+async function configuration (): Promise<void> {
+
+    const overrideConfig: Partial<ScriptConfig.Config> = {
+        // hier kann man die Werte von unten überschreiben bzw nicht ewig im Skript suchen wo nochmal die Farbe steht :)
+        // pages und subpages geht hier nicht, weil die Seiten ja erst später angelegt werden. Bei const gehts nach Reihenfolge.
+        // panelTopic: 'nspanel/ns_panel4',
+        weatherEntity: 'pirate-weather.0.',
+        defaultOffColor: Off,
+        defaultOnColor: On,
+
+        // weatherAddDefaultItems:
+        // - true  => alle Standard-Wetterelemente hinzufügen
+        // - false => keine hinzufügen
+        // - { ... } => selektiv per Schlüssel aktivieren:
+        //   sunriseSet, forecastDay1, forecastDay2, forecastDay3, forecastDay4, forecastDay5, forecastDay6,
+        //   windSpeed, windGust, windDirection, uvIndex, solar
+        // Hinweis: Die einzelnen Schlüssel funktionieren nur, wenn der gewählte Wetteranbieter
+        // die entsprechenden Daten liefert und diese im Adapter vorbereitet wurden
+        "weatherAddDefaultItems": false
+
+    }
+
+    /**************************************************************************************
+     **                                                                                  **
+     ** https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/wiki/Adapter-Installation **
+     **                                                                                  **
+     *************************************************************************************/
+
+
+
+    /***********************************************************************
+     **                                                                   **
+     **                       Page Configuration                          **
+     **                                                                   **
+     ***********************************************************************/
+
+
+    /** Icon-Test HMI 6.0.2 (Seiten aus dem emu-Skript übernommen) */
+
+    // 0 - eigene Icons (script/custom-icons.json, HMI 6.0.2): Startseite
+    const ownIcons: ScriptConfig.PageGrid2 = {
+        type: 'cardGrid2',
+        uniqueName: 'main',
+        heading: 'Eigene Icons',
+        items: [
+            // ohne icon -> Icon nach Position (Skript shutter_position_test zählt 0..100..0)
+            {id: 'alias.0.ShutterTest', name: 'Rollo Test'},
+            {navigate: true, targetPage: 'newicons', name: 'Fenster zu', icon: 'window-closed-variant'},
+            {navigate: true, targetPage: 'newicons', name: 'gekippt', icon: 'window-tilt-variant'},
+            {navigate: true, targetPage: 'newicons', name: 'offen', icon: 'window-open-hinged-variant'},
+            {navigate: true, targetPage: 'newicons', name: 'Rollo 25 %', icon: 'window-shutter-25'},
+            {navigate: true, targetPage: 'newicons', name: 'Rollo 50 %', icon: 'window-shutter-50'},
+            {navigate: true, targetPage: 'newicons', name: 'Rollo 75 %', icon: 'window-shutter-75'},
+        ],
+    };
+
+    // 0 - neue Icons aus MDI 7.4.47 (HMI 6.0.1): 2. Seite
+    const newIcons: ScriptConfig.PageGrid = {
+        type: 'cardGrid',
+        uniqueName: 'newicons',
+        heading: 'Neue Icons',
+        items: [
+            {navigate: true, targetPage: 'newicons2', name: 'Rollo auto', icon: 'window-shutter-auto'},
+            {navigate: true, targetPage: 'newicons2', name: 'Thermostat', icon: 'thermostat-auto'},
+            {navigate: true, targetPage: 'newicons2', name: 'Sauger', icon: 'robot-vacuum-alert'},
+            {navigate: true, targetPage: 'newicons2', name: 'Mäher', icon: 'mower-on'},
+            {navigate: true, targetPage: 'newicons2', name: 'Akku', icon: 'power-plug-battery'},
+            {navigate: true, targetPage: 'newicons2', name: 'Boiler', icon: 'water-boiler-auto'},
+        ],
+    };
+
+    // 0b - weitere neue Icons, ein Icon auf reserviertem Platz (pause-box) und ein Alias (lectern)
+    const newIcons2: ScriptConfig.PageGrid2 = {
+        type: 'cardGrid2',
+        uniqueName: 'newicons2',
+        heading: 'Neue Icons 2',
+        items: [
+            {navigate: true, targetPage: 'iconcheck', name: 'Markise', icon: 'awning'},
+            {navigate: true, targetPage: 'iconcheck', name: 'Wasserhahn', icon: 'faucet'},
+            {navigate: true, targetPage: 'iconcheck', name: 'Staub', icon: 'weather-dust'},
+            {navigate: true, targetPage: 'iconcheck', name: 'Lautspr.', icon: 'speaker-play'},
+            {navigate: true, targetPage: 'iconcheck', name: 'Sonne', icon: 'sun-angle'},
+            {navigate: true, targetPage: 'iconcheck', name: 'Haus %', icon: 'home-percent'},
+            {navigate: true, targetPage: 'iconcheck', name: 'pause-box', icon: 'pause-box'},
+            {navigate: true, targetPage: 'iconcheck', name: 'lectern', icon: 'lectern'},
+        ],
+    };
+
+    // 0c - Kontrolle: alte Icons, Aliase und Icons, deren Codepoint MDI neu vergeben hat
+    const iconCheck: ScriptConfig.PageGrid = {
+        type: 'cardGrid',
+        uniqueName: 'iconcheck',
+        heading: 'Icon-Kontrolle',
+        items: [
+            {navigate: true, targetPage: 'main', name: 'home', icon: 'home'},
+            {navigate: true, targetPage: 'main', name: 'google-home', icon: 'google-home'},
+            {navigate: true, targetPage: 'main', name: 'receipt', icon: 'receipt'},
+            {navigate: true, targetPage: 'main', name: 'receipt-text', icon: 'receipt-text'},
+            {navigate: true, targetPage: 'main', name: 'cal-week-end', icon: 'calendar-week-end'},
+            {navigate: true, targetPage: 'main', name: 'cal-filter', icon: 'calendar-filter'},
+        ],
+    };
+
+    // Diese Konfiguration für den Fahrplan ist ein Beispiel was die interne Adapterkonfiguration benutzt, diese 
+    // ist recht komplex und wird nicht weiter erläutert. Da gibts später fertige Templates die man hier verwenden kann.
+    // wie am Fahrplan Beispiel zu sehen ist.
+
+    /* const fahrplan: any = {
+        heading: 'Fahrplan Script',
+        native: {
+            card: 'cardEntities',
+            dpInit: 'fahrplan.0.0',
+            uniqueID: 'fahrplanrouten',
+            template: 'entities.fahrplan.routes',
+        }
+    }; */
+
+    // Konfiguration findet im Admin statt, uniqueName muß gleich dem namen in der Adminkonfiguration sein.
+
+    /* const qrCode: ScriptConfig.PageQR = {
+        type: 'cardQR',
+        uniqueName: 'qrCode'
+    }; */
+
+    // Konfiguration findet im Admin statt, uniqueName muß gleich dem namen in der Adminkonfiguration sein.
+
+    /* const chartHeizung: ScriptConfig.PageChart = {
+        type: 'cardChart',
+        uniqueName: 'temperatur'
+    }; */
+
+    // Ein Beispiel für eine Gridseite mit verschiedenen Farbskalen
+
+    /* const irgendeinName: ScriptConfig.PageGrid = {
+        type: 'cardGrid',
+        uniqueName: 'main',
+        heading: 'Wohnzimmer',
+        items: [
+            {id: 'alias.0.Temperatur', name: 'standard', onColor: Red, offColor: Blue, colorScale: {'val_min': 0, 'val_max': 40}},
+            {id: 'alias.0.Temperatur', name: 'hue', onColor: Red, offColor: Blue, colorScale: {'val_min': 0, 'val_max': 40, mode: 'hue'}},
+            {id: 'alias.0.Temperatur', name: 'cie', onColor: Red, offColor: Blue, colorScale: {'val_min': 0, 'val_max': 40, mode: 'cie'}},
+            {id: 'alias.0.Temperatur', name: 'standard log min', onColor: Red, offColor: Blue, colorScale: {'val_min': 0, 'val_max': 40, log10: 'min'}},
+            {id: 'alias.0.Temperatur', name: 'hue log min', onColor: Red, offColor: Blue, colorScale: {'val_min': 0, 'val_max': 40, mode: 'hue', log10: 'min'}},
+            {id: 'alias.0.Temperatur', name: 'cie log min', onColor: Red, offColor: Blue, colorScale: {'val_min': 0, 'val_max': 40, mode: 'cie', log10: 'min'}},
+            {id: 'alias.0.Temperatur', name: 'standard', onColor: Red, offColor: Blue, colorScale: {'val_min': 0, 'val_max': 40}},
+            {id: 'alias.0.Temperatur', name: 'hue', onColor: Red, offColor: Blue, colorScale: {'val_min': 0, 'val_max': 40, mode: 'hue'}},
+            {id: 'alias.0.Temperatur', name: 'cie', onColor: Red, offColor: Blue, colorScale: {'val_min': 0, 'val_max': 40, mode: 'cie'}},
+            {id: 'alias.0.Temperatur', name: 'standard log max', onColor: Red, offColor: Blue, colorScale: {'val_min': 0, 'val_max': 40, log10: 'max'}},
+            {id: 'alias.0.Temperatur', name: 'hue log max', onColor: Red, offColor: Blue, colorScale: {'val_min': 0, 'val_max': 40, mode: 'hue', log10: 'max'}},
+            {id: 'alias.0.Temperatur', name: 'cie log max', onColor: Red, offColor: Blue, colorScale: {'val_min': 0, 'val_max': 40, mode: 'cie', log10: 'max'}},
+        ]
+    }; */
+
+    /* const grid1: ScriptConfig.PageGrid = {
+        uniqueName: 'grid1', // keine Navigation, am besten uniqueName von config.ts übernehmen
+        heading: 'Grid 1',
+        items: [
+            {id: 'alias.0.Licht.lights.Gerät_1'},
+            {id: 'alias.0.Licht.lights.Gerät_2'},
+            {id: '0_userdata.0.Einzelne_Geräte.dimmer'},
+            {id: 'alias.0.NSPanel.allgemein.hue', },
+            {navigate: true, targetPage: 'fahrplanrouten'},
+            {id: 'alias.0.NSPanel.allgemein.shutter'}
+        ],
+        type: 'cardGrid',
+    } */
+
+    const config: ScriptConfig.Config = {
+        panelTopic: 'nspanel/ns_panel4',
+        weatherEntity: 'pirate-weather.0.',
+        defaultOffColor: Off,
+        defaultOnColor: On,
+        defaultBackgroundColor: HMIDark,
+        weatherAddDefaultItems: false,
+
+        // Als Gedankenstütze, die Hauptseite sollte main heißen!
+        //panelName: 'NSPanel', //unique name for the panel
+
+
+        // Seiteneinteilung / Page division
+        // Hauptseiten / Mainpages
+        pages: [
+            ownIcons,
+            newIcons,
+            newIcons2,
+            iconCheck,
+            //irgendeinName,
+            //grid1,
+            //qrCode,
+            //chartHeizung,
+        ],
+        // Unterseiten / Subpages
+        subPages: [
+            //fahrplan
+        ],
+
+        /***********************************************************************
+         **                                                                   **
+         **                    Screensaver Configuration                      **
+         **                                                                   **
+         ***********************************************************************/
+
+
+        favoritScreensaverEntity: [
+            {
+                type: 'template',
+                template: 'text.pirate-weather.favorit',
+                dpInit: `/^pirate-weather\\.0\\.weather\\.currently\\./`,
+                modeScr: 'favorit',
+            }
+        ],
+        alternateScreensaverEntity: [
+            // only used with alternate Screensaver
+        ],
+
+        indicatorScreensaverEntity: [
+            // indicatorScreensaverEntity 1 (only Advanced Screensaver)
+            {
+                type: 'script',
+                ScreensaverEntity: 'alias.0.NSPanel.allgemein.Status_offene_Fenster.ACTUAL',
+                ScreensaverEntityFactor: 1,
+                ScreensaverEntityDecimalPlaces: 0,
+                ScreensaverEntityIconOn: 'window-open-variant',
+                ScreensaverEntityIconOff: 'window-closed-variant',
+                ScreensaverEntityText: 'Fenster',
+                ScreensaverEntityUnitText: '%',
+                ScreensaverEntityIconColor: {val_min: 0, val_max: 1},
+            },
+            // indicatorScreensaverEntity 2 (only Advanced Screensaver)
+            {
+                type: 'script',
+                ScreensaverEntity: 'alias.0.NSPanel.allgemein.Status_offene_Tuer.ACTUAL',
+                ScreensaverEntityFactor: 1,
+                ScreensaverEntityDecimalPlaces: 0,
+                ScreensaverEntityIconOn: 'door-open',
+                ScreensaverEntityIconOff: 'door-closed',
+                ScreensaverEntityText: 'Tür',
+                ScreensaverEntityUnitText: '',
+                ScreensaverEntityIconColor: {val_min: 0, val_max: 1},
+            },
+            // indicatorScreensaverEntity 3 (only Advanced Screensaver)
+            {
+                type: 'script',
+                ScreensaverEntity: 'alias.0.NSPanel.allgemein.Status_Licht_An.ACTUAL',
+                ScreensaverEntityFactor: 1,
+                ScreensaverEntityDecimalPlaces: 0,
+                ScreensaverEntityIconOn: 'lightbulb',
+                ScreensaverEntityIconOff: null,
+                ScreensaverEntityText: 'Licht',
+                ScreensaverEntityUnitText: '',
+                ScreensaverEntityIconColor: {val_min: 0, val_max: 1},
+            },
+            // indicatorScreensaverEntity 4 (only Advanced Screensaver)
+            {
+                type: 'script',
+                ScreensaverEntity: 'alias.0.Türschloss.ACTUAL',
+                ScreensaverEntityFactor: 1,
+                ScreensaverEntityDecimalPlaces: 0,
+                ScreensaverEntityIconOn: 'lock',
+                ScreensaverEntityIconOff: 'lock-open',
+                ScreensaverEntityText: 'Türschloss',
+                ScreensaverEntityUnitText: '',
+                ScreensaverEntityIconColor: {val_min: 0, val_max: 1, val_best: 1},
+            },
+            // indicatorScreensaverEntity 5 (only Advanced Screensaver)
+            {
+                type: 'script',
+                ScreensaverEntity: 'alias.0.NSPanel.allgemein.Auto.Safety.ACTUAL',
+                ScreensaverEntityFactor: 1,
+                ScreensaverEntityDecimalPlaces: 0,
+                ScreensaverEntityIconOn: 'car-key',
+                ScreensaverEntityIconOff: null,
+                ScreensaverEntityText: 'Auto',
+                ScreensaverEntityUnitText: '',
+                ScreensaverEntityIconColor: {val_min: 0, val_max: 1, val_best: 1},
+            },
+        ],
+
+        bottomScreensaverEntity: [
+            // bottomScreensaverEntity 1
+            {
+                type: 'template',
+                template: 'text.pirate-weather.sunriseset',
+                dpInit: `/^pirate-weather\\.0\\.weather\\.daily\\.00.+/`,
+                modeScr: 'bottom',
+            },
+            // bottomScreensaverEntity 2
+            /*{
+                type: 'template',
+                template: 'text.hmip.windcombo',
+                dpInit: 'hmip.0.devices.3014G71HA0001XXXXXXXXXX',
+                modeScr: 'bottom',
+                //readOptions: {directionOfPanel: 81}
+            },*/
+            {
+                type: 'script',
+                ScreensaverEntity: 'pirate-weather.0.weather.currently.windSpeed',
+                ScreensaverEntityFactor: 1,
+                ScreensaverEntityDecimalPlaces: 1,
+                ScreensaverEntityIconOn: 'weather-windy',
+                ScreensaverEntityIconOff: null,
+                ScreensaverEntityText: "Wind",
+                ScreensaverEntityUnitText: 'm/s',
+                ScreensaverEntityIconColor: {'val_min': 0, 'val_max': 120}
+            },
+            // bottomScreensaverEntity 3
+            {
+                type: 'script',
+                ScreensaverEntity: 'pirate-weather.0.weather.currently.windGust',
+                ScreensaverEntityFactor: 1,
+                ScreensaverEntityDecimalPlaces: 1,
+                ScreensaverEntityIconOn: 'weather-tornado',
+                ScreensaverEntityIconOff: null,
+                ScreensaverEntityText: 'Böen',
+                ScreensaverEntityUnitText: 'm/s',
+                ScreensaverEntityIconColor: {'val_min': 0, 'val_max': 120}
+            },
+            // bottomScreensaverEntity 4
+            {
+                type: 'template',
+                template: 'text.pirate-weather.winddirection',
+                dpInit: `/^pirate-weather\\.0\\.weather\\.currently./`,
+                modeScr: 'bottom',
+            },
+            // bottomScreensaverEntity 5 (Advanced Screensaver)
+            {
+                type: 'script',
+                ScreensaverEntity: 'pirate-weather.0.weather.currently.humidity',
+                ScreensaverEntityFactor: 1,
+                ScreensaverEntityDecimalPlaces: 0,
+                ScreensaverEntityIconOn: 'water-percent',
+                ScreensaverEntityIconOff: null,
+                ScreensaverEntityText: 'Feuchte',
+                ScreensaverEntityUnitText: '%',
+                ScreensaverEntityIconColor: {'val_min': 0, 'val_max': 100, 'val_best': 60}
+            },
+            // bottomScreensaverEntity 6 (for Advanced Screensaver)
+            {
+                type: 'template',
+                template: 'text.pirate-weather.uvindex',
+                dpInit: `/^pirate-weather\\.0\\.weather\\.currently./`,
+                modeScr: 'bottom',
+            }
+            // Examples for Advanced-Screensaver: https://github.com/joBr99/nspanel-lovelace-ui/wiki/ioBroker-Config-Screensaver#entity-status-icons-ab-v400 
+
+            // Some templates for the screensaver uncomment the lines to use them
+            // If u use an other instance for the weather data, change the instance in the following lines
+            // If you want to have them all, set weatherAddDefaultItems=true in the config and leave the following lines as they are!
+
+            // zum nutzen der Vorlagen für den Bildschirmschoner die Zeilen auskommentieren, um sie zu verwenden
+            // Wenn du eine andere Instanz für die Wetterdaten verwendest, ändere die Instanz in den folgenden Zeilen
+            // Wenn du sie alle haben willst, setze weatherAddDefaultItems=true in der Konfiguration ganz oben und lass die folgenden Zeilen so wie sie sind!
+
+            /*
+
+            OPENWEATHERMAP
+
+            // Bottom 1 - sunrise/set
+            {
+                type: 'template',
+                template: 'text.openweathermap.favorit',
+                dpInit: `/^openweathermap\\.0.+/`,
+                modeScr: 'favorit',
+            },
+            // Bottom 2 -  Forecast Day 1
+            {
+                type: 'template',
+                template: 'text.openweathermap.bot2values',
+                dpInit: `/^openweathermap\\.0.+?day0/`,
+                modeScr: 'bottom',
+            },
+
+            // Bottom 3 - Forecast Day 2
+            {
+                type: 'template',
+                template: 'text.openweathermap.bot2values',
+                dpInit: `/^openweathermap\\.0.+?day1/`,
+                modeScr: 'bottom',
+            },
+
+            // Bottom 4 - Forecast Day 3
+            {
+                type: 'template',
+                template: 'text.openweathermap.bot2values',
+                dpInit: `/^openweathermap\\.0.+?day2/`,
+                modeScr: 'bottom',
+            },
+
+            // Bottom 5 - Forecast Day 4
+            {
+                type: 'template',
+                template: 'text.openweathermap.bot2values',
+                dpInit: `/^openweathermap\\.0.+?day3/`,
+                modeScr: 'bottom',
+            },
+            // Bottom 6 - Forecast Day 5
+            {
+                type: 'template',
+                template: 'text.openweathermap.bot2values',
+                dpInit: `/^openweathermap\\.0.+?day4/`,
+                modeScr: 'bottom',
+            },
+            // Bottom 7 -  Forecast Day 6
+            {
+                type: 'template',
+                template: 'text.openweathermap.bot2values',
+                dpInit: `/^openweathermap\\.0.+?day5/`,
+                modeScr: 'bottom',
+            },
+
+            // Bottom 8 - Windgeschwindigkeit
+            {
+                type: 'template',
+                template: 'text.openweathermap.windspeed',
+                dpInit: `/^openweathermap\\.0./`,
+                modeScr: 'bottom',
+            },
+
+            // Bottom 9 - Böen
+            {
+                type: 'template',
+                template: 'text.openweathermap.windgust',
+                dpInit: `/^openweathermap\\.0./`,
+                modeScr: 'bottom',
+            },
+
+            // Bottom 10 - Windrichtung
+            {
+                type: 'template',
+                template: 'text.openweathermap.winddirection',
+                dpInit: `/^openweathermap\\.0./`,
+                modeScr: 'bottom',
+            },
+
+            // Bottom 11 - UV-Index
+            {
+                type: 'template',
+                template: 'text.accuweather.uvindex',
+                dpInit: `/^accuweather\\.0./`,
+                modeScr: 'bottom',
+            },
+            */
+
+
+            /*
+            
+            PIRATE-WEATHER
+
+            // Bottom 1 - sunrise/set
+            {
+                type: 'template',
+                template: 'text.pirate-weather.sunriseset',
+                dpInit: `/^pirate-weather\\.0\\.weather\\.daily\\.00.+/`,
+                modeScr: 'bottom',
+            },
+            // Bottom 2 -  Forecast Day 1
+            {
+                type: 'template',
+                template: 'text.pirate-weather.bot2values',
+                dpInit: `/^pirate-weather\\.0.+?\\.daily\\.01/`,
+                modeScr: 'bottom',
+            },
+
+            // Bottom 3 - Forecast Day 2
+            {
+                type: 'template',
+                template: 'text.pirate-weather.bot2values',
+                dpInit: `/^pirate-weather\\.0.+?\\.daily\\.02/`,
+                modeScr: 'bottom',
+            },
+
+            // Bottom 4 - Forecast Day 3
+            {
+                type: 'template',
+                template: 'text.pirate-weather.bot2values',
+                dpInit: `/^pirate-weather\\.0.+?\\.daily\\.03/`,
+                modeScr: 'bottom',
+            },
+
+            // Bottom 5 - Forecast Day 4
+            {
+                type: 'template',
+                template: 'text.pirate-weather.bot2values',
+                dpInit: `/^pirate-weather\\.0.+?\\.daily\\.04/`,
+                modeScr: 'bottom',
+            },
+            // Bottom 6 - Forecast Day 5
+            {
+                type: 'template',
+                template: 'text.pirate-weather.bot2values',
+                dpInit: `/^pirate-weather\\.0.+?\\.daily\\.05/`,
+                modeScr: 'bottom',
+            },
+            // Bottom 7 -  Forecast Day 6
+            {
+                type: 'template',
+                template: 'text.pirate-weather.bot2values',
+                dpInit: `/^pirate-weather\\.0.+?\\.daily\\.06/`,
+                modeScr: 'bottom',
+            },
+
+            // Bottom 8 - Windgeschwindigkeit
+            {
+                type: 'template',
+                template: 'text.pirate-weather.windspeed',
+                dpInit: `/^pirate-weather\\.0\\.weather\\.currently./`,
+                modeScr: 'bottom',
+            },
+
+            // Bottom 9 - Böen
+            {
+                type: 'template',
+                template: 'text.pirate-weather.windgust',
+                dpInit: `/^pirate-weather\\.0\\.weather\\.currently./`,
+                modeScr: 'bottom',
+            },
+
+            // Bottom 10 - Windrichtung
+            {
+                type: 'template',
+                template: 'text.pirate-weather.winddirection',
+                dpInit: `/^pirate-weather\\.0\\.weather\\.currently./`,
+                modeScr: 'bottom',
+            },
+
+            // Bottom 11 - UV-Index
+            {
+                type: 'template',
+                template: 'text.pirate-weather.uvindex',
+                dpInit: `/^pirate-weather\\.0\\.weather\\.currently./`,
+                modeScr: 'bottom',
+            },
+            // hier kann man dann eine Stundenübersicht erzeugen durch anpassen der 02 bzw. 04
+            // die sind nicht in addDefaultWeather enthalten.
+            {
+                type: 'template',
+                template: 'text.pirate-weather.hourlyweather',
+                dpInit: `/^pirate-weather\\.0.+?\\.hourly\\.02/`,
+                modeScr: 'bottom',
+            },
+            {
+                type: 'template',
+                template: 'text.pirate-weather.hourlyweather',
+                dpInit: `/^pirate-weather\\.0.+?\\.hourly\\.04/`,
+                modeScr: 'bottom',
+            },
+            */
+
+            /* Bright Sky
+            {
+                type: 'template',
+                template: 'text.brightsky.sunriseset',
+                dpInit: `/^brightsky\\.0\\.daily\\.00.+/`,
+                modeScr: 'bottom',
+            },
+            // Bottom 2 - brightsky.0. Forecast Day 1
+            {
+                type: 'template',
+                template: 'text.brightsky.bot2values',
+                dpInit: `/^brightsky\\.0\\.daily\\.01/`,
+                modeScr: 'bottom',
+            },
+
+            // Bottom 3 - brightsky.0. Forecast Day 2
+            {
+                type: 'template',
+                template: 'text.brightsky.bot2values',
+                dpInit: `/^brightsky\\.0\\.daily\\.02/`,
+                modeScr: 'bottom',
+            },
+
+            // Bottom 4 - brightsky.0. Forecast Day 3
+            {
+                type: 'template',
+                template: 'text.brightsky.bot2values',
+                dpInit: `/^brightsky\\.0\\.daily\\.03/`,
+                modeScr: 'bottom',
+            },
+
+            // Bottom 5 - brightsky.0. Forecast Day 4
+            {
+                type: 'template',
+                template: 'text.brightsky.bot2values',
+                dpInit: `/^brightsky\\.0\\.daily\\.04/`,
+                modeScr: 'bottom',
+            },
+            // Bottom 6 - brightsky.0. Forecast Day 5
+            {
+                type: 'template',
+                template: 'text.brightsky.bot2values',
+                dpInit: `/^brightsky\\.0\\.daily\\.05/`,
+                modeScr: 'bottom',
+            },
+            // Bottom 7 - brightsky.0. Forecast Day 6
+            {
+                type: 'template',
+                template: 'text.brightsky.bot2values',
+                dpInit: `/^brightsky\\.0\\.daily\\.06/`,
+                modeScr: 'bottom',
+            },
+            // Bottom 8 - Windgeschwindigkeit
+            {
+                type: 'template',
+                template: 'text.brightsky.windspeed',
+                dpInit: `/^brightsky\\.0\\.current./`,
+                modeScr: 'bottom',
+            },
+
+            // Bottom 9 - Böen
+            {
+                template: 'text.brightsky.windgust',
+                dpInit: `/^brightsky\\.0\\.current./`,
+                modeScr: 'bottom',
+            },
+
+            // Bottom 10 - Windrichtung
+            {
+                type: 'template',
+                template: 'text.brightsky.winddirection',
+                dpInit: `/^brightsky\\.0\\.current./`,
+                modeScr: 'bottom',
+            },
+            // Bottom 10 - Solar
+            {
+                type: 'template',
+                template: 'text.brightsky.solar',
+                dpInit: `/^brightsky\\.0\\.current./`,
+                modeScr: 'bottom',
+            },
+            */
+        ],
+
+        leftScreensaverEntity: [
+            // leftScreensaverEntity 1 (only Advanced Screensaver)
+            {
+                type: 'script',
+                ScreensaverEntity: 'alias.0.NSPanel.Flur.Sensor.ANALOG.Temperature.ACTUAL',
+                ScreensaverEntityFactor: 1,
+                ScreensaverEntityDecimalPlaces: 1,
+                ScreensaverEntityIconOn: 'thermometer',
+                ScreensaverEntityIconOff: null,
+                ScreensaverEntityText: 'Temperatur',
+                ScreensaverEntityUnitText: '°C',
+                ScreensaverEntityIconColor: {val_min: 0, val_max: 35, val_best: 22},
+            },
+            // leftScreensaverEntity 2 (only Advanced Screensaver)
+            {
+                type: 'script',
+                ScreensaverEntity: 'alias.0.Heizung.WärmeTagesVerbrauch.ACTUAL',
+                ScreensaverEntityFactor: 1,
+                ScreensaverEntityDecimalPlaces: 1,
+                ScreensaverEntityIconOn: 'counter',
+                ScreensaverEntityIconOff: null,
+                ScreensaverEntityText: 'Wärme',
+                ScreensaverEntityUnitText: ' kWh',
+                ScreensaverEntityIconColor: MSYellow, //{'val_min': 0, 'val_max': 5000}
+            },
+            // leftScreensaverEntity 3 (only Advanced Screensaver)
+            {
+                type: 'script',
+                ScreensaverEntity: 'alias.0.NSPanel.allgemein.Abfall.event1.INFO',
+                ScreensaverEntityFactor: 1,
+                ScreensaverEntityDecimalPlaces: 0,
+                ScreensaverEntityDateFormat: {year: 'numeric', month: '2-digit', day: '2-digit'},
+                ScreensaverEntityIconOn: 'trash-can',
+                ScreensaverEntityIconOff: null,
+                ScreensaverEntityText: 'Abfall',
+                ScreensaverEntityUnitText: '',
+                ScreensaverEntityIconColor: '0_userdata.0.Abfallkalender.1.color',
+            },
+        ],
+
+        // Status Icon 
+        mrIcon1ScreensaverEntity: {
+            type: 'script',
+            ScreensaverEntity: 'Relay.1',
+            ScreensaverEntityIconOn: 'lightbulb',
+            ScreensaverEntityIconOff: null,
+            ScreensaverEntityValue: null,
+            ScreensaverEntityValueDecimalPlace: 0,
+            ScreensaverEntityValueUnit: null,
+            ScreensaverEntityOnColor: On,
+            ScreensaverEntityOffColor: HMIOff
+        },
+        mrIcon2ScreensaverEntity: {
+            type: 'script',
+            ScreensaverEntity: 'Relay.2',
+            ScreensaverEntityIconOn: 'lightbulb',
+            ScreensaverEntityIconOff: null,
+            ScreensaverEntityValue: null,
+            ScreensaverEntityValueDecimalPlace: 0,
+            ScreensaverEntityValueUnit: null,
+            ScreensaverEntityOnColor: On,
+            ScreensaverEntityOffColor: HMIOff
+        },
+        // ------ DE: Ende der Screensaver Einstellungen --------------------
+        // ------ EN: End of screensaver settings ---------------------------
+
+        // DE: Konfiguration des linken Schalters des NSPanels
+        // EN: Configuration of the left switch of the NSPanel
+        buttonLeft: {
+            mode: 'page',
+            page: 'main',
+        },
+
+        // DE: Konfiguration des rechten Schalters des NSPanels
+        // EN: Configuration of the right switch of the NSPanel
+        buttonRight: null/*{
+            mode: 'switch',
+            page: '0_userdata.0.example',
+            
+        }*/,
+    };
+
+
+    /**
+     ********************************************************************************
+     ********************************************************************************
+     ********************************************************************************
+     ********************************************************************************
+     ********************************************************************************
+     ********************************************************************************
+     ********************************************************************************
+     *  END STOP END STOP END - No more configuration - END STOP END STOP END       *
+     ********************************************************************************
+     *  For a update copy and paste the code below from orginal file.               *
+     * ******************************************************************************
+     ********************************************************************************
+     ********************************************************************************
+     ********************************************************************************
+     ********************************************************************************
+     ********************************************************************************
+     ********************************************************************************
+     */
+    try {
+        log(await sendToAsync('nspanel-lovelace-ui.0', 'ScriptConfig', Object.assign({...config, version, scriptName: scriptName}, overrideConfig), {timeout: 30_000}));
+    } catch (e) {
+        log(`Error in sendTo ScriptConfig: ${e}! This usually means that the adapter is not working!`, 'error');
+    }
+    stopScript(scriptName, undefined)
+}
+
+

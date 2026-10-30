@@ -2870,3 +2870,91 @@ export const ADMIN_BUTTON_DEFAULT_DELAY = 0.25;
 export const ADMIN_BUTTON_MIN_DELAY = 0.001;
 /** Largest delay the adapter accepts, in seconds (2^31-1 ms). */
 export const ADMIN_BUTTON_MAX_DELAY = 2_147_483;
+
+/* ---------------------------------------------------------------------------------------------
+ * Conversion of a configuration script into the admin configuration (sendTo `convertScriptToAdmin`)
+ * ------------------------------------------------------------------------------------------- */
+
+/** sendTo command of the adapter: plan (dryRun) or execute the conversion of a panel's script */
+export const SENDTO_CONVERT_SCRIPT_COMMAND = 'convertScriptToAdmin';
+
+export type ConvertScriptRequest = { panelTopic: string; dryRun: boolean };
+
+/** why a page, the screensaver or a button of the script is not converted */
+export type ConvertSkipReason =
+    | 'unsupportedPageType'
+    | 'nameExists'
+    | 'itemNotSupported'
+    | 'fieldNotSupported'
+    | 'adminOnly'
+    | 'adminAlreadyNavigated'
+    | 'adminEntryMissing'
+    | 'screensaverExists'
+    | 'screensaverItemNotSupported'
+    | 'screensaverEmpty'
+    | 'buttonConfigured'
+    | 'buttonNotSupported';
+
+/** a page of the script and what the conversion does with it */
+export type ConvertPagePlan = {
+    uniqueName: string;
+    /** page type of the script (`cardGrid`, `cardThermo2`, …) */
+    type: string;
+    /** card of the admin entry */
+    card: string;
+    itemCount: number;
+    navigation: NavigationLinks;
+    /**
+     * create - a new admin entry; assignNavigation - the admin entry exists (power/chart), only the navigation of
+     * this panel is assigned; removeReference - the script page is a dead reference and is only removed from the script
+     */
+    action: 'create' | 'assignNavigation' | 'removeReference';
+    /**
+     * create only: uniqueName of the admin entry when it differs from the script name - the start page
+     * `main` is stored as `main_<panel>` with `isMainPage` when the name is taken by another panel's page
+     */
+    storedAs?: string;
+    /** removeReference only: why the script page is a dead reference */
+    reason?: Extract<ConvertSkipReason, 'adminOnly' | 'adminAlreadyNavigated'>;
+};
+
+export type ConvertSkipped = { uniqueName: string; type: string; reason: ConvertSkipReason; detail?: string };
+
+export type ConvertScriptPlan = {
+    panelTopic: string;
+    panelName: string;
+    /** id of the script object (`scriptName` of the configuration) */
+    scriptId: string;
+    scriptFound: boolean;
+    pages: ConvertPagePlan[];
+    skipped: ConvertSkipped[];
+    screensaver?: { name: string; mode: ScreensaverMode; itemCount: number; notifyCount: number };
+    screensaverSkipped?: { reason: ConvertSkipReason; detail?: string };
+    buttons: { left?: AdminButtonFunction; right?: AdminButtonFunction };
+    buttonsSkipped: { side: 'left' | 'right'; reason: ConvertSkipReason; detail?: string }[];
+    /** no page, screensaver or button to convert and nothing to remove from the script */
+    nothingToDo: boolean;
+};
+
+export type ConvertScriptResult = ConvertScriptPlan & {
+    executed: boolean;
+    backupId?: string;
+    deletedBackups: string[];
+    renamedBackups: { from: string; to: string }[];
+    scriptRewritten: boolean;
+    /** what could not be changed in the script source (left untouched) */
+    scriptNotes: string[];
+    /** the panel was reloaded in the running adapter (hot reload, no restart) */
+    panelReloaded: boolean;
+    /**
+     * the adapter restarts itself right after this answer: the admin entries are written into the instance
+     * object, which the js-controller answers with a restart; the entries are used from that start on
+     */
+    adapterRestarts: boolean;
+    /**
+     * the admin entries could not be written into the instance object, but the plan is stored in the meta object
+     * (`native.pendingScriptConversion`) and the adapter applies it at its next start
+     */
+    pendingApplyAtStart?: boolean;
+    error?: string;
+};
