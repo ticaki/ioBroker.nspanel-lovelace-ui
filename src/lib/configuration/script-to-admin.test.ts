@@ -1941,6 +1941,9 @@ describe('lib/configuration - planScriptToAdmin: page items', () => {
                 filter: 1,
                 longPress: 'alias.0.Tests.button.SET',
                 targetPageLongPress: 'lp',
+                useValueConditions: 'val && val < 100',
+                minValue: 5,
+                maxValue: 90,
             },
         ]);
         expect(result.plan.skipped).to.deep.equal([]);
@@ -1973,6 +1976,9 @@ describe('lib/configuration - planScriptToAdmin: page items', () => {
             filter: 1,
             longPress: 'alias.0.Tests.button.SET',
             targetPageLongPress: 'lp',
+            useValueConditions: 'val && val < 100',
+            minValue: 5,
+            maxValue: 90,
         });
     });
 
@@ -2064,7 +2070,11 @@ describe('lib/configuration - planScriptToAdmin: page items', () => {
             [{ id: 'alias.0.Hue', sliderItems: [] }, 'items[0].sliderItems: not available in the admin'],
             [{ id: 'alias.0.Hue', enabled: false }, 'items[0].enabled: not available in the admin'],
             [{ id: 'alias.0.Hue', role: 'light' }, 'items[0].role: not available in the admin'],
-            [{ id: 'alias.0.Hue', minValue: 0 }, 'items[0].minValue: not available in the admin'],
+            [{ id: 'alias.0.Hue', useValueConditions: 5 }, 'items[0].useValueConditions: expected a text'],
+            [{ id: 'alias.0.Hue', minValue: '0' }, 'items[0].minValue: expected a number'],
+            [{ id: 'alias.0.Hue', maxValue: true }, 'items[0].maxValue: expected a number'],
+            [{ id: 'alias.0.Hue', maxValue: Number.NaN }, 'items[0].maxValue: expected a number'],
+            [{ type: 'custom', id: 'x', minValue: 1 }, 'items[0].minValue: not available in the admin'],
             [{ native: { template: 'x' } }, 'items[0]: native item'],
             [{ navigate: true }, 'items[0]: navigate without targetPage'],
             [{ id: 'alias.0.Hue', targetPage: 'x' }, 'items[0].targetPage: only used with navigate: true'],
@@ -2118,6 +2128,66 @@ describe('lib/configuration - planScriptToAdmin: page items', () => {
         expect((result.newPages[0] as ShareConfig.MenuEntry).pageItems[0]).to.deep.equal({
             channelId: { valueStateId: 'alias.0.Hue', unit: '', prefix: '', suffix: '', dateFormat: '' },
         });
+    });
+
+    it('drops an empty useValueConditions (the admin path hands an empty text on as undefined), keeps a range of 0', () => {
+        const result = planItems([{ id: 'alias.0.Tests.Volume', useValueConditions: '', minValue: 0, maxValue: 100 }]);
+        expect(result.plan.skipped).to.deep.equal([]);
+        expect((result.newPages[0] as ShareConfig.MenuEntry).pageItems[0]).to.deep.equal({
+            channelId: { valueStateId: 'alias.0.Tests.Volume', unit: '', prefix: '', suffix: '', dateFormat: '' },
+            minValue: 0,
+            maxValue: 100,
+        });
+    });
+
+    it('useValueConditions, minValue and maxValue reach the runtime item over the admin path like over the script path', async () => {
+        resetStatesController();
+        const logs: LogEntry[] = [];
+        const adapter = fakeAdapter(logs);
+        const prePage = { card: 'cardGrid', uniqueName: 'p' };
+        const volume = await adapter.convertAdminPageItemToPageItemConfig(
+            { channelId: ShareConfig.emptyChannelValueConfig('alias.0.Tests.Volume'), minValue: 5, maxValue: 90 },
+            prePage,
+            [],
+        );
+        expect(volume.error).to.equal(undefined);
+        const volumeData = (volume.pageItem as { data?: { minValue1?: unknown; maxValue1?: unknown } }).data;
+        expect(volumeData?.minValue1).to.deep.equal({ type: 'const', constVal: 5 });
+        expect(volumeData?.maxValue1).to.deep.equal({ type: 'const', constVal: 90 });
+
+        // 0 counts as not set on both paths (truthy check of the config manager)
+        const zero = await adapter.convertAdminPageItemToPageItemConfig(
+            { channelId: ShareConfig.emptyChannelValueConfig('alias.0.Tests.Volume'), minValue: 0, maxValue: 0 },
+            prePage,
+            [],
+        );
+        const zeroData = (zero.pageItem as { data?: { minValue1?: unknown; maxValue1?: unknown } }).data;
+        expect(zeroData?.minValue1).to.equal(undefined);
+        expect(zeroData?.maxValue1).to.equal(undefined);
+
+        type TextEntry = { data?: { icon?: { true?: { text?: { useValueConditions?: unknown } } } } };
+        const info = await adapter.convertAdminPageItemToPageItemConfig(
+            {
+                channelId: ShareConfig.emptyChannelValueConfig('0_userdata.0.Einzelne_Geräte.Info'),
+                useValueConditions: 'val && val < 100',
+            },
+            prePage,
+            [],
+        );
+        expect(info.error).to.equal(undefined);
+        expect((info.pageItem as TextEntry).data?.icon?.true?.text?.useValueConditions).to.deep.equal({
+            type: 'const',
+            constVal: 'val && val < 100',
+        });
+        const empty = await adapter.convertAdminPageItemToPageItemConfig(
+            {
+                channelId: ShareConfig.emptyChannelValueConfig('0_userdata.0.Einzelne_Geräte.Info'),
+                useValueConditions: '',
+            },
+            prePage,
+            [],
+        );
+        expect((empty.pageItem as TextEntry).data?.icon?.true?.text?.useValueConditions).to.equal(undefined);
     });
 });
 
@@ -2720,6 +2790,8 @@ describe('lib/configuration - planScriptToAdmin: equivalence of the runtime page
             ['main', 'create', {}],
             ['main22', 'create', { prev: 'main' }],
             ['powerpage', 'assignNavigation', { prev: 'main22', next: 'cardThermo2' }],
+            // subgrid2 holds the volume item with minValue / maxValue - the admin takes them
+            ['subgrid2', 'create', { prev: 'cardThermo2' }],
             ['hidden', 'create', { home: 'main' }],
         ]);
         expect(result.plan.skipped).to.deep.equal([
@@ -2728,12 +2800,6 @@ describe('lib/configuration - planScriptToAdmin: equivalence of the runtime page
                 type: 'cardGrid',
                 reason: 'itemNotSupported',
                 detail: 'items[1].confirm: not available in the admin',
-            },
-            {
-                uniqueName: 'subgrid2',
-                type: 'cardGrid',
-                reason: 'itemNotSupported',
-                detail: 'items[6].minValue: not available in the admin',
             },
             { uniqueName: 'testrole', type: 'cardGrid', reason: 'itemNotSupported', detail: 'items[0]: native item' },
         ]);
@@ -2826,6 +2892,43 @@ describe('lib/configuration - planScriptToAdmin: equivalence of the runtime page
             }),
         );
         expect(result.plan.pages[0].itemCount).to.equal(2);
+        expectIdempotent(result);
+    });
+
+    it('volume range and value condition of page items', async () => {
+        const result = await expectEquivalent(
+            baseConfig({
+                pages: [
+                    page({
+                        type: 'cardGrid',
+                        uniqueName: 'main',
+                        heading: 'Volume',
+                        items: [
+                            {
+                                id: '0_userdata.0.Einzelne_Geräte.volume',
+                                name: 'Volume',
+                                minValue: 0,
+                                maxValue: 100,
+                                navigate: true,
+                                targetPage: 'hidden',
+                            },
+                            { id: 'alias.0.Tests.Volume', minValue: 5, maxValue: 90 },
+                            {
+                                id: '0_userdata.0.Einzelne_Geräte.Info',
+                                useValue: true,
+                                useValueConditions: 'val && val < 100',
+                            },
+                            { id: 'alias.0.NSPanel.allgemein.Temperatur', useValueConditions: 'val > 20' },
+                        ],
+                    }),
+                    page({ type: 'cardGrid', uniqueName: 'hidden', heading: 'Hidden', items: [] }),
+                ],
+                mrIcon1ScreensaverEntity: mrIcon(null),
+                mrIcon2ScreensaverEntity: mrIcon(null),
+            }),
+        );
+        expect(result.plan.skipped).to.deep.equal([]);
+        expect(result.plan.pages[0].itemCount).to.equal(4);
         expectIdempotent(result);
     });
 });

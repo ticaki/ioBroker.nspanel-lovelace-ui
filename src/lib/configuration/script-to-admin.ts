@@ -313,6 +313,9 @@ const itemMappedKeys = [
     'inSel_Alias',
     'fontSize',
     'filter',
+    'useValueConditions',
+    'minValue',
+    'maxValue',
 ] as const;
 
 /** fields of a script page item the config manager never reads - dropping them changes nothing */
@@ -497,6 +500,20 @@ function convertPageItem(item: Dict, where: string): AdminPageItemConfig {
     const filter = num(item.filter, reason, `${where}.filter`);
     if (filter !== undefined) {
         admin.filter = filter;
+    }
+    // an empty condition is dropped: the admin path hands an empty text to the config manager as undefined
+    const useValueConditions = str(item.useValueConditions, reason, `${where}.useValueConditions`);
+    if (useValueConditions) {
+        admin.useValueConditions = useValueConditions;
+    }
+    // the config manager reads both for role volume only - kept for every item like the admin path does
+    const minValue = num(item.minValue, reason, `${where}.minValue`);
+    if (minValue !== undefined) {
+        admin.minValue = minValue;
+    }
+    const maxValue = num(item.maxValue, reason, `${where}.maxValue`);
+    if (maxValue !== undefined) {
+        admin.maxValue = maxValue;
     }
     return admin;
 }

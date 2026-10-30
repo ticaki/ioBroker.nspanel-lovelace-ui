@@ -63,6 +63,30 @@ import FormatListBulletedIcon from '@mui/icons-material/FormatListBulleted';
  */
 const MODE_LIST_ROLES: readonly string[] = ['rgbSingle', 'rgb', 'ct', 'hue', 'select'];
 
+/**
+ * Channel roles whose icon text takes `useValueConditions` (config-manager.ts, `iconTextDefaults` of
+ * getPageItemConfig): the value is shown instead of the icon only while the expression is true.
+ */
+const USE_VALUE_CONDITIONS_ROLES: readonly string[] = [
+    'info',
+    'slider',
+    'motion',
+    'door',
+    'window',
+    'temperature',
+    'value.temperature',
+    'thermostat',
+    'airCondition',
+    'humidity',
+    'value.humidity',
+];
+
+/** Same for navigation items (getPageNaviItemConfig): only these two roles hand the condition on. */
+const USE_VALUE_CONDITIONS_NAVI_ROLES: readonly string[] = ['thermostat', 'humidity'];
+
+/** Channel roles whose page item reads `minValue` / `maxValue` (config-manager.ts, case 'volume'). */
+const VALUE_RANGE_ROLES: readonly string[] = ['volume'];
+
 export type { AdminPageItemConfig as PageItemConfig };
 
 type ChannelConfigDialogProps = {
@@ -165,6 +189,12 @@ interface ChannelConfigDialogState {
     filter: number | undefined;
     /** Mode list of light items (undefined = not configured) */
     modeList: string[] | undefined;
+    /** JavaScript expression over `val` deciding whether the value is shown instead of the icon ('' = not set) */
+    useValueConditions: string;
+    /** Role volume: lower end of the volume slider (undefined = panel default) */
+    minValue: number | undefined;
+    /** Role volume: upper end of the volume slider (undefined = panel default) */
+    maxValue: number | undefined;
 }
 
 /** Minimales leeres ioBroker.InstanceCommon für ConfigGeneric-Komponenten */
@@ -243,6 +273,9 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
             inSel_Alias: undefined,
             modeList: undefined,
             filter: undefined,
+            useValueConditions: '',
+            minValue: undefined,
+            maxValue: undefined,
         };
     }
 
@@ -338,6 +371,9 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                 typeof data?.inSel_Alias === 'string' && data.inSel_Alias !== '' ? data.inSel_Alias : undefined,
             modeList: Array.isArray(data?.modeList) && data.modeList.length > 0 ? data.modeList : undefined,
             filter: typeof data?.filter === 'number' ? data.filter : undefined,
+            useValueConditions: typeof data?.useValueConditions === 'string' ? data.useValueConditions : '',
+            minValue: typeof data?.minValue === 'number' ? data.minValue : undefined,
+            maxValue: typeof data?.maxValue === 'number' ? data.maxValue : undefined,
         });
         if (this.props.pagesList && this.props.pagesList.length > 0) {
             this.setState({ availablePages: this.sortPages(this.props.pagesList) });
@@ -487,7 +523,14 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
             inSel_Alias,
             modeList,
             filter,
+            useValueConditions,
+            minValue,
+            maxValue,
         } = this.state;
+        // '' and non-finite numbers are "not set" - the field is left out of the stored item
+        const useValueConditionsOut = useValueConditions.trim() !== '' ? useValueConditions.trim() : undefined;
+        const minValueOut = minValue !== undefined && Number.isFinite(minValue) ? minValue : undefined;
+        const maxValueOut = maxValue !== undefined && Number.isFinite(maxValue) ? maxValue : undefined;
         if (this.state.nativeMode) {
             try {
                 const parsed: unknown = JSON.parse(this.state.nativeJson);
@@ -509,6 +552,9 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                     inSel_Alias,
                     modeList,
                     filter,
+                    useValueConditions: useValueConditionsOut,
+                    minValue: minValueOut,
+                    maxValue: maxValueOut,
                     role: channelRole ?? undefined,
                     useNative: true,
                     native: parsed,
@@ -536,6 +582,9 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
             inSel_Alias,
             modeList,
             filter,
+            useValueConditions: useValueConditionsOut,
+            minValue: minValueOut,
+            maxValue: maxValueOut,
             valueEntry: this.state.valueEntry,
         };
     }
@@ -1018,6 +1067,19 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
         void this.checkChannelExists(this.state.channelId.valueStateId, checked);
     };
 
+    /**
+     * Number of a range field; empty or not a number = not set.
+     *
+     * @param raw Text of the input.
+     */
+    private parseRangeInput(raw: string): number | undefined {
+        if (raw.trim() === '') {
+            return undefined;
+        }
+        const n = Number(raw);
+        return Number.isFinite(n) ? n : undefined;
+    }
+
     private handleUseValueChange = (event: React.ChangeEvent<HTMLInputElement>): void => {
         const checked = event.target.checked;
         this.setState({ useValue: checked });
@@ -1403,6 +1465,21 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
             this.state.trueColor !== '' || this.state.falseColor !== '' || this.state.scale !== undefined;
         const modeListConfigured =
             (channelRole !== 'select' && !!this.state.inSel_Alias) || (this.state.modeList?.length ?? 0) > 0;
+        /** Condition for the value text: only the roles whose icon text the adapter builds from it */
+        const useValueConditionsVisible =
+            channelRole !== null &&
+            channelIdValid &&
+            !isCustom &&
+            !nativeMode &&
+            (isNavigation ? USE_VALUE_CONDITIONS_NAVI_ROLES : USE_VALUE_CONDITIONS_ROLES).includes(channelRole);
+        /** Range of the volume slider: the adapter reads minValue / maxValue for page items of role volume only */
+        const valueRangeVisible =
+            channelRole !== null &&
+            channelIdValid &&
+            !isCustom &&
+            !nativeMode &&
+            !isNavigation &&
+            VALUE_RANGE_ROLES.includes(channelRole);
 
         console.log(
             `[ChannelConfigDialog] render: channelId=${channelId.valueStateId}, channelExists=${channelExists}, channelRole=${channelRole}, roleIsValid=${roleIsValid}, datapointErrors=${this.state.datapointErrors.join(',')}, datapointDuplicates=${this.state.datapointDuplicates.join(',')}, nativeMode=${nativeMode}, nativeJsonValid=${nativeJsonValid}, hasDatapointProblems=${hasDatapointProblems}, hasProblems=${this.state.hasProblems}, errorSaveDetails=${errorSaveDetails} standardCanSave=${standardCanSave}, canSave=${canSave} fieldsDisabled=${fieldsDisabled}, longPressEnabled=${longPressEnabled}, channelIdValid=${channelIdValid}`,
@@ -1866,6 +1943,51 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                                         </FormControl>
                                     )}
                                 </Box>
+                                {useValueConditionsVisible && (
+                                    <TextField
+                                        variant="standard"
+                                        fullWidth
+                                        label={I18n.t('channelConfigDialog_useValueConditions')}
+                                        value={this.state.useValueConditions}
+                                        onChange={e => this.setState({ useValueConditions: e.target.value })}
+                                        disabled={fieldsDisabled}
+                                        helperText={I18n.t('channelConfigDialog_useValueConditionsHint')}
+                                        placeholder="val && val < 100"
+                                        slotProps={{
+                                            inputLabel: { shrink: true },
+                                            input: { sx: { fontFamily: 'monospace' } },
+                                        }}
+                                    />
+                                )}
+                                {valueRangeVisible && (
+                                    <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2, flexWrap: 'wrap' }}>
+                                        <TextField
+                                            variant="standard"
+                                            type="number"
+                                            label={I18n.t('channelConfigDialog_minValue')}
+                                            value={this.state.minValue === undefined ? '' : String(this.state.minValue)}
+                                            onChange={e =>
+                                                this.setState({ minValue: this.parseRangeInput(e.target.value) })
+                                            }
+                                            disabled={fieldsDisabled}
+                                            sx={{ width: 160 }}
+                                            slotProps={{ inputLabel: { shrink: true }, htmlInput: { step: 'any' } }}
+                                        />
+                                        <TextField
+                                            variant="standard"
+                                            type="number"
+                                            label={I18n.t('channelConfigDialog_maxValue')}
+                                            value={this.state.maxValue === undefined ? '' : String(this.state.maxValue)}
+                                            onChange={e =>
+                                                this.setState({ maxValue: this.parseRangeInput(e.target.value) })
+                                            }
+                                            disabled={fieldsDisabled}
+                                            helperText={I18n.t('channelConfigDialog_valueRangeHint')}
+                                            sx={{ width: 160 }}
+                                            slotProps={{ inputLabel: { shrink: true }, htmlInput: { step: 'any' } }}
+                                        />
+                                    </Box>
+                                )}
                                 {this.state.isGridCard && longPressEnabled && (
                                     <Box
                                         component="fieldset"

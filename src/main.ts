@@ -3113,6 +3113,11 @@ class NspanelLovelaceUi extends utils.Adapter {
                     item.modeList = preItem.modeList?.length ? preItem.modeList : undefined;
                     // cardThermo2: heat circuit the item belongs to (page items only, not custom items)
                     item.filter = typeof preItem.filter === 'number' ? preItem.filter : undefined;
+                    // condition for the value text (icon text of info, slider, temperature, ... items)
+                    item.useValueConditions = preItem.useValueConditions ? preItem.useValueConditions : undefined;
+                    // role volume: range of the volume slider (the config manager reads both for volume only)
+                    item.minValue = typeof preItem.minValue === 'number' ? preItem.minValue : undefined;
+                    item.maxValue = typeof preItem.maxValue === 'number' ? preItem.maxValue : undefined;
                 }
             }
 

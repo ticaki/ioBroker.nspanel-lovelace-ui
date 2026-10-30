@@ -896,6 +896,21 @@ export type AdminPageItemConfig = {
      * counts as two circuits (heating and cooling), see the wiki page PageThermo2.
      */
     filter?: number;
+    /**
+     * JavaScript expression over `val` (the current value of the item), e.g. `val && val < 100`. While it
+     * is true the value is shown as text instead of the icon, otherwise the icon (`getIconEntryValue` of
+     * the adapter). The config manager hands it to the icon text of the roles info, slider, motion, door,
+     * window, temperature / value.temperature / thermostat / airCondition and humidity / value.humidity;
+     * of the navigation items only thermostat and humidity. Empty = not set.
+     */
+    useValueConditions?: string;
+    /**
+     * Role volume only: lower end of the volume slider. The config manager takes it only when it is
+     * truthy, so 0 counts as not set (the panel default).
+     */
+    minValue?: number;
+    /** Role volume only: upper end of the volume slider, 0 counts as not set like {@link minValue}. */
+    maxValue?: number;
 };
 
 /**
