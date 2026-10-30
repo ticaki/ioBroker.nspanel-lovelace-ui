@@ -4,7 +4,8 @@
  *
  * The functions here are the inverse of the code that turns admin entries back into the script form at
  * runtime: `convertAdminPageItemToPageItemConfig` (main.ts), `buildThermo2ScriptPage` /
- * `buildMediaScriptPage` (admin.ts), `buildScreensaverScriptConfig` (admin-screensaver.ts) and
+ * `buildThermoScriptPage` / `buildMediaScriptPage` (admin.ts), `buildScreensaverScriptConfig`
+ * (admin-screensaver.ts) and
  * `applyAdminButtons` (panel-buttons.ts). Everything those functions cannot produce is reported as not
  * convertible - a page is only converted as a whole, so the panel behaves exactly as before.
  *
@@ -52,6 +53,7 @@ import {
     type Thermo2CircuitConfig,
     type Thermo2Entry,
     type Thermo2SortOrder,
+    type ThermoEntry,
 } from '../types/adminShareConfig';
 import { isIconColorScaleElement } from '../types/function-and-const';
 import { findScreensaverEntry } from './admin-screensaver';
@@ -963,6 +965,72 @@ function convertThermo2Page(page: Dict, common: PageCommon, topic: string): Ther
     };
     if (sortOrder !== undefined && sortOrder !== null) {
         entry.sortOrder = sortOrder as Thermo2SortOrder;
+    }
+    return entry;
+}
+
+/**
+ * Admin entry of a classic cardThermo page - inverse of `buildThermoScriptPage` (admin.ts).
+ *
+ * The adapter reads only `heading` and, of `items[0]`, `id`, `unit`, `minValue`, `maxValue` and
+ * `stepValue` (`ConfigManager.getPageThermo`). Every other field of the item (`popupThermoMode1..3`,
+ * `popUpThermoName`, `setThermoAlias`, icons, colors, ...) and every further item are dropped without
+ * notice - the panel never saw them. The page is skipped only when the admin entry would build another
+ * page: no item, an item without a state id (or a navigation / native item), a unit that is no text or
+ * empty, a limit that is no number.
+ *
+ * @param page Page of the script.
+ * @param common Converted common fields.
+ * @param topic Topic of the panel.
+ */
+function convertThermoPage(page: Dict, common: PageCommon, topic: string): ThermoEntry {
+    const reason: ConvertSkipReason = 'fieldNotSupported';
+    rejectUnknownKeys(page, pageMappedKeys, pageIgnoredKeys, reason, 'page');
+    const items = page.items;
+    if (!Array.isArray(items) || items.length === 0) {
+        throw new ConvertError(reason, 'items: expected a list with the thermostat as first entry');
+    }
+    const item: unknown = items[0];
+    if (!isDict(item)) {
+        throw new ConvertError(reason, 'items[0]: expected an object');
+    }
+    if (item.native !== undefined && item.native !== null) {
+        throw new ConvertError(reason, 'items[0]: native item');
+    }
+    if (item.navigate === true) {
+        throw new ConvertError(reason, 'items[0].navigate: the thermostat page has no navigation item');
+    }
+    const id = trimmedText(item.id, reason, 'items[0].id');
+    if (!id) {
+        throw new ConvertError(reason, 'items[0].id: missing');
+    }
+    const unit = trimmedText(item.unit, reason, 'items[0].unit');
+    if (item.unit !== undefined && item.unit !== null && !unit) {
+        throw new ConvertError(reason, 'items[0].unit: empty - the admin shows the unit of the state instead');
+    }
+    const entry: ThermoEntry = {
+        card: 'cardThermo',
+        uniqueName: common.uniqueName,
+        headline: common.headline,
+        channelId: id,
+        hidden: common.hidden,
+        alwaysOn: common.alwaysOn,
+        navigationAssignment: [{ topic, navigation: common.navigation }],
+    };
+    if (unit !== undefined) {
+        entry.unit = unit;
+    }
+    const minValue = num(item.minValue, reason, 'items[0].minValue');
+    if (minValue !== undefined) {
+        entry.minValue = minValue;
+    }
+    const maxValue = num(item.maxValue, reason, 'items[0].maxValue');
+    if (maxValue !== undefined) {
+        entry.maxValue = maxValue;
+    }
+    const stepValue = num(item.stepValue, reason, 'items[0].stepValue');
+    if (stepValue !== undefined) {
+        entry.stepValue = stepValue;
     }
     return entry;
 }
@@ -2074,16 +2142,13 @@ export function planScriptToAdmin(input: ScriptToAdminInput): ScriptToAdminResul
             }
             return;
         }
-        if (typeName === 'cardThermo') {
-            skip(uniqueName, typeName, 'unsupportedPageType', 'classic thermo page');
-            return;
-        }
         if (
             typeName !== 'cardGrid' &&
             typeName !== 'cardGrid2' &&
             typeName !== 'cardGrid3' &&
             typeName !== 'cardEntities' &&
             typeName !== 'cardSchedule' &&
+            typeName !== 'cardThermo' &&
             typeName !== 'cardThermo2' &&
             typeName !== 'cardMedia'
         ) {
@@ -2112,6 +2177,8 @@ export function planScriptToAdmin(input: ScriptToAdminInput): ScriptToAdminResul
             let entry: PageConfigEntry;
             if (typeName === 'cardThermo2') {
                 entry = convertThermo2Page(page, common, panel.topic);
+            } else if (typeName === 'cardThermo') {
+                entry = convertThermoPage(page, common, panel.topic);
             } else if (typeName === 'cardMedia') {
                 entry = convertMediaPage(page, common, panel.topic);
             } else {

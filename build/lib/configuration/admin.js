@@ -30,7 +30,8 @@ var admin_exports = {};
 __export(admin_exports, {
   AdminConfiguration: () => AdminConfiguration,
   buildMediaScriptPage: () => buildMediaScriptPage,
-  buildThermo2ScriptPage: () => buildThermo2ScriptPage
+  buildThermo2ScriptPage: () => buildThermo2ScriptPage,
+  buildThermoScriptPage: () => buildThermoScriptPage
 });
 module.exports = __toCommonJS(admin_exports);
 var import_config_manager = require("../classes/config-manager");
@@ -227,6 +228,39 @@ Stack: ${stack}`
     return gridItem;
   }
   /**
+   * Builds the runtime page of a cardThermo entry (classic thermostat page).
+   *
+   * The entry is turned into the script form and handed to the code the script configuration
+   * uses (`ConfigManager.getPageThermo`), which checks the role of the channel, searches its
+   * states and generates the buttons at the bottom from them - the page is identical on both
+   * paths. The card has no page items of its own.
+   *
+   * @param entry Thermo entry as stored by the PageConfig editor.
+   * @param alwaysOn Validated always-on mode of the entry.
+   * @returns The page for the panel configuration; with an unusable channel it has no data.
+   */
+  async buildThermoPage(entry, alwaysOn) {
+    let gridItem = {
+      uniqueID: entry.uniqueName,
+      hidden: !!entry.hidden,
+      alwaysOn,
+      dpInit: "",
+      config: {
+        card: "cardThermo",
+        data: { headline: { type: "const", constVal: entry.headline || entry.uniqueName } }
+      },
+      pageItems: []
+    };
+    let messages = [];
+    const manager = new import_config_manager.ConfigManager(this.adapter);
+    ({ gridItem, messages } = await manager.getPageThermo(buildThermoScriptPage(entry), gridItem, messages));
+    for (const msg of messages) {
+      this.log.debug(`cardThermo '${entry.uniqueName}': ${msg}`);
+    }
+    this.log.debug(`Generated cardThermo page for '${entry.uniqueName}'`);
+    return gridItem;
+  }
+  /**
    * Builds the runtime page of a cardMedia entry.
    *
    * Same path as cardThermo2: the entry is turned into the script form and handed to
@@ -416,6 +450,13 @@ Stack: ${stack}`
             entry.alwaysOn = "none";
           }
           newPage = await this.buildThermo2Page(entry, entry.alwaysOn);
+          break;
+        }
+        case "cardThermo": {
+          if (!isAlwaysOnMode(entry.alwaysOn)) {
+            entry.alwaysOn = "none";
+          }
+          newPage = await this.buildThermoPage(entry, entry.alwaysOn);
           break;
         }
         case "cardMedia": {
@@ -921,6 +962,26 @@ function buildThermo2ScriptPage(entry) {
     sortOrder
   };
 }
+function thermoLimit(value) {
+  return typeof value === "number" && Number.isFinite(value) ? value : void 0;
+}
+function buildThermoScriptPage(entry) {
+  var _a;
+  return {
+    type: "cardThermo",
+    uniqueName: entry.uniqueName,
+    heading: entry.headline || entry.uniqueName,
+    items: [
+      {
+        id: (_a = thermo2Text(entry.channelId)) != null ? _a : "",
+        unit: thermo2Text(entry.unit),
+        minValue: thermoLimit(entry.minValue),
+        maxValue: thermoLimit(entry.maxValue),
+        stepValue: thermoLimit(entry.stepValue)
+      }
+    ]
+  };
+}
 function mediaVolume(value) {
   return typeof value === "number" && Number.isFinite(value) && value >= 0 ? value : void 0;
 }
@@ -1099,6 +1160,7 @@ function dataForcardTrash(entry) {
 0 && (module.exports = {
   AdminConfiguration,
   buildMediaScriptPage,
-  buildThermo2ScriptPage
+  buildThermo2ScriptPage,
+  buildThermoScriptPage
 });
 //# sourceMappingURL=admin.js.map

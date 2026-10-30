@@ -1327,5 +1327,10 @@
     "wlanhidden": "Wifi nascosto",
     "wlantype": "Crittografia WiFi",
     "writeTasmotaTele": "Scrivi i dati di telemetria Tasmota",
-    "writeTasmotaTeleHint": "Se abilitato, i dati di telemetria del pannello verranno memorizzati nei punti dati (pannelli/XXXXX/info/tasmota/sts....)."
+    "writeTasmotaTeleHint": "Se abilitato, i dati di telemetria del pannello verranno memorizzati nei punti dati (pannelli/XXXXX/info/tasmota/sts....).",
+    "page_type_thermo": "Termostato (classico)",
+    "thermo_intro": "Pagina termostato classica: un canale alias con il ruolo thermostat o airCondition. L’adapter legge gli stati di temperatura attuale, impostata e umidità sotto il canale; i pulsanti in basso non vengono configurati ma derivati dagli stati che vi trova (modalità, boost, finestra aperta, …).",
+    "thermo_headlineHint": "Vuoto = ID univoco della pagina",
+    "thermo_unitHint": "Vuoto = unità dello stato della temperatura impostata",
+    "thermo_limitsHint": "Salvato esattamente come nello script. Il pannello conta in decimi di grado: con un massimo di 100 o più i tre valori sono decimi (100 = 10 °C, passo 5 = 0,5 °C); con un massimo inferiore a 100 contano come gradi (passo 0,5 = 0,5 °C). Vuoto = min/max/step dello stato della temperatura impostata, altrimenti da 15 °C a 30 °C a passi di 0,5 °C."
 }

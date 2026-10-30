@@ -1639,6 +1639,60 @@ export function emptyThermo2Entry(uniqueName: string): Thermo2Entry {
 }
 
 // ---------------------------------------------------------------------------------------------
+// cardThermo - classic thermostat page, converted into the script form `ScriptConfig.PageThermo`
+// ---------------------------------------------------------------------------------------------
+
+/** channel roles the adapter accepts for the thermostat of a cardThermo page (ConfigManager.getPageThermo) */
+export const thermoChannelRoles: readonly string[] = ['thermostat', 'airCondition'];
+
+/**
+ * Classic thermostat page (`cardThermo`) - the admin form of the script page `ScriptConfig.PageThermo`.
+ *
+ * The page shows one thermostat: an alias channel with the role `thermostat` or `airCondition`. The
+ * adapter reads the actual, set and humidity states below the channel; the buttons at the bottom are
+ * not configured but derived from the states it finds there (mode icons of an airCondition `MODE`
+ * state, boost, window open, ...). Of the script page the adapter only reads `heading` and, of
+ * `items[0]`, the fields stored here (`ConfigManager.getPageThermo`); the entry keeps them exactly
+ * like the script, nothing is converted.
+ */
+export type ThermoEntry = {
+    card: Extract<AdminCardTypes, 'cardThermo'>;
+    uniqueName: string;
+    /** headline of the page, empty = uniqueName */
+    headline?: string;
+    /** alias channel (channel, device or folder) with common.role thermostat or airCondition (script `items[0].id`) */
+    channelId: string;
+    /** unit shown behind the actual and the set temperature; empty = `common.unit` of the set temperature state */
+    unit?: string;
+    /**
+     * Limits and step of the set temperature as the panel counts (pageThermo.ts): with a maximum of 100 or
+     * more the three values are tenths of a degree (100 = 10 °C, step 5 = 0.5 °C), with a maximum below 100
+     * they count as degrees and are multiplied by 10 (step 0.5 = 0.5 °C). A step below one tenth is raised
+     * to one tenth. Empty = `common.min` / `max` / `step` of the set temperature state, without them
+     * 15 °C to 30 °C in steps of 0.5 °C.
+     */
+    minValue?: number;
+    maxValue?: number;
+    stepValue?: number;
+} & PageConfigBaseFields;
+
+/**
+ * Creates a fresh thermo entry without a channel (same pattern as emptyThermo2Entry).
+ *
+ * @param uniqueName unique page name
+ */
+export function emptyThermoEntry(uniqueName: string): ThermoEntry {
+    return {
+        card: 'cardThermo',
+        uniqueName,
+        headline: '',
+        channelId: '',
+        hidden: false,
+        alwaysOn: 'none',
+    };
+}
+
+// ---------------------------------------------------------------------------------------------
 // cardMedia - media player page, converted into the script form `ScriptConfig.PageMedia`
 // ---------------------------------------------------------------------------------------------
 
@@ -1904,6 +1958,7 @@ export type PageConfigEntry =
     | MenuEntry
     | PowerEntry
     | Thermo2Entry
+    | ThermoEntry
     | MediaEntry
     | PageLinkEntry;
 export type PageConfig = PageConfigEntry;

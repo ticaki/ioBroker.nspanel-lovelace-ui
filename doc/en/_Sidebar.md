@@ -40,6 +40,7 @@
 - *(Page Media)* iA  
 - *(Page Thermo2)* iA  
 - [Page Thermo2 (Admin)](PageThermo2-Admin)
+- [Page Thermo (classic, Admin)](PageThermo-Admin)
  
 **Developer**  
 - *(Developer Templates)* iA  

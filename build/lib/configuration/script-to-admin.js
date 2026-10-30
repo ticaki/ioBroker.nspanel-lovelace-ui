@@ -143,7 +143,10 @@ const itemMappedKeys = [
   "useValue",
   "inSel_Alias",
   "fontSize",
-  "filter"
+  "filter",
+  "useValueConditions",
+  "minValue",
+  "maxValue"
 ];
 const itemIgnoredKeys = [
   "uniqueName",
@@ -304,6 +307,18 @@ function convertPageItem(item, where) {
   const filter = num(item.filter, reason, `${where}.filter`);
   if (filter !== void 0) {
     admin.filter = filter;
+  }
+  const useValueConditions = str(item.useValueConditions, reason, `${where}.useValueConditions`);
+  if (useValueConditions) {
+    admin.useValueConditions = useValueConditions;
+  }
+  const minValue = num(item.minValue, reason, `${where}.minValue`);
+  if (minValue !== void 0) {
+    admin.minValue = minValue;
+  }
+  const maxValue = num(item.maxValue, reason, `${where}.maxValue`);
+  if (maxValue !== void 0) {
+    admin.maxValue = maxValue;
   }
   return admin;
 }
@@ -621,6 +636,57 @@ function convertThermo2Page(page, common, topic) {
   };
   if (sortOrder !== void 0 && sortOrder !== null) {
     entry.sortOrder = sortOrder;
+  }
+  return entry;
+}
+function convertThermoPage(page, common, topic) {
+  const reason = "fieldNotSupported";
+  rejectUnknownKeys(page, pageMappedKeys, pageIgnoredKeys, reason, "page");
+  const items = page.items;
+  if (!Array.isArray(items) || items.length === 0) {
+    throw new ConvertError(reason, "items: expected a list with the thermostat as first entry");
+  }
+  const item = items[0];
+  if (!isDict(item)) {
+    throw new ConvertError(reason, "items[0]: expected an object");
+  }
+  if (item.native !== void 0 && item.native !== null) {
+    throw new ConvertError(reason, "items[0]: native item");
+  }
+  if (item.navigate === true) {
+    throw new ConvertError(reason, "items[0].navigate: the thermostat page has no navigation item");
+  }
+  const id = trimmedText(item.id, reason, "items[0].id");
+  if (!id) {
+    throw new ConvertError(reason, "items[0].id: missing");
+  }
+  const unit = trimmedText(item.unit, reason, "items[0].unit");
+  if (item.unit !== void 0 && item.unit !== null && !unit) {
+    throw new ConvertError(reason, "items[0].unit: empty - the admin shows the unit of the state instead");
+  }
+  const entry = {
+    card: "cardThermo",
+    uniqueName: common.uniqueName,
+    headline: common.headline,
+    channelId: id,
+    hidden: common.hidden,
+    alwaysOn: common.alwaysOn,
+    navigationAssignment: [{ topic, navigation: common.navigation }]
+  };
+  if (unit !== void 0) {
+    entry.unit = unit;
+  }
+  const minValue = num(item.minValue, reason, "items[0].minValue");
+  if (minValue !== void 0) {
+    entry.minValue = minValue;
+  }
+  const maxValue = num(item.maxValue, reason, "items[0].maxValue");
+  if (maxValue !== void 0) {
+    entry.maxValue = maxValue;
+  }
+  const stepValue = num(item.stepValue, reason, "items[0].stepValue");
+  if (stepValue !== void 0) {
+    entry.stepValue = stepValue;
   }
   return entry;
 }
@@ -1544,11 +1610,7 @@ function planScriptToAdmin(input) {
       }
       return;
     }
-    if (typeName === "cardThermo") {
-      skip(uniqueName, typeName, "unsupportedPageType", "classic thermo page");
-      return;
-    }
-    if (typeName !== "cardGrid" && typeName !== "cardGrid2" && typeName !== "cardGrid3" && typeName !== "cardEntities" && typeName !== "cardSchedule" && typeName !== "cardThermo2" && typeName !== "cardMedia") {
+    if (typeName !== "cardGrid" && typeName !== "cardGrid2" && typeName !== "cardGrid3" && typeName !== "cardEntities" && typeName !== "cardSchedule" && typeName !== "cardThermo" && typeName !== "cardThermo2" && typeName !== "cardMedia") {
       skip(uniqueName, typeName, "unsupportedPageType");
       return;
     }
@@ -1572,6 +1634,8 @@ function planScriptToAdmin(input) {
       let entry;
       if (typeName === "cardThermo2") {
         entry = convertThermo2Page(page, common, panel.topic);
+      } else if (typeName === "cardThermo") {
+        entry = convertThermoPage(page, common, panel.topic);
       } else if (typeName === "cardMedia") {
         entry = convertMediaPage(page, common, panel.topic);
       } else {

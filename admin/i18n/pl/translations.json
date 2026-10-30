@@ -1327,5 +1327,10 @@
     "wlanhidden": "Ukryte Wi -Fi",
     "wlantype": "Szyfrowanie Wi -Fi",
     "writeTasmotaTele": "Zapisz dane telemetryczne Tasmota",
-    "writeTasmotaTeleHint": "Po włączeniu dane telemetryczne panelu będą przechowywane w punktach danych (panels/XXXXX/info/tasmota/sts....)."
+    "writeTasmotaTeleHint": "Po włączeniu dane telemetryczne panelu będą przechowywane w punktach danych (panels/XXXXX/info/tasmota/sts....).",
+    "page_type_thermo": "Termostat (klasyczny)",
+    "thermo_intro": "Klasyczna strona termostatu: jeden kanał alias z rolą thermostat lub airCondition. Adapter odczytuje stany temperatury aktualnej, zadanej i wilgotności poniżej kanału; przyciski na dole nie są konfigurowane, lecz wyprowadzane ze stanów, które tam znajdzie (tryb, boost, otwarte okno, …).",
+    "thermo_headlineHint": "Puste = unikalny identyfikator strony",
+    "thermo_unitHint": "Puste = jednostka stanu temperatury zadanej",
+    "thermo_limitsHint": "Zapisywane dokładnie tak jak w skrypcie. Panel liczy w dziesiątych częściach stopnia: przy maksimum 100 lub większym wszystkie trzy wartości są dziesiątymi (100 = 10 °C, krok 5 = 0,5 °C), przy maksimum poniżej 100 liczą się jako stopnie (krok 0,5 = 0,5 °C). Puste = min/max/step stanu temperatury zadanej, w przeciwnym razie 15 °C do 30 °C w krokach co 0,5 °C."
 }

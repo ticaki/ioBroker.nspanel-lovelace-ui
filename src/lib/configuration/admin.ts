@@ -244,6 +244,41 @@ export class AdminConfiguration extends BaseClass {
     }
 
     /**
+     * Builds the runtime page of a cardThermo entry (classic thermostat page).
+     *
+     * The entry is turned into the script form and handed to the code the script configuration
+     * uses (`ConfigManager.getPageThermo`), which checks the role of the channel, searches its
+     * states and generates the buttons at the bottom from them - the page is identical on both
+     * paths. The card has no page items of its own.
+     *
+     * @param entry Thermo entry as stored by the PageConfig editor.
+     * @param alwaysOn Validated always-on mode of the entry.
+     * @returns The page for the panel configuration; with an unusable channel it has no data.
+     */
+    private async buildThermoPage(entry: ShareConfig.ThermoEntry, alwaysOn: AlwaysOnMode): Promise<PageBase> {
+        let gridItem: PageBase = {
+            uniqueID: entry.uniqueName,
+            hidden: !!entry.hidden,
+            alwaysOn,
+            dpInit: '',
+            config: {
+                card: 'cardThermo',
+                data: { headline: { type: 'const', constVal: entry.headline || entry.uniqueName } },
+            },
+            pageItems: [],
+        };
+        let messages: string[] = [];
+        const manager = new ConfigManager(this.adapter);
+        ({ gridItem, messages } = await manager.getPageThermo(buildThermoScriptPage(entry), gridItem, messages));
+        for (const msg of messages) {
+            // getPageThermo has already logged the finding, keep the summary at debug level
+            this.log.debug(`cardThermo '${entry.uniqueName}': ${msg}`);
+        }
+        this.log.debug(`Generated cardThermo page for '${entry.uniqueName}'`);
+        return gridItem;
+    }
+
+    /**
      * Builds the runtime page of a cardMedia entry.
      *
      * Same path as cardThermo2: the entry is turned into the script form and handed to
@@ -470,6 +505,13 @@ export class AdminConfiguration extends BaseClass {
                         entry.alwaysOn = 'none';
                     }
                     newPage = await this.buildThermo2Page(entry, entry.alwaysOn);
+                    break;
+                }
+                case 'cardThermo': {
+                    if (!isAlwaysOnMode(entry.alwaysOn)) {
+                        entry.alwaysOn = 'none';
+                    }
+                    newPage = await this.buildThermoPage(entry, entry.alwaysOn);
                     break;
                 }
                 case 'cardMedia': {
@@ -1129,6 +1171,44 @@ export function buildThermo2ScriptPage(entry: ShareConfig.Thermo2Entry): ScriptC
         thermoItems,
         items: [],
         sortOrder,
+    };
+}
+
+/**
+ * A stored limit of the classic thermostat page, passed on unchanged: the adapter interprets the
+ * number itself (tenths of a degree or degrees, see `ShareConfig.ThermoEntry`). Anything that is
+ * not a finite number is left out so the adapter takes the limits of the set temperature state.
+ *
+ * @param value Stored limit.
+ */
+function thermoLimit(value: unknown): number | undefined {
+    return typeof value === 'number' && Number.isFinite(value) ? value : undefined;
+}
+
+/**
+ * Turns a thermo entry into the script form of the classic thermostat page (`items[0]`).
+ *
+ * The channel and the unit are trimmed, empty optional fields are left out so the adapter takes
+ * its defaults, the limits are passed on unchanged. The result is what `getPageThermo` reads of a
+ * script page - the fields of the script item it never reads are not part of the admin entry.
+ *
+ * @param entry Thermo entry as stored by the PageConfig editor.
+ * @returns The page in the form of the script configuration.
+ */
+export function buildThermoScriptPage(entry: ShareConfig.ThermoEntry): ScriptConfig.PageThermo {
+    return {
+        type: 'cardThermo',
+        uniqueName: entry.uniqueName,
+        heading: entry.headline || entry.uniqueName,
+        items: [
+            {
+                id: thermo2Text(entry.channelId) ?? '',
+                unit: thermo2Text(entry.unit),
+                minValue: thermoLimit(entry.minValue),
+                maxValue: thermoLimit(entry.maxValue),
+                stepValue: thermoLimit(entry.stepValue),
+            },
+        ],
     };
 }
 

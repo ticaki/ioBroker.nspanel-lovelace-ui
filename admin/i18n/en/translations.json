@@ -1352,5 +1352,10 @@
     "wlantype": "Wifi encryption",
     "writeTasmotaTele": "Write Tasmota telemetry data",
     "writeTasmotaTeleHint": "When enabled, the telemetry data of the panel will be stored in the data points (panels/XXXXX/info/tasmota/sts....).",
-    "writeable": "writeable"
+    "writeable": "writeable",
+    "page_type_thermo": "Thermostat (classic)",
+    "thermo_intro": "Classic thermostat page: one alias channel with the role thermostat or airCondition. The adapter reads the actual, set and humidity states below the channel; the buttons at the bottom are not configured but derived from the states it finds there (mode, boost, window open, ...).",
+    "thermo_headlineHint": "Empty = unique ID of the page",
+    "thermo_unitHint": "Empty = unit of the set temperature state",
+    "thermo_limitsHint": "Stored exactly like in the script. The panel counts in tenths of a degree: with a maximum of 100 or more the three values are tenths (100 = 10 °C, step 5 = 0.5 °C), with a maximum below 100 they count as degrees (step 0.5 = 0.5 °C). Empty = min/max/step of the set temperature state, without them 15 °C to 30 °C in steps of 0.5 °C."
 }

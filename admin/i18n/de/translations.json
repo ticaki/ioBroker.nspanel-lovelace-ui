@@ -1352,5 +1352,10 @@
     "wlantype": "Wlan Verschlüsselung",
     "writeTasmotaTele": "Tasmota Telemetriedaten schreiben",
     "writeTasmotaTeleHint": "Wenn aktiviert, werden die Telemetriedaten des Panels in den Datenpunkten gespeichert. (panels/XXXXX/info/tasmota/sts....)",
-    "writeable": "beschreibbar"
+    "writeable": "beschreibbar",
+    "page_type_thermo": "Thermostat (klassisch)",
+    "thermo_intro": "Klassische Thermostat-Seite: ein Alias-Channel mit der Rolle thermostat oder airCondition. Der Adapter liest Ist-, Soll- und Luftfeuchte-Datenpunkte unterhalb des Channels; die Schaltflächen unten werden nicht konfiguriert, sondern aus den dort gefundenen Datenpunkten abgeleitet (Modus, Boost, Fenster offen, …).",
+    "thermo_headlineHint": "Leer = eindeutige ID der Seite",
+    "thermo_unitHint": "Leer = Einheit des Solltemperatur-Datenpunkts",
+    "thermo_limitsHint": "Wird genau wie im Skript gespeichert. Das Panel rechnet in Zehntelgrad: Ist das Maximum 100 oder größer, sind alle drei Werte Zehntel (100 = 10 °C, Schritt 5 = 0,5 °C), ist das Maximum kleiner als 100, gelten sie als Grad (Schritt 0,5 = 0,5 °C). Leer = min/max/step des Solltemperatur-Datenpunkts, sonst 15 °C bis 30 °C in Schritten von 0,5 °C."
 }

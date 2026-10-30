@@ -1327,5 +1327,10 @@
     "wlanhidden": "wifi caché",
     "wlantype": "Cryptage WiFi",
     "writeTasmotaTele": "Écrire les données de télémétrie Tasmota",
-    "writeTasmotaTeleHint": "Lorsqu'elle est activée, les données de télémétrie du panneau seront stockées dans les points de données (panels/XXXXX/info/tasmota/sts....)."
+    "writeTasmotaTeleHint": "Lorsqu'elle est activée, les données de télémétrie du panneau seront stockées dans les points de données (panels/XXXXX/info/tasmota/sts....).",
+    "page_type_thermo": "Thermostat (classique)",
+    "thermo_intro": "Page thermostat classique : un canal alias avec le rôle thermostat ou airCondition. L’adaptateur lit les états de température réelle, de consigne et d’humidité sous le canal ; les boutons du bas ne sont pas configurés mais dérivés des états qu’il y trouve (mode, boost, fenêtre ouverte, …).",
+    "thermo_headlineHint": "Vide = ID unique de la page",
+    "thermo_unitHint": "Vide = unité de l’état de la température de consigne",
+    "thermo_limitsHint": "Enregistré exactement comme dans le script. Le panneau compte en dixièmes de degré : avec un maximum de 100 ou plus, les trois valeurs sont des dixièmes (100 = 10 °C, pas 5 = 0,5 °C) ; avec un maximum inférieur à 100, elles comptent comme des degrés (pas 0,5 = 0,5 °C). Vide = min/max/step de l’état de consigne, sinon 15 °C à 30 °C par pas de 0,5 °C."
 }

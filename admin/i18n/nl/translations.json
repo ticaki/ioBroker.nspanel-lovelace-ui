@@ -1327,5 +1327,10 @@
     "wlanhidden": "verborgen wifi",
     "wlantype": "Wifi -codering",
     "writeTasmotaTele": "Schrijf Tasmota-telemetriegegevens",
-    "writeTasmotaTeleHint": "Indien ingeschakeld, worden de telemetriegegevens van het paneel opgeslagen in de datapunten (panels/XXXXX/info/tasmota/sts....)."
+    "writeTasmotaTeleHint": "Indien ingeschakeld, worden de telemetriegegevens van het paneel opgeslagen in de datapunten (panels/XXXXX/info/tasmota/sts....).",
+    "page_type_thermo": "Thermostaat (klassiek)",
+    "thermo_intro": "Klassieke thermostaatpagina: één alias-channel met de rol thermostat of airCondition. De adapter leest de datapunten voor actuele temperatuur, insteltemperatuur en luchtvochtigheid onder het channel; de knoppen onderaan worden niet geconfigureerd maar afgeleid uit de datapunten die hij daar vindt (modus, boost, raam open, …).",
+    "thermo_headlineHint": "Leeg = unieke ID van de pagina",
+    "thermo_unitHint": "Leeg = eenheid van het datapunt van de insteltemperatuur",
+    "thermo_limitsHint": "Wordt precies zoals in het script opgeslagen. Het paneel rekent in tienden van een graad: bij een maximum van 100 of meer zijn alle drie waarden tienden (100 = 10 °C, stap 5 = 0,5 °C), bij een maximum onder 100 gelden ze als graden (stap 0,5 = 0,5 °C). Leeg = min/max/step van het datapunt van de insteltemperatuur, anders 15 °C tot 30 °C in stappen van 0,5 °C."
 }

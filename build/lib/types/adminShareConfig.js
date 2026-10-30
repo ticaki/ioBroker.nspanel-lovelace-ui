@@ -45,6 +45,7 @@ __export(adminShareConfig_exports, {
   emptyScreensaverEntry: () => emptyScreensaverEntry,
   emptyThermo2Circuit: () => emptyThermo2Circuit,
   emptyThermo2Entry: () => emptyThermo2Entry,
+  emptyThermoEntry: () => emptyThermoEntry,
   findChartEntryForScript: () => findChartEntryForScript,
   findPowerEntryForScript: () => findPowerEntryForScript,
   formatEntryNumber: () => formatEntryNumber,
@@ -103,6 +104,7 @@ __export(adminShareConfig_exports, {
   thermo2Defaults: () => thermo2Defaults,
   thermo2MaxCircuits: () => thermo2MaxCircuits,
   thermo2SortOrders: () => thermo2SortOrders,
+  thermoChannelRoles: () => thermoChannelRoles,
   trashItemCount: () => trashItemCount
 });
 module.exports = __toCommonJS(adminShareConfig_exports);
@@ -612,6 +614,17 @@ function emptyThermo2Entry(uniqueName) {
     thermoItems: [],
     pageItems: [],
     sortOrder: "V",
+    hidden: false,
+    alwaysOn: "none"
+  };
+}
+const thermoChannelRoles = ["thermostat", "airCondition"];
+function emptyThermoEntry(uniqueName) {
+  return {
+    card: "cardThermo",
+    uniqueName,
+    headline: "",
+    channelId: "",
     hidden: false,
     alwaysOn: "none"
   };
@@ -1514,6 +1527,7 @@ const SENDTO_CONVERT_SCRIPT_COMMAND = "convertScriptToAdmin";
   emptyScreensaverEntry,
   emptyThermo2Circuit,
   emptyThermo2Entry,
+  emptyThermoEntry,
   findChartEntryForScript,
   findPowerEntryForScript,
   formatEntryNumber,
@@ -1572,6 +1586,7 @@ const SENDTO_CONVERT_SCRIPT_COMMAND = "convertScriptToAdmin";
   thermo2Defaults,
   thermo2MaxCircuits,
   thermo2SortOrders,
+  thermoChannelRoles,
   trashItemCount
 });
 //# sourceMappingURL=adminShareConfig.js.map

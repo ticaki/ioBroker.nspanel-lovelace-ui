@@ -1338,8 +1338,8 @@ async function expectEquivalent(
             differences(normalizePage(adminPage), normalizePage(scriptPage)),
             `page ${planned.uniqueName} (admin vs script)`,
         ).to.deep.equal([]);
-        if (planned.card !== 'cardThermo2' && planned.card !== 'cardMedia') {
-            // thermo2 and media pages add their own standard items at runtime
+        if (planned.card !== 'cardThermo' && planned.card !== 'cardThermo2' && planned.card !== 'cardMedia') {
+            // thermo, thermo2 and media pages add their own standard items at runtime
             const types = (adminPage?.pageItems ?? []).map((i): string =>
                 typeof i?.type === 'string' ? i.type : 'undefined',
             );
@@ -1558,7 +1558,8 @@ describe('lib/configuration - planScriptToAdmin: pages', () => {
             setState: '',
             navigationAssignment,
         });
-        const thermo = page({ type: 'cardThermo', uniqueName: 't', heading: 'T', items: [{ id: 'alias.0.Hue' }] });
+        // confirm has no admin field - the page stays in the script
+        const skipped = gridPage('t', { items: [{ id: 'alias.0.Hue', confirm: 'water' }] });
         // dead reference in the middle (cardQR without an admin page for this panel), a skipped page that
         // stays in the script as predecessor
         const middle = plan(
@@ -1567,7 +1568,7 @@ describe('lib/configuration - planScriptToAdmin: pages', () => {
                     gridPage('main'),
                     page({ type: 'cardQR', uniqueName: 'qr' }),
                     gridPage('a'),
-                    thermo,
+                    skipped,
                     gridPage('b'),
                 ],
             }),
@@ -1711,13 +1712,13 @@ describe('lib/configuration - planScriptToAdmin: pages', () => {
         expect(taken.plan.pages.map(p => p.uniqueName)).to.deep.equal(['a']);
     });
 
-    it('skips pages the admin cannot hold: cardThermo, native pages, page links', () => {
+    it('skips pages the admin cannot hold: unknown card types, native pages, page links', () => {
         const result = plan(
             baseConfig({
                 mrIcon1ScreensaverEntity: mrIcon(null),
                 mrIcon2ScreensaverEntity: mrIcon(null),
                 pages: [
-                    page({ type: 'cardThermo', uniqueName: 't', heading: 'T', items: [{ id: 'alias.0.Hue' }] }),
+                    page({ type: 'cardBurnRec', uniqueName: 't', heading: 'T', items: [] }),
                     page({ heading: 'Fahrplan', native: { card: 'cardEntities', uniqueID: 'fahrplan' } }),
                     page({ globalLink: 'global1' }),
                 ],
@@ -1725,7 +1726,7 @@ describe('lib/configuration - planScriptToAdmin: pages', () => {
         );
         expect(result.plan.pages).to.deep.equal([]);
         expect(result.plan.skipped.map(s => [s.uniqueName, s.type, s.reason])).to.deep.equal([
-            ['t', 'cardThermo', 'unsupportedPageType'],
+            ['t', 'cardBurnRec', 'unsupportedPageType'],
             ['fahrplan', 'native', 'unsupportedPageType'],
             ['global1', 'globalLink', 'unsupportedPageType'],
         ]);
@@ -2191,7 +2192,7 @@ describe('lib/configuration - planScriptToAdmin: page items', () => {
     });
 });
 
-describe('lib/configuration - planScriptToAdmin: cardThermo2 and cardMedia', () => {
+describe('lib/configuration - planScriptToAdmin: cardThermo2, cardThermo and cardMedia', () => {
     it('converts the circuits of a cardThermo2 page in both forms', () => {
         const result = plan(
             baseConfig({
@@ -2287,6 +2288,137 @@ describe('lib/configuration - planScriptToAdmin: cardThermo2 and cardMedia', () 
                 { uniqueName: 't', type: 'cardThermo2', reason: 'fieldNotSupported', detail },
             ]);
         }
+    });
+
+    it('converts a classic cardThermo page: channel, unit and the limits unchanged, navigation like a sub page', () => {
+        const result = plan(
+            baseConfig({
+                pages: [gridPage('main')],
+                subPages: [
+                    page({
+                        type: 'cardThermo',
+                        heading: 'Wohnzimmer',
+                        uniqueName: 'Wohnzimmer_Thermostat',
+                        subPage: true,
+                        parent: 'main',
+                        hiddenByTrigger: true,
+                        items: [
+                            {
+                                id: 'alias.0.NSPanel.1.usr.Temperatur.G.Wohnzimmer.1',
+                                unit: '°C',
+                                minValue: 100,
+                                maxValue: 300,
+                                stepValue: 1,
+                            },
+                        ],
+                    }),
+                ],
+            }),
+        );
+        expect(result.plan.skipped).to.deep.equal([]);
+        expect(result.plan.pages[1]).to.deep.include({
+            uniqueName: 'Wohnzimmer_Thermostat',
+            type: 'cardThermo',
+            card: 'cardThermo',
+            itemCount: 0,
+            navigation: { parent: 'main' },
+            action: 'create',
+        });
+        const entry = result.newPages[1];
+        expect(entry).to.deep.equal({
+            card: 'cardThermo',
+            uniqueName: 'Wohnzimmer_Thermostat',
+            headline: 'Wohnzimmer',
+            channelId: 'alias.0.NSPanel.1.usr.Temperatur.G.Wohnzimmer.1',
+            unit: '°C',
+            minValue: 100,
+            maxValue: 300,
+            stepValue: 1,
+            hidden: true,
+            alwaysOn: 'none',
+            navigationAssignment: [{ topic, navigation: { parent: 'main' } }],
+        });
+        expect(result.cleanedRaw.subPages).to.deep.equal([]);
+    });
+
+    it('drops the fields of a cardThermo item the adapter never reads and every further item', () => {
+        const result = plan(
+            baseConfig({
+                subPages: [
+                    page({
+                        type: 'cardThermo',
+                        heading: 'Bad',
+                        uniqueName: 'bad',
+                        items: [
+                            {
+                                id: 'alias.0.NSPanel.1.usr.Temperatur.G.Wohnzimmer.1',
+                                name: 'Bad',
+                                icon: 'radiator',
+                                onColor: Red,
+                                popupThermoMode1: ['Auto', 'Manuell'],
+                                popupThermoMode2: ['Tag', 'Nacht'],
+                                popupThermoMode3: ['Komfort'],
+                                popUpThermoName: ['Modus', 'Profil', 'Komfort'],
+                                setThermoAlias: ['alias.0.Bad.MODE', 'alias.0.Bad.PROFILE', 'alias.0.Bad.COMFORT'],
+                                setThermoDestTemp2: 'alias.0.Bad.SET2',
+                                iconArray: ['fire', 'snowflake'],
+                            },
+                            { id: 'alias.0.Hue', confirm: 'water' },
+                        ],
+                    }),
+                ],
+            }),
+        );
+        expect(result.plan.skipped).to.deep.equal([]);
+        expect(result.newPages[0]).to.deep.equal({
+            card: 'cardThermo',
+            uniqueName: 'bad',
+            headline: 'Bad',
+            channelId: 'alias.0.NSPanel.1.usr.Temperatur.G.Wohnzimmer.1',
+            hidden: false,
+            alwaysOn: 'none',
+            navigationAssignment: [{ topic, navigation: { home: 'main' } }],
+        });
+    });
+
+    it('skips a cardThermo page only when the admin entry would build another page', () => {
+        const id = 'alias.0.NSPanel.1.usr.Temperatur.G.Wohnzimmer.1';
+        const cases: [Record<string, unknown>, string][] = [
+            [{ items: [] }, 'items: expected a list with the thermostat as first entry'],
+            [{ items: undefined }, 'items: expected a list with the thermostat as first entry'],
+            [{ items: ['x'] }, 'items[0]: expected an object'],
+            [{ items: [{ native: { role: 'thermostat' } }] }, 'items[0]: native item'],
+            [
+                { items: [{ id, navigate: true, targetPage: 'main' }] },
+                'items[0].navigate: the thermostat page has no navigation item',
+            ],
+            [{ items: [{ unit: '°C' }] }, 'items[0].id: missing'],
+            [{ items: [{ id: ' ' }] }, 'items[0].id: the admin trims the text'],
+            [{ items: [{ id, unit: 5 }] }, 'items[0].unit: expected a text'],
+            [{ items: [{ id, unit: '' }] }, 'items[0].unit: empty - the admin shows the unit of the state instead'],
+            [{ items: [{ id, unit: ' °C' }] }, 'items[0].unit: the admin trims the text'],
+            [{ items: [{ id, minValue: '100' }] }, 'items[0].minValue: expected a number'],
+            [{ items: [{ id, maxValue: Number.NaN }] }, 'items[0].maxValue: expected a number'],
+            [{ items: [{ id, stepValue: true }] }, 'items[0].stepValue: expected a number'],
+            [{ items: [{ id }], filterType: 1, foo: 1 }, 'page.foo: not available in the admin'],
+        ];
+        for (const [extra, detail] of cases) {
+            const result = plan(
+                baseConfig({ subPages: [page({ type: 'cardThermo', uniqueName: 't', heading: 'T', ...extra })] }),
+            );
+            expect(result.plan.skipped, detail).to.deep.equal([
+                { uniqueName: 't', type: 'cardThermo', reason: 'fieldNotSupported', detail },
+            ]);
+            expect(result.cleanedRaw.subPages, detail).to.have.length(1);
+        }
+        // a limit of 0 or a negative number is passed on - the adapter decides what it means
+        const zero = plan(
+            baseConfig({
+                subPages: [page({ type: 'cardThermo', uniqueName: 't', heading: 'T', items: [{ id, minValue: 0 }] })],
+            }),
+        );
+        expect(zero.plan.skipped).to.deep.equal([]);
+        expect(zero.newPages[0]).to.deep.include({ minValue: 0 });
     });
 
     it('converts the media object of a cardMedia page', () => {
@@ -2816,26 +2948,24 @@ describe('lib/configuration - planScriptToAdmin: equivalence of the runtime page
             ['SensorGrid3', 'create', { prev: 'main' }],
             ['SensorGrid', 'create', { prev: 'SensorGrid3' }],
             ['qrCode', 'removeReference', {}],
+            ['this_Thermostat', 'create', { parent: 'main' }],
             ['drei', 'create', { parent: 'Only4' }],
+            ['Kueche_Thermostat', 'create', { parent: 'SensorGrid' }],
             ['WohnzimmerWindow', 'create', { parent: 'ObergeschossWindow' }],
             ['ObergeschossWindow', 'create', { parent: 'Only4' }],
             ['WindowGrid', 'create', { home: 'main' }],
             ['Only4', 'create', { parent: 'main' }],
             ['ogLightsGrid', 'create', { parent: 'Only4' }],
         ]);
+        // the thermo pages: channel and limits taken over unchanged (tenths of a degree: 10 to 30 °C in 0.1 steps)
+        const thermoEntries = result.newPages.filter((e): e is ShareConfig.ThermoEntry => e.card === 'cardThermo');
+        expect(thermoEntries.map(e => [e.uniqueName, e.headline, e.channelId])).to.deep.equal([
+            ['this_Thermostat', 'Wohnzimmer', 'alias.0.NSPanel.1.usr.Temperatur.G.Wohnzimmer.1'],
+            ['Kueche_Thermostat', 'Küche', 'alias.0.NSPanel.1.usr.Temperatur.G.Wohnzimmer.1'],
+        ]);
+        expect(thermoEntries[0]).to.deep.include({ minValue: 100, maxValue: 300, stepValue: 1 });
+        expect(thermoEntries[0].unit).to.equal(undefined);
         expect(result.plan.skipped).to.deep.equal([
-            {
-                uniqueName: 'this_Thermostat',
-                type: 'cardThermo',
-                reason: 'unsupportedPageType',
-                detail: 'classic thermo page',
-            },
-            {
-                uniqueName: 'Kueche_Thermostat',
-                type: 'cardThermo',
-                reason: 'unsupportedPageType',
-                detail: 'classic thermo page',
-            },
             {
                 uniqueName: '14',
                 type: 'cardMedia',
@@ -3105,7 +3235,7 @@ describe('lib/configuration - planScriptToAdmin: navigation of the panel stays t
         expect(before.adminpages).to.deep.equal({ prev: 'powerpage' });
 
         const result = plan(emuConfig(), { pageConfig: emuPageConfig(), screensaverMode: 'standard' });
-        expect(result.plan.skipped.map(s => s.uniqueName)).to.deep.equal(['entities1', 'entities2', 'thermo']);
+        expect(result.plan.skipped.map(s => s.uniqueName)).to.deep.equal(['entities1', 'entities2']);
         expect(result.plan.pages.map(p => [p.uniqueName, p.action, p.navigation])).to.deep.equal([
             ['main', 'create', {}],
             ['newicons', 'create', { prev: 'main' }],
@@ -3114,7 +3244,8 @@ describe('lib/configuration - planScriptToAdmin: navigation of the panel stays t
             ['grid6', 'create', { prev: 'entities2' }],
             ['popups', 'create', { prev: 'grid6' }],
             ['grid3', 'create', { prev: 'popups' }],
-            ['grid3b', 'create', { prev: 'grid3', next: 'thermo' }],
+            ['grid3b', 'create', { prev: 'grid3' }],
+            ['thermo', 'create', { prev: 'grid3b' }],
             ['schedule', 'create', { prev: 'thermo' }],
             ['powerpage', 'removeReference', {}],
             ['adminpages', 'create', { prev: 'schedule' }],

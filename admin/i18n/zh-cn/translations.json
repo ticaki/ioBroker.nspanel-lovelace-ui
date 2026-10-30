@@ -1327,5 +1327,10 @@
     "wlanhidden": "隐藏的wifi",
     "wlantype": "WiFi加密",
     "writeTasmotaTele": "写入 Tasmota 遥测数据",
-    "writeTasmotaTeleHint": "启用后，面板的遥测数据将存储在数据点（panels/XXXXX/info/tasmota/sts....）中。"
+    "writeTasmotaTeleHint": "启用后，面板的遥测数据将存储在数据点（panels/XXXXX/info/tasmota/sts....）中。",
+    "page_type_thermo": "恒温器（经典）",
+    "thermo_intro": "经典恒温器页面：一个角色为 thermostat 或 airCondition 的别名通道。适配器读取通道下的实际温度、设定温度和湿度状态；底部的按钮不需配置，而是由找到的状态推导出来（模式、boost、开窗等）。",
+    "thermo_headlineHint": "留空 = 页面的唯一 ID",
+    "thermo_unitHint": "留空 = 设定温度状态的单位",
+    "thermo_limitsHint": "与脚本中完全一致地保存。面板以十分之一度计算：最大值为 100 或更大时，三个值均为十分之一度（100 = 10 °C，步长 5 = 0.5 °C）；最大值小于 100 时按度计算（步长 0.5 = 0.5 °C）。留空 = 设定温度状态的 min/max/step，否则为 15 °C 至 30 °C，步长 0.5 °C。"
 }
