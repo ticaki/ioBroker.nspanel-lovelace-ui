@@ -227,7 +227,8 @@
   padding: 0 3px;
   border-radius: 8px;
   background: var(--node-bg, #fff);
-  border: 1px solid var(--node-border, #ccc);
+  /* Rahmen in Textfarbe: der Theme-Trennstrich wäre auf dem Seitenhintergrund kaum zu sehen */
+  border: 1px solid var(--node-text, #444);
   color: var(--node-text, inherit);
   font-size: 10px;
   line-height: 14px;
@@ -237,7 +238,7 @@
   justify-content: center;
   cursor: pointer;
   z-index: 4;
-  opacity: 0.55;
+  opacity: 0.6;
 }
 .node-box:hover .node-collapse,
 .node-box .node-collapse.node-collapse-collapsed {
@@ -248,5 +249,5 @@
 }
 /* Kante in einen eingeklappten Unterbaum - zeigt auf die eingeklappte Seite */
 .edge-collapsed .custom-edge-path {
-  stroke-opacity: 0.6;
+  stroke-opacity: var(--edge-collapsed-opacity, 0.6);
 }

@@ -184,6 +184,24 @@ describe('navigationAutoLayout', () => {
             expect(mid).to.be.within(top, bottom + 100);
         });
 
+        it('puts a page that only links into the tree next to its target, not below everything', () => {
+            const map: FixtureEntry[] = [
+                { page: 'main', label: 'main', prev: 'a', next: 'b' },
+                { page: 'a', label: 'a', next: 'main' },
+                { page: 'b', label: 'b', prev: 'main', next: 'c' },
+                { page: 'c', label: 'c', prev: 'b' },
+                { page: '///unlock', label: '///unlock', next: 'main', targetPages: ['///Overview'] },
+                { page: '///Overview', label: '///Overview', parent: '///unlock' },
+            ];
+            const tree = buildLayoutTree(map);
+            expect(tree.trees).to.have.length(1);
+            expect(tree.kids.get('main')?.map(k => k.entry)).to.deep.equal(['///unlock']);
+            const sizes = sizesOf(map);
+            const pos = computeAutoLayout(map, sizes, { collapsed: NO_COLLAPSE });
+            expect(pos['///unlock'].x).to.be.greaterThan(pos.main.x + sizes.get('main')!.width);
+            expect(pos['///unlock'].y).to.be.below(pos.c.y);
+        });
+
         it('distributes the sub trees of main over bands in a large tree', () => {
             const map = largeTreeMap();
             expect(countPages(map)).to.be.at.least(60);
@@ -201,6 +219,9 @@ describe('navigationAutoLayout', () => {
             const b = box(banded);
             expect(b.h).to.be.lessThan(f.h * 0.7);
             expect(b.w / b.h).to.be.greaterThan(f.w / f.h);
+            // the pages come close to the aimed aspect ratio of the bands
+            const pages = box(Object.fromEntries(Object.entries(banded).filter(([id]) => !id.startsWith('dp:'))));
+            expect(pages.w / pages.h).to.be.within(1.2, 2.1);
             expect(overlaps(banded, sizes)).to.deep.equal([]);
             // ///unlock bleibt unter main
             expect(Math.abs(banded['///unlock'].x - banded.main.x)).to.be.at.most(sizes.get('main')!.width);
@@ -272,8 +293,9 @@ describe('navigationAutoLayout', () => {
             const placed = placeNewNodes(map, sizes, fixed, toPlace, { collapsed: NO_COLLAPSE });
             expect(Object.keys(placed).sort()).to.deep.equal([...toPlace].sort());
             expect(overlaps({ ...fixed, ...placed }, sizes)).to.deep.equal([]);
-            // neue Unterseite in der Spalte der Geschwister, rechts von Wohnen
-            expect(placed.WZ_Neu.x).to.equal(fixed.WZ_Licht.x);
+            // neue Unterseite in der Spalte der Geschwister (mittig wie sie), rechts von Wohnen
+            const centre = (p: { x: number }, id: string): number => p.x + sizes.get(id)!.width / 2;
+            expect(centre(placed.WZ_Neu, 'WZ_Neu')).to.be.closeTo(centre(fixed.WZ_Licht, 'WZ_Licht'), 1);
             expect(placed.WZ_Neu.y).to.be.at.least(fixed.Wohnen.y);
             // Kettenende: darunter
             expect(placed.Garten_Licht2.y).to.be.greaterThan(fixed.Garten_Licht.y);
@@ -288,6 +310,20 @@ describe('navigationAutoLayout', () => {
             );
             expect(placed['dp:neu'].x).to.be.greaterThan(pageRight);
             expect(placed['dp:neu'].y).to.be.at.least(fixed.Bad.y);
+        });
+
+        it('does not let state nodes push a new page away', () => {
+            const map: FixtureEntry[] = [
+                { page: 'main', label: 'main', targetPages: ['a'], usedStates: ['dp:x'] },
+                { page: 'a', label: 'a', parent: 'main' },
+                { page: 'dp:x', label: 'x', nodeType: 'stateRef' },
+            ];
+            const sizes = sizesOf(map);
+            // the state node stands right where the new sub page belongs
+            const fixed: Positions = { main: { x: 0, y: 0 }, 'dp:x': { x: 150, y: 0 } };
+            const placed = placeNewNodes(map, sizes, fixed, new Set(['a']), { collapsed: NO_COLLAPSE });
+            expect(placed.a.y).to.equal(0);
+            expect(placed.a.x).to.be.greaterThan(sizes.get('main')!.width);
         });
 
         it('lays out everything when nothing has a position yet', () => {

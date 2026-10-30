@@ -15,6 +15,7 @@ import {
     SAVE_PANEL_NAVIGATION_COMMAND,
     isMainPageEntry,
     mainPageName,
+    servicePageName,
 } from '../../src/lib/types/adminShareConfig';
 import {
     adapterDecidedLink,
@@ -131,6 +132,39 @@ function storeCollapsed(panelName: string, collapsed: ReadonlySet<string>): void
     }
 }
 
+/** Prefix of the key under which the home link switch of a panel is remembered (view comfort). */
+const HOME_EDGES_STORAGE_PREFIX = `${ADAPTER_NAME}.navigationFlow.homeEdges.`;
+
+/**
+ * Reads whether the home links to `main` are shown for a panel. Without a stored choice (or when
+ * the storage fails) they are shown.
+ *
+ * @param panelName Name of the panel.
+ * @returns True when the home links are shown.
+ */
+function readStoredShowHomeEdges(panelName: string): boolean {
+    try {
+        return window.localStorage.getItem(HOME_EDGES_STORAGE_PREFIX + panelName) !== 'false';
+    } catch {
+        return true;
+    }
+}
+
+/**
+ * Remembers the home link switch of a panel in `window.localStorage` - a convenience only, errors
+ * are swallowed.
+ *
+ * @param panelName Name of the panel.
+ * @param show Whether the home links are shown.
+ */
+function storeShowHomeEdges(panelName: string, show: boolean): void {
+    try {
+        window.localStorage.setItem(HOME_EDGES_STORAGE_PREFIX + panelName, String(show));
+    } catch {
+        // Private mode or blocked storage - the choice then just isn't remembered
+    }
+}
+
 /** Icons nach Namen - die Liste steckt ohnehin im Bundle, die Zuordnung wird einmalig aufgebaut */
 let iconsByName: Map<string, string> | undefined;
 
@@ -215,10 +249,8 @@ import ConfirmDialog from './components/ConfirmDialog';
 import { alpha, useTheme } from '@mui/material/styles';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import {
-    HOME_EDGES_HIDDEN_FROM_PAGES,
     buildLayoutTree,
     computeAutoLayout,
-    countPages,
     defaultCollapsed,
     estimateNodeSize,
     hiddenByCollapse,
@@ -669,6 +701,33 @@ function nodeSizes(nodes: readonly FlowNode[]): Map<string, NodeSize> {
 }
 
 /**
+ * Whether a node is shown with the given switches (collapsing aside). System pages need "show
+ * system pages" - except `///unlock`, which is always shown -, state nodes need "show states".
+ *
+ * @param showSystemPages Switch "show system pages".
+ * @param showStates Switch "show states".
+ * @returns The check per node.
+ */
+function shownBySwitches(showSystemPages: boolean, showStates: boolean): (node: FlowNode) => boolean {
+    return node =>
+        (showSystemPages || !node.id.startsWith('///') || node.id === servicePageName) &&
+        (showStates || node.data.entry?.nodeType !== 'stateRef');
+}
+
+/**
+ * Positions to save: only nodes with a real position - provisionally placed nodes (and nodes in
+ * collapsed sub trees that never got a position) are left out, so they are placed again next time
+ * instead of being stored where they happen to stand (e.g. all at 0/0).
+ *
+ * @param nodes All nodes.
+ * @param unplaced Nodes with a provisional position only.
+ * @returns Name and position per node to save.
+ */
+function savedPositions(nodes: readonly FlowNode[], unplaced: ReadonlySet<string>): NavigationSavePayload['pages'] {
+    return nodes.filter(n => !unplaced.has(n.id)).map(n => ({ name: n.id, position: n.position }));
+}
+
+/**
  * Positionen der Knoten, außer den ausgenommenen.
  *
  * @param nodes Knoten der Ansicht.
@@ -715,8 +774,8 @@ interface NavigationViewInternalState extends NavigationViewState {
     unplaced: ReadonlySet<string>;
     /** Collapsed pages of the selected panel - their sub trees are hidden */
     collapsed: ReadonlySet<string>;
-    /** Home links to `main` shown; `undefined` = by the size of the configuration */
-    showHomeEdges?: boolean;
+    /** Home links to `main` shown - the user's choice per panel, shown unless switched off */
+    showHomeEdges: boolean;
     isTouchDevice?: boolean;
     showSystemPages: boolean;
     showStates: boolean;
@@ -784,13 +843,13 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
 
     // Schnelles Speichern beim Tabwechsel/Schließen über Beacon (kein await möglich)
     private saveNavigationBeacon = (): void => {
-        const { selectedPanel, nodes, dirty, alive } = this.state;
+        const { selectedPanel, nodes, dirty, alive, unplaced } = this.state;
         if (!selectedPanel || !nodes.length || !dirty || !alive) {
             return;
         }
         const payload: NavigationSavePayload = {
             panelName: selectedPanel,
-            pages: nodes.map(n => ({ name: n.id, position: n.position })),
+            pages: savedPositions(nodes, unplaced),
         };
         try {
             const url = `${window.location.origin}/adapter/${ADAPTER_NAME}/autosave`;
@@ -823,7 +882,7 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
     };
 
     async saveNavigation(): Promise<void> {
-        const { selectedPanel, nodes, dirty, alive } = this.state;
+        const { selectedPanel, nodes, dirty, alive, unplaced } = this.state;
         if (!selectedPanel || !nodes.length || !dirty) {
             return;
         }
@@ -834,7 +893,7 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
         }
         const payload: NavigationSavePayload = {
             panelName: selectedPanel,
-            pages: nodes.map(n => ({ name: n.id, position: n.position })),
+            pages: savedPositions(nodes, unplaced),
         };
         try {
             const instance = this.props.oContext.instance ?? '0';
@@ -871,6 +930,7 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
             internalsToken: 0,
             unplaced: new Set(),
             collapsed: new Set(),
+            showHomeEdges: true,
         };
         this.handleShowStatesChange = this.handleShowStatesChange.bind(this);
         this.fetchNavigation = this.fetchNavigation.bind(this);
@@ -930,10 +990,12 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
             if (!map || !toPlace.size) {
                 return { ...state, autoLayoutMenu: undefined, notice: I18n.t('auto_layout_nothing_new') };
             }
+            // The provisional positions of the rest (in collapsed sub trees) mean nothing - they
+            // must not keep the new nodes away
             const placed = placeNewNodes(
                 map,
                 nodeSizes(state.nodes),
-                positionsOf(state.nodes, toPlace),
+                positionsOf(state.nodes, state.unplaced),
                 toPlace,
                 { collapsed: state.collapsed },
                 this.getLayoutTree(map),
@@ -993,15 +1055,20 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
      * Places nodes that just became visible and have only a provisional position, around the
      * nodes that stay where they are. The view only - nothing is marked as changed.
      *
+     * Nodes with a provisional position that stay invisible do not count as occupied - otherwise
+     * e.g. the hidden state nodes in their outer column would push the revealed pages far down.
+     *
      * @param state Current state.
      * @param revealed Nodes that became visible.
      * @param collapsed Collapsed pages after the change.
+     * @param shown Whether a node is visible after the change (ignoring collapsing).
      * @returns The updated nodes, `undefined` when nothing had to be placed.
      */
     private placeRevealed(
         state: NavigationViewInternalState,
         revealed: Iterable<string>,
         collapsed: ReadonlySet<string>,
+        shown: (node: FlowNode) => boolean,
     ): FlowNode[] | undefined {
         const map = state.navigationMap;
         if (!map) {
@@ -1012,10 +1079,15 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
         if (!toPlace.size) {
             return undefined;
         }
+        const ignored = new Set(
+            state.nodes
+                .filter(n => toPlace.has(n.id) || (state.unplaced.has(n.id) && (hidden.has(n.id) || !shown(n))))
+                .map(n => n.id),
+        );
         const placed = placeNewNodes(
             map,
             nodeSizes(state.nodes),
-            positionsOf(state.nodes, toPlace),
+            positionsOf(state.nodes, ignored),
             toPlace,
             { collapsed },
             this.getLayoutTree(map),
@@ -1047,44 +1119,46 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
                         state,
                         [...before].filter(id => !after.has(id)),
                         collapsed,
+                        shownBySwitches(state.showSystemPages, state.showStates),
                     ) ?? nodes;
             } else {
                 collapsed.add(nodeId);
             }
             storeCollapsed(state.selectedPanel, collapsed);
-            return { ...state, collapsed, nodes };
+            // Kanten in den eingeklappten Unterbaum enden jetzt an anderen Anfassern - neu vermessen
+            return { ...state, collapsed, nodes, internalsToken: state.internalsToken + 1 };
         });
     };
 
-    private handleShowHomeEdgesChange = (_event: React.ChangeEvent<HTMLInputElement>, checked: boolean): void => {
-        this.setState({ showHomeEdges: checked });
-    };
-
     /**
-     * Whether the home links to `main` are shown - by the switch, or by the size of the
-     * configuration as long as the switch was not touched.
+     * The home link switch - remembered per panel.
      *
-     * @returns True when they are shown.
+     * @param _event Unused change event.
+     * @param checked Whether the home links to `main` are shown.
      */
-    private isShowingHomeEdges(): boolean {
-        const { showHomeEdges, navigationMap } = this.state;
-        if (showHomeEdges !== undefined) {
-            return showHomeEdges;
+    private handleShowHomeEdgesChange = (_event: React.ChangeEvent<HTMLInputElement>, checked: boolean): void => {
+        if (this.state.selectedPanel) {
+            storeShowHomeEdges(this.state.selectedPanel, checked);
         }
-        return !navigationMap || countPages(navigationMap) < HOME_EDGES_HIDDEN_FROM_PAGES;
-    }
+        this.setState(state => ({ showHomeEdges: checked, internalsToken: state.internalsToken + 1 }));
+    };
 
     // Arrow function: the checkbox calls the handler without `this`
     handleShowSystemPagesChange = (_event: React.ChangeEvent<HTMLInputElement>, checked: boolean): void => {
         if (!checked) {
-            this.setState({ showSystemPages: false });
+            this.setState(state => ({ showSystemPages: false, internalsToken: state.internalsToken + 1 }));
             return;
         }
-        // System pages without a saved position are placed now, around what is already shown
+        // System pages without a saved position are placed now, around what is already shown -
+        // `///unlock` is shown anyway and stays where it is
         this.setState(state => {
-            const systemPages = state.nodes.filter(n => n.id.startsWith('///')).map(n => n.id);
-            const nodes = this.placeRevealed(state, systemPages, state.collapsed) ?? state.nodes;
-            return { ...state, showSystemPages: true, nodes };
+            const systemPages = state.nodes
+                .filter(n => n.id.startsWith('///') && n.id !== servicePageName)
+                .map(n => n.id);
+            const nodes =
+                this.placeRevealed(state, systemPages, state.collapsed, shownBySwitches(true, state.showStates)) ??
+                state.nodes;
+            return { ...state, showSystemPages: true, nodes, internalsToken: state.internalsToken + 1 };
         });
     };
 
@@ -1099,13 +1173,15 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
      */
     handleShowStatesChange(_event: React.ChangeEvent<HTMLInputElement>, checked: boolean): void {
         if (!checked) {
-            this.setState({ showStates: false });
+            this.setState(state => ({ showStates: false, internalsToken: state.internalsToken + 1 }));
             return;
         }
         this.setState(state => {
             const states = state.nodes.filter(n => n.data.entry?.nodeType === 'stateRef').map(n => n.id);
-            const nodes = this.placeRevealed(state, states, state.collapsed) ?? state.nodes;
-            return { ...state, showStates: true, nodes };
+            const nodes =
+                this.placeRevealed(state, states, state.collapsed, shownBySwitches(state.showSystemPages, true)) ??
+                state.nodes;
+            return { ...state, showStates: true, nodes, internalsToken: state.internalsToken + 1 };
         });
     }
 
@@ -1518,7 +1594,7 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
         nodes: FlowNode[];
         unplaced: ReadonlySet<string>;
         collapsed: ReadonlySet<string>;
-        showHomeEdges: undefined;
+        showHomeEdges: boolean;
     } {
         const map = entry?.navigationMap;
         if (!entry || !map) {
@@ -1527,7 +1603,7 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
                 nodes: [],
                 unplaced: new Set(),
                 collapsed: new Set(),
-                showHomeEdges: undefined,
+                showHomeEdges: entry ? readStoredShowHomeEdges(entry.panelName) : true,
             };
         }
         const tree = this.getLayoutTree(map);
@@ -1549,7 +1625,13 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
             );
             nodes = withPositions(nodes, placed);
         }
-        return { navigationMap: map, nodes, unplaced, collapsed, showHomeEdges: undefined };
+        return {
+            navigationMap: map,
+            nodes,
+            unplaced,
+            collapsed,
+            showHomeEdges: readStoredShowHomeEdges(entry.panelName),
+        };
     }
 
     /** The "refresh" button: reads the navigation again, unsaved link changes stay */
@@ -2579,30 +2661,34 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
         const touchedCount = touched.size;
         const selectedPanelLabel = panelList.find(p => p.panelName === selectedPanel)?.friendlyName ?? selectedPanel;
         // Filter system pages (starting with ///) unless showSystemPages is true; ///unlock is always shown
-        const isSystemPage = (id: string): boolean => id.startsWith('///') && id !== '///unlock';
-        const isStateNode = (node: FlowNode): boolean => node.data.entry?.nodeType === 'stateRef';
+        const isSystemPage = (id: string): boolean => id.startsWith('///') && id !== servicePageName;
         // Clicking a page highlights all of its connections - same look as hovering one
         const selectedNodeId = this.state.infoPanelOpen ? this.state.infoNodeId : undefined;
         const map = this.state.navigationMap;
         const tree = map ? this.getLayoutTree(map) : undefined;
         const hidden = map ? this.getHidden(map, this.state.collapsed) : new Set<string>();
-        // Einklapp-Knopf an jeder Seite mit Unterseiten im Layout
+        // Einklapp-Knopf an jeder Seite mit Unterseiten im Layout - nur, wenn davon auch etwas
+        // angezeigt würde (die Service-Seiten unter ///unlock sind ohne "Systemseiten" ohnehin weg);
+        // die Zahl nennt die Seiten, die beim Aufklappen erscheinen
         const collapse = new Map<string, { collapsed: boolean; hidden: number }>();
         if (tree) {
             for (const [page, kids] of tree.kids) {
-                if (kids.length && !hidden.has(page)) {
+                if (!kids.length || hidden.has(page)) {
+                    continue;
+                }
+                const shown = subtreeOf(tree, page).filter(id => showSystemPages || !isSystemPage(id));
+                if (shown.length) {
                     const collapsed = this.state.collapsed.has(page);
-                    collapse.set(page, { collapsed, hidden: collapsed ? subtreeOf(tree, page).length : 0 });
+                    collapse.set(page, { collapsed, hidden: collapsed ? shown.length : 0 });
                 }
             }
         }
-        const shownNodes = nodes.filter(
-            n => !hidden.has(n.id) && (showSystemPages || !isSystemPage(n.id)) && (showStates || !isStateNode(n)),
-        );
+        const shownBy = shownBySwitches(showSystemPages, showStates);
+        const shownNodes = nodes.filter(n => !hidden.has(n.id) && shownBy(n));
         const visibleNodeIds = new Set(shownNodes.map(n => n.id));
         const redirected = tree ? this.redirectCollapsedEdges(edges, tree, hidden, visibleNodeIds) : [];
         const visibleNodes = this.decorateNodes(shownNodes, [...edges, ...redirected], collapse);
-        const showHomeEdges = this.isShowingHomeEdges();
+        const showHomeEdges = this.state.showHomeEdges;
         // remove dangling edges that reference missing nodes (safety for stale state); home links to
         // main can be hidden - except those of the selected page and of pages with unsaved changes
         const safeEdges = [...edges, ...redirected].filter(
@@ -2628,7 +2714,18 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
         ];
         return (
             <Box sx={{ width: '100%', p: 2, position: 'relative' }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', mb: 2, gap: 2 }}>
+                <Box
+                    sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        flexWrap: 'wrap',
+                        mb: 2,
+                        columnGap: 2,
+                        rowGap: 1,
+                        // the switches wrap as a whole instead of breaking their labels
+                        '& .MuiFormControlLabel-label': { whiteSpace: 'nowrap' },
+                    }}
+                >
                     <Typography variant="h6">{I18n.t('Panel_Navigation')}</Typography>
                     <Box sx={{ flex: 1 }} />
                     <FormControlLabel
@@ -2654,7 +2751,7 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
                     <FormControlLabel
                         control={
                             <Checkbox
-                                checked={this.isShowingHomeEdges()}
+                                checked={this.state.showHomeEdges}
                                 onChange={this.handleShowHomeEdgesChange}
                                 size="small"
                             />
@@ -2946,6 +3043,7 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
                                 key={selectedPanel || 'navigation-flow'}
                                 nodes={visibleNodes}
                                 fitView
+                                minZoom={0.1}
                                 nodesDraggable={true}
                                 nodesConnectable={editing}
                                 onNodesChange={this.onNodesChange}
@@ -3115,6 +3213,8 @@ export function ThemeVarsProvider({ children }: { children: React.ReactNode }): 
             root.style.setProperty(NODE_STYLE_VAR[style].border, color);
             root.style.setProperty(NODE_STYLE_VAR[style].bg, alpha(color, tint));
         }
+        // Blasse Kanten in eingeklappte Unterbäume: auf dunklem Grund kräftiger, sonst verschwinden sie
+        root.style.setProperty('--edge-collapsed-opacity', theme.palette.mode === 'dark' ? '0.85' : '0.6');
         // Kantenfarben (Primärfarbe als Default für Kanten)
         root.style.setProperty(EDGE_COLOR_VAR.default, theme.palette.primary.main || EDGE_COLOR_HEX.default);
         // Die Kantenarten sollen KEINE Theme-Farben verwenden — feste Farben

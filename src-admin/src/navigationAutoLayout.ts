@@ -11,6 +11,8 @@
  *   als Blöcke - so entstehen bei breiten Teilbäumen keine großen Lücken.
  * - Datenpunkt-Knoten stehen in einer äußeren Spalte rechts auf Höhe ihrer Seite; sie verschieben
  *   keine Seite, Ein- und Ausblenden der Datenpunkte ändert an den Seiten nichts.
+ * - Einzelne Seiten, auf die nichts verweist, die aber selbst in den Baum verweisen (z. B.
+ *   `///unlock` mit next = main), stehen neben der Seite, auf die sie verweisen.
  * - Nicht erreichbare Seiten kommen als eigene Bäume in den Bereich darunter.
  * - Große Konfigurationen (ab {@link AUTO_LAYOUT_DEFAULTS.bandMinPages} Seiten) werden auf mehrere
  *   Bänder nebeneinander verteilt: je Seite der Hauptkette ein Abschnitt, zu hohe Abschnitte (der
@@ -92,8 +94,8 @@ export interface AutoLayoutOptions {
  */
 export const AUTO_LAYOUT_DEFAULTS: Readonly<AutoLayoutOptions> = {
     hGap: 70,
-    vGap: 36,
-    groupGap: 24,
+    vGap: 30,
+    groupGap: 20,
     stateGap: 6,
     stateColumnGap: 105,
     orphanGap: 90,
@@ -105,19 +107,21 @@ export const AUTO_LAYOUT_DEFAULTS: Readonly<AutoLayoutOptions> = {
     collapsed: new Set<string>(),
 };
 
-/** Ab so vielen Seiten werden die home-Verbindungen zu `main` standardmäßig ausgeblendet */
-export const HOME_EDGES_HIDDEN_FROM_PAGES = 60;
-
+// Die Knoten sind border-box: min-/max-width in NavigationView.css schließen Innenabstand und Rahmen
+// ein. Zeichenbreiten am Admin gemessen (Median 6,8 bzw. 5,6 px, leicht aufgerundet - eine zu
+// breite Schätzung kostet nur etwas Platz, eine zu schmale führt zu Überlappungen).
 /** Geschätzte Höhe einer Seite (body2-Zeile + Innenabstand + Rahmen) */
 const PAGE_HEIGHT = 40;
-/** Mindestbreite einer Seite (min-width 80 + Innenabstand 16 + Rahmen 4) */
-const PAGE_MIN_WIDTH = 100;
-/** Geschätzte Breite eines Zeichens der Seitenbeschriftung */
-const PAGE_CHAR_WIDTH = 7.5;
+/** Mindestbreite einer Seite (min-width 80 in NavigationView.css) */
+const PAGE_MIN_WIDTH = 80;
+/** Innenabstand + Rahmen einer Seite, waagrecht */
+const PAGE_PADDING_X = 20;
+/** Geschätzte Breite eines Zeichens der Seitenbeschriftung (14 px) */
+const PAGE_CHAR_WIDTH = 7;
 /** Größte Breite eines Datenpunkt-Knotens (max-width 190 in NavigationView.css) */
 const STATE_MAX_WIDTH = 190;
-/** Kleinste Breite eines Datenpunkt-Knotens (min-width 60 + Innenabstand + Rahmen) */
-const STATE_MIN_WIDTH = 76;
+/** Kleinste Breite eines Datenpunkt-Knotens (min-width 60 in NavigationView.css) */
+const STATE_MIN_WIDTH = 60;
 /** Geschätzte Breite eines Zeichens der Datenpunkt-Beschriftung (10 px) */
 const STATE_CHAR_WIDTH = 5.6;
 /** Innenabstand + Rahmen eines Datenpunkt-Knotens, waagrecht */
@@ -142,7 +146,10 @@ export function estimateNodeSize(entry: Pick<LayoutEntry, 'page' | 'label' | 'no
         const lines = Math.max(1, Math.ceil(text / (STATE_MAX_WIDTH - STATE_PADDING_X)));
         return { width, height: lines * STATE_LINE_HEIGHT + STATE_PADDING_Y };
     }
-    return { width: Math.max(PAGE_MIN_WIDTH, Math.round(label.length * PAGE_CHAR_WIDTH + 20)), height: PAGE_HEIGHT };
+    return {
+        width: Math.max(PAGE_MIN_WIDTH, Math.round(label.length * PAGE_CHAR_WIDTH + PAGE_PADDING_X)),
+        height: PAGE_HEIGHT,
+    };
 }
 
 /** Eine prev/next-Kette - steht im Layout als senkrechte Spalte */
@@ -439,8 +446,31 @@ export function buildLayoutTree(map: readonly LayoutEntry[]): LayoutTree {
             attach(pick.k, pick.r);
         }
     };
+    /**
+     * Einzelne Seiten, auf die nichts verweist, die selbst aber in den Baum verweisen (z. B.
+     * `///unlock` mit next = main), kommen neben die Seite, auf die sie verweisen - als eigener Baum
+     * stünden sie weit unten und ihre Kante liefe quer durch alles. Längere Ketten bleiben eigene
+     * Bäume: neben ihrem Ziel würden sie die Spalte des Ziels weit auseinanderschieben.
+     */
+    const growBackwards = (): void => {
+        for (;;) {
+            let pick: LayoutRef | undefined;
+            for (const r of rawRefs) {
+                const from = chainOf(r.from);
+                if (from.nodes.length === 1 && !attached.has(from) && attached.has(chainOf(r.to)) && better(r, pick)) {
+                    pick = r;
+                }
+            }
+            if (!pick) {
+                return;
+            }
+            attach(chainOf(pick.from), { ...pick, from: pick.to, to: pick.from });
+            grow();
+        }
+    };
     attach(chainOf(root), undefined);
     grow();
+    growBackwards();
     // nicht erreichbare Bäume: Wurzel ist eine Kette, auf die keine noch freie Kette verweist
     for (;;) {
         const free = chains.filter(k => !attached.has(k));
@@ -451,6 +481,7 @@ export function buildLayoutTree(map: readonly LayoutEntry[]): LayoutTree {
         const start = free.find(k => !(refsInto.get(k) ?? []).some(r => freeSet.has(chainOf(r.from)))) ?? free[0];
         attach(start, undefined);
         grow();
+        growBackwards();
     }
     // Unterketten je Seite in der Reihenfolge ihrer Verweise
     const sorted = [...kidRef.entries()].sort((a, b) => a[1].order - b[1].order);
@@ -755,17 +786,54 @@ class Arranger {
     }
 
     /**
-     * Hauptbaum auf Bänder verteilen.
+     * Hauptbaum auf Bänder verteilen. Die Abschnitte lassen sich nicht beliebig teilen, deshalb
+     * ergibt eine rechnerische Bandhöhe selten das angestrebte Seitenverhältnis: Mehrere Bandhöhen
+     * werden ausprobiert, genommen wird die mit dem Seitenverhältnis am nächsten an
+     * {@link AutoLayoutOptions.bandAspect} (bei Gleichstand die mit weniger Bändern).
      *
      * @param root Wurzelkette des Hauptbaums.
      * @param width Breite des Hauptbaums ohne Bänder.
      * @param height Höhe des Hauptbaums ohne Bänder.
-     * @param out Ziel, wird für den Hauptbaum neu geschrieben.
+     * @param out Ziel, enthält bisher nur den Hauptbaum und wird neu geschrieben.
      * @returns Rechte und untere Kante.
      */
     placeBands(root: LayoutChain, width: number, height: number, out: Positions): { right: number; bottom: number } {
         const bands = Math.max(2, Math.round(Math.sqrt((height * this.o.bandAspect) / width)));
-        const bandH = height / bands;
+        let best: { pos: Positions; right: number; bottom: number; bands: number; score: number } | undefined;
+        for (let f = 0.6; f <= 2.01; f += 0.1) {
+            const pos: Positions = {};
+            const r = this.packBands(root, (height / bands) * f, pos);
+            if (r.bands < 2 || r.bottom <= 0) {
+                continue;
+            }
+            const score = Math.abs(Math.log(r.right / r.bottom / this.o.bandAspect));
+            if (!best || score < best.score - 0.01 || (score < best.score + 0.01 && r.bands < best.bands)) {
+                best = { pos, ...r, score };
+            }
+        }
+        if (!best) {
+            return { right: width, bottom: height };
+        }
+        for (const id of Object.keys(out)) {
+            delete out[id];
+        }
+        Object.assign(out, best.pos);
+        return { right: best.right, bottom: best.bottom };
+    }
+
+    /**
+     * Verteilt den Hauptbaum mit einer festen größten Bandhöhe auf Bänder.
+     *
+     * @param root Wurzelkette des Hauptbaums.
+     * @param bandH Größte Höhe eines Bandes.
+     * @param out Ziel.
+     * @returns Rechte und untere Kante, Anzahl der Bänder.
+     */
+    private packBands(
+        root: LayoutChain,
+        bandH: number,
+        out: Positions,
+    ): { right: number; bottom: number; bands: number } {
         // Abschnitte: je Seite der Hauptkette mit ihrem Unterbaum, zu hohe zerlegt in Kopf + Teilbäume
         interface Item {
             shape: Shape;
@@ -824,19 +892,16 @@ class Arranger {
         // Spalten: gemeinsame Breiten, jedes Band beginnt mit seiner ersten belegten Spalte
         const widths = this.columnWidths(items.map(i => i.shape));
         const xs = this.columnX(widths, 0);
-        for (const id of Object.keys(out)) {
-            if (this.isInShapes(id, items)) {
-                delete out[id];
-            }
-        }
         let bandX = 0;
         let right = 0;
         let bottom = 0;
+        let count = 0;
         for (let b = 0; b <= band; b++) {
             const inBand = placed.filter(p => p.band === b);
             if (!inBand.length) {
                 continue;
             }
+            count++;
             const minD = Math.min(...inBand.flatMap(p => [...p.item.shape.depth.values()]));
             let bandRight = bandX;
             for (const p of inBand) {
@@ -848,11 +913,7 @@ class Arranger {
             right = Math.max(right, bandRight);
             bandX = bandRight + this.o.bandGap;
         }
-        return { right, bottom };
-    }
-
-    private isInShapes(id: string, items: { shape: Shape }[]): boolean {
-        return items.some(i => i.shape.y.has(id));
+        return { right, bottom, bands: count };
     }
 
     /**
@@ -1022,7 +1083,8 @@ export function computeAutoLayout(
  * - Eine Seite unter dem Ende ihrer Kette (bzw. über dem Anfang), sonst in die Spalte rechts neben
  *   der Seite, die zu ihr führt - jeweils auf die erste freie Höhe.
  * - Seiten ohne platzierten Bezug werden als eigener Baum im Bereich unter allem angeordnet.
- * - Datenpunkt-Knoten in die äußere Spalte rechts, auf Höhe ihrer Seite.
+ * - Datenpunkt-Knoten in die äußere Spalte rechts, auf Höhe ihrer Seite. Sie verschieben keine
+ *   Seite: neue Seiten weichen nur Seiten aus.
  *
  * @param map Navigation-Map.
  * @param sizes Gemessene Knotengrößen; fehlende werden geschätzt.
@@ -1045,10 +1107,16 @@ export function placeNewNodes(
     const out: Positions = {};
     const pos: Positions = {};
     const rects: Rect[] = [];
+    // Seiten weichen nur Seiten aus: Datenpunkt-Knoten verschieben keine Seite (auch ausgeblendete
+    // in ihrer äußeren Spalte würden neue Seiten sonst weit nach unten drücken)
+    const pageRects: Rect[] = [];
     for (const id of Object.keys(fixed)) {
         if (!toPlace.has(id) && a.by.has(id)) {
             pos[id] = fixed[id];
             rects.push(a.rectOf(id, fixed[id]));
+            if (!a.isState(id)) {
+                pageRects.push(a.rectOf(id, fixed[id]));
+            }
         }
     }
     const put = (id: string, p: Point): void => {
@@ -1056,6 +1124,9 @@ export function placeNewNodes(
         out[id] = r;
         pos[id] = r;
         rects.push(a.rectOf(id, r));
+        if (!a.isState(id)) {
+            pageRects.push(a.rectOf(id, r));
+        }
     };
 
     // Seiten in Baum-Reihenfolge, damit die verweisende Seite vor ihren Unterseiten steht
@@ -1088,7 +1159,7 @@ export function placeNewNodes(
             const x = p.x + (a.size(above).width - size.width) / 2;
             put(id, {
                 x,
-                y: findFreeY(rects, x, size.width, size.height, p.y + a.size(above).height + o.vGap, o.vGap),
+                y: findFreeY(pageRects, x, size.width, size.height, p.y + a.size(above).height + o.vGap, o.vGap),
             });
             continue;
         }
@@ -1096,17 +1167,20 @@ export function placeNewNodes(
             const p = pos[below];
             const x = p.x + (a.size(below).width - size.width) / 2;
             const y0 = p.y - o.vGap - size.height;
-            const y = findFreeY(rects, x, size.width, size.height, y0, o.vGap);
-            put(id, { x, y: y === y0 ? y0 : findFreeY(rects, x, size.width, size.height, p.y, o.vGap) });
+            const y = findFreeY(pageRects, x, size.width, size.height, y0, o.vGap);
+            put(id, { x, y: y === y0 ? y0 : findFreeY(pageRects, x, size.width, size.height, p.y, o.vGap) });
             continue;
         }
         const owner = ownerOf.get(id);
         if (owner && pos[owner] && !deferred.has(owner)) {
             const op = pos[owner];
-            // An bereits stehenden Geschwistern ausrichten, sonst eine Spalte rechts der Seite
+            // Mittig unter bereits stehenden Geschwistern (die Spalten sind mittig ausgerichtet),
+            // sonst eine Spalte rechts der Seite
             const siblings = (tree.kids.get(owner) ?? []).flatMap(k => k.chain.nodes).filter(n => n !== id && pos[n]);
-            const x = siblings.length ? Math.min(...siblings.map(n => pos[n].x)) : op.x + a.size(owner).width + o.hGap;
-            put(id, { x, y: findFreeY(rects, x, size.width, size.height, op.y, o.groupGap) });
+            const x = siblings.length
+                ? pos[siblings[0]].x + (a.size(siblings[0]).width - size.width) / 2
+                : op.x + a.size(owner).width + o.hGap;
+            put(id, { x, y: findFreeY(pageRects, x, size.width, size.height, op.y, o.groupGap) });
             continue;
         }
         deferred.add(id);
@@ -1117,7 +1191,7 @@ export function placeNewNodes(
         const layout = computeAutoLayout(sub, sizes, { ...options, bands: o.bands });
         let maxY = -Infinity;
         let minX = Infinity;
-        for (const r of rects) {
+        for (const r of pageRects) {
             maxY = Math.max(maxY, r.y + r.h);
             minX = Math.min(minX, r.x);
         }
