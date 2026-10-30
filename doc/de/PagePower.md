@@ -4,20 +4,20 @@
 + [Grundeinstellung](#grundeinstellung)  
     + [Erzeuger / Verbraucher](#erzeuger--verbraucher)  
     + [Home ](#home)    
-+ [Verweis im Konifg Script](#verweis-im-konfig-script)   
++ [Übernahme der alten Tabelle `PagePower`](#übernahme-der-alten-tabelle-pagepower)   
 
- Die Page Power ermöglicht bis zu 6 Verbraucher / Erzeuger darzustellen und zu verrechnen. Sie soll die Stromverteilung in eurem Smarthome abbilden. Icons, Farbverläufe, Geschwidigkeit der Flußrichtung sowie die Flußrichtung selbst lassen sich hier einstellen. Die Einstellmöglichkeiten erklären wir an einem Beispiel. Ihr könnt mehrere dieser Seiten erstellen. Auf welchem Panel ihr diese dann nutzt, entscheidet ihr im Konfig-Script des jeweiligen Panels.  
+ Die Page Power ermöglicht bis zu 6 Verbraucher / Erzeuger darzustellen und zu verrechnen. Sie soll die Stromverteilung in eurem Smarthome abbilden. Icons, Farbverläufe, Geschwidigkeit der Flußrichtung sowie die Flußrichtung selbst lassen sich hier einstellen. Die Einstellmöglichkeiten erklären wir an einem Beispiel. Ihr könnt mehrere dieser Seiten erstellen. Auf welchem Panel ihr sie nutzt, legt ihr über die Navigationszuweisung im Tab `PageConfig` fest — ein Konfig-Script braucht ihr dafür nicht.  
   
 ---
 ## Grundeinstellung  
   
- <img alt= 'PagePower allg' src='../Pictures/pagePower/pagePowerallg.png'>  
-   
- Mit Auswahl des Tab `PagePower` kommt ihr an die Einstellungen. Um eine neue Page zu erstellen, klickt ihr auf das PLUS-Zeichen und es erscheinen die Datenfelder für die Page. (siehe Bild oben)  
-1. Zuerst legt ihr den Seitennamen fest, dieser darf sich im gesamten Panel nicht wiederholen. Es ist die ID für diese Seite und ist identisch mit dem `uniqueName`. Der Name erscheint auch in dem grauen Balken, dadruch könnt ihr bei mehreren Seiten sie leicht unterscheiden.
+ Eine Power-Seite wird im Tab `PageConfig` als Seite mit dem Typ `Leistung` angelegt:
+1. Der Seitenname darf sich im gesamten Panel nicht wiederholen. Es ist die ID für diese Seite (`uniqueName`).
 2. Die Überschrift auf der Seite festlegen.
-3. Wenn ihr den Haken bei `alwaysOnDisplay` setzt, bleibt die Seite permanent sichtbar und spring nicht automatisch in den Screensaver. Damit der Screensaver wieder aktiv wird, müsst ihr auf eine andere Seite springen.  
-4. Option `Seite ausblenden` ermöglicht die Seite aus der Navigation zu entfernen, wenn in der Serviceseite `System`die Option `hide Page` aktiv ist.
+3. Die sechs Felder für Erzeuger / Verbraucher und die beiden Werte am Haus einstellen (siehe unten).
+4. Die Navigation (auf welchen Panels, vorherige/nächste Seite) im Panel-Bereich zuweisen. `alwaysOnDisplay` und `Seite ausblenden` gibt es wie bei allen Seiten im Tab `PageConfig`.
+
+Den früheren Tab `PagePower` gibt es nicht mehr — siehe [Übernahme der alten Tabelle](#übernahme-der-alten-tabelle-pagepower). Die Bilder unten stammen noch aus diesem Tab, die Felder heißen im Editor gleich.
   
 ---  
 ## Erzeuger / Verbraucher  
@@ -30,7 +30,7 @@
  <img alt='pagePowerItemMore' src='../Pictures/pagePower/pagePowerItemMore.png'>  
    
  + **Anzahl der Dezimalstellen**, die dargestellt werden sollen, unabhängig von der Anzahl im Datenpunkt  
- + **Einheit** Hiermit wird die kleinste darzustellende Einheit ausgewählt. Durch die AutoUnit-Funktion wird die Einheit erhöht, wenn die Zahl vierstellig wird. z.B 999W werden bei Erhöhung zu 1kW. Wenn im Datenpunkt eine Einheit definiert ist, ist diese führend und überschreibt diese hier im Admin.  
+ + **Einheit** -> die Einheit des Wertes im Datenpunkt. Durch die AutoUnit-Funktion wird die Einheit erhöht, wenn die Zahl vierstellig wird, z.B. werden aus 999W bei Erhöhung 1kW.  
  + **maximale Leistung** -> den maximalen Wert eintragen der vom Datenpunkt zu erwarten ist. Der max-Wert bedeutet 100% Geschwindigkeit der Anzeige für die Flussrichtung. Bei 0W bleibt der Punkt stehen und wird bei Erhöhung der Leistung prozentual dann schneller.  
  + Durch setzen des Haken kann die **Flußrichtung umgekehrt** werden. Alle Erzeuger sollten zur Mitte fließen und Verbraucher davon weg. Die Mitte der Seite spiegelt den Verteilerkasten wieder, wo alle Verbraucher und Erzeuger zusammen kommen.  
  + **Iconfarbe** -> mit dem ColorPicture kann die Farbe des Icon ausgewählt werden. Soll das Icon nach Höhe der Leistung seine Farbe ändern, dann aktiviert `Farbskale verwenden`.  
@@ -65,40 +65,22 @@ Mit **Beschreibung/Titel** könnt ihr über der Flussanzeige einen Text einblend
   
 Home ist der mittlere Teil der Page, hier laufen alle Leistungen zusammen. Es ist der virtuelle Stromkasten mit seinem Zähler. Es gibt hier zwei Felder die Ihr nutzen könnt um Werte anzeigen zu lassen.  
 
-+ `Haus oben` ist der Wert über dem Haus-Symbol. Ihr legt den Datenpunkt fest den ihr anzeigen wollt und könnt über `weitere Einstellungen` zusätzlich noch Dezimalstellen und Einheit auswählen. Hier gilt auch das der Admin die Einheit vom Datenpunkt überschreibt.  
++ `Haus oben` ist der Wert über dem Haus-Symbol. Ihr legt den Datenpunkt fest den ihr anzeigen wollt und könnt über `weitere Einstellungen` zusätzlich noch Dezimalstellen und Einheit auswählen. Die Einheit ist auch hier die des Wertes im Datenpunkt.  
 + `Haus unten` hat zwei Funktionen. Wenn `interne Berechnung` nicht aktiv ist, dann gleicht es dem Feld `Haus oben`. Bei Aktivierung könnt ihr über `Auswahl Stromeinseisungen` die Felder auswählen, die euer Smarthome versorgen (z.B. Stromnetz, Batterie, Solarpanel)  
 ---  
-## Verweis im Konfig Script
-Im Konfig Script wird die Seite wie folgt eingebunden.  
-Als Hauptseite unter pages
+## Übernahme der alten Tabelle `PagePower`
+
+Bis Version 1.7 gab es den Tab `PagePower`, dessen Seiten über einen Verweis im Konfig-Script in die Navigation kamen. Beim ersten Start nach dem Update übernimmt der Adapter alle Einträge dieser Tabelle in den Tab `PageConfig` (Typ `Leistung`) und löscht die alte Tabelle. Ist ein Seitenname dort schon vergeben, bekommt die Seite den Zusatz `_power` (Warnung im Log) — das Script findet sie trotzdem unter dem alten Namen.
+
+Hat der Datenpunkt eines Wertes eine Einheit (`common.unit`), wird diese als Einheit übernommen — die alte Tabelle hat sie ebenfalls vor der dort gewählten Einheit angezeigt. Ohne Einheit am Datenpunkt bleibt die Einheit aus der Tabelle.
+
+Die Navigation kommt bei diesen Seiten vorerst weiter aus dem Konfig-Script, der bisherige Verweis funktioniert unverändert:
+
 ```typescript
     const powerGrid: ScriptConfig.PagePower = {
-        uniqueName: 'seitenname', // muss mit dem Namen im Admin übereinstimmen
+        uniqueName: 'seitenname', // Seitenname aus der alten Tabelle
         type: 'cardPower'
     };
-```  
+```
 
-Als Subpage unter subPages  
-```typescript
-    const energieAnzeige: ScriptConfig.PagePower = {
-        prev: 'uniqueName einer Seite',
-        home: 'main',
-        uniqueName: 'seitenname', // muss mit dem Namen im Admin übereinstimmen
-        type: 'cardPower'
-    };
-```  
-Unter pages bzw subPages wird der Name, der hinter `const` steht eingetragen.  
-```typescript
-        // Seiteneinteilung / Page division
-        // Hauptseiten / Mainpages
-        pages: [
-            powerGrid,
-        ],
-        // Unterseiten / Subpages
-        subPages: [
-            energieAnzeige,
-        ],
-```  
-
-> [!Note]  
-> Zuerst die Einstellungen im Admin durchführen und danach das Script anpassen und neu starten.
+Das ist eine Übergangslösung und veraltet: der Editor zeigt bei solchen Seiten einen Hinweis, das Log eine Warnung. Sobald der Seite im Tab `PageConfig` eine Navigation zugewiesen ist, gilt diese; die Seite dann aus dem Script entfernen — sonst wird sie dort mit einer Warnung übersprungen.

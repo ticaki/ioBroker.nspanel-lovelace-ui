@@ -1,5 +1,6 @@
 import React from 'react';
 import {
+    Alert,
     Box,
     Button,
     Checkbox,
@@ -33,6 +34,7 @@ import {
     type PowerHomeTopConfig,
     type PowerHomeBotConfig,
     emptyPowerSlot,
+    isScriptNavigatedPower,
 } from '../../../src/lib/types/adminShareConfig';
 import { isMainPageEntry } from '../../../src/lib/types/adminShareConfig';
 import { isDarkTheme } from '../themeUtils';
@@ -129,6 +131,27 @@ export class PagePowerEditor extends ConfigGeneric<ConfigGenericProps & PagePowe
             this.setState({ alive: isAlive });
         }
     };
+
+    /**
+     * Options of a unit select: W, kW, MW and - for a unit taken over from the state object by the
+     * migration of the old table "Page Power" (e.g. kWh) - the stored unit, so the select shows it.
+     *
+     * @param current stored unit
+     */
+    private renderUnitOptions(current: string | undefined): React.JSX.Element[] {
+        const units = ['W', 'kW', 'MW'];
+        if (current && !units.includes(current)) {
+            units.push(current);
+        }
+        return units.map(u => (
+            <MenuItem
+                key={u}
+                value={u}
+            >
+                {u}
+            </MenuItem>
+        ));
+    }
 
     private updateEntry(patch: Partial<PowerEntry>): void {
         this.props.onEntryChange({ ...this.props.entry, ...patch });
@@ -473,9 +496,7 @@ export class PagePowerEditor extends ConfigGeneric<ConfigGenericProps & PagePowe
                                 value={data.valueUnit ?? 'W'}
                                 onChange={e => this.updateSlot(slot, { valueUnit: e.target.value })}
                             >
-                                <MenuItem value="W">W</MenuItem>
-                                <MenuItem value="kW">kW</MenuItem>
-                                <MenuItem value="MW">MW</MenuItem>
+                                {this.renderUnitOptions(data.valueUnit)}
                             </Select>
                         </FormControl>
                         <TextField
@@ -626,9 +647,7 @@ export class PagePowerEditor extends ConfigGeneric<ConfigGenericProps & PagePowe
                                     value={data.valueUnit ?? 'W'}
                                     onChange={e => this.updateHomeTop({ valueUnit: e.target.value })}
                                 >
-                                    <MenuItem value="W">W</MenuItem>
-                                    <MenuItem value="kW">kW</MenuItem>
-                                    <MenuItem value="MW">MW</MenuItem>
+                                    {this.renderUnitOptions(data.valueUnit)}
                                 </Select>
                             </FormControl>
                         </Box>
@@ -728,9 +747,7 @@ export class PagePowerEditor extends ConfigGeneric<ConfigGenericProps & PagePowe
                                 value={data.valueUnit ?? 'W'}
                                 onChange={e => this.updateHomeBot({ valueUnit: e.target.value })}
                             >
-                                <MenuItem value="W">W</MenuItem>
-                                <MenuItem value="kW">kW</MenuItem>
-                                <MenuItem value="MW">MW</MenuItem>
+                                {this.renderUnitOptions(data.valueUnit)}
                             </Select>
                         </FormControl>
                     </Box>
@@ -780,6 +797,19 @@ export class PagePowerEditor extends ConfigGeneric<ConfigGenericProps & PagePowe
                     sx={{ mb: 2 }}
                     disabled={!this.state.alive}
                 />
+
+                {/* migrated from the table "Page Power": navigation still comes from the script */}
+                {isScriptNavigatedPower(entry) && (
+                    <Alert
+                        severity="warning"
+                        sx={{ mb: 2, maxWidth: 800 }}
+                    >
+                        {this.getText('power_script_navigation_hint').replace(
+                            '%s',
+                            entry.scriptName ?? entry.uniqueName,
+                        )}
+                    </Alert>
+                )}
 
                 <Box
                     sx={{

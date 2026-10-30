@@ -18,7 +18,9 @@ var __copyProps = (to, from, except, desc) => {
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 var pagePower_exports = {};
 __export(pagePower_exports, {
-  PagePower: () => PagePower
+  PagePower: () => PagePower,
+  buildPowerPage: () => buildPowerPage,
+  buildPowerSlotData: () => buildPowerSlotData
 });
 module.exports = __toCommonJS(pagePower_exports);
 var import_Page = require("../classes/Page");
@@ -141,548 +143,27 @@ class PagePower extends import_Page.Page {
     }
     return null;
   };
-  static async getPowerPageConfig(configManager, page, index, gridItem, messages) {
-    const adapter = configManager.adapter;
-    const config = adapter.config.pagePowerdata[index];
-    const states = [];
-    for (let i = 1; i <= 8; i++) {
-      const key = `power${i}_state`;
-      if (typeof config[key] === "string" && await configManager.existsState(config[key])) {
-        states.push(config[key]);
-      } else {
-        states.push("");
-      }
-    }
-    const icons = [];
-    for (let i = 1; i <= 6; i++) {
-      const key = `power${i}_icon`;
-      if (typeof config[key] === "string") {
-        icons.push(config[key]);
-      } else {
-        icons.push("");
-      }
-    }
-    const minSpeedScale = [];
-    for (let i = 1; i <= 6; i++) {
-      const key = `power${i}_minSpeedScale`;
-      if (typeof config[key] === "number") {
-        minSpeedScale.push(config[key]);
-      } else {
-        minSpeedScale.push(0);
-      }
-    }
-    const maxSpeedScale = [];
-    for (let i = 1; i <= 6; i++) {
-      const key = `power${i}_maxSpeedScale`;
-      if (typeof config[key] === "number") {
-        maxSpeedScale.push(config[key]);
-      } else {
-        maxSpeedScale.push(1e4);
-      }
-    }
-    const iconColor = [];
-    for (let i = 1; i <= 6; i++) {
-      const color = `power${i}_iconColor`;
-      const useScale = `_power${i}_useColorScale`;
-      if (typeof config[color] === "string" && typeof config[useScale] === "boolean" && !config[useScale]) {
-        iconColor.push(config[color]);
-      } else {
-        iconColor.push("");
-      }
-    }
-    const iconColorScale = [];
-    for (let i = 1; i <= 6; i++) {
-      const prefix = `power${i}_`;
-      const surfix = `ColorScale`;
-      const scale = [
-        config[`${prefix}min${surfix}`],
-        config[`${prefix}max${surfix}`],
-        config[`${prefix}best${surfix}`]
-      ];
-      const useScale = config[`_${prefix}use${surfix}`];
-      if (scale.every((s) => typeof s === "number") && useScale === true) {
-        iconColorScale.push(scale);
-      } else {
-        iconColorScale.push([]);
-      }
-    }
-    const entityHeadline = [];
-    for (let i = 1; i <= 6; i++) {
-      const key = `power${i}_entityHeadline`;
-      if (typeof config[key] === "string") {
-        entityHeadline.push(config[key]);
-      } else {
-        entityHeadline.push("");
-      }
-    }
-    const speedReverse = [];
-    for (let i = 1; i <= 6; i++) {
-      const key = `power${i}_reverse`;
-      if (typeof config[key] === "boolean") {
-        speedReverse.push(config[key]);
-      }
-    }
-    const valueDecimal = [];
-    for (let i = 1; i <= 8; i++) {
-      const key = `power${i}_valueDecimal`;
-      if (typeof config[key] === "number") {
-        valueDecimal.push(config[key]);
-      } else {
-        valueDecimal.push(0);
-      }
-    }
-    const configUnit = [];
-    const valueUnit = [];
-    for (let i = 1; i <= 7; i++) {
-      const key = `power${i}_valueUnit`;
-      switch (config[key]) {
-        case "W": {
-          configUnit.push(0);
-          break;
-        }
-        case "kW": {
-          configUnit.push(1);
-          break;
-        }
-        case "MW": {
-          configUnit.push(2);
-          break;
-        }
-        default: {
-          configUnit.push(void 0);
-        }
-      }
-      if (states[i - 1] != null && states[i - 1] != "" && await configManager.existsState(states[i - 1])) {
-        const o = await configManager.adapter.getForeignObjectAsync(states[i - 1]);
-        if (o && o.common && o.common.unit) {
-          valueUnit.push(` ${o.common.unit}`);
-        } else {
-          if (typeof config[key] === "string" && config[key] != "") {
-            valueUnit.push(` ${config[key]}`);
-          } else {
-            valueUnit.push(" W");
-          }
-        }
-      } else {
-        valueUnit.push("");
-      }
-    }
-    const unitPower8 = `power8_valueUnit`;
-    if (config.power8_selInternalCalculation) {
-      valueUnit.push(` ${String(config[unitPower8])}`);
-    } else {
-      if (states[7] != null && states[7] != "" && await configManager.existsState(states[7])) {
-        const o = await configManager.adapter.getForeignObjectAsync(states[7]);
-        if (o && o.common && o.common.unit) {
-          valueUnit.push(` ${o.common.unit}`);
-        } else {
-          if (typeof config[unitPower8] === "string" && config[unitPower8] != "") {
-            valueUnit.push(` ${config[unitPower8]}`);
-          } else {
-            valueUnit.push(" W");
-          }
-        }
-      } else {
-        valueUnit.push("");
-      }
-    }
-    let valueKey = {};
-    if (config.power8_selInternalCalculation) {
-      valueKey = {
-        value: { type: "internal", dp: `///${config.pageName}/powerSum` },
-        decimal: { type: "const", constVal: valueDecimal[7] },
-        unit: { type: "const", constVal: valueUnit[7] }
-      };
-    } else {
-      valueKey = {
-        value: { type: "triggered", dp: states[7] },
-        decimal: { type: "const", constVal: valueDecimal[7] },
-        unit: { type: "const", constVal: valueUnit[7] }
-      };
-    }
-    gridItem = {
+  /**
+   * Page config of a script page `cardPower` from a migrated entry of the page config
+   * (deprecated transition after the migration of the table "Page Power"): the entry delivers the
+   * content, the script the navigation. The page keeps the script name as id, so prev/next in the
+   * script still match even if the migration renamed the entry.
+   *
+   * @param configManager the running ConfigManager
+   * @param entry power entry of the page config
+   * @param gridItem page base to extend
+   * @param page the script page definition
+   */
+  static getPowerPageConfigFromEntry(configManager, entry, gridItem, page) {
+    const { config } = buildPowerPage(entry, configManager.adapter, page.uniqueName);
+    return {
       ...gridItem,
-      uniqueID: config.pageName,
-      alwaysOn: gridItem.alwaysOn === "always" || config.alwaysOnDisplay ? "always" : "none",
-      hidden: gridItem.hidden || config.hiddenByTrigger,
-      config: {
-        card: "cardPower",
-        index,
-        data: {
-          headline: await configManager.getFieldAsDataItemConfig(page.heading || config.headline || ""),
-          homeIcon: { true: { value: { type: "const", constVal: "home" } }, false: void 0 },
-          homeValueTop: {
-            value: { type: "triggered", dp: states[6] },
-            decimal: { type: "const", constVal: valueDecimal[6] },
-            unit: { type: "const", constVal: valueUnit[6] }
-          },
-          homeValueBot: valueKey,
-          leftTop: {
-            icon: {
-              true: {
-                value: {
-                  type: "const",
-                  constVal: icons[0]
-                },
-                color: {
-                  type: "const",
-                  constVal: iconColor[0]
-                  //undefined,
-                }
-              },
-              false: void 0,
-              scale: {
-                type: "const",
-                constVal: {
-                  val_min: iconColorScale[0][0],
-                  val_max: iconColorScale[0][1],
-                  val_best: iconColorScale[0][2],
-                  mode: "triGrad"
-                }
-              }
-            },
-            value: {
-              value: {
-                type: "triggered",
-                dp: states[0]
-              },
-              decimal: {
-                type: "const",
-                constVal: valueDecimal[0]
-              },
-              unit: {
-                type: "const",
-                constVal: valueUnit[0]
-              }
-            },
-            speed: {
-              value: {
-                type: "triggered",
-                dp: states[0]
-              },
-              minScale: {
-                type: "const",
-                constVal: minSpeedScale[0]
-              },
-              maxScale: {
-                type: "const",
-                constVal: maxSpeedScale[0]
-              },
-              negate: {
-                type: "const",
-                constVal: speedReverse[0]
-              }
-            },
-            text: {
-              true: { type: "const", constVal: entityHeadline[0] }
-            },
-            targetUnit: configUnit[0] ? { type: "const", constVal: configUnit[0] } : void 0
-          },
-          leftMiddle: {
-            icon: {
-              true: {
-                value: {
-                  type: "const",
-                  constVal: icons[1]
-                },
-                color: {
-                  type: "const",
-                  constVal: iconColor[1]
-                }
-              },
-              false: void 0,
-              scale: {
-                type: "const",
-                constVal: {
-                  val_min: iconColorScale[1][0],
-                  val_max: iconColorScale[1][1],
-                  val_best: iconColorScale[1][2],
-                  mode: "triGrad"
-                }
-              }
-            },
-            value: {
-              value: {
-                type: "triggered",
-                dp: states[1]
-              },
-              decimal: {
-                type: "const",
-                constVal: valueDecimal[1]
-              },
-              unit: {
-                type: "const",
-                constVal: valueUnit[1]
-              }
-            },
-            speed: {
-              value: {
-                type: "triggered",
-                dp: states[1]
-              },
-              minScale: {
-                type: "const",
-                constVal: minSpeedScale[1]
-              },
-              maxScale: {
-                type: "const",
-                constVal: maxSpeedScale[1]
-              },
-              negate: {
-                type: "const",
-                constVal: speedReverse[1]
-              }
-            },
-            text: {
-              true: { type: "const", constVal: entityHeadline[1] }
-            },
-            targetUnit: configUnit[1] ? { type: "const", constVal: configUnit[1] } : void 0
-          },
-          leftBottom: {
-            icon: {
-              true: {
-                value: {
-                  type: "const",
-                  constVal: icons[2]
-                },
-                color: {
-                  type: "const",
-                  constVal: iconColor[2]
-                }
-              },
-              false: void 0,
-              scale: {
-                type: "const",
-                constVal: {
-                  val_min: iconColorScale[2][0],
-                  val_max: iconColorScale[2][1],
-                  val_best: iconColorScale[2][2],
-                  mode: "triGrad"
-                }
-              }
-            },
-            value: {
-              value: {
-                type: "triggered",
-                dp: states[2]
-              },
-              decimal: {
-                type: "const",
-                constVal: valueDecimal[2]
-              },
-              unit: {
-                type: "const",
-                constVal: valueUnit[2]
-              }
-            },
-            speed: {
-              value: {
-                type: "triggered",
-                dp: states[2]
-              },
-              minScale: {
-                type: "const",
-                constVal: minSpeedScale[2]
-              },
-              maxScale: {
-                type: "const",
-                constVal: maxSpeedScale[2]
-              },
-              negate: {
-                type: "const",
-                constVal: speedReverse[2]
-              }
-            },
-            text: {
-              true: { type: "const", constVal: entityHeadline[2] }
-            },
-            targetUnit: configUnit[2] ? { type: "const", constVal: configUnit[2] } : void 0
-          },
-          rightTop: {
-            icon: {
-              true: {
-                value: {
-                  type: "const",
-                  constVal: icons[3]
-                },
-                color: {
-                  type: "const",
-                  constVal: iconColor[3]
-                }
-              },
-              false: void 0,
-              scale: {
-                type: "const",
-                constVal: {
-                  val_min: iconColorScale[3][0],
-                  val_max: iconColorScale[3][1],
-                  val_best: iconColorScale[3][2],
-                  mode: "triGrad"
-                }
-              }
-            },
-            value: {
-              value: {
-                type: "triggered",
-                dp: states[3]
-              },
-              decimal: {
-                type: "const",
-                constVal: valueDecimal[3]
-              },
-              unit: {
-                type: "const",
-                constVal: valueUnit[3]
-              }
-            },
-            speed: {
-              value: {
-                type: "triggered",
-                dp: states[3]
-              },
-              minScale: {
-                type: "const",
-                constVal: minSpeedScale[3]
-              },
-              maxScale: {
-                type: "const",
-                constVal: maxSpeedScale[3]
-              },
-              negate: {
-                type: "const",
-                constVal: speedReverse[3]
-              }
-            },
-            text: {
-              true: { type: "const", constVal: entityHeadline[3] }
-            },
-            targetUnit: configUnit[3] ? { type: "const", constVal: configUnit[3] } : void 0
-          },
-          rightMiddle: {
-            icon: {
-              true: {
-                value: {
-                  type: "const",
-                  constVal: icons[4]
-                },
-                color: {
-                  type: "const",
-                  constVal: iconColor[4]
-                }
-              },
-              false: void 0,
-              scale: {
-                type: "const",
-                constVal: {
-                  val_min: iconColorScale[4][0],
-                  val_max: iconColorScale[4][1],
-                  val_best: iconColorScale[4][2],
-                  mode: "triGrad"
-                }
-              }
-            },
-            value: {
-              value: {
-                type: "triggered",
-                dp: states[4]
-              },
-              decimal: {
-                type: "const",
-                constVal: valueDecimal[4]
-              },
-              unit: {
-                type: "const",
-                constVal: valueUnit[4]
-              }
-            },
-            speed: {
-              value: {
-                type: "triggered",
-                dp: states[4]
-              },
-              minScale: {
-                type: "const",
-                constVal: minSpeedScale[4]
-              },
-              maxScale: {
-                type: "const",
-                constVal: maxSpeedScale[4]
-              },
-              negate: {
-                type: "const",
-                constVal: speedReverse[4]
-              }
-            },
-            text: {
-              true: { type: "const", constVal: entityHeadline[4] }
-            },
-            targetUnit: configUnit[4] ? { type: "const", constVal: configUnit[4] } : void 0
-          },
-          rightBottom: {
-            icon: {
-              true: {
-                value: {
-                  type: "const",
-                  constVal: icons[5]
-                },
-                color: {
-                  type: "const",
-                  constVal: iconColor[5]
-                }
-              },
-              false: void 0,
-              scale: {
-                type: "const",
-                constVal: {
-                  val_min: iconColorScale[5][0],
-                  val_max: iconColorScale[5][1],
-                  val_best: iconColorScale[5][2],
-                  mode: "triGrad"
-                }
-              }
-            },
-            value: {
-              value: {
-                type: "triggered",
-                dp: states[5]
-              },
-              decimal: {
-                type: "const",
-                constVal: valueDecimal[5]
-              },
-              unit: {
-                type: "const",
-                constVal: valueUnit[5]
-              }
-            },
-            speed: {
-              value: {
-                type: "triggered",
-                dp: states[5]
-              },
-              minScale: {
-                type: "const",
-                constVal: minSpeedScale[5]
-              },
-              maxScale: {
-                type: "const",
-                constVal: maxSpeedScale[5]
-              },
-              negate: {
-                type: "const",
-                constVal: speedReverse[5]
-              }
-            },
-            text: {
-              true: { type: "const", constVal: entityHeadline[5] }
-            },
-            targetUnit: configUnit[5] ? { type: "const", constVal: configUnit[5] } : void 0
-          }
-        }
-      },
+      uniqueID: page.uniqueName,
+      alwaysOn: gridItem.alwaysOn === "always" || entry.alwaysOn === "always" ? "always" : "none",
+      hidden: !!(gridItem.hidden || entry.hidden),
+      ...config ? { config } : {},
       pageItems: []
     };
-    return { gridItem, messages };
   }
   async update() {
     var _a, _b, _c, _d;
@@ -809,8 +290,163 @@ class PagePower extends import_Page.Page {
   async onButtonEvent(_event) {
   }
 }
+function mapPowerTargetUnit(unit) {
+  switch (unit) {
+    case "kW":
+      return 1;
+    case "MW":
+      return 2;
+    case "W":
+      return 0;
+    default:
+      return void 0;
+  }
+}
+function buildPowerSlotData(slot) {
+  var _a, _b, _c, _d, _e, _f;
+  const s = slot != null ? slot : {};
+  const stateId = (s.state || "").trim();
+  const useColorScale = !!s.useColorScale;
+  const iconColor = useColorScale ? "" : s.iconColor || "";
+  const unitSuffix = s.valueUnit ? ` ${s.valueUnit}` : "";
+  const icon = {
+    true: {
+      value: { type: "const", constVal: s.icon || "" },
+      color: { type: "const", constVal: iconColor }
+    },
+    false: void 0
+  };
+  if (useColorScale) {
+    icon.scale = {
+      type: "const",
+      constVal: {
+        val_min: (_a = s.minColorScale) != null ? _a : 0,
+        val_max: (_b = s.maxColorScale) != null ? _b : 1e4,
+        val_best: (_c = s.bestColorScale) != null ? _c : 0,
+        mode: "triGrad"
+      }
+    };
+  }
+  const value = stateId ? {
+    value: { type: "triggered", dp: stateId },
+    decimal: { type: "const", constVal: (_d = s.valueDecimal) != null ? _d : 0 },
+    unit: { type: "const", constVal: unitSuffix }
+  } : void 0;
+  const speed = stateId ? {
+    value: { type: "triggered", dp: stateId },
+    minScale: { type: "const", constVal: (_e = s.minSpeedScale) != null ? _e : 0 },
+    maxScale: { type: "const", constVal: (_f = s.maxSpeedScale) != null ? _f : 1e4 },
+    negate: { type: "const", constVal: !!s.reverse }
+  } : void 0;
+  const targetUnit = mapPowerTargetUnit(s.valueUnit);
+  return {
+    icon,
+    value,
+    speed,
+    text: { true: { type: "const", constVal: s.entityHeadline || "" } },
+    targetUnit: targetUnit ? { type: "const", constVal: targetUnit } : void 0
+  };
+}
+function buildPowerPage(entry, adapter, pageName = entry.uniqueName) {
+  var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _A, _B;
+  const cfg = adapter.config || {};
+  if (!Array.isArray(cfg.pagePowerdata)) {
+    cfg.pagePowerdata = [];
+  }
+  const slotMap = [
+    [1, entry.leftTop],
+    [2, entry.leftMiddle],
+    [3, entry.leftBottom],
+    [4, entry.rightTop],
+    [5, entry.rightMiddle],
+    [6, entry.rightBottom]
+  ];
+  const synth = {
+    pageName,
+    headline: entry.headline || "",
+    alwaysOnDisplay: entry.alwaysOn === "always",
+    hiddenByTrigger: !!entry.hidden,
+    power7_state: ((_a = entry.homeTop) == null ? void 0 : _a.state) || "",
+    power7_valueDecimal: (_c = (_b = entry.homeTop) == null ? void 0 : _b.valueDecimal) != null ? _c : 0,
+    power7_valueUnit: ((_d = entry.homeTop) == null ? void 0 : _d.valueUnit) || "W",
+    power8_state: ((_e = entry.homeBot) == null ? void 0 : _e.state) || "",
+    power8_valueDecimal: (_g = (_f = entry.homeBot) == null ? void 0 : _f.valueDecimal) != null ? _g : 0,
+    power8_valueUnit: ((_h = entry.homeBot) == null ? void 0 : _h.valueUnit) || "W",
+    power8_selInternalCalculation: !!((_i = entry.homeBot) == null ? void 0 : _i.selInternalCalculation),
+    power8_selPowerSupply: Array.isArray((_j = entry.homeBot) == null ? void 0 : _j.selPowerSupply) ? entry.homeBot.selPowerSupply : []
+  };
+  for (const [i, s] of slotMap) {
+    const cur = s != null ? s : {};
+    synth[`power${i}_state`] = cur.state || "";
+    synth[`power${i}_icon`] = cur.icon || "";
+    synth[`power${i}_iconColor`] = cur.iconColor || "";
+    synth[`power${i}_valueDecimal`] = (_k = cur.valueDecimal) != null ? _k : 0;
+    synth[`power${i}_valueUnit`] = cur.valueUnit || "W";
+    synth[`power${i}_entityHeadline`] = cur.entityHeadline || "";
+    synth[`_power${i}_useColorScale`] = !!cur.useColorScale;
+    synth[`power${i}_minColorScale`] = (_l = cur.minColorScale) != null ? _l : 0;
+    synth[`power${i}_maxColorScale`] = (_m = cur.maxColorScale) != null ? _m : 1e4;
+    synth[`power${i}_bestColorScale`] = (_n = cur.bestColorScale) != null ? _n : 0;
+    synth[`power${i}_minSpeedScale`] = (_o = cur.minSpeedScale) != null ? _o : 0;
+    synth[`power${i}_maxSpeedScale`] = (_p = cur.maxSpeedScale) != null ? _p : 1e4;
+    synth[`power${i}_reverse`] = !!cur.reverse;
+  }
+  const existingIdx = cfg.pagePowerdata.findIndex((p) => p && typeof p === "object" && p.pageName === pageName);
+  let index;
+  if (existingIdx >= 0) {
+    cfg.pagePowerdata[existingIdx] = synth;
+    index = existingIdx;
+  } else {
+    index = cfg.pagePowerdata.length;
+    cfg.pagePowerdata.push(synth);
+  }
+  const homeBotInternal = !!((_q = entry.homeBot) == null ? void 0 : _q.selInternalCalculation);
+  const homeBotState = (((_r = entry.homeBot) == null ? void 0 : _r.state) || "").trim();
+  const homeBotUnitSuffix = ((_s = entry.homeBot) == null ? void 0 : _s.valueUnit) ? ` ${entry.homeBot.valueUnit}` : "";
+  const homeValueBot = homeBotInternal ? {
+    value: { type: "internal", dp: `///${pageName}/powerSum` },
+    decimal: { type: "const", constVal: (_u = (_t = entry.homeBot) == null ? void 0 : _t.valueDecimal) != null ? _u : 0 },
+    unit: { type: "const", constVal: homeBotUnitSuffix }
+  } : homeBotState ? {
+    value: { type: "triggered", dp: homeBotState },
+    decimal: { type: "const", constVal: (_w = (_v = entry.homeBot) == null ? void 0 : _v.valueDecimal) != null ? _w : 0 },
+    unit: { type: "const", constVal: homeBotUnitSuffix }
+  } : void 0;
+  const homeTopState = (((_x = entry.homeTop) == null ? void 0 : _x.state) || "").trim();
+  const homeTopUnitSuffix = ((_y = entry.homeTop) == null ? void 0 : _y.valueUnit) ? ` ${entry.homeTop.valueUnit}` : "";
+  const homeValueTop = homeTopState ? {
+    value: { type: "triggered", dp: homeTopState },
+    decimal: { type: "const", constVal: (_A = (_z = entry.homeTop) == null ? void 0 : _z.valueDecimal) != null ? _A : 0 },
+    unit: { type: "const", constVal: homeTopUnitSuffix }
+  } : void 0;
+  return {
+    uniqueID: pageName,
+    hidden: !!entry.hidden,
+    alwaysOn: (_B = entry.alwaysOn) != null ? _B : "none",
+    dpInit: "",
+    config: {
+      card: "cardPower",
+      index,
+      data: {
+        headline: { type: "const", constVal: entry.headline || entry.uniqueName },
+        homeIcon: { true: { value: { type: "const", constVal: "home" } }, false: void 0 },
+        homeValueTop,
+        homeValueBot,
+        leftTop: buildPowerSlotData(entry.leftTop),
+        leftMiddle: buildPowerSlotData(entry.leftMiddle),
+        leftBottom: buildPowerSlotData(entry.leftBottom),
+        rightTop: buildPowerSlotData(entry.rightTop),
+        rightMiddle: buildPowerSlotData(entry.rightMiddle),
+        rightBottom: buildPowerSlotData(entry.rightBottom)
+      }
+    },
+    pageItems: []
+  };
+}
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
-  PagePower
+  PagePower,
+  buildPowerPage,
+  buildPowerSlotData
 });
 //# sourceMappingURL=pagePower.js.map

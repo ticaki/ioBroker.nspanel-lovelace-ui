@@ -23,5 +23,6 @@
     "webPanelTopicInvalid": "Erlaubt sind nur Buchstaben, Ziffern, _, - und /",
     "webPanelTopicRequired": "Das Topic darf nicht leer sein",
     "webPanelTopicReserved": "Dieser Pfad wird vom Web-Server selbst benutzt",
-    "chart_script_navigation_hint": "Aus der alten Tabelle „Page Chart“ übernommen: Diese Seite bekommt ihre Navigation noch aus dem Skript (Seite „%s“). Das ist veraltet – bitte hier eine Navigation zuweisen und die Seite aus dem Skript entfernen."
+    "chart_script_navigation_hint": "Aus der alten Tabelle „Page Chart“ übernommen: Diese Seite bekommt ihre Navigation noch aus dem Skript (Seite „%s“). Das ist veraltet – bitte hier eine Navigation zuweisen und die Seite aus dem Skript entfernen.",
+    "power_script_navigation_hint": "Aus der alten Tabelle „Page Power“ übernommen: Diese Seite bekommt ihre Navigation noch aus dem Skript (Seite „%s“). Das ist veraltet – bitte hier eine Navigation zuweisen und die Seite aus dem Skript entfernen."
 }

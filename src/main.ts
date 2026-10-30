@@ -8,6 +8,8 @@ import {
     SENDTO_GET_PAGES_All_COMMAND,
     ALL_PANELS_SPECIAL_ID,
     migrateLegacyCharts,
+    migrateLegacyPower,
+    legacyPowerStates,
 } from './lib/types/adminShareConfig';
 /*
  * Created with @iobroker/create-adapter v2.5.0..
@@ -309,6 +311,35 @@ class NspanelLovelaceUi extends utils.Adapter {
                     );
                 }
                 delete native.pageChartdata;
+                change = true;
+            }
+            // old admin table "Page Power": same transition as the charts; a value takes the unit of its
+            // state object, as the old table path displayed it
+            if (native.pagePowerdata !== undefined) {
+                const rows = Array.isArray(native.pagePowerdata) ? native.pagePowerdata : [];
+                const stateUnits: Record<string, string> = {};
+                for (const id of legacyPowerStates(rows)) {
+                    try {
+                        const o = await this.getForeignObjectAsync(id);
+                        if (o?.common && typeof o.common.unit === 'string' && o.common.unit) {
+                            stateUnits[id] = o.common.unit;
+                        }
+                    } catch {
+                        // invalid id - keeps the unit of the table
+                    }
+                }
+                const migrated = migrateLegacyPower(rows, native.pageConfig, stateUnits);
+                for (const msg of migrated.messages) {
+                    this.log.warn(msg);
+                }
+                if (migrated.changed) {
+                    const count = migrated.entries.length - native.pageConfig.length;
+                    native.pageConfig = migrated.entries;
+                    this.log.info(
+                        `Moved ${count} power page(s) from the table "Page Power" to the page configuration.`,
+                    );
+                }
+                delete native.pagePowerdata;
                 change = true;
             }
             if (!this.config.versionJsonUrl || !this.config.tftUrl || !this.config.berryUrl) {

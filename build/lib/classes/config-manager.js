@@ -599,7 +599,7 @@ class ConfigManager extends import_library.BaseClass {
     return { messages: messages.map((a) => a.replaceAll("Error: ", "")), panelConfig };
   }
   async getPageConfig(config, panelConfig, messages) {
-    var _a, _b, _c, _d, _e, _f, _g, _h;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _i;
     if (panelConfig.pages === void 0) {
       panelConfig.pages = [];
     }
@@ -743,37 +743,34 @@ class ConfigManager extends import_library.BaseClass {
           continue;
         }
         if (page.type === "cardPower") {
-          if (!Array.isArray(this.adapter.config.pagePowerdata)) {
-            messages.push(`No pagePower configured in Admin for ${page.uniqueName}`);
-            this.log.warn(messages[messages.length - 1]);
-            continue;
-          }
-          const index = this.adapter.config.pagePowerdata.findIndex(
-            (item) => item.pageName === page.uniqueName
-          );
-          if (index === -1) {
-            messages.push(`No pagePowerdata found for ${page.uniqueName}`);
-            this.log.warn(messages[messages.length - 1]);
-            continue;
-          }
-          try {
-            ({ gridItem, messages } = await import_pagePower.PagePower.getPowerPageConfig(
-              this,
-              page,
-              index,
-              gridItem,
-              messages
-            ));
-          } catch (error) {
+          const entry = (0, import_adminShareConfig.findPowerEntryForScript)((_h = this.adapter.config.pageConfig) != null ? _h : [], page.uniqueName);
+          if (entry && !(0, import_adminShareConfig.isScriptNavigatedPower)(entry)) {
             messages.push(
-              `Configuration error in page power ${page.heading || "unknown"} with uniqueName ${page.uniqueName} - ${error}`
+              `Power page ${page.uniqueName} gets its navigation in the admin (tab PageConfig) - remove it from the script. Skipped!`
             );
+            this.log.warn(messages[messages.length - 1]);
+            continue;
+          }
+          if (entry) {
+            messages.push(
+              `Power page ${page.uniqueName}: the navigation from the script is deprecated - assign it in the admin (tab PageConfig, page ${entry.uniqueName}) and remove the page from the script.`
+            );
+            this.log.warn(messages[messages.length - 1]);
+            try {
+              gridItem = import_pagePower.PagePower.getPowerPageConfigFromEntry(this, entry, gridItem, page);
+            } catch (error) {
+              messages.push(`Configuration error in page power ${page.uniqueName} - ${error}`);
+              this.log.warn(messages[messages.length - 1]);
+              continue;
+            }
+          } else {
+            messages.push(`No power page ${page.uniqueName} found in the admin configuration`);
             this.log.warn(messages[messages.length - 1]);
             continue;
           }
         }
         if (page.type === "cardChart" || page.type === "cardLChart") {
-          const entry = (0, import_adminShareConfig.findChartEntryForScript)((_h = this.adapter.config.pageConfig) != null ? _h : [], page.uniqueName);
+          const entry = (0, import_adminShareConfig.findChartEntryForScript)((_i = this.adapter.config.pageConfig) != null ? _i : [], page.uniqueName);
           if (entry && !(0, import_adminShareConfig.isScriptNavigatedChart)(entry)) {
             messages.push(
               `Chart page ${page.uniqueName} gets its navigation in the admin (tab PageConfig) - remove it from the script. Skipped!`
