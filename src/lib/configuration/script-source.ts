@@ -868,10 +868,12 @@ function commentOut(src: string, def: Definition, marker: string): string {
     const prefix = src.slice(ls, def.stmtStart);
     const indent = /^[ \t]*$/.test(prefix) ? prefix : '';
     const text = src.slice(def.stmtStart, def.stmtEnd);
+    // a script written under Windows sits in the object with CRLF - the inserted lines keep its line ending
+    const eol = src.includes('\r\n') ? '\r\n' : '\n';
     let replaced: string;
     if (text.includes('*/')) {
         const lines = text
-            .split('\n')
+            .split(eol)
             .map((line, i) =>
                 i === 0
                     ? `// ${line}`
@@ -879,9 +881,9 @@ function commentOut(src: string, def: Definition, marker: string): string {
                       ? `${indent}// ${line.slice(indent.length)}`
                       : `// ${line}`,
             );
-        replaced = `// ${marker}\n${indent}${lines.join('\n')}`;
+        replaced = `// ${marker}${eol}${indent}${lines.join(eol)}`;
     } else {
-        replaced = `/* ${marker}\n${indent}${text}\n${indent}*/`;
+        replaced = `/* ${marker}${eol}${indent}${text}${eol}${indent}*/`;
     }
     return src.slice(0, def.stmtStart) + replaced + src.slice(def.stmtEnd);
 }

@@ -16,11 +16,21 @@ const TODAY = '2026-10-30';
 const ROOT = path.join(__dirname, '..', '..', '..');
 const FIXTURES = path.join(ROOT, 'test', 'fixtures', 'scripts');
 
-function readFixture(name: string): string {
-    return fs.readFileSync(path.join(FIXTURES, name), 'utf8');
+/**
+ * a file of the repository with LF line endings - a Windows checkout (core.autocrlf) delivers CRLF, the
+ * expectations below are written with `\n`
+ *
+ * @param file absolute path of the file
+ */
+function readLf(file: string): string {
+    return fs.readFileSync(file, 'utf8').replace(/\r\n/g, '\n');
 }
 
-const template = (): string => fs.readFileSync(path.join(ROOT, 'script', 'example_sendTo_script_iobroker.ts'), 'utf8');
+function readFixture(name: string): string {
+    return readLf(path.join(FIXTURES, name));
+}
+
+const template = (): string => readLf(path.join(ROOT, 'script', 'example_sendTo_script_iobroker.ts'));
 const nsPanel4 = (): string => readFixture('script.js.nspanel-lovelace-ui_0.ns_panel4.ts.txt');
 const nsPanel6 = (): string => readFixture('script.js.nspanel-lovelace-ui_0.nspanel6.ts.txt');
 const skriptconfig4 = (): string => readFixture('script.js.skriptconfig4.ts.txt');
@@ -436,6 +446,23 @@ describe('lib/configuration - script-source: removePagesFromScript', () => {
         const result = removePagesFromScript(template(), [], TODAY);
         expect(result.changed).to.be.false;
         expect(result.removed).to.deep.equal([]);
+    });
+
+    it('keeps CRLF line endings of a script written under Windows', () => {
+        const lf = nsPanel6();
+        const summary = scanScriptConfig(lf);
+        const names = [...summary.pages, ...summary.subPages]
+            .map(e => e.uniqueName)
+            .filter((n): n is string => typeof n === 'string');
+        expect(names.length).to.be.greaterThan(1);
+        const fromLf = removePagesFromScript(lf, names, TODAY);
+        const fromCrlf = removePagesFromScript(lf.replace(/\n/g, '\r\n'), names, TODAY);
+        expect(fromCrlf.changed).to.be.true;
+        expect(fromCrlf.removed).to.deep.equal(fromLf.removed);
+        expect(fromCrlf.notes).to.deep.equal(fromLf.notes);
+        expect(fromCrlf.source, 'no bare LF in the CRLF result').to.not.match(/[^\r]\n/);
+        expect(fromCrlf.source, 'no bare CR in the CRLF result').to.not.match(/\r(?!\n)/);
+        expect(fromCrlf.source.replace(/\r\n/g, '\n')).to.equal(fromLf.source);
     });
 });
 

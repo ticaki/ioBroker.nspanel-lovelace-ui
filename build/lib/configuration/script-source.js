@@ -596,17 +596,15 @@ function commentOut(src, def, marker) {
   const prefix = src.slice(ls, def.stmtStart);
   const indent = /^[ \t]*$/.test(prefix) ? prefix : "";
   const text = src.slice(def.stmtStart, def.stmtEnd);
+  const eol = src.includes("\r\n") ? "\r\n" : "\n";
   let replaced;
   if (text.includes("*/")) {
-    const lines = text.split("\n").map(
+    const lines = text.split(eol).map(
       (line, i) => i === 0 ? `// ${line}` : line.startsWith(indent) ? `${indent}// ${line.slice(indent.length)}` : `// ${line}`
     );
-    replaced = `// ${marker}
-${indent}${lines.join("\n")}`;
+    replaced = `// ${marker}${eol}${indent}${lines.join(eol)}`;
   } else {
-    replaced = `/* ${marker}
-${indent}${text}
-${indent}*/`;
+    replaced = `/* ${marker}${eol}${indent}${text}${eol}${indent}*/`;
   }
   return src.slice(0, def.stmtStart) + replaced + src.slice(def.stmtEnd);
 }

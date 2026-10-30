@@ -246,7 +246,8 @@ type ConvertAdminItem = (
  * @returns The method, to be called with the fake adapter as `this`.
  */
 function loadConvertAdminPageItem(): ConvertAdminItem {
-    const source = fs.readFileSync(path.join(__dirname, '../../main.ts'), 'utf8');
+    // a Windows checkout (core.autocrlf) delivers main.ts with CRLF - the markers below are searched with LF
+    const source = fs.readFileSync(path.join(__dirname, '../../main.ts'), 'utf8').replace(/\r\n/g, '\n');
     const start = source.indexOf('    async convertAdminPageItemToPageItemConfig(');
     const end = source.indexOf('\n}\nif (require.main !== module)', start);
     expect(start, 'method found in main.ts').to.be.greaterThan(-1);
