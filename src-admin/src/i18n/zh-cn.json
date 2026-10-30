@@ -121,5 +121,6 @@
     "webPanelTopicInvalid": "只允许字母、数字、_、- 和 /",
     "webPanelTopicRequired": "Topic 不能为空",
     "webPanelTopicReserved": "此路径由 Web 服务器自身使用",
-    "chart_script_navigation_hint": "从旧表格“Page Chart”迁移：此页面的导航仍来自脚本（页面“%s”）。此方式已弃用 - 请在此处分配导航并从脚本中删除该页面。"
+    "chart_script_navigation_hint": "从旧表格“Page Chart”迁移：此页面的导航仍来自脚本（页面“%s”）。此方式已弃用 - 请在此处分配导航并从脚本中删除该页面。",
+    "power_script_navigation_hint": "从旧表格“Page Power”迁移：此页面的导航仍来自脚本（页面“%s”）。此方式已弃用 - 请在此处分配导航并从脚本中删除该页面。"
 }

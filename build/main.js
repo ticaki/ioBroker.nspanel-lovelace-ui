@@ -259,6 +259,32 @@ class NspanelLovelaceUi extends utils.Adapter {
         delete native.pageChartdata;
         change = true;
       }
+      if (native.pagePowerdata !== void 0) {
+        const rows = Array.isArray(native.pagePowerdata) ? native.pagePowerdata : [];
+        const stateUnits = {};
+        for (const id of (0, import_adminShareConfig.legacyPowerStates)(rows)) {
+          try {
+            const o2 = await this.getForeignObjectAsync(id);
+            if ((o2 == null ? void 0 : o2.common) && typeof o2.common.unit === "string" && o2.common.unit) {
+              stateUnits[id] = o2.common.unit;
+            }
+          } catch {
+          }
+        }
+        const migrated = (0, import_adminShareConfig.migrateLegacyPower)(rows, native.pageConfig, stateUnits);
+        for (const msg of migrated.messages) {
+          this.log.warn(msg);
+        }
+        if (migrated.changed) {
+          const count = migrated.entries.length - native.pageConfig.length;
+          native.pageConfig = migrated.entries;
+          this.log.info(
+            `Moved ${count} power page(s) from the table "Page Power" to the page configuration.`
+          );
+        }
+        delete native.pagePowerdata;
+        change = true;
+      }
       if (!this.config.versionJsonUrl || !this.config.tftUrl || !this.config.berryUrl) {
         try {
           const iopackage = JSON.parse(

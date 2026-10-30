@@ -45,11 +45,14 @@ __export(adminShareConfig_exports, {
   emptyThermo2Circuit: () => emptyThermo2Circuit,
   emptyThermo2Entry: () => emptyThermo2Entry,
   findChartEntryForScript: () => findChartEntryForScript,
+  findPowerEntryForScript: () => findPowerEntryForScript,
   formatEntryNumber: () => formatEntryNumber,
   isMainPageEntry: () => isMainPageEntry,
   isPageLinkEntry: () => isPageLinkEntry,
   isScriptNavigatedChart: () => isScriptNavigatedChart,
+  isScriptNavigatedPower: () => isScriptNavigatedPower,
   isScrollCard: () => isScrollCard,
+  legacyPowerStates: () => legacyPowerStates,
   mainPageName: () => mainPageName,
   mediaBackendFeatures: () => mediaBackendFeatures,
   mediaBackendOf: () => mediaBackendOf,
@@ -58,6 +61,7 @@ __export(adminShareConfig_exports, {
   mediaVisibleToolbarItems: () => mediaVisibleToolbarItems,
   mediaVolumeDefaults: () => mediaVolumeDefaults,
   migrateLegacyCharts: () => migrateLegacyCharts,
+  migrateLegacyPower: () => migrateLegacyPower,
   migrateScreensaverNotify: () => migrateScreensaverNotify,
   newScreensaverNotifyId: () => newScreensaverNotifyId,
   normalizeChannelId: () => normalizeChannelId,
@@ -396,6 +400,10 @@ function isScriptNavigatedChart(entry) {
   var _a;
   return entry.card === "cardChart" && entry.scriptNavigation === true && !((_a = entry.navigationAssignment) == null ? void 0 : _a.length);
 }
+function isScriptNavigatedPower(entry) {
+  var _a;
+  return entry.card === "cardPower" && entry.scriptNavigation === true && !((_a = entry.navigationAssignment) == null ? void 0 : _a.length);
+}
 function findChartEntryForScript(entries, scriptPageName) {
   var _a;
   const charts = entries.filter((e) => !!e && e.card === "cardChart");
@@ -404,9 +412,17 @@ function findChartEntryForScript(entries, scriptPageName) {
     return e.scriptNavigation === true && ((_a2 = e.scriptName) != null ? _a2 : e.uniqueName) === scriptPageName;
   })) != null ? _a : charts.find((e) => e.uniqueName === scriptPageName);
 }
+function findPowerEntryForScript(entries, scriptPageName) {
+  var _a;
+  const powers = entries.filter((e) => !!e && e.card === "cardPower");
+  return (_a = powers.find((e) => {
+    var _a2;
+    return e.scriptNavigation === true && ((_a2 = e.scriptName) != null ? _a2 : e.uniqueName) === scriptPageName;
+  })) != null ? _a : powers.find((e) => e.uniqueName === scriptPageName);
+}
 function dropScriptNavigation(entry) {
   var _a;
-  if (entry.card !== "cardChart" || !entry.scriptNavigation || !((_a = entry.navigationAssignment) == null ? void 0 : _a.length)) {
+  if (entry.card !== "cardChart" && entry.card !== "cardPower" || !entry.scriptNavigation || !((_a = entry.navigationAssignment) == null ? void 0 : _a.length)) {
     return entry;
   }
   const copy = { ...entry };
@@ -456,6 +472,112 @@ function migrateLegacyCharts(rows, entries) {
       maxXAxisLabels: row.maxXAxisLabels || d.maxXAxisLabels,
       hidden: !!row.hiddenByTrigger,
       alwaysOn: row.alwaysOnDisplay ? "always" : "none"
+    });
+    changed = true;
+  }
+  return { entries: out, messages, changed };
+}
+function legacyPowerUnit(state, tableUnit, stateUnits) {
+  return state && stateUnits[state] || (typeof tableUnit === "string" && tableUnit !== "" ? tableUnit : "W");
+}
+function legacyPowerContent(row, stateUnits) {
+  const str = (key) => {
+    const v = row[key];
+    return typeof v === "string" ? v : "";
+  };
+  const num = (key, def) => {
+    const v = row[key];
+    return typeof v === "number" ? v : def;
+  };
+  const slot = (i) => {
+    const p = `power${i}_`;
+    const useScale = row[`_${p}useColorScale`];
+    const scale = [row[`${p}minColorScale`], row[`${p}maxColorScale`], row[`${p}bestColorScale`]];
+    const state = str(`${p}state`).trim();
+    return {
+      icon: str(`${p}icon`),
+      iconColor: useScale === false ? str(`${p}iconColor`) : "",
+      state,
+      valueDecimal: num(`${p}valueDecimal`, 0),
+      valueUnit: legacyPowerUnit(state, row[`${p}valueUnit`], stateUnits),
+      entityHeadline: str(`${p}entityHeadline`),
+      useColorScale: useScale === true && scale.every((s) => typeof s === "number"),
+      minColorScale: num(`${p}minColorScale`, 0),
+      maxColorScale: num(`${p}maxColorScale`, 1e4),
+      bestColorScale: num(`${p}bestColorScale`, 0),
+      minSpeedScale: num(`${p}minSpeedScale`, 0),
+      maxSpeedScale: num(`${p}maxSpeedScale`, 1e4),
+      reverse: row[`${p}reverse`] === true
+    };
+  };
+  const topState = str("power7_state").trim();
+  const botState = str("power8_state").trim();
+  const internal = row.power8_selInternalCalculation === true;
+  const supply = row.power8_selPowerSupply;
+  return {
+    leftTop: slot(1),
+    leftMiddle: slot(2),
+    leftBottom: slot(3),
+    rightTop: slot(4),
+    rightMiddle: slot(5),
+    rightBottom: slot(6),
+    homeTop: {
+      state: topState,
+      valueDecimal: num("power7_valueDecimal", 0),
+      valueUnit: legacyPowerUnit(topState, row.power7_valueUnit, stateUnits)
+    },
+    homeBot: {
+      selInternalCalculation: internal,
+      state: botState,
+      selPowerSupply: Array.isArray(supply) ? supply.map(Number).filter((n) => Number.isInteger(n) && n >= 1 && n <= 6) : [],
+      valueDecimal: num("power8_valueDecimal", 0),
+      // the internal sum has no state, its unit is the one selected in the table
+      valueUnit: legacyPowerUnit(internal ? "" : botState, row.power8_valueUnit, stateUnits)
+    }
+  };
+}
+function legacyPowerStates(rows) {
+  const ids = /* @__PURE__ */ new Set();
+  for (const row of rows != null ? rows : []) {
+    for (let i = 1; i <= 8; i++) {
+      const v = row == null ? void 0 : row[`power${i}_state`];
+      if (typeof v === "string" && v.trim()) {
+        ids.add(v.trim());
+      }
+    }
+  }
+  return [...ids];
+}
+function migrateLegacyPower(rows, entries, stateUnits = {}) {
+  const out = [...entries];
+  const messages = [];
+  let changed = false;
+  for (const row of rows != null ? rows : []) {
+    const name = typeof (row == null ? void 0 : row.pageName) === "string" ? row.pageName.trim() : "";
+    if (!name) {
+      continue;
+    }
+    if (out.some((e) => e.card === "cardPower" && e.scriptName === name)) {
+      continue;
+    }
+    let uniqueName = name;
+    for (let i = 1; out.some((e) => e.uniqueName === uniqueName); i++) {
+      uniqueName = `${name}_power${i === 1 ? "" : i}`;
+    }
+    if (uniqueName !== name) {
+      messages.push(
+        `Power page '${name}': the name is already used by another page, migrated as '${uniqueName}'. The script keeps using '${name}'.`
+      );
+    }
+    out.push({
+      card: "cardPower",
+      uniqueName,
+      scriptName: name,
+      scriptNavigation: true,
+      headline: typeof row.headline === "string" ? row.headline : "",
+      ...legacyPowerContent(row, stateUnits),
+      hidden: row.hiddenByTrigger === true,
+      alwaysOn: row.alwaysOnDisplay === true ? "always" : "none"
     });
     changed = true;
   }
@@ -614,7 +736,7 @@ function resolvePageLinks(entries) {
     copy.alwaysOn = entry.alwaysOn;
     copy.navigationAssignment = entry.navigationAssignment ? structuredClone(entry.navigationAssignment) : void 0;
     copy.isMainPage = !!entry.isMainPage;
-    if (copy.card === "cardChart") {
+    if (copy.card === "cardChart" || copy.card === "cardPower") {
       copy.scriptNavigation = false;
       delete copy.scriptName;
     }
@@ -1390,11 +1512,14 @@ const ADMIN_BUTTON_MAX_DELAY = 2147483;
   emptyThermo2Circuit,
   emptyThermo2Entry,
   findChartEntryForScript,
+  findPowerEntryForScript,
   formatEntryNumber,
   isMainPageEntry,
   isPageLinkEntry,
   isScriptNavigatedChart,
+  isScriptNavigatedPower,
   isScrollCard,
+  legacyPowerStates,
   mainPageName,
   mediaBackendFeatures,
   mediaBackendOf,
@@ -1403,6 +1528,7 @@ const ADMIN_BUTTON_MAX_DELAY = 2147483;
   mediaVisibleToolbarItems,
   mediaVolumeDefaults,
   migrateLegacyCharts,
+  migrateLegacyPower,
   migrateScreensaverNotify,
   newScreensaverNotifyId,
   normalizeChannelId,

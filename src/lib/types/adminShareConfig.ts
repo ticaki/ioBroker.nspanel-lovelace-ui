@@ -1059,6 +1059,16 @@ export type PowerEntry = {
     rightBottom: PowerSlotConfig;
     homeTop: PowerHomeTopConfig;
     homeBot: PowerHomeBotConfig;
+    /**
+     * Deprecated transition: the page was migrated from the old admin table "Page Power" and still
+     * gets its navigation from the script. Ends as soon as a navigation is assigned in the admin.
+     */
+    scriptNavigation?: boolean;
+    /**
+     * page name used in the script (`uniqueName` of the script page); set by the migration, differs from
+     * uniqueName if the entry was renamed. Stays after the switch to admin navigation.
+     */
+    scriptName?: string;
 } & PageConfigBaseFields;
 
 /**
@@ -1199,6 +1209,15 @@ export function isScriptNavigatedChart(entry: PageConfigEntry): entry is ChartEn
 }
 
 /**
+ * True if the power entry still gets its navigation from the script (migrated, no admin navigation yet).
+ *
+ * @param entry page config entry
+ */
+export function isScriptNavigatedPower(entry: PageConfigEntry): entry is PowerEntry {
+    return entry.card === 'cardPower' && entry.scriptNavigation === true && !entry.navigationAssignment?.length;
+}
+
+/**
  * Chart entry a script page `cardChart`/`cardLChart` refers to: first a migrated entry whose script
  * name matches, then any chart entry with that uniqueName.
  *
@@ -1217,16 +1236,38 @@ export function findChartEntryForScript(
 }
 
 /**
- * Ends the script navigation of a migrated chart entry once it has a navigation in the admin.
+ * Power entry a script page `cardPower` refers to: first a migrated entry whose script name matches,
+ * then any power entry with that uniqueName.
+ *
+ * @param entries page config
+ * @param scriptPageName uniqueName of the script page
+ */
+export function findPowerEntryForScript(
+    entries: readonly PageConfigEntry[],
+    scriptPageName: string,
+): PowerEntry | undefined {
+    const powers = entries.filter((e): e is PowerEntry => !!e && e.card === 'cardPower');
+    return (
+        powers.find(e => e.scriptNavigation === true && (e.scriptName ?? e.uniqueName) === scriptPageName) ??
+        powers.find(e => e.uniqueName === scriptPageName)
+    );
+}
+
+/**
+ * Ends the script navigation of a migrated chart or power entry once it has a navigation in the admin.
  * `scriptName` stays as a record of where the entry came from.
  *
  * @param entry page config entry
  */
 export function dropScriptNavigation(entry: PageConfigEntry): PageConfigEntry {
-    if (entry.card !== 'cardChart' || !entry.scriptNavigation || !entry.navigationAssignment?.length) {
+    if (
+        (entry.card !== 'cardChart' && entry.card !== 'cardPower') ||
+        !entry.scriptNavigation ||
+        !entry.navigationAssignment?.length
+    ) {
         return entry;
     }
-    const copy: ChartEntry = { ...entry };
+    const copy = { ...entry };
     delete copy.scriptNavigation;
     return copy;
 }
@@ -1286,6 +1327,178 @@ export function migrateLegacyCharts(
             maxXAxisLabels: row.maxXAxisLabels || d.maxXAxisLabels,
             hidden: !!row.hiddenByTrigger,
             alwaysOn: row.alwaysOnDisplay ? 'always' : 'none',
+        });
+        changed = true;
+    }
+    return { entries: out, messages, changed };
+}
+
+/**
+ * one row of the old admin table "Page Power" (`native.pagePowerdata`): flat fields `power1_*` … `power6_*`
+ * for the six slots, `power7_*` for the value above and `power8_*` for the value below the home icon.
+ * The values are typed loosely because the jsonConfig table stored numbers partly as strings.
+ */
+export type LegacyPowerRow = {
+    pageName: string;
+    headline?: unknown;
+    alwaysOnDisplay?: unknown;
+    hiddenByTrigger?: unknown;
+    [key: string]: unknown;
+};
+
+/**
+ * Display unit of a migrated value the way the old table path chose it: the unit of the state object
+ * first, then the unit selected in the table, else 'W'.
+ *
+ * @param state state id of the value
+ * @param tableUnit unit selected in the old table
+ * @param stateUnits common.unit of the states, by id
+ */
+function legacyPowerUnit(state: string, tableUnit: unknown, stateUnits: Readonly<Record<string, string>>): string {
+    return (state && stateUnits[state]) || (typeof tableUnit === 'string' && tableUnit !== '' ? tableUnit : 'W');
+}
+
+/**
+ * Converts one row of the old table "Page Power" into the slots of a power entry (power1 … power6 =
+ * leftTop … rightBottom). Mirrors how the old
+ * table path read the row: fields of the wrong type (e.g. a speed bound stored as string) fall back to the
+ * defaults, the static icon color only counts while the color scale is explicitly switched off and the
+ * color scale only while it is switched on with all three bounds set.
+ *
+ * @param row row of the old table
+ * @param stateUnits common.unit of the states used by the row, by id
+ */
+function legacyPowerContent(
+    row: LegacyPowerRow,
+    stateUnits: Readonly<Record<string, string>>,
+): Pick<
+    PowerEntry,
+    'leftTop' | 'leftMiddle' | 'leftBottom' | 'rightTop' | 'rightMiddle' | 'rightBottom' | 'homeTop' | 'homeBot'
+> {
+    const str = (key: string): string => {
+        const v = row[key];
+        return typeof v === 'string' ? v : '';
+    };
+    const num = (key: string, def: number): number => {
+        const v = row[key];
+        return typeof v === 'number' ? v : def;
+    };
+    const slot = (i: number): PowerSlotConfig => {
+        const p = `power${i}_`;
+        const useScale = row[`_${p}useColorScale`];
+        const scale = [row[`${p}minColorScale`], row[`${p}maxColorScale`], row[`${p}bestColorScale`]];
+        const state = str(`${p}state`).trim();
+        return {
+            icon: str(`${p}icon`),
+            iconColor: useScale === false ? str(`${p}iconColor`) : '',
+            state,
+            valueDecimal: num(`${p}valueDecimal`, 0),
+            valueUnit: legacyPowerUnit(state, row[`${p}valueUnit`], stateUnits),
+            entityHeadline: str(`${p}entityHeadline`),
+            useColorScale: useScale === true && scale.every(s => typeof s === 'number'),
+            minColorScale: num(`${p}minColorScale`, 0),
+            maxColorScale: num(`${p}maxColorScale`, 10_000),
+            bestColorScale: num(`${p}bestColorScale`, 0),
+            minSpeedScale: num(`${p}minSpeedScale`, 0),
+            maxSpeedScale: num(`${p}maxSpeedScale`, 10_000),
+            reverse: row[`${p}reverse`] === true,
+        };
+    };
+    const topState = str('power7_state').trim();
+    const botState = str('power8_state').trim();
+    const internal = row.power8_selInternalCalculation === true;
+    const supply = row.power8_selPowerSupply;
+    return {
+        leftTop: slot(1),
+        leftMiddle: slot(2),
+        leftBottom: slot(3),
+        rightTop: slot(4),
+        rightMiddle: slot(5),
+        rightBottom: slot(6),
+        homeTop: {
+            state: topState,
+            valueDecimal: num('power7_valueDecimal', 0),
+            valueUnit: legacyPowerUnit(topState, row.power7_valueUnit, stateUnits),
+        },
+        homeBot: {
+            selInternalCalculation: internal,
+            state: botState,
+            selPowerSupply: Array.isArray(supply)
+                ? supply.map(Number).filter(n => Number.isInteger(n) && n >= 1 && n <= 6)
+                : [],
+            valueDecimal: num('power8_valueDecimal', 0),
+            // the internal sum has no state, its unit is the one selected in the table
+            valueUnit: legacyPowerUnit(internal ? '' : botState, row.power8_valueUnit, stateUnits),
+        },
+    };
+}
+
+/**
+ * State ids a row of the old table "Page Power" reads - the migration needs their common.unit.
+ *
+ * @param rows old table `native.pagePowerdata`
+ */
+export function legacyPowerStates(rows: readonly LegacyPowerRow[] | undefined): string[] {
+    const ids = new Set<string>();
+    for (const row of rows ?? []) {
+        for (let i = 1; i <= 8; i++) {
+            const v = row?.[`power${i}_state`];
+            if (typeof v === 'string' && v.trim()) {
+                ids.add(v.trim());
+            }
+        }
+    }
+    return [...ids];
+}
+
+/**
+ * Moves the rows of the old admin table "Page Power" into the page config. The new entries keep their
+ * navigation in the script (`scriptNavigation`) until the user assigns one in the admin. A row whose name
+ * is already used by another entry gets a new name (`<name>_power`, `<name>_power2`, …); the script still
+ * finds it via `scriptName`. Rows migrated before are skipped.
+ *
+ * The unit of a value is taken from the state object if it has one (`stateUnits`), as the old table path
+ * displayed it, otherwise the unit selected in the table is kept.
+ *
+ * @param rows old table `native.pagePowerdata`
+ * @param entries page config `native.pageConfig`
+ * @param stateUnits common.unit of the states used by the rows, by id (see {@link legacyPowerStates})
+ * @returns the extended page config, the warnings for renamed rows, changed = something was added
+ */
+export function migrateLegacyPower(
+    rows: readonly LegacyPowerRow[] | undefined,
+    entries: readonly PageConfigEntry[],
+    stateUnits: Readonly<Record<string, string>> = {},
+): { entries: PageConfigEntry[]; messages: string[]; changed: boolean } {
+    const out = [...entries];
+    const messages: string[] = [];
+    let changed = false;
+    for (const row of rows ?? []) {
+        const name = typeof row?.pageName === 'string' ? row.pageName.trim() : '';
+        if (!name) {
+            continue;
+        }
+        if (out.some(e => e.card === 'cardPower' && e.scriptName === name)) {
+            continue;
+        }
+        let uniqueName = name;
+        for (let i = 1; out.some(e => e.uniqueName === uniqueName); i++) {
+            uniqueName = `${name}_power${i === 1 ? '' : i}`;
+        }
+        if (uniqueName !== name) {
+            messages.push(
+                `Power page '${name}': the name is already used by another page, migrated as '${uniqueName}'. The script keeps using '${name}'.`,
+            );
+        }
+        out.push({
+            card: 'cardPower',
+            uniqueName,
+            scriptName: name,
+            scriptNavigation: true,
+            headline: typeof row.headline === 'string' ? row.headline : '',
+            ...legacyPowerContent(row, stateUnits),
+            hidden: row.hiddenByTrigger === true,
+            alwaysOn: row.alwaysOnDisplay === true ? 'always' : 'none',
         });
         changed = true;
     }
@@ -1752,7 +1965,7 @@ export function resolvePageLinks(entries: readonly PageConfigEntry[]): {
             ? structuredClone(entry.navigationAssignment)
             : undefined;
         copy.isMainPage = !!entry.isMainPage;
-        if (copy.card === 'cardChart') {
+        if (copy.card === 'cardChart' || copy.card === 'cardPower') {
             // the script navigation belongs to the script page of the target, the link navigates on its own
             copy.scriptNavigation = false;
             delete copy.scriptName;

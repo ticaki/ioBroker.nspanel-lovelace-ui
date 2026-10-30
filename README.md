@@ -158,6 +158,8 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
     ### **WORK IN PROGRESS**
 -->
 ### **WORK IN PROGRESS**
+- (ticaki) power pages: the tab "Page Power" is gone - its pages are moved into the page configuration (tab PageConfig) at adapter start and the old table is deleted; a name already used by another page gets the suffix `_power`; a value whose state has a unit (`common.unit`) takes that unit
+- (ticaki) power pages: migrated pages keep their navigation from the script for now (deprecated, the editor shows a hint) until a navigation is assigned in the admin - script version 0.21.6 marks `ScriptConfig.PagePower` as deprecated
 - (ticaki) page configuration: new page type "Media player" (cardMedia for alexa2, sonos, spotify-premium, mpd and squeezeboxrpc) - edited on a preview similar to the panel: player with check by the adapter, colors, volume range and presets, standard items of the player (switch off, colors, speaker/playlist/favorite lists with names offered by the adapter) and own page items
 - (ticaki) page configuration: the paging of menu, thermostat and media pages (classic, arrow, automatic with interval, full or half page) is set in the page details; the editor of the menu pages now assumes classic paging like the adapter
 - (tt-tom17) NSPanel settings: every panel tile has two buttons that configure what the hardware buttons below the display do - decoupling from the relay (`cmd.detachLeft`/`cmd.detachRight`) and the action itself: go to a navigation point, flip or set a datapoint, or set it and flip it back after a delay; a button configured here wins over `buttonLeft`/`buttonRight` of the configuration script, an untouched one keeps the script value

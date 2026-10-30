@@ -82,7 +82,8 @@ declare global {
             }[];
             pw1: string;
 
-            // PagePower
+            // PagePower - the old admin table is migrated into pageConfig at adapter start; at runtime
+            // buildPowerPage() fills one record per power page, PagePower reads the internal sum from it
             pagePowerdata: {
                 pageName: string,
                 headline: string,
