@@ -160,6 +160,13 @@ export type NavigationFlowNodeData = {
      * when the script delivers other links by now than the override was made against.
      */
     overrideState?: 'active' | 'stale';
+    /**
+     * The page has sub pages in the layout and can be collapsed: whether it is collapsed right now
+     * and how many pages are hidden then.
+     */
+    collapse?: { collapsed: boolean; hidden: number };
+    /** Collapses or expands the sub pages of the node - set together with {@link collapse} */
+    onToggleCollapse?: (nodeId: string) => void;
 };
 
 /** Node of the flow as kept in the view state */
@@ -169,6 +176,8 @@ export interface FlowNode {
     position: { x: number; y: number };
     type?: string;
     draggable?: boolean;
+    /** Size as measured by React Flow - set once the node was rendered */
+    measured?: { width?: number; height?: number };
 }
 
 /** Edge of the flow as built from the navigation map */
@@ -180,7 +189,14 @@ export interface FlowEdge {
     targetHandle?: string;
     label: string;
     style: { strokeWidth: number; strokeDasharray?: string; stroke?: string };
-    data?: { isTarget: boolean; navType?: EdgeKind; bidirectional?: boolean; highlighted?: boolean };
+    data?: {
+        isTarget: boolean;
+        navType?: EdgeKind;
+        bidirectional?: boolean;
+        highlighted?: boolean;
+        /** The edge leads into a collapsed sub tree and is drawn to the collapsed page instead */
+        redirected?: boolean;
+    };
     className?: string;
     /** Edit mode: which end of the edge can be dragged to another node */
     reconnectable?: boolean | 'source' | 'target';

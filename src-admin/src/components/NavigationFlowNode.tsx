@@ -2,6 +2,7 @@ import React from 'react';
 import { Box, Typography } from '@mui/material';
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
+import RemoveIcon from '@mui/icons-material/Remove';
 import { Handle, Position, type Node, type NodeProps } from '@xyflow/react';
 import { I18n } from '@iobroker/gui-components';
 import type { NavigationLinkKind } from '../../../src/lib/types/navigationEdit';
@@ -164,6 +165,42 @@ export default class NavigationFlowNode extends React.PureComponent<NodeProps<Na
         );
     }
 
+    /**
+     * Click on the collapse button - must neither select nor drag the node.
+     *
+     * @param event The click.
+     */
+    private handleToggleCollapse = (event: React.MouseEvent<HTMLButtonElement>): void => {
+        event.stopPropagation();
+        this.props.data.onToggleCollapse?.(this.props.id);
+    };
+
+    /**
+     * Button to collapse/expand the sub pages; collapsed it shows how many pages are hidden.
+     *
+     * @returns The button, `null` for a page without sub pages.
+     */
+    private renderCollapseButton(): React.ReactNode {
+        const { collapse, onToggleCollapse } = this.props.data;
+        if (!collapse || !onToggleCollapse) {
+            return null;
+        }
+        return (
+            <button
+                type="button"
+                className={`node-collapse nodrag${collapse.collapsed ? ' node-collapse-collapsed' : ''}`}
+                onClick={this.handleToggleCollapse}
+                title={
+                    collapse.collapsed
+                        ? I18n.t('nav_expand').replace('%n', String(collapse.hidden))
+                        : I18n.t('nav_collapse')
+                }
+            >
+                {collapse.collapsed ? `+${collapse.hidden}` : <RemoveIcon className="node-collapse-icon" />}
+            </button>
+        );
+    }
+
     render(): React.ReactElement {
         const { data } = this.props;
         const entry = data.entry;
@@ -229,6 +266,7 @@ export default class NavigationFlowNode extends React.PureComponent<NodeProps<Na
                         <GeneratedPageMarker />
                     </span>
                 ) : null}
+                {this.renderCollapseButton()}
                 {!generated && data.overrideState ? (
                     <span className="node-marker node-marker-override">
                         <OverrideMarker stale={data.overrideState === 'stale'} />
