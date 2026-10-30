@@ -18,6 +18,8 @@
         "types": ["@iobroker/types", "node"]
     },
     "include": ["src"],
+    // Unit-Tests laufen über mocha im Hauptprojekt (npm test) und werden dort typgeprüft
+    "exclude": ["src/**/*.test.ts"],
     "references": [
         {
             "path": "./tsconfig.node.json"
