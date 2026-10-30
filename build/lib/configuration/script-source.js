@@ -447,6 +447,18 @@ function uniqueNameOf(s, obj) {
   const str = readStringLiteral(s, prop.valueStart);
   return str && str.end === prop.valueEnd ? str.value : void 0;
 }
+function pageNameOf(s, obj) {
+  const uniqueName = uniqueNameOf(s, obj);
+  if (uniqueName !== void 0) {
+    return uniqueName;
+  }
+  const prop = parseObjectProperties(s, obj.open, obj.close).find((p) => p.key === "globalLink");
+  if (!prop) {
+    return void 0;
+  }
+  const str = readStringLiteral(s, prop.valueStart);
+  return str && str.end === prop.valueEnd ? str.value : void 0;
+}
 function escapeRegExp(text) {
   return text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
@@ -608,11 +620,11 @@ function commentOut(src, def, marker) {
   }
   return src.slice(0, def.stmtStart) + replaced + src.slice(def.stmtEnd);
 }
-function resolveElement(s, el) {
+function resolveElement(s, el, nameOf = uniqueNameOf) {
   const text = s.blank.slice(el.start, el.end).trim();
   if (/^[A-Za-z_$][A-Za-z0-9_$]*$/.test(text)) {
     for (const def of findDefinitions(s, text)) {
-      const uniqueName = uniqueNameOf(s, def.body);
+      const uniqueName = nameOf(s, def.body);
       if (uniqueName !== void 0) {
         return { uniqueName, identifier: text };
       }
@@ -620,7 +632,7 @@ function resolveElement(s, el) {
     return { identifier: text };
   }
   if (s.src[el.start] === "{" && findMatching(s.blank, el.start) === el.end - 1) {
-    return { uniqueName: uniqueNameOf(s, { open: el.start, close: el.end - 1 }) };
+    return { uniqueName: nameOf(s, { open: el.start, close: el.end - 1 }) };
   }
   return {};
 }
@@ -672,7 +684,7 @@ function removePagesFromScript(source, uniqueNames, today) {
       continue;
     }
     for (const el of parseArrayElements(s, arr.open, arr.close)) {
-      const resolved = resolveElement(s, el);
+      const resolved = resolveElement(s, el, pageNameOf);
       if (resolved.uniqueName === void 0 || !wanted.includes(resolved.uniqueName)) {
         continue;
       }
@@ -692,7 +704,7 @@ function removePagesFromScript(source, uniqueNames, today) {
   const marker = `NSPanel: converted to the admin page configuration on ${today}`;
   for (const [id, name] of identifiers) {
     s = scanSource(out);
-    const def = findDefinitions(s, id).find((d) => uniqueNameOf(s, d.body) === name);
+    const def = findDefinitions(s, id).find((d) => pageNameOf(s, d.body) === name);
     if (!def) {
       definitionKept.push(name);
       notes.push(`definition of "${id}" (page "${name}") not found - left unchanged`);

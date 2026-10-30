@@ -911,6 +911,24 @@ export type AdminPageItemConfig = {
     minValue?: number;
     /** Role volume only: upper end of the volume slider, 0 counts as not set like {@link minValue}. */
     maxValue?: number;
+    /** Role blind only: text of the second row of the shutter popup. Empty = not set. */
+    secondRow?: string;
+    /**
+     * Roles dimmer, ct, rgb, rgbSingle and hue: lower end of the brightness slider. The config manager takes it
+     * only when it is truthy, so 0 counts as not set (the panel default).
+     */
+    minValueBrightness?: number;
+    /** Like {@link minValueBrightness}: upper end of the brightness slider. */
+    maxValueBrightness?: number;
+    /** Roles ct, rgb, rgbSingle and hue: lower end of the color temperature slider, 0 counts as not set. */
+    minValueColorTemp?: number;
+    /** Like {@link minValueColorTemp}: upper end of the color temperature slider. */
+    maxValueColorTemp?: number;
+    /**
+     * Roles dimmer, ct, rgb, rgbSingle and hue: switches the color mode of the light popup on. The script
+     * field is a text (`rgb`, `xy`), but the config manager only asks whether it is set at all.
+     */
+    colormode?: boolean;
 };
 
 /**
@@ -2948,7 +2966,41 @@ export const ADMIN_BUTTON_MAX_DELAY = 2_147_483;
 /** sendTo command of the adapter: plan (dryRun) or execute the conversion of a panel's script */
 export const SENDTO_CONVERT_SCRIPT_COMMAND = 'convertScriptToAdmin';
 
-export type ConvertScriptRequest = { panelTopic: string; dryRun: boolean };
+/**
+ * What happens with a page of the global script whose name exists in the admin with a different content:
+ * keepAdmin - the admin entry stays as it is, the panel is assigned to it (default);
+ * takeScript - the content of the admin entry is replaced by the global page, every existing assignment stays and
+ * the panel is added (this changes the page on the other assigned panels as well);
+ * skip - nothing changes, the page stays in the script of this panel.
+ */
+export type ConvertGlobalDecision = 'keepAdmin' | 'takeScript' | 'skip';
+
+export const CONVERT_GLOBAL_DECISIONS: readonly ConvertGlobalDecision[] = ['keepAdmin', 'takeScript', 'skip'];
+
+/** the default of {@link ConvertGlobalDecision} when the request carries none for a page */
+export const CONVERT_GLOBAL_DEFAULT_DECISION: ConvertGlobalDecision = 'keepAdmin';
+
+export type ConvertScriptRequest = {
+    panelTopic: string;
+    dryRun: boolean;
+    /** decisions for the conflicts of the plan (`ConvertScriptPlan.conflicts`), by uniqueName */
+    globalDecisions?: Record<string, ConvertGlobalDecision>;
+};
+
+/** a page of the global script whose admin entry of the same name differs from it */
+export type ConvertGlobalConflict = {
+    uniqueName: string;
+    /** page type of the script */
+    type: string;
+    /** card of the existing admin entry */
+    card: string;
+    /** the decision the plan was made with */
+    decision: ConvertGlobalDecision;
+    /** topics the existing admin entry is assigned to (`*` = all panels) */
+    assignedPanels: string[];
+    /** top level fields of the admin entry that differ */
+    differences: string[];
+};
 
 /** why a page, the screensaver or a button of the script is not converted */
 export type ConvertSkipReason =
@@ -2986,6 +3038,13 @@ export type ConvertPagePlan = {
     storedAs?: string;
     /** removeReference only: why the script page is a dead reference */
     reason?: Extract<ConvertSkipReason, 'adminOnly' | 'adminAlreadyNavigated'>;
+    /** the page comes from the global script (the global script itself is never rewritten) */
+    global?: boolean;
+    /**
+     * global pages whose name exists in the admin: identical - same content, only the panel is assigned
+     * (assignNavigation); keepAdmin / takeScript - the decision on a conflict (assignNavigation / create)
+     */
+    existing?: 'identical' | 'keepAdmin' | 'takeScript';
 };
 
 export type ConvertSkipped = { uniqueName: string; type: string; reason: ConvertSkipReason; detail?: string };
@@ -3002,6 +3061,8 @@ export type ConvertScriptPlan = {
     screensaverSkipped?: { reason: ConvertSkipReason; detail?: string };
     buttons: { left?: AdminButtonFunction; right?: AdminButtonFunction };
     buttonsSkipped: { side: 'left' | 'right'; reason: ConvertSkipReason; detail?: string }[];
+    /** pages of the global script that differ from the admin entry of the same name - the user decides */
+    conflicts?: ConvertGlobalConflict[];
     /** no page, screensaver or button to convert and nothing to remove from the script */
     nothingToDo: boolean;
 };

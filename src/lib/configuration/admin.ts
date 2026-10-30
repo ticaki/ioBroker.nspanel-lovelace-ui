@@ -642,7 +642,22 @@ export class AdminConfiguration extends BaseClass {
             // Check for duplicate page name. The start page may always be replaced by an admin
             // page - being able to define it here is the whole point of it. Any other page needs
             // the global override flag.
-            const overrideExisting = this.adapter.config.adminOverridesScriptPages || newPage.uniqueID === mainPageName;
+            let overrideExisting = this.adapter.config.adminOverridesScriptPages || newPage.uniqueID === mainPageName;
+            // A page of the global script configuration gives way to an admin page assigned to this panel by
+            // its topic (e.g. after the conversion of the panel script took it over) - pages of the panel's
+            // own script still win.
+            if (
+                !overrideExisting &&
+                panelAssignment !== undefined &&
+                option.globalPageIds?.includes(newPage.uniqueID) &&
+                !option.generatedPageIds?.includes(newPage.uniqueID) &&
+                option.pages.some((a: PageBase) => a.uniqueID === newPage.uniqueID)
+            ) {
+                overrideExisting = true;
+                this.log.info(
+                    `Page '${newPage.uniqueID}' of the global script configuration is replaced by the admin page assigned to this panel.`,
+                );
+            }
 
             // Position and links of the replaced navigation node, reused for the new node below.
             let replacedIndex = -1;

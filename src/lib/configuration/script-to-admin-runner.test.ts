@@ -851,6 +851,101 @@ describe('lib/configuration - script-to-admin-runner', () => {
         });
     });
 
+    describe('pages of the global script', () => {
+        const globalScriptId = 'script.js.global';
+        const globalRaw: ScriptConfig.globalPagesConfig = {
+            version: '0.21.6',
+            type: 'globalConfig',
+            subPages: [
+                page({ type: 'cardGrid', uniqueName: 'g1', heading: 'G1', items: [] }),
+                page({ type: 'cardGrid', uniqueName: 'g2', heading: 'G2', items: [] }),
+            ],
+        };
+        const existingG2: MenuEntry = {
+            card: 'cardGrid',
+            uniqueName: 'g2',
+            headline: 'Admin G2',
+            pageItems: [],
+            hidden: false,
+            alwaysOn: 'none',
+            navigationAssignment: [{ topic: 'nspanel/other', navigation: { home: 'main' } }],
+        };
+
+        /** a world whose panel script links g1 of the global script, g2 exists in the admin with other content */
+        function globalWorld(): FakeWorld {
+            const w = world({
+                raw: rawConfig({
+                    pages: [...rawConfig().pages, page({ globalLink: 'g1' })],
+                }),
+                pageConfig: [existingG2],
+            });
+            w.objects[namespace].native.globalConfigRaw = structuredClone(globalRaw);
+            const script = w.objects[scriptId];
+            script.common.source = String(script.common.source).replace(
+                'pages: [main, licht],',
+                "pages: [main, licht, { globalLink: 'g1' }],",
+            );
+            w.objects[globalScriptId] = {
+                ...scriptObject(globalScriptId, 'Global'),
+                common: { ...scriptObject(globalScriptId, 'Global').common, source: '// the global script' },
+            };
+            return w;
+        }
+
+        /**
+         * Runs the command with a message of its own.
+         *
+         * @param w The world.
+         * @param message The message of the sendTo.
+         */
+        async function send(w: FakeWorld, message: Record<string, unknown>): Promise<ConvertScriptAnswer> {
+            const runner = new ScriptToAdminRunner({
+                adapter: w.adapter,
+                createConfigStore: () => new ConfigManager(w.adapter as never),
+                now: () => new Date(2026, 9, 30, 12, 0, 0),
+            });
+            await runner.run({ panelTopic: topic, ...message }, answer => w.answers.push(answer));
+            expect(w.answers, 'exactly one answer').to.have.length(1);
+            return w.answers[0];
+        }
+
+        it('dry run: plans the global pages from globalConfigRaw, the conflict with the default decision', async () => {
+            const w = globalWorld();
+            const plan = asPlan(await send(w, { dryRun: true, globalDecisions: { g2: 'bogus' } }));
+            expect(plan.pages.map(p => [p.uniqueName, p.action, p.global === true])).to.deep.equal([
+                ['main', 'create', false],
+                ['licht', 'create', false],
+                ['g1', 'create', true],
+                ['sub1', 'create', false],
+                ['g2', 'assignNavigation', true],
+            ]);
+            expect(plan.conflicts?.map(c => [c.uniqueName, c.decision, c.assignedPanels])).to.deep.equal([
+                ['g2', 'keepAdmin', ['nspanel/other']],
+            ]);
+        });
+
+        it('execution: takes the decision, removes the link from the panel script, the global script stays', async () => {
+            const w = globalWorld();
+            const globalScriptBefore = structuredClone(w.objects[globalScriptId]);
+            const result = asResult(await send(w, { dryRun: false, globalDecisions: { g2: 'takeScript' } }));
+            expect(result.error).to.equal(undefined);
+            expect(result.conflicts?.[0].decision).to.equal('takeScript');
+            expect(result.scriptNotes).to.deep.equal([]);
+
+            // the panel script lost the link, the global script object is untouched
+            expect(String(w.objects[scriptId].common.source)).to.not.include('globalLink');
+            expect(w.objects[globalScriptId]).to.deep.equal(globalScriptBefore);
+            expect(w.objects[namespace].native.globalConfigRaw).to.deep.equal(globalRaw);
+            expect(storedRaw(w)?.pages).to.deep.equal([]);
+
+            const pages: MenuEntry[] = w.objects[instanceId].native.pageConfig;
+            expect(pages.map(p => p.uniqueName)).to.deep.equal(['g2', 'main', 'licht', 'g1', 'sub1']);
+            const g2 = pages[0];
+            expect(g2.headline).to.equal('G2');
+            expect(g2.navigationAssignment?.map(a => a.topic)).to.deep.equal(['nspanel/other', topic]);
+        });
+    });
+
     describe('applyPendingScriptConversions (adapter start)', () => {
         const logs: LogEntry[] = [];
         const log = {

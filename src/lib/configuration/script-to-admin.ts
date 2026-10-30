@@ -34,6 +34,9 @@ import {
     type ConvertScriptPlan,
     type ConvertSkipReason,
     type ConvertSkipped,
+    CONVERT_GLOBAL_DEFAULT_DECISION,
+    type ConvertGlobalConflict,
+    type ConvertGlobalDecision,
     type IconColorElement,
     type MediaEntry,
     type MediaToolbarConfig,
@@ -57,6 +60,7 @@ import {
 } from '../types/adminShareConfig';
 import { isIconColorScaleElement } from '../types/function-and-const';
 import { findScreensaverEntry } from './admin-screensaver';
+import { mergeGlobalConfig, type GlobalPageSource } from './global-config-merge';
 
 /** the panel entry of the admin (`native.panels[i]`) as far as the conversion needs it */
 export type ScriptToAdminPanel = {
@@ -89,6 +93,14 @@ export type ScriptToAdminInput = {
     scriptFound?: boolean;
     /** id generator for new notifications (tests), default {@link newScreensaverNotifyId} */
     notifyIdFactory?: (existing: readonly ScreensaverNotifyConfig[]) => string;
+    /**
+     * `native.globalConfigRaw` of the meta object. When it is a global configuration the plan is made on the
+     * pages as the runtime merges them for this panel ({@link mergeGlobalConfig}); the global script itself is
+     * never rewritten.
+     */
+    globalConfigRaw?: unknown;
+    /** decisions for global pages that differ from the admin entry of the same name, by uniqueName */
+    globalDecisions?: Readonly<Record<string, ConvertGlobalDecision>>;
 };
 
 export type ScriptToAdminResult = {
@@ -318,6 +330,12 @@ const itemMappedKeys = [
     'useValueConditions',
     'minValue',
     'maxValue',
+    'secondRow',
+    'minValueBrightness',
+    'maxValueBrightness',
+    'minValueColorTemp',
+    'maxValueColorTemp',
+    'colormode',
 ] as const;
 
 /** fields of a script page item the config manager never reads - dropping them changes nothing */
@@ -516,6 +534,24 @@ function convertPageItem(item: Dict, where: string): AdminPageItemConfig {
     const maxValue = num(item.maxValue, reason, `${where}.maxValue`);
     if (maxValue !== undefined) {
         admin.maxValue = maxValue;
+    }
+    // role blind: second text row - the config manager shows '' for a missing one, so '' is dropped
+    const secondRow = str(item.secondRow, reason, `${where}.secondRow`);
+    if (secondRow) {
+        admin.secondRow = secondRow;
+    }
+    // light ranges (dimmer, ct, rgb, rgbSingle, hue): the config manager takes them only when truthy, so 0
+    // means "not set" there - it is dropped without a word, the panel stays the same
+    for (const key of ['minValueBrightness', 'maxValueBrightness', 'minValueColorTemp', 'maxValueColorTemp'] as const) {
+        const value = num(item[key], reason, `${where}.${key}`);
+        if (value) {
+            admin[key] = value;
+        }
+    }
+    // the config manager only asks whether colormode is set at all (`!!item.colormode`) - 'rgb' and 'xy'
+    // both switch the color mode on
+    if (item.colormode) {
+        admin.colormode = true;
     }
     return admin;
 }
@@ -718,9 +754,13 @@ function ringLinks(name: string, ring: readonly string[], staysInScript: (name: 
 function pageCommon(page: Dict, isSub: boolean): PageCommon {
     const reason: ConvertSkipReason = 'fieldNotSupported';
     const uniqueName = String(page.uniqueName);
-    const heading = str(page.heading, reason, 'heading') ?? '';
+    let heading = str(page.heading, reason, 'heading') ?? '';
     if (!heading) {
-        throw new ConvertError(reason, 'heading: empty - the admin shows the uniqueName instead');
+        if (page.type !== 'cardThermo') {
+            throw new ConvertError(reason, 'heading: empty - the admin shows the uniqueName instead');
+        }
+        // the config manager shows `thermostat` on a cardThermo without heading - the admin entry says so
+        heading = 'thermostat';
     }
     if (looksLikeStateId(heading)) {
         throw new ConvertError(reason, 'heading: looks like a state id - the admin shows the text itself');
@@ -1957,6 +1997,69 @@ function scriptPageId(page: unknown): string {
 }
 
 /**
+ * A value as JSON with sorted object keys - two entries with the same content give the same text whatever
+ * the order of their fields. `undefined` fields are dropped like JSON does.
+ *
+ * @param value Any JSON value.
+ */
+function canonicalJson(value: unknown): string {
+    return JSON.stringify(value, (_key: string, v: unknown): unknown => {
+        if (isDict(v)) {
+            const sorted: Dict = {};
+            for (const key of Object.keys(v).sort()) {
+                sorted[key] = v[key];
+            }
+            return sorted;
+        }
+        return v;
+    });
+}
+
+/**
+ * The top level fields in which two admin entries differ, `navigationAssignment` left out.
+ *
+ * @param a First entry.
+ * @param b Second entry.
+ */
+function entryDifferences(a: PageConfigEntry, b: PageConfigEntry): string[] {
+    const left: Dict = { ...a };
+    const right: Dict = { ...b };
+    delete left.navigationAssignment;
+    delete right.navigationAssignment;
+    const keys = [...new Set([...Object.keys(left), ...Object.keys(right)])].sort();
+    return keys.filter(key => canonicalJson(left[key]) !== canonicalJson(right[key]));
+}
+
+/**
+ * Whether the admin entry is assigned to the panel by its topic - not through "all panels" and not excluded.
+ * Such an entry replaces a page of the global script at runtime (`AdminConfiguration`).
+ *
+ * @param entry Admin entry.
+ * @param topic Topic of the panel.
+ */
+function entryAssignedToPanel(entry: PageConfigEntry, topic: string): boolean {
+    const assignments = entry.navigationAssignment ?? [];
+    const own = assignments.find(a => a.topic === topic);
+    if (!own) {
+        return false;
+    }
+    return !(!own.navigation && assignments.some(a => a.topic === ALL_PANELS_SPECIAL_ID));
+}
+
+/**
+ * The name under which the runtime merges a `{ globalLink }` entry: its `uniqueName` (renamed), else the
+ * name of the global page. Empty when the page is no link.
+ *
+ * @param page Page of the script.
+ */
+function globalLinkName(page: unknown): string {
+    if (!isDict(page) || typeof page.globalLink !== 'string' || page.globalLink === '') {
+        return '';
+    }
+    return typeof page.uniqueName === 'string' ? page.uniqueName : page.globalLink;
+}
+
+/**
  * Plans the conversion of the script configuration of one panel into the admin configuration.
  *
  * Pure: nothing is read or written, the result describes what the caller has to store. See the file
@@ -1982,14 +2085,58 @@ export function planScriptToAdmin(input: ScriptToAdminInput): ScriptToAdminResul
     const removedFromScript: string[] = [];
     const removedPages = new Set<string>();
     const removedSubPages = new Set<string>();
-    const remove = (uniqueName: string, isSub: boolean): void => {
-        removedFromScript.push(uniqueName);
+    /** names of the `{ globalLink }` entries of the panel script that go */
+    const removedLinks = new Set<string>();
+    const conflicts: ConvertGlobalConflict[] = [];
+    /**
+     * A page leaves the script (it is an admin page from now on). A page of the global script is only taken
+     * out of the panel script when the panel links it - the global script itself stays as it is.
+     *
+     * @param uniqueName Name of the page.
+     * @param isSub The page comes from `subPages`.
+     * @param source Where a page of the global script comes from, undefined for a page of the panel script.
+     */
+    const remove = (uniqueName: string, isSub: boolean, source?: GlobalPageSource): void => {
         (isSub ? removedSubPages : removedPages).add(uniqueName);
+        if (!source) {
+            removedFromScript.push(uniqueName);
+        } else if (source.kind === 'linked') {
+            removedFromScript.push(uniqueName);
+            removedLinks.add(uniqueName);
+        }
     };
     const usedNames = new Set(updatedPages.map(e => e.uniqueName));
 
-    const pages = Array.isArray(raw.pages) ? raw.pages : [];
-    const subPages = Array.isArray(raw.subPages) ? raw.subPages : [];
+    const rawPages = Array.isArray(raw.pages) ? raw.pages : [];
+    const rawSubPages = Array.isArray(raw.subPages) ? raw.subPages : [];
+    // the pages as the runtime sees them: the global script merged in for this panel. Navigation copies get
+    // a fixed name here (the runtime uses a random one) - they are not converted anyway.
+    const merged =
+        input.globalConfigRaw !== undefined && input.globalConfigRaw !== null
+            ? mergeGlobalConfig(
+                  {
+                      pages: rawPages,
+                      subPages: rawSubPages,
+                      navigation: raw.navigation,
+                      nativePageItems: raw.nativePageItems,
+                  },
+                  input.globalConfigRaw,
+                  { random: () => 0 },
+              )
+            : undefined;
+    const globalSource = (page: unknown): GlobalPageSource | undefined =>
+        merged && isDict(page) ? merged.sources.get(page) : undefined;
+    const pages = merged ? merged.pages : rawPages;
+    const mergedPageNames = new Set(pages.map(scriptPageId));
+    // the config manager drops sub pages named like a page of `pages`; for the global sub pages (the copy a
+    // renamed link leaves behind among them) that is silent - the pages of the panel script keep their skip
+    const subPages = merged
+        ? merged.subPages.filter(p => {
+              const source = globalSource(p);
+              return !source || source.kind === 'linked' || !mergedPageNames.has(scriptPageId(p));
+          })
+        : rawSubPages;
+    const scriptNavigation = merged ? merged.navigation : raw.navigation;
     // the ring the config manager builds from `pages`: every page with a name, `main` first
     const ring = pages.map(scriptPageId).filter(id => id !== '');
     const mainIndex = ring.indexOf(mainPageName);
@@ -2033,11 +2180,137 @@ export function planScriptToAdmin(input: ScriptToAdminInput): ScriptToAdminResul
     /** navigation assignment of every converted page of `pages`, by uniqueName - its links are set after the loop */
     const ringAssignments = new Map<string, { topic: string; navigation?: NavigationLinks }>();
     const explicitNavigation = new Set(
-        (Array.isArray(raw.navigation) ? raw.navigation : []).map(n => (isDict(n) ? String(n.name) : '')),
+        (Array.isArray(scriptNavigation) ? scriptNavigation : []).map(n => (isDict(n) ? String(n.name) : '')),
     );
 
     const skip = (uniqueName: string, type: string, reason: ConvertSkipReason, detail?: string): void => {
         plan.skipped.push(detail === undefined ? { uniqueName, type, reason } : { uniqueName, type, reason, detail });
+    };
+
+    /**
+     * A convertible page as admin entry (the checks of every page included).
+     *
+     * @param page Page of the script.
+     * @param isSub The page comes from `subPages`.
+     * @param typeName Page type.
+     * @param uniqueName Name of the page.
+     */
+    const convertPage = (
+        page: Dict,
+        isSub: boolean,
+        typeName: string,
+        uniqueName: string,
+    ): { entry: PageConfigEntry; common: PageCommon } => {
+        if (explicitNavigation.has(uniqueName)) {
+            throw new ConvertError('fieldNotSupported', 'navigation: the script overrides the links of the page');
+        }
+        const common = pageCommon(page, isSub);
+        let entry: PageConfigEntry;
+        if (typeName === 'cardThermo2') {
+            entry = convertThermo2Page(page, common, panel.topic);
+        } else if (typeName === 'cardThermo') {
+            entry = convertThermoPage(page, common, panel.topic);
+        } else if (typeName === 'cardMedia') {
+            entry = convertMediaPage(page, common, panel.topic);
+        } else {
+            entry = convertMenuPage(page, common, panel.topic);
+        }
+        return { entry, common };
+    };
+
+    /**
+     * A page of the global script whose name exists in the admin (e.g. another panel took the same global page
+     * over already). Same content: only this panel is assigned to the entry. Different content: a conflict the
+     * user decides ({@link ConvertGlobalDecision}). An entry that is assigned to this panel already replaces the
+     * global page at runtime - the page has nothing left to convert.
+     *
+     * @param page Page of the merged configuration.
+     * @param isSub The page comes from `subPages`.
+     * @param typeName Page type.
+     * @param uniqueName Name of the page.
+     * @param existing The admin entry of that name.
+     * @param source Where the page comes from.
+     */
+    const handleExistingGlobal = (
+        page: Dict,
+        isSub: boolean,
+        typeName: string,
+        uniqueName: string,
+        existing: PageConfigEntry,
+        source: GlobalPageSource,
+    ): void => {
+        if (entryAssignedToPanel(existing, panel.topic)) {
+            if (source.kind === 'linked') {
+                plan.pages.push({
+                    uniqueName,
+                    type: typeName,
+                    card: existing.card,
+                    itemCount: 0,
+                    navigation: {},
+                    action: 'removeReference',
+                    reason: 'adminAlreadyNavigated',
+                    global: true,
+                });
+                remove(uniqueName, isSub, source);
+            }
+            return;
+        }
+        let converted: { entry: PageConfigEntry; common: PageCommon };
+        try {
+            converted = convertPage(page, isSub, typeName, uniqueName);
+        } catch (error) {
+            if (error instanceof ConvertError) {
+                skip(uniqueName, typeName, error.reason, error.detail);
+                return;
+            }
+            throw error;
+        }
+        const { entry, common } = converted;
+        const differences = entryDifferences(entry, existing);
+        let decision: ConvertGlobalDecision | 'identical' = 'identical';
+        if (differences.length > 0) {
+            decision = input.globalDecisions?.[uniqueName] ?? CONVERT_GLOBAL_DEFAULT_DECISION;
+            conflicts.push({
+                uniqueName,
+                type: typeName,
+                card: existing.card,
+                decision,
+                assignedPanels: (existing.navigationAssignment ?? []).map(a => a.topic),
+                differences,
+            });
+            if (decision === 'skip') {
+                skip(
+                    uniqueName,
+                    typeName,
+                    'nameExists',
+                    'the page of the global script differs from the admin entry - skipped by choice',
+                );
+                return;
+            }
+        }
+        const assignment = { topic: panel.topic, navigation: common.navigation };
+        const assignments = [...(existing.navigationAssignment ?? []).filter(a => a.topic !== panel.topic), assignment];
+        const replacement: PageConfigEntry =
+            decision === 'takeScript'
+                ? { ...entry, navigationAssignment: assignments }
+                : { ...existing, navigationAssignment: assignments };
+        updatedPages = updatedPages.map(e => (e === existing ? replacement : e));
+        if (!isSub) {
+            ringAssignments.set(uniqueName, assignment);
+        }
+        plan.pages.push({
+            uniqueName,
+            type: typeName,
+            card: replacement.card,
+            itemCount: ('pageItems' in replacement ? replacement.pageItems : []).filter(
+                i => !!i && !isEmptyAdminItem(i),
+            ).length,
+            navigation: common.navigation,
+            action: decision === 'takeScript' ? 'create' : 'assignNavigation',
+            global: true,
+            existing: decision,
+        });
+        remove(uniqueName, isSub, source);
     };
 
     const handlePage = (page: unknown, isSub: boolean): void => {
@@ -2065,12 +2338,27 @@ export function planScriptToAdmin(input: ScriptToAdminInput): ScriptToAdminResul
             skip('', typeName, 'fieldNotSupported', 'uniqueName missing');
             return;
         }
+        const source = globalSource(page);
+        if (source && (source.kind === 'navigationCopy' || merged?.copyRoots.has(uniqueName))) {
+            // the runtime gives the copies random names on every start - nothing the admin could hold
+            skip(
+                uniqueName,
+                typeName,
+                'fieldNotSupported',
+                'navigation copy of a renamed page of the global script (random name)',
+            );
+            return;
+        }
         if (isSub && mainPageNames.has(uniqueName)) {
             // the config manager drops a sub page whose name is used by a page of `pages`
             skip(uniqueName, typeName, 'nameExists', 'a page of pages has the same name - the script ignores this one');
             return;
         }
         if (typeName === 'cardQR' || typeName === 'cardAlarm' || typeName === 'cardUnlock') {
+            if (source && source.kind !== 'linked') {
+                // a dead reference of the global script - nothing to remove from the panel script
+                return;
+            }
             plan.pages.push({
                 uniqueName,
                 type: typeName,
@@ -2079,8 +2367,9 @@ export function planScriptToAdmin(input: ScriptToAdminInput): ScriptToAdminResul
                 navigation: {},
                 action: 'removeReference',
                 reason: 'adminOnly',
+                ...(source ? { global: true } : {}),
             });
-            remove(uniqueName, isSub);
+            remove(uniqueName, isSub, source);
             return;
         }
         if (typeName === 'cardPower' || typeName === 'cardChart' || typeName === 'cardLChart') {
@@ -2094,6 +2383,9 @@ export function planScriptToAdmin(input: ScriptToAdminInput): ScriptToAdminResul
             }
             const navigated = typeName === 'cardPower' ? isScriptNavigatedPower(entry) : isScriptNavigatedChart(entry);
             if (!navigated) {
+                if (source && source.kind !== 'linked') {
+                    return;
+                }
                 plan.pages.push({
                     uniqueName,
                     type: typeName,
@@ -2102,8 +2394,9 @@ export function planScriptToAdmin(input: ScriptToAdminInput): ScriptToAdminResul
                     navigation: {},
                     action: 'removeReference',
                     reason: 'adminAlreadyNavigated',
+                    ...(source ? { global: true } : {}),
                 });
-                remove(uniqueName, isSub);
+                remove(uniqueName, isSub, source);
                 return;
             }
             try {
@@ -2131,8 +2424,9 @@ export function planScriptToAdmin(input: ScriptToAdminInput): ScriptToAdminResul
                     itemCount: 0,
                     navigation,
                     action: 'assignNavigation',
+                    ...(source ? { global: true } : {}),
                 });
-                remove(uniqueName, isSub);
+                remove(uniqueName, isSub, source);
             } catch (error) {
                 if (error instanceof ConvertError) {
                     skip(uniqueName, typeName, error.reason, error.detail);
@@ -2155,6 +2449,13 @@ export function planScriptToAdmin(input: ScriptToAdminInput): ScriptToAdminResul
             skip(uniqueName, typeName, 'unsupportedPageType');
             return;
         }
+        if (source) {
+            const existing = updatedPages.find(e => e.uniqueName === uniqueName);
+            if (existing) {
+                handleExistingGlobal(page, isSub, typeName, uniqueName, existing, source);
+                return;
+            }
+        }
         // The start page: when the name `main` is taken by an entry that creates no page for this panel,
         // the page is stored under its own name and published as `main` through `isMainPage`.
         let storedAs: string | undefined;
@@ -2170,20 +2471,7 @@ export function planScriptToAdmin(input: ScriptToAdminInput): ScriptToAdminResul
             }
         }
         try {
-            if (explicitNavigation.has(uniqueName)) {
-                throw new ConvertError('fieldNotSupported', 'navigation: the script overrides the links of the page');
-            }
-            const common = pageCommon(page, isSub);
-            let entry: PageConfigEntry;
-            if (typeName === 'cardThermo2') {
-                entry = convertThermo2Page(page, common, panel.topic);
-            } else if (typeName === 'cardThermo') {
-                entry = convertThermoPage(page, common, panel.topic);
-            } else if (typeName === 'cardMedia') {
-                entry = convertMediaPage(page, common, panel.topic);
-            } else {
-                entry = convertMenuPage(page, common, panel.topic);
-            }
+            const { entry, common } = convertPage(page, isSub, typeName, uniqueName);
             if (storedAs !== undefined) {
                 entry.uniqueName = storedAs;
                 entry.isMainPage = true;
@@ -2191,7 +2479,7 @@ export function planScriptToAdmin(input: ScriptToAdminInput): ScriptToAdminResul
             newPages.push(entry);
             updatedPages.push(entry);
             usedNames.add(entry.uniqueName);
-            remove(uniqueName, isSub);
+            remove(uniqueName, isSub, source);
             if (!isSub && entry.navigationAssignment) {
                 ringAssignments.set(uniqueName, entry.navigationAssignment[0]);
             }
@@ -2206,6 +2494,9 @@ export function planScriptToAdmin(input: ScriptToAdminInput): ScriptToAdminResul
             };
             if (storedAs !== undefined) {
                 planned.storedAs = storedAs;
+            }
+            if (source) {
+                planned.global = true;
             }
             plan.pages.push(planned);
         } catch (error) {
@@ -2233,7 +2524,10 @@ export function planScriptToAdmin(input: ScriptToAdminInput): ScriptToAdminResul
     }
 
     // screensaver
-    const screensaver = convertScreensaver(input);
+    // the native page items of the global script block the screensaver just like those of the panel script
+    const screensaver = convertScreensaver(
+        merged ? { ...input, raw: { ...raw, nativePageItems: merged.nativePageItems } } : input,
+    );
     let screensaverEntry: ScreensaverEntry | undefined;
     let newNotify: ScreensaverNotifyConfig[] = [];
     if ('skipped' in screensaver) {
@@ -2290,10 +2584,15 @@ export function planScriptToAdmin(input: ScriptToAdminInput): ScriptToAdminResul
     const cleanedRaw: ScriptConfig.Config = structuredClone(raw);
     const keep =
         (removed: Set<string>) =>
-        (page: unknown): boolean =>
-            !(isDict(page) && page.type !== undefined && removed.has(scriptPageId(page)));
-    cleanedRaw.pages = pages.filter(keep(removedPages));
-    cleanedRaw.subPages = subPages.filter(keep(removedSubPages));
+        (page: unknown): boolean => {
+            const link = globalLinkName(page);
+            if (link !== '') {
+                return !removedLinks.has(link);
+            }
+            return !(isDict(page) && page.type !== undefined && removed.has(scriptPageId(page)));
+        };
+    cleanedRaw.pages = rawPages.filter(keep(removedPages));
+    cleanedRaw.subPages = rawSubPages.filter(keep(removedSubPages));
     const clearScreensaverInScript = !!screensaverEntry;
     if (clearScreensaverInScript) {
         cleanedRaw.favoritScreensaverEntity = [];
@@ -2317,6 +2616,9 @@ export function planScriptToAdmin(input: ScriptToAdminInput): ScriptToAdminResul
         cleanedRaw[side === 'left' ? 'buttonLeft' : 'buttonRight'] = null;
     }
 
+    if (conflicts.length > 0) {
+        plan.conflicts = conflicts;
+    }
     plan.nothingToDo =
         plan.pages.length === 0 && !screensaverEntry && buttons.left === undefined && buttons.right === undefined;
 

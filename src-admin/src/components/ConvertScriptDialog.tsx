@@ -7,6 +7,10 @@
  * same command without dryRun, the result reports what was done, the script backup and what could not be changed
  * in the script source. The adapter writes the instance configuration itself - the admin therefore has to be
  * reloaded afterwards, otherwise a later save of the admin would overwrite the new entries.
+ *
+ * Pages of the global script are planned per panel. When such a page exists in the admin with another content the
+ * plan lists it as conflict; the user decides per page (keep the admin version, take the script version, skip).
+ * Every change of a decision asks for a new dry run with the decisions, the execution sends them along.
  */
 import React from 'react';
 import {
@@ -24,16 +28,23 @@ import {
     DialogContent,
     DialogTitle,
     Divider,
+    FormControlLabel,
     List,
     ListItem,
     ListItemText,
+    Radio,
+    RadioGroup,
     Typography,
 } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { I18n } from '@iobroker/gui-components';
 import {
+    ALL_PANELS_SPECIAL_ID,
+    CONVERT_GLOBAL_DECISIONS,
     SENDTO_CONVERT_SCRIPT_COMMAND,
     type AdminButtonFunction,
+    type ConvertGlobalConflict,
+    type ConvertGlobalDecision,
     type ConvertPagePlan,
     type ConvertScriptPlan,
     type ConvertScriptRequest,
@@ -67,6 +78,10 @@ interface ConvertScriptDialogState {
     error: string;
     /** the execution ran into the timeout - the adapter may have finished it nevertheless */
     executeTimedOut: boolean;
+    /** decisions of the user for the conflicting pages of the global script, by uniqueName */
+    decisions: Record<string, ConvertGlobalDecision>;
+    /** a new dry run with changed decisions is under way - the plan shown is the previous one */
+    refreshing: boolean;
 }
 
 /** the adapter answers a dry run or an execution within this time, otherwise the request is given up */
@@ -143,6 +158,23 @@ function isConvertScriptResult(value: unknown): value is ConvertScriptResult {
         // older adapters do not send it - missing counts as false (see `send`)
         (fields.adapterRestarts === undefined || typeof fields.adapterRestarts === 'boolean')
     );
+}
+
+function isGlobalDecision(value: string): value is ConvertGlobalDecision {
+    return CONVERT_GLOBAL_DECISIONS.some(decision => decision === value);
+}
+
+/**
+ * readable list of the panels an admin entry is assigned to, without the panel of the dialog
+ *
+ * @param conflict conflict of the plan
+ * @param panelTopic topic of the panel of the dialog
+ */
+function otherPanelsText(conflict: ConvertGlobalConflict, panelTopic: string): string {
+    return conflict.assignedPanels
+        .filter(topic => topic !== panelTopic)
+        .map(topic => (topic === ALL_PANELS_SPECIAL_ID ? I18n.t('convertScript_allPanels') : topic))
+        .join(', ');
 }
 
 function isSkipReason(value: string): value is ConvertSkipReason {
@@ -306,6 +338,8 @@ class ConvertScriptDialog extends React.Component<ConvertScriptDialogProps, Conv
             result: null,
             error: '',
             executeTimedOut: false,
+            decisions: {},
+            refreshing: false,
         };
     }
 
@@ -331,6 +365,8 @@ class ConvertScriptDialog extends React.Component<ConvertScriptDialogProps, Conv
                 result: null,
                 error: '',
                 executeTimedOut: false,
+                decisions: {},
+                refreshing: false,
             },
             () => void this.send(true),
         );
@@ -344,6 +380,23 @@ class ConvertScriptDialog extends React.Component<ConvertScriptDialogProps, Conv
     private reload = (): void => {
         window.location.reload();
     };
+
+    /**
+     * The user changed the decision for a conflicting page of the global script: plan again with it.
+     *
+     * @param uniqueName name of the page
+     * @param value the chosen decision
+     */
+    private changeDecision(uniqueName: string, value: string): void {
+        if (!isGlobalDecision(value)) {
+            return;
+        }
+        this.sequence++;
+        this.setState(
+            { decisions: { ...this.state.decisions, [uniqueName]: value }, refreshing: true },
+            () => void this.send(true),
+        );
+    }
 
     private convert = (): void => {
         this.setState({ phase: 'executing', error: '' }, () => void this.send(false));
@@ -359,6 +412,9 @@ class ConvertScriptDialog extends React.Component<ConvertScriptDialogProps, Conv
         const seq = this.sequence;
         const { socket, adapterName, instance } = this.props;
         const request: ConvertScriptRequest = { panelTopic: this.state.panelTopic, dryRun };
+        if (Object.keys(this.state.decisions).length > 0) {
+            request.globalDecisions = { ...this.state.decisions };
+        }
         let answer: unknown;
         try {
             answer = await withTimeout<unknown>(
@@ -375,6 +431,7 @@ class ConvertScriptDialog extends React.Component<ConvertScriptDialogProps, Conv
                 phase: 'error',
                 error: err instanceof Error ? err.message : String(err),
                 executeTimedOut,
+                refreshing: false,
             });
             return;
         }
@@ -383,7 +440,7 @@ class ConvertScriptDialog extends React.Component<ConvertScriptDialogProps, Conv
         }
         if (isErrorResponse(answer)) {
             // the plan stays, so a failed execution still shows what was planned
-            this.setState({ phase: 'error', error: answer.error });
+            this.setState({ phase: 'error', error: answer.error, refreshing: false });
             return;
         }
         if (!dryRun && isConvertScriptResult(answer)) {
@@ -393,10 +450,10 @@ class ConvertScriptDialog extends React.Component<ConvertScriptDialogProps, Conv
             return;
         }
         if (dryRun && isConvertScriptPlan(answer)) {
-            this.setState({ phase: 'preview', plan: answer });
+            this.setState({ phase: 'preview', plan: answer, refreshing: false });
             return;
         }
-        this.setState({ phase: 'error', error: I18n.t('convertScript_invalidResponse') });
+        this.setState({ phase: 'error', error: I18n.t('convertScript_invalidResponse'), refreshing: false });
     }
 
     private renderSectionTitle(text: string): React.JSX.Element {
@@ -597,6 +654,95 @@ class ConvertScriptDialog extends React.Component<ConvertScriptDialogProps, Conv
         );
     }
 
+    /**
+     * the pages of the global script that differ from the admin entry of the same name, with the choice per page
+     *
+     * @param plan plan of the adapter
+     * @param editable true in the preview - the decisions can be changed
+     */
+    private renderConflicts(plan: ConvertScriptPlan, editable: boolean): React.JSX.Element | null {
+        const conflicts = plan.conflicts ?? [];
+        if (conflicts.length === 0) {
+            return null;
+        }
+        const disabled = !editable || this.state.refreshing;
+        return (
+            <>
+                {this.renderSectionTitle(I18n.t('convertScript_conflicts'))}
+                <Typography
+                    variant="body2"
+                    color="text.secondary"
+                >
+                    {I18n.t('convertScript_conflictsHint')}
+                </Typography>
+                <List
+                    dense
+                    disablePadding
+                >
+                    {conflicts.map(conflict => {
+                        const others = otherPanelsText(conflict, plan.panelTopic);
+                        return (
+                            <ListItem
+                                key={`conflict-${conflict.uniqueName}`}
+                                disableGutters
+                                sx={{ py: 0.5, display: 'block' }}
+                            >
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
+                                    <Typography
+                                        component="span"
+                                        sx={{ fontWeight: 'bold' }}
+                                    >
+                                        {conflict.uniqueName}
+                                    </Typography>
+                                    <Chip
+                                        size="small"
+                                        variant="outlined"
+                                        label={conflict.type}
+                                    />
+                                    {conflict.differences.length > 0 ? (
+                                        <Typography
+                                            component="span"
+                                            variant="body2"
+                                            color="text.secondary"
+                                        >
+                                            {I18n.t(
+                                                'convertScript_conflictDifferences',
+                                                conflict.differences.join(', '),
+                                            )}
+                                        </Typography>
+                                    ) : null}
+                                </Box>
+                                <RadioGroup
+                                    row
+                                    value={conflict.decision}
+                                    onChange={(_event, value) => this.changeDecision(conflict.uniqueName, value)}
+                                >
+                                    {CONVERT_GLOBAL_DECISIONS.map(decision => (
+                                        <FormControlLabel
+                                            key={decision}
+                                            value={decision}
+                                            control={<Radio size="small" />}
+                                            label={I18n.t(`convertScript_decision_${decision}`)}
+                                            disabled={disabled}
+                                        />
+                                    ))}
+                                </RadioGroup>
+                                {conflict.decision === 'takeScript' && others !== '' ? (
+                                    <Alert
+                                        severity="warning"
+                                        sx={{ py: 0 }}
+                                    >
+                                        {I18n.t('convertScript_conflictOtherPanels', others)}
+                                    </Alert>
+                                ) : null}
+                            </ListItem>
+                        );
+                    })}
+                </List>
+            </>
+        );
+    }
+
     private renderPage(page: ConvertPagePlan): React.JSX.Element {
         const navigation = navigationText(page.navigation);
         const card = page.card && page.card !== page.type ? `${page.type} → ${page.card}` : page.type;
@@ -628,6 +774,7 @@ class ConvertScriptDialog extends React.Component<ConvertScriptDialogProps, Conv
                         </Box>
                     }
                     secondary={[
+                        page.global ? I18n.t('convertScript_globalPage') : '',
                         page.storedAs ? I18n.t('convertScript_storedAs', page.storedAs) : '',
                         I18n.t('convertScript_items', String(page.itemCount)),
                         navigation,
@@ -805,6 +952,7 @@ class ConvertScriptDialog extends React.Component<ConvertScriptDialogProps, Conv
                 ) : null}
 
                 {this.renderSummary(plan)}
+                {this.renderConflicts(plan, showHints)}
                 {this.renderProblems(plan)}
                 {this.renderDetails(plan)}
             </>
@@ -1028,11 +1176,11 @@ class ConvertScriptDialog extends React.Component<ConvertScriptDialogProps, Conv
     }
 
     render(): React.JSX.Element {
-        const { open, panelName, panelTopic, phase, plan, executeTimedOut } = this.state;
+        const { open, panelName, panelTopic, phase, plan, executeTimedOut, refreshing } = this.state;
         // the dry run may be cancelled (the sequence counter drops its late answer), the execution may not
         const busy = phase === 'executing';
         const nothingToDo = phase === 'preview' && plan !== null && plan.nothingToDo;
-        const canConvert = phase === 'preview' && plan !== null && !plan.nothingToDo;
+        const canConvert = phase === 'preview' && plan !== null && !plan.nothingToDo && !refreshing;
         const offerReload = phase === 'done' || (phase === 'error' && executeTimedOut);
         // with nothing to take over the dialog only informs - its one button closes it
         const closeLabel = offerReload || nothingToDo ? 'convertScript_close' : 'Cancel';

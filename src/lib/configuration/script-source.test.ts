@@ -298,6 +298,33 @@ describe('lib/configuration - script-source: removePagesFromScript', () => {
         expect(result.source).to.include('        pages: [\n            pageA,\n            pageB,\n        ],');
     });
 
+    it('finds links to the global script by the name the runtime gives them', () => {
+        const source = miniScript(
+            [
+                '        pages: [',
+                '            pageA,',
+                "            { globalLink: 'g1' },",
+                "            { globalLink: 'g2', uniqueName: 'y', heading: 'Y' },",
+                "            { globalLink: 'g3' },",
+                '            linkG4,',
+                '        ],',
+                "        subPages: [{ globalLink: 'g5' }],",
+            ].join('\n'),
+            `${PAGE_A}    const linkG4: PageType = { globalLink: 'g4' };\n`,
+        );
+        // g2 is renamed: only its new name finds it
+        const result = removePagesFromScript(source, ['g1', 'y', 'g2', 'g4', 'g5'], TODAY);
+        expect(result.removed).to.deep.equal(['g1', 'y', 'g4', 'g5']);
+        expect(result.notFound).to.deep.equal(['g2']);
+        expect(result.definitionKept).to.deep.equal([]);
+        expectValidSyntax(result.source);
+        expect(entryTexts(result.source).pages).to.deep.equal(['pageA', "{ globalLink: 'g3' }"]);
+        expect(entryTexts(result.source).subPages).to.deep.equal([]);
+        // the definition of the removed link is commented out like a page definition
+        expect(result.source).to.include('/* NSPanel: converted to the admin page configuration on 2026-10-30');
+        expect(scanScriptConfig(result.source).pages.map(e => e.uniqueName)).to.deep.equal(['a', undefined]);
+    });
+
     it('removes the last element without trailing comma (single line array)', () => {
         const source = miniScript(
             '        pages: [pageA, pageB, pageC],\n        subPages: [],',

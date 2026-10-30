@@ -3118,6 +3118,15 @@ class NspanelLovelaceUi extends utils.Adapter {
                     // role volume: range of the volume slider (the config manager reads both for volume only)
                     item.minValue = typeof preItem.minValue === 'number' ? preItem.minValue : undefined;
                     item.maxValue = typeof preItem.maxValue === 'number' ? preItem.maxValue : undefined;
+                    // role blind: second text row of the shutter popup
+                    item.secondRow = preItem.secondRow ? preItem.secondRow : undefined;
+                    // light ranges and color mode (dimmer, ct, rgb, rgbSingle, hue) - the config manager reads
+                    // the numbers only when truthy and the color mode only as set / not set
+                    item.minValueBrightness = preItem.minValueBrightness ? preItem.minValueBrightness : undefined;
+                    item.maxValueBrightness = preItem.maxValueBrightness ? preItem.maxValueBrightness : undefined;
+                    item.minValueColorTemp = preItem.minValueColorTemp ? preItem.minValueColorTemp : undefined;
+                    item.maxValueColorTemp = preItem.maxValueColorTemp ? preItem.maxValueColorTemp : undefined;
+                    item.colormode = preItem.colormode === true ? 'xy' : undefined;
                 }
             }
 

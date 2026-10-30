@@ -641,6 +641,26 @@ function uniqueNameOf(s: ScannedSource, obj: Range): string | undefined {
     return str && str.end === prop.valueEnd ? str.value : undefined;
 }
 
+/**
+ * The name under which the runtime knows a page: its `uniqueName`, for a link to the global script without one
+ * (`{ globalLink: 'x' }`) the name of the linked global page. undefined when neither is a plain string literal.
+ *
+ * @param s scanned source
+ * @param obj the object literal
+ */
+function pageNameOf(s: ScannedSource, obj: Range): string | undefined {
+    const uniqueName = uniqueNameOf(s, obj);
+    if (uniqueName !== undefined) {
+        return uniqueName;
+    }
+    const prop = parseObjectProperties(s, obj.open, obj.close).find(p => p.key === 'globalLink');
+    if (!prop) {
+        return undefined;
+    }
+    const str = readStringLiteral(s, prop.valueStart);
+    return str && str.end === prop.valueEnd ? str.value : undefined;
+}
+
 type Definition = {
     /** position of `const`/`let`/`var` */
     stmtStart: number;
@@ -894,11 +914,22 @@ function commentOut(src: string, def: Definition, marker: string): string {
 
 type ResolvedElement = { uniqueName?: string; identifier?: string };
 
-function resolveElement(s: ScannedSource, el: ArrayElement): ResolvedElement {
+/**
+ * The page an array element stands for.
+ *
+ * @param s scanned source
+ * @param el the element
+ * @param nameOf how the name of a page object is read ({@link uniqueNameOf} or {@link pageNameOf})
+ */
+function resolveElement(
+    s: ScannedSource,
+    el: ArrayElement,
+    nameOf: (s: ScannedSource, obj: Range) => string | undefined = uniqueNameOf,
+): ResolvedElement {
     const text = s.blank.slice(el.start, el.end).trim();
     if (/^[A-Za-z_$][A-Za-z0-9_$]*$/.test(text)) {
         for (const def of findDefinitions(s, text)) {
-            const uniqueName = uniqueNameOf(s, def.body);
+            const uniqueName = nameOf(s, def.body);
             if (uniqueName !== undefined) {
                 return { uniqueName, identifier: text };
             }
@@ -906,7 +937,7 @@ function resolveElement(s: ScannedSource, el: ArrayElement): ResolvedElement {
         return { identifier: text };
     }
     if (s.src[el.start] === '{' && findMatching(s.blank, el.start) === el.end - 1) {
-        return { uniqueName: uniqueNameOf(s, { open: el.start, close: el.end - 1 }) };
+        return { uniqueName: nameOf(s, { open: el.start, close: el.end - 1 }) };
     }
     return {};
 }
@@ -940,7 +971,9 @@ export function scanScriptConfig(source: string): ScriptConfigSummary {
 
 /**
  * Removes the pages with the given uniqueNames from `pages`/`subPages` of the config object and comments
- * their definitions out (only when the identifier is not referenced anywhere else in the code).
+ * their definitions out (only when the identifier is not referenced anywhere else in the code). A link to the
+ * global script without `uniqueName` (`{ globalLink: 'x' }`) is found by the name of the linked page (`x`), one
+ * with `uniqueName` by that name - the names the runtime gives the merged pages.
  *
  * @param source the script source
  * @param uniqueNames the pages to remove
@@ -974,7 +1007,7 @@ export function removePagesFromScript(source: string, uniqueNames: string[], tod
             continue;
         }
         for (const el of parseArrayElements(s, arr.open, arr.close)) {
-            const resolved = resolveElement(s, el);
+            const resolved = resolveElement(s, el, pageNameOf);
             if (resolved.uniqueName === undefined || !wanted.includes(resolved.uniqueName)) {
                 continue;
             }
@@ -995,7 +1028,7 @@ export function removePagesFromScript(source: string, uniqueNames: string[], tod
     const marker = `NSPanel: converted to the admin page configuration on ${today}`;
     for (const [id, name] of identifiers) {
         s = scanSource(out);
-        const def = findDefinitions(s, id).find(d => uniqueNameOf(s, d.body) === name);
+        const def = findDefinitions(s, id).find(d => pageNameOf(s, d.body) === name);
         if (!def) {
             definitionKept.push(name);
             notes.push(`definition of "${id}" (page "${name}") not found - left unchanged`);

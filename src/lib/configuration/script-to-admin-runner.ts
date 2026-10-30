@@ -20,6 +20,8 @@
  */
 import {
     ADMIN_BUTTON_MODES,
+    CONVERT_GLOBAL_DECISIONS,
+    type ConvertGlobalDecision,
     findChartEntryForScript,
     findPowerEntryForScript,
     screensaverModes,
@@ -375,7 +377,7 @@ export class ScriptToAdminRunner {
         }
         let planned: Planned;
         try {
-            const outcome = await this.plan(request.panelTopic);
+            const outcome = await this.plan(request.panelTopic, request.globalDecisions);
             if (typeof outcome === 'string') {
                 respond({ error: outcome });
                 return;
@@ -542,16 +544,32 @@ export class ScriptToAdminRunner {
             return 'panelTopic is missing in the request';
         }
         // only an explicit false executes - a malformed request must not change anything
-        return { panelTopic: message.panelTopic, dryRun: message.dryRun !== false };
+        const request: ConvertScriptRequest = { panelTopic: message.panelTopic, dryRun: message.dryRun !== false };
+        // decisions for conflicting global pages; unknown values are dropped (the planner uses the default)
+        if (isDict(message.globalDecisions)) {
+            const decisions: Record<string, ConvertGlobalDecision> = {};
+            for (const [name, value] of Object.entries(message.globalDecisions)) {
+                const decision = CONVERT_GLOBAL_DECISIONS.find(d => d === value);
+                if (decision) {
+                    decisions[name] = decision;
+                }
+            }
+            request.globalDecisions = decisions;
+        }
+        return request;
     }
 
     /**
      * Reads the objects and runs the planner.
      *
      * @param panelTopic Topic of the panel.
+     * @param globalDecisions Decisions for conflicting pages of the global script.
      * @returns The plan or the error text.
      */
-    private async plan(panelTopic: string): Promise<Planned | string> {
+    private async plan(
+        panelTopic: string,
+        globalDecisions?: Record<string, ConvertGlobalDecision>,
+    ): Promise<Planned | string> {
         const panel = this.adapter.config.panels.find(p => !!p && p.topic === panelTopic);
         if (!panel) {
             return `Panel ${panelTopic} is not configured in the admin`;
@@ -602,6 +620,9 @@ export class ScriptToAdminRunner {
             instanceWeatherEntity: tables.weatherEntity,
             screensaverMode: mode && screensaverModes.includes(mode) ? mode : undefined,
             scriptFound: !!script,
+            // the global script is merged in for this panel; it is read, never written
+            globalConfigRaw: meta?.native?.globalConfigRaw,
+            globalDecisions,
         });
         return { raw, scriptId, script, result };
     }
@@ -673,6 +694,12 @@ export class ScriptToAdminRunner {
             counts[page.action]++;
             info(this.describePage(page, planned));
         }
+        for (const conflict of plan.conflicts ?? []) {
+            warn(
+                `Page '${conflict.uniqueName}' of the global script differs from the admin entry ` +
+                    `(${conflict.differences.join(', ')}) - decision: ${conflict.decision}`,
+            );
+        }
         for (const skipped of plan.skipped) {
             warn(
                 `Page '${skipped.uniqueName}' (${skipped.type}) skipped: ${reasonText(skipped.reason, skipped.detail)}`,
@@ -716,8 +743,14 @@ export class ScriptToAdminRunner {
         const head = `Page '${page.uniqueName}' (${page.type}`;
         switch (page.action) {
             case 'create':
-                return `${head}, ${page.itemCount} items): converted to the admin page configuration`;
+                if (page.existing === 'takeScript') {
+                    return `${head}, ${page.itemCount} items, global script): replaces the content of the existing admin entry, the panel is assigned`;
+                }
+                return `${head}, ${page.itemCount} items${page.global ? ', global script' : ''}): converted to the admin page configuration`;
             case 'assignNavigation': {
+                if (page.existing !== undefined) {
+                    return `${head}, global script): the panel is assigned to the existing admin entry (${page.existing === 'identical' ? 'same content' : 'admin content kept'})`;
+                }
                 const tables = planned.result.updatedPages;
                 const entry =
                     page.card === 'cardPower'

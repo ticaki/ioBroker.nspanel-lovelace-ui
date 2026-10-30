@@ -2692,6 +2692,12 @@ class NspanelLovelaceUi extends utils.Adapter {
           item.useValueConditions = preItem.useValueConditions ? preItem.useValueConditions : void 0;
           item.minValue = typeof preItem.minValue === "number" ? preItem.minValue : void 0;
           item.maxValue = typeof preItem.maxValue === "number" ? preItem.maxValue : void 0;
+          item.secondRow = preItem.secondRow ? preItem.secondRow : void 0;
+          item.minValueBrightness = preItem.minValueBrightness ? preItem.minValueBrightness : void 0;
+          item.maxValueBrightness = preItem.maxValueBrightness ? preItem.maxValueBrightness : void 0;
+          item.minValueColorTemp = preItem.minValueColorTemp ? preItem.minValueColorTemp : void 0;
+          item.maxValueColorTemp = preItem.maxValueColorTemp ? preItem.maxValueColorTemp : void 0;
+          item.colormode = preItem.colormode === true ? "xy" : void 0;
         }
       }
       const page = {

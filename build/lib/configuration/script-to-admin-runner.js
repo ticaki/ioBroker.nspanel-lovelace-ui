@@ -167,7 +167,7 @@ class ScriptToAdminRunner {
     }
     let planned;
     try {
-      const outcome = await this.plan(request.panelTopic);
+      const outcome = await this.plan(request.panelTopic, request.globalDecisions);
       if (typeof outcome === "string") {
         respond({ error: outcome });
         return;
@@ -320,16 +320,28 @@ class ScriptToAdminRunner {
     if (!isDict(message) || typeof message.panelTopic !== "string" || message.panelTopic === "") {
       return "panelTopic is missing in the request";
     }
-    return { panelTopic: message.panelTopic, dryRun: message.dryRun !== false };
+    const request = { panelTopic: message.panelTopic, dryRun: message.dryRun !== false };
+    if (isDict(message.globalDecisions)) {
+      const decisions = {};
+      for (const [name, value] of Object.entries(message.globalDecisions)) {
+        const decision = import_adminShareConfig.CONVERT_GLOBAL_DECISIONS.find((d) => d === value);
+        if (decision) {
+          decisions[name] = decision;
+        }
+      }
+      request.globalDecisions = decisions;
+    }
+    return request;
   }
   /**
    * Reads the objects and runs the planner.
    *
    * @param panelTopic Topic of the panel.
+   * @param globalDecisions Decisions for conflicting pages of the global script.
    * @returns The plan or the error text.
    */
-  async plan(panelTopic) {
-    var _a, _b, _c, _d;
+  async plan(panelTopic, globalDecisions) {
+    var _a, _b, _c, _d, _e;
     const panel = this.adapter.config.panels.find((p) => !!p && p.topic === panelTopic);
     if (!panel) {
       return `Panel ${panelTopic} is not configured in the admin`;
@@ -370,7 +382,10 @@ class ScriptToAdminRunner {
       screensaverNotify: tables.screensaverNotify,
       instanceWeatherEntity: tables.weatherEntity,
       screensaverMode: mode && import_adminShareConfig.screensaverModes.includes(mode) ? mode : void 0,
-      scriptFound: !!script
+      scriptFound: !!script,
+      // the global script is merged in for this panel; it is read, never written
+      globalConfigRaw: (_e = meta == null ? void 0 : meta.native) == null ? void 0 : _e.globalConfigRaw,
+      globalDecisions
     });
     return { raw, scriptId, script, result };
   }
@@ -425,6 +440,7 @@ class ScriptToAdminRunner {
    * @param dryRun Whether this is a dry run.
    */
   logPlan(planned, dryRun) {
+    var _a;
     const plan = planned.result.plan;
     const info = (text) => dryRun ? this.log.debug(text) : this.log.info(text);
     const warn = (text) => dryRun ? this.log.debug(text) : this.log.warn(text);
@@ -434,6 +450,11 @@ class ScriptToAdminRunner {
     for (const page of plan.pages) {
       counts[page.action]++;
       info(this.describePage(page, planned));
+    }
+    for (const conflict of (_a = plan.conflicts) != null ? _a : []) {
+      warn(
+        `Page '${conflict.uniqueName}' of the global script differs from the admin entry (${conflict.differences.join(", ")}) - decision: ${conflict.decision}`
+      );
     }
     for (const skipped of plan.skipped) {
       warn(
@@ -475,8 +496,14 @@ class ScriptToAdminRunner {
     const head = `Page '${page.uniqueName}' (${page.type}`;
     switch (page.action) {
       case "create":
-        return `${head}, ${page.itemCount} items): converted to the admin page configuration`;
+        if (page.existing === "takeScript") {
+          return `${head}, ${page.itemCount} items, global script): replaces the content of the existing admin entry, the panel is assigned`;
+        }
+        return `${head}, ${page.itemCount} items${page.global ? ", global script" : ""}): converted to the admin page configuration`;
       case "assignNavigation": {
+        if (page.existing !== void 0) {
+          return `${head}, global script): the panel is assigned to the existing admin entry (${page.existing === "identical" ? "same content" : "admin content kept"})`;
+        }
         const tables = planned.result.updatedPages;
         const entry = page.card === "cardPower" ? (0, import_adminShareConfig.findPowerEntryForScript)(tables, page.uniqueName) : (0, import_adminShareConfig.findChartEntryForScript)(tables, page.uniqueName);
         return `${head}): navigation assigned to the existing admin entry '${(_a = entry == null ? void 0 : entry.uniqueName) != null ? _a : page.uniqueName}'`;

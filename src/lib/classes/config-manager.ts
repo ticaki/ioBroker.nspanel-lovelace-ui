@@ -27,6 +27,7 @@ import { PageMedia } from '../pages/pageMedia';
 import { isPageItemDataItemsOptions } from '../types/type-pageItem';
 import { getVersionAsNumber } from '../const/tools';
 import { recordGeneratedPage } from '../configuration/navigation-overrides';
+import { mergeGlobalConfig } from '../configuration/global-config-merge';
 
 export class ConfigManager extends BaseClass {
     //private test: ConfigManager.DeviceState;
@@ -199,263 +200,22 @@ export class ConfigManager extends BaseClass {
         const globalPageIds = new Set<string>();
 
         {
-            const navigationAdjustRun = (
-                oldUniqueName: string | undefined,
-                newUniqueName: string | undefined,
-                pages: ScriptConfig.PageTypeGlobal[],
-                renamedPages: Record<string, string>,
-                maxRun: number = 3,
-                indexRun: number = 0,
-                runPrefix = '',
-            ): ScriptConfig.PageTypeGlobal[] => {
-                if (!oldUniqueName || !newUniqueName || oldUniqueName === newUniqueName) {
-                    return pages;
-                }
-                if (indexRun++ > maxRun) {
-                    this.log.warn(
-                        `navigationAdjustRun for ${oldUniqueName} to ${newUniqueName} aborted - maxRun ${maxRun} reached!`,
-                    );
-                    return pages;
-                }
-                const pageIndex = pages.findIndex(item => item.uniqueName === oldUniqueName);
-
-                if (pageIndex === -1) {
-                    return pages;
-                }
-                let page = pages[pageIndex];
-                if (!page) {
-                    return pages;
-                }
-                renamedPages[oldUniqueName] = newUniqueName;
-                page = { ...structuredClone(page), uniqueName: newUniqueName };
-                pages.push(page);
-
-                if ('items' in page && page.items) {
-                    for (let i = 0; i < page.items.length; i++) {
-                        const item = page.items[i];
-                        if (item && item.navigate && item.targetPage) {
-                            const origin = item.targetPage;
-
-                            for (const key in renamedPages) {
-                                const value = renamedPages[key];
-                                if (origin === value) {
-                                    item.targetPage = value;
-                                    continue;
-                                }
-                            }
-                            if (renamedPages[item.targetPage]) {
-                                item.targetPage = renamedPages[item.targetPage];
-                                continue;
-                            }
-                            const newName = `${runPrefix}_${item.targetPage}_copy_nav_${Math.floor(Math.random() * 100_000)}`;
-                            if (pages.findIndex(it => it.uniqueName === newName) === -1) {
-                                pages = navigationAdjustRun(
-                                    item.targetPage,
-                                    newName,
-                                    pages,
-                                    renamedPages,
-                                    maxRun,
-                                    indexRun,
-                                    runPrefix,
-                                );
-                            }
-                            item.targetPage = newName;
-                        }
-                    }
-                }
-                for (const t of ['next', 'prev', 'home', 'parent']) {
-                    const tag = t as 'next' | 'prev' | 'home' | 'parent';
-                    if (page[tag] === oldUniqueName) {
-                        for (const key in renamedPages) {
-                            const value = renamedPages[key];
-                            if (page[tag] === value) {
-                                continue;
-                            }
-                        }
-                        if (renamedPages[page[tag]]) {
-                            page[tag] = renamedPages[page[tag]];
-                            continue;
-                        }
-                        const newName = `${runPrefix}_${page[tag]}_copy_nav_${Math.floor(Math.random() * 100_000)}`;
-                        if (pages.findIndex(it => it.uniqueName === newName) === -1) {
-                            pages = navigationAdjustRun(
-                                page[tag],
-                                newName,
-                                pages,
-                                renamedPages,
-                                maxRun,
-                                indexRun,
-                                runPrefix,
-                            );
-                        }
-                        page[tag] = newName;
-                    }
-                }
-                return pages;
-            };
-            // merge global config
+            // merge global config (pure: the configuration of the script itself stays as it was sent)
             const obj = await this.adapter.getForeignObjectAsync(this.adapter.namespace);
             if (obj && obj.native && obj.native.globalConfigRaw) {
-                const globalConfig = obj.native.globalConfigRaw as ScriptConfig.globalPagesConfig;
-                if (globalConfig && configManagerConst.isGlobalConfig(globalConfig)) {
-                    globalConfig.maxNavigationAdjustRuns =
-                        globalConfig.maxNavigationAdjustRuns && globalConfig.maxNavigationAdjustRuns > 0
-                            ? globalConfig.maxNavigationAdjustRuns
-                            : 3;
-                    const removeGlobalPageIndexs: Set<number> = new Set();
-                    // merge global config for pages
-                    for (let i = 0; i < config.pages.length; i++) {
-                        const page = config.pages[i] as ScriptConfig.PageTypeGlobal;
-                        if (page && 'globalLink' in page && page.globalLink) {
-                            const gIndex = globalConfig.subPages.findIndex(item => item.uniqueName === page.globalLink);
-                            const gPage = gIndex !== -1 ? globalConfig.subPages[gIndex] : undefined;
-                            if (gPage) {
-                                for (const t of ['next', 'prev']) {
-                                    const tag = t as 'next' | 'prev';
-                                    if (gPage[tag] != null) {
-                                        const gIndex = globalConfig.subPages.findIndex(
-                                            item => item.uniqueName === gPage[tag],
-                                        );
-                                        const index = config.pages.findIndex(
-                                            item =>
-                                                ('globalLink' in item && item.globalLink === gPage[tag]) ||
-                                                item.uniqueName === gPage[tag],
-                                        );
-                                        if (gIndex !== -1 && index === -1) {
-                                            let msg = `Global page ${gPage.uniqueName} ${tag} link to subPage ${gPage[tag]}. `;
-                                            if (tag === 'next') {
-                                                msg += `Remove ${gPage[tag]} from subPages and add to pages at index ${i + 1}!`;
-                                            } else {
-                                                msg += `This is not recommended! Prev navigation will "randomly" change the order of pages! Consider to remove it!`;
-                                            }
-                                            messages.push(msg);
-                                            (config.pages as ScriptConfig.PageTypeGlobal[]).splice(i + 1, 0, {
-                                                globalLink: gPage[tag],
-                                            });
-                                        }
-                                    }
-                                }
-                            }
-                        }
+                const merged = mergeGlobalConfig(config, obj.native.globalConfigRaw);
+                if (merged) {
+                    for (const text of merged.warnings) {
+                        this.log.warn(text);
                     }
-                    for (let i = config.pages.length - 1; i >= 0; i--) {
-                        const page = config.pages[i] as ScriptConfig.PageTypeGlobal;
-                        if (page && 'globalLink' in page && page.globalLink) {
-                            const gIndex = globalConfig.subPages.findIndex(item => item.uniqueName === page.globalLink);
-                            let gPage = gIndex !== -1 ? globalConfig.subPages[gIndex] : undefined;
-                            if (gPage) {
-                                if (page.uniqueName != null && page.uniqueName !== gPage.uniqueName) {
-                                    globalConfig.subPages = navigationAdjustRun(
-                                        gPage.uniqueName,
-                                        page.uniqueName,
-                                        globalConfig.subPages,
-                                        {},
-                                        globalConfig.maxNavigationAdjustRuns,
-                                        0,
-                                        page.uniqueName,
-                                    ) as ScriptConfig.PageType[];
-                                    const index = globalConfig.subPages.findIndex(
-                                        p => p.uniqueName === page.uniqueName,
-                                    );
-                                    if (index !== -1) {
-                                        gPage = globalConfig.subPages[index];
-                                        gPage.uniqueName = page.uniqueName;
-                                    }
-                                } else {
-                                    removeGlobalPageIndexs.add(gIndex);
-                                }
-                                config.pages[i] = {
-                                    ...gPage,
-                                    prev: undefined,
-                                    next: undefined,
-                                    home: undefined,
-                                    parent: undefined,
-                                };
-                                if (page.heading) {
-                                    config.pages[i].heading = page.heading;
-                                }
-                                if (config.pages[i].uniqueName) {
-                                    globalPageIds.add(config.pages[i].uniqueName);
-                                }
-                            } else {
-                                config.pages.splice(i, 1);
-                                const msg = `Global page with uniqueName ${page.globalLink} not found!`;
-                                messages.push(msg);
-                                this.log.warn(msg);
-                            }
-                        }
+                    messages.push(...merged.messages);
+                    for (const id of merged.globalPageIds) {
+                        globalPageIds.add(id);
                     }
-
-                    // merge global config for subPages
-                    for (let i = config.subPages.length - 1; i >= 0; i--) {
-                        const page = config.subPages[i] as ScriptConfig.PageTypeGlobal;
-                        if (page && 'globalLink' in page && page.globalLink) {
-                            const gIndex = globalConfig.subPages.findIndex(item => item.uniqueName === page.globalLink);
-                            let gPage = gIndex !== -1 ? globalConfig.subPages[gIndex] : undefined;
-                            if (gPage) {
-                                if (page.uniqueName != null && page.uniqueName !== gPage.uniqueName) {
-                                    globalConfig.subPages = navigationAdjustRun(
-                                        gPage.uniqueName,
-                                        page.uniqueName,
-                                        globalConfig.subPages,
-                                        {},
-                                        globalConfig.maxNavigationAdjustRuns,
-                                        0,
-                                        page.uniqueName,
-                                    ) as ScriptConfig.PageType[];
-                                    const index = globalConfig.subPages.findIndex(
-                                        p => p.uniqueName === page.uniqueName,
-                                    );
-                                    if (index !== -1) {
-                                        gPage = globalConfig.subPages[index];
-                                        gPage.uniqueName = page.uniqueName;
-                                    }
-                                } else {
-                                    removeGlobalPageIndexs.add(gIndex);
-                                }
-                                const existNav =
-                                    page.prev != null || page.parent != null || page.next != null || page.home != null;
-
-                                config.subPages[i] = {
-                                    ...gPage,
-                                    prev: existNav ? page.prev : gPage.prev,
-                                    parent: existNav ? page.parent : gPage.parent,
-                                    next: existNav ? page.next : gPage.next,
-                                    home: existNav ? page.home : gPage.home,
-                                };
-
-                                if (page.heading) {
-                                    config.subPages[i].heading = page.heading;
-                                }
-                                if (config.subPages[i].uniqueName) {
-                                    globalPageIds.add(config.subPages[i].uniqueName);
-                                }
-                            } else {
-                                config.subPages.splice(i, 1);
-                                const msg = `Global page with uniqueName ${page.globalLink} not found!`;
-                                messages.push(msg);
-                                this.log.warn(msg);
-                            }
-                        }
-                    }
-
-                    for (const index of Array.from(removeGlobalPageIndexs).sort((a, b) => b - a)) {
-                        globalConfig.subPages.splice(index, 1);
-                    }
-                    for (const page of globalConfig.subPages || []) {
-                        // a page of the panel script with the same name wins (see filter below) - not global
-                        if (
-                            page &&
-                            page.uniqueName &&
-                            config.pages.findIndex(p => p && p.uniqueName === page.uniqueName) === -1
-                        ) {
-                            globalPageIds.add(page.uniqueName);
-                        }
-                    }
-                    config.subPages = config.subPages.concat(globalConfig.subPages || []);
-
-                    config.navigation = (config.navigation || []).concat(globalConfig.navigation || []);
-                    config.nativePageItems = (config.nativePageItems || []).concat(globalConfig.nativePageItems || []);
+                    config.pages = merged.pages;
+                    config.subPages = merged.subPages;
+                    config.navigation = merged.navigation;
+                    config.nativePageItems = merged.nativePageItems;
                 }
             }
         }

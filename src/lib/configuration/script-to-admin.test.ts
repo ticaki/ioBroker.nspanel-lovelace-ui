@@ -3397,3 +3397,364 @@ describe('lib/configuration - planScriptToAdmin: navigation of the panel stays t
         expect(after).to.deep.equal(before);
     });
 });
+
+/* ---------------------------------------------------------------------------------------------
+ * global script
+ * ------------------------------------------------------------------------------------------- */
+
+describe('lib/configuration - planScriptToAdmin: pages of the global script', function () {
+    this.timeout(60_000);
+
+    /**
+     * A global script configuration.
+     *
+     * @param subPages Its pages.
+     * @param extra Further fields.
+     */
+    function globalRaw(
+        subPages: ScriptConfig.PageType[],
+        extra: Partial<ScriptConfig.globalPagesConfig> = {},
+    ): ScriptConfig.globalPagesConfig {
+        return { version: '0.21.6', type: 'globalConfig', subPages, ...extra };
+    }
+
+    const otherPanel = { name: 'Other', topic: 'nspanel/other' };
+
+    it('converts linked, renamed and unlinked global pages with the links of this panel', () => {
+        const global = globalRaw([gridPage('g1'), gridPage('g2', { next: 'g1' }), gridPage('g9')]);
+        const globalBefore = structuredClone(global);
+        const result = plan(
+            baseConfig({
+                pages: [gridPage('main'), page({ globalLink: 'g1' }), page({ globalLink: 'g2', uniqueName: 'y' })],
+            }),
+            { globalConfigRaw: global },
+        );
+        expect(result.plan.skipped).to.deep.equal([]);
+        expect(result.plan.pages.map(p => [p.uniqueName, p.action, p.global === true, p.navigation])).to.deep.equal([
+            ['main', 'create', false, {}],
+            ['g1', 'create', true, { prev: 'main' }],
+            // renamed through the link: an admin entry of its own
+            ['y', 'create', true, { prev: 'g1' }],
+            // unlinked global sub pages every panel gets (g2 is only renamed for this panel, so it stays global)
+            ['g2', 'create', true, { next: 'g1' }],
+            ['g9', 'create', true, { home: 'main' }],
+        ]);
+        expect((result.newPages.find(e => e.uniqueName === 'y') as ShareConfig.MenuEntry).headline).to.equal(
+            'Seite g2',
+        );
+        // only the links of the panel script go - the unlinked pages have nothing to remove there
+        expect(result.removedFromScript).to.deep.equal(['main', 'g1', 'y']);
+        expect(result.cleanedRaw.pages).to.deep.equal([]);
+        expect(result.plan.conflicts).to.equal(undefined);
+        expect(global, 'global configuration unchanged').to.deep.equal(globalBefore);
+    });
+
+    it('keeps the old rule without global configuration: a link is skipped', () => {
+        const result = plan(baseConfig({ pages: [gridPage('main'), page({ globalLink: 'g1' })] }));
+        expect(result.plan.skipped.map(s => [s.uniqueName, s.type, s.reason])).to.deep.equal([
+            ['g1', 'globalLink', 'unsupportedPageType'],
+        ]);
+    });
+
+    it('uses the ring order the runtime sees: a global page inserted behind its prev', () => {
+        const result = plan(
+            baseConfig({
+                pages: [page({ globalLink: 'g1' }), gridPage('main'), gridPage('a')],
+            }),
+            { globalConfigRaw: globalRaw([gridPage('g1', { next: 'g2' }), gridPage('g2')]) },
+        );
+        // runtime ring: main, g1, g2, a (main moves to the front)
+        expect(result.plan.pages.map(p => [p.uniqueName, p.navigation])).to.deep.equal([
+            ['g1', { prev: 'main' }],
+            ['g2', { prev: 'g1' }],
+            ['main', {}],
+            ['a', { prev: 'g2' }],
+        ]);
+        // g2 is not in the panel script - only the link of g1 goes
+        expect(result.removedFromScript).to.deep.equal(['g1', 'main', 'a']);
+    });
+
+    it('only assigns this panel to an identical admin entry another panel took over - no message', () => {
+        const global = globalRaw([gridPage('g1')]);
+        const config = baseConfig({ pages: [gridPage('main'), page({ globalLink: 'g1' })] });
+        const first = plan(baseConfig({ ...config, panelTopic: otherPanel.topic }), {
+            panel: otherPanel,
+            globalConfigRaw: global,
+        });
+        const second = plan(config, {
+            globalConfigRaw: global,
+            pageConfig: first.updatedPages.filter(e => e.uniqueName === 'g1'),
+        });
+        expect(second.plan.skipped).to.deep.equal([]);
+        expect(second.plan.conflicts).to.equal(undefined);
+        const g1 = second.plan.pages.find(p => p.uniqueName === 'g1');
+        expect(g1).to.deep.include({ action: 'assignNavigation', global: true, existing: 'identical' });
+        const entry = second.updatedPages.find(e => e.uniqueName === 'g1');
+        expect(entry?.navigationAssignment).to.deep.equal([
+            { topic: otherPanel.topic, navigation: { prev: 'main' } },
+            { topic, navigation: { prev: 'main' } },
+        ]);
+        expect(second.newPages.map(e => e.uniqueName)).to.deep.equal(['main']);
+        expect(second.removedFromScript).to.deep.equal(['main', 'g1']);
+    });
+
+    it('reports a different admin entry as conflict and follows the decision', () => {
+        const global = globalRaw([gridPage('g1')]);
+        const config = baseConfig({ pages: [gridPage('main'), page({ globalLink: 'g1' })] });
+        const existing: ShareConfig.MenuEntry = {
+            card: 'cardGrid',
+            uniqueName: 'g1',
+            headline: 'Admin',
+            pageItems: [],
+            hidden: false,
+            alwaysOn: 'none',
+            navigationAssignment: [{ topic: otherPanel.topic, navigation: { home: 'main' } }],
+        };
+        const run = (decision?: ShareConfig.ConvertGlobalDecision): ScriptToAdminResult =>
+            plan(config, {
+                globalConfigRaw: global,
+                pageConfig: [existing],
+                ...(decision ? { globalDecisions: { g1: decision } } : {}),
+            });
+        const ownAssignment = { topic, navigation: { prev: 'main' } };
+
+        // default: keep the admin content, assign the panel
+        const keep = run();
+        expect(keep.plan.conflicts).to.deep.equal([
+            {
+                uniqueName: 'g1',
+                type: 'cardGrid',
+                card: 'cardGrid',
+                decision: 'keepAdmin',
+                assignedPanels: [otherPanel.topic],
+                differences: ['headline', 'pageItems'],
+            },
+        ]);
+        expect(keep.plan.pages.find(p => p.uniqueName === 'g1')).to.deep.include({
+            action: 'assignNavigation',
+            existing: 'keepAdmin',
+        });
+        expect(keep.updatedPages.find(e => e.uniqueName === 'g1')).to.deep.equal({
+            ...existing,
+            navigationAssignment: [...existing.navigationAssignment!, ownAssignment],
+        });
+        expect(keep.cleanedRaw.pages).to.deep.equal([]);
+        expect(run('keepAdmin').updatedPages).to.deep.equal(keep.updatedPages);
+
+        // take the script: content replaced, the other assignment stays
+        const take = run('takeScript');
+        expect(take.plan.conflicts?.[0].decision).to.equal('takeScript');
+        expect(take.plan.pages.find(p => p.uniqueName === 'g1')).to.deep.include({
+            action: 'create',
+            existing: 'takeScript',
+        });
+        const taken = take.updatedPages.find(e => e.uniqueName === 'g1') as ShareConfig.MenuEntry;
+        expect(taken.headline).to.equal('Seite g1');
+        expect(taken.pageItems).to.have.length(1);
+        expect(taken.navigationAssignment).to.deep.equal([existing.navigationAssignment![0], ownAssignment]);
+        expect(take.newPages.map(e => e.uniqueName)).to.deep.equal(['main']);
+
+        // skip: nothing changes, the link stays in the script
+        const skipped = run('skip');
+        expect(skipped.plan.conflicts?.[0].decision).to.equal('skip');
+        expect(skipped.plan.skipped).to.deep.equal([
+            {
+                uniqueName: 'g1',
+                type: 'cardGrid',
+                reason: 'nameExists',
+                detail: 'the page of the global script differs from the admin entry - skipped by choice',
+            },
+        ]);
+        expect(skipped.updatedPages.find(e => e.uniqueName === 'g1')).to.deep.equal(existing);
+        expect(skipped.removedFromScript).to.deep.equal(['main']);
+        expect(skipped.cleanedRaw.pages).to.deep.equal([page({ globalLink: 'g1' })]);
+    });
+
+    it('keeps the rule for pages of the panel script: an existing name is skipped', () => {
+        const existing: ShareConfig.MenuEntry = {
+            card: 'cardGrid',
+            uniqueName: 'a',
+            headline: 'Seite a',
+            pageItems: [],
+        };
+        const result = plan(baseConfig({ subPages: [gridPage('a')] }), {
+            globalConfigRaw: globalRaw([]),
+            pageConfig: [existing],
+        });
+        expect(result.plan.skipped).to.deep.equal([{ uniqueName: 'a', type: 'cardGrid', reason: 'nameExists' }]);
+        expect(result.plan.conflicts).to.equal(undefined);
+    });
+
+    it('leaves a global page alone that the admin already shows on this panel', () => {
+        const existing: ShareConfig.MenuEntry = {
+            card: 'cardGrid',
+            uniqueName: 'g1',
+            headline: 'Admin',
+            pageItems: [],
+            navigationAssignment: [{ topic, navigation: { home: 'main' } }],
+        };
+        const result = plan(baseConfig({ pages: [gridPage('main'), page({ globalLink: 'g1' })] }), {
+            globalConfigRaw: globalRaw([gridPage('g1'), gridPage('g9')]),
+            pageConfig: [existing, { ...existing, uniqueName: 'g9' }],
+        });
+        // the link is a dead reference now, the unlinked g9 has nothing to do
+        expect(result.plan.pages.map(p => [p.uniqueName, p.action, p.reason])).to.deep.equal([
+            ['main', 'create', undefined],
+            ['g1', 'removeReference', 'adminAlreadyNavigated'],
+        ]);
+        expect(result.plan.conflicts).to.equal(undefined);
+        expect(result.cleanedRaw.pages).to.deep.equal([]);
+    });
+
+    it('keeps the navigation and the native page items of the global script as obstacles', () => {
+        const result = plan(baseConfig({ pages: [gridPage('main')] }), {
+            globalConfigRaw: globalRaw([gridPage('g9')], {
+                navigation: [{ name: 'g9', page: 'g9', left: { single: 'main' } }] as never,
+                nativePageItems: [{ uniqueID: 'n1' }],
+            }),
+        });
+        expect(result.plan.skipped).to.deep.equal([
+            {
+                uniqueName: 'g9',
+                type: 'cardGrid',
+                reason: 'fieldNotSupported',
+                detail: 'navigation: the script overrides the links of the page',
+            },
+        ]);
+        expect(result.plan.screensaverSkipped).to.deep.equal({
+            reason: 'screensaverItemNotSupported',
+            detail: 'nativePageItems: not available in the admin',
+        });
+    });
+
+    it('skips the navigation copies of a renamed global page and the page itself', () => {
+        const result = plan(baseConfig({ pages: [gridPage('main'), page({ globalLink: 'g1', uniqueName: 'y' })] }), {
+            globalConfigRaw: globalRaw([
+                gridPage('g1', { items: [{ navigate: true, targetPage: 'g2' }] }),
+                gridPage('g2'),
+            ]),
+        });
+        expect(result.plan.skipped.map(s => [s.uniqueName, s.reason])).to.deep.equal([
+            ['y', 'fieldNotSupported'],
+            ['y_g2_copy_nav_0', 'fieldNotSupported'],
+        ]);
+        expect(result.removedFromScript).to.deep.equal(['main']);
+    });
+
+    it('is idempotent: the cleaned script against the extended admin finds nothing to do', () => {
+        const global = globalRaw([gridPage('g1'), gridPage('g9')]);
+        const result = plan(baseConfig({ pages: [gridPage('main'), page({ globalLink: 'g1' })] }), {
+            globalConfigRaw: global,
+        });
+        expectIdempotent(result, { globalConfigRaw: global });
+    });
+
+    it('builds the same runtime pages from the converted global pages', async () => {
+        const global = globalRaw([gridPage('g1'), gridPage('g9')]);
+        // the config manager reads the global configuration from the meta object
+        const meta = 'nspanel-lovelace-ui.0';
+        const before = DB.objects[meta];
+        DB.objects[meta] = { _id: meta, type: 'meta', common: {}, native: { globalConfigRaw: global } } as never;
+        try {
+            const result = await expectEquivalent(
+                baseConfig({ pages: [gridPage('main'), page({ globalLink: 'g1', heading: 'Panel heading' })] }),
+                { globalConfigRaw: global },
+            );
+            expect(result.plan.pages.map(p => p.uniqueName)).to.deep.equal(['main', 'g1', 'g9']);
+            expect((result.newPages[1] as ShareConfig.MenuEntry).headline).to.equal('Panel heading');
+        } finally {
+            if (before) {
+                DB.objects[meta] = before;
+            } else {
+                delete DB.objects[meta];
+            }
+        }
+    });
+});
+
+describe('lib/configuration - planScriptToAdmin: cardThermo without heading', function () {
+    this.timeout(60_000);
+
+    it('takes the headline thermostat the runtime shows - the panel looks the same', async () => {
+        const thermo = (extra: Record<string, unknown>): ScriptConfig.PageType =>
+            page({
+                type: 'cardThermo',
+                uniqueName: 't',
+                items: [{ id: 'alias.0.NSPanel.1.usr.Temperatur.G.Wohnzimmer.1' }],
+                ...extra,
+            });
+        for (const config of [
+            baseConfig({ subPages: [thermo({})] }),
+            baseConfig({ subPages: [thermo({ heading: '' })] }),
+        ]) {
+            const result = await expectEquivalent(config);
+            expect(result.plan.skipped).to.deep.equal([]);
+            expect(result.newPages[0]).to.deep.include({ card: 'cardThermo', headline: 'thermostat' });
+        }
+        // a state id stays an obstacle, other page types keep the empty heading as obstacle
+        const blocked = plan(
+            baseConfig({ subPages: [thermo({ heading: 'alias.0.Headline.ACTUAL' }), gridPage('g', { heading: '' })] }),
+        );
+        expect(blocked.plan.skipped.map(s => [s.uniqueName, s.detail])).to.deep.equal([
+            ['t', 'heading: looks like a state id - the admin shows the text itself'],
+            ['g', 'heading: empty - the admin shows the uniqueName instead'],
+        ]);
+    });
+});
+
+describe('lib/configuration - planScriptToAdmin: secondRow, light ranges and colormode', function () {
+    this.timeout(60_000);
+
+    const items = (): Record<string, unknown>[] => [
+        { id: 'alias.0.NSPanel.allgemein.shutter', secondRow: 'Zweite Zeile' },
+        { id: '0_userdata.0.Einzelne_Geräte.dimmer', minValueBrightness: 10, maxValueBrightness: 80, colormode: 'rgb' },
+        {
+            id: 'alias.0.NSPanel.allgemein.hue',
+            minValueBrightness: 0,
+            maxValueBrightness: 90,
+            minValueColorTemp: 2700,
+            maxValueColorTemp: 0,
+            colormode: 'xy',
+        },
+        { id: 'alias.0.Licht.rgbSingle', secondRow: '', colormode: '' },
+    ];
+
+    it('takes the fields over, drops 0 / empty (the runtime reads them as not set), colormode as switch', () => {
+        const result = plan(
+            baseConfig({ subPages: [page({ type: 'cardGrid', uniqueName: 'p', heading: 'P', items: items() })] }),
+        );
+        expect(result.plan.skipped).to.deep.equal([]);
+        const converted = (result.newPages[0] as ShareConfig.MenuEntry).pageItems.map(i => {
+            const { channelId: _channelId, ...rest } = i ?? { channelId: undefined };
+            return rest;
+        });
+        expect(converted).to.deep.equal([
+            { secondRow: 'Zweite Zeile' },
+            { minValueBrightness: 10, maxValueBrightness: 80, colormode: true },
+            { maxValueBrightness: 90, minValueColorTemp: 2700, colormode: true },
+            {},
+        ]);
+    });
+
+    it('rejects a field of the wrong type', () => {
+        const result = plan(
+            baseConfig({
+                subPages: [
+                    page({
+                        type: 'cardGrid',
+                        uniqueName: 'p',
+                        heading: 'P',
+                        items: [{ id: 'alias.0.NSPanel.allgemein.hue', minValueColorTemp: '2700' }],
+                    }),
+                ],
+            }),
+        );
+        expect(result.plan.skipped.map(s => s.detail)).to.deep.equal(['items[0].minValueColorTemp: expected a number']);
+    });
+
+    it('builds the same runtime items over the admin path as over the script path', async () => {
+        await expectEquivalent(
+            baseConfig({ subPages: [page({ type: 'cardGrid', uniqueName: 'p', heading: 'P', items: items() })] }),
+        );
+    });
+});

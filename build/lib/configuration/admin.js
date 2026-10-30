@@ -322,7 +322,7 @@ Stack: ${stack}`
    * @param option - Panel configuration partial
    */
   async createPagesFromConfig(option) {
-    var _a, _b, _c, _d, _e, _f, _g, _h, _i;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k;
     const entries = this.pageConfig;
     const pendingNavs = [];
     const mainAliases = new Set(
@@ -576,13 +576,19 @@ Stack: ${stack}`
       if (ShareConfig.isMainPageEntry(entry)) {
         newPage.uniqueID = import_default_pages.mainPageName;
       }
-      const overrideExisting = this.adapter.config.adminOverridesScriptPages || newPage.uniqueID === import_default_pages.mainPageName;
+      let overrideExisting = this.adapter.config.adminOverridesScriptPages || newPage.uniqueID === import_default_pages.mainPageName;
+      if (!overrideExisting && panelAssignment !== void 0 && ((_d = option.globalPageIds) == null ? void 0 : _d.includes(newPage.uniqueID)) && !((_e = option.generatedPageIds) == null ? void 0 : _e.includes(newPage.uniqueID)) && option.pages.some((a) => a.uniqueID === newPage.uniqueID)) {
+        overrideExisting = true;
+        this.log.info(
+          `Page '${newPage.uniqueID}' of the global script configuration is replaced by the admin page assigned to this panel.`
+        );
+      }
       let replacedIndex = -1;
       let replacedNav;
       if (!overrideExisting) {
         if (option.pages.find((a) => a.uniqueID === newPage.uniqueID)) {
           const existing = option.pages.find((a) => a.uniqueID === newPage.uniqueID);
-          if (option.navigation.some((b) => b && b.name === newPage.uniqueID) || (0, import_admin_screensaver.isScreensaverPage)(existing) || ((_d = option.generatedPageIds) == null ? void 0 : _d.includes(newPage.uniqueID))) {
+          if (option.navigation.some((b) => b && b.name === newPage.uniqueID) || (0, import_admin_screensaver.isScreensaverPage)(existing) || ((_f = option.generatedPageIds) == null ? void 0 : _f.includes(newPage.uniqueID))) {
             this.log.warn(`Page with name ${newPage.uniqueID} already exists, skipping!`);
             continue;
           }
@@ -599,7 +605,7 @@ Stack: ${stack}`
         }
         replacedIndex = option.navigation.findIndex((b) => b && b.name === newPage.uniqueID);
         if (replacedIndex !== -1) {
-          replacedNav = (_e = option.navigation[replacedIndex]) != null ? _e : void 0;
+          replacedNav = (_g = option.navigation[replacedIndex]) != null ? _g : void 0;
           option.navigation.splice(replacedIndex, 1);
         }
       }
@@ -607,8 +613,8 @@ Stack: ${stack}`
       const navigationEntry = {
         name: newPage.uniqueID,
         page: newPage.uniqueID,
-        right: { single: (_f = replacedNav == null ? void 0 : replacedNav.right) == null ? void 0 : _f.single, double: (_g = replacedNav == null ? void 0 : replacedNav.right) == null ? void 0 : _g.double },
-        left: { single: (_h = replacedNav == null ? void 0 : replacedNav.left) == null ? void 0 : _h.single, double: (_i = replacedNav == null ? void 0 : replacedNav.left) == null ? void 0 : _i.double }
+        right: { single: (_h = replacedNav == null ? void 0 : replacedNav.right) == null ? void 0 : _h.single, double: (_i = replacedNav == null ? void 0 : replacedNav.right) == null ? void 0 : _i.double },
+        left: { single: (_j = replacedNav == null ? void 0 : replacedNav.left) == null ? void 0 : _j.single, double: (_k = replacedNav == null ? void 0 : replacedNav.left) == null ? void 0 : _k.double }
       };
       if (replacedIndex !== -1) {
         option.navigation.splice(replacedIndex, 0, navigationEntry);

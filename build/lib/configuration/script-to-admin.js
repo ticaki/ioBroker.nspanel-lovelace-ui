@@ -26,6 +26,7 @@ var import_default_pages = require("../const/default-pages");
 var import_adminShareConfig = require("../types/adminShareConfig");
 var import_function_and_const = require("../types/function-and-const");
 var import_admin_screensaver = require("./admin-screensaver");
+var import_global_config_merge = require("./global-config-merge");
 class ConvertError extends Error {
   constructor(reason, detail) {
     super(`${reason}: ${detail}`);
@@ -146,7 +147,13 @@ const itemMappedKeys = [
   "filter",
   "useValueConditions",
   "minValue",
-  "maxValue"
+  "maxValue",
+  "secondRow",
+  "minValueBrightness",
+  "maxValueBrightness",
+  "minValueColorTemp",
+  "maxValueColorTemp",
+  "colormode"
 ];
 const itemIgnoredKeys = [
   "uniqueName",
@@ -320,6 +327,19 @@ function convertPageItem(item, where) {
   if (maxValue !== void 0) {
     admin.maxValue = maxValue;
   }
+  const secondRow = str(item.secondRow, reason, `${where}.secondRow`);
+  if (secondRow) {
+    admin.secondRow = secondRow;
+  }
+  for (const key of ["minValueBrightness", "maxValueBrightness", "minValueColorTemp", "maxValueColorTemp"]) {
+    const value = num(item[key], reason, `${where}.${key}`);
+    if (value) {
+      admin[key] = value;
+    }
+  }
+  if (item.colormode) {
+    admin.colormode = true;
+  }
   return admin;
 }
 function isEmptyAdminItem(item) {
@@ -435,9 +455,12 @@ function pageCommon(page, isSub) {
   var _a, _b;
   const reason = "fieldNotSupported";
   const uniqueName = String(page.uniqueName);
-  const heading = (_a = str(page.heading, reason, "heading")) != null ? _a : "";
+  let heading = (_a = str(page.heading, reason, "heading")) != null ? _a : "";
   if (!heading) {
-    throw new ConvertError(reason, "heading: empty - the admin shows the uniqueName instead");
+    if (page.type !== "cardThermo") {
+      throw new ConvertError(reason, "heading: empty - the admin shows the uniqueName instead");
+    }
+    heading = "thermostat";
   }
   if (looksLikeStateId(heading)) {
     throw new ConvertError(reason, "heading: looks like a state id - the admin shows the text itself");
@@ -1448,6 +1471,41 @@ function scriptPageId(page) {
   }
   return typeof page.uniqueName === "string" ? page.uniqueName : "";
 }
+function canonicalJson(value) {
+  return JSON.stringify(value, (_key, v) => {
+    if (isDict(v)) {
+      const sorted = {};
+      for (const key of Object.keys(v).sort()) {
+        sorted[key] = v[key];
+      }
+      return sorted;
+    }
+    return v;
+  });
+}
+function entryDifferences(a, b) {
+  const left = { ...a };
+  const right = { ...b };
+  delete left.navigationAssignment;
+  delete right.navigationAssignment;
+  const keys = [.../* @__PURE__ */ new Set([...Object.keys(left), ...Object.keys(right)])].sort();
+  return keys.filter((key) => canonicalJson(left[key]) !== canonicalJson(right[key]));
+}
+function entryAssignedToPanel(entry, topic) {
+  var _a;
+  const assignments = (_a = entry.navigationAssignment) != null ? _a : [];
+  const own = assignments.find((a) => a.topic === topic);
+  if (!own) {
+    return false;
+  }
+  return !(!own.navigation && assignments.some((a) => a.topic === import_adminShareConfig.ALL_PANELS_SPECIAL_ID));
+}
+function globalLinkName(page) {
+  if (!isDict(page) || typeof page.globalLink !== "string" || page.globalLink === "") {
+    return "";
+  }
+  return typeof page.uniqueName === "string" ? page.uniqueName : page.globalLink;
+}
 function planScriptToAdmin(input) {
   const { raw, panel } = input;
   const plan = {
@@ -1466,13 +1524,38 @@ function planScriptToAdmin(input) {
   const removedFromScript = [];
   const removedPages = /* @__PURE__ */ new Set();
   const removedSubPages = /* @__PURE__ */ new Set();
-  const remove = (uniqueName, isSub) => {
-    removedFromScript.push(uniqueName);
+  const removedLinks = /* @__PURE__ */ new Set();
+  const conflicts = [];
+  const remove = (uniqueName, isSub, source) => {
     (isSub ? removedSubPages : removedPages).add(uniqueName);
+    if (!source) {
+      removedFromScript.push(uniqueName);
+    } else if (source.kind === "linked") {
+      removedFromScript.push(uniqueName);
+      removedLinks.add(uniqueName);
+    }
   };
   const usedNames = new Set(updatedPages.map((e) => e.uniqueName));
-  const pages = Array.isArray(raw.pages) ? raw.pages : [];
-  const subPages = Array.isArray(raw.subPages) ? raw.subPages : [];
+  const rawPages = Array.isArray(raw.pages) ? raw.pages : [];
+  const rawSubPages = Array.isArray(raw.subPages) ? raw.subPages : [];
+  const merged = input.globalConfigRaw !== void 0 && input.globalConfigRaw !== null ? (0, import_global_config_merge.mergeGlobalConfig)(
+    {
+      pages: rawPages,
+      subPages: rawSubPages,
+      navigation: raw.navigation,
+      nativePageItems: raw.nativePageItems
+    },
+    input.globalConfigRaw,
+    { random: () => 0 }
+  ) : void 0;
+  const globalSource = (page) => merged && isDict(page) ? merged.sources.get(page) : void 0;
+  const pages = merged ? merged.pages : rawPages;
+  const mergedPageNames = new Set(pages.map(scriptPageId));
+  const subPages = merged ? merged.subPages.filter((p) => {
+    const source = globalSource(p);
+    return !source || source.kind === "linked" || !mergedPageNames.has(scriptPageId(p));
+  }) : rawSubPages;
+  const scriptNavigation = merged ? merged.navigation : raw.navigation;
   const ring = pages.map(scriptPageId).filter((id) => id !== "");
   const mainIndex = ring.indexOf(import_default_pages.mainPageName);
   if (mainIndex > 0) {
@@ -1506,10 +1589,99 @@ function planScriptToAdmin(input) {
   );
   const ringAssignments = /* @__PURE__ */ new Map();
   const explicitNavigation = new Set(
-    (Array.isArray(raw.navigation) ? raw.navigation : []).map((n) => isDict(n) ? String(n.name) : "")
+    (Array.isArray(scriptNavigation) ? scriptNavigation : []).map((n) => isDict(n) ? String(n.name) : "")
   );
   const skip = (uniqueName, type, reason, detail) => {
     plan.skipped.push(detail === void 0 ? { uniqueName, type, reason } : { uniqueName, type, reason, detail });
+  };
+  const convertPage = (page, isSub, typeName, uniqueName) => {
+    if (explicitNavigation.has(uniqueName)) {
+      throw new ConvertError("fieldNotSupported", "navigation: the script overrides the links of the page");
+    }
+    const common = pageCommon(page, isSub);
+    let entry;
+    if (typeName === "cardThermo2") {
+      entry = convertThermo2Page(page, common, panel.topic);
+    } else if (typeName === "cardThermo") {
+      entry = convertThermoPage(page, common, panel.topic);
+    } else if (typeName === "cardMedia") {
+      entry = convertMediaPage(page, common, panel.topic);
+    } else {
+      entry = convertMenuPage(page, common, panel.topic);
+    }
+    return { entry, common };
+  };
+  const handleExistingGlobal = (page, isSub, typeName, uniqueName, existing, source) => {
+    var _a, _b, _c, _d;
+    if (entryAssignedToPanel(existing, panel.topic)) {
+      if (source.kind === "linked") {
+        plan.pages.push({
+          uniqueName,
+          type: typeName,
+          card: existing.card,
+          itemCount: 0,
+          navigation: {},
+          action: "removeReference",
+          reason: "adminAlreadyNavigated",
+          global: true
+        });
+        remove(uniqueName, isSub, source);
+      }
+      return;
+    }
+    let converted;
+    try {
+      converted = convertPage(page, isSub, typeName, uniqueName);
+    } catch (error) {
+      if (error instanceof ConvertError) {
+        skip(uniqueName, typeName, error.reason, error.detail);
+        return;
+      }
+      throw error;
+    }
+    const { entry, common } = converted;
+    const differences = entryDifferences(entry, existing);
+    let decision = "identical";
+    if (differences.length > 0) {
+      decision = (_b = (_a = input.globalDecisions) == null ? void 0 : _a[uniqueName]) != null ? _b : import_adminShareConfig.CONVERT_GLOBAL_DEFAULT_DECISION;
+      conflicts.push({
+        uniqueName,
+        type: typeName,
+        card: existing.card,
+        decision,
+        assignedPanels: ((_c = existing.navigationAssignment) != null ? _c : []).map((a) => a.topic),
+        differences
+      });
+      if (decision === "skip") {
+        skip(
+          uniqueName,
+          typeName,
+          "nameExists",
+          "the page of the global script differs from the admin entry - skipped by choice"
+        );
+        return;
+      }
+    }
+    const assignment = { topic: panel.topic, navigation: common.navigation };
+    const assignments = [...((_d = existing.navigationAssignment) != null ? _d : []).filter((a) => a.topic !== panel.topic), assignment];
+    const replacement = decision === "takeScript" ? { ...entry, navigationAssignment: assignments } : { ...existing, navigationAssignment: assignments };
+    updatedPages = updatedPages.map((e) => e === existing ? replacement : e);
+    if (!isSub) {
+      ringAssignments.set(uniqueName, assignment);
+    }
+    plan.pages.push({
+      uniqueName,
+      type: typeName,
+      card: replacement.card,
+      itemCount: ("pageItems" in replacement ? replacement.pageItems : []).filter(
+        (i) => !!i && !isEmptyAdminItem(i)
+      ).length,
+      navigation: common.navigation,
+      action: decision === "takeScript" ? "create" : "assignNavigation",
+      global: true,
+      existing: decision
+    });
+    remove(uniqueName, isSub, source);
   };
   const handlePage = (page, isSub) => {
     var _a;
@@ -1537,11 +1709,24 @@ function planScriptToAdmin(input) {
       skip("", typeName, "fieldNotSupported", "uniqueName missing");
       return;
     }
+    const source = globalSource(page);
+    if (source && (source.kind === "navigationCopy" || (merged == null ? void 0 : merged.copyRoots.has(uniqueName)))) {
+      skip(
+        uniqueName,
+        typeName,
+        "fieldNotSupported",
+        "navigation copy of a renamed page of the global script (random name)"
+      );
+      return;
+    }
     if (isSub && mainPageNames.has(uniqueName)) {
       skip(uniqueName, typeName, "nameExists", "a page of pages has the same name - the script ignores this one");
       return;
     }
     if (typeName === "cardQR" || typeName === "cardAlarm" || typeName === "cardUnlock") {
+      if (source && source.kind !== "linked") {
+        return;
+      }
       plan.pages.push({
         uniqueName,
         type: typeName,
@@ -1549,9 +1734,10 @@ function planScriptToAdmin(input) {
         itemCount: 0,
         navigation: {},
         action: "removeReference",
-        reason: "adminOnly"
+        reason: "adminOnly",
+        ...source ? { global: true } : {}
       });
-      remove(uniqueName, isSub);
+      remove(uniqueName, isSub, source);
       return;
     }
     if (typeName === "cardPower" || typeName === "cardChart" || typeName === "cardLChart") {
@@ -1562,6 +1748,9 @@ function planScriptToAdmin(input) {
       }
       const navigated = typeName === "cardPower" ? (0, import_adminShareConfig.isScriptNavigatedPower)(entry) : (0, import_adminShareConfig.isScriptNavigatedChart)(entry);
       if (!navigated) {
+        if (source && source.kind !== "linked") {
+          return;
+        }
         plan.pages.push({
           uniqueName,
           type: typeName,
@@ -1569,9 +1758,10 @@ function planScriptToAdmin(input) {
           itemCount: 0,
           navigation: {},
           action: "removeReference",
-          reason: "adminAlreadyNavigated"
+          reason: "adminAlreadyNavigated",
+          ...source ? { global: true } : {}
         });
-        remove(uniqueName, isSub);
+        remove(uniqueName, isSub, source);
         return;
       }
       try {
@@ -1598,9 +1788,10 @@ function planScriptToAdmin(input) {
           card: entry.card,
           itemCount: 0,
           navigation,
-          action: "assignNavigation"
+          action: "assignNavigation",
+          ...source ? { global: true } : {}
         });
-        remove(uniqueName, isSub);
+        remove(uniqueName, isSub, source);
       } catch (error) {
         if (error instanceof ConvertError) {
           skip(uniqueName, typeName, error.reason, error.detail);
@@ -1613,6 +1804,13 @@ function planScriptToAdmin(input) {
     if (typeName !== "cardGrid" && typeName !== "cardGrid2" && typeName !== "cardGrid3" && typeName !== "cardEntities" && typeName !== "cardSchedule" && typeName !== "cardThermo" && typeName !== "cardThermo2" && typeName !== "cardMedia") {
       skip(uniqueName, typeName, "unsupportedPageType");
       return;
+    }
+    if (source) {
+      const existing = updatedPages.find((e) => e.uniqueName === uniqueName);
+      if (existing) {
+        handleExistingGlobal(page, isSub, typeName, uniqueName, existing, source);
+        return;
+      }
     }
     let storedAs;
     if (usedNames.has(uniqueName)) {
@@ -1627,20 +1825,7 @@ function planScriptToAdmin(input) {
       }
     }
     try {
-      if (explicitNavigation.has(uniqueName)) {
-        throw new ConvertError("fieldNotSupported", "navigation: the script overrides the links of the page");
-      }
-      const common = pageCommon(page, isSub);
-      let entry;
-      if (typeName === "cardThermo2") {
-        entry = convertThermo2Page(page, common, panel.topic);
-      } else if (typeName === "cardThermo") {
-        entry = convertThermoPage(page, common, panel.topic);
-      } else if (typeName === "cardMedia") {
-        entry = convertMediaPage(page, common, panel.topic);
-      } else {
-        entry = convertMenuPage(page, common, panel.topic);
-      }
+      const { entry, common } = convertPage(page, isSub, typeName, uniqueName);
       if (storedAs !== void 0) {
         entry.uniqueName = storedAs;
         entry.isMainPage = true;
@@ -1648,7 +1833,7 @@ function planScriptToAdmin(input) {
       newPages.push(entry);
       updatedPages.push(entry);
       usedNames.add(entry.uniqueName);
-      remove(uniqueName, isSub);
+      remove(uniqueName, isSub, source);
       if (!isSub && entry.navigationAssignment) {
         ringAssignments.set(uniqueName, entry.navigationAssignment[0]);
       }
@@ -1662,6 +1847,9 @@ function planScriptToAdmin(input) {
       };
       if (storedAs !== void 0) {
         planned.storedAs = storedAs;
+      }
+      if (source) {
+        planned.global = true;
       }
       plan.pages.push(planned);
     } catch (error) {
@@ -1686,7 +1874,9 @@ function planScriptToAdmin(input) {
   for (const page of subPages) {
     handlePage(page, true);
   }
-  const screensaver = convertScreensaver(input);
+  const screensaver = convertScreensaver(
+    merged ? { ...input, raw: { ...raw, nativePageItems: merged.nativePageItems } } : input
+  );
   let screensaverEntry;
   let newNotify = [];
   if ("skipped" in screensaver) {
@@ -1730,9 +1920,15 @@ function planScriptToAdmin(input) {
     }
   }
   const cleanedRaw = structuredClone(raw);
-  const keep = (removed) => (page) => !(isDict(page) && page.type !== void 0 && removed.has(scriptPageId(page)));
-  cleanedRaw.pages = pages.filter(keep(removedPages));
-  cleanedRaw.subPages = subPages.filter(keep(removedSubPages));
+  const keep = (removed) => (page) => {
+    const link = globalLinkName(page);
+    if (link !== "") {
+      return !removedLinks.has(link);
+    }
+    return !(isDict(page) && page.type !== void 0 && removed.has(scriptPageId(page)));
+  };
+  cleanedRaw.pages = rawPages.filter(keep(removedPages));
+  cleanedRaw.subPages = rawSubPages.filter(keep(removedSubPages));
   const clearScreensaverInScript = !!screensaverEntry;
   if (clearScreensaverInScript) {
     cleanedRaw.favoritScreensaverEntity = [];
@@ -1754,6 +1950,9 @@ function planScriptToAdmin(input) {
   }
   for (const side of clearButtonsInScript) {
     cleanedRaw[side === "left" ? "buttonLeft" : "buttonRight"] = null;
+  }
+  if (conflicts.length > 0) {
+    plan.conflicts = conflicts;
   }
   plan.nothingToDo = plan.pages.length === 0 && !screensaverEntry && buttons.left === void 0 && buttons.right === void 0;
   return {

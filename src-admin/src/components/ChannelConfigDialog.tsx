@@ -87,6 +87,21 @@ const USE_VALUE_CONDITIONS_NAVI_ROLES: readonly string[] = ['thermostat', 'humid
 /** Channel roles whose page item reads `minValue` / `maxValue` (config-manager.ts, case 'volume'). */
 const VALUE_RANGE_ROLES: readonly string[] = ['volume'];
 
+/** Channel roles whose page item reads `secondRow` (config-manager.ts, case 'blind'). */
+const SECOND_ROW_ROLES: readonly string[] = ['blind'];
+
+/**
+ * Channel roles whose page item reads `minValueBrightness` / `maxValueBrightness` and `colormode`
+ * (config-manager.ts, case 'dimmer' and the color branch 'rgbSingle' / 'ct' / 'rgb' / 'hue'). Role light does not.
+ */
+const BRIGHTNESS_ROLES: readonly string[] = ['dimmer', 'ct', 'rgb', 'rgbSingle', 'hue'];
+
+/** Channel roles whose page item reads `minValueColorTemp` / `maxValueColorTemp` (the color branch only). */
+const COLOR_TEMP_ROLES: readonly string[] = ['ct', 'rgb', 'rgbSingle', 'hue'];
+
+/** the number fields of a light item: lower / upper end of the brightness and the color temperature slider */
+type LightRangeKey = 'minValueBrightness' | 'maxValueBrightness' | 'minValueColorTemp' | 'maxValueColorTemp';
+
 export type { AdminPageItemConfig as PageItemConfig };
 
 type ChannelConfigDialogProps = {
@@ -195,6 +210,16 @@ interface ChannelConfigDialogState {
     minValue: number | undefined;
     /** Role volume: upper end of the volume slider (undefined = panel default) */
     maxValue: number | undefined;
+    /** Role blind: second text row of the shutter popup ('' = not set) */
+    secondRow: string;
+    /** Light roles: brightness slider range (undefined = panel default) */
+    minValueBrightness: number | undefined;
+    maxValueBrightness: number | undefined;
+    /** Color light roles: color temperature slider range (undefined = panel default) */
+    minValueColorTemp: number | undefined;
+    maxValueColorTemp: number | undefined;
+    /** Light roles: color mode switched on */
+    colormode: boolean;
 }
 
 /** Minimales leeres ioBroker.InstanceCommon für ConfigGeneric-Komponenten */
@@ -276,6 +301,12 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
             useValueConditions: '',
             minValue: undefined,
             maxValue: undefined,
+            secondRow: '',
+            minValueBrightness: undefined,
+            maxValueBrightness: undefined,
+            minValueColorTemp: undefined,
+            maxValueColorTemp: undefined,
+            colormode: false,
         };
     }
 
@@ -374,6 +405,12 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
             useValueConditions: typeof data?.useValueConditions === 'string' ? data.useValueConditions : '',
             minValue: typeof data?.minValue === 'number' ? data.minValue : undefined,
             maxValue: typeof data?.maxValue === 'number' ? data.maxValue : undefined,
+            secondRow: typeof data?.secondRow === 'string' ? data.secondRow : '',
+            minValueBrightness: typeof data?.minValueBrightness === 'number' ? data.minValueBrightness : undefined,
+            maxValueBrightness: typeof data?.maxValueBrightness === 'number' ? data.maxValueBrightness : undefined,
+            minValueColorTemp: typeof data?.minValueColorTemp === 'number' ? data.minValueColorTemp : undefined,
+            maxValueColorTemp: typeof data?.maxValueColorTemp === 'number' ? data.maxValueColorTemp : undefined,
+            colormode: data?.colormode === true,
         });
         if (this.props.pagesList && this.props.pagesList.length > 0) {
             this.setState({ availablePages: this.sortPages(this.props.pagesList) });
@@ -526,11 +563,24 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
             useValueConditions,
             minValue,
             maxValue,
+            secondRow,
+            colormode,
         } = this.state;
         // '' and non-finite numbers are "not set" - the field is left out of the stored item
         const useValueConditionsOut = useValueConditions.trim() !== '' ? useValueConditions.trim() : undefined;
         const minValueOut = minValue !== undefined && Number.isFinite(minValue) ? minValue : undefined;
         const maxValueOut = maxValue !== undefined && Number.isFinite(maxValue) ? maxValue : undefined;
+        // the adapter reads the light ranges only when they are truthy - 0 is stored as "not set"
+        const lightRange = (value: number | undefined): number | undefined =>
+            value !== undefined && Number.isFinite(value) && value !== 0 ? value : undefined;
+        const extraFields: Pick<AdminPageItemConfig, 'secondRow' | 'colormode' | LightRangeKey> = {
+            secondRow: secondRow !== '' ? secondRow : undefined,
+            minValueBrightness: lightRange(this.state.minValueBrightness),
+            maxValueBrightness: lightRange(this.state.maxValueBrightness),
+            minValueColorTemp: lightRange(this.state.minValueColorTemp),
+            maxValueColorTemp: lightRange(this.state.maxValueColorTemp),
+            colormode: colormode ? true : undefined,
+        };
         if (this.state.nativeMode) {
             try {
                 const parsed: unknown = JSON.parse(this.state.nativeJson);
@@ -555,6 +605,7 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                     useValueConditions: useValueConditionsOut,
                     minValue: minValueOut,
                     maxValue: maxValueOut,
+                    ...extraFields,
                     role: channelRole ?? undefined,
                     useNative: true,
                     native: parsed,
@@ -585,6 +636,7 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
             useValueConditions: useValueConditionsOut,
             minValue: minValueOut,
             maxValue: maxValueOut,
+            ...extraFields,
             valueEntry: this.state.valueEntry,
         };
     }
@@ -1072,6 +1124,64 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
      *
      * @param raw Text of the input.
      */
+    /**
+     * Lower and upper end of a light slider (brightness or color temperature); empty = panel default.
+     *
+     * @param minKey state field of the lower end
+     * @param maxKey state field of the upper end
+     * @param hintKey i18n key of the helper text
+     * @param disabled whether the fields are disabled
+     */
+    private renderLightRange(
+        minKey: LightRangeKey,
+        maxKey: LightRangeKey,
+        hintKey: string,
+        disabled: boolean,
+    ): React.JSX.Element {
+        const field = (key: LightRangeKey, label: string, hint: string | undefined): React.JSX.Element => (
+            <TextField
+                variant="standard"
+                type="number"
+                label={I18n.t(label)}
+                value={this.state[key] === undefined ? '' : String(this.state[key])}
+                onChange={e => this.setLightRange(key, this.parseRangeInput(e.target.value))}
+                disabled={disabled}
+                helperText={hint}
+                sx={{ width: 160 }}
+                slotProps={{ inputLabel: { shrink: true }, htmlInput: { step: 'any' } }}
+            />
+        );
+        return (
+            <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2, flexWrap: 'wrap' }}>
+                {field(minKey, `channelConfigDialog_${minKey}`, undefined)}
+                {field(maxKey, `channelConfigDialog_${maxKey}`, I18n.t(hintKey))}
+            </Box>
+        );
+    }
+
+    /**
+     * Sets one of the light slider fields.
+     *
+     * @param key state field
+     * @param value new value, undefined = not set
+     */
+    private setLightRange(key: LightRangeKey, value: number | undefined): void {
+        switch (key) {
+            case 'minValueBrightness':
+                this.setState({ minValueBrightness: value });
+                break;
+            case 'maxValueBrightness':
+                this.setState({ maxValueBrightness: value });
+                break;
+            case 'minValueColorTemp':
+                this.setState({ minValueColorTemp: value });
+                break;
+            case 'maxValueColorTemp':
+                this.setState({ maxValueColorTemp: value });
+                break;
+        }
+    }
+
     private parseRangeInput(raw: string): number | undefined {
         if (raw.trim() === '') {
             return undefined;
@@ -1480,6 +1590,21 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
             !nativeMode &&
             !isNavigation &&
             VALUE_RANGE_ROLES.includes(channelRole);
+        /**
+         * Fields the adapter reads for page items (not navigation items) of some roles only.
+         *
+         * @param roles channel roles that read the field
+         */
+        const pageItemOfRole = (roles: readonly string[]): boolean =>
+            channelRole !== null &&
+            channelIdValid &&
+            !isCustom &&
+            !nativeMode &&
+            !isNavigation &&
+            roles.includes(channelRole);
+        const secondRowVisible = pageItemOfRole(SECOND_ROW_ROLES);
+        const brightnessVisible = pageItemOfRole(BRIGHTNESS_ROLES);
+        const colorTempVisible = pageItemOfRole(COLOR_TEMP_ROLES);
 
         console.log(
             `[ChannelConfigDialog] render: channelId=${channelId.valueStateId}, channelExists=${channelExists}, channelRole=${channelRole}, roleIsValid=${roleIsValid}, datapointErrors=${this.state.datapointErrors.join(',')}, datapointDuplicates=${this.state.datapointDuplicates.join(',')}, nativeMode=${nativeMode}, nativeJsonValid=${nativeJsonValid}, hasDatapointProblems=${hasDatapointProblems}, hasProblems=${this.state.hasProblems}, errorSaveDetails=${errorSaveDetails} standardCanSave=${standardCanSave}, canSave=${canSave} fieldsDisabled=${fieldsDisabled}, longPressEnabled=${longPressEnabled}, channelIdValid=${channelIdValid}`,
@@ -1987,6 +2112,44 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                                             slotProps={{ inputLabel: { shrink: true }, htmlInput: { step: 'any' } }}
                                         />
                                     </Box>
+                                )}
+                                {secondRowVisible && (
+                                    <TextField
+                                        variant="standard"
+                                        fullWidth
+                                        label={I18n.t('channelConfigDialog_secondRow')}
+                                        value={this.state.secondRow}
+                                        onChange={e => this.setState({ secondRow: e.target.value })}
+                                        disabled={fieldsDisabled}
+                                        helperText={I18n.t('channelConfigDialog_secondRowHint')}
+                                        slotProps={{ inputLabel: { shrink: true } }}
+                                    />
+                                )}
+                                {brightnessVisible &&
+                                    this.renderLightRange(
+                                        'minValueBrightness',
+                                        'maxValueBrightness',
+                                        'channelConfigDialog_brightnessRange',
+                                        fieldsDisabled,
+                                    )}
+                                {colorTempVisible &&
+                                    this.renderLightRange(
+                                        'minValueColorTemp',
+                                        'maxValueColorTemp',
+                                        'channelConfigDialog_colorTempRange',
+                                        fieldsDisabled,
+                                    )}
+                                {brightnessVisible && (
+                                    <FormControlLabel
+                                        control={
+                                            <Checkbox
+                                                checked={this.state.colormode}
+                                                onChange={e => this.setState({ colormode: e.target.checked })}
+                                                disabled={fieldsDisabled}
+                                            />
+                                        }
+                                        label={I18n.t('channelConfigDialog_colormode')}
+                                    />
                                 )}
                                 {this.state.isGridCard && longPressEnabled && (
                                     <Box
