@@ -1225,7 +1225,14 @@ function plan(raw: ScriptConfig.Config, overrides: Partial<ScriptToAdminInput> =
     });
 }
 
-type ScriptRun = { pages: PageBase[]; navigation: NavigationItemConfig[]; logs: LogEntry[]; messages: string[] };
+type ScriptRun = {
+    pages: PageBase[];
+    navigation: NavigationItemConfig[];
+    logs: LogEntry[];
+    messages: string[];
+    /** pages of the global script (config manager), handed to the admin phase like Panel.preInit does */
+    globalPageIds?: string[];
+};
 
 /**
  * Builds the runtime pages of a script configuration like the adapter does when the script sends it.
@@ -1246,6 +1253,7 @@ async function runScript(config: ScriptConfig.Config, adminConfig: Record<string
         navigation: result.panelConfig!.navigation,
         logs,
         messages: result.messages,
+        globalPageIds: result.panelConfig!.globalPageIds,
     };
 }
 
@@ -1535,16 +1543,24 @@ describe('lib/configuration - planScriptToAdmin: pages', () => {
         // the config manager moves main to the front: main, a, b
         expect(result.plan.pages.map(p => [p.uniqueName, p.navigation])).to.deep.equal([
             ['a', { prev: 'main' }],
+            // the end of the ring leads into the service menu like at runtime; the start page gets its
+            // service link from the default start page node it replaces (ensureMainPage)
             ['main', {}],
-            ['b', { prev: 'a' }],
+            ['b', { prev: 'a', next: '///unlock' }],
         ]);
         // a successor staying in the script is named as next, one converted as well names the page as prev
         const mixed = plan(baseConfig({ pages: [gridPage('main'), gridPage('s', { heading: '' }), gridPage('c')] }));
         expect(mixed.plan.pages.map(p => [p.uniqueName, p.navigation])).to.deep.equal([
             ['main', { next: 's' }],
-            ['c', { prev: 's' }],
+            ['c', { prev: 's', next: '///unlock' }],
         ]);
+        // a ring of the start page only: it takes both service links over from the default start page node
         expect(plan(baseConfig({ pages: [gridPage('main')] })).plan.pages[0].navigation).to.deep.equal({});
+        // a ring of one other page: behind the default start page, into the service menu on the right
+        expect(plan(baseConfig({ pages: [gridPage('p')] })).plan.pages[0].navigation).to.deep.equal({
+            prev: 'main',
+            next: '///unlock',
+        });
     });
 
     it('skips pages of the ring that are gone for the panel after the conversion when it picks the predecessor', () => {
@@ -1578,7 +1594,7 @@ describe('lib/configuration - planScriptToAdmin: pages', () => {
             ['main', 'create', {}],
             ['qr', 'removeReference', {}],
             ['a', 'create', { prev: 'main', next: 't' }],
-            ['b', 'create', { prev: 't' }],
+            ['b', 'create', { prev: 't', next: '///unlock' }],
         ]);
         // the admin QR page is assigned to this panel (here: to all panels) - it exists and serves as predecessor
         const covered = plan(
@@ -1588,7 +1604,7 @@ describe('lib/configuration - planScriptToAdmin: pages', () => {
         expect(covered.plan.pages.map(p => [p.uniqueName, p.navigation])).to.deep.equal([
             ['main', {}],
             ['qr', {}],
-            ['a', { prev: 'qr' }],
+            ['a', { prev: 'qr', next: '///unlock' }],
         ]);
         const excluded = plan(
             baseConfig({ pages: [gridPage('main'), page({ type: 'cardQR', uniqueName: 'qr' }), gridPage('a')] }),
@@ -1597,7 +1613,7 @@ describe('lib/configuration - planScriptToAdmin: pages', () => {
         expect(excluded.plan.pages.map(p => [p.uniqueName, p.navigation])).to.deep.equal([
             ['main', {}],
             ['qr', {}],
-            ['a', { prev: 'main' }],
+            ['a', { prev: 'main', next: '///unlock' }],
         ]);
         // dead references at the start: a power page without admin entry and a dead chart reference
         const start = plan(
@@ -1624,7 +1640,7 @@ describe('lib/configuration - planScriptToAdmin: pages', () => {
             ['c', 'removeReference', {}],
             // no main in the script: the first page follows the default start page of the adapter
             ['a', 'create', { prev: 'main' }],
-            ['b', 'create', { prev: 'a' }],
+            ['b', 'create', { prev: 'a', next: '///unlock' }],
         ]);
         // a migrated power entry gets the navigation of the panel - it stays a valid predecessor
         const migrated = plan(
@@ -1634,7 +1650,7 @@ describe('lib/configuration - planScriptToAdmin: pages', () => {
         expect(migrated.plan.pages.map(p => [p.uniqueName, p.navigation])).to.deep.equal([
             ['main', {}],
             ['p', { prev: 'main' }],
-            ['a', { prev: 'p' }],
+            ['a', { prev: 'p', next: '///unlock' }],
         ]);
     });
 
@@ -1651,7 +1667,7 @@ describe('lib/configuration - planScriptToAdmin: pages', () => {
         expect(result.plan.skipped).to.deep.equal([]);
         expect(result.plan.pages.map(p => [p.uniqueName, p.storedAs, p.navigation])).to.deep.equal([
             ['main', 'main_Test_Panel_2', {}],
-            ['a', undefined, { prev: 'main' }],
+            ['a', undefined, { prev: 'main', next: '///unlock' }],
         ]);
         expect(result.newPages[0]).to.deep.include({
             uniqueName: 'main_Test_Panel_2',
@@ -1835,12 +1851,12 @@ describe('lib/configuration - planScriptToAdmin: pages', () => {
         );
         expect(result.plan.pages.map(p => [p.uniqueName, p.action, p.card, p.navigation])).to.deep.equal([
             ['main', 'create', 'cardGrid', {}],
-            ['power', 'assignNavigation', 'cardPower', { prev: 'main' }],
+            ['power', 'assignNavigation', 'cardPower', { prev: 'main', next: '///unlock' }],
             ['temp', 'assignNavigation', 'cardChart', { parent: 'main' }],
         ]);
         expect(result.newPages.map(e => e.uniqueName)).to.deep.equal(['main']);
         const power = result.updatedPages.find(e => e.uniqueName === 'power') as ShareConfig.PowerEntry;
-        expect(power.navigationAssignment).to.deep.equal([{ topic, navigation: { prev: 'main' } }]);
+        expect(power.navigationAssignment).to.deep.equal([{ topic, navigation: { prev: 'main', next: '///unlock' } }]);
         expect(power.scriptNavigation).to.equal(undefined);
         expect(power.scriptName).to.equal('power');
         const updatedChart = result.updatedPages.find(e => e.uniqueName === 'temp_chart') as ShareConfig.ChartEntry;
@@ -2942,7 +2958,7 @@ describe('lib/configuration - planScriptToAdmin: equivalence of the runtime page
             ['main', {}],
             ['newicons', { prev: 'main' }],
             ['newicons2', { prev: 'newicons' }],
-            ['iconcheck', { prev: 'newicons2' }],
+            ['iconcheck', { prev: 'newicons2', next: '///unlock' }],
         ]);
         expect(result.plan.skipped).to.deep.equal([]);
         expectIdempotent(result);
@@ -2959,7 +2975,7 @@ describe('lib/configuration - planScriptToAdmin: equivalence of the runtime page
             ['main22', 'create', { prev: 'main' }],
             ['powerpage', 'assignNavigation', { prev: 'main22', next: 'cardThermo2' }],
             // subgrid2 holds the volume item with minValue / maxValue - the admin takes them
-            ['subgrid2', 'create', { prev: 'cardThermo2' }],
+            ['subgrid2', 'create', { prev: 'cardThermo2', next: '///unlock' }],
             ['hidden', 'create', { home: 'main' }],
         ]);
         expect(result.plan.skipped).to.deep.equal([
@@ -2982,7 +2998,7 @@ describe('lib/configuration - planScriptToAdmin: equivalence of the runtime page
         expect(result.plan.pages.map(p => [p.uniqueName, p.action, p.navigation])).to.deep.equal([
             ['main', 'create', {}],
             ['SensorGrid3', 'create', { prev: 'main' }],
-            ['SensorGrid', 'create', { prev: 'SensorGrid3' }],
+            ['SensorGrid', 'create', { prev: 'SensorGrid3', next: '///unlock' }],
             ['qrCode', 'removeReference', {}],
             ['this_Thermostat', 'create', { parent: 'main' }],
             ['drei', 'create', { parent: 'Only4' }],
@@ -3116,8 +3132,11 @@ describe('lib/configuration - planScriptToAdmin: navigation of the panel stays t
      * @param navigation Navigation of the panel.
      */
     function ringOf(navigation: readonly NavigationItemConfig[]): Ring {
+        // the way into the service menu counts (the ends of the ring), other system nodes do not
         const link = (target: string | undefined): string | undefined =>
-            target === undefined || target.startsWith('///') ? undefined : target;
+            target === undefined || (target.startsWith('///') && target !== ShareConfig.serviceNodeName)
+                ? undefined
+                : target;
         const ring: Ring = {};
         for (const node of navigation) {
             if (!node || node.name.startsWith('///')) {
@@ -3161,7 +3180,13 @@ describe('lib/configuration - planScriptToAdmin: navigation of the panel stays t
             screensaverConfig: structuredClone(screensaverConfig),
             screensaverNotify: structuredClone(screensaverNotify),
         });
-        const option = { name: panelName, topic, pages: script.pages, navigation: script.navigation };
+        const option = {
+            name: panelName,
+            topic,
+            pages: script.pages,
+            navigation: script.navigation,
+            globalPageIds: script.globalPageIds,
+        };
         // like Panel.preInit: the default start page before the admin pages are merged
         ensureMainPage(option, panelName);
         await new AdminConfiguration(adapter).processentrys(option as never);
@@ -3264,11 +3289,12 @@ describe('lib/configuration - planScriptToAdmin: navigation of the panel stays t
 
     it('reproduces the ring of the emu panel after the conversion, the dead power reference healed', async () => {
         const before = await navigationOf(emuConfig(), emuPageConfig());
-        expect(before.main).to.deep.equal({ next: 'Unlock1' });
+        // the ends of the ring lead into the service menu
+        expect(before.main).to.deep.equal({ prev: '///service', next: 'Unlock1' });
         expect(before.entities1).to.deep.equal({ prev: 'iconcheck', next: 'entities2' });
         expect(before.testAbfall).to.deep.equal({ prev: 'chart', next: 'newicons' });
         expect(before.schedule).to.deep.equal({ prev: 'thermo', next: 'powerpage' });
-        expect(before.adminpages).to.deep.equal({ prev: 'powerpage' });
+        expect(before.adminpages).to.deep.equal({ prev: 'powerpage', next: '///service' });
 
         const result = plan(emuConfig(), { pageConfig: emuPageConfig(), screensaverMode: 'standard' });
         expect(result.plan.skipped.map(s => s.uniqueName)).to.deep.equal(['entities1', 'entities2']);
@@ -3284,7 +3310,7 @@ describe('lib/configuration - planScriptToAdmin: navigation of the panel stays t
             ['thermo', 'create', { prev: 'grid3b' }],
             ['schedule', 'create', { prev: 'thermo' }],
             ['powerpage', 'removeReference', {}],
-            ['adminpages', 'create', { prev: 'schedule' }],
+            ['adminpages', 'create', { prev: 'schedule', next: '///unlock' }],
         ]);
 
         const after = await navigationOf(
@@ -3296,7 +3322,7 @@ describe('lib/configuration - planScriptToAdmin: navigation of the panel stays t
         const expected: Ring = structuredClone(before);
         delete expected.powerpage;
         expected.schedule = { prev: 'thermo', next: 'adminpages' };
-        expected.adminpages = { prev: 'schedule' };
+        expected.adminpages = { prev: 'schedule', next: '///service' };
         expect(after).to.deep.equal(expected);
     });
 
@@ -3313,8 +3339,8 @@ describe('lib/configuration - planScriptToAdmin: navigation of the panel stays t
         };
         const ring = await navigationOf(config, [shortcut]);
         expect(ring.P).to.deep.equal({ prev: 'main', next: 'settings' });
-        expect(ring.settings).to.deep.equal({ prev: 'p5' });
-        expect(ring.main).to.deep.equal({ next: 'P' });
+        expect(ring.settings).to.deep.equal({ prev: 'p5', next: '///service' });
+        expect(ring.main).to.deep.equal({ prev: '///service', next: 'P' });
         // the old successor of main keeps its predecessor as well - P is a shortcut, not a link in the ring
         expect(ring.p1).to.deep.equal({ prev: 'main', next: 'p2' });
     });
@@ -3322,13 +3348,13 @@ describe('lib/configuration - planScriptToAdmin: navigation of the panel stays t
     it('keeps the first page behind the default start page when the script has no main (U5)', async () => {
         const config = baseConfig({ pages: [gridPage('p1'), gridPage('p2'), gridPage('p3')] });
         const before = await navigationOf(config, []);
-        expect(before.main).to.deep.equal({ next: 'p1' });
+        expect(before.main).to.deep.equal({ prev: '///service', next: 'p1' });
         expect(before.p1).to.deep.equal({ prev: 'main', next: 'p2' });
         const result = plan(config, { screensaverMode: 'standard' });
         expect(result.plan.pages.map(p => [p.uniqueName, p.navigation])).to.deep.equal([
             ['p1', { prev: 'main' }],
             ['p2', { prev: 'p1' }],
-            ['p3', { prev: 'p2' }],
+            ['p3', { prev: 'p2', next: '///unlock' }],
         ]);
         expect(await ringAfter(config)).to.deep.equal(before);
     });
@@ -3432,6 +3458,64 @@ describe('lib/configuration - planScriptToAdmin: navigation of the panel stays t
         );
         expect(after).to.deep.equal(before);
     });
+    it('keeps the ring when a global page is taken over - no provisional home from the global sub page node', async () => {
+        const global: ScriptConfig.globalPagesConfig = {
+            version: '0.21.6',
+            type: 'globalConfig',
+            subPages: [gridPage('g')],
+        };
+        const meta = 'nspanel-lovelace-ui.0';
+        const saved = DB.objects[meta];
+        DB.objects[meta] = { _id: meta, type: 'meta', common: {}, native: { globalConfigRaw: global } } as never;
+        try {
+            // panel A: g in the middle of the ring, panel B: g on the last place
+            for (const pages of [
+                [gridPage('main'), page({ globalLink: 'g' }), gridPage('a')],
+                [gridPage('main'), gridPage('a'), page({ globalLink: 'g' })],
+            ]) {
+                const config = baseConfig({ pages });
+                const before = await navigationOf(config, []);
+                const result = plan(config, { screensaverMode: 'standard', globalConfigRaw: global });
+                expect(result.plan.pages.map(p => p.uniqueName)).to.include('g');
+                const after = await navigationOf(
+                    result.cleanedRaw,
+                    result.updatedPages,
+                    result.screensaverEntry ? [result.screensaverEntry] : [],
+                    result.newNotify,
+                );
+                expect(after).to.deep.equal(before);
+                expect(after.g.home, 'no home link').to.equal(undefined);
+            }
+        } finally {
+            if (saved) {
+                DB.objects[meta] = saved;
+            } else {
+                delete DB.objects[meta];
+            }
+        }
+    });
+
+    it('keeps the way into the service menu at both ends of the ring', async () => {
+        const skippedPage = (name: string): ScriptConfig.PageType => gridPage(name, { heading: '' });
+        const cases: [string, ScriptConfig.PageType[]][] = [
+            ['ring converted completely', [gridPage('main'), gridPage('a'), gridPage('b')]],
+            ['only the end converted', [gridPage('main'), skippedPage('a'), gridPage('b')]],
+            ['the end stays in the script', [gridPage('main'), gridPage('a'), skippedPage('b')]],
+            ['the start page stays in the script', [skippedPage('main'), gridPage('a'), gridPage('b')]],
+            ['a ring of the start page only', [gridPage('main')]],
+            ['a ring of one page without start page', [gridPage('p')]],
+        ];
+        for (const [name, pages] of cases) {
+            const config = baseConfig({ pages });
+            const before = await navigationOf(config, []);
+            const after = await ringAfter(config);
+            expect(after, name).to.deep.equal(before);
+            // exactly one way into the service menu on each side
+            const right = Object.values(after).filter(l => l.next === ShareConfig.serviceNodeName);
+            const left = Object.values(after).filter(l => l.prev === ShareConfig.serviceNodeName);
+            expect([left.length, right.length], name).to.deep.equal([1, 1]);
+        }
+    });
 });
 
 /* ---------------------------------------------------------------------------------------------
@@ -3470,7 +3554,7 @@ describe('lib/configuration - planScriptToAdmin: pages of the global script', fu
             ['main', 'create', false, {}],
             ['g1', 'create', true, { prev: 'main' }],
             // renamed through the link: an admin entry of its own
-            ['y', 'create', true, { prev: 'g1' }],
+            ['y', 'create', true, { prev: 'g1', next: '///unlock' }],
             // unlinked global sub pages every panel gets (g2 is only renamed for this panel, so it stays global)
             ['g2', 'create', true, { next: 'g1' }],
             ['g9', 'create', true, { home: 'main' }],
@@ -3504,7 +3588,7 @@ describe('lib/configuration - planScriptToAdmin: pages of the global script', fu
             ['g1', { prev: 'main' }],
             ['g2', { prev: 'g1' }],
             ['main', {}],
-            ['a', { prev: 'g2' }],
+            ['a', { prev: 'g2', next: '///unlock' }],
         ]);
         // g2 is not in the panel script - only the link of g1 goes
         expect(result.removedFromScript).to.deep.equal(['g1', 'main', 'a']);
@@ -3527,8 +3611,8 @@ describe('lib/configuration - planScriptToAdmin: pages of the global script', fu
         expect(g1).to.deep.include({ action: 'assignNavigation', global: true, existing: 'identical' });
         const entry = second.updatedPages.find(e => e.uniqueName === 'g1');
         expect(entry?.navigationAssignment).to.deep.equal([
-            { topic: otherPanel.topic, navigation: { prev: 'main' } },
-            { topic, navigation: { prev: 'main' } },
+            { topic: otherPanel.topic, navigation: { prev: 'main', next: '///unlock' } },
+            { topic, navigation: { prev: 'main', next: '///unlock' } },
         ]);
         expect(second.newPages.map(e => e.uniqueName)).to.deep.equal(['main']);
         expect(second.removedFromScript).to.deep.equal(['main', 'g1']);
@@ -3552,7 +3636,7 @@ describe('lib/configuration - planScriptToAdmin: pages of the global script', fu
                 pageConfig: [existing],
                 ...(decision ? { globalDecisions: { g1: decision } } : {}),
             });
-        const ownAssignment = { topic, navigation: { prev: 'main' } };
+        const ownAssignment = { topic, navigation: { prev: 'main', next: '///unlock' } };
 
         // default: keep the admin content, assign the panel
         const keep = run();

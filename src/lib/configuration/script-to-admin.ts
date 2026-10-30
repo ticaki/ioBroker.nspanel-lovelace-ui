@@ -53,6 +53,7 @@ import {
     type ScreensaverNotifyConfig,
     type ScreensaverWeatherItems,
     type ScrollCard,
+    servicePageName,
     type Thermo2CircuitConfig,
     type Thermo2Entry,
     type Thermo2SortOrder,
@@ -722,7 +723,11 @@ function pageNavigation(page: Dict, isSub: boolean): NavigationLinks {
  * A successor that is converted as well names the page as its `prev` itself; stating `next` there
  * would break the chains of existing admin pages hooked between the two (`applyPendingNavigations`
  * keeps an explicit `next` over the chain order). Without a start page in the script the first page
- * follows the default `main` of the adapter.
+ * follows the default `main` of the adapter. The end of the ring leads into the service menu like the config
+ * manager links it (`navigation[last].right`): the converted last page gets `next` {@link servicePageName} (the
+ * admin maps it to the service node). The left end needs nothing: the start page of the script stays first (and
+ * keeps the link from the runtime), or it is converted and takes the link over from the default start page node
+ * it replaces; without a start page in the script the first page follows that default node.
  *
  * @param name Page of `pages`.
  * @param ring Surviving pages of `pages` in navigation order (`main` first).
@@ -738,8 +743,21 @@ function ringLinks(name: string, ring: readonly string[], staysInScript: (name: 
         // (ensureMainPage) - the first page has to stay behind it
         links.prev = mainPageName;
     }
-    const next = index === -1 ? undefined : ring[index + 1];
-    if (next !== undefined && staysInScript(next)) {
+    if (index === -1) {
+        return links;
+    }
+    if (index === ring.length - 1) {
+        // The config manager links the last node of the ring to the service menu on the right. A page of
+        // the script left in front of it loses that link at runtime (the admin splices this page behind it),
+        // so the converted last page has to carry it. Not the start page: it replaces the default start page
+        // node (ensureMainPage), which already holds the service links of an empty script ring.
+        if (name !== mainPageName) {
+            links.next = servicePageName;
+        }
+        return links;
+    }
+    const next = ring[index + 1];
+    if (staysInScript(next)) {
         links.next = next;
     }
     return links;

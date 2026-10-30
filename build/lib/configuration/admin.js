@@ -577,8 +577,10 @@ Stack: ${stack}`
         newPage.uniqueID = import_default_pages.mainPageName;
       }
       let overrideExisting = this.adapter.config.adminOverridesScriptPages || newPage.uniqueID === import_default_pages.mainPageName;
+      let replacesGlobal = false;
       if (!overrideExisting && panelAssignment !== void 0 && ((_d = option.globalPageIds) == null ? void 0 : _d.includes(newPage.uniqueID)) && !((_e = option.generatedPageIds) == null ? void 0 : _e.includes(newPage.uniqueID)) && option.pages.some((a) => a.uniqueID === newPage.uniqueID)) {
         overrideExisting = true;
+        replacesGlobal = true;
         this.log.info(
           `Page '${newPage.uniqueID}' of the global script configuration is replaced by the admin page assigned to this panel.`
         );
@@ -605,7 +607,7 @@ Stack: ${stack}`
         }
         replacedIndex = option.navigation.findIndex((b) => b && b.name === newPage.uniqueID);
         if (replacedIndex !== -1) {
-          replacedNav = (_g = option.navigation[replacedIndex]) != null ? _g : void 0;
+          replacedNav = replacesGlobal ? void 0 : (_g = option.navigation[replacedIndex]) != null ? _g : void 0;
           option.navigation.splice(replacedIndex, 1);
         }
       }

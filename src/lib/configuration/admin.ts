@@ -645,7 +645,10 @@ export class AdminConfiguration extends BaseClass {
             let overrideExisting = this.adapter.config.adminOverridesScriptPages || newPage.uniqueID === mainPageName;
             // A page of the global script configuration gives way to an admin page assigned to this panel by
             // its topic (e.g. after the conversion of the panel script took it over) - pages of the panel's
-            // own script still win.
+            // own script still win. The links of the replaced node are not inherited: the node of a global
+            // sub page the panel does not link carries the links of the global script (or the provisional
+            // `home: main` of the config manager), not the place the admin assignment gives the page.
+            let replacesGlobal = false;
             if (
                 !overrideExisting &&
                 panelAssignment !== undefined &&
@@ -654,6 +657,7 @@ export class AdminConfiguration extends BaseClass {
                 option.pages.some((a: PageBase) => a.uniqueID === newPage.uniqueID)
             ) {
                 overrideExisting = true;
+                replacesGlobal = true;
                 this.log.info(
                     `Page '${newPage.uniqueID}' of the global script configuration is replaced by the admin page assigned to this panel.`,
                 );
@@ -696,7 +700,7 @@ export class AdminConfiguration extends BaseClass {
                 }
                 replacedIndex = option.navigation.findIndex(b => b && b.name === newPage.uniqueID);
                 if (replacedIndex !== -1) {
-                    replacedNav = option.navigation[replacedIndex] ?? undefined;
+                    replacedNav = replacesGlobal ? undefined : (option.navigation[replacedIndex] ?? undefined);
                     option.navigation.splice(replacedIndex, 1);
                 }
             }

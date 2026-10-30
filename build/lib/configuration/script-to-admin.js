@@ -445,8 +445,17 @@ function ringLinks(name, ring, staysInScript) {
   } else if (index === 0 && !ring.includes(import_default_pages.mainPageName)) {
     links.prev = import_default_pages.mainPageName;
   }
-  const next = index === -1 ? void 0 : ring[index + 1];
-  if (next !== void 0 && staysInScript(next)) {
+  if (index === -1) {
+    return links;
+  }
+  if (index === ring.length - 1) {
+    if (name !== import_default_pages.mainPageName) {
+      links.next = import_adminShareConfig.servicePageName;
+    }
+    return links;
+  }
+  const next = ring[index + 1];
+  if (staysInScript(next)) {
     links.next = next;
   }
   return links;
