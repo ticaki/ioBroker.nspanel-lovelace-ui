@@ -2280,7 +2280,13 @@ describe('lib/configuration - planScriptToAdmin: cardThermo2 and cardMedia', () 
                 { media: { ...media, volumePresets: ['laut?150'] } },
                 "media.volumePresets: 'laut?150' - the admin rounds the value and keeps it between 0 and 100",
             ],
-            [{ media: { ...media, speakerList: ['a', 'a'] } }, 'media.speakerList: repeated names'],
+            [{ media: { ...media, speakerList: [' a'] } }, 'media.speakerList: expected trimmed, non-empty names'],
+            [{ media: { ...media, playList: ['a', ''] } }, 'media.playList: expected trimmed, non-empty names'],
+            [{ media: { ...media, favoriteList: 'a' } }, 'media.favoriteList: expected a list of names'],
+            [
+                { media: { ...media, volumePresets: [] } },
+                'media.volumePresets: expected a list with at least one preset',
+            ],
             [
                 { media: { ...media, itemsColorOff: { volumePresets: Red } } },
                 'media.itemsColorOff.volumePresets: not available in the admin',
@@ -2296,6 +2302,40 @@ describe('lib/configuration - planScriptToAdmin: cardThermo2 and cardMedia', () 
                 { uniqueName: 'm', type: 'cardMedia', reason: 'fieldNotSupported', detail },
             ]);
         }
+    });
+
+    it('takes an empty name list of a cardMedia page as a missing field and deduplicates repeated names', () => {
+        const media = { id: 'squeezeboxrpc.0.Players.Familienzimmer' };
+        const convert = (extra: Record<string, unknown>): ShareConfig.MediaEntry => {
+            const result = plan(
+                baseConfig({
+                    subPages: [
+                        page({
+                            type: 'cardMedia',
+                            uniqueName: 'm',
+                            heading: 'M',
+                            items: [],
+                            media: { ...media, ...extra },
+                        }),
+                    ],
+                }),
+            );
+            expect(result.plan.skipped, JSON.stringify(extra)).to.deep.equal([]);
+            expect(result.newPages.map(e => e.uniqueName)).to.deep.equal(['m']);
+            const entry = result.newPages[0];
+            if (entry.card !== 'cardMedia') {
+                throw new Error(`expected a cardMedia entry, got ${entry.card}`);
+            }
+            return entry;
+        };
+        // the media tools take every device for [] as well as for a missing list - the admin writes no list
+        const empty = convert({ speakerList: [], playList: [], favoriteList: [] });
+        expect(empty).to.not.have.any.keys('speakerList', 'playList', 'favoriteList');
+        expect(convert({}).speakerList).to.equal(undefined);
+        // the tools match with includes, the admin builder deduplicates anyway
+        expect(convert({ speakerList: ['a', 'a'] }).speakerList).to.deep.equal(['a']);
+        expect(convert({ playList: ['x', 'y', 'x'] }).playList).to.deep.equal(['x', 'y']);
+        expect(convert({ favoriteList: ['f'] }).favoriteList).to.deep.equal(['f']);
     });
 });
 

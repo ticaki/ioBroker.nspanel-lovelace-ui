@@ -981,8 +981,12 @@ const mediaToolbarItems: readonly MediaToolbarItem[] = [
 ];
 
 /**
- * A list of names of a media page: the admin builder trims, drops empty and repeated names - the list
- * has to be clean already.
+ * A list of names of a media page (`speakerList`, `playList`, `favoriteList`) in the admin form.
+ *
+ * An empty list means the same as a missing field on both paths (the media tools take every device,
+ * the admin builder writes no list) - it is dropped. Repeated names are deduplicated: the tools match
+ * with `includes`, the admin builder deduplicates anyway. A name with blanks at the edge or an empty
+ * name is rejected: the admin builder would trim or drop it and the list would match other devices.
  *
  * @param value Value of the script.
  * @param where Field name for the detail.
@@ -992,17 +996,15 @@ function mediaNameList(value: unknown, where: string): string[] | undefined {
         return undefined;
     }
     const reason: ConvertSkipReason = 'fieldNotSupported';
-    if (!Array.isArray(value) || value.length === 0) {
-        throw new ConvertError(reason, `${where}: expected a list with at least one name`);
+    if (!Array.isArray(value)) {
+        throw new ConvertError(reason, `${where}: expected a list of names`);
     }
     const names = value as unknown[];
     if (!names.every(n => typeof n === 'string' && n.trim() === n && n !== '')) {
         throw new ConvertError(reason, `${where}: expected trimmed, non-empty names`);
     }
-    if (new Set(names).size !== names.length) {
-        throw new ConvertError(reason, `${where}: repeated names`);
-    }
-    return [...(names as string[])];
+    const unique = [...new Set(names as string[])];
+    return unique.length ? unique : undefined;
 }
 
 /**

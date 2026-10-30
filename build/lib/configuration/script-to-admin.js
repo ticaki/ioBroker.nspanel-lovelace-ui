@@ -658,17 +658,15 @@ function mediaNameList(value, where) {
     return void 0;
   }
   const reason = "fieldNotSupported";
-  if (!Array.isArray(value) || value.length === 0) {
-    throw new ConvertError(reason, `${where}: expected a list with at least one name`);
+  if (!Array.isArray(value)) {
+    throw new ConvertError(reason, `${where}: expected a list of names`);
   }
   const names = value;
   if (!names.every((n) => typeof n === "string" && n.trim() === n && n !== "")) {
     throw new ConvertError(reason, `${where}: expected trimmed, non-empty names`);
   }
-  if (new Set(names).size !== names.length) {
-    throw new ConvertError(reason, `${where}: repeated names`);
-  }
-  return [...names];
+  const unique = [...new Set(names)];
+  return unique.length ? unique : void 0;
 }
 function convertMediaPage(page, common, topic) {
   const reason = "fieldNotSupported";
