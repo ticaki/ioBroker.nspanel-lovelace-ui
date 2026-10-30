@@ -1744,12 +1744,11 @@ describe('lib/configuration - planScriptToAdmin: pages', () => {
         expect(twice.cleanedRaw.subPages, 'the ignored sub page stays').to.have.length(1);
     });
 
-    it('skips a page with a navigation icon, an empty heading, a heading that is a state id, an unknown field or a navigation override', () => {
+    it('skips a page with an empty heading, a heading that is a state id, an unknown field or a navigation override', () => {
         const result = plan(
             baseConfig({
                 navigation: [{ name: 'f', page: 'f', left: { single: 'x' } }],
                 subPages: [
-                    gridPage('a', { prevIcon: 'arrow-left' }),
                     gridPage('b', { heading: '' }),
                     gridPage('c', { heading: 'alias.0.Headline.ACTUAL' }),
                     gridPage('d', { dpInit: 'x' }),
@@ -1760,7 +1759,6 @@ describe('lib/configuration - planScriptToAdmin: pages', () => {
             }),
         );
         expect(result.plan.skipped.map(s => [s.uniqueName, s.reason, s.detail])).to.deep.equal([
-            ['a', 'fieldNotSupported', 'prevIcon: the admin has no navigation icons'],
             ['b', 'fieldNotSupported', 'heading: empty - the admin shows the uniqueName instead'],
             ['c', 'fieldNotSupported', 'heading: looks like a state id - the admin shows the text itself'],
             ['d', 'fieldNotSupported', 'page.dpInit: not available in the admin'],
@@ -1768,6 +1766,29 @@ describe('lib/configuration - planScriptToAdmin: pages', () => {
             ['f', 'fieldNotSupported', 'navigation: the script overrides the links of the page'],
         ]);
         expect(result.plan.pages.map(p => p.uniqueName)).to.deep.equal(['g']);
+    });
+
+    it('ignores the navigation icons and colors of a page like useColor - the config manager never reads them', () => {
+        const icons = {
+            prevIcon: 'arrow-left',
+            prevIconColor: { red: 255, green: 0, blue: 0 },
+            nextIcon: 'arrow-right',
+            nextIconColor: { red: 0, green: 255, blue: 0 },
+            homeIcon: 'home',
+            homeIconColor: { red: 0, green: 0, blue: 255 },
+            parentIcon: 'arrow-up',
+            parentIconColor: { red: 1, green: 2, blue: 3 },
+        };
+        const result = plan(baseConfig({ subPages: [gridPage('a', { ...icons, useColor: true })] }));
+        expect(result.plan.skipped).to.deep.equal([]);
+        expect(result.plan.pages.map(p => [p.uniqueName, p.action])).to.deep.equal([['a', 'create']]);
+        expect(result.newPages.map(e => e.uniqueName)).to.deep.equal(['a']);
+        expect(result.newPages[0]).to.not.have.any.keys(...Object.keys(icons), 'useColor');
+        const serialized = JSON.stringify(result.newPages[0]);
+        for (const key of Object.keys(icons)) {
+            expect(serialized, `${key} must not reach the admin entry`).to.not.include(`"${key}"`);
+        }
+        expect(serialized).to.not.match(/arrow-left|arrow-right|arrow-up/);
     });
 
     it('removes cardQR, cardAlarm and cardUnlock references from the script (adminOnly)', () => {

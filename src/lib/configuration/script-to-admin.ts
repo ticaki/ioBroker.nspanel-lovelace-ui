@@ -578,10 +578,14 @@ const pageMappedKeys = [
     'hiddenByTrigger',
     'alwaysOnDisplay',
 ] as const;
-/** fields of a script page the config manager does not read */
-const pageIgnoredKeys = ['useColor', 'subPage', 'filterType'] as const;
-const scrollKeys = ['scrollType', 'scrollPresentation', 'scrollAutoTiming'] as const;
-const navigationIconKeys = [
+/**
+ * fields of a script page the config manager does not read - the navigation icons and their colors
+ * among them: the arrows come from the navigation class on both paths
+ */
+const pageIgnoredKeys = [
+    'useColor',
+    'subPage',
+    'filterType',
     'prevIcon',
     'prevIconColor',
     'nextIcon',
@@ -591,6 +595,7 @@ const navigationIconKeys = [
     'parentIcon',
     'parentIconColor',
 ] as const;
+const scrollKeys = ['scrollType', 'scrollPresentation', 'scrollAutoTiming'] as const;
 
 type PageCommon = {
     uniqueName: string;
@@ -630,11 +635,6 @@ function entryCoversPanel(entry: PageConfigEntry, topic: string): boolean {
  */
 function pageNavigation(page: Dict, isSub: boolean): NavigationLinks {
     const reason: ConvertSkipReason = 'fieldNotSupported';
-    for (const key of navigationIconKeys) {
-        if (page[key] !== undefined && page[key] !== null) {
-            throw new ConvertError(reason, `${key}: the admin has no navigation icons`);
-        }
-    }
     if (!isSub) {
         return {};
     }

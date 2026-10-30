@@ -93,7 +93,7 @@ function bool(value, reason, where) {
   }
   return value;
 }
-function colorScaleToAdmin(value, reason, where, allowBest) {
+function colorScaleToAdmin(value, reason, where) {
   var _a;
   if (value === void 0 || value === null) {
     return void 0;
@@ -108,9 +108,6 @@ function colorScaleToAdmin(value, reason, where, allowBest) {
   }
   if (best === void 0 || best === null) {
     return scale;
-  }
-  if (!allowBest) {
-    throw new ConvertError(reason, `${where}.color_best: not available in the admin`);
   }
   const hex = (_a = rgbToHex(best, reason, `${where}.color_best`)) != null ? _a : "#000000";
   const r = parseInt(hex.substring(1, 3), 16);
@@ -255,7 +252,7 @@ function convertPageItem(item, where) {
   if (targetPageLongPress !== void 0) {
     admin.targetPageLongPress = targetPageLongPress;
   }
-  const scale = colorScaleToAdmin(item.colorScale, reason, `${where}.colorScale`, false);
+  const scale = colorScaleToAdmin(item.colorScale, reason, `${where}.colorScale`);
   if (scale !== void 0) {
     admin.scale = scale;
   }
@@ -358,9 +355,10 @@ const pageMappedKeys = [
   "hiddenByTrigger",
   "alwaysOnDisplay"
 ];
-const pageIgnoredKeys = ["useColor", "subPage", "filterType"];
-const scrollKeys = ["scrollType", "scrollPresentation", "scrollAutoTiming"];
-const navigationIconKeys = [
+const pageIgnoredKeys = [
+  "useColor",
+  "subPage",
+  "filterType",
   "prevIcon",
   "prevIconColor",
   "nextIcon",
@@ -370,6 +368,7 @@ const navigationIconKeys = [
   "parentIcon",
   "parentIconColor"
 ];
+const scrollKeys = ["scrollType", "scrollPresentation", "scrollAutoTiming"];
 function entryCoversPanel(entry, topic) {
   var _a;
   const assignments = (_a = entry.navigationAssignment) != null ? _a : [];
@@ -382,11 +381,6 @@ function entryCoversPanel(entry, topic) {
 }
 function pageNavigation(page, isSub) {
   const reason = "fieldNotSupported";
-  for (const key of navigationIconKeys) {
-    if (page[key] !== void 0 && page[key] !== null) {
-      throw new ConvertError(reason, `${key}: the admin has no navigation icons`);
-    }
-  }
   if (!isSub) {
     return {};
   }
@@ -952,7 +946,7 @@ function convertScreensaverItem(element, area, where, defaults) {
   const iconColor = element.ScreensaverEntityIconColor;
   if (iconColor !== void 0 && iconColor !== null && iconColor !== "") {
     if (isDict(iconColor) && (iconColor.val_min !== void 0 || iconColor.val_max !== void 0)) {
-      const scale = colorScaleToAdmin(iconColor, reason, `${where}.ScreensaverEntityIconColor`, true);
+      const scale = colorScaleToAdmin(iconColor, reason, `${where}.ScreensaverEntityIconColor`);
       item.colorScale = scale;
     } else if (typeof iconColor === "string") {
       if (!colorOn) {
