@@ -245,22 +245,11 @@ function bool(value: unknown, reason: ConvertSkipReason, where: string): boolean
 /**
  * The color scale of a script item as the admin stores it (`color_best` as {r,g,b}).
  *
- * `color_best` of a page item is rejected: the script form {red, green, blue} fails the guard of the
- * config manager (the scale is dropped at runtime) and the admin form is turned back into exactly that
- * form by main.ts - neither way keeps the behaviour. A screensaver item passes its scale through
- * unchanged on both paths, there the color is converted.
- *
  * @param value Value of the script.
  * @param reason Reason to report.
  * @param where Field name for the detail.
- * @param allowBest Convert `color_best` instead of rejecting it.
  */
-function colorScaleToAdmin(
-    value: unknown,
-    reason: ConvertSkipReason,
-    where: string,
-    allowBest: boolean,
-): IconColorElement | undefined {
+function colorScaleToAdmin(value: unknown, reason: ConvertSkipReason, where: string): IconColorElement | undefined {
     if (value === undefined || value === null) {
         return undefined;
     }
@@ -274,9 +263,6 @@ function colorScaleToAdmin(
     }
     if (best === undefined || best === null) {
         return scale;
-    }
-    if (!allowBest) {
-        throw new ConvertError(reason, `${where}.color_best: not available in the admin`);
     }
     const hex = rgbToHex(best, reason, `${where}.color_best`) ?? '#000000';
     const r = parseInt(hex.substring(1, 3), 16);
@@ -454,7 +440,7 @@ function convertPageItem(item: Dict, where: string): AdminPageItemConfig {
     if (targetPageLongPress !== undefined) {
         admin.targetPageLongPress = targetPageLongPress;
     }
-    const scale = colorScaleToAdmin(item.colorScale, reason, `${where}.colorScale`, false);
+    const scale = colorScaleToAdmin(item.colorScale, reason, `${where}.colorScale`);
     if (scale !== undefined) {
         admin.scale = scale;
     }
@@ -1343,7 +1329,7 @@ function convertScreensaverItem(
     if (iconColor !== undefined && iconColor !== null && iconColor !== '') {
         if (isDict(iconColor) && (iconColor.val_min !== undefined || iconColor.val_max !== undefined)) {
             // the config manager treats everything with val_min / val_max as scale
-            const scale = colorScaleToAdmin(iconColor, reason, `${where}.ScreensaverEntityIconColor`, true);
+            const scale = colorScaleToAdmin(iconColor, reason, `${where}.ScreensaverEntityIconColor`);
             item.colorScale = scale;
         } else if (typeof iconColor === 'string') {
             if (!colorOn) {

@@ -848,4 +848,29 @@ describe('lib/classes/config-manager - page items (golden master)', function () 
             expect(a, role).to.deep.equal(b);
         }
     });
+
+    it('keeps a color scale with color_best in the script form and normalizes the color to {r, g, b}', async () => {
+        const scriptScale = { val_min: 0, val_max: 100, val_best: 50, color_best: { red: 1, green: 2, blue: 3 } };
+        const adminScale = { val_min: 0, val_max: 100, val_best: 50, color_best: { r: 1, g: 2, b: 3 } };
+        for (const fn of ['item', 'navi'] as const) {
+            const item =
+                fn === 'navi'
+                    ? {
+                          id: DEVICES.full('value.temperature'),
+                          navigate: true,
+                          targetPage: 'naviTarget',
+                          name: 'Temp',
+                          colorScale: scriptScale,
+                      }
+                    : { ...KITCHEN_SINK_CONST, id: DEVICES.full('value.temperature'), colorScale: scriptScale };
+            const result = await run(fn, item, fn === 'navi' ? PAGES.grid : PAGES.entities);
+            expect(result.error, `${fn}: no error`).to.equal(undefined);
+            const after = result.itemAfter as { colorScale?: unknown };
+            expect(after.colorScale, `${fn}: item normalized once at the entry`).to.deep.equal(adminScale);
+            const json = JSON.stringify(normalize(result.itemConfig));
+            expect(json, `${fn}: scale handed over with the admin form of color_best`).to.include(
+                JSON.stringify(adminScale),
+            );
+        }
+    });
 });

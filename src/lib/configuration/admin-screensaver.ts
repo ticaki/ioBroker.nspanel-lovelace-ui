@@ -146,9 +146,8 @@ export function screensaverItemToScript(
         element.ScreensaverEntityOffColor = offColor;
     }
     if (item.colorScale) {
-        // the admin stores color_best as {r,g,b} - the form the adapter works with (convertColorScaleBest
-        // accepts both), only the script type spells it {red,green,blue}
-        element.ScreensaverEntityIconColor = item.colorScale as unknown as ScriptConfig.IconColorElement;
+        // the admin stores color_best as {r,g,b} - the script type accepts that form as well
+        element.ScreensaverEntityIconColor = item.colorScale;
     } else if (item.colorState) {
         // the color comes from a state (config manager: getIconColor reads it)
         element.ScreensaverEntityIconColor = item.colorState;

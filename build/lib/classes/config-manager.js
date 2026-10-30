@@ -1391,8 +1391,20 @@ class ConfigManager extends import_library.BaseClass {
   isPageBaseItem(item) {
     return !("native" in item);
   }
+  /**
+   * Brings `color_best` of the item's color scale into the form the runtime works with ({r, g, b}) - a script
+   * writes it as {red, green, blue}. Done once here, so every card below hands the scale over unchanged.
+   *
+   * @param item Item of the script.
+   */
+  normalizeColorScale(item) {
+    if (this.isPageBaseItem(item) && globals.isIconColorScaleElement(item.colorScale) && item.colorScale.color_best) {
+      item.colorScale = globals.normalizeIconColorElement(item.colorScale);
+    }
+  }
   async getPageNaviItemConfig(item, page) {
     var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l;
+    this.normalizeColorScale(item);
     if (this.isNativePageItem(item)) {
       if (!(0, import_type_pageItem.isPageItemDataItemsOptions)(item.native)) {
         throw new Error(`Native item is not a valid PageItemDataItemsOptions`);
@@ -2345,6 +2357,7 @@ class ConfigManager extends import_library.BaseClass {
   async getPageItemConfig(item, page, messages = []) {
     var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _A, _B, _C, _D;
     let itemConfig = void 0;
+    this.normalizeColorScale(item);
     if (item.navigate) {
       if (!item.targetPage || typeof item.targetPage !== "string") {
         throw new Error(`TargetPage missing in ${item && "id" in item && item.id || "no id"}!`);

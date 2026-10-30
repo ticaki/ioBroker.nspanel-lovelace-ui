@@ -1611,10 +1611,27 @@ export class ConfigManager extends BaseClass {
         return !('native' in item);
     }
 
+    /**
+     * Brings `color_best` of the item's color scale into the form the runtime works with ({r, g, b}) - a script
+     * writes it as {red, green, blue}. Done once here, so every card below hands the scale over unchanged.
+     *
+     * @param item Item of the script.
+     */
+    private normalizeColorScale(item: ScriptConfig.PageItem): void {
+        if (
+            this.isPageBaseItem(item) &&
+            globals.isIconColorScaleElement(item.colorScale) &&
+            item.colorScale.color_best
+        ) {
+            item.colorScale = globals.normalizeIconColorElement(item.colorScale);
+        }
+    }
+
     async getPageNaviItemConfig(
         item: ScriptConfig.PageItem,
         page: ScriptConfig.PageType,
     ): Promise<NSPanel.PageItemDataItemsOptions | undefined> {
+        this.normalizeColorScale(item);
         if (this.isNativePageItem(item)) {
             if (!isPageItemDataItemsOptions(item.native)) {
                 throw new Error(`Native item is not a valid PageItemDataItemsOptions`);
@@ -2742,6 +2759,7 @@ export class ConfigManager extends BaseClass {
         pageConfig?: ScriptConfig.PageType;
     }> {
         let itemConfig: NSPanel.PageItemDataItemsOptions | undefined = undefined;
+        this.normalizeColorScale(item);
         if (item.navigate) {
             if (!item.targetPage || typeof item.targetPage !== 'string') {
                 throw new Error(`TargetPage missing in ${(item && 'id' in item && item.id) || 'no id'}!`);

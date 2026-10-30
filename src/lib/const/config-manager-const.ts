@@ -1,7 +1,7 @@
 import type { NSPanel } from '../types/NSPanel';
 import type { NspanelLovelaceUi } from '../types/NspanelLovelaceUi';
 import { type StateRole } from '../types/pages';
-import { arrayOfAll } from '../types/function-and-const';
+import { arrayOfAll, normalizeIconColorElement } from '../types/function-and-const';
 import type { ConfigButtonFunction } from '../types/types';
 import type { IconColorElement, PageBaseItemSimple } from '../types/adminShareConfig';
 
@@ -103,10 +103,7 @@ export function isConfig(F: any, adapter: NspanelLovelaceUi): F is ScriptConfig.
     return true;
 }
 export function checkIconColorElement(F: ScriptConfig.IconColorElement): IconColorElement {
-    return {
-        ...F,
-        color_best: { r: F.color_best?.red ?? 0, g: F.color_best?.green ?? 0, b: F.color_best?.blue ?? 0 },
-    };
+    return normalizeIconColorElement(F);
 }
 
 export function checkPageBaseItemSimple(F: ScriptConfig.PageBaseItemSimple): PageBaseItemSimple {

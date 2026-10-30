@@ -3090,16 +3090,9 @@ class NspanelLovelaceUi extends utils.Adapter {
                 item.name = preItem.name || undefined;
 
                 if (isIconColorScaleElement(preItem.scale)) {
-                    item.colorScale = {
-                        ...preItem.scale,
-                        color_best: preItem.scale.color_best
-                            ? {
-                                  red: preItem.scale.color_best.r,
-                                  green: preItem.scale.color_best.g,
-                                  blue: preItem.scale.color_best.b,
-                              }
-                            : undefined,
-                    };
+                    // color_best stays {r, g, b} - the script type accepts both forms, the config manager
+                    // normalizes to {r, g, b} anyway
+                    item.colorScale = { ...preItem.scale };
                 }
                 if (item.type !== 'custom') {
                     item.fontSize =

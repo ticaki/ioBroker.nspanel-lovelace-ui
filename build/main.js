@@ -2673,14 +2673,7 @@ class NspanelLovelaceUi extends utils.Adapter {
         item.targetPageLongPress = preItem.targetPageLongPress || void 0;
         item.name = preItem.name || void 0;
         if ((0, import_function_and_const.isIconColorScaleElement)(preItem.scale)) {
-          item.colorScale = {
-            ...preItem.scale,
-            color_best: preItem.scale.color_best ? {
-              red: preItem.scale.color_best.r,
-              green: preItem.scale.color_best.g,
-              blue: preItem.scale.color_best.b
-            } : void 0
-          };
+          item.colorScale = { ...preItem.scale };
         }
         if (item.type !== "custom") {
           item.fontSize = preItem.textSize || preItem.textSize == 0 ? Number(preItem.textSize) : void 0;

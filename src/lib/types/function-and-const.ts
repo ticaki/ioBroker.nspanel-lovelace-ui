@@ -32,16 +32,18 @@ export function isPartialIconSelectScaleElement(F: any): F is IconSelectElement 
 }
 
 /**
- * Normalize a valid IconColorElement (e.g. fix color_best).
- * Call this after `isIconColorElement()` returned true.
+ * Normalize a valid IconColorElement: `color_best` becomes {r, g, b}, the form the runtime works with
+ * (a script writes it as {red, green, blue}). Call this after `isIconColorScaleElement()` returned true.
  *
  * @param el IconColorElement
  */
 
-export function normalizeIconColorElement(el: IconColorElement): IconColorElement {
-    const copy: IconColorElement = { ...el };
-    if (copy.color_best) {
-        copy.color_best = convertColorScaleBest(copy.color_best);
+export function normalizeIconColorElement(el: IconColorElement | ScriptConfig.IconColorElement): IconColorElement {
+    const copy: IconColorElement = { ...el, color_best: undefined };
+    if (el.color_best) {
+        copy.color_best = convertColorScaleBest(el.color_best);
+    } else {
+        delete copy.color_best;
     }
     return copy;
 }
@@ -49,7 +51,9 @@ export function normalizeIconColorElement(el: IconColorElement): IconColorElemen
  * Lightweight type guard for IconColorElement.
  * - Checks presence & finiteness of required numbers.
  * - Optional fields, if present, must be of the right *shape*.
- * - No normalization, no range constraints (val_min may be > val_max).
+ * - `color_best` may be {r, g, b} or the script form {red, green, blue} - the config manager normalizes it
+ *   once (`normalizeIconColorElement`) before the scale reaches the runtime.
+ * - No range constraints (val_min may be > val_max).
  *
  * @param x unknown
  * @returns true if x is IconColorElement
@@ -92,8 +96,8 @@ export function isIconColorScaleElement(x: unknown): x is IconColorElement {
         return false;
     }
 
-    // optional color object
-    if (v.color_best != null && !Color.isRGB(v.color_best)) {
+    // optional color object - admin form {r, g, b} or script form {red, green, blue}
+    if (v.color_best != null && !Color.isRGB(v.color_best) && !Color.isScriptRGB(v.color_best)) {
         return false;
     }
 

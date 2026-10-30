@@ -83,9 +83,11 @@ function isPartialIconSelectScaleElement(F) {
   return F && ("valIcon_min" in F || "valIcon_max" in F);
 }
 function normalizeIconColorElement(el) {
-  const copy = { ...el };
-  if (copy.color_best) {
-    copy.color_best = convertColorScaleBest(copy.color_best);
+  const copy = { ...el, color_best: void 0 };
+  if (el.color_best) {
+    copy.color_best = convertColorScaleBest(el.color_best);
+  } else {
+    delete copy.color_best;
   }
   return copy;
 }
@@ -109,7 +111,7 @@ function isIconColorScaleElement(x) {
   if (v.mode != null && v.mode !== "mixed" && v.mode !== "hue" && v.mode !== "cie" && v.mode !== "triGrad" && v.mode !== "triGradAnchor" && v.mode !== "quadriGrad" && v.mode !== "quadriGradAnchor") {
     return false;
   }
-  if (v.color_best != null && !import_Color.Color.isRGB(v.color_best)) {
+  if (v.color_best != null && !import_Color.Color.isRGB(v.color_best) && !import_Color.Color.isScriptRGB(v.color_best)) {
     return false;
   }
   return true;

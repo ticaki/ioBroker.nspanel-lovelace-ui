@@ -1908,7 +1908,7 @@ describe('lib/configuration - planScriptToAdmin: page items', () => {
                 icon2: 'thermometer-off',
                 onColor: Red,
                 offColor: Blue,
-                colorScale: { val_min: 0, val_max: 40, mode: 'cie', log10: 'min' },
+                colorScale: { val_min: 0, val_max: 40, val_best: 21, color_best: Red, mode: 'cie', log10: 'min' },
                 fontSize: 2,
                 unit: '°C',
                 prefixValue: 'pre<',
@@ -1936,7 +1936,14 @@ describe('lib/configuration - planScriptToAdmin: page items', () => {
             falseIcon: 'thermometer-off',
             trueColor: '#ff0000',
             falseColor: '#0000ff',
-            scale: { val_min: 0, val_max: 40, mode: 'cie', log10: 'min' },
+            scale: {
+                val_min: 0,
+                val_max: 40,
+                val_best: 21,
+                color_best: { r: 255, g: 0, b: 0 },
+                mode: 'cie',
+                log10: 'min',
+            },
             textSize: 2,
             useValue: true,
             inSel_Alias: '0_userdata.0.Green',
@@ -2051,9 +2058,9 @@ describe('lib/configuration - planScriptToAdmin: page items', () => {
             [
                 {
                     id: 'alias.0.Hue',
-                    colorScale: { val_min: 0, val_max: 1, color_best: { red: 1, green: 2, blue: 3 } },
+                    colorScale: { val_min: 0, val_max: 1, color_best: 'green' },
                 },
-                'items[0].colorScale.color_best: not available in the admin',
+                'items[0].colorScale.color_best: only an RGB object {red, green, blue} can be converted',
             ],
             [
                 { id: 'alias.0.Hue', modeList: [] },
