@@ -1,13 +1,18 @@
 /**
  * Dialog of the Maintain tab that takes the configuration of a panel's script over into the admin page
  * configuration (sendTo `convertScriptToAdmin`). Opening the dialog asks the adapter for a dry run and shows
- * the plan: which pages, the screensaver and the hardware buttons are converted and what is skipped and why.
- * "Convert" runs the same command without dryRun, the result lists what was created, the script backup and what
- * could not be changed in the script source. The adapter writes the instance configuration itself - the admin
- * therefore has to be reloaded afterwards, otherwise a later save of the admin would overwrite the new entries.
+ * the plan as a short summary (how many pages, the screensaver, the hardware buttons) followed by the problems
+ * only: what is skipped and why, plus notes such as a page that is stored under another name. The list of the
+ * planned pages is folded away - a script with hundreds of pages must not drown the problems. "Take over" runs the
+ * same command without dryRun, the result reports what was done, the script backup and what could not be changed
+ * in the script source. The adapter writes the instance configuration itself - the admin therefore has to be
+ * reloaded afterwards, otherwise a later save of the admin would overwrite the new entries.
  */
 import React from 'react';
 import {
+    Accordion,
+    AccordionDetails,
+    AccordionSummary,
     Alert,
     AlertTitle,
     Box,
@@ -24,6 +29,7 @@ import {
     ListItemText,
     Typography,
 } from '@mui/material';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { I18n } from '@iobroker/gui-components';
 import {
     SENDTO_CONVERT_SCRIPT_COMMAND,
@@ -81,6 +87,17 @@ const SKIP_REASONS: readonly ConvertSkipReason[] = [
     'buttonConfigured',
     'buttonNotSupported',
 ];
+
+const BUTTON_SIDES: readonly ('left' | 'right')[] = ['left', 'right'];
+
+/** how many pages the plan handles per action */
+interface PageCounts {
+    create: number;
+    assignNavigation: number;
+    removeReference: number;
+    /** all pages the conversion touches */
+    taken: number;
+}
 
 function isRecord(value: unknown): value is Record<string, unknown> {
     return typeof value === 'object' && value !== null && !Array.isArray(value);
@@ -201,6 +218,52 @@ function buttonText(action: AdminButtonFunction | undefined): string {
             ? ` (${I18n.t('convertScript_buttonDelay', String(action.delay))})`
             : '';
     return `${mode}: ${action.state}${delay}`;
+}
+
+/**
+ * translated name of a hardware button side
+ *
+ * @param side left or right
+ */
+function sideText(side: 'left' | 'right'): string {
+    return I18n.t(side === 'left' ? 'panelButtonDialog_sideLeft' : 'panelButtonDialog_sideRight');
+}
+
+/**
+ * counts the pages of the plan per action
+ *
+ * @param plan plan of the adapter
+ */
+function countPages(plan: ConvertScriptPlan): PageCounts {
+    const counts: PageCounts = { create: 0, assignNavigation: 0, removeReference: 0, taken: plan.pages.length };
+    for (const page of plan.pages) {
+        counts[page.action]++;
+    }
+    return counts;
+}
+
+/**
+ * the pages of the plan that deserve a note although they are taken over: stored under another name or only
+ * removed from the script because the reference is dead
+ *
+ * @param plan plan of the adapter
+ */
+function notablePages(plan: ConvertScriptPlan): ConvertPagePlan[] {
+    return plan.pages.filter(page => page.storedAs !== undefined || page.action === 'removeReference');
+}
+
+/**
+ * true when the plan has nothing to report besides what is taken over as it is
+ *
+ * @param plan plan of the adapter
+ */
+function hasProblems(plan: ConvertScriptPlan): boolean {
+    return (
+        plan.skipped.length > 0 ||
+        plan.screensaverSkipped !== undefined ||
+        plan.buttonsSkipped.length > 0 ||
+        notablePages(plan).length > 0
+    );
 }
 
 /** the adapter did not answer in time */
@@ -347,6 +410,193 @@ class ConvertScriptDialog extends React.Component<ConvertScriptDialogProps, Conv
         );
     }
 
+    /**
+     * one entry of a list: bold name, optional type chip, a text next to it and a secondary line
+     *
+     * @param key react key
+     * @param name name of the page, the screensaver or the button side
+     * @param type page type for the chip, '' for none
+     * @param text what happens with it (skip reason, note)
+     * @param detail secondary line, '' for none
+     */
+    private renderEntry(key: string, name: string, type: string, text: string, detail: string): React.JSX.Element {
+        return (
+            <ListItem
+                key={key}
+                disableGutters
+                sx={{ py: 0.5 }}
+            >
+                <ListItemText
+                    primary={
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
+                            <Typography
+                                component="span"
+                                sx={{ fontWeight: 'bold' }}
+                            >
+                                {name}
+                            </Typography>
+                            {type !== '' ? (
+                                <Chip
+                                    size="small"
+                                    variant="outlined"
+                                    label={type}
+                                />
+                            ) : null}
+                            <Typography
+                                component="span"
+                                variant="body2"
+                            >
+                                {text}
+                            </Typography>
+                        </Box>
+                    }
+                    secondary={detail !== '' ? detail : undefined}
+                />
+            </ListItem>
+        );
+    }
+
+    /**
+     * one or two lines: how many pages are taken over (split by action), how many are skipped, the screensaver and
+     * the hardware buttons
+     *
+     * @param plan plan of the adapter
+     */
+    private renderSummary(plan: ConvertScriptPlan): React.JSX.Element {
+        const counts = countPages(plan);
+        const parts: string[] = [];
+        if (counts.taken > 0) {
+            const split: string[] = [];
+            if (counts.create > 0) {
+                split.push(I18n.t('convertScript_summary_create', String(counts.create)));
+            }
+            if (counts.assignNavigation > 0) {
+                split.push(I18n.t('convertScript_summary_assignNavigation', String(counts.assignNavigation)));
+            }
+            if (counts.removeReference > 0) {
+                split.push(I18n.t('convertScript_summary_removeReference', String(counts.removeReference)));
+            }
+            // the split is only worth a word when the pages are not all handled the same way
+            const detail = split.length > 1 ? ` (${split.join(', ')})` : '';
+            let pages = I18n.t('convertScript_summary_pages', String(counts.taken)) + detail;
+            if (plan.skipped.length > 0) {
+                pages += `, ${I18n.t('convertScript_summary_skipped', String(plan.skipped.length))}`;
+            }
+            parts.push(pages);
+        } else if (plan.skipped.length > 0) {
+            parts.push(
+                `${I18n.t('convertScript_summary_pagesNone')}, ${I18n.t('convertScript_summary_skipped', String(plan.skipped.length))}`,
+            );
+        } else {
+            parts.push(I18n.t('convertScript_summary_pagesNone'));
+        }
+        if (plan.screensaver) {
+            parts.push(I18n.t('convertScript_summary_screensaver'));
+        } else if (plan.screensaverSkipped) {
+            parts.push(I18n.t('convertScript_summary_screensaverSkipped'));
+        } else {
+            parts.push(I18n.t('convertScript_summary_screensaverNone'));
+        }
+        const buttons: string[] = [];
+        for (const side of BUTTON_SIDES) {
+            if (plan.buttons[side]) {
+                buttons.push(sideText(side));
+            } else if (plan.buttonsSkipped.some(entry => entry.side === side)) {
+                buttons.push(I18n.t('convertScript_summary_skipped', sideText(side)));
+            }
+        }
+        parts.push(
+            buttons.length > 0
+                ? I18n.t('convertScript_summary_buttons', buttons.join(', '))
+                : I18n.t('convertScript_summary_buttonsNone'),
+        );
+        return (
+            <Typography
+                variant="body1"
+                sx={{ mt: 2 }}
+            >
+                {parts.join(' · ')}
+            </Typography>
+        );
+    }
+
+    /**
+     * the problems only: skipped pages, screensaver and buttons with their reason, pages that are stored under
+     * another name and dead references that are only removed from the script
+     *
+     * @param plan plan of the adapter
+     */
+    private renderProblems(plan: ConvertScriptPlan): React.JSX.Element {
+        if (!hasProblems(plan)) {
+            return (
+                <>
+                    {this.renderSectionTitle(I18n.t('convertScript_problems'))}
+                    <Typography
+                        variant="body2"
+                        color="text.secondary"
+                    >
+                        {I18n.t('convertScript_noProblems')}
+                    </Typography>
+                </>
+            );
+        }
+        const rows: React.JSX.Element[] = [];
+        if (plan.screensaverSkipped) {
+            rows.push(
+                this.renderEntry(
+                    'screensaver',
+                    I18n.t('convertScript_screensaver'),
+                    '',
+                    reasonText(plan.screensaverSkipped.reason),
+                    plan.screensaverSkipped.detail ?? '',
+                ),
+            );
+        }
+        for (const entry of plan.buttonsSkipped) {
+            rows.push(
+                this.renderEntry(
+                    `button-${entry.side}`,
+                    `${I18n.t('convertScript_buttons')}: ${sideText(entry.side)}`,
+                    '',
+                    reasonText(entry.reason),
+                    entry.detail ?? '',
+                ),
+            );
+        }
+        plan.skipped.forEach((entry: ConvertSkipped, index: number) =>
+            rows.push(
+                this.renderEntry(
+                    `skipped-${index}-${entry.uniqueName}`,
+                    entry.uniqueName,
+                    entry.type,
+                    reasonText(entry.reason),
+                    entry.detail ?? '',
+                ),
+            ),
+        );
+        for (const page of notablePages(plan)) {
+            const notes: string[] = [];
+            if (page.storedAs !== undefined) {
+                notes.push(I18n.t('convertScript_storedAs', page.storedAs));
+            }
+            if (page.action === 'removeReference') {
+                notes.push(page.reason ? reasonText(page.reason) : actionText(page.action));
+            }
+            rows.push(this.renderEntry(`note-${page.uniqueName}`, page.uniqueName, page.type, notes.join(' · '), ''));
+        }
+        return (
+            <>
+                {this.renderSectionTitle(I18n.t('convertScript_problems'))}
+                <List
+                    dense
+                    disablePadding
+                >
+                    {rows}
+                </List>
+            </>
+        );
+    }
+
     private renderPage(page: ConvertPagePlan): React.JSX.Element {
         const navigation = navigationText(page.navigation);
         const card = page.card && page.card !== page.type ? `${page.type} → ${page.card}` : page.type;
@@ -389,102 +639,42 @@ class ConvertScriptDialog extends React.Component<ConvertScriptDialogProps, Conv
         );
     }
 
-    private renderSkipped(entry: ConvertSkipped, index: number): React.JSX.Element {
+    private renderScreensaverDetail(plan: ConvertScriptPlan): React.JSX.Element | null {
+        if (!plan.screensaver) {
+            return null;
+        }
+        const { name, mode, itemCount, notifyCount } = plan.screensaver;
         return (
-            <ListItem
-                key={`${entry.uniqueName}-${index}`}
-                disableGutters
-                sx={{ py: 0.5 }}
-            >
-                <ListItemText
-                    primary={
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
-                            <Typography
-                                component="span"
-                                sx={{ fontWeight: 'bold' }}
-                            >
-                                {entry.uniqueName}
-                            </Typography>
-                            {entry.type ? (
-                                <Chip
-                                    size="small"
-                                    variant="outlined"
-                                    label={entry.type}
-                                />
-                            ) : null}
-                            <Typography
-                                component="span"
-                                variant="body2"
-                            >
-                                {reasonText(entry.reason)}
-                            </Typography>
-                        </Box>
-                    }
-                    secondary={entry.detail}
-                />
-            </ListItem>
+            <>
+                {this.renderSectionTitle(I18n.t('convertScript_screensaver'))}
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
+                    <Typography
+                        component="span"
+                        sx={{ fontWeight: 'bold' }}
+                    >
+                        {name}
+                    </Typography>
+                    <Chip
+                        size="small"
+                        variant="outlined"
+                        label={I18n.t(`screensaver_mode_${mode}`)}
+                    />
+                </Box>
+                <Typography
+                    variant="body2"
+                    color="text.secondary"
+                >
+                    {I18n.t('convertScript_items', String(itemCount))} ·{' '}
+                    {I18n.t('convertScript_notifications', String(notifyCount))}
+                </Typography>
+            </>
         );
     }
 
-    private renderScreensaver(plan: ConvertScriptPlan): React.JSX.Element | null {
-        if (plan.screensaver) {
-            const { name, mode, itemCount, notifyCount } = plan.screensaver;
-            return (
-                <>
-                    {this.renderSectionTitle(I18n.t('convertScript_screensaver'))}
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
-                        <Typography
-                            component="span"
-                            sx={{ fontWeight: 'bold' }}
-                        >
-                            {name}
-                        </Typography>
-                        <Chip
-                            size="small"
-                            variant="outlined"
-                            label={I18n.t(`screensaver_mode_${mode}`)}
-                        />
-                        <Chip
-                            size="small"
-                            color="success"
-                            label={actionText('create')}
-                        />
-                    </Box>
-                    <Typography
-                        variant="body2"
-                        color="text.secondary"
-                    >
-                        {I18n.t('convertScript_items', String(itemCount))} ·{' '}
-                        {I18n.t('convertScript_notifications', String(notifyCount))}
-                    </Typography>
-                </>
-            );
-        }
-        if (plan.screensaverSkipped) {
-            return (
-                <>
-                    {this.renderSectionTitle(I18n.t('convertScript_screensaver'))}
-                    <Typography variant="body2">{reasonText(plan.screensaverSkipped.reason)}</Typography>
-                    {plan.screensaverSkipped.detail ? (
-                        <Typography
-                            variant="body2"
-                            color="text.secondary"
-                        >
-                            {plan.screensaverSkipped.detail}
-                        </Typography>
-                    ) : null}
-                </>
-            );
-        }
-        return null;
-    }
-
-    private renderButtons(plan: ConvertScriptPlan): React.JSX.Element | null {
-        const sides: ('left' | 'right')[] = ['left', 'right'];
+    private renderButtonsDetail(plan: ConvertScriptPlan): React.JSX.Element | null {
         const rows: React.JSX.Element[] = [];
-        for (const side of sides) {
+        for (const side of BUTTON_SIDES) {
             const action = plan.buttons[side];
-            const label = I18n.t(side === 'left' ? 'panelButtonDialog_sideLeft' : 'panelButtonDialog_sideRight');
             if (action) {
                 rows.push(
                     <ListItem
@@ -494,51 +684,14 @@ class ConvertScriptDialog extends React.Component<ConvertScriptDialogProps, Conv
                     >
                         <ListItemText
                             primary={
-                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
-                                    <Typography
-                                        component="span"
-                                        sx={{ fontWeight: 'bold' }}
-                                    >
-                                        {label}
-                                    </Typography>
-                                    <Chip
-                                        size="small"
-                                        color="success"
-                                        label={actionText('create')}
-                                    />
-                                </Box>
+                                <Typography
+                                    component="span"
+                                    sx={{ fontWeight: 'bold' }}
+                                >
+                                    {sideText(side)}
+                                </Typography>
                             }
                             secondary={buttonText(action)}
-                        />
-                    </ListItem>,
-                );
-            }
-            const skipped = plan.buttonsSkipped.find(entry => entry.side === side);
-            if (skipped) {
-                rows.push(
-                    <ListItem
-                        key={`${side}-skipped`}
-                        disableGutters
-                        sx={{ py: 0.5 }}
-                    >
-                        <ListItemText
-                            primary={
-                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
-                                    <Typography
-                                        component="span"
-                                        sx={{ fontWeight: 'bold' }}
-                                    >
-                                        {label}
-                                    </Typography>
-                                    <Typography
-                                        component="span"
-                                        variant="body2"
-                                    >
-                                        {reasonText(skipped.reason)}
-                                    </Typography>
-                                </Box>
-                            }
-                            secondary={skipped.detail}
                         />
                     </ListItem>,
                 );
@@ -561,10 +714,51 @@ class ConvertScriptDialog extends React.Component<ConvertScriptDialogProps, Conv
     }
 
     /**
-     * the plan: what is converted, what is skipped and the hints before the conversion
+     * everything that is taken over as planned, folded away: the pages, the screensaver and the hardware buttons
      *
      * @param plan plan of the adapter
-     * @param showHints true in the preview (backup, reload and unsaved-changes hints), false under a result
+     */
+    private renderDetails(plan: ConvertScriptPlan): React.JSX.Element | null {
+        const hasButtons = BUTTON_SIDES.some(side => plan.buttons[side] !== undefined);
+        if (plan.pages.length === 0 && !plan.screensaver && !hasButtons) {
+            return null;
+        }
+        return (
+            <Accordion
+                disableGutters
+                elevation={0}
+                variant="outlined"
+                sx={{ mt: 2 }}
+            >
+                <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                    <Typography variant="subtitle2">
+                        {I18n.t('convertScript_details', String(plan.pages.length))}
+                    </Typography>
+                </AccordionSummary>
+                <AccordionDetails sx={{ pt: 0 }}>
+                    {plan.pages.length > 0 ? (
+                        <>
+                            {this.renderSectionTitle(I18n.t('convertScript_pages'))}
+                            <List
+                                dense
+                                disablePadding
+                            >
+                                {plan.pages.map(page => this.renderPage(page))}
+                            </List>
+                        </>
+                    ) : null}
+                    {this.renderScreensaverDetail(plan)}
+                    {this.renderButtonsDetail(plan)}
+                </AccordionDetails>
+            </Accordion>
+        );
+    }
+
+    /**
+     * the plan: the hints before the conversion, the summary, the problems and the folded details
+     *
+     * @param plan plan of the adapter
+     * @param showHints true in the preview (backup, reload and unsaved-changes hints), false under an error
      */
     private renderPlan(plan: ConvertScriptPlan, showHints: boolean): React.JSX.Element {
         return (
@@ -610,56 +804,38 @@ class ConvertScriptDialog extends React.Component<ConvertScriptDialogProps, Conv
                     </Alert>
                 ) : null}
 
-                {plan.pages.length > 0 ? (
-                    <>
-                        {this.renderSectionTitle(I18n.t('convertScript_pages'))}
-                        <List
-                            dense
-                            disablePadding
-                        >
-                            {plan.pages.map(page => this.renderPage(page))}
-                        </List>
-                    </>
-                ) : null}
-
-                {this.renderScreensaver(plan)}
-                {this.renderButtons(plan)}
-
-                {plan.skipped.length > 0 ? (
-                    <>
-                        {this.renderSectionTitle(I18n.t('convertScript_skipped'))}
-                        <List
-                            dense
-                            disablePadding
-                        >
-                            {plan.skipped.map((entry, index) => this.renderSkipped(entry, index))}
-                        </List>
-                    </>
-                ) : null}
+                {this.renderSummary(plan)}
+                {this.renderProblems(plan)}
+                {this.renderDetails(plan)}
             </>
         );
     }
 
     /**
-     * the report after the conversion
+     * the report after the conversion: summary, backup, script notes and the reload hint - not the plan again
      *
      * @param result result of the adapter
      */
     private renderResult(result: ConvertScriptResult): React.JSX.Element {
-        const created = result.pages.filter(page => page.action === 'create').length;
-        const assigned = result.pages.filter(page => page.action === 'assignNavigation').length;
-        const removed = result.pages.filter(page => page.action === 'removeReference').length;
+        const counts = countPages(result);
         const extras: string[] = [];
+        if (result.skipped.length > 0) {
+            extras.push(I18n.t('convertScript_summary_skipped', String(result.skipped.length)));
+        }
         if (result.screensaver) {
             extras.push(I18n.t('convertScript_result_screensaver'));
         }
-        const buttonCount = (result.buttons.left ? 1 : 0) + (result.buttons.right ? 1 : 0);
+        const buttonCount = BUTTON_SIDES.filter(side => result.buttons[side] !== undefined).length;
         if (buttonCount > 0) {
             extras.push(I18n.t('convertScript_result_buttons', String(buttonCount)));
         }
         const summary =
-            I18n.t('convertScript_result_pages', String(created), String(assigned), String(removed)) +
-            (extras.length > 0 ? ` · ${extras.join(' · ')}` : '');
+            I18n.t(
+                'convertScript_result_pages',
+                String(counts.create),
+                String(counts.assignNavigation),
+                String(counts.removeReference),
+            ) + (extras.length > 0 ? ` · ${extras.join(' · ')}` : '');
         // the runner answers a failure after its first write with executed: true + error - that is a partial run
         const partial = result.executed && !!result.error;
         const success = result.executed && !result.error && result.adapterRestarts;
@@ -732,6 +908,12 @@ class ConvertScriptDialog extends React.Component<ConvertScriptDialogProps, Conv
                 ) : null}
 
                 {this.renderSectionTitle(I18n.t('convertScript_scriptSection'))}
+                <Typography
+                    variant="body2"
+                    color="text.secondary"
+                >
+                    {I18n.t('convertScript_script', result.scriptId)}
+                </Typography>
                 <Typography variant="body2">
                     {result.backupId
                         ? I18n.t('convertScript_backupCreated', result.backupId)
@@ -792,9 +974,6 @@ class ConvertScriptDialog extends React.Component<ConvertScriptDialogProps, Conv
                         {I18n.t('convertScript_reloadHint')} {I18n.t('convertScript_reloadRestartHint')}
                     </Alert>
                 ) : null}
-
-                <Divider sx={{ my: 2 }} />
-                {this.renderPlan(result, false)}
             </>
         );
     }
@@ -852,8 +1031,11 @@ class ConvertScriptDialog extends React.Component<ConvertScriptDialogProps, Conv
         const { open, panelName, panelTopic, phase, plan, executeTimedOut } = this.state;
         // the dry run may be cancelled (the sequence counter drops its late answer), the execution may not
         const busy = phase === 'executing';
+        const nothingToDo = phase === 'preview' && plan !== null && plan.nothingToDo;
         const canConvert = phase === 'preview' && plan !== null && !plan.nothingToDo;
         const offerReload = phase === 'done' || (phase === 'error' && executeTimedOut);
+        // with nothing to take over the dialog only informs - its one button closes it
+        const closeLabel = offerReload || nothingToDo ? 'convertScript_close' : 'Cancel';
         return (
             <Dialog
                 open={open}
@@ -874,7 +1056,7 @@ class ConvertScriptDialog extends React.Component<ConvertScriptDialogProps, Conv
                         onClick={this.close}
                         disabled={busy}
                     >
-                        {I18n.t(offerReload ? 'convertScript_close' : 'Cancel')}
+                        {I18n.t(closeLabel)}
                     </Button>
                     {offerReload ? (
                         <Button
@@ -884,7 +1066,8 @@ class ConvertScriptDialog extends React.Component<ConvertScriptDialogProps, Conv
                         >
                             {I18n.t('convertScript_reloadAdmin')}
                         </Button>
-                    ) : (
+                    ) : null}
+                    {!offerReload && !nothingToDo ? (
                         <Button
                             variant="contained"
                             color="primary"
@@ -893,7 +1076,7 @@ class ConvertScriptDialog extends React.Component<ConvertScriptDialogProps, Conv
                         >
                             {I18n.t('convertScript_convert')}
                         </Button>
-                    )}
+                    ) : null}
                 </DialogActions>
             </Dialog>
         );
