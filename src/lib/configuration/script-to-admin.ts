@@ -23,6 +23,7 @@ import {
     isMainPageEntry,
     isScriptNavigatedChart,
     isScriptNavigatedPower,
+    longPressAllowedOnCard,
     newScreensaverNotifyId,
     normalizeScrollFields,
     screensaverWeatherItemKeys,
@@ -135,6 +136,15 @@ class ConvertError extends Error {
 }
 
 type Dict = Record<string, unknown>;
+
+/** a converted script page with what the preview reports about its items */
+type ConvertedPage = {
+    entry: PageConfigEntry;
+    common: PageCommon;
+    rawItems: ConvertRawItem[];
+    /** items whose long press was dropped (list pages) */
+    longPressDropped: string[];
+};
 
 /**
  * Whether a value is a plain object (not null, not an array).
@@ -606,6 +616,39 @@ function rawPageItem(item: Dict): { admin: AdminPageItemConfig; format: RawItemF
 }
 
 /**
+ * A script item without its long press (`longPress`, `targetPageLongPress` and, for a native item,
+ * `setNaviLongPress` / `longPress` in `native.data`) - list pages have none.
+ *
+ * @param item Item of the script.
+ * @returns The item without long press (a copy, the input stays unchanged) and whether something was removed.
+ */
+function withoutLongPress(item: Dict): { item: Dict; dropped: boolean } {
+    let dropped = false;
+    const out: Dict = { ...item };
+    for (const key of ['longPress', 'targetPageLongPress']) {
+        if (key in out) {
+            dropped ||= out[key] !== undefined && out[key] !== null && out[key] !== '';
+            delete out[key];
+        }
+    }
+    if (isDict(out.native) && isDict(out.native.data)) {
+        const data: Dict = { ...out.native.data };
+        let changed = false;
+        for (const key of ['setNaviLongPress', 'longPress']) {
+            if (key in data) {
+                dropped ||= data[key] !== undefined && data[key] !== null;
+                delete data[key];
+                changed = true;
+            }
+        }
+        if (changed) {
+            out.native = { ...out.native, data };
+        }
+    }
+    return { item: out, dropped };
+}
+
+/**
  * The page items of a script page as the admin stores them.
  *
  * A `null` item of the script and an item without id and navigation are dropped - the config manager
@@ -614,10 +657,18 @@ function rawPageItem(item: Dict): { admin: AdminPageItemConfig; format: RawItemF
  * `empty`. An item the editor cannot express is taken over as raw item ({@link rawPageItem}) and listed in
  * `rawItems`.
  *
+ * On a list page (`longPressDropped` given) the long press of every item is dropped ({@link withoutLongPress}) -
+ * the item is taken over without it, the position is listed in `longPressDropped`.
+ *
  * @param items Items of the script page.
  * @param rawItems Collects the items taken over as raw items.
+ * @param longPressDropped Only for list pages: collects the items whose long press was dropped.
  */
-function convertPageItems(items: unknown, rawItems: ConvertRawItem[]): (AdminPageItemConfig | undefined)[] {
+function convertPageItems(
+    items: unknown,
+    rawItems: ConvertRawItem[],
+    longPressDropped?: string[],
+): (AdminPageItemConfig | undefined)[] {
     if (items === undefined || items === null) {
         return [];
     }
@@ -625,21 +676,29 @@ function convertPageItems(items: unknown, rawItems: ConvertRawItem[]): (AdminPag
         throw new ConvertError('fieldNotSupported', 'items: expected a list');
     }
     const out: (AdminPageItemConfig | undefined)[] = [];
-    items.forEach((item: unknown, index) => {
-        if (item === null || item === undefined) {
+    items.forEach((scriptItem: unknown, index) => {
+        if (scriptItem === null || scriptItem === undefined) {
             return;
         }
-        if (!isDict(item)) {
+        if (!isDict(scriptItem)) {
             throw new ConvertError('itemNotSupported', `items[${index}]: expected an object`);
         }
-        if (isEmptyPlace(item)) {
+        if (isEmptyPlace(scriptItem)) {
             out.push(undefined);
             return;
         }
-        if (isDroppedItem(item)) {
+        if (isDroppedItem(scriptItem)) {
             return;
         }
         const where = `items[${index}]`;
+        let item = scriptItem;
+        if (longPressDropped) {
+            const stripped = withoutLongPress(scriptItem);
+            item = stripped.item;
+            if (stripped.dropped) {
+                longPressDropped.push(where);
+            }
+        }
         try {
             out.push(convertPageItem(item, where));
         } catch (error) {
@@ -887,15 +946,22 @@ function scrollFields(page: Dict, card: ScrollCard): PageScrollFields {
  * @param common Converted common fields.
  * @param topic Topic of the panel.
  * @param rawItems Collects the items taken over as raw items.
+ * @param longPressDropped Collects the items whose long press was dropped (list pages only).
  */
-function convertMenuPage(page: Dict, common: PageCommon, topic: string, rawItems: ConvertRawItem[]): MenuEntry {
+function convertMenuPage(
+    page: Dict,
+    common: PageCommon,
+    topic: string,
+    rawItems: ConvertRawItem[],
+    longPressDropped: string[],
+): MenuEntry {
     rejectUnknownKeys(page, [...pageMappedKeys, ...scrollKeys], pageIgnoredKeys, 'fieldNotSupported', 'page');
     const card = page.type as MenuEntry['card'];
     return {
         card,
         uniqueName: common.uniqueName,
         headline: common.headline,
-        pageItems: convertPageItems(page.items, rawItems),
+        pageItems: convertPageItems(page.items, rawItems, longPressAllowedOnCard(card) ? undefined : longPressDropped),
         hidden: common.hidden,
         alwaysOn: common.alwaysOn,
         ...scrollFields(page, card),
@@ -2350,17 +2416,13 @@ export function planScriptToAdmin(input: ScriptToAdminInput): ScriptToAdminResul
      * @param typeName Page type.
      * @param uniqueName Name of the page.
      */
-    const convertPage = (
-        page: Dict,
-        isSub: boolean,
-        typeName: string,
-        uniqueName: string,
-    ): { entry: PageConfigEntry; common: PageCommon; rawItems: ConvertRawItem[] } => {
+    const convertPage = (page: Dict, isSub: boolean, typeName: string, uniqueName: string): ConvertedPage => {
         if (explicitNavigation.has(uniqueName)) {
             throw new ConvertError('fieldNotSupported', 'navigation: the script overrides the links of the page');
         }
         const common = pageCommon(page, isSub);
         const rawItems: ConvertRawItem[] = [];
+        const longPressDropped: string[] = [];
         let entry: PageConfigEntry;
         if (typeName === 'cardThermo2') {
             entry = convertThermo2Page(page, common, panel.topic, rawItems);
@@ -2369,9 +2431,9 @@ export function planScriptToAdmin(input: ScriptToAdminInput): ScriptToAdminResul
         } else if (typeName === 'cardMedia') {
             entry = convertMediaPage(page, common, panel.topic, rawItems);
         } else {
-            entry = convertMenuPage(page, common, panel.topic, rawItems);
+            entry = convertMenuPage(page, common, panel.topic, rawItems, longPressDropped);
         }
-        return { entry, common, rawItems };
+        return { entry, common, rawItems, longPressDropped };
     };
 
     /**
@@ -2411,7 +2473,7 @@ export function planScriptToAdmin(input: ScriptToAdminInput): ScriptToAdminResul
             }
             return;
         }
-        let converted: { entry: PageConfigEntry; common: PageCommon; rawItems: ConvertRawItem[] };
+        let converted: ConvertedPage;
         try {
             converted = convertPage(page, isSub, typeName, uniqueName);
         } catch (error) {
@@ -2466,6 +2528,9 @@ export function planScriptToAdmin(input: ScriptToAdminInput): ScriptToAdminResul
             global: true,
             existing: decision,
             ...(decision === 'takeScript' && converted.rawItems.length ? { rawItems: converted.rawItems } : {}),
+            ...(decision === 'takeScript' && converted.longPressDropped.length
+                ? { longPressDropped: converted.longPressDropped }
+                : {}),
         });
         remove(uniqueName, isSub, source);
     };
@@ -2628,7 +2693,7 @@ export function planScriptToAdmin(input: ScriptToAdminInput): ScriptToAdminResul
             }
         }
         try {
-            const { entry, common, rawItems } = convertPage(page, isSub, typeName, uniqueName);
+            const { entry, common, rawItems, longPressDropped } = convertPage(page, isSub, typeName, uniqueName);
             if (storedAs !== undefined) {
                 entry.uniqueName = storedAs;
                 entry.isMainPage = true;
@@ -2657,6 +2722,9 @@ export function planScriptToAdmin(input: ScriptToAdminInput): ScriptToAdminResul
             }
             if (rawItems.length) {
                 planned.rawItems = rawItems;
+            }
+            if (longPressDropped.length) {
+                planned.longPressDropped = longPressDropped;
             }
             plan.pages.push(planned);
         } catch (error) {

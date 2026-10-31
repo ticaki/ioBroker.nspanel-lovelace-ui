@@ -1,4 +1,3 @@
-import { Color } from '../const/Color';
 import type { NSPanel } from './NSPanel';
 import type {
     AlarmButtonEvents,
@@ -47,62 +46,8 @@ export function normalizeIconColorElement(el: IconColorElement | ScriptConfig.Ic
     }
     return copy;
 }
-/**
- * Lightweight type guard for IconColorElement.
- * - Checks presence & finiteness of required numbers.
- * - Optional fields, if present, must be of the right *shape*.
- * - `color_best` may be {r, g, b} or the script form {red, green, blue} - the config manager normalizes it
- *   once (`normalizeIconColorElement`) before the scale reaches the runtime.
- * - No range constraints (val_min may be > val_max).
- *
- * @param x unknown
- * @returns true if x is IconColorElement
- */
-
-export function isIconColorScaleElement(x: unknown): x is IconColorElement {
-    if (typeof x !== 'object' || x === null) {
-        return false;
-    }
-
-    const v = x as Partial<IconColorElement>;
-
-    // required
-    if (!Number.isFinite(v.val_min)) {
-        return false;
-    }
-    if (!Number.isFinite(v.val_max)) {
-        return false;
-    }
-
-    // optional numbers
-    if (v.val_best != null && !Number.isFinite(v.val_best)) {
-        return false;
-    }
-
-    // optional enums
-    if (v.log10 != null && v.log10 !== 'max' && v.log10 !== 'min') {
-        return false;
-    }
-    if (
-        v.mode != null &&
-        v.mode !== 'mixed' &&
-        v.mode !== 'hue' &&
-        v.mode !== 'cie' &&
-        v.mode !== 'triGrad' &&
-        v.mode !== 'triGradAnchor' &&
-        v.mode !== 'quadriGrad' &&
-        v.mode !== 'quadriGradAnchor'
-    ) {
-        return false;
-    }
-
-    // optional color object - admin form {r, g, b} or script form {red, green, blue}
-    if (v.color_best != null && !Color.isRGB(v.color_best) && !Color.isScriptRGB(v.color_best)) {
-        return false;
-    }
-
-    return true;
-}
+// moved to adminShareConfig (the admin imports it without the page types) - re-exported for the adapter code
+export { isIconColorScaleElement } from './adminShareConfig';
 export function isEventType(F: string): F is EventType {
     return ['event'].indexOf(F) != -1;
 }

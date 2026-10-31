@@ -45,12 +45,14 @@ import {
     type ScreensaverItemSource,
     type ScreensaverTemplateInfo,
     type ScreensaverTemplateNeed,
+    isRawItemObject,
     screensaverChannelIdOf,
     screensaverDateFormats,
     screensaverItemFields,
     screensaverItemSource,
 } from '../../../src/lib/types/adminShareConfig';
 import { getScreensaverItemDefaultsByRole, type PageItemRoleDefaults } from '../../../src/lib/const/page-item-defaults';
+import { screensaverItemToScript } from '../../../src/lib/configuration/admin-screensaver-item';
 
 export interface ScreensaverItemDialogProps {
     open: boolean;
@@ -454,8 +456,30 @@ export class ScreensaverItemDialog extends React.Component<ScreensaverItemDialog
     }
 
     private handleRawOpen = (): void => {
-        this.rawDialogRef.current?.openWith(this.state.draft.raw);
+        if (this.state.draft.raw) {
+            this.rawDialogRef.current?.openWith(this.state.draft.raw);
+            return;
+        }
+        // standard item: the dialog starts with the script element the adapter builds from the fields
+        this.rawDialogRef.current?.openWith(this.rawSuggestion(), false);
     };
+
+    /** the script element of the standard fields as raw data (format script), undefined while they are incomplete */
+    private rawSuggestion(): RawItemValue | undefined {
+        const item = this.buildStandardItem();
+        if (!item) {
+            return undefined;
+        }
+        const { objName, objRole, channelRole } = this.state;
+        const element = screensaverItemToScript(item, this.props.area, {
+            name: objName || undefined,
+            role: objRole || undefined,
+            channelRole: channelRole || undefined,
+        });
+        // JSON round trip: fields without a value (undefined) are left out of the text
+        const config: unknown = JSON.parse(JSON.stringify(element));
+        return isRawItemObject(config) ? { format: 'script', config } : undefined;
+    }
 
     private handleRawApply = (raw: RawItemValue): void => {
         this.setState({ draft: { ...this.state.draft, raw } });
@@ -468,17 +492,36 @@ export class ScreensaverItemDialog extends React.Component<ScreensaverItemDialog
     };
 
     private apply = (): void => {
-        if (this.state.draft.raw) {
-            // raw item: the raw data alone count, the fields of the dialog are not stored
-            this.props.onSave({ state: '', raw: this.state.draft.raw });
+        const { raw } = this.state.draft;
+        const standard = this.buildStandardItem();
+        if (raw) {
+            // raw item: the raw data alone count at runtime - the standard fields are kept for "back to standard"
+            const kept: ScreensaverItemConfig = standard ?? {
+                ...this.state.draft,
+                state: this.state.draft.state ?? '',
+            };
+            delete kept.raw;
+            this.props.onSave({ ...kept, raw });
             return;
         }
+        if (standard) {
+            this.props.onSave(standard);
+        }
+    };
+
+    /**
+     * the item from the standard fields of the dialog, regardless of the raw mode
+     *
+     * @returns the item to store, null while the fields are incomplete (no state / no template)
+     */
+    private buildStandardItem(): ScreensaverItemConfig | null {
         const draft = { ...this.state.draft };
+        delete draft.raw;
         draft.state = (draft.state ?? '').trim();
         if (this.state.source === 'template') {
             // the template brings icon, colors and texts - only what the script's template element knows is kept
             if (!draft.template || (this.templateNeed() === 'channel' && !draft.state)) {
-                return;
+                return null;
             }
             const kept: ScreensaverItemConfig = { state: draft.state, template: draft.template };
             if (draft.enabled) {
@@ -487,11 +530,10 @@ export class ScreensaverItemDialog extends React.Component<ScreensaverItemDialog
             if (draft.visibleCondition) {
                 kept.visibleCondition = draft.visibleCondition;
             }
-            this.props.onSave(kept);
-            return;
+            return kept;
         }
         if (!draft.state) {
-            return;
+            return null;
         }
         delete draft.template;
         switch (this.state.colorMode) {
@@ -549,8 +591,8 @@ export class ScreensaverItemDialog extends React.Component<ScreensaverItemDialog
         ) {
             delete draft.action;
         }
-        this.props.onSave(draft);
-    };
+        return draft;
+    }
 
     /** what the state holds - decides which fields make sense */
     private kind(): 'unknown' | 'boolean' | 'number' | 'date' | 'other' {

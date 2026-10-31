@@ -51,6 +51,7 @@ __export(adminShareConfig_exports, {
   findChartEntryForScript: () => findChartEntryForScript,
   findPowerEntryForScript: () => findPowerEntryForScript,
   formatEntryNumber: () => formatEntryNumber,
+  isIconColorScaleElement: () => isIconColorScaleElement,
   isMainPageEntry: () => isMainPageEntry,
   isPageLinkEntry: () => isPageLinkEntry,
   isRawItemFormat: () => isRawItemFormat,
@@ -59,6 +60,8 @@ __export(adminShareConfig_exports, {
   isScriptNavigatedPower: () => isScriptNavigatedPower,
   isScrollCard: () => isScrollCard,
   legacyPowerStates: () => legacyPowerStates,
+  longPressAllowedOnCard: () => longPressAllowedOnCard,
+  longPressListCards: () => longPressListCards,
   mainPageName: () => mainPageName,
   mediaBackendFeatures: () => mediaBackendFeatures,
   mediaBackendOf: () => mediaBackendOf,
@@ -115,6 +118,7 @@ __export(adminShareConfig_exports, {
   trashItemCount: () => trashItemCount
 });
 module.exports = __toCommonJS(adminShareConfig_exports);
+var import_Color = require("../const/Color");
 const ALL_PANELS_SPECIAL_ID = "///ALL_PANELS_SPECIAL";
 const SENDTO_GET_PANEL_NAVIGATION_COMMAND = "getPanelNavigation";
 const SAVE_PANEL_NAVIGATION_COMMAND = "savePanelNavigation";
@@ -372,6 +376,10 @@ const scrollHalfCards = ["cardGrid", "cardGrid2", "cardGrid3", "cardThermo2"];
 const scrollAutoTimingDefault = 15;
 function isScrollCard(card) {
   return !!card && scrollCards.includes(card);
+}
+const longPressListCards = ["cardEntities", "cardSchedule"];
+function longPressAllowedOnCard(card) {
+  return !!card && !longPressListCards.includes(card);
 }
 function normalizeScrollFields(entry, card) {
   const presentation = entry.scrollPresentation === "arrow" || entry.scrollPresentation === "auto" ? entry.scrollPresentation : "classic";
@@ -1500,6 +1508,31 @@ const requiredScriptDataPoints = {
   }
 };
 const CHANNEL_ROLES_LIST = Object.keys(requiredScriptDataPoints);
+function isIconColorScaleElement(x) {
+  if (typeof x !== "object" || x === null) {
+    return false;
+  }
+  const v = x;
+  if (!Number.isFinite(v.val_min)) {
+    return false;
+  }
+  if (!Number.isFinite(v.val_max)) {
+    return false;
+  }
+  if (v.val_best != null && !Number.isFinite(v.val_best)) {
+    return false;
+  }
+  if (v.log10 != null && v.log10 !== "max" && v.log10 !== "min") {
+    return false;
+  }
+  if (v.mode != null && v.mode !== "mixed" && v.mode !== "hue" && v.mode !== "cie" && v.mode !== "triGrad" && v.mode !== "triGradAnchor" && v.mode !== "quadriGrad" && v.mode !== "quadriGradAnchor") {
+    return false;
+  }
+  if (v.color_best != null && !import_Color.Color.isRGB(v.color_best) && !import_Color.Color.isScriptRGB(v.color_best)) {
+    return false;
+  }
+  return true;
+}
 const ADMIN_BUTTON_MODES = [
   "page",
   "switch",
@@ -1564,6 +1597,7 @@ const CONVERT_GLOBAL_DEFAULT_DECISION = "keepAdmin";
   findChartEntryForScript,
   findPowerEntryForScript,
   formatEntryNumber,
+  isIconColorScaleElement,
   isMainPageEntry,
   isPageLinkEntry,
   isRawItemFormat,
@@ -1572,6 +1606,8 @@ const CONVERT_GLOBAL_DEFAULT_DECISION = "keepAdmin";
   isScriptNavigatedPower,
   isScrollCard,
   legacyPowerStates,
+  longPressAllowedOnCard,
+  longPressListCards,
   mainPageName,
   mediaBackendFeatures,
   mediaBackendOf,

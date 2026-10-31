@@ -511,7 +511,8 @@ export class PageMenuEditor extends ConfigGeneric<ConfigGenericProps & PageMenuE
      * @param forTrue
      */
     private getItemIconSrc(item: AdminPageItemConfig | null | undefined, forTrue = true): string {
-        if (item == null) {
+        // raw item: the raw data alone count - kept standard fields (icons, role) are not shown
+        if (item == null || item.useNative) {
             return '';
         }
         const explicit = forTrue ? item.trueIcon : item.falseIcon;
@@ -673,7 +674,7 @@ export class PageMenuEditor extends ConfigGeneric<ConfigGenericProps & PageMenuE
             ? (this.state.channelNames[normalizeChannelId(item.channelId).valueStateId] ?? '')
             : '';
         const isNativeItem = item.useNative === true;
-        const isNavigationItem = item.isNavigation === true;
+        const isNavigationItem = !isNativeItem && item.isNavigation === true;
         const role = item.role ?? '';
         const fallbackLabel = role ? `${index + 1}: (${role})` : String(index + 1);
         // raw item: the raw data alone count, name and channel of the dialog are not used

@@ -927,6 +927,10 @@ export class PageMediaEditor extends ConfigGeneric<ConfigGenericProps & PageMedi
      * @returns icon name, empty when unknown
      */
     private itemIcon(item: AdminPageItemConfig): string {
+        // raw item: the raw data alone count - kept standard fields (icons, role) are not shown
+        if (item.useNative) {
+            return '';
+        }
         if (item.trueIcon) {
             return item.trueIcon;
         }
@@ -1231,7 +1235,7 @@ export class PageMediaEditor extends ConfigGeneric<ConfigGenericProps & PageMedi
                     onDragLeave={this.onDragLeave}
                     onDrop={alive ? e => this.onDrop(content.index, e) : undefined}
                 >
-                    {coloredIcon(this.itemIcon(stored), stored.trueColor || MOCK.own, 24)}
+                    {coloredIcon(this.itemIcon(stored), (!stored.useNative && stored.trueColor) || MOCK.own, 24)}
                     <Box
                         sx={{
                             px: 0.5,

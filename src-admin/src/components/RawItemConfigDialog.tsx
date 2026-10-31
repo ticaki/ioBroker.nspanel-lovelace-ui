@@ -106,9 +106,10 @@ class RawItemConfigDialog extends React.Component<RawItemConfigDialogProps, RawI
     /**
      * Opens the dialog, the stored content formatted.
      *
-     * @param value the stored raw data, undefined = the item has none yet
+     * @param value the stored raw data, or a suggestion built from the standard fields (then `active` is false)
+     * @param active the item is in raw mode already - default: a value was given
      */
-    public openWith(value: RawItemValue | undefined): void {
+    public openWith(value: RawItemValue | undefined, active: boolean = value !== undefined): void {
         const config = value?.config ?? {};
         this.setState({
             open: true,
@@ -116,7 +117,7 @@ class RawItemConfigDialog extends React.Component<RawItemConfigDialogProps, RawI
             json: JSON.stringify(config, null, 2),
             parsed: config,
             errorMessage: '',
-            active: value !== undefined,
+            active,
         });
     }
 

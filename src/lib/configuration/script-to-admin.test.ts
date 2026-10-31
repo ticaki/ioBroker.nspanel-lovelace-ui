@@ -19,12 +19,11 @@ import { ConfigManager } from '../classes/config-manager';
 import type { NavigationItemConfig } from '../classes/navigation';
 import { StatesControler } from '../controller/states-controller';
 import { requiredScriptDataPoints } from '../const/config-manager-const';
-import { Color } from '../const/Color';
 import { testScriptConfig } from '../const/test';
 import * as ShareConfig from '../types/adminShareConfig';
-import { isIconColorScaleElement } from '../types/function-and-const';
 import type { PageBase } from '../types/pages';
 import { AdminConfiguration } from './admin';
+import { adminPageItemToScriptItem } from './admin-page-item';
 import { ensureMainPage } from './main-page';
 import { isScreensaverPage } from './admin-screensaver';
 import { planScriptToAdmin, type ScriptToAdminInput, type ScriptToAdminResult } from './script-to-admin';
@@ -258,30 +257,12 @@ function loadConvertAdminPageItem(): ConvertAdminItem {
     }).outputText;
     const mod: { exports?: { prototype: { convertAdminPageItemToPageItemConfig: ConvertAdminItem } } } = {};
 
-    const factory = new Function(
-        'module',
-        'ConfigManager',
-        'Color',
-        'isIconColorScaleElement',
-        'isRawItemObject',
-        'pageItemRawFormat',
-        js,
-    ) as (
+    const factory = new Function('module', 'ConfigManager', 'adminPageItemToScriptItem', js) as (
         module: typeof mod,
         configManager: typeof ConfigManager,
-        color: typeof Color,
-        guard: typeof isIconColorScaleElement,
-        rawGuard: typeof ShareConfig.isRawItemObject,
-        rawFormat: typeof ShareConfig.pageItemRawFormat,
+        toScriptItem: typeof adminPageItemToScriptItem,
     ) => void;
-    factory(
-        mod,
-        ConfigManager,
-        Color,
-        isIconColorScaleElement,
-        ShareConfig.isRawItemObject,
-        ShareConfig.pageItemRawFormat,
-    );
+    factory(mod, ConfigManager, adminPageItemToScriptItem);
     return mod.exports!.prototype.convertAdminPageItemToPageItemConfig;
 }
 
@@ -2013,6 +1994,74 @@ describe('lib/configuration - planScriptToAdmin: page items', () => {
             useValueConditions: 'val && val < 100',
             minValue: 5,
             maxValue: 90,
+        });
+    });
+
+    describe('long press only on grid pages', () => {
+        const item = { id: 'alias.0.Tests.button', navigate: true, targetPage: 'main', targetPageLongPress: 'lp' };
+
+        for (const type of ['cardEntities', 'cardSchedule']) {
+            it(`${type}: drops longPress / targetPageLongPress, the item is converted, the preview lists it`, () => {
+                const result = plan(
+                    baseConfig({
+                        subPages: [
+                            page({
+                                type,
+                                uniqueName: 'p',
+                                heading: 'P',
+                                items: [{ ...item, longPress: 'alias.0.Tests.button.SET' }, { id: 'alias.0.Hue' }],
+                            }),
+                        ],
+                    }),
+                );
+                expect(result.plan.skipped).to.deep.equal([]);
+                const [planned] = result.plan.pages;
+                expect(planned.action).to.equal('create');
+                expect(planned.rawItems).to.equal(undefined);
+                expect(planned.longPressDropped).to.deep.equal(['items[0]']);
+                const [converted, other] = (result.newPages[0] as ShareConfig.MenuEntry).pageItems;
+                expect(converted).to.not.have.property('targetPageLongPress');
+                expect(converted).to.not.have.property('longPress');
+                expect(converted!.useNative).to.equal(undefined);
+                expect(converted!.isNavigation).to.equal(true);
+                expect(converted!.targetPage).to.equal('main');
+                expect(other!.channelId.valueStateId).to.equal('alias.0.Hue');
+            });
+        }
+
+        it('cardEntities: a raw item loses its long press as well (script and native format)', () => {
+            const result = plan(
+                baseConfig({
+                    subPages: [
+                        page({
+                            type: 'cardEntities',
+                            uniqueName: 'p',
+                            heading: 'P',
+                            items: [
+                                { id: 'alias.0.Hue', confirm: 'sure?', longPress: 'alias.0.Tests.button.SET' },
+                                { native: { role: 'button', data: { setNaviLongPress: 'x', longPress: true, a: 1 } } },
+                            ],
+                        }),
+                    ],
+                }),
+            );
+            const [planned] = result.plan.pages;
+            expect(planned.rawItems!.map(r => [r.item, r.format])).to.deep.equal([
+                ['items[0]', 'script'],
+                ['items[1]', 'native'],
+            ]);
+            expect(planned.longPressDropped).to.deep.equal(['items[0]', 'items[1]']);
+            const [scriptRaw, nativeRaw] = (result.newPages[0] as ShareConfig.MenuEntry).pageItems;
+            expect(scriptRaw!.native).to.not.have.property('longPress');
+            expect(nativeRaw!.native).to.deep.equal({ role: 'button', data: { a: 1 } });
+        });
+
+        it('cardGrid: long press stays, nothing is listed', () => {
+            const result = planItems([{ ...item }]);
+            const [planned] = result.plan.pages;
+            expect(planned.longPressDropped).to.equal(undefined);
+            const [converted] = (result.newPages[0] as ShareConfig.MenuEntry).pageItems;
+            expect(converted!.targetPageLongPress).to.equal('lp');
         });
     });
 

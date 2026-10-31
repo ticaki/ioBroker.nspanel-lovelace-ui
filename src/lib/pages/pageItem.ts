@@ -2026,6 +2026,8 @@ export class PageItem extends BaseTriggeredPage {
                         } else {
                             await item.longPress.setStateFlip();
                         }
+                        // an executed long press must never trigger the short press as well
+                        done = true;
                     }
                 }
             }

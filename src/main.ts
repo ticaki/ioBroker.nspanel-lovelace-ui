@@ -11,8 +11,6 @@ import {
     migrateLegacyCharts,
     migrateLegacyPower,
     legacyPowerStates,
-    isRawItemObject,
-    pageItemRawFormat,
 } from './lib/types/adminShareConfig';
 /*
  * Created with @iobroker/create-adapter v2.5.0..
@@ -55,7 +53,7 @@ import {
     isPendingScriptConversion,
     ScriptToAdminRunner,
 } from './lib/configuration/script-to-admin-runner';
-import { Color } from './lib/const/Color';
+import { adminPageItemToScriptItem } from './lib/configuration/admin-page-item';
 import path from 'node:path';
 import { testScriptConfig } from './lib/const/test';
 import type {
@@ -65,7 +63,7 @@ import type {
     PageConfig,
     AdminPageItemConfig,
 } from './lib/types/adminShareConfig';
-import { isIconColorScaleElement, isTasmotaStatusNet } from './lib/types/function-and-const';
+import { isTasmotaStatusNet } from './lib/types/function-and-const';
 import type { oldQRType } from './lib/types/types';
 import iCal from 'node-ical';
 import type { NSPanel } from './lib/types/NSPanel';
@@ -3050,100 +3048,10 @@ class NspanelLovelaceUi extends utils.Adapter {
         let pageConfig: ScriptConfig.PageType | undefined = undefined;
         if (preItem && prePage) {
             const manager = new ConfigManager(this);
-            let item: ScriptConfig.PageItem | undefined = undefined;
-
-            if (preItem.useNative) {
-                // raw item: taken as entered - a copy, the config manager changes the item it gets (ids, colors)
-                const raw = isRawItemObject(preItem.native) ? structuredClone(preItem.native) : undefined;
-                if (raw) {
-                    item =
-                        pageItemRawFormat(preItem) === 'native'
-                            ? { native: raw }
-                            : // script format: not validated here, the config manager checks it like a script item
-                              (raw as ScriptConfig.PageItem);
-                }
-            } else if (preItem.isNavigation) {
-                item = {
-                    navigate: true,
-                    targetPage: preItem.targetPage ?? '',
-                    type: null,
-                    id: preItem.channelId.valueStateId,
-                };
-            } else {
-                item = {
-                    type: null,
-                    id: preItem.channelId.valueStateId,
-                    // role button: pressed and then changes to targetPage (without navigate)
-                    targetPage: preItem.type !== 'custom' && preItem.targetPage ? preItem.targetPage : undefined,
-                };
-            }
-            const convertToScriptRGBColor = (color?: string): ScriptConfig.RGB | undefined => {
-                if (!color) {
-                    return undefined;
-                }
-                try {
-                    const c = Color.ConvertHexToRgb(color);
-                    return { red: c.r, green: c.g, blue: c.b };
-                } catch {
-                    this.log.warn(`Invalid color format: ${color}`);
-                    return undefined;
-                }
-            };
+            const item = adminPageItemToScriptItem(preItem, color => this.log.warn(`Invalid color format: ${color}`));
             if (!item) {
                 error = 'Invalid/Empty item native configuration!';
                 return { pageItem, messages, error };
-            }
-
-            // a raw item brings all of its fields itself - the fields of the dialog are not applied on top
-            if (!preItem.useNative && !('native' in item)) {
-                item.type = preItem.type === 'custom' ? 'custom' : null;
-                item.icon = preItem.trueIcon || undefined;
-                item.icon2 = preItem.falseIcon || undefined;
-                item.onColor = convertToScriptRGBColor(preItem.trueColor);
-                item.offColor = convertToScriptRGBColor(preItem.falseColor);
-                item.longPress = preItem.longPress || undefined;
-                item.targetPageLongPress = preItem.targetPageLongPress || undefined;
-                item.name = preItem.name || undefined;
-
-                if (isIconColorScaleElement(preItem.scale)) {
-                    // color_best stays {r, g, b} - the script type accepts both forms, the config manager
-                    // normalizes to {r, g, b} anyway
-                    item.colorScale = { ...preItem.scale };
-                }
-                if (item.type !== 'custom') {
-                    item.fontSize =
-                        preItem.textSize || preItem.textSize == 0
-                            ? (Number(preItem.textSize) as typeof preItem.textSize)
-                            : undefined;
-                    if (!item.name && preItem.valueEntry) {
-                        item.name = preItem.valueEntry.valueStateId;
-                        item.suffixName = preItem.valueEntry.suffix ? preItem.valueEntry.suffix : undefined;
-                        item.prefixName = preItem.valueEntry.prefix ? preItem.valueEntry.prefix : undefined;
-                    }
-
-                    item.prefixValue = preItem.channelId?.prefix ? preItem.channelId.prefix : undefined;
-                    item.suffixValue = preItem.channelId?.suffix ? preItem.channelId.suffix : undefined;
-                    item.unit = preItem.channelId?.unit ? preItem.channelId.unit : undefined;
-                    item.useValue = preItem.useValue;
-                    item.inSel_Alias = preItem.inSel_Alias || undefined;
-                    item.modeList = preItem.modeList?.length ? preItem.modeList : undefined;
-                    // cardThermo2: heat circuit the item belongs to (page items only, not custom items)
-                    item.filter = typeof preItem.filter === 'number' ? preItem.filter : undefined;
-                    // condition for the value text (icon text of info, slider, temperature, ... items)
-                    item.useValueConditions = preItem.useValueConditions ? preItem.useValueConditions : undefined;
-                    // role volume: range of the volume slider (the config manager reads both for volume only)
-                    item.minValue = typeof preItem.minValue === 'number' ? preItem.minValue : undefined;
-                    item.maxValue = typeof preItem.maxValue === 'number' ? preItem.maxValue : undefined;
-                    // role blind: second text row of the shutter popup
-                    item.secondRow = preItem.secondRow ? preItem.secondRow : undefined;
-                    // light ranges and color mode (dimmer, ct, rgb, rgbSingle, hue) - the config manager reads
-                    // the numbers only when truthy and the color mode only as set / not set
-                    item.minValueBrightness = preItem.minValueBrightness ? preItem.minValueBrightness : undefined;
-                    item.maxValueBrightness = preItem.maxValueBrightness ? preItem.maxValueBrightness : undefined;
-                    item.minValueColorTemp = preItem.minValueColorTemp ? preItem.minValueColorTemp : undefined;
-                    item.maxValueColorTemp = preItem.maxValueColorTemp ? preItem.maxValueColorTemp : undefined;
-                    item.colormode = preItem.colormode === true ? 'xy' : undefined;
-                }
             }
 
             const page = {

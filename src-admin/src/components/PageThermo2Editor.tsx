@@ -632,6 +632,10 @@ export class PageThermo2Editor extends ConfigGeneric<
      * @param item stored item
      */
     private itemIcon(item: AdminPageItemConfig): string {
+        // raw item: the raw data alone count - kept standard fields (icons, role) are not shown
+        if (item.useNative) {
+            return '';
+        }
         if (item.trueIcon) {
             return item.trueIcon;
         }

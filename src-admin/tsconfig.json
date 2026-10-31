@@ -17,7 +17,8 @@
         "jsx": "react-jsx",
         "types": ["@iobroker/types", "node"]
     },
-    "include": ["src"],
+    // ScriptConfig (global namespace): src/lib/configuration/admin-page-item.ts is shared with the adapter
+    "include": ["src", "../src/lib/types/config-manager.d.ts"],
     // Unit-Tests laufen über mocha im Hauptprojekt (npm test) und werden dort typgeprüft
     "exclude": ["src/**/*.test.ts"],
     "references": [

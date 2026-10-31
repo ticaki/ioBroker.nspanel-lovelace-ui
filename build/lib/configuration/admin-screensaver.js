@@ -22,29 +22,22 @@ __export(admin_screensaver_exports, {
   applyScreensaverEntry: () => applyScreensaverEntry,
   buildScreensaverScriptConfig: () => buildScreensaverScriptConfig,
   findScreensaverEntry: () => findScreensaverEntry,
-  hexToScriptRGB: () => hexToScriptRGB,
+  hexToScriptRGB: () => import_admin_screensaver_item2.hexToScriptRGB,
   isScreensaverPage: () => isScreensaverPage,
   objectNameOf: () => objectNameOf,
-  screensaverFallbackIcon: () => screensaverFallbackIcon,
-  screensaverItemToScript: () => screensaverItemToScript,
+  screensaverFallbackIcon: () => import_admin_screensaver_item2.screensaverFallbackIcon,
+  screensaverItemToScript: () => import_admin_screensaver_item2.screensaverItemToScript,
   screensaverMrIconToScript: () => screensaverMrIconToScript,
   screensaverNotifyToScript: () => screensaverNotifyToScript,
-  screensaverRawToScript: () => screensaverRawToScript,
+  screensaverRawToScript: () => import_admin_screensaver_item2.screensaverRawToScript,
   screensaverStateIds: () => screensaverStateIds
 });
 module.exports = __toCommonJS(admin_screensaver_exports);
 var import_adminShareConfig = require("../types/adminShareConfig");
 var import_Color = require("../const/Color");
-var import_page_item_defaults = require("../const/page-item-defaults");
+var import_admin_screensaver_item = require("./admin-screensaver-item");
+var import_admin_screensaver_item2 = require("./admin-screensaver-item");
 const adminScreensaverPageId = "scr-admin";
-const screensaverFallbackIcon = "help-circle-outline";
-function hexToScriptRGB(hex) {
-  if (typeof hex !== "string" || !/^#[0-9a-fA-F]{6}$/.test(hex)) {
-    return void 0;
-  }
-  const rgb = import_Color.Color.ConvertHexToRgb(hex);
-  return { red: rgb.r, green: rgb.g, blue: rgb.b };
-}
 function objectNameOf(obj, lang) {
   var _a;
   const raw = (_a = obj == null ? void 0 : obj.common) == null ? void 0 : _a.name;
@@ -70,103 +63,6 @@ function allItems(entry) {
   var _a, _b, _c;
   return [entry.favorit, entry.alternate, ...(_a = entry.left) != null ? _a : [], ...(_b = entry.bottom) != null ? _b : [], ...(_c = entry.indicator) != null ? _c : []];
 }
-function screensaverItemToScript(item, area, info = {}) {
-  var _a, _b, _c, _d, _e, _f;
-  if (item.raw) {
-    return screensaverRawToScript(item.raw, area);
-  }
-  if (item.template) {
-    const element2 = {
-      type: "template",
-      template: item.template,
-      dpInit: (_a = item.state) != null ? _a : "",
-      modeScr: area
-    };
-    if (item.enabled) {
-      element2.enabled = item.enabled;
-    }
-    if (item.visibleCondition) {
-      element2.visibleCondition = item.visibleCondition;
-    }
-    return element2;
-  }
-  let iconOn = item.iconOn || null;
-  let iconOff = item.iconOff || null;
-  if (!iconOn && !((_b = item.iconSelect) == null ? void 0 : _b.length)) {
-    const defaults = info.role || info.channelRole ? (0, import_page_item_defaults.getScreensaverItemDefaultsByRole)((_c = info.role) != null ? _c : "", info.channelRole) : null;
-    iconOn = (defaults == null ? void 0 : defaults.iconOn) || screensaverFallbackIcon;
-    iconOff = iconOff || (defaults == null ? void 0 : defaults.iconOff) || null;
-  }
-  const element = {
-    type: "script",
-    ScreensaverEntity: item.state,
-    ScreensaverEntityText: item.headline || info.name || "",
-    ScreensaverEntityIconOn: iconOn,
-    ScreensaverEntityIconOff: iconOff,
-    ScreensaverEntityOnText: (_d = item.textOn) != null ? _d : null,
-    ScreensaverEntityOffText: (_e = item.textOff) != null ? _e : null
-  };
-  if (item.unit !== void 0) {
-    element.ScreensaverEntityUnitText = item.unit;
-  }
-  if (typeof item.factor === "number") {
-    element.ScreensaverEntityFactor = item.factor;
-  }
-  if (typeof item.decimals === "number") {
-    element.ScreensaverEntityDecimalPlaces = item.decimals;
-  }
-  if (item.dateFormat) {
-    element.ScreensaverEntityDateFormat = item.dateFormat;
-  }
-  const onColor = hexToScriptRGB(item.colorOn);
-  if (onColor) {
-    element.ScreensaverEntityOnColor = onColor;
-  }
-  const offColor = hexToScriptRGB(item.colorOff);
-  if (offColor) {
-    element.ScreensaverEntityOffColor = offColor;
-  }
-  if (item.colorScale) {
-    element.ScreensaverEntityIconColor = item.colorScale;
-  } else if (item.colorState) {
-    element.ScreensaverEntityIconColor = item.colorState;
-  }
-  if ((_f = item.iconSelect) == null ? void 0 : _f.length) {
-    element.ScreensaverEntityIconSelect = item.iconSelect.map((s) => ({ icon: s.icon, value: s.value }));
-  }
-  if (item.enabled) {
-    element.ScreensaverEntityEnabled = item.enabled;
-  }
-  if (item.visibleCondition) {
-    element.ScreensaverEntityVisibleCondition = item.visibleCondition;
-  }
-  if (area === "indicator" && item.action) {
-    switch (item.action.kind) {
-      case "button":
-        element.ScreensaverEntityButton = item.action.state || null;
-        break;
-      case "switch":
-        element.ScreensaverEntitySwitch = item.action.state || null;
-        break;
-      case "navigate":
-        element.ScreensaverEntityNaviToPage = item.action.page || null;
-        break;
-    }
-  }
-  return element;
-}
-function screensaverRawToScript(raw, area) {
-  const config = structuredClone(raw.config);
-  if (raw.format === "native") {
-    return { type: "native", native: { ...config, modeScr: area } };
-  }
-  if (config.type === "template") {
-    config.modeScr = area;
-  } else if (config.type === "native" && (0, import_adminShareConfig.isRawItemObject)(config.native)) {
-    config.native = { ...config.native, modeScr: area };
-  }
-  return config;
-}
 function screensaverMrIconToScript(cfg) {
   var _a;
   if (!cfg || !cfg.entity && !cfg.value) {
@@ -181,8 +77,8 @@ function screensaverMrIconToScript(cfg) {
     ScreensaverEntityValue: cfg.value || null,
     ScreensaverEntityValueDecimalPlace: typeof cfg.valueDecimals === "number" ? cfg.valueDecimals : null,
     ScreensaverEntityValueUnit: cfg.valueUnit || null,
-    ScreensaverEntityOnColor: hexToScriptRGB(cfg.onColor),
-    ScreensaverEntityOffColor: hexToScriptRGB(cfg.offColor)
+    ScreensaverEntityOnColor: (0, import_admin_screensaver_item.hexToScriptRGB)(cfg.onColor),
+    ScreensaverEntityOffColor: (0, import_admin_screensaver_item.hexToScriptRGB)(cfg.offColor)
   };
   return element;
 }
@@ -231,7 +127,7 @@ function buildScreensaverScriptConfig(entry, panelTopic, states = {}, notifyList
   var _a, _b, _c;
   const convert = (item, area) => {
     var _a2;
-    return item ? screensaverItemToScript(item, area, item.raw ? {} : (_a2 = states[item.state]) != null ? _a2 : {}) : void 0;
+    return item ? (0, import_admin_screensaver_item.screensaverItemToScript)(item, area, item.raw ? {} : (_a2 = states[item.state]) != null ? _a2 : {}) : void 0;
   };
   const present = (list) => list.filter((e) => !!e);
   const favorit = convert(entry.favorit, "favorit");

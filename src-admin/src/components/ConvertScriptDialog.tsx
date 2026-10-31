@@ -469,6 +469,28 @@ class ConvertScriptDialog extends React.Component<ConvertScriptDialogProps, Conv
     }
 
     /**
+     * "1 item" / "n items"
+     *
+     * @param count number of items
+     */
+    private itemsText(count: number): string {
+        return count === 1 ? I18n.t('convertScript_items_one') : I18n.t('convertScript_items', String(count));
+    }
+
+    /**
+     * one raw item: position, format and why - the position only once (the detail of the planner mostly starts
+     * with it, e.g. `items[2]: native item`)
+     *
+     * @param item raw item of the plan
+     */
+    private rawItemText(item: ConvertRawItem): string {
+        const format = I18n.t(`rawItemDialog_format_${item.format}`);
+        return item.detail.startsWith(item.item)
+            ? I18n.t('convertScript_rawItemDetail', item.detail, format)
+            : I18n.t('convertScript_rawItem', item.item, format, item.detail);
+    }
+
+    /**
      * one entry of a list: bold name, optional type chip, a text next to it and a secondary line
      *
      * @param key react key
@@ -700,19 +722,47 @@ class ConvertScriptDialog extends React.Component<ConvertScriptDialogProps, Conv
                             group.key,
                             group.name,
                             group.type,
-                            I18n.t('convertScript_items', String(group.items.length)),
-                            group.items
-                                .map(item =>
-                                    I18n.t(
-                                        'convertScript_rawItem',
-                                        item.item,
-                                        I18n.t(`rawItemDialog_format_${item.format}`),
-                                        item.detail,
-                                    ),
-                                )
-                                .join(' · '),
+                            this.itemsText(group.items.length),
+                            group.items.map(item => this.rawItemText(item)).join(' · '),
                         ),
                     )}
+                </List>
+            </Alert>
+        );
+    }
+
+    /**
+     * info, no problem: items on list pages (cardEntities / cardSchedule) whose long press was dropped - list pages
+     * have no long press, the item itself is taken over
+     *
+     * @param plan plan of the adapter
+     */
+    private renderLongPressDropped(plan: ConvertScriptPlan): React.JSX.Element | null {
+        const pages = plan.pages.filter(page => page.longPressDropped?.length);
+        if (pages.length === 0) {
+            return null;
+        }
+        return (
+            <Alert
+                severity="info"
+                sx={{ mt: 2 }}
+            >
+                <AlertTitle>{I18n.t('convertScript_longPressDropped')}</AlertTitle>
+                <Typography variant="body2">{I18n.t('convertScript_longPressDroppedHint')}</Typography>
+                <List
+                    dense
+                    disablePadding
+                >
+                    {pages.map(page => {
+                        const items = page.longPressDropped ?? [];
+                        return this.renderEntry(
+                            `longpress-${page.uniqueName}`,
+                            page.uniqueName,
+                            page.type,
+                            this.itemsText(items.length),
+                            items.join(', '),
+                        );
+                    })}
                 </List>
             </Alert>
         );
@@ -840,7 +890,7 @@ class ConvertScriptDialog extends React.Component<ConvertScriptDialogProps, Conv
                     secondary={[
                         page.global ? I18n.t('convertScript_globalPage') : '',
                         page.storedAs ? I18n.t('convertScript_storedAs', page.storedAs) : '',
-                        I18n.t('convertScript_items', String(page.itemCount)),
+                        this.itemsText(page.itemCount),
                         navigation,
                     ]
                         .filter(part => part !== '')
@@ -875,8 +925,7 @@ class ConvertScriptDialog extends React.Component<ConvertScriptDialogProps, Conv
                     variant="body2"
                     color="text.secondary"
                 >
-                    {I18n.t('convertScript_items', String(itemCount))} ·{' '}
-                    {I18n.t('convertScript_notifications', String(notifyCount))}
+                    {this.itemsText(itemCount)} · {I18n.t('convertScript_notifications', String(notifyCount))}
                 </Typography>
             </>
         );
@@ -1019,6 +1068,7 @@ class ConvertScriptDialog extends React.Component<ConvertScriptDialogProps, Conv
                 {this.renderConflicts(plan, showHints)}
                 {this.renderProblems(plan)}
                 {this.renderRawItems(plan)}
+                {this.renderLongPressDropped(plan)}
                 {this.renderDetails(plan)}
             </>
         );

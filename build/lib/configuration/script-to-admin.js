@@ -360,7 +360,32 @@ function rawPageItem(item) {
     format
   };
 }
-function convertPageItems(items, rawItems) {
+function withoutLongPress(item) {
+  let dropped = false;
+  const out = { ...item };
+  for (const key of ["longPress", "targetPageLongPress"]) {
+    if (key in out) {
+      dropped || (dropped = out[key] !== void 0 && out[key] !== null && out[key] !== "");
+      delete out[key];
+    }
+  }
+  if (isDict(out.native) && isDict(out.native.data)) {
+    const data = { ...out.native.data };
+    let changed = false;
+    for (const key of ["setNaviLongPress", "longPress"]) {
+      if (key in data) {
+        dropped || (dropped = data[key] !== void 0 && data[key] !== null);
+        delete data[key];
+        changed = true;
+      }
+    }
+    if (changed) {
+      out.native = { ...out.native, data };
+    }
+  }
+  return { item: out, dropped };
+}
+function convertPageItems(items, rawItems, longPressDropped) {
   if (items === void 0 || items === null) {
     return [];
   }
@@ -368,21 +393,29 @@ function convertPageItems(items, rawItems) {
     throw new ConvertError("fieldNotSupported", "items: expected a list");
   }
   const out = [];
-  items.forEach((item, index) => {
-    if (item === null || item === void 0) {
+  items.forEach((scriptItem, index) => {
+    if (scriptItem === null || scriptItem === void 0) {
       return;
     }
-    if (!isDict(item)) {
+    if (!isDict(scriptItem)) {
       throw new ConvertError("itemNotSupported", `items[${index}]: expected an object`);
     }
-    if (isEmptyPlace(item)) {
+    if (isEmptyPlace(scriptItem)) {
       out.push(void 0);
       return;
     }
-    if (isDroppedItem(item)) {
+    if (isDroppedItem(scriptItem)) {
       return;
     }
     const where = `items[${index}]`;
+    let item = scriptItem;
+    if (longPressDropped) {
+      const stripped = withoutLongPress(scriptItem);
+      item = stripped.item;
+      if (stripped.dropped) {
+        longPressDropped.push(where);
+      }
+    }
     try {
       out.push(convertPageItem(item, where));
     } catch (error) {
@@ -544,14 +577,14 @@ function scrollFields(page, card) {
   }
   return fields;
 }
-function convertMenuPage(page, common, topic, rawItems) {
+function convertMenuPage(page, common, topic, rawItems, longPressDropped) {
   rejectUnknownKeys(page, [...pageMappedKeys, ...scrollKeys], pageIgnoredKeys, "fieldNotSupported", "page");
   const card = page.type;
   return {
     card,
     uniqueName: common.uniqueName,
     headline: common.headline,
-    pageItems: convertPageItems(page.items, rawItems),
+    pageItems: convertPageItems(page.items, rawItems, (0, import_adminShareConfig.longPressAllowedOnCard)(card) ? void 0 : longPressDropped),
     hidden: common.hidden,
     alwaysOn: common.alwaysOn,
     ...scrollFields(page, card),
@@ -1684,6 +1717,7 @@ function planScriptToAdmin(input) {
     }
     const common = pageCommon(page, isSub);
     const rawItems = [];
+    const longPressDropped = [];
     let entry;
     if (typeName === "cardThermo2") {
       entry = convertThermo2Page(page, common, panel.topic, rawItems);
@@ -1692,9 +1726,9 @@ function planScriptToAdmin(input) {
     } else if (typeName === "cardMedia") {
       entry = convertMediaPage(page, common, panel.topic, rawItems);
     } else {
-      entry = convertMenuPage(page, common, panel.topic, rawItems);
+      entry = convertMenuPage(page, common, panel.topic, rawItems, longPressDropped);
     }
-    return { entry, common, rawItems };
+    return { entry, common, rawItems, longPressDropped };
   };
   const handleExistingGlobal = (page, isSub, typeName, uniqueName, existing, source) => {
     var _a, _b, _c, _d;
@@ -1765,7 +1799,8 @@ function planScriptToAdmin(input) {
       action: decision === "takeScript" ? "create" : "assignNavigation",
       global: true,
       existing: decision,
-      ...decision === "takeScript" && converted.rawItems.length ? { rawItems: converted.rawItems } : {}
+      ...decision === "takeScript" && converted.rawItems.length ? { rawItems: converted.rawItems } : {},
+      ...decision === "takeScript" && converted.longPressDropped.length ? { longPressDropped: converted.longPressDropped } : {}
     });
     remove(uniqueName, isSub, source);
   };
@@ -1911,7 +1946,7 @@ function planScriptToAdmin(input) {
       }
     }
     try {
-      const { entry, common, rawItems } = convertPage(page, isSub, typeName, uniqueName);
+      const { entry, common, rawItems, longPressDropped } = convertPage(page, isSub, typeName, uniqueName);
       if (storedAs !== void 0) {
         entry.uniqueName = storedAs;
         entry.isMainPage = true;
@@ -1939,6 +1974,9 @@ function planScriptToAdmin(input) {
       }
       if (rawItems.length) {
         planned.rawItems = rawItems;
+      }
+      if (longPressDropped.length) {
+        planned.longPressDropped = longPressDropped;
       }
       plan.pages.push(planned);
     } catch (error) {

@@ -44,7 +44,7 @@ var fs = __toESM(require("node:fs"));
 var import_navigation_overrides = require("./lib/configuration/navigation-overrides");
 var import_panel_buttons = require("./lib/configuration/panel-buttons");
 var import_script_to_admin_runner = require("./lib/configuration/script-to-admin-runner");
-var import_Color = require("./lib/const/Color");
+var import_admin_page_item = require("./lib/configuration/admin-page-item");
 var import_node_path = __toESM(require("node:path"));
 var import_test = require("./lib/const/test");
 var import_function_and_const = require("./lib/types/function-and-const");
@@ -2626,88 +2626,15 @@ class NspanelLovelaceUi extends utils.Adapter {
     }
   }
   async convertAdminPageItemToPageItemConfig(preItem, prePage, messages) {
-    var _a, _b, _c, _d, _e;
     let error = void 0;
     let pageItem = void 0;
     let pageConfig = void 0;
     if (preItem && prePage) {
       const manager = new import_config_manager.ConfigManager(this);
-      let item = void 0;
-      if (preItem.useNative) {
-        const raw = (0, import_adminShareConfig.isRawItemObject)(preItem.native) ? structuredClone(preItem.native) : void 0;
-        if (raw) {
-          item = (0, import_adminShareConfig.pageItemRawFormat)(preItem) === "native" ? { native: raw } : (
-            // script format: not validated here, the config manager checks it like a script item
-            raw
-          );
-        }
-      } else if (preItem.isNavigation) {
-        item = {
-          navigate: true,
-          targetPage: (_a = preItem.targetPage) != null ? _a : "",
-          type: null,
-          id: preItem.channelId.valueStateId
-        };
-      } else {
-        item = {
-          type: null,
-          id: preItem.channelId.valueStateId,
-          // role button: pressed and then changes to targetPage (without navigate)
-          targetPage: preItem.type !== "custom" && preItem.targetPage ? preItem.targetPage : void 0
-        };
-      }
-      const convertToScriptRGBColor = (color) => {
-        if (!color) {
-          return void 0;
-        }
-        try {
-          const c = import_Color.Color.ConvertHexToRgb(color);
-          return { red: c.r, green: c.g, blue: c.b };
-        } catch {
-          this.log.warn(`Invalid color format: ${color}`);
-          return void 0;
-        }
-      };
+      const item = (0, import_admin_page_item.adminPageItemToScriptItem)(preItem, (color) => this.log.warn(`Invalid color format: ${color}`));
       if (!item) {
         error = "Invalid/Empty item native configuration!";
         return { pageItem, messages, error };
-      }
-      if (!preItem.useNative && !("native" in item)) {
-        item.type = preItem.type === "custom" ? "custom" : null;
-        item.icon = preItem.trueIcon || void 0;
-        item.icon2 = preItem.falseIcon || void 0;
-        item.onColor = convertToScriptRGBColor(preItem.trueColor);
-        item.offColor = convertToScriptRGBColor(preItem.falseColor);
-        item.longPress = preItem.longPress || void 0;
-        item.targetPageLongPress = preItem.targetPageLongPress || void 0;
-        item.name = preItem.name || void 0;
-        if ((0, import_function_and_const.isIconColorScaleElement)(preItem.scale)) {
-          item.colorScale = { ...preItem.scale };
-        }
-        if (item.type !== "custom") {
-          item.fontSize = preItem.textSize || preItem.textSize == 0 ? Number(preItem.textSize) : void 0;
-          if (!item.name && preItem.valueEntry) {
-            item.name = preItem.valueEntry.valueStateId;
-            item.suffixName = preItem.valueEntry.suffix ? preItem.valueEntry.suffix : void 0;
-            item.prefixName = preItem.valueEntry.prefix ? preItem.valueEntry.prefix : void 0;
-          }
-          item.prefixValue = ((_b = preItem.channelId) == null ? void 0 : _b.prefix) ? preItem.channelId.prefix : void 0;
-          item.suffixValue = ((_c = preItem.channelId) == null ? void 0 : _c.suffix) ? preItem.channelId.suffix : void 0;
-          item.unit = ((_d = preItem.channelId) == null ? void 0 : _d.unit) ? preItem.channelId.unit : void 0;
-          item.useValue = preItem.useValue;
-          item.inSel_Alias = preItem.inSel_Alias || void 0;
-          item.modeList = ((_e = preItem.modeList) == null ? void 0 : _e.length) ? preItem.modeList : void 0;
-          item.filter = typeof preItem.filter === "number" ? preItem.filter : void 0;
-          item.useValueConditions = preItem.useValueConditions ? preItem.useValueConditions : void 0;
-          item.minValue = typeof preItem.minValue === "number" ? preItem.minValue : void 0;
-          item.maxValue = typeof preItem.maxValue === "number" ? preItem.maxValue : void 0;
-          item.secondRow = preItem.secondRow ? preItem.secondRow : void 0;
-          item.minValueBrightness = preItem.minValueBrightness ? preItem.minValueBrightness : void 0;
-          item.maxValueBrightness = preItem.maxValueBrightness ? preItem.maxValueBrightness : void 0;
-          item.minValueColorTemp = preItem.minValueColorTemp ? preItem.minValueColorTemp : void 0;
-          item.maxValueColorTemp = preItem.maxValueColorTemp ? preItem.maxValueColorTemp : void 0;
-          item.colormode = preItem.colormode === true ? "xy" : void 0;
-        }
       }
       const page = {
         type: prePage.card,

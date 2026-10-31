@@ -52,9 +52,11 @@ import {
     requiredScriptDataPoints,
     emptyChannelValueConfig,
     isRawItemObject,
+    longPressAllowedOnCard,
     normalizeChannelId,
     pageItemRawFormat,
 } from '../../../src/lib/types/adminShareConfig';
+import { adminPageItemToScriptItem } from '../../../src/lib/configuration/admin-page-item';
 import ChannelColorDialog from './ChannelColorDialog';
 import ChannelModeListDialog from './ChannelModeListDialog';
 import FormatListBulletedIcon from '@mui/icons-material/FormatListBulleted';
@@ -538,17 +540,30 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
      * from `targetPage` for items of type button; the custom branch returns earlier and ignores it).
      */
     private isButtonTargetPageVisible(): boolean {
-        const { channelRole, isCustom, isNavigation, raw } = this.state;
-        return !raw && !isNavigation && !isCustom && channelRole === 'button';
+        return !this.state.raw && this.isButtonTargetPageAllowed();
+    }
+
+    /** the item takes a target page without navigation (role button) - independent of the raw mode */
+    private isButtonTargetPageAllowed(): boolean {
+        const { channelRole, isCustom, isNavigation } = this.state;
+        return !isNavigation && !isCustom && channelRole === 'button';
     }
 
     /**
-     * Long press fieldset visible: grid cards only, for role button, custom and navigation items
-     * (intentionally narrow - items with a popup collide with the long press).
+     * Long press fieldset visible: every page type except the list pages cardEntities / cardSchedule
+     * ({@link longPressAllowedOnCard}, independent of the isGridCard flag of openWith()), for role button,
+     * custom and navigation items only (intentionally narrow - items with a popup collide with the long press).
      */
     private isLongPressVisible(): boolean {
-        const { isGridCard, channelRole, isCustom, isNavigation, raw } = this.state;
-        return !raw && isGridCard && (channelRole === 'button' || isCustom || isNavigation);
+        return !this.state.raw && this.isLongPressAllowed();
+    }
+
+    /** the item takes a long press (page type and kind of item) - independent of the raw mode */
+    private isLongPressAllowed(): boolean {
+        const { channelRole, isCustom, isNavigation } = this.state;
+        return (
+            longPressAllowedOnCard(this.props.currentPageCard) && (channelRole === 'button' || isCustom || isNavigation)
+        );
     }
 
     /**
@@ -559,8 +574,21 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
         return this.state.isGridCard || this.props.currentPageCard === 'cardThermo2';
     }
 
-    /** Baut die zu speichernde PageItemConfig aus dem aktuellen State zusammen. */
+    /**
+     * Baut die zu speichernde PageItemConfig aus dem aktuellen State zusammen. Im Rohdaten-Modus bleiben die
+     * Standardfelder erhalten (für „Zurück zum Standard“), zur Laufzeit gilt nur `native`.
+     */
     private buildSaveConfig(): AdminPageItemConfig | null {
+        const standard = this.buildStandardConfig();
+        const { raw } = this.state;
+        if (raw) {
+            return { ...standard, useNative: true, nativeFormat: raw.format, native: raw.config };
+        }
+        return standard;
+    }
+
+    /** the item from the standard fields of the dialog, regardless of the raw mode */
+    private buildStandardConfig(): AdminPageItemConfig {
         const {
             channelId,
             name,
@@ -592,11 +620,11 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
         const maxValueOut = maxValue !== undefined && Number.isFinite(maxValue) ? maxValue : undefined;
         // the adapter reads the light ranges only when they are truthy - 0 is stored as "not set"
         // hidden long press fieldset: store nothing, so no stale value reaches the adapter
-        const longPressVisible = this.isLongPressVisible();
-        const targetPageLongPressOut = longPressVisible ? targetPageLongPress || null : null;
-        const longPressOut = longPressVisible ? longPress || null : null;
+        const longPressAllowed = this.isLongPressAllowed();
+        const targetPageLongPressOut = longPressAllowed ? targetPageLongPress || null : null;
+        const longPressOut = longPressAllowed ? longPress || null : null;
         // navigation items keep their target page, otherwise only a button item stores one
-        const targetPageOut = isNavigation || this.isButtonTargetPageVisible() ? targetPage : '';
+        const targetPageOut = isNavigation || this.isButtonTargetPageAllowed() ? targetPage : '';
         const lightRange = (value: number | undefined): number | undefined =>
             value !== undefined && Number.isFinite(value) && value !== 0 ? value : undefined;
         const extraFields: Pick<AdminPageItemConfig, 'secondRow' | 'colormode' | LightRangeKey> = {
@@ -607,16 +635,6 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
             maxValueColorTemp: lightRange(this.state.maxValueColorTemp),
             colormode: colormode ? true : undefined,
         };
-        const { raw } = this.state;
-        if (raw) {
-            // raw mode: the item is taken from the raw data alone - the adapter ignores every other field
-            return {
-                channelId,
-                useNative: true,
-                nativeFormat: raw.format,
-                native: raw.config,
-            };
-        }
         return {
             channelId: channelId,
             role: channelRole ?? undefined,
@@ -732,8 +750,28 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
     };
 
     private handleRawOpen = (): void => {
-        this.rawDialogRef.current?.openWith(this.state.raw ?? undefined);
+        if (this.state.raw) {
+            this.rawDialogRef.current?.openWith(this.state.raw);
+            return;
+        }
+        // standard item: the dialog starts with the script item the adapter builds from the fields
+        this.rawDialogRef.current?.openWith(this.rawSuggestion(), false);
     };
+
+    /**
+     * The script item of the standard fields as raw data (format script), undefined while the item has
+     * neither a channel nor a navigation target.
+     */
+    private rawSuggestion(): RawItemValue | undefined {
+        const { channelId, isNavigation, targetPage } = this.state;
+        if (!channelId.valueStateId && !(isNavigation && targetPage)) {
+            return undefined;
+        }
+        const item = adminPageItemToScriptItem(this.buildStandardConfig());
+        // JSON round trip: fields without a value (undefined) are left out of the text
+        const config: unknown = item ? JSON.parse(JSON.stringify(item)) : undefined;
+        return isRawItemObject(config) ? { format: 'script', config } : undefined;
+    }
 
     private handleRawApply = (raw: RawItemValue): void => {
         this.setState({ raw });
@@ -1549,8 +1587,9 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
         // raw mode: the item needs no channel, the raw data are complete in themselves
         const canSave = rawMode || standardCanSave;
 
+        // raw mode: role and datapoint checks do not apply - the raw data are saved as they are
         const errorSaveDetails =
-            !(isNavigation && !channelIdValid) && ((!roleIsValid && !isCustom) || this.state.hasProblems);
+            !rawMode && !(isNavigation && !channelIdValid) && ((!roleIsValid && !isCustom) || this.state.hasProblems);
         /** Felder sperren wenn noch keine gültige ID ausgewählt ist */
         const fieldsDisabled = !standardCanSave;
 
