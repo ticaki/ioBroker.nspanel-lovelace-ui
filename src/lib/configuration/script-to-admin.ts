@@ -31,6 +31,7 @@ import {
     type AdminPageItemConfig,
     type ChannelValueConfig,
     type ConvertPagePlan,
+    type ConvertRawItem,
     type ConvertScriptPlan,
     type ConvertSkipReason,
     type ConvertSkipped,
@@ -46,6 +47,7 @@ import {
     type NavigationLinks,
     type PageConfigEntry,
     type PageScrollFields,
+    type RawItemFormat,
     type ScreensaverEntry,
     type ScreensaverItemConfig,
     type ScreensaverMode,
@@ -415,7 +417,9 @@ function convertPageItem(item: Dict, where: string): AdminPageItemConfig {
     if (navigate && !targetPage) {
         throw new ConvertError(reason, `${where}: navigate without targetPage`);
     }
-    if (!navigate && targetPage) {
+    // without navigate the runtime uses targetPage for button items only (pressed, then the page changes) and
+    // ignores it for other roles; custom items return before it is read
+    if (!navigate && targetPage && custom) {
         throw new ConvertError(reason, `${where}.targetPage: only used with navigate: true`);
     }
     if (!navigate && !id) {
@@ -435,6 +439,8 @@ function convertPageItem(item: Dict, where: string): AdminPageItemConfig {
     const admin: AdminPageItemConfig = { channelId };
     if (navigate) {
         admin.isNavigation = true;
+        admin.targetPage = targetPage;
+    } else if (targetPage) {
         admin.targetPage = targetPage;
     }
     if (custom) {
@@ -579,16 +585,39 @@ function isDroppedItem(item: Dict): boolean {
 }
 
 /**
+ * A script item the editor cannot express as raw item of the admin - the runtime gets the same item as from
+ * the script (`convertAdminPageItemToPageItemConfig` hands a raw item to the config manager as it is).
+ *
+ * A native item without further fields becomes format `native` with the inner object. Fields next to
+ * `native` (navigate, targetPage) change the runtime item (`getPageNaviItemConfig`), so such an item keeps
+ * format `script` with the whole item, like every other item.
+ *
+ * @param item Item of the script.
+ */
+function rawPageItem(item: Dict): { admin: AdminPageItemConfig; format: RawItemFormat } {
+    const nativeOnly =
+        isDict(item.native) && Object.keys(item).every(key => key === 'native' || item[key] === undefined);
+    const format: RawItemFormat = nativeOnly ? 'native' : 'script';
+    const native = structuredClone(nativeOnly && isDict(item.native) ? item.native : item);
+    return {
+        admin: { channelId: emptyChannelValueConfig(''), useNative: true, nativeFormat: format, native },
+        format,
+    };
+}
+
+/**
  * The page items of a script page as the admin stores them.
  *
  * A `null` item of the script and an item without id and navigation are dropped - the config manager
  * skips them, they take no place on the panel. `id: 'empty'` becomes an empty place (undefined); at the
  * end of the list the admin drops empty places, so a trailing one stays an explicit item with the id
- * `empty`.
+ * `empty`. An item the editor cannot express is taken over as raw item ({@link rawPageItem}) and listed in
+ * `rawItems`.
  *
  * @param items Items of the script page.
+ * @param rawItems Collects the items taken over as raw items.
  */
-function convertPageItems(items: unknown): (AdminPageItemConfig | undefined)[] {
+function convertPageItems(items: unknown, rawItems: ConvertRawItem[]): (AdminPageItemConfig | undefined)[] {
     if (items === undefined || items === null) {
         return [];
     }
@@ -610,7 +639,17 @@ function convertPageItems(items: unknown): (AdminPageItemConfig | undefined)[] {
         if (isDroppedItem(item)) {
             return;
         }
-        out.push(convertPageItem(item, `items[${index}]`));
+        const where = `items[${index}]`;
+        try {
+            out.push(convertPageItem(item, where));
+        } catch (error) {
+            if (!(error instanceof ConvertError)) {
+                throw error;
+            }
+            const raw = rawPageItem(item);
+            out.push(raw.admin);
+            rawItems.push({ item: where, format: raw.format, detail: error.detail });
+        }
     });
     for (let i = out.length - 1; i >= 0 && out[i] === undefined; i--) {
         out[i] = { channelId: emptyChannelValueConfig('empty') };
@@ -847,15 +886,16 @@ function scrollFields(page: Dict, card: ScrollCard): PageScrollFields {
  * @param page Page of the script.
  * @param common Converted common fields.
  * @param topic Topic of the panel.
+ * @param rawItems Collects the items taken over as raw items.
  */
-function convertMenuPage(page: Dict, common: PageCommon, topic: string): MenuEntry {
+function convertMenuPage(page: Dict, common: PageCommon, topic: string, rawItems: ConvertRawItem[]): MenuEntry {
     rejectUnknownKeys(page, [...pageMappedKeys, ...scrollKeys], pageIgnoredKeys, 'fieldNotSupported', 'page');
     const card = page.type as MenuEntry['card'];
     return {
         card,
         uniqueName: common.uniqueName,
         headline: common.headline,
-        pageItems: convertPageItems(page.items),
+        pageItems: convertPageItems(page.items, rawItems),
         hidden: common.hidden,
         alwaysOn: common.alwaysOn,
         ...scrollFields(page, card),
@@ -981,8 +1021,9 @@ function convertThermo2Circuit(item: Dict, where: string): Thermo2CircuitConfig 
  * @param page Page of the script.
  * @param common Converted common fields.
  * @param topic Topic of the panel.
+ * @param rawItems Collects the items taken over as raw items.
  */
-function convertThermo2Page(page: Dict, common: PageCommon, topic: string): Thermo2Entry {
+function convertThermo2Page(page: Dict, common: PageCommon, topic: string, rawItems: ConvertRawItem[]): Thermo2Entry {
     const reason: ConvertSkipReason = 'fieldNotSupported';
     rejectUnknownKeys(
         page,
@@ -1015,7 +1056,7 @@ function convertThermo2Page(page: Dict, common: PageCommon, topic: string): Ther
         uniqueName: common.uniqueName,
         headline: common.headline,
         thermoItems,
-        pageItems: convertPageItems(page.items),
+        pageItems: convertPageItems(page.items, rawItems),
         hidden: common.hidden,
         alwaysOn: common.alwaysOn,
         ...scrollFields(page, 'cardThermo2'),
@@ -1156,8 +1197,9 @@ function mediaNameList(value: unknown, where: string): string[] | undefined {
  * @param page Page of the script.
  * @param common Converted common fields.
  * @param topic Topic of the panel.
+ * @param rawItems Collects the items taken over as raw items.
  */
-function convertMediaPage(page: Dict, common: PageCommon, topic: string): MediaEntry {
+function convertMediaPage(page: Dict, common: PageCommon, topic: string, rawItems: ConvertRawItem[]): MediaEntry {
     const reason: ConvertSkipReason = 'fieldNotSupported';
     rejectUnknownKeys(page, [...pageMappedKeys, ...scrollKeys, 'media'], pageIgnoredKeys, reason, 'page');
     const media = page.media;
@@ -1174,7 +1216,7 @@ function convertMediaPage(page: Dict, common: PageCommon, topic: string): MediaE
         uniqueName: common.uniqueName,
         headline: common.headline,
         mediaId,
-        pageItems: convertPageItems(page.items),
+        pageItems: convertPageItems(page.items, rawItems),
         hidden: common.hidden,
         alwaysOn: common.alwaysOn,
         ...scrollFields(page, 'cardMedia'),
@@ -1346,6 +1388,8 @@ const screensaverStateKeys = [
     'ScreensaverEntityFillIfBelowMin',
 ] as const;
 const screensaverTemplateKeys = ['type', 'template', 'dpInit', 'modeScr', 'enabled', 'visibleCondition'] as const;
+/** keys of a native screensaver element that make it the same as a template element (see convertScreensaverItem) */
+const nativeTemplateKeys: readonly string[] = ['template', 'dpInit', 'modeScr'];
 
 /** the colors of the script the config manager falls back to for an item without own colors */
 type ScriptDefaultColors = { on?: string; off?: string };
@@ -1371,6 +1415,20 @@ function convertScreensaverItem(
 ): ScreensaverItemConfig {
     const reason: ConvertSkipReason = 'screensaverItemNotSupported';
     if (element.type === 'native') {
+        const native = element.native;
+        // the config manager hands a template element on as runtime item (type removed) - a runtime item with
+        // nothing but template, dpInit and modeScr is the same as the template element and becomes a template
+        // item; enabled and visibleCondition are resolved for a template element only
+        if (
+            isDict(native) &&
+            Object.keys(native).every(key => nativeTemplateKeys.includes(key) || native[key] === undefined) &&
+            typeof native.template === 'string' &&
+            native.template !== '' &&
+            typeof native.dpInit === 'string' &&
+            native.modeScr === area
+        ) {
+            return { state: native.dpInit, template: native.template };
+        }
         throw new ConvertError(reason, `${where}: native element`);
     }
     if (element.type === 'template') {
@@ -1540,6 +1598,74 @@ function convertScreensaverItem(
         }
     }
     return item;
+}
+
+/**
+ * `#rrggbb` as the RGB object of the script.
+ *
+ * @param hex Color as `#rrggbb`.
+ */
+function hexToScriptRgb(hex: string): ScriptConfig.RGB {
+    return {
+        red: parseInt(hex.substring(1, 3), 16),
+        green: parseInt(hex.substring(3, 5), 16),
+        blue: parseInt(hex.substring(5, 7), 16),
+    };
+}
+
+/**
+ * A screensaver element the editor cannot express as raw item of the admin, unchanged behavior.
+ *
+ * - `type: 'native'` becomes format `native` with the inner runtime item.
+ * - every other element becomes format `script` with the element. An element of type `script` without own
+ *   colors gets the default colors of the script written in - the admin screensaver resolves a missing
+ *   color to the adapter default instead (like {@link convertScreensaverItem} does for the converted items).
+ *
+ * The admin places a raw item by its area and sets `modeScr` of a template element and of a runtime item to
+ * it (`screensaverRawToScript`); the config manager places those by their `modeScr`. An element whose
+ * `modeScr` differs from the list it stands in would move on the panel - the screensaver stays in the script.
+ *
+ * @param element Element of the script.
+ * @param area Area (list) the element stands in.
+ * @param where Prefix for the detail.
+ * @param defaults `defaultOnColor` / `defaultOffColor` of the script as hex.
+ */
+function rawScreensaverItem(
+    element: Dict,
+    area: ScreensaverArea,
+    where: string,
+    defaults: ScriptDefaultColors,
+): { item: ScreensaverItemConfig; format: RawItemFormat } {
+    const reason: ConvertSkipReason = 'screensaverItemNotSupported';
+    if (element.type === 'native') {
+        const native = element.native;
+        if (!isDict(native)) {
+            throw new ConvertError(reason, `${where}.native: expected an object`);
+        }
+        if (native.modeScr !== area) {
+            throw new ConvertError(
+                reason,
+                `${where}.native.modeScr: ${String(native.modeScr)} differs from the area ${area}`,
+            );
+        }
+        return { item: { state: '', raw: { format: 'native', config: structuredClone(native) } }, format: 'native' };
+    }
+    if (element.type === 'template' && element.modeScr !== area) {
+        throw new ConvertError(reason, `${where}.modeScr: ${String(element.modeScr)} differs from the area ${area}`);
+    }
+    const config = structuredClone(element);
+    if (config.type === 'script') {
+        const iconColor = config.ScreensaverEntityIconColor;
+        const iconColorIsScale =
+            isDict(iconColor) && (iconColor.val_min !== undefined || iconColor.val_max !== undefined);
+        if (!config.ScreensaverEntityOnColor && (!iconColor || iconColorIsScale) && defaults.on) {
+            config.ScreensaverEntityOnColor = hexToScriptRgb(defaults.on);
+        }
+        if (config.ScreensaverEntityOffColor === undefined && defaults.off) {
+            config.ScreensaverEntityOffColor = hexToScriptRgb(defaults.off);
+        }
+    }
+    return { item: { state: '', raw: { format: 'script', config } }, format: 'script' };
 }
 
 const mrIconKeys = [
@@ -1750,7 +1876,7 @@ function weatherItemsOf(value: unknown): ScreensaverWeatherItems | undefined {
 }
 
 type ScreensaverResult =
-    | { entry: ScreensaverEntry; notify: ScreensaverNotifyConfig[] }
+    | { entry: ScreensaverEntry; notify: ScreensaverNotifyConfig[]; rawItems: ConvertRawItem[] }
     | { skipped: { reason: ConvertSkipReason; detail?: string } };
 
 /**
@@ -1776,6 +1902,7 @@ function convertScreensaver(input: ScriptToAdminInput): ScreensaverResult {
         } catch {
             // no valid default colors: the config manager falls back to its own default, so does the admin
         }
+        const rawItems: ConvertRawItem[] = [];
         const area = (
             name: ScreensaverArea,
             list: unknown,
@@ -1798,7 +1925,17 @@ function convertScreensaver(input: ScriptToAdminInput): ScreensaverResult {
                 if (!isDict(element)) {
                     throw new ConvertError('screensaverItemNotSupported', `${name}[${index}]: expected an object`);
                 }
-                out.push(convertScreensaverItem(element, name, `${name}[${index}]`, defaults));
+                const where = `${name}[${index}]`;
+                try {
+                    out.push(convertScreensaverItem(element, name, where, defaults));
+                } catch (error) {
+                    if (!(error instanceof ConvertError)) {
+                        throw error;
+                    }
+                    const raw = rawScreensaverItem(element, name, where, defaults);
+                    out.push(raw.item);
+                    rawItems.push({ item: where, format: raw.format, detail: error.detail });
+                }
             });
             return out;
         };
@@ -1893,7 +2030,7 @@ function convertScreensaver(input: ScriptToAdminInput): ScreensaverResult {
         if (weatherItems) {
             entry.weatherAddDefaultItems = weatherItems;
         }
-        return { entry, notify };
+        return { entry, notify, rawItems };
     } catch (error) {
         if (error instanceof ConvertError) {
             return { skipped: { reason: error.reason, detail: error.detail } };
@@ -2218,22 +2355,23 @@ export function planScriptToAdmin(input: ScriptToAdminInput): ScriptToAdminResul
         isSub: boolean,
         typeName: string,
         uniqueName: string,
-    ): { entry: PageConfigEntry; common: PageCommon } => {
+    ): { entry: PageConfigEntry; common: PageCommon; rawItems: ConvertRawItem[] } => {
         if (explicitNavigation.has(uniqueName)) {
             throw new ConvertError('fieldNotSupported', 'navigation: the script overrides the links of the page');
         }
         const common = pageCommon(page, isSub);
+        const rawItems: ConvertRawItem[] = [];
         let entry: PageConfigEntry;
         if (typeName === 'cardThermo2') {
-            entry = convertThermo2Page(page, common, panel.topic);
+            entry = convertThermo2Page(page, common, panel.topic, rawItems);
         } else if (typeName === 'cardThermo') {
             entry = convertThermoPage(page, common, panel.topic);
         } else if (typeName === 'cardMedia') {
-            entry = convertMediaPage(page, common, panel.topic);
+            entry = convertMediaPage(page, common, panel.topic, rawItems);
         } else {
-            entry = convertMenuPage(page, common, panel.topic);
+            entry = convertMenuPage(page, common, panel.topic, rawItems);
         }
-        return { entry, common };
+        return { entry, common, rawItems };
     };
 
     /**
@@ -2273,7 +2411,7 @@ export function planScriptToAdmin(input: ScriptToAdminInput): ScriptToAdminResul
             }
             return;
         }
-        let converted: { entry: PageConfigEntry; common: PageCommon };
+        let converted: { entry: PageConfigEntry; common: PageCommon; rawItems: ConvertRawItem[] };
         try {
             converted = convertPage(page, isSub, typeName, uniqueName);
         } catch (error) {
@@ -2327,6 +2465,7 @@ export function planScriptToAdmin(input: ScriptToAdminInput): ScriptToAdminResul
             action: decision === 'takeScript' ? 'create' : 'assignNavigation',
             global: true,
             existing: decision,
+            ...(decision === 'takeScript' && converted.rawItems.length ? { rawItems: converted.rawItems } : {}),
         });
         remove(uniqueName, isSub, source);
     };
@@ -2489,7 +2628,7 @@ export function planScriptToAdmin(input: ScriptToAdminInput): ScriptToAdminResul
             }
         }
         try {
-            const { entry, common } = convertPage(page, isSub, typeName, uniqueName);
+            const { entry, common, rawItems } = convertPage(page, isSub, typeName, uniqueName);
             if (storedAs !== undefined) {
                 entry.uniqueName = storedAs;
                 entry.isMainPage = true;
@@ -2515,6 +2654,9 @@ export function planScriptToAdmin(input: ScriptToAdminInput): ScriptToAdminResul
             }
             if (source) {
                 planned.global = true;
+            }
+            if (rawItems.length) {
+                planned.rawItems = rawItems;
             }
             plan.pages.push(planned);
         } catch (error) {
@@ -2568,6 +2710,9 @@ export function planScriptToAdmin(input: ScriptToAdminInput): ScriptToAdminResul
                 (entry.mrIcon2 ? 1 : 0),
             notifyCount: newNotify.length,
         };
+        if (screensaver.rawItems.length) {
+            plan.screensaver.rawItems = screensaver.rawItems;
+        }
     }
 
     // buttons

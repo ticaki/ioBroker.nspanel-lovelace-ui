@@ -11,6 +11,8 @@ import {
     migrateLegacyCharts,
     migrateLegacyPower,
     legacyPowerStates,
+    isRawItemObject,
+    pageItemRawFormat,
 } from './lib/types/adminShareConfig';
 /*
  * Created with @iobroker/create-adapter v2.5.0..
@@ -3040,15 +3042,26 @@ class NspanelLovelaceUi extends utils.Adapter {
         pageItem: NSPanel.PageItemDataItemsOptions | undefined;
         messages: string[];
         error: string | undefined;
+        /** page the config manager generated from the item (`media-<id>` behind a media item) - the caller adds it */
+        pageConfig?: ScriptConfig.PageType;
     }> {
         let error: string | undefined = undefined;
         let pageItem: NSPanel.PageItemDataItemsOptions | undefined = undefined;
+        let pageConfig: ScriptConfig.PageType | undefined = undefined;
         if (preItem && prePage) {
             const manager = new ConfigManager(this);
             let item: ScriptConfig.PageItem | undefined = undefined;
 
             if (preItem.useNative) {
-                item = preItem.useNative ? preItem.native : undefined;
+                // raw item: taken as entered - a copy, the config manager changes the item it gets (ids, colors)
+                const raw = isRawItemObject(preItem.native) ? structuredClone(preItem.native) : undefined;
+                if (raw) {
+                    item =
+                        pageItemRawFormat(preItem) === 'native'
+                            ? { native: raw }
+                            : // script format: not validated here, the config manager checks it like a script item
+                              (raw as ScriptConfig.PageItem);
+                }
             } else if (preItem.isNavigation) {
                 item = {
                     navigate: true,
@@ -3060,6 +3073,8 @@ class NspanelLovelaceUi extends utils.Adapter {
                 item = {
                     type: null,
                     id: preItem.channelId.valueStateId,
+                    // role button: pressed and then changes to targetPage (without navigate)
+                    targetPage: preItem.type !== 'custom' && preItem.targetPage ? preItem.targetPage : undefined,
                 };
             }
             const convertToScriptRGBColor = (color?: string): ScriptConfig.RGB | undefined => {
@@ -3079,7 +3094,8 @@ class NspanelLovelaceUi extends utils.Adapter {
                 return { pageItem, messages, error };
             }
 
-            if (!('native' in item)) {
+            // a raw item brings all of its fields itself - the fields of the dialog are not applied on top
+            if (!preItem.useNative && !('native' in item)) {
                 item.type = preItem.type === 'custom' ? 'custom' : null;
                 item.icon = preItem.trueIcon || undefined;
                 item.icon2 = preItem.falseIcon || undefined;
@@ -3140,11 +3156,12 @@ class NspanelLovelaceUi extends utils.Adapter {
                 const result = await manager.getPageItemConfig(item, page, messages);
                 messages = result.messages;
                 pageItem = result.itemConfig;
+                pageConfig = result.pageConfig;
             } catch (e: any) {
                 error = `Error in configuration: ${e.message}`;
             }
         }
-        return { pageItem, messages, error };
+        return { pageItem, messages, error, pageConfig };
     }
 }
 if (require.main !== module) {

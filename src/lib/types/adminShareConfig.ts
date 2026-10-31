@@ -397,6 +397,71 @@ export type ScreensaverMrIconConfig = {
     iconSelect?: { value: string; icon: string }[];
 };
 
+/**
+ * format of a raw item of the admin: `script` = the item as it would stand in the script (page item
+ * `ScriptConfig.PageItem`, screensaver element `ScriptConfig.ScreenSaverElement`), converted by the config
+ * manager like the script; `native` = the runtime item the config manager produces
+ * (`NSPanel.PageItemDataItemsOptions`), taken over unchanged
+ */
+export type RawItemFormat = 'script' | 'native';
+
+/** all raw formats, in the order the dialog offers them */
+export const rawItemFormats: readonly RawItemFormat[] = ['native', 'script'];
+
+/**
+ * Whether a value is a raw format.
+ *
+ * @param value any value
+ */
+export function isRawItemFormat(value: unknown): value is RawItemFormat {
+    return value === 'script' || value === 'native';
+}
+
+/**
+ * Whether a value is a plain object (not null, not an array) - the only form a raw configuration may have.
+ *
+ * @param value any value
+ */
+export function isRawItemObject(value: unknown): value is Record<string, unknown> {
+    return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+/**
+ * Format of a raw page item: undefined counts as `script` (configs saved before the field existed).
+ *
+ * @param item the page item
+ * @param item.nativeFormat the stored format
+ */
+export function pageItemRawFormat(item: { nativeFormat?: RawItemFormat }): RawItemFormat {
+    return item.nativeFormat === 'native' ? 'native' : 'script';
+}
+
+/**
+ * A short text that names a raw item in lists: the first set field of id, template, dpInit and
+ * ScreensaverEntity (for a script item with `native` those of the inner object); '' when none is set.
+ *
+ * @param config the raw configuration
+ */
+export function rawItemLabel(config: unknown): string {
+    if (!isRawItemObject(config)) {
+        return '';
+    }
+    for (const key of ['id', 'template', 'dpInit', 'ScreensaverEntity'] as const) {
+        const value = config[key];
+        if (typeof value === 'string' && value.trim()) {
+            return value.trim();
+        }
+    }
+    return isRawItemObject(config.native) ? rawItemLabel(config.native) : '';
+}
+
+/** raw configuration of a screensaver item, see {@link RawItemFormat} */
+export type ScreensaverItemRaw = {
+    format: RawItemFormat;
+    /** the element (`script`) or the runtime item (`native`) */
+    config: Record<string, unknown>;
+};
+
 /** what an indicator does when it is pressed (ScreensaverEntityButton / ...Switch / ...NaviToPage of the script) */
 export type ScreensaverItemAction = {
     kind: 'button' | 'switch' | 'navigate';
@@ -447,6 +512,12 @@ export type ScreensaverItemConfig = {
     enabled?: string;
     /** expression over `val` that hides the item while false (ScreensaverEntityVisibleCondition) */
     visibleCondition?: string;
+    /**
+     * raw item: the item is taken from this configuration as entered (dialog "raw data"), every other field
+     * is ignored then. The area of the item is where it is placed in the admin: `modeScr` of a template
+     * element or a runtime item is set to that area ({@link screensaverItemToScript}).
+     */
+    raw?: ScreensaverItemRaw;
 };
 
 export type ScreensaverItemField = 'headline' | 'value' | 'text' | 'action';
@@ -886,10 +957,19 @@ export type AdminPageItemConfig = {
     inSel_Alias?: string;
     /** Light items (roles rgbSingle, rgb, ct, hue): selectable modes, sent to the panel joined with '?' (max. 900 chars) */
     modeList?: string[];
-    /** Native-Modus: Item wird direkt als NSPanel.PageItemDataItemsOptions übergeben */
+    /**
+     * raw mode: the item is not built from the fields of the dialog but taken from {@link native} as entered
+     * (dialog "raw data"); every other field of the item is ignored then
+     */
     useNative?: boolean;
-    /** Rohe NSPanel.PageItemDataItemsOptions-Konfiguration (nur wenn useNative=true) */
-    native?: any;
+    /**
+     * format of {@link native} (raw mode only): `script` (also undefined - configs saved before the field
+     * existed) = a page item of the script (`ScriptConfig.PageItem`), converted by the config manager like a
+     * script item; `native` = the runtime item (`NSPanel.PageItemDataItemsOptions`), taken over unchanged
+     */
+    nativeFormat?: RawItemFormat;
+    /** the raw configuration in the format {@link nativeFormat} (raw mode only) */
+    native?: Record<string, unknown>;
     /**
      * cardThermo2 only: 0-based index of the heat circuit the item belongs to, the item is shown
      * while that circuit is selected. Undefined = shown for every circuit. An airCondition channel
@@ -3040,6 +3120,8 @@ export type ConvertPagePlan = {
     reason?: Extract<ConvertSkipReason, 'adminOnly' | 'adminAlreadyNavigated'>;
     /** the page comes from the global script (the global script itself is never rewritten) */
     global?: boolean;
+    /** create only: items taken over as raw items, see {@link ConvertRawItem} */
+    rawItems?: ConvertRawItem[];
     /**
      * global pages whose name exists in the admin: identical - same content, only the panel is assigned
      * (assignNavigation); keepAdmin / takeScript - the decision on a conflict (assignNavigation / create)
@@ -3049,6 +3131,18 @@ export type ConvertPagePlan = {
 
 export type ConvertSkipped = { uniqueName: string; type: string; reason: ConvertSkipReason; detail?: string };
 
+/**
+ * an item the admin editor cannot express - it is taken over as raw item (unchanged behavior) instead of
+ * keeping the page in the script
+ */
+export type ConvertRawItem = {
+    /** where it stands in the script, e.g. `items[2]` or `left[0]` */
+    item: string;
+    format: RawItemFormat;
+    /** why the editor cannot express it */
+    detail: string;
+};
+
 export type ConvertScriptPlan = {
     panelTopic: string;
     panelName: string;
@@ -3057,7 +3151,14 @@ export type ConvertScriptPlan = {
     scriptFound: boolean;
     pages: ConvertPagePlan[];
     skipped: ConvertSkipped[];
-    screensaver?: { name: string; mode: ScreensaverMode; itemCount: number; notifyCount: number };
+    screensaver?: {
+        name: string;
+        mode: ScreensaverMode;
+        itemCount: number;
+        notifyCount: number;
+        /** items taken over as raw items, see {@link ConvertRawItem} */
+        rawItems?: ConvertRawItem[];
+    };
     screensaverSkipped?: { reason: ConvertSkipReason; detail?: string };
     buttons: { left?: AdminButtonFunction; right?: AdminButtonFunction };
     buttonsSkipped: { side: 'left' | 'right'; reason: ConvertSkipReason; detail?: string }[];

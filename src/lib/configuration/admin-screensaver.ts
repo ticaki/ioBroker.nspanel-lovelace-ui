@@ -1,7 +1,8 @@
-import { screensaverCardOfMode, screensaverNotifyOfEntry } from '../types/adminShareConfig';
+import { isRawItemObject, screensaverCardOfMode, screensaverNotifyOfEntry } from '../types/adminShareConfig';
 import type {
     ScreensaverEntry,
     ScreensaverItemConfig,
+    ScreensaverItemRaw,
     ScreensaverMrIconConfig,
     ScreensaverNotifyConfig,
 } from '../types/adminShareConfig';
@@ -65,7 +66,7 @@ export function objectNameOf(obj: ioBroker.Object | null | undefined, lang: stri
 export function screensaverStateIds(entry: ScreensaverEntry): string[] {
     const ids = new Set<string>();
     for (const item of allItems(entry)) {
-        if (item && !item.template && item.state) {
+        if (item && !item.raw && !item.template && item.state) {
             ids.add(item.state);
         }
     }
@@ -93,6 +94,9 @@ export function screensaverItemToScript(
     area: ScreensaverScriptArea,
     info: ScreensaverStateInfo = {},
 ): ScriptConfig.ScreenSaverElement {
+    if (item.raw) {
+        return screensaverRawToScript(item.raw, area);
+    }
     if (item.template) {
         const element: ScriptConfig.ScreenSaverElement = {
             type: 'template',
@@ -175,6 +179,35 @@ export function screensaverItemToScript(
         }
     }
     return element;
+}
+
+/**
+ * A raw item of the admin as the ScreenSaverElement of the script configuration: format `script` is the
+ * element itself, format `native` the runtime item wrapped as `{ type: 'native', native }`.
+ *
+ * The area is where the item is placed in the admin. The config manager places a template element and a
+ * runtime item by their `modeScr` (it ignores the area of the list for them), so `modeScr` is set to the
+ * area - a different `modeScr` in the entered configuration would show the item somewhere else than the
+ * admin shows it. A script element (`type: 'script'`) takes the area from its list anyway.
+ *
+ * @param raw raw configuration of the item
+ * @param area area of the screensaver the item is placed in
+ */
+export function screensaverRawToScript(
+    raw: ScreensaverItemRaw,
+    area: ScreensaverScriptArea,
+): ScriptConfig.ScreenSaverElement {
+    const config = structuredClone(raw.config);
+    if (raw.format === 'native') {
+        return { type: 'native', native: { ...config, modeScr: area } };
+    }
+    if (config.type === 'template') {
+        config.modeScr = area;
+    } else if (config.type === 'native' && isRawItemObject(config.native)) {
+        config.native = { ...config.native, modeScr: area };
+    }
+    // not validated here: the config manager checks the element like one of the script
+    return config as ScriptConfig.ScreenSaverElement;
 }
 
 /**
@@ -276,7 +309,7 @@ export function buildScreensaverScriptConfig(
         item: ScreensaverItemConfig | undefined,
         area: ScreensaverScriptArea,
     ): ScriptConfig.ScreenSaverElement | undefined =>
-        item ? screensaverItemToScript(item, area, states[item.state] ?? {}) : undefined;
+        item ? screensaverItemToScript(item, area, item.raw ? {} : (states[item.state] ?? {})) : undefined;
     const present = (list: (ScriptConfig.ScreenSaverElement | undefined)[]): ScriptConfig.ScreenSaverElement[] =>
         list.filter((e): e is ScriptConfig.ScreenSaverElement => !!e);
 

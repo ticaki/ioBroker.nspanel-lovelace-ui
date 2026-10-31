@@ -25,6 +25,7 @@ import type { PageBase } from '../types/pages';
 import { buildChartPageConfig } from '../pages/pageChart';
 import { buildPowerPage } from '../pages/pagePower';
 import type { AlwaysOnMode } from '../types/types';
+import { recordGeneratedPage } from './navigation-overrides';
 
 type PendingNavEntry = {
     pageId: string;
@@ -56,6 +57,23 @@ const systemNavigationNodeNames: ReadonlySet<string> = new Set(
  */
 function resolveNavigationTarget(name: string | undefined): string | undefined {
     return name === ShareConfig.servicePageName ? ShareConfig.serviceNodeName : name;
+}
+
+/**
+ * A page that belongs to this panel: it has a navigation node (own script, global script), is the
+ * screensaver or was generated from a page item (`media-<id>`). A page without any of these was merged
+ * in from the script of another panel (`ConfigManager.getConfig`) - it would be dropped later anyway.
+ *
+ * @param option Panel configuration partial.
+ * @param page The page.
+ * @returns true when the page must not be replaced.
+ */
+function belongsToPanel(option: panelConfigPartial, page: PageBase): boolean {
+    return (
+        option.navigation.some(b => b && b.name === page.uniqueID) ||
+        isScreensaverPage(page) ||
+        !!option.generatedPageIds?.includes(page.uniqueID)
+    );
 }
 
 function shallowDescribe(value: unknown): string {
@@ -194,9 +212,14 @@ export class AdminConfiguration extends BaseClass {
      *
      * @param entry Thermo2 entry as stored by the PageConfig editor.
      * @param alwaysOn Validated always-on mode of the entry.
+     * @param generated Receives the pages generated from the page items (`media-<id>`).
      * @returns The page for the panel configuration; without a usable circuit it has no data.
      */
-    private async buildThermo2Page(entry: ShareConfig.Thermo2Entry, alwaysOn: AlwaysOnMode): Promise<PageBase> {
+    private async buildThermo2Page(
+        entry: ShareConfig.Thermo2Entry,
+        alwaysOn: AlwaysOnMode,
+        generated: ScriptConfig.PageType[],
+    ): Promise<PageBase> {
         let gridItem = {
             uniqueID: entry.uniqueName,
             hidden: !!entry.hidden,
@@ -235,6 +258,9 @@ export class AdminConfiguration extends BaseClass {
             if (!result.error && result.pageItem) {
                 gridItem.pageItems = gridItem.pageItems ?? [];
                 gridItem.pageItems.push(result.pageItem);
+                if (result.pageConfig) {
+                    generated.push(result.pageConfig);
+                }
             } else if (result.error) {
                 this.log.warn(`Error processing page item ${index} for page '${entry.uniqueName}': ${result.error}`);
             }
@@ -287,9 +313,14 @@ export class AdminConfiguration extends BaseClass {
      *
      * @param entry Media entry as stored by the PageConfig editor.
      * @param alwaysOn Validated always-on mode of the entry.
+     * @param generated Receives the pages generated from the page items (`media-<id>`).
      * @returns The page for the panel configuration; with an unusable player it has no items.
      */
-    private async buildMediaPage(entry: ShareConfig.MediaEntry, alwaysOn: AlwaysOnMode): Promise<PageBase> {
+    private async buildMediaPage(
+        entry: ShareConfig.MediaEntry,
+        alwaysOn: AlwaysOnMode,
+        generated: ScriptConfig.PageType[],
+    ): Promise<PageBase> {
         let gridItem = {
             uniqueID: entry.uniqueName,
             hidden: !!entry.hidden,
@@ -328,6 +359,9 @@ export class AdminConfiguration extends BaseClass {
             if (!result.error && result.pageItem) {
                 gridItem.pageItems = gridItem.pageItems ?? [];
                 gridItem.pageItems.push(result.pageItem);
+                if (result.pageConfig) {
+                    generated.push(result.pageConfig);
+                }
             } else if (result.error) {
                 this.log.warn(`Error processing page item ${index} for page '${entry.uniqueName}': ${result.error}`);
             }
@@ -401,6 +435,8 @@ export class AdminConfiguration extends BaseClass {
 
             // Create page configuration based on card type
             let newPage: PageBase;
+            // pages generated from the page items (`media-<id>`), added once the page itself is in
+            const generatedPages: ScriptConfig.PageType[] = [];
 
             switch (entry.card) {
                 case 'cardAlarm': {
@@ -504,7 +540,7 @@ export class AdminConfiguration extends BaseClass {
                     if (!isAlwaysOnMode(entry.alwaysOn)) {
                         entry.alwaysOn = 'none';
                     }
-                    newPage = await this.buildThermo2Page(entry, entry.alwaysOn);
+                    newPage = await this.buildThermo2Page(entry, entry.alwaysOn, generatedPages);
                     break;
                 }
                 case 'cardThermo': {
@@ -518,7 +554,7 @@ export class AdminConfiguration extends BaseClass {
                     if (!isAlwaysOnMode(entry.alwaysOn)) {
                         entry.alwaysOn = 'none';
                     }
-                    newPage = await this.buildMediaPage(entry, entry.alwaysOn);
+                    newPage = await this.buildMediaPage(entry, entry.alwaysOn, generatedPages);
                     break;
                 }
                 case 'cardGrid':
@@ -563,6 +599,9 @@ export class AdminConfiguration extends BaseClass {
                             if (!result.error && result.pageItem) {
                                 newPage.pageItems = newPage.pageItems ?? [];
                                 newPage.pageItems.unshift(result.pageItem);
+                                if (result.pageConfig) {
+                                    generatedPages.unshift(result.pageConfig);
+                                }
                             } else if (result.error) {
                                 this.log.warn(
                                     `Error processing1 page item ${index} for page '${entry.uniqueName}': ${result.error}`,
@@ -614,6 +653,9 @@ export class AdminConfiguration extends BaseClass {
                             if (!result.error && result.pageItem) {
                                 newPage.pageItems = newPage.pageItems ?? [];
                                 newPage.pageItems.unshift(result.pageItem);
+                                if (result.pageConfig) {
+                                    generatedPages.unshift(result.pageConfig);
+                                }
                             } else if (result.error) {
                                 this.log.warn(
                                     `Error processing page item ${index} for page '${entry.uniqueName}': ${result.error}`,
@@ -668,19 +710,11 @@ export class AdminConfiguration extends BaseClass {
             let replacedNav: NavigationItemConfigNonNull | undefined;
 
             if (!overrideExisting) {
-                if (option.pages.find((a: PageBase) => a.uniqueID === newPage.uniqueID)) {
-                    // A page with a navigation node belongs to this panel (own script, global
-                    // script) and wins. A page without one was merged in from the script of
-                    // another panel (ConfigManager.getConfig) - it would be dropped later anyway
-                    // (no node), so the admin page configured for this panel replaces it.
-                    // The screensaver and the pages generated from page items (media-<id>) carry no
-                    // node either but belong to this panel.
-                    const existing = option.pages.find((a: PageBase) => a.uniqueID === newPage.uniqueID);
-                    if (
-                        option.navigation.some(b => b && b.name === newPage.uniqueID) ||
-                        isScreensaverPage(existing) ||
-                        option.generatedPageIds?.includes(newPage.uniqueID)
-                    ) {
+                const existing = option.pages.find((a: PageBase) => a.uniqueID === newPage.uniqueID);
+                if (existing) {
+                    // A page of this panel wins. A page merged in from the script of another panel is
+                    // replaced by the admin page configured for this panel.
+                    if (belongsToPanel(option, existing)) {
                         this.log.warn(`Page with name ${newPage.uniqueID} already exists, skipping!`);
                         continue;
                     }
@@ -706,6 +740,7 @@ export class AdminConfiguration extends BaseClass {
             }
 
             option.pages.push(newPage);
+            await this.addGeneratedPages(option, newPage.uniqueID, generatedPages);
 
             // Build stub navigation entry; chain links are resolved in applyPendingNavigations.
             // Links of a replaced node are inherited so the surrounding chain survives; an
@@ -766,6 +801,60 @@ export class AdminConfiguration extends BaseClass {
         }
 
         return pendingNavs;
+    }
+
+    /**
+     * Adds the pages generated from the page items of an admin page (`media-<id>` behind a media item)
+     * exactly like the script path does: `ConfigManager.getPageConfig` builds each of them as a sub page
+     * with the admin page as parent (navigation node with the parent on a double press), and the page is
+     * recorded as generated - its navigation is read-only in the admin. An existing page of the same name
+     * that belongs to this panel is kept (the first one wins, like the deduplication of the script path),
+     * one merged in from the script of another panel gives way.
+     *
+     * @param option Panel configuration partial.
+     * @param parent Published id of the admin page the items belong to.
+     * @param generated Pages handed back by `convertAdminPageItemToPageItemConfig`.
+     */
+    private async addGeneratedPages(
+        option: panelConfigPartial,
+        parent: string,
+        generated: ScriptConfig.PageType[],
+    ): Promise<void> {
+        const subPages: ScriptConfig.PageType[] = [];
+        for (const page of generated) {
+            const id = page.uniqueName;
+            if (subPages.some(p => p.uniqueName === id)) {
+                // the same item twice on one page
+                continue;
+            }
+            const existing = option.pages.find((a: PageBase) => a.uniqueID === id);
+            if (existing) {
+                if (option.generatedPageIds?.includes(id)) {
+                    // generated from the same item on another page - same content, the first one stays
+                    this.log.debug(`Generated page '${id}' of page '${parent}' already exists - kept the first one`);
+                    continue;
+                }
+                if (belongsToPanel(option, existing)) {
+                    this.log.warn(
+                        `Page '${id}' generated by a page item of page '${parent}' already exists, skipping!`,
+                    );
+                    continue;
+                }
+                option.pages = option.pages.filter((a: PageBase) => a.uniqueID !== id);
+            }
+            page.parent = parent;
+            subPages.push(page);
+        }
+        if (subPages.length === 0) {
+            return;
+        }
+        const manager = new ConfigManager(this.adapter);
+        const { panelConfig } = await manager.getPageConfig({ pages: [], subPages }, { pages: [], navigation: [] }, []);
+        for (const page of panelConfig.pages) {
+            option.pages.push(page);
+            recordGeneratedPage(option, page.uniqueID);
+        }
+        option.navigation.push(...panelConfig.navigation);
     }
 
     /**

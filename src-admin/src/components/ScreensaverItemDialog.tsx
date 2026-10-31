@@ -32,6 +32,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import PaletteIcon from '@mui/icons-material/Palette';
 import TuneIcon from '@mui/icons-material/Tune';
 import { EntitySelector } from './EntitySelector';
+import RawItemConfigDialog, { RawItemButton, RawItemNotice, type RawItemValue } from './RawItemConfigDialog';
 import ChannelColorDialog from './ChannelColorDialog';
 import ScreensaverIconSelectDialog from './ScreensaverIconSelectDialog';
 import IconSelect from '../IconSelect';
@@ -195,6 +196,7 @@ const DEFAULT_OFF = '#888888';
 export class ScreensaverItemDialog extends React.Component<ScreensaverItemDialogProps, ScreensaverItemDialogState> {
     private colorDialogRef = React.createRef<ChannelColorDialog>();
     private iconSelectDialogRef = React.createRef<ScreensaverIconSelectDialog>();
+    private rawDialogRef = React.createRef<RawItemConfigDialog>();
 
     constructor(props: ScreensaverItemDialogProps) {
         super(props);
@@ -370,6 +372,10 @@ export class ScreensaverItemDialog extends React.Component<ScreensaverItemDialog
      */
     private blocked(): boolean {
         const { draft, objType, objKind, actionObj } = this.state;
+        if (draft.raw) {
+            // a raw item needs no state, the raw data are complete in themselves
+            return false;
+        }
         if (this.state.source === 'template') {
             return !draft.template || (this.templateNeed() === 'channel' && !draft.state.trim());
         }
@@ -447,7 +453,26 @@ export class ScreensaverItemDialog extends React.Component<ScreensaverItemDialog
         this.set(field, Number.isFinite(n) ? n : undefined);
     }
 
+    private handleRawOpen = (): void => {
+        this.rawDialogRef.current?.openWith(this.state.draft.raw);
+    };
+
+    private handleRawApply = (raw: RawItemValue): void => {
+        this.setState({ draft: { ...this.state.draft, raw } });
+    };
+
+    private handleRawRemove = (): void => {
+        const draft = { ...this.state.draft };
+        delete draft.raw;
+        this.setState({ draft });
+    };
+
     private apply = (): void => {
+        if (this.state.draft.raw) {
+            // raw item: the raw data alone count, the fields of the dialog are not stored
+            this.props.onSave({ state: '', raw: this.state.draft.raw });
+            return;
+        }
         const draft = { ...this.state.draft };
         draft.state = (draft.state ?? '').trim();
         if (this.state.source === 'template') {
@@ -1330,10 +1355,13 @@ export class ScreensaverItemDialog extends React.Component<ScreensaverItemDialog
         const roleDefaults = this.roleDefaults();
         const iconMissing = this.iconMissing();
         // state mode: the fields follow the type of the state; template mode: the template defines the look
-        const known = !template && kind !== 'unknown';
-        const visibility = template
-            ? !!draft.template && (this.templateNeed() === 'none' || !!draft.state.trim())
-            : known;
+        // raw item: the raw data alone count - no field of the dialog is shown
+        const known = !draft.raw && !template && kind !== 'unknown';
+        const visibility = draft.raw
+            ? false
+            : template
+              ? !!draft.template && (this.templateNeed() === 'none' || !!draft.state.trim())
+              : known;
         return (
             <Dialog
                 open={open}
@@ -1341,15 +1369,26 @@ export class ScreensaverItemDialog extends React.Component<ScreensaverItemDialog
                 maxWidth="md"
                 fullWidth
             >
-                <DialogTitle>
-                    {this.getText('screensaver_item_title')
-                        .replace('%s', this.getText(`screensaver_area_${area}`))
-                        .replace('%s', String(index + 1))
-                        .replace('%s', String(count))}
+                <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <Box sx={{ flex: 1 }}>
+                        {this.getText('screensaver_item_title')
+                            .replace('%s', this.getText(`screensaver_area_${area}`))
+                            .replace('%s', String(index + 1))
+                            .replace('%s', String(count))}
+                    </Box>
+                    <RawItemButton
+                        active={!!draft.raw}
+                        onClick={this.handleRawOpen}
+                    />
                 </DialogTitle>
                 <DialogContent dividers>
-                    {this.renderSourceSwitch()}
-                    {template ? (
+                    {draft.raw ? null : this.renderSourceSwitch()}
+                    {draft.raw ? (
+                        <RawItemNotice
+                            value={draft.raw}
+                            onEdit={this.handleRawOpen}
+                        />
+                    ) : template ? (
                         this.renderTemplateFields()
                     ) : (
                         <Box sx={{ display: 'flex', gap: 3, alignItems: 'flex-start' }}>
@@ -1555,6 +1594,16 @@ export class ScreensaverItemDialog extends React.Component<ScreensaverItemDialog
                     </Button>
                 </DialogActions>
 
+                <RawItemConfigDialog
+                    ref={this.rawDialogRef}
+                    kind="screensaverItem"
+                    themeType={
+                        this.props.oContext?.themeType ??
+                        (this.props.theme?.palette?.mode === 'dark' ? 'dark' : 'light')
+                    }
+                    onApply={this.handleRawApply}
+                    onRemove={this.handleRawRemove}
+                />
                 <ScreensaverIconSelectDialog
                     ref={this.iconSelectDialogRef}
                     getText={this.props.getText}

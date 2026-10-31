@@ -46,6 +46,7 @@ import {
     type ConvertGlobalConflict,
     type ConvertGlobalDecision,
     type ConvertPagePlan,
+    type ConvertRawItem,
     type ConvertScriptPlan,
     type ConvertScriptRequest,
     type ConvertScriptResult,
@@ -655,6 +656,69 @@ class ConvertScriptDialog extends React.Component<ConvertScriptDialogProps, Conv
     }
 
     /**
+     * info, no problem: the items the editor cannot express, taken over as raw data per page and for the
+     * screensaver - the panel behaves as before
+     *
+     * @param plan plan of the adapter
+     */
+    private renderRawItems(plan: ConvertScriptPlan): React.JSX.Element | null {
+        const groups: { key: string; name: string; type: string; items: ConvertRawItem[] }[] = [];
+        for (const page of plan.pages) {
+            if (page.rawItems?.length) {
+                groups.push({
+                    key: `raw-${page.uniqueName}`,
+                    name: page.uniqueName,
+                    type: page.type,
+                    items: page.rawItems,
+                });
+            }
+        }
+        if (plan.screensaver?.rawItems?.length) {
+            groups.push({
+                key: 'raw-screensaver',
+                name: I18n.t('convertScript_screensaver'),
+                type: '',
+                items: plan.screensaver.rawItems,
+            });
+        }
+        if (groups.length === 0) {
+            return null;
+        }
+        return (
+            <Alert
+                severity="info"
+                sx={{ mt: 2 }}
+            >
+                <AlertTitle>{I18n.t('convertScript_rawItems')}</AlertTitle>
+                <Typography variant="body2">{I18n.t('convertScript_rawItemsHint')}</Typography>
+                <List
+                    dense
+                    disablePadding
+                >
+                    {groups.map(group =>
+                        this.renderEntry(
+                            group.key,
+                            group.name,
+                            group.type,
+                            I18n.t('convertScript_items', String(group.items.length)),
+                            group.items
+                                .map(item =>
+                                    I18n.t(
+                                        'convertScript_rawItem',
+                                        item.item,
+                                        I18n.t(`rawItemDialog_format_${item.format}`),
+                                        item.detail,
+                                    ),
+                                )
+                                .join(' · '),
+                        ),
+                    )}
+                </List>
+            </Alert>
+        );
+    }
+
+    /**
      * the pages of the global script that differ from the admin entry of the same name, with the choice per page
      *
      * @param plan plan of the adapter
@@ -954,6 +1018,7 @@ class ConvertScriptDialog extends React.Component<ConvertScriptDialogProps, Conv
                 {this.renderSummary(plan)}
                 {this.renderConflicts(plan, showHints)}
                 {this.renderProblems(plan)}
+                {this.renderRawItems(plan)}
                 {this.renderDetails(plan)}
             </>
         );

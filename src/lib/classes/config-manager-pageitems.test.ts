@@ -656,8 +656,31 @@ const GENERIC_CASES: { name: string; fn: Fn; item: Record<string, unknown>; page
     {
         name: 'item custom writeable options',
         fn: 'item',
-        item: { ...KITCHEN_SINK_CONST, type: 'custom', id: 'alias.0.custom.writeable' },
+        item: { ...KITCHEN_SINK_CONST, longPress: undefined, type: 'custom', id: 'alias.0.custom.writeable' },
         page: PAGES.entities,
+    },
+    {
+        name: 'item custom writeable targetPageLongPress',
+        fn: 'item',
+        item: { type: 'custom', id: 'alias.0.custom.writeable', targetPageLongPress: 'longPage' },
+        page: PAGES.grid,
+    },
+    {
+        name: 'item custom writeable longPress',
+        fn: 'item',
+        item: { type: 'custom', id: 'alias.0.custom.writeable', longPress: 'alias.0.helper.switch' },
+        page: PAGES.grid,
+    },
+    {
+        name: 'item custom writeable both longPress options',
+        fn: 'item',
+        item: {
+            type: 'custom',
+            id: 'alias.0.custom.writeable',
+            targetPageLongPress: 'longPage',
+            longPress: 'alias.0.helper.switch',
+        },
+        page: PAGES.grid,
     },
     {
         name: 'item custom readonly',

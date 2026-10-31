@@ -196,6 +196,33 @@ describe('lib/configuration - admin screensaver (entry -> script configuration)'
         });
     });
 
+    it('turns a raw item into its element, modeScr taken from the area the item is placed in', () => {
+        const native = { template: 'text.brightsky.favorit', dpInit: 'brightsky.0', modeScr: 'bottom', data: {} };
+        expect(
+            screensaverItemToScript(
+                { state: 'ignored', iconOn: 'ignored', raw: { format: 'native', config: native } },
+                'favorit',
+            ),
+        ).to.deep.equal({ type: 'native', native: { ...native, modeScr: 'favorit' } });
+        const script = { type: 'script', ScreensaverEntity: 'alias.0.T', ScreensaverEntityText: 'T' };
+        expect(screensaverItemToScript({ state: '', raw: { format: 'script', config: script } }, 'left')).to.deep.equal(
+            script,
+        );
+        const template = { type: 'template', template: 't', dpInit: 'x', modeScr: 'left' };
+        expect(
+            screensaverItemToScript({ state: '', raw: { format: 'script', config: template } }, 'indicator'),
+        ).to.deep.equal({ ...template, modeScr: 'indicator' });
+        expect(
+            screensaverItemToScript(
+                { state: '', raw: { format: 'script', config: { type: 'native', native: { modeScr: 'left' } } } },
+                'bottom',
+            ),
+        ).to.deep.equal({ type: 'native', native: { modeScr: 'bottom' } });
+        // the stored configuration stays untouched
+        expect(native.modeScr).to.equal('bottom');
+        expect(template.modeScr).to.equal('left');
+    });
+
     it('converts the MR icons and drops an icon without state and value', () => {
         expect(screensaverMrIconToScript(undefined)).to.equal(undefined);
         expect(screensaverMrIconToScript({ iconOn: 'lightbulb' })).to.equal(undefined);
@@ -354,10 +381,16 @@ describe('lib/configuration - admin screensaver (entry -> script configuration)'
         expect(screensaverChannelIdOf('')).to.equal('');
     });
 
-    it('lists the states of the state items once, templates excluded', () => {
+    it('lists the states of the state items once, templates and raw items excluded', () => {
         const entry: ScreensaverEntry = {
             ...emptyScreensaverEntry('x', 'standard'),
-            bottom: [{ state: 'a' }, { state: 'b', headline: 'B' }, { state: 'c', template: 't' }, { state: 'a' }],
+            bottom: [
+                { state: 'a' },
+                { state: 'b', headline: 'B' },
+                { state: 'c', template: 't' },
+                { state: 'a' },
+                { state: 'e', raw: { format: 'script', config: {} } },
+            ],
             left: [{ state: 'd' }],
         };
         expect(screensaverStateIds(entry)).to.deep.equal(['d', 'a', 'b']);

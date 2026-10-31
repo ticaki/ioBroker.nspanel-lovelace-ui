@@ -175,6 +175,68 @@
       "id": "alias.0.custom.writeable"
     }
   },
+  "generic | item custom writeable both longPress options": {
+    "error": "You can only use targetPageLongPress or longPress in the same item!",
+    "logs": [],
+    "itemAfter": {
+      "type": "custom",
+      "id": "alias.0.custom.writeable",
+      "targetPageLongPress": "longPage",
+      "longPress": "alias.0.helper.switch"
+    }
+  },
+  "generic | item custom writeable longPress": {
+    "itemConfig": {
+      "type": "button",
+      "data": {
+        "entity1": {
+          "value": {
+            "type": "triggered",
+            "dp": "alias.0.custom.writeable"
+          },
+          "set": {
+            "type": "state",
+            "dp": "alias.0.custom.writeable"
+          }
+        },
+        "longPress": {
+          "type": "state",
+          "dp": "alias.0.helper.switch"
+        },
+        "icon": {
+          "true": {
+            "value": {
+              "type": "const",
+              "constVal": "gesture-tap-button"
+            },
+            "color": {
+              "type": "const",
+              "constVal": "default.color.from.start.activated"
+            }
+          }
+        },
+        "text1": {
+          "true": {
+            "type": "const",
+            "constVal": "press"
+          }
+        },
+        "text": {
+          "true": {
+            "type": "const",
+            "constVal": "Custom W"
+          }
+        }
+      }
+    },
+    "messages": [],
+    "logs": [],
+    "itemAfter": {
+      "type": "custom",
+      "id": "alias.0.custom.writeable",
+      "longPress": "alias.0.helper.switch"
+    }
+  },
   "generic | item custom writeable options": {
     "itemConfig": {
       "type": "button",
@@ -188,6 +250,10 @@
             "type": "state",
             "dp": "alias.0.custom.writeable"
           }
+        },
+        "setNaviLongPress": {
+          "type": "const",
+          "constVal": "longPage"
         },
         "icon": {
           "true": {
@@ -297,7 +363,6 @@
       "filter": 2,
       "targetPage": "otherPage",
       "targetPageLongPress": "longPage",
-      "longPress": "alias.0.helper.switch",
       "useValueConditions": "cond",
       "interpolateColor": true,
       "useColor": true,
@@ -349,6 +414,58 @@
       ],
       "type": "custom",
       "id": "alias.0.custom.writeable"
+    }
+  },
+  "generic | item custom writeable targetPageLongPress": {
+    "itemConfig": {
+      "type": "button",
+      "data": {
+        "entity1": {
+          "value": {
+            "type": "triggered",
+            "dp": "alias.0.custom.writeable"
+          },
+          "set": {
+            "type": "state",
+            "dp": "alias.0.custom.writeable"
+          }
+        },
+        "setNaviLongPress": {
+          "type": "const",
+          "constVal": "longPage"
+        },
+        "icon": {
+          "true": {
+            "value": {
+              "type": "const",
+              "constVal": "gesture-tap-button"
+            },
+            "color": {
+              "type": "const",
+              "constVal": "default.color.from.start.activated"
+            }
+          }
+        },
+        "text1": {
+          "true": {
+            "type": "const",
+            "constVal": "press"
+          }
+        },
+        "text": {
+          "true": {
+            "type": "const",
+            "constVal": "Custom W"
+          }
+        }
+      }
+    },
+    "messages": [],
+    "logs": [],
+    "itemAfter": {
+      "type": "custom",
+      "id": "alias.0.custom.writeable",
+      "targetPageLongPress": "longPage"
     }
   },
   "generic | item id delete": {

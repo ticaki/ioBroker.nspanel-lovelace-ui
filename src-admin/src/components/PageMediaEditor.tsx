@@ -33,6 +33,7 @@ import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import ClearIcon from '@mui/icons-material/Clear';
 import LockIcon from '@mui/icons-material/Lock';
 import { I18n } from '@iobroker/gui-components';
+import { rawItemListLabel } from './RawItemConfigDialog';
 import { ConfigGeneric, type ConfigGenericProps, type ConfigGenericState } from '@iobroker/json-config';
 import { EntitySelector } from './EntitySelector';
 import ChannelConfigDialog from './ChannelConfigDialog';
@@ -943,7 +944,7 @@ export class PageMediaEditor extends ConfigGeneric<ConfigGenericProps & PageMedi
     private itemLabel(item: AdminPageItemConfig, index: number): string {
         const channelId = normalizeChannelId(item.channelId).valueStateId;
         return item.useNative
-            ? '[native]'
+            ? rawItemListLabel(item.native)
             : item.name || this.state.objectNames[channelId] || channelId || String(index + 1);
     }
 
@@ -1695,7 +1696,6 @@ export class PageMediaEditor extends ConfigGeneric<ConfigGenericProps & PageMedi
                     theme={theme}
                     themeType={oContext?.themeType}
                     oContext={oContext}
-                    expertMode={this.props.expertMode ?? false}
                     pagesList={this.props.pagesList ?? []}
                     currentPageName={entry.uniqueName}
                     currentPageCard="cardMedia"

@@ -56,6 +56,7 @@ import {
     type ScreensaverNotifyConfig,
     type ScreensaverPanelModel,
     type ScreensaverWeatherItemKey,
+    rawItemLabel,
     screensaverAreas,
     screensaverCardOfMode,
     screensaverMaxEntries,
@@ -321,6 +322,11 @@ function isState(obj: ioBroker.Object): boolean {
  * @param item stored item
  */
 function itemIcon(item: ScreensaverItemConfig): string {
+    if (item.raw) {
+        // a raw script element may name its icon, a runtime item has none the admin could read
+        const icon = item.raw.config.ScreensaverEntityIconOn;
+        return typeof icon === 'string' ? icon : '';
+    }
     return item.iconOn || item.iconSelect?.[0]?.icon || '';
 }
 
@@ -330,6 +336,11 @@ function itemIcon(item: ScreensaverItemConfig): string {
  * @param item stored item
  */
 function itemLabel(item: ScreensaverItemConfig): string {
+    if (item.raw) {
+        // raw item: marked with braces, named by id / template / dpInit of the raw data
+        const text = rawItemLabel(item.raw.config);
+        return text ? `{ } ${text.split('.').pop() || text}` : '{ }';
+    }
     if (item.headline) {
         return item.headline;
     }

@@ -258,13 +258,30 @@ function loadConvertAdminPageItem(): ConvertAdminItem {
     }).outputText;
     const mod: { exports?: { prototype: { convertAdminPageItemToPageItemConfig: ConvertAdminItem } } } = {};
 
-    const factory = new Function('module', 'ConfigManager', 'Color', 'isIconColorScaleElement', js) as (
+    const factory = new Function(
+        'module',
+        'ConfigManager',
+        'Color',
+        'isIconColorScaleElement',
+        'isRawItemObject',
+        'pageItemRawFormat',
+        js,
+    ) as (
         module: typeof mod,
         configManager: typeof ConfigManager,
         color: typeof Color,
         guard: typeof isIconColorScaleElement,
+        rawGuard: typeof ShareConfig.isRawItemObject,
+        rawFormat: typeof ShareConfig.pageItemRawFormat,
     ) => void;
-    factory(mod, ConfigManager, Color, isIconColorScaleElement);
+    factory(
+        mod,
+        ConfigManager,
+        Color,
+        isIconColorScaleElement,
+        ShareConfig.isRawItemObject,
+        ShareConfig.pageItemRawFormat,
+    );
     return mod.exports!.prototype.convertAdminPageItemToPageItemConfig;
 }
 
@@ -1574,8 +1591,8 @@ describe('lib/configuration - planScriptToAdmin: pages', () => {
             setState: '',
             navigationAssignment,
         });
-        // confirm has no admin field - the page stays in the script
-        const skipped = gridPage('t', { items: [{ id: 'alias.0.Hue', confirm: 'water' }] });
+        // an unknown page field - the page stays in the script
+        const skipped = gridPage('t', { unknownField: true });
         // dead reference in the middle (cardQR without an admin page for this panel), a skipped page that
         // stays in the script as predecessor
         const middle = plan(
@@ -2081,7 +2098,7 @@ describe('lib/configuration - planScriptToAdmin: page items', () => {
         expect(result.plan.pages[0].itemCount, 'the trailing empty places do not count').to.equal(2);
     });
 
-    it('skips the whole page for an item the admin cannot express, naming item and field', () => {
+    it('takes an item the admin cannot express over as raw item (script format), naming item and field', () => {
         const cases: [unknown, string][] = [
             [{ id: 'alias.0.Hue', confirm: 'water' }, 'items[0].confirm: not available in the admin'],
             [{ id: 'alias.0.Hue', sliderItems: [] }, 'items[0].sliderItems: not available in the admin'],
@@ -2094,7 +2111,7 @@ describe('lib/configuration - planScriptToAdmin: page items', () => {
             [{ type: 'custom', id: 'x', minValue: 1 }, 'items[0].minValue: not available in the admin'],
             [{ native: { template: 'x' } }, 'items[0]: native item'],
             [{ navigate: true }, 'items[0]: navigate without targetPage'],
-            [{ id: 'alias.0.Hue', targetPage: 'x' }, 'items[0].targetPage: only used with navigate: true'],
+            [{ type: 'custom', id: 'x', targetPage: 'p' }, 'items[0].targetPage: only used with navigate: true'],
             [
                 { id: 'alias.0.Hue', onColor: 'red' },
                 'items[0].onColor: only an RGB object {red, green, blue} can be converted',
@@ -2122,11 +2139,21 @@ describe('lib/configuration - planScriptToAdmin: page items', () => {
         for (const [item, detail] of cases) {
             const result = planItems([{ id: 'alias.0.Licht.lights.Gerät_1' }, item]);
             const expected = detail.replace('items[0]', 'items[1]');
-            expect(result.plan.skipped, JSON.stringify(item)).to.deep.equal([
-                { uniqueName: 'p', type: 'cardGrid', reason: 'itemNotSupported', detail: expected },
+            // the native item without further fields keeps its inner object (format native)
+            const nativeOnly = !!item && typeof item === 'object' && 'native' in item;
+            const format: ShareConfig.RawItemFormat = nativeOnly ? 'native' : 'script';
+            expect(result.plan.skipped, JSON.stringify(item)).to.deep.equal([]);
+            expect(result.plan.pages[0].rawItems, JSON.stringify(item)).to.deep.equal([
+                { item: 'items[1]', format, detail: expected },
             ]);
-            expect(result.newPages).to.deep.equal([]);
-            expect(result.cleanedRaw.subPages).to.have.length(1);
+            const entry = result.newPages[0] as ShareConfig.MenuEntry;
+            expect(entry.pageItems[1]).to.deep.equal({
+                channelId: ShareConfig.emptyChannelValueConfig(''),
+                useNative: true,
+                nativeFormat: format,
+                native: nativeOnly ? item.native : item,
+            });
+            expect(result.cleanedRaw.subPages).to.have.length(0);
         }
     });
 
@@ -2155,6 +2182,36 @@ describe('lib/configuration - planScriptToAdmin: page items', () => {
             minValue: 0,
             maxValue: 100,
         });
+    });
+
+    it('takes over targetPage without navigate (button: pressed, then the page changes) - same runtime item as the script', async () => {
+        const items = [
+            { id: 'alias.0.Button', icon: 'restart', targetPage: 'p', targetPageLongPress: 'p' },
+            { id: 'alias.0.Hue', targetPage: 'p' },
+        ];
+        const result = planItems(items);
+        expect(result.plan.skipped).to.deep.equal([]);
+        const pageItems = (result.newPages[0] as ShareConfig.MenuEntry).pageItems;
+        expect(pageItems[0]).to.deep.equal({
+            channelId: { valueStateId: 'alias.0.Button', unit: '', prefix: '', suffix: '', dateFormat: '' },
+            targetPage: 'p',
+            trueIcon: 'restart',
+            targetPageLongPress: 'p',
+        });
+        expect(pageItems[0]?.isNavigation).to.equal(undefined);
+        resetStatesController();
+        const adapter = fakeAdapter([]);
+        const converted = await adapter.convertAdminPageItemToPageItemConfig(
+            pageItems[0],
+            { card: 'cardGrid', uniqueName: 'p' },
+            [],
+        );
+        expect(converted.error).to.equal(undefined);
+        const json = JSON.stringify(converted.pageItem);
+        expect(json, 'setNavi from targetPage').to.include('"setNavi":{"type":"const","constVal":"p"}');
+        await expectEquivalent(
+            baseConfig({ subPages: [page({ type: 'cardGrid', uniqueName: 'p', heading: 'P', items })] }),
+        );
     });
 
     it('the prefix of the value in the admin goes before the value, the suffix behind it (prefixValue / suffixValue)', async () => {
@@ -2676,13 +2733,16 @@ describe('lib/configuration - planScriptToAdmin: screensaver', () => {
             screensaverNotify: [{ id: 'old', enabled: ['x'] }],
             notifyIdFactory: existing => `id${existing.length}`,
         });
-        expect(
-            result.plan.screensaverSkipped,
-            'the indicator with a state as on color is not convertible',
-        ).to.deep.equal({
-            reason: 'screensaverItemNotSupported',
-            detail: 'indicator[4].ScreensaverEntityOnColor: the admin takes a fixed color only',
-        });
+        // the indicator with a state as on color has no admin field - it is taken over as raw item
+        expect(result.plan.screensaverSkipped).to.equal(undefined);
+        expect(result.plan.screensaver!.rawItems).to.deep.equal([
+            {
+                item: 'indicator[4]',
+                format: 'script',
+                detail: 'indicator[4].ScreensaverEntityOnColor: the admin takes a fixed color only',
+            },
+        ]);
+        expect(result.screensaverEntry!.indicator[4]!.raw!.format).to.equal('script');
         const config = nsPanel6Config();
         config.indicatorScreensaverEntity.pop();
         const ok = plan(config, {
@@ -2721,7 +2781,7 @@ describe('lib/configuration - planScriptToAdmin: screensaver', () => {
         expect(ok.cleanedRaw.notifyScreensaverEntity).to.equal(undefined);
     });
 
-    it('skips the screensaver when the panel already has one, when it is empty or when an element is not convertible', () => {
+    it('skips the screensaver when the panel already has one, when it is empty or when an element cannot be placed', () => {
         const exists = plan(templateConfig(), {
             screensaverConfig: [{ name: 'x', mode: 'standard', panels: [topic], left: [], bottom: [], indicator: [] }],
         });
@@ -2744,30 +2804,14 @@ describe('lib/configuration - planScriptToAdmin: screensaver', () => {
                 { mrIcon1ScreensaverEntity: mrIcon(null) },
                 'mrIcon1ScreensaverEntity: without state and value - the script shows the off icon, the admin shows nothing',
             ],
-            [{ leftScreensaverEntity: [{ type: 'native', native: {} }] }, 'left[0]: native element'],
+            // the admin places a raw item by its area - an element the config manager places elsewhere stays
             [
-                { leftScreensaverEntity: [{ ...item, ScreensaverEntityText: '' }] },
-                'left[0].ScreensaverEntityText: empty - the admin shows the name of the state',
+                { leftScreensaverEntity: [{ type: 'native', native: {} }] },
+                'left[0].native.modeScr: undefined differs from the area left',
             ],
             [
-                { leftScreensaverEntity: [{ ...item, ScreensaverEntityIconOn: null }] },
-                'left[0].ScreensaverEntityIconOn: empty - the admin adds a default icon',
-            ],
-            [
-                {
-                    leftScreensaverEntity: [
-                        { ...item, ScreensaverEntityOffColor: null as unknown as ScriptConfig.RGB },
-                    ],
-                },
-                'left[0].ScreensaverEntityOffColor: null (no off color) is not available in the admin',
-            ],
-            [
-                { leftScreensaverEntity: [{ ...item, ScreensaverEntityFillIfBelowMin: false }] },
-                'left[0].ScreensaverEntityFillIfBelowMin: not available in the admin',
-            ],
-            [
-                { leftScreensaverEntity: [{ ...item, ScreensaverEntityEnabled: ['a'] as unknown as string }] },
-                'left[0].ScreensaverEntityEnabled: expected a state id',
+                { leftScreensaverEntity: [{ type: 'native', native: { modeScr: 'bottom' } }] },
+                'left[0].native.modeScr: bottom differs from the area left',
             ],
             [{ favoritScreensaverEntity: [item, item] }, 'favorit: the admin takes one item'],
             [
@@ -2791,6 +2835,80 @@ describe('lib/configuration - planScriptToAdmin: screensaver', () => {
                 baseConfig(partial).mrIcon1ScreensaverEntity,
             );
         }
+    });
+
+    it('takes an element the admin cannot express over as raw item, the default colors of the script written in', () => {
+        const item = templateConfig().leftScreensaverEntity[0] as Extract<
+            ScriptConfig.ScreenSaverElement,
+            { type: 'script' }
+        >;
+        const cases: [typeof item, string][] = [
+            [{ ...item, ScreensaverEntityText: '' }, 'empty - the admin shows the name of the state'],
+            [{ ...item, ScreensaverEntityIconOn: null }, 'empty - the admin adds a default icon'],
+            [
+                { ...item, ScreensaverEntityOffColor: null as unknown as ScriptConfig.RGB },
+                'null (no off color) is not available in the admin',
+            ],
+            [{ ...item, ScreensaverEntityFillIfBelowMin: false }, 'not available in the admin'],
+            [{ ...item, ScreensaverEntityEnabled: ['a'] as unknown as string }, 'expected a state id'],
+        ];
+        const red = { red: 200, green: 0, blue: 0 };
+        const blue = { red: 0, green: 0, blue: 200 };
+        for (const [element, detail] of cases) {
+            const result = plan(
+                baseConfig({ leftScreensaverEntity: [element], defaultOnColor: red, defaultOffColor: blue }),
+            );
+            expect(result.plan.screensaverSkipped, detail).to.equal(undefined);
+            const rawItems = result.plan.screensaver!.rawItems!;
+            expect(rawItems.map(r => [r.item, r.format])).to.deep.equal([['left[0]', 'script']]);
+            expect(rawItems[0].detail).to.contain(detail);
+            const stored = result.screensaverEntry!.left[0]!;
+            expect(stored.raw!.format).to.equal('script');
+            // the script element, without own colors the default colors of the script (the admin screensaver
+            // resolves a missing color to the adapter default)
+            expect(stored.raw!.config).to.deep.equal({
+                ScreensaverEntityOnColor: item.ScreensaverEntityOnColor ?? red,
+                ...element,
+                ...(element.ScreensaverEntityOffColor === undefined ? { ScreensaverEntityOffColor: blue } : {}),
+            });
+        }
+    });
+
+    it('takes a native element with nothing but template, dpInit and modeScr as template item', () => {
+        const native = { template: 'text.window.isOpen', dpInit: 'alias.0.Fenster', modeScr: 'bottom' };
+        const result = plan(baseConfig({ bottomScreensaverEntity: [{ type: 'native', native }] }));
+        expect(result.plan.screensaverSkipped).to.equal(undefined);
+        expect(result.plan.screensaver!.rawItems).to.equal(undefined);
+        expect(result.screensaverEntry!.bottom).to.deep.equal([
+            { state: 'alias.0.Fenster', template: 'text.window.isOpen' },
+        ]);
+        // enabled is resolved for a template element only - the native element stays raw
+        const withEnabled = plan(
+            baseConfig({ bottomScreensaverEntity: [{ type: 'native', native: { ...native, enabled: 'x.0.y' } }] }),
+        );
+        expect(withEnabled.screensaverEntry!.bottom[0]!.raw!.format).to.equal('native');
+    });
+
+    it('takes a native element over as raw item with its runtime item (format native)', () => {
+        const favorit: ScriptConfig.ScreenSaverElement = {
+            type: 'native',
+            native: {
+                template: 'text.brightsky.favorit',
+                dpInit: '/^brightsky\\.0\\.current.+/',
+                modeScr: 'favorit',
+                data: { entity2: { value: { type: 'triggered', dp: 'x.0.temp' } } },
+            },
+        };
+        const result = plan(baseConfig({ favoritScreensaverEntity: [favorit] }));
+        expect(result.plan.screensaverSkipped).to.equal(undefined);
+        expect(result.plan.screensaver!.rawItems).to.deep.equal([
+            { item: 'favorit[0]', format: 'native', detail: 'favorit[0]: native element' },
+        ]);
+        expect(result.screensaverEntry!.favorit).to.deep.equal({
+            state: '',
+            raw: { format: 'native', config: (favorit as { native: Record<string, unknown> }).native },
+        });
+        expect(result.clearScreensaverInScript).to.equal(true);
     });
 
     it('keeps the indicator action with the priority of the config manager', () => {
@@ -2944,6 +3062,66 @@ describe('lib/configuration - planScriptToAdmin: equivalence of the runtime page
         expectIdempotent(result);
     });
 
+    it('raw items: native page item, item with confirm, native favorit - same runtime pages over both paths', async () => {
+        const config = baseConfig({
+            subPages: [
+                page({
+                    type: 'cardGrid',
+                    uniqueName: 'raw',
+                    heading: 'Raw',
+                    items: [
+                        // Roborock: native page item without further fields - format native
+                        { native: { dpInit: 'roborock.0.Devices.X', template: 'text.roborock.status' } },
+                        // confirm has no admin field - format script with the unchanged item
+                        { id: 'alias.0.Licht.lights.Gerät_1', confirm: 'water' },
+                        // native item with navigation - fields next to native, format script
+                        { native: { type: 'button', data: {} }, navigate: true, targetPage: 'main' },
+                        { id: 'alias.0.Licht.lights.Gerät_1' },
+                    ],
+                }),
+            ],
+            favoritScreensaverEntity: [
+                {
+                    type: 'native',
+                    native: {
+                        template: 'text.brightsky.favorit',
+                        dpInit: '/^brightsky\\.0\\.current.+/',
+                        modeScr: 'favorit',
+                        data: { entity2: { value: { type: 'triggered', dp: 'x.0.temp' } } },
+                    },
+                },
+            ],
+        });
+        const result = await expectEquivalent(config);
+        expect(result.plan.skipped).to.deep.equal([]);
+        expect(result.plan.pages.map(p => [p.uniqueName, p.action, p.rawItems])).to.deep.equal([
+            [
+                'raw',
+                'create',
+                [
+                    { item: 'items[0]', format: 'native', detail: 'items[0]: native item' },
+                    { item: 'items[1]', format: 'script', detail: 'items[1].confirm: not available in the admin' },
+                    { item: 'items[2]', format: 'script', detail: 'items[2]: native item' },
+                ],
+            ],
+        ]);
+        const entry = result.newPages[0] as ShareConfig.MenuEntry;
+        expect(entry.pageItems[0]).to.deep.equal({
+            channelId: ShareConfig.emptyChannelValueConfig(''),
+            useNative: true,
+            nativeFormat: 'native',
+            native: { dpInit: 'roborock.0.Devices.X', template: 'text.roborock.status' },
+        });
+        expect(entry.pageItems[2]!.native).to.deep.equal({
+            native: { type: 'button', data: {} },
+            navigate: true,
+            targetPage: 'main',
+        });
+        expect(result.plan.screensaverSkipped).to.equal(undefined);
+        expect(result.screensaverEntry!.favorit!.raw!.format).to.equal('native');
+        expectIdempotent(result);
+    });
+
     it('script template (script/example_sendTo_script_iobroker.ts)', async () => {
         const result = await expectEquivalent(templateConfig());
         expect(result.plan.pages.map(p => p.uniqueName)).to.deep.equal(['main']);
@@ -2973,22 +3151,32 @@ describe('lib/configuration - planScriptToAdmin: equivalence of the runtime page
         expect(result.plan.pages.map(p => [p.uniqueName, p.action, p.navigation])).to.deep.equal([
             ['main', 'create', {}],
             ['main22', 'create', { prev: 'main' }],
-            ['powerpage', 'assignNavigation', { prev: 'main22', next: 'cardThermo2' }],
+            ['powerpage', 'assignNavigation', { prev: 'main22' }],
+            ['cardThermo2', 'create', { prev: 'powerpage' }],
             // subgrid2 holds the volume item with minValue / maxValue - the admin takes them
             ['subgrid2', 'create', { prev: 'cardThermo2', next: '///unlock' }],
+            ['testrole', 'create', { home: 'hidden', parent: 'cardGrid1' }],
             ['hidden', 'create', { home: 'main' }],
         ]);
-        expect(result.plan.skipped).to.deep.equal([
-            {
-                uniqueName: 'cardThermo2',
-                type: 'cardGrid',
-                reason: 'itemNotSupported',
-                detail: 'items[1].confirm: not available in the admin',
-            },
-            { uniqueName: 'testrole', type: 'cardGrid', reason: 'itemNotSupported', detail: 'items[0]: native item' },
+        // the item with confirm and the native item are taken over as raw items - same runtime pages (above)
+        expect(result.plan.skipped).to.deep.equal([]);
+        expect(result.plan.pages.filter(p => p.rawItems).map(p => [p.uniqueName, p.rawItems])).to.deep.equal([
+            [
+                'cardThermo2',
+                [
+                    { item: 'items[1]', format: 'script', detail: 'items[1].confirm: not available in the admin' },
+                    {
+                        item: 'items[10]',
+                        format: 'script',
+                        detail: 'items[10].sliderItems: not available in the admin',
+                    },
+                ],
+            ],
+            ['testrole', [{ item: 'items[0]', format: 'native', detail: 'items[0]: native item' }]],
         ]);
-        // the screensaver is skipped because of the indicator with a state as on color (see the rules above)
-        expect(result.plan.screensaverSkipped!.reason).to.equal('screensaverItemNotSupported');
+        // the indicator with a state as on color is a raw item as well (see the rules above)
+        expect(result.plan.screensaverSkipped).to.equal(undefined);
+        expect(result.plan.screensaver!.rawItems!.map(r => r.item)).to.deep.equal(['indicator[4]']);
         expect(result.plan.buttons).to.deep.equal({ left: { mode: 'page', page: 'main' } });
         expectIdempotent(result, overrides);
     });
@@ -3112,6 +3300,38 @@ describe('lib/configuration - planScriptToAdmin: equivalence of the runtime page
         expect(result.plan.skipped).to.deep.equal([]);
         expect(result.plan.pages[0].itemCount).to.equal(4);
         expectIdempotent(result);
+    });
+
+    it('a media item generates its media page on the admin path like on the script path', async () => {
+        const mediaPage = 'media-alias.0.Tests.media';
+        const config = baseConfig({
+            pages: [
+                page({
+                    type: 'cardGrid',
+                    uniqueName: 'main',
+                    heading: 'Media',
+                    items: [{ id: 'alias.0.Tests.media' }, { id: 'alias.0.Licht.lights.Gerät_1' }],
+                }),
+            ],
+            mrIcon1ScreensaverEntity: mrIcon(null),
+            mrIcon2ScreensaverEntity: mrIcon(null),
+        });
+        const result = await expectEquivalent(config);
+        expect(result.plan.skipped).to.deep.equal([]);
+        expect(result.plan.pages[0].itemCount).to.equal(2);
+        expectIdempotent(result);
+
+        // the generated page itself and its navigation node are the same on both paths
+        const script = await runScript(config);
+        const admin = await runAdmin(result);
+        const scriptMedia = script.pages.find(p => p.uniqueID === mediaPage);
+        const adminMedia = admin.pages.find(p => p.uniqueID === mediaPage);
+        expect(scriptMedia?.config?.card, 'script path generates the page').to.equal('cardMedia');
+        expect(differences(normalizePage(adminMedia), normalizePage(scriptMedia)), 'generated page').to.deep.equal([]);
+        const nodeOf = (run: ScriptRun): NavigationItemConfig | undefined =>
+            run.navigation.find(n => n?.name === mediaPage);
+        expect(nodeOf(admin)).to.deep.equal(nodeOf(script));
+        expect(nodeOf(admin)?.left).to.deep.equal({ double: 'main' });
     });
 });
 
@@ -3297,12 +3517,19 @@ describe('lib/configuration - planScriptToAdmin: navigation of the panel stays t
         expect(before.adminpages).to.deep.equal({ prev: 'powerpage', next: '///service' });
 
         const result = plan(emuConfig(), { pageConfig: emuPageConfig(), screensaverMode: 'standard' });
-        expect(result.plan.skipped.map(s => s.uniqueName)).to.deep.equal(['entities1', 'entities2']);
+        // entities1 / entities2 hold an item with confirm - taken over as raw item, the pages are converted
+        expect(result.plan.skipped).to.deep.equal([]);
+        expect(result.plan.pages.filter(p => p.rawItems).map(p => p.uniqueName)).to.deep.equal([
+            'entities1',
+            'entities2',
+        ]);
         expect(result.plan.pages.map(p => [p.uniqueName, p.action, p.navigation])).to.deep.equal([
             ['main', 'create', {}],
             ['newicons', 'create', { prev: 'main' }],
             ['newicons2', 'create', { prev: 'newicons' }],
-            ['iconcheck', 'create', { prev: 'newicons2', next: 'entities1' }],
+            ['iconcheck', 'create', { prev: 'newicons2' }],
+            ['entities1', 'create', { prev: 'iconcheck' }],
+            ['entities2', 'create', { prev: 'entities1' }],
             ['grid6', 'create', { prev: 'entities2' }],
             ['popups', 'create', { prev: 'grid6' }],
             ['grid3', 'create', { prev: 'popups' }],
@@ -3386,6 +3613,100 @@ describe('lib/configuration - planScriptToAdmin: navigation of the panel stays t
         // predecessor of the target (applyPendingNavigations step 5) - the double-press link stays away
         expect(after.s2).to.deep.equal({ prev: 'a', next: 'b' });
         expect(after.s3).to.deep.equal(before.s3);
+    });
+
+    it('generates the media page of a media item on an admin page, parent = the admin page, read-only', async () => {
+        const logs: LogEntry[] = [];
+        const mediaPage = 'media-alias.0.Tests.media';
+        const menu = (uniqueName: string, item: ShareConfig.AdminPageItemConfig): ShareConfig.MenuEntry => ({
+            card: 'cardGrid',
+            uniqueName,
+            headline: uniqueName,
+            pageItems: [item],
+            navigationAssignment: [{ topic, navigation: {} }],
+        });
+        const adapter = fakeAdapter(logs, {
+            pageConfig: [
+                menu('wohnen', { channelId: ShareConfig.emptyChannelValueConfig('alias.0.Tests.media') }),
+                // a raw item in the script format with the same media channel: same generated page, first one stays
+                menu('raw', {
+                    channelId: ShareConfig.emptyChannelValueConfig(''),
+                    useNative: true,
+                    nativeFormat: 'script',
+                    native: { id: 'alias.0.Tests.media' },
+                }),
+            ],
+        });
+        resetStatesController();
+        const option: {
+            name: string;
+            topic: string;
+            pages: PageBase[];
+            navigation: NavigationItemConfig[];
+            generatedPageIds?: string[];
+        } = {
+            name: panelName,
+            topic,
+            pages: [],
+            navigation: [],
+        };
+        await new AdminConfiguration(adapter).processentrys(option as never);
+        expect(logs.filter(l => l[0] === 'error' || l[0] === 'warn')).to.deep.equal([]);
+        const generated = option.pages.filter(p => p.uniqueID === mediaPage);
+        expect(generated).to.have.length(1);
+        expect(generated[0].config?.card).to.equal('cardMedia');
+        expect(option.generatedPageIds).to.deep.equal([mediaPage]);
+        const nodes = option.navigation.filter(n => n?.name === mediaPage);
+        expect(nodes).to.have.length(1);
+        expect(nodes[0]?.left).to.deep.equal({ double: 'wohnen' });
+        expect(nodes[0]?.right).to.equal(undefined);
+        // the items of both pages lead there
+        for (const id of ['wohnen', 'raw']) {
+            const json = JSON.stringify(option.pages.find(p => p.uniqueID === id)?.pageItems);
+            expect(json, `item of ${id}`).to.include(`"setNavi":{"type":"const","constVal":"${mediaPage}"}`);
+        }
+    });
+
+    it('keeps a page of the panel with the name of a generated media page', async () => {
+        const logs: LogEntry[] = [];
+        const mediaPage = 'media-alias.0.Tests.media';
+        const adapter = fakeAdapter(logs, {
+            pageConfig: [
+                {
+                    card: 'cardGrid',
+                    uniqueName: 'wohnen',
+                    headline: 'wohnen',
+                    pageItems: [{ channelId: ShareConfig.emptyChannelValueConfig('alias.0.Tests.media') }],
+                    navigationAssignment: [{ topic, navigation: {} }],
+                } satisfies ShareConfig.MenuEntry,
+            ],
+        });
+        resetStatesController();
+        const own = {
+            uniqueID: mediaPage,
+            dpInit: '',
+            alwaysOn: 'none',
+            config: { card: 'cardGrid', data: {} },
+            pageItems: [],
+        } as unknown as PageBase;
+        const option: {
+            name: string;
+            topic: string;
+            pages: PageBase[];
+            navigation: NavigationItemConfig[];
+            generatedPageIds?: string[];
+        } = {
+            name: panelName,
+            topic,
+            pages: [own],
+            navigation: [{ name: mediaPage, page: mediaPage, left: undefined, right: undefined }],
+        };
+        await new AdminConfiguration(adapter).processentrys(option as never);
+        expect(option.pages.filter(p => p.uniqueID === mediaPage)).to.deep.equal([own]);
+        expect(option.generatedPageIds).to.equal(undefined);
+        const warnings = logs.filter(l => l[1].includes('already exists')).map(l => l[1]);
+        expect(warnings).to.have.length(1);
+        expect(warnings[0]).to.include(`Page '${mediaPage}' generated by a page item of page 'wohnen' already exists`);
     });
 
     it('does not replace the screensaver or a generated page by an admin page of the same name (U2)', async () => {
@@ -3856,7 +4177,7 @@ describe('lib/configuration - planScriptToAdmin: secondRow, light ranges and col
         ]);
     });
 
-    it('rejects a field of the wrong type', () => {
+    it('takes an item with a field of the wrong type over as raw item', () => {
         const result = plan(
             baseConfig({
                 subPages: [
@@ -3869,7 +4190,10 @@ describe('lib/configuration - planScriptToAdmin: secondRow, light ranges and col
                 ],
             }),
         );
-        expect(result.plan.skipped.map(s => s.detail)).to.deep.equal(['items[0].minValueColorTemp: expected a number']);
+        expect(result.plan.skipped).to.deep.equal([]);
+        expect(result.plan.pages[0].rawItems!.map(r => r.detail)).to.deep.equal([
+            'items[0].minValueColorTemp: expected a number',
+        ]);
     });
 
     it('builds the same runtime items over the admin path as over the script path', async () => {

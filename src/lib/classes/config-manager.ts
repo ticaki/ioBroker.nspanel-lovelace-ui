@@ -125,7 +125,7 @@ export class ConfigManager extends BaseClass {
             let messages: string[] = [];
             // get all pages from global config
             const tempConfig = { ...configuration, pages: [] };
-            ({ panelConfig, messages } = await this.getPageConfig(tempConfig as any, panelConfig, messages));
+            ({ panelConfig, messages } = await this.getPageConfig(tempConfig, panelConfig, messages));
 
             const obj = await this.adapter.getForeignObjectAsync(this.adapter.namespace);
             if (obj && !this.dontWrite) {
@@ -444,7 +444,7 @@ export class ConfigManager extends BaseClass {
     }
 
     async getPageConfig(
-        config: ScriptConfig.Config,
+        config: Pick<ScriptConfig.Config, 'pages' | 'subPages'>,
         panelConfig: Omit<Partial<panelConfigPartial>, 'pages' | 'navigation'> & {
             navigation: NavigationItemConfig[];
             pages: pages.PageBase[];
@@ -2561,6 +2561,9 @@ export class ConfigManager extends BaseClass {
                         throw new Error(`State ${item.id} does not exist!`);
                     }
                     if (writeable) {
+                        if (item.targetPageLongPress && item.longPress) {
+                            throw new Error(`You can only use targetPageLongPress or longPress in the same item!`);
+                        }
                         return {
                             messages,
                             itemConfig: {
@@ -2570,6 +2573,12 @@ export class ConfigManager extends BaseClass {
                                         value: await this.getFieldAsDataItemConfig(item.id, true),
                                         set: writeable ? await this.getFieldAsDataItemConfig(item.id) : undefined,
                                     },
+                                    setNaviLongPress: item.targetPageLongPress
+                                        ? await this.getFieldAsDataItemConfig(item.targetPageLongPress)
+                                        : undefined,
+                                    longPress: item.longPress
+                                        ? await this.getFieldAsDataItemConfig(item.longPress)
+                                        : undefined,
 
                                     icon: {
                                         true: {

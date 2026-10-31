@@ -31,7 +31,7 @@ import ErrorOutline from '@mui/icons-material/ErrorOutlineOutlined';
 import PaletteIcon from '@mui/icons-material/Palette';
 import { I18n, type ThemeType } from '@iobroker/gui-components';
 import { ConfigGeneric, type ConfigGenericProps, type ConfigGenericState } from '@iobroker/json-config';
-import Editor from '@iobroker/json-config/build/JsonConfigComponent/wrapper/Components/Editor';
+import RawItemConfigDialog, { RawItemButton, RawItemNotice, type RawItemValue } from './RawItemConfigDialog';
 import { EntitySelector } from './EntitySelector';
 import IconSelect from '../IconSelect';
 import SettingsIcon from '@mui/icons-material/Settings';
@@ -51,7 +51,9 @@ import {
     CHANNEL_ROLES_LIST,
     requiredScriptDataPoints,
     emptyChannelValueConfig,
+    isRawItemObject,
     normalizeChannelId,
+    pageItemRawFormat,
 } from '../../../src/lib/types/adminShareConfig';
 import ChannelColorDialog from './ChannelColorDialog';
 import ChannelModeListDialog from './ChannelModeListDialog';
@@ -127,8 +129,6 @@ type ChannelConfigDialogProps = {
     initialChannelId?: string;
     /** Trigger-Button ausblenden; Dialog wird per openWith()-Methode geöffnet */
     hideTriggerButton?: boolean;
-    /** Expert-Mode – zeigt Native-Toggle-Button an */
-    expertMode?: boolean;
 };
 
 interface ChannelConfigDialogState {
@@ -159,14 +159,8 @@ interface ChannelConfigDialogState {
     roleIsValid: boolean | null;
     /** Vorgeladene Channel-IDs mit passender Rolle – Basis für filterFunc */
     validChannelIds: string[];
-    /** Expert-Mode: native JSON-Editor aktiv */
-    nativeMode: boolean;
-    /** Rohes JSON im nativen Editor */
-    nativeJson: string;
-    /** true wenn nativeJson syntaktisch valide ist */
-    nativeJsonValid: boolean;
-    /** Fehlermeldung aus JSON.parse (inklusive Zeileninfo falls vorhanden) */
-    nativeJsonErrorMessage: string;
+    /** raw data of the item (dialog RawItemConfigDialog); set = raw mode, the standard fields are not used */
+    raw: RawItemValue | null;
     /** true während CheckPageItemConfig-Anfrage läuft */
     isSaving: boolean;
     /** Ergebnis-Dialog sichtbar */
@@ -239,6 +233,7 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
     private valueEntryDialogMain = React.createRef<ChannelValueDialog>();
     private colorDialogRef = React.createRef<ChannelColorDialog>();
     private modeListDialogRef = React.createRef<ChannelModeListDialog>();
+    private rawDialogRef = React.createRef<RawItemConfigDialog>();
     private static iconMap: Map<string, string> | null = null;
 
     private static getIconBase64(name: string): string {
@@ -275,10 +270,7 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
             stateIsWriteable: null,
             roleIsValid: null,
             validChannelIds: [],
-            nativeMode: false,
-            nativeJson: '',
-            nativeJsonValid: false,
-            nativeJsonErrorMessage: '',
+            raw: null,
             isSaving: false,
             checkResultOpen: false,
             checkResultMessages: [],
@@ -362,6 +354,10 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
      */
     public openWith(data?: Partial<AdminPageItemConfig>, isGridCard?: boolean): void {
         const isNative = data?.useNative === true;
+        const raw: RawItemValue | null =
+            data && isNative
+                ? { format: pageItemRawFormat(data), config: isRawItemObject(data.native) ? data.native : {} }
+                : null;
         this.setState({
             open: true,
             channelId: normalizeChannelId(data?.channelId),
@@ -379,10 +375,7 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
             checkingChannel: false,
             channelRole: data?.role ?? null,
             roleIsValid: null,
-            nativeMode: isNative,
-            nativeJson: isNative ? JSON.stringify(data?.native ?? {}, null, 2) : '',
-            nativeJsonValid: isNative,
-            nativeJsonErrorMessage: '',
+            raw,
             useValue: data?.useValue ?? false,
             textSize: data?.textSize,
             valueEntry: data?.valueEntry,
@@ -540,6 +533,25 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
     };
 
     /**
+     * Target page after pressing: normal (non-navigation, non-custom) items of role button. The adapter
+     * presses the button and then changes to the page (config-manager.ts getPageItemConfig sets `setNavi`
+     * from `targetPage` for items of type button; the custom branch returns earlier and ignores it).
+     */
+    private isButtonTargetPageVisible(): boolean {
+        const { channelRole, isCustom, isNavigation, raw } = this.state;
+        return !raw && !isNavigation && !isCustom && channelRole === 'button';
+    }
+
+    /**
+     * Long press fieldset visible: grid cards only, for role button, custom and navigation items
+     * (intentionally narrow - items with a popup collide with the long press).
+     */
+    private isLongPressVisible(): boolean {
+        const { isGridCard, channelRole, isCustom, isNavigation, raw } = this.state;
+        return !raw && isGridCard && (channelRole === 'button' || isCustom || isNavigation);
+    }
+
+    /**
      * Font size (textSize) visible: grid cards and cardThermo2 - the HMI reads the font id suffix of the icon text
      * there. cardThermo2 is checked explicitly, independent of the isGridCard flag of openWith().
      */
@@ -579,6 +591,12 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
         const minValueOut = minValue !== undefined && Number.isFinite(minValue) ? minValue : undefined;
         const maxValueOut = maxValue !== undefined && Number.isFinite(maxValue) ? maxValue : undefined;
         // the adapter reads the light ranges only when they are truthy - 0 is stored as "not set"
+        // hidden long press fieldset: store nothing, so no stale value reaches the adapter
+        const longPressVisible = this.isLongPressVisible();
+        const targetPageLongPressOut = longPressVisible ? targetPageLongPress || null : null;
+        const longPressOut = longPressVisible ? longPress || null : null;
+        // navigation items keep their target page, otherwise only a button item stores one
+        const targetPageOut = isNavigation || this.isButtonTargetPageVisible() ? targetPage : '';
         const lightRange = (value: number | undefined): number | undefined =>
             value !== undefined && Number.isFinite(value) && value !== 0 ? value : undefined;
         const extraFields: Pick<AdminPageItemConfig, 'secondRow' | 'colormode' | LightRangeKey> = {
@@ -589,38 +607,15 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
             maxValueColorTemp: lightRange(this.state.maxValueColorTemp),
             colormode: colormode ? true : undefined,
         };
-        if (this.state.nativeMode) {
-            try {
-                const parsed: unknown = JSON.parse(this.state.nativeJson);
-                return {
-                    channelId: channelId,
-                    name,
-                    isNavigation,
-                    type: undefined,
-                    targetPage,
-                    targetPageLongPress: targetPageLongPress || null,
-                    longPress: longPress || null,
-                    trueIcon,
-                    trueColor,
-                    falseIcon,
-                    falseColor,
-                    useValue,
-                    textSize,
-                    scale,
-                    inSel_Alias,
-                    modeList,
-                    filter,
-                    useValueConditions: useValueConditionsOut,
-                    minValue: minValueOut,
-                    maxValue: maxValueOut,
-                    ...extraFields,
-                    role: channelRole ?? undefined,
-                    useNative: true,
-                    native: parsed,
-                };
-            } catch {
-                return null;
-            }
+        const { raw } = this.state;
+        if (raw) {
+            // raw mode: the item is taken from the raw data alone - the adapter ignores every other field
+            return {
+                channelId,
+                useNative: true,
+                nativeFormat: raw.format,
+                native: raw.config,
+            };
         }
         return {
             channelId: channelId,
@@ -628,9 +623,9 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
             name,
             isNavigation,
             type: isCustom ? 'custom' : undefined,
-            targetPage,
-            targetPageLongPress: targetPageLongPress || null,
-            longPress: longPress || null,
+            targetPage: targetPageOut,
+            targetPageLongPress: targetPageLongPressOut,
+            longPress: longPressOut,
             trueIcon,
             trueColor,
             falseIcon,
@@ -736,30 +731,20 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
         }
     };
 
-    private handleNativeModeToggle = (): void => {
-        if (!this.state.nativeMode) {
-            // Beim Wechsel zu Native: vorhandenes native-JSON beibehalten oder leer starten
-            this.setState({
-                nativeMode: true,
-                nativeJson: '{}',
-                nativeJsonValid: true,
-            });
-        } else {
-            this.setState({ nativeMode: false });
-        }
+    private handleRawOpen = (): void => {
+        this.rawDialogRef.current?.openWith(this.state.raw ?? undefined);
     };
 
-    private handleNativeJsonChange = (json: string): void => {
-        let valid = false;
-        let errorMessage = '';
-        try {
-            JSON.parse(json);
-            valid = true;
-        } catch (e) {
-            valid = false;
-            errorMessage = e instanceof Error ? e.message : String(e);
+    private handleRawApply = (raw: RawItemValue): void => {
+        this.setState({ raw });
+    };
+
+    private handleRawRemove = (): void => {
+        this.setState({ raw: null });
+        const id = this.state.channelId.valueStateId;
+        if (id) {
+            void this.checkChannelExists(id, this.state.isCustom);
         }
-        this.setState({ nativeJson: json, nativeJsonValid: valid, nativeJsonErrorMessage: errorMessage });
     };
 
     private async loadValidChannels(): Promise<void> {
@@ -1544,40 +1529,41 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
             channelRole,
             stateIsWriteable,
             roleIsValid,
-            nativeMode,
-            nativeJson,
-            nativeJsonValid,
+            raw,
             useValue,
             colorFieldDisabled,
         } = this.state;
 
+        const rawMode = raw !== null;
         const hasDatapointProblems =
-            !nativeMode &&
+            !rawMode &&
             !this.state.checkingDatapoints &&
             (this.state.datapointErrors.length > 0 ||
                 this.state.datapointDuplicates.length > 0 ||
                 this.state.hasProblems);
 
-        const expertMode = this.props.expertMode === true;
         const channelIdValid = channelId.valueStateId !== '';
         const standardCanSave =
             (isNavigation && targetPage !== '') ||
             (!isNavigation && channelIdValid && channelExists === true && !checkingChannel);
-        const canSave = nativeMode ? nativeJsonValid : standardCanSave;
+        // raw mode: the item needs no channel, the raw data are complete in themselves
+        const canSave = rawMode || standardCanSave;
 
         const errorSaveDetails =
             !(isNavigation && !channelIdValid) && ((!roleIsValid && !isCustom) || this.state.hasProblems);
         /** Felder sperren wenn noch keine gültige ID ausgewählt ist */
         const fieldsDisabled = !standardCanSave;
 
-        const internColorFieldsDisabled = !channelIdValid || isCustom || nativeMode || colorFieldDisabled;
+        const internColorFieldsDisabled = !channelIdValid || isCustom || rawMode || colorFieldDisabled;
         /**
          * Modusliste nur für die Licht-Rollen, die der Adapter dafür auswertet. Bewusst OHNE `colorFieldDisabled`:
          * diese Rollen haben `type: 'boolean'` in den Page-Item-Defaults, der Farb-Button ist für sie gesperrt.
          */
         const modeListVisible =
-            channelRole !== null && MODE_LIST_ROLES.includes(channelRole) && channelIdValid && !isCustom && !nativeMode;
+            channelRole !== null && MODE_LIST_ROLES.includes(channelRole) && channelIdValid && !isCustom && !rawMode;
         const longPressEnabled = channelRole === 'button' || isCustom || isNavigation;
+        const longPressVisible = this.isLongPressVisible();
+        const buttonTargetPageVisible = this.isButtonTargetPageVisible();
         /** Buttons turn green (theme palette "success", works in light and dark mode) once their settings hold data */
         const colorConfigured =
             this.state.trueColor !== '' || this.state.falseColor !== '' || this.state.scale !== undefined;
@@ -1588,14 +1574,14 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
             channelRole !== null &&
             channelIdValid &&
             !isCustom &&
-            !nativeMode &&
+            !rawMode &&
             (isNavigation ? USE_VALUE_CONDITIONS_NAVI_ROLES : USE_VALUE_CONDITIONS_ROLES).includes(channelRole);
         /** Range of the volume slider: the adapter reads minValue / maxValue for page items of role volume only */
         const valueRangeVisible =
             channelRole !== null &&
             channelIdValid &&
             !isCustom &&
-            !nativeMode &&
+            !rawMode &&
             !isNavigation &&
             VALUE_RANGE_ROLES.includes(channelRole);
         /**
@@ -1607,7 +1593,7 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
             channelRole !== null &&
             channelIdValid &&
             !isCustom &&
-            !nativeMode &&
+            !rawMode &&
             !isNavigation &&
             roles.includes(channelRole);
         const secondRowVisible = pageItemOfRole(SECOND_ROW_ROLES);
@@ -1615,7 +1601,7 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
         const colorTempVisible = pageItemOfRole(COLOR_TEMP_ROLES);
 
         console.log(
-            `[ChannelConfigDialog] render: channelId=${channelId.valueStateId}, channelExists=${channelExists}, channelRole=${channelRole}, roleIsValid=${roleIsValid}, datapointErrors=${this.state.datapointErrors.join(',')}, datapointDuplicates=${this.state.datapointDuplicates.join(',')}, nativeMode=${nativeMode}, nativeJsonValid=${nativeJsonValid}, hasDatapointProblems=${hasDatapointProblems}, hasProblems=${this.state.hasProblems}, errorSaveDetails=${errorSaveDetails} standardCanSave=${standardCanSave}, canSave=${canSave} fieldsDisabled=${fieldsDisabled}, longPressEnabled=${longPressEnabled}, channelIdValid=${channelIdValid}`,
+            `[ChannelConfigDialog] render: channelId=${channelId.valueStateId}, channelExists=${channelExists}, channelRole=${channelRole}, roleIsValid=${roleIsValid}, datapointErrors=${this.state.datapointErrors.join(',')}, datapointDuplicates=${this.state.datapointDuplicates.join(',')}, rawMode=${rawMode}, hasDatapointProblems=${hasDatapointProblems}, hasProblems=${this.state.hasProblems}, errorSaveDetails=${errorSaveDetails} standardCanSave=${standardCanSave}, canSave=${canSave} fieldsDisabled=${fieldsDisabled}, longPressEnabled=${longPressEnabled}, channelIdValid=${channelIdValid}`,
         );
         // Untertitel neben dem Titel
         const titleSuffix =
@@ -1689,41 +1675,19 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                                     ({titleSuffix})
                                 </Typography>
                             </Typography>
+                            <RawItemButton
+                                active={rawMode}
+                                onClick={this.handleRawOpen}
+                            />
                         </Box>
                     </DialogTitle>
 
                     <DialogContent>
-                        {nativeMode ? (
-                            <Box>
-                                <Box
-                                    sx={{
-                                        height: 420,
-                                        border: 1,
-                                        borderColor: nativeJsonValid ? 'divider' : 'error.main',
-                                        borderRadius: 1,
-                                        overflow: 'hidden',
-                                    }}
-                                >
-                                    <Editor
-                                        mode="json"
-                                        value={nativeJson}
-                                        onChange={this.handleNativeJsonChange}
-                                        themeType={this.props.themeType ?? 'light'}
-                                        name="channel-config-native-editor"
-                                        editValueMode
-                                        error={!nativeJsonValid}
-                                    />
-                                </Box>
-                                {!nativeJsonValid && (
-                                    <Typography
-                                        variant="caption"
-                                        color="error"
-                                        sx={{ display: 'block', mt: 0.5, px: 0.5 }}
-                                    >
-                                        {this.state.nativeJsonErrorMessage || I18n.t('channelConfigDialog_invalidJson')}
-                                    </Typography>
-                                )}
-                            </Box>
+                        {raw ? (
+                            <RawItemNotice
+                                value={raw}
+                                onEdit={this.handleRawOpen}
+                            />
                         ) : (
                             <Box sx={panelBoxStyle}>
                                 <Box
@@ -2159,7 +2123,57 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                                         label={I18n.t('channelConfigDialog_colormode')}
                                     />
                                 )}
-                                {this.state.isGridCard && longPressEnabled && (
+                                {/* Zielseite nach dem Drücken – nur normale Items der Rolle button */}
+                                {buttonTargetPageVisible && (
+                                    <Tooltip
+                                        title={I18n.t('channelConfigDialog_buttonTargetPageTooltip')}
+                                        placement="top"
+                                    >
+                                        <Autocomplete
+                                            options={loadingPages ? [] : availablePages}
+                                            value={targetPage || null}
+                                            onChange={(_e, val) => this.handleTargetPageChange(val ?? '')}
+                                            onInputChange={(_e, val) => this.handleTargetPageChange(val)}
+                                            disabled={loadingPages || fieldsDisabled}
+                                            freeSolo
+                                            forcePopupIcon
+                                            renderInput={params => (
+                                                <TextField
+                                                    {...params}
+                                                    variant="standard"
+                                                    label={I18n.t('channelConfigDialog_buttonTargetPage')}
+                                                    slotProps={{
+                                                        ...params.slotProps,
+                                                        input: {
+                                                            ...params.slotProps.input,
+                                                            endAdornment: (
+                                                                <>
+                                                                    {loadingPages && <CircularProgress size={16} />}
+                                                                    {params.slotProps.input.endAdornment}
+                                                                </>
+                                                            ),
+                                                        },
+                                                    }}
+                                                />
+                                            )}
+                                        />
+                                    </Tooltip>
+                                )}
+                                {/* Zweispaltiger Bereich: Wahr / Unwahr */}
+                                <Box
+                                    sx={{
+                                        display: 'flex',
+                                        gap: 2,
+                                        flexWrap: 'wrap',
+                                        opacity: fieldsDisabled ? 0.4 : 1,
+                                        pointerEvents: fieldsDisabled ? 'none' : 'auto',
+                                    }}
+                                >
+                                    {this.renderBranchColumn('true')}
+                                    {this.renderBranchColumn('false')}
+                                </Box>
+                                {/* Langer Druck: bewusst ganz unten im Dialog */}
+                                {longPressVisible && (
                                     <Box
                                         component="fieldset"
                                         sx={{
@@ -2264,19 +2278,6 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                                         )}
                                     </Box>
                                 )}
-                                {/* Zweispaltiger Bereich: Wahr / Unwahr */}
-                                <Box
-                                    sx={{
-                                        display: 'flex',
-                                        gap: 2,
-                                        flexWrap: 'wrap',
-                                        opacity: fieldsDisabled ? 0.4 : 1,
-                                        pointerEvents: fieldsDisabled ? 'none' : 'auto',
-                                    }}
-                                >
-                                    {this.renderBranchColumn('true')}
-                                    {this.renderBranchColumn('false')}
-                                </Box>
                             </Box>
                         )}
                     </DialogContent>
@@ -2311,23 +2312,9 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                                 )}
                             </Box>
                         )}
-                        {/* Untere Zeile: Native-Toggle links, Abbrechen + Speichern rechts */}
+                        {/* Untere Zeile: Abbrechen + Speichern rechts */}
                         <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1 }}>
-                            {/* Nativ JSON-Modus Umschalter nur im Expertenmodus anzeigen */}
-                            {(expertMode || nativeMode) && (
-                                <Button
-                                    size="small"
-                                    variant={nativeMode ? 'contained' : 'outlined'}
-                                    color={nativeMode ? 'warning' : 'inherit'}
-                                    onClick={this.handleNativeModeToggle}
-                                    sx={{ mr: 'auto' }}
-                                >
-                                    {nativeMode
-                                        ? I18n.t('channelConfigDialog_standard')
-                                        : I18n.t('channelConfigDialog_native')}
-                                </Button>
-                            )}
-                            {/* Abbrechen-Button immer anzeigen, Speichern-Button nur wenn nicht im Native-Modus oder wenn im Native-Modus gültiges JSON vorliegt */}
+                            {/* Abbrechen-Button immer anzeigen, Speichern-Button nur mit gültiger Konfiguration (Rohdaten oder Standardfelder) */}
                             <Button onClick={this.handleClose}>{I18n.t('channelConfigDialog_cancel')}</Button>
                             <Button
                                 variant="contained"
@@ -2353,6 +2340,14 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                     </DialogActions>
                 </Dialog>
 
+                {/* raw data of the item */}
+                <RawItemConfigDialog
+                    ref={this.rawDialogRef}
+                    kind="pageItem"
+                    themeType={themeType}
+                    onApply={this.handleRawApply}
+                    onRemove={this.handleRawRemove}
+                />
                 {/* Color Options Dialog */}
                 <ChannelColorDialog
                     ref={this.colorDialogRef}
