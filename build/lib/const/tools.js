@@ -305,6 +305,7 @@ async function getIconEntryValue(i, on, def, defOff = null, getText = false) {
     return import_icon_mapping.Icons.GetIcon(on ? def : defOff || def);
   }
   const textSize = i.textSize && await i.textSize.getNumber();
+  const sizeSuffix = textSize != null ? `\xAC${textSize}` : "";
   const text = getText ? i.true && i.true.text && await getValueEntryString(i.true.text) || null : null;
   if (text !== null) {
     const textFalse = i.false && i.false.text && await getValueEntryString(i.false.text) || null;
@@ -325,21 +326,21 @@ async function getIconEntryValue(i, on, def, defOff = null, getText = false) {
         const scale = i.scale && await i.scale.getObject();
         if (globals.isPartialColorScaleElement(scale)) {
           if (scale.val_min && scale.val_min >= on || scale.val_max && scale.val_max <= on) {
-            return text + (textSize != null ? `\xAC${textSize}` : "");
+            return text + sizeSuffix;
           }
           textFalse;
         }
       }
       if (!on) {
-        return (textFalse || text) + (textSize != null ? `\xAC${textSize}` : "");
+        return (textFalse || text) + sizeSuffix;
       }
-      return text + (textSize != null ? `\xAC${textSize}` : "");
+      return text + sizeSuffix;
     }
   }
   const icon = i.true && i.true.value && await i.true.value.getString() || null;
   if (icon === import_page_item_defaults.SHUTTER_POSITION_ICON) {
     const name = typeof on === "number" ? (0, import_page_item_defaults.getShutterIconByPosition)(on) : on ? import_page_item_defaults.pageItemDefaults.blind.iconOn : import_page_item_defaults.pageItemDefaults.blind.iconOff;
-    return import_icon_mapping.Icons.GetIcon(name) + (textSize != null ? `\xAC${textSize}` : "");
+    return import_icon_mapping.Icons.GetIcon(name) + sizeSuffix;
   }
   const scaleM = i.scale && await i.scale.getObject();
   if (typeof on === "boolean") {
@@ -353,7 +354,7 @@ async function getIconEntryValue(i, on, def, defOff = null, getText = false) {
     if (!on) {
       return import_icon_mapping.Icons.GetIcon(
         i.false && i.false.value && await i.false.value.getString() || defOff || icon || def
-      );
+      ) + sizeSuffix;
     }
   } else if (typeof on === "number") {
     const scale = globals.isPartialIconSelectScaleElement(scaleM) ? scaleM : { valIcon_min: 0, valIcon_max: 1 };
@@ -361,14 +362,14 @@ async function getIconEntryValue(i, on, def, defOff = null, getText = false) {
     const min = swap ? scale.valIcon_max : scale.valIcon_min;
     const max = swap ? scale.valIcon_min : scale.valIcon_max;
     if (min < on && max > on) {
-      return import_icon_mapping.Icons.GetIcon(i.unstable && i.unstable.value && await i.unstable.value.getString() || icon || def) + (textSize != null ? `\xAC${textSize}` : "");
+      return import_icon_mapping.Icons.GetIcon(i.unstable && i.unstable.value && await i.unstable.value.getString() || icon || def) + sizeSuffix;
     } else if (!swap && max > on || swap && min < on) {
       return import_icon_mapping.Icons.GetIcon(
         i.false && i.false.value && await i.false.value.getString() || defOff || icon || def
-      ) + (textSize != null ? `\xAC${textSize}` : "");
+      ) + sizeSuffix;
     }
   }
-  return import_icon_mapping.Icons.GetIcon(icon != null ? icon : def) + (textSize != null ? `\xAC${textSize}` : "");
+  return import_icon_mapping.Icons.GetIcon(icon != null ? icon : def) + sizeSuffix;
 }
 async function getIconEntryColor(i, value, def, defOff = null) {
   var _a, _b, _c;

@@ -539,6 +539,14 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
         });
     };
 
+    /**
+     * Font size (textSize) visible: grid cards and cardThermo2 - the HMI reads the font id suffix of the icon text
+     * there. cardThermo2 is checked explicitly, independent of the isGridCard flag of openWith().
+     */
+    private isTextSizeVisible(): boolean {
+        return this.state.isGridCard || this.props.currentPageCard === 'cardThermo2';
+    }
+
     /** Baut die zu speichernde PageItemConfig aus dem aktuellen State zusammen. */
     private buildSaveConfig(): AdminPageItemConfig | null {
         const {
@@ -2008,7 +2016,7 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                                             </Select>
                                         </FormControl>
                                     )}
-                                    {this.state.isGridCard && (
+                                    {this.isTextSizeVisible() && (
                                         <Tooltip
                                             title={
                                                 <span style={{ whiteSpace: 'pre-line' }}>

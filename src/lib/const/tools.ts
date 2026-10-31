@@ -282,6 +282,8 @@ export async function getIconEntryValue(
         return Icons.GetIcon(on ? def : defOff || def);
     }
     const textSize = i.textSize && (await i.textSize.getNumber());
+    // font id suffix the HMI reads from the icon text (`<icon>¬<font id>`)
+    const sizeSuffix = textSize != null ? `¬${textSize}` : '';
     const text = getText ? (i.true && i.true.text && (await getValueEntryString(i.true.text))) || null : null;
     if (text !== null) {
         const textFalse = (i.false && i.false.text && (await getValueEntryString(i.false.text))) || null;
@@ -302,15 +304,15 @@ export async function getIconEntryValue(
                 const scale = i.scale && (await i.scale.getObject());
                 if (globals.isPartialColorScaleElement(scale)) {
                     if ((scale.val_min && scale.val_min >= on) || (scale.val_max && scale.val_max <= on)) {
-                        return text + (textSize != null ? `¬${textSize}` : '');
+                        return text + sizeSuffix;
                     }
                     textFalse;
                 }
             }
             if (!on) {
-                return (textFalse || text) + (textSize != null ? `¬${textSize}` : '');
+                return (textFalse || text) + sizeSuffix;
             }
-            return text + (textSize != null ? `¬${textSize}` : '');
+            return text + sizeSuffix;
         }
     }
     const icon = (i.true && i.true.value && (await i.true.value.getString())) || null;
@@ -322,7 +324,7 @@ export async function getIconEntryValue(
                 : on
                   ? pageItemDefaults.blind.iconOn
                   : pageItemDefaults.blind.iconOff;
-        return Icons.GetIcon(name) + (textSize != null ? `¬${textSize}` : '');
+        return Icons.GetIcon(name) + sizeSuffix;
     }
     const scaleM = i.scale && (await i.scale.getObject());
 
@@ -336,8 +338,10 @@ export async function getIconEntryValue(
             on = !on;
         }
         if (!on) {
-            return Icons.GetIcon(
-                (i.false && i.false.value && (await i.false.value.getString())) || defOff || icon || def,
+            return (
+                Icons.GetIcon(
+                    (i.false && i.false.value && (await i.false.value.getString())) || defOff || icon || def,
+                ) + sizeSuffix
             );
         }
     } else if (typeof on === 'number') {
@@ -348,17 +352,17 @@ export async function getIconEntryValue(
         if (min < on && max > on) {
             return (
                 Icons.GetIcon((i.unstable && i.unstable.value && (await i.unstable.value.getString())) || icon || def) +
-                (textSize != null ? `¬${textSize}` : '')
+                sizeSuffix
             );
         } else if ((!swap && max > on) || (swap && min < on)) {
             return (
                 Icons.GetIcon(
                     (i.false && i.false.value && (await i.false.value.getString())) || defOff || icon || def,
-                ) + (textSize != null ? `¬${textSize}` : '')
+                ) + sizeSuffix
             );
         }
     }
-    return Icons.GetIcon(icon ?? def) + (textSize != null ? `¬${textSize}` : '');
+    return Icons.GetIcon(icon ?? def) + sizeSuffix;
 }
 
 export async function getIconEntryColor(
