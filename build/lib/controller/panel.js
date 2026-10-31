@@ -61,6 +61,7 @@ var import_page_origin = require("../configuration/page-origin");
 var import_page_targets = require("../configuration/page-targets");
 var import_page_states = require("../configuration/page-states");
 var import_default_pages = require("../const/default-pages");
+var import_display_diagnosis = require("./display-diagnosis");
 const DefaultOptions = {
   format: {
     weekday: "short",
@@ -95,6 +96,10 @@ class Panel extends import_library.BaseClass {
   /** Timestamp of the last Nextion 0x24 (serial buffer overflow) reported by the display, 0 if none */
   nextionBufferOverflowTs = 0;
   lastAutoRestartTs = 0;
+  /** Since when the loop offers `pageType~pageStartup` without an answer from the display, 0 if online */
+  displayOfflineSinceTs = 0;
+  /** Diagnosis of a display that does not answer although Tasmota is online, see display-diagnosis.ts */
+  displayDiagnosis = { reported: false, lastQueryTs: 0, timeout: void 0, answers: void 0 };
   lastSendTypeDate = 0;
   isBuzzerAllowed = true;
   options;
@@ -1048,6 +1053,8 @@ class Panel extends import_library.BaseClass {
             this.nextionBufferOverflowTs = now;
           }
           return;
+        } else if (this.handleDisplayDiagnosisAnswer(msg)) {
+          return;
         } else if ("nlui_driver_version" in msg) {
           this.info.nspanel.berryDriverVersion = parseInt(msg.nlui_driver_version);
           await this.library.writedp(
@@ -1548,10 +1555,105 @@ class Panel extends import_library.BaseClass {
     if (this.unload || this.adapter.unload) {
       return;
     }
+    this.checkDisplayNotAnswering();
     this.loopTimeout = this.adapter.setTimeout(() => {
       this.loop();
     }, t);
   };
+  /**
+   * Called by the loop: if a hardware panel has been offered `pageType~pageStartup` for
+   * {@link DISPLAY_DIAGNOSIS_DELAY_MS} without a startup event, ask Tasmota for `Module` and
+   * `Gpio 255` to find out why the display does not answer.
+   */
+  checkDisplayNotAnswering() {
+    const now = Date.now();
+    if (this.isOnline || this.flashing || !this.initDone || this.isVirtual) {
+      this.displayOfflineSinceTs = 0;
+      return;
+    }
+    if (this.info.nspanel.berryDriverVersion === -1) {
+      return;
+    }
+    if (this.displayOfflineSinceTs === 0) {
+      this.displayOfflineSinceTs = now;
+      return;
+    }
+    const diag = this.displayDiagnosis;
+    if (diag.reported || diag.answers || now - this.displayOfflineSinceTs < import_display_diagnosis.DISPLAY_DIAGNOSIS_DELAY_MS || now - diag.lastQueryTs < import_display_diagnosis.DISPLAY_DIAGNOSIS_RETRY_MS) {
+      return;
+    }
+    diag.lastQueryTs = now;
+    diag.answers = {};
+    this.log.debug("Display does not answer - query Module and Gpio from tasmota");
+    this.sendToTasmota(`${this.topic}/cmnd/Module`, "");
+    this.sendToTasmota(`${this.topic}/cmnd/Gpio`, "255");
+    diag.timeout = this.adapter.setTimeout(() => {
+      diag.timeout = void 0;
+      this.finishDisplayDiagnosis();
+    }, import_display_diagnosis.DISPLAY_DIAGNOSIS_ANSWER_TIMEOUT_MS);
+  }
+  /**
+   * Collects the answers to `Module` and `Gpio 255` while a diagnosis is running.
+   *
+   * @param msg parsed `stat/RESULT` payload
+   * @returns true if the payload was an answer of the diagnosis
+   */
+  handleDisplayDiagnosisAnswer(msg) {
+    const answers = this.displayDiagnosis.answers;
+    if (!answers) {
+      return false;
+    }
+    const module2 = (0, import_display_diagnosis.parseModuleAnswer)(msg);
+    const gpio4 = (0, import_display_diagnosis.parseGpio4Answer)(msg);
+    if (!module2 && !gpio4) {
+      return typeof msg === "object" && msg !== null && Object.keys(msg).some((k) => /^GPIO\d+$/.test(k));
+    }
+    if (module2) {
+      answers.module = module2;
+    }
+    if (gpio4) {
+      answers.gpio4 = gpio4;
+    }
+    if (answers.module && answers.gpio4) {
+      this.finishDisplayDiagnosis();
+    }
+    return true;
+  }
+  /** Evaluates the collected answers and logs the result once */
+  finishDisplayDiagnosis() {
+    const diag = this.displayDiagnosis;
+    if (diag.timeout) {
+      this.adapter.clearTimeout(diag.timeout);
+      diag.timeout = void 0;
+    }
+    const answers = diag.answers;
+    diag.answers = void 0;
+    if (!answers || this.isOnline || this.unload || this.adapter.unload) {
+      return;
+    }
+    const result = (0, import_display_diagnosis.evaluateDisplayDiagnosis)(answers);
+    const seconds = Math.round((Date.now() - this.displayOfflineSinceTs) / 1e3);
+    const text = (0, import_display_diagnosis.buildDisplayDiagnosisMessage)(result, this.topic, seconds);
+    if (!text) {
+      this.log.debug("No answer from tasmota to Module/Gpio - tasmota seems to be offline");
+      return;
+    }
+    diag.reported = true;
+    if (result.result === "misconfigured") {
+      this.log.error(text);
+    } else {
+      this.log.warn(text);
+    }
+  }
+  /** Forgets a running or reported diagnosis - the display answered */
+  resetDisplayDiagnosis() {
+    const diag = this.displayDiagnosis;
+    if (diag.timeout) {
+      this.adapter.clearTimeout(diag.timeout);
+    }
+    this.displayDiagnosis = { reported: false, lastQueryTs: 0, timeout: void 0, answers: void 0 };
+    this.displayOfflineSinceTs = 0;
+  }
   requestStatusTasmota() {
     this.sendToTasmota(`${this.topic}/cmnd/STATUS0`, "");
   }
@@ -1592,6 +1694,7 @@ class Panel extends import_library.BaseClass {
     if (this.blockStartup) {
       this.adapter.clearTimeout(this.blockStartup);
     }
+    this.resetDisplayDiagnosis();
     this.log.info("Goint offline because delete panel!");
     this.isOnline = false;
     await this.setStatus("offline");
@@ -1705,6 +1808,7 @@ class Panel extends import_library.BaseClass {
         this.blockStartup = this.adapter.setTimeout(() => {
           this.blockStartup = null;
         }, 1e4);
+        this.resetDisplayDiagnosis();
         this.isOnline = true;
         this.info.nspanel.displayVersion = event.opt;
         if (this.isVirtual) {
