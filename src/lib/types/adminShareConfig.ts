@@ -457,6 +457,183 @@ export function rawItemLabel(config: unknown): string {
     return isRawItemObject(config.native) ? rawItemLabel(config.native) : '';
 }
 
+/**
+ * condition of a screensaver item: the state that hides it while false (`enabled`) and / or the
+ * expression over `val` that hides it while false (`visibleCondition`) - as text for the editor
+ */
+export type ScreensaverItemCondition = {
+    enabled?: string;
+    visibleCondition?: string;
+};
+
+const RAW_ENABLED_KEYS: readonly string[] = ['enabled', 'ScreensaverEntityEnabled'];
+const RAW_VISIBLE_KEYS: readonly string[] = ['visibleCondition', 'ScreensaverEntityVisibleCondition'];
+/** a nested raw configuration is searched to this depth only (guards against cycles) */
+const RAW_CONDITION_DEPTH = 10;
+/** longest text of a condition (expression, JSON of an unknown object) */
+const CONDITION_TEXT_MAX = 80;
+
+/**
+ * Shortens a text to {@link CONDITION_TEXT_MAX} characters, the cut marked with an ellipsis.
+ *
+ * @param text text
+ */
+function shortConditionText(text: string): string {
+    return text.length > CONDITION_TEXT_MAX ? `${text.slice(0, CONDITION_TEXT_MAX - 1)}…` : text;
+}
+
+/**
+ * Expression text of a condition: trimmed, whitespace runs joined to one space, a single
+ * `return X;` reduced to `X`, at most {@link CONDITION_TEXT_MAX} characters.
+ *
+ * @param text expression or `read` function body of a runtime item
+ */
+export function conditionExpressionText(text: string): string {
+    const flat = text.trim().replace(/\s+/g, ' ');
+    const single = /^return\s+([^;]+?)\s*;?$/.exec(flat);
+    return shortConditionText(single ? single[1] : flat);
+}
+
+/** texts found in a value of an enabled key: the states / constants and the expressions of runtime items */
+type ConditionParts = { enabled: string[]; visible: string[] };
+
+/**
+ * Evaluates a value of an enabled key in all forms of the runtime: a state id (script template /
+ * element), an array of them, a DataItem object of a runtime item (`{type, dp, read}` - the visible
+ * condition is its `read`; `{type: 'const', constVal}` hides only while constVal is false) or an
+ * array of those. Other objects count as short JSON; `true` and empty values hide nothing.
+ *
+ * @param value value of the key
+ * @param depth nesting depth (guards against cycles)
+ */
+function conditionParts(value: unknown, depth = 0): ConditionParts {
+    const out: ConditionParts = { enabled: [], visible: [] };
+    if (depth > RAW_CONDITION_DEPTH) {
+        return out;
+    }
+    if (typeof value === 'string') {
+        if (value.trim()) {
+            out.enabled.push(value.trim());
+        }
+    } else if (typeof value === 'number' || value === false) {
+        out.enabled.push(String(value));
+    } else if (Array.isArray(value)) {
+        for (const v of value) {
+            const part = conditionParts(v, depth + 1);
+            out.enabled.push(...part.enabled);
+            out.visible.push(...part.visible);
+        }
+    } else if (isRawItemObject(value)) {
+        if (value.type === 'const') {
+            if (value.constVal === false) {
+                out.enabled.push('false');
+            }
+            return out;
+        }
+        const dp = typeof value.dp === 'string' && value.dp.trim() ? value.dp.trim() : '';
+        const id = typeof value.id === 'string' && value.id.trim() ? value.id.trim() : '';
+        if (dp || id) {
+            out.enabled.push(dp || id);
+            if (typeof value.read === 'string' && value.read.trim()) {
+                out.visible.push(conditionExpressionText(value.read));
+            }
+        } else if (Object.keys(value).length) {
+            out.enabled.push(shortConditionText(JSON.stringify(value)));
+        }
+    }
+    return out;
+}
+
+/**
+ * Text of the states / constants of a condition value (see conditionParts), joined with ', ';
+ * '' for empty values and `true` (that hides nothing).
+ *
+ * @param value value of an enabled / visibleCondition key
+ */
+export function conditionValueText(value: unknown): string {
+    return conditionParts(value).enabled.join(', ');
+}
+
+/**
+ * Searches a raw configuration recursively (nested objects and arrays, e.g. `native`, `data`) for a
+ * non-empty value under `enabled` / `ScreensaverEntityEnabled` and `visibleCondition` /
+ * `ScreensaverEntityVisibleCondition` - the first one found of each counts. The `read` of a runtime
+ * DataItem under an enabled key counts as visible condition.
+ *
+ * @param config the raw configuration
+ * @returns the condition, undefined when there is none
+ */
+export function rawItemCondition(config: unknown): ScreensaverItemCondition | undefined {
+    const out: ScreensaverItemCondition = {};
+    const visit = (value: unknown, depth: number): void => {
+        if (depth > RAW_CONDITION_DEPTH || (out.enabled !== undefined && out.visibleCondition !== undefined)) {
+            return;
+        }
+        if (Array.isArray(value)) {
+            for (const v of value) {
+                visit(v, depth + 1);
+            }
+            return;
+        }
+        if (!isRawItemObject(value)) {
+            return;
+        }
+        for (const [key, v] of Object.entries(value)) {
+            if (out.enabled === undefined && RAW_ENABLED_KEYS.includes(key)) {
+                const part = conditionParts(v);
+                if (part.visible.length && out.visibleCondition === undefined) {
+                    out.visibleCondition = shortConditionText(part.visible.join(', '));
+                }
+                if (part.enabled.length) {
+                    out.enabled = part.enabled.join(', ');
+                    continue;
+                }
+            }
+            if (out.visibleCondition === undefined && RAW_VISIBLE_KEYS.includes(key)) {
+                const text =
+                    typeof v === 'string' ? (v.trim() ? conditionExpressionText(v) : '') : conditionValueText(v);
+                if (text) {
+                    out.visibleCondition = text;
+                    continue;
+                }
+            }
+            if (typeof v === 'object' && v !== null) {
+                visit(v, depth + 1);
+            }
+        }
+    };
+    visit(config, 0);
+    return out.enabled !== undefined || out.visibleCondition !== undefined ? out : undefined;
+}
+
+/**
+ * Condition of a screensaver item (enabled state and / or visible condition): of the raw data for a raw
+ * item, else of the fields `enabled` and `visibleCondition`.
+ *
+ * @param item the item
+ * @returns the condition, undefined when the item is always shown
+ */
+export function screensaverItemCondition(
+    item: ScreensaverItemConfig | undefined,
+): ScreensaverItemCondition | undefined {
+    if (!item) {
+        return undefined;
+    }
+    if (item.raw) {
+        return rawItemCondition(item.raw.config);
+    }
+    const out: ScreensaverItemCondition = {};
+    const enabled = conditionValueText(item.enabled);
+    const visible = conditionValueText(item.visibleCondition);
+    if (enabled) {
+        out.enabled = enabled;
+    }
+    if (visible) {
+        out.visibleCondition = visible;
+    }
+    return enabled || visible ? out : undefined;
+}
+
 /** raw configuration of a screensaver item, see {@link RawItemFormat} */
 export type ScreensaverItemRaw = {
     format: RawItemFormat;

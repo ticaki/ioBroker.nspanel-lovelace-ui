@@ -39,6 +39,8 @@ __export(adminShareConfig_exports, {
   SENDTO_GET_SCREENSAVER_TEMPLATES_COMMAND: () => SENDTO_GET_SCREENSAVER_TEMPLATES_COMMAND,
   SENDTO_GET_WEATHER_ENTITY_COMMAND: () => SENDTO_GET_WEATHER_ENTITY_COMMAND,
   chartDefaults: () => chartDefaults,
+  conditionExpressionText: () => conditionExpressionText,
+  conditionValueText: () => conditionValueText,
   dropScriptNavigation: () => dropScriptNavigation,
   emptyChannelValueConfig: () => emptyChannelValueConfig,
   emptyChartEntry: () => emptyChartEntry,
@@ -82,6 +84,7 @@ __export(adminShareConfig_exports, {
   panelStatusColors: () => panelStatusColors,
   panelStatusStates: () => panelStatusStates,
   panelStatusTranslationKeys: () => panelStatusTranslationKeys,
+  rawItemCondition: () => rawItemCondition,
   rawItemFormats: () => rawItemFormats,
   rawItemLabel: () => rawItemLabel,
   requiredScriptDataPoints: () => requiredScriptDataPoints,
@@ -91,6 +94,7 @@ __export(adminShareConfig_exports, {
   screensaverCardOfMode: () => screensaverCardOfMode,
   screensaverChannelIdOf: () => screensaverChannelIdOf,
   screensaverDateFormats: () => screensaverDateFormats,
+  screensaverItemCondition: () => screensaverItemCondition,
   screensaverItemFields: () => screensaverItemFields,
   screensaverItemSource: () => screensaverItemSource,
   screensaverMaxEntries: () => screensaverMaxEntries,
@@ -210,6 +214,117 @@ function rawItemLabel(config) {
     }
   }
   return isRawItemObject(config.native) ? rawItemLabel(config.native) : "";
+}
+const RAW_ENABLED_KEYS = ["enabled", "ScreensaverEntityEnabled"];
+const RAW_VISIBLE_KEYS = ["visibleCondition", "ScreensaverEntityVisibleCondition"];
+const RAW_CONDITION_DEPTH = 10;
+const CONDITION_TEXT_MAX = 80;
+function shortConditionText(text) {
+  return text.length > CONDITION_TEXT_MAX ? `${text.slice(0, CONDITION_TEXT_MAX - 1)}\u2026` : text;
+}
+function conditionExpressionText(text) {
+  const flat = text.trim().replace(/\s+/g, " ");
+  const single = /^return\s+([^;]+?)\s*;?$/.exec(flat);
+  return shortConditionText(single ? single[1] : flat);
+}
+function conditionParts(value, depth = 0) {
+  const out = { enabled: [], visible: [] };
+  if (depth > RAW_CONDITION_DEPTH) {
+    return out;
+  }
+  if (typeof value === "string") {
+    if (value.trim()) {
+      out.enabled.push(value.trim());
+    }
+  } else if (typeof value === "number" || value === false) {
+    out.enabled.push(String(value));
+  } else if (Array.isArray(value)) {
+    for (const v of value) {
+      const part = conditionParts(v, depth + 1);
+      out.enabled.push(...part.enabled);
+      out.visible.push(...part.visible);
+    }
+  } else if (isRawItemObject(value)) {
+    if (value.type === "const") {
+      if (value.constVal === false) {
+        out.enabled.push("false");
+      }
+      return out;
+    }
+    const dp = typeof value.dp === "string" && value.dp.trim() ? value.dp.trim() : "";
+    const id = typeof value.id === "string" && value.id.trim() ? value.id.trim() : "";
+    if (dp || id) {
+      out.enabled.push(dp || id);
+      if (typeof value.read === "string" && value.read.trim()) {
+        out.visible.push(conditionExpressionText(value.read));
+      }
+    } else if (Object.keys(value).length) {
+      out.enabled.push(shortConditionText(JSON.stringify(value)));
+    }
+  }
+  return out;
+}
+function conditionValueText(value) {
+  return conditionParts(value).enabled.join(", ");
+}
+function rawItemCondition(config) {
+  const out = {};
+  const visit = (value, depth) => {
+    if (depth > RAW_CONDITION_DEPTH || out.enabled !== void 0 && out.visibleCondition !== void 0) {
+      return;
+    }
+    if (Array.isArray(value)) {
+      for (const v of value) {
+        visit(v, depth + 1);
+      }
+      return;
+    }
+    if (!isRawItemObject(value)) {
+      return;
+    }
+    for (const [key, v] of Object.entries(value)) {
+      if (out.enabled === void 0 && RAW_ENABLED_KEYS.includes(key)) {
+        const part = conditionParts(v);
+        if (part.visible.length && out.visibleCondition === void 0) {
+          out.visibleCondition = shortConditionText(part.visible.join(", "));
+        }
+        if (part.enabled.length) {
+          out.enabled = part.enabled.join(", ");
+          continue;
+        }
+      }
+      if (out.visibleCondition === void 0 && RAW_VISIBLE_KEYS.includes(key)) {
+        const text = typeof v === "string" ? v.trim() ? conditionExpressionText(v) : "" : conditionValueText(v);
+        if (text) {
+          out.visibleCondition = text;
+          continue;
+        }
+      }
+      if (typeof v === "object" && v !== null) {
+        visit(v, depth + 1);
+      }
+    }
+  };
+  visit(config, 0);
+  return out.enabled !== void 0 || out.visibleCondition !== void 0 ? out : void 0;
+}
+function screensaverItemCondition(item) {
+  if (!item) {
+    return void 0;
+  }
+  if (item.raw) {
+    return rawItemCondition(item.raw.config);
+  }
+  const out = {};
+  const enabled = conditionValueText(item.enabled);
+  const visible = conditionValueText(item.visibleCondition);
+  if (enabled) {
+    out.enabled = enabled;
+  }
+  if (visible) {
+    out.visibleCondition = visible;
+  }
+  return enabled || visible ? out : void 0;
 }
 function screensaverChannelIdOf(stateId) {
   const parts = stateId.split(".");
@@ -1585,6 +1700,8 @@ const CONVERT_GLOBAL_DEFAULT_DECISION = "keepAdmin";
   SENDTO_GET_SCREENSAVER_TEMPLATES_COMMAND,
   SENDTO_GET_WEATHER_ENTITY_COMMAND,
   chartDefaults,
+  conditionExpressionText,
+  conditionValueText,
   dropScriptNavigation,
   emptyChannelValueConfig,
   emptyChartEntry,
@@ -1628,6 +1745,7 @@ const CONVERT_GLOBAL_DEFAULT_DECISION = "keepAdmin";
   panelStatusColors,
   panelStatusStates,
   panelStatusTranslationKeys,
+  rawItemCondition,
   rawItemFormats,
   rawItemLabel,
   requiredScriptDataPoints,
@@ -1637,6 +1755,7 @@ const CONVERT_GLOBAL_DEFAULT_DECISION = "keepAdmin";
   screensaverCardOfMode,
   screensaverChannelIdOf,
   screensaverDateFormats,
+  screensaverItemCondition,
   screensaverItemFields,
   screensaverItemSource,
   screensaverMaxEntries,

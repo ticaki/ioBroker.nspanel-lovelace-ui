@@ -157,6 +157,9 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
     Placeholder for the next version (at the beginning of the line):
     ### **WORK IN PROGRESS**
 -->
+### **WORK IN PROGRESS**
+- (ticaki) screensaver editor: areas with more items than places page with arrows instead of hiding the extra items, they are no longer reported as "no place in this version"; items with a condition (enabled / visible condition, also in raw data) are marked
+
 ### 2.0.0 (2026-10-31)
 - (ticaki) maintain: new button "Take script over into admin" on every panel tile - converts the pages, the screensaver and the hardware buttons of a panel script into the admin configuration (preview with all problems, backup of the script, pages of the global script per panel, items the editor cannot express are taken over as raw data)
 - (ticaki) a configuration script is no longer required; new panel option "Panel uses no script" - the panel is configured in the admin only and a script sent for it is rejected
