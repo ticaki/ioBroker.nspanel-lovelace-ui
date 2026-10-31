@@ -42,10 +42,11 @@ function findPanelEntry(panels, topic) {
   return void 0;
 }
 function isNoScriptPanel(panels, topic) {
-  return findPanelEntry(panels, topic)?.noScript === true;
+  var _a;
+  return ((_a = findPanelEntry(panels, topic)) == null ? void 0 : _a.noScript) === true;
 }
 function noScriptRejectionMessage(panel, topic, scriptId) {
-  const name = panel?.name ? `"${panel.name}" (topic ${topic})` : `with topic ${topic}`;
+  const name = (panel == null ? void 0 : panel.name) ? `"${panel.name}" (topic ${topic})` : `with topic ${topic}`;
   const script = scriptId ? `the panel script ${scriptId}` : "this panel script";
   return `\u274C Panel ${name} is set to "Panel uses no script" in the panel settings of the adapter - the configuration of ${script} was rejected and not stored. Disable or delete ${script} in the JavaScript adapter, otherwise it sends its configuration again on every start. To use a panel script again, remove the check mark in the panel settings. The global script is not affected.`;
 }
@@ -67,7 +68,7 @@ function checkScriptConfigTopics(panels, message) {
       continue;
     }
     const panel = findPanelEntry(panels, topic);
-    if (panel?.noScript === true) {
+    if ((panel == null ? void 0 : panel.noScript) === true) {
       result.rejected.push(noScriptRejectionMessage(panel, topic, scriptId));
     } else {
       result.accepted.push(topic);
@@ -83,3 +84,4 @@ function checkScriptConfigTopics(panels, message) {
   noScriptRejectionMessage,
   normalizePanelTopic
 });
+//# sourceMappingURL=no-script.js.map
