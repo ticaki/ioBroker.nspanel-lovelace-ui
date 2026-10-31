@@ -5,8 +5,17 @@ export const LONG_PRESS_MS = 600;
 
 export interface PressableProps {
     onPress?: () => void;
-    /** when given, holding longer than {@link LONG_PRESS_MS} calls this instead of `onPress` */
+    /**
+     * when given, holding longer than {@link LONG_PRESS_MS} (or `longPressMs`) calls this instead of `onPress`.
+     * Only touch areas with a `tmLP` timer in the HMI pass it: the grid tiles (cardGrid / cardGrid2 / cardGrid3)
+     * and the entities of cardMedia / cardThermo2; without it a held touch is a normal press.
+     */
     onLongPress?: () => void;
+    /**
+     * hold time in ms for `onLongPress`, default {@link LONG_PRESS_MS}. Pages pass the `tim` of their
+     * `tmLP` timer in the HMI (cardMedia 500 ms, cardThermo2 300 ms).
+     */
+    longPressMs?: number;
     disabled?: boolean;
     style?: React.CSSProperties;
     className?: string;
@@ -57,7 +66,7 @@ export class Pressable extends React.Component<PressableProps, PressableState> {
                 this.longFired = true;
                 this.setState({ pressed: false });
                 this.props.onLongPress?.();
-            }, LONG_PRESS_MS);
+            }, this.props.longPressMs ?? LONG_PRESS_MS);
         }
     };
 

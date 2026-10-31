@@ -114,7 +114,7 @@
     "webPanelEdit": "编辑网页面板",
     "webPanelId": "网页面板的 ID",
     "webPanelKind": "Web",
-    "webPanelNoTasmotaMaintain": "网页面板没有 Tasmota 固件和 TFT 显示屏，这里没有可刷写的内容。只有脚本适用。",
+    "webPanelNoTasmotaMaintain": "网页面板没有 Tasmota 固件和 TFT 显示屏，这里没有可刷写的内容。",
     "webPanelTopic": "Topic（唯一，作为 URL 路径）",
     "webPanelTopicDuplicate": "此 topic 已被其他面板使用",
     "webPanelTopicHelp": "字母、数字、_ 和 -，/ 作为分隔符",
@@ -122,5 +122,11 @@
     "webPanelTopicRequired": "Topic 不能为空",
     "webPanelTopicReserved": "此路径由 Web 服务器自身使用",
     "chart_script_navigation_hint": "从旧表格“Page Chart”迁移：此页面的导航仍来自脚本（页面“%s”）。此方式已弃用 - 请在此处分配导航并从脚本中删除该页面。",
-    "power_script_navigation_hint": "从旧表格“Page Power”迁移：此页面的导航仍来自脚本（页面“%s”）。此方式已弃用 - 请在此处分配导航并从脚本中删除该页面。"
+    "power_script_navigation_hint": "从旧表格“Page Power”迁移：此页面的导航仍来自脚本（页面“%s”）。此方式已弃用 - 请在此处分配导航并从脚本中删除该页面。",
+    "panelNoScript": "面板不使用脚本",
+    "panelNoScriptTooltip": "该面板仅在管理界面（及全局脚本）中配置。为其发送的面板脚本将被拒绝，不提供脚本更新。",
+    "panelNoScriptInfo": "脚本已禁用",
+    "panelNoScriptVersion": "脚本已禁用",
+    "convertScript_noScriptPanel": "该面板设置为“面板不使用脚本”。请在面板设置中取消勾选，转换脚本，然后重新勾选。",
+    "panelButtonDialog_modeNoneHintNoScript": "该面板不使用脚本——如未在此配置操作，该按键没有功能。"
 }

@@ -14,7 +14,6 @@ export interface EntityListProps {
     /** top of the first row */
     top: number;
     compact?: boolean;
-    send: (event: string) => void;
     press: (id: string, action: string, value?: string | number) => void;
     openPopup: (popup: string, id: string, title?: string, icon?: string, iconColor?: number) => void;
 }
@@ -22,7 +21,7 @@ export interface EntityListProps {
 /** Title bar plus the entity rows of cardEntities / cardSchedule */
 export class EntityList extends React.Component<EntityListProps> {
     render(): React.JSX.Element {
-        const { model, pageType, global, top, send, press } = this.props;
+        const { model, pageType, global, top, press } = this.props;
         const count = menuSlotCount(pageType, global.model);
         const { width, height } = stageSize(global.model);
         // portrait: rows may grow a little to fill the taller stage, the narrow width uses the compact widgets
@@ -58,7 +57,6 @@ export class EntityList extends React.Component<EntityListProps> {
                             entity={entity}
                             height={rowHeight}
                             compact={compact}
-                            send={send}
                             press={press}
                             openPopup={this.props.openPopup}
                         />

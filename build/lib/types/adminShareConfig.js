@@ -27,7 +27,10 @@ __export(adminShareConfig_exports, {
   ADMIN_BUTTON_STATE_MODES: () => ADMIN_BUTTON_STATE_MODES,
   ALL_PANELS_SPECIAL_ID: () => ALL_PANELS_SPECIAL_ID,
   CHANNEL_ROLES_LIST: () => CHANNEL_ROLES_LIST,
+  CONVERT_GLOBAL_DECISIONS: () => CONVERT_GLOBAL_DECISIONS,
+  CONVERT_GLOBAL_DEFAULT_DECISION: () => CONVERT_GLOBAL_DEFAULT_DECISION,
   SAVE_PANEL_NAVIGATION_COMMAND: () => SAVE_PANEL_NAVIGATION_COMMAND,
+  SENDTO_CONVERT_SCRIPT_COMMAND: () => SENDTO_CONVERT_SCRIPT_COMMAND,
   SENDTO_GET_MEDIA_PLAYER_COMMAND: () => SENDTO_GET_MEDIA_PLAYER_COMMAND,
   SENDTO_GET_PAGES_All_COMMAND: () => SENDTO_GET_PAGES_All_COMMAND,
   SENDTO_GET_PAGES_COMMAND: () => SENDTO_GET_PAGES_COMMAND,
@@ -44,15 +47,21 @@ __export(adminShareConfig_exports, {
   emptyScreensaverEntry: () => emptyScreensaverEntry,
   emptyThermo2Circuit: () => emptyThermo2Circuit,
   emptyThermo2Entry: () => emptyThermo2Entry,
+  emptyThermoEntry: () => emptyThermoEntry,
   findChartEntryForScript: () => findChartEntryForScript,
   findPowerEntryForScript: () => findPowerEntryForScript,
   formatEntryNumber: () => formatEntryNumber,
+  isIconColorScaleElement: () => isIconColorScaleElement,
+  isLongPressCard: () => isLongPressCard,
   isMainPageEntry: () => isMainPageEntry,
   isPageLinkEntry: () => isPageLinkEntry,
+  isRawItemFormat: () => isRawItemFormat,
+  isRawItemObject: () => isRawItemObject,
   isScriptNavigatedChart: () => isScriptNavigatedChart,
   isScriptNavigatedPower: () => isScriptNavigatedPower,
   isScrollCard: () => isScrollCard,
   legacyPowerStates: () => legacyPowerStates,
+  longPressCards: () => longPressCards,
   mainPageName: () => mainPageName,
   mediaBackendFeatures: () => mediaBackendFeatures,
   mediaBackendOf: () => mediaBackendOf,
@@ -67,11 +76,14 @@ __export(adminShareConfig_exports, {
   normalizeChannelId: () => normalizeChannelId,
   normalizeScrollFields: () => normalizeScrollFields,
   normalizeTrashItems: () => normalizeTrashItems,
+  pageItemRawFormat: () => pageItemRawFormat,
   pageLinkCard: () => pageLinkCard,
   pageLinkProblem: () => pageLinkProblem,
   panelStatusColors: () => panelStatusColors,
   panelStatusStates: () => panelStatusStates,
   panelStatusTranslationKeys: () => panelStatusTranslationKeys,
+  rawItemFormats: () => rawItemFormats,
+  rawItemLabel: () => rawItemLabel,
   requiredScriptDataPoints: () => requiredScriptDataPoints,
   resolvePageLinks: () => resolvePageLinks,
   reversePanelStatusStates: () => reversePanelStatusStates,
@@ -102,9 +114,11 @@ __export(adminShareConfig_exports, {
   thermo2Defaults: () => thermo2Defaults,
   thermo2MaxCircuits: () => thermo2MaxCircuits,
   thermo2SortOrders: () => thermo2SortOrders,
+  thermoChannelRoles: () => thermoChannelRoles,
   trashItemCount: () => trashItemCount
 });
 module.exports = __toCommonJS(adminShareConfig_exports);
+var import_Color = require("../const/Color");
 const ALL_PANELS_SPECIAL_ID = "///ALL_PANELS_SPECIAL";
 const SENDTO_GET_PANEL_NAVIGATION_COMMAND = "getPanelNavigation";
 const SAVE_PANEL_NAVIGATION_COMMAND = "savePanelNavigation";
@@ -174,6 +188,28 @@ function screensaverCardOfMode(mode) {
     default:
       return "screensaver";
   }
+}
+const rawItemFormats = ["native", "script"];
+function isRawItemFormat(value) {
+  return value === "script" || value === "native";
+}
+function isRawItemObject(value) {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+function pageItemRawFormat(item) {
+  return item.nativeFormat === "native" ? "native" : "script";
+}
+function rawItemLabel(config) {
+  if (!isRawItemObject(config)) {
+    return "";
+  }
+  for (const key of ["id", "template", "dpInit", "ScreensaverEntity"]) {
+    const value = config[key];
+    if (typeof value === "string" && value.trim()) {
+      return value.trim();
+    }
+  }
+  return isRawItemObject(config.native) ? rawItemLabel(config.native) : "";
 }
 function screensaverChannelIdOf(stateId) {
   const parts = stateId.split(".");
@@ -340,6 +376,10 @@ const scrollHalfCards = ["cardGrid", "cardGrid2", "cardGrid3", "cardThermo2"];
 const scrollAutoTimingDefault = 15;
 function isScrollCard(card) {
   return !!card && scrollCards.includes(card);
+}
+const longPressCards = ["cardGrid", "cardGrid2", "cardGrid3"];
+function isLongPressCard(card) {
+  return !!card && longPressCards.includes(card);
 }
 function normalizeScrollFields(entry, card) {
   const presentation = entry.scrollPresentation === "arrow" || entry.scrollPresentation === "auto" ? entry.scrollPresentation : "classic";
@@ -611,6 +651,17 @@ function emptyThermo2Entry(uniqueName) {
     thermoItems: [],
     pageItems: [],
     sortOrder: "V",
+    hidden: false,
+    alwaysOn: "none"
+  };
+}
+const thermoChannelRoles = ["thermostat", "airCondition"];
+function emptyThermoEntry(uniqueName) {
+  return {
+    card: "cardThermo",
+    uniqueName,
+    headline: "",
+    channelId: "",
     hidden: false,
     alwaysOn: "none"
   };
@@ -1457,6 +1508,31 @@ const requiredScriptDataPoints = {
   }
 };
 const CHANNEL_ROLES_LIST = Object.keys(requiredScriptDataPoints);
+function isIconColorScaleElement(x) {
+  if (typeof x !== "object" || x === null) {
+    return false;
+  }
+  const v = x;
+  if (!Number.isFinite(v.val_min)) {
+    return false;
+  }
+  if (!Number.isFinite(v.val_max)) {
+    return false;
+  }
+  if (v.val_best != null && !Number.isFinite(v.val_best)) {
+    return false;
+  }
+  if (v.log10 != null && v.log10 !== "max" && v.log10 !== "min") {
+    return false;
+  }
+  if (v.mode != null && v.mode !== "mixed" && v.mode !== "hue" && v.mode !== "cie" && v.mode !== "triGrad" && v.mode !== "triGradAnchor" && v.mode !== "quadriGrad" && v.mode !== "quadriGradAnchor") {
+    return false;
+  }
+  if (v.color_best != null && !import_Color.Color.isRGB(v.color_best) && !import_Color.Color.isScriptRGB(v.color_best)) {
+    return false;
+  }
+  return true;
+}
 const ADMIN_BUTTON_MODES = [
   "page",
   "switch",
@@ -1483,6 +1559,9 @@ const ADMIN_BUTTON_DELAY_MODES = [
 const ADMIN_BUTTON_DEFAULT_DELAY = 0.25;
 const ADMIN_BUTTON_MIN_DELAY = 1e-3;
 const ADMIN_BUTTON_MAX_DELAY = 2147483;
+const SENDTO_CONVERT_SCRIPT_COMMAND = "convertScriptToAdmin";
+const CONVERT_GLOBAL_DECISIONS = ["keepAdmin", "takeScript", "skip"];
+const CONVERT_GLOBAL_DEFAULT_DECISION = "keepAdmin";
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
   ADAPTER_NAME,
@@ -1494,7 +1573,10 @@ const ADMIN_BUTTON_MAX_DELAY = 2147483;
   ADMIN_BUTTON_STATE_MODES,
   ALL_PANELS_SPECIAL_ID,
   CHANNEL_ROLES_LIST,
+  CONVERT_GLOBAL_DECISIONS,
+  CONVERT_GLOBAL_DEFAULT_DECISION,
   SAVE_PANEL_NAVIGATION_COMMAND,
+  SENDTO_CONVERT_SCRIPT_COMMAND,
   SENDTO_GET_MEDIA_PLAYER_COMMAND,
   SENDTO_GET_PAGES_All_COMMAND,
   SENDTO_GET_PAGES_COMMAND,
@@ -1511,15 +1593,21 @@ const ADMIN_BUTTON_MAX_DELAY = 2147483;
   emptyScreensaverEntry,
   emptyThermo2Circuit,
   emptyThermo2Entry,
+  emptyThermoEntry,
   findChartEntryForScript,
   findPowerEntryForScript,
   formatEntryNumber,
+  isIconColorScaleElement,
+  isLongPressCard,
   isMainPageEntry,
   isPageLinkEntry,
+  isRawItemFormat,
+  isRawItemObject,
   isScriptNavigatedChart,
   isScriptNavigatedPower,
   isScrollCard,
   legacyPowerStates,
+  longPressCards,
   mainPageName,
   mediaBackendFeatures,
   mediaBackendOf,
@@ -1534,11 +1622,14 @@ const ADMIN_BUTTON_MAX_DELAY = 2147483;
   normalizeChannelId,
   normalizeScrollFields,
   normalizeTrashItems,
+  pageItemRawFormat,
   pageLinkCard,
   pageLinkProblem,
   panelStatusColors,
   panelStatusStates,
   panelStatusTranslationKeys,
+  rawItemFormats,
+  rawItemLabel,
   requiredScriptDataPoints,
   resolvePageLinks,
   reversePanelStatusStates,
@@ -1569,6 +1660,7 @@ const ADMIN_BUTTON_MAX_DELAY = 2147483;
   thermo2Defaults,
   thermo2MaxCircuits,
   thermo2SortOrders,
+  thermoChannelRoles,
   trashItemCount
 });
 //# sourceMappingURL=adminShareConfig.js.map

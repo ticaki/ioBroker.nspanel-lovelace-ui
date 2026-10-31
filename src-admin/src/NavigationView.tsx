@@ -15,6 +15,7 @@ import {
     SAVE_PANEL_NAVIGATION_COMMAND,
     isMainPageEntry,
     mainPageName,
+    servicePageName,
 } from '../../src/lib/types/adminShareConfig';
 import {
     adapterDecidedLink,
@@ -94,6 +95,76 @@ function storeSelectedPanel(panelName: string): void {
     }
 }
 
+/** Prefix of the key under which the collapsed pages of a panel are remembered (view comfort). */
+const COLLAPSED_STORAGE_PREFIX = `${ADAPTER_NAME}.navigationFlow.collapsed.`;
+
+/**
+ * Reads the collapsed pages of a panel from `window.localStorage`.
+ *
+ * @param panelName Name of the panel.
+ * @returns The collapsed pages, `undefined` if nothing is stored for the panel (or storage fails).
+ */
+function readStoredCollapsed(panelName: string): string[] | undefined {
+    try {
+        const raw = window.localStorage.getItem(COLLAPSED_STORAGE_PREFIX + panelName);
+        if (raw === null) {
+            return undefined;
+        }
+        const parsed: unknown = JSON.parse(raw);
+        return Array.isArray(parsed) ? parsed.filter((id): id is string => typeof id === 'string') : undefined;
+    } catch {
+        return undefined;
+    }
+}
+
+/**
+ * Stores the collapsed pages of a panel in `window.localStorage` - a convenience only, errors are
+ * swallowed.
+ *
+ * @param panelName Name of the panel.
+ * @param collapsed The collapsed pages.
+ */
+function storeCollapsed(panelName: string, collapsed: ReadonlySet<string>): void {
+    try {
+        window.localStorage.setItem(COLLAPSED_STORAGE_PREFIX + panelName, JSON.stringify([...collapsed]));
+    } catch {
+        // Private mode or blocked storage - the state then just isn't remembered
+    }
+}
+
+/** Prefix of the key under which the home link switch of a panel is remembered (view comfort). */
+const HOME_EDGES_STORAGE_PREFIX = `${ADAPTER_NAME}.navigationFlow.homeEdges.`;
+
+/**
+ * Reads whether the home links to `main` are shown for a panel. Without a stored choice (or when
+ * the storage fails) they are shown.
+ *
+ * @param panelName Name of the panel.
+ * @returns True when the home links are shown.
+ */
+function readStoredShowHomeEdges(panelName: string): boolean {
+    try {
+        return window.localStorage.getItem(HOME_EDGES_STORAGE_PREFIX + panelName) !== 'false';
+    } catch {
+        return true;
+    }
+}
+
+/**
+ * Remembers the home link switch of a panel in `window.localStorage` - a convenience only, errors
+ * are swallowed.
+ *
+ * @param panelName Name of the panel.
+ * @param show Whether the home links are shown.
+ */
+function storeShowHomeEdges(panelName: string, show: boolean): void {
+    try {
+        window.localStorage.setItem(HOME_EDGES_STORAGE_PREFIX + panelName, String(show));
+    } catch {
+        // Private mode or blocked storage - the choice then just isn't remembered
+    }
+}
+
 /** Icons nach Namen - die Liste steckt ohnehin im Bundle, die Zuordnung wird einmalig aufgebaut */
 let iconsByName: Map<string, string> | undefined;
 
@@ -170,12 +241,25 @@ import {
     FormControlLabel,
     Alert,
     Snackbar,
+    ButtonGroup,
 } from '@mui/material';
 import NodePageInfoPanel from './components/NodePageInfoPanel';
 import { openPageConfig } from './pageConfigLink';
 import ConfirmDialog from './components/ConfirmDialog';
 import { alpha, useTheme } from '@mui/material/styles';
-import { hierarchy, tree } from 'd3-hierarchy';
+import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
+import {
+    buildLayoutTree,
+    computeAutoLayout,
+    defaultCollapsed,
+    estimateNodeSize,
+    hiddenByCollapse,
+    placeNewNodes,
+    subtreeOf,
+    type LayoutTree,
+    type NodeSize,
+    type Positions,
+} from './navigationAutoLayout';
 import React, { useEffect } from 'react';
 import { ConfigGeneric, type ConfigGenericProps, type ConfigGenericState } from '@iobroker/json-config';
 import { I18n } from '@iobroker/gui-components';
@@ -235,6 +319,8 @@ type CustomEdgeType = Edge<{
     bidirectional?: boolean;
     /** Set while the page at either end is selected - the edge is drawn like on hover */
     highlighted?: boolean;
+    /** The edge leads into a collapsed sub tree and is drawn to the collapsed page instead */
+    redirected?: boolean;
 }>;
 
 function CustomEdge(props: EdgeProps<CustomEdgeType>): React.ReactElement {
@@ -427,17 +513,16 @@ interface MapToFlowOptions {
  */
 function mapNavigationMapToFlow(navigationMap: NavigationMap, options: MapToFlowOptions = {}): FlowData {
     const mergeReciprocal = options.mergeReciprocal !== false;
-    const nodes: FlowNode[] = navigationMap.map((entry: NavigationMapEntry, idx: number) => {
+    const nodes: FlowNode[] = navigationMap.map((entry: NavigationMapEntry) => {
         let position: { x: number; y: number };
         if (entry.position && typeof entry.position.x === 'number' && typeof entry.position.y === 'number') {
             position = entry.position;
             // Debug: Position aus entry übernommen
             // console.debug('[mapNavigationMapToFlow] Node', entry.page, 'Position from entry:', position);
         } else {
-            // Automatische Anordnung, falls keine Position geliefert
-            position = { x: 100 * idx, y: 100 * (idx % 3) };
-            // Debug: Fallback-Position
-            // console.debug('[mapNavigationMapToFlow] Node', entry.page, 'No position, fallback:', position);
+            // Vorläufig - Knoten ohne Position setzt `deriveFlowState` über das Auto-Layout
+            // ("nur neue platzieren"); nur Knoten in eingeklappten Unterbäumen bleiben hier stehen
+            position = { x: 0, y: 0 };
         }
         return {
             id: entry.page,
@@ -594,329 +679,80 @@ function mapNavigationMapToFlow(navigationMap: NavigationMap, options: MapToFlow
     return { nodes, edges };
 }
 
-/** Abstand der Datenpunkt-Knoten rechts neben ihrer Seite */
-const STATE_NODE_OFFSET_X = 320;
-
-/** Vertikaler Abstand mehrerer Datenpunkt-Knoten derselben Seite */
-const STATE_NODE_SPACING_Y = 46;
-
 /**
- * Legt die Datenpunkt-Knoten neben die Seite, die sie nutzt.
+ * Größen der Knoten fürs Auto-Layout: was React Flow gemessen hat, sonst geschätzt (ausgeblendete
+ * Knoten, erstes Laden).
  *
- * Betroffen sind nur Knoten ohne gespeicherte Position, also die, die zum ersten Mal eingeblendet
- * werden. Alle anderen Knoten - besonders die Seiten - bleiben unangetastet.
- *
- * @param nodes Aktuelle Knoten der Ansicht.
- * @returns Die Knoten mit den ergänzten Positionen und ob überhaupt etwas platziert wurde.
+ * @param nodes Knoten der Ansicht.
+ * @returns Größe je Knoten-Id.
  */
-function placeStateNodes(nodes: FlowNode[]): { nodes: FlowNode[]; moved: boolean } {
-    const byId = new Map(nodes.map(n => [n.id, n]));
-    const isStateNode = (id: string): boolean => byId.get(id)?.data.entry?.nodeType === 'stateRef';
-    // Seite, die einen Datenpunkt-Knoten als erste nutzt - an ihr wird er ausgerichtet
-    const owner = new Map<string, string>();
+function nodeSizes(nodes: readonly FlowNode[]): Map<string, NodeSize> {
+    const sizes = new Map<string, NodeSize>();
     for (const node of nodes) {
-        const entry = node.data.entry;
-        if (!entry || entry.nodeType === 'stateRef') {
-            continue;
-        }
-        const links = [
-            ...(entry.usedStates ?? []),
-            ...(entry.targetPages ?? []),
-            ...(entry.targetPagesLongPress ?? []),
-        ];
-        for (const id of links) {
-            if (!owner.has(id) && isStateNode(id)) {
-                owner.set(id, node.id);
-            }
-        }
+        const { width, height } = node.measured ?? {};
+        sizes.set(
+            node.id,
+            width && height
+                ? { width, height }
+                : estimateNodeSize(node.data.entry ?? { page: node.id, label: node.data.label }),
+        );
     }
-
-    const slots = new Map<string, number>();
-    let moved = false;
-    const placed = nodes.map(node => {
-        const entry = node.data.entry;
-        if (!entry || entry.nodeType !== 'stateRef' || entry.position) {
-            return node;
-        }
-        const ownerId = owner.get(node.id);
-        const anchor = ownerId ? byId.get(ownerId)?.position : undefined;
-        if (!ownerId || !anchor) {
-            return node;
-        }
-        const slot = slots.get(ownerId) ?? 0;
-        slots.set(ownerId, slot + 1);
-        const position = { x: anchor.x + STATE_NODE_OFFSET_X, y: anchor.y + slot * STATE_NODE_SPACING_Y };
-        moved = true;
-        // Die Position wandert auch in den Eintrag, sonst würde erneutes Einblenden neu platzieren
-        return { ...node, position, data: { ...node.data, entry: { ...entry, position } } };
-    });
-    return { nodes: placed, moved };
+    return sizes;
 }
 
-// Compute a simple automatic layout: find the 'main' node (page === 'main' or first entry)
-// Build trunk along prev/next links (both directions) and then place branches for other nodes.
-function computeAutoLayout(navigationMap: NavigationMap): Record<string, { x: number; y: number }> {
-    // Build lookup
-    const mapById = new Map<string, NavigationMapEntry>();
-    for (const e of navigationMap) {
-        mapById.set(e.page, e);
-    }
+/**
+ * Whether a node is shown with the given switches (collapsing aside). System pages need "show
+ * system pages" - except `///unlock`, which is always shown -, state nodes need "show states".
+ *
+ * @param showSystemPages Switch "show system pages".
+ * @param showStates Switch "show states".
+ * @returns The check per node.
+ */
+function shownBySwitches(showSystemPages: boolean, showStates: boolean): (node: FlowNode) => boolean {
+    return node =>
+        (showSystemPages || !node.id.startsWith('///') || node.id === servicePageName) &&
+        (showStates || node.data.entry?.nodeType !== 'stateRef');
+}
 
-    // Determine trunk (main + prev/next chain)
-    const main = navigationMap.find(e => e.page === 'main') || navigationMap[0];
-    const trunk: string[] = [];
-    if (main) {
-        let cur: string | undefined | null = main.page;
-        while (cur) {
-            trunk.unshift(cur);
-            const ent = mapById.get(cur);
-            const prev = ent && typeof ent.prev === 'string' ? ent.prev : undefined;
-            if (prev && !trunk.includes(prev)) {
-                cur = prev;
-            } else {
-                break;
-            }
-        }
-        cur = main.page;
-        while (cur) {
-            const ent = mapById.get(cur);
-            const next = ent && typeof ent.next === 'string' ? ent.next : undefined;
-            if (next && !trunk.includes(next)) {
-                trunk.push(next);
-                cur = next;
-            } else {
-                break;
-            }
-        }
-    }
+/**
+ * Positions to save: only nodes with a real position - provisionally placed nodes (and nodes in
+ * collapsed sub trees that never got a position) are left out, so they are placed again next time
+ * instead of being stored where they happen to stand (e.g. all at 0/0).
+ *
+ * @param nodes All nodes.
+ * @param unplaced Nodes with a provisional position only.
+ * @returns Name and position per node to save.
+ */
+function savedPositions(nodes: readonly FlowNode[], unplaced: ReadonlySet<string>): NavigationSavePayload['pages'] {
+    return nodes.filter(n => !unplaced.has(n.id)).map(n => ({ name: n.id, position: n.position }));
+}
 
-    // Build a pseudo-root tree where trunk nodes are direct children of root (vertical stack)
-    const root: any = { id: '__root', children: [] };
-    const nodeMap: Record<string, any> = {};
-    // create node objects for all pages
-    for (const entry of navigationMap) {
-        nodeMap[entry.page] = { id: entry.page, children: [] };
-    }
-
-    // trunk as children of root in order
-    for (const id of trunk) {
-        const nm = nodeMap[id];
-        if (nm) {
-            root.children.push(nm);
+/**
+ * Positionen der Knoten, außer den ausgenommenen.
+ *
+ * @param nodes Knoten der Ansicht.
+ * @param except Knoten, deren Position nicht zählt.
+ * @returns Position je Knoten-Id.
+ */
+function positionsOf(nodes: readonly FlowNode[], except: ReadonlySet<string>): Positions {
+    const out: Positions = {};
+    for (const node of nodes) {
+        if (!except.has(node.id)) {
+            out[node.id] = node.position;
         }
     }
+    return out;
+}
 
-    // attach non-trunk nodes to the nearest trunk node by BFS following prev/next (ignore home/parent)
-    const findAttach = (pageId: string): string => {
-        const seen = new Set<string>();
-        const q: string[] = [pageId];
-        while (q.length) {
-            const p = q.shift() as string;
-            if (trunk.includes(p)) {
-                return p;
-            }
-            if (seen.has(p)) {
-                continue;
-            }
-            seen.add(p);
-            const ent = mapById.get(p);
-            if (!ent) {
-                continue;
-            }
-            if (ent.prev && typeof ent.prev === 'string') {
-                q.push(ent.prev);
-            }
-            if (ent.next && typeof ent.next === 'string') {
-                q.push(ent.next);
-            }
-        }
-        return trunk[0] || pageId;
-    };
-
-    // Attach nodes using BFS expansion:
-    // 1) trunk nodes are direct children of root
-    // 2) For each node we process, attach its targetPages. For each target attached,
-    //    collect the full prev->...->next chain and attach that chain as children of the current node
-    //    (this prevents targets from creating their own extra level when they are sequences).
-    // 3) Continue BFS until no more nodes can be attached. Remaining nodes are attached via findAttach fallback.
-    const assigned = new Set<string>();
-
-    // mark trunk nodes as assigned and children of root (already pushed above)
-    for (const id of trunk) {
-        assigned.add(id);
-        // nodeMap[id] already pushed into root.children above
-    }
-
-    // helper: collect full prev->...->next chain starting from startId
-    const collectChain = (startId: string): string[] => {
-        // find left-most by following prev
-        let left = startId;
-        const seenLocal = new Set<string>();
-        while (true) {
-            if (seenLocal.has(left)) {
-                break;
-            }
-            seenLocal.add(left);
-            const ent = mapById.get(left);
-            const p = ent && typeof ent.prev === 'string' ? ent.prev : undefined;
-            if (!p || p === left) {
-                break;
-            }
-            left = p;
-        }
-        // now walk forward via next collecting nodes
-        const chain: string[] = [];
-        let cur = left;
-        seenLocal.clear();
-        while (cur && !seenLocal.has(cur)) {
-            seenLocal.add(cur);
-            chain.push(cur);
-            const ent = mapById.get(cur);
-            const nx = ent && typeof ent.next === 'string' ? ent.next : undefined;
-            if (!nx || nx === cur) {
-                break;
-            }
-            cur = nx;
-        }
-        return chain;
-    };
-
-    // BFS queue seeded with trunk nodes
-    const queue: string[] = [...trunk];
-    while (queue.length) {
-        const parentId = queue.shift() as string;
-        if (!parentId) {
-            continue;
-        }
-        const parentEnt = mapById.get(parentId);
-        if (!parentEnt) {
-            continue;
-        }
-
-        // process targets of this parent
-        if (Array.isArray(parentEnt.targetPages) && parentEnt.targetPages.length) {
-            for (const t of parentEnt.targetPages) {
-                if (!t || assigned.has(t)) {
-                    continue;
-                }
-                // collect the whole prev/next chain for this target and attach under parentId
-                const chain = collectChain(t);
-                // Attach chain nested: first element as child of parentId, next as child of first, etc.
-                let prevNode = parentId;
-                for (const cid of chain) {
-                    if (assigned.has(cid)) {
-                        prevNode = cid;
-                        continue;
-                    }
-                    const parentObj = nodeMap[prevNode];
-                    const childObj = nodeMap[cid];
-                    if (!parentObj || !childObj) {
-                        // missing referenced node: skip
-                        continue;
-                    }
-                    // avoid duplicate attachments
-                    if (!parentObj.children.includes(childObj)) {
-                        parentObj.children.push(childObj);
-                    }
-                    assigned.add(cid);
-                    // enqueue the newly attached node so its targets get processed as well
-                    queue.push(cid);
-                    prevNode = cid;
-                }
-            }
-        }
-        // additionally, ensure that if this parent has direct prev/next siblings that are not trunk
-        // they should not be attached here (prev/next are handled when collecting chains for targets)
-    }
-
-    // Fallback: attach any remaining unassigned nodes by resolving via prev/next to nearest trunk
-    // First try: if a node has a parent and is unassigned, attach it under its parent
-    for (const entry of navigationMap) {
-        if (assigned.has(entry.page)) {
-            continue;
-        }
-        if (!entry.prev && !entry.next && (!entry.targetPages || !entry.targetPages.length) && entry.parent) {
-            const parentId = entry.parent;
-            const parentObj = nodeMap[parentId];
-            const childObj = nodeMap[entry.page];
-            if (parentObj && childObj && !parentObj.children.includes(childObj)) {
-                parentObj.children.push(childObj);
-                assigned.add(entry.page);
-                // also enqueue so its targets (if any) get processed later
-                queue.push(entry.page);
-            }
-        }
-    }
-
-    // Final fallback: attach any still-unassigned nodes by resolving via prev/next to nearest trunk
-    // but attach full prev/next chains nested so they render as vertical stacks
-    for (const entry of navigationMap) {
-        if (assigned.has(entry.page)) {
-            continue;
-        }
-        const attachTo = findAttach(entry.page);
-        if (!nodeMap[attachTo]) {
-            // fallback to root if something went wrong
-            continue;
-        }
-        // collect whole prev->...->next chain for this entry and attach nested
-        const chain = collectChain(entry.page);
-        let prevNode = attachTo;
-        for (const cid of chain) {
-            if (assigned.has(cid)) {
-                prevNode = cid;
-                continue;
-            }
-            const parentObj = nodeMap[prevNode];
-            const childObj = nodeMap[cid];
-            if (!parentObj || !childObj) {
-                prevNode = cid;
-                assigned.add(cid);
-                continue;
-            }
-            if (!parentObj.children.includes(childObj)) {
-                parentObj.children.push(childObj);
-            }
-            assigned.add(cid);
-            // enqueue to process its targets later
-            queue.push(cid);
-            prevNode = cid;
-        }
-    }
-
-    // layout via d3.tree (vertical tree) then rotate coords for left->right
-    const rootNode = hierarchy(root);
-    // nodeSize: [verticalSpacing, horizontalSpacing]
-    // verticalSpacing halved to show nodes closer together
-    // estimate horizontal spacing from label widths so nodes don't overlap horizontally
-    const charWidth = 8; // approx px per character (monospace-ish estimate)
-    const paddingHor = 40; // left+right padding per node
-    let maxLabelLen = 1;
-    for (const e of navigationMap) {
-        const label = e.label || e.page || '';
-        maxLabelLen = Math.max(maxLabelLen, String(label).length);
-    }
-    const estNodeWidth = Math.round(maxLabelLen * charWidth + paddingHor);
-    const minH = 140;
-    const maxH = 400;
-    const horizSpacing = Math.min(maxH, Math.max(minH, estNodeWidth));
-    const layout = tree<any>().nodeSize([70, horizSpacing]);
-    layout(rootNode);
-
-    const positions: Record<string, { x: number; y: number }> = {};
-    // find min/max of the vertical layout coordinate (d.x) so we can invert the axis
-    const allX = rootNode.descendants().map(d => d.x ?? 0);
-    const maxX = allX.length ? Math.max(...allX) : 0;
-    // map coordinates: keep horizontal (d.y) as x, but invert vertical so root/main is at top
-    rootNode.descendants().forEach(d => {
-        const id = d.data.id as string;
-        if (!id || id === '__root') {
-            return;
-        }
-        // x = horizontal distance (depth), y = inverted vertical position so tree grows downward
-        positions[id] = { x: Math.round(d.y ?? 0), y: Math.round(maxX - (d.x ?? 0)) };
-    });
-    return positions;
+/**
+ * Übernimmt neue Positionen in die Knoten; Knoten ohne neue Position bleiben dieselben Objekte.
+ *
+ * @param nodes Knoten der Ansicht.
+ * @param positions Neue Positionen.
+ * @returns Die Knoten.
+ */
+function withPositions(nodes: readonly FlowNode[], positions: Positions): FlowNode[] {
+    return nodes.map(node => (positions[node.id] ? { ...node, position: positions[node.id] } : node));
 }
 
 interface NavigationViewInternalState extends NavigationViewState {
@@ -929,6 +765,17 @@ interface NavigationViewInternalState extends NavigationViewState {
     /** Current values of the states the icons of the info panel are read from, by state id. */
     infoIconValues?: Record<string, string>;
     confirmAutoLayoutOpen?: boolean;
+    /** Anchor of the open menu of the auto layout button */
+    autoLayoutMenu?: HTMLElement;
+    /**
+     * Nodes whose position is only provisional: they had no saved position and were placed
+     * automatically. They are placed again when they appear and lose the mark when moved.
+     */
+    unplaced: ReadonlySet<string>;
+    /** Collapsed pages of the selected panel - their sub trees are hidden */
+    collapsed: ReadonlySet<string>;
+    /** Home links to `main` shown - the user's choice per panel, shown unless switched off */
+    showHomeEdges: boolean;
     isTouchDevice?: boolean;
     showSystemPages: boolean;
     showStates: boolean;
@@ -996,13 +843,13 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
 
     // Schnelles Speichern beim Tabwechsel/Schließen über Beacon (kein await möglich)
     private saveNavigationBeacon = (): void => {
-        const { selectedPanel, nodes, dirty, alive } = this.state;
+        const { selectedPanel, nodes, dirty, alive, unplaced } = this.state;
         if (!selectedPanel || !nodes.length || !dirty || !alive) {
             return;
         }
         const payload: NavigationSavePayload = {
             panelName: selectedPanel,
-            pages: nodes.map(n => ({ name: n.id, position: n.position })),
+            pages: savedPositions(nodes, unplaced),
         };
         try {
             const url = `${window.location.origin}/adapter/${ADAPTER_NAME}/autosave`;
@@ -1035,7 +882,7 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
     };
 
     async saveNavigation(): Promise<void> {
-        const { selectedPanel, nodes, dirty, alive } = this.state;
+        const { selectedPanel, nodes, dirty, alive, unplaced } = this.state;
         if (!selectedPanel || !nodes.length || !dirty) {
             return;
         }
@@ -1046,7 +893,7 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
         }
         const payload: NavigationSavePayload = {
             panelName: selectedPanel,
-            pages: nodes.map(n => ({ name: n.id, position: n.position })),
+            pages: savedPositions(nodes, unplaced),
         };
         try {
             const instance = this.props.oContext.instance ?? '0';
@@ -1081,6 +928,9 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
             touched: new Map(),
             restarting: false,
             internalsToken: 0,
+            unplaced: new Set(),
+            collapsed: new Set(),
+            showHomeEdges: true,
         };
         this.handleShowStatesChange = this.handleShowStatesChange.bind(this);
         this.fetchNavigation = this.fetchNavigation.bind(this);
@@ -1095,59 +945,243 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
     }
 
     openConfirmAutoLayout(): void {
-        this.setState({ confirmAutoLayoutOpen: true });
+        this.setState({ confirmAutoLayoutOpen: true, autoLayoutMenu: undefined });
     }
 
     closeConfirmAutoLayout(): void {
         this.setState({ confirmAutoLayoutOpen: false });
     }
 
+    /**
+     * "Rearrange everything": every visible node gets a new position. Nodes in collapsed sub trees
+     * keep theirs but count as unplaced, so they are placed again when expanded.
+     */
     confirmAutoLayout(): void {
-        // delete existing positions from navigationMap entries then run autolayout
-        const nav = this.state.navigationMap;
-        if (!nav) {
-            this.setState({ confirmAutoLayoutOpen: false });
-            return;
-        }
-        // remove position field from entries (works on local copy)
-        const cleaned = nav.map(e => ({
-            ...e,
-            position: undefined,
-        }));
-        // compute positions and apply
-        const positions = computeAutoLayout(cleaned);
-        const newNodes: FlowNode[] = cleaned.map(entry => ({
-            id: entry.page,
-            data: { label: entry.label || entry.page, entry },
-            position: positions[entry.page] ?? { x: 0, y: 0 },
-            type: 'custom',
-            draggable: true,
-        }));
-        this.setState({ nodes: newNodes, dirty: true, confirmAutoLayoutOpen: false });
+        this.setState(state => {
+            const map = state.navigationMap;
+            if (!map) {
+                return { ...state, confirmAutoLayoutOpen: false };
+            }
+            const positions = computeAutoLayout(
+                map,
+                nodeSizes(state.nodes),
+                { collapsed: state.collapsed },
+                this.getLayoutTree(map),
+            );
+            return {
+                ...state,
+                nodes: withPositions(state.nodes, positions),
+                unplaced: new Set(state.nodes.filter(n => !positions[n.id]).map(n => n.id)),
+                dirty: true,
+                confirmAutoLayoutOpen: false,
+            };
+        });
     }
+
+    /**
+     * "Place nodes without a position" (default of the auto layout button): only nodes without a
+     * saved position are placed, next to the page that leads to them; all others stay put.
+     */
+    private placeNewOnly = (): void => {
+        this.setState(state => {
+            const map = state.navigationMap;
+            const hidden = map ? this.getHidden(map, state.collapsed) : new Set<string>();
+            const toPlace = new Set([...state.unplaced].filter(id => !hidden.has(id)));
+            if (!map || !toPlace.size) {
+                return { ...state, autoLayoutMenu: undefined, notice: I18n.t('auto_layout_nothing_new') };
+            }
+            // The provisional positions of the rest (in collapsed sub trees) mean nothing - they
+            // must not keep the new nodes away
+            const placed = placeNewNodes(
+                map,
+                nodeSizes(state.nodes),
+                positionsOf(state.nodes, state.unplaced),
+                toPlace,
+                { collapsed: state.collapsed },
+                this.getLayoutTree(map),
+            );
+            return {
+                ...state,
+                nodes: withPositions(state.nodes, placed),
+                unplaced: new Set([...state.unplaced].filter(id => !placed[id])),
+                dirty: true,
+                autoLayoutMenu: undefined,
+            };
+        });
+    };
+
+    private openAutoLayoutMenu = (event: React.MouseEvent<HTMLElement>): void => {
+        this.setState({ autoLayoutMenu: event.currentTarget });
+    };
+
+    private closeAutoLayoutMenu = (): void => {
+        this.setState({ autoLayoutMenu: undefined });
+    };
+
+    /** Layout tree of the current map, kept until the map changes */
+    private layoutTreeCache?: { map: NavigationMap; tree: LayoutTree };
+
+    /**
+     * Layout tree of a map - who hangs below whom, independent of positions.
+     *
+     * @param map Navigation map.
+     * @returns The tree.
+     */
+    private getLayoutTree(map: NavigationMap): LayoutTree {
+        if (this.layoutTreeCache?.map !== map) {
+            this.layoutTreeCache = { map, tree: buildLayoutTree(map) };
+        }
+        return this.layoutTreeCache.tree;
+    }
+
+    /** Hidden nodes for the last map/collapse combination */
+    private hiddenCache?: { map: NavigationMap; collapsed: ReadonlySet<string>; hidden: Set<string> };
+
+    /**
+     * Nodes hidden by collapsed sub trees.
+     *
+     * @param map Navigation map.
+     * @param collapsed Collapsed pages.
+     * @returns The hidden nodes.
+     */
+    private getHidden(map: NavigationMap, collapsed: ReadonlySet<string>): Set<string> {
+        if (this.hiddenCache?.map !== map || this.hiddenCache.collapsed !== collapsed) {
+            this.hiddenCache = { map, collapsed, hidden: hiddenByCollapse(this.getLayoutTree(map), collapsed) };
+        }
+        return this.hiddenCache.hidden;
+    }
+
+    /**
+     * Places nodes that just became visible and have only a provisional position, around the
+     * nodes that stay where they are. The view only - nothing is marked as changed.
+     *
+     * Nodes with a provisional position that stay invisible do not count as occupied - otherwise
+     * e.g. the hidden state nodes in their outer column would push the revealed pages far down.
+     *
+     * @param state Current state.
+     * @param revealed Nodes that became visible.
+     * @param collapsed Collapsed pages after the change.
+     * @param shown Whether a node is visible after the change (ignoring collapsing).
+     * @returns The updated nodes, `undefined` when nothing had to be placed.
+     */
+    private placeRevealed(
+        state: NavigationViewInternalState,
+        revealed: Iterable<string>,
+        collapsed: ReadonlySet<string>,
+        shown: (node: FlowNode) => boolean,
+    ): FlowNode[] | undefined {
+        const map = state.navigationMap;
+        if (!map) {
+            return undefined;
+        }
+        const hidden = hiddenByCollapse(this.getLayoutTree(map), collapsed);
+        const toPlace = new Set([...revealed].filter(id => state.unplaced.has(id) && !hidden.has(id)));
+        if (!toPlace.size) {
+            return undefined;
+        }
+        const ignored = new Set(
+            state.nodes
+                .filter(n => toPlace.has(n.id) || (state.unplaced.has(n.id) && (hidden.has(n.id) || !shown(n))))
+                .map(n => n.id),
+        );
+        const placed = placeNewNodes(
+            map,
+            nodeSizes(state.nodes),
+            positionsOf(state.nodes, ignored),
+            toPlace,
+            { collapsed },
+            this.getLayoutTree(map),
+        );
+        return withPositions(state.nodes, placed);
+    }
+
+    /**
+     * Collapses or expands the sub pages of a page (the button on the node). Expanded pages that
+     * have only a provisional position are placed next to it. Remembered per panel.
+     *
+     * @param nodeId The page.
+     */
+    private toggleCollapse = (nodeId: string): void => {
+        this.setState(state => {
+            const map = state.navigationMap;
+            if (!map) {
+                return state;
+            }
+            const collapsed = new Set(state.collapsed);
+            let nodes = state.nodes;
+            if (collapsed.has(nodeId)) {
+                collapsed.delete(nodeId);
+                const tree = this.getLayoutTree(map);
+                const before = hiddenByCollapse(tree, state.collapsed);
+                const after = hiddenByCollapse(tree, collapsed);
+                nodes =
+                    this.placeRevealed(
+                        state,
+                        [...before].filter(id => !after.has(id)),
+                        collapsed,
+                        shownBySwitches(state.showSystemPages, state.showStates),
+                    ) ?? nodes;
+            } else {
+                collapsed.add(nodeId);
+            }
+            storeCollapsed(state.selectedPanel, collapsed);
+            // Kanten in den eingeklappten Unterbaum enden jetzt an anderen Anfassern - neu vermessen
+            return { ...state, collapsed, nodes, internalsToken: state.internalsToken + 1 };
+        });
+    };
+
+    /**
+     * The home link switch - remembered per panel.
+     *
+     * @param _event Unused change event.
+     * @param checked Whether the home links to `main` are shown.
+     */
+    private handleShowHomeEdgesChange = (_event: React.ChangeEvent<HTMLInputElement>, checked: boolean): void => {
+        if (this.state.selectedPanel) {
+            storeShowHomeEdges(this.state.selectedPanel, checked);
+        }
+        this.setState(state => ({ showHomeEdges: checked, internalsToken: state.internalsToken + 1 }));
+    };
 
     // Arrow function: the checkbox calls the handler without `this`
     handleShowSystemPagesChange = (_event: React.ChangeEvent<HTMLInputElement>, checked: boolean): void => {
-        this.setState({ showSystemPages: checked });
+        if (!checked) {
+            this.setState(state => ({ showSystemPages: false, internalsToken: state.internalsToken + 1 }));
+            return;
+        }
+        // System pages without a saved position are placed now, around what is already shown -
+        // `///unlock` is shown anyway and stays where it is
+        this.setState(state => {
+            const systemPages = state.nodes
+                .filter(n => n.id.startsWith('///') && n.id !== servicePageName)
+                .map(n => n.id);
+            const nodes =
+                this.placeRevealed(state, systemPages, state.collapsed, shownBySwitches(true, state.showStates)) ??
+                state.nodes;
+            return { ...state, showSystemPages: true, nodes, internalsToken: state.internalsToken + 1 };
+        });
     };
 
     /**
      * Turns the state nodes on or off.
      *
-     * On the first time they are shown they have no position yet, so they are placed next to the
-     * page that uses them. The pages themselves are left where they are - only the new nodes move.
+     * State nodes without a saved position are placed in the outer column right of all pages, at
+     * the height of the page that uses them. The pages themselves are left where they are.
      *
      * @param _event Unused change event.
      * @param checked Whether the state nodes should be shown.
      */
     handleShowStatesChange(_event: React.ChangeEvent<HTMLInputElement>, checked: boolean): void {
         if (!checked) {
-            this.setState({ showStates: false });
+            this.setState(state => ({ showStates: false, internalsToken: state.internalsToken + 1 }));
             return;
         }
         this.setState(state => {
-            const placed = placeStateNodes(state.nodes);
-            return { showStates: true, nodes: placed.nodes, dirty: state.dirty || placed.moved };
+            const states = state.nodes.filter(n => n.data.entry?.nodeType === 'stateRef').map(n => n.id);
+            const nodes =
+                this.placeRevealed(state, states, state.collapsed, shownBySwitches(state.showSystemPages, true)) ??
+                state.nodes;
+            return { ...state, showStates: true, nodes, internalsToken: state.internalsToken + 1 };
         });
     }
 
@@ -1547,16 +1581,56 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
      * from a `PanelListEntry` the same way. The edges are not part of the state - they are derived
      * from the map, the (unsaved) page configuration and the edit mode in {@link getFlowEdges}.
      *
+     * Nodes without a saved position are placed like "place nodes without a position" does - next
+     * to the page that leads to them, around the saved ones - but keep their provisional mark. The
+     * collapsed pages come from the browser storage; without a stored state the service sub tree
+     * is collapsed.
+     *
      * @param entry Panel list entry to derive the flow from, or `undefined` if none was found
-     * @returns The `navigationMap` and `nodes` to apply to the state
+     * @returns The `navigationMap`, `nodes`, provisional and collapsed nodes to apply to the state
      */
     private deriveFlowState(entry: PanelListEntry | undefined): {
         navigationMap: NavigationMap | null;
         nodes: FlowNode[];
+        unplaced: ReadonlySet<string>;
+        collapsed: ReadonlySet<string>;
+        showHomeEdges: boolean;
     } {
+        const map = entry?.navigationMap;
+        if (!entry || !map) {
+            return {
+                navigationMap: entry ? entry.navigationMap : null,
+                nodes: [],
+                unplaced: new Set(),
+                collapsed: new Set(),
+                showHomeEdges: entry ? readStoredShowHomeEdges(entry.panelName) : true,
+            };
+        }
+        const tree = this.getLayoutTree(map);
+        const collapsed = new Set(readStoredCollapsed(entry.panelName) ?? defaultCollapsed(tree));
+        let nodes = mapNavigationMapToFlow(map).nodes;
+        const unplaced = new Set(
+            map
+                .filter(e => !e.position || typeof e.position.x !== 'number' || typeof e.position.y !== 'number')
+                .map(e => e.page),
+        );
+        if (unplaced.size) {
+            const placed = placeNewNodes(
+                map,
+                nodeSizes(nodes),
+                positionsOf(nodes, unplaced),
+                unplaced,
+                { collapsed },
+                tree,
+            );
+            nodes = withPositions(nodes, placed);
+        }
         return {
-            navigationMap: entry ? entry.navigationMap : null,
-            nodes: entry && entry.navigationMap ? mapNavigationMapToFlow(entry.navigationMap).nodes : [],
+            navigationMap: map,
+            nodes,
+            unplaced,
+            collapsed,
+            showHomeEdges: readStoredShowHomeEdges(entry.panelName),
         };
     }
 
@@ -1609,8 +1683,7 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
             state => ({
                 panelList,
                 selectedPanel,
-                navigationMap: flowState.navigationMap,
-                nodes: flowState.nodes,
+                ...flowState,
                 noData: false,
                 dirty: false,
                 touched: this.reconcileTouched(state.touched, panelList),
@@ -1661,8 +1734,7 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
         const flowState = this.deriveFlowState(found);
         this.setState({
             selectedPanel: panelName,
-            navigationMap: flowState.navigationMap,
-            nodes: flowState.nodes,
+            ...flowState,
             dirty: false,
             editMenu: undefined,
             scopeDialog: undefined,
@@ -1679,10 +1751,16 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
             this.setState(state => {
                 const newNodes = applyNodeChanges(changes, state.nodes);
                 const moved = newNodes.find(n => n.id === movedId);
+                // A node moved by hand has its position for good
+                const movedIds = changes.filter(c => c.type === 'position').map(c => String(c.id));
+                const unplaced = movedIds.some(id => state.unplaced.has(id))
+                    ? new Set([...state.unplaced].filter(id => !movedIds.includes(id)))
+                    : state.unplaced;
                 // Die gelesenen Icons gehören zum bisherigen Knoten, nicht zu einem anderen
                 const iconValues = movedId === state.infoNodeId ? state.infoIconValues : undefined;
                 return {
                     nodes: newNodes,
+                    unplaced,
                     dirty: true,
                     infoPanelOpen: true,
                     infoData: this.buildInfoData(moved?.data?.entry, iconValues),
@@ -1778,6 +1856,20 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
             p => p && (p.name === panelName || p.topic === panelName || p.topic?.split('/').pop() === panelName),
         );
         return found?.topic ?? '';
+    }
+
+    /**
+     * Whether the panel is marked "panel uses no script" in the panel table.
+     *
+     * @param panelTopic Topic of the panel.
+     * @returns true for a panel without a script.
+     */
+    private isNoScriptPanel(panelTopic: string | undefined): boolean {
+        const panels: { topic?: string; noScript?: boolean }[] | undefined = this.props.data?.panels;
+        if (!panelTopic || !Array.isArray(panels)) {
+            return false;
+        }
+        return panels.some(p => p && p.topic === panelTopic && p.noScript === true);
     }
 
     /** Topic of the selected panel - the key its pages are assigned under */
@@ -1980,6 +2072,74 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
     }
 
     /**
+     * Edges from a visible page into a collapsed sub tree, drawn to the collapsed page instead -
+     * once per source, kind and collapsed page. They are view only: no menu, not reconnectable.
+     * Edges inside a collapsed sub tree or out of it are left out (back links like home/parent
+     * from the hidden pages would only repeat the tree).
+     *
+     * @param edges All edges of the flow.
+     * @param tree Layout tree of the map.
+     * @param hidden Nodes hidden by collapsing.
+     * @param visible Nodes shown.
+     * @returns The redirected edges.
+     */
+    private redirectCollapsedEdges(
+        edges: readonly FlowEdge[],
+        tree: LayoutTree,
+        hidden: ReadonlySet<string>,
+        visible: ReadonlySet<string>,
+    ): FlowEdge[] {
+        if (!hidden.size) {
+            return [];
+        }
+        // Layout-Elternseite jeder Seite, um zur sichtbaren eingeklappten Seite hochzulaufen
+        const owner = new Map<string, string>();
+        for (const [page, kids] of tree.kids) {
+            for (const kid of kids) {
+                for (const n of kid.chain.nodes) {
+                    owner.set(n, page);
+                }
+            }
+        }
+        const visibleAncestor = (id: string): string | undefined => {
+            let cur: string | undefined = id;
+            while (cur && hidden.has(cur)) {
+                cur = owner.get(cur);
+            }
+            return cur;
+        };
+        const out: FlowEdge[] = [];
+        const seen = new Set<string>();
+        for (const edge of edges) {
+            if (hidden.has(edge.source) || !hidden.has(edge.target) || !visible.has(edge.source)) {
+                continue;
+            }
+            const target = visibleAncestor(edge.target);
+            if (!target || target === edge.source || !visible.has(target)) {
+                continue;
+            }
+            const kind = edge.data?.navType ?? 'target';
+            const key = `${edge.source}|${kind}|${target}`;
+            if (seen.has(key)) {
+                continue;
+            }
+            seen.add(key);
+            out.push({
+                ...edge,
+                id: `${edge.id}-collapsed-${target}`,
+                target,
+                // Am eingeklappten Knoten endet die Kante immer links in der Mitte
+                targetHandle: 'targetLeft',
+                style: { ...edge.style, strokeDasharray: '2 4' },
+                data: { isTarget: true, navType: edge.data?.navType, redirected: true },
+                className: `${edge.className ?? ''} edge-collapsed`.trim(),
+                reconnectable: false,
+            });
+        }
+        return out;
+    }
+
+    /**
      * Adds what the node component needs to know to each node: the handles an edge uses (and in
      * which colour), the edit mode, whether the page has unsaved changes, whether it is generated
      * and whether a navigation override of the admin exists for it (and is out of date).
@@ -1989,8 +2149,13 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
      *
      * @param nodes Nodes to show.
      * @param edges All edges of the flow, hidden ones included - a hidden edge still marks its handle.
+     * @param collapse Pages with sub pages in the layout: collapsed or not, and how many are hidden then.
      */
-    private decorateNodes(nodes: FlowNode[], edges: FlowEdge[]): FlowNode[] {
+    private decorateNodes(
+        nodes: FlowNode[],
+        edges: FlowEdge[],
+        collapse: ReadonlyMap<string, { collapsed: boolean; hidden: number }>,
+    ): FlowNode[] {
         const { editing } = this.state;
         const touched = this.getTouched();
         const overrides = this.getNavigationOverrides();
@@ -2039,12 +2204,14 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
                     : !!scriptPage.override?.stale;
                 overrideState = stale ? 'stale' : 'active';
             }
+            const collapseInfo = collapse.get(node.id);
             const key = [
                 editing,
                 editable,
                 unsaved,
                 generated,
                 overrideState ?? '',
+                collapseInfo ? `${collapseInfo.collapsed}:${collapseInfo.hidden}` : '',
                 ...Object.entries(used)
                     .map(([id, kind]) => `${id}=${kind ?? ''}`)
                     .sort(),
@@ -2055,7 +2222,17 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
             }
             const decorated: FlowNode = {
                 ...node,
-                data: { ...node.data, usedHandles: used, editing, editable, unsaved, generated, overrideState },
+                data: {
+                    ...node.data,
+                    usedHandles: used,
+                    editing,
+                    editable,
+                    unsaved,
+                    generated,
+                    overrideState,
+                    collapse: collapseInfo,
+                    onToggleCollapse: collapseInfo ? this.toggleCollapse : undefined,
+                },
             };
             this.nodeCache.set(node.id, { source: node, key, node: decorated });
             return decorated;
@@ -2170,7 +2347,7 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
      * @param edge The clicked edge.
      */
     private onEdgeClick = (event: React.MouseEvent, edge: Edge): void => {
-        if (!this.state.editing) {
+        if (!this.state.editing || edge.data?.redirected) {
             return;
         }
         if (!isNavigationLinkKind(edge.data?.navType) || !this.isEditableEntry(this.entryOfNode(edge.source))) {
@@ -2494,20 +2671,50 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
             internalsToken,
         } = this.state;
         const edges = this.getFlowEdges();
-        const touchedCount = this.getTouched().size;
+        const touched = this.getTouched();
+        const touchedCount = touched.size;
         const selectedPanelLabel = panelList.find(p => p.panelName === selectedPanel)?.friendlyName ?? selectedPanel;
         // Filter system pages (starting with ///) unless showSystemPages is true; ///unlock is always shown
-        const isSystemPage = (id: string): boolean => id.startsWith('///') && id !== '///unlock';
-        const isStateNode = (node: FlowNode): boolean => node.data.entry?.nodeType === 'stateRef';
-        const visibleNodes = this.decorateNodes(
-            nodes.filter(n => (showSystemPages || !isSystemPage(n.id)) && (showStates || !isStateNode(n))),
-            edges,
-        );
-        const visibleNodeIds = new Set(visibleNodes.map(n => n.id));
-        // remove dangling edges that reference missing nodes (safety for stale state)
-        const safeEdges = (edges || []).filter(e => visibleNodeIds.has(e.source) && visibleNodeIds.has(e.target));
+        const isSystemPage = (id: string): boolean => id.startsWith('///') && id !== servicePageName;
         // Clicking a page highlights all of its connections - same look as hovering one
         const selectedNodeId = this.state.infoPanelOpen ? this.state.infoNodeId : undefined;
+        const map = this.state.navigationMap;
+        const tree = map ? this.getLayoutTree(map) : undefined;
+        const hidden = map ? this.getHidden(map, this.state.collapsed) : new Set<string>();
+        // Einklapp-Knopf an jeder Seite mit Unterseiten im Layout - nur, wenn davon auch etwas
+        // angezeigt würde (die Service-Seiten unter ///unlock sind ohne "Systemseiten" ohnehin weg);
+        // die Zahl nennt die Seiten, die beim Aufklappen erscheinen
+        const collapse = new Map<string, { collapsed: boolean; hidden: number }>();
+        if (tree) {
+            for (const [page, kids] of tree.kids) {
+                if (!kids.length || hidden.has(page)) {
+                    continue;
+                }
+                const shown = subtreeOf(tree, page).filter(id => showSystemPages || !isSystemPage(id));
+                if (shown.length) {
+                    const collapsed = this.state.collapsed.has(page);
+                    collapse.set(page, { collapsed, hidden: collapsed ? shown.length : 0 });
+                }
+            }
+        }
+        const shownBy = shownBySwitches(showSystemPages, showStates);
+        const shownNodes = nodes.filter(n => !hidden.has(n.id) && shownBy(n));
+        const visibleNodeIds = new Set(shownNodes.map(n => n.id));
+        const redirected = tree ? this.redirectCollapsedEdges(edges, tree, hidden, visibleNodeIds) : [];
+        const visibleNodes = this.decorateNodes(shownNodes, [...edges, ...redirected], collapse);
+        const showHomeEdges = this.state.showHomeEdges;
+        // remove dangling edges that reference missing nodes (safety for stale state); home links to
+        // main can be hidden - except those of the selected page and of pages with unsaved changes
+        const safeEdges = [...edges, ...redirected].filter(
+            e =>
+                visibleNodeIds.has(e.source) &&
+                visibleNodeIds.has(e.target) &&
+                (showHomeEdges ||
+                    e.data?.navType !== 'home' ||
+                    e.target !== 'main' ||
+                    e.source === selectedNodeId ||
+                    touched.has(e.source)),
+        );
         // Legende für die Kantenarten
         const legend: { kind: EdgeKind; labelKey: string; dash?: string; bidirectional?: boolean }[] = [
             { kind: 'prevNext', labelKey: 'nav_legend_prev_next', bidirectional: true },
@@ -2521,7 +2728,18 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
         ];
         return (
             <Box sx={{ width: '100%', p: 2, position: 'relative' }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', mb: 2, gap: 2 }}>
+                <Box
+                    sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        flexWrap: 'wrap',
+                        mb: 2,
+                        columnGap: 2,
+                        rowGap: 1,
+                        // the switches wrap as a whole instead of breaking their labels
+                        '& .MuiFormControlLabel-label': { whiteSpace: 'nowrap' },
+                    }}
+                >
                     <Typography variant="h6">{I18n.t('Panel_Navigation')}</Typography>
                     <Box sx={{ flex: 1 }} />
                     <FormControlLabel
@@ -2547,6 +2765,16 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
                     <FormControlLabel
                         control={
                             <Checkbox
+                                checked={this.state.showHomeEdges}
+                                onChange={this.handleShowHomeEdgesChange}
+                                size="small"
+                            />
+                        }
+                        label={I18n.t('show_home_edges')}
+                    />
+                    <FormControlLabel
+                        control={
+                            <Checkbox
                                 checked={editing}
                                 onChange={this.handleEditingChange}
                                 disabled={!this.state.navigationMap || !this.getSelectedPanelTopic()}
@@ -2562,13 +2790,38 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
                     >
                         {I18n.t('refresh')}
                     </Button>
-                    <Button
+                    <ButtonGroup
                         variant="outlined"
-                        onClick={this.openConfirmAutoLayout}
                         disabled={loading || !this.state.navigationMap}
                     >
-                        {I18n.t('auto_layout')}
-                    </Button>
+                        <Button
+                            onClick={this.placeNewOnly}
+                            title={I18n.t('auto_layout_place_new_hint')}
+                        >
+                            {I18n.t('auto_layout')}
+                        </Button>
+                        <Button
+                            size="small"
+                            onClick={this.openAutoLayoutMenu}
+                            aria-label={I18n.t('auto_layout_more')}
+                            title={I18n.t('auto_layout_more')}
+                        >
+                            <ArrowDropDownIcon />
+                        </Button>
+                    </ButtonGroup>
+                    <Menu
+                        anchorEl={this.state.autoLayoutMenu}
+                        open={!!this.state.autoLayoutMenu}
+                        onClose={this.closeAutoLayoutMenu}
+                    >
+                        <MenuItem
+                            onClick={this.placeNewOnly}
+                            title={I18n.t('auto_layout_place_new_hint')}
+                        >
+                            {I18n.t('auto_layout_place_new')}
+                        </MenuItem>
+                        <MenuItem onClick={this.openConfirmAutoLayout}>{I18n.t('auto_layout_all')}</MenuItem>
+                    </Menu>
                     <Typography
                         variant="body2"
                         color={alive ? 'success.main' : 'error.main'}
@@ -2804,6 +3057,7 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
                                 key={selectedPanel || 'navigation-flow'}
                                 nodes={visibleNodes}
                                 fitView
+                                minZoom={0.1}
                                 nodesDraggable={true}
                                 nodesConnectable={editing}
                                 onNodesChange={this.onNodesChange}
@@ -2902,6 +3156,7 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
                                 panelName={staleDialog?.panelName ?? ''}
                                 items={staleDialog?.items ?? []}
                                 onDecide={this.handleStaleDecision}
+                                noScript={this.isNoScriptPanel(staleDialog?.panelTopic)}
                             />
                             <NodePageInfoPanel
                                 open={!!this.state.infoPanelOpen}
@@ -2918,32 +3173,6 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
                 )}
             </Box>
         );
-    }
-
-    // Compute automatic tree layout: trunk is main and nodes connected via prev/next
-    handleAutoLayout(): void {
-        const nav = this.state.navigationMap;
-        if (!nav) {
-            return;
-        }
-        const positions = computeAutoLayout(nav);
-        // rebuild nodes based on navigationMap to ensure ids/entries align with positions
-        const currentById: Record<string, FlowNode> = {};
-        for (const n of this.state.nodes) {
-            currentById[n.id] = n;
-        }
-        const newNodes: FlowNode[] = nav.map(entry => {
-            const existing = currentById[entry.page];
-            const pos = positions[entry.page] ?? existing?.position ?? { x: 0, y: 0 };
-            return {
-                id: entry.page,
-                data: { label: entry.label || entry.page, entry },
-                position: pos,
-                type: existing?.type ?? 'custom',
-                draggable: existing?.draggable ?? true,
-            };
-        });
-        this.setState({ nodes: newNodes, dirty: true });
     }
 }
 
@@ -2999,6 +3228,8 @@ export function ThemeVarsProvider({ children }: { children: React.ReactNode }): 
             root.style.setProperty(NODE_STYLE_VAR[style].border, color);
             root.style.setProperty(NODE_STYLE_VAR[style].bg, alpha(color, tint));
         }
+        // Blasse Kanten in eingeklappte Unterbäume: auf dunklem Grund kräftiger, sonst verschwinden sie
+        root.style.setProperty('--edge-collapsed-opacity', theme.palette.mode === 'dark' ? '0.85' : '0.6');
         // Kantenfarben (Primärfarbe als Default für Kanten)
         root.style.setProperty(EDGE_COLOR_VAR.default, theme.palette.primary.main || EDGE_COLOR_HEX.default);
         // Die Kantenarten sollen KEINE Theme-Farben verwenden — feste Farben

@@ -1760,6 +1760,7 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
             } else {
               await item.longPress.setStateFlip();
             }
+            done = true;
           }
         }
       }

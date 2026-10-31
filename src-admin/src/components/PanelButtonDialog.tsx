@@ -40,6 +40,8 @@ export interface PanelButtonDialogPanel {
     kind?: 'tasmota' | 'web';
     buttonLeft?: AdminButtonFunction;
     buttonRight?: AdminButtonFunction;
+    /** "panel uses no script": without an admin action the button has no function */
+    noScript?: boolean;
 }
 
 export interface PanelButtonDialogProps {
@@ -64,6 +66,8 @@ interface PanelButtonDialogState {
     panelName: string;
     /** a web panel has no relays, its buttons always report to the adapter */
     isWebPanel: boolean;
+    /** "panel uses no script" - there is no script that could decide for the button */
+    noScript: boolean;
     mode: DialogMode;
     /** target of mode 'page' */
     page: string;
@@ -81,6 +85,7 @@ interface PanelButtonDialogState {
 
 const closedState: Omit<PanelButtonDialogState, 'side' | 'panelId' | 'panelName' | 'isWebPanel'> = {
     open: false,
+    noScript: false,
     mode: 'none',
     page: '',
     stateId: '',
@@ -139,6 +144,7 @@ class PanelButtonDialog extends React.Component<PanelButtonDialogProps, PanelBut
                 panelId,
                 panelName: panel.name ?? '',
                 isWebPanel: panel.kind === 'web',
+                noScript: panel.noScript === true,
                 mode,
                 page: action && action.mode === 'page' ? action.page : '',
                 stateId: action && action.mode !== 'page' ? action.state : '',
@@ -525,7 +531,11 @@ class PanelButtonDialog extends React.Component<PanelButtonDialogProps, PanelBut
                                         variant="caption"
                                         sx={{ color: 'text.secondary' }}
                                     >
-                                        {I18n.t('panelButtonDialog_modeNoneHint')}
+                                        {I18n.t(
+                                            this.state.noScript
+                                                ? 'panelButtonDialog_modeNoneHintNoScript'
+                                                : 'panelButtonDialog_modeNoneHint',
+                                        )}
                                     </Typography>
                                 )}
                                 {mode === 'page' && this.renderPageField()}

@@ -25,6 +25,7 @@ import type { PageBase } from '../types/pages';
 import { buildChartPageConfig } from '../pages/pageChart';
 import { buildPowerPage } from '../pages/pagePower';
 import type { AlwaysOnMode } from '../types/types';
+import { recordGeneratedPage } from './navigation-overrides';
 
 type PendingNavEntry = {
     pageId: string;
@@ -56,6 +57,23 @@ const systemNavigationNodeNames: ReadonlySet<string> = new Set(
  */
 function resolveNavigationTarget(name: string | undefined): string | undefined {
     return name === ShareConfig.servicePageName ? ShareConfig.serviceNodeName : name;
+}
+
+/**
+ * A page that belongs to this panel: it has a navigation node (own script, global script), is the
+ * screensaver or was generated from a page item (`media-<id>`). A page without any of these was merged
+ * in from the script of another panel (`ConfigManager.getConfig`) - it would be dropped later anyway.
+ *
+ * @param option Panel configuration partial.
+ * @param page The page.
+ * @returns true when the page must not be replaced.
+ */
+function belongsToPanel(option: panelConfigPartial, page: PageBase): boolean {
+    return (
+        option.navigation.some(b => b && b.name === page.uniqueID) ||
+        isScreensaverPage(page) ||
+        !!option.generatedPageIds?.includes(page.uniqueID)
+    );
 }
 
 function shallowDescribe(value: unknown): string {
@@ -194,9 +212,14 @@ export class AdminConfiguration extends BaseClass {
      *
      * @param entry Thermo2 entry as stored by the PageConfig editor.
      * @param alwaysOn Validated always-on mode of the entry.
+     * @param generated Receives the pages generated from the page items (`media-<id>`).
      * @returns The page for the panel configuration; without a usable circuit it has no data.
      */
-    private async buildThermo2Page(entry: ShareConfig.Thermo2Entry, alwaysOn: AlwaysOnMode): Promise<PageBase> {
+    private async buildThermo2Page(
+        entry: ShareConfig.Thermo2Entry,
+        alwaysOn: AlwaysOnMode,
+        generated: ScriptConfig.PageType[],
+    ): Promise<PageBase> {
         let gridItem = {
             uniqueID: entry.uniqueName,
             hidden: !!entry.hidden,
@@ -235,11 +258,49 @@ export class AdminConfiguration extends BaseClass {
             if (!result.error && result.pageItem) {
                 gridItem.pageItems = gridItem.pageItems ?? [];
                 gridItem.pageItems.push(result.pageItem);
+                if (result.pageConfig) {
+                    generated.push(result.pageConfig);
+                }
             } else if (result.error) {
                 this.log.warn(`Error processing page item ${index} for page '${entry.uniqueName}': ${result.error}`);
             }
         }
         this.log.debug(`Generated cardThermo2 page for '${entry.uniqueName}'`);
+        return gridItem;
+    }
+
+    /**
+     * Builds the runtime page of a cardThermo entry (classic thermostat page).
+     *
+     * The entry is turned into the script form and handed to the code the script configuration
+     * uses (`ConfigManager.getPageThermo`), which checks the role of the channel, searches its
+     * states and generates the buttons at the bottom from them - the page is identical on both
+     * paths. The card has no page items of its own.
+     *
+     * @param entry Thermo entry as stored by the PageConfig editor.
+     * @param alwaysOn Validated always-on mode of the entry.
+     * @returns The page for the panel configuration; with an unusable channel it has no data.
+     */
+    private async buildThermoPage(entry: ShareConfig.ThermoEntry, alwaysOn: AlwaysOnMode): Promise<PageBase> {
+        let gridItem: PageBase = {
+            uniqueID: entry.uniqueName,
+            hidden: !!entry.hidden,
+            alwaysOn,
+            dpInit: '',
+            config: {
+                card: 'cardThermo',
+                data: { headline: { type: 'const', constVal: entry.headline || entry.uniqueName } },
+            },
+            pageItems: [],
+        };
+        let messages: string[] = [];
+        const manager = new ConfigManager(this.adapter);
+        ({ gridItem, messages } = await manager.getPageThermo(buildThermoScriptPage(entry), gridItem, messages));
+        for (const msg of messages) {
+            // getPageThermo has already logged the finding, keep the summary at debug level
+            this.log.debug(`cardThermo '${entry.uniqueName}': ${msg}`);
+        }
+        this.log.debug(`Generated cardThermo page for '${entry.uniqueName}'`);
         return gridItem;
     }
 
@@ -252,9 +313,14 @@ export class AdminConfiguration extends BaseClass {
      *
      * @param entry Media entry as stored by the PageConfig editor.
      * @param alwaysOn Validated always-on mode of the entry.
+     * @param generated Receives the pages generated from the page items (`media-<id>`).
      * @returns The page for the panel configuration; with an unusable player it has no items.
      */
-    private async buildMediaPage(entry: ShareConfig.MediaEntry, alwaysOn: AlwaysOnMode): Promise<PageBase> {
+    private async buildMediaPage(
+        entry: ShareConfig.MediaEntry,
+        alwaysOn: AlwaysOnMode,
+        generated: ScriptConfig.PageType[],
+    ): Promise<PageBase> {
         let gridItem = {
             uniqueID: entry.uniqueName,
             hidden: !!entry.hidden,
@@ -293,6 +359,9 @@ export class AdminConfiguration extends BaseClass {
             if (!result.error && result.pageItem) {
                 gridItem.pageItems = gridItem.pageItems ?? [];
                 gridItem.pageItems.push(result.pageItem);
+                if (result.pageConfig) {
+                    generated.push(result.pageConfig);
+                }
             } else if (result.error) {
                 this.log.warn(`Error processing page item ${index} for page '${entry.uniqueName}': ${result.error}`);
             }
@@ -366,6 +435,8 @@ export class AdminConfiguration extends BaseClass {
 
             // Create page configuration based on card type
             let newPage: PageBase;
+            // pages generated from the page items (`media-<id>`), added once the page itself is in
+            const generatedPages: ScriptConfig.PageType[] = [];
 
             switch (entry.card) {
                 case 'cardAlarm': {
@@ -469,14 +540,21 @@ export class AdminConfiguration extends BaseClass {
                     if (!isAlwaysOnMode(entry.alwaysOn)) {
                         entry.alwaysOn = 'none';
                     }
-                    newPage = await this.buildThermo2Page(entry, entry.alwaysOn);
+                    newPage = await this.buildThermo2Page(entry, entry.alwaysOn, generatedPages);
+                    break;
+                }
+                case 'cardThermo': {
+                    if (!isAlwaysOnMode(entry.alwaysOn)) {
+                        entry.alwaysOn = 'none';
+                    }
+                    newPage = await this.buildThermoPage(entry, entry.alwaysOn);
                     break;
                 }
                 case 'cardMedia': {
                     if (!isAlwaysOnMode(entry.alwaysOn)) {
                         entry.alwaysOn = 'none';
                     }
-                    newPage = await this.buildMediaPage(entry, entry.alwaysOn);
+                    newPage = await this.buildMediaPage(entry, entry.alwaysOn, generatedPages);
                     break;
                 }
                 case 'cardGrid':
@@ -521,6 +599,9 @@ export class AdminConfiguration extends BaseClass {
                             if (!result.error && result.pageItem) {
                                 newPage.pageItems = newPage.pageItems ?? [];
                                 newPage.pageItems.unshift(result.pageItem);
+                                if (result.pageConfig) {
+                                    generatedPages.unshift(result.pageConfig);
+                                }
                             } else if (result.error) {
                                 this.log.warn(
                                     `Error processing1 page item ${index} for page '${entry.uniqueName}': ${result.error}`,
@@ -572,6 +653,9 @@ export class AdminConfiguration extends BaseClass {
                             if (!result.error && result.pageItem) {
                                 newPage.pageItems = newPage.pageItems ?? [];
                                 newPage.pageItems.unshift(result.pageItem);
+                                if (result.pageConfig) {
+                                    generatedPages.unshift(result.pageConfig);
+                                }
                             } else if (result.error) {
                                 this.log.warn(
                                     `Error processing page item ${index} for page '${entry.uniqueName}': ${result.error}`,
@@ -600,16 +684,44 @@ export class AdminConfiguration extends BaseClass {
             // Check for duplicate page name. The start page may always be replaced by an admin
             // page - being able to define it here is the whole point of it. Any other page needs
             // the global override flag.
-            const overrideExisting = this.adapter.config.adminOverridesScriptPages || newPage.uniqueID === mainPageName;
+            let overrideExisting = this.adapter.config.adminOverridesScriptPages || newPage.uniqueID === mainPageName;
+            // A page of the global script configuration gives way to an admin page assigned to this panel by
+            // its topic (e.g. after the conversion of the panel script took it over) - pages of the panel's
+            // own script still win. The links of the replaced node are not inherited: the node of a global
+            // sub page the panel does not link carries the links of the global script (or the provisional
+            // `home: main` of the config manager), not the place the admin assignment gives the page.
+            let replacesGlobal = false;
+            if (
+                !overrideExisting &&
+                panelAssignment !== undefined &&
+                option.globalPageIds?.includes(newPage.uniqueID) &&
+                !option.generatedPageIds?.includes(newPage.uniqueID) &&
+                option.pages.some((a: PageBase) => a.uniqueID === newPage.uniqueID)
+            ) {
+                overrideExisting = true;
+                replacesGlobal = true;
+                this.log.info(
+                    `Page '${newPage.uniqueID}' of the global script configuration is replaced by the admin page assigned to this panel.`,
+                );
+            }
 
             // Position and links of the replaced navigation node, reused for the new node below.
             let replacedIndex = -1;
             let replacedNav: NavigationItemConfigNonNull | undefined;
 
             if (!overrideExisting) {
-                if (option.pages.find((a: PageBase) => a.uniqueID === newPage.uniqueID)) {
-                    this.log.warn(`Page with name ${newPage.uniqueID} already exists, skipping!`);
-                    continue;
+                const existing = option.pages.find((a: PageBase) => a.uniqueID === newPage.uniqueID);
+                if (existing) {
+                    // A page of this panel wins. A page merged in from the script of another panel is
+                    // replaced by the admin page configured for this panel.
+                    if (belongsToPanel(option, existing)) {
+                        this.log.warn(`Page with name ${newPage.uniqueID} already exists, skipping!`);
+                        continue;
+                    }
+                    this.log.info(
+                        `Page '${newPage.uniqueID}' of another panel's script is replaced by the admin page configured for this panel.`,
+                    );
+                    option.pages = option.pages.filter((a: PageBase) => a.uniqueID !== newPage.uniqueID);
                 }
             } else {
                 // Remove the existing page and take out its navigation node. The node is
@@ -622,12 +734,13 @@ export class AdminConfiguration extends BaseClass {
                 }
                 replacedIndex = option.navigation.findIndex(b => b && b.name === newPage.uniqueID);
                 if (replacedIndex !== -1) {
-                    replacedNav = option.navigation[replacedIndex] ?? undefined;
+                    replacedNav = replacesGlobal ? undefined : (option.navigation[replacedIndex] ?? undefined);
                     option.navigation.splice(replacedIndex, 1);
                 }
             }
 
             option.pages.push(newPage);
+            await this.addGeneratedPages(option, newPage.uniqueID, generatedPages);
 
             // Build stub navigation entry; chain links are resolved in applyPendingNavigations.
             // Links of a replaced node are inherited so the surrounding chain survives; an
@@ -691,6 +804,60 @@ export class AdminConfiguration extends BaseClass {
     }
 
     /**
+     * Adds the pages generated from the page items of an admin page (`media-<id>` behind a media item)
+     * exactly like the script path does: `ConfigManager.getPageConfig` builds each of them as a sub page
+     * with the admin page as parent (navigation node with the parent on a double press), and the page is
+     * recorded as generated - its navigation is read-only in the admin. An existing page of the same name
+     * that belongs to this panel is kept (the first one wins, like the deduplication of the script path),
+     * one merged in from the script of another panel gives way.
+     *
+     * @param option Panel configuration partial.
+     * @param parent Published id of the admin page the items belong to.
+     * @param generated Pages handed back by `convertAdminPageItemToPageItemConfig`.
+     */
+    private async addGeneratedPages(
+        option: panelConfigPartial,
+        parent: string,
+        generated: ScriptConfig.PageType[],
+    ): Promise<void> {
+        const subPages: ScriptConfig.PageType[] = [];
+        for (const page of generated) {
+            const id = page.uniqueName;
+            if (subPages.some(p => p.uniqueName === id)) {
+                // the same item twice on one page
+                continue;
+            }
+            const existing = option.pages.find((a: PageBase) => a.uniqueID === id);
+            if (existing) {
+                if (option.generatedPageIds?.includes(id)) {
+                    // generated from the same item on another page - same content, the first one stays
+                    this.log.debug(`Generated page '${id}' of page '${parent}' already exists - kept the first one`);
+                    continue;
+                }
+                if (belongsToPanel(option, existing)) {
+                    this.log.warn(
+                        `Page '${id}' generated by a page item of page '${parent}' already exists, skipping!`,
+                    );
+                    continue;
+                }
+                option.pages = option.pages.filter((a: PageBase) => a.uniqueID !== id);
+            }
+            page.parent = parent;
+            subPages.push(page);
+        }
+        if (subPages.length === 0) {
+            return;
+        }
+        const manager = new ConfigManager(this.adapter);
+        const { panelConfig } = await manager.getPageConfig({ pages: [], subPages }, { pages: [], navigation: [] }, []);
+        for (const page of panelConfig.pages) {
+            option.pages.push(page);
+            recordGeneratedPage(option, page.uniqueID);
+        }
+        option.navigation.push(...panelConfig.navigation);
+    }
+
+    /**
      * Phase 2: wire prev/next navigation by building full chains and splicing
      * them into the existing navigation, preserving existing connections.
      *
@@ -719,6 +886,21 @@ export class AdminConfiguration extends BaseClass {
             pendingMap.set(p.pageId, p);
         }
 
+        // The first page that is no pending page when the `prev` links are followed from a page - the
+        // page the chain is spliced after.
+        const chainRoot = (pageId: string): string | undefined => {
+            const seen = new Set<string>();
+            let current = pendingMap.get(pageId);
+            while (current && current.prev !== undefined && !seen.has(current.pageId)) {
+                seen.add(current.pageId);
+                if (!pendingMap.has(current.prev)) {
+                    return current.prev;
+                }
+                current = pendingMap.get(current.prev);
+            }
+            return undefined;
+        };
+
         // Step 1: Apply each page's own explicit prev/next as direct left/right pointers
         for (const pending of pendingNavs) {
             const pageEntry = option.navigation.find(b => b?.name === pending.pageId);
@@ -730,6 +912,26 @@ export class AdminConfiguration extends BaseClass {
             }
             if (pending.next !== undefined) {
                 pageEntry.right = { ...(pageEntry.right ?? {}), single: pending.next };
+                // A page that names both neighbours sits between them. A successor that is no pending
+                // page (e.g. a page of the script) is only linked back by spliceChainAfter when it was the
+                // old right of the predecessor - not when the page is spliced in as part of a longer chain,
+                // so the back link is set here, but only when the successor still points at the root of
+                // the chain (or at nothing / a system node): a page used as a shortcut to a successor
+                // somewhere else in the ring leaves the successor's own predecessor in place. Pages with
+                // `next` only are handled in step 5.
+                if (pending.prev !== undefined && !pendingMap.has(pending.next)) {
+                    const nextEntry = option.navigation.find(b => b?.name === pending.next);
+                    const current = nextEntry?.left?.single;
+                    if (
+                        nextEntry &&
+                        (current === undefined ||
+                            current.startsWith('///') ||
+                            systemNavigationNodeNames.has(current) ||
+                            current === chainRoot(pending.pageId))
+                    ) {
+                        nextEntry.left = { ...(nextEntry.left ?? {}), single: pending.pageId };
+                    }
+                }
             }
         }
 
@@ -1077,6 +1279,44 @@ export function buildThermo2ScriptPage(entry: ShareConfig.Thermo2Entry): ScriptC
         thermoItems,
         items: [],
         sortOrder,
+    };
+}
+
+/**
+ * A stored limit of the classic thermostat page, passed on unchanged: the adapter interprets the
+ * number itself (tenths of a degree or degrees, see `ShareConfig.ThermoEntry`). Anything that is
+ * not a finite number is left out so the adapter takes the limits of the set temperature state.
+ *
+ * @param value Stored limit.
+ */
+function thermoLimit(value: unknown): number | undefined {
+    return typeof value === 'number' && Number.isFinite(value) ? value : undefined;
+}
+
+/**
+ * Turns a thermo entry into the script form of the classic thermostat page (`items[0]`).
+ *
+ * The channel and the unit are trimmed, empty optional fields are left out so the adapter takes
+ * its defaults, the limits are passed on unchanged. The result is what `getPageThermo` reads of a
+ * script page - the fields of the script item it never reads are not part of the admin entry.
+ *
+ * @param entry Thermo entry as stored by the PageConfig editor.
+ * @returns The page in the form of the script configuration.
+ */
+export function buildThermoScriptPage(entry: ShareConfig.ThermoEntry): ScriptConfig.PageThermo {
+    return {
+        type: 'cardThermo',
+        uniqueName: entry.uniqueName,
+        heading: entry.headline || entry.uniqueName,
+        items: [
+            {
+                id: thermo2Text(entry.channelId) ?? '',
+                unit: thermo2Text(entry.unit),
+                minValue: thermoLimit(entry.minValue),
+                maxValue: thermoLimit(entry.maxValue),
+                stepValue: thermoLimit(entry.stepValue),
+            },
+        ],
     };
 }
 

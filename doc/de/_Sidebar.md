@@ -42,6 +42,7 @@
 - [Page Media](PageMedia)   
 - [Page Thermo2](PageThermo2) 
 - [Page Thermo2 – Admin](PageThermo2-Admin)  
+- [Page Thermo (klassisch) – Admin](PageThermo-Admin)  
   
 **Developer**  
 - [Developer Templates](Developer-Templates)  

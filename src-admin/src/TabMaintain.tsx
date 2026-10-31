@@ -19,8 +19,10 @@ import {
 } from '@mui/material';
 import { grey, orange, blue, yellow } from '@mui/material/colors';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
+import MoveDownIcon from '@mui/icons-material/MoveDown';
 import { type IobTheme, type ThemeName, type ThemeType } from '@iobroker/gui-components';
 import { PanelStatusBadge } from './components/PanelStatusBadge';
+import ConvertScriptDialog from './components/ConvertScriptDialog';
 import { ThemeProvider } from '@mui/material/styles';
 import { getLightSurfaceTheme } from './themeUtils';
 import {
@@ -48,6 +50,8 @@ interface MaintainPanelInfo {
     _check_tasmota?: boolean;
     _check_tft?: boolean;
     _check_script?: boolean;
+    /** "panel uses no script": no script version, no script update, no conversion */
+    _noScript?: boolean;
 }
 
 interface MaintainPanelProps {
@@ -95,6 +99,8 @@ class MaintainPanel extends ConfigGeneric<ConfigGenericProps & MaintainPanelProp
     private panelsConfig: PanelConfig[] = [];
     private _isMounted: boolean = false;
     private aliveStateId = `system.adapter.${this.adapterName}.${this.instance}.alive`;
+    /** dialog that takes the configuration of a panel's script over into the admin page configuration */
+    private convertDialogRef = React.createRef<ConvertScriptDialog>();
 
     constructor(props: ConfigGenericProps & MaintainPanelProps) {
         super(props);
@@ -481,8 +487,20 @@ class MaintainPanel extends ConfigGeneric<ConfigGenericProps & MaintainPanelProp
         }
     }
 
+    /**
+     * opens the preview of the conversion script → admin for one panel
+     *
+     * @param panel row of the maintain table
+     */
+    private handleConvertScript(panel: MaintainPanelInfo): void {
+        if (!panel._topic) {
+            return;
+        }
+        this.convertDialogRef.current?.openWith(panel._topic, panel._name || panel._Headline);
+    }
+
     private async handleUpdateAllScripts(): Promise<void> {
-        const panels = this.state.panelsInfo.filter(p => p._check_script && p._name && p._topic);
+        const panels = this.state.panelsInfo.filter(p => p._check_script && !p._noScript && p._name && p._topic);
         if (panels.length === 0) {
             return;
         }
@@ -611,7 +629,7 @@ class MaintainPanel extends ConfigGeneric<ConfigGenericProps & MaintainPanelProp
         const webLink = this.webLink();
         const { panelsInfo, error, processingPanel, alive } = this.state;
         const confirmDialog = this.confirmDialog;
-        const anyScriptNeedsUpdate = panelsInfo.some(p => p._check_script);
+        const anyScriptNeedsUpdate = panelsInfo.some(p => p._check_script && !p._noScript);
 
         return (
             <Box sx={{ p: 2 }}>
@@ -837,38 +855,64 @@ class MaintainPanel extends ConfigGeneric<ConfigGenericProps & MaintainPanelProp
                                     <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, alignItems: 'center' }}>
                                         <TextField
                                             label={this.getText('vScript')}
-                                            value={panel._ScriptVersion}
+                                            value={
+                                                panel._noScript
+                                                    ? this.getText('panelNoScriptVersion')
+                                                    : panel._ScriptVersion
+                                            }
                                             slotProps={{ input: { readOnly: true } }}
                                             size="small"
                                             sx={{ flex: '1 1 250px', minWidth: 200, maxWidth: 300 }}
                                         />
+                                        {panel._noScript ? null : (
+                                            <Button
+                                                variant="contained"
+                                                onClick={() => this.handleCreateScript(panel)}
+                                                disabled={
+                                                    !panel._name ||
+                                                    !panel._topic ||
+                                                    processingPanel === panel._name ||
+                                                    !alive
+                                                }
+                                                size="small"
+                                                sx={{
+                                                    flex: '0 0 auto',
+                                                    minWidth: 200,
+                                                    ...(cardStyle.buttonScriptColor !== 'primary' && {
+                                                        backgroundColor: cardStyle.buttonScriptColor,
+                                                        '&:hover': {
+                                                            backgroundColor: cardStyle.buttonScriptColor,
+                                                            filter: 'brightness(0.9)',
+                                                        },
+                                                    }),
+                                                }}
+                                            >
+                                                {processingPanel === panel._name ? (
+                                                    <CircularProgress size={20} />
+                                                ) : (
+                                                    this.getText('createScript')
+                                                )}
+                                            </Button>
+                                        )}
                                         <Button
-                                            variant="contained"
-                                            onClick={() => this.handleCreateScript(panel)}
+                                            variant="outlined"
+                                            startIcon={<MoveDownIcon />}
+                                            onClick={() => this.handleConvertScript(panel)}
                                             disabled={
-                                                !panel._name ||
                                                 !panel._topic ||
+                                                panel._noScript === true ||
                                                 processingPanel === panel._name ||
                                                 !alive
                                             }
+                                            title={
+                                                panel._noScript
+                                                    ? this.getText('convertScript_noScriptPanel')
+                                                    : undefined
+                                            }
                                             size="small"
-                                            sx={{
-                                                flex: '0 0 auto',
-                                                minWidth: 200,
-                                                ...(cardStyle.buttonScriptColor !== 'primary' && {
-                                                    backgroundColor: cardStyle.buttonScriptColor,
-                                                    '&:hover': {
-                                                        backgroundColor: cardStyle.buttonScriptColor,
-                                                        filter: 'brightness(0.9)',
-                                                    },
-                                                }),
-                                            }}
+                                            sx={{ flex: '0 0 auto', minWidth: 200 }}
                                         >
-                                            {processingPanel === panel._name ? (
-                                                <CircularProgress size={20} />
-                                            ) : (
-                                                this.getText('createScript')
-                                            )}
+                                            {this.getText('convertScript_button')}
                                         </Button>
                                     </Box>
 
@@ -902,6 +946,15 @@ class MaintainPanel extends ConfigGeneric<ConfigGenericProps & MaintainPanelProp
                         );
                     })}
                 </Box>
+
+                {/* Conversion of a panel's script into the admin page configuration */}
+                <ConvertScriptDialog
+                    ref={this.convertDialogRef}
+                    socket={this.props.oContext.socket}
+                    adapterName={this.adapterName}
+                    instance={this.instance}
+                    changed={this.props.changed}
+                />
 
                 {/* Confirmation Dialog */}
                 {confirmDialog && (

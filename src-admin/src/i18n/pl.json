@@ -114,7 +114,7 @@
     "webPanelEdit": "Edytuj panel webowy",
     "webPanelId": "ID panelu webowego",
     "webPanelKind": "Web",
-    "webPanelNoTasmotaMaintain": "Panel webowy nie ma firmware Tasmota ani wyświetlacza TFT, nie ma tu czego flashować. Obowiązuje tylko skrypt.",
+    "webPanelNoTasmotaMaintain": "Panel webowy nie ma firmware Tasmota ani wyświetlacza TFT, nie ma tu czego flashować.",
     "webPanelTopic": "Topic (unikalny, staje się ścieżką URL)",
     "webPanelTopicDuplicate": "Ten topic jest już używany przez inny panel",
     "webPanelTopicHelp": "Litery, cyfry, _ i -, / jako separator",
@@ -122,5 +122,11 @@
     "webPanelTopicRequired": "Topic nie może być pusty",
     "webPanelTopicReserved": "Ta ścieżka jest używana przez sam serwer web",
     "chart_script_navigation_hint": "Przeniesiona ze starej tabeli \"Page Chart\": ta strona nadal otrzymuje nawigację ze skryptu (strona \"%s\"). Jest to przestarzałe – przypisz tutaj nawigację i usuń stronę ze skryptu.",
-    "power_script_navigation_hint": "Przeniesiona ze starej tabeli \"Page Power\": ta strona nadal otrzymuje nawigację ze skryptu (strona \"%s\"). Jest to przestarzałe – przypisz tutaj nawigację i usuń stronę ze skryptu."
+    "power_script_navigation_hint": "Przeniesiona ze starej tabeli \"Page Power\": ta strona nadal otrzymuje nawigację ze skryptu (strona \"%s\"). Jest to przestarzałe – przypisz tutaj nawigację i usuń stronę ze skryptu.",
+    "panelNoScript": "Panel nie używa skryptu",
+    "panelNoScriptTooltip": "Panel jest konfigurowany wyłącznie w adminie (i przez skrypt globalny). Wysłany dla niego skrypt panelu jest odrzucany, aktualizacja skryptu nie jest oferowana.",
+    "panelNoScriptInfo": "Skrypt wyłączony",
+    "panelNoScriptVersion": "Skrypt wyłączony",
+    "convertScript_noScriptPanel": "Panel ma ustawione „Panel nie używa skryptu”. Usuń zaznaczenie w ustawieniach panelu, przekonwertuj skrypt, a następnie zaznacz ponownie.",
+    "panelButtonDialog_modeNoneHintNoScript": "Panel nie używa skryptu – bez skonfigurowanej tutaj akcji przycisk nie ma funkcji."
 }

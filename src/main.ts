@@ -6,6 +6,7 @@ import {
     SENDTO_GET_SCREENSAVER_TEMPLATES_COMMAND,
     SENDTO_GET_MEDIA_PLAYER_COMMAND,
     SENDTO_GET_PAGES_All_COMMAND,
+    SENDTO_CONVERT_SCRIPT_COMMAND,
     ALL_PANELS_SPECIAL_ID,
     migrateLegacyCharts,
     migrateLegacyPower,
@@ -47,7 +48,13 @@ import {
     scriptLinksByPage,
 } from './lib/configuration/navigation-overrides';
 import { applyAdminButtons } from './lib/configuration/panel-buttons';
-import { Color } from './lib/const/Color';
+import { checkScriptConfigTopics, findPanelEntry, isNoScriptPanel } from './lib/configuration/no-script';
+import {
+    applyPendingScriptConversions,
+    isPendingScriptConversion,
+    ScriptToAdminRunner,
+} from './lib/configuration/script-to-admin-runner';
+import { adminPageItemToScriptItem } from './lib/configuration/admin-page-item';
 import path from 'node:path';
 import { testScriptConfig } from './lib/const/test';
 import type {
@@ -57,7 +64,7 @@ import type {
     PageConfig,
     AdminPageItemConfig,
 } from './lib/types/adminShareConfig';
-import { isIconColorScaleElement, isTasmotaStatusNet } from './lib/types/function-and-const';
+import { isTasmotaStatusNet } from './lib/types/function-and-const';
 import type { oldQRType } from './lib/types/types';
 import iCal from 'node-ical';
 import type { NSPanel } from './lib/types/NSPanel';
@@ -189,6 +196,139 @@ class NspanelLovelaceUi extends utils.Adapter {
                 );
             }
         }
+    }
+
+    /**
+     * Reloads every running panel marked "panel uses no script" with the adapter default configuration
+     * (+ the global script configuration, merged by the config manager) - after the global script changed.
+     * Nothing is stored: the stored script configuration of such a panel stays untouched.
+     *
+     * @returns messages for the sender
+     */
+    private async reloadNoScriptPanels(): Promise<string[]> {
+        const messages: string[] = [];
+        for (const panel of this.config.panels || []) {
+            if (!panel || !panel.topic || panel.noScript !== true || this.unload) {
+                continue;
+            }
+            if (!this.controller?.panels.some(p => p && p.topic === panel.topic)) {
+                continue;
+            }
+            const manager = new ConfigManager(this, true);
+            try {
+                const c = await manager.setScriptConfig(ConfigManager.getDefaultScriptConfig(panel.topic, true));
+                if (c.panelConfig) {
+                    c.panelConfig.model = panel.model || 'eu';
+                    const state = await this.reloadPanelWithConfig(c.panelConfig, messages);
+                    if (state === 'stopping') {
+                        break;
+                    }
+                } else {
+                    messages.push(...c.messages);
+                }
+            } finally {
+                await manager.delete();
+            }
+        }
+        return messages;
+    }
+
+    /**
+     * Reloads a panel with a freshly converted configuration: merges it with the stored configuration of the
+     * other panels (the same way the adapter start does), applies the admin buttons and navigation overrides,
+     * removes the running panel and adds it again.
+     *
+     * @param panelConfig configuration of the panel as `ConfigManager.setScriptConfig` returns it
+     * @param messages receives the messages for the sender
+     * @returns 'reloaded', 'failed' or 'stopping' when the adapter unloads meanwhile
+     */
+    private async reloadPanelWithConfig(
+        panelConfig: Omit<Partial<panelConfigPartial>, 'pages' | 'navigation'> & {
+            navigation: NavigationItemConfig[];
+            pages: pages.PageBase[];
+        },
+        messages: string[],
+    ): Promise<'reloaded' | 'failed' | 'stopping'> {
+        // Merge with the stored configuration of the other panels, the
+        // same way the adapter start does. Without it the reloaded
+        // panel would lose the pages of all other panels and could no
+        // longer navigate to them.
+        const others: Partial<panelConfigPartial>[] = [];
+        const instanceObj = await this.getForeignObjectAsync(this.namespace);
+        const stored = instanceObj?.native?.scriptConfig;
+        if (Array.isArray(stored)) {
+            for (const item of stored as Partial<panelConfigPartial>[]) {
+                if (
+                    item &&
+                    item.topic &&
+                    item.topic !== panelConfig.topic &&
+                    this.config.panels.findIndex(a => a.topic === item.topic) !== -1 &&
+                    // its stored script configuration is not used at adapter start either
+                    !isNoScriptPanel(this.config.panels, item.topic)
+                ) {
+                    others.push(item);
+                }
+            }
+        }
+        const panelTopic = panelConfig.topic ?? '';
+        this.applyAdminButtonsTo(
+            panelConfig,
+            this.config.panels.find(p => p && p.topic === panelTopic),
+        );
+        this.applyNavigationOverridesTo(panelConfig, panelTopic);
+        const arr = await ConfigManager.getConfig(this, [panelConfig, ...others]);
+        if (arr && arr.length > 0) {
+            const config = arr[0];
+            if (this.controller && config) {
+                const topic = config.topic;
+
+                if (topic) {
+                    const index = this.config.panels.findIndex(p => p.topic === topic);
+                    if (index !== -1) {
+                        const indexC = this.controller.panels.findIndex(a => a.topic === topic);
+                        if (indexC !== -1) {
+                            config.model = this.config.panels[index].model;
+                            await this.controller.removePanel(this.controller.panels[indexC]);
+
+                            if (this.unload) {
+                                return 'stopping';
+                            }
+                            await this.delay(1000);
+
+                            if (this.unload) {
+                                return 'stopping';
+                            }
+                        }
+                        const done = await this.controller.addPanel(config);
+                        if (done) {
+                            const name = config.name || config.topic;
+                            const msg = `✅ Panel "${name}" reloaded with updated configuration.`;
+                            this.log.info(msg);
+                            messages.push(msg);
+                            return 'reloaded';
+                        }
+                        const msg = `Panel ${topic} found but could not be reloaded. Check log for details.`;
+                        this.log.error(msg);
+                        messages.push(msg);
+                    } else {
+                        messages.push(
+                            `Panel ${topic} not found in Adapter configuration. Check Admin configuration for correct panel topic.`,
+                        );
+                    }
+                } else {
+                    messages.push(`Panel ${topic} not found in script. Configuration saved. Adapter restart required!`);
+                }
+            } else {
+                messages.push(
+                    this.controller
+                        ? `Controller not exist.  Configuration saved. Adapter restart required!`
+                        : `Config not exist. `,
+                );
+            }
+        } else {
+            messages.push(`No config found after conversion`);
+        }
+        return 'failed';
     }
 
     /**
@@ -357,6 +497,29 @@ class NspanelLovelaceUi extends utils.Adapter {
                 }
             }
 
+            // a script conversion (sendTo convertScriptToAdmin) the adapter did not finish: its admin part is
+            // parked in the meta object - applied here, the parked entry is removed after the instance write
+            const meta = await this.getForeignObjectAsync(this.namespace);
+            let parkedMeta: typeof meta;
+            const parkedList: unknown[] = Array.isArray(meta?.native?.pendingScriptConversion)
+                ? meta.native.pendingScriptConversion
+                : [];
+            if (meta && parkedList.length > 0) {
+                const parked = parkedList.filter(isPendingScriptConversion);
+                const topics = parked.map(p => p.panelTopic).join(', ');
+                meta.native.pendingScriptConversion = [];
+                if (applyPendingScriptConversions(native, parked, this.log)) {
+                    this.log.warn(
+                        `Applied the parked script conversion of panel(s) ${topics} to the admin configuration`,
+                    );
+                    parkedMeta = meta;
+                    change = true;
+                } else {
+                    this.log.info(`Parked script conversion of panel(s) ${topics}: everything is already in the admin`);
+                    await this.setForeignObjectAsync(this.namespace, meta);
+                }
+            }
+
             if (change) {
                 const uniquePages = new Map();
                 for (const p of native.pageConfig ?? []) {
@@ -370,6 +533,9 @@ class NspanelLovelaceUi extends utils.Adapter {
                 }
                 native.pageConfig = [...uniquePages.values()];
                 await this.setForeignObject(`system.adapter.${this.namespace}`, o);
+                if (parkedMeta) {
+                    await this.setForeignObjectAsync(this.namespace, parkedMeta);
+                }
                 this.log.warn(`Updated configuration of ${this.namespace} to the latest version. Restart adapter!`);
                 return;
             }
@@ -430,8 +596,14 @@ class NspanelLovelaceUi extends utils.Adapter {
                 // admin applied before it is used
                 let chosen: Partial<panelConfigPartial> | undefined;
 
+                // "panel uses no script": a stored script configuration of this panel is left in place (for
+                // the case the check mark is removed again) but not used - admin + global script only
+                const noScript = a.noScript === true;
+
                 // 1) RAW versuchen
-                const raw = scriptConfigRaw.find((b: { panelTopic: string }) => b.panelTopic === a.topic);
+                const raw = noScript
+                    ? undefined
+                    : scriptConfigRaw.find((b: { panelTopic: string }) => b.panelTopic === a.topic);
                 if (raw) {
                     rawFound = true;
                     const c = await manager.setScriptConfig(raw);
@@ -450,7 +622,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                 }
 
                 // 2) Fallback: converted
-                if (!usedConfig) {
+                if (!usedConfig && !noScript) {
                     const conv = scriptConfig.find((b: { topic: string }) => b.topic === a.topic);
                     if (conv) {
                         conv.model = a.model || 'eu';
@@ -461,7 +633,7 @@ class NspanelLovelaceUi extends utils.Adapter {
 
                 // 3) Fallback: kein Skript - die Admin-Konfiguration reicht, das Skript-Template ohne Inhalt dient als Basis
                 if (!usedConfig && !rawFound) {
-                    const c = await manager.setScriptConfig(ConfigManager.getDefaultScriptConfig(a.topic));
+                    const c = await manager.setScriptConfig(ConfigManager.getDefaultScriptConfig(a.topic, noScript));
                     if (c && c.panelConfig) {
                         c.panelConfig.model = a.model || 'eu';
                         chosen = c.panelConfig;
@@ -482,7 +654,11 @@ class NspanelLovelaceUi extends utils.Adapter {
                 } else if (usedConfig === 'raw') {
                     this.log.debug(`Config for ${a.topic}: raw`);
                 } else if (usedConfig === 'default') {
-                    this.log.info(`No script config for ${a.topic} - using the admin configuration only`);
+                    this.log.info(
+                        noScript
+                            ? `Panel ${a.name || a.topic} without script - admin configuration only`
+                            : `No script config for ${a.topic} - using the admin configuration only`,
+                    );
                 } else {
                     // usedConfig === 'converted'
                     if (rawFound && rawConversionFailed) {
@@ -1369,6 +1545,11 @@ class NspanelLovelaceUi extends utils.Adapter {
                         r = await manager.setScriptConfig({ ...obj.message, panelTopic: config });
                         await manager.delete();
                         const result = r.messages;
+                        // the global script is the only script source of the panels marked "panel uses no
+                        // script" - reload them now, the other panels get it with their next script run
+                        if (!this.config.testCase && this.controller) {
+                            result.push(...(await this.reloadNoScriptPanels()));
+                        }
                         if (obj.callback) {
                             this.sendTo(obj.from, obj.command, result, obj.callback);
                         }
@@ -1418,14 +1599,32 @@ class NspanelLovelaceUi extends utils.Adapter {
                                       })
                                     | undefined;
                             } = { messages: [], panelConfig: undefined };
+                            // a local panel script for a panel marked "panel uses no script" is rejected
+                            // completely (not stored, panel not reloaded) - the global script always passes
+                            const topicCheck = checkScriptConfigTopics(this.config.panels, obj.message);
+                            for (const text of topicCheck.rejected) {
+                                this.log.error(text);
+                            }
+                            if (topicCheck.rejected.length > 0 && topicCheck.accepted.length === 0) {
+                                await manager.delete();
+                                if (obj.callback) {
+                                    this.sendTo(obj.from, obj.command, topicCheck.rejected, obj.callback);
+                                }
+                                this.scriptConfigBacklog.shift();
+                                continue;
+                            }
                             if (obj.message.panelTopic && Array.isArray(obj.message.panelTopic)) {
-                                const topics = JSON.parse(JSON.stringify(obj.message.panelTopic));
+                                const topics: unknown[] =
+                                    topicCheck.rejected.length > 0
+                                        ? topicCheck.accepted
+                                        : JSON.parse(JSON.stringify(obj.message.panelTopic));
                                 for (const a of topics) {
                                     r = await manager.setScriptConfig({ ...obj.message, panelTopic: a });
                                 }
                             } else {
                                 r = await manager.setScriptConfig(obj.message);
                             }
+                            r.messages.unshift(...topicCheck.rejected);
                             //this.log.debug(`ScriptConfig result ${JSON.stringify(r.panelConfig)}`);
                             if (this.config.testCase) {
                                 this.testCaseConfig = [r.panelConfig];
@@ -1434,106 +1633,14 @@ class NspanelLovelaceUi extends utils.Adapter {
                                 //try {
 
                                 if (r.panelConfig) {
-                                    // Merge with the stored configuration of the other panels, the
-                                    // same way the adapter start does. Without it the reloaded
-                                    // panel would lose the pages of all other panels and could no
-                                    // longer navigate to them.
-                                    const others: Partial<panelConfigPartial>[] = [];
-                                    const instanceObj = await this.getForeignObjectAsync(this.namespace);
-                                    const stored = instanceObj?.native?.scriptConfig;
-                                    if (Array.isArray(stored)) {
-                                        for (const item of stored as Partial<panelConfigPartial>[]) {
-                                            if (
-                                                item &&
-                                                item.topic &&
-                                                item.topic !== r.panelConfig.topic &&
-                                                this.config.panels.findIndex(a => a.topic === item.topic) !== -1
-                                            ) {
-                                                others.push(item);
-                                            }
+                                    const state = await this.reloadPanelWithConfig(r.panelConfig, r.messages);
+                                    if (state === 'stopping') {
+                                        if (obj.callback) {
+                                            this.sendTo(obj.from, obj.command, 'Adapter is stopping', obj.callback);
                                         }
+                                        return;
                                     }
-                                    const panelTopic = r.panelConfig.topic ?? '';
-                                    this.applyAdminButtonsTo(
-                                        r.panelConfig,
-                                        this.config.panels.find(p => p && p.topic === panelTopic),
-                                    );
-                                    this.applyNavigationOverridesTo(r.panelConfig, panelTopic);
-                                    const arr = await ConfigManager.getConfig(this, [r.panelConfig, ...others]);
-                                    if (arr && arr.length > 0) {
-                                        const config = arr[0];
-                                        if (this.controller && config) {
-                                            const topic = config.topic;
-
-                                            if (topic) {
-                                                const index = this.config.panels.findIndex(p => p.topic === topic);
-                                                if (index !== -1) {
-                                                    const indexC = this.controller.panels.findIndex(
-                                                        a => a.topic === topic,
-                                                    );
-                                                    if (indexC !== -1) {
-                                                        config.model = this.config.panels[index].model;
-                                                        await this.controller.removePanel(
-                                                            this.controller.panels[indexC],
-                                                        );
-
-                                                        if (this.unload) {
-                                                            if (obj.callback) {
-                                                                this.sendTo(
-                                                                    obj.from,
-                                                                    obj.command,
-                                                                    'Adapter is stopping',
-                                                                    obj.callback,
-                                                                );
-                                                            }
-                                                            return;
-                                                        }
-                                                        await this.delay(1000);
-
-                                                        if (this.unload) {
-                                                            if (obj.callback) {
-                                                                this.sendTo(
-                                                                    obj.from,
-                                                                    obj.command,
-                                                                    'Adapter is stopping',
-                                                                    obj.callback,
-                                                                );
-                                                            }
-                                                            return;
-                                                        }
-                                                    }
-                                                    const done = await this.controller.addPanel(config);
-                                                    if (done) {
-                                                        const name = config.name || config.topic;
-                                                        const msg = `✅ Panel "${name}" reloaded with updated configuration.`;
-                                                        this.log.info(msg);
-                                                        r.messages.push(msg);
-                                                        reloaded = true;
-                                                    } else {
-                                                        const msg = `Panel ${topic} found but could not be reloaded. Check log for details.`;
-                                                        this.log.error(msg);
-                                                        r.messages.push(msg);
-                                                    }
-                                                } else {
-                                                    r.messages.push(
-                                                        `Panel ${topic} not found in Adapter configuration. Check Admin configuration for correct panel topic.`,
-                                                    );
-                                                }
-                                            } else {
-                                                r.messages.push(
-                                                    `Panel ${topic} not found in script. Configuration saved. Adapter restart required!`,
-                                                );
-                                            }
-                                        } else {
-                                            r.messages.push(
-                                                this.controller
-                                                    ? `Controller not exist.  Configuration saved. Adapter restart required!`
-                                                    : `Config not exist. `,
-                                            );
-                                        }
-                                    } else {
-                                        r.messages.push(`No config found after conversion`);
-                                    }
+                                    reloaded = state === 'reloaded';
                                 } else {
                                     r.messages.push(`Invalid configuration!`);
                                 }
@@ -1585,6 +1692,22 @@ class NspanelLovelaceUi extends utils.Adapter {
                     if (obj.callback) {
                         this.sendTo(obj.from, obj.command, 'something when wrong', obj.callback);
                     }
+                    break;
+                }
+                case SENDTO_CONVERT_SCRIPT_COMMAND: {
+                    // conversion of a configuration script into the admin configuration (admin tab maintain);
+                    // the runner answers before it writes the instance object, that write restarts the adapter
+                    const runner = new ScriptToAdminRunner({
+                        adapter: this,
+                        createConfigStore: () => new ConfigManager(this),
+                        screensaverMode: topic =>
+                            this.controller?.panels.find(p => p && p.topic === topic)?.screenSaver?.mode,
+                    });
+                    await runner.run(obj.message, answer => {
+                        if (obj.callback) {
+                            this.sendTo(obj.from, obj.command, answer, obj.callback);
+                        }
+                    });
                     break;
                 }
                 case 'setPopupNotification': {
@@ -1999,7 +2122,9 @@ class NspanelLovelaceUi extends utils.Adapter {
                                 `${scriptPath}.${this.library.cleandp(a.friendlyName, false, true)}`,
                             );
                             const o = await this.getForeignObjectAsync(scriptId);
-                            if (o) {
+                            // "panel uses no script": no version check, no script update
+                            const noScript = isNoScriptPanel(this.config.panels, a.topic);
+                            if (o && !noScript) {
                                 const temp = o.common.source.match(/const.version.+'(\d+\.\d+\.\d+)';/)?.[1] ?? '';
                                 if (temp !== version) {
                                     check = true;
@@ -2078,7 +2203,8 @@ class NspanelLovelaceUi extends utils.Adapter {
                                 _id: a.info?.tasmota?.net?.Mac ? a.info.tasmota.net.Mac : '',
                                 _tftVersion: nv ? nv : '???',
                                 _tasmotaVersion: tv ? tv : '???',
-                                _ScriptVersion: sv ? `v${sv}` : '???',
+                                _ScriptVersion: noScript ? '---' : sv ? `v${sv}` : '???',
+                                _noScript: noScript,
                                 _nsPanelModel: a.isVirtual
                                     ? a.info.nspanel.model
                                     : a.info?.nspanel?.model
@@ -2097,6 +2223,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                         const temp = [];
                         for (const a of temp2) {
                             const ft = flashingObj[a.name];
+                            const noScript = a.noScript === true;
                             let sv = version;
                             const scriptId = this.library.cleandp(
                                 `${scriptPath}.${this.library.cleandp(a.name, false, true)}`,
@@ -2132,7 +2259,8 @@ class NspanelLovelaceUi extends utils.Adapter {
                                 _id: '',
                                 _tftVersion: '---',
                                 _tasmotaVersion: '---',
-                                _ScriptVersion: sv ? `v${sv}` : '???',
+                                _ScriptVersion: noScript ? '---' : sv ? `v${sv}` : '???',
+                                _noScript: noScript,
                                 _nsPanelModel: a.model,
                             });
                         }
@@ -2151,6 +2279,15 @@ class NspanelLovelaceUi extends utils.Adapter {
                     break;
                 }
                 case 'createScript': {
+                    if (isNoScriptPanel(this.config.panels, obj.message?.topic)) {
+                        const panel = findPanelEntry(this.config.panels, obj.message.topic);
+                        const text = `Panel ${panel?.name || obj.message.topic} uses no script - no panel script is created or updated`;
+                        this.log.warn(text);
+                        if (obj.callback) {
+                            this.sendTo(obj.from, obj.command, { error: text }, obj.callback);
+                        }
+                        break;
+                    }
                     const result = await this.createConfigurationScript(obj.message.name, obj.message.topic);
                     if (obj.callback) {
                         this.sendTo(obj.from, obj.command, result, obj.callback);
@@ -2775,7 +2912,12 @@ class NspanelLovelaceUi extends utils.Adapter {
                 );
             }
 
-            await this.createConfigurationScript(session.item.name, session.item.topic);
+            if (session.item.noScript === true) {
+                // "panel uses no script": only the global script is kept up to date
+                await this.createGlobalConfigurationScript();
+            } else {
+                await this.createConfigurationScript(session.item.name, session.item.topic);
+            }
 
             const panels = this.config.panels ?? [];
             if (session.isNew && !panels.includes(session.item)) {
@@ -2992,87 +3134,18 @@ class NspanelLovelaceUi extends utils.Adapter {
         pageItem: NSPanel.PageItemDataItemsOptions | undefined;
         messages: string[];
         error: string | undefined;
+        /** page the config manager generated from the item (`media-<id>` behind a media item) - the caller adds it */
+        pageConfig?: ScriptConfig.PageType;
     }> {
         let error: string | undefined = undefined;
         let pageItem: NSPanel.PageItemDataItemsOptions | undefined = undefined;
+        let pageConfig: ScriptConfig.PageType | undefined = undefined;
         if (preItem && prePage) {
             const manager = new ConfigManager(this);
-            let item: ScriptConfig.PageItem | undefined = undefined;
-
-            if (preItem.useNative) {
-                item = preItem.useNative ? preItem.native : undefined;
-            } else if (preItem.isNavigation) {
-                item = {
-                    navigate: true,
-                    targetPage: preItem.targetPage ?? '',
-                    type: null,
-                    id: preItem.channelId.valueStateId,
-                };
-            } else {
-                item = {
-                    type: null,
-                    id: preItem.channelId.valueStateId,
-                };
-            }
-            const convertToScriptRGBColor = (color?: string): ScriptConfig.RGB | undefined => {
-                if (!color) {
-                    return undefined;
-                }
-                try {
-                    const c = Color.ConvertHexToRgb(color);
-                    return { red: c.r, green: c.g, blue: c.b };
-                } catch {
-                    this.log.warn(`Invalid color format: ${color}`);
-                    return undefined;
-                }
-            };
+            const item = adminPageItemToScriptItem(preItem, color => this.log.warn(`Invalid color format: ${color}`));
             if (!item) {
                 error = 'Invalid/Empty item native configuration!';
                 return { pageItem, messages, error };
-            }
-
-            if (!('native' in item)) {
-                item.type = preItem.type === 'custom' ? 'custom' : null;
-                item.icon = preItem.trueIcon || undefined;
-                item.icon2 = preItem.falseIcon || undefined;
-                item.onColor = convertToScriptRGBColor(preItem.trueColor);
-                item.offColor = convertToScriptRGBColor(preItem.falseColor);
-                item.longPress = preItem.longPress || undefined;
-                item.targetPageLongPress = preItem.targetPageLongPress || undefined;
-                item.name = preItem.name || undefined;
-
-                if (isIconColorScaleElement(preItem.scale)) {
-                    item.colorScale = {
-                        ...preItem.scale,
-                        color_best: preItem.scale.color_best
-                            ? {
-                                  red: preItem.scale.color_best.r,
-                                  green: preItem.scale.color_best.g,
-                                  blue: preItem.scale.color_best.b,
-                              }
-                            : undefined,
-                    };
-                }
-                if (item.type !== 'custom') {
-                    item.fontSize =
-                        preItem.textSize || preItem.textSize == 0
-                            ? (Number(preItem.textSize) as typeof preItem.textSize)
-                            : undefined;
-                    if (!item.name && preItem.valueEntry) {
-                        item.name = preItem.valueEntry.valueStateId;
-                        item.suffixName = preItem.valueEntry.suffix ? preItem.valueEntry.suffix : undefined;
-                        item.prefixName = preItem.valueEntry.prefix ? preItem.valueEntry.prefix : undefined;
-                    }
-
-                    item.prefixValue = preItem.channelId?.suffix ? preItem.channelId.suffix : undefined;
-                    item.suffixValue = preItem.channelId?.prefix ? preItem.channelId.prefix : undefined;
-                    item.unit = preItem.channelId?.unit ? preItem.channelId.unit : undefined;
-                    item.useValue = preItem.useValue;
-                    item.inSel_Alias = preItem.inSel_Alias || undefined;
-                    item.modeList = preItem.modeList?.length ? preItem.modeList : undefined;
-                    // cardThermo2: heat circuit the item belongs to (page items only, not custom items)
-                    item.filter = typeof preItem.filter === 'number' ? preItem.filter : undefined;
-                }
             }
 
             const page = {
@@ -3085,11 +3158,12 @@ class NspanelLovelaceUi extends utils.Adapter {
                 const result = await manager.getPageItemConfig(item, page, messages);
                 messages = result.messages;
                 pageItem = result.itemConfig;
+                pageConfig = result.pageConfig;
             } catch (e: any) {
                 error = `Error in configuration: ${e.message}`;
             }
         }
-        return { pageItem, messages, error };
+        return { pageItem, messages, error, pageConfig };
     }
 }
 if (require.main !== module) {

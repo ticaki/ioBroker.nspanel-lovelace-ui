@@ -1,4 +1,3 @@
-import { Color } from '../const/Color';
 import type { NSPanel } from './NSPanel';
 import type {
     AlarmButtonEvents,
@@ -32,73 +31,23 @@ export function isPartialIconSelectScaleElement(F: any): F is IconSelectElement 
 }
 
 /**
- * Normalize a valid IconColorElement (e.g. fix color_best).
- * Call this after `isIconColorElement()` returned true.
+ * Normalize a valid IconColorElement: `color_best` becomes {r, g, b}, the form the runtime works with
+ * (a script writes it as {red, green, blue}). Call this after `isIconColorScaleElement()` returned true.
  *
  * @param el IconColorElement
  */
 
-export function normalizeIconColorElement(el: IconColorElement): IconColorElement {
-    const copy: IconColorElement = { ...el };
-    if (copy.color_best) {
-        copy.color_best = convertColorScaleBest(copy.color_best);
+export function normalizeIconColorElement(el: IconColorElement | ScriptConfig.IconColorElement): IconColorElement {
+    const copy: IconColorElement = { ...el, color_best: undefined };
+    if (el.color_best) {
+        copy.color_best = convertColorScaleBest(el.color_best);
+    } else {
+        delete copy.color_best;
     }
     return copy;
 }
-/**
- * Lightweight type guard for IconColorElement.
- * - Checks presence & finiteness of required numbers.
- * - Optional fields, if present, must be of the right *shape*.
- * - No normalization, no range constraints (val_min may be > val_max).
- *
- * @param x unknown
- * @returns true if x is IconColorElement
- */
-
-export function isIconColorScaleElement(x: unknown): x is IconColorElement {
-    if (typeof x !== 'object' || x === null) {
-        return false;
-    }
-
-    const v = x as Partial<IconColorElement>;
-
-    // required
-    if (!Number.isFinite(v.val_min)) {
-        return false;
-    }
-    if (!Number.isFinite(v.val_max)) {
-        return false;
-    }
-
-    // optional numbers
-    if (v.val_best != null && !Number.isFinite(v.val_best)) {
-        return false;
-    }
-
-    // optional enums
-    if (v.log10 != null && v.log10 !== 'max' && v.log10 !== 'min') {
-        return false;
-    }
-    if (
-        v.mode != null &&
-        v.mode !== 'mixed' &&
-        v.mode !== 'hue' &&
-        v.mode !== 'cie' &&
-        v.mode !== 'triGrad' &&
-        v.mode !== 'triGradAnchor' &&
-        v.mode !== 'quadriGrad' &&
-        v.mode !== 'quadriGradAnchor'
-    ) {
-        return false;
-    }
-
-    // optional color object
-    if (v.color_best != null && !Color.isRGB(v.color_best)) {
-        return false;
-    }
-
-    return true;
-}
+// moved to adminShareConfig (the admin imports it without the page types) - re-exported for the adapter code
+export { isIconColorScaleElement } from './adminShareConfig';
 export function isEventType(F: string): F is EventType {
     return ['event'].indexOf(F) != -1;
 }

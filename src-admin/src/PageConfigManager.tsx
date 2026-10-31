@@ -13,6 +13,7 @@ import {
     dropScriptNavigation,
     emptyChartEntry,
     emptyThermo2Entry,
+    emptyThermoEntry,
     emptyMediaEntry,
     emptyPowerSlot,
     isMainPageEntry,
@@ -37,6 +38,7 @@ import { PageTrashEditor } from './components/PageTrashEditor';
 import { takeRequestedPageConfig } from './pageConfigLink';
 import { PageChartEditor } from './components/PageChartEditor';
 import { PageThermo2Editor } from './components/PageThermo2Editor';
+import { PageThermoEditor } from './components/PageThermoEditor';
 import { PageMediaEditor } from './components/PageMediaEditor';
 import type { PageCommonFields } from './components/NavigationAssignmentPanel';
 import { PageLinkEditor } from './components/PageLinkEditor';
@@ -374,6 +376,8 @@ class PageConfigManager extends ConfigGeneric<ConfigGenericProps & { theme?: any
             newEntry = emptyChartEntry(name);
         } else if (cardType === 'cardThermo2') {
             newEntry = emptyThermo2Entry(name);
+        } else if (cardType === 'cardThermo') {
+            newEntry = emptyThermoEntry(name);
         } else if (cardType === 'cardMedia') {
             newEntry = emptyMediaEntry(name);
         } else if (cardType === pageLinkCard) {
@@ -630,6 +634,20 @@ class PageConfigManager extends ConfigGeneric<ConfigGenericProps & { theme?: any
                     theme={this.props.theme}
                     expertMode={this.props.expertMode ?? false}
                     pagesList={pagesList}
+                />
+            );
+        }
+
+        if (currentEntry.card === 'cardThermo') {
+            return (
+                <PageThermoEditor
+                    {...this.props}
+                    entry={currentEntry}
+                    onEntryChange={this.handleEntryChange}
+                    onUniqueNameChange={this.handleUniqueNameChange}
+                    getText={key => this.getText(key)}
+                    oContext={this.props.oContext}
+                    theme={this.props.theme}
                 />
             );
         }

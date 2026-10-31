@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { entityPressEvent } from './entityPress';
+import { entityTouch } from './entityPress';
 import { handleCommand, initial, MEDIA_OPTIONS, parseEntityUpd, parseEntityUpdateDetail, parseOnOff } from './parse';
 
 const ctx = { pageType: 'cardMedia', pageArgs: [] };
@@ -94,23 +94,27 @@ describe('cardMedia parse', () => {
     });
 });
 
-describe('cardMedia entity press', () => {
-    it('requests popups for popup types', () => {
+describe('cardMedia entity touch', () => {
+    it('opens the popup of the touch types (input_sel, number) on tap', () => {
         const m = parseEntityUpd(args(SPOTIFY), initial(), ctx);
-        expect(entityPressEvent(m.options[0])).toEqual({ popup: 'popupInSel', id: '0' });
-        expect(entityPressEvent(m.options[3])).toEqual({ popup: 'popupSlider', id: '3' });
-        expect(entityPressEvent(m.logo)).toEqual({ popup: 'popupSlider', id: 'logo' });
+        expect(entityTouch('cardMedia', m.options[0])).toEqual({ id: '0', tapPopup: 'popupInSel' });
+        expect(entityTouch('cardMedia', m.options[3])).toEqual({ id: '3', tapPopup: 'popupSlider' });
+        expect(entityTouch('cardMedia', m.logo)).toEqual({ id: 'logo', tapPopup: 'popupSlider' });
     });
 
-    it('presses buttons, toggles switches, ignores empty slots', () => {
+    it('buttons and switches only press, empty slots do nothing', () => {
         const m = parseEntityUpd(args(SPOTIFY), initial(), ctx);
-        expect(entityPressEvent(m.options[4])).toEqual({ id: '4', action: 'button' });
+        expect(entityTouch('cardMedia', m.options[4])).toEqual({ id: '4' });
         expect(
-            entityPressEvent({ type: 'switch', id: '2', icon: '', iconColor: 0, displayName: '', optionalValue: '1' }),
-        ).toEqual({ id: '2', action: 'OnOff', value: 0 });
-        expect(
-            entityPressEvent({ type: 'switch', id: '2', icon: '', iconColor: 0, displayName: '', optionalValue: '0' }),
-        ).toEqual({ id: '2', action: 'OnOff', value: 1 });
-        expect(entityPressEvent(parseEntityUpd(args(README), initial(), ctx).options[0])).toBeUndefined();
+            entityTouch('cardMedia', {
+                type: 'switch',
+                id: '2',
+                icon: '',
+                iconColor: 0,
+                displayName: '',
+                optionalValue: '1',
+            }),
+        ).toEqual({ id: '2' });
+        expect(entityTouch('cardMedia', parseEntityUpd(args(README), initial(), ctx).options[0])).toBeUndefined();
     });
 });

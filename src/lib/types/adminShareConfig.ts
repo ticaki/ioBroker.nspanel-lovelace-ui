@@ -1,4 +1,4 @@
-import type { RGB } from '../const/Color';
+import { Color, type RGB } from '../const/Color';
 
 // Zentrale Definition aller verfügbaren Card-Typen
 export type AdminCardTypes =
@@ -68,6 +68,8 @@ export type AdminPanelConfig = {
     name?: string;
     topic?: string;
     model?: string;
+    /** "panel uses no script": configured in the admin (+ global script) only, a local panel script is rejected */
+    noScript?: boolean;
 };
 
 export type PanelsResponse = PanelInfo[];
@@ -397,6 +399,71 @@ export type ScreensaverMrIconConfig = {
     iconSelect?: { value: string; icon: string }[];
 };
 
+/**
+ * format of a raw item of the admin: `script` = the item as it would stand in the script (page item
+ * `ScriptConfig.PageItem`, screensaver element `ScriptConfig.ScreenSaverElement`), converted by the config
+ * manager like the script; `native` = the runtime item the config manager produces
+ * (`NSPanel.PageItemDataItemsOptions`), taken over unchanged
+ */
+export type RawItemFormat = 'script' | 'native';
+
+/** all raw formats, in the order the dialog offers them */
+export const rawItemFormats: readonly RawItemFormat[] = ['native', 'script'];
+
+/**
+ * Whether a value is a raw format.
+ *
+ * @param value any value
+ */
+export function isRawItemFormat(value: unknown): value is RawItemFormat {
+    return value === 'script' || value === 'native';
+}
+
+/**
+ * Whether a value is a plain object (not null, not an array) - the only form a raw configuration may have.
+ *
+ * @param value any value
+ */
+export function isRawItemObject(value: unknown): value is Record<string, unknown> {
+    return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+/**
+ * Format of a raw page item: undefined counts as `script` (configs saved before the field existed).
+ *
+ * @param item the page item
+ * @param item.nativeFormat the stored format
+ */
+export function pageItemRawFormat(item: { nativeFormat?: RawItemFormat }): RawItemFormat {
+    return item.nativeFormat === 'native' ? 'native' : 'script';
+}
+
+/**
+ * A short text that names a raw item in lists: the first set field of id, template, dpInit and
+ * ScreensaverEntity (for a script item with `native` those of the inner object); '' when none is set.
+ *
+ * @param config the raw configuration
+ */
+export function rawItemLabel(config: unknown): string {
+    if (!isRawItemObject(config)) {
+        return '';
+    }
+    for (const key of ['id', 'template', 'dpInit', 'ScreensaverEntity'] as const) {
+        const value = config[key];
+        if (typeof value === 'string' && value.trim()) {
+            return value.trim();
+        }
+    }
+    return isRawItemObject(config.native) ? rawItemLabel(config.native) : '';
+}
+
+/** raw configuration of a screensaver item, see {@link RawItemFormat} */
+export type ScreensaverItemRaw = {
+    format: RawItemFormat;
+    /** the element (`script`) or the runtime item (`native`) */
+    config: Record<string, unknown>;
+};
+
 /** what an indicator does when it is pressed (ScreensaverEntityButton / ...Switch / ...NaviToPage of the script) */
 export type ScreensaverItemAction = {
     kind: 'button' | 'switch' | 'navigate';
@@ -447,6 +514,12 @@ export type ScreensaverItemConfig = {
     enabled?: string;
     /** expression over `val` that hides the item while false (ScreensaverEntityVisibleCondition) */
     visibleCondition?: string;
+    /**
+     * raw item: the item is taken from this configuration as entered (dialog "raw data"), every other field
+     * is ignored then. The area of the item is where it is placed in the admin: `modeScr` of a template
+     * element or a runtime item is set to that area ({@link screensaverItemToScript}).
+     */
+    raw?: ScreensaverItemRaw;
 };
 
 export type ScreensaverItemField = 'headline' | 'value' | 'text' | 'action';
@@ -886,16 +959,58 @@ export type AdminPageItemConfig = {
     inSel_Alias?: string;
     /** Light items (roles rgbSingle, rgb, ct, hue): selectable modes, sent to the panel joined with '?' (max. 900 chars) */
     modeList?: string[];
-    /** Native-Modus: Item wird direkt als NSPanel.PageItemDataItemsOptions übergeben */
+    /**
+     * raw mode: the item is not built from the fields of the dialog but taken from {@link native} as entered
+     * (dialog "raw data"); every other field of the item is ignored then
+     */
     useNative?: boolean;
-    /** Rohe NSPanel.PageItemDataItemsOptions-Konfiguration (nur wenn useNative=true) */
-    native?: any;
+    /**
+     * format of {@link native} (raw mode only): `script` (also undefined - configs saved before the field
+     * existed) = a page item of the script (`ScriptConfig.PageItem`), converted by the config manager like a
+     * script item; `native` = the runtime item (`NSPanel.PageItemDataItemsOptions`), taken over unchanged
+     */
+    nativeFormat?: RawItemFormat;
+    /** the raw configuration in the format {@link nativeFormat} (raw mode only) */
+    native?: Record<string, unknown>;
     /**
      * cardThermo2 only: 0-based index of the heat circuit the item belongs to, the item is shown
      * while that circuit is selected. Undefined = shown for every circuit. An airCondition channel
      * counts as two circuits (heating and cooling), see the wiki page PageThermo2.
      */
     filter?: number;
+    /**
+     * JavaScript expression over `val` (the current value of the item), e.g. `val && val < 100`. While it
+     * is true the value is shown as text instead of the icon, otherwise the icon (`getIconEntryValue` of
+     * the adapter). The config manager hands it to the icon text of the roles info, slider, motion, door,
+     * window, temperature / value.temperature / thermostat / airCondition and humidity / value.humidity;
+     * of the navigation items only thermostat and humidity. Empty = not set.
+     */
+    useValueConditions?: string;
+    /**
+     * Role volume only: lower end of the volume slider. The config manager takes it only when it is
+     * truthy, so 0 counts as not set (the panel default).
+     */
+    minValue?: number;
+    /** Role volume only: upper end of the volume slider, 0 counts as not set like {@link minValue}. */
+    maxValue?: number;
+    /** Role blind only: text of the second row of the shutter popup. Empty = not set. */
+    secondRow?: string;
+    /**
+     * Roles dimmer, ct, rgb, rgbSingle and hue: lower end of the brightness slider. The config manager takes it
+     * only when it is truthy, so 0 counts as not set (the panel default).
+     */
+    minValueBrightness?: number;
+    /** Like {@link minValueBrightness}: upper end of the brightness slider. */
+    maxValueBrightness?: number;
+    /** Roles ct, rgb, rgbSingle and hue: lower end of the color temperature slider, 0 counts as not set. */
+    minValueColorTemp?: number;
+    /** Like {@link minValueColorTemp}: upper end of the color temperature slider. */
+    maxValueColorTemp?: number;
+    /**
+     * Roles dimmer, ct, rgb, rgbSingle and hue: switches the color mode of the light popup on. The script
+     * field is a text (`rgb`, `xy`), but the config manager only asks whether it is set at all.
+     */
+    colormode?: boolean;
 };
 
 /**
@@ -937,6 +1052,24 @@ export const scrollAutoTimingDefault = 15;
  */
 export function isScrollCard(card: string | undefined): card is ScrollCard {
     return !!card && (scrollCards as readonly string[]).includes(card);
+}
+
+/**
+ * Page types whose items take a long press (`longPress`, `targetPageLongPress`). On the HMI (v5.1.1 / v6.0.2)
+ * only the items of the grid pages send `event,buttonPress3,<entnN>` on a long press; cardEntities, cardSchedule,
+ * cardMedia and cardThermo2 send `buttonPress2` for their items only (there a long press exists on the
+ * navigation arrows nent1 / nent2 alone).
+ */
+export const longPressCards: readonly string[] = ['cardGrid', 'cardGrid2', 'cardGrid3'];
+
+/**
+ * Whether the items of a page type take a long press: the grid pages only ({@link longPressCards}).
+ *
+ * @param card Card of an admin page entry or page type of the script.
+ * @returns True for cardGrid, cardGrid2 and cardGrid3.
+ */
+export function isLongPressCard(card: string | undefined): boolean {
+    return !!card && longPressCards.includes(card);
 }
 
 /**
@@ -1624,6 +1757,60 @@ export function emptyThermo2Entry(uniqueName: string): Thermo2Entry {
 }
 
 // ---------------------------------------------------------------------------------------------
+// cardThermo - classic thermostat page, converted into the script form `ScriptConfig.PageThermo`
+// ---------------------------------------------------------------------------------------------
+
+/** channel roles the adapter accepts for the thermostat of a cardThermo page (ConfigManager.getPageThermo) */
+export const thermoChannelRoles: readonly string[] = ['thermostat', 'airCondition'];
+
+/**
+ * Classic thermostat page (`cardThermo`) - the admin form of the script page `ScriptConfig.PageThermo`.
+ *
+ * The page shows one thermostat: an alias channel with the role `thermostat` or `airCondition`. The
+ * adapter reads the actual, set and humidity states below the channel; the buttons at the bottom are
+ * not configured but derived from the states it finds there (mode icons of an airCondition `MODE`
+ * state, boost, window open, ...). Of the script page the adapter only reads `heading` and, of
+ * `items[0]`, the fields stored here (`ConfigManager.getPageThermo`); the entry keeps them exactly
+ * like the script, nothing is converted.
+ */
+export type ThermoEntry = {
+    card: Extract<AdminCardTypes, 'cardThermo'>;
+    uniqueName: string;
+    /** headline of the page, empty = uniqueName */
+    headline?: string;
+    /** alias channel (channel, device or folder) with common.role thermostat or airCondition (script `items[0].id`) */
+    channelId: string;
+    /** unit shown behind the actual and the set temperature; empty = `common.unit` of the set temperature state */
+    unit?: string;
+    /**
+     * Limits and step of the set temperature as the panel counts (pageThermo.ts): with a maximum of 100 or
+     * more the three values are tenths of a degree (100 = 10 °C, step 5 = 0.5 °C), with a maximum below 100
+     * they count as degrees and are multiplied by 10 (step 0.5 = 0.5 °C). A step below one tenth is raised
+     * to one tenth. Empty = `common.min` / `max` / `step` of the set temperature state, without them
+     * 15 °C to 30 °C in steps of 0.5 °C.
+     */
+    minValue?: number;
+    maxValue?: number;
+    stepValue?: number;
+} & PageConfigBaseFields;
+
+/**
+ * Creates a fresh thermo entry without a channel (same pattern as emptyThermo2Entry).
+ *
+ * @param uniqueName unique page name
+ */
+export function emptyThermoEntry(uniqueName: string): ThermoEntry {
+    return {
+        card: 'cardThermo',
+        uniqueName,
+        headline: '',
+        channelId: '',
+        hidden: false,
+        alwaysOn: 'none',
+    };
+}
+
+// ---------------------------------------------------------------------------------------------
 // cardMedia - media player page, converted into the script form `ScriptConfig.PageMedia`
 // ---------------------------------------------------------------------------------------------
 
@@ -1889,6 +2076,7 @@ export type PageConfigEntry =
     | MenuEntry
     | PowerEntry
     | Thermo2Entry
+    | ThermoEntry
     | MediaEntry
     | PageLinkEntry;
 export type PageConfig = PageConfigEntry;
@@ -2746,6 +2934,62 @@ export type IconColorElement = {
     log10?: 'max' | 'min';
 };
 
+/**
+ * Lightweight type guard for IconColorElement.
+ * - Checks presence & finiteness of required numbers.
+ * - Optional fields, if present, must be of the right *shape*.
+ * - `color_best` may be {r, g, b} or the script form {red, green, blue} - the config manager normalizes it
+ *   once (`normalizeIconColorElement`) before the scale reaches the runtime.
+ * - No range constraints (val_min may be > val_max).
+ *
+ * @param x unknown
+ * @returns true if x is IconColorElement
+ */
+export function isIconColorScaleElement(x: unknown): x is IconColorElement {
+    if (typeof x !== 'object' || x === null) {
+        return false;
+    }
+
+    const v = x as Partial<IconColorElement>;
+
+    // required
+    if (!Number.isFinite(v.val_min)) {
+        return false;
+    }
+    if (!Number.isFinite(v.val_max)) {
+        return false;
+    }
+
+    // optional numbers
+    if (v.val_best != null && !Number.isFinite(v.val_best)) {
+        return false;
+    }
+
+    // optional enums
+    if (v.log10 != null && v.log10 !== 'max' && v.log10 !== 'min') {
+        return false;
+    }
+    if (
+        v.mode != null &&
+        v.mode !== 'mixed' &&
+        v.mode !== 'hue' &&
+        v.mode !== 'cie' &&
+        v.mode !== 'triGrad' &&
+        v.mode !== 'triGradAnchor' &&
+        v.mode !== 'quadriGrad' &&
+        v.mode !== 'quadriGradAnchor'
+    ) {
+        return false;
+    }
+
+    // optional color object - admin form {r, g, b} or script form {red, green, blue}
+    if (v.color_best != null && !Color.isRGB(v.color_best) && !Color.isScriptRGB(v.color_best)) {
+        return false;
+    }
+
+    return true;
+}
+
 export type PageBaseItemSimple = {
     useColor?: boolean;
     targetPageLongPress?: string;
@@ -2870,3 +3114,160 @@ export const ADMIN_BUTTON_DEFAULT_DELAY = 0.25;
 export const ADMIN_BUTTON_MIN_DELAY = 0.001;
 /** Largest delay the adapter accepts, in seconds (2^31-1 ms). */
 export const ADMIN_BUTTON_MAX_DELAY = 2_147_483;
+
+/* ---------------------------------------------------------------------------------------------
+ * Conversion of a configuration script into the admin configuration (sendTo `convertScriptToAdmin`)
+ * ------------------------------------------------------------------------------------------- */
+
+/** sendTo command of the adapter: plan (dryRun) or execute the conversion of a panel's script */
+export const SENDTO_CONVERT_SCRIPT_COMMAND = 'convertScriptToAdmin';
+
+/**
+ * What happens with a page of the global script whose name exists in the admin with a different content:
+ * keepAdmin - the admin entry stays as it is, the panel is assigned to it (default);
+ * takeScript - the content of the admin entry is replaced by the global page, every existing assignment stays and
+ * the panel is added (this changes the page on the other assigned panels as well);
+ * skip - nothing changes, the page stays in the script of this panel.
+ */
+export type ConvertGlobalDecision = 'keepAdmin' | 'takeScript' | 'skip';
+
+export const CONVERT_GLOBAL_DECISIONS: readonly ConvertGlobalDecision[] = ['keepAdmin', 'takeScript', 'skip'];
+
+/** the default of {@link ConvertGlobalDecision} when the request carries none for a page */
+export const CONVERT_GLOBAL_DEFAULT_DECISION: ConvertGlobalDecision = 'keepAdmin';
+
+export type ConvertScriptRequest = {
+    panelTopic: string;
+    dryRun: boolean;
+    /** decisions for the conflicts of the plan (`ConvertScriptPlan.conflicts`), by uniqueName */
+    globalDecisions?: Record<string, ConvertGlobalDecision>;
+};
+
+/** a page of the global script whose admin entry of the same name differs from it */
+export type ConvertGlobalConflict = {
+    uniqueName: string;
+    /** page type of the script */
+    type: string;
+    /** card of the existing admin entry */
+    card: string;
+    /** the decision the plan was made with */
+    decision: ConvertGlobalDecision;
+    /** topics the existing admin entry is assigned to (`*` = all panels) */
+    assignedPanels: string[];
+    /** top level fields of the admin entry that differ */
+    differences: string[];
+};
+
+/** why a page, the screensaver or a button of the script is not converted */
+export type ConvertSkipReason =
+    | 'unsupportedPageType'
+    | 'nameExists'
+    | 'itemNotSupported'
+    | 'fieldNotSupported'
+    | 'adminOnly'
+    | 'adminAlreadyNavigated'
+    | 'adminEntryMissing'
+    | 'screensaverExists'
+    | 'screensaverItemNotSupported'
+    | 'screensaverEmpty'
+    | 'buttonConfigured'
+    | 'buttonNotSupported';
+
+/** a page of the script and what the conversion does with it */
+export type ConvertPagePlan = {
+    uniqueName: string;
+    /** page type of the script (`cardGrid`, `cardThermo2`, …) */
+    type: string;
+    /** card of the admin entry */
+    card: string;
+    itemCount: number;
+    navigation: NavigationLinks;
+    /**
+     * create - a new admin entry; assignNavigation - the admin entry exists (power/chart), only the navigation of
+     * this panel is assigned; removeReference - the script page is a dead reference and is only removed from the script
+     */
+    action: 'create' | 'assignNavigation' | 'removeReference';
+    /**
+     * create only: uniqueName of the admin entry when it differs from the script name - the start page
+     * `main` is stored as `main_<panel>` with `isMainPage` when the name is taken by another panel's page
+     */
+    storedAs?: string;
+    /** removeReference only: why the script page is a dead reference */
+    reason?: Extract<ConvertSkipReason, 'adminOnly' | 'adminAlreadyNavigated'>;
+    /** the page comes from the global script (the global script itself is never rewritten) */
+    global?: boolean;
+    /** create only: items taken over as raw items, see {@link ConvertRawItem} */
+    rawItems?: ConvertRawItem[];
+    /**
+     * create only: positions of the items (e.g. `items[2]`) whose long press was dropped - only the grid pages
+     * ({@link longPressCards}) have a long press
+     */
+    longPressDropped?: string[];
+    /**
+     * global pages whose name exists in the admin: identical - same content, only the panel is assigned
+     * (assignNavigation); keepAdmin / takeScript - the decision on a conflict (assignNavigation / create)
+     */
+    existing?: 'identical' | 'keepAdmin' | 'takeScript';
+};
+
+export type ConvertSkipped = { uniqueName: string; type: string; reason: ConvertSkipReason; detail?: string };
+
+/**
+ * an item the admin editor cannot express - it is taken over as raw item (unchanged behavior) instead of
+ * keeping the page in the script
+ */
+export type ConvertRawItem = {
+    /** where it stands in the script, e.g. `items[2]` or `left[0]` */
+    item: string;
+    format: RawItemFormat;
+    /** why the editor cannot express it */
+    detail: string;
+};
+
+export type ConvertScriptPlan = {
+    panelTopic: string;
+    panelName: string;
+    /** id of the script object (`scriptName` of the configuration) */
+    scriptId: string;
+    scriptFound: boolean;
+    pages: ConvertPagePlan[];
+    skipped: ConvertSkipped[];
+    screensaver?: {
+        name: string;
+        mode: ScreensaverMode;
+        itemCount: number;
+        notifyCount: number;
+        /** items taken over as raw items, see {@link ConvertRawItem} */
+        rawItems?: ConvertRawItem[];
+    };
+    screensaverSkipped?: { reason: ConvertSkipReason; detail?: string };
+    buttons: { left?: AdminButtonFunction; right?: AdminButtonFunction };
+    buttonsSkipped: { side: 'left' | 'right'; reason: ConvertSkipReason; detail?: string }[];
+    /** pages of the global script that differ from the admin entry of the same name - the user decides */
+    conflicts?: ConvertGlobalConflict[];
+    /** no page, screensaver or button to convert and nothing to remove from the script */
+    nothingToDo: boolean;
+};
+
+export type ConvertScriptResult = ConvertScriptPlan & {
+    executed: boolean;
+    backupId?: string;
+    deletedBackups: string[];
+    renamedBackups: { from: string; to: string }[];
+    scriptRewritten: boolean;
+    /** what could not be changed in the script source (left untouched) */
+    scriptNotes: string[];
+    /** the panel was reloaded in the running adapter (hot reload, no restart) */
+    panelReloaded: boolean;
+    /**
+     * the adapter restarts itself right after this answer: the admin entries are written into the instance
+     * object, which the js-controller answers with a restart; the entries are used from that start on
+     */
+    adapterRestarts: boolean;
+    /**
+     * the admin entries could not be written into the instance object, but the plan is stored in the meta object
+     * (`native.pendingScriptConversion`) and the adapter applies it at its next start
+     */
+    pendingApplyAtStart?: boolean;
+    error?: string;
+};

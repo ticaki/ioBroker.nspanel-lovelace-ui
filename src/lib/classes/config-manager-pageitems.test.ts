@@ -656,8 +656,31 @@ const GENERIC_CASES: { name: string; fn: Fn; item: Record<string, unknown>; page
     {
         name: 'item custom writeable options',
         fn: 'item',
-        item: { ...KITCHEN_SINK_CONST, type: 'custom', id: 'alias.0.custom.writeable' },
+        item: { ...KITCHEN_SINK_CONST, longPress: undefined, type: 'custom', id: 'alias.0.custom.writeable' },
         page: PAGES.entities,
+    },
+    {
+        name: 'item custom writeable targetPageLongPress',
+        fn: 'item',
+        item: { type: 'custom', id: 'alias.0.custom.writeable', targetPageLongPress: 'longPage' },
+        page: PAGES.grid,
+    },
+    {
+        name: 'item custom writeable longPress',
+        fn: 'item',
+        item: { type: 'custom', id: 'alias.0.custom.writeable', longPress: 'alias.0.helper.switch' },
+        page: PAGES.grid,
+    },
+    {
+        name: 'item custom writeable both longPress options',
+        fn: 'item',
+        item: {
+            type: 'custom',
+            id: 'alias.0.custom.writeable',
+            targetPageLongPress: 'longPage',
+            longPress: 'alias.0.helper.switch',
+        },
+        page: PAGES.grid,
     },
     {
         name: 'item custom readonly',
@@ -846,6 +869,31 @@ describe('lib/classes/config-manager - page items (golden master)', function () 
             const a = normalize(await run('item', item, PAGES.entities));
             const b = normalize(await run('item', item, PAGES.entities));
             expect(a, role).to.deep.equal(b);
+        }
+    });
+
+    it('keeps a color scale with color_best in the script form and normalizes the color to {r, g, b}', async () => {
+        const scriptScale = { val_min: 0, val_max: 100, val_best: 50, color_best: { red: 1, green: 2, blue: 3 } };
+        const adminScale = { val_min: 0, val_max: 100, val_best: 50, color_best: { r: 1, g: 2, b: 3 } };
+        for (const fn of ['item', 'navi'] as const) {
+            const item =
+                fn === 'navi'
+                    ? {
+                          id: DEVICES.full('value.temperature'),
+                          navigate: true,
+                          targetPage: 'naviTarget',
+                          name: 'Temp',
+                          colorScale: scriptScale,
+                      }
+                    : { ...KITCHEN_SINK_CONST, id: DEVICES.full('value.temperature'), colorScale: scriptScale };
+            const result = await run(fn, item, fn === 'navi' ? PAGES.grid : PAGES.entities);
+            expect(result.error, `${fn}: no error`).to.equal(undefined);
+            const after = result.itemAfter as { colorScale?: unknown };
+            expect(after.colorScale, `${fn}: item normalized once at the entry`).to.deep.equal(adminScale);
+            const json = JSON.stringify(normalize(result.itemConfig));
+            expect(json, `${fn}: scale handed over with the admin form of color_best`).to.include(
+                JSON.stringify(adminScale),
+            );
         }
     });
 });
