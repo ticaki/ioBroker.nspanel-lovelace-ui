@@ -1402,9 +1402,23 @@ export class ScreensaverEditor extends React.Component<ScreensaverEditorProps, S
                     ? item.action.kind
                     : 'none'
                 : undefined;
-        const title = action
+        const text = action
             ? `${this.getText('screensaver_slot_item').replace('%s', label)} · ${this.getText(`screensaver_item_action_${action}`)}`
             : this.getText('screensaver_slot_item').replace('%s', label);
+        const conditionLines = this.conditionLines(item);
+        // the condition is named in the tooltip of the place (the eye has no tooltip of its own)
+        const title = conditionLines.length ? (
+            <Box>
+                <Box>{text}</Box>
+                {conditionLines.map((line, i) => (
+                    <Box key={i}>{line}</Box>
+                ))}
+            </Box>
+        ) : (
+            text
+        );
+        // inline places: the eye follows the text, keep the corner of the delete button free
+        const inlineMarker = inline && conditionLines.length > 0;
         return (
             <Tooltip
                 key={key}
@@ -1413,6 +1427,7 @@ export class ScreensaverEditor extends React.Component<ScreensaverEditorProps, S
                 <Box
                     sx={{
                         ...base,
+                        ...(inlineMarker ? { pr: '22px' } : {}),
                         border: '2px solid',
                         borderColor: action ? INDICATOR_COLORS[action] : item.colorOn || '#8ab4f8',
                         outline: over ? '2px solid #4da3ff' : 'none',
@@ -1446,7 +1461,7 @@ export class ScreensaverEditor extends React.Component<ScreensaverEditorProps, S
                     >
                         {label}
                     </Box>
-                    {this.renderConditionMarker(item, key)}
+                    {conditionLines.length > 0 && this.renderConditionMarker(key, inline)}
                     <Box
                         className="ss-actions"
                         sx={{
@@ -1477,48 +1492,50 @@ export class ScreensaverEditor extends React.Component<ScreensaverEditorProps, S
     }
 
     /**
-     * small eye in the top left corner of a place whose item is shown under a condition only (enabled
-     * state / visible condition, of the raw data as well) - the tooltip names the condition
+     * the condition of an item shown under a condition only (enabled state / visible condition, of the
+     * raw data as well) as tooltip lines - empty without a condition
      *
      * @param item item of the place
-     * @param key key of the place
      */
-    private renderConditionMarker(item: ScreensaverItemConfig, key: string): React.JSX.Element | null {
+    private conditionLines(item: ScreensaverItemConfig): string[] {
         const cond = screensaverItemCondition(item);
-        if (!cond) {
-            return null;
+        const lines: string[] = [];
+        if (cond?.enabled) {
+            lines.push(this.getText('screensaver_condition_enabled').replace('%s', cond.enabled));
         }
+        if (cond?.visibleCondition) {
+            lines.push(this.getText('screensaver_condition_visible').replace('%s', cond.visibleCondition));
+        }
+        return lines;
+    }
+
+    /**
+     * small eye of a place whose item is shown under a condition only - a plain symbol, the tooltip of the
+     * place names the condition. Stacked places: top left corner; inline places (icon and text side by
+     * side): at the end of the line behind the text, so it covers neither icon nor text
+     *
+     * @param key key of the place
+     * @param inline icon and text side by side
+     */
+    private renderConditionMarker(key: string, inline: boolean): React.JSX.Element {
         return (
-            <Tooltip
-                title={
-                    <Box>
-                        {cond.enabled && (
-                            <Box>{this.getText('screensaver_condition_enabled').replace('%s', cond.enabled)}</Box>
-                        )}
-                        {cond.visibleCondition && (
-                            <Box>
-                                {this.getText('screensaver_condition_visible').replace('%s', cond.visibleCondition)}
-                            </Box>
-                        )}
-                    </Box>
-                }
+            <Box
+                sx={{
+                    ...(inline
+                        ? { position: 'relative', flexShrink: 0, alignSelf: 'center', ml: -0.5 }
+                        : { position: 'absolute', top: 1, left: 1 }),
+                    display: 'flex',
+                    p: '1px',
+                    borderRadius: '50%',
+                    color: '#ffd54f',
+                    backgroundColor: 'rgba(0,0,0,0.55)',
+                    pointerEvents: 'none',
+                }}
+                aria-hidden
+                data-ss={`${key}-condition`}
             >
-                <Box
-                    sx={{
-                        position: 'absolute',
-                        top: 1,
-                        left: 1,
-                        display: 'flex',
-                        p: '1px',
-                        borderRadius: '50%',
-                        color: '#ffd54f',
-                        backgroundColor: 'rgba(0,0,0,0.55)',
-                    }}
-                    data-ss={`${key}-condition`}
-                >
-                    <VisibilityOutlinedIcon sx={{ fontSize: 12 }} />
-                </Box>
-            </Tooltip>
+                <VisibilityOutlinedIcon sx={{ fontSize: 12 }} />
+            </Box>
         );
     }
 
