@@ -6,6 +6,8 @@ import { isEmptyEntity } from '../../protocol/split';
 import type { Entity6 } from '../../protocol/types';
 import { theme } from '../../style/theme';
 import type { CardProps } from '../CardContract';
+import { Pressable } from '../cardEntities/shared/Pressable';
+import { entityPressProps } from '../cardMedia/entityPress';
 import {
     RING_START,
     RING_SWEEP,
@@ -381,13 +383,20 @@ export class CardThermo2 extends React.Component<CardProps<CardThermo2Model>, Ca
         );
     }
 
+    /**
+     * A page item around the ring. Touch as in the HMI (`bEntity1..9`): a tap sends
+     * `event,buttonPress2,<id>,button` (shutter, input_sel and timer open their popup instead),
+     * holding a light, fan or number opens its popup - see {@link entityPressProps}.
+     */
     private renderSlot(entity: Entity6, index: number, x: number, y: number, size: number): React.JSX.Element {
         const empty = isEmptyEntity(entity) || entity.icon === '';
+        const handlers = empty ? undefined : entityPressProps('cardThermo2', entity, this.props);
         return (
-            <div
+            <Pressable
                 key={index}
-                data-pressable={empty ? undefined : ''}
-                data-thermo-slot={index}
+                data-role="thermo-slot"
+                data-id={String(index)}
+                {...handlers}
                 style={{
                     position: 'absolute',
                     left: x - 26,
@@ -399,16 +408,13 @@ export class CardThermo2 extends React.Component<CardProps<CardThermo2Model>, Ca
                     justifyContent: 'center',
                     visibility: empty ? 'hidden' : 'visible',
                 }}
-                onClick={
-                    empty ? undefined : (): void => this.props.press(this.props.model.id, 'hvac_action', entity.id)
-                }
             >
                 <Icon
                     glyph={entity.icon}
                     size={size}
                     color={color565ToCss(entity.iconColor)}
                 />
-            </div>
+            </Pressable>
         );
     }
 
