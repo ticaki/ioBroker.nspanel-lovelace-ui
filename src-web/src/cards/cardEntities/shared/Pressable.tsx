@@ -5,7 +5,10 @@ export const LONG_PRESS_MS = 600;
 
 export interface PressableProps {
     onPress?: () => void;
-    /** when given, holding longer than {@link LONG_PRESS_MS} calls this instead of `onPress` */
+    /**
+     * when given, holding longer than {@link LONG_PRESS_MS} calls this instead of `onPress`. Only the grid tiles
+     * (cardGrid / cardGrid2 / cardGrid3) pass it, like the HMI; without it a held touch is a normal press.
+     */
     onLongPress?: () => void;
     disabled?: boolean;
     style?: React.CSSProperties;

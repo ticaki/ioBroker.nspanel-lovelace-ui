@@ -376,7 +376,7 @@
     "convertScript_items_one": "1 item",
     "convertScript_loading": "O adaptador verifica o que pode ser transferido…",
     "convertScript_longPressDropped": "Pressão longa descartada",
-    "convertScript_longPressDroppedHint": "As páginas de lista (cardEntities, cardSchedule) não têm pressão longa. Os itens são adotados sem longPress / targetPageLongPress.",
+    "convertScript_longPressDroppedHint": "A pressão longa só está disponível nas páginas de grelha (cardGrid/2/3). Os itens são adotados sem longPress / targetPageLongPress.",
     "convertScript_nav_home": "início",
     "convertScript_nav_next": "seguinte",
     "convertScript_nav_parent": "superior",

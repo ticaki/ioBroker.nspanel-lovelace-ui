@@ -377,7 +377,7 @@
     "convertScript_items_one": "1 item",
     "convertScript_loading": "The adapter checks what can be taken over…",
     "convertScript_longPressDropped": "Long press dropped",
-    "convertScript_longPressDroppedHint": "List pages (cardEntities, cardSchedule) have no long press. The items are taken over without longPress / targetPageLongPress.",
+    "convertScript_longPressDroppedHint": "Long press is only available on grid pages (cardGrid/2/3). The items are taken over without longPress / targetPageLongPress.",
     "convertScript_nav_home": "home",
     "convertScript_nav_next": "next",
     "convertScript_nav_parent": "parent",

@@ -52,6 +52,7 @@ __export(adminShareConfig_exports, {
   findPowerEntryForScript: () => findPowerEntryForScript,
   formatEntryNumber: () => formatEntryNumber,
   isIconColorScaleElement: () => isIconColorScaleElement,
+  isLongPressCard: () => isLongPressCard,
   isMainPageEntry: () => isMainPageEntry,
   isPageLinkEntry: () => isPageLinkEntry,
   isRawItemFormat: () => isRawItemFormat,
@@ -60,8 +61,7 @@ __export(adminShareConfig_exports, {
   isScriptNavigatedPower: () => isScriptNavigatedPower,
   isScrollCard: () => isScrollCard,
   legacyPowerStates: () => legacyPowerStates,
-  longPressAllowedOnCard: () => longPressAllowedOnCard,
-  longPressListCards: () => longPressListCards,
+  longPressCards: () => longPressCards,
   mainPageName: () => mainPageName,
   mediaBackendFeatures: () => mediaBackendFeatures,
   mediaBackendOf: () => mediaBackendOf,
@@ -377,9 +377,9 @@ const scrollAutoTimingDefault = 15;
 function isScrollCard(card) {
   return !!card && scrollCards.includes(card);
 }
-const longPressListCards = ["cardEntities", "cardSchedule"];
-function longPressAllowedOnCard(card) {
-  return !!card && !longPressListCards.includes(card);
+const longPressCards = ["cardGrid", "cardGrid2", "cardGrid3"];
+function isLongPressCard(card) {
+  return !!card && longPressCards.includes(card);
 }
 function normalizeScrollFields(entry, card) {
   const presentation = entry.scrollPresentation === "arrow" || entry.scrollPresentation === "auto" ? entry.scrollPresentation : "classic";
@@ -1598,6 +1598,7 @@ const CONVERT_GLOBAL_DEFAULT_DECISION = "keepAdmin";
   findPowerEntryForScript,
   formatEntryNumber,
   isIconColorScaleElement,
+  isLongPressCard,
   isMainPageEntry,
   isPageLinkEntry,
   isRawItemFormat,
@@ -1606,8 +1607,7 @@ const CONVERT_GLOBAL_DEFAULT_DECISION = "keepAdmin";
   isScriptNavigatedPower,
   isScrollCard,
   legacyPowerStates,
-  longPressAllowedOnCard,
-  longPressListCards,
+  longPressCards,
   mainPageName,
   mediaBackendFeatures,
   mediaBackendOf,

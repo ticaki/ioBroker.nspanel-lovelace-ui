@@ -732,8 +732,8 @@ class ConvertScriptDialog extends React.Component<ConvertScriptDialogProps, Conv
     }
 
     /**
-     * info, no problem: items on list pages (cardEntities / cardSchedule) whose long press was dropped - list pages
-     * have no long press, the item itself is taken over
+     * info, no problem: items whose long press was dropped - only the grid pages (cardGrid / cardGrid2 / cardGrid3)
+     * have a long press, the item itself is taken over
      *
      * @param plan plan of the adapter
      */

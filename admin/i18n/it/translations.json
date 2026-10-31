@@ -376,7 +376,7 @@
     "convertScript_items_one": "1 elemento",
     "convertScript_loading": "L'adattatore verifica cosa può essere trasferito…",
     "convertScript_longPressDropped": "Pressione lunga scartata",
-    "convertScript_longPressDroppedHint": "Le pagine elenco (cardEntities, cardSchedule) non hanno la pressione lunga. Gli elementi vengono acquisiti senza longPress / targetPageLongPress.",
+    "convertScript_longPressDroppedHint": "La pressione lunga è disponibile solo sulle pagine griglia (cardGrid/2/3). Gli elementi vengono acquisiti senza longPress / targetPageLongPress.",
     "convertScript_nav_home": "home",
     "convertScript_nav_next": "successiva",
     "convertScript_nav_parent": "superiore",

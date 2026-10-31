@@ -10,7 +10,7 @@ export const ENTITIES_ROW_HEIGHT = 57;
 /** cardEntities: a list of up to 4 (eu, us-l) or 5 (us-p) entity rows */
 export class CardEntities extends React.Component<CardProps<CardEntitiesModel>> {
     render(): React.JSX.Element {
-        const { model, ctx, global, send, press, openPopup } = this.props;
+        const { model, ctx, global, press, openPopup } = this.props;
         return (
             <EntityList
                 model={model}
@@ -18,7 +18,6 @@ export class CardEntities extends React.Component<CardProps<CardEntitiesModel>> 
                 global={global}
                 top={ENTITIES_TOP}
                 rowHeight={ENTITIES_ROW_HEIGHT}
-                send={send}
                 press={press}
                 openPopup={openPopup}
             />

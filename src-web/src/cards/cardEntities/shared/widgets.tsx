@@ -13,7 +13,6 @@ export interface EntityIconProps {
     /** scales glyph and text (compact rows of cardSchedule) */
     scale?: number;
     onPress?: () => void;
-    onLongPress?: () => void;
     style?: React.CSSProperties;
 }
 
@@ -25,7 +24,7 @@ export interface EntityIconProps {
  */
 export class EntityIcon extends React.Component<EntityIconProps> {
     render(): React.JSX.Element {
-        const { icon, color, onPress, onLongPress, style, scale = 1 } = this.props;
+        const { icon, color, onPress, style, scale = 1 } = this.props;
         const { glyph, text, font } = splitIconField(icon);
         const nf = nextionFont(font, this.props.font);
         const fontSize = Math.round(nf.fontSize * scale);
@@ -34,7 +33,6 @@ export class EntityIcon extends React.Component<EntityIconProps> {
             <Pressable
                 data-role="icon"
                 onPress={onPress}
-                onLongPress={onLongPress}
                 style={{
                     display: 'flex',
                     alignItems: 'center',
@@ -303,7 +301,6 @@ export class NumberSlider extends React.Component<NumberSliderProps, NumberSlide
 export interface TextButtonProps {
     text: string;
     onPress: () => void;
-    onLongPress?: () => void;
     /** css colour of the text; the HMI draws button and input_sel in its blue, the timer in white */
     color?: string;
     fontSize?: number;
@@ -312,12 +309,11 @@ export interface TextButtonProps {
 /** A text at the right of a row that can be pressed (button, input_sel, timer) */
 export class TextButton extends React.Component<TextButtonProps> {
     render(): React.JSX.Element {
-        const { text, onPress, onLongPress, color = theme.foreground, fontSize = 18 } = this.props;
+        const { text, onPress, color = theme.foreground, fontSize = 18 } = this.props;
         return (
             <Pressable
                 data-role="text-button"
                 onPress={onPress}
-                onLongPress={onLongPress}
                 style={{
                     fontSize,
                     lineHeight: 1,

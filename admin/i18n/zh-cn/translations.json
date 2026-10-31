@@ -376,7 +376,7 @@
     "convertScript_items_one": "1 个项目",
     "convertScript_loading": "适配器正在检查可以转入的内容…",
     "convertScript_longPressDropped": "已丢弃长按",
-    "convertScript_longPressDroppedHint": "列表页面（cardEntities、cardSchedule）没有长按。这些项目将在不带 longPress / targetPageLongPress 的情况下被接管。",
+    "convertScript_longPressDroppedHint": "长按仅在网格页面（cardGrid/2/3）上可用。这些项目将在不带 longPress / targetPageLongPress 的情况下被接管。",
     "convertScript_nav_home": "主页",
     "convertScript_nav_next": "下一页",
     "convertScript_nav_parent": "上级",

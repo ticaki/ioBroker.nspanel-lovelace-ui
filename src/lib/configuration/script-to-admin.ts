@@ -23,7 +23,7 @@ import {
     isMainPageEntry,
     isScriptNavigatedChart,
     isScriptNavigatedPower,
-    longPressAllowedOnCard,
+    isLongPressCard,
     newScreensaverNotifyId,
     normalizeScrollFields,
     screensaverWeatherItemKeys,
@@ -142,7 +142,7 @@ type ConvertedPage = {
     entry: PageConfigEntry;
     common: PageCommon;
     rawItems: ConvertRawItem[];
-    /** items whose long press was dropped (list pages) */
+    /** items whose long press was dropped (every page type except cardGrid / cardGrid2 / cardGrid3) */
     longPressDropped: string[];
 };
 
@@ -617,7 +617,7 @@ function rawPageItem(item: Dict): { admin: AdminPageItemConfig; format: RawItemF
 
 /**
  * A script item without its long press (`longPress`, `targetPageLongPress` and, for a native item,
- * `setNaviLongPress` / `longPress` in `native.data`) - list pages have none.
+ * `setNaviLongPress` / `longPress` in `native.data`) - only the grid pages have one ({@link isLongPressCard}).
  *
  * @param item Item of the script.
  * @returns The item without long press (a copy, the input stays unchanged) and whether something was removed.
@@ -657,12 +657,13 @@ function withoutLongPress(item: Dict): { item: Dict; dropped: boolean } {
  * `empty`. An item the editor cannot express is taken over as raw item ({@link rawPageItem}) and listed in
  * `rawItems`.
  *
- * On a list page (`longPressDropped` given) the long press of every item is dropped ({@link withoutLongPress}) -
- * the item is taken over without it, the position is listed in `longPressDropped`.
+ * On a page type without long press (`longPressDropped` given, every type except the grid pages, see
+ * {@link isLongPressCard}) the long press of every item is dropped ({@link withoutLongPress}) - the item is taken
+ * over without it, the position is listed in `longPressDropped`.
  *
  * @param items Items of the script page.
  * @param rawItems Collects the items taken over as raw items.
- * @param longPressDropped Only for list pages: collects the items whose long press was dropped.
+ * @param longPressDropped Only for page types without long press: collects the items whose long press was dropped.
  */
 function convertPageItems(
     items: unknown,
@@ -946,7 +947,7 @@ function scrollFields(page: Dict, card: ScrollCard): PageScrollFields {
  * @param common Converted common fields.
  * @param topic Topic of the panel.
  * @param rawItems Collects the items taken over as raw items.
- * @param longPressDropped Collects the items whose long press was dropped (list pages only).
+ * @param longPressDropped Collects the items whose long press was dropped (cardEntities / cardSchedule only).
  */
 function convertMenuPage(
     page: Dict,
@@ -961,7 +962,7 @@ function convertMenuPage(
         card,
         uniqueName: common.uniqueName,
         headline: common.headline,
-        pageItems: convertPageItems(page.items, rawItems, longPressAllowedOnCard(card) ? undefined : longPressDropped),
+        pageItems: convertPageItems(page.items, rawItems, isLongPressCard(card) ? undefined : longPressDropped),
         hidden: common.hidden,
         alwaysOn: common.alwaysOn,
         ...scrollFields(page, card),
@@ -1088,8 +1089,15 @@ function convertThermo2Circuit(item: Dict, where: string): Thermo2CircuitConfig 
  * @param common Converted common fields.
  * @param topic Topic of the panel.
  * @param rawItems Collects the items taken over as raw items.
+ * @param longPressDropped Collects the items whose long press was dropped - cardThermo2 has no long press.
  */
-function convertThermo2Page(page: Dict, common: PageCommon, topic: string, rawItems: ConvertRawItem[]): Thermo2Entry {
+function convertThermo2Page(
+    page: Dict,
+    common: PageCommon,
+    topic: string,
+    rawItems: ConvertRawItem[],
+    longPressDropped: string[],
+): Thermo2Entry {
     const reason: ConvertSkipReason = 'fieldNotSupported';
     rejectUnknownKeys(
         page,
@@ -1122,7 +1130,7 @@ function convertThermo2Page(page: Dict, common: PageCommon, topic: string, rawIt
         uniqueName: common.uniqueName,
         headline: common.headline,
         thermoItems,
-        pageItems: convertPageItems(page.items, rawItems),
+        pageItems: convertPageItems(page.items, rawItems, longPressDropped),
         hidden: common.hidden,
         alwaysOn: common.alwaysOn,
         ...scrollFields(page, 'cardThermo2'),
@@ -1264,8 +1272,15 @@ function mediaNameList(value: unknown, where: string): string[] | undefined {
  * @param common Converted common fields.
  * @param topic Topic of the panel.
  * @param rawItems Collects the items taken over as raw items.
+ * @param longPressDropped Collects the items whose long press was dropped - cardMedia has no long press.
  */
-function convertMediaPage(page: Dict, common: PageCommon, topic: string, rawItems: ConvertRawItem[]): MediaEntry {
+function convertMediaPage(
+    page: Dict,
+    common: PageCommon,
+    topic: string,
+    rawItems: ConvertRawItem[],
+    longPressDropped: string[],
+): MediaEntry {
     const reason: ConvertSkipReason = 'fieldNotSupported';
     rejectUnknownKeys(page, [...pageMappedKeys, ...scrollKeys, 'media'], pageIgnoredKeys, reason, 'page');
     const media = page.media;
@@ -1282,7 +1297,7 @@ function convertMediaPage(page: Dict, common: PageCommon, topic: string, rawItem
         uniqueName: common.uniqueName,
         headline: common.headline,
         mediaId,
-        pageItems: convertPageItems(page.items, rawItems),
+        pageItems: convertPageItems(page.items, rawItems, longPressDropped),
         hidden: common.hidden,
         alwaysOn: common.alwaysOn,
         ...scrollFields(page, 'cardMedia'),
@@ -2425,11 +2440,11 @@ export function planScriptToAdmin(input: ScriptToAdminInput): ScriptToAdminResul
         const longPressDropped: string[] = [];
         let entry: PageConfigEntry;
         if (typeName === 'cardThermo2') {
-            entry = convertThermo2Page(page, common, panel.topic, rawItems);
+            entry = convertThermo2Page(page, common, panel.topic, rawItems, longPressDropped);
         } else if (typeName === 'cardThermo') {
             entry = convertThermoPage(page, common, panel.topic);
         } else if (typeName === 'cardMedia') {
-            entry = convertMediaPage(page, common, panel.topic, rawItems);
+            entry = convertMediaPage(page, common, panel.topic, rawItems, longPressDropped);
         } else {
             entry = convertMenuPage(page, common, panel.topic, rawItems, longPressDropped);
         }

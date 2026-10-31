@@ -376,7 +376,7 @@
     "convertScript_items_one": "1 elemento",
     "convertScript_loading": "El adaptador comprueba qué se puede transferir…",
     "convertScript_longPressDropped": "Pulsación larga descartada",
-    "convertScript_longPressDroppedHint": "Las páginas de lista (cardEntities, cardSchedule) no tienen pulsación larga. Los elementos se adoptan sin longPress / targetPageLongPress.",
+    "convertScript_longPressDroppedHint": "La pulsación larga solo está disponible en las páginas de cuadrícula (cardGrid/2/3). Los elementos se adoptan sin longPress / targetPageLongPress.",
     "convertScript_nav_home": "inicio",
     "convertScript_nav_next": "siguiente",
     "convertScript_nav_parent": "superior",

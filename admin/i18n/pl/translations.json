@@ -376,7 +376,7 @@
     "convertScript_items_one": "1 element",
     "convertScript_loading": "Adapter sprawdza, co można przenieść…",
     "convertScript_longPressDropped": "Długie naciśnięcie pominięte",
-    "convertScript_longPressDroppedHint": "Strony listy (cardEntities, cardSchedule) nie obsługują długiego naciśnięcia. Elementy są przejmowane bez longPress / targetPageLongPress.",
+    "convertScript_longPressDroppedHint": "Długie naciśnięcie jest dostępne tylko na stronach siatki (cardGrid/2/3). Elementy są przejmowane bez longPress / targetPageLongPress.",
     "convertScript_nav_home": "start",
     "convertScript_nav_next": "następna",
     "convertScript_nav_parent": "nadrzędna",

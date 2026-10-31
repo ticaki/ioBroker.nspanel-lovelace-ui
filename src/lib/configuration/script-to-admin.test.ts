@@ -2063,6 +2063,77 @@ describe('lib/configuration - planScriptToAdmin: page items', () => {
             const [converted] = (result.newPages[0] as ShareConfig.MenuEntry).pageItems;
             expect(converted!.targetPageLongPress).to.equal('lp');
         });
+
+        for (const type of ['cardGrid2', 'cardGrid3']) {
+            it(`${type}: long press stays, nothing is listed`, () => {
+                const result = plan(
+                    baseConfig({
+                        subPages: [
+                            page({
+                                type,
+                                uniqueName: 'p',
+                                heading: 'P',
+                                items: [{ ...item, longPress: 'alias.0.Tests.button.SET' }],
+                            }),
+                        ],
+                    }),
+                );
+                const [planned] = result.plan.pages;
+                expect(planned.action).to.equal('create');
+                expect(planned.longPressDropped).to.equal(undefined);
+                const [converted] = (result.newPages[0] as ShareConfig.MenuEntry).pageItems;
+                expect(converted!.targetPageLongPress).to.equal('lp');
+                expect(converted!.longPress).to.equal('alias.0.Tests.button.SET');
+            });
+        }
+
+        it('cardMedia: drops the long press of its items, the preview lists it', () => {
+            const result = plan(
+                baseConfig({
+                    subPages: [
+                        page({
+                            type: 'cardMedia',
+                            uniqueName: 'm',
+                            heading: 'M',
+                            media: { id: 'squeezeboxrpc.0.Players.Familienzimmer' },
+                            items: [{ id: 'alias.0.Hue' }, { ...item, longPress: 'alias.0.Tests.button.SET' }],
+                        }),
+                    ],
+                }),
+            );
+            expect(result.plan.skipped).to.deep.equal([]);
+            const [planned] = result.plan.pages;
+            expect(planned.action).to.equal('create');
+            expect(planned.longPressDropped).to.deep.equal(['items[1]']);
+            const [, converted] = (result.newPages[0] as ShareConfig.MediaEntry).pageItems;
+            expect(converted).to.not.have.property('targetPageLongPress');
+            expect(converted).to.not.have.property('longPress');
+            expect(converted!.targetPage).to.equal('main');
+        });
+
+        it('cardThermo2: drops the long press of its items, the preview lists it', () => {
+            const result = plan(
+                baseConfig({
+                    subPages: [
+                        page({
+                            type: 'cardThermo2',
+                            uniqueName: 't',
+                            heading: 'T',
+                            thermoItems: [{ id: 'alias.0.NSPanel.1.usr.Temperatur.G.Wohnzimmer.1' }],
+                            items: [{ ...item, longPress: 'alias.0.Tests.button.SET' }],
+                        }),
+                    ],
+                }),
+            );
+            expect(result.plan.skipped).to.deep.equal([]);
+            const [planned] = result.plan.pages;
+            expect(planned.action).to.equal('create');
+            expect(planned.longPressDropped).to.deep.equal(['items[0]']);
+            const [converted] = (result.newPages[0] as ShareConfig.Thermo2Entry).pageItems;
+            expect(converted).to.not.have.property('targetPageLongPress');
+            expect(converted).to.not.have.property('longPress');
+            expect(converted!.targetPage).to.equal('main');
+        });
     });
 
     it('puts prefixName / suffixName into the value entry, the name becomes its state id', () => {

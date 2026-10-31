@@ -377,7 +377,7 @@
     "convertScript_items_one": "1 Element",
     "convertScript_loading": "Der Adapter prüft, was übernommen werden kann…",
     "convertScript_longPressDropped": "Langer Druck verworfen",
-    "convertScript_longPressDroppedHint": "Listen-Seiten (cardEntities, cardSchedule) haben keinen langen Druck. Die Elemente werden ohne longPress / targetPageLongPress übernommen.",
+    "convertScript_longPressDroppedHint": "Langer Druck ist nur auf Grid-Seiten (cardGrid/2/3) verfügbar. Die Elemente werden ohne longPress / targetPageLongPress übernommen.",
     "convertScript_nav_home": "Home",
     "convertScript_nav_next": "weiter",
     "convertScript_nav_parent": "übergeordnet",

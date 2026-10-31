@@ -584,7 +584,7 @@ function convertMenuPage(page, common, topic, rawItems, longPressDropped) {
     card,
     uniqueName: common.uniqueName,
     headline: common.headline,
-    pageItems: convertPageItems(page.items, rawItems, (0, import_adminShareConfig.longPressAllowedOnCard)(card) ? void 0 : longPressDropped),
+    pageItems: convertPageItems(page.items, rawItems, (0, import_adminShareConfig.isLongPressCard)(card) ? void 0 : longPressDropped),
     hidden: common.hidden,
     alwaysOn: common.alwaysOn,
     ...scrollFields(page, card),
@@ -682,7 +682,7 @@ function convertThermo2Circuit(item, where) {
   set("modeState", trimmedText(item.modeId, reason, `${where}.modeId`));
   return circuit;
 }
-function convertThermo2Page(page, common, topic, rawItems) {
+function convertThermo2Page(page, common, topic, rawItems, longPressDropped) {
   const reason = "fieldNotSupported";
   rejectUnknownKeys(
     page,
@@ -714,7 +714,7 @@ function convertThermo2Page(page, common, topic, rawItems) {
     uniqueName: common.uniqueName,
     headline: common.headline,
     thermoItems,
-    pageItems: convertPageItems(page.items, rawItems),
+    pageItems: convertPageItems(page.items, rawItems, longPressDropped),
     hidden: common.hidden,
     alwaysOn: common.alwaysOn,
     ...scrollFields(page, "cardThermo2"),
@@ -820,7 +820,7 @@ function mediaNameList(value, where) {
   const unique = [...new Set(names)];
   return unique.length ? unique : void 0;
 }
-function convertMediaPage(page, common, topic, rawItems) {
+function convertMediaPage(page, common, topic, rawItems, longPressDropped) {
   const reason = "fieldNotSupported";
   rejectUnknownKeys(page, [...pageMappedKeys, ...scrollKeys, "media"], pageIgnoredKeys, reason, "page");
   const media = page.media;
@@ -837,7 +837,7 @@ function convertMediaPage(page, common, topic, rawItems) {
     uniqueName: common.uniqueName,
     headline: common.headline,
     mediaId,
-    pageItems: convertPageItems(page.items, rawItems),
+    pageItems: convertPageItems(page.items, rawItems, longPressDropped),
     hidden: common.hidden,
     alwaysOn: common.alwaysOn,
     ...scrollFields(page, "cardMedia"),
@@ -1720,11 +1720,11 @@ function planScriptToAdmin(input) {
     const longPressDropped = [];
     let entry;
     if (typeName === "cardThermo2") {
-      entry = convertThermo2Page(page, common, panel.topic, rawItems);
+      entry = convertThermo2Page(page, common, panel.topic, rawItems, longPressDropped);
     } else if (typeName === "cardThermo") {
       entry = convertThermoPage(page, common, panel.topic);
     } else if (typeName === "cardMedia") {
-      entry = convertMediaPage(page, common, panel.topic, rawItems);
+      entry = convertMediaPage(page, common, panel.topic, rawItems, longPressDropped);
     } else {
       entry = convertMenuPage(page, common, panel.topic, rawItems, longPressDropped);
     }

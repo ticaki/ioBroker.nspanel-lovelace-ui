@@ -376,7 +376,7 @@
     "convertScript_items_one": "1 element",
     "convertScript_loading": "De adapter controleert wat overgenomen kan worden…",
     "convertScript_longPressDropped": "Lang indrukken verwijderd",
-    "convertScript_longPressDroppedHint": "Lijstpagina's (cardEntities, cardSchedule) hebben geen lang indrukken. De elementen worden overgenomen zonder longPress / targetPageLongPress.",
+    "convertScript_longPressDroppedHint": "Lang indrukken is alleen beschikbaar op grid-pagina's (cardGrid/2/3). De elementen worden overgenomen zonder longPress / targetPageLongPress.",
     "convertScript_nav_home": "home",
     "convertScript_nav_next": "volgende",
     "convertScript_nav_parent": "bovenliggend",

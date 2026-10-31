@@ -376,7 +376,7 @@
     "convertScript_items_one": "1 элемент",
     "convertScript_loading": "Адаптер проверяет, что можно перенести…",
     "convertScript_longPressDropped": "Долгое нажатие отброшено",
-    "convertScript_longPressDroppedHint": "На страницах-списках (cardEntities, cardSchedule) нет долгого нажатия. Элементы переносятся без longPress / targetPageLongPress.",
+    "convertScript_longPressDroppedHint": "Долгое нажатие доступно только на страницах-сетках (cardGrid/2/3). Элементы переносятся без longPress / targetPageLongPress.",
     "convertScript_nav_home": "домой",
     "convertScript_nav_next": "вперёд",
     "convertScript_nav_parent": "родительская",

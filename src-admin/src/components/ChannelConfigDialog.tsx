@@ -52,7 +52,7 @@ import {
     requiredScriptDataPoints,
     emptyChannelValueConfig,
     isRawItemObject,
-    longPressAllowedOnCard,
+    isLongPressCard,
     normalizeChannelId,
     pageItemRawFormat,
 } from '../../../src/lib/types/adminShareConfig';
@@ -550,8 +550,8 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
     }
 
     /**
-     * Long press fieldset visible: every page type except the list pages cardEntities / cardSchedule
-     * ({@link longPressAllowedOnCard}, independent of the isGridCard flag of openWith()), for role button,
+     * Long press fieldset visible: grid pages cardGrid / cardGrid2 / cardGrid3 only - only their items send a long
+     * press on the HMI ({@link isLongPressCard}, independent of the isGridCard flag of openWith()), for role button,
      * custom and navigation items only (intentionally narrow - items with a popup collide with the long press).
      */
     private isLongPressVisible(): boolean {
@@ -561,9 +561,7 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
     /** the item takes a long press (page type and kind of item) - independent of the raw mode */
     private isLongPressAllowed(): boolean {
         const { channelRole, isCustom, isNavigation } = this.state;
-        return (
-            longPressAllowedOnCard(this.props.currentPageCard) && (channelRole === 'button' || isCustom || isNavigation)
-        );
+        return isLongPressCard(this.props.currentPageCard) && (channelRole === 'button' || isCustom || isNavigation);
     }
 
     /**

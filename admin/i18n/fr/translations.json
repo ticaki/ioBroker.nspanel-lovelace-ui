@@ -376,7 +376,7 @@
     "convertScript_items_one": "1 élément",
     "convertScript_loading": "L'adaptateur vérifie ce qui peut être repris…",
     "convertScript_longPressDropped": "Appui long supprimé",
-    "convertScript_longPressDroppedHint": "Les pages de liste (cardEntities, cardSchedule) n'ont pas d'appui long. Les éléments sont repris sans longPress / targetPageLongPress.",
+    "convertScript_longPressDroppedHint": "L'appui long n'est disponible que sur les pages grille (cardGrid/2/3). Les éléments sont repris sans longPress / targetPageLongPress.",
     "convertScript_nav_home": "accueil",
     "convertScript_nav_next": "suivant",
     "convertScript_nav_parent": "parent",

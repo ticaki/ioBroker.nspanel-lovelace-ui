@@ -376,7 +376,7 @@
     "convertScript_items_one": "1 елемент",
     "convertScript_loading": "Адаптер перевіряє, що можна перенести…",
     "convertScript_longPressDropped": "Довге натискання відкинуто",
-    "convertScript_longPressDroppedHint": "На сторінках-списках (cardEntities, cardSchedule) немає довгого натискання. Елементи переносяться без longPress / targetPageLongPress.",
+    "convertScript_longPressDroppedHint": "Довге натискання доступне лише на сторінках-сітках (cardGrid/2/3). Елементи переносяться без longPress / targetPageLongPress.",
     "convertScript_nav_home": "домів",
     "convertScript_nav_next": "вперед",
     "convertScript_nav_parent": "батьківська",

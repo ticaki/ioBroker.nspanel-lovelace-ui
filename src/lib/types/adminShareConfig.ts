@@ -1052,18 +1052,22 @@ export function isScrollCard(card: string | undefined): card is ScrollCard {
     return !!card && (scrollCards as readonly string[]).includes(card);
 }
 
-/** page types with a list layout - their items have no long press (`longPress`, `targetPageLongPress`) */
-export const longPressListCards: readonly string[] = ['cardEntities', 'cardSchedule'];
+/**
+ * Page types whose items take a long press (`longPress`, `targetPageLongPress`). On the HMI (v5.1.1 / v6.0.2)
+ * only the items of the grid pages send `event,buttonPress3,<entnN>` on a long press; cardEntities, cardSchedule,
+ * cardMedia and cardThermo2 send `buttonPress2` for their items only (there a long press exists on the
+ * navigation arrows nent1 / nent2 alone).
+ */
+export const longPressCards: readonly string[] = ['cardGrid', 'cardGrid2', 'cardGrid3'];
 
 /**
- * Whether the items of a page type take a long press: every page type except the list pages
- * ({@link longPressListCards}).
+ * Whether the items of a page type take a long press: the grid pages only ({@link longPressCards}).
  *
  * @param card Card of an admin page entry or page type of the script.
- * @returns False without a card and for the list pages.
+ * @returns True for cardGrid, cardGrid2 and cardGrid3.
  */
-export function longPressAllowedOnCard(card: string | undefined): boolean {
-    return !!card && !longPressListCards.includes(card);
+export function isLongPressCard(card: string | undefined): boolean {
+    return !!card && longPressCards.includes(card);
 }
 
 /**
@@ -3193,8 +3197,8 @@ export type ConvertPagePlan = {
     /** create only: items taken over as raw items, see {@link ConvertRawItem} */
     rawItems?: ConvertRawItem[];
     /**
-     * create only: positions of the items (e.g. `items[2]`) whose long press was dropped - list pages
-     * ({@link longPressListCards}) have no long press
+     * create only: positions of the items (e.g. `items[2]`) whose long press was dropped - only the grid pages
+     * ({@link longPressCards}) have a long press
      */
     longPressDropped?: string[];
     /**

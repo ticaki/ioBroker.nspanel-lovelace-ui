@@ -39,7 +39,6 @@ export interface EntityRowProps {
     height: number;
     /** smaller icons and fonts (cardSchedule with 6 rows) */
     compact?: boolean;
-    send: (event: string) => void;
     press: (id: string, action: string, value?: string | number) => void;
     openPopup: (popup: string, id: string, title?: string, icon?: string, iconColor?: number) => void;
 }
@@ -51,9 +50,13 @@ export interface EntityRowProps {
  * - light, light2, switch, fan: toggle -> `OnOff,1|0`; icon of light/light2/fan -> `pageOpenDetail`
  * - shutter, shutter2: buttons -> `up` / `stop` / `down`; icon -> `pageOpenDetail,popupShutter[2]`
  * - number: slider -> `number-set,<value>`; icon -> `button` (flips `switch1` in the adapter)
- * - button: button -> `button`, long press -> `event,buttonPress3,<id>,button`
+ * - button: button -> `button`
  * - input_sel: text -> `pageOpenDetail,popupInSel`; timer: text -> `pageOpenDetail,popupTimer`
  * - text: nothing
+ *
+ * No long press: on the HMI (v5.1.1 / v6.0.2) only the items of cardGrid / cardGrid2 / cardGrid3 send
+ * `event,buttonPress3,<id>,button`. The rows of cardEntities / cardSchedule have no long press timer, they send
+ * `buttonPress2` already on touch-down (`codesdown`, `codesup-0`), so holding a row is the same as tapping it.
  */
 export class EntityRow extends React.Component<EntityRowProps> {
     private openPopup(): void {
@@ -82,11 +85,6 @@ export class EntityRow extends React.Component<EntityRowProps> {
             default:
                 break;
         }
-    };
-
-    private readonly onLongPress = (): void => {
-        const { entity, send } = this.props;
-        send(`event,buttonPress3,${entity.id},button`);
     };
 
     /**
@@ -147,7 +145,6 @@ export class EntityRow extends React.Component<EntityRowProps> {
                             color={theme.accent}
                             fontSize={fontSize}
                             onPress={(): void => press(entity.id, 'button')}
-                            onLongPress={this.onLongPress}
                         />
                     ),
                 };
