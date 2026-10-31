@@ -214,7 +214,7 @@ function convertPageItem(item, where) {
   if (navigate && !targetPage) {
     throw new ConvertError(reason, `${where}: navigate without targetPage`);
   }
-  if (!navigate && targetPage) {
+  if (!navigate && targetPage && custom) {
     throw new ConvertError(reason, `${where}.targetPage: only used with navigate: true`);
   }
   if (!navigate && !id) {
@@ -233,6 +233,8 @@ function convertPageItem(item, where) {
   const admin = { channelId };
   if (navigate) {
     admin.isNavigation = true;
+    admin.targetPage = targetPage;
+  } else if (targetPage) {
     admin.targetPage = targetPage;
   }
   if (custom) {
@@ -349,7 +351,16 @@ function isEmptyAdminItem(item) {
 function isDroppedItem(item) {
   return !item.navigate && !("native" in item) && item.type !== "custom" && !item.id;
 }
-function convertPageItems(items) {
+function rawPageItem(item) {
+  const nativeOnly = isDict(item.native) && Object.keys(item).every((key) => key === "native" || item[key] === void 0);
+  const format = nativeOnly ? "native" : "script";
+  const native = structuredClone(nativeOnly && isDict(item.native) ? item.native : item);
+  return {
+    admin: { channelId: (0, import_adminShareConfig.emptyChannelValueConfig)(""), useNative: true, nativeFormat: format, native },
+    format
+  };
+}
+function convertPageItems(items, rawItems) {
   if (items === void 0 || items === null) {
     return [];
   }
@@ -371,7 +382,17 @@ function convertPageItems(items) {
     if (isDroppedItem(item)) {
       return;
     }
-    out.push(convertPageItem(item, `items[${index}]`));
+    const where = `items[${index}]`;
+    try {
+      out.push(convertPageItem(item, where));
+    } catch (error) {
+      if (!(error instanceof ConvertError)) {
+        throw error;
+      }
+      const raw = rawPageItem(item);
+      out.push(raw.admin);
+      rawItems.push({ item: where, format: raw.format, detail: error.detail });
+    }
   });
   for (let i = out.length - 1; i >= 0 && out[i] === void 0; i--) {
     out[i] = { channelId: (0, import_adminShareConfig.emptyChannelValueConfig)("empty") };
@@ -523,14 +544,14 @@ function scrollFields(page, card) {
   }
   return fields;
 }
-function convertMenuPage(page, common, topic) {
+function convertMenuPage(page, common, topic, rawItems) {
   rejectUnknownKeys(page, [...pageMappedKeys, ...scrollKeys], pageIgnoredKeys, "fieldNotSupported", "page");
   const card = page.type;
   return {
     card,
     uniqueName: common.uniqueName,
     headline: common.headline,
-    pageItems: convertPageItems(page.items),
+    pageItems: convertPageItems(page.items, rawItems),
     hidden: common.hidden,
     alwaysOn: common.alwaysOn,
     ...scrollFields(page, card),
@@ -628,7 +649,7 @@ function convertThermo2Circuit(item, where) {
   set("modeState", trimmedText(item.modeId, reason, `${where}.modeId`));
   return circuit;
 }
-function convertThermo2Page(page, common, topic) {
+function convertThermo2Page(page, common, topic, rawItems) {
   const reason = "fieldNotSupported";
   rejectUnknownKeys(
     page,
@@ -660,7 +681,7 @@ function convertThermo2Page(page, common, topic) {
     uniqueName: common.uniqueName,
     headline: common.headline,
     thermoItems,
-    pageItems: convertPageItems(page.items),
+    pageItems: convertPageItems(page.items, rawItems),
     hidden: common.hidden,
     alwaysOn: common.alwaysOn,
     ...scrollFields(page, "cardThermo2"),
@@ -766,7 +787,7 @@ function mediaNameList(value, where) {
   const unique = [...new Set(names)];
   return unique.length ? unique : void 0;
 }
-function convertMediaPage(page, common, topic) {
+function convertMediaPage(page, common, topic, rawItems) {
   const reason = "fieldNotSupported";
   rejectUnknownKeys(page, [...pageMappedKeys, ...scrollKeys, "media"], pageIgnoredKeys, reason, "page");
   const media = page.media;
@@ -783,7 +804,7 @@ function convertMediaPage(page, common, topic) {
     uniqueName: common.uniqueName,
     headline: common.headline,
     mediaId,
-    pageItems: convertPageItems(page.items),
+    pageItems: convertPageItems(page.items, rawItems),
     hidden: common.hidden,
     alwaysOn: common.alwaysOn,
     ...scrollFields(page, "cardMedia"),
@@ -941,10 +962,15 @@ const screensaverStateKeys = [
   "ScreensaverEntityFillIfBelowMin"
 ];
 const screensaverTemplateKeys = ["type", "template", "dpInit", "modeScr", "enabled", "visibleCondition"];
+const nativeTemplateKeys = ["template", "dpInit", "modeScr"];
 function convertScreensaverItem(element, area, where, defaults) {
   var _a, _b, _c, _d;
   const reason = "screensaverItemNotSupported";
   if (element.type === "native") {
+    const native = element.native;
+    if (isDict(native) && Object.keys(native).every((key) => nativeTemplateKeys.includes(key) || native[key] === void 0) && typeof native.template === "string" && native.template !== "" && typeof native.dpInit === "string" && native.modeScr === area) {
+      return { state: native.dpInit, template: native.template };
+    }
     throw new ConvertError(reason, `${where}: native element`);
   }
   if (element.type === "template") {
@@ -1106,6 +1132,44 @@ function convertScreensaverItem(element, area, where, defaults) {
     }
   }
   return item;
+}
+function hexToScriptRgb(hex) {
+  return {
+    red: parseInt(hex.substring(1, 3), 16),
+    green: parseInt(hex.substring(3, 5), 16),
+    blue: parseInt(hex.substring(5, 7), 16)
+  };
+}
+function rawScreensaverItem(element, area, where, defaults) {
+  const reason = "screensaverItemNotSupported";
+  if (element.type === "native") {
+    const native = element.native;
+    if (!isDict(native)) {
+      throw new ConvertError(reason, `${where}.native: expected an object`);
+    }
+    if (native.modeScr !== area) {
+      throw new ConvertError(
+        reason,
+        `${where}.native.modeScr: ${String(native.modeScr)} differs from the area ${area}`
+      );
+    }
+    return { item: { state: "", raw: { format: "native", config: structuredClone(native) } }, format: "native" };
+  }
+  if (element.type === "template" && element.modeScr !== area) {
+    throw new ConvertError(reason, `${where}.modeScr: ${String(element.modeScr)} differs from the area ${area}`);
+  }
+  const config = structuredClone(element);
+  if (config.type === "script") {
+    const iconColor = config.ScreensaverEntityIconColor;
+    const iconColorIsScale = isDict(iconColor) && (iconColor.val_min !== void 0 || iconColor.val_max !== void 0);
+    if (!config.ScreensaverEntityOnColor && (!iconColor || iconColorIsScale) && defaults.on) {
+      config.ScreensaverEntityOnColor = hexToScriptRgb(defaults.on);
+    }
+    if (config.ScreensaverEntityOffColor === void 0 && defaults.off) {
+      config.ScreensaverEntityOffColor = hexToScriptRgb(defaults.off);
+    }
+  }
+  return { item: { state: "", raw: { format: "script", config } }, format: "script" };
 }
 const mrIconKeys = [
   "type",
@@ -1299,6 +1363,7 @@ function convertScreensaver(input) {
       defaults.off = rgbToHex(raw.defaultOffColor, "screensaverItemNotSupported", "defaultOffColor");
     } catch {
     }
+    const rawItems = [];
     const area = (name, list, keepGaps) => {
       if (list === void 0 || list === null) {
         return [];
@@ -1317,7 +1382,17 @@ function convertScreensaver(input) {
         if (!isDict(element)) {
           throw new ConvertError("screensaverItemNotSupported", `${name}[${index}]: expected an object`);
         }
-        out.push(convertScreensaverItem(element, name, `${name}[${index}]`, defaults));
+        const where = `${name}[${index}]`;
+        try {
+          out.push(convertScreensaverItem(element, name, where, defaults));
+        } catch (error) {
+          if (!(error instanceof ConvertError)) {
+            throw error;
+          }
+          const raw2 = rawScreensaverItem(element, name, where, defaults);
+          out.push(raw2.item);
+          rawItems.push({ item: where, format: raw2.format, detail: error.detail });
+        }
       });
       return out;
     };
@@ -1400,7 +1475,7 @@ function convertScreensaver(input) {
     if (weatherItems) {
       entry.weatherAddDefaultItems = weatherItems;
     }
-    return { entry, notify };
+    return { entry, notify, rawItems };
   } catch (error) {
     if (error instanceof ConvertError) {
       return { skipped: { reason: error.reason, detail: error.detail } };
@@ -1608,17 +1683,18 @@ function planScriptToAdmin(input) {
       throw new ConvertError("fieldNotSupported", "navigation: the script overrides the links of the page");
     }
     const common = pageCommon(page, isSub);
+    const rawItems = [];
     let entry;
     if (typeName === "cardThermo2") {
-      entry = convertThermo2Page(page, common, panel.topic);
+      entry = convertThermo2Page(page, common, panel.topic, rawItems);
     } else if (typeName === "cardThermo") {
       entry = convertThermoPage(page, common, panel.topic);
     } else if (typeName === "cardMedia") {
-      entry = convertMediaPage(page, common, panel.topic);
+      entry = convertMediaPage(page, common, panel.topic, rawItems);
     } else {
-      entry = convertMenuPage(page, common, panel.topic);
+      entry = convertMenuPage(page, common, panel.topic, rawItems);
     }
-    return { entry, common };
+    return { entry, common, rawItems };
   };
   const handleExistingGlobal = (page, isSub, typeName, uniqueName, existing, source) => {
     var _a, _b, _c, _d;
@@ -1688,7 +1764,8 @@ function planScriptToAdmin(input) {
       navigation: common.navigation,
       action: decision === "takeScript" ? "create" : "assignNavigation",
       global: true,
-      existing: decision
+      existing: decision,
+      ...decision === "takeScript" && converted.rawItems.length ? { rawItems: converted.rawItems } : {}
     });
     remove(uniqueName, isSub, source);
   };
@@ -1834,7 +1911,7 @@ function planScriptToAdmin(input) {
       }
     }
     try {
-      const { entry, common } = convertPage(page, isSub, typeName, uniqueName);
+      const { entry, common, rawItems } = convertPage(page, isSub, typeName, uniqueName);
       if (storedAs !== void 0) {
         entry.uniqueName = storedAs;
         entry.isMainPage = true;
@@ -1859,6 +1936,9 @@ function planScriptToAdmin(input) {
       }
       if (source) {
         planned.global = true;
+      }
+      if (rawItems.length) {
+        planned.rawItems = rawItems;
       }
       plan.pages.push(planned);
     } catch (error) {
@@ -1901,6 +1981,9 @@ function planScriptToAdmin(input) {
       itemCount: (entry.favorit ? 1 : 0) + (entry.alternate ? 1 : 0) + count(entry.left) + count(entry.bottom) + count(entry.indicator) + (entry.mrIcon1 ? 1 : 0) + (entry.mrIcon2 ? 1 : 0),
       notifyCount: newNotify.length
     };
+    if (screensaver.rawItems.length) {
+      plan.screensaver.rawItems = screensaver.rawItems;
+    }
   }
   const buttons = {};
   const clearButtonsInScript = [];

@@ -53,6 +53,8 @@ __export(adminShareConfig_exports, {
   formatEntryNumber: () => formatEntryNumber,
   isMainPageEntry: () => isMainPageEntry,
   isPageLinkEntry: () => isPageLinkEntry,
+  isRawItemFormat: () => isRawItemFormat,
+  isRawItemObject: () => isRawItemObject,
   isScriptNavigatedChart: () => isScriptNavigatedChart,
   isScriptNavigatedPower: () => isScriptNavigatedPower,
   isScrollCard: () => isScrollCard,
@@ -71,11 +73,14 @@ __export(adminShareConfig_exports, {
   normalizeChannelId: () => normalizeChannelId,
   normalizeScrollFields: () => normalizeScrollFields,
   normalizeTrashItems: () => normalizeTrashItems,
+  pageItemRawFormat: () => pageItemRawFormat,
   pageLinkCard: () => pageLinkCard,
   pageLinkProblem: () => pageLinkProblem,
   panelStatusColors: () => panelStatusColors,
   panelStatusStates: () => panelStatusStates,
   panelStatusTranslationKeys: () => panelStatusTranslationKeys,
+  rawItemFormats: () => rawItemFormats,
+  rawItemLabel: () => rawItemLabel,
   requiredScriptDataPoints: () => requiredScriptDataPoints,
   resolvePageLinks: () => resolvePageLinks,
   reversePanelStatusStates: () => reversePanelStatusStates,
@@ -179,6 +184,28 @@ function screensaverCardOfMode(mode) {
     default:
       return "screensaver";
   }
+}
+const rawItemFormats = ["native", "script"];
+function isRawItemFormat(value) {
+  return value === "script" || value === "native";
+}
+function isRawItemObject(value) {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+function pageItemRawFormat(item) {
+  return item.nativeFormat === "native" ? "native" : "script";
+}
+function rawItemLabel(config) {
+  if (!isRawItemObject(config)) {
+    return "";
+  }
+  for (const key of ["id", "template", "dpInit", "ScreensaverEntity"]) {
+    const value = config[key];
+    if (typeof value === "string" && value.trim()) {
+      return value.trim();
+    }
+  }
+  return isRawItemObject(config.native) ? rawItemLabel(config.native) : "";
 }
 function screensaverChannelIdOf(stateId) {
   const parts = stateId.split(".");
@@ -1539,6 +1566,8 @@ const CONVERT_GLOBAL_DEFAULT_DECISION = "keepAdmin";
   formatEntryNumber,
   isMainPageEntry,
   isPageLinkEntry,
+  isRawItemFormat,
+  isRawItemObject,
   isScriptNavigatedChart,
   isScriptNavigatedPower,
   isScrollCard,
@@ -1557,11 +1586,14 @@ const CONVERT_GLOBAL_DEFAULT_DECISION = "keepAdmin";
   normalizeChannelId,
   normalizeScrollFields,
   normalizeTrashItems,
+  pageItemRawFormat,
   pageLinkCard,
   pageLinkProblem,
   panelStatusColors,
   panelStatusStates,
   panelStatusTranslationKeys,
+  rawItemFormats,
+  rawItemLabel,
   requiredScriptDataPoints,
   resolvePageLinks,
   reversePanelStatusStates,

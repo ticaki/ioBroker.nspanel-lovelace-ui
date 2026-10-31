@@ -29,6 +29,7 @@ __export(admin_screensaver_exports, {
   screensaverItemToScript: () => screensaverItemToScript,
   screensaverMrIconToScript: () => screensaverMrIconToScript,
   screensaverNotifyToScript: () => screensaverNotifyToScript,
+  screensaverRawToScript: () => screensaverRawToScript,
   screensaverStateIds: () => screensaverStateIds
 });
 module.exports = __toCommonJS(admin_screensaver_exports);
@@ -59,7 +60,7 @@ function objectNameOf(obj, lang) {
 function screensaverStateIds(entry) {
   const ids = /* @__PURE__ */ new Set();
   for (const item of allItems(entry)) {
-    if (item && !item.template && item.state) {
+    if (item && !item.raw && !item.template && item.state) {
       ids.add(item.state);
     }
   }
@@ -71,6 +72,9 @@ function allItems(entry) {
 }
 function screensaverItemToScript(item, area, info = {}) {
   var _a, _b, _c, _d, _e, _f;
+  if (item.raw) {
+    return screensaverRawToScript(item.raw, area);
+  }
   if (item.template) {
     const element2 = {
       type: "template",
@@ -151,6 +155,18 @@ function screensaverItemToScript(item, area, info = {}) {
   }
   return element;
 }
+function screensaverRawToScript(raw, area) {
+  const config = structuredClone(raw.config);
+  if (raw.format === "native") {
+    return { type: "native", native: { ...config, modeScr: area } };
+  }
+  if (config.type === "template") {
+    config.modeScr = area;
+  } else if (config.type === "native" && (0, import_adminShareConfig.isRawItemObject)(config.native)) {
+    config.native = { ...config.native, modeScr: area };
+  }
+  return config;
+}
 function screensaverMrIconToScript(cfg) {
   var _a;
   if (!cfg || !cfg.entity && !cfg.value) {
@@ -215,7 +231,7 @@ function buildScreensaverScriptConfig(entry, panelTopic, states = {}, notifyList
   var _a, _b, _c;
   const convert = (item, area) => {
     var _a2;
-    return item ? screensaverItemToScript(item, area, (_a2 = states[item.state]) != null ? _a2 : {}) : void 0;
+    return item ? screensaverItemToScript(item, area, item.raw ? {} : (_a2 = states[item.state]) != null ? _a2 : {}) : void 0;
   };
   const present = (list) => list.filter((e) => !!e);
   const favorit = convert(entry.favorit, "favorit");
@@ -303,6 +319,7 @@ function isScreensaverPage(page) {
   screensaverItemToScript,
   screensaverMrIconToScript,
   screensaverNotifyToScript,
+  screensaverRawToScript,
   screensaverStateIds
 });
 //# sourceMappingURL=admin-screensaver.js.map

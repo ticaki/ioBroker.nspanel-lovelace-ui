@@ -2629,11 +2629,18 @@ class NspanelLovelaceUi extends utils.Adapter {
     var _a, _b, _c, _d, _e;
     let error = void 0;
     let pageItem = void 0;
+    let pageConfig = void 0;
     if (preItem && prePage) {
       const manager = new import_config_manager.ConfigManager(this);
       let item = void 0;
       if (preItem.useNative) {
-        item = preItem.useNative ? preItem.native : void 0;
+        const raw = (0, import_adminShareConfig.isRawItemObject)(preItem.native) ? structuredClone(preItem.native) : void 0;
+        if (raw) {
+          item = (0, import_adminShareConfig.pageItemRawFormat)(preItem) === "native" ? { native: raw } : (
+            // script format: not validated here, the config manager checks it like a script item
+            raw
+          );
+        }
       } else if (preItem.isNavigation) {
         item = {
           navigate: true,
@@ -2644,7 +2651,9 @@ class NspanelLovelaceUi extends utils.Adapter {
       } else {
         item = {
           type: null,
-          id: preItem.channelId.valueStateId
+          id: preItem.channelId.valueStateId,
+          // role button: pressed and then changes to targetPage (without navigate)
+          targetPage: preItem.type !== "custom" && preItem.targetPage ? preItem.targetPage : void 0
         };
       }
       const convertToScriptRGBColor = (color) => {
@@ -2663,7 +2672,7 @@ class NspanelLovelaceUi extends utils.Adapter {
         error = "Invalid/Empty item native configuration!";
         return { pageItem, messages, error };
       }
-      if (!("native" in item)) {
+      if (!preItem.useNative && !("native" in item)) {
         item.type = preItem.type === "custom" ? "custom" : null;
         item.icon = preItem.trueIcon || void 0;
         item.icon2 = preItem.falseIcon || void 0;
@@ -2710,11 +2719,12 @@ class NspanelLovelaceUi extends utils.Adapter {
         const result = await manager.getPageItemConfig(item, page, messages);
         messages = result.messages;
         pageItem = result.itemConfig;
+        pageConfig = result.pageConfig;
       } catch (e) {
         error = `Error in configuration: ${e.message}`;
       }
     }
-    return { pageItem, messages, error };
+    return { pageItem, messages, error, pageConfig };
   }
 }
 if (require.main !== module) {

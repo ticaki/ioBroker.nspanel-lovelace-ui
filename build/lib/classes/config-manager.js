@@ -2182,6 +2182,9 @@ class ConfigManager extends import_library.BaseClass {
             throw new Error(`State ${item.id} does not exist!`);
           }
           if (writeable) {
+            if (item.targetPageLongPress && item.longPress) {
+              throw new Error(`You can only use targetPageLongPress or longPress in the same item!`);
+            }
             return {
               messages,
               itemConfig: {
@@ -2191,6 +2194,8 @@ class ConfigManager extends import_library.BaseClass {
                     value: await this.getFieldAsDataItemConfig(item.id, true),
                     set: writeable ? await this.getFieldAsDataItemConfig(item.id) : void 0
                   },
+                  setNaviLongPress: item.targetPageLongPress ? await this.getFieldAsDataItemConfig(item.targetPageLongPress) : void 0,
+                  longPress: item.longPress ? await this.getFieldAsDataItemConfig(item.longPress) : void 0,
                   icon: {
                     true: {
                       value: await this.getFieldAsDataItemConfig(
