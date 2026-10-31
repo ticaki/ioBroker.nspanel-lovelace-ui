@@ -18,6 +18,7 @@ var __copyProps = (to, from, except, desc) => {
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 var script_to_admin_runner_exports = {};
 __export(script_to_admin_runner_exports, {
+  CONVERT_NO_SCRIPT_ERROR_KEY: () => CONVERT_NO_SCRIPT_ERROR_KEY,
   ScriptToAdminRunner: () => ScriptToAdminRunner,
   applyPendingScriptConversions: () => applyPendingScriptConversions,
   isPendingScriptConversion: () => isPendingScriptConversion,
@@ -26,7 +27,9 @@ __export(script_to_admin_runner_exports, {
 module.exports = __toCommonJS(script_to_admin_runner_exports);
 var import_adminShareConfig = require("../types/adminShareConfig");
 var import_script_source = require("./script-source");
+var import_no_script = require("./no-script");
 var import_script_to_admin = require("./script-to-admin");
+const CONVERT_NO_SCRIPT_ERROR_KEY = "convertScript_noScriptPanel";
 const DEFAULT_ANSWER_DELAY = 500;
 function isDict(value) {
   return typeof value === "object" && value !== null && !Array.isArray(value);
@@ -163,6 +166,12 @@ class ScriptToAdminRunner {
     const request = this.parseRequest(message);
     if (typeof request === "string") {
       respond({ error: request });
+      return;
+    }
+    if ((0, import_no_script.isNoScriptPanel)(this.adapter.config.panels, request.panelTopic)) {
+      const text = `Panel ${request.panelTopic} is set to "Panel uses no script" - remove the check mark in the panel settings, convert the script and set the check mark again afterwards`;
+      this.log.warn(text);
+      respond({ error: text, errorKey: CONVERT_NO_SCRIPT_ERROR_KEY });
       return;
     }
     let planned;
@@ -681,6 +690,7 @@ function errorText(e) {
 }
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
+  CONVERT_NO_SCRIPT_ERROR_KEY,
   ScriptToAdminRunner,
   applyPendingScriptConversions,
   isPendingScriptConversion,

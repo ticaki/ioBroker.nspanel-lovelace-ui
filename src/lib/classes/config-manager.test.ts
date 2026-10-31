@@ -178,8 +178,32 @@ describe('lib/classes/config-manager - getDefaultScriptConfig', () => {
         const result = await manager.setScriptConfig(ConfigManager.getDefaultScriptConfig('panel/a'));
 
         expect(result.panelConfig).to.not.equal(undefined);
-        expect(result.messages[0]).to.match(/^Panel .* is correct!$/);
+        // no script behind the adapter default configuration - its version is not checked
+        expect(result.messages[0]).to.match(/^Panel .* without script - admin configuration only$/);
+        expect(result.messages.some(m => /Update|too low|higher/.test(m))).to.equal(false);
         expect((result.panelConfig?.pages ?? []).map(p => p.uniqueID)).to.include('main');
+        await manager.delete();
+    });
+
+    it('has no placeholder page for a panel marked "panel uses no script"', () => {
+        const config = ConfigManager.getDefaultScriptConfig('panel/a', true);
+        expect(isConfig(config, fakeAdapter(['panel/a']))).to.equal(true);
+        expect(config.pages).to.deep.equal([]);
+    });
+
+    it('skips the version check of a script for a panel marked "panel uses no script"', async () => {
+        const adapter = fakeScriptAdapter(undefined);
+        adapter.config.panels[0].noScript = true;
+        const manager = new ConfigManager(adapter, true);
+        const config = {
+            ...ConfigManager.getDefaultScriptConfig('panel/a'),
+            scriptName: 'script.js.x',
+            version: '0.6.0',
+        };
+        const result = await manager.setScriptConfig(config);
+        expect(result.panelConfig).to.not.equal(undefined);
+        expect(result.messages[0]).to.match(/without script - admin configuration only$/);
+        expect(result.messages.some(m => /Update/.test(m))).to.equal(false);
         await manager.delete();
     });
 });

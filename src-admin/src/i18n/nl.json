@@ -114,7 +114,7 @@
     "webPanelEdit": "Webpaneel bewerken",
     "webPanelId": "ID van het webpaneel",
     "webPanelKind": "Web",
-    "webPanelNoTasmotaMaintain": "Een webpaneel heeft geen Tasmota-firmware en geen TFT-display, er is niets te flashen. Alleen het script geldt.",
+    "webPanelNoTasmotaMaintain": "Een webpaneel heeft geen Tasmota-firmware en geen TFT-display, er is niets te flashen.",
     "webPanelTopic": "Topic (uniek, wordt het URL-pad)",
     "webPanelTopicDuplicate": "Dit topic wordt al door een ander paneel gebruikt",
     "webPanelTopicHelp": "Letters, cijfers, _ en -, / als scheidingsteken",
@@ -122,5 +122,11 @@
     "webPanelTopicRequired": "Het topic mag niet leeg zijn",
     "webPanelTopicReserved": "Dit pad wordt door de webserver zelf gebruikt",
     "chart_script_navigation_hint": "Overgenomen uit de oude tabel \"Page Chart\": deze pagina krijgt haar navigatie nog uit het script (pagina \"%s\"). Dit is verouderd - wijs hier een navigatie toe en verwijder de pagina uit het script.",
-    "power_script_navigation_hint": "Overgenomen uit de oude tabel \"Page Power\": deze pagina krijgt haar navigatie nog uit het script (pagina \"%s\"). Dit is verouderd - wijs hier een navigatie toe en verwijder de pagina uit het script."
+    "power_script_navigation_hint": "Overgenomen uit de oude tabel \"Page Power\": deze pagina krijgt haar navigatie nog uit het script (pagina \"%s\"). Dit is verouderd - wijs hier een navigatie toe en verwijder de pagina uit het script.",
+    "panelNoScript": "Paneel gebruikt geen script",
+    "panelNoScriptTooltip": "Het paneel wordt alleen in de admin (en door het globale script) geconfigureerd. Een paneelscript dat ervoor wordt verzonden, wordt geweigerd; er wordt geen scriptupdate aangeboden.",
+    "panelNoScriptInfo": "Script uitgeschakeld",
+    "panelNoScriptVersion": "Script uitgeschakeld",
+    "convertScript_noScriptPanel": "Het paneel staat op \"Paneel gebruikt geen script\". Verwijder het vinkje in de paneelinstellingen, converteer het script en zet het vinkje daarna weer.",
+    "panelButtonDialog_modeNoneHintNoScript": "Het paneel gebruikt geen script - zonder hier ingestelde actie heeft de knop geen functie."
 }

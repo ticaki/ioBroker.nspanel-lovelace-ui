@@ -76,6 +76,8 @@ interface PanelConfig {
     model?: string;
     /** missing = tasmota; a web panel has no hardware behind it */
     kind?: 'tasmota' | 'web';
+    /** "panel uses no script": configured in the admin (+ global script) only */
+    noScript?: boolean;
 }
 
 // Hier können weitere States hinzugefügt werden, die angezeigt bzw. gesteuert werden sollen
@@ -759,7 +761,11 @@ class TabPanelinfo extends ConfigGeneric<ConfigGenericProps & PanelinfoProps, Pa
     }
 
     // Render state control based on object data
-    private renderStateControl(panelId: string, statePath: string): React.JSX.Element | null {
+    private renderStateControl(
+        panelId: string,
+        statePath: string,
+        noScript: boolean = false,
+    ): React.JSX.Element | null {
         const panelStateData = this.state.panelStates[panelId];
         if (!panelStateData || !panelStateData.states[statePath]) {
             return null;
@@ -767,7 +773,13 @@ class TabPanelinfo extends ConfigGeneric<ConfigGenericProps & PanelinfoProps, Pa
 
         const stateData = panelStateData.states[statePath];
         const obj = stateData.object;
-        const value = stateData.tempValue !== undefined ? stateData.tempValue : (stateData.value ?? '');
+        // a panel marked "panel uses no script" shows a hint instead of the name of the adapter default configuration
+        const value =
+            noScript && statePath === 'info.internal.scriptName'
+                ? this.getText('panelNoScriptInfo')
+                : stateData.tempValue !== undefined
+                  ? stateData.tempValue
+                  : (stateData.value ?? '');
         const isWritable = obj.common.write;
         const type = obj.common.type;
         const states = obj.common.states;
@@ -1056,7 +1068,11 @@ class TabPanelinfo extends ConfigGeneric<ConfigGenericProps & PanelinfoProps, Pa
                                         {displayStates
                                             .filter(isShown)
                                             .map(statePath =>
-                                                this.renderStateControl(panelConfig?.id || panel._id, statePath),
+                                                this.renderStateControl(
+                                                    panelConfig?.id || panel._id,
+                                                    statePath,
+                                                    panelConfig?.noScript === true,
+                                                ),
                                             )}
                                         {optionalDisplayStates
                                             .filter(

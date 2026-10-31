@@ -65,9 +65,10 @@ export class ConfigManager extends BaseClass {
      * entries. Everything else comes from the admin configuration, which takes precedence anyway.
      *
      * @param panelTopic topic of the panel
+     * @param noScript the panel is marked "panel uses no script" - no placeholder start page
      * @returns a configuration that can be passed to {@link setScriptConfig}
      */
-    static getDefaultScriptConfig(panelTopic: string): ScriptConfig.Config {
+    static getDefaultScriptConfig(panelTopic: string, noScript: boolean = false): ScriptConfig.Config {
         return {
             ...configManagerConst.defaultConfig,
             version: ConfigManager.getTemplateScriptVersion() || ConfigManager.breakingVersion,
@@ -77,7 +78,8 @@ export class ConfigManager extends BaseClass {
             defaultOffColor: { red: 253, green: 128, blue: 0 },
             defaultBackgroundColor: { red: 29, green: 29, blue: 29 },
             weatherAddDefaultItems: false,
-            pages: [{ type: 'cardGrid', uniqueName: mainPageName, heading: 'Die Leere', items: [] }],
+            // "panel uses no script": no placeholder page, the adapter adds its system start page
+            pages: noScript ? [] : [{ type: 'cardGrid', uniqueName: mainPageName, heading: 'Die Leere', items: [] }],
             subPages: [],
         };
     }
@@ -170,14 +172,20 @@ export class ConfigManager extends BaseClass {
         const requiredVersion = getVersionAsNumber(scriptVersion);
         const breakingVersion = getVersionAsNumber(ConfigManager.breakingVersion);
 
-        if (version < breakingVersion) {
+        // "panel uses no script" or no script at all (adapter default configuration): there is no script whose
+        // version could be checked or updated - configured in the admin (+ global script) only
+        const withoutScript = panelItem.noScript === true || config.scriptName === configManagerConst.defaultScriptName;
+        if (withoutScript) {
+            messages.push(
+                `Panel for Topic: ${config.panelTopic} name: ${panelItem.name} without script - admin configuration only`,
+            );
+        } else if (version < breakingVersion) {
             messages.push(
                 `Update Script! Panel for Topic: ${config.panelTopic} - name: ${panelItem.name} Script version ${config.version} is too low! Aborted! Required version is >=${ConfigManager.breakingVersion}!`,
             );
             this.log.error(messages[messages.length - 1]);
             return { messages, panelConfig: undefined };
-        }
-        if (version < requiredVersion) {
+        } else if (version < requiredVersion) {
             messages.push(
                 `Update your script and/or resend the configuration to the adapter! Panel for Topic: ${config.panelTopic}, name: ${panelItem.name} — script version ${config.version} is below the required version ${scriptVersion}!`,
             );
@@ -382,7 +390,9 @@ export class ConfigManager extends BaseClass {
             this.log.warn(messages[messages.length - 1]);
         }
 
-        if (panelConfig.pages.length === 0) {
+        if (withoutScript) {
+            // no script - the pages come from the admin (+ global script), the adapter adds the start page
+        } else if (panelConfig.pages.length === 0) {
             // Valid setup since a script is optional: all pages may live in the admin (e.g. after the
             // script was taken over into the admin). The adapter adds a default start page.
             messages.push(`No pages in the script configuration! Pages from the admin configuration are used.`);

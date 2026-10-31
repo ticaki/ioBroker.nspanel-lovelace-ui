@@ -1858,6 +1858,20 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
         return found?.topic ?? '';
     }
 
+    /**
+     * Whether the panel is marked "panel uses no script" in the panel table.
+     *
+     * @param panelTopic Topic of the panel.
+     * @returns true for a panel without a script.
+     */
+    private isNoScriptPanel(panelTopic: string | undefined): boolean {
+        const panels: { topic?: string; noScript?: boolean }[] | undefined = this.props.data?.panels;
+        if (!panelTopic || !Array.isArray(panels)) {
+            return false;
+        }
+        return panels.some(p => p && p.topic === panelTopic && p.noScript === true);
+    }
+
     /** Topic of the selected panel - the key its pages are assigned under */
     private getSelectedPanelTopic(): string | undefined {
         return this.state.panelList.find(p => p.panelName === this.state.selectedPanel)?.panelTopic || undefined;
@@ -3142,6 +3156,7 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
                                 panelName={staleDialog?.panelName ?? ''}
                                 items={staleDialog?.items ?? []}
                                 onDecide={this.handleStaleDecision}
+                                noScript={this.isNoScriptPanel(staleDialog?.panelTopic)}
                             />
                             <NodePageInfoPanel
                                 open={!!this.state.infoPanelOpen}

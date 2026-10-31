@@ -85,9 +85,10 @@ class ConfigManager extends import_library.BaseClass {
    * entries. Everything else comes from the admin configuration, which takes precedence anyway.
    *
    * @param panelTopic topic of the panel
+   * @param noScript the panel is marked "panel uses no script" - no placeholder start page
    * @returns a configuration that can be passed to {@link setScriptConfig}
    */
-  static getDefaultScriptConfig(panelTopic) {
+  static getDefaultScriptConfig(panelTopic, noScript = false) {
     return {
       ...configManagerConst.defaultConfig,
       version: ConfigManager.getTemplateScriptVersion() || ConfigManager.breakingVersion,
@@ -97,7 +98,8 @@ class ConfigManager extends import_library.BaseClass {
       defaultOffColor: { red: 253, green: 128, blue: 0 },
       defaultBackgroundColor: { red: 29, green: 29, blue: 29 },
       weatherAddDefaultItems: false,
-      pages: [{ type: "cardGrid", uniqueName: import_default_pages.mainPageName, heading: "Die Leere", items: [] }],
+      // "panel uses no script": no placeholder page, the adapter adds its system start page
+      pages: noScript ? [] : [{ type: "cardGrid", uniqueName: import_default_pages.mainPageName, heading: "Die Leere", items: [] }],
       subPages: []
     };
   }
@@ -168,14 +170,18 @@ class ConfigManager extends import_library.BaseClass {
     const version = (0, import_tools.getVersionAsNumber)(config.version);
     const requiredVersion = (0, import_tools.getVersionAsNumber)(scriptVersion);
     const breakingVersion = (0, import_tools.getVersionAsNumber)(ConfigManager.breakingVersion);
-    if (version < breakingVersion) {
+    const withoutScript = panelItem.noScript === true || config.scriptName === configManagerConst.defaultScriptName;
+    if (withoutScript) {
+      messages.push(
+        `Panel for Topic: ${config.panelTopic} name: ${panelItem.name} without script - admin configuration only`
+      );
+    } else if (version < breakingVersion) {
       messages.push(
         `Update Script! Panel for Topic: ${config.panelTopic} - name: ${panelItem.name} Script version ${config.version} is too low! Aborted! Required version is >=${ConfigManager.breakingVersion}!`
       );
       this.log.error(messages[messages.length - 1]);
       return { messages, panelConfig: void 0 };
-    }
-    if (version < requiredVersion) {
+    } else if (version < requiredVersion) {
       messages.push(
         `Update your script and/or resend the configuration to the adapter! Panel for Topic: ${config.panelTopic}, name: ${panelItem.name} \u2014 script version ${config.version} is below the required version ${scriptVersion}!`
       );
@@ -344,7 +350,8 @@ class ConfigManager extends import_library.BaseClass {
       messages.push(`Button right wrong configured!`);
       this.log.warn(messages[messages.length - 1]);
     }
-    if (panelConfig.pages.length === 0) {
+    if (withoutScript) {
+    } else if (panelConfig.pages.length === 0) {
       messages.push(`No pages in the script configuration! Pages from the admin configuration are used.`);
       this.log.info(messages[messages.length - 1]);
     } else if (panelConfig.navigation.length === 0) {

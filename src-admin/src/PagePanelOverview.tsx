@@ -2,8 +2,8 @@ import React from 'react';
 import { ConfigGeneric, type ConfigGenericProps, type ConfigGenericState } from '@iobroker/json-config';
 import {
     Alert,
-    //Checkbox,
-    //FormControlLabel,
+    Checkbox,
+    FormControlLabel,
     Autocomplete,
     Box,
     Select,
@@ -54,6 +54,8 @@ interface PanelConfig {
     buttonLeft?: AdminButtonFunction;
     /** action of the right hardware button; missing = the configuration script decides */
     buttonRight?: AdminButtonFunction;
+    /** "panel uses no script": configured in the admin (+ global script) only, a local panel script is rejected */
+    noScript?: boolean;
 }
 
 /** the three hardware models a panel (and a web panel) can have */
@@ -1067,6 +1069,29 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
         void this.onChange('panels', updatedPanels).then(() => this.forceUpdate());
     };
 
+    /**
+     * Stores the option "panel uses no script" in the panel table. Unchecked removes the field again.
+     *
+     * @param panelId Id of the panel.
+     * @param noScript true = the panel is configured in the admin (+ global script) only.
+     */
+    private handleNoScriptChange = (panelId: string, noScript: boolean): void => {
+        const panels: PanelConfig[] = this.props.data.panels || [];
+        const updatedPanels = panels.map((panel: PanelConfig) => {
+            if (panel.id !== panelId) {
+                return panel;
+            }
+            const next: PanelConfig = { ...panel };
+            if (noScript) {
+                next.noScript = true;
+            } else {
+                delete next.noScript;
+            }
+            return next;
+        });
+        void this.onChange('panels', updatedPanels).then(() => this.forceUpdate());
+    };
+
     // Schließt den Message-Dialog
     private handleMessageClose = (): void => {
         this.setState({ showMessageConfirm: false });
@@ -1435,6 +1460,22 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
                                             sx={{ flex: '1 1 250px', minWidth: 200, maxWidth: 300 }}
                                         />
                                     </Box>
+
+                                    {/* Panel uses no script (native.panels[].noScript) */}
+                                    <FormControlLabel
+                                        control={
+                                            <Checkbox
+                                                size="small"
+                                                checked={panel.noScript === true}
+                                                disabled={!panel.id}
+                                                onChange={(event: React.ChangeEvent<HTMLInputElement>): void =>
+                                                    this.handleNoScriptChange(panel.id ?? '', event.target.checked)
+                                                }
+                                            />
+                                        }
+                                        label={this.getText('panelNoScript')}
+                                        title={this.getText('panelNoScriptTooltip')}
+                                    />
 
                                     {/* Hardware buttons below the display */}
                                     <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 1 }}>

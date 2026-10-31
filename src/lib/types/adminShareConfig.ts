@@ -68,6 +68,8 @@ export type AdminPanelConfig = {
     name?: string;
     topic?: string;
     model?: string;
+    /** "panel uses no script": configured in the admin (+ global script) only, a local panel script is rejected */
+    noScript?: boolean;
 };
 
 export type PanelsResponse = PanelInfo[];

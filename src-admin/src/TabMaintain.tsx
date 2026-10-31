@@ -50,6 +50,8 @@ interface MaintainPanelInfo {
     _check_tasmota?: boolean;
     _check_tft?: boolean;
     _check_script?: boolean;
+    /** "panel uses no script": no script version, no script update, no conversion */
+    _noScript?: boolean;
 }
 
 interface MaintainPanelProps {
@@ -498,7 +500,7 @@ class MaintainPanel extends ConfigGeneric<ConfigGenericProps & MaintainPanelProp
     }
 
     private async handleUpdateAllScripts(): Promise<void> {
-        const panels = this.state.panelsInfo.filter(p => p._check_script && p._name && p._topic);
+        const panels = this.state.panelsInfo.filter(p => p._check_script && !p._noScript && p._name && p._topic);
         if (panels.length === 0) {
             return;
         }
@@ -627,7 +629,7 @@ class MaintainPanel extends ConfigGeneric<ConfigGenericProps & MaintainPanelProp
         const webLink = this.webLink();
         const { panelsInfo, error, processingPanel, alive } = this.state;
         const confirmDialog = this.confirmDialog;
-        const anyScriptNeedsUpdate = panelsInfo.some(p => p._check_script);
+        const anyScriptNeedsUpdate = panelsInfo.some(p => p._check_script && !p._noScript);
 
         return (
             <Box sx={{ p: 2 }}>
@@ -853,44 +855,60 @@ class MaintainPanel extends ConfigGeneric<ConfigGenericProps & MaintainPanelProp
                                     <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, alignItems: 'center' }}>
                                         <TextField
                                             label={this.getText('vScript')}
-                                            value={panel._ScriptVersion}
+                                            value={
+                                                panel._noScript
+                                                    ? this.getText('panelNoScriptVersion')
+                                                    : panel._ScriptVersion
+                                            }
                                             slotProps={{ input: { readOnly: true } }}
                                             size="small"
                                             sx={{ flex: '1 1 250px', minWidth: 200, maxWidth: 300 }}
                                         />
-                                        <Button
-                                            variant="contained"
-                                            onClick={() => this.handleCreateScript(panel)}
-                                            disabled={
-                                                !panel._name ||
-                                                !panel._topic ||
-                                                processingPanel === panel._name ||
-                                                !alive
-                                            }
-                                            size="small"
-                                            sx={{
-                                                flex: '0 0 auto',
-                                                minWidth: 200,
-                                                ...(cardStyle.buttonScriptColor !== 'primary' && {
-                                                    backgroundColor: cardStyle.buttonScriptColor,
-                                                    '&:hover': {
+                                        {panel._noScript ? null : (
+                                            <Button
+                                                variant="contained"
+                                                onClick={() => this.handleCreateScript(panel)}
+                                                disabled={
+                                                    !panel._name ||
+                                                    !panel._topic ||
+                                                    processingPanel === panel._name ||
+                                                    !alive
+                                                }
+                                                size="small"
+                                                sx={{
+                                                    flex: '0 0 auto',
+                                                    minWidth: 200,
+                                                    ...(cardStyle.buttonScriptColor !== 'primary' && {
                                                         backgroundColor: cardStyle.buttonScriptColor,
-                                                        filter: 'brightness(0.9)',
-                                                    },
-                                                }),
-                                            }}
-                                        >
-                                            {processingPanel === panel._name ? (
-                                                <CircularProgress size={20} />
-                                            ) : (
-                                                this.getText('createScript')
-                                            )}
-                                        </Button>
+                                                        '&:hover': {
+                                                            backgroundColor: cardStyle.buttonScriptColor,
+                                                            filter: 'brightness(0.9)',
+                                                        },
+                                                    }),
+                                                }}
+                                            >
+                                                {processingPanel === panel._name ? (
+                                                    <CircularProgress size={20} />
+                                                ) : (
+                                                    this.getText('createScript')
+                                                )}
+                                            </Button>
+                                        )}
                                         <Button
                                             variant="outlined"
                                             startIcon={<MoveDownIcon />}
                                             onClick={() => this.handleConvertScript(panel)}
-                                            disabled={!panel._topic || processingPanel === panel._name || !alive}
+                                            disabled={
+                                                !panel._topic ||
+                                                panel._noScript === true ||
+                                                processingPanel === panel._name ||
+                                                !alive
+                                            }
+                                            title={
+                                                panel._noScript
+                                                    ? this.getText('convertScript_noScriptPanel')
+                                                    : undefined
+                                            }
                                             size="small"
                                             sx={{ flex: '0 0 auto', minWidth: 200 }}
                                         >

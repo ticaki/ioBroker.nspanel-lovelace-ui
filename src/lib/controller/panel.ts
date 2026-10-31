@@ -47,6 +47,7 @@ import { PageOriginTracker } from '../configuration/page-origin';
 import { collectNavigationTargets } from '../configuration/page-targets';
 import { collectPageStates, emptyStateNode, mergeStateInfo, type PageStateNode } from '../configuration/page-states';
 import { mainPageName } from '../const/default-pages';
+import { isNoScriptPanel } from '../configuration/no-script';
 import type { NSPanel } from '../types/NSPanel';
 import {
     buildDisplayDiagnosisMessage,
@@ -420,7 +421,10 @@ export class Panel extends BaseClass {
                 this.sendToTasmota = this.panelSend.addMessageTasmota;
             }
         }
-        this.info.nspanel.scriptVersion = options.scriptVersion || 'unknown';
+        // "panel uses no script": there is no script version
+        this.info.nspanel.scriptVersion = isNoScriptPanel(this.adapter.config.panels, this.topic)
+            ? 'none'
+            : options.scriptVersion || 'unknown';
         this.info.tasmota.onlineVersion = this.controller.globalPanelInfo.availableTasmotaFirmwareVersion;
         //this.info.nspanel.onlineVersion = this.controller.globalPanelInfo.availableTftFirmwareVersion;
         // remove unused pages except screensaver - pages must be in navigation
@@ -444,7 +448,10 @@ export class Panel extends BaseClass {
         const ensured = ensureMainPage(options, this.friendlyName || this.name);
         // A generated default start page belongs to the adapter, not to the script.
         this.pageOrigins.classify(options.pages, 'system');
-        if (ensured.pageAdded || ensured.navigationAdded) {
+        if (
+            (ensured.pageAdded || ensured.navigationAdded) &&
+            !isNoScriptPanel(this.adapter.config.panels, this.topic)
+        ) {
             this.log.info(
                 `No page '${mainPageName}' in the script configuration - a default start page was added. A page named '${mainPageName}' in the admin configuration replaces it.`,
             );

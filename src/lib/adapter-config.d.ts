@@ -79,6 +79,11 @@ declare global {
                 buttonLeft?: AdminButtonFunction,
                 /** action of the right hardware button, configured in the panel tile; missing = the configuration script decides */
                 buttonRight?: AdminButtonFunction,
+                /**
+                 * "panel uses no script": the panel is configured in the admin (+ global script) only - a local
+                 * panel script is rejected, its version is not checked and no script update is offered
+                 */
+                noScript?: boolean,
             }[];
             pw1: string;
 

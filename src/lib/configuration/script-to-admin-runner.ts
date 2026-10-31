@@ -44,6 +44,7 @@ import {
     planScriptBackup,
     removePagesFromScript,
 } from './script-source';
+import { isNoScriptPanel } from './no-script';
 import { planScriptToAdmin, type ScriptToAdminPanel, type ScriptToAdminResult } from './script-to-admin';
 
 /** the log of the adapter as far as the runner uses it */
@@ -60,6 +61,8 @@ export type ScriptToAdminConfigPanel = {
     topic: string;
     buttonLeft?: AdminButtonFunction;
     buttonRight?: AdminButtonFunction;
+    /** "panel uses no script" - a conversion is refused */
+    noScript?: boolean;
 };
 
 /** the part of the adapter the runner works with (`NspanelLovelaceUi` satisfies it) */
@@ -98,7 +101,13 @@ export type ScriptToAdminRunnerOptions = {
 };
 
 /** the answer of the command, as the admin dialog expects it */
-export type ConvertScriptAnswer = { error: string } | ConvertScriptPlan | ConvertScriptResult;
+export type ConvertScriptAnswer =
+    | { error: string; /** translation key of the error for the admin */ errorKey?: string }
+    | ConvertScriptPlan
+    | ConvertScriptResult;
+
+/** translation key of the error for a panel marked "panel uses no script" */
+export const CONVERT_NO_SCRIPT_ERROR_KEY = 'convertScript_noScriptPanel';
 
 const DEFAULT_ANSWER_DELAY = 500;
 
@@ -373,6 +382,14 @@ export class ScriptToAdminRunner {
         const request = this.parseRequest(message);
         if (typeof request === 'string') {
             respond({ error: request });
+            return;
+        }
+        if (isNoScriptPanel(this.adapter.config.panels, request.panelTopic)) {
+            const text =
+                `Panel ${request.panelTopic} is set to "Panel uses no script" - remove the check mark in the panel ` +
+                `settings, convert the script and set the check mark again afterwards`;
+            this.log.warn(text);
+            respond({ error: text, errorKey: CONVERT_NO_SCRIPT_ERROR_KEY });
             return;
         }
         let planned: Planned;

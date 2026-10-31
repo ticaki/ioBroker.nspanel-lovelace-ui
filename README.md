@@ -158,6 +158,7 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
     ### **WORK IN PROGRESS**
 -->
 ### **WORK IN PROGRESS**
+- (ticaki) new option per panel "Panel uses no script" in the panel settings: the panel is configured in the admin (and by the global script) only - a panel script sent for it is rejected with an error (not stored, panel not reloaded), its stored script configuration is ignored, the maintain tab offers no script update or conversion and shows "Script disabled", no script version warnings; a change of the global script reloads these panels right away
 - (ticaki) fix: a media item on an admin page now gets its media player sub page (`media-<id>`) like in the script - before, the item led to a page that did not exist
 - (ticaki) error in the log if Tasmota is online but the display never answers: the adapter checks `Module`/`Gpio` and tells you to load the NSPanel template (`Module 0`, GPIO4 "Output Lo" powers the display) or, if Tasmota is fine, to check TFT, wiring and power
 - (ticaki) fix: the font size of a page item was lost while the item is off (all cards); the item dialog of cardThermo2 offers the font size explicitly

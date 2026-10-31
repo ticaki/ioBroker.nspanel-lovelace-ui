@@ -39,6 +39,8 @@ export interface NavigationOverrideStaleDialogProps {
     items: StaleOverrideItem[];
     /** The decision, applied to every listed page */
     onDecide: (decision: StaleOverrideDecision) => void;
+    /** the panel is marked "panel uses no script" - taking over the script is not offered */
+    noScript?: boolean;
 }
 
 /**
@@ -139,13 +141,15 @@ export default class NavigationOverrideStaleDialog extends React.PureComponent<N
                     >
                         {I18n.t('nav_edit_stale_keep')}
                     </Button>
-                    <Button
-                        variant="outlined"
-                        onClick={this.handleScript}
-                        title={I18n.t('nav_edit_stale_take_script_hint')}
-                    >
-                        {I18n.t('nav_edit_stale_take_script')}
-                    </Button>
+                    {this.props.noScript ? null : (
+                        <Button
+                            variant="outlined"
+                            onClick={this.handleScript}
+                            title={I18n.t('nav_edit_stale_take_script_hint')}
+                        >
+                            {I18n.t('nav_edit_stale_take_script')}
+                        </Button>
+                    )}
                     <Button
                         variant="text"
                         onClick={this.handleLater}

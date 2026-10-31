@@ -11,6 +11,7 @@ import type { ConvertScriptPlan, ConvertScriptResult, MenuEntry, ScreensaverEntr
 import { scanScriptConfig } from './script-source';
 import {
     applyPendingScriptConversions,
+    CONVERT_NO_SCRIPT_ERROR_KEY,
     localDate,
     ScriptToAdminRunner,
     type PendingScriptConversion,
@@ -484,6 +485,14 @@ describe('lib/configuration - script-to-admin-runner', () => {
         });
         await runner.run({ panelTopic: 'nspanel/other', dryRun: true }, answer => w.answers.push(answer));
         expect(w.answers[0]).to.deep.equal({ error: 'Panel nspanel/other is not configured in the admin' });
+    });
+
+    it('refuses a panel marked "panel uses no script" without writing anything', async () => {
+        const w = world();
+        (w.adapter.config.panels[0] as { noScript?: boolean }).noScript = true;
+        const answer = await run(w, false);
+        expect(answer).to.have.property('errorKey', CONVERT_NO_SCRIPT_ERROR_KEY);
+        expect(w.trace).to.deep.equal([{ op: 'respond', id: '' }]);
     });
 
     it('answers with an error when the script never sent its configuration', async () => {

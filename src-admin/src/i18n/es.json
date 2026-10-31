@@ -114,7 +114,7 @@
     "webPanelEdit": "Editar panel web",
     "webPanelId": "ID del panel web",
     "webPanelKind": "Web",
-    "webPanelNoTasmotaMaintain": "Un panel web no tiene firmware Tasmota ni pantalla TFT, no hay nada que flashear. Solo se aplica el script.",
+    "webPanelNoTasmotaMaintain": "Un panel web no tiene firmware Tasmota ni pantalla TFT, no hay nada que flashear.",
     "webPanelTopic": "Topic (único, se convierte en la ruta URL)",
     "webPanelTopicDuplicate": "Este topic ya lo usa otro panel",
     "webPanelTopicHelp": "Letras, dígitos, _ y -, / como separador",
@@ -122,5 +122,11 @@
     "webPanelTopicRequired": "El topic no puede estar vacío",
     "webPanelTopicReserved": "Esta ruta la usa el propio servidor web",
     "chart_script_navigation_hint": "Migrada desde la antigua tabla \"Page Chart\": esta página aún obtiene su navegación del script (página \"%s\"). Esto está obsoleto: asigne aquí una navegación y elimine la página del script.",
-    "power_script_navigation_hint": "Migrada desde la antigua tabla \"Page Power\": esta página aún obtiene su navegación del script (página \"%s\"). Esto está obsoleto: asigne aquí una navegación y elimine la página del script."
+    "power_script_navigation_hint": "Migrada desde la antigua tabla \"Page Power\": esta página aún obtiene su navegación del script (página \"%s\"). Esto está obsoleto: asigne aquí una navegación y elimine la página del script.",
+    "panelNoScript": "El panel no usa script",
+    "panelNoScriptTooltip": "El panel se configura solo en el admin (y mediante el script global). Un script de panel enviado para él se rechaza; no se ofrece ninguna actualización del script.",
+    "panelNoScriptInfo": "Script desactivado",
+    "panelNoScriptVersion": "Script desactivado",
+    "convertScript_noScriptPanel": "El panel está configurado como \"El panel no usa script\". Quite la marca en los ajustes del panel, convierta el script y vuelva a marcarla después.",
+    "panelButtonDialog_modeNoneHintNoScript": "El panel no usa script: sin una acción configurada aquí, el botón no tiene función."
 }

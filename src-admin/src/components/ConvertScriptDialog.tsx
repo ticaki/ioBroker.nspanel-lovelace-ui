@@ -124,7 +124,7 @@ function isRecord(value: unknown): value is Record<string, unknown> {
  *
  * @param value answer of the adapter
  */
-function isErrorResponse(value: unknown): value is { error: string } {
+function isErrorResponse(value: unknown): value is { error: string; errorKey?: string } {
     return isRecord(value) && typeof value.error === 'string' && value.error !== '' && !('executed' in value);
 }
 
@@ -441,7 +441,9 @@ class ConvertScriptDialog extends React.Component<ConvertScriptDialogProps, Conv
         }
         if (isErrorResponse(answer)) {
             // the plan stays, so a failed execution still shows what was planned
-            this.setState({ phase: 'error', error: answer.error, refreshing: false });
+            const error =
+                typeof answer.errorKey === 'string' && answer.errorKey ? I18n.t(answer.errorKey) : answer.error;
+            this.setState({ phase: 'error', error, refreshing: false });
             return;
         }
         if (!dryRun && isConvertScriptResult(answer)) {

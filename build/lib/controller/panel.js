@@ -61,6 +61,7 @@ var import_page_origin = require("../configuration/page-origin");
 var import_page_targets = require("../configuration/page-targets");
 var import_page_states = require("../configuration/page-states");
 var import_default_pages = require("../const/default-pages");
+var import_no_script = require("../configuration/no-script");
 var import_display_diagnosis = require("./display-diagnosis");
 const DefaultOptions = {
   format: {
@@ -344,7 +345,7 @@ class Panel extends import_library.BaseClass {
         this.sendToTasmota = this.panelSend.addMessageTasmota;
       }
     }
-    this.info.nspanel.scriptVersion = options.scriptVersion || "unknown";
+    this.info.nspanel.scriptVersion = (0, import_no_script.isNoScriptPanel)(this.adapter.config.panels, this.topic) ? "none" : options.scriptVersion || "unknown";
     this.info.tasmota.onlineVersion = this.controller.globalPanelInfo.availableTasmotaFirmwareVersion;
     this.statesControler = options.controller.statesControler;
     this.statesControler.clearObjectDatabase();
@@ -357,7 +358,7 @@ class Panel extends import_library.BaseClass {
     this.pageOrigins.classify(options.pages, "script");
     const ensured = (0, import_main_page.ensureMainPage)(options, this.friendlyName || this.name);
     this.pageOrigins.classify(options.pages, "system");
-    if (ensured.pageAdded || ensured.navigationAdded) {
+    if ((ensured.pageAdded || ensured.navigationAdded) && !(0, import_no_script.isNoScriptPanel)(this.adapter.config.panels, this.topic)) {
       this.log.info(
         `No page '${import_default_pages.mainPageName}' in the script configuration - a default start page was added. A page named '${import_default_pages.mainPageName}' in the admin configuration replaces it.`
       );
