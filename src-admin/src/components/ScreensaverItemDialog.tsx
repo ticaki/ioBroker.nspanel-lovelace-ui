@@ -1223,14 +1223,10 @@ export class ScreensaverItemDialog extends React.Component<ScreensaverItemDialog
     }
 
     /**
-     * icon per value range of a number state: in expert mode a button opens the list, an existing list is
-     * shown (and can be removed) without expert mode too
+     * icon per value range of a number state: a button opens the list, an existing list is shown and can be removed
      */
     private renderIconSelectSection(): React.JSX.Element | null {
         const list = this.state.draft.iconSelect;
-        if (!list?.length && !this.props.expertMode) {
-            return null;
-        }
         return (
             <Box
                 sx={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 1, mb: 2 }}
@@ -1595,7 +1591,7 @@ export class ScreensaverItemDialog extends React.Component<ScreensaverItemDialog
 
                     {known && fields.action && this.renderActionSection()}
 
-                    {visibility && this.props.expertMode && (
+                    {visibility && (
                         <Box sx={{ mb: 1 }}>
                             <Typography
                                 variant="subtitle2"
