@@ -158,6 +158,10 @@ Ein Web-Panel hat weder Tasmota noch ein Nextion-Display. Deshalb gibt es dort:
 - **keine Tasmota-Befehle** außer dem Summer, keinen Tasmota-Neustart,
 - **kein Update-Symbol** im Bildschirmschoner.
 
+> **Umgekehrt ist das der Grund, ein Web-Panel zum Ausprobieren anzulegen:** Außer den Relais lässt sich
+> damit alles testen — Seiten, Navigation, Bildschirmschoner, Popups, Blätterung, Farben. Dafür braucht es
+> weder ein zweites Gerät noch einen Emulator; ein Web-Panel ist in einer Minute angelegt (Abschnitt 3).
+
 ## 7. Fallstricke
 
 - **Port belegt:** Läuft auf dem Port schon etwas anderes, bleiben die Web-Panels aus; das Log nennt den
