@@ -37,6 +37,8 @@ import { rawItemListLabel } from './RawItemConfigDialog';
 import { ConfigGeneric, type ConfigGenericProps, type ConfigGenericState } from '@iobroker/json-config';
 import { EntitySelector } from './EntitySelector';
 import ChannelConfigDialog from './ChannelConfigDialog';
+import { MediaPlayerSelectDialog } from './MediaPlayerSelectDialog';
+import { MEDIA_LOGOS, objectName } from './mediaPlayerShared';
 import icons from '../icons.json';
 import { getPageItemDefaultsByRole, getPageNaviItemDefaultsByRole } from '../../../src/lib/const/page-item-defaults';
 import {
@@ -90,15 +92,6 @@ const TOOLBAR_ICONS: Record<MediaToolbarItem, string> = {
     crossfade: 'shuffle',
 };
 
-/** a similar logo per backend - colors only, the panel shows the real ones */
-const LOGOS: Record<MediaBackend, { text: string; bg: string; fg: string }> = {
-    alexa2: { text: 'alexa', bg: '#1a98d5', fg: '#fff' },
-    sonos: { text: 'SONOS', bg: '#111', fg: '#fff' },
-    'spotify-premium': { text: 'spotify', bg: '#1db954', fg: '#000' },
-    mpd: { text: 'mpd', bg: '#555', fg: '#fff' },
-    squeezeboxrpc: { text: 'LMS', bg: '#e8731a', fg: '#fff' },
-};
-
 /** colors of the mock where the adapter takes the color theme of the panel */
 const MOCK = {
     item: '#4dd0e1',
@@ -107,9 +100,6 @@ const MOCK = {
     power: '#ffffff',
     own: '#dddddd',
 };
-
-/** object types a player id may have (the SelectID shows states only by default) */
-const PLAYER_OBJECT_TYPES: ioBroker.ObjectType[] = ['device', 'channel', 'folder'];
 
 type DialogKind = 'player' | 'colors' | 'volume' | 'item';
 type ColorKey = 'colorMediaIcon' | 'colorMediaArtist' | 'colorMediaTitle';
@@ -138,6 +128,8 @@ interface PageMediaEditorState extends ConfigGenericState {
     editingIndex: number | null;
     dragOverKey: string | null;
     dragSource: number | null;
+    /** the player selection list is open (in the player dialog) */
+    playerSelectOpen: boolean;
 }
 
 let iconMap: Map<string, string> | null = null;
@@ -159,36 +151,6 @@ function iconSrc(name: string): string {
         }
     }
     return iconMap.get(name) ?? '';
-}
-
-/**
- * common.name of an object as plain text
- *
- * @param obj object from the database
- * @param lang admin language
- * @returns the name, empty when there is none
- */
-function objectName(obj: ioBroker.Object | null | undefined, lang: string): string {
-    const raw: unknown = obj?.common?.name;
-    if (typeof raw === 'string') {
-        return raw;
-    }
-    if (raw && typeof raw === 'object') {
-        const values = Object.entries(raw).filter((e): e is [string, string] => typeof e[1] === 'string');
-        const map = Object.fromEntries(values);
-        return map[lang] || map.en || values[0]?.[1] || '';
-    }
-    return '';
-}
-
-/**
- * objects the player browser offers: devices, channels and folders of the supported adapters
- *
- * @param obj object from the browser
- * @returns true when the object can be a player
- */
-function isPlayerObject(obj: ioBroker.Object): boolean {
-    return !!obj && PLAYER_OBJECT_TYPES.includes(obj.type) && !!mediaBackendOf(obj._id);
 }
 
 /**
@@ -245,6 +207,7 @@ export class PageMediaEditor extends ConfigGeneric<ConfigGenericProps & PageMedi
             editingIndex: null,
             dragOverKey: null,
             dragSource: null,
+            playerSelectOpen: false,
         };
     }
 
@@ -401,7 +364,7 @@ export class PageMediaEditor extends ConfigGeneric<ConfigGenericProps & PageMedi
     }
 
     private closeDialog = (): void => {
-        this.setState({ dialog: null, dialogItem: null, draft: null });
+        this.setState({ dialog: null, dialogItem: null, draft: null, playerSelectOpen: false });
     };
 
     private applyDialog = (): void => {
@@ -547,10 +510,24 @@ export class PageMediaEditor extends ConfigGeneric<ConfigGenericProps & PageMedi
                         theme={theme}
                         themeType={themeType}
                         dialogName="selectMediaPlayer"
-                        filterFunc={isPlayerObject}
-                        types={PLAYER_OBJECT_TYPES}
+                        onOpenDialog={() => this.setState({ playerSelectOpen: true })}
                     />
                 </Box>
+                {this.state.playerSelectOpen && (
+                    <MediaPlayerSelectDialog
+                        socket={oContext.socket}
+                        selected={draft.mediaId}
+                        lang={I18n.getLanguage?.() ?? 'en'}
+                        getText={(key: string) => this.getText(key)}
+                        onSelect={(id: string) => {
+                            this.setState({ playerSelectOpen: false });
+                            this.setDraft({ mediaId: id });
+                            void this.loadNames([id]);
+                            void this.checkPlayer(id);
+                        }}
+                        onClose={() => this.setState({ playerSelectOpen: false })}
+                    />
+                )}
                 <Typography
                     variant="caption"
                     color="text.secondary"
@@ -1300,7 +1277,7 @@ export class PageMediaEditor extends ConfigGeneric<ConfigGenericProps & PageMedi
     private renderPanel(): React.JSX.Element {
         const { entry } = this.props;
         const backend = this.backend();
-        const logo = backend ? LOGOS[backend] : undefined;
+        const logo = backend ? MEDIA_LOGOS[backend] : undefined;
         const contents = this.slotContents();
         // one free place stays reachable to add an item
         const total = contents.length + 1;

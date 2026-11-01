@@ -1502,7 +1502,7 @@ function convertScreensaver(input) {
       entry.notify = notify.map((n) => n.id);
     }
     if (!input.instanceWeatherEntity) {
-      entry.weatherEntity = typeof raw.weatherEntity === "string" ? raw.weatherEntity : "";
+      entry.weatherEntity = typeof raw.weatherEntity === "string" ? (0, import_adminShareConfig.normalizeWeatherEntity)(raw.weatherEntity) : "";
     }
     const weatherItems = weatherItemsOf(raw.weatherAddDefaultItems);
     if (weatherItems) {

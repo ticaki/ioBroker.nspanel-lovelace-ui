@@ -1,4 +1,5 @@
 import { Color, type RGB } from '../const/Color';
+import mediaPlayersJson from '../../../templates/media-players.json';
 
 // Zentrale Definition aller verfügbaren Card-Typen
 export type AdminCardTypes =
@@ -1010,6 +1011,17 @@ export const screensaverWeatherItemsOfAdapter: Record<ScreensaverWeatherAdapter,
 export function screensaverWeatherAdapterOf(entity: string | undefined): ScreensaverWeatherAdapter | undefined {
     const prefix = (entity ?? '').split('.')[0];
     return screensaverWeatherAdapters.find(a => a === prefix);
+}
+
+/**
+ * Weather instance without the trailing dot scripts write (`pirate-weather.0.` → `pirate-weather.0`), the
+ * form the instance list of the admin uses; '' stays ''. The config manager accepts both forms.
+ *
+ * @param entity weather instance as stored
+ * @returns the instance id
+ */
+export function normalizeWeatherEntity(entity: string): string {
+    return entity.trim().replace(/\.+$/, '');
 }
 
 /**
@@ -2077,6 +2089,134 @@ export const mediaBackendFeatures: Record<MediaBackend, MediaBackendFeatures> = 
 export function mediaBackendOf(id: string | undefined): MediaBackend | undefined {
     const name = (id ?? '').trim().split('.')[0];
     return (mediaBackends as readonly string[]).includes(name) ? (name as MediaBackend) : undefined;
+}
+
+/**
+ * How the admin finds the players of a backend (templates/media-players.json):
+ * - `node`: every object `<adapter>.<instance>.<folder>.<name>` of type `objectType` is a player
+ * - `instance`: the instance itself is the player, the id is `<adapter>.<instance>`
+ */
+export type MediaPlayerDefinition =
+    | { backend: MediaBackend; kind: 'instance' }
+    | { backend: MediaBackend; kind: 'node'; folder: string; objectType: ioBroker.ObjectType };
+
+/** object types a `node` definition may name */
+const mediaPlayerObjectTypes: readonly ioBroker.ObjectType[] = ['device', 'channel', 'folder', 'state'];
+
+/**
+ * Type guard for an object type a `node` definition may name.
+ *
+ * @param value Value from the json.
+ * @returns true for device, channel, folder or state.
+ */
+function isMediaPlayerObjectType(value: unknown): value is ioBroker.ObjectType {
+    return typeof value === 'string' && (mediaPlayerObjectTypes as readonly string[]).includes(value);
+}
+
+/**
+ * Type guard for a backend name.
+ *
+ * @param value Value from the json.
+ * @returns true when the value is one of mediaBackends.
+ */
+export function isMediaBackend(value: unknown): value is MediaBackend {
+    return typeof value === 'string' && (mediaBackends as readonly string[]).includes(value);
+}
+
+/**
+ * Checks one entry of templates/media-players.json.
+ *
+ * @param value Entry from the json.
+ * @returns The definition, undefined when the entry is invalid or names an unknown backend.
+ */
+export function toMediaPlayerDefinition(value: unknown): MediaPlayerDefinition | undefined {
+    if (!value || typeof value !== 'object') {
+        return undefined;
+    }
+    const entry: Record<string, unknown> = { ...value };
+    const backend = entry.backend;
+    if (!isMediaBackend(backend)) {
+        return undefined;
+    }
+    if (entry.kind === 'instance') {
+        return { backend, kind: 'instance' };
+    }
+    const { folder, objectType } = entry;
+    if (entry.kind === 'node' && typeof folder === 'string' && folder && !folder.includes('.')) {
+        return isMediaPlayerObjectType(objectType) ? { backend, kind: 'node', folder, objectType } : undefined;
+    }
+    return undefined;
+}
+
+/**
+ * Reads the player definitions from the content of templates/media-players.json.
+ *
+ * @param json Parsed json `{ players: [...] }`.
+ * @returns The valid definitions, the first one per backend wins.
+ */
+export function parseMediaPlayerDefinitions(json: unknown): MediaPlayerDefinition[] {
+    const list: unknown = json && typeof json === 'object' && 'players' in json ? json.players : undefined;
+    const result: MediaPlayerDefinition[] = [];
+    for (const raw of Array.isArray(list) ? list : []) {
+        const def = toMediaPlayerDefinition(raw);
+        if (def && !result.some(d => d.backend === def.backend)) {
+            result.push(def);
+        }
+    }
+    return result;
+}
+
+/** how the admin finds the players of each backend - edit templates/media-players.json */
+export const mediaPlayerDefinitions: readonly MediaPlayerDefinition[] = parseMediaPlayerDefinitions(mediaPlayersJson);
+
+/**
+ * Player definition of a backend.
+ *
+ * @param backend Backend.
+ * @returns The definition, undefined when templates/media-players.json has none.
+ */
+export function mediaPlayerDefinitionOf(backend: MediaBackend | undefined): MediaPlayerDefinition | undefined {
+    return backend ? mediaPlayerDefinitions.find(d => d.backend === backend) : undefined;
+}
+
+/**
+ * Whether an id is a player the adapter accepts, following templates/media-players.json.
+ *
+ * @param id Object id.
+ * @param type Object type; checked for `node` definitions only, undefined = not checked.
+ * @returns true for `<adapter>.<N>.<folder>.<name>` of the definition's object type (`node`) and for
+ * `<adapter>.<N>` or any object below it (`instance`, see mediaPlayerIdOf).
+ */
+export function isSelectableMediaPlayer(id: string, type?: string): boolean {
+    const parts = id.trim().split('.');
+    const def = mediaPlayerDefinitionOf(mediaBackendOf(id));
+    if (!def || parts.length < 2 || !/^\d+$/.test(parts[1])) {
+        return false;
+    }
+    if (def.kind === 'instance') {
+        return parts.slice(2).every(part => part !== '');
+    }
+    return (
+        parts.length === 4 &&
+        parts[2] === def.folder &&
+        parts[3] !== '' &&
+        (type === undefined || type === def.objectType)
+    );
+}
+
+/**
+ * Player id the adapter uses for an id: ids of an `instance` backend are cut to `<adapter>.<instance>`,
+ * all other ids stay unchanged.
+ *
+ * @param id Object id.
+ * @returns The player id.
+ */
+export function mediaPlayerIdOf(id: string): string {
+    const def = mediaPlayerDefinitionOf(mediaBackendOf(id));
+    if (def?.kind === 'instance') {
+        return id.trim().split('.').slice(0, 2).join('.');
+    }
+    return id;
 }
 
 /** one standard item of the bar: switched off, or other colors than the adapter default (#rrggbb) */

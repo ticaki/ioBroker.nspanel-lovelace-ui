@@ -49,6 +49,7 @@ import { EntitySelector } from './EntitySelector';
 import { ScreensaverItemDialog } from './ScreensaverItemDialog';
 import ScreensaverNotifyListDialog from './ScreensaverNotifyListDialog';
 import IconSelect from '../IconSelect';
+import { commonNameText, screensaverEntryObjectIds, screensaverItemLabel } from '../screensaverItemLabel';
 import icons from '../icons.json';
 import {
     type ScreensaverItemConfig,
@@ -61,7 +62,6 @@ import {
     type ScreensaverNotifyConfig,
     type ScreensaverPanelModel,
     type ScreensaverWeatherItemKey,
-    rawItemLabel,
     screensaverAreas,
     screensaverCardOfMode,
     screensaverItemCondition,
@@ -71,6 +71,7 @@ import {
     screensaverWeatherAdapterOf,
     screensaverWeatherItemsOfAdapter,
     screensaverWeatherItemsOn,
+    normalizeWeatherEntity,
 } from '../../../src/lib/types/adminShareConfig';
 
 /** select value for "weather instance of the global settings" (entry.weatherEntity undefined) */
@@ -373,27 +374,6 @@ function itemIcon(item: ScreensaverItemConfig): string {
     return item.iconOn || item.iconSelect?.[0]?.icon || '';
 }
 
-/**
- * short label of an item for a place of the mock: headline, else the last part of the state id
- *
- * @param item stored item
- */
-function itemLabel(item: ScreensaverItemConfig): string {
-    if (item.raw) {
-        // raw item: marked with braces, named by id / template / dpInit of the raw data
-        const text = rawItemLabel(item.raw.config);
-        return text ? `{ } ${text.split('.').pop() || text}` : '{ }';
-    }
-    if (item.headline) {
-        return item.headline;
-    }
-    if (item.state) {
-        return item.state.split('.').pop() || item.state;
-    }
-    // a template without an object (clock, wlan): the last part of the template name
-    return item.template ? item.template.split('.').pop() || item.template : '?';
-}
-
 const EMPTY_COMMON: ioBroker.InstanceCommon = {} as ioBroker.InstanceCommon;
 
 interface ScreensaverEditorState {
@@ -410,6 +390,8 @@ interface ScreensaverEditorState {
     bottomScroll: { pos: number; size: number; client: number } | null;
     /** shown window of places per list area (window k = indices k*limit ... k*limit+limit-1), see windowOf */
     windows: Partial<Record<ListArea, number>>;
+    /** common.name per object id of the items (labels of the places), as far as loaded */
+    objectNames: Record<string, string>;
 }
 
 export class ScreensaverEditor extends React.Component<ScreensaverEditorProps, ScreensaverEditorState> {
@@ -424,16 +406,50 @@ export class ScreensaverEditor extends React.Component<ScreensaverEditorProps, S
             dragOverKey: null,
             bottomScroll: null,
             windows: {},
+            objectNames: {},
         };
+    }
+
+    /** object ids whose name was asked for already (loaded or failed) */
+    private requestedNames = new Set<string>();
+    private unmounted = false;
+
+    /** loads common.name of the objects of the items that are not asked for yet (labels of the places) */
+    private loadObjectNames(): void {
+        const socket = this.props.oContext?.socket;
+        if (!socket?.getObject) {
+            return;
+        }
+        const lang: string = socket.systemLang ?? this.props.oContext?.systemLang ?? 'en';
+        for (const id of screensaverEntryObjectIds(this.props.entry)) {
+            if (this.requestedNames.has(id)) {
+                continue;
+            }
+            this.requestedNames.add(id);
+            Promise.resolve(socket.getObject(id))
+                .then((obj: ioBroker.Object | null | undefined) => {
+                    const name = commonNameText(obj?.common?.name, lang);
+                    if (name && !this.unmounted) {
+                        this.setState(prev => ({ objectNames: { ...prev.objectNames, [id]: name } }));
+                    }
+                })
+                .catch(() => {
+                    // no object / no rights: the label keeps the last part of the id
+                });
+        }
     }
 
     componentDidMount(): void {
         window.addEventListener('resize', this.syncBottomScroll);
         this.syncBottomScroll();
+        this.loadObjectNames();
     }
 
     componentDidUpdate(prevProps: ScreensaverEditorProps): void {
         this.syncBottomScroll();
+        if (prevProps.entry !== this.props.entry) {
+            this.loadObjectNames();
+        }
         // another entry, version or first panel (model): start with the first window again - a window
         // beyond the items is clamped anyway (windowOf)
         const prev = prevProps.entry;
@@ -447,6 +463,7 @@ export class ScreensaverEditor extends React.Component<ScreensaverEditorProps, S
     }
 
     componentWillUnmount(): void {
+        this.unmounted = true;
         window.removeEventListener('resize', this.syncBottomScroll);
         document.removeEventListener('mousemove', this.clearStaleDrag);
     }
@@ -1393,7 +1410,7 @@ export class ScreensaverEditor extends React.Component<ScreensaverEditorProps, S
         }
         const icon = itemIcon(item);
         const src = iconSrc(icon);
-        const label = itemLabel(item);
+        const { short: label, full: fullLabel } = screensaverItemLabel(item, this.state.objectNames);
         const dragging = !!dragSource && this.slotKey(dragSource) === key;
         // indicators: the frame tells what the key does
         const action =
@@ -1403,8 +1420,8 @@ export class ScreensaverEditor extends React.Component<ScreensaverEditorProps, S
                     : 'none'
                 : undefined;
         const text = action
-            ? `${this.getText('screensaver_slot_item').replace('%s', label)} · ${this.getText(`screensaver_item_action_${action}`)}`
-            : this.getText('screensaver_slot_item').replace('%s', label);
+            ? `${this.getText('screensaver_slot_item').replace('%s', fullLabel)} · ${this.getText(`screensaver_item_action_${action}`)}`
+            : this.getText('screensaver_slot_item').replace('%s', fullLabel);
         const conditionLines = this.conditionLines(item);
         // the condition is named in the tooltip of the place (the eye has no tooltip of its own)
         const title = conditionLines.length ? (
@@ -1799,7 +1816,10 @@ export class ScreensaverEditor extends React.Component<ScreensaverEditorProps, S
     /** weather instance that applies: the entry's own value, else the global setting; '' = none */
     private weatherEntity(): string {
         const { entry, globalWeatherEntity } = this.props;
-        return entry.weatherEntity === undefined ? (globalWeatherEntity ?? '') : entry.weatherEntity;
+        // scripts write the instance with a trailing dot (`pirate-weather.0.`) - compared without it
+        return normalizeWeatherEntity(
+            entry.weatherEntity === undefined ? (globalWeatherEntity ?? '') : entry.weatherEntity,
+        );
     }
 
     /** weather items the adapter appends to the bottom area, in its order */
@@ -1833,7 +1853,7 @@ export class ScreensaverEditor extends React.Component<ScreensaverEditorProps, S
         if (value === WEATHER_GLOBAL) {
             delete out.weatherEntity;
         } else {
-            out.weatherEntity = value;
+            out.weatherEntity = normalizeWeatherEntity(value);
         }
         this.props.onEntryChange(out);
     }
@@ -1857,7 +1877,7 @@ export class ScreensaverEditor extends React.Component<ScreensaverEditorProps, S
     /** the weather settings next to the panel: instance and the extra items of the bottom area */
     private renderWeatherBox(): React.JSX.Element {
         const { entry, alive, weatherEntities, globalWeatherEntity = '' } = this.props;
-        const own = entry.weatherEntity;
+        const own = entry.weatherEntity === undefined ? undefined : normalizeWeatherEntity(entry.weatherEntity);
         const value = own === undefined ? WEATHER_GLOBAL : own;
         const effective = this.weatherEntity();
         const adapter = screensaverWeatherAdapterOf(effective);
@@ -1890,7 +1910,8 @@ export class ScreensaverEditor extends React.Component<ScreensaverEditorProps, S
                         <MenuItem value={WEATHER_GLOBAL}>
                             {this.getText('screensaver_weather_global').replace(
                                 '%s',
-                                globalWeatherEntity || this.getText('screensaver_weather_global_none'),
+                                normalizeWeatherEntity(globalWeatherEntity) ||
+                                    this.getText('screensaver_weather_global_none'),
                             )}
                         </MenuItem>
                         <MenuItem value="">{this.getText('screensaver_weather_none')}</MenuItem>

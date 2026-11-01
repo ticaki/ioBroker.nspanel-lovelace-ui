@@ -2784,7 +2784,8 @@ describe('lib/configuration - planScriptToAdmin: screensaver', () => {
             name: panelName,
             mode: 'advanced',
             panels: [topic],
-            weatherEntity: 'pirate-weather.0.',
+            // the trailing dot of the script is dropped - the admin lists the instance without it
+            weatherEntity: 'pirate-weather.0',
             screensaverSwipe: false,
             screensaverIndicatorButtons: false,
         });
@@ -2846,6 +2847,17 @@ describe('lib/configuration - planScriptToAdmin: screensaver', () => {
         expect(result.screensaverEntry).to.not.have.property('weatherEntity');
         const all = plan({ ...templateConfig(), weatherAddDefaultItems: true });
         expect(Object.keys(all.screensaverEntry!.weatherAddDefaultItems!)).to.have.length(12);
+    });
+
+    it('takes the weather entity of the script without trailing dots, keeps "no weather"', () => {
+        const entity = (value: unknown): string | undefined =>
+            plan({ ...templateConfig(), weatherEntity: value as string }).screensaverEntry!.weatherEntity;
+        expect(entity('pirate-weather.0.')).to.equal('pirate-weather.0');
+        expect(entity('accuweather.1..')).to.equal('accuweather.1');
+        expect(entity(' brightsky.0 ')).to.equal('brightsky.0');
+        expect(entity('openweathermap.0')).to.equal('openweathermap.0');
+        expect(entity('')).to.equal('');
+        expect(entity(undefined)).to.equal('');
     });
 
     it('converts the notifications into the shared list and references them', () => {

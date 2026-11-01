@@ -46,6 +46,7 @@ import {
     type MediaVolumePreset,
     type MenuEntry,
     type NavigationLinks,
+    normalizeWeatherEntity,
     type PageConfigEntry,
     type PageScrollFields,
     type RawItemFormat,
@@ -2105,7 +2106,9 @@ function convertScreensaver(input: ScriptToAdminInput): ScreensaverResult {
         // the global weather entity of the instance replaces the one of the script (config manager) - then
         // the entry leaves the field to the global setting as well
         if (!input.instanceWeatherEntity) {
-            entry.weatherEntity = typeof raw.weatherEntity === 'string' ? raw.weatherEntity : '';
+            // scripts write the instance with a trailing dot (`pirate-weather.0.`), the admin lists it without
+            entry.weatherEntity =
+                typeof raw.weatherEntity === 'string' ? normalizeWeatherEntity(raw.weatherEntity) : '';
         }
         const weatherItems = weatherItemsOf(raw.weatherAddDefaultItems);
         if (weatherItems) {
