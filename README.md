@@ -161,7 +161,8 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
 - (ticaki) admin: the text size of a page item shows the pixel size of each font; with an icon only the fonts 1, 3 and 4 are offered (fonts 0, 2 and 5 have no icons - a stored 0/2/5 is kept but marked with a warning), with a value font 5 notes "ASCII only"
 - (ticaki) web panel: the font id `¬<n>` of a page item is read on every card (cardThermo2 showed it as text and an icon as `?`); like on the panel an icon in font 0, 2 or 5 stays empty and font 5 drops all non-ASCII characters
 - (ticaki) web panel: cardThermo2 uses the component boxes and fonts of the HMI (page items 100 x 55 px with font 3, the 9th item 55 x 40 px with font 1, centred, a line larger than the box starts at the top left and is cut) and the eu positions of ring and buttons (us-l 15 px to the right); font 5 has the size of the HMI font
-- (ticaki) admin: the "..." button next to the item name is called "Dynamic name" and explains that it is only used while the name field is empty (on cardThermo2/cardMedia the name is the title of the item's popup); it no longer stores or previews a unit or date format the adapter ignores
+- (ticaki) admin: the "..." button next to the item name is called "Dynamic name" and explains that it is only used while the name field is empty; it no longer stores or previews a unit or date format the adapter ignores
+- (ticaki) admin: on cardThermo2 and cardMedia the name field of a page item notes that the name is only the title of the item's popup and is not shown below the icon on the panel
 
 ### 2.0.1 (2026-11-01)
 - (ticaki) screensaver editor: areas with more items than places page with arrows instead of hiding the extra items, they are no longer reported as "no place in this version"; items with a condition (enabled / visible condition, also in raw data) are marked

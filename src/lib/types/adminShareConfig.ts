@@ -1324,6 +1324,22 @@ export function isLongPressCard(card: string | undefined): boolean {
 }
 
 /**
+ * Page types that show no item names on the card: the name of a page item is only the title of the popup the
+ * item opens (the adapter falls back to it for the popup headline, `pageItem.ts`).
+ */
+export const nameIsPopupTitleCards: readonly string[] = ['cardThermo2', 'cardMedia'];
+
+/**
+ * Whether the name of a page item is only the title of its popup on this page type ({@link nameIsPopupTitleCards}).
+ *
+ * @param card Card of an admin page entry or page type of the script.
+ * @returns True for cardThermo2 and cardMedia.
+ */
+export function isNameOnlyPopupTitle(card: string | undefined): boolean {
+    return !!card && nameIsPopupTitleCards.includes(card);
+}
+
+/**
  * The scroll settings of an entry as the adapter takes them, with the defaults filled in.
  *
  * @param entry Stored scroll fields, may be incomplete or come from an older version.

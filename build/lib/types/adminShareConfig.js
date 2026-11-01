@@ -72,6 +72,7 @@ __export(adminShareConfig_exports, {
   isLongPressCard: () => isLongPressCard,
   isMainPageEntry: () => isMainPageEntry,
   isMediaBackend: () => isMediaBackend,
+  isNameOnlyPopupTitle: () => isNameOnlyPopupTitle,
   isPageLinkEntry: () => isPageLinkEntry,
   isRawItemFormat: () => isRawItemFormat,
   isRawItemObject: () => isRawItemObject,
@@ -94,6 +95,7 @@ __export(adminShareConfig_exports, {
   migrateLegacyCharts: () => migrateLegacyCharts,
   migrateLegacyPower: () => migrateLegacyPower,
   migrateScreensaverNotify: () => migrateScreensaverNotify,
+  nameIsPopupTitleCards: () => nameIsPopupTitleCards,
   newScreensaverNotifyId: () => newScreensaverNotifyId,
   normalizeChannelId: () => normalizeChannelId,
   normalizeScrollFields: () => normalizeScrollFields,
@@ -543,6 +545,10 @@ function isScrollCard(card) {
 const longPressCards = ["cardGrid", "cardGrid2", "cardGrid3"];
 function isLongPressCard(card) {
   return !!card && longPressCards.includes(card);
+}
+const nameIsPopupTitleCards = ["cardThermo2", "cardMedia"];
+function isNameOnlyPopupTitle(card) {
+  return !!card && nameIsPopupTitleCards.includes(card);
 }
 function normalizeScrollFields(entry, card) {
   const presentation = entry.scrollPresentation === "arrow" || entry.scrollPresentation === "auto" ? entry.scrollPresentation : "classic";
@@ -1829,6 +1835,7 @@ const CONVERT_GLOBAL_DEFAULT_DECISION = "keepAdmin";
   isLongPressCard,
   isMainPageEntry,
   isMediaBackend,
+  isNameOnlyPopupTitle,
   isPageLinkEntry,
   isRawItemFormat,
   isRawItemObject,
@@ -1851,6 +1858,7 @@ const CONVERT_GLOBAL_DEFAULT_DECISION = "keepAdmin";
   migrateLegacyCharts,
   migrateLegacyPower,
   migrateScreensaverNotify,
+  nameIsPopupTitleCards,
   newScreensaverNotifyId,
   normalizeChannelId,
   normalizeScrollFields,

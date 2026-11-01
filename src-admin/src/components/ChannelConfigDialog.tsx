@@ -54,6 +54,7 @@ import {
     emptyChannelValueConfig,
     isRawItemObject,
     isLongPressCard,
+    isNameOnlyPopupTitle,
     normalizeChannelId,
     pageItemRawFormat,
     HMI_FONTS,
@@ -579,15 +580,33 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
     }
 
     /**
-     * Hint of the dynamic name dialog. On cardThermo2 / cardMedia the panel shows no item names on the card,
-     * the name is the title of the popup the item opens (the adapter falls back to it for the popup headline).
+     * The page shows no item names on the card, the name is only the title of the item's popup
+     * ({@link isNameOnlyPopupTitle}) - the one source for the name texts of the dialog.
      */
+    private get nameIsPopupTitle(): boolean {
+        return isNameOnlyPopupTitle(this.props.currentPageCard);
+    }
+
+    /** Hint of the dynamic name dialog, with the popup note where the name is only the popup title */
     private dynamicNameHint(): string {
         const hint = I18n.t('channelConfigDialog_dynamicNameHint');
-        const card = this.props.currentPageCard;
-        return card === 'cardThermo2' || card === 'cardMedia'
-            ? `${hint}\n${I18n.t('channelConfigDialog_dynamicNamePopupHint')}`
-            : hint;
+        return this.nameIsPopupTitle ? `${hint}\n${I18n.t('channelConfigDialog_namePopupTitleHint')}` : hint;
+    }
+
+    /** Helper text below the Name field: name suggestion / default, plus the popup note where it applies */
+    private nameHelperText(): string | undefined {
+        const { name, channelNameSuggestion } = this.state;
+        const base =
+            name === '' && channelNameSuggestion
+                ? `${I18n.t('channelConfigDialog_nameSuggestion')}: ${channelNameSuggestion}`
+                : name === ''
+                  ? I18n.t('channelConfigDialog_defaultName')
+                  : undefined;
+        if (!this.nameIsPopupTitle) {
+            return base;
+        }
+        const popup = I18n.t('channelConfigDialog_namePopupTitleHint');
+        return base ? `${popup}\n${base}` : popup;
     }
 
     /**
@@ -2027,16 +2046,10 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                                         variant="standard"
                                         sx={{ flex: 1 }}
                                         disabled={fieldsDisabled}
-                                        helperText={
-                                            name === '' && this.state.channelNameSuggestion
-                                                ? `${I18n.t('channelConfigDialog_nameSuggestion')}: ${this.state.channelNameSuggestion}`
-                                                : name === ''
-                                                  ? I18n.t('channelConfigDialog_defaultName')
-                                                  : undefined
-                                        }
+                                        helperText={this.nameHelperText()}
                                         slotProps={{
                                             formHelperText: {
-                                                sx: { color: 'text.disabled' },
+                                                sx: { color: 'text.disabled', whiteSpace: 'pre-line' },
                                             },
                                             inputLabel: {
                                                 shrink: name !== '' || this.state.valueEntryPreview !== '',

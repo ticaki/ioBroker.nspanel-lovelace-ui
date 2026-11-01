@@ -1,5 +1,26 @@
 import { expect } from 'chai';
-import { HMI_FONTS, HMI_TEXT_SIZES, isAsciiOnlyTextSize, isHmiTextSize, isIconTextSize } from './adminShareConfig';
+import {
+    HMI_FONTS,
+    HMI_TEXT_SIZES,
+    isAsciiOnlyTextSize,
+    isHmiTextSize,
+    isIconTextSize,
+    isNameOnlyPopupTitle,
+} from './adminShareConfig';
+
+describe('lib/types - isNameOnlyPopupTitle', () => {
+    it('is true for the pages without item names on the card', () => {
+        expect(isNameOnlyPopupTitle('cardThermo2')).to.equal(true);
+        expect(isNameOnlyPopupTitle('cardMedia')).to.equal(true);
+    });
+
+    it('is false for the pages that show the item name', () => {
+        for (const card of ['cardEntities', 'cardGrid', 'cardGrid2', 'cardGrid3', 'cardSchedule', 'cardThermo']) {
+            expect(isNameOnlyPopupTitle(card)).to.equal(false);
+        }
+        expect(isNameOnlyPopupTitle(undefined)).to.equal(false);
+    });
+});
 
 describe('lib/types - HMI fonts (textSize)', () => {
     it('describes every font 0-5', () => {
