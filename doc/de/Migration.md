@@ -33,7 +33,7 @@ Das Skript-Objekt selbst muss nicht mehr existieren. Fehlt es, legt der Adapter 
 
 Tab `Maintain`, in jeder Panel-Kachel in der Zeile **Skriptversion** neben **SCRIPT UPDATE**.
 
-<!-- BILD FOLGT: <img alt="Panel-Kachel im Tab Maintain mit dem Knopf Skript in Admin übernehmen" src="../Pictures/Migration/migration-01-maintain-knopf.png" width="100%"/> -->
+<img alt="Panel-Kachel im Tab Maintain mit dem Knopf Skript in Admin übernehmen" src="../Pictures/Migration/migration-01-maintain-knopf.png" width="100%"/>
 
 | Zustand | Bedeutung |
 |---|---|
@@ -47,7 +47,7 @@ Der Klick öffnet den Dialog **Skript in Admin übernehmen – `<Panelname>`** u
 
 Der Dialog zeigt zuerst die Id des Skripts, dann die Hinweise, dann eine einzeilige Zusammenfassung und darunter die Blöcke. Die Liste aller geplanten Seiten ist zugeklappt (**Details: `n` Seiten**), damit ein Skript mit vielen Seiten die Probleme nicht zudeckt.
 
-<!-- BILD FOLGT: <img alt="Vorschau der Übernahme mit Zusammenfassung und Blöcken" src="../Pictures/Migration/migration-02-vorschau.png" width="100%"/> -->
+<img alt="Vorschau der Übernahme mit Zusammenfassung und Blöcken" src="../Pictures/Migration/migration-02-vorschau.png" width="100%"/>
 
 | Block | Inhalt |
 |---|---|
@@ -127,7 +127,7 @@ Nach der Änderung startet der JavaScript-Adapter das Skript neu; es sendet dann
 3. **Bericht.** Der Dialog zeigt **Übernommen** mit der Bilanz (`n Seiten angelegt, n Navigationen zugewiesen, n Verweise entfernt`, dazu Screensaver und Buttons), den Abschnitt **Skript** mit Backup-Id, nachgerückten und gelöschten Backups, ob der Quelltext geändert wurde, und gegebenenfalls die Liste der von Hand zu prüfenden Stellen.
 4. **Admin neu laden.** Der Knopf im Dialog lädt die Admin-Seite neu. Das ist nicht optional: Die im Browser geladene Instanz-Konfiguration ist nach der Übernahme veraltet, ein Speichern würde die neuen Einträge wieder überschreiben. Während der Adapter neu startet, zeigt der Admin eventuell kurz „nicht verbunden".
 
-<!-- BILD FOLGT: <img alt="Bericht nach der Übernahme mit Backup und Hinweis auf das Neuladen" src="../Pictures/Migration/migration-03-bericht.png" width="100%"/> -->
+<img alt="Bericht nach der Übernahme mit Backup und Hinweis auf das Neuladen" src="../Pictures/Migration/migration-03-bericht.png" width="100%"/>
 
 Nach dem Neuladen stehen die Seiten im Tab `PageConfig` (Menü-Seiten siehe `pageMenu`, Thermostatseiten siehe `cardThermo2`), der Screensaver im Tab `Screensaver` und die Buttons in der Panel-Kachel unter `NSPanelsetting`.
 
