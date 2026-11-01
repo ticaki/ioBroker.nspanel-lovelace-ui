@@ -104,7 +104,7 @@ export interface IconField {
     font?: number;
 }
 
-export { NEXTION_FONTS, NEXTION_FONT_SIZE, nextionFont, type NextionFont } from '../../../protocol/fonts';
+export { NEXTION_FONTS, NEXTION_FONT_SIZE, nextionFont, textShift, type NextionFont } from '../../../protocol/fonts';
 
 /**
  * Splits the icon field: the adapter can send a glyph, plain text (a value shown instead of an

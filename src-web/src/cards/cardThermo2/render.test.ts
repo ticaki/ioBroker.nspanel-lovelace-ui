@@ -4,7 +4,8 @@ import { describe, expect, it } from 'vitest';
 import glyphMap from '../../icons/glyph-map.json';
 import { setIconPaths } from '../../icons/iconData';
 import { initialGlobalState } from '../../store/PanelStore';
-import { CardThermo2 } from './CardThermo2';
+import type { PanelModel } from '../../protocol/types';
+import { CardThermo2, SLOT_BOXES } from './CardThermo2';
 import { initial, type CardThermo2Model } from './parse';
 
 // the MDI paths are loaded at runtime, the test only needs the icons of the card
@@ -15,7 +16,7 @@ const BULB = Object.entries(glyphMap).find(([, n]) => n === 'lightbulb')?.[0] ??
 /** the slot icon fields of the hardware test (HMI 6.0.2) */
 const FIELDS = [`${BULB}¬0`, '21,4°C¬1', `${BULB}¬2`, '48%¬3', `${BULB}¬4`, '35%¬5', '', '21,4°C'];
 
-function render(icons: readonly string[]): string {
+function render(icons: readonly string[], panel: PanelModel = 'eu'): string {
     const base = initial();
     const model: CardThermo2Model = {
         ...base,
@@ -32,7 +33,7 @@ function render(icons: readonly string[]): string {
         React.createElement(CardThermo2, {
             model,
             ctx: { pageType: 'cardThermo2', pageArgs: [] },
-            global: initialGlobalState(),
+            global: initialGlobalState(panel),
             send: () => undefined,
             press: () => undefined,
             openPopup: () => undefined,
@@ -76,6 +77,30 @@ describe('cardThermo2 slots with a font id ¬<n>', () => {
         expect(slot(html, 3)).toContain('font-size:36px');
         expect(slot(html, 1)).toContain('font-size:25px');
         expect(slot(html, 5)).toContain('font-weight:700');
+    });
+
+    it('uses the default font of the HMI components without ¬<n>: 3 at the sides, 1 for the 9th item', () => {
+        const html = render([...FIELDS, '21,4°C']);
+        expect(slot(html, 7)).toContain('data-font="3"');
+        expect(slot(html, 7)).toContain('font-size:36px');
+        expect(slot(html, 8)).toContain('data-font="1"');
+    });
+
+    it('places the slots in the boxes of bEntity1..8 / bPopup (eu, us-l 15 px to the right)', () => {
+        expect(SLOT_BOXES).toHaveLength(9);
+        expect(SLOT_BOXES[0]).toEqual({ x: 10, y: 72, w: 100, h: 55, font: 3 });
+        expect(SLOT_BOXES[7]).toEqual({ x: 341, y: 243, w: 100, h: 55, font: 3 });
+        expect(SLOT_BOXES[8]).toEqual({ x: 198, y: 266, w: 55, h: 40, font: 1 });
+        expect(slot(render(FIELDS), 4)).toContain('left:341px;top:72px;width:100px;height:55px');
+        expect(slot(render(FIELDS, 'us-l'), 4)).toContain('left:356px;top:72px;width:100px;height:55px');
+    });
+
+    it('aligns like xcen/ycen=1 and starts a line that does not fit at the top left, cut at the box', () => {
+        const box = slot(render(FIELDS), 5);
+        expect(box).toContain('justify-content:safe center;align-items:safe center;overflow:hidden');
+        // the 128 px line of font 5 is higher than the 55 px box
+        expect(box).toContain('height:128px');
+        expect(box).toContain('white-space:nowrap');
     });
 
     it('drops non-ascii characters in font 5', () => {

@@ -1,6 +1,14 @@
 import { describe, expect, it } from 'vitest';
 import glyphMap from '../icons/glyph-map.json';
-import { NEXTION_FONTS, drawableField, drawableText, isIconChar, nextionFont, splitFontSuffix } from './fonts';
+import {
+    NEXTION_FONTS,
+    drawableField,
+    drawableText,
+    isIconChar,
+    nextionFont,
+    splitFontSuffix,
+    textShift,
+} from './fonts';
 
 /** the glyph of a MDI icon as the adapter sends it */
 function glyphOf(name: string): string {
@@ -19,6 +27,17 @@ describe('Nextion fonts', () => {
         expect(NEXTION_FONTS.map(f => f.icons)).toEqual([false, true, false, true, true, false]);
         expect(NEXTION_FONTS.map(f => f.asciiOnly)).toEqual([false, false, false, false, false, true]);
         expect(NEXTION_FONTS.map(f => f.fontWeight)).toEqual([400, 400, 400, 400, 700, 700]);
+    });
+
+    it('puts the capitals of the css text on the row of the bitmap font', () => {
+        // css cap top = (px - 1.362 em) / 2 + 0.355 em, shifted to capTop of the font file
+        expect(NEXTION_FONTS.map(f => f.capTop)).toEqual([5, 7, 7, 11, 8, 20]);
+        expect(textShift(NEXTION_FONTS[3])).toBe(-1);
+        expect(textShift(NEXTION_FONTS[5])).toBe(-5);
+        for (const f of NEXTION_FONTS) {
+            const cssCapTop = (f.px - 1.362 * f.fontSize) / 2 + 0.355 * f.fontSize + textShift(f);
+            expect(Math.abs(cssCapTop - f.capTop)).toBeLessThanOrEqual(0.5);
+        }
     });
 
     it('falls back to the element font without or with an unknown font id', () => {

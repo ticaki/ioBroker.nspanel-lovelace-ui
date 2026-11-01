@@ -7,7 +7,7 @@ import type { Entity6 } from '../../protocol/types';
 import { theme } from '../../style/theme';
 import type { CardProps } from '../CardContract';
 import { Pressable } from '../cardEntities/shared/Pressable';
-import { EntityIcon } from '../cardEntities/shared/widgets';
+import { HmiTextBox } from '../cardEntities/shared/widgets';
 import { entityPressProps } from '../cardMedia/entityPress';
 import {
     RING_START,
@@ -28,7 +28,12 @@ const REPEAT_FAST_MS = 125;
 const REPEAT_FAST_AFTER_TICKS = 4;
 
 /** ring geometry in stage pixels */
-const CX = 240;
+/**
+ * x of the ring centre: eu `p1` 125..325 (centre 225), us-l `p1` 140..340 - the us-l layout is
+ * the eu layout shifted 15 px to the right (all components of cardThermo2, HMI 6.0.2).
+ */
+const CX_EU = 225;
+const US_L_SHIFT = 15;
 const CY = 165;
 /** radius of the middle of the ring */
 const R = 86;
@@ -38,8 +43,28 @@ const KNOB_R = 10;
 const RING_BOX = R + STROKE;
 const SEGMENTS = 54;
 const RING_GREY = '#3a3a3a';
-/** Nextion font of the slots without `¬<n>`: icons and text (the glyph keeps the slot's icon size) */
-const SLOT_DEFAULT_FONT = 1;
+/** a page item component of the HMI: box in stage pixels and default font */
+interface SlotBox {
+    x: number;
+    y: number;
+    w: number;
+    h: number;
+    font: number;
+}
+
+/**
+ * The page item buttons of cardThermo2 in `HMI/nspanel-v6.0.2.HMI` (eu): `bEntity1..4` left
+ * column x 10, `bEntity5..8` right column x 341, y 72 / 129 / 186 / 243, 100 x 55, font 3;
+ * `bPopup` (9th item) x 198 y 266, 55 x 40, font 1. All with xcen=1, ycen=1, isbr=0. The page
+ * code resets `.font` to these defaults on every `entityUpd` and sets the `¬<n>` font instead.
+ * us-l: the same boxes 15 px to the right. us-p has its own layout (55 x 55 boxes in two rows
+ * at y 72 / 396), not implemented by the web panel - it uses the eu boxes.
+ */
+export const SLOT_BOXES: readonly SlotBox[] = [
+    ...[72, 129, 186, 243].map(y => ({ x: 10, y, w: 100, h: 55, font: 3 })),
+    ...[72, 129, 186, 243].map(y => ({ x: 341, y, w: 100, h: 55, font: 3 })),
+    { x: 198, y: 266, w: 55, h: 40, font: 1 },
+];
 
 /** colour stops of the ring: blue (cold) over cyan and yellow to red (hot) */
 const GRADIENT: readonly (readonly [number, [number, number, number]])[] = [
@@ -111,6 +136,16 @@ export class CardThermo2 extends React.Component<CardProps<CardThermo2Model>, Ca
     componentWillUnmount(): void {
         this.clearSendTimer();
         this.stopRepeat();
+    }
+
+    /** horizontal shift of the layout against eu: us-l is 15 px to the right */
+    private get shift(): number {
+        return this.props.global.model === 'us-l' ? US_L_SHIFT : 0;
+    }
+
+    /** x of the ring centre */
+    private get cx(): number {
+        return CX_EU + this.shift;
     }
 
     private get dst(): number {
@@ -268,7 +303,7 @@ export class CardThermo2 extends React.Component<CardProps<CardThermo2Model>, Ca
                 viewBox={`0 0 ${size} ${size}`}
                 style={{
                     position: 'absolute',
-                    left: CX - RING_BOX,
+                    left: this.cx - RING_BOX,
                     top: CY - RING_BOX,
                     touchAction: 'none',
                     cursor: 'pointer',
@@ -311,7 +346,7 @@ export class CardThermo2 extends React.Component<CardProps<CardThermo2Model>, Ca
             <div
                 style={{
                     position: 'absolute',
-                    left: CX - 70,
+                    left: this.cx - 70,
                     width: 140,
                     top,
                     height: 30,
@@ -355,7 +390,7 @@ export class CardThermo2 extends React.Component<CardProps<CardThermo2Model>, Ca
             <div
                 style={{
                     position: 'absolute',
-                    left: CX - 70,
+                    left: this.cx - 70,
                     width: 140,
                     top: CY - 26,
                     height: 52,
@@ -388,12 +423,13 @@ export class CardThermo2 extends React.Component<CardProps<CardThermo2Model>, Ca
 
     /**
      * A page item around the ring. The icon field may carry a value instead of an icon and a
-     * font id `¬<n>` (item option `textSize`), drawn like on the HMI by {@link EntityIcon}.
+     * font id `¬<n>` (item option `textSize`), drawn like on the HMI by {@link HmiTextBox} in the box of the component.
      * Touch as in the HMI (`bEntity1..9`): a tap sends
      * `event,buttonPress2,<id>,button` (shutter, input_sel and timer open their popup instead),
      * holding a light, fan or number opens its popup - see {@link entityPressProps}.
      */
-    private renderSlot(entity: Entity6, index: number, x: number, y: number, size: number): React.JSX.Element {
+    private renderSlot(entity: Entity6, index: number): React.JSX.Element {
+        const box = SLOT_BOXES[index];
         const empty = isEmptyEntity(entity) || entity.icon === '';
         const handlers = empty ? undefined : entityPressProps('cardThermo2', entity, this.props);
         return (
@@ -404,22 +440,21 @@ export class CardThermo2 extends React.Component<CardProps<CardThermo2Model>, Ca
                 {...handlers}
                 style={{
                     position: 'absolute',
-                    left: x - 26,
-                    top: y - 26,
-                    width: 52,
-                    height: 52,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
+                    left: box.x + this.shift,
+                    top: box.y,
+                    width: box.w,
+                    height: box.h,
                     visibility: empty ? 'hidden' : 'visible',
                 }}
             >
-                <EntityIcon
-                    icon={entity.icon}
+                <HmiTextBox
+                    field={entity.icon}
                     color={color565ToCss(entity.iconColor)}
-                    font={SLOT_DEFAULT_FONT}
-                    defaultIconSize={size}
-                    style={{ width: '100%', height: '100%' }}
+                    x={0}
+                    y={0}
+                    w={box.w}
+                    h={box.h}
+                    font={box.font}
                 />
             </Pressable>
         );
@@ -456,7 +491,6 @@ export class CardThermo2 extends React.Component<CardProps<CardThermo2Model>, Ca
 
     render(): React.JSX.Element {
         const { model, ctx, press } = this.props;
-        const rows = [95, 150, 205, 260];
         return (
             <div
                 data-page={ctx.pageType}
@@ -483,7 +517,7 @@ export class CardThermo2 extends React.Component<CardProps<CardThermo2Model>, Ca
                     data-thermo-mode=""
                     style={{
                         position: 'absolute',
-                        left: CX - 100,
+                        left: this.cx - 100,
                         width: 200,
                         top: 238,
                         textAlign: 'center',
@@ -497,11 +531,9 @@ export class CardThermo2 extends React.Component<CardProps<CardThermo2Model>, Ca
                 >
                     {model.mode}
                 </div>
-                {this.renderStepButton(-1, CX - 58)}
-                {this.renderStepButton(1, CX + 58)}
-                {rows.map((y, i) => this.renderSlot(model.slots[i], i, 58, y, 40))}
-                {rows.map((y, i) => this.renderSlot(model.slots[4 + i], 4 + i, 422, y, 40))}
-                {this.renderSlot(model.slots[8], 8, CX, 283, 32)}
+                {this.renderStepButton(-1, this.cx - 58)}
+                {this.renderStepButton(1, this.cx + 58)}
+                {model.slots.slice(0, SLOT_BOXES.length).map((slot, i) => this.renderSlot(slot, i))}
             </div>
         );
     }

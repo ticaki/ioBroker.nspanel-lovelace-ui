@@ -579,6 +579,18 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
     }
 
     /**
+     * Hint of the dynamic name dialog. On cardThermo2 / cardMedia the panel shows no item names on the card,
+     * the name is the title of the popup the item opens (the adapter falls back to it for the popup headline).
+     */
+    private dynamicNameHint(): string {
+        const hint = I18n.t('channelConfigDialog_dynamicNameHint');
+        const card = this.props.currentPageCard;
+        return card === 'cardThermo2' || card === 'cardMedia'
+            ? `${hint}\n${I18n.t('channelConfigDialog_dynamicNamePopupHint')}`
+            : hint;
+    }
+
+    /**
      * The item sends a value text instead of an icon: only `useValue` on grid cards - the adapter ignores
      * `useValue` on other page types, there the field always carries the icon.
      */
@@ -2526,12 +2538,14 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                     onDelete={() => this.setState({ channelId: emptyChannelValueConfig() })}
                 />
 
-                {/* Name-Entry-Konfigurationsdialog */}
+                {/* Dynamic name: builds the item name from a state, only used while the Name field is empty */}
                 <ChannelValueDialog
                     ref={this.valueEntryDialogRef}
                     socket={socket}
                     theme={theme}
                     themeType={themeType}
+                    title={I18n.t('channelConfigDialog_dynamicNameTitle')}
+                    hint={this.dynamicNameHint()}
                     features={{
                         showUnit: false,
                         showDateFormat: false,

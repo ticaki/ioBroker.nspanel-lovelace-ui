@@ -13,7 +13,8 @@ import {
 } from '@mui/material';
 import { I18n, type ThemeType } from '@iobroker/gui-components';
 import { EntitySelector } from './EntitySelector';
-import type { ChannelValueConfig } from '../../../src/lib/types/adminShareConfig';
+import { emptyChannelValueConfig, type ChannelValueConfig } from '../../../src/lib/types/adminShareConfig';
+import { visibleValueConfig } from '../channelValueConfig';
 
 /** Feature flags passed by the parent to show/hide optional sections. */
 type ChannelValueDialogFeatures = {
@@ -74,6 +75,10 @@ type ChannelValueDialogProps = {
      * Useful for reducing sub-state IDs to their channel/device prefix.
      */
     mainValueTransformId?: (id: string) => string;
+    /** Dialog title (translated), default: the value display title */
+    title?: string;
+    /** Hint shown at the top of the dialog (translated) */
+    hint?: string;
 };
 
 interface ChannelValueDialogState {
@@ -163,7 +168,8 @@ class ChannelValueDialog extends React.Component<ChannelValueDialogProps, Channe
         if (this.previewTimer !== null) {
             clearTimeout(this.previewTimer);
         }
-        const df = config?.dateFormat;
+        config = visibleValueConfig(config, this.props.features ?? {});
+        const df = config.dateFormat;
         const dateLocal = (df && typeof df === 'object' ? df.local : null) ?? getBrowserLocale();
         const rawFormat = df && typeof df === 'object' ? df.format : null;
         const dateFormatOptions = rawFormat != null ? JSON.stringify(rawFormat, null, 2) : '';
@@ -204,7 +210,8 @@ class ChannelValueDialog extends React.Component<ChannelValueDialogProps, Channe
         if (this.previewTimer !== null) {
             clearTimeout(this.previewTimer);
         }
-        const df = config?.dateFormat;
+        config = visibleValueConfig(config, this.props.features ?? {});
+        const df = config.dateFormat;
         const dateLocal = (df && typeof df === 'object' ? df.local : null) ?? getBrowserLocale();
         const rawFormat = df && typeof df === 'object' ? df.format : null;
         const dateFormatOptions = rawFormat != null ? JSON.stringify(rawFormat, null, 2) : '';
@@ -243,12 +250,20 @@ class ChannelValueDialog extends React.Component<ChannelValueDialogProps, Channe
         this.setState({ open: false });
     };
 
+    /** the date format section can be shown (feature not switched off) - otherwise no format is stored or applied */
+    private dateFormatVisible(): boolean {
+        return this.props.features?.showDateFormat !== false;
+    }
+
     private handleSave = (): void => {
         const { valueStateId, unit, prefix, suffix, dateLocal, dateFormatOptions } = this.state;
         const parsedFormat = tryParseDateFormatOptions(dateFormatOptions);
         const dateFormat: ChannelValueConfig['dateFormat'] =
             parsedFormat !== null ? { local: dateLocal, format: parsedFormat } : '';
-        this.props.onSave?.({ valueStateId, unit, prefix, suffix, dateFormat });
+        this.props.onSave?.({
+            ...emptyChannelValueConfig(),
+            ...visibleValueConfig({ valueStateId, unit, prefix, suffix, dateFormat }, this.props.features ?? {}),
+        });
         this.setState({ open: false });
     };
 
@@ -362,7 +377,7 @@ class ChannelValueDialog extends React.Component<ChannelValueDialogProps, Channe
         if (mainValue === null) {
             mainResolved = valueStateId ? `${valueStateId}` : '';
         } else {
-            const parsedOpts = tryParseDateFormatOptions(dateFormatOptions);
+            const parsedOpts = this.dateFormatVisible() ? tryParseDateFormatOptions(dateFormatOptions) : null;
             if (parsedOpts !== null) {
                 // For numbers treat as Unix-ms timestamp; for strings try ISO date parsing (new Date)
                 const isValidTimestamp = typeof mainValue === 'number' && mainValue >= 0;
@@ -381,6 +396,8 @@ class ChannelValueDialog extends React.Component<ChannelValueDialogProps, Channe
             }
         }
 
+        // without the unit field the unit of the state object is used - the adapter does the same
+        // (getValueEntryString() falls back to common.unit)
         const newPreviewText = `${prefixResolved}${mainResolved}${valueStateType === 'number' ? unit : ''}${suffixResolved}`;
         this.setState({ previewLoading: false, previewText: newPreviewText }, () => {
             this.props.onPreviewUpdate?.(newPreviewText);
@@ -467,7 +484,7 @@ class ChannelValueDialog extends React.Component<ChannelValueDialogProps, Channe
                 fullWidth
                 maxWidth="sm"
             >
-                <DialogTitle>{I18n.t('valueEntryDialog_title')}</DialogTitle>
+                <DialogTitle>{this.props.title ?? I18n.t('valueEntryDialog_title')}</DialogTitle>
                 <DialogContent>
                     <Box
                         sx={{
@@ -477,6 +494,15 @@ class ChannelValueDialog extends React.Component<ChannelValueDialogProps, Channe
                             mt: 1,
                         }}
                     >
+                        {this.props.hint ? (
+                            <Typography
+                                variant="body2"
+                                color="text.secondary"
+                                sx={{ whiteSpace: 'pre-line' }}
+                            >
+                                {this.props.hint}
+                            </Typography>
+                        ) : null}
                         {/* Value State ID – highlighted box */}
                         <Paper
                             variant="outlined"
