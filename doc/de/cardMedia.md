@@ -31,7 +31,7 @@ Inhalt:
 
 ## 2. Der Editor im Überblick
 
-<!-- BILD FOLGT: <img alt="Editor der Mediaplayer-Seite mit Vorschau, Standard-Elementen und Knopfzeile" src="../Pictures/cardMedia/media-01-editor.png" width="100%"/> -->
+<img alt="Editor der Mediaplayer-Seite mit Vorschau, Standard-Elementen und Knopfzeile" src="../Pictures/cardMedia/media-01-editor.png" width="100%"/>
 
 Unter der Vorschau steht der Hinweis, der die Arbeitsweise zusammenfasst: *„Ähnlich wie auf dem Panel – Klick auf einen Bereich ändert ihn. Die Leiste zeigt zuerst die Standard-Elemente des Players (Schloss), dann die eigenen Seitenelemente; diese lassen sich per Ziehen umsortieren."*
 
@@ -54,7 +54,7 @@ Alle vier Dialoge arbeiten auf einer Kopie des Eintrags: **Übernehmen** schreib
 
 ## 3. Player, Prüfung und Überschrift
 
-<!-- BILD FOLGT: <img alt="Dialog Player mit Player-Feld, Prüfergebnis und Überschrift" src="../Pictures/cardMedia/media-02-player-dialog.png" width="100%"/> -->
+<img alt="Dialog Player mit Player-Feld, Prüfergebnis und Überschrift" src="../Pictures/cardMedia/media-02-player-dialog.png" width="100%"/>
 
 **Player (Gerät, Kanal oder Ordner – kein Datenpunkt)** nimmt die ID des Players. Sie lässt sich eintippen oder über **…** aus der Liste wählen. Der Hilfstext nennt die Beispiele:
 
@@ -70,7 +70,7 @@ squeezeboxrpc.0.Players.<Name>
 
 **Die Auswahlliste** (Knopf **…**) ist kein Objektbaum, sondern eine Suche: Sie liest die Objekte der fünf Adapter und zeigt alles, was als Player in Frage kommt, nach Adapter gruppiert und mit Logo-Marke.
 
-<!-- BILD FOLGT: <img alt="Dialog Player auswählen mit Suchfeld und nach Adapter gruppierter Liste" src="../Pictures/cardMedia/media-03-player-auswahl.png" width="100%"/> -->
+<img alt="Dialog Player auswählen mit Suchfeld und nach Adapter gruppierter Liste" src="../Pictures/cardMedia/media-03-player-auswahl.png" width="100%"/>
 
 | Feld | Wirkung |
 |---|---|
@@ -97,7 +97,7 @@ Der Hinweis unter der Liste: *„Klick markiert einen Player, Doppelklick übern
 
 ## 4. Farben
 
-<!-- BILD FOLGT: <img alt="Dialog Farben mit Titel-Zeile, Interpret-Zeile und Ein/Aus-Knopf" src="../Pictures/cardMedia/media-04-farben.png" width="100%"/> -->
+<img alt="Dialog Farben mit Titel-Zeile, Interpret-Zeile und Ein/Aus-Knopf" src="../Pictures/cardMedia/media-04-farben.png" width="100%"/>
 
 Drei gleich aufgebaute Felder. Jedes zeigt neben der Farbe ein **×** (*Zurück auf Standard*) und, solange nichts gesetzt ist, den Text *Standard des Farbschemas*.
 
@@ -109,7 +109,7 @@ Drei gleich aufgebaute Felder. Jedes zeigt neben der Farbe ein **×** (*Zurück 
 
 ## 5. Lautstärke: Bereich und Voreinstellungen
 
-<!-- BILD FOLGT: <img alt="Dialog Lautstärke mit Minimal- und Maximalwert und der Liste der Voreinstellungen" src="../Pictures/cardMedia/media-05-lautstaerke.png" width="100%"/> -->
+<img alt="Dialog Lautstärke mit Minimal- und Maximalwert und der Liste der Voreinstellungen" src="../Pictures/cardMedia/media-05-lautstaerke.png" width="100%"/>
 
 | Feld | Wirkung |
 |---|---|
@@ -122,7 +122,7 @@ Ein leeres Namensfeld wird rot markiert und sperrt **Übernehmen**. Die Werte we
 
 ## 6. Standard-Elemente des Players
 
-<!-- BILD FOLGT: <img alt="Die Marken der Standard-Elemente unter der Vorschau, ein abgeschaltetes durchgestrichen" src="../Pictures/cardMedia/media-06-standardelemente.png" width="100%"/> -->
+<img alt="Die Marken der Standard-Elemente unter der Vorschau, ein abgeschaltetes durchgestrichen" src="../Pictures/cardMedia/media-06-standardelemente.png" width="100%"/>
 
 Welche Elemente es gibt und in welcher Reihenfolge sie in die Leiste kommen, bestimmt der Player – nicht die Reihenfolge im Editor:
 
@@ -159,7 +159,7 @@ Die Hilfstexte der Dialoge beschreiben, was ein Element tut, zum Beispiel *„W�
 
 ## 7. Die drei Listen: Lautsprecher, Playlisten, Favoriten
 
-<!-- BILD FOLGT: <img alt="Elementdialog Lautsprecher mit eigener Liste und den vom Adapter angebotenen Namen" src="../Pictures/cardMedia/media-07-liste.png" width="100%"/> -->
+<img alt="Elementdialog Lautsprecher mit eigener Liste und den vom Adapter angebotenen Namen" src="../Pictures/cardMedia/media-07-liste.png" width="100%"/>
 
 Die drei Elemente *Lautsprecher*, *Playlisten* und *Favoriten* führen eine Namensliste. Sie wirkt als Auswahl: **leer bedeutet alles**, was der Player hergibt.
 
@@ -206,7 +206,7 @@ Zwei Besonderheiten dieser Karte gelten für die eigenen Elemente:
 
 ## 9. Blättern der Optionsleiste
 
-<!-- BILD FOLGT: <img alt="Vorschau mit zwei Seiten der Leiste und der Seitenanzeige darunter" src="../Pictures/cardMedia/media-08-blaettern.png" width="100%"/> -->
+<img alt="Vorschau mit zwei Seiten der Leiste und der Seitenanzeige darunter" src="../Pictures/cardMedia/media-08-blaettern.png" width="100%"/>
 
 Die Leiste hat **fünf** Plätze. Passt nicht alles hinein, wird geblättert; wie, steht rechts im Bereich **Navigation/Panel** unter **Blättern der Seitenelemente**:
 
