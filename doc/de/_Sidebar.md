@@ -38,7 +38,7 @@
 - [Abfall](cardTrash)  
 - [Thermostat](cardThermo2)  
 - [Thermostat (klassisch)](cardThermo)  
-- Mediaplayer *(folgt)*  
+- [Mediaplayer](cardMedia)  
 - [Verknüpfung](pageLink)  
 - [Wiederkehrende Dialoge](PageConfig-Dialoge)  
 
