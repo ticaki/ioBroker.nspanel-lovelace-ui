@@ -39,6 +39,8 @@ __export(adminShareConfig_exports, {
   CHANNEL_ROLES_LIST: () => CHANNEL_ROLES_LIST,
   CONVERT_GLOBAL_DECISIONS: () => CONVERT_GLOBAL_DECISIONS,
   CONVERT_GLOBAL_DEFAULT_DECISION: () => CONVERT_GLOBAL_DEFAULT_DECISION,
+  HMI_FONTS: () => HMI_FONTS,
+  HMI_TEXT_SIZES: () => HMI_TEXT_SIZES,
   SAVE_PANEL_NAVIGATION_COMMAND: () => SAVE_PANEL_NAVIGATION_COMMAND,
   SENDTO_CONVERT_SCRIPT_COMMAND: () => SENDTO_CONVERT_SCRIPT_COMMAND,
   SENDTO_GET_MEDIA_PLAYER_COMMAND: () => SENDTO_GET_MEDIA_PLAYER_COMMAND,
@@ -63,7 +65,10 @@ __export(adminShareConfig_exports, {
   findChartEntryForScript: () => findChartEntryForScript,
   findPowerEntryForScript: () => findPowerEntryForScript,
   formatEntryNumber: () => formatEntryNumber,
+  isAsciiOnlyTextSize: () => isAsciiOnlyTextSize,
+  isHmiTextSize: () => isHmiTextSize,
   isIconColorScaleElement: () => isIconColorScaleElement,
+  isIconTextSize: () => isIconTextSize,
   isLongPressCard: () => isLongPressCard,
   isMainPageEntry: () => isMainPageEntry,
   isMediaBackend: () => isMediaBackend,
@@ -499,6 +504,27 @@ function normalizeChannelId(raw) {
     };
   }
   return emptyChannelValueConfig();
+}
+const HMI_FONTS = {
+  0: { px: 24, icons: false, asciiOnly: false, bold: false },
+  1: { px: 32, icons: true, asciiOnly: false, bold: false },
+  2: { px: 32, icons: false, asciiOnly: false, bold: false },
+  3: { px: 48, icons: true, asciiOnly: false, bold: false },
+  4: { px: 80, icons: true, asciiOnly: false, bold: true },
+  5: { px: 128, icons: false, asciiOnly: true, bold: true }
+};
+const HMI_TEXT_SIZES = [0, 1, 2, 3, 4, 5];
+function isHmiTextSize(n) {
+  return typeof n === "number" && Number.isInteger(n) && n >= 0 && n <= 5;
+}
+function isIconTextSize(n) {
+  if (n === void 0) {
+    return true;
+  }
+  return isHmiTextSize(n) && HMI_FONTS[n].icons;
+}
+function isAsciiOnlyTextSize(n) {
+  return isHmiTextSize(n) && HMI_FONTS[n].asciiOnly;
 }
 const scrollCards = [
   "cardGrid",
@@ -1770,6 +1796,8 @@ const CONVERT_GLOBAL_DEFAULT_DECISION = "keepAdmin";
   CHANNEL_ROLES_LIST,
   CONVERT_GLOBAL_DECISIONS,
   CONVERT_GLOBAL_DEFAULT_DECISION,
+  HMI_FONTS,
+  HMI_TEXT_SIZES,
   SAVE_PANEL_NAVIGATION_COMMAND,
   SENDTO_CONVERT_SCRIPT_COMMAND,
   SENDTO_GET_MEDIA_PLAYER_COMMAND,
@@ -1794,7 +1822,10 @@ const CONVERT_GLOBAL_DEFAULT_DECISION = "keepAdmin";
   findChartEntryForScript,
   findPowerEntryForScript,
   formatEntryNumber,
+  isAsciiOnlyTextSize,
+  isHmiTextSize,
   isIconColorScaleElement,
+  isIconTextSize,
   isLongPressCard,
   isMainPageEntry,
   isMediaBackend,

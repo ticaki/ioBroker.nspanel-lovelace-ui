@@ -1115,6 +1115,68 @@ export function normalizeChannelId(raw: unknown): ChannelValueConfig {
     return emptyChannelValueConfig();
 }
 
+/** Nextion font id of a page item (`textSize`), sent to the panel as suffix `¬<id>` of the icon/value text */
+export type HmiTextSize = 0 | 1 | 2 | 3 | 4 | 5;
+
+/** What a Nextion font of the HMI (6.0.2) can draw */
+export interface HmiFontInfo {
+    /** line height of the bitmap font in px */
+    px: number;
+    /** the font contains the icon glyphs (U+E000…) - without them an icon stays empty on the panel */
+    icons: boolean;
+    /** the font only contains ASCII - `°`, umlauts etc. vanish */
+    asciiOnly: boolean;
+    bold: boolean;
+}
+
+/**
+ * The Nextion fonts 0-5 of the HMI, verified on hardware (HMI 6.0.2):
+ * 0 = 24 px text only, 1 = 32 px (NotoSans, icons), 2 = 32 px text only, 3 = 48 px (icons),
+ * 4 = 80 px bold (icons), 5 = 128 px ASCII only (no icons, no `°`/umlauts).
+ */
+export const HMI_FONTS: Readonly<Record<HmiTextSize, HmiFontInfo>> = {
+    0: { px: 24, icons: false, asciiOnly: false, bold: false },
+    1: { px: 32, icons: true, asciiOnly: false, bold: false },
+    2: { px: 32, icons: false, asciiOnly: false, bold: false },
+    3: { px: 48, icons: true, asciiOnly: false, bold: false },
+    4: { px: 80, icons: true, asciiOnly: false, bold: true },
+    5: { px: 128, icons: false, asciiOnly: true, bold: true },
+};
+
+/** all text sizes in ascending order */
+export const HMI_TEXT_SIZES: readonly HmiTextSize[] = [0, 1, 2, 3, 4, 5];
+
+/**
+ * Type guard for a valid text size (font id 0-5).
+ *
+ * @param n the value to check
+ */
+export function isHmiTextSize(n: unknown): n is HmiTextSize {
+    return typeof n === 'number' && Number.isInteger(n) && n >= 0 && n <= 5;
+}
+
+/**
+ * True when an icon can be drawn with this text size: undefined (= default font of the element)
+ * or a font that contains the icon glyphs (1, 3, 4).
+ *
+ * @param n the text size, undefined for the default
+ */
+export function isIconTextSize(n: number | undefined): boolean {
+    if (n === undefined) {
+        return true;
+    }
+    return isHmiTextSize(n) && HMI_FONTS[n].icons;
+}
+
+/**
+ * True when the text size only draws ASCII characters (font 5).
+ *
+ * @param n the text size, undefined for the default
+ */
+export function isAsciiOnlyTextSize(n: number | undefined): boolean {
+    return isHmiTextSize(n) && HMI_FONTS[n].asciiOnly;
+}
+
 // QR Entry for pageQR configuration
 export type AdminPageItemConfig = {
     /**
@@ -1137,7 +1199,7 @@ export type AdminPageItemConfig = {
     falseColor?: string;
     useValue?: boolean;
     /** Text size override 0–5 (undefined = default) */
-    textSize?: 0 | 1 | 2 | 3 | 4 | 5;
+    textSize?: HmiTextSize;
     scale?: IconScaleElement;
     /** Value-display configuration (prefix / unit / suffix / dateFormat) */
     valueEntry?: ChannelValueConfig;

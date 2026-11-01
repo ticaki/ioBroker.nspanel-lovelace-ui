@@ -45,6 +45,7 @@ import type {
     ChannelValueConfig,
     ChannelColorConfig,
     ChannelModeListConfig,
+    HmiTextSize,
 } from '../../../src/lib/types/adminShareConfig';
 import {
     ADAPTER_NAME,
@@ -55,6 +56,11 @@ import {
     isLongPressCard,
     normalizeChannelId,
     pageItemRawFormat,
+    HMI_FONTS,
+    HMI_TEXT_SIZES,
+    isAsciiOnlyTextSize,
+    isHmiTextSize,
+    isIconTextSize,
 } from '../../../src/lib/types/adminShareConfig';
 import { adminPageItemToScriptItem } from '../../../src/lib/configuration/admin-page-item';
 import ChannelColorDialog from './ChannelColorDialog';
@@ -187,8 +193,8 @@ interface ChannelConfigDialogState {
     valueEntryPreview: string;
     /** useValue Checkbox Auswahl */
     useValue: boolean;
-    /** Textgröße 1–5 (undefined = Standard) */
-    textSize: 0 | 1 | 2 | 3 | 4 | 5 | undefined;
+    /** Textgröße 0–5 (undefined = Standard) */
+    textSize: HmiTextSize | undefined;
     /** Farbthema-ID aus der Adapter-Konfiguration (0=default,1=topical,2=technical,3=sunset,4=volcano,5=custom) */
     adapterColorTheme: number;
     scale?: IconScaleElement;
@@ -570,6 +576,62 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
      */
     private isTextSizeVisible(): boolean {
         return this.state.isGridCard || this.props.currentPageCard === 'cardThermo2';
+    }
+
+    /**
+     * The item sends a value text instead of an icon: only `useValue` on grid cards - the adapter ignores
+     * `useValue` on other page types, there the field always carries the icon.
+     */
+    private showsValueText(): boolean {
+        return this.state.isGridCard && this.state.useValue;
+    }
+
+    /**
+     * The text sizes offered in the select: with an icon only the fonts that contain the icon glyphs (1, 3, 4),
+     * a stored value outside of them stays in the list so it is not silently dropped.
+     */
+    private textSizeOptions(): string[] {
+        const { textSize } = this.state;
+        const sizes = this.showsValueText()
+            ? HMI_TEXT_SIZES
+            : HMI_TEXT_SIZES.filter(n => isIconTextSize(n) || n === textSize);
+        return ['', ...sizes.map(n => String(n))];
+    }
+
+    /**
+     * Label of a text size option, built from the font table: `0 – 24 px (text only)`, `4 – 80 px bold`, …
+     *
+     * @param option the option value ('' = default)
+     */
+    private textSizeLabel(option: string): string {
+        const n = Number(option);
+        if (option === '' || !isHmiTextSize(n)) {
+            return I18n.t('valueEntryDialog_textSizeDefault');
+        }
+        const font = HMI_FONTS[n];
+        let label = `${n} – ${font.px} px`;
+        if (font.bold) {
+            label += ` ${I18n.t('valueEntryDialog_textSizeBold')}`;
+        }
+        if (font.asciiOnly) {
+            label += ` (${I18n.t('valueEntryDialog_textSizeAsciiOnly')})`;
+        } else if (!font.icons) {
+            label += ` (${I18n.t('valueEntryDialog_textSizeTextOnly')})`;
+        }
+        return label;
+    }
+
+    /** Hint below the text size select: an icon in a font without icons, or a value in the ASCII-only font */
+    private textSizeHint(): { text: string; warning: boolean } | null {
+        const { textSize } = this.state;
+        if (!this.showsValueText()) {
+            return isIconTextSize(textSize)
+                ? null
+                : { text: I18n.t('valueEntryDialog_textSizeIconEmpty'), warning: true };
+        }
+        return isAsciiOnlyTextSize(textSize)
+            ? { text: I18n.t('valueEntryDialog_textSizeAsciiHint'), warning: false }
+            : null;
     }
 
     /**
@@ -2027,31 +2089,62 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                                             placement="top"
                                         >
                                             <Autocomplete
-                                                options={['', '0', '1', '2', '3', '4', '5'] as string[]}
+                                                options={this.textSizeOptions()}
                                                 value={
                                                     this.state.textSize !== undefined ? String(this.state.textSize) : ''
                                                 }
-                                                onChange={(_e, val) =>
+                                                onChange={(_e, val) => {
+                                                    const n = Number(val);
                                                     this.setState({
                                                         textSize:
-                                                            val === '' || val === null
-                                                                ? undefined
-                                                                : (Number(val) as 0 | 1 | 2 | 3 | 4 | 5),
-                                                    })
-                                                }
+                                                            val !== '' && val !== null && isHmiTextSize(n)
+                                                                ? n
+                                                                : undefined,
+                                                    });
+                                                }}
                                                 disabled={fieldsDisabled}
                                                 disableClearable={false}
-                                                getOptionLabel={opt =>
-                                                    opt === '' ? I18n.t('valueEntryDialog_textSizeDefault') : opt
-                                                }
-                                                sx={{ width: 160 }}
-                                                renderInput={params => (
-                                                    <TextField
-                                                        {...params}
-                                                        variant="standard"
-                                                        label={I18n.t('valueEntryDialog_textSize')}
-                                                    />
-                                                )}
+                                                getOptionLabel={opt => this.textSizeLabel(opt)}
+                                                renderOption={(props, opt) => {
+                                                    const { key, ...rest } = props;
+                                                    const empty =
+                                                        !this.showsValueText() &&
+                                                        opt !== '' &&
+                                                        !isIconTextSize(Number(opt));
+                                                    return (
+                                                        <li
+                                                            key={key}
+                                                            {...rest}
+                                                        >
+                                                            <Typography
+                                                                variant="body2"
+                                                                color={empty ? 'warning.main' : undefined}
+                                                            >
+                                                                {this.textSizeLabel(opt)}
+                                                            </Typography>
+                                                        </li>
+                                                    );
+                                                }}
+                                                sx={{ width: 260 }}
+                                                renderInput={params => {
+                                                    const hint = this.textSizeHint();
+                                                    return (
+                                                        <TextField
+                                                            {...params}
+                                                            variant="standard"
+                                                            label={I18n.t('valueEntryDialog_textSize')}
+                                                            helperText={hint?.text}
+                                                            slotProps={{
+                                                                ...params.slotProps,
+                                                                formHelperText: {
+                                                                    sx: hint?.warning
+                                                                        ? { color: 'warning.main' }
+                                                                        : undefined,
+                                                                },
+                                                            }}
+                                                        />
+                                                    );
+                                                }}
                                             />
                                         </Tooltip>
                                     )}

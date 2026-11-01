@@ -157,6 +157,10 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
     Placeholder for the next version (at the beginning of the line):
     ### **WORK IN PROGRESS**
 -->
+### **WORK IN PROGRESS**
+- (ticaki) admin: the text size of a page item shows the pixel size of each font; with an icon only the fonts 1, 3 and 4 are offered (fonts 0, 2 and 5 have no icons - a stored 0/2/5 is kept but marked with a warning), with a value font 5 notes "ASCII only"
+- (ticaki) web panel: the font id `¬<n>` of a page item is read on every card (cardThermo2 showed it as text and an icon as `?`); like on the panel an icon in font 0, 2 or 5 stays empty and font 5 drops all non-ASCII characters
+
 ### 2.0.1 (2026-11-01)
 - (ticaki) screensaver editor: areas with more items than places page with arrows instead of hiding the extra items, they are no longer reported as "no place in this version"; items with a condition (enabled / visible condition, also in raw data) are marked
 - (ticaki) admin: the "..." button of the media page player opens a list of all players found (alexa2 Echo devices, sonos speakers, squeezebox players, spotify-premium/mpd instances) grouped by adapter with search instead of the object tree; the id can still be typed by hand

@@ -7,6 +7,7 @@ import type { Entity6 } from '../../protocol/types';
 import { theme } from '../../style/theme';
 import type { CardProps } from '../CardContract';
 import { Pressable } from '../cardEntities/shared/Pressable';
+import { EntityIcon } from '../cardEntities/shared/widgets';
 import { entityPressProps } from '../cardMedia/entityPress';
 import {
     RING_START,
@@ -37,6 +38,8 @@ const KNOB_R = 10;
 const RING_BOX = R + STROKE;
 const SEGMENTS = 54;
 const RING_GREY = '#3a3a3a';
+/** Nextion font of the slots without `¬<n>`: icons and text (the glyph keeps the slot's icon size) */
+const SLOT_DEFAULT_FONT = 1;
 
 /** colour stops of the ring: blue (cold) over cyan and yellow to red (hot) */
 const GRADIENT: readonly (readonly [number, [number, number, number]])[] = [
@@ -384,7 +387,9 @@ export class CardThermo2 extends React.Component<CardProps<CardThermo2Model>, Ca
     }
 
     /**
-     * A page item around the ring. Touch as in the HMI (`bEntity1..9`): a tap sends
+     * A page item around the ring. The icon field may carry a value instead of an icon and a
+     * font id `¬<n>` (item option `textSize`), drawn like on the HMI by {@link EntityIcon}.
+     * Touch as in the HMI (`bEntity1..9`): a tap sends
      * `event,buttonPress2,<id>,button` (shutter, input_sel and timer open their popup instead),
      * holding a light, fan or number opens its popup - see {@link entityPressProps}.
      */
@@ -409,10 +414,12 @@ export class CardThermo2 extends React.Component<CardProps<CardThermo2Model>, Ca
                     visibility: empty ? 'hidden' : 'visible',
                 }}
             >
-                <Icon
-                    glyph={entity.icon}
-                    size={size}
+                <EntityIcon
+                    icon={entity.icon}
                     color={color565ToCss(entity.iconColor)}
+                    font={SLOT_DEFAULT_FONT}
+                    defaultIconSize={size}
+                    style={{ width: '100%', height: '100%' }}
                 />
             </Pressable>
         );

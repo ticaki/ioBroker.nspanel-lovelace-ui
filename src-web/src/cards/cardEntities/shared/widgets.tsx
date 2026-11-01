@@ -12,6 +12,8 @@ export interface EntityIconProps {
     font: number;
     /** scales glyph and text (compact rows of cardSchedule) */
     scale?: number;
+    /** glyph size when the field carries no `¬<font>` (default: icon size of `font`) */
+    defaultIconSize?: number;
     onPress?: () => void;
     style?: React.CSSProperties;
 }
@@ -28,7 +30,9 @@ export class EntityIcon extends React.Component<EntityIconProps> {
         const { glyph, text, font } = splitIconField(icon);
         const nf = nextionFont(font, this.props.font);
         const fontSize = Math.round(nf.fontSize * scale);
-        const iconSize = Math.round(nf.iconSize * scale);
+        const baseIconSize =
+            font === undefined && this.props.defaultIconSize !== undefined ? this.props.defaultIconSize : nf.iconSize;
+        const iconSize = Math.round(baseIconSize * scale);
         return (
             <Pressable
                 data-role="icon"
