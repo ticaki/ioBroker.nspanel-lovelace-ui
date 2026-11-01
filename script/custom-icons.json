@@ -1,0 +1,32 @@
+[
+    {
+        "name": "window-tilt-variant",
+        "hex": "FD40",
+        "data": "M3 2 L21 2 L21 20 L23 20 L23 23 L1 23 L1 20 L3 20ZM5 20 L19 20 L19 4 L5 4ZM6.3 5 L17.7 5 L19 20 L5 20ZM7.23 11.6 L11.1 11.6 L11.1 6.5 L7.68 6.5ZM6.64 18.5 L11.1 18.5 L11.1 13.4 L7.08 13.4ZM12.9 11.6 L16.77 11.6 L16.32 6.5 L12.9 6.5ZM12.9 18.5 L17.36 18.5 L16.92 13.4 L12.9 13.4Z",
+        "description": "window with muntins, tilted (bottom hinged) - matches window-closed-variant"
+    },
+    {
+        "name": "window-open-hinged-variant",
+        "hex": "FD41",
+        "data": "M3 2 L21 2 L21 20 L23 20 L23 23 L1 23 L1 20 L3 20ZM5 20 L19 20 L19 4 L5 4ZM5 4 L12.2 2.6 L12.2 21.4 L5 20ZM6.4 11.3 L7.9 11.3 L7.9 4.86 L6.4 5.15ZM6.4 18.85 L7.9 19.14 L7.9 12.7 L6.4 12.7ZM9.3 11.3 L10.8 11.3 L10.8 4.3 L9.3 4.59ZM9.3 19.41 L10.8 19.7 L10.8 12.7 L9.3 12.7Z",
+        "description": "window with muntins, side hinged and opened - matches window-closed-variant"
+    },
+    {
+        "name": "window-shutter-25",
+        "hex": "FD42",
+        "data": "M3 4H21V8H19V20H17V8H7V20H5V8H3V4ZM8 11.25 L16 11.25 L16 13.25 L8 13.25ZM8 8.25 L16 8.25 L16 10.25 L8 10.25Z",
+        "description": "roller shutter 25 % closed - between window-shutter-open and window-shutter"
+    },
+    {
+        "name": "window-shutter-50",
+        "hex": "FD43",
+        "data": "M3 4H21V8H19V20H17V8H7V20H5V8H3V4ZM8 13.5 L16 13.5 L16 15.5 L8 15.5ZM8 10.5 L16 10.5 L16 12.5 L8 12.5ZM8 8 L16 8 L16 9.5 L8 9.5Z",
+        "description": "roller shutter 50 % closed"
+    },
+    {
+        "name": "window-shutter-75",
+        "hex": "FD44",
+        "data": "M3 4H21V8H19V20H17V8H7V20H5V8H3V4ZM8 15.75 L16 15.75 L16 17.75 L8 17.75ZM8 12.75 L16 12.75 L16 14.75 L8 14.75ZM8 9.75 L16 9.75 L16 11.75 L8 11.75ZM8 8 L16 8 L16 8.75 L8 8.75Z",
+        "description": "roller shutter 75 % closed"
+    }
+]

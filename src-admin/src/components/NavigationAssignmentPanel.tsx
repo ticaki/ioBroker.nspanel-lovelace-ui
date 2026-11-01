@@ -20,6 +20,7 @@ import {
     Checkbox,
     Tabs,
     Tab,
+    TextField,
 } from '@mui/material';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutlineOutlined';
 import NavigationIcon from '@mui/icons-material/Navigation';
@@ -34,13 +35,20 @@ import type {
     NavigationAssignment,
     PageConfigBaseFields,
     PageConfigEntry,
+    PageScrollFields,
+    ScrollCard,
 } from '../../../src/lib/types/adminShareConfig';
 import {
     // SENDTO_GET_PANELS_COMMAND,
     ADAPTER_NAME,
     ALL_PANELS_SPECIAL_ID,
     mainPageName,
+    scrollAutoTimingDefault,
+    scrollHalfCards,
 } from '../../../src/lib/types/adminShareConfig';
+
+/** fields of the page details: navigation flags of every page plus the paging of the menu cards */
+export type PageCommonFields = PageConfigBaseFields & PageScrollFields;
 
 // Special panel ID that the adapter will treat specially when present in assignments
 
@@ -58,8 +66,10 @@ type NavigationAssignmentPanelProps = {
     // hide navigation fields (next/prev/home/parent) - for screensaver pages
     hideNavigationFields?: boolean;
     // Neu: Gemeinsame Felder
-    commonFields?: PageConfigBaseFields;
-    onCommonFieldsChange?: (fields: Partial<PageConfigBaseFields>) => void;
+    commonFields?: PageCommonFields;
+    onCommonFieldsChange?: (fields: Partial<PageCommonFields>) => void;
+    /** card of the selected page when it pages through its items - shows the scroll settings */
+    scrollCard?: ScrollCard;
     /** Vom übergeordneten PageConfigManager bereitgestellt – navigationNodes pro panelTopic */
     panelPagesMap?: Record<string, string[]>;
     /** Alle Admin-Seiten, für die Startseiten- und Zielprüfung */
@@ -901,10 +911,122 @@ class NavigationAssignmentPanel extends ConfigGeneric<
         return topics.filter(t => !this.isTargetAvailableOnPanel(t, target)).map(t => this.getPanelLabel(t));
     }
 
-    private handleCommonFieldChange(field: keyof PageConfigBaseFields, value: any): void {
+    private handleCommonFieldChange<K extends keyof PageCommonFields>(field: K, value: PageCommonFields[K]): void {
         if (this.props.onCommonFieldsChange) {
             this.props.onCommonFieldsChange({ [field]: value });
         }
+    }
+
+    /**
+     * Paging of the page items, only for the cards built on PageMenu.
+     *
+     * @param fields Stored fields of the selected page.
+     * @param card Card of the selected page.
+     * @returns The radio groups of the scroll settings.
+     */
+    private renderScrollFields(fields: PageCommonFields, card: ScrollCard): React.JSX.Element {
+        const presentation = fields.scrollPresentation ?? 'classic';
+        const halfAllowed = scrollHalfCards.includes(card);
+        return (
+            <Box sx={{ mt: 2 }}>
+                <FormControl
+                    component="fieldset"
+                    disabled={!this.state.alive}
+                >
+                    <Typography
+                        variant="subtitle2"
+                        sx={{ mb: 1 }}
+                    >
+                        {I18n.t('scroll_presentation')}
+                    </Typography>
+                    <RadioGroup
+                        row
+                        value={presentation}
+                        onChange={(_e, val) => {
+                            if (val === 'classic' || val === 'arrow' || val === 'auto') {
+                                this.handleCommonFieldChange('scrollPresentation', val);
+                            }
+                        }}
+                    >
+                        <FormControlLabel
+                            value="classic"
+                            control={<Radio />}
+                            label={I18n.t('scroll_classic')}
+                        />
+                        <FormControlLabel
+                            value="arrow"
+                            control={<Radio />}
+                            label={I18n.t('scroll_arrow')}
+                        />
+                        <FormControlLabel
+                            value="auto"
+                            control={<Radio />}
+                            label={I18n.t('scroll_auto')}
+                        />
+                    </RadioGroup>
+                    <Typography
+                        variant="caption"
+                        color="text.secondary"
+                        sx={{ display: 'block' }}
+                    >
+                        {I18n.t(`scroll_${presentation}_hint`)}
+                    </Typography>
+                </FormControl>
+                {presentation !== 'arrow' && halfAllowed && (
+                    <FormControl
+                        component="fieldset"
+                        disabled={!this.state.alive}
+                        sx={{ mt: 1, display: 'block' }}
+                    >
+                        <Typography
+                            variant="subtitle2"
+                            sx={{ mb: 1 }}
+                        >
+                            {I18n.t('scroll_type')}
+                        </Typography>
+                        <RadioGroup
+                            row
+                            value={fields.scrollType ?? 'page'}
+                            onChange={(_e, val) => {
+                                if (val === 'page' || val === 'half') {
+                                    this.handleCommonFieldChange('scrollType', val);
+                                }
+                            }}
+                        >
+                            <FormControlLabel
+                                value="page"
+                                control={<Radio />}
+                                label={I18n.t('scroll_type_page')}
+                            />
+                            <FormControlLabel
+                                value="half"
+                                control={<Radio />}
+                                label={I18n.t('scroll_type_half')}
+                            />
+                        </RadioGroup>
+                    </FormControl>
+                )}
+                {presentation === 'auto' && (
+                    <TextField
+                        variant="standard"
+                        type="number"
+                        sx={{ mt: 1, width: 220 }}
+                        disabled={!this.state.alive}
+                        label={I18n.t('scroll_auto_timing')}
+                        placeholder={String(scrollAutoTimingDefault)}
+                        value={fields.scrollAutoTiming ?? ''}
+                        onChange={e => {
+                            const v = parseInt(e.target.value, 10);
+                            this.handleCommonFieldChange(
+                                'scrollAutoTiming',
+                                Number.isFinite(v) && v > 0 ? v : undefined,
+                            );
+                        }}
+                        slotProps={{ htmlInput: { min: 1 }, inputLabel: { shrink: true } }}
+                    />
+                )}
+            </Box>
+        );
     }
 
     private renderCommonFields(): React.JSX.Element | null {
@@ -970,6 +1092,8 @@ class NavigationAssignmentPanel extends ConfigGeneric<
                     />
                 </Box>
 
+                {this.props.scrollCard && this.renderScrollFields(commonFields, this.props.scrollCard)}
+
                 {/* AlwaysOn Radio Group */}
                 <Box sx={{ mt: 2 }}>
                     <FormControl
@@ -986,7 +1110,9 @@ class NavigationAssignmentPanel extends ConfigGeneric<
                             row
                             value={commonFields.alwaysOn || 'none'}
                             onChange={(_e, val) => {
-                                this.handleCommonFieldChange('alwaysOn', val);
+                                if (val === 'none' || val === 'always' || val === 'ignore' || val === 'action') {
+                                    this.handleCommonFieldChange('alwaysOn', val);
+                                }
                             }}
                         >
                             <FormControlLabel

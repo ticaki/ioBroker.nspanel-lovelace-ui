@@ -1,12 +1,12 @@
 {
     "tasmota": "15.3.0",
-    "tasmota-beta": "15.6.0",
+    "tasmota-beta": "16.0.0",
     "berry": "11",
     "berry-beta": "11",
     "tft": "5.1.1",
     "tft-us-l": "5.1.1",
     "tft-us-p": "5.1.3",
-    "tft-beta": "5.1.1",
-    "tft-us-l-beta": "5.1.1",
-    "tft-us-p-beta": "5.1.3"
+    "tft-beta": "6.0.3",
+    "tft-us-l-beta": "6.0.2",
+    "tft-us-p-beta": "6.0.2"
 }

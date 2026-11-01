@@ -122,11 +122,7 @@ function isConfig(F, adapter) {
   return true;
 }
 function checkIconColorElement(F) {
-  var _a, _b, _c, _d, _e, _f;
-  return {
-    ...F,
-    color_best: { r: (_b = (_a = F.color_best) == null ? void 0 : _a.red) != null ? _b : 0, g: (_d = (_c = F.color_best) == null ? void 0 : _c.green) != null ? _d : 0, b: (_f = (_e = F.color_best) == null ? void 0 : _e.blue) != null ? _f : 0 }
-  };
+  return (0, import_function_and_const.normalizeIconColorElement)(F);
 }
 function checkPageBaseItemSimple(F) {
   return F;

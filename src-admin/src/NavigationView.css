@@ -126,3 +126,128 @@
   top: auto !important;
   transform: none !important;
 }
+
+/* Bearbeitungsmodus: Quell-Handles editierbarer Seiten sind groesser und zeigen, dass man ziehen kann */
+.node-box.node-editing .react-flow__handle.handle-edit-source {
+  width: 11px;
+  height: 11px;
+  cursor: crosshair;
+  border: 2px solid var(--node-bg, #fff);
+  z-index: 3;
+}
+
+/* Seite mit noch nicht gespeicherten Verweisen: gestrichelter Aussenrahmen plus Punkt rechts oben */
+.node-box.node-unsaved {
+  outline: 2px dashed var(--edge-color, #1976d2);
+  outline-offset: 3px;
+}
+.node-box .node-unsaved-marker {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--edge-color, #1976d2);
+  border: 2px solid var(--node-bg, #fff);
+  z-index: 4;
+}
+
+/* Editierbare Kante: Klick oeffnet das Menue */
+.edge-editable .custom-edge-hit {
+  cursor: context-menu;
+}
+
+/* Verweis, der nicht in der Konfiguration steht, sondern vom Adapter abgeleitet ist (Standard-Home,
+   Verkettung): blass und duenner, damit man sieht, was ein Entfernen wirklich bewirkt */
+.edge-derived .custom-edge-path {
+  stroke-opacity: 0.45;
+  stroke-width: 1.5;
+}
+.edge-derived:hover .custom-edge-path,
+.edge-derived.custom-edge-highlighted .custom-edge-path {
+  stroke-width: 2.5;
+}
+
+/* Marker am Knoten: Schloss (erzeugte Seite, Navigation nicht aenderbar) rechts oben, Stift
+   (Navigation im Admin ueberschrieben) links oben - der Punkt fuer "nicht gespeichert" bleibt
+   rechts oben, eine erzeugte Seite kann nie ungespeichert sein */
+.node-box .node-marker {
+  position: absolute;
+  top: -8px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--node-bg, #fff);
+  border: 1px solid var(--node-border, #ccc);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 4;
+  pointer-events: auto;
+}
+.node-box .node-marker-generated {
+  right: -8px;
+}
+.node-box .node-marker-override {
+  left: -8px;
+}
+.node-marker-icon {
+  font-size: 11px !important;
+  color: var(--node-text, inherit);
+}
+.node-marker-icon.node-marker-icon-stale {
+  color: #ed6c02;
+}
+/* Erzeugte Seite: Quell-Handles fehlen, der Rahmen ist gepunktet, damit man es auch ohne Marker sieht */
+.node-box.node-generated.node-editing {
+  border-style: dotted;
+}
+/* Marker in der Legende */
+.legend-marker {
+  width: 16px;
+  height: 16px;
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  border: 1px solid var(--node-border, #ccc);
+  background: var(--node-bg, #868686ff);
+}
+
+/* Einklapp-Knopf rechts unten an Seiten mit Unterseiten; eingeklappt zeigt er "+N" (Anzahl der
+   ausgeblendeten Seiten). Unten Mitte sitzt der next-Anfasser, deshalb nach rechts versetzt. */
+.node-box .node-collapse {
+  position: absolute;
+  bottom: -9px;
+  right: 10px;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 3px;
+  border-radius: 8px;
+  background: var(--node-bg, #fff);
+  /* Rahmen in Textfarbe: der Theme-Trennstrich wäre auf dem Seitenhintergrund kaum zu sehen */
+  border: 1px solid var(--node-text, #444);
+  color: var(--node-text, inherit);
+  font-size: 10px;
+  line-height: 14px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 4;
+  opacity: 0.6;
+}
+.node-box:hover .node-collapse,
+.node-box .node-collapse.node-collapse-collapsed {
+  opacity: 1;
+}
+.node-box .node-collapse-icon {
+  font-size: 12px !important;
+}
+/* Kante in einen eingeklappten Unterbaum - zeigt auf die eingeklappte Seite */
+.edge-collapsed .custom-edge-path {
+  stroke-opacity: var(--edge-collapsed-opacity, 0.6);
+}

@@ -114,12 +114,19 @@
     "webPanelEdit": "Modifica pannello web",
     "webPanelId": "ID del pannello web",
     "webPanelKind": "Web",
-    "webPanelNoTasmotaMaintain": "Un pannello web non ha firmware Tasmota né display TFT, non c'è nulla da flashare. Vale solo lo script.",
+    "webPanelNoTasmotaMaintain": "Un pannello web non ha firmware Tasmota né display TFT, non c'è nulla da flashare.",
     "webPanelTopic": "Topic (univoco, diventa il percorso dell'URL)",
     "webPanelTopicDuplicate": "Questo topic è già usato da un altro pannello",
     "webPanelTopicHelp": "Lettere, cifre, _ e -, / come separatore",
     "webPanelTopicInvalid": "Sono ammessi solo lettere, cifre, _, - e /",
     "webPanelTopicRequired": "Il topic non può essere vuoto",
     "webPanelTopicReserved": "Questo percorso è usato dal server web stesso",
-    "chart_script_navigation_hint": "Migrata dalla vecchia tabella \"Page Chart\": questa pagina riceve ancora la navigazione dallo script (pagina \"%s\"). È obsoleto: assegna qui una navigazione e rimuovi la pagina dallo script."
+    "chart_script_navigation_hint": "Migrata dalla vecchia tabella \"Page Chart\": questa pagina riceve ancora la navigazione dallo script (pagina \"%s\"). È obsoleto: assegna qui una navigazione e rimuovi la pagina dallo script.",
+    "power_script_navigation_hint": "Migrata dalla vecchia tabella \"Page Power\": questa pagina riceve ancora la navigazione dallo script (pagina \"%s\"). È obsoleto: assegna qui una navigazione e rimuovi la pagina dallo script.",
+    "panelNoScript": "Il pannello non usa script",
+    "panelNoScriptTooltip": "Il pannello è configurato solo nell'admin (e dallo script globale). Uno script del pannello inviato per esso viene rifiutato, non viene offerto alcun aggiornamento dello script.",
+    "panelNoScriptInfo": "Script disattivato",
+    "panelNoScriptVersion": "Script disattivato",
+    "convertScript_noScriptPanel": "Il pannello è impostato su \"Il pannello non usa script\". Rimuovi la spunta nelle impostazioni del pannello, converti lo script e poi rimetti la spunta.",
+    "panelButtonDialog_modeNoneHintNoScript": "Il pannello non usa script: senza un'azione configurata qui il tasto non ha alcuna funzione."
 }

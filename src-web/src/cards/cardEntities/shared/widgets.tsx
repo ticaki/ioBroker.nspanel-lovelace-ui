@@ -1,7 +1,7 @@
 import React from 'react';
 import { Icon } from '../../../components/Icon';
 import { theme } from '../../../style/theme';
-import { nextionFont, splitIconField, type NumberOptions, type ShutterOptions } from './entityTypes';
+import { nextionFont, splitIconField, textShift, type NumberOptions, type ShutterOptions } from './entityTypes';
 import { Pressable } from './Pressable';
 
 export interface EntityIconProps {
@@ -13,7 +13,6 @@ export interface EntityIconProps {
     /** scales glyph and text (compact rows of cardSchedule) */
     scale?: number;
     onPress?: () => void;
-    onLongPress?: () => void;
     style?: React.CSSProperties;
 }
 
@@ -25,7 +24,7 @@ export interface EntityIconProps {
  */
 export class EntityIcon extends React.Component<EntityIconProps> {
     render(): React.JSX.Element {
-        const { icon, color, onPress, onLongPress, style, scale = 1 } = this.props;
+        const { icon, color, onPress, style, scale = 1 } = this.props;
         const { glyph, text, font } = splitIconField(icon);
         const nf = nextionFont(font, this.props.font);
         const fontSize = Math.round(nf.fontSize * scale);
@@ -34,7 +33,6 @@ export class EntityIcon extends React.Component<EntityIconProps> {
             <Pressable
                 data-role="icon"
                 onPress={onPress}
-                onLongPress={onLongPress}
                 style={{
                     display: 'flex',
                     alignItems: 'center',
@@ -58,6 +56,85 @@ export class EntityIcon extends React.Component<EntityIconProps> {
                 ) : null}
                 {text !== '' ? <span style={{ flex: '0 0 auto' }}>{text}</span> : null}
             </Pressable>
+        );
+    }
+}
+
+/** text alignment of a Nextion component (`xcen` / `ycen`): 0 = start, 1 = centre, 2 = end */
+export type NextionAlign = 0 | 1 | 2;
+
+export interface HmiTextBoxProps {
+    /** the field as the adapter sends it (glyph, text or glyph + text, optionally `¬<font>`) */
+    field: string;
+    color: string;
+    /** the box of the Nextion component in stage pixels */
+    x: number;
+    y: number;
+    w: number;
+    h: number;
+    /** font of the component when the field carries no `¬<font>` */
+    font: number;
+    xcen?: NextionAlign;
+    ycen?: NextionAlign;
+}
+
+function flexAlign(a: NextionAlign): string {
+    return a === 0 ? 'flex-start' : a === 2 ? 'safe flex-end' : 'safe center';
+}
+
+/**
+ * A Nextion text/button component without word wrap (`isbr=0`): the line of the bitmap font
+ * (height = Nextion font size) is aligned in the box like `xcen` / `ycen`; a line that is
+ * wider or higher than the box starts at the left / top edge and is cut at the box (verified on
+ * hardware: `35%` in font 5 shows the upper left part, the bulb in font 4 sits at the top).
+ * Characters the font lacks are not drawn (see {@link splitIconField}).
+ */
+export class HmiTextBox extends React.Component<HmiTextBoxProps> {
+    render(): React.JSX.Element {
+        const { field, color, x, y, w, h, xcen = 1, ycen = 1 } = this.props;
+        const { glyph, text, font } = splitIconField(field);
+        const nf = nextionFont(font, this.props.font);
+        return (
+            <div
+                data-role="hmi-box"
+                data-font={font ?? this.props.font}
+                style={{
+                    position: 'absolute',
+                    left: x,
+                    top: y,
+                    width: w,
+                    height: h,
+                    display: 'flex',
+                    justifyContent: flexAlign(xcen),
+                    alignItems: flexAlign(ycen),
+                    overflow: 'hidden',
+                    pointerEvents: 'none',
+                }}
+            >
+                <div
+                    style={{
+                        flex: '0 0 auto',
+                        height: nf.px,
+                        display: 'flex',
+                        alignItems: 'flex-start',
+                        whiteSpace: 'nowrap',
+                        color,
+                        fontSize: nf.fontSize,
+                        fontWeight: nf.fontWeight,
+                        lineHeight: `${nf.px}px`,
+                    }}
+                >
+                    {glyph !== undefined ? (
+                        <Icon
+                            glyph={glyph}
+                            size={nf.iconSize}
+                            color={color}
+                            style={{ marginTop: nf.iconTop }}
+                        />
+                    ) : null}
+                    {text !== '' ? <span style={{ position: 'relative', top: textShift(nf) }}>{text}</span> : null}
+                </div>
+            </div>
         );
     }
 }
@@ -303,7 +380,6 @@ export class NumberSlider extends React.Component<NumberSliderProps, NumberSlide
 export interface TextButtonProps {
     text: string;
     onPress: () => void;
-    onLongPress?: () => void;
     /** css colour of the text; the HMI draws button and input_sel in its blue, the timer in white */
     color?: string;
     fontSize?: number;
@@ -312,12 +388,11 @@ export interface TextButtonProps {
 /** A text at the right of a row that can be pressed (button, input_sel, timer) */
 export class TextButton extends React.Component<TextButtonProps> {
     render(): React.JSX.Element {
-        const { text, onPress, onLongPress, color = theme.foreground, fontSize = 18 } = this.props;
+        const { text, onPress, color = theme.foreground, fontSize = 18 } = this.props;
         return (
             <Pressable
                 data-role="text-button"
                 onPress={onPress}
-                onLongPress={onLongPress}
                 style={{
                     fontSize,
                     lineHeight: 1,

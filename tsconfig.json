@@ -48,6 +48,6 @@
             "moduleResolution": "node"
         }
     },
-    "include": ["src/**/*.ts", "tasks.ts"],
+    "include": ["src/**/*.ts", "tasks.ts", "src-admin/src/**/*.test.ts"],
     "exclude": ["build/**", "node_modules/**", "widgets/**", ".dev-Data/*", "script/*", "doc/*", "testumgebung/*" ]
 }

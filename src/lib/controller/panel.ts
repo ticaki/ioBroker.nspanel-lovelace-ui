@@ -1,5 +1,7 @@
 import type {
+    NavigationLinks,
     NavigationMapEntry,
+    NavigationOverrideState,
     NavigationPositionsMap,
     PageMenuConfigInfo,
     PanelListEntry,
@@ -45,7 +47,18 @@ import { PageOriginTracker } from '../configuration/page-origin';
 import { collectNavigationTargets } from '../configuration/page-targets';
 import { collectPageStates, emptyStateNode, mergeStateInfo, type PageStateNode } from '../configuration/page-states';
 import { mainPageName } from '../const/default-pages';
+import { isNoScriptPanel } from '../configuration/no-script';
 import type { NSPanel } from '../types/NSPanel';
+import {
+    buildDisplayDiagnosisMessage,
+    DISPLAY_DIAGNOSIS_ANSWER_TIMEOUT_MS,
+    DISPLAY_DIAGNOSIS_DELAY_MS,
+    DISPLAY_DIAGNOSIS_RETRY_MS,
+    evaluateDisplayDiagnosis,
+    parseGpio4Answer,
+    parseModuleAnswer,
+    type DisplayDiagnosisAnswers,
+} from './display-diagnosis';
 
 export interface panelConfigPartial extends Partial<panelConfigTop> {
     format?: Partial<Intl.DateTimeFormatOptions>;
@@ -68,6 +81,18 @@ export interface panelConfigPartial extends Partial<panelConfigTop> {
      * Filled by the config manager, used to record the origin of those pages.
      */
     globalPageIds?: string[];
+    /**
+     * Pages the config manager generated from a page item (e.g. `media-<id>` behind a media item).
+     * Their navigation is read-only in the admin, whatever the page item comes from.
+     */
+    generatedPageIds?: string[];
+    /**
+     * Links each script page carries according to the script configuration, before the navigation
+     * overrides of the admin were applied. Set by `main.ts`, reported with the navigation map.
+     */
+    scriptNavigationLinks?: Record<string, NavigationLinks>;
+    /** Navigation overrides of the admin that are in effect, by page. Set by `main.ts`. */
+    navigationOverrideStates?: Record<string, NavigationOverrideState>;
     /** 'tasmota' (default) for a real NSPanel, 'web' for a panel shown in a browser */
     kind?: 'tasmota' | 'web';
     /** Message channel to the panel - the MQTT client when missing */
@@ -128,6 +153,16 @@ export class Panel extends BaseClass {
     /** Timestamp of the last Nextion 0x24 (serial buffer overflow) reported by the display, 0 if none */
     private nextionBufferOverflowTs: number = 0;
     private lastAutoRestartTs: number = 0;
+    /** Since when the loop offers `pageType~pageStartup` without an answer from the display, 0 if online */
+    private displayOfflineSinceTs: number = 0;
+    /** Diagnosis of a display that does not answer although Tasmota is online, see display-diagnosis.ts */
+    private displayDiagnosis: {
+        /** a problem was logged - not again until the next startup event */
+        reported: boolean;
+        lastQueryTs: number;
+        timeout: ioBroker.Timeout | undefined;
+        answers: DisplayDiagnosisAnswers | undefined;
+    } = { reported: false, lastQueryTs: 0, timeout: undefined, answers: undefined };
     public lastSendTypeDate: number = 0;
     public isBuzzerAllowed: boolean = true;
     options: panelConfigPartial;
@@ -386,7 +421,10 @@ export class Panel extends BaseClass {
                 this.sendToTasmota = this.panelSend.addMessageTasmota;
             }
         }
-        this.info.nspanel.scriptVersion = options.scriptVersion || 'unknown';
+        // "panel uses no script": there is no script version
+        this.info.nspanel.scriptVersion = isNoScriptPanel(this.adapter.config.panels, this.topic)
+            ? 'none'
+            : options.scriptVersion || 'unknown';
         this.info.tasmota.onlineVersion = this.controller.globalPanelInfo.availableTasmotaFirmwareVersion;
         //this.info.nspanel.onlineVersion = this.controller.globalPanelInfo.availableTftFirmwareVersion;
         // remove unused pages except screensaver - pages must be in navigation
@@ -410,7 +448,10 @@ export class Panel extends BaseClass {
         const ensured = ensureMainPage(options, this.friendlyName || this.name);
         // A generated default start page belongs to the adapter, not to the script.
         this.pageOrigins.classify(options.pages, 'system');
-        if (ensured.pageAdded || ensured.navigationAdded) {
+        if (
+            (ensured.pageAdded || ensured.navigationAdded) &&
+            !isNoScriptPanel(this.adapter.config.panels, this.topic)
+        ) {
             this.log.info(
                 `No page '${mainPageName}' in the script configuration - a default start page was added. A page named '${mainPageName}' in the admin configuration replaces it.`,
             );
@@ -1198,6 +1239,8 @@ export class Panel extends BaseClass {
                         this.nextionBufferOverflowTs = now;
                     }
                     return;
+                } else if (this.handleDisplayDiagnosisAnswer(msg)) {
+                    return;
                 } else if ('nlui_driver_version' in msg) {
                     this.info.nspanel.berryDriverVersion = parseInt(msg.nlui_driver_version);
                     await this.library.writedp(
@@ -1776,12 +1819,119 @@ export class Panel extends BaseClass {
         if (this.unload || this.adapter.unload) {
             return;
         }
+        this.checkDisplayNotAnswering();
         // offline: offer `pageType~pageStartup` every 5 s until the panel answers with its startup event
         // (a web panel has no Tasmota rule that repeats the startup page); online: tidy the pages now and then
         this.loopTimeout = this.adapter.setTimeout(() => {
             this.loop();
         }, t);
     };
+
+    /**
+     * Called by the loop: if a hardware panel has been offered `pageType~pageStartup` for
+     * {@link DISPLAY_DIAGNOSIS_DELAY_MS} without a startup event, ask Tasmota for `Module` and
+     * `Gpio 255` to find out why the display does not answer.
+     */
+    private checkDisplayNotAnswering(): void {
+        const now = Date.now();
+        if (this.isOnline || this.flashing || !this.initDone || this.isVirtual) {
+            // flashing: the display is busy - count again afterwards
+            this.displayOfflineSinceTs = 0;
+            return;
+        }
+        if (this.info.nspanel.berryDriverVersion === -1) {
+            // emulator - no real display behind it
+            return;
+        }
+        if (this.displayOfflineSinceTs === 0) {
+            this.displayOfflineSinceTs = now;
+            return;
+        }
+        const diag = this.displayDiagnosis;
+        if (
+            diag.reported ||
+            diag.answers ||
+            now - this.displayOfflineSinceTs < DISPLAY_DIAGNOSIS_DELAY_MS ||
+            now - diag.lastQueryTs < DISPLAY_DIAGNOSIS_RETRY_MS
+        ) {
+            return;
+        }
+        diag.lastQueryTs = now;
+        diag.answers = {};
+        this.log.debug('Display does not answer - query Module and Gpio from tasmota');
+        this.sendToTasmota(`${this.topic}/cmnd/Module`, '');
+        this.sendToTasmota(`${this.topic}/cmnd/Gpio`, '255');
+        diag.timeout = this.adapter.setTimeout(() => {
+            diag.timeout = undefined;
+            this.finishDisplayDiagnosis();
+        }, DISPLAY_DIAGNOSIS_ANSWER_TIMEOUT_MS);
+    }
+
+    /**
+     * Collects the answers to `Module` and `Gpio 255` while a diagnosis is running.
+     *
+     * @param msg parsed `stat/RESULT` payload
+     * @returns true if the payload was an answer of the diagnosis
+     */
+    private handleDisplayDiagnosisAnswer(msg: unknown): boolean {
+        const answers = this.displayDiagnosis.answers;
+        if (!answers) {
+            return false;
+        }
+        const module = parseModuleAnswer(msg);
+        const gpio4 = parseGpio4Answer(msg);
+        if (!module && !gpio4) {
+            // a split `Gpio 255` answer without GPIO4 still belongs to the diagnosis
+            return typeof msg === 'object' && msg !== null && Object.keys(msg).some(k => /^GPIO\d+$/.test(k));
+        }
+        if (module) {
+            answers.module = module;
+        }
+        if (gpio4) {
+            answers.gpio4 = gpio4;
+        }
+        if (answers.module && answers.gpio4) {
+            this.finishDisplayDiagnosis();
+        }
+        return true;
+    }
+
+    /** Evaluates the collected answers and logs the result once */
+    private finishDisplayDiagnosis(): void {
+        const diag = this.displayDiagnosis;
+        if (diag.timeout) {
+            this.adapter.clearTimeout(diag.timeout);
+            diag.timeout = undefined;
+        }
+        const answers = diag.answers;
+        diag.answers = undefined;
+        if (!answers || this.isOnline || this.unload || this.adapter.unload) {
+            return;
+        }
+        const result = evaluateDisplayDiagnosis(answers);
+        const seconds = Math.round((Date.now() - this.displayOfflineSinceTs) / 1000);
+        const text = buildDisplayDiagnosisMessage(result, this.topic, seconds);
+        if (!text) {
+            this.log.debug('No answer from tasmota to Module/Gpio - tasmota seems to be offline');
+            return;
+        }
+        diag.reported = true;
+        if (result.result === 'misconfigured') {
+            this.log.error(text);
+        } else {
+            this.log.warn(text);
+        }
+    }
+
+    /** Forgets a running or reported diagnosis - the display answered */
+    private resetDisplayDiagnosis(): void {
+        const diag = this.displayDiagnosis;
+        if (diag.timeout) {
+            this.adapter.clearTimeout(diag.timeout);
+        }
+        this.displayDiagnosis = { reported: false, lastQueryTs: 0, timeout: undefined, answers: undefined };
+        this.displayOfflineSinceTs = 0;
+    }
 
     requestStatusTasmota(): void {
         this.sendToTasmota(`${this.topic}/cmnd/STATUS0`, '');
@@ -1824,6 +1974,7 @@ export class Panel extends BaseClass {
         if (this.blockStartup) {
             this.adapter.clearTimeout(this.blockStartup);
         }
+        this.resetDisplayDiagnosis();
         this.log.info('Goint offline because delete panel!');
         this.isOnline = false;
         await this.setStatus('offline');
@@ -1945,6 +2096,7 @@ export class Panel extends BaseClass {
                 this.blockStartup = this.adapter.setTimeout(() => {
                     this.blockStartup = null;
                 }, 10_000);
+                this.resetDisplayDiagnosis();
                 this.isOnline = true;
                 this.info.nspanel.displayVersion = event.opt;
                 if (this.isVirtual) {
@@ -2816,6 +2968,7 @@ export class Panel extends BaseClass {
         const res: PanelListEntry = {
             panelName: this.name,
             friendlyName: this.friendlyName,
+            panelTopic: this.topic,
             navigationMap: [],
         };
         const o = await this.adapter.getObjectAsync(`panels.${this.name}`);
@@ -2911,6 +3064,26 @@ export class Panel extends BaseClass {
                 origin,
                 adminPageName: origin === 'admin' ? this.getAdminPageName(nav.page.name) : undefined,
             };
+            // A page the config manager generated from a page item keeps its navigation whatever
+            // its origin - the admin shows it read-only
+            if (this.options.generatedPageIds?.includes(nav.page.name)) {
+                navMap.generated = true;
+            }
+            // Script pages carry what the script says and what the admin changed on top of it
+            if (origin === 'script' || origin === 'global') {
+                const scriptLinks = this.options.scriptNavigationLinks?.[nav.page.name];
+                if (scriptLinks) {
+                    navMap.scriptLinks = { ...scriptLinks };
+                }
+                const override = this.options.navigationOverrideStates?.[nav.page.name];
+                if (override) {
+                    navMap.override = {
+                        navigation: { ...override.navigation },
+                        scriptLinks: { ...override.scriptLinks },
+                        stale: override.stale,
+                    };
+                }
+            }
             // A page item leads to another page on a short press (`targetPage` in the script) and to
             // a second one on a long press (`targetPageLongPress`); the page itself can carry both too.
             const targetSources = [...(nav.page.pageItemConfig ?? []).map(item => item?.data), nav.page.config?.data];

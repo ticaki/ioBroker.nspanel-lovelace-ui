@@ -114,12 +114,19 @@
     "webPanelEdit": "Modifier le panneau web",
     "webPanelId": "ID du panneau web",
     "webPanelKind": "Web",
-    "webPanelNoTasmotaMaintain": "Un panneau web n'a ni firmware Tasmota ni écran TFT, il n'y a rien à flasher. Seul le script s'applique.",
+    "webPanelNoTasmotaMaintain": "Un panneau web n'a ni firmware Tasmota ni écran TFT, il n'y a rien à flasher.",
     "webPanelTopic": "Topic (unique, devient le chemin de l'URL)",
     "webPanelTopicDuplicate": "Ce topic est déjà utilisé par un autre panneau",
     "webPanelTopicHelp": "Lettres, chiffres, _ et -, / comme séparateur",
     "webPanelTopicInvalid": "Seuls les lettres, chiffres, _, - et / sont autorisés",
     "webPanelTopicRequired": "Le topic ne doit pas être vide",
     "webPanelTopicReserved": "Ce chemin est utilisé par le serveur web lui-même",
-    "chart_script_navigation_hint": "Migrée depuis l'ancien tableau « Page Chart » : cette page reçoit encore sa navigation du script (page « %s »). C'est obsolète – attribuez ici une navigation et retirez la page du script."
+    "chart_script_navigation_hint": "Migrée depuis l'ancien tableau « Page Chart » : cette page reçoit encore sa navigation du script (page « %s »). C'est obsolète – attribuez ici une navigation et retirez la page du script.",
+    "power_script_navigation_hint": "Migrée depuis l'ancien tableau « Page Power » : cette page reçoit encore sa navigation du script (page « %s »). C'est obsolète – attribuez ici une navigation et retirez la page du script.",
+    "panelNoScript": "Le panneau n'utilise pas de script",
+    "panelNoScriptTooltip": "Le panneau est configuré uniquement dans l'admin (et par le script global). Un script de panneau envoyé pour lui est refusé, aucune mise à jour de script n'est proposée.",
+    "panelNoScriptInfo": "Script désactivé",
+    "panelNoScriptVersion": "Script désactivé",
+    "convertScript_noScriptPanel": "Le panneau est réglé sur « Le panneau n'utilise pas de script ». Décochez la case dans les paramètres du panneau, convertissez le script, puis cochez-la à nouveau.",
+    "panelButtonDialog_modeNoneHintNoScript": "Le panneau n'utilise pas de script - sans action configurée ici, le bouton n'a aucune fonction."
 }

@@ -12,6 +12,7 @@ import {
     FormControl,
 } from '@mui/material';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutlineOutlined';
+import LinkIcon from '@mui/icons-material/Link';
 import ConfirmDialog from './ConfirmDialog';
 import NavigationAssignmentPanel from './NavigationAssignmentPanel';
 import type {
@@ -24,7 +25,10 @@ import {
     ADAPTER_NAME,
     ALL_PANELS_SPECIAL_ID,
     isMainPageEntry,
+    isPageLinkEntry,
     mainPageName,
+    pageLinkCard,
+    pageLinkProblem,
 } from '../../../src/lib/types/adminShareConfig';
 
 /**
@@ -45,6 +49,8 @@ export type PageCardType =
           AdminCardTypes,
           | 'cardChart'
           | 'cardThermo2'
+          | 'cardThermo'
+          | 'cardMedia'
           | 'cardAlarm'
           | 'cardQR'
           | 'cardPower'
@@ -57,6 +63,7 @@ export type PageCardType =
     | 'all'
     | 'mainPages' // Filter: alle Seiten mit isMainPage, kein eigener Kartentyp
     | 'cardTrash'
+    | typeof pageLinkCard // Verknüpfung auf eine andere Admin-Seite
     | 'pageMenu'; // 'pageMenu' = Gruppe für alle Menu-Kartentypen
 
 const MENU_CARD_TYPES: ReadonlyArray<string> = ['cardGrid', 'cardGrid2', 'cardGrid3', 'cardEntities', 'cardSchedule'];
@@ -207,6 +214,87 @@ export class PageConfigLayout extends React.Component<PageConfigLayoutProps, Pag
     private handleDeleteCancel = (): void => {
         this.setState({ confirmDeleteOpen: false, confirmDeleteName: null });
     };
+
+    /**
+     * Name of a list entry; a page link gets a link icon in front, in warning colour if its target
+     * is missing.
+     *
+     * @param name uniqueName of the entry
+     * @returns The name element of the list row.
+     */
+    private renderEntryName(name: string): React.JSX.Element {
+        const { entries } = this.props;
+        const entry = entries.find(e => e.uniqueName === name);
+        const isLink = !!entry && isPageLinkEntry(entry);
+        const broken = !!entry && isPageLinkEntry(entry) && !!pageLinkProblem(entry, entries);
+        return (
+            <Typography
+                variant="body2"
+                sx={{
+                    flex: 1,
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 0.5,
+                }}
+            >
+                {isLink && (
+                    <LinkIcon
+                        fontSize="small"
+                        color={broken ? 'warning' : 'action'}
+                    />
+                )}
+                {entry ? getDisplayName(entry) : name}
+            </Typography>
+        );
+    }
+
+    /**
+     * Small clickable name of the linked page, shown below a page link in the list. A missing
+     * target is shown in warning colour and is not clickable.
+     *
+     * @param name uniqueName of the list entry
+     * @param visibleEntries Entries left over by the filters - a target hidden by a filter resets the panel filter.
+     * @returns The target line or null if the entry is no page link.
+     */
+    private renderLinkTarget(name: string, visibleEntries: PageConfigEntry[]): React.JSX.Element | null {
+        const { entries } = this.props;
+        const entry = entries.find(e => e.uniqueName === name);
+        if (!entry || !isPageLinkEntry(entry)) {
+            return null;
+        }
+        const target = entry.target;
+        const broken = !!pageLinkProblem(entry, entries);
+        return (
+            <Box sx={{ width: '100%', pl: 3.5, mt: 0.25 }}>
+                <Typography
+                    variant="caption"
+                    title={broken ? undefined : this.getText('page_link_open_target')}
+                    onClick={e => {
+                        e.stopPropagation();
+                        if (broken) {
+                            return;
+                        }
+                        if (!visibleEntries.some(v => v.uniqueName === target)) {
+                            this.setState({ selectedPanelFilter: '' });
+                        }
+                        this.props.onSelectedChange(target);
+                    }}
+                    sx={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: 0.25,
+                        color: broken ? 'warning.main' : 'primary.main',
+                        cursor: broken ? 'default' : 'pointer',
+                        '&:hover': broken ? {} : { textDecoration: 'underline' },
+                    }}
+                >
+                    → {target || '?'}
+                </Typography>
+            </Box>
+        );
+    }
 
     render(): React.JSX.Element {
         const {
@@ -368,6 +456,9 @@ export class PageConfigLayout extends React.Component<PageConfigLayoutProps, Pag
                                 <MenuItem value="cardTrash">{this.getText('page_type_trash')}</MenuItem>
                                 <MenuItem value="cardChart">{this.getText('page_type_chart')}</MenuItem>
                                 <MenuItem value="cardThermo2">{this.getText('page_type_thermo2')}</MenuItem>
+                                <MenuItem value="cardThermo">{this.getText('page_type_thermo')}</MenuItem>
+                                <MenuItem value="cardMedia">{this.getText('page_type_media')}</MenuItem>
+                                <MenuItem value={pageLinkCard}>{this.getText('page_type_pageLink')}</MenuItem>
                             </Select>
                         </FormControl>
                     </Paper>
@@ -479,6 +570,7 @@ export class PageConfigLayout extends React.Component<PageConfigLayoutProps, Pag
                                         backgroundColor: selected === name ? 'action.selected' : 'transparent',
                                         mb: 0.5,
                                         display: 'flex',
+                                        flexWrap: 'wrap',
                                         justifyContent: 'space-between',
                                         alignItems: 'center',
                                         '&:hover .delete-icon': {
@@ -486,15 +578,7 @@ export class PageConfigLayout extends React.Component<PageConfigLayoutProps, Pag
                                         },
                                     }}
                                 >
-                                    <Typography
-                                        variant="body2"
-                                        sx={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis' }}
-                                    >
-                                        {(() => {
-                                            const entry = entries.find(e => e.uniqueName === name);
-                                            return entry ? getDisplayName(entry) : name;
-                                        })()}
-                                    </Typography>
+                                    {this.renderEntryName(name)}
                                     <IconButton
                                         disabled={!this.state.alive}
                                         className="delete-icon"
@@ -517,6 +601,7 @@ export class PageConfigLayout extends React.Component<PageConfigLayoutProps, Pag
                                     >
                                         <DeleteOutlineIcon fontSize="small" />
                                     </IconButton>
+                                    {this.renderLinkTarget(name, filteredEntries)}
                                 </Box>
                             ))
                         )}

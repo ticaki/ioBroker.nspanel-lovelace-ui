@@ -48,5 +48,5 @@ export const theme = {
     /** font size of the title (32 px Nextion font) */
     titleFontSize: 24,
     /** area below the display with the two hardware buttons */
-    hardwareButtonsHeight: 48,
+    hardwareButtonsHeight: 68,
 } as const;

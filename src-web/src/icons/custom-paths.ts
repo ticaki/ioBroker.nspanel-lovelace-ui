@@ -1,6 +1,6 @@
 /**
- * SVG paths (24x24 viewBox) for icon names of the HMI font that do not exist in
- * `@mdi/svg` (brand icons like logo-spotify, removed MDI icons like google-home).
+ * SVG paths (24x24 viewBox) for icon names without a drawing in `@mdi/svg` or
+ * `script/icons.json` (the media logos like logo-spotify).
  * The names are listed in `missing.json`. A card worker who needs one of them adds
  * the path here, it wins over `mdi-paths.json`.
  */

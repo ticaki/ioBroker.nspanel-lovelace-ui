@@ -311,6 +311,14 @@ describe('lib/types/function-and-const', () => {
         it('isIconColorScaleElement rejects unknown mode', () => {
             expect(isIconColorScaleElement({ ...validColorScale, mode: 'bogus' })).to.equal(false);
         });
+        it('isIconColorScaleElement accepts color_best in the admin and in the script form', () => {
+            expect(isIconColorScaleElement({ ...validColorScale, color_best: { r: 1, g: 2, b: 3 } })).to.equal(true);
+            expect(isIconColorScaleElement({ ...validColorScale, color_best: { red: 1, green: 2, blue: 3 } })).to.equal(
+                true,
+            );
+            expect(isIconColorScaleElement({ ...validColorScale, color_best: '#ff0000' })).to.equal(false);
+            expect(isIconColorScaleElement({ ...validColorScale, color_best: { r: 1 } })).to.equal(false);
+        });
         it('isIconSelectScaleElement requires both keys', () => {
             expect(isIconSelectScaleElement(validIconSelect)).to.equal(true);
             expect(isIconSelectScaleElement({ valIcon_min: 'a' })).to.equal(false);
@@ -347,7 +355,7 @@ describe('lib/types/function-and-const', () => {
                 val_min: 0,
                 val_max: 100,
                 color_best: { red: 10, green: 20, blue: 30 },
-            } as any);
+            });
             expect(out.color_best).to.deep.equal({ r: 10, g: 20, b: 30 });
         });
     });

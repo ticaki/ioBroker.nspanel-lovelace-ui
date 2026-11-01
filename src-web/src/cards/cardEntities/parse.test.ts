@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import glyphMap from '../../icons/glyph-map.json';
 import { initial, parseEntityUpd, parseEntityUpdateDetail } from './parse';
 import { menuSlotCount, menuSlots, isEmptySlot } from './shared/menuParse';
 import {
@@ -125,6 +126,21 @@ describe('entity helpers', () => {
         expect(splitIconField('¬4')).toEqual({ glyph: undefined, text: '', font: 4 });
         // only 0-5 are fonts
         expect(splitIconField('a¬9')).toEqual({ glyph: undefined, text: 'a¬9' });
+    });
+
+    it('keeps only what the font of the ¬<n> can draw, like the HMI', () => {
+        const bulb = Object.entries(glyphMap).find(([, n]) => n === 'lightbulb')?.[0] ?? '';
+        expect(bulb).not.toBe('');
+        // fonts 1, 3, 4 contain the icons
+        expect(splitIconField(`${bulb}¬1`)).toEqual({ glyph: bulb, text: '', font: 1 });
+        expect(splitIconField(`${bulb}¬4`)).toEqual({ glyph: bulb, text: '', font: 4 });
+        // fonts 0, 2, 5 do not: the icon stays empty
+        expect(splitIconField(`${bulb}¬0`)).toEqual({ glyph: undefined, text: '', font: 0 });
+        expect(splitIconField(`${bulb}¬2`)).toEqual({ glyph: undefined, text: '', font: 2 });
+        expect(splitIconField(`${bulb}21.5¬2`)).toEqual({ glyph: undefined, text: '21.5', font: 2 });
+        // font 5 is ascii only
+        expect(splitIconField('21,4°C¬5')).toEqual({ glyph: undefined, text: '21,4C', font: 5 });
+        expect(splitIconField(`${bulb}35%¬5`)).toEqual({ glyph: undefined, text: '35%', font: 5 });
     });
 
     it('shows a value on cardGrid3 only when optionalValue is a text', () => {

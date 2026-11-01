@@ -4,7 +4,6 @@ import { ConfigGeneric, type ConfigGenericProps, type ConfigGenericState } from 
 import type {
     PageConfigEntry,
     NavigationAssignmentList,
-    PageConfigBaseFields,
     MenuEntry,
     AdminPanelConfig,
     PowerEntry,
@@ -14,10 +13,15 @@ import {
     dropScriptNavigation,
     emptyChartEntry,
     emptyThermo2Entry,
+    emptyThermoEntry,
+    emptyMediaEntry,
     emptyPowerSlot,
     isMainPageEntry,
+    isPageLinkEntry,
+    isScrollCard,
     mainPageName,
     normalizeTrashItems,
+    pageLinkCard,
     SENDTO_GET_PAGES_All_COMMAND,
 } from '../../src/lib/types/adminShareConfig';
 import {
@@ -34,6 +38,10 @@ import { PageTrashEditor } from './components/PageTrashEditor';
 import { takeRequestedPageConfig } from './pageConfigLink';
 import { PageChartEditor } from './components/PageChartEditor';
 import { PageThermo2Editor } from './components/PageThermo2Editor';
+import { PageThermoEditor } from './components/PageThermoEditor';
+import { PageMediaEditor } from './components/PageMediaEditor';
+import type { PageCommonFields } from './components/NavigationAssignmentPanel';
+import { PageLinkEditor } from './components/PageLinkEditor';
 
 interface PageConfigManagerState extends ConfigGenericState {
     entries: PageConfigEntry[];
@@ -368,6 +376,12 @@ class PageConfigManager extends ConfigGeneric<ConfigGenericProps & { theme?: any
             newEntry = emptyChartEntry(name);
         } else if (cardType === 'cardThermo2') {
             newEntry = emptyThermo2Entry(name);
+        } else if (cardType === 'cardThermo') {
+            newEntry = emptyThermoEntry(name);
+        } else if (cardType === 'cardMedia') {
+            newEntry = emptyMediaEntry(name);
+        } else if (cardType === pageLinkCard) {
+            newEntry = { card: pageLinkCard, uniqueName: name, headline: '', target: '' };
         } else if (
             cardType === 'pageMenu' ||
             cardType === 'cardGrid' ||
@@ -426,9 +440,33 @@ class PageConfigManager extends ConfigGeneric<ConfigGenericProps & { theme?: any
         if (newName.trim() === mainPageName) {
             return;
         }
-        const updated = this.state.entries.map(it => (it.uniqueName === oldName ? { ...it, uniqueName: newName } : it));
+        // links follow their renamed target
+        const updated = this.state.entries.map(it =>
+            it.uniqueName === oldName
+                ? { ...it, uniqueName: newName }
+                : isPageLinkEntry(it) && it.target === oldName
+                  ? { ...it, target: newName }
+                  : it,
+        );
         this.setState({ entries: updated, selected: newName } as PageConfigManagerState);
         void this.onChange(this.props.attr, updated);
+    };
+
+    /**
+     * Selects a page of the list. A page hidden by the page type filter switches the filter to
+     * all pages, otherwise the selection would not be visible.
+     *
+     * @param selected uniqueName of the page
+     */
+    private handleSelectPage = (selected: string): void => {
+        // a page that was just added is not in the state yet - it matches the current filter anyway
+        const known = this.state.entries.some(e => e.uniqueName === selected);
+        const visible =
+            !known ||
+            filterEntriesByCardType(this.state.entries, this.state.selectedCardType).some(
+                e => e.uniqueName === selected,
+            );
+        this.setState({ selected, ...(visible ? {} : { selectedCardType: 'all' }) } as PageConfigManagerState);
     };
 
     private handleCardTypeChange = (cardType: PageCardType): void => {
@@ -438,7 +476,7 @@ class PageConfigManager extends ConfigGeneric<ConfigGenericProps & { theme?: any
         this.setState({ selectedCardType: cardType, selected: newSelected } as PageConfigManagerState);
     };
 
-    private handleCommonFieldsChange = (uniqueName: string, fields: Partial<PageConfigBaseFields>): void => {
+    private handleCommonFieldsChange = (uniqueName: string, fields: Partial<PageCommonFields>): void => {
         const updated = this.state.entries.map(it =>
             it.uniqueName === uniqueName ? dropScriptNavigation({ ...it, ...fields }) : it,
         );
@@ -474,6 +512,20 @@ class PageConfigManager extends ConfigGeneric<ConfigGenericProps & { theme?: any
                 >
                     {this.getText('Entry not found')}
                 </Typography>
+            );
+        }
+
+        if (isPageLinkEntry(currentEntry)) {
+            return (
+                <PageLinkEditor
+                    entry={currentEntry}
+                    entries={entries}
+                    alive={this.state.alive}
+                    onEntryChange={this.handleEntryChange}
+                    onUniqueNameChange={this.handleUniqueNameChange}
+                    onSelectPage={this.handleSelectPage}
+                    getText={key => this.getText(key)}
+                />
             );
         }
 
@@ -586,6 +638,36 @@ class PageConfigManager extends ConfigGeneric<ConfigGenericProps & { theme?: any
             );
         }
 
+        if (currentEntry.card === 'cardThermo') {
+            return (
+                <PageThermoEditor
+                    {...this.props}
+                    entry={currentEntry}
+                    onEntryChange={this.handleEntryChange}
+                    onUniqueNameChange={this.handleUniqueNameChange}
+                    getText={key => this.getText(key)}
+                    oContext={this.props.oContext}
+                    theme={this.props.theme}
+                />
+            );
+        }
+
+        if (currentEntry.card === 'cardMedia') {
+            return (
+                <PageMediaEditor
+                    {...this.props}
+                    entry={currentEntry}
+                    onEntryChange={this.handleEntryChange}
+                    onUniqueNameChange={this.handleUniqueNameChange}
+                    getText={key => this.getText(key)}
+                    oContext={this.props.oContext}
+                    theme={this.props.theme}
+                    expertMode={this.props.expertMode ?? false}
+                    pagesList={pagesList}
+                />
+            );
+        }
+
         return (
             <Typography variant="body2">
                 {currentEntry.card} - {this.getText('coming_soon')}
@@ -601,7 +683,7 @@ class PageConfigManager extends ConfigGeneric<ConfigGenericProps & { theme?: any
                 entries={this.state.entries}
                 selected={this.state.selected}
                 selectedCardType={this.state.selectedCardType}
-                onSelectedChange={(selected: string) => this.setState({ selected } as PageConfigManagerState)}
+                onSelectedChange={this.handleSelectPage}
                 onCardTypeChange={this.handleCardTypeChange}
                 onAdd={this.handleAdd}
                 onDelete={this.handleDelete}
@@ -626,10 +708,18 @@ class PageConfigManager extends ConfigGeneric<ConfigGenericProps & { theme?: any
                               // Ohne dieses Feld bleibt die Startseiten-Checkbox immer leer und eine
                               // gesetzte Startseite lässt sich nicht wieder abwählen.
                               isMainPage: isMainPageEntry(currentEntry),
+                              ...(isScrollCard(currentEntry.card) && 'pageItems' in currentEntry
+                                  ? {
+                                        scrollPresentation: currentEntry.scrollPresentation,
+                                        scrollType: currentEntry.scrollType,
+                                        scrollAutoTiming: currentEntry.scrollAutoTiming,
+                                    }
+                                  : {}),
                           }
                         : undefined,
+                    scrollCard: currentEntry && isScrollCard(currentEntry.card) ? currentEntry.card : undefined,
                     onCommonFieldsChange: currentEntry
-                        ? (fields: Partial<PageConfigBaseFields>) => {
+                        ? (fields: Partial<PageCommonFields>) => {
                               this.handleCommonFieldsChange(currentEntry.uniqueName, fields);
                           }
                         : undefined,

@@ -2,16 +2,59 @@
 import './NavigationView.css';
 import iconList from './icons.json';
 import type {
+    NavigationLinks,
     NavigationMapEntry,
     NavigationMap,
-    PageOrigin,
+    NavigationOverride,
+    PageConfigEntry,
     PanelListEntry,
     NavigationSavePayload,
 } from '../../src/lib/types/adminShareConfig';
 import {
     SENDTO_GET_PANEL_NAVIGATION_COMMAND,
     SAVE_PANEL_NAVIGATION_COMMAND,
+    isMainPageEntry,
+    mainPageName,
+    servicePageName,
 } from '../../src/lib/types/adminShareConfig';
+import {
+    adapterDecidedLink,
+    applyNavigationOverlay,
+    assignmentSourceOf,
+    effectiveNavigation,
+    effectiveScriptLinks,
+    isNavigationApplied,
+    isNavigationLinkKind,
+    isOverrideStale,
+    mergeNavigationOverride,
+    overrideOf,
+    removeNavigationOverride,
+    setNavigationLink,
+    setOverrideLink,
+    type NavigationEditScope,
+    type NavigationLinkKind,
+} from '../../src/lib/types/navigationEdit';
+import {
+    EDGE_COLOR_HEX,
+    EDGE_COLOR_VAR,
+    LINK_HANDLES,
+    NODE_COLOR_HEX,
+    NODE_STYLE_LABEL_KEY,
+    NODE_STYLE_VAR,
+    NODE_STYLES,
+    SOURCE_HANDLE_KIND,
+    STATIC_EDGE_KINDS,
+    edgeColor,
+    type EdgeKind,
+    type FlowEdge,
+    type FlowNode,
+} from './navigationFlowConst';
+import NavigationFlowNode, { GeneratedPageMarker, OverrideMarker } from './components/NavigationFlowNode';
+import NavigationScopeDialog from './components/NavigationScopeDialog';
+import NavigationOverrideStaleDialog, {
+    type StaleOverrideDecision,
+    type StaleOverrideItem,
+} from './components/NavigationOverrideStaleDialog';
 
 const ADAPTER_NAME = 'nspanel-lovelace-ui';
 
@@ -52,6 +95,76 @@ function storeSelectedPanel(panelName: string): void {
     }
 }
 
+/** Prefix of the key under which the collapsed pages of a panel are remembered (view comfort). */
+const COLLAPSED_STORAGE_PREFIX = `${ADAPTER_NAME}.navigationFlow.collapsed.`;
+
+/**
+ * Reads the collapsed pages of a panel from `window.localStorage`.
+ *
+ * @param panelName Name of the panel.
+ * @returns The collapsed pages, `undefined` if nothing is stored for the panel (or storage fails).
+ */
+function readStoredCollapsed(panelName: string): string[] | undefined {
+    try {
+        const raw = window.localStorage.getItem(COLLAPSED_STORAGE_PREFIX + panelName);
+        if (raw === null) {
+            return undefined;
+        }
+        const parsed: unknown = JSON.parse(raw);
+        return Array.isArray(parsed) ? parsed.filter((id): id is string => typeof id === 'string') : undefined;
+    } catch {
+        return undefined;
+    }
+}
+
+/**
+ * Stores the collapsed pages of a panel in `window.localStorage` - a convenience only, errors are
+ * swallowed.
+ *
+ * @param panelName Name of the panel.
+ * @param collapsed The collapsed pages.
+ */
+function storeCollapsed(panelName: string, collapsed: ReadonlySet<string>): void {
+    try {
+        window.localStorage.setItem(COLLAPSED_STORAGE_PREFIX + panelName, JSON.stringify([...collapsed]));
+    } catch {
+        // Private mode or blocked storage - the state then just isn't remembered
+    }
+}
+
+/** Prefix of the key under which the home link switch of a panel is remembered (view comfort). */
+const HOME_EDGES_STORAGE_PREFIX = `${ADAPTER_NAME}.navigationFlow.homeEdges.`;
+
+/**
+ * Reads whether the home links to `main` are shown for a panel. Without a stored choice (or when
+ * the storage fails) they are shown.
+ *
+ * @param panelName Name of the panel.
+ * @returns True when the home links are shown.
+ */
+function readStoredShowHomeEdges(panelName: string): boolean {
+    try {
+        return window.localStorage.getItem(HOME_EDGES_STORAGE_PREFIX + panelName) !== 'false';
+    } catch {
+        return true;
+    }
+}
+
+/**
+ * Remembers the home link switch of a panel in `window.localStorage` - a convenience only, errors
+ * are swallowed.
+ *
+ * @param panelName Name of the panel.
+ * @param show Whether the home links are shown.
+ */
+function storeShowHomeEdges(panelName: string, show: boolean): void {
+    try {
+        window.localStorage.setItem(HOME_EDGES_STORAGE_PREFIX + panelName, String(show));
+    } catch {
+        // Private mode or blocked storage - the choice then just isn't remembered
+    }
+}
+
 /** Icons nach Namen - die Liste steckt ohnehin im Bundle, die Zuordnung wird einmalig aufgebaut */
 let iconsByName: Map<string, string> | undefined;
 
@@ -79,142 +192,10 @@ function iconSvg(name: string): string | undefined {
     );
 }
 
-/** Kantenarten des Navigationsgraphen */
-type EdgeKind = 'default' | 'prev' | 'next' | 'prevNext' | 'home' | 'parent' | 'target' | 'targetLongPress' | 'state';
-
-/** Feste Farben der Kantenarten - Basis für Legende, Handles, Marker und Kanten */
-const EDGE_COLOR_HEX: Record<EdgeKind, string> = {
-    default: '#1976d2',
-    prev: '#6676d2',
-    next: '#19c3d2',
-    prevNext: '#9c27b0', // beidseitige prev/next-Verbindung
-    home: '#fbc02d',
-    parent: '#d32f2f',
-    target: '#43a047',
-    targetLongPress: '#fb8c00', // langer Druck auf ein Seitenelement
-    state: '#546e7a', // Datenpunkt oder Channel, den die Seite nutzt
-};
-
-/** CSS-Variablen der Kantenfarben - erlauben ein Override über das Theme */
-const EDGE_COLOR_VAR: Record<EdgeKind, string> = {
-    default: '--edge-color',
-    prev: '--edge-prev',
-    next: '--edge-next',
-    prevNext: '--edge-prev-next',
-    home: '--edge-home',
-    parent: '--edge-parent',
-    target: '--edge-target',
-    targetLongPress: '--edge-target-long-press',
-    state: '--edge-state',
-};
-
-/**
- * Basisfarbe je Seitenherkunft. Sie wird nicht direkt gezeichnet: der Knoten bekommt sie als
- * Rahmenfarbe und als abgeschwächter Hintergrund, damit die Beschriftung in hellem wie dunklem
- * Theme lesbar bleibt. Seiten aus dem Konfigurationsskript behalten das Aussehen des Themes.
- */
-const NODE_COLOR_HEX: Record<Exclude<NodeStyle, 'script'>, string> = {
-    global: '#8e24aa', // violett - Seite aus der globalen Skript-Konfiguration
-    admin: '#43a047', // grün
-    system: '#f9a825', // gelb
-    stateRef: '#546e7a', // blaugrau - kein Seiten-, sondern ein Datenpunkt-Knoten
-};
-
-/**
- * Aussehen eines Knotens: die Herkunft der Seite, oder `stateRef` für einen Knoten, der für einen
- * Datenpunkt steht statt für eine Seite.
- */
-type NodeStyle = PageOrigin | 'stateRef';
-
-/** CSS-Variablen je Knotenart - vom ThemeVarsProvider passend zum Theme gefüllt */
-const NODE_STYLE_VAR: Record<NodeStyle, { bg: string; border: string }> = {
-    script: { bg: '--node-bg', border: '--node-border' },
-    global: { bg: '--node-global-bg', border: '--node-global-border' },
-    admin: { bg: '--node-admin-bg', border: '--node-admin-border' },
-    system: { bg: '--node-system-bg', border: '--node-system-border' },
-    stateRef: { bg: '--node-state-ref-bg', border: '--node-state-ref-border' },
-};
-
-/** Alle Knotenarten in der Reihenfolge der Legende */
-const NODE_STYLES: NodeStyle[] = ['script', 'global', 'admin', 'system', 'stateRef'];
-
-/** Übersetzungsschlüssel der Knotenarten für die Legende */
-const NODE_STYLE_LABEL_KEY: Record<NodeStyle, string> = {
-    script: 'nav_legend_origin_script',
-    global: 'nav_legend_origin_global',
-    admin: 'nav_legend_origin_admin',
-    system: 'nav_legend_origin_system',
-    stateRef: 'nav_legend_state_ref',
-};
-
-/**
- * Knotenart eines Eintrags - ein Datenpunkt-Knoten steht für keine Seite und hat daher keine Herkunft
- *
- * @param entry Eintrag der Navigationskarte
- */
-function nodeStyleOf(entry: NavigationMapEntry | undefined): NodeStyle {
-    if (entry?.nodeType === 'stateRef') {
-        return 'stateRef';
-    }
-    return entry?.origin ?? 'script';
-}
-
-/** Kantenarten mit fester Farbe - unabhängig vom Admin-Theme */
-const STATIC_EDGE_KINDS: EdgeKind[] = [
-    'prev',
-    'next',
-    'prevNext',
-    'home',
-    'parent',
-    'target',
-    'targetLongPress',
-    'state',
-];
-
-/** Zuordnung Handle -> Kantenart, für die Einfärbung der Handles am Knoten */
-const HANDLE_EDGE_KIND: Record<string, EdgeKind> = {
-    prev: 'prev',
-    next: 'next',
-    homeTopLeft: 'home',
-    homeTopRight: 'home',
-    parentBottomLeft: 'parent',
-    parentBottomRight: 'parent',
-    targetRight: 'target',
-    targetLeft: 'target',
-};
-
-/**
- * Farbe einer Kantenart als CSS-Ausdruck mit Hex-Fallback
- *
- * @param kind Kantenart
- */
-function edgeColor(kind: EdgeKind): string {
-    return `var(${EDGE_COLOR_VAR[kind]}, ${EDGE_COLOR_HEX[kind]})`;
-}
 // Typ für das Rückgabeobjekt der mapNavigationMapToFlow-Funktion
 interface FlowData {
     nodes: FlowNode[];
     edges: FlowEdge[];
-}
-// Typen für React Flow Nodes und Edges
-interface FlowNode {
-    id: string;
-    data: { label: string; entry?: NavigationMapEntry };
-    position: { x: number; y: number };
-    type?: string;
-    draggable?: boolean;
-}
-
-interface FlowEdge {
-    id: string;
-    source: string;
-    target: string;
-    sourceHandle?: string;
-    targetHandle?: string;
-    label: string;
-    style: { strokeWidth: number; strokeDasharray?: string; stroke?: string };
-    data?: { isTarget: boolean; navType?: EdgeKind; bidirectional?: boolean; highlighted?: boolean };
-    className?: string;
 }
 // State-Interface für die NavigationView-Klasse
 interface NavigationViewState extends ConfigGenericState {
@@ -226,22 +207,31 @@ interface NavigationViewState extends ConfigGenericState {
     noData?: boolean;
 }
 // React import consolidated below with hooks
-import type { Edge, EdgeProps } from '@xyflow/react';
+import type {
+    Connection,
+    Edge,
+    EdgeProps,
+    EdgeTypes,
+    FinalConnectionState,
+    NodeTypes,
+    OnConnectEnd,
+    OnReconnect,
+} from '@xyflow/react';
 import {
     ReactFlow,
     Background,
     Controls,
-    Handle,
-    Position,
+    ConnectionMode,
     applyNodeChanges,
-    applyEdgeChanges,
     getBezierPath,
+    useUpdateNodeInternals,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import type { SelectChangeEvent } from '@mui/material';
 import {
     Select,
     MenuItem,
+    Menu,
     Box,
     Button,
     Divider,
@@ -249,22 +239,78 @@ import {
     CircularProgress,
     Checkbox,
     FormControlLabel,
+    Alert,
+    Snackbar,
+    ButtonGroup,
 } from '@mui/material';
 import NodePageInfoPanel from './components/NodePageInfoPanel';
 import { openPageConfig } from './pageConfigLink';
 import ConfirmDialog from './components/ConfirmDialog';
 import { alpha, useTheme } from '@mui/material/styles';
-import { hierarchy, tree } from 'd3-hierarchy';
+import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
+import {
+    buildLayoutTree,
+    computeAutoLayout,
+    defaultCollapsed,
+    estimateNodeSize,
+    hiddenByCollapse,
+    placeNewNodes,
+    subtreeOf,
+    type LayoutTree,
+    type NodeSize,
+    type Positions,
+} from './navigationAutoLayout';
 import React, { useEffect } from 'react';
 import { ConfigGeneric, type ConfigGenericProps, type ConfigGenericState } from '@iobroker/json-config';
 import { I18n } from '@iobroker/gui-components';
-// Typdefinitionen für panelConfig (vereinfachte Annahme)
-// Siehe zentrale Typen in src/lib/types/navigation.ts
-type NavigationPanelConfig = {
+/** A change of one navigation link, waiting for the user to pick the scope it is written to */
+interface PendingLinkChange {
+    /** Node the link starts at */
+    sourceNodeId: string;
+    /** `uniqueName` of the admin entry behind that node */
+    uniqueName: string;
+    panelTopic: string;
+    kind: NavigationLinkKind;
+    /** Node the link points to, `undefined` removes the link */
+    target: string | undefined;
+}
+
+/** One link in the menu of an edge */
+interface EdgeMenuItem {
+    source: string;
+    target: string;
+    kind: NavigationLinkKind;
+    /** The link is stored in the configuration of an admin page and can be removed */
+    removable: boolean;
+}
+
+/**
+ * Menu of a clicked edge, at the position of the click. It lists every link between the two
+ * pages in both directions - `a.next = b` and `b.prev = a` are drawn on top of each other.
+ */
+interface EdgeEditMenu {
+    x: number;
+    y: number;
+    items: EdgeMenuItem[];
+    /** Script pages among the two whose navigation is overridden - the override can be dropped */
+    restorable: string[];
+}
+
+/** Pages whose override is out of date, waiting for the user's decision */
+interface StaleOverrideDialogState {
     panelName: string;
-    friendlyName: string;
-    navigationMap: NavigationMap;
-};
+    panelTopic: string;
+    items: StaleOverrideItem[];
+}
+
+/** Node types of the flow - defined once, React Flow re-mounts every node when the object changes */
+const NODE_TYPES: NodeTypes = { custom: NavigationFlowNode };
+
+/** Shared empty set, so a panel without touched nodes keeps the same identity between renders */
+const NO_TOUCHED: ReadonlySet<string> = new Set();
+
+/** Stable empty override list - `getNavigationOverrides` returns it while the instance has none */
+const NO_OVERRIDES: NavigationOverride[] = [];
 
 /** Edge type of this view - `@xyflow/react` types `data` as `Record<string, unknown>` */
 type CustomEdgeType = Edge<{
@@ -273,6 +319,8 @@ type CustomEdgeType = Edge<{
     bidirectional?: boolean;
     /** Set while the page at either end is selected - the edge is drawn like on hover */
     highlighted?: boolean;
+    /** The edge leads into a collapsed sub tree and is drawn to the collapsed page instead */
+    redirected?: boolean;
 }>;
 
 function CustomEdge(props: EdgeProps<CustomEdgeType>): React.ReactElement {
@@ -349,6 +397,9 @@ function CustomEdge(props: EdgeProps<CustomEdgeType>): React.ReactElement {
         </g>
     );
 }
+
+/** Edge types of the flow - defined once like the node types */
+const EDGE_TYPES: EdgeTypes = { custom: CustomEdge };
 
 interface EdgeArrowMarkersProps {
     kind: EdgeKind;
@@ -446,19 +497,32 @@ function LegendEdgePreview(props: LegendEdgePreviewProps): React.ReactElement {
     );
 }
 
-// Hilfsfunktion für die Umwandlung der NavigationMap in React Flow Nodes/Edges
-function mapNavigationMapToFlow(navigationMap: NavigationMap): FlowData {
-    const nodes: FlowNode[] = navigationMap.map((entry: NavigationMapEntry, idx: number) => {
+interface MapToFlowOptions {
+    /**
+     * Draw a pair `a.next === b` and `b.prev === a` as one edge with two arrow heads. Off in edit
+     * mode, where every edge stands for exactly one link of the configuration.
+     */
+    mergeReciprocal?: boolean;
+}
+
+/**
+ * Builds the nodes and edges of the flow from a navigation map.
+ *
+ * @param navigationMap Navigation map of the panel.
+ * @param options See {@link MapToFlowOptions}; reciprocal prev/next pairs are merged by default.
+ */
+function mapNavigationMapToFlow(navigationMap: NavigationMap, options: MapToFlowOptions = {}): FlowData {
+    const mergeReciprocal = options.mergeReciprocal !== false;
+    const nodes: FlowNode[] = navigationMap.map((entry: NavigationMapEntry) => {
         let position: { x: number; y: number };
         if (entry.position && typeof entry.position.x === 'number' && typeof entry.position.y === 'number') {
             position = entry.position;
             // Debug: Position aus entry übernommen
             // console.debug('[mapNavigationMapToFlow] Node', entry.page, 'Position from entry:', position);
         } else {
-            // Automatische Anordnung, falls keine Position geliefert
-            position = { x: 100 * idx, y: 100 * (idx % 3) };
-            // Debug: Fallback-Position
-            // console.debug('[mapNavigationMapToFlow] Node', entry.page, 'No position, fallback:', position);
+            // Vorläufig - Knoten ohne Position setzt `deriveFlowState` über das Auto-Layout
+            // ("nur neue platzieren"); nur Knoten in eingeklappten Unterbäumen bleiben hier stehen
+            position = { x: 0, y: 0 };
         }
         return {
             id: entry.page,
@@ -481,7 +545,7 @@ function mapNavigationMapToFlow(navigationMap: NavigationMap): FlowData {
      * @param b Seite, deren `prev` geprüft wird
      */
     const isReciprocal = (a: string, b: string): boolean => {
-        if (a === b) {
+        if (!mergeReciprocal || a === b) {
             return false;
         }
         const from = entryByPage.get(a);
@@ -504,8 +568,8 @@ function mapNavigationMapToFlow(navigationMap: NavigationMap): FlowData {
             id: `nav-${a}-${b}-prevnext`,
             source: a,
             target: b,
-            sourceHandle: 'next',
-            targetHandle: 'prev',
+            sourceHandle: LINK_HANDLES.next.source,
+            targetHandle: LINK_HANDLES.next.target,
             label: '',
             style: { strokeWidth: 2, stroke: edgeColor('prevNext') },
             data: { isTarget: false, navType: 'prevNext', bidirectional: true },
@@ -524,8 +588,8 @@ function mapNavigationMapToFlow(navigationMap: NavigationMap): FlowData {
                     id: `nav-${entry.page}-${entry.next}-next`,
                     source: entry.page,
                     target: entry.next,
-                    sourceHandle: 'next',
-                    targetHandle: 'prev',
+                    sourceHandle: LINK_HANDLES.next.source,
+                    targetHandle: LINK_HANDLES.next.target,
                     label: '',
                     style: { strokeWidth: 2, stroke: edgeColor('next') },
                     data: { isTarget: false, navType: 'next' },
@@ -543,8 +607,8 @@ function mapNavigationMapToFlow(navigationMap: NavigationMap): FlowData {
                     id: `nav-${entry.page}-${entry.prev}-prev`,
                     source: entry.page,
                     target: entry.prev,
-                    sourceHandle: 'prev',
-                    targetHandle: 'next',
+                    sourceHandle: LINK_HANDLES.prev.source,
+                    targetHandle: LINK_HANDLES.prev.target,
                     label: '',
                     style: { strokeWidth: 2, stroke: edgeColor('prev') },
                     data: { isTarget: false, navType: 'prev' },
@@ -558,8 +622,8 @@ function mapNavigationMapToFlow(navigationMap: NavigationMap): FlowData {
                 id: `nav-${entry.page}-${entry.home}-home`,
                 source: entry.page,
                 target: entry.home,
-                sourceHandle: 'homeTopLeft',
-                targetHandle: 'homeTopRight',
+                sourceHandle: LINK_HANDLES.home.source,
+                targetHandle: LINK_HANDLES.home.target,
                 label: '',
                 style: { strokeWidth: 2, strokeDasharray: '8 8', stroke: edgeColor('home') },
                 data: { isTarget: false, navType: 'home' },
@@ -572,8 +636,8 @@ function mapNavigationMapToFlow(navigationMap: NavigationMap): FlowData {
                 id: `nav-${entry.page}-${entry.parent}-parent`,
                 source: entry.page,
                 target: entry.parent,
-                sourceHandle: 'parentBottomLeft',
-                targetHandle: 'parentBottomRight',
+                sourceHandle: LINK_HANDLES.parent.source,
+                targetHandle: LINK_HANDLES.parent.target,
                 label: '',
                 style: { strokeWidth: 2, stroke: edgeColor('parent') },
                 data: { isTarget: false, navType: 'parent' },
@@ -615,334 +679,84 @@ function mapNavigationMapToFlow(navigationMap: NavigationMap): FlowData {
     return { nodes, edges };
 }
 
-/** Abstand der Datenpunkt-Knoten rechts neben ihrer Seite */
-const STATE_NODE_OFFSET_X = 320;
-
-/** Vertikaler Abstand mehrerer Datenpunkt-Knoten derselben Seite */
-const STATE_NODE_SPACING_Y = 46;
-
 /**
- * Legt die Datenpunkt-Knoten neben die Seite, die sie nutzt.
+ * Größen der Knoten fürs Auto-Layout: was React Flow gemessen hat, sonst geschätzt (ausgeblendete
+ * Knoten, erstes Laden).
  *
- * Betroffen sind nur Knoten ohne gespeicherte Position, also die, die zum ersten Mal eingeblendet
- * werden. Alle anderen Knoten - besonders die Seiten - bleiben unangetastet.
- *
- * @param nodes Aktuelle Knoten der Ansicht.
- * @returns Die Knoten mit den ergänzten Positionen und ob überhaupt etwas platziert wurde.
+ * @param nodes Knoten der Ansicht.
+ * @returns Größe je Knoten-Id.
  */
-function placeStateNodes(nodes: FlowNode[]): { nodes: FlowNode[]; moved: boolean } {
-    const byId = new Map(nodes.map(n => [n.id, n]));
-    const isStateNode = (id: string): boolean => byId.get(id)?.data.entry?.nodeType === 'stateRef';
-    // Seite, die einen Datenpunkt-Knoten als erste nutzt - an ihr wird er ausgerichtet
-    const owner = new Map<string, string>();
+function nodeSizes(nodes: readonly FlowNode[]): Map<string, NodeSize> {
+    const sizes = new Map<string, NodeSize>();
     for (const node of nodes) {
-        const entry = node.data.entry;
-        if (!entry || entry.nodeType === 'stateRef') {
-            continue;
-        }
-        const links = [
-            ...(entry.usedStates ?? []),
-            ...(entry.targetPages ?? []),
-            ...(entry.targetPagesLongPress ?? []),
-        ];
-        for (const id of links) {
-            if (!owner.has(id) && isStateNode(id)) {
-                owner.set(id, node.id);
-            }
-        }
+        const { width, height } = node.measured ?? {};
+        sizes.set(
+            node.id,
+            width && height
+                ? { width, height }
+                : estimateNodeSize(node.data.entry ?? { page: node.id, label: node.data.label }),
+        );
     }
-
-    const slots = new Map<string, number>();
-    let moved = false;
-    const placed = nodes.map(node => {
-        const entry = node.data.entry;
-        if (!entry || entry.nodeType !== 'stateRef' || entry.position) {
-            return node;
-        }
-        const ownerId = owner.get(node.id);
-        const anchor = ownerId ? byId.get(ownerId)?.position : undefined;
-        if (!ownerId || !anchor) {
-            return node;
-        }
-        const slot = slots.get(ownerId) ?? 0;
-        slots.set(ownerId, slot + 1);
-        const position = { x: anchor.x + STATE_NODE_OFFSET_X, y: anchor.y + slot * STATE_NODE_SPACING_Y };
-        moved = true;
-        // Die Position wandert auch in den Eintrag, sonst würde erneutes Einblenden neu platzieren
-        return { ...node, position, data: { ...node.data, entry: { ...entry, position } } };
-    });
-    return { nodes: placed, moved };
+    return sizes;
 }
 
-// Compute a simple automatic layout: find the 'main' node (page === 'main' or first entry)
-// Build trunk along prev/next links (both directions) and then place branches for other nodes.
-function computeAutoLayout(navigationMap: NavigationMap): Record<string, { x: number; y: number }> {
-    // Build lookup
-    const mapById = new Map<string, NavigationMapEntry>();
-    for (const e of navigationMap) {
-        mapById.set(e.page, e);
-    }
+/**
+ * Whether a node is shown with the given switches (collapsing aside). System pages need "show
+ * system pages" - except `///unlock`, which is always shown -, state nodes need "show states".
+ *
+ * @param showSystemPages Switch "show system pages".
+ * @param showStates Switch "show states".
+ * @returns The check per node.
+ */
+function shownBySwitches(showSystemPages: boolean, showStates: boolean): (node: FlowNode) => boolean {
+    return node =>
+        (showSystemPages || !node.id.startsWith('///') || node.id === servicePageName) &&
+        (showStates || node.data.entry?.nodeType !== 'stateRef');
+}
 
-    // Determine trunk (main + prev/next chain)
-    const main = navigationMap.find(e => e.page === 'main') || navigationMap[0];
-    const trunk: string[] = [];
-    if (main) {
-        let cur: string | undefined | null = main.page;
-        while (cur) {
-            trunk.unshift(cur);
-            const ent = mapById.get(cur);
-            const prev = ent && typeof ent.prev === 'string' ? ent.prev : undefined;
-            if (prev && !trunk.includes(prev)) {
-                cur = prev;
-            } else {
-                break;
-            }
-        }
-        cur = main.page;
-        while (cur) {
-            const ent = mapById.get(cur);
-            const next = ent && typeof ent.next === 'string' ? ent.next : undefined;
-            if (next && !trunk.includes(next)) {
-                trunk.push(next);
-                cur = next;
-            } else {
-                break;
-            }
-        }
-    }
+/**
+ * Positions to save: only nodes with a real position - provisionally placed nodes (and nodes in
+ * collapsed sub trees that never got a position) are left out, so they are placed again next time
+ * instead of being stored where they happen to stand (e.g. all at 0/0).
+ *
+ * @param nodes All nodes.
+ * @param unplaced Nodes with a provisional position only.
+ * @returns Name and position per node to save.
+ */
+function savedPositions(nodes: readonly FlowNode[], unplaced: ReadonlySet<string>): NavigationSavePayload['pages'] {
+    return nodes.filter(n => !unplaced.has(n.id)).map(n => ({ name: n.id, position: n.position }));
+}
 
-    // Build a pseudo-root tree where trunk nodes are direct children of root (vertical stack)
-    const root: any = { id: '__root', children: [] };
-    const nodeMap: Record<string, any> = {};
-    // create node objects for all pages
-    for (const entry of navigationMap) {
-        nodeMap[entry.page] = { id: entry.page, children: [] };
-    }
-
-    // trunk as children of root in order
-    for (const id of trunk) {
-        const nm = nodeMap[id];
-        if (nm) {
-            root.children.push(nm);
+/**
+ * Positionen der Knoten, außer den ausgenommenen.
+ *
+ * @param nodes Knoten der Ansicht.
+ * @param except Knoten, deren Position nicht zählt.
+ * @returns Position je Knoten-Id.
+ */
+function positionsOf(nodes: readonly FlowNode[], except: ReadonlySet<string>): Positions {
+    const out: Positions = {};
+    for (const node of nodes) {
+        if (!except.has(node.id)) {
+            out[node.id] = node.position;
         }
     }
+    return out;
+}
 
-    // attach non-trunk nodes to the nearest trunk node by BFS following prev/next (ignore home/parent)
-    const findAttach = (pageId: string): string => {
-        const seen = new Set<string>();
-        const q: string[] = [pageId];
-        while (q.length) {
-            const p = q.shift() as string;
-            if (trunk.includes(p)) {
-                return p;
-            }
-            if (seen.has(p)) {
-                continue;
-            }
-            seen.add(p);
-            const ent = mapById.get(p);
-            if (!ent) {
-                continue;
-            }
-            if (ent.prev && typeof ent.prev === 'string') {
-                q.push(ent.prev);
-            }
-            if (ent.next && typeof ent.next === 'string') {
-                q.push(ent.next);
-            }
-        }
-        return trunk[0] || pageId;
-    };
-
-    // Attach nodes using BFS expansion:
-    // 1) trunk nodes are direct children of root
-    // 2) For each node we process, attach its targetPages. For each target attached,
-    //    collect the full prev->...->next chain and attach that chain as children of the current node
-    //    (this prevents targets from creating their own extra level when they are sequences).
-    // 3) Continue BFS until no more nodes can be attached. Remaining nodes are attached via findAttach fallback.
-    const assigned = new Set<string>();
-
-    // mark trunk nodes as assigned and children of root (already pushed above)
-    for (const id of trunk) {
-        assigned.add(id);
-        // nodeMap[id] already pushed into root.children above
-    }
-
-    // helper: collect full prev->...->next chain starting from startId
-    const collectChain = (startId: string): string[] => {
-        // find left-most by following prev
-        let left = startId;
-        const seenLocal = new Set<string>();
-        while (true) {
-            if (seenLocal.has(left)) {
-                break;
-            }
-            seenLocal.add(left);
-            const ent = mapById.get(left);
-            const p = ent && typeof ent.prev === 'string' ? ent.prev : undefined;
-            if (!p || p === left) {
-                break;
-            }
-            left = p;
-        }
-        // now walk forward via next collecting nodes
-        const chain: string[] = [];
-        let cur = left;
-        seenLocal.clear();
-        while (cur && !seenLocal.has(cur)) {
-            seenLocal.add(cur);
-            chain.push(cur);
-            const ent = mapById.get(cur);
-            const nx = ent && typeof ent.next === 'string' ? ent.next : undefined;
-            if (!nx || nx === cur) {
-                break;
-            }
-            cur = nx;
-        }
-        return chain;
-    };
-
-    // BFS queue seeded with trunk nodes
-    const queue: string[] = [...trunk];
-    while (queue.length) {
-        const parentId = queue.shift() as string;
-        if (!parentId) {
-            continue;
-        }
-        const parentEnt = mapById.get(parentId);
-        if (!parentEnt) {
-            continue;
-        }
-
-        // process targets of this parent
-        if (Array.isArray(parentEnt.targetPages) && parentEnt.targetPages.length) {
-            for (const t of parentEnt.targetPages) {
-                if (!t || assigned.has(t)) {
-                    continue;
-                }
-                // collect the whole prev/next chain for this target and attach under parentId
-                const chain = collectChain(t);
-                // Attach chain nested: first element as child of parentId, next as child of first, etc.
-                let prevNode = parentId;
-                for (const cid of chain) {
-                    if (assigned.has(cid)) {
-                        prevNode = cid;
-                        continue;
-                    }
-                    const parentObj = nodeMap[prevNode];
-                    const childObj = nodeMap[cid];
-                    if (!parentObj || !childObj) {
-                        // missing referenced node: skip
-                        continue;
-                    }
-                    // avoid duplicate attachments
-                    if (!parentObj.children.includes(childObj)) {
-                        parentObj.children.push(childObj);
-                    }
-                    assigned.add(cid);
-                    // enqueue the newly attached node so its targets get processed as well
-                    queue.push(cid);
-                    prevNode = cid;
-                }
-            }
-        }
-        // additionally, ensure that if this parent has direct prev/next siblings that are not trunk
-        // they should not be attached here (prev/next are handled when collecting chains for targets)
-    }
-
-    // Fallback: attach any remaining unassigned nodes by resolving via prev/next to nearest trunk
-    // First try: if a node has a parent and is unassigned, attach it under its parent
-    for (const entry of navigationMap) {
-        if (assigned.has(entry.page)) {
-            continue;
-        }
-        if (!entry.prev && !entry.next && (!entry.targetPages || !entry.targetPages.length) && entry.parent) {
-            const parentId = entry.parent;
-            const parentObj = nodeMap[parentId];
-            const childObj = nodeMap[entry.page];
-            if (parentObj && childObj && !parentObj.children.includes(childObj)) {
-                parentObj.children.push(childObj);
-                assigned.add(entry.page);
-                // also enqueue so its targets (if any) get processed later
-                queue.push(entry.page);
-            }
-        }
-    }
-
-    // Final fallback: attach any still-unassigned nodes by resolving via prev/next to nearest trunk
-    // but attach full prev/next chains nested so they render as vertical stacks
-    for (const entry of navigationMap) {
-        if (assigned.has(entry.page)) {
-            continue;
-        }
-        const attachTo = findAttach(entry.page);
-        if (!nodeMap[attachTo]) {
-            // fallback to root if something went wrong
-            continue;
-        }
-        // collect whole prev->...->next chain for this entry and attach nested
-        const chain = collectChain(entry.page);
-        let prevNode = attachTo;
-        for (const cid of chain) {
-            if (assigned.has(cid)) {
-                prevNode = cid;
-                continue;
-            }
-            const parentObj = nodeMap[prevNode];
-            const childObj = nodeMap[cid];
-            if (!parentObj || !childObj) {
-                prevNode = cid;
-                assigned.add(cid);
-                continue;
-            }
-            if (!parentObj.children.includes(childObj)) {
-                parentObj.children.push(childObj);
-            }
-            assigned.add(cid);
-            // enqueue to process its targets later
-            queue.push(cid);
-            prevNode = cid;
-        }
-    }
-
-    // layout via d3.tree (vertical tree) then rotate coords for left->right
-    const rootNode = hierarchy(root);
-    // nodeSize: [verticalSpacing, horizontalSpacing]
-    // verticalSpacing halved to show nodes closer together
-    // estimate horizontal spacing from label widths so nodes don't overlap horizontally
-    const charWidth = 8; // approx px per character (monospace-ish estimate)
-    const paddingHor = 40; // left+right padding per node
-    let maxLabelLen = 1;
-    for (const e of navigationMap) {
-        const label = e.label || e.page || '';
-        maxLabelLen = Math.max(maxLabelLen, String(label).length);
-    }
-    const estNodeWidth = Math.round(maxLabelLen * charWidth + paddingHor);
-    const minH = 140;
-    const maxH = 400;
-    const horizSpacing = Math.min(maxH, Math.max(minH, estNodeWidth));
-    const layout = tree<any>().nodeSize([70, horizSpacing]);
-    layout(rootNode);
-
-    const positions: Record<string, { x: number; y: number }> = {};
-    // find min/max of the vertical layout coordinate (d.x) so we can invert the axis
-    const allX = rootNode.descendants().map(d => d.x ?? 0);
-    const maxX = allX.length ? Math.max(...allX) : 0;
-    // map coordinates: keep horizontal (d.y) as x, but invert vertical so root/main is at top
-    rootNode.descendants().forEach(d => {
-        const id = d.data.id as string;
-        if (!id || id === '__root') {
-            return;
-        }
-        // x = horizontal distance (depth), y = inverted vertical position so tree grows downward
-        positions[id] = { x: Math.round(d.y ?? 0), y: Math.round(maxX - (d.x ?? 0)) };
-    });
-    return positions;
+/**
+ * Übernimmt neue Positionen in die Knoten; Knoten ohne neue Position bleiben dieselben Objekte.
+ *
+ * @param nodes Knoten der Ansicht.
+ * @param positions Neue Positionen.
+ * @returns Die Knoten.
+ */
+function withPositions(nodes: readonly FlowNode[], positions: Positions): FlowNode[] {
+    return nodes.map(node => (positions[node.id] ? { ...node, position: positions[node.id] } : node));
 }
 
 interface NavigationViewInternalState extends NavigationViewState {
     nodes: FlowNode[];
-    edges: FlowEdge[];
     dirty?: boolean;
     noData?: boolean;
     infoPanelOpen?: boolean;
@@ -951,26 +765,91 @@ interface NavigationViewInternalState extends NavigationViewState {
     /** Current values of the states the icons of the info panel are read from, by state id. */
     infoIconValues?: Record<string, string>;
     confirmAutoLayoutOpen?: boolean;
+    /** Anchor of the open menu of the auto layout button */
+    autoLayoutMenu?: HTMLElement;
+    /**
+     * Nodes whose position is only provisional: they had no saved position and were placed
+     * automatically. They are placed again when they appear and lose the mark when moved.
+     */
+    unplaced: ReadonlySet<string>;
+    /** Collapsed pages of the selected panel - their sub trees are hidden */
+    collapsed: ReadonlySet<string>;
+    /** Home links to `main` shown - the user's choice per panel, shown unless switched off */
+    showHomeEdges: boolean;
     isTouchDevice?: boolean;
     showSystemPages: boolean;
     showStates: boolean;
+    /** Edit mode: links of admin pages can be drawn and removed */
+    editing: boolean;
+    /** Node ids whose links were changed but not saved yet, by panel name */
+    touched: Map<string, ReadonlySet<string>>;
+    editMenu?: EdgeEditMenu;
+    scopeDialog?: PendingLinkChange;
+    staleDialog?: StaleOverrideDialogState;
+    /** Translated warning shown in a snackbar, e.g. when a page cannot be edited */
+    notice?: string;
+    /** The adapter restarted and the navigation is being read again - the old view stays meanwhile */
+    restarting: boolean;
+    /**
+     * Bumped whenever handles appear or disappear without the node changing its size (edit mode,
+     * fresh data) - React Flow then re-measures the handles, see {@link NodeInternalsRefresher}.
+     */
+    internalsToken: number;
 }
 
 class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInternalState> {
     private autosaveInterval?: NodeJS.Timeout;
+
+    /** Timer of the restart phase: the first read after the adapter came back, or the next poll */
+    private restartTimeout?: NodeJS.Timeout;
+
+    /** End of the restart phase - polling stops here even without an answer */
+    private restartDeadline = 0;
+
+    /** Last alive value seen - the state may lag behind, the subscription must not */
+    private lastAlive = false;
+
+    /** Edges of the current map/config/edit mode, kept until one of the inputs changes */
+    private edgesCache?: {
+        map: NavigationMap;
+        pageConfig: PageConfigEntry[];
+        overrides: NavigationOverride[];
+        panelTopic: string | undefined;
+        touched: ReadonlySet<string>;
+        editing: boolean;
+        edges: FlowEdge[];
+    };
+
+    /**
+     * Stale overrides the user already decided on (or postponed) in this session, by
+     * `<panelTopic>|<page>` - the question is asked once per page and session.
+     */
+    private staleDecided = new Set<string>();
+
+    /** Nodes with the data of the edit mode added, kept per node until the node or that data changes */
+    private nodeCache = new Map<string, { source: FlowNode; key: string; node: FlowNode }>();
+
+    /**
+     * Scope the user picked for a page assigned to all panels, by `<panelTopic>|<uniqueName>` - so
+     * the question is asked once per page and session, not with every link.
+     */
+    private scopeChoice = new Map<string, NavigationEditScope>();
+
+    /** Set while `onConnect` applied a connection, so `onConnectEnd` does not apply it again */
+    private connectApplied = false;
 
     /** Node the icons of the info panel are being read for, or were read for - each node once. */
     private iconValuesLoadedFor?: string;
 
     // Schnelles Speichern beim Tabwechsel/Schließen über Beacon (kein await möglich)
     private saveNavigationBeacon = (): void => {
-        const { selectedPanel, nodes, dirty, alive } = this.state;
+        const { selectedPanel, nodes, dirty, alive, unplaced } = this.state;
         if (!selectedPanel || !nodes.length || !dirty || !alive) {
             return;
         }
         const payload: NavigationSavePayload = {
             panelName: selectedPanel,
-            pages: nodes.map(n => ({ name: n.id, position: n.position })),
+            pages: savedPositions(nodes, unplaced),
         };
         try {
             const url = `${window.location.origin}/adapter/${ADAPTER_NAME}/autosave`;
@@ -1003,7 +882,7 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
     };
 
     async saveNavigation(): Promise<void> {
-        const { selectedPanel, nodes, dirty, alive } = this.state;
+        const { selectedPanel, nodes, dirty, alive, unplaced } = this.state;
         if (!selectedPanel || !nodes.length || !dirty) {
             return;
         }
@@ -1014,7 +893,7 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
         }
         const payload: NavigationSavePayload = {
             panelName: selectedPanel,
-            pages: nodes.map(n => ({ name: n.id, position: n.position })),
+            pages: savedPositions(nodes, unplaced),
         };
         try {
             const instance = this.props.oContext.instance ?? '0';
@@ -1029,8 +908,6 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
             console.error('Fehler beim Speichern der Navigation:', e);
         }
     }
-    private aliveTimeout?: NodeJS.Timeout;
-
     constructor(props: ConfigGenericProps) {
         super(props);
         this.state = {
@@ -1041,20 +918,24 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
             selectedPanel: '',
             navigationMap: null,
             nodes: [],
-            edges: [],
             dirty: false,
             infoPanelOpen: false,
             infoData: null,
             infoNodeId: undefined,
             showSystemPages: false,
             showStates: false,
+            editing: false,
+            touched: new Map(),
+            restarting: false,
+            internalsToken: 0,
+            unplaced: new Set(),
+            collapsed: new Set(),
+            showHomeEdges: true,
         };
         this.handleShowStatesChange = this.handleShowStatesChange.bind(this);
-        this.checkAlive = this.checkAlive.bind(this);
         this.fetchNavigation = this.fetchNavigation.bind(this);
         this.handlePanelChange = this.handlePanelChange.bind(this);
         this.onNodesChange = this.onNodesChange.bind(this);
-        this.onEdgesChange = this.onEdgesChange.bind(this);
         this.onNodeClick = this.onNodeClick.bind(this);
         this.onPaneClick = this.onPaneClick.bind(this);
         this.saveNavigation = this.saveNavigation.bind(this);
@@ -1064,59 +945,243 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
     }
 
     openConfirmAutoLayout(): void {
-        this.setState({ confirmAutoLayoutOpen: true });
+        this.setState({ confirmAutoLayoutOpen: true, autoLayoutMenu: undefined });
     }
 
     closeConfirmAutoLayout(): void {
         this.setState({ confirmAutoLayoutOpen: false });
     }
 
+    /**
+     * "Rearrange everything": every visible node gets a new position. Nodes in collapsed sub trees
+     * keep theirs but count as unplaced, so they are placed again when expanded.
+     */
     confirmAutoLayout(): void {
-        // delete existing positions from navigationMap entries then run autolayout
-        const nav = this.state.navigationMap;
-        if (!nav) {
-            this.setState({ confirmAutoLayoutOpen: false });
-            return;
-        }
-        // remove position field from entries (works on local copy)
-        const cleaned = nav.map(e => ({
-            ...e,
-            position: undefined,
-        }));
-        // compute positions and apply
-        const positions = computeAutoLayout(cleaned);
-        const newNodes: FlowNode[] = cleaned.map(entry => ({
-            id: entry.page,
-            data: { label: entry.label || entry.page, entry },
-            position: positions[entry.page] ?? { x: 0, y: 0 },
-            type: 'custom',
-            draggable: true,
-        }));
-        const flow = mapNavigationMapToFlow(cleaned);
-        this.setState({ nodes: newNodes, edges: flow.edges, dirty: true, confirmAutoLayoutOpen: false } as any);
+        this.setState(state => {
+            const map = state.navigationMap;
+            if (!map) {
+                return { ...state, confirmAutoLayoutOpen: false };
+            }
+            const positions = computeAutoLayout(
+                map,
+                nodeSizes(state.nodes),
+                { collapsed: state.collapsed },
+                this.getLayoutTree(map),
+            );
+            return {
+                ...state,
+                nodes: withPositions(state.nodes, positions),
+                unplaced: new Set(state.nodes.filter(n => !positions[n.id]).map(n => n.id)),
+                dirty: true,
+                confirmAutoLayoutOpen: false,
+            };
+        });
     }
 
-    handleShowSystemPagesChange(_event: React.ChangeEvent<HTMLInputElement>, checked: boolean): void {
-        this.setState({ showSystemPages: checked });
+    /**
+     * "Place nodes without a position" (default of the auto layout button): only nodes without a
+     * saved position are placed, next to the page that leads to them; all others stay put.
+     */
+    private placeNewOnly = (): void => {
+        this.setState(state => {
+            const map = state.navigationMap;
+            const hidden = map ? this.getHidden(map, state.collapsed) : new Set<string>();
+            const toPlace = new Set([...state.unplaced].filter(id => !hidden.has(id)));
+            if (!map || !toPlace.size) {
+                return { ...state, autoLayoutMenu: undefined, notice: I18n.t('auto_layout_nothing_new') };
+            }
+            // The provisional positions of the rest (in collapsed sub trees) mean nothing - they
+            // must not keep the new nodes away
+            const placed = placeNewNodes(
+                map,
+                nodeSizes(state.nodes),
+                positionsOf(state.nodes, state.unplaced),
+                toPlace,
+                { collapsed: state.collapsed },
+                this.getLayoutTree(map),
+            );
+            return {
+                ...state,
+                nodes: withPositions(state.nodes, placed),
+                unplaced: new Set([...state.unplaced].filter(id => !placed[id])),
+                dirty: true,
+                autoLayoutMenu: undefined,
+            };
+        });
+    };
+
+    private openAutoLayoutMenu = (event: React.MouseEvent<HTMLElement>): void => {
+        this.setState({ autoLayoutMenu: event.currentTarget });
+    };
+
+    private closeAutoLayoutMenu = (): void => {
+        this.setState({ autoLayoutMenu: undefined });
+    };
+
+    /** Layout tree of the current map, kept until the map changes */
+    private layoutTreeCache?: { map: NavigationMap; tree: LayoutTree };
+
+    /**
+     * Layout tree of a map - who hangs below whom, independent of positions.
+     *
+     * @param map Navigation map.
+     * @returns The tree.
+     */
+    private getLayoutTree(map: NavigationMap): LayoutTree {
+        if (this.layoutTreeCache?.map !== map) {
+            this.layoutTreeCache = { map, tree: buildLayoutTree(map) };
+        }
+        return this.layoutTreeCache.tree;
     }
+
+    /** Hidden nodes for the last map/collapse combination */
+    private hiddenCache?: { map: NavigationMap; collapsed: ReadonlySet<string>; hidden: Set<string> };
+
+    /**
+     * Nodes hidden by collapsed sub trees.
+     *
+     * @param map Navigation map.
+     * @param collapsed Collapsed pages.
+     * @returns The hidden nodes.
+     */
+    private getHidden(map: NavigationMap, collapsed: ReadonlySet<string>): Set<string> {
+        if (this.hiddenCache?.map !== map || this.hiddenCache.collapsed !== collapsed) {
+            this.hiddenCache = { map, collapsed, hidden: hiddenByCollapse(this.getLayoutTree(map), collapsed) };
+        }
+        return this.hiddenCache.hidden;
+    }
+
+    /**
+     * Places nodes that just became visible and have only a provisional position, around the
+     * nodes that stay where they are. The view only - nothing is marked as changed.
+     *
+     * Nodes with a provisional position that stay invisible do not count as occupied - otherwise
+     * e.g. the hidden state nodes in their outer column would push the revealed pages far down.
+     *
+     * @param state Current state.
+     * @param revealed Nodes that became visible.
+     * @param collapsed Collapsed pages after the change.
+     * @param shown Whether a node is visible after the change (ignoring collapsing).
+     * @returns The updated nodes, `undefined` when nothing had to be placed.
+     */
+    private placeRevealed(
+        state: NavigationViewInternalState,
+        revealed: Iterable<string>,
+        collapsed: ReadonlySet<string>,
+        shown: (node: FlowNode) => boolean,
+    ): FlowNode[] | undefined {
+        const map = state.navigationMap;
+        if (!map) {
+            return undefined;
+        }
+        const hidden = hiddenByCollapse(this.getLayoutTree(map), collapsed);
+        const toPlace = new Set([...revealed].filter(id => state.unplaced.has(id) && !hidden.has(id)));
+        if (!toPlace.size) {
+            return undefined;
+        }
+        const ignored = new Set(
+            state.nodes
+                .filter(n => toPlace.has(n.id) || (state.unplaced.has(n.id) && (hidden.has(n.id) || !shown(n))))
+                .map(n => n.id),
+        );
+        const placed = placeNewNodes(
+            map,
+            nodeSizes(state.nodes),
+            positionsOf(state.nodes, ignored),
+            toPlace,
+            { collapsed },
+            this.getLayoutTree(map),
+        );
+        return withPositions(state.nodes, placed);
+    }
+
+    /**
+     * Collapses or expands the sub pages of a page (the button on the node). Expanded pages that
+     * have only a provisional position are placed next to it. Remembered per panel.
+     *
+     * @param nodeId The page.
+     */
+    private toggleCollapse = (nodeId: string): void => {
+        this.setState(state => {
+            const map = state.navigationMap;
+            if (!map) {
+                return state;
+            }
+            const collapsed = new Set(state.collapsed);
+            let nodes = state.nodes;
+            if (collapsed.has(nodeId)) {
+                collapsed.delete(nodeId);
+                const tree = this.getLayoutTree(map);
+                const before = hiddenByCollapse(tree, state.collapsed);
+                const after = hiddenByCollapse(tree, collapsed);
+                nodes =
+                    this.placeRevealed(
+                        state,
+                        [...before].filter(id => !after.has(id)),
+                        collapsed,
+                        shownBySwitches(state.showSystemPages, state.showStates),
+                    ) ?? nodes;
+            } else {
+                collapsed.add(nodeId);
+            }
+            storeCollapsed(state.selectedPanel, collapsed);
+            // Kanten in den eingeklappten Unterbaum enden jetzt an anderen Anfassern - neu vermessen
+            return { ...state, collapsed, nodes, internalsToken: state.internalsToken + 1 };
+        });
+    };
+
+    /**
+     * The home link switch - remembered per panel.
+     *
+     * @param _event Unused change event.
+     * @param checked Whether the home links to `main` are shown.
+     */
+    private handleShowHomeEdgesChange = (_event: React.ChangeEvent<HTMLInputElement>, checked: boolean): void => {
+        if (this.state.selectedPanel) {
+            storeShowHomeEdges(this.state.selectedPanel, checked);
+        }
+        this.setState(state => ({ showHomeEdges: checked, internalsToken: state.internalsToken + 1 }));
+    };
+
+    // Arrow function: the checkbox calls the handler without `this`
+    handleShowSystemPagesChange = (_event: React.ChangeEvent<HTMLInputElement>, checked: boolean): void => {
+        if (!checked) {
+            this.setState(state => ({ showSystemPages: false, internalsToken: state.internalsToken + 1 }));
+            return;
+        }
+        // System pages without a saved position are placed now, around what is already shown -
+        // `///unlock` is shown anyway and stays where it is
+        this.setState(state => {
+            const systemPages = state.nodes
+                .filter(n => n.id.startsWith('///') && n.id !== servicePageName)
+                .map(n => n.id);
+            const nodes =
+                this.placeRevealed(state, systemPages, state.collapsed, shownBySwitches(true, state.showStates)) ??
+                state.nodes;
+            return { ...state, showSystemPages: true, nodes, internalsToken: state.internalsToken + 1 };
+        });
+    };
 
     /**
      * Turns the state nodes on or off.
      *
-     * On the first time they are shown they have no position yet, so they are placed next to the
-     * page that uses them. The pages themselves are left where they are - only the new nodes move.
+     * State nodes without a saved position are placed in the outer column right of all pages, at
+     * the height of the page that uses them. The pages themselves are left where they are.
      *
      * @param _event Unused change event.
      * @param checked Whether the state nodes should be shown.
      */
     handleShowStatesChange(_event: React.ChangeEvent<HTMLInputElement>, checked: boolean): void {
         if (!checked) {
-            this.setState({ showStates: false });
+            this.setState(state => ({ showStates: false, internalsToken: state.internalsToken + 1 }));
             return;
         }
         this.setState(state => {
-            const placed = placeStateNodes(state.nodes);
-            return { showStates: true, nodes: placed.nodes, dirty: state.dirty || placed.moved };
+            const states = state.nodes.filter(n => n.data.entry?.nodeType === 'stateRef').map(n => n.id);
+            const nodes =
+                this.placeRevealed(state, states, state.collapsed, shownBySwitches(state.showSystemPages, true)) ??
+                state.nodes;
+            return { ...state, showStates: true, nodes, internalsToken: state.internalsToken + 1 };
         });
     }
 
@@ -1384,7 +1449,7 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
 
     // eslint-disable-next-line @typescript-eslint/require-await
     async componentDidMount(): Promise<void> {
-        this.checkAlive();
+        void this.subscribeAlive();
         this.fetchNavigation();
         // Autosave-Intervall starten
         this.autosaveInterval = setInterval(() => {
@@ -1408,8 +1473,10 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
     }
 
     componentWillUnmount(): void {
-        if (this.aliveTimeout) {
-            clearTimeout(this.aliveTimeout);
+        this.clearRestartTimer();
+        const socket = this.props.oContext.socket;
+        if (socket && typeof socket.unsubscribeState === 'function') {
+            void socket.unsubscribeState(this.aliveStateId(), this.onAliveChanged);
         }
         if (this.autosaveInterval) {
             clearInterval(this.autosaveInterval);
@@ -1422,106 +1489,237 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
         }
     }
 
-    checkAlive(): void {
-        const instance = this.props.oContext.instance ?? '0';
+    private aliveStateId(): string {
+        return `system.adapter.${ADAPTER_NAME}.${this.props.oContext.instance ?? '0'}.alive`;
+    }
+
+    /**
+     * Reads the alive state once and subscribes to it - a poll would miss the short offline
+     * moment of a restart.
+     */
+    private async subscribeAlive(): Promise<void> {
         const socket = this.props.oContext.socket;
-        if (socket && typeof socket.getState === 'function') {
-            void socket.getState(`system.adapter.${ADAPTER_NAME}.${instance}.alive`).then(state => {
-                this.setState({ alive: !!state?.val });
-                this.aliveTimeout = setTimeout(this.checkAlive, 5000);
-            });
-        } else {
-            this.aliveTimeout = setTimeout(this.checkAlive, 5000);
+        if (!socket || typeof socket.getState !== 'function' || typeof socket.subscribeState !== 'function') {
+            return;
+        }
+        try {
+            const state = await socket.getState(this.aliveStateId());
+            this.lastAlive = !!state?.val;
+            this.setState({ alive: this.lastAlive });
+            await socket.subscribeState(this.aliveStateId(), this.onAliveChanged);
+        } catch (e) {
+            console.error('[NavigationView] Cannot read or subscribe the alive state:', e);
         }
     }
 
     /**
-     * Derives the `navigationMap`/`nodes`/`edges` state slice for a panel list entry.
+     * The adapter went offline or came back. Back after a restart (e.g. after "save" in the admin)
+     * its navigation is read again - see {@link startRestartReload}.
+     *
+     * @param _id State id, unused.
+     * @param state The alive state.
+     */
+    private onAliveChanged = (_id: string, state: ioBroker.State | null | undefined): void => {
+        const alive = !!state?.val;
+        const wasAlive = this.lastAlive;
+        this.lastAlive = alive;
+        if (alive !== this.state.alive) {
+            this.setState({ alive });
+        }
+        if (alive && !wasAlive) {
+            this.startRestartReload();
+        }
+    };
+
+    private clearRestartTimer(): void {
+        if (this.restartTimeout) {
+            clearTimeout(this.restartTimeout);
+            this.restartTimeout = undefined;
+        }
+    }
+
+    /**
+     * Starts the restart phase: the first read follows after 3 s, then every 2 s until the adapter
+     * answers with at least one panel or 60 s are over. The current view stays as it is meanwhile.
+     */
+    private startRestartReload(): void {
+        this.clearRestartTimer();
+        this.restartDeadline = Date.now() + 60000;
+        this.setState({ restarting: true });
+        this.restartTimeout = setTimeout(() => void this.pollAfterRestart(), 3000);
+    }
+
+    /** One read of the restart phase - see {@link startRestartReload} */
+    private async pollAfterRestart(): Promise<void> {
+        this.restartTimeout = undefined;
+        const panelList = await this.requestNavigation();
+        if (panelList?.length) {
+            this.setState({ restarting: false });
+            // The adapter answers before it finished building the navigation at times - when marks
+            // remain, one more read follows
+            this.applyPanelList(panelList, 7000);
+            return;
+        }
+        if (Date.now() < this.restartDeadline) {
+            this.restartTimeout = setTimeout(() => void this.pollAfterRestart(), 2000);
+            return;
+        }
+        this.setState({
+            restarting: false,
+            panelList: [],
+            selectedPanel: '',
+            navigationMap: null,
+            nodes: [],
+            noData: true,
+        });
+    }
+
+    /**
+     * Derives the `navigationMap`/`nodes` state slice for a panel list entry.
      *
      * Shared by {@link fetchNavigation} and {@link handlePanelChange} so both compute the flow
-     * from a `PanelListEntry` the same way.
+     * from a `PanelListEntry` the same way. The edges are not part of the state - they are derived
+     * from the map, the (unsaved) page configuration and the edit mode in {@link getFlowEdges}.
+     *
+     * Nodes without a saved position are placed like "place nodes without a position" does - next
+     * to the page that leads to them, around the saved ones - but keep their provisional mark. The
+     * collapsed pages come from the browser storage; without a stored state the service sub tree
+     * is collapsed.
      *
      * @param entry Panel list entry to derive the flow from, or `undefined` if none was found
-     * @returns The `navigationMap`, `nodes` and `edges` to apply to the state
+     * @returns The `navigationMap`, `nodes`, provisional and collapsed nodes to apply to the state
      */
     private deriveFlowState(entry: PanelListEntry | undefined): {
         navigationMap: NavigationMap | null;
         nodes: FlowNode[];
-        edges: FlowEdge[];
+        unplaced: ReadonlySet<string>;
+        collapsed: ReadonlySet<string>;
+        showHomeEdges: boolean;
     } {
-        let nodes: FlowNode[] = [];
-        let edges: FlowEdge[] = [];
-        if (entry && entry.navigationMap) {
-            const flow = mapNavigationMapToFlow(entry.navigationMap);
-            nodes = flow.nodes;
-            edges = flow.edges;
+        const map = entry?.navigationMap;
+        if (!entry || !map) {
+            return {
+                navigationMap: entry ? entry.navigationMap : null,
+                nodes: [],
+                unplaced: new Set(),
+                collapsed: new Set(),
+                showHomeEdges: entry ? readStoredShowHomeEdges(entry.panelName) : true,
+            };
+        }
+        const tree = this.getLayoutTree(map);
+        const collapsed = new Set(readStoredCollapsed(entry.panelName) ?? defaultCollapsed(tree));
+        let nodes = mapNavigationMapToFlow(map).nodes;
+        const unplaced = new Set(
+            map
+                .filter(e => !e.position || typeof e.position.x !== 'number' || typeof e.position.y !== 'number')
+                .map(e => e.page),
+        );
+        if (unplaced.size) {
+            const placed = placeNewNodes(
+                map,
+                nodeSizes(nodes),
+                positionsOf(nodes, unplaced),
+                unplaced,
+                { collapsed },
+                tree,
+            );
+            nodes = withPositions(nodes, placed);
         }
         return {
-            navigationMap: entry ? entry.navigationMap : null,
+            navigationMap: map,
             nodes,
-            edges,
+            unplaced,
+            collapsed,
+            showHomeEdges: readStoredShowHomeEdges(entry.panelName),
         };
     }
 
+    /** The "refresh" button: reads the navigation again, unsaved link changes stay */
+    private handleRefreshClick = (): void => {
+        this.fetchNavigation();
+    };
+
+    /**
+     * Asks the adapter for the navigation of all panels.
+     *
+     * @returns The panel list, or `undefined` when the adapter did not answer within 3 s or sent
+     * no list.
+     */
+    private requestNavigation(): Promise<PanelListEntry[] | undefined> {
+        const instance = this.props.oContext.instance ?? '0';
+        const request = this.props.oContext.socket
+            .sendTo(`${ADAPTER_NAME}.${instance}`, SENDTO_GET_PANEL_NAVIGATION_COMMAND, null)
+            .then((res: { result?: PanelListEntry[] }): PanelListEntry[] | undefined =>
+                res && Array.isArray(res.result) ? res.result : undefined,
+            )
+            .catch((): undefined => undefined);
+        const timeout = new Promise<undefined>(resolve => setTimeout(() => resolve(undefined), 3000));
+        return Promise.race([request, timeout]);
+    }
+
+    /**
+     * Takes a freshly read panel list into the state. Pages whose links the new data already
+     * reflects lose their unsaved mark, whoever triggered the read.
+     *
+     * @param result Panel list as the adapter sent it.
+     * @param retryIfTouchedMs When marks remain, read once more after this many milliseconds.
+     */
+    private applyPanelList(result: PanelListEntry[], retryIfTouchedMs?: number): void {
+        // PanelList mit friendlyName übernehmen; ein älterer Adapter liefert noch kein
+        // panelTopic - dann wird es aus der Panel-Tabelle der Instanz nachgeschlagen
+        const panelList: PanelListEntry[] = result.map(p => ({
+            panelName: p.panelName,
+            friendlyName: p.friendlyName || p.panelName,
+            panelTopic: p.panelTopic || this.lookupPanelTopic(p.panelName),
+            navigationMap: p.navigationMap,
+        }));
+        // Zuletzt gewähltes Panel bevorzugen, falls es noch existiert - sonst wie bisher das erste
+        const storedPanelName = readStoredSelectedPanel();
+        const storedEntry = storedPanelName ? panelList.find(p => p.panelName === storedPanelName) : undefined;
+        const selectedEntry = storedEntry || panelList[0];
+        const selectedPanel = selectedEntry?.panelName || '';
+        const flowState = this.deriveFlowState(selectedEntry);
+        this.setState(
+            state => ({
+                panelList,
+                selectedPanel,
+                ...flowState,
+                noData: false,
+                dirty: false,
+                touched: this.reconcileTouched(state.touched, panelList),
+                editMenu: undefined,
+                internalsToken: state.internalsToken + 1,
+            }),
+            () => {
+                this.checkStaleOverrides(selectedEntry);
+                if (retryIfTouchedMs && [...this.state.touched.values()].some(set => set.size > 0)) {
+                    this.clearRestartTimer();
+                    this.restartTimeout = setTimeout(() => {
+                        this.restartTimeout = undefined;
+                        this.fetchNavigation();
+                    }, retryIfTouchedMs);
+                }
+            },
+        );
+    }
+
+    /** Reads the navigation of all panels from the adapter - at mount and on "refresh" */
     fetchNavigation(): void {
         this.setState({ loading: true, noData: false });
-        const instance = this.props.oContext.instance ?? '0';
-        let didRespond = false;
-        const timeout = setTimeout(() => {
-            if (!didRespond) {
+        void this.requestNavigation().then(result => {
+            this.setState({ loading: false });
+            if (result) {
+                this.applyPanelList(result);
+            } else {
                 this.setState({
-                    loading: false,
                     panelList: [],
                     selectedPanel: '',
                     navigationMap: null,
                     nodes: [],
-                    edges: [],
                     noData: true,
                 });
             }
-        }, 3000);
-        void this.props.oContext.socket
-            .sendTo(`${ADAPTER_NAME}.${instance}`, SENDTO_GET_PANEL_NAVIGATION_COMMAND, null)
-            .then((res: { result?: NavigationPanelConfig[] }) => {
-                didRespond = true;
-                clearTimeout(timeout);
-                this.setState({ loading: false });
-                if (res && Array.isArray(res.result)) {
-                    // PanelList mit friendlyName übernehmen
-                    const panelList: PanelListEntry[] = res.result.map(p => ({
-                        panelName: p.panelName,
-                        friendlyName: p.friendlyName || p.panelName,
-                        navigationMap: p.navigationMap,
-                    }));
-                    // Zuletzt gewähltes Panel bevorzugen, falls es noch existiert - sonst wie bisher das erste
-                    const storedPanelName = readStoredSelectedPanel();
-                    const storedEntry = storedPanelName
-                        ? panelList.find(p => p.panelName === storedPanelName)
-                        : undefined;
-                    const selectedEntry = storedEntry || panelList[0];
-                    const selectedPanel = selectedEntry?.panelName || '';
-                    const flowState = this.deriveFlowState(selectedEntry);
-                    // Debug entfernt
-                    this.setState({
-                        panelList,
-                        selectedPanel,
-                        navigationMap: flowState.navigationMap,
-                        nodes: flowState.nodes,
-                        edges: flowState.edges,
-                        noData: false,
-                        dirty: false,
-                    });
-                } else {
-                    this.setState({
-                        panelList: [],
-                        selectedPanel: '',
-                        navigationMap: null,
-                        nodes: [],
-                        edges: [],
-                        noData: true,
-                    });
-                }
-            });
+        });
     }
 
     handlePanelChange(event: SelectChangeEvent<string>, _child?: React.ReactNode): void {
@@ -1536,11 +1734,13 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
         const flowState = this.deriveFlowState(found);
         this.setState({
             selectedPanel: panelName,
-            navigationMap: flowState.navigationMap,
-            nodes: flowState.nodes,
-            edges: flowState.edges,
+            ...flowState,
             dirty: false,
+            editMenu: undefined,
+            scopeDialog: undefined,
         });
+        this.setState(state => ({ internalsToken: state.internalsToken + 1 }));
+        this.checkStaleOverrides(found);
     }
 
     onNodesChange(changes: any[]): void {
@@ -1551,10 +1751,16 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
             this.setState(state => {
                 const newNodes = applyNodeChanges(changes, state.nodes);
                 const moved = newNodes.find(n => n.id === movedId);
+                // A node moved by hand has its position for good
+                const movedIds = changes.filter(c => c.type === 'position').map(c => String(c.id));
+                const unplaced = movedIds.some(id => state.unplaced.has(id))
+                    ? new Set([...state.unplaced].filter(id => !movedIds.includes(id)))
+                    : state.unplaced;
                 // Die gelesenen Icons gehören zum bisherigen Knoten, nicht zu einem anderen
                 const iconValues = movedId === state.infoNodeId ? state.infoIconValues : undefined;
                 return {
                     nodes: newNodes,
+                    unplaced,
                     dirty: true,
                     infoPanelOpen: true,
                     infoData: this.buildInfoData(moved?.data?.entry, iconValues),
@@ -1572,33 +1778,943 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
         }
     }
 
-    onEdgesChange(changes: any[]): void {
-        if (changes.some(change => change.type === 'position')) {
-            this.setState(state => ({
-                edges: applyEdgeChanges(changes, state.edges),
-                dirty: true,
-            }));
+    // ---------------------------------------------------------------------------------------------
+    // Edit mode: prev/next/home/parent of admin pages are set by drawing connections
+    // ---------------------------------------------------------------------------------------------
+
+    /**
+     * Drops the unsaved mark of every page whose links the freshly read navigation already
+     * reflects - the adapter restarted and applied the saved configuration.
+     *
+     * @param touched Marks by panel name.
+     * @param panelList The navigation just read.
+     * @returns The remaining marks.
+     */
+    private reconcileTouched(
+        touched: Map<string, ReadonlySet<string>>,
+        panelList: PanelListEntry[],
+    ): Map<string, ReadonlySet<string>> {
+        const pageConfig = this.getPageConfig();
+        const overrides = this.getNavigationOverrides();
+        const result = new Map<string, ReadonlySet<string>>();
+        for (const [panelName, pages] of touched) {
+            const panel = panelList.find(p => p.panelName === panelName);
+            if (!panel || !panel.panelTopic) {
+                result.set(panelName, pages);
+                continue;
+            }
+            const remaining = new Set(
+                [...pages].filter(
+                    page => !isNavigationApplied(panel.navigationMap, pageConfig, panel.panelTopic, page, overrides),
+                ),
+            );
+            if (remaining.size) {
+                result.set(panelName, remaining);
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Shows a translated warning in the snackbar.
+     *
+     * @param key Translation key.
+     */
+    private showNotice(key: string): void {
+        this.setState({ notice: I18n.t(key) });
+    }
+
+    private closeNotice = (): void => {
+        this.setState({ notice: undefined });
+    };
+
+    /** Page configuration of the instance as the admin holds it right now - unsaved changes included */
+    private getPageConfig(): PageConfigEntry[] {
+        const config: PageConfigEntry[] | undefined = this.props.data?.pageConfig;
+        return Array.isArray(config) ? config : [];
+    }
+
+    /** Navigation overrides of the script pages as the admin holds them right now - unsaved changes included */
+    private getNavigationOverrides(): NavigationOverride[] {
+        const overrides: NavigationOverride[] | undefined = this.props.data?.navigationOverrides;
+        return Array.isArray(overrides) ? overrides : NO_OVERRIDES;
+    }
+
+    /**
+     * Topic of a panel from the panel table of the instance - fallback for an adapter that does not
+     * report `panelTopic` with the navigation yet.
+     *
+     * @param panelName Name of the panel as reported with the navigation.
+     * @returns The topic, or an empty string when the panel is not in the table.
+     */
+    private lookupPanelTopic(panelName: string): string {
+        const panels: { topic?: string; name?: string }[] | undefined = this.props.data?.panels;
+        if (!Array.isArray(panels)) {
+            return '';
+        }
+        const found = panels.find(
+            p => p && (p.name === panelName || p.topic === panelName || p.topic?.split('/').pop() === panelName),
+        );
+        return found?.topic ?? '';
+    }
+
+    /**
+     * Whether the panel is marked "panel uses no script" in the panel table.
+     *
+     * @param panelTopic Topic of the panel.
+     * @returns true for a panel without a script.
+     */
+    private isNoScriptPanel(panelTopic: string | undefined): boolean {
+        const panels: { topic?: string; noScript?: boolean }[] | undefined = this.props.data?.panels;
+        if (!panelTopic || !Array.isArray(panels)) {
+            return false;
+        }
+        return panels.some(p => p && p.topic === panelTopic && p.noScript === true);
+    }
+
+    /** Topic of the selected panel - the key its pages are assigned under */
+    private getSelectedPanelTopic(): string | undefined {
+        return this.state.panelList.find(p => p.panelName === this.state.selectedPanel)?.panelTopic || undefined;
+    }
+
+    /** Nodes of the selected panel whose links were changed but not saved yet */
+    private getTouched(): ReadonlySet<string> {
+        return this.state.touched.get(this.state.selectedPanel) ?? NO_TOUCHED;
+    }
+
+    /**
+     * A page created from the admin configuration - its links are written to `pageConfig`.
+     *
+     * @param entry Entry of the node.
+     */
+    private isAdminEntry(
+        entry: NavigationMapEntry | undefined,
+    ): entry is NavigationMapEntry & { adminPageName: string } {
+        return (
+            !!entry &&
+            entry.nodeType !== 'stateRef' &&
+            !entry.generated &&
+            entry.origin === 'admin' &&
+            !!entry.adminPageName
+        );
+    }
+
+    /**
+     * A page of the configuration script (of the panel or the global one) the adapter reported
+     * script links for - its links are written as an override to `navigationOverrides`. A page
+     * the adapter generated from a page item is read-only.
+     *
+     * @param entry Entry of the node.
+     */
+    private isScriptEntry(
+        entry: NavigationMapEntry | undefined,
+    ): entry is NavigationMapEntry & { scriptLinks: NavigationLinks } {
+        return (
+            !!entry &&
+            entry.nodeType !== 'stateRef' &&
+            !entry.generated &&
+            (entry.origin === 'script' || entry.origin === 'global') &&
+            !!entry.scriptLinks
+        );
+    }
+
+    /**
+     * A page whose links can be edited here: an admin page or a script page, but never a
+     * generated one.
+     *
+     * @param entry Entry of the node.
+     */
+    private isEditableEntry(entry: NavigationMapEntry | undefined): boolean {
+        return this.isAdminEntry(entry) || this.isScriptEntry(entry);
+    }
+
+    /**
+     * An edge that stands for one editable link: one of the four navigation links of an admin page.
+     *
+     * @param edge Edge of the flow.
+     */
+    private isEditableEdge(edge: FlowEdge): boolean {
+        return isNavigationLinkKind(edge.data?.navType) && this.isEditableEntry(this.entryOfNode(edge.source));
+    }
+
+    /**
+     * A node a link may point to: a page of the panel other than the source.
+     *
+     * @param sourceNodeId Node the link starts at.
+     * @param targetNodeId Node under the pointer, if any.
+     */
+    private isValidLinkTarget(sourceNodeId: string, targetNodeId: string | undefined): targetNodeId is string {
+        if (!targetNodeId || targetNodeId === sourceNodeId) {
+            return false;
+        }
+        const target = this.entryOfNode(targetNodeId);
+        return !!target && target.nodeType !== 'stateRef';
+    }
+
+    /**
+     * Whether a stored link target names the node shown in the flow. The start page is stored
+     * under the name of its entry but shown as `main`.
+     *
+     * @param stored Target as stored in the configuration.
+     * @param nodeId Node id in the flow.
+     */
+    private storedTargetIs(stored: string | undefined, nodeId: string | undefined): boolean {
+        if (!stored || !nodeId) {
+            return stored === nodeId;
+        }
+        if (stored === nodeId) {
+            return true;
+        }
+        return (
+            nodeId === mainPageName &&
+            this.getPageConfig().some(e => e && e.uniqueName === stored && isMainPageEntry(e))
+        );
+    }
+
+    /**
+     * Whether a link shown in the flow is stored in the configuration - only then it can be
+     * removed. A link the adapter derived (default home, prev/next chaining) is not.
+     *
+     * @param sourceNodeId Node the link starts at.
+     * @param kind Which link.
+     * @param target Node the link points to.
+     */
+    private isConfiguredLink(sourceNodeId: string, kind: NavigationLinkKind, target: string): boolean {
+        const entry = this.entryOfNode(sourceNodeId);
+        const panelTopic = this.getSelectedPanelTopic();
+        const { navigationMap } = this.state;
+        if (!panelTopic || !navigationMap) {
+            return false;
+        }
+        // The chaining of admin pages decides this link ahead of the configuration - removing the
+        // configured value here would bring the edge right back
+        if (
+            (kind === 'prev' || kind === 'next') &&
+            adapterDecidedLink(
+                navigationMap,
+                this.getPageConfig(),
+                panelTopic,
+                sourceNodeId,
+                kind,
+                this.getNavigationOverrides(),
+            )
+        ) {
+            return false;
+        }
+        let stored: string | undefined;
+        if (this.isAdminEntry(entry)) {
+            const configEntry = this.getPageConfig().find(e => e && e.uniqueName === entry.adminPageName);
+            stored = configEntry ? effectiveNavigation(configEntry, panelTopic)?.[kind] : undefined;
+        } else if (this.isScriptEntry(entry)) {
+            // The override when there is one, else the script - both are "configured"
+            stored = effectiveScriptLinks(entry, this.getNavigationOverrides(), panelTopic)?.[kind];
         } else {
-            this.setState(state => ({
-                edges: applyEdgeChanges(changes, state.edges),
-            }));
+            return false;
+        }
+        return !!stored && this.storedTargetIs(stored, target);
+    }
+
+    /**
+     * Edges of the flow: the map the adapter reported, overlaid with the unsaved configuration of
+     * the touched pages. In edit mode every edge stands for one link of the configuration and the
+     * edges of admin pages can be dragged to another page.
+     *
+     * Derived, not kept in the state: it depends on the map, the page configuration of the admin,
+     * the touched pages and the edit mode, and every one of them changes elsewhere. The result is
+     * cached until one of the inputs changes, so dragging a node does not rebuild it.
+     */
+    private getFlowEdges(): FlowEdge[] {
+        const { navigationMap, editing } = this.state;
+        if (!navigationMap) {
+            return [];
+        }
+        const pageConfig = this.getPageConfig();
+        const overrides = this.getNavigationOverrides();
+        const panelTopic = this.getSelectedPanelTopic();
+        const touched = this.getTouched();
+        const cache = this.edgesCache;
+        if (
+            cache &&
+            cache.map === navigationMap &&
+            cache.pageConfig === pageConfig &&
+            cache.overrides === overrides &&
+            cache.panelTopic === panelTopic &&
+            cache.touched === touched &&
+            cache.editing === editing
+        ) {
+            return cache.edges;
+        }
+        const map =
+            panelTopic && touched.size
+                ? applyNavigationOverlay(navigationMap, pageConfig, panelTopic, touched, overrides)
+                : navigationMap;
+        let edges = mapNavigationMapToFlow(map, { mergeReciprocal: !editing }).edges;
+        if (editing) {
+            // Only the target end of an editable edge can be dragged; every other edge says so
+            // explicitly, as an edge without the flag would inherit `edgesReconnectable`
+            edges = edges.map(edge => {
+                const kind = edge.data?.navType;
+                if (!isNavigationLinkKind(kind) || !this.isEditableEdge(edge)) {
+                    return { ...edge, reconnectable: false };
+                }
+                // A link the adapter derived (default home, chaining) is not in the configuration
+                // and drawn pale - removing the configured counterpart leaves it visible
+                const derived = !this.isConfiguredLink(edge.source, kind, edge.target);
+                return {
+                    ...edge,
+                    reconnectable: 'target',
+                    className: `${edge.className ?? ''} edge-editable${derived ? ' edge-derived' : ''}`.trim(),
+                };
+            });
+        }
+        this.edgesCache = { map: navigationMap, pageConfig, overrides, panelTopic, touched, editing, edges };
+        return edges;
+    }
+
+    /**
+     * Edges from a visible page into a collapsed sub tree, drawn to the collapsed page instead -
+     * once per source, kind and collapsed page. They are view only: no menu, not reconnectable.
+     * Edges inside a collapsed sub tree or out of it are left out (back links like home/parent
+     * from the hidden pages would only repeat the tree).
+     *
+     * @param edges All edges of the flow.
+     * @param tree Layout tree of the map.
+     * @param hidden Nodes hidden by collapsing.
+     * @param visible Nodes shown.
+     * @returns The redirected edges.
+     */
+    private redirectCollapsedEdges(
+        edges: readonly FlowEdge[],
+        tree: LayoutTree,
+        hidden: ReadonlySet<string>,
+        visible: ReadonlySet<string>,
+    ): FlowEdge[] {
+        if (!hidden.size) {
+            return [];
+        }
+        // Layout-Elternseite jeder Seite, um zur sichtbaren eingeklappten Seite hochzulaufen
+        const owner = new Map<string, string>();
+        for (const [page, kids] of tree.kids) {
+            for (const kid of kids) {
+                for (const n of kid.chain.nodes) {
+                    owner.set(n, page);
+                }
+            }
+        }
+        const visibleAncestor = (id: string): string | undefined => {
+            let cur: string | undefined = id;
+            while (cur && hidden.has(cur)) {
+                cur = owner.get(cur);
+            }
+            return cur;
+        };
+        const out: FlowEdge[] = [];
+        const seen = new Set<string>();
+        for (const edge of edges) {
+            if (hidden.has(edge.source) || !hidden.has(edge.target) || !visible.has(edge.source)) {
+                continue;
+            }
+            const target = visibleAncestor(edge.target);
+            if (!target || target === edge.source || !visible.has(target)) {
+                continue;
+            }
+            const kind = edge.data?.navType ?? 'target';
+            const key = `${edge.source}|${kind}|${target}`;
+            if (seen.has(key)) {
+                continue;
+            }
+            seen.add(key);
+            out.push({
+                ...edge,
+                id: `${edge.id}-collapsed-${target}`,
+                target,
+                // Am eingeklappten Knoten endet die Kante immer links in der Mitte
+                targetHandle: 'targetLeft',
+                style: { ...edge.style, strokeDasharray: '2 4' },
+                data: { isTarget: true, navType: edge.data?.navType, redirected: true },
+                className: `${edge.className ?? ''} edge-collapsed`.trim(),
+                reconnectable: false,
+            });
+        }
+        return out;
+    }
+
+    /**
+     * Adds what the node component needs to know to each node: the handles an edge uses (and in
+     * which colour), the edit mode, whether the page has unsaved changes, whether it is generated
+     * and whether a navigation override of the admin exists for it (and is out of date).
+     *
+     * A node keeps its identity as long as neither it nor that data changes - React Flow would
+     * otherwise re-adopt every node with every render, e.g. while one of them is dragged.
+     *
+     * @param nodes Nodes to show.
+     * @param edges All edges of the flow, hidden ones included - a hidden edge still marks its handle.
+     * @param collapse Pages with sub pages in the layout: collapsed or not, and how many are hidden then.
+     */
+    private decorateNodes(
+        nodes: FlowNode[],
+        edges: FlowEdge[],
+        collapse: ReadonlyMap<string, { collapsed: boolean; hidden: number }>,
+    ): FlowNode[] {
+        const { editing } = this.state;
+        const touched = this.getTouched();
+        const overrides = this.getNavigationOverrides();
+        const panelTopic = this.getSelectedPanelTopic();
+        // Ein Handle bekommt die Farbe der ersten Kante, die es benutzt - so stimmen auch
+        // beidseitige und Long-Press-Verbindungen
+        const usedByNode = new Map<string, Record<string, EdgeKind | undefined>>();
+        const mark = (nodeId: string, handleId: string | undefined, kind: EdgeKind | undefined): void => {
+            if (!handleId) {
+                return;
+            }
+            let used = usedByNode.get(nodeId);
+            if (!used) {
+                used = {};
+                usedByNode.set(nodeId, used);
+            }
+            if (!(handleId in used) || (kind && !used[handleId])) {
+                used[handleId] = kind;
+            }
+        };
+        for (const edge of edges) {
+            mark(edge.source, edge.sourceHandle, edge.data?.navType);
+            mark(edge.target, edge.targetHandle, edge.data?.navType);
+        }
+        return nodes.map(node => {
+            const used = usedByNode.get(node.id) ?? {};
+            const entry = node.data.entry;
+            const editable = editing && this.isEditableEntry(entry);
+            const unsaved = touched.has(node.id);
+            const generated = !!entry && entry.nodeType !== 'stateRef' && !!entry.generated;
+            // An override the admin holds right now (saved or not), compared with the script links
+            // the adapter reported - so the warning goes away as soon as the override is brought up
+            // to date here. What the adapter reported about its own override is the fallback only.
+            const scriptPage =
+                entry &&
+                entry.nodeType !== 'stateRef' &&
+                !entry.generated &&
+                (entry.origin === 'script' || entry.origin === 'global')
+                    ? entry
+                    : undefined;
+            const override = panelTopic && scriptPage ? overrideOf(overrides, panelTopic, node.id) : undefined;
+            let overrideState: 'active' | 'stale' | undefined;
+            if (override && scriptPage) {
+                const stale = scriptPage.scriptLinks
+                    ? isOverrideStale(override, scriptPage.scriptLinks)
+                    : !!scriptPage.override?.stale;
+                overrideState = stale ? 'stale' : 'active';
+            }
+            const collapseInfo = collapse.get(node.id);
+            const key = [
+                editing,
+                editable,
+                unsaved,
+                generated,
+                overrideState ?? '',
+                collapseInfo ? `${collapseInfo.collapsed}:${collapseInfo.hidden}` : '',
+                ...Object.entries(used)
+                    .map(([id, kind]) => `${id}=${kind ?? ''}`)
+                    .sort(),
+            ].join('|');
+            const cached = this.nodeCache.get(node.id);
+            if (cached && cached.source === node && cached.key === key) {
+                return cached.node;
+            }
+            const decorated: FlowNode = {
+                ...node,
+                data: {
+                    ...node.data,
+                    usedHandles: used,
+                    editing,
+                    editable,
+                    unsaved,
+                    generated,
+                    overrideState,
+                    collapse: collapseInfo,
+                    onToggleCollapse: collapseInfo ? this.toggleCollapse : undefined,
+                },
+            };
+            this.nodeCache.set(node.id, { source: node, key, node: decorated });
+            return decorated;
+        });
+    }
+
+    private handleEditingChange = (_event: React.ChangeEvent<HTMLInputElement>, checked: boolean): void => {
+        this.setState(state => ({
+            editing: checked,
+            editMenu: undefined,
+            scopeDialog: undefined,
+            internalsToken: state.internalsToken + 1,
+        }));
+    };
+
+    /**
+     * Only a link of an admin page may be drawn, and only to another page of the panel.
+     *
+     * @param connection The connection being drawn, or an existing edge.
+     */
+    private isValidConnection = (connection: Edge | Connection): boolean => {
+        if (!this.state.editing) {
+            return false;
+        }
+        const kind = SOURCE_HANDLE_KIND[connection.sourceHandle ?? ''];
+        if (!kind || !this.isEditableEntry(this.entryOfNode(connection.source))) {
+            return false;
+        }
+        return this.isValidLinkTarget(connection.source, connection.target);
+    };
+
+    /**
+     * A connection was dropped on a handle: the source handle says which link is set.
+     *
+     * @param connection The finished connection.
+     */
+    private onConnect = (connection: Connection): void => {
+        if (!this.state.editing) {
+            return;
+        }
+        const kind = SOURCE_HANDLE_KIND[connection.sourceHandle ?? ''];
+        if (!kind || !this.isValidLinkTarget(connection.source, connection.target)) {
+            return;
+        }
+        this.connectApplied = true;
+        this.applyNavigationLink(connection.source, kind, connection.target);
+    };
+
+    /**
+     * A connection ended without a valid handle - e.g. on the body of a node. The node under the
+     * pointer is taken as target, so nobody has to hit the small handle.
+     *
+     * @param event Pointer event the connection ended with.
+     * @param connectionState Where the connection started and whether a handle took it.
+     */
+    private onConnectEnd: OnConnectEnd = (
+        event: MouseEvent | TouchEvent,
+        connectionState: FinalConnectionState,
+    ): void => {
+        const applied = this.connectApplied;
+        this.connectApplied = false;
+        if (!this.state.editing || applied || connectionState.isValid === true) {
+            return;
+        }
+        const sourceNodeId = connectionState.fromNode?.id;
+        const kind = SOURCE_HANDLE_KIND[connectionState.fromHandle?.id ?? ''];
+        if (!sourceNodeId || !kind) {
+            return;
+        }
+        const point = 'changedTouches' in event ? event.changedTouches[0] : event;
+        if (!point) {
+            return;
+        }
+        const nodeElement = document.elementFromPoint(point.clientX, point.clientY)?.closest('.react-flow__node');
+        const targetNodeId = nodeElement instanceof HTMLElement ? nodeElement.dataset.id : undefined;
+        if (!this.isValidLinkTarget(sourceNodeId, targetNodeId)) {
+            return;
+        }
+        this.applyNavigationLink(sourceNodeId, kind, targetNodeId);
+    };
+
+    /**
+     * The target end of an edge was dragged to another handle. A drop into the void leaves the
+     * edge as it is - a link is removed through its menu only.
+     *
+     * @param oldEdge The edge before the drag.
+     * @param connection Where it was dropped.
+     */
+    private onReconnect: OnReconnect = (oldEdge: Edge, connection: Connection): void => {
+        if (!this.state.editing) {
+            return;
+        }
+        const kind = oldEdge.data?.navType;
+        if (
+            !isNavigationLinkKind(kind) ||
+            connection.source !== oldEdge.source ||
+            !this.isEditableEntry(this.entryOfNode(oldEdge.source))
+        ) {
+            return;
+        }
+        if (connection.target === oldEdge.target || !this.isValidLinkTarget(connection.source, connection.target)) {
+            return;
+        }
+        this.connectApplied = true;
+        this.applyNavigationLink(connection.source, kind, connection.target);
+    };
+
+    /**
+     * Edit mode: a click on an editable edge opens its menu at the pointer.
+     *
+     * @param event The click.
+     * @param edge The clicked edge.
+     */
+    private onEdgeClick = (event: React.MouseEvent, edge: Edge): void => {
+        if (!this.state.editing || edge.data?.redirected) {
+            return;
+        }
+        if (!isNavigationLinkKind(edge.data?.navType) || !this.isEditableEntry(this.entryOfNode(edge.source))) {
+            return;
+        }
+        // a.next = b and b.prev = a lie on top of each other - the menu offers both
+        const pair = new Set([edge.source, edge.target]);
+        const items: EdgeMenuItem[] = [];
+        for (const other of this.getFlowEdges()) {
+            const kind = other.data?.navType;
+            if (!isNavigationLinkKind(kind) || !pair.has(other.source) || !pair.has(other.target)) {
+                continue;
+            }
+            items.push({
+                source: other.source,
+                target: other.target,
+                kind,
+                removable: this.isEditableEdge(other) && this.isConfiguredLink(other.source, kind, other.target),
+            });
+        }
+        // A script page with an override can go back to the script navigation
+        const panelTopic = this.getSelectedPanelTopic();
+        const overrides = this.getNavigationOverrides();
+        const restorable = panelTopic
+            ? [...pair].filter(
+                  page => this.isScriptEntry(this.entryOfNode(page)) && overrideOf(overrides, panelTopic, page),
+              )
+            : [];
+        this.setState({ editMenu: { x: event.clientX, y: event.clientY, items, restorable } });
+    };
+
+    private closeEditMenu = (): void => {
+        this.setState({ editMenu: undefined });
+    };
+
+    /**
+     * A removable entry of the edge menu was clicked - the entry carries its index in `data-index`.
+     *
+     * @param event The click.
+     */
+    private removeMenuLink = (event: React.MouseEvent<HTMLLIElement>): void => {
+        const index = Number(event.currentTarget.dataset.index);
+        const item = this.state.editMenu?.items[index];
+        this.setState({ editMenu: undefined });
+        if (item?.removable) {
+            this.applyNavigationLink(item.source, item.kind, undefined);
+        }
+    };
+
+    /**
+     * "Restore script navigation" of the edge menu was clicked - the entry carries the page in
+     * `data-page`. The override of that page is dropped, the page follows the script again.
+     *
+     * @param event The click.
+     */
+    private restoreMenuScript = (event: React.MouseEvent<HTMLLIElement>): void => {
+        const page = event.currentTarget.dataset.page;
+        this.setState({ editMenu: undefined });
+        const panelTopic = this.getSelectedPanelTopic();
+        if (!page || !panelTopic) {
+            return;
+        }
+        const overrides = this.getNavigationOverrides();
+        const updated = removeNavigationOverride(overrides, panelTopic, page);
+        if (updated !== overrides) {
+            this.writeNavigationOverrides(updated, [page]);
+        }
+    };
+
+    /**
+     * Writes the overrides to the instance configuration and marks the pages as unsaved.
+     *
+     * @param updated The new override list.
+     * @param pages Node ids of the pages the change belongs to.
+     */
+    private writeNavigationOverrides(updated: readonly NavigationOverride[], pages: readonly string[]): void {
+        void this.onChange('navigationOverrides', updated);
+        this.markTouched(pages);
+    }
+
+    /**
+     * Marks pages of the selected panel as changed but not saved yet.
+     *
+     * @param pages Node ids of the pages.
+     */
+    private markTouched(pages: readonly string[]): void {
+        this.setState(state => {
+            const touched = new Map(state.touched);
+            const forPanel = new Set(touched.get(state.selectedPanel) ?? []);
+            for (const page of pages) {
+                forPanel.add(page);
+            }
+            touched.set(state.selectedPanel, forPanel);
+            return { touched };
+        });
+    }
+
+    /**
+     * Sets or removes one navigation link of a page - every edit of the flow ends up here.
+     *
+     * Admin pages are written to the page configuration of the instance; the admin's save button
+     * takes it from there. A page assigned to all panels first asks which assignment to write to.
+     * Script pages get an override in `navigationOverrides`, which the adapter applies on top of
+     * the script at start. Generated pages cannot be edited.
+     *
+     * @param sourceNodeId Node the link starts at.
+     * @param kind Which link to set.
+     * @param target Node the link points to, `undefined` removes the link.
+     */
+    applyNavigationLink(sourceNodeId: string, kind: NavigationLinkKind, target: string | undefined): void {
+        const entry = this.entryOfNode(sourceNodeId);
+        const panelTopic = this.getSelectedPanelTopic();
+        if (this.isScriptEntry(entry)) {
+            if (!panelTopic) {
+                return;
+            }
+            const overrides = this.getNavigationOverrides();
+            const updated = setOverrideLink(overrides, panelTopic, entry.page, kind, target, entry.scriptLinks);
+            if (updated !== overrides) {
+                this.writeNavigationOverrides(updated, [sourceNodeId]);
+            }
+            return;
+        }
+        if (!this.isAdminEntry(entry)) {
+            return;
+        }
+        const configEntry = this.getPageConfig().find(e => e && e.uniqueName === entry.adminPageName);
+        if (!panelTopic || !configEntry) {
+            this.showNotice('nav_edit_not_assigned');
+            return;
+        }
+        const change: PendingLinkChange = { sourceNodeId, uniqueName: entry.adminPageName, panelTopic, kind, target };
+        switch (assignmentSourceOf(configEntry, panelTopic)) {
+            case 'panel':
+                this.writeNavigationLink(change, 'panel');
+                break;
+            case 'all': {
+                const chosen = this.scopeChoice.get(`${panelTopic}|${change.uniqueName}`);
+                if (chosen) {
+                    this.writeNavigationLink(change, chosen);
+                } else {
+                    this.setState({ scopeDialog: change });
+                }
+                break;
+            }
+            default:
+                // Excluded or not assigned according to the unsaved configuration - the flow still
+                // shows the page from the last adapter start, there is no assignment to write to
+                this.showNotice('nav_edit_not_assigned');
+                break;
         }
     }
 
-    render(): string | React.ReactElement | null {
-        const { alive, loading, panelList, selectedPanel, nodes, edges, noData, showSystemPages, showStates } =
-            this.state;
-        // Filter system pages (starting with ///) unless showSystemPages is true; ///unlock is always shown
-        const isSystemPage = (id: string): boolean => id.startsWith('///') && id !== '///unlock';
-        const isStateNode = (node: FlowNode): boolean => node.data.entry?.nodeType === 'stateRef';
-        const visibleNodes = nodes.filter(
-            n => (showSystemPages || !isSystemPage(n.id)) && (showStates || !isStateNode(n)),
+    /**
+     * Writes a link change into the page configuration and marks the page as unsaved.
+     *
+     * @param change The link to set or remove.
+     * @param scope Which assignment row to write to.
+     */
+    private writeNavigationLink(change: PendingLinkChange, scope: NavigationEditScope): void {
+        const pageConfig = this.getPageConfig();
+        const configEntry = pageConfig.find(e => e && e.uniqueName === change.uniqueName);
+        if (!configEntry) {
+            return;
+        }
+        // Already stored that way - nothing to write, nothing to mark
+        const stored = effectiveNavigation(configEntry, change.panelTopic)?.[change.kind];
+        if (
+            assignmentSourceOf(configEntry, change.panelTopic) === scope &&
+            this.storedTargetIs(stored, change.target)
+        ) {
+            return;
+        }
+        const updated = setNavigationLink(
+            pageConfig,
+            change.uniqueName,
+            change.panelTopic,
+            change.kind,
+            change.target,
+            scope,
         );
-        const visibleNodeIds = new Set(visibleNodes.map(n => n.id));
-        // remove dangling edges that reference missing nodes (safety for stale state)
-        const safeEdges = (edges || []).filter(e => visibleNodeIds.has(e.source) && visibleNodeIds.has(e.target));
+        if (updated === pageConfig) {
+            return;
+        }
+        void this.onChange('pageConfig', updated);
+        this.markTouched([change.sourceNodeId]);
+    }
+
+    private handleScopeAll = (): void => {
+        this.resolveScope('all');
+    };
+
+    private handleScopePanel = (): void => {
+        this.resolveScope('panel');
+    };
+
+    private handleScopeCancel = (): void => {
+        this.setState({ scopeDialog: undefined });
+    };
+
+    /**
+     * The user picked where a change of a page assigned to all panels is written to. The choice is
+     * kept for the page, so the next link of it is written without asking again.
+     *
+     * @param scope The chosen assignment row.
+     */
+    private resolveScope(scope: NavigationEditScope): void {
+        const change = this.state.scopeDialog;
+        this.setState({ scopeDialog: undefined });
+        if (!change) {
+            return;
+        }
+        this.scopeChoice.set(`${change.panelTopic}|${change.uniqueName}`, scope);
+        this.writeNavigationLink(change, scope);
+    }
+
+    /**
+     * After a panel was loaded: when the adapter reports overrides whose script changed since
+     * (`override.stale`) and the user has not decided on them in this session, the question is
+     * asked. Only overrides the admin still holds count - one removed but not saved yet is gone.
+     *
+     * @param panel The panel just loaded or selected.
+     */
+    private checkStaleOverrides(panel: PanelListEntry | undefined): void {
+        if (!panel || !panel.panelTopic || this.state.staleDialog) {
+            return;
+        }
+        const overrides = this.getNavigationOverrides();
+        const items: StaleOverrideItem[] = [];
+        for (const entry of panel.navigationMap) {
+            if (!entry.override?.stale || !this.isScriptEntry(entry)) {
+                continue;
+            }
+            if (this.staleDecided.has(`${panel.panelTopic}|${entry.page}`)) {
+                continue;
+            }
+            const override = overrideOf(overrides, panel.panelTopic, entry.page);
+            if (!override) {
+                continue;
+            }
+            items.push({
+                page: entry.page,
+                then: { ...(override.scriptLinks ?? {}) },
+                now: { ...entry.scriptLinks },
+                mine: { ...(override.navigation ?? {}) },
+            });
+        }
+        if (items.length) {
+            this.setState({
+                staleDialog: { panelName: panel.friendlyName || panel.panelName, panelTopic: panel.panelTopic, items },
+            });
+        }
+    }
+
+    /**
+     * The user decided what happens with the stale overrides listed in the dialog - for all of
+     * them at once. Every decision but "later" rewrites the overrides and marks the pages as
+     * unsaved; "later" only keeps the question from coming back in this session.
+     *
+     * @param decision The choice.
+     */
+    private handleStaleDecision = (decision: StaleOverrideDecision): void => {
+        const dialog = this.state.staleDialog;
+        this.setState({ staleDialog: undefined });
+        if (!dialog) {
+            return;
+        }
+        for (const item of dialog.items) {
+            this.staleDecided.add(`${dialog.panelTopic}|${item.page}`);
+        }
+        if (decision === 'later') {
+            return;
+        }
+        let overrides: readonly NavigationOverride[] = this.getNavigationOverrides();
+        const before = overrides;
+        for (const item of dialog.items) {
+            const override = overrideOf(overrides, dialog.panelTopic, item.page);
+            if (!override) {
+                continue;
+            }
+            switch (decision) {
+                case 'merge':
+                    overrides = overrides.map(o =>
+                        o === override
+                            ? { ...o, navigation: mergeNavigationOverride(o, item.now), scriptLinks: { ...item.now } }
+                            : o,
+                    );
+                    break;
+                case 'keep':
+                    overrides = overrides.map(o => (o === override ? { ...o, scriptLinks: { ...item.now } } : o));
+                    break;
+                case 'script':
+                    overrides = removeNavigationOverride(overrides, dialog.panelTopic, item.page);
+                    break;
+            }
+        }
+        if (overrides !== before) {
+            this.writeNavigationOverrides(
+                overrides,
+                dialog.items.map(item => item.page),
+            );
+        }
+    };
+
+    render(): string | React.ReactElement | null {
+        const {
+            alive,
+            loading,
+            panelList,
+            selectedPanel,
+            nodes,
+            noData,
+            showSystemPages,
+            showStates,
+            editing,
+            editMenu,
+            scopeDialog,
+            staleDialog,
+            notice,
+            restarting,
+            internalsToken,
+        } = this.state;
+        const edges = this.getFlowEdges();
+        const touched = this.getTouched();
+        const touchedCount = touched.size;
+        const selectedPanelLabel = panelList.find(p => p.panelName === selectedPanel)?.friendlyName ?? selectedPanel;
+        // Filter system pages (starting with ///) unless showSystemPages is true; ///unlock is always shown
+        const isSystemPage = (id: string): boolean => id.startsWith('///') && id !== servicePageName;
         // Clicking a page highlights all of its connections - same look as hovering one
         const selectedNodeId = this.state.infoPanelOpen ? this.state.infoNodeId : undefined;
+        const map = this.state.navigationMap;
+        const tree = map ? this.getLayoutTree(map) : undefined;
+        const hidden = map ? this.getHidden(map, this.state.collapsed) : new Set<string>();
+        // Einklapp-Knopf an jeder Seite mit Unterseiten im Layout - nur, wenn davon auch etwas
+        // angezeigt würde (die Service-Seiten unter ///unlock sind ohne "Systemseiten" ohnehin weg);
+        // die Zahl nennt die Seiten, die beim Aufklappen erscheinen
+        const collapse = new Map<string, { collapsed: boolean; hidden: number }>();
+        if (tree) {
+            for (const [page, kids] of tree.kids) {
+                if (!kids.length || hidden.has(page)) {
+                    continue;
+                }
+                const shown = subtreeOf(tree, page).filter(id => showSystemPages || !isSystemPage(id));
+                if (shown.length) {
+                    const collapsed = this.state.collapsed.has(page);
+                    collapse.set(page, { collapsed, hidden: collapsed ? shown.length : 0 });
+                }
+            }
+        }
+        const shownBy = shownBySwitches(showSystemPages, showStates);
+        const shownNodes = nodes.filter(n => !hidden.has(n.id) && shownBy(n));
+        const visibleNodeIds = new Set(shownNodes.map(n => n.id));
+        const redirected = tree ? this.redirectCollapsedEdges(edges, tree, hidden, visibleNodeIds) : [];
+        const visibleNodes = this.decorateNodes(shownNodes, [...edges, ...redirected], collapse);
+        const showHomeEdges = this.state.showHomeEdges;
+        // remove dangling edges that reference missing nodes (safety for stale state); home links to
+        // main can be hidden - except those of the selected page and of pages with unsaved changes
+        const safeEdges = [...edges, ...redirected].filter(
+            e =>
+                visibleNodeIds.has(e.source) &&
+                visibleNodeIds.has(e.target) &&
+                (showHomeEdges ||
+                    e.data?.navType !== 'home' ||
+                    e.target !== 'main' ||
+                    e.source === selectedNodeId ||
+                    touched.has(e.source)),
+        );
         // Legende für die Kantenarten
         const legend: { kind: EdgeKind; labelKey: string; dash?: string; bidirectional?: boolean }[] = [
             { kind: 'prevNext', labelKey: 'nav_legend_prev_next', bidirectional: true },
@@ -1612,7 +2728,18 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
         ];
         return (
             <Box sx={{ width: '100%', p: 2, position: 'relative' }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', mb: 2, gap: 2 }}>
+                <Box
+                    sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        flexWrap: 'wrap',
+                        mb: 2,
+                        columnGap: 2,
+                        rowGap: 1,
+                        // the switches wrap as a whole instead of breaking their labels
+                        '& .MuiFormControlLabel-label': { whiteSpace: 'nowrap' },
+                    }}
+                >
                     <Typography variant="h6">{I18n.t('Panel_Navigation')}</Typography>
                     <Box sx={{ flex: 1 }} />
                     <FormControlLabel
@@ -1635,20 +2762,66 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
                         }
                         label={I18n.t('show_states')}
                     />
+                    <FormControlLabel
+                        control={
+                            <Checkbox
+                                checked={this.state.showHomeEdges}
+                                onChange={this.handleShowHomeEdgesChange}
+                                size="small"
+                            />
+                        }
+                        label={I18n.t('show_home_edges')}
+                    />
+                    <FormControlLabel
+                        control={
+                            <Checkbox
+                                checked={editing}
+                                onChange={this.handleEditingChange}
+                                disabled={!this.state.navigationMap || !this.getSelectedPanelTopic()}
+                                size="small"
+                            />
+                        }
+                        label={I18n.t('nav_edit_mode')}
+                    />
                     <Button
                         variant="outlined"
-                        onClick={this.fetchNavigation}
+                        onClick={this.handleRefreshClick}
                         disabled={loading}
                     >
                         {I18n.t('refresh')}
                     </Button>
-                    <Button
+                    <ButtonGroup
                         variant="outlined"
-                        onClick={this.openConfirmAutoLayout}
                         disabled={loading || !this.state.navigationMap}
                     >
-                        {I18n.t('auto_layout')}
-                    </Button>
+                        <Button
+                            onClick={this.placeNewOnly}
+                            title={I18n.t('auto_layout_place_new_hint')}
+                        >
+                            {I18n.t('auto_layout')}
+                        </Button>
+                        <Button
+                            size="small"
+                            onClick={this.openAutoLayoutMenu}
+                            aria-label={I18n.t('auto_layout_more')}
+                            title={I18n.t('auto_layout_more')}
+                        >
+                            <ArrowDropDownIcon />
+                        </Button>
+                    </ButtonGroup>
+                    <Menu
+                        anchorEl={this.state.autoLayoutMenu}
+                        open={!!this.state.autoLayoutMenu}
+                        onClose={this.closeAutoLayoutMenu}
+                    >
+                        <MenuItem
+                            onClick={this.placeNewOnly}
+                            title={I18n.t('auto_layout_place_new_hint')}
+                        >
+                            {I18n.t('auto_layout_place_new')}
+                        </MenuItem>
+                        <MenuItem onClick={this.openConfirmAutoLayout}>{I18n.t('auto_layout_all')}</MenuItem>
+                    </Menu>
                     <Typography
                         variant="body2"
                         color={alive ? 'success.main' : 'error.main'}
@@ -1711,7 +2884,75 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
                             </Typography>
                         </Box>
                     ))}
+                    <Divider
+                        orientation="vertical"
+                        flexItem
+                    />
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                        <span className="legend-marker">
+                            <GeneratedPageMarker />
+                        </span>
+                        <Typography
+                            variant="caption"
+                            sx={{ whiteSpace: 'nowrap' }}
+                        >
+                            {I18n.t('nav_edit_legend_generated')}
+                        </Typography>
+                    </Box>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                        <span className="legend-marker">
+                            <OverrideMarker stale={false} />
+                        </span>
+                        <Typography
+                            variant="caption"
+                            sx={{ whiteSpace: 'nowrap' }}
+                        >
+                            {I18n.t('nav_edit_legend_override')}
+                        </Typography>
+                    </Box>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                        <span className="legend-marker">
+                            <OverrideMarker stale />
+                        </span>
+                        <Typography
+                            variant="caption"
+                            sx={{ whiteSpace: 'nowrap' }}
+                        >
+                            {I18n.t('nav_edit_legend_override_stale')}
+                        </Typography>
+                    </Box>
+                    {editing ? (
+                        <>
+                            <Divider
+                                orientation="vertical"
+                                flexItem
+                            />
+                            <Typography
+                                variant="caption"
+                                color="text.secondary"
+                            >
+                                {I18n.t('nav_edit_legend_hint')}
+                            </Typography>
+                        </>
+                    ) : null}
                 </Box>
+                {touchedCount > 0 ? (
+                    <Alert
+                        severity="info"
+                        sx={{ mb: 1 }}
+                    >
+                        {I18n.t('nav_edit_unsaved_hint')}
+                    </Alert>
+                ) : null}
+                {restarting ? (
+                    <Alert
+                        severity="info"
+                        icon={<CircularProgress size={18} />}
+                        sx={{ mb: 1 }}
+                    >
+                        {I18n.t('nav_restart_waiting')}
+                    </Alert>
+                ) : null}
                 {loading ? (
                     <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: 200 }}>
                         <CircularProgress />
@@ -1816,12 +3057,14 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
                                 key={selectedPanel || 'navigation-flow'}
                                 nodes={visibleNodes}
                                 fitView
+                                minZoom={0.1}
                                 nodesDraggable={true}
+                                nodesConnectable={editing}
                                 onNodesChange={this.onNodesChange}
                                 onNodeClick={this.onNodeClick}
                                 onPaneClick={this.onPaneClick}
-                                onEdgesChange={this.onEdgesChange}
-                                edgeTypes={{ custom: CustomEdge }}
+                                nodeTypes={NODE_TYPES}
+                                edgeTypes={EDGE_TYPES}
                                 edges={safeEdges.map(e => ({
                                     ...e,
                                     type: 'custom',
@@ -1833,185 +3076,88 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
                                             (e.source === selectedNodeId || e.target === selectedNodeId),
                                     },
                                 }))}
-                                nodeTypes={{
-                                    custom: ({ id, data }: any) => {
-                                        const handleTypes: Record<string, boolean> = {
-                                            prev: false,
-                                            next: false,
-                                            homeTopLeft: false,
-                                            homeTopRight: false,
-                                            parentBottomLeft: false,
-                                            parentBottomRight: false,
-                                            targetRight: false,
-                                            targetLeft: false,
-                                        };
-                                        // Ein Handle bekommt die Farbe der Kante, die es benutzt - so
-                                        // stimmen auch beidseitige und Long-Press-Verbindungen
-                                        const handleKind: Record<string, EdgeKind> = {};
-                                        for (const edge of edges) {
-                                            const kind = edge.data?.navType;
-                                            const mark = (handleId: string | undefined): void => {
-                                                if (!handleId) {
-                                                    return;
-                                                }
-                                                handleTypes[handleId] = true;
-                                                if (kind && !handleKind[handleId]) {
-                                                    handleKind[handleId] = kind;
-                                                }
-                                            };
-                                            if (edge.source === id) {
-                                                mark(edge.sourceHandle);
-                                            }
-                                            if (edge.target === id) {
-                                                mark(edge.targetHandle);
-                                            }
-                                        }
-                                        const handleColor = (handleId: string): string =>
-                                            EDGE_COLOR_HEX[
-                                                handleKind[handleId] ?? HANDLE_EDGE_KIND[handleId] ?? 'default'
-                                            ];
-                                        // Fallback-Title (native) für pageInfo bauen
-                                        let _pageInfoTooltip: string | undefined;
-                                        const pageInfo = data.entry?.pageInfo;
-                                        if (pageInfo && typeof pageInfo === 'object') {
-                                            const entries = Object.entries(pageInfo).filter(
-                                                ([_key, value]) =>
-                                                    typeof value === 'string' || typeof value === 'number',
-                                            );
-                                            if (entries.length) {
-                                                _pageInfoTooltip = entries
-                                                    .map(
-                                                        ([key, value]) =>
-                                                            `${I18n.t(key)}: ${
-                                                                typeof value === 'string'
-                                                                    ? I18n.t(value)
-                                                                    : String(value)
-                                                            }`,
-                                                    )
-                                                    .join('\n');
-                                            }
-                                        }
-                                        // kept for later use by external scripts; avoid unused-variable lint
-                                        void _pageInfoTooltip;
-                                        const entry: NavigationMapEntry | undefined = data.entry;
-                                        const style = nodeStyleOf(entry);
-                                        const vars = NODE_STYLE_VAR[style];
-                                        return (
-                                            <Box
-                                                className={
-                                                    style === 'stateRef' ? 'node-box node-state-ref' : 'node-box'
-                                                }
-                                                style={{
-                                                    background: `var(${vars.bg})`,
-                                                    borderColor: `var(${vars.border})`,
-                                                }}
-                                                title={entry?.stateId}
-                                            >
-                                                {/* prev: oben */}
-                                                {handleTypes.prev && (
-                                                    <Handle
-                                                        type="target"
-                                                        position={Position.Top}
-                                                        id="prev"
-                                                        style={{ background: handleColor('prev') }}
-                                                    />
-                                                )}
-                                                {handleTypes.prev && (
-                                                    <Handle
-                                                        type="source"
-                                                        position={Position.Top}
-                                                        id="prev"
-                                                        style={{ background: handleColor('prev') }}
-                                                    />
-                                                )}
-                                                {/* next: unten */}
-                                                {handleTypes.next && (
-                                                    <Handle
-                                                        type="target"
-                                                        position={Position.Bottom}
-                                                        id="next"
-                                                        style={{ background: handleColor('next') }}
-                                                    />
-                                                )}
-                                                {handleTypes.next && (
-                                                    <Handle
-                                                        type="source"
-                                                        position={Position.Bottom}
-                                                        id="next"
-                                                        style={{ background: handleColor('next') }}
-                                                    />
-                                                )}
-                                                {/* home: links oben (source), rechts oben (target) */}
-                                                {handleTypes.homeTopLeft && (
-                                                    <Handle
-                                                        type="source"
-                                                        position={Position.Left}
-                                                        id="homeTopLeft"
-                                                        className="homeTopLeft"
-                                                        style={{ background: handleColor('homeTopLeft') }}
-                                                    />
-                                                )}
-                                                {handleTypes.homeTopRight && (
-                                                    <Handle
-                                                        type="target"
-                                                        position={Position.Right}
-                                                        id="homeTopRight"
-                                                        className="homeTopRight"
-                                                        style={{ background: handleColor('homeTopRight') }}
-                                                    />
-                                                )}
-                                                {/* parent: links unten (source), rechts unten (target) */}
-                                                {handleTypes.parentBottomLeft && (
-                                                    <Handle
-                                                        type="source"
-                                                        position={Position.Left}
-                                                        id="parentBottomLeft"
-                                                        className="parentBottomLeft"
-                                                        style={{ background: handleColor('parentBottomLeft') }}
-                                                    />
-                                                )}
-                                                {handleTypes.parentBottomRight && (
-                                                    <Handle
-                                                        type="target"
-                                                        position={Position.Right}
-                                                        id="parentBottomRight"
-                                                        className="parentBottomRight"
-                                                        style={{ background: handleColor('parentBottomRight') }}
-                                                    />
-                                                )}
-                                                {/* targetPages: rechts Mitte (source), links Mitte (target) */}
-                                                {handleTypes.targetRight && (
-                                                    <Handle
-                                                        type="source"
-                                                        position={Position.Right}
-                                                        id="targetRight"
-                                                        style={{ background: handleColor('targetRight'), top: '50%' }}
-                                                    />
-                                                )}
-                                                {handleTypes.targetLeft && (
-                                                    <Handle
-                                                        type="target"
-                                                        position={Position.Left}
-                                                        id="targetLeft"
-                                                        style={{ background: handleColor('targetLeft'), top: '50%' }}
-                                                    />
-                                                )}
-                                                <Typography
-                                                    variant="body2"
-                                                    color="text.primary"
-                                                    className="node-label"
-                                                    sx={{ position: 'relative', zIndex: 2, cursor: 'move' }}
-                                                >
-                                                    {data.label}
-                                                </Typography>
-                                            </Box>
-                                        );
-                                    },
-                                }}
+                                connectionMode={editing ? ConnectionMode.Loose : ConnectionMode.Strict}
+                                connectionRadius={30}
+                                isValidConnection={this.isValidConnection}
+                                onConnect={this.onConnect}
+                                onConnectEnd={this.onConnectEnd}
+                                edgesReconnectable={editing}
+                                onReconnect={this.onReconnect}
+                                onEdgeClick={this.onEdgeClick}
                             >
                                 <Controls />
                                 <Background gap={16} />
+                                <NodeInternalsRefresher
+                                    nodeIds={visibleNodes.map(n => n.id)}
+                                    token={internalsToken}
+                                />
                             </ReactFlow>
+                            <Menu
+                                open={!!editMenu}
+                                onClose={this.closeEditMenu}
+                                anchorReference="anchorPosition"
+                                anchorPosition={editMenu ? { top: editMenu.y, left: editMenu.x } : undefined}
+                            >
+                                {(editMenu?.items ?? []).map((item, index) =>
+                                    item.removable ? (
+                                        <MenuItem
+                                            key={`${item.kind}-${item.source}-${item.target}`}
+                                            data-index={index}
+                                            onClick={this.removeMenuLink}
+                                        >
+                                            {I18n.t('nav_edit_remove_link')
+                                                .replace('%k', item.kind)
+                                                .replace('%s', item.source)
+                                                .replace('%t', item.target)}
+                                        </MenuItem>
+                                    ) : (
+                                        <MenuItem
+                                            key={`${item.kind}-${item.source}-${item.target}`}
+                                            disabled
+                                        >
+                                            {`${item.kind}: ${item.source} → ${item.target} – ${I18n.t('nav_edit_link_derived')}`}
+                                        </MenuItem>
+                                    ),
+                                )}
+                                {editMenu?.restorable.length ? <Divider /> : null}
+                                {(editMenu?.restorable ?? []).map(page => (
+                                    <MenuItem
+                                        key={`restore-${page}`}
+                                        data-page={page}
+                                        onClick={this.restoreMenuScript}
+                                    >
+                                        {I18n.t('nav_edit_restore_script').replace('%s', page)}
+                                    </MenuItem>
+                                ))}
+                            </Menu>
+                            <Snackbar
+                                open={!!notice}
+                                autoHideDuration={6000}
+                                onClose={this.closeNotice}
+                                anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+                            >
+                                <Alert
+                                    severity="warning"
+                                    onClose={this.closeNotice}
+                                >
+                                    {notice}
+                                </Alert>
+                            </Snackbar>
+                            <NavigationScopeDialog
+                                open={!!scopeDialog}
+                                pageName={scopeDialog?.uniqueName ?? ''}
+                                panelName={selectedPanelLabel}
+                                onAll={this.handleScopeAll}
+                                onPanel={this.handleScopePanel}
+                                onCancel={this.handleScopeCancel}
+                            />
+                            <NavigationOverrideStaleDialog
+                                open={!!staleDialog}
+                                panelName={staleDialog?.panelName ?? ''}
+                                items={staleDialog?.items ?? []}
+                                onDecide={this.handleStaleDecision}
+                                noScript={this.isNoScriptPanel(staleDialog?.panelTopic)}
+                            />
                             <NodePageInfoPanel
                                 open={!!this.state.infoPanelOpen}
                                 title={this.getInfoTitle()}
@@ -2028,33 +3174,38 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
             </Box>
         );
     }
+}
 
-    // Compute automatic tree layout: trunk is main and nodes connected via prev/next
-    handleAutoLayout(): void {
-        const nav = this.state.navigationMap;
-        if (!nav) {
-            return;
-        }
-        const positions = computeAutoLayout(nav);
-        // rebuild nodes based on navigationMap to ensure ids/entries align with positions
-        const currentById: Record<string, FlowNode> = {};
-        for (const n of this.state.nodes) {
-            currentById[n.id] = n;
-        }
-        const newNodes: FlowNode[] = nav.map(entry => {
-            const existing = currentById[entry.page];
-            const pos = positions[entry.page] ?? existing?.position ?? { x: 0, y: 0 };
-            return {
-                id: entry.page,
-                data: { label: entry.label || entry.page, entry },
-                position: pos,
-                type: existing?.type ?? 'custom',
-                draggable: existing?.draggable ?? true,
-            };
-        });
-        const flow = mapNavigationMapToFlow(nav);
-        this.setState({ nodes: newNodes, edges: flow.edges, dirty: true } as any);
-    }
+interface NodeInternalsRefresherProps {
+    /** Nodes whose handles are re-measured */
+    nodeIds: string[];
+    /** Whenever this changes, the nodes are re-measured */
+    token: number | string;
+}
+
+/**
+ * Makes React Flow re-measure the handles of the nodes.
+ *
+ * Handles that appear or disappear without the node changing its size (edit mode on/off, fresh
+ * data) are not picked up by React Flow's ResizeObserver, and a connection cannot start from a
+ * handle it has not measured. `updateNodeInternals` exists only as the hook
+ * `useUpdateNodeInternals` (the store context is not exported, the instance of `onInit` has no
+ * such method), so this is - like {@link ThemeVarsProvider} - the one place a hook is used.
+ * It has to be a child of `<ReactFlow>`.
+ *
+ * @param props Node ids and the token that triggers the re-measure.
+ */
+function NodeInternalsRefresher(props: NodeInternalsRefresherProps): null {
+    const { nodeIds, token } = props;
+    const updateNodeInternals = useUpdateNodeInternals();
+    useEffect(() => {
+        // The new handles are in the DOM after this render, but their bounds are read in the next
+        // frame to be safe
+        const frame = requestAnimationFrame(() => updateNodeInternals(nodeIds));
+        return () => cancelAnimationFrame(frame);
+        // nodeIds changes identity with every render - the token alone decides when to re-measure
+    }, [token]);
+    return null;
 }
 
 // Optional: ThemeVarsProvider — setzt CSS-Variablen aus dem aktuellen MUI-Theme
@@ -2077,6 +3228,8 @@ export function ThemeVarsProvider({ children }: { children: React.ReactNode }): 
             root.style.setProperty(NODE_STYLE_VAR[style].border, color);
             root.style.setProperty(NODE_STYLE_VAR[style].bg, alpha(color, tint));
         }
+        // Blasse Kanten in eingeklappte Unterbäume: auf dunklem Grund kräftiger, sonst verschwinden sie
+        root.style.setProperty('--edge-collapsed-opacity', theme.palette.mode === 'dark' ? '0.85' : '0.6');
         // Kantenfarben (Primärfarbe als Default für Kanten)
         root.style.setProperty(EDGE_COLOR_VAR.default, theme.palette.primary.main || EDGE_COLOR_HEX.default);
         // Die Kantenarten sollen KEINE Theme-Farben verwenden — feste Farben

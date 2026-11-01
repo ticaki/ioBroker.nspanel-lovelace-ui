@@ -25,6 +25,11 @@ interface EntitySelectorProps {
      * Rückwärtskompatibel – ohne Prop wird die ID unverändert übernommen.
      */
     onTransformSelectedId?: (id: string) => string;
+    /**
+     * Own selection dialog: the "..." button calls this instead of opening the SelectID; the caller
+     * shows its dialog and reports the choice through onChange/onCommit itself.
+     */
+    onOpenDialog?: () => void;
     disabled?: boolean;
 }
 
@@ -57,6 +62,7 @@ export class EntitySelector extends React.Component<EntitySelectorProps, EntityS
             filterFunc,
             types,
             onTransformSelectedId,
+            onOpenDialog,
             disabled,
         } = this.props;
         const { showSelectDialog } = this.state;
@@ -85,7 +91,7 @@ export class EntitySelector extends React.Component<EntitySelectorProps, EntityS
                     />
                     <Button
                         variant="outlined"
-                        onClick={() => this.setState({ showSelectDialog: true })}
+                        onClick={() => (onOpenDialog ? onOpenDialog() : this.setState({ showSelectDialog: true }))}
                         sx={{ minWidth: 48 }}
                         disabled={disabled}
                     >

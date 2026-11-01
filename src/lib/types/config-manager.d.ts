@@ -1008,8 +1008,9 @@ declare namespace ScriptConfig {
         val_best?: number;
         /**
          * Optional best-color (nur wirksam, wenn `val_best` gesetzt ist).
+         * `{red, green, blue}` wie die anderen Farben des Skripts; `{r, g, b}` (Form des Admins) wird ebenfalls angenommen.
          */
-        color_best?: RGB;
+        color_best?: RGB | { r: number; g: number; b: number };
         /**
          * Color scale mode. Default is 'mixed'.
          * - 'mixed': interpolate linearly between two RGB colors.

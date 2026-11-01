@@ -29,8 +29,9 @@ var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: tru
 var admin_exports = {};
 __export(admin_exports, {
   AdminConfiguration: () => AdminConfiguration,
-  buildPowerSlotData: () => buildPowerSlotData,
-  buildThermo2ScriptPage: () => buildThermo2ScriptPage
+  buildMediaScriptPage: () => buildMediaScriptPage,
+  buildThermo2ScriptPage: () => buildThermo2ScriptPage,
+  buildThermoScriptPage: () => buildThermoScriptPage
 });
 module.exports = __toCommonJS(admin_exports);
 var import_config_manager = require("../classes/config-manager");
@@ -38,6 +39,7 @@ var import_admin_screensaver = require("./admin-screensaver");
 var import_Color = require("../const/Color");
 var import_default_pages = require("../const/default-pages");
 var import_pageThermo2 = require("../pages/pageThermo2");
+var import_pageMedia = require("../pages/pageMedia");
 var import_library = require("../controller/library");
 var import_system_templates = require("../templates/system-templates");
 var ShareConfig = __toESM(require("../types/adminShareConfig"));
@@ -45,11 +47,17 @@ var import_adminShareConfig = require("../types/adminShareConfig");
 var import_function_and_const = require("../types/function-and-const");
 var import_credentials = require("../credentials");
 var import_pageChart = require("../pages/pageChart");
+var import_pagePower = require("../pages/pagePower");
+var import_navigation_overrides = require("./navigation-overrides");
 const systemNavigationNodeNames = new Set(
   import_system_templates.systemNavigation.filter((node) => node != null).map((node) => node.name)
 );
 function resolveNavigationTarget(name) {
   return name === ShareConfig.servicePageName ? ShareConfig.serviceNodeName : name;
+}
+function belongsToPanel(option, page) {
+  var _a;
+  return option.navigation.some((b) => b && b.name === page.uniqueID) || (0, import_admin_screensaver.isScreensaverPage)(page) || !!((_a = option.generatedPageIds) == null ? void 0 : _a.includes(page.uniqueID));
 }
 function shallowDescribe(value) {
   if (value === null) {
@@ -80,7 +88,13 @@ class AdminConfiguration extends import_library.BaseClass {
   constructor(adapter) {
     super(adapter, "AdminConfiguration");
     this.adapter = adapter;
-    this.pageConfig = this.adapter.config.pageConfig || [];
+    const resolved = ShareConfig.resolvePageLinks(this.adapter.config.pageConfig || []);
+    for (const link of resolved.unresolved) {
+      this.log.warn(
+        link.problem === "link" ? `Page link '${link.uniqueName}' points to the page link '${link.target}', links of links are not supported - skipping!` : `Page link '${link.uniqueName}': target page '${link.target}' does not exist - skipping!`
+      );
+    }
+    this.pageConfig = resolved.entries;
   }
   /**
    * Process configurable pages from adapter config and build navigation entries.
@@ -173,9 +187,10 @@ Stack: ${stack}`
    *
    * @param entry Thermo2 entry as stored by the PageConfig editor.
    * @param alwaysOn Validated always-on mode of the entry.
+   * @param generated Receives the pages generated from the page items (`media-<id>`).
    * @returns The page for the panel configuration; without a usable circuit it has no data.
    */
-  async buildThermo2Page(entry, alwaysOn) {
+  async buildThermo2Page(entry, alwaysOn, generated) {
     var _a, _b;
     let gridItem = {
       uniqueID: entry.uniqueName,
@@ -186,11 +201,12 @@ Stack: ${stack}`
         card: "cardThermo2",
         scrollType: "page",
         scrollPresentation: "classic",
-        data: { headline: { type: "const", constVal: entry.uniqueName } },
+        data: { headline: { type: "const", constVal: entry.headline || entry.uniqueName } },
         index: 0
       },
       pageItems: []
     };
+    applyScrollFields(gridItem, entry);
     const messages = [];
     const manager = new import_config_manager.ConfigManager(this.adapter);
     ({ gridItem } = await import_pageThermo2.PageThermo2.getPage(manager, buildThermo2ScriptPage(entry), gridItem, messages));
@@ -210,11 +226,105 @@ Stack: ${stack}`
       if (!result.error && result.pageItem) {
         gridItem.pageItems = (_b = gridItem.pageItems) != null ? _b : [];
         gridItem.pageItems.push(result.pageItem);
+        if (result.pageConfig) {
+          generated.push(result.pageConfig);
+        }
       } else if (result.error) {
         this.log.warn(`Error processing page item ${index} for page '${entry.uniqueName}': ${result.error}`);
       }
     }
     this.log.debug(`Generated cardThermo2 page for '${entry.uniqueName}'`);
+    return gridItem;
+  }
+  /**
+   * Builds the runtime page of a cardThermo entry (classic thermostat page).
+   *
+   * The entry is turned into the script form and handed to the code the script configuration
+   * uses (`ConfigManager.getPageThermo`), which checks the role of the channel, searches its
+   * states and generates the buttons at the bottom from them - the page is identical on both
+   * paths. The card has no page items of its own.
+   *
+   * @param entry Thermo entry as stored by the PageConfig editor.
+   * @param alwaysOn Validated always-on mode of the entry.
+   * @returns The page for the panel configuration; with an unusable channel it has no data.
+   */
+  async buildThermoPage(entry, alwaysOn) {
+    let gridItem = {
+      uniqueID: entry.uniqueName,
+      hidden: !!entry.hidden,
+      alwaysOn,
+      dpInit: "",
+      config: {
+        card: "cardThermo",
+        data: { headline: { type: "const", constVal: entry.headline || entry.uniqueName } }
+      },
+      pageItems: []
+    };
+    let messages = [];
+    const manager = new import_config_manager.ConfigManager(this.adapter);
+    ({ gridItem, messages } = await manager.getPageThermo(buildThermoScriptPage(entry), gridItem, messages));
+    for (const msg of messages) {
+      this.log.debug(`cardThermo '${entry.uniqueName}': ${msg}`);
+    }
+    this.log.debug(`Generated cardThermo page for '${entry.uniqueName}'`);
+    return gridItem;
+  }
+  /**
+   * Builds the runtime page of a cardMedia entry.
+   *
+   * Same path as cardThermo2: the entry is turned into the script form and handed to
+   * `PageMedia.getPage`, which picks the backend and adds the standard items. The own page items
+   * of the entry are appended afterwards, so they follow the standard items in the bar.
+   *
+   * @param entry Media entry as stored by the PageConfig editor.
+   * @param alwaysOn Validated always-on mode of the entry.
+   * @param generated Receives the pages generated from the page items (`media-<id>`).
+   * @returns The page for the panel configuration; with an unusable player it has no items.
+   */
+  async buildMediaPage(entry, alwaysOn, generated) {
+    var _a, _b;
+    let gridItem = {
+      uniqueID: entry.uniqueName,
+      hidden: !!entry.hidden,
+      alwaysOn,
+      dpInit: "",
+      config: {
+        card: "cardMedia",
+        scrollType: "page",
+        scrollPresentation: "classic",
+        data: { headline: { type: "const", constVal: entry.headline || entry.uniqueName } },
+        index: 0
+      },
+      pageItems: []
+    };
+    applyScrollFields(gridItem, entry);
+    const messages = [];
+    const manager = new import_config_manager.ConfigManager(this.adapter);
+    ({ gridItem } = await import_pageMedia.PageMedia.getPage(manager, buildMediaScriptPage(entry), gridItem, messages));
+    for (const msg of messages) {
+      this.log.debug(`cardMedia '${entry.uniqueName}': ${msg}`);
+    }
+    const items = (_a = entry.pageItems) != null ? _a : [];
+    const lastFilled = items.reduceRight((acc, v, i) => acc === -1 && v != null ? i : acc, -1);
+    for (let index = 0; index <= lastFilled; index++) {
+      const stored = items[index];
+      const item = stored ? { ...stored, channelId: ShareConfig.normalizeChannelId(stored.channelId) } : { channelId: ShareConfig.emptyChannelValueConfig("empty") };
+      const result = await this.adapter.convertAdminPageItemToPageItemConfig(
+        item,
+        { card: "cardMedia", uniqueName: entry.uniqueName },
+        []
+      );
+      if (!result.error && result.pageItem) {
+        gridItem.pageItems = (_b = gridItem.pageItems) != null ? _b : [];
+        gridItem.pageItems.push(result.pageItem);
+        if (result.pageConfig) {
+          generated.push(result.pageConfig);
+        }
+      } else if (result.error) {
+        this.log.warn(`Error processing page item ${index} for page '${entry.uniqueName}': ${result.error}`);
+      }
+    }
+    this.log.debug(`Generated cardMedia page for '${entry.uniqueName}'`);
     return gridItem;
   }
   /**
@@ -225,7 +335,7 @@ Stack: ${stack}`
    * @param option - Panel configuration partial
    */
   async createPagesFromConfig(option) {
-    var _a, _b, _c, _d, _e, _f, _g, _h;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j;
     const entries = this.pageConfig;
     const pendingNavs = [];
     const mainAliases = new Set(
@@ -253,6 +363,7 @@ Stack: ${stack}`
         continue;
       }
       let newPage;
+      const generatedPages = [];
       switch (entry.card) {
         case "cardAlarm": {
           if (!isAlwaysOnMode(entry.alwaysOn)) {
@@ -344,7 +455,7 @@ Stack: ${stack}`
           if (!isAlwaysOnMode(entry.alwaysOn)) {
             entry.alwaysOn = "none";
           }
-          newPage = dataForCardPower(entry, this.adapter);
+          newPage = (0, import_pagePower.buildPowerPage)(entry, this.adapter);
           this.log.debug(`Generated cardPower page for '${entry.uniqueName}'`);
           break;
         }
@@ -352,7 +463,21 @@ Stack: ${stack}`
           if (!isAlwaysOnMode(entry.alwaysOn)) {
             entry.alwaysOn = "none";
           }
-          newPage = await this.buildThermo2Page(entry, entry.alwaysOn);
+          newPage = await this.buildThermo2Page(entry, entry.alwaysOn, generatedPages);
+          break;
+        }
+        case "cardThermo": {
+          if (!isAlwaysOnMode(entry.alwaysOn)) {
+            entry.alwaysOn = "none";
+          }
+          newPage = await this.buildThermoPage(entry, entry.alwaysOn);
+          break;
+        }
+        case "cardMedia": {
+          if (!isAlwaysOnMode(entry.alwaysOn)) {
+            entry.alwaysOn = "none";
+          }
+          newPage = await this.buildMediaPage(entry, entry.alwaysOn, generatedPages);
           break;
         }
         case "cardGrid":
@@ -368,13 +493,13 @@ Stack: ${stack}`
             dpInit: "",
             config: {
               card: entry.card,
-              scrollPresentation: entry.scrollPresentation || "classic",
               data: {
                 headline: { type: "const", constVal: entry.headline || entry.uniqueName }
               }
             },
             pageItems: []
           };
+          applyScrollFields(newPage, entry);
           if (entry.pageItems) {
             let start = false;
             for (let index = entry.pageItems.length - 1; index >= 0; index--) {
@@ -396,6 +521,9 @@ Stack: ${stack}`
               if (!result.error && result.pageItem) {
                 newPage.pageItems = (_b = newPage.pageItems) != null ? _b : [];
                 newPage.pageItems.unshift(result.pageItem);
+                if (result.pageConfig) {
+                  generatedPages.unshift(result.pageConfig);
+                }
               } else if (result.error) {
                 this.log.warn(
                   `Error processing1 page item ${index} for page '${entry.uniqueName}': ${result.error}`
@@ -423,6 +551,7 @@ Stack: ${stack}`
             },
             pageItems: []
           };
+          applyScrollFields(newPage, entry);
           if (entry.pageItems) {
             let start = false;
             for (let index = entry.pageItems.length - 1; index >= 0; index--) {
@@ -444,6 +573,9 @@ Stack: ${stack}`
               if (!result.error && result.pageItem) {
                 newPage.pageItems = (_c = newPage.pageItems) != null ? _c : [];
                 newPage.pageItems.unshift(result.pageItem);
+                if (result.pageConfig) {
+                  generatedPages.unshift(result.pageConfig);
+                }
               } else if (result.error) {
                 this.log.warn(
                   `Error processing page item ${index} for page '${entry.uniqueName}': ${result.error}`
@@ -464,13 +596,28 @@ Stack: ${stack}`
       if (ShareConfig.isMainPageEntry(entry)) {
         newPage.uniqueID = import_default_pages.mainPageName;
       }
-      const overrideExisting = this.adapter.config.adminOverridesScriptPages || newPage.uniqueID === import_default_pages.mainPageName;
+      let overrideExisting = this.adapter.config.adminOverridesScriptPages || newPage.uniqueID === import_default_pages.mainPageName;
+      let replacesGlobal = false;
+      if (!overrideExisting && panelAssignment !== void 0 && ((_d = option.globalPageIds) == null ? void 0 : _d.includes(newPage.uniqueID)) && !((_e = option.generatedPageIds) == null ? void 0 : _e.includes(newPage.uniqueID)) && option.pages.some((a) => a.uniqueID === newPage.uniqueID)) {
+        overrideExisting = true;
+        replacesGlobal = true;
+        this.log.info(
+          `Page '${newPage.uniqueID}' of the global script configuration is replaced by the admin page assigned to this panel.`
+        );
+      }
       let replacedIndex = -1;
       let replacedNav;
       if (!overrideExisting) {
-        if (option.pages.find((a) => a.uniqueID === newPage.uniqueID)) {
-          this.log.warn(`Page with name ${newPage.uniqueID} already exists, skipping!`);
-          continue;
+        const existing = option.pages.find((a) => a.uniqueID === newPage.uniqueID);
+        if (existing) {
+          if (belongsToPanel(option, existing)) {
+            this.log.warn(`Page with name ${newPage.uniqueID} already exists, skipping!`);
+            continue;
+          }
+          this.log.info(
+            `Page '${newPage.uniqueID}' of another panel's script is replaced by the admin page configured for this panel.`
+          );
+          option.pages = option.pages.filter((a) => a.uniqueID !== newPage.uniqueID);
         }
       } else {
         const pageCount = option.pages.length;
@@ -480,16 +627,17 @@ Stack: ${stack}`
         }
         replacedIndex = option.navigation.findIndex((b) => b && b.name === newPage.uniqueID);
         if (replacedIndex !== -1) {
-          replacedNav = (_d = option.navigation[replacedIndex]) != null ? _d : void 0;
+          replacedNav = replacesGlobal ? void 0 : (_f = option.navigation[replacedIndex]) != null ? _f : void 0;
           option.navigation.splice(replacedIndex, 1);
         }
       }
       option.pages.push(newPage);
+      await this.addGeneratedPages(option, newPage.uniqueID, generatedPages);
       const navigationEntry = {
         name: newPage.uniqueID,
         page: newPage.uniqueID,
-        right: { single: (_e = replacedNav == null ? void 0 : replacedNav.right) == null ? void 0 : _e.single, double: (_f = replacedNav == null ? void 0 : replacedNav.right) == null ? void 0 : _f.double },
-        left: { single: (_g = replacedNav == null ? void 0 : replacedNav.left) == null ? void 0 : _g.single, double: (_h = replacedNav == null ? void 0 : replacedNav.left) == null ? void 0 : _h.double }
+        right: { single: (_g = replacedNav == null ? void 0 : replacedNav.right) == null ? void 0 : _g.single, double: (_h = replacedNav == null ? void 0 : replacedNav.right) == null ? void 0 : _h.double },
+        left: { single: (_i = replacedNav == null ? void 0 : replacedNav.left) == null ? void 0 : _i.single, double: (_j = replacedNav == null ? void 0 : replacedNav.left) == null ? void 0 : _j.double }
       };
       if (replacedIndex !== -1) {
         option.navigation.splice(replacedIndex, 0, navigationEntry);
@@ -535,6 +683,54 @@ Stack: ${stack}`
     return pendingNavs;
   }
   /**
+   * Adds the pages generated from the page items of an admin page (`media-<id>` behind a media item)
+   * exactly like the script path does: `ConfigManager.getPageConfig` builds each of them as a sub page
+   * with the admin page as parent (navigation node with the parent on a double press), and the page is
+   * recorded as generated - its navigation is read-only in the admin. An existing page of the same name
+   * that belongs to this panel is kept (the first one wins, like the deduplication of the script path),
+   * one merged in from the script of another panel gives way.
+   *
+   * @param option Panel configuration partial.
+   * @param parent Published id of the admin page the items belong to.
+   * @param generated Pages handed back by `convertAdminPageItemToPageItemConfig`.
+   */
+  async addGeneratedPages(option, parent, generated) {
+    var _a;
+    const subPages = [];
+    for (const page of generated) {
+      const id = page.uniqueName;
+      if (subPages.some((p) => p.uniqueName === id)) {
+        continue;
+      }
+      const existing = option.pages.find((a) => a.uniqueID === id);
+      if (existing) {
+        if ((_a = option.generatedPageIds) == null ? void 0 : _a.includes(id)) {
+          this.log.debug(`Generated page '${id}' of page '${parent}' already exists - kept the first one`);
+          continue;
+        }
+        if (belongsToPanel(option, existing)) {
+          this.log.warn(
+            `Page '${id}' generated by a page item of page '${parent}' already exists, skipping!`
+          );
+          continue;
+        }
+        option.pages = option.pages.filter((a) => a.uniqueID !== id);
+      }
+      page.parent = parent;
+      subPages.push(page);
+    }
+    if (subPages.length === 0) {
+      return;
+    }
+    const manager = new import_config_manager.ConfigManager(this.adapter);
+    const { panelConfig } = await manager.getPageConfig({ pages: [], subPages }, { pages: [], navigation: [] }, []);
+    for (const page of panelConfig.pages) {
+      option.pages.push(page);
+      (0, import_navigation_overrides.recordGeneratedPage)(option, page.uniqueID);
+    }
+    option.navigation.push(...panelConfig.navigation);
+  }
+  /**
    * Phase 2: wire prev/next navigation by building full chains and splicing
    * them into the existing navigation, preserving existing connections.
    *
@@ -553,7 +749,7 @@ Stack: ${stack}`
    * @param pendingNavs - Pending navigation entries collected in phase 1
    */
   applyPendingNavigations(option, pendingNavs) {
-    var _a, _b, _c, _d, _e, _f, _g, _h, _i;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k;
     if (!pendingNavs.length) {
       return;
     }
@@ -561,6 +757,18 @@ Stack: ${stack}`
     for (const p of pendingNavs) {
       pendingMap.set(p.pageId, p);
     }
+    const chainRoot = (pageId) => {
+      const seen = /* @__PURE__ */ new Set();
+      let current = pendingMap.get(pageId);
+      while (current && current.prev !== void 0 && !seen.has(current.pageId)) {
+        seen.add(current.pageId);
+        if (!pendingMap.has(current.prev)) {
+          return current.prev;
+        }
+        current = pendingMap.get(current.prev);
+      }
+      return void 0;
+    };
     for (const pending of pendingNavs) {
       const pageEntry = option.navigation.find((b) => (b == null ? void 0 : b.name) === pending.pageId);
       if (!pageEntry) {
@@ -571,12 +779,19 @@ Stack: ${stack}`
       }
       if (pending.next !== void 0) {
         pageEntry.right = { ...(_b = pageEntry.right) != null ? _b : {}, single: pending.next };
+        if (pending.prev !== void 0 && !pendingMap.has(pending.next)) {
+          const nextEntry = option.navigation.find((b) => (b == null ? void 0 : b.name) === pending.next);
+          const current = (_c = nextEntry == null ? void 0 : nextEntry.left) == null ? void 0 : _c.single;
+          if (nextEntry && (current === void 0 || current.startsWith("///") || systemNavigationNodeNames.has(current) || current === chainRoot(pending.pageId))) {
+            nextEntry.left = { ...(_d = nextEntry.left) != null ? _d : {}, single: pending.pageId };
+          }
+        }
       }
     }
     const byPrev = /* @__PURE__ */ new Map();
     for (const pending of pendingNavs) {
       if (pending.prev !== void 0) {
-        const list = (_c = byPrev.get(pending.prev)) != null ? _c : [];
+        const list = (_e = byPrev.get(pending.prev)) != null ? _e : [];
         list.push(pending.pageId);
         byPrev.set(pending.prev, list);
       }
@@ -612,13 +827,13 @@ Stack: ${stack}`
       if (!pageEntry) {
         continue;
       }
-      const oldLeft = (_d = nextEntry.left) == null ? void 0 : _d.single;
-      nextEntry.left = { ...(_e = nextEntry.left) != null ? _e : {}, single: pending.pageId };
-      if (oldLeft !== void 0 && oldLeft !== pending.pageId && !((_f = pageEntry.left) == null ? void 0 : _f.single)) {
-        pageEntry.left = { ...(_g = pageEntry.left) != null ? _g : {}, single: oldLeft };
+      const oldLeft = (_f = nextEntry.left) == null ? void 0 : _f.single;
+      nextEntry.left = { ...(_g = nextEntry.left) != null ? _g : {}, single: pending.pageId };
+      if (oldLeft !== void 0 && oldLeft !== pending.pageId && !((_h = pageEntry.left) == null ? void 0 : _h.single)) {
+        pageEntry.left = { ...(_i = pageEntry.left) != null ? _i : {}, single: oldLeft };
         const oldLeftEntry = option.navigation.find((b) => (b == null ? void 0 : b.name) === oldLeft);
-        if (((_h = oldLeftEntry == null ? void 0 : oldLeftEntry.right) == null ? void 0 : _h.single) === pending.next) {
-          oldLeftEntry.right = { ...(_i = oldLeftEntry.right) != null ? _i : {}, single: pending.pageId };
+        if (((_j = oldLeftEntry == null ? void 0 : oldLeftEntry.right) == null ? void 0 : _j.single) === pending.next) {
+          oldLeftEntry.right = { ...(_k = oldLeftEntry.right) != null ? _k : {}, single: pending.pageId };
         }
       }
     }
@@ -824,6 +1039,107 @@ function buildThermo2ScriptPage(entry) {
     sortOrder
   };
 }
+function thermoLimit(value) {
+  return typeof value === "number" && Number.isFinite(value) ? value : void 0;
+}
+function buildThermoScriptPage(entry) {
+  var _a;
+  return {
+    type: "cardThermo",
+    uniqueName: entry.uniqueName,
+    heading: entry.headline || entry.uniqueName,
+    items: [
+      {
+        id: (_a = thermo2Text(entry.channelId)) != null ? _a : "",
+        unit: thermo2Text(entry.unit),
+        minValue: thermoLimit(entry.minValue),
+        maxValue: thermoLimit(entry.maxValue),
+        stepValue: thermoLimit(entry.stepValue)
+      }
+    ]
+  };
+}
+function mediaVolume(value) {
+  return typeof value === "number" && Number.isFinite(value) && value >= 0 ? value : void 0;
+}
+function mediaList(list) {
+  if (!Array.isArray(list)) {
+    return void 0;
+  }
+  const names = [...new Set(list.map((n) => typeof n === "string" ? n.trim() : "").filter((n) => !!n))];
+  return names.length ? names : void 0;
+}
+function buildMediaScriptPage(entry) {
+  var _a, _b;
+  let minValue = mediaVolume(entry.minValue);
+  let maxValue = mediaVolume(entry.maxValue);
+  if (minValue !== void 0 && maxValue !== void 0 && minValue > maxValue) {
+    [minValue, maxValue] = [maxValue, minValue];
+  }
+  const low = minValue != null ? minValue : ShareConfig.mediaVolumeDefaults.minValue;
+  const high = maxValue != null ? maxValue : ShareConfig.mediaVolumeDefaults.maxValue;
+  const deactivateDefaultItems = {};
+  const itemsColorOn = {};
+  const itemsColorOff = {};
+  for (const [key, config] of Object.entries((_a = entry.toolbar) != null ? _a : {})) {
+    if (!config) {
+      continue;
+    }
+    const item = key;
+    if (config.enabled === false && item !== "volumePresets") {
+      deactivateDefaultItems[item] = true;
+    }
+    const on = thermo2Rgb(config.colorOn);
+    if (on) {
+      itemsColorOn[item] = on;
+    }
+    const off = thermo2Rgb(config.colorOff);
+    if (off && item !== "volumePresets") {
+      itemsColorOff[item] = off;
+    }
+  }
+  const volumePresets = (Array.isArray(entry.volumePresets) ? entry.volumePresets : []).filter((p) => p && thermo2Text(p.name) && typeof p.value === "number" && Number.isFinite(p.value)).map((p) => `${thermo2Text(p.name)}?${Math.round(Math.min(high, Math.max(low, p.value)))}`);
+  const media = {
+    id: (_b = thermo2Text(entry.mediaId)) != null ? _b : "",
+    name: thermo2Text(entry.name),
+    minValue,
+    maxValue,
+    colorMediaIcon: thermo2Rgb(entry.colorMediaIcon),
+    colorMediaArtist: thermo2Rgb(entry.colorMediaArtist),
+    colorMediaTitle: thermo2Rgb(entry.colorMediaTitle),
+    speakerList: mediaList(entry.speakerList),
+    playList: mediaList(entry.playList),
+    favoriteList: mediaList(entry.favoriteList),
+    volumePresets: volumePresets.length ? volumePresets : void 0,
+    deactivateDefaultItems: Object.keys(deactivateDefaultItems).length ? deactivateDefaultItems : void 0,
+    itemsColorOn: Object.keys(itemsColorOn).length ? itemsColorOn : void 0,
+    itemsColorOff: Object.keys(itemsColorOff).length ? itemsColorOff : void 0
+  };
+  for (const key of Object.keys(media)) {
+    if (media[key] === void 0) {
+      delete media[key];
+    }
+  }
+  return {
+    type: "cardMedia",
+    uniqueName: entry.uniqueName,
+    heading: "",
+    media,
+    items: []
+  };
+}
+function applyScrollFields(page, entry) {
+  const config = page.config;
+  if (!config || !ShareConfig.isScrollCard(config.card) || !(0, import_function_and_const.isPageMenuConfig)(config)) {
+    return;
+  }
+  const scroll = ShareConfig.normalizeScrollFields(entry, config.card);
+  config.scrollType = scroll.scrollType;
+  config.scrollPresentation = scroll.scrollPresentation;
+  if (scroll.scrollPresentation === "auto" && config.scrollPresentation === "auto") {
+    config.scrollAutoTiming = scroll.scrollAutoTiming;
+  }
+}
 function isAlwaysOnMode(F) {
   const R = F;
   switch (R) {
@@ -836,161 +1152,6 @@ function isAlwaysOnMode(F) {
       (0, import_function_and_const.exhaustiveCheck)(R);
       return false;
   }
-}
-function mapPowerTargetUnit(unit) {
-  switch (unit) {
-    case "kW":
-      return 1;
-    case "MW":
-      return 2;
-    case "W":
-      return 0;
-    default:
-      return void 0;
-  }
-}
-function buildPowerSlotData(slot) {
-  var _a, _b, _c, _d, _e, _f;
-  const s = slot != null ? slot : {};
-  const stateId = (s.state || "").trim();
-  const useColorScale = !!s.useColorScale;
-  const iconColor = useColorScale ? "" : s.iconColor || "";
-  const unitSuffix = s.valueUnit ? ` ${s.valueUnit}` : "";
-  const icon = {
-    true: {
-      value: { type: "const", constVal: s.icon || "" },
-      color: { type: "const", constVal: iconColor }
-    },
-    false: void 0
-  };
-  if (useColorScale) {
-    icon.scale = {
-      type: "const",
-      constVal: {
-        val_min: (_a = s.minColorScale) != null ? _a : 0,
-        val_max: (_b = s.maxColorScale) != null ? _b : 1e4,
-        val_best: (_c = s.bestColorScale) != null ? _c : 0,
-        mode: "triGrad"
-      }
-    };
-  }
-  const value = stateId ? {
-    value: { type: "triggered", dp: stateId },
-    decimal: { type: "const", constVal: (_d = s.valueDecimal) != null ? _d : 0 },
-    unit: { type: "const", constVal: unitSuffix }
-  } : void 0;
-  const speed = stateId ? {
-    value: { type: "triggered", dp: stateId },
-    minScale: { type: "const", constVal: (_e = s.minSpeedScale) != null ? _e : 0 },
-    maxScale: { type: "const", constVal: (_f = s.maxSpeedScale) != null ? _f : 1e4 },
-    negate: { type: "const", constVal: !!s.reverse }
-  } : void 0;
-  const targetUnit = mapPowerTargetUnit(s.valueUnit);
-  return {
-    icon,
-    value,
-    speed,
-    text: { true: { type: "const", constVal: s.entityHeadline || "" } },
-    targetUnit: targetUnit ? { type: "const", constVal: targetUnit } : void 0
-  };
-}
-function dataForCardPower(entry, adapter) {
-  var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _A, _B;
-  const cfg = adapter.config || {};
-  if (!Array.isArray(cfg.pagePowerdata)) {
-    cfg.pagePowerdata = [];
-  }
-  const slotMap = [
-    [1, entry.leftTop],
-    [2, entry.leftMiddle],
-    [3, entry.leftBottom],
-    [4, entry.rightTop],
-    [5, entry.rightMiddle],
-    [6, entry.rightBottom]
-  ];
-  const synth = {
-    pageName: entry.uniqueName,
-    headline: entry.headline || "",
-    alwaysOnDisplay: entry.alwaysOn === "always",
-    hiddenByTrigger: !!entry.hidden,
-    power7_state: ((_a = entry.homeTop) == null ? void 0 : _a.state) || "",
-    power7_valueDecimal: (_c = (_b = entry.homeTop) == null ? void 0 : _b.valueDecimal) != null ? _c : 0,
-    power7_valueUnit: ((_d = entry.homeTop) == null ? void 0 : _d.valueUnit) || "W",
-    power8_state: ((_e = entry.homeBot) == null ? void 0 : _e.state) || "",
-    power8_valueDecimal: (_g = (_f = entry.homeBot) == null ? void 0 : _f.valueDecimal) != null ? _g : 0,
-    power8_valueUnit: ((_h = entry.homeBot) == null ? void 0 : _h.valueUnit) || "W",
-    power8_selInternalCalculation: !!((_i = entry.homeBot) == null ? void 0 : _i.selInternalCalculation),
-    power8_selPowerSupply: Array.isArray((_j = entry.homeBot) == null ? void 0 : _j.selPowerSupply) ? entry.homeBot.selPowerSupply : []
-  };
-  for (const [i, s] of slotMap) {
-    const cur = s != null ? s : {};
-    synth[`power${i}_state`] = cur.state || "";
-    synth[`power${i}_icon`] = cur.icon || "";
-    synth[`power${i}_iconColor`] = cur.iconColor || "";
-    synth[`power${i}_valueDecimal`] = (_k = cur.valueDecimal) != null ? _k : 0;
-    synth[`power${i}_valueUnit`] = cur.valueUnit || "W";
-    synth[`power${i}_entityHeadline`] = cur.entityHeadline || "";
-    synth[`_power${i}_useColorScale`] = !!cur.useColorScale;
-    synth[`power${i}_minColorScale`] = (_l = cur.minColorScale) != null ? _l : 0;
-    synth[`power${i}_maxColorScale`] = (_m = cur.maxColorScale) != null ? _m : 1e4;
-    synth[`power${i}_bestColorScale`] = (_n = cur.bestColorScale) != null ? _n : 0;
-    synth[`power${i}_minSpeedScale`] = (_o = cur.minSpeedScale) != null ? _o : 0;
-    synth[`power${i}_maxSpeedScale`] = (_p = cur.maxSpeedScale) != null ? _p : 1e4;
-    synth[`power${i}_reverse`] = !!cur.reverse;
-  }
-  const existingIdx = cfg.pagePowerdata.findIndex(
-    (p) => p && typeof p === "object" && p.pageName === entry.uniqueName
-  );
-  let index;
-  if (existingIdx >= 0) {
-    cfg.pagePowerdata[existingIdx] = synth;
-    index = existingIdx;
-  } else {
-    index = cfg.pagePowerdata.length;
-    cfg.pagePowerdata.push(synth);
-  }
-  const homeBotInternal = !!((_q = entry.homeBot) == null ? void 0 : _q.selInternalCalculation);
-  const homeBotState = (((_r = entry.homeBot) == null ? void 0 : _r.state) || "").trim();
-  const homeBotUnitSuffix = ((_s = entry.homeBot) == null ? void 0 : _s.valueUnit) ? ` ${entry.homeBot.valueUnit}` : "";
-  const homeValueBot = homeBotInternal ? {
-    value: { type: "internal", dp: `///${entry.uniqueName}/powerSum` },
-    decimal: { type: "const", constVal: (_u = (_t = entry.homeBot) == null ? void 0 : _t.valueDecimal) != null ? _u : 0 },
-    unit: { type: "const", constVal: homeBotUnitSuffix }
-  } : homeBotState ? {
-    value: { type: "triggered", dp: homeBotState },
-    decimal: { type: "const", constVal: (_w = (_v = entry.homeBot) == null ? void 0 : _v.valueDecimal) != null ? _w : 0 },
-    unit: { type: "const", constVal: homeBotUnitSuffix }
-  } : void 0;
-  const homeTopState = (((_x = entry.homeTop) == null ? void 0 : _x.state) || "").trim();
-  const homeTopUnitSuffix = ((_y = entry.homeTop) == null ? void 0 : _y.valueUnit) ? ` ${entry.homeTop.valueUnit}` : "";
-  const homeValueTop = homeTopState ? {
-    value: { type: "triggered", dp: homeTopState },
-    decimal: { type: "const", constVal: (_A = (_z = entry.homeTop) == null ? void 0 : _z.valueDecimal) != null ? _A : 0 },
-    unit: { type: "const", constVal: homeTopUnitSuffix }
-  } : void 0;
-  return {
-    uniqueID: entry.uniqueName,
-    hidden: !!entry.hidden,
-    alwaysOn: (_B = entry.alwaysOn) != null ? _B : "none",
-    dpInit: "",
-    config: {
-      card: "cardPower",
-      index,
-      data: {
-        headline: { type: "const", constVal: entry.headline || entry.uniqueName },
-        homeIcon: { true: { value: { type: "const", constVal: "home" } }, false: void 0 },
-        homeValueTop,
-        homeValueBot,
-        leftTop: buildPowerSlotData(entry.leftTop),
-        leftMiddle: buildPowerSlotData(entry.leftMiddle),
-        leftBottom: buildPowerSlotData(entry.leftBottom),
-        rightTop: buildPowerSlotData(entry.rightTop),
-        rightMiddle: buildPowerSlotData(entry.rightMiddle),
-        rightBottom: buildPowerSlotData(entry.rightBottom)
-      }
-    },
-    pageItems: []
-  };
 }
 function dataForcardTrash(entry) {
   let newPage;
@@ -1075,7 +1236,8 @@ function dataForcardTrash(entry) {
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
   AdminConfiguration,
-  buildPowerSlotData,
-  buildThermo2ScriptPage
+  buildMediaScriptPage,
+  buildThermo2ScriptPage,
+  buildThermoScriptPage
 });
 //# sourceMappingURL=admin.js.map

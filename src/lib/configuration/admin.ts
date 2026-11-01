@@ -12,17 +12,20 @@ import {
 import { Color } from '../const/Color';
 import { mainPageName } from '../const/default-pages';
 import { PageThermo2 } from '../pages/pageThermo2';
+import { PageMedia } from '../pages/pageMedia';
 import { BaseClass } from '../controller/library';
 import type { panelConfigPartial } from '../controller/panel';
 import { systemNavigation } from '../templates/system-templates';
 import * as ShareConfig from '../types/adminShareConfig';
 import { screensaverChannelIdOf } from '../types/adminShareConfig';
-import { exhaustiveCheck } from '../types/function-and-const';
+import { exhaustiveCheck, isPageMenuConfig } from '../types/function-and-const';
 import { resolveSecret } from '../credentials';
 import type { NspanelLovelaceUi } from '../types/NspanelLovelaceUi';
 import type { PageBase } from '../types/pages';
 import { buildChartPageConfig } from '../pages/pageChart';
+import { buildPowerPage } from '../pages/pagePower';
 import type { AlwaysOnMode } from '../types/types';
+import { recordGeneratedPage } from './navigation-overrides';
 
 type PendingNavEntry = {
     pageId: string;
@@ -56,6 +59,23 @@ function resolveNavigationTarget(name: string | undefined): string | undefined {
     return name === ShareConfig.servicePageName ? ShareConfig.serviceNodeName : name;
 }
 
+/**
+ * A page that belongs to this panel: it has a navigation node (own script, global script), is the
+ * screensaver or was generated from a page item (`media-<id>`). A page without any of these was merged
+ * in from the script of another panel (`ConfigManager.getConfig`) - it would be dropped later anyway.
+ *
+ * @param option Panel configuration partial.
+ * @param page The page.
+ * @returns true when the page must not be replaced.
+ */
+function belongsToPanel(option: panelConfigPartial, page: PageBase): boolean {
+    return (
+        option.navigation.some(b => b && b.name === page.uniqueID) ||
+        isScreensaverPage(page) ||
+        !!option.generatedPageIds?.includes(page.uniqueID)
+    );
+}
+
 function shallowDescribe(value: unknown): string {
     if (value === null) {
         return 'null';
@@ -82,11 +102,19 @@ function shallowDescribe(value: unknown): string {
 }
 
 export class AdminConfiguration extends BaseClass {
-    private pageConfig: ShareConfig.PageConfig[] = [];
+    private pageConfig: ShareConfig.PageContentEntry[] = [];
     constructor(adapter: NspanelLovelaceUi) {
         super(adapter, 'AdminConfiguration');
         this.adapter = adapter;
-        this.pageConfig = this.adapter.config.pageConfig || [];
+        const resolved = ShareConfig.resolvePageLinks(this.adapter.config.pageConfig || []);
+        for (const link of resolved.unresolved) {
+            this.log.warn(
+                link.problem === 'link'
+                    ? `Page link '${link.uniqueName}' points to the page link '${link.target}', links of links are not supported - skipping!`
+                    : `Page link '${link.uniqueName}': target page '${link.target}' does not exist - skipping!`,
+            );
+        }
+        this.pageConfig = resolved.entries;
     }
 
     /**
@@ -184,9 +212,14 @@ export class AdminConfiguration extends BaseClass {
      *
      * @param entry Thermo2 entry as stored by the PageConfig editor.
      * @param alwaysOn Validated always-on mode of the entry.
+     * @param generated Receives the pages generated from the page items (`media-<id>`).
      * @returns The page for the panel configuration; without a usable circuit it has no data.
      */
-    private async buildThermo2Page(entry: ShareConfig.Thermo2Entry, alwaysOn: AlwaysOnMode): Promise<PageBase> {
+    private async buildThermo2Page(
+        entry: ShareConfig.Thermo2Entry,
+        alwaysOn: AlwaysOnMode,
+        generated: ScriptConfig.PageType[],
+    ): Promise<PageBase> {
         let gridItem = {
             uniqueID: entry.uniqueName,
             hidden: !!entry.hidden,
@@ -196,11 +229,12 @@ export class AdminConfiguration extends BaseClass {
                 card: 'cardThermo2',
                 scrollType: 'page',
                 scrollPresentation: 'classic',
-                data: { headline: { type: 'const', constVal: entry.uniqueName } },
+                data: { headline: { type: 'const', constVal: entry.headline || entry.uniqueName } },
                 index: 0,
             },
             pageItems: [],
         } as PageBase;
+        applyScrollFields(gridItem, entry);
         const messages: string[] = [];
         const manager = new ConfigManager(this.adapter);
         ({ gridItem } = await PageThermo2.getPage(manager, buildThermo2ScriptPage(entry), gridItem, messages));
@@ -224,11 +258,115 @@ export class AdminConfiguration extends BaseClass {
             if (!result.error && result.pageItem) {
                 gridItem.pageItems = gridItem.pageItems ?? [];
                 gridItem.pageItems.push(result.pageItem);
+                if (result.pageConfig) {
+                    generated.push(result.pageConfig);
+                }
             } else if (result.error) {
                 this.log.warn(`Error processing page item ${index} for page '${entry.uniqueName}': ${result.error}`);
             }
         }
         this.log.debug(`Generated cardThermo2 page for '${entry.uniqueName}'`);
+        return gridItem;
+    }
+
+    /**
+     * Builds the runtime page of a cardThermo entry (classic thermostat page).
+     *
+     * The entry is turned into the script form and handed to the code the script configuration
+     * uses (`ConfigManager.getPageThermo`), which checks the role of the channel, searches its
+     * states and generates the buttons at the bottom from them - the page is identical on both
+     * paths. The card has no page items of its own.
+     *
+     * @param entry Thermo entry as stored by the PageConfig editor.
+     * @param alwaysOn Validated always-on mode of the entry.
+     * @returns The page for the panel configuration; with an unusable channel it has no data.
+     */
+    private async buildThermoPage(entry: ShareConfig.ThermoEntry, alwaysOn: AlwaysOnMode): Promise<PageBase> {
+        let gridItem: PageBase = {
+            uniqueID: entry.uniqueName,
+            hidden: !!entry.hidden,
+            alwaysOn,
+            dpInit: '',
+            config: {
+                card: 'cardThermo',
+                data: { headline: { type: 'const', constVal: entry.headline || entry.uniqueName } },
+            },
+            pageItems: [],
+        };
+        let messages: string[] = [];
+        const manager = new ConfigManager(this.adapter);
+        ({ gridItem, messages } = await manager.getPageThermo(buildThermoScriptPage(entry), gridItem, messages));
+        for (const msg of messages) {
+            // getPageThermo has already logged the finding, keep the summary at debug level
+            this.log.debug(`cardThermo '${entry.uniqueName}': ${msg}`);
+        }
+        this.log.debug(`Generated cardThermo page for '${entry.uniqueName}'`);
+        return gridItem;
+    }
+
+    /**
+     * Builds the runtime page of a cardMedia entry.
+     *
+     * Same path as cardThermo2: the entry is turned into the script form and handed to
+     * `PageMedia.getPage`, which picks the backend and adds the standard items. The own page items
+     * of the entry are appended afterwards, so they follow the standard items in the bar.
+     *
+     * @param entry Media entry as stored by the PageConfig editor.
+     * @param alwaysOn Validated always-on mode of the entry.
+     * @param generated Receives the pages generated from the page items (`media-<id>`).
+     * @returns The page for the panel configuration; with an unusable player it has no items.
+     */
+    private async buildMediaPage(
+        entry: ShareConfig.MediaEntry,
+        alwaysOn: AlwaysOnMode,
+        generated: ScriptConfig.PageType[],
+    ): Promise<PageBase> {
+        let gridItem = {
+            uniqueID: entry.uniqueName,
+            hidden: !!entry.hidden,
+            alwaysOn,
+            dpInit: '',
+            config: {
+                card: 'cardMedia',
+                scrollType: 'page',
+                scrollPresentation: 'classic',
+                data: { headline: { type: 'const', constVal: entry.headline || entry.uniqueName } },
+                index: 0,
+            },
+            pageItems: [],
+        } as PageBase;
+        applyScrollFields(gridItem, entry);
+        const messages: string[] = [];
+        const manager = new ConfigManager(this.adapter);
+        ({ gridItem } = await PageMedia.getPage(manager, buildMediaScriptPage(entry), gridItem, messages));
+        for (const msg of messages) {
+            // getPage has already logged the finding, keep the summary at debug level
+            this.log.debug(`cardMedia '${entry.uniqueName}': ${msg}`);
+        }
+
+        const items = entry.pageItems ?? [];
+        const lastFilled = items.reduceRight<number>((acc, v, i) => (acc === -1 && v != null ? i : acc), -1);
+        for (let index = 0; index <= lastFilled; index++) {
+            const stored = items[index];
+            const item: ShareConfig.AdminPageItemConfig = stored
+                ? { ...stored, channelId: ShareConfig.normalizeChannelId(stored.channelId) }
+                : { channelId: ShareConfig.emptyChannelValueConfig('empty') };
+            const result = await this.adapter.convertAdminPageItemToPageItemConfig(
+                item,
+                { card: 'cardMedia', uniqueName: entry.uniqueName },
+                [],
+            );
+            if (!result.error && result.pageItem) {
+                gridItem.pageItems = gridItem.pageItems ?? [];
+                gridItem.pageItems.push(result.pageItem);
+                if (result.pageConfig) {
+                    generated.push(result.pageConfig);
+                }
+            } else if (result.error) {
+                this.log.warn(`Error processing page item ${index} for page '${entry.uniqueName}': ${result.error}`);
+            }
+        }
+        this.log.debug(`Generated cardMedia page for '${entry.uniqueName}'`);
         return gridItem;
     }
 
@@ -297,6 +435,8 @@ export class AdminConfiguration extends BaseClass {
 
             // Create page configuration based on card type
             let newPage: PageBase;
+            // pages generated from the page items (`media-<id>`), added once the page itself is in
+            const generatedPages: ScriptConfig.PageType[] = [];
 
             switch (entry.card) {
                 case 'cardAlarm': {
@@ -392,7 +532,7 @@ export class AdminConfiguration extends BaseClass {
                     if (!isAlwaysOnMode(entry.alwaysOn)) {
                         entry.alwaysOn = 'none';
                     }
-                    newPage = dataForCardPower(entry, this.adapter);
+                    newPage = buildPowerPage(entry, this.adapter);
                     this.log.debug(`Generated cardPower page for '${entry.uniqueName}'`);
                     break;
                 }
@@ -400,7 +540,21 @@ export class AdminConfiguration extends BaseClass {
                     if (!isAlwaysOnMode(entry.alwaysOn)) {
                         entry.alwaysOn = 'none';
                     }
-                    newPage = await this.buildThermo2Page(entry, entry.alwaysOn);
+                    newPage = await this.buildThermo2Page(entry, entry.alwaysOn, generatedPages);
+                    break;
+                }
+                case 'cardThermo': {
+                    if (!isAlwaysOnMode(entry.alwaysOn)) {
+                        entry.alwaysOn = 'none';
+                    }
+                    newPage = await this.buildThermoPage(entry, entry.alwaysOn);
+                    break;
+                }
+                case 'cardMedia': {
+                    if (!isAlwaysOnMode(entry.alwaysOn)) {
+                        entry.alwaysOn = 'none';
+                    }
+                    newPage = await this.buildMediaPage(entry, entry.alwaysOn, generatedPages);
                     break;
                 }
                 case 'cardGrid':
@@ -416,13 +570,13 @@ export class AdminConfiguration extends BaseClass {
                         dpInit: '',
                         config: {
                             card: entry.card,
-                            scrollPresentation: entry.scrollPresentation || 'classic',
                             data: {
                                 headline: { type: 'const', constVal: entry.headline || entry.uniqueName },
                             },
                         },
                         pageItems: [],
                     };
+                    applyScrollFields(newPage, entry);
 
                     if (entry.pageItems) {
                         let start = false;
@@ -445,6 +599,9 @@ export class AdminConfiguration extends BaseClass {
                             if (!result.error && result.pageItem) {
                                 newPage.pageItems = newPage.pageItems ?? [];
                                 newPage.pageItems.unshift(result.pageItem);
+                                if (result.pageConfig) {
+                                    generatedPages.unshift(result.pageConfig);
+                                }
                             } else if (result.error) {
                                 this.log.warn(
                                     `Error processing1 page item ${index} for page '${entry.uniqueName}': ${result.error}`,
@@ -473,6 +630,7 @@ export class AdminConfiguration extends BaseClass {
                         },
                         pageItems: [],
                     };
+                    applyScrollFields(newPage, entry);
 
                     if (entry.pageItems) {
                         let start = false;
@@ -495,6 +653,9 @@ export class AdminConfiguration extends BaseClass {
                             if (!result.error && result.pageItem) {
                                 newPage.pageItems = newPage.pageItems ?? [];
                                 newPage.pageItems.unshift(result.pageItem);
+                                if (result.pageConfig) {
+                                    generatedPages.unshift(result.pageConfig);
+                                }
                             } else if (result.error) {
                                 this.log.warn(
                                     `Error processing page item ${index} for page '${entry.uniqueName}': ${result.error}`,
@@ -523,16 +684,44 @@ export class AdminConfiguration extends BaseClass {
             // Check for duplicate page name. The start page may always be replaced by an admin
             // page - being able to define it here is the whole point of it. Any other page needs
             // the global override flag.
-            const overrideExisting = this.adapter.config.adminOverridesScriptPages || newPage.uniqueID === mainPageName;
+            let overrideExisting = this.adapter.config.adminOverridesScriptPages || newPage.uniqueID === mainPageName;
+            // A page of the global script configuration gives way to an admin page assigned to this panel by
+            // its topic (e.g. after the conversion of the panel script took it over) - pages of the panel's
+            // own script still win. The links of the replaced node are not inherited: the node of a global
+            // sub page the panel does not link carries the links of the global script (or the provisional
+            // `home: main` of the config manager), not the place the admin assignment gives the page.
+            let replacesGlobal = false;
+            if (
+                !overrideExisting &&
+                panelAssignment !== undefined &&
+                option.globalPageIds?.includes(newPage.uniqueID) &&
+                !option.generatedPageIds?.includes(newPage.uniqueID) &&
+                option.pages.some((a: PageBase) => a.uniqueID === newPage.uniqueID)
+            ) {
+                overrideExisting = true;
+                replacesGlobal = true;
+                this.log.info(
+                    `Page '${newPage.uniqueID}' of the global script configuration is replaced by the admin page assigned to this panel.`,
+                );
+            }
 
             // Position and links of the replaced navigation node, reused for the new node below.
             let replacedIndex = -1;
             let replacedNav: NavigationItemConfigNonNull | undefined;
 
             if (!overrideExisting) {
-                if (option.pages.find((a: PageBase) => a.uniqueID === newPage.uniqueID)) {
-                    this.log.warn(`Page with name ${newPage.uniqueID} already exists, skipping!`);
-                    continue;
+                const existing = option.pages.find((a: PageBase) => a.uniqueID === newPage.uniqueID);
+                if (existing) {
+                    // A page of this panel wins. A page merged in from the script of another panel is
+                    // replaced by the admin page configured for this panel.
+                    if (belongsToPanel(option, existing)) {
+                        this.log.warn(`Page with name ${newPage.uniqueID} already exists, skipping!`);
+                        continue;
+                    }
+                    this.log.info(
+                        `Page '${newPage.uniqueID}' of another panel's script is replaced by the admin page configured for this panel.`,
+                    );
+                    option.pages = option.pages.filter((a: PageBase) => a.uniqueID !== newPage.uniqueID);
                 }
             } else {
                 // Remove the existing page and take out its navigation node. The node is
@@ -545,12 +734,13 @@ export class AdminConfiguration extends BaseClass {
                 }
                 replacedIndex = option.navigation.findIndex(b => b && b.name === newPage.uniqueID);
                 if (replacedIndex !== -1) {
-                    replacedNav = option.navigation[replacedIndex] ?? undefined;
+                    replacedNav = replacesGlobal ? undefined : (option.navigation[replacedIndex] ?? undefined);
                     option.navigation.splice(replacedIndex, 1);
                 }
             }
 
             option.pages.push(newPage);
+            await this.addGeneratedPages(option, newPage.uniqueID, generatedPages);
 
             // Build stub navigation entry; chain links are resolved in applyPendingNavigations.
             // Links of a replaced node are inherited so the surrounding chain survives; an
@@ -614,6 +804,60 @@ export class AdminConfiguration extends BaseClass {
     }
 
     /**
+     * Adds the pages generated from the page items of an admin page (`media-<id>` behind a media item)
+     * exactly like the script path does: `ConfigManager.getPageConfig` builds each of them as a sub page
+     * with the admin page as parent (navigation node with the parent on a double press), and the page is
+     * recorded as generated - its navigation is read-only in the admin. An existing page of the same name
+     * that belongs to this panel is kept (the first one wins, like the deduplication of the script path),
+     * one merged in from the script of another panel gives way.
+     *
+     * @param option Panel configuration partial.
+     * @param parent Published id of the admin page the items belong to.
+     * @param generated Pages handed back by `convertAdminPageItemToPageItemConfig`.
+     */
+    private async addGeneratedPages(
+        option: panelConfigPartial,
+        parent: string,
+        generated: ScriptConfig.PageType[],
+    ): Promise<void> {
+        const subPages: ScriptConfig.PageType[] = [];
+        for (const page of generated) {
+            const id = page.uniqueName;
+            if (subPages.some(p => p.uniqueName === id)) {
+                // the same item twice on one page
+                continue;
+            }
+            const existing = option.pages.find((a: PageBase) => a.uniqueID === id);
+            if (existing) {
+                if (option.generatedPageIds?.includes(id)) {
+                    // generated from the same item on another page - same content, the first one stays
+                    this.log.debug(`Generated page '${id}' of page '${parent}' already exists - kept the first one`);
+                    continue;
+                }
+                if (belongsToPanel(option, existing)) {
+                    this.log.warn(
+                        `Page '${id}' generated by a page item of page '${parent}' already exists, skipping!`,
+                    );
+                    continue;
+                }
+                option.pages = option.pages.filter((a: PageBase) => a.uniqueID !== id);
+            }
+            page.parent = parent;
+            subPages.push(page);
+        }
+        if (subPages.length === 0) {
+            return;
+        }
+        const manager = new ConfigManager(this.adapter);
+        const { panelConfig } = await manager.getPageConfig({ pages: [], subPages }, { pages: [], navigation: [] }, []);
+        for (const page of panelConfig.pages) {
+            option.pages.push(page);
+            recordGeneratedPage(option, page.uniqueID);
+        }
+        option.navigation.push(...panelConfig.navigation);
+    }
+
+    /**
      * Phase 2: wire prev/next navigation by building full chains and splicing
      * them into the existing navigation, preserving existing connections.
      *
@@ -642,6 +886,21 @@ export class AdminConfiguration extends BaseClass {
             pendingMap.set(p.pageId, p);
         }
 
+        // The first page that is no pending page when the `prev` links are followed from a page - the
+        // page the chain is spliced after.
+        const chainRoot = (pageId: string): string | undefined => {
+            const seen = new Set<string>();
+            let current = pendingMap.get(pageId);
+            while (current && current.prev !== undefined && !seen.has(current.pageId)) {
+                seen.add(current.pageId);
+                if (!pendingMap.has(current.prev)) {
+                    return current.prev;
+                }
+                current = pendingMap.get(current.prev);
+            }
+            return undefined;
+        };
+
         // Step 1: Apply each page's own explicit prev/next as direct left/right pointers
         for (const pending of pendingNavs) {
             const pageEntry = option.navigation.find(b => b?.name === pending.pageId);
@@ -653,6 +912,26 @@ export class AdminConfiguration extends BaseClass {
             }
             if (pending.next !== undefined) {
                 pageEntry.right = { ...(pageEntry.right ?? {}), single: pending.next };
+                // A page that names both neighbours sits between them. A successor that is no pending
+                // page (e.g. a page of the script) is only linked back by spliceChainAfter when it was the
+                // old right of the predecessor - not when the page is spliced in as part of a longer chain,
+                // so the back link is set here, but only when the successor still points at the root of
+                // the chain (or at nothing / a system node): a page used as a shortcut to a successor
+                // somewhere else in the ring leaves the successor's own predecessor in place. Pages with
+                // `next` only are handled in step 5.
+                if (pending.prev !== undefined && !pendingMap.has(pending.next)) {
+                    const nextEntry = option.navigation.find(b => b?.name === pending.next);
+                    const current = nextEntry?.left?.single;
+                    if (
+                        nextEntry &&
+                        (current === undefined ||
+                            current.startsWith('///') ||
+                            systemNavigationNodeNames.has(current) ||
+                            current === chainRoot(pending.pageId))
+                    ) {
+                        nextEntry.left = { ...(nextEntry.left ?? {}), single: pending.pageId };
+                    }
+                }
             }
         }
 
@@ -1003,6 +1282,162 @@ export function buildThermo2ScriptPage(entry: ShareConfig.Thermo2Entry): ScriptC
     };
 }
 
+/**
+ * A stored limit of the classic thermostat page, passed on unchanged: the adapter interprets the
+ * number itself (tenths of a degree or degrees, see `ShareConfig.ThermoEntry`). Anything that is
+ * not a finite number is left out so the adapter takes the limits of the set temperature state.
+ *
+ * @param value Stored limit.
+ */
+function thermoLimit(value: unknown): number | undefined {
+    return typeof value === 'number' && Number.isFinite(value) ? value : undefined;
+}
+
+/**
+ * Turns a thermo entry into the script form of the classic thermostat page (`items[0]`).
+ *
+ * The channel and the unit are trimmed, empty optional fields are left out so the adapter takes
+ * its defaults, the limits are passed on unchanged. The result is what `getPageThermo` reads of a
+ * script page - the fields of the script item it never reads are not part of the admin entry.
+ *
+ * @param entry Thermo entry as stored by the PageConfig editor.
+ * @returns The page in the form of the script configuration.
+ */
+export function buildThermoScriptPage(entry: ShareConfig.ThermoEntry): ScriptConfig.PageThermo {
+    return {
+        type: 'cardThermo',
+        uniqueName: entry.uniqueName,
+        heading: entry.headline || entry.uniqueName,
+        items: [
+            {
+                id: thermo2Text(entry.channelId) ?? '',
+                unit: thermo2Text(entry.unit),
+                minValue: thermoLimit(entry.minValue),
+                maxValue: thermoLimit(entry.maxValue),
+                stepValue: thermoLimit(entry.stepValue),
+            },
+        ],
+    };
+}
+
+/**
+ * Stored volume limit, undefined when empty or not a number (adapter default).
+ *
+ * @param value Stored value.
+ */
+function mediaVolume(value: unknown): number | undefined {
+    return typeof value === 'number' && Number.isFinite(value) && value >= 0 ? value : undefined;
+}
+
+/**
+ * Clean list of names: trimmed, empty and repeated entries dropped.
+ *
+ * @param list Stored list, may be missing.
+ * @returns The list, undefined when nothing is left (adapter default).
+ */
+function mediaList(list: unknown): string[] | undefined {
+    if (!Array.isArray(list)) {
+        return undefined;
+    }
+    const names = [...new Set(list.map(n => (typeof n === 'string' ? n.trim() : '')).filter(n => !!n))];
+    return names.length ? names : undefined;
+}
+
+/**
+ * Turns a media entry into the script form of the page (`media` of `ScriptConfig.PageMedia`).
+ *
+ * The standard items become `deactivateDefaultItems` / `itemsColorOn` / `itemsColorOff`, colors
+ * the RGB objects of the script, the presets `name?value` strings clamped to the volume range.
+ * Empty fields are left out so the backend takes its defaults. The own page items are not part of
+ * the result - they are converted separately.
+ *
+ * @param entry Media entry as stored by the PageConfig editor.
+ * @returns The page in the form of the script configuration.
+ */
+export function buildMediaScriptPage(entry: ShareConfig.MediaEntry): ScriptConfig.PageMedia {
+    let minValue = mediaVolume(entry.minValue);
+    let maxValue = mediaVolume(entry.maxValue);
+    if (minValue !== undefined && maxValue !== undefined && minValue > maxValue) {
+        [minValue, maxValue] = [maxValue, minValue];
+    }
+    const low = minValue ?? ShareConfig.mediaVolumeDefaults.minValue;
+    const high = maxValue ?? ShareConfig.mediaVolumeDefaults.maxValue;
+
+    const deactivateDefaultItems: NonNullable<ScriptConfig.PageMediaItem['deactivateDefaultItems']> = {};
+    const itemsColorOn: NonNullable<ScriptConfig.PageMediaItem['itemsColorOn']> = {};
+    const itemsColorOff: NonNullable<ScriptConfig.PageMediaItem['itemsColorOff']> = {};
+    for (const [key, config] of Object.entries(entry.toolbar ?? {})) {
+        if (!config) {
+            continue;
+        }
+        const item = key as ShareConfig.MediaToolbarItem;
+        if (config.enabled === false && item !== 'volumePresets') {
+            deactivateDefaultItems[item] = true;
+        }
+        const on = thermo2Rgb(config.colorOn);
+        if (on) {
+            itemsColorOn[item] = on;
+        }
+        const off = thermo2Rgb(config.colorOff);
+        if (off && item !== 'volumePresets') {
+            itemsColorOff[item] = off;
+        }
+    }
+
+    const volumePresets = (Array.isArray(entry.volumePresets) ? entry.volumePresets : [])
+        .filter(p => p && thermo2Text(p.name) && typeof p.value === 'number' && Number.isFinite(p.value))
+        .map(p => `${thermo2Text(p.name)}?${Math.round(Math.min(high, Math.max(low, p.value)))}`);
+
+    const media: ScriptConfig.PageMediaItem = {
+        id: thermo2Text(entry.mediaId) ?? '',
+        name: thermo2Text(entry.name),
+        minValue,
+        maxValue,
+        colorMediaIcon: thermo2Rgb(entry.colorMediaIcon),
+        colorMediaArtist: thermo2Rgb(entry.colorMediaArtist),
+        colorMediaTitle: thermo2Rgb(entry.colorMediaTitle),
+        speakerList: mediaList(entry.speakerList),
+        playList: mediaList(entry.playList),
+        favoriteList: mediaList(entry.favoriteList),
+        volumePresets: volumePresets.length ? volumePresets : undefined,
+        deactivateDefaultItems: Object.keys(deactivateDefaultItems).length ? deactivateDefaultItems : undefined,
+        itemsColorOn: Object.keys(itemsColorOn).length ? itemsColorOn : undefined,
+        itemsColorOff: Object.keys(itemsColorOff).length ? itemsColorOff : undefined,
+    };
+    for (const key of Object.keys(media) as (keyof ScriptConfig.PageMediaItem)[]) {
+        if (media[key] === undefined) {
+            delete media[key];
+        }
+    }
+    return {
+        type: 'cardMedia',
+        uniqueName: entry.uniqueName,
+        heading: '',
+        media,
+        items: [],
+    };
+}
+
+/**
+ * Sets the scroll settings of an admin entry on a page built on PageMenu (same fields
+ * config-manager.ts sets from the script page). Other cards are left untouched.
+ *
+ * @param page Page under construction.
+ * @param entry Scroll fields of the admin entry.
+ */
+function applyScrollFields(page: PageBase, entry: ShareConfig.PageScrollFields): void {
+    const config = page.config;
+    if (!config || !ShareConfig.isScrollCard(config.card) || !isPageMenuConfig(config)) {
+        return;
+    }
+    const scroll = ShareConfig.normalizeScrollFields(entry, config.card);
+    config.scrollType = scroll.scrollType;
+    config.scrollPresentation = scroll.scrollPresentation;
+    if (scroll.scrollPresentation === 'auto' && config.scrollPresentation === 'auto') {
+        config.scrollAutoTiming = scroll.scrollAutoTiming;
+    }
+}
+
 function isAlwaysOnMode(F: any): F is AlwaysOnMode {
     const R = F as AlwaysOnMode;
     switch (R) {
@@ -1015,213 +1450,6 @@ function isAlwaysOnMode(F: any): F is AlwaysOnMode {
             exhaustiveCheck(R);
             return false;
     }
-}
-
-/**
- * Map a 'W'|'kW'|'MW' selection to the internal targetUnit index used by PagePower.
- *
- * @param unit Display unit string from the React form
- */
-function mapPowerTargetUnit(unit: string | undefined): number | undefined {
-    switch (unit) {
-        case 'kW':
-            return 1;
-        case 'MW':
-            return 2;
-        case 'W':
-            return 0;
-        default:
-            return undefined;
-    }
-}
-
-/**
- * Build the per-slot data block for cardPower from a PowerSlotConfig.
- * Mirrors the structure produced by PagePower.getPowerPageConfig() for one slot.
- *
- * The React editor only stores a scale bound once the user has typed into its field; a slot whose
- * bounds were never touched carries no minColorScale/maxColorScale/bestColorScale at all. The scale
- * is therefore built from the same defaults the classic jsonConfig accordion materialises (0 / 10000 / 0)
- * whenever useColorScale is set, instead of silently leaving the icon white.
- *
- * Exported for the unit test only.
- *
- * @param slot Per-slot configuration from the React PowerEntry
- */
-export function buildPowerSlotData(slot: ShareConfig.PowerSlotConfig | undefined): any {
-    const s = slot ?? {};
-    const stateId = (s.state || '').trim();
-    const useColorScale = !!s.useColorScale;
-    const iconColor = useColorScale ? '' : s.iconColor || '';
-    const unitSuffix = s.valueUnit ? ` ${s.valueUnit}` : '';
-
-    const icon: any = {
-        true: {
-            value: { type: 'const', constVal: s.icon || '' },
-            color: { type: 'const', constVal: iconColor },
-        },
-        false: undefined,
-    };
-    if (useColorScale) {
-        icon.scale = {
-            type: 'const',
-            constVal: {
-                val_min: s.minColorScale ?? 0,
-                val_max: s.maxColorScale ?? 10_000,
-                val_best: s.bestColorScale ?? 0,
-                mode: 'triGrad',
-            },
-        };
-    }
-
-    const value = stateId
-        ? {
-              value: { type: 'triggered', dp: stateId },
-              decimal: { type: 'const', constVal: s.valueDecimal ?? 0 },
-              unit: { type: 'const', constVal: unitSuffix },
-          }
-        : undefined;
-
-    const speed = stateId
-        ? {
-              value: { type: 'triggered', dp: stateId },
-              minScale: { type: 'const', constVal: s.minSpeedScale ?? 0 },
-              maxScale: { type: 'const', constVal: s.maxSpeedScale ?? 10_000 },
-              negate: { type: 'const', constVal: !!s.reverse },
-          }
-        : undefined;
-
-    const targetUnit = mapPowerTargetUnit(s.valueUnit);
-
-    return {
-        icon,
-        value,
-        speed,
-        text: { true: { type: 'const', constVal: s.entityHeadline || '' } },
-        targetUnit: targetUnit ? { type: 'const', constVal: targetUnit } : undefined,
-    };
-}
-
-/**
- * Convert a PowerEntry from the React admin tab into a runtime PageBase for cardPower.
- *
- * Side effect: ensures `adapter.config.pagePowerdata` contains a flat-field record for this
- * page (under its uniqueName). PagePower.update() and onInternalCommand read
- * `adapter.config.pagePowerdata[index]` at runtime for the internal-sum calculation, so the
- * synthetic record must be present and `index` must point at it. If a record with the same
- * pageName already exists (legacy jsonConfig source), it is replaced — the React tab takes
- * precedence by user request.
- *
- * @param entry   PowerEntry as built by the React admin editor
- * @param adapter Adapter instance (for mutating `adapter.config.pagePowerdata`)
- */
-function dataForCardPower(entry: ShareConfig.PowerEntry, adapter: any): PageBase {
-    const cfg: any = adapter.config || {};
-    if (!Array.isArray(cfg.pagePowerdata)) {
-        cfg.pagePowerdata = [];
-    }
-    const slotMap: Array<[number, ShareConfig.PowerSlotConfig | undefined]> = [
-        [1, entry.leftTop],
-        [2, entry.leftMiddle],
-        [3, entry.leftBottom],
-        [4, entry.rightTop],
-        [5, entry.rightMiddle],
-        [6, entry.rightBottom],
-    ];
-    const synth: Record<string, unknown> = {
-        pageName: entry.uniqueName,
-        headline: entry.headline || '',
-        alwaysOnDisplay: entry.alwaysOn === 'always',
-        hiddenByTrigger: !!entry.hidden,
-        power7_state: entry.homeTop?.state || '',
-        power7_valueDecimal: entry.homeTop?.valueDecimal ?? 0,
-        power7_valueUnit: entry.homeTop?.valueUnit || 'W',
-        power8_state: entry.homeBot?.state || '',
-        power8_valueDecimal: entry.homeBot?.valueDecimal ?? 0,
-        power8_valueUnit: entry.homeBot?.valueUnit || 'W',
-        power8_selInternalCalculation: !!entry.homeBot?.selInternalCalculation,
-        power8_selPowerSupply: Array.isArray(entry.homeBot?.selPowerSupply) ? entry.homeBot.selPowerSupply : [],
-    };
-    for (const [i, s] of slotMap) {
-        const cur = s ?? {};
-        synth[`power${i}_state`] = cur.state || '';
-        synth[`power${i}_icon`] = cur.icon || '';
-        synth[`power${i}_iconColor`] = cur.iconColor || '';
-        synth[`power${i}_valueDecimal`] = cur.valueDecimal ?? 0;
-        synth[`power${i}_valueUnit`] = cur.valueUnit || 'W';
-        synth[`power${i}_entityHeadline`] = cur.entityHeadline || '';
-        synth[`_power${i}_useColorScale`] = !!cur.useColorScale;
-        synth[`power${i}_minColorScale`] = cur.minColorScale ?? 0;
-        synth[`power${i}_maxColorScale`] = cur.maxColorScale ?? 10_000;
-        synth[`power${i}_bestColorScale`] = cur.bestColorScale ?? 0;
-        synth[`power${i}_minSpeedScale`] = cur.minSpeedScale ?? 0;
-        synth[`power${i}_maxSpeedScale`] = cur.maxSpeedScale ?? 10_000;
-        synth[`power${i}_reverse`] = !!cur.reverse;
-    }
-
-    // Replace existing record (jsonConfig or earlier React run) — React takes precedence.
-    const existingIdx = cfg.pagePowerdata.findIndex(
-        (p: any) => p && typeof p === 'object' && p.pageName === entry.uniqueName,
-    );
-    let index: number;
-    if (existingIdx >= 0) {
-        cfg.pagePowerdata[existingIdx] = synth;
-        index = existingIdx;
-    } else {
-        index = cfg.pagePowerdata.length;
-        cfg.pagePowerdata.push(synth);
-    }
-
-    const homeBotInternal = !!entry.homeBot?.selInternalCalculation;
-    const homeBotState = (entry.homeBot?.state || '').trim();
-    const homeBotUnitSuffix = entry.homeBot?.valueUnit ? ` ${entry.homeBot.valueUnit}` : '';
-    const homeValueBot: any = homeBotInternal
-        ? {
-              value: { type: 'internal', dp: `///${entry.uniqueName}/powerSum` },
-              decimal: { type: 'const', constVal: entry.homeBot?.valueDecimal ?? 0 },
-              unit: { type: 'const', constVal: homeBotUnitSuffix },
-          }
-        : homeBotState
-          ? {
-                value: { type: 'triggered', dp: homeBotState },
-                decimal: { type: 'const', constVal: entry.homeBot?.valueDecimal ?? 0 },
-                unit: { type: 'const', constVal: homeBotUnitSuffix },
-            }
-          : undefined;
-
-    const homeTopState = (entry.homeTop?.state || '').trim();
-    const homeTopUnitSuffix = entry.homeTop?.valueUnit ? ` ${entry.homeTop.valueUnit}` : '';
-    const homeValueTop = homeTopState
-        ? {
-              value: { type: 'triggered', dp: homeTopState },
-              decimal: { type: 'const', constVal: entry.homeTop?.valueDecimal ?? 0 },
-              unit: { type: 'const', constVal: homeTopUnitSuffix },
-          }
-        : undefined;
-
-    return {
-        uniqueID: entry.uniqueName,
-        hidden: !!entry.hidden,
-        alwaysOn: entry.alwaysOn ?? 'none',
-        dpInit: '',
-        config: {
-            card: 'cardPower',
-            index,
-            data: {
-                headline: { type: 'const', constVal: entry.headline || entry.uniqueName },
-                homeIcon: { true: { value: { type: 'const', constVal: 'home' } }, false: undefined },
-                homeValueTop,
-                homeValueBot,
-                leftTop: buildPowerSlotData(entry.leftTop),
-                leftMiddle: buildPowerSlotData(entry.leftMiddle),
-                leftBottom: buildPowerSlotData(entry.leftBottom),
-                rightTop: buildPowerSlotData(entry.rightTop),
-                rightMiddle: buildPowerSlotData(entry.rightMiddle),
-                rightBottom: buildPowerSlotData(entry.rightBottom),
-            },
-        },
-        pageItems: [],
-    } as unknown as PageBase;
 }
 
 function dataForcardTrash(entry: ShareConfig.TrashEntry): PageBase {

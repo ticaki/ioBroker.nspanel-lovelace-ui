@@ -16,12 +16,19 @@
     "webPanelEdit": "Edit web panel",
     "webPanelId": "ID of the web panel",
     "webPanelKind": "Web",
-    "webPanelNoTasmotaMaintain": "A web panel has no Tasmota firmware and no TFT display, there is nothing to flash. Only the script applies.",
+    "webPanelNoTasmotaMaintain": "A web panel has no Tasmota firmware and no TFT display, there is nothing to flash.",
     "webPanelTopic": "Topic (unique, becomes the URL path)",
     "webPanelTopicDuplicate": "This topic is already used by another panel",
     "webPanelTopicHelp": "Letters, digits, _ and -, / as separator",
     "webPanelTopicInvalid": "Only letters, digits, _, - and / are allowed",
     "webPanelTopicRequired": "The topic must not be empty",
     "webPanelTopicReserved": "This path is used by the web server itself",
-    "chart_script_navigation_hint": "Migrated from the old table \"Page Chart\": this page still gets its navigation from the script (page \"%s\"). This is deprecated - assign a navigation here and remove the page from the script."
+    "chart_script_navigation_hint": "Migrated from the old table \"Page Chart\": this page still gets its navigation from the script (page \"%s\"). This is deprecated - assign a navigation here and remove the page from the script.",
+    "power_script_navigation_hint": "Migrated from the old table \"Page Power\": this page still gets its navigation from the script (page \"%s\"). This is deprecated - assign a navigation here and remove the page from the script.",
+    "panelNoScript": "Panel uses no script",
+    "panelNoScriptTooltip": "The panel is configured in the admin (and by the global script) only. A panel script sent for it is rejected, no script update is offered.",
+    "panelNoScriptInfo": "Script disabled",
+    "panelNoScriptVersion": "Script disabled",
+    "convertScript_noScriptPanel": "The panel is set to \"Panel uses no script\". Remove the check mark in the panel settings, convert the script and set the check mark again afterwards.",
+    "panelButtonDialog_modeNoneHintNoScript": "The panel uses no script - without an action configured here the button has no function."
 }

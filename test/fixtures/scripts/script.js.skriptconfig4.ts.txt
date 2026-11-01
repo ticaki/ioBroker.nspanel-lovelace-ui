@@ -1,0 +1,1032 @@
+// Test fixture for src/lib/configuration/script-source.test.ts: trimmed copy of the user script
+// "script.js.skriptconfig4" exported from the dev-server; everything from "const version =" on (colours, type declarations) is cut off.
+async function configuration (): Promise<void> {
+const NSPanel_Path = '0_userdata.0.NSPanel.2.';
+ const AliasPath: string = 'alias.0.' + NSPanel_Path.substring(13, NSPanel_Path.length);
+
+const qrCode: any = {
+        type: 'cardQR',
+        uniqueName: 'qrCode'
+    };
+    const main: PageType = {
+    'type': 'cardGrid',
+        uniqueName:'main',
+    'heading': 'Wohnzimmer',
+    'useColor': true,
+    'items': [
+        {id:'alias.0.Licht.rgbSingle',
+        name: 'HUE (CT=Kelvin)', // HUE Channel - Philips WiZ GU10 über matter.0 - Color-Temperature in Kelvin
+                    icon: 'lightbulb-on',
+                    icon2: 'lightbulb-outline',
+                    //offColor: Off,
+                    //minValueColorTemp: 2203, // Kelvin = Warmweiß
+                    //maxValueColorTemp: 6536, // Kelvin = Kaltweiß
+                    interpolateColor: true, 
+                    modeList: ["Color", "Ocean", "Romantik", "Sonnenuntergang", "Party", "Kamin", "Gemütlich", "Wald", "Pastellfarben", "Aufwachen", "Schlafenszeit", "Warmweiß", "Tageslicht", 
+                            "Kaltweiß", "Nachtlicht", "Fokus", "Entspannen", "Echte Farben", "Fernsehzeit", "Pflanzenwachstum", "Frühling", "Sommer", "Herbst", "Tieftauchgang", "Dschungel", 
+                            "Mojito", "Club", "Weihnachten", "Halloween", "Kerzenlicht", "Goldenes Weiß", "Impuls", "Steampunk"], 
+                    inSel_ChoiceState: true },
+        {navigate: true, targetPage: 'Only4', id: 'alias.0.Tests.ButtonSensor'},
+        {id: 'alias.0.Tests.ButtonSensor'},
+        {navigate: true, targetPage: 'Only4', id: 'alias.0.Tests.ButtonNav'},
+        {id: 'alias.0.Tests.ButtonNav'},
+          {id: 'alias.0.Tests.Volume'},
+            {id:'alias.0.Tests.Timer'},
+            { id: 'alias.0.NSPanel.1.usr.Temperatur.M.Wohnzimmer',name: 'Wohnzimmer', fontSize:3, onColor: Red, offColor: Blue, useValue: true, colorScale: {'val_min': 0, 'val_max': 40, mode:'cie'} },
+            { id: 'alias.0.NSPanel.1.usr.Temperatur.M.Wohnzimmer',name: 'Wohnzimmer', fontSize:4, onColor: Red, offColor: Blue, useValue: true, colorScale: {'val_min': 0, 'val_max': 40, mode:'cie'} },
+            { id: 'alias.0.NSPanel.1.usr.Temperatur.M.Wohnzimmer',name: 'Wohnzimmer', fontSize:5, onColor: Red, offColor: Blue, useValue: true, colorScale: {'val_min': 0, 'val_max': 40, mode:'cie'} },
+{navigate: true,targetPage: 'Only4',id: 'alias.0.NSPanel.allgemein.shutter'},
+{id: 'alias.0.NSPanel.allgemein.shutter'},            
+            
+        //{ navigate: true, id: 'alias.0.NSPanel.1.usr.Temperatur.M.Wohnzimmer', targetPage: 'this_Thermostat',name: 'Wohnzimmer', onColor: Red, offColor: Blue, useValue: true, colorScale: {'val_min': 0, 'val_max': 40, mode:'cie'} },
+        { id: 'alias.0.NSPanel.1.usr.Fenster.Obergeschoss.Wohnzimmer.room', onColor: MSRed, offColor: MSGreen},
+        //{ navigate: true, id: '', targetPage: 'Alexa_Schlafzimmer', onColor: White},
+        
+        { navigate: true, icon:'home', name:'Haus', targetPage: 'Only4', onColor: White},
+        { navigate: true, id:'0_userdata.0.Info!', icon:'home', name:'Haus', targetPage: 'Only4', onColor: Blue},
+        {icon:'home', name:'Haus', onColor: White},
+        {id:'0_userdata.0.Info!', icon:'home', name:'Haus', onColor: White},
+        {id:'alias.0.Licht.lights.Gerät_1'}, 
+    ]};
+
+let Level_2_Erdgeschoss_2: PageType = 
+                {
+                    'type': 'cardGrid',
+                    uniqueName:'Level_2_Erdgeschoss_2',
+                    'heading': 'Erdgeschoss (2)',
+                    'useColor': true,
+                    'subPage': true,
+                    //'parent': Level_1_Haus,
+                    'prev': 'Level_2_Erdgeschoss_1',
+                    'home': 'main',
+                    'items': [
+                        { navigate: true, id: 'alias.0.Haus.Erdgeschoss.Gaeste_WC.Indikator', targetPage: 'Level_3_GaesteWC', name: 'Gäste WC' , icon: 'toilet', offColor: MenuHighInd, onColor: Menu},
+                        { navigate: true, id: 'alias.0.Haus.Erdgeschoss.Hauswirtschaftsraum.Indikator', targetPage: 'Level_3_Hauswirtschaftsraum', name: 'Hauswirtschaft' , icon: 'floor-plan', offColor: MenuHighInd, onColor: Menu},
+                        { navigate: true, id: 'alias.0.Haus.Erdgeschoss.Flur_vorne.Indikator', targetPage: 'Level_3_EG_FlurVorne', name: 'Flur vorne' , icon: 'floor-plan', offColor: MenuHighInd, onColor: Menu},
+                        { navigate: true, id: 'alias.0.Haus.Erdgeschoss.Flur_hinten.Indikator', targetPage: 'Level_3_EG_FlurHinten', name: 'Flur hinten' , icon: 'floor-plan', offColor: MenuHighInd, onColor: Menu},
+                    ]
+                };
+
+// TEMPERATURE
+let Only4: PageType = {
+    'type': 'cardEntities',
+    uniqueName:'Only4',
+    'heading': 'Menü',
+    'useColor': true,
+    parent:'main',
+    'items': [
+        { navigate: true, id: 'alias.0.NSPanel.1.usr.Temperatur.M.OG', targetPage: 'SensorGrid',name: 'Obergeschoss', onColor: MSGreen, useValue: true, colorScale: {'val_min': -20, 'val_max': 40, 'val_best': 22} },
+        { navigate: true, id: 'alias.0.NSPanel.1.usr.Fenster.Obergeschoss.floor', targetPage: 'ObergeschossWindow', onColor: MSRed, offColor: MSGreen},
+        { navigate: true, id: 'alias.0.NSPanel.Beleuchtung.Obergeschoss', targetPage: 'ogLightsGrid', onColor: MSYellow, offColor: Black, icon: 'lightbulb'},
+        { navigate: true, targetPage: 'Alexa', name: 'test'},
+    ]};
+
+        //Meine Einstellungen
+    let SensorGrid: PageType = {
+    'type': 'cardGrid',
+    'heading': 'Temperatur Innen',
+    uniqueName:'SensorGrid',
+    'useColor': true,
+    'subPage': true,
+    'parent': 'Only4',
+    'items': [
+        { navigate: true, id: 'alias.0.NSPanel.1.usr.Temperatur.M.Wohnzimmer', targetPage: 'Wohnzimmer_Thermostat',name: 'Wohnzimmer', onColor: MSGreen, useValue: true, colorScale: {'val_min': -20, 'val_max': 40, 'val_best': 22} },
+        { navigate: true, id: 'alias.0.NSPanel.1.usr.Temperatur.M.Küche', targetPage: 'Kueche_Thermostat',name: 'Küche', onColor: MSYellow , useValue: true, colorScale: {'val_min': -20, 'val_max': 40, 'val_best': 22} },
+        {navigate: true, id: 'alias.0.NSPanel.1.usr.Temperatur.M.Bad', targetPage: 'Bad_Thermostat', name: 'Bad', useValue: true, onColor: White, colorScale: {'val_min': -20, 'val_max': 40, 'val_best': 22} },
+        { navigate: true, id: 'alias.0.NSPanel.1.usr.Temperatur.M.Kinderzimmer_1', targetPage: 'Kinderzimmer_1_Thermostat',name: 'Sarah', onColor: White, useValue: true, colorScale: {'val_min': -20, 'val_max': 40, 'val_best': 22} },
+        { navigate: true, id: 'alias.0.NSPanel.1.usr.Temperatur.M.Schlafzimmer', targetPage: 'Schlafzimmer_Thermostat',name: 'Schlafzimmer', onColor: White, useValue: true, colorScale: {'val_min': -20, 'val_max': 40, 'val_best': 19} },
+        { navigate: true, id: 'alias.0.NSPanel.1.usr.Temperatur.M.Ankleidezimmer', targetPage: 'Ankleidezimmer_Thermostat',name: 'Ankleidezimmer', onColor: White, useValue: true, colorScale: {'val_min': -20, 'val_max': 40, 'val_best': 20} },
+    ]};
+    
+let SensorGrid3: PageType = {
+    'type': 'cardEntities',
+    'heading': 'Temperatur Innen',
+    uniqueName:'SensorGrid3',
+    'useColor': true,
+    'subPage': true,
+    'parent': 'Only4',
+    'items': [
+        { navigate: true, id: 'alias.0.NSPanel.1.usr.Temperatur.M.Wohnzimmer', targetPage: 'Wohnzimmer_Thermostat',name: 'Wohnzimmer', onColor: MSGreen, useValue: true, colorScale: {'val_min': -20, 'val_max': 40, 'val_best': 22} },
+        { navigate: true, id: 'alias.0.NSPanel.1.usr.Temperatur.M.Küche', targetPage: 'Kueche_Thermostat',name: 'Küche', onColor: MSYellow , useValue: true, colorScale: {'val_min': -20, 'val_max': 40, 'val_best': 22} },
+        {navigate: true, id: 'alias.0.NSPanel.1.usr.Temperatur.M.Bad', targetPage: 'Bad_Thermostat', name: 'Bad', useValue: true, onColor: White, colorScale: {'val_min': -20, 'val_max': 40, 'val_best': 22} },
+        { navigate: true, id: 'alias.0.NSPanel.1.usr.Temperatur.M.Kinderzimmer_1', targetPage: 'Kinderzimmer_1_Thermostat',name: 'Sarah', onColor: White, useValue: true, colorScale: {'val_min': -20, 'val_max': 40, 'val_best': 22} },
+        { navigate: true, id: 'alias.0.NSPanel.1.usr.Temperatur.M.Schlafzimmer', targetPage: 'Schlafzimmer_Thermostat',name: 'Schlafzimmer', onColor: White, useValue: true, colorScale: {'val_min': -20, 'val_max': 40, 'val_best': 19} },
+        { navigate: true, id: 'alias.0.NSPanel.1.usr.Temperatur.M.Ankleidezimmer', targetPage: 'Ankleidezimmer_Thermostat',name: 'Ankleidezimmer', onColor: White, useValue: true, colorScale: {'val_min': -20, 'val_max': 40, 'val_best': 20} },
+    ]};
+let Bad_Thermostat: PageType = 
+{
+    'type': 'cardThermo',
+    'heading': 'Bad',
+    uniqueName:'Bad_Thermostat',
+    'subPage': true,
+    'home': 'SensorGrid3',
+    //'parent': SensorGrid,
+    'items': [{ 
+                id: 'alias.0.NSPanel.1.usr.Temperatur.G.Bad',
+                minValue: 100, 
+                maxValue: 300,
+                stepValue: 1,
+                popupThermoMode1: ['1', '2', '3'],
+                popupThermoMode2: ['4', '5', '6'],
+                popupThermoMode3: ['7', '8', '9'],
+                setThermoAlias: ['alias.0.Thermoinsel.1','alias.0.Thermoinsel.2','alias.0.Thermoinsel.3']
+             }]
+};
+let Ankleidezimmer_Thermostat: PageType = 
+{
+    'type': 'cardThermo',
+    'heading': 'Ankleidezimmer',
+    uniqueName:'Ankleidezimmer_Thermostat',
+    'subPage': true,
+    'parent':'SensorGrid',
+    'items': [{ 
+                id: 'alias.0.NSPanel.1.usr.Temperatur.G.Ankleidezimmer',
+                minValue: 100, 
+                maxValue: 300,
+                stepValue: 1
+             }]
+};
+let Schlafzimmer_Thermostat: PageType = 
+{
+    'type': 'cardThermo',
+    'heading': 'Schlafzimmer',
+    uniqueName:'Schlafzimmer_Thermostat',
+    'subPage': true,
+    
+    'parent': 'SensorGrid',
+    'items': [{ 
+                id: 'alias.0.NSPanel.1.usr.Temperatur.G.Schlafzimmer',
+                minValue: 100, 
+                maxValue: 300,
+                stepValue: 1
+             }]
+};
+
+let this_Thermostat: PageType = 
+{
+    'type': 'cardThermo',
+    'heading': 'Wohnzimmer',
+    'subPage': true,
+    uniqueName:'this_Thermostat',
+    'parent': 'main',
+    'items': [{ 
+                id: 'alias.0.NSPanel.1.usr.Temperatur.G.Wohnzimmer.1',
+                minValue: 100, 
+                maxValue: 300,
+                stepValue: 1,
+                setThermoDestTemp2: 'ACTUAL2',
+                setThermoAlias: ['Standard']
+             }]
+};
+
+let Wohnzimmer_Thermostat: PageType = 
+{
+    'type': 'cardThermo',
+    'heading': 'Wohnzimmer',
+    'subPage': true,
+    uniqueName:'Wohnzimmer_Thermostat',
+    'parent': 'SensorGrid',
+   'items': [{ 
+                id: 'alias.0.NSPanel.1.usr.Temperatur.G.Wohnzimmer.1',
+                minValue: 100, 
+                maxValue: 300,
+                stepValue: 1,
+                setThermoDestTemp2: 'ACTUAL2',
+                setThermoAlias: ['Standard']
+             }]
+};
+let Kueche_Thermostat: PageType = 
+{
+    'type': 'cardThermo',
+    'heading': 'Küche',
+    'subPage': true,
+    uniqueName:'Kueche_Thermostat',
+    'parent': 'SensorGrid',
+    'items': [{ 
+                id: 'alias.0.NSPanel.1.usr.Temperatur.G.Küche',
+                minValue: 100, 
+                maxValue: 300,
+                stepValue: 1
+             }]
+};
+let Kinderzimmer_1_Thermostat: PageType = 
+{
+    'type': 'cardThermo',
+    'heading': 'Sarah',
+    'subPage': true,
+    uniqueName:'Kinderzimmer_1_Thermostat',
+    'parent': 'SensorGrid',
+    'items': [{ 
+                id: 'alias.0.NSPanel.1.usr.Temperatur.G.Kinderzimmer_1',
+                minValue: 100, 
+                maxValue: 300,
+                stepValue: 1
+             }]
+};
+
+
+
+
+
+//WINDOWOS
+
+let WindowGrid: PageType = {
+    'type': 'cardGrid',
+    'heading': 'Menü',
+    uniqueName:'WindowGrid',
+    'useColor': true,
+    'items': [
+        { navigate: true, id: 'alias.0.NSPanel.1.usr.Fenster.Obergeschoss.floor', targetPage: 'ObergeschossWindow',name: 'Obergeschoss', onColor: MSGreen, useValue: true, colorScale: {'val_min': 0, 'val_max': 1, 'val_best': 0} },
+    ]};
+let ObergeschossWindow: PageType = {
+    'type': 'cardGrid',
+    'heading': 'Menü',
+    uniqueName:'ObergeschossWindow',
+    'useColor': true,
+    'subPage': true,
+    'parent': 'Only4',
+    'items': [
+        { navigate: true, targetPage: 'WohnzimmerWindow', id: 'alias.0.NSPanel.1.usr.Fenster.Obergeschoss.Wohnzimmer.room', onColor: MSRed, offColor: MSGreen },
+        { id: 'alias.0.NSPanel.1.usr.Fenster.Obergeschoss.Schlafzimmer.room', onColor: MSRed, offColor: MSGreen},
+        { id: 'alias.0.NSPanel.1.usr.Fenster.Obergeschoss.Bad.room', onColor: MSRed, offColor: MSGreen},
+    ]};
+    
+    // { navigate: true, targetPage: 'WohnzimmerWindow', id: 'alias.0.NSPanel.1.usr.Fenster.Obergeschoss.Wohnzimmer.room', onColor: MSGreen, offColor: MSRed , icon2:'window-open-variant', icon: 'window-closed-variant' },
+       
+//
+let WohnzimmerWindow: PageType = {
+    'type': 'cardGrid',
+    'heading': 'Menü',
+    uniqueName:'WohnzimmerWindow',
+    'useColor': true,
+    'subPage': true,
+    'parent': 'ObergeschossWindow',
+    'items': [
+        { id: 'alias.0.NSPanel.1.usr.Fenster.Obergeschoss.Wohnzimmer.giebelfenster_links', onColor: MSRed, offColor: MSGreen},
+        { id: 'alias.0.NSPanel.1.usr.Fenster.Obergeschoss.Wohnzimmer.giebelfenster_rechts', onColor: MSRed, offColor: MSGreen},
+        { id: 'alias.0.NSPanel.1.usr.Fenster.Obergeschoss.Wohnzimmer.fenster_seite', onColor: MSRed, offColor: MSGreen},
+    ]};
+
+// ALEXA
+let Alexa: PageType =  
+{
+    'type': 'cardMedia',
+    'heading': 'Alexa',
+    uniqueName:'14',
+    'items': [{   
+                id: AliasPath + 'Media.PlayerAlexa', 
+                adapterPlayerInstance: 'alexa2.0.',
+                mediaDevice: 'G000000000000000', 
+                speakerList: ['Überall'],
+                //analog alexa2 Music-Provider
+                playList: ['Spotify-Playlist.PartyPlaylist',
+                           'Amazon-Music-Playlist.Mein Discovery Mix',
+                           'My-Library-Playlist.2020',
+                           'My-Library-Playlist.2021',
+                           'TuneIn.Radio Bob Rock',
+                           'TuneIn.NDR2',
+                           'Spotify-Playlist.Sabaton Radio',
+                           'Spotify-Playlist.Rock Party',
+                           'Spotify-Playlist.This Is Nightwish',
+                           'Spotify-Playlist.Metal Christmas'],
+                equalizerList: ['Bassboost','Klassik','Dance', 'Deep', 'Electronic', 'Flat', 'Hip-Hop', 'Rock', 
+                                'Metal', 'Jazz', 'Latin', 'Tonstärke', 'Lounge', 'Piano'],
+                colorMediaIcon: colorAlexa,
+                colorMediaArtist: Yellow,
+                colorMediaTitle: Yellow,
+                alwaysOnDisplay: true,
+                autoCreateALias: true
+             }]
+};
+
+let Alexa_Schlafzimmer: PageType =  
+{
+    'type': 'cardMedia',
+    'heading': 'Alexa',
+    uniqueName:'15',
+    'subPage': true,
+    'parent': 'main',
+    'items': [{   
+                id: AliasPath + 'Media.PlayerAlexa', 
+                adapterPlayerInstance: 'alexa2.0.',
+                mediaDevice: 'G000000000000000', 
+                speakerList: ['Überall'],
+                //analog alexa2 Music-Provider
+                playList: ['Spotify-Playlist.PartyPlaylist',
+                           'Amazon-Music-Playlist.Mein Discovery Mix',
+                           'My-Library-Playlist.2020',
+                           'My-Library-Playlist.2021',
+                           'TuneIn.Radio Bob Rock',
+                           'TuneIn.NDR2',
+                           'Spotify-Playlist.Sabaton Radio',
+                           'Spotify-Playlist.Rock Party',
+                           'Spotify-Playlist.This Is Nightwish',
+                           'Spotify-Playlist.Metal Christmas'],
+                equalizerList: ['Bassboost','Klassik','Dance', 'Deep', 'Electronic', 'Flat', 'Hip-Hop', 'Rock', 
+                                'Metal', 'Jazz', 'Latin', 'Tonstärke', 'Lounge', 'Piano'],
+                colorMediaIcon: colorAlexa,
+                colorMediaArtist: Yellow,
+                colorMediaTitle: Yellow,
+                alwaysOnDisplay: true,
+                autoCreateALias: true
+             }]
+};
+/*let AlexaTest: PageType =  
+{
+    'type': 'cardMedia',
+    'heading': 'Alexa',
+    
+    'items': [{   
+                id: AliasPath + 'Media.PlayerAlexaTest', 
+                adapterPlayerInstance: 'alexa2.0.',
+                mediaDevice: 'be2533c5fcc54496b8be595d5ea5ea78', 
+                //speakerList: ['Überall'],
+                //analog alexa2 Music-Provider
+                playList: [],
+                equalizerList: ['Bassboost','Klassik','Dance', 'Deep', 'Electronic', 'Flat', 'Hip-Hop', 'Rock', 
+                                'Metal', 'Jazz', 'Latin', 'Tonstärke', 'Lounge', 'Piano'],
+                colorMediaIcon: colorAlexa,
+                colorMediaArtist: Yellow,
+                colorMediaTitle: Yellow,
+                alwaysOnDisplay: true,
+                autoCreateALias: true
+             }]
+};*/
+
+let ogLightsGrid: PageType = {
+    'type': 'cardGrid2',
+    'heading': 'Beleuchtung',
+    'useColor': true,
+    uniqueName:'ogLightsGrid',
+    'subPage': true,
+    'parent': 'Only4',
+    'items': [
+        { id: 'alias.0.NSPanel.Beleuchtung.Abstellraum', name: 'Abstellraum', onColor: MSYellow, offColor: Black, icon: 'lightbulb' },
+        { id: 'alias.0.NSPanel.Beleuchtung.Ankleidezimmer', name: 'Ankleidezimmer', onColor: MSYellow, offColor: Black, icon: 'lightbulb' },
+        { id: 'alias.0.NSPanel.Beleuchtung.Bad', name: 'Bad', onColor: MSYellow, offColor: Black, icon: 'lightbulb' },
+        { id: 'alias.0.NSPanel.Beleuchtung.Flur', name: 'Flur', onColor: MSYellow, offColor: Black, icon: 'lightbulb' },
+        { id: 'alias.0.NSPanel.Beleuchtung.Küche', name: 'Küche', onColor: MSYellow, offColor: Black, icon: 'lightbulb' },
+        { id: 'alias.0.NSPanel.Beleuchtung.Schlafzimmer', name: 'Schlafzimmer', onColor: MSYellow, offColor: Black, icon: 'lightbulb' },
+        { id: 'alias.0.NSPanel.Beleuchtung.Wohnzimmer', name: 'Wohnzimmer', onColor: MSYellow, offColor: Black, icon: 'lightbulb' },
+    ]
+};
+
+
+
+// End of Service Pages
+
+/***********************************************************************
+ **                                                                   **
+ **                           Configuration                           **
+ **                                                                   **
+ ***********************************************************************/
+const SensorGrid2 = JSON.parse(JSON.stringify(SensorGrid))
+SensorGrid2.uniqueName = 'drei'
+const config: ScriptConfig.Config = {
+        panelTopic: 'nspanel/ns_panel4',
+        weatherEntity: 'accuweather.0.',
+        weatherAddDefaultItems: false,
+        defaultOffColor: MSRed,
+        defaultOnColor: Green,
+        defaultColor: MSGreen,
+        defaultBackgroundColor: HMIDark,
+
+    pages: [
+        main,
+        SensorGrid3,
+        SensorGrid,
+        qrCode
+        //Alexa,     
+        //Unlock_Service            //Auto-Alias Service Page (Service Pages used with cardUnlock)
+    ],
+
+    // Unterseiten / Subpages
+    subPages: [
+        this_Thermostat,
+        SensorGrid2,
+        Ankleidezimmer_Thermostat,
+        WohnzimmerWindow,
+        Bad_Thermostat,
+        Kinderzimmer_1_Thermostat,
+        Kueche_Thermostat,
+        Wohnzimmer_Thermostat,
+        Schlafzimmer_Thermostat,
+        ObergeschossWindow,
+        WindowGrid,
+        Only4,
+        ogLightsGrid
+
+    ],
+
+    /***********************************************************************
+     **                                                                   **
+     **                    Screensaver Configuration                      **
+     **                                                                   **
+     ***********************************************************************/
+
+    favoritScreensaverEntity: [
+        {
+                type: 'script',
+                ScreensaverEntity: 'alias.0.NSPanel.1.Sensor.ANALOG.Temperature.ACTUAL',
+                ScreensaverEntityFactor: 1,
+                ScreensaverEntityDecimalPlaces: 1,
+                ScreensaverEntityIconOn: 'thermometer',
+                ScreensaverEntityIconOff: null,
+                ScreensaverEntityText: 'Temperatur',
+                ScreensaverEntityUnitText: '°C',
+                ScreensaverEntityIconColor: {'val_min': 0, 'val_max': 35, 'val_best': 22.5}
+            },
+    ],
+    alternateScreensaverEntity: [],
+
+    leftScreensaverEntity:
+        [
+            // leftScreensaverEntity 1 (only Advanced Screensaver)
+            {
+                type: 'script',
+                ScreensaverEntity: 'alias.0.NSPanel.1.Sensor.ANALOG.Temperature.ACTUAL',
+                ScreensaverEntityFactor: 1,
+                ScreensaverEntityDecimalPlaces: 1,
+                ScreensaverEntityIconOn: 'thermometer',
+                ScreensaverEntityIconOff: null,
+                ScreensaverEntityText: 'Temperatur',
+                ScreensaverEntityUnitText: '°C',
+                ScreensaverEntityIconColor: {'val_min': 0, 'val_max': 35, 'val_best': 22.5}
+            },
+            // leftScreensaverEntity 2 (only Advanced Screensaver)
+            {
+                type: 'script',
+                ScreensaverEntity: 'shelly.0.SHEM-3#C45BBE6C597F#1.Total.InstantPower',
+                ScreensaverEntityFactor: 1,
+                ScreensaverEntityDecimalPlaces: 0,
+                ScreensaverEntityIconOn: 'counter',
+                ScreensaverEntityIconOff: null,
+                ScreensaverEntityText: 'L1-L3',
+                ScreensaverEntityUnitText: ' W',
+                ScreensaverEntityIconColor: Blue
+            },
+            // leftScreensaverEntity 3 (only Advanced Screensaver)
+        	{
+                type: 'script',
+                ScreensaverEntity: 'alias.0.zuhause.ug.Technik.Battery_Procent_Nspanel',
+                ScreensaverEntityFactor: 1,
+                ScreensaverEntityDecimalPlaces: 0,
+                ScreensaverEntityIconOn: '0_userdata.0.zuhause.k.technik.Battery_NsPanel_Icon',
+                ScreensaverEntityIconOff: null,
+                ScreensaverEntityText: 'Batterie',
+                ScreensaverEntityUnitText: '%',
+                ScreensaverEntityIconColor: {'val_min': 0, 'val_max': 100}
+            },
+        ],
+
+    bottomScreensaverEntity :  
+        [
+            // bottomScreensaverEntity 1
+            {
+                type: 'script',
+                ScreensaverEntity: 'accuweather.0.Hourly.h0.PrecipitationProbability',
+                ScreensaverEntityFactor: 1,
+                ScreensaverEntityDecimalPlaces: 0,
+                ScreensaverEntityIconOn: 'weather-pouring',
+                ScreensaverEntityIconOff: null,
+                ScreensaverEntityText: 'Regen',
+                ScreensaverEntityUnitText: '%',
+                ScreensaverEntityIconColor: {'val_min': 0, 'val_max': 100}
+            },
+            // bottomScreensaverEntity 2
+            {
+                type: 'script',
+                ScreensaverEntity: 'accuweather.0.Current.WindSpeed',
+                ScreensaverEntityFactor: (1000/3600),
+                ScreensaverEntityDecimalPlaces: 1,
+                ScreensaverEntityIconOn: 'weather-windy',
+                ScreensaverEntityIconOff: null,
+                ScreensaverEntityText: "Wind",
+                ScreensaverEntityUnitText: 'm/s',
+                ScreensaverEntityIconColor: { 'val_min': 0, 'val_max': 120 }
+            },
+            // bottomScreensaverEntity 3
+            {
+                type: 'script',
+                ScreensaverEntity: 'accuweather.0.Current.WindGust',
+                ScreensaverEntityFactor: (1000/3600),
+                ScreensaverEntityDecimalPlaces: 1,
+                ScreensaverEntityIconOn: 'weather-tornado',
+                ScreensaverEntityIconOff: null,
+                ScreensaverEntityText: 'Böen',
+                ScreensaverEntityUnitText: 'm/s',
+                ScreensaverEntityIconColor: { 'val_min': 0, 'val_max': 120 }
+            },
+            // bottomScreensaverEntity 4
+            {
+                type: 'script',
+                ScreensaverEntity: 'alias.0.zuhause.og.Wohnzimmer.Szene_Zahl',
+                ScreensaverEntityFactor: 1,
+                ScreensaverEntityDecimalPlaces: 0,
+                ScreensaverEntityIconOn: 'ceiling-light-outline',
+                ScreensaverEntityIconOff: null,
+                ScreensaverEntityText: 'Szene',
+                ScreensaverEntityUnitText: '',
+                ScreensaverEntityIconColor: White
+            },
+            {
+                type: 'native',
+                native: {            
+                    role: '2values',
+                    dpInit: '',
+                    type: 'text',
+                    modeScr: 'bottom',
+                    data: {
+                        entity1: {
+                            value: { type: 'triggered', dp: 'daswetter.0.NextDays.Location_1.Day_6.Minimale_Temperatur_value' },
+                            decimal: {
+                                type: 'const',
+                                constVal: 0,
+                            },
+                            factor: undefined,
+                            unit: {
+                                type: 'const',
+                                constVal: '° ',
+                            },
+                        },
+                        entity2: {
+                            value: { type: 'triggered', dp: 'daswetter.0.NextDays.Location_1.Day_6.Maximale_Temperatur_value' },
+                            decimal: {
+                                type: 'const',
+                                constVal: 0,
+                            },
+                            factor: undefined,
+                            unit: {
+                                type: 'const',
+                                constVal: '°',
+                            },
+                        },
+                        icon: {
+                            true: {
+                                value: {
+                                    type: 'triggered',
+                                    dp: 'daswetter.0.NextDays.Location_1.Day_6.Wetter_Symbol_id',
+                                    read: `{
+                                                switch (val) {
+                                                    case 1:         // Sonnig
+                                                        return 'weather-sunny';  // sunny
+        
+                                                    case 2:         // Teils bewölkt
+                                                    case 3:         // Bewölkt
+                                                        return 'weather-partly-cloudy';  // partlycloudy
+                        
+                                                    case 4:         // Bedeckt
+                                                        return 'weather-cloudy';  // cloudy
+                        
+                                                    case 5:        // Teils bewölkt mit leichtem Regen
+                                                    case 6:        // Bewölkt mit leichtem Regen
+                                                    case 8:        // Teils bewölkt mit mäßigem Regen
+                                                    case 9:        // Bewölkt mit mäßigem Regen
+                                                        return 'weather-partly-rainy';  // partly-rainy
+                        
+                                                    case 7:        // Bedeckt mit leichtem Regen
+                                                        return 'weather-rainy';  // rainy
+                        
+                                                    case 10:        // Bedeckt mit mäßigem Regen
+                                                        return 'weather-pouring';  // pouring
+                        
+                                                    case 11:        // Teils bewölkt mit starken Regenschauern
+                                                    case 12:        // Bewölkt mit stürmischen Regenschauern
+                                                        return 'weather-partly-lightning';  // partlylightning
+                        
+                                                    case 13:        // Bedeckt mit stürmischen Regenschauern
+                                                        return 'weather-lightning';  // lightning
+                        
+                                                    case 14:        // Teils bewölkt mit stürmischen Regenschauern und Hagel
+                                                    case 15:        // Bewölkt mit stürmischen Regenschauern und Hagel
+                                                    case 16:        // Bedeckt mit stürmischen Regenschauern und Hagel
+                                                        return 'weather-hail';  // Hail
+        
+                                                    case 17:        // Teils bewölkt mit Schnee
+                                                    case 18:        // Bewölkt mit Schnee
+                                                        return 'weather-partly-snowy';  // partlysnowy
+
+                                                    case 19:        // Bedeckt mit Schneeschauern
+                                                        return 'weather-snowy';  // snowy
+        
+                                                    case 20:        // Teils bewölkt mit Schneeregen
+                                                    case 21:        // Bewölkt mit Schneeregen
+                                                        return 'weather-partly-snowy-rainy';
+        
+                                                    case 22:        // Bedeckt mit Schneeregen
+                                                        return 'weather-snowy-rainy';  // snowy-rainy
+        
+                                                    default:
+                                                        return 'alert-circle-outline';
+                                                }
+                                            }`,
+                                },
+                                color: {
+                                    type: 'triggered',
+                                    dp: 'daswetter.0.NextDays.Location_1.Day_6.Wetter_Symbol_id',
+                                    read: `{
+                                                switch (val) {
+                                                    case 1:         // Sonnig
+                                                        return Color.swSunny;
+        
+                                                    case 2:         // Teils bewölkt
+                                                    case 3:         // Bewölkt
+                                                        return Color.swPartlycloudy;
+        
+                                                    case 4:         // Bedeckt
+                                                        return Color.swCloudy;
+        
+                                                    case 5:        // Teils bewölkt mit leichtem Regen
+                                                    case 6:        // Bewölkt mit leichtem Regen
+                                                    case 8:        // Teils bewölkt mit mäßigem Regen
+                                                    case 9:        // Bewölkt mit mäßigem Regen
+                                                        return Color.swRainy;
+        
+                                                    case 7:        // Bedeckt mit leichtem Regen
+                                                        return Color.swRainy;
+
+                                                    case 10:        // Bedeckt mit mäßigem Regen
+                                                        return Color.swPouring;
+        
+                                                    case 11:        // Teils bewölkt mit starken Regenschauern
+                                                    case 12:        // Bewölkt mit stürmischen Regenschauern
+                                                        return Color.swLightningRainy;
+        
+                                                    case 13:        // Bedeckt mit stürmischen Regenschauern
+                                                        return Color.swLightning;
+        
+                                                    case 14:        // Teils bewölkt mit stürmischen Regenschauern und Hagel
+                                                    case 15:        // Bewölkt mit stürmischen Regenschauern und Hagel
+                                                    case 16:        // Bedeckt mit stürmischen Regenschauern und Hagel
+                                                        return Color.swHail;
+        
+                                                    case 17:        // Teils bewölkt mit Schnee
+                                                    case 18:        // Bewölkt mit Schnee
+                                                        return Color.swSnowy;
+        
+                                                    case 19:        // Bedeckt mit Schneeschauern
+                                                        return Color.swSnowy;
+        
+                                                    case 20:        // Teils bewölkt mit Schneeregen
+                                                    case 21:        // Bewölkt mit Schneeregen
+                                                        return Color.swSnowyRainy;  // snowy-rainy
+        
+                                                    case 22:        // Bedeckt mit Schneeregen
+                                                        return Color.swSnowyRainy;
+        
+                                                    default:
+                                                        return Color.White;
+                                                }
+                                            }`,
+                                },
+                            },
+                            false: {
+                                value: undefined,
+                                color: undefined
+                            },
+                            scale: undefined,
+                            maxBri: undefined,
+                            minBri: undefined,
+                        },
+                        text: {
+                            true: {
+                                type: 'triggered',
+                                dp: 'daswetter.0.NextDays.Location_1.Day_6.Tag_value',                        
+                                read:  `{
+                                            return (val).substring(0,2);
+                                        }`,
+                            },
+                            false: undefined,
+                        },
+                    },
+                },
+            
+
+            },
+            // bottomScreensaverEntity 5 (only Advanced Screensaver)
+            {
+                type: 'script',
+                ScreensaverEntity: '0_userdata.0.zuhause.og.Windows_open',
+                ScreensaverEntityFactor: 1,
+                ScreensaverEntityDecimalPlaces: 0,
+                ScreensaverEntityIconOn: 'window-closed-variant',
+                ScreensaverEntityIconOff: null,
+                ScreensaverEntityText: 'Fenster',
+                ScreensaverEntityUnitText: '',
+                ScreensaverEntityIconColor: {'val_min': 0, 'val_max': 10, 'val_best': 0}
+            },
+            // bottomScreensaverEntity 6 (only Advanced Screensaver)
+            {
+                type: 'script',
+                ScreensaverEntity: 'accuweather.0.Current.UVIndex',
+                ScreensaverEntityFactor: 1,
+                ScreensaverEntityDecimalPlaces: 0,
+                ScreensaverEntityIconOn: 'solar-power',
+                ScreensaverEntityIconOff: null,
+                ScreensaverEntityText: 'UV',
+                ScreensaverEntityUnitText: '',
+                ScreensaverEntityIconColor: {'val_min': 0, 'val_max': 9}
+            },
+            
+            {
+                type: 'template',
+                template: 'text.accuweather.sunriseset',
+                dpInit: `/^accuweather\\.0.Daily.+/`,
+                modeScr: 'bottom',
+            },
+            // Bottom 2 - accuWeather.0. Forecast Day 1
+            {
+                type: 'template',
+                template: 'text.accuweather.bot2values',
+                dpInit: `/^accuweather\\.0.+?d1$/g`,
+                modeScr: 'bottom',
+            },
+
+            // Bottom 3 - accuWeather.0. Forecast Day 2
+            {
+                type: 'template',
+                template: 'text.accuweather.bot2values',
+                dpInit: `/^accuweather\\.0.+?d2$/`,
+                modeScr: 'bottom',
+            },
+
+            // Bottom 4 - accuWeather.0. Forecast Day 3
+            {
+                type: 'template',
+                template: 'text.accuweather.bot2values',
+                dpInit: `/^accuweather\\.0.+?d3$/`,
+                modeScr: 'bottom',
+            },
+
+            // Bottom 5 - accuWeather.0. Forecast Day 4
+            {
+                type: 'template',
+                template: 'text.accuweather.bot2values',
+                dpInit: `/^accuweather\\.0.+?d4$/`,
+                modeScr: 'bottom',
+            },
+            // Bottom 6 - accuWeather.0. Forecast Day 5
+            {
+                type: 'template',
+                template: 'text.accuweather.bot2values',
+                dpInit: `/^accuweather\\.0.+?d5$/`,
+                modeScr: 'bottom',
+            },
+
+            // Bottom 7 - Windgeschwindigkeit
+            {
+                type: 'template',
+                template: 'text.accuweather.windspeed',
+                dpInit: `/^accuweather\\.0./`,
+                modeScr: 'bottom',
+            },
+
+            // Bottom 8 - Böen
+            {
+                type: 'template',
+                template: 'text.accuweather.windgust',
+                dpInit: `/^accuweather\\.0./`,
+                modeScr: 'bottom',
+            },
+
+            // Bottom 9 - Windrichtung
+            {
+                type: 'template',
+                template: 'text.accuweather.winddirection',
+                dpInit: `/^accuweather\\.0./`,
+                modeScr: 'bottom',
+            },
+
+            // Bottom 10 - UV-Index
+            {
+                type: 'template',
+                template: 'text.accuweather.uvindex',
+                dpInit: `/^accuweather\\.0./`,
+                modeScr: 'bottom',
+            },
+            
+        ],
+
+    indicatorScreensaverEntity:
+        [
+            // indicatorScreensaverEntity 1 (only Advanced Screensaver)
+            { 
+                type: 'script',
+                ScreensaverEntity: 'alias.0.zuhause.eg.Haustür-Status',
+                ScreensaverEntityFactor: 1,
+                ScreensaverEntityDecimalPlaces: 0,
+                ScreensaverEntityIconOff: 'door-open',
+                ScreensaverEntityIconOn: 'door',
+                ScreensaverEntityText: 'Haustür',
+                ScreensaverEntityUnitText: '',
+                ScreensaverEntityIconColor: {'val_min': 0, 'val_max': 1, 'val_best': 1}
+            },
+            // indicatorScreensaverEntity 2 (only Advanced Screensaver)
+            { 
+                type: 'script',
+                ScreensaverEntity: '0_userdata.0.zuhause.og.flur.bwm_pause',
+                ScreensaverEntityFactor: 1,
+                ScreensaverEntityDecimalPlaces: 0,
+                ScreensaverEntityIconOff: 'motion-sensor',
+                ScreensaverEntityIconOn: 'motion-sensor-off',
+                ScreensaverEntityText: 'Bewegung',
+                ScreensaverEntityUnitText: '',
+                ScreensaverEntityIconColor: {'val_min': 0, 'val_max': 1}
+            },
+            // indicatorScreensaverEntity 3 (only Advanced Screensaver)
+            { 
+                type: 'script',
+                ScreensaverEntity: '0_userdata.0.currentSceneWZ',
+                ScreensaverEntityFactor: 1,
+                ScreensaverEntityDecimalPlaces: 0,
+                ScreensaverEntityIconOn: 'garage-variant-lock',
+                ScreensaverEntityIconOff: null,
+                ScreensaverEntityText: 'Garage',
+                ScreensaverEntityUnitText: '',
+                ScreensaverEntityIconColor: {'val_min': 0, 'val_max': 1}
+            },
+            // indicatorScreensaverEntity 4 (only Advanced Screensaver)
+            { 
+                type: 'script',
+                ScreensaverEntity: '0_userdata.0.Dummys.Gute_Nacht',
+                ScreensaverEntityFactor: 1,
+                ScreensaverEntityDecimalPlaces: 0,
+                ScreensaverEntityIconOn: 'weather-night',
+                ScreensaverEntityIconOff: 'weather-sunny',
+                ScreensaverEntityText: 'Mäher',
+                ScreensaverEntityUnitText: '%',
+                ScreensaverEntityIconColor: { 'val_min': 0, 'val_max': 1 }
+            },
+            // indicatorScreensaverEntity 5 (only Advanced Screensaver)
+            { 
+                type: 'script',
+                ScreensaverEntity: '0_userdata.0.currentSceneWZ',
+                ScreensaverEntityFactor: 1,
+                ScreensaverEntityDecimalPlaces: 1,
+                ScreensaverEntityIconOn: 'waves-arrow-up',
+                ScreensaverEntityIconOff: null,
+                ScreensaverEntityText: 'Feuchte',
+                ScreensaverEntityUnitText: '%',
+                ScreensaverEntityIconColor: {'val_min': 0, 'val_max': 985, 'val_best': 500}
+            }
+        ],
+
+    /*bottomScreensaverEntity: [
+        // bottomScreensaverEntity 1
+        {
+            ScreensaverEntity: 'accuweather.0.Daily.Day1.Sunrise',
+            ScreensaverEntityFactor: 1,
+            ScreensaverEntityDecimalPlaces: 0,
+            ScreensaverEntityDateFormat: { hour: '2-digit',minute: '2-digit' }, // Description at Wiki-Pages
+            ScreensaverEntityIconOn: 'weather-sunset-up',
+            ScreensaverEntityIconOff: null,
+            ScreensaverEntityText: 'Sonne',
+            ScreensaverEntityUnitText: '%',
+            ScreensaverEntityIconColor: MSYellow //{'val_min': 0, 'val_max': 100}
+        },
+        // bottomScreensaverEntity 2
+        {
+            ScreensaverEntity: 'accuweather.0.Current.WindSpeed',
+            ScreensaverEntityFactor: (1000/3600),
+            ScreensaverEntityDecimalPlaces: 1,
+            ScreensaverEntityIconOn: 'weather-windy',
+            ScreensaverEntityIconOff: null,
+            ScreensaverEntityText: "Wind",
+            ScreensaverEntityUnitText: 'm/s',
+            ScreensaverEntityIconColor: { 'val_min': 0,'val_max': 120 }
+        },
+        // bottomScreensaverEntity 3
+        {
+            ScreensaverEntity: 'accuweather.0.Current.WindGust',
+            ScreensaverEntityFactor: (1000/3600),
+            ScreensaverEntityDecimalPlaces: 1,
+            ScreensaverEntityIconOn: 'weather-tornado',
+            ScreensaverEntityIconOff: null,
+            ScreensaverEntityText: 'Böen',
+            ScreensaverEntityUnitText: 'm/s',
+            ScreensaverEntityIconColor: { 'val_min': 0,'val_max': 120 }
+        },
+        // bottomScreensaverEntity 4
+        {
+            ScreensaverEntity: 'accuweather.0.Current.WindDirectionText',
+            ScreensaverEntityFactor: 1,
+            ScreensaverEntityDecimalPlaces: 0,
+            ScreensaverEntityIconOn: 'windsock',
+            ScreensaverEntityIconOff: null,
+            ScreensaverEntityText: 'Windr.',
+            ScreensaverEntityUnitText: '°',
+            ScreensaverEntityIconColor: White
+        },
+        // bottomScreensaverEntity 5 (for Alternative and Advanced Screensaver)
+        {
+            ScreensaverEntity: '0_userdata.0.Kontrollzentrum.Fussbodenheizung.Wohnzimmer.homekit_CurrentRelativeHumidity',
+            ScreensaverEntityFactor: 1,
+            ScreensaverEntityDecimalPlaces: 1,
+            ScreensaverEntityIconOn: 'water-percent',
+            ScreensaverEntityIconOff: null,
+            ScreensaverEntityText: 'Feuchte',
+            ScreensaverEntityUnitText: '%',
+            ScreensaverEntityIconColor: { 'val_min': 0,'val_max': 100,'val_best': 65 }
+        },
+        // bottomScreensaverEntity 6 (for Advanced Screensaver)
+        {
+            ScreensaverEntity: NSPanel_Path+'Relay.1',
+            ScreensaverEntityIconOn: 'coach-lamp-variant',
+            ScreensaverEntityText: 'Street',
+            ScreensaverEntityOnColor: Yellow,
+            ScreensaverEntityOffColor: White,
+            ScreensaverEntityOnText: 'Is ON',
+            ScreensaverEntityOffText: 'Not ON'
+        },
+        // Examples for Advanced-Screensaver: https://github.com/joBr99/nspanel-lovelace-ui/wiki/ioBroker-Config-Screensaver#entity-status-icons-ab-v400 
+    ],*/
+
+
+    // Status Icon 
+    mrIcon1ScreensaverEntity: {
+        type: 'script',
+        ScreensaverEntity: '0_userdata.0.example_state_mricon',
+        ScreensaverEntityIconOn: 'lightbulb',
+        ScreensaverEntityIconOff: null,
+        ScreensaverEntityValue: null,
+        ScreensaverEntityValueDecimalPlace: 0,
+        ScreensaverEntityValueUnit: null,
+        ScreensaverEntityOnColor: On,
+        ScreensaverEntityOffColor: HMIOff
+    },
+    mrIcon2ScreensaverEntity: {
+        type: 'script',
+        ScreensaverEntity: 'Relay.2',
+        ScreensaverEntityIconOn: 'lightbulb',
+        ScreensaverEntityIconOff: null,
+        ScreensaverEntityValue: null,
+        ScreensaverEntityValueDecimalPlace: 0,
+        ScreensaverEntityValueUnit: null,
+        ScreensaverEntityOnColor: On,
+        ScreensaverEntityOffColor: HMIOff
+    },
+
+   
+        // Als Gedankenstütze, die Hauptseite muß main heißen!
+        //panelName: 'NSPanel', //unique name for the panel
+
+
+       
+
+        /***********************************************************************
+         **                                                                   **
+         **                    Screensaver Configuration                      **
+         **                                                                   **
+         ***********************************************************************/
+        
+        // ------ DE: Ende der Screensaver Einstellungen --------------------
+        // ------ EN: End of screensaver settings ---------------------------
+
+        //-------DE: Anfang Einstellungen für Hardware Button, wenn Sie softwareseitig genutzt werden (Rule2) -------------
+        //-------EN: Start Settings for Hardware Button, if used in software (Rule2) --------------------------------------
+        // DE: Konfiguration des linken Schalters des NSPanels
+        // EN: Configuration of the left switch of the NSPanel
+        buttonLeft:{
+            mode:'page',
+            page:'SensorGrid2'
+        },
+
+        // DE: Konfiguration des rechten Schalters des NSPanels
+        // EN: Configuration of the right switch of the NSPanel
+        buttonRight:{
+            mode:'switch',
+            state:'0_userdata.0.example_state_boolean2'
+        }
+
+        //--------- DE: Ende - Einstellungen für Hardware Button, wenn Sie softwareseitig genutzt werden (Rule2) -------------
+        //--------- EN: End - settings for hardware button if they are used in software (Rule2) ------------------------------
+
+        // DE: WICHTIG !! Parameter nicht ändern  WICHTIG!!
+        // EN: IMPORTANT !! Do not change parameters IMPORTANT!!
+
+    };
+
+
+       /**
+     ********************************************************************************
+     ********************************************************************************
+     ********************************************************************************
+     ********************************************************************************
+     ********************************************************************************
+     ********************************************************************************
+     ********************************************************************************
+     *  END STOP END STOP END - No more configuration - END STOP END STOP END       *
+     ********************************************************************************
+     *  For a update copy and paste the code below from orginal file.               *
+     * ******************************************************************************
+     ********************************************************************************
+     ********************************************************************************
+     ********************************************************************************
+     ********************************************************************************
+     ********************************************************************************
+     ********************************************************************************
+     */
+
+    log(await sendToAsync('nspanel-lovelace-ui.0', 'ScriptConfig', {...config, version}))
+}
+

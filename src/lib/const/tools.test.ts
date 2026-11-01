@@ -1,9 +1,12 @@
 import { expect } from 'chai';
+import { Icons } from './icon_mapping';
+import type { Dataitem } from '../controller/data-item';
 import {
     alignText,
     buildScrollingText,
     deepAssign,
     formatHMS,
+    getIconEntryValue,
     getInternalDefaults,
     getPayload,
     getPayloadArray,
@@ -16,6 +19,19 @@ import {
     isVersionGreaterOrEqual,
     setTriggeredToState,
 } from './tools';
+
+/**
+ * Minimal stand-in for a const Dataitem - getIconEntryValue() reads it via getString()/getNumber().
+ *
+ * @param value the value the item returns
+ */
+function constItem(value: string | number): Dataitem {
+    const fake = {
+        getString: async (): Promise<string> => String(value),
+        getNumber: async (): Promise<number> => Number(value),
+    };
+    return fake as unknown as Dataitem;
+}
 
 describe('lib/const/tools', () => {
     describe('alignText', () => {
@@ -298,6 +314,27 @@ describe('lib/const/tools', () => {
         it('respects write=false', () => {
             const d = getInternalDefaults('boolean', 'switch', false);
             expect(d.write).to.equal(false);
+        });
+    });
+    describe('getIconEntryValue font size suffix', () => {
+        const icon = (): Parameters<typeof getIconEntryValue>[0] => ({
+            true: { value: constItem('lightbulb') },
+            false: { value: constItem('lightbulb-outline') },
+            textSize: constItem(3),
+        });
+        it('appends the font id for the on state', async () => {
+            expect(await getIconEntryValue(icon(), true, '')).to.equal(`${Icons.GetIcon('lightbulb')}¬3`);
+        });
+        it('appends the font id for the off state (boolean)', async () => {
+            expect(await getIconEntryValue(icon(), false, '')).to.equal(`${Icons.GetIcon('lightbulb-outline')}¬3`);
+        });
+        it('appends font id 0', async () => {
+            const i = { ...icon(), textSize: constItem(0) };
+            expect(await getIconEntryValue(i, false, '')).to.equal(`${Icons.GetIcon('lightbulb-outline')}¬0`);
+        });
+        it('appends no suffix without textSize', async () => {
+            const i = { true: { value: constItem('lightbulb') }, false: { value: constItem('lightbulb-outline') } };
+            expect(await getIconEntryValue(i, false, '')).to.equal(Icons.GetIcon('lightbulb-outline'));
         });
     });
 });

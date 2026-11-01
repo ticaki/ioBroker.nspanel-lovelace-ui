@@ -1,6 +1,6 @@
 {
   "name": "iobroker.nspanel-lovelace-ui",
-  "version": "1.7.0",
+  "version": "2.0.2",
   "description": "NsPanel Lovelace UI is a Firmware for the nextion screen inside of NSPanel in the Design of Lovelace UI Design.",
   "author": {
     "name": "ticaki",
@@ -79,7 +79,7 @@
     "prebuild:ts": "clean-dir ./build",
     "build:ts": "build-adapter ts",
     "watch:ts": "build-adapter ts --watch",
-    "test:ts": "mocha --config test/mocharc.custom.json \"src/**/*.test.ts\"",
+    "test:ts": "mocha --config test/mocharc.custom.json \"src/**/*.test.ts\" \"src-admin/src/**/*.test.ts\"",
     "test:unit": "npm run test:ts",
     "test:package": "mocha test/package --exit",
     "test:integration": "mocha test/integration --exit",

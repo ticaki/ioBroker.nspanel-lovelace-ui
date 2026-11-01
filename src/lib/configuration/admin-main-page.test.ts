@@ -170,4 +170,54 @@ describe('lib/configuration - pages merged from another panel', () => {
         expect(mainPages[0].config).to.not.have.nested.property('data.headline.constVal', 'Fremdes Panel');
         expect(mainPages[0].config).to.have.nested.property('data.headline.constVal', 'Testpanel');
     });
+
+    /**
+     * A page merged in from another panel's script: it has no navigation node on this panel.
+     *
+     * @param uniqueID Id of the page.
+     * @returns The page.
+     */
+    function foreignPage(uniqueID: string): PageBase {
+        return {
+            uniqueID,
+            dpInit: '',
+            alwaysOn: 'none',
+            config: { card: 'cardGrid', data: { headline: { type: 'const', constVal: 'Fremdes Panel' } } },
+            pageItems: [],
+        } as unknown as PageBase;
+    }
+
+    it('lets an admin page replace a page of another panel that has no navigation node here', async () => {
+        const option: any = {
+            name: 'test',
+            topic: panelTopic,
+            pages: [screensaverPage(), foreignPage('grid1')],
+            navigation: [],
+        };
+        ensureMainPage(option, 'Testpanel');
+        await new AdminConfiguration(fakeAdapter([adminGridEntry('grid1', false)])).processentrys(option);
+
+        const pages = option.pages.filter((p: PageBase) => p.uniqueID === 'grid1');
+        expect(pages.length, 'exactly one page grid1').to.equal(1);
+        expect(pages[0].config).to.have.nested.property('data.headline.constVal', 'grid1');
+        expect(
+            option.navigation.some((n: NavigationItemConfig) => n && n.name === 'grid1'),
+            'navigation node',
+        ).to.equal(true);
+    });
+
+    it('keeps a script page of this panel (with a navigation node) over an admin page of the same name', async () => {
+        const option: any = {
+            name: 'test',
+            topic: panelTopic,
+            pages: [screensaverPage(), foreignPage('grid1')],
+            navigation: [{ name: 'grid1', page: 'grid1', left: {}, right: {} }],
+        };
+        ensureMainPage(option, 'Testpanel');
+        await new AdminConfiguration(fakeAdapter([adminGridEntry('grid1', false)])).processentrys(option);
+
+        const pages = option.pages.filter((p: PageBase) => p.uniqueID === 'grid1');
+        expect(pages.length).to.equal(1);
+        expect(pages[0].config).to.have.nested.property('data.headline.constVal', 'Fremdes Panel');
+    });
 });

@@ -10,7 +10,7 @@ export const SCHEDULE_ROW_HEIGHT = 35;
 /** cardSchedule: like cardEntities, but 6 tighter rows */
 export class CardSchedule extends React.Component<CardProps<CardScheduleModel>> {
     render(): React.JSX.Element {
-        const { model, ctx, global, send, press, openPopup } = this.props;
+        const { model, ctx, global, press, openPopup } = this.props;
         return (
             <EntityList
                 model={model}
@@ -19,7 +19,6 @@ export class CardSchedule extends React.Component<CardProps<CardScheduleModel>> 
                 top={SCHEDULE_TOP}
                 rowHeight={SCHEDULE_ROW_HEIGHT}
                 compact
-                send={send}
                 press={press}
                 openPopup={openPopup}
             />

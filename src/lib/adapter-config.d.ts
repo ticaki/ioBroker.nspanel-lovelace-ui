@@ -1,7 +1,7 @@
 // This file extends the AdapterConfig type from "@types/iobroker"
 
 import {NSpanelModel} from "./types/types";
-import type { ScreensaverEntry, ScreensaverNotifyConfig } from "./types/adminShareConfig";
+import type { AdminButtonFunction, NavigationOverride, PageLinkEntry, ScreensaverEntry, ScreensaverNotifyConfig } from "./types/adminShareConfig";
 
 // Augment the globally declared type ioBroker.AdapterConfig
 declare global {
@@ -11,6 +11,8 @@ declare global {
             berryUrl: string;
             tftUrl: string;
             adminOverridesScriptPages: boolean;
+            /** navigation of script pages changed in the admin tab "Navigation Flow" - applied on top of the script at start */
+            navigationOverrides?: NavigationOverride[];
             rememberLastSite: boolean
             testCase: boolean;
             mqttServer: boolean;
@@ -66,10 +68,27 @@ declare global {
              * Admin panel table. `kind` missing = 'tasmota' (hardware NSPanel); 'web' = standalone
              * web panel (id `web_<12 hex>`, no ip) shown only in a browser.
              */
-            panels: {name: string, topic: string, id: string, ip: string, model: NSpanelModel, kind?: 'tasmota' | 'web'}[];
+            panels: {
+                name: string,
+                topic: string,
+                id: string,
+                ip: string,
+                model: NSpanelModel,
+                kind?: 'tasmota' | 'web',
+                /** action of the left hardware button, configured in the panel tile; missing = the configuration script decides */
+                buttonLeft?: AdminButtonFunction,
+                /** action of the right hardware button, configured in the panel tile; missing = the configuration script decides */
+                buttonRight?: AdminButtonFunction,
+                /**
+                 * "panel uses no script": the panel is configured in the admin (+ global script) only - a local
+                 * panel script is rejected, its version is not checked and no script update is offered
+                 */
+                noScript?: boolean,
+            }[];
             pw1: string;
 
-            // PagePower
+            // PagePower - the old admin table is migrated into pageConfig at adapter start; at runtime
+            // buildPowerPage() fills one record per power page, PagePower reads the internal sum from it
             pagePowerdata: {
                 pageName: string,
                 headline: string,
@@ -333,7 +352,7 @@ declare global {
                 hidden?: boolean;
                 alwaysOn?: 'none' | 'always' | 'action' | 'ignore';
                 navigationAssignment?: navigationAssignment[]
-            })[];
+            }|PageLinkEntry)[];
         }
     }
 }

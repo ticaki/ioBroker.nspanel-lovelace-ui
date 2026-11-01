@@ -2,8 +2,8 @@ import React from 'react';
 import { ConfigGeneric, type ConfigGenericProps, type ConfigGenericState } from '@iobroker/json-config';
 import {
     Alert,
-    //Checkbox,
-    //FormControlLabel,
+    Checkbox,
+    FormControlLabel,
     Autocomplete,
     Box,
     Select,
@@ -37,6 +37,8 @@ import {
     type WebLinkSettings,
 } from './webPanelUrl';
 import ConfigIP from './components/ConfigIP';
+import PanelButtonDialog, { type PanelButtonSide } from './components/PanelButtonDialog';
+import type { AdminButtonFunction } from '../../src/lib/types/adminShareConfig';
 import { PanelStatusBadge } from './components/PanelStatusBadge';
 import { resolveTasmotaTimeZone, uniqueTasmotaTimeZones, type TasmotaTimeZone } from './tasmotaTimeZones';
 
@@ -48,6 +50,12 @@ interface PanelConfig {
     model?: string;
     /** missing = tasmota; a web panel (`kind: 'web'`) has no hardware behind it */
     kind?: 'tasmota' | 'web';
+    /** action of the left hardware button; missing = the configuration script decides */
+    buttonLeft?: AdminButtonFunction;
+    /** action of the right hardware button; missing = the configuration script decides */
+    buttonRight?: AdminButtonFunction;
+    /** "panel uses no script": configured in the admin (+ global script) only, a local panel script is rejected */
+    noScript?: boolean;
 }
 
 /** the three hardware models a panel (and a web panel) can have */
@@ -145,6 +153,12 @@ interface PagePanelOverviewState extends ConfigGenericState {
     pendingPanels: PanelConfig[] | null;
     // Map of panel IDs to their online status
     panelOnlineStates: Record<string, boolean>;
+    /**
+     * `cmd.detachLeft`/`cmd.detachRight` per panel id - a coupled hardware button switches its
+     * relay and never reaches the adapter, so an action configured for it has no effect.
+     * `null` = the state could not be read.
+     */
+    panelDetachStates: Record<string, { left: boolean | null; right: boolean | null }>;
     // State for blink animation
     isBlinking: boolean;
     // Lokale Kopien der Tasmota-Eingabefelder (verhindert Cursor-Sprünge)
@@ -159,6 +173,8 @@ interface PagePanelOverviewState extends ConfigGenericState {
 }
 
 class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any }, PagePanelOverviewState> {
+    /** dialog that configures the action of one hardware button of one panel */
+    private buttonDialogRef = React.createRef<PanelButtonDialog>();
     private pagesRetryTimeout?: NodeJS.Timeout;
     private blinkTimeout?: NodeJS.Timeout;
     private instance = this.props.oContext.instance ?? '0';
@@ -182,6 +198,7 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
             successMessage: '',
             pendingPanels: null,
             panelOnlineStates: {},
+            panelDetachStates: {},
             isBlinking: false,
             localTasmotaIP: props.data._tasmotaIP ?? '',
             localTasmotaName: props.data._tasmotaName ?? '',
@@ -229,6 +246,9 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
                 `${this.adapterName}.${this.instance}.panels.${panel.id}.info.isOnline`,
                 this.onPanelOnlineChanged,
             );
+            for (const id of this.detachStateIds(panel)) {
+                this.props.oContext.socket.unsubscribeState(id, this.onPanelDetachChanged);
+            }
         }
     }
     // Lade Timezone-Entities beim Mounten und abonniere Alive-Status
@@ -262,6 +282,17 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
             }
         } catch (error) {
             console.error('[PagePanelOverview] Failed to subscribe to panel online states:', error);
+        }
+
+        await this.loadDetachStates();
+        try {
+            for (const panel of this.props.data.panels || []) {
+                for (const id of this.detachStateIds(panel)) {
+                    await this.props.oContext.socket.subscribeState(id, this.onPanelDetachChanged);
+                }
+            }
+        } catch (error) {
+            console.error('[PagePanelOverview] Failed to subscribe to panel detach states:', error);
         }
 
         // Listen for visibility changes to refresh states when tab becomes visible again
@@ -330,6 +361,8 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
         } catch (error) {
             console.error('[PagePanelOverview] Failed to refresh panel online states:', error);
         }
+
+        await this.loadDetachStates();
     }
 
     // Callback for alive state changes
@@ -340,6 +373,97 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
         if (wasAlive !== isAlive) {
             this.setState({ alive: isAlive, error: isAlive ? null : this.getText('adapterNotAlive') });
         }
+    };
+
+    /**
+     * The two decoupling states of a panel.
+     *
+     * @param panel Panel of the table.
+     * @returns Both state ids, empty for a panel without an id.
+     */
+    private detachStateIds(panel: PanelConfig): string[] {
+        if (!panel.id) {
+            return [];
+        }
+        const base = `${this.adapterName}.${this.instance}.panels.${panel.id}.cmd.`;
+        return [`${base}detachLeft`, `${base}detachRight`];
+    }
+
+    /** Reads the decoupling states of all panels, so the tiles can tell an effective action from a kept one. */
+    private async loadDetachStates(): Promise<void> {
+        const states: PagePanelOverviewState['panelDetachStates'] = {};
+        for (const panel of this.props.data.panels || []) {
+            if (!panel.id) {
+                continue;
+            }
+            const entry: { left: boolean | null; right: boolean | null } = { left: null, right: null };
+            const [leftId, rightId] = this.detachStateIds(panel);
+            for (const [side, id] of [
+                ['left', leftId],
+                ['right', rightId],
+            ] as ['left' | 'right', string][]) {
+                try {
+                    const state = await this.props.oContext.socket.getState(id);
+                    entry[side] = state && state.val != null ? !!state.val : null;
+                } catch {
+                    entry[side] = null;
+                }
+            }
+            states[panel.id] = entry;
+        }
+        this.setState({ panelDetachStates: states });
+    }
+
+    /**
+     * Whether an action configured for a hardware button can work at all: a web panel has no relay,
+     * a hardware button has to be decoupled from its one. An unreadable state counts as decoupled -
+     * the same rule the dialog follows.
+     *
+     * @param panel Panel of the tile.
+     * @param side Which of the two buttons below the display.
+     */
+    private isButtonEffective(panel: PanelConfig, side: 'left' | 'right'): boolean {
+        if (panel.kind === 'web') {
+            return true;
+        }
+        const entry = panel.id ? this.state.panelDetachStates[panel.id] : undefined;
+        return !entry || entry[side] !== false;
+    }
+
+    /**
+     * Colour of a hardware button tile button: green = the configured action works, orange = an
+     * action is configured but the button is still coupled to its relay, default = nothing
+     * configured here (the configuration script may well have an action for it).
+     *
+     * @param panel Panel of the tile.
+     * @param side Which of the two buttons below the display.
+     */
+    private buttonTileColor(panel: PanelConfig, side: 'left' | 'right'): 'success' | 'warning' | 'primary' {
+        const action = side === 'left' ? panel.buttonLeft : panel.buttonRight;
+        if (!action) {
+            return 'primary';
+        }
+        return this.isButtonEffective(panel, side) ? 'success' : 'warning';
+    }
+
+    // Callback für Änderungen der Entkopplung (cmd.detachLeft/cmd.detachRight)
+    onPanelDetachChanged = (id: string, state: ioBroker.State | null | undefined): void => {
+        const match = id.match(/\.panels\.([^.]+)\.cmd\.detach(Left|Right)$/);
+        if (!match) {
+            return;
+        }
+        const panelId = match[1];
+        const side = match[2] === 'Left' ? 'left' : 'right';
+        const value = state && state.val != null ? !!state.val : null;
+        this.setState(prevState => {
+            const entry = prevState.panelDetachStates[panelId] ?? { left: null, right: null };
+            if (entry[side] === value) {
+                return null;
+            }
+            return {
+                panelDetachStates: { ...prevState.panelDetachStates, [panelId]: { ...entry, [side]: value } },
+            };
+        });
     };
 
     // Callback für State-Änderungen (z.B. Online-Status der Panels)
@@ -900,6 +1024,74 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
         }
     };
 
+    /**
+     * Opens the hardware button dialog for one panel.
+     *
+     * @param panel Panel of the tile.
+     * @param side Which of the two buttons below the display.
+     */
+    private handleButtonConfigOpen = (panel: PanelConfig, side: PanelButtonSide): void => {
+        this.buttonDialogRef.current?.openWith(panel, side);
+    };
+
+    /**
+     * Stores the action the dialog built in the panel table. `undefined` removes the field again,
+     * the configuration script decides for this button from then on.
+     *
+     * @param panelId Id of the panel.
+     * @param side Which of the two buttons below the display.
+     * @param action The action, undefined = not configured in the admin.
+     */
+    private handleButtonConfigSave = (
+        panelId: string,
+        side: PanelButtonSide,
+        action: AdminButtonFunction | undefined,
+    ): void => {
+        const panels: PanelConfig[] = this.props.data.panels || [];
+        const updatedPanels = panels.map((panel: PanelConfig) => {
+            if (panel.id !== panelId) {
+                return panel;
+            }
+            const next: PanelConfig = { ...panel };
+            if (side === 'left') {
+                if (action === undefined) {
+                    delete next.buttonLeft;
+                } else {
+                    next.buttonLeft = action;
+                }
+            } else if (action === undefined) {
+                delete next.buttonRight;
+            } else {
+                next.buttonRight = action;
+            }
+            return next;
+        });
+        void this.onChange('panels', updatedPanels).then(() => this.forceUpdate());
+    };
+
+    /**
+     * Stores the option "panel uses no script" in the panel table. Unchecked removes the field again.
+     *
+     * @param panelId Id of the panel.
+     * @param noScript true = the panel is configured in the admin (+ global script) only.
+     */
+    private handleNoScriptChange = (panelId: string, noScript: boolean): void => {
+        const panels: PanelConfig[] = this.props.data.panels || [];
+        const updatedPanels = panels.map((panel: PanelConfig) => {
+            if (panel.id !== panelId) {
+                return panel;
+            }
+            const next: PanelConfig = { ...panel };
+            if (noScript) {
+                next.noScript = true;
+            } else {
+                delete next.noScript;
+            }
+            return next;
+        });
+        void this.onChange('panels', updatedPanels).then(() => this.forceUpdate());
+    };
+
     // Schließt den Message-Dialog
     private handleMessageClose = (): void => {
         this.setState({ showMessageConfirm: false });
@@ -1150,6 +1342,8 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
                 <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
                     {panels.map((panel, index) => {
                         const isWebPanel = panel.kind === 'web';
+                        const leftColor = this.buttonTileColor(panel, 'left');
+                        const rightColor = this.buttonTileColor(panel, 'right');
                         return (
                             <Box
                                 key={panel.id || index}
@@ -1267,6 +1461,52 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
                                         />
                                     </Box>
 
+                                    {/* Panel uses no script (native.panels[].noScript) */}
+                                    <FormControlLabel
+                                        control={
+                                            <Checkbox
+                                                size="small"
+                                                checked={panel.noScript === true}
+                                                disabled={!panel.id}
+                                                onChange={(event: React.ChangeEvent<HTMLInputElement>): void =>
+                                                    this.handleNoScriptChange(panel.id ?? '', event.target.checked)
+                                                }
+                                            />
+                                        }
+                                        label={this.getText('panelNoScript')}
+                                        title={this.getText('panelNoScriptTooltip')}
+                                    />
+
+                                    {/* Hardware buttons below the display */}
+                                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 1 }}>
+                                        <Button
+                                            variant="outlined"
+                                            color={leftColor}
+                                            size="small"
+                                            onClick={() => this.handleButtonConfigOpen(panel, 'left')}
+                                            disabled={!panel.id}
+                                            title={
+                                                leftColor === 'warning' ? this.getText('hwButtonCoupled') : undefined
+                                            }
+                                            sx={{ flex: '1 1 140px' }}
+                                        >
+                                            {this.getText('hwButtonLeft')}
+                                        </Button>
+                                        <Button
+                                            variant="outlined"
+                                            color={rightColor}
+                                            size="small"
+                                            onClick={() => this.handleButtonConfigOpen(panel, 'right')}
+                                            disabled={!panel.id}
+                                            title={
+                                                rightColor === 'warning' ? this.getText('hwButtonCoupled') : undefined
+                                            }
+                                            sx={{ flex: '1 1 140px' }}
+                                        >
+                                            {this.getText('hwButtonRight')}
+                                        </Button>
+                                    </Box>
+
                                     {/* Console Button (Tasmota only) */}
                                     {isWebPanel ? null : (
                                         <Button
@@ -1285,6 +1525,18 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
                         );
                     })}
                 </Box>
+
+                {/* Action of one hardware button (native.panels[].buttonLeft/buttonRight) */}
+                <PanelButtonDialog
+                    ref={this.buttonDialogRef}
+                    socket={this.props.oContext.socket}
+                    theme={this.props.theme}
+                    themeType={this.props.oContext.themeType}
+                    adapterName={this.adapterName}
+                    instance={this.instance}
+                    alive={alive}
+                    onSave={this.handleButtonConfigSave}
+                />
 
                 {/* Confirm Dialog */}
                 <Dialog

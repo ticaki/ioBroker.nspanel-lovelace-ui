@@ -1,5 +1,6 @@
 import React from 'react';
 import { glyphToName, iconPath } from '../icons/iconData';
+import { drawableField } from '../protocol/fonts';
 
 export { glyphToName, iconPath } from '../icons/iconData';
 
@@ -20,10 +21,14 @@ export interface IconProps {
 /**
  * Draws a MDI icon for a glyph of the HMI font. A glyph that is not an icon (plain text,
  * e.g. `<`) is shown as text, an unknown private use glyph as a small placeholder box.
+ * A trailing font id `¬<n>` is removed; in a font without icons (0, 2, 5) the glyph stays
+ * empty like on the HMI, the size of the box is kept.
  */
 export class Icon extends React.Component<IconProps> {
     render(): React.JSX.Element {
-        const { glyph, size = 24, color = '#ffffff', className, style, onClick } = this.props;
+        const { size = 24, color = '#ffffff', className, style, onClick } = this.props;
+        const sized = this.props.glyph !== undefined ? drawableField(this.props.glyph) : undefined;
+        const glyph = sized?.font !== undefined ? sized.body : this.props.glyph;
         const name = this.props.name ?? (glyph ? glyphToName(glyph) : undefined);
         const d = name ? iconPath(name) : undefined;
         const box: React.CSSProperties = {
@@ -35,6 +40,16 @@ export class Icon extends React.Component<IconProps> {
             flex: '0 0 auto',
             ...style,
         };
+        if (sized?.font !== undefined && glyph === '' && this.props.name === undefined) {
+            return (
+                <span
+                    data-icon-empty=""
+                    className={className}
+                    style={box}
+                    onClick={onClick}
+                />
+            );
+        }
         if (d) {
             return (
                 <svg

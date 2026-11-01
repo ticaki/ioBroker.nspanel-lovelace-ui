@@ -16,12 +16,19 @@
     "webPanelEdit": "Web-Panel bearbeiten",
     "webPanelId": "ID des Web-Panels",
     "webPanelKind": "Web",
-    "webPanelNoTasmotaMaintain": "Ein Web-Panel hat keine Tasmota-Firmware und kein TFT-Display, hier gibt es nichts zu flashen. Nur das Skript gilt.",
+    "webPanelNoTasmotaMaintain": "Ein Web-Panel hat keine Tasmota-Firmware und kein TFT-Display, hier gibt es nichts zu flashen.",
     "webPanelTopic": "Topic (eindeutig, wird zum URL-Pfad)",
     "webPanelTopicDuplicate": "Dieses Topic wird schon von einem anderen Panel benutzt",
     "webPanelTopicHelp": "Buchstaben, Ziffern, _ und -, / als Trenner",
     "webPanelTopicInvalid": "Erlaubt sind nur Buchstaben, Ziffern, _, - und /",
     "webPanelTopicRequired": "Das Topic darf nicht leer sein",
     "webPanelTopicReserved": "Dieser Pfad wird vom Web-Server selbst benutzt",
-    "chart_script_navigation_hint": "Aus der alten Tabelle „Page Chart“ übernommen: Diese Seite bekommt ihre Navigation noch aus dem Skript (Seite „%s“). Das ist veraltet – bitte hier eine Navigation zuweisen und die Seite aus dem Skript entfernen."
+    "chart_script_navigation_hint": "Aus der alten Tabelle „Page Chart“ übernommen: Diese Seite bekommt ihre Navigation noch aus dem Skript (Seite „%s“). Das ist veraltet – bitte hier eine Navigation zuweisen und die Seite aus dem Skript entfernen.",
+    "power_script_navigation_hint": "Aus der alten Tabelle „Page Power“ übernommen: Diese Seite bekommt ihre Navigation noch aus dem Skript (Seite „%s“). Das ist veraltet – bitte hier eine Navigation zuweisen und die Seite aus dem Skript entfernen.",
+    "panelNoScript": "Panel benutzt kein Skript",
+    "panelNoScriptTooltip": "Das Panel wird nur über den Admin (und das globale Skript) konfiguriert. Ein dafür gesendetes Panel-Skript wird abgelehnt, ein Skript-Update wird nicht angeboten.",
+    "panelNoScriptInfo": "Skript deaktiviert",
+    "panelNoScriptVersion": "Skript deaktiviert",
+    "convertScript_noScriptPanel": "Das Panel ist auf „Panel benutzt kein Skript“ gestellt. Haken in den Panel-Einstellungen entfernen, Skript konvertieren und danach den Haken wieder setzen.",
+    "panelButtonDialog_modeNoneHintNoScript": "Das Panel benutzt kein Skript – ohne hier konfigurierte Aktion hat die Taste keine Funktion."
 }

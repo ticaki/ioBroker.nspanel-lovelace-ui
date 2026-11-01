@@ -37,6 +37,7 @@ import { isMainPageEntry } from '../../../src/lib/types/adminShareConfig';
 import ChannelConfigDialog from './ChannelConfigDialog';
 import icons from '../icons.json';
 import { I18n, type IobTheme, type ThemeName, type ThemeType } from '@iobroker/gui-components';
+import { rawItemListLabel } from './RawItemConfigDialog';
 import { getPageItemDefaultsByRole, getPageNaviItemDefaultsByRole } from '../../../src/lib/const/page-item-defaults';
 import { ConfigGeneric, type ConfigGenericProps, type ConfigGenericState } from '@iobroker/json-config';
 
@@ -510,7 +511,8 @@ export class PageMenuEditor extends ConfigGeneric<ConfigGenericProps & PageMenuE
      * @param forTrue
      */
     private getItemIconSrc(item: AdminPageItemConfig | null | undefined, forTrue = true): string {
-        if (item == null) {
+        // raw item: the raw data alone count - kept standard fields (icons, role) are not shown
+        if (item == null || item.useNative) {
             return '';
         }
         const explicit = forTrue ? item.trueIcon : item.falseIcon;
@@ -672,22 +674,19 @@ export class PageMenuEditor extends ConfigGeneric<ConfigGenericProps & PageMenuE
             ? (this.state.channelNames[normalizeChannelId(item.channelId).valueStateId] ?? '')
             : '';
         const isNativeItem = item.useNative === true;
-        const isNavigationItem = item.isNavigation === true;
+        const isNavigationItem = !isNativeItem && item.isNavigation === true;
         const role = item.role ?? '';
-        const fallbackLabel = isNativeItem
-            ? `${index + 1}: [native]`
-            : role
-              ? `${index + 1}: (${role})`
-              : String(index + 1);
-        const label = item.name || channelName || fallbackLabel;
-        const isNameFromChannel = !item.name && !!channelName;
+        const fallbackLabel = role ? `${index + 1}: (${role})` : String(index + 1);
+        // raw item: the raw data alone count, name and channel of the dialog are not used
+        const label = isNativeItem ? rawItemListLabel(item.native) : item.name || channelName || fallbackLabel;
+        const isNameFromChannel = !isNativeItem && !item.name && !!channelName;
 
         if (wide) {
             // Listenansicht (cardEntities / cardSchedule)
             return (
                 <Tooltip
                     key={index}
-                    title={normalizeChannelId(item.channelId).valueStateId || label}
+                    title={(!isNativeItem && normalizeChannelId(item.channelId).valueStateId) || label}
                 >
                     <Paper
                         elevation={isDragSource ? 0 : 2}
@@ -776,7 +775,7 @@ export class PageMenuEditor extends ConfigGeneric<ConfigGenericProps & PageMenuE
         return (
             <Tooltip
                 key={index}
-                title={normalizeChannelId(item.channelId).valueStateId || label}
+                title={(!isNativeItem && normalizeChannelId(item.channelId).valueStateId) || label}
             >
                 <Paper
                     elevation={isDragSource ? 0 : 2}
@@ -958,7 +957,8 @@ export class PageMenuEditor extends ConfigGeneric<ConfigGenericProps & PageMenuE
 
         const baseSlots = entry.card === 'cardGrid2' ? grid2Slots : SLOT_COUNTS_BASE[entry.card];
         const isGridCard = ['cardGrid', 'cardGrid2', 'cardGrid3'].includes(entry.card);
-        const scrollPresentation = entry.scrollPresentation ?? 'arrow';
+        // adapter default is classic, the setting itself lives in the page details
+        const scrollPresentation = entry.scrollPresentation ?? 'classic';
         const potentialArrow = isGridCard && scrollPresentation === 'arrow';
         const pageItems = entry.pageItems ?? [];
 
@@ -978,7 +978,6 @@ export class PageMenuEditor extends ConfigGeneric<ConfigGenericProps & PageMenuE
         const totalPages = Math.max(basePagesFinal, totalPagesEst);
         const totalRealSlots = effectiveSlots * totalPages;
         const filledCount = pageItems.filter(p => p != null).length;
-        const showScrollRadio = isGridCard && totalPages > 1;
 
         return (
             <Box>
@@ -1107,39 +1106,6 @@ export class PageMenuEditor extends ConfigGeneric<ConfigGenericProps & PageMenuE
                     </FormControl>
                 </Box>
 
-                {/* Scroll-Typ Auswahl (nur bei Grid und mehreren Seiten) */}
-                {showScrollRadio && (
-                    <Box sx={{ mb: 2 }}>
-                        <FormControl
-                            component="fieldset"
-                            disabled={!this.state.alive}
-                        >
-                            <FormLabel component="legend">{this.getText('pageMenu_scroll_type')}</FormLabel>
-                            <RadioGroup
-                                row
-                                value={scrollPresentation}
-                                onChange={(_e, val) => {
-                                    this.props.onEntryChange({
-                                        ...entry,
-                                        scrollPresentation: val as 'classic' | 'arrow',
-                                    });
-                                }}
-                            >
-                                <FormControlLabel
-                                    value="classic"
-                                    control={<Radio />}
-                                    label={this.getText('pageMenu_scroll_classic')}
-                                />
-                                <FormControlLabel
-                                    value="arrow"
-                                    control={<Radio />}
-                                    label={this.getText('pageMenu_scroll_arrow')}
-                                />
-                            </RadioGroup>
-                        </FormControl>
-                    </Box>
-                )}
-
                 {/* Items */}
                 <Paper
                     variant="outlined"
@@ -1238,7 +1204,6 @@ export class PageMenuEditor extends ConfigGeneric<ConfigGenericProps & PageMenuE
                     theme={this.props.theme}
                     themeType={this.props.oContext?.themeType}
                     oContext={this.props.oContext}
-                    expertMode={this.props.expertMode ?? false}
                     pagesList={this.state.filteredPagesList}
                     currentPageName={this.props.entry.uniqueName}
                     currentPageCard={this.props.entry.card}

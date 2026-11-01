@@ -114,12 +114,19 @@
     "webPanelEdit": "Editar painel web",
     "webPanelId": "ID do painel web",
     "webPanelKind": "Web",
-    "webPanelNoTasmotaMaintain": "Um painel web não tem firmware Tasmota nem ecrã TFT, não há nada para flashar. Só o script se aplica.",
+    "webPanelNoTasmotaMaintain": "Um painel web não tem firmware Tasmota nem ecrã TFT, não há nada para flashar.",
     "webPanelTopic": "Topic (único, torna-se o caminho do URL)",
     "webPanelTopicDuplicate": "Este topic já é usado por outro painel",
     "webPanelTopicHelp": "Letras, dígitos, _ e -, / como separador",
     "webPanelTopicInvalid": "Só são permitidos letras, dígitos, _, - e /",
     "webPanelTopicRequired": "O topic não pode estar vazio",
     "webPanelTopicReserved": "Este caminho é usado pelo próprio servidor web",
-    "chart_script_navigation_hint": "Migrada da antiga tabela \"Page Chart\": esta página ainda obtém a sua navegação do script (página \"%s\"). Isto está obsoleto - atribua aqui uma navegação e remova a página do script."
+    "chart_script_navigation_hint": "Migrada da antiga tabela \"Page Chart\": esta página ainda obtém a sua navegação do script (página \"%s\"). Isto está obsoleto - atribua aqui uma navegação e remova a página do script.",
+    "power_script_navigation_hint": "Migrada da antiga tabela \"Page Power\": esta página ainda obtém a sua navegação do script (página \"%s\"). Isto está obsoleto - atribua aqui uma navegação e remova a página do script.",
+    "panelNoScript": "O painel não usa script",
+    "panelNoScriptTooltip": "O painel é configurado apenas no admin (e pelo script global). Um script de painel enviado para ele é rejeitado, nenhuma atualização de script é oferecida.",
+    "panelNoScriptInfo": "Script desativado",
+    "panelNoScriptVersion": "Script desativado",
+    "convertScript_noScriptPanel": "O painel está definido como \"O painel não usa script\". Remova a marca nas configurações do painel, converta o script e depois marque novamente.",
+    "panelButtonDialog_modeNoneHintNoScript": "O painel não usa script - sem uma ação configurada aqui, o botão não tem função."
 }

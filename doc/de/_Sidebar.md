@@ -36,6 +36,7 @@
 - [Verlaufsdiagramm](PageChart-Admin)  
 - [Abfall](PageTrash-Admin)  
 - [Thermostat](PageThermo2-Admin)  
+- [Thermostat (klassisch)](PageThermo-Admin)  
 - [Wiederkehrende Dialoge](PageConfig-Dialoge)  
 
 **Screensaver**  

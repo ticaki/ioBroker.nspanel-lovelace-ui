@@ -44,6 +44,7 @@ import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutlined';
 import LockIcon from '@mui/icons-material/Lock';
 import ClearIcon from '@mui/icons-material/Clear';
 import { I18n } from '@iobroker/gui-components';
+import { rawItemListLabel } from './RawItemConfigDialog';
 import { ConfigGeneric, type ConfigGenericProps, type ConfigGenericState } from '@iobroker/json-config';
 import { EntitySelector } from './EntitySelector';
 import ChannelConfigDialog from './ChannelConfigDialog';
@@ -618,7 +619,7 @@ export class PageThermo2Editor extends ConfigGeneric<
             }
             const channelId = normalizeChannelId(item.channelId).valueStateId;
             const label = item.useNative
-                ? '[native]'
+                ? rawItemListLabel(item.native)
                 : item.name || this.state.objectNames[channelId] || channelId || String(index + 1);
             out.push({ kind: 'item', icon: this.itemIcon(item), label, index, filter });
         });
@@ -631,6 +632,10 @@ export class PageThermo2Editor extends ConfigGeneric<
      * @param item stored item
      */
     private itemIcon(item: AdminPageItemConfig): string {
+        // raw item: the raw data alone count - kept standard fields (icons, role) are not shown
+        if (item.useNative) {
+            return '';
+        }
         if (item.trueIcon) {
             return item.trueIcon;
         }
@@ -2157,7 +2162,6 @@ export class PageThermo2Editor extends ConfigGeneric<
                     theme={theme}
                     themeType={oContext?.themeType}
                     oContext={oContext}
-                    expertMode={this.props.expertMode ?? false}
                     pagesList={this.props.pagesList ?? []}
                     currentPageName={entry.uniqueName}
                     currentPageCard="cardThermo2"

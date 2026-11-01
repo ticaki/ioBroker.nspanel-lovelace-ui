@@ -50,6 +50,8 @@ var import_pageThermo2 = require("../pages/pageThermo2");
 var import_pageMedia = require("../pages/pageMedia");
 var import_type_pageItem = require("../types/type-pageItem");
 var import_tools = require("../const/tools");
+var import_navigation_overrides = require("../configuration/navigation-overrides");
+var import_global_config_merge = require("../configuration/global-config-merge");
 class ConfigManager extends import_library.BaseClass {
   //private test: ConfigManager.DeviceState;
   //colorOn: RGB = Color.On;
@@ -83,9 +85,10 @@ class ConfigManager extends import_library.BaseClass {
    * entries. Everything else comes from the admin configuration, which takes precedence anyway.
    *
    * @param panelTopic topic of the panel
+   * @param noScript the panel is marked "panel uses no script" - no placeholder start page
    * @returns a configuration that can be passed to {@link setScriptConfig}
    */
-  static getDefaultScriptConfig(panelTopic) {
+  static getDefaultScriptConfig(panelTopic, noScript = false) {
     return {
       ...configManagerConst.defaultConfig,
       version: ConfigManager.getTemplateScriptVersion() || ConfigManager.breakingVersion,
@@ -95,7 +98,8 @@ class ConfigManager extends import_library.BaseClass {
       defaultOffColor: { red: 253, green: 128, blue: 0 },
       defaultBackgroundColor: { red: 29, green: 29, blue: 29 },
       weatherAddDefaultItems: false,
-      pages: [{ type: "cardGrid", uniqueName: import_default_pages.mainPageName, heading: "Die Leere", items: [] }],
+      // "panel uses no script": no placeholder page, the adapter adds its system start page
+      pages: noScript ? [] : [{ type: "cardGrid", uniqueName: import_default_pages.mainPageName, heading: "Die Leere", items: [] }],
       subPages: []
     };
   }
@@ -166,14 +170,18 @@ class ConfigManager extends import_library.BaseClass {
     const version = (0, import_tools.getVersionAsNumber)(config.version);
     const requiredVersion = (0, import_tools.getVersionAsNumber)(scriptVersion);
     const breakingVersion = (0, import_tools.getVersionAsNumber)(ConfigManager.breakingVersion);
-    if (version < breakingVersion) {
+    const withoutScript = panelItem.noScript === true || config.scriptName === configManagerConst.defaultScriptName;
+    if (withoutScript) {
+      messages.push(
+        `Panel for Topic: ${config.panelTopic} name: ${panelItem.name} without script - admin configuration only`
+      );
+    } else if (version < breakingVersion) {
       messages.push(
         `Update Script! Panel for Topic: ${config.panelTopic} - name: ${panelItem.name} Script version ${config.version} is too low! Aborted! Required version is >=${ConfigManager.breakingVersion}!`
       );
       this.log.error(messages[messages.length - 1]);
       return { messages, panelConfig: void 0 };
-    }
-    if (version < requiredVersion) {
+    } else if (version < requiredVersion) {
       messages.push(
         `Update your script and/or resend the configuration to the adapter! Panel for Topic: ${config.panelTopic}, name: ${panelItem.name} \u2014 script version ${config.version} is below the required version ${scriptVersion}!`
       );
@@ -190,233 +198,21 @@ class ConfigManager extends import_library.BaseClass {
     }
     const globalPageIds = /* @__PURE__ */ new Set();
     {
-      const navigationAdjustRun = (oldUniqueName, newUniqueName, pages, renamedPages, maxRun = 3, indexRun = 0, runPrefix = "") => {
-        if (!oldUniqueName || !newUniqueName || oldUniqueName === newUniqueName) {
-          return pages;
-        }
-        if (indexRun++ > maxRun) {
-          this.log.warn(
-            `navigationAdjustRun for ${oldUniqueName} to ${newUniqueName} aborted - maxRun ${maxRun} reached!`
-          );
-          return pages;
-        }
-        const pageIndex = pages.findIndex((item) => item.uniqueName === oldUniqueName);
-        if (pageIndex === -1) {
-          return pages;
-        }
-        let page = pages[pageIndex];
-        if (!page) {
-          return pages;
-        }
-        renamedPages[oldUniqueName] = newUniqueName;
-        page = { ...structuredClone(page), uniqueName: newUniqueName };
-        pages.push(page);
-        if ("items" in page && page.items) {
-          for (let i = 0; i < page.items.length; i++) {
-            const item = page.items[i];
-            if (item && item.navigate && item.targetPage) {
-              const origin = item.targetPage;
-              for (const key in renamedPages) {
-                const value = renamedPages[key];
-                if (origin === value) {
-                  item.targetPage = value;
-                  continue;
-                }
-              }
-              if (renamedPages[item.targetPage]) {
-                item.targetPage = renamedPages[item.targetPage];
-                continue;
-              }
-              const newName = `${runPrefix}_${item.targetPage}_copy_nav_${Math.floor(Math.random() * 1e5)}`;
-              if (pages.findIndex((it) => it.uniqueName === newName) === -1) {
-                pages = navigationAdjustRun(
-                  item.targetPage,
-                  newName,
-                  pages,
-                  renamedPages,
-                  maxRun,
-                  indexRun,
-                  runPrefix
-                );
-              }
-              item.targetPage = newName;
-            }
-          }
-        }
-        for (const t of ["next", "prev", "home", "parent"]) {
-          const tag = t;
-          if (page[tag] === oldUniqueName) {
-            for (const key in renamedPages) {
-              const value = renamedPages[key];
-              if (page[tag] === value) {
-                continue;
-              }
-            }
-            if (renamedPages[page[tag]]) {
-              page[tag] = renamedPages[page[tag]];
-              continue;
-            }
-            const newName = `${runPrefix}_${page[tag]}_copy_nav_${Math.floor(Math.random() * 1e5)}`;
-            if (pages.findIndex((it) => it.uniqueName === newName) === -1) {
-              pages = navigationAdjustRun(
-                page[tag],
-                newName,
-                pages,
-                renamedPages,
-                maxRun,
-                indexRun,
-                runPrefix
-              );
-            }
-            page[tag] = newName;
-          }
-        }
-        return pages;
-      };
       const obj2 = await this.adapter.getForeignObjectAsync(this.adapter.namespace);
       if (obj2 && obj2.native && obj2.native.globalConfigRaw) {
-        const globalConfig = obj2.native.globalConfigRaw;
-        if (globalConfig && configManagerConst.isGlobalConfig(globalConfig)) {
-          globalConfig.maxNavigationAdjustRuns = globalConfig.maxNavigationAdjustRuns && globalConfig.maxNavigationAdjustRuns > 0 ? globalConfig.maxNavigationAdjustRuns : 3;
-          const removeGlobalPageIndexs = /* @__PURE__ */ new Set();
-          for (let i = 0; i < config.pages.length; i++) {
-            const page = config.pages[i];
-            if (page && "globalLink" in page && page.globalLink) {
-              const gIndex = globalConfig.subPages.findIndex((item) => item.uniqueName === page.globalLink);
-              const gPage = gIndex !== -1 ? globalConfig.subPages[gIndex] : void 0;
-              if (gPage) {
-                for (const t of ["next", "prev"]) {
-                  const tag = t;
-                  if (gPage[tag] != null) {
-                    const gIndex2 = globalConfig.subPages.findIndex(
-                      (item) => item.uniqueName === gPage[tag]
-                    );
-                    const index = config.pages.findIndex(
-                      (item) => "globalLink" in item && item.globalLink === gPage[tag] || item.uniqueName === gPage[tag]
-                    );
-                    if (gIndex2 !== -1 && index === -1) {
-                      let msg = `Global page ${gPage.uniqueName} ${tag} link to subPage ${gPage[tag]}. `;
-                      if (tag === "next") {
-                        msg += `Remove ${gPage[tag]} from subPages and add to pages at index ${i + 1}!`;
-                      } else {
-                        msg += `This is not recommended! Prev navigation will "randomly" change the order of pages! Consider to remove it!`;
-                      }
-                      messages.push(msg);
-                      config.pages.splice(i + 1, 0, {
-                        globalLink: gPage[tag]
-                      });
-                    }
-                  }
-                }
-              }
-            }
+        const merged = (0, import_global_config_merge.mergeGlobalConfig)(config, obj2.native.globalConfigRaw);
+        if (merged) {
+          for (const text of merged.warnings) {
+            this.log.warn(text);
           }
-          for (let i = config.pages.length - 1; i >= 0; i--) {
-            const page = config.pages[i];
-            if (page && "globalLink" in page && page.globalLink) {
-              const gIndex = globalConfig.subPages.findIndex((item) => item.uniqueName === page.globalLink);
-              let gPage = gIndex !== -1 ? globalConfig.subPages[gIndex] : void 0;
-              if (gPage) {
-                if (page.uniqueName != null && page.uniqueName !== gPage.uniqueName) {
-                  globalConfig.subPages = navigationAdjustRun(
-                    gPage.uniqueName,
-                    page.uniqueName,
-                    globalConfig.subPages,
-                    {},
-                    globalConfig.maxNavigationAdjustRuns,
-                    0,
-                    page.uniqueName
-                  );
-                  const index = globalConfig.subPages.findIndex(
-                    (p) => p.uniqueName === page.uniqueName
-                  );
-                  if (index !== -1) {
-                    gPage = globalConfig.subPages[index];
-                    gPage.uniqueName = page.uniqueName;
-                  }
-                } else {
-                  removeGlobalPageIndexs.add(gIndex);
-                }
-                config.pages[i] = {
-                  ...gPage,
-                  prev: void 0,
-                  next: void 0,
-                  home: void 0,
-                  parent: void 0
-                };
-                if (page.heading) {
-                  config.pages[i].heading = page.heading;
-                }
-                if (config.pages[i].uniqueName) {
-                  globalPageIds.add(config.pages[i].uniqueName);
-                }
-              } else {
-                config.pages.splice(i, 1);
-                const msg = `Global page with uniqueName ${page.globalLink} not found!`;
-                messages.push(msg);
-                this.log.warn(msg);
-              }
-            }
+          messages.push(...merged.messages);
+          for (const id of merged.globalPageIds) {
+            globalPageIds.add(id);
           }
-          for (let i = config.subPages.length - 1; i >= 0; i--) {
-            const page = config.subPages[i];
-            if (page && "globalLink" in page && page.globalLink) {
-              const gIndex = globalConfig.subPages.findIndex((item) => item.uniqueName === page.globalLink);
-              let gPage = gIndex !== -1 ? globalConfig.subPages[gIndex] : void 0;
-              if (gPage) {
-                if (page.uniqueName != null && page.uniqueName !== gPage.uniqueName) {
-                  globalConfig.subPages = navigationAdjustRun(
-                    gPage.uniqueName,
-                    page.uniqueName,
-                    globalConfig.subPages,
-                    {},
-                    globalConfig.maxNavigationAdjustRuns,
-                    0,
-                    page.uniqueName
-                  );
-                  const index = globalConfig.subPages.findIndex(
-                    (p) => p.uniqueName === page.uniqueName
-                  );
-                  if (index !== -1) {
-                    gPage = globalConfig.subPages[index];
-                    gPage.uniqueName = page.uniqueName;
-                  }
-                } else {
-                  removeGlobalPageIndexs.add(gIndex);
-                }
-                const existNav = page.prev != null || page.parent != null || page.next != null || page.home != null;
-                config.subPages[i] = {
-                  ...gPage,
-                  prev: existNav ? page.prev : gPage.prev,
-                  parent: existNav ? page.parent : gPage.parent,
-                  next: existNav ? page.next : gPage.next,
-                  home: existNav ? page.home : gPage.home
-                };
-                if (page.heading) {
-                  config.subPages[i].heading = page.heading;
-                }
-                if (config.subPages[i].uniqueName) {
-                  globalPageIds.add(config.subPages[i].uniqueName);
-                }
-              } else {
-                config.subPages.splice(i, 1);
-                const msg = `Global page with uniqueName ${page.globalLink} not found!`;
-                messages.push(msg);
-                this.log.warn(msg);
-              }
-            }
-          }
-          for (const index of Array.from(removeGlobalPageIndexs).sort((a, b) => b - a)) {
-            globalConfig.subPages.splice(index, 1);
-          }
-          for (const page of globalConfig.subPages || []) {
-            if (page && page.uniqueName && config.pages.findIndex((p) => p && p.uniqueName === page.uniqueName) === -1) {
-              globalPageIds.add(page.uniqueName);
-            }
-          }
-          config.subPages = config.subPages.concat(globalConfig.subPages || []);
-          config.navigation = (config.navigation || []).concat(globalConfig.navigation || []);
-          config.nativePageItems = (config.nativePageItems || []).concat(globalConfig.nativePageItems || []);
+          config.pages = merged.pages;
+          config.subPages = merged.subPages;
+          config.navigation = merged.navigation;
+          config.nativePageItems = merged.nativePageItems;
         }
       }
     }
@@ -554,9 +350,10 @@ class ConfigManager extends import_library.BaseClass {
       messages.push(`Button right wrong configured!`);
       this.log.warn(messages[messages.length - 1]);
     }
-    if (panelConfig.pages.length === 0) {
-      messages.push(`No pages found! This needs to be fixed!`);
-      this.log.error(messages[messages.length - 1]);
+    if (withoutScript) {
+    } else if (panelConfig.pages.length === 0) {
+      messages.push(`No pages in the script configuration! Pages from the admin configuration are used.`);
+      this.log.info(messages[messages.length - 1]);
     } else if (panelConfig.navigation.length === 0) {
       messages.push(
         `No navigation items found in the script configuration! Pages from the admin configuration are used.`
@@ -598,7 +395,7 @@ class ConfigManager extends import_library.BaseClass {
     return { messages: messages.map((a) => a.replaceAll("Error: ", "")), panelConfig };
   }
   async getPageConfig(config, panelConfig, messages) {
-    var _a, _b, _c, _d, _e, _f, _g, _h;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _i;
     if (panelConfig.pages === void 0) {
       panelConfig.pages = [];
     }
@@ -742,37 +539,34 @@ class ConfigManager extends import_library.BaseClass {
           continue;
         }
         if (page.type === "cardPower") {
-          if (!Array.isArray(this.adapter.config.pagePowerdata)) {
-            messages.push(`No pagePower configured in Admin for ${page.uniqueName}`);
-            this.log.warn(messages[messages.length - 1]);
-            continue;
-          }
-          const index = this.adapter.config.pagePowerdata.findIndex(
-            (item) => item.pageName === page.uniqueName
-          );
-          if (index === -1) {
-            messages.push(`No pagePowerdata found for ${page.uniqueName}`);
-            this.log.warn(messages[messages.length - 1]);
-            continue;
-          }
-          try {
-            ({ gridItem, messages } = await import_pagePower.PagePower.getPowerPageConfig(
-              this,
-              page,
-              index,
-              gridItem,
-              messages
-            ));
-          } catch (error) {
+          const entry = (0, import_adminShareConfig.findPowerEntryForScript)((_h = this.adapter.config.pageConfig) != null ? _h : [], page.uniqueName);
+          if (entry && !(0, import_adminShareConfig.isScriptNavigatedPower)(entry)) {
             messages.push(
-              `Configuration error in page power ${page.heading || "unknown"} with uniqueName ${page.uniqueName} - ${error}`
+              `Power page ${page.uniqueName} gets its navigation in the admin (tab PageConfig) - remove it from the script. Skipped!`
             );
+            this.log.warn(messages[messages.length - 1]);
+            continue;
+          }
+          if (entry) {
+            messages.push(
+              `Power page ${page.uniqueName}: the navigation from the script is deprecated - assign it in the admin (tab PageConfig, page ${entry.uniqueName}) and remove the page from the script.`
+            );
+            this.log.warn(messages[messages.length - 1]);
+            try {
+              gridItem = import_pagePower.PagePower.getPowerPageConfigFromEntry(this, entry, gridItem, page);
+            } catch (error) {
+              messages.push(`Configuration error in page power ${page.uniqueName} - ${error}`);
+              this.log.warn(messages[messages.length - 1]);
+              continue;
+            }
+          } else {
+            messages.push(`No power page ${page.uniqueName} found in the admin configuration`);
             this.log.warn(messages[messages.length - 1]);
             continue;
           }
         }
         if (page.type === "cardChart" || page.type === "cardLChart") {
-          const entry = (0, import_adminShareConfig.findChartEntryForScript)((_h = this.adapter.config.pageConfig) != null ? _h : [], page.uniqueName);
+          const entry = (0, import_adminShareConfig.findChartEntryForScript)((_i = this.adapter.config.pageConfig) != null ? _i : [], page.uniqueName);
           if (entry && !(0, import_adminShareConfig.isScriptNavigatedChart)(entry)) {
             messages.push(
               `Chart page ${page.uniqueName} gets its navigation in the admin (tab PageConfig) - remove it from the script. Skipped!`
@@ -818,6 +612,7 @@ class ConfigManager extends import_library.BaseClass {
                 temp.pageConfig.parent = page.uniqueName;
                 scriptPages.push(temp.pageConfig);
                 config.subPages.push(temp.pageConfig);
+                (0, import_navigation_overrides.recordGeneratedPage)(panelConfig, temp.pageConfig.uniqueName);
               }
             } catch (error) {
               messages.push(
@@ -1392,8 +1187,20 @@ class ConfigManager extends import_library.BaseClass {
   isPageBaseItem(item) {
     return !("native" in item);
   }
+  /**
+   * Brings `color_best` of the item's color scale into the form the runtime works with ({r, g, b}) - a script
+   * writes it as {red, green, blue}. Done once here, so every card below hands the scale over unchanged.
+   *
+   * @param item Item of the script.
+   */
+  normalizeColorScale(item) {
+    if (this.isPageBaseItem(item) && globals.isIconColorScaleElement(item.colorScale) && item.colorScale.color_best) {
+      item.colorScale = globals.normalizeIconColorElement(item.colorScale);
+    }
+  }
   async getPageNaviItemConfig(item, page) {
     var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l;
+    this.normalizeColorScale(item);
     if (this.isNativePageItem(item)) {
       if (!(0, import_type_pageItem.isPageItemDataItemsOptions)(item.native)) {
         throw new Error(`Native item is not a valid PageItemDataItemsOptions`);
@@ -2346,6 +2153,7 @@ class ConfigManager extends import_library.BaseClass {
   async getPageItemConfig(item, page, messages = []) {
     var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _A, _B, _C, _D;
     let itemConfig = void 0;
+    this.normalizeColorScale(item);
     if (item.navigate) {
       if (!item.targetPage || typeof item.targetPage !== "string") {
         throw new Error(`TargetPage missing in ${item && "id" in item && item.id || "no id"}!`);
@@ -2381,6 +2189,9 @@ class ConfigManager extends import_library.BaseClass {
             throw new Error(`State ${item.id} does not exist!`);
           }
           if (writeable) {
+            if (item.targetPageLongPress && item.longPress) {
+              throw new Error(`You can only use targetPageLongPress or longPress in the same item!`);
+            }
             return {
               messages,
               itemConfig: {
@@ -2390,6 +2201,8 @@ class ConfigManager extends import_library.BaseClass {
                     value: await this.getFieldAsDataItemConfig(item.id, true),
                     set: writeable ? await this.getFieldAsDataItemConfig(item.id) : void 0
                   },
+                  setNaviLongPress: item.targetPageLongPress ? await this.getFieldAsDataItemConfig(item.targetPageLongPress) : void 0,
+                  longPress: item.longPress ? await this.getFieldAsDataItemConfig(item.longPress) : void 0,
                   icon: {
                     true: {
                       value: await this.getFieldAsDataItemConfig(
@@ -2823,6 +2636,7 @@ class ConfigManager extends import_library.BaseClass {
             break;
           }
           case "blind": {
+            const blindIconOn = item.icon || (item.icon2 || item.icon3 || globals.isPartialIconSelectScaleElement(item.colorScale) ? import_page_item_defaults.pageItemDefaults.blind.iconOn : import_page_item_defaults.SHUTTER_POSITION_ICON);
             if (foundedStates[role].TILT_OPEN || foundedStates[role].TILT_CLOSE || foundedStates[role].TILT_STOP) {
               const tempItem = {
                 type: "shutter",
@@ -2830,10 +2644,7 @@ class ConfigManager extends import_library.BaseClass {
                 data: {
                   icon: {
                     true: {
-                      value: await this.getFieldAsDataItemConfig(
-                        item.icon || import_page_item_defaults.pageItemDefaults.blind.iconOn,
-                        true
-                      ),
+                      value: await this.getFieldAsDataItemConfig(blindIconOn, true),
                       color: await this.getIconColor(
                         item.onColor,
                         import_Color.Color[import_page_item_defaults.pageItemDefaults.blind.colorOn]
@@ -2899,10 +2710,7 @@ class ConfigManager extends import_library.BaseClass {
                 data: {
                   icon: {
                     true: {
-                      value: await this.getFieldAsDataItemConfig(
-                        item.icon || import_page_item_defaults.pageItemDefaults.blind.iconOn,
-                        true
-                      ),
+                      value: await this.getFieldAsDataItemConfig(blindIconOn, true),
                       color: await this.getIconColor(
                         item.onColor,
                         import_Color.Color[import_page_item_defaults.pageItemDefaults.blind.colorOn]

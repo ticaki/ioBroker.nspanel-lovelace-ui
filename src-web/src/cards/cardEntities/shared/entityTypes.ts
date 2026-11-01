@@ -1,4 +1,5 @@
 import { glyphToName } from '../../../icons/iconData';
+import { drawableField } from '../../../protocol/fonts';
 import { toNumber } from '../../../protocol/split';
 import type { Entity6 } from '../../../protocol/types';
 
@@ -103,55 +104,20 @@ export interface IconField {
     font?: number;
 }
 
-/** Metrics of a Nextion font of the HMI, in stage pixels */
-export interface NextionFont {
-    /** css font size of text: Noto Sans with a cap height of 0.714 em matches the pictures */
-    fontSize: number;
-    /** css size of a MDI glyph: the icons fill about 0.9 of the Nextion line height */
-    iconSize: number;
-    fontWeight: 400 | 700;
-}
-
-/**
- * The Nextion fonts 0-5 of the HMI (`fontSize` of a script item, `¬<n>` in the icon field):
- * 0 = 24 px text (noto-sans-24), 1 = 32 px icons and text (NotoSans-Regular), 2 = 32 px text
- * (noto-sans-32), 3 = 48 px icons and text, 4 = 80 px bold icons and text (NotoSans-Bold),
- * 5 = 128 px bold, ascii only. The Nextion size is the line height of the bitmap font; the
- * css sizes were measured on the emulator pictures (cap heights 13, 18, 17, 26, 43, 67 px).
- */
-export const NEXTION_FONTS: readonly NextionFont[] = [
-    { fontSize: 18, iconSize: 22, fontWeight: 400 },
-    { fontSize: 25, iconSize: 29, fontWeight: 400 },
-    { fontSize: 24, iconSize: 29, fontWeight: 400 },
-    { fontSize: 36, iconSize: 43, fontWeight: 400 },
-    { fontSize: 60, iconSize: 70, fontWeight: 700 },
-    { fontSize: 94, iconSize: 112, fontWeight: 700 },
-];
-
-/** css font size of text in the Nextion fonts 0-5 */
-export const NEXTION_FONT_SIZE: readonly number[] = NEXTION_FONTS.map(f => f.fontSize);
-
-/**
- * The metrics of a Nextion font.
- *
- * @param font the font from the icon field (`¬<n>`), undefined when the field has none
- * @param fallback the font the HMI uses for the element without a `¬<n>`
- */
-export function nextionFont(font: number | undefined, fallback: number): NextionFont {
-    const index = font !== undefined && font >= 0 && font < NEXTION_FONTS.length ? font : fallback;
-    return NEXTION_FONTS[index] ?? NEXTION_FONTS[1];
-}
+export { NEXTION_FONTS, NEXTION_FONT_SIZE, nextionFont, textShift, type NextionFont } from '../../../protocol/fonts';
 
 /**
  * Splits the icon field: the adapter can send a glyph, plain text (a value shown instead of an
  * icon) or a glyph followed by text (role `combined`), each optionally followed by `¬<font>`.
+ * With a `¬<font>` only what that font can draw is kept (see {@link drawableField}): an icon in
+ * font 0, 2 or 5 is gone, font 5 drops every non-ASCII character.
  *
  * @param icon the field
  */
 export function splitIconField(icon: string): IconField {
-    const sized = /¬([0-5])$/.exec(icon);
-    if (sized) {
-        return { ...splitIconField(icon.slice(0, sized.index)), font: Number(sized[1]) };
+    const { body, font } = drawableField(icon);
+    if (font !== undefined) {
+        return { ...splitIconField(body), font };
     }
     if (icon === '') {
         return { glyph: undefined, text: '' };

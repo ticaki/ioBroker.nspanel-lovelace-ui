@@ -6,7 +6,8 @@ import { isEmptyEntity } from '../../protocol/split';
 import type { Entity6 } from '../../protocol/types';
 import { theme } from '../../style/theme';
 import type { CardProps } from '../CardContract';
-import { entityPressEvent } from './entityPress';
+import { Pressable } from '../cardEntities/shared/Pressable';
+import { entityPressProps } from './entityPress';
 import type { CardMediaModel } from './parse';
 
 /** step of the volume buttons left and right of the slider */
@@ -125,18 +126,6 @@ class VolumeSlider extends React.Component<VolumeSliderProps, VolumeSliderState>
 
 /** The media card: logo, two text rows, transport buttons, volume slider and five option buttons */
 export class CardMedia extends React.Component<CardProps<CardMediaModel>> {
-    private pressEntity(entity: Entity6): void {
-        const event = entityPressEvent(entity);
-        if (!event) {
-            return;
-        }
-        if ('popup' in event) {
-            this.props.openPopup(event.popup, event.id, entity.displayName, entity.icon, entity.iconColor);
-        } else {
-            this.props.press(event.id, event.action, event.value);
-        }
-    }
-
     private renderControl(
         glyph: string | undefined,
         name: string | undefined,
@@ -171,14 +160,15 @@ export class CardMedia extends React.Component<CardProps<CardMediaModel>> {
 
     private renderOption(entity: Entity6, index: number): React.JSX.Element {
         const empty = isEmptyEntity(entity);
-        const pressable = !empty && entityPressEvent(entity) !== undefined;
+        const handlers = empty ? undefined : entityPressProps('cardMedia', entity, this.props);
         const color = color565ToCss(entity.iconColor);
         const text = entity.icon === '' ? entity.optionalValue || entity.displayName : '';
         return (
-            <div
+            <Pressable
                 key={index}
-                data-media-option={index}
-                data-pressable={pressable ? '' : undefined}
+                data-role="media-option"
+                data-id={String(index)}
+                {...handlers}
                 style={{
                     width: 96,
                     height: 48,
@@ -190,7 +180,6 @@ export class CardMedia extends React.Component<CardProps<CardMediaModel>> {
                     whiteSpace: 'nowrap',
                     overflow: 'hidden',
                 }}
-                onClick={pressable ? (): void => this.pressEntity(entity) : undefined}
             >
                 {empty ? null : entity.icon !== '' ? (
                     <Icon
@@ -201,7 +190,7 @@ export class CardMedia extends React.Component<CardProps<CardMediaModel>> {
                 ) : (
                     text
                 )}
-            </div>
+            </Pressable>
         );
     }
 
@@ -210,11 +199,11 @@ export class CardMedia extends React.Component<CardProps<CardMediaModel>> {
         if (isEmptyEntity(logo) || logo.icon === '') {
             return null;
         }
-        const pressable = entityPressEvent(logo) !== undefined;
+        const handlers = entityPressProps('cardMedia', logo, this.props);
         return (
-            <div
-                data-media-logo=""
-                data-pressable={pressable ? '' : undefined}
+            <Pressable
+                data-role="media-logo"
+                {...handlers}
                 style={{
                     position: 'absolute',
                     left: 10,
@@ -225,14 +214,13 @@ export class CardMedia extends React.Component<CardProps<CardMediaModel>> {
                     alignItems: 'center',
                     justifyContent: 'center',
                 }}
-                onClick={pressable ? (): void => this.pressEntity(logo) : undefined}
             >
                 <Icon
                     glyph={logo.icon}
                     size={58}
                     color={color565ToCss(logo.iconColor)}
                 />
-            </div>
+            </Pressable>
         );
     }
 

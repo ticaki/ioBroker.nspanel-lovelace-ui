@@ -34,7 +34,7 @@ __export(function_and_const_exports, {
   isColorEntryType: () => isColorEntryType,
   isEventMethod: () => isEventMethod,
   isEventType: () => isEventType,
-  isIconColorScaleElement: () => isIconColorScaleElement,
+  isIconColorScaleElement: () => import_adminShareConfig.isIconColorScaleElement,
   isIconSelectScaleElement: () => isIconSelectScaleElement,
   isPageMenuConfig: () => isPageMenuConfig,
   isPartialColorScaleElement: () => isPartialColorScaleElement,
@@ -65,7 +65,7 @@ __export(function_and_const_exports, {
   screenSaverModeArray: () => screenSaverModeArray
 });
 module.exports = __toCommonJS(function_and_const_exports);
-var import_Color = require("../const/Color");
+var import_adminShareConfig = require("./adminShareConfig");
 function convertColorScaleBest(F) {
   var _a, _b, _c;
   if (F) {
@@ -83,36 +83,13 @@ function isPartialIconSelectScaleElement(F) {
   return F && ("valIcon_min" in F || "valIcon_max" in F);
 }
 function normalizeIconColorElement(el) {
-  const copy = { ...el };
-  if (copy.color_best) {
-    copy.color_best = convertColorScaleBest(copy.color_best);
+  const copy = { ...el, color_best: void 0 };
+  if (el.color_best) {
+    copy.color_best = convertColorScaleBest(el.color_best);
+  } else {
+    delete copy.color_best;
   }
   return copy;
-}
-function isIconColorScaleElement(x) {
-  if (typeof x !== "object" || x === null) {
-    return false;
-  }
-  const v = x;
-  if (!Number.isFinite(v.val_min)) {
-    return false;
-  }
-  if (!Number.isFinite(v.val_max)) {
-    return false;
-  }
-  if (v.val_best != null && !Number.isFinite(v.val_best)) {
-    return false;
-  }
-  if (v.log10 != null && v.log10 !== "max" && v.log10 !== "min") {
-    return false;
-  }
-  if (v.mode != null && v.mode !== "mixed" && v.mode !== "hue" && v.mode !== "cie" && v.mode !== "triGrad" && v.mode !== "triGradAnchor" && v.mode !== "quadriGrad" && v.mode !== "quadriGradAnchor") {
-    return false;
-  }
-  if (v.color_best != null && !import_Color.Color.isRGB(v.color_best)) {
-    return false;
-  }
-  return true;
 }
 function isEventType(F) {
   return ["event"].indexOf(F) != -1;

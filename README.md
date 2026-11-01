@@ -157,16 +157,34 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
     Placeholder for the next version (at the beginning of the line):
     ### **WORK IN PROGRESS**
 -->
-### **WORK IN PROGRESS**
-- (ticaki) chart pages: the tab "Page Chart" is gone - its pages are moved into the page configuration (tab PageConfig) at adapter start and the old table is deleted; a name already used by another page gets the suffix `_chart`
-- (ticaki) chart pages: migrated pages keep their navigation from the script for now (deprecated, the editor shows a hint) until a navigation is assigned in the admin - script version 0.21.4 marks `ScriptConfig.PageChart` as deprecated
-- (tt-tom17) web panel: on a grid card a short tap on a tile switches it and holding the tile opens its detail popup, like on a real panel - a light tile with a colour role (rgb, rgbSingle, rgbThree, hue, ct, dimmer) opened the popup on a tap and was switched when held
-- (tt-tom17) a panel switched off via `panels.<id>.cmd.activated` is now left alone at adapter start - it no longer receives a restart request over http
-- (tt-tom17) a switched off panel reports the status `deactivated` instead of keeping the status of the previous run, so the panel overview no longer shows it as running
-- (tt-tom17) switching `cmd.activated` is confirmed at the panel again - the acknowledgement went to `panels.controller.cmd.activated` before
-- (ticaki) screensaver: the time no longer stops when other values on the screensaver change often - a trigger arriving within the update throttle was replaced by the first one and the minute update of the clock got lost
-- (tt-tom17) `cmd.hideCards` keeps its stored value at adapter start - it was overwritten with the value of `cmd.activated`
-- (ticaki) a configuration script is no longer required: a panel without a script starts with the admin configuration only (empty start page as fallback) instead of being skipped or pausing the adapter
+### 2.0.2 (2026-11-01)
+- (ticaki) admin: page item text size shows the pixel size of each font; icons only offer fonts 1, 3 and 4 (the others have no icons), font 5 is marked "ASCII only"
+- (ticaki) admin: the "..." button next to the item name is now "Dynamic name" (used only while the name is empty) and no longer offers unit and date format, which were ignored
+- (ticaki) admin: on cardThermo2 and cardMedia the name field notes that the name is only the popup title
+- (ticaki) admin: screensaver item dialog: "icon per value range" and the visibility settings are available without expert mode
+- (ticaki) web panel: the font `¬<n>` of page items works on every card; cardThermo2 uses the slot sizes and positions of the HMI
+
+### 2.0.1 (2026-11-01)
+- (ticaki) screensaver editor: areas with more items than places page with arrows instead of hiding the extra items, they are no longer reported as "no place in this version"; items with a condition (enabled / visible condition, also in raw data) are marked
+- (ticaki) admin: the "..." button of the media page player opens a list of all players found (alexa2 Echo devices, sonos speakers, squeezebox players, spotify-premium/mpd instances) grouped by adapter with search instead of the object tree; the id can still be typed by hand
+- (ticaki) admin: screensaver items show readable names (headline, object name or template name) instead of regex fragments; the full name is in the tooltip
+- (ticaki) admin: a script weather instance with a trailing dot (`pirate-weather.0.`) is recognized as installed and saved without the dot
+
+### 2.0.0 (2026-10-31)
+- (ticaki) maintain: new button "Take script over into admin" on every panel tile - converts the pages, the screensaver and the hardware buttons of a panel script into the admin configuration (preview with all problems, backup of the script, pages of the global script per panel, items the editor cannot express are taken over as raw data)
+- (ticaki) a configuration script is no longer required; new panel option "Panel uses no script" - the panel is configured in the admin only and a script sent for it is rejected
+- (ticaki) page configuration: new page types "Media player" (cardMedia), "Thermostat (classic)" (cardThermo) and "Page link"; paging of menu, thermostat and media pages can be set
+- (ticaki) page configuration: the old tabs "Page Power" and "Page Chart" are moved into the page configuration automatically at adapter start
+- (ticaki) item dialog: raw data (JSON) for page and screensaver items, many more fields (value conditions, slider ranges, `secondRow`, `colormode`, target page for buttons); long press is offered on grid pages only, like on the HMI
+- (tt-tom17) panel settings: the hardware buttons (relay decoupling and action) are configured in the panel tile
+- (ticaki) navigation flow: edit mode for prev/next/home/parent links (also for script pages, stored as override), auto layout, collapsible sub trees
+- (ticaki) icons: Material Design Icons 7.4.47 (546 new icons), own window and shutter icons, blinds show their position as icon - needs HMI/TFT 6.0.2 (beta TFT EU is 6.0.2)
+- (ticaki) global script: an admin page assigned to a panel replaces the global page of the same name
+- (ticaki, tt-tom17) web panel: tap and hold behave like on the HMI (grid tiles, cardMedia, cardThermo2, list rows), hardware buttons 20px higher
+- (ticaki) error in the log when Tasmota runs but the display never answers (hint to the NSPanel template / GPIO4)
+- (ticaki) fix: prefix and suffix of admin page item values were swapped - if you entered them the other way round, swap them back
+- (ticaki) fixes: `colorScale.color_best` ignored, font size lost while an item is off, long press also triggered the short press, media item of an admin page without media sub page, screensaver clock stopped, "show system pages" in the navigation flow
+- (tt-tom17) fixes: deactivated panels (`cmd.activated`) are left alone at adapter start and report `deactivated`, `cmd.hideCards` keeps its value at adapter start
 
 ### 1.7.0 (2026-10-25)
 - (ticaki) web panels: the panel UI in a web browser via http://<host>:8090/<topic>, no Tasmota needed - one web panel per address, all browsers on it stay in sync (new admin tab "Web panels")

@@ -1,7 +1,9 @@
 "use strict";
+var __create = Object.create;
 var __defProp = Object.defineProperty;
 var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
 var __getOwnPropNames = Object.getOwnPropertyNames;
+var __getProtoOf = Object.getPrototypeOf;
 var __hasOwnProp = Object.prototype.hasOwnProperty;
 var __export = (target, all) => {
   for (var name in all)
@@ -15,13 +17,33 @@ var __copyProps = (to, from, except, desc) => {
   }
   return to;
 };
+var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__getProtoOf(mod)) : {}, __copyProps(
+  // If the importer is in node compatibility mode or this is not an ESM
+  // file that has been converted to a CommonJS file using a Babel-
+  // compatible transform (i.e. "__esModule" has not been set), then set
+  // "default" to the CommonJS "module.exports" for node compatibility.
+  isNodeMode || !mod || !mod.__esModule ? __defProp(target, "default", { value: mod, enumerable: true }) : target,
+  mod
+));
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 var adminShareConfig_exports = {};
 __export(adminShareConfig_exports, {
   ADAPTER_NAME: () => ADAPTER_NAME,
+  ADMIN_BUTTON_DEFAULT_DELAY: () => ADMIN_BUTTON_DEFAULT_DELAY,
+  ADMIN_BUTTON_DELAY_MODES: () => ADMIN_BUTTON_DELAY_MODES,
+  ADMIN_BUTTON_MAX_DELAY: () => ADMIN_BUTTON_MAX_DELAY,
+  ADMIN_BUTTON_MIN_DELAY: () => ADMIN_BUTTON_MIN_DELAY,
+  ADMIN_BUTTON_MODES: () => ADMIN_BUTTON_MODES,
+  ADMIN_BUTTON_STATE_MODES: () => ADMIN_BUTTON_STATE_MODES,
   ALL_PANELS_SPECIAL_ID: () => ALL_PANELS_SPECIAL_ID,
   CHANNEL_ROLES_LIST: () => CHANNEL_ROLES_LIST,
+  CONVERT_GLOBAL_DECISIONS: () => CONVERT_GLOBAL_DECISIONS,
+  CONVERT_GLOBAL_DEFAULT_DECISION: () => CONVERT_GLOBAL_DEFAULT_DECISION,
+  HMI_FONTS: () => HMI_FONTS,
+  HMI_TEXT_SIZES: () => HMI_TEXT_SIZES,
   SAVE_PANEL_NAVIGATION_COMMAND: () => SAVE_PANEL_NAVIGATION_COMMAND,
+  SENDTO_CONVERT_SCRIPT_COMMAND: () => SENDTO_CONVERT_SCRIPT_COMMAND,
+  SENDTO_GET_MEDIA_PLAYER_COMMAND: () => SENDTO_GET_MEDIA_PLAYER_COMMAND,
   SENDTO_GET_PAGES_All_COMMAND: () => SENDTO_GET_PAGES_All_COMMAND,
   SENDTO_GET_PAGES_COMMAND: () => SENDTO_GET_PAGES_COMMAND,
   SENDTO_GET_PANELS_COMMAND: () => SENDTO_GET_PANELS_COMMAND,
@@ -29,32 +51,74 @@ __export(adminShareConfig_exports, {
   SENDTO_GET_SCREENSAVER_TEMPLATES_COMMAND: () => SENDTO_GET_SCREENSAVER_TEMPLATES_COMMAND,
   SENDTO_GET_WEATHER_ENTITY_COMMAND: () => SENDTO_GET_WEATHER_ENTITY_COMMAND,
   chartDefaults: () => chartDefaults,
+  conditionExpressionText: () => conditionExpressionText,
+  conditionValueText: () => conditionValueText,
   dropScriptNavigation: () => dropScriptNavigation,
   emptyChannelValueConfig: () => emptyChannelValueConfig,
   emptyChartEntry: () => emptyChartEntry,
+  emptyMediaEntry: () => emptyMediaEntry,
   emptyPowerSlot: () => emptyPowerSlot,
   emptyScreensaverEntry: () => emptyScreensaverEntry,
   emptyThermo2Circuit: () => emptyThermo2Circuit,
   emptyThermo2Entry: () => emptyThermo2Entry,
+  emptyThermoEntry: () => emptyThermoEntry,
   findChartEntryForScript: () => findChartEntryForScript,
+  findPowerEntryForScript: () => findPowerEntryForScript,
   formatEntryNumber: () => formatEntryNumber,
+  isAsciiOnlyTextSize: () => isAsciiOnlyTextSize,
+  isHmiTextSize: () => isHmiTextSize,
+  isIconColorScaleElement: () => isIconColorScaleElement,
+  isIconTextSize: () => isIconTextSize,
+  isLongPressCard: () => isLongPressCard,
   isMainPageEntry: () => isMainPageEntry,
+  isMediaBackend: () => isMediaBackend,
+  isNameOnlyPopupTitle: () => isNameOnlyPopupTitle,
+  isPageLinkEntry: () => isPageLinkEntry,
+  isRawItemFormat: () => isRawItemFormat,
+  isRawItemObject: () => isRawItemObject,
   isScriptNavigatedChart: () => isScriptNavigatedChart,
+  isScriptNavigatedPower: () => isScriptNavigatedPower,
+  isScrollCard: () => isScrollCard,
+  isSelectableMediaPlayer: () => isSelectableMediaPlayer,
+  legacyPowerStates: () => legacyPowerStates,
+  longPressCards: () => longPressCards,
   mainPageName: () => mainPageName,
+  mediaBackendFeatures: () => mediaBackendFeatures,
+  mediaBackendOf: () => mediaBackendOf,
+  mediaBackends: () => mediaBackends,
+  mediaListKinds: () => mediaListKinds,
+  mediaPlayerDefinitionOf: () => mediaPlayerDefinitionOf,
+  mediaPlayerDefinitions: () => mediaPlayerDefinitions,
+  mediaPlayerIdOf: () => mediaPlayerIdOf,
+  mediaVisibleToolbarItems: () => mediaVisibleToolbarItems,
+  mediaVolumeDefaults: () => mediaVolumeDefaults,
   migrateLegacyCharts: () => migrateLegacyCharts,
+  migrateLegacyPower: () => migrateLegacyPower,
   migrateScreensaverNotify: () => migrateScreensaverNotify,
+  nameIsPopupTitleCards: () => nameIsPopupTitleCards,
   newScreensaverNotifyId: () => newScreensaverNotifyId,
   normalizeChannelId: () => normalizeChannelId,
+  normalizeScrollFields: () => normalizeScrollFields,
   normalizeTrashItems: () => normalizeTrashItems,
+  normalizeWeatherEntity: () => normalizeWeatherEntity,
+  pageItemRawFormat: () => pageItemRawFormat,
+  pageLinkCard: () => pageLinkCard,
+  pageLinkProblem: () => pageLinkProblem,
   panelStatusColors: () => panelStatusColors,
   panelStatusStates: () => panelStatusStates,
   panelStatusTranslationKeys: () => panelStatusTranslationKeys,
+  parseMediaPlayerDefinitions: () => parseMediaPlayerDefinitions,
+  rawItemCondition: () => rawItemCondition,
+  rawItemFormats: () => rawItemFormats,
+  rawItemLabel: () => rawItemLabel,
   requiredScriptDataPoints: () => requiredScriptDataPoints,
+  resolvePageLinks: () => resolvePageLinks,
   reversePanelStatusStates: () => reversePanelStatusStates,
   screensaverAreas: () => screensaverAreas,
   screensaverCardOfMode: () => screensaverCardOfMode,
   screensaverChannelIdOf: () => screensaverChannelIdOf,
   screensaverDateFormats: () => screensaverDateFormats,
+  screensaverItemCondition: () => screensaverItemCondition,
   screensaverItemFields: () => screensaverItemFields,
   screensaverItemSource: () => screensaverItemSource,
   screensaverMaxEntries: () => screensaverMaxEntries,
@@ -68,6 +132,9 @@ __export(adminShareConfig_exports, {
   screensaverWeatherItemKeys: () => screensaverWeatherItemKeys,
   screensaverWeatherItemsOfAdapter: () => screensaverWeatherItemsOfAdapter,
   screensaverWeatherItemsOn: () => screensaverWeatherItemsOn,
+  scrollAutoTimingDefault: () => scrollAutoTimingDefault,
+  scrollCards: () => scrollCards,
+  scrollHalfCards: () => scrollHalfCards,
   serviceNodeName: () => serviceNodeName,
   servicePageName: () => servicePageName,
   shortStateLabel: () => shortStateLabel,
@@ -75,9 +142,13 @@ __export(adminShareConfig_exports, {
   thermo2Defaults: () => thermo2Defaults,
   thermo2MaxCircuits: () => thermo2MaxCircuits,
   thermo2SortOrders: () => thermo2SortOrders,
+  thermoChannelRoles: () => thermoChannelRoles,
+  toMediaPlayerDefinition: () => toMediaPlayerDefinition,
   trashItemCount: () => trashItemCount
 });
 module.exports = __toCommonJS(adminShareConfig_exports);
+var import_Color = require("../const/Color");
+var import_media_players = __toESM(require("../../../templates/media-players.json"));
 const ALL_PANELS_SPECIAL_ID = "///ALL_PANELS_SPECIAL";
 const SENDTO_GET_PANEL_NAVIGATION_COMMAND = "getPanelNavigation";
 const SAVE_PANEL_NAVIGATION_COMMAND = "savePanelNavigation";
@@ -147,6 +218,139 @@ function screensaverCardOfMode(mode) {
     default:
       return "screensaver";
   }
+}
+const rawItemFormats = ["native", "script"];
+function isRawItemFormat(value) {
+  return value === "script" || value === "native";
+}
+function isRawItemObject(value) {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+function pageItemRawFormat(item) {
+  return item.nativeFormat === "native" ? "native" : "script";
+}
+function rawItemLabel(config) {
+  if (!isRawItemObject(config)) {
+    return "";
+  }
+  for (const key of ["id", "template", "dpInit", "ScreensaverEntity"]) {
+    const value = config[key];
+    if (typeof value === "string" && value.trim()) {
+      return value.trim();
+    }
+  }
+  return isRawItemObject(config.native) ? rawItemLabel(config.native) : "";
+}
+const RAW_ENABLED_KEYS = ["enabled", "ScreensaverEntityEnabled"];
+const RAW_VISIBLE_KEYS = ["visibleCondition", "ScreensaverEntityVisibleCondition"];
+const RAW_CONDITION_DEPTH = 10;
+const CONDITION_TEXT_MAX = 80;
+function shortConditionText(text) {
+  return text.length > CONDITION_TEXT_MAX ? `${text.slice(0, CONDITION_TEXT_MAX - 1)}\u2026` : text;
+}
+function conditionExpressionText(text) {
+  const flat = text.trim().replace(/\s+/g, " ");
+  const single = /^return\s+([^;]+?)\s*;?$/.exec(flat);
+  return shortConditionText(single ? single[1] : flat);
+}
+function conditionParts(value, depth = 0) {
+  const out = { enabled: [], visible: [] };
+  if (depth > RAW_CONDITION_DEPTH) {
+    return out;
+  }
+  if (typeof value === "string") {
+    if (value.trim()) {
+      out.enabled.push(value.trim());
+    }
+  } else if (typeof value === "number" || value === false) {
+    out.enabled.push(String(value));
+  } else if (Array.isArray(value)) {
+    for (const v of value) {
+      const part = conditionParts(v, depth + 1);
+      out.enabled.push(...part.enabled);
+      out.visible.push(...part.visible);
+    }
+  } else if (isRawItemObject(value)) {
+    if (value.type === "const") {
+      if (value.constVal === false) {
+        out.enabled.push("false");
+      }
+      return out;
+    }
+    const dp = typeof value.dp === "string" && value.dp.trim() ? value.dp.trim() : "";
+    const id = typeof value.id === "string" && value.id.trim() ? value.id.trim() : "";
+    if (dp || id) {
+      out.enabled.push(dp || id);
+      if (typeof value.read === "string" && value.read.trim()) {
+        out.visible.push(conditionExpressionText(value.read));
+      }
+    } else if (Object.keys(value).length) {
+      out.enabled.push(shortConditionText(JSON.stringify(value)));
+    }
+  }
+  return out;
+}
+function conditionValueText(value) {
+  return conditionParts(value).enabled.join(", ");
+}
+function rawItemCondition(config) {
+  const out = {};
+  const visit = (value, depth) => {
+    if (depth > RAW_CONDITION_DEPTH || out.enabled !== void 0 && out.visibleCondition !== void 0) {
+      return;
+    }
+    if (Array.isArray(value)) {
+      for (const v of value) {
+        visit(v, depth + 1);
+      }
+      return;
+    }
+    if (!isRawItemObject(value)) {
+      return;
+    }
+    for (const [key, v] of Object.entries(value)) {
+      if (out.enabled === void 0 && RAW_ENABLED_KEYS.includes(key)) {
+        const part = conditionParts(v);
+        if (part.visible.length && out.visibleCondition === void 0) {
+          out.visibleCondition = shortConditionText(part.visible.join(", "));
+        }
+        if (part.enabled.length) {
+          out.enabled = part.enabled.join(", ");
+          continue;
+        }
+      }
+      if (out.visibleCondition === void 0 && RAW_VISIBLE_KEYS.includes(key)) {
+        const text = typeof v === "string" ? v.trim() ? conditionExpressionText(v) : "" : conditionValueText(v);
+        if (text) {
+          out.visibleCondition = text;
+          continue;
+        }
+      }
+      if (typeof v === "object" && v !== null) {
+        visit(v, depth + 1);
+      }
+    }
+  };
+  visit(config, 0);
+  return out.enabled !== void 0 || out.visibleCondition !== void 0 ? out : void 0;
+}
+function screensaverItemCondition(item) {
+  if (!item) {
+    return void 0;
+  }
+  if (item.raw) {
+    return rawItemCondition(item.raw.config);
+  }
+  const out = {};
+  const enabled = conditionValueText(item.enabled);
+  const visible = conditionValueText(item.visibleCondition);
+  if (enabled) {
+    out.enabled = enabled;
+  }
+  if (visible) {
+    out.visibleCondition = visible;
+  }
+  return enabled || visible ? out : void 0;
 }
 function screensaverChannelIdOf(stateId) {
   const parts = stateId.split(".");
@@ -260,6 +464,9 @@ function screensaverWeatherAdapterOf(entity) {
   const prefix = (entity != null ? entity : "").split(".")[0];
   return screensaverWeatherAdapters.find((a) => a === prefix);
 }
+function normalizeWeatherEntity(entity) {
+  return entity.trim().replace(/\.+$/, "");
+}
 function screensaverWeatherItemsOn(items, entity) {
   const adapter = screensaverWeatherAdapterOf(entity);
   if (!adapter || !items) {
@@ -299,6 +506,58 @@ function normalizeChannelId(raw) {
     };
   }
   return emptyChannelValueConfig();
+}
+const HMI_FONTS = {
+  0: { px: 24, icons: false, asciiOnly: false, bold: false },
+  1: { px: 32, icons: true, asciiOnly: false, bold: false },
+  2: { px: 32, icons: false, asciiOnly: false, bold: false },
+  3: { px: 48, icons: true, asciiOnly: false, bold: false },
+  4: { px: 80, icons: true, asciiOnly: false, bold: true },
+  5: { px: 128, icons: false, asciiOnly: true, bold: true }
+};
+const HMI_TEXT_SIZES = [0, 1, 2, 3, 4, 5];
+function isHmiTextSize(n) {
+  return typeof n === "number" && Number.isInteger(n) && n >= 0 && n <= 5;
+}
+function isIconTextSize(n) {
+  if (n === void 0) {
+    return true;
+  }
+  return isHmiTextSize(n) && HMI_FONTS[n].icons;
+}
+function isAsciiOnlyTextSize(n) {
+  return isHmiTextSize(n) && HMI_FONTS[n].asciiOnly;
+}
+const scrollCards = [
+  "cardGrid",
+  "cardGrid2",
+  "cardGrid3",
+  "cardEntities",
+  "cardSchedule",
+  "cardThermo2",
+  "cardMedia"
+];
+const scrollHalfCards = ["cardGrid", "cardGrid2", "cardGrid3", "cardThermo2"];
+const scrollAutoTimingDefault = 15;
+function isScrollCard(card) {
+  return !!card && scrollCards.includes(card);
+}
+const longPressCards = ["cardGrid", "cardGrid2", "cardGrid3"];
+function isLongPressCard(card) {
+  return !!card && longPressCards.includes(card);
+}
+const nameIsPopupTitleCards = ["cardThermo2", "cardMedia"];
+function isNameOnlyPopupTitle(card) {
+  return !!card && nameIsPopupTitleCards.includes(card);
+}
+function normalizeScrollFields(entry, card) {
+  const presentation = entry.scrollPresentation === "arrow" || entry.scrollPresentation === "auto" ? entry.scrollPresentation : "classic";
+  const type = entry.scrollType === "half" && scrollHalfCards.includes(card) ? "half" : "page";
+  if (presentation !== "auto") {
+    return { scrollPresentation: presentation, scrollType: type };
+  }
+  const timing = typeof entry.scrollAutoTiming === "number" && Number.isFinite(entry.scrollAutoTiming) && entry.scrollAutoTiming > 0 ? entry.scrollAutoTiming : scrollAutoTimingDefault;
+  return { scrollPresentation: "auto", scrollType: type, scrollAutoTiming: timing };
 }
 function emptyPowerSlot() {
   return {
@@ -350,6 +609,10 @@ function isScriptNavigatedChart(entry) {
   var _a;
   return entry.card === "cardChart" && entry.scriptNavigation === true && !((_a = entry.navigationAssignment) == null ? void 0 : _a.length);
 }
+function isScriptNavigatedPower(entry) {
+  var _a;
+  return entry.card === "cardPower" && entry.scriptNavigation === true && !((_a = entry.navigationAssignment) == null ? void 0 : _a.length);
+}
 function findChartEntryForScript(entries, scriptPageName) {
   var _a;
   const charts = entries.filter((e) => !!e && e.card === "cardChart");
@@ -358,9 +621,17 @@ function findChartEntryForScript(entries, scriptPageName) {
     return e.scriptNavigation === true && ((_a2 = e.scriptName) != null ? _a2 : e.uniqueName) === scriptPageName;
   })) != null ? _a : charts.find((e) => e.uniqueName === scriptPageName);
 }
+function findPowerEntryForScript(entries, scriptPageName) {
+  var _a;
+  const powers = entries.filter((e) => !!e && e.card === "cardPower");
+  return (_a = powers.find((e) => {
+    var _a2;
+    return e.scriptNavigation === true && ((_a2 = e.scriptName) != null ? _a2 : e.uniqueName) === scriptPageName;
+  })) != null ? _a : powers.find((e) => e.uniqueName === scriptPageName);
+}
 function dropScriptNavigation(entry) {
   var _a;
-  if (entry.card !== "cardChart" || !entry.scriptNavigation || !((_a = entry.navigationAssignment) == null ? void 0 : _a.length)) {
+  if (entry.card !== "cardChart" && entry.card !== "cardPower" || !entry.scriptNavigation || !((_a = entry.navigationAssignment) == null ? void 0 : _a.length)) {
     return entry;
   }
   const copy = { ...entry };
@@ -415,6 +686,112 @@ function migrateLegacyCharts(rows, entries) {
   }
   return { entries: out, messages, changed };
 }
+function legacyPowerUnit(state, tableUnit, stateUnits) {
+  return state && stateUnits[state] || (typeof tableUnit === "string" && tableUnit !== "" ? tableUnit : "W");
+}
+function legacyPowerContent(row, stateUnits) {
+  const str = (key) => {
+    const v = row[key];
+    return typeof v === "string" ? v : "";
+  };
+  const num = (key, def) => {
+    const v = row[key];
+    return typeof v === "number" ? v : def;
+  };
+  const slot = (i) => {
+    const p = `power${i}_`;
+    const useScale = row[`_${p}useColorScale`];
+    const scale = [row[`${p}minColorScale`], row[`${p}maxColorScale`], row[`${p}bestColorScale`]];
+    const state = str(`${p}state`).trim();
+    return {
+      icon: str(`${p}icon`),
+      iconColor: useScale === false ? str(`${p}iconColor`) : "",
+      state,
+      valueDecimal: num(`${p}valueDecimal`, 0),
+      valueUnit: legacyPowerUnit(state, row[`${p}valueUnit`], stateUnits),
+      entityHeadline: str(`${p}entityHeadline`),
+      useColorScale: useScale === true && scale.every((s) => typeof s === "number"),
+      minColorScale: num(`${p}minColorScale`, 0),
+      maxColorScale: num(`${p}maxColorScale`, 1e4),
+      bestColorScale: num(`${p}bestColorScale`, 0),
+      minSpeedScale: num(`${p}minSpeedScale`, 0),
+      maxSpeedScale: num(`${p}maxSpeedScale`, 1e4),
+      reverse: row[`${p}reverse`] === true
+    };
+  };
+  const topState = str("power7_state").trim();
+  const botState = str("power8_state").trim();
+  const internal = row.power8_selInternalCalculation === true;
+  const supply = row.power8_selPowerSupply;
+  return {
+    leftTop: slot(1),
+    leftMiddle: slot(2),
+    leftBottom: slot(3),
+    rightTop: slot(4),
+    rightMiddle: slot(5),
+    rightBottom: slot(6),
+    homeTop: {
+      state: topState,
+      valueDecimal: num("power7_valueDecimal", 0),
+      valueUnit: legacyPowerUnit(topState, row.power7_valueUnit, stateUnits)
+    },
+    homeBot: {
+      selInternalCalculation: internal,
+      state: botState,
+      selPowerSupply: Array.isArray(supply) ? supply.map(Number).filter((n) => Number.isInteger(n) && n >= 1 && n <= 6) : [],
+      valueDecimal: num("power8_valueDecimal", 0),
+      // the internal sum has no state, its unit is the one selected in the table
+      valueUnit: legacyPowerUnit(internal ? "" : botState, row.power8_valueUnit, stateUnits)
+    }
+  };
+}
+function legacyPowerStates(rows) {
+  const ids = /* @__PURE__ */ new Set();
+  for (const row of rows != null ? rows : []) {
+    for (let i = 1; i <= 8; i++) {
+      const v = row == null ? void 0 : row[`power${i}_state`];
+      if (typeof v === "string" && v.trim()) {
+        ids.add(v.trim());
+      }
+    }
+  }
+  return [...ids];
+}
+function migrateLegacyPower(rows, entries, stateUnits = {}) {
+  const out = [...entries];
+  const messages = [];
+  let changed = false;
+  for (const row of rows != null ? rows : []) {
+    const name = typeof (row == null ? void 0 : row.pageName) === "string" ? row.pageName.trim() : "";
+    if (!name) {
+      continue;
+    }
+    if (out.some((e) => e.card === "cardPower" && e.scriptName === name)) {
+      continue;
+    }
+    let uniqueName = name;
+    for (let i = 1; out.some((e) => e.uniqueName === uniqueName); i++) {
+      uniqueName = `${name}_power${i === 1 ? "" : i}`;
+    }
+    if (uniqueName !== name) {
+      messages.push(
+        `Power page '${name}': the name is already used by another page, migrated as '${uniqueName}'. The script keeps using '${name}'.`
+      );
+    }
+    out.push({
+      card: "cardPower",
+      uniqueName,
+      scriptName: name,
+      scriptNavigation: true,
+      headline: typeof row.headline === "string" ? row.headline : "",
+      ...legacyPowerContent(row, stateUnits),
+      hidden: row.hiddenByTrigger === true,
+      alwaysOn: row.alwaysOnDisplay === true ? "always" : "none"
+    });
+    changed = true;
+  }
+  return { entries: out, messages, changed };
+}
 const thermo2SortOrders = ["V", "H", "HM", "VM", "HB", "VB"];
 const thermo2MaxCircuits = 8;
 const thermo2Defaults = {
@@ -447,6 +824,143 @@ function emptyThermo2Entry(uniqueName) {
     alwaysOn: "none"
   };
 }
+const thermoChannelRoles = ["thermostat", "airCondition"];
+function emptyThermoEntry(uniqueName) {
+  return {
+    card: "cardThermo",
+    uniqueName,
+    headline: "",
+    channelId: "",
+    hidden: false,
+    alwaysOn: "none"
+  };
+}
+const mediaBackends = ["alexa2", "sonos", "spotify-premium", "mpd", "squeezeboxrpc"];
+const mediaListKinds = ["speakerList", "playList", "favoriteList"];
+const mediaBackendFeatures = {
+  alexa2: {
+    items: ["reminder", "online", "speakerList", "playList", "equalizer", "clock", "volumePresets", "repeat"],
+    colorOn: ["online", "speakerList", "playList", "equalizer", "clock", "volumePresets", "repeat"],
+    colorOff: ["reminder", "online", "speakerList", "repeat"],
+    titleColor: false
+  },
+  sonos: {
+    items: [
+      "online",
+      "speakerList",
+      "favoriteList",
+      "playList",
+      "clock",
+      "volumePresets",
+      "trackList",
+      "repeat",
+      "crossfade"
+    ],
+    colorOn: ["online", "speakerList", "favoriteList", "playList", "clock", "volumePresets", "repeat", "crossfade"],
+    colorOff: ["online", "speakerList", "repeat", "crossfade"],
+    titleColor: false
+  },
+  "spotify-premium": {
+    items: ["online", "speakerList", "playList", "trackList", "clock", "volumePresets", "repeat"],
+    colorOn: ["online", "speakerList", "playList", "clock", "volumePresets", "repeat"],
+    colorOff: ["online", "speakerList", "repeat"],
+    titleColor: false
+  },
+  mpd: {
+    items: ["online", "repeat", "clock", "volumePresets", "crossfade"],
+    colorOn: ["online", "repeat", "clock", "volumePresets"],
+    colorOff: ["online", "repeat"],
+    titleColor: false
+  },
+  squeezeboxrpc: {
+    items: ["online", "speakerList", "favoriteList", "playList", "clock", "volumePresets", "trackList", "repeat"],
+    colorOn: ["online", "speakerList", "favoriteList", "playList", "clock", "volumePresets", "repeat"],
+    colorOff: ["online", "speakerList", "repeat"],
+    titleColor: true
+  }
+};
+function mediaBackendOf(id) {
+  const name = (id != null ? id : "").trim().split(".")[0];
+  return mediaBackends.includes(name) ? name : void 0;
+}
+const mediaPlayerObjectTypes = ["device", "channel", "folder", "state"];
+function isMediaPlayerObjectType(value) {
+  return typeof value === "string" && mediaPlayerObjectTypes.includes(value);
+}
+function isMediaBackend(value) {
+  return typeof value === "string" && mediaBackends.includes(value);
+}
+function toMediaPlayerDefinition(value) {
+  if (!value || typeof value !== "object") {
+    return void 0;
+  }
+  const entry = { ...value };
+  const backend = entry.backend;
+  if (!isMediaBackend(backend)) {
+    return void 0;
+  }
+  if (entry.kind === "instance") {
+    return { backend, kind: "instance" };
+  }
+  const { folder, objectType } = entry;
+  if (entry.kind === "node" && typeof folder === "string" && folder && !folder.includes(".")) {
+    return isMediaPlayerObjectType(objectType) ? { backend, kind: "node", folder, objectType } : void 0;
+  }
+  return void 0;
+}
+function parseMediaPlayerDefinitions(json) {
+  const list = json && typeof json === "object" && "players" in json ? json.players : void 0;
+  const result = [];
+  for (const raw of Array.isArray(list) ? list : []) {
+    const def = toMediaPlayerDefinition(raw);
+    if (def && !result.some((d) => d.backend === def.backend)) {
+      result.push(def);
+    }
+  }
+  return result;
+}
+const mediaPlayerDefinitions = parseMediaPlayerDefinitions(import_media_players.default);
+function mediaPlayerDefinitionOf(backend) {
+  return backend ? mediaPlayerDefinitions.find((d) => d.backend === backend) : void 0;
+}
+function isSelectableMediaPlayer(id, type) {
+  const parts = id.trim().split(".");
+  const def = mediaPlayerDefinitionOf(mediaBackendOf(id));
+  if (!def || parts.length < 2 || !/^\d+$/.test(parts[1])) {
+    return false;
+  }
+  if (def.kind === "instance") {
+    return parts.slice(2).every((part) => part !== "");
+  }
+  return parts.length === 4 && parts[2] === def.folder && parts[3] !== "" && (type === void 0 || type === def.objectType);
+}
+function mediaPlayerIdOf(id) {
+  const def = mediaPlayerDefinitionOf(mediaBackendOf(id));
+  if ((def == null ? void 0 : def.kind) === "instance") {
+    return id.trim().split(".").slice(0, 2).join(".");
+  }
+  return id;
+}
+const mediaVolumeDefaults = { minValue: 0, maxValue: 100 };
+const SENDTO_GET_MEDIA_PLAYER_COMMAND = "getMediaPlayer";
+function emptyMediaEntry(uniqueName) {
+  return {
+    card: "cardMedia",
+    uniqueName,
+    mediaId: "",
+    pageItems: [],
+    hidden: false,
+    alwaysOn: "none"
+  };
+}
+function mediaVisibleToolbarItems(entry, backend) {
+  return mediaBackendFeatures[backend].items.filter(
+    (item) => {
+      var _a, _b, _c;
+      return item === "volumePresets" ? ((_a = entry.volumePresets) != null ? _a : []).length > 0 : ((_c = (_b = entry.toolbar) == null ? void 0 : _b[item]) == null ? void 0 : _c.enabled) !== false;
+    }
+  );
+}
 const trashItemCount = 6;
 const trashItemColors = ["#3c3fff", "#fffd77", "#d2d2d2", "#de8900", "#d2d2d2", "#d2d2d2"];
 function normalizeTrashItems(items) {
@@ -461,6 +975,52 @@ function normalizeTrashItems(items) {
       icon: (_d = item.icon) != null ? _d : ""
     };
   });
+}
+const pageLinkCard = "pageLink";
+function isPageLinkEntry(entry) {
+  return !!entry && entry.card === pageLinkCard;
+}
+function pageLinkProblem(link, entries) {
+  const target = link.target ? entries.find((e) => e && e.uniqueName === link.target) : void 0;
+  if (!target) {
+    return "missing";
+  }
+  return isPageLinkEntry(target) ? "link" : void 0;
+}
+function resolvePageLinks(entries) {
+  const result = [];
+  const unresolved = [];
+  for (const entry of entries) {
+    if (!entry) {
+      continue;
+    }
+    if (!isPageLinkEntry(entry)) {
+      result.push(entry);
+      continue;
+    }
+    const target = entries.find((e) => e && e.uniqueName === entry.target);
+    if (!target || isPageLinkEntry(target)) {
+      unresolved.push({
+        uniqueName: entry.uniqueName,
+        target: entry.target,
+        problem: target ? "link" : "missing"
+      });
+      continue;
+    }
+    const copy = structuredClone(target);
+    copy.uniqueName = entry.uniqueName;
+    copy.headline = entry.headline || target.headline || target.uniqueName;
+    copy.hidden = entry.hidden;
+    copy.alwaysOn = entry.alwaysOn;
+    copy.navigationAssignment = entry.navigationAssignment ? structuredClone(entry.navigationAssignment) : void 0;
+    copy.isMainPage = !!entry.isMainPage;
+    if (copy.card === "cardChart" || copy.card === "cardPower") {
+      copy.scriptNavigation = false;
+      delete copy.scriptName;
+    }
+    result.push(copy);
+  }
+  return { entries: result, unresolved };
 }
 function isMainPageEntry(entry) {
   return "isMainPage" in entry && !!entry.isMainPage;
@@ -1175,12 +1735,78 @@ const requiredScriptDataPoints = {
   }
 };
 const CHANNEL_ROLES_LIST = Object.keys(requiredScriptDataPoints);
+function isIconColorScaleElement(x) {
+  if (typeof x !== "object" || x === null) {
+    return false;
+  }
+  const v = x;
+  if (!Number.isFinite(v.val_min)) {
+    return false;
+  }
+  if (!Number.isFinite(v.val_max)) {
+    return false;
+  }
+  if (v.val_best != null && !Number.isFinite(v.val_best)) {
+    return false;
+  }
+  if (v.log10 != null && v.log10 !== "max" && v.log10 !== "min") {
+    return false;
+  }
+  if (v.mode != null && v.mode !== "mixed" && v.mode !== "hue" && v.mode !== "cie" && v.mode !== "triGrad" && v.mode !== "triGradAnchor" && v.mode !== "quadriGrad" && v.mode !== "quadriGradAnchor") {
+    return false;
+  }
+  if (v.color_best != null && !import_Color.Color.isRGB(v.color_best) && !import_Color.Color.isScriptRGB(v.color_best)) {
+    return false;
+  }
+  return true;
+}
+const ADMIN_BUTTON_MODES = [
+  "page",
+  "switch",
+  "button",
+  "buttonOnDelayOff",
+  "buttonOffDelayOn",
+  "buttonDelayOn",
+  "buttonDelayOff"
+];
+const ADMIN_BUTTON_STATE_MODES = [
+  "switch",
+  "button",
+  "buttonOnDelayOff",
+  "buttonOffDelayOn",
+  "buttonDelayOn",
+  "buttonDelayOff"
+];
+const ADMIN_BUTTON_DELAY_MODES = [
+  "buttonOnDelayOff",
+  "buttonOffDelayOn",
+  "buttonDelayOn",
+  "buttonDelayOff"
+];
+const ADMIN_BUTTON_DEFAULT_DELAY = 0.25;
+const ADMIN_BUTTON_MIN_DELAY = 1e-3;
+const ADMIN_BUTTON_MAX_DELAY = 2147483;
+const SENDTO_CONVERT_SCRIPT_COMMAND = "convertScriptToAdmin";
+const CONVERT_GLOBAL_DECISIONS = ["keepAdmin", "takeScript", "skip"];
+const CONVERT_GLOBAL_DEFAULT_DECISION = "keepAdmin";
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
   ADAPTER_NAME,
+  ADMIN_BUTTON_DEFAULT_DELAY,
+  ADMIN_BUTTON_DELAY_MODES,
+  ADMIN_BUTTON_MAX_DELAY,
+  ADMIN_BUTTON_MIN_DELAY,
+  ADMIN_BUTTON_MODES,
+  ADMIN_BUTTON_STATE_MODES,
   ALL_PANELS_SPECIAL_ID,
   CHANNEL_ROLES_LIST,
+  CONVERT_GLOBAL_DECISIONS,
+  CONVERT_GLOBAL_DEFAULT_DECISION,
+  HMI_FONTS,
+  HMI_TEXT_SIZES,
   SAVE_PANEL_NAVIGATION_COMMAND,
+  SENDTO_CONVERT_SCRIPT_COMMAND,
+  SENDTO_GET_MEDIA_PLAYER_COMMAND,
   SENDTO_GET_PAGES_All_COMMAND,
   SENDTO_GET_PAGES_COMMAND,
   SENDTO_GET_PANELS_COMMAND,
@@ -1188,32 +1814,74 @@ const CHANNEL_ROLES_LIST = Object.keys(requiredScriptDataPoints);
   SENDTO_GET_SCREENSAVER_TEMPLATES_COMMAND,
   SENDTO_GET_WEATHER_ENTITY_COMMAND,
   chartDefaults,
+  conditionExpressionText,
+  conditionValueText,
   dropScriptNavigation,
   emptyChannelValueConfig,
   emptyChartEntry,
+  emptyMediaEntry,
   emptyPowerSlot,
   emptyScreensaverEntry,
   emptyThermo2Circuit,
   emptyThermo2Entry,
+  emptyThermoEntry,
   findChartEntryForScript,
+  findPowerEntryForScript,
   formatEntryNumber,
+  isAsciiOnlyTextSize,
+  isHmiTextSize,
+  isIconColorScaleElement,
+  isIconTextSize,
+  isLongPressCard,
   isMainPageEntry,
+  isMediaBackend,
+  isNameOnlyPopupTitle,
+  isPageLinkEntry,
+  isRawItemFormat,
+  isRawItemObject,
   isScriptNavigatedChart,
+  isScriptNavigatedPower,
+  isScrollCard,
+  isSelectableMediaPlayer,
+  legacyPowerStates,
+  longPressCards,
   mainPageName,
+  mediaBackendFeatures,
+  mediaBackendOf,
+  mediaBackends,
+  mediaListKinds,
+  mediaPlayerDefinitionOf,
+  mediaPlayerDefinitions,
+  mediaPlayerIdOf,
+  mediaVisibleToolbarItems,
+  mediaVolumeDefaults,
   migrateLegacyCharts,
+  migrateLegacyPower,
   migrateScreensaverNotify,
+  nameIsPopupTitleCards,
   newScreensaverNotifyId,
   normalizeChannelId,
+  normalizeScrollFields,
   normalizeTrashItems,
+  normalizeWeatherEntity,
+  pageItemRawFormat,
+  pageLinkCard,
+  pageLinkProblem,
   panelStatusColors,
   panelStatusStates,
   panelStatusTranslationKeys,
+  parseMediaPlayerDefinitions,
+  rawItemCondition,
+  rawItemFormats,
+  rawItemLabel,
   requiredScriptDataPoints,
+  resolvePageLinks,
   reversePanelStatusStates,
   screensaverAreas,
   screensaverCardOfMode,
   screensaverChannelIdOf,
   screensaverDateFormats,
+  screensaverItemCondition,
   screensaverItemFields,
   screensaverItemSource,
   screensaverMaxEntries,
@@ -1227,6 +1895,9 @@ const CHANNEL_ROLES_LIST = Object.keys(requiredScriptDataPoints);
   screensaverWeatherItemKeys,
   screensaverWeatherItemsOfAdapter,
   screensaverWeatherItemsOn,
+  scrollAutoTimingDefault,
+  scrollCards,
+  scrollHalfCards,
   serviceNodeName,
   servicePageName,
   shortStateLabel,
@@ -1234,6 +1905,8 @@ const CHANNEL_ROLES_LIST = Object.keys(requiredScriptDataPoints);
   thermo2Defaults,
   thermo2MaxCircuits,
   thermo2SortOrders,
+  thermoChannelRoles,
+  toMediaPlayerDefinition,
   trashItemCount
 });
 //# sourceMappingURL=adminShareConfig.js.map

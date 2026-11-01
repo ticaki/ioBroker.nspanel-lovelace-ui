@@ -1,0 +1,557 @@
+// Test fixture for src/lib/configuration/script-source.test.ts: trimmed copy of the user script
+// "script.js.nspanel-lovelace-ui_0.nspanel6" exported from the dev-server; everything from "const version =" on (colours, type declarations) is cut off.
+
+async function configuration(): Promise<void> {
+
+    const overrideConfig: Partial<ScriptConfig.Config> = {
+        // hier kann man die Werte von unten überschreiben bzw nicht ewig im Skript suchen wo nochmal die Farbe steht :)
+        // pages und subpages geht hier nicht, weil die Seiten ja erst später angelegt werden. Bei const gehts nach Reihenfolge.
+        // panelTopic: 'nspanel/ns_panel4',
+        weatherEntity: 'brightsky.0.',
+        defaultOffColor: Off,
+        defaultOnColor: On,
+        weatherAddDefaultItems: true,
+    }
+
+    // Diese Konfiguration für den Fahrplan ist ein Beispiel was die interne Adapterkonfiguration benutzt, diese 
+    // ist recht komplex und wird nicht weiter erläutert. Da gibts später fertige Templates die man hier verwenden kann.
+    // wie am Fahrplan Beispiel zu sehen ist.
+    const fahrplan: any = {
+        heading: 'Fahrplan Script',
+        native: {
+            card: 'cardEntities',
+            dpInit: 'fahrplan.0.0',
+            uniqueID: 'fahrplanrouten',
+            template: 'entities.fahrplan.routes',
+        }
+    };
+
+    const powerpage: PageType = {
+        type: 'cardPower',
+        uniqueName: 'powerpage'
+    }
+
+    // Ein Beispiel für eine Gridseite mit verschiedenen Farbskalen
+    const irgendeinName: PageType = {
+        type: 'cardGrid',
+        uniqueName: 'cardThermo2',
+        //uniqueName: 'grid2',
+        heading: '///timeString',
+        //scrollPresentation: 'auto',
+        //scrollAutoTiming: 0,
+        alwaysOnDisplay: true,
+        items: [
+            { navigate:true, id: 'alias.0.Button', targetPage:`main` ,longPress: 'alias.0.Tests.button.SET'},
+            //@ts-ignore
+            { id: 'alias.0.Button', name:'testconfim', confirm: 'water'},
+            //{ id: 'alias.0.Tests.media', navigate: true, targetPage: 'media2',targetPageLongPress: 'mainMedia' },
+            //{ id: 'alias.0.Tests.media', asControl: true },
+
+            { id: 'alias.0.Tests.media', navigate: true, targetPage: 'media2' },
+
+            // {id: 'alias.0.Tests.Info.Infotest', navigate: true, targetPage: 'media2'},
+            { id: 'alias.0.Tests.Info.Infotest', navigate: true, targetPage: 'media2', useValue: true },
+            //{id: 'alias.0.Tests.Info.Infotest'},
+            { id: 'alias.0.Tests.Info.Infotest', useValue: true },
+
+
+            { id: 'alias.0.Hue',name: 'Hue', onColor: Yellow, offColor: Green, icon: 'lightbulb-on', icon2: 'lightbulb-outline', 
+                modeList: ["test","okay"],
+                inSel_Alias: '0_userdata.0.Green'  },
+            { id: 'alias.0.NSPanel.allgemein.shutterOnly' },
+            { id: 'alias.0.Licht.lights.Gerät_1' },
+            { id: 'alias.0.Licht.lights.Gerät_2' },
+            { id: '0_userdata.0.Einzelne_Geräte.timer' },
+            { id: '0_userdata.0.Einzelne_Geräte.slider', sliderItems: [{ heading: 'test', id: '', stepValue: 5 }], useValue: true },
+            { navigate: true, targetPage: 'media2', },
+            { navigate: true, targetPage: 'media2', id: '0_userdata.0.Info!' },
+            { id: 'alias.0.NSPanel.allgemein.shutter', filter: 1 },
+            { id: 'alias.0.NSPanel.allgemein.humidity' },
+            { id: 'alias.0.NSPanel.allgemein.Temperatur', suffixName: '>suf', prefixName: 'pre<', suffixValue: '>suf', prefixValue: 'pre<', fontSize: 1, useValue: true, name: 'standard', onColor: Red, offColor: Blue, colorScale: { 'val_min': 0, 'val_max': 40 } },
+            { id: 'alias.0.NSPanel.allgemein.Temperatur', fontSize: 2, useValue: true, name: 'hue', onColor: Red, offColor: Blue, colorScale: { 'val_min': 0, 'val_max': 40, mode: 'hue' } },
+            { id: 'alias.0.NSPanel.allgemein.Temperatur', fontSize: 3, useValue: true, name: 'cie', onColor: Red, offColor: Blue, colorScale: { 'val_min': 0, 'val_max': 40, mode: 'cie' } },
+            { id: 'alias.0.NSPanel.allgemein.Temperatur', fontSize: 5, useValue: true, name: 'standard log min', onColor: Red, offColor: Blue, colorScale: { 'val_min': 0, 'val_max': 40, log10: 'min' } },
+            { id: 'alias.0.NSPanel.allgemein.Temperatur', useValue: true, name: 'hue log min', onColor: Red, offColor: Blue, colorScale: { 'val_min': 0, 'val_max': 40, mode: 'hue', log10: 'min' } },
+            { id: 'alias.0.NSPanel.allgemein.Temperatur', useValue: false, name: 'cie log min', onColor: Red, offColor: Blue, colorScale: { 'val_min': 0, 'val_max': 40, mode: 'cie', log10: 'min' } },
+        ]
+    };
+
+    const ThermoNew: PageType = {
+        type: 'cardThermo2',
+        uniqueName: 'main22',
+        heading: 'egal wird eh nicht angezeigt',
+        //sortOrder: 'HB',
+        thermoItems:[
+            {id:'alias.0.NSPanel.1.usr.Temperatur.G.Wohnzimmer.1',
+            name:'Heizung',
+            name2:'Klimaanlage',
+            minValue:16,
+            maxValue:28,
+            stepValue:0.1,},
+            //{name: 'test1', id:'0_userdata.0.Einzelne_Geräte.Thermostat'},
+            //{name: 'test2', modeList:['aus','kaputt', 'falsch'], modeId:'0_userdata.0.Einzelne_Geräte.Thermostat.MODE' ,iconHeatCycle:'home', iconHeatCycleOffColor:Red, thermoId1:'0_userdata.0.Einzelne_Geräte.Thermostat.ACTUAL', set:'0_userdata.0.Einzelne_Geräte.Thermostat.SET', thermoId2:'0_userdata.0.Einzelne_Geräte.Thermostat.HUMIDITY'}
+        ],
+        items: [
+            { id: 'alias.0.NSPanel.1.usr.Temperatur.G.Wohnzimmer.1', useValue: true,fontSize: 1 },
+            {id: '0_userdata.0.Einzelne_Geräte.dimmer'},
+            /* {id: 'alias.0.Licht.lights.Gerät_1', filter: 0},
+           {id: 'alias.0.Licht.lights.Gerät_2', filter: 0},
+            {id: 'delete'},
+            {id: 'empty'},
+            {id: 'alias.0.NSPanel.allgemein.hue', },
+            {navigate: true, targetPage: 'fahrplanrouten'},
+            {id: 'alias.0.NSPanel.allgemein.shutter', filter: 1},
+            {id: 'alias.0.NSPanel.allgemein.shutter', filter: 1},
+            {id: 'alias.0.NSPanel.allgemein.shutter', filter: 1}*/
+        ],
+    }
+
+    const hidden: PageType = {
+        uniqueName: 'hidden', // keine Navigation, am besten uniqueName von config.ts übernehmen
+        heading: 'Grid 1',
+        items: [
+            { id: 'alias.0.Licht.lights.Gerät_1' },
+            { id: 'alias.0.Licht.lights.Gerät_2' },
+            { id: '0_userdata.0.Einzelne_Geräte.dimmer' },
+            { id: 'alias.0.NSPanel.allgemein.hue', },
+            { navigate: true, targetPage: 'fahrplanrouten' },
+            { id: 'alias.0.NSPanel.allgemein.shutter' }
+        ],
+        type: 'cardGrid',
+        hiddenByTrigger: true,
+        useColor: true
+    }
+    const subgrid1: PageType = {
+        //uniqueName: 'media2', // keine Navigation, am besten uniqueName von config.ts übernehmen
+        uniqueName: 'testrole',
+        heading: 'Grid 1',
+        items: [
+            { native: { template: 'text.battery.low', dpInit: '0_userdata.0', }, },
+            { id: 'alias.0.Licht.lights.Gerät_1' },
+            { id: 'alias.0.Licht.lights.Gerät_2' },
+            { id: '0_userdata.0.Einzelne_Geräte.dimmer' },
+            { id: 'alias.0.NSPanel.allgemein.hue', },
+            { navigate: true, targetPage: 'fahrplanrouten' },
+            { id: 'alias.0.NSPanel.allgemein.shutter' },
+            { id: '0_userdata.0.Einzelne_Geräte.volume', name: 'Volume', onColor: HMIOn, offColor: HMIOff, minValue: 0, maxValue: 100, navigate: true, targetPage: 'hidden' }
+
+        ],
+        type: 'cardGrid',
+        home: 'hidden',
+        parent: 'cardGrid1',
+        hiddenByTrigger: false,
+        useColor: true
+    }
+    const subgrid2: PageType = {
+        uniqueName: 'subgrid2', // keine Navigation, am besten uniqueName von config.ts übernehmen
+        heading: 'Grid Arrow',
+        items: [
+            { type: 'custom', id: 'alias.0.Licht.lights.Gerät_1.ACTUAL', name:'custom', icon:'water' },
+            { id: 'alias.0.Licht.lights.Gerät_2' },
+            { id: '0_userdata.0.Einzelne_Geräte.dimmer' },
+            { id: 'alias.0.NSPanel.allgemein.hue', },
+            { navigate: true, targetPage: 'fahrplanrouten' },
+            { id: 'alias.0.NSPanel.allgemein.shutter' },
+            { id: '0_userdata.0.Einzelne_Geräte.volume', name: 'Volume', onColor: HMIOn, offColor: HMIOff, minValue: 0, maxValue: 100, navigate: true, targetPage: 'hidden' }
+
+        ],
+        scrollPresentation: 'arrow',
+        type: 'cardGrid',
+        home: 'hidden',
+        parent: 'cardGrid1',
+        hiddenByTrigger: false,
+        useColor: true
+    }
+    const pageMediaTest1: PageType = {
+        type: 'cardMedia',
+        heading: 'main',
+        media: {
+            id: 'squeezeboxrpc.0.Players.Familienzimmer',
+            //speakerList: ['Familienzimmer', 'Mobil', 'Schlafzimmer'],
+            playList: ['Anime Best'],
+            volumePresets: ['leise?2'],
+            minValue: 0,
+            maxValue: 25,
+
+        },
+        uniqueName: 'main',
+        items: [
+            /*
+            {native: {template: 'text.clock',dpInit: '',},},
+            {id: '0_userdata.0.Einzelne_Geräte.Info', name: 'Gartenhaus' ,icon: 'storefront-outline', onColor: Menu, navigate: true, targetPage:'subgrid1'},
+            { name:'2', navigate: true, targetPage:'hidden'},
+            {id: '0_userdata.0.Einzelne_Geräte.volume', name: 'Volume', onColor: HMIOn, offColor: HMIOff, minValue: 0, maxValue: 100, navigate: true, targetPage:'hidden'},
+            {id: '0_userdata.0.Einzelne_Geräte.Info', name: 'Gartenhaus' ,icon: 'storefront-outline', onColor: Menu, navigate: true, targetPage:'subgrid1'},
+            { name:'2', navigate: true, targetPage:'hidden'},
+            {id: '0_userdata.0.Einzelne_Geräte.volume', name: 'Volume', onColor: HMIOn, offColor: HMIOff, minValue: 0, maxValue: 100, navigate: true, targetPage:'hidden'},
+            {id: '0_userdata.0.Einzelne_Geräte.Info', name: 'Gartenhaus' ,icon: 'storefront-outline', onColor: Menu, navigate: true, targetPage:'subgrid1'},
+            { name:'2', navigate: true, targetPage:'hidden'},
+            {id: '0_userdata.0.Einzelne_Geräte.volume', name: 'Volume', onColor: HMIOn, offColor: HMIOff, minValue: 0, maxValue: 100, navigate: true, targetPage:'hidden'},
+            {id: '0_userdata.0.Einzelne_Geräte.Info', name: 'Gartenhaus' ,icon: 'storefront-outline', onColor: Menu, navigate: true, targetPage:'subgrid1'},
+           */
+        ],
+        scrollPresentation: 'arrow'
+    };
+
+    const pageMediaTest2: PageType = {
+        type: 'cardMedia',
+        heading: 'test',
+        alwaysOnDisplay: true,
+        media: {
+            id: 'alexa2.0.Echo-Devices.G000000000000000',
+            speakerList: ['Anrichte'],
+            playList: ['Apple-Music-Playlist.Anime Best']
+        },
+        uniqueName: 'pageMediaTest2',
+        //uniqueName:'subgrid1',
+        items: [/*
+            { id: '0_userdata.0.Einzelne_Geräte.Info', name: 'Zeit', icon: 'clock-time-four-outline', offColor: White, onColor: White, useValue: true, fontSize: 1 },
+            {id: '0_userdata.0.Einzelne_Geräte.Info', name: 'Gartenhaus' ,icon: 'storefront-outline', onColor: Menu, navigate: true, targetPage:'subgrid1'},
+            { name:'2', navigate: true, targetPage:'hidden'},
+            {id: '0_userdata.0.Einzelne_Geräte.volume', name: 'Volume', onColor: HMIOn, offColor: HMIOff, minValue: 0, maxValue: 100, navigate: true, targetPage:'hidden'},
+            { name:'2', navigate: true, targetPage:'hidden'},
+            { name:'2', navigate: true, targetPage:'hidden'},
+            { name:'2', navigate: true, targetPage:'hidden'},
+            {id: '0_userdata.0.Einzelne_Geräte.volume', name: 'Volume', onColor: HMIOn, offColor: HMIOff, minValue: 0, maxValue: 100, navigate: true, targetPage:'hidden'},
+       */ ],
+        scrollPresentation: 'arrow',
+    };
+
+    const config: ScriptConfig.Config = {
+        panelTopic: 'nspanel/ns_panel6',
+        weatherEntity: 'accuweather.0.',
+        defaultOffColor: Off,
+        defaultOnColor: On,
+        defaultBackgroundColor: HMIDark,
+        weatherAddDefaultItems: false,
+
+        // Als Gedankenstütze, die Hauptseite muß main heißen!
+        //panelName: 'NSPanel', //unique name for the panel
+
+
+        // Seiteneinteilung / Page division
+        // Hauptseiten / Mainpages
+        pages: [
+            pageMediaTest1,
+
+            ThermoNew,
+            pageMediaTest2,
+            powerpage,
+            irgendeinName,
+            subgrid2,
+        ],
+        // Unterseiten / Subpages
+        subPages: [
+            subgrid1,
+            hidden
+            //fahrplan
+        ],
+
+        /***********************************************************************
+         **                                                                   **
+         **                    Screensaver Configuration                      **
+         **                                                                   **
+         ***********************************************************************/
+        notifyScreensaverEntity: [
+            { // nur wenn State true ist
+                type: 'script',
+                Enabled: ['0_userdata.0.NotityficationTest', '0_userdata.0.NotityficationTest2'],
+                Headline: 'test2',
+                Text: 'text2',
+                Priority: 2
+            },
+            {
+                type: 'script',
+                HeadlinePrefix: 'Hohe Zahl: ',
+                Headline: '0_userdata.0.number',
+                TextPrefix: 'Im Datenpunkt steht die Zahl ',
+                Text: '0_userdata.0.number',
+                TextSuffix: '. Bis dahin kannst du nicht zählen. Frag deine Mama!',
+                Enabled: '0_userdata.0.number',
+                VisibleCondition: 'val > 9',
+                isDismissiblePerEvent: true,
+                dismissibleIDGlobal: 'TestNotify',
+                Priority: 1,
+                buzzer: true
+            },
+        ], 
+        
+        favoritScreensaverEntity: [
+            {
+                type: 'template',
+                template: 'text.openweathermap.favorit',
+                dpInit: `/^openweathermap\\.0.+/`,
+                modeScr: 'favorit',
+            }
+        ],
+        alternateScreensaverEntity: [
+            // only used with alternate Screensaver
+        ],
+
+        indicatorScreensaverEntity: [
+            // indicatorScreensaverEntity 1 (only Advanced Screensaver)
+            {
+                type: 'script',
+                ScreensaverEntity: 'alias.0.NSPanel.allgemein.Status_offene_Fenster.ACTUAL',
+                ScreensaverEntityFactor: 1,
+                ScreensaverEntityDecimalPlaces: 0,
+                ScreensaverEntityIconOn: 'window-open-variant',
+                ScreensaverEntityIconOff: 'window-closed-variant',
+                ScreensaverEntityText: 'Fenster',
+                ScreensaverEntityUnitText: '%',
+                ScreensaverEntityIconColor: { val_min: 0, val_max: 1 },
+                ScreensaverEntityEnabled: '0_userdata.0.number1'
+            },
+            // indicatorScreensaverEntity 2 (only Advanced Screensaver)
+            {
+                type: 'script',
+                ScreensaverEntity: 'alias.0.NSPanel.allgemein.Status_offene_Tuer.ACTUAL',
+                ScreensaverEntityFactor: 1,
+                ScreensaverEntityDecimalPlaces: 0,
+                ScreensaverEntityIconOn: 'door-open',
+                ScreensaverEntityIconOff: 'door-closed',
+                ScreensaverEntityText: 'Tür',
+                ScreensaverEntityUnitText: '',
+                ScreensaverEntityIconColor: '0_userdata.0.RGB',
+            },
+            // indicatorScreensaverEntity 3 (only Advanced Screensaver)
+            {
+                type: 'script',
+                ScreensaverEntity: 'alias.0.NSPanel.allgemein.Status_Licht_An.ACTUAL',
+                ScreensaverEntityFactor: 1,
+                ScreensaverEntityDecimalPlaces: 0,
+                ScreensaverEntityIconOn: 'lightbulb',
+                ScreensaverEntityIconOff: null,
+                ScreensaverEntityText: 'Licht',
+                ScreensaverEntityUnitText: '',
+                ScreensaverEntityIconColor: { val_min: 0, val_max: 1 },
+            },
+            // indicatorScreensaverEntity 4 (only Advanced Screensaver)
+            {
+                type: 'script',
+                ScreensaverEntity: 'alias.0.Türschloss.ACTUAL',
+                ScreensaverEntityFactor: 1,
+                ScreensaverEntityDecimalPlaces: 0,
+                ScreensaverEntityIconOn: 'lock',
+                ScreensaverEntityIconOff: 'lock-open',
+                ScreensaverEntityText: 'Türschloss',
+                ScreensaverEntityUnitText: '',
+                ScreensaverEntityIconColor: { val_min: 0, val_max: 1, val_best: 1 },
+            },
+            // indicatorScreensaverEntity 5 (only Advanced Screensaver)
+            {
+                type: 'script',
+                ScreensaverEntity: 'alias.0.NSPanel.allgemein.Auto.Safety.ACTUAL',
+                ScreensaverEntityFactor: 1,
+                ScreensaverEntityDecimalPlaces: 0,
+                ScreensaverEntityIconOn: 'car-key',
+                ScreensaverEntityIconOff: null,
+                ScreensaverEntityText: 'Auto',
+                ScreensaverEntityUnitText: '',
+                ScreensaverEntityOnColor: '0_userdata.0.RGB'
+            },
+        ],
+
+        bottomScreensaverEntity: [/*
+            {
+                type: 'template',
+                template: 'text.openweathermap.favorit',
+                dpInit: `/^openweathermap\\.0.+/`,
+                modeScr: 'favorit',
+            },
+            // Bottom 2 -  Forecast Day 1
+            {
+                type: 'template',
+                template: 'text.openweathermap.bot2values',
+                dpInit: `/^openweathermap\\.0.+?day0/`,
+                modeScr: 'bottom',
+            },
+
+            // Bottom 3 - Forecast Day 2
+            {
+                type: 'template',
+                template: 'text.openweathermap.bot2values',
+                dpInit: `/^openweathermap\\.0.+?day1/`,
+                modeScr: 'bottom',
+            },
+
+            // Bottom 4 - Forecast Day 3
+            {
+                type: 'template',
+                template: 'text.openweathermap.bot2values',
+                dpInit: `/^openweathermap\\.0.+?day2/`,
+                modeScr: 'bottom',
+            },
+
+            // Bottom 5 - Forecast Day 4
+            {
+                type: 'template',
+                template: 'text.openweathermap.bot2values',
+                dpInit: `/^openweathermap\\.0.+?day3/`,
+                modeScr: 'bottom',
+            },
+            // Bottom 6 - Forecast Day 5
+            {
+                type: 'template',
+                template: 'text.openweathermap.bot2values',
+                dpInit: `/^openweathermap\\.0.+?day4/`,
+                modeScr: 'bottom',
+            },
+            // Bottom 7 -  Forecast Day 6
+            {
+                type: 'template',
+                template: 'text.openweathermap.bot2values',
+                dpInit: `/^openweathermap\\.0.+?day5/`,
+                modeScr: 'bottom',
+            },
+
+            // Bottom 8 - Windgeschwindigkeit
+            {
+                type: 'template',
+                template: 'text.openweathermap.windspeed',
+                dpInit: `/^openweathermap\\.0./`,
+                modeScr: 'bottom',
+            },
+
+            // Bottom 9 - Böen
+            {
+                type: 'template',
+                template: 'text.openweathermap.windgust',
+                dpInit: `/^openweathermap\\.0./`,
+                modeScr: 'bottom',
+            },
+
+            // Bottom 10 - Windrichtung
+            {
+                type: 'template',
+                template: 'text.openweathermap.winddirection',
+                dpInit: `/^openweathermap\\.0./`,
+                modeScr: 'bottom',
+            },
+
+        */],
+
+        leftScreensaverEntity: [
+            // leftScreensaverEntity 1 (only Advanced Screensaver)
+            {
+                type: 'script',
+                ScreensaverEntity: 'alias.0.NSPanel.Flur.Sensor.ANALOG.Temperature.ACTUAL',
+                ScreensaverEntityFactor: 1,
+                ScreensaverEntityDecimalPlaces: 1,
+                ScreensaverEntityIconOn: 'thermometer',
+                ScreensaverEntityIconOff: null,
+                ScreensaverEntityText: 'Temperatur',
+                ScreensaverEntityUnitText: '°C',
+                ScreensaverEntityIconColor: { val_min: 0, val_max: 35, val_best: 22 },
+            },
+            // leftScreensaverEntity 2 (only Advanced Screensaver)
+            {
+                type: 'script',
+                ScreensaverEntity: 'alias.0.Heizung.WärmeTagesVerbrauch.ACTUAL',
+                ScreensaverEntityFactor: 1,
+                ScreensaverEntityDecimalPlaces: 1,
+                ScreensaverEntityIconOn: 'counter',
+                ScreensaverEntityIconOff: null,
+                ScreensaverEntityText: 'Wärme',
+                ScreensaverEntityUnitText: ' kWh',
+                ScreensaverEntityIconColor: MSYellow, //{'val_min': 0, 'val_max': 5000}
+            },
+            // leftScreensaverEntity 3 (only Advanced Screensaver)
+            {
+                type: 'script',
+                ScreensaverEntity: 'alias.0.NSPanel.allgemein.Abfall.event1.INFO',
+                ScreensaverEntityFactor: 1,
+                ScreensaverEntityDecimalPlaces: 0,
+                ScreensaverEntityDateFormat: { year: 'numeric', month: '2-digit', day: '2-digit' },
+                ScreensaverEntityIconOn: 'trash-can',
+                ScreensaverEntityIconOff: null,
+                ScreensaverEntityText: 'Abfall',
+                ScreensaverEntityUnitText: '',
+                ScreensaverEntityIconColor: '0_userdata.0.Abfallkalender.1.color',
+            },
+        ],
+
+        // Status Icon 
+        mrIcon1ScreensaverEntity: {
+            type: 'script',
+            ScreensaverEntity: 'Relay.1',
+            ScreensaverEntityIconOn: 'lightbulb',
+            ScreensaverEntityIconOff: null,
+            ScreensaverEntityValue: null,
+            ScreensaverEntityValueDecimalPlace: 0,
+            ScreensaverEntityValueUnit: null,
+            ScreensaverEntityOnColor: On,
+            ScreensaverEntityOffColor: HMIOff
+        },
+        mrIcon2ScreensaverEntity: {
+            type: 'script',
+            ScreensaverEntity: 'Relay.2',
+            ScreensaverEntityIconOn: 'lightbulb',
+            ScreensaverEntityIconOff: null,
+            ScreensaverEntityValue: null,
+            ScreensaverEntityValueDecimalPlace: 0,
+            ScreensaverEntityValueUnit: null,
+            ScreensaverEntityOnColor: On,
+            ScreensaverEntityOffColor: HMIOff
+        },
+        // ------ DE: Ende der Screensaver Einstellungen --------------------
+        // ------ EN: End of screensaver settings ---------------------------
+
+        //-------DE: Anfang Einstellungen für Hardware Button, wenn Sie softwareseitig genutzt werden (Rule2) -------------
+        //-------EN: Start Settings for Hardware Button, if used in software (Rule2) --------------------------------------
+        // DE: Konfiguration des linken Schalters des NSPanels
+        // EN: Configuration of the left switch of the NSPanel
+        buttonLeft: {
+            // DE: Mögliche Werte wenn Rule2 definiert: 'page', 'toggle', 'set' - Wenn nicht definiert --> mode: null
+            // EN: Possible values if Rule2 defined: 'page', 'toggle', 'set' - If not defined --> mode: null
+            mode: 'page',
+            // DE: Zielpage - Verwendet wenn mode = page
+            // EN: Target page - Used if mode = page
+            page: 'main',
+        },
+
+        // DE: Konfiguration des rechten Schalters des NSPanels
+        // EN: Configuration of the right switch of the NSPanel
+        buttonRight: null/*{
+            mode: 'toggle',
+            page: '0_userdata.0.example',
+            
+        }*/,
+
+        //--------- DE: Ende - Einstellungen für Hardware Button, wenn Sie softwareseitig genutzt werden (Rule2) -------------
+        //--------- EN: End - settings for hardware button if they are used in software (Rule2) ------------------------------
+
+        // DE: WICHTIG !! Parameter nicht ändern  WICHTIG!!
+        // EN: IMPORTANT !! Do not change parameters IMPORTANT!!
+
+    };
+
+
+    /**
+     ********************************************************************************
+     ********************************************************************************
+     ********************************************************************************
+     ********************************************************************************
+     ********************************************************************************
+     ********************************************************************************
+     ********************************************************************************
+     *  END STOP END STOP END - No more configuration - END STOP END STOP END       *
+     ********************************************************************************
+     *  For a update copy and paste the code below from orginal file.               *
+     * ******************************************************************************
+     ********************************************************************************
+     ********************************************************************************
+     ********************************************************************************
+     ********************************************************************************
+     ********************************************************************************
+     ********************************************************************************
+     */
+    try {
+        log(await sendToAsync('nspanel-lovelace-ui.0', 'ScriptConfig', Object.assign({...config, version, scriptName: scriptName}, overrideConfig), {timeout: 30_000}));
+    } catch (e) {
+        log(`Error in sendTo ScriptConfig: ${e}! This usually means that the adapter is not working!`, 'error');
+    }
+    stopScript(scriptName, undefined)
+}
+
+
