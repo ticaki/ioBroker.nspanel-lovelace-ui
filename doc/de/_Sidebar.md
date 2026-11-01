@@ -19,7 +19,7 @@
 - [Nspanel-Einstellungen](NSPanelsetting)  
 - [Global Settings](globelSettings)  
 - [Maintain](Maintain)  
-- Skript-Migration *(folgt)*  
+- [Skript-Migration](Migration)  
 - [Navigation Flow](naviFlow)  
 - [Symbolübersicht](symbolOverview)  
 - [Tasmota-Tools](tasmotatools) 🔒  
@@ -39,7 +39,7 @@
 - [Thermostat](cardThermo2)  
 - [Thermostat (klassisch)](cardThermo)  
 - Mediaplayer *(folgt)*  
-- Verknüpfung *(folgt)*  
+- [Verknüpfung](pageLink)  
 - [Wiederkehrende Dialoge](PageConfig-Dialoge)  
 
 **Screensaver**  
