@@ -157,7 +157,7 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
     Placeholder for the next version (at the beginning of the line):
     ### **WORK IN PROGRESS**
 -->
-### **WORK IN PROGRESS**
+### 2.0.1 (2026-11-01)
 - (ticaki) screensaver editor: areas with more items than places page with arrows instead of hiding the extra items, they are no longer reported as "no place in this version"; items with a condition (enabled / visible condition, also in raw data) are marked
 - (ticaki) admin: the "..." button of the media page player opens a list of all players found (alexa2 Echo devices, sonos speakers, squeezebox players, spotify-premium/mpd instances) grouped by adapter with search instead of the object tree; the id can still be typed by hand
 - (ticaki) admin: screensaver items show readable names (headline, object name or template name) instead of regex fragments; the full name is in the tooltip
