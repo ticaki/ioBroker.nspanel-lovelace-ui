@@ -1,12 +1,19 @@
 import { expect } from 'chai';
 import {
     emptyMediaEntry,
+    isSelectableMediaPlayer,
+    mediaBackends,
+    mediaPlayerDefinitions,
+    mediaPlayerIdOf,
+    parseMediaPlayerDefinitions,
+    toMediaPlayerDefinition,
     mediaBackendOf,
     mediaVisibleToolbarItems,
     normalizeScrollFields,
     type MediaEntry,
 } from '../types/adminShareConfig';
 import { buildMediaScriptPage } from './admin';
+import mediaPlayersJson from '../../../templates/media-players.json';
 
 describe('lib/configuration - buildMediaScriptPage', () => {
     it('leaves everything to the adapter for a bare player', () => {
@@ -119,5 +126,66 @@ describe('lib/types/adminShareConfig - normalizeScrollFields', () => {
         expect(
             normalizeScrollFields({ scrollPresentation: 'arrow', scrollAutoTiming: 5 }, 'cardGrid'),
         ).to.not.have.property('scrollAutoTiming');
+    });
+});
+
+describe('lib/types - media player definitions (templates/media-players.json)', () => {
+    it('has exactly one valid definition per backend of mediaBackends', () => {
+        const raw: unknown[] = mediaPlayersJson.players;
+        expect(raw.map(e => toMediaPlayerDefinition(e))).to.not.include(undefined);
+        expect(mediaPlayerDefinitions.map(d => d.backend)).to.have.members([...mediaBackends]);
+        expect(mediaPlayerDefinitions).to.have.length(mediaBackends.length);
+    });
+
+    it('rejects invalid entries', () => {
+        expect(toMediaPlayerDefinition({ backend: 'hue', kind: 'instance' })).to.equal(undefined);
+        expect(toMediaPlayerDefinition({ backend: 'sonos', kind: 'node', folder: 'root' })).to.equal(undefined);
+        expect(
+            toMediaPlayerDefinition({ backend: 'sonos', kind: 'node', folder: 'a.b', objectType: 'channel' }),
+        ).to.equal(undefined);
+        expect(
+            toMediaPlayerDefinition({ backend: 'sonos', kind: 'node', folder: 'root', objectType: 'enum' }),
+        ).to.equal(undefined);
+        expect(toMediaPlayerDefinition({ backend: 'mpd', kind: 'other' })).to.equal(undefined);
+        expect(toMediaPlayerDefinition(null)).to.equal(undefined);
+        expect(parseMediaPlayerDefinitions({ players: 'x' })).to.deep.equal([]);
+        expect(
+            parseMediaPlayerDefinitions({
+                players: [
+                    { backend: 'mpd', kind: 'instance' },
+                    { backend: 'mpd', kind: 'node', folder: 'x', objectType: 'device' },
+                ],
+            }),
+        ).to.deep.equal([{ backend: 'mpd', kind: 'instance' }]);
+    });
+});
+
+describe('lib/types - isSelectableMediaPlayer / mediaPlayerIdOf', () => {
+    it('accepts only the player nodes of alexa2, sonos and squeezeboxrpc', () => {
+        expect(isSelectableMediaPlayer('alexa2.0.Echo-Devices.G090XX', 'device')).to.equal(true);
+        expect(isSelectableMediaPlayer('sonos.1.root.192_168_1_20', 'channel')).to.equal(true);
+        expect(isSelectableMediaPlayer('squeezeboxrpc.0.Players.Kitchen', 'device')).to.equal(true);
+        expect(isSelectableMediaPlayer('sonos.1.root.192_168_1_20')).to.equal(true);
+
+        expect(isSelectableMediaPlayer('alexa2.0.Echo-Devices', 'folder')).to.equal(false);
+        expect(isSelectableMediaPlayer('alexa2.0.Echo-Devices.G090XX.Player', 'channel')).to.equal(false);
+        expect(isSelectableMediaPlayer('alexa2.0.Echo-Devices.G090XX', 'channel')).to.equal(false);
+        expect(isSelectableMediaPlayer('alexa2.0.Contacts.G090XX', 'device')).to.equal(false);
+        expect(isSelectableMediaPlayer('sonos.x.root.192_168_1_20', 'channel')).to.equal(false);
+        expect(isSelectableMediaPlayer('sonos.0.root.192_168_1_20', 'state')).to.equal(false);
+        expect(isSelectableMediaPlayer('hue.0.root.lamp', 'channel')).to.equal(false);
+    });
+
+    it('accepts a spotify-premium / mpd instance and any object below it, cut to the instance', () => {
+        expect(isSelectableMediaPlayer('spotify-premium.0')).to.equal(true);
+        expect(isSelectableMediaPlayer('spotify-premium.0.player.playbackInfo', 'state')).to.equal(true);
+        expect(isSelectableMediaPlayer('mpd.1.state', 'state')).to.equal(true);
+        expect(isSelectableMediaPlayer('mpd.1.', 'state')).to.equal(false);
+        expect(isSelectableMediaPlayer('mpd.a.state', 'state')).to.equal(false);
+        expect(isSelectableMediaPlayer('mpd', 'state')).to.equal(false);
+
+        expect(mediaPlayerIdOf('spotify-premium.0.player.playbackInfo')).to.equal('spotify-premium.0');
+        expect(mediaPlayerIdOf('mpd.1.state')).to.equal('mpd.1');
+        expect(mediaPlayerIdOf('sonos.0.root.192_168_1_20')).to.equal('sonos.0.root.192_168_1_20');
     });
 });

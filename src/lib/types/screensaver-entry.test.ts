@@ -2,7 +2,11 @@ import { expect } from 'chai';
 import fs from 'node:fs';
 import path from 'node:path';
 import {
+    conditionExpressionText,
+    conditionValueText,
     emptyScreensaverEntry,
+    rawItemCondition,
+    screensaverItemCondition,
     formatEntryNumber,
     screensaverNotifyLines,
     screensaverAreas,
@@ -131,6 +135,132 @@ describe('lib/types - screensaver item source (admin tab)', () => {
         for (const name of names) {
             expect(name, name).to.match(/^[A-Za-z]+\.[A-Za-z0-9_.-]+$/);
         }
+    });
+});
+
+describe('lib/types - screensaver item condition (admin tab marker)', () => {
+    it('reads enabled and visibleCondition of a normal item', () => {
+        expect(screensaverItemCondition(undefined)).to.equal(undefined);
+        expect(screensaverItemCondition({ state: 'a.0.x' })).to.equal(undefined);
+        expect(screensaverItemCondition({ state: 'a.0.x', enabled: ' ', visibleCondition: '' })).to.equal(undefined);
+        expect(screensaverItemCondition({ state: 'a.0.x', enabled: 'a.0.on' })).to.deep.equal({ enabled: 'a.0.on' });
+        expect(screensaverItemCondition({ state: 'a.0.x', visibleCondition: 'val > 3' })).to.deep.equal({
+            visibleCondition: 'val > 3',
+        });
+    });
+
+    it('takes the raw data alone for a raw item', () => {
+        const item: ScreensaverItemConfig = {
+            state: 'a.0.x',
+            enabled: 'ignored.0.x',
+            raw: {
+                format: 'script',
+                config: {
+                    type: 'template',
+                    template: 'text.sainlogic.windarrow',
+                    dpInit: 'sainlogic.0',
+                    modeScr: 'bottom',
+                    readOptions: { a: 1 },
+                    enabled: 'sainlogic.0.weather.current.windspeed',
+                    visibleCondition: 'parseFloat(val) >= 6',
+                },
+            },
+        };
+        expect(screensaverItemCondition(item)).to.deep.equal({
+            enabled: 'sainlogic.0.weather.current.windspeed',
+            visibleCondition: 'parseFloat(val) >= 6',
+        });
+        expect(screensaverItemCondition({ state: 'a', enabled: 'x', raw: { format: 'script', config: {} } })).to.equal(
+            undefined,
+        );
+    });
+
+    it('searches nested objects and arrays of the raw data', () => {
+        expect(
+            rawItemCondition({ native: { data: { entity1: { ScreensaverEntityEnabled: 'a.0.on' } } } }),
+        ).to.deep.equal({ enabled: 'a.0.on' });
+        expect(rawItemCondition({ list: [{}, { ScreensaverEntityVisibleCondition: 'val' }] })).to.deep.equal({
+            visibleCondition: 'val',
+        });
+        // an object value: named by dp / id, else short JSON
+        expect(rawItemCondition({ data: { enabled: { type: 'triggered', dp: 'a.0.dp' } } })).to.deep.equal({
+            enabled: 'a.0.dp',
+        });
+        expect(rawItemCondition({ enabled: { type: 'unknown', x: 1 } })).to.deep.equal({
+            enabled: '{"type":"unknown","x":1}',
+        });
+        // empty values do not count, the search goes on
+        expect(rawItemCondition({ enabled: '', native: { enabled: 'b.0.on' } })).to.deep.equal({ enabled: 'b.0.on' });
+        expect(rawItemCondition({ enabled: true, visibleCondition: {} })).to.equal(undefined);
+        expect(rawItemCondition('text')).to.equal(undefined);
+        expect(rawItemCondition(null)).to.equal(undefined);
+    });
+
+    it('reads the runtime forms of the config manager', () => {
+        // script template: enabled as array of states
+        expect(
+            rawItemCondition({
+                type: 'template',
+                template: 'text.x',
+                enabled: ['a.0.on', ' b.0.on '],
+                visibleCondition: 'val > 3',
+            }),
+        ).to.deep.equal({ enabled: 'a.0.on, b.0.on', visibleCondition: 'val > 3' });
+        expect(rawItemCondition({ type: 'template', enabled: [] })).to.equal(undefined);
+        // script element on the top level
+        expect(
+            rawItemCondition({
+                ScreensaverEntity: 'a.0.x',
+                ScreensaverEntityEnabled: 'a.0.on',
+                ScreensaverEntityVisibleCondition: 'parseFloat(val) >= 6',
+            }),
+        ).to.deep.equal({ enabled: 'a.0.on', visibleCondition: 'parseFloat(val) >= 6' });
+        // native item: DataItem with read
+        expect(
+            rawItemCondition({
+                data: { enabled: { type: 'triggered', dp: 'x.0.y', read: '\n return parseFloat(val) >= 6;\n' } },
+            }),
+        ).to.deep.equal({ enabled: 'x.0.y', visibleCondition: 'parseFloat(val) >= 6' });
+        // native item: constants
+        expect(rawItemCondition({ data: { enabled: { type: 'const', constVal: true } } })).to.equal(undefined);
+        expect(rawItemCondition({ data: { enabled: { type: 'const' } } })).to.equal(undefined);
+        expect(rawItemCondition({ data: { enabled: { type: 'const', constVal: '' } } })).to.equal(undefined);
+        expect(rawItemCondition({ data: { enabled: { type: 'const', constVal: false } } })).to.deep.equal({
+            enabled: 'false',
+        });
+        // native item: array of DataItems, a multi-line read is kept (whitespace joined)
+        expect(
+            rawItemCondition({
+                data: {
+                    enabled: [
+                        { type: 'triggered', dp: 'a.0.x', read: 'return val > 1;' },
+                        { type: 'state', dp: 'b.0.y', read: '\n val = Number(val);\n return val < 5;\n' },
+                    ],
+                },
+            }),
+        ).to.deep.equal({
+            enabled: 'a.0.x, b.0.y',
+            visibleCondition: 'val > 1, val = Number(val); return val < 5;',
+        });
+    });
+
+    it('stops at cycles', () => {
+        const a: Record<string, unknown> = {};
+        a.self = a;
+        expect(rawItemCondition(a)).to.equal(undefined);
+    });
+
+    it('turns condition values into text', () => {
+        expect(conditionValueText(' a ')).to.equal('a');
+        expect(conditionValueText(false)).to.equal('false');
+        expect(conditionValueText(true)).to.equal('');
+        expect(conditionValueText(0)).to.equal('0');
+        expect(conditionValueText({ id: 'x.0.y' })).to.equal('x.0.y');
+        expect(conditionValueText({ long: 'x'.repeat(200) }).length).to.equal(80);
+        expect(conditionValueText(['a', { dp: 'b' }, { type: 'const', constVal: true }])).to.equal('a, b');
+        expect(conditionExpressionText('  return  a ;  ')).to.equal('a');
+        expect(conditionExpressionText('x'.repeat(200)).length).to.equal(80);
+        expect(conditionValueText(undefined)).to.equal('');
     });
 });
 

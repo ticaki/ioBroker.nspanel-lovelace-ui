@@ -1,7 +1,9 @@
 "use strict";
+var __create = Object.create;
 var __defProp = Object.defineProperty;
 var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
 var __getOwnPropNames = Object.getOwnPropertyNames;
+var __getProtoOf = Object.getPrototypeOf;
 var __hasOwnProp = Object.prototype.hasOwnProperty;
 var __export = (target, all) => {
   for (var name in all)
@@ -15,6 +17,14 @@ var __copyProps = (to, from, except, desc) => {
   }
   return to;
 };
+var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__getProtoOf(mod)) : {}, __copyProps(
+  // If the importer is in node compatibility mode or this is not an ESM
+  // file that has been converted to a CommonJS file using a Babel-
+  // compatible transform (i.e. "__esModule" has not been set), then set
+  // "default" to the CommonJS "module.exports" for node compatibility.
+  isNodeMode || !mod || !mod.__esModule ? __defProp(target, "default", { value: mod, enumerable: true }) : target,
+  mod
+));
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 var adminShareConfig_exports = {};
 __export(adminShareConfig_exports, {
@@ -39,6 +49,8 @@ __export(adminShareConfig_exports, {
   SENDTO_GET_SCREENSAVER_TEMPLATES_COMMAND: () => SENDTO_GET_SCREENSAVER_TEMPLATES_COMMAND,
   SENDTO_GET_WEATHER_ENTITY_COMMAND: () => SENDTO_GET_WEATHER_ENTITY_COMMAND,
   chartDefaults: () => chartDefaults,
+  conditionExpressionText: () => conditionExpressionText,
+  conditionValueText: () => conditionValueText,
   dropScriptNavigation: () => dropScriptNavigation,
   emptyChannelValueConfig: () => emptyChannelValueConfig,
   emptyChartEntry: () => emptyChartEntry,
@@ -54,12 +66,14 @@ __export(adminShareConfig_exports, {
   isIconColorScaleElement: () => isIconColorScaleElement,
   isLongPressCard: () => isLongPressCard,
   isMainPageEntry: () => isMainPageEntry,
+  isMediaBackend: () => isMediaBackend,
   isPageLinkEntry: () => isPageLinkEntry,
   isRawItemFormat: () => isRawItemFormat,
   isRawItemObject: () => isRawItemObject,
   isScriptNavigatedChart: () => isScriptNavigatedChart,
   isScriptNavigatedPower: () => isScriptNavigatedPower,
   isScrollCard: () => isScrollCard,
+  isSelectableMediaPlayer: () => isSelectableMediaPlayer,
   legacyPowerStates: () => legacyPowerStates,
   longPressCards: () => longPressCards,
   mainPageName: () => mainPageName,
@@ -67,6 +81,9 @@ __export(adminShareConfig_exports, {
   mediaBackendOf: () => mediaBackendOf,
   mediaBackends: () => mediaBackends,
   mediaListKinds: () => mediaListKinds,
+  mediaPlayerDefinitionOf: () => mediaPlayerDefinitionOf,
+  mediaPlayerDefinitions: () => mediaPlayerDefinitions,
+  mediaPlayerIdOf: () => mediaPlayerIdOf,
   mediaVisibleToolbarItems: () => mediaVisibleToolbarItems,
   mediaVolumeDefaults: () => mediaVolumeDefaults,
   migrateLegacyCharts: () => migrateLegacyCharts,
@@ -76,12 +93,15 @@ __export(adminShareConfig_exports, {
   normalizeChannelId: () => normalizeChannelId,
   normalizeScrollFields: () => normalizeScrollFields,
   normalizeTrashItems: () => normalizeTrashItems,
+  normalizeWeatherEntity: () => normalizeWeatherEntity,
   pageItemRawFormat: () => pageItemRawFormat,
   pageLinkCard: () => pageLinkCard,
   pageLinkProblem: () => pageLinkProblem,
   panelStatusColors: () => panelStatusColors,
   panelStatusStates: () => panelStatusStates,
   panelStatusTranslationKeys: () => panelStatusTranslationKeys,
+  parseMediaPlayerDefinitions: () => parseMediaPlayerDefinitions,
+  rawItemCondition: () => rawItemCondition,
   rawItemFormats: () => rawItemFormats,
   rawItemLabel: () => rawItemLabel,
   requiredScriptDataPoints: () => requiredScriptDataPoints,
@@ -91,6 +111,7 @@ __export(adminShareConfig_exports, {
   screensaverCardOfMode: () => screensaverCardOfMode,
   screensaverChannelIdOf: () => screensaverChannelIdOf,
   screensaverDateFormats: () => screensaverDateFormats,
+  screensaverItemCondition: () => screensaverItemCondition,
   screensaverItemFields: () => screensaverItemFields,
   screensaverItemSource: () => screensaverItemSource,
   screensaverMaxEntries: () => screensaverMaxEntries,
@@ -115,10 +136,12 @@ __export(adminShareConfig_exports, {
   thermo2MaxCircuits: () => thermo2MaxCircuits,
   thermo2SortOrders: () => thermo2SortOrders,
   thermoChannelRoles: () => thermoChannelRoles,
+  toMediaPlayerDefinition: () => toMediaPlayerDefinition,
   trashItemCount: () => trashItemCount
 });
 module.exports = __toCommonJS(adminShareConfig_exports);
 var import_Color = require("../const/Color");
+var import_media_players = __toESM(require("../../../templates/media-players.json"));
 const ALL_PANELS_SPECIAL_ID = "///ALL_PANELS_SPECIAL";
 const SENDTO_GET_PANEL_NAVIGATION_COMMAND = "getPanelNavigation";
 const SAVE_PANEL_NAVIGATION_COMMAND = "savePanelNavigation";
@@ -210,6 +233,117 @@ function rawItemLabel(config) {
     }
   }
   return isRawItemObject(config.native) ? rawItemLabel(config.native) : "";
+}
+const RAW_ENABLED_KEYS = ["enabled", "ScreensaverEntityEnabled"];
+const RAW_VISIBLE_KEYS = ["visibleCondition", "ScreensaverEntityVisibleCondition"];
+const RAW_CONDITION_DEPTH = 10;
+const CONDITION_TEXT_MAX = 80;
+function shortConditionText(text) {
+  return text.length > CONDITION_TEXT_MAX ? `${text.slice(0, CONDITION_TEXT_MAX - 1)}\u2026` : text;
+}
+function conditionExpressionText(text) {
+  const flat = text.trim().replace(/\s+/g, " ");
+  const single = /^return\s+([^;]+?)\s*;?$/.exec(flat);
+  return shortConditionText(single ? single[1] : flat);
+}
+function conditionParts(value, depth = 0) {
+  const out = { enabled: [], visible: [] };
+  if (depth > RAW_CONDITION_DEPTH) {
+    return out;
+  }
+  if (typeof value === "string") {
+    if (value.trim()) {
+      out.enabled.push(value.trim());
+    }
+  } else if (typeof value === "number" || value === false) {
+    out.enabled.push(String(value));
+  } else if (Array.isArray(value)) {
+    for (const v of value) {
+      const part = conditionParts(v, depth + 1);
+      out.enabled.push(...part.enabled);
+      out.visible.push(...part.visible);
+    }
+  } else if (isRawItemObject(value)) {
+    if (value.type === "const") {
+      if (value.constVal === false) {
+        out.enabled.push("false");
+      }
+      return out;
+    }
+    const dp = typeof value.dp === "string" && value.dp.trim() ? value.dp.trim() : "";
+    const id = typeof value.id === "string" && value.id.trim() ? value.id.trim() : "";
+    if (dp || id) {
+      out.enabled.push(dp || id);
+      if (typeof value.read === "string" && value.read.trim()) {
+        out.visible.push(conditionExpressionText(value.read));
+      }
+    } else if (Object.keys(value).length) {
+      out.enabled.push(shortConditionText(JSON.stringify(value)));
+    }
+  }
+  return out;
+}
+function conditionValueText(value) {
+  return conditionParts(value).enabled.join(", ");
+}
+function rawItemCondition(config) {
+  const out = {};
+  const visit = (value, depth) => {
+    if (depth > RAW_CONDITION_DEPTH || out.enabled !== void 0 && out.visibleCondition !== void 0) {
+      return;
+    }
+    if (Array.isArray(value)) {
+      for (const v of value) {
+        visit(v, depth + 1);
+      }
+      return;
+    }
+    if (!isRawItemObject(value)) {
+      return;
+    }
+    for (const [key, v] of Object.entries(value)) {
+      if (out.enabled === void 0 && RAW_ENABLED_KEYS.includes(key)) {
+        const part = conditionParts(v);
+        if (part.visible.length && out.visibleCondition === void 0) {
+          out.visibleCondition = shortConditionText(part.visible.join(", "));
+        }
+        if (part.enabled.length) {
+          out.enabled = part.enabled.join(", ");
+          continue;
+        }
+      }
+      if (out.visibleCondition === void 0 && RAW_VISIBLE_KEYS.includes(key)) {
+        const text = typeof v === "string" ? v.trim() ? conditionExpressionText(v) : "" : conditionValueText(v);
+        if (text) {
+          out.visibleCondition = text;
+          continue;
+        }
+      }
+      if (typeof v === "object" && v !== null) {
+        visit(v, depth + 1);
+      }
+    }
+  };
+  visit(config, 0);
+  return out.enabled !== void 0 || out.visibleCondition !== void 0 ? out : void 0;
+}
+function screensaverItemCondition(item) {
+  if (!item) {
+    return void 0;
+  }
+  if (item.raw) {
+    return rawItemCondition(item.raw.config);
+  }
+  const out = {};
+  const enabled = conditionValueText(item.enabled);
+  const visible = conditionValueText(item.visibleCondition);
+  if (enabled) {
+    out.enabled = enabled;
+  }
+  if (visible) {
+    out.visibleCondition = visible;
+  }
+  return enabled || visible ? out : void 0;
 }
 function screensaverChannelIdOf(stateId) {
   const parts = stateId.split(".");
@@ -322,6 +456,9 @@ const screensaverWeatherItemsOfAdapter = {
 function screensaverWeatherAdapterOf(entity) {
   const prefix = (entity != null ? entity : "").split(".")[0];
   return screensaverWeatherAdapters.find((a) => a === prefix);
+}
+function normalizeWeatherEntity(entity) {
+  return entity.trim().replace(/\.+$/, "");
 }
 function screensaverWeatherItemsOn(items, entity) {
   const adapter = screensaverWeatherAdapterOf(entity);
@@ -713,6 +850,64 @@ const mediaBackendFeatures = {
 function mediaBackendOf(id) {
   const name = (id != null ? id : "").trim().split(".")[0];
   return mediaBackends.includes(name) ? name : void 0;
+}
+const mediaPlayerObjectTypes = ["device", "channel", "folder", "state"];
+function isMediaPlayerObjectType(value) {
+  return typeof value === "string" && mediaPlayerObjectTypes.includes(value);
+}
+function isMediaBackend(value) {
+  return typeof value === "string" && mediaBackends.includes(value);
+}
+function toMediaPlayerDefinition(value) {
+  if (!value || typeof value !== "object") {
+    return void 0;
+  }
+  const entry = { ...value };
+  const backend = entry.backend;
+  if (!isMediaBackend(backend)) {
+    return void 0;
+  }
+  if (entry.kind === "instance") {
+    return { backend, kind: "instance" };
+  }
+  const { folder, objectType } = entry;
+  if (entry.kind === "node" && typeof folder === "string" && folder && !folder.includes(".")) {
+    return isMediaPlayerObjectType(objectType) ? { backend, kind: "node", folder, objectType } : void 0;
+  }
+  return void 0;
+}
+function parseMediaPlayerDefinitions(json) {
+  const list = json && typeof json === "object" && "players" in json ? json.players : void 0;
+  const result = [];
+  for (const raw of Array.isArray(list) ? list : []) {
+    const def = toMediaPlayerDefinition(raw);
+    if (def && !result.some((d) => d.backend === def.backend)) {
+      result.push(def);
+    }
+  }
+  return result;
+}
+const mediaPlayerDefinitions = parseMediaPlayerDefinitions(import_media_players.default);
+function mediaPlayerDefinitionOf(backend) {
+  return backend ? mediaPlayerDefinitions.find((d) => d.backend === backend) : void 0;
+}
+function isSelectableMediaPlayer(id, type) {
+  const parts = id.trim().split(".");
+  const def = mediaPlayerDefinitionOf(mediaBackendOf(id));
+  if (!def || parts.length < 2 || !/^\d+$/.test(parts[1])) {
+    return false;
+  }
+  if (def.kind === "instance") {
+    return parts.slice(2).every((part) => part !== "");
+  }
+  return parts.length === 4 && parts[2] === def.folder && parts[3] !== "" && (type === void 0 || type === def.objectType);
+}
+function mediaPlayerIdOf(id) {
+  const def = mediaPlayerDefinitionOf(mediaBackendOf(id));
+  if ((def == null ? void 0 : def.kind) === "instance") {
+    return id.trim().split(".").slice(0, 2).join(".");
+  }
+  return id;
 }
 const mediaVolumeDefaults = { minValue: 0, maxValue: 100 };
 const SENDTO_GET_MEDIA_PLAYER_COMMAND = "getMediaPlayer";
@@ -1585,6 +1780,8 @@ const CONVERT_GLOBAL_DEFAULT_DECISION = "keepAdmin";
   SENDTO_GET_SCREENSAVER_TEMPLATES_COMMAND,
   SENDTO_GET_WEATHER_ENTITY_COMMAND,
   chartDefaults,
+  conditionExpressionText,
+  conditionValueText,
   dropScriptNavigation,
   emptyChannelValueConfig,
   emptyChartEntry,
@@ -1600,12 +1797,14 @@ const CONVERT_GLOBAL_DEFAULT_DECISION = "keepAdmin";
   isIconColorScaleElement,
   isLongPressCard,
   isMainPageEntry,
+  isMediaBackend,
   isPageLinkEntry,
   isRawItemFormat,
   isRawItemObject,
   isScriptNavigatedChart,
   isScriptNavigatedPower,
   isScrollCard,
+  isSelectableMediaPlayer,
   legacyPowerStates,
   longPressCards,
   mainPageName,
@@ -1613,6 +1812,9 @@ const CONVERT_GLOBAL_DEFAULT_DECISION = "keepAdmin";
   mediaBackendOf,
   mediaBackends,
   mediaListKinds,
+  mediaPlayerDefinitionOf,
+  mediaPlayerDefinitions,
+  mediaPlayerIdOf,
   mediaVisibleToolbarItems,
   mediaVolumeDefaults,
   migrateLegacyCharts,
@@ -1622,12 +1824,15 @@ const CONVERT_GLOBAL_DEFAULT_DECISION = "keepAdmin";
   normalizeChannelId,
   normalizeScrollFields,
   normalizeTrashItems,
+  normalizeWeatherEntity,
   pageItemRawFormat,
   pageLinkCard,
   pageLinkProblem,
   panelStatusColors,
   panelStatusStates,
   panelStatusTranslationKeys,
+  parseMediaPlayerDefinitions,
+  rawItemCondition,
   rawItemFormats,
   rawItemLabel,
   requiredScriptDataPoints,
@@ -1637,6 +1842,7 @@ const CONVERT_GLOBAL_DEFAULT_DECISION = "keepAdmin";
   screensaverCardOfMode,
   screensaverChannelIdOf,
   screensaverDateFormats,
+  screensaverItemCondition,
   screensaverItemFields,
   screensaverItemSource,
   screensaverMaxEntries,
@@ -1661,6 +1867,7 @@ const CONVERT_GLOBAL_DEFAULT_DECISION = "keepAdmin";
   thermo2MaxCircuits,
   thermo2SortOrders,
   thermoChannelRoles,
+  toMediaPlayerDefinition,
   trashItemCount
 });
 //# sourceMappingURL=adminShareConfig.js.map

@@ -1,0 +1,9 @@
+{
+    "players": [
+        { "backend": "alexa2", "kind": "node", "folder": "Echo-Devices", "objectType": "device" },
+        { "backend": "sonos", "kind": "node", "folder": "root", "objectType": "channel" },
+        { "backend": "spotify-premium", "kind": "instance" },
+        { "backend": "mpd", "kind": "instance" },
+        { "backend": "squeezeboxrpc", "kind": "node", "folder": "Players", "objectType": "device" }
+    ]
+}
