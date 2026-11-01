@@ -54,7 +54,7 @@ Der Seitentyp filtert die Liste **und** bestimmt, was ein Klick auf **+** anlegt
 
 **Reihenfolge:** Die Liste ist immer alphabetisch sortiert; eine eigene Reihenfolge gibt es nicht und ist auch nicht nötig — was das Panel anzeigt, ergibt sich aus der Navigation, nicht aus der Listenposition.
 
-**Kopieren:** Eine ganze Seite lässt sich nicht duplizieren — wohl aber **einzelne PageItems einer Menü-Seite**: Rechtsklick auf die Fläche, *Element kopieren*, Rechtsklick auf die Zielfläche, *Element einfügen*. Das geht auch von einer Menü-Seite in eine andere. Die Einzelheiten — auch woran der Zwischenspeicher hängt und was beim Einfügen überschrieben wird — stehen unter [Menü-Seite](PageMenu-Admin#5-flächen-kopieren-und-einfügen).
+**Kopieren:** Eine ganze Seite lässt sich nicht duplizieren — wohl aber **einzelne PageItems einer Menü-Seite**: Rechtsklick auf die Fläche, *Element kopieren*, Rechtsklick auf die Zielfläche, *Element einfügen*. Das geht auch von einer Menü-Seite in eine andere. Die Einzelheiten — auch woran der Zwischenspeicher hängt und was beim Einfügen überschrieben wird — stehen unter [Menü-Seite](pageMenu#5-flächen-kopieren-und-einfügen).
 
 **Löschen:** über das Papierkorb-Symbol in der Zeile, mit Rückfrage.
 
@@ -114,13 +114,13 @@ Eine Ausnahme: Das Zuweisen eines Panels trägt den Seitennamen sofort beim Pane
 
 Die Einstellungen der einzelnen Karten stehen auf eigenen Seiten:
 
-- [Menü-Seite](PageMenu-Admin)
-- [Alarm und Entsperrseite](PageAlarm-Admin)
-- [QR-Code](PageQR-Admin)
-- [Energie](PagePower-Admin)
-- [Verlaufsdiagramm](PageChart-Admin)
-- [Abfall](PageTrash-Admin)
-- [Thermostat](PageThermo2-Admin)
+- [Menü-Seite](pageMenu)
+- [Alarm und Entsperrseite](cardAlarm)
+- [QR-Code](cardQR)
+- [Energie](cardPower)
+- [Verlaufsdiagramm](cardChart)
+- [Abfall](cardTrash)
+- [Thermostat](cardThermo2)
 - [Wiederkehrende Dialoge](PageConfig-Dialoge)
 
 Die **Entsperrseite** ist kein eigener Seitentyp: Sie entsteht aus einer Alarm-Seite, bei der im Editor statt *Alarm* die Betriebsart *Unlock* gewählt wird; dazu kommt das Ziel, auf das nach der richtigen PIN gesprungen wird.

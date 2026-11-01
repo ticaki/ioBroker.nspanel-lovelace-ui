@@ -70,8 +70,8 @@ Im **Log** der Instanz lässt sich jeder Teilschritt mitlesen. Ist alles durch, 
 
 - Im Tab **Maintain** steht je Panel die installierte **Tasmota-Version**, die **TFT-Version** und die **Skriptversion**, jeweils mit einem Knopf zum Aktualisieren; *Skripte für alle Panels aktualisieren* macht das in einem Rutsch. Diese Knöpfe sind auch der Weg, den Berry-Treiber oder die TFT-Firmware später neu aufzuspielen.
 - Seiten anlegen — **im Admin** ([Standard Pages](Pages)). Alle Seitentypen haben dort einen Editor.
-- Den Bildschirmschoner einrichten: [Screensaver – Admin](Screensaver-Admin).
-- Das [Konfigurationsskript](ScriptConfig) ist nur für **erfahrene Nutzer in besonderen Konstellationen** nötig; als Einstiegsbeispiel gibt es [example_sendTo_script_iobroker.ts](https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/blob/main/script/example_sendTo_script_iobroker.ts).
+- Den Bildschirmschoner einrichten: Screensaver – Admin.
+- Das Konfigurationsskript ist nur für **erfahrene Nutzer in besonderen Konstellationen** nötig; als Einstiegsbeispiel gibt es [example_sendTo_script_iobroker.ts](https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/blob/main/script/example_sendTo_script_iobroker.ts).
 - **Fehlt im Admin eine Einstellung, bitte beim Entwicklerteam melden** ([Issue](https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/issues)).
 
 ## 6. Wenn es klemmt

@@ -1,266 +1,209 @@
-# Screensaver in the configuration script
+# Screensaver – configuration in the admin
 
-> **The admin is the way.** The screensaver is set up in the *Screensaver* tab — every slot is shown as a
-> picture, the fields are labelled, and the preview shows at once what the panel will display:
-> [Screensaver – configuration in the admin](Screensaver-Admin), messages under
-> [notifications](Screensaver-Notify).
->
-> This page describes the **second way**: the same configuration from a configuration script. It is kept
-> deliberately coarse — it explains the structure and shows examples, but it does not list every field.
-> If you are looking for a field, you will find it in the admin interface where it belongs.
+The screensaver can be set up without a script: tab **Screensaver** in the instance settings. One entry describes one screensaver – its version, the panels that show it and the items on its places. The editor draws the panel the way the chosen version shows it; every place can be clicked and opens the matching settings. In the adapter the admin entry goes through the same code as the script screensaver (`getScreensaverConfig`), so the result on the panel is identical.
 
-## When both exist, the admin wins
+What a screensaver is, which versions exist and how it is configured in the script is described on the German page [Screensaver](https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/wiki/screensaver). This page covers the admin only.
 
-If a panel is listed in a screensaver of the admin tab, that one **replaces the screensaver from the
-script**. The adapter says so in the log at start:
+Contents:
+- [Creating a screensaver](#1-creating-a-screensaver)
+- [The editor at a glance](#2-the-editor-at-a-glance)
+- [Version and panels](#3-version-and-panels)
+- [Items: the item dialog](#4-items-the-item-dialog)
+- [Templates as items](#5-templates-as-items)
+- [Indicators and buttons](#6-indicators-and-buttons)
+- [Status icons](#7-status-icons)
+- [Time and date](#8-time-and-date)
+- [Weather](#9-weather)
+- [Options: rotation, swipe, indicator buttons](#10-options-rotation-swipe-indicator-buttons)
+- [Notifications](#11-notifications)
+- [Saving – what the adapter does with it](#12-saving--what-the-adapter-does-with-it)
+- [If something does not look as expected](#13-if-something-does-not-look-as-expected)
 
-```
-Screensaver '<name>' (<mode>) from the admin configuration replaces the script screensaver of panel '<panel>'
-```
+## 1. Creating a screensaver
 
-Without a matching admin entry nothing changes and the script screensaver stays. If a panel ends up in
-several admin screensavers by accident, the adapter takes the first one and warns.
+1. Open the instance settings → tab **Screensaver**.
+2. On the left type a name into **New screensaver** and click the PLUS. The name must be unique; it only serves the list and the log.
+3. The entry appears in the list, the editor opens on the right. A new entry starts as version **Standard** without a panel – the places appear as soon as a panel is chosen (see [Version and panels](#3-version-and-panels)).
 
-One difference remains afterwards:
+The bin on a list entry deletes it (with confirmation). Below the list the **panels without an entry** are named – they keep the screensaver of their script.
 
-| | Where version and rotation time come from |
+## 2. The editor at a glance
+
+![Editor](../Pictures/screensaverAdmin/admin-01-ueberblick.png)
+
+| Element | Meaning |
 |---|---|
-| **Admin screensaver** | From the entry. The states `cmd.screenSaver.layout` and `.rotationTime` **follow** it. |
-| **Script screensaver** | From exactly those states — they are the way to change both. |
+| **Name** | Name of the entry (can be renamed, must stay unique). |
+| **Version** | `Standard`, `Alternate`, `Advanced` or `Easyview` – the card (`screensaver`, `screensaver2`, `screensaver3`) follows from it. The line below names the card and the panel model the places are drawn for. |
+| **Panels** | Multi select of the panels showing this screensaver. A panel can have only one. |
+| **Panel picture** | The places of the chosen version: **Favorit** (large), **Left**, **Bottom**, **Indicators** (Advanced) or **Alternate**. Dashed with **+** = free (click adds an item), occupied = click edits, drag moves – also between the areas. Every item shows its icon in its color and, as text, the last part of the state id or the template name. |
+| **Time**, **Date** | Click opens the dialog for 12h/24h or the date format. |
+| **Two icons at the bottom** | The status icons (`mrIcon1`, `mrIcon2`), click opens their dialog; grey = not used. |
+| **Gear** | Options: rotation time, swipe gestures, indicator buttons. |
+| **Bell** | The notifications that cover the screensaver – see [Notifications](#11-notifications). The number next to it tells how many are switched on for this screensaver. Needs a running instance. |
+| **Weather** (right) | Weather adapter and its additional items, see [Weather](#9-weather). |
+| **Frames of the indicators** | grey = no button, red = button, green = switch, blue = open page (see [Indicators](#6-indicators-and-buttons)). |
 
-The script itself **cannot** set the version: the script configuration has no field for it, and the page
-is always built as `standard`. To get another version, set `panels.<panel>.cmd.screenSaver.layout`.
+The note at the bottom reminds that a panel assigned here gets this screensaver when the adapter starts – instead of the screensaver of its script.
 
-## The four versions
+## 3. Version and panels
 
-| Version | `layout` | Card | Favourite | Alternate | Left | Bottom | Indicators | MR icons |
-|---|---|---|---|---|---|---|---|---|
-| `standard` | 0 | `screensaver` | 1 | – | – | 4 | – | 2 |
-| `alternate` | 1 | `screensaver` | 1 | 1 | – | 3 | – | 2 |
-| `advanced` | 2 | `screensaver2` | 1 | – | 3 | 6 | 5 | 2 |
-| `easyview` | 3 | `screensaver3` | 1 | – | – | 3 | – | 2 |
+![Panels](../Pictures/screensaverAdmin/admin-02-panels.png)
 
-The numbers are for the **eu** model; on the `us-p` model `easyview` has four slots at the bottom instead
-of three. The authoritative table lives in the code (`definition.ts`, `ScreenSaverConst`) and the admin
-reads it from the same source.
+- **Panels**: The list shows all panels of the instance (tooltip with topic, IP and model). The **model of the first chosen panel** decides how many places the areas have – `eu` and `us-l` in landscape, `us-p` in portrait with its own layout. If the chosen panels have different models, the editor says which one it draws for. If a panel is listed in two entries, the first one in the list wins; editor and log warn about it.
+- **Changing the version**: Items that have no place in the new version are kept and reported at the top – the button **Remove** deletes them at once. Switching back to the old version brings them back.
 
-## The areas
+![Version change](../Pictures/screensaverAdmin/admin-14-version-wechsel.png)
 
-Every area is one field of the script configuration:
+The places per version and model are those of the script (`ScreenSaverConst`): Standard and Easyview have favorit and bottom, Alternate also the alternate place, Advanced additionally left and indicators.
 
-| Field | What it fills |
+## 4. Items: the item dialog
+
+A click on a free place opens the item dialog, a click on an occupied item edits it. The fields follow the place and the type of the state; a preview at the top right draws the item the way the place shows it.
+
+![New item](../Pictures/screensaverAdmin/admin-03-item-neu.png)
+
+**Source**: *State* (one state with its own fields, like `type: 'script'` in the script) or *Template* (a page item template of the adapter, see [Templates](#5-templates-as-items)).
+
+**State**: Type the id or pick it from the object tree via **…**. It has to be a **state** (`type: state`) – a channel or device is refused with a hint, as is an id that does not exist. As soon as the state is known, the dialog shows name, type and unit as well as the role and reveals the fields that fit the type:
+
+![Item with an on/off state](../Pictures/screensaverAdmin/admin-04-item-datenpunkt.png)
+
+| Type of the state | Fields |
 |---|---|
-| `favoritScreensaverEntity` | The large slot — usually the current weather. |
-| `alternateScreensaverEntity` | The slot that takes turns with the favourite. **Only in version `alternate`**; in any other one such entries are discarded. |
-| `leftScreensaverEntity` | The left column, `advanced` only. May contain gaps (`undefined`/`null`). |
-| `bottomScreensaverEntity` | The bottom row. |
-| `indicatorScreensaverEntity` | The status icons at the top right, `advanced` only. May contain gaps as well. |
-| `mrIcon1ScreensaverEntity` / `mrIcon2ScreensaverEntity` | The two icons at the bottom. **An object, not an array.** |
-| `notifyScreensaverEntity` | The notifications (see below). |
+| **boolean** | icon on / off, color on / off, text while true / false |
+| **number** | icon (expert mode: an icon list per value range too), fixed color or color scale by value, unit (empty = of the state), factor, decimals |
+| date/time (role `date`/`time`) | icon, color, date format (`Intl.DateTimeFormat` options, presets to choose from, expert mode: own JSON) |
+| other (string …) | icon, color |
 
-## Three ways to fill a slot
+Depending on the place fields are added or dropped: **Bottom** has the **headline** (empty = name of the state), **indicators** show the icon only and have the **action** instead (see [Indicators](#6-indicators-and-buttons)).
 
-```typescript
-// 1. script – state and label by hand
-{ type: 'script', ScreensaverEntity: '<state id>', ScreensaverEntityText: 'Inside' }
+**Icon**: An item needs an icon – without one the panel cannot draw it, so the dialog does not allow **Apply**. **Default icons are preset** from the role (and stay editable): the role of the channel above the state counts first (a `light` channel gives the bulb also for its `.ACTUAL`), otherwise the role of the state itself (`value.humidity`, `switch.light`, `sensor.door`, `value.temperature` …). The line "Role: …" names both. If the role knows no icons, please choose one.
 
-// 2. template – a ready-made template, dpInit tells it where to look
-{ type: 'template', template: 'text.clock', dpInit: '', modeScr: 'left' }
+**Color**: *fixed colors* (separate on/off for boolean, picker or hex value); for numbers alternatively *color scale by value* (dialog with scale, minimum/maximum, best value, mode – like the page items):
 
-// 3. native – the raw page structure, the emergency exit
-{ type: 'native', native: { /* … */ } }
+![Number with color scale](../Pictures/screensaverAdmin/admin-05-item-zahl-skala.png)
+
+Third choice *color from a state*: a state whose value is the color – `#rrggbb`, `{"r":…,"g":…,"b":…}` (also as JSON string) or a decimal number. On an on/off state it applies to "on", "off" takes the default color. The state must exist and be a state.
+
+![Color from a state](../Pictures/screensaverAdmin/admin-06-item-farbe-datenpunkt.png)
+
+**Icon per value range** (numbers only): Instead of one fixed icon the item can hold a list "up to value → icon" – the panel then changes the icon with the value. The button **Icon per value…** sits below the icon field in **expert mode**; a list that is already stored is shown with its icons without expert mode too and can be dropped there with the trash button.
+
+![Icon per value range](../Pictures/screensaverAdmin/admin-15-item-icon-wertebereich.png)
+
+- Every row holds an **up to value** and an **icon**. An icon applies **up to and including** its value, above the highest value its icon stays. In the picture: up to 5 `snowflake-thermometer`, up to 18 `thermometer-low`, up to 24 `thermometer`, above that `thermometer-high` – so 23.5 °C shows the middle icon (see the preview).
+- **Add entry** appends a row, the trash button on the right removes it. **Sort by value** only tidies the list up – the order does not matter, the adapter sorts the list itself.
+- **Apply** stays disabled while a started row is incomplete (every row needs a number **and** an icon); a value used twice is reported – only one of those entries takes effect. An empty list removes the setting.
+- The list **replaces the icon** of the field above. Color or color scale, unit, factor and decimals keep working as before.
+- In the script this is `ScreensaverEntityIconSelect`; the adapter builds the same read function as on the script path, so the result on the panel is identical.
+
+**Text instead of value** (boolean): Instead of `true`/`false` the panel shows the text for true or false. Each field may also hold the **id of a state** – then its value is shown. An empty field keeps the raw value.
+
+**Visibility** (expert mode): a state that hides the item while `false`, and optionally a condition over `val` (like `ScreensaverEntityEnabled` / `ScreensaverEntityVisibleCondition` in the script). `val` is the value of the item's state – so `val > 0` shows the item for positive values only.
+
+![Item dialog in expert mode](../Pictures/screensaverAdmin/admin-16-item-expertenmodus.png)
+
+The picture shows the same favourite with expert mode switched on (the icon at the bottom left of the admin bar): the button **Icon per value…** sits below the icon field, at the bottom are the visibility state and the condition. Without expert mode both blocks are missing – a stored icon list stays visible nevertheless.
+
+**Remove item** at the bottom left clears the place.
+
+## 5. Templates as items
+
+With the source **Template** a place takes a page item template of the adapter (e.g. `text.clock`, `text.lock`, `script.light`, `shutter.basic`, the `pirate-weather.*` templates). The template brings icon, colors and texts itself, so these fields are not shown.
+
+![Template](../Pictures/screensaverAdmin/admin-07-item-template.png)
+
+- The list of templates comes from the **running adapter** (grouped by prefix). If the instance is not running, the list is empty and the dialog says so.
+- Below the selection stand type, expected role and – for adapter templates – the adapter.
+- Most templates search their states **below an object**: then a **channel or alias** is chosen (the object tree shows channels, devices and folders), and the dialog names what the template looks for below it (e.g. `.ACTUAL`, `switch.lock | state`). A single state at this spot is reported as a warning.
+- Templates without an object (`text.clock`, `text.wlan`, `button.service.*` …) need none – the field is not shown.
+
+This matches `type: 'template'` with `dpInit` in the script.
+
+## 6. Indicators and buttons
+
+The indicators (version Advanced) show an icon only. For them the item dialog has the **action when pressed**:
+
+![Indicator with action](../Pictures/screensaverAdmin/admin-08-indikator-aktion.png)
+
+| Action | Effect | Script |
+|---|---|---|
+| none | a tap leads to the main page | – |
+| **Button (writes true)** | writes `true` into the chosen state | `ScreensaverEntityButton` |
+| **Switch (toggles)** | toggles the chosen state between `true` and `false` | `ScreensaverEntitySwitch` |
+| **Open page** | opens the chosen page of the instance | `ScreensaverEntityNaviToPage` |
+
+Button and switch need a **writable** state (`common.write`); the dialog checks it and otherwise does not allow applying. All three actions only work when **Indicators act as buttons** is enabled in the [options](#10-options-rotation-swipe-indicator-buttons) – without the option a tap on an indicator leads to the main page. In the panel picture the frame shows the action: red = button, green = switch, blue = page, grey = none.
+
+## 7. Status icons
+
+The two icons in the footer (`mrIcon1`, `mrIcon2`) each follow a state: icon "on" while `true`, otherwise "off", each with its own color. An optional second state is shown as a value next to it (with decimals and unit). Without a state the icon stays unused.
+
+![Status icon](../Pictures/screensaverAdmin/admin-09-statussymbol.png)
+
+## 8. Time and date
+
+Click on the time: **adapter default**, **24 hours** or **12 hours**, with preview.
+
+![Time](../Pictures/screensaverAdmin/admin-10-uhr.png)
+
+Click on the date: format of **weekday**, **month** and **year** (long, short, numeric, 2-digit …). "Global setting" takes the format from the instance settings; a value here applies to this screensaver only. The preview shows the result with today's date.
+
+![Date](../Pictures/screensaverAdmin/admin-11-datum.png)
+
+## 9. Weather
+
+To the right of the panel picture stands the **weather adapter** of this screensaver:
+
+![Weather](../Pictures/screensaverAdmin/admin-12-wetter.png)
+
+- **Global setting** – the weather instance of the instance settings (named in brackets), **No weather**, or one of the installed weather instances.
+- With a chosen adapter checkboxes for its **additional items** appear (sunrise/sunset, forecast days, wind …). They are appended after the own items of the **bottom** area; with more items than places the area pages (rotation time) and the editor shows a scrollbar with the number of items.
+- The **favorit** shows the current weather as long as no own item lies there – an own item replaces it.
+
+## 10. Options: rotation, swipe, indicator buttons
+
+The gear in the panel picture opens the options:
+
+![Options](../Pictures/screensaverAdmin/admin-13-optionen.png)
+
+- **Rotation time (s)**: areas with more items than places page through; `0` = off (`rotationTime`).
+- **Swipe gestures on the screensaver** (`screensaverSwipe`).
+- **Indicators act as buttons** (`screensaverIndicatorButtons`) – required for the actions of [Indicators](#6-indicators-and-buttons).
+
+## 11. Notifications
+
+The **bell** next to the gear opens the notifications: two lines that cover the screensaver while a datapoint is “on” – a headline with an icon and a text below it.
+
+- All screensavers share **one common list**. The checkbox **Show on this screensaver** decides where a notification appears; editing and deleting affect every screensaver that uses it.
+- The panel shows **one** notification at a time – the one with the lowest priority number.
+- The number at the bell tells how many notifications are switched on for this screensaver.
+
+> Everything else – content, conditions, priority, dismissing and the buzzer – has its own page: [Notifications](Screensaver-Notify).
+
+## 12. Saving – what the adapter does with it
+
+**Save** or **Save and close** at the bottom; the instance restarts. On start the adapter looks for the first entry that lists the topic of each panel and builds the screensaver from it – through the same path as the script. The log then says e.g.:
+
+```
+Screensaver 'Wohnzimmer' (advanced) from the admin configuration replaces the script screensaver of panel 'NSPanel-Wohnzimmer'
 ```
 
-- With **`script`**, `ScreensaverEntity` and `ScreensaverEntityText` are mandatory; everything else (icon,
-  unit, colour, decimals, date format, visibility) is optional.
-- With **`template`**, `template`, `dpInit` and `modeScr` are mandatory — **`dpInit` too**, even when the
-  template needs no search; then it stays an empty string.
-- **MR icons know fewer fields** than the other slots: `ScreensaverEntity`, `ScreensaverEntityIconOn`,
-  `ScreensaverEntityIconOff`, `ScreensaverEntityValue`, `ScreensaverEntityValueDecimalPlace`,
-  `ScreensaverEntityValueUnit`, `ScreensaverEntityOnColor` and `ScreensaverEntityOffColor` — all eight
-  belong to it. There is **no** `ScreensaverEntityText` or `ScreensaverEntityIconColor` there; the adapter
-  reads neither.
+- The screensaver of the script is replaced for this panel; panels without an entry keep it.
+- Version and rotation time come from the entry; the states `panels.<panel>.cmd.screenSaver.layout` and `…rotationTime` follow it (they do not overwrite the entry).
+- An item without icon gets the default icons of its role, without a known role `help-circle-outline` – the dialog does not let it through without icon anyway.
+- The stored form lies in `native.screensaverConfig` of the instance (one object per entry). The **notifications** are kept separately in `native.screensaverNotify`; the entry only remembers the ids of those that are to appear on it.
 
-## Templates
+## 13. If something does not look as expected
 
-The templates that ship with the adapter are named `text.…` and cover clock, weather, windows, doors,
-motion, battery, network and timetables. The list lives in the code (`src/lib/templates/text.ts`) and is
-always current there; every name used below exists.
-
-Weather comes for four adapters: `accuweather`, `openweathermap`, `pirate-weather` and `brightsky` — each
-with its own family of templates (`text.<adapter>.favorit`, `.bot2values`, `.sunriseset`, `.windspeed`, …).
-`weatherAddDefaultItems` appends sunrise/sunset, up to six forecast days, wind and — as far as the adapter
-delivers them — UV index and solar radiation.
-
-## Examples
-
-The blocks below are **excerpts** from `const config: ScriptConfig.Config = { … }`; the mandatory parts of
-the configuration (`version`, `scriptName`, `weatherEntity`, the colours, `pages`, …) still sit next to
-them, see [ScriptConfig](ScriptConfig).
-
-### Advanced — the full layout
-
-```typescript
-// Favourite: current weather
-favoritScreensaverEntity: [{
-    type: 'template',
-    template: 'text.pirate-weather.favorit',
-    dpInit: `/^pirate-weather\\.0\\.weather\\.currently\\./`,
-    modeScr: 'favorit',
-}],
-
-// Left column: three slots
-leftScreensaverEntity: [
-    {
-        type: 'script',
-        ScreensaverEntity: 'alias.0.Livingroom.Temperature',
-        ScreensaverEntityText: 'Inside',
-        ScreensaverEntityIconOn: 'thermometer',
-        ScreensaverEntityUnitText: '°C',
-        ScreensaverEntityIconColor: { val_min: 18, val_max: 26, val_best: 22 },
-    },
-    {
-        type: 'script',
-        ScreensaverEntity: 'alias.0.Livingroom.Humidity',
-        ScreensaverEntityText: 'Humidity',
-        ScreensaverEntityIconOn: 'water-percent',
-        ScreensaverEntityUnitText: '%',
-        ScreensaverEntityIconColor: { val_min: 30, val_max: 70, val_best: 45 },
-    },
-    { type: 'template', template: 'text.clock', dpInit: '', modeScr: 'left' },
-],
-
-// Status icons at the top right
-indicatorScreensaverEntity: [
-    { type: 'template', template: 'text.window.isOpen', dpInit: `/^alias\\.0\\.Livingroom\\.Window.*$/`, modeScr: 'indicator' },
-    { type: 'template', template: 'text.motion', dpInit: `/^zigbee\\.0\\..*\\.occupancy$/`, modeScr: 'indicator' },
-    { type: 'template', template: 'text.battery.low', dpInit: `/^zigbee\\.0\\..*\\.battery_low$/`, modeScr: 'indicator' },
-],
-
-// Bottom row
-bottomScreensaverEntity: [
-    { type: 'template', template: 'text.pirate-weather.bot2values', dpInit: `/^pirate-weather\\.0\\.weather\\.daily\\.01.*/`, modeScr: 'bottom' },
-    { type: 'template', template: 'text.pirate-weather.bot2values', dpInit: `/^pirate-weather\\.0\\.weather\\.daily\\.02.*/`, modeScr: 'bottom' },
-    {
-        type: 'script',
-        ScreensaverEntity: 'alias.0.Energy.Consumption.Current',
-        ScreensaverEntityText: 'Power',
-        ScreensaverEntityIconOn: 'flash',
-        ScreensaverEntityUnitText: 'W',
-        ScreensaverEntityIconColor: { val_min: 0, val_max: 5000, mode: 'triGrad' },
-    },
-],
-
-// The two icons at the bottom – an object with eight fields
-mrIcon1ScreensaverEntity: {
-    type: 'script',
-    ScreensaverEntity: 'Relay.1',
-    ScreensaverEntityIconOn: 'lightbulb-on',
-    ScreensaverEntityIconOff: 'lightbulb-off',
-    ScreensaverEntityValue: null,
-    ScreensaverEntityValueDecimalPlace: null,
-    ScreensaverEntityValueUnit: null,
-    ScreensaverEntityOnColor: { r: 255, g: 215, b: 0 },
-    ScreensaverEntityOffColor: { r: 68, g: 115, b: 158 },
-},
-mrIcon2ScreensaverEntity: {
-    type: 'script',
-    ScreensaverEntity: 'alias.0.Livingroom.Socket',
-    ScreensaverEntityIconOn: 'power-plug',
-    ScreensaverEntityIconOff: 'power-plug-off',
-    ScreensaverEntityValue: null,
-    ScreensaverEntityValueDecimalPlace: null,
-    ScreensaverEntityValueUnit: null,
-    ScreensaverEntityOnColor: { r: 0, g: 255, b: 0 },
-    ScreensaverEntityOffColor: { r: 68, g: 115, b: 158 },
-},
-```
-
-`Relay.1` and `Relay.2` are accepted shorthands for the panel's two relays; the adapter maps them to
-`cmd/power1` and `cmd/power2`.
-
-### Alternate — the favourite takes turns
-
-```typescript
-favoritScreensaverEntity: [{
-    type: 'template',
-    template: 'text.accuweather.favorit',
-    dpInit: `/^accuweather\\.0\\.Current\\./`,
-    modeScr: 'favorit',
-}],
-
-alternateScreensaverEntity: [{
-    type: 'script',
-    ScreensaverEntity: 'alias.0.Garden.Temperature',
-    ScreensaverEntityText: 'Garden',
-    ScreensaverEntityIconOn: 'tree',
-    ScreensaverEntityUnitText: '°C',
-}],
-
-bottomScreensaverEntity: [
-    { type: 'template', template: 'text.accuweather.sunriseset', dpInit: `/^accuweather\\.0\\.Daily\\.Day1\\./`, modeScr: 'bottom' },
-    { type: 'template', template: 'text.accuweather.windspeed', dpInit: `/^accuweather\\.0\\.Current\\.WindSpeed$/`, modeScr: 'bottom' },
-    { type: 'template', template: 'text.clock', dpInit: '', modeScr: 'bottom' },
-],
-```
-
-### Standard and EasyView — four and three slots at the bottom
-
-```typescript
-// standard: favourite + 4 slots at the bottom
-bottomScreensaverEntity: [
-    { type: 'template', template: 'text.openweathermap.bot2values', dpInit: `/^openweathermap\\.0\\.forecast\\.day1\\./`, modeScr: 'bottom' },
-    { type: 'template', template: 'text.openweathermap.sunriseset', dpInit: `/^openweathermap\\.0\\.forecast\\.current\\./`, modeScr: 'bottom' },
-    {
-        type: 'script',
-        ScreensaverEntity: 'alias.0.House.PowerConsumption',
-        ScreensaverEntityText: 'Power',
-        ScreensaverEntityIconOn: 'flash',
-        ScreensaverEntityUnitText: 'W',
-    },
-    { type: 'template', template: 'text.clock', dpInit: '', modeScr: 'bottom' },
-],
-```
-
-EasyView is the same with three slots (four on the `us-p` model) and a larger font.
-
-## Notifications
-
-Messages on the screensaver are the same thing on both routes: the admin writes them into its list, the
-script into `notifyScreensaverEntity`. What they can do — content, condition, priority, acknowledge with a
-group id, buzzer — is described in detail under [notifications](Screensaver-Notify).
-
-```typescript
-notifyScreensaverEntity: [{
-    type: 'script',
-    Priority: 10,
-    Headline: 'Window open',
-    Text: 'Please close it before leaving',
-    HeadlineIcon: 'window-open',
-    Enabled: 'alias.0.Window.Status',
-    VisibleCondition: 'val > 0',
-    isDismissiblePerEvent: true,
-    dismissibleIDGlobal: 'window',
-}],
-```
-
-`Priority`, `Headline` and `Text` are mandatory. If `VisibleCondition` is used, `Enabled` has to be set as
-well. The smallest priority number wins; a message sent through a state or `sendTo` pushes everything from
-this list aside.
-
-## Pitfalls
-
-- **Too many entries are not cut off, they are paged.** If an area holds more entries than it has slots,
-  the adapter builds windows and shows them in turn — five entries on three slots alternate between the
-  first three and the remaining two.
-- **`alternate` entries disappear silently** as long as the version is not `alternate`. The same goes for
-  any slot the current version does not have.
-- **Loaded fewer than configured?** Then the log says `Warning: <area>ScreensaverEntity - loaded X of Y
-  configured items` — almost always a state that does not exist.
-- **`ScreensaverEntityEnabled` is a state id, not a `true`.** The state has to exist, otherwise the entry
-  is rejected. The condition in `ScreensaverEntityVisibleCondition` is evaluated against **that** value,
-  not against the one being displayed.
-- **Colour scale:** `mode` knows `mixed`, `hue`, `cie`, `triGrad`, `triGradAnchor`, `quadriGrad` and
-  `quadriGradAnchor`; `log10` only `'max'` or `'min'` — there is no `'center'`.
-- **MR icons are displays, not switches.** Only indicator entries can switch something, through
-  `ScreensaverEntityButton`, `ScreensaverEntitySwitch` or `ScreensaverEntityNaviToPage`.
+- **The Screensaver tab is missing:** It appears once the MQTT settings are complete. When the login comes from the central credentials, the tab was hidden by mistake up to version 1.5.0 – see [PR #810](https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/pull/810).
+- **Everything greyed out:** The instance is not running. The editor works with a running instance only, the template list comes from the running adapter.
+- **No places in the panel picture:** No panel chosen yet.
+- **Apply stays disabled:** state missing or no state (channel chosen?), no icon, no writable state for button/switch, no valid state for "color from a state" – the dialog names the reason in a yellow line.
+- **The icon does not change with the value:** An icon list exists for number states only, and every icon applies up to and including its value – above the highest value its icon stays. Duplicate values are reported by the dialog, only one of them takes effect.
+- **Wrong icon preset:** The role of the channel above the state counts first – just change the icon.
+- **Panel shows the script screensaver:** The panel is in no entry, or it is in a second entry further down (the first wins) – see the log.
+- **Items missing after a version change:** They lie in areas the version does not have (message at the top of the editor); switch the version back or **Remove**.
+- **Indicator does not react to its action:** Enable the option **Indicators act as buttons**.
+- **A message covers the screensaver:** That is a notification – which one and why is explained under [Notifications](Screensaver-Notify#9-if-something-does-not-look-as-expected).

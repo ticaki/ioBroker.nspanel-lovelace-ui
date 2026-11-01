@@ -13,13 +13,13 @@
 **Basisinstallation**  
 - [NSPanel flashen](NSPanel-flashen)  
 - [Adapterinstallation](Adapter-Installation)  
-- [NSPanel Emulator](NSPanel-Nextion-Editor)  
+- [MQTT-Server Einstellungen](General)  
 
 **Adapter Admin**  
-- [MQTT-Server Einstellungen](General)  
 - [Nspanel-Einstellungen](NSPanelsetting)  
 - [Global Settings](globelSettings)  
 - [Maintain](Maintain)  
+- Skript-Migration *(folgt)*  
 - [Navigation Flow](naviFlow)  
 - [Symbolübersicht](symbolOverview)  
 - [Tasmota-Tools](tasmotatools) 🔒  
@@ -29,47 +29,32 @@
 
 **Seiten im Admin anlegen**  
 - [PageConfig – Übersicht](PageConfig)  
-- [Menü-Seite](PageMenu-Admin)  
-- [Alarm und Entsperrseite](PageAlarm-Admin)  
-- [QR-Code](PageQR-Admin)  
-- [Energie](PagePower-Admin)  
-- [Verlaufsdiagramm](PageChart-Admin)  
-- [Abfall](PageTrash-Admin)  
-- [Thermostat](PageThermo2-Admin)  
-- [Thermostat (klassisch)](PageThermo-Admin)  
+- [Seitenübersicht](Pages)  
+- [Menü-Seiten](pageMenu)  
+- [Alarm und Entsperrseite](cardAlarm)  
+- [QR-Code](cardQR)  
+- [Energie](cardPower)  
+- [Verlaufsdiagramm](cardChart)  
+- [Abfall](cardTrash)  
+- [Thermostat](cardThermo2)  
+- [Thermostat (klassisch)](cardThermo)  
+- Mediaplayer *(folgt)*  
+- Verknüpfung *(folgt)*  
 - [Wiederkehrende Dialoge](PageConfig-Dialoge)  
 
 **Screensaver**  
-- [Einleitung](screensaver)  
-- [Screensaver – Admin](Screensaver-Admin)  
+- [Screensaver im Admin](screensaver)  
 - [Benachrichtigungen](Screensaver-Notify)  
 
-**Konfigurationsscript**  
-- [Einleitung](ScriptConfig) iA  
-- [Grundlagen Seitenerstellung](ScriptConfig#seiten-konfiguration)  
-- [Global Pages & Global Link](GlobalPages)  
-- [PageItems erstellen](ScriptConfig#pageitems) iA  
-- [Screensaver im Skript](ScriptConfig#screensaver) iA  
-
-**Standard Pages**  
-- [Einleitung](Pages)  
-- [Page QR](PageQR)  
-- [Page Power](PagePower)  
-- [Page Chart](PageChart)  
-- [Page Alarm](PageAlarm)  
-- [Page Media](PageMedia)  
-- [Page Thermo2](PageThermo2)  
+**Auf dem Panel**  
 - [Popups](pagePopup)  
 
-**Developer**  
-- [Developer Templates](Developer-Templates)  
-- [Developer News (Latest)](<Developer-News-(Latest)>)  
-- [Developer Readme](Developer-Readme)  
-- [Alias Table](ALIAS)  
-- [Color Themes](colorTheme)  
+**Nachschlagen**  
+- [Alias-Tabelle](ALIAS)  
+- [Farbthemen](colorTheme)  
 - [PanelStatusBadge (Komponente)](PanelStatusBadge)  
 
 **Finde uns**  
 [![iobrokerLogo](../Pictures/iobrokerLogo.png)](https://forum.iobroker.net/topic/80055/alphatest-nspanel-lovelace-ui-v0-1-1)  
 
-*iA = in Arbeit · (folgt) = Seite entsteht noch · 🔒 = nur im Expertenmodus sichtbar*
+*(folgt) = Seite entsteht noch · 🔒 = nur im Expertenmodus sichtbar*

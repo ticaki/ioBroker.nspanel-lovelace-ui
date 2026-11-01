@@ -2,7 +2,7 @@
 
 Die klassische Thermostat-Seite `cardThermo` lässt sich ohne Skript im Admin anlegen: Tab **PageConfig**, Seitentyp **Thermostat (klassisch)**. Im Adapter läuft die Admin-Seite durch denselben Code wie die Skript-Seite (`ConfigManager.getPageThermo`), das Ergebnis auf dem Panel ist identisch.
 
-Die Seite zeigt **ein** Thermostat: einen Alias-Channel mit der Rolle `thermostat` oder `airCondition`. Konfiguriert werden nur Überschrift, Channel, Einheit und die Grenzen der Solltemperatur – alles andere (Ist-Temperatur, Luftfeuchte, zweiter Sollwert, Modus-Symbole und Schaltflächen unten) leitet der Adapter aus den Datenpunkten ab, die er unterhalb des Channels findet. Es gibt keine eigenen PageItems. Wer mehrere Heizkreise oder eigene Schaltflächen auf einer Seite braucht, nimmt [Page Thermo2](PageThermo2-Admin).
+Die Seite zeigt **ein** Thermostat: einen Alias-Channel mit der Rolle `thermostat` oder `airCondition`. Konfiguriert werden nur Überschrift, Channel, Einheit und die Grenzen der Solltemperatur – alles andere (Ist-Temperatur, Luftfeuchte, zweiter Sollwert, Modus-Symbole und Schaltflächen unten) leitet der Adapter aus den Datenpunkten ab, die er unterhalb des Channels findet. Es gibt keine eigenen PageItems. Wer mehrere Heizkreise oder eigene Schaltflächen auf einer Seite braucht, nimmt [Page Thermo2](cardThermo2).
 
 Inhalt:
 - [Seite anlegen](#1-seite-anlegen)
@@ -81,6 +81,6 @@ Das Skript kennt am Thermo-Item die Felder `iconArray`, `popupThermoMode1`, `pop
 
 ## 6. Übernahme aus dem Skript
 
-Beim [Übernehmen eines Skripts in den Admin](ScriptConfig#skript-in-den-admin-übernehmen) wird eine `cardThermo`-Seite zu diesem Seitentyp: `heading` → Überschrift, `items[0].id` → Channel, `items[0].unit` → Einheit, `items[0].minValue`/`maxValue`/`stepValue` → die drei Zahlen (unverändert). Alle anderen Felder des Items ([siehe oben](#skriptfelder-ohne-wirkung)) und weitere Items liest der Adapter auch im Skript nie – sie fallen ohne Meldung weg, das Panel zeigt dasselbe wie vorher.
+Beim Übernehmen eines Skripts in den Admin wird eine `cardThermo`-Seite zu diesem Seitentyp: `heading` → Überschrift, `items[0].id` → Channel, `items[0].unit` → Einheit, `items[0].minValue`/`maxValue`/`stepValue` → die drei Zahlen (unverändert). Alle anderen Felder des Items ([siehe oben](#skriptfelder-ohne-wirkung)) und weitere Items liest der Adapter auch im Skript nie – sie fallen ohne Meldung weg, das Panel zeigt dasselbe wie vorher.
 
 Übersprungen wird die Seite nur, wenn die Übernahme das Panel verändern würde: kein Item, `items[0]` ohne `id` (oder ein Navigations-/`native`-Item), eine `unit`, die kein Text oder leer ist, ein `minValue`/`maxValue`/`stepValue`, das keine Zahl ist.

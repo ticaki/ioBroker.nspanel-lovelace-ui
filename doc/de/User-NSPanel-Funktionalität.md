@@ -39,7 +39,7 @@ Auf dem Display lassen sich damit
 
 Das Panel zeigt immer **eine** Seite. Gewechselt wird über Navigationspfeile, durch Antippen von Fliesen und über die beiden Hardware-Tasten; für die Detailbedienung (Helligkeit, Farbe, Lüfterstufe) öffnen sich **Popups**. Aus dem Ruhezustand — dem Bildschirmschoner — führt ein Antippen zurück auf die erste Seite.
 
-Wie Seiten miteinander verbunden sind, steht unter *Navigation (Seite folgt)*; die Belegung der Hardware-Tasten im [Konfigurationsskript](ScriptConfig).
+Wie Seiten miteinander verbunden sind, steht unter *Navigation (Seite folgt)*; die Belegung der Hardware-Tasten im Konfigurationsskript.
 
 ## 4. Seitentypen
 
@@ -69,7 +69,7 @@ Davon zu trennen ist das **Meldungs-Popup** (`popupNotify`): keine Detailansicht
 
 ## 6. Bildschirmschoner
 
-Im Ruhezustand zeigt das Panel einen Bildschirmschoner mit Uhrzeit, Datum, Wetter und frei belegbaren Werteplätzen, dazu Statussymbole und Indikator-Tasten. Es gibt mehrere Versionen mit unterschiedlicher Aufteilung (Standard, Alternativ, Advanced, EasyView). Einrichten geht im Admin ([Screensaver – Admin](Screensaver-Admin)) oder im Skript ([Screensaver](screensaver)).
+Im Ruhezustand zeigt das Panel einen Bildschirmschoner mit Uhrzeit, Datum, Wetter und frei belegbaren Werteplätzen, dazu Statussymbole und Indikator-Tasten. Es gibt mehrere Versionen mit unterschiedlicher Aufteilung (Standard, Alternativ, Advanced, EasyView). Einrichten geht im Admin (Screensaver – Admin) oder im Skript (Screensaver).
 
 ## 7. Konfiguration im Admin — und wann das Skript
 

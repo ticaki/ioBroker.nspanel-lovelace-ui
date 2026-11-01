@@ -8,14 +8,14 @@ The configuration script is the route for **experienced users in special cases**
 
 | Page | What it is for | What arrives on the panel | Create in the admin |
 |---|---|---|---|
-| Menu page | Tile or list overview with freely chosen items | basics in the configuration script *(English page to come)* | [Menu page](PageMenu-Admin) |
-| Thermostat | Heating and climate, up to eight heat circuits | [Page Thermo2](PageThermo2) | [Thermostat](PageThermo2-Admin) |
-| Power | Energy flow with sources and consumers | [Page Power](PagePower) | [Power](PagePower-Admin) |
-| Chart | History chart | [Page Chart](PageChart) | [Chart](PageChart-Admin) |
-| QR code | Wi-Fi access, a phone number or an address as a QR code | [Page QR](PageQR) | [QR code](PageQR-Admin) |
-| Alarm | Alarm system with PIN and states | [Page Alarm](PageAlarm) | [Alarm and unlock page](PageAlarm-Admin) |
-| Trash | Waste collection dates | no card of its own — the adapter builds a list page from it | [Trash](PageTrash-Admin) |
-| Media | Music and playlists | [Page Media](PageMedia) | **not in the admin** — script only |
+| Menu page | Tile or list overview with freely chosen items | basics in the configuration script *(English page to come)* | [Menu page](pageMenu) |
+| Thermostat | Heating and climate, up to eight heat circuits | Page Thermo2 | [Thermostat](cardThermo2) |
+| Power | Energy flow with sources and consumers | Page Power | [Power](cardPower) |
+| Chart | History chart | Page Chart | [Chart](cardChart) |
+| QR code | Wi-Fi access, a phone number or an address as a QR code | Page QR | [QR code](cardQR) |
+| Alarm | Alarm system with PIN and states | Page Alarm | [Alarm and unlock page](cardAlarm) |
+| Trash | Waste collection dates | no card of its own — the adapter builds a list page from it | [Trash](cardTrash) |
+| Media | Music and playlists | Page Media | **not in the admin** — script only |
 
 ## Things to keep in mind
 

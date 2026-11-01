@@ -69,7 +69,7 @@ A different thing altogether is the **notification popup** (`popupNotify`): not 
 
 ## 6. Screensaver
 
-When idle, the panel shows a screensaver with time, date, weather and freely assignable value slots, plus status badges and indicator buttons. Several versions with different layouts exist (standard, alternate, advanced, easyview). It can be set up in the admin ([screensaver – admin](Screensaver-Admin)) or in the script.
+When idle, the panel shows a screensaver with time, date, weather and freely assignable value slots, plus status badges and indicator buttons. Several versions with different layouts exist (standard, alternate, advanced, easyview). It can be set up in the admin (screensaver – admin) or in the script.
 
 ## 7. Configuration in the admin — and when the script
 

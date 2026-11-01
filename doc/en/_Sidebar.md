@@ -11,15 +11,15 @@
 - [Feature overview](User-NSPanel-Funktionalität)  
 
 **Basic installation**  
-- Flashing the NSPanel *(to come)*  
+- Flashing the NSPanel *(follows)*  
 - [Adapter installation](Adapter-Installation)  
-- NSPanel emulator *(to come)*  
+- [MQTT server settings](General)  
 
 **Adapter admin**  
-- [MQTT server settings](General)  
 - [NSPanel settings](NSPanelsetting)  
 - [Global settings](globelSettings)  
 - [Maintain](Maintain)  
+- Script migration *(follows)*  
 - [Navigation flow](naviFlow)  
 - [Icon overview](symbolOverview)  
 - [Tasmota tools](tasmotatools) 🔒  
@@ -27,45 +27,34 @@
 - [Web panel](WebPanel)  
 - [Developer](Developer) 🔒  
 
-**Creating pages in the admin**  
+**Pages created in the admin**  
 - [PageConfig – overview](PageConfig)  
-- [Menu page](PageMenu-Admin)  
-- [Alarm and unlock](PageAlarm-Admin)  
-- [QR code](PageQR-Admin)  
-- [Power](PagePower-Admin)  
-- [Chart](PageChart-Admin)  
-- [Trash](PageTrash-Admin)  
-- [Thermostat](PageThermo2-Admin)  
-- [Thermostat (classic)](PageThermo-Admin)  
+- [Page overview](Pages)  
+- [Menu pages](pageMenu)  
+- [Alarm and unlock page](cardAlarm)  
+- [QR code](cardQR)  
+- [Power](cardPower)  
+- [Chart](cardChart)  
+- [Waste calendar](cardTrash)  
+- [Thermostat](cardThermo2)  
+- [Thermostat (classic)](cardThermo)  
+- Media player *(follows)*  
+- Page link *(follows)*  
 - [Recurring dialogs](PageConfig-Dialoge)  
 
 **Screensaver**  
-- [Introduction](Pages)  
-- [Screensaver – admin](Screensaver-Admin)  
+- [Screensaver in the admin](screensaver)  
 - [Notifications](Screensaver-Notify)  
 
-**Configuration script**  
-- [Introduction](Pages)  
-- [Global pages & global link](GlobalPages)  
-
-**Standard pages**  
-- Introduction *(to come)*  
-- [Page QR](PageQR)  
-- [Page Power](PagePower)  
-- [Page Chart](PageChart)  
-- [Page Alarm](PageAlarm)  
-- [Page Media](PageMedia)  
-- [Page Thermo2](PageThermo2)  
+**On the panel**  
 - [Popups](pagePopup)  
-**Developer**  
-- Developer templates *(to come)*  
-- Developer news (latest) *(to come)*  
-- Developer readme *(to come)*  
-- Alias table *(to come)*  
-- [Colour themes](colorTheme)  
+
+**Reference**  
+- Alias table *(follows)*  
+- [Color themes](colorTheme)  
 - [PanelStatusBadge (component)](PanelStatusBadge)  
 
 **Find us**  
 [![iobrokerLogo](../Pictures/iobrokerLogo.png)](https://forum.iobroker.net/topic/80055/alphatest-nspanel-lovelace-ui-v0-1-1)  
 
-*iA = work in progress · (to come) = page is still being written · 🔒 = only visible in expert mode*
+*(follows) = page is still being written · 🔒 = only visible in expert mode*

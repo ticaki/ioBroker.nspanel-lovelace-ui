@@ -66,7 +66,7 @@ Clicking the **headline** opens the dialog of the selected circuit, the **+** ab
 
 ![Heat circuit](../Pictures/PageThermo2/admin-02-heizkreis.png)
 
-**Data source – alias channel:** a channel with the role `thermostat` or `airCondition` (see the [alias table](ALIAS)). Type the ID or pick it with **…** from the object tree; the tree shows channels, devices and folders.
+**Data source – alias channel:** a channel with the role `thermostat` or `airCondition` (see the alias table). Type the ID or pick it with **…** from the object tree; the tree shows channels, devices and folders.
 
 ![Object selection](../Pictures/PageThermo2/admin-04-objektauswahl.png)
 

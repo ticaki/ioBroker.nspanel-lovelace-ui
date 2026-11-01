@@ -4,7 +4,7 @@ A notification covers the screensaver while a datapoint is “on”: two lines �
 
 They are created through the **bell** in the panel image of the screensaver editor, right next to the gear. All screensavers share **one common list**; the checkbox in each row decides on which screensaver a notification appears. A configuration script is not needed for this.
 
-How the screensaver itself is created is described under [Screensaver – admin](Screensaver-Admin). This page covers the notifications only.
+How the screensaver itself is created is described under Screensaver – admin. This page covers the notifications only.
 
 Contents:
 - [The list](#1-the-list)

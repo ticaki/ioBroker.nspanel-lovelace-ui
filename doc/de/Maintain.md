@@ -40,7 +40,7 @@ Ist die **Beta-TFT** eingeschaltet, blendet der Tab oben einen Hinweis darauf ei
 
 Jede Panel-Kachel hat neben dem Knopf zum Anlegen des Konfig-Skripts den Knopf **Skript in Admin übernehmen**. Damit wandert die Konfiguration, die das Skript des Panels an den Adapter geschickt hat, in die Admin-Konfiguration: Seiten in den Tab `PageConfig`, der Bildschirmschoner in den Tab `Screensaver`, die Hardware-Buttons in die Panel-Kachel unter `NSPanelsetting`. Der Knopf ist nur aktiv, wenn die Instanz läuft und das Panel ein Topic hat.
 
-Was mit dem Skript dabei passiert (Backup, Auskommentieren, was man danach von Hand prüfen sollte) und welche Seiten übernommen werden können, steht unter [Skript in den Admin übernehmen](ScriptConfig#skript-in-den-admin-übernehmen) in der Skript-Doku. Hier geht es nur um den Ablauf im Admin.
+Was mit dem Skript dabei passiert (Backup, Auskommentieren, was man danach von Hand prüfen sollte) und welche Seiten übernommen werden können, steht unter Skript in den Admin übernehmen in der Skript-Doku. Hier geht es nur um den Ablauf im Admin.
 
 ### Voraussetzung
 
@@ -55,7 +55,7 @@ Ein Skript, das **mehrere Panels** bedient (`panelTopic: ['…', '…']`), wird 
    - **Screensaver** – Name, Version (z. B. Standard, Alternate, Advanced), Anzahl der Elemente und Benachrichtigungen; oder der Grund, warum er nicht übernommen wird.
    - **Hardware-Buttons** – links/rechts mit der Aktion; oder der Grund, warum ein Button übersprungen wird.
    - **Übersprungen** – alle Seiten, die im Skript bleiben, jeweils mit Grund und, wenn möglich, dem betroffenen Feld oder Element (z. B. `items[3].confirm: not available in the admin`).
-   - **Seiten des globalen Skripts, die vom Admin abweichen** – nur wenn es solche gibt: pro Seite die Auswahl **Admin-Stand behalten**, **Skriptstand übernehmen** oder **Überspringen** (siehe [Seiten des globalen Skripts](ScriptConfig#seiten-des-globalen-skripts)); jede Änderung fragt den Adapter nach einer neuen Vorschau, beim Übernehmen geht die Auswahl mit.
+   - **Seiten des globalen Skripts, die vom Admin abweichen** – nur wenn es solche gibt: pro Seite die Auswahl **Admin-Stand behalten**, **Skriptstand übernehmen** oder **Überspringen** (siehe Seiten des globalen Skripts); jede Änderung fragt den Adapter nach einer neuen Vorschau, beim Übernehmen geht die Auswahl mit.
    
    Dazu Hinweise: ob das Skript-Objekt gefunden wurde (sonst gibt es kein Backup und das Skript bleibt unverändert), ob es überhaupt etwas zu tun gibt, und ob der Admin ungespeicherte Änderungen hat.
 2. **Übernehmen.** Der Adapter parkt zuerst die anzulegenden Admin-Einträge in seinem Meta-Objekt (`native.pendingScriptConversion`), sichert und bereinigt dann das Skript, entfernt die übernommenen Teile aus der gespeicherten Skript-Konfiguration und schreibt die Instanz-Konfiguration. Weil er die Instanz-Konfiguration selbst schreibt, startet er anschließend neu. Schlägt das Schreiben der Instanz-Konfiguration fehl, zeigt der Dialog **Teilweise ausgeführt**: Das Skript ist dann bereits gesichert und bereinigt, die geparkten Admin-Einträge übernimmt der Adapter beim nächsten Start (Warnung im Log).

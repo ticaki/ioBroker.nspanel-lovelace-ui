@@ -2,7 +2,7 @@
 
 The classic thermostat page `cardThermo` can be created without a script: tab **PageConfig**, page type **Thermostat (classic)**. In the adapter the admin page runs through the same code as the script page (`ConfigManager.getPageThermo`), the result on the panel is identical.
 
-The page shows **one** thermostat: an alias channel with the role `thermostat` or `airCondition`. Only the headline, the channel, the unit and the limits of the set temperature are configured – everything else (actual temperature, humidity, second set point, mode icons and the buttons at the bottom) is derived by the adapter from the states it finds below the channel. There are no page items of its own. For several heat circuits or own buttons on one page use [Page Thermo2](PageThermo2-Admin).
+The page shows **one** thermostat: an alias channel with the role `thermostat` or `airCondition`. Only the headline, the channel, the unit and the limits of the set temperature are configured – everything else (actual temperature, humidity, second set point, mode icons and the buttons at the bottom) is derived by the adapter from the states it finds below the channel. There are no page items of its own. For several heat circuits or own buttons on one page use [Page Thermo2](cardThermo2).
 
 Contents:
 - [Creating the page](#1-creating-the-page)

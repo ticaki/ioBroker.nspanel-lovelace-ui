@@ -4,7 +4,7 @@ Eine Benachrichtigung legt sich über den Bildschirmschoner, solange ein Datenpu
 
 Angelegt werden sie über die **Glocke** im Panelbild des Screensaver-Editors, gleich neben dem Zahnrad. Alle Bildschirmschoner teilen sich **eine gemeinsame Liste**; das Häkchen je Zeile entscheidet, auf welchem Bildschirmschoner eine Benachrichtigung erscheint. Ein Konfigurationsskript ist dafür nicht nötig.
 
-Wie der Bildschirmschoner selbst angelegt wird, steht unter [Screensaver – Admin](Screensaver-Admin). Diese Seite beschreibt nur die Benachrichtigungen.
+Wie der Bildschirmschoner selbst angelegt wird, steht unter Screensaver – Admin. Diese Seite beschreibt nur die Benachrichtigungen.
 
 Inhalt:
 - [Die Liste](#1-die-liste)
@@ -121,7 +121,7 @@ Der Dialog arbeitet auf einer Kopie: Erst **Übernehmen** in der Liste schreibt 
 - Ältere Konfigurationen, bei denen die Benachrichtigungen noch im Eintrag des Bildschirmschoners steckten, wandern beim Laden automatisch in die gemeinsame Liste.
 - Nicht angehakte Benachrichtigungen bleiben erhalten, werden aber an kein Panel geschickt.
 
-Auf dem Panel entsteht daraus eine Überschriftzeile (Symbol + Präfix + Wert/Text + Einheit) und darunter die Textzeile (Präfix + Text + Suffix). Im Skript entspricht das `notifyScreensaverEntity`, siehe [Screensaver](screensaver).
+Auf dem Panel entsteht daraus eine Überschriftzeile (Symbol + Präfix + Wert/Text + Einheit) und darunter die Textzeile (Präfix + Text + Suffix). Im Skript entspricht das `notifyScreensaverEntity`, siehe Screensaver.
 
 ## 9. Wenn etwas nicht wie erwartet aussieht
 

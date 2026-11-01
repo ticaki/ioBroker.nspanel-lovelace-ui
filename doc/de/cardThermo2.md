@@ -13,7 +13,7 @@ Die Thermostat-Seite `cardThermo2` lässt sich ohne Skript im Admin anlegen: Tab
   `VACATION` und `WORKING` — sie dürfen im Kanal stehen, erscheinen am Panel aber nicht.
 - Die vollständige Tabelle aller Rollen steht unter [Alias Table](ALIAS).
 
-Wie dieselbe Seite **im Konfigurationsskript** aussieht, zeigt [Page Thermo2](PageThermo2) — als
+Wie dieselbe Seite **im Konfigurationsskript** aussieht, zeigt Page Thermo2 — als
 Code-Referenz für erfahrene Nutzer in besonderen Fällen, nicht als zweiter Einrichtungsweg.
 
 Inhalt:
