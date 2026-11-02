@@ -544,7 +544,8 @@ class PageThermo2 extends import_pageMenu.PageMenu {
       const data = {
         entity3: set ? {
           value: { type: "triggered", dp: set },
-          set: { type: "state", dp: set }
+          set: { type: "state", dp: set },
+          unit: { type: "const", constVal: item.unit || "\xB0C" }
         } : void 0,
         entity1: await configManager.existsState(actual) ? {
           value: { type: "triggered", dp: actual || "" },
@@ -587,7 +588,7 @@ class PageThermo2 extends import_pageMenu.PageMenu {
         },
         entity2: await configManager.existsState(humidity) ? {
           value: { type: "triggered", dp: humidity || "" },
-          unit: { type: "const", constVal: item.unit || "%" }
+          unit: { type: "const", constVal: item.unit2 || "%" }
         } : void 0,
         headline: { type: "const", constVal: headline || "HEATING" },
         minValue: item.minValue != null ? {
