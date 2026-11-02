@@ -31,6 +31,29 @@ type MyValidType = AtLeastOne<MyType>;
 
 export const a: MyValidType = { c: 'c' };*/
 
+/**
+ * Snaps the set temperature onto the step the panel works with.
+ *
+ * The panel only accepts values of the grid `minTemp + n * tempStep`, all three in tenths of a
+ * degree. Everything outside the limits is pulled back onto them; a value that would land above the
+ * maximum after snapping steps down instead.
+ *
+ * @param dstTemp Set temperature in tenths of a degree.
+ * @param minTemp Lower limit in tenths of a degree.
+ * @param maxTemp Upper limit in tenths of a degree.
+ * @param tempStep Step width in tenths of a degree, values below one are treated as one.
+ * @returns The set temperature inside the limits and on the step grid.
+ */
+export function snapSetTemperature(dstTemp: number, minTemp: number, maxTemp: number, tempStep: number): number {
+    const step = Number.isFinite(tempStep) && tempStep >= 1 ? tempStep : 1;
+    const clamped = Math.min(Math.max(dstTemp, minTemp), maxTemp);
+    let snapped = Math.round((clamped - minTemp) / step) * step + minTemp;
+    if (snapped > maxTemp) {
+        snapped -= step;
+    }
+    return snapped < minTemp ? minTemp : snapped;
+}
+
 export class PageThermo extends Page {
     //config: pages.cardThermoDataItemOptions;
     items: pages.cardThermoDataItems | undefined;
@@ -198,10 +221,12 @@ export class PageThermo extends Page {
                 typeof message.dstTemp === 'number' &&
                 typeof message.tempStep === 'string'
             ) {
-                message.dstTemp = Math.min(Math.max(message.dstTemp, message.minTemp), message.maxTemp);
-                message.dstTemp =
-                    Math.round((message.dstTemp - message.minTemp) / parseInt(message.tempStep) + message.minTemp) *
-                    parseInt(message.tempStep);
+                message.dstTemp = snapSetTemperature(
+                    message.dstTemp,
+                    message.minTemp,
+                    message.maxTemp,
+                    parseInt(message.tempStep),
+                );
             }
 
             v = (item.data.set2 && (await item.data.set2.getNumber())) ?? null;
