@@ -102,7 +102,7 @@ Third choice *color from a state*: a state whose value is the color – `#rrggbb
 
 **Visibility** (expert mode): a state that hides the item while `false`, and optionally a condition over `val` (like `ScreensaverEntityEnabled` / `ScreensaverEntityVisibleCondition` in the script). `val` is the value of the item's state – so `val > 0` shows the item for positive values only.
 
-![Item dialog in expert mode](../Pictures/screensaverAdmin/admin-16-item-expertenmodus.png)
+![Item dialog in expert mode](../Pictures/screensaverAdmin/admin-16-item-icon-und-sichtbarkeit.png)
 
 The picture shows the same favourite with expert mode switched on (the icon at the bottom left of the admin bar): the button **Icon per value…** sits below the icon field, at the bottom are the visibility state and the condition. Without expert mode both blocks are missing – a stored icon list stays visible nevertheless.
 
