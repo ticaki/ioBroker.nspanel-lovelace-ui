@@ -139,10 +139,10 @@ Klick auf **Zeile 1** (Ist-Temperatur) oder **Zeile 3** (Luftfeuchte). Der Dialo
 |---|---|
 | **Symbol** | Symbol vor dem Wert, aus der Symbolliste. Standard `thermometer` (Zeile 1) bzw. `water-percent` (Zeile 3). |
 | **Farbe** | Farbe von Symbol und Wert. Standard grün (Zeile 1) bzw. magenta (Zeile 3); **Zurück auf Standard** setzt sie zurück. |
-| **Einheit** (Zeile 1) | Text hinter dem Wert. **Dieses Feld gilt für Zeile 1 und Zeile 3.** Leer = `°C` in Zeile 1 und `%` in Zeile 3. |
-| **Einheit** (Zeile 3) | Wird gespeichert und in der Vorschau angezeigt, **erreicht das Panel aber nicht** (siehe [Fallstricke](#fallstricke)). |
+| **Einheit** (Zeile 1) | Text hinter dem Wert. Das Feld gilt für **Zeile 1 und für die große Zahl im Stellring** (die Solltemperatur). Leer = `°C`. |
+| **Einheit** (Zeile 3) | Text hinter der Luftfeuchte. Leer = `%`. |
 
-Die Einheit neben der **großen Zahl** im Stellring setzt der Adapter nicht aus diesen Feldern, sie ist immer `°C`.
+Die Einheit neben der **großen Zahl** im Stellring kommt aus dem Feld **Einheit** der Zeile 1 – der Hinweis in der Dialogüberschrift stimmt also.
 
 ## 7. Modusanzeige
 
@@ -248,8 +248,7 @@ Ein Feld hält die Übernahme auf: **`power`** am Heizkreis – für den eigenen
 - **Die neunte Fläche gibt es nur bei der Anordnung `V`.** Bei jeder anderen Anordnung sendet der Adapter nur die acht seitlichen Flächen; ein Item auf der neunten erscheint nicht. Der Editor markiert sie dann mit einem Schloss – wer die Anordnung nachträglich ändert, verliert also eine belegte Fläche je Seite.
 - **„Blättern: Pfeil" und eine Anordnung ungleich `V` schließen sich aus.** Der Blätterpfeil liegt auf der neunten Fläche – genau der, die bei H, HM, VM, HB und VB wegfällt. Die Seite lässt sich dann nicht mehr blättern, weil in dieser Einstellung auch die Navigationspfeile nicht blättern.
 - **„Weiterblättern um eine halbe Seite" wird angeboten, aber nie benutzt.** Der Adapter setzt den Wert für diese Karte immer auf *ganze Seite* zurück.
-- **Die zweite Einheit erreicht das Panel nicht.** Der Adapter nimmt für **beide** Wertzeilen das Feld **Einheit** der Zeile 1 (leer = `°C` in Zeile 1, `%` in Zeile 3); das Feld **Einheit** im Block *Zeile 3* liest er nie – auch nicht auf dem Admin-Weg. Ein `°C` in Zeile 1 ergibt am Panel also `30.0 °C` bei der Luftfeuchte. Die Vorschau zeigt trotzdem die zweite Einheit.
-- **Der Hinweis „Einheit gilt auch für die Solltemperatur" trifft nicht zu.** Die Einheit neben der großen Zahl im Stellring ist immer `°C`; gemeint ist die Luftfeuchte-Zeile.
+- **Bis einschließlich 2.0.2 erreichte die zweite Einheit das Panel nicht.** Der Adapter nahm für beide Wertzeilen das Feld **Einheit** der Zeile 1 – eine Luftfeuchte bekam damit `°C` angehängt, und die Solltemperatur blieb ohne Einheit. Beides ist in der Version nach 2.0.2 behoben; wer noch 2.0.2 oder älter fährt, trägt in Zeile 1 die Einheit ein, die zur Ist-Temperatur passt, und lebt bei der Luftfeuchte damit.
 - **Die Platzhalter „Werte in Zehnteln" täuschen.** Ist die Option in den NSPanel-Einstellungen aktiv, bedeutet eine eingetragene 15 im Feld *Minimale Temperatur* 1,5 °C – die Platzhalter im Dialog zeigen weiter 15 / 28 / 0,5.
 - **Reservierte Lücken erscheinen in jedem Heizkreis.** Der Editor merkt sich den Heizkreis einer freien Fläche, der Adapter verwirft diese Bindung beim Bauen der Seite. Eine Lücke, die nur bei Heizkreis 1 gedacht war, verschiebt die Flächen aller anderen Heizkreise um einen Platz.
 - **Die Vorschau zählt einen Platz mehr als das Panel.** Der Editor hält immer eine freie Fläche zum Anlegen offen. Bei genau neun Flächen zeigt er deshalb zwei Seiten, während das Panel alles auf einer Seite unterbringt.
