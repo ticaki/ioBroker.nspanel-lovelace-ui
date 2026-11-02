@@ -156,6 +156,7 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
 <!--
     Placeholder for the next version (at the beginning of the line):
     ### **WORK IN PROGRESS**
+- (tt-tom17) cardThermo: the set temperature reached the panel multiplied by the step width (19.0 °C became 79.0 °C with the usual step of 0.5 °C) - only a step of 0.1 °C was unaffected
 -->
 ### **WORK IN PROGRESS**
 - (ticaki) admin screensaver: uniform, larger paging arrows for all areas except favorit (the scroll bar for weather items is gone, weather items are paged like the panel does); the alternate area can hold several items the panel rotates through
