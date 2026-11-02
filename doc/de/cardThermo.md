@@ -123,7 +123,11 @@ Daraus folgt:
 - Ein vollständig ausgestatteter Alias überschreitet die acht Plätze leicht: `thermostat` kann elf Flächen erzeugen, `airCondition` mit sieben Modi dreizehn. Dann ist die Leiste immer zweiseitig.
 - Jede erzeugte Fläche kostet einen Platz. Wer die Reihenfolge oder die Auswahl beeinflussen will, muss Datenpunkte aus dem Alias entfernen – im Admin gibt es für diese Karte keine eigenen PageItems.
 
-<!-- Bild folgt: Leiste mit Blätterpfeil auf dem achten Platz, siehe BILDAUFTRAG 2 -->
+![Acht Plätze: sieben Flächen und der Blätterpfeil](../Pictures/PageThermo/panel-05-blaetterpfeil.png)
+
+Das Bild zeigt einen vollständigen `thermostat`-Alias: Ein/Aus, Boost, Fenster offen (grün, weil offen),
+Party, Wartung, nicht erreichbar, noch einmal Wartung — und auf dem achten Platz den Blätterpfeil. Die
+beiden gleichen Schraubenschlüssel sind der doppelte `MAINTAIN`-Block aus den [Fallstricken](#fallstricke).
 
 ## 7. Speichern, Panel-Zuweisung, Navigation
 
