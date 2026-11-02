@@ -1437,7 +1437,7 @@ function convertScreensaver(input) {
       return items[0];
     };
     const favorit = single("favorit", raw.favoritScreensaverEntity);
-    const alternate = single("alternate", raw.alternateScreensaverEntity);
+    const alternate = area("alternate", raw.alternateScreensaverEntity, false);
     const left = area("left", raw.leftScreensaverEntity, true);
     const bottom = area("bottom", raw.bottomScreensaverEntity, false);
     const indicator = area("indicator", raw.indicatorScreensaverEntity, true);
@@ -1460,7 +1460,7 @@ function convertScreensaver(input) {
       });
     }
     const present = (list) => list.some((i) => !!i);
-    if (!favorit && !alternate && !present(left) && !present(bottom) && !present(indicator) && !mrIcon1 && !mrIcon2 && notify.length === 0) {
+    if (!favorit && !present(alternate) && !present(left) && !present(bottom) && !present(indicator) && !mrIcon1 && !mrIcon2 && notify.length === 0) {
       return { skipped: { reason: "screensaverEmpty" } };
     }
     for (const [icon, where] of [
@@ -1474,7 +1474,7 @@ function convertScreensaver(input) {
         );
       }
     }
-    const mode = (_a = input.screensaverMode) != null ? _a : present(left) || present(indicator) ? "advanced" : alternate ? "alternate" : "standard";
+    const mode = (_a = input.screensaverMode) != null ? _a : present(left) || present(indicator) ? "advanced" : present(alternate) ? "alternate" : "standard";
     const entry = {
       name: panel.name,
       mode,
@@ -1489,7 +1489,7 @@ function convertScreensaver(input) {
     if (favorit) {
       entry.favorit = favorit;
     }
-    if (alternate) {
+    if (present(alternate)) {
       entry.alternate = alternate;
     }
     if (mrIcon1) {
@@ -2016,7 +2016,7 @@ function planScriptToAdmin(input) {
     plan.screensaver = {
       name: entry.name,
       mode: entry.mode,
-      itemCount: (entry.favorit ? 1 : 0) + (entry.alternate ? 1 : 0) + count(entry.left) + count(entry.bottom) + count(entry.indicator) + (entry.mrIcon1 ? 1 : 0) + (entry.mrIcon2 ? 1 : 0),
+      itemCount: (entry.favorit ? 1 : 0) + count((0, import_adminShareConfig.screensaverAlternateItems)(entry.alternate)) + count(entry.left) + count(entry.bottom) + count(entry.indicator) + (entry.mrIcon1 ? 1 : 0) + (entry.mrIcon2 ? 1 : 0),
       notifyCount: newNotify.length
     };
     if (screensaver.rawItems.length) {

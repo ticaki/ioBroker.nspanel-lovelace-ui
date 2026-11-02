@@ -25,6 +25,7 @@ import {
     isScriptNavigatedPower,
     isLongPressCard,
     newScreensaverNotifyId,
+    screensaverAlternateItems,
     normalizeScrollFields,
     screensaverWeatherItemKeys,
     thermo2SortOrders,
@@ -2021,7 +2022,7 @@ function convertScreensaver(input: ScriptToAdminInput): ScreensaverResult {
             });
             return out;
         };
-        const single = (name: 'favorit' | 'alternate', list: unknown): ScreensaverItemConfig | undefined => {
+        const single = (name: 'favorit', list: unknown): ScreensaverItemConfig | undefined => {
             const items = area(name, list, false).filter((i): i is ScreensaverItemConfig => !!i);
             if (items.length > 1) {
                 throw new ConvertError('screensaverItemNotSupported', `${name}: the admin takes one item`);
@@ -2029,7 +2030,8 @@ function convertScreensaver(input: ScriptToAdminInput): ScreensaverResult {
             return items[0];
         };
         const favorit = single('favorit', raw.favoritScreensaverEntity);
-        const alternate = single('alternate', raw.alternateScreensaverEntity);
+        // the panel rotates through several alternate items like through the bottom ones
+        const alternate = area('alternate', raw.alternateScreensaverEntity, false);
         const left = area('left', raw.leftScreensaverEntity, true);
         const bottom = area('bottom', raw.bottomScreensaverEntity, false);
         const indicator = area('indicator', raw.indicatorScreensaverEntity, true);
@@ -2053,7 +2055,7 @@ function convertScreensaver(input: ScriptToAdminInput): ScreensaverResult {
         const present = (list: (ScreensaverItemConfig | undefined)[]): boolean => list.some(i => !!i);
         if (
             !favorit &&
-            !alternate &&
+            !present(alternate) &&
             !present(left) &&
             !present(bottom) &&
             !present(indicator) &&
@@ -2076,7 +2078,7 @@ function convertScreensaver(input: ScriptToAdminInput): ScreensaverResult {
         }
         const mode: ScreensaverMode =
             input.screensaverMode ??
-            (present(left) || present(indicator) ? 'advanced' : alternate ? 'alternate' : 'standard');
+            (present(left) || present(indicator) ? 'advanced' : present(alternate) ? 'alternate' : 'standard');
         const entry: ScreensaverEntry = {
             name: panel.name,
             mode,
@@ -2091,7 +2093,7 @@ function convertScreensaver(input: ScriptToAdminInput): ScreensaverResult {
         if (favorit) {
             entry.favorit = favorit;
         }
-        if (alternate) {
+        if (present(alternate)) {
             entry.alternate = alternate;
         }
         if (mrIcon1) {
@@ -2788,7 +2790,7 @@ export function planScriptToAdmin(input: ScriptToAdminInput): ScriptToAdminResul
             mode: entry.mode,
             itemCount:
                 (entry.favorit ? 1 : 0) +
-                (entry.alternate ? 1 : 0) +
+                count(screensaverAlternateItems(entry.alternate)) +
                 count(entry.left) +
                 count(entry.bottom) +
                 count(entry.indicator) +

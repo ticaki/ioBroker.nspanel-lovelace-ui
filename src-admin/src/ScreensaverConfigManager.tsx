@@ -17,6 +17,7 @@ import type {
 } from '../../src/lib/types/adminShareConfig';
 import {
     migrateScreensaverNotify,
+    normalizeScreensaverEntry,
     ADAPTER_NAME,
     SENDTO_GET_PAGES_All_COMMAND,
     SENDTO_GET_WEATHER_ENTITY_COMMAND,
@@ -57,7 +58,8 @@ class ScreensaverConfigManager extends ConfigGeneric<
         const saved = ConfigGeneric.getValue(props.data, props.attr);
         const savedNotify = ConfigGeneric.getValue(props.data, NOTIFY_ATTR);
         const migrated = migrateScreensaverNotify(
-            Array.isArray(saved) ? (saved as ScreensaverEntry[]) : [],
+            // entries saved before `alternate` became a list hold a single item there
+            Array.isArray(saved) ? (saved as ScreensaverEntry[]).map(e => normalizeScreensaverEntry(e)) : [],
             Array.isArray(savedNotify) ? (savedNotify as ScreensaverNotifyConfig[]) : [],
         );
         this.notifyMigrated = migrated.changed;

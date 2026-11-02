@@ -2849,6 +2849,24 @@ describe('lib/configuration - planScriptToAdmin: screensaver', () => {
         expect(Object.keys(all.screensaverEntry!.weatherAddDefaultItems!)).to.have.length(12);
     });
 
+    it('takes several alternate items over as the rotating alternate list', () => {
+        const item = templateConfig().leftScreensaverEntity[0] as Extract<
+            ScriptConfig.ScreenSaverElement,
+            { type: 'script' }
+        >;
+        const result = plan(
+            baseConfig({
+                alternateScreensaverEntity: [item, { ...item, ScreensaverEntity: 'alias.0.Other.ACTUAL' }],
+            }),
+        );
+        expect(result.plan.screensaverSkipped).to.equal(undefined);
+        const entry = result.screensaverEntry!;
+        expect(entry.mode).to.equal('alternate');
+        expect(entry.alternate).to.have.length(2);
+        expect(entry.alternate![1]).to.deep.include({ state: 'alias.0.Other.ACTUAL' });
+        expect(result.plan.screensaver!.itemCount).to.equal(2 + (entry.mrIcon1 ? 1 : 0) + (entry.mrIcon2 ? 1 : 0));
+    });
+
     it('takes the weather entity of the script without trailing dots, keeps "no weather"', () => {
         const entity = (value: unknown): string | undefined =>
             plan({ ...templateConfig(), weatherEntity: value as string }).screensaverEntry!.weatherEntity;

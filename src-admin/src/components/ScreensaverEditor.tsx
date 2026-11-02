@@ -4,8 +4,8 @@
  * The screensaver is drawn like the panel shows it in the chosen version (standard, alternate,
  * advanced, easyview - doc/Pictures/screensaver): the places of the item areas, the two status icons
  * (mrIcon), time and date. A click on a free place adds an item (ChannelConfigDialog like the page
- * editors), a click on an item edits it, items can be dragged between places; time, date, the status
- * icons and the gear open small dialogs. The panels showing this screensaver are chosen here - the
+ * editors), a click on an item edits it, items can be dragged between places; time, date and the status
+ * icons open small dialogs, the bar below the picture holds the notifications and options buttons. The panels showing this screensaver are chosen here - the
  * model of the first panel decides how many places an area has (ScreenSaverConst of the adapter).
  */
 import React from 'react';
@@ -88,6 +88,9 @@ const WEATHER_ICONS: Record<string, string> = {
     solar: 'solar-power',
 };
 const WEATHER_COLOR = '#8ab4f8';
+/** width (height for vertical pagers) of the paging arrows next to the places and their icon size, px */
+const PAGER_SIZE = 28;
+const PAGER_ICON = 24;
 /** frame of an indicator by what its key does - grey = no key (no action or the option is off) */
 const INDICATOR_COLORS: Record<'none' | 'button' | 'switch' | 'navigate', string> = {
     none: '#888',
@@ -128,15 +131,17 @@ export interface ScreensaverEditorProps {
 type DialogKind = 'mricon1' | 'mricon2' | 'time' | 'date' | 'options';
 type SlotRef = { area: ScreensaverArea; index: number };
 /** areas holding a list of items - the panel pages through them window by window */
-type ListArea = 'left' | 'bottom' | 'indicator';
+type ListArea = Exclude<ScreensaverArea, 'favorit'>;
+/** one place of the shown sequence of an area: a stored place or a weather item the adapter appends */
+type ShownSlot = { kind: 'slot'; ref: SlotRef } | { kind: 'weather'; key: ScreensaverWeatherItemKey };
 
 /**
- * Whether an area holds a list of items (favorit and alternate hold one item).
+ * Whether an area holds a list of items (only favorit holds one item).
  *
  * @param area area
  */
 function isListArea(area: ScreensaverArea): area is ListArea {
-    return area === 'left' || area === 'bottom' || area === 'indicator';
+    return area !== 'favorit';
 }
 
 /**
@@ -386,8 +391,6 @@ interface ScreensaverEditorState {
     editing: SlotRef | null;
     dragSource: SlotRef | null;
     dragOverKey: string | null;
-    /** scroll state of the bottom area while weather items make it scroll (own scroll bar, see renderScrollBar) */
-    bottomScroll: { pos: number; size: number; client: number } | null;
     /** shown window of places per list area (window k = indices k*limit ... k*limit+limit-1), see windowOf */
     windows: Partial<Record<ListArea, number>>;
     /** common.name per object id of the items (labels of the places), as far as loaded */
@@ -404,7 +407,6 @@ export class ScreensaverEditor extends React.Component<ScreensaverEditorProps, S
             editing: null,
             dragSource: null,
             dragOverKey: null,
-            bottomScroll: null,
             windows: {},
             objectNames: {},
         };
@@ -440,13 +442,10 @@ export class ScreensaverEditor extends React.Component<ScreensaverEditorProps, S
     }
 
     componentDidMount(): void {
-        window.addEventListener('resize', this.syncBottomScroll);
-        this.syncBottomScroll();
         this.loadObjectNames();
     }
 
     componentDidUpdate(prevProps: ScreensaverEditorProps): void {
-        this.syncBottomScroll();
         if (prevProps.entry !== this.props.entry) {
             this.loadObjectNames();
         }
@@ -464,7 +463,6 @@ export class ScreensaverEditor extends React.Component<ScreensaverEditorProps, S
 
     componentWillUnmount(): void {
         this.unmounted = true;
-        window.removeEventListener('resize', this.syncBottomScroll);
         document.removeEventListener('mousemove', this.clearStaleDrag);
     }
 
@@ -473,110 +471,6 @@ export class ScreensaverEditor extends React.Component<ScreensaverEditorProps, S
     }
 
     private notifyRef = React.createRef<ScreensaverNotifyListDialog>();
-
-    // ---------- own scroll bar of the bottom area ----------
-
-    /** the scrolling bottom area (only rendered while weather items are appended) */
-    private bottomRef = React.createRef<HTMLDivElement>();
-
-    /** reads the scroll state of the bottom area into the state - once per change only */
-    private syncBottomScroll = (): void => {
-        const el = this.bottomRef.current;
-        const cur = this.state.bottomScroll;
-        if (!el) {
-            if (cur) {
-                this.setState({ bottomScroll: null });
-            }
-            return;
-        }
-        const vertical = el.dataset.axis === 'y';
-        const info = vertical
-            ? { pos: el.scrollTop, size: el.scrollHeight, client: el.clientHeight }
-            : { pos: el.scrollLeft, size: el.scrollWidth, client: el.clientWidth };
-        if (!cur || cur.pos !== info.pos || cur.size !== info.size || cur.client !== info.client) {
-            this.setState({ bottomScroll: info });
-        }
-    };
-
-    private scrollBottomTo(pos: number, relative = false): void {
-        const el = this.bottomRef.current;
-        if (!el) {
-            return;
-        }
-        if (el.dataset.axis === 'y') {
-            el.scrollTop = relative ? el.scrollTop + pos : pos;
-        } else {
-            el.scrollLeft = relative ? el.scrollLeft + pos : pos;
-        }
-    }
-
-    /**
-     * Scroll bar drawn by the editor: Safari and Firefox on macOS show overlay scroll bars only while
-     * scrolling, so the native bar is hidden and this one is always visible. Click on the track jumps,
-     * the thumb drags.
-     *
-     * @param vertical the area scrolls vertically (portrait layouts with grid columns)
-     */
-    private renderScrollBar(vertical: boolean): React.JSX.Element {
-        const info = this.state.bottomScroll;
-        const thickness = 8;
-        const base = {
-            position: 'relative' as const,
-            flexShrink: 0,
-            borderRadius: thickness / 2,
-            ...(vertical ? { width: thickness, alignSelf: 'stretch' } : { height: thickness }),
-        };
-        if (!info || info.size <= info.client + 1) {
-            return <Box sx={base} />;
-        }
-        const frac = Math.max(info.client / info.size, 0.08);
-        const start = Math.min(info.pos / info.size, 1 - frac);
-        const onTrack = (e: React.MouseEvent<HTMLDivElement>): void => {
-            const r = e.currentTarget.getBoundingClientRect();
-            const rel = vertical ? (e.clientY - r.top) / r.height : (e.clientX - r.left) / r.width;
-            this.scrollBottomTo(rel * info.size - info.client / 2);
-        };
-        const onThumb = (e: React.MouseEvent<HTMLDivElement>): void => {
-            e.stopPropagation();
-            e.preventDefault();
-            const track = e.currentTarget.parentElement;
-            const trackLen = track ? (vertical ? track.clientHeight : track.clientWidth) : 1;
-            let last = vertical ? e.clientY : e.clientX;
-            const move = (ev: MouseEvent): void => {
-                const now = vertical ? ev.clientY : ev.clientX;
-                this.scrollBottomTo(((now - last) * info.size) / trackLen, true);
-                last = now;
-            };
-            const up = (): void => {
-                document.removeEventListener('mousemove', move);
-                document.removeEventListener('mouseup', up);
-            };
-            document.addEventListener('mousemove', move);
-            document.addEventListener('mouseup', up);
-        };
-        return (
-            <Box
-                sx={{ ...base, backgroundColor: 'rgba(255,255,255,0.18)', cursor: 'pointer' }}
-                onMouseDown={onTrack}
-                data-ss="bottom-scrollbar"
-            >
-                <Box
-                    sx={{
-                        position: 'absolute',
-                        borderRadius: thickness / 2,
-                        backgroundColor: '#bbb',
-                        cursor: 'grab',
-                        '&:hover': { backgroundColor: '#eee' },
-                        ...(vertical
-                            ? { top: `${start * 100}%`, height: `${frac * 100}%`, left: 0, right: 0 }
-                            : { left: `${start * 100}%`, width: `${frac * 100}%`, top: 0, bottom: 0 }),
-                    }}
-                    onMouseDown={onThumb}
-                    data-ss="bottom-scrollbar-thumb"
-                />
-            </Box>
-        );
-    }
 
     // ---------- panels and model ----------
 
@@ -642,6 +536,40 @@ export class ScreensaverEditor extends React.Component<ScreensaverEditorProps, S
     }
 
     /**
+     * Length of the shown sequence of a list area: its stored places; in bottom the weather items the
+     * adapter appends behind the last own item count as well (see shownSlot).
+     *
+     * @param area list area
+     */
+    private shownLength(area: ListArea): number {
+        if (area === 'bottom') {
+            return this.lastOwnBottom() + this.weatherKeys().length;
+        }
+        return (this.props.entry[area] ?? []).length;
+    }
+
+    /**
+     * Place `v` of the shown sequence of a list area. In bottom the adapter appends the weather items
+     * behind the last own item (getScreensaverConfig) and pages through all of them: places before the
+     * last own item map to the same bottom index (gaps stay free places), then the weather items follow,
+     * the free places behind them map to the bottom indices after the last own item.
+     *
+     * @param area list area
+     * @param v index in the shown sequence (over all windows)
+     */
+    private shownSlot(area: ListArea, v: number): ShownSlot {
+        if (area === 'bottom') {
+            const weather = this.weatherKeys();
+            const last = this.lastOwnBottom();
+            if (v >= last && v < last + weather.length) {
+                return { kind: 'weather', key: weather[v - last] };
+            }
+            return { kind: 'slot', ref: { area, index: v < last ? v : v - weather.length } };
+        }
+        return { kind: 'slot', ref: { area, index: v } };
+    }
+
+    /**
      * Number of windows of a list area: `limit` places each, one more while every place of the last
      * window is taken (room to add an item). Areas without places and single-item areas have one.
      *
@@ -652,11 +580,17 @@ export class ScreensaverEditor extends React.Component<ScreensaverEditorProps, S
         if (!isListArea(area) || limit <= 0) {
             return 1;
         }
-        const list = this.props.entry[area] ?? [];
-        const len = list.length;
+        const len = this.shownLength(area);
         let count = Math.max(1, Math.ceil(len / limit));
-        if (len > 0 && len % limit === 0 && list.slice(len - limit).every(it => !!it)) {
-            count++;
+        if (len > 0 && len % limit === 0) {
+            let full = true;
+            for (let v = len - limit; v < len && full; v++) {
+                const slot = this.shownSlot(area, v);
+                full = slot.kind === 'weather' || !!this.item(slot.ref);
+            }
+            if (full) {
+                count++;
+            }
         }
         return count;
     }
@@ -689,8 +623,8 @@ export class ScreensaverEditor extends React.Component<ScreensaverEditorProps, S
 
     private item(ref: SlotRef): ScreensaverItemConfig | undefined {
         const { entry } = this.props;
-        if (ref.area === 'favorit' || ref.area === 'alternate') {
-            return ref.index === 0 ? (entry[ref.area] ?? undefined) : undefined;
+        if (ref.area === 'favorit') {
+            return ref.index === 0 ? (entry.favorit ?? undefined) : undefined;
         }
         return entry[ref.area]?.[ref.index] ?? undefined;
     }
@@ -707,12 +641,12 @@ export class ScreensaverEditor extends React.Component<ScreensaverEditorProps, S
         item: ScreensaverItemConfig | undefined,
         base: ScreensaverEntry = this.props.entry,
     ): ScreensaverEntry {
-        if (ref.area === 'favorit' || ref.area === 'alternate') {
+        if (ref.area === 'favorit') {
             const out = { ...base };
             if (item) {
-                out[ref.area] = item;
+                out.favorit = item;
             } else {
-                delete out[ref.area];
+                delete out.favorit;
             }
             return out;
         }
@@ -726,43 +660,6 @@ export class ScreensaverEditor extends React.Component<ScreensaverEditorProps, S
         }
         return { ...base, [ref.area]: list };
     }
-
-    /** items of areas the chosen version and model have no places for, per area */
-    private overflow(): { area: ScreensaverArea; count: number }[] {
-        const { entry } = this.props;
-        const out: { area: ScreensaverArea; count: number }[] = [];
-        for (const area of screensaverAreas) {
-            const limit = this.layout().areas[area] ? this.limit(area) : 0;
-            let count = 0;
-            if (area === 'favorit' || area === 'alternate') {
-                count = entry[area] && limit === 0 ? 1 : 0;
-            } else if (limit === 0) {
-                // more items than places is fine - the panel pages through them (windows of the editor);
-                // only an area the version does not have drops its items
-                count = (entry[area] ?? []).filter(it => !!it).length;
-            }
-            if (count) {
-                out.push({ area, count });
-            }
-        }
-        return out;
-    }
-
-    private removeOverflow = (): void => {
-        const { entry } = this.props;
-        let out: ScreensaverEntry = { ...entry };
-        for (const area of screensaverAreas) {
-            const limit = this.layout().areas[area] ? this.limit(area) : 0;
-            if (area === 'favorit' || area === 'alternate') {
-                if (limit === 0) {
-                    delete out[area];
-                }
-            } else if (limit === 0) {
-                out = { ...out, [area]: [] };
-            }
-        }
-        this.props.onEntryChange(out);
-    };
 
     private openItem(ref: SlotRef): void {
         this.setState({ editing: ref });
@@ -1336,9 +1233,8 @@ export class ScreensaverEditor extends React.Component<ScreensaverEditorProps, S
      * @param ref place
      * @param big favorit place: larger icon
      * @param inline icon and text side by side
-     * @param fixed flex basis while the area scrolls (weather items appended)
      */
-    private renderSlot(ref: SlotRef, big: boolean, inline: boolean, fixed?: string): React.JSX.Element {
+    private renderSlot(ref: SlotRef, big: boolean, inline: boolean): React.JSX.Element {
         const { alive } = this.props;
         const { dragOverKey, dragSource } = this.state;
         const key = this.slotKey(ref);
@@ -1346,7 +1242,7 @@ export class ScreensaverEditor extends React.Component<ScreensaverEditorProps, S
         const over = dragOverKey === key;
         const weatherHere = ref.area === 'favorit' && ref.index === 0 && this.weatherFavorit();
         const base = {
-            flex: fixed ? `0 0 ${fixed}` : 1,
+            flex: 1,
             minWidth: 0,
             minHeight: 0,
             display: 'flex',
@@ -1557,8 +1453,9 @@ export class ScreensaverEditor extends React.Component<ScreensaverEditorProps, S
     }
 
     /**
-     * an item area with its places - a list area with more items than places shows one window of
-     * `limit` places at a time and arrows next to it to page (like the panel pages through the items)
+     * an item area with its places - a list area (all but favorit) shows one window of `limit` places at
+     * a time and arrows next to it to page (like the panel pages through the items); in bottom the
+     * weather items the adapter appends are part of the windows (shownSlot)
      *
      * @param area area
      * @param box position and direction
@@ -1571,43 +1468,18 @@ export class ScreensaverEditor extends React.Component<ScreensaverEditorProps, S
         const pages = this.windowCount(area);
         const win = this.windowOf(area);
         const offset = win * count;
-        // weather items are appended behind the last own item (getScreensaverConfig): they are drawn in
-        // the window holding that item, the places keep their size and the area scrolls
-        const lastOwn = area === 'bottom' ? this.lastOwnBottom() : 0;
-        const weatherWindow = lastOwn > 0 ? Math.floor((lastOwn - 1) / count) : 0;
-        const weather = area === 'bottom' && weatherWindow === win ? this.weatherKeys() : [];
-        const rows = box.columns ? Math.ceil(count / box.columns) : 1;
-        const fixed = weather.length && !box.columns ? `calc((100% - ${(count - 1) * 4}px) / ${count})` : undefined;
+        const inline = this.inlineSlot(area, box);
         const slots: React.JSX.Element[] = [];
-        const place = (i: number): React.JSX.Element =>
-            this.renderSlot({ area, index: offset + i }, area === 'favorit', this.inlineSlot(area, box), fixed);
-        // the weather items follow the last own item (the adapter appends them to the list of items),
-        // the free places come after them
-        const split = weather.length ? lastOwn - offset : count;
-        for (let i = 0; i < split; i++) {
-            slots.push(place(i));
+        for (let i = 0; i < count; i++) {
+            if (!isListArea(area)) {
+                slots.push(this.renderSlot({ area, index: offset + i }, area === 'favorit', inline));
+                continue;
+            }
+            const slot = this.shownSlot(area, offset + i);
+            slots.push(
+                slot.kind === 'weather' ? this.renderWeatherSlot(slot.key) : this.renderSlot(slot.ref, false, inline),
+            );
         }
-        for (const key of weather) {
-            slots.push(this.renderWeatherSlot(key, fixed));
-        }
-        for (let i = split; i < count; i++) {
-            slots.push(place(i));
-        }
-        const inner = {
-            display: box.columns ? 'grid' : 'flex',
-            gridTemplateColumns: box.columns ? `repeat(${box.columns}, 1fr)` : undefined,
-            gridAutoRows: box.columns
-                ? weather.length
-                    ? `calc((100% - ${(rows - 1) * 4}px) / ${rows})`
-                    : '1fr'
-                : undefined,
-            flexDirection: box.direction,
-            gap: 0.5,
-            p: 0.5,
-            boxSizing: 'border-box' as const,
-            borderRadius: 1,
-            border: '1px solid rgba(255,255,255,0.08)',
-        };
         const outer = {
             position: 'absolute' as const,
             top: box.top,
@@ -1615,63 +1487,34 @@ export class ScreensaverEditor extends React.Component<ScreensaverEditorProps, S
             width: box.width,
             height: box.height,
         };
-        const pager = pages > 1 && isListArea(area);
-        // with arrows the places fill the room between them, else the whole box
-        const frame = pager ? { flex: 1, minWidth: 0, minHeight: 0 } : outer;
-        let core: React.JSX.Element;
-        if (!weather.length) {
-            core = (
-                <Box
-                    sx={{ ...frame, ...inner }}
-                    data-ss={`area-${area}`}
-                >
-                    {slots}
-                </Box>
-            );
-        } else {
-            // the area scrolls (native bar hidden, own one drawn next to it - renderScrollBar)
-            const vertical = !!box.columns;
-            core = (
-                <Box
-                    sx={{
-                        ...frame,
-                        display: 'flex',
-                        flexDirection: vertical ? 'row' : 'column',
-                        gap: 0.25,
-                        boxSizing: 'border-box',
-                    }}
-                    data-ss={`area-${area}-scroll`}
-                >
-                    <Box
-                        key={`window-${win}`}
-                        ref={this.bottomRef}
-                        data-axis={vertical ? 'y' : 'x'}
-                        onScroll={this.syncBottomScroll}
-                        sx={{
-                            ...inner,
-                            flex: 1,
-                            minWidth: 0,
-                            minHeight: 0,
-                            overflowX: vertical ? 'hidden' : 'auto',
-                            overflowY: vertical ? 'auto' : 'hidden',
-                            scrollbarWidth: 'none',
-                            '&::-webkit-scrollbar': { display: 'none' },
-                        }}
-                        data-ss={`area-${area}`}
-                    >
-                        {slots}
-                    </Box>
-                    {this.renderScrollBar(vertical)}
-                </Box>
-            );
-        }
+        const pager = isListArea(area);
+        const core = (
+            <Box
+                sx={{
+                    // with arrows the places fill the room between them, else the whole box
+                    ...(pager ? { flex: 1, minWidth: 0, minHeight: 0 } : outer),
+                    display: box.columns ? 'grid' : 'flex',
+                    gridTemplateColumns: box.columns ? `repeat(${box.columns}, 1fr)` : undefined,
+                    gridAutoRows: box.columns ? '1fr' : undefined,
+                    flexDirection: box.direction,
+                    gap: 0.5,
+                    p: 0.5,
+                    boxSizing: 'border-box',
+                    borderRadius: 1,
+                    border: '1px solid rgba(255,255,255,0.08)',
+                }}
+                data-ss={`area-${area}`}
+            >
+                {slots}
+            </Box>
+        );
         return (
             <Tooltip
                 key={area}
                 title={this.getText(`screensaver_area_${area}`)}
                 placement="top"
             >
-                {pager ? (
+                {isListArea(area) ? (
                     <Box
                         sx={{
                             ...outer,
@@ -1697,8 +1540,9 @@ export class ScreensaverEditor extends React.Component<ScreensaverEditorProps, S
     private lastPagerDrag = 0;
 
     /**
-     * arrow next to the places of a list area: pages one window back or on; dragging an item over it
-     * pages as well (items can be moved between windows)
+     * arrow next to the places of a list area: pages one window back or on (disabled at the ends, also
+     * while there is one window only); dragging an item over it pages as well (items can be moved
+     * between windows)
      *
      * @param area list area
      * @param dir -1 = back, 1 = on
@@ -1727,11 +1571,12 @@ export class ScreensaverEditor extends React.Component<ScreensaverEditorProps, S
                 this.setWindow(area, target);
             }
         };
+        const iconSx = { fontSize: PAGER_ICON };
         return (
             <Box
                 sx={{
                     flex: '0 0 auto',
-                    ...(vertical ? { height: 18 } : { width: 18 }),
+                    ...(vertical ? { height: PAGER_SIZE } : { width: PAGER_SIZE }),
                     display: 'flex',
                     flexDirection: vertical ? 'row' : 'column',
                     alignItems: 'center',
@@ -1740,12 +1585,20 @@ export class ScreensaverEditor extends React.Component<ScreensaverEditorProps, S
                 }}
                 onDragOver={this.props.alive ? onDragOver : undefined}
             >
-                <Tooltip title={this.getText(dir < 0 ? 'screensaver_page_prev' : 'screensaver_page_next')}>
+                <Tooltip
+                    title={enabled ? this.getText(dir < 0 ? 'screensaver_page_prev' : 'screensaver_page_next') : ''}
+                >
                     <span>
                         <IconButton
                             size="small"
                             disabled={!enabled}
-                            sx={{ p: 0, color: '#ddd', '&.Mui-disabled': { color: '#555' } }}
+                            sx={{
+                                p: '1px',
+                                color: '#fff',
+                                backgroundColor: 'rgba(255,255,255,0.08)',
+                                '&:hover': { backgroundColor: 'rgba(255,255,255,0.22)' },
+                                '&.Mui-disabled': { color: 'rgba(255,255,255,0.22)', backgroundColor: 'transparent' },
+                            }}
                             onClick={e => {
                                 e.stopPropagation();
                                 this.setWindow(area, target);
@@ -1754,14 +1607,14 @@ export class ScreensaverEditor extends React.Component<ScreensaverEditorProps, S
                         >
                             {vertical ? (
                                 dir < 0 ? (
-                                    <ExpandLessIcon fontSize="small" />
+                                    <ExpandLessIcon sx={iconSx} />
                                 ) : (
-                                    <ExpandMoreIcon fontSize="small" />
+                                    <ExpandMoreIcon sx={iconSx} />
                                 )
                             ) : dir < 0 ? (
-                                <ChevronLeftIcon fontSize="small" />
+                                <ChevronLeftIcon sx={iconSx} />
                             ) : (
-                                <ChevronRightIcon fontSize="small" />
+                                <ChevronRightIcon sx={iconSx} />
                             )}
                         </IconButton>
                     </span>
@@ -1775,7 +1628,7 @@ export class ScreensaverEditor extends React.Component<ScreensaverEditorProps, S
                             .replace('%s', String(pages))}
                     >
                         <Box
-                            sx={{ fontSize: 9, lineHeight: 1, color: '#aaa', whiteSpace: 'nowrap' }}
+                            sx={{ fontSize: 11, lineHeight: 1, color: '#ccc', whiteSpace: 'nowrap' }}
                             data-ss={`area-${area}-page`}
                         >
                             {`${win + 1}/${pages}`}
@@ -1832,9 +1685,15 @@ export class ScreensaverEditor extends React.Component<ScreensaverEditorProps, S
         return (this.props.entry.bottom ?? []).reduce((n, it, i) => (it ? i + 1 : n), 0);
     }
 
-    /** own items of the bottom area (over all windows) */
-    private ownBottom(): number {
-        return this.ownCount('bottom');
+    /**
+     * Number of places of an area over all windows (title of the item dialog) - in bottom without the
+     * places the weather items take.
+     *
+     * @param area area
+     */
+    private placeCount(area: ScreensaverArea): number {
+        const all = this.limit(area) * this.windowCount(area);
+        return area === 'bottom' ? Math.max(all - this.weatherKeys().length, 0) : all;
     }
 
     /** the favorit place shows the current weather: adapter known and no own item */
@@ -1996,9 +1855,8 @@ export class ScreensaverEditor extends React.Component<ScreensaverEditorProps, S
      * a weather item of the bottom area as the adapter appends it - not editable here
      *
      * @param key item
-     * @param fixed flex basis while the area scrolls
      */
-    private renderWeatherSlot(key: ScreensaverWeatherItemKey, fixed?: string): React.JSX.Element {
+    private renderWeatherSlot(key: ScreensaverWeatherItemKey): React.JSX.Element {
         const src = iconSrc(WEATHER_ICONS[key.startsWith('forecastDay') ? 'forecastDay' : key]);
         return (
             <Tooltip
@@ -2007,7 +1865,7 @@ export class ScreensaverEditor extends React.Component<ScreensaverEditorProps, S
             >
                 <Box
                     sx={{
-                        flex: fixed ? `0 0 ${fixed}` : 1,
+                        flex: 1,
                         minWidth: 0,
                         minHeight: 0,
                         display: 'flex',
@@ -2093,50 +1951,63 @@ export class ScreensaverEditor extends React.Component<ScreensaverEditorProps, S
                     const box = layout.areas[area];
                     return box ? this.renderAreaSlots(area, box) : null;
                 })}
-                {/* bell → notifications */}
-                <Tooltip title={this.props.alive ? this.getText('screensaver_notify_hint') : ''}>
-                    <IconButton
-                        size="small"
-                        disabled={!this.props.alive}
-                        onClick={() => this.notifyRef.current?.openWith(this.props.notifyList, entry.notify)}
-                        sx={{
-                            position: 'absolute',
-                            right: 'calc(1% + 46px)',
-                            bottom: '1%',
-                            color: '#fff',
-                            zIndex: 1,
-                            backgroundColor: 'rgba(0,0,0,0.6)',
-                            '&:hover': { backgroundColor: 'rgba(255,255,255,0.2)' },
-                        }}
-                        data-ss="notify"
-                    >
-                        <Badge
-                            badgeContent={screensaverNotifyOfEntry(entry, this.props.notifyList).length}
-                            color="primary"
+            </Box>
+        );
+    }
+
+    /**
+     * Action bar directly below the panel mock (same width, right-aligned): notifications and options.
+     * Kept outside the mock so it never covers places or paging arrows.
+     */
+    private renderPanelActions(): React.JSX.Element {
+        const { entry, alive } = this.props;
+        const notifyCount = screensaverNotifyOfEntry(entry, this.props.notifyList).length;
+        return (
+            <Box
+                sx={{
+                    width: '100%',
+                    maxWidth: this.layout().maxWidth,
+                    display: 'flex',
+                    justifyContent: 'flex-end',
+                    flexWrap: 'wrap',
+                    gap: 1,
+                    mt: 1,
+                }}
+            >
+                <Tooltip title={alive ? this.getText('screensaver_notify_hint') : ''}>
+                    <span>
+                        <Button
+                            variant="outlined"
+                            size="small"
+                            disabled={!alive}
+                            onClick={() => this.notifyRef.current?.openWith(this.props.notifyList, entry.notify)}
+                            startIcon={
+                                <Badge
+                                    badgeContent={notifyCount}
+                                    color="primary"
+                                >
+                                    <NotificationsIcon />
+                                </Badge>
+                            }
+                            data-ss="notify"
                         >
-                            <NotificationsIcon sx={{ fontSize: 26 }} />
-                        </Badge>
-                    </IconButton>
+                            {this.getText('screensaver_notify')}
+                        </Button>
+                    </span>
                 </Tooltip>
-                {/* gear → options */}
-                <Tooltip title={this.props.alive ? this.getText('screensaver_options_hint') : ''}>
-                    <IconButton
-                        size="small"
-                        disabled={!this.props.alive}
-                        onClick={() => this.openDialog('options')}
-                        sx={{
-                            position: 'absolute',
-                            right: '1%',
-                            bottom: '1%',
-                            color: '#fff',
-                            zIndex: 1,
-                            backgroundColor: 'rgba(0,0,0,0.6)',
-                            '&:hover': { backgroundColor: 'rgba(255,255,255,0.2)' },
-                        }}
-                        data-ss="options"
-                    >
-                        <SettingsIcon sx={{ fontSize: 26 }} />
-                    </IconButton>
+                <Tooltip title={alive ? this.getText('screensaver_options_hint') : ''}>
+                    <span>
+                        <Button
+                            variant="outlined"
+                            size="small"
+                            disabled={!alive}
+                            onClick={() => this.openDialog('options')}
+                            startIcon={<SettingsIcon />}
+                            data-ss="options"
+                        >
+                            {this.getText('screensaver_options')}
+                        </Button>
+                    </span>
                 </Tooltip>
             </Box>
         );
@@ -2296,7 +2167,10 @@ export class ScreensaverEditor extends React.Component<ScreensaverEditorProps, S
         );
     }
 
-    /** a hint per list area with more own items than places: the panel pages through the visible ones */
+    /**
+     * a hint per list area with more items than places (in bottom the appended weather items count as
+     * well): the panel pages through the visible ones
+     */
     private renderPagingHints(): React.JSX.Element[] {
         const out: React.JSX.Element[] = [];
         for (const area of screensaverAreas) {
@@ -2305,7 +2179,22 @@ export class ScreensaverEditor extends React.Component<ScreensaverEditorProps, S
             }
             const limit = this.limit(area);
             const own = this.ownCount(area);
-            if (limit > 0 && own > limit) {
+            const weather = area === 'bottom' ? this.weatherKeys().length : 0;
+            if (limit > 0 && weather > 0 && own + weather > limit) {
+                out.push(
+                    <Typography
+                        key={area}
+                        variant="caption"
+                        color="text.secondary"
+                        sx={{ display: 'block', mt: 0.5 }}
+                        data-ss={`area-${area}-hint`}
+                    >
+                        {this.getText('screensaver_weather_pagingHint')
+                            .replace('%s', String(own + weather))
+                            .replace('%s', String(limit))}
+                    </Typography>,
+                );
+            } else if (limit > 0 && own > limit) {
                 out.push(
                     <Typography
                         key={area}
@@ -2326,43 +2215,17 @@ export class ScreensaverEditor extends React.Component<ScreensaverEditorProps, S
     }
 
     render(): React.JSX.Element {
-        const { oContext, theme, alive } = this.props;
+        const { oContext, theme } = this.props;
         const { editing } = this.state;
         const hasPanel = this.hasPanel();
-        const overflow = hasPanel ? this.overflow() : [];
-        const weatherBottom = hasPanel && this.layout().areas.bottom ? this.weatherKeys().length : 0;
         return (
             <Box>
                 {this.renderHeader()}
-                {overflow.length > 0 && (
-                    <Alert
-                        severity="warning"
-                        sx={{ mb: 1.5 }}
-                        action={
-                            <Button
-                                size="small"
-                                color="inherit"
-                                disabled={!alive}
-                                onClick={this.removeOverflow}
-                            >
-                                {this.getText('screensaver_overflow_remove')}
-                            </Button>
-                        }
-                    >
-                        {this.getText('screensaver_overflow')
-                            .replace('%s', String(overflow.reduce((n, o) => n + o.count, 0)))
-                            .replace(
-                                '%s',
-                                overflow
-                                    .map(o => `${this.getText(`screensaver_area_${o.area}`)} (${o.count})`)
-                                    .join(', '),
-                            )}
-                    </Alert>
-                )}
                 {hasPanel && (
                     <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, alignItems: 'flex-start' }}>
                         <Box sx={{ flex: '1 1 420px', minWidth: 0, maxWidth: this.layout().maxWidth }}>
                             {this.renderPanel()}
+                            {this.renderPanelActions()}
                             <Typography
                                 variant="caption"
                                 color="text.secondary"
@@ -2380,17 +2243,6 @@ export class ScreensaverEditor extends React.Component<ScreensaverEditorProps, S
                                 </Typography>
                             )}
                             {this.renderPagingHints()}
-                            {weatherBottom > 0 && this.ownBottom() + weatherBottom > this.limit('bottom') && (
-                                <Typography
-                                    variant="caption"
-                                    color="text.secondary"
-                                    sx={{ display: 'block', mt: 0.5 }}
-                                >
-                                    {this.getText('screensaver_weather_scrollHint')
-                                        .replace('%s', String(this.ownBottom() + weatherBottom))
-                                        .replace('%s', String(this.limit('bottom')))}
-                                </Typography>
-                            )}
                         </Box>
                         {this.renderWeatherBox()}
                     </Box>
@@ -2427,7 +2279,7 @@ export class ScreensaverEditor extends React.Component<ScreensaverEditorProps, S
                     open={!!editing}
                     area={editing?.area ?? 'bottom'}
                     index={editing?.index ?? 0}
-                    count={editing ? this.limit(editing.area) * this.windowCount(editing.area) : 0}
+                    count={editing ? this.placeCount(editing.area) : 0}
                     inline={
                         !!editing &&
                         this.inlineSlot(

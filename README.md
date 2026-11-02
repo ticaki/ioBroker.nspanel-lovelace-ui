@@ -157,6 +157,11 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
     Placeholder for the next version (at the beginning of the line):
     ### **WORK IN PROGRESS**
 -->
+### **WORK IN PROGRESS**
+- (ticaki) admin screensaver: uniform, larger paging arrows for all areas except favorit (the scroll bar for weather items is gone, weather items are paged like the panel does); the alternate area can hold several items the panel rotates through
+- (ticaki) admin screensaver: the notifications and options buttons moved from the panel picture to a bar below it, so they no longer cover places and paging arrows
+- (ticaki) admin screensaver: items of areas the chosen version does not show are no longer reported as a problem or offered for removal - the version can change at runtime (`cmd.screenSaver.layout`)
+
 ### 2.0.2 (2026-11-01)
 - (ticaki) admin: page item text size shows the pixel size of each font; icons only offer fonts 1, 3 and 4 (the others have no icons), font 5 is marked "ASCII only"
 - (ticaki) admin: the "..." button next to the item name is now "Dynamic name" (used only while the name is empty) and no longer offers unit and date format, which were ignored

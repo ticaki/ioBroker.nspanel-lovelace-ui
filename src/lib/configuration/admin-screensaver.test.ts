@@ -289,6 +289,29 @@ describe('lib/configuration - admin screensaver (entry -> script configuration)'
         expect(config.pages).to.deep.equal([]);
     });
 
+    it('builds several alternate items compacted, a legacy single alternate item as one', () => {
+        const entry: ScreensaverEntry = {
+            ...emptyScreensaverEntry('Flur', 'alternate'),
+            panels: ['NSPanel_1'],
+            alternate: [{ state: 'a1' }, undefined, { state: 'a3' }],
+        };
+        const config = buildScreensaverScriptConfig(entry, 'NSPanel_1');
+        expect(
+            config.alternateScreensaverEntity.map(e => (e as { ScreensaverEntity: string }).ScreensaverEntity),
+        ).to.deep.equal(['a1', 'a3']);
+        expect(screensaverStateIds(entry)).to.deep.equal(['a1', 'a3']);
+
+        // entries saved before `alternate` became a list hold one item object
+        const legacy = { ...entry, alternate: { state: 'old' } } as unknown as ScreensaverEntry;
+        const legacyConfig = buildScreensaverScriptConfig(legacy, 'NSPanel_1');
+        expect(
+            legacyConfig.alternateScreensaverEntity.map(e => (e as { ScreensaverEntity: string }).ScreensaverEntity),
+        ).to.deep.equal(['old']);
+        expect(screensaverStateIds(legacy)).to.deep.equal(['old']);
+        const found = findScreensaverEntry([legacy], 'NSPanel_1').entry;
+        expect(found?.alternate).to.deep.equal([{ state: 'old' }]);
+    });
+
     it('turns a notification into the notify element of the script', () => {
         expect(
             screensaverNotifyToScript({

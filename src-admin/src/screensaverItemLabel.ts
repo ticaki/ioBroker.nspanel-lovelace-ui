@@ -11,6 +11,7 @@
  * `pirate-weather.0.weather.currently`. The full label (tooltip) adds template and state / prefix.
  */
 import type { ScreensaverEntry, ScreensaverItemConfig } from '../../src/lib/types/adminShareConfig';
+import { screensaverAlternateItems } from '../../src/lib/types/adminShareConfig';
 
 /** short and full name of an item: short for the place of the mock, full for its tooltip */
 export interface ScreensaverItemLabel {
@@ -210,7 +211,7 @@ export function screensaverItemObjectId(item: ScreensaverItemConfig): string {
 export function screensaverEntryObjectIds(entry: ScreensaverEntry): string[] {
     const items: (ScreensaverItemConfig | undefined)[] = [
         entry.favorit,
-        entry.alternate,
+        ...screensaverAlternateItems(entry.alternate),
         ...(entry.left ?? []),
         ...(entry.bottom ?? []),
         ...(entry.indicator ?? []),
