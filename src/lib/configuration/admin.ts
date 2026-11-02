@@ -453,14 +453,7 @@ export class AdminConfiguration extends BaseClass {
                             data: {
                                 alarmType: { type: 'const', constVal: entry.alarmType || 'unlock' },
                                 headline: { type: 'const', constVal: entry.headline || 'Unlock' },
-                                button1: entry.button1 ? { type: 'const', constVal: entry.button1 } : undefined,
-                                button2: entry.button2 ? { type: 'const', constVal: entry.button2 } : undefined,
-                                button3: entry.button3 ? { type: 'const', constVal: entry.button3 } : undefined,
-                                button4: entry.button4 ? { type: 'const', constVal: entry.button4 } : undefined,
-                                button5: entry.button1 ? { type: 'const', constVal: entry.button5 } : undefined,
-                                button6: entry.button2 ? { type: 'const', constVal: entry.button6 } : undefined,
-                                button7: entry.button3 ? { type: 'const', constVal: entry.button7 } : undefined,
-                                button8: entry.button4 ? { type: 'const', constVal: entry.button8 } : undefined,
+                                ...alarmButtonData(entry),
                                 pin: entry.pin != null ? { type: 'const', constVal: String(entry.pin) } : undefined,
                                 approved: { type: 'const', constVal: !!entry.approved },
                                 global: { type: 'const', constVal: !!entry.global },
@@ -475,9 +468,12 @@ export class AdminConfiguration extends BaseClass {
                     if (!isAlwaysOnMode(entry.alwaysOn)) {
                         entry.alwaysOn = 'none';
                     }
-                    // the password may live in a central credential, the entry then only holds its id
-                    const qrPassword = await resolveSecret(this.adapter, entry.qrCredentialId, entry.qrPass);
-                    if (qrPassword.source === 'credential') {
+                    // the password belongs to an encrypted wifi code only - every other type must not
+                    // carry it to the panel, it would stand on the card and inside the scanned code
+                    const qrPassword = qrUsesPassword(entry)
+                        ? await resolveSecret(this.adapter, entry.qrCredentialId, entry.qrPass)
+                        : undefined;
+                    if (qrPassword?.source === 'credential') {
                         this.log.debug(
                             `QR page '${entry.uniqueName}': password taken from credential "${qrPassword.name}"`,
                         );
@@ -495,7 +491,7 @@ export class AdminConfiguration extends BaseClass {
                                 ssidUrlTel: { type: 'const', constVal: entry.ssidUrlTel || '' },
                                 wlantype: { type: 'const', constVal: entry.wlantype || 'WPA' },
                                 wlanhidden: { type: 'const', constVal: !!entry.wlanhidden || false },
-                                password: { type: 'const', constVal: qrPassword.secret },
+                                password: { type: 'const', constVal: qrPassword?.secret ?? '' },
                                 pwdhidden: { type: 'const', constVal: !!entry.pwdhidden || false },
                                 setState: entry.setState ? { type: 'triggered', dp: entry.setState } : undefined,
                             },
@@ -1450,6 +1446,50 @@ function isAlwaysOnMode(F: any): F is AlwaysOnMode {
             exhaustiveCheck(R);
             return false;
     }
+}
+
+/**
+ * Texts of the eight alarm buttons as the page takes them.
+ *
+ * The panel shows `button1` to `button4` while the page is disarmed (the arm buttons) and
+ * `button5` to `button8` while it is armed (the disarm buttons). Every button stands on its own:
+ * an empty arm button must not remove the disarm button of the same row.
+ *
+ * @param entry Alarm entry of the page configuration.
+ * @returns One `const` data item per filled button, every other button stays undefined.
+ */
+export function alarmButtonData(
+    entry: ShareConfig.UnlockEntry,
+): Record<
+    'button1' | 'button2' | 'button3' | 'button4' | 'button5' | 'button6' | 'button7' | 'button8',
+    { type: 'const'; constVal: string } | undefined
+> {
+    const text = (value: string | undefined): { type: 'const'; constVal: string } | undefined =>
+        value ? { type: 'const', constVal: value } : undefined;
+    return {
+        button1: text(entry.button1),
+        button2: text(entry.button2),
+        button3: text(entry.button3),
+        button4: text(entry.button4),
+        button5: text(entry.button5),
+        button6: text(entry.button6),
+        button7: text(entry.button7),
+        button8: text(entry.button8),
+    };
+}
+
+/**
+ * Whether the stored wifi password belongs to the code at all.
+ *
+ * Only a wifi code (`selType` 1) with an encryption carries a password. `No Password` and the
+ * types FREE, URL and TEL must not take it over - the editor hides the field for them, so the user
+ * expects the password to be gone.
+ *
+ * @param entry QR entry of the page configuration.
+ * @returns true when the password has to be resolved and handed to the page.
+ */
+export function qrUsesPassword(entry: ShareConfig.QREntry): boolean {
+    return (entry.selType ?? 0) === 1 && (entry.wlantype ?? 'WPA') !== 'nopass';
 }
 
 function dataForcardTrash(entry: ShareConfig.TrashEntry): PageBase {

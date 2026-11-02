@@ -156,6 +156,8 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
 <!--
     Placeholder for the next version (at the beginning of the line):
     ### **WORK IN PROGRESS**
+- (tt-tom17) cardQR: a page with the encryption "No Password" (or a free text, url or telephone code) no longer carries the stored wifi password to the panel - it was shown in clear text on the card and was part of the scanned code
+- (tt-tom17) cardAlarm: the disarm buttons (columns 5 to 8) were only taken over when the arm button of the same row was filled, so a page with the disarm column alone showed no button at all
 -->
 ### **WORK IN PROGRESS**
 - (ticaki) admin screensaver: uniform, larger paging arrows for all areas except favorit (the scroll bar for weather items is gone, weather items are paged like the panel does); the alternate area can hold several items the panel rotates through
