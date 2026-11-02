@@ -107,7 +107,7 @@ _(Bild folgt: Ereignisliste mit Kästchen und dem Knopf „Auswahl übernehmen" 
 
 ## 6. Die sechs Abfallarten
 
-![Die sechs Abfallarten mit Farbe, Symbol und Namen](../Pictures/pageTrash/trash-02-abfallarten.png)
+![Die sechs Abfallarten mit Farbe, Symbol und Namen](../Pictures/pageTrash/trash-03-editor-abfallarten.png)
 
 Darunter stehen **sechs gleich aufgebaute Blöcke**, einer je Abfallart:
 

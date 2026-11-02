@@ -80,7 +80,11 @@ Zwei Spalten mit je vier Feldern. Was man einträgt, ist der **Text** der Schalt
 | Spalte **Aktivieren**, vier Felder | Erscheint im Zustand `disarmed`. Ein Druck meldet `A1`…`A4` und armiert die Anlage (vier Varianten, z. B. „Anwesend“ und „Abwesend“). |
 | Spalte **Deaktivieren**, vier Felder | Erscheint im Zustand `armed`. Ein Druck meldet `D1`…`D4` und deaktiviert die Anlage. |
 
-> 📷 *Bild folgt: Editor im Modus **Alarm** mit beiden Schaltflächenspalten und den zwei Haken darunter.*
+![Editor im Modus Alarm mit beiden Schaltflächenspalten](../Pictures/pageAlarm/alarm-03-modus-alarm.png)
+
+Und so sieht die Seite am Panel aus – eine frisch angelegte Alarmseite startet im Zustand `armed`, gezeigt werden deshalb die Schaltflächen der Spalte *Deaktivieren*:
+
+![Die Alarmseite am Panel im Zustand armed](../Pictures/pageAlarm/alarm-04-panel-armed.png)
 
 > Die vier Felder beider Spalten tragen in der Oberfläche **dieselben Beschriftungen** — *Oberer Knopf*, *2. Knopf*, *3. Knopf*, *Unterer Knopf*, mit den Platzhaltern *1. Schaltflächentext* bis *4. Schaltflächentext*. Es gibt keine eigenen Texte für „5. Knopf“ bis „8. Knopf“; unterschieden werden die Spalten nur an ihrer Überschrift.
 >

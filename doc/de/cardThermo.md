@@ -25,7 +25,7 @@ Inhalt:
 
 Die Felder **Panel-Filter** und **Seitentyp** über der Liste filtern nur die Anzeige der Liste.
 
-<!-- Bild folgt: Editor der klassischen Thermostat-Seite, siehe BILDAUFTRAG 1 -->
+![Editor der klassischen Thermostat-Seite](../Pictures/PageThermo/admin-01-editor.png)
 
 ## 2. cardThermo oder cardThermo2
 
