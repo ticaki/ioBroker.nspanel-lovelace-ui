@@ -138,7 +138,7 @@ Unten rechts stehen **Abbrechen** und **Übernehmen**. Während der Prüfung hei
 
 ## 2. Rohdaten des Items
 
-<!-- Bild folgt: Dialog „Rohdaten des Items" mit dem Format-Umschalter native/script, dem Hinweiskasten, dem JSON-Editor und den Knöpfen „Rohdaten entfernen (zurück zum Standard)" / Abbrechen / Übernehmen -->
+![Der Dialog „Rohdaten des Items"](../Pictures/pageConfigDialoge/dialoge-rohdaten-item.png)
 
 Der Knopf **`{ }`** rechts in der Titelzeile der Pageitem-Konfiguration (Tooltip *„Item als Rohdaten (JSON) eingeben"*) öffnet den Dialog **Rohdaten des Items**. Er ist **immer** da — kein Expertenmodus nötig. Hier wird das Pageitem als rohes JSON eingegeben, für Einstellungen, für die es noch keine Oberfläche gibt. Denselben Knopf hat der Item-Dialog des [Bildschirmschoners](screensaver#4-items-der-item-dialog).
 

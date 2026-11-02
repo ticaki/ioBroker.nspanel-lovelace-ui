@@ -146,7 +146,7 @@ Zu wissen:
 
 Der zweite Reiter der rechten Spalte. Er gilt für jeden Seitentyp; die drei Blätter-Einstellungen erscheinen nur bei den Karten, die eine Liste von Seitenelementen blättern.
 
-<!-- Bild folgt: Rechte Spalte, Reiter Seitendetails einer Grid-Seite: Startseite (main) mit Hinweistext, Versteckt, Blättern der Seitenelemente, Weiterblättern um, Verhalten des Bildschirmschoners -->
+![Die Seitendetails mit Blätter-Einstellungen und Bildschirmschoner-Verhalten](../Pictures/pageConfig/pageconfig-06-seitendetails.png)
 
 | Einstellung | Bedeutung |
 |---|---|

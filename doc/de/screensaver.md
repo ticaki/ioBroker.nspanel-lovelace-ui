@@ -134,7 +134,7 @@ Dritte Möglichkeit *Farbe aus Datenpunkt*: ein State, dessen Wert die Farbe ist
 
 Ein Item mit Bedingung trägt im Panelbild das Augen-Symbol und **belegt auf dem Panel keinen Platz**, solange die Bedingung nicht erfüllt ist – die übrigen Items rücken nach.
 
-![Der vollständige Item-Dialog mit Icon-Liste und Sichtbarkeit](../Pictures/screensaverAdmin/admin-16-item-expertenmodus.png)
+![Der vollständige Item-Dialog mit Icon-Liste und Sichtbarkeit](../Pictures/screensaverAdmin/admin-16-item-icon-und-sichtbarkeit.png)
 
 Der **Expertenmodus** (Symbol unten links in der Admin-Leiste) wirkt im Item-Dialog nur noch an einer Stelle: bei einem Datums- oder Zeit-Datenpunkt bietet das Feld **Datumsformat** dann zusätzlich *Eigenes (JSON)* und darunter ein Feld für freie `Intl.DateTimeFormatOptions`. Alle anderen Felder stehen ohne ihn offen.
 
@@ -155,7 +155,7 @@ Mit der Quelle **Template** nimmt ein Platz ein PageItem-Template des Adapters (
 
 Für Items, die der Dialog nicht in Felder fasst, nimmt der Item-Dialog die Konfiguration **als JSON** – genauso wie bei den Seiten-Items (siehe [PageConfig-Dialoge](PageConfig-Dialoge)). Hier landen auch die Items, die die [Migration](Migration) aus einem Skript als Rohdaten übernommen hat.
 
-> *(Bild folgt: der Dialog **Rohdaten des Items** mit Formatwahl, JSON-Editor und den drei Knöpfen.)*
+![Der Dialog „Rohdaten des Items" am Screensaver-Item](../Pictures/screensaverAdmin/admin-17-rohdaten-dialog.png)
 
 - **Der Knopf**: `{ }` rechts oben im Titel des Item-Dialogs, Tooltip *Item als Rohdaten (JSON) eingeben*. Er ist blass, solange das Item über die Felder konfiguriert ist, und **orange**, sobald Rohdaten aktiv sind.
 - **Der Dialog** heißt **Rohdaten des Items**. Oben die Formatwahl, darunter ein Hilfetext zum gewählten Format, dann ein JSON-Editor mit **JSON formatieren**. Ungültiger Text wird rot umrandet und mit *Ungültiges JSON: …* bzw. *Die Konfiguration muss ein JSON-Objekt { ... } sein* gemeldet; **Übernehmen** bleibt dann gesperrt.

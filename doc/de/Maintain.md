@@ -18,7 +18,7 @@ Inhalt:
 
 Der Tab erscheint erst, wenn die MQTT-Angaben vollständig sind — eigener Server oder Broker-IP, Port und Zugangsdaten (Benutzer und Passwort, bei einem fremden Broker alternativ die zentrale Credential-Id) — und **mindestens ein Panel** in der Tabelle unter [NSPanelsetting](NSPanelsetting) steht. Fehlt davon etwas, ist der Tab nicht sichtbar.
 
-<!-- Bild folgt: Tab Maintain mit dem Kopfbereich und der Karte eines verbundenen Panels -->
+![Der Tab Maintain mit der Karte eines verbundenen Panels](../Pictures/maintain/maintain-01-panelkarte.png)
 
 Über den Karten liegen:
 

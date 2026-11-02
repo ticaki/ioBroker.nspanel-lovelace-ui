@@ -2,7 +2,7 @@
 
 Dieser Tab zeichnet die **Navigation eines Panels als Graph**: Jede Seite ist ein **Knoten**, jede Verbindung zwischen zwei Seiten eine **Linie**. Damit lässt sich auf einen Blick prüfen, ob die Seiten so zusammenhängen, wie es gedacht war, und woher jede Seite kommt. Seit 2.0.0 ist der Tab außerdem ein **Editor**: Mit dem Haken *Navigation bearbeiten* werden `prev`, `next`, `home` und `parent` direkt im Graphen gezogen statt Feld für Feld im Tab [PageConfig](PageConfig).
 
-<!-- Bild folgt: Navigation Flow mit Kopfzeile, vollständiger Legende und Graph (Bildauftrag 1) -->
+![Der Navigation Flow mit Legende und Graph](../Pictures/naviFlow/naviflow-01-graph.png)
 
 Inhalt:
 - [Was der Tab zeigt](#1-was-der-tab-zeigt)
@@ -90,7 +90,7 @@ Ein **Datenpunkt- oder Channel-Knoten** zeigt stattdessen *Datenpunkt-Info* bzw.
 
 Der Haken **Navigation bearbeiten** macht aus dem Graphen einen Editor.
 
-<!-- Bild folgt: Editiermodus, Quell-Anfasser an einem Knoten und gezogene Verbindung (Bildauftrag 2) -->
+![Der Editiermodus mit den Anfassern an den Knoten](../Pictures/naviFlow/naviflow-02-editiermodus.png)
 
 **Was sich im Bild ändert.** Jede editierbare Seite zeigt vier vergrößerte **Quell-Anfasser**, jede Seite außerdem die vier Ziel-Anfasser, damit eine Verbindung auf ihr abgelegt werden kann. Beidseitige `prev`/`next`-Verbindungen werden im Editiermodus **nicht mehr als eine violette Doppelpfeil-Linie**, sondern als zwei getrennte Linien gezeichnet: Jede Linie steht hier für genau einen Eintrag der Konfiguration.
 
