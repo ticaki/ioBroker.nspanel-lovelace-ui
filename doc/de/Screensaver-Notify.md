@@ -2,9 +2,9 @@
 
 Eine Benachrichtigung legt sich über den Bildschirmschoner, solange ein Datenpunkt „an“ ist: zwei Zeilen – eine Überschrift mit Symbol und darunter ein Text. Gedacht ist das für Dinge, die man sehen soll, ohne das Panel zu bedienen: ein offenes Fenster, ein Alarm, eine Störung, ein Wert, der aus dem Rahmen läuft.
 
-Angelegt werden sie über die **Glocke** im Panelbild des Screensaver-Editors, gleich neben dem Zahnrad. Alle Bildschirmschoner teilen sich **eine gemeinsame Liste**; das Häkchen je Zeile entscheidet, auf welchem Bildschirmschoner eine Benachrichtigung erscheint. Ein Konfigurationsskript ist dafür nicht nötig.
+Angelegt werden sie über die **Glocke** im Panelbild des Screensaver-Editors, gleich neben dem Zahnrad. Alle Bildschirmschoner teilen sich **eine gemeinsame Liste**; das Häkchen je Zeile entscheidet, auf welchem Bildschirmschoner eine Benachrichtigung erscheint. Ein Konfigurationsskript ist dafür nicht nötig – seit 2.0.0 braucht das Panel überhaupt keines mehr (Haken **Panel benutzt kein Skript**, siehe [NSPanel-Einstellungen](NSPanelsetting)).
 
-Wie der Bildschirmschoner selbst angelegt wird, steht unter Screensaver – Admin. Diese Seite beschreibt nur die Benachrichtigungen.
+Wie der Bildschirmschoner selbst angelegt wird, steht unter [Screensaver im Admin](screensaver). Diese Seite beschreibt nur die Benachrichtigungen.
 
 Inhalt:
 - [Die Liste](#1-die-liste)
@@ -31,10 +31,10 @@ Ein Klick öffnet **Benachrichtigungen** – die gemeinsame Liste. Jede Zeile ze
 |---|---|
 | **Auf diesem Bildschirmschoner anzeigen** | Das Häkchen schaltet die Benachrichtigung für den gerade geöffneten Bildschirmschoner ein. Ohne Häkchen bleibt sie in der Liste, geht aber an kein Panel. |
 | Prioritäts-Chip | Die Prioritätszahl, siehe [Priorität](#4-priorität-welche-meldung-das-panel-zeigt). |
-| Beschriftung | Die **Beschreibung**, sonst die Überschrift, sonst der Text, sonst der erste Datenpunkt. |
+| Beschriftung | Die **Beschreibung**, sonst Präfix + Überschrift + Einheit, sonst der Text, sonst der erste Datenpunkt. |
 | Zweite Zeile | Die Datenpunkte, bei Bedarf die Bedingung und „Quittieren (Gruppen-ID)“. |
 | **Auch verwendet von: …** | Erscheint, wenn weitere Bildschirmschoner dieselbe Benachrichtigung nutzen. |
-| **Bearbeiten**, **Duplizieren**, **Löschen** | Stift, Kopie, Papierkorb. Duplizieren legt die Kopie direkt darunter an und übernimmt den Haken. |
+| **Bearbeiten**, **Duplizieren**, **Löschen** | Stift, Kopie, Papierkorb. Duplizieren legt die Kopie in der gespeicherten Liste direkt hinter das Original und übernimmt den Haken – angezeigt wird sie dort, wohin die Sortierung sie stellt. |
 
 Unten legt **Benachrichtigung hinzufügen** eine neue an.
 
@@ -42,11 +42,13 @@ Unten legt **Benachrichtigung hinzufügen** eine neue an.
 
 > ⚠️ **Bearbeiten und Löschen wirken auf alle Bildschirmschoner**, die dieselbe Benachrichtigung nutzen. Beim Bearbeiten weist der Dialog darauf hin, beim Löschen fragt er nach – aber nur, wenn die Benachrichtigung tatsächlich mehrfach verwendet wird. Wer eine Meldung nur für ein Panel ändern will, **dupliziert** sie zuerst.
 
+> **Löschen räumt überall auf – Behalten auch.** Beim Löschen verschwindet die Benachrichtigung aus **allen** Bildschirmschoner-Einträgen, nicht nur aus dem offenen. Umgekehrt löscht das Löschen eines **Bildschirmschoners** seine Benachrichtigungen **nicht**: sie bleiben in der gemeinsamen Liste und erscheinen bei jedem anderen Bildschirmschoner als nicht angehakte Zeile. Aufräumen heißt: Zeile für Zeile im Glocken-Dialog löschen.
+
 ## 2. Inhalt: Überschrift und Text
 ![Der Editor mit der Vorschau](../Pictures/screensaverAdmin/notify-02-editor.png)
 
 
-Der Abschnitt **Inhalt** füllt die zwei Zeilen, die das Panel anzeigt:
+Ganz oben im Dialog steht die **Beschreibung**, darunter die Vorschau, dann der Abschnitt **Inhalt**. Er füllt die zwei Zeilen, die das Panel anzeigt – das Symbolfeld sitzt unter den beiden Textzeilen:
 
 | Feld | Wirkung |
 |---|---|
@@ -55,11 +57,11 @@ Der Abschnitt **Inhalt** füllt die zwei Zeilen, die das Panel anzeigt:
 | **Text-Präfix**, **Text**, **Text-Suffix** | Die zweite Zeile. |
 | **Beschreibung** | Nur für die Übersicht in der Liste – sie wird **nicht** auf dem Panel angezeigt. |
 
-**Jedes dieser Felder nimmt entweder einen festen Text oder die ID eines Datenpunkts** – im zweiten Fall zeigt das Panel dessen aktuellen Wert. Zahlen werden dabei wie am Panel formatiert; hat die Überschrift keine eigene Einheit, hängt der Adapter die Einheit des Datenpunkts an.
+**Jedes dieser Felder nimmt entweder einen festen Text oder die ID eines Datenpunkts** – im zweiten Fall zeigt das Panel dessen aktuellen Wert. Zahlen werden dabei wie am Panel formatiert; hat die Überschrift keine eigene Einheit, hängt der Adapter die Einheit (`common.unit`) des Datenpunkts an – auch bei Text-Datenpunkten. Das gilt nur für die Überschrift: die Textzeile hat kein Einheitenfeld und bekommt nie eine Einheit angehängt.
 
 > **Präfix und Suffix des Textes** bleiben gesperrt, solange **Text** leer ist – allein ergeben sie keine Zeile. Was bei gesperrtem Feld schon dort stand, wird beim Übernehmen verworfen.
 
-> ⚠️ Ob ein Feld als Text oder als Datenpunkt gilt, entscheidet allein, **ob es die ID wirklich gibt**. Ein Tippfehler in der ID landet unbemerkt als Text auf dem Panel; gewarnt wird nicht. Die [Vorschau](#7-vorschau-und-was-der-dialog-prüft) ist die Probe aufs Exempel: Steht dort der Wert, wurde die ID erkannt.
+> ⚠️ Ob ein Feld als Text oder als Datenpunkt gilt, entscheidet allein, **ob es die ID wirklich gibt**. Ein Tippfehler in der ID landet unbemerkt als Text auf dem Panel; gewarnt wird nicht. Dasselbe gilt für eine ID, die auf einen Punkt endet (`pirate-weather.0.` statt `pirate-weather.0.temperature`) – sie wird nie als Datenpunkt erkannt. Die [Vorschau](#7-vorschau-und-was-der-dialog-prüft) ist die Probe aufs Exempel: Steht dort der Wert, wurde die ID erkannt.
 
 ## 3. Wann anzeigen: Datenpunkte und Bedingung
 ![Datenpunkte, Bedingung, Priorität, Quittieren und Summer](../Pictures/screensaverAdmin/notify-03-editor-unten.png)
@@ -92,11 +94,15 @@ Das Panel zeigt **immer nur eine** Benachrichtigung. Sind mehrere gleichzeitig a
 
 > ⚠️ **Ohne** „Quittieren“ bleibt die Meldung stehen, solange ihre Datenpunkte an sind – sie lässt sich am Panel nicht wegtippen. Für Dauerzustände (offenes Fenster) ist das gewollt, für Ereignisse (Türklingel) meist nicht.
 
+> ⚠️ **Der Tipp ist verbraucht.** Solange eine Meldung auf dem Bildschirmschoner liegt, nimmt sie den Tipp für sich: mit **Quittieren** verschwindet sie, ohne **Quittieren** passiert nichts Sichtbares – und in beiden Fällen wechselt das Panel **nicht** zur Hauptseite. Nach dem Quittieren führt der nächste Tipp wieder normal weiter; bei einer nicht quittierbaren Meldung bleibt der Weg über den Tipp versperrt, solange ihre Datenpunkte an sind.
+
 ## 6. Summer
 
-Drei Möglichkeiten: **Aus**, **Standard** (`1,2,3,0xF54`) oder **Eigene Tonfolge**. Bei „Eigene“ ist das Feld **Tonfolge** Pflicht; es nimmt die Argumente des Tasmota-Befehls `Buzzer` in der Form *Anzahl,an,aus,Melodie*.
+Drei Möglichkeiten: **Aus**, **Standard** (`1,2,3,0xF54`) oder **Eigene Tonfolge**. Bei „Eigene“ ist das Feld **Tonfolge** Pflicht; es nimmt die Argumente des Tasmota-Befehls `Buzzer` in der Form *Anzahl,an,aus,Melodie*. Leerzeichen am Rand schneidet der Admin beim Übernehmen weg.
 
-Der Summer ertönt nur, **wenn die angezeigte Benachrichtigung wechselt** – nicht wiederholt, solange dieselbe Meldung steht. Außerdem schweigt er im Nachtmodus und wenn `cmd.isBuzzerAllowed` des Panels aus ist.
+Der Summer ertönt nur, **wenn die angezeigte Benachrichtigung wechselt** – nicht wiederholt, solange dieselbe Meldung steht. Außerdem schweigt er im **Nachtmodus** (`panels.<Panel>.cmd.dim.dayMode` aus) und wenn `panels.<Panel>.cmd.isBuzzerAllowed` aus ist; dieser State ist beschreibbar und steht von Haus aus auf `true`.
+
+> Auf einem [Web-Panel](WebPanel) erscheint dieselbe Meldung. Der Summer ist der einzige Tasmota-Befehl, den der Adapter an den Browser durchreicht – dort spielt ihn der Browser ab, allerdings erst, nachdem im Browser einmal getippt wurde.
 
 ## 7. Vorschau und was der Dialog prüft
 
@@ -121,7 +127,15 @@ Der Dialog arbeitet auf einer Kopie: Erst **Übernehmen** in der Liste schreibt 
 - Ältere Konfigurationen, bei denen die Benachrichtigungen noch im Eintrag des Bildschirmschoners steckten, wandern beim Laden automatisch in die gemeinsame Liste.
 - Nicht angehakte Benachrichtigungen bleiben erhalten, werden aber an kein Panel geschickt.
 
-Auf dem Panel entsteht daraus eine Überschriftzeile (Symbol + Präfix + Wert/Text + Einheit) und darunter die Textzeile (Präfix + Text + Suffix). Im Skript entspricht das `notifyScreensaverEntity`, siehe Screensaver.
+Auf dem Panel entsteht daraus eine Überschriftzeile (Symbol + Präfix + Wert/Text + Einheit) und darunter die Textzeile (Präfix + Text + Suffix) – auf dem Panel wie auf dem [Web-Panel](WebPanel).
+
+**Aus einem Skript übernehmen (ab 2.0.0).** [Maintain](Maintain) → **Skript in den Admin übernehmen** bringt die Benachrichtigungen des Panel-Skripts mit:
+
+- Jede wird eine Zeile der gemeinsamen Liste, als **Beschreibung** trägt sie den Panelnamen mit laufender Nummer (*Wohnzimmer 1*, *Wohnzimmer 2* …), und sie ist für den neu angelegten Bildschirmschoner gleich angehakt.
+- Die Vorschau der Übernahme zählt sie mit („*n* Benachrichtigungen“), zusammen mit der Zahl der Screensaver-Items.
+- Bricht die Übernahme zwischen Skript-Sicherung und Instanz-Schreiben ab, holt der Adapter die noch fehlenden Benachrichtigungen beim nächsten Start nach ID nach und meldet es im Log. Doppelt angelegt wird nichts.
+
+> ⚠️ Lässt sich **eine** Benachrichtigung nicht abbilden, wird der **ganze Bildschirmschoner** übersprungen – gemeldet als „Ein Element des Screensavers lässt sich im Admin nicht abbilden“. Das passiert bei einer Benachrichtigung aus einer Vorlage oder aus Rohdaten, bei einem Feld, das der Admin nicht kennt, bei fehlendem Datenpunkt und bei einer Tonfolge mit Leerzeichen am Rand. Für Screensaver-**Items** gibt es den Rohdaten-Weg als Rückfall, für Benachrichtigungen nicht: hier hilft nur, die Meldung im Skript zu entfernen, zu übernehmen und sie danach im Admin neu anzulegen.
 
 ## 9. Wenn etwas nicht wie erwartet aussieht
 
@@ -130,6 +144,8 @@ Auf dem Panel entsteht daraus eine Überschriftzeile (Symbol + Präfix + Wert/Te
 - **Die Meldung erscheint nie:** Alle Datenpunkte müssen gleichzeitig „an“ sein. Gibt es einen der Datenpunkte nicht, zählt er als „aus“ – bei mehreren Datenpunkten verschwindet die Meldung damit still. Ist **nur ein** Datenpunkt eingetragen und fehlt dieser, verwirft der Adapter die ganze Benachrichtigung und schreibt einen Fehler ins Log.
 - **Es erscheint eine andere Meldung als erwartet:** Es ist immer nur eine zu sehen – die mit der kleinsten Prioritätszahl. Leere Priorität heißt 99.
 - **Die Meldung geht nicht weg:** Ohne **Quittieren** bleibt sie, bis ihre Datenpunkte ausgehen.
+- **Ein Tipp auf den Bildschirmschoner tut nichts:** Es liegt eine Benachrichtigung darüber – der Tipp wird für sie verbraucht, siehe [Quittieren](#5-quittieren-und-gruppen-id).
+- **Eine gelöschte Benachrichtigung taucht wieder auf:** Nicht gelöscht, nur nicht mehr angehakt. Ein gelöschter Bildschirmschoner nimmt seine Benachrichtigungen nicht mit – sie stehen weiter in der gemeinsamen Liste.
 - **Quittieren wirkt auf mehr als gedacht:** Benachrichtigungen mit derselben **Gruppen-ID** werden gemeinsam ausgeblendet, auch auf anderen Panels.
 - **Der Summer bleibt still:** Nachtmodus, `cmd.isBuzzerAllowed` aus – oder die angezeigte Meldung hat gar nicht gewechselt.
 - **Die Überschrift wird falsch umbrochen:** Die Zeichenfolge `<sp!it>` darf im Text nicht vorkommen, der Adapter trennt daran intern die Zeilen. Ein `~` im Text wird durch `-` ersetzt.
