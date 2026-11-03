@@ -822,6 +822,7 @@
     "pchart_Legend2": "Имя и проценты",
     "pchart_Legend3": "Имя, значение и проценты",
     "pchart_LegendMode": "Легенда",
+    "pchart_NotLogged": "Эта точка данных не записывается экземпляром %s",
     "pchart_Range": "Период",
     "pchart_RangeCurrent": "Текущее значение",
     "pchart_RangeCustom": "Произвольно (часов до сейчас)",

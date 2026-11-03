@@ -822,6 +822,7 @@
     "pchart_Legend2": "Naam en procent",
     "pchart_Legend3": "Naam, waarde en procent",
     "pchart_LegendMode": "Legenda",
+    "pchart_NotLogged": "Dit datapunt wordt niet gelogd door %s",
     "pchart_Range": "Periode",
     "pchart_RangeCurrent": "Huidige waarde",
     "pchart_RangeCustom": "Aangepast (uren tot nu)",

@@ -14,11 +14,20 @@ import {
     MenuItem,
     Select,
     TextField,
+    Tooltip,
     Typography,
 } from '@mui/material';
+import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 import { ConfigGeneric, type ConfigGenericProps, type ConfigGenericState } from '@iobroker/json-config';
 import { EntitySelector } from './EntitySelector';
-import { adapterAliveStateId, loadDbInstances, shortInstanceId, type DbInstance } from './dbInstances';
+import {
+    adapterAliveStateId,
+    isLoggedByInstance,
+    loadDbInstances,
+    loggedByInstance,
+    shortInstanceId,
+    type DbInstance,
+} from './dbInstances';
 import {
     emptyPChartSlot,
     isMainPageEntry,
@@ -45,6 +54,8 @@ export interface PagePChartEditorProps {
 interface PagePChartEditorState extends ConfigGenericState {
     alive: boolean;
     dbInstances: DbInstance[];
+    /** objects of the slot states, loaded once per id (null = the object does not exist) - for the logging check */
+    slotObjects: Record<string, ioBroker.Object | null>;
 }
 
 /** translation key of every range option (the select lists them in this order, see pchartRangeKeys) */
@@ -108,8 +119,12 @@ export class PagePChartEditor extends ConfigGeneric<ConfigGenericProps & PagePCh
             ...this.state,
             alive: false,
             dbInstances: [],
+            slotObjects: {},
         };
     }
+
+    /** ids whose object is being loaded right now, so that a re-render does not request them twice */
+    private loadingObjects: Set<string> = new Set();
 
     componentWillUnmount(): void {
         this.props.oContext.socket.unsubscribeState(adapterAliveStateId(this.props.oContext), this.onAliveChanged);
@@ -126,6 +141,66 @@ export class PagePChartEditor extends ConfigGeneric<ConfigGenericProps & PagePCh
             this.setState({ alive: false });
         }
         await this.loadDbInstances();
+        await this.loadSlotObjects();
+    }
+
+    componentDidUpdate(prevProps: ConfigGenericProps & PagePChartEditorProps): void {
+        if (prevProps.entry !== this.props.entry) {
+            // a slot state was typed or picked: check the new id, the instance change needs no reload
+            void this.loadSlotObjects();
+        }
+    }
+
+    /**
+     * Loads the objects of the slot states that are not cached yet (only needed while a range is set,
+     * the check is skipped for the current value).
+     */
+    private async loadSlotObjects(): Promise<void> {
+        if (rangeKeyOf(this.props.entry) === 'current') {
+            return;
+        }
+        const ids = slotsOf(this.props.entry)
+            .map(slot => slot.state ?? '')
+            .filter(id => id && !(id in this.state.slotObjects) && !this.loadingObjects.has(id));
+        if (ids.length === 0) {
+            return;
+        }
+        for (const id of ids) {
+            this.loadingObjects.add(id);
+        }
+        const loaded: Record<string, ioBroker.Object | null> = {};
+        for (const id of ids) {
+            try {
+                loaded[id] = (await this.props.oContext.socket.getObject(id)) ?? null;
+            } catch (error) {
+                console.error('[PagePChartEditor] Failed to read object', id, error);
+                loaded[id] = null;
+            }
+            this.loadingObjects.delete(id);
+        }
+        this.setState(prev => ({ slotObjects: { ...prev.slotObjects, ...loaded } }));
+    }
+
+    /**
+     * Whether the warning "not logged" is shown for a slot: a range is set, the slot has a state and
+     * either no instance is chosen or the (loaded) object has no enabled logging for it. While the
+     * object is still loading nothing is shown.
+     *
+     * @param slot the slot
+     */
+    private slotNotLogged(slot: PChartSlotConfig): boolean {
+        const { entry } = this.props;
+        if (rangeKeyOf(entry) === 'current' || !slot.state) {
+            return false;
+        }
+        const instance = shortInstanceId(entry.selInstance);
+        if (!instance) {
+            return true;
+        }
+        if (!(slot.state in this.state.slotObjects)) {
+            return false;
+        }
+        return !isLoggedByInstance(instance, this.state.slotObjects[slot.state]);
     }
 
     private onAliveChanged = (_id: string, state: ioBroker.State | null | undefined): void => {
@@ -393,10 +468,17 @@ export class PagePChartEditor extends ConfigGeneric<ConfigGenericProps & PagePCh
     }
 
     private renderSlot(slot: PChartSlotConfig, index: number): React.JSX.Element {
-        const { oContext, theme } = this.props;
+        const { entry, oContext, theme } = this.props;
         const { alive } = this.state;
         const themeType = oContext?.themeType ?? (theme?.palette?.mode || 'light');
         const defaultColor = emptyPChartSlot(index).color ?? '#ffffff';
+        const useDb = rangeKeyOf(entry) !== 'current';
+        const instance = shortInstanceId(entry.selInstance);
+        // with a range only states the chosen instance logs are offered, like the chart editor
+        const stateFilter = useDb
+            ? (obj: ioBroker.Object): boolean => isNumberState(obj) && loggedByInstance(instance)(obj)
+            : isNumberState;
+        const notLogged = this.slotNotLogged(slot);
         return (
             <Box
                 key={index}
@@ -425,17 +507,37 @@ export class PagePChartEditor extends ConfigGeneric<ConfigGenericProps & PagePCh
                     }}
                     disabled={!alive}
                 />
-                <EntitySelector
-                    label={this.getText('pchart_SliceState')}
-                    value={slot.state ?? ''}
-                    onChange={(v: string) => this.updateSlot(index, { state: v })}
-                    socket={oContext.socket}
-                    theme={theme}
-                    themeType={themeType}
-                    dialogName={`selectPChartSlot${index}`}
-                    filterFunc={isNumberState}
-                    disabled={!alive}
-                />
+                <Box sx={{ display: 'flex', alignItems: 'flex-end', gap: 1 }}>
+                    <Box sx={{ flex: 1, minWidth: 0 }}>
+                        <EntitySelector
+                            label={this.getText('pchart_SliceState')}
+                            value={slot.state ?? ''}
+                            onChange={(v: string) => this.updateSlot(index, { state: v })}
+                            socket={oContext.socket}
+                            theme={theme}
+                            themeType={themeType}
+                            dialogName={`selectPChartSlot${index}`}
+                            filterFunc={stateFilter}
+                            disabled={!alive}
+                        />
+                    </Box>
+                    {notLogged && (
+                        <Tooltip
+                            title={this.getText('pchart_NotLogged').replace(
+                                '%s',
+                                instance || this.getText('chart_Instance'),
+                            )}
+                            placement="top"
+                            arrow
+                        >
+                            <WarningAmberIcon
+                                color="warning"
+                                fontSize="small"
+                                sx={{ mb: 0.5 }}
+                            />
+                        </Tooltip>
+                    )}
+                </Box>
                 <TextField
                     variant="standard"
                     type="text"

@@ -822,6 +822,7 @@
     "pchart_Legend2": "名称和百分比",
     "pchart_Legend3": "名称、数值和百分比",
     "pchart_LegendMode": "图例",
+    "pchart_NotLogged": "此数据点未被 %s 记录",
     "pchart_Range": "时间范围",
     "pchart_RangeCurrent": "当前值",
     "pchart_RangeCustom": "自定义（至今的小时数）",

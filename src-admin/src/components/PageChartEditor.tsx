@@ -20,7 +20,13 @@ import {
 } from '@mui/material';
 import { ConfigGeneric, type ConfigGenericProps, type ConfigGenericState } from '@iobroker/json-config';
 import { EntitySelector } from './EntitySelector';
-import { adapterAliveStateId, DB_ADAPTERS, loadDbInstances, shortInstanceId, type DbInstance } from './dbInstances';
+import {
+    adapterAliveStateId,
+    loadDbInstances,
+    loggedByInstance,
+    shortInstanceId,
+    type DbInstance,
+} from './dbInstances';
 import {
     type ChartEntry,
     chartDefaults,
@@ -51,29 +57,6 @@ type NumberField = 'rangeHours' | 'maxXAxisTicks' | 'maxXAxisLabels';
  */
 function isState(obj: ioBroker.Object): boolean {
     return !!(obj && obj.type === 'state');
-}
-
-/**
- * DB source: only states with logging enabled for the chosen instance,
- * e.g. `influxdb.0` → `common.custom['influxdb.0'].enabled`.
- * Without a chosen instance: any enabled logging of a DB adapter.
- *
- * @param instance short instance id (`influxdb.0`) or ''
- */
-function loggedByInstance(instance: string): (obj: ioBroker.Object) => boolean {
-    return (obj: ioBroker.Object): boolean => {
-        if (!obj || obj.type !== 'state') {
-            return false;
-        }
-        const custom = obj.common?.custom as Record<string, { enabled?: boolean } | undefined> | undefined;
-        if (!custom) {
-            return false;
-        }
-        if (instance) {
-            return !!custom[instance]?.enabled;
-        }
-        return Object.keys(custom).some(key => DB_ADAPTERS.includes(key.split('.')[0]) && !!custom[key]?.enabled);
-    };
 }
 
 export class PageChartEditor extends ConfigGeneric<ConfigGenericProps & PageChartEditorProps, PageChartEditorState> {

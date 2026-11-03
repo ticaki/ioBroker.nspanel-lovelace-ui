@@ -822,6 +822,7 @@
     "pchart_Legend2": "Nom et pourcentage",
     "pchart_Legend3": "Nom, valeur et pourcentage",
     "pchart_LegendMode": "Légende",
+    "pchart_NotLogged": "Ce point de données n'est pas journalisé par %s",
     "pchart_Range": "Période",
     "pchart_RangeCurrent": "Valeur actuelle",
     "pchart_RangeCustom": "Personnalisé (heures jusqu'à maintenant)",

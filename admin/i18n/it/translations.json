@@ -822,6 +822,7 @@
     "pchart_Legend2": "Nome e percentuale",
     "pchart_Legend3": "Nome, valore e percentuale",
     "pchart_LegendMode": "Legenda",
+    "pchart_NotLogged": "Questo datapoint non viene registrato da %s",
     "pchart_Range": "Periodo",
     "pchart_RangeCurrent": "Valore attuale",
     "pchart_RangeCustom": "Personalizzato (ore fino ad ora)",

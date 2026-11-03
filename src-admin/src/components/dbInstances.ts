@@ -42,6 +42,36 @@ export async function loadDbInstances(socket: any): Promise<DbInstance[]> {
 }
 
 /**
+ * Whether a state is logged by a DB instance: `common.custom['influxdb.0'].enabled`. Without an instance:
+ * any enabled logging of a DB adapter.
+ *
+ * @param instance short instance id (`influxdb.0`) or ''
+ * @param obj object from the browser or the object cache
+ */
+export function isLoggedByInstance(instance: string, obj: ioBroker.Object | null | undefined): boolean {
+    if (!obj || obj.type !== 'state') {
+        return false;
+    }
+    const custom = obj.common?.custom as Record<string, { enabled?: boolean } | undefined> | undefined;
+    if (!custom) {
+        return false;
+    }
+    if (instance) {
+        return !!custom[instance]?.enabled;
+    }
+    return Object.keys(custom).some(key => DB_ADAPTERS.includes(key.split('.')[0]) && !!custom[key]?.enabled);
+}
+
+/**
+ * DB source: only states with logging enabled for the chosen instance (filter of the state picker).
+ *
+ * @param instance short instance id (`influxdb.0`) or ''
+ */
+export function loggedByInstance(instance: string): (obj: ioBroker.Object) => boolean {
+    return (obj: ioBroker.Object): boolean => isLoggedByInstance(instance, obj);
+}
+
+/**
  * The alive state of the adapter instance the admin is opened for.
  *
  * @param oContext admin context (instance number)

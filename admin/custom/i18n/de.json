@@ -827,6 +827,7 @@
     "pchart_Legend2": "Name und Prozent",
     "pchart_Legend3": "Name, Wert und Prozent",
     "pchart_LegendMode": "Legende",
+    "pchart_NotLogged": "Dieser Datenpunkt wird von %s nicht aufgezeichnet",
     "pchart_Range": "Zeitraum",
     "pchart_RangeCurrent": "Aktueller Wert",
     "pchart_RangeCustom": "Benutzerdefiniert (Stunden bis jetzt)",
