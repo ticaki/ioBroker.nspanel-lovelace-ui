@@ -18,6 +18,7 @@ export type AdminCardTypes =
     | 'cardPower'
     | 'cardChart'
     | 'cardLChart'
+    | 'cardPChart'
     | 'cardThermo'
     | 'screensaver'
     | 'screensaver2'
@@ -1629,6 +1630,144 @@ export function emptyChartEntry(uniqueName: string): ChartEntry {
     };
 }
 
+// ---------------------------------------------------------------------------------------------
+// cardPChart - pie chart (TFT 6.0.5, EU panel). Admin only, there is no script page for it.
+// ---------------------------------------------------------------------------------------------
+
+/** the HMI draws at most this many slices, everything after is ignored by the panel */
+export const PCHART_MAX_SLICES = 6;
+
+/** data sources of a pie chart entry (`selInstanceDataSource`) */
+export const PCHART_SOURCE_SLOTS = 0;
+export const PCHART_SOURCE_SCRIPT = 1;
+
+/**
+ * One slice of the pie chart in the slot source: a numeric state with name, unit and color.
+ * A slot without a state is left out; a value of 0 keeps its legend line.
+ */
+export type PChartSlotConfig = {
+    /** legend name, empty = `common.name` of the state (translated) */
+    name?: string;
+    /** numeric state delivering the slice value */
+    state?: string;
+    /** unit behind the value text, empty = `common.unit` of the state */
+    unit?: string;
+    /** slice color as hex (`#rrggbb`), sent as RGB565 */
+    color?: string;
+};
+
+/** time range of the slot source: 0 = current value of the states, otherwise the average over the last hours */
+export type PChartRangeOption = 'current' | 'hour' | 'day' | 'week' | 'month' | 'custom';
+
+/** hours of the fixed range options (`custom` has none) */
+export const pchartRangeHours: Readonly<Record<Exclude<PChartRangeOption, 'custom'>, number>> = {
+    current: 0,
+    hour: 1,
+    day: 24,
+    week: 24 * 7,
+    month: 24 * 30,
+};
+
+/**
+ * Range option shown for stored hours: a preset if the hours match one, otherwise `custom`.
+ *
+ * @param hours stored `rangeHours`, undefined or 0 = current value
+ */
+export function pchartRangeOptionOf(hours: number | undefined): PChartRangeOption {
+    const h = hours && hours > 0 ? hours : 0;
+    const preset = (Object.keys(pchartRangeHours) as Exclude<PChartRangeOption, 'custom'>[]).find(
+        key => pchartRangeHours[key] === h,
+    );
+    return preset ?? 'custom';
+}
+
+/**
+ * Hours to store for a chosen range option.
+ *
+ * @param option chosen option
+ * @param customHours hours typed in for `custom`; invalid or missing = 1
+ */
+export function pchartRangeHoursOf(option: PChartRangeOption, customHours?: number): number {
+    if (option === 'custom') {
+        return customHours && Number.isFinite(customHours) && customHours > 0 ? customHours : 1;
+    }
+    return pchartRangeHours[option];
+}
+
+export type PChartEntry = {
+    card: Extract<AdminCardTypes, 'cardPChart'>;
+    uniqueName: string;
+    headline?: string;
+    /** legend of the panel: 0 = name, 1 = name and value, 2 = name and percent, 3 = name, value and percent */
+    legendMode?: number;
+    /** decimal places of the value text (slot source) */
+    decimals?: number;
+    /** 0 = slots (states, optionally averaged over `rangeHours`), 1 = script data point with the finished panel text */
+    selInstanceDataSource?: number;
+    /** slot source: up to PCHART_MAX_SLICES slices in legend order */
+    slots?: PChartSlotConfig[];
+    /** slot source: average over the last hours read via getHistory, 0 or undefined = current value */
+    rangeHours?: number;
+    /** slot source with rangeHours > 0: DB instance that logs the slot states (`influxdb.0`) */
+    selInstance?: string;
+    /** script source: state a script writes `Name~Number~Value text~Color~…` into (format of the old NSPanel script) */
+    setStateForValues?: string;
+} & PageConfigBaseFields;
+
+/** DB query of a pie chart page, travels as JSON in the const item `dbData` (like ChartDetailsExternal) */
+export type PChartDetailsExternal = {
+    instance: string;
+    hours: number;
+};
+
+/**
+ * Defaults of a pie chart page - the single source for the PageConfig editor, handleAdd and admin.ts.
+ * The six slot colors are the ones the old NSPanel script examples used.
+ */
+export const pchartDefaults = {
+    legendMode: 3,
+    decimals: 2,
+    selInstanceDataSource: PCHART_SOURCE_SLOTS,
+    rangeHours: 0,
+    slotColors: ['#F80000', '#00F800', '#0000F8', '#F8F800', '#00F8F8', '#F800F8'] as readonly string[],
+};
+
+/**
+ * Empty default for a slice slot - used when adding a new cardPChart entry.
+ *
+ * @param index slot index (0-5), picks the default color
+ */
+export function emptyPChartSlot(index: number): PChartSlotConfig {
+    return {
+        name: '',
+        state: '',
+        unit: '',
+        color: pchartDefaults.slotColors[index % pchartDefaults.slotColors.length],
+    };
+}
+
+/**
+ * Creates a fresh pie chart entry with all fields set explicitly (same pattern as emptyChartEntry).
+ *
+ * @param uniqueName unique page name
+ */
+export function emptyPChartEntry(uniqueName: string): PChartEntry {
+    return {
+        card: 'cardPChart',
+        uniqueName,
+        headline: uniqueName,
+        legendMode: pchartDefaults.legendMode,
+        decimals: pchartDefaults.decimals,
+        selInstanceDataSource: pchartDefaults.selInstanceDataSource,
+        slots: Array.from({ length: PCHART_MAX_SLICES }, (_, i) => emptyPChartSlot(i)),
+        rangeHours: pchartDefaults.rangeHours,
+        selInstance: '',
+        setStateForValues: '',
+        hidden: false,
+        alwaysOn: 'none',
+    };
+}
+
 /** one row of the old admin table "Page Chart" (`native.pageChartdata`) */
 export type LegacyChartRow = {
     pageName: string;
@@ -2518,6 +2657,7 @@ export type PageConfigEntry =
     | UnlockEntry
     | TrashEntry
     | ChartEntry
+    | PChartEntry
     | MenuEntry
     | PowerEntry
     | Thermo2Entry
