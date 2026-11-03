@@ -122,8 +122,25 @@ export class PageChart extends Page {
         if (message.ticks) {
             this.log.debug(`Ticks: ${message.ticks.join(',')}`);
         }
+        const payload = this.getMessage(message);
+        if (!this.shouldSend(payload)) {
+            this.log.debug(`Payload unchanged, not sent: ${this.name}`);
+            return;
+        }
+        // pageType and entityUpd always go together: the panel answers the pageType with
+        // `renderCurrentPage` (the ack of the queue) and then draws the entityUpd that follows
         this.sendType(true);
-        this.sendToPanel(this.getMessage(message), false);
+        this.sendToPanel(payload, false);
+    }
+
+    /**
+     * Whether the finished payload is sent. The base sends every update; the pie chart skips a payload
+     * that equals the last one sent, because the panel redraws the whole pie on every entityUpd.
+     *
+     * @param _payload the entityUpd as it would be sent
+     */
+    protected shouldSend(_payload: string): boolean {
+        return true;
     }
 
     /**

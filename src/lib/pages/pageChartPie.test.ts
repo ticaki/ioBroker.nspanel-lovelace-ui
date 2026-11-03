@@ -86,8 +86,11 @@ function fakePage(
     page.visibility = true;
     page.refreshInterval = 1000;
     page.sent = [];
-    page.sendType = (): void => undefined;
+    // pageType and entityUpd are recorded in order, so a pageType without a following payload would show
+    page.sendType = (): void => page.sent.push('pageType');
     page.sendToPanel = (payload: string): void => page.sent.push(payload);
+    page.lastPayload = undefined;
+    page.chartTimeouts = new Map();
     page.adapter.setTimeout = (): undefined => undefined;
     page.adapter.clearTimeout = (): void => undefined;
     page.adapter.unload = false;
@@ -292,14 +295,88 @@ describe('lib/pages - PageChartPie', () => {
     });
 
     describe('update', () => {
-        it('sends the entityUpd while visible', async () => {
+        it('sends the entityUpd while visible, the pageType right before it', async () => {
             const fake = fakePage(slots);
             const page: any = fake.page;
 
             await page.update();
 
-            expect(page.sent).to.have.length(1);
-            expect(page.sent[0].split('~')[1]).to.equal('Energie');
+            expect(page.sent).to.have.length(2);
+            expect(page.sent[0]).to.equal('pageType');
+            expect(page.sent[1].split('~')[1]).to.equal('Energie');
+        });
+
+        it('does not send a second update with the same data (the panel would redraw the pie for nothing)', async () => {
+            const fake = fakePage(slots);
+            const page: any = fake.page;
+
+            await page.update();
+            await page.update();
+            await page.update();
+
+            expect(page.sent).to.have.length(2);
+        });
+
+        it('sends again when a value changed', async () => {
+            const fake = fakePage(slots);
+            const page: any = fake.page;
+
+            await page.update();
+            page.pieItems.data.slices[0].value = item(9.9, 'a.bezug');
+            await page.update();
+
+            expect(page.sent).to.have.length(4);
+            expect(page.sent[3]).to.contain('9.90 kWh');
+            expect(page.sent[3]).to.not.equal(page.sent[1]);
+        });
+
+        it('sends again after the page became visible, even with the same data', async () => {
+            const fake = fakePage(slots);
+            const page: any = fake.page;
+
+            await page.update();
+            await page.update();
+            expect(page.sent).to.have.length(2);
+
+            // the panel showed another page meanwhile, the pie is drawn from scratch
+            await page.onVisibilityChange(false);
+            page.visibility = true;
+            await page.onVisibilityChange(true);
+
+            expect(page.sent).to.have.length(4);
+            expect(page.sent[2]).to.equal('pageType');
+            expect(page.sent[3]).to.equal(page.sent[1]);
+        });
+
+        it('every pageType (answered by renderCurrentPage) is followed by its entityUpd, nothing is sent alone', async () => {
+            const fake = fakePage(slots);
+            const page: any = fake.page;
+
+            await page.update();
+            await page.update();
+            page.lastPayload = undefined;
+            await page.update();
+
+            expect(page.sent).to.have.length(4);
+            for (let i = 0; i < page.sent.length; i += 2) {
+                expect(page.sent[i]).to.equal('pageType');
+                expect(page.sent[i + 1]).to.contain('entityUpd~Energie');
+            }
+        });
+
+        it('forgets the last payload on delete', async () => {
+            const fake = fakePage(slots);
+            const page: any = fake.page;
+            page.basePanel = { statesControler: { deletePageLoop: (): void => undefined } };
+
+            await page.update();
+            try {
+                await page.delete();
+            } catch {
+                // the base delete touches panel internals the fake does not have - only the reset matters here
+            }
+
+            expect(page.lastPayload).to.equal(undefined);
         });
 
         it('does not send when the page became invisible while the data was read', async () => {

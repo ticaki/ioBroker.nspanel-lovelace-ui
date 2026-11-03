@@ -107,8 +107,22 @@ class PageChart extends import_Page.Page {
     if (message.ticks) {
       this.log.debug(`Ticks: ${message.ticks.join(",")}`);
     }
+    const payload = this.getMessage(message);
+    if (!this.shouldSend(payload)) {
+      this.log.debug(`Payload unchanged, not sent: ${this.name}`);
+      return;
+    }
     this.sendType(true);
-    this.sendToPanel(this.getMessage(message), false);
+    this.sendToPanel(payload, false);
+  }
+  /**
+   * Whether the finished payload is sent. The base sends every update; the pie chart skips a payload
+   * that equals the last one sent, because the panel redraws the whole pie on every entityUpd.
+   *
+   * @param _payload the entityUpd as it would be sent
+   */
+  shouldSend(_payload) {
+    return true;
   }
   /**
    * The fields of the next entityUpd: bar and line chart read ticks and values via getChartData,

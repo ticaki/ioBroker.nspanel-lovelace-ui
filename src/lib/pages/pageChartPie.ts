@@ -94,6 +94,12 @@ export class PageChartPie extends PageChart {
     private sliceMeta: Map<string, { name: string; unit: string }> = new Map();
     /** states (or the instance) a warning was logged for - logged once until a value arrives again */
     private warned: Set<string> = new Set();
+    /**
+     * The entityUpd sent last. The panel redraws the whole pie on every entityUpd and is blind for touch
+     * meanwhile, so an unchanged payload is not sent again. Reset when the page becomes visible (the
+     * panel then shows another page or the screensaver) and on delete.
+     */
+    private lastPayload: string | undefined;
 
     constructor(config: PageInterface, options: pages.PageBase) {
         super(config, options);
@@ -118,6 +124,27 @@ export class PageChartPie extends PageChart {
             }
         }
         await super.init();
+    }
+
+    protected shouldSend(payload: string): boolean {
+        if (payload === this.lastPayload) {
+            return false;
+        }
+        this.lastPayload = payload;
+        return true;
+    }
+
+    protected async onVisibilityChange(val: boolean): Promise<void> {
+        if (val) {
+            // the page is drawn from scratch: whatever was sent before is gone from the panel
+            this.lastPayload = undefined;
+        }
+        await super.onVisibilityChange(val);
+    }
+
+    async delete(): Promise<void> {
+        this.lastPayload = undefined;
+        await super.delete();
     }
 
     protected async getUpdateMessage(): Promise<Partial<pages.PageChartMessage>> {
