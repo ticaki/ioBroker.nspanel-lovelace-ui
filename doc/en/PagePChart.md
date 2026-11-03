@@ -41,6 +41,8 @@ Per slice (1–6):
 
 A value of 0 keeps its legend line (without a piece in the pie), negative values count as 0. The order of the rows is the order in legend and pie.
 
+The legend has a fixed width: names longer than about 20 characters and value texts longer than about 15 characters (next to the percentage; about 20 without it) are cut hard by the adapter so that nothing is written on top of each other – narrow characters count less, capitals and digits more. This applies to both data sources.
+
 ## Script data point
 
 For scripts that build the panel text themselves (for instance following the old NSPanel Lovelace script): one state the script writes the finished text into. Four fields per slice, separated by `~`:

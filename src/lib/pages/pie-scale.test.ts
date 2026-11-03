@@ -1,7 +1,13 @@
 import { expect } from 'chai';
 import {
     finishPieSlices,
+    fitPieText,
     formatPieValueText,
+    PIE_NAME_BUDGET,
+    PIE_TEXT_BUDGET,
+    PIE_TEXT_BUDGET_WITH_PERCENT,
+    pieCharWidth,
+    pieTextBudget,
     mergePieRest,
     parsePieScriptString,
     pieColorToDec,
@@ -161,6 +167,81 @@ describe('lib/pages - pie-scale', () => {
             ]);
 
             expect(slices.map(s => s.value)).to.deep.equal([0, PIE_TARGET_SUM]);
+        });
+    });
+
+    describe('fitPieText - the legend width measured on the panel', () => {
+        const lower = (n: number): string => 'a'.repeat(n);
+        const upper = (n: number): string => 'A'.repeat(n);
+        const digits = (n: number): string => '1234567890'.repeat(2).slice(0, n);
+
+        it('name: 20 lower case letters fit, 21 do not', () => {
+            expect(fitPieText(lower(20), PIE_NAME_BUDGET)).to.equal(lower(20));
+            expect(fitPieText(lower(21), PIE_NAME_BUDGET)).to.equal(lower(20));
+        });
+
+        it('name: 17 capitals fit', () => {
+            expect(fitPieText(upper(17), PIE_NAME_BUDGET)).to.equal(upper(17));
+            expect(fitPieText(upper(18), PIE_NAME_BUDGET)).to.equal(upper(17));
+        });
+
+        it('value text next to the percentage (mode 3): 14 digits fit, 15 do not; 13 capitals, 15 lower case', () => {
+            expect(pieTextBudget(3)).to.equal(PIE_TEXT_BUDGET_WITH_PERCENT);
+            expect(fitPieText(digits(14), PIE_TEXT_BUDGET_WITH_PERCENT)).to.equal(digits(14));
+            expect(fitPieText(digits(15), PIE_TEXT_BUDGET_WITH_PERCENT)).to.equal(digits(14));
+            expect(fitPieText(upper(13), PIE_TEXT_BUDGET_WITH_PERCENT)).to.equal(upper(13));
+            expect(fitPieText(upper(14), PIE_TEXT_BUDGET_WITH_PERCENT)).to.equal(upper(13));
+            expect(fitPieText(lower(15), PIE_TEXT_BUDGET_WITH_PERCENT)).to.equal(lower(15));
+            expect(fitPieText(lower(16), PIE_TEXT_BUDGET_WITH_PERCENT)).to.equal(lower(15));
+        });
+
+        it('value text without the percentage (mode 1) keeps 20 lower case letters', () => {
+            expect(pieTextBudget(1)).to.equal(PIE_TEXT_BUDGET);
+            expect(pieTextBudget(0)).to.equal(PIE_TEXT_BUDGET);
+            expect(pieTextBudget(2)).to.equal(PIE_TEXT_BUDGET);
+            expect(pieTextBudget(9)).to.equal(PIE_TEXT_BUDGET_WITH_PERCENT);
+            expect(fitPieText(lower(20), PIE_TEXT_BUDGET)).to.equal(lower(20));
+            expect(fitPieText(lower(21), PIE_TEXT_BUDGET)).to.equal(lower(20));
+        });
+
+        it('narrow and wide characters count less or more', () => {
+            expect(pieCharWidth('i')).to.equal(0.6);
+            expect(pieCharWidth(' ')).to.equal(0.6);
+            expect(pieCharWidth('m')).to.equal(1.5);
+            expect(pieCharWidth('%')).to.equal(1.5);
+            expect(pieCharWidth('7')).to.equal(1.1);
+            expect(pieCharWidth('B')).to.equal(1.2);
+            expect(pieCharWidth('ä')).to.equal(1);
+            // 33 narrow characters are still under 20 units, 13 wide ones are not
+            expect(fitPieText('i'.repeat(33), PIE_NAME_BUDGET)).to.equal('i'.repeat(33));
+            expect(fitPieText('w'.repeat(14), PIE_NAME_BUDGET)).to.equal('w'.repeat(14));
+            expect(fitPieText('w'.repeat(15), PIE_NAME_BUDGET)).to.equal('w'.repeat(14));
+        });
+
+        it('cuts hard without an ellipsis and trims trailing blanks, empty stays empty', () => {
+            // E(1.2) i(0.6) gennuzung … t(0.6) = 20.0 after "Photovolt", the "a" starting there is cut
+            expect(fitPieText('Eigennutzung Photovoltaik', PIE_NAME_BUDGET)).to.equal('Eigennutzung Photovolt');
+            // the blank still fits (19.6 before it) but is trimmed once the cut lands behind it
+            expect(fitPieText(`${lower(19)}f xyz`, PIE_NAME_BUDGET)).to.equal(`${lower(19)}f`);
+            expect(fitPieText('abc   ', PIE_NAME_BUDGET)).to.equal('abc');
+            expect(fitPieText('   ', PIE_NAME_BUDGET)).to.equal('');
+            expect(fitPieText('', PIE_NAME_BUDGET)).to.equal('');
+            expect(fitPieText('kurz', PIE_NAME_BUDGET)).to.equal('kurz');
+        });
+
+        it('finishPieSlices fits both texts for the legend mode, the summary slice included', () => {
+            const long = { name: lower(25), value: 1, text: digits(16), color: '1' };
+            const other = { name: 'Sonstiges und noch viel mehr Text', value: 1, text: '', color: '2' };
+            const mode3 = finishPieSlices([long, other], 3);
+            expect(mode3[0].name).to.equal(lower(20));
+            expect(mode3[0].text).to.equal(digits(14));
+            expect(mode3[1].name).to.equal(fitPieText(other.name, PIE_NAME_BUDGET));
+            expect(mode3[1].text).to.equal('');
+
+            const mode1 = finishPieSlices([long], 1);
+            expect(mode1[0].text).to.equal(digits(16));
+            // the default is mode 3
+            expect(finishPieSlices([long])[0].text).to.equal(digits(14));
         });
     });
 

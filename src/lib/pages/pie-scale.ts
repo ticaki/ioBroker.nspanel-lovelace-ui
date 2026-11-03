@@ -134,17 +134,87 @@ export function mergePieRest(slices: readonly PieSliceInput[], otherName: string
 }
 
 /**
- * Scales the numbers and cuts the list to what the panel reads.
+ * Width budgets of the legend, measured on the panel (TFT 6.0.5, legend mode 3): the name takes the full
+ * legend width - 20 lower case letters or 17 capitals fit; the value text sits left of the percentage -
+ * 15 lower case letters, 13 capitals or 14 digits fit, anything longer collides with the percentage.
+ * Without the percentage (mode 1) the value text has the full width.
+ */
+export const PIE_NAME_BUDGET = 20;
+export const PIE_TEXT_BUDGET_WITH_PERCENT = 15;
+export const PIE_TEXT_BUDGET = 20;
+
+const NARROW_CHARS = new Set(['i', 'l', 'j', 't', 'f', 'r', '.', ',', ':', ';', "'", '!', '|', ' ']);
+const WIDE_CHARS = new Set(['m', 'w', 'M', 'W', '@', '%']);
+
+/**
+ * Estimated width of one character in units: lower case 1.0, digits 1.1, capitals 1.2, narrow characters
+ * (`i l j t f r . , : ; ' ! |` and space) 0.6, wide ones (`m w M W @ %`) 1.5, everything else 1.0.
+ *
+ * @param ch one character
+ */
+export function pieCharWidth(ch: string): number {
+    if (NARROW_CHARS.has(ch)) {
+        return 0.6;
+    }
+    if (WIDE_CHARS.has(ch)) {
+        return 1.5;
+    }
+    if (ch >= '0' && ch <= '9') {
+        return 1.1;
+    }
+    if (ch >= 'A' && ch <= 'Z') {
+        return 1.2;
+    }
+    return 1;
+}
+
+/**
+ * Cuts a legend text to the width budget of the panel. A character is kept as long as the characters
+ * before it stay below the budget (the budget is the width at which the text starts to collide, the
+ * character starting there is the first one cut). Hard cut, no ellipsis (the Nextion font has none for
+ * sure), trailing blanks are trimmed.
+ *
+ * @param text text without the field separator (see sanitizePieText)
+ * @param budget width in units, e.g. PIE_NAME_BUDGET
+ */
+export function fitPieText(text: string, budget: number): string {
+    let width = 0;
+    let end = 0;
+    for (const ch of text) {
+        if (width >= budget) {
+            break;
+        }
+        width += pieCharWidth(ch);
+        end += ch.length;
+    }
+    return text.slice(0, end).trimEnd();
+}
+
+/**
+ * Width budget of the value text for a legend mode: next to the percentage (mode 3) it is shorter.
+ * In mode 0 and 2 the panel does not show the value text at all.
+ *
+ * @param legendMode legend mode 0-3
+ */
+export function pieTextBudget(legendMode: number): number {
+    return pieLegendMode(legendMode) === 3 ? PIE_TEXT_BUDGET_WITH_PERCENT : PIE_TEXT_BUDGET;
+}
+
+/**
+ * Scales the numbers, fits name and value text to the legend width and cuts the list to what the panel
+ * reads - for both sources, the summary slice included.
  *
  * @param slices slices with raw numbers
+ * @param legendMode legend mode 0-3 (sets the budget of the value text), default 3
  */
-export function finishPieSlices(slices: readonly PieSliceInput[]): PieSlice[] {
+export function finishPieSlices(slices: readonly PieSliceInput[], legendMode = 3): PieSlice[] {
     const cut = slices.slice(0, PCHART_MAX_SLICES);
     const values = scalePieValues(cut.map(s => s.value));
+    const textBudget = pieTextBudget(legendMode);
     return cut.map((s, i) => ({
-        name: sanitizePieText(s.name),
+        name: fitPieText(sanitizePieText(s.name), PIE_NAME_BUDGET),
         value: values[i],
-        text: sanitizePieText(s.text),
+        text: fitPieText(sanitizePieText(s.text), textBudget),
         color: s.color,
     }));
 }

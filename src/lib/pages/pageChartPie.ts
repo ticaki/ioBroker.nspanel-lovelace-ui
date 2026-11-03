@@ -135,8 +135,9 @@ export class PageChartPie extends PageChart {
             return message;
         }
         message.headline = (data.headline && (await data.headline.getTranslatedString())) ?? this.name;
-        message.text = String(pieLegendMode((data.legendMode && (await data.legendMode.getNumber())) ?? null));
-        message.value = pieSlicesToPayload(finishPieSlices(await this.getPieSlices()));
+        const legendMode = pieLegendMode((data.legendMode && (await data.legendMode.getNumber())) ?? null);
+        message.text = String(legendMode);
+        message.value = pieSlicesToPayload(finishPieSlices(await this.getPieSlices(), legendMode));
         return message;
     }
 

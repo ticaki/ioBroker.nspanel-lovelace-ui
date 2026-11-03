@@ -118,8 +118,9 @@ class PageChartPie extends import_pageChart.PageChart {
       return message;
     }
     message.headline = (_b = data.headline && await data.headline.getTranslatedString()) != null ? _b : this.name;
-    message.text = String((0, import_pie_scale.pieLegendMode)((_c = data.legendMode && await data.legendMode.getNumber()) != null ? _c : null));
-    message.value = (0, import_pie_scale.pieSlicesToPayload)((0, import_pie_scale.finishPieSlices)(await this.getPieSlices()));
+    const legendMode = (0, import_pie_scale.pieLegendMode)((_c = data.legendMode && await data.legendMode.getNumber()) != null ? _c : null);
+    message.text = String(legendMode);
+    message.value = (0, import_pie_scale.pieSlicesToPayload)((0, import_pie_scale.finishPieSlices)(await this.getPieSlices(), legendMode));
     return message;
   }
   /**

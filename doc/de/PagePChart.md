@@ -41,6 +41,8 @@ Je Scheibe (1–6):
 
 Der Wert 0 behält seine Legendenzeile (ohne Stück im Kreis), negative Werte zählen als 0. Die Reihenfolge der Zeilen ist die Reihenfolge in Legende und Kreis.
 
+Die Legende hat eine feste Breite: Namen über etwa 20 Zeichen und Wert-Texte über etwa 15 Zeichen (neben der Prozentzahl; ohne Prozentzahl etwa 20) kürzt der Adapter hart, damit nichts übereinander geschrieben wird – schmale Zeichen zählen weniger, Großbuchstaben und Ziffern mehr. Das gilt für beide Datenquellen.
+
 ## Skript-Datenpunkt
 
 Für Skripte, die den Panel-Text selbst erzeugen (etwa nach dem Muster des alten NSPanel-Lovelace-Skripts): ein Datenpunkt, in den das Skript den fertigen Text schreibt. Je Scheibe vier Felder, getrennt durch `~`:

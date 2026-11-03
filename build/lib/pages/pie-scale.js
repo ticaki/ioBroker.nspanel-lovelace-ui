@@ -18,14 +18,20 @@ var __copyProps = (to, from, except, desc) => {
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 var pie_scale_exports = {};
 __export(pie_scale_exports, {
+  PIE_NAME_BUDGET: () => PIE_NAME_BUDGET,
   PIE_TARGET_SUM: () => PIE_TARGET_SUM,
+  PIE_TEXT_BUDGET: () => PIE_TEXT_BUDGET,
+  PIE_TEXT_BUDGET_WITH_PERCENT: () => PIE_TEXT_BUDGET_WITH_PERCENT,
   finishPieSlices: () => finishPieSlices,
+  fitPieText: () => fitPieText,
   formatPieValueText: () => formatPieValueText,
   mergePieRest: () => mergePieRest,
   parsePieScriptString: () => parsePieScriptString,
+  pieCharWidth: () => pieCharWidth,
   pieColorToDec: () => pieColorToDec,
   pieLegendMode: () => pieLegendMode,
   pieSlicesToPayload: () => pieSlicesToPayload,
+  pieTextBudget: () => pieTextBudget,
   sanitizePieText: () => sanitizePieText,
   scalePieValues: () => scalePieValues
 });
@@ -88,13 +94,49 @@ function mergePieRest(slices, otherName) {
   keep.push({ name: sanitizePieText(otherName), value: sum, text: "", color: rest[0].color });
   return keep;
 }
-function finishPieSlices(slices) {
+const PIE_NAME_BUDGET = 20;
+const PIE_TEXT_BUDGET_WITH_PERCENT = 15;
+const PIE_TEXT_BUDGET = 20;
+const NARROW_CHARS = /* @__PURE__ */ new Set(["i", "l", "j", "t", "f", "r", ".", ",", ":", ";", "'", "!", "|", " "]);
+const WIDE_CHARS = /* @__PURE__ */ new Set(["m", "w", "M", "W", "@", "%"]);
+function pieCharWidth(ch) {
+  if (NARROW_CHARS.has(ch)) {
+    return 0.6;
+  }
+  if (WIDE_CHARS.has(ch)) {
+    return 1.5;
+  }
+  if (ch >= "0" && ch <= "9") {
+    return 1.1;
+  }
+  if (ch >= "A" && ch <= "Z") {
+    return 1.2;
+  }
+  return 1;
+}
+function fitPieText(text, budget) {
+  let width = 0;
+  let end = 0;
+  for (const ch of text) {
+    if (width >= budget) {
+      break;
+    }
+    width += pieCharWidth(ch);
+    end += ch.length;
+  }
+  return text.slice(0, end).trimEnd();
+}
+function pieTextBudget(legendMode) {
+  return pieLegendMode(legendMode) === 3 ? PIE_TEXT_BUDGET_WITH_PERCENT : PIE_TEXT_BUDGET;
+}
+function finishPieSlices(slices, legendMode = 3) {
   const cut = slices.slice(0, import_adminShareConfig.PCHART_MAX_SLICES);
   const values = scalePieValues(cut.map((s) => s.value));
+  const textBudget = pieTextBudget(legendMode);
   return cut.map((s, i) => ({
-    name: sanitizePieText(s.name),
+    name: fitPieText(sanitizePieText(s.name), PIE_NAME_BUDGET),
     value: values[i],
-    text: sanitizePieText(s.text),
+    text: fitPieText(sanitizePieText(s.text), textBudget),
     color: s.color
   }));
 }
@@ -106,14 +148,20 @@ function pieLegendMode(mode) {
 }
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
+  PIE_NAME_BUDGET,
   PIE_TARGET_SUM,
+  PIE_TEXT_BUDGET,
+  PIE_TEXT_BUDGET_WITH_PERCENT,
   finishPieSlices,
+  fitPieText,
   formatPieValueText,
   mergePieRest,
   parsePieScriptString,
+  pieCharWidth,
   pieColorToDec,
   pieLegendMode,
   pieSlicesToPayload,
+  pieTextBudget,
   sanitizePieText,
   scalePieValues
 });
