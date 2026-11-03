@@ -73,7 +73,7 @@ Diese Felder erscheinen nur beim Typ **WLAN**, in dieser Reihenfolge: WLAN-Versc
 
 > ⚠️ **Ein hier eingetragenes Passwort steht unverschlüsselt in der Instanzkonfiguration** (`native.pageConfig[].qrPass`) und ist für jeden mit Objekt-Leserecht lesbar. Verschlüsselt liegt es nur, wenn es aus den zentralen Zugangsdaten kommt. Wer das nicht möchte, nimmt für die Gäste ein eigenes Gastnetz mit einem Passwort, dessen Verlust nicht schmerzt.
 
-> ⚠️ **`No Password` entfernt das Passwort nicht.** Der Haken blendet nur die Felder aus; gespeichert bleibt alles. Der Adapter setzt das Passwort weiterhin in die Zeichenkette (`WIFI:T:nopass;…;P:<Passwort>;`) und zeigt es auch in der zweiten Zeile der Karte an. Dasselbe gilt beim Wechsel des QR-Typs: Passwort, Verschlüsselungsart und Schalter bleiben unsichtbar in der Konfiguration stehen. Wer sie los werden will, löscht die Felder, solange der Typ noch auf WLAN und die Verschlüsselung nicht auf *No Password* steht.
+> ℹ️ **`No Password` nimmt das Passwort vom Panel, nicht aus der Konfiguration.** Der Adapter löst das Passwort nur auf, wenn es zum Code gehört: WLAN-Code **und** eine Verschlüsselung außer *No Password*. Bei *No Password* bleibt die zweite Zeile der Karte leer und der Code trägt ein leeres Passwortfeld (`WIFI:T:nopass;S:<SSID>;P:;H:;`); bei den Typen Freitext, URL und Telefon spielt das Passwort ohnehin keine Rolle mehr. **Gespeichert bleibt der Wert aber:** Wird später wieder eine Verschlüsselung gewählt, ist das alte Passwort da — ein Umschalten zerstört also nichts. Wer es endgültig los werden will, leert das Feld, solange der Typ auf WLAN und die Verschlüsselung nicht auf *No Password* steht.
 
 **Verstecktes Netzwerk** — schreibt `H:true` in den Code, damit sich der Scanner auch mit einem Netz verbindet, das seinen Namen nicht aussendet. Ohne den Haken endet die Zeichenkette auf `H:;`.
 
@@ -166,7 +166,7 @@ Seit **2.0.0** räumt der Knopf **Skript in Admin übernehmen** im Tab `Maintain
 
 - **`WPA2` steht da, `WPA` wird gesendet.** Die Vorbelegung der Oberfläche ist nicht gespeichert; ohne gespeicherten Wert schreibt der Adapter `WPA`. Das Feld **WLAN-Verschlüsselung** einmal bewusst setzen.
 - **Nach der Übernahme aus `pageQRdata` fehlen Passwort und Verschlüsselungsart.** Beide neu eintragen, siehe [Abschnitt 9](#9-übernahme-aus-der-alten-tabelle).
-- **`No Password` löscht nichts.** Das gespeicherte Passwort steht weiter im Code und in der Passwortzeile der Karte.
+- **`No Password` löscht das gespeicherte Passwort nicht.** Aufs Panel gelangt es nicht mehr, in der Konfiguration bleibt es stehen und erscheint wieder, sobald eine Verschlüsselung gewählt wird.
 - **Ein gesetzter Schalter-Datenpunkt wirkt auch nach einem Typwechsel.** Dann hängt ein WLAN-Schalter an einer URL- oder Telefonkarte.
 - **Gesperrtes Passwortfeld trotz fehlendem Zugangsdaten-Eintrag.** Erst das Auswahlfeld auf **Login / Passwort-Feld nutzen** zurückstellen.
 - **Sonderzeichen brechen den WLAN-Code**: `;`, `:`, `,`, `\` werden nicht geschützt, `~` wird zu `-`, führende und abschließende Leerzeichen werden abgeschnitten.

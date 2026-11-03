@@ -75,7 +75,7 @@ These fields only appear for the type **WiFi**, in this order: WiFi Encryption, 
 
 > ⚠️ **A password entered here is stored unencrypted in the instance configuration** (`native.pageConfig[].qrPass`) and is readable by anyone with read access to the objects. It is stored encrypted only when it comes from the central credentials. Whoever does not want that uses a separate guest network for the visitors with a password whose loss does not hurt.
 
-> ⚠️ **`No Password` does not remove the password.** The choice only hides the fields; everything stays stored. The adapter still puts the password into the string (`WIFI:T:nopass;…;P:<password>;`) and also shows it in the second line of the card. The same applies when switching the QR type: password, encryption type and switch stay in the configuration invisibly. Whoever wants to get rid of them clears the fields while the type is still WiFi and the encryption is not *No Password*.
+> ℹ️ **`No Password` takes the password off the panel, not out of the configuration.** The adapter only resolves the password when it belongs to the code: a WiFi code **and** an encryption other than *No Password*. With *No Password* the second line of the card stays empty and the code carries an empty password field (`WIFI:T:nopass;S:<ssid>;P:;H:;`); with the types free text, url and telephone the password plays no role at all any more. **The value stays stored though:** pick an encryption again later and the old password is back - so switching destroys nothing. Whoever wants to get rid of it for good clears the field while the type is WiFi and the encryption is not *No Password*.
 
 **Hidden Network** — writes `H:true` into the code so the scanner also connects to a network that does not broadcast its name. Without the checkbox the string ends with `H:;`.
 
@@ -168,7 +168,7 @@ Since **2.0.0** the button **Take script over into admin** in the tab `Maintain`
 
 - **`WPA2` is shown, `WPA` is sent.** The preset of the interface is not stored; without a stored value the adapter writes `WPA`. Set the field **WiFi Encryption** deliberately once.
 - **After the take-over from `pageQRdata` password and encryption type are missing.** Enter both anew, see [section 9](#9-taken-over-from-the-old-table).
-- **`No Password` deletes nothing.** The stored password is still in the code and in the password line of the card.
+- **`No Password` does not delete the stored password.** It no longer reaches the panel, but it stays in the configuration and shows up again as soon as an encryption is chosen.
 - **A switch state once set also works after a type change.** Then a WiFi switch hangs on a URL or phone card.
 - **Locked password field although no credential entry exists.** Set the select box back to **Use the login / password field** first.
 - **Special characters break the WiFi code**: `;`, `:`, `,`, `\` are not escaped, `~` becomes `-`, leading and trailing spaces are trimmed.

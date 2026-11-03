@@ -25,7 +25,7 @@ Inhalt:
 
 Der Name ist die **Eindeutige ID** der Seite — unter ihm sprechen andere Seiten sie in ihren Navigationszielen an. Zum Umbenennen siehe [PageConfig – Übersicht](PageConfig#seiten-anlegen-umbenennen-löschen).
 
-Die neue Seite bringt mit: die **Überschrift** gleich dem Seitennamen, die **Pin** `0` — und **keine Betriebsart** (siehe [Abschnitt 2](#2-betriebsart-alarm-oder-entsperren)).
+Die neue Seite bringt mit: die **Überschrift** gleich dem Seitennamen, die **Pin** `0`, die Betriebsart **Alarm** und in beiden Schaltflächenspalten den **oberen Knopf** vorbelegt — *Aktivieren* und *Deaktivieren* (siehe [Abschnitt 2](#2-betriebsart-alarm-oder-entsperren) und [Abschnitt 4](#4-die-schaltflächen-der-alarm-seite)).
 
 > **Alle Felder sind ausgegraut, wenn die Instanz nicht läuft.** Der Editor beobachtet dazu den Datenpunkt `alive` der Instanz; bei gestopptem Adapter lässt sich nichts eintragen. Einen erklärenden Hinweis gibt die Oberfläche nicht.
 
@@ -44,9 +44,7 @@ Direkt unter der ID steht **Typ** mit zwei Möglichkeiten:
 
 Die **Entsperrseite ist kein eigener Seitentyp** — sie entsteht genau hier, aus einer Alarm-Seite. Deshalb findet man sie in der Auswahl beim Anlegen nicht.
 
-> ⚠️ **Eine neue Seite hat noch keine Betriebsart.** Beim Anlegen wird nichts vorbelegt: Es ist **keine** der beiden Schaltflächen aktiv, und weil der Editor die weiteren Felder je Betriebsart einblendet, sieht man zunächst **nur** ID, Typ, Überschrift und Pin — die Seite wirkt halb leer. **Zuerst den Typ wählen**, dann erscheint der Rest.
->
-> Bleibt der Typ ungesetzt, baut der Adapter die Seite als **Entsperrseite** — obwohl der Seitentyp beim Anlegen „Alarm“ hieß. Wer eine Alarmseite will, muss *Alarm* aktiv anklicken.
+> **Vorbelegt ist *Alarm*.** Eine neue Seite entsteht als Alarmanlage, der Editor zeigt also sofort alle Felder. Für eine Entsperrseite genügt ein Klick auf *Entsperren*; die Schaltflächentexte verschwinden dann aus der Ansicht, bleiben aber in der Konfiguration stehen.
 
 **Umschalten später** blendet die Felder der anderen Betriebsart nur aus; eingetragene Werte bleiben in der Konfiguration stehen und werden weiter in die Seite übernommen. Wirksam ist jeweils nur, was zur gewählten Betriebsart gehört — die Schaltflächentexte und *Genehmigt* bei *Alarm*, das Sprungziel bei *Entsperren*. Eine Ausnahme ist die Checkbox `unlock_global`: Sie ist nur im Modus *Alarm* sichtbar, der Adapter liest sie aber in **beiden** Betriebsarten (siehe [Abschnitt 7](#7-ein-zustand-für-mehrere-panels)).
 
@@ -77,8 +75,8 @@ Zwei Spalten mit je vier Feldern. Was man einträgt, ist der **Text** der Schalt
 
 | Feld | Wirkung |
 |---|---|
-| Spalte **Aktivieren**, vier Felder | Erscheint im Zustand `disarmed`. Ein Druck meldet `A1`…`A4` und armiert die Anlage (vier Varianten, z. B. „Anwesend“ und „Abwesend“). |
-| Spalte **Deaktivieren**, vier Felder | Erscheint im Zustand `armed`. Ein Druck meldet `D1`…`D4` und deaktiviert die Anlage. |
+| Spalte **Aktivieren**, vier Felder | Erscheint im Zustand `disarmed`. Ein Druck meldet `A1`…`A4` und armiert die Anlage (vier Varianten, z. B. „Anwesend“ und „Abwesend“). **Das obere Feld ist Pflicht.** |
+| Spalte **Deaktivieren**, vier Felder | Erscheint im Zustand `armed`. Ein Druck meldet `D1`…`D4` und deaktiviert die Anlage. **Das obere Feld ist Pflicht.** |
 
 ![Editor im Modus Alarm mit beiden Schaltflächenspalten](../Pictures/pageAlarm/alarm-03-modus-alarm.png)
 
@@ -90,11 +88,11 @@ Und so sieht die Seite am Panel aus – eine frisch angelegte Alarmseite startet
 >
 > Die Überschriften benennen die **Aktion**, nicht den Zustand: Die Spalte *Aktivieren* enthält die Schaltflächen, die armieren — sichtbar sind sie folglich, wenn die Anlage **aus** ist. Die englische Fassung sagt an dieser Stelle „Armed“ / „Disarmed“ und liest sich damit wie eine Zustandsangabe; gemeint ist dasselbe.
 
-> ⚠️ **Die Spalte „Deaktivieren“ wird nur zeilenweise übernommen — und zwar abhängig von der linken Spalte.** Beim Bauen der Seite prüft der Adapter das falsche Feld: Ob der *obere* Knopf der Spalte *Deaktivieren* übernommen wird, entscheidet der *obere* Knopf der Spalte *Aktivieren*, und so weiter über alle vier Zeilen. Wer nur die rechte Spalte ausfüllt, bekommt am Panel im Zustand `armed` **keine einzige Schaltfläche**.
+> **Der obere Knopf beider Spalten ist Pflicht.** Ohne ihn wäre die Karte in einem ihrer beiden Zustände ohne jede Schaltfläche — und aus diesem Zustand käme man nur noch über den Datenpunkt `.status` heraus. Beim Anlegen stehen deshalb *Aktivieren* und *Deaktivieren* in den beiden Feldern; leert man eines, färbt der Editor es rot, nennt den Grund und **sperrt das Speichern**, bis wieder ein Text darin steht. Die übrigen sechs Felder sind frei. Bei der Betriebsart *Entsperren* gibt es keine Pflichtfelder — dort genügt der eine eingebaute Knopf.
 >
-> **Bis das behoben ist: immer paarweise füllen** — zu jedem Text in der Spalte *Aktivieren* auch einen in derselben Zeile der Spalte *Deaktivieren*.
+> Jedes Feld wird für sich übernommen: Ein Text in der Spalte *Deaktivieren* braucht **keinen** Partner in derselben Zeile der Spalte *Aktivieren*.
 
-> ⚠️ **Eine neue Alarmseite startet im Zustand `armed`**, nicht `disarmed`. Sie zeigt also zuerst die Spalte *Deaktivieren*. Zusammen mit dem Punkt darüber heißt das: Eine Seite, in der nur die Spalte *Aktivieren* gefüllt ist, zeigt am Panel **gar keine Schaltfläche** und lässt sich nur über den Datenpunkt `.status` in Gang bringen (`0` schreiben).
+> **Eine neue Alarmseite startet im Zustand `armed`**, nicht `disarmed`. Sie zeigt also zuerst die Spalte *Deaktivieren* — mit dem vorbelegten Knopf *Deaktivieren* ist sie damit sofort bedienbar.
 
 Symbole und Farben der Karte sind fest und nicht einstellbar; ein Symbolfeld gibt es für diesen Kartentyp nicht.
 
@@ -189,9 +187,7 @@ Panel, Navigationsziele, *Startseite (main)*, *Versteckt* und *Verhalten des Bil
 
 ## Fallstricke
 
-- **Die Seite wirkt halb leer.** Die Betriebsart ist noch nicht gewählt — *Alarm* oder *Entsperren* anklicken, dann erscheinen die übrigen Felder. Ohne Auswahl entsteht eine Entsperrseite.
-- **Im Zustand `armed` gibt es keine Schaltfläche.** Die Spalte *Deaktivieren* wird zeilenweise nur übernommen, wenn dieselbe Zeile der Spalte *Aktivieren* gefüllt ist. Immer paarweise ausfüllen.
-- **Eine frische Alarmseite zeigt gar nichts an.** Sie startet in `armed`, also mit der Spalte *Deaktivieren*. `0` in `.status` schreiben oder beide Spalten füllen.
+- **Das Speichern ist gesperrt und ein Schaltflächenfeld ist rot.** Der obere Knopf einer der beiden Spalten ist leer; beide sind bei der Betriebsart *Alarm* Pflicht.
 - **Die Karte blinkt und reagiert nicht.** Entweder steht sie in `arming`/`pending` und wartet auf `.approve` (Haken *Genehmigt*), oder sie steht in `triggered`. Beides endet nur über `.status`.
 - **Die PIN wird abgefragt, obwohl keine eingetragen wurde.** Das leere Feld steht als `0` in der Konfiguration, und `0` ist eine gültige PIN.
 - **Die PIN wird nicht angenommen.** Führende Nullen sind beim Speichern verloren gegangen — eingegeben werden muss die Zahl ohne sie.

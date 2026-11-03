@@ -25,7 +25,7 @@ Contents:
 
 The name is the **Unique ID** of the page — other pages address it by that name in their navigation targets. For renaming see [PageConfig – Overview](PageConfig#creating-renaming-and-deleting-pages).
 
-The new page brings along: the **Headline** equal to the page name, the **PIN** `0` — and **no operating mode** (see [section 2](#2-operating-mode-alarm-or-unlock)).
+The new page brings along: the **Headline** equal to the page name, the **PIN** `0`, the operating mode **Alarm** and the **top button** of both columns prefilled - *Arm* and *Disarm* (see [section 2](#2-operating-mode-alarm-or-unlock) and [section 4](#4-the-buttons-of-the-alarm-page)).
 
 > **Every field is greyed out while the instance is not running.** The editor watches the `alive` state of the instance for that; with a stopped adapter nothing can be entered. The interface gives no explanation for this.
 
@@ -44,9 +44,7 @@ Right below the ID sits **Type** with two choices:
 
 The **unlock page is not a page type of its own** — it is created right here, out of an alarm page. That is why you will not find it in the list when creating a page.
 
-> ⚠️ **A new page has no operating mode yet.** Nothing is preset when creating it: **neither** of the two buttons is active, and because the editor shows the further fields per mode, at first you only see ID, type, headline and PIN — the page looks half empty. **Pick the type first**, then the rest appears.
->
-> If the type stays unset, the adapter builds the page as an **unlock page** — even though the page type was called "Alarm" when creating it. So whoever wants an alarm page has to click *Alarm* actively.
+> **The preset is *Alarm*.** A new page is created as an alarm system, so the editor shows every field right away. For an unlock page one click on *Unlock* is enough; the button texts then disappear from the view but stay in the configuration.
 
 **Switching later** only hides the fields of the other mode; values you entered stay in the configuration and are still taken into the page. Effective is only what belongs to the chosen mode — the button texts and *Approved* with *Alarm*, the jump target with *Unlock*. One exception is the checkbox `unlock_global`: it is visible in the mode *Alarm* only, but the adapter reads it in **both** modes (see [section 7](#7-one-state-for-several-panels)).
 
@@ -77,8 +75,8 @@ Two columns with four fields each. What you enter is the **text** of the button;
 
 | Field | Effect |
 |---|---|
-| Column **Armed**, four fields | Appears in state `disarmed`. A press reports `A1`…`A4` and arms the system (four variants, e.g. "at home" and "away"). |
-| Column **Disarmed**, four fields | Appears in state `armed`. A press reports `D1`…`D4` and disarms the system. |
+| Column **Armed**, four fields | Appears in state `disarmed`. A press reports `A1`…`A4` and arms the system (four variants, e.g. "at home" and "away"). **The top field is mandatory.** |
+| Column **Disarmed**, four fields | Appears in state `armed`. A press reports `D1`…`D4` and disarms the system. **The top field is mandatory.** |
 
 ![Editor in the Alarm mode with both button columns](../Pictures/pageAlarm/alarm-03-modus-alarm.png)
 
@@ -90,11 +88,11 @@ And this is how the page looks on the panel – a freshly created alarm page sta
 >
 > The headings read like a state, but they name the **action**: the column *Armed* holds the buttons that arm — so they are visible while the system is **off**. The German version says *Aktivieren* / *Deaktivieren* ("arm" / "disarm") at this point; the same thing is meant.
 
-> ⚠️ **The "Disarmed" column is taken over row by row only — and depending on the left column.** When building the page the adapter checks the wrong field: whether the *top* button of the column *Disarmed* is taken over is decided by the *top* button of the column *Armed*, and so on over all four rows. Whoever fills in the right column only gets **not a single button** on the panel in the state `armed`.
+> **The top button of both columns is mandatory.** Without it the card would be left without any button in one of its two states - and that state could only be left through the state `.status`. That is why *Arm* and *Disarm* sit in those two fields from the start; clear one and the editor turns it red, names the reason and **blocks saving** until a text is back in it. The other six fields are free. The operating mode *Unlock* has no mandatory fields - its single built-in button is enough.
 >
-> **Until this is fixed: always fill in pairs** — for every text in the column *Armed* also one in the same row of the column *Disarmed*.
+> Every field is taken over on its own: a text in the column *Disarmed* needs **no** partner in the same row of the column *Armed*.
 
-> ⚠️ **A new alarm page starts in the state `armed`**, not `disarmed`. So it shows the column *Disarmed* first. Together with the point above that means: a page in which only the column *Armed* is filled shows **no button at all** on the panel and can only be got going through the state `.status` (write `0`).
+> **A new alarm page starts in the state `armed`**, not `disarmed`. So it shows the column *Disarmed* first - with the prefilled button *Disarm* it can be operated right away.
 
 Icons and colors of the card are fixed and not adjustable; there is no icon field for this card type.
 
@@ -189,9 +187,7 @@ Panel, navigation targets, *Start page (main)*, *Hidden* and *Screensaver behavi
 
 ## Pitfalls
 
-- **The page looks half empty.** The operating mode has not been chosen yet — click *Alarm* or *Unlock*, then the remaining fields appear. Without a choice an unlock page is created.
-- **In the state `armed` there is no button.** The column *Disarmed* is taken over row by row only if the same row of the column *Armed* is filled. Always fill in pairs.
-- **A fresh alarm page shows nothing at all.** It starts in `armed`, so with the column *Disarmed*. Write `0` into `.status` or fill both columns.
+- **Saving is blocked and a button field is red.** The top button of one of the two columns is empty; both are mandatory in the operating mode *Alarm*.
 - **The card flashes and does not react.** Either it is in `arming`/`pending` and waits for `.approve` (checkbox *Approved*), or it is in `triggered`. Both end through `.status` only.
 - **The PIN is prompted for although none was entered.** The empty field is stored as `0` in the configuration, and `0` is a valid PIN.
 - **The PIN is not accepted.** Leading zeros were lost when saving — the number has to be entered without them.
