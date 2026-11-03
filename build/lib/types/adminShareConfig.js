@@ -640,7 +640,7 @@ function emptyChartEntry(uniqueName) {
     alwaysOn: "none"
   };
 }
-const PCHART_MAX_SLICES = 6;
+const PCHART_MAX_SLICES = 5;
 const PCHART_SOURCE_SLOTS = 0;
 const PCHART_SOURCE_SCRIPT = 1;
 const pchartRangeKeys = [

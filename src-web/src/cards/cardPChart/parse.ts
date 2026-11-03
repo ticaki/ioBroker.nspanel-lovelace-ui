@@ -15,7 +15,7 @@ import { leadingInt } from '../cardChart/parse';
  *   percentage; empty or anything else = 3
  * - field 16 stays empty
  * - from field 17 on every slice takes four fields `Name~Number~Value text~Color` (RGB565 decimal);
- *   at most six slices, everything after the sixth is ignored (never summed up)
+ *   at most {@link MAX_SLICES} slices, everything after is ignored (never summed up)
  * - the number is read as an integer, negative numbers count as 0; the percentages are computed here
  */
 export interface PieModel {
@@ -48,8 +48,8 @@ export interface PieSlice {
     percentText: string;
 }
 
-/** the panel draws at most six slices */
-export const MAX_SLICES = 6;
+/** the panel draws at most this many slices - HMI 6.0.5: m0.h/40 = 5 legend rows (6 from m0.h >= 240 px on) */
+export const MAX_SLICES = 5;
 
 /** fields per slice from field 17 on */
 const SLICE_FIELDS = 4;
@@ -106,7 +106,7 @@ export function formatPercent(permille: number): string {
 }
 
 /**
- * Reads the slices from `rest` (the fields after the navigation): four fields each, at most six,
+ * Reads the slices from `rest` (the fields after the navigation): four fields each, at most MAX_SLICES,
  * the list ends at the first slice without name and number.
  *
  * @param rest the fields after the navigation (`rest[0]` is field 14)

@@ -112,20 +112,20 @@ describe('lib/pages - pie-scale', () => {
     });
 
     describe('mergePieRest', () => {
-        it('keeps exactly six slices, sums seven or more up as "Other" from the sixth on', () => {
+        it('keeps exactly five slices, sums six or more up as "Other" from the fifth on', () => {
             const slice = (i: number): { name: string; value: number; text: string; color: string } => ({
                 name: `S${i + 1}`,
                 value: i + 1,
                 text: `${i + 1} W`,
                 color: String(100 + i),
             });
-            const six = Array.from({ length: 6 }, (_, i) => slice(i));
-            expect(mergePieRest(six, 'Sonstiges').map(s => s.name)).to.deep.equal(['S1', 'S2', 'S3', 'S4', 'S5', 'S6']);
+            const five = Array.from({ length: 5 }, (_, i) => slice(i));
+            expect(mergePieRest(five, 'Sonstiges').map(s => s.name)).to.deep.equal(['S1', 'S2', 'S3', 'S4', 'S5']);
 
             const eight = Array.from({ length: 8 }, (_, i) => slice(i));
             const merged = mergePieRest(eight, 'Sonstiges');
-            expect(merged).to.have.length(6);
-            expect(merged[5]).to.deep.equal({ name: 'Sonstiges', value: 6 + 7 + 8, text: '', color: '105' });
+            expect(merged).to.have.length(5);
+            expect(merged[4]).to.deep.equal({ name: 'Sonstiges', value: 5 + 6 + 7 + 8, text: '', color: '104' });
         });
 
         it('ignores negative numbers in the sum of the rest', () => {
@@ -137,7 +137,7 @@ describe('lib/pages - pie-scale', () => {
             }));
             const merged = mergePieRest(slices, 'Other');
 
-            expect(merged[5]).to.deep.equal({ name: 'Other', value: 10, text: '', color: '5' });
+            expect(merged[4]).to.deep.equal({ name: 'Other', value: 20, text: '', color: '4' });
         });
     });
 
@@ -153,26 +153,26 @@ describe('lib/pages - pie-scale', () => {
             );
         });
 
-        it('removes the separator from names and texts and sums the rest up as the sixth slice', () => {
+        it('removes the separator from names and texts and sums the rest up as the fifth slice', () => {
             const slices = finishPieSlices(
                 Array.from({ length: 8 }, (_, i) => ({ name: `a~b${i}`, value: 1, text: 'x~y', color: String(i) })),
                 3,
                 'Sonst~iges',
             );
 
-            expect(slices).to.have.length(6);
+            expect(slices).to.have.length(5);
             expect(slices[0].name).to.equal('a-b0');
             expect(slices[0].text).to.equal('x-y');
-            expect(slices[5]).to.deep.equal({
+            expect(slices[4]).to.deep.equal({
                 name: 'Sonst-iges',
-                value: 3 * (PIE_TARGET_SUM / 8),
+                value: 4 * (PIE_TARGET_SUM / 8),
                 text: '',
-                color: '5',
+                color: '4',
             });
-            expect(pieSlicesToPayload(slices).split('~')).to.have.length(24);
+            expect(pieSlicesToPayload(slices).split('~')).to.have.length(20);
             // the default name of the summary slice
             expect(
-                finishPieSlices(Array.from({ length: 7 }, () => ({ name: 'x', value: 1, text: '', color: '1' })))[5]
+                finishPieSlices(Array.from({ length: 7 }, () => ({ name: 'x', value: 1, text: '', color: '1' })))[4]
                     .name,
             ).to.equal('Other');
         });

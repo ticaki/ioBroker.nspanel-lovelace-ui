@@ -1634,8 +1634,11 @@ export function emptyChartEntry(uniqueName: string): ChartEntry {
 // cardPChart - pie chart (TFT 6.0.5, EU panel). Admin only, there is no script page for it.
 // ---------------------------------------------------------------------------------------------
 
-/** the HMI draws at most this many slices, everything after is ignored by the panel */
-export const PCHART_MAX_SLICES = 6;
+/**
+ * The HMI draws at most this many slices, everything after is ignored by the panel.
+ * HMI 6.0.5: m0.h/40 = 5 Zeilen; ab m0.h >= 240 px sind 6 möglich.
+ */
+export const PCHART_MAX_SLICES = 5;
 
 /** data sources of a pie chart entry (`selInstanceDataSource`) */
 export const PCHART_SOURCE_SLOTS = 0;
@@ -1817,7 +1820,7 @@ export type PChartDetailsExternal = {
 
 /**
  * Defaults of a pie chart page - the single source for the PageConfig editor, handleAdd and admin.ts.
- * The six slot colors are the ones the old NSPanel script examples used.
+ * The slot colors (one per possible slice) are the ones the old NSPanel script examples used.
  */
 export const pchartDefaults = {
     legendMode: 3,

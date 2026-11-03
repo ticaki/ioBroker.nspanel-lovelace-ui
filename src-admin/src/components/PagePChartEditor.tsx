@@ -1,7 +1,7 @@
 /**
  * Editor for pie chart pages (cardPChart) in the PageConfig tab.
  * Follows PageChartEditor: alive-gated fields, main-page lock, defaults from pchartDefaults so that
- * display and storage never diverge. The slots are the main view (up to six slices with time range and
+ * display and storage never diverge. The slots are the main view (PCHART_MAX_SLICES slices with time range and
  * DB instance), the script data point is the second option of the source select.
  */
 import React from 'react';
@@ -83,7 +83,7 @@ function isState(obj: ioBroker.Object): boolean {
 }
 
 /**
- * The six slots of the entry, filled up with empty slots so that the editor always shows all rows.
+ * The slots of the entry (PCHART_MAX_SLICES), filled up with empty slots so that the editor always shows all rows.
  *
  * @param entry pie chart entry
  */

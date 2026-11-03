@@ -2,8 +2,9 @@
  * Pure helpers of the pie chart page (cardPChart, TFT 6.0.5).
  *
  * Contract of the panel:
- * - from field 17 on every slice takes four fields `Name~Number~Value text~Color`, at most six slices,
- *   everything after the sixth is ignored, the panel never sums anything up;
+ * - from field 17 on every slice takes four fields `Name~Number~Value text~Color`, at most PCHART_MAX_SLICES
+ *   slices (five on HMI 6.0.5, its legend has five rows), everything after is ignored, the panel never sums
+ *   anything up;
  * - the number is an integer >= 0 and only sets the size of the slice, negative numbers become 0 in the
  *   panel; the panel multiplies the sum by 720 in 32 bit, so the sum has to stay below 2 000 000;
  * - the percentages are computed by the panel, the value text is printed as it is;
@@ -115,7 +116,7 @@ export function parsePieScriptString(text: string | null | undefined): PieSliceI
 
 /**
  * Keeps the first PCHART_MAX_SLICES - 1 slices and sums the rest up as one slice, if there are more than
- * PCHART_MAX_SLICES. Exactly six or fewer slices stay as they are.
+ * PCHART_MAX_SLICES. Exactly PCHART_MAX_SLICES or fewer slices stay as they are.
  *
  * @param slices slices in order
  * @param otherName translated name of the summary slice

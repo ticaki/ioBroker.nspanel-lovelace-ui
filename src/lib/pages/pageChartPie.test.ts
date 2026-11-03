@@ -339,12 +339,12 @@ describe('lib/pages - PageChartPie', () => {
             expect(fields[1]).to.equal('Skript');
             expect(fields[15]).to.equal('0');
             const slices = fields.slice(17);
-            expect(slices).to.have.length(24);
-            expect(slices.slice(20)).to.deep.equal([
+            expect(slices).to.have.length(20);
+            expect(slices.slice(16)).to.deep.equal([
                 'Sonstiges',
-                String(Math.round((200 / 700) * PIE_TARGET_SUM)),
+                String(Math.round((300 / 700) * PIE_TARGET_SUM)),
                 '',
-                '5',
+                '4',
             ]);
         });
 

@@ -1,6 +1,6 @@
 # Page PChart – Kreisdiagramm
 
-Die Seite `cardPChart` zeigt bis zu sechs Werte als Kreisdiagramm mit Legende. Die Prozentwerte rechnet das Panel selbst, Überschrift und Legende erscheinen in der Schriftfarbe des Panels. Voraussetzung ist die TFT-Version 6.0.5 (EU-Panel).
+Die Seite `cardPChart` zeigt bis zu fünf Werte als Kreisdiagramm mit Legende (die Legende der HMI 6.0.5 hat fünf Zeilen). Die Prozentwerte rechnet das Panel selbst, Überschrift und Legende erscheinen in der Schriftfarbe des Panels. Voraussetzung ist die TFT-Version 6.0.5 (EU-Panel).
 
 Eine Kreisdiagramm-Seite wird im Tab `PageConfig` als Seite mit dem Typ `Kreisdiagramm` angelegt: alles im Editor einstellen, Navigation im Panel-Bereich zuweisen. Ein Skript ist nicht nötig; einen Seitentyp im Konfig-Script gibt es für diese Karte nicht.
 
@@ -17,7 +17,7 @@ Die Felder sind nur bedienbar, solange die Adapterinstanz läuft. Sichtbarkeit (
 
 ## Werte aus Datenpunkten (Standard)
 
-Die Hauptansicht des Editors: ein Zeitraum, bei Bedarf eine DB-Instanz und sechs Zeilen für die Scheiben.
+Die Hauptansicht des Editors: ein Zeitraum, bei Bedarf eine DB-Instanz und fünf Zeilen für die Scheiben.
 
 ### Zeitraum
 
@@ -32,12 +32,12 @@ Der Zeitraum wird als Schlüssel gespeichert (`rangeKey`: `current`, `h1`, `d1`,
 
 ### Scheiben
 
-Je Scheibe (1–6):
+Je Scheibe (1–5):
 
 - **Name**: Text der Legende. Leer → der Name des Datenpunkts (`common.name`, in der Sprache des Adapters).
 - **Datenpunkt (Zahl)**: der numerische Datenpunkt. Eine Scheibe ohne Datenpunkt entfällt; die übrigen rücken auf.
 - **Einheit**: steht hinter dem Wert, z. B. `kWh`. Leer → die Einheit des Datenpunkts (`common.unit`).
-- **Farbe** der Scheibe. Neue Seiten haben sechs unterschiedliche Vorgabefarben.
+- **Farbe** der Scheibe. Neue Seiten haben je Scheibe eine andere Vorgabefarbe.
 
 Der Wert 0 behält seine Legendenzeile (ohne Stück im Kreis), negative Werte zählen als 0. Die Reihenfolge der Zeilen ist die Reihenfolge in Legende und Kreis.
 
@@ -58,8 +58,8 @@ Beispiel: `Netzbezug~5200~5.20 kWh~63488~Eigennutzung~3100~3.10 kWh~2016~Einspei
 - **Wert-Text**: steht fertig formatiert in der Legende, z. B. `5.20 kWh`.
 - **Farbe**: RGB565 dezimal wie bei den anderen Karten; ein Hex-Wert wie `#ff0000` wird umgerechnet.
 
-Mehr als sechs Scheiben: der Adapter fasst ab der sechsten alle restlichen zu einer Scheibe **Sonstiges** zusammen (Zahl = Summe der Reste, ohne Wert-Text, Farbe der sechsten Scheibe), weil das Panel nur sechs Einträge liest. Ein Zeitraum gilt für diese Quelle nicht.
+Mehr als fünf Scheiben: der Adapter fasst ab der fünften alle restlichen zu einer Scheibe **Sonstiges** zusammen (Zahl = Summe der Reste, ohne Wert-Text, Farbe der fünften Scheibe), weil das Panel nur fünf Einträge liest. Ein Zeitraum gilt für diese Quelle nicht.
 
 ## Was der Adapter ans Panel schickt
 
-Die Zahlen aller Scheiben werden mit einem gemeinsamen Faktor auf Ganzzahlen skaliert, deren Summe bei etwa 1 000 000 liegt – das Panel rechnet mit der Summe in 32 Bit und braucht sie unter 2 000 000; kleine Anteile fallen dabei nicht auf 0. Die Nachkommastellen der Originalwerte stehen nur im Wert-Text. Das Panel liest höchstens sechs Scheiben, die Prozentwerte berechnet es selbst.
+Die Zahlen aller Scheiben werden mit einem gemeinsamen Faktor auf Ganzzahlen skaliert, deren Summe bei etwa 1 000 000 liegt – das Panel rechnet mit der Summe in 32 Bit und braucht sie unter 2 000 000; kleine Anteile fallen dabei nicht auf 0. Die Nachkommastellen der Originalwerte stehen nur im Wert-Text. Das Panel liest höchstens fünf Scheiben, die Prozentwerte berechnet es selbst.

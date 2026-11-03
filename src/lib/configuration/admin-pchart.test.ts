@@ -140,7 +140,7 @@ describe('lib/configuration - buildPChartPageConfig', () => {
         expect(config.data.headline).to.deep.equal({ type: 'const', constVal: 'Page PChart' });
         expect(config.data.legendMode).to.deep.equal({ type: 'const', constVal: pchartDefaults.legendMode });
         expect(config.data.decimals).to.deep.equal({ type: 'const', constVal: pchartDefaults.decimals });
-        expect(config.data.slices?.[5]?.color).to.deep.equal({ type: 'const', constVal: pchartDefaults.slotColors[5] });
+        expect(config.data.slices?.[4]?.color).to.deep.equal({ type: 'const', constVal: pchartDefaults.slotColors[4] });
     });
 
     it('an invalid legend mode becomes 3', () => {

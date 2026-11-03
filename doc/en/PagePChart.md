@@ -1,6 +1,6 @@
 # Page PChart – pie chart
 
-The page `cardPChart` shows up to six values as a pie chart with a legend. The panel computes the percentages itself; headline and legend use the font color of the panel. It needs TFT version 6.0.5 (EU panel).
+The page `cardPChart` shows up to five values as a pie chart with a legend (the legend of HMI 6.0.5 has five rows). The panel computes the percentages itself; headline and legend use the font color of the panel. It needs TFT version 6.0.5 (EU panel).
 
 A pie chart page is created in the `PageConfig` tab as a page of type `Pie chart`: configure everything in the editor, assign the navigation in the panel section. No script is needed; there is no page type for this card in the configuration script.
 
@@ -17,7 +17,7 @@ The fields can only be edited while the adapter instance is running. Visibility 
 
 ## Values from states (default)
 
-The main view of the editor: a time range, a DB instance when needed and six rows for the slices.
+The main view of the editor: a time range, a DB instance when needed and five rows for the slices.
 
 ### Time range
 
@@ -32,12 +32,12 @@ The range is stored as a key (`rangeKey`: `current`, `h1`, `d1`, `w1`, `m1`, `cu
 
 ### Slices
 
-Per slice (1–6):
+Per slice (1–5):
 
 - **Name**: text of the legend. Empty → the name of the state (`common.name`, in the language of the adapter).
 - **State (number)**: the numeric state. A slice without a state is left out; the others move up.
 - **Unit**: printed behind the value, e.g. `kWh`. Empty → the unit of the state (`common.unit`).
-- **Color** of the slice. New pages start with six different default colors.
+- **Color** of the slice. New pages start with a different default color per slice.
 
 A value of 0 keeps its legend line (without a piece in the pie), negative values count as 0. The order of the rows is the order in legend and pie.
 
@@ -58,8 +58,8 @@ Example: `Grid~5200~5.20 kWh~63488~Self use~3100~3.10 kWh~2016~Feed-in~1500~1.50
 - **Value text**: printed in the legend as it is, e.g. `5.20 kWh`.
 - **Color**: RGB565 decimal like on the other cards; a hex value like `#ff0000` is converted.
 
-More than six slices: from the sixth on the adapter sums all remaining ones up as one slice **Other** (number = sum of the rest, no value text, color of the sixth slice), because the panel reads six entries only. A time range does not apply to this source.
+More than five slices: from the fifth on the adapter sums all remaining ones up as one slice **Other** (number = sum of the rest, no value text, color of the fifth slice), because the panel reads five entries only. A time range does not apply to this source.
 
 ## What the adapter sends to the panel
 
-The numbers of all slices are scaled with one common factor to integers whose sum is about 1 000 000 – the panel works with the sum in 32 bit and needs it below 2 000 000; small shares do not drop to 0. The decimals of the original values only appear in the value text. The panel reads at most six slices and computes the percentages itself.
+The numbers of all slices are scaled with one common factor to integers whose sum is about 1 000 000 – the panel works with the sum in 32 bit and needs it below 2 000 000; small shares do not drop to 0. The decimals of the original values only appear in the value text. The panel reads at most five slices and computes the percentages itself.

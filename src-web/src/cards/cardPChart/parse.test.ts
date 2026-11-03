@@ -97,13 +97,13 @@ describe('cardPChart parse', () => {
         expect(m.slices[1].percentText).toBe('100.0');
     });
 
-    it('takes at most six slices and never sums the rest up', () => {
+    it('takes at most five slices (the legend of HMI 6.0.5 has five rows) and never sums the rest up', () => {
         const m = parse(`${HEAD}~3~~${slices(7)}`);
-        expect(MAX_SLICES).toBe(6);
-        expect(m.slices).toHaveLength(6);
-        expect(m.slices.map(s => s.name)).toEqual(['S1', 'S2', 'S3', 'S4', 'S5', 'S6']);
-        expect(m.total).toBe(600);
-        expect(m.slices.every(s => s.percentText === '16.6')).toBe(true);
+        expect(MAX_SLICES).toBe(5);
+        expect(m.slices).toHaveLength(5);
+        expect(m.slices.map(s => s.name)).toEqual(['S1', 'S2', 'S3', 'S4', 'S5']);
+        expect(m.total).toBe(500);
+        expect(m.slices.every(s => s.percentText === '20.0')).toBe(true);
     });
 
     it('keeps a slice with the number 0 in the legend', () => {
