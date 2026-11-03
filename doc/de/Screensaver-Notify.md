@@ -2,7 +2,7 @@
 
 Eine Benachrichtigung legt sich über den Bildschirmschoner, solange ein Datenpunkt „an“ ist: zwei Zeilen – eine Überschrift mit Symbol und darunter ein Text. Gedacht ist das für Dinge, die man sehen soll, ohne das Panel zu bedienen: ein offenes Fenster, ein Alarm, eine Störung, ein Wert, der aus dem Rahmen läuft.
 
-Angelegt werden sie über die **Glocke** im Panelbild des Screensaver-Editors, gleich neben dem Zahnrad. Alle Bildschirmschoner teilen sich **eine gemeinsame Liste**; das Häkchen je Zeile entscheidet, auf welchem Bildschirmschoner eine Benachrichtigung erscheint. Ein Konfigurationsskript ist dafür nicht nötig – seit 2.0.0 braucht das Panel überhaupt keines mehr (Haken **Panel benutzt kein Skript**, siehe [NSPanel-Einstellungen](NSPanelsetting)).
+Angelegt werden sie über den Knopf **Benachrichtigungen** unter dem Panelbild des Screensaver-Editors, neben **Optionen** (bis 2.0.2 war es die Glocke im Bild). Alle Bildschirmschoner teilen sich **eine gemeinsame Liste**; das Häkchen je Zeile entscheidet, auf welchem Bildschirmschoner eine Benachrichtigung erscheint. Ein Konfigurationsskript ist dafür nicht nötig – seit 2.0.0 braucht das Panel überhaupt keines mehr (Haken **Panel benutzt kein Skript**, siehe [NSPanel-Einstellungen](NSPanelsetting)).
 
 Wie der Bildschirmschoner selbst angelegt wird, steht unter [Screensaver im Admin](screensaver). Diese Seite beschreibt nur die Benachrichtigungen.
 
@@ -18,12 +18,12 @@ Inhalt:
 - [Wenn etwas nicht wie erwartet aussieht](#9-wenn-etwas-nicht-wie-erwartet-aussieht)
 
 ## 1. Die Liste
-![Die Glocke im Editor, mit der Zahl der aktiven Meldungen](../Pictures/screensaverAdmin/admin-01-ueberblick.png)
+![Der Screensaver-Editor mit der Knopfleiste unter dem Panelbild](../Pictures/screensaverAdmin/admin-01-ueberblick.png)
 
 ![Die gemeinsame Liste der Benachrichtigungen](../Pictures/screensaverAdmin/notify-01-liste.png)
 
 
-Die Glocke sitzt im Panelbild unten rechts, links vom Zahnrad. Die kleine Zahl daran nennt, wie viele Benachrichtigungen auf **diesem** Bildschirmschoner eingeschaltet sind. Sie ist nur bedienbar, solange die Instanz läuft.
+Der Knopf sitzt unter dem Panelbild, links von **Optionen**. Die kleine Zahl daran nennt, wie viele Benachrichtigungen auf **diesem** Bildschirmschoner eingeschaltet sind. Er ist nur bedienbar, solange die Instanz läuft.
 
 Ein Klick öffnet **Benachrichtigungen** – die gemeinsame Liste. Jede Zeile zeigt:
 
@@ -139,7 +139,7 @@ Auf dem Panel entsteht daraus eine Überschriftzeile (Symbol + Präfix + Wert/Te
 
 ## 9. Wenn etwas nicht wie erwartet aussieht
 
-- **Die Glocke ist grau:** Die Instanz läuft nicht. Benachrichtigungen lassen sich nur bei laufender Instanz bearbeiten.
+- **Der Knopf ist grau:** Die Instanz läuft nicht. Benachrichtigungen lassen sich nur bei laufender Instanz bearbeiten.
 - **Statt des Werts steht die ID auf dem Panel:** Die ID gibt es nicht – dann gilt der Eintrag als fester Text. In der Vorschau sieht man es sofort.
 - **Die Meldung erscheint nie:** Alle Datenpunkte müssen gleichzeitig „an“ sein. Gibt es einen der Datenpunkte nicht, zählt er als „aus“ – bei mehreren Datenpunkten verschwindet die Meldung damit still. Ist **nur ein** Datenpunkt eingetragen und fehlt dieser, verwirft der Adapter die ganze Benachrichtigung und schreibt einen Fehler ins Log.
 - **Es erscheint eine andere Meldung als erwartet:** Es ist immer nur eine zu sehen – die mit der kleinsten Prioritätszahl. Leere Priorität heißt 99.

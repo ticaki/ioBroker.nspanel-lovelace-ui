@@ -2,7 +2,7 @@
 
 Der Tab **Nspanel-Einstellungen** ist die Panelverwaltung des Adapters: Oben steht das Einrichtungsformular, mit dem ein NSPanel angelegt oder neu übertragen wird, daneben der Knopf für ein Web-Panel, darunter für jedes bekannte Panel eine Kachel. In der Kachel sitzen auch die beiden Einstellungen, die es erst seit 2.0.0 gibt: der Haken **Panel benutzt kein Skript** und je ein Knopf für die **Aktion der beiden Hardware-Taster** unter dem Display.
 
-<!-- Bild folgt: Tab „Nspanel-Einstellungen" mit Einrichtungsformular, beiden Knöpfen und zwei Panelkacheln -->
+![Der Tab Nspanel-Einstellungen mit Einrichtungsformular und zwei Panelkacheln](../Pictures/nspanelSetting/tab-uebersicht.png)
 
 **Was wann wirkt** — das gilt für den ganzen Tab:
 
@@ -85,7 +85,7 @@ Die richtige Reihenfolge beim Umstieg von einem Skript — übernehmen, prüfen,
 
 Die beiden Tasten unter dem Display sind seit 2.0.0 im Admin einstellbar. **HW-Button links** und **HW-Button rechts** in der Kachel öffnen je einen Dialog *Hardware-Button links/rechts – <Panelname>*; gespeichert wird das Ergebnis als `buttonLeft` bzw. `buttonRight` des Panels.
 
-<!-- Bild folgt: Dialog „Hardware-Button links", Relais entkoppelt, Aktion „Auf true setzen, nach der Verzögerung zurück auf false" mit Datenpunkt und Verzögerung -->
+![Der Dialog Hardware-Button links mit entkoppeltem Relais und gewählter Aktion](../Pictures/nspanelSetting/hw-button-dialog-entkoppelt.png)
 
 **Der Admin überschreibt das Skript.** Beim Aufbau der Panel-Konfiguration legt der Adapter die Aktionen des Admins über die des Konfigurationsskripts, und zwar getrennt für jede Seite:
 

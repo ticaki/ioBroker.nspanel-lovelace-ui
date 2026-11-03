@@ -107,7 +107,7 @@ Das Ablegen gelingt auch auf der **Fläche** des Zielknotens — den kleinen Anf
 
 **Verweis entfernen.** Ein **Klick auf die Linie** öffnet an der Zeigerposition ein Menü. Es listet **alle** Verweise zwischen den beiden Seiten in beiden Richtungen — `a.next = b` und `b.prev = a` liegen übereinander. Jeder Eintrag, der in der Konfiguration steht, lässt sich entfernen (*prev: a → b entfernen*).
 
-<!-- Bild folgt: geöffnetes Linien-Menü mit entfernbarem und abgeleitetem Eintrag (Bildauftrag 3) -->
+![Das Menü einer Linie im Editiermodus](../Pictures/naviFlow/naviflow-03-linienmenue.png)
 
 **Drei Fälle, in denen nichts geht:**
 

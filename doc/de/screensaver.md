@@ -48,8 +48,7 @@ Jede Zeile der Liste nennt unter dem Namen die Version und die zugeordneten Pane
 | **Rahmen der Indikatoren** | grau = keine Taste, rot = Taste, grün = Schalter, blau = Seite öffnen. Grau steht auch, wenn die Option **Indikatoren wirken als Tasten** aus ist (siehe [Indikatoren](#8-indikatoren-und-tasten)). |
 | **Uhrzeit**, **Datum** | Klick öffnet den Dialog für 12h/24h bzw. das Datumsformat. |
 | **Zwei Statussymbole** | `mrIcon1` und `mrIcon2`; Klick öffnet ihren Dialog, grau = nicht belegt. Ihre Lage hängt von der Version ab: bei Standard, Alternate und Easyview in den oberen Ecken, bei Advanced unten neben dem Datum. |
-| **Zahnrad** (unten rechts) | Optionen: Rotationszeit, Wischgesten, Indikator-Tasten. |
-| **Glocke** (links davon) | Die Benachrichtigungen. Die Zahl daran nennt, wie viele auf diesem Bildschirmschoner eingeschaltet sind. |
+| **Knopfleiste unter dem Bild** | **Benachrichtigungen** (mit der Zahl der auf diesem Bildschirmschoner eingeschalteten Meldungen) und **Optionen** (Rotationszeit, Wischgesten, Indikator-Tasten). Beide Knöpfe lagen bis 2.0.2 als Glocke und Zahnrad **im** Panelbild. |
 | **Wetter** (rechte Spalte) | Wetter-Adapter und seine Zusatz-Items, siehe [Wetter](#11-wetter). |
 
 Die Beschriftung eines Items im Panelbild folgt einer Rangfolge – eine Regex wird dabei **nie** als solche angezeigt:
@@ -196,7 +195,7 @@ Beispiel im Format **script** – ein einzelner Datenpunkt mit eigenen Feldern:
 
 Die Listenbereiche **Links**, **Unten** und **Indikatoren** zeichnet der Editor in **Fenstern** von so vielen Plätzen, wie die Version und das Panelmodell hergeben. Ist das letzte Fenster voll, hängt er ein weiteres an – es lassen sich also beliebig viele Items über die Platzzahl hinaus anlegen.
 
-> *(Bild folgt: ein Bereich **Unten** mit sieben Items auf vier Plätzen – Blätterpfeile mit Zähler, ein Item mit Augen-Symbol und der Hinweis unter dem Panelbild.)*
+![Der Bereich Unten mit Blätterzähler und der Knopfleiste darunter](../Pictures/screensaverAdmin/admin-18-bereich-unten.png)
 
 - **Blättern im Editor**: Ab dem zweiten Fenster stehen Pfeile neben den Plätzen (bei schmalen Spalten darüber und darunter), Tooltips *Vorherige Plätze* und *Nächste Plätze*. Daneben steht der Zähler `1/3`, dessen Tooltip ihn ausschreibt: *Plätze 1-4 · Seite 1 von 3*.
 - **Items zwischen Fenstern verschieben**: Ein Item über einen Pfeil ziehen – der Editor blättert dabei weiter (etwa ein Fenster pro Dreivierteltelsekunde) und das Item lässt sich im Zielfenster ablegen.
@@ -254,7 +253,7 @@ Rechts neben dem Panelbild steht der **Wetter-Adapter** dieses Bildschirmschoner
 
 ## 12. Optionen: Rotation, Wischen, Indikator-Tasten
 
-Das Zahnrad im Panelbild öffnet die **Optionen** – drei Einstellungen:
+Der Knopf **Optionen** unter dem Panelbild öffnet drei Einstellungen (bis 2.0.2 war es das Zahnrad im Bild):
 
 ![Optionen](../Pictures/screensaverAdmin/admin-13-optionen.png)
 
@@ -268,7 +267,7 @@ Die Gesten-Kennzahl kommt nur an, wenn zusätzlich der State `panels.<Panel>.cmd
 
 ## 13. Benachrichtigungen
 
-Die **Glocke** neben dem Zahnrad öffnet die Benachrichtigungen: zwei Zeilen, die sich über den Bildschirmschoner legen, solange ein Datenpunkt „an“ ist. Alle Bildschirmschoner teilen sich eine gemeinsame Liste; das Häkchen **Auf diesem Bildschirmschoner anzeigen** entscheidet, wo eine Benachrichtigung erscheint. Die Zahl an der Glocke nennt, wie viele auf diesem Bildschirmschoner eingeschaltet sind. Die Glocke ist nur bei laufender Instanz bedienbar.
+Der Knopf **Benachrichtigungen** unter dem Panelbild (bis 2.0.2 die Glocke im Bild) öffnet sie: zwei Zeilen, die sich über den Bildschirmschoner legen, solange ein Datenpunkt „an“ ist. Alle Bildschirmschoner teilen sich eine gemeinsame Liste; das Häkchen **Auf diesem Bildschirmschoner anzeigen** entscheidet, wo eine Benachrichtigung erscheint. Die Zahl am Knopf nennt, wie viele auf diesem Bildschirmschoner eingeschaltet sind. Der Knopf ist nur bei laufender Instanz bedienbar.
 
 > Alles Weitere – Inhalt, Bedingungen, Priorität, Quittieren und Summer – steht auf der eigenen Seite [Screensaver-Notify](Screensaver-Notify).
 

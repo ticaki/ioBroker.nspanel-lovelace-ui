@@ -22,7 +22,7 @@ Inhalt:
 
 ## 1. Pageitem-Konfiguration
 
-<!-- Bild folgt: Pageitem-Konfiguration einer Grid-Seite mit Rolle dimmer, geöffnet, mit Kanalfeld, Namensfeld, Text-/Icongröße, den beiden Spalten wahr/unwahr und der Knopfzeile am Fuß -->
+![Die Pageitem-Konfiguration eines Items mit der Rolle select](../Pictures/pageConfigDialoge/dialoge-01-pageitem.png)
 
 Das ist der Dialog, der hinter jeder einzelnen Fläche einer Karte steckt. Geöffnet wird er durch **Klick auf die Fläche** im Editor — auf einer Menü-Seite auf eines der Felder, auf der Thermostat-Seite auf eine der Flächen rings um die Solltemperatur, auf der Mediaplayer-Seite auf einen Platz der unteren Leiste. Eine freie Fläche legt dabei ein neues Pageitem an, eine belegte öffnet das vorhandene.
 
@@ -164,7 +164,7 @@ Hier landen auch die Items, die die [Übernahme eines Konfigurationsskripts](Mig
 
 ## 3. Die Objektauswahl
 
-<!-- Bild folgt: geöffnete ioBroker-Objektauswahl aus dem Feld „Langer Druck", vorgefiltert auf beschreibbare boolesche Datenpunkte -->
+![Die Objektauswahl aus dem Pageitem-Dialog](../Pictures/pageConfigDialoge/dialoge-03-objektauswahl.png)
 
 Überall, wo eine ioBroker-ID gebraucht wird, steht dasselbe Paar: ein **Textfeld** und daneben der Knopf **…**.
 
@@ -175,7 +175,7 @@ Hier landen auch die Items, die die [Übernahme eines Konfigurationsskripts](Mig
 
 ## 4. Dynamischer Name
 
-<!-- Bild folgt: Dialog „Dynamischer Name" mit dem Hinweistext, Wertquelle, Präfix, Suffix und der Vorschau mit echtem Wert -->
+![Der Dialog Dynamischer Name](../Pictures/pageConfigDialoge/dialoge-04-dynamischer-name.png)
 
 Der Knopf **…** am Namensfeld öffnet den Dialog **Dynamischer Name** (Tooltip *„Dynamischer Name (aus einem State)"*). Oben steht, was er tut: *„Bildet den Namen des Elements aus einem State, optional mit Präfix und Suffix (Text oder State-ID). Wird nur verwendet, solange das Feld Name leer ist."*
 
@@ -195,7 +195,7 @@ Auf der Thermostat- und der Mediaplayer-Seite nennt der Hinweis zusätzlich, das
 
 ## 5. Wertanzeige-Konfiguration am Kanal
 
-<!-- Bild folgt: Dialog „Wertanzeige-Konfiguration", geöffnet über das Zahnrad am Kanalfeld: schreibgeschützte Wertquelle, Einheit, Präfix, Suffix, Kasten Datumsformat, Vorschau mit <value> -->
+![Der Dialog Wertanzeige-Konfiguration am Zahnrad der Kanal-ID](../Pictures/pageConfigDialoge/dialoge-05-wertanzeige.png)
 
 Das **Zahnrad** am Kanalfeld öffnet den Dialog *Wertanzeige-Konfiguration* (Tooltip *„Kanal-ID erweitert konfigurieren"*). Er beschreibt, wie der **Wert** des Kanals am Panel erscheint. Die Wertquelle ist hier der Kanal selbst und **schreibgeschützt** — geändert wird sie im Kanalfeld.
 
@@ -225,7 +225,7 @@ Das **Zahnrad** am Kanalfeld öffnet den Dialog *Wertanzeige-Konfiguration* (Too
 
 ## 6. Farboptionen
 
-<!-- Bild folgt: Dialog „Farboptionen" mit den drei Farbfeldern, Min-/Max-/Bester Wert, Farbmodus, logarithmischer Skalierung und der Farbvorschau-Tabelle darunter -->
+![Der Dialog Farboptionen mit Farbskala und Grenzwerten](../Pictures/pageConfigDialoge/dialoge-06-farboptionen.png)
 
 Titel *Farboptionen*. Hier wird aus einem Zahlenwert eine Farbe — ein Symbol, das von Blau nach Rot läuft, je wärmer der Messwert ist.
 
@@ -244,7 +244,7 @@ Darunter liegt eine **Farbvorschau**: eine Tabelle mit Zahlenwerten über farbig
 
 ## 7. Modusliste
 
-<!-- Bild folgt: Dialog „Modusliste (inSel_Alias / modeList)" mit grüner Prüfmeldung, dem mehrzeiligen Modus-Feld, dem Zähler und dem Knopf „Liste aus Datenpunkt übernehmen" -->
+![Der Dialog Modusliste](../Pictures/pageConfigDialoge/dialoge-07-modusliste.png)
 
 Titel *Modusliste (inSel_Alias / modeList)*. Damit bekommt ein Pageitem eine **Auswahlliste** am Panel — etwa die Lichtszenen einer RGB-Lampe. Der Dialog gilt für die Rollen `rgbSingle`, `rgb`, `ct`, `hue` und `select`.
 

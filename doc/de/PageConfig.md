@@ -2,7 +2,7 @@
 
 Im Tab **PageConfig** entstehen die Seiten der Panels: anlegen, einrichten, einem Panel zuweisen und untereinander verknüpfen. Alles, was hier eingestellt wird, liegt in der Konfiguration der Instanz — **ein Konfigurationsskript wird dafür nicht gebraucht**. Wer von einem Skript kommt, findet den Weg in den Admin unter [Migration](Migration).
 
-<!-- Bild folgt: Der Tab PageConfig im Überblick (linke Spalte mit Panel-Filter, Seitentyp und Seitenliste, Editor in der Mitte, Spalte Navigation/Panel rechts) -->
+![Der Tab PageConfig: Seitenliste links, Editor in der Mitte, Navigation/Panel rechts](../Pictures/pageConfig/pageconfig-01-uebersicht.png)
 
 Dieser Tab ist die gemeinsame Hülle für **zehn Seitentypen**. Was in der Mitte zu sehen ist, hängt am Typ der gewählten Seite; alles ringsherum — Liste, Filter, Panelzuweisung, Navigation, Seitendetails, Speichern — ist für alle Typen gleich und steht auf dieser Seite. Die Einstellungen der einzelnen Karten stehen auf eigenen Seiten, siehe [Unterseiten je Kartentyp](#unterseiten-je-kartentyp).
 
@@ -56,7 +56,7 @@ Zur Auswahl stehen alle Panels der Panel-Tabelle, auch die [Web-Panels](WebPanel
 
 Der Seitentyp filtert die Liste **und** bestimmt, was ein Klick auf **+** anlegt. Die Auswahl hat zwölf Einträge: zwei reine Filter und die zehn Seitentypen.
 
-<!-- Bild folgt: Geöffnete Auswahl Seitentyp mit allen zwölf Einträgen, daneben der geöffnete Panel-Filter -->
+![Die geöffnete Auswahl Seitentyp mit allen zwölf Einträgen](../Pictures/pageConfig/pageconfig-02-seitentyp.png)
 
 | Eintrag | Bedeutung | Beschrieben unter |
 |---|---|---|
@@ -102,7 +102,7 @@ Dazu:
 
 **Löschen:** über das Papierkorb-Symbol in der Zeile — auf dem Schreibtisch erscheint es beim Überfahren der Zeile, auf einem Berührungsschirm steht es immer da. Es folgt die Rückfrage *Element löschen?* mit dem Namen der Seite. Danach wählt die Liste die erste Seite des aktuellen Filters aus.
 
-<!-- Bild folgt: Rückfrage „Element löschen?“ mit dem Seitennamen -->
+![Die Rückfrage vor dem Löschen einer Seite](../Pictures/pageConfig/pageconfig-04-loeschen.png)
 
 > ⚠️ **Beim Löschen werden Verweise anderer Seiten nicht mitgeräumt.** Zeigte ein *prev*, *next*, *parent* oder *home* auf die gelöschte Seite, bleibt dieser Eintrag stehen und läuft ins Leere; eine [Verknüpfung](pageLink) auf die gelöschte Seite wird vom Adapter gemeldet und übersprungen. Vor dem Löschen lohnt ein Blick in den [Navigation Flow](naviFlow), wer auf die Seite zeigt.
 
@@ -110,7 +110,7 @@ Dazu:
 
 Der erste Reiter der rechten Spalte bestimmt, **auf welchem Panel** eine Seite erscheint und **wie man sie erreicht**.
 
-<!-- Bild folgt: Rechte Spalte, Reiter Navigation: Panelauswahl mit +, Liste der zugewiesenen Panels, die vier Felder prev/next/parent/home, Haken „Systemseiten anzeigen“ und die Zusammenfassung mit Statuspunkt und ⚠ -->
+![Die Spalte Navigation/Panel mit Panelzuweisung, den vier Zielen und der Zusammenfassung](../Pictures/pageConfig/pageconfig-05-navigation.png)
 
 **Panel zuweisen:** im Auswahlfeld ein Panel wählen und mit **+** hinzufügen. Zusätzlich gibt es den Eintrag **(alle)** — damit gilt die Seite für jedes Panel, auch für später hinzugekommene. Bereits zugewiesene Panels verschwinden aus der Auswahl. Ein zugewiesenes Panel entfernt das Papierkorb-Symbol daneben; der **erste Klick markiert nur** (das Symbol wird dunkelrot hinterlegt), der zweite löscht, und nach drei Sekunden ohne zweiten Klick verfällt die Markierung.
 
