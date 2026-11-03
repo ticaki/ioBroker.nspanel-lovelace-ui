@@ -78,6 +78,7 @@ __export(adminShareConfig_exports, {
   isMainPageEntry: () => isMainPageEntry,
   isMediaBackend: () => isMediaBackend,
   isNameOnlyPopupTitle: () => isNameOnlyPopupTitle,
+  isPChartRangeKey: () => isPChartRangeKey,
   isPageLinkEntry: () => isPageLinkEntry,
   isRawItemFormat: () => isRawItemFormat,
   isRawItemObject: () => isRawItemObject,
@@ -115,14 +116,13 @@ __export(adminShareConfig_exports, {
   panelStatusTranslationKeys: () => panelStatusTranslationKeys,
   parseMediaPlayerDefinitions: () => parseMediaPlayerDefinitions,
   pchartDefaults: () => pchartDefaults,
-  pchartRangeHours: () => pchartRangeHours,
-  pchartRangeHoursOf: () => pchartRangeHoursOf,
-  pchartRangeOptionOf: () => pchartRangeOptionOf,
+  pchartRangeKeys: () => pchartRangeKeys,
   rawItemCondition: () => rawItemCondition,
   rawItemFormats: () => rawItemFormats,
   rawItemLabel: () => rawItemLabel,
   requiredScriptDataPoints: () => requiredScriptDataPoints,
   resolvePageLinks: () => resolvePageLinks,
+  resolveRange: () => resolveRange,
   reversePanelStatusStates: () => reversePanelStatusStates,
   screensaverAlternateItems: () => screensaverAlternateItems,
   screensaverAreas: () => screensaverAreas,
@@ -642,31 +642,90 @@ function emptyChartEntry(uniqueName) {
 const PCHART_MAX_SLICES = 6;
 const PCHART_SOURCE_SLOTS = 0;
 const PCHART_SOURCE_SCRIPT = 1;
-const pchartRangeHours = {
-  current: 0,
-  hour: 1,
-  day: 24,
-  week: 24 * 7,
-  month: 24 * 30
-};
-function pchartRangeOptionOf(hours) {
-  const h = hours && hours > 0 ? hours : 0;
-  const preset = Object.keys(pchartRangeHours).find(
-    (key) => pchartRangeHours[key] === h
-  );
-  return preset != null ? preset : "custom";
+const pchartRangeKeys = [
+  "current",
+  "h1",
+  "d1",
+  "w1",
+  "m1",
+  "custom",
+  "today",
+  "yesterday",
+  "thisWeek",
+  "lastWeek",
+  "thisMonth",
+  "lastMonth"
+];
+function isPChartRangeKey(value) {
+  return typeof value === "string" && pchartRangeKeys.includes(value);
 }
-function pchartRangeHoursOf(option, customHours) {
-  if (option === "custom") {
-    return customHours && Number.isFinite(customHours) && customHours > 0 ? customHours : 1;
+const pchartRollingHours = {
+  h1: 1,
+  d1: 24,
+  w1: 24 * 7,
+  m1: 24 * 30
+};
+function startOfLocalDay(ts) {
+  const d = new Date(ts);
+  d.setHours(0, 0, 0, 0);
+  return d;
+}
+function startOfLocalWeek(ts) {
+  const d = startOfLocalDay(ts);
+  const daysSinceMonday = (d.getDay() + 6) % 7;
+  d.setDate(d.getDate() - daysSinceMonday);
+  return d;
+}
+function startOfLocalMonth(ts) {
+  const d = startOfLocalDay(ts);
+  d.setDate(1);
+  return d;
+}
+function resolveRange(key, now, customHours) {
+  switch (key) {
+    case "current":
+      return { start: now, end: now };
+    case "h1":
+    case "d1":
+    case "w1":
+    case "m1":
+      return { start: now - pchartRollingHours[key] * 36e5, end: now };
+    case "custom": {
+      const hours = customHours && Number.isFinite(customHours) && customHours > 0 ? customHours : 1;
+      return { start: now - hours * 36e5, end: now };
+    }
+    case "today":
+      return { start: startOfLocalDay(now).getTime(), end: now };
+    case "yesterday": {
+      const end = startOfLocalDay(now);
+      const start = new Date(end);
+      start.setDate(start.getDate() - 1);
+      return { start: start.getTime(), end: end.getTime() };
+    }
+    case "thisWeek":
+      return { start: startOfLocalWeek(now).getTime(), end: now };
+    case "lastWeek": {
+      const end = startOfLocalWeek(now);
+      const start = new Date(end);
+      start.setDate(start.getDate() - 7);
+      return { start: start.getTime(), end: end.getTime() };
+    }
+    case "thisMonth":
+      return { start: startOfLocalMonth(now).getTime(), end: now };
+    case "lastMonth": {
+      const end = startOfLocalMonth(now);
+      const start = new Date(end);
+      start.setMonth(start.getMonth() - 1);
+      return { start: start.getTime(), end: end.getTime() };
+    }
   }
-  return pchartRangeHours[option];
 }
 const pchartDefaults = {
   legendMode: 3,
   decimals: 2,
   selInstanceDataSource: PCHART_SOURCE_SLOTS,
-  rangeHours: 0,
+  rangeKey: "current",
+  rangeHours: 24,
   slotColors: ["#F80000", "#00F800", "#0000F8", "#F8F800", "#00F8F8", "#F800F8"]
 };
 function emptyPChartSlot(index) {
@@ -686,6 +745,7 @@ function emptyPChartEntry(uniqueName) {
     decimals: pchartDefaults.decimals,
     selInstanceDataSource: pchartDefaults.selInstanceDataSource,
     slots: Array.from({ length: PCHART_MAX_SLICES }, (_, i) => emptyPChartSlot(i)),
+    rangeKey: pchartDefaults.rangeKey,
     rangeHours: pchartDefaults.rangeHours,
     selInstance: "",
     setStateForValues: "",
@@ -1929,6 +1989,7 @@ const CONVERT_GLOBAL_DEFAULT_DECISION = "keepAdmin";
   isMainPageEntry,
   isMediaBackend,
   isNameOnlyPopupTitle,
+  isPChartRangeKey,
   isPageLinkEntry,
   isRawItemFormat,
   isRawItemObject,
@@ -1966,14 +2027,13 @@ const CONVERT_GLOBAL_DEFAULT_DECISION = "keepAdmin";
   panelStatusTranslationKeys,
   parseMediaPlayerDefinitions,
   pchartDefaults,
-  pchartRangeHours,
-  pchartRangeHoursOf,
-  pchartRangeOptionOf,
+  pchartRangeKeys,
   rawItemCondition,
   rawItemFormats,
   rawItemLabel,
   requiredScriptDataPoints,
   resolvePageLinks,
+  resolveRange,
   reversePanelStatusStates,
   screensaverAlternateItems,
   screensaverAreas,

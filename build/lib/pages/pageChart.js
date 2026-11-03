@@ -178,10 +178,24 @@ class PageChart extends import_Page.Page {
     return { ticksChart, valuesChart };
   }
   /**
-   * Reads history values via `getHistory` of a history/sql/influxdb instance.
+   * Reads history values via `getHistory` of a history/sql/influxdb instance over the last hours.
    *
    * @param _id state id to read
    * @param _rangeHours time window in hours, ending now
+   * @param _instance db instance, `influxdb.0` or `system.adapter.influxdb.0`
+   * @param query what the chart type needs from the history, see getDataFromDBWindow
+   */
+  async getDataFromDB(_id, _rangeHours, _instance, query) {
+    const end = Date.now();
+    return this.getDataFromDBWindow(_id, end - _rangeHours * 60 * 60 * 1e3, end, _instance, query);
+  }
+  /**
+   * Reads history values via `getHistory` of a history/sql/influxdb instance over an explicit window
+   * (pie chart: calendar ranges with a fixed start and end).
+   *
+   * @param _id state id to read
+   * @param start start of the window in milliseconds
+   * @param end end of the window in milliseconds
    * @param _instance db instance, `influxdb.0` or `system.adapter.influxdb.0`
    * @param query what the chart type needs from the history
    * @param query.aggregate 'average' (one value per interval) or 'none' (raw values)
@@ -189,7 +203,7 @@ class PageChart extends import_Page.Page {
    * @param query.removeBorderValues true = no extra points before start and after end (pie: one average only)
    * @param query.round digits after the decimal point, default 1
    */
-  async getDataFromDB(_id, _rangeHours, _instance, query) {
+  async getDataFromDBWindow(_id, start, end, _instance, query) {
     if (!_instance) {
       return null;
     }
@@ -228,8 +242,8 @@ class PageChart extends import_Page.Page {
           {
             id: _id,
             options: {
-              start: Date.now() - _rangeHours * 60 * 60 * 1e3,
-              end: Date.now(),
+              start,
+              end,
               /** number of intervals for 'average' (one value per interval, spread over start..end) */
               count: query.count,
               /** do not return more entries than limit */

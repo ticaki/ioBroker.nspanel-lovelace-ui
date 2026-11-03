@@ -34,8 +34,14 @@ function buildPChartPageConfig(entry) {
   var _a, _b, _c;
   const d = import_adminShareConfig.pchartDefaults;
   const scriptSource = entry.selInstanceDataSource === import_adminShareConfig.PCHART_SOURCE_SCRIPT;
-  const hours = !scriptSource && entry.rangeHours && entry.rangeHours > 0 ? entry.rangeHours : 0;
-  const dbData = hours > 0 ? { instance: entry.selInstance || "", hours } : void 0;
+  const rangeKey = (0, import_adminShareConfig.isPChartRangeKey)(entry.rangeKey) ? entry.rangeKey : "current";
+  let dbData;
+  if (!scriptSource && rangeKey !== "current") {
+    dbData = { instance: entry.selInstance || "", rangeKey };
+    if (rangeKey === "custom") {
+      dbData.hours = entry.rangeHours && entry.rangeHours > 0 ? entry.rangeHours : 1;
+    }
+  }
   let slices;
   if (!scriptSource) {
     slices = [];
@@ -149,8 +155,9 @@ class PageChartPie extends import_pageChart.PageChart {
     return (0, import_pie_scale.mergePieRest)(result, otherName);
   }
   /**
-   * Average of a slot state over the configured range via getHistory. Without a usable value (instance
-   * not alive, no rows, timeout) the slice shows 0 and a warning is logged once for that state.
+   * Average of a slot state over the configured range via getHistory: the window comes from
+   * resolveRange (rolling ranges end now, calendar ranges have a fixed start and end). Without a usable
+   * value (instance not alive, no rows, timeout) the slice shows 0 and a warning is logged once for that state.
    *
    * @param item value item of the slice (its dp is queried)
    * @param details DB instance and range
@@ -162,7 +169,8 @@ class PageChartPie extends import_pageChart.PageChart {
       return 0;
     }
     try {
-      const rows = await this.getDataFromDB(dp, details.hours, details.instance, {
+      const { start, end } = (0, import_adminShareConfig.resolveRange)(details.rangeKey, Date.now(), details.hours);
+      const rows = await this.getDataFromDBWindow(dp, start, end, details.instance, {
         aggregate: "average",
         count: 1,
         removeBorderValues: true,
@@ -237,7 +245,7 @@ function isPChartDetailsExternal(obj) {
     return false;
   }
   const o = obj;
-  return typeof o.instance === "string" && typeof o.hours === "number" && o.hours > 0;
+  return typeof o.instance === "string" && (0, import_adminShareConfig.isPChartRangeKey)(o.rangeKey) && o.rangeKey !== "current" && (o.hours === void 0 || typeof o.hours === "number");
 }
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
