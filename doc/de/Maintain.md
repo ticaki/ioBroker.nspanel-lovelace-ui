@@ -85,7 +85,7 @@ Der Haken **Panel benutzt kein Skript** sitzt in der Panel-Kachel unter [NSPanel
 - **Skripte für alle Panels aktualisieren** lässt das Panel aus.
 - **Skript in Admin übernehmen** ist grau; der Tooltip nennt den Grund. Auch ein Aufruf am Adapter vorbei wird abgelehnt: Erst den Haken entfernen, dann übernehmen, dann den Haken wieder setzen.
 
-<!-- Bild folgt: Panel-Kachel eines Panels ohne Skript: Feld „Skript deaktiviert", kein SCRIPT UPDATE, grauer Übernahme-Knopf mit Tooltip -->
+![Eine Karte ohne Skript neben einer gewöhnlichen: „Skript deaktiviert", kein SCRIPT UPDATE, grauer Übernahme-Knopf](../Pictures/maintain/maintain-02-kein-skript.png)
 
 ## 6. Web-Panels im Tab
 

@@ -97,7 +97,7 @@ Damit die Seite etwas anzeigen kann, muss der Adapter wissen, **welcher Ereignis
 2. Die Namen erscheinen als Liste zum Ankreuzen — Überschrift **Gefundene Ereignisse, bitte auswählen** (State-Weg) bzw. **Ereignisse auswählen** (Datei-Weg). **Höchstens sechs** lassen sich ankreuzen; danach sind die übrigen Zeilen gesperrt.
 3. **Auswahl übernehmen** trägt die angekreuzten Namen in die Felder *Abfallart 1* bis *6* ein — in der Reihenfolge, in der sie angekreuzt wurden, nicht in der Reihenfolge der Liste.
 
-_(Bild folgt: Ereignisliste mit Kästchen und dem Knopf „Auswahl übernehmen" — siehe Bildauftrag.)_
+![Die gefundenen Ereignisse mit Kästchen und dem Knopf „Auswahl übernehmen"](../Pictures/pageTrash/trash-04-ereignisliste.png)
 
 > ⚠️ **„Auswahl übernehmen" überschreibt alle sechs Abfallart-Felder.** Jedes Feld, zu dem es keinen angekreuzten Namen gibt, wird **geleert**. Farben, Symbole und die optionalen Namen bleiben unberührt. Wer die Abfallarten schon von Hand gepflegt hat, trägt Ergänzungen besser von Hand nach.
 
