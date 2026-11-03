@@ -1656,42 +1656,127 @@ export type PChartSlotConfig = {
     color?: string;
 };
 
-/** time range of the slot source: 0 = current value of the states, otherwise the average over the last hours */
-export type PChartRangeOption = 'current' | 'hour' | 'day' | 'week' | 'month' | 'custom';
-
-/** hours of the fixed range options (`custom` has none) */
-export const pchartRangeHours: Readonly<Record<Exclude<PChartRangeOption, 'custom'>, number>> = {
-    current: 0,
-    hour: 1,
-    day: 24,
-    week: 24 * 7,
-    month: 24 * 30,
-};
+/**
+ * Time range of the slot source. `current` = current value of the states (no DB). Rolling ranges end now:
+ * `h1`, `d1`, `w1`, `m1` (30 days) and `custom` (hours in `rangeHours`). Calendar ranges have a fixed start
+ * and end in the local time of the adapter, the week starts on Monday: `today` (00:00 - now), `yesterday`
+ * (00:00 - 24:00), `thisWeek` (Monday 00:00 - now), `lastWeek` (Monday 00:00 - Sunday 24:00), `thisMonth`
+ * (1st 00:00 - now), `lastMonth` (1st 00:00 - last day 24:00).
+ */
+export const pchartRangeKeys = [
+    'current',
+    'h1',
+    'd1',
+    'w1',
+    'm1',
+    'custom',
+    'today',
+    'yesterday',
+    'thisWeek',
+    'lastWeek',
+    'thisMonth',
+    'lastMonth',
+] as const;
+export type PChartRangeKey = (typeof pchartRangeKeys)[number];
 
 /**
- * Range option shown for stored hours: a preset if the hours match one, otherwise `custom`.
- *
- * @param hours stored `rangeHours`, undefined or 0 = current value
+ * @param value anything stored as range key
  */
-export function pchartRangeOptionOf(hours: number | undefined): PChartRangeOption {
-    const h = hours && hours > 0 ? hours : 0;
-    const preset = (Object.keys(pchartRangeHours) as Exclude<PChartRangeOption, 'custom'>[]).find(
-        key => pchartRangeHours[key] === h,
-    );
-    return preset ?? 'custom';
+export function isPChartRangeKey(value: unknown): value is PChartRangeKey {
+    return typeof value === 'string' && (pchartRangeKeys as readonly string[]).includes(value);
+}
+
+/** hours of the rolling ranges (`custom` takes the configured hours) */
+const pchartRollingHours: Readonly<Record<'h1' | 'd1' | 'w1' | 'm1', number>> = {
+    h1: 1,
+    d1: 24,
+    w1: 24 * 7,
+    m1: 24 * 30,
+};
+
+/** a resolved range in milliseconds since epoch */
+export type PChartRange = { start: number; end: number };
+
+/**
+ * Start of the local day of a timestamp.
+ *
+ * @param ts timestamp
+ */
+function startOfLocalDay(ts: number): Date {
+    const d = new Date(ts);
+    d.setHours(0, 0, 0, 0);
+    return d;
 }
 
 /**
- * Hours to store for a chosen range option.
+ * Start of the local week (Monday 00:00) of a timestamp.
  *
- * @param option chosen option
- * @param customHours hours typed in for `custom`; invalid or missing = 1
+ * @param ts timestamp
  */
-export function pchartRangeHoursOf(option: PChartRangeOption, customHours?: number): number {
-    if (option === 'custom') {
-        return customHours && Number.isFinite(customHours) && customHours > 0 ? customHours : 1;
+function startOfLocalWeek(ts: number): Date {
+    const d = startOfLocalDay(ts);
+    const daysSinceMonday = (d.getDay() + 6) % 7;
+    d.setDate(d.getDate() - daysSinceMonday);
+    return d;
+}
+
+/**
+ * Start of the local month (1st 00:00) of a timestamp.
+ *
+ * @param ts timestamp
+ */
+function startOfLocalMonth(ts: number): Date {
+    const d = startOfLocalDay(ts);
+    d.setDate(1);
+    return d;
+}
+
+/**
+ * Resolves a range key into a window `start`..`end` in milliseconds (local time of the process, week starts
+ * on Monday). `current` gives the empty window `now`..`now`.
+ *
+ * @param key range key
+ * @param now reference time in milliseconds
+ * @param customHours hours of `custom`; invalid or missing = 1
+ */
+export function resolveRange(key: PChartRangeKey, now: number, customHours?: number): PChartRange {
+    switch (key) {
+        case 'current':
+            return { start: now, end: now };
+        case 'h1':
+        case 'd1':
+        case 'w1':
+        case 'm1':
+            return { start: now - pchartRollingHours[key] * 3_600_000, end: now };
+        case 'custom': {
+            const hours = customHours && Number.isFinite(customHours) && customHours > 0 ? customHours : 1;
+            return { start: now - hours * 3_600_000, end: now };
+        }
+        case 'today':
+            return { start: startOfLocalDay(now).getTime(), end: now };
+        case 'yesterday': {
+            const end = startOfLocalDay(now);
+            const start = new Date(end);
+            start.setDate(start.getDate() - 1);
+            return { start: start.getTime(), end: end.getTime() };
+        }
+        case 'thisWeek':
+            return { start: startOfLocalWeek(now).getTime(), end: now };
+        case 'lastWeek': {
+            const end = startOfLocalWeek(now);
+            const start = new Date(end);
+            start.setDate(start.getDate() - 7);
+            return { start: start.getTime(), end: end.getTime() };
+        }
+        case 'thisMonth':
+            return { start: startOfLocalMonth(now).getTime(), end: now };
+        case 'lastMonth': {
+            const end = startOfLocalMonth(now);
+            const start = new Date(end);
+            start.setMonth(start.getMonth() - 1);
+            return { start: start.getTime(), end: end.getTime() };
+        }
     }
-    return pchartRangeHours[option];
 }
 
 export type PChartEntry = {
@@ -1702,13 +1787,15 @@ export type PChartEntry = {
     legendMode?: number;
     /** decimal places of the value text (slot source) */
     decimals?: number;
-    /** 0 = slots (states, optionally averaged over `rangeHours`), 1 = script data point with the finished panel text */
+    /** 0 = slots (states, optionally averaged over a range), 1 = script data point with the finished panel text */
     selInstanceDataSource?: number;
     /** slot source: up to PCHART_MAX_SLICES slices in legend order */
     slots?: PChartSlotConfig[];
-    /** slot source: average over the last hours read via getHistory, 0 or undefined = current value */
+    /** slot source: the range the values are averaged over via getHistory, missing = `current` */
+    rangeKey?: PChartRangeKey;
+    /** slot source, range `custom` only: hours back from now */
     rangeHours?: number;
-    /** slot source with rangeHours > 0: DB instance that logs the slot states (`influxdb.0`) */
+    /** slot source with a range: DB instance that logs the slot states (`influxdb.0`) */
     selInstance?: string;
     /** script source: state a script writes `Name~Number~Value text~Color~…` into (format of the old NSPanel script) */
     setStateForValues?: string;
@@ -1717,7 +1804,9 @@ export type PChartEntry = {
 /** DB query of a pie chart page, travels as JSON in the const item `dbData` (like ChartDetailsExternal) */
 export type PChartDetailsExternal = {
     instance: string;
-    hours: number;
+    rangeKey: Exclude<PChartRangeKey, 'current'>;
+    /** hours of `custom` */
+    hours?: number;
 };
 
 /**
@@ -1728,7 +1817,8 @@ export const pchartDefaults = {
     legendMode: 3,
     decimals: 2,
     selInstanceDataSource: PCHART_SOURCE_SLOTS,
-    rangeHours: 0,
+    rangeKey: 'current' as PChartRangeKey,
+    rangeHours: 24,
     slotColors: ['#F80000', '#00F800', '#0000F8', '#F8F800', '#00F8F8', '#F800F8'] as readonly string[],
 };
 
@@ -1760,6 +1850,7 @@ export function emptyPChartEntry(uniqueName: string): PChartEntry {
         decimals: pchartDefaults.decimals,
         selInstanceDataSource: pchartDefaults.selInstanceDataSource,
         slots: Array.from({ length: PCHART_MAX_SLICES }, (_, i) => emptyPChartSlot(i)),
+        rangeKey: pchartDefaults.rangeKey,
         rangeHours: pchartDefaults.rangeHours,
         selInstance: '',
         setStateForValues: '',
