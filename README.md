@@ -165,6 +165,9 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
 - (ticaki) admin screensaver: items of areas the chosen version does not show are no longer reported as a problem or offered for removal - the version can change at runtime (`cmd.screenSaver.layout`)
 - (tt-tom17) cardThermo2: the humidity row uses the unit configured for it, and the unit of the first row now also applies to the set temperature - the admin offers both fields, the adapter read only the first one
 - (tt-tom17) admin: the two hardware button buttons of a panel tile now sit one below the other, and their colour also shows whether the relay is decoupled - with a tooltip naming the state
+- (tt-tom17) cardQR: a page with the encryption "No Password" (or a free text, url or telephone code) no longer carries the stored wifi password to the panel - it was shown in clear text on the card and was part of the scanned code
+- (tt-tom17) cardAlarm: the disarm buttons (columns 5 to 8) were only taken over when the arm button of the same row was filled, so a page with the disarm column alone showed no button at all
+- (tt-tom17) cardAlarm: a new page starts as an alarm system with the buttons "Arm" and "Disarm" filled in, and the top button of both columns is mandatory - without them the card has no button at all in one of its two states and cannot be left; the type "unlock" still needs one button only
 
 ### 2.0.2 (2026-11-01)
 - (ticaki) admin: page item text size shows the pixel size of each font; icons only offer fonts 1, 3 and 4 (the others have no icons), font 5 is marked "ASCII only"
