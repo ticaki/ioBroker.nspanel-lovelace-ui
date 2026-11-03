@@ -157,7 +157,7 @@ Der zweite Reiter der rechten Spalte. Er gilt für jeden Seitentyp; die drei Bl�
 | **Sekunden bis zur nächsten Seite** | Nur bei *Automatisch*; leer = 15 Sekunden. |
 | **Verhalten des Bildschirmschoners** | *Standard-Timeout* (die Zeit des Panels gilt), *Niemals aktivieren* (der Bildschirmschoner startet nicht, solange diese Seite zu sehen ist — etwa eine Alarmseite) oder *Von der vorherigen Seite übernehmen* (die Seite schickt dem Panel keine neue Zeit, es gilt weiter die der vorher gezeigten Seite). |
 
-Die drei Blätter-Zeilen erscheinen bei **Menü-Seiten** (Grid, Grid2, Grid3, Entities, Schedule), bei der **Thermostat-Seite (Thermo2)** und beim **Mediaplayer**. *Eine halbe Seite* gibt es nur bei den drei Grid-Varianten und bei Thermo2 — und bei Thermo2 wird die Wahl vom Adapter wieder auf *ganze Seite* zurückgesetzt. Was die drei Modi auf der jeweiligen Karte bedeuten, steht unter [Menü-Seiten](pageMenu#6-mehr-einträge-seiten-und-blättern), [Thermostat](cardThermo2) und [Mediaplayer](cardMedia#9-blättern-der-optionsleiste).
+Die drei Blätter-Zeilen erscheinen bei **Menü-Seiten** (Grid, Grid2, Grid3, Entities, Schedule), bei der **Thermostat-Seite (Thermo2)** und beim **Mediaplayer**. *Eine halbe Seite* gibt es nur bei den drei Grid-Varianten und bei Thermo2 — und bei Thermo2 wird die Wahl vom Adapter wieder auf *ganze Seite* zurückgesetzt. Was die drei Modi auf der jeweiligen Karte bedeuten, steht unter [Menü-Seiten](pageMenu#7-blättern-der-seitenelemente), [Thermostat](cardThermo2) und [Mediaplayer](cardMedia#9-blättern-der-optionsleiste).
 
 Der **dritte Reiter** der Spalte ist ein Platzhalter für spätere Einstellungen. Er zeigt den unübersetzten englischen Satz *„Placeholder content for this tab."*
 

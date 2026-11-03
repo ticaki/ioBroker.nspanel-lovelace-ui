@@ -11,7 +11,7 @@
 - [Feature overview](User-NSPanel-Funktionalität)  
 
 **Basic installation**  
-- Flashing the NSPanel *(follows)*  
+- [Flashing the NSPanel](NSPanel-flashen)  
 - [Adapter installation](Adapter-Installation)  
 - [MQTT server settings](General)  
 
@@ -19,7 +19,7 @@
 - [NSPanel settings](NSPanelsetting)  
 - [Global settings](globelSettings)  
 - [Maintain](Maintain)  
-- Script migration *(follows)*  
+- [Script migration](Migration)  
 - [Navigation flow](naviFlow)  
 - [Icon overview](symbolOverview)  
 - [Tasmota tools](tasmotatools) 🔒  
@@ -38,8 +38,8 @@
 - [Waste calendar](cardTrash)  
 - [Thermostat](cardThermo2)  
 - [Thermostat (classic)](cardThermo)  
-- Media player *(follows)*  
-- Page link *(follows)*  
+- [Media player](cardMedia)  
+- [Page link](pageLink)  
 - [Recurring dialogs](PageConfig-Dialoge)  
 
 **Screensaver**  
@@ -50,11 +50,11 @@
 - [Popups](pagePopup)  
 
 **Reference**  
-- Alias table *(follows)*  
+- [Alias table](ALIAS)  
 - [Color themes](colorTheme)  
 - [PanelStatusBadge (component)](PanelStatusBadge)  
 
 **Find us**  
 [![iobrokerLogo](../Pictures/iobrokerLogo.png)](https://forum.iobroker.net/topic/80055/alphatest-nspanel-lovelace-ui-v0-1-1)  
 
-*(follows) = page is still being written · 🔒 = only visible in expert mode*
+🔒 = only visible in expert mode*

@@ -9,7 +9,7 @@ Inhalt:
 - [4. Seitentypen](#4-seitentypen)
 - [5. Popups](#5-popups)
 - [6. Bildschirmschoner](#6-bildschirmschoner)
-- [7. Zwei Wege der Konfiguration](#7-zwei-wege-der-konfiguration)
+- [7. Zwei Wege der Konfiguration](#7-konfiguration-im-admin--und-wann-das-skript)
 - [8. Hardware-Tasten, Relais und Summer](#8-hardware-tasten-relais-und-summer)
 - [9. Was man dafür braucht](#9-was-man-dafür-braucht)
 

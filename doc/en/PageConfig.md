@@ -1,18 +1,44 @@
 # PageConfig – overview
 
-The **PageConfig** tab is where the pages of a panel are built: create them, set them up, assign them to a panel and link them to each other. Everything configured here lives in the adapter configuration — no configuration script is needed for it.
+The **PageConfig** tab is where the pages of the panels are built: create them, set them up, assign them to a panel and link them to each other. Everything configured here lives in the configuration of the instance — **no configuration script is needed for it**. Coming from a script, the way into the admin is described under [Migration](Migration).
 
-<img alt="The PageConfig tab with panel filter, page type and page list" src="../Pictures/pageConfig/pageconfig-01-uebersicht.png" width="100%"/>
+![The PageConfig tab: page list on the left, editor in the middle, navigation/panel on the right](../Pictures/pageConfig/pageconfig-01-uebersicht.png)
 
-The tab only appears once the MQTT connection is up and at least one panel is set up. The **instance must also be running**: with the adapter stopped, the page type, the create field and the whole right-hand column are greyed out, because the admin asks the running adapter for the existing pages.
+This tab is the common shell for **ten page types**. What is shown in the middle depends on the type of the selected page; everything around it — list, filter, panel assignment, navigation, page details, saving — is the same for every type and is described on this page. The settings of the individual cards have pages of their own, see [sub-pages per card type](#sub-pages-per-card-type).
+
+Contents:
+- [When the tab appears](#when-the-tab-appears)
+- [Layout](#layout)
+- [Panel filter](#panel-filter)
+- [Page type](#page-type)
+- [Creating, renaming and deleting pages](#creating-renaming-and-deleting-pages)
+- [Panel assignment and navigation](#panel-assignment-and-navigation)
+- [Page details](#page-details)
+- [The *Documentation* button](#the-documentation-button)
+- [Saving](#saving)
+- [Sub-pages per card type](#sub-pages-per-card-type)
+- [Pitfalls](#pitfalls)
+
+## When the tab appears
+
+The tab is **hidden** as long as one of the two prerequisites is missing:
+
+- The **MQTT settings** are complete: the adapter's own server or the IP of an external server, plus the port and the credentials (user and password for the own server; for an external server either a credentials entry or user and password). See [MQTT server settings](General).
+- **At least one panel** is set up, see [NSPanel settings](NSPanelsetting).
+
+Only the **entries in the form** are checked, not a connection that actually stands.
+
+In addition, the **instance has to be running**. With the instance stopped, *Page Type*, the *New Page* field, the **+** button, the bin icons of the list, the three tabs of the right-hand column and the fields of the editors stay locked; the panel filter and the page list can still be read. The reason: the admin asks the **running adapter for the existing page names** live (command `getAllPages`) — if the answer stays empty, it tries again every three seconds.
 
 ## Layout
 
 | Area | Content |
 |---|---|
-| **Left** | Panel filter, page type, the page list and the link to this documentation. |
-| **Middle** | The editor of the selected page — one per card type (see [sub-pages](#sub-pages-per-card-type)). |
-| **Right** | **Navigation/Panel**: panel assignment, navigation targets and the page details. The column can be collapsed with the handle. |
+| **Left** | Panel filter, page type, the *New Page* field, the page list and the *Documentation* button. |
+| **Middle** | The editor of the selected page — one per page type. With no page selected it says *Select an item*. |
+| **Right** | **Navigation/Panel** with three tabs: panel assignment and navigation targets, the page details and an empty third tab. |
+
+The right-hand column can be collapsed with the **handle** on its left edge (⏷ open, ⏶ closed). As long as no page is selected it is collapsed and the handle does nothing. On a narrow screen (phone, tablet) there is no handle: the column then moves below the editor and carries a bar labelled *Navigation/Panel* at the top.
 
 ## Panel filter
 
@@ -21,58 +47,78 @@ Decides which pages the list shows — it changes nothing in the configuration.
 | Choice | Shows |
 |---|---|
 | **All panels** | Every page, regardless of assignment. |
-| **Unassigned** | Pages without a panel assignment. Those are **not reachable** on any panel — this is where to find them again. |
+| **Not assigned** | Pages without a panel assignment. Those are **not present** on the panel — this is where to find them again. |
 | **&lt;panel name&gt;** | Pages assigned to that panel, plus every page set to *(all)*. |
 
-<img alt="The opened panel filter" src="../Pictures/pageConfig/pageconfig-02-panelfilter.png" width="100%"/>
+Every panel of the panel table can be chosen, including the [web panels](WebPanel). The web panel **mirror** of a hardware panel is not an entry of its own: it gets the pages of the panel it is made from and therefore does not appear in the list.
 
 ## Page type
 
-The page type filters the list **and** determines what a click on **+** creates.
+The page type filters the list **and** determines what a click on **+** creates. The selection has twelve entries: two pure filters and the ten page types.
 
-<img alt="Choosing the page type" src="../Pictures/pageConfig/pageconfig-03-seitentyp.png" width="100%"/>
+![The opened Page Type selection with all twelve entries](../Pictures/pageConfig/pageconfig-02-seitentyp.png)
 
-- **All** and **Main pages** are filters only — nothing can be created under them, the input field is hidden.
-- **Menu page** covers the five menu variants (grid with 6, 8 or 4 cells, entities, schedule); which one it becomes is decided afterwards in the editor.
-- The remaining entries — **Alarm**, **QR**, **Power**, **Trash**, **Chart**, **Thermostat (Thermo2)** — are one card type each.
+| Entry | Meaning | Described under |
+|---|---|---|
+| **All** | Filter: shows every page. | — |
+| **Main pages** | Filter: shows the pages flagged as start page. | [Page details](#page-details) |
+| **Menu page** | Five variants in one type: Grid (6 slots), Grid2 (8 slots, 9 on *us-p*), Grid3 (4 slots), Entities (4 rows), Schedule (6 rows). | [Menu page](pageMenu) |
+| **Alarm** | Alarm system; with the *unlock* mode it becomes the unlock page. | [Alarm and unlock page](cardAlarm) |
+| **QR** | Wi-Fi access, phone number or address as a QR code. | [QR code](cardQR) |
+| **Power** | Energy flow with producers and consumers. | [Power](cardPower) |
+| **Trash** | Collection dates. | [Trash](cardTrash) |
+| **Chart** | History as a line or as columns. | [Chart](cardChart) |
+| **Thermostat (Thermo2)** | Heating and climate, up to eight heat circuits. | [Thermostat](cardThermo2) |
+| **Thermostat (classic)** | The older thermostat card with eight slots. | [Thermostat (classic)](cardThermo) |
+| **Media player** | Music, speakers, playlists and favourites. | [Media player](cardMedia) |
+| **Page link** | Shows another admin page under its own name and with its own navigation. | [Page link](pageLink) |
 
-**Main pages** is not a card type of its own but a marker: any page can be the start page (see [page details](#page-details)). In the list it carries the suffix `(main)`.
+In addition:
+
+- Under **All** and **Main pages** nothing can be created — the *New Page* field is hidden then.
+- **Main pages** is not a card type but a marker. In the list a flagged page carries `(main)` behind it; it stays stored under its own name.
+- **Menu page** first creates a **Grid (6 slots)**; which of the five variants it becomes is decided by the *Card type* radio group in the editor. It can still be changed there later.
+- A page that is jumped to from outside — via the button on the node in the [navigation flow](naviFlow) or as the target of a page link — resets the filter to **All** if it would otherwise be invisible.
 
 ## Creating, renaming and deleting pages
 
-<img alt="Creating a new page with a page type selected" src="../Pictures/pageConfig/pageconfig-04-seite-anlegen.png" width="100%"/>
+![The note when creating a name the adapter already knows](../Pictures/pageConfig/pageconfig-03-anlegen-hinweis.png)
 
-**Create:** pick a page type, enter a name in the *New page* field, press **+**. The name is the unique ID of the page: it is how other pages address it in their navigation targets, and how a `navigate` command on a button jumps to it.
+**Create:** pick a page type, enter a name in the *New Page* field, press **+**. The name is the **unique ID** of the page: it is how other pages address it in their navigation targets, and how a page item with a navigation target or a script jumps to it.
 
-- `main` is reserved and will be rejected — the start page is made with the marker, not with the name.
-- A name already in use cannot be created, the button stays disabled.
-- If the name matches a page that already comes from the configuration script, a note points it out: the admin page then **replaces** the script page of the same name. (A configuration script addresses its pages by that same name — which is why a clash is noticed at all.)
+- `main` is reserved; the **+** button stays disabled and a note names the reason — the start page is made with the marker, not with the name.
+- A name **already in use** cannot be created, the button stays disabled.
+- If the running adapter already knows the name from a page that does **not** come from the admin, the note *"This name already exists as a panel page - the admin page overrides it."* appears. The note applies to pages from every configuration script and to the pages of **all** panels, not only of the one currently filtered.
 
-**Rename:** not in the list, but in the editor via the *Unique ID* field. On the start page it is locked while the marker is set.
+> ⚠️ **The note promises too much.** A page of the same name from the **script of this panel** wins: the adapter then skips the admin page and writes *"Page with name … already exists, skipping!"* into the log. Overriding only happens in three cases — the **start page** (which always replaces a `main` from the script), a page of the **global** script configuration (only if the panel is assigned to the admin page **by name**; an assignment of *(all)* is not enough) and a page that was only handed in from the **script of another panel**. To replace a script page, remove it from the script — or take the script over completely, see [Migration](Migration).
 
-> ⚠️ **Renaming does not carry the navigation along.** Every *prev*, *next*, *parent* and *home* **of other pages** that pointed at the old name stays as it was and then leads nowhere — the same goes for a `navigate` command on a button and for a reference from the configuration script. After renaming, set every connection to this page again; the [Navigation flow](naviFlow) tab shows which ones they are. And unlike creating, renaming does **not reject a name already in use** — the ID then exists twice. When in doubt it is safer to create the page anew than to rename it.
+**Rename:** not in the list, but in the editor via the **Unique ID** field. On the start page it is locked, with the note that the name stays stored unchanged. The field acts on **every keystroke**: intermediate states of typing are each briefly the real name. An empty entry and the name `main` are discarded silently.
 
-**Order:** the list is always sorted alphabetically; there is no manual order, and none is needed — what the panel shows follows from the navigation, not from the position in the list.
+> ⚠️ **Renaming does not carry the navigation along.** Every *prev*, *next*, *parent* and *home* **of other pages** that pointed at the old name stays as it was and then leads nowhere — the same goes for a navigation target on a page item and for every reference from a configuration script. Only a [page link](pageLink) follows its renamed target by itself. And unlike creating, renaming does **not reject a name already in use** — the ID then exists twice, and the interface offers no way out of that state. After renaming, therefore, set every connection to this page again; the [navigation flow](naviFlow) shows which ones they are. When in doubt it is safer to create the page anew than to rename it.
 
-**Copy:** a whole page cannot be duplicated — but **single page items of a menu page** can: right-click the cell, *copy item*, right-click the target cell, *paste item*. This also works from one menu page into another. The details — including what the clipboard belongs to and what gets overwritten when pasting — are under [Menu page](pageMenu#5-copying-and-pasting-tiles).
+**Order:** the list is always sorted alphabetically; there is no manual order, and none is needed — what the panel shows follows from the navigation, not from the position in the list. In the select lists of the navigation targets `main` comes first, the rest alphabetically.
 
-**Delete:** via the bin icon in the row, with a confirmation.
+**Copy:** a whole page can**not** be duplicated. If the same content is to appear at two places of the navigation, the [page link](pageLink) is the way. What can be copied are **single page items of a menu page**: right-click the slot, *Copy item*, right-click the target slot, *Paste item* — also from one menu page into another. There is no way by tap or keyboard shortcut, so on tablet and phone the function is out of reach. The details are under [Menu page](pageMenu#5-copying-and-pasting-tiles).
 
-<img alt="Confirmation before deleting a page" src="../Pictures/pageConfig/pageconfig-07-loeschen.png" width="100%"/>
+**Delete:** via the bin icon in the row — on the desktop it appears when hovering the row, on a touch screen it is always there. The confirmation *Delete item?* with the name of the page follows. Afterwards the list selects the first page of the current filter.
 
-> ⚠️ Deleting does **not clean up references from other pages**. If a *prev*, *next*, *parent* or *home* pointed at the deleted page, that entry stays and leads nowhere. Before deleting, the [Navigation flow](naviFlow) tab shows who points at the page.
+![The confirmation before deleting a page](../Pictures/pageConfig/pageconfig-04-loeschen.png)
+
+> ⚠️ **Deleting does not clean up references from other pages.** If a *prev*, *next*, *parent* or *home* pointed at the deleted page, that entry stays and leads nowhere; a [page link](pageLink) to the deleted page is reported by the adapter and skipped. Before deleting, the [navigation flow](naviFlow) is worth a look to see who points at the page.
 
 ## Panel assignment and navigation
 
-The right-hand column decides **on which panel** a page appears and **how it is reached**.
+The first tab of the right-hand column decides **on which panel** a page appears and **how it is reached**.
 
-<img alt="Page editor with the Navigation/Panel column" src="../Pictures/pageConfig/pageconfig-05-editor-navigation.png" width="100%"/>
+![The Navigation/Panel column with panel assignment, the four targets and the summary](../Pictures/pageConfig/pageconfig-05-navigation.png)
 
-**Assign a panel:** choose a panel in the select field and add it with **+**. There is also the entry **(all)** — the page then applies to every panel, including ones added later. The bin icon next to an assignment removes it again (on a phone tap twice: the first tap only marks it).
+**Assign a panel:** choose a panel in the select field and add it with **+**. There is also the entry **(all)** — the page then applies to every panel, including ones added later. Panels already assigned disappear from the selection. The bin icon next to an assignment removes it; the **first click only marks** it (the icon gets a dark red background), the second deletes it, and after three seconds without a second click the marking expires.
 
-> A page **without** a panel assignment is never built and does not exist on the panel. That is the most common reason for "the page is gone" — the *Unassigned* panel filter lists all of them.
+> A page **without** a panel assignment is never built and does not exist on the panel. That is the most common reason for "the page is gone" — the *Not assigned* panel filter shows everyone affected.
 
-**Navigation targets:** there are four fields for the selected panel. They match the swipe gestures on the panel:
+**Excluding a single panel:** if the page is set to *(all)*, a panel can be excluded by assigning it **in addition** and leaving its navigation **empty**. The adapter then skips the page for exactly that panel; the summary carries the note *Page will not be added*.
+
+**Navigation targets:** there are four fields for the panel **clicked** in the list. They match the swipe gestures on the panel:
 
 | Field | Gesture on the panel |
 |---|---|
@@ -81,46 +127,83 @@ The right-hand column decides **on which panel** a page appears and **how it is 
 | **home** | swipe right twice |
 | **parent** | swipe left twice |
 
-The choices are the pages this panel knows about — the page itself is excluded. The **Show system pages** checkbox adds the internal pages (`///…`) to the list; the unlock page `///unlock` is always available.
+The choices are the pages this panel knows about and the admin pages assigned to it — the page itself is excluded. The **Show system pages** checkbox adds the internal pages (`///…`) to the list; the unlock page `///unlock` is never hidden. A target already entered always stays visible, even when it is a system page.
+
+Below the fields there is a **summary** per assigned panel: a dot (green as soon as any target is set, otherwise red), the panel name and the four values.
 
 Worth knowing:
 
-- **The opposite direction is not created automatically.** Setting `next = B` on page A means `prev = A` has to be entered on B as well, otherwise there is no way back.
-- A page with no target at all that is not the start page automatically gets `home` pointing at the start page when the configuration is built — an emergency exit, not navigation.
-- A ⚠️ on a field means the target does not exist on the panel in question. If a panel has not reported any pages yet (because it has never been online), no warning is shown.
-- With the **(all)** assignment, *prev* or *next* has to be set, otherwise the page can only be reached from a button with a `navigate` command. The admin points this out.
+- **The opposite direction is not created automatically.** Setting `next = B` on page A means `prev = A` has to be entered on B as well, otherwise there is no way back. The final chaining of *prev* and *next* is only computed by the adapter when it builds; in case of a conflict *prev* wins.
+- A page that has **no target at all** and is not the start page automatically gets `home` pointing at the start page when it is built — an emergency exit, not navigation.
+- A target pointing at the **page itself** is removed by the adapter for *home* and *parent* and written into the log.
+- A **⚠** on a value means: the target does not exist on the panel in question. If a panel has not reported any pages at all yet (because it has never been online), no warning is shown.
+- With the assignment **(all)**, *prev* or *next* has to be set, otherwise the page can only be reached through a navigation target on a page item. The admin points this out.
+- If the page is flagged as the **start page**, the panel selection, the bin and the four fields are locked; a note at the top names the reason. To change them, uncheck the box under *Page details*.
+- On a **menu page in the Grid2 variant** the selection depends on the assignment: Grid2 requires all assigned panels to use the same model — otherwise the variant is disabled and the editor falls back to Grid.
+- Pages of the type **Power** or **Chart** that come from the old tabs *Page Power* / *Page Chart* at first keep taking their navigation from the script. The **first panel assignment in the admin ends that**; the script page is a dead reference afterwards. See [Migration](Migration#8-the-old-tabs-page-power-and-page-chart).
 
 ## Page details
 
-<img alt="The page details tab" src="../Pictures/pageConfig/pageconfig-06-seitendetails.png" width="100%"/>
+The second tab of the right-hand column. It applies to every page type; the three paging settings only appear on the cards that page through a list of page items.
+
+![The page details with paging settings and screensaver behaviour](../Pictures/pageConfig/pageconfig-06-seitendetails.png)
 
 | Setting | Meaning |
 |---|---|
-| **Start page (main)** | The page is published under the ID `main` and replaces the start page of the configuration script. There can only be one per panel — if another one is already set, the checkbox stays disabled and the note names the page in the way. While the marker is set, the name, the panel assignment and the navigation targets are locked: the start page inherits the links of its predecessor. |
-| **Hidden** | The page is built but does not appear when swiping through. It stays reachable through a dedicated navigation target or a button. |
-| **Screensaver behaviour** | *Default timeout* (the panel's setting), *never activate* (the page stays on screen — an alarm page, for instance) or *take over from the previous page*. |
+| **Start page (main)** | The page is published on the assigned panels under the ID `main` and replaces the start page from the script or the one the adapter generates. Assign first, then flag: without a panel assignment the checkbox stays disabled (*"Assign a panel first"*), likewise with the instance stopped and when another page is already the start page for one of the panels concerned — the note names it. While the marker is set, the name, the panel assignment and the navigation targets are locked; the start page inherits the place and the links of the page it replaces. |
+| **Hidden** | The page is built but does not appear when swiping through normally. It stays reachable through a dedicated navigation target. |
+| **Paging of the page items** | *Classic* (the double arrows of the panel page), *Arrow* (the last slot of the page becomes the paging arrow) or *Automatic* (like classic, and pages on by itself as well). Default: classic. |
+| **Scroll by** | *Full page* or *Half page*. Only appears with *Classic* and *Automatic*. |
+| **Seconds until the next page** | Only with *Automatic*; empty = 15 seconds. |
+| **Screensaver behavior** | *Default timeout* (the time of the panel applies), *Never activate* (the screensaver does not start while this page is on screen — an alarm page, for instance) or *Inherit from previous page* (the page sends the panel no new time, the one of the previously shown page keeps applying). |
 
-The third tab of the column (*placeholder*) has no function and is reserved for later settings.
+The three paging rows appear on **menu pages** (Grid, Grid2, Grid3, Entities, Schedule), on the **thermostat page (Thermo2)** and on the **media player**. *Half page* only exists on the three grid variants and on Thermo2 — and on Thermo2 the choice is reset to *Full page* by the adapter. What the three modes mean on the respective card is described under [Menu page](pageMenu#7-paging-of-the-page-items), [Thermostat](cardThermo2) and [Media player](cardMedia#9-paging-of-the-option-bar).
 
-> The tab labels currently show the keys `navigation`, `pagedetails` and `placeholder` instead of their translations — a known point in the admin interface, without consequences for the configuration.
+The **third tab** of the column is a placeholder for later settings. It shows the untranslated English sentence *"Placeholder content for this tab."*
+
+> The tab labels currently show the keys `navigation`, `pagedetails` and `placeholder` instead of their translations (on a narrow screen `nav`, `details`, `free`) — a known point in the admin interface, without consequences for the configuration. This page therefore names the tabs by their function and not by their label.
+
+## The *Documentation* button
+
+Below the page list, **Documentation** opens the wiki page of the currently selected page type in a new tab. With the selection on *All* or *Main pages*, the selected page decides: the button leads to the page of its card — for a menu page that is *cardGrid*, *cardGrid2*, *cardGrid3*, *cardEntities* or *cardSchedule*, which all redirect to [Menu page](pageMenu). If **no** page is selected, the button lands on this overview.
 
 ## Saving
 
-The admin collects all page changes in the form; they only take effect on **Save**, and the adapter restarts for it. There is **no warning when leaving the tab** — clicking away unsaved loses the work.
+The admin collects all page changes in the form; they only take effect on **Save**. The adapter restarts afterwards and builds the pages. Closing the instance settings or reloading the browser loses everything unsaved.
 
-One exception: assigning a panel writes the page name to the panel straight away so that the select lists are complete. That is only a cache of the interface — the page itself is still only created on save.
+One exception: **assigning a panel** writes the page name into the remembered page list of the panel object **straight away**, so that the select lists of the other pages are complete. That is only a cache of the interface — the page itself is still only created on save.
 
 ## Sub-pages per card type
 
-The settings of the individual cards have pages of their own:
+The settings of the individual page types, in the order of the *Page Type* selection:
 
-- [Menu page](pageMenu)
+- [Menu page](pageMenu) — Grid, Grid2, Grid3, Entities, Schedule
 - [Alarm and unlock page](cardAlarm)
 - [QR code](cardQR)
 - [Power](cardPower)
-- [Chart](cardChart)
 - [Trash](cardTrash)
+- [Chart](cardChart)
 - [Thermostat](cardThermo2)
-- [Recurring dialogs](PageConfig-Dialoge)
+- [Thermostat (classic)](cardThermo)
+- [Media player](cardMedia)
+- [Page link](pageLink)
+
+Plus the dialogs that look the same in several editors: [Recurring dialogs](PageConfig-Dialoge) — page item, object picker, colours, mode list, raw data.
 
 The **unlock page** is not a page type of its own: it is made from an alarm page whose editor is switched from *alarm* to the *unlock* mode, together with the target to jump to after the correct PIN.
+
+Which states the cards expect is listed in the [alias table](ALIAS); the way from an existing configuration script into the admin is described by [Migration](Migration).
+
+## Pitfalls
+
+- **Almost nothing works without a running instance.** Creating, deleting, renaming and the whole right-hand column are locked, because the admin asks the adapter for the existing page names. The interface gives no hint about it — the fields are simply grey.
+- **A page without a panel assignment does not exist.** It is in the list but is not built. The *Not assigned* filter finds it.
+- **Renaming breaks the navigation silently.** References from other pages stay on the old name, and a duplicate name is not rejected. Creating the page anew is safer.
+- **Deleting does not clean up.** Whoever pointed at the deleted page points nowhere afterwards.
+- **The note "the admin page overrides it" only holds in three cases.** Against the page from the script of the **same** panel the admin page loses and is skipped when building; that is only visible in the log.
+- **The start page locks its own assignment.** The panel and the navigation targets can only be changed after unchecking the marker. What was entered before flagging stays in effect.
+- **An assigned panel remembers the page even without saving.** The name goes into the remembered page list of the panel straight away and then appears in the select lists of other pages although the page does not exist yet — even if the assignment is removed again at once or never saved. On the next start of the adapter the list is rewritten and the entry disappears; until then the ⚠ warning is also omitted for that target.
+- **Copying only works with a mouse.** *Copy item* and *Paste item* hang on the right-click; on tablet and phone there is no substitute. Pasting over an occupied slot happens without a confirmation.
+- **"Half page" does not take effect everywhere.** On Thermo2 the choice is always reset to *Full page*, and switching a grid page to Entities or Schedule afterwards keeps the stored value, which the adapter then discards as well.
+- **An `alwaysOn: action` taken over from a script cannot be selected.** There is no button for this fourth mode (the page holds the screensaver back after every action). The value stays stored but shows **no** selected radio button in the *Page details* tab — and the first click into the group deletes it for good.
+- **Three tab labels are untranslated**, the third tab is empty and shows an English sentence. Both are harmless.

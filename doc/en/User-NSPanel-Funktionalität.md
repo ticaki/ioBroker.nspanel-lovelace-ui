@@ -9,7 +9,7 @@ Contents:
 - [4. Page types](#4-page-types)
 - [5. Popups](#5-popups)
 - [6. Screensaver](#6-screensaver)
-- [7. Two ways to configure it](#7-two-ways-to-configure-it)
+- [7. Two ways to configure it](#7-configuration-in-the-admin--and-when-the-script)
 - [8. Hardware buttons, relays and buzzer](#8-hardware-buttons-relays-and-buzzer)
 - [9. What you need](#9-what-you-need)
 

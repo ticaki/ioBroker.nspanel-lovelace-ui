@@ -247,7 +247,7 @@ Rechts neben dem Panelbild steht der **Wetter-Adapter** dieses Bildschirmschoner
 ![Wetter](../Pictures/screensaverAdmin/admin-12-wetter.png)
 
 - **Globale Einstellung** – die Wetter-Instanz aus den Instanzeinstellungen (in Klammern genannt), **Kein Wetter**, oder eine der installierten Wetter-Instanzen. Unterstützt werden `accuweather`, `openweathermap`, `pirate-weather` und `brightsky`; ist keine davon installiert, sagt der Editor es.
-- Mit gewähltem Adapter erscheinen Häkchen für seine **Zusatz-Items unten** (Sonnenauf-/untergang, Vorhersage Tag …, Windgeschwindigkeit, Böen, Windrichtung, UV-Index, Solarstrahlung). Sie hängen sich **hinter das letzte eigene Item** im Bereich **Unten**; passt beides nicht mehr auf die Plätze, blättert das Panel sie durch (Rotationszeit hinter dem Zahnrad) und der Editor zeigt an dieser Stelle eine Scrollleiste mit der Zahl der Items.
+- Mit gewähltem Adapter erscheinen Häkchen für seine **Zusatz-Items unten** (Sonnenauf-/untergang, Vorhersage Tag …, Windgeschwindigkeit, Böen, Windrichtung, UV-Index, Solarstrahlung). Sie hängen sich **hinter das letzte eigene Item** im Bereich **Unten**; passt beides nicht mehr auf die Plätze, blättert das Panel sie durch (Rotationszeit hinter dem Knopf **Optionen**) und der Editor zeigt an dieser Stelle eine Scrollleiste mit der Zahl der Items.
 - Der **Favorit** zeigt das aktuelle Wetter, solange dort kein eigenes Item liegt – ein eigenes Item verdrängt es.
 - Eine eingetragene, aber nicht mehr installierte Instanz wird gemeldet (*Die Instanz „…“ ist nicht (mehr) installiert.*).
 
