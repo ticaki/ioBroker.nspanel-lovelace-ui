@@ -142,12 +142,12 @@ export const PIE_NAME_BUDGET = 20;
 export const PIE_TEXT_BUDGET_WITH_PERCENT = 15;
 export const PIE_TEXT_BUDGET = 20;
 
-const NARROW_CHARS = new Set(['i', 'l', 'j', 't', 'f', 'r', '.', ',', ':', ';', "'", '!', '|', ' ']);
-const WIDE_CHARS = new Set(['m', 'w', 'M', 'W', '@', '%']);
+const NARROW_CHARS = new Set([' ', '.', ',', ':', ';', "'", '!', '|']);
 
 /**
- * Estimated width of one character in units: lower case 1.0, digits 1.1, capitals 1.2, narrow characters
- * (`i l j t f r . , : ; ' ! |` and space) 0.6, wide ones (`m w M W @ %`) 1.5, everything else 1.0.
+ * Estimated width of one character in units, calibrated on the alphabet measurement of the panel (the
+ * narrow letters i, l, t … are already part of that average): lower case letters (umlauts and ß included)
+ * 1.0, capitals 1.15, digits 1.05, space and `. , : ; ' ! |` 0.6, everything else 1.0.
  *
  * @param ch one character
  */
@@ -155,23 +155,19 @@ export function pieCharWidth(ch: string): number {
     if (NARROW_CHARS.has(ch)) {
         return 0.6;
     }
-    if (WIDE_CHARS.has(ch)) {
-        return 1.5;
-    }
     if (ch >= '0' && ch <= '9') {
-        return 1.1;
+        return 1.05;
     }
     if (ch >= 'A' && ch <= 'Z') {
-        return 1.2;
+        return 1.15;
     }
     return 1;
 }
 
 /**
- * Cuts a legend text to the width budget of the panel. A character is kept as long as the characters
- * before it stay below the budget (the budget is the width at which the text starts to collide, the
- * character starting there is the first one cut). Hard cut, no ellipsis (the Nextion font has none for
- * sure), trailing blanks are trimmed.
+ * Cuts a legend text to the width budget of the panel: a character is kept as long as the accumulated
+ * width including it stays within the budget. Hard cut, no ellipsis (the Nextion font has none for sure),
+ * trailing blanks are trimmed.
  *
  * @param text text without the field separator (see sanitizePieText)
  * @param budget width in units, e.g. PIE_NAME_BUDGET
@@ -180,10 +176,11 @@ export function fitPieText(text: string, budget: number): string {
     let width = 0;
     let end = 0;
     for (const ch of text) {
-        if (width >= budget) {
+        width += pieCharWidth(ch);
+        // small tolerance against the float drift of the sums (13 x 1.15 is 14.949999…)
+        if (width > budget + 1e-9) {
             break;
         }
-        width += pieCharWidth(ch);
         end += ch.length;
     }
     return text.slice(0, end).trimEnd();

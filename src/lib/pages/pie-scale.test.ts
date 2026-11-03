@@ -192,24 +192,38 @@ describe('lib/pages - pie-scale', () => {
         const upper = (n: number): string => 'A'.repeat(n);
         const digits = (n: number): string => '1234567890'.repeat(2).slice(0, n);
 
-        it('name: 20 lower case letters fit, 21 do not', () => {
+        // the alphabet strings of the measurement on the panel
+        const ALPHA = 'abcdefghijklmnopqrstuvwxyz';
+        const ALPHA_UPPER = ALPHA.toUpperCase();
+
+        it('name: abcdefghijklmnopqrst (20) fits, 21 lower case letters do not', () => {
+            expect(fitPieText(ALPHA.slice(0, 20), PIE_NAME_BUDGET)).to.equal('abcdefghijklmnopqrst');
+            expect(fitPieText(ALPHA.slice(0, 21), PIE_NAME_BUDGET)).to.equal('abcdefghijklmnopqrst');
             expect(fitPieText(lower(20), PIE_NAME_BUDGET)).to.equal(lower(20));
             expect(fitPieText(lower(21), PIE_NAME_BUDGET)).to.equal(lower(20));
+            // the full alphabet plus digits of the hardware test gives exactly 20 letters
+            expect(fitPieText(`${ALPHA}0123456789`, PIE_NAME_BUDGET)).to.equal('abcdefghijklmnopqrst');
         });
 
-        it('name: 17 capitals fit', () => {
+        it('name: ABCDEFGHIJKLMNOPQ (17) fits, 18 capitals do not', () => {
+            expect(fitPieText(ALPHA_UPPER.slice(0, 17), PIE_NAME_BUDGET)).to.equal('ABCDEFGHIJKLMNOPQ');
+            expect(fitPieText(ALPHA_UPPER.slice(0, 18), PIE_NAME_BUDGET)).to.equal('ABCDEFGHIJKLMNOPQ');
             expect(fitPieText(upper(17), PIE_NAME_BUDGET)).to.equal(upper(17));
             expect(fitPieText(upper(18), PIE_NAME_BUDGET)).to.equal(upper(17));
         });
 
-        it('value text next to the percentage (mode 3): 14 digits fit, 15 do not; 13 capitals, 15 lower case', () => {
+        it('value text next to the percentage (mode 3): 15 lower case, 13 capitals, 14 digits fit, one more not', () => {
             expect(pieTextBudget(3)).to.equal(PIE_TEXT_BUDGET_WITH_PERCENT);
-            expect(fitPieText(digits(14), PIE_TEXT_BUDGET_WITH_PERCENT)).to.equal(digits(14));
+            expect(fitPieText(ALPHA.slice(0, 15), PIE_TEXT_BUDGET_WITH_PERCENT)).to.equal('abcdefghijklmno');
+            expect(fitPieText(ALPHA.slice(0, 16), PIE_TEXT_BUDGET_WITH_PERCENT)).to.equal('abcdefghijklmno');
+            expect(fitPieText(ALPHA_UPPER.slice(0, 13), PIE_TEXT_BUDGET_WITH_PERCENT)).to.equal('ABCDEFGHIJKLM');
+            expect(fitPieText(ALPHA_UPPER.slice(0, 14), PIE_TEXT_BUDGET_WITH_PERCENT)).to.equal('ABCDEFGHIJKLM');
+            expect(fitPieText('12345678901234', PIE_TEXT_BUDGET_WITH_PERCENT)).to.equal('12345678901234');
+            expect(fitPieText('123456789012345', PIE_TEXT_BUDGET_WITH_PERCENT)).to.equal('12345678901234');
             expect(fitPieText(digits(15), PIE_TEXT_BUDGET_WITH_PERCENT)).to.equal(digits(14));
-            expect(fitPieText(upper(13), PIE_TEXT_BUDGET_WITH_PERCENT)).to.equal(upper(13));
-            expect(fitPieText(upper(14), PIE_TEXT_BUDGET_WITH_PERCENT)).to.equal(upper(13));
-            expect(fitPieText(lower(15), PIE_TEXT_BUDGET_WITH_PERCENT)).to.equal(lower(15));
             expect(fitPieText(lower(16), PIE_TEXT_BUDGET_WITH_PERCENT)).to.equal(lower(15));
+            // the value string of the hardware test gives exactly 15 letters
+            expect(fitPieText(`${ALPHA}0123`, PIE_TEXT_BUDGET_WITH_PERCENT)).to.equal('abcdefghijklmno');
         });
 
         it('value text without the percentage (mode 1) keeps 20 lower case letters', () => {
@@ -221,25 +235,27 @@ describe('lib/pages - pie-scale', () => {
             expect(fitPieText(lower(21), PIE_TEXT_BUDGET)).to.equal(lower(20));
         });
 
-        it('narrow and wide characters count less or more', () => {
-            expect(pieCharWidth('i')).to.equal(0.6);
+        it('blanks and punctuation count 0.6, capitals 1.15, digits 1.05, letters (umlauts too) and the rest 1.0', () => {
             expect(pieCharWidth(' ')).to.equal(0.6);
-            expect(pieCharWidth('m')).to.equal(1.5);
-            expect(pieCharWidth('%')).to.equal(1.5);
-            expect(pieCharWidth('7')).to.equal(1.1);
-            expect(pieCharWidth('B')).to.equal(1.2);
+            expect(pieCharWidth('.')).to.equal(0.6);
+            expect(pieCharWidth('i')).to.equal(1);
+            expect(pieCharWidth('m')).to.equal(1);
+            expect(pieCharWidth('W')).to.equal(1.15);
+            expect(pieCharWidth('%')).to.equal(1);
+            expect(pieCharWidth('7')).to.equal(1.05);
+            expect(pieCharWidth('B')).to.equal(1.15);
             expect(pieCharWidth('ä')).to.equal(1);
-            // 33 narrow characters are still under 20 units, 13 wide ones are not
-            expect(fitPieText('i'.repeat(33), PIE_NAME_BUDGET)).to.equal('i'.repeat(33));
-            expect(fitPieText('w'.repeat(14), PIE_NAME_BUDGET)).to.equal('w'.repeat(14));
-            expect(fitPieText('w'.repeat(15), PIE_NAME_BUDGET)).to.equal('w'.repeat(14));
+            expect(pieCharWidth('ß')).to.equal(1);
+            // 33 narrow characters are within 20 units (19.8), 34 are not
+            expect(fitPieText('.'.repeat(33), PIE_NAME_BUDGET)).to.equal('.'.repeat(33));
+            expect(fitPieText('.'.repeat(34), PIE_NAME_BUDGET)).to.equal('.'.repeat(33));
         });
 
         it('cuts hard without an ellipsis and trims trailing blanks, empty stays empty', () => {
-            // E(1.2) i(0.6) gennuzung … t(0.6) = 20.0 after "Photovolt", the "a" starting there is cut
-            expect(fitPieText('Eigennutzung Photovoltaik', PIE_NAME_BUDGET)).to.equal('Eigennutzung Photovolt');
-            // the blank still fits (19.6 before it) but is trimmed once the cut lands behind it
-            expect(fitPieText(`${lower(19)}f xyz`, PIE_NAME_BUDGET)).to.equal(`${lower(19)}f`);
+            // E(1.15) + igennutzung(11) + blank(0.6) + P(1.15) + hotovo(6) = 19.9, the "l" would make 20.9
+            expect(fitPieText('Eigennutzung Photovoltaik', PIE_NAME_BUDGET)).to.equal('Eigennutzung Photovo');
+            // the blank still fits (19.6 with it) but is trimmed once the cut lands behind it
+            expect(fitPieText(`${lower(19)} xyz`, PIE_NAME_BUDGET)).to.equal(lower(19));
             expect(fitPieText('abc   ', PIE_NAME_BUDGET)).to.equal('abc');
             expect(fitPieText('   ', PIE_NAME_BUDGET)).to.equal('');
             expect(fitPieText('', PIE_NAME_BUDGET)).to.equal('');

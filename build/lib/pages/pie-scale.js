@@ -97,20 +97,16 @@ function mergePieRest(slices, otherName) {
 const PIE_NAME_BUDGET = 20;
 const PIE_TEXT_BUDGET_WITH_PERCENT = 15;
 const PIE_TEXT_BUDGET = 20;
-const NARROW_CHARS = /* @__PURE__ */ new Set(["i", "l", "j", "t", "f", "r", ".", ",", ":", ";", "'", "!", "|", " "]);
-const WIDE_CHARS = /* @__PURE__ */ new Set(["m", "w", "M", "W", "@", "%"]);
+const NARROW_CHARS = /* @__PURE__ */ new Set([" ", ".", ",", ":", ";", "'", "!", "|"]);
 function pieCharWidth(ch) {
   if (NARROW_CHARS.has(ch)) {
     return 0.6;
   }
-  if (WIDE_CHARS.has(ch)) {
-    return 1.5;
-  }
   if (ch >= "0" && ch <= "9") {
-    return 1.1;
+    return 1.05;
   }
   if (ch >= "A" && ch <= "Z") {
-    return 1.2;
+    return 1.15;
   }
   return 1;
 }
@@ -118,10 +114,10 @@ function fitPieText(text, budget) {
   let width = 0;
   let end = 0;
   for (const ch of text) {
-    if (width >= budget) {
+    width += pieCharWidth(ch);
+    if (width > budget + 1e-9) {
       break;
     }
-    width += pieCharWidth(ch);
     end += ch.length;
   }
   return text.slice(0, end).trimEnd();
