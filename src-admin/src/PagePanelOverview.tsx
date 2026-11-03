@@ -438,12 +438,31 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
      * @param panel Panel of the tile.
      * @param side Which of the two buttons below the display.
      */
-    private buttonTileColor(panel: PanelConfig, side: 'left' | 'right'): 'success' | 'warning' | 'primary' {
+    private buttonTileColor(panel: PanelConfig, side: 'left' | 'right'): 'success' | 'warning' | 'info' | 'inherit' {
         const action = side === 'left' ? panel.buttonLeft : panel.buttonRight;
-        if (!action) {
-            return 'primary';
+        const effective = this.isButtonEffective(panel, side);
+        if (action) {
+            return effective ? 'success' : 'warning';
         }
-        return this.isButtonEffective(panel, side) ? 'success' : 'warning';
+        // nothing configured here - the colour still tells whether the relay is decoupled
+        return effective ? 'info' : 'inherit';
+    }
+
+    /**
+     * Tooltip of a hardware button in the tile - it says what the colour stands for.
+     *
+     * @param panel Panel of the tile.
+     * @param side Which of the two buttons below the display.
+     */
+    private buttonTileTitle(panel: PanelConfig, side: 'left' | 'right'): string {
+        const action = side === 'left' ? panel.buttonLeft : panel.buttonRight;
+        if (action) {
+            return this.getText(this.isButtonEffective(panel, side) ? 'hwButtonEffective' : 'hwButtonCoupled');
+        }
+        if (panel.kind === 'web') {
+            return this.getText('hwButtonWebNoAction');
+        }
+        return this.getText(this.isButtonEffective(panel, side) ? 'hwButtonDetachedNoAction' : 'hwButtonNoAction');
     }
 
     // Callback für Änderungen der Entkopplung (cmd.detachLeft/cmd.detachRight)
@@ -1478,17 +1497,15 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
                                     />
 
                                     {/* Hardware buttons below the display */}
-                                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 1 }}>
+                                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, mt: 1 }}>
                                         <Button
                                             variant="outlined"
                                             color={leftColor}
                                             size="small"
                                             onClick={() => this.handleButtonConfigOpen(panel, 'left')}
                                             disabled={!panel.id}
-                                            title={
-                                                leftColor === 'warning' ? this.getText('hwButtonCoupled') : undefined
-                                            }
-                                            sx={{ flex: '1 1 140px' }}
+                                            fullWidth
+                                            title={this.buttonTileTitle(panel, 'left')}
                                         >
                                             {this.getText('hwButtonLeft')}
                                         </Button>
@@ -1498,10 +1515,8 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
                                             size="small"
                                             onClick={() => this.handleButtonConfigOpen(panel, 'right')}
                                             disabled={!panel.id}
-                                            title={
-                                                rightColor === 'warning' ? this.getText('hwButtonCoupled') : undefined
-                                            }
-                                            sx={{ flex: '1 1 140px' }}
+                                            fullWidth
+                                            title={this.buttonTileTitle(panel, 'right')}
                                         >
                                             {this.getText('hwButtonRight')}
                                         </Button>
