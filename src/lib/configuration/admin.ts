@@ -185,6 +185,7 @@ export class AdminConfiguration extends BaseClass {
                 states[id] = {
                     name: objectNameOf(obj, lang),
                     role: typeof obj?.common?.role === 'string' ? obj.common.role : '',
+                    type: obj?.type === 'state' && typeof obj.common?.type === 'string' ? obj.common.type : '',
                     channelRole:
                         (channel?.type === 'channel' || channel?.type === 'device') &&
                         typeof channel.common?.role === 'string'

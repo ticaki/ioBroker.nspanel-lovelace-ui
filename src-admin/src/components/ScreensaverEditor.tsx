@@ -2,7 +2,7 @@
  * Editor of the admin tab "Screensaver".
  *
  * The screensaver is drawn like the panel shows it in the chosen version (standard, alternate,
- * advanced, easyview - doc/Pictures/screensaver): the places of the item areas, the two status icons
+ * advanced, easyview - doc/Pictures/screensaver, tiles - HMI/tools/screensaver4.py): the places of the item areas, the two status icons
  * (mrIcon), time and date. A click on a free place adds an item (ChannelConfigDialog like the page
  * editors), a click on an item edits it, items can be dragged between places; time, date and the status
  * icons open small dialogs, the bar below the picture holds the notifications and options buttons. The panels showing this screensaver are chosen here - the
@@ -166,6 +166,11 @@ type AreaBox = Pct & {
     columns?: number;
     /** paging arrows above / below the places instead of left / right (narrow columns) */
     verticalPager?: boolean;
+    /**
+     * own grid cell (1-based row / column of the `columns` grid) per place - for areas whose places are
+     * not one block (tiles: 5 indicators above the clock, 2 beside it); time and date lie above the free cells
+     */
+    cells?: { row: number; column: number }[];
 };
 type Layout = {
     /** width : height of the panel */
@@ -182,8 +187,37 @@ type Layout = {
 /** the two panel shapes: eu and us-l are landscape, us-p is portrait */
 type LayoutModel = 'eu' | 'us-p';
 
+/** tiles (screensaver4) - the HMI exists for the landscape panel only, 3 rows x 5 columns of 90 x 107 px */
+const TILES_LAYOUT: Layout = {
+    aspect: '3 / 2',
+    maxWidth: 720,
+    mricon: null,
+    time: { top: '35%', left: '24%', width: '52%', height: '20%', fontSize: 44 },
+    date: { top: '55%', left: '24%', width: '52%', height: '11%' },
+    areas: {
+        indicator: {
+            top: '1%',
+            left: '2%',
+            width: '96%',
+            height: '65%',
+            direction: 'row',
+            columns: 5,
+            cells: [
+                { row: 1, column: 1 },
+                { row: 1, column: 2 },
+                { row: 1, column: 3 },
+                { row: 1, column: 4 },
+                { row: 1, column: 5 },
+                { row: 2, column: 1 },
+                { row: 2, column: 5 },
+            ],
+        },
+        bottom: { top: '67%', left: '2%', width: '96%', height: '32%', direction: 'row' },
+    },
+};
+
 /**
- * geometry of the four versions as the panel draws them - landscape from doc/Pictures/screensaver/*.png,
+ * geometry of the five versions as the panel draws them - landscape from doc/Pictures/screensaver/*.png,
  * portrait (us-p) from photos of a US panel; the portrait `alternate` layout is derived from `standard`
  */
 const LAYOUTS: Record<ScreensaverMode, Record<LayoutModel, Layout>> = {
@@ -324,6 +358,7 @@ const LAYOUTS: Record<ScreensaverMode, Record<LayoutModel, Layout>> = {
             },
         },
     },
+    tiles: { eu: TILES_LAYOUT, 'us-p': TILES_LAYOUT },
 };
 
 /**
@@ -1480,6 +1515,23 @@ export class ScreensaverEditor extends React.Component<ScreensaverEditorProps, S
                 slot.kind === 'weather' ? this.renderWeatherSlot(slot.key) : this.renderSlot(slot.ref, false, inline),
             );
         }
+        const cells = box.cells;
+        const placed = cells
+            ? slots.map((slot, i) => (
+                  <Box
+                      key={`cell-${i}`}
+                      sx={{
+                          gridRow: cells[i]?.row,
+                          gridColumn: cells[i]?.column,
+                          display: 'flex',
+                          minWidth: 0,
+                          minHeight: 0,
+                      }}
+                  >
+                      {slot}
+                  </Box>
+              ))
+            : slots;
         const outer = {
             position: 'absolute' as const,
             top: box.top,
@@ -1501,11 +1553,11 @@ export class ScreensaverEditor extends React.Component<ScreensaverEditorProps, S
                     p: 0.5,
                     boxSizing: 'border-box',
                     borderRadius: 1,
-                    border: '1px solid rgba(255,255,255,0.08)',
+                    border: cells ? undefined : '1px solid rgba(255,255,255,0.08)',
                 }}
                 data-ss={`area-${area}`}
             >
-                {slots}
+                {placed}
             </Box>
         );
         return (
@@ -1923,14 +1975,14 @@ export class ScreensaverEditor extends React.Component<ScreensaverEditorProps, S
                 {layout.mricon && this.renderMrIcon('mrIcon2', layout.mricon[1])}
                 {this.renderArea(
                     'time',
-                    { ...layout.time, color: '#fff', fontSize: layout.time.fontSize, fontWeight: 500 },
+                    { ...layout.time, color: '#fff', fontSize: layout.time.fontSize, fontWeight: 500, zIndex: 1 },
                     'screensaver_time_hint',
                     'time',
                     <span>{this.timePreview(entry.clockFormat)}</span>,
                 )}
                 {this.renderArea(
                     'date',
-                    { ...layout.date, color: '#fff', fontSize: 16 },
+                    { ...layout.date, color: '#fff', fontSize: 16, zIndex: 1 },
                     'screensaver_date_hint',
                     'date',
                     <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>

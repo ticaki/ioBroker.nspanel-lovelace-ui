@@ -22,6 +22,7 @@ export type AdminCardTypes =
     | 'screensaver'
     | 'screensaver2'
     | 'screensaver3'
+    | 'screensaver4'
     // Popup Cards
     | 'popupNotify'
     | 'cardItemSpecial'; // Special card to manage pageItems (not selectable in admin UI)
@@ -294,14 +295,14 @@ export type UnlockEntry = {
 // ---------------------------------------------------------------------------------------------
 
 /**
- * the four screensaver versions of the panel; `standard` and `alternate` share the card `screensaver`.
+ * the five screensaver versions of the panel; `standard` and `alternate` share the card `screensaver`.
  * Same values as ScreensaverModeType in types.ts - declared here because that file must not become part
  * of the admin bundle (a test checks that both stay equal).
  */
-export type ScreensaverMode = 'standard' | 'alternate' | 'advanced' | 'easyview';
-export const screensaverModes: readonly ScreensaverMode[] = ['standard', 'alternate', 'advanced', 'easyview'];
+export type ScreensaverMode = 'standard' | 'alternate' | 'advanced' | 'easyview' | 'tiles';
+export const screensaverModes: readonly ScreensaverMode[] = ['standard', 'alternate', 'advanced', 'easyview', 'tiles'];
 
-export type ScreensaverCard = Extract<AdminCardTypes, 'screensaver' | 'screensaver2' | 'screensaver3'>;
+export type ScreensaverCard = Extract<AdminCardTypes, 'screensaver' | 'screensaver2' | 'screensaver3' | 'screensaver4'>;
 
 /** areas of the screensaver that take page items (mricon, time, date and notify have their own dialogs) */
 export type ScreensaverArea = 'favorit' | 'alternate' | 'left' | 'bottom' | 'indicator';
@@ -347,6 +348,14 @@ export const screensaverSlotLimits: Record<
         indicator: { eu: 0 },
         mricon: { eu: 2 },
     },
+    tiles: {
+        favorit: { eu: 0 },
+        alternate: { eu: 0 },
+        left: { eu: 0 },
+        bottom: { eu: 5 },
+        indicator: { eu: 7 },
+        mricon: { eu: 0 },
+    },
 };
 
 /**
@@ -378,6 +387,8 @@ export function screensaverCardOfMode(mode: ScreensaverMode): ScreensaverCard {
             return 'screensaver2';
         case 'easyview':
             return 'screensaver3';
+        case 'tiles':
+            return 'screensaver4';
         default:
             return 'screensaver';
     }

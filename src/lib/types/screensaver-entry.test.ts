@@ -76,13 +76,17 @@ describe('lib/types - screensaver entry (admin tab)', () => {
         expect(screensaverMaxEntries('easyview', 'bottom', 'us-l')).to.equal(3);
         expect(screensaverMaxEntries('advanced', 'bottom', 'us-p')).to.equal(6);
         expect(screensaverMaxEntries('standard', 'left')).to.equal(0);
+        expect(screensaverMaxEntries('tiles', 'bottom', 'us-p')).to.equal(5);
+        expect(screensaverMaxEntries('tiles', 'indicator')).to.equal(7);
+        expect(screensaverMaxEntries('tiles', 'favorit')).to.equal(0);
     });
 
-    it('maps the four versions to the three cards like screensaver.ts', () => {
+    it('maps the five versions to the four cards like screensaver.ts', () => {
         expect(screensaverCardOfMode('standard')).to.equal('screensaver');
         expect(screensaverCardOfMode('alternate')).to.equal('screensaver');
         expect(screensaverCardOfMode('advanced')).to.equal('screensaver2');
         expect(screensaverCardOfMode('easyview')).to.equal('screensaver3');
+        expect(screensaverCardOfMode('tiles')).to.equal('screensaver4');
     });
 
     it('creates an entry without panels and items', () => {

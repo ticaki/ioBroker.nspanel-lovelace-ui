@@ -209,7 +209,7 @@ function applyScreensaverEntry(page, entry) {
 function isScreensaverPage(page) {
   var _a;
   const card = (_a = page == null ? void 0 : page.config) == null ? void 0 : _a.card;
-  return card === "screensaver" || card === "screensaver2" || card === "screensaver3";
+  return card === "screensaver" || card === "screensaver2" || card === "screensaver3" || card === "screensaver4";
 }
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {

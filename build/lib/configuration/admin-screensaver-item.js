@@ -36,7 +36,7 @@ function hexToScriptRGB(hex) {
   return { red: rgb.r, green: rgb.g, blue: rgb.b };
 }
 function screensaverItemToScript(item, area, info = {}) {
-  var _a, _b, _c, _d, _e, _f;
+  var _a, _b, _c, _d, _e, _f, _g, _h;
   if (item.raw) {
     return screensaverRawToScript(item.raw, area);
   }
@@ -57,8 +57,10 @@ function screensaverItemToScript(item, area, info = {}) {
   }
   let iconOn = item.iconOn || null;
   let iconOff = item.iconOff || null;
-  if (!iconOn && !((_b = item.iconSelect) == null ? void 0 : _b.length)) {
-    const defaults = info.role || info.channelRole ? (0, import_page_item_defaults.getScreensaverItemDefaultsByRole)((_c = info.role) != null ? _c : "", info.channelRole) : null;
+  if (!iconOn && !iconOff && !((_b = item.iconSelect) == null ? void 0 : _b.length) && (0, import_page_item_defaults.isScreensaverBlindPosition)((_c = info.role) != null ? _c : "", info.channelRole, info.type)) {
+    iconOn = import_page_item_defaults.SHUTTER_POSITION_ICON;
+  } else if (!iconOn && !((_d = item.iconSelect) == null ? void 0 : _d.length)) {
+    const defaults = info.role || info.channelRole ? (0, import_page_item_defaults.getScreensaverItemDefaultsByRole)((_e = info.role) != null ? _e : "", info.channelRole) : null;
     iconOn = (defaults == null ? void 0 : defaults.iconOn) || screensaverFallbackIcon;
     iconOff = iconOff || (defaults == null ? void 0 : defaults.iconOff) || null;
   }
@@ -68,8 +70,8 @@ function screensaverItemToScript(item, area, info = {}) {
     ScreensaverEntityText: item.headline || info.name || "",
     ScreensaverEntityIconOn: iconOn,
     ScreensaverEntityIconOff: iconOff,
-    ScreensaverEntityOnText: (_d = item.textOn) != null ? _d : null,
-    ScreensaverEntityOffText: (_e = item.textOff) != null ? _e : null
+    ScreensaverEntityOnText: (_f = item.textOn) != null ? _f : null,
+    ScreensaverEntityOffText: (_g = item.textOff) != null ? _g : null
   };
   if (item.unit !== void 0) {
     element.ScreensaverEntityUnitText = item.unit;
@@ -96,7 +98,7 @@ function screensaverItemToScript(item, area, info = {}) {
   } else if (item.colorState) {
     element.ScreensaverEntityIconColor = item.colorState;
   }
-  if ((_f = item.iconSelect) == null ? void 0 : _f.length) {
+  if ((_h = item.iconSelect) == null ? void 0 : _h.length) {
     element.ScreensaverEntityIconSelect = item.iconSelect.map((s) => ({ icon: s.icon, value: s.value }));
   }
   if (item.enabled) {

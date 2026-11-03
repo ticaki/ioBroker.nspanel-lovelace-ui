@@ -35,6 +35,7 @@ var import_Color = require("../const/Color");
 var typePageItem = __toESM(require("../types/type-pageItem"));
 var tools = __toESM(require("../const/tools"));
 var import_icon_mapping = require("../const/icon_mapping");
+var import_page_item_defaults = require("../const/page-item-defaults");
 var import_data_item = require("../controller/data-item");
 var import_function_and_const = require("../types/function-and-const");
 var import_baseClassPage = require("../classes/baseClassPage");
@@ -162,7 +163,9 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
         break;
       }
     }
-    if (["screensaver", "screensaver2", "screensaver3", "popupNotify", "popupNotify2"].indexOf(this.parent.card) !== -1) {
+    if (["screensaver", "screensaver2", "screensaver3", "screensaver4", "popupNotify", "popupNotify2"].indexOf(
+      this.parent.card
+    ) !== -1) {
       if (!this.parent.basePanel.persistentPageItems[this.id]) {
         if (this.config.modeScr) {
           switch (this.config.modeScr) {
@@ -225,7 +228,7 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
     }
   }
   async getPageItemPayload(skipEnabledCheck = false) {
-    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q, _R, _S, _T, _U, _V, _W, _X, _Y, _Z, __, _$, _aa, _ba, _ca, _da, _ea, _fa, _ga;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q, _R, _S, _T, _U, _V, _W, _X, _Y, _Z, __, _$, _aa, _ba, _ca, _da, _ea, _fa, _ga, _ha, _ia, _ja;
     await this.controller.statesControler.activateTrigger(this);
     this.lastPopupType = void 0;
     if (this.dataItems && this.config) {
@@ -505,20 +508,21 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
                 break;
               }
               default: {
-                message.icon = (_R = await tools.getIconEntryValue(
+                const positionIcon = typeof showIcon === "number" && await ((_S = (_R = (_Q = item.icon) == null ? void 0 : _Q.true) == null ? void 0 : _R.value) == null ? void 0 : _S.getString()) === import_page_item_defaults.SHUTTER_POSITION_ICON;
+                message.icon = (_U = await tools.getIconEntryValue(
                   item.icon,
-                  !!showIcon,
+                  positionIcon ? showIcon : !!showIcon,
                   "",
                   null,
-                  (_Q = !(0, import_function_and_const.isCardEntitiesType)(this.parent.card) && !this.parent.card.startsWith("screens")) != null ? _Q : false
-                )) != null ? _R : "";
+                  (_T = !(0, import_function_and_const.isCardEntitiesType)(this.parent.card) && !this.parent.card.startsWith("screens")) != null ? _T : false
+                )) != null ? _U : "";
               }
             }
             const additionalId = entry.data.additionalId ? await entry.data.additionalId.getString() : "";
             message.iconColor = await tools.getIconEntryColor(item.icon, value != null ? value : true, import_Color.Color.HMIOn);
             if (entry.type === "button" && entry.data.confirm) {
               if (this.confirmClick === "unlock") {
-                const newValue = (_S = await entry.data.confirm.getObject()) != null ? _S : await entry.data.confirm.getString();
+                const newValue = (_V = await entry.data.confirm.getObject()) != null ? _V : await entry.data.confirm.getString();
                 if (newValue) {
                   const text = typeof newValue === "object" ? newValue.text : newValue;
                   if ((0, import_function_and_const.isCardEntitiesType)(this.parent.card)) {
@@ -556,7 +560,7 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
               message.intNameEntity + additionalId,
               message.icon,
               message.iconColor,
-              (_T = message.displayName) != null ? _T : "",
+              (_W = message.displayName) != null ? _W : "",
               message.optionalValue
             );
           }
@@ -565,17 +569,17 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
         case "input_sel": {
           const item = entry.data;
           message.type = "input_sel";
-          let value = (_U = await tools.getValueEntryNumber(item.entityInSel)) != null ? _U : await tools.getValueEntryBoolean(item.entityInSel);
+          let value = (_X = await tools.getValueEntryNumber(item.entityInSel)) != null ? _X : await tools.getValueEntryBoolean(item.entityInSel);
           if (entry.role === "alexa-speaker") {
             value = this.parent.currentItem === this.parent.items[0];
           }
           message.icon = await tools.getIconEntryValue(item.icon, !!(value != null ? value : true), "gesture-tap-button");
-          message.iconColor = (_V = await tools.getIconEntryColor(item.icon, !!(value != null ? value : true), import_Color.Color.HMIOff)) != null ? _V : import_Color.Color.HMIOn;
+          message.iconColor = (_Y = await tools.getIconEntryColor(item.icon, !!(value != null ? value : true), import_Color.Color.HMIOff)) != null ? _Y : import_Color.Color.HMIOn;
           message.displayName = this.library.getTranslation(
-            (_X = (_W = await tools.getEntryTextOnOff(item.headline, !!(value != null ? value : true))) != null ? _W : message.displayName) != null ? _X : ""
+            (__ = (_Z = await tools.getEntryTextOnOff(item.headline, !!(value != null ? value : true))) != null ? _Z : message.displayName) != null ? __ : ""
           );
           message.optionalValue = this.library.getTranslation(
-            (_Y = await tools.getEntryTextOnOff(item.text, !!(value != null ? value : true), true)) != null ? _Y : "PRESS"
+            (_$ = await tools.getEntryTextOnOff(item.text, !!(value != null ? value : true), true)) != null ? _$ : "PRESS"
           );
           return tools.getItemMesssage(message);
           break;
@@ -585,12 +589,12 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
             if (entry.type === "fan") {
               const item = entry.data;
               message.type = "fan";
-              const value = (_Z = await tools.getValueEntryBoolean(item.entity1)) != null ? _Z : null;
+              const value = (_aa = await tools.getValueEntryBoolean(item.entity1)) != null ? _aa : null;
               message.displayName = this.library.getTranslation(
-                (_$ = (__ = await tools.getEntryTextOnOff(item.headline, true)) != null ? __ : message.displayName) != null ? _$ : ""
+                (_ca = (_ba = await tools.getEntryTextOnOff(item.headline, true)) != null ? _ba : message.displayName) != null ? _ca : ""
               );
-              message.icon = (_aa = await tools.getIconEntryValue(item.icon, value, "")) != null ? _aa : "";
-              message.iconColor = (_ba = await tools.getIconEntryColor(item.icon, value, import_Color.Color.HMIOn)) != null ? _ba : "";
+              message.icon = (_da = await tools.getIconEntryValue(item.icon, value, "")) != null ? _da : "";
+              message.iconColor = (_ea = await tools.getIconEntryColor(item.icon, value, import_Color.Color.HMIOn)) != null ? _ea : "";
               return tools.getPayloadRemoveTilde(
                 message.type,
                 message.intNameEntity,
@@ -612,7 +616,7 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
           if (entry.type === "timer") {
             const item = entry.data;
             message.type = "timer";
-            const value = (_da = (_ca = item.entity1 && item.entity1.value && await tools.getValueEntryNumber(item.entity1)) != null ? _ca : this.tempData && this.tempData.time) != null ? _da : 0;
+            const value = (_ga = (_fa = item.entity1 && item.entity1.value && await tools.getValueEntryNumber(item.entity1)) != null ? _fa : this.tempData && this.tempData.time) != null ? _ga : 0;
             if (value !== null) {
               let opt = "";
               if (this.tempData) {
@@ -653,10 +657,10 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
               message.iconColor = await tools.getIconEntryColor(item.icon, v, import_Color.Color.White);
               message.icon = await tools.getIconEntryValue(item.icon, v, "gesture-tap-button");
               message.optionalValue = this.library.getTranslation(
-                (_ea = await tools.getEntryTextOnOff(item.text, value !== 0)) != null ? _ea : opt
+                (_ha = await tools.getEntryTextOnOff(item.text, value !== 0)) != null ? _ha : opt
               );
               message.displayName = this.library.getTranslation(
-                (_ga = (_fa = await tools.getEntryTextOnOff(item.headline, true)) != null ? _fa : message.displayName) != null ? _ga : ""
+                (_ja = (_ia = await tools.getEntryTextOnOff(item.headline, true)) != null ? _ia : message.displayName) != null ? _ja : ""
               );
               return tools.getPayloadRemoveTilde(
                 message.type,
@@ -1920,7 +1924,7 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
             await item.setValue2.setStateTrue();
             break;
           }
-          if (nav) {
+          if (nav || entry.role === "blind") {
             break;
           }
           if ((_p = (_o = item.entity1) == null ? void 0 : _o.value) == null ? void 0 : _p.writeable) {

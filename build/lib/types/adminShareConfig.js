@@ -170,7 +170,7 @@ function shortStateLabel(dp) {
 const mainPageName = "main";
 const serviceNodeName = "///service";
 const servicePageName = "///unlock";
-const screensaverModes = ["standard", "alternate", "advanced", "easyview"];
+const screensaverModes = ["standard", "alternate", "advanced", "easyview", "tiles"];
 const screensaverAreas = ["favorit", "alternate", "left", "bottom", "indicator"];
 const screensaverSlotLimits = {
   standard: {
@@ -204,6 +204,14 @@ const screensaverSlotLimits = {
     bottom: { eu: 3, "us-p": 4, "us-l": 3 },
     indicator: { eu: 0 },
     mricon: { eu: 2 }
+  },
+  tiles: {
+    favorit: { eu: 0 },
+    alternate: { eu: 0 },
+    left: { eu: 0 },
+    bottom: { eu: 5 },
+    indicator: { eu: 7 },
+    mricon: { eu: 0 }
   }
 };
 function screensaverMaxEntries(mode, area, model = "eu") {
@@ -217,6 +225,8 @@ function screensaverCardOfMode(mode) {
       return "screensaver2";
     case "easyview":
       return "screensaver3";
+    case "tiles":
+      return "screensaver4";
     default:
       return "screensaver";
   }

@@ -7,7 +7,11 @@
 import { isRawItemObject } from '../types/adminShareConfig';
 import type { ScreensaverItemConfig, ScreensaverItemRaw } from '../types/adminShareConfig';
 import { Color } from '../const/Color';
-import { getScreensaverItemDefaultsByRole } from '../const/page-item-defaults';
+import {
+    getScreensaverItemDefaultsByRole,
+    isScreensaverBlindPosition,
+    SHUTTER_POSITION_ICON,
+} from '../const/page-item-defaults';
 
 /** areas of the screensaver whose items the entry stores (the script names of the arrays follow) */
 export type ScreensaverScriptArea = 'favorit' | 'alternate' | 'left' | 'bottom' | 'indicator';
@@ -18,9 +22,10 @@ export const screensaverFallbackIcon = 'help-circle-outline';
 /**
  * what the adapter knows about the state of an item: its name stands in for a missing headline, the
  * role of its channel and its own role pick the default icons when the item has none
- * ({@link getScreensaverItemDefaultsByRole})
+ * ({@link getScreensaverItemDefaultsByRole}); with its type they tell the position of a blind
+ * ({@link isScreensaverBlindPosition})
  */
-export type ScreensaverStateInfo = { name?: string; role?: string; channelRole?: string };
+export type ScreensaverStateInfo = { name?: string; role?: string; channelRole?: string; type?: string };
 
 /**
  * `#rrggbb` of the admin dialogs as the RGB object of the script configuration
@@ -41,7 +46,8 @@ export function hexToScriptRGB(hex: string | undefined): ScriptConfig.RGB | unde
  * fields of the item dialog.
  *
  * An item without icons gets the default icons of the role of its state, without a known role the
- * {@link screensaverFallbackIcon} - the panel cannot draw an item without icon.
+ * {@link screensaverFallbackIcon} - the panel cannot draw an item without icon. The position of a blind
+ * without icons gets the icon by position ({@link SHUTTER_POSITION_ICON}) instead.
  *
  * @param item stored item
  * @param area area of the screensaver (modeScr of a template element; the action fields only count on an indicator)
@@ -72,7 +78,15 @@ export function screensaverItemToScript(
     }
     let iconOn = item.iconOn || null;
     let iconOff = item.iconOff || null;
-    if (!iconOn && !item.iconSelect?.length) {
+    if (
+        !iconOn &&
+        !iconOff &&
+        !item.iconSelect?.length &&
+        isScreensaverBlindPosition(info.role ?? '', info.channelRole, info.type)
+    ) {
+        // blind: the icon follows the position (config manager getEntityData / tools getIconEntryValue)
+        iconOn = SHUTTER_POSITION_ICON;
+    } else if (!iconOn && !item.iconSelect?.length) {
         const defaults =
             info.role || info.channelRole ? getScreensaverItemDefaultsByRole(info.role ?? '', info.channelRole) : null;
         iconOn = defaults?.iconOn || screensaverFallbackIcon;

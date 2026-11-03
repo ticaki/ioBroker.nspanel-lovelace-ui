@@ -163,25 +163,32 @@ export const screenSaverCardArray: screenSaverCardType[] = arrayOfAllScreenSaver
     'screensaver',
     'screensaver2',
     'screensaver3',
+    'screensaver4',
 ]);
 export function isScreenSaverCardType(F: string): F is screenSaverCardType {
     if (typeof F !== 'string') {
         return false;
     }
 
-    return ['screensaver', 'screensaver2', 'screensaver3'].includes(F);
+    return ['screensaver', 'screensaver2', 'screensaver3', 'screensaver4'].includes(F);
 }
 
-export const screenSaverModeArray = arrayOfAllScreenSaverMode(['standard', 'advanced', 'alternate', 'easyview']);
+export const screenSaverModeArray = arrayOfAllScreenSaverMode([
+    'standard',
+    'advanced',
+    'alternate',
+    'easyview',
+    'tiles',
+]);
 export function isScreenSaverMode(F: any): F is NSPanel.ScreensaverModeType {
     if (typeof F !== 'string') {
         return false;
     }
 
-    return ['standard', 'advanced', 'alternate', 'easyview'].includes(F);
+    return ['standard', 'advanced', 'alternate', 'easyview', 'tiles'].includes(F);
 }
 // Optimierter Type Guard für ScreensaverMode Numbers
-const SCREENSAVER_MODE_NUMBERS = [0, 1, 2, 3] as const;
+const SCREENSAVER_MODE_NUMBERS = [0, 1, 2, 3, 4] as const;
 
 export function isScreenSaverModeAsNumber(value: unknown): value is NSPanel.ScreensaverModeTypeAsNumber {
     return typeof value === 'number' && SCREENSAVER_MODE_NUMBERS.includes(value as any);
@@ -300,7 +307,7 @@ export function isAlarmButtonEvent(value: unknown): value is AlarmButtonEvents {
     return typeof value === 'string' && ALARM_BUTTON_EVENTS.includes(value as any);
 }
 const arrayOfModes = arrayOfAll<ScreensaverModeType>();
-export const arrayOfScreensaverModes = arrayOfModes(['standard', 'alternate', 'advanced', 'easyview']);
+export const arrayOfScreensaverModes = arrayOfModes(['standard', 'alternate', 'advanced', 'easyview', 'tiles']);
 
 export function isTasmotaStatusNet(F: any): F is { StatusNET: NSPanel.STATUS0['StatusNET'] } {
     return F && typeof F === 'object' && 'StatusNET' in F && typeof F.StatusNET === 'object';

@@ -51,7 +51,12 @@ import {
     screensaverItemFields,
     screensaverItemSource,
 } from '../../../src/lib/types/adminShareConfig';
-import { getScreensaverItemDefaultsByRole, type PageItemRoleDefaults } from '../../../src/lib/const/page-item-defaults';
+import {
+    getScreensaverItemDefaultsByRole,
+    getShutterIconByPosition,
+    isScreensaverBlindPosition,
+    type PageItemRoleDefaults,
+} from '../../../src/lib/const/page-item-defaults';
 import { screensaverItemToScript } from '../../../src/lib/configuration/admin-screensaver-item';
 
 export interface ScreensaverItemDialogProps {
@@ -285,9 +290,13 @@ export class ScreensaverItemDialog extends React.Component<ScreensaverItemDialog
             // a state item without icons starts with the default icons of its role (the panel cannot draw
             // an item without icon) - an icon list needs none
             const defaults = objKind === 'state' ? getScreensaverItemDefaultsByRole(objRole, channelRole) : null;
+            // the position of a blind needs no icon - without one the icon follows the position
+            const blind =
+                objKind === 'state' &&
+                isScreensaverBlindPosition(objRole, channelRole, String(obj?.common?.type ?? ''));
             this.setState(prev => {
                 const draft = { ...prev.draft };
-                if (defaults && !draft.iconOn && !draft.iconSelect?.length) {
+                if (defaults && !blind && !draft.iconOn && !draft.iconSelect?.length) {
                     draft.iconOn = defaults.iconOn;
                     if (!draft.iconOff && defaults.iconOff && obj?.common?.type === 'boolean') {
                         draft.iconOff = defaults.iconOff;
@@ -361,10 +370,28 @@ export class ScreensaverItemDialog extends React.Component<ScreensaverItemDialog
             : null;
     }
 
+    /** the state is the position of a blind (level.blind / value.blind or a number of a `blind` channel) */
+    private blindPosition(): boolean {
+        const { objKind, objRole, channelRole, objType } = this.state;
+        return objKind === 'state' && isScreensaverBlindPosition(objRole, channelRole, objType ?? undefined);
+    }
+
+    /** a blind without icons: the adapter shows the icon by position (5 icons from closed to open) */
+    private blindPositionIcons(): boolean {
+        const { draft } = this.state;
+        return this.blindPosition() && !draft.iconOn && !draft.iconOff && !draft.iconSelect?.length;
+    }
+
     /** a state item needs an icon (or an icon list) - the panel cannot draw an item without */
     private iconMissing(): boolean {
         const { draft } = this.state;
-        return this.state.source === 'state' && this.kind() !== 'unknown' && !draft.iconOn && !draft.iconSelect?.length;
+        return (
+            this.state.source === 'state' &&
+            this.kind() !== 'unknown' &&
+            !draft.iconOn &&
+            !draft.iconSelect?.length &&
+            !this.blindPositionIcons()
+        );
     }
 
     /**
@@ -470,11 +497,12 @@ export class ScreensaverItemDialog extends React.Component<ScreensaverItemDialog
         if (!item) {
             return undefined;
         }
-        const { objName, objRole, channelRole } = this.state;
+        const { objName, objRole, channelRole, objType } = this.state;
         const element = screensaverItemToScript(item, this.props.area, {
             name: objName || undefined,
             role: objRole || undefined,
             channelRole: channelRole || undefined,
+            type: objType || undefined,
         });
         // JSON round trip: fields without a value (undefined) are left out of the text
         const config: unknown = JSON.parse(JSON.stringify(element));
@@ -1311,12 +1339,16 @@ export class ScreensaverItemDialog extends React.Component<ScreensaverItemDialog
         const fields = screensaverItemFields(this.props.area);
         const kind = this.kind();
         const big = this.props.area === 'favorit';
-        const unit = draft.unit ?? objUnit;
-        const sample = 23.456 * (draft.factor ?? 1);
+        // the position of a blind: shown in %, half open as sample
+        const blind = this.blindPosition();
+        const unit = draft.unit ?? (blind ? '%' : objUnit);
+        const sample = blind ? 50 : 23.456 * (draft.factor ?? 1);
         const src = iconSrc(
             kind === 'number' && draft.iconSelect?.length
                 ? ScreensaverItemDialog.iconForValue(draft.iconSelect, sample)
-                : draft.iconOn,
+                : this.blindPositionIcons()
+                  ? getShutterIconByPosition(sample)
+                  : draft.iconOn,
         );
         let value = '';
         switch (kind) {
@@ -1327,7 +1359,7 @@ export class ScreensaverItemDialog extends React.Component<ScreensaverItemDialog
                 value = this.dateSample(draft.dateFormat);
                 break;
             case 'number': {
-                value = `${sample.toFixed(draft.decimals ?? 1)}${unit ? ` ${unit}` : ''}`;
+                value = `${sample.toFixed(draft.decimals ?? (blind ? 0 : 1))}${unit ? ` ${unit}` : ''}`;
                 break;
             }
             case 'other':
@@ -1521,6 +1553,19 @@ export class ScreensaverItemDialog extends React.Component<ScreensaverItemDialog
                                 {kind === 'boolean' && this.renderIconField('iconOff', 'screensaver_item_iconOff')}
                             </Box>
                             {kind === 'number' && this.renderIconSelectSection()}
+                            {this.blindPosition() && (
+                                <Alert
+                                    severity="info"
+                                    sx={{ mb: 2 }}
+                                    data-ss="blind-position"
+                                >
+                                    {this.getText(
+                                        this.blindPositionIcons()
+                                            ? 'screensaver_item_blindPositionIcons'
+                                            : 'screensaver_item_blindPosition',
+                                    )}
+                                </Alert>
+                            )}
                             {iconMissing && (
                                 <Alert
                                     severity="warning"

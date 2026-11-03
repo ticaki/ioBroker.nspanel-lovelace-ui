@@ -472,7 +472,8 @@ export class Panel extends BaseClass {
             if (
                 b.config?.card === 'screensaver' ||
                 b.config?.card === 'screensaver2' ||
-                b.config?.card === 'screensaver3'
+                b.config?.card === 'screensaver3' ||
+                b.config?.card === 'screensaver4'
             ) {
                 return true;
             }
@@ -580,7 +581,8 @@ export class Panel extends BaseClass {
             }
             case 'screensaver':
             case 'screensaver2':
-            case 'screensaver3': {
+            case 'screensaver3':
+            case 'screensaver4': {
                 const ssconfig: PageInterface = {
                     card: pageConfig.config.card,
                     panel: this,
@@ -899,9 +901,7 @@ export class Panel extends BaseClass {
 
         const currentScreensaver = this.library.readdb(`panels.${this.name}.cmd.screenSaver.layout`);
 
-        const scs: Page[] = this.pages.filter(
-            a => a && (a.card === 'screensaver' || a.card === 'screensaver2' || a.card === 'screensaver3'),
-        ) as Page[];
+        const scs: Page[] = this.pages.filter(a => a && globals.isScreenSaverCardType(a.card)) as Page[];
         // a screensaver from the admin tab defines version and rotation time itself - the stored states follow it,
         // the script screensaver keeps taking both from the states (they are the way to change them)
         const adminScreensaver = !!this.screenSaver && this.pageOrigins.get(this.screenSaver.name) === 'admin';

@@ -687,7 +687,9 @@ export class Screensaver extends React.Component<CardProps<ScreensaverModel>> {
         switch (layout) {
             case 'alternate':
                 return this.renderAlternate(areas);
+            // tiles has no drawing of its own yet - the advanced one shows its bottom values and indicators
             case 'advanced':
+            case 'tiles':
                 return this.renderAdvanced(areas);
             case 'easyview':
                 return this.renderEasyview(areas);
