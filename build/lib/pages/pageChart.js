@@ -63,17 +63,20 @@ function buildChartPageConfig(entry) {
     }
   };
 }
+const chartCards = ["cardChart", "cardLChart", "cardPChart"];
 class PageChart extends import_Page.Page {
   items;
   dbDetails;
-  chartTimeout;
-  oldDatabaseData = null;
+  /** running getHistory timeouts, one per state id (the pie chart queries several states) */
+  chartTimeouts = /* @__PURE__ */ new Map();
+  /** last history result per state id, returned while a query for the same state is still running */
+  oldDatabaseData = /* @__PURE__ */ new Map();
   constructor(config, options) {
-    if (config.card !== "cardChart" && config.card !== "cardLChart") {
+    if (!chartCards.includes(config.card)) {
       return;
     }
     super(config, options);
-    if (options.config && (options.config.card == "cardChart" || options.config.card == "cardLChart")) {
+    if (options.config && chartCards.includes(options.config.card)) {
       this.config = options.config;
     } else {
       throw new Error("Missing config!");
@@ -90,11 +93,26 @@ class PageChart extends import_Page.Page {
     await super.init();
   }
   async update() {
-    var _a, _b;
     if (!this.visibility) {
       return;
     }
     await super.update();
+    const message = await this.getUpdateMessage();
+    if (message.value) {
+      this.log.debug(`Value: ${message.value}`);
+    }
+    if (message.ticks) {
+      this.log.debug(`Ticks: ${message.ticks.join(",")}`);
+    }
+    this.sendType(true);
+    this.sendToPanel(this.getMessage(message), false);
+  }
+  /**
+   * The fields of the next entityUpd: bar and line chart read ticks and values via getChartData,
+   * the pie chart overrides this with its slices.
+   */
+  async getUpdateMessage() {
+    var _a, _b;
     const message = {};
     message.navigation = this.getNavigation();
     message.headline = `Error`;
@@ -110,14 +128,7 @@ class PageChart extends import_Page.Page {
       message.value = valuesChart;
       message.ticks = ticksChart;
     }
-    if (message.value) {
-      this.log.debug(`Value: ${message.value}`);
-    }
-    if (message.ticks) {
-      this.log.debug(`Ticks: ${message.ticks.join(",")}`);
-    }
-    this.sendType(true);
-    this.sendToPanel(this.getMessage(message), false);
+    return message;
   }
   /**
    * Script page `type: 'cardChart' | 'cardLChart'` that refers to a chart entry of the page config
@@ -175,6 +186,8 @@ class PageChart extends import_Page.Page {
    * @param query what the chart type needs from the history
    * @param query.aggregate 'average' (one value per interval) or 'none' (raw values)
    * @param query.count number of intervals (bar: hours, line: fine grid); also used as `limit`
+   * @param query.removeBorderValues true = no extra points before start and after end (pie: one average only)
+   * @param query.round digits after the decimal point, default 1
    */
   async getDataFromDB(_id, _rangeHours, _instance, query) {
     if (!_instance) {
@@ -190,12 +203,13 @@ class PageChart extends import_Page.Page {
       return null;
     }
     return new Promise((resolve, reject) => {
-      if (this.chartTimeout) {
-        resolve(this.oldDatabaseData || null);
+      var _a, _b;
+      if (this.chartTimeouts.has(_id)) {
+        resolve((_a = this.oldDatabaseData.get(_id)) != null ? _a : null);
         return;
       }
-      this.chartTimeout = this.adapter.setTimeout(() => {
-        this.chartTimeout = null;
+      const timeout = this.adapter.setTimeout(() => {
+        this.chartTimeouts.delete(_id);
         if (this.unload || this.adapter.unload) {
           resolve(null);
           return;
@@ -204,6 +218,9 @@ class PageChart extends import_Page.Page {
           new Error(`PageChart: ${this.name} - DB: ${_instance} - Timeout getting history for state ${_id}`)
         );
       }, 15e3);
+      if (timeout) {
+        this.chartTimeouts.set(_id, timeout);
+      }
       try {
         this.adapter.sendTo(
           _instance,
@@ -221,14 +238,16 @@ class PageChart extends import_Page.Page {
               ignoreNull: true,
               aggregate: query.aggregate,
               /** round result to number of digits after decimal point */
-              round: 1
+              round: (_b = query.round) != null ? _b : 1,
+              ...query.removeBorderValues ? { removeBorderValues: true } : {}
             }
           },
           (result) => {
-            if (this.chartTimeout) {
-              this.adapter.clearTimeout(this.chartTimeout);
+            const timeout2 = this.chartTimeouts.get(_id);
+            if (timeout2) {
+              this.adapter.clearTimeout(timeout2);
             }
-            this.chartTimeout = null;
+            this.chartTimeouts.delete(_id);
             if (this.unload || this.adapter.unload) {
               resolve(null);
               return;
@@ -242,7 +261,7 @@ class PageChart extends import_Page.Page {
                     `Value: ${result.result[i].val}, ISO-Timestring: ${new Date(result.result[i].ts).toISOString()}`
                   );
                 }
-                this.oldDatabaseData = result.result;
+                this.oldDatabaseData.set(_id, result.result);
                 resolve(result.result);
                 return;
               }
@@ -283,10 +302,10 @@ class PageChart extends import_Page.Page {
   async onButtonEvent(_event) {
   }
   async delete() {
-    if (this.chartTimeout) {
-      this.adapter.clearTimeout(this.chartTimeout);
+    for (const timeout of this.chartTimeouts.values()) {
+      this.adapter.clearTimeout(timeout);
     }
-    this.chartTimeout = null;
+    this.chartTimeouts.clear();
     await super.delete();
   }
 }

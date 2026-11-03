@@ -41,6 +41,9 @@ __export(adminShareConfig_exports, {
   CONVERT_GLOBAL_DEFAULT_DECISION: () => CONVERT_GLOBAL_DEFAULT_DECISION,
   HMI_FONTS: () => HMI_FONTS,
   HMI_TEXT_SIZES: () => HMI_TEXT_SIZES,
+  PCHART_MAX_SLICES: () => PCHART_MAX_SLICES,
+  PCHART_SOURCE_SCRIPT: () => PCHART_SOURCE_SCRIPT,
+  PCHART_SOURCE_SLOTS: () => PCHART_SOURCE_SLOTS,
   SAVE_PANEL_NAVIGATION_COMMAND: () => SAVE_PANEL_NAVIGATION_COMMAND,
   SENDTO_CONVERT_SCRIPT_COMMAND: () => SENDTO_CONVERT_SCRIPT_COMMAND,
   SENDTO_GET_MEDIA_PLAYER_COMMAND: () => SENDTO_GET_MEDIA_PLAYER_COMMAND,
@@ -57,6 +60,8 @@ __export(adminShareConfig_exports, {
   emptyChannelValueConfig: () => emptyChannelValueConfig,
   emptyChartEntry: () => emptyChartEntry,
   emptyMediaEntry: () => emptyMediaEntry,
+  emptyPChartEntry: () => emptyPChartEntry,
+  emptyPChartSlot: () => emptyPChartSlot,
   emptyPowerSlot: () => emptyPowerSlot,
   emptyScreensaverEntry: () => emptyScreensaverEntry,
   emptyThermo2Circuit: () => emptyThermo2Circuit,
@@ -109,6 +114,10 @@ __export(adminShareConfig_exports, {
   panelStatusStates: () => panelStatusStates,
   panelStatusTranslationKeys: () => panelStatusTranslationKeys,
   parseMediaPlayerDefinitions: () => parseMediaPlayerDefinitions,
+  pchartDefaults: () => pchartDefaults,
+  pchartRangeHours: () => pchartRangeHours,
+  pchartRangeHoursOf: () => pchartRangeHoursOf,
+  pchartRangeOptionOf: () => pchartRangeOptionOf,
   rawItemCondition: () => rawItemCondition,
   rawItemFormats: () => rawItemFormats,
   rawItemLabel: () => rawItemLabel,
@@ -626,6 +635,60 @@ function emptyChartEntry(uniqueName) {
     maxXAxisTicks: chartDefaults.maxXAxisTicks,
     factorCardChart: chartDefaults.factorCardChart,
     maxXAxisLabels: chartDefaults.maxXAxisLabels,
+    hidden: false,
+    alwaysOn: "none"
+  };
+}
+const PCHART_MAX_SLICES = 6;
+const PCHART_SOURCE_SLOTS = 0;
+const PCHART_SOURCE_SCRIPT = 1;
+const pchartRangeHours = {
+  current: 0,
+  hour: 1,
+  day: 24,
+  week: 24 * 7,
+  month: 24 * 30
+};
+function pchartRangeOptionOf(hours) {
+  const h = hours && hours > 0 ? hours : 0;
+  const preset = Object.keys(pchartRangeHours).find(
+    (key) => pchartRangeHours[key] === h
+  );
+  return preset != null ? preset : "custom";
+}
+function pchartRangeHoursOf(option, customHours) {
+  if (option === "custom") {
+    return customHours && Number.isFinite(customHours) && customHours > 0 ? customHours : 1;
+  }
+  return pchartRangeHours[option];
+}
+const pchartDefaults = {
+  legendMode: 3,
+  decimals: 2,
+  selInstanceDataSource: PCHART_SOURCE_SLOTS,
+  rangeHours: 0,
+  slotColors: ["#F80000", "#00F800", "#0000F8", "#F8F800", "#00F8F8", "#F800F8"]
+};
+function emptyPChartSlot(index) {
+  return {
+    name: "",
+    state: "",
+    unit: "",
+    color: pchartDefaults.slotColors[index % pchartDefaults.slotColors.length]
+  };
+}
+function emptyPChartEntry(uniqueName) {
+  return {
+    card: "cardPChart",
+    uniqueName,
+    headline: uniqueName,
+    legendMode: pchartDefaults.legendMode,
+    decimals: pchartDefaults.decimals,
+    selInstanceDataSource: pchartDefaults.selInstanceDataSource,
+    slots: Array.from({ length: PCHART_MAX_SLICES }, (_, i) => emptyPChartSlot(i)),
+    rangeHours: pchartDefaults.rangeHours,
+    selInstance: "",
+    setStateForValues: "",
     hidden: false,
     alwaysOn: "none"
   };
@@ -1829,6 +1892,9 @@ const CONVERT_GLOBAL_DEFAULT_DECISION = "keepAdmin";
   CONVERT_GLOBAL_DEFAULT_DECISION,
   HMI_FONTS,
   HMI_TEXT_SIZES,
+  PCHART_MAX_SLICES,
+  PCHART_SOURCE_SCRIPT,
+  PCHART_SOURCE_SLOTS,
   SAVE_PANEL_NAVIGATION_COMMAND,
   SENDTO_CONVERT_SCRIPT_COMMAND,
   SENDTO_GET_MEDIA_PLAYER_COMMAND,
@@ -1845,6 +1911,8 @@ const CONVERT_GLOBAL_DEFAULT_DECISION = "keepAdmin";
   emptyChannelValueConfig,
   emptyChartEntry,
   emptyMediaEntry,
+  emptyPChartEntry,
+  emptyPChartSlot,
   emptyPowerSlot,
   emptyScreensaverEntry,
   emptyThermo2Circuit,
@@ -1897,6 +1965,10 @@ const CONVERT_GLOBAL_DEFAULT_DECISION = "keepAdmin";
   panelStatusStates,
   panelStatusTranslationKeys,
   parseMediaPlayerDefinitions,
+  pchartDefaults,
+  pchartRangeHours,
+  pchartRangeHoursOf,
+  pchartRangeOptionOf,
   rawItemCondition,
   rawItemFormats,
   rawItemLabel,

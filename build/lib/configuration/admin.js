@@ -47,6 +47,7 @@ var import_adminShareConfig = require("../types/adminShareConfig");
 var import_function_and_const = require("../types/function-and-const");
 var import_credentials = require("../credentials");
 var import_pageChart = require("../pages/pageChart");
+var import_pageChartPie = require("../pages/pageChartPie");
 var import_pagePower = require("../pages/pagePower");
 var import_navigation_overrides = require("./navigation-overrides");
 const systemNavigationNodeNames = new Set(
@@ -447,6 +448,20 @@ Stack: ${stack}`
             alwaysOn: entry.alwaysOn,
             dpInit: "",
             config: (0, import_pageChart.buildChartPageConfig)(entry),
+            pageItems: []
+          };
+          break;
+        }
+        case "cardPChart": {
+          if (!isAlwaysOnMode(entry.alwaysOn)) {
+            entry.alwaysOn = "none";
+          }
+          newPage = {
+            uniqueID: entry.uniqueName,
+            hidden: !!entry.hidden,
+            alwaysOn: entry.alwaysOn,
+            dpInit: "",
+            config: (0, import_pageChartPie.buildPChartPageConfig)(entry),
             pageItems: []
           };
           break;
