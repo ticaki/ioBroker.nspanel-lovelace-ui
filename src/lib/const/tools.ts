@@ -1487,3 +1487,25 @@ export function getStringFromStringOrTranslated(
 }
 
 export default formatHMS;
+
+/**
+ * Returns the Tasmota version from the versions json. With beta enabled the key `tasmota-beta` is preferred,
+ * falling back to `tasmota`.
+ *
+ * @param json versions json
+ * @param beta use the beta version if available
+ * @returns trimmed version string or ''
+ */
+export function getTasmotaVersionFromJson(json: Record<string, unknown> | undefined | null, beta: boolean): string {
+    if (!json) {
+        return '';
+    }
+    if (beta) {
+        const b = json['tasmota-beta'];
+        if (typeof b === 'string' && b.trim()) {
+            return b.trim();
+        }
+    }
+    const v = json.tasmota;
+    return typeof v === 'string' ? v.trim() : '';
+}

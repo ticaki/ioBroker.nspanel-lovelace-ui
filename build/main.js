@@ -50,6 +50,7 @@ var import_node_path = __toESM(require("node:path"));
 var import_test = require("./lib/const/test");
 var import_function_and_const = require("./lib/types/function-and-const");
 var import_node_ical = __toESM(require("node-ical"));
+var import_tools = require("./lib/const/tools");
 const NS_PANEL_INIT_SESSION_TTL = 6e5;
 class NspanelLovelaceUi extends utils.Adapter {
   library;
@@ -1979,8 +1980,14 @@ class NspanelLovelaceUi extends utils.Adapter {
           let language = this.library.getLocalLanguage();
           language = language === "zh-cn" ? "en" : language;
           const result = await this.getVersionsJson();
-          if (result && "tasmota" in result && typeof result.tasmota === "string") {
-            const cmnd = `OtaUrl http://ota.tasmota.com/tasmota32/release-${result.tasmota.trim()}/tasmota32-${language.toUpperCase()}.bin; Upgrade 1`;
+          const msg = obj.message;
+          const msgBeta = msg && typeof msg === "object" && "useBetaTFT" in msg && typeof msg.useBetaTFT === "boolean" ? msg.useBetaTFT : void 0;
+          const tasmotaVersion = (0, import_tools.getTasmotaVersionFromJson)(
+            result,
+            msgBeta != null ? msgBeta : this.config.useBetaTFT === true
+          );
+          if (tasmotaVersion) {
+            const cmnd = `OtaUrl http://ota.tasmota.com/tasmota32/release-${tasmotaVersion}/tasmota32-${language.toUpperCase()}.bin; Upgrade 1`;
             if ((_D = this.controller) == null ? void 0 : _D.panels) {
               const index = this.controller.panels.findIndex((a) => a.topic === obj.message.topic);
               if (index !== -1) {

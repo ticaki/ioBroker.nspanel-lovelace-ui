@@ -731,7 +731,10 @@ class Controller extends Library.BaseClass {
         return;
       }
       this.globalPanelInfo.availableTftFirmwareVersion = result;
-      this.globalPanelInfo.availableTasmotaFirmwareVersion = result.tasmota ? result.tasmota.trim() : "";
+      this.globalPanelInfo.availableTasmotaFirmwareVersion = (0, import_tools.getTasmotaVersionFromJson)(
+        result,
+        this.adapter.config.useBetaTFT === true
+      );
       for (const panel of this.panels) {
         await panel.writeInfo();
       }
@@ -746,7 +749,7 @@ class Controller extends Library.BaseClass {
         this.log.error("No version data received.");
         return "";
       }
-      const TasmotaVersionOnline = typeof result.tasmota === "string" ? result.tasmota.trim() : "";
+      const TasmotaVersionOnline = (0, import_tools.getTasmotaVersionFromJson)(result, this.adapter.config.useBetaTFT === true);
       this.globalPanelInfo.availableTasmotaFirmwareVersion = TasmotaVersionOnline;
       for (const panel of this.panels) {
         panel.info.tasmota.onlineVersion = this.globalPanelInfo.availableTasmotaFirmwareVersion;
