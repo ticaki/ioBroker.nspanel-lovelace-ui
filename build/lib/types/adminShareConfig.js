@@ -98,6 +98,7 @@ __export(adminShareConfig_exports, {
   nameIsPopupTitleCards: () => nameIsPopupTitleCards,
   newScreensaverNotifyId: () => newScreensaverNotifyId,
   normalizeChannelId: () => normalizeChannelId,
+  normalizeScreensaverEntry: () => normalizeScreensaverEntry,
   normalizeScrollFields: () => normalizeScrollFields,
   normalizeTrashItems: () => normalizeTrashItems,
   normalizeWeatherEntity: () => normalizeWeatherEntity,
@@ -114,6 +115,7 @@ __export(adminShareConfig_exports, {
   requiredScriptDataPoints: () => requiredScriptDataPoints,
   resolvePageLinks: () => resolvePageLinks,
   reversePanelStatusStates: () => reversePanelStatusStates,
+  screensaverAlternateItems: () => screensaverAlternateItems,
   screensaverAreas: () => screensaverAreas,
   screensaverCardOfMode: () => screensaverCardOfMode,
   screensaverChannelIdOf: () => screensaverChannelIdOf,
@@ -473,6 +475,29 @@ function screensaverWeatherItemsOn(items, entity) {
     return [];
   }
   return screensaverWeatherItemsOfAdapter[adapter].filter((k) => items[k] === true);
+}
+function isScreensaverItemObject(value) {
+  return !!value && typeof value === "object" && !Array.isArray(value);
+}
+function screensaverAlternateItems(value) {
+  if (Array.isArray(value)) {
+    return value.map((v) => isScreensaverItemObject(v) ? v : void 0);
+  }
+  return isScreensaverItemObject(value) ? [value] : [];
+}
+function normalizeScreensaverEntry(entry) {
+  const raw = entry.alternate;
+  if (raw === void 0 || Array.isArray(raw)) {
+    return entry;
+  }
+  const out = { ...entry };
+  const list = screensaverAlternateItems(raw);
+  if (list.length) {
+    out.alternate = list;
+  } else {
+    delete out.alternate;
+  }
+  return out;
 }
 function emptyScreensaverEntry(name, mode = "standard") {
   return {
@@ -1861,6 +1886,7 @@ const CONVERT_GLOBAL_DEFAULT_DECISION = "keepAdmin";
   nameIsPopupTitleCards,
   newScreensaverNotifyId,
   normalizeChannelId,
+  normalizeScreensaverEntry,
   normalizeScrollFields,
   normalizeTrashItems,
   normalizeWeatherEntity,
@@ -1877,6 +1903,7 @@ const CONVERT_GLOBAL_DEFAULT_DECISION = "keepAdmin";
   requiredScriptDataPoints,
   resolvePageLinks,
   reversePanelStatusStates,
+  screensaverAlternateItems,
   screensaverAreas,
   screensaverCardOfMode,
   screensaverChannelIdOf,

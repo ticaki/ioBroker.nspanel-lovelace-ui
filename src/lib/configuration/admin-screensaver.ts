@@ -1,4 +1,9 @@
-import { screensaverCardOfMode, screensaverNotifyOfEntry } from '../types/adminShareConfig';
+import {
+    normalizeScreensaverEntry,
+    screensaverAlternateItems,
+    screensaverCardOfMode,
+    screensaverNotifyOfEntry,
+} from '../types/adminShareConfig';
 import type {
     ScreensaverEntry,
     ScreensaverItemConfig,
@@ -62,7 +67,13 @@ export function screensaverStateIds(entry: ScreensaverEntry): string[] {
 }
 
 function allItems(entry: ScreensaverEntry): (ScreensaverItemConfig | undefined)[] {
-    return [entry.favorit, entry.alternate, ...(entry.left ?? []), ...(entry.bottom ?? []), ...(entry.indicator ?? [])];
+    return [
+        entry.favorit,
+        ...screensaverAlternateItems(entry.alternate),
+        ...(entry.left ?? []),
+        ...(entry.bottom ?? []),
+        ...(entry.indicator ?? []),
+    ];
 }
 
 /**
@@ -169,7 +180,6 @@ export function buildScreensaverScriptConfig(
         list.filter((e): e is ScriptConfig.ScreenSaverElement => !!e);
 
     const favorit = convert(entry.favorit, 'favorit');
-    const alternate = convert(entry.alternate, 'alternate');
     const config = {
         version: 'admin',
         scriptName: `admin.screensaver.${entry.name}`,
@@ -178,7 +188,11 @@ export function buildScreensaverScriptConfig(
         weatherEntity: entry.weatherEntity as string,
         weatherAddDefaultItems: entry.weatherAddDefaultItems,
         favoritScreensaverEntity: favorit ? [favorit] : [],
-        alternateScreensaverEntity: alternate ? [alternate] : [],
+        // the panel shows one alternate item at a time and rotates through them - gaps carry no position
+        // (entries saved before `alternate` became a list hold a single item)
+        alternateScreensaverEntity: present(
+            screensaverAlternateItems(entry.alternate).map(i => convert(i, 'alternate')),
+        ),
         // left and indicator keep their gaps - the panel places them by index
         leftScreensaverEntity: (entry.left ?? []).map(i => convert(i, 'left')),
         bottomScreensaverEntity: present((entry.bottom ?? []).map(i => convert(i, 'bottom'))),
@@ -205,8 +219,9 @@ export function buildScreensaverScriptConfig(
 }
 
 /**
- * The entry a panel uses: the first one that lists its topic. Further entries with the same topic are
- * returned by name so the caller can warn.
+ * The entry a panel uses: the first one that lists its topic, in the current form
+ * ({@link normalizeScreensaverEntry}). Further entries with the same topic are returned by name so the
+ * caller can warn.
  *
  * @param entries screensaver table of the instance
  * @param topic topic of the panel
@@ -216,7 +231,7 @@ export function findScreensaverEntry(
     topic: string,
 ): { entry: ScreensaverEntry | undefined; others: string[] } {
     const hits = (entries ?? []).filter(e => e && Array.isArray(e.panels) && e.panels.includes(topic));
-    return { entry: hits[0], others: hits.slice(1).map(e => e.name) };
+    return { entry: hits[0] ? normalizeScreensaverEntry(hits[0]) : undefined, others: hits.slice(1).map(e => e.name) };
 }
 
 type DateFormatItem = {

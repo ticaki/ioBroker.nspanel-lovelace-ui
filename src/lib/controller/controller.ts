@@ -4,7 +4,7 @@ import { StatesControler } from './states-controller';
 import * as Panel from './panel';
 import { genericStateObjects } from '../const/definition';
 import { SystemNotifications } from '../classes/system-notifications';
-import { getInternalDefaults, getRGBFromValue } from '../const/tools';
+import { getInternalDefaults, getRGBFromValue, getTasmotaVersionFromJson } from '../const/tools';
 import type { nsPanelState, nsPanelStateVal } from '../types/types';
 import type { ColorThemenInterface } from '../const/Color';
 import { Color } from '../const/Color';
@@ -817,7 +817,10 @@ export class Controller extends Library.BaseClass {
 
             this.globalPanelInfo.availableTftFirmwareVersion = result;
 
-            this.globalPanelInfo.availableTasmotaFirmwareVersion = result.tasmota ? result.tasmota.trim() : '';
+            this.globalPanelInfo.availableTasmotaFirmwareVersion = getTasmotaVersionFromJson(
+                result,
+                this.adapter.config.useBetaTFT === true,
+            );
 
             for (const panel of this.panels) {
                 await panel.writeInfo();
@@ -834,7 +837,7 @@ export class Controller extends Library.BaseClass {
                 return '';
             }
             // Filter JSON by "tag_name" and write to variable
-            const TasmotaVersionOnline = typeof result.tasmota === 'string' ? result.tasmota.trim() : '';
+            const TasmotaVersionOnline = getTasmotaVersionFromJson(result, this.adapter.config.useBetaTFT === true);
 
             this.globalPanelInfo.availableTasmotaFirmwareVersion = TasmotaVersionOnline;
             for (const panel of this.panels) {

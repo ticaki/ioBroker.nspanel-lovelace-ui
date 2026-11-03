@@ -597,6 +597,7 @@ export class PageThermo2 extends PageMenu {
                     ? {
                           value: { type: 'triggered', dp: set },
                           set: { type: 'state', dp: set },
+                          unit: { type: 'const', constVal: item.unit || '°C' },
                       }
                     : undefined,
                 entity1: (await configManager.existsState(actual))
@@ -661,7 +662,7 @@ export class PageThermo2 extends PageMenu {
                 entity2: (await configManager.existsState(humidity))
                     ? {
                           value: { type: 'triggered', dp: humidity || '' },
-                          unit: { type: 'const', constVal: item.unit || '%' },
+                          unit: { type: 'const', constVal: item.unit2 || '%' },
                       }
                     : undefined,
                 headline: { type: 'const', constVal: headline || 'HEATING' },

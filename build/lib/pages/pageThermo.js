@@ -18,7 +18,8 @@ var __copyProps = (to, from, except, desc) => {
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 var pageThermo_exports = {};
 __export(pageThermo_exports, {
-  PageThermo: () => PageThermo
+  PageThermo: () => PageThermo,
+  snapSetTemperature: () => snapSetTemperature
 });
 module.exports = __toCommonJS(pageThermo_exports);
 var import_Page = require("../classes/Page");
@@ -43,6 +44,15 @@ const PageThermoMessageDefault = {
   temp2: "",
   btDetail: "1"
 };
+function snapSetTemperature(dstTemp, minTemp, maxTemp, tempStep) {
+  const step = Number.isFinite(tempStep) && tempStep >= 1 ? tempStep : 1;
+  const clamped = Math.min(Math.max(dstTemp, minTemp), maxTemp);
+  let snapped = Math.round((clamped - minTemp) / step) * step + minTemp;
+  if (snapped > maxTemp) {
+    snapped -= step;
+  }
+  return snapped < minTemp ? minTemp : snapped;
+}
 class PageThermo extends import_Page.Page {
   //config: pages.cardThermoDataItemOptions;
   items;
@@ -181,8 +191,12 @@ class PageThermo extends import_Page.Page {
       }
       message.tempStep = parseFloat(message.tempStep) < 1 ? "1" : message.tempStep;
       if (typeof message.minTemp === "number" && typeof message.maxTemp === "number" && typeof message.dstTemp === "number" && typeof message.tempStep === "string") {
-        message.dstTemp = Math.min(Math.max(message.dstTemp, message.minTemp), message.maxTemp);
-        message.dstTemp = Math.round((message.dstTemp - message.minTemp) / parseInt(message.tempStep) + message.minTemp) * parseInt(message.tempStep);
+        message.dstTemp = snapSetTemperature(
+          message.dstTemp,
+          message.minTemp,
+          message.maxTemp,
+          parseInt(message.tempStep)
+        );
       }
       v = (_f = item.data.set2 && await item.data.set2.getNumber()) != null ? _f : null;
       if (v !== null) {
@@ -345,6 +359,7 @@ class PageThermo extends import_Page.Page {
 }
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
-  PageThermo
+  PageThermo,
+  snapSetTemperature
 });
 //# sourceMappingURL=pageThermo.js.map

@@ -934,7 +934,12 @@ export type ScreensaverEntry = {
     /** topics of the panels using this screensaver (multi select, no "all panels") */
     panels: string[];
     favorit?: ScreensaverItemConfig;
-    alternate?: ScreensaverItemConfig;
+    /**
+     * items of the alternate line - the panel shows one at a time and rotates through them; gaps are kept
+     * as undefined like in bottom. Entries saved before this was a list hold a single object, see
+     * {@link normalizeScreensaverEntry} / {@link screensaverAlternateItems}.
+     */
+    alternate?: (ScreensaverItemConfig | undefined)[];
     /** items of the areas in panel order, gaps are kept as undefined */
     left: (ScreensaverItemConfig | undefined)[];
     bottom: (ScreensaverItemConfig | undefined)[];
@@ -1040,6 +1045,51 @@ export function screensaverWeatherItemsOn(
         return [];
     }
     return screensaverWeatherItemsOfAdapter[adapter].filter(k => items[k] === true);
+}
+
+/**
+ * Whether a stored value is one screensaver item (an object, not a list).
+ *
+ * @param value stored value
+ */
+function isScreensaverItemObject(value: unknown): value is ScreensaverItemConfig {
+    return !!value && typeof value === 'object' && !Array.isArray(value);
+}
+
+/**
+ * Items of the alternate area as a list. Entries saved before `alternate` became a list hold a single
+ * item object - it becomes a list of one; anything else (missing, invalid) an empty list.
+ *
+ * @param value stored `entry.alternate` (list or legacy single item)
+ * @returns the items, gaps kept as undefined
+ */
+export function screensaverAlternateItems(value: unknown): (ScreensaverItemConfig | undefined)[] {
+    if (Array.isArray(value)) {
+        return value.map(v => (isScreensaverItemObject(v) ? v : undefined));
+    }
+    return isScreensaverItemObject(value) ? [value] : [];
+}
+
+/**
+ * A stored screensaver entry in the current form: a legacy single `alternate` item becomes a list.
+ * The entry itself is returned when nothing had to change.
+ *
+ * @param entry stored entry
+ * @returns the entry in the current form
+ */
+export function normalizeScreensaverEntry(entry: ScreensaverEntry): ScreensaverEntry {
+    const raw: unknown = entry.alternate;
+    if (raw === undefined || Array.isArray(raw)) {
+        return entry;
+    }
+    const out: ScreensaverEntry = { ...entry };
+    const list = screensaverAlternateItems(raw);
+    if (list.length) {
+        out.alternate = list;
+    } else {
+        delete out.alternate;
+    }
+    return out;
 }
 
 /**

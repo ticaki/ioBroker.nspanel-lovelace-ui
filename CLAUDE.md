@@ -5,9 +5,10 @@
 1. **Nur class-based Components** – keine Hooks, keine funktionalen Komponenten.
 
 2. **Alle sichtbaren Strings müssen übersetzt sein** via i18n.
-   - Übersetzungsdateien für Admin: `./src-admin/src/i18n/en.json` und `./src-admin/src/i18n/de.json`
-   - Adapter-Übersetzungen: `./admin/i18n/*/translations.json`
-   - Mindestens Englisch **und** Deutsch bei neuen Keys.
+   - Übersetzungen (auch für die Admin-React-UI): `./admin/i18n/*/translations.json` – der Admin-Build
+     (`build:admin`) mergt sie nach `admin/custom/i18n/*.json`.
+   - `./src-admin/src/i18n/*.json` enthält nur eine Handvoll Basis-Keys – neue Keys **nicht** dort anlegen.
+   - Mindestens Englisch **und** Deutsch bei neuen Keys, möglichst alle 11 Sprachen.
 
 3. **Return-Typen sind Pflicht** – öffentliche und interne Methoden müssen explizite Rückgabetypen haben.
 

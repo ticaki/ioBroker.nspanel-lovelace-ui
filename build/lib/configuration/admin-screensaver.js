@@ -61,7 +61,13 @@ function screensaverStateIds(entry) {
 }
 function allItems(entry) {
   var _a, _b, _c;
-  return [entry.favorit, entry.alternate, ...(_a = entry.left) != null ? _a : [], ...(_b = entry.bottom) != null ? _b : [], ...(_c = entry.indicator) != null ? _c : []];
+  return [
+    entry.favorit,
+    ...(0, import_adminShareConfig.screensaverAlternateItems)(entry.alternate),
+    ...(_a = entry.left) != null ? _a : [],
+    ...(_b = entry.bottom) != null ? _b : [],
+    ...(_c = entry.indicator) != null ? _c : []
+  ];
 }
 function screensaverMrIconToScript(cfg) {
   var _a;
@@ -131,7 +137,6 @@ function buildScreensaverScriptConfig(entry, panelTopic, states = {}, notifyList
   };
   const present = (list) => list.filter((e) => !!e);
   const favorit = convert(entry.favorit, "favorit");
-  const alternate = convert(entry.alternate, "alternate");
   const config = {
     version: "admin",
     scriptName: `admin.screensaver.${entry.name}`,
@@ -140,7 +145,11 @@ function buildScreensaverScriptConfig(entry, panelTopic, states = {}, notifyList
     weatherEntity: entry.weatherEntity,
     weatherAddDefaultItems: entry.weatherAddDefaultItems,
     favoritScreensaverEntity: favorit ? [favorit] : [],
-    alternateScreensaverEntity: alternate ? [alternate] : [],
+    // the panel shows one alternate item at a time and rotates through them - gaps carry no position
+    // (entries saved before `alternate` became a list hold a single item)
+    alternateScreensaverEntity: present(
+      (0, import_adminShareConfig.screensaverAlternateItems)(entry.alternate).map((i) => convert(i, "alternate"))
+    ),
     // left and indicator keep their gaps - the panel places them by index
     leftScreensaverEntity: ((_a = entry.left) != null ? _a : []).map((i) => convert(i, "left")),
     bottomScreensaverEntity: present(((_b = entry.bottom) != null ? _b : []).map((i) => convert(i, "bottom"))),
@@ -165,7 +174,7 @@ function buildScreensaverScriptConfig(entry, panelTopic, states = {}, notifyList
 }
 function findScreensaverEntry(entries, topic) {
   const hits = (entries != null ? entries : []).filter((e) => e && Array.isArray(e.panels) && e.panels.includes(topic));
-  return { entry: hits[0], others: hits.slice(1).map((e) => e.name) };
+  return { entry: hits[0] ? (0, import_adminShareConfig.normalizeScreensaverEntry)(hits[0]) : void 0, others: hits.slice(1).map((e) => e.name) };
 }
 function applyScreensaverEntry(page, entry) {
   var _a, _b, _c, _d, _e;

@@ -5,7 +5,9 @@ import {
     conditionExpressionText,
     conditionValueText,
     emptyScreensaverEntry,
+    normalizeScreensaverEntry,
     rawItemCondition,
+    screensaverAlternateItems,
     screensaverItemCondition,
     formatEntryNumber,
     screensaverNotifyLines,
@@ -25,6 +27,7 @@ import {
 import { ScreenSaverConst, weatherEntities } from '../const/definition';
 import type { NSpanelModel, ScreensaverModeType } from './types';
 import type {
+    ScreensaverEntry,
     ScreensaverItemConfig,
     ScreensaverMode,
     ScreensaverPanelModel,
@@ -117,6 +120,27 @@ describe('lib/types - screensaver entry (admin tab)', () => {
         const b = emptyScreensaverEntry('a');
         expect(a).to.not.equal(b);
         expect(a.bottom).to.not.equal(b.bottom);
+    });
+
+    it('turns a legacy single alternate item into a list, keeps current entries as they are', () => {
+        const item: ScreensaverItemConfig = { state: 'a.0.b' };
+        expect(screensaverAlternateItems(item)).to.deep.equal([item]);
+        expect(screensaverAlternateItems([item, undefined, item])).to.deep.equal([item, undefined, item]);
+        expect(screensaverAlternateItems(undefined)).to.deep.equal([]);
+        expect(screensaverAlternateItems('x')).to.deep.equal([]);
+
+        const current = { ...emptyScreensaverEntry('a', 'alternate'), alternate: [item] };
+        expect(normalizeScreensaverEntry(current)).to.equal(current);
+        const none = emptyScreensaverEntry('a');
+        expect(normalizeScreensaverEntry(none)).to.equal(none);
+
+        const legacy = { ...emptyScreensaverEntry('a', 'alternate'), alternate: item } as unknown as ScreensaverEntry;
+        const normalized = normalizeScreensaverEntry(legacy);
+        expect(normalized).to.not.equal(legacy);
+        expect(normalized.alternate).to.deep.equal([item]);
+        expect(normalized.name).to.equal('a');
+        // the stored entry is not changed
+        expect(legacy.alternate).to.equal(item);
     });
 });
 

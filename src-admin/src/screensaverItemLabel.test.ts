@@ -142,10 +142,15 @@ describe('screensaverItemLabel', () => {
         expect(screensaverItemObjectId({ state: '/^a\\.b/', template: 'text.x' })).to.equal('');
         const entry = {
             favorit: { state: 'alias.0.Window', template: 'text.window.isOpen' },
+            alternate: [{ state: 'alias.0.Alt' }],
             left: [undefined, { state: 'alias.0.Window' }],
             bottom: [{ state: '/^pirate-weather\\.0\\./', template: 'text.pirate-weather.favorit' }],
             indicator: [{ state: '', raw: { format: 'script', config: { ScreensaverEntity: 'a.0.b' } } }],
         } as unknown as ScreensaverEntry;
-        expect(screensaverEntryObjectIds(entry)).to.deep.equal(['alias.0.Window', 'a.0.b']);
+        expect(screensaverEntryObjectIds(entry)).to.deep.equal(['alias.0.Window', 'alias.0.Alt', 'a.0.b']);
+        // entries saved before `alternate` became a list hold one item object
+        expect(
+            screensaverEntryObjectIds({ ...entry, alternate: { state: 'alias.0.Old' } } as unknown as ScreensaverEntry),
+        ).to.deep.equal(['alias.0.Window', 'alias.0.Old', 'a.0.b']);
     });
 });
