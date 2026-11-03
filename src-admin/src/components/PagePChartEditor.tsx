@@ -22,14 +22,14 @@ import {
     ADAPTER_NAME,
     emptyPChartSlot,
     isMainPageEntry,
+    isPChartRangeKey,
     PCHART_MAX_SLICES,
     PCHART_SOURCE_SCRIPT,
     PCHART_SOURCE_SLOTS,
     pchartDefaults,
-    pchartRangeHoursOf,
-    pchartRangeOptionOf,
+    pchartRangeKeys,
     type PChartEntry,
-    type PChartRangeOption,
+    type PChartRangeKey,
     type PChartSlotConfig,
 } from '../../../src/lib/types/adminShareConfig';
 
@@ -47,21 +47,25 @@ type DbInstance = { id: string; name: string };
 interface PagePChartEditorState extends ConfigGenericState {
     alive: boolean;
     dbInstances: DbInstance[];
-    /** the user chose "custom" in the range select - keeps the hours field visible even if the hours match a preset */
-    customRange: boolean;
 }
 
 /** adapters that answer `getHistory` */
 const DB_ADAPTERS = ['influxdb', 'history', 'sql'];
 
-const RANGE_OPTIONS: readonly PChartRangeOption[] = ['current', 'hour', 'day', 'week', 'month', 'custom'];
-const RANGE_LABEL_KEYS: Readonly<Record<PChartRangeOption, string>> = {
+/** translation key of every range option (the select lists them in this order, see pchartRangeKeys) */
+const RANGE_LABEL_KEYS: Readonly<Record<PChartRangeKey, string>> = {
     current: 'pchart_RangeCurrent',
-    hour: 'pchart_RangeHour',
-    day: 'pchart_RangeDay',
-    week: 'pchart_RangeWeek',
-    month: 'pchart_RangeMonth',
+    h1: 'pchart_RangeHour',
+    d1: 'pchart_RangeDay',
+    w1: 'pchart_RangeWeek',
+    m1: 'pchart_RangeMonth',
     custom: 'pchart_RangeCustom',
+    today: 'pchart_RangeToday',
+    yesterday: 'pchart_RangeYesterday',
+    thisWeek: 'pchart_RangeThisWeek',
+    lastWeek: 'pchart_RangeLastWeek',
+    thisMonth: 'pchart_RangeThisMonth',
+    lastMonth: 'pchart_RangeLastMonth',
 };
 const LEGEND_LABEL_KEYS: readonly string[] = ['pchart_Legend0', 'pchart_Legend1', 'pchart_Legend2', 'pchart_Legend3'];
 
@@ -102,6 +106,15 @@ function slotsOf(entry: PChartEntry): PChartSlotConfig[] {
     return Array.from({ length: PCHART_MAX_SLICES }, (_, i) => slots[i] ?? emptyPChartSlot(i));
 }
 
+/**
+ * The stored range key, `current` for a missing or unknown one.
+ *
+ * @param entry pie chart entry
+ */
+function rangeKeyOf(entry: PChartEntry): PChartRangeKey {
+    return isPChartRangeKey(entry.rangeKey) ? entry.rangeKey : 'current';
+}
+
 export class PagePChartEditor extends ConfigGeneric<ConfigGenericProps & PagePChartEditorProps, PagePChartEditorState> {
     constructor(props: ConfigGenericProps & PagePChartEditorProps) {
         super(props);
@@ -109,7 +122,6 @@ export class PagePChartEditor extends ConfigGeneric<ConfigGenericProps & PagePCh
             ...this.state,
             alive: false,
             dbInstances: [],
-            customRange: pchartRangeOptionOf(props.entry.rangeHours) === 'custom',
         };
     }
 
@@ -133,13 +145,6 @@ export class PagePChartEditor extends ConfigGeneric<ConfigGenericProps & PagePCh
             this.setState({ alive: false });
         }
         await this.loadDbInstances();
-    }
-
-    componentDidUpdate(prevProps: ConfigGenericProps & PagePChartEditorProps): void {
-        if (prevProps.entry.uniqueName !== this.props.entry.uniqueName) {
-            // another page was selected: derive the range selection from its hours again
-            this.setState({ customRange: pchartRangeOptionOf(this.props.entry.rangeHours) === 'custom' });
-        }
     }
 
     private onAliveChanged = (_id: string, state: ioBroker.State | null | undefined): void => {
@@ -186,23 +191,14 @@ export class PagePChartEditor extends ConfigGeneric<ConfigGenericProps & PagePCh
         this.handleFieldChange('slots', slots);
     }
 
-    private handleRangeChange(option: PChartRangeOption): void {
-        const { entry } = this.props;
-        this.setState({ customRange: option === 'custom' });
-        const hours = pchartRangeHoursOf(option, entry.rangeHours);
-        if (hours !== (entry.rangeHours ?? 0)) {
-            this.handleFieldChange('rangeHours', hours);
-        }
-    }
-
     /**
-     * typed hours of the custom range; empty or invalid input keeps one hour (0 would switch to the current value)
+     * typed hours of the custom range; empty or invalid input keeps the field empty, the adapter then uses one hour
      *
      * @param raw text of the input
      */
     private handleCustomHoursChange(raw: string): void {
         const n = parseInt(raw, 10);
-        this.handleFieldChange('rangeHours', pchartRangeHoursOf('custom', Number.isFinite(n) ? n : undefined));
+        this.handleFieldChange('rangeHours', Number.isFinite(n) && n > 0 ? n : undefined);
     }
 
     private renderUniqueName(): React.JSX.Element {
@@ -326,9 +322,9 @@ export class PagePChartEditor extends ConfigGeneric<ConfigGenericProps & PagePCh
 
     private renderRange(): React.JSX.Element {
         const { entry } = this.props;
-        const { alive, dbInstances, customRange } = this.state;
-        const option: PChartRangeOption = customRange ? 'custom' : pchartRangeOptionOf(entry.rangeHours);
-        const useDb = option !== 'current';
+        const { alive, dbInstances } = this.state;
+        const rangeKey = rangeKeyOf(entry);
+        const useDb = rangeKey !== 'current';
         const selectedInstance = shortInstanceId(entry.selInstance);
         const instanceKnown = dbInstances.some(inst => inst.name === selectedInstance);
         const instanceMissing = useDb && !selectedInstance;
@@ -337,36 +333,36 @@ export class PagePChartEditor extends ConfigGeneric<ConfigGenericProps & PagePCh
                 <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, alignItems: 'flex-start' }}>
                     <FormControl
                         variant="standard"
-                        sx={{ minWidth: 220 }}
+                        sx={{ minWidth: 260 }}
                         disabled={!alive}
                     >
                         <InputLabel>{this.getText('pchart_Range')}</InputLabel>
                         <Select
-                            value={option}
+                            value={rangeKey}
                             onChange={e => {
-                                const value = String(e.target.value);
-                                const chosen = RANGE_OPTIONS.find(o => o === value);
-                                if (chosen) {
-                                    this.handleRangeChange(chosen);
+                                const value: unknown = e.target.value;
+                                if (isPChartRangeKey(value)) {
+                                    this.handleFieldChange('rangeKey', value);
                                 }
                             }}
                         >
-                            {RANGE_OPTIONS.map(o => (
+                            {pchartRangeKeys.map(key => (
                                 <MenuItem
-                                    key={o}
-                                    value={o}
+                                    key={key}
+                                    value={key}
                                 >
-                                    {this.getText(RANGE_LABEL_KEYS[o])}
+                                    {this.getText(RANGE_LABEL_KEYS[key])}
                                 </MenuItem>
                             ))}
                         </Select>
                     </FormControl>
-                    {option === 'custom' && (
+                    {rangeKey === 'custom' && (
                         <TextField
                             variant="standard"
                             type="number"
                             label={this.getText('pchart_RangeHours')}
                             value={entry.rangeHours && entry.rangeHours > 0 ? entry.rangeHours : ''}
+                            placeholder="1"
                             onChange={e => {
                                 this.handleCustomHoursChange(e.target.value);
                             }}
