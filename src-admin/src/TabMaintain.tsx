@@ -388,7 +388,7 @@ class MaintainPanel extends ConfigGeneric<ConfigGenericProps & MaintainPanelProp
                 const result = await this.props.oContext.socket.sendTo(
                     `${this.adapterName}.${this.instance}`,
                     'updateTasmota',
-                    { topic: panel._topic },
+                    { topic: panel._topic, useBetaTFT: this.props.data.useBetaTFT || false },
                 );
 
                 if (!this._isMounted) {

@@ -68,6 +68,7 @@ import { isTasmotaStatusNet } from './lib/types/function-and-const';
 import type { oldQRType } from './lib/types/types';
 import iCal from 'node-ical';
 import type { NSPanel } from './lib/types/NSPanel';
+import { getTasmotaVersionFromJson } from './lib/const/tools';
 
 /** Zwischenstand einer laufenden Panel-Einrichtung, siehe `nsPanelInitStep1` */
 interface NsPanelInitSession {
@@ -2323,8 +2324,17 @@ class NspanelLovelaceUi extends utils.Adapter {
                     let language = this.library.getLocalLanguage();
                     language = language === 'zh-cn' ? 'en' : language;
                     const result = await this.getVersionsJson();
-                    if (result && 'tasmota' in result && typeof result.tasmota === 'string') {
-                        const cmnd = `OtaUrl http://ota.tasmota.com/tasmota32/release-${result.tasmota.trim()}/tasmota32-${language.toUpperCase()}.bin; Upgrade 1`;
+                    const msg: unknown = obj.message;
+                    const msgBeta =
+                        msg && typeof msg === 'object' && 'useBetaTFT' in msg && typeof msg.useBetaTFT === 'boolean'
+                            ? msg.useBetaTFT
+                            : undefined;
+                    const tasmotaVersion = getTasmotaVersionFromJson(
+                        result,
+                        msgBeta ?? this.config.useBetaTFT === true,
+                    );
+                    if (tasmotaVersion) {
+                        const cmnd = `OtaUrl http://ota.tasmota.com/tasmota32/release-${tasmotaVersion}/tasmota32-${language.toUpperCase()}.bin; Upgrade 1`;
 
                         if (this.controller?.panels) {
                             const index = this.controller.panels.findIndex(a => a.topic === obj.message.topic);

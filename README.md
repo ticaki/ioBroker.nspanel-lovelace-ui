@@ -158,11 +158,13 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
     ### **WORK IN PROGRESS**
 -->
 ### **WORK IN PROGRESS**
+- (tt-tom17) cardThermo: the set temperature reached the panel multiplied by the step width (19.0 °C became 79.0 °C with the usual step of 0.5 °C) - only a step of 0.1 °C was unaffected
+- (ticaki) Tasmota update and the Tasmota update indicator use the `tasmota-beta` version when the beta option is enabled; the beta option label in the admin no longer refers to TFT only
 - (ticaki) admin screensaver: uniform, larger paging arrows for all areas except favorit (the scroll bar for weather items is gone, weather items are paged like the panel does); the alternate area can hold several items the panel rotates through
 - (ticaki) admin screensaver: the notifications and options buttons moved from the panel picture to a bar below it, so they no longer cover places and paging arrows
 - (ticaki) admin screensaver: items of areas the chosen version does not show are no longer reported as a problem or offered for removal - the version can change at runtime (`cmd.screenSaver.layout`)
 - (tt-tom17) cardThermo2: the humidity row uses the unit configured for it, and the unit of the first row now also applies to the set temperature - the admin offers both fields, the adapter read only the first one
-- (tt-tom17) cardThermo: the set temperature reached the panel multiplied by the step width (19.0 °C became 79.0 °C with the usual step of 0.5 °C) - only a step of 0.1 °C was unaffected
+- (tt-tom17) admin: the two hardware button buttons of a panel tile now sit one below the other, and their colour also shows whether the relay is decoupled - with a tooltip naming the state
 - (tt-tom17) cardQR: a page with the encryption "No Password" (or a free text, url or telephone code) no longer carries the stored wifi password to the panel - it was shown in clear text on the card and was part of the scanned code
 - (tt-tom17) cardAlarm: the disarm buttons (columns 5 to 8) were only taken over when the arm button of the same row was filled, so a page with the disarm column alone showed no button at all
 - (tt-tom17) cardAlarm: a new page starts as an alarm system with the buttons "Arm" and "Disarm" filled in, and the top button of both columns is mandatory - without them the card has no button at all in one of its two states and cannot be left; the type "unlock" still needs one button only

@@ -55,6 +55,7 @@ __export(tools_exports, {
   getScaledNumber: () => getScaledNumber,
   getSliderCTFromValue: () => getSliderCTFromValue,
   getStringFromStringOrTranslated: () => getStringFromStringOrTranslated,
+  getTasmotaVersionFromJson: () => getTasmotaVersionFromJson,
   getTemperaturColorFromValue: () => getTemperaturColorFromValue,
   getTranslation: () => getTranslation,
   getValueAutoUnit: () => getValueAutoUnit,
@@ -1132,6 +1133,19 @@ function getStringFromStringOrTranslated(adapter, input, def) {
   return def != null ? def : ``;
 }
 var tools_default = formatHMS;
+function getTasmotaVersionFromJson(json, beta) {
+  if (!json) {
+    return "";
+  }
+  if (beta) {
+    const b = json["tasmota-beta"];
+    if (typeof b === "string" && b.trim()) {
+      return b.trim();
+    }
+  }
+  const v = json.tasmota;
+  return typeof v === "string" ? v.trim() : "";
+}
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
   GetIconColor,
@@ -1160,6 +1174,7 @@ var tools_default = formatHMS;
   getScaledNumber,
   getSliderCTFromValue,
   getStringFromStringOrTranslated,
+  getTasmotaVersionFromJson,
   getTemperaturColorFromValue,
   getTranslation,
   getValueAutoUnit,
