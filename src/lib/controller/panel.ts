@@ -40,6 +40,7 @@ import { cardTemplates } from '../templates/card';
 import { deepAssign, getRegExp, getRGBFromValue, isVersionGreaterOrEqual } from '../const/tools';
 import { PageChartBar } from '../pages/pageChartBar';
 import { PageChartLine } from '../pages/pageChartLine';
+import { PageChartPie } from '../pages/pageChartPie';
 import { PageThermo2 } from '../pages/pageThermo2';
 import { AdminConfiguration } from '../configuration/admin';
 import { ensureMainPage } from '../configuration/main-page';
@@ -533,6 +534,10 @@ export class Panel extends BaseClass {
             case 'cardLChart': {
                 pageConfig = Panel.getPage(pageConfig, this);
                 return new PageChartLine(pmconfig, pageConfig);
+            }
+            case 'cardPChart': {
+                pageConfig = Panel.getPage(pageConfig, this);
+                return new PageChartPie(pmconfig, pageConfig);
             }
             case 'cardEntities': {
                 pageConfig = Panel.getPage(pageConfig, this);

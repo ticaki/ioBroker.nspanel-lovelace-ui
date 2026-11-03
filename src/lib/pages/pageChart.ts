@@ -58,18 +58,23 @@ export function buildChartPageConfig(entry: ChartEntry): pages.cardChartDataItem
     };
 }
 
+/** the cards the chart classes draw: bar, line (PageChart) and pie (PageChartPie) */
+const chartCards: readonly pages.PageTypeCards[] = ['cardChart', 'cardLChart', 'cardPChart'];
+
 export class PageChart extends Page {
     items: pages.cardChartDataItems | undefined;
     protected dbDetails?: ChartDetailsExternal;
-    protected chartTimeout: ioBroker.Timeout | undefined | null;
-    protected oldDatabaseData: any[] | null = null;
+    /** running getHistory timeouts, one per state id (the pie chart queries several states) */
+    protected chartTimeouts: Map<string, ioBroker.Timeout> = new Map();
+    /** last history result per state id, returned while a query for the same state is still running */
+    protected oldDatabaseData: Map<string, any[]> = new Map();
 
     constructor(config: PageInterface, options: pages.PageBase) {
-        if (config.card !== 'cardChart' && config.card !== 'cardLChart') {
+        if (!chartCards.includes(config.card)) {
             return;
         }
         super(config, options);
-        if (options.config && (options.config.card == 'cardChart' || options.config.card == 'cardLChart')) {
+        if (options.config && chartCards.includes(options.config.card)) {
             this.config = options.config;
         } else {
             throw new Error('Missing config!');
@@ -92,6 +97,22 @@ export class PageChart extends Page {
             return;
         }
         await super.update();
+        const message = await this.getUpdateMessage();
+        if (message.value) {
+            this.log.debug(`Value: ${message.value}`);
+        }
+        if (message.ticks) {
+            this.log.debug(`Ticks: ${message.ticks.join(',')}`);
+        }
+        this.sendType(true);
+        this.sendToPanel(this.getMessage(message), false);
+    }
+
+    /**
+     * The fields of the next entityUpd: bar and line chart read ticks and values via getChartData,
+     * the pie chart overrides this with its slices.
+     */
+    protected async getUpdateMessage(): Promise<Partial<pages.PageChartMessage>> {
         const message: Partial<pages.PageChartMessage> = {};
         message.navigation = this.getNavigation();
         message.headline = `Error`;
@@ -110,14 +131,7 @@ export class PageChart extends Page {
             message.value = valuesChart;
             message.ticks = ticksChart;
         }
-        if (message.value) {
-            this.log.debug(`Value: ${message.value}`);
-        }
-        if (message.ticks) {
-            this.log.debug(`Ticks: ${message.ticks.join(',')}`);
-        }
-        this.sendType(true);
-        this.sendToPanel(this.getMessage(message), false);
+        return message;
     }
 
     /**
@@ -183,12 +197,14 @@ export class PageChart extends Page {
      * @param query what the chart type needs from the history
      * @param query.aggregate 'average' (one value per interval) or 'none' (raw values)
      * @param query.count number of intervals (bar: hours, line: fine grid); also used as `limit`
+     * @param query.removeBorderValues true = no extra points before start and after end (pie: one average only)
+     * @param query.round digits after the decimal point, default 1
      */
     protected async getDataFromDB(
         _id: string,
         _rangeHours: number,
         _instance: string,
-        query: { aggregate: 'average' | 'none'; count: number },
+        query: { aggregate: 'average' | 'none'; count: number; removeBorderValues?: boolean; round?: number },
     ): Promise<any[] | null> {
         if (!_instance) {
             return null;
@@ -204,12 +220,12 @@ export class PageChart extends Page {
             return null;
         }
         return new Promise((resolve, reject) => {
-            if (this.chartTimeout) {
-                resolve(this.oldDatabaseData || null);
+            if (this.chartTimeouts.has(_id)) {
+                resolve(this.oldDatabaseData.get(_id) ?? null);
                 return;
             }
-            this.chartTimeout = this.adapter.setTimeout(() => {
-                this.chartTimeout = null;
+            const timeout = this.adapter.setTimeout(() => {
+                this.chartTimeouts.delete(_id);
                 if (this.unload || this.adapter.unload) {
                     resolve(null);
                     return;
@@ -218,6 +234,9 @@ export class PageChart extends Page {
                     new Error(`PageChart: ${this.name} - DB: ${_instance} - Timeout getting history for state ${_id}`),
                 );
             }, 15_000);
+            if (timeout) {
+                this.chartTimeouts.set(_id, timeout);
+            }
             try {
                 this.adapter.sendTo(
                     _instance,
@@ -235,14 +254,16 @@ export class PageChart extends Page {
                             ignoreNull: true,
                             aggregate: query.aggregate,
                             /** round result to number of digits after decimal point */
-                            round: 1,
+                            round: query.round ?? 1,
+                            ...(query.removeBorderValues ? { removeBorderValues: true } : {}),
                         },
                     },
                     result => {
-                        if (this.chartTimeout) {
-                            this.adapter.clearTimeout(this.chartTimeout);
+                        const timeout = this.chartTimeouts.get(_id);
+                        if (timeout) {
+                            this.adapter.clearTimeout(timeout);
                         }
-                        this.chartTimeout = null;
+                        this.chartTimeouts.delete(_id);
                         if (this.unload || this.adapter.unload) {
                             resolve(null);
                             return;
@@ -256,7 +277,7 @@ export class PageChart extends Page {
                                         `Value: ${result.result[i].val}, ISO-Timestring: ${new Date(result.result[i].ts).toISOString()}`,
                                     );
                                 }
-                                this.oldDatabaseData = result.result;
+                                this.oldDatabaseData.set(_id, result.result);
                                 resolve(result.result);
                                 return;
                             }
@@ -271,7 +292,7 @@ export class PageChart extends Page {
         });
     }
 
-    private getMessage(_message: Partial<pages.PageChartMessage>): string {
+    protected getMessage(_message: Partial<pages.PageChartMessage>): string {
         let result: pages.PageChartMessage = PageChartMessageDefault;
         result = { ...result, ..._message };
         return getPayload(
@@ -306,10 +327,10 @@ export class PageChart extends Page {
     }
 
     async delete(): Promise<void> {
-        if (this.chartTimeout) {
-            this.adapter.clearTimeout(this.chartTimeout);
+        for (const timeout of this.chartTimeouts.values()) {
+            this.adapter.clearTimeout(timeout);
         }
-        this.chartTimeout = null;
+        this.chartTimeouts.clear();
         await super.delete();
     }
 }
