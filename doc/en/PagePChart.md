@@ -22,9 +22,13 @@ The main view of the editor: a time range, a DB instance when needed and six row
 ### Time range
 
 - **Current value** (default): every slice shows the current value of its state. When one of the states changes the adapter redraws the page – at most once a minute, because the panel rebuilds the whole pie on every update.
-- **Last hour**, **Last 24 hours**, **Last 7 days**, **Last 30 days** or **Custom** with an hours field: every slice shows the **average** of its state over that range, always "from then until now". This needs a **DB instance** (`history`, `sql` or `influxdb`, stored in the short form `influxdb.0`) that logs all slice states. The adapter reads the averages via `getHistory` (one average per state, one after the other) and reloads them every 5 minutes while the page is shown. If the database returns no value for a state (not logged, instance not running, timeout) that slice shows 0 and the log gets a warning – once, until a value arrives again; the other slices are not affected.
+- Every other entry: each slice shows the **average** of its state over the range. This needs a **DB instance** (`history`, `sql` or `influxdb`, stored in the short form `influxdb.0`) that logs all slice states.
+  - **Rolling, until now:** `Last hour`, `Last 24 hours`, `Last 7 days`, `Last 30 days`, `Custom` (hours field, e.g. 36 = the last 36 hours).
+  - **Calendar, fixed start and end** (local time of the adapter, week starts on Monday): `Today` (00:00 until now), `Yesterday` (00:00 to 24:00 of the previous day), `This week` (Monday 00:00 until now), `Last week` (Monday 00:00 to Sunday 24:00 of the previous week), `This month` (1st 00:00 until now), `Last month` (1st 00:00 to last day 24:00 of the previous month). With `Yesterday`, `Last week` and `Last month` the value therefore only changes with the next day/week/month.
 
-The range is stored as a number of hours (`rangeHours`, 0 = current value).
+  The adapter reads the averages via `getHistory` over exactly that window (one average per state, one after the other) and reloads them every 5 minutes while the page is shown. If the database returns no value for a state (not logged, instance not running, timeout) that slice shows 0 and the log gets a warning – once, until a value arrives again; the other slices are not affected.
+
+The range is stored as a key (`rangeKey`: `current`, `h1`, `d1`, `w1`, `m1`, `custom`, `today`, `yesterday`, `thisWeek`, `lastWeek`, `thisMonth`, `lastMonth`), the hours (`rangeHours`) only for `custom`.
 
 ### Slices
 

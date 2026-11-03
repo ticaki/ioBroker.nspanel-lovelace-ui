@@ -22,9 +22,13 @@ Die Hauptansicht des Editors: ein Zeitraum, bei Bedarf eine DB-Instanz und sechs
 ### Zeitraum
 
 - **Aktueller Wert** (Vorgabe): jede Scheibe zeigt den aktuellen Wert ihres Datenpunkts. Ändert sich einer der Datenpunkte, zeichnet der Adapter die Seite neu – höchstens einmal pro Minute, da das Panel den Kreis bei jedem Update komplett neu aufbaut.
-- **Letzte Stunde**, **Letzte 24 Stunden**, **Letzte 7 Tage**, **Letzte 30 Tage** oder **Benutzerdefiniert** mit einem Stundenfeld: jede Scheibe zeigt den **Mittelwert** ihres Datenpunkts über diesen Zeitraum, immer „von damals bis jetzt“. Dafür muss eine **DB-Instanz** gewählt werden (`history`, `sql` oder `influxdb`, gespeichert in der Kurzform `influxdb.0`), die alle Scheiben-Datenpunkte loggt. Der Adapter fragt die Mittelwerte per `getHistory` ab (ein Mittelwert je Datenpunkt, nacheinander) und lädt sie alle 5 Minuten neu, solange die Seite angezeigt wird. Liefert die Datenbank für einen Datenpunkt keinen Wert (nicht geloggt, Instanz nicht gestartet, Zeitüberschreitung), zeigt die Scheibe 0 und das Log eine Warnung – einmal, bis wieder ein Wert kommt; die übrigen Scheiben sind davon nicht betroffen.
+- Alle anderen Einträge: jede Scheibe zeigt den **Mittelwert** ihres Datenpunkts über den Zeitraum. Dafür muss eine **DB-Instanz** gewählt werden (`history`, `sql` oder `influxdb`, gespeichert in der Kurzform `influxdb.0`), die alle Scheiben-Datenpunkte loggt.
+  - **Rollierend, bis jetzt:** `Letzte Stunde`, `Letzte 24 Stunden`, `Letzte 7 Tage`, `Letzte 30 Tage`, `Benutzerdefiniert` (Stundenfeld, z. B. 36 = die letzten 36 Stunden).
+  - **Kalender, fester Anfang und festes Ende** (lokale Zeit des Adapters, Woche ab Montag): `Heute` (00:00 bis jetzt), `Gestern` (00:00 bis 24:00 des Vortags), `Diese Woche` (Montag 00:00 bis jetzt), `Letzte Woche` (Montag 00:00 bis Sonntag 24:00 der Vorwoche), `Dieser Monat` (1. 00:00 bis jetzt), `Letzter Monat` (1. 00:00 bis letzter Tag 24:00 des Vormonats). Bei `Gestern`, `Letzte Woche` und `Letzter Monat` ändert sich der Wert also erst mit dem nächsten Tag/Wochen-/Monatswechsel.
 
-Der Zeitraum wird als Stundenzahl gespeichert (`rangeHours`, 0 = aktueller Wert).
+  Der Adapter fragt die Mittelwerte per `getHistory` über genau dieses Fenster ab (ein Mittelwert je Datenpunkt, nacheinander) und lädt sie alle 5 Minuten neu, solange die Seite angezeigt wird. Liefert die Datenbank für einen Datenpunkt keinen Wert (nicht geloggt, Instanz nicht gestartet, Zeitüberschreitung), zeigt die Scheibe 0 und das Log eine Warnung – einmal, bis wieder ein Wert kommt; die übrigen Scheiben sind davon nicht betroffen.
+
+Der Zeitraum wird als Schlüssel gespeichert (`rangeKey`: `current`, `h1`, `d1`, `w1`, `m1`, `custom`, `today`, `yesterday`, `thisWeek`, `lastWeek`, `thisMonth`, `lastMonth`), die Stunden (`rangeHours`) nur für `custom`.
 
 ### Scheiben
 
