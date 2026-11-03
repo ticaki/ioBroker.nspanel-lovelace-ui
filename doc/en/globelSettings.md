@@ -6,7 +6,7 @@ These settings apply to **all panels of the instance** together — unlike the p
 
 | Setting | Effect |
 |---|---|
-| **Beta TFT firmware → use the beta version** | *TFT UPDATE* in the [maintain](Maintain) tab then installs the beta instead of the stable firmware. Only usable in **expert mode**, and the box turns red while the tick is set — a deliberate warning. |
+| **Beta firmware → use beta for TFT, Berry driver and Tasmota** | The tick switches all three firmware parts to their beta builds: *TFT UPDATE* in the [maintain](Maintain) tab installs the beta TFT instead of the stable one, the Berry install takes the beta driver (`berry-beta`), and *TASMOTA UPDATE* together with its version display follows the `tasmota-beta` entry of the version list — if that entry is missing, Tasmota stays on the stable version. Only usable in **expert mode**, and the box turns red while the tick is set — a deliberate warning. |
 | **Colour theme** | Colour scheme of the panel: standard, tropical, technical, sunset, volcano or your own colours. With your own colours an additional tab appears in which every colour is set individually ([colour themes](colorTheme)). |
 | **Weather entity** | The adapter instance the weather data comes from. The supported weather adapters are offered — brightsky, OpenWeatherMap, Pirate Weather and AccuWeather. |
 | **Date format** | **Long weekday format** spells the weekday out, **month format** chooses between spelled out, abbreviated and numeric, **long year format** shows four digits instead of two. |

@@ -26,7 +26,7 @@ Above the cards sit:
 |---|---|
 | **Help for adapter installation** (red text button) | Opens the wiki page [adapter installation](Adapter-Installation) in a new tab. |
 | **Update scripts for all panels** | The same as *SCRIPT UPDATE*, but for every panel whose script version differs from the shipped template. Panels with the **Panel uses no script** checkbox are left out. The button is orange while there is something to do, and grey when nothing is pending, the instance is not running or another operation is in progress. |
-| Note **Beta version in use** | Appears while *beta TFT firmware* is switched on in the [Global Settings](globelSettings). |
+| Note **Beta version in use** | Appears while *beta firmware* is switched on in the [Global Settings](globelSettings). |
 | Red error line | A message of the adapter about the last operation; it can be closed. |
 
 The tab fetches the data from the adapter when it opens, on every return to the browser tab, after every action and about five seconds after a change of the online state of a panel. **If the instance is not running**, there is no data: when opened, the tab stays empty and reports that the adapter is not running; if the instance dies while the tab is open, the cards turn grey and all controls are locked.
@@ -52,8 +52,8 @@ Before both updates the admin asks for confirmation and mentions the roughly **4
 
 | Button | What happens |
 |---|---|
-| **TASMOTA UPDATE** | The adapter reads the recommended Tasmota version from the version list and sends the panel the OTA command for `tasmota32-<LANGUAGE>.bin` from `ota.tasmota.com` over MQTT. The language is the one of the admin (Chinese falls back to English). The panel downloads it itself and restarts. |
-| **TFT UPDATE** | The adapter determines the TFT file matching the hardware model (`nspanel[-model]-v<version>.tft`), taking *beta TFT firmware* and a version pinned in the [Global Settings](globelSettings) into account, and sends the panel the flash command. The panel downloads the file **itself** from the TFT server (internet access needed) and restarts; that takes a few minutes. |
+| **TASMOTA UPDATE** | The adapter reads the recommended Tasmota version from the version list and sends the panel the OTA command for `tasmota32-<LANGUAGE>.bin` from `ota.tasmota.com` over MQTT. The language is the one of the admin (Chinese falls back to English). The panel downloads it itself and restarts. With *beta firmware* switched on in the [Global Settings](globelSettings) the adapter takes the `tasmota-beta` entry of the version list — if it is missing, the stable version; the version field of the card then compares against the beta as well. |
+| **TFT UPDATE** | The adapter determines the TFT file matching the hardware model (`nspanel[-model]-v<version>.tft`), taking *beta firmware* and a version pinned in the [Global Settings](globelSettings) into account, and sends the panel the flash command. The panel downloads the file **itself** from the TFT server (internet access needed) and restarts; that takes a few minutes. |
 
 Both commands only go to panels the adapter is currently operating. The same tools — plus the Berry installation and the restart — are available in the [Tasmota tools](tasmotatools) tab, there via the IP instead of via the panel card. The version fields refresh by themselves as soon as the panel reports back.
 

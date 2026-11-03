@@ -6,7 +6,7 @@ Diese Einstellungen gelten für **alle Panels der Instanz** gemeinsam — anders
 
 | Einstellung | Wirkung |
 |---|---|
-| **Beta TFT-Firmware → Beta-Version verwenden** | Das *TFT UPDATE* im Tab [Maintain](Maintain) installiert dann die Beta statt der stabilen Firmware. Nur im **Expertenmodus** bedienbar, und der Kasten färbt sich rot, solange der Haken sitzt — eine bewusste Warnung. |
+| **Beta-Firmware → Beta für TFT, Berry-Treiber und Tasmota verwenden** | Der Haken schaltet alle drei Firmware-Teile auf ihre Beta-Stände: Das *TFT UPDATE* im Tab [Maintain](Maintain) installiert die Beta-TFT statt der stabilen, die Berry-Installation nimmt den Beta-Treiber (`berry-beta`), und das *TASMOTA UPDATE* samt Versionsanzeige folgt dem Eintrag `tasmota-beta` der Versionsliste — fehlt der Eintrag, bleibt Tasmota auf der stabilen Version. Nur im **Expertenmodus** bedienbar, und der Kasten färbt sich rot, solange der Haken sitzt — eine bewusste Warnung. |
 | **Farbthema** | Farbschema des Panels: Standard, Tropisch, Technisch, Sonnenuntergang, Vulkan oder eigene Farben. Mit den eigenen Farben erscheint ein zusätzlicher Tab, in dem jede Farbe einzeln gesetzt wird ([Color Themes](colorTheme)). |
 | **Wetter-Entity** | Die Adapterinstanz, aus der die Wetterdaten kommen. Zur Auswahl stehen die unterstützten Wetteradapter — brightsky, OpenWeatherMap, Pirate Weather und AccuWeather. |
 | **Datumsformat** | **Langes Wochentagsformat** schreibt den Wochentag aus, **Monatsformat** wählt zwischen ausgeschrieben, abgekürzt und numerisch, **Langes Jahresformat** zeigt vier statt zwei Stellen. |

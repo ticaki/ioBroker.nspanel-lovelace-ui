@@ -26,7 +26,7 @@ Der Tab erscheint erst, wenn die MQTT-Angaben vollständig sind — eigener Serv
 |---|---|
 | **Hilfe zur Adapterinstallation** (roter Text-Knopf) | Öffnet die Wiki-Seite [Adapter-Installation](Adapter-Installation) in einem neuen Tab. |
 | **Skripte für alle Panels aktualisieren** | Dasselbe wie *SCRIPT UPDATE*, aber für alle Panels, deren Skriptversion von der mitgelieferten Vorlage abweicht. Panels mit dem Haken **Panel benutzt kein Skript** werden ausgelassen. Der Knopf ist orange, solange es etwas zu tun gibt, und grau, wenn nichts ansteht, die Instanz nicht läuft oder gerade ein anderer Vorgang läuft. |
-| Hinweis **Beta-Version in Verwendung** | Erscheint, solange *Beta TFT-Firmware* in den [Global Settings](globelSettings) eingeschaltet ist. |
+| Hinweis **Beta-Version in Verwendung** | Erscheint, solange *Beta-Firmware* in den [Global Settings](globelSettings) eingeschaltet ist. |
 | Rote Fehlerzeile | Meldung des Adapters zum letzten Vorgang; lässt sich schließen. |
 
 Die Daten holt der Tab beim Öffnen, bei jeder Rückkehr in den Browser-Tab, nach jeder Aktion und etwa fünf Sekunden nach einer Änderung des Online-Status eines Panels beim Adapter ab. **Läuft die Instanz nicht**, gibt es keine Daten: Beim Öffnen bleibt der Tab leer und meldet, dass der Adapter nicht läuft; stirbt die Instanz bei geöffnetem Tab, werden die Karten grau und alle Bedienelemente gesperrt.
@@ -52,8 +52,8 @@ Vor beiden Updates fragt der Admin nach und nennt die rund **40 Sekunden**, in d
 
 | Knopf | Was passiert |
 |---|---|
-| **TASMOTA UPDATE** | Der Adapter liest die empfohlene Tasmota-Version aus der Versionsliste und schickt dem Panel über MQTT den OTA-Befehl auf `tasmota32-<SPRACHE>.bin` von `ota.tasmota.com`. Die Sprache ist die des Admin (Chinesisch fällt auf Englisch zurück). Das Panel lädt selbst und startet neu. |
-| **TFT UPDATE** | Der Adapter bestimmt die zum Hardwaremodell passende TFT-Datei (`nspanel[-modell]-v<version>.tft`), berücksichtigt dabei *Beta TFT-Firmware* und eine festgenagelte Version aus den [Global Settings](globelSettings), und schickt dem Panel den Flash-Befehl. Das Panel lädt die Datei **selbst** vom TFT-Server (Internetzugang nötig) und startet neu; das dauert einige Minuten. |
+| **TASMOTA UPDATE** | Der Adapter liest die empfohlene Tasmota-Version aus der Versionsliste und schickt dem Panel über MQTT den OTA-Befehl auf `tasmota32-<SPRACHE>.bin` von `ota.tasmota.com`. Die Sprache ist die des Admin (Chinesisch fällt auf Englisch zurück). Das Panel lädt selbst und startet neu. Ist in den [Global Settings](globelSettings) die *Beta-Firmware* eingeschaltet, nimmt der Adapter den Eintrag `tasmota-beta` der Versionsliste — fehlt er, die stabile Version; auch das Versionsfeld der Karte vergleicht dann gegen die Beta. |
+| **TFT UPDATE** | Der Adapter bestimmt die zum Hardwaremodell passende TFT-Datei (`nspanel[-modell]-v<version>.tft`), berücksichtigt dabei *Beta-Firmware* und eine festgenagelte Version aus den [Global Settings](globelSettings), und schickt dem Panel den Flash-Befehl. Das Panel lädt die Datei **selbst** vom TFT-Server (Internetzugang nötig) und startet neu; das dauert einige Minuten. |
 
 Beide Befehle gehen nur an Panels, die der Adapter gerade betreibt. Dieselben Werkzeuge gibt es — zusätzlich zur Berry-Installation und zum Neustart — im Tab [Tasmota-Tools](tasmotatools), dort über die IP statt über die Panel-Karte. Die Versionsfelder aktualisieren sich von selbst, sobald das Panel sich wieder meldet.
 
