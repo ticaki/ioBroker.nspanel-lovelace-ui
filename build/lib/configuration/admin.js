@@ -99,6 +99,22 @@ class AdminConfiguration extends import_library.BaseClass {
     this.pageConfig = resolved.entries;
   }
   /**
+   * Translation of a key with a hard fallback.
+   *
+   * `getTranslation` hands back the key itself when it is missing, which would put a token like
+   * `unlock_button_default_arm` onto the panel. The fallback keeps that off the display.
+   *
+   * @param key Translation key of `admin/i18n`.
+   * @param fallback Text to use when the key is unknown.
+   * @returns Translated text or the fallback.
+   */
+  translateWithFallback(key, fallback) {
+    var _a, _b;
+    const translate = (_b = (_a = this.library) == null ? void 0 : _a.getTranslation) == null ? void 0 : _b.bind(this.library);
+    const text = translate ? translate(key) : "";
+    return text && text !== key ? text : fallback;
+  }
+  /**
    * Process configurable pages from adapter config and build navigation entries.
    * Orchestrates page creation (phase 1) and deferred navigation chain resolution (phase 2).
    *
@@ -381,7 +397,10 @@ Stack: ${stack}`
               data: {
                 alarmType: { type: "const", constVal: entry.alarmType || "unlock" },
                 headline: { type: "const", constVal: entry.headline || "Unlock" },
-                ...alarmButtonData(entry),
+                ...alarmButtonData(entry, {
+                  arm: this.translateWithFallback("unlock_button_default_arm", "Arm"),
+                  disarm: this.translateWithFallback("unlock_button_default_disarm", "Disarm")
+                }),
                 pin: entry.pin != null ? { type: "const", constVal: String(entry.pin) } : void 0,
                 approved: { type: "const", constVal: !!entry.approved },
                 global: { type: "const", constVal: !!entry.global },
@@ -1148,14 +1167,18 @@ function isAlwaysOnMode(F) {
       return false;
   }
 }
-function alarmButtonData(entry) {
+function alarmButtonData(entry, defaults) {
+  var _a;
   const text = (value) => value ? { type: "const", constVal: value } : void 0;
+  const isAlarm = ((_a = entry.alarmType) != null ? _a : "unlock") === "alarm";
+  const armText = isAlarm ? entry.button1 || (defaults == null ? void 0 : defaults.arm) : entry.button1;
+  const disarmText = isAlarm ? entry.button5 || (defaults == null ? void 0 : defaults.disarm) : entry.button5;
   return {
-    button1: text(entry.button1),
+    button1: text(armText),
     button2: text(entry.button2),
     button3: text(entry.button3),
     button4: text(entry.button4),
-    button5: text(entry.button5),
+    button5: text(disarmText),
     button6: text(entry.button6),
     button7: text(entry.button7),
     button8: text(entry.button8)

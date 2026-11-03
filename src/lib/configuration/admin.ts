@@ -118,6 +118,22 @@ export class AdminConfiguration extends BaseClass {
     }
 
     /**
+     * Translation of a key with a hard fallback.
+     *
+     * `getTranslation` hands back the key itself when it is missing, which would put a token like
+     * `unlock_button_default_arm` onto the panel. The fallback keeps that off the display.
+     *
+     * @param key Translation key of `admin/i18n`.
+     * @param fallback Text to use when the key is unknown.
+     * @returns Translated text or the fallback.
+     */
+    private translateWithFallback(key: string, fallback: string): string {
+        const translate = this.library?.getTranslation?.bind(this.library);
+        const text = translate ? translate(key) : '';
+        return text && text !== key ? text : fallback;
+    }
+
+    /**
      * Process configurable pages from adapter config and build navigation entries.
      * Orchestrates page creation (phase 1) and deferred navigation chain resolution (phase 2).
      *
@@ -453,7 +469,10 @@ export class AdminConfiguration extends BaseClass {
                             data: {
                                 alarmType: { type: 'const', constVal: entry.alarmType || 'unlock' },
                                 headline: { type: 'const', constVal: entry.headline || 'Unlock' },
-                                ...alarmButtonData(entry),
+                                ...alarmButtonData(entry, {
+                                    arm: this.translateWithFallback('unlock_button_default_arm', 'Arm'),
+                                    disarm: this.translateWithFallback('unlock_button_default_disarm', 'Disarm'),
+                                }),
                                 pin: entry.pin != null ? { type: 'const', constVal: String(entry.pin) } : undefined,
                                 approved: { type: 'const', constVal: !!entry.approved },
                                 global: { type: 'const', constVal: !!entry.global },
@@ -1455,23 +1474,35 @@ function isAlwaysOnMode(F: any): F is AlwaysOnMode {
  * `button5` to `button8` while it is armed (the disarm buttons). Every button stands on its own:
  * an empty arm button must not remove the disarm button of the same row.
  *
+ * An alarm system needs both top buttons: without `button1` the page shows nothing while it is
+ * disarmed, without `button5` nothing while it is armed - and the user cannot leave that state
+ * any more. A configuration that lost them therefore falls back to the given default texts.
+ *
  * @param entry Alarm entry of the page configuration.
+ * @param defaults Texts for `button1`/`button5` of an alarm system when the entry has none.
+ * @param defaults.arm Text of `button1`, the button that arms the system.
+ * @param defaults.disarm Text of `button5`, the button that disarms it.
  * @returns One `const` data item per filled button, every other button stays undefined.
  */
 export function alarmButtonData(
     entry: ShareConfig.UnlockEntry,
+    defaults?: { arm: string; disarm: string },
 ): Record<
     'button1' | 'button2' | 'button3' | 'button4' | 'button5' | 'button6' | 'button7' | 'button8',
     { type: 'const'; constVal: string } | undefined
 > {
     const text = (value: string | undefined): { type: 'const'; constVal: string } | undefined =>
         value ? { type: 'const', constVal: value } : undefined;
+    // only an alarm system has the two states - 'unlock' lives with a single button
+    const isAlarm = (entry.alarmType ?? 'unlock') === 'alarm';
+    const armText = isAlarm ? entry.button1 || defaults?.arm : entry.button1;
+    const disarmText = isAlarm ? entry.button5 || defaults?.disarm : entry.button5;
     return {
-        button1: text(entry.button1),
+        button1: text(armText),
         button2: text(entry.button2),
         button3: text(entry.button3),
         button4: text(entry.button4),
-        button5: text(entry.button5),
+        button5: text(disarmText),
         button6: text(entry.button6),
         button7: text(entry.button7),
         button8: text(entry.button8),

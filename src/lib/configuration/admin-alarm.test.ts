@@ -76,4 +76,36 @@ describe('lib/configuration - alarmButtonData', () => {
 
         expect(Object.values(data).every(b => b === undefined)).to.equal(true);
     });
+
+    it('fills the two top buttons of an alarm system from the defaults', () => {
+        // without them the card has no button at all in one of its two states
+        const data = alarmButtonData(alarmEntry({}), { arm: 'Arm', disarm: 'Disarm' });
+
+        expect(data.button1).to.deep.equal({ type: 'const', constVal: 'Arm' });
+        expect(data.button5).to.deep.equal({ type: 'const', constVal: 'Disarm' });
+        expect(data.button2).to.equal(undefined);
+        expect(data.button6).to.equal(undefined);
+    });
+
+    it('keeps the texts of the entry instead of the defaults', () => {
+        const data = alarmButtonData(alarmEntry({ button1: 'Scharf', button5: 'Aus' }), {
+            arm: 'Arm',
+            disarm: 'Disarm',
+        });
+
+        expect(data.button1).to.deep.equal({ type: 'const', constVal: 'Scharf' });
+        expect(data.button5).to.deep.equal({ type: 'const', constVal: 'Aus' });
+    });
+
+    it('adds no default for the unlock type - one button is enough there', () => {
+        const data = alarmButtonData(alarmEntry({ alarmType: 'unlock' }), { arm: 'Arm', disarm: 'Disarm' });
+
+        expect(Object.values(data).every(b => b === undefined)).to.equal(true);
+    });
+
+    it('treats a missing alarm type as unlock', () => {
+        const data = alarmButtonData(alarmEntry({ alarmType: undefined }), { arm: 'Arm', disarm: 'Disarm' });
+
+        expect(Object.values(data).every(b => b === undefined)).to.equal(true);
+    });
 });
