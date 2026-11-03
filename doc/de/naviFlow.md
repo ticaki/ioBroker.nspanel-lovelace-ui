@@ -135,7 +135,7 @@ Die Wahl wird je Seite und Panel für die Sitzung gemerkt; der nächste Verweis 
 
 Auch Seiten aus dem Konfigurationsskript (eigenes oder globales) lassen sich hier umhängen. Das **Skript bleibt unangetastet**: Die Änderung wird als *Überschreibung* in der Instanz-Konfiguration gespeichert und vom Adapter bei jedem Start über die Skript-Navigation gelegt — sie übersteht damit auch ein erneutes Senden des Skripts. Solche Seiten tragen im Graphen einen **Stift**.
 
-Jede Überschreibung merkt sich zusätzlich, welche Verweise das Skript **zum Zeitpunkt der Änderung** geliefert hat. Liefert es inzwischen andere, gilt sie als veraltet: Der Stift wird zur Warnfarbe, und beim Laden oder Wechseln des Panels fragt der Admim nach („Skript-Navigation hat sich geändert"). Der Dialog stellt je Seite drei Spalten gegenüber — *Skript zum Zeitpunkt der Änderung*, *Skript jetzt*, *Deine Änderung* — und bietet vier Wege an, die **für alle aufgeführten Seiten gemeinsam** gelten:
+Jede Überschreibung merkt sich zusätzlich, welche Verweise das Skript **zum Zeitpunkt der Änderung** geliefert hat. Liefert es inzwischen andere, gilt sie als veraltet: Der Stift wird zur Warnfarbe, und beim Laden oder Wechseln des Panels fragt der Admin nach („Skript-Navigation hat sich geändert"). Der Dialog stellt je Seite drei Spalten gegenüber — *Skript zum Zeitpunkt der Änderung*, *Skript jetzt*, *Deine Änderung* — und bietet vier Wege an, die **für alle aufgeführten Seiten gemeinsam** gelten:
 
 | Knopf | Wirkung |
 |---|---|
@@ -144,7 +144,7 @@ Jede Überschreibung merkt sich zusätzlich, welche Verweise das Skript **zum Ze
 | **Skript übernehmen** | Die Überschreibung wird verworfen, die Seite folgt wieder dem Skript. Bei einem Panel mit dem Haken *Panel benutzt kein Skript* ([NSPanelsetting](NSPanelsetting)) wird dieser Knopf nicht angeboten. |
 | **Später** | Schließt den Dialog ohne Entscheidung. In dieser Sitzung wird nicht erneut gefragt. |
 
-<!-- Bild folgt: Dialog „Skript-Navigation hat sich geändert" mit der Vergleichstabelle (Bildauftrag 4) -->
+![Der Dialog „Skript-Navigation hat sich geändert" mit der Vergleichstabelle](../Pictures/naviFlow/naviflow-04-stale-dialog.png)
 
 Eine Überschreibung lässt sich auch einzeln zurücknehmen: Im Menü einer Linie steht dafür *Skript-Navigation von „…" wiederherstellen*.
 

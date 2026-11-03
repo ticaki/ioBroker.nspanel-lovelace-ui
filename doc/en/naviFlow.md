@@ -144,7 +144,7 @@ Every override additionally remembers which links the script delivered **at the 
 | **Take over the script** | The override is dropped, the page follows the script again. On a panel with the tick box *Panel uses no script* ([NSPanelsetting](NSPanelsetting)) this button is not offered. |
 | **Later** | Closes the dialog without a decision. It is not asked again in this session. |
 
-<!-- Picture to follow: dialog "Script navigation changed" with the comparison table (picture job 4) -->
+![The dialog "Script navigation changed" with the comparison table](../Pictures/naviFlow/naviflow-04-stale-dialog.png)
 
 An override can also be taken back one by one: the menu of a line holds *Restore script navigation of "…"* for that.
 
