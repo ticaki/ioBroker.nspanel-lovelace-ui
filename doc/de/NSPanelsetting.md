@@ -52,7 +52,7 @@ Alles weitere — Adresse, Bedienung im Browser, PIN und HTTPS, Grenzen eines We
 
 ## 4. Die Panelkachel
 
-<!-- Bild folgt: Panelkachel eines NSPanels mit Statusabzeichen, Haken „Panel benutzt kein Skript", den beiden HW-Button-Knöpfen und „Tasmota-Konsole öffnen" -->
+![Zwei Panelkacheln mit den beiden HW-Button-Knöpfen in Grün, Orange und Blau](../Pictures/nspanelSetting/panelkachel-hw-buttons.png)
 
 Im Kopf der Kachel stehen der Panelname, bei einem Web-Panel das Kennzeichen **Web** und darunter der Verbindungsstatus (siehe [Panel-Status](PanelStatusBadge)). Rechts daneben liegen die Symbolknöpfe:
 
@@ -136,13 +136,15 @@ Je nach Auswahl erscheinen die passenden Felder:
 
 ## 9. Farbe der Knöpfe in der Kachel
 
-Die beiden Knöpfe in der Kachel zeigen am Rahmen, woran man ist:
+Die beiden Knöpfe stehen **untereinander** über die volle Breite der Kachel und zeigen an ihrer Farbe,
+woran man ist. Jede Farbe hat einen eigenen Tooltip, der den Zustand ausspricht:
 
 | Farbe | Bedeutung |
 |---|---|
-| **Primärfarbe** (unauffällig) | Für diese Seite ist im Admin **nichts** konfiguriert. Das Konfigurationsskript kann trotzdem eine Aktion für sie haben. |
-| **Grün** | Eine Aktion ist konfiguriert und kann wirken: Der Taster ist vom Relais entkoppelt — oder es ist ein Web-Panel, das gar keins hat. |
-| **Orange** | Eine Aktion ist konfiguriert, der Taster hängt aber noch an seinem Relais. Der Tooltip sagt es: *Aktion konfiguriert, aber der Button ist mit seinem Relais gekoppelt – sie wirkt erst nach dem Entkoppeln.* |
+| **Grün** | Eine Aktion ist im Admin konfiguriert und kann wirken: Der Taster ist vom Relais entkoppelt — oder es ist ein Web-Panel, das gar keins hat. |
+| **Orange** | Eine Aktion ist konfiguriert, der Taster hängt aber noch an seinem Relais: *Aktion konfiguriert, aber der Button ist mit seinem Relais gekoppelt – sie wirkt erst nach dem Entkoppeln.* |
+| **Blau** | Im Admin ist für diese Seite **nichts** konfiguriert, das Relais ist aber **entkoppelt** — der Tastendruck erreicht also den Adapter, und es gilt, was das Konfigurationsskript für diesen Taster sagt. |
+| **Grau** | Nichts konfiguriert und der Taster schaltet sein Relais — der Werkszustand. |
 
 Lässt sich die Entkopplung nicht lesen — etwa bei stehender Instanz —, gilt sie als entkoppelt; der Knopf ist dann grün. Dieselbe Regel benutzt der Dialog, wenn er entscheidet, ob er die Aktion anbietet.
 
