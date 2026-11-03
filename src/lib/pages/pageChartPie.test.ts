@@ -83,6 +83,15 @@ function fakePage(
             fake.objects[id] ? { _id: id, common: { ...fake.objects[id] } } : null,
     };
     page.getNavigation = (): string => 'button~bSubPrev~~~~~button~bSubNext~~~~';
+    page.visibility = true;
+    page.refreshInterval = 1000;
+    page.sent = [];
+    page.sendType = (): void => undefined;
+    page.sendToPanel = (payload: string): void => page.sent.push(payload);
+    page.adapter.setTimeout = (): undefined => undefined;
+    page.adapter.clearTimeout = (): void => undefined;
+    page.adapter.unload = false;
+    page.unload = false;
     page.getDataFromDBWindow = async (id: string, start: number, end: number): Promise<unknown[] | null> => {
         fake.historyCalls.push({ id, start, end });
         const result = fake.history[id];
@@ -190,7 +199,7 @@ describe('lib/pages - PageChartPie', () => {
 
             const slices = await page.getPieSlices();
 
-            expect(fake.historyCalls.map(c => c.id)).to.deep.equal(['a.bezug', 'a.eigen', 'a.einspeisung']);
+            expect(fake.historyCalls.map(c => c.id).sort()).to.deep.equal(['a.bezug', 'a.eigen', 'a.einspeisung']);
             // rolling range: 24 h back from now
             const call = fake.historyCalls[0];
             expect(call.end - call.start).to.equal(24 * 3_600_000);
@@ -199,6 +208,23 @@ describe('lib/pages - PageChartPie', () => {
             expect(slices[0].text).to.equal('4.25 kWh');
             expect(slices[1].text).to.equal('3.00 kWh');
             expect(fake.warnings).to.deep.equal([]);
+        });
+
+        it('a row with val null is no value: the slot shows 0 and warns', async () => {
+            const fake = fakePage(slots, { details });
+            fake.history['a.bezug'] = [{ ts: 1, val: null }];
+            fake.history['a.eigen'] = [
+                { ts: 1, val: null },
+                { ts: 2, val: 2 },
+            ];
+            fake.history['a.einspeisung'] = [{ ts: 1, val: '3.5' }];
+            const page: any = fake.page;
+
+            const slices = await page.getPieSlices();
+
+            expect(slices.map((s: { value: number }) => s.value)).to.deep.equal([0, 2, 3.5]);
+            expect(fake.warnings).to.have.length(1);
+            expect(fake.warnings[0]).to.contain('a.bezug');
         });
 
         it('a slot without a history value shows 0 and warns once, the other slots stay', async () => {
@@ -262,6 +288,42 @@ describe('lib/pages - PageChartPie', () => {
 
             expect(slices.map((s: { value: number }) => s.value)).to.deep.equal([0, 0, 0]);
             expect(fake.warnings).to.have.length(1);
+        });
+    });
+
+    describe('update', () => {
+        it('sends the entityUpd while visible', async () => {
+            const fake = fakePage(slots);
+            const page: any = fake.page;
+
+            await page.update();
+
+            expect(page.sent).to.have.length(1);
+            expect(page.sent[0].split('~')[1]).to.equal('Energie');
+        });
+
+        it('does not send when the page became invisible while the data was read', async () => {
+            const fake = fakePage(slots, { details: { instance: 'influxdb.0', rangeKey: 'd1' } });
+            const page: any = fake.page;
+            page.getDataFromDBWindow = async (): Promise<unknown[]> => {
+                // the panel navigated away during the history query
+                page.visibility = false;
+                return [{ ts: 1, val: 1 }];
+            };
+
+            await page.update();
+
+            expect(page.sent).to.deep.equal([]);
+        });
+
+        it('does nothing when it is not visible', async () => {
+            const fake = fakePage(slots);
+            const page: any = fake.page;
+            page.visibility = false;
+
+            await page.update();
+
+            expect(page.sent).to.deep.equal([]);
         });
     });
 

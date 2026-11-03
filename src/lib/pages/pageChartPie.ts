@@ -3,6 +3,7 @@ import { getStringFromStringOrTranslated } from '../const/tools';
 import type { Dataitem } from '../controller/data-item';
 import {
     isPChartRangeKey,
+    PCHART_CUSTOM_HOURS_DEFAULT,
     PCHART_MAX_SLICES,
     PCHART_SOURCE_SCRIPT,
     pchartDefaults,
@@ -15,7 +16,6 @@ import { PageChart } from './pageChart';
 import {
     finishPieSlices,
     formatPieValueText,
-    mergePieRest,
     parsePieScriptString,
     pieColorToDec,
     pieLegendMode,
@@ -46,7 +46,7 @@ export function buildPChartPageConfig(entry: PChartEntry): pages.cardChartPieDat
     if (!scriptSource && rangeKey !== 'current') {
         dbData = { instance: entry.selInstance || '', rangeKey };
         if (rangeKey === 'custom') {
-            dbData.hours = entry.rangeHours && entry.rangeHours > 0 ? entry.rangeHours : 1;
+            dbData.hours = entry.rangeHours && entry.rangeHours > 0 ? entry.rangeHours : PCHART_CUSTOM_HOURS_DEFAULT;
         }
     }
     let slices: pages.cardChartPieDataItemOptions['data']['slices'];
@@ -137,42 +137,43 @@ export class PageChartPie extends PageChart {
         message.headline = (data.headline && (await data.headline.getTranslatedString())) ?? this.name;
         const legendMode = pieLegendMode((data.legendMode && (await data.legendMode.getNumber())) ?? null);
         message.text = String(legendMode);
-        message.value = pieSlicesToPayload(finishPieSlices(await this.getPieSlices(), legendMode));
+        const otherName = this.library.getTranslation(PCHART_OTHER_KEY);
+        message.value = pieSlicesToPayload(finishPieSlices(await this.getPieSlices(), legendMode, otherName));
         return message;
     }
 
     /**
-     * The slices in legend order with their unscaled numbers. Script source: the parsed text of the
-     * data point, more than six entries are summed up as "Other". Slot source: one slice per configured
-     * state, current value or average over the range; a slot without a value shows 0.
+     * The slices in legend order with their unscaled numbers, not yet limited to what the panel reads
+     * (finishPieSlices sums the rest up). Script source: the parsed text of the data point. Slot source:
+     * one slice per configured state, current value or average over the range - the slots are read in
+     * parallel (the history keeps a timeout per state); a slot without a value shows 0.
      */
     async getPieSlices(): Promise<PieSliceInput[]> {
         const data = this.pieItems?.data;
         if (!data) {
             return [];
         }
-        const otherName = this.library.getTranslation(PCHART_OTHER_KEY);
         if (this.scriptSource) {
             const text = data.value ? await data.value.getString() : null;
-            return parsePieScriptString(text, otherName);
+            return parsePieScriptString(text);
         }
         const decimals = (data.decimals && (await data.decimals.getNumber())) ?? pchartDefaults.decimals;
         const dbAlive = this.pieDetails ? await this.isDbAlive(this.pieDetails.instance) : false;
-        const result: PieSliceInput[] = [];
-        for (const slice of data.slices ?? []) {
-            if (!slice || !slice.value) {
-                continue;
-            }
-            const meta = await this.getSliceMeta(slice.value);
-            const name = (slice.name && (await slice.name.getTranslatedString())) || meta.name;
-            const unit = (slice.unit && (await slice.unit.getString())) ?? meta.unit;
-            const color = (slice.color && (await slice.color.getRGBDec())) ?? pieColorToDec(undefined);
-            const value = this.pieDetails
-                ? await this.getSliceAverage(slice.value, this.pieDetails, dbAlive)
-                : ((await slice.value.getNumber()) ?? 0);
-            result.push({ name, value, text: formatPieValueText(value, decimals, unit), color });
-        }
-        return mergePieRest(result, otherName);
+        const slices = (data.slices ?? []).filter(
+            (slice): slice is NonNullable<typeof slice> & { value: Dataitem } => !!slice && !!slice.value,
+        );
+        return Promise.all(
+            slices.map(async (slice): Promise<PieSliceInput> => {
+                const meta = await this.getSliceMeta(slice.value);
+                const name = (slice.name && (await slice.name.getTranslatedString())) || meta.name;
+                const unit = (slice.unit && (await slice.unit.getString())) ?? meta.unit;
+                const color = (slice.color && (await slice.color.getRGBDec())) ?? pieColorToDec(undefined);
+                const value = this.pieDetails
+                    ? await this.getSliceAverage(slice.value, this.pieDetails, dbAlive)
+                    : ((await slice.value.getNumber()) ?? 0);
+                return { name, value, text: formatPieValueText(value, decimals, unit), color };
+            }),
+        );
     }
 
     /**
@@ -197,8 +198,9 @@ export class PageChartPie extends PageChart {
                 removeBorderValues: true,
                 round: 6,
             });
+            // a row with `val: null` (nothing logged in the window) is no value
             const values = (rows ?? [])
-                .map(row => (row && typeof row === 'object' && 'val' in row ? Number(row.val) : NaN))
+                .map(row => (row && typeof row === 'object' && 'val' in row && row.val != null ? Number(row.val) : NaN))
                 .filter(v => Number.isFinite(v));
             if (values.length > 0) {
                 this.warned.delete(dp);

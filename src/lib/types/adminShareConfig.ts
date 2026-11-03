@@ -1694,6 +1694,9 @@ const pchartRollingHours: Readonly<Record<'h1' | 'd1' | 'w1' | 'm1', number>> = 
     m1: 24 * 30,
 };
 
+/** hours of a `custom` range when none are configured - the single default for editor, page config and resolveRange */
+export const PCHART_CUSTOM_HOURS_DEFAULT = 24;
+
 /** a resolved range in milliseconds since epoch */
 export type PChartRange = { start: number; end: number };
 
@@ -1737,7 +1740,7 @@ function startOfLocalMonth(ts: number): Date {
  *
  * @param key range key
  * @param now reference time in milliseconds
- * @param customHours hours of `custom`; invalid or missing = 1
+ * @param customHours hours of `custom`; invalid or missing = PCHART_CUSTOM_HOURS_DEFAULT
  */
 export function resolveRange(key: PChartRangeKey, now: number, customHours?: number): PChartRange {
     switch (key) {
@@ -1749,7 +1752,10 @@ export function resolveRange(key: PChartRangeKey, now: number, customHours?: num
         case 'm1':
             return { start: now - pchartRollingHours[key] * 3_600_000, end: now };
         case 'custom': {
-            const hours = customHours && Number.isFinite(customHours) && customHours > 0 ? customHours : 1;
+            const hours =
+                customHours && Number.isFinite(customHours) && customHours > 0
+                    ? customHours
+                    : PCHART_CUSTOM_HOURS_DEFAULT;
             return { start: now - hours * 3_600_000, end: now };
         }
         case 'today':
@@ -1818,7 +1824,7 @@ export const pchartDefaults = {
     decimals: 2,
     selInstanceDataSource: PCHART_SOURCE_SLOTS,
     rangeKey: 'current' as PChartRangeKey,
-    rangeHours: 24,
+    rangeHours: PCHART_CUSTOM_HOURS_DEFAULT,
     slotColors: ['#F80000', '#00F800', '#0000F8', '#F8F800', '#00F8F8', '#F800F8'] as readonly string[],
 };
 

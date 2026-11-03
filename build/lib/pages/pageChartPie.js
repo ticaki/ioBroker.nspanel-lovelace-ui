@@ -39,7 +39,7 @@ function buildPChartPageConfig(entry) {
   if (!scriptSource && rangeKey !== "current") {
     dbData = { instance: entry.selInstance || "", rangeKey };
     if (rangeKey === "custom") {
-      dbData.hours = entry.rangeHours && entry.rangeHours > 0 ? entry.rangeHours : 1;
+      dbData.hours = entry.rangeHours && entry.rangeHours > 0 ? entry.rangeHours : import_adminShareConfig.PCHART_CUSTOM_HOURS_DEFAULT;
     }
   }
   let slices;
@@ -120,40 +120,42 @@ class PageChartPie extends import_pageChart.PageChart {
     message.headline = (_b = data.headline && await data.headline.getTranslatedString()) != null ? _b : this.name;
     const legendMode = (0, import_pie_scale.pieLegendMode)((_c = data.legendMode && await data.legendMode.getNumber()) != null ? _c : null);
     message.text = String(legendMode);
-    message.value = (0, import_pie_scale.pieSlicesToPayload)((0, import_pie_scale.finishPieSlices)(await this.getPieSlices(), legendMode));
+    const otherName = this.library.getTranslation(PCHART_OTHER_KEY);
+    message.value = (0, import_pie_scale.pieSlicesToPayload)((0, import_pie_scale.finishPieSlices)(await this.getPieSlices(), legendMode, otherName));
     return message;
   }
   /**
-   * The slices in legend order with their unscaled numbers. Script source: the parsed text of the
-   * data point, more than six entries are summed up as "Other". Slot source: one slice per configured
-   * state, current value or average over the range; a slot without a value shows 0.
+   * The slices in legend order with their unscaled numbers, not yet limited to what the panel reads
+   * (finishPieSlices sums the rest up). Script source: the parsed text of the data point. Slot source:
+   * one slice per configured state, current value or average over the range - the slots are read in
+   * parallel (the history keeps a timeout per state); a slot without a value shows 0.
    */
   async getPieSlices() {
-    var _a, _b, _c, _d, _e, _f;
+    var _a, _b, _c;
     const data = (_a = this.pieItems) == null ? void 0 : _a.data;
     if (!data) {
       return [];
     }
-    const otherName = this.library.getTranslation(PCHART_OTHER_KEY);
     if (this.scriptSource) {
       const text = data.value ? await data.value.getString() : null;
-      return (0, import_pie_scale.parsePieScriptString)(text, otherName);
+      return (0, import_pie_scale.parsePieScriptString)(text);
     }
     const decimals = (_b = data.decimals && await data.decimals.getNumber()) != null ? _b : import_adminShareConfig.pchartDefaults.decimals;
     const dbAlive = this.pieDetails ? await this.isDbAlive(this.pieDetails.instance) : false;
-    const result = [];
-    for (const slice of (_c = data.slices) != null ? _c : []) {
-      if (!slice || !slice.value) {
-        continue;
-      }
-      const meta = await this.getSliceMeta(slice.value);
-      const name = slice.name && await slice.name.getTranslatedString() || meta.name;
-      const unit = (_d = slice.unit && await slice.unit.getString()) != null ? _d : meta.unit;
-      const color = (_e = slice.color && await slice.color.getRGBDec()) != null ? _e : (0, import_pie_scale.pieColorToDec)(void 0);
-      const value = this.pieDetails ? await this.getSliceAverage(slice.value, this.pieDetails, dbAlive) : (_f = await slice.value.getNumber()) != null ? _f : 0;
-      result.push({ name, value, text: (0, import_pie_scale.formatPieValueText)(value, decimals, unit), color });
-    }
-    return (0, import_pie_scale.mergePieRest)(result, otherName);
+    const slices = ((_c = data.slices) != null ? _c : []).filter(
+      (slice) => !!slice && !!slice.value
+    );
+    return Promise.all(
+      slices.map(async (slice) => {
+        var _a2, _b2, _c2;
+        const meta = await this.getSliceMeta(slice.value);
+        const name = slice.name && await slice.name.getTranslatedString() || meta.name;
+        const unit = (_a2 = slice.unit && await slice.unit.getString()) != null ? _a2 : meta.unit;
+        const color = (_b2 = slice.color && await slice.color.getRGBDec()) != null ? _b2 : (0, import_pie_scale.pieColorToDec)(void 0);
+        const value = this.pieDetails ? await this.getSliceAverage(slice.value, this.pieDetails, dbAlive) : (_c2 = await slice.value.getNumber()) != null ? _c2 : 0;
+        return { name, value, text: (0, import_pie_scale.formatPieValueText)(value, decimals, unit), color };
+      })
+    );
   }
   /**
    * Average of a slot state over the configured range via getHistory: the window comes from
@@ -177,7 +179,7 @@ class PageChartPie extends import_pageChart.PageChart {
         removeBorderValues: true,
         round: 6
       });
-      const values = (rows != null ? rows : []).map((row) => row && typeof row === "object" && "val" in row ? Number(row.val) : NaN).filter((v) => Number.isFinite(v));
+      const values = (rows != null ? rows : []).map((row) => row && typeof row === "object" && "val" in row && row.val != null ? Number(row.val) : NaN).filter((v) => Number.isFinite(v));
       if (values.length > 0) {
         this.warned.delete(dp);
         return values.reduce((a, b) => a + b, 0) / values.length;

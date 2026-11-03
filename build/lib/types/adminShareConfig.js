@@ -41,6 +41,7 @@ __export(adminShareConfig_exports, {
   CONVERT_GLOBAL_DEFAULT_DECISION: () => CONVERT_GLOBAL_DEFAULT_DECISION,
   HMI_FONTS: () => HMI_FONTS,
   HMI_TEXT_SIZES: () => HMI_TEXT_SIZES,
+  PCHART_CUSTOM_HOURS_DEFAULT: () => PCHART_CUSTOM_HOURS_DEFAULT,
   PCHART_MAX_SLICES: () => PCHART_MAX_SLICES,
   PCHART_SOURCE_SCRIPT: () => PCHART_SOURCE_SCRIPT,
   PCHART_SOURCE_SLOTS: () => PCHART_SOURCE_SLOTS,
@@ -665,6 +666,7 @@ const pchartRollingHours = {
   w1: 24 * 7,
   m1: 24 * 30
 };
+const PCHART_CUSTOM_HOURS_DEFAULT = 24;
 function startOfLocalDay(ts) {
   const d = new Date(ts);
   d.setHours(0, 0, 0, 0);
@@ -691,7 +693,7 @@ function resolveRange(key, now, customHours) {
     case "m1":
       return { start: now - pchartRollingHours[key] * 36e5, end: now };
     case "custom": {
-      const hours = customHours && Number.isFinite(customHours) && customHours > 0 ? customHours : 1;
+      const hours = customHours && Number.isFinite(customHours) && customHours > 0 ? customHours : PCHART_CUSTOM_HOURS_DEFAULT;
       return { start: now - hours * 36e5, end: now };
     }
     case "today":
@@ -725,7 +727,7 @@ const pchartDefaults = {
   decimals: 2,
   selInstanceDataSource: PCHART_SOURCE_SLOTS,
   rangeKey: "current",
-  rangeHours: 24,
+  rangeHours: PCHART_CUSTOM_HOURS_DEFAULT,
   slotColors: ["#F80000", "#00F800", "#0000F8", "#F8F800", "#00F8F8", "#F800F8"]
 };
 function emptyPChartSlot(index) {
@@ -1952,6 +1954,7 @@ const CONVERT_GLOBAL_DEFAULT_DECISION = "keepAdmin";
   CONVERT_GLOBAL_DEFAULT_DECISION,
   HMI_FONTS,
   HMI_TEXT_SIZES,
+  PCHART_CUSTOM_HOURS_DEFAULT,
   PCHART_MAX_SLICES,
   PCHART_SOURCE_SCRIPT,
   PCHART_SOURCE_SLOTS,

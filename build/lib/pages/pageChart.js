@@ -98,6 +98,9 @@ class PageChart extends import_Page.Page {
     }
     await super.update();
     const message = await this.getUpdateMessage();
+    if (!this.visibility) {
+      return;
+    }
     if (message.value) {
       this.log.debug(`Value: ${message.value}`);
     }
@@ -183,11 +186,15 @@ class PageChart extends import_Page.Page {
    * @param _id state id to read
    * @param _rangeHours time window in hours, ending now
    * @param _instance db instance, `influxdb.0` or `system.adapter.influxdb.0`
-   * @param query what the chart type needs from the history, see getDataFromDBWindow
+   * @param query what the chart type needs from the history, see getDataFromDBWindow; `limit` defaults to `count`
    */
   async getDataFromDB(_id, _rangeHours, _instance, query) {
+    var _a;
     const end = Date.now();
-    return this.getDataFromDBWindow(_id, end - _rangeHours * 60 * 60 * 1e3, end, _instance, query);
+    return this.getDataFromDBWindow(_id, end - _rangeHours * 60 * 60 * 1e3, end, _instance, {
+      ...query,
+      limit: (_a = query.limit) != null ? _a : query.count
+    });
   }
   /**
    * Reads history values via `getHistory` of a history/sql/influxdb instance over an explicit window
@@ -199,7 +206,8 @@ class PageChart extends import_Page.Page {
    * @param _instance db instance, `influxdb.0` or `system.adapter.influxdb.0`
    * @param query what the chart type needs from the history
    * @param query.aggregate 'average' (one value per interval) or 'none' (raw values)
-   * @param query.count number of intervals (bar: hours, line: fine grid); also used as `limit`
+   * @param query.count number of intervals (bar: hours, line: fine grid)
+   * @param query.limit do not return more entries than this, left out = no limit
    * @param query.removeBorderValues true = no extra points before start and after end (pie: one average only)
    * @param query.round digits after the decimal point, default 1
    */
@@ -246,8 +254,8 @@ class PageChart extends import_Page.Page {
               end,
               /** number of intervals for 'average' (one value per interval, spread over start..end) */
               count: query.count,
-              /** do not return more entries than limit */
-              limit: query.count,
+              /** do not return more entries than limit (not sent for an aggregated single value) */
+              ...query.limit !== void 0 ? { limit: query.limit } : {},
               /** if null values should be included (false), replaced by last not null value (true) or replaced with 0 (0) */
               ignoreNull: true,
               aggregate: query.aggregate,

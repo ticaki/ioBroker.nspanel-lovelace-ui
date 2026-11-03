@@ -70,7 +70,7 @@ function pieColorToDec(color) {
   }
   return String(import_Color.Color.rgb_dec565(import_Color.Color.White));
 }
-function parsePieScriptString(text, otherName) {
+function parsePieScriptString(text) {
   const fields = (text != null ? text : "").split("~");
   const slices = [];
   for (let i = 0; i + 3 < fields.length; i += 4) {
@@ -82,7 +82,7 @@ function parsePieScriptString(text, otherName) {
       color: pieColorToDec(fields[i + 3])
     });
   }
-  return mergePieRest(slices, otherName);
+  return slices;
 }
 function mergePieRest(slices, otherName) {
   if (slices.length <= import_adminShareConfig.PCHART_MAX_SLICES) {
@@ -129,8 +129,8 @@ function fitPieText(text, budget) {
 function pieTextBudget(legendMode) {
   return pieLegendMode(legendMode) === 3 ? PIE_TEXT_BUDGET_WITH_PERCENT : PIE_TEXT_BUDGET;
 }
-function finishPieSlices(slices, legendMode = 3) {
-  const cut = slices.slice(0, import_adminShareConfig.PCHART_MAX_SLICES);
+function finishPieSlices(slices, legendMode = 3, otherName = "Other") {
+  const cut = mergePieRest(slices, otherName);
   const values = scalePieValues(cut.map((s) => s.value));
   const textBudget = pieTextBudget(legendMode);
   return cut.map((s, i) => ({

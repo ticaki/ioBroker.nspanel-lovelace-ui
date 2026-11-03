@@ -4,6 +4,7 @@ import {
     emptyPChartSlot,
     PCHART_MAX_SLICES,
     PCHART_SOURCE_SCRIPT,
+    PCHART_CUSTOM_HOURS_DEFAULT,
     PCHART_SOURCE_SLOTS,
     pchartDefaults,
     type PChartEntry,
@@ -89,8 +90,11 @@ describe('lib/configuration - buildPChartPageConfig', () => {
             rangeKey: 'custom',
             hours: 36,
         });
-        // custom without usable hours = one hour
-        expect(dbDataOf({ ...entry, rangeKey: 'custom', rangeHours: 0, selInstance: 'sql.0' })?.hours).to.equal(1);
+        // custom without usable hours = the one default (editor, page config and resolveRange agree)
+        expect(dbDataOf({ ...entry, rangeKey: 'custom', rangeHours: 0, selInstance: 'sql.0' })?.hours).to.equal(
+            PCHART_CUSTOM_HOURS_DEFAULT,
+        );
+        expect(pchartDefaults.rangeHours).to.equal(PCHART_CUSTOM_HOURS_DEFAULT);
         expect(dbDataOf({ ...entry, rangeKey: 'd1', rangeHours: 36, selInstance: 'sql.0' })).to.deep.equal({
             instance: 'sql.0',
             rangeKey: 'd1',

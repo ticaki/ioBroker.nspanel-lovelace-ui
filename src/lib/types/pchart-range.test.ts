@@ -1,5 +1,11 @@
 import { expect } from 'chai';
-import { isPChartRangeKey, pchartRangeKeys, resolveRange, type PChartRangeKey } from './adminShareConfig';
+import {
+    isPChartRangeKey,
+    PCHART_CUSTOM_HOURS_DEFAULT,
+    pchartRangeKeys,
+    resolveRange,
+    type PChartRangeKey,
+} from './adminShareConfig';
 
 /**
  * Local timestamp - the ranges are resolved in the local time of the process, so the expectations are
@@ -29,10 +35,11 @@ describe('lib/types/adminShareConfig - resolveRange (pie chart)', () => {
         expect(resolveRange('custom', thursday, 36)).to.deep.equal({ start: thursday - 36 * HOUR, end: thursday });
     });
 
-    it('custom without usable hours falls back to one hour, current is the empty window now', () => {
-        expect(resolveRange('custom', thursday)).to.deep.equal({ start: thursday - HOUR, end: thursday });
-        expect(resolveRange('custom', thursday, 0)).to.deep.equal({ start: thursday - HOUR, end: thursday });
-        expect(resolveRange('custom', thursday, NaN)).to.deep.equal({ start: thursday - HOUR, end: thursday });
+    it('custom without usable hours falls back to the default hours, current is the empty window now', () => {
+        const fallback = { start: thursday - PCHART_CUSTOM_HOURS_DEFAULT * HOUR, end: thursday };
+        expect(resolveRange('custom', thursday)).to.deep.equal(fallback);
+        expect(resolveRange('custom', thursday, 0)).to.deep.equal(fallback);
+        expect(resolveRange('custom', thursday, NaN)).to.deep.equal(fallback);
         expect(resolveRange('current', thursday)).to.deep.equal({ start: thursday, end: thursday });
     });
 

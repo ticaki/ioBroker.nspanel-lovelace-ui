@@ -92,15 +92,13 @@ export function pieColorToDec(color: string | null | undefined): string {
 }
 
 /**
- * Parses the text of the script data point (format of the old NSPanel script): `Name~Number~Value text~Color~…`, four fields per
- * slice, an incomplete last group is dropped. More than PCHART_MAX_SLICES slices: the sixth and all
- * following are summed up as one slice named `otherName` with an empty value text and the color of the
- * sixth. The numbers are not scaled here, see finishPieSlices.
+ * Parses the text of the script data point (format of the old NSPanel script): `Name~Number~Value text~Color~…`,
+ * four fields per slice, an incomplete last group is dropped. All slices are returned; the summary of the
+ * rest and the scaling happen in finishPieSlices.
  *
  * @param text the state value
- * @param otherName translated name of the summary slice
  */
-export function parsePieScriptString(text: string | null | undefined, otherName: string): PieSliceInput[] {
+export function parsePieScriptString(text: string | null | undefined): PieSliceInput[] {
     const fields = (text ?? '').split('~');
     const slices: PieSliceInput[] = [];
     for (let i = 0; i + 3 < fields.length; i += 4) {
@@ -112,7 +110,7 @@ export function parsePieScriptString(text: string | null | undefined, otherName:
             color: pieColorToDec(fields[i + 3]),
         });
     }
-    return mergePieRest(slices, otherName);
+    return slices;
 }
 
 /**
@@ -201,14 +199,15 @@ export function pieTextBudget(legendMode: number): number {
 }
 
 /**
- * Scales the numbers, fits name and value text to the legend width and cuts the list to what the panel
- * reads - for both sources, the summary slice included.
+ * Sums the rest up as `otherName` (see mergePieRest), scales the numbers and fits name and value text to the
+ * legend width - the one place that limits the slices to what the panel reads, for both sources.
  *
  * @param slices slices with raw numbers
  * @param legendMode legend mode 0-3 (sets the budget of the value text), default 3
+ * @param otherName translated name of the summary slice, default "Other"
  */
-export function finishPieSlices(slices: readonly PieSliceInput[], legendMode = 3): PieSlice[] {
-    const cut = slices.slice(0, PCHART_MAX_SLICES);
+export function finishPieSlices(slices: readonly PieSliceInput[], legendMode = 3, otherName = 'Other'): PieSlice[] {
+    const cut = mergePieRest(slices, otherName);
     const values = scalePieValues(cut.map(s => s.value));
     const textBudget = pieTextBudget(legendMode);
     return cut.map((s, i) => ({
