@@ -44,7 +44,7 @@ Ist *Ist eine Navigation* gesetzt, erscheint das Feld **Zielseite**. Es listet d
 
 ### Der ioBroker-Kanal und seine Prüfzeichen
 
-<!-- Bild folgt: Kanalfeld mit rotem Fehlerzeichen links daneben, offener Tooltip „Fehlende Pflicht-Datenpunkte: …", darunter die Klartextzeile -->
+![Das rote Fehlerzeichen am Kanalfeld mit seinem Tooltip](../Pictures/pageConfigDialoge/dialoge-02-fehlerzeichen.png)
 
 Das Feld heißt **ioBroker-Kanal**, beim benutzerdefinierten Knopf dagegen **ioBroker-Datenpunkt**. Die Auswahl über „…" ist nach der **Rolle** gefiltert, nicht nach dem Kartentyp: Angeboten werden die 30 Kanalrollen, für die der Adapter Datenpunkte kennt, und alles, was unter einem solchen Kanal liegt. Die Wahl eines Datenpunkts wird dabei **auf seinen Kanal gekürzt**. Die vollständige Rollentabelle steht unter [Alias Table](ALIAS).
 
