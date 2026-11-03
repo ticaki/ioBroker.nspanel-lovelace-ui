@@ -35,7 +35,7 @@ function item(value: string | number | null, dp?: string): FakeItem {
 type Fake = {
     page: PageChartPie;
     warnings: string[];
-    historyCalls: string[];
+    historyCalls: { id: string; start: number; end: number }[];
     history: Record<string, unknown[] | null | Error>;
     objects: Record<string, { name?: unknown; unit?: string }>;
 };
@@ -46,14 +46,19 @@ type Fake = {
  * @param data the data items of the page (`pieItems.data`)
  * @param opts source and DB behaviour of the page
  * @param opts.scriptSource true = the page reads the script data point
- * @param opts.details DB instance and hours = averaged slot source
+ * @param opts.details DB instance and range = averaged slot source
  * @param opts.details.instance DB instance
- * @param opts.details.hours range in hours
+ * @param opts.details.rangeKey range key
+ * @param opts.details.hours hours of a custom range
  * @param opts.dbAlive alive state of the instance
  */
 function fakePage(
     data: Record<string, unknown>,
-    opts: { scriptSource?: boolean; details?: { instance: string; hours: number }; dbAlive?: boolean } = {},
+    opts: {
+        scriptSource?: boolean;
+        details?: { instance: string; rangeKey: 'd1' | 'custom' | 'yesterday'; hours?: number };
+        dbAlive?: boolean;
+    } = {},
 ): Fake {
     const fake: Fake = {
         page: Object.create(PageChartPie.prototype),
@@ -78,8 +83,8 @@ function fakePage(
             fake.objects[id] ? { _id: id, common: { ...fake.objects[id] } } : null,
     };
     page.getNavigation = (): string => 'button~bSubPrev~~~~~button~bSubNext~~~~';
-    page.getDataFromDB = async (id: string): Promise<unknown[] | null> => {
-        fake.historyCalls.push(id);
+    page.getDataFromDBWindow = async (id: string, start: number, end: number): Promise<unknown[] | null> => {
+        fake.historyCalls.push({ id, start, end });
         const result = fake.history[id];
         if (result instanceof Error) {
             throw result;
@@ -170,7 +175,7 @@ describe('lib/pages - PageChartPie', () => {
     });
 
     describe('averaged over a range', () => {
-        const details = { instance: 'influxdb.0', hours: 24 };
+        const details = { instance: 'influxdb.0', rangeKey: 'd1' as const };
 
         it('queries every slot sequentially and shows the average with the decimals of the page', async () => {
             const fake = fakePage(slots, { details });
@@ -185,7 +190,11 @@ describe('lib/pages - PageChartPie', () => {
 
             const slices = await page.getPieSlices();
 
-            expect(fake.historyCalls).to.deep.equal(['a.bezug', 'a.eigen', 'a.einspeisung']);
+            expect(fake.historyCalls.map(c => c.id)).to.deep.equal(['a.bezug', 'a.eigen', 'a.einspeisung']);
+            // rolling range: 24 h back from now
+            const call = fake.historyCalls[0];
+            expect(call.end - call.start).to.equal(24 * 3_600_000);
+            expect(Date.now() - call.end).to.be.below(5000);
             expect(slices.map((s: { value: number }) => s.value)).to.deep.equal([4.25, 3, 1]);
             expect(slices[0].text).to.equal('4.25 kWh');
             expect(slices[1].text).to.equal('3.00 kWh');
@@ -229,8 +238,24 @@ describe('lib/pages - PageChartPie', () => {
             expect(fake.warnings[0]).to.contain('influxdb.0');
         });
 
+        it('a calendar range is queried with its fixed window, a custom range with its hours', async () => {
+            const yesterday = fakePage(slots, { details: { instance: 'sql.0', rangeKey: 'yesterday' } });
+            await (yesterday.page as any).getPieSlices();
+            const call = yesterday.historyCalls[0];
+            const endOfYesterday = new Date();
+            endOfYesterday.setHours(0, 0, 0, 0);
+            expect(call.end).to.equal(endOfYesterday.getTime());
+            const startOfYesterday = new Date(endOfYesterday);
+            startOfYesterday.setDate(startOfYesterday.getDate() - 1);
+            expect(call.start).to.equal(startOfYesterday.getTime());
+
+            const custom = fakePage(slots, { details: { instance: 'sql.0', rangeKey: 'custom', hours: 36 } });
+            await (custom.page as any).getPieSlices();
+            expect(custom.historyCalls[0].end - custom.historyCalls[0].start).to.equal(36 * 3_600_000);
+        });
+
         it('a range without an instance warns once and shows 0', async () => {
-            const fake = fakePage(slots, { details: { instance: '', hours: 24 } });
+            const fake = fakePage(slots, { details: { instance: '', rangeKey: 'd1' } });
             const page: any = fake.page;
 
             const slices = await page.getPieSlices();

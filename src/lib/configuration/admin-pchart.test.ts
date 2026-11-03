@@ -6,9 +6,6 @@ import {
     PCHART_SOURCE_SCRIPT,
     PCHART_SOURCE_SLOTS,
     pchartDefaults,
-    pchartRangeHours,
-    pchartRangeHoursOf,
-    pchartRangeOptionOf,
     type PChartEntry,
 } from '../types/adminShareConfig';
 import { buildPChartPageConfig, isPChartDetailsExternal } from '../pages/pageChartPie';
@@ -73,11 +70,11 @@ describe('lib/configuration - buildPChartPageConfig', () => {
         ]);
     });
 
-    it('slot source with a range: dbData with instance and hours, value items without trigger', () => {
-        const ranged: PChartEntry = { ...entry, rangeHours: 24, selInstance: 'influxdb.0' };
+    it('slot source with a range: dbData with instance and range key, value items without trigger', () => {
+        const ranged: PChartEntry = { ...entry, rangeKey: 'lastMonth', selInstance: 'influxdb.0' };
         const config = buildPChartPageConfig(ranged);
 
-        expect(dbDataOf(ranged)).to.deep.equal({ instance: 'influxdb.0', hours: 24 });
+        expect(dbDataOf(ranged)).to.deep.equal({ instance: 'influxdb.0', rangeKey: 'lastMonth' });
         expect(config.data.slices?.map(s => s?.value)).to.deep.equal([
             { type: 'state', dp: 'alias.0.Netz.Bezug' },
             { type: 'state', dp: 'alias.0.PV.Eigen' },
@@ -86,9 +83,29 @@ describe('lib/configuration - buildPChartPageConfig', () => {
         expect(isPChartDetailsExternal(dbDataOf(ranged))).to.equal(true);
     });
 
-    it('a range without an instance still builds (the page warns at runtime and shows 0)', () => {
-        expect(dbDataOf({ ...entry, rangeHours: 1, selInstance: '' })).to.deep.equal({ instance: '', hours: 1 });
-        expect(isPChartDetailsExternal({ instance: 'x', hours: 0 })).to.equal(false);
+    it('custom range: the hours travel with the query, other ranges carry none', () => {
+        expect(dbDataOf({ ...entry, rangeKey: 'custom', rangeHours: 36, selInstance: 'sql.0' })).to.deep.equal({
+            instance: 'sql.0',
+            rangeKey: 'custom',
+            hours: 36,
+        });
+        // custom without usable hours = one hour
+        expect(dbDataOf({ ...entry, rangeKey: 'custom', rangeHours: 0, selInstance: 'sql.0' })?.hours).to.equal(1);
+        expect(dbDataOf({ ...entry, rangeKey: 'd1', rangeHours: 36, selInstance: 'sql.0' })).to.deep.equal({
+            instance: 'sql.0',
+            rangeKey: 'd1',
+        });
+    });
+
+    it('a range without an instance still builds (the page warns at runtime and shows 0), unknown keys mean current', () => {
+        expect(dbDataOf({ ...entry, rangeKey: 'h1', selInstance: '' })).to.deep.equal({ instance: '', rangeKey: 'h1' });
+        expect(dbDataOf({ ...entry, rangeKey: 'current', selInstance: 'sql.0' })).to.equal(undefined);
+        expect(dbDataOf({ ...entry, rangeKey: 'nope' as PChartEntry['rangeKey'], selInstance: 'sql.0' })).to.equal(
+            undefined,
+        );
+        expect(isPChartDetailsExternal({ instance: 'x', rangeKey: 'current' })).to.equal(false);
+        expect(isPChartDetailsExternal({ instance: 'x', rangeKey: 'today' })).to.equal(true);
+        expect(isPChartDetailsExternal({ instance: 'x', hours: 24 })).to.equal(false);
         expect(isPChartDetailsExternal(null)).to.equal(false);
     });
 
@@ -97,7 +114,7 @@ describe('lib/configuration - buildPChartPageConfig', () => {
             ...entry,
             selInstanceDataSource: PCHART_SOURCE_SCRIPT,
             setStateForValues: '0_userdata.0.pie',
-            rangeHours: 24,
+            rangeKey: 'd1',
             selInstance: 'influxdb.0',
         };
         const config = buildPChartPageConfig(script);
@@ -137,7 +154,8 @@ describe('lib/configuration - buildPChartPageConfig', () => {
         expect(fresh.selInstanceDataSource).to.equal(PCHART_SOURCE_SLOTS);
         expect(fresh.legendMode).to.equal(pchartDefaults.legendMode);
         expect(fresh.decimals).to.equal(pchartDefaults.decimals);
-        expect(fresh.rangeHours).to.equal(0);
+        expect(fresh.rangeKey).to.equal('current');
+        expect(fresh.rangeHours).to.equal(pchartDefaults.rangeHours);
         expect(fresh.selInstance).to.equal('');
         expect(fresh.setStateForValues).to.equal('');
         expect(fresh.slots).to.have.length(PCHART_MAX_SLICES);
@@ -149,30 +167,5 @@ describe('lib/configuration - buildPChartPageConfig', () => {
         // a fresh entry builds a page without slices and without a DB query
         expect(buildPChartPageConfig(fresh).data.slices).to.deep.equal([]);
         expect(buildPChartPageConfig(fresh).data.dbData).to.equal(undefined);
-    });
-});
-
-describe('lib/types/adminShareConfig - pie chart range', () => {
-    it('maps the stored hours onto the range options and back', () => {
-        expect(pchartRangeOptionOf(undefined)).to.equal('current');
-        expect(pchartRangeOptionOf(0)).to.equal('current');
-        expect(pchartRangeOptionOf(1)).to.equal('hour');
-        expect(pchartRangeOptionOf(24)).to.equal('day');
-        expect(pchartRangeOptionOf(168)).to.equal('week');
-        expect(pchartRangeOptionOf(720)).to.equal('month');
-        expect(pchartRangeOptionOf(36)).to.equal('custom');
-
-        expect(pchartRangeHoursOf('current')).to.equal(0);
-        expect(pchartRangeHoursOf('hour')).to.equal(1);
-        expect(pchartRangeHoursOf('day')).to.equal(24);
-        expect(pchartRangeHoursOf('week')).to.equal(pchartRangeHours.week);
-        expect(pchartRangeHoursOf('month')).to.equal(24 * 30);
-        expect(pchartRangeHoursOf('custom', 36)).to.equal(36);
-    });
-
-    it('custom without usable hours falls back to one hour', () => {
-        expect(pchartRangeHoursOf('custom')).to.equal(1);
-        expect(pchartRangeHoursOf('custom', 0)).to.equal(1);
-        expect(pchartRangeHoursOf('custom', NaN)).to.equal(1);
     });
 });

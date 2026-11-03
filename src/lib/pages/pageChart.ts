@@ -58,6 +58,18 @@ export function buildChartPageConfig(entry: ChartEntry): pages.cardChartDataItem
     };
 }
 
+/** what a chart asks the history for */
+export type HistoryQuery = {
+    /** 'average' (one value per interval) or 'none' (raw values) */
+    aggregate: 'average' | 'none';
+    /** number of intervals (bar: hours, line: fine grid); also used as `limit` */
+    count: number;
+    /** true = no extra points before start and after end (pie: one average only) */
+    removeBorderValues?: boolean;
+    /** digits after the decimal point, default 1 */
+    round?: number;
+};
+
 /** the cards the chart classes draw: bar, line (PageChart) and pie (PageChartPie) */
 const chartCards: readonly pages.PageTypeCards[] = ['cardChart', 'cardLChart', 'cardPChart'];
 
@@ -189,10 +201,30 @@ export class PageChart extends Page {
     }
 
     /**
-     * Reads history values via `getHistory` of a history/sql/influxdb instance.
+     * Reads history values via `getHistory` of a history/sql/influxdb instance over the last hours.
      *
      * @param _id state id to read
      * @param _rangeHours time window in hours, ending now
+     * @param _instance db instance, `influxdb.0` or `system.adapter.influxdb.0`
+     * @param query what the chart type needs from the history, see getDataFromDBWindow
+     */
+    protected async getDataFromDB(
+        _id: string,
+        _rangeHours: number,
+        _instance: string,
+        query: HistoryQuery,
+    ): Promise<any[] | null> {
+        const end = Date.now();
+        return this.getDataFromDBWindow(_id, end - _rangeHours * 60 * 60 * 1000, end, _instance, query);
+    }
+
+    /**
+     * Reads history values via `getHistory` of a history/sql/influxdb instance over an explicit window
+     * (pie chart: calendar ranges with a fixed start and end).
+     *
+     * @param _id state id to read
+     * @param start start of the window in milliseconds
+     * @param end end of the window in milliseconds
      * @param _instance db instance, `influxdb.0` or `system.adapter.influxdb.0`
      * @param query what the chart type needs from the history
      * @param query.aggregate 'average' (one value per interval) or 'none' (raw values)
@@ -200,11 +232,12 @@ export class PageChart extends Page {
      * @param query.removeBorderValues true = no extra points before start and after end (pie: one average only)
      * @param query.round digits after the decimal point, default 1
      */
-    protected async getDataFromDB(
+    protected async getDataFromDBWindow(
         _id: string,
-        _rangeHours: number,
+        start: number,
+        end: number,
         _instance: string,
-        query: { aggregate: 'average' | 'none'; count: number; removeBorderValues?: boolean; round?: number },
+        query: HistoryQuery,
     ): Promise<any[] | null> {
         if (!_instance) {
             return null;
@@ -244,8 +277,8 @@ export class PageChart extends Page {
                     {
                         id: _id,
                         options: {
-                            start: Date.now() - _rangeHours * 60 * 60 * 1000,
-                            end: Date.now(),
+                            start,
+                            end,
                             /** number of intervals for 'average' (one value per interval, spread over start..end) */
                             count: query.count,
                             /** do not return more entries than limit */

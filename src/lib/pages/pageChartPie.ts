@@ -2,9 +2,11 @@ import { type PageInterface } from '../classes/PageInterface';
 import { getStringFromStringOrTranslated } from '../const/tools';
 import type { Dataitem } from '../controller/data-item';
 import {
+    isPChartRangeKey,
     PCHART_MAX_SLICES,
     PCHART_SOURCE_SCRIPT,
     pchartDefaults,
+    resolveRange,
     type PChartDetailsExternal,
     type PChartEntry,
 } from '../types/adminShareConfig';
@@ -29,9 +31,9 @@ const PIE_DB_REFRESH_INTERVAL = 5 * 60_000;
 
 /**
  * Page config of a pie chart page from a PageConfig entry.
- * - slot source: the configured slots with a state become `slices`; with a range (`rangeHours` > 0) the
- *   query travels as JSON in the const item `dbData` and the value items are plain `state` items (read on
- *   refresh, no trigger), without a range they are `triggered` and every change redraws the pie;
+ * - slot source: the configured slots with a state become `slices`; with a range (`rangeKey` other than
+ *   `current`) the query travels as JSON in the const item `dbData` and the value items are plain `state`
+ *   items (read on refresh, no trigger), without a range they are `triggered` and every change redraws the pie;
  * - script source: only `value`, the state with the finished panel text.
  *
  * @param entry pie chart entry as stored by the PageConfig editor
@@ -39,9 +41,14 @@ const PIE_DB_REFRESH_INTERVAL = 5 * 60_000;
 export function buildPChartPageConfig(entry: PChartEntry): pages.cardChartPieDataItemOptions {
     const d = pchartDefaults;
     const scriptSource = entry.selInstanceDataSource === PCHART_SOURCE_SCRIPT;
-    const hours = !scriptSource && entry.rangeHours && entry.rangeHours > 0 ? entry.rangeHours : 0;
-    const dbData: PChartDetailsExternal | undefined =
-        hours > 0 ? { instance: entry.selInstance || '', hours } : undefined;
+    const rangeKey = isPChartRangeKey(entry.rangeKey) ? entry.rangeKey : 'current';
+    let dbData: PChartDetailsExternal | undefined;
+    if (!scriptSource && rangeKey !== 'current') {
+        dbData = { instance: entry.selInstance || '', rangeKey };
+        if (rangeKey === 'custom') {
+            dbData.hours = entry.rangeHours && entry.rangeHours > 0 ? entry.rangeHours : 1;
+        }
+    }
     let slices: pages.cardChartPieDataItemOptions['data']['slices'];
     if (!scriptSource) {
         slices = [];
@@ -168,8 +175,9 @@ export class PageChartPie extends PageChart {
     }
 
     /**
-     * Average of a slot state over the configured range via getHistory. Without a usable value (instance
-     * not alive, no rows, timeout) the slice shows 0 and a warning is logged once for that state.
+     * Average of a slot state over the configured range via getHistory: the window comes from
+     * resolveRange (rolling ranges end now, calendar ranges have a fixed start and end). Without a usable
+     * value (instance not alive, no rows, timeout) the slice shows 0 and a warning is logged once for that state.
      *
      * @param item value item of the slice (its dp is queried)
      * @param details DB instance and range
@@ -181,7 +189,8 @@ export class PageChartPie extends PageChart {
             return 0;
         }
         try {
-            const rows = await this.getDataFromDB(dp, details.hours, details.instance, {
+            const { start, end } = resolveRange(details.rangeKey, Date.now(), details.hours);
+            const rows = await this.getDataFromDBWindow(dp, start, end, details.instance, {
                 aggregate: 'average',
                 count: 1,
                 removeBorderValues: true,
@@ -268,5 +277,10 @@ export function isPChartDetailsExternal(obj: unknown): obj is PChartDetailsExter
         return false;
     }
     const o = obj as Record<string, unknown>;
-    return typeof o.instance === 'string' && typeof o.hours === 'number' && o.hours > 0;
+    return (
+        typeof o.instance === 'string' &&
+        isPChartRangeKey(o.rangeKey) &&
+        o.rangeKey !== 'current' &&
+        (o.hours === undefined || typeof o.hours === 'number')
+    );
 }
