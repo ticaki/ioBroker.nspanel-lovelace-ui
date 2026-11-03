@@ -158,11 +158,13 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
     ### **WORK IN PROGRESS**
 -->
 ### **WORK IN PROGRESS**
+- (tt-tom17) cardThermo: the set temperature reached the panel multiplied by the step width (19.0 °C became 79.0 °C with the usual step of 0.5 °C) - only a step of 0.1 °C was unaffected
 - (ticaki) Tasmota update and the Tasmota update indicator use the `tasmota-beta` version when the beta option is enabled; the beta option label in the admin no longer refers to TFT only
 - (ticaki) admin screensaver: uniform, larger paging arrows for all areas except favorit (the scroll bar for weather items is gone, weather items are paged like the panel does); the alternate area can hold several items the panel rotates through
 - (ticaki) admin screensaver: the notifications and options buttons moved from the panel picture to a bar below it, so they no longer cover places and paging arrows
 - (ticaki) admin screensaver: items of areas the chosen version does not show are no longer reported as a problem or offered for removal - the version can change at runtime (`cmd.screenSaver.layout`)
 - (tt-tom17) cardThermo2: the humidity row uses the unit configured for it, and the unit of the first row now also applies to the set temperature - the admin offers both fields, the adapter read only the first one
+- (tt-tom17) admin: the two hardware button buttons of a panel tile now sit one below the other, and their colour also shows whether the relay is decoupled - with a tooltip naming the state
 
 ### 2.0.2 (2026-11-01)
 - (ticaki) admin: page item text size shows the pixel size of each font; icons only offer fonts 1, 3 and 4 (the others have no icons), font 5 is marked "ASCII only"
