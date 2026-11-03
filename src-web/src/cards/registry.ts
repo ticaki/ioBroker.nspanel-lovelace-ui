@@ -12,6 +12,7 @@ import { cardUnlockModule } from './cardUnlock';
 import { cardQRModule } from './cardQR';
 import { cardPowerModule } from './cardPower';
 import { cardChartModule } from './cardChart';
+import { cardPChartModule } from './cardPChart';
 import { popupLightModule } from './popupLight';
 import { popupShutterModule } from './popupShutter';
 import { popupFanModule } from './popupFan';
@@ -36,6 +37,7 @@ export const modules: readonly AnyCardModule[] = [
     cardQRModule,
     cardPowerModule,
     cardChartModule,
+    cardPChartModule,
     popupLightModule,
     popupShutterModule,
     popupFanModule,

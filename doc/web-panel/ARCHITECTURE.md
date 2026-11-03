@@ -474,6 +474,7 @@ Module und ihre pageTypes:
 | `cardQR` | `cardQR` |
 | `cardPower` | `cardPower` |
 | `cardChart` | `cardChart`, `cardLChart` |
+| `cardPChart` | `cardPChart` |
 | `popupLight` | `popupLight`, `popupLightNew` |
 | `popupShutter` | `popupShutter`, `popupShutter2` |
 | `popupFan` | `popupFan` |
