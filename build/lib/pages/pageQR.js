@@ -78,7 +78,7 @@ class PageQR extends import_Page.Page {
     this.minUpdateInterval = 1e3;
   }
   async init() {
-    var _a, _b, _c, _d, _e, _f, _g, _h;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j;
     const config = structuredClone(this.config);
     if (!((config == null ? void 0 : config.card) === "cardQR" && config.data)) {
       throw new Error("PageQR: invalid configuration");
@@ -95,6 +95,7 @@ class PageQR extends import_Page.Page {
     const selType = (_c = await ((_b = this.items.data.selType) == null ? void 0 : _b.getNumber())) != null ? _c : 0;
     const ssidurltel = (_e = await ((_d = this.items.data.ssidUrlTel) == null ? void 0 : _d.getString())) != null ? _e : "";
     const password = (_g = await ((_f = this.items.data.password) == null ? void 0 : _f.getString())) != null ? _g : "";
+    const wlantype = (_i = await ((_h = this.items.data.wlantype) == null ? void 0 : _h.getString())) != null ? _i : "WPA";
     let text1 = "";
     let text = "";
     let icon1 = "";
@@ -153,11 +154,11 @@ class PageQR extends import_Page.Page {
     });
     let text1Second = "";
     let textSecond = "";
-    if (selType == 1) {
+    if (selType == 1 && wlantype !== "nopass") {
       text1Second = password;
       textSecond = "Password";
     }
-    if ((_h = config.data) == null ? void 0 : _h.setState) {
+    if ((_j = config.data) == null ? void 0 : _j.setState) {
       this.pageItemConfig.push({
         type: "button",
         role: "button",
@@ -242,7 +243,7 @@ class PageQR extends import_Page.Page {
           break;
         case 1: {
           this.log.debug(`qrType = wifi`);
-          const pass = password;
+          const pass = wlantype === "nopass" ? "" : password;
           message.textQR = `WIFI:T:${wlantype};S:${ssidurltel};P:${pass};${wlanhidden ? `H:${wlanhidden}` : `H:`};`;
           message.optionalValue1 = ssidurltel;
           break;

@@ -89,6 +89,38 @@ export class PageAlarmEditor extends React.Component<PageAlarmEditorProps, PageA
         this.props.onEntryChange(updated);
     }
 
+    /**
+     * Switches the type and fills the two top buttons of an alarm system.
+     *
+     * An alarm system shows `button1` while it is disarmed and `button5` while it is armed; without
+     * them the card stays without any button in that state. Switching to `alarm` therefore fills
+     * both with their default text when they are empty. Type `unlock` needs one button only.
+     *
+     * @param value New alarm type, `alarm` or `unlock`.
+     */
+    private handleAlarmTypeChange(value: string): void {
+        const updated: any = { ...this.props.entry, alarmType: value };
+        if (value === 'alarm') {
+            if (!updated.button1) {
+                updated.button1 = this.getText('unlock_button_default_arm');
+            }
+            if (!updated.button5) {
+                updated.button5 = this.getText('unlock_button_default_disarm');
+            }
+        }
+        this.props.onEntryChange(updated);
+    }
+
+    /**
+     * Whether a button field has to be filled.
+     *
+     * @param index Button index 1 to 8.
+     * @returns true for the top button of both columns of an alarm system.
+     */
+    private isRequiredButton(index: number): boolean {
+        return this.props.entry.alarmType === 'alarm' && (index === 1 || index === 5);
+    }
+
     render(): React.JSX.Element {
         const { entry, pagesList } = this.props;
 
@@ -146,7 +178,7 @@ export class PageAlarmEditor extends React.Component<PageAlarmEditorProps, PageA
                             row
                             value={entry.alarmType || ''}
                             onChange={(_e, val) => {
-                                this.handleFieldChange('alarmType', val);
+                                this.handleAlarmTypeChange(val);
                             }}
                         >
                             <FormControlLabel
@@ -245,6 +277,8 @@ export class PageAlarmEditor extends React.Component<PageAlarmEditorProps, PageA
                                     {[1, 2, 3, 4].map(i => {
                                         const key = `button${i}` as const;
                                         const labelIndex = ((i - 1) % 4) + 1;
+                                        const required = this.isRequiredButton(i);
+                                        const missing = required && !(entry as any)[key];
                                         return (
                                             <Box key={i}>
                                                 <Typography
@@ -259,6 +293,11 @@ export class PageAlarmEditor extends React.Component<PageAlarmEditorProps, PageA
                                                     variant="standard"
                                                     placeholder={this.getText(`unlock_button${labelIndex}_placeholder`)}
                                                     value={(entry as any)[key] ?? ''}
+                                                    required={required}
+                                                    error={missing}
+                                                    helperText={
+                                                        missing ? this.getText('unlock_buttons_required') : undefined
+                                                    }
                                                     onChange={e => {
                                                         this.handleFieldChange(key, e.target.value);
                                                     }}
@@ -294,6 +333,8 @@ export class PageAlarmEditor extends React.Component<PageAlarmEditorProps, PageA
                                     {[5, 6, 7, 8].map(i => {
                                         const key = `button${i}` as const;
                                         const labelIndex = ((i - 1) % 4) + 1;
+                                        const required = this.isRequiredButton(i);
+                                        const missing = required && !(entry as any)[key];
                                         return (
                                             <Box key={i}>
                                                 <Typography
@@ -308,6 +349,11 @@ export class PageAlarmEditor extends React.Component<PageAlarmEditorProps, PageA
                                                     variant="standard"
                                                     placeholder={this.getText(`unlock_button${labelIndex}_placeholder`)}
                                                     value={(entry as any)[key] ?? ''}
+                                                    required={required}
+                                                    error={missing}
+                                                    helperText={
+                                                        missing ? this.getText('unlock_buttons_required') : undefined
+                                                    }
                                                     onChange={e => {
                                                         this.handleFieldChange(key, e.target.value);
                                                     }}
