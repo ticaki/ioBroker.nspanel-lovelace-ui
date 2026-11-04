@@ -23,6 +23,7 @@ __export(navigationEdit_exports, {
   assignmentSourceOf: () => assignmentSourceOf,
   effectiveNavigation: () => effectiveNavigation,
   effectiveScriptLinks: () => effectiveScriptLinks,
+  findNavigationReferences: () => findNavigationReferences,
   isNavigationApplied: () => isNavigationApplied,
   isNavigationLinkKind: () => isNavigationLinkKind,
   isOverrideStale: () => isOverrideStale,
@@ -307,6 +308,44 @@ function isNavigationApplied(map, entries, panelTopic, page, overrides = []) {
   const nextByAdmin = adapterDecidedLink(map, entries, panelTopic, page, "next", overrides) !== void 0;
   return (expected.home && !known.has(expected.home) ? true : same(expected.home, item.home)) && (expected.parent && !known.has(expected.parent) ? true : same(expected.parent, item.parent)) && (prevByAdmin || applied(links.prev, item.prev)) && (nextByAdmin || applied(links.next, item.next));
 }
+function findNavigationReferences(entries, uniqueName) {
+  if (!uniqueName) {
+    return [];
+  }
+  const self = entries.find((e) => e && e.uniqueName === uniqueName);
+  const names = /* @__PURE__ */ new Set([uniqueName]);
+  if (self && (0, import_adminShareConfig.isMainPageEntry)(self)) {
+    names.add(import_adminShareConfig.mainPageName);
+  }
+  const hit = (target) => !!target && names.has(target);
+  const found = [];
+  for (const entry of entries) {
+    if (!entry || entry.uniqueName === uniqueName) {
+      continue;
+    }
+    const kinds = [];
+    const rows = Array.isArray(entry.navigationAssignment) ? entry.navigationAssignment : [];
+    for (const kind of navigationLinkKinds) {
+      if (rows.some((row) => {
+        var _a;
+        return row && hit((_a = row.navigation) == null ? void 0 : _a[kind]);
+      })) {
+        kinds.push(kind);
+      }
+    }
+    if ((0, import_adminShareConfig.isPageLinkEntry)(entry) && hit(entry.target)) {
+      kinds.push("link");
+    }
+    const items = "pageItems" in entry && Array.isArray(entry.pageItems) ? entry.pageItems : [];
+    if (items.some((item) => item && (hit(item.targetPage) || hit(item.targetPageLongPress)))) {
+      kinds.push("item");
+    }
+    if (kinds.length) {
+      found.push({ uniqueName: entry.uniqueName, kinds });
+    }
+  }
+  return found;
+}
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
   adapterDecidedLink,
@@ -314,6 +353,7 @@ function isNavigationApplied(map, entries, panelTopic, page, overrides = []) {
   assignmentSourceOf,
   effectiveNavigation,
   effectiveScriptLinks,
+  findNavigationReferences,
   isNavigationApplied,
   isNavigationLinkKind,
   isOverrideStale,

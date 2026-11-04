@@ -464,27 +464,6 @@ class PageConfigManager extends ConfigGeneric<ConfigGenericProps & { theme?: any
         this.checkAlarmButtons(updated);
     };
 
-    private handleUniqueNameChange = (oldName: string, newName: string): void => {
-        if (!newName.trim()) {
-            return;
-        }
-        // 'main' is reserved: the start page is set via the checkbox in the navigation assignment,
-        // otherwise its checks could be bypassed by renaming a page afterwards.
-        if (newName.trim() === mainPageName) {
-            return;
-        }
-        // links follow their renamed target
-        const updated = this.state.entries.map(it =>
-            it.uniqueName === oldName
-                ? { ...it, uniqueName: newName }
-                : isPageLinkEntry(it) && it.target === oldName
-                  ? { ...it, target: newName }
-                  : it,
-        );
-        this.setState({ entries: updated, selected: newName } as PageConfigManagerState);
-        void this.onChange(this.props.attr, updated);
-    };
-
     /**
      * Selects a page of the list. A page hidden by the page type filter switches the filter to
      * all pages, otherwise the selection would not be visible.
@@ -555,7 +534,6 @@ class PageConfigManager extends ConfigGeneric<ConfigGenericProps & { theme?: any
                     entries={entries}
                     alive={this.state.alive}
                     onEntryChange={this.handleEntryChange}
-                    onUniqueNameChange={this.handleUniqueNameChange}
                     onSelectPage={this.handleSelectPage}
                     getText={key => this.getText(key)}
                 />
@@ -569,7 +547,6 @@ class PageConfigManager extends ConfigGeneric<ConfigGenericProps & { theme?: any
                     entry={currentEntry}
                     pagesList={pagesList}
                     onEntryChange={this.handleEntryChange}
-                    onUniqueNameChange={this.handleUniqueNameChange}
                     getText={key => this.getText(key)}
                     oContext={this.props.oContext}
                     theme={this.props.theme}
@@ -589,7 +566,6 @@ class PageConfigManager extends ConfigGeneric<ConfigGenericProps & { theme?: any
                     {...this.props}
                     entry={currentEntry}
                     onEntryChange={this.handleEntryChange}
-                    onUniqueNameChange={this.handleUniqueNameChange}
                     getText={key => this.getText(key)}
                     oContext={this.props.oContext}
                     panels={Array.isArray(this.props.data?.panels) ? this.props.data.panels : []}
@@ -606,7 +582,6 @@ class PageConfigManager extends ConfigGeneric<ConfigGenericProps & { theme?: any
                     {...this.props}
                     entry={currentEntry}
                     onEntryChange={this.handleEntryChange}
-                    onUniqueNameChange={this.handleUniqueNameChange}
                     getText={key => this.getText(key)}
                     oContext={this.props.oContext}
                     theme={this.props.theme}
@@ -620,7 +595,6 @@ class PageConfigManager extends ConfigGeneric<ConfigGenericProps & { theme?: any
                     {...this.props}
                     entry={currentEntry}
                     onEntryChange={this.handleEntryChange}
-                    onUniqueNameChange={this.handleUniqueNameChange}
                     getText={key => this.getText(key)}
                     oContext={this.props.oContext}
                     theme={this.props.theme}
@@ -634,7 +608,6 @@ class PageConfigManager extends ConfigGeneric<ConfigGenericProps & { theme?: any
                     {...this.props}
                     entry={currentEntry}
                     onEntryChange={this.handleEntryChange}
-                    onUniqueNameChange={this.handleUniqueNameChange}
                     theme={this.props.theme}
                     themeType={this.props.oContext?.themeType}
                 />
@@ -647,7 +620,6 @@ class PageConfigManager extends ConfigGeneric<ConfigGenericProps & { theme?: any
                     {...this.props}
                     entry={currentEntry}
                     onEntryChange={this.handleEntryChange}
-                    onUniqueNameChange={this.handleUniqueNameChange}
                     getText={key => this.getText(key)}
                     oContext={this.props.oContext}
                     theme={this.props.theme}
@@ -661,7 +633,6 @@ class PageConfigManager extends ConfigGeneric<ConfigGenericProps & { theme?: any
                     {...this.props}
                     entry={currentEntry}
                     onEntryChange={this.handleEntryChange}
-                    onUniqueNameChange={this.handleUniqueNameChange}
                     getText={key => this.getText(key)}
                     oContext={this.props.oContext}
                     theme={this.props.theme}
@@ -677,7 +648,6 @@ class PageConfigManager extends ConfigGeneric<ConfigGenericProps & { theme?: any
                     {...this.props}
                     entry={currentEntry}
                     onEntryChange={this.handleEntryChange}
-                    onUniqueNameChange={this.handleUniqueNameChange}
                     getText={key => this.getText(key)}
                     oContext={this.props.oContext}
                     theme={this.props.theme}
@@ -691,7 +661,6 @@ class PageConfigManager extends ConfigGeneric<ConfigGenericProps & { theme?: any
                     {...this.props}
                     entry={currentEntry}
                     onEntryChange={this.handleEntryChange}
-                    onUniqueNameChange={this.handleUniqueNameChange}
                     getText={key => this.getText(key)}
                     oContext={this.props.oContext}
                     theme={this.props.theme}

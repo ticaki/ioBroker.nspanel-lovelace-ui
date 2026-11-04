@@ -13,6 +13,7 @@ import {
     ALL_PANELS_SPECIAL_ID,
     dropScriptNavigation,
     isMainPageEntry,
+    isPageLinkEntry,
     mainPageName,
     type NavigationAssignment,
     type NavigationLinks,
@@ -655,4 +656,71 @@ export function isNavigationApplied(
         (prevByAdmin || applied(links.prev, item.prev)) &&
         (nextByAdmin || applied(links.next, item.next))
     );
+}
+
+/** How a page points at another page: one of the four navigation links, a page link or a page item. */
+export type NavigationReferenceKind = NavigationLinkKind | 'link' | 'item';
+
+/** A page of the configuration that points at a searched page, and every way it does so. */
+export type NavigationReference = {
+    /** `uniqueName` of the page that carries the reference. */
+    uniqueName: string;
+    /** The ways this page points at the searched one, links in the order of the flow. */
+    kinds: NavigationReferenceKind[];
+};
+
+/**
+ * Every admin page that points at a page - its navigation links, a page link naming it as target
+ * and page items navigating to it.
+ *
+ * Used before a page is deleted: the deletion leaves these references behind, the adapter only
+ * warns about them in the log (`Navigation unresolved for …`). The page itself is left out, a page
+ * flagged as start page is also found under its reserved id `main`.
+ *
+ * Pages of a configuration script are not part of `entries` and therefore not found - a caller
+ * showing the result must not claim it to be complete.
+ *
+ * @param entries Page configuration (`native.pageConfig`), unsaved changes included.
+ * @param uniqueName `uniqueName` of the page the references are searched for.
+ * @returns One entry per referencing page, in the order of the configuration; empty when nothing
+ * points at the page.
+ */
+export function findNavigationReferences(
+    entries: readonly PageConfigEntry[],
+    uniqueName: string,
+): NavigationReference[] {
+    if (!uniqueName) {
+        return [];
+    }
+    const self = entries.find(e => e && e.uniqueName === uniqueName);
+    // the start page is published under its reserved id as well - a link may name either
+    const names = new Set<string>([uniqueName]);
+    if (self && isMainPageEntry(self)) {
+        names.add(mainPageName);
+    }
+    const hit = (target: string | null | undefined): boolean => !!target && names.has(target);
+    const found: NavigationReference[] = [];
+    for (const entry of entries) {
+        if (!entry || entry.uniqueName === uniqueName) {
+            continue;
+        }
+        const kinds: NavigationReferenceKind[] = [];
+        const rows = Array.isArray(entry.navigationAssignment) ? entry.navigationAssignment : [];
+        for (const kind of navigationLinkKinds) {
+            if (rows.some(row => row && hit(row.navigation?.[kind]))) {
+                kinds.push(kind);
+            }
+        }
+        if (isPageLinkEntry(entry) && hit(entry.target)) {
+            kinds.push('link');
+        }
+        const items = 'pageItems' in entry && Array.isArray(entry.pageItems) ? entry.pageItems : [];
+        if (items.some(item => item && (hit(item.targetPage) || hit(item.targetPageLongPress)))) {
+            kinds.push('item');
+        }
+        if (kinds.length) {
+            found.push({ uniqueName: entry.uniqueName, kinds });
+        }
+    }
+    return found;
 }

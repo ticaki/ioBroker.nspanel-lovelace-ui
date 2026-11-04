@@ -21,6 +21,7 @@ import type {
     PageConfigEntry,
     AdminPanelConfig,
 } from '../../../src/lib/types/adminShareConfig';
+import { findNavigationReferences } from '../../../src/lib/types/navigationEdit';
 import {
     ADAPTER_NAME,
     ALL_PANELS_SPECIAL_ID,
@@ -131,6 +132,9 @@ interface PageConfigLayoutState {
 }
 
 export class PageConfigLayout extends React.Component<PageConfigLayoutProps, PageConfigLayoutState> {
+    /** How many referencing pages the delete dialog names before it counts the rest. */
+    private static readonly maxReferencesShown = 5;
+
     constructor(props: PageConfigLayoutProps) {
         super(props);
         this.state = {
@@ -210,6 +214,47 @@ export class PageConfigLayout extends React.Component<PageConfigLayoutProps, Pag
         this.props.onDelete(name);
         this.setState({ confirmDeleteOpen: false, confirmDeleteName: null });
     };
+
+    /**
+     * Description of the delete confirmation: the question, and the pages that point at the page
+     * to be deleted. Deleting does not clean those references up, so they are named beforehand.
+     *
+     * Only pages of the admin configuration are found - a reference from a configuration script is
+     * not part of it, which the hint says.
+     *
+     * @returns The description for the confirmation dialog.
+     */
+    private renderDeleteDescription(): React.ReactNode {
+        const name = this.state.confirmDeleteName;
+        const question = this.getText('delete_confirm_text') + (name ? `: ${name}` : '');
+        const references = name ? findNavigationReferences(this.props.entries, name) : [];
+        if (!references.length) {
+            return question;
+        }
+        const shown = references.slice(0, PageConfigLayout.maxReferencesShown);
+        let list = shown.map(reference => reference.uniqueName).join(', ');
+        const rest = references.length - shown.length;
+        if (rest > 0) {
+            list += ` ${this.getText('delete_confirm_referenced_more').replace('%n', String(rest))}`;
+        }
+        return (
+            <>
+                {question}
+                <Box
+                    component="span"
+                    sx={{ display: 'block', mt: 1, fontWeight: 600 }}
+                >
+                    {this.getText('delete_confirm_referenced').replace('%s', list)}
+                </Box>
+                <Box
+                    component="span"
+                    sx={{ display: 'block', mt: 1 }}
+                >
+                    {this.getText('delete_confirm_referenced_hint')}
+                </Box>
+            </>
+        );
+    }
 
     private handleDeleteCancel = (): void => {
         this.setState({ confirmDeleteOpen: false, confirmDeleteName: null });
@@ -643,10 +688,7 @@ export class PageConfigLayout extends React.Component<PageConfigLayoutProps, Pag
                     onClose={this.handleDeleteCancel}
                     onConfirm={this.handleDeleteConfirm}
                     title={this.getText('delete_confirm_title')}
-                    description={
-                        this.getText('delete_confirm_text') +
-                        (this.state.confirmDeleteName ? `: ${this.state.confirmDeleteName}` : '')
-                    }
+                    description={this.renderDeleteDescription()}
                     cancelText={this.getText('Cancel1')}
                     confirmText={this.getText('Delete')}
                     ariaTitleId="unlock-delete-confirm-title"

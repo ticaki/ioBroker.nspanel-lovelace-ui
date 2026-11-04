@@ -1,11 +1,13 @@
 import { expect } from 'chai';
 import {
     ALL_PANELS_SPECIAL_ID,
+    emptyChannelValueConfig,
     type MenuEntry,
     type NavigationMap,
     type NavigationMapEntry,
     type NavigationOverride,
     type PageConfigEntry,
+    pageLinkCard,
 } from './adminShareConfig';
 import {
     adapterDecidedLink,
@@ -13,6 +15,7 @@ import {
     assignmentSourceOf,
     effectiveNavigation,
     effectiveScriptLinks,
+    findNavigationReferences,
     isNavigationApplied,
     isNavigationLinkKind,
     overrideOf,
@@ -748,5 +751,68 @@ describe('lib/types/navigationEdit - overlay and applied check for script pages'
             { panelTopic, page: 'a', navigation: { prev: 'main', next: 'b', home: 'nowhere' }, scriptLinks: {} },
         ];
         expect(isNavigationApplied(map(), [], panelTopic, 'a', unknown)).to.equal(true);
+    });
+});
+
+describe('lib/types/navigationEdit - findNavigationReferences', () => {
+    it('finds the navigation links of other pages, on every panel row', () => {
+        const entries: PageConfigEntry[] = [
+            gridEntry('victim', [{ topic: ALL_PANELS_SPECIAL_ID, navigation: { home: 'main' } }]),
+            gridEntry('a', [{ topic: ALL_PANELS_SPECIAL_ID, navigation: { next: 'victim' } }]),
+            gridEntry('b', [
+                { topic: ALL_PANELS_SPECIAL_ID, navigation: { home: 'main' } },
+                { topic: otherTopic, navigation: { prev: 'victim', parent: 'victim' } },
+            ]),
+            gridEntry('c', [{ topic: panelTopic, navigation: { next: 'a' } }]),
+        ];
+        expect(findNavigationReferences(entries, 'victim')).to.deep.equal([
+            { uniqueName: 'a', kinds: ['next'] },
+            { uniqueName: 'b', kinds: ['prev', 'parent'] },
+        ]);
+    });
+
+    it('leaves the page itself out and knows no references', () => {
+        const entries: PageConfigEntry[] = [
+            gridEntry('victim', [{ topic: panelTopic, navigation: { next: 'victim', home: 'victim' } }]),
+        ];
+        expect(findNavigationReferences(entries, 'victim')).to.deep.equal([]);
+        expect(findNavigationReferences(entries, '')).to.deep.equal([]);
+        expect(findNavigationReferences(entries, 'unknown')).to.deep.equal([]);
+    });
+
+    it('finds the start page under its reserved id as well', () => {
+        const entries: PageConfigEntry[] = [
+            gridEntry('start', [{ topic: panelTopic, navigation: {} }], true),
+            gridEntry('a', [{ topic: panelTopic, navigation: { home: 'main' } }]),
+            gridEntry('b', [{ topic: panelTopic, navigation: { parent: 'start' } }]),
+        ];
+        expect(findNavigationReferences(entries, 'start')).to.deep.equal([
+            { uniqueName: 'a', kinds: ['home'] },
+            { uniqueName: 'b', kinds: ['parent'] },
+        ]);
+        // a page that is not the start page is not found under `main`
+        const plain: PageConfigEntry[] = [
+            gridEntry('start', [{ topic: panelTopic, navigation: {} }]),
+            gridEntry('a', [{ topic: panelTopic, navigation: { home: 'main' } }]),
+        ];
+        expect(findNavigationReferences(plain, 'start')).to.deep.equal([]);
+    });
+
+    it('finds page links and page items that navigate to the page', () => {
+        const withItem = gridEntry('menu', [{ topic: panelTopic, navigation: { home: 'main' } }]);
+        withItem.pageItems = [
+            undefined,
+            { channelId: emptyChannelValueConfig(), isNavigation: true, targetPage: 'victim' },
+            { channelId: emptyChannelValueConfig(), targetPageLongPress: 'victim' },
+        ];
+        const entries: PageConfigEntry[] = [
+            gridEntry('victim', [{ topic: panelTopic, navigation: { home: 'main' } }]),
+            { card: pageLinkCard, uniqueName: 'shortcut', headline: '', target: 'victim' },
+            withItem,
+        ];
+        expect(findNavigationReferences(entries, 'victim')).to.deep.equal([
+            { uniqueName: 'shortcut', kinds: ['link'] },
+            { uniqueName: 'menu', kinds: ['item'] },
+        ]);
     });
 });

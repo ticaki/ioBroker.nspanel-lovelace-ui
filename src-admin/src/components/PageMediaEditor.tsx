@@ -64,7 +64,6 @@ import {
 export interface PageMediaEditorProps {
     entry: MediaEntry;
     onEntryChange: (updated: MediaEntry) => void;
-    onUniqueNameChange: (oldName: string, newName: string) => void;
     getText: (key: string) => string;
     oContext: any;
     theme?: any;
@@ -1565,12 +1564,6 @@ export class PageMediaEditor extends ConfigGeneric<ConfigGenericProps & PageMedi
                         type="text"
                         label={this.getText('unique_label')}
                         value={entry.uniqueName}
-                        onChange={e => {
-                            const newUniqueName = e.target.value;
-                            if (newUniqueName.trim()) {
-                                this.props.onUniqueNameChange(entry.uniqueName, newUniqueName);
-                            }
-                        }}
                         slotProps={{
                             input: {
                                 sx: {
@@ -1581,8 +1574,12 @@ export class PageMediaEditor extends ConfigGeneric<ConfigGenericProps & PageMedi
                                 },
                             },
                         }}
-                        disabled={!alive || isMainPageEntry(entry)}
-                        helperText={isMainPageEntry(entry) ? this.getText('page_name_main_locked') : undefined}
+                        disabled
+                        helperText={
+                            isMainPageEntry(entry)
+                                ? this.getText('page_name_main_locked')
+                                : this.getText('page_name_locked')
+                        }
                     />
                 </Box>
 

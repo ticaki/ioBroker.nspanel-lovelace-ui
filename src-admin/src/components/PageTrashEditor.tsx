@@ -32,7 +32,6 @@ import { isMainPageEntry, normalizeTrashItems } from '../../../src/lib/types/adm
 export interface PageTrashEditorProps {
     entry: TrashEntry;
     onEntryChange: (updated: TrashEntry) => void;
-    onUniqueNameChange: (oldName: string, newName: string) => void;
     getText: (key: string) => string;
     oContext: any;
     theme?: IobTheme;
@@ -304,13 +303,7 @@ export class PageTrashEditor extends ConfigGeneric<ConfigGenericProps & PageTras
                         type="text"
                         label={this.getText('unique_label')}
                         value={entry.uniqueName}
-                        disabled={!alive || isMainPageEntry(entry)}
-                        onChange={e => {
-                            const newUniqueName = e.target.value;
-                            if (newUniqueName.trim()) {
-                                this.props.onUniqueNameChange(entry.uniqueName, newUniqueName);
-                            }
-                        }}
+                        disabled
                         slotProps={{
                             input: {
                                 sx: {
@@ -321,7 +314,11 @@ export class PageTrashEditor extends ConfigGeneric<ConfigGenericProps & PageTras
                                 },
                             },
                         }}
-                        helperText={isMainPageEntry(entry) ? this.getText('page_name_main_locked') : undefined}
+                        helperText={
+                            isMainPageEntry(entry)
+                                ? this.getText('page_name_main_locked')
+                                : this.getText('page_name_locked')
+                        }
                     />
                 </Box>
 

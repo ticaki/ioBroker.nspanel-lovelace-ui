@@ -22,7 +22,6 @@ export interface PageAlarmEditorProps {
     entry: UnlockEntry;
     pagesList: string[];
     onEntryChange: (updated: UnlockEntry) => void;
-    onUniqueNameChange: (oldName: string, newName: string) => void;
     getText: (key: string) => string;
     oContext: any;
     theme: any;
@@ -141,12 +140,6 @@ export class PageAlarmEditor extends React.Component<PageAlarmEditorProps, PageA
                         type="text"
                         label={this.getText('unique_label')}
                         value={entry.uniqueName}
-                        onChange={e => {
-                            const newUniqueName = e.target.value;
-                            if (newUniqueName.trim()) {
-                                this.props.onUniqueNameChange(entry.uniqueName, newUniqueName);
-                            }
-                        }}
                         slotProps={{
                             input: {
                                 sx: {
@@ -157,8 +150,12 @@ export class PageAlarmEditor extends React.Component<PageAlarmEditorProps, PageA
                                 },
                             },
                         }}
-                        disabled={!this.state.alive || isMainPageEntry(entry)}
-                        helperText={isMainPageEntry(entry) ? this.getText('page_name_main_locked') : undefined}
+                        disabled
+                        helperText={
+                            isMainPageEntry(entry)
+                                ? this.getText('page_name_main_locked')
+                                : this.getText('page_name_locked')
+                        }
                     />
                 </Box>
 
