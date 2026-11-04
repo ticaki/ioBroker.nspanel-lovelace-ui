@@ -1,0 +1,6 @@
+# cardPChart (pie chart, TFT 6.0.5) - the payload PageChartPie builds: field 14 empty (not read),
+# field 15 legend mode 3 (name, value text and percentage), field 16 empty, from field 17 on
+# Name~Number~Value text~Color per slice; the percentages are computed by the renderer
+dimmode~20~100~0~65535
+pageType~cardPChart
+entityUpd~Energie~button~bSubPrev~~65535~~~button~bSubNext~~65535~~~~3~~Netzbezug~5200~5.20 kWh~63488~Eigennutzung~3100~3.10 kWh~2016~Einspeisung~1500~1.50 kWh~2047

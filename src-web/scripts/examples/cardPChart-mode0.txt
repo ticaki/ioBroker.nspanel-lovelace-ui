@@ -1,0 +1,5 @@
+# cardPChart with legend mode 0 (names only), seven slices (the panel draws at most six, the seventh
+# is ignored) and a slice with the number 0 (legend row without a sector)
+dimmode~20~100~0~65535
+pageType~cardPChart
+entityUpd~Verbraucher~button~bSubPrev~~65535~~~button~bSubNext~~65535~~~~0~~Küche~2400~2.40 kWh~63488~Wohnzimmer~1800~1.80 kWh~2016~Büro~1200~1.20 kWh~2047~Bad~0~0.00 kWh~65504~Keller~600~0.60 kWh~64800~Garage~300~0.30 kWh~31~Siebte~900~0.90 kWh~65535

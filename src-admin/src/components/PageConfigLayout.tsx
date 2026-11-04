@@ -48,6 +48,7 @@ export type PageCardType =
     | Extract<
           AdminCardTypes,
           | 'cardChart'
+          | 'cardPChart'
           | 'cardThermo2'
           | 'cardThermo'
           | 'cardMedia'
@@ -455,6 +456,7 @@ export class PageConfigLayout extends React.Component<PageConfigLayoutProps, Pag
                                 <MenuItem value="cardPower">{this.getText('page_type_power')}</MenuItem>
                                 <MenuItem value="cardTrash">{this.getText('page_type_trash')}</MenuItem>
                                 <MenuItem value="cardChart">{this.getText('page_type_chart')}</MenuItem>
+                                <MenuItem value="cardPChart">{this.getText('page_type_pchart')}</MenuItem>
                                 <MenuItem value="cardThermo2">{this.getText('page_type_thermo2')}</MenuItem>
                                 <MenuItem value="cardThermo">{this.getText('page_type_thermo')}</MenuItem>
                                 <MenuItem value="cardMedia">{this.getText('page_type_media')}</MenuItem>

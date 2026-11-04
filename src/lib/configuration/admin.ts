@@ -23,6 +23,7 @@ import { resolveSecret } from '../credentials';
 import type { NspanelLovelaceUi } from '../types/NspanelLovelaceUi';
 import type { PageBase } from '../types/pages';
 import { buildChartPageConfig } from '../pages/pageChart';
+import { buildPChartPageConfig } from '../pages/pageChartPie';
 import { buildPowerPage } from '../pages/pagePower';
 import type { AlwaysOnMode } from '../types/types';
 import { recordGeneratedPage } from './navigation-overrides';
@@ -538,6 +539,21 @@ export class AdminConfiguration extends BaseClass {
                         alwaysOn: entry.alwaysOn,
                         dpInit: '',
                         config: buildChartPageConfig(entry),
+                        pageItems: [],
+                    };
+                    break;
+                }
+
+                case 'cardPChart': {
+                    if (!isAlwaysOnMode(entry.alwaysOn)) {
+                        entry.alwaysOn = 'none';
+                    }
+                    newPage = {
+                        uniqueID: entry.uniqueName,
+                        hidden: !!entry.hidden,
+                        alwaysOn: entry.alwaysOn,
+                        dpInit: '',
+                        config: buildPChartPageConfig(entry),
                         pageItems: [],
                     };
                     break;

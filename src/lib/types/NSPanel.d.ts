@@ -1622,6 +1622,7 @@ export namespace NSPanel {
         | 'cardPower'
         | 'cardChart'
         | 'cardLChart'
+        | 'cardPChart'
         | 'cardThermo'
         | 'screensaver'
         | 'screensaver2'

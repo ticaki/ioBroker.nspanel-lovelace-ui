@@ -58,6 +58,7 @@ Adapter Community (ioBroker Forum): [Forum](https://forum.iobroker.net/topic/800
 - [x] screensaver3
 - [x] cardChart
 - [x] cardLChart
+- [x] cardPChart
 - [ ] cardLChart2 (new - in progress)
 - [x] cardEntities
 - [x] cardSchedule
@@ -158,6 +159,9 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
     ### **WORK IN PROGRESS**
 -->
 ### **WORK IN PROGRESS**
+- (ticaki) screensaver: a mode this adapter version does not know (e.g. after a downgrade) no longer breaks the screensaver - it falls back to `standard` with a warning in the log, the stored configuration stays unchanged
+- (ticaki) cardPChart: new page type "Pie chart" in the PageConfig tab (TFT 6.0.5, EU panel) - up to five slices (the legend of HMI 6.0.5 has five rows) from numeric states with name, unit and color, legend mode and decimals; optionally the average over a time range (rolling: 1 h, 24 h, 7 d, 30 d, custom hours; calendar: today, yesterday, this/last week, this/last month) read from a history/sql/influxdb instance; alternatively a script data point with the finished panel text, more than five entries are summed up as "Other"; the web panel renders the card as well
+- (ticaki) web panel: without a connected browser the panel no longer offers the startup page every 5 s, which only filled the debug log
 - (tt-tom17) cardThermo: the set temperature reached the panel multiplied by the step width (19.0 °C became 79.0 °C with the usual step of 0.5 °C) - only a step of 0.1 °C was unaffected
 - (ticaki) Tasmota update and the Tasmota update indicator use the `tasmota-beta` version when the beta option is enabled; the beta option label in the admin no longer refers to TFT only
 - (ticaki) admin screensaver: uniform, larger paging arrows for all areas except favorit (the scroll bar for weather items is gone, weather items are paged like the panel does); the alternate area can hold several items the panel rotates through
