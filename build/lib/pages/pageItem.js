@@ -163,7 +163,7 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
         break;
       }
     }
-    if (["screensaver", "screensaver2", "screensaver3", "screensaver4", "popupNotify", "popupNotify2"].indexOf(
+    if (["screensaver", "screensaver2", "screensaver3", "screensaver5", "popupNotify", "popupNotify2"].indexOf(
       this.parent.card
     ) !== -1) {
       if (!this.parent.basePanel.persistentPageItems[this.id]) {

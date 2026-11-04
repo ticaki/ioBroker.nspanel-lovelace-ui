@@ -86,7 +86,7 @@ function blindItem(
         data.setNavi = constItem(opts.navi);
     }
     const parent: any = {
-        card: 'screensaver4',
+        card: 'screensaver5',
         isScreensaver: true,
         screensaverIndicatorButtons: true,
         basePanel: {
@@ -174,7 +174,7 @@ describe('lib/pages - blind as screensaver element: indicator tap', () => {
             pageItems,
             screensaverIndicatorButtons: true,
             unload: false,
-            card: 'screensaver4',
+            card: 'screensaver5',
             name: '#scr',
             id: '0',
             log: adapter.log,

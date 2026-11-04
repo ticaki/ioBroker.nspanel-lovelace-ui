@@ -2,7 +2,7 @@
  * Editor of the admin tab "Screensaver".
  *
  * The screensaver is drawn like the panel shows it in the chosen version (standard, alternate,
- * advanced, easyview - doc/Pictures/screensaver, tiles - HMI/tools/screensaver4.py): the places of the item areas, the two status icons
+ * advanced, easyview - doc/Pictures/screensaver, tiles - HMI/tools/screensaver5.py): the places of the item areas, the two status icons
  * (mrIcon), time and date. A click on a free place adds an item (ChannelConfigDialog like the page
  * editors), a click on an item edits it, items can be dragged between places; time, date and the status
  * icons open small dialogs, the bar below the picture holds the notifications and options buttons. The panels showing this screensaver are chosen here - the
@@ -187,11 +187,15 @@ type Layout = {
 /** the two panel shapes: eu and us-l are landscape, us-p is portrait */
 type LayoutModel = 'eu' | 'us-p';
 
-/** tiles (screensaver4) - the HMI exists for the landscape panel only, 3 rows x 5 columns of 90 x 107 px */
+/** tiles (screensaver5) on the landscape panels - 3 rows x 5 columns of 90 x 107 px */
 const TILES_LAYOUT: Layout = {
     aspect: '3 / 2',
     maxWidth: 720,
-    mricon: null,
+    // two color bars at the lower edge of the panel, like easyview on the HMI
+    mricon: [
+        { top: '94%', left: '2%', width: '39%', height: '6%' },
+        { top: '94%', left: '58.5%', width: '39%', height: '6%' },
+    ],
     time: { top: '35%', left: '24%', width: '52%', height: '20%', fontSize: 44 },
     date: { top: '55%', left: '24%', width: '52%', height: '11%' },
     areas: {
@@ -212,7 +216,7 @@ const TILES_LAYOUT: Layout = {
                 { row: 2, column: 5 },
             ],
         },
-        bottom: { top: '67%', left: '2%', width: '96%', height: '32%', direction: 'row' },
+        bottom: { top: '67%', left: '2%', width: '96%', height: '27%', direction: 'row' },
     },
 };
 
@@ -220,6 +224,42 @@ const TILES_LAYOUT: Layout = {
  * geometry of the five versions as the panel draws them - landscape from doc/Pictures/screensaver/*.png,
  * portrait (us-p) from photos of a US panel; the portrait `alternate` layout is derived from `standard`
  */
+/**
+ * tiles (screensaver5) on the portrait panel (HMI/tools/screensaver5_usp.py, 320 x 480): 4 indicators, time, date,
+ * 4 indicators, 4 bottom items, the two status bars; time and date lie above the free grid row of the indicators
+ */
+const TILES_LAYOUT_PORTRAIT: Layout = {
+    aspect: '2 / 3',
+    maxWidth: 440,
+    mricon: [
+        { top: '96%', left: '1%', width: '40%', height: '4%' },
+        { top: '96%', left: '59%', width: '40%', height: '4%' },
+    ],
+    time: { top: '27%', left: '10%', width: '80%', height: '16%', fontSize: 56 },
+    date: { top: '43%', left: '5%', width: '90%', height: '6%' },
+    areas: {
+        indicator: {
+            top: '1%',
+            left: '2%',
+            width: '96%',
+            height: '75%',
+            direction: 'row',
+            columns: 4,
+            cells: [
+                { row: 1, column: 1 },
+                { row: 1, column: 2 },
+                { row: 1, column: 3 },
+                { row: 1, column: 4 },
+                { row: 3, column: 1 },
+                { row: 3, column: 2 },
+                { row: 3, column: 3 },
+                { row: 3, column: 4 },
+            ],
+        },
+        bottom: { top: '77%', left: '2%', width: '96%', height: '18%', direction: 'row' },
+    },
+};
+
 const LAYOUTS: Record<ScreensaverMode, Record<LayoutModel, Layout>> = {
     standard: {
         eu: {
@@ -358,7 +398,7 @@ const LAYOUTS: Record<ScreensaverMode, Record<LayoutModel, Layout>> = {
             },
         },
     },
-    tiles: { eu: TILES_LAYOUT, 'us-p': TILES_LAYOUT },
+    tiles: { eu: TILES_LAYOUT, 'us-p': TILES_LAYOUT_PORTRAIT },
 };
 
 /**

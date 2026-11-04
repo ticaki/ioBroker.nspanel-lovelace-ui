@@ -317,7 +317,7 @@ export class Page extends BaseClassPage {
             case 'screensaver':
             case 'screensaver2':
             case 'screensaver3':
-            case 'screensaver4':
+            case 'screensaver5':
             case 'cardItemSpecial':
             case 'cardSchedule':
             case 'cardThermo2':

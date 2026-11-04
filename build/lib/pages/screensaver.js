@@ -77,7 +77,7 @@ const _Screensaver = class _Screensaver extends import_Page.Page {
         `Screensaver '${config.name}' of panel '${config.panel.friendlyName || config.panel.name}': mode '${String(rejected.mode)}' (card '${String(rejected.card)}') is not known to this adapter version - using 'standard' instead. The stored configuration stays unchanged.`
       );
     }
-    if (!options.config || options.config.card !== "screensaver" && options.config.card !== "screensaver2" && options.config.card !== "screensaver3" && options.config.card !== "screensaver4") {
+    if (!options.config || options.config.card !== "screensaver" && options.config.card !== "screensaver2" && options.config.card !== "screensaver3" && options.config.card !== "screensaver5") {
       config.adapter.log.error(
         `Invalid card for screensaver: ${options ? JSON.stringify(options) : "undefined"}`
       );
@@ -98,7 +98,7 @@ const _Screensaver = class _Screensaver extends import_Page.Page {
         break;
       }
       case "tiles": {
-        config.card = "screensaver4";
+        config.card = "screensaver5";
         break;
       }
     }
@@ -650,13 +650,13 @@ const _Screensaver = class _Screensaver extends import_Page.Page {
   goRight() {
   }
   get mode() {
-    if (!this.config || this.config.card !== "screensaver" && this.config.card !== "screensaver2" && this.config.card !== "screensaver3" && this.config.card !== "screensaver4") {
+    if (!this.config || this.config.card !== "screensaver" && this.config.card !== "screensaver2" && this.config.card !== "screensaver3" && this.config.card !== "screensaver5") {
       return "standard";
     }
     return this.config.mode;
   }
   set mode(mode) {
-    if (!this.config || this.config.card !== "screensaver" && this.config.card !== "screensaver2" && this.config.card !== "screensaver3" && this.config.card !== "screensaver4") {
+    if (!this.config || this.config.card !== "screensaver" && this.config.card !== "screensaver2" && this.config.card !== "screensaver3" && this.config.card !== "screensaver5") {
       return;
     }
     if (globals.isScreenSaverMode(mode)) {
@@ -694,9 +694,9 @@ const _Screensaver = class _Screensaver extends import_Page.Page {
         break;
       }
       case 4: {
-        this.card = "screensaver4";
+        this.card = "screensaver5";
         if (this.config) {
-          this.config.card = "screensaver4";
+          this.config.card = "screensaver5";
         }
         break;
       }

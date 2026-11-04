@@ -159,7 +159,8 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
     ### **WORK IN PROGRESS**
 -->
 ### **WORK IN PROGRESS**
-- (ticaki) screensaver mode tiles (page screensaver4): 5 values at the bottom, 7 indicators - needs a HMI with screensaver4
+- (ticaki) admin screensaver: a new screensaver gets two status icons coupled to the relays of the panel
+- (ticaki) screensaver mode tiles (page screensaver5): 5 values at the bottom, 7 indicators (portrait panel: 4 values, 8 indicators), the two status icons as color bars at the lower edge like easyview, a larger clock - needs a HMI with screensaver5; the web panel draws the mode like the panel
 - (ticaki) screensaver: a blind (position state or `blind` channel) as element shows one of the 5 position icons when it has no icon of its own and its position in %; tapping it as indicator only runs the configured action, never moves the blind or opens a popup
 - (ticaki) admin page navigation: a page named `main` without the start page flag (older configurations) is treated as the start page as well - its own prev/next/parent/home are ignored, a warning in the log asks to set the flag
 - (ticaki) admin page navigation: the locked prev/next/parent/home fields of a start page only carry the label tooltip, the "choose a value to store" hint is gone there; the resolved neighbours are re-read after the adapter restarted instead of keeping the stale ones

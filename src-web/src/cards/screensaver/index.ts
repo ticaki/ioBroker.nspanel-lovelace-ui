@@ -2,7 +2,7 @@ import { defineCard } from '../CardContract';
 import { Screensaver } from './Screensaver';
 import { handleCommand, initial, parseEntityUpd } from './parse';
 
-export const pageTypes = ['screensaver', 'screensaver2', 'screensaver3', 'screensaver4'] as const;
+export const pageTypes = ['screensaver', 'screensaver2', 'screensaver3', 'screensaver5'] as const;
 
 export const screensaverModule = defineCard({
     pageTypes,

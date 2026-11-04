@@ -145,25 +145,10 @@ Verbleibende, bekannte Abweichungen:
 - ~~Startvideo~~ erledigt 2026-10-25: die Startseite spielt die Boot-Animation der HMI
   (Frames und Banner aus den HMI-Dateien, `components/startup/`), kein `www/startup/` mehr.
 - us-p/us-l-Layouts, Admin-Vorschau als iframe (Phase 5, Mixed Content).
-- **Screensaver `tiles` (pageType `screensaver4`, 2026-11-03, Branch `feat/screensaver4`)**: das
-  Web-Panel erkennt die Seite und zerlegt den Payload richtig (`parse.ts`: Layout `tiles`, 5 bottom,
-  7 indicator, Test in `parse.test.ts`), zeichnet sie aber noch mit der advanced-Darstellung
-  (`Screensaver.tsx` ~690, `case 'tiles'`) – unten 6 Spalten, 5 Indikatorplätze, Indikator 6/7
-  liegen falsch oder fehlen. Nötig ist eine eigene Darstellung nach der HMI-Seite:
-  - Raster 3 Zeilen × 5 Spalten, Zellen 90 × 107 px (eu, nutzbare Breite 450 px).
-  - Oben f1–f5: Indikatoren, nur Icon (Font 4 = 80 px), die ganze Zelle ist Tippfläche →
-    `event,buttonPress2,<id>,button` mit der id aus Feld 2 des Indikator-Slots.
-  - Mitte: f6 | Uhrzeit (Font 4, zentriert über 3 Spalten) mit AM/PM rechts daneben, darunter
-    Datum (Font 0, 24 px) | f7.
-  - Unten e1–e5: Name / Icon (32 px) / Wert wie die Forecast-Einträge des Standard-Screensavers.
-  - Keine Statusicons (mrIcons), kein Favorit, kein `tTimeAdd`, kein Trennstrich.
-  - Farben aus `color~` wie beim Standard: 1 Hintergrund, 2 Uhrzeit, 3 AM/PM, 4 Datum, 6–9 Namen
-    e1–e4, 10–13 Werte e1–e4, e5 nimmt 9 bzw. 13; Icon-Farben aus `weatherUpdate`.
-  - `notify` überdeckt die untere Zeile (wie Standard), Tippen blendet aus.
-  - Rollladen-Elemente: Positions-Icons `window-shutter`/`-25`/`-50`/`-75`/`-open` (FD42–FD44
-    eigene Icons) im Web-Panel prüfen.
-  Vorlage für Maße/Fonts: `HMI/tools/screensaver4.py` (Generator der HMI-Seite). Abnahme per
-  Screenshot am Test-Panel `webtest` mit einer `tiles`-Konfiguration.
+- **Screensaver `tiles` (pageType `screensaver5`, Branch `feat/screensaver4`)**: eigene Darstellung
+  `renderTiles` in `Screensaver.tsx`, Maße aus `HMI/tools/screensaver5.py` (Bühne = HMI-x + 16), abgeglichen am
+  Emu-Screenshot vom 2026-11-04; Beispiel `src-web/scripts/examples/screensaver5.txt`. Statusicons als zwei
+  Farbbalken unten wie auf dem Panel. Noch ungeprüft: `notify`, AM/PM.
 
 ## Testumgebung
 

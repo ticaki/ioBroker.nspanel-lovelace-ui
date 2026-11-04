@@ -76,9 +76,14 @@ describe('lib/types - screensaver entry (admin tab)', () => {
         expect(screensaverMaxEntries('easyview', 'bottom', 'us-l')).to.equal(3);
         expect(screensaverMaxEntries('advanced', 'bottom', 'us-p')).to.equal(6);
         expect(screensaverMaxEntries('standard', 'left')).to.equal(0);
-        expect(screensaverMaxEntries('tiles', 'bottom', 'us-p')).to.equal(5);
+        expect(screensaverMaxEntries('tiles', 'bottom')).to.equal(5);
+        expect(screensaverMaxEntries('tiles', 'bottom', 'us-l')).to.equal(5);
+        expect(screensaverMaxEntries('tiles', 'bottom', 'us-p')).to.equal(4);
         expect(screensaverMaxEntries('tiles', 'indicator')).to.equal(7);
+        expect(screensaverMaxEntries('tiles', 'indicator', 'us-l')).to.equal(7);
+        expect(screensaverMaxEntries('tiles', 'indicator', 'us-p')).to.equal(8);
         expect(screensaverMaxEntries('tiles', 'favorit')).to.equal(0);
+        expect(screensaverMaxEntries('tiles', 'mricon')).to.equal(2);
     });
 
     it('maps the five versions to the four cards like screensaver.ts', () => {
@@ -86,7 +91,7 @@ describe('lib/types - screensaver entry (admin tab)', () => {
         expect(screensaverCardOfMode('alternate')).to.equal('screensaver');
         expect(screensaverCardOfMode('advanced')).to.equal('screensaver2');
         expect(screensaverCardOfMode('easyview')).to.equal('screensaver3');
-        expect(screensaverCardOfMode('tiles')).to.equal('screensaver4');
+        expect(screensaverCardOfMode('tiles')).to.equal('screensaver5');
     });
 
     it('creates an entry without panels and items', () => {
@@ -372,5 +377,13 @@ describe('lib/types - screensaver weather (admin tab)', () => {
         });
         // prefix and suffix of the text need a text
         expect(screensaverNotifyLines({ textPrefix: '[', textSuffix: ']' })).to.deep.equal({ heading: '', text: '' });
+    });
+});
+
+describe('emptyScreensaverEntry', () => {
+    it('couples the status icons to the relays and gives them a color for the panel', () => {
+        const entry = emptyScreensaverEntry('new');
+        expect(entry.mrIcon1).to.deep.include({ entity: 'Relay.1', onColor: '#fdd835', offColor: '#44739e' });
+        expect(entry.mrIcon2).to.deep.include({ entity: 'Relay.2', onColor: '#fdd835', offColor: '#44739e' });
     });
 });

@@ -856,7 +856,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                                 p.config?.card === 'screensaver' ||
                                 p.config?.card === 'screensaver2' ||
                                 p.config?.card === 'screensaver3' ||
-                                p.config?.card === 'screensaver4'
+                                p.config?.card === 'screensaver5'
                             ) {
                                 p.uniqueID = `#${p.uniqueID}`;
                             }

@@ -174,7 +174,7 @@ export class PageItem extends BaseTriggeredPage {
             }
         }
         if (
-            ['screensaver', 'screensaver2', 'screensaver3', 'screensaver4', 'popupNotify', 'popupNotify2'].indexOf(
+            ['screensaver', 'screensaver2', 'screensaver3', 'screensaver5', 'popupNotify', 'popupNotify2'].indexOf(
                 this.parent.card,
             ) !== -1
         ) {

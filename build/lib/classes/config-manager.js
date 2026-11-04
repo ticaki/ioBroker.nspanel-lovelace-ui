@@ -244,7 +244,7 @@ class ConfigManager extends import_library.BaseClass {
       const result = await this.getScreensaverConfig(config, messages);
       const screensaver = result.configArray;
       messages = result.messages;
-      if (screensaver && screensaver.config && (screensaver.config.card === "screensaver" || screensaver.config.card === "screensaver2" || screensaver.config.card === "screensaver3" || screensaver.config.card === "screensaver4") && config.advancedOptions) {
+      if (screensaver && screensaver.config && (screensaver.config.card === "screensaver" || screensaver.config.card === "screensaver2" || screensaver.config.card === "screensaver3" || screensaver.config.card === "screensaver5") && config.advancedOptions) {
         screensaver.config.screensaverSwipe = !!config.advancedOptions.screensaverSwipe;
         screensaver.config.screensaverIndicatorButtons = !!config.advancedOptions.screensaverIndicatorButtons;
       }
@@ -4835,7 +4835,7 @@ class ConfigManager extends import_library.BaseClass {
           if (pages) {
             pages = pages.filter((a) => {
               var _a, _b, _c, _d;
-              if (((_a = a.config) == null ? void 0 : _a.card) === "screensaver" || ((_b = a.config) == null ? void 0 : _b.card) === "screensaver2" || ((_c = a.config) == null ? void 0 : _c.card) === "screensaver3" || ((_d = a.config) == null ? void 0 : _d.card) === "screensaver4") {
+              if (((_a = a.config) == null ? void 0 : _a.card) === "screensaver" || ((_b = a.config) == null ? void 0 : _b.card) === "screensaver2" || ((_c = a.config) == null ? void 0 : _c.card) === "screensaver3" || ((_d = a.config) == null ? void 0 : _d.card) === "screensaver5") {
                 return false;
               }
               if (scriptConfig[b].pages.find((b2) => b2.uniqueID === a.uniqueID)) {

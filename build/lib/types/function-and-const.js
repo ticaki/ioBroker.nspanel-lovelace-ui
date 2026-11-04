@@ -199,13 +199,13 @@ const screenSaverCardArray = arrayOfAllScreenSaverCards([
   "screensaver",
   "screensaver2",
   "screensaver3",
-  "screensaver4"
+  "screensaver5"
 ]);
 function isScreenSaverCardType(F) {
   if (typeof F !== "string") {
     return false;
   }
-  return ["screensaver", "screensaver2", "screensaver3", "screensaver4"].includes(F);
+  return ["screensaver", "screensaver2", "screensaver3", "screensaver5"].includes(F);
 }
 const screenSaverModeArray = arrayOfAllScreenSaverMode([
   "standard",

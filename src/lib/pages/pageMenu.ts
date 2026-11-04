@@ -63,7 +63,7 @@ export class PageMenu extends Page {
                 case 'screensaver':
                 case 'screensaver2':
                 case 'screensaver3':
-                case 'screensaver4':
+                case 'screensaver5':
                 case 'popupNotify':
                 default:
                     this.log.warn(

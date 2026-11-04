@@ -295,5 +295,5 @@ export function applyScreensaverEntry(page: pages.PageBase, entry: ScreensaverEn
  */
 export function isScreensaverPage(page: { config?: { card?: string } } | undefined | null): boolean {
     const card = page?.config?.card;
-    return card === 'screensaver' || card === 'screensaver2' || card === 'screensaver3' || card === 'screensaver4';
+    return card === 'screensaver' || card === 'screensaver2' || card === 'screensaver3' || card === 'screensaver5';
 }

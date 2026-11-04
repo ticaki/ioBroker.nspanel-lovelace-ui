@@ -93,10 +93,12 @@ describe('lib/types/function-and-const', () => {
             expect(isScreenSaverCardType('screensaver')).to.equal(true);
             expect(isScreenSaverCardType('screensaver2')).to.equal(true);
             expect(isScreenSaverCardType('screensaver3')).to.equal(true);
-            expect(isScreenSaverCardType('screensaver4')).to.equal(true);
+            expect(isScreenSaverCardType('screensaver5')).to.equal(true);
         });
         it('isScreenSaverCardType rejects unknown', () => {
-            expect(isScreenSaverCardType('screensaver5')).to.equal(false);
+            // screensaver4 is a page of the official HMI that is not ours
+            expect(isScreenSaverCardType('screensaver4')).to.equal(false);
+            expect(isScreenSaverCardType('screensaver6')).to.equal(false);
         });
         it('isScreenSaverMode accepts the five known modes', () => {
             expect(isScreenSaverMode('standard')).to.equal(true);

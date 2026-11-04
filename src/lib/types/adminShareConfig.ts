@@ -23,7 +23,7 @@ export type AdminCardTypes =
     | 'screensaver'
     | 'screensaver2'
     | 'screensaver3'
-    | 'screensaver4'
+    | 'screensaver5'
     // Popup Cards
     | 'popupNotify'
     | 'cardItemSpecial'; // Special card to manage pageItems (not selectable in admin UI)
@@ -303,7 +303,7 @@ export type UnlockEntry = {
 export type ScreensaverMode = 'standard' | 'alternate' | 'advanced' | 'easyview' | 'tiles';
 export const screensaverModes: readonly ScreensaverMode[] = ['standard', 'alternate', 'advanced', 'easyview', 'tiles'];
 
-export type ScreensaverCard = Extract<AdminCardTypes, 'screensaver' | 'screensaver2' | 'screensaver3' | 'screensaver4'>;
+export type ScreensaverCard = Extract<AdminCardTypes, 'screensaver' | 'screensaver2' | 'screensaver3' | 'screensaver5'>;
 
 /** areas of the screensaver that take page items (mricon, time, date and notify have their own dialogs) */
 export type ScreensaverArea = 'favorit' | 'alternate' | 'left' | 'bottom' | 'indicator';
@@ -353,9 +353,9 @@ export const screensaverSlotLimits: Record<
         favorit: { eu: 0 },
         alternate: { eu: 0 },
         left: { eu: 0 },
-        bottom: { eu: 5 },
-        indicator: { eu: 7 },
-        mricon: { eu: 0 },
+        bottom: { eu: 5, 'us-p': 4 },
+        indicator: { eu: 7, 'us-p': 8 },
+        mricon: { eu: 2 },
     },
 };
 
@@ -389,7 +389,7 @@ export function screensaverCardOfMode(mode: ScreensaverMode): ScreensaverCard {
         case 'easyview':
             return 'screensaver3';
         case 'tiles':
-            return 'screensaver4';
+            return 'screensaver5';
         default:
             return 'screensaver';
     }
@@ -1105,6 +1105,23 @@ export function normalizeScreensaverEntry(entry: ScreensaverEntry): ScreensaverE
 }
 
 /**
+ * Status icon of a new screensaver: follows the relay of the panel like the sample of the script, so the panel
+ * gets a color from the start (the tiles and easyview layouts draw the icons as color bars).
+ *
+ * @param relay the relay
+ * @returns the icon
+ */
+function defaultRelayIcon(relay: 'Relay.1' | 'Relay.2'): ScreensaverMrIconConfig {
+    return {
+        entity: relay,
+        iconOn: 'lightbulb',
+        iconOff: 'lightbulb-outline',
+        onColor: '#fdd835',
+        offColor: '#44739e',
+    };
+}
+
+/**
  * Creates a fresh screensaver entry without items.
  *
  * @param name unique name
@@ -1118,6 +1135,8 @@ export function emptyScreensaverEntry(name: string, mode: ScreensaverMode = 'sta
         left: [],
         bottom: [],
         indicator: [],
+        mrIcon1: defaultRelayIcon('Relay.1'),
+        mrIcon2: defaultRelayIcon('Relay.2'),
         rotationTime: 0,
         screensaverSwipe: false,
         screensaverIndicatorButtons: false,

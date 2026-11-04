@@ -8,7 +8,7 @@ describe('registry', () => {
             'screensaver',
             'screensaver2',
             'screensaver3',
-            'screensaver4',
+            'screensaver5',
             'cardEntities',
             'cardGrid',
             'cardGrid2',

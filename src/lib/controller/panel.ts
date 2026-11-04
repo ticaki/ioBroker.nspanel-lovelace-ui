@@ -474,7 +474,7 @@ export class Panel extends BaseClass {
                 b.config?.card === 'screensaver' ||
                 b.config?.card === 'screensaver2' ||
                 b.config?.card === 'screensaver3' ||
-                b.config?.card === 'screensaver4'
+                b.config?.card === 'screensaver5'
             ) {
                 return true;
             }
@@ -587,7 +587,7 @@ export class Panel extends BaseClass {
             case 'screensaver':
             case 'screensaver2':
             case 'screensaver3':
-            case 'screensaver4': {
+            case 'screensaver5': {
                 const ssconfig: PageInterface = {
                     card: pageConfig.config.card,
                     panel: this,

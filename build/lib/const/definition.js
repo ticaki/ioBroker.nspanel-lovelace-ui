@@ -2580,16 +2580,16 @@ const ScreenSaverConst = {
       maxEntries: { eu: 0 }
     },
     bottom: {
-      maxEntries: { eu: 5 }
+      maxEntries: { eu: 5, "us-p": 4 }
     },
     alternate: {
       maxEntries: { eu: 0 }
     },
     indicator: {
-      maxEntries: { eu: 7 }
+      maxEntries: { eu: 7, "us-p": 8 }
     },
     mricon: {
-      maxEntries: { eu: 0 }
+      maxEntries: { eu: 2 }
     },
     favorit: {
       maxEntries: { eu: 0 }

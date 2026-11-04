@@ -374,7 +374,7 @@ class Panel extends import_library.BaseClass {
     }
     options.pages = options.pages.filter((b) => {
       var _a2, _b, _c, _d;
-      if (((_a2 = b.config) == null ? void 0 : _a2.card) === "screensaver" || ((_b = b.config) == null ? void 0 : _b.card) === "screensaver2" || ((_c = b.config) == null ? void 0 : _c.card) === "screensaver3" || ((_d = b.config) == null ? void 0 : _d.card) === "screensaver4") {
+      if (((_a2 = b.config) == null ? void 0 : _a2.card) === "screensaver" || ((_b = b.config) == null ? void 0 : _b.card) === "screensaver2" || ((_c = b.config) == null ? void 0 : _c.card) === "screensaver3" || ((_d = b.config) == null ? void 0 : _d.card) === "screensaver5") {
         return true;
       }
       if (options.navigation.find((c) => c && c.name === b.uniqueID)) {
@@ -482,7 +482,7 @@ class Panel extends import_library.BaseClass {
       case "screensaver":
       case "screensaver2":
       case "screensaver3":
-      case "screensaver4": {
+      case "screensaver5": {
         const ssconfig = {
           card: pageConfig.config.card,
           panel: this,

@@ -163,14 +163,14 @@ export const screenSaverCardArray: screenSaverCardType[] = arrayOfAllScreenSaver
     'screensaver',
     'screensaver2',
     'screensaver3',
-    'screensaver4',
+    'screensaver5',
 ]);
 export function isScreenSaverCardType(F: string): F is screenSaverCardType {
     if (typeof F !== 'string') {
         return false;
     }
 
-    return ['screensaver', 'screensaver2', 'screensaver3', 'screensaver4'].includes(F);
+    return ['screensaver', 'screensaver2', 'screensaver3', 'screensaver5'].includes(F);
 }
 
 export const screenSaverModeArray = arrayOfAllScreenSaverMode([

@@ -3,7 +3,7 @@ import { field, parseEntityList, toNumber } from '../../protocol/split';
 import type { Entity6, PanelModel } from '../../protocol/types';
 
 /**
- * The five layouts of the screensaver (`tiles` = pageType `screensaver4`). `standard` and `alternate` share the pageType
+ * The five layouts of the screensaver (`tiles` = pageType `screensaver5`). `standard` and `alternate` share the pageType
  * `screensaver` and are told apart by the number of entities of the `weatherUpdate`
  * (the adapter sends 5 for standard and 6 for alternate, see `Screensaver.update()`).
  */
@@ -161,7 +161,7 @@ export function handleCommand(
 }
 
 /**
- * The layout of the page: `screensaver2` = advanced, `screensaver3` = easyview, `screensaver4` = tiles, `screensaver`
+ * The layout of the page: `screensaver2` = advanced, `screensaver3` = easyview, `screensaver5` = tiles, `screensaver`
  * = alternate when the `weatherUpdate` carried 6 entities, standard otherwise.
  *
  * @param pageType the active pageType
@@ -173,7 +173,7 @@ export function layoutOf(pageType: string, entities: readonly Entity6[]): Screen
             return 'advanced';
         case 'screensaver3':
             return 'easyview';
-        case 'screensaver4':
+        case 'screensaver5':
             return 'tiles';
         default:
             return entities.length >= ALTERNATE_ENTITY_COUNT ? 'alternate' : 'standard';

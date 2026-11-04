@@ -86,7 +86,7 @@ export class Screensaver extends Page {
             (options.config.card !== 'screensaver' &&
                 options.config.card !== 'screensaver2' &&
                 options.config.card !== 'screensaver3' &&
-                options.config.card !== 'screensaver4')
+                options.config.card !== 'screensaver5')
         ) {
             config.adapter.log.error(
                 `Invalid card for screensaver: ${options ? JSON.stringify(options) : 'undefined'}`,
@@ -108,7 +108,7 @@ export class Screensaver extends Page {
                 break;
             }
             case 'tiles': {
-                config.card = 'screensaver4';
+                config.card = 'screensaver5';
                 break;
             }
         }
@@ -609,7 +609,6 @@ export class Screensaver extends Page {
         if (message === null) {
             return;
         }
-        // tiles (screensaver4) has no status icons - the HMI ignores statusUpdate, send it empty
         const mrIcon1 = (message.options.mricon[0] ?? '').split('~');
         const mrIcon2 = (message.options.mricon[1] ?? '').split('~');
         const msgArray: string[] = [
@@ -797,7 +796,7 @@ export class Screensaver extends Page {
             (this.config.card !== 'screensaver' &&
                 this.config.card !== 'screensaver2' &&
                 this.config.card !== 'screensaver3' &&
-                this.config.card !== 'screensaver4')
+                this.config.card !== 'screensaver5')
         ) {
             return 'standard';
         }
@@ -809,7 +808,7 @@ export class Screensaver extends Page {
             (this.config.card !== 'screensaver' &&
                 this.config.card !== 'screensaver2' &&
                 this.config.card !== 'screensaver3' &&
-                this.config.card !== 'screensaver4')
+                this.config.card !== 'screensaver5')
         ) {
             return;
         }
@@ -854,9 +853,9 @@ export class Screensaver extends Page {
             }
             case 4: {
                 // overwrite readonly property
-                (this.card as any) = 'screensaver4';
+                (this.card as any) = 'screensaver5';
                 if (this.config) {
-                    this.config.card = 'screensaver4';
+                    this.config.card = 'screensaver5';
                 }
                 break;
             }

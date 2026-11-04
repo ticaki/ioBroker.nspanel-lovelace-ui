@@ -688,7 +688,7 @@ class NspanelLovelaceUi extends utils.Adapter {
               if (!("uniqueID" in p)) {
                 continue;
               }
-              if (((_c = p.config) == null ? void 0 : _c.card) === "screensaver" || ((_d = p.config) == null ? void 0 : _d.card) === "screensaver2" || ((_e = p.config) == null ? void 0 : _e.card) === "screensaver3" || ((_f = p.config) == null ? void 0 : _f.card) === "screensaver4") {
+              if (((_c = p.config) == null ? void 0 : _c.card) === "screensaver" || ((_d = p.config) == null ? void 0 : _d.card) === "screensaver2" || ((_e = p.config) == null ? void 0 : _e.card) === "screensaver3" || ((_f = p.config) == null ? void 0 : _f.card) === "screensaver5") {
                 p.uniqueID = `#${p.uniqueID}`;
               }
               if (names.indexOf(p.uniqueID) !== -1) {

@@ -182,7 +182,7 @@ describe('screensaver parse', () => {
         const bottom = [1, 2, 3, 4, 5].map(n => e('B', 1, `b${n}`, `${n}`));
         const indicator = [1, 2, 3, 4, 5, 6, 7].map(n => e('I', 2, '', '', `0?${n + 9}`));
         const payload = wu(...bottom, ...indicator);
-        const areas = splitAreas('screensaver4', parseWeatherUpdate(parseCommand(payload).args), 'eu');
+        const areas = splitAreas('screensaver5', parseWeatherUpdate(parseCommand(payload).args), 'eu');
         expect(areas.layout).toBe('tiles');
         expect(areas.favorit).toBeUndefined();
         expect(areas.bottom.map(b => b.optionalValue)).toEqual(['1', '2', '3', '4', '5']);

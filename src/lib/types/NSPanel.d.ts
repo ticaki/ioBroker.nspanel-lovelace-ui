@@ -1627,7 +1627,7 @@ export namespace NSPanel {
         | 'screensaver'
         | 'screensaver2'
         | 'screensaver3'
-        | 'screensaver4'
+        | 'screensaver5'
         // Popup Cards
         | 'popupNotify'
         | 'popupNotify2'

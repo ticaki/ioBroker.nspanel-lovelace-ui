@@ -275,7 +275,7 @@ export class ConfigManager extends BaseClass {
                 (screensaver.config.card === 'screensaver' ||
                     screensaver.config.card === 'screensaver2' ||
                     screensaver.config.card === 'screensaver3' ||
-                    screensaver.config.card === 'screensaver4') &&
+                    screensaver.config.card === 'screensaver5') &&
                 config.advancedOptions
             ) {
                 screensaver.config.screensaverSwipe = !!config.advancedOptions.screensaverSwipe;
@@ -5813,7 +5813,7 @@ export class ConfigManager extends BaseClass {
                                 a.config?.card === 'screensaver' ||
                                 a.config?.card === 'screensaver2' ||
                                 a.config?.card === 'screensaver3' ||
-                                a.config?.card === 'screensaver4'
+                                a.config?.card === 'screensaver5'
                             ) {
                                 return false;
                             }
