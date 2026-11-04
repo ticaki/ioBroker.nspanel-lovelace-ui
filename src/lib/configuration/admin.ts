@@ -796,11 +796,19 @@ export class AdminConfiguration extends BaseClass {
             // The start page has no navigation of its own: its neighbours follow from the pages
             // that point at it (`prev: main` / `next: main`), its home would be a self link. Stored
             // links are kept untouched - they apply again as soon as the entry is no start page.
-            if (ShareConfig.isMainPageEntry(entry)) {
+            // A page literally named `main` (older configurations from before the start page flag)
+            // is published as the start node as well, so it is treated the same way.
+            if (ShareConfig.isMainPageEntry(entry) || newPage.uniqueID === mainPageName) {
                 if (navigation.prev || navigation.next || navigation.parent || navigation.home) {
-                    this.log.debug(
-                        `Page '${entry.uniqueName}' is the start page - its own navigation links are ignored.`,
-                    );
+                    if (ShareConfig.isMainPageEntry(entry)) {
+                        this.log.debug(
+                            `Page '${entry.uniqueName}' is the start page - its own navigation links are ignored.`,
+                        );
+                    } else {
+                        this.log.warn(
+                            `Page '${entry.uniqueName}' is named like the start page but not flagged as start page - it is treated as the start page, its own navigation links are ignored. Flag it as start page in the admin.`,
+                        );
+                    }
                 }
                 continue;
             }

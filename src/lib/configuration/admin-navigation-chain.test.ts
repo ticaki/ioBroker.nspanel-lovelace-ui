@@ -148,6 +148,17 @@ describe('lib/configuration - navigation of the start page', () => {
         expect(node(navigation, 'pietest').left?.single).to.equal('pietest2');
         expect(brokenRingLinks(navigation)).to.deep.equal([]);
     });
+
+    it('treats a page named main without the start page flag as the start page', async () => {
+        // Older configurations from before the flag: the page is published as the start node anyway.
+        const navigation = await runPreInit([
+            grid('main', false, [{ topic: panelTopic, navigation: { next: 'seite1' } }]),
+            grid('seite1', false, [{ topic: panelTopic, navigation: {} }]),
+        ]);
+
+        expect(node(navigation, mainPageName).right?.single).to.equal('///service');
+        expect(node(navigation, 'seite1').left?.single).to.equal(undefined);
+    });
 });
 
 describe('lib/configuration - explicit next of a chain root', () => {

@@ -677,11 +677,17 @@ Stack: ${stack}`
       if (!navigation) {
         continue;
       }
-      if (ShareConfig.isMainPageEntry(entry)) {
+      if (ShareConfig.isMainPageEntry(entry) || newPage.uniqueID === import_default_pages.mainPageName) {
         if (navigation.prev || navigation.next || navigation.parent || navigation.home) {
-          this.log.debug(
-            `Page '${entry.uniqueName}' is the start page - its own navigation links are ignored.`
-          );
+          if (ShareConfig.isMainPageEntry(entry)) {
+            this.log.debug(
+              `Page '${entry.uniqueName}' is the start page - its own navigation links are ignored.`
+            );
+          } else {
+            this.log.warn(
+              `Page '${entry.uniqueName}' is named like the start page but not flagged as start page - it is treated as the start page, its own navigation links are ignored. Flag it as start page in the admin.`
+            );
+          }
         }
         continue;
       }
