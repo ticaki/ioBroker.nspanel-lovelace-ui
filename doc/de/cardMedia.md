@@ -25,7 +25,7 @@ Inhalt:
 2. Links als Seitentyp **Mediaplayer** wählen, einen Namen eintragen, **+** drücken.
 3. Die Seite erscheint in der Liste, rechts öffnet sich der Editor. Eine neue Seite hat noch keinen Player: Oben steht *„Noch kein Player ausgewählt."* mit dem Knopf **Player**, der direkt in den Player-Dialog führt.
 
-**Eindeutige ID** über der Vorschau ist der Seitenname; bei der Startseite ist das Feld gesperrt.
+**Eindeutige ID** über der Vorschau ist der Seitenname; das Feld ist nur lesbar, der Name ist nach dem Anlegen fest.
 
 > Wie bei allen Kartentypen sind sämtliche Felder gesperrt, solange die Instanz nicht läuft. Der Editor sagt das nur an einer Stelle, nämlich im Player-Dialog: *„Der Adapter läuft nicht – der Player kann nicht geprüft und es können keine Namen gelesen werden."*
 

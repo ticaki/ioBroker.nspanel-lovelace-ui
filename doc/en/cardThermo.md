@@ -47,7 +47,7 @@ In short: `cardThermo` is the quick card for **one** thermostat whose alias brin
 
 | Field | Meaning |
 |---|---|
-| **Unique ID** | Page name; locked for the start page (`main`). |
+| **Unique ID** | Page name; read-only, fixed once the page exists. On the start page the note names the id `main`. |
 | **Headline** | Header line of the page on the panel. Hint text: *Empty = unique ID of the page*. |
 | **Thermostat channel (role thermostat or airCondition)** | Alias channel, device or folder with `common.role` `thermostat` or `airCondition`. The object tree behind **…** shows only objects with these roles; an ID typed in by hand is checked by the editor when the field is left. If it matches, *Role: …* appears below it, otherwise a warning: *The object … was not found* or *The channel … has the role "…" – expected thermostat or airCondition*. Which states the adapter looks for below the channel is in [section 5](#5-what-the-adapter-builds-from-the-states) and in the [alias table](ALIAS). |
 | **Unit** | Text behind the temperatures (e.g. `°C`). Hint text: *Empty = unit of the set temperature state* – that applies to the big number, the line of the actual temperature then stays without a unit (see [Pitfalls](#pitfalls)). The humidity always shows `%`. |

@@ -22,7 +22,7 @@ Contents:
 2. On the left pick the page type **Power**, enter a name, press **+**.
 3. The page appears in the list and the editor opens on the right.
 
-**Unique ID** above the grid is the page name; on the start page the field is locked. **Headline** is the header line on the panel — creating the page fills in the page name, and an empty field shows the page name again on the panel.
+**Unique ID** above the grid is the page name; the field is read-only, the name is fixed once the page exists. **Headline** is the header line on the panel — creating the page fills in the page name, and an empty field shows the page name again on the panel.
 
 > As with every card type the fields of the main form are locked while the instance is not running — without an explanation. For the three dialogs of this page that is only partly true, see [section 3](#3-setting-up-a-flow).
 

@@ -47,7 +47,7 @@ Kurz: `cardThermo` ist die schnelle Karte für **ein** Thermostat, dessen Alias 
 
 | Feld | Bedeutung |
 |---|---|
-| **Eindeutige ID** | Seitenname; bei der Startseite (`main`) gesperrt. |
+| **Eindeutige ID** | Seitenname; nur lesbar, nach dem Anlegen fest. Bei der Startseite nennt der Hinweis die ID `main`. |
 | **Überschrift** | Kopfzeile der Seite auf dem Panel. Hilfetext: *Leer = eindeutige ID der Seite*. |
 | **Thermostat-Channel (Rolle thermostat oder airCondition)** | Alias-Channel, Device oder Ordner mit `common.role` `thermostat` oder `airCondition`. Der Objektbaum hinter **…** zeigt nur Objekte mit diesen Rollen; eine von Hand eingetippte ID prüft der Editor beim Verlassen des Feldes. Passt sie, steht darunter *Rolle: …*, sonst eine Warnung: *Das Objekt … wurde nicht gefunden* bzw. *Der Channel … hat die Rolle „…" – erwartet wird thermostat oder airCondition*. Welche Datenpunkte der Adapter unterhalb des Channels sucht, steht in [Abschnitt 5](#5-was-der-adapter-aus-den-datenpunkten-baut) und in der [Alias-Tabelle](ALIAS). |
 | **Einheit** | Text hinter den Temperaturen (z. B. `°C`). Hilfetext: *Leer = Einheit des Solltemperatur-Datenpunkts* – das gilt für die große Zahl, die Zeile der Ist-Temperatur bleibt dann ohne Einheit (siehe [Fallstricke](#fallstricke)). Die Luftfeuchte zeigt immer `%`. |

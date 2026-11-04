@@ -24,7 +24,7 @@ Contents:
 2. On the left under **Page Type** pick the entry **QR**, enter a name in the field **New Page**, press **+**.
 3. The page appears in the list **Pages**, the editor opens on the right.
 
-The name is shown in the editor as **Unique ID** and is the ID of the page — other pages address it by that name in their navigation targets. The field is locked while the page is marked as the start page; the editor then shows the hint *Start page - published under the id "main"…*. For renaming and its pitfalls see [PageConfig – Overview](PageConfig#creating-renaming-and-deleting-pages).
+The name is shown in the editor as **Unique ID** and is the ID of the page — other pages address it by that name in their navigation targets. The field is read-only — the name is fixed once the page exists; if the page is marked as the start page, the editor shows the hint *Start page - published under the id "main"…* instead. Why the name is fixed is explained under [PageConfig – Overview](PageConfig#creating-and-deleting-pages).
 
 The fields **Panel Filter** and **Page Type** above the list only filter what the list shows.
 

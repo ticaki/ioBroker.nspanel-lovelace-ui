@@ -23,7 +23,7 @@ Inhalt:
 
 **Überschrift** ist die Kopfzeile am Panel; bleibt sie leer, nimmt das Panel den Seitennamen.
 
-> Das Feld **Eindeutige ID** verwirft eine **leere** Eingabe und den reservierten Namen `main` **stillschweigend**: Weil das Feld seinen Wert aus der Konfiguration bezieht, erscheinen die getippten Zeichen einfach nicht. Das sieht nach einem Fehler aus, ist aber Absicht — die Startseite wird über die Markierung **Startseite (main)** in den Seitendetails gesetzt, nicht durch Umbenennen. Ist die Seite die Startseite, ist das Feld ohnehin **gesperrt** und trägt den Hinweis „Startseite – wird unter der ID `main` veröffentlicht". Zum Umbenennen und seinen Fallstricken siehe [PageConfig – Übersicht](PageConfig#seiten-anlegen-umbenennen-löschen).
+> Das Feld **Eindeutige ID** ist **nur lesbar**: Der Name einer Seite ist nach dem Anlegen fest, der Hinweis darunter sagt das auch („Der Name ist nach dem Anlegen fest – andere Seiten verweisen darauf."). Ist die Seite die Startseite, steht dort stattdessen ihr eigener Hinweis („Startseite – wird unter der ID `main` veröffentlicht"); die Startseite wird über die Markierung **Startseite (main)** in den Seitendetails gesetzt, nicht über den Namen. Warum der Name fest ist und wie eine Seite trotzdem anders heißen kann, steht unter [PageConfig – Übersicht](PageConfig#seiten-anlegen-und-löschen).
 
 ## 2. Die fünf Varianten
 ![Editor einer Menü-Seite mit den fünf Varianten](../Pictures/pageMenu/menu-01-editor.png)
@@ -186,7 +186,7 @@ Für Menü-Seiten ist die Panel-Zuweisung doppelt wichtig: Sie entscheidet nicht
 
 > **Bei *Pfeil* kommt man nur vorwärts.** Es gibt keinen Rückwärts-Pfeil in der Fläche; zurück geht es nur durch Weiterblättern bis zum Umlauf.
 
-> **Die Überschrift ist nicht der Seitenname.** Bleibt **Überschrift** leer, nimmt das Panel die **Eindeutige ID** als Kopfzeile. Wer die ID später ändert, ändert damit auch die Kopfzeile aller Seiten ohne eigene Überschrift.
+> **Die Überschrift ist nicht der Seitenname.** Bleibt **Überschrift** leer, nimmt das Panel die **Eindeutige ID** als Kopfzeile. Die ID lässt sich später nicht mehr ändern — wer eine andere Kopfzeile will, trägt eine **Überschrift** ein.
 
 > **Lücken mitten in der Belegung kosten Platz.** Der Adapter füllt sie mit leeren Elementen auf; nur Lücken am Ende fallen weg. Eine „aufgeräumt" wirkende Seite mit einer Lücke in der zweiten Reihe hat am Panel also eine Fläche weniger, als die Zählung im Editor vermuten lässt.
 

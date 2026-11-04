@@ -24,7 +24,7 @@ Inhalt:
 2. Links unter **Seitentyp** den Eintrag **QR** wählen, im Feld **Neue Seite** einen Namen eintragen, **+** drücken.
 3. Die Seite erscheint in der Liste **Seiten**, rechts öffnet sich der Editor.
 
-Der Name steht im Editor als **Eindeutige ID** und ist die ID der Seite — unter ihr sprechen andere Seiten sie in ihren Navigationszielen an. Das Feld ist gesperrt, solange die Seite als Startseite markiert ist; der Editor zeigt dann den Hinweis *Startseite – wird unter der ID „main" veröffentlicht…*. Zum Umbenennen und zu den Fallstricken dabei siehe [PageConfig – Übersicht](PageConfig#seiten-anlegen-umbenennen-löschen).
+Der Name steht im Editor als **Eindeutige ID** und ist die ID der Seite — unter ihr sprechen andere Seiten sie in ihren Navigationszielen an. Das Feld ist nur lesbar — der Name ist nach dem Anlegen fest; ist die Seite als Startseite markiert, zeigt der Editor stattdessen den Hinweis *Startseite – wird unter der ID „main" veröffentlicht…*. Warum der Name fest ist, steht unter [PageConfig – Übersicht](PageConfig#seiten-anlegen-und-löschen).
 
 Die Felder **Panel-Filter** und **Seitentyp** über der Liste filtern nur die Anzeige.
 

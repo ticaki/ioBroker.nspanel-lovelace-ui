@@ -51,7 +51,7 @@ Intern tragen beide Varianten denselben Kartentyp `cardChart`; der Diagrammtyp i
 
 | Feld | Wirkung |
 |---|---|
-| **Eindeutige ID** | Seitenname; unter ihm sprechen andere Seiten die Seite in ihren Navigationszielen an. Bei der Startseite gesperrt, der Editor nennt den Grund: *Startseite – wird unter der ID „main" veröffentlicht.* Zum Umbenennen siehe [PageConfig – Übersicht](PageConfig#seiten-anlegen-umbenennen-löschen). |
+| **Eindeutige ID** | Seitenname; unter ihm sprechen andere Seiten die Seite in ihren Navigationszielen an. Nur lesbar — der Name ist nach dem Anlegen fest (*„Der Name ist nach dem Anlegen fest – andere Seiten verweisen darauf."*); bei der Startseite steht dort ihr eigener Hinweis: *Startseite – wird unter der ID „main" veröffentlicht.* Siehe [PageConfig – Übersicht](PageConfig#seiten-anlegen-und-löschen). |
 | **Überschrift** | Kopfzeile am Panel. Leer zeigt das Panel `Page Chart`. |
 | **Farbe für Diagramm auswählen** | Farbe der Kurve beziehungsweise der Säulen, als Farbwähler. Vorgabe Gelb. |
 | **Bezeichnung Y-Achse** | Text neben der Achse, zum Beispiel `W`. Das Liniendiagramm hängt hier bei Bedarf seinen automatischen Faktor an — aus `W` wird dann `W x10`. Das Feld steht in beiden Wegen der Datenaufbereitung. |

@@ -23,7 +23,7 @@ Contents:
 
 **Headline** is the header line on the panel; left empty, the panel uses the page name.
 
-> The **Unique ID** field discards an **empty** entry and the reserved name `main` **silently**: because the field takes its value from the configuration, the characters you type simply do not appear. That looks like a bug but is intended — the start page is set through the **Start page (main)** mark in the page details, not by renaming. If the page is the start page, the field is **locked** anyway and carries the notice "Start page - published under the id „main"". For renaming and its pitfalls see [PageConfig – Overview](PageConfig#creating-renaming-and-deleting-pages).
+> The **Unique ID** field is **read-only**: the name of a page is fixed once it exists, and the note below says so ("The name is fixed once the page exists - other pages refer to it."). If the page is the start page, its own notice stands there instead ("Start page - published under the id „main""); the start page is set through the **Start page (main)** mark in the page details, not through the name. Why the name is fixed, and how a page can still end up with another name, is explained under [PageConfig – Overview](PageConfig#creating-and-deleting-pages).
 
 ## 2. The five variants
 
@@ -186,7 +186,7 @@ For menu pages the panel assignment matters twice over: it decides not only wher
 
 > **With *Arrow* you can only go forwards.** There is no backwards arrow in the tile; the way back is paging on until it wraps around.
 
-> **The headline is not the page name.** Left empty, the panel takes the **Unique ID** as the header line. Change the ID later and you change the header line of every page without a headline of its own.
+> **The headline is not the page name.** Left empty, the panel takes the **Unique ID** as the header line. The ID cannot be changed later — whoever wants another header line enters a **Headline**.
 
 > **Gaps in the middle of the filling cost space.** The adapter fills them with empty items; only gaps at the end are dropped. A page that looks "tidy" with a gap in the second row therefore has one tile fewer on the panel than the count in the editor suggests.
 

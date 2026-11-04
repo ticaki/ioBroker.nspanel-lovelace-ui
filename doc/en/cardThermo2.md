@@ -43,7 +43,7 @@ The fields **Panel Filter** and **Page Type** above the list only filter what th
 
 | Field | Effect |
 |---|---|
-| **Unique ID** | Page name. Locked for the start page (*"Start page - published under the id 'main' …"*). |
+| **Unique ID** | Page name; read-only, fixed once the page exists. On the start page its own note stands there (*"Start page - published under the id 'main' …"*). |
 | **Tabs above the preview** | One tab per heat circuit, the way the panel counts them: an `airCondition` channel gives two tabs (heating and cooling, the second one with the suffix *(cooling)*). The **+** on the right adds a heat circuit; from eight stored data sources on it is locked (*"At most 8 heat circuits (an airCondition counts twice)"*). |
 | **Headline** in the preview | Click → dialog **Heat circuit** (data source, headline, order, remove). |
 | **Line 1** (thermometer, actual temperature) and **line 3** (drop, humidity) | Click → dialog **Value display** (icon, color, unit). |

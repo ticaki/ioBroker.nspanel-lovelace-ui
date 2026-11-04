@@ -42,7 +42,7 @@ Wie bei allen Seitentypen gilt: Die Felder sind nur bedienbar, solange die **Ins
 
 | Feld | Wirkung |
 |---|---|
-| **Eindeutige ID** | Der Name der Verknüpfung und damit der Name, unter dem diese Seite auf dem Panel liegt. Gesperrt, solange die Verknüpfung als Startseite markiert ist. |
+| **Eindeutige ID** | Der Name der Verknüpfung und damit der Name, unter dem diese Seite auf dem Panel liegt. Nur lesbar — wie bei jeder Seite ist der Name nach dem Anlegen fest. |
 | **Überschrift** | Die Kopfzeile am Panel. **Leer** übernimmt die Überschrift der verknüpften Seite — der Hilfetext lautet *Leer = Überschrift der verknüpften Seite, ist die auch leer, deren eindeutiger Name*. Das Feld zeigt die geerbte Überschrift als blassen Platzhalter, solange nichts eingetragen ist. |
 | **Verknüpfte Seite** | Das Ziel: die Seite, deren Inhalt gezeigt wird. Die Liste enthält alle Seiten der Konfiguration **außer anderen Verknüpfungen** und außer der Verknüpfung selbst, alphabetisch nach ID sortiert; die Startseite trägt den Zusatz `(main)`. |
 | **Verknüpfte Seite öffnen** | Knopf neben dem Auswahlfeld: springt in der Liste auf die verknüpfte Seite, um deren Inhalt zu bearbeiten. Er erscheint erst, wenn ein gültiges Ziel gesetzt ist. |
@@ -100,9 +100,9 @@ In beiden Fällen gilt: Die Seite fehlt am Panel **ganz** — Navigationsziele a
 
 ## Fallstricke
 
-> ⚠️ **Löschen der verknüpften Seite räumt die Verknüpfung nicht mit.** Sie bleibt mit ihrem alten Ziel stehen und ist ab sofort defekt. Vor dem Löschen einer Seite lohnt der Blick in die Liste, ob eine Zeile **→ Name** auf sie zeigt.
+> ⚠️ **Löschen der verknüpften Seite räumt die Verknüpfung nicht mit.** Sie bleibt mit ihrem alten Ziel stehen und ist ab sofort defekt. Die Rückfrage vor dem Löschen **nennt** die Verknüpfung immerhin unter den Seiten, die auf die gelöschte zeigen — entfernt oder umgehängt wird sie aber nicht. In der Liste ist sie an der Zeile **→ Name** zu erkennen.
 
-> **Umbenennen der verknüpften Seite zieht dagegen nach:** Der Admin trägt den neuen Namen in allen Verknüpfungen nach, die auf diese Seite zeigen. Wird die **Verknüpfung selbst** umbenannt, gilt die allgemeine Regel aus [PageConfig](PageConfig): *next*, *prev*, *home*, *parent* und `navigate`-Befehle anderer Seiten behalten den alten Namen und müssen nachgezogen werden.
+> **Umbenannt wird nichts mehr:** Der Name einer Seite ist nach dem Anlegen fest — der der verknüpften Seite wie der der Verknüpfung selbst (siehe [PageConfig](PageConfig#seiten-anlegen-und-löschen)). Damit kann eine Verknüpfung ihr Ziel nicht mehr durch ein Umbenennen verlieren; nur das Löschen bricht sie.
 
 > **Der Inhalt lässt sich an der Verknüpfung nicht ändern.** Wer am Panel etwas anpassen will, muss es an der verknüpften Seite tun — und die Änderung erscheint dann an **allen** Verknüpfungen dieser Seite. Der Knopf **Verknüpfte Seite öffnen** ist der kurze Weg dorthin.
 

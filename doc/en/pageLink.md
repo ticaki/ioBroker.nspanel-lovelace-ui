@@ -42,7 +42,7 @@ As with all page types: the fields can only be used while the **instance is runn
 
 | Field | Meaning |
 |---|---|
-| **Unique ID** | The name of the link and therefore the name under which this page sits on the panel. Locked while the link is marked as the start page. |
+| **Unique ID** | The name of the link and therefore the name under which this page sits on the panel. Read-only — as on every page the name is fixed once the page exists. |
 | **Headline** | The header line on the panel. **Empty** takes over the headline of the linked page — the help text reads *Empty = headline of the linked page, if that is empty too its unique name*. The field shows the inherited headline as a pale placeholder as long as nothing is entered. |
 | **Linked page** | The target: the page whose content is shown. The list contains all pages of the configuration **except other page links** and except the link itself, sorted alphabetically by ID; the start page carries the addition `(main)`. |
 | **Open linked page** | Button next to the selection field: jumps to the linked page in the list to edit its content. It only appears once a valid target is set. |
@@ -100,9 +100,9 @@ In both cases the same applies: the page is missing on the panel **entirely** �
 
 ## Pitfalls
 
-> ⚠️ **Deleting the linked page does not clean up the page link.** It stays in place with its old target and is broken from then on. Before deleting a page it is worth a look at the list whether a line **→ name** points at it.
+> ⚠️ **Deleting the linked page does not clean up the page link.** It stays in place with its old target and is broken from then on. The confirmation before deleting does at least **name** the link among the pages pointing at the deleted one — but it is neither removed nor moved. In the list it shows as the line **→ name**.
 
-> **Renaming the linked page, on the other hand, is followed through:** the admin enters the new name in all page links that point at this page. If the **link itself** is renamed, the general rule from [PageConfig](PageConfig) applies: *next*, *prev*, *home*, *parent* and `navigate` commands of other pages keep the old name and have to be adjusted.
+> **Nothing is renamed any more:** the name of a page is fixed once it exists — that of the linked page as well as that of the link itself (see [PageConfig](PageConfig#creating-and-deleting-pages)). A page link can therefore no longer lose its target through a rename; only deleting breaks it.
 
 > **The content cannot be changed on the page link.** Whoever wants to adjust something on the panel has to do it on the linked page — and the change then appears on **all** links of that page. The button **Open linked page** is the short way there.
 

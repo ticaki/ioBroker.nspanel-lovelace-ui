@@ -24,7 +24,7 @@ Contents:
 2. On the left pick **Trash** as the **Page Type**, enter a name under **New Page**, press **+**.
 3. The page appears in the list **Pages** and the editor opens on the right.
 
-**Unique ID** is the page name other pages use to address this page in their navigation targets; while the page is flagged as **Start page (main)** the field is locked (notice below it: *"Start page - published under the id „main". …"*). For renaming see [PageConfig – Overview](PageConfig#creating-renaming-and-deleting-pages).
+**Unique ID** is the page name other pages use to address this page in their navigation targets; the field is read-only, the name is fixed once the page exists. While the page is flagged as **Start page (main)**, its own notice stands below it (*"Start page - published under the id „main". …"*). See [PageConfig – Overview](PageConfig#creating-and-deleting-pages).
 
 **Headline** is the header line on the panel; left empty, the panel shows `Trash`.
 
@@ -57,7 +57,7 @@ The editor is a form, from top to bottom:
 
 | Field | Meaning |
 |---|---|
-| **Unique ID** | Page name; locked on the start page. |
+| **Unique ID** | Page name; read-only, fixed once the page exists. |
 | **Headline** | Header line on the panel; empty → `Trash`. |
 | **Layout** | Number of date lines: *4 trash entries* or *6 trash entries*. |
 | **Import type** | *Import via iCal Adapter State* or *Import via .ics file*. |

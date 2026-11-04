@@ -43,7 +43,7 @@ Die Felder **Panel-Filter** und **Seitentyp** über der Liste filtern nur die An
 
 | Feld | Wirkung |
 |---|---|
-| **Eindeutige ID** | Seitenname. Bei der Startseite gesperrt (*„Startseite – wird unter der ID ‚main' veröffentlicht …"*). |
+| **Eindeutige ID** | Seitenname; nur lesbar, nach dem Anlegen fest. Bei der Startseite steht dort ihr eigener Hinweis (*„Startseite – wird unter der ID ‚main' veröffentlicht …"*). |
 | **Reiter über der Vorschau** | Ein Reiter je Heizkreis, so wie das Panel zählt: ein `airCondition`-Channel ergibt zwei Reiter (Heizen und Kühlen, der zweite mit dem Zusatz *(Kühlen)*). Das **+** rechts legt einen Heizkreis an; ab acht gespeicherten Datenquellen ist es gesperrt (*„Höchstens 8 Heizkreise (eine airCondition zählt doppelt)"*). |
 | **Überschrift** in der Vorschau | Klick → Dialog **Heizkreis** (Datenquelle, Überschrift, Reihenfolge, Entfernen). |
 | **Zeile 1** (Thermometer, Ist-Temperatur) und **Zeile 3** (Tropfen, Luftfeuchte) | Klick → Dialog **Anzeige der Werte** (Symbol, Farbe, Einheit). |

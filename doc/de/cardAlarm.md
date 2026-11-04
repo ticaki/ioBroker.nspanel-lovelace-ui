@@ -23,7 +23,7 @@ Inhalt:
 2. Links als Seitentyp **Alarm** wählen, im Feld *Neue Seite* einen Namen eintragen, **+** drücken.
 3. Die Seite erscheint in der Liste **Seiten**, rechts öffnet sich der Editor.
 
-Der Name ist die **Eindeutige ID** der Seite — unter ihm sprechen andere Seiten sie in ihren Navigationszielen an. Zum Umbenennen siehe [PageConfig – Übersicht](PageConfig#seiten-anlegen-umbenennen-löschen).
+Der Name ist die **Eindeutige ID** der Seite — unter ihm sprechen andere Seiten sie in ihren Navigationszielen an. Der Name ist nach dem Anlegen fest; warum, steht unter [PageConfig – Übersicht](PageConfig#seiten-anlegen-und-löschen).
 
 Die neue Seite bringt mit: die **Überschrift** gleich dem Seitennamen, die **Pin** `0`, die Betriebsart **Alarm** und in beiden Schaltflächenspalten den **oberen Knopf** vorbelegt — *Aktivieren* und *Deaktivieren* (siehe [Abschnitt 2](#2-betriebsart-alarm-oder-entsperren) und [Abschnitt 4](#4-die-schaltflächen-der-alarm-seite)).
 

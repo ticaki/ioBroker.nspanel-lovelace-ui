@@ -25,7 +25,7 @@ Contents:
 2. On the left choose the page type **Media player**, enter a name, press **+**.
 3. The page appears in the list, the editor opens on the right. A new page has no player yet: at the top it says *„No player selected yet."* with the button **Player**, which leads straight into the player dialog.
 
-**Unique ID** above the preview is the page name; for the start page the field is locked.
+**Unique ID** above the preview is the page name; the field is read-only, the name is fixed once the page exists.
 
 > As with all card types every field is locked while the instance is not running. The editor says so at one spot only, namely in the player dialog: *„The adapter is not running - the player cannot be checked and no names can be read."*
 

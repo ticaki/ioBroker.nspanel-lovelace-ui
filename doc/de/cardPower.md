@@ -22,7 +22,7 @@ Inhalt:
 2. Links als Seitentyp **Leistung** wählen, einen Namen eintragen, **+** drücken.
 3. Die Seite erscheint in der Liste, rechts öffnet sich der Editor.
 
-**Eindeutige ID** über dem Raster ist der Seitenname; bei der Startseite ist das Feld gesperrt. **Überschrift** ist die Kopfzeile am Panel — beim Anlegen wird der Seitenname eingetragen, ein leeres Feld zeigt am Panel wieder den Seitennamen.
+**Eindeutige ID** über dem Raster ist der Seitenname; das Feld ist nur lesbar, der Name ist nach dem Anlegen fest. **Überschrift** ist die Kopfzeile am Panel — beim Anlegen wird der Seitenname eingetragen, ein leeres Feld zeigt am Panel wieder den Seitennamen.
 
 > Wie bei allen Kartentypen sind die Felder der Hauptmaske gesperrt, solange die Instanz nicht läuft — ohne erklärenden Hinweis. Für die drei Dialoge dieser Seite gilt das nur teilweise, siehe [Abschnitt 3](#3-einen-fluss-einrichten).
 

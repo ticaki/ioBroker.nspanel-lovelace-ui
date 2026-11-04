@@ -24,7 +24,7 @@ Inhalt:
 2. Links als **Seitentyp** den Eintrag **Abfall** wählen, unter **Neue Seite** einen Namen eintragen, **+** drücken.
 3. Die Seite erscheint in der Liste **Seiten**, rechts öffnet sich der Editor.
 
-**Eindeutige ID** ist der Seitenname, über den andere Seiten die Seite in ihren Navigationszielen ansprechen; ist die Seite als **Startseite (main)** markiert, ist das Feld gesperrt (Hinweis darunter: *„Startseite – wird unter der ID „main" veröffentlicht. …"*). Zum Umbenennen siehe [PageConfig – Übersicht](PageConfig#seiten-anlegen-umbenennen-löschen).
+**Eindeutige ID** ist der Seitenname, über den andere Seiten die Seite in ihren Navigationszielen ansprechen; das Feld ist nur lesbar, der Name ist nach dem Anlegen fest. Ist die Seite als **Startseite (main)** markiert, steht darunter ihr eigener Hinweis (*„Startseite – wird unter der ID „main" veröffentlicht. …"*). Siehe [PageConfig – Übersicht](PageConfig#seiten-anlegen-und-löschen).
 
 **Überschrift** ist die Kopfzeile am Panel; bleibt das Feld leer, zeigt das Panel `Trash`.
 
@@ -57,7 +57,7 @@ Der Editor ist ein Formular, von oben nach unten:
 
 | Feld | Bedeutung |
 |---|---|
-| **Eindeutige ID** | Seitenname; bei der Startseite gesperrt. |
+| **Eindeutige ID** | Seitenname; nur lesbar, nach dem Anlegen fest. |
 | **Überschrift** | Kopfzeile am Panel; leer → `Trash`. |
 | **Layout** | Zahl der Terminzeilen: *4 Abfalltermine* oder *6 Abfalltermine*. |
 | **Importtyp** | *Import über iCal Adapter State* oder *Import über .ics-Datei*. |

@@ -51,7 +51,7 @@ Internally both variants carry the same card type `cardChart`; the chart type is
 
 | Field | Effect |
 |---|---|
-| **Unique ID** | Page name; other pages address this page under it in their navigation targets. Locked on the start page, where the editor names the reason: *Start page - published under the id „main".* For renaming see [PageConfig – Overview](PageConfig#creating-renaming-and-deleting-pages). |
+| **Unique ID** | Page name; other pages address this page under it in their navigation targets. Read-only — the name is fixed once the page exists (*"The name is fixed once the page exists - other pages refer to it."*); on the start page its own note stands there: *Start page - published under the id „main".* See [PageConfig – Overview](PageConfig#creating-and-deleting-pages). |
 | **Headline** | Header line on the panel. Left empty, the panel shows `Page Chart`. |
 | **Select color for chart** | Colour of the curve or of the columns, as a colour picker. Default yellow. |
 | **y-axis label** | Text next to the axis, for example `W`. The line chart appends its automatic factor here when needed — `W` then becomes `W x10`. The field is present in both ways of data formatting. |

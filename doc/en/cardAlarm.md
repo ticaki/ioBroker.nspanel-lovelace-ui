@@ -23,7 +23,7 @@ Contents:
 2. On the left pick the page type **Alarm**, enter a name in the field *New Page*, press **+**.
 3. The page appears in the list **Pages**, the editor opens on the right.
 
-The name is the **Unique ID** of the page — other pages address it by that name in their navigation targets. For renaming see [PageConfig – Overview](PageConfig#creating-renaming-and-deleting-pages).
+The name is the **Unique ID** of the page — other pages address it by that name in their navigation targets. The name is fixed once the page exists; why, is explained under [PageConfig – Overview](PageConfig#creating-and-deleting-pages).
 
 The new page brings along: the **Headline** equal to the page name, the **PIN** `0`, the operating mode **Alarm** and the **top button** of both columns prefilled - *Arm* and *Disarm* (see [section 2](#2-operating-mode-alarm-or-unlock) and [section 4](#4-the-buttons-of-the-alarm-page)).
 
