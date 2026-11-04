@@ -1739,7 +1739,7 @@ class NavigationAssignmentPanel extends ConfigGeneric<
                                             display: { xs: 'inline', md: 'none' },
                                         }}
                                     >
-                                        {I18n.t('nav') || 'Nav'}
+                                        {I18n.t('nav')}
                                     </Box>
                                     {/* Full label on desktop */}
                                     <Box
@@ -1748,7 +1748,7 @@ class NavigationAssignmentPanel extends ConfigGeneric<
                                             display: { xs: 'none', md: 'inline' },
                                         }}
                                     >
-                                        {I18n.t('navigation') || 'Navigation'}
+                                        {I18n.t('navigation')}
                                     </Box>
                                 </>
                             }
@@ -1770,7 +1770,7 @@ class NavigationAssignmentPanel extends ConfigGeneric<
                                             display: { xs: 'inline', md: 'none' },
                                         }}
                                     >
-                                        {I18n.t('details') || 'Details'}
+                                        {I18n.t('details')}
                                     </Box>
                                     {/* Full label on desktop */}
                                     <Box
@@ -1779,7 +1779,7 @@ class NavigationAssignmentPanel extends ConfigGeneric<
                                             display: { xs: 'none', md: 'inline' },
                                         }}
                                     >
-                                        {I18n.t('pagedetails') || 'Page Details'}
+                                        {I18n.t('pagedetails')}
                                     </Box>
                                 </>
                             }
