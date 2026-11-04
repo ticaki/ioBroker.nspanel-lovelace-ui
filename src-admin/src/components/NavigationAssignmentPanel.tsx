@@ -164,6 +164,12 @@ class NavigationAssignmentPanel extends ConfigGeneric<
     /** False after unmount - a late answer of the adapter must not touch the state any more. */
     private _mounted = false;
 
+    /** Timer of the restart phase - see {@link startNavigationReload} */
+    private _navigationReloadTimer?: ReturnType<typeof setTimeout>;
+
+    /** End of the restart phase (ms since epoch) - see {@link startNavigationReload} */
+    private _navigationReloadDeadline = 0;
+
     constructor(props: ConfigGenericProps & NavigationAssignmentPanelProps) {
         super(props);
         this.state = {
@@ -186,6 +192,7 @@ class NavigationAssignmentPanel extends ConfigGeneric<
 
     componentWillUnmount(): void {
         this._mounted = false;
+        this.clearNavigationReloadTimer();
         // Unsubscribe from alive state changes
         if (this.props.oContext && this.props.oContext.socket) {
             const instance = this.props.oContext.instance ?? '0';
@@ -369,10 +376,51 @@ class NavigationAssignmentPanel extends ConfigGeneric<
                 this.retryLoadingPagesForAssignments();
             }
             if (!wasAlive && isAlive) {
-                void this.loadPanelNavigation();
+                this.startNavigationReload();
             }
         }
     };
+
+    private clearNavigationReloadTimer(): void {
+        if (this._navigationReloadTimer) {
+            clearTimeout(this._navigationReloadTimer);
+            this._navigationReloadTimer = undefined;
+        }
+    }
+
+    /**
+     * Starts the restart phase: the adapter came back (e.g. after "save" in the admin), but it does
+     * not answer `getPanelNavigation` before its controller exists. The first read follows after
+     * 3 s, then every 2 s until the adapter answers with at least one panel or 60 s are over. The
+     * cached navigation stays as it is meanwhile.
+     */
+    private startNavigationReload(): void {
+        this.clearNavigationReloadTimer();
+        this._navigationReloadDeadline = Date.now() + 60000;
+        this._navigationReloadTimer = setTimeout(() => void this.pollNavigationAfterRestart(), 3000);
+    }
+
+    /** One read of the restart phase - see {@link startNavigationReload} */
+    private async pollNavigationAfterRestart(): Promise<void> {
+        this._navigationReloadTimer = undefined;
+        const result = await this.requestPanelNavigation();
+        if (!this._mounted) {
+            return;
+        }
+        if (result?.length) {
+            this.setState({ panelNavigation: result });
+            // The adapter answers before it finished building the navigation at times - one more
+            // read follows
+            this._navigationReloadTimer = setTimeout(() => {
+                this._navigationReloadTimer = undefined;
+                void this.loadPanelNavigation();
+            }, 7000);
+            return;
+        }
+        if (Date.now() < this._navigationReloadDeadline) {
+            this._navigationReloadTimer = setTimeout(() => void this.pollNavigationAfterRestart(), 2000);
+        }
+    }
 
     /**
      * Asks the adapter for the navigation of all panels - the links as the running adapter
@@ -655,17 +703,20 @@ class NavigationAssignmentPanel extends ConfigGeneric<
             if (!resolved) {
                 return emptyLabel;
             }
-            return (
-                <Tooltip title={I18n.t('nav_resolved_not_stored')}>
-                    <Typography
-                        component="span"
-                        variant="inherit"
-                        sx={{ fontStyle: 'italic', color: 'text.disabled' }}
-                    >
-                        {resolved}
-                    </Typography>
-                </Tooltip>
+            const placeholder = (
+                <Typography
+                    component="span"
+                    variant="inherit"
+                    sx={{ fontStyle: 'italic', color: 'text.disabled' }}
+                >
+                    {resolved}
+                </Typography>
             );
+            // a start page cannot store a value here, so the "choose a value to store" hint is wrong
+            if (this.props.commonFields?.isMainPage) {
+                return placeholder;
+            }
+            return <Tooltip title={I18n.t('nav_resolved_not_stored')}>{placeholder}</Tooltip>;
         };
     }
 
@@ -1977,7 +2028,7 @@ class NavigationAssignmentPanel extends ConfigGeneric<
                                 <Box>
                                     <Box sx={{ display: 'flex', alignItems: 'center', mb: 0.5 }}>
                                         {this.renderNavFieldLabel(this.state.selectedAddedTopic, 'prev', 'prev', {
-                                            hint: I18n.t('nav_prev_tooltip'),
+                                            hint: lockAssignment ? undefined : I18n.t('nav_prev_tooltip'),
                                             sx: { mr: 0.5 },
                                         })}
                                     </Box>
@@ -2002,6 +2053,7 @@ class NavigationAssignmentPanel extends ConfigGeneric<
                                             if (this.state.selectedAddedTopic) {
                                                 void this.loadPagesForPanel(this.state.selectedAddedTopic, true);
                                             }
+                                            void this.loadPanelNavigation();
                                         }}
                                         onChange={e =>
                                             this.setNavigationForSelected({
@@ -2049,7 +2101,7 @@ class NavigationAssignmentPanel extends ConfigGeneric<
                                 <Box>
                                     <Box sx={{ display: 'flex', alignItems: 'center', mb: 0.5 }}>
                                         {this.renderNavFieldLabel(this.state.selectedAddedTopic, 'next', 'next', {
-                                            hint: I18n.t('nav_next_tooltip'),
+                                            hint: lockAssignment ? undefined : I18n.t('nav_next_tooltip'),
                                             sx: { mr: 0.5 },
                                         })}
                                     </Box>
@@ -2074,6 +2126,7 @@ class NavigationAssignmentPanel extends ConfigGeneric<
                                             if (this.state.selectedAddedTopic) {
                                                 void this.loadPagesForPanel(this.state.selectedAddedTopic, true);
                                             }
+                                            void this.loadPanelNavigation();
                                         }}
                                         onChange={e =>
                                             this.setNavigationForSelected({
@@ -2136,6 +2189,7 @@ class NavigationAssignmentPanel extends ConfigGeneric<
                                             if (this.state.selectedAddedTopic) {
                                                 void this.loadPagesForPanel(this.state.selectedAddedTopic, true);
                                             }
+                                            void this.loadPanelNavigation();
                                         }}
                                         onChange={e =>
                                             this.setNavigationForSelected({
@@ -2191,6 +2245,7 @@ class NavigationAssignmentPanel extends ConfigGeneric<
                                             if (this.state.selectedAddedTopic) {
                                                 void this.loadPagesForPanel(this.state.selectedAddedTopic, true);
                                             }
+                                            void this.loadPanelNavigation();
                                         }}
                                         onChange={e =>
                                             this.setNavigationForSelected({

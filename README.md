@@ -159,6 +159,7 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
     ### **WORK IN PROGRESS**
 -->
 ### **WORK IN PROGRESS**
+- (ticaki) admin page navigation: the locked prev/next/parent/home fields of a start page only carry the label tooltip, the "choose a value to store" hint is gone there; the resolved neighbours are re-read after the adapter restarted instead of keeping the stale ones
 - (ticaki) admin page navigation: a click on the label prev/next/parent/home opens the page the link resolves to, as long as it is an admin page; a system page as target only shows a short notice
 - (ticaki) admin page navigation: a page flagged as start page no longer carries a prev/next/parent of its own - its neighbours follow from the pages pointing at it (the stored values are kept and apply again once the flag is removed); an explicit `next` of a page is no longer overwritten when other pages chain in behind it; the admin shows the neighbours the adapter resolved as greyed placeholders in empty prev/next/parent/home fields and warns when other pages store the same prev/next or point at the page with their prev while its next leads elsewhere
 - (ticaki) screensaver: a mode this adapter version does not know (e.g. after a downgrade) no longer breaks the screensaver - it falls back to `standard` with a warning in the log, the stored configuration stays unchanged
