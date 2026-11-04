@@ -677,6 +677,14 @@ Stack: ${stack}`
       if (!navigation) {
         continue;
       }
+      if (ShareConfig.isMainPageEntry(entry)) {
+        if (navigation.prev || navigation.next || navigation.parent || navigation.home) {
+          this.log.debug(
+            `Page '${entry.uniqueName}' is the start page - its own navigation links are ignored.`
+          );
+        }
+        continue;
+      }
       const nav = {
         ...navigation,
         prev: resolveNavigationTarget(resolveTarget(navigation.prev)),
@@ -890,7 +898,9 @@ Stack: ${stack}`
     var _a, _b, _c, _d, _e, _f, _g;
     const prevEntry = option.navigation.find((b) => (b == null ? void 0 : b.name) === prevTarget);
     const oldRight = (_a = prevEntry == null ? void 0 : prevEntry.right) == null ? void 0 : _a.single;
-    if (prevEntry) {
+    const rootPending = pendingMap.get(prevTarget);
+    const rootHasExternalNext = (rootPending == null ? void 0 : rootPending.next) !== void 0 && rootPending.next !== fullChain[0];
+    if (prevEntry && !rootHasExternalNext) {
       prevEntry.right = { ...(_b = prevEntry.right) != null ? _b : {}, single: fullChain[0] };
     }
     const firstEntry = option.navigation.find((b) => (b == null ? void 0 : b.name) === fullChain[0]);
@@ -911,7 +921,7 @@ Stack: ${stack}`
         }
       }
     }
-    if (oldRight !== void 0 && !fullChain.includes(oldRight)) {
+    if (oldRight !== void 0 && !rootHasExternalNext && !fullChain.includes(oldRight)) {
       const lastId = fullChain[fullChain.length - 1];
       const lastPending = pendingMap.get(lastId);
       const lastEntry = option.navigation.find((b) => (b == null ? void 0 : b.name) === lastId);
@@ -934,12 +944,13 @@ Stack: ${stack}`
    * @param processedGroups - Set of already processed prevTargets (prevents cycles)
    */
   buildFullChain(prevTarget, byPrev, pendingMap, processedGroups) {
+    var _a;
     const pageIds = byPrev.get(prevTarget);
     if (!pageIds || processedGroups.has(prevTarget)) {
       return [];
     }
     processedGroups.add(prevTarget);
-    const groupChain = this.buildChainFromGroup(pageIds, pendingMap);
+    const groupChain = this.buildChainFromGroup(pageIds, pendingMap, (_a = pendingMap.get(prevTarget)) == null ? void 0 : _a.next);
     const result = [];
     for (const pageId of groupChain) {
       result.push(pageId);
@@ -957,8 +968,10 @@ Stack: ${stack}`
    *
    * @param pageIds - Page IDs in the group (definition order)
    * @param pendingMap - Lookup map from pageId to PendingNavEntry
+   * @param preferredStart - Page the chain starts with when it is part of the group: the explicit
+   * `next` of the page the group hangs behind
    */
-  buildChainFromGroup(pageIds, pendingMap) {
+  buildChainFromGroup(pageIds, pendingMap, preferredStart) {
     const pageSet = new Set(pageIds);
     const nextInGroup = /* @__PURE__ */ new Map();
     for (const id of pageIds) {
@@ -968,7 +981,10 @@ Stack: ${stack}`
       }
     }
     const hasIncoming = new Set(nextInGroup.values());
-    const starts = pageIds.filter((id) => !hasIncoming.has(id));
+    const starts = pageIds.filter((id) => !hasIncoming.has(id) && id !== preferredStart);
+    if (preferredStart !== void 0 && pageSet.has(preferredStart)) {
+      starts.unshift(preferredStart);
+    }
     const result = [];
     const visited = /* @__PURE__ */ new Set();
     for (const start of starts) {

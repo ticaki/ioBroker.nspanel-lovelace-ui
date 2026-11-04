@@ -5,6 +5,8 @@ import {
     Select,
     MenuItem,
     Button,
+    Link,
+    Snackbar,
     List,
     ListItem,
     ListItemButton,
@@ -35,16 +37,28 @@ import type {
     PageConfigBaseFields,
     PageConfigEntry,
     PageScrollFields,
+    PanelListEntry,
     ScrollCard,
 } from '../../../src/lib/types/adminShareConfig';
 import {
     // SENDTO_GET_PANELS_COMMAND,
     ADAPTER_NAME,
     ALL_PANELS_SPECIAL_ID,
+    SENDTO_GET_PANEL_NAVIGATION_COMMAND,
+    isMainPageEntry,
     mainPageName,
     scrollAutoTimingDefault,
     scrollHalfCards,
 } from '../../../src/lib/types/adminShareConfig';
+
+/** The four links a page stores per panel. */
+type NavField = 'next' | 'prev' | 'home' | 'parent';
+
+/** Spacing a navigation field label needs at its place in the panel. */
+type NavFieldLabelSx = { mr?: number; mb?: number; display?: 'block' };
+
+/** Where a navigation link leads to in the admin: an admin page or a system page that cannot be opened. */
+type NavLinkTarget = { kind: 'page'; name: string } | { kind: 'system' };
 
 /** fields of the page details: navigation flags of every page plus the paging of the menu cards */
 export type PageCommonFields = PageConfigBaseFields & PageScrollFields;
@@ -71,6 +85,8 @@ type NavigationAssignmentPanelProps = {
     panelPagesMap?: Record<string, string[]>;
     /** Alle Admin-Seiten, für die Startseiten- und Zielprüfung */
     allEntries?: PageConfigEntry[];
+    /** Opens another admin page; without it the field labels stay plain text */
+    onOpenPage?: (name: string) => void;
 };
 
 interface NavigationAssignmentPanelState extends ConfigGenericState {
@@ -99,6 +115,13 @@ interface NavigationAssignmentPanelState extends ConfigGenericState {
     activeTab?: number;
     // show system pages (///-prefixed) in the prev/next/parent/home dropdowns; ///unlock is always shown regardless
     showSystemPages: boolean;
+    // a click on a navigation label led to a system page: shows the short notice
+    systemPageNoticeOpen: boolean;
+    /**
+     * Navigation of all panels as the adapter resolved it (`getPanelNavigation`), read when the
+     * panel opens and cached. `undefined` until the adapter answered.
+     */
+    panelNavigation?: PanelListEntry[];
 }
 
 /**
@@ -138,6 +161,9 @@ class NavigationAssignmentPanel extends ConfigGeneric<
     /** Menge der aktuell abonnierten Objekt-IDs für Panel-Objekte */
     private _subscribedObjectIds = new Set<string>();
 
+    /** False after unmount - a late answer of the adapter must not touch the state any more. */
+    private _mounted = false;
+
     constructor(props: ConfigGenericProps & NavigationAssignmentPanelProps) {
         super(props);
         this.state = {
@@ -154,10 +180,12 @@ class NavigationAssignmentPanel extends ConfigGeneric<
             focusReceived: {},
             activeTab: 0,
             showSystemPages: false,
+            systemPageNoticeOpen: false,
         };
     }
 
     componentWillUnmount(): void {
+        this._mounted = false;
         // Unsubscribe from alive state changes
         if (this.props.oContext && this.props.oContext.socket) {
             const instance = this.props.oContext.instance ?? '0';
@@ -175,6 +203,7 @@ class NavigationAssignmentPanel extends ConfigGeneric<
 
     async componentDidMount(): Promise<void> {
         void super.componentDidMount();
+        this._mounted = true;
 
         // Get initial alive state and subscribe to changes
         if (this.props.oContext && this.props.oContext.socket) {
@@ -185,6 +214,9 @@ class NavigationAssignmentPanel extends ConfigGeneric<
                 const state = await this.props.oContext.socket.getState(aliveStateId);
                 const isAlive = !!state?.val;
                 this.setState({ alive: isAlive });
+                if (isAlive) {
+                    void this.loadPanelNavigation();
+                }
 
                 // Subscribe to alive state changes
                 await this.props.oContext.socket.subscribeState(aliveStateId, this.onAliveChanged);
@@ -336,8 +368,348 @@ class NavigationAssignmentPanel extends ConfigGeneric<
             if (!wasAlive && isAlive && this.state.assignments.length > 0) {
                 this.retryLoadingPagesForAssignments();
             }
+            if (!wasAlive && isAlive) {
+                void this.loadPanelNavigation();
+            }
         }
     };
+
+    /**
+     * Asks the adapter for the navigation of all panels - the links as the running adapter
+     * resolved them, not the stored ones.
+     *
+     * @returns The panel list, or `undefined` when the adapter did not answer within 3 s or sent
+     * no list.
+     */
+    private requestPanelNavigation(): Promise<PanelListEntry[] | undefined> {
+        if (!this.props.oContext?.socket) {
+            return Promise.resolve(undefined);
+        }
+        const instance = this.props.oContext.instance ?? '0';
+        const request = this.props.oContext.socket
+            .sendTo(`${ADAPTER_NAME}.${instance}`, SENDTO_GET_PANEL_NAVIGATION_COMMAND, null)
+            .then((res: { result?: PanelListEntry[] }): PanelListEntry[] | undefined =>
+                res && Array.isArray(res.result) ? res.result : undefined,
+            )
+            .catch((): undefined => undefined);
+        const timeout = new Promise<undefined>(resolve => setTimeout(() => resolve(undefined), 3000));
+        return Promise.race([request, timeout]);
+    }
+
+    /**
+     * Reads the resolved navigation of all panels into the state cache. Nothing happens while the
+     * adapter is not running; a missing answer leaves the previous cache in place.
+     */
+    private async loadPanelNavigation(): Promise<void> {
+        if (!this.state.alive) {
+            return;
+        }
+        const result = await this.requestPanelNavigation();
+        if (result && this._mounted) {
+            this.setState({ panelNavigation: result });
+        }
+    }
+
+    /**
+     * Name of the navigation node the adapter publishes the edited page under: the start page
+     * is published as `main`, any other page under its own name.
+     *
+     * @returns The node name, or `undefined` when no page is selected.
+     */
+    private getOwnNodeName(): string | undefined {
+        if (!this.props.uniqueName) {
+            return undefined;
+        }
+        return this.props.commonFields?.isMainPage ? mainPageName : this.props.uniqueName;
+    }
+
+    /**
+     * Maps a page name onto the navigation node name the adapter uses: an entry flagged as start
+     * page is published as `main`.
+     *
+     * @param name Page name as stored in the configuration.
+     * @returns The node name.
+     */
+    private toNodeName(name: string): string {
+        const entry = (this.props.allEntries ?? []).find(e => e.uniqueName === name);
+        return entry && isMainPageEntry(entry) ? mainPageName : name;
+    }
+
+    /**
+     * The link the running adapter resolved for the edited page on a panel.
+     *
+     * @param topic Panel topic; the ALL assignment has no single panel to read from.
+     * @param field The link.
+     * @returns The resolved target, or '' when unknown.
+     */
+    private getResolvedNavValue(topic: string | undefined, field: NavField): string {
+        const nodeName = this.getOwnNodeName();
+        if (!topic || topic === ALL_PANELS_SPECIAL_ID || !nodeName || !this.state.panelNavigation) {
+            return '';
+        }
+        const panel = this.state.panelNavigation.find(p => p.panelTopic === topic);
+        const entry = panel?.navigationMap.find(e => e.page === nodeName && e.nodeType !== 'stateRef');
+        return entry?.[field] ?? '';
+    }
+
+    /**
+     * The admin page a navigation link of the edited page leads to: the target the adapter resolved,
+     * else the stored one - a start page's stored links are invalid and do not count.
+     *
+     * @param topic Panel topic or the ALL id.
+     * @param field The link.
+     * @returns The admin page, or the marker for a system page without admin entry; `undefined` when
+     * the link is empty, its target is no admin page (script or generated page) or it is the edited
+     * page itself.
+     */
+    private getNavLinkTarget(topic: string | undefined, field: NavField): NavLinkTarget | undefined {
+        if (!topic) {
+            return undefined;
+        }
+        const node =
+            this.getResolvedNavValue(topic, field) ||
+            (this.props.commonFields?.isMainPage ? '' : this.getNavValue(topic, field));
+        if (!node) {
+            return undefined;
+        }
+        const entries = this.props.allEntries ?? [];
+        let target: PageConfigEntry | undefined;
+        if (node === mainPageName) {
+            const candidates = entries.filter(e => isMainPageEntry(e) || e.uniqueName === mainPageName);
+            target =
+                candidates.find(e => this.getCoveredTopics(e.navigationAssignment).includes(topic)) ??
+                (topic === ALL_PANELS_SPECIAL_ID ? candidates[0] : undefined);
+        } else {
+            target = entries.find(e => e.uniqueName === node);
+        }
+        if (!target) {
+            return isSystemPage(node) ? { kind: 'system' } : undefined;
+        }
+        return target.uniqueName !== this.props.uniqueName ? { kind: 'page', name: target.uniqueName } : undefined;
+    }
+
+    /**
+     * Label of a navigation link; it opens the linked page when that is an admin page and shows a
+     * short notice when that is a system page.
+     *
+     * @param topic Panel topic or the ALL id.
+     * @param field The link.
+     * @param label Text of the label.
+     * @param options Additional tooltip text and spacing of the label.
+     * @param options.hint Tooltip text shown in addition to the link target.
+     * @param options.sx Spacing of the label.
+     * @returns The label element.
+     */
+    private renderNavFieldLabel(
+        topic: string | undefined,
+        field: NavField,
+        label: string,
+        options: { hint?: string; sx?: NavFieldLabelSx } = {},
+    ): React.JSX.Element {
+        const { hint, sx } = options;
+        const { onOpenPage } = this.props;
+        const target = onOpenPage ? this.getNavLinkTarget(topic, field) : undefined;
+        const openHint = !target
+            ? ''
+            : target.kind === 'page'
+              ? I18n.t('nav_open_target').replace('%s', target.name)
+              : I18n.t('nav_system_page_no_jump');
+        const tooltip =
+            hint && openHint ? (
+                <>
+                    {openHint}
+                    <br />
+                    {hint}
+                </>
+            ) : (
+                hint || openHint
+            );
+        const element =
+            onOpenPage && target ? (
+                <Link
+                    component="button"
+                    type="button"
+                    variant="caption"
+                    color="text.secondary"
+                    underline="hover"
+                    onClick={() => {
+                        if (target.kind === 'page') {
+                            onOpenPage(target.name);
+                        } else {
+                            this.setState({ systemPageNoticeOpen: true });
+                        }
+                    }}
+                    sx={{ ...sx, cursor: 'pointer', '&:hover': { color: 'primary.main' } }}
+                >
+                    {label}
+                </Link>
+            ) : (
+                <Typography
+                    variant="caption"
+                    color="text.secondary"
+                    sx={sx}
+                >
+                    {label}
+                </Typography>
+            );
+        return tooltip ? <Tooltip title={tooltip}>{element}</Tooltip> : element;
+    }
+
+    /**
+     * The navigation an entry stores for a panel topic, like the adapter picks it: the panel's own
+     * assignment replaces the ALL assignment, an own assignment without navigation excludes the
+     * panel.
+     *
+     * @param entry Admin page entry.
+     * @param topic Panel topic or the ALL id.
+     * @returns The stored links, or `undefined` when the entry is not assigned to the panel.
+     */
+    private getStoredNavigationFor(entry: PageConfigEntry, topic: string): NavigationAssignment['navigation'] {
+        const list = entry.navigationAssignment ?? [];
+        const own = list.find(a => a.topic === topic);
+        if (own) {
+            return own.navigation;
+        }
+        if (topic !== ALL_PANELS_SPECIAL_ID) {
+            return list.find(a => a.topic === ALL_PANELS_SPECIAL_ID)?.navigation;
+        }
+        return undefined;
+    }
+
+    /**
+     * Other admin pages of the same panel that store the same `prev` or `next` as the edited page.
+     * Start pages are left out - the adapter ignores their own links.
+     *
+     * @param topic Panel topic the links are compared for.
+     * @param field `prev` or `next`.
+     * @returns Names of the colliding pages, in configuration order.
+     */
+    private getPagesWithSameTarget(topic: string | undefined, field: 'prev' | 'next'): string[] {
+        if (!topic || !this.props.uniqueName) {
+            return [];
+        }
+        const mine = this.getNavValue(topic, field);
+        if (!mine) {
+            return [];
+        }
+        const myTarget = this.toNodeName(mine);
+        const result: string[] = [];
+        for (const other of this.props.allEntries ?? []) {
+            if (other.uniqueName === this.props.uniqueName || isMainPageEntry(other)) {
+                continue;
+            }
+            const target = this.getStoredNavigationFor(other, topic)?.[field];
+            if (target && this.toNodeName(target) === myTarget) {
+                result.push(other.uniqueName);
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Other admin pages of the panel whose `prev` points at the edited page while the edited page
+     * names a `next` that is none of them - the adapter keeps the explicit `next`, so those pages
+     * only hang on by their own `prev`.
+     *
+     * @param topic Panel topic the links are compared for.
+     * @returns Names of the pages pointing here, in configuration order.
+     */
+    private getPagesPointingHereByPrev(topic: string | undefined): string[] {
+        const nodeName = this.getOwnNodeName();
+        if (!topic || !nodeName) {
+            return [];
+        }
+        const myNext = this.getNavValue(topic, 'next');
+        if (!myNext) {
+            return [];
+        }
+        const myNextNode = this.toNodeName(myNext);
+        const result: string[] = [];
+        for (const other of this.props.allEntries ?? []) {
+            if (other.uniqueName === this.props.uniqueName || isMainPageEntry(other)) {
+                continue;
+            }
+            const prev = this.getStoredNavigationFor(other, topic)?.prev;
+            if (prev && this.toNodeName(prev) === nodeName && this.toNodeName(other.uniqueName) !== myNextNode) {
+                result.push(other.uniqueName);
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Value renderer of a prev/next/parent/home select: a stored value is shown as is, an empty
+     * field shows the link the adapter resolved as a greyed, italic placeholder - it is derived
+     * from the other pages and not stored.
+     *
+     * @param field The link the select edits.
+     * @param emptyLabel What to show when neither a stored nor a resolved value exists.
+     * @returns The `renderValue` callback of the select.
+     */
+    private renderNavSelectValue(field: NavField, emptyLabel: React.ReactNode): (value: string) => React.ReactNode {
+        return (value: string): React.ReactNode => {
+            if (value) {
+                return value;
+            }
+            const resolved = this.getResolvedNavValue(this.state.selectedAddedTopic, field);
+            if (!resolved) {
+                return emptyLabel;
+            }
+            return (
+                <Tooltip title={I18n.t('nav_resolved_not_stored')}>
+                    <Typography
+                        component="span"
+                        variant="inherit"
+                        sx={{ fontStyle: 'italic', color: 'text.disabled' }}
+                    >
+                        {resolved}
+                    </Typography>
+                </Tooltip>
+            );
+        };
+    }
+
+    /**
+     * Warning lines under a prev/next select about other pages colliding with the stored link.
+     *
+     * @param field `prev` or `next`.
+     * @returns The warnings, or `null` when there are none.
+     */
+    private renderNavCollisions(field: 'prev' | 'next'): React.JSX.Element | null {
+        if (this.props.commonFields?.isMainPage) {
+            return null;
+        }
+        const topic = this.state.selectedAddedTopic;
+        const lines: string[] = [];
+        const same = this.getPagesWithSameTarget(topic, field);
+        if (same.length) {
+            lines.push(
+                I18n.t(field === 'next' ? 'nav_collision_same_next' : 'nav_collision_same_prev', same.join(', ')),
+            );
+        }
+        if (field === 'next') {
+            const pointing = this.getPagesPointingHereByPrev(topic);
+            if (pointing.length) {
+                lines.push(I18n.t('nav_collision_prev_points_here', pointing.join(', ')));
+            }
+        }
+        if (!lines.length) {
+            return null;
+        }
+        return (
+            <Box sx={{ mt: 0.5 }}>
+                {lines.map((line, idx) => (
+                    <Typography
+                        key={`${field}-collision-${idx}`}
+                        variant="caption"
+                        sx={{ display: 'block', color: 'warning.main' }}
+                    >
+                        {line}
+                    </Typography>
+                ))}
+            </Box>
+        );
+    }
 
     private async applyAssignmentsFromProps(nextAssignments: NavigationAssignmentList): Promise<void> {
         const addedPanels = (nextAssignments || [])
@@ -398,6 +770,8 @@ class NavigationAssignmentPanel extends ConfigGeneric<
             void this.loadPanels(false).then(() => {
                 void this.applyAssignmentsFromProps(nextAssignments);
             });
+            // Resolved links of the newly selected page
+            void this.loadPanelNavigation();
         } else if (
             this.props.currentAssignments &&
             !isEqual(prevProps.currentAssignments || {}, this.props.currentAssignments || {})
@@ -785,6 +1159,7 @@ class NavigationAssignmentPanel extends ConfigGeneric<
         // If expanding, re-apply assignments to ensure data is fresh
         if (wasCollapsed) {
             void this.applyAssignmentsFromProps(this.props.currentAssignments || []);
+            void this.loadPanelNavigation();
         }
     };
 
@@ -1601,21 +1976,28 @@ class NavigationAssignmentPanel extends ConfigGeneric<
                             <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1, mt: 1 }}>
                                 <Box>
                                     <Box sx={{ display: 'flex', alignItems: 'center', mb: 0.5 }}>
-                                        <Tooltip title={I18n.t('nav_prev_tooltip')}>
-                                            <Typography
-                                                variant="caption"
-                                                color="text.secondary"
-                                                sx={{ mr: 0.5 }}
-                                            >
-                                                prev
-                                            </Typography>
-                                        </Tooltip>
+                                        {this.renderNavFieldLabel(this.state.selectedAddedTopic, 'prev', 'prev', {
+                                            hint: I18n.t('nav_prev_tooltip'),
+                                            sx: { mr: 0.5 },
+                                        })}
                                     </Box>
                                     <Select
                                         size="small"
                                         displayEmpty
                                         aria-label="prev"
-                                        value={this.getNavValue(this.state.selectedAddedTopic, 'prev') || ''}
+                                        value={
+                                            lockAssignment
+                                                ? ''
+                                                : this.getNavValue(this.state.selectedAddedTopic, 'prev') || ''
+                                        }
+                                        renderValue={this.renderNavSelectValue(
+                                            'prev',
+                                            this.state.selectedAddedTopic ? (
+                                                <em>—</em>
+                                            ) : (
+                                                <em>{I18n.t('select_panel_first')}</em>
+                                            ),
+                                        )}
                                         onOpen={() => {
                                             if (this.state.selectedAddedTopic) {
                                                 void this.loadPagesForPanel(this.state.selectedAddedTopic, true);
@@ -1662,24 +2044,32 @@ class NavigationAssignmentPanel extends ConfigGeneric<
                                             </MenuItem>
                                         ))}
                                     </Select>
+                                    {this.renderNavCollisions('prev')}
                                 </Box>
                                 <Box>
                                     <Box sx={{ display: 'flex', alignItems: 'center', mb: 0.5 }}>
-                                        <Tooltip title={I18n.t('nav_next_tooltip')}>
-                                            <Typography
-                                                variant="caption"
-                                                color="text.secondary"
-                                                sx={{ mr: 0.5 }}
-                                            >
-                                                next
-                                            </Typography>
-                                        </Tooltip>
+                                        {this.renderNavFieldLabel(this.state.selectedAddedTopic, 'next', 'next', {
+                                            hint: I18n.t('nav_next_tooltip'),
+                                            sx: { mr: 0.5 },
+                                        })}
                                     </Box>
                                     <Select
                                         size="small"
                                         displayEmpty
                                         aria-label="next"
-                                        value={this.getNavValue(this.state.selectedAddedTopic, 'next') || ''}
+                                        value={
+                                            lockAssignment
+                                                ? ''
+                                                : this.getNavValue(this.state.selectedAddedTopic, 'next') || ''
+                                        }
+                                        renderValue={this.renderNavSelectValue(
+                                            'next',
+                                            this.state.selectedAddedTopic ? (
+                                                <em>—</em>
+                                            ) : (
+                                                <em>{I18n.t('select_panel_first')}</em>
+                                            ),
+                                        )}
                                         onOpen={() => {
                                             if (this.state.selectedAddedTopic) {
                                                 void this.loadPagesForPanel(this.state.selectedAddedTopic, true);
@@ -1726,20 +2116,22 @@ class NavigationAssignmentPanel extends ConfigGeneric<
                                             </MenuItem>
                                         ))}
                                     </Select>
+                                    {this.renderNavCollisions('next')}
                                 </Box>
                                 <Box>
-                                    <Typography
-                                        variant="caption"
-                                        color="text.secondary"
-                                        sx={{ mb: 0.5, display: 'block' }}
-                                    >
-                                        parent
-                                    </Typography>
+                                    {this.renderNavFieldLabel(this.state.selectedAddedTopic, 'parent', 'parent', {
+                                        sx: { mb: 0.5, display: 'block' },
+                                    })}
                                     <Select
                                         size="small"
                                         displayEmpty
                                         aria-label="parent"
-                                        value={this.getNavValue(this.state.selectedAddedTopic, 'parent') || ''}
+                                        value={
+                                            lockAssignment
+                                                ? ''
+                                                : this.getNavValue(this.state.selectedAddedTopic, 'parent') || ''
+                                        }
+                                        renderValue={this.renderNavSelectValue('parent', <em>—</em>)}
                                         onOpen={() => {
                                             if (this.state.selectedAddedTopic) {
                                                 void this.loadPagesForPanel(this.state.selectedAddedTopic, true);
@@ -1782,18 +2174,19 @@ class NavigationAssignmentPanel extends ConfigGeneric<
                                     </Select>
                                 </Box>
                                 <Box>
-                                    <Typography
-                                        variant="caption"
-                                        color="text.secondary"
-                                        sx={{ mb: 0.5, display: 'block' }}
-                                    >
-                                        home
-                                    </Typography>
+                                    {this.renderNavFieldLabel(this.state.selectedAddedTopic, 'home', 'home', {
+                                        sx: { mb: 0.5, display: 'block' },
+                                    })}
                                     <Select
                                         size="small"
                                         displayEmpty
                                         aria-label="home"
-                                        value={this.getNavValue(this.state.selectedAddedTopic, 'home') || ''}
+                                        value={
+                                            lockAssignment
+                                                ? ''
+                                                : this.getNavValue(this.state.selectedAddedTopic, 'home') || ''
+                                        }
+                                        renderValue={this.renderNavSelectValue('home', <em>—</em>)}
                                         onOpen={() => {
                                             if (this.state.selectedAddedTopic) {
                                                 void this.loadPagesForPanel(this.state.selectedAddedTopic, true);
@@ -1835,6 +2228,15 @@ class NavigationAssignmentPanel extends ConfigGeneric<
                                         ))}
                                     </Select>
                                 </Box>
+                                {lockAssignment && (
+                                    <Typography
+                                        variant="caption"
+                                        color="text.secondary"
+                                        sx={{ gridColumn: '1 / -1', display: 'block' }}
+                                    >
+                                        {I18n.t('main_page_resolved_neighbours')}
+                                    </Typography>
+                                )}
                                 <FormControlLabel
                                     control={
                                         <Checkbox
@@ -1856,15 +2258,21 @@ class NavigationAssignmentPanel extends ConfigGeneric<
                                       const hasAll: boolean = this.state.added.some(
                                           p => p.panelTopic === ALL_PANELS_SPECIAL_ID,
                                       );
-                                      const nextValue = this.getNavValue(topic, 'next');
-                                      const prevValue = this.getNavValue(topic, 'prev');
-                                      const homeValue = this.getNavValue(topic, 'home');
-                                      const parentValue = this.getNavValue(topic, 'parent');
+                                      // The stored links of a start page are invalid - the summary shows the
+                                      // neighbours the adapter resolved instead, like the fields above.
+                                      const summaryValue = (field: NavField): string =>
+                                          lockAssignment
+                                              ? this.getResolvedNavValue(topic, field)
+                                              : this.getNavValue(topic, field);
+                                      const nextValue = summaryValue('next');
+                                      const prevValue = summaryValue('prev');
+                                      const homeValue = summaryValue('home');
+                                      const parentValue = summaryValue('parent');
 
                                       const anyNavSet = !!(nextValue || prevValue || homeValue || parentValue);
 
                                       const isAllThis = topic === ALL_PANELS_SPECIAL_ID;
-                                      const showNotice = !nextValue && !prevValue;
+                                      const showNotice = !lockAssignment && !nextValue && !prevValue;
                                       const noticeKey = isAllThis
                                           ? 'nav_all_requires_prev_next'
                                           : hasAll
@@ -1905,10 +2313,12 @@ class NavigationAssignmentPanel extends ConfigGeneric<
                                                   }}
                                               >
                                                   {(['prev', 'next', 'parent', 'home'] as const).map((field, idx) => {
-                                                      const val = this.getNavValue(topic, field);
-                                                      const missing = val
-                                                          ? this.getPanelsMissingTarget(topic, val)
-                                                          : [];
+                                                      const val = summaryValue(field);
+                                                      // Resolved links come from the running adapter - they exist.
+                                                      const missing =
+                                                          val && !lockAssignment
+                                                              ? this.getPanelsMissingTarget(topic, val)
+                                                              : [];
                                                       return (
                                                           <React.Fragment key={`${topic}-${field}`}>
                                                               <Box
@@ -1918,12 +2328,11 @@ class NavigationAssignmentPanel extends ConfigGeneric<
                                                                       gap: 0.5,
                                                                   }}
                                                               >
-                                                                  <Typography
-                                                                      variant="caption"
-                                                                      color="text.secondary"
-                                                                  >
-                                                                      {I18n.t(field) || field}
-                                                                  </Typography>
+                                                                  {this.renderNavFieldLabel(
+                                                                      topic,
+                                                                      field,
+                                                                      I18n.t(field) || field,
+                                                                  )}
                                                                   {missing.length > 0 ? (
                                                                       <Tooltip
                                                                           title={I18n.t('nav_target_missing')
@@ -1936,6 +2345,20 @@ class NavigationAssignmentPanel extends ConfigGeneric<
                                                                               sx={{ fontWeight: 600 }}
                                                                           >
                                                                               {val} ⚠
+                                                                          </Typography>
+                                                                      </Tooltip>
+                                                                  ) : lockAssignment && val ? (
+                                                                      <Tooltip
+                                                                          title={I18n.t('nav_resolved_not_stored')}
+                                                                      >
+                                                                          <Typography
+                                                                              variant="body2"
+                                                                              sx={{
+                                                                                  fontStyle: 'italic',
+                                                                                  color: 'text.disabled',
+                                                                              }}
+                                                                          >
+                                                                              {val}
                                                                           </Typography>
                                                                       </Tooltip>
                                                                   ) : (
@@ -1984,6 +2407,17 @@ class NavigationAssignmentPanel extends ConfigGeneric<
                         </>
                     )}
                 </Box>
+                <Snackbar
+                    open={this.state.systemPageNoticeOpen}
+                    autoHideDuration={3000}
+                    onClose={(_event, reason) => {
+                        // a second click on the label must not close the notice again
+                        if (reason !== 'clickaway') {
+                            this.setState({ systemPageNoticeOpen: false });
+                        }
+                    }}
+                    message={I18n.t('nav_system_page_no_jump')}
+                />
             </Box>
         );
     }

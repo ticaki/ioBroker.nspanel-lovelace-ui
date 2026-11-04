@@ -793,6 +793,18 @@ export class AdminConfiguration extends BaseClass {
                 continue;
             }
 
+            // The start page has no navigation of its own: its neighbours follow from the pages
+            // that point at it (`prev: main` / `next: main`), its home would be a self link. Stored
+            // links are kept untouched - they apply again as soon as the entry is no start page.
+            if (ShareConfig.isMainPageEntry(entry)) {
+                if (navigation.prev || navigation.next || navigation.parent || navigation.home) {
+                    this.log.debug(
+                        `Page '${entry.uniqueName}' is the start page - its own navigation links are ignored.`,
+                    );
+                }
+                continue;
+            }
+
             // Apply home/parent immediately – no chain dependency
             const nav = {
                 ...navigation,
@@ -1065,8 +1077,14 @@ export class AdminConfiguration extends BaseClass {
         const prevEntry = option.navigation.find(b => b?.name === prevTarget);
         const oldRight = prevEntry?.right?.single;
 
+        // A root that names a `next` of its own keeps it (the same rule as for the inner links
+        // below): the chain only hangs on to the root by its `left`, and its end is not connected
+        // to that explicit successor either - the root's own link stays as it is.
+        const rootPending = pendingMap.get(prevTarget);
+        const rootHasExternalNext = rootPending?.next !== undefined && rootPending.next !== fullChain[0];
+
         // Wire: prevTarget.right → chain[0]
-        if (prevEntry) {
+        if (prevEntry && !rootHasExternalNext) {
             prevEntry.right = { ...(prevEntry.right ?? {}), single: fullChain[0] };
         }
         const firstEntry = option.navigation.find(b => b?.name === fullChain[0]);
@@ -1093,7 +1111,7 @@ export class AdminConfiguration extends BaseClass {
         }
 
         // Splice end: connect last chain element to the old right of prevTarget
-        if (oldRight !== undefined && !fullChain.includes(oldRight)) {
+        if (oldRight !== undefined && !rootHasExternalNext && !fullChain.includes(oldRight)) {
             const lastId = fullChain[fullChain.length - 1];
             const lastPending = pendingMap.get(lastId);
             const lastEntry = option.navigation.find(b => b?.name === lastId);
@@ -1129,7 +1147,8 @@ export class AdminConfiguration extends BaseClass {
         }
 
         processedGroups.add(prevTarget);
-        const groupChain = this.buildChainFromGroup(pageIds, pendingMap);
+        // A root naming one of its group members as `next` puts that member first.
+        const groupChain = this.buildChainFromGroup(pageIds, pendingMap, pendingMap.get(prevTarget)?.next);
         const result: string[] = [];
 
         for (const pageId of groupChain) {
@@ -1151,8 +1170,14 @@ export class AdminConfiguration extends BaseClass {
      *
      * @param pageIds - Page IDs in the group (definition order)
      * @param pendingMap - Lookup map from pageId to PendingNavEntry
+     * @param preferredStart - Page the chain starts with when it is part of the group: the explicit
+     * `next` of the page the group hangs behind
      */
-    private buildChainFromGroup(pageIds: string[], pendingMap: Map<string, PendingNavEntry>): string[] {
+    private buildChainFromGroup(
+        pageIds: string[],
+        pendingMap: Map<string, PendingNavEntry>,
+        preferredStart?: string,
+    ): string[] {
         const pageSet = new Set(pageIds);
 
         // Collect next pointers that stay within the group
@@ -1164,9 +1189,13 @@ export class AdminConfiguration extends BaseClass {
             }
         }
 
-        // Chain starts: pages not pointed to as next by any other page in the group
+        // Chain starts: pages not pointed to as next by any other page in the group. The page the
+        // root names as its `next` comes first, whatever points at it.
         const hasIncoming = new Set(nextInGroup.values());
-        const starts = pageIds.filter(id => !hasIncoming.has(id));
+        const starts = pageIds.filter(id => !hasIncoming.has(id) && id !== preferredStart);
+        if (preferredStart !== undefined && pageSet.has(preferredStart)) {
+            starts.unshift(preferredStart);
+        }
 
         const result: string[] = [];
         const visited = new Set<string>();
