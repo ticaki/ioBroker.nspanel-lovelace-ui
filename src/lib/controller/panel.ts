@@ -1818,7 +1818,9 @@ export class Panel extends BaseClass {
             t = 5000;
             if (!this.flashing) {
                 this.panelSend.resetMessageDB();
-                this.sendToPanel('pageType~pageStartup', false, true, { retain: true });
+                if (this.channel.hasReceiver?.() !== false) {
+                    this.sendToPanel('pageType~pageStartup', false, true, { retain: true });
+                }
             }
         }
         if (this.unload || this.adapter.unload) {
@@ -1826,7 +1828,9 @@ export class Panel extends BaseClass {
         }
         this.checkDisplayNotAnswering();
         // offline: offer `pageType~pageStartup` every 5 s until the panel answers with its startup event
-        // (a web panel has no Tasmota rule that repeats the startup page); online: tidy the pages now and then
+        // (a web panel has no Tasmota rule that repeats the startup page); a channel that knows nobody can
+        // receive (web panel without a browser) gets no offer, its next browser sends the startup event itself;
+        // online: tidy the pages now and then
         this.loopTimeout = this.adapter.setTimeout(() => {
             this.loop();
         }, t);
