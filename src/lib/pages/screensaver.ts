@@ -16,6 +16,45 @@ import { Color, type RGB } from '../const/Color';
 import type { NSPanel } from '../types/NSPanel';
 import { screensaverNotifyLines } from '../types/adminShareConfig';
 
+/**
+ * true for the config of a screensaver page, including cards of other adapter versions (screensaver4)
+ *
+ * @param config config of a page
+ */
+function isScreensaverConfig(
+    config: NonNullable<pages.PageBase['config']>,
+): config is pages.screensaverDataItemOptions {
+    return typeof config.card === 'string' && config.card.startsWith('screensaver');
+}
+
+/**
+ * Replaces a screensaver mode or card this adapter version does not know (branch or downgrade, e.g.
+ * `tiles`) by the standard screensaver. The page gets its own copy of the config, so the given one -
+ * and with it the stored configuration - stays as it is and the mode applies again after an upgrade.
+ * Anything else is returned untouched, a config that is no screensaver stays an error of the constructor.
+ *
+ * @param options configuration of the page
+ * @returns the page to use and, after a fallback, the rejected mode and card
+ */
+export function resolveScreensaverOptions(options: pages.PageBase): {
+    options: pages.PageBase;
+    rejected?: { mode: unknown; card: unknown };
+} {
+    const config = options.config;
+    if (!config || !isScreensaverConfig(config)) {
+        return { options };
+    }
+    const mode: unknown = config.mode;
+    const card: unknown = config.card;
+    if (globals.isScreenSaverMode(mode) && typeof card === 'string' && globals.isScreenSaverCardType(card)) {
+        return { options };
+    }
+    return {
+        options: { ...options, config: { ...config, card: 'screensaver', mode: 'standard' } },
+        rejected: { mode, card },
+    };
+}
+
 export class Screensaver extends Page {
     items: undefined;
     private step: number = 0;
@@ -35,7 +74,13 @@ export class Screensaver extends Page {
     private activeNotification: boolean = false;
     private activeNotifyId: string = '';
     //readonly mode: Types.ScreensaverModeType = 'standard';
-    constructor(config: PageInterface, options: pages.PageBase) {
+    constructor(config: PageInterface, pageOptions: pages.PageBase) {
+        const { options, rejected } = resolveScreensaverOptions(pageOptions);
+        if (rejected) {
+            config.adapter.log.warn(
+                `Screensaver '${config.name}' of panel '${config.panel.friendlyName || config.panel.name}': mode '${String(rejected.mode)}' (card '${String(rejected.card)}') is not known to this adapter version - using 'standard' instead. The stored configuration stays unchanged.`,
+            );
+        }
         if (
             !options.config ||
             (options.config.card !== 'screensaver' &&

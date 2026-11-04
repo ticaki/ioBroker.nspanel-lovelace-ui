@@ -13,6 +13,7 @@ import {
     ALL_PANELS_SPECIAL_ID,
     dropScriptNavigation,
     isMainPageEntry,
+    isPageLinkEntry,
     mainPageName,
     type NavigationAssignment,
     type NavigationLinks,
@@ -655,4 +656,138 @@ export function isNavigationApplied(
         (prevByAdmin || applied(links.prev, item.prev)) &&
         (nextByAdmin || applied(links.next, item.next))
     );
+}
+
+/** How a page points at another page: one of the four navigation links, a page link or a page item. */
+export type NavigationReferenceKind = NavigationLinkKind | 'link' | 'item';
+
+/** A page of the configuration that points at a searched page, and every way it does so. */
+export type NavigationReference = {
+    /** `uniqueName` of the page that carries the reference. */
+    uniqueName: string;
+    /** The ways this page points at the searched one, links in the order of the flow. */
+    kinds: NavigationReferenceKind[];
+};
+
+/**
+ * Every admin page that points at a page - its navigation links, a page link naming it as target
+ * and page items navigating to it.
+ *
+ * Used before a page is deleted: the deletion leaves these references behind, the adapter only
+ * warns about them in the log (`Navigation unresolved for …`). The page itself is left out, a page
+ * flagged as start page is also found under its reserved id `main`.
+ *
+ * Pages of a configuration script are not part of `entries` and therefore not found - a caller
+ * showing the result must not claim it to be complete.
+ *
+ * @param entries Page configuration (`native.pageConfig`), unsaved changes included.
+ * @param uniqueName `uniqueName` of the page the references are searched for.
+ * @returns One entry per referencing page, in the order of the configuration; empty when nothing
+ * points at the page.
+ */
+export function findNavigationReferences(
+    entries: readonly PageConfigEntry[],
+    uniqueName: string,
+): NavigationReference[] {
+    if (!uniqueName) {
+        return [];
+    }
+    const self = entries.find(e => e && e.uniqueName === uniqueName);
+    // the start page is published under its reserved id as well - a link may name either
+    const names = new Set<string>([uniqueName]);
+    if (self && isMainPageEntry(self)) {
+        names.add(mainPageName);
+    }
+    const hit = (target: string | null | undefined): boolean => !!target && names.has(target);
+    const found: NavigationReference[] = [];
+    for (const entry of entries) {
+        if (!entry || entry.uniqueName === uniqueName) {
+            continue;
+        }
+        const kinds: NavigationReferenceKind[] = [];
+        const rows = Array.isArray(entry.navigationAssignment) ? entry.navigationAssignment : [];
+        for (const kind of navigationLinkKinds) {
+            if (rows.some(row => row && hit(row.navigation?.[kind]))) {
+                kinds.push(kind);
+            }
+        }
+        if (isPageLinkEntry(entry) && hit(entry.target)) {
+            kinds.push('link');
+        }
+        const items = 'pageItems' in entry && Array.isArray(entry.pageItems) ? entry.pageItems : [];
+        if (items.some(item => item && (hit(item.targetPage) || hit(item.targetPageLongPress)))) {
+            kinds.push('item');
+        }
+        if (kinds.length) {
+            found.push({ uniqueName: entry.uniqueName, kinds });
+        }
+    }
+    return found;
+}
+
+/** The two links the chain of a panel is built from. */
+const chainLinkKinds: readonly NavigationLinkKind[] = ['prev', 'next'];
+
+/**
+ * Closes the gap a deleted page leaves in the prev/next chains: every page that points at it takes
+ * over its link of the same kind, so `A -> B -> C` becomes `A -> C` when B goes.
+ *
+ * Call this **before** the page is removed from the configuration - the links of the page to be
+ * deleted are the ones that get handed over. Per assignment row, so every panel keeps its own
+ * chain; the links of the deleted page are read with the rules of the adapter
+ * ({@link effectiveNavigation}), which means a panel row falls back to the "all panels" row.
+ *
+ * A link that cannot be handed over is removed instead of being left pointing at a page that no
+ * longer exists: when the deleted page has no link of that kind on this panel, is not assigned to
+ * it, or when the handover would make the page point at itself.
+ *
+ * Only prev/next are touched. home/parent name a destination, not a neighbour - there is nothing
+ * to close there, and a page of a configuration script cannot be reached from here at all (it is
+ * edited through `native.navigationOverrides`).
+ *
+ * @param entries Page configuration (`native.pageConfig`), still containing the page to delete.
+ * @param uniqueName `uniqueName` of the page that is about to be deleted.
+ * @returns The updated configuration, or `entries` itself when no chain had to be closed.
+ */
+export function closeNavigationChain(entries: PageConfigEntry[], uniqueName: string): PageConfigEntry[] {
+    const removed = entries.find(e => e && e.uniqueName === uniqueName);
+    if (!removed) {
+        return entries;
+    }
+    // the start page is published under its reserved id as well - a link may name either
+    const names = new Set<string>([uniqueName]);
+    if (isMainPageEntry(removed)) {
+        names.add(mainPageName);
+    }
+    let result = entries;
+    for (const entry of entries) {
+        if (!entry || entry.uniqueName === uniqueName || !Array.isArray(entry.navigationAssignment)) {
+            continue;
+        }
+        for (const row of entry.navigationAssignment) {
+            if (!row?.navigation) {
+                continue;
+            }
+            const scope: NavigationEditScope = row.topic === ALL_PANELS_SPECIAL_ID ? 'all' : 'panel';
+            const handedOver = effectiveNavigation(removed, row.topic) ?? {};
+            for (const kind of chainLinkKinds) {
+                const current = row.navigation[kind];
+                if (!current || !names.has(current)) {
+                    continue;
+                }
+                let target = handedOver[kind] || undefined;
+                // the neighbour must not end up pointing at itself or at the page that goes away
+                if (
+                    target &&
+                    (names.has(target) ||
+                        target === entry.uniqueName ||
+                        (target === mainPageName && isMainPageEntry(entry)))
+                ) {
+                    target = undefined;
+                }
+                result = setNavigationLink(result, entry.uniqueName, row.topic, kind, target, scope);
+            }
+        }
+    }
+    return result;
 }

@@ -38,6 +38,7 @@
 - [Page QR](PageQR)  
 - [Page Power](PagePower)  
 - [Page Chart](PageChart)
+- [Page PChart (Kreisdiagramm)](PagePChart)
 - [Page Alarm](PageAlarm) iA
 - [Page Media](PageMedia)   
 - [Page Thermo2](PageThermo2) 

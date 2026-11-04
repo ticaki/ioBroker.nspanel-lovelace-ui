@@ -282,6 +282,7 @@ class Page extends import_baseClassPage.BaseClassPage {
       //case 'cardBurnRec':
       case "cardChart":
       case "cardLChart":
+      case "cardPChart":
       case "cardThermo":
         forceSend = true;
       //@disable-next-line no-fallthrough

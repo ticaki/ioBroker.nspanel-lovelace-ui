@@ -9,10 +9,12 @@ import type {
     PowerEntry,
     UnlockEntry,
 } from '../../src/lib/types/adminShareConfig';
+import { closeNavigationChain } from '../../src/lib/types/navigationEdit';
 import {
     ADAPTER_NAME,
     dropScriptNavigation,
     emptyChartEntry,
+    emptyPChartEntry,
     emptyThermo2Entry,
     emptyThermoEntry,
     emptyMediaEntry,
@@ -38,6 +40,7 @@ import { PageQREditor } from './components/PageQREditor';
 import { PageTrashEditor } from './components/PageTrashEditor';
 import { takeRequestedPageConfig } from './pageConfigLink';
 import { PageChartEditor } from './components/PageChartEditor';
+import { PagePChartEditor } from './components/PagePChartEditor';
 import { PageThermo2Editor } from './components/PageThermo2Editor';
 import { PageThermoEditor } from './components/PageThermoEditor';
 import { PageMediaEditor } from './components/PageMediaEditor';
@@ -380,6 +383,8 @@ class PageConfigManager extends ConfigGeneric<ConfigGenericProps & { theme?: any
             } satisfies PowerEntry;
         } else if (cardType === 'cardChart') {
             newEntry = emptyChartEntry(name);
+        } else if (cardType === 'cardPChart') {
+            newEntry = emptyPChartEntry(name);
         } else if (cardType === 'cardThermo2') {
             newEntry = emptyThermo2Entry(name);
         } else if (cardType === 'cardThermo') {
@@ -413,8 +418,16 @@ class PageConfigManager extends ConfigGeneric<ConfigGenericProps & { theme?: any
         this.checkAlarmButtons(updated);
     };
 
-    private handleDelete = (name: string): void => {
-        const updated = this.state.entries.filter(e => e.uniqueName !== name);
+    /**
+     * Deletes a page. With `closeChain` the pages that swipe to it take over its prev/next first,
+     * so the chain of every panel closes instead of ending at a page that no longer exists.
+     *
+     * @param name `uniqueName` of the page.
+     * @param closeChain Whether the prev/next gap is closed, asked in the confirmation.
+     */
+    private handleDelete = (name: string, closeChain: boolean): void => {
+        const entries = closeChain ? closeNavigationChain(this.state.entries, name) : this.state.entries;
+        const updated = entries.filter(e => e.uniqueName !== name);
         this.setState({ entries: updated } as PageConfigManagerState);
         void this.onChange(this.props.attr, updated);
         this.checkAlarmButtons(updated);
@@ -462,27 +475,6 @@ class PageConfigManager extends ConfigGeneric<ConfigGenericProps & { theme?: any
         this.setState({ entries: updated } as PageConfigManagerState);
         void this.onChange(this.props.attr, updated);
         this.checkAlarmButtons(updated);
-    };
-
-    private handleUniqueNameChange = (oldName: string, newName: string): void => {
-        if (!newName.trim()) {
-            return;
-        }
-        // 'main' is reserved: the start page is set via the checkbox in the navigation assignment,
-        // otherwise its checks could be bypassed by renaming a page afterwards.
-        if (newName.trim() === mainPageName) {
-            return;
-        }
-        // links follow their renamed target
-        const updated = this.state.entries.map(it =>
-            it.uniqueName === oldName
-                ? { ...it, uniqueName: newName }
-                : isPageLinkEntry(it) && it.target === oldName
-                  ? { ...it, target: newName }
-                  : it,
-        );
-        this.setState({ entries: updated, selected: newName } as PageConfigManagerState);
-        void this.onChange(this.props.attr, updated);
     };
 
     /**
@@ -555,7 +547,6 @@ class PageConfigManager extends ConfigGeneric<ConfigGenericProps & { theme?: any
                     entries={entries}
                     alive={this.state.alive}
                     onEntryChange={this.handleEntryChange}
-                    onUniqueNameChange={this.handleUniqueNameChange}
                     onSelectPage={this.handleSelectPage}
                     getText={key => this.getText(key)}
                 />
@@ -569,7 +560,6 @@ class PageConfigManager extends ConfigGeneric<ConfigGenericProps & { theme?: any
                     entry={currentEntry}
                     pagesList={pagesList}
                     onEntryChange={this.handleEntryChange}
-                    onUniqueNameChange={this.handleUniqueNameChange}
                     getText={key => this.getText(key)}
                     oContext={this.props.oContext}
                     theme={this.props.theme}
@@ -589,7 +579,6 @@ class PageConfigManager extends ConfigGeneric<ConfigGenericProps & { theme?: any
                     {...this.props}
                     entry={currentEntry}
                     onEntryChange={this.handleEntryChange}
-                    onUniqueNameChange={this.handleUniqueNameChange}
                     getText={key => this.getText(key)}
                     oContext={this.props.oContext}
                     panels={Array.isArray(this.props.data?.panels) ? this.props.data.panels : []}
@@ -606,7 +595,6 @@ class PageConfigManager extends ConfigGeneric<ConfigGenericProps & { theme?: any
                     {...this.props}
                     entry={currentEntry}
                     onEntryChange={this.handleEntryChange}
-                    onUniqueNameChange={this.handleUniqueNameChange}
                     getText={key => this.getText(key)}
                     oContext={this.props.oContext}
                     theme={this.props.theme}
@@ -620,7 +608,6 @@ class PageConfigManager extends ConfigGeneric<ConfigGenericProps & { theme?: any
                     {...this.props}
                     entry={currentEntry}
                     onEntryChange={this.handleEntryChange}
-                    onUniqueNameChange={this.handleUniqueNameChange}
                     getText={key => this.getText(key)}
                     oContext={this.props.oContext}
                     theme={this.props.theme}
@@ -634,7 +621,6 @@ class PageConfigManager extends ConfigGeneric<ConfigGenericProps & { theme?: any
                     {...this.props}
                     entry={currentEntry}
                     onEntryChange={this.handleEntryChange}
-                    onUniqueNameChange={this.handleUniqueNameChange}
                     theme={this.props.theme}
                     themeType={this.props.oContext?.themeType}
                 />
@@ -647,7 +633,19 @@ class PageConfigManager extends ConfigGeneric<ConfigGenericProps & { theme?: any
                     {...this.props}
                     entry={currentEntry}
                     onEntryChange={this.handleEntryChange}
-                    onUniqueNameChange={this.handleUniqueNameChange}
+                    getText={key => this.getText(key)}
+                    oContext={this.props.oContext}
+                    theme={this.props.theme}
+                />
+            );
+        }
+
+        if (currentEntry.card === 'cardPChart') {
+            return (
+                <PagePChartEditor
+                    {...this.props}
+                    entry={currentEntry}
+                    onEntryChange={this.handleEntryChange}
                     getText={key => this.getText(key)}
                     oContext={this.props.oContext}
                     theme={this.props.theme}
@@ -661,7 +659,6 @@ class PageConfigManager extends ConfigGeneric<ConfigGenericProps & { theme?: any
                     {...this.props}
                     entry={currentEntry}
                     onEntryChange={this.handleEntryChange}
-                    onUniqueNameChange={this.handleUniqueNameChange}
                     getText={key => this.getText(key)}
                     oContext={this.props.oContext}
                     theme={this.props.theme}
@@ -677,7 +674,6 @@ class PageConfigManager extends ConfigGeneric<ConfigGenericProps & { theme?: any
                     {...this.props}
                     entry={currentEntry}
                     onEntryChange={this.handleEntryChange}
-                    onUniqueNameChange={this.handleUniqueNameChange}
                     getText={key => this.getText(key)}
                     oContext={this.props.oContext}
                     theme={this.props.theme}
@@ -691,7 +687,6 @@ class PageConfigManager extends ConfigGeneric<ConfigGenericProps & { theme?: any
                     {...this.props}
                     entry={currentEntry}
                     onEntryChange={this.handleEntryChange}
-                    onUniqueNameChange={this.handleUniqueNameChange}
                     getText={key => this.getText(key)}
                     oContext={this.props.oContext}
                     theme={this.props.theme}

@@ -43,10 +43,30 @@ export class VirtualPanelChannel extends BaseClass implements PanelChannel {
     private subscriptions: { filter: string; callback: callbackMessageType }[] = [];
     private commandListeners: VirtualChannelListener[] = [];
     private buzzerListeners: VirtualChannelListener[] = [];
+    private receiverConnected: boolean = false;
 
     constructor(adapter: AdapterClassDefinition, topic: string, name: string = '') {
         super(adapter, name || `VirtualChannel-${topic}`);
         this.topic = topic;
+    }
+
+    /**
+     * Is a browser connected to this channel?
+     *
+     * @returns true if at least one browser is connected
+     */
+    hasReceiver(): boolean {
+        return this.receiverConnected;
+    }
+
+    /**
+     * Set by the manager whenever a browser connects or goes away. The state lives here because
+     * the channel of a standalone web panel survives a panel reload.
+     *
+     * @param connected true if at least one browser is connected
+     */
+    setReceiverConnected(connected: boolean): void {
+        this.receiverConnected = connected;
     }
 
     onCommand(listener: VirtualChannelListener): void {

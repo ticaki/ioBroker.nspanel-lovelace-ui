@@ -56,7 +56,6 @@ type Grid2ModelStatus = 'all-usp' | 'none-usp' | 'conflict' | 'unknown';
 export interface PageMenuEditorProps {
     entry: MenuEntry;
     onEntryChange: (updated: MenuEntry) => void;
-    onUniqueNameChange: (oldName: string, newName: string) => void;
     getText: (key: string) => string;
     oContext: any;
     theme?: IobTheme;
@@ -989,17 +988,17 @@ export class PageMenuEditor extends ConfigGeneric<ConfigGenericProps & PageMenuE
                         type="text"
                         label={this.getText('unique_label')}
                         value={entry.uniqueName}
-                        onChange={e => {
-                            const newUniqueName = e.target.value;
-                            if (newUniqueName.trim()) {
-                                this.props.onUniqueNameChange(entry.uniqueName, newUniqueName);
-                            }
-                        }}
                         slotProps={{
-                            input: { sx: { backgroundColor: 'transparent', px: 1, fontWeight: 600, width: '50%' } },
+                            input: {
+                                readOnly: true,
+                                sx: { backgroundColor: 'transparent', px: 1, fontWeight: 600, width: '50%' },
+                            },
                         }}
-                        disabled={!this.state.alive || isMainPageEntry(entry)}
-                        helperText={isMainPageEntry(entry) ? this.getText('page_name_main_locked') : undefined}
+                        helperText={
+                            isMainPageEntry(entry)
+                                ? this.getText('page_name_main_locked')
+                                : this.getText('page_name_locked')
+                        }
                     />
                 </Box>
 

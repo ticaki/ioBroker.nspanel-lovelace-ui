@@ -231,7 +231,8 @@ export type PageOthersConfigs =
     | cardNotifyDataItemOptions
     | cardPopup2DataItemOptions
     | cardQRDataItemOptions
-    | cardChartDataItemOptions;
+    | cardChartDataItemOptions
+    | cardChartPieDataItemOptions;
 
 type PageBaseTemplate = {
     uniqueID: string;
@@ -267,7 +268,8 @@ export type PageBase = (
         | cardAlarmDataItems
         | cardPopupDataItems
         | cardQRDataItems
-        | cardChartDataItems;
+        | cardChartDataItems
+        | cardChartPieDataItems;
 };
 
 export type PageBaseConfigTemplate = {
@@ -371,6 +373,41 @@ export type cardChartDataItemOptions = {
 export type cardChartDataItems = {
     card: Extract<AdminCardTypes, 'cardChart' | 'cardLChart'>;
     data: ChangeTypeOfKeys<PageChartConfig, dataItem.Dataitem | undefined>;
+};
+
+/** one slice of the pie chart (slot source): the state with the number plus name, unit and color */
+export type PageChartPieSliceConfig = {
+    /** legend name; missing = common.name of the value state */
+    name: string;
+    /** numeric state; `triggered` for the current value, `state` (no trigger) when averaged over a range */
+    value: string;
+    /** unit behind the value text; missing = common.unit of the value state */
+    unit: string;
+    /** hex color, sent as RGB565 */
+    color: string;
+};
+
+type PageChartPieConfig = {
+    headline: string;
+    /** legend of the panel 0-3, see PChartEntry.legendMode */
+    legendMode: number;
+    /** decimal places of the value text */
+    decimals: number;
+    /** script source: state a script writes `Name~Number~Value text~Color~…` into */
+    value?: string;
+    /** slot source: the configured slices in legend order */
+    slices?: PageChartPieSliceConfig[];
+    /** slot source averaged over a range: JSON string of PChartDetailsExternal (instance, hours) */
+    dbData?: string;
+};
+
+export type cardChartPieDataItemOptions = {
+    card: Extract<AdminCardTypes, 'cardPChart'>;
+    data: ChangeTypeOfKeys<PageChartPieConfig, NSPanel.DataItemsOptions | undefined>;
+};
+export type cardChartPieDataItems = {
+    card: Extract<AdminCardTypes, 'cardPChart'>;
+    data: ChangeTypeOfKeys<PageChartPieConfig, dataItem.Dataitem | undefined>;
 };
 
 type PageAlarmConfig = {

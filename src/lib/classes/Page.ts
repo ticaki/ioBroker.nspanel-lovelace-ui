@@ -302,6 +302,7 @@ export class Page extends BaseClassPage {
             //case 'cardBurnRec':
             case 'cardChart':
             case 'cardLChart':
+            case 'cardPChart':
             case 'cardThermo':
                 forceSend = true;
             //@disable-next-line no-fallthrough

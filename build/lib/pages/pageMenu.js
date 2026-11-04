@@ -78,6 +78,7 @@ class PageMenu extends import_Page.Page {
           break;
         case "cardChart":
         case "cardLChart":
+        case "cardPChart":
         case "cardThermo":
         case "cardQR":
         case "cardAlarm":

@@ -23,6 +23,7 @@ describe('registry', () => {
             'cardPower',
             'cardChart',
             'cardLChart',
+            'cardPChart',
             'popupLight',
             'popupLightNew',
             'popupShutter',

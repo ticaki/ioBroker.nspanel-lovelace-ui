@@ -36,7 +36,8 @@ var __privateAdd = (obj, member, value) => member.has(obj) ? __typeError("Cannot
 var __privateMethod = (obj, member, method) => (__accessCheck(obj, member, "access private method"), method);
 var screensaver_exports = {};
 __export(screensaver_exports, {
-  Screensaver: () => Screensaver
+  Screensaver: () => Screensaver,
+  resolveScreensaverOptions: () => resolveScreensaverOptions
 });
 module.exports = __toCommonJS(screensaver_exports);
 var Definition = __toESM(require("../const/definition"));
@@ -48,10 +49,34 @@ var import_pageItem = require("./pageItem");
 var import_Color = require("../const/Color");
 var import_adminShareConfig = require("../types/adminShareConfig");
 var _Screensaver_instances, sendNotify_fn;
+function isScreensaverConfig(config) {
+  return typeof config.card === "string" && config.card.startsWith("screensaver");
+}
+function resolveScreensaverOptions(options) {
+  const config = options.config;
+  if (!config || !isScreensaverConfig(config)) {
+    return { options };
+  }
+  const mode = config.mode;
+  const card = config.card;
+  if (globals.isScreenSaverMode(mode) && typeof card === "string" && globals.isScreenSaverCardType(card)) {
+    return { options };
+  }
+  return {
+    options: { ...options, config: { ...config, card: "screensaver", mode: "standard" } },
+    rejected: { mode, card }
+  };
+}
 const _Screensaver = class _Screensaver extends import_Page.Page {
   //readonly mode: Types.ScreensaverModeType = 'standard';
-  constructor(config, options) {
+  constructor(config, pageOptions) {
     var _a, _b;
+    const { options, rejected } = resolveScreensaverOptions(pageOptions);
+    if (rejected) {
+      config.adapter.log.warn(
+        `Screensaver '${config.name}' of panel '${config.panel.friendlyName || config.panel.name}': mode '${String(rejected.mode)}' (card '${String(rejected.card)}') is not known to this adapter version - using 'standard' instead. The stored configuration stays unchanged.`
+      );
+    }
     if (!options.config || options.config.card !== "screensaver" && options.config.card !== "screensaver2" && options.config.card !== "screensaver3" && options.config.card !== "screensaver4") {
       config.adapter.log.error(
         `Invalid card for screensaver: ${options ? JSON.stringify(options) : "undefined"}`
@@ -712,6 +737,7 @@ __publicField(_Screensaver, "minUpdateInterval", 3e3);
 let Screensaver = _Screensaver;
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
-  Screensaver
+  Screensaver,
+  resolveScreensaverOptions
 });
 //# sourceMappingURL=screensaver.js.map
