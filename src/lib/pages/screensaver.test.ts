@@ -1,6 +1,8 @@
 import { expect } from 'chai';
-import { Screensaver } from './screensaver';
+import { resolveScreensaverOptions, Screensaver } from './screensaver';
 import type * as Types from '../types/types';
+import type * as pages from '../types/pages';
+import type { PageInterface } from '../classes/PageInterface';
 
 /**
  * A tap on an indicator of the screensaver: the panel calls `onPopupRequest` first and then
@@ -105,5 +107,145 @@ describe('lib/pages/screensaver - indicator tap', () => {
 
         expect(f.commands).to.deep.equal(['12:brightnessSlider:50']);
         expect(f.writes).to.deep.equal([]);
+    });
+});
+
+describe('lib/pages/screensaver - mode of another adapter version', () => {
+    type Logs = { warn: string[]; error: string[] };
+
+    // page configuration as it comes from the admin or a stored script - the mode is deliberately not typed
+    const pageOf = (mode: string | undefined, card: string = 'screensaver'): pages.PageBase =>
+        ({
+            uniqueID: 'scr-admin',
+            alwaysOn: 'none',
+            pageItems: [],
+            config: {
+                card,
+                mode,
+                rotationTime: 60,
+                model: 'eu',
+                data: undefined,
+                screensaverSwipe: true,
+                screensaverIndicatorButtons: false,
+            },
+        }) as unknown as pages.PageBase;
+
+    const construct = (page: pages.PageBase): { saver: Screensaver; logs: Logs } => {
+        const logs: Logs = { warn: [], error: [] };
+        const adapter = {
+            controller: {},
+            library: {},
+            log: {
+                warn: (msg: string): void => void logs.warn.push(msg),
+                error: (msg: string): void => void logs.error.push(msg),
+            },
+        };
+        const config = {
+            card: 'screensaver',
+            id: '0',
+            name: 'scr-admin',
+            dpInit: '',
+            adapter,
+            panel: { name: 'ns_panel4', friendlyName: 'Panel 4' },
+        } as unknown as PageInterface;
+        return { saver: new Screensaver(config, page), logs };
+    };
+
+    // page item that sits in a place of the screensaver and sends its index as payload
+    const placeItem = (place: string, index: number): any => ({
+        config: { modeScr: place },
+        dataItems: {},
+        isEnabled: async (): Promise<boolean> => Promise.resolve(true),
+        getPageItemPayload: async (): Promise<string> => Promise.resolve(`~~icon${index}~~text${index}~`),
+    });
+
+    it('falls back to standard with card screensaver and warns once for an unknown mode', () => {
+        const { saver, logs } = construct(pageOf('tiles'));
+
+        expect(saver.mode).to.equal('standard');
+        expect(saver.card).to.equal('screensaver');
+        expect(saver.config?.card).to.equal('screensaver');
+        expect(logs.warn).to.have.length(1);
+        expect(logs.warn[0]).to.include("'tiles'").and.include("'standard'").and.include('Panel 4');
+        expect(logs.error).to.deep.equal([]);
+    });
+
+    it('also takes a stored card of another version', () => {
+        const { saver, logs } = construct(pageOf('tiles', 'screensaver4'));
+
+        expect(saver.mode).to.equal('standard');
+        expect(saver.card).to.equal('screensaver');
+        expect(logs.warn).to.have.length(1);
+        expect(logs.warn[0]).to.include("'screensaver4'");
+        expect(logs.error).to.deep.equal([]);
+    });
+
+    it('falls back when the mode is missing', () => {
+        const { saver, logs } = construct(pageOf(undefined));
+
+        expect(saver.mode).to.equal('standard');
+        expect(logs.warn).to.have.length(1);
+    });
+
+    it('keeps the other settings but leaves the given configuration untouched', () => {
+        const page = pageOf('tiles', 'screensaver4');
+        const before = structuredClone(page);
+        const { saver } = construct(page);
+
+        expect(page).to.deep.equal(before);
+        expect(saver.rotationTime).to.equal(60_000);
+        expect(saver.screensaverSwipe).to.equal(true);
+
+        // a later switch of the running layout must not reach the stored object either
+        saver.overwriteModel(2, true);
+        expect(saver.mode).to.equal('advanced');
+        expect(page).to.deep.equal(before);
+    });
+
+    for (const [mode, card] of [
+        ['standard', 'screensaver'],
+        ['alternate', 'screensaver'],
+        ['advanced', 'screensaver2'],
+        ['easyview', 'screensaver3'],
+    ]) {
+        it(`keeps the known mode ${mode}`, () => {
+            const page = pageOf(mode, card);
+            const { saver, logs } = construct(page);
+
+            expect(saver.mode).to.equal(mode);
+            expect(saver.card).to.equal(card);
+            expect(saver.config).to.equal(page.config);
+            expect(logs.warn).to.deep.equal([]);
+            expect(resolveScreensaverOptions(page).options).to.equal(page);
+        });
+    }
+
+    it('stays an error without a config or for a card that is no screensaver', () => {
+        const noConfig = { uniqueID: 'x', alwaysOn: 'none', pageItems: [] } as unknown as pages.PageBase;
+        const grid = pageOf('tiles', 'cardGrid');
+
+        expect(resolveScreensaverOptions(noConfig).rejected).to.equal(undefined);
+        expect(resolveScreensaverOptions(grid).rejected).to.equal(undefined);
+        expect(resolveScreensaverOptions(grid).options).to.equal(grid);
+    });
+
+    it('builds a message without errors when more items exist than the standard layout has places', async () => {
+        const { saver } = construct(pageOf('tiles'));
+        // what a tiles screensaver holds: 5 bottom items and 7 indicators, standard has 4 and 0 places
+        const items: any[] = [];
+        for (let i = 0; i < 5; i++) {
+            items.push(placeItem('bottom', i));
+        }
+        for (let i = 5; i < 12; i++) {
+            items.push(placeItem('indicator', i));
+        }
+        saver.pageItems = items;
+
+        const message = await saver.getData(['bottom', 'indicator', 'left', 'alternate', 'favorit']);
+
+        expect(message?.options.bottom).to.have.length(4);
+        expect(message?.options.bottom[0]).to.include('icon0');
+        expect(message?.options.indicator).to.deep.equal([]);
+        expect(message?.options.left).to.deep.equal([]);
     });
 });

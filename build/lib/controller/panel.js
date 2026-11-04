@@ -1549,13 +1549,16 @@ class Panel extends import_library.BaseClass {
     }, 200);
   }
   loop = () => {
+    var _a, _b;
     this.pages = this.pages.filter((a) => a && !a.unload);
     let t = Math.random() * 3e4 + 1e4;
     if (!this.isOnline) {
       t = 5e3;
       if (!this.flashing) {
         this.panelSend.resetMessageDB();
-        this.sendToPanel("pageType~pageStartup", false, true, { retain: true });
+        if (((_b = (_a = this.channel).hasReceiver) == null ? void 0 : _b.call(_a)) !== false) {
+          this.sendToPanel("pageType~pageStartup", false, true, { retain: true });
+        }
       }
     }
     if (this.unload || this.adapter.unload) {

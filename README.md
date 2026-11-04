@@ -160,7 +160,9 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
 -->
 ### **WORK IN PROGRESS**
 - (ticaki) admin page navigation: a page flagged as start page no longer carries a prev/next/parent of its own - its neighbours follow from the pages pointing at it (the stored values are kept and apply again once the flag is removed); an explicit `next` of a page is no longer overwritten when other pages chain in behind it; the admin shows the neighbours the adapter resolved as greyed placeholders in empty prev/next/parent/home fields and warns when other pages store the same prev/next or point at the page with their prev while its next leads elsewhere
+- (ticaki) screensaver: a mode this adapter version does not know (e.g. after a downgrade) no longer breaks the screensaver - it falls back to `standard` with a warning in the log, the stored configuration stays unchanged
 - (ticaki) cardPChart: new page type "Pie chart" in the PageConfig tab (TFT 6.0.5, EU panel) - up to five slices (the legend of HMI 6.0.5 has five rows) from numeric states with name, unit and color, legend mode and decimals; optionally the average over a time range (rolling: 1 h, 24 h, 7 d, 30 d, custom hours; calendar: today, yesterday, this/last week, this/last month) read from a history/sql/influxdb instance; alternatively a script data point with the finished panel text, more than five entries are summed up as "Other"; the web panel renders the card as well
+- (ticaki) web panel: without a connected browser the panel no longer offers the startup page every 5 s, which only filled the debug log
 - (tt-tom17) cardThermo: the set temperature reached the panel multiplied by the step width (19.0 °C became 79.0 °C with the usual step of 0.5 °C) - only a step of 0.1 °C was unaffected
 - (ticaki) Tasmota update and the Tasmota update indicator use the `tasmota-beta` version when the beta option is enabled; the beta option label in the admin no longer refers to TFT only
 - (ticaki) admin screensaver: uniform, larger paging arrows for all areas except favorit (the scroll bar for weather items is gone, weather items are paged like the panel does); the alternate area can hold several items the panel rotates through
@@ -168,6 +170,9 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
 - (ticaki) admin screensaver: items of areas the chosen version does not show are no longer reported as a problem or offered for removal - the version can change at runtime (`cmd.screenSaver.layout`)
 - (tt-tom17) cardThermo2: the humidity row uses the unit configured for it, and the unit of the first row now also applies to the set temperature - the admin offers both fields, the adapter read only the first one
 - (tt-tom17) admin: the two hardware button buttons of a panel tile now sit one below the other, and their colour also shows whether the relay is decoupled - with a tooltip naming the state
+- (tt-tom17) cardQR: a page with the encryption "No Password" (or a free text, url or telephone code) no longer carries the stored wifi password to the panel - it was shown in clear text on the card and was part of the scanned code
+- (tt-tom17) cardAlarm: the disarm buttons (columns 5 to 8) were only taken over when the arm button of the same row was filled, so a page with the disarm column alone showed no button at all
+- (tt-tom17) cardAlarm: a new page starts as an alarm system with the buttons "Arm" and "Disarm" filled in, and the top button of both columns is mandatory - without them the card has no button at all in one of its two states and cannot be left; the type "unlock" still needs one button only
 
 ### 2.0.2 (2026-11-01)
 - (ticaki) admin: page item text size shows the pixel size of each font; icons only offer fonts 1, 3 and 4 (the others have no icons), font 5 is marked "ASCII only"

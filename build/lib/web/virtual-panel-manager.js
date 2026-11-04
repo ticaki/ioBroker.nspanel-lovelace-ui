@@ -176,6 +176,7 @@ class VirtualPanelManager extends import_library.BaseClass {
       panel.panelSend.resetMessageDB();
     }
     entry.clients.add(client);
+    entry.channel.setReceiverConnected(entry.clients.size > 0);
     client.send({
       t: "hello",
       model: panel.info.nspanel.model,
@@ -198,6 +199,7 @@ class VirtualPanelManager extends import_library.BaseClass {
     if (!entry.clients.delete(client)) {
       return;
     }
+    entry.channel.setReceiverConnected(entry.clients.size > 0);
     if (entry.clients.size > 0 || this.unload || this.adapter.unload) {
       return;
     }

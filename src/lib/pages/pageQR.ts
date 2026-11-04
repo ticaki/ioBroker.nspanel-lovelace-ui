@@ -63,6 +63,7 @@ export class PageQR extends Page {
         const selType = (await this.items.data.selType?.getNumber()) ?? 0;
         const ssidurltel = (await this.items.data.ssidUrlTel?.getString()) ?? '';
         const password = (await this.items.data.password?.getString()) ?? '';
+        const wlantype = (await this.items.data.wlantype?.getString()) ?? 'WPA';
 
         let text1 = '';
         let text = '';
@@ -123,8 +124,8 @@ export class PageQR extends Page {
         let text1Second = '';
         let textSecond = '';
 
-        if (selType == 1) {
-            // WIFI - show password
+        if (selType == 1 && wlantype !== 'nopass') {
+            // WIFI with an encryption - show the password
             text1Second = password;
             textSecond = 'Password';
         }
@@ -220,7 +221,8 @@ export class PageQR extends Page {
                     break;
                 case 1: {
                     this.log.debug(`qrType = wifi`);
-                    const pass = password;
+                    // an open network has no password - neither on the card nor inside the code
+                    const pass = wlantype === 'nopass' ? '' : password;
                     message.textQR = `WIFI:T:${wlantype};S:${ssidurltel};P:${pass};${wlanhidden ? `H:${wlanhidden}` : `H:`};`;
                     message.optionalValue1 = ssidurltel;
                     break;
