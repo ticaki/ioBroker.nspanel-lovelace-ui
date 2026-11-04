@@ -7,6 +7,7 @@ import type {
     MenuEntry,
     AdminPanelConfig,
     PowerEntry,
+    UnlockEntry,
 } from '../../src/lib/types/adminShareConfig';
 import {
     ADAPTER_NAME,
@@ -120,6 +121,8 @@ class PageConfigManager extends ConfigGeneric<ConfigGenericProps & { theme?: any
         }
         // Panel-Objekt-Subscriptions für navigationNodes (einmalig beim Mount)
         await this.updatePanelObjectSubscriptions();
+        // a configuration that already lost a top button must not be saved again unnoticed
+        this.checkAlarmButtons(this.state.entries);
     }
 
     componentDidUpdate(prevProps: Readonly<ConfigGenericProps & { theme?: any }>): void {
@@ -318,15 +321,18 @@ class PageConfigManager extends ConfigGeneric<ConfigGenericProps & { theme?: any
         let newEntry: PageConfigEntry;
 
         if (cardType === 'cardAlarm') {
+            // an alarm system is the common case and needs both top buttons from the start,
+            // otherwise the new page stays without any button in one of its two states
             newEntry = {
                 card: 'cardAlarm',
                 uniqueName: name,
                 headline: name,
-                button1: '',
+                alarmType: 'alarm',
+                button1: this.getText('unlock_button_default_arm'),
                 button2: '',
                 button3: '',
                 button4: '',
-                button5: '',
+                button5: this.getText('unlock_button_default_disarm'),
                 button6: '',
                 button7: '',
                 button8: '',
@@ -408,12 +414,14 @@ class PageConfigManager extends ConfigGeneric<ConfigGenericProps & { theme?: any
         const updated = [...this.state.entries, newEntry];
         this.setState({ entries: updated } as PageConfigManagerState);
         void this.onChange(this.props.attr, updated);
+        this.checkAlarmButtons(updated);
     };
 
     private handleDelete = (name: string): void => {
         const updated = this.state.entries.filter(e => e.uniqueName !== name);
         this.setState({ entries: updated } as PageConfigManagerState);
         void this.onChange(this.props.attr, updated);
+        this.checkAlarmButtons(updated);
 
         const filteredAfterDelete = filterEntriesByCardType(updated, this.state.selectedCardType);
 
@@ -429,10 +437,35 @@ class PageConfigManager extends ConfigGeneric<ConfigGenericProps & { theme?: any
         void this.onChange(this.props.attr, updated);
     };
 
+    /**
+     * Blocks saving while an alarm system misses one of its two top buttons.
+     *
+     * The panel shows `button1` while the page is disarmed and `button5` while it is armed. Without
+     * them the card has no button at all in that state and the user cannot leave it, so the empty
+     * field is reported to the admin and the save button stays disabled. Type `unlock` needs one
+     * button only and is not checked.
+     *
+     * @param entries Current page configuration.
+     */
+    private checkAlarmButtons(entries: PageConfigEntry[]): void {
+        const broken = entries.find(
+            entry =>
+                entry.card === 'cardAlarm' &&
+                (entry as UnlockEntry).alarmType === 'alarm' &&
+                (!(entry as UnlockEntry).button1 || !(entry as UnlockEntry).button5),
+        );
+        if (broken) {
+            this.props.onError(this.props.attr, this.getText('unlock_buttons_required'));
+        } else {
+            this.props.onError(this.props.attr);
+        }
+    }
+
     private handleEntryChange = (updatedEntry: PageConfigEntry): void => {
         const updated = this.state.entries.map(it => (it.uniqueName === updatedEntry.uniqueName ? updatedEntry : it));
         this.setState({ entries: updated } as PageConfigManagerState);
         void this.onChange(this.props.attr, updated);
+        this.checkAlarmButtons(updated);
     };
 
     private handleUniqueNameChange = (oldName: string, newName: string): void => {

@@ -29,9 +29,11 @@ var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: tru
 var admin_exports = {};
 __export(admin_exports, {
   AdminConfiguration: () => AdminConfiguration,
+  alarmButtonData: () => alarmButtonData,
   buildMediaScriptPage: () => buildMediaScriptPage,
   buildThermo2ScriptPage: () => buildThermo2ScriptPage,
-  buildThermoScriptPage: () => buildThermoScriptPage
+  buildThermoScriptPage: () => buildThermoScriptPage,
+  qrUsesPassword: () => qrUsesPassword
 });
 module.exports = __toCommonJS(admin_exports);
 var import_config_manager = require("../classes/config-manager");
@@ -96,6 +98,22 @@ class AdminConfiguration extends import_library.BaseClass {
       );
     }
     this.pageConfig = resolved.entries;
+  }
+  /**
+   * Translation of a key with a hard fallback.
+   *
+   * `getTranslation` hands back the key itself when it is missing, which would put a token like
+   * `unlock_button_default_arm` onto the panel. The fallback keeps that off the display.
+   *
+   * @param key Translation key of `admin/i18n`.
+   * @param fallback Text to use when the key is unknown.
+   * @returns Translated text or the fallback.
+   */
+  translateWithFallback(key, fallback) {
+    var _a, _b;
+    const translate = (_b = (_a = this.library) == null ? void 0 : _a.getTranslation) == null ? void 0 : _b.bind(this.library);
+    const text = translate ? translate(key) : "";
+    return text && text !== key ? text : fallback;
   }
   /**
    * Process configurable pages from adapter config and build navigation entries.
@@ -336,7 +354,7 @@ Stack: ${stack}`
    * @param option - Panel configuration partial
    */
   async createPagesFromConfig(option) {
-    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k;
     const entries = this.pageConfig;
     const pendingNavs = [];
     const mainAliases = new Set(
@@ -380,14 +398,10 @@ Stack: ${stack}`
               data: {
                 alarmType: { type: "const", constVal: entry.alarmType || "unlock" },
                 headline: { type: "const", constVal: entry.headline || "Unlock" },
-                button1: entry.button1 ? { type: "const", constVal: entry.button1 } : void 0,
-                button2: entry.button2 ? { type: "const", constVal: entry.button2 } : void 0,
-                button3: entry.button3 ? { type: "const", constVal: entry.button3 } : void 0,
-                button4: entry.button4 ? { type: "const", constVal: entry.button4 } : void 0,
-                button5: entry.button1 ? { type: "const", constVal: entry.button5 } : void 0,
-                button6: entry.button2 ? { type: "const", constVal: entry.button6 } : void 0,
-                button7: entry.button3 ? { type: "const", constVal: entry.button7 } : void 0,
-                button8: entry.button4 ? { type: "const", constVal: entry.button8 } : void 0,
+                ...alarmButtonData(entry, {
+                  arm: this.translateWithFallback("unlock_button_default_arm", "Arm"),
+                  disarm: this.translateWithFallback("unlock_button_default_disarm", "Disarm")
+                }),
                 pin: entry.pin != null ? { type: "const", constVal: String(entry.pin) } : void 0,
                 approved: { type: "const", constVal: !!entry.approved },
                 global: { type: "const", constVal: !!entry.global },
@@ -402,8 +416,8 @@ Stack: ${stack}`
           if (!isAlwaysOnMode(entry.alwaysOn)) {
             entry.alwaysOn = "none";
           }
-          const qrPassword = await (0, import_credentials.resolveSecret)(this.adapter, entry.qrCredentialId, entry.qrPass);
-          if (qrPassword.source === "credential") {
+          const qrPassword = qrUsesPassword(entry) ? await (0, import_credentials.resolveSecret)(this.adapter, entry.qrCredentialId, entry.qrPass) : void 0;
+          if ((qrPassword == null ? void 0 : qrPassword.source) === "credential") {
             this.log.debug(
               `QR page '${entry.uniqueName}': password taken from credential "${qrPassword.name}"`
             );
@@ -421,7 +435,7 @@ Stack: ${stack}`
                 ssidUrlTel: { type: "const", constVal: entry.ssidUrlTel || "" },
                 wlantype: { type: "const", constVal: entry.wlantype || "WPA" },
                 wlanhidden: { type: "const", constVal: !!entry.wlanhidden || false },
-                password: { type: "const", constVal: qrPassword.secret },
+                password: { type: "const", constVal: (_b = qrPassword == null ? void 0 : qrPassword.secret) != null ? _b : "" },
                 pwdhidden: { type: "const", constVal: !!entry.pwdhidden || false },
                 setState: entry.setState ? { type: "triggered", dp: entry.setState } : void 0
               }
@@ -534,7 +548,7 @@ Stack: ${stack}`
                 []
               );
               if (!result.error && result.pageItem) {
-                newPage.pageItems = (_b = newPage.pageItems) != null ? _b : [];
+                newPage.pageItems = (_c = newPage.pageItems) != null ? _c : [];
                 newPage.pageItems.unshift(result.pageItem);
                 if (result.pageConfig) {
                   generatedPages.unshift(result.pageConfig);
@@ -586,7 +600,7 @@ Stack: ${stack}`
                 []
               );
               if (!result.error && result.pageItem) {
-                newPage.pageItems = (_c = newPage.pageItems) != null ? _c : [];
+                newPage.pageItems = (_d = newPage.pageItems) != null ? _d : [];
                 newPage.pageItems.unshift(result.pageItem);
                 if (result.pageConfig) {
                   generatedPages.unshift(result.pageConfig);
@@ -613,7 +627,7 @@ Stack: ${stack}`
       }
       let overrideExisting = this.adapter.config.adminOverridesScriptPages || newPage.uniqueID === import_default_pages.mainPageName;
       let replacesGlobal = false;
-      if (!overrideExisting && panelAssignment !== void 0 && ((_d = option.globalPageIds) == null ? void 0 : _d.includes(newPage.uniqueID)) && !((_e = option.generatedPageIds) == null ? void 0 : _e.includes(newPage.uniqueID)) && option.pages.some((a) => a.uniqueID === newPage.uniqueID)) {
+      if (!overrideExisting && panelAssignment !== void 0 && ((_e = option.globalPageIds) == null ? void 0 : _e.includes(newPage.uniqueID)) && !((_f = option.generatedPageIds) == null ? void 0 : _f.includes(newPage.uniqueID)) && option.pages.some((a) => a.uniqueID === newPage.uniqueID)) {
         overrideExisting = true;
         replacesGlobal = true;
         this.log.info(
@@ -642,7 +656,7 @@ Stack: ${stack}`
         }
         replacedIndex = option.navigation.findIndex((b) => b && b.name === newPage.uniqueID);
         if (replacedIndex !== -1) {
-          replacedNav = replacesGlobal ? void 0 : (_f = option.navigation[replacedIndex]) != null ? _f : void 0;
+          replacedNav = replacesGlobal ? void 0 : (_g = option.navigation[replacedIndex]) != null ? _g : void 0;
           option.navigation.splice(replacedIndex, 1);
         }
       }
@@ -651,8 +665,8 @@ Stack: ${stack}`
       const navigationEntry = {
         name: newPage.uniqueID,
         page: newPage.uniqueID,
-        right: { single: (_g = replacedNav == null ? void 0 : replacedNav.right) == null ? void 0 : _g.single, double: (_h = replacedNav == null ? void 0 : replacedNav.right) == null ? void 0 : _h.double },
-        left: { single: (_i = replacedNav == null ? void 0 : replacedNav.left) == null ? void 0 : _i.single, double: (_j = replacedNav == null ? void 0 : replacedNav.left) == null ? void 0 : _j.double }
+        right: { single: (_h = replacedNav == null ? void 0 : replacedNav.right) == null ? void 0 : _h.single, double: (_i = replacedNav == null ? void 0 : replacedNav.right) == null ? void 0 : _i.double },
+        left: { single: (_j = replacedNav == null ? void 0 : replacedNav.left) == null ? void 0 : _j.single, double: (_k = replacedNav == null ? void 0 : replacedNav.left) == null ? void 0 : _k.double }
       };
       if (replacedIndex !== -1) {
         option.navigation.splice(replacedIndex, 0, navigationEntry);
@@ -1168,6 +1182,27 @@ function isAlwaysOnMode(F) {
       return false;
   }
 }
+function alarmButtonData(entry, defaults) {
+  var _a;
+  const text = (value) => value ? { type: "const", constVal: value } : void 0;
+  const isAlarm = ((_a = entry.alarmType) != null ? _a : "unlock") === "alarm";
+  const armText = isAlarm ? entry.button1 || (defaults == null ? void 0 : defaults.arm) : entry.button1;
+  const disarmText = isAlarm ? entry.button5 || (defaults == null ? void 0 : defaults.disarm) : entry.button5;
+  return {
+    button1: text(armText),
+    button2: text(entry.button2),
+    button3: text(entry.button3),
+    button4: text(entry.button4),
+    button5: text(disarmText),
+    button6: text(entry.button6),
+    button7: text(entry.button7),
+    button8: text(entry.button8)
+  };
+}
+function qrUsesPassword(entry) {
+  var _a, _b;
+  return ((_a = entry.selType) != null ? _a : 0) === 1 && ((_b = entry.wlantype) != null ? _b : "WPA") !== "nopass";
+}
 function dataForcardTrash(entry) {
   let newPage;
   const pageItems = Array.from({ length: entry.countItems }, (_, i) => {
@@ -1251,8 +1286,10 @@ function dataForcardTrash(entry) {
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
   AdminConfiguration,
+  alarmButtonData,
   buildMediaScriptPage,
   buildThermo2ScriptPage,
-  buildThermoScriptPage
+  buildThermoScriptPage,
+  qrUsesPassword
 });
 //# sourceMappingURL=admin.js.map
