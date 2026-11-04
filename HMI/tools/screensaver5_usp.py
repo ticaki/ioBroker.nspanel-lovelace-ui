@@ -143,7 +143,7 @@ def color_lines(ind, names):
            f'{i}if(tTime.bco!=screensaver5.bco)', f'{i}{{', f'{i}  screensaver5.bco=tTime.bco']
     out += [f'{i}  {n}.bco=tTime.bco' for n in names]
     out.append(f'{i}}}')
-    fields = [(2, 'tTime'), (3, 'tAMPM'), (4, 'tDate')]
+    fields = [(2, 'tTime'), (3, 'tAMPM'), (4, 'tDate'), (16, 'tTimeAdd')]
     fields += [(5 + n, f'e{n}Name') for n in range(1, 5)] + [(9 + n, f'e{n}Val') for n in range(1, 5)]
     for field, name in fields:
         out += [f'{i}spstr strCommand.txt,tTmp.txt,"~",{field}', f'{i}covx tTmp.txt,{name}.pco,0,0']
@@ -165,6 +165,11 @@ def build_ss5(us_ss, us_ss2, us_ss3, clock_font):
     src['tAMPM'].geometry(274, CLOCK[0] + 16, 46, 26)
     src['tAMPM'].set('font', 0)
     src['tAMPM'].set('xcen', 0)
+    # the info icon left of the digits, centred on them
+    src['tTimeAdd'].geometry(14, CLOCK[0] + 30, 32, 36)
+    src['tTimeAdd'].set('font', 1)
+    src['tTimeAdd'].set('xcen', 1)
+    src['tTimeAdd'].set('ycen', 1)
     src['tDate'].geometry(0, DATE[0], 320, DATE[1])
     src['tDate'].set('font', 0)
     src['tDate'].set('ycen', 1)
@@ -189,7 +194,7 @@ def build_ss5(us_ss, us_ss2, us_ss3, clock_font):
     bars[1].geometry(189, BARS, 130, 5)
     src['tNotifyHead'].geometry(0, ROW2[0] + ROW2[1], 320, 50)
     src['tNotifyText'].geometry(0, ROW2[0] + ROW2[1] + 50, 320, BARS - (ROW2[0] + ROW2[1] + 50))
-    page.objs = objs + bottom + inds + [src['tAMPM']] + names + [src['tNotifyHead'], src['tNotifyText']] + bars
+    page.objs = objs + bottom + inds + [src['tAMPM'], src['tTimeAdd']] + names + [src['tNotifyHead'], src['tNotifyText']] + bars
     lines = src['tmSerial'].code('timer')
     a, b = block(lines, find(lines, 'if(tInstruction.txt=="statusUpdate")'))
     lines[a:b] = status_lines(lines[a][:len(lines[a]) - len(lines[a].lstrip())])
@@ -197,9 +202,9 @@ def build_ss5(us_ss, us_ss2, us_ss3, clock_font):
     ind = lines[a][:len(lines[a]) - len(lines[a].lstrip())]
     lines[a:b] = weather_lines(ind)
     a, b = block(lines, find(lines, 'if(tInstruction.txt=="color"&&tNotifyHead.txt==""&&tNotifyText.txt=="")'))
-    lines[a:b] = color_lines(ind, ['tAMPM', 'tDate'] + [o.name for o in bottom + inds])
+    lines[a:b] = color_lines(ind, ['tAMPM', 'tTimeAdd', 'tDate'] + [o.name for o in bottom + inds])
     a, b = block(lines, find(lines, 'if(tInstruction.txt=="time")'))
-    lines[a:b] = [x for x in lines[a:b] if 'tTimeAdd' not in x and x.strip() not in ('ref tIcon1', 'ref tIcon2')]
+    lines[a:b] = [x for x in lines[a:b] if x.strip() not in ('ref tIcon1', 'ref tIcon2')]
     return page
 
 

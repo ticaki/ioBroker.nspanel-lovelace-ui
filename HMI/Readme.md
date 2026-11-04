@@ -557,7 +557,7 @@ Layout from top to bottom:
 | eu, us-l | us-p |
 |---|---|
 | indicators f1..f5 | indicators f1..f4 |
-| f6, time and AM/PM, date, f7 | time and AM/PM |
+| f6, info icon, time and AM/PM, date, f7 | info icon, time and AM/PM |
 | | date |
 | | indicators f5..f8 |
 | bottom items e1..e5 | bottom items e1..e4 |
@@ -577,11 +577,11 @@ An indicator shows its icon only, the whole tile is the touch area. A bottom ite
 | indicator icon | 33 + 6j | 27 + 6j |
 | indicator icon color | 34 + 6j | 28 + 6j |
 
-`color~` like the standard screensaver: 1 background, 2 time, 3 AM/PM, 4 date, 6..9 names of item 1..4, 10..13 values of item 1..4. On eu and us-l item 5 uses 9 and 13.
+`color~` like the standard screensaver: 1 background, 2 time, 3 AM/PM, 4 date, 6..9 names of item 1..4, 10..13 values of item 1..4, 16 info icon. On eu and us-l item 5 uses 9 and 13.
 
 `statusUpdate~icon1~color1~icon2~color2~...`: only the colors are used, fields 2 and 4 color the two status bars like on `screensaver3`. An empty color makes the bar black.
 
-`time~HH:MM` uses an own font that only has the digits, `:`, space and `AMPamp`. `time~HH:MM?PM` shows the part behind `?` as AM/PM.
+`time~HH:MM` uses an own font that only has the digits, `:`, space and `AMPamp`. `time~HH:MM?PM` shows the part behind `?` as AM/PM. `time~HH:MM~icon` shows the info icon left of the time, like on the other screensavers.
 
 `notify~` covers the row of the bottom items.
 

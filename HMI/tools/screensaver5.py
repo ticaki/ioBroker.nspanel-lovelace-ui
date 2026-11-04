@@ -9,7 +9,7 @@ The script rebuilds that page and adds 'screensaver5' to the pageType switch of 
 
 Layout, 3 rows x 5 columns of 90 x 107 px:
   top     f1..f5   indicators, icon only, a touch sends event,buttonPress2,<id>,button
-  middle  f6 | time, AM/PM, date (3 columns) | f7
+  middle  f6 | info icon, time, AM/PM, date (3 columns) | f7
   bottom  e1..e5   name / icon / value like the forecast items of the standard screensaver
   bottom edge      tRelay1, tRelay2 - the status icons as two color bars, like screensaver3
 
@@ -113,7 +113,7 @@ def color_lines(ind, names):
            f'{i}  screensaver5.bco=tTime.bco']
     out += [f'{i}  {n}.bco=tTime.bco' for n in names]
     out.append(f'{i}}}')
-    fields = [(2, 'tTime'), (3, 'tAMPM'), (4, 'tDate')]
+    fields = [(2, 'tTime'), (3, 'tAMPM'), (4, 'tDate'), (16, 'tTimeAdd')]
     fields += [(5 + n, f'e{n}Name') for n in range(1, 5)] + [(9, 'e5Name')]
     fields += [(9 + n, f'e{n}Val') for n in range(1, 5)] + [(13, 'e5Val')]
     for field, name in fields:
@@ -150,14 +150,19 @@ def build_page(page, adv, easy, clock_font):
 
     # middle row: time and date over the three middle columns
     x0, w = COL, 3 * COL
-    src['tTime'].geometry(x0, ROWS[1], w, 80)
+    # no overlap with the info icon and AM/PM: a redraw of one text object would erase the part it covers
+    src['tTime'].geometry(x0 + 24, ROWS[1], w - 48, 80)
     src['tTime'].set('font', clock_font)
     src['tTime'].set('xcen', 1)
     src['tTime'].set('ycen', 1)
     # right of the digits, above the free left edge of f7 - therefore in front of the indicators
-    src['tAMPM'].geometry(336, ROWS[1] + 8, 36, 26)
+    src['tAMPM'].geometry(336, ROWS[1] + 8, 32, 26)
     src['tAMPM'].set('font', 0)
     src['tAMPM'].set('xcen', 0)
+    src['tTimeAdd'].geometry(82, ROWS[1] + 30, 32, 36)
+    src['tTimeAdd'].set('font', 1)
+    src['tTimeAdd'].set('xcen', 1)
+    src['tTimeAdd'].set('ycen', 1)
     src['tDate'].geometry(x0, ROWS[1] + 80, w, ROW_H[1] - 80)
     src['tDate'].set('font', 0)
     src['tDate'].set('ycen', 1)
@@ -175,12 +180,14 @@ def build_page(page, adv, easy, clock_font):
         ]
 
     # indicators: f1..f5 top row, f6 middle left, f7 middle right; the whole cell is the touch area
-    cells = [(k * COL, ROWS[0], ROW_H[0]) for k in range(5)] + [(0, ROWS[1], ROW_H[1]), (4 * COL, ROWS[1], ROW_H[1])]
+    # f6 and f7 keep the centre of their column but leave the room of the info icon and AM/PM
+    cells = [(k * COL, ROWS[0], COL, ROW_H[0]) for k in range(5)]
+    cells += [(8, ROWS[1], COL - 16, ROW_H[1]), (4 * COL + 8, ROWS[1], COL - 16, ROW_H[1])]
     template = adv.obj('f1Icon')
     indicators, names = [], []
-    for j, (x, y, h) in enumerate(cells):
+    for j, (x, y, cw, h) in enumerate(cells):
         n = j + 1
-        o = text_obj(template, f'f{n}Icon', x, y, COL, h, 4, 4)
+        o = text_obj(template, f'f{n}Icon', x, y, cw, h, 4, 4)
         o.set_code('down', [f'tSend.txt="event,buttonPress2,"+entn{n}.txt+",button"'] + SEND)
         indicators.append(o)
         names.append(var_obj(var, f'entn{n}', 14))
@@ -188,7 +195,7 @@ def build_page(page, adv, easy, clock_font):
     # status icons as color bars: same objects, place and z-order (above the notification) as screensaver3
     bars = [easy.obj('tRelay1').copy(), easy.obj('tRelay2').copy()]
 
-    page.objs = objs + bottom + indicators + [src['tAMPM']] + names + [src[n] for n in TOP] + bars
+    page.objs = objs + bottom + indicators + [src['tAMPM'], src['tTimeAdd']] + names + [src[n] for n in TOP] + bars
     src['tNotifyHead'].geometry(0, ROWS[2], 450, 50)
     src['tNotifyText'].geometry(0, ROWS[2] + 50, 450, ROW_H[2] - 50)
 
@@ -200,10 +207,10 @@ def build_page(page, adv, easy, clock_font):
     ind = lines[a][:len(lines[a]) - len(lines[a].lstrip())]
     lines[a:b] = weather_lines(ind)
     a, b = block(lines, find(lines, 'if(tInstruction.txt=="color"&&tNotifyHead.txt==""&&tNotifyText.txt=="")'))
-    colored = ['tAMPM', 'tDate'] + [o.name for o in bottom + indicators]
+    colored = ['tAMPM', 'tTimeAdd', 'tDate'] + [o.name for o in bottom + indicators]
     lines[a:b] = color_lines(ind, colored)
     a, b = block(lines, find(lines, 'if(tInstruction.txt=="time")'))
-    lines[a:b] = [x for x in lines[a:b] if 'tTimeAdd' not in x and x.strip() not in ('ref tIcon1', 'ref tIcon2')]
+    lines[a:b] = [x for x in lines[a:b] if x.strip() not in ('ref tIcon1', 'ref tIcon2')]
     add_page_switch(lines)
     src['tmSerial'].set_code('timer', lines)
 

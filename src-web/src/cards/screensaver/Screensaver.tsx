@@ -223,7 +223,7 @@ export class Screensaver extends React.Component<CardProps<ScreensaverModel>> {
     /**
      * The info icon of `time~HH:MM~icon` (colour `tTimeAdd`): below the time in the
      * standard and alternate layout, above it in the advanced layout and left of it in
-     * EasyView.
+     * EasyView and tiles.
      *
      * @param top top edge of the icon box
      * @param left left edge of the icon box
@@ -739,6 +739,7 @@ export class Screensaver extends React.Component<CardProps<ScreensaverModel>> {
                     86,
                     700,
                 )}
+                {this.renderTimeIcon(141, 99, 28)}
                 {this.renderDate({
                     top: textTop(192, 18),
                     left: column(1),
