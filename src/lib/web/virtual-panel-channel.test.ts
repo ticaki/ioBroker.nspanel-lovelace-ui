@@ -92,6 +92,15 @@ describe('lib/web/virtual-panel-channel - VirtualPanelChannel', () => {
         expect(byFilter).to.equal(2);
     });
 
+    it('has no receiver by default and reports what the manager sets', () => {
+        const channel = setup();
+        expect(channel.hasReceiver()).to.equal(false);
+        channel.setReceiverConnected(true);
+        expect(channel.hasReceiver()).to.equal(true);
+        channel.setReceiverConnected(false);
+        expect(channel.hasReceiver()).to.equal(false);
+    });
+
     it('is silent after delete', async () => {
         const channel = setup();
         const commands: string[] = [];

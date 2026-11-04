@@ -14,4 +14,9 @@ export interface PanelChannel {
     subscribe(topic: string, callback: callbackMessageType): Promise<void>;
     unsubscribe(topic: string): void;
     removeByFunction(callback: callbackMessageType): void;
+    /**
+     * Can anyone receive messages right now? `false` means nobody can at the moment. Not
+     * implemented by MQTT, because the adapter cannot know who listens on the broker.
+     */
+    hasReceiver?(): boolean;
 }

@@ -14,6 +14,7 @@ import {
     ADAPTER_NAME,
     dropScriptNavigation,
     emptyChartEntry,
+    emptyPChartEntry,
     emptyThermo2Entry,
     emptyThermoEntry,
     emptyMediaEntry,
@@ -39,6 +40,7 @@ import { PageQREditor } from './components/PageQREditor';
 import { PageTrashEditor } from './components/PageTrashEditor';
 import { takeRequestedPageConfig } from './pageConfigLink';
 import { PageChartEditor } from './components/PageChartEditor';
+import { PagePChartEditor } from './components/PagePChartEditor';
 import { PageThermo2Editor } from './components/PageThermo2Editor';
 import { PageThermoEditor } from './components/PageThermoEditor';
 import { PageMediaEditor } from './components/PageMediaEditor';
@@ -381,6 +383,8 @@ class PageConfigManager extends ConfigGeneric<ConfigGenericProps & { theme?: any
             } satisfies PowerEntry;
         } else if (cardType === 'cardChart') {
             newEntry = emptyChartEntry(name);
+        } else if (cardType === 'cardPChart') {
+            newEntry = emptyPChartEntry(name);
         } else if (cardType === 'cardThermo2') {
             newEntry = emptyThermo2Entry(name);
         } else if (cardType === 'cardThermo') {
@@ -626,6 +630,19 @@ class PageConfigManager extends ConfigGeneric<ConfigGenericProps & { theme?: any
         if (currentEntry.card === 'cardChart') {
             return (
                 <PageChartEditor
+                    {...this.props}
+                    entry={currentEntry}
+                    onEntryChange={this.handleEntryChange}
+                    getText={key => this.getText(key)}
+                    oContext={this.props.oContext}
+                    theme={this.props.theme}
+                />
+            );
+        }
+
+        if (currentEntry.card === 'cardPChart') {
+            return (
+                <PagePChartEditor
                     {...this.props}
                     entry={currentEntry}
                     onEntryChange={this.handleEntryChange}

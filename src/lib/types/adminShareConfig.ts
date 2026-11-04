@@ -18,6 +18,7 @@ export type AdminCardTypes =
     | 'cardPower'
     | 'cardChart'
     | 'cardLChart'
+    | 'cardPChart'
     | 'cardThermo'
     | 'screensaver'
     | 'screensaver2'
@@ -1629,6 +1630,244 @@ export function emptyChartEntry(uniqueName: string): ChartEntry {
     };
 }
 
+// ---------------------------------------------------------------------------------------------
+// cardPChart - pie chart (TFT 6.0.5, EU panel). Admin only, there is no script page for it.
+// ---------------------------------------------------------------------------------------------
+
+/**
+ * The HMI draws at most this many slices, everything after is ignored by the panel.
+ * HMI 6.0.5: m0.h/40 = 5 Zeilen; ab m0.h >= 240 px sind 6 möglich.
+ */
+export const PCHART_MAX_SLICES = 5;
+
+/** data sources of a pie chart entry (`selInstanceDataSource`) */
+export const PCHART_SOURCE_SLOTS = 0;
+export const PCHART_SOURCE_SCRIPT = 1;
+
+/**
+ * One slice of the pie chart in the slot source: a numeric state with name, unit and color.
+ * A slot without a state is left out; a value of 0 keeps its legend line.
+ */
+export type PChartSlotConfig = {
+    /** legend name, empty = `common.name` of the state (translated) */
+    name?: string;
+    /** numeric state delivering the slice value */
+    state?: string;
+    /** unit behind the value text, empty = `common.unit` of the state */
+    unit?: string;
+    /** slice color as hex (`#rrggbb`), sent as RGB565 */
+    color?: string;
+};
+
+/**
+ * Time range of the slot source. `current` = current value of the states (no DB). Rolling ranges end now:
+ * `h1`, `d1`, `w1`, `m1` (30 days) and `custom` (hours in `rangeHours`). Calendar ranges have a fixed start
+ * and end in the local time of the adapter, the week starts on Monday: `today` (00:00 - now), `yesterday`
+ * (00:00 - 24:00), `thisWeek` (Monday 00:00 - now), `lastWeek` (Monday 00:00 - Sunday 24:00), `thisMonth`
+ * (1st 00:00 - now), `lastMonth` (1st 00:00 - last day 24:00).
+ */
+export const pchartRangeKeys = [
+    'current',
+    'h1',
+    'd1',
+    'w1',
+    'm1',
+    'custom',
+    'today',
+    'yesterday',
+    'thisWeek',
+    'lastWeek',
+    'thisMonth',
+    'lastMonth',
+] as const;
+export type PChartRangeKey = (typeof pchartRangeKeys)[number];
+
+/**
+ * @param value anything stored as range key
+ */
+export function isPChartRangeKey(value: unknown): value is PChartRangeKey {
+    return typeof value === 'string' && (pchartRangeKeys as readonly string[]).includes(value);
+}
+
+/** hours of the rolling ranges (`custom` takes the configured hours) */
+const pchartRollingHours: Readonly<Record<'h1' | 'd1' | 'w1' | 'm1', number>> = {
+    h1: 1,
+    d1: 24,
+    w1: 24 * 7,
+    m1: 24 * 30,
+};
+
+/** hours of a `custom` range when none are configured - the single default for editor, page config and resolveRange */
+export const PCHART_CUSTOM_HOURS_DEFAULT = 24;
+
+/** a resolved range in milliseconds since epoch */
+export type PChartRange = { start: number; end: number };
+
+/**
+ * Start of the local day of a timestamp.
+ *
+ * @param ts timestamp
+ */
+function startOfLocalDay(ts: number): Date {
+    const d = new Date(ts);
+    d.setHours(0, 0, 0, 0);
+    return d;
+}
+
+/**
+ * Start of the local week (Monday 00:00) of a timestamp.
+ *
+ * @param ts timestamp
+ */
+function startOfLocalWeek(ts: number): Date {
+    const d = startOfLocalDay(ts);
+    const daysSinceMonday = (d.getDay() + 6) % 7;
+    d.setDate(d.getDate() - daysSinceMonday);
+    return d;
+}
+
+/**
+ * Start of the local month (1st 00:00) of a timestamp.
+ *
+ * @param ts timestamp
+ */
+function startOfLocalMonth(ts: number): Date {
+    const d = startOfLocalDay(ts);
+    d.setDate(1);
+    return d;
+}
+
+/**
+ * Resolves a range key into a window `start`..`end` in milliseconds (local time of the process, week starts
+ * on Monday). `current` gives the empty window `now`..`now`.
+ *
+ * @param key range key
+ * @param now reference time in milliseconds
+ * @param customHours hours of `custom`; invalid or missing = PCHART_CUSTOM_HOURS_DEFAULT
+ */
+export function resolveRange(key: PChartRangeKey, now: number, customHours?: number): PChartRange {
+    switch (key) {
+        case 'current':
+            return { start: now, end: now };
+        case 'h1':
+        case 'd1':
+        case 'w1':
+        case 'm1':
+            return { start: now - pchartRollingHours[key] * 3_600_000, end: now };
+        case 'custom': {
+            const hours =
+                customHours && Number.isFinite(customHours) && customHours > 0
+                    ? customHours
+                    : PCHART_CUSTOM_HOURS_DEFAULT;
+            return { start: now - hours * 3_600_000, end: now };
+        }
+        case 'today':
+            return { start: startOfLocalDay(now).getTime(), end: now };
+        case 'yesterday': {
+            const end = startOfLocalDay(now);
+            const start = new Date(end);
+            start.setDate(start.getDate() - 1);
+            return { start: start.getTime(), end: end.getTime() };
+        }
+        case 'thisWeek':
+            return { start: startOfLocalWeek(now).getTime(), end: now };
+        case 'lastWeek': {
+            const end = startOfLocalWeek(now);
+            const start = new Date(end);
+            start.setDate(start.getDate() - 7);
+            return { start: start.getTime(), end: end.getTime() };
+        }
+        case 'thisMonth':
+            return { start: startOfLocalMonth(now).getTime(), end: now };
+        case 'lastMonth': {
+            const end = startOfLocalMonth(now);
+            const start = new Date(end);
+            start.setMonth(start.getMonth() - 1);
+            return { start: start.getTime(), end: end.getTime() };
+        }
+    }
+}
+
+export type PChartEntry = {
+    card: Extract<AdminCardTypes, 'cardPChart'>;
+    uniqueName: string;
+    headline?: string;
+    /** legend of the panel: 0 = name, 1 = name and value, 2 = name and percent, 3 = name, value and percent */
+    legendMode?: number;
+    /** decimal places of the value text (slot source) */
+    decimals?: number;
+    /** 0 = slots (states, optionally averaged over a range), 1 = script data point with the finished panel text */
+    selInstanceDataSource?: number;
+    /** slot source: up to PCHART_MAX_SLICES slices in legend order */
+    slots?: PChartSlotConfig[];
+    /** slot source: the range the values are averaged over via getHistory, missing = `current` */
+    rangeKey?: PChartRangeKey;
+    /** slot source, range `custom` only: hours back from now */
+    rangeHours?: number;
+    /** slot source with a range: DB instance that logs the slot states (`influxdb.0`) */
+    selInstance?: string;
+    /** script source: state a script writes `Name~Number~Value text~Color~…` into (format of the old NSPanel script) */
+    setStateForValues?: string;
+} & PageConfigBaseFields;
+
+/** DB query of a pie chart page, travels as JSON in the const item `dbData` (like ChartDetailsExternal) */
+export type PChartDetailsExternal = {
+    instance: string;
+    rangeKey: Exclude<PChartRangeKey, 'current'>;
+    /** hours of `custom` */
+    hours?: number;
+};
+
+/**
+ * Defaults of a pie chart page - the single source for the PageConfig editor, handleAdd and admin.ts.
+ * The slot colors (one per possible slice) are the ones the old NSPanel script examples used.
+ */
+export const pchartDefaults = {
+    legendMode: 3,
+    decimals: 2,
+    selInstanceDataSource: PCHART_SOURCE_SLOTS,
+    rangeKey: 'current' as PChartRangeKey,
+    rangeHours: PCHART_CUSTOM_HOURS_DEFAULT,
+    slotColors: ['#F80000', '#00F800', '#0000F8', '#F8F800', '#00F8F8', '#F800F8'] as readonly string[],
+};
+
+/**
+ * Empty default for a slice slot - used when adding a new cardPChart entry.
+ *
+ * @param index slot index (0-5), picks the default color
+ */
+export function emptyPChartSlot(index: number): PChartSlotConfig {
+    return {
+        name: '',
+        state: '',
+        unit: '',
+        color: pchartDefaults.slotColors[index % pchartDefaults.slotColors.length],
+    };
+}
+
+/**
+ * Creates a fresh pie chart entry with all fields set explicitly (same pattern as emptyChartEntry).
+ *
+ * @param uniqueName unique page name
+ */
+export function emptyPChartEntry(uniqueName: string): PChartEntry {
+    return {
+        card: 'cardPChart',
+        uniqueName,
+        headline: uniqueName,
+        legendMode: pchartDefaults.legendMode,
+        decimals: pchartDefaults.decimals,
+        selInstanceDataSource: pchartDefaults.selInstanceDataSource,
+        slots: Array.from({ length: PCHART_MAX_SLICES }, (_, i) => emptyPChartSlot(i)),
+        rangeKey: pchartDefaults.rangeKey,
+        rangeHours: pchartDefaults.rangeHours,
+        selInstance: '',
+        setStateForValues: '',
+        hidden: false,
+        alwaysOn: 'none',
+    };
+}
+
 /** one row of the old admin table "Page Chart" (`native.pageChartdata`) */
 export type LegacyChartRow = {
     pageName: string;
@@ -2518,6 +2757,7 @@ export type PageConfigEntry =
     | UnlockEntry
     | TrashEntry
     | ChartEntry
+    | PChartEntry
     | MenuEntry
     | PowerEntry
     | Thermo2Entry

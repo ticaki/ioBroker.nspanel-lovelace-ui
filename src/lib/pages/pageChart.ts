@@ -58,18 +58,37 @@ export function buildChartPageConfig(entry: ChartEntry): pages.cardChartDataItem
     };
 }
 
+/** what a chart asks the history for */
+export type HistoryQuery = {
+    /** 'average' (one value per interval) or 'none' (raw values) */
+    aggregate: 'average' | 'none';
+    /** number of intervals (bar: hours, line: fine grid) */
+    count: number;
+    /** do not return more entries than this; left out = no limit (pie: one aggregated value only) */
+    limit?: number;
+    /** true = no extra points before start and after end (pie: one average only) */
+    removeBorderValues?: boolean;
+    /** digits after the decimal point, default 1 */
+    round?: number;
+};
+
+/** the cards the chart classes draw: bar, line (PageChart) and pie (PageChartPie) */
+const chartCards: readonly pages.PageTypeCards[] = ['cardChart', 'cardLChart', 'cardPChart'];
+
 export class PageChart extends Page {
     items: pages.cardChartDataItems | undefined;
     protected dbDetails?: ChartDetailsExternal;
-    protected chartTimeout: ioBroker.Timeout | undefined | null;
-    protected oldDatabaseData: any[] | null = null;
+    /** running getHistory timeouts, one per state id (the pie chart queries several states) */
+    protected chartTimeouts: Map<string, ioBroker.Timeout> = new Map();
+    /** last history result per state id, returned while a query for the same state is still running */
+    protected oldDatabaseData: Map<string, any[]> = new Map();
 
     constructor(config: PageInterface, options: pages.PageBase) {
-        if (config.card !== 'cardChart' && config.card !== 'cardLChart') {
+        if (!chartCards.includes(config.card)) {
             return;
         }
         super(config, options);
-        if (options.config && (options.config.card == 'cardChart' || options.config.card == 'cardLChart')) {
+        if (options.config && chartCards.includes(options.config.card)) {
             this.config = options.config;
         } else {
             throw new Error('Missing config!');
@@ -92,6 +111,43 @@ export class PageChart extends Page {
             return;
         }
         await super.update();
+        const message = await this.getUpdateMessage();
+        if (!this.visibility) {
+            // the panel moved on while the history was read - nothing to draw any more
+            return;
+        }
+        if (message.value) {
+            this.log.debug(`Value: ${message.value}`);
+        }
+        if (message.ticks) {
+            this.log.debug(`Ticks: ${message.ticks.join(',')}`);
+        }
+        const payload = this.getMessage(message);
+        if (!this.shouldSend(payload)) {
+            this.log.debug(`Payload unchanged, not sent: ${this.name}`);
+            return;
+        }
+        // pageType and entityUpd always go together: the panel answers the pageType with
+        // `renderCurrentPage` (the ack of the queue) and then draws the entityUpd that follows
+        this.sendType(true);
+        this.sendToPanel(payload, false);
+    }
+
+    /**
+     * Whether the finished payload is sent. The base sends every update; the pie chart skips a payload
+     * that equals the last one sent, because the panel redraws the whole pie on every entityUpd.
+     *
+     * @param _payload the entityUpd as it would be sent
+     */
+    protected shouldSend(_payload: string): boolean {
+        return true;
+    }
+
+    /**
+     * The fields of the next entityUpd: bar and line chart read ticks and values via getChartData,
+     * the pie chart overrides this with its slices.
+     */
+    protected async getUpdateMessage(): Promise<Partial<pages.PageChartMessage>> {
         const message: Partial<pages.PageChartMessage> = {};
         message.navigation = this.getNavigation();
         message.headline = `Error`;
@@ -110,14 +166,7 @@ export class PageChart extends Page {
             message.value = valuesChart;
             message.ticks = ticksChart;
         }
-        if (message.value) {
-            this.log.debug(`Value: ${message.value}`);
-        }
-        if (message.ticks) {
-            this.log.debug(`Ticks: ${message.ticks.join(',')}`);
-        }
-        this.sendType(true);
-        this.sendToPanel(this.getMessage(message), false);
+        return message;
     }
 
     /**
@@ -175,20 +224,47 @@ export class PageChart extends Page {
     }
 
     /**
-     * Reads history values via `getHistory` of a history/sql/influxdb instance.
+     * Reads history values via `getHistory` of a history/sql/influxdb instance over the last hours.
      *
      * @param _id state id to read
      * @param _rangeHours time window in hours, ending now
      * @param _instance db instance, `influxdb.0` or `system.adapter.influxdb.0`
-     * @param query what the chart type needs from the history
-     * @param query.aggregate 'average' (one value per interval) or 'none' (raw values)
-     * @param query.count number of intervals (bar: hours, line: fine grid); also used as `limit`
+     * @param query what the chart type needs from the history, see getDataFromDBWindow; `limit` defaults to `count`
      */
     protected async getDataFromDB(
         _id: string,
         _rangeHours: number,
         _instance: string,
-        query: { aggregate: 'average' | 'none'; count: number },
+        query: HistoryQuery,
+    ): Promise<any[] | null> {
+        const end = Date.now();
+        return this.getDataFromDBWindow(_id, end - _rangeHours * 60 * 60 * 1000, end, _instance, {
+            ...query,
+            limit: query.limit ?? query.count,
+        });
+    }
+
+    /**
+     * Reads history values via `getHistory` of a history/sql/influxdb instance over an explicit window
+     * (pie chart: calendar ranges with a fixed start and end).
+     *
+     * @param _id state id to read
+     * @param start start of the window in milliseconds
+     * @param end end of the window in milliseconds
+     * @param _instance db instance, `influxdb.0` or `system.adapter.influxdb.0`
+     * @param query what the chart type needs from the history
+     * @param query.aggregate 'average' (one value per interval) or 'none' (raw values)
+     * @param query.count number of intervals (bar: hours, line: fine grid)
+     * @param query.limit do not return more entries than this, left out = no limit
+     * @param query.removeBorderValues true = no extra points before start and after end (pie: one average only)
+     * @param query.round digits after the decimal point, default 1
+     */
+    protected async getDataFromDBWindow(
+        _id: string,
+        start: number,
+        end: number,
+        _instance: string,
+        query: HistoryQuery,
     ): Promise<any[] | null> {
         if (!_instance) {
             return null;
@@ -204,12 +280,12 @@ export class PageChart extends Page {
             return null;
         }
         return new Promise((resolve, reject) => {
-            if (this.chartTimeout) {
-                resolve(this.oldDatabaseData || null);
+            if (this.chartTimeouts.has(_id)) {
+                resolve(this.oldDatabaseData.get(_id) ?? null);
                 return;
             }
-            this.chartTimeout = this.adapter.setTimeout(() => {
-                this.chartTimeout = null;
+            const timeout = this.adapter.setTimeout(() => {
+                this.chartTimeouts.delete(_id);
                 if (this.unload || this.adapter.unload) {
                     resolve(null);
                     return;
@@ -218,6 +294,9 @@ export class PageChart extends Page {
                     new Error(`PageChart: ${this.name} - DB: ${_instance} - Timeout getting history for state ${_id}`),
                 );
             }, 15_000);
+            if (timeout) {
+                this.chartTimeouts.set(_id, timeout);
+            }
             try {
                 this.adapter.sendTo(
                     _instance,
@@ -225,24 +304,26 @@ export class PageChart extends Page {
                     {
                         id: _id,
                         options: {
-                            start: Date.now() - _rangeHours * 60 * 60 * 1000,
-                            end: Date.now(),
+                            start,
+                            end,
                             /** number of intervals for 'average' (one value per interval, spread over start..end) */
                             count: query.count,
-                            /** do not return more entries than limit */
-                            limit: query.count,
+                            /** do not return more entries than limit (not sent for an aggregated single value) */
+                            ...(query.limit !== undefined ? { limit: query.limit } : {}),
                             /** if null values should be included (false), replaced by last not null value (true) or replaced with 0 (0) */
                             ignoreNull: true,
                             aggregate: query.aggregate,
                             /** round result to number of digits after decimal point */
-                            round: 1,
+                            round: query.round ?? 1,
+                            ...(query.removeBorderValues ? { removeBorderValues: true } : {}),
                         },
                     },
                     result => {
-                        if (this.chartTimeout) {
-                            this.adapter.clearTimeout(this.chartTimeout);
+                        const timeout = this.chartTimeouts.get(_id);
+                        if (timeout) {
+                            this.adapter.clearTimeout(timeout);
                         }
-                        this.chartTimeout = null;
+                        this.chartTimeouts.delete(_id);
                         if (this.unload || this.adapter.unload) {
                             resolve(null);
                             return;
@@ -256,7 +337,7 @@ export class PageChart extends Page {
                                         `Value: ${result.result[i].val}, ISO-Timestring: ${new Date(result.result[i].ts).toISOString()}`,
                                     );
                                 }
-                                this.oldDatabaseData = result.result;
+                                this.oldDatabaseData.set(_id, result.result);
                                 resolve(result.result);
                                 return;
                             }
@@ -271,7 +352,7 @@ export class PageChart extends Page {
         });
     }
 
-    private getMessage(_message: Partial<pages.PageChartMessage>): string {
+    protected getMessage(_message: Partial<pages.PageChartMessage>): string {
         let result: pages.PageChartMessage = PageChartMessageDefault;
         result = { ...result, ..._message };
         return getPayload(
@@ -306,10 +387,10 @@ export class PageChart extends Page {
     }
 
     async delete(): Promise<void> {
-        if (this.chartTimeout) {
-            this.adapter.clearTimeout(this.chartTimeout);
+        for (const timeout of this.chartTimeouts.values()) {
+            this.adapter.clearTimeout(timeout);
         }
-        this.chartTimeout = null;
+        this.chartTimeouts.clear();
         await super.delete();
     }
 }

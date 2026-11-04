@@ -21,8 +21,14 @@ import {
 import { ConfigGeneric, type ConfigGenericProps, type ConfigGenericState } from '@iobroker/json-config';
 import { EntitySelector } from './EntitySelector';
 import {
+    adapterAliveStateId,
+    loadDbInstances,
+    loggedByInstance,
+    shortInstanceId,
+    type DbInstance,
+} from './dbInstances';
+import {
     type ChartEntry,
-    ADAPTER_NAME,
     chartDefaults,
     isMainPageEntry,
     isScriptNavigatedChart,
@@ -36,26 +42,12 @@ export interface PageChartEditorProps {
     theme?: any;
 }
 
-type DbInstance = { id: string; name: string };
-
 interface PageChartEditorState extends ConfigGenericState {
     alive: boolean;
     dbInstances: DbInstance[];
 }
 
 type NumberField = 'rangeHours' | 'maxXAxisTicks' | 'maxXAxisLabels';
-
-/** adapters that answer `getHistory` */
-const DB_ADAPTERS = ['influxdb', 'history', 'sql'];
-
-/**
- * `system.adapter.influxdb.0` → `influxdb.0` (the stored form, same as the classic table)
- *
- * @param id full or short instance id
- */
-function shortInstanceId(id: string | undefined): string {
-    return (id ?? '').replace(/^system\.adapter\./, '');
-}
 
 /**
  * script source: every state, like the classic table (no `common.read` check, many script states lack it)
@@ -64,29 +56,6 @@ function shortInstanceId(id: string | undefined): string {
  */
 function isState(obj: ioBroker.Object): boolean {
     return !!(obj && obj.type === 'state');
-}
-
-/**
- * DB source: only states with logging enabled for the chosen instance,
- * e.g. `influxdb.0` → `common.custom['influxdb.0'].enabled`.
- * Without a chosen instance: any enabled logging of a DB adapter.
- *
- * @param instance short instance id (`influxdb.0`) or ''
- */
-function loggedByInstance(instance: string): (obj: ioBroker.Object) => boolean {
-    return (obj: ioBroker.Object): boolean => {
-        if (!obj || obj.type !== 'state') {
-            return false;
-        }
-        const custom = obj.common?.custom as Record<string, { enabled?: boolean } | undefined> | undefined;
-        if (!custom) {
-            return false;
-        }
-        if (instance) {
-            return !!custom[instance]?.enabled;
-        }
-        return Object.keys(custom).some(key => DB_ADAPTERS.includes(key.split('.')[0]) && !!custom[key]?.enabled);
-    };
 }
 
 export class PageChartEditor extends ConfigGeneric<ConfigGenericProps & PageChartEditorProps, PageChartEditorState> {
@@ -100,16 +69,11 @@ export class PageChartEditor extends ConfigGeneric<ConfigGenericProps & PageChar
     }
 
     componentWillUnmount(): void {
-        const instance = this.props.oContext.instance ?? '0';
-        this.props.oContext.socket.unsubscribeState(
-            `system.adapter.${ADAPTER_NAME}.${instance}.alive`,
-            this.onAliveChanged,
-        );
+        this.props.oContext.socket.unsubscribeState(adapterAliveStateId(this.props.oContext), this.onAliveChanged);
     }
 
     async componentDidMount(): Promise<void> {
-        const instance = this.props.oContext.instance ?? '0';
-        const aliveStateId = `system.adapter.${ADAPTER_NAME}.${instance}.alive`;
+        const aliveStateId = adapterAliveStateId(this.props.oContext);
         try {
             const state = await this.props.oContext.socket.getState(aliveStateId);
             this.setState({ alive: !!state?.val });
@@ -131,21 +95,7 @@ export class PageChartEditor extends ConfigGeneric<ConfigGenericProps & PageChar
     /** enabled history/sql/influxdb instances, stored and shown in the short form `influxdb.0` */
     private async loadDbInstances(): Promise<void> {
         try {
-            const { socket } = this.props.oContext;
-            const objects = await socket.getObjectViewSystem('instance', 'system.adapter.', 'system.adapter.香');
-            const dbInstances: DbInstance[] = [];
-            for (const id of Object.keys(objects)) {
-                const obj = objects[id];
-                if (!obj || obj.type !== 'instance' || !obj.common?.enabled) {
-                    continue;
-                }
-                const name = shortInstanceId(id);
-                if (DB_ADAPTERS.some(adapter => name.startsWith(`${adapter}.`))) {
-                    dbInstances.push({ id, name });
-                }
-            }
-            dbInstances.sort((a, b) => a.name.localeCompare(b.name));
-            this.setState({ dbInstances });
+            this.setState({ dbInstances: await loadDbInstances(this.props.oContext.socket) });
         } catch (error) {
             console.error('[PageChartEditor] Error loading DB instances:', error);
         }

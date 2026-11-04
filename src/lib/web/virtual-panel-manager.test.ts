@@ -224,6 +224,19 @@ describe('lib/web/virtual-panel-manager - clones', () => {
         expect(clone.received).to.deep.equal(['event,startup,55,eu,5.1.1', 'event,buttonPress2,x,bExit']);
     });
 
+    it('tells the channel whether a browser is connected', async () => {
+        const { manager } = setup();
+        const a = client();
+        const b = client();
+        const entry = (await manager.attach(REAL_TOPIC, a))!;
+        expect(entry.channel.hasReceiver()).to.equal(true);
+        await manager.attach(REAL_TOPIC, b);
+        manager.detach(entry, a);
+        expect(entry.channel.hasReceiver()).to.equal(true);
+        manager.detach(entry, b);
+        expect(entry.channel.hasReceiver()).to.equal(false);
+    });
+
     it('keeps the clone after the last browser left and removes it when the grace period is over', async () => {
         const { adapter, ctrl, manager } = setup();
         const a = client();
