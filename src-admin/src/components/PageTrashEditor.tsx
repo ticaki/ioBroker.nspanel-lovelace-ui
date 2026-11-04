@@ -303,9 +303,9 @@ export class PageTrashEditor extends ConfigGeneric<ConfigGenericProps & PageTras
                         type="text"
                         label={this.getText('unique_label')}
                         value={entry.uniqueName}
-                        disabled
                         slotProps={{
                             input: {
+                                readOnly: true,
                                 sx: {
                                     backgroundColor: 'transparent',
                                     px: 1,

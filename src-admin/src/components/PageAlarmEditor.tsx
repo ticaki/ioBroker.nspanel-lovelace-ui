@@ -142,6 +142,7 @@ export class PageAlarmEditor extends React.Component<PageAlarmEditorProps, PageA
                         value={entry.uniqueName}
                         slotProps={{
                             input: {
+                                readOnly: true,
                                 sx: {
                                     backgroundColor: 'transparent',
                                     px: 1,
@@ -150,7 +151,6 @@ export class PageAlarmEditor extends React.Component<PageAlarmEditorProps, PageA
                                 },
                             },
                         }}
-                        disabled
                         helperText={
                             isMainPageEntry(entry)
                                 ? this.getText('page_name_main_locked')

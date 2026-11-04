@@ -1997,6 +1997,7 @@ export class PageThermo2Editor extends ConfigGeneric<
                         value={entry.uniqueName}
                         slotProps={{
                             input: {
+                                readOnly: true,
                                 sx: {
                                     backgroundColor: 'transparent',
                                     px: 1,
@@ -2005,7 +2006,6 @@ export class PageThermo2Editor extends ConfigGeneric<
                                 },
                             },
                         }}
-                        disabled
                         helperText={
                             isMainPageEntry(entry)
                                 ? this.getText('page_name_main_locked')

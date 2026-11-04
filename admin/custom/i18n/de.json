@@ -477,7 +477,7 @@
     "deletePanelConfirmText": "Möchten Sie das Panel '%s' wirklich löschen?",
     "deletePanelSuccessText": "Panel '%s' wurde gelöscht. Möchten Sie die Änderungen speichern?",
     "delete_confirm_close_chain": "Vor- und Nachseite miteinander verbinden",
-    "delete_confirm_close_chain_hint": "Die Seiten, die auf diese wischen, übernehmen ihre Vor- bzw. Nachseite; fehlt eine, wird der Verweis entfernt. Je Panel getrennt.",
+    "delete_confirm_close_chain_hint": "Die Seiten, die auf diese zeigen, übernehmen ihre Vor- bzw. Nachseite; fehlt eine, wird der Verweis entfernt. Je Panel getrennt.",
     "delete_confirm_referenced": "Auf diese Seite zeigen: %s",
     "delete_confirm_referenced_hint": "Diese Verweise bleiben stehen und müssen von Hand geändert werden. Verweise aus Konfigurationsskripten sind hier nicht aufgeführt.",
     "delete_confirm_referenced_more": "… und %n weitere",

@@ -477,7 +477,7 @@
     "deletePanelConfirmText": "Do you really want to delete the panel '%s'?",
     "deletePanelSuccessText": "Panel '%s' has been deleted. Do you want to save the changes?",
     "delete_confirm_close_chain": "Connect the previous and the next page",
-    "delete_confirm_close_chain_hint": "The pages that swipe to this one take over its previous or next page; a missing one removes the link. Per panel.",
+    "delete_confirm_close_chain_hint": "The pages that point at this one take over its previous or next page; a missing one removes the link. Per panel.",
     "delete_confirm_referenced": "These pages point at it: %s",
     "delete_confirm_referenced_hint": "These references stay behind and have to be changed by hand. References from configuration scripts are not listed here.",
     "delete_confirm_referenced_more": "... and %n more",

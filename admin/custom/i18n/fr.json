@@ -476,7 +476,7 @@
     "deletePanelConfirmText": "Voulez-vous vraiment supprimer le panneau '%s' ?",
     "deletePanelSuccessText": "Le panneau '%s' a été supprimé. Voulez-vous enregistrer les modifications ?",
     "delete_confirm_close_chain": "Relier la page précédente et la page suivante",
-    "delete_confirm_close_chain_hint": "Les pages qui mènent à celle-ci reprennent sa page précédente ou suivante ; si elle manque, le lien est supprimé. Par panneau.",
+    "delete_confirm_close_chain_hint": "Les pages qui pointent vers celle-ci reprennent sa page précédente ou suivante ; si elle manque, le lien est supprimé. Par panneau.",
     "delete_confirm_referenced": "Ces pages pointent vers elle : %s",
     "delete_confirm_referenced_hint": "Ces références subsistent et doivent être modifiées à la main. Les références provenant des scripts de configuration ne sont pas listées ici.",
     "delete_confirm_referenced_more": "… et %n autres",

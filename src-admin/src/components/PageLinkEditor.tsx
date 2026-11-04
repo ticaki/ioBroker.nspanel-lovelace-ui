@@ -55,9 +55,9 @@ export class PageLinkEditor extends React.Component<PageLinkEditorProps> {
                         type="text"
                         label={this.getText('unique_label')}
                         value={entry.uniqueName}
-                        disabled
                         slotProps={{
                             input: {
+                                readOnly: true,
                                 sx: {
                                     backgroundColor: 'transparent',
                                     px: 1,

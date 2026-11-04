@@ -113,6 +113,7 @@ export class PageQREditor extends ConfigGeneric<ConfigGenericProps & PageQREdito
                         value={entry.uniqueName}
                         slotProps={{
                             input: {
+                                readOnly: true,
                                 sx: {
                                     backgroundColor: 'transparent',
                                     px: 1,
@@ -121,7 +122,6 @@ export class PageQREditor extends ConfigGeneric<ConfigGenericProps & PageQREdito
                                 },
                             },
                         }}
-                        disabled
                         helperText={
                             isMainPageEntry(entry)
                                 ? this.getText('page_name_main_locked')

@@ -989,9 +989,11 @@ export class PageMenuEditor extends ConfigGeneric<ConfigGenericProps & PageMenuE
                         label={this.getText('unique_label')}
                         value={entry.uniqueName}
                         slotProps={{
-                            input: { sx: { backgroundColor: 'transparent', px: 1, fontWeight: 600, width: '50%' } },
+                            input: {
+                                readOnly: true,
+                                sx: { backgroundColor: 'transparent', px: 1, fontWeight: 600, width: '50%' },
+                            },
                         }}
-                        disabled
                         helperText={
                             isMainPageEntry(entry)
                                 ? this.getText('page_name_main_locked')

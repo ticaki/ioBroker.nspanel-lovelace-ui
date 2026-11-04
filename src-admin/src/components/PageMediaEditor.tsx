@@ -1566,6 +1566,7 @@ export class PageMediaEditor extends ConfigGeneric<ConfigGenericProps & PageMedi
                         value={entry.uniqueName}
                         slotProps={{
                             input: {
+                                readOnly: true,
                                 sx: {
                                     backgroundColor: 'transparent',
                                     px: 1,
@@ -1574,7 +1575,6 @@ export class PageMediaEditor extends ConfigGeneric<ConfigGenericProps & PageMedi
                                 },
                             },
                         }}
-                        disabled
                         helperText={
                             isMainPageEntry(entry)
                                 ? this.getText('page_name_main_locked')

@@ -260,6 +260,7 @@ export class PageChartEditor extends ConfigGeneric<ConfigGenericProps & PageChar
                         value={entry.uniqueName}
                         slotProps={{
                             input: {
+                                readOnly: true,
                                 sx: {
                                     backgroundColor: 'transparent',
                                     px: 1,
@@ -268,7 +269,6 @@ export class PageChartEditor extends ConfigGeneric<ConfigGenericProps & PageChar
                                 },
                             },
                         }}
-                        disabled
                         helperText={
                             isMainPageEntry(entry)
                                 ? this.getText('page_name_main_locked')

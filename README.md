@@ -170,7 +170,7 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
 - (tt-tom17) cardAlarm: a new page starts as an alarm system with the buttons "Arm" and "Disarm" filled in, and the top button of both columns is mandatory - without them the card has no button at all in one of its two states and cannot be left; the type "unlock" still needs one button only
 - (tt-tom17) PageConfig: the unique id of a page is fixed once the page was created - renaming it left the navigation of every other page pointing at the old name, visible only as a warning in the log
 - (tt-tom17) PageConfig: the delete confirmation names the pages that point at the page to be deleted - deleting still leaves those references behind, but no longer silently
-- (tt-tom17) PageConfig: the delete confirmation offers to connect the previous and the next page, so deleting a page out of a swipe chain no longer leaves its neighbours pointing at a page that is gone
+- (tt-tom17) PageConfig: the delete confirmation offers to connect the previous and the next page, so deleting a page out of a prev/next chain no longer leaves its neighbours pointing at a page that is gone
 - (tt-tom17) PageConfig: the third tab of the navigation column is gone - it only showed an untranslated placeholder text
 
 ### 2.0.2 (2026-11-01)

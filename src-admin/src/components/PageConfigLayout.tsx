@@ -242,8 +242,8 @@ export class PageConfigLayout extends React.Component<PageConfigLayoutProps, Pag
     }
 
     /**
-     * The option to close the prev/next gap, offered only when a page actually swipes to the one
-     * that goes away - home/parent links name a destination, there is no gap to close.
+     * The option to close the prev/next gap, offered only when a page actually points at the one that
+     * goes away with prev or next - home/parent name a destination, there is no gap to close.
      *
      * @returns The checkbox for the delete confirmation, or `null`.
      */
