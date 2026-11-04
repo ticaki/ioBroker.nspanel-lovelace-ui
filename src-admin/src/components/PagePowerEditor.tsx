@@ -74,7 +74,6 @@ const SLOT_INDICES: Record<SlotKey, number> = {
 export interface PagePowerEditorProps {
     entry: PowerEntry;
     onEntryChange: (updated: PowerEntry) => void;
-    onUniqueNameChange: (oldName: string, newName: string) => void;
     theme?: IobTheme;
     themeType?: ThemeType;
     themeName?: ThemeName;
@@ -772,17 +771,17 @@ export class PagePowerEditor extends ConfigGeneric<ConfigGenericProps & PagePowe
                         variant="standard"
                         label={this.getText('unique_label')}
                         value={entry.uniqueName}
-                        onChange={e => {
-                            const v = e.target.value;
-                            if (v.trim()) {
-                                this.props.onUniqueNameChange(entry.uniqueName, v);
-                            }
-                        }}
                         slotProps={{
-                            input: { sx: { backgroundColor: 'transparent', px: 1, fontWeight: 600, width: '50%' } },
+                            input: {
+                                readOnly: true,
+                                sx: { backgroundColor: 'transparent', px: 1, fontWeight: 600, width: '50%' },
+                            },
                         }}
-                        disabled={!this.state.alive || isMainPageEntry(entry)}
-                        helperText={isMainPageEntry(entry) ? this.getText('page_name_main_locked') : undefined}
+                        helperText={
+                            isMainPageEntry(entry)
+                                ? this.getText('page_name_main_locked')
+                                : this.getText('page_name_locked')
+                        }
                     />
                 </Box>
                 <TextField

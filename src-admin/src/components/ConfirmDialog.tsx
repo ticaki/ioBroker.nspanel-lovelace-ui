@@ -6,7 +6,9 @@ export interface ConfirmDialogProps {
     onClose: () => void;
     onConfirm: () => void;
     title: string;
-    description: string;
+    description: React.ReactNode;
+    /** Shown below the description, e.g. an option the confirmation offers. */
+    extra?: React.ReactNode;
     cancelText: string;
     confirmText: string;
     ariaTitleId?: string;
@@ -19,6 +21,7 @@ export default function ConfirmDialog({
     onConfirm,
     title,
     description,
+    extra,
     cancelText,
     confirmText,
     ariaTitleId = 'confirm-dialog-title',
@@ -36,6 +39,7 @@ export default function ConfirmDialog({
             <DialogTitle id={ariaTitleId}>{title}</DialogTitle>
             <DialogContent>
                 <DialogContentText id={ariaDescId}>{description}</DialogContentText>
+                {extra}
             </DialogContent>
             <DialogActions sx={{ display: 'flex', flexDirection: 'column', gap: 1, p: 2 }}>
                 <Button

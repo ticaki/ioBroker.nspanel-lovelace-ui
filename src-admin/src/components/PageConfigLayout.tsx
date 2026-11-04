@@ -10,6 +10,8 @@ import {
     Select,
     MenuItem,
     FormControl,
+    Checkbox,
+    FormControlLabel,
 } from '@mui/material';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutlineOutlined';
 import LinkIcon from '@mui/icons-material/Link';
@@ -21,6 +23,7 @@ import type {
     PageConfigEntry,
     AdminPanelConfig,
 } from '../../../src/lib/types/adminShareConfig';
+import { findNavigationReferences, type NavigationReference } from '../../../src/lib/types/navigationEdit';
 import {
     ADAPTER_NAME,
     ALL_PANELS_SPECIAL_ID,
@@ -110,7 +113,8 @@ export interface PageConfigLayoutProps {
     onSelectedChange: (name: string) => void;
     onCardTypeChange: (cardType: PageCardType) => void;
     onAdd: (name: string, cardType: PageCardType) => void;
-    onDelete: (name: string) => void;
+    /** deletes a page; `closeChain` hands its prev/next over to the pages that point at it */
+    onDelete: (name: string, closeChain: boolean) => void;
     onAssign: (uniqueName: string, assignments: NavigationAssignmentList) => void;
     children: React.ReactNode;
     oContext: any;
@@ -126,18 +130,24 @@ interface PageConfigLayoutState {
     newName: string;
     confirmDeleteOpen: boolean;
     confirmDeleteName: string | null;
+    /** option of the delete confirmation: close the prev/next gap the page leaves behind */
+    confirmDeleteCloseChain: boolean;
     alive?: boolean;
     /** Gewählter Panel-Filterkey (leer = alle) */
     selectedPanelFilter: string;
 }
 
 export class PageConfigLayout extends React.Component<PageConfigLayoutProps, PageConfigLayoutState> {
+    /** How many referencing pages the delete dialog names before it counts the rest. */
+    private static readonly maxReferencesShown = 5;
+
     constructor(props: PageConfigLayoutProps) {
         super(props);
         this.state = {
             newName: '',
             confirmDeleteOpen: false,
             confirmDeleteName: null,
+            confirmDeleteCloseChain: false,
             alive: false,
             selectedPanelFilter: '',
         };
@@ -199,21 +209,116 @@ export class PageConfigLayout extends React.Component<PageConfigLayoutProps, Pag
         this.setState({
             confirmDeleteOpen: true,
             confirmDeleteName: name,
+            confirmDeleteCloseChain: false,
         });
     };
 
     private handleDeleteConfirm = (): void => {
         const name = this.state.confirmDeleteName;
         if (!name) {
-            this.setState({ confirmDeleteOpen: false, confirmDeleteName: null });
+            this.setState({ confirmDeleteOpen: false, confirmDeleteName: null, confirmDeleteCloseChain: false });
             return;
         }
-        this.props.onDelete(name);
-        this.setState({ confirmDeleteOpen: false, confirmDeleteName: null });
+        this.props.onDelete(name, this.state.confirmDeleteCloseChain);
+        this.setState({ confirmDeleteOpen: false, confirmDeleteName: null, confirmDeleteCloseChain: false });
     };
 
+    /**
+     * Description of the delete confirmation: the question, and the pages that point at the page
+     * to be deleted. Deleting does not clean those references up, so they are named beforehand.
+     *
+     * Only pages of the admin configuration are found - a reference from a configuration script is
+     * not part of it, which the hint says.
+     *
+     * @returns The description for the confirmation dialog.
+     */
+    /**
+     * The pages that point at the page the delete confirmation is open for.
+     *
+     * @returns The references, empty while no dialog is open.
+     */
+    private deleteReferences(): NavigationReference[] {
+        const name = this.state.confirmDeleteName;
+        return name ? findNavigationReferences(this.props.entries, name) : [];
+    }
+
+    /**
+     * The option to close the prev/next gap, offered only when a page actually points at the one that
+     * goes away with prev or next - home/parent name a destination, there is no gap to close.
+     *
+     * @returns The checkbox for the delete confirmation, or `null`.
+     */
+    private renderDeleteCloseChain(): React.ReactNode {
+        const inChain = this.deleteReferences().some(
+            reference => reference.kinds.includes('prev') || reference.kinds.includes('next'),
+        );
+        if (!inChain) {
+            return null;
+        }
+        return (
+            <FormControlLabel
+                sx={{ mt: 1, alignItems: 'flex-start' }}
+                control={
+                    <Checkbox
+                        checked={this.state.confirmDeleteCloseChain}
+                        onChange={e => this.setState({ confirmDeleteCloseChain: e.target.checked })}
+                        size="small"
+                    />
+                }
+                label={
+                    <>
+                        <Box
+                            component="span"
+                            sx={{ display: 'block' }}
+                        >
+                            {this.getText('delete_confirm_close_chain')}
+                        </Box>
+                        <Box
+                            component="span"
+                            sx={{ display: 'block', fontSize: '0.8rem', color: 'text.secondary' }}
+                        >
+                            {this.getText('delete_confirm_close_chain_hint')}
+                        </Box>
+                    </>
+                }
+            />
+        );
+    }
+
+    private renderDeleteDescription(): React.ReactNode {
+        const name = this.state.confirmDeleteName;
+        const question = this.getText('delete_confirm_text') + (name ? `: ${name}` : '');
+        const references = this.deleteReferences();
+        if (!references.length) {
+            return question;
+        }
+        const shown = references.slice(0, PageConfigLayout.maxReferencesShown);
+        let list = shown.map(reference => reference.uniqueName).join(', ');
+        const rest = references.length - shown.length;
+        if (rest > 0) {
+            list += ` ${this.getText('delete_confirm_referenced_more').replace('%n', String(rest))}`;
+        }
+        return (
+            <>
+                {question}
+                <Box
+                    component="span"
+                    sx={{ display: 'block', mt: 1, fontWeight: 600 }}
+                >
+                    {this.getText('delete_confirm_referenced').replace('%s', list)}
+                </Box>
+                <Box
+                    component="span"
+                    sx={{ display: 'block', mt: 1 }}
+                >
+                    {this.getText('delete_confirm_referenced_hint')}
+                </Box>
+            </>
+        );
+    }
+
     private handleDeleteCancel = (): void => {
-        this.setState({ confirmDeleteOpen: false, confirmDeleteName: null });
+        this.setState({ confirmDeleteOpen: false, confirmDeleteName: null, confirmDeleteCloseChain: false });
     };
 
     /**
@@ -645,10 +750,8 @@ export class PageConfigLayout extends React.Component<PageConfigLayoutProps, Pag
                     onClose={this.handleDeleteCancel}
                     onConfirm={this.handleDeleteConfirm}
                     title={this.getText('delete_confirm_title')}
-                    description={
-                        this.getText('delete_confirm_text') +
-                        (this.state.confirmDeleteName ? `: ${this.state.confirmDeleteName}` : '')
-                    }
+                    description={this.renderDeleteDescription()}
+                    extra={this.renderDeleteCloseChain()}
                     cancelText={this.getText('Cancel1')}
                     confirmText={this.getText('Delete')}
                     ariaTitleId="unlock-delete-confirm-title"
