@@ -5,6 +5,8 @@ import {
     Select,
     MenuItem,
     Button,
+    Link,
+    Snackbar,
     List,
     ListItem,
     ListItemButton,
@@ -53,6 +55,12 @@ import {
 /** The four links a page stores per panel. */
 type NavField = 'next' | 'prev' | 'home' | 'parent';
 
+/** Spacing a navigation field label needs at its place in the panel. */
+type NavFieldLabelSx = { mr?: number; mb?: number; display?: 'block' };
+
+/** Where a navigation link leads to in the admin: an admin page or a system page that cannot be opened. */
+type NavLinkTarget = { kind: 'page'; name: string } | { kind: 'system' };
+
 /** fields of the page details: navigation flags of every page plus the paging of the menu cards */
 export type PageCommonFields = PageConfigBaseFields & PageScrollFields;
 
@@ -80,6 +88,8 @@ type NavigationAssignmentPanelProps = {
     panelPagesMap?: Record<string, string[]>;
     /** Alle Admin-Seiten, für die Startseiten- und Zielprüfung */
     allEntries?: PageConfigEntry[];
+    /** Opens another admin page; without it the field labels stay plain text */
+    onOpenPage?: (name: string) => void;
 };
 
 interface NavigationAssignmentPanelState extends ConfigGenericState {
@@ -108,6 +118,8 @@ interface NavigationAssignmentPanelState extends ConfigGenericState {
     activeTab?: number;
     // show system pages (///-prefixed) in the prev/next/parent/home dropdowns; ///unlock is always shown regardless
     showSystemPages: boolean;
+    // a click on a navigation label led to a system page: shows the short notice
+    systemPageNoticeOpen: boolean;
     /**
      * Navigation of all panels as the adapter resolved it (`getPanelNavigation`), read when the
      * panel opens and cached. `undefined` until the adapter answered.
@@ -171,6 +183,7 @@ class NavigationAssignmentPanel extends ConfigGeneric<
             focusReceived: {},
             activeTab: 0,
             showSystemPages: false,
+            systemPageNoticeOpen: false,
         };
     }
 
@@ -440,6 +453,109 @@ class NavigationAssignmentPanel extends ConfigGeneric<
         const panel = this.state.panelNavigation.find(p => p.panelTopic === topic);
         const entry = panel?.navigationMap.find(e => e.page === nodeName && e.nodeType !== 'stateRef');
         return entry?.[field] ?? '';
+    }
+
+    /**
+     * The admin page a navigation link of the edited page leads to: the target the adapter resolved,
+     * else the stored one - a start page's stored links are invalid and do not count.
+     *
+     * @param topic Panel topic or the ALL id.
+     * @param field The link.
+     * @returns The admin page, or the marker for a system page without admin entry; `undefined` when
+     * the link is empty, its target is no admin page (script or generated page) or it is the edited
+     * page itself.
+     */
+    private getNavLinkTarget(topic: string | undefined, field: NavField): NavLinkTarget | undefined {
+        if (!topic) {
+            return undefined;
+        }
+        const node =
+            this.getResolvedNavValue(topic, field) ||
+            (this.props.commonFields?.isMainPage ? '' : this.getNavValue(topic, field));
+        if (!node) {
+            return undefined;
+        }
+        const entries = this.props.allEntries ?? [];
+        let target: PageConfigEntry | undefined;
+        if (node === mainPageName) {
+            const candidates = entries.filter(e => isMainPageEntry(e) || e.uniqueName === mainPageName);
+            target =
+                candidates.find(e => this.getCoveredTopics(e.navigationAssignment).includes(topic)) ??
+                (topic === ALL_PANELS_SPECIAL_ID ? candidates[0] : undefined);
+        } else {
+            target = entries.find(e => e.uniqueName === node);
+        }
+        if (!target) {
+            return isSystemPage(node) ? { kind: 'system' } : undefined;
+        }
+        return target.uniqueName !== this.props.uniqueName ? { kind: 'page', name: target.uniqueName } : undefined;
+    }
+
+    /**
+     * Label of a navigation link; it opens the linked page when that is an admin page and shows a
+     * short notice when that is a system page.
+     *
+     * @param topic Panel topic or the ALL id.
+     * @param field The link.
+     * @param label Text of the label.
+     * @param options Additional tooltip text and spacing of the label.
+     * @param options.hint Tooltip text shown in addition to the link target.
+     * @param options.sx Spacing of the label.
+     * @returns The label element.
+     */
+    private renderNavFieldLabel(
+        topic: string | undefined,
+        field: NavField,
+        label: string,
+        options: { hint?: string; sx?: NavFieldLabelSx } = {},
+    ): React.JSX.Element {
+        const { hint, sx } = options;
+        const { onOpenPage } = this.props;
+        const target = onOpenPage ? this.getNavLinkTarget(topic, field) : undefined;
+        const openHint = !target
+            ? ''
+            : target.kind === 'page'
+              ? I18n.t('nav_open_target').replace('%s', target.name)
+              : I18n.t('nav_system_page_no_jump');
+        const tooltip =
+            hint && openHint ? (
+                <>
+                    {hint}
+                    <br />
+                    {openHint}
+                </>
+            ) : (
+                hint || openHint
+            );
+        const element =
+            onOpenPage && target ? (
+                <Link
+                    component="button"
+                    type="button"
+                    variant="caption"
+                    color="text.secondary"
+                    underline="hover"
+                    onClick={() => {
+                        if (target.kind === 'page') {
+                            onOpenPage(target.name);
+                        } else {
+                            this.setState({ systemPageNoticeOpen: true });
+                        }
+                    }}
+                    sx={{ ...sx, cursor: 'pointer', '&:hover': { color: 'primary.main' } }}
+                >
+                    {label}
+                </Link>
+            ) : (
+                <Typography
+                    variant="caption"
+                    color="text.secondary"
+                    sx={sx}
+                >
+                    {label}
+                </Typography>
+            );
+        return tooltip ? <Tooltip title={tooltip}>{element}</Tooltip> : element;
     }
 
     /**
@@ -1895,15 +2011,10 @@ class NavigationAssignmentPanel extends ConfigGeneric<
                                 <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1, mt: 1 }}>
                                     <Box>
                                         <Box sx={{ display: 'flex', alignItems: 'center', mb: 0.5 }}>
-                                            <Tooltip title={I18n.t('nav_prev_tooltip')}>
-                                                <Typography
-                                                    variant="caption"
-                                                    color="text.secondary"
-                                                    sx={{ mr: 0.5 }}
-                                                >
-                                                    prev
-                                                </Typography>
-                                            </Tooltip>
+                                            {this.renderNavFieldLabel(this.state.selectedAddedTopic, 'prev', 'prev', {
+                                                hint: I18n.t('nav_prev_tooltip'),
+                                                sx: { mr: 0.5 },
+                                            })}
                                         </Box>
                                         <Select
                                             size="small"
@@ -1972,15 +2083,10 @@ class NavigationAssignmentPanel extends ConfigGeneric<
                                     </Box>
                                     <Box>
                                         <Box sx={{ display: 'flex', alignItems: 'center', mb: 0.5 }}>
-                                            <Tooltip title={I18n.t('nav_next_tooltip')}>
-                                                <Typography
-                                                    variant="caption"
-                                                    color="text.secondary"
-                                                    sx={{ mr: 0.5 }}
-                                                >
-                                                    next
-                                                </Typography>
-                                            </Tooltip>
+                                            {this.renderNavFieldLabel(this.state.selectedAddedTopic, 'next', 'next', {
+                                                hint: I18n.t('nav_next_tooltip'),
+                                                sx: { mr: 0.5 },
+                                            })}
                                         </Box>
                                         <Select
                                             size="small"
@@ -2048,13 +2154,9 @@ class NavigationAssignmentPanel extends ConfigGeneric<
                                         {this.renderNavCollisions('next')}
                                     </Box>
                                     <Box>
-                                        <Typography
-                                            variant="caption"
-                                            color="text.secondary"
-                                            sx={{ mb: 0.5, display: 'block' }}
-                                        >
-                                            parent
-                                        </Typography>
+                                        {this.renderNavFieldLabel(this.state.selectedAddedTopic, 'parent', 'parent', {
+                                            sx: { mb: 0.5, display: 'block' },
+                                        })}
                                         <Select
                                             size="small"
                                             displayEmpty
@@ -2107,13 +2209,9 @@ class NavigationAssignmentPanel extends ConfigGeneric<
                                         </Select>
                                     </Box>
                                     <Box>
-                                        <Typography
-                                            variant="caption"
-                                            color="text.secondary"
-                                            sx={{ mb: 0.5, display: 'block' }}
-                                        >
-                                            home
-                                        </Typography>
+                                        {this.renderNavFieldLabel(this.state.selectedAddedTopic, 'home', 'home', {
+                                            sx: { mb: 0.5, display: 'block' },
+                                        })}
                                         <Select
                                             size="small"
                                             displayEmpty
@@ -2266,12 +2364,11 @@ class NavigationAssignmentPanel extends ConfigGeneric<
                                                                       gap: 0.5,
                                                                   }}
                                                               >
-                                                                  <Typography
-                                                                      variant="caption"
-                                                                      color="text.secondary"
-                                                                  >
-                                                                      {I18n.t(field) || field}
-                                                                  </Typography>
+                                                                  {this.renderNavFieldLabel(
+                                                                      topic,
+                                                                      field,
+                                                                      I18n.t(field) || field,
+                                                                  )}
                                                                   {missing.length > 0 ? (
                                                                       <Tooltip
                                                                           title={I18n.t('nav_target_missing')
@@ -2358,6 +2455,17 @@ class NavigationAssignmentPanel extends ConfigGeneric<
                         </>
                     )}
                 </Box>
+                <Snackbar
+                    open={this.state.systemPageNoticeOpen}
+                    autoHideDuration={3000}
+                    onClose={(_event, reason) => {
+                        // a second click on the label must not close the notice again
+                        if (reason !== 'clickaway') {
+                            this.setState({ systemPageNoticeOpen: false });
+                        }
+                    }}
+                    message={I18n.t('nav_system_page_no_jump')}
+                />
             </Box>
         );
     }

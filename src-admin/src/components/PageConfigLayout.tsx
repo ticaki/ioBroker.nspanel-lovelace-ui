@@ -217,6 +217,43 @@ export class PageConfigLayout extends React.Component<PageConfigLayoutProps, Pag
     };
 
     /**
+     * Entries left over by the card type and panel filters.
+     *
+     * @returns The entries the list shows.
+     */
+    private getVisibleEntries(): PageConfigEntry[] {
+        const { selectedPanelFilter } = this.state;
+        // Filter entries by selected card type
+        const cardFilteredEntries = filterEntriesByCardType(this.props.entries, this.props.selectedCardType);
+
+        // Filter additionally by selected panel
+        return selectedPanelFilter === ''
+            ? cardFilteredEntries
+            : selectedPanelFilter === PANEL_FILTER_UNASSIGNED
+              ? cardFilteredEntries.filter(e => {
+                    const assignment = e.navigationAssignment ?? [];
+                    return assignment.length === 0;
+                })
+              : cardFilteredEntries.filter(e => {
+                    const assignment = e.navigationAssignment ?? [];
+                    return assignment.some(a => a.topic === selectedPanelFilter || a.topic === ALL_PANELS_SPECIAL_ID);
+                });
+    }
+
+    /**
+     * Selects a page; a target hidden by a filter resets the panel filter. The card type filter is
+     * handled by `onSelectedChange`.
+     *
+     * @param name uniqueName of the page
+     */
+    private handleOpenPage = (name: string): void => {
+        if (!this.getVisibleEntries().some(v => v.uniqueName === name)) {
+            this.setState({ selectedPanelFilter: '' });
+        }
+        this.props.onSelectedChange(name);
+    };
+
+    /**
      * Name of a list entry; a page link gets a link icon in front, in warning colour if its target
      * is missing.
      *
@@ -256,10 +293,9 @@ export class PageConfigLayout extends React.Component<PageConfigLayoutProps, Pag
      * target is shown in warning colour and is not clickable.
      *
      * @param name uniqueName of the list entry
-     * @param visibleEntries Entries left over by the filters - a target hidden by a filter resets the panel filter.
      * @returns The target line or null if the entry is no page link.
      */
-    private renderLinkTarget(name: string, visibleEntries: PageConfigEntry[]): React.JSX.Element | null {
+    private renderLinkTarget(name: string): React.JSX.Element | null {
         const { entries } = this.props;
         const entry = entries.find(e => e.uniqueName === name);
         if (!entry || !isPageLinkEntry(entry)) {
@@ -277,10 +313,7 @@ export class PageConfigLayout extends React.Component<PageConfigLayoutProps, Pag
                         if (broken) {
                             return;
                         }
-                        if (!visibleEntries.some(v => v.uniqueName === target)) {
-                            this.setState({ selectedPanelFilter: '' });
-                        }
-                        this.props.onSelectedChange(target);
+                        this.handleOpenPage(target);
                     }}
                     sx={{
                         display: 'inline-flex',
@@ -324,24 +357,7 @@ export class PageConfigLayout extends React.Component<PageConfigLayoutProps, Pag
             !uniqueNames.includes(newName) &&
             (this.props.pagesList ?? []).includes(newName);
 
-        // Filter entries by selected card type
-        const cardFilteredEntries = filterEntriesByCardType(entries, selectedCardType);
-
-        // Filter additionally by selected panel
-        const filteredEntries =
-            selectedPanelFilter === ''
-                ? cardFilteredEntries
-                : selectedPanelFilter === PANEL_FILTER_UNASSIGNED
-                  ? cardFilteredEntries.filter(e => {
-                        const assignment = e.navigationAssignment ?? [];
-                        return assignment.length === 0;
-                    })
-                  : cardFilteredEntries.filter(e => {
-                        const assignment = e.navigationAssignment ?? [];
-                        return assignment.some(
-                            a => a.topic === selectedPanelFilter || a.topic === ALL_PANELS_SPECIAL_ID,
-                        );
-                    });
+        const filteredEntries = this.getVisibleEntries();
 
         // Alphabetisch sortiert
         const filteredUniqueNames = Array.from(new Set(filteredEntries.map(e => e.uniqueName)))
@@ -603,7 +619,7 @@ export class PageConfigLayout extends React.Component<PageConfigLayoutProps, Pag
                                     >
                                         <DeleteOutlineIcon fontSize="small" />
                                     </IconButton>
-                                    {this.renderLinkTarget(name, filteredEntries)}
+                                    {this.renderLinkTarget(name)}
                                 </Box>
                             ))
                         )}
@@ -700,6 +716,7 @@ export class PageConfigLayout extends React.Component<PageConfigLayoutProps, Pag
                         currentAssignments={currentAssignments}
                         oContext={oContext}
                         onAssign={onAssign}
+                        onOpenPage={this.handleOpenPage}
                     />
                 </Box>
             </Box>
