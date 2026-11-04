@@ -27,7 +27,6 @@ import {
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutlineOutlined';
 import NavigationIcon from '@mui/icons-material/Navigation';
 import SettingsIcon from '@mui/icons-material/Settings';
-import ExtensionIcon from '@mui/icons-material/Extension';
 import Tooltip from '@mui/material/Tooltip';
 import { ConfigGeneric, type ConfigGenericProps, type ConfigGenericState } from '@iobroker/json-config';
 import { I18n } from '@iobroker/gui-components';
@@ -77,8 +76,6 @@ type NavigationAssignmentPanelProps = {
     // called when assignments change: (uniqueName, assignments)
     onAssign?: (uniqueName: string, assignments: NavigationAssignmentList) => void;
     // optional tooltip texts for next/prev
-    // hide navigation fields (next/prev/home/parent) - for screensaver pages
-    hideNavigationFields?: boolean;
     // Neu: Gemeinsame Felder
     commonFields?: PageCommonFields;
     onCommonFieldsChange?: (fields: Partial<PageCommonFields>) => void;
@@ -1741,37 +1738,6 @@ class NavigationAssignmentPanel extends ConfigGeneric<
                             }}
                             disabled={!this.state.alive}
                         />
-                        <Tab
-                            icon={<ExtensionIcon sx={{ fontSize: { xs: 18, md: 20 } }} />}
-                            iconPosition="start"
-                            label={
-                                <>
-                                    {/* Responsive label: short on mobile */}
-                                    <Box
-                                        component="span"
-                                        sx={{
-                                            display: { xs: 'inline', md: 'none' },
-                                        }}
-                                    >
-                                        {I18n.t('free') || 'Free'}
-                                    </Box>
-                                    {/* Full label on desktop */}
-                                    <Box
-                                        component="span"
-                                        sx={{
-                                            display: { xs: 'none', md: 'inline' },
-                                        }}
-                                    >
-                                        {I18n.t('placeholder') || 'Placeholder'}
-                                    </Box>
-                                </>
-                            }
-                            sx={{
-                                minWidth: { xs: 'auto', md: 90 },
-                                px: { xs: 1, md: 2 },
-                            }}
-                            disabled={!this.state.alive}
-                        />
                     </Tabs>
 
                     {activeTab === 0 && (
@@ -2007,284 +1973,282 @@ class NavigationAssignmentPanel extends ConfigGeneric<
                             <Divider sx={{ my: 1 }} />
 
                             {/* navigation selectors for the selected added panel (labels only, options removed) */}
-                            {!this.props.hideNavigationFields && (
-                                <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1, mt: 1 }}>
-                                    <Box>
-                                        <Box sx={{ display: 'flex', alignItems: 'center', mb: 0.5 }}>
-                                            {this.renderNavFieldLabel(this.state.selectedAddedTopic, 'prev', 'prev', {
-                                                hint: I18n.t('nav_prev_tooltip'),
-                                                sx: { mr: 0.5 },
-                                            })}
-                                        </Box>
-                                        <Select
-                                            size="small"
-                                            displayEmpty
-                                            aria-label="prev"
-                                            value={
-                                                lockAssignment
-                                                    ? ''
-                                                    : this.getNavValue(this.state.selectedAddedTopic, 'prev') || ''
-                                            }
-                                            renderValue={this.renderNavSelectValue(
-                                                'prev',
-                                                this.state.selectedAddedTopic ? (
-                                                    <em>—</em>
-                                                ) : (
-                                                    <em>{I18n.t('select_panel_first')}</em>
-                                                ),
-                                            )}
-                                            onOpen={() => {
-                                                if (this.state.selectedAddedTopic) {
-                                                    void this.loadPagesForPanel(this.state.selectedAddedTopic, true);
-                                                }
-                                            }}
-                                            onChange={e =>
-                                                this.setNavigationForSelected({
-                                                    prev: String(e.target.value) || undefined,
-                                                })
-                                            }
-                                            sx={{ width: '100%' }}
-                                            disabled={
-                                                !this.state.alive ||
-                                                lockAssignment ||
-                                                (this.state.selectedAddedTopic
-                                                    ? this.state.isLoading[this.state.selectedAddedTopic] || false
-                                                    : false)
-                                            }
-                                            endAdornment={
-                                                this.state.selectedAddedTopic &&
-                                                this.state.isLoading[this.state.selectedAddedTopic] ? (
-                                                    <Box sx={{ display: 'flex', alignItems: 'center', pr: 1 }}>
-                                                        <CircularProgress size={16} />
-                                                    </Box>
-                                                ) : null
-                                            }
-                                        >
-                                            <MenuItem value="">
-                                                {this.state.selectedAddedTopic ? (
-                                                    <em>—</em>
-                                                ) : (
-                                                    <em>{I18n.t('select_panel_first')}</em>
-                                                )}
-                                            </MenuItem>
-                                            {this.getSelectablePages(
-                                                pages,
-                                                this.getNavValue(this.state.selectedAddedTopic, 'prev'),
-                                            ).map((p: string) => (
-                                                <MenuItem
-                                                    key={`prev-${p}`}
-                                                    value={p}
-                                                >
-                                                    {p}
-                                                </MenuItem>
-                                            ))}
-                                        </Select>
-                                        {this.renderNavCollisions('prev')}
-                                    </Box>
-                                    <Box>
-                                        <Box sx={{ display: 'flex', alignItems: 'center', mb: 0.5 }}>
-                                            {this.renderNavFieldLabel(this.state.selectedAddedTopic, 'next', 'next', {
-                                                hint: I18n.t('nav_next_tooltip'),
-                                                sx: { mr: 0.5 },
-                                            })}
-                                        </Box>
-                                        <Select
-                                            size="small"
-                                            displayEmpty
-                                            aria-label="next"
-                                            value={
-                                                lockAssignment
-                                                    ? ''
-                                                    : this.getNavValue(this.state.selectedAddedTopic, 'next') || ''
-                                            }
-                                            renderValue={this.renderNavSelectValue(
-                                                'next',
-                                                this.state.selectedAddedTopic ? (
-                                                    <em>—</em>
-                                                ) : (
-                                                    <em>{I18n.t('select_panel_first')}</em>
-                                                ),
-                                            )}
-                                            onOpen={() => {
-                                                if (this.state.selectedAddedTopic) {
-                                                    void this.loadPagesForPanel(this.state.selectedAddedTopic, true);
-                                                }
-                                            }}
-                                            onChange={e =>
-                                                this.setNavigationForSelected({
-                                                    next: String(e.target.value) || undefined,
-                                                })
-                                            }
-                                            sx={{ width: '100%' }}
-                                            disabled={
-                                                !this.state.alive ||
-                                                lockAssignment ||
-                                                (this.state.selectedAddedTopic
-                                                    ? this.state.isLoading[this.state.selectedAddedTopic] || false
-                                                    : false)
-                                            }
-                                            endAdornment={
-                                                this.state.selectedAddedTopic &&
-                                                this.state.isLoading[this.state.selectedAddedTopic] ? (
-                                                    <Box sx={{ display: 'flex', alignItems: 'center', pr: 1 }}>
-                                                        <CircularProgress size={16} />
-                                                    </Box>
-                                                ) : null
-                                            }
-                                        >
-                                            <MenuItem value="">
-                                                {this.state.selectedAddedTopic ? (
-                                                    <em>—</em>
-                                                ) : (
-                                                    <em>{I18n.t('select_panel_first')}</em>
-                                                )}
-                                            </MenuItem>
-                                            {this.getSelectablePages(
-                                                pages,
-                                                this.getNavValue(this.state.selectedAddedTopic, 'next'),
-                                            ).map((p: string) => (
-                                                <MenuItem
-                                                    key={`next-${p}`}
-                                                    value={p}
-                                                >
-                                                    {p}
-                                                </MenuItem>
-                                            ))}
-                                        </Select>
-                                        {this.renderNavCollisions('next')}
-                                    </Box>
-                                    <Box>
-                                        {this.renderNavFieldLabel(this.state.selectedAddedTopic, 'parent', 'parent', {
-                                            sx: { mb: 0.5, display: 'block' },
+                            <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1, mt: 1 }}>
+                                <Box>
+                                    <Box sx={{ display: 'flex', alignItems: 'center', mb: 0.5 }}>
+                                        {this.renderNavFieldLabel(this.state.selectedAddedTopic, 'prev', 'prev', {
+                                            hint: I18n.t('nav_prev_tooltip'),
+                                            sx: { mr: 0.5 },
                                         })}
-                                        <Select
-                                            size="small"
-                                            displayEmpty
-                                            aria-label="parent"
-                                            value={
-                                                lockAssignment
-                                                    ? ''
-                                                    : this.getNavValue(this.state.selectedAddedTopic, 'parent') || ''
-                                            }
-                                            renderValue={this.renderNavSelectValue('parent', <em>—</em>)}
-                                            onOpen={() => {
-                                                if (this.state.selectedAddedTopic) {
-                                                    void this.loadPagesForPanel(this.state.selectedAddedTopic, true);
-                                                }
-                                            }}
-                                            onChange={e =>
-                                                this.setNavigationForSelected({
-                                                    parent: String(e.target.value) || undefined,
-                                                })
-                                            }
-                                            sx={{ width: '100%' }}
-                                            disabled={
-                                                !this.state.alive ||
-                                                lockAssignment ||
-                                                (this.state.selectedAddedTopic
-                                                    ? this.state.isLoading[this.state.selectedAddedTopic] || false
-                                                    : false)
-                                            }
-                                            endAdornment={
-                                                this.state.selectedAddedTopic &&
-                                                this.state.isLoading[this.state.selectedAddedTopic] ? (
-                                                    <Box sx={{ display: 'flex', alignItems: 'center', pr: 1 }}>
-                                                        <CircularProgress size={16} />
-                                                    </Box>
-                                                ) : null
-                                            }
-                                        >
-                                            <MenuItem value="">{<em>—</em>}</MenuItem>
-                                            {this.getSelectablePages(
-                                                pages,
-                                                this.getNavValue(this.state.selectedAddedTopic, 'parent'),
-                                            ).map((p: string) => (
-                                                <MenuItem
-                                                    key={`parent-${p}`}
-                                                    value={p}
-                                                >
-                                                    {p}
-                                                </MenuItem>
-                                            ))}
-                                        </Select>
                                     </Box>
-                                    <Box>
-                                        {this.renderNavFieldLabel(this.state.selectedAddedTopic, 'home', 'home', {
-                                            sx: { mb: 0.5, display: 'block' },
-                                        })}
-                                        <Select
-                                            size="small"
-                                            displayEmpty
-                                            aria-label="home"
-                                            value={
-                                                lockAssignment
-                                                    ? ''
-                                                    : this.getNavValue(this.state.selectedAddedTopic, 'home') || ''
-                                            }
-                                            renderValue={this.renderNavSelectValue('home', <em>—</em>)}
-                                            onOpen={() => {
-                                                if (this.state.selectedAddedTopic) {
-                                                    void this.loadPagesForPanel(this.state.selectedAddedTopic, true);
-                                                }
-                                            }}
-                                            onChange={e =>
-                                                this.setNavigationForSelected({
-                                                    home: String(e.target.value) || undefined,
-                                                })
-                                            }
-                                            sx={{ width: '100%' }}
-                                            disabled={
-                                                !this.state.alive ||
-                                                lockAssignment ||
-                                                (this.state.selectedAddedTopic
-                                                    ? this.state.isLoading[this.state.selectedAddedTopic] || false
-                                                    : false)
-                                            }
-                                            endAdornment={
-                                                this.state.selectedAddedTopic &&
-                                                this.state.isLoading[this.state.selectedAddedTopic] ? (
-                                                    <Box sx={{ display: 'flex', alignItems: 'center', pr: 1 }}>
-                                                        <CircularProgress size={16} />
-                                                    </Box>
-                                                ) : null
-                                            }
-                                        >
-                                            <MenuItem value="">{<em>—</em>}</MenuItem>
-                                            {this.getSelectablePages(
-                                                pages,
-                                                this.getNavValue(this.state.selectedAddedTopic, 'home'),
-                                            ).map((p: string) => (
-                                                <MenuItem
-                                                    key={`home-${p}`}
-                                                    value={p}
-                                                >
-                                                    {p}
-                                                </MenuItem>
-                                            ))}
-                                        </Select>
-                                    </Box>
-                                    {lockAssignment && (
-                                        <Typography
-                                            variant="caption"
-                                            color="text.secondary"
-                                            sx={{ gridColumn: '1 / -1', display: 'block' }}
-                                        >
-                                            {I18n.t('main_page_resolved_neighbours')}
-                                        </Typography>
-                                    )}
-                                    <FormControlLabel
-                                        control={
-                                            <Checkbox
-                                                checked={this.state.showSystemPages}
-                                                onChange={this.handleShowSystemPagesChange}
-                                                size="small"
-                                            />
+                                    <Select
+                                        size="small"
+                                        displayEmpty
+                                        aria-label="prev"
+                                        value={
+                                            lockAssignment
+                                                ? ''
+                                                : this.getNavValue(this.state.selectedAddedTopic, 'prev') || ''
                                         }
-                                        label={I18n.t('show_system_pages')}
-                                    />
-                                    <Divider sx={{ my: 1 }} />
+                                        renderValue={this.renderNavSelectValue(
+                                            'prev',
+                                            this.state.selectedAddedTopic ? (
+                                                <em>—</em>
+                                            ) : (
+                                                <em>{I18n.t('select_panel_first')}</em>
+                                            ),
+                                        )}
+                                        onOpen={() => {
+                                            if (this.state.selectedAddedTopic) {
+                                                void this.loadPagesForPanel(this.state.selectedAddedTopic, true);
+                                            }
+                                        }}
+                                        onChange={e =>
+                                            this.setNavigationForSelected({
+                                                prev: String(e.target.value) || undefined,
+                                            })
+                                        }
+                                        sx={{ width: '100%' }}
+                                        disabled={
+                                            !this.state.alive ||
+                                            lockAssignment ||
+                                            (this.state.selectedAddedTopic
+                                                ? this.state.isLoading[this.state.selectedAddedTopic] || false
+                                                : false)
+                                        }
+                                        endAdornment={
+                                            this.state.selectedAddedTopic &&
+                                            this.state.isLoading[this.state.selectedAddedTopic] ? (
+                                                <Box sx={{ display: 'flex', alignItems: 'center', pr: 1 }}>
+                                                    <CircularProgress size={16} />
+                                                </Box>
+                                            ) : null
+                                        }
+                                    >
+                                        <MenuItem value="">
+                                            {this.state.selectedAddedTopic ? (
+                                                <em>—</em>
+                                            ) : (
+                                                <em>{I18n.t('select_panel_first')}</em>
+                                            )}
+                                        </MenuItem>
+                                        {this.getSelectablePages(
+                                            pages,
+                                            this.getNavValue(this.state.selectedAddedTopic, 'prev'),
+                                        ).map((p: string) => (
+                                            <MenuItem
+                                                key={`prev-${p}`}
+                                                value={p}
+                                            >
+                                                {p}
+                                            </MenuItem>
+                                        ))}
+                                    </Select>
+                                    {this.renderNavCollisions('prev')}
                                 </Box>
-                            )}
+                                <Box>
+                                    <Box sx={{ display: 'flex', alignItems: 'center', mb: 0.5 }}>
+                                        {this.renderNavFieldLabel(this.state.selectedAddedTopic, 'next', 'next', {
+                                            hint: I18n.t('nav_next_tooltip'),
+                                            sx: { mr: 0.5 },
+                                        })}
+                                    </Box>
+                                    <Select
+                                        size="small"
+                                        displayEmpty
+                                        aria-label="next"
+                                        value={
+                                            lockAssignment
+                                                ? ''
+                                                : this.getNavValue(this.state.selectedAddedTopic, 'next') || ''
+                                        }
+                                        renderValue={this.renderNavSelectValue(
+                                            'next',
+                                            this.state.selectedAddedTopic ? (
+                                                <em>—</em>
+                                            ) : (
+                                                <em>{I18n.t('select_panel_first')}</em>
+                                            ),
+                                        )}
+                                        onOpen={() => {
+                                            if (this.state.selectedAddedTopic) {
+                                                void this.loadPagesForPanel(this.state.selectedAddedTopic, true);
+                                            }
+                                        }}
+                                        onChange={e =>
+                                            this.setNavigationForSelected({
+                                                next: String(e.target.value) || undefined,
+                                            })
+                                        }
+                                        sx={{ width: '100%' }}
+                                        disabled={
+                                            !this.state.alive ||
+                                            lockAssignment ||
+                                            (this.state.selectedAddedTopic
+                                                ? this.state.isLoading[this.state.selectedAddedTopic] || false
+                                                : false)
+                                        }
+                                        endAdornment={
+                                            this.state.selectedAddedTopic &&
+                                            this.state.isLoading[this.state.selectedAddedTopic] ? (
+                                                <Box sx={{ display: 'flex', alignItems: 'center', pr: 1 }}>
+                                                    <CircularProgress size={16} />
+                                                </Box>
+                                            ) : null
+                                        }
+                                    >
+                                        <MenuItem value="">
+                                            {this.state.selectedAddedTopic ? (
+                                                <em>—</em>
+                                            ) : (
+                                                <em>{I18n.t('select_panel_first')}</em>
+                                            )}
+                                        </MenuItem>
+                                        {this.getSelectablePages(
+                                            pages,
+                                            this.getNavValue(this.state.selectedAddedTopic, 'next'),
+                                        ).map((p: string) => (
+                                            <MenuItem
+                                                key={`next-${p}`}
+                                                value={p}
+                                            >
+                                                {p}
+                                            </MenuItem>
+                                        ))}
+                                    </Select>
+                                    {this.renderNavCollisions('next')}
+                                </Box>
+                                <Box>
+                                    {this.renderNavFieldLabel(this.state.selectedAddedTopic, 'parent', 'parent', {
+                                        sx: { mb: 0.5, display: 'block' },
+                                    })}
+                                    <Select
+                                        size="small"
+                                        displayEmpty
+                                        aria-label="parent"
+                                        value={
+                                            lockAssignment
+                                                ? ''
+                                                : this.getNavValue(this.state.selectedAddedTopic, 'parent') || ''
+                                        }
+                                        renderValue={this.renderNavSelectValue('parent', <em>—</em>)}
+                                        onOpen={() => {
+                                            if (this.state.selectedAddedTopic) {
+                                                void this.loadPagesForPanel(this.state.selectedAddedTopic, true);
+                                            }
+                                        }}
+                                        onChange={e =>
+                                            this.setNavigationForSelected({
+                                                parent: String(e.target.value) || undefined,
+                                            })
+                                        }
+                                        sx={{ width: '100%' }}
+                                        disabled={
+                                            !this.state.alive ||
+                                            lockAssignment ||
+                                            (this.state.selectedAddedTopic
+                                                ? this.state.isLoading[this.state.selectedAddedTopic] || false
+                                                : false)
+                                        }
+                                        endAdornment={
+                                            this.state.selectedAddedTopic &&
+                                            this.state.isLoading[this.state.selectedAddedTopic] ? (
+                                                <Box sx={{ display: 'flex', alignItems: 'center', pr: 1 }}>
+                                                    <CircularProgress size={16} />
+                                                </Box>
+                                            ) : null
+                                        }
+                                    >
+                                        <MenuItem value="">{<em>—</em>}</MenuItem>
+                                        {this.getSelectablePages(
+                                            pages,
+                                            this.getNavValue(this.state.selectedAddedTopic, 'parent'),
+                                        ).map((p: string) => (
+                                            <MenuItem
+                                                key={`parent-${p}`}
+                                                value={p}
+                                            >
+                                                {p}
+                                            </MenuItem>
+                                        ))}
+                                    </Select>
+                                </Box>
+                                <Box>
+                                    {this.renderNavFieldLabel(this.state.selectedAddedTopic, 'home', 'home', {
+                                        sx: { mb: 0.5, display: 'block' },
+                                    })}
+                                    <Select
+                                        size="small"
+                                        displayEmpty
+                                        aria-label="home"
+                                        value={
+                                            lockAssignment
+                                                ? ''
+                                                : this.getNavValue(this.state.selectedAddedTopic, 'home') || ''
+                                        }
+                                        renderValue={this.renderNavSelectValue('home', <em>—</em>)}
+                                        onOpen={() => {
+                                            if (this.state.selectedAddedTopic) {
+                                                void this.loadPagesForPanel(this.state.selectedAddedTopic, true);
+                                            }
+                                        }}
+                                        onChange={e =>
+                                            this.setNavigationForSelected({
+                                                home: String(e.target.value) || undefined,
+                                            })
+                                        }
+                                        sx={{ width: '100%' }}
+                                        disabled={
+                                            !this.state.alive ||
+                                            lockAssignment ||
+                                            (this.state.selectedAddedTopic
+                                                ? this.state.isLoading[this.state.selectedAddedTopic] || false
+                                                : false)
+                                        }
+                                        endAdornment={
+                                            this.state.selectedAddedTopic &&
+                                            this.state.isLoading[this.state.selectedAddedTopic] ? (
+                                                <Box sx={{ display: 'flex', alignItems: 'center', pr: 1 }}>
+                                                    <CircularProgress size={16} />
+                                                </Box>
+                                            ) : null
+                                        }
+                                    >
+                                        <MenuItem value="">{<em>—</em>}</MenuItem>
+                                        {this.getSelectablePages(
+                                            pages,
+                                            this.getNavValue(this.state.selectedAddedTopic, 'home'),
+                                        ).map((p: string) => (
+                                            <MenuItem
+                                                key={`home-${p}`}
+                                                value={p}
+                                            >
+                                                {p}
+                                            </MenuItem>
+                                        ))}
+                                    </Select>
+                                </Box>
+                                {lockAssignment && (
+                                    <Typography
+                                        variant="caption"
+                                        color="text.secondary"
+                                        sx={{ gridColumn: '1 / -1', display: 'block' }}
+                                    >
+                                        {I18n.t('main_page_resolved_neighbours')}
+                                    </Typography>
+                                )}
+                                <FormControlLabel
+                                    control={
+                                        <Checkbox
+                                            checked={this.state.showSystemPages}
+                                            onChange={this.handleShowSystemPagesChange}
+                                            size="small"
+                                        />
+                                    }
+                                    label={I18n.t('show_system_pages')}
+                                />
+                                <Divider sx={{ my: 1 }} />
+                            </Box>
 
                             {/* Notice when no next/prev is selected */}
                             {/* Für jedes hinzugefügte Panel: Status + nav summary */}
@@ -2440,18 +2404,6 @@ class NavigationAssignmentPanel extends ConfigGeneric<
                         <>
                             {/* Tab 1: Placeholder content */}
                             {this.renderCommonFields()}
-                        </>
-                    )}
-
-                    {activeTab === 2 && (
-                        <>
-                            {/* Tab 2: Placeholder content */}
-                            <Typography
-                                variant="body1"
-                                color="text.secondary"
-                            >
-                                {I18n.t('Placeholder content for this tab.')}
-                            </Typography>
                         </>
                     )}
                 </Box>
