@@ -12,6 +12,7 @@ Das Konfigurationsskript ist der Weg für **erfahrene Nutzer in besonderen Konst
 | Thermostat | Heizung und Klima, bis zu acht Heizkreise | Page Thermo2 | [Thermostat](cardThermo2) |
 | Energie | Energiefluss mit Quellen und Verbrauchern | Page Power | [Energie](cardPower) |
 | Verlaufsdiagramm | Verlauf aus der History | Page Chart | [Verlaufsdiagramm](cardChart) |
+| Kreisdiagramm | bis zu fünf Werte als Tortendiagramm, aktuell oder als Mittelwert | Page PChart (ab TFT 6.0.5) | [Kreisdiagramm](cardPChart) |
 | QR-Code | WLAN-Zugang, Telefonnummer oder Adresse als QR-Code | Page QR | [QR-Code](cardQR) |
 | Alarm | Alarmanlage mit PIN und Zuständen | Page Alarm | [Alarm und Entsperrseite](cardAlarm) |
 | Abfall | Abfuhrtermine | keine eigene Karte — der Adapter baut eine Listenseite daraus | [Abfall](cardTrash) |

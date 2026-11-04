@@ -231,7 +231,7 @@ More than nine slots are spread over several pages by the adapter. **How** the p
 
 ## 12. Panel assignment, navigation, saving
 
-- Panel, navigation targets (`prev`, `next`, `parent`, `home`), **Start page (main)**, **Hidden** and **Screensaver behavior** are on the right in the column **Navigation/Panel**, described under [PageConfig – Overview](PageConfig#panel-assignment-and-navigation). Without `next`/`prev` the page is reachable only through a dedicated navigation target.
+- Panel, navigation targets (`prev`, `next`, `parent`, `home`), **Start page (main)**, **Hidden** and **Screensaver behavior** are on the right in the column **Navigation/Panel**, described under [PageConfig – Overview](PageConfig#panel-assignment-and-navigation). Without `next`/`prev` of its own the page is only reachable when **another** page points at it with its `prev`/`next` or a page item has it as a target; a neighbour that arises that way is shown in the field in grey.
 - At the bottom **Save** or **Save and close**. The instance restarts afterwards and builds the page.
 - If the adapter does not build the page or skips a heat circuit (object missing, wrong role, `SET` not found or not writable), the reason is in the log of the instance – among others *invalid SET datapoint. Not exists or not writeable!*
 - The card is also reproduced in the [web panel](WebPanel); since 2.0.2 it takes over the sizes and positions of the slots from the HMI there.

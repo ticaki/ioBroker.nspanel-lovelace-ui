@@ -35,7 +35,7 @@
 - [QR code](cardQR)  
 - [Power](cardPower)  
 - [Chart](cardChart)  
-- [Pie chart](PagePChart)  
+- [Pie chart](cardPChart)  
 - [Waste calendar](cardTrash)  
 - [Thermostat](cardThermo2)  
 - [Thermostat (classic)](cardThermo)  

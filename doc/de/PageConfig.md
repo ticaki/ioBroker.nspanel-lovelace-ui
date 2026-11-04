@@ -118,7 +118,9 @@ Der erste Reiter der rechten Spalte bestimmt, **auf welchem Panel** eine Seite e
 
 > Eine Seite **ohne** Panelzuweisung wird gar nicht erst gebaut und ist am Panel nicht vorhanden. Das ist der häufigste Grund für „die Seite ist weg" — der Panel-Filter *Nicht zugewiesen* zeigt alle Betroffenen.
 
-**Ein einzelnes Panel ausnehmen:** Steht die Seite auf *(alle)*, lässt sich ein Panel davon ausschließen, indem es **zusätzlich** zugewiesen und seine Navigation **leer** gelassen wird. Der Adapter überspringt die Seite dann für genau dieses Panel; in der Zusammenfassung steht dazu der Hinweis *Seite wird nicht hinzugefügt*.
+**Ein einzelnes Panel ausnehmen:** Steht die Seite auf *(alle)*, lässt sich ein Panel davon ausschließen, indem es **zusätzlich** zugewiesen und seine Navigation **nie angefasst** wird. Der Adapter überspringt die Seite dann für genau dieses Panel; in der Zusammenfassung steht dazu der Hinweis *Seite wird nicht hinzugefügt*.
+
+> **Einmal angefasst, bleibt die Zeile bestehen.** Der Ausschluss hängt daran, dass die Panelzeile **gar keine** Navigation trägt. Wer dort ein Ziel setzt und später wieder entfernt, hat eine leere, aber vorhandene Navigation — die Seite wird dann wieder gebaut, obwohl der Hinweis *Seite wird nicht hinzugefügt* weiter erscheint (er sieht nur die leeren Felder *prev* und *next*). Sicher ausschließen lässt sich das Panel dann nur, indem man es entfernt und neu zuweist.
 
 **Navigationsziele:** Für das in der Liste **angeklickte** Panel gibt es vier Felder. Sie entsprechen den Wischgesten am Panel:
 
@@ -135,7 +137,7 @@ Unter den Feldern steht je zugewiesenem Panel eine **Zusammenfassung**: ein Punk
 
 **Ermittelte Nachbarn als Platzhalter:** Ein Feld **ohne** eigenen Wert zeigt kursiv und grau den Nachbarn, den der **laufende** Adapter für dieses Panel ermittelt hat — etwa die Seite, deren *next* hierher zeigt. Das ist kein gespeicherter Wert, der Tooltip sagt es: *„Aus der Navigation des laufenden Adapters ermittelt, nicht gespeichert. Zum Speichern einen Wert wählen."* Gespeichert wird erst eine eigene Auswahl; ein leeres Feld bleibt leer, es wird nichts zurückgeschrieben. Ohne laufende Instanz bleiben die Platzhalter leer, ebenso bei der Zuweisung **(alle)** — dort können die Nachbarn je Panel verschieden sein. Nach einem Neustart des Adapters füllen sie sich mit Verzögerung: Der Admin fragt die Navigation ab der dritten Sekunde an bis zu eine Minute lang nach.
 
-**Hinweise auf Kollisionen:** Unter *prev* und *next* steht in Warnfarbe ein Hinweis, wenn im gewählten Panel andere Seiten **denselben** Wert gespeichert haben (*„Die Seiten X, Y zeigen ebenfalls auf dieses prev."*) oder wenn andere Seiten mit ihrem *prev* auf diese Seite zeigen, das eigene *next* aber zu keiner von ihnen führt (*„… sie hängen nur über ihr eigenes prev an."*). Gerechnet wird mit der gespeicherten Konfiguration — Startseiten zählen nicht mit, weil ihre eigenen Werte ohnehin ignoriert werden.
+**Hinweise auf Kollisionen:** Unter *prev* und *next* steht in Warnfarbe ein Hinweis, wenn im gewählten Panel andere Seiten **denselben** Wert gespeichert haben (*„Die Seiten X, Y zeigen ebenfalls auf dieses prev."*, entsprechend für *next*) oder wenn andere Seiten mit ihrem *prev* auf diese Seite zeigen, das eigene *next* aber zu keiner von ihnen führt (*„… sie hängen nur über ihr eigenes prev an."*). Gerechnet wird mit der gespeicherten Konfiguration — Startseiten zählen nicht mit, weil ihre eigenen Werte ohnehin ignoriert werden.
 
 Zu wissen:
 
@@ -187,6 +189,7 @@ Die Einstellungen der einzelnen Seitentypen, in der Reihenfolge der Auswahl *Sei
 - [Energie](cardPower)
 - [Abfall](cardTrash)
 - [Verlaufsdiagramm](cardChart)
+- [Kreisdiagramm](cardPChart)
 - [Thermostat](cardThermo2)
 - [Thermostat (klassisch)](cardThermo)
 - [Mediaplayer](cardMedia)

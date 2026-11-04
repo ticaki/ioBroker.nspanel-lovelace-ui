@@ -1,4 +1,4 @@
-# Page PChart – pie chart
+# Pie chart page – configuration in the admin
 
 The page `cardPChart` shows up to five values as a pie chart with a legend (the legend of HMI 6.0.5 has five rows). The panel computes the percentages itself; headline and legend use the font color of the panel. It needs TFT version 6.0.5 (EU panel).
 

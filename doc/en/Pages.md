@@ -12,6 +12,7 @@ The configuration script is the route for **experienced users in special cases**
 | Thermostat | Heating and climate, up to eight heat circuits | Page Thermo2 | [Thermostat](cardThermo2) |
 | Power | Energy flow with sources and consumers | Page Power | [Power](cardPower) |
 | Chart | History chart | Page Chart | [Chart](cardChart) |
+| Pie chart | up to five values as a pie chart, current or averaged | Page PChart (TFT 6.0.5 and newer) | [Pie chart](cardPChart) |
 | QR code | Wi-Fi access, a phone number or an address as a QR code | Page QR | [QR code](cardQR) |
 | Alarm | Alarm system with PIN and states | Page Alarm | [Alarm and unlock page](cardAlarm) |
 | Trash | Waste collection dates | no card of its own — the adapter builds a list page from it | [Trash](cardTrash) |

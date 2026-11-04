@@ -131,7 +131,7 @@ beiden gleichen Schraubenschlüssel sind der doppelte `MAINTAIN`-Block aus den [
 
 ## 7. Speichern, Panel-Zuweisung, Navigation
 
-- Rechts im Bereich **Navigation/Panel** das Panel zuweisen und die Navigation (`prev`, `next`, `parent`, `home`) setzen – wie bei den anderen Seitentypen. Ohne `next`/`prev` ist die Seite nur über ein Navigationsziel erreichbar.
+- Rechts im Bereich **Navigation/Panel** das Panel zuweisen und die Navigation (`prev`, `next`, `parent`, `home`) setzen – wie bei den anderen Seitentypen. Ohne eigene `next`/`prev` ist die Seite nur erreichbar, wenn eine **andere** Seite mit ihrem `prev`/`next` auf sie zeigt oder ein Pageitem sie als Ziel hat; das Feld zeigt einen so entstandenen Nachbarn grau an.
 - Unten **Speichern** bzw. **Speichern und schließen**. Die Instanz startet danach neu und baut die Seite auf.
 - Bleibt die Karte leer (kein Channel, Objekt fehlt, falsche Rolle, `SET` nicht gefunden), steht der Grund als Fehler im Log der Instanz.
 

@@ -231,7 +231,7 @@ Mehr als neun Flächen verteilt der Adapter auf mehrere Seiten. **Wie** geblätt
 
 ## 12. Panel-Zuweisung, Navigation, Speichern
 
-- Panel, Navigationsziele (`prev`, `next`, `parent`, `home`), **Startseite (main)**, **Versteckt** und **Verhalten des Bildschirmschoners** liegen rechts in der Spalte **Navigation/Panel**, beschrieben unter [PageConfig – Übersicht](PageConfig#panelzuweisung-und-navigation). Ohne `next`/`prev` ist die Seite nur über ein gezieltes Navigationsziel erreichbar.
+- Panel, Navigationsziele (`prev`, `next`, `parent`, `home`), **Startseite (main)**, **Versteckt** und **Verhalten des Bildschirmschoners** liegen rechts in der Spalte **Navigation/Panel**, beschrieben unter [PageConfig – Übersicht](PageConfig#panelzuweisung-und-navigation). Ohne eigene `next`/`prev` ist die Seite nur erreichbar, wenn eine **andere** Seite mit ihrem `prev`/`next` auf sie zeigt oder ein Pageitem sie als Ziel hat; das Feld zeigt einen so entstandenen Nachbarn grau an.
 - Unten **Speichern** bzw. **Speichern und schließen**. Die Instanz startet danach neu und baut die Seite auf.
 - Baut der Adapter die Seite nicht oder überspringt er einen Heizkreis (Objekt fehlt, falsche Rolle, `SET` nicht gefunden oder nicht beschreibbar), steht der Grund im Log der Instanz – unter anderem *invalid SET datapoint. Not exists or not writeable!*
 - Die Karte wird auch im [Web-Panel](WebPanel) nachgebildet; seit 2.0.2 übernimmt es dort die Größen und Positionen der Flächen vom HMI.

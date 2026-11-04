@@ -131,7 +131,7 @@ two identical wrenches are the duplicated `MAINTAIN` block from the [Pitfalls](#
 
 ## 7. Saving, panel assignment, navigation
 
-- On the right in the area **Navigation/Panel** assign the panel and set the navigation (`prev`, `next`, `parent`, `home`) – like for the other page types. Without `next`/`prev` the page is reachable only through a navigation target.
+- On the right in the area **Navigation/Panel** assign the panel and set the navigation (`prev`, `next`, `parent`, `home`) – like for the other page types. Without `next`/`prev` of its own the page is only reachable when **another** page points at it with its `prev`/`next` or a page item has it as a target; a neighbour that arises that way is shown in the field in grey.
 - At the bottom **Save** or **Save and close**. The instance restarts afterwards and builds the page.
 - If the card stays empty (no channel, object missing, wrong role, `SET` not found), the reason is in the log of the instance as an error.
 

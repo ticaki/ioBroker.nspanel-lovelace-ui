@@ -118,7 +118,9 @@ The first tab of the right-hand column decides **on which panel** a page appears
 
 > A page **without** a panel assignment is never built and does not exist on the panel. That is the most common reason for "the page is gone" — the *Not assigned* panel filter shows everyone affected.
 
-**Excluding a single panel:** if the page is set to *(all)*, a panel can be excluded by assigning it **in addition** and leaving its navigation **empty**. The adapter then skips the page for exactly that panel; the summary carries the note *Page will not be added*.
+**Excluding a single panel:** if the page is set to *(all)*, a panel can be excluded by assigning it **in addition** and **never touching** its navigation. The adapter then skips the page for exactly that panel; the summary carries the note *Page will not be added*.
+
+> **Once touched, the row stays.** The exclusion depends on the panel row carrying **no** navigation at all. Setting a target there and removing it again leaves an empty but existing navigation — the page is built again, while the note *Page will not be added* keeps showing (it only looks at the empty *prev* and *next* fields). The only safe way out is to remove the panel and assign it again.
 
 **Navigation targets:** there are four fields for the panel **clicked** in the list. They match the swipe gestures on the panel:
 
@@ -135,7 +137,7 @@ Below the fields there is a **summary** per assigned panel: a dot (green as soon
 
 **Resolved neighbours as a placeholder:** a field **without** a value of its own shows, in grey italics, the neighbour the **running** adapter resolved for this panel — the page whose *next* points here, for instance. That is not a stored value, and the tooltip says so: *"Determined from the navigation of the running adapter, not stored. Choose a value to store it."* Only a choice of your own is stored; an empty field stays empty, nothing is written back. Without a running instance the placeholders stay empty, and so they do with the assignment **(all)** — there the neighbours can differ per panel. After a restart of the adapter they fill with a delay: the admin asks for the navigation from the third second on, for up to a minute.
 
-**Collision notes:** below *prev* and *next* a note appears in the warning colour when other pages on the selected panel have stored the **same** value (*"The pages X, Y also point to this prev."*) or when other pages point at this page with their *prev* while its own *next* leads to none of them (*"… they only hang on by their own prev."*). The notes are computed from the stored configuration — start pages do not count, because their own values are ignored anyway.
+**Collision notes:** below *prev* and *next* a note appears in the warning colour when other pages on the selected panel have stored the **same** value (*"The pages X, Y also point to this prev."*, likewise for *next*) or when other pages point at this page with their *prev* while its own *next* leads to none of them (*"… they only hang on by their own prev."*). The notes are computed from the stored configuration — start pages do not count, because their own values are ignored anyway.
 
 Worth knowing:
 
@@ -187,6 +189,7 @@ The settings of the individual page types, in the order of the *Page Type* selec
 - [Power](cardPower)
 - [Trash](cardTrash)
 - [Chart](cardChart)
+- [Pie chart](cardPChart)
 - [Thermostat](cardThermo2)
 - [Thermostat (classic)](cardThermo)
 - [Media player](cardMedia)

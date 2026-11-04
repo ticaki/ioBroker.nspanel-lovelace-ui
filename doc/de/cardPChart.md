@@ -1,4 +1,4 @@
-# Page PChart – Kreisdiagramm
+# Kreisdiagramm-Seite – Konfiguration im Admin
 
 Die Seite `cardPChart` zeigt bis zu fünf Werte als Kreisdiagramm mit Legende (die Legende der HMI 6.0.5 hat fünf Zeilen). Die Prozentwerte rechnet das Panel selbst, Überschrift und Legende erscheinen in der Schriftfarbe des Panels. Voraussetzung ist die TFT-Version 6.0.5 (EU-Panel).
 
