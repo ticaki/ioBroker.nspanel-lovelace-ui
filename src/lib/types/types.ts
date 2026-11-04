@@ -236,8 +236,8 @@ export type Event = {
     opt: string[];
 };
 export type EventType = 'event';
-export type ScreensaverModeType = 'standard' | 'alternate' | 'advanced' | 'easyview';
-export type ScreensaverModeTypeAsNumber = 0 | 1 | 2 | 3;
+export type ScreensaverModeType = 'standard' | 'alternate' | 'advanced' | 'easyview' | 'tiles';
+export type ScreensaverModeTypeAsNumber = 0 | 1 | 2 | 3 | 4;
 export interface State extends Omit<ioBroker.State, 'val'> {
     val: StateValue;
 }

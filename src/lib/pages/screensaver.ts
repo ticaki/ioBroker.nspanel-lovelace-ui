@@ -85,7 +85,8 @@ export class Screensaver extends Page {
             !options.config ||
             (options.config.card !== 'screensaver' &&
                 options.config.card !== 'screensaver2' &&
-                options.config.card !== 'screensaver3')
+                options.config.card !== 'screensaver3' &&
+                options.config.card !== 'screensaver5')
         ) {
             config.adapter.log.error(
                 `Invalid card for screensaver: ${options ? JSON.stringify(options) : 'undefined'}`,
@@ -104,6 +105,10 @@ export class Screensaver extends Page {
             }
             case 'easyview': {
                 config.card = 'screensaver3';
+                break;
+            }
+            case 'tiles': {
+                config.card = 'screensaver5';
                 break;
             }
         }
@@ -519,10 +524,7 @@ export class Screensaver extends Page {
      */
     onStateTrigger = async (_dp: string, from: BaseTriggeredPage): Promise<void> => {
         const config = this.config;
-        if (
-            !config ||
-            (config.card !== 'screensaver' && config.card !== 'screensaver2' && config.card !== 'screensaver3')
-        ) {
+        if (!config || !globals.isScreenSaverCardType(config.card)) {
             return;
         }
         if (from instanceof PageItem && this.pageItems) {
@@ -607,8 +609,8 @@ export class Screensaver extends Page {
         if (message === null) {
             return;
         }
-        const mrIcon1 = message.options.mricon[0].split('~');
-        const mrIcon2 = message.options.mricon[1].split('~');
+        const mrIcon1 = (message.options.mricon[0] ?? '').split('~');
+        const mrIcon2 = (message.options.mricon[1] ?? '').split('~');
         const msgArray: string[] = [
             'statusUpdate',
             mrIcon1[2] ?? '',
@@ -737,6 +739,13 @@ export class Screensaver extends Page {
         if (action === 'button') {
             return;
         }
+        // a blind on the screensaver shows its position only - it opens no shutter popup
+        if (
+            (popup === 'popupShutter' || popup === 'popupShutter2') &&
+            this.pageItems?.[Number(id)]?.dataItems?.role === 'blind'
+        ) {
+            return;
+        }
         await super.onPopupRequest(id, popup, action, value, event);
     }
 
@@ -786,7 +795,8 @@ export class Screensaver extends Page {
             !this.config ||
             (this.config.card !== 'screensaver' &&
                 this.config.card !== 'screensaver2' &&
-                this.config.card !== 'screensaver3')
+                this.config.card !== 'screensaver3' &&
+                this.config.card !== 'screensaver5')
         ) {
             return 'standard';
         }
@@ -797,7 +807,8 @@ export class Screensaver extends Page {
             !this.config ||
             (this.config.card !== 'screensaver' &&
                 this.config.card !== 'screensaver2' &&
-                this.config.card !== 'screensaver3')
+                this.config.card !== 'screensaver3' &&
+                this.config.card !== 'screensaver5')
         ) {
             return;
         }
@@ -837,6 +848,14 @@ export class Screensaver extends Page {
                 (this.card as any) = 'screensaver3';
                 if (this.config) {
                     this.config.card = 'screensaver3';
+                }
+                break;
+            }
+            case 4: {
+                // overwrite readonly property
+                (this.card as any) = 'screensaver5';
+                if (this.config) {
+                    this.config.card = 'screensaver5';
                 }
                 break;
             }

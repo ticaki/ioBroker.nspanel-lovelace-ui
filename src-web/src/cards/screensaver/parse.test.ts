@@ -178,6 +178,17 @@ describe('screensaver parse', () => {
         expect(areas.bottom.map(b => b.optionalValue)).toEqual(['06:42', '6,2m/s', '12,3m/s']);
     });
 
+    it('tiles layout: 5 bottom entities, then 7 indicators, no favorit', () => {
+        const bottom = [1, 2, 3, 4, 5].map(n => e('B', 1, `b${n}`, `${n}`));
+        const indicator = [1, 2, 3, 4, 5, 6, 7].map(n => e('I', 2, '', '', `0?${n + 9}`));
+        const payload = wu(...bottom, ...indicator);
+        const areas = splitAreas('screensaver5', parseWeatherUpdate(parseCommand(payload).args), 'eu');
+        expect(areas.layout).toBe('tiles');
+        expect(areas.favorit).toBeUndefined();
+        expect(areas.bottom.map(b => b.optionalValue)).toEqual(['1', '2', '3', '4', '5']);
+        expect(areas.indicator.map(i => i.id)).toEqual(['0?10', '0?11', '0?12', '0?13', '0?14', '0?15', '0?16']);
+    });
+
     it('tolerates a short or empty weatherUpdate', () => {
         expect(splitAreas('screensaver', [], 'eu').layout).toBe('standard');
         const one: Entity6[] = parseWeatherUpdate(parseCommand(wu(e('S', 1, '', '1'))).args);

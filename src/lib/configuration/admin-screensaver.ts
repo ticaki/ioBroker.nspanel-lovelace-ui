@@ -289,11 +289,11 @@ export function applyScreensaverEntry(page: pages.PageBase, entry: ScreensaverEn
 }
 
 /**
- * true for the screensaver page of a panel configuration (any of the three cards)
+ * true for the screensaver page of a panel configuration (any of the four cards)
  *
  * @param page page of the panel configuration
  */
 export function isScreensaverPage(page: { config?: { card?: string } } | undefined | null): boolean {
     const card = page?.config?.card;
-    return card === 'screensaver' || card === 'screensaver2' || card === 'screensaver3';
+    return card === 'screensaver' || card === 'screensaver2' || card === 'screensaver3' || card === 'screensaver5';
 }

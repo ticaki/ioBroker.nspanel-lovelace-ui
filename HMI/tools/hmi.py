@@ -92,17 +92,39 @@ class Hmi:
             if name == 'main.HMI' and main_checksum(data) != struct.unpack_from('<I', data, 0)[0]:
                 raise ValueError('wrong checksum of main.HMI')
 
-    def build(self, changes):
-        """New project file with the sections {name: bytes} replaced, the way the editor saves."""
+    def build(self, changes, added=None):
+        """New project file with the sections {name: bytes} replaced, the way the editor saves.
+
+        added: {name: (bytes, template)} new sections; the directory record is a copy of the live
+        record of the section 'template' (keeps its opaque bytes).
+        """
         out = bytearray(self.d)
         records = [bytearray(r) for r in self.records]
+
+        def live(name):
+            return [r for r in records if r[:16].split(b'\0')[0].decode('latin1') == name and not r[24]][0]
+
+        def fix(name, data):
+            if name.endswith('.pa'):
+                return struct.pack('<I', page_checksum(data)) + data[4:]
+            if name == 'main.HMI':
+                return struct.pack('<I', main_checksum(data)) + data[4:]
+            return data
+
+        for name, (data, template) in (added or {}).items():
+            if name in self.files:
+                raise KeyError(f'{name} exists')
+            data = fix(name, data)
+            new = bytearray(live(template))
+            new[:16] = name.encode('latin1').ljust(16, b'\0')
+            struct.pack_into('<II', new, 16, len(out), len(data))
+            records.append(new)
+            out += data
         for name, data in changes.items():
             if name not in self.files:
                 raise KeyError(name)
-            if name.endswith('.pa'):
-                data = struct.pack('<I', page_checksum(data)) + data[4:]
-            live = [r for r in records if r[:16].split(b'\0')[0].decode('latin1') == name and not r[24]]
-            old = live[0]
+            data = fix(name, data)
+            old = live(name)
             new = bytearray(old)
             struct.pack_into('<II', new, 16, len(out), len(data))
             old[0] = 0

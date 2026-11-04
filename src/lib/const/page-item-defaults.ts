@@ -737,3 +737,26 @@ export function getShutterIconByPosition(position: number): string {
     const index = Math.min(Math.max(closedSteps, 1), SHUTTER_STEP_ICONS.length) - 1;
     return SHUTTER_STEP_ICONS[index];
 }
+
+/**
+ * true when a screensaver item shows the position of a blind: a number state with the role
+ * `level.blind` / `value.blind`, or a number state of a channel / device with the role `blind`
+ * (its `.ACTUAL` / `.SET`) - the tilt of a blind is no position. Such an item without an icon of its
+ * own gets the icon by position ({@link SHUTTER_POSITION_ICON}), shows the position in % and never
+ * moves the blind on a tap.
+ *
+ * @param role common.role of the state
+ * @param channelRole common.role of the channel / device above the state
+ * @param type common.type of the state
+ * @returns true for the position of a blind
+ */
+export function isScreensaverBlindPosition(
+    role: string,
+    channelRole: string | undefined,
+    type: string | undefined,
+): boolean {
+    if (type !== 'number' || /tilt/i.test(role)) {
+        return false;
+    }
+    return role === 'level.blind' || role === 'value.blind' || channelRole === 'blind';
+}

@@ -198,22 +198,29 @@ function exhaustiveCheck(_param) {
 const screenSaverCardArray = arrayOfAllScreenSaverCards([
   "screensaver",
   "screensaver2",
-  "screensaver3"
+  "screensaver3",
+  "screensaver5"
 ]);
 function isScreenSaverCardType(F) {
   if (typeof F !== "string") {
     return false;
   }
-  return ["screensaver", "screensaver2", "screensaver3"].includes(F);
+  return ["screensaver", "screensaver2", "screensaver3", "screensaver5"].includes(F);
 }
-const screenSaverModeArray = arrayOfAllScreenSaverMode(["standard", "advanced", "alternate", "easyview"]);
+const screenSaverModeArray = arrayOfAllScreenSaverMode([
+  "standard",
+  "advanced",
+  "alternate",
+  "easyview",
+  "tiles"
+]);
 function isScreenSaverMode(F) {
   if (typeof F !== "string") {
     return false;
   }
-  return ["standard", "advanced", "alternate", "easyview"].includes(F);
+  return ["standard", "advanced", "alternate", "easyview", "tiles"].includes(F);
 }
-const SCREENSAVER_MODE_NUMBERS = [0, 1, 2, 3];
+const SCREENSAVER_MODE_NUMBERS = [0, 1, 2, 3, 4];
 function isScreenSaverModeAsNumber(value) {
   return typeof value === "number" && SCREENSAVER_MODE_NUMBERS.includes(value);
 }
@@ -328,7 +335,7 @@ function isAlarmButtonEvent(value) {
   return typeof value === "string" && ALARM_BUTTON_EVENTS.includes(value);
 }
 const arrayOfModes = arrayOfAll();
-const arrayOfScreensaverModes = arrayOfModes(["standard", "alternate", "advanced", "easyview"]);
+const arrayOfScreensaverModes = arrayOfModes(["standard", "alternate", "advanced", "easyview", "tiles"]);
 function isTasmotaStatusNet(F) {
   return F && typeof F === "object" && "StatusNET" in F && typeof F.StatusNET === "object";
 }

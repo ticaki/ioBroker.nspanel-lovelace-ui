@@ -677,7 +677,7 @@ const ScreensaverLayout = {
          * valueList string[]/stringify oder string?string?string?string stelle korreliert mit setList  {input_sel}
          */
         //valueList: { type: 'internal', dp: 'cmd/screenSaverLayout', read: 'return val ? val.split(";") : []' },
-        valueList: { type: "const", constVal: "standard?alternate?advanced?easyview" }
+        valueList: { type: "const", constVal: "standard?alternate?advanced?easyview?tiles" }
       }
     },
     {

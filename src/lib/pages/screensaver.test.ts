@@ -110,6 +110,97 @@ describe('lib/pages/screensaver - indicator tap', () => {
     });
 });
 
+describe('lib/pages/screensaver - tiles (screensaver5) payload', () => {
+    /**
+     * a screensaver item - payload `type~id~icon~color~name~value` like PageItem.getPageItemPayload
+     *
+     * @param modeScr place of the item
+     * @param n index of the item, also its id `0?n`
+     */
+    const item = (modeScr: string, n: number): any => ({
+        config: { modeScr },
+        dataItems: { data: {} },
+        isEnabled: async (): Promise<boolean> => Promise.resolve(true),
+        getPageItemPayload: async (): Promise<string> => Promise.resolve(`text~0?${n}~i${n}~${n}~${modeScr}${n}~v${n}`),
+    });
+
+    function tilesSaver(pageItems: any[], model: string = 'eu'): Screensaver {
+        const saver = Object.create(Screensaver.prototype) as Screensaver;
+        Object.assign(saver, {
+            pageItems,
+            config: { card: 'screensaver5', mode: 'tiles', model },
+            step: 0,
+        });
+        return saver;
+    }
+
+    it('sends exactly 5 bottom and 7 indicator slots and the status bars, nothing for favorit, left and alternate', async () => {
+        // favorit, left and alternate items of a former version must not reach the page
+        const saver = tilesSaver([
+            item('favorit', 0),
+            item('left', 1),
+            item('alternate', 2),
+            item('mricon', 3),
+            item('bottom', 4),
+            item('bottom', 5),
+            item('indicator', 6),
+            item('indicator', 7),
+        ]);
+        const message = await saver.getData(['left', 'bottom', 'indicator', 'alternate', 'favorit', 'mricon']);
+        expect(message).to.not.equal(null);
+        const o = message!.options;
+        expect(o.favorit).to.deep.equal([]);
+        expect(o.left).to.deep.equal([]);
+        expect(o.alternate).to.deep.equal([]);
+        expect(o.mricon).to.have.length(2);
+        expect(o.mricon[0]).to.include('~i3~3~');
+        expect(o.bottom).to.have.length(5);
+        expect(o.indicator).to.have.length(7);
+        // the order Screensaver.update() concatenates
+        const fields = [...o.favorit, ...o.left, ...o.bottom, ...o.alternate, ...o.indicator].join('~').split('~');
+        expect(fields).to.have.length(12 * 6);
+        expect(o.bottom[0]).to.equal('~~i4~4~bottom4~v4');
+        expect(o.bottom[2]).to.equal('~~~~~');
+        // the indicator keeps its id - the HMI sends it back with buttonPress2
+        expect(o.indicator[0]).to.equal('~0?6~i6~6~indicator6~v6');
+        expect(o.indicator[6]).to.equal('~~~~~');
+    });
+
+    it('sends 4 bottom and 8 indicator slots on the portrait panel', async () => {
+        const items = [];
+        for (let i = 0; i < 5; i++) {
+            items.push(item('bottom', i));
+        }
+        for (let i = 5; i < 13; i++) {
+            items.push(item('indicator', i));
+        }
+        const saver = tilesSaver(items, 'us-p');
+        const message = await saver.getData(['bottom', 'indicator']);
+        const o = message!.options;
+        expect(o.bottom).to.have.length(4);
+        expect(o.indicator).to.have.length(8);
+        expect([...o.bottom, ...o.indicator].join('~').split('~')).to.have.length(12 * 6);
+        expect(o.bottom[0]).to.equal('~~i0~0~bottom0~v0');
+        // the HMI reads the id of indicator j from field 26 + 6j
+        expect(o.indicator[0]).to.equal('~0?5~i5~5~indicator5~v5');
+        expect(o.indicator[7]).to.equal('~0?12~i12~12~indicator12~v12');
+    });
+
+    it('pages more than 7 indicators in windows of 7', async () => {
+        const items = [];
+        for (let i = 0; i < 9; i++) {
+            items.push(item('indicator', i));
+        }
+        const saver = tilesSaver(items);
+        const message = await saver.getData(['indicator']);
+        expect(message!.options.indicator).to.have.length(7);
+        (saver as any).step = 1;
+        const second = await saver.getData(['indicator']);
+        expect(second!.options.indicator[0]).to.equal('~0?7~i7~7~indicator7~v7');
+        expect(second!.options.indicator[2]).to.equal('~~~~~');
+    });
+});
+
 describe('lib/pages/screensaver - mode of another adapter version', () => {
     type Logs = { warn: string[]; error: string[] };
 
@@ -160,23 +251,23 @@ describe('lib/pages/screensaver - mode of another adapter version', () => {
     });
 
     it('falls back to standard with card screensaver and warns once for an unknown mode', () => {
-        const { saver, logs } = construct(pageOf('tiles'));
+        const { saver, logs } = construct(pageOf('hologram'));
 
         expect(saver.mode).to.equal('standard');
         expect(saver.card).to.equal('screensaver');
         expect(saver.config?.card).to.equal('screensaver');
         expect(logs.warn).to.have.length(1);
-        expect(logs.warn[0]).to.include("'tiles'").and.include("'standard'").and.include('Panel 4');
+        expect(logs.warn[0]).to.include("'hologram'").and.include("'standard'").and.include('Panel 4');
         expect(logs.error).to.deep.equal([]);
     });
 
     it('also takes a stored card of another version', () => {
-        const { saver, logs } = construct(pageOf('tiles', 'screensaver4'));
+        const { saver, logs } = construct(pageOf('hologram', 'screensaver9'));
 
         expect(saver.mode).to.equal('standard');
         expect(saver.card).to.equal('screensaver');
         expect(logs.warn).to.have.length(1);
-        expect(logs.warn[0]).to.include("'screensaver4'");
+        expect(logs.warn[0]).to.include("'screensaver9'");
         expect(logs.error).to.deep.equal([]);
     });
 
@@ -188,7 +279,7 @@ describe('lib/pages/screensaver - mode of another adapter version', () => {
     });
 
     it('keeps the other settings but leaves the given configuration untouched', () => {
-        const page = pageOf('tiles', 'screensaver4');
+        const page = pageOf('hologram', 'screensaver9');
         const before = structuredClone(page);
         const { saver } = construct(page);
 
@@ -207,6 +298,7 @@ describe('lib/pages/screensaver - mode of another adapter version', () => {
         ['alternate', 'screensaver'],
         ['advanced', 'screensaver2'],
         ['easyview', 'screensaver3'],
+        ['tiles', 'screensaver5'],
     ]) {
         it(`keeps the known mode ${mode}`, () => {
             const page = pageOf(mode, card);
@@ -222,7 +314,7 @@ describe('lib/pages/screensaver - mode of another adapter version', () => {
 
     it('stays an error without a config or for a card that is no screensaver', () => {
         const noConfig = { uniqueID: 'x', alwaysOn: 'none', pageItems: [] } as unknown as pages.PageBase;
-        const grid = pageOf('tiles', 'cardGrid');
+        const grid = pageOf('hologram', 'cardGrid');
 
         expect(resolveScreensaverOptions(noConfig).rejected).to.equal(undefined);
         expect(resolveScreensaverOptions(grid).rejected).to.equal(undefined);
@@ -230,8 +322,8 @@ describe('lib/pages/screensaver - mode of another adapter version', () => {
     });
 
     it('builds a message without errors when more items exist than the standard layout has places', async () => {
-        const { saver } = construct(pageOf('tiles'));
-        // what a tiles screensaver holds: 5 bottom items and 7 indicators, standard has 4 and 0 places
+        const { saver } = construct(pageOf('hologram'));
+        // what a layout of another version may hold: 5 bottom items and 7 indicators, standard has 4 and 0 places
         const items: any[] = [];
         for (let i = 0; i < 5; i++) {
             items.push(placeItem('bottom', i));

@@ -5,6 +5,7 @@ import * as typePageItem from '../types/type-pageItem';
 import * as tools from '../const/tools';
 import type { nsPanelState, PopupType } from '../types/types';
 import { Icons } from '../const/icon_mapping';
+import { SHUTTER_POSITION_ICON } from '../const/page-item-defaults';
 import { isDataItem, type Dataitem } from '../controller/data-item';
 import { type ChangeTypeOfKeys, type DeviceRole, type PageBase } from '../types/pages';
 import { isCardEntitiesType, isCardGridType } from '../types/function-and-const';
@@ -173,8 +174,9 @@ export class PageItem extends BaseTriggeredPage {
             }
         }
         if (
-            ['screensaver', 'screensaver2', 'screensaver3', 'popupNotify', 'popupNotify2'].indexOf(this.parent.card) !==
-            -1
+            ['screensaver', 'screensaver2', 'screensaver3', 'screensaver5', 'popupNotify', 'popupNotify2'].indexOf(
+                this.parent.card,
+            ) !== -1
         ) {
             if (!this.parent.basePanel.persistentPageItems[this.id]) {
                 if (this.config.modeScr) {
@@ -618,10 +620,14 @@ export class PageItem extends BaseTriggeredPage {
                                 break;
                             }
                             default: {
+                                // the icon of a blind by position needs the position, not only open / closed
+                                const positionIcon =
+                                    typeof showIcon === 'number' &&
+                                    (await item.icon?.true?.value?.getString()) === SHUTTER_POSITION_ICON;
                                 message.icon =
                                     (await tools.getIconEntryValue(
                                         item.icon,
-                                        !!showIcon,
+                                        positionIcon ? showIcon : !!showIcon,
                                         '',
                                         null,
                                         (!isCardEntitiesType(this.parent.card) &&
@@ -2205,7 +2211,8 @@ export class PageItem extends BaseTriggeredPage {
                         await item.setValue2.setStateTrue();
                         break;
                     }
-                    if (nav) {
+                    // a blind (screensaver item) shows its position only - a tap never moves it
+                    if (nav || entry.role === 'blind') {
                         break;
                     }
                     if (item.entity1?.value?.writeable) {

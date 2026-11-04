@@ -244,7 +244,7 @@ class ConfigManager extends import_library.BaseClass {
       const result = await this.getScreensaverConfig(config, messages);
       const screensaver = result.configArray;
       messages = result.messages;
-      if (screensaver && screensaver.config && (screensaver.config.card === "screensaver" || screensaver.config.card === "screensaver2" || screensaver.config.card === "screensaver3") && config.advancedOptions) {
+      if (screensaver && screensaver.config && (screensaver.config.card === "screensaver" || screensaver.config.card === "screensaver2" || screensaver.config.card === "screensaver3" || screensaver.config.card === "screensaver5") && config.advancedOptions) {
         screensaver.config.screensaverSwipe = !!config.advancedOptions.screensaverSwipe;
         screensaver.config.screensaverIndicatorButtons = !!config.advancedOptions.screensaverIndicatorButtons;
       }
@@ -4532,10 +4532,15 @@ class ConfigManager extends import_library.BaseClass {
     }
     result.data.entity2 = structuredClone(result.data.entity1);
     let obj;
-    if (entity.ScreensaverEntity && !entity.ScreensaverEntity.endsWith(".")) {
-      obj = await this.adapter.getForeignObjectAsync(entity.ScreensaverEntity);
-      result.data.entity1.value = await this.getFieldAsDataItemConfig(entity.ScreensaverEntity, true);
-      result.data.entity2.value = await this.getFieldAsDataItemConfig(entity.ScreensaverEntity);
+    let entityId = entity.ScreensaverEntity;
+    let blind = false;
+    if (entityId && !entityId.endsWith(".")) {
+      const found = await this.getScreensaverEntityObject(entityId);
+      obj = found.obj;
+      entityId = found.id;
+      blind = found.blind;
+      result.data.entity1.value = await this.getFieldAsDataItemConfig(entityId, true);
+      result.data.entity2.value = await this.getFieldAsDataItemConfig(entityId);
     }
     if (mode === "indicator") {
       result.type = "button";
@@ -4566,6 +4571,20 @@ class ConfigManager extends import_library.BaseClass {
       result.data.entity1.decimal = { type: "const", constVal: entity.ScreensaverEntityDecimalPlaces };
       result.data.entity2.decimal = { type: "const", constVal: entity.ScreensaverEntityDecimalPlaces };
     }
+    if (blind) {
+      result.role = "blind";
+      const closedIsZero = !!this.adapter.config.shutterClosedIsZero;
+      for (const e of [result.data.entity1, result.data.entity2]) {
+        e.minScale = { type: "const", constVal: closedIsZero ? 0 : 100 };
+        e.maxScale = { type: "const", constVal: closedIsZero ? 100 : 0 };
+        if (entity.ScreensaverEntityUnitText == null) {
+          e.unit = { type: "const", constVal: "%" };
+        }
+        if (entity.ScreensaverEntityDecimalPlaces == null) {
+          e.decimal = { type: "const", constVal: 0 };
+        }
+      }
+    }
     if (entity.ScreensaverEntityDateFormat) {
       result.data.entity1.dateFormat = {
         type: "const",
@@ -4581,6 +4600,8 @@ class ConfigManager extends import_library.BaseClass {
       color = await this.getIconColor(entity.ScreensaverEntityOnColor || import_Color.Color.on);
     } else if (entity.ScreensaverEntityIconColor && !isIconScaleElement(entity.ScreensaverEntityIconColor)) {
       color = await this.getIconColor(entity.ScreensaverEntityIconColor || this.colorDefault);
+    } else if (blind) {
+      color = await this.getIconColor(import_Color.Color[import_page_item_defaults.pageItemDefaults.blind.colorOn]);
     } else {
       color = await this.getIconColor(defaultColors.defaultOnColor || this.colorDefault);
     }
@@ -4588,11 +4609,14 @@ class ConfigManager extends import_library.BaseClass {
     if (entity.ScreensaverEntityOffColor) {
       colorOff = await this.getIconColor(entity.ScreensaverEntityOffColor);
     } else if (entity.ScreensaverEntityOffColor !== null) {
-      colorOff = await this.getIconColor(defaultColors.defaultOffColor);
+      colorOff = await this.getIconColor(
+        blind ? import_Color.Color[import_page_item_defaults.pageItemDefaults.blind.colorOff] : defaultColors.defaultOffColor
+      );
     }
-    if (entity.ScreensaverEntityIconOn) {
+    const iconOn = entity.ScreensaverEntityIconOn || (blind && !(Array.isArray(entity.ScreensaverEntityIconSelect) && entity.ScreensaverEntityIconSelect.length > 0) ? entity.ScreensaverEntityIconOff ? import_page_item_defaults.pageItemDefaults.blind.iconOn : import_page_item_defaults.SHUTTER_POSITION_ICON : null);
+    if (iconOn) {
       result.data.icon = {
-        true: { value: await this.getFieldAsDataItemConfig(entity.ScreensaverEntityIconOn) }
+        true: { value: await this.getFieldAsDataItemConfig(iconOn) }
       };
     }
     if ("ScreensaverEntityEnabled" in entity && entity.ScreensaverEntityEnabled != null) {
@@ -4627,7 +4651,7 @@ class ConfigManager extends import_library.BaseClass {
       };
     }
     if (dataType === "number" && entity.ScreensaverEntityIconSelect && Array.isArray(entity.ScreensaverEntityIconSelect)) {
-      const obj2 = await this.getFieldAsDataItemConfig(entity.ScreensaverEntity);
+      const obj2 = await this.getFieldAsDataItemConfig(entityId != null ? entityId : "");
       if (obj2 && obj2.type === "state") {
         entity.ScreensaverEntityIconSelect.sort((a, b) => a.value - b.value);
         obj2.read = `
@@ -4697,6 +4721,38 @@ class ConfigManager extends import_library.BaseClass {
       return result;
     }
     throw new Error("Invalid data");
+  }
+  /**
+   * Object of the state a screensaver element shows and whether it is the position of a blind
+   * ({@link isScreensaverBlindPosition}). A blind channel / device (role `blind`) stands for its
+   * `.ACTUAL`, else its `.SET`.
+   *
+   * @param id ScreensaverEntity of the element
+   * @returns id and object of the shown state, blind = position of a blind
+   */
+  async getScreensaverEntityObject(id) {
+    var _a, _b, _c, _d, _e;
+    const obj = await this.adapter.getForeignObjectAsync(id);
+    if (!obj) {
+      return { id, obj, blind: false };
+    }
+    if ((obj.type === "channel" || obj.type === "device") && ((_a = obj.common) == null ? void 0 : _a.role) === "blind") {
+      for (const key of ["ACTUAL", "SET"]) {
+        const child = await this.adapter.getForeignObjectAsync(`${id}.${key}`);
+        if ((child == null ? void 0 : child.type) === "state" && ((_b = child.common) == null ? void 0 : _b.type) === "number") {
+          return { id: `${id}.${key}`, obj: child, blind: true };
+        }
+      }
+      return { id, obj, blind: false };
+    }
+    if (obj.type !== "state") {
+      return { id, obj, blind: false };
+    }
+    const channelId = (0, import_adminShareConfig.screensaverChannelIdOf)(id);
+    const channel = channelId ? await this.adapter.getForeignObjectAsync(channelId) : null;
+    const channelRole = ((channel == null ? void 0 : channel.type) === "channel" || (channel == null ? void 0 : channel.type) === "device") && typeof ((_c = channel.common) == null ? void 0 : _c.role) === "string" ? channel.common.role : "";
+    const role = typeof ((_d = obj.common) == null ? void 0 : _d.role) === "string" ? obj.common.role : "";
+    return { id, obj, blind: (0, import_page_item_defaults.isScreensaverBlindPosition)(role, channelRole, (_e = obj.common) == null ? void 0 : _e.type) };
   }
   async getFieldAsDataItemConfig(possibleId, isTrigger = false) {
     if (typeof possibleId === "string") {
@@ -4778,8 +4834,8 @@ class ConfigManager extends import_library.BaseClass {
           let pages = structuredClone(scriptConfig[c].pages);
           if (pages) {
             pages = pages.filter((a) => {
-              var _a, _b, _c;
-              if (((_a = a.config) == null ? void 0 : _a.card) === "screensaver" || ((_b = a.config) == null ? void 0 : _b.card) === "screensaver2" || ((_c = a.config) == null ? void 0 : _c.card) === "screensaver3") {
+              var _a, _b, _c, _d;
+              if (((_a = a.config) == null ? void 0 : _a.card) === "screensaver" || ((_b = a.config) == null ? void 0 : _b.card) === "screensaver2" || ((_c = a.config) == null ? void 0 : _c.card) === "screensaver3" || ((_d = a.config) == null ? void 0 : _d.card) === "screensaver5") {
                 return false;
               }
               if (scriptConfig[b].pages.find((b2) => b2.uniqueID === a.uniqueID)) {
