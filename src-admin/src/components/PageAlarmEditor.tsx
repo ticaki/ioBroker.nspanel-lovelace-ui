@@ -401,7 +401,23 @@ export class PageAlarmEditor extends React.Component<PageAlarmEditorProps, PageA
                                         disabled={!this.state.alive}
                                     />
                                 }
-                                label={this.getText('unlock_global')}
+                                sx={{ alignItems: 'flex-start' }}
+                                label={
+                                    <>
+                                        <Box
+                                            component="span"
+                                            sx={{ display: 'block', mt: 1 }}
+                                        >
+                                            {this.getText('unlock_global')}
+                                        </Box>
+                                        <Box
+                                            component="span"
+                                            sx={{ display: 'block', fontSize: '0.8rem', color: 'text.secondary' }}
+                                        >
+                                            {this.getText('unlock_global_hint')}
+                                        </Box>
+                                    </>
+                                }
                             />
                         </Box>
                     </Box>
