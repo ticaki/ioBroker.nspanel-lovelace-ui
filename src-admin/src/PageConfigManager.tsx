@@ -9,6 +9,7 @@ import type {
     PowerEntry,
     UnlockEntry,
 } from '../../src/lib/types/adminShareConfig';
+import { closeNavigationChain } from '../../src/lib/types/navigationEdit';
 import {
     ADAPTER_NAME,
     dropScriptNavigation,
@@ -413,8 +414,16 @@ class PageConfigManager extends ConfigGeneric<ConfigGenericProps & { theme?: any
         this.checkAlarmButtons(updated);
     };
 
-    private handleDelete = (name: string): void => {
-        const updated = this.state.entries.filter(e => e.uniqueName !== name);
+    /**
+     * Deletes a page. With `closeChain` the pages that swipe to it take over its prev/next first,
+     * so the chain of every panel closes instead of ending at a page that no longer exists.
+     *
+     * @param name `uniqueName` of the page.
+     * @param closeChain Whether the prev/next gap is closed, asked in the confirmation.
+     */
+    private handleDelete = (name: string, closeChain: boolean): void => {
+        const entries = closeChain ? closeNavigationChain(this.state.entries, name) : this.state.entries;
+        const updated = entries.filter(e => e.uniqueName !== name);
         this.setState({ entries: updated } as PageConfigManagerState);
         void this.onChange(this.props.attr, updated);
         this.checkAlarmButtons(updated);

@@ -724,3 +724,70 @@ export function findNavigationReferences(
     }
     return found;
 }
+
+/** The two links the chain of a panel is built from. */
+const chainLinkKinds: readonly NavigationLinkKind[] = ['prev', 'next'];
+
+/**
+ * Closes the gap a deleted page leaves in the prev/next chains: every page that points at it takes
+ * over its link of the same kind, so `A -> B -> C` becomes `A -> C` when B goes.
+ *
+ * Call this **before** the page is removed from the configuration - the links of the page to be
+ * deleted are the ones that get handed over. Per assignment row, so every panel keeps its own
+ * chain; the links of the deleted page are read with the rules of the adapter
+ * ({@link effectiveNavigation}), which means a panel row falls back to the "all panels" row.
+ *
+ * A link that cannot be handed over is removed instead of being left pointing at a page that no
+ * longer exists: when the deleted page has no link of that kind on this panel, is not assigned to
+ * it, or when the handover would make the page point at itself.
+ *
+ * Only prev/next are touched. home/parent name a destination, not a neighbour - there is nothing
+ * to close there, and a page of a configuration script cannot be reached from here at all (it is
+ * edited through `native.navigationOverrides`).
+ *
+ * @param entries Page configuration (`native.pageConfig`), still containing the page to delete.
+ * @param uniqueName `uniqueName` of the page that is about to be deleted.
+ * @returns The updated configuration, or `entries` itself when no chain had to be closed.
+ */
+export function closeNavigationChain(entries: PageConfigEntry[], uniqueName: string): PageConfigEntry[] {
+    const removed = entries.find(e => e && e.uniqueName === uniqueName);
+    if (!removed) {
+        return entries;
+    }
+    // the start page is published under its reserved id as well - a link may name either
+    const names = new Set<string>([uniqueName]);
+    if (isMainPageEntry(removed)) {
+        names.add(mainPageName);
+    }
+    let result = entries;
+    for (const entry of entries) {
+        if (!entry || entry.uniqueName === uniqueName || !Array.isArray(entry.navigationAssignment)) {
+            continue;
+        }
+        for (const row of entry.navigationAssignment) {
+            if (!row?.navigation) {
+                continue;
+            }
+            const scope: NavigationEditScope = row.topic === ALL_PANELS_SPECIAL_ID ? 'all' : 'panel';
+            const handedOver = effectiveNavigation(removed, row.topic) ?? {};
+            for (const kind of chainLinkKinds) {
+                const current = row.navigation[kind];
+                if (!current || !names.has(current)) {
+                    continue;
+                }
+                let target = handedOver[kind] || undefined;
+                // the neighbour must not end up pointing at itself or at the page that goes away
+                if (
+                    target &&
+                    (names.has(target) ||
+                        target === entry.uniqueName ||
+                        (target === mainPageName && isMainPageEntry(entry)))
+                ) {
+                    target = undefined;
+                }
+                result = setNavigationLink(result, entry.uniqueName, row.topic, kind, target, scope);
+            }
+        }
+    }
+    return result;
+}

@@ -13,6 +13,7 @@ import {
     adapterDecidedLink,
     applyNavigationOverlay,
     assignmentSourceOf,
+    closeNavigationChain,
     effectiveNavigation,
     effectiveScriptLinks,
     findNavigationReferences,
@@ -814,5 +815,81 @@ describe('lib/types/navigationEdit - findNavigationReferences', () => {
             { uniqueName: 'shortcut', kinds: ['link'] },
             { uniqueName: 'menu', kinds: ['item'] },
         ]);
+    });
+});
+
+describe('lib/types/navigationEdit - closeNavigationChain', () => {
+    it('hands the chain over: a -> b -> c becomes a -> c when b goes', () => {
+        const entries: PageConfigEntry[] = [
+            gridEntry('a', [{ topic: panelTopic, navigation: { next: 'b' } }]),
+            gridEntry('b', [{ topic: panelTopic, navigation: { prev: 'a', next: 'c' } }]),
+            gridEntry('c', [{ topic: panelTopic, navigation: { prev: 'b' } }]),
+        ];
+        const updated = closeNavigationChain(entries, 'b');
+        expect(rowsOf(updated, 'a')).to.deep.equal([{ topic: panelTopic, navigation: { next: 'c' } }]);
+        expect(rowsOf(updated, 'c')).to.deep.equal([{ topic: panelTopic, navigation: { prev: 'a' } }]);
+        // the page to be deleted is left untouched, the caller removes it
+        expect(rowsOf(updated, 'b')).to.deep.equal([{ topic: panelTopic, navigation: { prev: 'a', next: 'c' } }]);
+    });
+
+    it('removes a link that cannot be handed over, and keeps the other links', () => {
+        const entries: PageConfigEntry[] = [
+            gridEntry('a', [{ topic: panelTopic, navigation: { next: 'b', home: 'main' } }]),
+            gridEntry('b', [{ topic: panelTopic, navigation: { prev: 'a' } }]),
+        ];
+        expect(rowsOf(closeNavigationChain(entries, 'b'), 'a')).to.deep.equal([
+            { topic: panelTopic, navigation: { home: 'main' } },
+        ]);
+    });
+
+    it('does not let a page point at itself - a -> b -> a drops the link', () => {
+        const entries: PageConfigEntry[] = [
+            gridEntry('a', [{ topic: panelTopic, navigation: { next: 'b' } }]),
+            gridEntry('b', [{ topic: panelTopic, navigation: { next: 'a' } }]),
+        ];
+        expect(rowsOf(closeNavigationChain(entries, 'b'), 'a')).to.deep.equal([{ topic: panelTopic, navigation: {} }]);
+    });
+
+    it('closes every assignment row with the links that apply to it', () => {
+        const entries: PageConfigEntry[] = [
+            gridEntry('a', [
+                { topic: ALL_PANELS_SPECIAL_ID, navigation: { next: 'b' } },
+                { topic: panelTopic, navigation: { next: 'b' } },
+            ]),
+            gridEntry('b', [
+                { topic: ALL_PANELS_SPECIAL_ID, navigation: { next: 'c' } },
+                { topic: panelTopic, navigation: { next: 'd' } },
+            ]),
+        ];
+        expect(rowsOf(closeNavigationChain(entries, 'b'), 'a')).to.deep.equal([
+            { topic: ALL_PANELS_SPECIAL_ID, navigation: { next: 'c' } },
+            { topic: panelTopic, navigation: { next: 'd' } },
+        ]);
+    });
+
+    it('finds the start page under its reserved id and is a no-op without a hit', () => {
+        const entries: PageConfigEntry[] = [
+            gridEntry('start', [{ topic: panelTopic, navigation: { prev: 'z' } }], true),
+            gridEntry('a', [{ topic: panelTopic, navigation: { prev: 'main' } }]),
+            gridEntry('z', [{ topic: panelTopic, navigation: {} }]),
+        ];
+        expect(rowsOf(closeNavigationChain(entries, 'start'), 'a')).to.deep.equal([
+            { topic: panelTopic, navigation: { prev: 'z' } },
+        ]);
+        // an unknown name and a page nothing points at leave the input untouched, by identity
+        expect(closeNavigationChain(entries, 'unknown')).to.equal(entries);
+        const untouched: PageConfigEntry[] = [
+            gridEntry('a', [{ topic: panelTopic, navigation: { home: 'main' } }]),
+            gridEntry('b', [{ topic: panelTopic, navigation: { parent: 'a' } }]),
+        ];
+        expect(closeNavigationChain(untouched, 'a')).to.equal(untouched);
+    });
+
+    it('drops the link of a panel the deleted page was not assigned to', () => {
+        const entries: PageConfigEntry[] = [
+            gridEntry('a', [{ topic: otherTopic, navigation: { prev: 'b' } }]),
+            gridEntry('b', [{ topic: panelTopic, navigation: { prev: 'a' } }]),
+        ];
+        expect(rowsOf(closeNavigationChain(entries, 'b'), 'a')).to.deep.equal([{ topic: otherTopic, navigation: {} }]);
     });
 });

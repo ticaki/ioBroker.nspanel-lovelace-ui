@@ -475,6 +475,8 @@
     "deletePanel": "Eliminar panel",
     "deletePanelConfirmText": "¿Realmente deseas eliminar el panel '%s'?",
     "deletePanelSuccessText": "El panel '%s' ha sido eliminado. ¿Quieres guardar los cambios?",
+    "delete_confirm_close_chain": "Conectar la página anterior y la siguiente",
+    "delete_confirm_close_chain_hint": "Las páginas que llevan a esta asumen su página anterior o siguiente; si falta, se elimina el enlace. Por panel.",
     "delete_confirm_referenced": "Estas páginas apuntan a ella: %s",
     "delete_confirm_referenced_hint": "Estas referencias permanecen y deben cambiarse a mano. Las referencias de los scripts de configuración no se enumeran aquí.",
     "delete_confirm_referenced_more": "… y %n más",

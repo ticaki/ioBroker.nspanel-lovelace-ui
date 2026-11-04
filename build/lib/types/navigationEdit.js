@@ -21,6 +21,7 @@ __export(navigationEdit_exports, {
   adapterDecidedLink: () => adapterDecidedLink,
   applyNavigationOverlay: () => applyNavigationOverlay,
   assignmentSourceOf: () => assignmentSourceOf,
+  closeNavigationChain: () => closeNavigationChain,
   effectiveNavigation: () => effectiveNavigation,
   effectiveScriptLinks: () => effectiveScriptLinks,
   findNavigationReferences: () => findNavigationReferences,
@@ -346,11 +347,49 @@ function findNavigationReferences(entries, uniqueName) {
   }
   return found;
 }
+const chainLinkKinds = ["prev", "next"];
+function closeNavigationChain(entries, uniqueName) {
+  var _a;
+  const removed = entries.find((e) => e && e.uniqueName === uniqueName);
+  if (!removed) {
+    return entries;
+  }
+  const names = /* @__PURE__ */ new Set([uniqueName]);
+  if ((0, import_adminShareConfig.isMainPageEntry)(removed)) {
+    names.add(import_adminShareConfig.mainPageName);
+  }
+  let result = entries;
+  for (const entry of entries) {
+    if (!entry || entry.uniqueName === uniqueName || !Array.isArray(entry.navigationAssignment)) {
+      continue;
+    }
+    for (const row of entry.navigationAssignment) {
+      if (!(row == null ? void 0 : row.navigation)) {
+        continue;
+      }
+      const scope = row.topic === import_adminShareConfig.ALL_PANELS_SPECIAL_ID ? "all" : "panel";
+      const handedOver = (_a = effectiveNavigation(removed, row.topic)) != null ? _a : {};
+      for (const kind of chainLinkKinds) {
+        const current = row.navigation[kind];
+        if (!current || !names.has(current)) {
+          continue;
+        }
+        let target = handedOver[kind] || void 0;
+        if (target && (names.has(target) || target === entry.uniqueName || target === import_adminShareConfig.mainPageName && (0, import_adminShareConfig.isMainPageEntry)(entry))) {
+          target = void 0;
+        }
+        result = setNavigationLink(result, entry.uniqueName, row.topic, kind, target, scope);
+      }
+    }
+  }
+  return result;
+}
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
   adapterDecidedLink,
   applyNavigationOverlay,
   assignmentSourceOf,
+  closeNavigationChain,
   effectiveNavigation,
   effectiveScriptLinks,
   findNavigationReferences,

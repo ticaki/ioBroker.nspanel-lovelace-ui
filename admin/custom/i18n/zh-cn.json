@@ -475,6 +475,8 @@
     "deletePanel": "删除面板",
     "deletePanelConfirmText": "您确实要删除面板“%s”吗？",
     "deletePanelSuccessText": "面板“%s”已被删除。您想保存更改吗？",
+    "delete_confirm_close_chain": "将上一页与下一页相连",
+    "delete_confirm_close_chain_hint": "指向本页的页面接管它的上一页或下一页；若没有，则删除该引用。按面板分别处理。",
     "delete_confirm_referenced": "以下页面指向该页面：%s",
     "delete_confirm_referenced_hint": "这些引用会保留，需要手动修改。此处不包含来自配置脚本的引用。",
     "delete_confirm_referenced_more": "……还有 %n 个",

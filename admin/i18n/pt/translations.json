@@ -475,6 +475,8 @@
     "deletePanel": "Excluir painel",
     "deletePanelConfirmText": "Você realmente deseja excluir o painel '%s'?",
     "deletePanelSuccessText": "O painel '%s' foi excluído. Deseja salvar as alterações?",
+    "delete_confirm_close_chain": "Ligar a página anterior à seguinte",
+    "delete_confirm_close_chain_hint": "As páginas que apontam para esta assumem a sua página anterior ou seguinte; se faltar, a referência é removida. Por painel.",
     "delete_confirm_referenced": "Estas páginas apontam para ela: %s",
     "delete_confirm_referenced_hint": "Estas referências permanecem e têm de ser alteradas à mão. As referências de scripts de configuração não são listadas aqui.",
     "delete_confirm_referenced_more": "… e %n mais",
