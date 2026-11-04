@@ -224,6 +224,7 @@ export class VirtualPanelManager extends BaseClass {
             panel.panelSend.resetMessageDB();
         }
         entry.clients.add(client);
+        entry.channel.setReceiverConnected(entry.clients.size > 0);
         client.send({
             t: 'hello',
             model: panel.info.nspanel.model,
@@ -247,11 +248,12 @@ export class VirtualPanelManager extends BaseClass {
         if (!entry.clients.delete(client)) {
             return;
         }
+        entry.channel.setReceiverConnected(entry.clients.size > 0);
         if (entry.clients.size > 0 || this.unload || this.adapter.unload) {
             return;
         }
-        // without a browser the panel is offline like a switched off display: the send queue is
-        // dropped and the panel offers `pageType~pageStartup` to the next browser right away
+        // without a browser the panel is offline like a switched off display: `loop()` drops the
+        // send queue and offers nothing, the next browser sends its startup event itself
         const panel = this.panelOf(entry);
         if (panel && !panel.unload && panel.isOnline) {
             this.log.info(`No browser left on ${panel.friendlyName} - offline`);

@@ -54,6 +54,7 @@ var import_card = require("../templates/card");
 var import_tools = require("../const/tools");
 var import_pageChartBar = require("../pages/pageChartBar");
 var import_pageChartLine = require("../pages/pageChartLine");
+var import_pageChartPie = require("../pages/pageChartPie");
 var import_pageThermo2 = require("../pages/pageThermo2");
 var import_admin = require("../configuration/admin");
 var import_main_page = require("../configuration/main-page");
@@ -431,6 +432,10 @@ class Panel extends import_library.BaseClass {
       case "cardLChart": {
         pageConfig = Panel.getPage(pageConfig, this);
         return new import_pageChartLine.PageChartLine(pmconfig, pageConfig);
+      }
+      case "cardPChart": {
+        pageConfig = Panel.getPage(pageConfig, this);
+        return new import_pageChartPie.PageChartPie(pmconfig, pageConfig);
       }
       case "cardEntities": {
         pageConfig = Panel.getPage(pageConfig, this);
@@ -1544,13 +1549,16 @@ class Panel extends import_library.BaseClass {
     }, 200);
   }
   loop = () => {
+    var _a, _b;
     this.pages = this.pages.filter((a) => a && !a.unload);
     let t = Math.random() * 3e4 + 1e4;
     if (!this.isOnline) {
       t = 5e3;
       if (!this.flashing) {
         this.panelSend.resetMessageDB();
-        this.sendToPanel("pageType~pageStartup", false, true, { retain: true });
+        if (((_b = (_a = this.channel).hasReceiver) == null ? void 0 : _b.call(_a)) !== false) {
+          this.sendToPanel("pageType~pageStartup", false, true, { retain: true });
+        }
       }
     }
     if (this.unload || this.adapter.unload) {

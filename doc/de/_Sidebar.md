@@ -35,6 +35,7 @@
 - [QR-Code](cardQR)  
 - [Energie](cardPower)  
 - [Verlaufsdiagramm](cardChart)  
+- [Kreisdiagramm](PagePChart)  
 - [Abfall](cardTrash)  
 - [Thermostat](cardThermo2)  
 - [Thermostat (klassisch)](cardThermo)  

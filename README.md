@@ -58,6 +58,7 @@ Adapter Community (ioBroker Forum): [Forum](https://forum.iobroker.net/topic/800
 - [x] screensaver3
 - [x] cardChart
 - [x] cardLChart
+- [x] cardPChart
 - [ ] cardLChart2 (new - in progress)
 - [x] cardEntities
 - [x] cardSchedule
@@ -158,6 +159,13 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
     ### **WORK IN PROGRESS**
 -->
 ### **WORK IN PROGRESS**
+- (ticaki) admin page navigation: a page named `main` without the start page flag (older configurations) is treated as the start page as well - its own prev/next/parent/home are ignored, a warning in the log asks to set the flag
+- (ticaki) admin page navigation: the locked prev/next/parent/home fields of a start page only carry the label tooltip, the "choose a value to store" hint is gone there; the resolved neighbours are re-read after the adapter restarted instead of keeping the stale ones
+- (ticaki) admin page navigation: a click on the label prev/next/parent/home opens the page the link resolves to, as long as it is an admin page; a system page as target only shows a short notice
+- (ticaki) admin page navigation: a page flagged as start page no longer carries a prev/next/parent of its own - its neighbours follow from the pages pointing at it (the stored values are kept and apply again once the flag is removed); an explicit `next` of a page is no longer overwritten when other pages chain in behind it; the admin shows the neighbours the adapter resolved as greyed placeholders in empty prev/next/parent/home fields and warns when other pages store the same prev/next or point at the page with their prev while its next leads elsewhere
+- (ticaki) screensaver: a mode this adapter version does not know (e.g. after a downgrade) no longer breaks the screensaver - it falls back to `standard` with a warning in the log, the stored configuration stays unchanged
+- (ticaki) cardPChart: new page type "Pie chart" in the PageConfig tab (TFT 6.0.5, EU panel) - up to five slices (the legend of HMI 6.0.5 has five rows) from numeric states with name, unit and color, legend mode and decimals; optionally the average over a time range (rolling: 1 h, 24 h, 7 d, 30 d, custom hours; calendar: today, yesterday, this/last week, this/last month) read from a history/sql/influxdb instance; alternatively a script data point with the finished panel text, more than five entries are summed up as "Other"; the web panel renders the card as well
+- (ticaki) web panel: without a connected browser the panel no longer offers the startup page every 5 s, which only filled the debug log
 - (tt-tom17) cardThermo: the set temperature reached the panel multiplied by the step width (19.0 °C became 79.0 °C with the usual step of 0.5 °C) - only a step of 0.1 °C was unaffected
 - (ticaki) Tasmota update and the Tasmota update indicator use the `tasmota-beta` version when the beta option is enabled; the beta option label in the admin no longer refers to TFT only
 - (ticaki) admin screensaver: uniform, larger paging arrows for all areas except favorit (the scroll bar for weather items is gone, weather items are paged like the panel does); the alternate area can hold several items the panel rotates through
@@ -168,6 +176,10 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
 - (tt-tom17) cardQR: a page with the encryption "No Password" (or a free text, url or telephone code) no longer carries the stored wifi password to the panel - it was shown in clear text on the card and was part of the scanned code
 - (tt-tom17) cardAlarm: the disarm buttons (columns 5 to 8) were only taken over when the arm button of the same row was filled, so a page with the disarm column alone showed no button at all
 - (tt-tom17) cardAlarm: a new page starts as an alarm system with the buttons "Arm" and "Disarm" filled in, and the top button of both columns is mandatory - without them the card has no button at all in one of its two states and cannot be left; the type "unlock" still needs one button only
+- (tt-tom17) PageConfig: the unique id of a page is fixed once the page was created - renaming it left the navigation of every other page pointing at the old name, visible only as a warning in the log
+- (tt-tom17) PageConfig: the delete confirmation names the pages that point at the page to be deleted - deleting still leaves those references behind, but no longer silently
+- (tt-tom17) PageConfig: the delete confirmation offers to connect the previous and the next page, so deleting a page out of a prev/next chain no longer leaves its neighbours pointing at a page that is gone
+- (tt-tom17) PageConfig: the third tab of the navigation column is gone - it only showed an untranslated placeholder text
 
 ### 2.0.2 (2026-11-01)
 - (ticaki) admin: page item text size shows the pixel size of each font; icons only offer fonts 1, 3 and 4 (the others have no icons), font 5 is marked "ASCII only"

@@ -322,7 +322,7 @@ class PageGlobalSettings extends ConfigGeneric<ConfigGenericProps & { theme?: an
                             <MenuItem value={2}>{this.getText('technical')}</MenuItem>
                             <MenuItem value={3}>{this.getText('sunset')}</MenuItem>
                             <MenuItem value={4}>{this.getText('vulcano')}</MenuItem>
-                            <MenuItem value={5}>{this.getText('userColors')}</MenuItem>
+                            <MenuItem value={5}>{this.getText('userColor')}</MenuItem>
                         </Select>
                     </FormControl>
                 </Box>

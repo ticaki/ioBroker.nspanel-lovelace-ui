@@ -11,7 +11,6 @@ export interface PageLinkEditorProps {
     entries: PageConfigEntry[];
     alive: boolean;
     onEntryChange: (updated: PageLinkEntry) => void;
-    onUniqueNameChange: (oldName: string, newName: string) => void;
     /** selects another page of the list */
     onSelectPage: (uniqueName: string) => void;
     getText: (key: string) => string;
@@ -56,15 +55,9 @@ export class PageLinkEditor extends React.Component<PageLinkEditorProps> {
                         type="text"
                         label={this.getText('unique_label')}
                         value={entry.uniqueName}
-                        disabled={!alive || isMainPageEntry(entry)}
-                        onChange={e => {
-                            const newUniqueName = e.target.value;
-                            if (newUniqueName.trim()) {
-                                this.props.onUniqueNameChange(entry.uniqueName, newUniqueName);
-                            }
-                        }}
                         slotProps={{
                             input: {
+                                readOnly: true,
                                 sx: {
                                     backgroundColor: 'transparent',
                                     px: 1,
@@ -73,7 +66,11 @@ export class PageLinkEditor extends React.Component<PageLinkEditorProps> {
                                 },
                             },
                         }}
-                        helperText={isMainPageEntry(entry) ? this.getText('page_name_main_locked') : undefined}
+                        helperText={
+                            isMainPageEntry(entry)
+                                ? this.getText('page_name_main_locked')
+                                : this.getText('page_name_locked')
+                        }
                     />
                 </Box>
 

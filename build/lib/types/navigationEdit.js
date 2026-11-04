@@ -21,8 +21,10 @@ __export(navigationEdit_exports, {
   adapterDecidedLink: () => adapterDecidedLink,
   applyNavigationOverlay: () => applyNavigationOverlay,
   assignmentSourceOf: () => assignmentSourceOf,
+  closeNavigationChain: () => closeNavigationChain,
   effectiveNavigation: () => effectiveNavigation,
   effectiveScriptLinks: () => effectiveScriptLinks,
+  findNavigationReferences: () => findNavigationReferences,
   isNavigationApplied: () => isNavigationApplied,
   isNavigationLinkKind: () => isNavigationLinkKind,
   isOverrideStale: () => isOverrideStale,
@@ -307,13 +309,90 @@ function isNavigationApplied(map, entries, panelTopic, page, overrides = []) {
   const nextByAdmin = adapterDecidedLink(map, entries, panelTopic, page, "next", overrides) !== void 0;
   return (expected.home && !known.has(expected.home) ? true : same(expected.home, item.home)) && (expected.parent && !known.has(expected.parent) ? true : same(expected.parent, item.parent)) && (prevByAdmin || applied(links.prev, item.prev)) && (nextByAdmin || applied(links.next, item.next));
 }
+function findNavigationReferences(entries, uniqueName) {
+  if (!uniqueName) {
+    return [];
+  }
+  const self = entries.find((e) => e && e.uniqueName === uniqueName);
+  const names = /* @__PURE__ */ new Set([uniqueName]);
+  if (self && (0, import_adminShareConfig.isMainPageEntry)(self)) {
+    names.add(import_adminShareConfig.mainPageName);
+  }
+  const hit = (target) => !!target && names.has(target);
+  const found = [];
+  for (const entry of entries) {
+    if (!entry || entry.uniqueName === uniqueName) {
+      continue;
+    }
+    const kinds = [];
+    const rows = Array.isArray(entry.navigationAssignment) ? entry.navigationAssignment : [];
+    for (const kind of navigationLinkKinds) {
+      if (rows.some((row) => {
+        var _a;
+        return row && hit((_a = row.navigation) == null ? void 0 : _a[kind]);
+      })) {
+        kinds.push(kind);
+      }
+    }
+    if ((0, import_adminShareConfig.isPageLinkEntry)(entry) && hit(entry.target)) {
+      kinds.push("link");
+    }
+    const items = "pageItems" in entry && Array.isArray(entry.pageItems) ? entry.pageItems : [];
+    if (items.some((item) => item && (hit(item.targetPage) || hit(item.targetPageLongPress)))) {
+      kinds.push("item");
+    }
+    if (kinds.length) {
+      found.push({ uniqueName: entry.uniqueName, kinds });
+    }
+  }
+  return found;
+}
+const chainLinkKinds = ["prev", "next"];
+function closeNavigationChain(entries, uniqueName) {
+  var _a;
+  const removed = entries.find((e) => e && e.uniqueName === uniqueName);
+  if (!removed) {
+    return entries;
+  }
+  const names = /* @__PURE__ */ new Set([uniqueName]);
+  if ((0, import_adminShareConfig.isMainPageEntry)(removed)) {
+    names.add(import_adminShareConfig.mainPageName);
+  }
+  let result = entries;
+  for (const entry of entries) {
+    if (!entry || entry.uniqueName === uniqueName || !Array.isArray(entry.navigationAssignment)) {
+      continue;
+    }
+    for (const row of entry.navigationAssignment) {
+      if (!(row == null ? void 0 : row.navigation)) {
+        continue;
+      }
+      const scope = row.topic === import_adminShareConfig.ALL_PANELS_SPECIAL_ID ? "all" : "panel";
+      const handedOver = (_a = effectiveNavigation(removed, row.topic)) != null ? _a : {};
+      for (const kind of chainLinkKinds) {
+        const current = row.navigation[kind];
+        if (!current || !names.has(current)) {
+          continue;
+        }
+        let target = handedOver[kind] || void 0;
+        if (target && (names.has(target) || target === entry.uniqueName || target === import_adminShareConfig.mainPageName && (0, import_adminShareConfig.isMainPageEntry)(entry))) {
+          target = void 0;
+        }
+        result = setNavigationLink(result, entry.uniqueName, row.topic, kind, target, scope);
+      }
+    }
+  }
+  return result;
+}
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
   adapterDecidedLink,
   applyNavigationOverlay,
   assignmentSourceOf,
+  closeNavigationChain,
   effectiveNavigation,
   effectiveScriptLinks,
+  findNavigationReferences,
   isNavigationApplied,
   isNavigationLinkKind,
   isOverrideStale,
