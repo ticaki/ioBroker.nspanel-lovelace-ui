@@ -517,9 +517,9 @@ class NavigationAssignmentPanel extends ConfigGeneric<
         const tooltip =
             hint && openHint ? (
                 <>
-                    {hint}
-                    <br />
                     {openHint}
+                    <br />
+                    {hint}
                 </>
             ) : (
                 hint || openHint
