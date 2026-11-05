@@ -113,13 +113,11 @@ The **Speed scale** section controls the animation — it runs faster the greate
 
 | Field | Effect |
 |---|---|
-| `powerMinValueForSpeed` | The power at which the dot **stands still**. Default 0 — with it the dot is motionless at 0 W. |
+| **Minimum power** | The power at which the dot **stands still**. Default 0 — with it the dot is motionless at 0 W. |
 | **Maximum power** | The power at which the animation runs at **100 %**, that is fastest. Default 10000. In between the speed grows evenly with the power. |
 | **Reverse flow direction** | Reverses the direction of travel — for flows whose state carries the sign the other way round. |
 
 The direction of travel comes from the **sign**: a negative measurement makes the dot run the other way, and the checkbox *Reverse flow direction* reverses both.
-
-> ⚠️ **The first field shows the raw key `powerMinValueForSpeed` instead of a label** — the adapter is missing the translation, in both languages. What is meant is the **minimum power for the speed**, the counterpart of the field next to it.
 
 > The label **Maximum power** effectively exists twice: here for the animation, further up as *maximum power for color* for the gradient. They can only be told apart by the section headings *Color scale* and *Speed scale*.
 
@@ -176,7 +174,6 @@ If a page that still comes from a script is to be managed here, the way leads th
 - **All limits for colour and speed apply to the raw value** of the state, not to the unit the panel shows.
 - **Without an icon colour and without the colour scale the icon is white.** On pages from the old table that is the normal case when the checkbox *Color depends on value* was never touched there.
 - **A measurement outside the colour scale stretches it** instead of sticking at the end — the colours then shift for all other values too.
-- **`powerMinValueForSpeed` is a missing translation key**, not a special field. What is meant is the minimum power for the speed.
 - **"Maximum power" appears twice in the dialog** — once for the colour, once for the speed. Only the section heading tells them apart.
 - **The house values neither shorten nor convert.** A value that is too long overflows there, and a wrong unit goes unnoticed because nobody checks it.
 - **"Slots, die negativ in die Summe gehen" is mislabelled** in German. What you select are the tiles that **contribute**.

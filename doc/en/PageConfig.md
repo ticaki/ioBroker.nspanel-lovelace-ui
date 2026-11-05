@@ -167,7 +167,7 @@ The second tab of the right-hand column. It applies to every page type; the thre
 
 The three paging rows appear on **menu pages** (Grid, Grid2, Grid3, Entities, Schedule), on the **thermostat page (Thermo2)** and on the **media player**. *Half page* only exists on the three grid variants and on Thermo2 — and on Thermo2 the choice is reset to *Full page* by the adapter. What the three modes mean on the respective card is described under [Menu page](pageMenu#7-paging-of-the-page-items), [Thermostat](cardThermo2) and [Media player](cardMedia#9-paging-of-the-option-bar).
 
-> The tab labels currently show the keys `navigation` and `pagedetails` instead of their translations (on a narrow screen `nav`, `details`) — a known point in the admin interface, without consequences for the configuration. This page therefore names the tabs by their function and not by their label.
+> The two tabs are labelled *Navigation* and *Page details* (on a narrow screen *Nav* and *Details*).
 
 ## The *Documentation* button
 
@@ -214,4 +214,3 @@ Which states the cards expect is listed in the [alias table](ALIAS); the way fro
 - **Copying only works with a mouse.** *Copy item* and *Paste item* hang on the right-click; on tablet and phone there is no substitute. Pasting over an occupied slot happens without a confirmation.
 - **"Half page" does not take effect everywhere.** On Thermo2 the choice is always reset to *Full page*, and switching a grid page to Entities or Schedule afterwards keeps the stored value, which the adapter then discards as well.
 - **An `alwaysOn: action` taken over from a script cannot be selected.** There is no button for this fourth mode (the page holds the screensaver back after every action). The value stays stored but shows **no** selected radio button in the *Page details* tab — and the first click into the group deletes it for good.
-- **Both tab labels are untranslated.** They show `navigation` and `pagedetails` (on a narrow screen `nav`, `details`) — harmless.

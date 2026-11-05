@@ -46,7 +46,7 @@ Die **Entsperrseite ist kein eigener Seitentyp** — sie entsteht genau hier, au
 
 > **Vorbelegt ist *Alarm*.** Eine neue Seite entsteht als Alarmanlage, der Editor zeigt also sofort alle Felder. Für eine Entsperrseite genügt ein Klick auf *Entsperren*; die Schaltflächentexte verschwinden dann aus der Ansicht, bleiben aber in der Konfiguration stehen.
 
-**Umschalten später** blendet die Felder der anderen Betriebsart nur aus; eingetragene Werte bleiben in der Konfiguration stehen und werden weiter in die Seite übernommen. Wirksam ist jeweils nur, was zur gewählten Betriebsart gehört — die Schaltflächentexte und *Genehmigt* bei *Alarm*, das Sprungziel bei *Entsperren*. Eine Ausnahme ist die Checkbox `unlock_global`: Sie ist nur im Modus *Alarm* sichtbar, der Adapter liest sie aber in **beiden** Betriebsarten (siehe [Abschnitt 7](#7-ein-zustand-für-mehrere-panels)).
+**Umschalten später** blendet die Felder der anderen Betriebsart nur aus; eingetragene Werte bleiben in der Konfiguration stehen und werden weiter in die Seite übernommen. Wirksam ist jeweils nur, was zur gewählten Betriebsart gehört — die Schaltflächentexte und *Genehmigt* bei *Alarm*, das Sprungziel bei *Entsperren*. Eine Ausnahme ist die Checkbox *Status für alle Panels gemeinsam*: Sie ist nur im Modus *Alarm* sichtbar, der Adapter liest sie aber in **beiden** Betriebsarten (siehe [Abschnitt 7](#7-ein-zustand-für-mehrere-panels)).
 
 **Überschrift** ist die Kopfzeile am Panel. Beim Anlegen wird der Seitenname eingetragen.
 
@@ -112,7 +112,7 @@ Die Karte kennt fünf Zustände. Den aktuellen hält der Datenpunkt `.status`, �
 - **Aus `triggered` führt kein Weg über das Panel.** Die Tastatur wird zwar freigegeben, der Adapter verwirft in diesem Zustand aber jedes Schaltflächen-Ereignis. Zurück geht es nur durch einen neuen Wert in `.status`.
 - **Beim Start normalisiert der Adapter** `pending` zu `armed` und `arming` zu `disarmed` — ein Zwischenzustand übersteht keinen Neustart. `triggered` und die beiden Ruhezustände bleiben erhalten.
 
-> ⚠️ **Die Zustandstexte erscheinen englisch.** Dem Adapter fehlen die Übersetzungen für `armed`, `disarmed`, `arming`, `pending`, `triggered` und `locked` — in allen Sprachen; in diesem Fall zeigt er den Schlüssel selbst. Auf dem Panel steht also wörtlich „arming“, „pending“, „triggered“. Übersetzt sind nur „Gesperrt für“ und „entsperren“. Dasselbe betrifft die Klartextliste des Datenpunkts `.status`.
+> Auf dem Panel stehen die Zustände als Kurzformen in der Sprache des Adapters — auf Deutsch „Aktiv“ (`armed`), „Aktiv.“ (`arming`), „Inaktiv“ (`disarmed`), „Warte“ (`pending`), „Ausgel.“ (`triggered`) und „Gesperrt“ (`locked`).
 
 ## 6. Genehmigt: Bestätigung von außen
 
@@ -133,7 +133,7 @@ Zu beachten:
 
 ## 7. Ein Zustand für mehrere Panels
 
-> ⚠️ **Diese Checkbox zeigt zurzeit den Schlüssel `unlock_global` statt einer Beschriftung** — dem Adapter fehlt die Übersetzung, in allen Sprachen. Sie ist aber keine Kleinigkeit, deshalb hier, was sie tut:
+> Die Checkbox heißt **Status für alle Panels gemeinsam**; der Hinweistext darunter nennt den Ablageort der Datenpunkte. Sie ist keine Kleinigkeit, deshalb hier, was sie tut:
 
 Der Haken verlegt die Statusdatenpunkte der Seite von `panels.<panel>.alarm.<seite>` nach **`alarm.<seite>`** und hält den Zustand damit **über alle Panels hinweg gleich**: Schaltet ein Panel die Anlage, zieht der Adapter alle anderen Alarmseiten **gleichen Namens** nach. Wer dieselbe Alarmseite auf mehreren Panels zeigt, will das — sonst ist die Anlage auf dem einen Panel armiert und auf dem anderen nicht.
 
@@ -194,8 +194,7 @@ Panel, Navigationsziele, *Startseite (main)*, *Versteckt* und *Verhalten des Bil
 - **Die Karte ist minutenlang gesperrt.** Die Wartezeit verdoppelt sich mit jedem Fehlversuch und ist nicht begrenzt; zurückgesetzt wird sie nur durch die richtige PIN oder einen Neustart des Adapters.
 - **Am Panel steht „Unlock“.** Die Überschrift ist leer; der Adapter setzt diesen Ersatzwert ein.
 - **Ein Schaltflächentext erscheint anders als eingetippt.** Der Text entspricht einem Übersetzungsschlüssel des Adapters (`on`, `off`, `Start`, `unlock` …) und wird ersetzt.
-- **Die Zustände stehen englisch auf dem Panel.** Die Übersetzungen fehlen dem Adapter; er zeigt dann den Schlüssel.
 - **Das Entsperren springt nicht.** Entweder ist kein Ziel eingetragen, oder das Ziel gibt es auf dem zugewiesenen Panel nicht — die Auswahlliste bietet die Seiten aller Panels an. Prüfen lässt sich das am Log (`Dont find navigation target`).
-- **Skripte finden die Datenpunkte nicht mehr.** Der Haken `unlock_global` verschiebt sie von `panels.<panel>.alarm.<seite>` nach `alarm.<seite>`.
+- **Skripte finden die Datenpunkte nicht mehr.** Der Haken *Status für alle Panels gemeinsam* verschiebt sie von `panels.<panel>.alarm.<seite>` nach `alarm.<seite>`.
 - **Ein Schreibzugriff bleibt ohne Wirkung.** `.status` und `.approve` müssen ohne Bestätigung (`ack = false`) geschrieben werden.
 - **Alles ausgegraut:** Die Instanz läuft nicht. Der Editor ist nur bei laufender Instanz bedienbar.

@@ -167,7 +167,7 @@ Der zweite Reiter der rechten Spalte. Er gilt für jeden Seitentyp; die drei Bl�
 
 Die drei Blätter-Zeilen erscheinen bei **Menü-Seiten** (Grid, Grid2, Grid3, Entities, Schedule), bei der **Thermostat-Seite (Thermo2)** und beim **Mediaplayer**. *Eine halbe Seite* gibt es nur bei den drei Grid-Varianten und bei Thermo2 — und bei Thermo2 wird die Wahl vom Adapter wieder auf *ganze Seite* zurückgesetzt. Was die drei Modi auf der jeweiligen Karte bedeuten, steht unter [Menü-Seiten](pageMenu#7-blättern-der-seitenelemente), [Thermostat](cardThermo2) und [Mediaplayer](cardMedia#9-blättern-der-optionsleiste).
 
-> Die Reiterbeschriftungen zeigen zurzeit die Schlüssel `navigation` und `pagedetails` statt der Übersetzungen (auf schmalem Schirm `nav`, `details`) — ein bekannter Punkt in der Admin-Oberfläche, inhaltlich ohne Folgen. Diese Seite nennt die Reiter deshalb bei ihrer Funktion und nicht bei ihrer Beschriftung.
+> Die beiden Reiter heißen *Navigation* und *Seitendetails* (auf schmalem Schirm *Nav* und *Details*).
 
 ## Der Knopf *Dokumentation*
 
@@ -214,4 +214,3 @@ Welche Datenpunkte die Karten erwarten, steht in der [Alias-Tabelle](ALIAS); den
 - **Kopieren nur mit der Maus.** *Element kopieren* und *Element einfügen* hängen am Rechtsklick; auf Tablet und Telefon gibt es keinen Ersatz. Eingefügt wird ohne Rückfrage über eine belegte Fläche.
 - **„Eine halbe Seite" ist nicht überall wirksam.** Bei Thermo2 wird die Wahl immer auf *ganze Seite* zurückgesetzt, und wer eine Grid-Seite nachträglich auf Entities oder Schedule umstellt, behält den gespeicherten Wert, den der Adapter dann ebenfalls verwirft.
 - **Ein aus einem Skript übernommenes „alwaysOn: action" ist nicht wählbar.** Für diesen vierten Modus (die Seite hält den Bildschirmschoner nach jeder Aktion zurück) gibt es keinen Knopf. Der Wert bleibt gespeichert, zeigt im Reiter *Seitendetails* aber **keinen** ausgewählten Punkt — und der erste Klick in die Gruppe löscht ihn endgültig.
-- **Beide Reiterbeschriftungen sind unübersetzt.** Sie zeigen `navigation` und `pagedetails` (auf schmalem Schirm `nav`, `details`) — harmlos.

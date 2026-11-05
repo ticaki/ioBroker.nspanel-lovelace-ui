@@ -46,7 +46,7 @@ The **unlock page is not a page type of its own** — it is created right here, 
 
 > **The preset is *Alarm*.** A new page is created as an alarm system, so the editor shows every field right away. For an unlock page one click on *Unlock* is enough; the button texts then disappear from the view but stay in the configuration.
 
-**Switching later** only hides the fields of the other mode; values you entered stay in the configuration and are still taken into the page. Effective is only what belongs to the chosen mode — the button texts and *Approved* with *Alarm*, the jump target with *Unlock*. One exception is the checkbox `unlock_global`: it is visible in the mode *Alarm* only, but the adapter reads it in **both** modes (see [section 7](#7-one-state-for-several-panels)).
+**Switching later** only hides the fields of the other mode; values you entered stay in the configuration and are still taken into the page. Effective is only what belongs to the chosen mode — the button texts and *Approved* with *Alarm*, the jump target with *Unlock*. One exception is the checkbox *Shared status for all panels*: it is visible in the mode *Alarm* only, but the adapter reads it in **both** modes (see [section 7](#7-one-state-for-several-panels)).
 
 **Headline** is the header line on the panel. Creating the page fills in the page name.
 
@@ -112,7 +112,7 @@ The card knows five states. The current one is held by the state `.status`, thro
 - **There is no way out of `triggered` through the panel.** The pad is released, but in this state the adapter discards every button event. The only way back is a new value in `.status`.
 - **On start-up the adapter normalises** `pending` to `armed` and `arming` to `disarmed` — an intermediate state does not survive a restart. `triggered` and the two resting states are kept.
 
-> ⚠️ **The status texts appear in English.** The adapter is missing the translations for `armed`, `disarmed`, `arming`, `pending`, `triggered` and `locked` — in every language; in that case it shows the key itself. So the panel literally reads "arming", "pending", "triggered". Translated are only "locked for" and "unlock". The same concerns the plain text list of the state `.status`.
+> On the panel the states appear as short forms in the language of the adapter — in English "Armed" (`armed`), "Arming" (`arming`), "Disarm" (`disarmed`), "Pend" (`pending`), "Trig" (`triggered`) and "Locked" (`locked`).
 
 ## 6. Approved: confirmation from outside
 
@@ -133,7 +133,7 @@ Points to note:
 
 ## 7. One state for several panels
 
-> ⚠️ **This checkbox currently shows the key `unlock_global` instead of a label** — the adapter is missing the translation, in every language. It is not a minor setting though, so here is what it does:
+> The checkbox is labelled **Shared status for all panels**; the hint below it names where the states live. It is not a minor setting though, so here is what it does:
 
 The checkbox moves the status states of the page from `panels.<panel>.alarm.<page>` to **`alarm.<page>`** and thereby keeps the state **the same across all panels**: if one panel switches the system, the adapter pulls all other alarm pages **of the same name** along. Whoever shows the same alarm page on several panels wants that — otherwise the system is armed on one panel and not on the other.
 
@@ -194,8 +194,7 @@ Panel, navigation targets, *Start page (main)*, *Hidden* and *Screensaver behavi
 - **The card is locked for minutes.** The waiting time doubles with every failed attempt and is not capped; it is only reset by the correct PIN or by a restart of the adapter.
 - **The panel reads "Unlock".** The headline is empty; the adapter inserts this substitute value.
 - **A button text appears different from what was typed in.** The text matches a translation key of the adapter (`on`, `off`, `Start`, `unlock` …) and is replaced.
-- **The states read English on the panel.** The translations are missing in the adapter; it then shows the key.
 - **Unlocking does not jump.** Either no target is entered, or the target does not exist on the assigned panel — the select list offers the pages of all panels. This can be checked in the log (`Dont find navigation target`).
-- **Scripts no longer find the states.** The checkbox `unlock_global` moves them from `panels.<panel>.alarm.<page>` to `alarm.<page>`.
+- **Scripts no longer find the states.** The checkbox *Shared status for all panels* moves them from `panels.<panel>.alarm.<page>` to `alarm.<page>`.
 - **A write access stays without effect.** `.status` and `.approve` have to be written unacknowledged (`ack = false`).
 - **Everything greyed out:** the instance is not running. The editor can be used with a running instance only.
