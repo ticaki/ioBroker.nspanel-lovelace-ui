@@ -291,6 +291,7 @@ function pageHtml(lang: Lang, page: Page, nav: string, foot: string, hasOther: b
     <div id="results" hidden></div>
   </div>
   <a class="headlink" href="../icons/" title="${esc(lang.ui.iconsHint)}">◆ ${esc(lang.ui.icons)}</a>
+  <a class="headlink" href="${REPO}" title="${esc(lang.ui.repo)}">GitHub</a>
   <a class="headlink" href="${otherHref}">${esc(lang.ui.other)}</a>
 </header>
 <div class="layout">
