@@ -7,12 +7,11 @@ import type {
     MenuEntry,
     AdminPanelConfig,
     PowerEntry,
-    UnlockEntry,
 } from '../../src/lib/types/adminShareConfig';
 import { closeNavigationChain } from '../../src/lib/types/navigationEdit';
-import { assignMissingItemIds } from '../../src/lib/types/adminShareConfig';
 import {
     ADAPTER_NAME,
+    assignMissingItemIds,
     dropScriptNavigation,
     emptyChartEntry,
     emptyPChartEntry,
@@ -468,10 +467,7 @@ class PageConfigManager extends ConfigGeneric<ConfigGenericProps & { theme?: any
      */
     private checkAlarmButtons(entries: PageConfigEntry[]): void {
         const broken = entries.find(
-            entry =>
-                entry.card === 'cardAlarm' &&
-                (entry as UnlockEntry).alarmType === 'alarm' &&
-                (!(entry as UnlockEntry).button1 || !(entry as UnlockEntry).button5),
+            entry => entry.card === 'cardAlarm' && entry.alarmType === 'alarm' && (!entry.button1 || !entry.button5),
         );
         if (broken) {
             this.props.onError(this.props.attr, this.getText('unlock_buttons_required'));
