@@ -4,6 +4,7 @@ import {
     migrateScreensaverNotify,
     screensaverChannelIdOf,
     type ScreensaverEntry,
+    type ScreensaverItemConfig,
     type ScreensaverNotifyConfig,
 } from '../types/adminShareConfig';
 import {
@@ -193,6 +194,42 @@ describe('lib/configuration - admin screensaver (entry -> script configuration)'
             template: 'text.clock',
             dpInit: '',
             modeScr: 'left',
+        });
+    });
+
+    it('hands readOptions and - on the indicator only - the action of a template item on', () => {
+        const item: ScreensaverItemConfig = {
+            state: 'bydhvs.0',
+            template: 'text.battery.bydhvs',
+            readOptions: { min: 5 },
+            action: { kind: 'navigate', page: 'power' },
+        };
+        expect(screensaverItemToScript(item, 'indicator')).to.deep.equal({
+            type: 'template',
+            template: 'text.battery.bydhvs',
+            dpInit: 'bydhvs.0',
+            modeScr: 'indicator',
+            readOptions: { min: 5 },
+            ScreensaverEntityNaviToPage: 'power',
+        });
+        expect(screensaverItemToScript(item, 'left')).to.deep.equal({
+            type: 'template',
+            template: 'text.battery.bydhvs',
+            dpInit: 'bydhvs.0',
+            modeScr: 'left',
+            readOptions: { min: 5 },
+        });
+        expect(
+            screensaverItemToScript(
+                { ...item, readOptions: {}, action: { kind: 'button', state: 'a.0.b' } },
+                'indicator',
+            ),
+        ).to.deep.equal({
+            type: 'template',
+            template: 'text.battery.bydhvs',
+            dpInit: 'bydhvs.0',
+            modeScr: 'indicator',
+            ScreensaverEntityButton: 'a.0.b',
         });
     });
 
@@ -431,6 +468,21 @@ describe('lib/configuration - admin screensaver (entry -> script configuration)'
         expect(findScreensaverEntry(entries, 'p2').entry?.name).to.equal('B');
         expect(findScreensaverEntry(entries, 'p3').entry).to.equal(undefined);
         expect(findScreensaverEntry(undefined, 'p1').entry).to.equal(undefined);
+    });
+
+    it('hands an enabled clock timer to the page, a disabled one not', () => {
+        const pageOf = (): pages.PageBase =>
+            ({ uniqueID: 'x', alwaysOn: 'none', pageItems: [], config: {} }) as unknown as pages.PageBase;
+        const clockTimer = { enabled: true, activeState: 'a.0.on', dataState: 'a.0.ts' };
+        const on = pageOf();
+        applyScreensaverEntry(on, { ...emptyScreensaverEntry('Flur', 'standard'), clockTimer });
+        expect(on.config).to.deep.include({ clockTimer });
+        const off = pageOf();
+        applyScreensaverEntry(off, {
+            ...emptyScreensaverEntry('Flur', 'standard'),
+            clockTimer: { ...clockTimer, enabled: false },
+        });
+        expect(off.config).to.not.have.property('clockTimer');
     });
 
     it('applies version, rotation, swipe, indicator buttons, id and the formats onto the built page', () => {

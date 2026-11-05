@@ -357,6 +357,10 @@ const textTemplates = {
     role: "battery",
     adapter: "bydhvs",
     type: "text",
+    adminOptions: [
+      { key: "min", type: "number", label: "screensaver_item_option_socMin" },
+      { key: "max", type: "number", label: "screensaver_item_option_socMax" }
+    ],
     dpInit: "/bydhvs\\.#\xB0^\xB0#\\./",
     data: {
       icon: {
@@ -1238,6 +1242,7 @@ const textTemplates = {
     }
   },
   "text.openweathermap.favorit": {
+    screensaverAreas: ["favorit", "alternate"],
     role: "text",
     adapter: "openweathermap",
     type: "text",
@@ -1750,6 +1755,7 @@ const textTemplates = {
     }
   },
   "text.pirate-weather.favorit": {
+    screensaverAreas: ["favorit", "alternate"],
     role: "text",
     adapter: "pirate-weather",
     type: "text",
@@ -2566,6 +2572,7 @@ const textTemplates = {
   },
   //Brightsky favorit dayly weather
   "text.brightsky.favorit": {
+    screensaverAreas: ["favorit", "alternate"],
     role: "text",
     adapter: "brightsky",
     type: "text",
@@ -3267,6 +3274,7 @@ const textTemplates = {
     }
   },
   "text.accuweather.favorit": {
+    screensaverAreas: ["favorit", "alternate"],
     role: "text",
     adapter: "accuweather",
     type: "text",

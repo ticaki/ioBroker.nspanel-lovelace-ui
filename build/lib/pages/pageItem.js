@@ -39,6 +39,8 @@ var import_page_item_defaults = require("../const/page-item-defaults");
 var import_data_item = require("../controller/data-item");
 var import_function_and_const = require("../types/function-and-const");
 var import_baseClassPage = require("../classes/baseClassPage");
+var import_screensaver_timer = require("./screensaver-timer");
+const panelsWarnedAboutClockTimer = /* @__PURE__ */ new WeakSet();
 class PageItem extends import_baseClassPage.BaseTriggeredPage {
   defaultOnColor = import_Color.Color.White;
   defaultOffColor = import_Color.Color.Blue;
@@ -49,11 +51,14 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
   parent;
   tempData = void 0;
   // use this to save some data while object is active
-  tempInterval;
   confirmClick = "lock";
   timeouts = {};
   // for select - force next read of common
   updateCommon = { lastRequest: 0, counts: 0 };
+  /** the screensaver this item listens to (`useScreensaverTimer`) */
+  clockTimerSaver;
+  /** the screensaver uses this item as the source of its timer */
+  clockSourceListeners = /* @__PURE__ */ new Set();
   constructor(config, options) {
     super({
       name: config.name,
@@ -83,7 +88,7 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
     return p;
   }
   async init() {
-    var _a, _b, _c, _d, _e, _f;
+    var _a, _b, _c, _d, _e;
     if (!this.config) {
       return;
     }
@@ -147,15 +152,20 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
       }
       case "timer": {
         if (this.dataItems.role === "timer" && this.tempData === void 0) {
-          if ((_d = (_c = (_b = this.dataItems.data.entity1) == null ? void 0 : _b.value) == null ? void 0 : _c.common) == null ? void 0 : _d.role) {
-            if (["value.timer", "level.timer"].indexOf(this.dataItems.data.entity1.value.common.role) !== -1) {
+          if (this.dataItems.useScreensaverTimer) {
+            this.tempData = { role: "ss-timer", editSeconds: 0 };
+            break;
+          }
+          const actualCommon = (_c = (_b = this.dataItems.data.entity1) == null ? void 0 : _b.value) == null ? void 0 : _c.common;
+          if (actualCommon == null ? void 0 : actualCommon.role) {
+            if (actualCommon.role !== "date" && (0, import_screensaver_timer.isCountdownCommon)(actualCommon)) {
               this.tempData = { status: "pause", role: "ex-timer" };
               break;
             }
             this.tempData = { status: "pause", role: "ex-alarm" };
             break;
           }
-          this.tempData = { status: "pause", value: 0, role: "timer" };
+          this.tempData = { status: "stop", value: 0, role: "timer" };
           if (!this.parent.basePanel.persistentPageItems[this.id]) {
             this.parent.basePanel.persistentPageItems[this.id] = this;
           }
@@ -188,7 +198,7 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
       }
     }
     if (this.config.role === "alexa-speaker") {
-      const id = (_e = this.parent.items[0].ident) != null ? _e : "";
+      const id = (_d = this.parent.items[0].ident) != null ? _d : "";
       const arr = id.split(".").slice(0, 3);
       const str = arr.join(".");
       const devices = str && arr.length === 3 ? await this.adapter.getObjectViewAsync("system", "device", {
@@ -199,7 +209,7 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
       if (devices && devices.rows && devices.rows.length > 0) {
         if (this.dataItems && this.dataItems.type === "input_sel") {
           const data = this.dataItems.data;
-          let filter = await ((_f = data == null ? void 0 : data.valueList) == null ? void 0 : _f.getObject()) || null;
+          let filter = await ((_e = data == null ? void 0 : data.valueList) == null ? void 0 : _e.getObject()) || null;
           filter = Array.isArray(filter) && filter.length > 0 ? filter : null;
           for (const instance of devices.rows) {
             if (instance && instance.value && instance.id && instance.id.split(".").length === 4) {
@@ -228,7 +238,7 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
     }
   }
   async getPageItemPayload(skipEnabledCheck = false) {
-    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q, _R, _S, _T, _U, _V, _W, _X, _Y, _Z, __, _$, _aa, _ba, _ca, _da, _ea, _fa, _ga, _ha, _ia, _ja;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q, _R, _S, _T, _U, _V, _W, _X, _Y, _Z, __, _$, _aa, _ba, _ca, _da, _ea, _fa, _ga, _ha, _ia;
     await this.controller.statesControler.activateTrigger(this);
     this.lastPopupType = void 0;
     if (this.dataItems && this.config) {
@@ -616,51 +626,17 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
           if (entry.type === "timer") {
             const item = entry.data;
             message.type = "timer";
-            const value = (_ga = (_fa = item.entity1 && item.entity1.value && await tools.getValueEntryNumber(item.entity1)) != null ? _fa : this.tempData && this.tempData.time) != null ? _ga : 0;
-            if (value !== null) {
-              let opt = "";
-              if (this.tempData) {
-                switch (this.tempData.role) {
-                  case "ex-timer": {
-                    opt = new Date((/* @__PURE__ */ new Date()).setHours(0, 0, 0, value)).toLocaleTimeString("de", {
-                      hour: "2-digit",
-                      minute: "2-digit",
-                      second: "2-digit"
-                    });
-                    break;
-                  }
-                  case "ex-alarm": {
-                    opt = new Date((/* @__PURE__ */ new Date()).setHours(0, 0, 0, value)).toLocaleTimeString("de", {
-                      hour: "2-digit",
-                      minute: "2-digit",
-                      second: "2-digit"
-                    });
-                    break;
-                  }
-                  case "timer": {
-                    opt = new Date(
-                      (/* @__PURE__ */ new Date()).setHours(0, 0, this.tempData.time || 0, 0)
-                    ).toLocaleTimeString("de", {
-                      hour: "2-digit",
-                      minute: "2-digit",
-                      second: "2-digit"
-                    });
-                    break;
-                  }
-                }
-              }
-              const s = item.setValue2 && await item.setValue2.getNumber();
-              let v = !!value;
-              if (s != null) {
-                v = s > 1;
-              }
+            const { opt, on } = await this.getTimerListValue(item);
+            const s = ((_fa = this.tempData) == null ? void 0 : _fa.role) !== "ss-timer" && item.setValue2 && await item.setValue2.getNumber();
+            const v = typeof s === "number" ? s > 1 : on;
+            {
               message.iconColor = await tools.getIconEntryColor(item.icon, v, import_Color.Color.White);
               message.icon = await tools.getIconEntryValue(item.icon, v, "gesture-tap-button");
               message.optionalValue = this.library.getTranslation(
-                (_ha = await tools.getEntryTextOnOff(item.text, value !== 0)) != null ? _ha : opt
+                (_ga = await tools.getEntryTextOnOff(item.text, on)) != null ? _ga : opt
               );
               message.displayName = this.library.getTranslation(
-                (_ja = (_ia = await tools.getEntryTextOnOff(item.headline, true)) != null ? _ia : message.displayName) != null ? _ja : ""
+                (_ia = (_ha = await tools.getEntryTextOnOff(item.headline, true)) != null ? _ha : message.displayName) != null ? _ia : ""
               );
               return tools.getPayloadRemoveTilde(
                 message.type,
@@ -1034,10 +1010,14 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
     return true;
   }
   async onStateChange(_dp, _state) {
-    var _a, _b, _c;
+    var _a, _b, _c, _d;
+    if (((_a = this.tempData) == null ? void 0 : _a.role) === "timer") {
+      await this.onInternalTimerState(_dp, _state.new.val);
+    }
+    this.notifyClockSource();
     if (_state.old.val !== _state.new.val) {
-      if (((_a = this.config) == null ? void 0 : _a.role) === "isDismissiblePerEvent") {
-        if ((_c = (_b = this.dataItems) == null ? void 0 : _b.data) == null ? void 0 : _c.enabled) {
+      if (((_b = this.config) == null ? void 0 : _b.role) === "isDismissiblePerEvent") {
+        if ((_d = (_c = this.dataItems) == null ? void 0 : _c.data) == null ? void 0 : _d.enabled) {
           if (Array.isArray(this.dataItems.data.enabled)) {
             let found = false;
             for (const en of this.dataItems.data.enabled) {
@@ -1077,14 +1057,458 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
       this.tempData = { ...this.tempData, isDismissiblePerEvent: true };
     }
   }
+  /**
+   * @returns true when this item uses the timer of the screensaver
+   */
+  get usesScreensaverTimer() {
+    var _a;
+    return ((_a = this.tempData) == null ? void 0 : _a.role) === "ss-timer";
+  }
+  /**
+   * Only a real countdown can be the source of the screensaver: counted here, or outside with a STATUS.
+   *
+   * @returns true when it is one
+   */
+  isCountdownSource() {
+    var _a, _b, _c, _d;
+    return ((_a = this.tempData) == null ? void 0 : _a.role) === "timer" || ((_b = this.tempData) == null ? void 0 : _b.role) === "ex-timer" && ((_c = this.dataItems) == null ? void 0 : _c.type) === "timer" && !!((_d = this.dataItems.data) == null ? void 0 : _d.setValue2);
+  }
+  /**
+   * Keeps this item while its page is not shown and reports its changes.
+   *
+   * @param listener called on every change, must not throw
+   */
+  async useAsClockTimerSource(listener) {
+    this.clockSourceListeners.add(listener);
+    this.parent.basePanel.persistentPageItems[this.id] = this;
+    await this.controller.statesControler.activateTrigger(this);
+  }
+  /**
+   * @param listener as given to {@link useAsClockTimerSource}
+   */
+  removeClockTimerSource(listener) {
+    this.clockSourceListeners.delete(listener);
+  }
+  notifyClockSource() {
+    this.clockSourceListeners.forEach((listener) => listener());
+  }
+  /**
+   * @returns the countdown for the screensaver
+   */
+  async getCountdownView() {
+    var _a, _b, _c, _d, _e, _f;
+    const data = ((_a = this.dataItems) == null ? void 0 : _a.type) === "timer" ? this.dataItems.data : void 0;
+    if (((_b = this.tempData) == null ? void 0 : _b.role) === "timer") {
+      const seconds2 = this.internalSeconds();
+      const base = { remainingMs: seconds2 * 1e3, canStart: true, canStop: true };
+      switch (this.tempData.status) {
+        case "run":
+          return { ...base, status: "running", endTs: this.tempData.endTs };
+        case "expired":
+          return { ...base, status: "expired" };
+        default:
+          return { ...base, status: this.tempData.status === "pause" && seconds2 > 0 ? "paused" : "off" };
+      }
+    }
+    const status = (data == null ? void 0 : data.setValue2) ? await data.setValue2.getNumber() : null;
+    const seconds = data ? (0, import_screensaver_timer.timerSecondsOf)(await this.getTimerActual(data), (_d = (_c = data.entity1) == null ? void 0 : _c.value) == null ? void 0 : _d.common.unit) : 0;
+    const view = {
+      remainingMs: seconds * 1e3,
+      canStart: !!((_e = data == null ? void 0 : data.setValue2) == null ? void 0 : _e.writeable) && !!data && !!this.getTimerWriteState(data),
+      canStop: !!((_f = data == null ? void 0 : data.setValue2) == null ? void 0 : _f.writeable)
+    };
+    if (status === 2) {
+      return { ...view, status: seconds > 0 ? "running" : "expired" };
+    }
+    return { ...view, status: status === 1 && seconds > 0 ? "paused" : "off" };
+  }
+  /**
+   * @param seconds duration
+   * @returns true when the item was told to start
+   */
+  async startAsClockTimerSource(seconds) {
+    const view = await this.getCountdownView();
+    if (seconds <= 0 || view.status !== "off" || !view.canStart) {
+      return false;
+    }
+    await this.onCommand("timer-start", (0, import_screensaver_timer.timerClockText)(seconds));
+    await this.onCommand("timer-begin", "");
+    return true;
+  }
+  /**
+   * @returns true when the item was told to stop
+   */
+  async stopAsClockTimerSource() {
+    const view = await this.getCountdownView();
+    if (view.status === "off" || !view.canStop) {
+      return false;
+    }
+    await this.onCommand(view.status === "expired" ? "timer-finish" : "timer-clear", "");
+    return true;
+  }
+  /**
+   * The internal timer is up and listens to its SET and STATUS, also while its page was never shown. It does not
+   * count after a restart: a STATUS left over from before is corrected.
+   */
+  async activateControlledTimer() {
+    await this.controller.statesControler.activateTrigger(this);
+    await this.mirrorInternalStatus();
+  }
+  /**
+   * @returns the STATUS that fits the internal timer: 2 also while expired - the external timer says the same with
+   * ACTUAL 0 at STATUS 2, and it stays so until finish
+   */
+  internalStatusValue() {
+    var _a;
+    switch ((_a = this.tempData) == null ? void 0 : _a.status) {
+      case "run":
+      case "expired":
+        return 2;
+      case "pause":
+        return this.tempData.value > 0 ? 1 : 0;
+      default:
+        return 0;
+    }
+  }
+  /**
+   * Writes STATUS only when it differs. The state of the timer is changed before, so the echo of this write is the
+   * value {@link onInternalStatus} expects and does nothing.
+   */
+  async mirrorInternalStatus() {
+    var _a, _b;
+    const status = ((_a = this.dataItems) == null ? void 0 : _a.type) === "timer" ? (_b = this.dataItems.data) == null ? void 0 : _b.setValue2 : void 0;
+    if ((status == null ? void 0 : status.writeable) && await status.getNumber() !== this.internalStatusValue()) {
+      await status.setState(this.internalStatusValue());
+    }
+  }
+  /**
+   * After every change of the internal timer: STATUS, source of the screensaver and popup follow.
+   */
+  async onInternalTimerChanged() {
+    await this.mirrorInternalStatus();
+    this.notifyClockSource();
+    await this.drawTimer();
+  }
+  /**
+   * Something other than the time changed: at once the popup or the line of the list, whichever is visible.
+   */
+  async drawTimer() {
+    if (this.lastPopupType) {
+      await this.onStateTrigger();
+    } else if (!this.parent.sleep && this.parent.getVisibility()) {
+      await this.parent.onStateTriggerSuperDoNotOverride("timer", this);
+    }
+  }
+  /**
+   * One second of the ticker of the page.
+   *
+   * @returns true when the line of the list has to show more than a new time
+   */
+  async onTimerTick() {
+    var _a, _b;
+    let changed = false;
+    if (((_a = this.tempData) == null ? void 0 : _a.role) === "ss-timer") {
+      const access = await ((_b = this.parent.basePanel.screenSaver) == null ? void 0 : _b.getClockTimerAccess());
+      changed = (access == null ? void 0 : access.selection.status) !== this.tempData.lastStatus;
+    }
+    if (this.lastPopupType) {
+      await this.onStateTrigger();
+      return false;
+    }
+    return changed;
+  }
+  /**
+   * Starts or continues the internal timer; with no time left it starts from SET. Nothing to count: nothing happens,
+   * the first tick would report a finished timer.
+   */
+  async startInternalTimer() {
+    var _a, _b;
+    const data = ((_a = this.dataItems) == null ? void 0 : _a.type) === "timer" ? this.dataItems.data : void 0;
+    if (!(this.tempData.value > 0) && ((_b = data == null ? void 0 : data.entity1) == null ? void 0 : _b.set)) {
+      this.tempData.value = (0, import_screensaver_timer.timerSecondsOf)(await data.entity1.set.getNumber(), data.entity1.set.common.unit);
+    }
+    if (!(this.tempData.value > 0)) {
+      await this.mirrorInternalStatus();
+      return;
+    }
+    this.tempData.status = "run";
+    this.tempData.endTs = Date.now() + this.tempData.value * 1e3;
+    this.scheduleInternalEnd();
+    await this.onInternalTimerChanged();
+  }
+  /**
+   * @returns the time of the internal timer: while it runs out of its end - as every other view of this timer does
+   */
+  internalSeconds() {
+    var _a, _b;
+    if (((_a = this.tempData) == null ? void 0 : _a.status) === "run" && this.tempData.endTs) {
+      return Math.max(0, Math.ceil((this.tempData.endTs - Date.now()) / 1e3));
+    }
+    return Number((_b = this.tempData) == null ? void 0 : _b.value) || 0;
+  }
+  clearInternalEnd() {
+    if (this.timeouts.internalEnd) {
+      this.adapter.clearTimeout(this.timeouts.internalEnd);
+      this.timeouts.internalEnd = void 0;
+    }
+  }
+  /**
+   * The end of the internal timer, also while nothing of it is visible: no counting in between.
+   */
+  scheduleInternalEnd() {
+    this.clearInternalEnd();
+    const wait = Math.min(this.tempData.endTs - Date.now(), 864e5);
+    this.timeouts.internalEnd = this.adapter.setTimeout(
+      () => {
+        this.timeouts.internalEnd = void 0;
+        this.onInternalEnd().catch((err) => this.log.warn(`${this.name}: timer: ${String(err)}`));
+      },
+      Math.max(0, wait)
+    );
+  }
+  async onInternalEnd() {
+    var _a;
+    if (this.unload || ((_a = this.tempData) == null ? void 0 : _a.status) !== "run") {
+      return;
+    }
+    if (this.internalSeconds() > 0) {
+      this.scheduleInternalEnd();
+      return;
+    }
+    this.tempData.value = 0;
+    this.tempData.status = "expired";
+    if (this.dataItems && this.dataItems.type == "timer" && this.dataItems.data) {
+      this.dataItems.data.setValue1 && await this.dataItems.data.setValue1.setStateTrue();
+    }
+    await this.onInternalTimerChanged();
+  }
+  /**
+   * A state of the channel of an internal timer changed.
+   *
+   * @param dp state id
+   * @param val new value
+   */
+  async onInternalTimerState(dp, val) {
+    var _a, _b, _c, _d;
+    const data = ((_a = this.dataItems) == null ? void 0 : _a.type) === "timer" ? this.dataItems.data : void 0;
+    const isState = (item) => !!item && "dp" in item.options && item.options.dp === dp;
+    if (isState(data == null ? void 0 : data.setValue2)) {
+      await this.onInternalStatus(Number(val));
+    } else if (isState((_b = data == null ? void 0 : data.entity1) == null ? void 0 : _b.set)) {
+      await this.onInternalSet(val, (_d = (_c = data == null ? void 0 : data.entity1) == null ? void 0 : _c.set) == null ? void 0 : _d.common.unit);
+    }
+  }
+  /**
+   * STATUS from outside: 2 starts or continues, 1 pauses, 0 cancels. The value of this timer already: nothing to do
+   * (that also is the echo of an own write). What can not be done is answered with the value that is true.
+   *
+   * @param value new value
+   */
+  async onInternalStatus(value) {
+    if (value === this.internalStatusValue()) {
+      return;
+    }
+    if (value === 2) {
+      await this.onCommand("timer-begin", "");
+    } else if (value === 1 && this.tempData.status === "run") {
+      await this.onCommand("timer-pause", "");
+    } else if (value === 0) {
+      await this.onCommand("timer-clear", "");
+    } else {
+      await this.mirrorInternalStatus();
+    }
+  }
+  /**
+   * SET from outside: sets the time, a running timer goes on with it, a standing one does not start. 0 cancels.
+   *
+   * @param val new value
+   * @param unit common.unit of SET
+   */
+  async onInternalSet(val, unit) {
+    if (this.tempData.ownSet !== void 0 && this.tempData.ownSet === val) {
+      this.tempData.ownSet = void 0;
+      return;
+    }
+    this.tempData.ownSet = void 0;
+    const seconds = (0, import_screensaver_timer.timerSecondsOf)(typeof val === "number" ? val : Number(val), unit);
+    if (seconds <= 0) {
+      await this.onCommand("timer-clear", "");
+      return;
+    }
+    this.tempData.value = seconds;
+    if (this.tempData.status === "run") {
+      this.tempData.endTs = Date.now() + seconds * 1e3;
+      this.scheduleInternalEnd();
+    } else if (this.tempData.status === "expired") {
+      this.tempData.status = "stop";
+    }
+    await this.onInternalTimerChanged();
+  }
+  /**
+   * The timer of the screensaver of this panel; changes of its states update this item from now on.
+   *
+   * @returns undefined when there is none, the panel is told once
+   */
+  async getScreensaverTimer() {
+    var _a, _b;
+    const panel = this.parent.basePanel;
+    const saver = panel.screenSaver;
+    if (saver !== this.clockTimerSaver) {
+      (_a = this.clockTimerSaver) == null ? void 0 : _a.removeClockTimerListener(this.onClockTimerChange);
+      saver == null ? void 0 : saver.addClockTimerListener(this.onClockTimerChange);
+      this.clockTimerSaver = saver;
+    }
+    const access = await (saver == null ? void 0 : saver.getClockTimerAccess());
+    if (!access && !panelsWarnedAboutClockTimer.has(panel)) {
+      panelsWarnedAboutClockTimer.add(panel);
+      this.log.warn(
+        `${this.name}: 'use the timer of the screensaver' is set, but the screensaver of panel '${panel.friendlyName || panel.name}' has no complete timer. The item stays without buttons.`
+      );
+    }
+    this.tempData.lastStatus = access == null ? void 0 : access.selection.status;
+    this.parent.setTimerTick(this, (_b = access == null ? void 0 : access.ticking) != null ? _b : false);
+    return access;
+  }
+  onClockTimerChange = () => {
+    this.refreshClockTimer().catch((err) => this.log.warn(`${this.name}: timer: ${String(err)}`));
+  };
+  /**
+   * Draws the popup or the line of the list again, whichever is visible.
+   */
+  async refreshClockTimer() {
+    if (!this.unload && !this.adapter.unload) {
+      await this.drawTimer();
+    }
+  }
+  /**
+   * @param item data of the item
+   * @returns where a time set in the popup goes: SET, without a writeable SET a writeable ACTUAL
+   */
+  getTimerWriteState(item) {
+    var _a, _b;
+    const entity = item.entity1;
+    return ((_a = entity == null ? void 0 : entity.set) == null ? void 0 : _a.writeable) ? entity.set : ((_b = entity == null ? void 0 : entity.value) == null ? void 0 : _b.writeable) ? entity.value : void 0;
+  }
+  /**
+   * @param item data of the item
+   * @returns the value of ACTUAL, 0 without it
+   */
+  async getTimerActual(item) {
+    var _a;
+    return (_a = item.entity1 && item.entity1.value && await tools.getValueEntryNumber(item.entity1)) != null ? _a : 0;
+  }
+  /**
+   * @param item data of the item
+   * @returns the text of the list and whether the timer counts as on
+   */
+  async getTimerListValue(item) {
+    var _a, _b, _c, _d, _e;
+    switch ((_a = this.tempData) == null ? void 0 : _a.role) {
+      case "ss-timer": {
+        const selection = (_b = await this.getScreensaverTimer()) == null ? void 0 : _b.selection;
+        return {
+          opt: (0, import_screensaver_timer.timerClockText)(Math.ceil(((_c = selection == null ? void 0 : selection.remainingMs) != null ? _c : 0) / 1e3)),
+          on: !!selection && selection.status !== "off"
+        };
+      }
+      case "timer": {
+        const seconds = this.internalSeconds();
+        this.parent.setTimerTick(this, this.tempData.status === "run");
+        return { opt: (0, import_screensaver_timer.timerClockText)(seconds), on: seconds > 0 || this.tempData.status === "expired" };
+      }
+      case "ex-timer": {
+        const seconds = (0, import_screensaver_timer.timerSecondsOf)(await this.getTimerActual(item), (_e = (_d = item.entity1) == null ? void 0 : _d.value) == null ? void 0 : _e.common.unit);
+        return { opt: (0, import_screensaver_timer.timerClockText)(seconds), on: seconds > 0 };
+      }
+      case "ex-alarm": {
+        const value = await this.getTimerActual(item);
+        const { hour, minute } = (0, import_screensaver_timer.alarmClockOf)(value);
+        return {
+          opt: `${String(hour).padStart(2, "0")}:${String(minute).padStart(2, "0")}`,
+          on: value > 0
+        };
+      }
+      default: {
+        return { opt: "", on: await this.getTimerActual(item) !== 0 };
+      }
+    }
+  }
+  /**
+   * @param item data of the item
+   * @returns what the popup of a timer shows
+   */
+  async getTimerPopupState(item) {
+    var _a, _b, _c, _d, _e;
+    const none = { editable: false, buttons: [void 0, void 0, void 0] };
+    const statusValue = item.setValue2 ? (_a = await item.setValue2.getNumber()) != null ? _a : 0 : void 0;
+    const external = {
+      status: statusValue,
+      canStatus: !!((_b = item.setValue2) == null ? void 0 : _b.writeable),
+      canSet: !!this.getTimerWriteState(item)
+    };
+    const role = (_c = this.tempData) == null ? void 0 : _c.role;
+    switch (role) {
+      case "ss-timer": {
+        const access = await this.getScreensaverTimer();
+        if (!access) {
+          return { on: false, ...(0, import_screensaver_timer.timerPopupFields)(0), ...none };
+        }
+        const running = access.selection.status !== "off";
+        const seconds = running ? Math.ceil(access.selection.remainingMs / 1e3) : Number(this.tempData.editSeconds) || 0;
+        return {
+          on: running,
+          ...(0, import_screensaver_timer.timerPopupFields)(seconds),
+          ...(0, import_screensaver_timer.timerPopupButtons)({
+            mode: "ss-timer",
+            status: access.selection.status,
+            canStart: access.canStart,
+            canStop: access.canStop
+          })
+        };
+      }
+      case "timer": {
+        const seconds = this.internalSeconds();
+        this.parent.setTimerTick(this, this.tempData.status === "run");
+        return {
+          on: this.tempData.status === "run" || this.tempData.status === "expired",
+          ...(0, import_screensaver_timer.timerPopupFields)(seconds),
+          ...(0, import_screensaver_timer.timerPopupButtons)({ mode: "timer", status: this.tempData.status, seconds })
+        };
+      }
+      case "ex-timer": {
+        const seconds = (0, import_screensaver_timer.timerSecondsOf)(await this.getTimerActual(item), (_e = (_d = item.entity1) == null ? void 0 : _d.value) == null ? void 0 : _e.common.unit);
+        return {
+          on: seconds > 0,
+          ...(0, import_screensaver_timer.timerPopupFields)(seconds),
+          ...(0, import_screensaver_timer.timerPopupButtons)({ mode: "ex-timer", ...external, seconds })
+        };
+      }
+      case "ex-alarm": {
+        const value = await this.getTimerActual(item);
+        const { hour, minute } = (0, import_screensaver_timer.alarmClockOf)(value);
+        return {
+          on: value > 0,
+          minutes: String(hour),
+          seconds: String(minute),
+          ...(0, import_screensaver_timer.timerPopupButtons)({ mode: "ex-alarm", ...external })
+        };
+      }
+      default: {
+        return { on: false, ...(0, import_screensaver_timer.timerPopupFields)(0), ...none };
+      }
+    }
+  }
   async GeneratePopup(mode) {
-    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q, _R, _S, _T, _U, _V, _W, _X, _Y, _Z, __, _$, _aa, _ba, _ca, _da, _ea, _fa, _ga, _ha, _ia, _ja, _ka, _la, _ma, _na, _oa, _pa, _qa, _ra, _sa, _ta, _ua, _va, _wa, _xa, _ya, _za, _Aa, _Ba;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q, _R, _S, _T, _U, _V, _W, _X, _Y, _Z, __, _$, _aa, _ba, _ca, _da, _ea, _fa, _ga, _ha, _ia, _ja, _ka, _la, _ma, _na;
     if (!this.config || !this.dataItems) {
       return null;
     }
     const entry = this.dataItems;
     let message = {};
     message.entityName = this.id;
+    if (!this.lastPopupType && ((_a = this.tempData) == null ? void 0 : _a.role) === "ss-timer") {
+      this.tempData.editSeconds = 0;
+    }
     this.visibility = true;
     this.lastPopupType = mode;
     switch (mode) {
@@ -1106,7 +1530,7 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
               return null;
             }
             const item = entry.data;
-            message.buttonState = (_a = await tools.getValueEntryBoolean(item.entity1)) != null ? _a : "disable";
+            message.buttonState = (_b = await tools.getValueEntryBoolean(item.entity1)) != null ? _b : "disable";
             const dimmer = item.dimmer && item.dimmer.value && await item.dimmer.value.getNumber();
             if (dimmer != null && item.dimmer) {
               if (item.dimmer.minScale != void 0 && item.dimmer.maxScale) {
@@ -1119,7 +1543,7 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
                     100
                   )
                 );
-              } else if (((_c = (_b = item.dimmer.value) == null ? void 0 : _b.common) == null ? void 0 : _c.min) !== void 0 && ((_e = (_d = item.dimmer.value) == null ? void 0 : _d.common) == null ? void 0 : _e.max)) {
+              } else if (((_d = (_c = item.dimmer.value) == null ? void 0 : _c.common) == null ? void 0 : _d.min) !== void 0 && ((_f = (_e = item.dimmer.value) == null ? void 0 : _e.common) == null ? void 0 : _f.max)) {
                 message.slider1Pos = Math.trunc(
                   import_Color.Color.scale(
                     dimmer,
@@ -1137,11 +1561,11 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
               message.icon = await tools.getIconEntryValue(item.icon, message.buttonState, "", "");
             }
             if (this.config.role !== "volume.mute") {
-              message.slidersColor = (_g = await tools.getIconEntryColor(
+              message.slidersColor = (_h = await tools.getIconEntryColor(
                 item.icon,
-                message.slider1Pos === void 0 || message.slider1Pos === "disable" ? null : (_f = message.slider1Pos) != null ? _f : message.buttonState === true,
+                message.slider1Pos === void 0 || message.slider1Pos === "disable" ? null : (_g = message.slider1Pos) != null ? _g : message.buttonState === true,
                 import_Color.Color.White
-              )) != null ? _g : "disable";
+              )) != null ? _h : "disable";
               let rgb = null;
               switch (this.config.role) {
                 case "socket":
@@ -1150,22 +1574,22 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
                 case "ct":
                   break;
                 case "hue": {
-                  const nhue = (_h = item.hue && await item.hue.getNumber()) != null ? _h : null;
+                  const nhue = (_i = item.hue && await item.hue.getNumber()) != null ? _i : null;
                   if (nhue != null) {
-                    rgb = (_i = import_Color.Color.hsv2RGB(nhue, 1, 1)) != null ? _i : null;
+                    rgb = (_j = import_Color.Color.hsv2RGB(nhue, 1, 1)) != null ? _j : null;
                   }
                   break;
                 }
                 case "rgbThree": {
-                  rgb = (_j = await tools.getRGBfromRGBThree(item)) != null ? _j : null;
+                  rgb = (_k = await tools.getRGBfromRGBThree(item)) != null ? _k : null;
                   break;
                 }
                 case "rgbSingle": {
-                  rgb = (_k = item.color && item.color.true && await item.color.true.getRGBValue()) != null ? _k : null;
+                  rgb = (_l = item.color && item.color.true && await item.color.true.getRGBValue()) != null ? _l : null;
                   break;
                 }
                 case "rgb.hex": {
-                  rgb = (_l = item.color && item.color.true && await item.color.true.getRGBValue()) != null ? _l : null;
+                  rgb = (_m = item.color && item.color.true && await item.color.true.getRGBValue()) != null ? _m : null;
                   break;
                 }
               }
@@ -1182,7 +1606,7 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
               let colorMode = !item.colorMode ? "none" : await item.colorMode.getBoolean() ? "hue" : "ct";
               if (colorMode === "none") {
                 const ctState = item.ct && item.ct.value && await item.ct.value.getState();
-                const colorState = (_q = (_p = (_o = (_n = (_m = item.Red && await item.Red.getState()) != null ? _m : item.Green && await item.Green.getState()) != null ? _n : item.Blue && await item.Blue.getState()) != null ? _o : item.color && item.color.true && await item.color.true.getState()) != null ? _p : item.hue && await item.hue.getState()) != null ? _q : null;
+                const colorState = (_r = (_q = (_p = (_o = (_n = item.Red && await item.Red.getState()) != null ? _n : item.Green && await item.Green.getState()) != null ? _o : item.Blue && await item.Blue.getState()) != null ? _p : item.color && item.color.true && await item.color.true.getState()) != null ? _q : item.hue && await item.hue.getState()) != null ? _r : null;
                 if (ctState && colorState) {
                   if (ctState.ts > colorState.ts) {
                     colorMode = "ct";
@@ -1203,20 +1627,20 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
                 );
               }
               if (message.slider2Pos !== "disable" && colorMode === "ct") {
-                message.slidersColor = (_r = await tools.getTemperaturColorFromValue(item.ct, dimmer != null ? dimmer : 100)) != null ? _r : "";
+                message.slidersColor = (_s = await tools.getTemperaturColorFromValue(item.ct, dimmer != null ? dimmer : 100)) != null ? _s : "";
               }
-              message.popup = !!((_s = item.entityInSel) == null ? void 0 : _s.value);
-              message.slider2Translation = (_t = item.text2 && item.text2.true && await item.text2.true.getString()) != null ? _t : void 0;
-              message.hue_translation = (_u = item.text3 && item.text3.true && await item.text3.true.getString()) != null ? _u : void 0;
+              message.popup = !!((_t = item.entityInSel) == null ? void 0 : _t.value);
+              message.slider2Translation = (_u = item.text2 && item.text2.true && await item.text2.true.getString()) != null ? _u : void 0;
+              message.hue_translation = (_v = item.text3 && item.text3.true && await item.text3.true.getString()) != null ? _v : void 0;
             } else {
               message.slider2Pos = "disable";
-              message.slidersColor = (_v = await tools.getIconEntryColor(
+              message.slidersColor = (_w = await tools.getIconEntryColor(
                 item.icon,
                 message.buttonState !== false,
                 import_Color.Color.White
-              )) != null ? _v : "disable";
+              )) != null ? _w : "disable";
             }
-            message.slider1Translation = (_w = item.text1 && item.text1.true && await item.text1.true.getString()) != null ? _w : void 0;
+            message.slider1Translation = (_x = item.text1 && item.text1.true && await item.text1.true.getString()) != null ? _x : void 0;
             if (message.slider1Translation !== void 0) {
               message.slider1Translation = this.library.getTranslation(message.slider1Translation);
             }
@@ -1238,16 +1662,16 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
           if (message.type !== "popupFan") {
             break;
           }
-          const value = (_x = await tools.getValueEntryBoolean(item.entity1)) != null ? _x : null;
-          message.icon = (_y = await tools.getIconEntryValue(item.icon, value, "")) != null ? _y : "";
-          message.iconColor = (_z = await tools.getIconEntryColor(item.icon, value, import_Color.Color.HMIOn)) != null ? _z : "";
-          message.slider1 = String((_A = await tools.getScaledNumber(item.speed)) != null ? _A : "");
+          const value = (_y = await tools.getValueEntryBoolean(item.entity1)) != null ? _y : null;
+          message.icon = (_z = await tools.getIconEntryValue(item.icon, value, "")) != null ? _z : "";
+          message.iconColor = (_A = await tools.getIconEntryColor(item.icon, value, import_Color.Color.HMIOn)) != null ? _A : "";
+          message.slider1 = String((_B = await tools.getScaledNumber(item.speed)) != null ? _B : "");
           message.slider1Max = String(
-            (_B = item.speed && item.speed.maxScale && await item.speed.maxScale.getNumber()) != null ? _B : "100"
+            (_C = item.speed && item.speed.maxScale && await item.speed.maxScale.getNumber()) != null ? _C : "100"
           );
           message.buttonstate = value ? "1" : "0";
           message.speedText = this.library.getTranslation(
-            (_C = await tools.getEntryTextOnOff(item.text, value)) != null ? _C : ""
+            (_D = await tools.getEntryTextOnOff(item.text, value)) != null ? _D : ""
           );
           let force = false;
           if (this.updateCommon.counts < 4) {
@@ -1275,7 +1699,7 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
               message.mode = tools.formatInSelText(this.library.getTranslation(sList.value));
             }
           } else {
-            let list = (_E = (_D = item.valueList && await item.valueList.getObject()) != null ? _D : item.valueList && await item.valueList.getString()) != null ? _E : "";
+            let list = (_F = (_E = item.valueList && await item.valueList.getObject()) != null ? _E : item.valueList && await item.valueList.getString()) != null ? _F : "";
             if (list !== null) {
               if (typeof list === "string") {
                 list = list.split("?");
@@ -1294,7 +1718,7 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
               message.modeList = message.modeList.slice(0, 900);
               this.log.warn("Value list has more as 900 chars!");
             }
-            const n = (_F = await tools.getValueEntryNumber(item.entityInSel)) != null ? _F : 0;
+            const n = (_G = await tools.getValueEntryNumber(item.entityInSel)) != null ? _G : 0;
             if (Array.isArray(list) && n != null && n < list.length) {
               message.mode = list[n];
             }
@@ -1312,14 +1736,14 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
         if (!(message.type === "insel")) {
           return null;
         }
-        let value = (_G = await tools.getValueEntryNumber(item.entityInSel)) != null ? _G : await tools.getValueEntryBoolean(item.entityInSel);
+        let value = (_H = await tools.getValueEntryNumber(item.entityInSel)) != null ? _H : await tools.getValueEntryBoolean(item.entityInSel);
         if (entry.role === "alexa-speaker") {
           value = this.parent.currentItem === this.parent.items[0];
         }
-        message.textColor = (_H = await tools.getIconEntryColor(item.icon, !!(value != null ? value : true), import_Color.Color.HMIOff)) != null ? _H : import_Color.Color.HMIOn;
-        message.currentState = mode === "popupThermo" ? this.library.getTranslation((_I = item.headline && await item.headline.getString()) != null ? _I : "") : "entity2" in item ? (_J = await tools.getValueEntryString(item.entity2)) != null ? _J : "" : "";
+        message.textColor = (_I = await tools.getIconEntryColor(item.icon, !!(value != null ? value : true), import_Color.Color.HMIOff)) != null ? _I : import_Color.Color.HMIOn;
+        message.currentState = mode === "popupThermo" ? this.library.getTranslation((_J = item.headline && await item.headline.getString()) != null ? _J : "") : "entity2" in item ? (_K = await tools.getValueEntryString(item.entity2)) != null ? _K : "" : "";
         message.headline = this.library.getTranslation(
-          (_K = item.headline && await item.headline.getString()) != null ? _K : ""
+          (_L = item.headline && await item.headline.getString()) != null ? _L : ""
         );
         const sList = item.entityInSel && await this.getListFromStates(
           item.entityInSel,
@@ -1338,13 +1762,13 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
             message = { ...message, type: "popupThermo" };
             if (message.type === "popupThermo") {
               message.headline = this.library.getTranslation(
-                (_M = (_L = await tools.getEntryTextOnOff(item.headline, true)) != null ? _L : message.headline) != null ? _M : ""
+                (_N = (_M = await tools.getEntryTextOnOff(item.headline, true)) != null ? _M : message.headline) != null ? _N : ""
               );
             }
             break;
           }
         }
-        let list = (_O = (_N = item.valueList && await item.valueList.getObject()) != null ? _N : item.valueList && await item.valueList.getString()) != null ? _O : [
+        let list = (_P = (_O = item.valueList && await item.valueList.getObject()) != null ? _O : item.valueList && await item.valueList.getString()) != null ? _P : [
           "1",
           "2",
           "3",
@@ -1375,7 +1799,7 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
           message.list = message.list.slice(0, 900);
           this.log.warn("Value list has more as 900 chars!");
         }
-        const n = (_P = await tools.getValueEntryNumber(item.entityInSel)) != null ? _P : 0;
+        const n = (_Q = await tools.getValueEntryNumber(item.entityInSel)) != null ? _Q : 0;
         if (Array.isArray(list) && n != null && n < list.length) {
           message.currentState = list[n];
         }
@@ -1385,7 +1809,7 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
         message = { ...message, type: "popupThermo" };
         if (message.type === "popupThermo") {
           message.headline = this.library.getTranslation(
-            (_R = (_Q = await tools.getEntryTextOnOff(item.headline, true)) != null ? _Q : message.headline) != null ? _R : ""
+            (_S = (_R = await tools.getEntryTextOnOff(item.headline, true)) != null ? _R : message.headline) != null ? _S : ""
           );
         }
         break;
@@ -1401,19 +1825,19 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
         if (!(message.type === "popupShutter")) {
           break;
         }
-        let pos1 = (_S = await tools.getValueEntryNumber(item.entity1)) != null ? _S : "disable";
+        let pos1 = (_T = await tools.getValueEntryNumber(item.entity1)) != null ? _T : "disable";
         if (pos1 === "disable") {
-          pos1 = (_T = await tools.getValueEntryBoolean(item.entity1)) != null ? _T : "disable";
+          pos1 = (_U = await tools.getValueEntryBoolean(item.entity1)) != null ? _U : "disable";
         }
-        message.text2 = (_U = await tools.getEntryTextOnOff(item.text, typeof pos1 === "boolean" ? pos1 : true)) != null ? _U : "";
+        message.text2 = (_V = await tools.getEntryTextOnOff(item.text, typeof pos1 === "boolean" ? pos1 : true)) != null ? _V : "";
         message.text2 = this.library.getTranslation(message.text2);
-        let pos2 = (_V = await tools.getValueEntryNumber(item.entity2)) != null ? _V : "disable";
+        let pos2 = (_W = await tools.getValueEntryNumber(item.entity2)) != null ? _W : "disable";
         if (pos1 !== "disable") {
           pos1 = !this.adapter.config.shutterClosedIsZero && typeof pos1 === "number" ? 100 - pos1 : pos1;
-          message.icon = (_W = await tools.getIconEntryValue(item.icon, pos1, "")) != null ? _W : "";
+          message.icon = (_X = await tools.getIconEntryValue(item.icon, pos1, "")) != null ? _X : "";
         } else if (typeof pos2 !== "string") {
           pos2 = !this.adapter.config.shutterClosedIsZero && typeof pos2 === "number" ? 100 - pos2 : pos2;
-          message.icon = (_X = await tools.getIconEntryValue(item.icon, pos2, "")) != null ? _X : "";
+          message.icon = (_Y = await tools.getIconEntryValue(item.icon, pos2, "")) != null ? _Y : "";
         }
         const optionalValue = item.valueList ? await item.valueList.getObject() : [
           "arrow-up",
@@ -1448,7 +1872,7 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
           });
           if (index === 0) {
             message.pos1 = typeof pos === "boolean" ? "disable" : String(pos);
-            message.pos1text = (_Y = await tools.getEntryTextOnOff(item.text1, true)) != null ? _Y : "";
+            message.pos1text = (_Z = await tools.getEntryTextOnOff(item.text1, true)) != null ? _Z : "";
             message.pos1text = this.library.getTranslation(message.pos1text);
             message.iconL1 = optionalValueC[0];
             message.iconM1 = optionalValueC[1];
@@ -1464,7 +1888,7 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
             }
           } else {
             message.pos2 = typeof pos === "boolean" ? "disable" : String(pos);
-            message.pos2text = (_Z = await tools.getEntryTextOnOff(item.text2, true)) != null ? _Z : "";
+            message.pos2text = (__ = await tools.getEntryTextOnOff(item.text2, true)) != null ? __ : "";
             message.pos2text = this.library.getTranslation(message.pos2text);
             message.iconL2 = optionalValueC[0];
             message.iconM2 = optionalValueC[1];
@@ -1490,7 +1914,7 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
           pos1 = await tools.getValueEntryBoolean(item.entity1);
         }
         message.pos1 = pos1 == null || typeof pos1 === "boolean" ? "disable" : this.adapter.config.shutterClosedIsZero && typeof pos1 === "number" ? (100 - pos1).toFixed() : pos1.toFixed();
-        message.text2 = (__ = await tools.getEntryTextOnOff(item.text, typeof pos1 === "boolean" ? pos1 : true)) != null ? __ : "";
+        message.text2 = (_$ = await tools.getEntryTextOnOff(item.text, typeof pos1 === "boolean" ? pos1 : true)) != null ? _$ : "";
         message.text2 = this.library.getTranslation(message.text2);
         message.iconT1 = import_icon_mapping.Icons.GetIcon("arrow-up");
         message.iconM1 = import_icon_mapping.Icons.GetIcon("stop");
@@ -1504,8 +1928,8 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
           if (val === null || val === void 0) {
             val = await tools.getValueEntryBoolean(item.entity2);
           }
-          message.iconT2 = (_$ = await tools.getIconEntryValue(item.icon2, val != null ? val : true, "window-open")) != null ? _$ : "";
-          message.iconT2Color = (_aa = await tools.getIconEntryColor(item.icon2, pos1, import_Color.Color.White)) != null ? _aa : "";
+          message.iconT2 = (_aa = await tools.getIconEntryValue(item.icon2, val != null ? val : true, "window-open")) != null ? _aa : "";
+          message.iconT2Color = (_ba = await tools.getIconEntryColor(item.icon2, pos1, import_Color.Color.White)) != null ? _ba : "";
           message.iconT2Enable = "enable";
         }
         if (item.entity3) {
@@ -1516,8 +1940,8 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
           if (val === null || val === void 0) {
             val = true;
           }
-          message.iconM2 = (_ba = await tools.getIconEntryValue(item.icon3, val, "window-open")) != null ? _ba : "";
-          message.iconM2Color = (_ca = await tools.getIconEntryColor(item.icon3, val, import_Color.Color.White)) != null ? _ca : "";
+          message.iconM2 = (_ca = await tools.getIconEntryValue(item.icon3, val, "window-open")) != null ? _ca : "";
+          message.iconM2Color = (_da = await tools.getIconEntryColor(item.icon3, val, import_Color.Color.White)) != null ? _da : "";
           message.iconM2Enable = "enable";
         }
         if (item.entity4) {
@@ -1525,8 +1949,8 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
           if (val === null || val === void 0) {
             val = await tools.getValueEntryBoolean(item.entity4);
           }
-          message.iconB2 = (_da = await tools.getIconEntryValue(item.icon4, val, "window-open")) != null ? _da : "";
-          message.iconB2Color = (_ea = await tools.getIconEntryColor(item.icon4, val, import_Color.Color.White)) != null ? _ea : "";
+          message.iconB2 = (_ea = await tools.getIconEntryValue(item.icon4, val, "window-open")) != null ? _ea : "";
+          message.iconB2Color = (_fa = await tools.getIconEntryColor(item.icon4, val, import_Color.Color.White)) != null ? _fa : "";
           message.iconB2Enable = "enable";
         }
         break;
@@ -1541,112 +1965,18 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
           break;
         }
         if (this.tempData) {
-          let value = !item.setValue1 ? (_fa = item.entity1 && await tools.getValueEntryNumber(item.entity1)) != null ? _fa : null : (_ga = this.tempData && this.tempData.time) != null ? _ga : 0;
-          if (value == null) {
-            value = 0;
-          }
-          switch (this.tempData.role) {
-            case "ex-timer": {
-              message.iconColor = await tools.GetIconColor(item.icon, value > 0);
-              message.minutes = new Date((/* @__PURE__ */ new Date()).setHours(0, 0, 0, value)).toLocaleTimeString("de", {
-                minute: "2-digit"
-              });
-              message.seconds = new Date((/* @__PURE__ */ new Date()).setHours(0, 0, 0, value)).toLocaleTimeString("de", {
-                second: "2-digit"
-              });
-              break;
-            }
-            case "ex-alarm": {
-              message.iconColor = await tools.GetIconColor(item.icon, value > 0);
-              message.minutes = new Date((/* @__PURE__ */ new Date()).setHours(0, 0, 0, value)).toLocaleTimeString("de", {
-                hour: "2-digit"
-              });
-              message.seconds = new Date((/* @__PURE__ */ new Date()).setHours(0, 0, 0, value)).toLocaleTimeString("de", {
-                minute: "2-digit"
-              });
-              break;
-            }
-            case "timer": {
-              message.iconColor = await tools.GetIconColor(item.icon, this.tempData.status === "run");
-              message.minutes = Math.floor(this.tempData.value / 60).toFixed(0);
-              message.seconds = Math.floor(this.tempData.value % 60).toFixed(0);
-              break;
-            }
-          }
-          switch (this.tempData.role) {
-            case "ex-alarm": {
-              const status = item.setValue2 && await item.setValue2.getNumber();
-              if (status == null) {
-                break;
-              }
-              switch (status) {
-                case 0:
-                case 1: {
-                  message.editable = ((_ia = (_ha = item.entity1) == null ? void 0 : _ha.set) == null ? void 0 : _ia.writeable) ? "1" : "0";
-                  message.action1 = ((_ja = item.setValue2) == null ? void 0 : _ja.writeable) ? "begin" : "disable";
-                  message.action3 = ((_la = (_ka = item.entity1) == null ? void 0 : _ka.set) == null ? void 0 : _la.writeable) ? "clear" : "disable";
-                  message.text1 = this.library.getTranslation("continue");
-                  message.text3 = this.library.getTranslation("clear");
-                  break;
-                }
-                case 2: {
-                  message.editable = "0";
-                  message.action2 = ((_ma = item.setValue2) == null ? void 0 : _ma.writeable) ? "pause" : "disable";
-                  message.action3 = ((_oa = (_na = item.entity1) == null ? void 0 : _na.set) == null ? void 0 : _oa.writeable) ? "clear" : "disable";
-                  message.text2 = this.library.getTranslation("stop");
-                  message.text3 = this.library.getTranslation("clear");
-                  break;
-                }
-              }
-              break;
-            }
-            case "ex-timer": {
-              const status = item.setValue2 && await item.setValue2.getNumber();
-              if (status == null) {
-                break;
-              }
-              switch (status) {
-                case 0:
-                case 1: {
-                  message.editable = ((_qa = (_pa = item.entity1) == null ? void 0 : _pa.set) == null ? void 0 : _qa.writeable) ? "1" : "0";
-                  message.action1 = ((_ra = item.setValue2) == null ? void 0 : _ra.writeable) ? "begin" : "disable";
-                  message.action3 = ((_ta = (_sa = item.entity1) == null ? void 0 : _sa.set) == null ? void 0 : _ta.writeable) ? "clear" : "disable";
-                  message.text1 = this.library.getTranslation("start");
-                  message.text3 = this.library.getTranslation("clear");
-                  break;
-                }
-                case 2: {
-                  message.editable = "0";
-                  message.action2 = ((_ua = item.setValue2) == null ? void 0 : _ua.writeable) ? "pause" : "disable";
-                  message.action3 = ((_wa = (_va = item.entity1) == null ? void 0 : _va.set) == null ? void 0 : _wa.writeable) ? "clear" : "disable";
-                  message.text2 = this.library.getTranslation("stop");
-                  message.text3 = this.library.getTranslation("clear");
-                  break;
-                }
-              }
-              break;
-            }
-            case "timer": {
-              if (this.tempData.status === "run") {
-                message.editable = "0";
-                message.action2 = "pause";
-                message.text2 = this.library.getTranslation("pause");
-              } else if (this.tempData.value > 0) {
-                message.editable = "0";
-                message.action1 = "begin";
-                message.action3 = "clear";
-                message.text1 = this.library.getTranslation("continue");
-                message.text3 = this.library.getTranslation("clear");
-              } else {
-                message.editable = "1";
-                message.action1 = "begin";
-                message.action3 = "clear";
-                message.text1 = this.library.getTranslation("Start");
-                message.text3 = this.library.getTranslation("clear");
-              }
-              break;
-            }
-          }
+          const popup = await this.getTimerPopupState(item);
+          message.iconColor = await tools.GetIconColor(item.icon, popup.on);
+          message.minutes = popup.minutes;
+          message.seconds = popup.seconds;
+          message.editable = popup.editable ? "1" : "0";
+          const [first, second, third] = popup.buttons;
+          message.action1 = (_ga = first == null ? void 0 : first.action) != null ? _ga : "";
+          message.action2 = (_ha = second == null ? void 0 : second.action) != null ? _ha : "";
+          message.action3 = (_ia = third == null ? void 0 : third.action) != null ? _ia : "";
+          message.text1 = first ? this.library.getTranslation(first.text) : "";
+          message.text2 = second ? this.library.getTranslation(second.text) : "";
+          message.text3 = third ? this.library.getTranslation(third.text) : "";
         }
         break;
       }
@@ -1670,14 +2000,14 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
           message[`hSlider${b}Visibility`] = "enable";
           const heading = item[`heading${b}`];
           if (heading) {
-            message[`tSlider${b}`] = this.library.getTranslation((_xa = await heading.getString()) != null ? _xa : "");
+            message[`tSlider${b}`] = this.library.getTranslation((_ja = await heading.getString()) != null ? _ja : "");
           }
           message[`tIconS${b}M`] = import_icon_mapping.Icons.GetIcon("minus-box");
           message[`tIconS${b}P`] = import_icon_mapping.Icons.GetIcon("plus-box");
           const minValue = item[`minValue${b}`];
           let min = 0;
           if (minValue) {
-            min = (_ya = await minValue.getNumber()) != null ? _ya : 0;
+            min = (_ka = await minValue.getNumber()) != null ? _ka : 0;
           } else if (entity && entity.value && entity.value.common.min != void 0) {
             min = entity.value.common.min;
           }
@@ -1685,7 +2015,7 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
           const maxValue = item[`maxValue${b}`];
           let max = 100;
           if (maxValue) {
-            max = (_za = await maxValue.getNumber()) != null ? _za : 100;
+            max = (_la = await maxValue.getNumber()) != null ? _la : 100;
           } else if (entity && entity.value && entity.value.common.max != void 0) {
             max = entity.value.common.max;
           }
@@ -1695,13 +2025,13 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
           const steps = item[`steps${b}`];
           message[`hSlider${b}Step`] = "1";
           if (steps) {
-            message[`hSlider${b}Step`] = String((_Aa = await steps.getNumber()) != null ? _Aa : "1");
+            message[`hSlider${b}Step`] = String((_ma = await steps.getNumber()) != null ? _ma : "1");
           } else if (entity && entity.value && entity.value.common.step != void 0) {
             message[`hSlider${b}Step`] = String(entity.value.common.step);
           }
           const zero = item[`zero${b}`];
           if (zero) {
-            message[`hSlider${b}ZeroVal`] = String((_Ba = await zero.getNumber()) != null ? _Ba : "");
+            message[`hSlider${b}ZeroVal`] = String((_na = await zero.getNumber()) != null ? _na : "");
           }
         }
         break;
@@ -1717,10 +2047,15 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
     return this.parent ? `${this.parent.name}.${this.id}` : this.id;
   }
   async delete() {
+    var _a, _b;
     this.unload = true;
+    this.parent.setTimerTick(this, false);
     if (this.parent.basePanel != null && this.parent.basePanel.persistentPageItems != null) {
       if (this.parent.basePanel.persistentPageItems[this.id]) {
         if (!this.parent.basePanel.unload) {
+          if (((_a = this.tempData) == null ? void 0 : _a.role) === "timer" || this.clockSourceListeners.size > 0) {
+            this.unload = false;
+          }
           return;
         }
         delete this.parent.basePanel.persistentPageItems[this.id];
@@ -1732,6 +2067,9 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
       }
       this.adapter.clearTimeout(this.timeouts[key]);
     }
+    this.clearInternalEnd();
+    (_b = this.clockTimerSaver) == null ? void 0 : _b.removeClockTimerListener(this.onClockTimerChange);
+    this.clockTimerSaver = void 0;
     this.visibility = false;
     this.unload = true;
     await this.controller.statesControler.deactivateTrigger(this);
@@ -1772,7 +2110,7 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
     return done;
   }
   async onCommand(action, value) {
-    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _A, _B, _C, _D, _E, _F, _G;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q, _R, _S, _T, _U;
     if (value === void 0 || this.dataItems === void 0) {
       return false;
     }
@@ -2367,143 +2705,111 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
         break;
       }
       case "timer-begin": {
+        if (((_E = this.tempData) == null ? void 0 : _E.role) === "ss-timer") {
+          await ((_F = this.parent.basePanel.screenSaver) == null ? void 0 : _F.startClockTimer(this.tempData.editSeconds));
+          break;
+        }
+        if (((_G = this.tempData) == null ? void 0 : _G.role) === "timer") {
+          await this.startInternalTimer();
+          break;
+        }
         if (this.dataItems && this.dataItems.type == "timer" && this.dataItems.data) {
           this.dataItems.data.setValue2 && await this.dataItems.data.setValue2.setState(2);
-        }
-        switch (this.tempData.role) {
-          case "ex-alarm":
-          case "ex-timer": {
-            break;
-          }
-          case "timer": {
-            if (this.tempInterval) {
-              this.adapter.clearInterval(this.tempInterval);
-            }
-            this.tempData.status = "run";
-            if (this.visibility) {
-              await this.onStateTrigger();
-            }
-            this.tempInterval = this.adapter.setInterval(async () => {
-              if (this.unload && this.tempInterval) {
-                this.adapter.clearInterval(this.tempInterval);
-              }
-              if (--this.tempData.value <= 0) {
-                this.tempData.value = 0;
-                this.tempData.status = "stop";
-                this.dataItems && this.dataItems.type == "timer" && this.dataItems.data && this.dataItems.data.setValue1 && await this.dataItems.data.setValue1.setStateTrue();
-                if (this.visibility) {
-                  await this.onStateTrigger();
-                } else if (!this.parent.sleep && this.parent.getVisibility()) {
-                  await this.parent.onStateTriggerSuperDoNotOverride("timer", this);
-                }
-                if (this.tempInterval) {
-                  this.adapter.clearInterval(this.tempInterval);
-                }
-                this.tempInterval = void 0;
-              } else if (this.tempData.value > 0) {
-                if (this.visibility) {
-                  await this.onStateTrigger();
-                } else if (!this.parent.sleep && this.parent.getVisibility()) {
-                  await this.parent.onStateTriggerSuperDoNotOverride("timer", this);
-                }
-              }
-            }, 1e3);
-            break;
-          }
         }
         break;
       }
       case "timer-start": {
+        const input = (0, import_screensaver_timer.parseTimerInput)(value);
+        if (!input || !this.tempData) {
+          break;
+        }
+        const seconds = input[0] * 3600 + input[1] * 60 + input[2];
+        const data = ((_H = this.dataItems) == null ? void 0 : _H.type) === "timer" ? this.dataItems.data : void 0;
+        const set = data && this.getTimerWriteState(data);
         switch (this.tempData.role) {
-          case "ex-alarm": {
-            const t = value.split(":").reduce((p, c, i) => {
-              return String(parseInt(p) + parseInt(c) * 60 ** (2 - i));
-            });
-            const r = new Date((/* @__PURE__ */ new Date()).setHours(0, parseInt(t), 0, 0)).getTime();
-            if (this.dataItems && this.dataItems.type == "timer" && this.dataItems.data) {
-              ((_E = this.dataItems.data.entity1) == null ? void 0 : _E.set) && await this.dataItems.data.entity1.set.setState(r);
+          case "ss-timer": {
+            this.tempData.editSeconds = seconds;
+            if (this.visibility) {
+              await this.onStateTrigger();
             }
             break;
           }
+          case "ex-alarm": {
+            await (set == null ? void 0 : set.setState((0, import_screensaver_timer.nextAlarmTs)(input[1], input[2], Date.now())));
+            break;
+          }
           case "ex-timer": {
-            const t = value.split(":").reduce((p, c, i) => {
-              return String(parseInt(p) + parseInt(c) * 60 ** (2 - i));
-            });
-            const r = new Date((/* @__PURE__ */ new Date()).setHours(0, 0, parseInt(t), 0)).getTime();
-            if (this.dataItems && this.dataItems.type == "timer" && this.dataItems.data) {
-              ((_F = this.dataItems.data.entity1) == null ? void 0 : _F.set) && await this.dataItems.data.entity1.set.setState(r);
+            await (set == null ? void 0 : set.setState((0, import_screensaver_timer.timerValueOf)(seconds, set.common.unit)));
+            break;
+          }
+          case "timer": {
+            this.clearInternalEnd();
+            this.tempData.value = seconds;
+            this.tempData.status = "stop";
+            if (set) {
+              const raw = (0, import_screensaver_timer.timerValueOf)(seconds, set.common.unit);
+              this.tempData.ownSet = raw;
+              await set.setState(raw);
+            }
+            await this.onInternalTimerChanged();
+            break;
+          }
+        }
+        break;
+      }
+      case "timer-finish":
+      case "timer-clear": {
+        if (((_I = this.tempData) == null ? void 0 : _I.role) === "ss-timer") {
+          await ((_J = this.parent.basePanel.screenSaver) == null ? void 0 : _J.stopClockTimer());
+          break;
+        }
+        const data = ((_K = this.dataItems) == null ? void 0 : _K.type) === "timer" ? this.dataItems.data : void 0;
+        const reported = ((_L = this.tempData) == null ? void 0 : _L.status) === "expired";
+        if (((_M = this.tempData) == null ? void 0 : _M.role) !== "timer") {
+          await ((_N = data == null ? void 0 : data.setValue2) == null ? void 0 : _N.setState(0));
+        }
+        switch ((_O = this.tempData) == null ? void 0 : _O.role) {
+          case "ex-timer": {
+            const set = (_P = data == null ? void 0 : data.entity1) == null ? void 0 : _P.set;
+            const actual = (_Q = data == null ? void 0 : data.entity1) == null ? void 0 : _Q.value;
+            if (set == null ? void 0 : set.writeable) {
+              await set.setState(0);
+            }
+            if (actual == null ? void 0 : actual.writeable) {
+              await actual.setState(0);
             }
             break;
           }
           case "timer": {
-            if (this.tempInterval) {
-              this.adapter.clearInterval(this.tempInterval);
-            }
-            if (value) {
-              this.tempData.value = value.split(":").reduce((p, c, i) => {
-                return String(parseInt(p) + parseInt(c) * 60 ** (2 - i));
-              });
-            }
+            this.clearInternalEnd();
+            this.tempData.value = 0;
+            this.tempData.status = "stop";
             break;
           }
         }
-        break;
-      }
-      case "timer-finish": {
-        break;
-      }
-      case "timer-clear": {
-        if (this.dataItems && this.dataItems.type == "timer" && this.dataItems.data) {
-          this.dataItems.data.setValue2 && await this.dataItems.data.setValue2.setState(0);
+        if (action === "timer-finish" && !reported) {
+          await ((_R = data == null ? void 0 : data.setValue1) == null ? void 0 : _R.setStateTrue());
         }
-        if (this.tempData) {
-          switch (this.tempData.role) {
-            case "ex-alarm":
-            case "ex-timer": {
-              const r = new Date((/* @__PURE__ */ new Date()).setHours(0, 0, 0, 0)).getTime();
-              if (this.dataItems && this.dataItems.type == "timer" && this.dataItems.data) {
-                ((_G = this.dataItems.data.entity1) == null ? void 0 : _G.set) && await this.dataItems.data.entity1.set.setState(r);
-              }
-              break;
-            }
-            case "timer":
-              {
-                this.tempData.value = 0;
-                this.tempData.status = "stop";
-                if (this.visibility) {
-                  await this.onStateTrigger();
-                }
-                if (this.tempInterval) {
-                  this.adapter.clearInterval(this.tempInterval);
-                }
-              }
-              break;
-          }
+        if (((_S = this.tempData) == null ? void 0 : _S.role) === "timer") {
+          await this.onInternalTimerChanged();
+        } else {
+          this.notifyClockSource();
         }
         break;
       }
       case "timer-pause": {
+        if (((_T = this.tempData) == null ? void 0 : _T.role) === "ss-timer") {
+          break;
+        }
+        if (((_U = this.tempData) == null ? void 0 : _U.role) === "timer") {
+          this.clearInternalEnd();
+          this.tempData.value = this.internalSeconds();
+          this.tempData.status = "pause";
+          await this.onInternalTimerChanged();
+          break;
+        }
         if (this.dataItems && this.dataItems.type == "timer" && this.dataItems.data) {
           this.dataItems.data.setValue2 && await this.dataItems.data.setValue2.setState(1);
-        }
-        if (this.tempData) {
-          switch (this.tempData.role) {
-            case "ex-alarm":
-            case "ex-timer": {
-              break;
-            }
-            case "timer":
-              {
-                this.tempData.status = "pause";
-                if (this.visibility) {
-                  await this.onStateTrigger();
-                }
-                if (this.tempInterval) {
-                  this.adapter.clearInterval(this.tempInterval);
-                }
-              }
-              break;
-          }
         }
         break;
       }

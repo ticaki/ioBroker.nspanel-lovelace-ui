@@ -1,9 +1,12 @@
 import { expect } from 'chai';
-import { screensaverTemplateInfos } from './template-info';
+import fs from 'node:fs';
+import path from 'node:path';
+import { screensaverAreas } from '../types/adminShareConfig';
+import { pageItemTemplateInfos } from './template-info';
 import { pageItemTemplates } from './templateArray';
 
 describe('lib/templates - template info (screensaver item dialog)', () => {
-    const infos = screensaverTemplateInfos();
+    const infos = pageItemTemplateInfos();
     const byName = new Map(infos.map(i => [i.name, i]));
 
     it('describes every page item template exactly once, sorted by name', () => {
@@ -26,6 +29,54 @@ describe('lib/templates - template info (screensaver item dialog)', () => {
         for (const name of ['text.clock', 'text.wlan', 'button.iconLeftSize', 'button.service.adapter.stopped']) {
             expect(byName.get(name), name).to.include({ need: 'none' });
             expect(byName.get(name)?.looksFor, name).to.deep.equal([]);
+        }
+    });
+
+    it('offers text and button templates on every place, other types on none', () => {
+        expect(byName.get('text.clock')?.areas).to.deep.equal([...screensaverAreas]);
+        expect(byName.get('button.iconLeftSize')?.areas).to.deep.equal([...screensaverAreas]);
+        for (const info of infos) {
+            if (info.type !== 'text' && info.type !== 'button') {
+                expect(info.areas, info.name).to.deep.equal([]);
+            }
+        }
+        expect(infos.filter(i => i.type !== 'text' && i.type !== 'button').length).to.be.greaterThan(0);
+    });
+
+    it('offers the favorit templates on favorit and alternate only', () => {
+        const favorit = infos.filter(i => /^text\..+\.favorit$/.test(i.name));
+        expect(favorit.map(i => i.name)).to.deep.equal([
+            'text.accuweather.favorit',
+            'text.brightsky.favorit',
+            'text.openweathermap.favorit',
+            'text.pirate-weather.favorit',
+        ]);
+        for (const info of favorit) {
+            expect(info.areas, info.name).to.deep.equal(['favorit', 'alternate']);
+        }
+        expect(infos.filter(i => i.areas.length > 0 && i.areas.length < screensaverAreas.length)).to.have.length(
+            favorit.length,
+        );
+    });
+
+    it('reports the options of a template', () => {
+        expect(byName.get('text.battery.bydhvs')?.options).to.deep.equal([
+            { key: 'min', type: 'number', label: 'screensaver_item_option_socMin' },
+            { key: 'max', type: 'number', label: 'screensaver_item_option_socMax' },
+        ]);
+        expect(byName.get('text.battery')?.options).to.deep.equal([]);
+    });
+
+    it('has the label of every option in all translations', () => {
+        for (const language of fs.readdirSync(path.join(__dirname, '../../../admin/i18n'))) {
+            const translations = JSON.parse(
+                fs.readFileSync(path.join(__dirname, `../../../admin/i18n/${language}/translations.json`), 'utf8'),
+            );
+            for (const info of infos) {
+                for (const option of info.options) {
+                    expect(translations, `${language}: ${option.label}`).to.have.property(option.label);
+                }
+            }
         }
     });
 

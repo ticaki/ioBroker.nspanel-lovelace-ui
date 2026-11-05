@@ -159,8 +159,17 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
     ### **WORK IN PROGRESS**
 -->
 ### **WORK IN PROGRESS**
+- (ticaki) popupTimer repaired: internal timer shows its time in the list and stays at 00:00 with Finish until confirmed, it can be controlled from outside through SET and STATUS; external timer in seconds (ms with unit ms), alarm clock with local time and On/Off; start, pause and on/off only with a STATUS state, finish reports STATE, cancel does not; the item shows its own name instead of "Timer"
+- (ticaki) panel: fewer page updates: at most one list update per 2 s for running timers, at least 1 s between updates of a page, a queued `entityUpd` / `entityUpdateDetail` is replaced by a newer one
+- (ticaki) screensaver at once: new target "Screensaver" for the target page of an item and for prev, next, parent and home of a page (`///screensaver` in the script), new state `panels.<panel>.cmd.screenSaver.activate`
+- (ticaki) popupTimer: a `level.timer` item can use the timer of the screensaver of its panel (item dialog: "Use the timer of the screensaver")
+- (ticaki) screensaver: the timer on the clock can come from a page item with a timer popup (time dialog: source of the timer), paused timers stay visible with `timer-pause`
+- (ticaki) admin: page items get an internal id when the pages are written, scripts can set `itemId` themselves
 - (tt-tom17) documentation moved to GitHub Pages
 - (tt-tom17) admin: the missing translations of the page configuration are filled in (the two tabs of the navigation column, the alarm states on the panel, the checkbox "Shared status for all panels", the field "Minimum power" of the power page) - the documentation names the labels instead of the raw keys
+- (ticaki) screensaver: a timer can replace the clock (admin, time dialog: on/off and data state, or patterns for timers in changing slots) - shows the remaining minutes (`125.5`, from 1000 minutes `1234`) in the color of the timer with an icon, the first tap switches to the clock; all screensaver modes and the web panel
+- (ticaki) admin screensaver: a template on a plain adapter instance (`bydhvs.0`) shows the template name instead of `0`
+- (ticaki) admin screensaver: page item templates are fully configurable - offered per place, instances of the adapter as suggestions, template options (`readOptions`, e.g. SOC limits of `text.battery.bydhvs`); on an indicator a template can act on tap (page, button, switch), also in the script
 - (ticaki) screensaver mode tiles: shows the info icon left of the time (notifications, update hint); needs the updated HMI with screensaver5
 - (ticaki) admin screensaver: a new screensaver gets two status icons coupled to the relays of the panel
 - (ticaki) screensaver mode tiles (page screensaver5): 5 values at the bottom, 7 indicators (portrait panel: 4 values, 8 indicators), the two status icons as color bars at the lower edge like easyview, a larger clock - needs a HMI with screensaver5; the web panel draws the mode like the panel

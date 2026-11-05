@@ -3,6 +3,9 @@ import { resolveScreensaverOptions, Screensaver } from './screensaver';
 import type * as Types from '../types/types';
 import type * as pages from '../types/pages';
 import type { PageInterface } from '../classes/PageInterface';
+import { Color, type RGB } from '../const/Color';
+import { Icons } from '../const/icon_mapping';
+import type { ScreensaverClockTimer } from '../types/adminShareConfig';
 
 /**
  * A tap on an indicator of the screensaver: the panel calls `onPopupRequest` first and then
@@ -339,5 +342,607 @@ describe('lib/pages/screensaver - mode of another adapter version', () => {
         expect(message?.options.bottom[0]).to.include('icon0');
         expect(message?.options.indicator).to.deep.equal([]);
         expect(message?.options.left).to.deep.equal([]);
+    });
+});
+
+describe('lib/pages/screensaver - timer instead of the clock', () => {
+    const NOW = new Date(2026, 10, 5, 12, 0, 0, 0).getTime();
+    const SAND = Icons.GetIcon('timer-sand');
+    const ALERT = Icons.GetIcon('timer-alert');
+    const ORANGE = String(Color.rgb_dec565(Color.Orange));
+    const RED = String(Color.rgb_dec565(Color.Red));
+    const realNow = Date.now;
+
+    type Fixture = {
+        saver: any;
+        sent: string[];
+        warn: string[];
+        timers: { fn: () => void; ms: number; cleared: boolean }[];
+        states: Record<string, unknown>;
+        patterns: string[];
+        common: Record<string, Record<string, unknown>>;
+        /** sends a new value like the states controller: value first, then the trigger */
+        setState: (id: string, val: unknown) => Promise<void>;
+        /** messages sent by the given action */
+        during: (action: () => Promise<unknown>) => Promise<string[]>;
+    };
+
+    afterEach(() => {
+        Date.now = realNow;
+    });
+
+    async function setup(clockTimer: ScreensaverClockTimer, initial: Record<string, unknown>): Promise<Fixture> {
+        Date.now = (): number => NOW;
+        const sent: string[] = [];
+        const warn: string[] = [];
+        const timers: Fixture['timers'] = [];
+        const states = { ...initial };
+        const patterns: string[] = [];
+        const common: Fixture['common'] = {};
+        const noop = (): void => undefined;
+        const log = { debug: noop, info: noop, warn: (m: string): void => void warn.push(m), error: noop };
+        const statesControler = {
+            setTrigger: async (): Promise<void> => Promise.resolve(),
+            getStateVal: async (id: string): Promise<unknown> => Promise.resolve(states[id] ?? null),
+            getObjectAsync: async (id: string): Promise<unknown> =>
+                Promise.resolve({ type: 'state', common: common[id] ?? {} }),
+            subscribePattern: async (pattern: string): Promise<void> => void patterns.push(pattern),
+            unsubscribePattern: async (pattern: string): Promise<void> =>
+                void patterns.splice(patterns.indexOf(pattern), 1),
+        };
+        const adapter = {
+            namespace: 'nspanel-lovelace-ui.0',
+            unload: false,
+            log,
+            library: {},
+            controller: { statesControler },
+            setTimeout: (fn: () => void, ms: number): unknown => {
+                const timer = { fn, ms, cleared: false };
+                timers.push(timer);
+                return timer;
+            },
+            clearTimeout: (timer: { cleared: boolean }): void => {
+                timer.cleared = true;
+            },
+            getForeignStatesAsync: async (pattern: string): Promise<Record<string, { val: unknown }>> => {
+                const out: Record<string, { val: unknown }> = {};
+                const [prefix, suffix] = pattern.split('*');
+                for (const id of Object.keys(states)) {
+                    if (id.startsWith(prefix) && id.endsWith(suffix)) {
+                        out[id] = { val: states[id] };
+                    }
+                }
+                return Promise.resolve(out);
+            },
+        };
+        const panel = {
+            name: 'p',
+            friendlyName: 'Panel',
+            isOnline: true,
+            isVirtual: true,
+            screenSaverDoubleClick: true,
+            info: { nspanel: {} },
+            panelSend: { addMessage: (payload: string): void => void sent.push(payload) },
+        };
+        const config = {
+            card: 'screensaver',
+            id: '0',
+            name: 'scr',
+            dpInit: '',
+            adapter,
+            panel,
+        } as unknown as PageInterface;
+        const page = {
+            uniqueID: 'scr',
+            alwaysOn: 'none',
+            pageItems: [],
+            config: {
+                card: 'screensaver',
+                mode: 'standard',
+                rotationTime: 0,
+                model: 'eu',
+                data: undefined,
+                screensaverSwipe: false,
+                screensaverIndicatorButtons: false,
+                clockTimer,
+            },
+        } as unknown as pages.PageBase;
+        const saver: any = new Screensaver(config, page);
+        saver.log = log;
+        saver.pageItems = [
+            {
+                config: { modeScr: 'time' },
+                dataItems: { data: {} },
+                isEnabled: async (): Promise<boolean> => Promise.resolve(true),
+                getPageItemPayload: async (): Promise<string> => Promise.resolve('~~~~~12:34'),
+                delete: async (): Promise<void> => Promise.resolve(),
+            },
+        ];
+        saver.visibility = true;
+        // the part of init() of this feature - the base class needs a full panel
+        await saver.initClockTimer();
+        return {
+            saver,
+            sent,
+            warn,
+            timers,
+            states,
+            patterns,
+            common,
+            setState: async (id, val): Promise<void> => {
+                states[id] = val;
+                if (clockTimer.activePattern) {
+                    saver.onTimerPatternState(id, val === undefined ? null : { val, ack: true });
+                } else {
+                    await saver.onStateChange(id, { old: { val: null }, new: { val } });
+                }
+                await saver.onStateTrigger(id, saver);
+            },
+            during: async (action): Promise<string[]> => {
+                const from = sent.length;
+                await action();
+                return sent.slice(from);
+            },
+        };
+    }
+
+    const simple: ScreensaverClockTimer = { enabled: true, activeState: 'x.0.on', dataState: 'x.0.ts' };
+    const slots: ScreensaverClockTimer = {
+        enabled: true,
+        activeState: '',
+        dataState: '',
+        activePattern: 'x.0.*.aktiv',
+        dataPattern: 'x.0.*.targetTs',
+    };
+    const colorsOf = (messages: string[]): string[] => messages.filter(m => m.startsWith('color~'));
+    const timesOf = (messages: string[]): string[] => messages.filter(m => m.startsWith('time~'));
+    const iconColor = (message: string): string => message.split('~')[16];
+    const timeColor = (message: string): string => message.split('~')[2];
+    const FG_TIME = String(Color.rgb_dec565(Color.fgTime as RGB));
+
+    describe('payload', () => {
+        it('shows the remaining time with the icon, ahead of the info icon', async () => {
+            const f = await setup(simple, { 'x.0.on': true, 'x.0.ts': NOW + 90_000 });
+            f.saver._infoIcon = 'wrench';
+            const sent = await f.during(() => f.saver.HandleTime());
+            expect(timesOf(sent)).to.deep.equal([`time~1.5~${SAND}`]);
+        });
+
+        it('shows the alarm with its icon, ahead of the update symbols', async () => {
+            const f = await setup(simple, { 'x.0.on': true, 'x.0.ts': NOW - 1000 });
+            f.saver.basePanel.isVirtual = false;
+            f.saver.basePanel.info.nspanel = { displayVersion: '0.0.0', onlineVersion: '1' };
+            const sent = await f.during(() => f.saver.HandleTime());
+            expect(timesOf(sent)).to.deep.equal([`time~0.0~${ALERT}`]);
+        });
+
+        it('shows the clock with the info icon while the on/off state is off', async () => {
+            const f = await setup(simple, { 'x.0.on': false, 'x.0.ts': NOW + 90_000 });
+            f.saver._infoIcon = 'wrench';
+            const sent = await f.during(() => f.saver.HandleTime());
+            expect(sent).to.deep.equal([`time~12:34~${Icons.GetIcon('wrench')}`]);
+        });
+
+        it('shows the clock without a run for targetTs 0, the alarm after a run', async () => {
+            const f = await setup(simple, { 'x.0.on': true, 'x.0.ts': 0 });
+            expect(await f.during(() => f.saver.HandleTime())).to.deep.equal(['time~12:34']);
+            await f.setState('x.0.ts', NOW + 60_000);
+            const sent = await f.during(() => f.setState('x.0.ts', 0));
+            expect(timesOf(sent)).to.deep.equal([`time~0.0~${ALERT}`]);
+        });
+
+        it('takes 0 of a state that counts down as alarm right from the start', async () => {
+            const f = await setup(simple, { 'x.0.on': true, 'x.0.ts': 0 });
+            f.common['x.0.ts'] = { unit: 's' };
+            expect(timesOf(await f.during(() => f.saver.HandleTime()))).to.deep.equal([`time~0.0~${ALERT}`]);
+        });
+
+        it('sends the same text only once, the clock trigger does not repeat it', async () => {
+            const f = await setup(simple, { 'x.0.on': true, 'x.0.ts': NOW + 90_000 });
+            await f.saver.HandleTime();
+            expect(await f.during(() => f.saver.HandleTime())).to.deep.equal([]);
+            Date.now = (): number => NOW + 35_000;
+            expect(timesOf(await f.during(() => f.saver.HandleTime()))).to.deep.equal([`time~1.0~${SAND}`]);
+        });
+
+        it('ignores a timer without on/off state with one warning', async () => {
+            const f = await setup({ ...simple, activeState: '' }, { 'x.0.ts': NOW + 90_000 });
+            expect(f.warn).to.have.length(1);
+            expect(await f.during(() => f.saver.HandleTime())).to.deep.equal(['time~12:34']);
+        });
+    });
+
+    describe('tick', () => {
+        it('wakes up at the next tenth of a minute of the remaining time and at the end', async () => {
+            const f = await setup(simple, { 'x.0.on': true, 'x.0.ts': NOW + 90_500 });
+            await f.saver.HandleTime();
+            expect(f.timers.at(-1)?.ms).to.equal(500);
+
+            Date.now = (): number => NOW + 90_500;
+            f.timers.at(-1)?.fn();
+            await new Promise(resolve => setImmediate(resolve));
+            expect(timesOf(f.sent).at(-1)).to.equal(`time~0.0~${ALERT}`);
+        });
+
+        it('does not repeat the text when nothing changed at the wake up, but a change of the data comes at once', async () => {
+            const f = await setup(simple, { 'x.0.on': true, 'x.0.ts': NOW + 90_000 });
+            await f.saver.HandleTime();
+            Date.now = (): number => NOW + 1;
+            expect(await f.during(() => f.saver.HandleTime())).to.deep.equal([]);
+            const sent = await f.during(() => f.setState('x.0.ts', NOW + 600_000));
+            expect(timesOf(sent)).to.deep.equal([`time~10.0~${SAND}`]);
+        });
+
+        it('shows a state that counts down in seconds the same way', async () => {
+            const f = await setup(simple, { 'x.0.on': true, 'x.0.ts': 7 });
+            f.common['x.0.ts'] = { unit: 's' };
+            expect(timesOf(await f.during(() => f.saver.HandleTime()))).to.deep.equal([`time~0.2~${SAND}`]);
+            expect(timesOf(await f.during(() => f.setState('x.0.ts', 6)))).to.deep.equal([`time~0.1~${SAND}`]);
+            expect(timesOf(await f.during(() => f.setState('x.0.ts', 1)))).to.deep.equal([]);
+            expect(timesOf(await f.during(() => f.setState('x.0.ts', 0)))).to.deep.equal([`time~0.0~${ALERT}`]);
+        });
+
+        it('is cleared when the screensaver gets invisible', async () => {
+            const f = await setup(simple, { 'x.0.on': true, 'x.0.ts': NOW + 90_000 });
+            await f.saver.HandleTime();
+            const timer = f.timers.at(-1)!;
+            f.saver.visibility = false;
+            await f.saver.onVisibilityChange(false);
+            expect(timer.cleared).to.equal(true);
+            expect(f.saver.timerTick).to.equal(undefined);
+        });
+
+        it('sends nothing and sets no timer while invisible', async () => {
+            const f = await setup(simple, { 'x.0.on': true, 'x.0.ts': NOW + 90_000 });
+            f.saver.visibility = false;
+            expect(await f.during(() => f.saver.HandleTime())).to.deep.equal([]);
+            expect(f.timers).to.deep.equal([]);
+        });
+    });
+
+    describe('color', () => {
+        it('holds the override and is sent once per change of the status, not per minute', async () => {
+            const f = await setup(simple, { 'x.0.on': true, 'x.0.ts': NOW + 120_000 });
+            const start = await f.during(() => f.saver.HandleTime());
+            expect(colorsOf(start)).to.have.length(1);
+            expect(iconColor(colorsOf(start)[0])).to.equal(ORANGE);
+            expect(timeColor(colorsOf(start)[0])).to.equal(ORANGE);
+
+            Date.now = (): number => NOW + 61_000;
+            const minute = await f.during(() => f.saver.HandleTime());
+            expect(timesOf(minute)).to.deep.equal([`time~1.0~${SAND}`]);
+            expect(colorsOf(minute)).to.deep.equal([]);
+
+            Date.now = (): number => NOW + 120_000;
+            const expired = await f.during(() => f.saver.HandleTime());
+            expect(iconColor(colorsOf(expired)[0])).to.equal(RED);
+            expect(timeColor(colorsOf(expired)[0])).to.equal(RED);
+            expect(colorsOf(expired)).to.have.length(1);
+
+            const off = await f.during(() => f.setState('x.0.on', false));
+            expect(colorsOf(off)).to.have.length(1);
+            expect(iconColor(colorsOf(off)[0])).to.not.equal(RED);
+            expect(timeColor(colorsOf(off)[0])).to.equal(FG_TIME);
+            expect(timesOf(off)).to.deep.equal(['time~12:34']);
+        });
+
+        it('a change of the status: first the text, then the color - also when the text stays', async () => {
+            const f = await setup(simple, { 'x.0.on': true, 'x.0.ts': NOW + 120_000 });
+            await f.saver.HandleTime();
+            Date.now = (): number => NOW + 120_000;
+            const kinds = (await f.during(() => f.saver.HandleTime())).map(m => m.split('~')[0]);
+            expect(kinds).to.deep.equal(['time', 'color']);
+
+            const g = await setup(simple, { 'x.0.on': true, 'x.0.ts': NOW + 120_000 });
+            await g.saver.HandleTime();
+            g.saver.colorTimerStatus = 'off';
+            g.saver.resetLastMessage();
+            const same = await g.during(() => g.saver.HandleTime());
+            expect(same.map(m => m.split('~')[0])).to.deep.equal(['color']);
+        });
+
+        it('goes out with every regular color message', async () => {
+            const f = await setup(simple, { 'x.0.on': true, 'x.0.ts': NOW + 120_000 });
+            await f.saver.HandleTime();
+            f.saver.sendColors();
+            expect(iconColor(f.sent.filter(m => m.startsWith('color~')).at(-1)!)).to.equal(ORANGE);
+            expect(timeColor(colorsOf(f.sent).at(-1)!)).to.equal(ORANGE);
+        });
+
+        it('keeps the normal color of the time without a timer', async () => {
+            const off = await setup(simple, { 'x.0.on': false, 'x.0.ts': NOW + 120_000 });
+            expect(colorsOf(await off.during(() => off.saver.HandleTime()))).to.deep.equal([]);
+            off.saver.sendColors();
+            expect(timeColor(colorsOf(off.sent).at(-1)!)).to.equal(FG_TIME);
+
+            const none = await setup({ ...simple, enabled: false }, {});
+            expect(colorsOf(await none.during(() => none.saver.HandleTime()))).to.deep.equal([]);
+            none.saver.sendColors();
+            expect(timeColor(colorsOf(none.sent).at(-1)!)).to.equal(FG_TIME);
+        });
+
+        it('a tap gives the time its normal color, the icon keeps the one of the timer', async () => {
+            const f = await setup(simple, { 'x.0.on': true, 'x.0.ts': NOW + 120_000 });
+            await f.saver.HandleTime();
+            const tap = await f.during(() => f.saver.onTimerTap('bExit', '1'));
+            expect(colorsOf(tap)).to.have.length(1);
+            expect(timeColor(colorsOf(tap)[0])).to.equal(FG_TIME);
+            expect(iconColor(colorsOf(tap)[0])).to.equal(ORANGE);
+            // comes before the clock: no moment of an orange clock
+            expect(tap.findIndex(m => m.startsWith('color~'))).to.be.lessThan(
+                tap.findIndex(m => m.startsWith('time~')),
+            );
+
+            // not repeated while nothing changes, the regular message stays normal
+            expect(colorsOf(await f.during(() => f.saver.HandleTime()))).to.deep.equal([]);
+            f.saver.sendColors();
+            expect(timeColor(colorsOf(f.sent).at(-1)!)).to.equal(FG_TIME);
+
+            Date.now = (): number => NOW + 120_000;
+            const expired = await f.during(() => f.saver.HandleTime());
+            expect(colorsOf(expired)).to.have.length(1);
+            expect(timeColor(colorsOf(expired)[0])).to.equal(FG_TIME);
+            expect(iconColor(colorsOf(expired)[0])).to.equal(RED);
+        });
+
+        it('a tap on the alarm also gives the time its normal color', async () => {
+            const f = await setup(simple, { 'x.0.on': true, 'x.0.ts': NOW - 1000 });
+            await f.saver.HandleTime();
+            expect(timeColor(colorsOf(f.sent).at(-1)!)).to.equal(RED);
+            const tap = await f.during(() => f.saver.onTimerTap('bExit', '1'));
+            expect(timeColor(colorsOf(tap)[0])).to.equal(FG_TIME);
+            expect(iconColor(colorsOf(tap)[0])).to.equal(RED);
+        });
+
+        it('the color comes back with the timer at the start of the screensaver', async () => {
+            const f = await setup(simple, { 'x.0.on': true, 'x.0.ts': NOW + 120_000 });
+            await f.saver.HandleTime();
+            await f.saver.onTimerTap('bExit', '1');
+            f.saver.sendType = (): void => undefined;
+            f.saver.restartRotationLoop = async (): Promise<void> => Promise.resolve();
+            const sent = await f.during(() => f.saver.onVisibilityChange(true));
+            expect(colorsOf(sent)).to.have.length(1);
+            expect(timeColor(colorsOf(sent)[0])).to.equal(ORANGE);
+        });
+
+        it('the color comes back with a new timer', async () => {
+            const f = await setup(simple, { 'x.0.on': true, 'x.0.ts': NOW + 120_000 });
+            await f.saver.HandleTime();
+            await f.saver.onTimerTap('bExit', '1');
+            const sent = await f.during(() => f.setState('x.0.ts', NOW + 300_000));
+            expect(colorsOf(sent)).to.have.length(1);
+            expect(timeColor(colorsOf(sent)[0])).to.equal(ORANGE);
+            expect(timesOf(sent)).to.deep.equal([`time~5.0~${SAND}`]);
+        });
+
+        it('after a tap behind a notification it is sent again with the normal color', async () => {
+            const f = await setup(simple, { 'x.0.on': true, 'x.0.ts': NOW + 120_000 });
+            f.saver.customNotification = true;
+            f.saver.headingNotification = 'Head';
+            f.saver.textNotification = 'Text';
+            await f.saver.HandleNotification();
+            await f.saver.HandleTime();
+            await f.saver.onTimerTap('bExit', '1');
+            expect(f.saver.activeNotification).to.equal(true);
+            expect(f.saver.colorsDropped).to.equal(true);
+
+            f.saver.customNotification = false;
+            const sent = await f.during(() => f.saver.HandleNotification());
+            expect(colorsOf(sent)).to.have.length(1);
+            expect(timeColor(colorsOf(sent)[0])).to.equal(FG_TIME);
+            expect(iconColor(colorsOf(sent)[0])).to.equal(ORANGE);
+            expect(f.saver.colorsDropped).to.equal(false);
+        });
+
+        it('is sent again after a notification, the HMI drops it while one is shown', async () => {
+            const f = await setup(simple, { 'x.0.on': true, 'x.0.ts': NOW + 120_000 });
+            f.saver.activeNotification = true;
+            await f.saver.HandleTime();
+            expect(f.saver.colorsDropped).to.equal(true);
+            const sent = await f.during(() => f.saver.HandleNotification());
+            expect(sent[0]).to.match(/^notify~/);
+            expect(colorsOf(sent)).to.have.length(1);
+        });
+    });
+
+    describe('tap', () => {
+        const running = { 'x.0.on': true, 'x.0.ts': NOW + 600_000 };
+
+        it('the first tap switches to the clock, the icon stays', async () => {
+            const f = await setup(simple, running);
+            await f.saver.HandleTime();
+            let done = false;
+            const sent = await f.during(async () => {
+                done = await f.saver.onTimerTap('bExit', '1');
+            });
+            expect(done).to.equal(true);
+            expect(timesOf(sent)).to.deep.equal([`time~12:34~${SAND}`]);
+            expect(colorsOf(sent)).to.have.length(1);
+        });
+
+        it('takes the tap before a notification and shows it again - the HMI clears it by itself', async () => {
+            const f = await setup(simple, running);
+            f.saver.customNotification = true;
+            f.saver.headingNotification = 'Head';
+            f.saver.textNotification = 'Text';
+            await f.saver.HandleTime();
+            const dismiss = f.saver.deactivateNotify;
+            let dismissed = false;
+            f.saver.deactivateNotify = async (): Promise<boolean> => {
+                dismissed = true;
+                return dismiss.call(f.saver);
+            };
+            const sent = await f.during(() => f.saver.onTimerTap('bExit', '1'));
+            expect(dismissed).to.equal(false);
+            expect(sent.at(-1)).to.match(/^notify~Head~Text/);
+        });
+
+        it('leaves swipes alone', async () => {
+            const f = await setup(simple, running);
+            await f.saver.HandleTime();
+            for (const action of ['swipeUp', 'swipeDown', 'swipeLeft', 'swipeRight']) {
+                expect(await f.saver.onTimerTap(action, '')).to.equal(false);
+            }
+            expect(f.saver.timerTappedAway).to.equal(false);
+        });
+
+        it('does nothing without a timer on the display', async () => {
+            const f = await setup(simple, { 'x.0.on': false, 'x.0.ts': 0 });
+            await f.saver.HandleTime();
+            expect(await f.saver.onTimerTap('bExit', '1')).to.equal(false);
+        });
+
+        it('swallows the second tap of a double click only within the limit', async () => {
+            const f = await setup(simple, running);
+            await f.saver.HandleTime();
+            expect(await f.saver.onTimerTap('bExit', '1')).to.equal(true);
+            Date.now = (): number => NOW + 400;
+            expect(await f.saver.onTimerTap('bExit', '2')).to.equal(true);
+            // the window follows the swallowed tap
+            Date.now = (): number => NOW + 1300;
+            expect(await f.saver.onTimerTap('bExit', '3')).to.equal(true);
+            Date.now = (): number => NOW + 2300;
+            expect(await f.saver.onTimerTap('bExit', '4')).to.equal(false);
+        });
+
+        it('keeps a following tap with a new count or without double click', async () => {
+            const f = await setup(simple, running);
+            await f.saver.HandleTime();
+            await f.saver.onTimerTap('bExit', '1');
+            expect(await f.saver.onTimerTap('bExit', '1')).to.equal(false);
+            f.saver.basePanel.screenSaverDoubleClick = false;
+            expect(await f.saver.onTimerTap('bExit', '2')).to.equal(false);
+        });
+
+        it('also takes the tap without double click', async () => {
+            const f = await setup(simple, running);
+            f.saver.basePanel.screenSaverDoubleClick = false;
+            await f.saver.HandleTime();
+            expect(await f.saver.onTimerTap('bExit', '5')).to.equal(true);
+        });
+
+        it('the timer comes back with the next start of the screensaver', async () => {
+            const f = await setup(simple, running);
+            await f.saver.HandleTime();
+            await f.saver.onTimerTap('bExit', '1');
+            // onVisibilityChange(true) without the rest of the page
+            f.saver.sendType = (): void => undefined;
+            f.saver.restartRotationLoop = async (): Promise<void> => Promise.resolve();
+            const sent = await f.during(() => f.saver.onVisibilityChange(true));
+            expect(timesOf(sent)).to.deep.equal([`time~10.0~${SAND}`]);
+        });
+
+        it('stays on the clock with the alert icon when the tapped away timer expires', async () => {
+            const f = await setup(simple, running);
+            await f.saver.HandleTime();
+            await f.saver.onTimerTap('bExit', '1');
+            Date.now = (): number => NOW + 600_000;
+            const sent = await f.during(() => f.saver.HandleTime());
+            expect(timesOf(sent)).to.deep.equal([`time~12:34~${ALERT}`]);
+            expect(iconColor(colorsOf(sent)[0])).to.equal(RED);
+        });
+
+        for (const [name, changes] of [
+            ['another end time', [['x.0.ts', NOW + 300_000]]],
+            [
+                'off and on again',
+                [
+                    ['x.0.on', false],
+                    ['x.0.on', true],
+                ],
+            ],
+        ] as [string, [string, unknown][]][]) {
+            it(`the timer comes back with a new timer: ${name}`, async () => {
+                const f = await setup(simple, running);
+                await f.saver.HandleTime();
+                await f.saver.onTimerTap('bExit', '1');
+                for (const [id, val] of changes) {
+                    await f.setState(id, val);
+                }
+                expect(f.saver.timerTappedAway).to.equal(false);
+                expect(timesOf(f.sent).at(-1)).to.match(/^time~(5|10)\.0~/);
+            });
+        }
+    });
+
+    describe('slots', () => {
+        it('warns once and stays on the clock with invalid patterns', async () => {
+            const f = await setup({ ...slots, dataPattern: 'x.0.*.*.targetTs' }, {});
+            expect(f.warn).to.have.length(1);
+            expect(f.patterns).to.deep.equal([]);
+            expect(await f.during(() => f.saver.HandleTime())).to.deep.equal(['time~12:34']);
+        });
+
+        it('subscribes both patterns and reads the existing slots', async () => {
+            const f = await setup(slots, {
+                'x.0.1.aktiv': true,
+                'x.0.1.targetTs': NOW + 600_000,
+                'x.0.2.aktiv': true,
+                'x.0.2.targetTs': NOW + 300_000,
+                'x.0.3.aktiv': false,
+                'x.0.3.targetTs': NOW + 60_000,
+            });
+            expect(f.patterns).to.deep.equal(['x.0.*.aktiv', 'x.0.*.targetTs']);
+            const sent = await f.during(() => f.saver.HandleTime());
+            expect(timesOf(sent)).to.deep.equal([`time~5.0~${SAND}`]);
+        });
+
+        it('takes a slot that appears later, an alarm before a running slot, and shows the rest again', async () => {
+            const f = await setup(slots, { 'x.0.1.aktiv': true, 'x.0.1.targetTs': NOW + 600_000 });
+            await f.saver.HandleTime();
+            await f.setState('x.0.2.targetTs', NOW - 1000);
+            await f.setState('x.0.2.aktiv', true);
+            expect(timesOf(f.sent).at(-1)).to.equal(`time~0.0~${ALERT}`);
+            await f.setState('x.0.2.aktiv', false);
+            expect(timesOf(f.sent).at(-1)).to.equal(`time~10.0~${SAND}`);
+        });
+
+        it('a slot gets free and is used again', async () => {
+            const f = await setup(slots, { 'x.0.1.aktiv': true, 'x.0.1.targetTs': NOW + 600_000 });
+            await f.saver.HandleTime();
+            await f.setState('x.0.1.aktiv', false);
+            await f.setState('x.0.1.targetTs', 0);
+            expect(timesOf(f.sent).at(-1)).to.equal('time~12:34');
+            await f.setState('x.0.1.targetTs', NOW + 120_000);
+            await f.setState('x.0.1.aktiv', true);
+            expect(timesOf(f.sent).at(-1)).to.equal(`time~2.0~${SAND}`);
+        });
+
+        it('forgets a deleted slot', async () => {
+            const f = await setup(slots, { 'x.0.1.aktiv': true, 'x.0.1.targetTs': NOW + 600_000 });
+            await f.saver.HandleTime();
+            await f.setState('x.0.1.aktiv', undefined);
+            await f.setState('x.0.1.targetTs', undefined);
+            expect(f.saver.timerSources.size).to.equal(0);
+            expect(timesOf(f.sent).at(-1)).to.equal('time~12:34');
+        });
+
+        it('brings the timer back when another slot becomes active or the shown slot changes', async () => {
+            const f = await setup(slots, {
+                'x.0.1.aktiv': true,
+                'x.0.1.targetTs': NOW + 300_000,
+                'x.0.2.aktiv': true,
+                'x.0.2.targetTs': NOW + 600_000,
+            });
+            await f.saver.HandleTime();
+            await f.saver.onTimerTap('bExit', '1');
+            await f.setState('x.0.3.targetTs', NOW + 900_000);
+            await f.setState('x.0.3.aktiv', true);
+            expect(f.saver.timerTappedAway).to.equal(false);
+
+            await f.saver.onTimerTap('bExit', '2');
+            await f.setState('x.0.1.aktiv', false);
+            expect(f.saver.timerTappedAway).to.equal(false);
+            expect(timesOf(f.sent).at(-1)).to.equal(`time~10.0~${SAND}`);
+        });
+
+        it('ends the subscriptions and the wake up on delete', async () => {
+            const f = await setup(slots, { 'x.0.1.aktiv': true, 'x.0.1.targetTs': NOW + 600_000 });
+            await f.saver.HandleTime();
+            const tick = f.timers.at(-1)!;
+            await f.saver.delete();
+            expect(f.patterns).to.deep.equal([]);
+            expect(tick.cleared).to.equal(true);
+        });
     });
 });

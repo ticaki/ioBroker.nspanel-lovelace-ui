@@ -52,8 +52,8 @@ export const SENDTO_GET_PAGES_COMMAND = 'getPagesForPanel';
 export const SENDTO_GET_PAGES_All_COMMAND = 'getAllPages';
 /** sendTo command of main.ts: installed instances of the supported weather adapters ({ value, label }[], first entry = none) */
 export const SENDTO_GET_WEATHER_ENTITY_COMMAND = 'getWeatherEntity';
-/** admin tab screensaver: the page item templates (`pageItemTemplates`) with type, role and adapter */
-export const SENDTO_GET_SCREENSAVER_TEMPLATES_COMMAND = 'getScreensaverTemplates';
+/** admin: the page item templates (`pageItemTemplates`) with type, role, adapter, usable places and options */
+export const SENDTO_GET_PAGE_ITEM_TEMPLATES_COMMAND = 'getPageItemTemplates';
 // Central adapter name constant for admin <-> adapter sendTo calls
 export const ADAPTER_NAME = 'nspanel-lovelace-ui';
 // Expected response when asking the adapter for panels
@@ -258,6 +258,12 @@ export const serviceNodeName = '///service';
  * {@link serviceNodeName} before it is used as a navigation target.
  */
 export const servicePageName = '///unlock';
+
+/**
+ * Reserved target of `targetPage` and of prev/next/parent/home: no page, it shows the screensaver at once, like the end
+ * of the timeout. `///` is the prefix of the system pages, so no page of a user can collide with it.
+ */
+export const screensaverTargetPage = '///screensaver';
 
 export interface PageConfigBaseFields {
     hidden?: boolean;
@@ -700,6 +706,8 @@ export type ScreensaverItemConfig = {
     textOff?: string;
     /** indicator area only */
     action?: ScreensaverItemAction;
+    /** template item only: options of the template, its `read` functions get them as `options` (readOptions of the script) */
+    readOptions?: Record<string, string | number>;
     /** state that hides the item while false (ScreensaverEntityEnabled) */
     enabled?: string;
     /** expression over `val` that hides the item while false (ScreensaverEntityVisibleCondition) */
@@ -740,20 +748,31 @@ export function screensaverItemSource(
     return item?.template ? 'template' : 'state';
 }
 
+/** an option of a page item template the admin offers as a field; the value goes to `readOptions` under `key` */
+export type PageItemTemplateOption = {
+    key: string;
+    type: 'number' | 'text';
+    /** i18n key of the label */
+    label: string;
+};
+
 /**
- * a page item template as the adapter reports it (main.ts, getScreensaverTemplates)
+ * a page item template as the adapter reports it (main.ts, getPageItemTemplates)
  *
  * `need` tells what the item dialog has to ask for: `channel` - the template searches its states below
  * the object (`mode: 'auto'`, relative ids), `none` - the template works without an object (clock, wlan).
  * `looksFor` lists the ids or roles it searches for (hint in the dialog).
+ * `areas` lists the places of the screensaver the template can be used on, `options` its option fields.
  */
-export type ScreensaverTemplateInfo = {
+export type PageItemTemplateInfo = {
     name: string;
     type: string;
     role: string;
     adapter: string;
     need: ScreensaverTemplateNeed;
     looksFor: string[];
+    areas: ScreensaverArea[];
+    options: PageItemTemplateOption[];
 };
 
 export type ScreensaverTemplateNeed = 'channel' | 'none';
@@ -962,6 +981,8 @@ export type ScreensaverEntry = {
     notify?: string[];
     /** 12h or 24h clock, undefined = adapter default (24h) */
     clockFormat?: '12h' | '24h';
+    /** timer shown instead of the clock, see {@link ScreensaverClockTimer} */
+    clockTimer?: ScreensaverClockTimer;
     /** date format overrides, undefined = global settings of the instance (config-manager getScreensaverConfig) */
     weekdayFormat?: 'short' | 'long';
     monthFormat?: 'long' | 'short' | '2-digit';
@@ -981,6 +1002,332 @@ export type ScreensaverEntry = {
 };
 
 export type ScreensaverConfig = ScreensaverEntry[];
+
+/** a timer the screensaver shows instead of the clock while it runs (src/lib/pages/screensaver-timer.ts) */
+export type ScreensaverClockTimer = {
+    enabled: boolean;
+    /** on/off state: only while it is true there is a timer at all */
+    activeState: string;
+    /** data state: end time (unix ms / s, ISO, HH:MM) or remaining time */
+    dataState: string;
+    /**
+     * special case, timers in changing slots of a fixed path: patterns with exactly one `*`, on/off and data of a
+     * slot have the same part for the `*`. Both set: they replace activeState and dataState.
+     */
+    activePattern?: string;
+    dataPattern?: string;
+    /**
+     * Source is a page item with a popupTimer instead of the states above: its {@link AdminPageItemConfig.itemId}, the
+     * item may lie on any page of the panel. Empty: chosen as source, but no item picked yet.
+     */
+    itemId?: string;
+};
+
+/**
+ * @param timer configuration of the timer
+ * @returns true when a page item is the source
+ */
+export function clockTimerUsesPageItem(timer: Pick<ScreensaverClockTimer, 'itemId'>): boolean {
+    return timer.itemId !== undefined;
+}
+
+/**
+ * A channel is a countdown for the screensaver: internal (no ACTUAL) or counted outside with a STATUS that says
+ * whether it runs. Not an alarm clock (role date, or a value without a unit of time) and not a pure display.
+ *
+ * @param actual common of ACTUAL, undefined without this state
+ * @param actual.unit unit of the state
+ * @param actual.role role of the state
+ * @param hasStatus the channel has a STATUS
+ * @returns true when the item can be the source of the screensaver
+ */
+export function isCountdownChannel(
+    actual: { unit?: unknown; role?: unknown } | undefined,
+    hasStatus: boolean,
+): boolean {
+    if (!actual) {
+        return true;
+    }
+    if (actual.role === 'date' || !hasStatus) {
+        return false;
+    }
+    const unit = typeof actual.unit === 'string' ? actual.unit.trim().toLowerCase() : '';
+    return ['s', 'sec', 'ms'].includes(unit) || actual.role === 'value.timer' || actual.role === 'level.timer';
+}
+
+/** the part of a page entry the item ids and the timer source need */
+type ItemPage = {
+    uniqueName: string;
+    headline?: string;
+    navigationAssignment?: NavigationAssignmentList;
+    pageItems: (AdminPageItemConfig | undefined)[];
+};
+
+/**
+ * @param page entry of `pageConfig`
+ * @returns true for a page with page items
+ */
+function isItemPage(page: unknown): page is ItemPage {
+    return !!page && typeof page === 'object' && 'pageItems' in page && Array.isArray(page.pageItems);
+}
+
+const ITEM_ID_CHARS = 'abcdefghijklmnopqrstuvwxyz0123456789';
+const ITEM_ID_LENGTH = 6;
+
+/**
+ * A new id of a page item, internal and never shown in the dialogs.
+ *
+ * @param used ids that exist already
+ * @returns `item_` and 6 characters of a secure random, not in `used`
+ */
+export function newItemId(used: ReadonlySet<string>): string {
+    for (;;) {
+        // 252 is the largest multiple of 36 up to 256: the rest would prefer the first characters
+        const bytes = globalThis.crypto.getRandomValues(new Uint8Array(ITEM_ID_LENGTH * 4)).filter(b => b < 252);
+        if (bytes.length < ITEM_ID_LENGTH) {
+            continue;
+        }
+        const id = `item_${[...bytes.slice(0, ITEM_ID_LENGTH)].map(b => ITEM_ID_CHARS[b % 36]).join('')}`;
+        if (!used.has(id)) {
+            return id;
+        }
+    }
+}
+
+/**
+ * Gives every page item without an id one; ids that exist are never changed. Only to be called when the pages are
+ * written anyway: nothing changes by just looking at them.
+ *
+ * @param pages entries of `pageConfig`
+ * @returns the same array when nothing was missing, else a copy with new objects for what changed
+ */
+export function assignMissingItemIds<T>(pages: readonly T[]): readonly T[] {
+    const used = new Set<string>();
+    for (const page of pages) {
+        if (isItemPage(page)) {
+            for (const item of page.pageItems) {
+                if (item?.itemId) {
+                    used.add(item.itemId);
+                }
+            }
+        }
+    }
+    let changed = false;
+    const out = pages.map((page): T => {
+        if (!isItemPage(page) || !page.pageItems.some(item => item && !item.itemId)) {
+            return page;
+        }
+        changed = true;
+        const pageItems = page.pageItems.map(item => {
+            if (!item || item.itemId) {
+                return item;
+            }
+            const itemId = newItemId(used);
+            used.add(itemId);
+            return { ...item, itemId };
+        });
+        return { ...page, pageItems };
+    });
+    return changed ? out : pages;
+}
+
+/**
+ * Items that can be a timer. A stored item often has no role (older items, migration), only its channel knows it: an
+ * item without a role is a candidate, {@link loadClockTimerChannels} decides by the channel.
+ *
+ * @param pages entries of `pageConfig`
+ * @returns page, item and position
+ */
+function timerItemsOf(pages: readonly unknown[]): { page: ItemPage; item: AdminPageItemConfig; position: number }[] {
+    const out: { page: ItemPage; item: AdminPageItemConfig; position: number }[] = [];
+    for (const page of pages) {
+        if (isItemPage(page)) {
+            page.pageItems.forEach((item, index) => {
+                if (
+                    item &&
+                    (item.role === undefined || item.role === 'level.timer') &&
+                    item.type !== 'custom' &&
+                    !item.isNavigation &&
+                    !item.useNative &&
+                    item.channelId?.valueStateId
+                ) {
+                    out.push({ page, item, position: index + 1 });
+                }
+            });
+        }
+    }
+    return out;
+}
+
+/**
+ * @param pages entries of `pageConfig`
+ * @returns the channels of all candidates, see {@link loadClockTimerChannels}
+ */
+export function clockTimerChannels(pages: readonly unknown[]): string[] {
+    return [...new Set(timerItemsOf(pages).map(({ item }) => item.channelId.valueStateId))];
+}
+
+/** what the objects say about the channel of an item */
+export type ClockTimerChannelInfo = {
+    /** channel of role level.timer that shows a countdown, see {@link isCountdownChannel} */
+    isCountdown: boolean;
+    /** common.name in the given language */
+    name?: string;
+};
+
+/**
+ * Reads what {@link clockTimerItemChoice} needs from the objects: the role of the channel decides, like in the item
+ * dialog.
+ *
+ * @param pages entries of `pageConfig`
+ * @param getObject reads an object, may answer null
+ * @param lang language of the names
+ * @returns the channels; one that can not be read counts as no countdown
+ */
+export async function loadClockTimerChannels(
+    pages: readonly unknown[],
+    getObject: (id: string) => Promise<{ common?: Record<string, unknown> } | null | undefined>,
+    lang: string,
+): Promise<Record<string, ClockTimerChannelInfo>> {
+    const out: Record<string, ClockTimerChannelInfo> = {};
+    for (const channel of clockTimerChannels(pages)) {
+        try {
+            const common = (await getObject(channel))?.common;
+            if (common?.role !== 'level.timer') {
+                out[channel] = { isCountdown: false };
+                continue;
+            }
+            const actual = await getObject(`${channel}.ACTUAL`);
+            const status = await getObject(`${channel}.STATUS`);
+            const rawName = common.name;
+            const names: Record<string, unknown> = isRawItemObject(rawName) ? rawName : {};
+            const name = typeof rawName === 'string' ? rawName : (names[lang] ?? names.en);
+            out[channel] = {
+                isCountdown: isCountdownChannel(actual?.common, !!status),
+                name: typeof name === 'string' && name ? name : undefined,
+            };
+        } catch {
+            out[channel] = { isCountdown: false };
+        }
+    }
+    return out;
+}
+
+/** what the time dialog of a screensaver offers as the source of the timer */
+export type ClockTimerItemChoice = {
+    /** items that can be chosen, page and name as label; items of the same name on a page with their position */
+    items: { itemId: string; label: string }[];
+    /** fitting items without an id yet: they can be chosen after the next save */
+    waiting: number;
+};
+
+/**
+ * What the time dialog of a screensaver offers: never an item that uses the screensaver itself (circle).
+ *
+ * @param pages entries of `pageConfig`
+ * @param panels topics of the panels of the screensaver, empty = pages of any panel
+ * @param channels result of {@link loadClockTimerChannels}
+ * @returns the items
+ */
+export function clockTimerItemChoice(
+    pages: readonly unknown[],
+    panels: readonly string[],
+    channels: Readonly<Record<string, ClockTimerChannelInfo>>,
+): ClockTimerItemChoice {
+    const fitting = timerItemsOf(pages).filter(
+        ({ page, item }) =>
+            (panels.length === 0 || (page.navigationAssignment ?? []).some(a => panels.includes(a.topic))) &&
+            !item.useScreensaverTimer &&
+            channels[item.channelId.valueStateId]?.isCountdown,
+    );
+    const nameOf = (item: AdminPageItemConfig): string =>
+        item.name || channels[item.channelId.valueStateId]?.name || item.channelId.valueStateId;
+    const items: ClockTimerItemChoice['items'] = [];
+    for (const { page, item, position } of fitting) {
+        if (item.itemId) {
+            const twin = fitting.some(o => o.page === page && o.item !== item && nameOf(o.item) === nameOf(item));
+            const name = twin ? `${nameOf(item)} (${position})` : nameOf(item);
+            items.push({ itemId: item.itemId, label: `${page.headline || page.uniqueName} - ${name}` });
+        }
+    }
+    return { items, waiting: fitting.length - items.length };
+}
+
+/**
+ * A screensaver of a panel of this page has exactly this item as its source: the item must not use the screensaver.
+ *
+ * @param screensavers entries of `screensaverConfig`
+ * @param pages entries of `pageConfig`
+ * @param page name of the page of the item
+ * @param itemId id of the item
+ * @returns true when it would be a circle
+ */
+export function isClockTimerSourceItem(
+    screensavers: readonly ScreensaverEntry[],
+    pages: readonly { uniqueName?: string; navigationAssignment?: NavigationAssignmentList }[],
+    page: string,
+    itemId: string | undefined,
+): boolean {
+    if (!itemId) {
+        return false;
+    }
+    const topics = (pages.find(p => p?.uniqueName === page)?.navigationAssignment ?? []).map(a => a.topic);
+    return screensavers.some(
+        s =>
+            s?.clockTimer?.enabled &&
+            s.clockTimer.itemId === itemId &&
+            (s.panels ?? []).some(topic => topics.includes(topic)),
+    );
+}
+
+/** what is wrong with the two patterns of a {@link ScreensaverClockTimer}, 'ok' = nothing */
+export type ClockTimerPatternCheck = 'ok' | 'missing' | 'wildcard' | 'prefix' | 'same';
+
+/**
+ * checks the two slot patterns: both set, exactly one `*` each, and a path before it - `*.aktiv` would subscribe to
+ * all states of the system
+ *
+ * @param activePattern pattern of the on/off states
+ * @param dataPattern pattern of the data states
+ * @returns the result
+ */
+export function checkClockTimerPatterns(activePattern: string, dataPattern: string): ClockTimerPatternCheck {
+    const patterns = [activePattern.trim(), dataPattern.trim()];
+    if (patterns.some(p => !p)) {
+        return 'missing';
+    }
+    if (patterns.some(p => p.split('*').length !== 2)) {
+        return 'wildcard';
+    }
+    if (patterns.some(p => !/^[^.*]+\.[^*]*\*/.test(p))) {
+        return 'prefix';
+    }
+    return patterns[0] === patterns[1] ? 'same' : 'ok';
+}
+
+/**
+ * @param timer configuration of the timer
+ * @returns true when the timer uses slot patterns instead of the two states
+ */
+export function clockTimerUsesSlots(timer: Pick<ScreensaverClockTimer, 'activePattern' | 'dataPattern'>): boolean {
+    return !!timer.activePattern?.trim() || !!timer.dataPattern?.trim();
+}
+
+/**
+ * An enabled timer needs both states or two valid patterns: without the on/off state there is no valid timer.
+ *
+ * @param timer configuration of the timer
+ * @returns true when it can run
+ */
+export function isClockTimerComplete(timer: ScreensaverClockTimer): boolean {
+    if (timer.itemId !== undefined) {
+        return !!timer.itemId;
+    }
+    if (clockTimerUsesSlots(timer)) {
+        return checkClockTimerPatterns(timer.activePattern ?? '', timer.dataPattern ?? '') === 'ok';
+    }
+    return !!timer.activeState.trim() && !!timer.dataState.trim();
+}
 
 /** weather adapters getScreensaverConfig knows (definition.ts weatherEntities) */
 export const screensaverWeatherAdapters = ['accuweather', 'openweathermap', 'pirate-weather', 'brightsky'] as const;
@@ -1327,6 +1674,10 @@ export type AdminPageItemConfig = {
     maxValue?: number;
     /** Role blind only: text of the second row of the shutter popup. Empty = not set. */
     secondRow?: string;
+    /** Role level.timer only: use the timer of the screensaver of this panel (clockTimer) instead of own states. */
+    useScreensaverTimer?: boolean;
+    /** internal, given by the admin ({@link assignMissingItemIds}): the screensaver finds the item by it, on any page */
+    itemId?: string;
     /**
      * Roles dimmer, ct, rgb, rgbSingle and hue: lower end of the brightness slider. The config manager takes it
      * only when it is truthy, so 0 counts as not set (the panel default).
@@ -3747,6 +4098,8 @@ export type PageBaseItemSimple = {
     actionStringArray?: string[];
     alwaysOnDisplay?: boolean;
     useValueConditions?: string | null;
+    useScreensaverTimer?: boolean;
+    itemId?: string;
 };
 
 export type Beispiel = Pick<PageBaseItemSimple, 'minValue' | 'maxValue' | 'stepValue'>;

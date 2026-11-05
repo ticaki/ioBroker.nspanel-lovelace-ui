@@ -64,6 +64,13 @@ function adminPageItemToScriptItem(preItem, onInvalidColor = () => void 0) {
   if (!item) {
     return void 0;
   }
+  if (preItem.itemId) {
+    if (!("native" in item)) {
+      item.itemId = item.itemId || preItem.itemId;
+    } else if ((0, import_adminShareConfig.isRawItemObject)(item.native)) {
+      item.native.itemId = item.native.itemId || preItem.itemId;
+    }
+  }
   if (!preItem.useNative && !("native" in item)) {
     item.type = preItem.type === "custom" ? "custom" : null;
     item.icon = preItem.trueIcon || void 0;
@@ -94,6 +101,7 @@ function adminPageItemToScriptItem(preItem, onInvalidColor = () => void 0) {
       item.minValue = typeof preItem.minValue === "number" ? preItem.minValue : void 0;
       item.maxValue = typeof preItem.maxValue === "number" ? preItem.maxValue : void 0;
       item.secondRow = preItem.secondRow ? preItem.secondRow : void 0;
+      item.useScreensaverTimer = preItem.useScreensaverTimer === true ? true : void 0;
       item.minValueBrightness = preItem.minValueBrightness ? preItem.minValueBrightness : void 0;
       item.maxValueBrightness = preItem.maxValueBrightness ? preItem.maxValueBrightness : void 0;
       item.minValueColorTemp = preItem.minValueColorTemp ? preItem.minValueColorTemp : void 0;

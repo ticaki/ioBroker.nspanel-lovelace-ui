@@ -9,6 +9,7 @@ import { ConfigManager } from './config-manager';
 import { SHUTTER_POSITION_ICON, pageItemDefaults } from '../const/page-item-defaults';
 import { Color } from '../const/Color';
 import { screensaverItemToScript } from '../configuration/admin-screensaver-item';
+import { Page } from './Page';
 import type { NSPanel } from '../types/NSPanel';
 
 type ObjectDB = Record<string, ioBroker.Object>;
@@ -36,6 +37,7 @@ function database(): ObjectDB {
         [`${CHANNEL}.SET`]: state(`${CHANNEL}.SET`, { role: 'level.blind' }),
         [`${CHANNEL}.TILT_ACTUAL`]: state(`${CHANNEL}.TILT_ACTUAL`, { role: 'value.tilt' }),
         'alias.0.wetter.Temperatur': state('alias.0.wetter.Temperatur', { role: 'value.temperature', unit: '°C' }),
+        'alias.0.nurLesen': state('alias.0.nurLesen', { role: 'value', write: false }),
     };
 }
 
@@ -180,5 +182,86 @@ describe('lib/configuration/admin-screensaver-item - blind', () => {
             type: 'number',
         });
         expect(tilt.type === 'script' && tilt.ScreensaverEntityIconOn).to.equal(pageItemDefaults.blind.iconOn);
+    });
+});
+
+describe('lib/classes/config-manager - template element', () => {
+    const element = {
+        type: 'template',
+        template: 'text.battery.bydhvs',
+        dpInit: 'bydhvs.0',
+        readOptions: { min: 5 },
+    } as const;
+    const WRITABLE = 'alias.0.wetter.Temperatur';
+
+    it('without action nothing changes: no type, no data', async () => {
+        const r = await entityData({ ...element, modeScr: 'indicator' }, 'indicator');
+        expect(r).to.deep.equal({
+            template: 'text.battery.bydhvs',
+            dpInit: 'bydhvs.0',
+            readOptions: { min: 5 },
+            modeScr: 'indicator',
+        });
+    });
+
+    it('page on an indicator: a button with setNavi, the action field does not reach the runtime item', async () => {
+        const r = await entityData(
+            { ...element, modeScr: 'indicator', ScreensaverEntityNaviToPage: 'power' },
+            'indicator',
+        );
+        expect(r.type).to.equal('button');
+        expect(r.data.setNavi).to.deep.equal({ type: 'const', constVal: 'power' });
+        expect(r).to.not.have.property('ScreensaverEntityNaviToPage');
+        expect(r.readOptions).to.deep.equal({ min: 5 });
+    });
+
+    it('button and switch on an indicator: the first one counts, a state that cannot be written is left out', async () => {
+        const both = await entityData(
+            { ...element, modeScr: 'indicator', ScreensaverEntityButton: WRITABLE, ScreensaverEntitySwitch: WRITABLE },
+            'indicator',
+        );
+        expect(both.type).to.equal('button');
+        expect(both.data.setValue2).to.deep.equal({ type: 'state', dp: WRITABLE });
+        expect(both.data.setValue1).to.equal(undefined);
+        const sw = await entityData(
+            { ...element, modeScr: 'indicator', ScreensaverEntitySwitch: WRITABLE },
+            'indicator',
+        );
+        expect(sw.data.setValue1).to.deep.equal({ type: 'state', dp: WRITABLE });
+        const readOnly = await entityData(
+            { ...element, modeScr: 'indicator', ScreensaverEntityButton: 'alias.0.nurLesen' },
+            'indicator',
+        );
+        expect(readOnly.type).to.equal('button');
+        expect(readOnly.data.setValue2).to.equal(undefined);
+    });
+
+    it('outside the indicator the action is ignored', async () => {
+        const r = await entityData({ ...element, modeScr: 'bottom', ScreensaverEntityNaviToPage: 'power' }, 'bottom');
+        expect(r).to.deep.equal({
+            template: 'text.battery.bydhvs',
+            dpInit: 'bydhvs.0',
+            readOptions: { min: 5 },
+            modeScr: 'bottom',
+        });
+    });
+
+    it('the template system takes the button: its data stay, setNavi comes along, admin fields are left out', async () => {
+        const r = await entityData(
+            { ...element, modeScr: 'indicator', ScreensaverEntityNaviToPage: 'power' },
+            'indicator',
+        );
+        const page: any = {
+            log: { error: (): void => undefined, warn: (): void => undefined },
+            getItemFromTemplate: Page.prototype.getItemFromTemplate,
+        };
+        const item: any = await page.getItemFromTemplate(r);
+        expect(item.type).to.equal('button');
+        expect(item.role).to.equal('battery');
+        expect(item.data.setNavi).to.deep.equal({ type: 'const', constVal: 'power' });
+        expect(item.data.icon.true.value.regexp.source).to.equal('\\.State\\.SOC$');
+        expect(item.readOptions).to.deep.equal({ min: 5 });
+        expect(item).to.not.have.property('adminOptions');
+        expect(item).to.not.have.property('screensaverAreas');
     });
 });

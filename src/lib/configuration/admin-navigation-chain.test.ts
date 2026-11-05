@@ -193,3 +193,34 @@ describe('lib/configuration - explicit next of a chain root', () => {
         expect(node(navigation, 'b').right?.single).to.equal(undefined);
     });
 });
+
+describe('lib/configuration - screensaver as navigation target', () => {
+    const target = '///screensaver';
+
+    it('a next keeps its link, the chain around it stays', async () => {
+        const navigation = await runPreInit([
+            grid('a', false, [{ topic: panelTopic, navigation: { prev: 'main', next: target } }]),
+            grid('main', true, [{ topic: panelTopic }]),
+        ]);
+        expect(node(navigation, 'a').right?.single).to.equal(target);
+        expect(node(navigation, 'a').left?.single).to.equal('main');
+    });
+
+    it('several pages with this prev are no chain behind it', async () => {
+        const navigation = await runPreInit([
+            grid('a', false, [{ topic: panelTopic, navigation: { prev: target } }]),
+            grid('b', false, [{ topic: panelTopic, navigation: { prev: target } }]),
+        ]);
+        expect(node(navigation, 'a').left?.single).to.equal(target);
+        expect(node(navigation, 'b').left?.single).to.equal(target);
+        expect(navigation.some(n => n?.name === target)).to.equal(false);
+    });
+
+    it('home and parent go through', async () => {
+        const navigation = await runPreInit([
+            grid('a', false, [{ topic: panelTopic, navigation: { home: target, parent: target } }]),
+        ]);
+        expect(node(navigation, 'a').right?.double).to.equal(target);
+        expect(node(navigation, 'a').left?.double).to.equal(target);
+    });
+});

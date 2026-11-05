@@ -80,6 +80,14 @@ export function adminPageItemToScriptItem(
     if (!item) {
         return undefined;
     }
+    if (preItem.itemId) {
+        // also for a raw item: an id that was removed from its JSON must not get lost
+        if (!('native' in item)) {
+            item.itemId = item.itemId || preItem.itemId;
+        } else if (isRawItemObject(item.native)) {
+            item.native.itemId = item.native.itemId || preItem.itemId;
+        }
+    }
 
     // a raw item brings all of its fields itself - the fields of the dialog are not applied on top
     if (!preItem.useNative && !('native' in item)) {
@@ -123,6 +131,8 @@ export function adminPageItemToScriptItem(
             item.maxValue = typeof preItem.maxValue === 'number' ? preItem.maxValue : undefined;
             // role blind: second text row of the shutter popup
             item.secondRow = preItem.secondRow ? preItem.secondRow : undefined;
+            // role level.timer: the timer of the screensaver of this panel instead of own states
+            item.useScreensaverTimer = preItem.useScreensaverTimer === true ? true : undefined;
             // light ranges and color mode (dimmer, ct, rgb, rgbSingle, hue) - the config manager reads
             // the numbers only when truthy and the color mode only as set / not set
             item.minValueBrightness = preItem.minValueBrightness ? preItem.minValueBrightness : undefined;

@@ -17,6 +17,8 @@ import path from 'node:path';
 import { requiredScriptDataPoints } from '../const/config-manager-const';
 import { StatesControler } from '../controller/states-controller';
 import { ConfigManager } from './config-manager';
+import { adminPageItemToScriptItem } from '../configuration/admin-page-item';
+import type { AdminPageItemConfig } from '../types/adminShareConfig';
 
 const SNAPSHOT_FILE = path.join(__dirname, '__snapshots__', 'config-manager-pageitems.snap.json');
 const UPDATE = process.env.UPDATE_SNAPSHOTS === '1' || process.env.UPDATE_SNAPSHOTS === 'true';
@@ -895,5 +897,89 @@ describe('lib/classes/config-manager - page items (golden master)', function () 
                 JSON.stringify(adminScale),
             );
         }
+    });
+
+    it('the screensaver as target of an item stays a constant, it is no state', async () => {
+        const result = await run('item', { id: DEVICES.full('button'), targetPage: '///screensaver' }, PAGES.entities);
+        expect(result.error).to.equal(undefined);
+        const data = (result.itemConfig as { data: { setNavi: unknown } }).data;
+        expect(data.setNavi).to.deep.equal({ type: 'const', constVal: '///screensaver' });
+    });
+
+    describe('level.timer: name in the list and the title of the popup', () => {
+        const id = DEVICES.full('level.timer');
+        const headline = async (item: Record<string, unknown>): Promise<unknown> => {
+            const result = await run('item', item, PAGES.entities);
+            expect(result.error).to.equal(undefined);
+            return (result.itemConfig as { data: { headline: unknown } }).data.headline;
+        };
+
+        it('script: the name of the item, else the name of the channel', async () => {
+            expect(await headline({ id, name: 'Küche' })).to.deep.equal({ type: 'const', constVal: 'Küche' });
+            expect(await headline({ id })).to.deep.equal({ type: 'const', constVal: 'full level.timer (de)' });
+        });
+
+        it('admin: the same through the script item of the admin', async () => {
+            const admin = (name: string | undefined): Record<string, unknown> =>
+                adminPageItemToScriptItem({
+                    channelId: { valueStateId: id },
+                    name,
+                } as unknown as AdminPageItemConfig) as unknown as Record<string, unknown>;
+            expect(await headline(admin('Küche'))).to.deep.equal({ type: 'const', constVal: 'Küche' });
+            expect(await headline(admin(undefined))).to.deep.equal({
+                type: 'const',
+                constVal: 'full level.timer (de)',
+            });
+        });
+
+        it('SET without ACTUAL: internal timer, SET with its own trigger', async () => {
+            const setOnly = 'alias.0.setonly.level_timer';
+            addChannel(DB.objects, setOnly, 'level.timer', 'set only');
+            addState(DB.objects, `${setOnly}.SET`, { role: 'level.timer', type: 'number', write: true });
+            try {
+                const result = await run('item', { id: setOnly }, PAGES.entities);
+                expect(result.error).to.equal(undefined);
+                const entity1 = (result.itemConfig as { data: { entity1: { value?: unknown; set?: unknown } } }).data
+                    .entity1;
+                expect(entity1.value).to.equal(undefined);
+                expect(entity1.set).to.include({ type: 'triggered', dp: `${setOnly}.SET` });
+            } finally {
+                delete DB.objects[setOnly];
+                delete DB.objects[`${setOnly}.SET`];
+            }
+        });
+
+        it('one state as ACTUAL and SET by role: named ACTUAL it stays ACTUAL, role date stays a clock', async () => {
+            const entityOf = async (name: string, common: Partial<ioBroker.StateCommon>): Promise<any> => {
+                const channel = 'alias.0.onestate.level_timer';
+                addChannel(DB.objects, channel, 'level.timer', 'one');
+                addState(DB.objects, `${channel}.${name}`, { type: 'number', write: true, ...common });
+                try {
+                    const result = await run('item', { id: channel }, PAGES.entities);
+                    expect(result.error).to.equal(undefined);
+                    return (result.itemConfig as { data: { entity1: unknown } }).data.entity1;
+                } finally {
+                    delete DB.objects[channel];
+                    delete DB.objects[`${channel}.${name}`];
+                }
+            };
+            const actual = await entityOf('ACTUAL', { role: 'level.timer' });
+            expect(actual.value.dp).to.equal('alias.0.onestate.level_timer.ACTUAL');
+            expect(actual.set).to.equal(undefined);
+            const clock = await entityOf('SET', { role: 'date' });
+            expect(clock.value.dp).to.equal('alias.0.onestate.level_timer.SET');
+            expect(clock.set).to.equal(undefined);
+        });
+
+        it('Timer only as the last fallback', async () => {
+            const channel = DB.objects[id];
+            const name = channel.common.name;
+            channel.common.name = '';
+            try {
+                expect(await headline({ id })).to.deep.equal({ type: 'const', constVal: 'Timer' });
+            } finally {
+                channel.common.name = name;
+            }
+        });
     });
 });

@@ -56,7 +56,8 @@ export class BaseTriggeredPage extends BaseClass {
 
     constructor(card: BaseTriggeredPageInterface, alwaysOn: AlwaysOnMode = 'none') {
         super(card.adapter, card.name);
-        this.minUpdateInterval = 400;
+        // about 0.85 s per message reach the panel: more only fills the queue
+        this.minUpdateInterval = 1000;
         if (!this.adapter.controller) {
             throw new Error('No controller! bye bye');
         }

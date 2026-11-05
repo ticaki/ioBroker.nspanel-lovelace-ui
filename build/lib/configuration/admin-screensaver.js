@@ -177,7 +177,7 @@ function findScreensaverEntry(entries, topic) {
   return { entry: hits[0] ? (0, import_adminShareConfig.normalizeScreensaverEntry)(hits[0]) : void 0, others: hits.slice(1).map((e) => e.name) };
 }
 function applyScreensaverEntry(page, entry) {
-  var _a, _b, _c, _d, _e;
+  var _a, _b, _c, _d, _e, _f;
   page.uniqueID = adminScreensaverPageId;
   const config = page.config;
   config.card = (0, import_adminShareConfig.screensaverCardOfMode)(entry.mode);
@@ -185,9 +185,12 @@ function applyScreensaverEntry(page, entry) {
   config.rotationTime = typeof entry.rotationTime === "number" && entry.rotationTime > 0 ? entry.rotationTime : 0;
   config.screensaverSwipe = !!entry.screensaverSwipe;
   config.screensaverIndicatorButtons = !!entry.screensaverIndicatorButtons;
-  for (const raw of (_a = page.pageItems) != null ? _a : []) {
+  if ((_a = entry.clockTimer) == null ? void 0 : _a.enabled) {
+    config.clockTimer = entry.clockTimer;
+  }
+  for (const raw of (_b = page.pageItems) != null ? _b : []) {
     const item = raw;
-    const format = (_e = (_d = (_c = (_b = item == null ? void 0 : item.data) == null ? void 0 : _b.entity2) == null ? void 0 : _c.dateFormat) == null ? void 0 : _d.constVal) == null ? void 0 : _e.format;
+    const format = (_f = (_e = (_d = (_c = item == null ? void 0 : item.data) == null ? void 0 : _c.entity2) == null ? void 0 : _d.dateFormat) == null ? void 0 : _e.constVal) == null ? void 0 : _f.format;
     if (!format) {
       continue;
     }

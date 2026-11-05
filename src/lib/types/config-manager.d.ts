@@ -594,6 +594,8 @@ declare namespace ScriptConfig {
     export type PageBaseCustomItem = {
         type: 'custom';
         id: string;
+        /** see {@link PageBaseItemSimple.itemId} */
+        itemId?: string;
         navigate?: boolean | null | undefined;
         targetPage?: string | null | undefined;
         targetPageLongPress?: string | null | undefined;
@@ -712,6 +714,10 @@ declare namespace ScriptConfig {
         actionStringArray?: string[];
         alwaysOnDisplay?: boolean;
         useValueConditions?: string | null | undefined;
+        /** role level.timer: use the timer of the screensaver of this panel (clockTimer) instead of own states */
+        useScreensaverTimer?: boolean;
+        /** id of this item, unique in the instance: the screensaver can use it as the source of its timer (clockTimer.itemId) */
+        itemId?: string;
     };
     type sliderItems = {
         heading: string;
@@ -810,6 +816,12 @@ declare namespace ScriptConfig {
     };
 
     export type ScreenSaverElementWithUndefined = null | undefined | ScreenSaverElement;
+    /** what an element does when tapped - indicator place only, the first of button, switch and page counts */
+    export type ScreenSaverIndicatorAction = {
+        ScreensaverEntityNaviToPage?: string | null;
+        ScreensaverEntityButton?: string | null;
+        ScreensaverEntitySwitch?: string | null;
+    };
     export type ScreenSaverElement = { type: ScreenSaverType } & (
         | ({
               type: 'script';
@@ -904,8 +916,11 @@ declare namespace ScriptConfig {
               dpInit: string;
               enabled?: string;
               visibleCondition?: string;
+              /** options of the template, its `read` functions get them as `options` */
+              readOptions?: Record<string, string | number>;
               modeScr: 'left' | 'bottom' | 'indicator' | 'favorit' | 'alternate';
-          } & ({ enabled: string; visibleCondition?: string } | { enabled?: string }))
+          } & ScreenSaverIndicatorAction &
+              ({ enabled: string; visibleCondition?: string } | { enabled?: string }))
     );
 
     export type ScreenSaverNotifyElement = { type: ScreenSaverType } & (

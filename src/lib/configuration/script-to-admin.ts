@@ -346,6 +346,8 @@ const itemMappedKeys = [
     'minValue',
     'maxValue',
     'secondRow',
+    'useScreensaverTimer',
+    'itemId',
     'minValueBrightness',
     'maxValueBrightness',
     'minValueColorTemp',
@@ -555,6 +557,13 @@ function convertPageItem(item: Dict, where: string): AdminPageItemConfig {
         admin.maxValue = maxValue;
     }
     // role blind: second text row - the config manager shows '' for a missing one, so '' is dropped
+    if (item.useScreensaverTimer === true) {
+        admin.useScreensaverTimer = true;
+    }
+    const itemId = str(item.itemId, reason, `${where}.itemId`);
+    if (itemId) {
+        admin.itemId = itemId;
+    }
     const secondRow = str(item.secondRow, reason, `${where}.secondRow`);
     if (secondRow) {
         admin.secondRow = secondRow;
@@ -1470,12 +1479,78 @@ const screensaverStateKeys = [
     'ScreensaverEntityVisibleCondition',
     'ScreensaverEntityFillIfBelowMin',
 ] as const;
-const screensaverTemplateKeys = ['type', 'template', 'dpInit', 'modeScr', 'enabled', 'visibleCondition'] as const;
+const screensaverTemplateKeys = [
+    'type',
+    'template',
+    'dpInit',
+    'modeScr',
+    'enabled',
+    'visibleCondition',
+    'readOptions',
+    'ScreensaverEntityNaviToPage',
+    'ScreensaverEntityButton',
+    'ScreensaverEntitySwitch',
+] as const;
 /** keys of a native screensaver element that make it the same as a template element (see convertScreensaverItem) */
-const nativeTemplateKeys: readonly string[] = ['template', 'dpInit', 'modeScr'];
+const nativeTemplateKeys: readonly string[] = ['template', 'dpInit', 'modeScr', 'readOptions'];
 
 /** the colors of the script the config manager falls back to for an item without own colors */
 type ScriptDefaultColors = { on?: string; off?: string };
+
+/**
+ * The options of a template element as the admin stores them: texts and numbers only.
+ *
+ * @param value `readOptions` of the element.
+ * @param reason Reason to report when they do not fit.
+ * @param where Field name for the detail.
+ * @returns the options, undefined when there are none
+ */
+function convertReadOptions(
+    value: unknown,
+    reason: ConvertSkipReason,
+    where: string,
+): Record<string, string | number> | undefined {
+    if (value === undefined || value === null) {
+        return undefined;
+    }
+    if (!isDict(value)) {
+        throw new ConvertError(reason, `${where}: expected an object`);
+    }
+    const options: Record<string, string | number> = {};
+    for (const [key, option] of Object.entries(value)) {
+        if (typeof option !== 'string' && typeof option !== 'number') {
+            throw new ConvertError(reason, `${where}.${key}: the admin takes a text or a number`);
+        }
+        options[key] = option;
+    }
+    return Object.keys(options).length > 0 ? options : undefined;
+}
+
+/**
+ * The action of an indicator as the admin stores it. The config manager takes the first of button, switch
+ * and page - the others have no effect.
+ *
+ * @param element Element of the script (script or template).
+ * @param reason Reason to report when a field is no text.
+ * @param where Prefix for the detail.
+ * @returns the action, undefined when the element has none
+ */
+function convertIndicatorAction(
+    element: Dict,
+    reason: ConvertSkipReason,
+    where: string,
+): ScreensaverItemConfig['action'] {
+    const button = str(element.ScreensaverEntityButton, reason, `${where}.ScreensaverEntityButton`);
+    const switchState = str(element.ScreensaverEntitySwitch, reason, `${where}.ScreensaverEntitySwitch`);
+    const navi = str(element.ScreensaverEntityNaviToPage, reason, `${where}.ScreensaverEntityNaviToPage`);
+    if (button) {
+        return { kind: 'button', state: button };
+    }
+    if (switchState) {
+        return { kind: 'switch', state: switchState };
+    }
+    return navi ? { kind: 'navigate', page: navi } : undefined;
+}
 
 /**
  * One screensaver element of the script as the admin stores it - inverse of `screensaverItemToScript`
@@ -1510,7 +1585,8 @@ function convertScreensaverItem(
             typeof native.dpInit === 'string' &&
             native.modeScr === area
         ) {
-            return { state: native.dpInit, template: native.template };
+            const readOptions = convertReadOptions(native.readOptions, reason, `${where}.native.readOptions`);
+            return { state: native.dpInit, template: native.template, ...(readOptions ? { readOptions } : {}) };
         }
         throw new ConvertError(reason, `${where}: native element`);
     }
@@ -1538,6 +1614,16 @@ function convertScreensaverItem(
         const condition = str(element.visibleCondition, reason, `${where}.visibleCondition`);
         if (condition) {
             item.visibleCondition = condition;
+        }
+        const readOptions = convertReadOptions(element.readOptions, reason, `${where}.readOptions`);
+        if (readOptions) {
+            item.readOptions = readOptions;
+        }
+        if (area === 'indicator') {
+            const action = convertIndicatorAction(element, reason, where);
+            if (action) {
+                item.action = action;
+            }
         }
         return item;
     }
@@ -1668,16 +1754,9 @@ function convertScreensaverItem(
         throw new ConvertError(reason, `${where}.ScreensaverEntityFillIfBelowMin: not available in the admin`);
     }
     if (area === 'indicator') {
-        // the config manager takes the first of button, switch and page - the others have no effect
-        const button = str(element.ScreensaverEntityButton, reason, `${where}.ScreensaverEntityButton`);
-        const switchState = str(element.ScreensaverEntitySwitch, reason, `${where}.ScreensaverEntitySwitch`);
-        const navi = str(element.ScreensaverEntityNaviToPage, reason, `${where}.ScreensaverEntityNaviToPage`);
-        if (button) {
-            item.action = { kind: 'button', state: button };
-        } else if (switchState) {
-            item.action = { kind: 'switch', state: switchState };
-        } else if (navi) {
-            item.action = { kind: 'navigate', page: navi };
+        const action = convertIndicatorAction(element, reason, where);
+        if (action) {
+            item.action = action;
         }
     }
     return item;

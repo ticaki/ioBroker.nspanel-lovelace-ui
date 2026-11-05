@@ -58,7 +58,7 @@ describe('lib/classes/baseClassPage - throttled triggers', () => {
         await page.onStateTriggerSuperDoNotOverride('solar2', weather);
         expect(page.calls).to.deep.equal([{ dp: 'solar', from: 'weather' }]);
 
-        await clock.tickAsync(400);
+        await clock.tickAsync(1000);
         expect(page.calls).to.deep.equal([
             { dp: 'solar', from: 'weather' },
             { dp: '///time', from: 'time' },
@@ -72,18 +72,34 @@ describe('lib/classes/baseClassPage - throttled triggers', () => {
         await page.onStateTriggerSuperDoNotOverride('a', source('a'));
         await page.onStateTriggerSuperDoNotOverride('b', source('b'));
         await page.onStateTriggerSuperDoNotOverride('c', source('c'));
-        await clock.tickAsync(400);
+        await clock.tickAsync(1000);
         expect(page.calls).to.deep.equal([
             { dp: 'a', from: 'a' },
             { dp: 'c', from: 'c' },
         ]);
     });
 
+    it('the first change goes out at once, only what follows in the window waits', async () => {
+        const page = new TestPage(false);
+        await page.onStateTriggerSuperDoNotOverride('button', source('a'));
+        // without any time passing
+        expect(page.calls).to.deep.equal([{ dp: 'button', from: 'a' }]);
+        await page.onStateTriggerSuperDoNotOverride('next', source('b'));
+        await clock.tickAsync(999);
+        expect(page.calls).to.have.length(1);
+        await clock.tickAsync(1);
+        expect(page.calls.at(-1)).to.deep.equal({ dp: 'next', from: 'b' });
+        // the window is over: at once again
+        await clock.tickAsync(1000);
+        await page.onStateTriggerSuperDoNotOverride('later', source('c'));
+        expect(page.calls.at(-1)).to.deep.equal({ dp: 'later', from: 'c' });
+    });
+
     it('does not replay without a trigger in the window', async () => {
         const page = new TestPage(true);
 
         await page.onStateTriggerSuperDoNotOverride('a', source('a'));
-        await clock.tickAsync(1000);
+        await clock.tickAsync(2000);
         expect(page.calls).to.deep.equal([{ dp: 'a', from: 'a' }]);
     });
 });

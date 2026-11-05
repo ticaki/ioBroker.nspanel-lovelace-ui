@@ -133,7 +133,7 @@ class PageAlarm extends import_Page.Page {
       this.isGlobal = true;
       this.pathToStates = this.library.cleandp(`alarm.${this.name}`, false, false);
     }
-    this.minUpdateInterval = 500;
+    this.minUpdateInterval = 1e3;
     this.neverDeactivateTrigger = true;
     this.approveId = this.library.cleandp(`${this.pathToStates}.approve`, false, false);
     this.statusState = this.library.cleandp(`${this.pathToStates}.status`, false, false);

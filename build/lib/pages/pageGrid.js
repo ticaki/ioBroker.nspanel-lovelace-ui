@@ -57,7 +57,7 @@ class PageGrid extends import_pageMenu.PageMenu {
     if (options.items && (options.items.card == "cardGrid" || options.items.card == "cardGrid2" || options.items.card == "cardGrid3")) {
       this.items = options.items;
     }
-    this.minUpdateInterval = 500;
+    this.minUpdateInterval = 1e3;
   }
   async init() {
     const config = structuredClone(this.config);

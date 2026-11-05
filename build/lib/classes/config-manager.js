@@ -2150,6 +2150,32 @@ class ConfigManager extends import_library.BaseClass {
     }
     return result;
   }
+  /**
+   * ACTUAL and SET of a timer. Both are searched by role, so one state can match both: named SET it is no ACTUAL
+   * (the adapter counts, SET sets its time from outside - it needs its own trigger for that), otherwise it is the
+   * ACTUAL that can be written. A clock time stays what is shown, it is nothing to count.
+   *
+   * @param actual found state for ACTUAL
+   * @param set found state for SET
+   * @param isAlarm the state has role date
+   * @returns value and set of the item
+   */
+  getTimerEntity(actual, set, isAlarm) {
+    const actualDp = actual && "dp" in actual ? actual.dp : void 0;
+    const setDp = set && "dp" in set ? set.dp : void 0;
+    const sameState = !!actualDp && actualDp === setDp;
+    if (sameState && !actualDp.endsWith(".SET")) {
+      return { value: actual, set: void 0 };
+    }
+    if (sameState && isAlarm) {
+      return { value: actual, set: void 0 };
+    }
+    const internal = !actual || sameState;
+    return {
+      value: internal ? void 0 : actual,
+      set: internal && set && setDp ? { ...set, dp: setDp, type: "triggered" } : set
+    };
+  }
   async getPageItemConfig(item, page, messages = []) {
     var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _A, _B, _C, _D;
     let itemConfig = void 0;
@@ -3421,6 +3447,8 @@ class ConfigManager extends import_library.BaseClass {
               role: "timer",
               type: "timer",
               dpInit: "",
+              useScreensaverTimer: item.useScreensaverTimer === true ? true : void 0,
+              itemId: item.itemId,
               data: {
                 icon: {
                   true: {
@@ -3447,8 +3475,12 @@ class ConfigManager extends import_library.BaseClass {
                   maxBri: void 0,
                   minBri: void 0
                 },
-                entity1: { value: foundedStates[role].ACTUAL, set: foundedStates[role].SET },
-                headline: { type: "const", constVal: "Timer" },
+                entity1: this.getTimerEntity(
+                  foundedStates[role].ACTUAL,
+                  foundedStates[role].SET,
+                  isAlarm
+                ),
+                headline: await getButtonsTextTrue(item, "Timer"),
                 setValue1: foundedStates[role].STATE,
                 setValue2: foundedStates[role].STATUS
               }
@@ -4469,6 +4501,29 @@ class ConfigManager extends import_library.BaseClass {
     }
     return result;
   }
+  /**
+   * What an indicator does when tapped, as data items of a button page item: the first of button, switch and page.
+   *
+   * @param entity element of the script (script or template)
+   * @returns the data items to set, null when the element has no action; a state that does not exist or is not
+   * writable gives an undefined data item
+   */
+  async getScreensaverIndicatorAction(entity) {
+    if (entity.ScreensaverEntityButton) {
+      return {
+        setValue2: await this.existsAndWriteableState(entity.ScreensaverEntityButton) ? { type: "state", dp: entity.ScreensaverEntityButton } : void 0
+      };
+    }
+    if (entity.ScreensaverEntitySwitch) {
+      return {
+        setValue1: await this.existsAndWriteableState(entity.ScreensaverEntitySwitch) ? { type: "state", dp: entity.ScreensaverEntitySwitch } : void 0
+      };
+    }
+    if (entity.ScreensaverEntityNaviToPage) {
+      return { setNavi: { type: "const", constVal: entity.ScreensaverEntityNaviToPage } };
+    }
+    return null;
+  }
   async getEntityData(entity, mode, defaultColors) {
     var _a, _b;
     const result = {
@@ -4524,7 +4579,17 @@ class ConfigManager extends import_library.BaseClass {
       }
       "visibleCondition" in temp && delete temp.visibleCondition;
       "enabled" in temp && delete temp.enabled;
-      delete temp.type;
+      for (const key of ["ScreensaverEntityNaviToPage", "ScreensaverEntityButton", "ScreensaverEntitySwitch"]) {
+        delete temp[key];
+      }
+      const action = mode === "indicator" ? await this.getScreensaverIndicatorAction(entity) : null;
+      if (action) {
+        temp.type = "button";
+        temp.data = temp.data || {};
+        Object.assign(temp.data, action);
+      } else {
+        delete temp.type;
+      }
       return temp;
     }
     if (!result.data.entity1) {
@@ -4544,15 +4609,9 @@ class ConfigManager extends import_library.BaseClass {
     }
     if (mode === "indicator") {
       result.type = "button";
-      if ("ScreensaverEntityButton" in entity && entity.ScreensaverEntityButton) {
-        result.data.setValue2 = await this.existsAndWriteableState(entity.ScreensaverEntityButton) ? { type: "state", dp: entity.ScreensaverEntityButton } : void 0;
-      } else if ("ScreensaverEntitySwitch" in entity && entity.ScreensaverEntitySwitch) {
-        result.data.setValue1 = await this.existsAndWriteableState(entity.ScreensaverEntitySwitch) ? { type: "state", dp: entity.ScreensaverEntitySwitch } : void 0;
-      } else if ("ScreensaverEntityNaviToPage" in entity && entity.ScreensaverEntityNaviToPage) {
-        result.data.setNavi = {
-          type: "const",
-          constVal: entity.ScreensaverEntityNaviToPage
-        };
+      const action = await this.getScreensaverIndicatorAction(entity);
+      if (action) {
+        Object.assign(result.data, action);
       }
     }
     const dataType = obj && obj.common && obj.common.type ? obj.common.type : void 0;

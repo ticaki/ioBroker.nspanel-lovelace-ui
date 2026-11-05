@@ -834,7 +834,7 @@ Stack: ${stack}`
     }
     const byPrev = /* @__PURE__ */ new Map();
     for (const pending of pendingNavs) {
-      if (pending.prev !== void 0) {
+      if (pending.prev !== void 0 && pending.prev !== ShareConfig.screensaverTargetPage) {
         const list = (_e = byPrev.get(pending.prev)) != null ? _e : [];
         list.push(pending.pageId);
         byPrev.set(pending.prev, list);

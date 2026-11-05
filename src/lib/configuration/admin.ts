@@ -990,7 +990,8 @@ export class AdminConfiguration extends BaseClass {
         // Step 2: Group pages by their declared `prev` target (preserving definition order)
         const byPrev = new Map<string, string[]>();
         for (const pending of pendingNavs) {
-            if (pending.prev !== undefined) {
+            // the screensaver is no node: nothing can be spliced behind it, the link of step 1 is all there is
+            if (pending.prev !== undefined && pending.prev !== ShareConfig.screensaverTargetPage) {
                 const list = byPrev.get(pending.prev) ?? [];
                 list.push(pending.pageId);
                 byPrev.set(pending.prev, list);

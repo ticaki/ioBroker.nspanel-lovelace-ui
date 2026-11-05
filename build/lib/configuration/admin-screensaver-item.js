@@ -53,6 +53,12 @@ function screensaverItemToScript(item, area, info = {}) {
     if (item.visibleCondition) {
       element2.visibleCondition = item.visibleCondition;
     }
+    if (item.readOptions && Object.keys(item.readOptions).length > 0) {
+      element2.readOptions = { ...item.readOptions };
+    }
+    if (area === "indicator" && item.action) {
+      setScreensaverIndicatorAction(element2, item.action);
+    }
     return element2;
   }
   let iconOn = item.iconOn || null;
@@ -108,19 +114,22 @@ function screensaverItemToScript(item, area, info = {}) {
     element.ScreensaverEntityVisibleCondition = item.visibleCondition;
   }
   if (area === "indicator" && item.action) {
-    switch (item.action.kind) {
-      case "button":
-        element.ScreensaverEntityButton = item.action.state || null;
-        break;
-      case "switch":
-        element.ScreensaverEntitySwitch = item.action.state || null;
-        break;
-      case "navigate":
-        element.ScreensaverEntityNaviToPage = item.action.page || null;
-        break;
-    }
+    setScreensaverIndicatorAction(element, item.action);
   }
   return element;
+}
+function setScreensaverIndicatorAction(element, action) {
+  switch (action.kind) {
+    case "button":
+      element.ScreensaverEntityButton = action.state || null;
+      break;
+    case "switch":
+      element.ScreensaverEntitySwitch = action.state || null;
+      break;
+    case "navigate":
+      element.ScreensaverEntityNaviToPage = action.page || null;
+      break;
+  }
 }
 function screensaverRawToScript(raw, area) {
   const config = structuredClone(raw.config);

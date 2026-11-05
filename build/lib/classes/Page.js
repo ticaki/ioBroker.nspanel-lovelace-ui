@@ -40,6 +40,11 @@ var import_templateArray = require("../templates/templateArray");
 var import_icon_mapping = require("../const/icon_mapping");
 var import_Color = require("../const/Color");
 class Page extends import_baseClassPage.BaseClassPage {
+  /** a page sends at most one update per this time because of running timers (ms), a little less than 2 ticks */
+  static timerListInterval = 1900;
+  timerTickItems = /* @__PURE__ */ new Set();
+  timerTicker;
+  lastTimerListUpdate = 0;
   card;
   id;
   lastCardCounter = 0;
@@ -207,6 +212,8 @@ class Page extends import_baseClassPage.BaseClassPage {
       }
       const newTemplate = structuredClone(template);
       delete newTemplate.adapter;
+      delete newTemplate.screensaverAreas;
+      delete newTemplate.adminOptions;
       if (options.type && options.type !== template.type && !(options.type == "button" && template.type == "text")) {
         this.log.error(`Type: ${JSON.stringify(options.type)} is not equal with ${template.type}`);
         return void 0;
@@ -357,6 +364,111 @@ class Page extends import_baseClassPage.BaseClassPage {
       }
     }
     return result;
+  }
+  /**
+   * @param itemId id of a page item
+   * @returns the positions of the items with this id on this page
+   */
+  itemIndexesOfId(itemId) {
+    var _a;
+    const out = [];
+    ((_a = this.pageItemConfig) != null ? _a : []).forEach((c, index) => {
+      if (c && "itemId" in c && c.itemId === itemId) {
+        out.push(index);
+      }
+    });
+    return out;
+  }
+  /**
+   * A page item, also while the page was never shown - the same instance the page uses later on as soon as the item
+   * is kept (persistentPageItems).
+   *
+   * @param index position in the page
+   * @returns the item
+   */
+  async getPageItemAt(index) {
+    var _a;
+    return import_pageItem.PageItem.getPageItem(
+      {
+        name: `${this.name}|PI`,
+        adapter: this.adapter,
+        panel: this.basePanel,
+        card: "cardItemSpecial",
+        id: `${this.id}?${index}`,
+        parent: this
+      },
+      (_a = this.pageItemConfig) == null ? void 0 : _a[index]
+    );
+  }
+  /**
+   * A timer on this page is running and is drawn: it wants to be drawn again as its time goes by. There is one
+   * ticker per page, however many timers run on it.
+   *
+   * @param item the item
+   * @param on true while it runs
+   */
+  setTimerTick(item, on) {
+    if (on) {
+      this.timerTickItems.add(item);
+      if (!this.timerTicker && !this.unload) {
+        this.timerTicker = this.adapter.setInterval(() => void this.onTimerTicker(), 1e3);
+      }
+    } else {
+      this.timerTickItems.delete(item);
+      if (this.timerTickItems.size === 0) {
+        this.stopTimerTicker();
+      }
+    }
+  }
+  stopTimerTicker() {
+    this.timerTickItems.clear();
+    if (this.timerTicker) {
+      this.adapter.clearInterval(this.timerTicker);
+      this.timerTicker = void 0;
+    }
+  }
+  /**
+   * Every second: an open popup follows, the list of the page gets one common update per
+   * {@link Page.timerListInterval} - and none while a popup lies on top of it. A change that is more than time, like
+   * the end of a timer, does not wait. Only ticks are limited here: buttons and states do not come along this way.
+   */
+  async onTimerTicker() {
+    if (this.unload || this.adapter.unload) {
+      this.stopTimerTicker();
+      return;
+    }
+    const items = [...this.timerTickItems];
+    let changed = false;
+    for (const item of items) {
+      changed = await item.onTimerTick() || changed;
+    }
+    if (this.sleep) {
+      return;
+    }
+    if (!this.getVisibility()) {
+      this.stopTimerTicker();
+      return;
+    }
+    const now = Date.now();
+    if (items.length > 0 && (changed || now - this.lastTimerListUpdate >= Page.timerListInterval)) {
+      this.lastTimerListUpdate = now;
+      await this.onStateTriggerSuperDoNotOverride("timer", items[0]);
+    }
+  }
+  /**
+   * Internal timers with SET or STATUS are controlled from outside, also while the page was never shown: they are
+   * created and subscribed here. Without these states the item comes into being with its page as always.
+   */
+  async connectControlledTimers() {
+    var _a, _b, _c;
+    const configs = (_a = this.pageItemConfig) != null ? _a : [];
+    for (let index = 0; index < configs.length; index++) {
+      const c = configs[index];
+      if (c && c.type === "timer" && c.role === "timer" && !c.useScreensaverTimer && c.data && !((_b = c.data.entity1) == null ? void 0 : _b.value) && (((_c = c.data.entity1) == null ? void 0 : _c.set) || c.data.setValue2)) {
+        const item = await this.getPageItemAt(index);
+        await (item == null ? void 0 : item.activateControlledTimer());
+      }
+    }
   }
   /**
    * Generates the navigation payload string for the NSPanel.
@@ -569,6 +681,7 @@ class Page extends import_baseClassPage.BaseClassPage {
    */
   async delete() {
     this.unload = true;
+    this.stopTimerTicker();
     if (this.directChildPage) {
       await this.directChildPage.delete();
       this.directChildPage = void 0;

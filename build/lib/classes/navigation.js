@@ -19,6 +19,7 @@ var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: tru
 var navigation_exports = {};
 __export(navigation_exports, {
   Navigation: () => Navigation,
+  SCREENSAVER_NAV_INDEX: () => SCREENSAVER_NAV_INDEX,
   isNavigationItemConfig: () => isNavigationItemConfig,
   isNavigationItemConfigArray: () => isNavigationItemConfigArray
 });
@@ -29,6 +30,9 @@ var import_icon_mapping = require("../const/icon_mapping");
 var import_tools = require("../const/tools");
 var import_definition = require("../const/definition");
 var import_default_pages = require("../const/default-pages");
+var import_adminShareConfig = require("../types/adminShareConfig");
+const SCREENSAVER_NAV_INDEX = -2;
+const SCREENSAVER_NAV_ICON = "power-sleep";
 function isNavigationItemConfigArray(a) {
   if (!a) {
     return false;
@@ -172,6 +176,10 @@ class Navigation extends import_library.BaseClass {
           if (!r2) {
             continue;
           }
+          if (r2 === import_adminShareConfig.screensaverTargetPage) {
+            i[nk][nk2] = SCREENSAVER_NAV_INDEX;
+            continue;
+          }
           let found = this.navigationConfig.find((entry) => entry && entry.name === r2);
           if (!found && r2 === import_default_pages.mainPageName && effectiveMain !== import_default_pages.mainPageName) {
             found = this.navigationConfig.find((entry) => entry && entry.name === effectiveMain);
@@ -206,6 +214,11 @@ class Navigation extends import_library.BaseClass {
     }
   }
   async setPageByIndex(index, d) {
+    if (index === SCREENSAVER_NAV_INDEX) {
+      this.infityCounter = 0;
+      await this.panel.activateScreensaver();
+      return;
+    }
     if (index !== -1 && index !== void 0) {
       const item = this.database[index];
       if (item) {
@@ -235,6 +248,10 @@ class Navigation extends import_library.BaseClass {
     return this.database;
   }
   async setTargetPageByName(n) {
+    if (n === import_adminShareConfig.screensaverTargetPage) {
+      await this.panel.activateScreensaver();
+      return;
+    }
     const index = this.navigationConfig.findIndex((a) => a && a.name === n);
     if (index !== -1) {
       await this.setPageByIndex(index);
@@ -342,7 +359,7 @@ class Navigation extends import_library.BaseClass {
         navigationString = (0, import_tools.getPayloadRemoveTilde)(
           "button",
           "bSubPrev",
-          item.left.double === void 0 ? import_icon_mapping.Icons.GetIcon("arrow-left-bold") : import_icon_mapping.Icons.GetIcon("arrow-top-left-bold-outline"),
+          item.left.single === SCREENSAVER_NAV_INDEX ? import_icon_mapping.Icons.GetIcon(SCREENSAVER_NAV_ICON) : item.left.double === void 0 ? import_icon_mapping.Icons.GetIcon("arrow-left-bold") : import_icon_mapping.Icons.GetIcon("arrow-top-left-bold-outline"),
           item.left.double === void 0 ? String(import_Color.Color.rgb_dec565(import_Color.Color.navLeft)) : String(import_Color.Color.rgb_dec565(import_Color.Color.navDownLeft)),
           "",
           ""
@@ -351,7 +368,7 @@ class Navigation extends import_library.BaseClass {
         navigationString = (0, import_tools.getPayloadRemoveTilde)(
           "button",
           "bUp",
-          import_icon_mapping.Icons.GetIcon("arrow-up-bold"),
+          import_icon_mapping.Icons.GetIcon(item.left.double === SCREENSAVER_NAV_INDEX ? SCREENSAVER_NAV_ICON : "arrow-up-bold"),
           String(import_Color.Color.rgb_dec565(import_Color.Color.navParent)),
           "",
           ""
@@ -366,7 +383,7 @@ class Navigation extends import_library.BaseClass {
         navigationString2 = (0, import_tools.getPayloadRemoveTilde)(
           "button",
           "bSubNext",
-          item.right.double === void 0 ? import_icon_mapping.Icons.GetIcon("arrow-right-bold") : import_icon_mapping.Icons.GetIcon("arrow-top-right-bold-outline"),
+          item.right.single === SCREENSAVER_NAV_INDEX ? import_icon_mapping.Icons.GetIcon(SCREENSAVER_NAV_ICON) : item.right.double === void 0 ? import_icon_mapping.Icons.GetIcon("arrow-right-bold") : import_icon_mapping.Icons.GetIcon("arrow-top-right-bold-outline"),
           item.right.double === void 0 ? String(import_Color.Color.rgb_dec565(import_Color.Color.navRight)) : String(import_Color.Color.rgb_dec565(import_Color.Color.navDownRight)),
           "",
           ""
@@ -375,7 +392,7 @@ class Navigation extends import_library.BaseClass {
         navigationString2 = (0, import_tools.getPayloadRemoveTilde)(
           "button",
           "bHome",
-          import_icon_mapping.Icons.GetIcon("home"),
+          import_icon_mapping.Icons.GetIcon(item.right.double === SCREENSAVER_NAV_INDEX ? SCREENSAVER_NAV_ICON : "home"),
           String(import_Color.Color.rgb_dec565(import_Color.Color.navHome)),
           "",
           ""
@@ -470,6 +487,7 @@ class Navigation extends import_library.BaseClass {
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
   Navigation,
+  SCREENSAVER_NAV_INDEX,
   isNavigationItemConfig,
   isNavigationItemConfigArray
 });

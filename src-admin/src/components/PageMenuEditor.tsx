@@ -315,7 +315,8 @@ export class PageMenuEditor extends ConfigGeneric<ConfigGenericProps & PageMenuE
         while (pageItems.length <= contextMenuIndex) {
             pageItems.push(undefined);
         }
-        pageItems[contextMenuIndex] = { ...clipboard };
+        // a copy is another item: it gets its own id when it is written
+        pageItems[contextMenuIndex] = { ...clipboard, itemId: undefined };
         this.props.onEntryChange({ ...this.props.entry, pageItems });
         this.setState({ contextMenuEl: null, contextMenuIndex: null });
     };

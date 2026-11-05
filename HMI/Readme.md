@@ -581,7 +581,7 @@ An indicator shows its icon only, the whole tile is the touch area. A bottom ite
 
 `statusUpdate~icon1~color1~icon2~color2~...`: only the colors are used, fields 2 and 4 color the two status bars like on `screensaver3`. An empty color makes the bar black.
 
-`time~HH:MM` uses an own font that only has the digits, `:`, space and `AMPamp`. `time~HH:MM?PM` shows the part behind `?` as AM/PM. `time~HH:MM~icon` shows the info icon left of the time, like on the other screensavers.
+`time~HH:MM` uses an own font (height 96) with the ASCII characters U+0020 to U+007E like font 5, the timer of the adapter shows `125.5` with it. `time~HH:MM?PM` shows the part behind `?` as AM/PM. `time~HH:MM~icon` shows the info icon left of the time, like on the other screensavers.
 
 `notify~` covers the row of the bottom items.
 
@@ -2691,6 +2691,8 @@ action fields are in the answer on the button press
 in case action is empty the button will be hidden
 
 `entityUpdateDetail~{entity_id}~~{icon_color}~{entity_id}~{min_remaining}~{sec_remaining}~{editable}~{action1}~{action2}~{action3}~{label1}~{label2}~{label3}`
+
+Actions of the adapter: `begin`, `pause`, `clear`, `finish`; the button press arrives as `event,buttonPress2,{entity_id},timer-{action}`. Closing the editing sends `event,buttonPress2,{entity_id},timer-start,00:MM:SS`, the fields hold up to 59 and the adapter sends at most 99:59. For an alarm clock the two fields are hour and minute.
 
 
 

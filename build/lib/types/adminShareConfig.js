@@ -50,11 +50,17 @@ __export(adminShareConfig_exports, {
   SENDTO_GET_MEDIA_PLAYER_COMMAND: () => SENDTO_GET_MEDIA_PLAYER_COMMAND,
   SENDTO_GET_PAGES_All_COMMAND: () => SENDTO_GET_PAGES_All_COMMAND,
   SENDTO_GET_PAGES_COMMAND: () => SENDTO_GET_PAGES_COMMAND,
+  SENDTO_GET_PAGE_ITEM_TEMPLATES_COMMAND: () => SENDTO_GET_PAGE_ITEM_TEMPLATES_COMMAND,
   SENDTO_GET_PANELS_COMMAND: () => SENDTO_GET_PANELS_COMMAND,
   SENDTO_GET_PANEL_NAVIGATION_COMMAND: () => SENDTO_GET_PANEL_NAVIGATION_COMMAND,
-  SENDTO_GET_SCREENSAVER_TEMPLATES_COMMAND: () => SENDTO_GET_SCREENSAVER_TEMPLATES_COMMAND,
   SENDTO_GET_WEATHER_ENTITY_COMMAND: () => SENDTO_GET_WEATHER_ENTITY_COMMAND,
+  assignMissingItemIds: () => assignMissingItemIds,
   chartDefaults: () => chartDefaults,
+  checkClockTimerPatterns: () => checkClockTimerPatterns,
+  clockTimerChannels: () => clockTimerChannels,
+  clockTimerItemChoice: () => clockTimerItemChoice,
+  clockTimerUsesPageItem: () => clockTimerUsesPageItem,
+  clockTimerUsesSlots: () => clockTimerUsesSlots,
   conditionExpressionText: () => conditionExpressionText,
   conditionValueText: () => conditionValueText,
   dropScriptNavigation: () => dropScriptNavigation,
@@ -72,6 +78,9 @@ __export(adminShareConfig_exports, {
   findPowerEntryForScript: () => findPowerEntryForScript,
   formatEntryNumber: () => formatEntryNumber,
   isAsciiOnlyTextSize: () => isAsciiOnlyTextSize,
+  isClockTimerComplete: () => isClockTimerComplete,
+  isClockTimerSourceItem: () => isClockTimerSourceItem,
+  isCountdownChannel: () => isCountdownChannel,
   isHmiTextSize: () => isHmiTextSize,
   isIconColorScaleElement: () => isIconColorScaleElement,
   isIconTextSize: () => isIconTextSize,
@@ -88,6 +97,7 @@ __export(adminShareConfig_exports, {
   isScrollCard: () => isScrollCard,
   isSelectableMediaPlayer: () => isSelectableMediaPlayer,
   legacyPowerStates: () => legacyPowerStates,
+  loadClockTimerChannels: () => loadClockTimerChannels,
   longPressCards: () => longPressCards,
   mainPageName: () => mainPageName,
   mediaBackendFeatures: () => mediaBackendFeatures,
@@ -103,6 +113,7 @@ __export(adminShareConfig_exports, {
   migrateLegacyPower: () => migrateLegacyPower,
   migrateScreensaverNotify: () => migrateScreensaverNotify,
   nameIsPopupTitleCards: () => nameIsPopupTitleCards,
+  newItemId: () => newItemId,
   newScreensaverNotifyId: () => newScreensaverNotifyId,
   normalizeChannelId: () => normalizeChannelId,
   normalizeScreensaverEntry: () => normalizeScreensaverEntry,
@@ -139,6 +150,7 @@ __export(adminShareConfig_exports, {
   screensaverNotifyLines: () => screensaverNotifyLines,
   screensaverNotifyOfEntry: () => screensaverNotifyOfEntry,
   screensaverSlotLimits: () => screensaverSlotLimits,
+  screensaverTargetPage: () => screensaverTargetPage,
   screensaverWeatherAdapterOf: () => screensaverWeatherAdapterOf,
   screensaverWeatherAdapters: () => screensaverWeatherAdapters,
   screensaverWeatherItemKeys: () => screensaverWeatherItemKeys,
@@ -168,7 +180,7 @@ const SENDTO_GET_PANELS_COMMAND = "getPanels";
 const SENDTO_GET_PAGES_COMMAND = "getPagesForPanel";
 const SENDTO_GET_PAGES_All_COMMAND = "getAllPages";
 const SENDTO_GET_WEATHER_ENTITY_COMMAND = "getWeatherEntity";
-const SENDTO_GET_SCREENSAVER_TEMPLATES_COMMAND = "getScreensaverTemplates";
+const SENDTO_GET_PAGE_ITEM_TEMPLATES_COMMAND = "getPageItemTemplates";
 const ADAPTER_NAME = "nspanel-lovelace-ui";
 function stateRefNodeId(dp) {
   return `dp:${dp}`;
@@ -180,6 +192,7 @@ function shortStateLabel(dp) {
 const mainPageName = "main";
 const serviceNodeName = "///service";
 const servicePageName = "///unlock";
+const screensaverTargetPage = "///screensaver";
 const screensaverModes = ["standard", "alternate", "advanced", "easyview", "tiles"];
 const screensaverAreas = ["favorit", "alternate", "left", "bottom", "indicator"];
 const screensaverSlotLimits = {
@@ -458,6 +471,168 @@ function migrateScreensaverNotify(entries, list) {
     return { ...entry, notify: ids.length ? ids : void 0 };
   });
   return { entries: converted, list: out, changed };
+}
+function clockTimerUsesPageItem(timer) {
+  return timer.itemId !== void 0;
+}
+function isCountdownChannel(actual, hasStatus) {
+  if (!actual) {
+    return true;
+  }
+  if (actual.role === "date" || !hasStatus) {
+    return false;
+  }
+  const unit = typeof actual.unit === "string" ? actual.unit.trim().toLowerCase() : "";
+  return ["s", "sec", "ms"].includes(unit) || actual.role === "value.timer" || actual.role === "level.timer";
+}
+function isItemPage(page) {
+  return !!page && typeof page === "object" && "pageItems" in page && Array.isArray(page.pageItems);
+}
+const ITEM_ID_CHARS = "abcdefghijklmnopqrstuvwxyz0123456789";
+const ITEM_ID_LENGTH = 6;
+function newItemId(used) {
+  for (; ; ) {
+    const bytes = globalThis.crypto.getRandomValues(new Uint8Array(ITEM_ID_LENGTH * 4)).filter((b) => b < 252);
+    if (bytes.length < ITEM_ID_LENGTH) {
+      continue;
+    }
+    const id = `item_${[...bytes.slice(0, ITEM_ID_LENGTH)].map((b) => ITEM_ID_CHARS[b % 36]).join("")}`;
+    if (!used.has(id)) {
+      return id;
+    }
+  }
+}
+function assignMissingItemIds(pages) {
+  const used = /* @__PURE__ */ new Set();
+  for (const page of pages) {
+    if (isItemPage(page)) {
+      for (const item of page.pageItems) {
+        if (item == null ? void 0 : item.itemId) {
+          used.add(item.itemId);
+        }
+      }
+    }
+  }
+  let changed = false;
+  const out = pages.map((page) => {
+    if (!isItemPage(page) || !page.pageItems.some((item) => item && !item.itemId)) {
+      return page;
+    }
+    changed = true;
+    const pageItems = page.pageItems.map((item) => {
+      if (!item || item.itemId) {
+        return item;
+      }
+      const itemId = newItemId(used);
+      used.add(itemId);
+      return { ...item, itemId };
+    });
+    return { ...page, pageItems };
+  });
+  return changed ? out : pages;
+}
+function timerItemsOf(pages) {
+  const out = [];
+  for (const page of pages) {
+    if (isItemPage(page)) {
+      page.pageItems.forEach((item, index) => {
+        var _a;
+        if (item && (item.role === void 0 || item.role === "level.timer") && item.type !== "custom" && !item.isNavigation && !item.useNative && ((_a = item.channelId) == null ? void 0 : _a.valueStateId)) {
+          out.push({ page, item, position: index + 1 });
+        }
+      });
+    }
+  }
+  return out;
+}
+function clockTimerChannels(pages) {
+  return [...new Set(timerItemsOf(pages).map(({ item }) => item.channelId.valueStateId))];
+}
+async function loadClockTimerChannels(pages, getObject, lang) {
+  var _a, _b;
+  const out = {};
+  for (const channel of clockTimerChannels(pages)) {
+    try {
+      const common = (_a = await getObject(channel)) == null ? void 0 : _a.common;
+      if ((common == null ? void 0 : common.role) !== "level.timer") {
+        out[channel] = { isCountdown: false };
+        continue;
+      }
+      const actual = await getObject(`${channel}.ACTUAL`);
+      const status = await getObject(`${channel}.STATUS`);
+      const rawName = common.name;
+      const names = isRawItemObject(rawName) ? rawName : {};
+      const name = typeof rawName === "string" ? rawName : (_b = names[lang]) != null ? _b : names.en;
+      out[channel] = {
+        isCountdown: isCountdownChannel(actual == null ? void 0 : actual.common, !!status),
+        name: typeof name === "string" && name ? name : void 0
+      };
+    } catch {
+      out[channel] = { isCountdown: false };
+    }
+  }
+  return out;
+}
+function clockTimerItemChoice(pages, panels, channels) {
+  const fitting = timerItemsOf(pages).filter(
+    ({ page, item }) => {
+      var _a, _b;
+      return (panels.length === 0 || ((_a = page.navigationAssignment) != null ? _a : []).some((a) => panels.includes(a.topic))) && !item.useScreensaverTimer && ((_b = channels[item.channelId.valueStateId]) == null ? void 0 : _b.isCountdown);
+    }
+  );
+  const nameOf = (item) => {
+    var _a;
+    return item.name || ((_a = channels[item.channelId.valueStateId]) == null ? void 0 : _a.name) || item.channelId.valueStateId;
+  };
+  const items = [];
+  for (const { page, item, position } of fitting) {
+    if (item.itemId) {
+      const twin = fitting.some((o) => o.page === page && o.item !== item && nameOf(o.item) === nameOf(item));
+      const name = twin ? `${nameOf(item)} (${position})` : nameOf(item);
+      items.push({ itemId: item.itemId, label: `${page.headline || page.uniqueName} - ${name}` });
+    }
+  }
+  return { items, waiting: fitting.length - items.length };
+}
+function isClockTimerSourceItem(screensavers, pages, page, itemId) {
+  var _a, _b;
+  if (!itemId) {
+    return false;
+  }
+  const topics = ((_b = (_a = pages.find((p) => (p == null ? void 0 : p.uniqueName) === page)) == null ? void 0 : _a.navigationAssignment) != null ? _b : []).map((a) => a.topic);
+  return screensavers.some(
+    (s) => {
+      var _a2, _b2;
+      return ((_a2 = s == null ? void 0 : s.clockTimer) == null ? void 0 : _a2.enabled) && s.clockTimer.itemId === itemId && ((_b2 = s.panels) != null ? _b2 : []).some((topic) => topics.includes(topic));
+    }
+  );
+}
+function checkClockTimerPatterns(activePattern, dataPattern) {
+  const patterns = [activePattern.trim(), dataPattern.trim()];
+  if (patterns.some((p) => !p)) {
+    return "missing";
+  }
+  if (patterns.some((p) => p.split("*").length !== 2)) {
+    return "wildcard";
+  }
+  if (patterns.some((p) => !/^[^.*]+\.[^*]*\*/.test(p))) {
+    return "prefix";
+  }
+  return patterns[0] === patterns[1] ? "same" : "ok";
+}
+function clockTimerUsesSlots(timer) {
+  var _a, _b;
+  return !!((_a = timer.activePattern) == null ? void 0 : _a.trim()) || !!((_b = timer.dataPattern) == null ? void 0 : _b.trim());
+}
+function isClockTimerComplete(timer) {
+  var _a, _b;
+  if (timer.itemId !== void 0) {
+    return !!timer.itemId;
+  }
+  if (clockTimerUsesSlots(timer)) {
+    return checkClockTimerPatterns((_a = timer.activePattern) != null ? _a : "", (_b = timer.dataPattern) != null ? _b : "") === "ok";
+  }
+  return !!timer.activeState.trim() && !!timer.dataState.trim();
 }
 const screensaverWeatherAdapters = ["accuweather", "openweathermap", "pirate-weather", "brightsky"];
 const screensaverWeatherItemKeys = [
@@ -1984,11 +2159,17 @@ const CONVERT_GLOBAL_DEFAULT_DECISION = "keepAdmin";
   SENDTO_GET_MEDIA_PLAYER_COMMAND,
   SENDTO_GET_PAGES_All_COMMAND,
   SENDTO_GET_PAGES_COMMAND,
+  SENDTO_GET_PAGE_ITEM_TEMPLATES_COMMAND,
   SENDTO_GET_PANELS_COMMAND,
   SENDTO_GET_PANEL_NAVIGATION_COMMAND,
-  SENDTO_GET_SCREENSAVER_TEMPLATES_COMMAND,
   SENDTO_GET_WEATHER_ENTITY_COMMAND,
+  assignMissingItemIds,
   chartDefaults,
+  checkClockTimerPatterns,
+  clockTimerChannels,
+  clockTimerItemChoice,
+  clockTimerUsesPageItem,
+  clockTimerUsesSlots,
   conditionExpressionText,
   conditionValueText,
   dropScriptNavigation,
@@ -2006,6 +2187,9 @@ const CONVERT_GLOBAL_DEFAULT_DECISION = "keepAdmin";
   findPowerEntryForScript,
   formatEntryNumber,
   isAsciiOnlyTextSize,
+  isClockTimerComplete,
+  isClockTimerSourceItem,
+  isCountdownChannel,
   isHmiTextSize,
   isIconColorScaleElement,
   isIconTextSize,
@@ -2022,6 +2206,7 @@ const CONVERT_GLOBAL_DEFAULT_DECISION = "keepAdmin";
   isScrollCard,
   isSelectableMediaPlayer,
   legacyPowerStates,
+  loadClockTimerChannels,
   longPressCards,
   mainPageName,
   mediaBackendFeatures,
@@ -2037,6 +2222,7 @@ const CONVERT_GLOBAL_DEFAULT_DECISION = "keepAdmin";
   migrateLegacyPower,
   migrateScreensaverNotify,
   nameIsPopupTitleCards,
+  newItemId,
   newScreensaverNotifyId,
   normalizeChannelId,
   normalizeScreensaverEntry,
@@ -2073,6 +2259,7 @@ const CONVERT_GLOBAL_DEFAULT_DECISION = "keepAdmin";
   screensaverNotifyLines,
   screensaverNotifyOfEntry,
   screensaverSlotLimits,
+  screensaverTargetPage,
   screensaverWeatherAdapterOf,
   screensaverWeatherAdapters,
   screensaverWeatherItemKeys,

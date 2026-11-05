@@ -14,7 +14,9 @@ import {
     SENDTO_GET_PANEL_NAVIGATION_COMMAND,
     SAVE_PANEL_NAVIGATION_COMMAND,
     isMainPageEntry,
+    assignMissingItemIds,
     mainPageName,
+    screensaverTargetPage,
     servicePageName,
 } from '../../src/lib/types/adminShareConfig';
 import {
@@ -710,7 +712,10 @@ function nodeSizes(nodes: readonly FlowNode[]): Map<string, NodeSize> {
  */
 function shownBySwitches(showSystemPages: boolean, showStates: boolean): (node: FlowNode) => boolean {
     return node =>
-        (showSystemPages || !node.id.startsWith('///') || node.id === servicePageName) &&
+        (showSystemPages ||
+            !node.id.startsWith('///') ||
+            node.id === servicePageName ||
+            node.id === screensaverTargetPage) &&
         (showStates || node.data.entry?.nodeType !== 'stateRef');
 }
 
@@ -1153,7 +1158,7 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
         // `///unlock` is shown anyway and stays where it is
         this.setState(state => {
             const systemPages = state.nodes
-                .filter(n => n.id.startsWith('///') && n.id !== servicePageName)
+                .filter(n => n.id.startsWith('///') && n.id !== servicePageName && n.id !== screensaverTargetPage)
                 .map(n => n.id);
             const nodes =
                 this.placeRevealed(state, systemPages, state.collapsed, shownBySwitches(true, state.showStates)) ??
@@ -2532,7 +2537,7 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
         if (updated === pageConfig) {
             return;
         }
-        void this.onChange('pageConfig', updated);
+        void this.onChange('pageConfig', [...assignMissingItemIds(updated)]);
         this.markTouched([change.sourceNodeId]);
     }
 
@@ -2675,7 +2680,8 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
         const touchedCount = touched.size;
         const selectedPanelLabel = panelList.find(p => p.panelName === selectedPanel)?.friendlyName ?? selectedPanel;
         // Filter system pages (starting with ///) unless showSystemPages is true; ///unlock is always shown
-        const isSystemPage = (id: string): boolean => id.startsWith('///') && id !== servicePageName;
+        const isSystemPage = (id: string): boolean =>
+            id.startsWith('///') && id !== servicePageName && id !== screensaverTargetPage;
         // Clicking a page highlights all of its connections - same look as hovering one
         const selectedNodeId = this.state.infoPanelOpen ? this.state.infoNodeId : undefined;
         const map = this.state.navigationMap;

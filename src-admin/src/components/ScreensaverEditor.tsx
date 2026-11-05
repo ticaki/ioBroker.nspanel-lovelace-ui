@@ -52,8 +52,9 @@ import IconSelect from '../IconSelect';
 import { commonNameText, screensaverEntryObjectIds, screensaverItemLabel } from '../screensaverItemLabel';
 import icons from '../icons.json';
 import {
+    type ScreensaverClockTimer,
     type ScreensaverItemConfig,
-    type ScreensaverTemplateInfo,
+    type PageItemTemplateInfo,
     type AdminPanelConfig,
     type ScreensaverArea,
     type ScreensaverEntry,
@@ -62,6 +63,13 @@ import {
     type ScreensaverNotifyConfig,
     type ScreensaverPanelModel,
     type ScreensaverWeatherItemKey,
+    checkClockTimerPatterns,
+    clockTimerItemChoice,
+    clockTimerUsesPageItem,
+    loadClockTimerChannels,
+    type ClockTimerChannelInfo,
+    clockTimerUsesSlots,
+    isClockTimerComplete,
     screensaverAreas,
     screensaverCardOfMode,
     screensaverItemCondition,
@@ -120,12 +128,14 @@ export interface ScreensaverEditorProps {
     expertMode?: boolean;
     /** pages the adapter knows - navigation targets in the item dialog */
     pagesList?: string[];
+    /** native.pageConfig: the page items that can be the source of the timer */
+    pageEntries?: readonly unknown[];
     /** installed instances of the supported weather adapters, undefined while unknown (adapter offline) */
     weatherEntities?: { value: string; label: string }[];
     /** native.weatherEntity of the instance - applies while the entry has no own value */
     globalWeatherEntity?: string;
     /** page item templates the adapter knows (item dialog), undefined while unknown (adapter offline) */
-    templates?: ScreensaverTemplateInfo[];
+    templates?: PageItemTemplateInfo[];
 }
 
 type DialogKind = 'mricon1' | 'mricon2' | 'time' | 'date' | 'options';
@@ -462,6 +472,10 @@ interface ScreensaverEditorState {
     draftIcon: ScreensaverMrIconConfig | null;
     /** copy of the entry fields while time/date/options dialog is open */
     draftEntry: Partial<ScreensaverEntry> | null;
+    /** copy of the slot patterns while the sub dialog of the timer is open */
+    draftTimerPatterns: { active: string; data: string } | null;
+    /** what the objects say about the channels of the items, loaded when the time dialog opens */
+    timerItemChannels: Record<string, ClockTimerChannelInfo>;
     /** place the item dialog belongs to */
     editing: SlotRef | null;
     dragSource: SlotRef | null;
@@ -479,6 +493,8 @@ export class ScreensaverEditor extends React.Component<ScreensaverEditorProps, S
             dialog: null,
             draftIcon: null,
             draftEntry: null,
+            draftTimerPatterns: null,
+            timerItemChannels: {},
             editing: null,
             dragSource: null,
             dragOverKey: null,
@@ -825,11 +841,15 @@ export class ScreensaverEditor extends React.Component<ScreensaverEditorProps, S
             this.setState({ dialog: kind, draftIcon: { ...(entry[field] ?? {}) }, draftEntry: null });
             return;
         }
+        if (kind === 'time') {
+            void this.loadTimerItemKinds();
+        }
         this.setState({
             dialog: kind,
             draftIcon: null,
             draftEntry: {
                 clockFormat: entry.clockFormat,
+                clockTimer: entry.clockTimer,
                 weekdayFormat: entry.weekdayFormat,
                 monthFormat: entry.monthFormat,
                 yearFormat: entry.yearFormat,
@@ -841,7 +861,7 @@ export class ScreensaverEditor extends React.Component<ScreensaverEditorProps, S
     }
 
     private closeDialog = (): void => {
-        this.setState({ dialog: null, draftIcon: null, draftEntry: null });
+        this.setState({ dialog: null, draftIcon: null, draftEntry: null, draftTimerPatterns: null });
     };
 
     private applyDialog = (): void => {
@@ -864,7 +884,7 @@ export class ScreensaverEditor extends React.Component<ScreensaverEditorProps, S
         } else if (draftEntry) {
             const out: ScreensaverEntry = { ...entry, ...draftEntry };
             // undefined = global setting / adapter default: do not store the key
-            for (const k of ['clockFormat', 'weekdayFormat', 'monthFormat', 'yearFormat'] as const) {
+            for (const k of ['clockFormat', 'clockTimer', 'weekdayFormat', 'monthFormat', 'yearFormat'] as const) {
                 if (out[k] === undefined) {
                     delete out[k];
                 }
@@ -942,6 +962,302 @@ export class ScreensaverEditor extends React.Component<ScreensaverEditorProps, S
                     filterFunc={isState}
                 />
             </Box>
+        );
+    }
+
+    /**
+     * the timer of the time dialog as it is being edited
+     *
+     * @returns the timer, an empty one when none is stored
+     */
+    private draftTimer(): ScreensaverClockTimer {
+        return this.state.draftEntry?.clockTimer ?? { enabled: false, activeState: '', dataState: '' };
+    }
+
+    private setTimer(change: Partial<ScreensaverClockTimer>): void {
+        const out: ScreensaverClockTimer = { ...this.draftTimer(), ...change };
+        // nothing entered: not stored at all
+        const empty =
+            !out.enabled &&
+            !out.activeState &&
+            !out.dataState &&
+            !clockTimerUsesSlots(out) &&
+            !clockTimerUsesPageItem(out);
+        this.setEntryDraft('clockTimer', empty ? undefined : out);
+    }
+
+    /**
+     * The objects of a channel decide whether its item is a countdown.
+     */
+    private async loadTimerItemKinds(): Promise<void> {
+        const socket = this.props.oContext?.socket;
+        if (!socket) {
+            return;
+        }
+        const lang: string = socket.systemLang ?? this.props.oContext?.systemLang ?? 'en';
+        const channels = await loadClockTimerChannels(
+            this.props.pageEntries ?? [],
+            (id: string): Promise<ioBroker.Object | null | undefined> => socket.getObject(id),
+            lang,
+        );
+        if (!this.unmounted) {
+            this.setState({ timerItemChannels: channels });
+        }
+    }
+
+    private renderTimerItemField(): React.JSX.Element {
+        const itemId = this.draftTimer().itemId ?? '';
+        const { items, waiting } = clockTimerItemChoice(
+            this.props.pageEntries ?? [],
+            this.props.entry.panels ?? [],
+            this.state.timerItemChannels,
+        );
+        const known = !itemId || items.some(c => c.itemId === itemId);
+        return (
+            <Box sx={{ mb: 1 }}>
+                {items.length > 0 && (
+                    <TextField
+                        select
+                        fullWidth
+                        variant="standard"
+                        label={this.getText('screensaver_timer_item')}
+                        value={known ? itemId : ''}
+                        onChange={e => this.setTimer({ itemId: e.target.value })}
+                        slotProps={{ inputLabel: { shrink: true } }}
+                    >
+                        {items.map(c => (
+                            <MenuItem
+                                key={c.itemId}
+                                value={c.itemId}
+                            >
+                                {c.label}
+                            </MenuItem>
+                        ))}
+                    </TextField>
+                )}
+                {items.length === 0 && waiting === 0 && (
+                    <Alert
+                        severity="info"
+                        sx={{ mt: 1 }}
+                    >
+                        {this.getText('screensaver_timer_itemNone')}
+                    </Alert>
+                )}
+                {waiting > 0 && (
+                    <Alert
+                        severity="info"
+                        sx={{ mt: 1 }}
+                    >
+                        {this.getText('screensaver_timer_itemWaiting')}
+                    </Alert>
+                )}
+                {!known && (
+                    <Alert
+                        severity="warning"
+                        sx={{ mt: 1 }}
+                    >
+                        {this.getText('screensaver_timer_itemMissing')}
+                    </Alert>
+                )}
+                <Typography
+                    variant="caption"
+                    color="text.secondary"
+                    sx={{ display: 'block', mt: 1, whiteSpace: 'pre-line' }}
+                >
+                    {this.getText('screensaver_timer_itemHint')}
+                </Typography>
+            </Box>
+        );
+    }
+
+    private renderTimerStateField(field: 'activeState' | 'dataState', labelKey: string): React.JSX.Element {
+        const { oContext, theme } = this.props;
+        const themeType = oContext?.themeType ?? (theme?.palette?.mode || 'light');
+        return (
+            <Box sx={{ mb: 2 }}>
+                <EntitySelector
+                    label={this.getText(labelKey)}
+                    value={this.draftTimer()[field]}
+                    onChange={(v: string) => this.setTimer({ [field]: v })}
+                    socket={oContext.socket}
+                    theme={theme}
+                    themeType={themeType}
+                    dialogName={`selectScreensaverTimer_${field}`}
+                    filterFunc={isState}
+                />
+            </Box>
+        );
+    }
+
+    private renderTimerSection(): React.JSX.Element {
+        const timer = this.draftTimer();
+        const slots = clockTimerUsesSlots(timer);
+        const fromItem = clockTimerUsesPageItem(timer);
+        return (
+            <Box
+                sx={{ mt: 2 }}
+                data-ss="clock-timer"
+            >
+                <FormControlLabel
+                    control={
+                        <Checkbox
+                            checked={timer.enabled}
+                            onChange={e => this.setTimer({ enabled: e.target.checked })}
+                        />
+                    }
+                    label={this.getText('screensaver_timer_show')}
+                />
+                {timer.enabled && (
+                    <Box sx={{ mt: 1 }}>
+                        <TextField
+                            select
+                            fullWidth
+                            variant="standard"
+                            sx={{ mb: 1 }}
+                            label={this.getText('screensaver_timer_source')}
+                            value={fromItem ? 'item' : 'states'}
+                            onChange={e => {
+                                const useItem = e.target.value === 'item';
+                                this.setTimer({ itemId: useItem ? '' : undefined });
+                            }}
+                            slotProps={{ inputLabel: { shrink: true } }}
+                        >
+                            <MenuItem value="states">{this.getText('screensaver_timer_source_states')}</MenuItem>
+                            <MenuItem value="item">{this.getText('screensaver_timer_source_item')}</MenuItem>
+                        </TextField>
+                        {fromItem && this.renderTimerItemField()}
+                        {!fromItem && this.renderTimerStateField('activeState', 'screensaver_timer_activeState')}
+                        {!fromItem && this.renderTimerStateField('dataState', 'screensaver_timer_dataState')}
+                        {!fromItem && (
+                            <Typography
+                                variant="caption"
+                                color="text.secondary"
+                                sx={{ display: 'block', mb: 1, whiteSpace: 'pre-line' }}
+                            >
+                                {this.getText('screensaver_timer_hint')}
+                            </Typography>
+                        )}
+                        {!fromItem && slots && (
+                            <Alert
+                                severity="info"
+                                sx={{ mb: 1 }}
+                            >
+                                {this.getText('screensaver_timer_slotsActive')}
+                            </Alert>
+                        )}
+                        {!isClockTimerComplete(timer) && (
+                            <Alert
+                                severity="warning"
+                                sx={{ mb: 1 }}
+                            >
+                                {this.getText('screensaver_timer_incomplete')}
+                            </Alert>
+                        )}
+                        {!fromItem && (
+                            <Button
+                                size="small"
+                                onClick={() =>
+                                    this.setState({
+                                        draftTimerPatterns: {
+                                            active: timer.activePattern ?? '',
+                                            data: timer.dataPattern ?? '',
+                                        },
+                                    })
+                                }
+                            >
+                                {this.getText('screensaver_timer_advanced')}
+                            </Button>
+                        )}
+                    </Box>
+                )}
+            </Box>
+        );
+    }
+
+    /**
+     * @returns the error of the patterns in the sub dialog, '' when they can be taken; both empty = no slots
+     */
+    private timerPatternError(): string {
+        const draft = this.state.draftTimerPatterns;
+        if (!draft || (!draft.active.trim() && !draft.data.trim())) {
+            return '';
+        }
+        const check = checkClockTimerPatterns(draft.active, draft.data);
+        return check === 'ok' ? '' : this.getText(`screensaver_timer_pattern_${check}`);
+    }
+
+    private applyTimerPatterns = (): void => {
+        const draft = this.state.draftTimerPatterns;
+        if (!draft || this.timerPatternError()) {
+            return;
+        }
+        const { activePattern: _a, dataPattern: _d, ...rest } = this.draftTimer();
+        const active = draft.active.trim();
+        const data = draft.data.trim();
+        const out: ScreensaverClockTimer = active ? { ...rest, activePattern: active, dataPattern: data } : rest;
+        this.setEntryDraft('clockTimer', out);
+        this.setState({ draftTimerPatterns: null });
+    };
+
+    private renderTimerPatternDialog(): React.JSX.Element | null {
+        const draft = this.state.draftTimerPatterns;
+        if (!draft) {
+            return null;
+        }
+        const error = this.timerPatternError();
+        return (
+            <Dialog
+                open
+                onClose={() => this.setState({ draftTimerPatterns: null })}
+                maxWidth="sm"
+                fullWidth
+            >
+                <DialogTitle>{this.getText('screensaver_timer_slotsTitle')}</DialogTitle>
+                <DialogContent dividers>
+                    <Typography
+                        variant="caption"
+                        color="text.secondary"
+                        sx={{ display: 'block', mb: 2 }}
+                    >
+                        {this.getText('screensaver_timer_slotsHint')}
+                    </Typography>
+                    <TextField
+                        fullWidth
+                        variant="standard"
+                        autoComplete="off"
+                        sx={{ mb: 2 }}
+                        label={this.getText('screensaver_timer_activePattern')}
+                        placeholder="path.*.aktiv"
+                        value={draft.active}
+                        onChange={e => this.setState({ draftTimerPatterns: { ...draft, active: e.target.value } })}
+                        slotProps={{ inputLabel: { shrink: true } }}
+                    />
+                    <TextField
+                        fullWidth
+                        variant="standard"
+                        autoComplete="off"
+                        sx={{ mb: 2 }}
+                        label={this.getText('screensaver_timer_dataPattern')}
+                        placeholder="path.*.targetTs"
+                        value={draft.data}
+                        onChange={e => this.setState({ draftTimerPatterns: { ...draft, data: e.target.value } })}
+                        slotProps={{ inputLabel: { shrink: true } }}
+                    />
+                    {!!error && <Alert severity="error">{error}</Alert>}
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={() => this.setState({ draftTimerPatterns: null })}>
+                        {this.getText('Cancel1')}
+                    </Button>
+                    <Button
+                        variant="contained"
+                        disabled={!!error}
+                        onClick={this.applyTimerPatterns}
+                    >
+                        {this.getText('screensaver_apply')}
+                    </Button>
+                </DialogActions>
+            </Dialog>
         );
     }
 
@@ -1152,6 +1468,8 @@ export class ScreensaverEditor extends React.Component<ScreensaverEditorProps, S
                     >
                         {this.getText('screensaver_preview')}: <b>{this.timePreview(draftEntry.clockFormat)}</b>
                     </Typography>
+                    {this.renderTimerSection()}
+                    {this.renderTimerPatternDialog()}
                 </Box>
             );
         } else if (dialog === 'date' && draftEntry) {
@@ -1234,6 +1552,7 @@ export class ScreensaverEditor extends React.Component<ScreensaverEditorProps, S
                     <Button onClick={this.closeDialog}>{this.getText('Cancel1')}</Button>
                     <Button
                         variant="contained"
+                        disabled={!!draftEntry?.clockTimer?.enabled && !isClockTimerComplete(draftEntry.clockTimer)}
                         onClick={this.applyDialog}
                     >
                         {this.getText('screensaver_apply')}

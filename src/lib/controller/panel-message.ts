@@ -179,11 +179,55 @@ export class PanelSend extends BaseClass {
         if (force === true) {
             this.resetMessageDB();
         }
+        const replaced = this.findReplaceable(payload, ackForType, opt, lastPageType);
+        if (replaced) {
+            replaced.payload = payload;
+            return;
+        }
         this.messageDb.push({ payload: payload, opt: opt, ackForType: ackForType, sent: 0, done: 0 });
         if (this.messageTimeout === undefined) {
             void this.sendMessageLoop();
         }
     };
+
+    /**
+     * The panel only needs the newest state of a page or of a popup: a new `entityUpd` takes the place of an older one
+     * that was not sent yet, `entityUpdateDetail` per item id. Nothing moves in the queue. A message that was sent waits
+     * for its ack and stays as it is, so ack and retry only ever see what was really sent. A pageType ends the page.
+     *
+     * @param payload the new message
+     * @param ackForType kind of ack of the new message
+     * @param opt options of the new message
+     * @param lastPageType index of the last pageType in the queue
+     * @returns the queued message to overwrite
+     */
+    private findReplaceable(
+        payload: string,
+        ackForType: boolean,
+        opt: IClientPublishOptions | undefined,
+        lastPageType: number,
+    ): QueuedMessage | undefined {
+        const fields = payload.split('~', 2);
+        const isPage = fields[0] === 'entityUpd';
+        const isDetail = fields[0] === 'entityUpdateDetail';
+        if (!isPage && !isDetail) {
+            return undefined;
+        }
+        for (let i = this.messageDb.length - 1; i > lastPageType; i--) {
+            const queued = this.messageDb[i];
+            const other = queued.payload.split('~', 2);
+            if (
+                queued.sent === 0 &&
+                queued.ackForType === ackForType &&
+                queued.opt === opt &&
+                other[0] === fields[0] &&
+                (isPage || other[1] === fields[1])
+            ) {
+                return queued;
+            }
+        }
+        return undefined;
+    }
 
     private readonly sendMessageLoop = async (): Promise<void> => {
         const msg = this.messageDb[0];
