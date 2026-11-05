@@ -1,0 +1,10 @@
+# Screensaver, tiles layout: 7 indicators, 5 bottom entities, two status bars
+# Payloads the adapter sent to the panel "emu" (2026-11-04), compared with a screenshot of the emulator.
+timeout~20
+dimmode~100~100~2147~53247~1
+pageType~screensaver5
+time~22:45
+date~Mi., 4. November 26
+weatherUpdate~~~~65504~Sonne~~~~~64512~Wind~2,4m/s~~~~64512~Böen~3,9m/s~~~~65535~Windr.~NO~~~~64835~Feuchte~82%~~29?9~~65222~Fenster~1~~29?10~~64512~Tür~0~~29?11~~64512~Licht~0~~29?12~~64512~Bewegung~0~~29?13~~18~Wohnzimmer~0~~29?14~~64512~Licht~0~~29?15~~65222~Heizung~1
+color~2147~53247~2047~54938~65535~34431~34431~34431~34431~34431~34431~34431~34431~16904~2047~2047
+statusUpdate~~17299~~17299~~

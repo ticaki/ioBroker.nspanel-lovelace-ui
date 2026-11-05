@@ -22,6 +22,11 @@ import {
  */
 const CAP_TOP = 0.13;
 
+/** x of the first column of the tiles layout: the HMI draws on 450 of the 480 px */
+const TILES_LEFT = 16;
+const TILES_COLUMN = 90;
+const TILES_ROW = 107;
+
 /** Column of the bottom area: `left` and `width` in stage pixels */
 interface Column {
     left: number;
@@ -62,7 +67,7 @@ function textTop(capTop: number, fontSize: number): number {
 }
 
 /**
- * The screensaver: time, date, the weather/entity areas of the four layouts, the two MR
+ * The screensaver: time, date, the weather/entity areas of the five layouts, the two MR
  * icons and a notification. A tap sends `event,buttonPress2,screensaver,bExit,<taps>`,
  * a swipe `…,screensaver,swipe<Up|Down|Left|Right>`, an indicator (advanced layout)
  * `event,buttonPress2,<id>,button` - the latter only while the display is awake
@@ -171,10 +176,12 @@ export class Screensaver extends React.Component<CardProps<ScreensaverModel>> {
      * @param box.height height of the row
      * @param box.align whether the row is centred or right aligned
      * @param fontSize font size of the time
+     * @param fontWeight font weight of the time
      */
     private renderTime(
         box: { top: number; left: number; width: number; height: number; align: 'center' | 'right' },
         fontSize: number,
+        fontWeight?: number,
     ): React.JSX.Element {
         const { global, model } = this.props;
         const colors = model.colors;
@@ -195,7 +202,7 @@ export class Screensaver extends React.Component<CardProps<ScreensaverModel>> {
                     whiteSpace: 'nowrap',
                 }}
             >
-                <span style={{ fontSize, lineHeight: 1, color: this.color(colors?.time) }}>{time}</span>
+                <span style={{ fontSize, fontWeight, lineHeight: 1, color: this.color(colors?.time) }}>{time}</span>
                 {ampm !== '' ? (
                     <span
                         style={{
@@ -216,7 +223,7 @@ export class Screensaver extends React.Component<CardProps<ScreensaverModel>> {
     /**
      * The info icon of `time~HH:MM~icon` (colour `tTimeAdd`): below the time in the
      * standard and alternate layout, above it in the advanced layout and left of it in
-     * EasyView.
+     * EasyView and tiles.
      *
      * @param top top edge of the icon box
      * @param left left edge of the icon box
@@ -554,6 +561,43 @@ export class Screensaver extends React.Component<CardProps<ScreensaverModel>> {
         );
     }
 
+    /**
+     * An indicator: a tap on its box sends `event,buttonPress2,<id>,button`.
+     *
+     * @param entity the indicator
+     * @param index position in the indicator area
+     * @param box position of the touch area
+     * @param icon content of the touch area
+     */
+    private renderIndicator(
+        entity: Entity6,
+        index: number,
+        box: React.CSSProperties,
+        icon: React.JSX.Element | null,
+    ): React.JSX.Element | null {
+        if (isBlankEntity(entity)) {
+            return null;
+        }
+        return (
+            <div
+                key={index}
+                data-role={`indicator${index + 1}`}
+                onPointerUp={(e): void => {
+                    e.stopPropagation();
+                    this.pointerStart = undefined;
+                    this.indicatorTap(entity.id);
+                }}
+                style={{
+                    position: 'absolute',
+                    cursor: entity.id !== '' ? 'pointer' : 'default',
+                    ...box,
+                }}
+            >
+                {icon}
+            </div>
+        );
+    }
+
     private renderAdvanced(areas: ScreensaverAreas): React.JSX.Element {
         const { model } = this.props;
         const colors = model.colors;
@@ -593,29 +637,19 @@ export class Screensaver extends React.Component<CardProps<ScreensaverModel>> {
                     ),
                 )}
                 {areas.indicator.map((entity, i) =>
-                    isBlankEntity(entity) ? null : (
-                        <div
-                            key={i}
-                            data-role={`indicator${i + 1}`}
-                            onPointerUp={(e): void => {
-                                e.stopPropagation();
-                                this.pointerStart = undefined;
-                                this.indicatorTap(entity.id);
-                            }}
-                            style={{
-                                position: 'absolute',
-                                top: 128,
-                                left: 178 + i * 56,
-                                width: 56,
-                                height: 48,
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                cursor: entity.id !== '' ? 'pointer' : 'default',
-                            }}
-                        >
-                            {this.renderIcon(entity, 44)}
-                        </div>
+                    this.renderIndicator(
+                        entity,
+                        i,
+                        {
+                            top: 128,
+                            left: 178 + i * 56,
+                            width: 56,
+                            height: 48,
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                        },
+                        this.renderIcon(entity, 44),
                     ),
                 )}
                 {this.renderBottom(areas.bottom, columns, {
@@ -682,6 +716,82 @@ export class Screensaver extends React.Component<CardProps<ScreensaverModel>> {
         );
     }
 
+    /**
+     * Tiles (`screensaver5`, HMI/tools/screensaver5.py): 3 rows x 5 columns of 90 x 107 px. Indicators f1-f5 on
+     * top, f6 | time and date | f7 in the middle, the bottom items below, two status bars at the lower edge.
+     *
+     * @param areas the areas of the payload
+     */
+    private renderTiles(areas: ScreensaverAreas): React.JSX.Element {
+        const { model } = this.props;
+        const column = (i: number): number => TILES_LEFT + i * TILES_COLUMN;
+        const cells = [0, 1, 2, 3, 4]
+            .map(i => ({ left: column(i), top: 0 }))
+            .concat([
+                { left: column(0), top: TILES_ROW },
+                { left: column(4), top: TILES_ROW },
+            ]);
+        const iconStyle: React.CSSProperties = { position: 'absolute', top: 14, left: 12 };
+        return (
+            <>
+                {this.renderTime(
+                    { top: 112, left: column(1), width: 3 * TILES_COLUMN, height: 81, align: 'center' },
+                    86,
+                    700,
+                )}
+                {this.renderTimeIcon(141, 99, 28)}
+                {this.renderDate({
+                    top: textTop(192, 18),
+                    left: column(1),
+                    width: 3 * TILES_COLUMN,
+                    textAlign: 'center',
+                    fontSize: 18,
+                })}
+                {areas.indicator.map((entity, i) => {
+                    const cell = cells[i];
+                    return cell
+                        ? this.renderIndicator(
+                              entity,
+                              i,
+                              { ...cell, width: TILES_COLUMN, height: TILES_ROW },
+                              this.renderIcon(entity, 66, iconStyle),
+                          )
+                        : null;
+                })}
+                {model.notify
+                    ? this.renderNotify({
+                          headingTop: 216,
+                          headingSize: 38,
+                          textTop: 270,
+                          textSize: 17,
+                          lineHeight: 24,
+                          lines: 2,
+                      })
+                    : this.renderBottom(
+                          areas.bottom,
+                          areas.bottom.map((_, i) => ({ left: column(i), width: TILES_COLUMN })),
+                          { labelTop: 221, labelSize: 18, iconTop: 248, iconSize: 30, valueTop: 287, valueSize: 18 },
+                      )}
+                {model.status.map((status, i) =>
+                    status.icon === '' ? null : (
+                        <div
+                            key={i}
+                            data-role={`statusBar${i + 1}`}
+                            style={{
+                                position: 'absolute',
+                                top: 315,
+                                left: TILES_LEFT + (i === 0 ? 1 : 265),
+                                width: 184,
+                                height: 5,
+                                background: color565ToCss(status.color),
+                            }}
+                        />
+                    ),
+                )}
+            </>
+        );
+    }
+
     private renderLayout(areas: ScreensaverAreas): React.JSX.Element {
         const layout: ScreensaverLayout = areas.layout;
         switch (layout) {
@@ -689,6 +799,8 @@ export class Screensaver extends React.Component<CardProps<ScreensaverModel>> {
                 return this.renderAlternate(areas);
             case 'advanced':
                 return this.renderAdvanced(areas);
+            case 'tiles':
+                return this.renderTiles(areas);
             case 'easyview':
                 return this.renderEasyview(areas);
             default:

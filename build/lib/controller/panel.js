@@ -373,8 +373,8 @@ class Panel extends import_library.BaseClass {
       );
     }
     options.pages = options.pages.filter((b) => {
-      var _a2, _b, _c;
-      if (((_a2 = b.config) == null ? void 0 : _a2.card) === "screensaver" || ((_b = b.config) == null ? void 0 : _b.card) === "screensaver2" || ((_c = b.config) == null ? void 0 : _c.card) === "screensaver3") {
+      var _a2, _b, _c, _d;
+      if (((_a2 = b.config) == null ? void 0 : _a2.card) === "screensaver" || ((_b = b.config) == null ? void 0 : _b.card) === "screensaver2" || ((_c = b.config) == null ? void 0 : _c.card) === "screensaver3" || ((_d = b.config) == null ? void 0 : _d.card) === "screensaver5") {
         return true;
       }
       if (options.navigation.find((c) => c && c.name === b.uniqueID)) {
@@ -481,7 +481,8 @@ class Panel extends import_library.BaseClass {
       }
       case "screensaver":
       case "screensaver2":
-      case "screensaver3": {
+      case "screensaver3":
+      case "screensaver5": {
         const ssconfig = {
           card: pageConfig.config.card,
           panel: this,
@@ -759,9 +760,7 @@ class Panel extends import_library.BaseClass {
     }
     await this.adapter.delay(100);
     const currentScreensaver = this.library.readdb(`panels.${this.name}.cmd.screenSaver.layout`);
-    const scs = this.pages.filter(
-      (a) => a && (a.card === "screensaver" || a.card === "screensaver2" || a.card === "screensaver3")
-    );
+    const scs = this.pages.filter((a) => a && globals.isScreenSaverCardType(a.card));
     const adminScreensaver = !!this.screenSaver && this.pageOrigins.get(this.screenSaver.name) === "admin";
     if (currentScreensaver && currentScreensaver.val != null && !adminScreensaver) {
       if (scs && scs[0]) {

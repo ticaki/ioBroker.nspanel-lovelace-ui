@@ -253,6 +253,7 @@ describe('lib/configuration - admin screensaver (entry -> script configuration)'
     it('builds the script configuration with gaps kept on left and indicator, bottom compacted', () => {
         const entry: ScreensaverEntry = {
             ...emptyScreensaverEntry('Wohnzimmer', 'advanced'),
+            mrIcon2: undefined,
             panels: ['NSPanel_1'],
             favorit: { state: 'f' },
             left: [undefined, { state: 'l2' }],

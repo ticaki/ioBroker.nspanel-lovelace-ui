@@ -180,7 +180,7 @@ function shortStateLabel(dp) {
 const mainPageName = "main";
 const serviceNodeName = "///service";
 const servicePageName = "///unlock";
-const screensaverModes = ["standard", "alternate", "advanced", "easyview"];
+const screensaverModes = ["standard", "alternate", "advanced", "easyview", "tiles"];
 const screensaverAreas = ["favorit", "alternate", "left", "bottom", "indicator"];
 const screensaverSlotLimits = {
   standard: {
@@ -214,6 +214,14 @@ const screensaverSlotLimits = {
     bottom: { eu: 3, "us-p": 4, "us-l": 3 },
     indicator: { eu: 0 },
     mricon: { eu: 2 }
+  },
+  tiles: {
+    favorit: { eu: 0 },
+    alternate: { eu: 0 },
+    left: { eu: 0 },
+    bottom: { eu: 5, "us-p": 4 },
+    indicator: { eu: 7, "us-p": 8 },
+    mricon: { eu: 2 }
   }
 };
 function screensaverMaxEntries(mode, area, model = "eu") {
@@ -227,6 +235,8 @@ function screensaverCardOfMode(mode) {
       return "screensaver2";
     case "easyview":
       return "screensaver3";
+    case "tiles":
+      return "screensaver5";
     default:
       return "screensaver";
   }
@@ -509,6 +519,15 @@ function normalizeScreensaverEntry(entry) {
   }
   return out;
 }
+function defaultRelayIcon(relay) {
+  return {
+    entity: relay,
+    iconOn: "lightbulb",
+    iconOff: "lightbulb-outline",
+    onColor: "#fdd835",
+    offColor: "#44739e"
+  };
+}
 function emptyScreensaverEntry(name, mode = "standard") {
   return {
     name,
@@ -517,6 +536,8 @@ function emptyScreensaverEntry(name, mode = "standard") {
     left: [],
     bottom: [],
     indicator: [],
+    mrIcon1: defaultRelayIcon("Relay.1"),
+    mrIcon2: defaultRelayIcon("Relay.2"),
     rotationTime: 0,
     screensaverSwipe: false,
     screensaverIndicatorButtons: false

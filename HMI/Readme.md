@@ -16,6 +16,7 @@ Messages from the Panel are send to the `tele/XXX/RESULT` Topic, encoded in json
   - [Messages to Nextion Display](#messages-to-nextion-display)
     - [General Commands, implemented on all pages](#general-commands-implemented-on-all-pages)
     - [screensaver page](#screensaver-page)
+    - [screensaver5 page (Tiles)](#screensaver5-page-tiles)
     - [cardEntities Page](#cardentities-page)
     - [cardGrid Page](#cardgrid-page)
     - [cardMedia](#cardmedia)
@@ -23,6 +24,7 @@ Messages from the Panel are send to the `tele/XXX/RESULT` Topic, encoded in json
     - [cardAlarm](#cardalarm)
     - [cardQR](#cardqr)
     - [cardPower](#cardpower)
+    - [cardPChart Page](#cardpchart-page)
 
 ## Startup
 
@@ -58,6 +60,7 @@ Send theese message once after receiving the startup event (parameters will be e
 `pageType~screensaver` (Standard & Alternate Screensaver)
 `pageType~screensaver2` (Advanced Screensaver)
 `pageType~screensaver3` (EasyView Screensaver)
+`pageType~screensaver5` (Tiles Screensaver, needs a HMI with this page, see [screensaver5 page](#screensaver5-page-tiles))
 
 After sending this command you should already see the time and date.
 To also show weather data you have to send them with weatherUpdate, but we will skip this for now.
@@ -534,6 +537,53 @@ change the page type:
 `notify~heading~text`
 
 `statusUpdate~icon1~icon1Color~icon2~icon2~icon2color~icon1font~icon2font`
+
+### screensaver5 page (Tiles)
+
+Screensaver in a grid of tiles. The page is part of these project files, the official `nspanel-v6.0.7.HMI` does not have it:
+
+| Panel | File | Page size | Grid |
+|---|---|---|---|
+| eu | `HMI/nspanel-v6.0.7.screensaver5.HMI` | 480 x 320, used x 0..449 | 5 columns of 90 px |
+| us-l | `HMI/us-l/nspanel-us-l-v6.0.7.screensaver5.HMI` | 480 x 320, used x 15..464 | 5 columns of 90 px |
+| us-p | `HMI/us-p/nspanel-us-p-v6.0.7.screensaver5.HMI` | 320 x 480 | 4 columns of 80 px |
+
+The page `screensaver4` of the official HMI 6.0.7 is an unrelated animation without an entry in the `pageType` switch.
+
+The generators in `HMI/tools` create the files: `screensaver5.py` (eu), `screensaver5_usl.py`, `screensaver5_usp.py`.
+
+Layout from top to bottom:
+
+| eu, us-l | us-p |
+|---|---|
+| indicators f1..f5 | indicators f1..f4 |
+| f6, info icon, time and AM/PM, date, f7 | info icon, time and AM/PM |
+| | date |
+| | indicators f5..f8 |
+| bottom items e1..e5 | bottom items e1..e4 |
+| two status bars | two status bars |
+
+An indicator shows its icon only, the whole tile is the touch area. A bottom item shows name, icon and value.
+
+`weatherUpdate~` has 12 slots of 6 fields, `type~id~icon~color~name~value`. Numbers are the parameter numbers, 0 is the instruction:
+
+| Field | eu, us-l: 5 bottom, 7 indicators | us-p: 4 bottom, 8 indicators |
+|---|---|---|
+| bottom icon | 3 + 6k, k = 0..4 | 3 + 6k, k = 0..3 |
+| bottom icon color | 4 + 6k | 4 + 6k |
+| bottom name | 5 + 6k | 5 + 6k |
+| bottom value | 6 + 6k | 6 + 6k |
+| indicator id | 32 + 6j, j = 0..6 | 26 + 6j, j = 0..7 |
+| indicator icon | 33 + 6j | 27 + 6j |
+| indicator icon color | 34 + 6j | 28 + 6j |
+
+`color~` like the standard screensaver: 1 background, 2 time, 3 AM/PM, 4 date, 6..9 names of item 1..4, 10..13 values of item 1..4, 16 info icon. On eu and us-l item 5 uses 9 and 13.
+
+`statusUpdate~icon1~color1~icon2~color2~...`: only the colors are used, fields 2 and 4 color the two status bars like on `screensaver3`. An empty color makes the bar black.
+
+`time~HH:MM` uses an own font that only has the digits, `:`, space and `AMPamp`. `time~HH:MM?PM` shows the part behind `?` as AM/PM. `time~HH:MM~icon` shows the info icon left of the time, like on the other screensavers.
+
+`notify~` covers the row of the bottom items.
 
 ### cardEntities Page
 
@@ -2581,6 +2631,27 @@ Example: `entityUpd~Guest Wifi~button~navigate.prev~<~65535~~~button~navigate.ne
 `entityUpd~Chart Demo~~button~navigate.prev~<~65535~~~button~navigate.next~>~65535~~~~6666~Gas [kWh]~20:40:60:80:100~10~7^2:00~7~6^4:00~6~7^6:00~0~7^8:00~5~1^10:00~1~10^12:00~5~6^14:00~8`
 
 
+### cardPChart Page
+
+Pie chart, part of the HMI since 6.0.5.
+
+`entityUpd~heading~navigation~color~legendMode~~[name~number~valueText~color]*`
+
+`entityUpd~Power~button~bSubPrev~~2047~~~button~bSubNext~~2047~~~~3~~House~361111~5.2 kWh~62157~Heating~215278~3.1 kWh~1838`
+
+| Field | Description |
+|---|---|
+| color | not read for this card, stays empty |
+| legendMode | 0 = name, 1 = name and value, 2 = name and percent, 3 = name, value and percent; empty = 3 |
+| name | text of the legend |
+| number | size of the slice, the sum of all numbers has to be below 2000000 |
+| valueText | text of the value in the legend |
+| color | RGB565 as decimal number |
+
+The legend has 5 rows on eu and us-l, further entries are ignored. On us-p the pie is above the legend and the page has room for 6 entries, the adapter sends 5.
+
+The pie chart of `HMI/nspanel-v6.0.7.screensaver5.HMI` and the us-l and us-p files draws the largest slice with lines as well, so all slices end on the same rim.
+
 ### popupLight Page
 
 `entityUpdateDetail~entityName~*ignored*~*iconColor*~*buttonState*~*sliderBrightnessPos*~*sliderColorTempPos*~*colorMode*~*color_translation*~*color_temp_translation*~*brightness_translation*`
@@ -2645,6 +2716,8 @@ in case action is empty the button will be hidden
 `event,buttonPress2,screensaver,exit` - Touch Event on Screensaver
 
 `event,screensaverOpen` - Screensaver has opened
+
+`event,buttonPress2,<id>,button` - Touch on an indicator of screensaver2 or screensaver5
 
 
 ### cardEntities Page

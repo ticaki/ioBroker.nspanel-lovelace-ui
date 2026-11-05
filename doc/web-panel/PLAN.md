@@ -145,6 +145,10 @@ Verbleibende, bekannte Abweichungen:
 - ~~Startvideo~~ erledigt 2026-10-25: die Startseite spielt die Boot-Animation der HMI
   (Frames und Banner aus den HMI-Dateien, `components/startup/`), kein `www/startup/` mehr.
 - us-p/us-l-Layouts, Admin-Vorschau als iframe (Phase 5, Mixed Content).
+- **Screensaver `tiles` (pageType `screensaver5`, Branch `feat/screensaver4`)**: eigene Darstellung
+  `renderTiles` in `Screensaver.tsx`, Maße aus `HMI/tools/screensaver5.py` (Bühne = HMI-x + 16), abgeglichen am
+  Emu-Screenshot vom 2026-11-04; Beispiel `src-web/scripts/examples/screensaver5.txt`. Statusicons als zwei
+  Farbbalken unten wie auf dem Panel. Noch ungeprüft: `notify`, AM/PM.
 
 ## Testumgebung
 

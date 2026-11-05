@@ -89,30 +89,34 @@ describe('lib/types/function-and-const', () => {
     });
 
     describe('Screensaver guards', () => {
-        it('isScreenSaverCardType accepts the three known cards', () => {
+        it('isScreenSaverCardType accepts the four known cards', () => {
             expect(isScreenSaverCardType('screensaver')).to.equal(true);
             expect(isScreenSaverCardType('screensaver2')).to.equal(true);
             expect(isScreenSaverCardType('screensaver3')).to.equal(true);
+            expect(isScreenSaverCardType('screensaver5')).to.equal(true);
         });
         it('isScreenSaverCardType rejects unknown', () => {
+            // screensaver4 is a page of the official HMI that is not ours
             expect(isScreenSaverCardType('screensaver4')).to.equal(false);
+            expect(isScreenSaverCardType('screensaver6')).to.equal(false);
         });
-        it('isScreenSaverMode accepts the four known modes', () => {
+        it('isScreenSaverMode accepts the five known modes', () => {
             expect(isScreenSaverMode('standard')).to.equal(true);
             expect(isScreenSaverMode('advanced')).to.equal(true);
             expect(isScreenSaverMode('alternate')).to.equal(true);
             expect(isScreenSaverMode('easyview')).to.equal(true);
+            expect(isScreenSaverMode('tiles')).to.equal(true);
         });
         it('isScreenSaverMode rejects unknown / non-strings', () => {
             expect(isScreenSaverMode('foo')).to.equal(false);
             expect(isScreenSaverMode(0)).to.equal(false);
         });
-        it('isScreenSaverModeAsNumber accepts 0..3', () => {
+        it('isScreenSaverModeAsNumber accepts 0..4', () => {
             expect(isScreenSaverModeAsNumber(0)).to.equal(true);
-            expect(isScreenSaverModeAsNumber(3)).to.equal(true);
+            expect(isScreenSaverModeAsNumber(4)).to.equal(true);
         });
         it('isScreenSaverModeAsNumber rejects out-of-range and string values', () => {
-            expect(isScreenSaverModeAsNumber(4)).to.equal(false);
+            expect(isScreenSaverModeAsNumber(5)).to.equal(false);
             expect(isScreenSaverModeAsNumber('0')).to.equal(false);
         });
     });

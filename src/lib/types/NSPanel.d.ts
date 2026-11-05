@@ -432,9 +432,9 @@ export namespace NSPanel {
 
     type EventType = 'event';
 
-    type ScreensaverModeType = 'standard' | 'alternate' | 'advanced' | 'easyview';
+    type ScreensaverModeType = 'standard' | 'alternate' | 'advanced' | 'easyview' | 'tiles';
 
-    type ScreensaverModeTypeAsNumber = 0 | 1 | 2 | 3;
+    type ScreensaverModeTypeAsNumber = 0 | 1 | 2 | 3 | 4;
 
     type StateValue = ioBroker.StateValue | object;
 
@@ -1627,6 +1627,7 @@ export namespace NSPanel {
         | 'screensaver'
         | 'screensaver2'
         | 'screensaver3'
+        | 'screensaver5'
         // Popup Cards
         | 'popupNotify'
         | 'popupNotify2'

@@ -148,7 +148,7 @@ Stack: ${stack}`
    * @param option - Panel configuration partial (pages of the script already inside)
    */
   async processScreensaver(option) {
-    var _a, _b, _c, _d;
+    var _a, _b, _c, _d, _e;
     const topic = (_a = option.sourceTopic) != null ? _a : option.topic;
     const { entry, others } = (0, import_admin_screensaver.findScreensaverEntry)(this.adapter.config.screensaverConfig, topic);
     if (!entry) {
@@ -169,7 +169,8 @@ Stack: ${stack}`
         states[id] = {
           name: (0, import_admin_screensaver.objectNameOf)(obj, lang),
           role: typeof ((_b = obj == null ? void 0 : obj.common) == null ? void 0 : _b.role) === "string" ? obj.common.role : "",
-          channelRole: ((channel == null ? void 0 : channel.type) === "channel" || (channel == null ? void 0 : channel.type) === "device") && typeof ((_c = channel.common) == null ? void 0 : _c.role) === "string" ? channel.common.role : ""
+          type: (obj == null ? void 0 : obj.type) === "state" && typeof ((_c = obj.common) == null ? void 0 : _c.type) === "string" ? obj.common.type : "",
+          channelRole: ((channel == null ? void 0 : channel.type) === "channel" || (channel == null ? void 0 : channel.type) === "device") && typeof ((_d = channel.common) == null ? void 0 : _d.role) === "string" ? channel.common.role : ""
         };
       } catch {
         states[id] = {};
@@ -177,7 +178,7 @@ Stack: ${stack}`
     }
     const manager = new import_config_manager.ConfigManager(this.adapter);
     const result = await manager.getScreensaverConfig(
-      (0, import_admin_screensaver.buildScreensaverScriptConfig)(entry, topic, states, (_d = this.adapter.config.screensaverNotify) != null ? _d : []),
+      (0, import_admin_screensaver.buildScreensaverScriptConfig)(entry, topic, states, (_e = this.adapter.config.screensaverNotify) != null ? _e : []),
       [],
       {
         weatherEntityFixed: entry.weatherEntity !== void 0

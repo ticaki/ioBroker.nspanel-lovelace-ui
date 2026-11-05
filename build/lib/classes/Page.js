@@ -297,6 +297,7 @@ class Page extends import_baseClassPage.BaseClassPage {
       case "screensaver":
       case "screensaver2":
       case "screensaver3":
+      case "screensaver5":
       case "cardItemSpecial":
       case "cardSchedule":
       case "cardThermo2":

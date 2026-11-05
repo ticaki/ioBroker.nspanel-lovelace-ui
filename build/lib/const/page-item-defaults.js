@@ -23,6 +23,7 @@ __export(page_item_defaults_exports, {
   getPageNaviItemDefaultsByRole: () => getPageNaviItemDefaultsByRole,
   getScreensaverItemDefaultsByRole: () => getScreensaverItemDefaultsByRole,
   getShutterIconByPosition: () => getShutterIconByPosition,
+  isScreensaverBlindPosition: () => isScreensaverBlindPosition,
   pageItemDefaults: () => pageItemDefaults,
   pageNaviItemDefaults: () => pageNaviItemDefaults
 });
@@ -617,6 +618,12 @@ function getShutterIconByPosition(position) {
   const index = Math.min(Math.max(closedSteps, 1), SHUTTER_STEP_ICONS.length) - 1;
   return SHUTTER_STEP_ICONS[index];
 }
+function isScreensaverBlindPosition(role, channelRole, type) {
+  if (type !== "number" || /tilt/i.test(role)) {
+    return false;
+  }
+  return role === "level.blind" || role === "value.blind" || channelRole === "blind";
+}
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
   SHUTTER_POSITION_ICON,
@@ -624,6 +631,7 @@ function getShutterIconByPosition(position) {
   getPageNaviItemDefaultsByRole,
   getScreensaverItemDefaultsByRole,
   getShutterIconByPosition,
+  isScreensaverBlindPosition,
   pageItemDefaults,
   pageNaviItemDefaults
 });

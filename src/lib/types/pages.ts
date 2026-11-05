@@ -203,6 +203,7 @@ export type allCards =
     | 'screensaver'
     | 'screensaver2'
     | 'screensaver3'
+    | 'screensaver5'
     | 'cardItemSpecial';
 
 export type AlarmButtonEvents = 'A1' | 'A2' | 'A3' | 'A4' | 'D1' | 'D2' | 'D3' | 'D4' | 'U1' | '';
@@ -272,7 +273,7 @@ export type PageBase = (
 };
 
 export type PageBaseConfigTemplate = {
-    card: Exclude<PageTypeCards, 'screensaver' | 'screensaver2' | 'screensaver3'>;
+    card: Exclude<PageTypeCards, 'screensaver' | 'screensaver2' | 'screensaver3' | 'screensaver5'>;
     adapter: string;
     alwaysOn: 'none' | 'always' | 'action' | 'ignore';
     pageItems: NSPanel.PageItemDataItemsOptions[];
@@ -559,7 +560,7 @@ export type cardMediaDataItems = {
 };
 
 // Screensaver Types - optimiert mit const assertion
-export type screenSaverCardType = 'screensaver' | 'screensaver2' | 'screensaver3';
+export type screenSaverCardType = 'screensaver' | 'screensaver2' | 'screensaver3' | 'screensaver5';
 
 export type screensaverDataItemOptions = {
     card: Extends<PageTypeCards, screenSaverCardType>;

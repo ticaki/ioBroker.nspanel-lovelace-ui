@@ -289,7 +289,7 @@ class NspanelLovelaceUi extends utils.Adapter {
    * Is called when databases are connected and adapter received configuration.
    */
   async onReady() {
-    var _a, _b, _c, _d, _e;
+    var _a, _b, _c, _d, _e, _f;
     if (this.config.deactivateDebugLog) {
       this.log.debug = (_msg) => {
       };
@@ -688,7 +688,7 @@ class NspanelLovelaceUi extends utils.Adapter {
               if (!("uniqueID" in p)) {
                 continue;
               }
-              if (((_c = p.config) == null ? void 0 : _c.card) === "screensaver" || ((_d = p.config) == null ? void 0 : _d.card) === "screensaver2" || ((_e = p.config) == null ? void 0 : _e.card) === "screensaver3") {
+              if (((_c = p.config) == null ? void 0 : _c.card) === "screensaver" || ((_d = p.config) == null ? void 0 : _d.card) === "screensaver2" || ((_e = p.config) == null ? void 0 : _e.card) === "screensaver3" || ((_f = p.config) == null ? void 0 : _f.card) === "screensaver5") {
                 p.uniqueID = `#${p.uniqueID}`;
               }
               if (names.indexOf(p.uniqueID) !== -1) {

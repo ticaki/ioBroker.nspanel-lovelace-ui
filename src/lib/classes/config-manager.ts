@@ -1,6 +1,6 @@
 import { Color, type RGB } from '../const/Color';
 import * as configManagerConst from '../const/config-manager-const';
-import { pageItemDefaults, SHUTTER_POSITION_ICON } from '../const/page-item-defaults';
+import { isScreensaverBlindPosition, pageItemDefaults, SHUTTER_POSITION_ICON } from '../const/page-item-defaults';
 import { mainPageName } from '../const/default-pages';
 import type { panelConfigPartial } from '../controller/panel';
 import { StatesControler } from '../controller/states-controller';
@@ -11,6 +11,7 @@ import {
     findPowerEntryForScript,
     isScriptNavigatedChart,
     isScriptNavigatedPower,
+    screensaverChannelIdOf,
 } from '../types/adminShareConfig';
 import { getStringOrArray } from '../tools/readme';
 import type { NspanelLovelaceUi } from '../types/NspanelLovelaceUi';
@@ -273,7 +274,8 @@ export class ConfigManager extends BaseClass {
                 screensaver.config &&
                 (screensaver.config.card === 'screensaver' ||
                     screensaver.config.card === 'screensaver2' ||
-                    screensaver.config.card === 'screensaver3') &&
+                    screensaver.config.card === 'screensaver3' ||
+                    screensaver.config.card === 'screensaver5') &&
                 config.advancedOptions
             ) {
                 screensaver.config.screensaverSwipe = !!config.advancedOptions.screensaverSwipe;
@@ -5427,11 +5429,17 @@ export class ConfigManager extends BaseClass {
         }
         result.data.entity2 = structuredClone(result.data.entity1);
 
-        let obj;
-        if (entity.ScreensaverEntity && !entity.ScreensaverEntity.endsWith('.')) {
-            obj = await this.adapter.getForeignObjectAsync(entity.ScreensaverEntity);
-            result.data.entity1.value = await this.getFieldAsDataItemConfig(entity.ScreensaverEntity, true);
-            result.data.entity2.value = await this.getFieldAsDataItemConfig(entity.ScreensaverEntity);
+        let obj: ioBroker.Object | null | undefined;
+        // id of the shown state - a blind channel stands for its .ACTUAL / .SET
+        let entityId = entity.ScreensaverEntity;
+        let blind = false;
+        if (entityId && !entityId.endsWith('.')) {
+            const found = await this.getScreensaverEntityObject(entityId);
+            obj = found.obj;
+            entityId = found.id;
+            blind = found.blind;
+            result.data.entity1.value = await this.getFieldAsDataItemConfig(entityId, true);
+            result.data.entity2.value = await this.getFieldAsDataItemConfig(entityId);
         }
         if (mode === 'indicator') {
             // button has all propertys of text
@@ -5470,6 +5478,22 @@ export class ConfigManager extends BaseClass {
             result.data.entity1.decimal = { type: 'const', constVal: entity.ScreensaverEntityDecimalPlaces };
             result.data.entity2.decimal = { type: 'const', constVal: entity.ScreensaverEntityDecimalPlaces };
         }
+        if (blind) {
+            // position of a blind like a page item: 0 = closed, 100 = open after shutterClosedIsZero,
+            // shown in % - the icon follows the position, a tap never moves the blind (PageItem.onCommand)
+            result.role = 'blind';
+            const closedIsZero = !!this.adapter.config.shutterClosedIsZero;
+            for (const e of [result.data.entity1, result.data.entity2]) {
+                e.minScale = { type: 'const', constVal: closedIsZero ? 0 : 100 };
+                e.maxScale = { type: 'const', constVal: closedIsZero ? 100 : 0 };
+                if (entity.ScreensaverEntityUnitText == null) {
+                    e.unit = { type: 'const', constVal: '%' };
+                }
+                if (entity.ScreensaverEntityDecimalPlaces == null) {
+                    e.decimal = { type: 'const', constVal: 0 };
+                }
+            }
+        }
         if (entity.ScreensaverEntityDateFormat) {
             result.data.entity1.dateFormat = {
                 type: 'const',
@@ -5486,6 +5510,9 @@ export class ConfigManager extends BaseClass {
             color = await this.getIconColor(entity.ScreensaverEntityOnColor || Color.on);
         } else if (entity.ScreensaverEntityIconColor && !isIconScaleElement(entity.ScreensaverEntityIconColor)) {
             color = await this.getIconColor(entity.ScreensaverEntityIconColor || this.colorDefault);
+        } else if (blind) {
+            // the colors of a blind page item
+            color = await this.getIconColor(Color[pageItemDefaults.blind.colorOn]);
         } else {
             color = await this.getIconColor(defaultColors.defaultOnColor || this.colorDefault);
         }
@@ -5494,12 +5521,23 @@ export class ConfigManager extends BaseClass {
         if (entity.ScreensaverEntityOffColor) {
             colorOff = await this.getIconColor(entity.ScreensaverEntityOffColor);
         } else if (entity.ScreensaverEntityOffColor !== null) {
-            colorOff = await this.getIconColor(defaultColors.defaultOffColor);
+            colorOff = await this.getIconColor(
+                blind ? Color[pageItemDefaults.blind.colorOff] : defaultColors.defaultOffColor,
+            );
         }
 
-        if (entity.ScreensaverEntityIconOn) {
+        // a blind without an icon of its own: the icon follows the position (tools getIconEntryValue)
+        const iconOn =
+            entity.ScreensaverEntityIconOn ||
+            (blind &&
+            !(Array.isArray(entity.ScreensaverEntityIconSelect) && entity.ScreensaverEntityIconSelect.length > 0)
+                ? entity.ScreensaverEntityIconOff
+                    ? pageItemDefaults.blind.iconOn
+                    : SHUTTER_POSITION_ICON
+                : null);
+        if (iconOn) {
             result.data.icon = {
-                true: { value: await this.getFieldAsDataItemConfig(entity.ScreensaverEntityIconOn) },
+                true: { value: await this.getFieldAsDataItemConfig(iconOn) },
             };
         }
         if ('ScreensaverEntityEnabled' in entity && entity.ScreensaverEntityEnabled != null) {
@@ -5547,7 +5585,7 @@ export class ConfigManager extends BaseClass {
             entity.ScreensaverEntityIconSelect &&
             Array.isArray(entity.ScreensaverEntityIconSelect)
         ) {
-            const obj = await this.getFieldAsDataItemConfig(entity.ScreensaverEntity);
+            const obj = await this.getFieldAsDataItemConfig(entityId ?? '');
             if (obj && obj.type === 'state') {
                 entity.ScreensaverEntityIconSelect.sort((a, b) => a.value - b.value);
                 // read function for icon selection
@@ -5633,6 +5671,43 @@ export class ConfigManager extends BaseClass {
             return result;
         }
         throw new Error('Invalid data');
+    }
+
+    /**
+     * Object of the state a screensaver element shows and whether it is the position of a blind
+     * ({@link isScreensaverBlindPosition}). A blind channel / device (role `blind`) stands for its
+     * `.ACTUAL`, else its `.SET`.
+     *
+     * @param id ScreensaverEntity of the element
+     * @returns id and object of the shown state, blind = position of a blind
+     */
+    async getScreensaverEntityObject(
+        id: string,
+    ): Promise<{ id: string; obj: ioBroker.Object | null | undefined; blind: boolean }> {
+        const obj = await this.adapter.getForeignObjectAsync(id);
+        if (!obj) {
+            return { id, obj, blind: false };
+        }
+        if ((obj.type === 'channel' || obj.type === 'device') && obj.common?.role === 'blind') {
+            for (const key of ['ACTUAL', 'SET']) {
+                const child = await this.adapter.getForeignObjectAsync(`${id}.${key}`);
+                if (child?.type === 'state' && child.common?.type === 'number') {
+                    return { id: `${id}.${key}`, obj: child, blind: true };
+                }
+            }
+            return { id, obj, blind: false };
+        }
+        if (obj.type !== 'state') {
+            return { id, obj, blind: false };
+        }
+        const channelId = screensaverChannelIdOf(id);
+        const channel = channelId ? await this.adapter.getForeignObjectAsync(channelId) : null;
+        const channelRole =
+            (channel?.type === 'channel' || channel?.type === 'device') && typeof channel.common?.role === 'string'
+                ? channel.common.role
+                : '';
+        const role = typeof obj.common?.role === 'string' ? obj.common.role : '';
+        return { id, obj, blind: isScreensaverBlindPosition(role, channelRole, obj.common?.type) };
     }
 
     async getFieldAsDataItemConfig(
@@ -5737,7 +5812,8 @@ export class ConfigManager extends BaseClass {
                             if (
                                 a.config?.card === 'screensaver' ||
                                 a.config?.card === 'screensaver2' ||
-                                a.config?.card === 'screensaver3'
+                                a.config?.card === 'screensaver3' ||
+                                a.config?.card === 'screensaver5'
                             ) {
                                 return false;
                             }

@@ -77,7 +77,7 @@ const _Screensaver = class _Screensaver extends import_Page.Page {
         `Screensaver '${config.name}' of panel '${config.panel.friendlyName || config.panel.name}': mode '${String(rejected.mode)}' (card '${String(rejected.card)}') is not known to this adapter version - using 'standard' instead. The stored configuration stays unchanged.`
       );
     }
-    if (!options.config || options.config.card !== "screensaver" && options.config.card !== "screensaver2" && options.config.card !== "screensaver3") {
+    if (!options.config || options.config.card !== "screensaver" && options.config.card !== "screensaver2" && options.config.card !== "screensaver3" && options.config.card !== "screensaver5") {
       config.adapter.log.error(
         `Invalid card for screensaver: ${options ? JSON.stringify(options) : "undefined"}`
       );
@@ -95,6 +95,10 @@ const _Screensaver = class _Screensaver extends import_Page.Page {
       }
       case "easyview": {
         config.card = "screensaver3";
+        break;
+      }
+      case "tiles": {
+        config.card = "screensaver5";
         break;
       }
     }
@@ -142,7 +146,7 @@ const _Screensaver = class _Screensaver extends import_Page.Page {
      */
     __publicField(this, "onStateTrigger", async (_dp, from) => {
       const config = this.config;
-      if (!config || config.card !== "screensaver" && config.card !== "screensaver2" && config.card !== "screensaver3") {
+      if (!config || !globals.isScreenSaverCardType(config.card)) {
         return;
       }
       if (from instanceof import_pageItem.PageItem && this.pageItems) {
@@ -484,7 +488,7 @@ const _Screensaver = class _Screensaver extends import_Page.Page {
     this.sendToPanel(`date~${message.options.date[0].split("~")[5]}`, false);
   }
   async HandleScreensaverStatusIcons() {
-    var _a, _b, _c, _d;
+    var _a, _b, _c, _d, _e, _f;
     if (!this.visibility) {
       return;
     }
@@ -492,14 +496,14 @@ const _Screensaver = class _Screensaver extends import_Page.Page {
     if (message === null) {
       return;
     }
-    const mrIcon1 = message.options.mricon[0].split("~");
-    const mrIcon2 = message.options.mricon[1].split("~");
+    const mrIcon1 = ((_a = message.options.mricon[0]) != null ? _a : "").split("~");
+    const mrIcon2 = ((_b = message.options.mricon[1]) != null ? _b : "").split("~");
     const msgArray = [
       "statusUpdate",
-      (_a = mrIcon1[2]) != null ? _a : "",
-      (_b = mrIcon1[3]) != null ? _b : "",
-      (_c = mrIcon2[2]) != null ? _c : "",
-      (_d = mrIcon2[3]) != null ? _d : "",
+      (_c = mrIcon1[2]) != null ? _c : "",
+      (_d = mrIcon1[3]) != null ? _d : "",
+      (_e = mrIcon2[2]) != null ? _e : "",
+      (_f = mrIcon2[3]) != null ? _f : "",
       this.basePanel.info.nspanel.bigIconLeft ? "1" : "",
       this.basePanel.info.nspanel.bigIconRight ? "1" : ""
     ];
@@ -596,7 +600,11 @@ const _Screensaver = class _Screensaver extends import_Page.Page {
    * @param event the incoming event
    */
   async onPopupRequest(id, popup, action, value, event = null) {
+    var _a, _b, _c;
     if (action === "button") {
+      return;
+    }
+    if ((popup === "popupShutter" || popup === "popupShutter2") && ((_c = (_b = (_a = this.pageItems) == null ? void 0 : _a[Number(id)]) == null ? void 0 : _b.dataItems) == null ? void 0 : _c.role) === "blind") {
       return;
     }
     await super.onPopupRequest(id, popup, action, value, event);
@@ -642,13 +650,13 @@ const _Screensaver = class _Screensaver extends import_Page.Page {
   goRight() {
   }
   get mode() {
-    if (!this.config || this.config.card !== "screensaver" && this.config.card !== "screensaver2" && this.config.card !== "screensaver3") {
+    if (!this.config || this.config.card !== "screensaver" && this.config.card !== "screensaver2" && this.config.card !== "screensaver3" && this.config.card !== "screensaver5") {
       return "standard";
     }
     return this.config.mode;
   }
   set mode(mode) {
-    if (!this.config || this.config.card !== "screensaver" && this.config.card !== "screensaver2" && this.config.card !== "screensaver3") {
+    if (!this.config || this.config.card !== "screensaver" && this.config.card !== "screensaver2" && this.config.card !== "screensaver3" && this.config.card !== "screensaver5") {
       return;
     }
     if (globals.isScreenSaverMode(mode)) {
@@ -682,6 +690,13 @@ const _Screensaver = class _Screensaver extends import_Page.Page {
         this.card = "screensaver3";
         if (this.config) {
           this.config.card = "screensaver3";
+        }
+        break;
+      }
+      case 4: {
+        this.card = "screensaver5";
+        if (this.config) {
+          this.config.card = "screensaver5";
         }
         break;
       }
