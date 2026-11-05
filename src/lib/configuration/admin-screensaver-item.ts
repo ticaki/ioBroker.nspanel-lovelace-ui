@@ -5,7 +5,7 @@
  * and the admin (the raw data dialog starts with the script element of a standard item).
  */
 import { isRawItemObject } from '../types/adminShareConfig';
-import type { ScreensaverItemConfig, ScreensaverItemRaw } from '../types/adminShareConfig';
+import type { ScreensaverItemAction, ScreensaverItemConfig, ScreensaverItemRaw } from '../types/adminShareConfig';
 import { Color } from '../const/Color';
 import {
     getScreensaverItemDefaultsByRole,
@@ -74,6 +74,12 @@ export function screensaverItemToScript(
         if (item.visibleCondition) {
             element.visibleCondition = item.visibleCondition;
         }
+        if (item.readOptions && Object.keys(item.readOptions).length > 0) {
+            element.readOptions = { ...item.readOptions };
+        }
+        if (area === 'indicator' && item.action) {
+            setScreensaverIndicatorAction(element, item.action);
+        }
         return element;
     }
     let iconOn = item.iconOn || null;
@@ -138,19 +144,32 @@ export function screensaverItemToScript(
         element.ScreensaverEntityVisibleCondition = item.visibleCondition;
     }
     if (area === 'indicator' && item.action) {
-        switch (item.action.kind) {
-            case 'button':
-                element.ScreensaverEntityButton = item.action.state || null;
-                break;
-            case 'switch':
-                element.ScreensaverEntitySwitch = item.action.state || null;
-                break;
-            case 'navigate':
-                element.ScreensaverEntityNaviToPage = item.action.page || null;
-                break;
-        }
+        setScreensaverIndicatorAction(element, item.action);
     }
     return element;
+}
+
+/**
+ * The action of an indicator as the field of the script element
+ *
+ * @param element script or template element, gets the field
+ * @param action action of the item
+ */
+function setScreensaverIndicatorAction(
+    element: ScriptConfig.ScreenSaverIndicatorAction,
+    action: ScreensaverItemAction,
+): void {
+    switch (action.kind) {
+        case 'button':
+            element.ScreensaverEntityButton = action.state || null;
+            break;
+        case 'switch':
+            element.ScreensaverEntitySwitch = action.state || null;
+            break;
+        case 'navigate':
+            element.ScreensaverEntityNaviToPage = action.page || null;
+            break;
+    }
 }
 
 /**

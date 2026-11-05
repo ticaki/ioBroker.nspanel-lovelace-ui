@@ -3,7 +3,7 @@ import {
     SAVE_PANEL_NAVIGATION_COMMAND,
     SENDTO_GET_PAGES_COMMAND,
     SENDTO_GET_PANELS_COMMAND,
-    SENDTO_GET_SCREENSAVER_TEMPLATES_COMMAND,
+    SENDTO_GET_PAGE_ITEM_TEMPLATES_COMMAND,
     SENDTO_GET_MEDIA_PLAYER_COMMAND,
     SENDTO_GET_PAGES_All_COMMAND,
     SENDTO_CONVERT_SCRIPT_COMMAND,
@@ -32,7 +32,7 @@ import { FidoCredentialStore } from './lib/web/fido-store';
 import { Icons } from './lib/const/icon_mapping';
 import * as definition from './lib/const/definition';
 import { ConfigManager } from './lib/classes/config-manager';
-import { screensaverTemplateInfos } from './lib/templates/template-info';
+import { pageItemTemplateInfos } from './lib/templates/template-info';
 import { mediaPlayerInfo } from './lib/configuration/admin-media';
 import type { Panel, panelConfigPartial } from './lib/controller/panel';
 import { generateAliasDocumentation } from './lib/tools/readme';
@@ -1298,6 +1298,7 @@ class NspanelLovelaceUi extends utils.Adapter {
         } else {
             // The state was deleted
             // this.log.info(`state ${id} deleted`);
+            this.controller?.statesControler.onStateDeleted(id);
         }
     }
 
@@ -1479,9 +1480,9 @@ class NspanelLovelaceUi extends utils.Adapter {
                     }
                     break;
                 }
-                case SENDTO_GET_SCREENSAVER_TEMPLATES_COMMAND: {
-                    // the admin bundle must not import the templates (colord, adapter types) - the screensaver tab asks here
-                    const result = screensaverTemplateInfos();
+                case SENDTO_GET_PAGE_ITEM_TEMPLATES_COMMAND: {
+                    // the admin bundle must not import the templates (colord, adapter types) - the admin asks here
+                    const result = pageItemTemplateInfos();
                     if (obj.callback) {
                         this.sendTo(obj.from, obj.command, result, obj.callback);
                     }

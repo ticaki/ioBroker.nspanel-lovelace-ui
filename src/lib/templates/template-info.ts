@@ -1,23 +1,27 @@
 import type { NSPanel } from '../types/NSPanel';
-import type { ScreensaverTemplateInfo } from '../types/adminShareConfig';
+import { screensaverAreas } from '../types/adminShareConfig';
+import type { PageItemTemplateInfo } from '../types/adminShareConfig';
 import { pageItemTemplates } from './templateArray';
 
 /**
- * Describes the page item templates for the screensaver tab of the admin: name, type, role, adapter and
- * what the template needs as its object. A template needs a channel as soon as one of its data items is
- * resolved with `mode: 'auto'` (search below `dpInit` by regexp / role) or a relative id (`.lift`);
- * without such items it works on its own (clock, wlan, service buttons).
+ * Describes the page item templates for the admin: name, type, role, adapter and what the template needs
+ * as its object. A template needs a channel as soon as one of its data items is resolved with `mode: 'auto'`
+ * (search below `dpInit` by regexp / role) or a relative id (`.lift`); without such items it works on its
+ * own (clock, wlan, service buttons).
+ *
+ * `areas`: a text or button template fits every place of the screensaver unless `screensaverAreas` of the
+ * template narrows them, any other type (number, light, shutter) fits none. `options`: `adminOptions` of the template.
  *
  * @param templates the templates to describe, default the page item templates of the adapter
  * @returns one entry per template, sorted by name
  */
-export function screensaverTemplateInfos(
+export function pageItemTemplateInfos(
     templates: Record<string, NSPanel.PageItemOptionsTemplate | undefined> = pageItemTemplates as Record<
         string,
         NSPanel.PageItemOptionsTemplate | undefined
     >,
-): ScreensaverTemplateInfo[] {
-    const result: ScreensaverTemplateInfo[] = [];
+): PageItemTemplateInfo[] {
+    const result: PageItemTemplateInfo[] = [];
     for (const [name, template] of Object.entries(templates)) {
         if (!template) {
             continue;
@@ -57,6 +61,11 @@ export function screensaverTemplateInfos(
             adapter: String(template.adapter ?? ''),
             need: channel ? 'channel' : 'none',
             looksFor,
+            areas:
+                template.type === 'text' || template.type === 'button'
+                    ? [...(template.screensaverAreas ?? screensaverAreas)]
+                    : [],
+            options: template.adminOptions ? [...template.adminOptions] : [],
         });
     }
     return result.sort((a, b) => a.name.localeCompare(b.name));

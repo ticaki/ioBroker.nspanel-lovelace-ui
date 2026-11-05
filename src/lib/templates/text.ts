@@ -345,6 +345,10 @@ export const textTemplates: TemplateItems = {
         role: 'battery',
         adapter: 'bydhvs',
         type: 'text',
+        adminOptions: [
+            { key: 'min', type: 'number', label: 'screensaver_item_option_socMin' },
+            { key: 'max', type: 'number', label: 'screensaver_item_option_socMax' },
+        ],
         dpInit: '/bydhvs\\.#°^°#\\./',
 
         data: {
@@ -1232,6 +1236,7 @@ export const textTemplates: TemplateItems = {
         },
     },
     'text.openweathermap.favorit': {
+        screensaverAreas: ['favorit', 'alternate'],
         role: 'text',
         adapter: 'openweathermap',
         type: 'text',
@@ -1746,6 +1751,7 @@ export const textTemplates: TemplateItems = {
         },
     },
     'text.pirate-weather.favorit': {
+        screensaverAreas: ['favorit', 'alternate'],
         role: 'text',
         adapter: 'pirate-weather',
         type: 'text',
@@ -2575,6 +2581,7 @@ export const textTemplates: TemplateItems = {
 
     //Brightsky favorit dayly weather
     'text.brightsky.favorit': {
+        screensaverAreas: ['favorit', 'alternate'],
         role: 'text',
         adapter: 'brightsky',
         type: 'text',
@@ -3282,6 +3289,7 @@ export const textTemplates: TemplateItems = {
         },
     },
     'text.accuweather.favorit': {
+        screensaverAreas: ['favorit', 'alternate'],
         role: 'text',
         adapter: 'accuweather',
         type: 'text',

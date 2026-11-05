@@ -46,10 +46,14 @@ import type {
     ChannelColorConfig,
     ChannelModeListConfig,
     HmiTextSize,
+    PageConfigEntry,
+    ScreensaverEntry,
 } from '../../../src/lib/types/adminShareConfig';
 import {
     ADAPTER_NAME,
     CHANNEL_ROLES_LIST,
+    screensaverTargetPage,
+    isClockTimerSourceItem,
     requiredScriptDataPoints,
     emptyChannelValueConfig,
     isRawItemObject,
@@ -100,6 +104,8 @@ const VALUE_RANGE_ROLES: readonly string[] = ['volume'];
 
 /** Channel roles whose page item reads `secondRow` (config-manager.ts, case 'blind'). */
 const SECOND_ROW_ROLES: readonly string[] = ['blind'];
+/** Channel roles whose page item reads `useScreensaverTimer` (config-manager.ts, case 'level.timer'). */
+const SCREENSAVER_TIMER_ROLES: readonly string[] = ['level.timer'];
 
 /**
  * Channel roles whose page item reads `minValueBrightness` / `maxValueBrightness` and `colormode`
@@ -215,6 +221,12 @@ interface ChannelConfigDialogState {
     maxValue: number | undefined;
     /** Role blind: second text row of the shutter popup ('' = not set) */
     secondRow: string;
+    /** Role level.timer: the item uses the timer of the screensaver of this panel */
+    useScreensaverTimer: boolean;
+    /** internal id of the item: kept as it is, the page editor gives a new item its id */
+    itemId: string | undefined;
+    /** stored tables: the screensaver of the panel may use this item as its source (circle) */
+    timerSourceTables: { screensavers: ScreensaverEntry[]; pages: PageConfigEntry[] };
     /** Light roles: brightness slider range (undefined = panel default) */
     minValueBrightness: number | undefined;
     maxValueBrightness: number | undefined;
@@ -303,6 +315,9 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
             minValue: undefined,
             maxValue: undefined,
             secondRow: '',
+            useScreensaverTimer: false,
+            itemId: undefined,
+            timerSourceTables: { screensavers: [], pages: [] },
             minValueBrightness: undefined,
             maxValueBrightness: undefined,
             minValueColorTemp: undefined,
@@ -362,6 +377,7 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
      * @param isGridCard  (optional) true wenn die Daten von einem GridCard-Item stammen – steuert die Sichtbarkeit bestimmter Felder
      */
     public openWith(data?: Partial<AdminPageItemConfig>, isGridCard?: boolean): void {
+        void this.loadTimerSourceTables();
         const isNative = data?.useNative === true;
         const raw: RawItemValue | null =
             data && isNative
@@ -408,6 +424,8 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
             minValue: typeof data?.minValue === 'number' ? data.minValue : undefined,
             maxValue: typeof data?.maxValue === 'number' ? data.maxValue : undefined,
             secondRow: typeof data?.secondRow === 'string' ? data.secondRow : '',
+            useScreensaverTimer: data?.useScreensaverTimer === true,
+            itemId: typeof data?.itemId === 'string' ? data.itemId : undefined,
             minValueBrightness: typeof data?.minValueBrightness === 'number' ? data.minValueBrightness : undefined,
             maxValueBrightness: typeof data?.maxValueBrightness === 'number' ? data.maxValueBrightness : undefined,
             minValueColorTemp: typeof data?.minValueColorTemp === 'number' ? data.minValueColorTemp : undefined,
@@ -457,6 +475,37 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
             modeList: config.modeList,
         });
     };
+
+    private async loadTimerSourceTables(): Promise<void> {
+        const socket = this.props.oContext?.socket ?? this.props.socket;
+        const instance = this.props.oContext?.instance ?? this.props.instance ?? 0;
+        if (!socket) {
+            return;
+        }
+        try {
+            const obj: ioBroker.Object | null | undefined = await socket.getObject(
+                `system.adapter.${this.props.adapterName ?? ADAPTER_NAME}.${instance}`,
+            );
+            const screensavers: unknown = obj?.native?.screensaverConfig;
+            const pages: unknown = obj?.native?.pageConfig;
+            this.setState({
+                timerSourceTables: {
+                    screensavers: Array.isArray(screensavers) ? screensavers : [],
+                    pages: Array.isArray(pages) ? pages : [],
+                },
+            });
+        } catch {
+            /* the adapter finds a circle at runtime as well */
+        }
+    }
+
+    /**
+     * @returns true while the screensaver of this panel has this item as its source
+     */
+    private isTimerSourceOfScreensaver(): boolean {
+        const { screensavers, pages } = this.state.timerSourceTables;
+        return isClockTimerSourceItem(screensavers, pages, this.props.currentPageName ?? '', this.state.itemId);
+    }
 
     private async loadAdapterColorTheme(): Promise<void> {
         const { socket, adapterName = ADAPTER_NAME, instance = 0 } = this.props;
@@ -718,8 +767,18 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
         const targetPageOut = isNavigation || this.isButtonTargetPageAllowed() ? targetPage : '';
         const lightRange = (value: number | undefined): number | undefined =>
             value !== undefined && Number.isFinite(value) && value !== 0 ? value : undefined;
-        const extraFields: Pick<AdminPageItemConfig, 'secondRow' | 'colormode' | LightRangeKey> = {
+        const extraFields: Pick<
+            AdminPageItemConfig,
+            'secondRow' | 'useScreensaverTimer' | 'itemId' | 'colormode' | LightRangeKey
+        > = {
             secondRow: secondRow !== '' ? secondRow : undefined,
+            itemId: this.state.itemId,
+            useScreensaverTimer:
+                this.state.useScreensaverTimer &&
+                SCREENSAVER_TIMER_ROLES.includes(channelRole ?? '') &&
+                !this.isTimerSourceOfScreensaver()
+                    ? true
+                    : undefined,
             minValueBrightness: lightRange(this.state.minValueBrightness),
             maxValueBrightness: lightRange(this.state.maxValueBrightness),
             minValueColorTemp: lightRange(this.state.minValueColorTemp),
@@ -1318,8 +1377,29 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
     };
 
     private handleTargetPageChange = (value: string): void => {
-        this.setState({ targetPage: value });
+        this.setState({ targetPage: this.targetPageOfText(value) });
     };
+
+    /**
+     * @param pages pages that can be chosen
+     * @returns the options of a target page: the screensaver is a target as well
+     */
+    private targetPageOptions(pages: string[]): string[] {
+        return [...pages, screensaverTargetPage];
+    }
+
+    private targetPageLabel = (option: string): string =>
+        option === screensaverTargetPage ? I18n.t('screensaver_target') : option;
+
+    /**
+     * The field of a target page can be typed in and reports its text: the text of the screensaver means the target.
+     *
+     * @param text text of the field
+     * @returns the value to store
+     */
+    private targetPageOfText(text: string): string {
+        return text === I18n.t('screensaver_target') ? screensaverTargetPage : text;
+    }
 
     private sortPages(pages: string[]): string[] {
         const current = this.props.currentPageName;
@@ -1727,6 +1807,7 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
             !isNavigation &&
             roles.includes(channelRole);
         const secondRowVisible = pageItemOfRole(SECOND_ROW_ROLES);
+        const screensaverTimerVisible = pageItemOfRole(SCREENSAVER_TIMER_ROLES);
         const brightnessVisible = pageItemOfRole(BRIGHTNESS_ROLES);
         const colorTempVisible = pageItemOfRole(COLOR_TEMP_ROLES);
 
@@ -1858,7 +1939,8 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                                 {/* Zielseiten-Selector – nur sichtbar wenn isNavigation aktiv */}
                                 {isNavigation && (
                                     <Autocomplete
-                                        options={loadingPages ? [] : availablePages}
+                                        options={loadingPages ? [] : this.targetPageOptions(availablePages)}
+                                        getOptionLabel={this.targetPageLabel}
                                         value={targetPage || null}
                                         onChange={(_e, val) => this.handleTargetPageChange(val ?? '')}
                                         onInputChange={(_e, val) => this.handleTargetPageChange(val)}
@@ -2252,6 +2334,36 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                                         slotProps={{ inputLabel: { shrink: true } }}
                                     />
                                 )}
+                                {screensaverTimerVisible && (
+                                    <Box>
+                                        <FormControlLabel
+                                            control={
+                                                <Checkbox
+                                                    checked={
+                                                        this.state.useScreensaverTimer &&
+                                                        !this.isTimerSourceOfScreensaver()
+                                                    }
+                                                    onChange={e =>
+                                                        this.setState({ useScreensaverTimer: e.target.checked })
+                                                    }
+                                                    disabled={fieldsDisabled || this.isTimerSourceOfScreensaver()}
+                                                />
+                                            }
+                                            label={I18n.t('channelConfigDialog_useScreensaverTimer')}
+                                        />
+                                        <Typography
+                                            variant="caption"
+                                            color="text.secondary"
+                                            sx={{ display: 'block' }}
+                                        >
+                                            {I18n.t(
+                                                this.isTimerSourceOfScreensaver()
+                                                    ? 'channelConfigDialog_useScreensaverTimerLocked'
+                                                    : 'channelConfigDialog_useScreensaverTimerHint',
+                                            )}
+                                        </Typography>
+                                    </Box>
+                                )}
                                 {brightnessVisible &&
                                     this.renderLightRange(
                                         'minValueBrightness',
@@ -2285,7 +2397,8 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                                         placement="top"
                                     >
                                         <Autocomplete
-                                            options={loadingPages ? [] : availablePages}
+                                            options={loadingPages ? [] : this.targetPageOptions(availablePages)}
+                                            getOptionLabel={this.targetPageLabel}
                                             value={targetPage || null}
                                             onChange={(_e, val) => this.handleTargetPageChange(val ?? '')}
                                             onInputChange={(_e, val) => this.handleTargetPageChange(val)}
@@ -2399,13 +2512,16 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                                         )}
                                         {longPress == null && (
                                             <Autocomplete
-                                                options={loadingPages ? [] : availablePages}
+                                                options={loadingPages ? [] : this.targetPageOptions(availablePages)}
+                                                getOptionLabel={this.targetPageLabel}
                                                 value={targetPageLongPress || null}
                                                 onChange={(_e, val) =>
                                                     this.setState({ targetPageLongPress: val || null })
                                                 }
                                                 onInputChange={(_e, val) =>
-                                                    this.setState({ targetPageLongPress: val || null })
+                                                    this.setState({
+                                                        targetPageLongPress: this.targetPageOfText(val) || null,
+                                                    })
                                                 }
                                                 disabled={loadingPages}
                                                 freeSolo

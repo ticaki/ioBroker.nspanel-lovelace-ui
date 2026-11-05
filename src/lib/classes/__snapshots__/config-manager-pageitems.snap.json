@@ -54776,7 +54776,7 @@
         },
         "headline": {
           "type": "const",
-          "constVal": "Timer"
+          "constVal": "full level.timer (de)"
         },
         "setValue1": {
           "type": "state",
@@ -54878,7 +54878,7 @@
         },
         "headline": {
           "type": "const",
-          "constVal": "Timer"
+          "constVal": "On"
         },
         "setValue1": {
           "type": "state",
@@ -55058,8 +55058,8 @@
           }
         },
         "headline": {
-          "type": "const",
-          "constVal": "Timer"
+          "type": "triggered",
+          "dp": "alias.0.ext.level_timer.BUTTONTEXT"
         },
         "setValue1": {
           "type": "state",
@@ -55165,7 +55165,7 @@
         },
         "headline": {
           "type": "const",
-          "constVal": "Timer"
+          "constVal": "On"
         },
         "setValue1": {
           "type": "state",
@@ -55350,7 +55350,7 @@
         },
         "headline": {
           "type": "const",
-          "constVal": "Timer"
+          "constVal": "full level.timer (de)"
         },
         "setValue1": {
           "type": "state",
@@ -55407,7 +55407,7 @@
         "entity1": {},
         "headline": {
           "type": "const",
-          "constVal": "Timer"
+          "constVal": "min level.timer (de)"
         }
       }
     },
@@ -55485,7 +55485,7 @@
         "entity1": {},
         "headline": {
           "type": "const",
-          "constVal": "Timer"
+          "constVal": "On"
         }
       },
       "filter": 2
@@ -55646,8 +55646,8 @@
         },
         "entity1": {},
         "headline": {
-          "type": "const",
-          "constVal": "Timer"
+          "type": "triggered",
+          "dp": "alias.0.helper.text"
         },
         "enabled": {
           "type": "const",
@@ -55762,7 +55762,7 @@
         },
         "headline": {
           "type": "const",
-          "constVal": "Timer"
+          "constVal": "full level.timer (de)"
         },
         "setValue1": {
           "type": "state",
@@ -55848,7 +55848,7 @@
         },
         "headline": {
           "type": "const",
-          "constVal": "Timer"
+          "constVal": "full level.timer (de)"
         },
         "setValue1": {
           "type": "state",
@@ -55930,7 +55930,7 @@
         },
         "headline": {
           "type": "const",
-          "constVal": "Timer"
+          "constVal": "full level.timer (de)"
         },
         "setValue1": {
           "type": "state",
@@ -56014,8 +56014,8 @@
           }
         },
         "headline": {
-          "type": "const",
-          "constVal": "Timer"
+          "type": "triggered",
+          "dp": "alias.0.helper.text"
         },
         "setValue1": {
           "type": "state",
@@ -56125,7 +56125,7 @@
         },
         "headline": {
           "type": "const",
-          "constVal": "Timer"
+          "constVal": "full level.timer (de)"
         },
         "setValue1": {
           "type": "state",
@@ -56227,7 +56227,7 @@
         },
         "headline": {
           "type": "const",
-          "constVal": "Timer"
+          "constVal": "On"
         },
         "setValue1": {
           "type": "state",
@@ -56384,7 +56384,7 @@
         "entity1": {},
         "headline": {
           "type": "const",
-          "constVal": "Timer"
+          "constVal": "empty level.timer (de)"
         }
       }
     },
@@ -56465,8 +56465,8 @@
           }
         },
         "headline": {
-          "type": "const",
-          "constVal": "Timer"
+          "type": "triggered",
+          "dp": "alias.0.ext.level_timer.BUTTONTEXT"
         },
         "setValue1": {
           "type": "state",
@@ -56551,7 +56551,7 @@
         },
         "headline": {
           "type": "const",
-          "constVal": "Timer"
+          "constVal": "full level.timer (de)"
         },
         "setValue1": {
           "type": "state",
@@ -56632,7 +56632,7 @@
         },
         "headline": {
           "type": "const",
-          "constVal": "Timer"
+          "constVal": "full level.timer (de)"
         },
         "setValue1": {
           "type": "state",
@@ -56691,7 +56691,7 @@
         "entity1": {},
         "headline": {
           "type": "const",
-          "constVal": "Timer"
+          "constVal": "min level.timer (de)"
         }
       }
     },
@@ -56776,8 +56776,8 @@
           }
         },
         "headline": {
-          "type": "const",
-          "constVal": "Timer"
+          "type": "triggered",
+          "dp": "alias.0.helper.text"
         },
         "setValue1": {
           "type": "state",
@@ -56887,7 +56887,7 @@
         },
         "headline": {
           "type": "const",
-          "constVal": "Timer"
+          "constVal": "full level.timer (de)"
         },
         "setValue1": {
           "type": "state",
@@ -56969,7 +56969,7 @@
         },
         "headline": {
           "type": "const",
-          "constVal": "Timer"
+          "constVal": "full level.timer (de)"
         },
         "setValue1": {
           "type": "state",
@@ -57050,7 +57050,7 @@
         },
         "headline": {
           "type": "const",
-          "constVal": "Timer"
+          "constVal": "full level.timer (de)"
         },
         "setValue1": {
           "type": "state",

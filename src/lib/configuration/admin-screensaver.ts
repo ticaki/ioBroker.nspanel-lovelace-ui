@@ -5,6 +5,7 @@ import {
     screensaverNotifyOfEntry,
 } from '../types/adminShareConfig';
 import type {
+    ScreensaverClockTimer,
     ScreensaverEntry,
     ScreensaverItemConfig,
     ScreensaverMrIconConfig,
@@ -259,12 +260,16 @@ export function applyScreensaverEntry(page: pages.PageBase, entry: ScreensaverEn
         rotationTime: number;
         screensaverSwipe: boolean;
         screensaverIndicatorButtons: boolean;
+        clockTimer?: ScreensaverClockTimer;
     };
     config.card = screensaverCardOfMode(entry.mode);
     config.mode = entry.mode;
     config.rotationTime = typeof entry.rotationTime === 'number' && entry.rotationTime > 0 ? entry.rotationTime : 0;
     config.screensaverSwipe = !!entry.screensaverSwipe;
     config.screensaverIndicatorButtons = !!entry.screensaverIndicatorButtons;
+    if (entry.clockTimer?.enabled) {
+        config.clockTimer = entry.clockTimer;
+    }
 
     for (const raw of page.pageItems ?? []) {
         const item = raw as unknown as DateFormatItem;

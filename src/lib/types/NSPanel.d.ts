@@ -1,6 +1,7 @@
 import type * as dataItem from '../controller/data-item';
 import type * as typePageItem from './type-pageItem';
 import type * as pages from './pages';
+import type { PageItemTemplateOption, ScreensaverArea } from './adminShareConfig';
 
 export namespace NSPanel {
     type TemplateItems = Partial<Record<TemplateIdent, typePageItem.PageItemOptionsTemplate>>;
@@ -330,7 +331,7 @@ export namespace NSPanel {
         name?: string;
         scale?: { min: number; max: number };
         dp?: string | undefined;
-        constants?: Record<string, string>;
+        constants?: Record<string, string | number>;
     } & (
         | DataItemsOptionsConst
         | DataItemsOptionsState
@@ -1021,6 +1022,15 @@ export namespace NSPanel {
         modeScr?: string;
         dpInit?: string;
         type: SerialTypePageElements;
+        /**
+         * Admin only: the places of the screensaver the template is offered for. Without it, every place
+         * for type text / button and none for any other type (template-info.ts).
+         */
+        screensaverAreas?: ScreensaverArea[];
+        /**
+         * Admin only: the options the template reads from `readOptions`, shown as fields.
+         */
+        adminOptions?: PageItemTemplateOption[];
     } & (
         | ({ template?: undefined } & Omit<PageItemUnion, 'template' | 'data' | 'type' | 'dpInit' | 'modeScr'> &
               (
@@ -1066,11 +1076,18 @@ export namespace NSPanel {
 
     type PageItemTimerDataItemsOptions = {
         type: 'timer';
+        /** the item uses the timer of the screensaver of its panel (clockTimer) instead of its own states */
+        useScreensaverTimer?: boolean;
+        /** id of the item, the screensaver finds it by this (clockTimer.itemId) */
+        itemId?: string;
         data: pages.ChangeTypeOfKeys<PageItemTimer, DataItemsOptions | undefined>;
     };
 
     type PageItemTimerDataItems = {
         type: 'timer';
+        /** see {@link PageItemTimerDataItemsOptions} */
+        useScreensaverTimer?: boolean;
+        itemId?: string;
         data: pages.ChangeTypeOfKeys<PageItemTimer, dataItem.Dataitem | undefined>;
     };
 
@@ -1446,7 +1463,7 @@ export namespace NSPanel {
     type PageItemUnion = {
         role?: pages.DeviceRole | pages.CardRole;
         template?: undefined;
-        readOptions?: Record<string, string>;
+        readOptions?: Record<string, string | number>;
         dpInit?: string | RegExp;
         enums?: string | string[];
         device?: string;

@@ -24,6 +24,7 @@ import * as ShareConfig from '../types/adminShareConfig';
 import type { PageBase } from '../types/pages';
 import { AdminConfiguration } from './admin';
 import { adminPageItemToScriptItem } from './admin-page-item';
+import { screensaverItemToScript } from './admin-screensaver-item';
 import { ensureMainPage } from './main-page';
 import { isScreensaverPage } from './admin-screensaver';
 import { planScriptToAdmin, type ScriptToAdminInput, type ScriptToAdminResult } from './script-to-admin';
@@ -3039,6 +3040,70 @@ describe('lib/configuration - planScriptToAdmin: screensaver', () => {
         expect(withEnabled.screensaverEntry!.bottom[0]!.raw!.format).to.equal('native');
     });
 
+    it('takes a template element with readOptions and action over without loss', () => {
+        const element = (modeScr: 'left' | 'indicator', more: Record<string, unknown> = {}): any => ({
+            type: 'template',
+            template: 'text.battery.bydhvs',
+            dpInit: 'bydhvs.0',
+            readOptions: { min: 5 },
+            modeScr,
+            ...more,
+        });
+        const result = plan(
+            baseConfig({
+                leftScreensaverEntity: [element('left'), element('left', { ScreensaverEntityNaviToPage: 'main' })],
+                indicatorScreensaverEntity: [
+                    element('indicator', { ScreensaverEntityNaviToPage: 'main' }),
+                    element('indicator', { ScreensaverEntityButton: 'a.0.b', ScreensaverEntitySwitch: 'a.0.c' }),
+                ],
+            }),
+        );
+        expect(result.plan.screensaverSkipped).to.equal(undefined);
+        expect(result.plan.screensaver!.rawItems).to.equal(undefined);
+        const entry = result.screensaverEntry!;
+        const base = { state: 'bydhvs.0', template: 'text.battery.bydhvs', readOptions: { min: 5 } };
+        // outside the indicator the config manager ignores the action
+        expect(entry.left.slice(0, 2)).to.deep.equal([base, base]);
+        expect(entry.indicator.slice(0, 2)).to.deep.equal([
+            { ...base, action: { kind: 'navigate', page: 'main' } },
+            { ...base, action: { kind: 'button', state: 'a.0.b' } },
+        ]);
+        // round trip: the admin builds the same element again
+        expect(screensaverItemToScript(entry.left[0]!, 'left')).to.deep.equal(element('left'));
+        expect(screensaverItemToScript(entry.indicator[0]!, 'indicator')).to.deep.equal(
+            element('indicator', { ScreensaverEntityNaviToPage: 'main' }),
+        );
+    });
+
+    it('keeps readOptions the admin cannot store as raw item', () => {
+        const element: any = {
+            type: 'template',
+            template: 'text.battery.bydhvs',
+            dpInit: 'bydhvs.0',
+            readOptions: { min: { nested: true } },
+            modeScr: 'left',
+        };
+        const result = plan(baseConfig({ leftScreensaverEntity: [element] }));
+        expect(result.screensaverEntry!.left[0]).to.deep.equal({
+            state: '',
+            raw: { format: 'script', config: element },
+        });
+    });
+
+    it('takes a native element with readOptions as template item', () => {
+        const native = {
+            template: 'text.battery.bydhvs',
+            dpInit: 'bydhvs.0',
+            modeScr: 'bottom',
+            readOptions: { max: 95 },
+        };
+        const result = plan(baseConfig({ bottomScreensaverEntity: [{ type: 'native', native }] }));
+        expect(result.plan.screensaver!.rawItems).to.equal(undefined);
+        expect(result.screensaverEntry!.bottom).to.deep.equal([
+            { state: 'bydhvs.0', template: 'text.battery.bydhvs', readOptions: { max: 95 } },
+        ]);
+    });
+
     it('takes a native element over as raw item with its runtime item (format native)', () => {
         const favorit: ScriptConfig.ScreenSaverElement = {
             type: 'native',
@@ -4295,6 +4360,51 @@ describe('lib/configuration - planScriptToAdmin: cardThermo without heading', fu
 
 describe('lib/configuration - planScriptToAdmin: secondRow, light ranges and colormode', function () {
     this.timeout(60_000);
+
+    it('keeps the screensaver as target of an item', () => {
+        const result = plan(
+            baseConfig({
+                subPages: [
+                    page({
+                        type: 'cardGrid',
+                        uniqueName: 'p',
+                        heading: 'P',
+                        items: [
+                            { id: 'alias.0.NSPanel.allgemein.hue', targetPageLongPress: '///screensaver' },
+                            { navigate: true, targetPage: '///screensaver', id: 'alias.0.NSPanel.allgemein.hue' },
+                        ],
+                    }),
+                ],
+            }),
+        );
+        expect(result.plan.skipped).to.deep.equal([]);
+        const items = (result.newPages[0] as ShareConfig.MenuEntry).pageItems;
+        expect(items[0]?.targetPageLongPress).to.equal('///screensaver');
+        expect(items[1]?.targetPage).to.equal('///screensaver');
+    });
+
+    it('keeps itemId and useScreensaverTimer of a script item', () => {
+        const result = plan(
+            baseConfig({
+                subPages: [
+                    page({
+                        type: 'cardGrid',
+                        uniqueName: 'p',
+                        heading: 'P',
+                        items: [
+                            { id: 'alias.0.NSPanel.allgemein.shutter', itemId: 'kitchen', useScreensaverTimer: true },
+                            { id: 'alias.0.NSPanel.allgemein.hue' },
+                        ],
+                    }),
+                ],
+            }),
+        );
+        expect(result.plan.skipped).to.deep.equal([]);
+        const converted = (result.newPages[0] as ShareConfig.MenuEntry).pageItems;
+        expect(converted[0]).to.include({ itemId: 'kitchen', useScreensaverTimer: true });
+        // the adapter does not invent an id: the admin gives it with the next change of the pages
+        expect(converted[1]).to.not.have.property('itemId');
+    });
 
     const items = (): Record<string, unknown>[] => [
         { id: 'alias.0.NSPanel.allgemein.shutter', secondRow: 'Zweite Zeile' },

@@ -470,6 +470,19 @@ const genericStateObjects = {
             },
             native: {}
           },
+          activate: {
+            _id: "",
+            type: "state",
+            common: {
+              name: "StateObjects.screenSaver.activate",
+              type: "boolean",
+              role: "button",
+              read: false,
+              write: true,
+              def: false
+            },
+            native: {}
+          },
           activateNotification: {
             _id: "",
             type: "state",

@@ -1,4 +1,4 @@
-"""Build the clock font of 'screensaver5': NotoSans Bold, height 96, only the characters of the clock.
+"""Build the clock font of 'screensaver5': NotoSans Bold, height 96, the ASCII characters like font 5.
 
 Usage: PUPPETEER_PATH=$(npm root -g)/ python3 -I -B HMI/tools/clockfont.py <in.HMI> <out.zi>
 
@@ -21,7 +21,7 @@ NAME = 'NotoSans-Bold-Clock96'
 HEIGHT = 96
 SIZE = 86  # digits of about 63 px, "22:09" 220 px: the middle between font 4 and font 5
 BASELINE = 79
-CHARS = '0123456789: AMPamp'
+CHARS = ''.join(chr(code) for code in range(0x20, 0x7F))
 WOFF = os.path.join(HERE, '../../src-web/node_modules/@fontsource/noto-sans/files/noto-sans-latin-700-normal.woff')
 
 

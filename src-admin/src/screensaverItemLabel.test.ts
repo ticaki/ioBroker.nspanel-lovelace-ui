@@ -11,6 +11,22 @@ import {
 } from './screensaverItemLabel';
 
 describe('screensaverItemLabel', () => {
+    describe('template on the instance of an adapter', () => {
+        const item = (state: string, template = 'text.battery.bydhvs'): Parameters<typeof screensaverItemLabel>[0] => ({
+            state,
+            template,
+        });
+        it('names the template instead of the number of the instance', () => {
+            expect(screensaverItemLabel(item('bydhvs.0')).short).to.equal('battery bydhvs');
+            expect(screensaverItemLabel(item('bydhvs.12')).short).to.equal('battery bydhvs');
+        });
+        it('keeps the other cases', () => {
+            expect(screensaverItemLabel(item('bydhvs.0.State')).short).to.equal('State');
+            expect(screensaverItemLabel(item('bydhvs.0', '')).short).to.equal('0');
+            expect(screensaverItemLabel({ ...item('bydhvs.0'), headline: 'Akku' }).short).to.equal('Akku');
+        });
+    });
+
     describe('readableIdPattern', () => {
         it('keeps a plain id', () => {
             expect(readableIdPattern(' alias.0.Window ')).to.equal('alias.0.Window');

@@ -24,7 +24,7 @@ import { PageMedia } from '../pages/pageMedia';
 import type { IClientPublishOptions } from 'mqtt';
 import type { StatesControler } from './states-controller';
 import { PageGrid } from '../pages/pageGrid';
-import { Navigation, type NavigationConfig } from '../classes/navigation';
+import { Navigation, SCREENSAVER_NAV_INDEX, type NavigationConfig } from '../classes/navigation';
 import { PageThermo } from '../pages/pageThermo';
 import { PagePower } from '../pages/pagePower';
 import type { PageItem } from '../pages/pageItem';
@@ -829,6 +829,11 @@ export class Panel extends BaseClass {
             definition.genericStateObjects.panel.panels.cmd.screenSaver.textNotification,
         );
         val = undefined;
+        await this.library.writedp(
+            `panels.${this.name}.cmd.screenSaver.activate`,
+            false,
+            definition.genericStateObjects.panel.panels.cmd.screenSaver.activate,
+        );
         state = this.library.readdb(`panels.${this.name}.cmd.screenSaver.activateNotification`);
         if (state && state.val != null && this.screenSaver) {
             this.screenSaver.customNotification = !!state.val;
@@ -918,6 +923,11 @@ export class Panel extends BaseClass {
                 }
             }
         }
+        // all pages are initialized: a page item can be the source of the timer now
+        for (const page of this.pages) {
+            await page?.connectControlledTimers();
+        }
+        await this.screenSaver?.connectClockTimerItem();
         await this.library.writedp(
             `panels.${this.name}.cmd.screenSaver.layout`,
             this.screenSaver && this.screenSaver.mode ? Screensaver.mapModeToNumber(this.screenSaver.mode) : 0,
@@ -1094,6 +1104,29 @@ export class Panel extends BaseClass {
             await this._activePage.update();
         }
     }
+    /**
+     * What the end of the timeout of the panel does.
+     */
+    async showScreensaverNow(): Promise<void> {
+        await this.setActivePage(this.screenSaver);
+        this.navigation.resetPosition();
+        this.pages.forEach(a => a && a.reset());
+    }
+
+    /**
+     * The screensaver on request: a jump of an item, a navigation arrow, a state. Nothing to do when the panel can not
+     * show it or it is on the display already - a timeout of the panel does not come here.
+     */
+    async activateScreensaver(): Promise<void> {
+        if (!this.isOnline || !this.screenSaver) {
+            return;
+        }
+        if (this._activePage === this.screenSaver && !this.screenSaver.sleep) {
+            return;
+        }
+        await this.showScreensaverNow();
+    }
+
     getActivePage(): Page {
         if (!this._activePage) {
             throw new Error(`No active page here panel ${this.friendlyName}, check code!`);
@@ -1551,6 +1584,17 @@ export class Panel extends BaseClass {
                             false,
                         );
                     }
+                    break;
+                }
+                case 'screenSaver.activate': {
+                    if (state.val) {
+                        await this.activateScreensaver();
+                    }
+                    await this.library.writedp(
+                        `panels.${this.name}.cmd.screenSaver.activate`,
+                        false,
+                        definition.genericStateObjects.panel.panels.cmd.screenSaver.activate,
+                    );
                     break;
                 }
                 case 'screenSaver.doubleClick': {
@@ -2015,6 +2059,13 @@ export class Panel extends BaseClass {
         await super.delete();
     }
 
+    /**
+     * @param itemId id of a page item
+     * @returns where items with this id lie on this panel
+     */
+    findPageItemsById(itemId: string): { page: Page; index: number }[] {
+        return this.pages.flatMap(page => (page ? page.itemIndexesOfId(itemId).map(index => ({ page, index })) : []));
+    }
     getPagebyUniqueID(uniqueID: string): Page | null {
         if (!uniqueID) {
             return null;
@@ -2166,9 +2217,7 @@ export class Panel extends BaseClass {
                 break;
             }
             case 'sleepReached': {
-                await this.setActivePage(this.screenSaver);
-                this.navigation.resetPosition();
-                this.pages.forEach(a => a && a.reset());
+                await this.showScreensaverNow();
                 break;
             }
             case 'pageOpenDetail': {
@@ -2185,6 +2234,10 @@ export class Panel extends BaseClass {
             case 'buttonPress3':
             case 'buttonPress2': {
                 if (event.id == 'screensaver') {
+                    // before the gesture and notification states: this tap only switches the timer to the clock
+                    if (await this.screenSaver.onTimerTap(event.action, event.opt)) {
+                        break;
+                    }
                     await this.library.writedp(
                         `panels.${this.name}.cmd.screenSaver.activateNotification`,
                         false,
@@ -3017,21 +3070,24 @@ export class Panel extends BaseClass {
             let prev: string | undefined = undefined;
             let home: string | undefined = undefined;
             let parent: string | undefined = undefined;
+            const nameOf = (index: number): string | undefined => {
+                if (index === SCREENSAVER_NAV_INDEX) {
+                    return adminShareConfig.screensaverTargetPage;
+                }
+                const n = db[index];
+                return n != null && n.page ? n.page.name : undefined;
+            };
             if (typeof nav.right.single === 'number') {
-                const n = db[nav.right.single];
-                next = n != null && n.page ? n.page.name : undefined;
+                next = nameOf(nav.right.single);
             }
             if (typeof nav.left.single === 'number') {
-                const n = db[nav.left.single];
-                prev = n != null && n.page ? n.page.name : undefined;
+                prev = nameOf(nav.left.single);
             }
             if (typeof nav.right.double === 'number') {
-                const n = db[nav.right.double];
-                home = n != null && n.page ? n.page.name : undefined;
+                home = nameOf(nav.right.double);
             }
             if (typeof nav.left.double === 'number') {
-                const n = db[nav.left.double];
-                parent = n != null && n.page ? n.page.name : undefined;
+                parent = nameOf(nav.left.double);
             }
             // The headline is only known when it is a constant - otherwise it is read from a state
             const headline = readConstString(nav.page.config?.data, 'headline');
@@ -3129,6 +3185,23 @@ export class Panel extends BaseClass {
             res.navigationMap.push(navMap);
         }
         res.navigationMap.push(...stateRefEntries.values());
+        // the reserved target has a node of its own in the flow as soon as something leads to it
+        const target = adminShareConfig.screensaverTargetPage;
+        const leadsThere = res.navigationMap.some(
+            e =>
+                [e.next, e.prev, e.home, e.parent].includes(target) ||
+                !!e.targetPages?.includes(target) ||
+                !!e.targetPagesLongPress?.includes(target),
+        );
+        if (leadsThere) {
+            res.navigationMap.push({
+                page: target,
+                label: this.library.getTranslation('screensaver_target'),
+                origin: 'system',
+                generated: true,
+                position: navMapFromConfig?.find(a => a.name === target)?.position ?? undefined,
+            });
+        }
 
         return res;
     }

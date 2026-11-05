@@ -10,6 +10,7 @@ import type {
     UnlockEntry,
 } from '../../src/lib/types/adminShareConfig';
 import { closeNavigationChain } from '../../src/lib/types/navigationEdit';
+import { assignMissingItemIds } from '../../src/lib/types/adminShareConfig';
 import {
     ADAPTER_NAME,
     dropScriptNavigation,
@@ -311,6 +312,18 @@ class PageConfigManager extends ConfigGeneric<ConfigGenericProps & { theme?: any
         this.setState({ pagesList: Array.from(new Set(pages)) } as PageConfigManagerState);
     }
 
+    /**
+     * The one way the pages of this table are written: page items without an id get one here, so they do when they are
+     * created and all older ones with the first change. Opening the admin writes nothing.
+     *
+     * @param updated the new table
+     */
+    private commitEntries(updated: PageConfigEntry[]): void {
+        const stamped = [...assignMissingItemIds(updated)];
+        this.setState({ entries: stamped } as PageConfigManagerState);
+        void this.onChange(this.props.attr, stamped);
+    }
+
     private handleAdd = (name: string, cardType: PageCardType): void => {
         if (!canCreateForCardType(cardType)) {
             return; // Sollte nicht vorkommen (Button ist disabled)
@@ -413,8 +426,7 @@ class PageConfigManager extends ConfigGeneric<ConfigGenericProps & { theme?: any
         }
 
         const updated = [...this.state.entries, newEntry];
-        this.setState({ entries: updated } as PageConfigManagerState);
-        void this.onChange(this.props.attr, updated);
+        this.commitEntries(updated);
         this.checkAlarmButtons(updated);
     };
 
@@ -428,8 +440,7 @@ class PageConfigManager extends ConfigGeneric<ConfigGenericProps & { theme?: any
     private handleDelete = (name: string, closeChain: boolean): void => {
         const entries = closeChain ? closeNavigationChain(this.state.entries, name) : this.state.entries;
         const updated = entries.filter(e => e.uniqueName !== name);
-        this.setState({ entries: updated } as PageConfigManagerState);
-        void this.onChange(this.props.attr, updated);
+        this.commitEntries(updated);
         this.checkAlarmButtons(updated);
 
         const filteredAfterDelete = filterEntriesByCardType(updated, this.state.selectedCardType);
@@ -442,8 +453,7 @@ class PageConfigManager extends ConfigGeneric<ConfigGenericProps & { theme?: any
         const updated = this.state.entries.map(it =>
             it.uniqueName === uniqueName ? dropScriptNavigation({ ...it, navigationAssignment: assignments }) : it,
         );
-        this.setState({ entries: updated } as PageConfigManagerState);
-        void this.onChange(this.props.attr, updated);
+        this.commitEntries(updated);
     };
 
     /**
@@ -472,8 +482,7 @@ class PageConfigManager extends ConfigGeneric<ConfigGenericProps & { theme?: any
 
     private handleEntryChange = (updatedEntry: PageConfigEntry): void => {
         const updated = this.state.entries.map(it => (it.uniqueName === updatedEntry.uniqueName ? updatedEntry : it));
-        this.setState({ entries: updated } as PageConfigManagerState);
-        void this.onChange(this.props.attr, updated);
+        this.commitEntries(updated);
         this.checkAlarmButtons(updated);
     };
 
@@ -505,8 +514,7 @@ class PageConfigManager extends ConfigGeneric<ConfigGenericProps & { theme?: any
         const updated = this.state.entries.map(it =>
             it.uniqueName === uniqueName ? dropScriptNavigation({ ...it, ...fields }) : it,
         );
-        this.setState({ entries: updated } as PageConfigManagerState);
-        void this.onChange(this.props.attr, updated);
+        this.commitEntries(updated);
     };
 
     private renderMiddlePanel(): React.JSX.Element {

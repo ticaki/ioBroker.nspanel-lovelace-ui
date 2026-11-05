@@ -48,6 +48,7 @@ var tools = __toESM(require("../const/tools"));
 var import_pageItem = require("./pageItem");
 var import_Color = require("../const/Color");
 var import_adminShareConfig = require("../types/adminShareConfig");
+var import_screensaver_timer = require("./screensaver-timer");
 var _Screensaver_instances, sendNotify_fn;
 function isScreensaverConfig(config) {
   return typeof config.card === "string" && config.card.startsWith("screensaver");
@@ -70,7 +71,7 @@ function resolveScreensaverOptions(options) {
 const _Screensaver = class _Screensaver extends import_Page.Page {
   //readonly mode: Types.ScreensaverModeType = 'standard';
   constructor(config, pageOptions) {
-    var _a, _b;
+    var _a, _b, _c;
     const { options, rejected } = resolveScreensaverOptions(pageOptions);
     if (rejected) {
       config.adapter.log.warn(
@@ -120,6 +121,41 @@ const _Screensaver = class _Screensaver extends import_Page.Page {
     __publicField(this, "customNotification", false);
     __publicField(this, "activeNotification", false);
     __publicField(this, "activeNotifyId", "");
+    /** timer instead of the clock, undefined = none or not usable */
+    __publicField(this, "clockTimer");
+    __publicField(this, "timerSources", /* @__PURE__ */ new Map());
+    __publicField(this, "timerMemory", /* @__PURE__ */ new Map());
+    /** unit and kind of the data states as far as read */
+    __publicField(this, "timerCommon", /* @__PURE__ */ new Map());
+    __publicField(this, "timerPatterns", []);
+    __publicField(this, "timerSelection", import_screensaver_timer.TIMER_OFF);
+    /** the timer was tapped away, the clock is shown - only at runtime */
+    __publicField(this, "timerTappedAway", false);
+    __publicField(this, "lastTimerTap", 0);
+    __publicField(this, "timerTick");
+    /** page items of this panel that use this timer, see {@link addClockTimerListener} */
+    __publicField(this, "clockTimerListeners", /* @__PURE__ */ new Set());
+    /** a page item is the source of the timer, see {@link connectClockTimerItem} */
+    __publicField(this, "timerItem");
+    /** last timer message on the display, the time trigger of the clock must not repeat it */
+    __publicField(this, "lastTimerPayload", "");
+    /** timer status of the last `color~` */
+    __publicField(this, "colorTimerStatus", "off");
+    /** the last `color~` was for a shown timer */
+    __publicField(this, "colorTimerShown", false);
+    /** the HMI drops `color~` while a notification is shown */
+    __publicField(this, "colorsDropped", false);
+    __publicField(this, "onTimerItemChange", () => {
+      this.clockTimerListeners.forEach((listener) => listener());
+      void this.onStateTriggerSuperDoNotOverride("timer", this);
+    });
+    __publicField(this, "onTimerPatternState", (id, state) => {
+      var _a;
+      if (this.applyTimerPatternState(id, state)) {
+        (_a = this.clockTimerListeners) == null ? void 0 : _a.forEach((listener) => listener());
+        void this.onStateTriggerSuperDoNotOverride(id, this);
+      }
+    });
     __publicField(this, "rotationLoop", async () => {
       if (!this.visibility) {
         return;
@@ -147,6 +183,10 @@ const _Screensaver = class _Screensaver extends import_Page.Page {
     __publicField(this, "onStateTrigger", async (_dp, from) => {
       const config = this.config;
       if (!config || !globals.isScreenSaverCardType(config.card)) {
+        return;
+      }
+      if (from === this) {
+        await this.onTimerStatesChanged();
         return;
       }
       if (from instanceof import_pageItem.PageItem && this.pageItems) {
@@ -187,6 +227,7 @@ const _Screensaver = class _Screensaver extends import_Page.Page {
     });
     this.screensaverIndicatorButtons = (_a = options.config.screensaverIndicatorButtons) != null ? _a : false;
     this.screensaverSwipe = (_b = options.config.screensaverSwipe) != null ? _b : false;
+    this.clockTimer = ((_c = options.config.clockTimer) == null ? void 0 : _c.enabled) ? options.config.clockTimer : void 0;
     this.rotationTime = options.config.rotationTime !== 0 && options.config.rotationTime < 3 ? 3e3 : options.config.rotationTime * 1e3;
     this.neverDeactivateTrigger = true;
     this.replayTriggerPerSource = true;
@@ -204,6 +245,397 @@ const _Screensaver = class _Screensaver extends import_Page.Page {
           Definition.genericStateObjects.panel.panels.buttons.indicator
         );
       }
+    }
+    await this.initClockTimer();
+  }
+  /**
+   * Connects the states of the timer. A timer that can not run is dropped with one warning, the clock stays.
+   */
+  async initClockTimer() {
+    var _a, _b, _c, _d, _e, _f;
+    const timer = this.clockTimer;
+    if (!timer || this.timerSources.size > 0 || this.timerPatterns.length > 0) {
+      return;
+    }
+    const label = `Screensaver '${this.name}' of panel '${this.basePanel.friendlyName || this.basePanel.name}'`;
+    if ((0, import_adminShareConfig.clockTimerUsesPageItem)(timer) && (0, import_adminShareConfig.isClockTimerComplete)(timer)) {
+      return;
+    }
+    if (!(0, import_adminShareConfig.isClockTimerComplete)(timer)) {
+      const reason = (0, import_adminShareConfig.clockTimerUsesPageItem)(timer) ? "no page item is chosen" : (0, import_adminShareConfig.clockTimerUsesSlots)(timer) ? `invalid slot patterns (${(0, import_adminShareConfig.checkClockTimerPatterns)((_a = timer.activePattern) != null ? _a : "", (_b = timer.dataPattern) != null ? _b : "")}): '${(_c = timer.activePattern) != null ? _c : ""}', '${(_d = timer.dataPattern) != null ? _d : ""}' - both need exactly one * after a path` : "the on/off state and the data state are both required";
+      this.log.warn(`${label}: timer is ignored, ${reason}.`);
+      this.clockTimer = void 0;
+      return;
+    }
+    const states = this.controller.statesControler;
+    try {
+      if ((0, import_adminShareConfig.clockTimerUsesSlots)(timer)) {
+        const patterns = [((_e = timer.activePattern) != null ? _e : "").trim(), ((_f = timer.dataPattern) != null ? _f : "").trim()];
+        if (patterns.some((p) => p.startsWith(`${this.adapter.namespace}.`))) {
+          throw new Error(`patterns must not refer to the adapter's own namespace: ${patterns.join(", ")}`);
+        }
+        this.timerPatterns = patterns;
+        for (const pattern of patterns) {
+          await states.subscribePattern(pattern, this.onTimerPatternState);
+        }
+        for (const pattern of patterns) {
+          const found = await this.adapter.getForeignStatesAsync(pattern);
+          for (const [id, state] of Object.entries(found)) {
+            this.applyTimerPatternState(id, state);
+          }
+        }
+      } else {
+        const activeId = timer.activeState.trim();
+        const dataId = timer.dataState.trim();
+        await states.setTrigger(activeId, this);
+        await states.setTrigger(dataId, this);
+        this.timerSources.set("", {
+          activeId,
+          dataId,
+          activeVal: await states.getStateVal(activeId),
+          dataVal: await states.getStateVal(dataId)
+        });
+      }
+    } catch (err) {
+      this.log.warn(`${label}: timer is ignored: ${String(err)}`);
+      await this.releaseTimerPatterns();
+      this.timerSources.clear();
+      this.clockTimer = void 0;
+    }
+  }
+  /**
+   * Connects a page item as the source of the timer, also while its page was never shown. No item, no countdown or
+   * a circle (the item uses this screensaver): one warning and the clock stays, the states of the item are not read.
+   */
+  async connectClockTimerItem() {
+    var _a;
+    const itemId = (_a = this.clockTimer) == null ? void 0 : _a.itemId;
+    if (!itemId || this.timerItem) {
+      return;
+    }
+    const found = this.basePanel.findPageItemsById(itemId);
+    const item = found.length === 1 ? await found[0].page.getPageItemAt(found[0].index) : void 0;
+    let problem = "";
+    if (found.length > 1) {
+      problem = `the id is used by ${found.length} items of this panel`;
+    } else if (!item) {
+      problem = "this panel has no such item";
+    } else if (item.usesScreensaverTimer) {
+      problem = "the item itself uses the timer of the screensaver, that is a circle: remove 'use the timer of the screensaver' from the item or choose another source";
+    } else if (!item.isCountdownSource()) {
+      problem = "the item shows no countdown (alarm clock or display without STATUS)";
+    }
+    if (problem || !item) {
+      this.log.warn(
+        `Screensaver '${this.name}' of panel '${this.basePanel.friendlyName || this.basePanel.name}': timer from page item '${itemId}' is ignored: ${problem}.`
+      );
+      this.clockTimer = void 0;
+      await (item == null ? void 0 : item.delete());
+      return;
+    }
+    this.timerItem = item;
+    await item.useAsClockTimerSource(this.onTimerItemChange);
+  }
+  /**
+   * ends the subscriptions by pattern
+   */
+  async releaseTimerPatterns() {
+    const patterns = this.timerPatterns;
+    this.timerPatterns = [];
+    for (const pattern of patterns) {
+      try {
+        await this.controller.statesControler.unsubscribePattern(pattern, this.onTimerPatternState);
+      } catch (err) {
+        this.log.debug(`Timer: unsubscribe of ${pattern} failed: ${String(err)}`);
+      }
+    }
+  }
+  /**
+   * takes the value of a slot state; a slot of which both states are deleted is gone
+   *
+   * @param id state id
+   * @param state the state, null when it was deleted
+   * @returns true when something changed
+   */
+  applyTimerPatternState(id, state) {
+    const [activePattern, dataPattern] = this.timerPatterns;
+    const val = state ? state.val : void 0;
+    let changed = false;
+    for (const [pattern, field] of [
+      [activePattern, "activeVal"],
+      [dataPattern, "dataVal"]
+    ]) {
+      const key = (0, import_screensaver_timer.timerSlotKey)(pattern, id);
+      if (key === void 0) {
+        continue;
+      }
+      let source = this.timerSources.get(key);
+      if (!source) {
+        if (val === void 0) {
+          continue;
+        }
+        source = {
+          activeId: activePattern.replace("*", key),
+          dataId: dataPattern.replace("*", key),
+          activeVal: void 0,
+          dataVal: void 0
+        };
+        this.timerSources.set(key, source);
+      }
+      if (source[field] !== val) {
+        source[field] = val;
+        changed = true;
+      }
+      if (source.activeVal === void 0 && source.dataVal === void 0) {
+        this.timerSources.delete(key);
+      }
+    }
+    return changed;
+  }
+  /**
+   * the values of the two states of a simple timer; the trigger follows
+   *
+   * @param dp state id
+   * @param state old and new state
+   * @param state.old old state
+   * @param state.new new state
+   */
+  async onStateChange(dp, state) {
+    var _a, _b;
+    const source = (_a = this.timerSources) == null ? void 0 : _a.get("");
+    if ((source == null ? void 0 : source.activeId) === dp) {
+      source.activeVal = state.new.val;
+    }
+    if ((source == null ? void 0 : source.dataId) === dp) {
+      source.dataVal = state.new.val;
+    }
+    if ((source == null ? void 0 : source.activeId) === dp || (source == null ? void 0 : source.dataId) === dp) {
+      (_b = this.clockTimerListeners) == null ? void 0 : _b.forEach((listener) => listener());
+    }
+    return Promise.resolve();
+  }
+  /**
+   * unit and kind of a data state, read once
+   *
+   * @param id data state
+   * @returns what the object says
+   */
+  async timerCommonOf(id) {
+    const known = this.timerCommon.get(id);
+    if (known) {
+      return known;
+    }
+    const obj = await this.controller.statesControler.getObjectAsync(id);
+    if (!obj || obj.type !== "state") {
+      return { countdownState: false };
+    }
+    const common = { unit: obj.common.unit, countdownState: (0, import_screensaver_timer.isCountdownCommon)(obj.common) };
+    this.timerCommon.set(id, common);
+    return common;
+  }
+  /**
+   * The next memory of all slots, the current one stays as it is.
+   *
+   * @param now current time in ms
+   * @returns the memory per slot and whether a new timer began
+   */
+  async evaluateTimerSlots(now) {
+    const memory = /* @__PURE__ */ new Map();
+    let started = false;
+    if (this.timerItem) {
+      const key = "item";
+      const step = (0, import_screensaver_timer.stepTimerItem)(this.timerMemory.get(key), await this.timerItem.getCountdownView());
+      memory.set(key, step.memory);
+      return { memory, started: step.started };
+    }
+    for (const [key, source] of this.timerSources) {
+      const common = await this.timerCommonOf(source.dataId);
+      const step = (0, import_screensaver_timer.stepTimerSlot)(
+        this.timerMemory.get(key),
+        {
+          on: (0, import_screensaver_timer.isTimerOn)(source.activeVal),
+          value: source.dataVal,
+          unit: common.unit,
+          countdownState: common.countdownState
+        },
+        now
+      );
+      memory.set(key, step.memory);
+      started = started || step.started;
+    }
+    return { memory, started };
+  }
+  /**
+   * What a page item of this panel can do with the timer (`useScreensaverTimer`). Only reads: the evaluation of the
+   * display - and with it a tapped away timer and the sending of the display - stays with {@link refreshTimer}.
+   *
+   * @returns undefined when this screensaver has no usable timer
+   */
+  async getClockTimerAccess() {
+    var _a;
+    if (!this.clockTimer) {
+      return void 0;
+    }
+    const now = Date.now();
+    const { memory } = await this.evaluateTimerSlots(now);
+    const selection = (0, import_screensaver_timer.selectTimer)(memory, now);
+    if (this.timerItem) {
+      const view = await this.timerItem.getCountdownView();
+      return {
+        selection,
+        ticking: (0, import_screensaver_timer.nextTimerWakeMs)(memory, selection, false, now) !== void 0,
+        canStart: view.status === "off" && view.canStart,
+        canStop: view.status !== "off" && view.canStop
+      };
+    }
+    const shown = selection.key === void 0 ? void 0 : this.timerSources.get(selection.key);
+    const free = await this.findTimerStartSlot();
+    return {
+      selection,
+      ticking: (0, import_screensaver_timer.nextTimerWakeMs)(memory, selection, false, now) !== void 0,
+      canStart: !!free && free.activeCommon.write !== false && free.dataCommon.write !== false,
+      canStop: !!shown && ((_a = await this.timerStateCommon(shown.activeId)) == null ? void 0 : _a.write) !== false
+    };
+  }
+  /**
+   * Starts the timer in the lowest free slot: first the data, so that switching on never sees the old one.
+   *
+   * @param seconds duration
+   * @returns true when it was written
+   */
+  async startClockTimer(seconds) {
+    if (this.timerItem) {
+      return this.timerItem.startAsClockTimerSource(seconds);
+    }
+    const slot = await this.findTimerStartSlot();
+    if (!slot || seconds <= 0 || slot.activeCommon.write === false || slot.dataCommon.write === false) {
+      return false;
+    }
+    const value = (0, import_screensaver_timer.timerStartValue)(slot.dataCommon, seconds, Date.now());
+    return await this.writeTimerState(slot.source.dataId, value) && await this.writeTimerState(slot.source.activeId, (0, import_screensaver_timer.timerActiveValue)(slot.activeCommon, true));
+  }
+  /**
+   * Switches off the slot that is shown.
+   *
+   * @returns true when it was written
+   */
+  async stopClockTimer() {
+    if (this.timerItem) {
+      return this.timerItem.stopAsClockTimerSource();
+    }
+    const access = await this.getClockTimerAccess();
+    const shown = (access == null ? void 0 : access.selection.key) === void 0 ? void 0 : this.timerSources.get(access.selection.key);
+    const common = shown && await this.timerStateCommon(shown.activeId);
+    if (!shown || !common || common.write === false) {
+      return false;
+    }
+    return this.writeTimerState(shown.activeId, (0, import_screensaver_timer.timerActiveValue)(common, false));
+  }
+  /**
+   * A page item is told about every change of the states of the timer.
+   *
+   * @param listener called on a change, must not throw
+   */
+  addClockTimerListener(listener) {
+    this.clockTimerListeners.add(listener);
+  }
+  /**
+   * @param listener as given to {@link addClockTimerListener}
+   */
+  removeClockTimerListener(listener) {
+    var _a;
+    (_a = this.clockTimerListeners) == null ? void 0 : _a.delete(listener);
+  }
+  /**
+   * @returns the slot a start takes: the lowest one that is off and whose two states exist
+   */
+  async findTimerStartSlot() {
+    for (const key of (0, import_screensaver_timer.orderTimerSlotKeys)(this.timerSources.keys())) {
+      const source = this.timerSources.get(key);
+      if (!source || (0, import_screensaver_timer.isTimerOn)(source.activeVal)) {
+        continue;
+      }
+      const activeCommon = await this.timerStateCommon(source.activeId);
+      const dataCommon = await this.timerStateCommon(source.dataId);
+      if (activeCommon && dataCommon) {
+        return { source, activeCommon, dataCommon };
+      }
+    }
+    return void 0;
+  }
+  /**
+   * @param id state id
+   * @returns common of the state, undefined when it does not exist
+   */
+  async timerStateCommon(id) {
+    const obj = await this.controller.statesControler.getObjectAsync(id);
+    return (obj == null ? void 0 : obj.type) === "state" ? obj.common : void 0;
+  }
+  /**
+   * @param id state id
+   * @param value value to write, as a command - only states of the adapter are written confirmed
+   * @returns false when it failed, that is logged
+   */
+  async writeTimerState(id, value) {
+    try {
+      await this.adapter.setForeignStateAsync(id, value, id.startsWith(`${this.adapter.namespace}.`));
+      return true;
+    } catch (err) {
+      this.log.warn(`Timer: cannot write ${id}: ${String(err)}`);
+      return false;
+    }
+  }
+  /**
+   * Evaluates all slots for now. A new timer, or another slot on the display, brings a tapped away timer back.
+   *
+   * @returns what the display has to show
+   */
+  async refreshTimer() {
+    if (!this.clockTimer) {
+      return import_screensaver_timer.TIMER_OFF;
+    }
+    const now = Date.now();
+    const { memory, started } = await this.evaluateTimerSlots(now);
+    this.timerMemory = memory;
+    const selection = (0, import_screensaver_timer.selectTimer)(this.timerMemory, now);
+    if (started || selection.status === "off" || selection.key !== void 0 && selection.key !== this.timerSelection.key) {
+      this.timerTappedAway = false;
+    }
+    this.timerSelection = selection;
+    return selection;
+  }
+  /**
+   * a state of the timer changed: without a timer before and after it there is nothing to send
+   */
+  async onTimerStatesChanged() {
+    const before = this.timerSelection.status;
+    const selection = await this.refreshTimer();
+    if (before !== "off" || selection.status !== "off") {
+      await this.HandleTime();
+    }
+  }
+  clearTimerTick() {
+    if (this.timerTick) {
+      this.adapter.clearTimeout(this.timerTick);
+      this.timerTick = void 0;
+    }
+  }
+  /**
+   * Wakes up for the next change of the display that comes without a state change.
+   *
+   * @param selection what the display shows
+   */
+  scheduleTimerTick(selection) {
+    this.clearTimerTick();
+    if (!this.visibility || this.unload || this.adapter.unload) {
+      return;
+    }
+    const wait = (0, import_screensaver_timer.nextTimerWakeMs)(this.timerMemory, selection, this.timerTappedAway, Date.now());
+    if (wait !== void 0) {
+      this.timerTick = this.adapter.setTimeout(() => {
+        this.timerTick = void 0;
+        void this.HandleTime();
+      }, wait);
     }
   }
   /**
@@ -434,13 +866,50 @@ const _Screensaver = class _Screensaver extends import_Page.Page {
     return await super.createPageItems(pageItemsConfig);
   }
   sendColors() {
-    const colorPayload = `color~${import_Color.Color.rgb_dec565(import_Color.Color.background)}~${import_Color.Color.rgb_dec565(import_Color.Color.fgTime)}~${import_Color.Color.rgb_dec565(import_Color.Color.fgTimeAmPm)}~${import_Color.Color.rgb_dec565(import_Color.Color.fgDate)}~${import_Color.Color.rgb_dec565(import_Color.Color.fgMain)}~${import_Color.Color.rgb_dec565(import_Color.Color.fgForecast)}~${import_Color.Color.rgb_dec565(import_Color.Color.fgForecast)}~${import_Color.Color.rgb_dec565(import_Color.Color.fgForecast)}~${import_Color.Color.rgb_dec565(import_Color.Color.fgForecast)}~${import_Color.Color.rgb_dec565(import_Color.Color.fgForecast)}~${import_Color.Color.rgb_dec565(import_Color.Color.fgForecast)}~${import_Color.Color.rgb_dec565(import_Color.Color.fgForecast)}~${import_Color.Color.rgb_dec565(import_Color.Color.fgForecast)}~${import_Color.Color.rgb_dec565(import_Color.Color.fgBar)}~${import_Color.Color.rgb_dec565(import_Color.Color.fgMainAlt)}~${import_Color.Color.rgb_dec565(import_Color.Color.fgTimeAdd)}`;
+    var _a, _b;
+    const colorPayload = `color~${import_Color.Color.rgb_dec565(import_Color.Color.background)}~${import_Color.Color.rgb_dec565(this.timeColor())}~${import_Color.Color.rgb_dec565(import_Color.Color.fgTimeAmPm)}~${import_Color.Color.rgb_dec565(import_Color.Color.fgDate)}~${import_Color.Color.rgb_dec565(import_Color.Color.fgMain)}~${import_Color.Color.rgb_dec565(import_Color.Color.fgForecast)}~${import_Color.Color.rgb_dec565(import_Color.Color.fgForecast)}~${import_Color.Color.rgb_dec565(import_Color.Color.fgForecast)}~${import_Color.Color.rgb_dec565(import_Color.Color.fgForecast)}~${import_Color.Color.rgb_dec565(import_Color.Color.fgForecast)}~${import_Color.Color.rgb_dec565(import_Color.Color.fgForecast)}~${import_Color.Color.rgb_dec565(import_Color.Color.fgForecast)}~${import_Color.Color.rgb_dec565(import_Color.Color.fgForecast)}~${import_Color.Color.rgb_dec565(import_Color.Color.fgBar)}~${import_Color.Color.rgb_dec565(import_Color.Color.fgMainAlt)}~${import_Color.Color.rgb_dec565(this.timeAddColor())}`;
+    this.colorTimerStatus = (_b = (_a = this.timerSelection) == null ? void 0 : _a.status) != null ? _b : "off";
+    this.colorTimerShown = this.isTimerShown();
+    this.colorsDropped = !!this.clockTimer && this.activeNotification;
     this.sendToPanel(colorPayload, false);
+  }
+  /**
+   * @returns color of the info icon: the timer overrides it as long as it is active
+   */
+  timeAddColor() {
+    var _a;
+    switch ((_a = this.timerSelection) == null ? void 0 : _a.status) {
+      case "running":
+      case "paused":
+        return import_Color.Color.Orange;
+      case "expired":
+        return import_Color.Color.Red;
+      default:
+        return import_Color.Color.fgTimeAdd;
+    }
+  }
+  /**
+   * @returns color of the time: the one of the timer while it is on the display - after a tap to the clock only the
+   * icon keeps it
+   */
+  timeColor() {
+    return this.isTimerShown() ? this.timeAddColor() : import_Color.Color.fgTime;
+  }
+  /**
+   * @returns true while the display shows the timer instead of the clock
+   */
+  isTimerShown() {
+    var _a, _b;
+    const status = (_b = (_a = this.timerSelection) == null ? void 0 : _a.status) != null ? _b : "off";
+    return status !== "off" && !this.timerTappedAway;
   }
   async onVisibilityChange(v) {
     this.step = 0;
     if (v) {
       this.lastUpdateTs = 0;
+      this.timerTappedAway = false;
+      this.lastTimerTap = 0;
+      this.lastTimerPayload = "";
       this.sendType();
       await this.HandleTime();
       await this.restartRotationLoop();
@@ -448,6 +917,7 @@ const _Screensaver = class _Screensaver extends import_Page.Page {
       if (this.timeoutRotation) {
         this.adapter.clearTimeout(this.timeoutRotation);
       }
+      this.clearTimerTick();
     }
   }
   async restartRotationLoop() {
@@ -460,13 +930,26 @@ const _Screensaver = class _Screensaver extends import_Page.Page {
     if (this.basePanel.isOnline === false) {
       return;
     }
-    const message = await this.getData(["time"]);
-    if (message === null || !message.options.time[0]) {
-      this.log.debug("HandleTime: no message, no time or panel is offline");
+    const timer = await this.refreshTimer();
+    const timerActive = timer.status !== "off";
+    if (timerActive && !this.visibility) {
       return;
     }
+    const showTimer = timerActive && !this.timerTappedAway;
+    let text = timer.text;
+    if (!showTimer) {
+      const message = await this.getData(["time"]);
+      if (message === null || !message.options.time[0]) {
+        this.log.debug("HandleTime: no message, no time or panel is offline");
+        return;
+      }
+      text = message.options.time[0].split("~")[5];
+    }
     let icon = `${this.infoIcon ? `~${import_icon_mapping.Icons.GetIcon(this.infoIcon)}` : ""}`;
-    if (this.basePanel.isVirtual) {
+    if (timerActive) {
+      const iconName = timer.status === "expired" ? "timer-alert" : timer.status === "paused" ? "timer-pause" : "timer-sand";
+      icon = `~${import_icon_mapping.Icons.GetIcon(iconName)}`;
+    } else if (this.basePanel.isVirtual) {
     } else if (this.basePanel.info.nspanel.displayVersion === "0.0.0") {
       if (!this.adapter.config.hideDeveloperSymbols) {
         icon = `~${import_icon_mapping.Icons.GetIcon("cog-refresh-outline")}`;
@@ -474,7 +957,19 @@ const _Screensaver = class _Screensaver extends import_Page.Page {
     } else if (!icon && this.basePanel.info.nspanel.onlineVersion !== this.basePanel.info.nspanel.displayVersion) {
       icon = `~${import_icon_mapping.Icons.GetIcon("wrench-clock")}`;
     }
-    this.sendToPanel(`time~${message.options.time[0].split("~")[5]}${icon}`, false);
+    const colorsChanged = !!this.clockTimer && this.visibility && (this.colorTimerStatus !== timer.status || this.colorTimerShown !== showTimer);
+    const payload = `time~${text}${icon}`;
+    this.scheduleTimerTick(timer);
+    if (colorsChanged && !showTimer) {
+      this.sendColors();
+    }
+    if (!showTimer || payload !== this.lastTimerPayload) {
+      this.lastTimerPayload = showTimer ? payload : "";
+      this.sendToPanel(payload, false);
+    }
+    if (colorsChanged && showTimer) {
+      this.sendColors();
+    }
   }
   async HandleDate() {
     if (this.basePanel.isOnline === false) {
@@ -578,6 +1073,33 @@ const _Screensaver = class _Screensaver extends import_Page.Page {
     }
     return false;
   }
+  /**
+   * The first tap on a shown timer switches to the clock: no gesture, no notification, no page change. Taps of the
+   * same double click that follow are swallowed, see {@link Screensaver.timerTapWindow}.
+   *
+   * @param action action of the event
+   * @param opt taps counted by the HMI
+   * @returns true when the tap is done
+   */
+  async onTimerTap(action, opt) {
+    if (action !== "bExit" || !this.clockTimer) {
+      return false;
+    }
+    const now = Date.now();
+    const timer = await this.refreshTimer();
+    if (timer.status !== "off" && !this.timerTappedAway) {
+      this.timerTappedAway = true;
+      this.lastTimerTap = now;
+      await this.HandleTime();
+      await this.HandleNotification();
+      return true;
+    }
+    if (this.basePanel.screenSaverDoubleClick && now - this.lastTimerTap < _Screensaver.timerTapWindow && parseInt(opt) > 1) {
+      this.lastTimerTap = now;
+      return true;
+    }
+    return false;
+  }
   async onScreensaverTap() {
     const result = await this.deactivateNotify();
     if (result) {
@@ -634,6 +1156,7 @@ const _Screensaver = class _Screensaver extends import_Page.Page {
     }
   }
   async delete() {
+    var _a;
     await super.delete();
     if (this.timeoutRotation) {
       this.adapter.clearTimeout(this.timeoutRotation);
@@ -644,6 +1167,11 @@ const _Screensaver = class _Screensaver extends import_Page.Page {
     if (this.blockButtons) {
       this.adapter.clearTimeout(this.blockButtons);
     }
+    this.clearTimerTick();
+    this.clockTimerListeners.clear();
+    (_a = this.timerItem) == null ? void 0 : _a.removeClockTimerSource(this.onTimerItemChange);
+    this.timerItem = void 0;
+    await this.releaseTimerPatterns();
   }
   goLeft() {
   }
@@ -710,6 +1238,10 @@ const _Screensaver = class _Screensaver extends import_Page.Page {
     if (!init && this.visibility) {
       this.sendType();
       void this.update();
+      if (this.clockTimer) {
+        this.lastTimerPayload = "";
+        void this.HandleTime();
+      }
     }
   }
   static mapModeToNumber(mode) {
@@ -731,9 +1263,20 @@ sendNotify_fn = function(enabled, heading = "", text = "") {
   this.activeNotification = enabled && (heading !== "" || text !== "");
   const msg = this.activeNotification ? tools.getPayloadRemoveTilde("notify", heading, text) : tools.getPayload("notify", "", "");
   this.sendToPanel(msg, false);
+  if (!this.activeNotification && this.colorsDropped) {
+    this.sendColors();
+  }
 };
 /** Minimum pause between two weatherUpdate/color bursts - protects the Nextion serial buffer */
 __publicField(_Screensaver, "minUpdateInterval", 3e3);
+/**
+ * A tap that follows a tap on the timer is still the same double click up to this long after it (and the one
+ * before, for more than two taps). The HMI has no limit of its own - all screensaver pages: `tc0` press does
+ * `vaTap.val+=1` and prepares `bExit,<vaTap>`, its release sends it. Only `tmSleep` sets `vaTap.val=0` when the
+ * display dims after `sleepTimeout`, or a reload of the page. So every later tap arrives with opt > 1 and this
+ * limit must come from here: a quick double tap is over within it, even with the way over Tasmota and MQTT.
+ */
+__publicField(_Screensaver, "timerTapWindow", 1e3);
 let Screensaver = _Screensaver;
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {

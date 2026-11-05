@@ -4,6 +4,7 @@
  * Order for the short label of a place in the mock:
  * 1. headline of the item (ScreensaverEntityText for a raw script item)
  * 2. a plain state / object id: its common.name (when loaded), else the last part of the id
+ *    - only the instance of a template (`bydhvs.0`) says nothing as a name: its template name is used
  * 3. a template: the template name without its type (`text.pirate-weather.favorit` → `pirate-weather favorit`)
  * 4. a regexp as state (dpInit): the last part of its readable prefix
  *
@@ -28,6 +29,9 @@ interface LabelSource {
 
 /** characters that end the literal start of a regexp when they are not escaped */
 const REGEX_META = new Set(['.', '*', '+', '?', '(', ')', '[', ']', '{', '}', '|', '^', '$']);
+
+/** an id that is only the instance of an adapter (`bydhvs.0`) */
+const ADAPTER_INSTANCE = /^[^.]+\.\d+$/;
 
 /**
  * the id is written as a regexp (`/.../flags`) - like getRegExp of the adapter reads it
@@ -243,7 +247,7 @@ export function screensaverItemLabel(
     const templateName = template ? readableTemplateName(template) : '';
 
     let short = headline;
-    if (!short && state && !regex) {
+    if (!short && state && !regex && !(templateName && ADAPTER_INSTANCE.test(state))) {
         short = names[state] || lastSegment(state);
     }
     if (!short && templateName) {

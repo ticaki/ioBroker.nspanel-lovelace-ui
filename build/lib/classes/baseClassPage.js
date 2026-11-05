@@ -61,7 +61,7 @@ class BaseTriggeredPage extends import_library.BaseClass {
   }
   constructor(card, alwaysOn = "none") {
     super(card.adapter, card.name);
-    this.minUpdateInterval = 400;
+    this.minUpdateInterval = 1e3;
     if (!this.adapter.controller) {
       throw new Error("No controller! bye bye");
     }

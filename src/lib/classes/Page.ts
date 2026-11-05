@@ -14,6 +14,11 @@ import type { NSPanel } from '../types/NSPanel';
 export type PageConfigAll = pages.PageBase;
 
 export class Page extends BaseClassPage {
+    /** a page sends at most one update per this time because of running timers (ms), a little less than 2 ticks */
+    private static readonly timerListInterval = 1900;
+    private timerTickItems: Set<PageItem> = new Set();
+    private timerTicker: ioBroker.Interval | undefined;
+    private lastTimerListUpdate: number = 0;
     readonly card: pages.PageTypeCards;
     readonly id: string;
     private lastCardCounter: number = 0;
@@ -220,6 +225,9 @@ export class Page extends BaseClassPage {
 
             const newTemplate = structuredClone(template) as Partial<NSPanel.PageItemOptionsTemplate>;
             delete newTemplate.adapter;
+            // admin only, the runtime item does not need them
+            delete newTemplate.screensaverAreas;
+            delete newTemplate.adminOptions;
             if (
                 options.type &&
                 options.type !== template.type &&
@@ -384,6 +392,122 @@ export class Page extends BaseClassPage {
             }
         }
         return result;
+    }
+
+    /**
+     * @param itemId id of a page item
+     * @returns the positions of the items with this id on this page
+     */
+    itemIndexesOfId(itemId: string): number[] {
+        const out: number[] = [];
+        (this.pageItemConfig ?? []).forEach((c, index) => {
+            if (c && 'itemId' in c && c.itemId === itemId) {
+                out.push(index);
+            }
+        });
+        return out;
+    }
+
+    /**
+     * A page item, also while the page was never shown - the same instance the page uses later on as soon as the item
+     * is kept (persistentPageItems).
+     *
+     * @param index position in the page
+     * @returns the item
+     */
+    async getPageItemAt(index: number): Promise<PageItem | undefined> {
+        return PageItem.getPageItem(
+            {
+                name: `${this.name}|PI`,
+                adapter: this.adapter,
+                panel: this.basePanel,
+                card: 'cardItemSpecial',
+                id: `${this.id}?${index}`,
+                parent: this,
+            },
+            this.pageItemConfig?.[index],
+        );
+    }
+
+    /**
+     * A timer on this page is running and is drawn: it wants to be drawn again as its time goes by. There is one
+     * ticker per page, however many timers run on it.
+     *
+     * @param item the item
+     * @param on true while it runs
+     */
+    setTimerTick(item: PageItem, on: boolean): void {
+        if (on) {
+            this.timerTickItems.add(item);
+            if (!this.timerTicker && !this.unload) {
+                this.timerTicker = this.adapter.setInterval(() => void this.onTimerTicker(), 1000);
+            }
+        } else {
+            this.timerTickItems.delete(item);
+            if (this.timerTickItems.size === 0) {
+                this.stopTimerTicker();
+            }
+        }
+    }
+
+    private stopTimerTicker(): void {
+        this.timerTickItems.clear();
+        if (this.timerTicker) {
+            this.adapter.clearInterval(this.timerTicker);
+            this.timerTicker = undefined;
+        }
+    }
+
+    /**
+     * Every second: an open popup follows, the list of the page gets one common update per
+     * {@link Page.timerListInterval} - and none while a popup lies on top of it. A change that is more than time, like
+     * the end of a timer, does not wait. Only ticks are limited here: buttons and states do not come along this way.
+     */
+    private async onTimerTicker(): Promise<void> {
+        if (this.unload || this.adapter.unload) {
+            this.stopTimerTicker();
+            return;
+        }
+        const items = [...this.timerTickItems];
+        let changed = false;
+        for (const item of items) {
+            changed = (await item.onTimerTick()) || changed;
+        }
+        if (this.sleep) {
+            return;
+        }
+        if (!this.getVisibility()) {
+            this.stopTimerTicker();
+            return;
+        }
+        const now = Date.now();
+        if (items.length > 0 && (changed || now - this.lastTimerListUpdate >= Page.timerListInterval)) {
+            this.lastTimerListUpdate = now;
+            await this.onStateTriggerSuperDoNotOverride('timer', items[0]);
+        }
+    }
+
+    /**
+     * Internal timers with SET or STATUS are controlled from outside, also while the page was never shown: they are
+     * created and subscribed here. Without these states the item comes into being with its page as always.
+     */
+    async connectControlledTimers(): Promise<void> {
+        const configs = this.pageItemConfig ?? [];
+        for (let index = 0; index < configs.length; index++) {
+            const c = configs[index];
+            if (
+                c &&
+                c.type === 'timer' &&
+                c.role === 'timer' &&
+                !c.useScreensaverTimer &&
+                c.data &&
+                !c.data.entity1?.value &&
+                (c.data.entity1?.set || c.data.setValue2)
+            ) {
+                const item = await this.getPageItemAt(index);
+                await item?.activateControlledTimer();
+            }
+        }
     }
 
     /**
@@ -622,6 +746,7 @@ export class Page extends BaseClassPage {
      */
     async delete(): Promise<void> {
         this.unload = true;
+        this.stopTimerTicker();
 
         if (this.directChildPage) {
             await this.directChildPage.delete();

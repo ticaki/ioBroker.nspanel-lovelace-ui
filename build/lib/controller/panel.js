@@ -503,7 +503,7 @@ class Panel extends import_library.BaseClass {
     }
   }
   init = async () => {
-    var _a, _b, _c, _d;
+    var _a, _b, _c, _d, _e;
     if (this.unload || this.adapter.unload) {
       return;
     }
@@ -698,6 +698,11 @@ class Panel extends import_library.BaseClass {
       definition.genericStateObjects.panel.panels.cmd.screenSaver.textNotification
     );
     val = void 0;
+    await this.library.writedp(
+      `panels.${this.name}.cmd.screenSaver.activate`,
+      false,
+      definition.genericStateObjects.panel.panels.cmd.screenSaver.activate
+    );
     state = this.library.readdb(`panels.${this.name}.cmd.screenSaver.activateNotification`);
     if (state && state.val != null && this.screenSaver) {
       this.screenSaver.customNotification = !!state.val;
@@ -770,6 +775,10 @@ class Panel extends import_library.BaseClass {
         }
       }
     }
+    for (const page of this.pages) {
+      await (page == null ? void 0 : page.connectControlledTimers());
+    }
+    await ((_c = this.screenSaver) == null ? void 0 : _c.connectClockTimerItem());
     await this.library.writedp(
       `panels.${this.name}.cmd.screenSaver.layout`,
       this.screenSaver && this.screenSaver.mode ? import_screensaver.Screensaver.mapModeToNumber(this.screenSaver.mode) : 0,
@@ -796,7 +805,7 @@ class Panel extends import_library.BaseClass {
     }
     await this.library.writedp(
       `panels.${this.name}.cmd.screenSaver.infoIcon`,
-      (_d = (_c = this.screenSaver) == null ? void 0 : _c.infoIcon) != null ? _d : "",
+      (_e = (_d = this.screenSaver) == null ? void 0 : _d.infoIcon) != null ? _e : "",
       definition.genericStateObjects.panel.panels.cmd.screenSaver.infoIcon
     );
     if (this.buttons && this.screenSaver) {
@@ -913,6 +922,27 @@ class Panel extends import_library.BaseClass {
       this._activePage.sendType(true);
       await this._activePage.update();
     }
+  }
+  /**
+   * What the end of the timeout of the panel does.
+   */
+  async showScreensaverNow() {
+    await this.setActivePage(this.screenSaver);
+    this.navigation.resetPosition();
+    this.pages.forEach((a) => a && a.reset());
+  }
+  /**
+   * The screensaver on request: a jump of an item, a navigation arrow, a state. Nothing to do when the panel can not
+   * show it or it is on the display already - a timeout of the panel does not come here.
+   */
+  async activateScreensaver() {
+    if (!this.isOnline || !this.screenSaver) {
+      return;
+    }
+    if (this._activePage === this.screenSaver && !this.screenSaver.sleep) {
+      return;
+    }
+    await this.showScreensaverNow();
   }
   getActivePage() {
     if (!this._activePage) {
@@ -1312,6 +1342,17 @@ class Panel extends import_library.BaseClass {
               false
             );
           }
+          break;
+        }
+        case "screenSaver.activate": {
+          if (state.val) {
+            await this.activateScreensaver();
+          }
+          await this.library.writedp(
+            `panels.${this.name}.cmd.screenSaver.activate`,
+            false,
+            definition.genericStateObjects.panel.panels.cmd.screenSaver.activate
+          );
           break;
         }
         case "screenSaver.doubleClick": {
@@ -1733,6 +1774,13 @@ class Panel extends import_library.BaseClass {
     this.data = {};
     await super.delete();
   }
+  /**
+   * @param itemId id of a page item
+   * @returns where items with this id lie on this panel
+   */
+  findPageItemsById(itemId) {
+    return this.pages.flatMap((page) => page ? page.itemIndexesOfId(itemId).map((index) => ({ page, index })) : []);
+  }
   getPagebyUniqueID(uniqueID) {
     var _a;
     if (!uniqueID) {
@@ -1866,9 +1914,7 @@ class Panel extends import_library.BaseClass {
         break;
       }
       case "sleepReached": {
-        await this.setActivePage(this.screenSaver);
-        this.navigation.resetPosition();
-        this.pages.forEach((a) => a && a.reset());
+        await this.showScreensaverNow();
         break;
       }
       case "pageOpenDetail": {
@@ -1885,6 +1931,9 @@ class Panel extends import_library.BaseClass {
       case "buttonPress3":
       case "buttonPress2": {
         if (event.id == "screensaver") {
+          if (await this.screenSaver.onTimerTap(event.action, event.opt)) {
+            break;
+          }
           await this.library.writedp(
             `panels.${this.name}.cmd.screenSaver.activateNotification`,
             false,
@@ -2656,7 +2705,7 @@ ${this.info.tasmota.onlineVersion}`;
     return void 0;
   }
   async getNavigationArrayForFlow() {
-    var _a, _b, _c, _d, _e, _f, _g, _h, _i;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k;
     const res = {
       panelName: this.name,
       friendlyName: this.friendlyName,
@@ -2699,21 +2748,24 @@ ${this.info.tasmota.onlineVersion}`;
       let prev = void 0;
       let home = void 0;
       let parent = void 0;
+      const nameOf = (index) => {
+        if (index === import_navigation.SCREENSAVER_NAV_INDEX) {
+          return adminShareConfig.screensaverTargetPage;
+        }
+        const n = db[index];
+        return n != null && n.page ? n.page.name : void 0;
+      };
       if (typeof nav.right.single === "number") {
-        const n = db[nav.right.single];
-        next = n != null && n.page ? n.page.name : void 0;
+        next = nameOf(nav.right.single);
       }
       if (typeof nav.left.single === "number") {
-        const n = db[nav.left.single];
-        prev = n != null && n.page ? n.page.name : void 0;
+        prev = nameOf(nav.left.single);
       }
       if (typeof nav.right.double === "number") {
-        const n = db[nav.right.double];
-        home = n != null && n.page ? n.page.name : void 0;
+        home = nameOf(nav.right.double);
       }
       if (typeof nav.left.double === "number") {
-        const n = db[nav.left.double];
-        parent = n != null && n.page ? n.page.name : void 0;
+        parent = nameOf(nav.left.double);
       }
       const headline = readConstString((_a = nav.page.config) == null ? void 0 : _a.data, "headline");
       let pageInfo = { card: "cardGrid", alwaysOn: "none", headline };
@@ -2798,6 +2850,22 @@ ${this.info.tasmota.onlineVersion}`;
       res.navigationMap.push(navMap);
     }
     res.navigationMap.push(...stateRefEntries.values());
+    const target = adminShareConfig.screensaverTargetPage;
+    const leadsThere = res.navigationMap.some(
+      (e) => {
+        var _a2, _b2;
+        return [e.next, e.prev, e.home, e.parent].includes(target) || !!((_a2 = e.targetPages) == null ? void 0 : _a2.includes(target)) || !!((_b2 = e.targetPagesLongPress) == null ? void 0 : _b2.includes(target));
+      }
+    );
+    if (leadsThere) {
+      res.navigationMap.push({
+        page: target,
+        label: this.library.getTranslation("screensaver_target"),
+        origin: "system",
+        generated: true,
+        position: (_k = (_j = navMapFromConfig == null ? void 0 : navMapFromConfig.find((a) => a.name === target)) == null ? void 0 : _j.position) != null ? _k : void 0
+      });
+    }
     return res;
   }
   static getPage(config, that) {

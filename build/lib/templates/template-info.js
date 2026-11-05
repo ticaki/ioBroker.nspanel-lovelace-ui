@@ -18,12 +18,13 @@ var __copyProps = (to, from, except, desc) => {
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 var template_info_exports = {};
 __export(template_info_exports, {
-  screensaverTemplateInfos: () => screensaverTemplateInfos
+  pageItemTemplateInfos: () => pageItemTemplateInfos
 });
 module.exports = __toCommonJS(template_info_exports);
+var import_adminShareConfig = require("../types/adminShareConfig");
 var import_templateArray = require("./templateArray");
-function screensaverTemplateInfos(templates = import_templateArray.pageItemTemplates) {
-  var _a, _b, _c;
+function pageItemTemplateInfos(templates = import_templateArray.pageItemTemplates) {
+  var _a, _b, _c, _d;
   const result = [];
   for (const [name, template] of Object.entries(templates)) {
     if (!template) {
@@ -62,7 +63,9 @@ function screensaverTemplateInfos(templates = import_templateArray.pageItemTempl
       role: String((_b = template.role) != null ? _b : ""),
       adapter: String((_c = template.adapter) != null ? _c : ""),
       need: channel ? "channel" : "none",
-      looksFor
+      looksFor,
+      areas: template.type === "text" || template.type === "button" ? [...(_d = template.screensaverAreas) != null ? _d : import_adminShareConfig.screensaverAreas] : [],
+      options: template.adminOptions ? [...template.adminOptions] : []
     });
   }
   return result.sort((a, b) => a.name.localeCompare(b.name));
@@ -84,6 +87,6 @@ function describeSearch(item, relative) {
 }
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
-  screensaverTemplateInfos
+  pageItemTemplateInfos
 });
 //# sourceMappingURL=template-info.js.map

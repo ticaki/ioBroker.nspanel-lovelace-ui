@@ -1076,11 +1076,13 @@ class NspanelLovelaceUi extends utils.Adapter {
    * @param state The state object holding the new value and meta information of the state
    */
   async onStateChange(id, state) {
+    var _a;
     if (state) {
       if (this.controller) {
         await this.controller.statesControler.onStateChange(id, state);
       }
     } else {
+      (_a = this.controller) == null ? void 0 : _a.statesControler.onStateDeleted(id);
     }
   }
   // If you need to accept messages in your adapter, uncomment the following block and the corresponding line in the constructor.
@@ -1251,8 +1253,8 @@ class NspanelLovelaceUi extends utils.Adapter {
           }
           break;
         }
-        case import_adminShareConfig.SENDTO_GET_SCREENSAVER_TEMPLATES_COMMAND: {
-          const result = (0, import_template_info.screensaverTemplateInfos)();
+        case import_adminShareConfig.SENDTO_GET_PAGE_ITEM_TEMPLATES_COMMAND: {
+          const result = (0, import_template_info.pageItemTemplateInfos)();
           if (obj.callback) {
             this.sendTo(obj.from, obj.command, result, obj.callback);
           }

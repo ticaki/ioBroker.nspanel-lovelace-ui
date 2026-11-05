@@ -956,6 +956,12 @@ declare namespace ScriptConfig {
             dpInit: string;
             readOptions?: Record<string, any>;
             modeScr: 'left' | 'bottom' | 'indicator' | 'favorit' | 'alternate';
+            /**
+             * Only for modeScr 'indicator': what a tap does (the first of button, switch and page counts).
+             */
+            ScreensaverEntityNaviToPage?: string | null;
+            ScreensaverEntityButton?: string | null;
+            ScreensaverEntitySwitch?: string | null;
         } & ({enabled: string; visibleCondition?: string} | {enabled?: string}))
     );
 

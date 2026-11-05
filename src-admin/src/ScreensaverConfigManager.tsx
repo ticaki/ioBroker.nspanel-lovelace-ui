@@ -14,7 +14,7 @@ import type {
     AdminPanelConfig,
     ScreensaverEntry,
     ScreensaverNotifyConfig,
-    ScreensaverTemplateInfo,
+    PageItemTemplateInfo,
 } from '../../src/lib/types/adminShareConfig';
 import {
     migrateScreensaverNotify,
@@ -22,7 +22,7 @@ import {
     ADAPTER_NAME,
     SENDTO_GET_PAGES_All_COMMAND,
     SENDTO_GET_WEATHER_ENTITY_COMMAND,
-    SENDTO_GET_SCREENSAVER_TEMPLATES_COMMAND,
+    SENDTO_GET_PAGE_ITEM_TEMPLATES_COMMAND,
     emptyScreensaverEntry,
 } from '../../src/lib/types/adminShareConfig';
 
@@ -38,7 +38,7 @@ interface ScreensaverConfigManagerState extends ConfigGenericState {
     /** installed instances of the supported weather adapters, undefined until the adapter answered */
     weatherEntities?: { value: string; label: string }[];
     /** page item templates of the adapter (item dialog, source "template"), undefined until the adapter answered */
-    templates?: ScreensaverTemplateInfo[];
+    templates?: PageItemTemplateInfo[];
 }
 
 const PAGES_RETRY_MS = 3000;
@@ -152,7 +152,7 @@ class ScreensaverConfigManager extends ConfigGeneric<
         this.setState({ pagesList: Array.from(new Set(list)) } as ScreensaverConfigManagerState);
     }
 
-    /** page item templates the adapter knows (main.ts getScreensaverTemplates) - the admin must not import them */
+    /** page item templates the adapter knows (main.ts getPageItemTemplates) - the admin must not import them */
     private async loadTemplates(): Promise<void> {
         if (!this.state.alive) {
             return;
@@ -161,10 +161,10 @@ class ScreensaverConfigManager extends ConfigGeneric<
         try {
             const raw = await this.props.oContext.socket.sendTo(
                 `${ADAPTER_NAME}.${instance}`,
-                SENDTO_GET_SCREENSAVER_TEMPLATES_COMMAND,
+                SENDTO_GET_PAGE_ITEM_TEMPLATES_COMMAND,
                 {},
             );
-            const list: ScreensaverTemplateInfo[] = Array.isArray(raw)
+            const list: PageItemTemplateInfo[] = Array.isArray(raw)
                 ? raw
                 : Array.isArray(raw?.result)
                   ? raw.result
@@ -173,7 +173,7 @@ class ScreensaverConfigManager extends ConfigGeneric<
                 templates: list.filter(t => t && typeof t.name === 'string' && t.name !== ''),
             } as ScreensaverConfigManagerState);
         } catch (e) {
-            console.warn('[ScreensaverConfig] getScreensaverTemplates failed', e);
+            console.warn('[ScreensaverConfig] getPageItemTemplates failed', e);
         }
     }
 
@@ -507,6 +507,7 @@ class ScreensaverConfigManager extends ConfigGeneric<
                 alive={alive}
                 expertMode={this.props.expertMode ?? false}
                 pagesList={pagesList}
+                pageEntries={Array.isArray(data.pageConfig) ? data.pageConfig : []}
                 weatherEntities={this.state.weatherEntities}
                 templates={this.state.templates}
                 globalWeatherEntity={typeof data.weatherEntity === 'string' ? data.weatherEntity : ''}

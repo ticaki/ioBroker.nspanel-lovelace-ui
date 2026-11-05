@@ -26,6 +26,13 @@ var import_library = require("./library");
 var import_tools = require("../const/tools");
 class StatesControler extends import_library.BaseClass {
   triggerDB = {};
+  /**
+   * Subscriptions by pattern, for states that come and go at runtime: per pattern one subscription of the adapter
+   * and any number of listeners. Kept apart from triggerDB, which needs an entry per existing id - so unsubscribing
+   * an id there never touches a pattern. A state matched by a pattern and an id can arrive twice, the listeners
+   * have to take that.
+   */
+  patternTriggers = /* @__PURE__ */ new Map();
   lastObjectDatabaseCleanup = Date.now();
   // Performance-optimized lookup maps
   targetToTriggerMap = /* @__PURE__ */ new Map();
@@ -187,6 +194,62 @@ class StatesControler extends import_library.BaseClass {
     }
     this.objectDatabase = {};
     this.lastObjectDatabaseCleanup = Date.now();
+  }
+  /**
+   * Listens to all states of a pattern, also to those that do not exist yet. Pair with {@link unsubscribePattern}.
+   *
+   * @param pattern state id with `*`, it also matches across dots
+   * @param listener gets id and state; state null when the state was deleted
+   */
+  async subscribePattern(pattern, listener) {
+    const entry = this.patternTriggers.get(pattern);
+    if (entry) {
+      entry.listeners.add(listener);
+      return;
+    }
+    const body = pattern.split("*").map((part) => part.replace(/[.+?^${}()|[\]\\]/g, "\\$&")).join(".*");
+    this.patternTriggers.set(pattern, { regex: new RegExp(`^${body}$`), listeners: /* @__PURE__ */ new Set([listener]) });
+    await this.adapter.subscribeForeignStatesAsync(pattern);
+  }
+  /**
+   * Ends {@link subscribePattern}, the last listener of a pattern ends the subscription of the adapter.
+   *
+   * @param pattern the pattern
+   * @param listener the listener
+   */
+  async unsubscribePattern(pattern, listener) {
+    const entry = this.patternTriggers.get(pattern);
+    if (!entry) {
+      return;
+    }
+    entry.listeners.delete(listener);
+    if (entry.listeners.size === 0) {
+      this.patternTriggers.delete(pattern);
+      await this.adapter.unsubscribeForeignStatesAsync(pattern);
+    }
+  }
+  /**
+   * hands a state to the listeners of its patterns
+   *
+   * @param dp state id
+   * @param state the state, null when it was deleted
+   */
+  notifyPatternListeners(dp, state) {
+    for (const entry of this.patternTriggers.values()) {
+      if (entry.regex.test(dp)) {
+        for (const listener of [...entry.listeners]) {
+          listener(dp, state);
+        }
+      }
+    }
+  }
+  /**
+   * A state was deleted: only subscriptions by pattern care, an id of triggerDB keeps its last value.
+   *
+   * @param dp state id
+   */
+  onStateDeleted(dp) {
+    this.notifyPatternListeners(dp, null);
   }
   existsState(id) {
     return this.triggerDB[id] !== void 0 || this.stateDB[id] !== void 0;
@@ -573,6 +636,9 @@ class StatesControler extends import_library.BaseClass {
     const startsWithAlias = dp.startsWith("alias.0");
     const startsWithNamespace = dp.startsWith(adapterNamespace);
     const entry = this.triggerDB[dp];
+    if (this.patternTriggers.size > 0 && (state.ack || startsWithUserdata || startsWithAlias)) {
+      this.notifyPatternListeners(dp, state);
+    }
     if (entry == null ? void 0 : entry.state) {
       if (debugLogEnabled) {
         this.log.debug(`Trigger from ${dp} with state ${JSON.stringify(state)}`);

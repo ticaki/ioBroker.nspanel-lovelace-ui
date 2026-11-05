@@ -46,6 +46,7 @@ import {
     ALL_PANELS_SPECIAL_ID,
     SENDTO_GET_PANEL_NAVIGATION_COMMAND,
     isMainPageEntry,
+    screensaverTargetPage,
     mainPageName,
     scrollAutoTimingDefault,
     scrollHalfCards,
@@ -134,7 +135,7 @@ interface NavigationAssignmentPanelState extends ConfigGenericState {
  * @returns `true` if the name is a system page other than `///unlock`.
  */
 function isSystemPage(name: string): boolean {
-    return name.startsWith('///') && name !== '///unlock';
+    return name.startsWith('///') && name !== '///unlock' && name !== screensaverTargetPage;
 }
 
 /**
@@ -642,6 +643,10 @@ class NavigationAssignmentPanel extends ConfigGeneric<
         }
         const myTarget = this.toNodeName(mine);
         const result: string[] = [];
+        if (mine === screensaverTargetPage) {
+            // any number of pages can lead to it, it has no neighbour to fight about
+            return result;
+        }
         for (const other of this.props.allEntries ?? []) {
             if (other.uniqueName === this.props.uniqueName || isMainPageEntry(other)) {
                 continue;
@@ -697,7 +702,7 @@ class NavigationAssignmentPanel extends ConfigGeneric<
     private renderNavSelectValue(field: NavField, emptyLabel: React.ReactNode): (value: string) => React.ReactNode {
         return (value: string): React.ReactNode => {
             if (value) {
-                return value;
+                return this.navTargetLabel(value);
             }
             const resolved = this.getResolvedNavValue(this.state.selectedAddedTopic, field);
             if (!resolved) {
@@ -709,7 +714,7 @@ class NavigationAssignmentPanel extends ConfigGeneric<
                     variant="inherit"
                     sx={{ fontStyle: 'italic', color: 'text.disabled' }}
                 >
-                    {resolved}
+                    {this.navTargetLabel(resolved)}
                 </Typography>
             );
             // a start page cannot store a value here, so the "choose a value to store" hint is wrong
@@ -1183,10 +1188,19 @@ class NavigationAssignmentPanel extends ConfigGeneric<
      * @returns Pages selectable in the dropdown.
      */
     private getSelectablePages(pages: string[], currentValue?: string): string[] {
-        return pages.filter(
+        const selectable = pages.filter(
             (p: string) =>
                 p !== this.props.uniqueName && (this.state.showSystemPages || !isSystemPage(p) || p === currentValue),
         );
+        return selectable.includes(screensaverTargetPage) ? selectable : [...selectable, screensaverTargetPage];
+    }
+
+    /**
+     * @param target target of a link
+     * @returns the text of the target
+     */
+    private navTargetLabel(target: string): string {
+        return target === screensaverTargetPage ? I18n.t('screensaver_target') : target;
     }
 
     /**
@@ -1303,6 +1317,9 @@ class NavigationAssignmentPanel extends ConfigGeneric<
      * @returns True, wenn das Ziel auf dem Panel verfügbar ist oder nicht beurteilt werden kann.
      */
     private isTargetAvailableOnPanel(panelTopic: string, target: string): boolean {
+        if (target === screensaverTargetPage) {
+            return true; // keine Seite - jedes Panel hat einen Screensaver
+        }
         const known = this.props.panelPagesMap?.[panelTopic];
         if (!known || known.length === 0) {
             return true; // keine Daten - keine Aussage
@@ -2092,7 +2109,7 @@ class NavigationAssignmentPanel extends ConfigGeneric<
                                                 key={`prev-${p}`}
                                                 value={p}
                                             >
-                                                {p}
+                                                {this.navTargetLabel(p)}
                                             </MenuItem>
                                         ))}
                                     </Select>
@@ -2165,7 +2182,7 @@ class NavigationAssignmentPanel extends ConfigGeneric<
                                                 key={`next-${p}`}
                                                 value={p}
                                             >
-                                                {p}
+                                                {this.navTargetLabel(p)}
                                             </MenuItem>
                                         ))}
                                     </Select>
@@ -2222,7 +2239,7 @@ class NavigationAssignmentPanel extends ConfigGeneric<
                                                 key={`parent-${p}`}
                                                 value={p}
                                             >
-                                                {p}
+                                                {this.navTargetLabel(p)}
                                             </MenuItem>
                                         ))}
                                     </Select>
@@ -2278,7 +2295,7 @@ class NavigationAssignmentPanel extends ConfigGeneric<
                                                 key={`home-${p}`}
                                                 value={p}
                                             >
-                                                {p}
+                                                {this.navTargetLabel(p)}
                                             </MenuItem>
                                         ))}
                                     </Select>

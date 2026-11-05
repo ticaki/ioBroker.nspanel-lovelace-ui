@@ -1,7 +1,7 @@
 import type { RGB } from '../const/Color';
 import type * as dataItem from '../controller/data-item';
 import { type PageItem } from '../pages/pageItem';
-import type { AdminCardTypes } from './adminShareConfig';
+import type { AdminCardTypes, ScreensaverClockTimer } from './adminShareConfig';
 import type { NSPanel } from './NSPanel';
 
 export type CardRole = 'AdapterConnection' | 'AdapterStopped' | 'AdapterUpdates' | 'SonosSpeaker' | 'SqueezeboxSpeaker';
@@ -569,6 +569,8 @@ export type screensaverDataItemOptions = {
     model: NSPanel.NSpanelModel;
     screensaverSwipe: boolean;
     screensaverIndicatorButtons: boolean;
+    /** only from the admin: timer instead of the clock */
+    clockTimer?: ScreensaverClockTimer;
     data: undefined;
 };
 type Extends<T, U extends T> = U;

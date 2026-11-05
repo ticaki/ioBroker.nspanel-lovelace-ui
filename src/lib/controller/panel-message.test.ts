@@ -175,3 +175,93 @@ describe('lib/controller/panel-message - PanelSend ack handling', () => {
         expect(published).to.deep.equal(['a', 'a', 'b', 'c']);
     });
 });
+
+describe('lib/controller/panel-message - PanelSend newest state only', () => {
+    let clock: sinon.SinonFakeTimers;
+    let send: PanelSend;
+    let published: string[];
+
+    const done = async (): Promise<void> => {
+        await send.onMessage(`${TOPIC}/stat/RESULT`, '{"CustomSend":"Done"}');
+        await clock.tickAsync(250);
+    };
+    const add = (payload: string): void => send.addMessage(payload, false);
+
+    beforeEach(async () => {
+        clock = sinon.useFakeTimers();
+        ({ send, published } = setup());
+        // the first message is on its way and keeps the queue waiting
+        add('first');
+        await clock.tickAsync(0);
+    });
+    afterEach(async () => {
+        await send.delete();
+        clock.restore();
+    });
+
+    it('a new entityUpd takes the place of an unsent one, nothing moves', async () => {
+        add('entityUpd~a');
+        add('other');
+        add('entityUpd~b');
+        await done();
+        await done();
+        await done();
+        expect(published).to.deep.equal(['first', 'entityUpd~b', 'other']);
+    });
+
+    it('a message on its way is not touched, retry and ack stay with it', async () => {
+        add('entityUpd~a');
+        await done();
+        expect(published.at(-1)).to.equal('entityUpd~a');
+        add('entityUpd~b');
+        // retry of the one on its way
+        await clock.tickAsync(3000);
+        expect(published.filter(p => p === 'entityUpd~a')).to.have.length(2);
+        expect(published).to.not.include('entityUpd~b');
+        await send.onMessage(`${TOPIC}/stat/RESULT`, '{"CustomSend":"Done"}');
+        await send.onMessage(`${TOPIC}/stat/RESULT`, '{"CustomSend":"Done"}');
+        await clock.tickAsync(250);
+        expect(published.at(-1)).to.equal('entityUpd~b');
+    });
+
+    it('entityUpdateDetail per item id', async () => {
+        add('entityUpdateDetail~1~a');
+        add('entityUpdateDetail~2~a');
+        add('entityUpdateDetail~1~b');
+        await done();
+        await done();
+        await done();
+        expect(published).to.deep.equal(['first', 'entityUpdateDetail~1~b', 'entityUpdateDetail~2~a']);
+    });
+
+    it('a pageType ends the page: older updates stay, pageType itself is never replaced', async () => {
+        add('entityUpd~old');
+        add('pageType~x');
+        add('entityUpd~new');
+        add('pageType~y');
+        for (let i = 0; i < 4; i++) {
+            await done();
+        }
+        expect(published).to.deep.equal(['first', 'entityUpd~old', 'pageType~x', 'entityUpd~new', 'pageType~y']);
+    });
+
+    it('other messages are never replaced and an entityUpd does not take an entityUpdateDetail', async () => {
+        add('time~1');
+        add('time~2');
+        add('entityUpdateDetail~1~a');
+        add('entityUpd~a');
+        for (let i = 0; i < 4; i++) {
+            await done();
+        }
+        expect(published).to.deep.equal(['first', 'time~1', 'time~2', 'entityUpdateDetail~1~a', 'entityUpd~a']);
+    });
+
+    it('a message with an ack for its type is not replaced by one without', async () => {
+        send.addMessage('entityUpd~a', true);
+        add('entityUpd~b');
+        await done();
+        await send.onMessage(`${TOPIC}/stat/RESULT`, '{"CustomSend":"renderCurrentPage"}');
+        await clock.tickAsync(250);
+        expect(published).to.deep.equal(['first', 'entityUpd~a', 'entityUpd~b']);
+    });
+});

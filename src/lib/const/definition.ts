@@ -67,6 +67,7 @@ export const genericStateObjects: {
                     rotationTime: ioBroker.StateObject;
                     headingNotification: ioBroker.StateObject;
                     textNotification: ioBroker.StateObject;
+                    activate: ioBroker.StateObject;
                     activateNotification: ioBroker.StateObject;
                 };
                 pagePopup: customChannelType & {
@@ -529,6 +530,19 @@ export const genericStateObjects: {
                             read: true,
                             write: true,
                             def: '',
+                        },
+                        native: {},
+                    },
+                    activate: {
+                        _id: '',
+                        type: 'state',
+                        common: {
+                            name: 'StateObjects.screenSaver.activate',
+                            type: 'boolean',
+                            role: 'button',
+                            read: false,
+                            write: true,
+                            def: false,
                         },
                         native: {},
                     },

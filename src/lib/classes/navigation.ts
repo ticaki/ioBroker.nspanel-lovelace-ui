@@ -6,6 +6,12 @@ import type { Page } from './Page';
 import { getPayload, getPayloadRemoveTilde } from '../const/tools';
 import { genericStateObjects } from '../const/definition';
 import { mainPageName } from '../const/default-pages';
+import { screensaverTargetPage } from '../types/adminShareConfig';
+
+/** index of the reserved target in the links of the database: it is no node of the navigation */
+export const SCREENSAVER_NAV_INDEX = -2;
+/** the arrow of the panel that leads to the screensaver */
+const SCREENSAVER_NAV_ICON = 'power-sleep';
 type optionalActionsType = 'notifications';
 export type NavigationItemConfig = {
     name: string;
@@ -210,6 +216,10 @@ export class Navigation extends BaseClass {
                         continue;
                     }
 
+                    if (r2 === screensaverTargetPage) {
+                        i[nk][nk2] = SCREENSAVER_NAV_INDEX;
+                        continue;
+                    }
                     let found = this.navigationConfig.find(entry => entry && entry.name === r2);
                     if (!found && r2 === mainPageName && effectiveMain !== mainPageName) {
                         // Hard coded links to the start page (e.g. the service pages) are
@@ -248,6 +258,12 @@ export class Navigation extends BaseClass {
     }
 
     async setPageByIndex(index: number | undefined, d?: 'left' | 'right'): Promise<void> {
+        if (index === SCREENSAVER_NAV_INDEX) {
+            // the position stays what the screensaver makes of it, also the way back
+            this.infityCounter = 0;
+            await this.panel.activateScreensaver();
+            return;
+        }
         if (index !== -1 && index !== undefined) {
             const item = this.database[index];
             if (item) {
@@ -278,6 +294,10 @@ export class Navigation extends BaseClass {
     }
 
     async setTargetPageByName(n: string): Promise<void> {
+        if (n === screensaverTargetPage) {
+            await this.panel.activateScreensaver();
+            return;
+        }
         const index = this.navigationConfig.findIndex(a => a && a.name === n);
         if (index !== -1) {
             await this.setPageByIndex(index);
@@ -391,9 +411,11 @@ export class Navigation extends BaseClass {
                 navigationString = getPayloadRemoveTilde(
                     'button',
                     'bSubPrev',
-                    item.left.double === undefined
-                        ? Icons.GetIcon('arrow-left-bold')
-                        : Icons.GetIcon('arrow-top-left-bold-outline'),
+                    item.left.single === SCREENSAVER_NAV_INDEX
+                        ? Icons.GetIcon(SCREENSAVER_NAV_ICON)
+                        : item.left.double === undefined
+                          ? Icons.GetIcon('arrow-left-bold')
+                          : Icons.GetIcon('arrow-top-left-bold-outline'),
                     item.left.double === undefined
                         ? String(Color.rgb_dec565(Color.navLeft as RGB))
                         : String(Color.rgb_dec565(Color.navDownLeft as RGB)),
@@ -404,7 +426,7 @@ export class Navigation extends BaseClass {
                 navigationString = getPayloadRemoveTilde(
                     'button',
                     'bUp',
-                    Icons.GetIcon('arrow-up-bold'),
+                    Icons.GetIcon(item.left.double === SCREENSAVER_NAV_INDEX ? SCREENSAVER_NAV_ICON : 'arrow-up-bold'),
                     String(Color.rgb_dec565(Color.navParent as RGB)),
                     '',
                     '',
@@ -420,9 +442,11 @@ export class Navigation extends BaseClass {
                 navigationString2 = getPayloadRemoveTilde(
                     'button',
                     'bSubNext',
-                    item.right.double === undefined
-                        ? Icons.GetIcon('arrow-right-bold')
-                        : Icons.GetIcon('arrow-top-right-bold-outline'),
+                    item.right.single === SCREENSAVER_NAV_INDEX
+                        ? Icons.GetIcon(SCREENSAVER_NAV_ICON)
+                        : item.right.double === undefined
+                          ? Icons.GetIcon('arrow-right-bold')
+                          : Icons.GetIcon('arrow-top-right-bold-outline'),
                     item.right.double === undefined
                         ? String(Color.rgb_dec565(Color.navRight as RGB))
                         : String(Color.rgb_dec565(Color.navDownRight as RGB)),
@@ -433,7 +457,7 @@ export class Navigation extends BaseClass {
                 navigationString2 = getPayloadRemoveTilde(
                     'button',
                     'bHome',
-                    Icons.GetIcon('home'),
+                    Icons.GetIcon(item.right.double === SCREENSAVER_NAV_INDEX ? SCREENSAVER_NAV_ICON : 'home'),
                     String(Color.rgb_dec565(Color.navHome as RGB)),
                     '',
                     '',

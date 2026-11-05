@@ -1304,6 +1304,7 @@ declare namespace ScriptConfig {
 
     export type PageBaseCustomItem = {
         type: 'custom';
+        itemId?: string;
         id: string;
         navigate?: boolean | null | undefined;
         targetPage?: string | null | undefined;
@@ -1406,6 +1407,10 @@ declare namespace ScriptConfig {
             xAxisDecorationId?: string;
             useValue?: boolean;
             useValueConditions?: string | null | undefined;
+            /** role level.timer: use the timer of the screensaver of this panel instead of own states */
+            useScreensaverTimer?: boolean;
+            /** id of this item, unique in the instance: for a timer item that is the source of the screensaver in the admin */
+            itemId?: string;
             monobutton?: boolean;
             inSel_ChoiceState?: boolean; // deprecated
             inSel_Alias?: string;
@@ -1707,6 +1712,12 @@ declare namespace ScriptConfig {
             dpInit: string;
             readOptions?: Record<string, any>;
             modeScr: 'left' | 'bottom' | 'indicator' | 'favorit' | 'alternate';
+            /**
+             * Only for modeScr 'indicator': what a tap does (the first of button, switch and page counts).
+             */
+            ScreensaverEntityNaviToPage?: string | null;
+            ScreensaverEntityButton?: string | null;
+            ScreensaverEntitySwitch?: string | null;
         } & ({enabled: string; visibleCondition?: string} | {enabled?: string}))
     );
 

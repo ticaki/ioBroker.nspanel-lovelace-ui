@@ -149,6 +149,8 @@ const itemMappedKeys = [
   "minValue",
   "maxValue",
   "secondRow",
+  "useScreensaverTimer",
+  "itemId",
   "minValueBrightness",
   "maxValueBrightness",
   "minValueColorTemp",
@@ -328,6 +330,13 @@ function convertPageItem(item, where) {
   const maxValue = num(item.maxValue, reason, `${where}.maxValue`);
   if (maxValue !== void 0) {
     admin.maxValue = maxValue;
+  }
+  if (item.useScreensaverTimer === true) {
+    admin.useScreensaverTimer = true;
+  }
+  const itemId = str(item.itemId, reason, `${where}.itemId`);
+  if (itemId) {
+    admin.itemId = itemId;
   }
   const secondRow = str(item.secondRow, reason, `${where}.secondRow`);
   if (secondRow) {
@@ -994,15 +1003,55 @@ const screensaverStateKeys = [
   "ScreensaverEntityVisibleCondition",
   "ScreensaverEntityFillIfBelowMin"
 ];
-const screensaverTemplateKeys = ["type", "template", "dpInit", "modeScr", "enabled", "visibleCondition"];
-const nativeTemplateKeys = ["template", "dpInit", "modeScr"];
+const screensaverTemplateKeys = [
+  "type",
+  "template",
+  "dpInit",
+  "modeScr",
+  "enabled",
+  "visibleCondition",
+  "readOptions",
+  "ScreensaverEntityNaviToPage",
+  "ScreensaverEntityButton",
+  "ScreensaverEntitySwitch"
+];
+const nativeTemplateKeys = ["template", "dpInit", "modeScr", "readOptions"];
+function convertReadOptions(value, reason, where) {
+  if (value === void 0 || value === null) {
+    return void 0;
+  }
+  if (!isDict(value)) {
+    throw new ConvertError(reason, `${where}: expected an object`);
+  }
+  const options = {};
+  for (const [key, option] of Object.entries(value)) {
+    if (typeof option !== "string" && typeof option !== "number") {
+      throw new ConvertError(reason, `${where}.${key}: the admin takes a text or a number`);
+    }
+    options[key] = option;
+  }
+  return Object.keys(options).length > 0 ? options : void 0;
+}
+function convertIndicatorAction(element, reason, where) {
+  const button = str(element.ScreensaverEntityButton, reason, `${where}.ScreensaverEntityButton`);
+  const switchState = str(element.ScreensaverEntitySwitch, reason, `${where}.ScreensaverEntitySwitch`);
+  const navi = str(element.ScreensaverEntityNaviToPage, reason, `${where}.ScreensaverEntityNaviToPage`);
+  if (button) {
+    return { kind: "button", state: button };
+  }
+  if (switchState) {
+    return { kind: "switch", state: switchState };
+  }
+  return navi ? { kind: "navigate", page: navi } : void 0;
+}
 function convertScreensaverItem(element, area, where, defaults) {
   var _a, _b, _c, _d;
   const reason = "screensaverItemNotSupported";
   if (element.type === "native") {
     const native = element.native;
     if (isDict(native) && Object.keys(native).every((key) => nativeTemplateKeys.includes(key) || native[key] === void 0) && typeof native.template === "string" && native.template !== "" && typeof native.dpInit === "string" && native.modeScr === area) {
-      return { state: native.dpInit, template: native.template };
+      const readOptions = convertReadOptions(native.readOptions, reason, `${where}.native.readOptions`);
+      return { state: native.dpInit, template: native.template, ...readOptions ? { readOptions } : {} };
     }
     throw new ConvertError(reason, `${where}: native element`);
   }
@@ -1030,6 +1079,16 @@ function convertScreensaverItem(element, area, where, defaults) {
     const condition2 = str(element.visibleCondition, reason, `${where}.visibleCondition`);
     if (condition2) {
       item2.visibleCondition = condition2;
+    }
+    const readOptions = convertReadOptions(element.readOptions, reason, `${where}.readOptions`);
+    if (readOptions) {
+      item2.readOptions = readOptions;
+    }
+    if (area === "indicator") {
+      const action = convertIndicatorAction(element, reason, where);
+      if (action) {
+        item2.action = action;
+      }
     }
     return item2;
   }
@@ -1153,15 +1212,9 @@ function convertScreensaverItem(element, area, where, defaults) {
     throw new ConvertError(reason, `${where}.ScreensaverEntityFillIfBelowMin: not available in the admin`);
   }
   if (area === "indicator") {
-    const button = str(element.ScreensaverEntityButton, reason, `${where}.ScreensaverEntityButton`);
-    const switchState = str(element.ScreensaverEntitySwitch, reason, `${where}.ScreensaverEntitySwitch`);
-    const navi = str(element.ScreensaverEntityNaviToPage, reason, `${where}.ScreensaverEntityNaviToPage`);
-    if (button) {
-      item.action = { kind: "button", state: button };
-    } else if (switchState) {
-      item.action = { kind: "switch", state: switchState };
-    } else if (navi) {
-      item.action = { kind: "navigate", page: navi };
+    const action = convertIndicatorAction(element, reason, where);
+    if (action) {
+      item.action = action;
     }
   }
   return item;
