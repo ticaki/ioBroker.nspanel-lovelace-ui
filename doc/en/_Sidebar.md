@@ -2,57 +2,60 @@
 ![SOnOFFLogo](../Pictures/SOnOffLogo.png)   
 # [Adapter - Home](Home)  
 ## TFT Release: v5.0.0  
-[![tftrelase](https://img.shields.io/github/release/ticaki/iobroker.nspanel-lovelace-ui.svg)](https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/tree/main/HMI)  Link funktioniert -> logo falsch
+[![tftrelase](https://img.shields.io/github/release/ticaki/iobroker.nspanel-lovelace-ui.svg)](https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/tree/main/HMI)
 ---
 ## Adapter Version  
 [![npm](https://img.shields.io/npm/v/iobroker.nspanel-lovelace-ui.svg)](https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/releases) ![Number of Installations](https://iobroker.live/badges/nspanel-lovelace-ui-installed.svg)
 
-**Introduction**  
-- *(Overview pending)*  
+**Getting started**  
+- [Feature overview](User-NSPanel-Funktionalität)  
 
-**Basic Installation**  
-- *(Flash Panel)* iA  
-- *(Adapter Installation)* iA  
-- *(NSPanel Emulator)* iA  
+**Basic installation**  
+- [Flashing the NSPanel](NSPanel-flashen)  
+- [Adapter installation](Adapter-Installation)  
+- [MQTT server settings](General)  
 
-**Adapter Admin**  
-- *(General)* iA  
-- *(NSPanel Settings)* iA  
-- *(Maintain)* iA  
-- *(Developer)* iA  
+**Adapter admin**  
+- [NSPanel settings](NSPanelsetting)  
+- [Global settings](globelSettings)  
+- [Maintain](Maintain)  
+- [Script migration](Migration)  
+- [Navigation flow](naviFlow)  
+- [Icon overview](symbolOverview)  
+- [Tasmota tools](tasmotatools) 🔒  
+- [Panel info](Panelinfo)  
+- [Web panel](WebPanel)  
+- [Developer](Developer) 🔒  
 
-**Configuration Script**  
-- *(Introduction)* iA  
-- *(Page Basics)* iA  
-- *(Create PageItems)* iA  
-- *(Screensaver)* iA  
+**Pages created in the admin**  
+- [PageConfig – overview](PageConfig)  
+- [Page overview](Pages)  
+- [Menu pages](pageMenu)  
+- [Alarm and unlock page](cardAlarm)  
+- [QR code](cardQR)  
+- [Power](cardPower)  
+- [Chart](cardChart)  
+- [Pie chart](cardPChart)  
+- [Waste calendar](cardTrash)  
+- [Thermostat](cardThermo2)  
+- [Thermostat (classic)](cardThermo)  
+- [Media player](cardMedia)  
+- [Page link](pageLink)  
+- [Recurring dialogs](PageConfig-Dialoge)  
 
 **Screensaver**  
-- *(Introduction)* iA  
-- [Screensaver (Admin)](Screensaver-Admin)  
+- [Screensaver in the admin](screensaver)  
+- [Notifications](Screensaver-Notify)  
 
-**Standard Pages**  
-- *(Introduction)* iA  
-- *(Page QR)* iA  
-- *(Page Power)* iA  
-- [Page Chart](PageChart)
-- [Page PChart (pie chart)](PagePChart)
-- *(Page Alarm)* iA  
-- *(Page Media)* iA  
-- *(Page Thermo2)* iA  
-- [Page Thermo2 (Admin)](PageThermo2-Admin)
-- [Page Thermo (classic, Admin)](PageThermo-Admin)
- 
-**Developer**  
-- *(Developer Templates)* iA  
-- *(Developer News (Latest))* iA  
-- *(Developer Readme)* iA  
-- *(Alias Table)* iA  
-- [Color Themes](colorTheme)  
+**On the panel**  
+- [Popups](pagePopup)  
 
-**FAQ**  
-- *(Coming soon)*  
+**Reference**  
+- [Alias table](ALIAS)  
+- [Color themes](colorTheme)  
+- [PanelStatusBadge (component)](PanelStatusBadge)  
 
-**Community**  
-[ioBroker Forum](https://forum.iobroker.net/topic/80055/alphatest-nspanel-lovelace-ui-v0-1-1)
+**Find us**  
+[![iobrokerLogo](../Pictures/iobrokerLogo.png)](https://forum.iobroker.net/topic/80055/alphatest-nspanel-lovelace-ui-v0-1-1)  
 
+🔒 = only visible in expert mode*

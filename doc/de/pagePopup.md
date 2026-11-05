@@ -1,95 +1,136 @@
-v0.8.0
+# Popups
 
-![Bildschirmfoto 2025-11-07 um 11.05.45.png](/assets/uploads/files/1762509950429-bildschirmfoto-2025-11-07-um-11.05.45-resized.png) 
+Im Adapter heißen **zwei verschiedene Dinge** Popup:
 
-Es werden immer alle Datenpunkte übertragen:
+1. **Detail-Popups einer Fläche** — Licht, Rollladen, Thermostat, Timer, Auswahlliste. Sie gehen auf, wenn
+   man auf einer Seite länger oder gezielt auf eine Fläche tippt, und gehören zum jeweiligen Pageitem;
+   eingestellt werden sie dort (siehe [Wiederkehrende Dialoge](PageConfig-Dialoge)).
+2. **Das Meldungs-Popup** — eine eigene Seite, die eine Nachricht über alles andere legt. Um die geht es
+   hier.
 
-`activate` sendet die Daten an den Adapter
+> **Das Meldungs-Popup wird nirgends angelegt.** Es ist eine **Systemseite**: Jedes Panel bekommt beim
+> Start zwei davon — eine für die Systemmeldungen des Adapters und eine für eigene Meldungen. Im Admin
+> gibt es diesen Seitentyp nicht, im Konfigurationsskript auch nicht. Gesteuert wird die Seite
+> ausschließlich über **Datenpunkte** oder über **`sendTo`**.
 
-Erklärung zu den States ist unten zu finden - einzig `global` bedeutet an alle Panels senden
+## Weg 1: die Datenpunkte
 
-`buttonLeft` hat `nächstes` als Standardfunktion (unendlicher Kreisverkehr) - wird automatische eingeblendet bei Bedarf
-`buttonMid` schließt nur die pagePopup
-`buttonRight` hat `löschen` als Standardfunktion
+Je Panel liegt unter `nspanel-lovelace-ui.<Instanz>.panels.<Panel>.cmd.pagePopup.` ein Satz Felder.
+Man füllt sie und löst dann **`activate`** aus — erst dieser Knopf liest **alle** Felder und schickt die
+Meldung ab.
 
-`buttonLeft` die `nächste` Funktion schließt global/lokal auch ein überblättertes information Popup
-`X` schließt auf dem Panel wo es gedrückt wird das popup. Ein information Popup wird dabei entfernt.
-`buttonRight` schließt/löscht/bestätigt bei einem globalen Popup dieses für alle Panels.
+| Datenpunkt | Typ | Vorgabe | Bedeutung |
+|---|---|---|---|
+| `id` | string | leer | Name zum Wiedererkennen. **Leer löscht alle** gespeicherten Popups. |
+| `global` | boolean | false | An alle Panels statt nur an dieses. |
+| `activate` | button | — | Löst den Versand aus. |
+| `priority` | number | 50 | Kleiner = weiter vorn. **≤ 0 löscht** das Popup mit dieser `id`, **≤ −100** alle, deren `id` damit beginnt. |
+| `type` | string | `information` | `information` oder `acknowledge`. |
+| `headline` / `colorHeadline` | string / json | leer / weiß | Überschrift und ihre Farbe. |
+| `text` / `colorText` | string / json | leer / weiß | Meldungstext und seine Farbe. |
+| `buttonLeft` / `buttonMid` / `buttonRight` (+ `colorButton…`) | string / json | leer / weiß | Beschriftung und Farbe der drei Knöpfe. |
+| `icon` / `iconColor` | string / json | leer | Symbol vor der Überschrift. |
+| `textSize` | number 1–5 | 3 | Schriftgröße und damit, wie viele Zeilen passen. |
+| `buzzer` | boolean | false | Einmaliger Ton beim Anzeigen. |
+| `alwaysOn` | boolean | **true** | Popup bleibt stehen, statt in den Bildschirmschoner zu laufen. |
 
-Buttonrückgabe States:
-Findet man nicht unter cmd :)
-Dort wird beim Drücken eines Buttons der entsprechende button mit der ID aktualisiert. Bei globalen Popups auch auf der globalen Ebene
+Auf diesem Weg gilt:
 
+- **Leere Felder bleiben leer.** Die Ersatztexte *Missing Headline* / *Missing Text* gibt es nur auf dem
+  `sendTo`-Weg.
+- **Der Summer kann hier nur an oder aus sein.** Ein eigenes Tasmota-Muster lässt sich nur über `sendTo`
+  mitgeben — und gesummt wird ohnehin nur, wenn am Panel `cmd.isBuzzerAllowed` gesetzt ist.
+- **`textSize` kennt am Datenpunkt nur 1 bis 5.** Die Größe 0 nimmt nur `sendTo` entgegen.
 
-Empfohlen:
-Versand innerhalb eines Skriptes
+## Weg 2: `sendTo`
 
-Simpel:
+Aus einem Skript heraus ist das der bequemere Weg, weil alles in einem Rutsch geht:
+
+```javascript
+sendTo('nspanel-lovelace-ui.0', 'setPopupNotification', {
+    id: 'test3',
+    headline: 'test3',
+    buttonLeft: 'weiter',
+    buttonRight: 'oki',
+    text: 'Es lebt!!!'
+});
 ```
-sendTo('nspanel-lovelace-ui.0', 'setPopupNotification', {id: 'test3', headline:'test3', buttonLeft:'weiter', buttonRight: 'oki',  text:'Es lebt!!!'})
-```
 
-oder in kompliziert: :)
+Ausführlich, mit allen Feldern, die der Adapter auswertet:
 
-```
+```typescript
 type PagePopupDataDetails = {
-             id?: string;
-             headline: string;
-             text: string;
-             panel?: string;
-             priority?: number;
-             type?: 'information' | 'acknowledge';
-             colorHeadline?: {r:number,g:number,b:number} | string;
-             buttonLeft?: string;
-             colorButtonLeft?: {r:number,g:number,b:number} | string;
-             buttonMid?: string;
-             colorButtonMid?: {r:number,g:number,b:number} | string;
-             buttonRight?: string;
-             colorButtonRight?: {r:number,g:number,b:number} | string;
-             colorText?: {r:number,g:number,b:number} | string;
-             textSize?: string;
-             icon?: string;
-             iconColor?: {r:number,g:number,b:number};
-             alwaysOn?: boolean;
-             buzzer: boolean | string
-         };
+    id?: string;                 // fehlt → 'missing'
+    priority?: number;           // fehlt → 50
+    type?: 'information' | 'acknowledge';   // fehlt → 'information'
+    headline: string;            // fehlt → 'Missing Headline'
+    text: string;                // fehlt → 'Missing Text'
+    panel?: string | string[];   // fehlt → an alle Panels
+    global?: boolean;            // nur false schaltet global ab
+    colorHeadline?: { r: number; g: number; b: number } | string;
+    buttonLeft?: string;
+    colorButtonLeft?: { r: number; g: number; b: number } | string;
+    buttonMid?: string;
+    colorButtonMid?: { r: number; g: number; b: number } | string;
+    buttonRight?: string;
+    colorButtonRight?: { r: number; g: number; b: number } | string;
+    colorText?: { r: number; g: number; b: number } | string;
+    textSize?: string;           // 0–5
+    icon?: string;
+    iconColor?: { r: number; g: number; b: number } | string;
+    alwaysOn?: boolean;          // fehlt → true
+    buzzer?: boolean | string;   // true oder ein Tasmota-Muster
+};
 
 const message: PagePopupDataDetails = {
-    id: 'test3', 
+    id: 'test3',
     priority: 49,
-    headline:'test3', 
-    buttonLeft:'weiter', 
-    buttonRight: 'oki',  
-    text:'Es lebt!!!',
+    headline: 'test3',
+    buttonLeft: 'weiter',
+    buttonRight: 'oki',
+    text: 'Es lebt!!!',
     type: 'information',
-}
+};
 
-sendTo('nspanel-lovelace-ui.0', 'setPopupNotification', message)
+sendTo('nspanel-lovelace-ui.0', 'setPopupNotification', message);
 ```
 
-Popups sind grundsätzlich erstmal dauerhaft 
-buttonLeft - buttonMid - buttonRight wurde ja oben schon erklärt
+Die Farbfelder nehmen ein `{r,g,b}`-Objekt **oder** eine Zeichenkette wie `#ff0000`. Ein unbrauchbarer
+Wert fällt stillschweigend auf die Standardfarbe zurück. Ist **kein Panel online**, meldet der Adapter das
+im Rückruf (`{ error: 'No Panels Online' }`); ein Panelname, den es nicht gibt, landet als Fehler im Log.
 
-Global: Wenn kein Panel angegeben ist gilt alles als global auch das löschen.
+## Die Warteschlange
 
-**id**: zur Wiedererkennung - beliebige Zeichenkette - wenn leer werden alle gespeicherten Popups gelöscht
-**type**: information - wenn aufs X gedrückt wird oder auf den `buttonRight`/`buttonLeft` wird das gelöscht / acknowledge - drücken auf X startet wiedervorlage Timer (5 Minuten) drücken auf `buttonRight` löscht es.
-**priority**: 1: höchste Prio |  <= 0 löscht das popup mit der **id** <= -100 löscht die Popups die mit der **id** anfangen
-**panel**: leer oder nicht da -> popup ist global | mit Angabe nur das benannte Panel
-**alwaysOn**: das gleiche wie bei Seiten
-**textSize**: unterschiedliche Textgrößen 0-5
-**buzzer**: true/false oder ein Tasmota Buzzer string. Wird 1 mal beim anzeigen ausgelöst.
+Mehrere Meldungen liegen nebeneinander und werden **aufsteigend nach `priority`** sortiert — die kleinste
+Zahl steht vorn. Das Panel zeigt immer die vorderste.
 
-**text** - **headline** muß angegeben sein sonst steht im Panel **missing text/headline**
+> **Höchstens zehn Popups** hält der Adapter je Panel vor; was darüber hinaus ankommt, fällt hinten weg.
+> Ein fehlerhaftes JSON wird **ohne Meldung verworfen** — kein Logeintrag, keine Reaktion am Panel.
 
-**acknowledge** ohne Angabe von buttonRight wird umgetypt in **information**
+## Die Knöpfe, das X und die Rückmeldungen
 
-das sind auswertungsstates für die popups
+| Knopf | Wirkung |
+|---|---|
+| **links** | Blättert zur nächsten Meldung. Liegt mehr als eine an und ist das Feld leer, beschriftet der Adapter den Knopf selbst mit *Next*. |
+| **Mitte** | Nimmt die aktuelle Meldung aus der Warteschlange und kehrt zur vorherigen Seite zurück. |
+| **rechts** | Bestätigt und löscht. Bei `type: 'acknowledge'` ohne eigene Beschriftung steht dort **`ok`** — der Typ bleibt dabei `acknowledge`. |
+| **X** | Schließt die Meldung auf dem Panel, an dem gedrückt wurde. Bei `acknowledge` **und** `alwaysOn` kommt sie nach **fünf Minuten** von selbst wieder. |
 
+Was gedrückt wurde, steht hinterher in Datenpunkten — **nicht** unter `cmd`:
 
+- je Panel: `…panels.<Panel>.pagePopup.id`, `.buttonLeft`, `.buttonMid`, `.buttonRight`
+- für alle Panels zusammen: `nspanel-lovelace-ui.<Instanz>.pagePopup.id`, `.buttonLeft`, `.buttonMid`,
+  `.buttonRight`
 
-in **id** steht die ID die du hingeschickt ist - auf globaler ebene steht noch das panel davor also panel.id
-lokal im panel steht nur die ID
-wenn yes oder no angeklickt wird, wird der entsprechende State mit der ID aktualisiert.
+> **Beim linken Knopf stimmt das nicht ganz:** Der Adapter schreibt dort den Wert **mit** vorangestelltem
+> Panelnamen in den **lokalen** Datenpunkt und den globalen gar nicht — bei Mitte und rechts ist es
+> umgekehrt richtig herum (lokal die reine `id`, global mit Panelnamen). Wer auf den linken Knopf reagiert,
+> prüft den Wert also besser mit „endet auf meine id".
 
-**global** wird nur von globalen popups beschrieben. lokal von allen die auf dem panel angezeigt werden.
+## Darstellung am Panel
+
+- **Langer Text rotiert.** Passt der Text nicht in die Zeilen, die `textSize` erlaubt, blättert das Panel
+  ihn durch (etwa 3 Sekunden je Abschnitt, bei der Rückkehr zum Anfang kürzer).
+- **Ein unbekanntes Symbol lässt der Adapter weg** und schickt die Meldung ohne Symbol.
+- **`alwaysOn: true` hält das Popup offen**, sonst greift der Panel-Timeout und der Bildschirmschoner
+  übernimmt. Tippt man den Bildschirmschoner an, holt das Panel ein offenes Popup zurück.

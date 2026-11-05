@@ -1,7 +1,27 @@
-# Einleitung Standard Pages  
+# Standard Pages – Einleitung
 
-Die Seiten PageQR, PageChart, PagePower und PageAlarm folgen einer festen Einstellung, deshalb haben wir uns entschieden diese im Admin abzubilden. Alle Einstellungen werden dort vorgenommen und im Adapter gespeichert. Im Konfig-Script ist dann nur ein Verweis auf die Seite nötig. Auf den folgenden Seiten wird jede Page mit ihren Einstellmöglichkeiten beschrieben.  
-- [PageQR](PageQR)  
-- [PageChart](PageChart)  
-- [PagePower](PagePower)  
-- [PageAlarm](PageAlarm)
+**Alle Seiten werden im Admin angelegt.** Ein Teil von ihnen hat dabei einen **festen Aufbau**: Wie die Elemente auf dem Panel liegen, gibt die Karte vor, frei ist nur, welche Datenpunkte sie zeigt und wie sie beschriftet sind. Für jede dieser Karten gibt es im Admin einen eigenen Editor, der die Seite so zeichnet, wie das Panel sie später anzeigt.
+
+Das Konfigurationsskript ist der Weg für **erfahrene Nutzer in besonderen Konstellationen** — für den normalen Betrieb wird es nicht gebraucht. **Lässt sich etwas im Admin nicht einstellen, bitte beim Entwicklerteam melden** ([Issue](https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/issues)), statt es im Skript zu umgehen.
+
+## Welche Seite wo konfiguriert wird
+
+| Seite | Wofür sie da ist | Was am Panel ankommt | Anlegen im Admin |
+|---|---|---|---|
+| Menüseite | Fliesen- oder Listenübersicht mit frei gewählten Items | Grundlagen im Konfigurationsskript | [Menü-Seite](pageMenu) |
+| Thermostat | Heizung und Klima, bis zu acht Heizkreise | Page Thermo2 | [Thermostat](cardThermo2) |
+| Energie | Energiefluss mit Quellen und Verbrauchern | Page Power | [Energie](cardPower) |
+| Verlaufsdiagramm | Verlauf aus der History | Page Chart | [Verlaufsdiagramm](cardChart) |
+| Kreisdiagramm | bis zu fünf Werte als Tortendiagramm, aktuell oder als Mittelwert | Page PChart (ab TFT 6.0.5) | [Kreisdiagramm](cardPChart) |
+| QR-Code | WLAN-Zugang, Telefonnummer oder Adresse als QR-Code | Page QR | [QR-Code](cardQR) |
+| Alarm | Alarmanlage mit PIN und Zuständen | Page Alarm | [Alarm und Entsperrseite](cardAlarm) |
+| Abfall | Abfuhrtermine | keine eigene Karte — der Adapter baut eine Listenseite daraus | [Abfall](cardTrash) |
+| Medien | Musik und Wiedergabelisten | Page Media | **nicht im Admin** — nur im Skript |
+
+## Was dabei zu beachten ist
+
+- **Drei Seitentypen gibt es nur im Admin.** QR-Code, Alarm/Entsperren und Abfall kann ein Konfigurationsskript nicht anlegen — es weist sie ausdrücklich ab („is only supported in the admin configuration! Skipped!") und überspringt sie samt Navigationseintrag.
+- **Eine Seite, eine Quelle.** Ist eine Seite im Admin angelegt, gilt für die aufgeführten Panels der Admin-Eintrag. Eine gleichnamige Seite im Skript wird für diese Panels nicht mehr verwendet.
+- **Datenpunkte über Alias-Kanäle.** Die Karten erwarten bestimmte Rollen; welche das sind, steht in der [Alias-Tabelle](ALIAS). Der Editor im Admin prüft das beim Auswählen mit.
+- **Entsperren statt eigener Seite.** Die frühere eigene Unlock-Seite ist kein eigener Punkt mehr, sie wird beim Anlegen der Seiten im Admin mit eingestellt.
+- **Popups** gehören nicht hierher: sie öffnen sich aus einer Seite heraus und sind unter [Popups](pagePopup) beschrieben.
