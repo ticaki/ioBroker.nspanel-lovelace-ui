@@ -113,13 +113,11 @@ Der Abschnitt **Geschwindigkeitsskala** steuert die Animation — sie läuft ums
 
 | Feld | Wirkung |
 |---|---|
-| `powerMinValueForSpeed` | Die Leistung, bei der der Punkt **steht**. Vorgabe 0 — mit ihr steht der Punkt bei 0 W still. |
+| **minimale Leistung** | Die Leistung, bei der der Punkt **steht**. Vorgabe 0 — mit ihr steht der Punkt bei 0 W still. |
 | **maximale Leistung** | Die Leistung, bei der die Animation mit **100 %** läuft, also am schnellsten. Vorgabe 10000. Dazwischen wächst die Geschwindigkeit gleichmäßig mit der Leistung. |
 | **Flussrichtung umkehren** | Dreht die Laufrichtung um — für Flüsse, deren Datenpunkt das Vorzeichen andersherum führt. |
 
 Die Laufrichtung kommt aus dem **Vorzeichen**: Ein negativer Messwert lässt den Punkt in die andere Richtung laufen, der Haken *Flussrichtung umkehren* dreht beides um.
-
-> ⚠️ **Das erste Feld zeigt den rohen Schlüssel `powerMinValueForSpeed` statt einer Beschriftung** — dem Adapter fehlt die Übersetzung, in beiden Sprachen. Gemeint ist die **minimale Leistung für die Geschwindigkeit**, das Gegenstück zum Feld daneben.
 
 > Die Beschriftung **maximale Leistung** gibt es faktisch zweimal: hier für die Animation, weiter oben als *maximale Leistung für Farbe* für den Farbverlauf. Auseinanderhalten kann man sie nur über die Abschnittsüberschriften *Farbskala* und *Geschwindigkeitsskala*.
 
@@ -176,7 +174,6 @@ Soll eine Seite, die heute noch aus einem Skript kommt, hier verwaltet werden, f
 - **Alle Grenzen für Farbe und Geschwindigkeit gelten für den Rohwert** des Datenpunkts, nicht für die Einheit, die das Panel zeigt.
 - **Ohne Iconfarbe und ohne Farbskala ist das Symbol weiß.** Bei Seiten aus der alten Tabelle ist das der Normalfall, wenn der Haken *Farbe vom Wert abhängig* dort nie angefasst wurde.
 - **Ein Messwert außerhalb der Farbskala dehnt sie**, statt am Rand stehen zu bleiben — die Farben verschieben sich dann für alle anderen Werte mit.
-- **`powerMinValueForSpeed` ist ein fehlendes Übersetzungs-Schlüsselwort**, kein Sonderfeld. Gemeint ist die minimale Leistung für die Geschwindigkeit.
 - **„maximale Leistung" steht zweimal im Dialog** — einmal für die Farbe, einmal für die Geschwindigkeit. Nur die Abschnittsüberschrift unterscheidet sie.
 - **Die Hauswerte kürzen nicht und rechnen nicht um.** Ein zu langer Wert läuft dort über, und eine falsche Einheit fällt nicht auf, weil niemand sie prüft.
 - **„Slots, die negativ in die Summe gehen" ist falsch beschriftet.** Ausgewählt werden die Flächen, die **beitragen**.
