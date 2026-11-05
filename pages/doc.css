@@ -1,0 +1,408 @@
+/* Styling of the documentation site (built by script/build-doc-page.ts).
+   Colours and typography follow pages/icons.html so both parts of the site match. */
+:root {
+    --bg: #f6f7f9;
+    --card: #ffffff;
+    --text: #1d2125;
+    --muted: #69707a;
+    --border: #dde1e6;
+    --accent: #0a7bd6;
+    --code-bg: #f0f2f5;
+    --note: #e7f1fb;
+    --note-border: #0a7bd6;
+    --warn: #fdeccf;
+    --warn-border: #c58100;
+}
+@media (prefers-color-scheme: dark) {
+    :root {
+        --bg: #15181c;
+        --card: #1f2329;
+        --text: #e6e9ed;
+        --muted: #98a0aa;
+        --border: #2f353d;
+        --accent: #4aa8f0;
+        --code-bg: #222831;
+        --note: #16293a;
+        --note-border: #4aa8f0;
+        --warn: #45361c;
+        --warn-border: #f2c574;
+    }
+}
+* {
+    box-sizing: border-box;
+}
+body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font:
+        15px/1.55 system-ui,
+        -apple-system,
+        'Segoe UI',
+        Roboto,
+        sans-serif;
+}
+a {
+    color: var(--accent);
+}
+.skip {
+    position: absolute;
+    left: -9999px;
+}
+
+header {
+    position: sticky;
+    top: 0;
+    z-index: 5;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    background: var(--bg);
+    border-bottom: 1px solid var(--border);
+}
+.brand {
+    font-weight: 600;
+    text-decoration: none;
+    color: var(--text);
+    white-space: nowrap;
+}
+.brand span {
+    color: var(--muted);
+    font-weight: 400;
+}
+.headlink {
+    text-decoration: none;
+    white-space: nowrap;
+    padding: 6px 10px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: var(--card);
+    font-size: 13px;
+}
+.iconbtn {
+    display: none;
+    background: var(--card);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 6px 10px;
+    font-size: 15px;
+    cursor: pointer;
+}
+.searchbox {
+    position: relative;
+    flex: 1 1 200px;
+}
+input[type='search'] {
+    width: 100%;
+    padding: 7px 10px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: var(--card);
+    color: var(--text);
+    font: inherit;
+}
+#results {
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    right: 0;
+    max-height: 60vh;
+    overflow: auto;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.18);
+}
+#results a {
+    display: block;
+    padding: 8px 10px;
+    text-decoration: none;
+    color: var(--text);
+    border-bottom: 1px solid var(--border);
+}
+#results a:last-child {
+    border-bottom: 0;
+}
+#results a:hover,
+#results a.sel {
+    background: var(--note);
+}
+#results .t {
+    font-weight: 600;
+}
+#results .h {
+    color: var(--muted);
+    font-size: 12px;
+}
+#results .none {
+    padding: 8px 10px;
+    color: var(--muted);
+}
+
+.layout {
+    display: flex;
+    align-items: flex-start;
+    gap: 24px;
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 14px;
+}
+#sidebar {
+    position: sticky;
+    top: 61px;
+    flex: 0 0 270px;
+    width: 270px;
+    max-height: calc(100vh - 70px);
+    overflow: auto;
+    padding: 16px 8px 40px 0;
+    font-size: 14px;
+}
+#sidebar ul {
+    list-style: none;
+    margin: 4px 0;
+    padding-left: 14px;
+}
+#sidebar li {
+    margin: 2px 0;
+}
+#sidebar a {
+    text-decoration: none;
+}
+#sidebar a:hover {
+    text-decoration: underline;
+}
+#sidebar strong {
+    display: block;
+    margin-top: 12px;
+}
+#sidebar h1 {
+    font-size: 17px;
+    margin: 6px 0;
+}
+#sidebar h2 {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--muted);
+    border: 0;
+    margin: 12px 0 2px;
+}
+#sidebar h3 {
+    font-size: 13px;
+    margin: 10px 0 2px;
+}
+/* das grosse Panelbild am Kopf der Sidebar stoert, die Badges darunter sind klein nuetzlich */
+#sidebar p:first-of-type img {
+    display: none;
+}
+#sidebar img {
+    max-height: 18px;
+    width: auto;
+    border: 0;
+    vertical-align: middle;
+}
+#sidebar hr {
+    border: 0;
+    border-top: 1px solid var(--border);
+    margin: 12px 0;
+}
+
+main {
+    flex: 1 1 auto;
+    min-width: 0;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 22px 26px 30px;
+    margin: 16px 0 40px;
+}
+main h1 {
+    font-size: 26px;
+    margin: 0 0 14px;
+}
+main h2 {
+    font-size: 21px;
+    margin: 28px 0 10px;
+    padding-bottom: 4px;
+    border-bottom: 1px solid var(--border);
+}
+main h3 {
+    font-size: 17px;
+    margin: 22px 0 8px;
+}
+main h4 {
+    font-size: 15px;
+    margin: 18px 0 6px;
+}
+main img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+}
+main table {
+    border-collapse: collapse;
+    margin: 14px 0;
+    display: block;
+    overflow-x: auto;
+    max-width: 100%;
+}
+main th,
+main td {
+    border: 1px solid var(--border);
+    padding: 6px 10px;
+    text-align: left;
+    vertical-align: top;
+}
+main th {
+    background: var(--code-bg);
+}
+main code {
+    background: var(--code-bg);
+    padding: 1px 5px;
+    border-radius: 4px;
+    font-size: 90%;
+}
+main pre {
+    background: var(--code-bg);
+    padding: 12px 14px;
+    border-radius: 8px;
+    overflow-x: auto;
+}
+main pre code {
+    background: none;
+    padding: 0;
+    font-size: 13px;
+}
+main blockquote {
+    margin: 14px 0;
+    padding: 10px 14px;
+    background: var(--note);
+    border-left: 4px solid var(--note-border);
+    border-radius: 0 6px 6px 0;
+}
+main blockquote p {
+    margin: 6px 0;
+}
+main blockquote.callout.warning,
+main blockquote.callout.caution,
+main blockquote.callout.important {
+    background: var(--warn);
+    border-left-color: var(--warn-border);
+}
+.callout-title {
+    font-weight: 600;
+    text-transform: capitalize;
+    margin-top: 0 !important;
+}
+.anchor {
+    float: left;
+    margin-left: -0.8em;
+    padding-right: 0.3em;
+    opacity: 0;
+    text-decoration: none;
+    color: var(--muted);
+}
+h1:hover .anchor,
+h2:hover .anchor,
+h3:hover .anchor,
+h4:hover .anchor {
+    opacity: 1;
+}
+.meta {
+    color: var(--muted);
+    font-size: 13px;
+}
+.meta a {
+    color: var(--muted);
+}
+hr {
+    border: 0;
+    border-top: 1px solid var(--border);
+    margin: 24px 0 12px;
+}
+
+/* start page */
+body.start {
+    display: flex;
+    min-height: 100vh;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+body.start main {
+    max-width: 760px;
+    text-align: center;
+}
+body.start h1 {
+    font-size: 28px;
+}
+.lead {
+    color: var(--muted);
+    margin: 0 0 22px;
+}
+.cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+    gap: 14px;
+}
+.card {
+    display: block;
+    text-align: left;
+    text-decoration: none;
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px 18px;
+    background: var(--bg);
+}
+.card:hover {
+    border-color: var(--accent);
+}
+.card h2 {
+    margin: 0 0 6px;
+    font-size: 18px;
+    border: 0;
+}
+.card p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 13px;
+}
+
+@media (max-width: 860px) {
+    .iconbtn {
+        display: inline-block;
+    }
+    /* auf schmalen Geraeten bekommt die Suche eine eigene Zeile, sonst wird sie zerquetscht */
+    header {
+        flex-wrap: wrap;
+    }
+    .searchbox {
+        order: 3;
+        flex: 1 1 100%;
+    }
+    .headlink {
+        padding: 6px 8px;
+        font-size: 12px;
+    }
+    .layout {
+        display: block;
+        padding: 0 10px;
+    }
+    #sidebar {
+        display: none;
+        position: static;
+        width: auto;
+        max-height: none;
+        padding: 10px 0;
+        border-bottom: 1px solid var(--border);
+    }
+    #sidebar.open {
+        display: block;
+    }
+    main {
+        padding: 16px;
+    }
+}

@@ -22,3 +22,4 @@ src/lib/password.ts
 .eslintcache
 .gitignore
 .commitinfo
+_site/

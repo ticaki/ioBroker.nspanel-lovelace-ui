@@ -17,6 +17,7 @@ import DeleteOutlineIcon from '@mui/icons-material/DeleteOutlineOutlined';
 import LinkIcon from '@mui/icons-material/Link';
 import ConfirmDialog from './ConfirmDialog';
 import NavigationAssignmentPanel from './NavigationAssignmentPanel';
+import { docUrl } from '../docLink';
 import type {
     AdminCardTypes,
     NavigationAssignmentList,
@@ -471,7 +472,13 @@ export class PageConfigLayout extends React.Component<PageConfigLayoutProps, Pag
 
         const currentEntry = entries.find(e => e.uniqueName === selected);
         const currentAssignments = currentEntry?.navigationAssignment || [];
-        const docUrl = `https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/wiki/${encodeURIComponent(!canCreateForCardType(selectedCardType) ? (currentEntry?.card ? currentEntry.card : 'PageConfig') : selectedCardType)}`;
+        const documentationUrl = docUrl(
+            !canCreateForCardType(selectedCardType)
+                ? currentEntry?.card
+                    ? currentEntry.card
+                    : 'PageConfig'
+                : selectedCardType,
+        );
         return (
             <Box
                 sx={{
@@ -731,10 +738,10 @@ export class PageConfigLayout extends React.Component<PageConfigLayoutProps, Pag
                     </Paper>
                     <Divider sx={{ my: 1 }} />
                     {/* Documentation link */}
-                    {docUrl && (
+                    {documentationUrl && (
                         <Box sx={{ mb: 2 }}>
                             <a
-                                href={docUrl}
+                                href={documentationUrl}
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 style={{

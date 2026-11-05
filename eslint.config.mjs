@@ -24,6 +24,7 @@ export default [
             'json',
             'script',
             'node_modules',
+            'pages',
             'templates',
             '.dev-data',
             'script/**/*.ts',

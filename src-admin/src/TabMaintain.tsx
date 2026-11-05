@@ -25,6 +25,7 @@ import { PanelStatusBadge } from './components/PanelStatusBadge';
 import ConvertScriptDialog from './components/ConvertScriptDialog';
 import { ThemeProvider } from '@mui/material/styles';
 import { getLightSurfaceTheme } from './themeUtils';
+import { docUrl } from './docLink';
 import {
     defaultWebLinkSettings,
     loadWebLinkSettings,
@@ -648,7 +649,7 @@ class MaintainPanel extends ConfigGeneric<ConfigGenericProps & MaintainPanelProp
                     <Button
                         variant="text"
                         color="primary"
-                        href="https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/wiki/Adapter-Installation"
+                        href={docUrl('Adapter-Installation')}
                         target="_blank"
                         sx={{ color: 'red' }}
                     >

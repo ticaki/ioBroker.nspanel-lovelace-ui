@@ -50,6 +50,18 @@
     }
     h1 { font-size: 18px; margin: 0 0 4px; }
     .hint { color: var(--muted); margin: 0 0 10px; font-size: 13px; }
+    .backlink {
+        display: inline-block;
+        margin: 0 0 6px;
+        padding: 4px 10px;
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        background: var(--card);
+        color: var(--accent);
+        text-decoration: none;
+        font-size: 13px;
+    }
+    .backlink:hover { border-color: var(--accent); }
     .controls { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
     input[type=search] {
         flex: 1 1 240px;
@@ -146,6 +158,7 @@
 </head>
 <body>
 <header>
+    <a class="backlink" id="backToDocs" href="../" data-t="docs"></a>
     <h1 data-t="title">NSPanel Lovelace UI – Icons</h1>
     <p class="hint" data-t="hint"></p>
     <div class="controls">
@@ -175,6 +188,7 @@
             alias: 'same glyph as',
             own_badge: 'own',
             loading: 'loading…',
+            docs: '← Documentation',
         },
         de: {
             title: 'NSPanel Lovelace UI – Icons',
@@ -188,6 +202,7 @@
             alias: 'gleicher Glyph wie',
             own_badge: 'eigen',
             loading: 'lädt …',
+            docs: '← Dokumentation',
         },
     };
     const lang = navigator.language.toLowerCase().startsWith('de') ? 'de' : 'en';
@@ -196,6 +211,7 @@
     document.querySelectorAll('[data-t]').forEach(el => {
         el.textContent = t[el.dataset.t];
     });
+    document.getElementById('backToDocs').href = `../${lang}/Home.html`;
     const search = document.getElementById('search');
     search.placeholder = t.search;
     const grid = document.getElementById('grid');
