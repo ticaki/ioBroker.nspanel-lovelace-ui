@@ -51,6 +51,7 @@
     h1 { font-size: 18px; margin: 0 0 4px; }
     .hint { color: var(--muted); margin: 0 0 10px; font-size: 13px; }
     .backlink {
+        margin-right: 6px;
         display: inline-block;
         margin: 0 0 6px;
         padding: 4px 10px;
@@ -159,6 +160,7 @@
 <body>
 <header>
     <a class="backlink" id="backToDocs" href="../" data-t="docs"></a>
+    <a class="backlink" href="https://github.com/ticaki/ioBroker.nspanel-lovelace-ui" data-t="repo"></a>
     <h1 data-t="title">NSPanel Lovelace UI – Icons</h1>
     <p class="hint" data-t="hint"></p>
     <div class="controls">
@@ -189,6 +191,7 @@
             own_badge: 'own',
             loading: 'loading…',
             docs: '← Documentation',
+            repo: 'GitHub',
         },
         de: {
             title: 'NSPanel Lovelace UI – Icons',
@@ -203,6 +206,7 @@
             own_badge: 'eigen',
             loading: 'lädt …',
             docs: '← Dokumentation',
+            repo: 'GitHub',
         },
     };
     const lang = navigator.language.toLowerCase().startsWith('de') ? 'de' : 'en';
