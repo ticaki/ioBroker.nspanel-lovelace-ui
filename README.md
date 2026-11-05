@@ -44,7 +44,7 @@ With this custom UI, you can:
 
 ### Installation & Questions
 
-Adapter Wiki: https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/wiki  
+Documentation: https://ticaki.github.io/ioBroker.nspanel-lovelace-ui (German and English, icon overview under `/icons/`)  
 Adapter Community (ioBroker Forum): [Forum](https://forum.iobroker.net/topic/80055/alphatest-nspanel-lovelace-ui-v0-1-1)
 
 ---
@@ -159,6 +159,7 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
     ### **WORK IN PROGRESS**
 -->
 ### **WORK IN PROGRESS**
+- (tt-tom17) documentation moved to GitHub Pages
 - (ticaki) screensaver mode tiles: shows the info icon left of the time (notifications, update hint); needs the updated HMI with screensaver5
 - (ticaki) admin screensaver: a new screensaver gets two status icons coupled to the relays of the panel
 - (ticaki) screensaver mode tiles (page screensaver5): 5 values at the bottom, 7 indicators (portrait panel: 4 values, 8 indicators), the two status icons as color bars at the lower edge like easyview, a larger clock - needs a HMI with screensaver5; the web panel draws the mode like the panel

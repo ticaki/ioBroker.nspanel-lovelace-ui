@@ -44,7 +44,7 @@
                 "_openLinkWikiColorThemes": {
                     "type": "staticLink",
                     "text": "openLinkWikiColorThemes",
-                    "href": "https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/wiki/ColorThemes",
+                    "href": "https://ticaki.github.io/ioBroker.nspanel-lovelace-ui/colorTheme",
                     "icon": "info",
                     "button": true,
                     "style": {
@@ -934,7 +934,7 @@
                 "_openLinkWikiTasmotaTools": {
                     "type": "staticLink",
                     "text": "openLinkWikiTasmotaTools",
-                    "href": "https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/wiki/Tasmota-Tools",
+                    "href": "https://ticaki.github.io/ioBroker.nspanel-lovelace-ui/tasmotatools",
                     "icon": "info",
                     "button": true,
                     "style": {

@@ -9,6 +9,7 @@ import DeleteOutlineIcon from '@mui/icons-material/DeleteOutlineOutlined';
 import { ConfigGeneric, type ConfigGenericProps, type ConfigGenericState } from '@iobroker/json-config';
 import ConfirmDialog from './components/ConfirmDialog';
 import { ScreensaverEditor } from './components/ScreensaverEditor';
+import { docUrl } from './docLink';
 import type {
     AdminPanelConfig,
     ScreensaverEntry,
@@ -446,7 +447,7 @@ class ScreensaverConfigManager extends ConfigGeneric<
                 )}
                 <Divider sx={{ my: 1 }} />
                 <a
-                    href="https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/wiki/screensaver"
+                    href={docUrl('screensaver')}
                     target="_blank"
                     rel="noopener noreferrer"
                     style={{ textDecoration: 'none', color: 'inherit', fontSize: '0.875rem' }}
