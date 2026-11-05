@@ -1,6 +1,6 @@
 <img src="https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/assets/102996011/a268be21-25f2-420a-a53c-0286096d4245" width="30%" height="30%">
 
-# ioBroker adapter wiki
+# NSPanel Lovelace UI — Documentation
 
 ## SONOFF NSPanel Lovelace UI GUI - NEXT LEVEL
 

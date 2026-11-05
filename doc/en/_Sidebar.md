@@ -1,8 +1,10 @@
 ![Panel eu_us mit logo](<../Pictures/Panel eu_us mit logo.png>)  
 ![SOnOFFLogo](../Pictures/SOnOffLogo.png)   
 # [Adapter - Home](Home)  
-## TFT Release: v5.0.0  
-[![tftrelase](https://img.shields.io/github/release/ticaki/iobroker.nspanel-lovelace-ui.svg)](https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/tree/main/HMI)
+## [TFT release](https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/tree/main/HMI)  
+- EU: v{{version:tft}}  
+- US-L: v{{version:tft-us-l}}  
+- US-P: v{{version:tft-us-p}}  
 ---
 ## Adapter Version  
 [![npm](https://img.shields.io/npm/v/iobroker.nspanel-lovelace-ui.svg)](https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/releases) ![Number of Installations](https://iobroker.live/badges/nspanel-lovelace-ui-installed.svg)
