@@ -19,6 +19,21 @@ type TrashEntry = {
     items: TrashItem[];
 };
 
+/**
+ * The next daily update of the trash dates: the next 00:01 local time after `now`, from the calendar
+ * date, so a day with a DST change gets its 23 or 25 hours. Where 00:01 does not exist on such a day, the
+ * Date constructor moves it behind the gap; where it exists twice, it takes the first one.
+ *
+ * @param now the current time
+ * @returns the time of the next update, always later than `now`
+ */
+export function getNextTrashRefresh(now: Date): Date {
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 1, 0, 0);
+    return today.getTime() > now.getTime()
+        ? today
+        : new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 0, 1, 0, 0);
+}
+
 export async function getTrashDataFromState(
     trashJSON: any,
     entry: TrashEntry,

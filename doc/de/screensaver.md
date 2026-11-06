@@ -149,6 +149,7 @@ Mit der Quelle **Template** nimmt ein Platz ein PageItem-Template des Adapters (
 - Unter der Auswahl stehen *Typ · erwartete Rolle · Adapter*.
 - Die meisten Templates suchen ihre Datenpunkte **unterhalb eines Objekts**: Dann wird ein **Kanal oder Alias, in dem das Template seine Datenpunkte sucht** gewählt (der Objektbaum zeigt Kanäle, Geräte und Ordner), und der Dialog nennt, wonach das Template darunter sucht (z. B. `.ACTUAL`, `switch.lock | state`). Ein einzelner Datenpunkt an dieser Stelle wird als Warnung gemeldet.
 - Templates ohne Objekt (`text.clock`, `text.wlan`, `button.service.*` …) brauchen keines – dann steht *Dieses Template braucht kein Objekt – es bringt seine Daten selbst mit*.
+- `text.trash.next` und `text.trash.afterNext` (nur im Bereich **unten**) zeigen den nächsten und den übernächsten Termin einer [Abfall-Seite](cardTrash): Symbol und Farbe des Termins, darüber *Abfall*, darunter heute, morgen oder der Wochentag wie auf der Seite, ein Datum kurz als Tag.Monat (`06.12`). Das Feld *Abfall-Seite* nimmt die Eindeutige ID der Seite, leer gilt die erste konfigurierte Abfall-Seite. Gibt es keinen Termin oder ist die ID unbekannt, blendet sich das Item aus. Eine eigene **Sichtbarkeits**-Einstellung ersetzt dieses Ausblenden.
 
 ## 6. Rohdaten (JSON)
 

@@ -59,6 +59,9 @@ import {
     parseGpio4Answer,
     parseModuleAnswer,
     type DisplayDiagnosisAnswers,
+    isSafebootVersion,
+    buildSafebootMessage,
+    parseInfo1Version,
 } from './display-diagnosis';
 
 export interface panelConfigPartial extends Partial<panelConfigTop> {
@@ -1199,7 +1202,11 @@ export class Panel extends BaseClass {
                 this._activePage && void this._activePage.setVisibility(false);
                 this.sendtempOffsetToPanel = (_val: number) => {};
                 this.restartLoops();
-                this.log.warn('is offline!');
+                if (!this.isVirtual && !this.info.tasmota.safeboot) {
+                    // a web panel without a browser is no fault, the manager reports it once;
+                    // safeboot has its own warning
+                    this.log.warn('is offline!');
+                }
                 void this.setStatus('offline');
                 this._isOnline = s;
             }
@@ -1326,6 +1333,7 @@ export class Panel extends BaseClass {
         } else if (topic.endsWith('/tele/LWT')) {
             // deaktiviert, weils zu falschen offline meldungen kommen.
         } else if (topic.endsWith('/tele/INFO1')) {
+            await this.handleInfo1(message);
             this.restartLoops();
         } else if (topic.endsWith('/tele/STATE')) {
             this.info.tasmota.sts = JSON.parse(message) as Types.TasmotaTeleState;
@@ -1399,7 +1407,7 @@ export class Panel extends BaseClass {
                         this.info.tasmota.mqttClient = data.StatusMQT.MqttClient;
                         this.info.tasmota.net = data.StatusNET;
                         this.info.tasmota.firmwareversion = data.StatusFWR.Version;
-                        this.info.tasmota.safeboot = data.StatusFWR.Version.includes('Safeboot');
+                        this.setSafeboot(isSafebootVersion(data.StatusFWR.Version), data.StatusFWR.Version);
                         this.info.tasmota.uptime = data.StatusSTS.Uptime;
                         this.info.tasmota.sts = data.StatusSTS;
                         this.info.tasmota.sensors = data.StatusSNS;
@@ -1862,9 +1870,7 @@ export class Panel extends BaseClass {
             t = 5000;
             if (!this.flashing) {
                 this.panelSend.resetMessageDB();
-                if (this.channel.hasReceiver?.() !== false) {
-                    this.sendToPanel('pageType~pageStartup', false, true, { retain: true });
-                }
+                this.offerStartupPage();
             }
         }
         if (this.unload || this.adapter.unload) {
@@ -1873,12 +1879,55 @@ export class Panel extends BaseClass {
         this.checkDisplayNotAnswering();
         // offline: offer `pageType~pageStartup` every 5 s until the panel answers with its startup event
         // (a web panel has no Tasmota rule that repeats the startup page); a channel that knows nobody can
-        // receive (web panel without a browser) gets no offer, its next browser sends the startup event itself;
+        // receive (web panel without a browser) gets no offer, its next browser sends the startup event itself,
+        // and neither does a Tasmota in safeboot, which knows no command;
         // online: tidy the pages now and then
         this.loopTimeout = this.adapter.setTimeout(() => {
             this.loop();
         }, t);
     };
+
+    /** Offers `pageType~pageStartup` to a panel that can receive it */
+    private offerStartupPage(): void {
+        if (this.channel.hasReceiver?.() !== false && !this.info.tasmota.safeboot) {
+            this.sendToPanel('pageType~pageStartup', false, true, { retain: true });
+        }
+    }
+
+    /**
+     * `tele/INFO1` tells the running firmware after every Tasmota start, also in safeboot.
+     *
+     * @param message raw payload
+     */
+    private async handleInfo1(message: string): Promise<void> {
+        const version = parseInfo1Version(message);
+        if (version !== null && this.setSafeboot(isSafebootVersion(version), version)) {
+            await this.writeInfo();
+        }
+    }
+
+    /**
+     * Keeps track of the safeboot image: warns once when the panel enters it and stops everything that
+     * needs the normal firmware. `loop()` offers the startup page again as soon as the flag is gone.
+     *
+     * @param safeboot true if the safeboot image is running
+     * @param version firmware version as reported by Tasmota, for the warning
+     * @returns true if the state changed
+     */
+    private setSafeboot(safeboot: boolean, version: string): boolean {
+        if (safeboot === this.info.tasmota.safeboot) {
+            return false;
+        }
+        this.info.tasmota.safeboot = safeboot;
+        if (safeboot) {
+            this.log.warn(buildSafebootMessage(this.topic, version));
+            this.resetDisplayDiagnosis();
+            this.isOnline = false;
+        } else {
+            this.log.info('Tasmota left safeboot');
+        }
+        return true;
+    }
 
     /**
      * Called by the loop: if a hardware panel has been offered `pageType~pageStartup` for
@@ -1887,8 +1936,8 @@ export class Panel extends BaseClass {
      */
     private checkDisplayNotAnswering(): void {
         const now = Date.now();
-        if (this.isOnline || this.flashing || !this.initDone || this.isVirtual) {
-            // flashing: the display is busy - count again afterwards
+        if (this.isOnline || this.flashing || !this.initDone || this.isVirtual || this.info.tasmota.safeboot) {
+            // flashing: the display is busy, safeboot: Tasmota knows no command - count again afterwards
             this.displayOfflineSinceTs = 0;
             return;
         }
@@ -2157,6 +2206,8 @@ export class Panel extends BaseClass {
                     this.blockStartup = null;
                 }, 10_000);
                 this.resetDisplayDiagnosis();
+                // a display only answers through the normal firmware, in case its INFO1 got lost
+                this.setSafeboot(false, '');
                 this.isOnline = true;
                 this.info.nspanel.displayVersion = event.opt;
                 if (this.isVirtual) {

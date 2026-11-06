@@ -1,4 +1,6 @@
 import { Color } from '../const/Color';
+import { trashPagesState } from '../const/definition';
+import type { NSPanel } from '../types/NSPanel';
 import type { TemplateItems } from '../types/types';
 
 /**
@@ -71,6 +73,70 @@ const brightskyIconColorRead = `
         default:
             return Color.White;
     }`;
+
+/**
+ * Data item of a trash template: reads one date of the trash pages.
+ *
+ * `val` is the map of {@link trashPagesState}, empty until the first run. Everything is null safe: a missing
+ * date must neither write to the log nor reach `getString`, which turns `undefined` into the text 'undefined'.
+ * `options.page` is the unique id of the page, without it the first configured page counts.
+ *
+ * @param index position of the date on the trash page
+ * @param result expression with the date `entry`, may be undefined
+ * @returns the data item
+ */
+function trashDataItem(index: number, result: string): NSPanel.DataItemsOptions {
+    return {
+        type: 'internal',
+        dp: trashPagesState,
+        read: `
+            const pages = val && typeof val === 'object' ? val : {};
+            const wanted = options?.page != null ? String(options.page).trim() : '';
+            const id = wanted !== '' ? wanted : Object.keys(pages)[0];
+            const dates = id !== undefined && Object.hasOwn(pages, id) ? pages[id] : null;
+            const entry = Array.isArray(dates) ? dates[${index}] : undefined;
+            return ${result};`,
+    };
+}
+
+/**
+ * Date of a trash entry for the bottom area, where a full date gets cut off: `06.12.2026` and `06.12.26` become
+ * `06.12`, everything else (today, tomorrow, weekday) stays as the page shows it.
+ */
+const trashShortDate = `typeof entry?.text1 === 'string'
+                ? entry.text1.replace(/^(\\d{2}\\.\\d{2})\\.(?:\\d{2}|\\d{4})$/, '$1')
+                : (entry?.text1 ?? null)`;
+
+/**
+ * Bottom item of the screensaver with a date of a trash page: icon and color of the date, the headline and
+ * the date in short form (see {@link trashShortDate}). Without a date the item hides itself.
+ *
+ * @param index position of the date on the trash page
+ * @returns the template
+ */
+function trashTemplate(index: number): NSPanel.PageItemOptionsTemplate {
+    return {
+        role: 'text',
+        type: 'text',
+        modeScr: 'bottom',
+        adapter: '',
+        dpInit: '',
+        screensaverAreas: ['bottom'],
+        adminOptions: [{ key: 'page', type: 'text', label: 'screensaver_item_option_trashPage' }],
+        data: {
+            enabled: trashDataItem(index, '!!entry'),
+            entity1: { value: { type: 'const', constVal: true } },
+            icon: {
+                true: {
+                    value: trashDataItem(index, 'entry?.icon ?? null'),
+                    color: trashDataItem(index, 'entry?.color ?? null'),
+                },
+            },
+            text: { true: { type: 'const', constVal: 'page_type_trash' }, false: undefined },
+            text1: { true: trashDataItem(index, trashShortDate), false: undefined },
+        },
+    };
+}
 
 export const textTemplates: TemplateItems = {
     'text.clock': {
@@ -4179,4 +4245,6 @@ export const textTemplates: TemplateItems = {
             },
         },
     },
+    'text.trash.next': trashTemplate(0),
+    'text.trash.afterNext': trashTemplate(1),
 };

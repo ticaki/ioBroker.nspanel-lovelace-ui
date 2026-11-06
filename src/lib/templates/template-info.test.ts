@@ -55,8 +55,19 @@ describe('lib/templates - template info (screensaver item dialog)', () => {
             expect(info.areas, info.name).to.deep.equal(['favorit', 'alternate']);
         }
         expect(infos.filter(i => i.areas.length > 0 && i.areas.length < screensaverAreas.length)).to.have.length(
-            favorit.length,
+            favorit.length + 2, // the two trash templates, see below
         );
+    });
+
+    it('offers the trash templates on bottom only, without an object, with the page as option', () => {
+        for (const name of ['text.trash.next', 'text.trash.afterNext']) {
+            expect(byName.get(name), name).to.include({ need: 'none', type: 'text', adapter: '' });
+            expect(byName.get(name)?.looksFor, name).to.deep.equal([]);
+            expect(byName.get(name)?.areas, name).to.deep.equal(['bottom']);
+            expect(byName.get(name)?.options, name).to.deep.equal([
+                { key: 'page', type: 'text', label: 'screensaver_item_option_trashPage' },
+            ]);
+        }
     });
 
     it('reports the options of a template', () => {

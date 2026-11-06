@@ -1022,6 +1022,7 @@
     "screensaver_item_notState": "%s 不是数据点（对象类型：%s）– 请选择一个数据点",
     "screensaver_item_option_socMax": "SOC 上限 (%)",
     "screensaver_item_option_socMin": "SOC 下限 (%)",
+    "screensaver_item_option_trashPage": "垃圾页面(唯一 ID,留空 = 第一个页面)",
     "screensaver_item_pickState": "选择状态——字段取决于其类型",
     "screensaver_item_pickTemplate": "选择一个模板——它自带图标、颜色和文本；然后选择它读取的对象",
     "screensaver_item_preview_true": "开",

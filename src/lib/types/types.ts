@@ -92,6 +92,8 @@ export type TemplateIdent =
     | 'button.service.adapter.stopped'
     | 'button.service.adapter.noconnection'
     | 'text.fahrplan.departure'
+    | 'text.trash.next'
+    | 'text.trash.afterNext'
     | ''
     | 'button.humidity'
     | 'text.temperature'

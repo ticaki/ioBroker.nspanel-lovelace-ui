@@ -246,4 +246,51 @@ describe('lib/const/Color', () => {
             expect(blue.b).to.equal(255);
         });
     });
+
+    describe('Color.buildCustomTheme', () => {
+        it('uses the default theme as base', () => {
+            expect(Color.buildCustomTheme({})).to.deep.equal(Color.defaultTheme);
+        });
+        it('overrides a color of every group', () => {
+            const theme = Color.buildCustomTheme({
+                colorStates: [{ colGood: '#010203' }],
+                colorCardMedia: [{ colMediaTitleOn: '#040506' }],
+            });
+            expect(theme.good).to.deep.equal({ r: 1, g: 2, b: 3 });
+            expect(theme.mediaTitleOn).to.deep.equal({ r: 4, g: 5, b: 6 });
+        });
+        it('ignores an invalid color and reports it', () => {
+            const invalid: string[][] = [];
+            const theme = Color.buildCustomTheme({ colorStates: [{ colGood: 'green', colBad: '  ' }] }, (k, v) =>
+                invalid.push([k, v]),
+            );
+            expect(theme.good).to.deep.equal(Color.defaultTheme.good);
+            expect(invalid).to.deep.equal([['colGood', 'green']]);
+        });
+        it('ignores unknown keys and fields without the col prefix', () => {
+            const theme = Color.buildCustomTheme({ colorStates: [{ colNoSuchKey: '#010203', good: '#010203' }] });
+            expect(theme).to.deep.equal(Color.defaultTheme);
+        });
+        it('does not change the default theme', () => {
+            const before = JSON.stringify(Color.defaultTheme);
+            const theme = Color.buildCustomTheme({ colorStates: [{ colGood: '#010203' }] });
+            expect(theme).to.not.equal(Color.defaultTheme);
+            expect(JSON.stringify(Color.defaultTheme)).to.equal(before);
+        });
+    });
+
+    describe('Color.getThemeFromNative', () => {
+        it('returns the themes 0-4 by index', () => {
+            expect(Color.getThemeFromNative({ colorTheme: 0 })).to.equal(Color.defaultTheme);
+            expect(Color.getThemeFromNative({ colorTheme: 4 })).to.equal(Color.volcanoTheme);
+        });
+        it('builds the custom theme for index 5', () => {
+            const theme = Color.getThemeFromNative({ colorTheme: 5, colorStates: [{ colOn: '#010203' }] });
+            expect(theme.on).to.deep.equal({ r: 1, g: 2, b: 3 });
+        });
+        it('returns the default theme without a usable index', () => {
+            expect(Color.getThemeFromNative(undefined)).to.equal(Color.defaultTheme);
+            expect(Color.getThemeFromNative({ colorTheme: '5' })).to.equal(Color.defaultTheme);
+        });
+    });
 });

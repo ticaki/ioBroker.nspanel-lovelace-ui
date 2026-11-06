@@ -10,7 +10,7 @@ import type { ColorThemenInterface } from '../const/Color';
 import { Color } from '../const/Color';
 import type { PageAlarm } from '../pages/pageAlarm';
 import type { AlarmStates, PagePopupDataDetails } from '../types/pages';
-import { getTrashDataFromFile, getTrashDataFromState } from '../pages/tools/pageTrash';
+import { getNextTrashRefresh, getTrashDataFromFile, getTrashDataFromState } from '../pages/tools/pageTrash';
 import * as definition from '../const/definition';
 import * as adminShareConfig from '../types/adminShareConfig';
 import type { PanelChannel } from '../classes/panel-channel';
@@ -34,6 +34,9 @@ export class Controller extends Library.BaseClass {
     private minuteLoopTimeout: ioBroker.Timeout | undefined;
     private dateUpdateTimeout: ioBroker.Timeout | undefined;
     private dailyIntervalTimeout: ioBroker.Interval | undefined;
+    private trashRefreshTimeout: ioBroker.Timeout | undefined;
+    /** dates of all trash pages by unique id, the value of `definition.trashPagesState` */
+    private trashPages: Record<string, unknown[]> = {};
     private dataCache: Record<string, { time: number; data: any }> = {};
     private options: ControllerOptions;
     public globalPanelInfo: {
@@ -470,6 +473,7 @@ export class Controller extends Library.BaseClass {
             }
         }
         void this.systemNotification.init();
+        await this.initTrashPagesState();
 
         const tasks: Promise<boolean>[] = [];
         for (const panelConfig of panels) {
@@ -483,6 +487,7 @@ export class Controller extends Library.BaseClass {
         await Promise.all(tasks);
         void this.minuteLoop();
         void this.hourLoop();
+        this.scheduleTrashRefresh();
         await this.checkOnlineVersion();
         await this.getTrashDaten(true);
         this.log.info(`${this.panels.length} Panels initialized`);
@@ -687,6 +692,9 @@ export class Controller extends Library.BaseClass {
         if (this.dailyIntervalTimeout) {
             this.adapter.clearInterval(this.dailyIntervalTimeout);
         }
+        if (this.trashRefreshTimeout) {
+            this.adapter.clearTimeout(this.trashRefreshTimeout);
+        }
         if (this.systemNotification) {
             await this.systemNotification.delete();
         }
@@ -856,51 +864,59 @@ export class Controller extends Library.BaseClass {
      *
      */
     private buildCustomColorTheme(): ColorThemenInterface {
-        const cfg = this.adapter.config as unknown as {
-            colorStates?: any[];
-            colorNavigation?: any[];
-            colorWeatherIcon?: any[];
-            colorDisplay?: any[];
-            colorWeatherForecast?: any[];
-            colorScreensaver?: any[];
-            colorCardMedia?: any[];
-        };
+        return Color.buildCustomTheme(this.adapter.config, (key, value) => {
+            this.log.debug(`Color property ${key} with value ${value} is not valid and will be ignored.`);
+        });
+    }
 
-        // Start with a full copy of the default theme
-        const result: ColorThemenInterface = { ...Color.defaultTheme };
+    /**
+     * Plans the daily update of the trash dates at 00:01 local time, in addition to the 6 hour run of
+     * `hourLoop`. The time is calculated anew each day, a fixed interval would drift on a DST change.
+     */
+    private scheduleTrashRefresh(): void {
+        if (this.unload || this.adapter.unload) {
+            return;
+        }
+        const now = new Date();
+        this.trashRefreshTimeout = this.adapter.setTimeout(
+            () => this.runTrashRefresh(),
+            getNextTrashRefresh(now).getTime() - now.getTime(),
+        );
+    }
 
-        const merge = (arr?: Array<Record<string, string>>): void => {
-            if (!Array.isArray(arr) || !arr[0]) {
-                return;
+    /**
+     * One daily update of the trash dates. A failure must not end the daily updates.
+     */
+    private async runTrashRefresh(): Promise<void> {
+        try {
+            await this.getTrashDaten();
+        } catch (e) {
+            this.log.error(`Daily trash update failed: ${e instanceof Error ? e.message : JSON.stringify(e)}`);
+        }
+        this.scheduleTrashRefresh();
+    }
+
+    /**
+     * Creates the internal state of the templates `text.trash.*` with one empty entry per trash page.
+     *
+     * Has to run before the panels are created: a data item whose internal state does not exist yet is
+     * dropped for good (`Dataitem.isValidAndInit`), the item would never hide and never update. The empty
+     * entries also keep the order of the page configuration, a page whose source fails on the first run
+     * stays the first page.
+     */
+    async initTrashPagesState(): Promise<void> {
+        for (const entry of this.adapter.config.pageConfig ?? []) {
+            if (entry.card === 'cardTrash') {
+                this.trashPages[entry.uniqueName] = [];
             }
-            for (const [k, v] of Object.entries(arr[0])) {
-                if (typeof v === 'string' && v.trim() !== '' && /^col[A-Z]/.test(k)) {
-                    // entferne col-Präfix und schreibe den ersten Buchstaben klein (colGood -> good)
-                    const keyNoPrefix = k.replace(/^col/, '');
-                    const kTemp = keyNoPrefix.length
-                        ? keyNoPrefix.charAt(0).toLowerCase() + keyNoPrefix.slice(1)
-                        : keyNoPrefix;
-                    if (Color.isHex(v)) {
-                        const colRgb = Color.ConvertHexToRgb(v);
-                        if (Color.isRGB(colRgb) && kTemp in result) {
-                            result[kTemp as keyof typeof result] = colRgb;
-                        }
-                    } else {
-                        this.log.debug(`Color property ${k} with value ${v} is not valid and will be ignored.`);
-                    }
-                }
-            }
-        };
-
-        merge(cfg.colorStates);
-        merge(cfg.colorNavigation);
-        merge(cfg.colorWeatherIcon);
-        merge(cfg.colorDisplay);
-        merge(cfg.colorWeatherForecast);
-        merge(cfg.colorScreensaver);
-        merge(cfg.colorCardMedia);
-
-        return result;
+        }
+        await this.statesControler.setInternalState(
+            definition.trashPagesState,
+            '',
+            false,
+            getInternalDefaults('string', 'text', false),
+        );
+        await this.statesControler.setInternalState(definition.trashPagesState, this.trashPages, false);
     }
 
     async getTrashDaten(init: boolean = false): Promise<void> {
@@ -911,6 +927,7 @@ export class Controller extends Library.BaseClass {
             }
             const trashEntries = this.adapter.config.pageConfig.filter(e => e.card === 'cardTrash');
             this.log.debug(`Found ${trashEntries.length} trash card configurations.`);
+            let trashPagesChanged = false;
 
             for (const entry of trashEntries) {
                 try {
@@ -948,6 +965,10 @@ export class Controller extends Library.BaseClass {
                         continue;
                     }
 
+                    // a new object: the same one again would not count as a change for the triggers
+                    this.trashPages = { ...this.trashPages, [entry.uniqueName]: result.messages };
+                    trashPagesChanged = true;
+
                     if (init) {
                         await this.statesControler.setInternalState(
                             `///pageTrash_${entry.uniqueName}`,
@@ -969,6 +990,9 @@ export class Controller extends Library.BaseClass {
                 } catch (error: any) {
                     this.log.error(`Error processing trash entry ${entry.uniqueName}: ${error.message}`);
                 }
+            }
+            if (trashPagesChanged) {
+                await this.statesControler.setInternalState(definition.trashPagesState, this.trashPages, false);
             }
         } catch (error: any) {
             this.log.error(`getTrashDaten error: ${error.message}`);

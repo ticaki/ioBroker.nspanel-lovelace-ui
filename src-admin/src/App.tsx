@@ -140,6 +140,8 @@ class App extends GenericApp<GenericAppProps, AppState> {
                 content: (
                     <ChannelConfigDialog
                         socket={this.socket}
+                        adapterName={oCtx.adapterName}
+                        instance={oCtx.instance}
                         theme={this.state.theme}
                         themeType={this.state.themeType}
                         oContext={oCtx}

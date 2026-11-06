@@ -1057,6 +1057,7 @@
     "screensaver_item_notState": "%s ist kein Datenpunkt (Objekttyp: %s) – bitte einen Datenpunkt wählen",
     "screensaver_item_option_socMax": "SOC-Obergrenze (%)",
     "screensaver_item_option_socMin": "SOC-Untergrenze (%)",
+    "screensaver_item_option_trashPage": "Abfall-Seite (Eindeutige ID, leer = erste Seite)",
     "screensaver_item_pickState": "Datenpunkt wählen – die Felder richten sich nach seinem Typ",
     "screensaver_item_pickTemplate": "Template wählen – es bringt Icon, Farben und Texte mit; danach das Objekt, das es ausliest",
     "screensaver_item_preview_true": "an",

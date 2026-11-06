@@ -40,6 +40,8 @@ import ChannelConfigDialog from './ChannelConfigDialog';
 import { MediaPlayerSelectDialog } from './MediaPlayerSelectDialog';
 import { MEDIA_LOGOS, objectName } from './mediaPlayerShared';
 import icons from '../icons.json';
+import { loadAdapterColorTheme, resolveThemeColor, rgbToHex } from '../adapterColorTheme';
+import { Color, type ColorThemenInterface } from '../../../src/lib/const/Color';
 import { getPageItemDefaultsByRole, getPageNaviItemDefaultsByRole } from '../../../src/lib/const/page-item-defaults';
 import {
     type AdminPageItemConfig,
@@ -103,6 +105,28 @@ const MOCK = {
 type DialogKind = 'player' | 'colors' | 'volume' | 'item';
 type ColorKey = 'colorMediaIcon' | 'colorMediaArtist' | 'colorMediaTitle';
 
+/** start value of a color field whose default is not one theme color */
+const COLOR_FIELD_FALLBACK = '#ffffff';
+
+/**
+ * Theme keys of the default colors of the standard items - the same in all pages/tools/get<Backend>.ts;
+ * `clock` comes from the template text.clock. trackList has no color field.
+ */
+const MEDIA_ITEM_DEFAULT_COLORS: Partial<
+    Record<MediaToolbarItem, { on?: keyof ColorThemenInterface; off?: keyof ColorThemenInterface }>
+> = {
+    reminder: { off: 'attention' },
+    online: { on: 'good', off: 'attention' },
+    speakerList: { on: 'good', off: 'bad' },
+    favoriteList: { on: 'activated' },
+    playList: { on: 'activated' },
+    equalizer: { on: 'activated' },
+    clock: { on: 'foreground' },
+    volumePresets: { on: 'activated' },
+    repeat: { on: 'activated', off: 'deactivated' },
+    crossfade: { on: 'activated', off: 'deactivated' },
+};
+
 /** what a place of the bar shows */
 type SlotContent = { kind: 'std'; item: MediaToolbarItem } | { kind: 'item'; index: number };
 
@@ -129,6 +153,8 @@ interface PageMediaEditorState extends ConfigGenericState {
     dragSource: number | null;
     /** the player selection list is open (in the player dialog) */
     playerSelectOpen: boolean;
+    /** color theme of the adapter - the default colors of the color fields */
+    colorTheme: ColorThemenInterface;
 }
 
 let iconMap: Map<string, string> | null = null;
@@ -207,6 +233,7 @@ export class PageMediaEditor extends ConfigGeneric<ConfigGenericProps & PageMedi
             dragOverKey: null,
             dragSource: null,
             playerSelectOpen: false,
+            colorTheme: Color.defaultTheme,
         };
     }
 
@@ -218,7 +245,26 @@ export class PageMediaEditor extends ConfigGeneric<ConfigGenericProps & PageMedi
         );
     }
 
+    private async loadColorTheme(): Promise<void> {
+        const { oContext } = this.props;
+        this.setState({
+            colorTheme: await loadAdapterColorTheme(oContext?.socket, oContext?.adapterName, oContext?.instance),
+        });
+    }
+
+    /**
+     * start value of a color field
+     *
+     * @param key key of the default color in the theme, undefined = no single theme color
+     * @returns hex color
+     */
+    private defaultColor(key: keyof ColorThemenInterface | undefined): string {
+        const rgb = key ? resolveThemeColor(this.state.colorTheme, key) : null;
+        return rgb ? rgbToHex(rgb) : COLOR_FIELD_FALLBACK;
+    }
+
     async componentDidMount(): Promise<void> {
+        void this.loadColorTheme();
         const instance = this.props.oContext.instance ?? '0';
         const aliveStateId = `system.adapter.${ADAPTER_NAME}.${instance}.alive`;
         try {
@@ -347,6 +393,7 @@ export class PageMediaEditor extends ConfigGeneric<ConfigGenericProps & PageMedi
      * @param item standard item of the item dialog
      */
     private openDialog(kind: DialogKind, item: MediaToolbarItem | null = null): void {
+        void this.loadColorTheme();
         this.setState({ dialog: kind, dialogItem: item, draft: this.cloneEntry(), listInput: '' });
     }
 
@@ -410,12 +457,14 @@ export class PageMediaEditor extends ConfigGeneric<ConfigGenericProps & PageMedi
      *
      * @param label caption
      * @param value stored color
+     * @param defaultColor start value of the input while no color is stored
      * @param onChange new color, undefined = default
      * @param disabled not supported by the backend
      */
     private renderColorField(
         label: string,
         value: string | undefined,
+        defaultColor: string,
         onChange: (v: string | undefined) => void,
         disabled = false,
     ): React.JSX.Element {
@@ -425,7 +474,7 @@ export class PageMediaEditor extends ConfigGeneric<ConfigGenericProps & PageMedi
                     variant="standard"
                     type="color"
                     label={label}
-                    value={value || '#ffffff'}
+                    value={value || defaultColor}
                     disabled={disabled}
                     onChange={e => onChange(e.target.value)}
                     slotProps={{ inputLabel: { shrink: true } }}
@@ -564,11 +613,22 @@ export class PageMediaEditor extends ConfigGeneric<ConfigGenericProps & PageMedi
     private renderColorsDialog(draft: MediaEntry): React.JSX.Element {
         const backend = this.backend(draft);
         const titleColor = backend ? mediaBackendFeatures[backend].titleColor : false;
-        const field = (key: ColorKey, labelKey: string, disabled = false): React.JSX.Element =>
-            this.renderColorField(this.getText(labelKey), draft[key], v => this.setDraft({ [key]: v }), disabled);
+        const field = (
+            key: ColorKey,
+            labelKey: string,
+            themeKey: keyof ColorThemenInterface | undefined,
+            disabled = false,
+        ): React.JSX.Element =>
+            this.renderColorField(
+                this.getText(labelKey),
+                draft[key],
+                this.defaultColor(themeKey),
+                v => this.setDraft({ [key]: v }),
+                disabled,
+            );
         return (
             <>
-                {field('colorMediaTitle', 'media_colorTitle', !titleColor)}
+                {field('colorMediaTitle', 'media_colorTitle', 'mediaTitleOn', !titleColor)}
                 {!titleColor && (
                     <Typography
                         variant="caption"
@@ -578,8 +638,9 @@ export class PageMediaEditor extends ConfigGeneric<ConfigGenericProps & PageMedi
                         {this.getText('media_colorTitleOnly')}
                     </Typography>
                 )}
-                {field('colorMediaArtist', 'media_colorArtist')}
-                {field('colorMediaIcon', 'media_colorPower')}
+                {field('colorMediaArtist', 'media_colorArtist', 'mediaArtistOn')}
+                {/* the default of the power button depends on the backend (on/off or mediaOnOffColor) */}
+                {field('colorMediaIcon', 'media_colorPower', undefined)}
             </>
         );
     }
@@ -831,11 +892,15 @@ export class PageMediaEditor extends ConfigGeneric<ConfigGenericProps & PageMedi
                     this.renderColorField(
                         this.getText(features.colorOff.includes(item) ? 'media_colorOn' : 'media_colorItem'),
                         config.colorOn,
+                        this.defaultColor(MEDIA_ITEM_DEFAULT_COLORS[item]?.on),
                         v => this.setDraftToolbar(item, { colorOn: v }),
                     )}
                 {features?.colorOff.includes(item) &&
-                    this.renderColorField(this.getText('media_colorOff'), config.colorOff, v =>
-                        this.setDraftToolbar(item, { colorOff: v }),
+                    this.renderColorField(
+                        this.getText('media_colorOff'),
+                        config.colorOff,
+                        this.defaultColor(MEDIA_ITEM_DEFAULT_COLORS[item]?.off),
+                        v => this.setDraftToolbar(item, { colorOff: v }),
                     )}
                 {list && config.enabled !== false && this.renderListEditor(draft, list)}
             </>
@@ -1671,6 +1736,8 @@ export class PageMediaEditor extends ConfigGeneric<ConfigGenericProps & PageMedi
                 <ChannelConfigDialog
                     ref={this.dialogRef}
                     socket={oContext?.socket}
+                    adapterName={oContext?.adapterName}
+                    instance={oContext?.instance}
                     theme={theme}
                     themeType={oContext?.themeType}
                     oContext={oContext}

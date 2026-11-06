@@ -2540,6 +2540,12 @@ export const InternalStates: { panel: Record<NSPanel.PanelInternalCommand, types
     },
 };
 
+/**
+ * Internal state with the dates of all trash pages: `{ [uniqueName]: messages }`, the pages in the
+ * order of the page configuration. Read by the templates `text.trash.*`, whose `dp` cannot depend on a page.
+ */
+export const trashPagesState = '///pageTrashAll';
+
 export const tasmotaOtaUrl = 'http://ota.tasmota.com/tasmota32/release/';
 
 export const ScreenSaverConst: Record<

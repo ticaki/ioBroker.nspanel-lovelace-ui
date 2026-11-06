@@ -153,7 +153,7 @@ Der Adapter hält intern bis zu sechs Termine bereit; bei der Einstellung *4 Abf
 
 ## 9. Wann die Termine aktualisiert werden
 
-Der Adapter holt die Termine **beim Start der Instanz** und danach in der Stundenschleife **alle sechs Stunden** — zu den vollen Stunden 0, 6, 12 und 18 Uhr. Eine Überwachung des ical-Datenpunkts gibt es nicht: Ein neuer Termin im Kalender oder eine neu hochgeladene Datei wird erst mit dem nächsten Durchlauf sichtbar. Wer nicht warten will, startet die Instanz neu.
+Der Adapter holt die Termine **beim Start der Instanz** und danach in der Stundenschleife **alle sechs Stunden** — zu den vollen Stunden 0, 6, 12 und 18 Uhr —, außerdem täglich um **00:01 Uhr** Ortszeit. Eine Überwachung des ical-Datenpunkts gibt es nicht: Ein neuer Termin im Kalender oder eine neu hochgeladene Datei wird erst mit dem nächsten Durchlauf sichtbar. Wer nicht warten will, startet die Instanz neu.
 
 Jeder Durchlauf schreibt das Ergebnis in den internen Datenpunkt `pageTrash_<Eindeutige ID>`. Probleme der Quelle stehen als Warnung oder Fehler im ioBroker-Log, etwa *„No trash state defined for entry …"*, *„Trash state … has no data ."* oder *„No trash .ics-file defined for entry …"*.
 
@@ -171,6 +171,10 @@ An der Abfall-Seite selbst hat sich in 2.0.0 bis 2.0.2 nichts geändert. Für di
 - Der Verweis **Dokumentation** unter der Seitenliste führt auf die Wiki-Seite des gewählten Kartentyps — für diesen Seitentyp also auf `cardTrash`.
 - Der neue Seitentyp **Verknüpfung** ([pageLink](pageLink)) kann eine Abfall-Seite unter einem zweiten Namen auf einem weiteren Panel zeigen. Inhalt und Termine bleiben die der Originalseite.
 
+## Termine auf dem Screensaver
+
+Die Templates `text.trash.next` und `text.trash.afterNext` zeigen den nächsten und den übernächsten Termin im unteren Bereich des Screensavers, siehe [Screensaver](screensaver). Heute, morgen und der Wochentag erscheinen wie auf der Seite, ein Datum kurz als Tag.Monat (`06.12`). Fehlt ein Termin, blendet sich das Item aus, ohne Meldung im Log.
+
 ## Fallstricke
 
 - **Ohne laufende Instanz geht nichts.** Alle Felder sind gesperrt, Suche und Upload laufen nicht. Einen Hinweis auf den Grund gibt der Editor hier — anders als bei anderen Seitentypen — nicht.
@@ -183,6 +187,6 @@ An der Abfall-Seite selbst hat sich in 2.0.0 bis 2.0.2 nichts geändert. Für di
 - **Der Datenpunkt muss `_date` und `event` liefern.** Fehlt `_date` — etwa weil der Datenpunkt nur `date` kennt —, greift der Filter auf vergangene Termine nicht und am Panel steht `01.01.1970`.
 - **Beim State-Weg wird nicht sortiert.** Liefert der ical-Adapter die Tabelle unsortiert, stehen die Zeilen auch am Panel in dieser Reihenfolge. Nur der Datei-Weg sortiert nach Datum.
 - **Das Feld „.ics-Datei inkl. Pfad" meint den Dateibereich der Instanz**, nicht das Dateisystem des Servers. Eine Datei desselben Namens wird beim Hochladen überschrieben.
-- **Bis zu sechs Stunden Verzug.** Weder eine Änderung am Kalender noch eine neu hochgeladene Datei wirkt sofort; die Termine werden nur beim Start und zu den Stunden 0, 6, 12 und 18 Uhr geholt.
+- **Bis zu sechs Stunden Verzug.** Weder eine Änderung am Kalender noch eine neu hochgeladene Datei wirkt sofort; die Termine werden nur beim Start, zu den Stunden 0, 6, 12 und 18 Uhr und täglich um 00:01 Uhr geholt.
 - **Meldungen in zwei Sprachen.** Die Hinweisfenster der Ereignissuche sind teils deutsch, teils englisch hartcodiert; die Logmeldungen sind englisch.
 - **Ein Eintrag aus einer älteren Admin-Version ohne die Liste der Abfallarten kommt leer an.** Der Adapter füllt in diesem Fall sechs leere Blöcke mit den Standardfarben — eine Umwandlung alter Einzelfelder gibt es nicht, die Abfallarten sind neu einzutragen.

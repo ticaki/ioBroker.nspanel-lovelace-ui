@@ -40,6 +40,7 @@ __export(definition_exports, {
   isDimValueForKey: () => isDimValueForKey,
   tasmotaOtaUrl: () => tasmotaOtaUrl,
   tasmotaTimeZones: () => tasmotaTimeZones,
+  trashPagesState: () => trashPagesState,
   weatherEntities: () => weatherEntities
 });
 module.exports = __toCommonJS(definition_exports);
@@ -2470,6 +2471,7 @@ const InternalStates = {
     }
   }
 };
+const trashPagesState = "///pageTrashAll";
 const tasmotaOtaUrl = "http://ota.tasmota.com/tasmota32/release/";
 const ScreenSaverConst = {
   standard: {
@@ -5444,6 +5446,7 @@ function isDimValueForKey(key, val) {
   isDimValueForKey,
   tasmotaOtaUrl,
   tasmotaTimeZones,
+  trashPagesState,
   weatherEntities
 });
 //# sourceMappingURL=definition.js.map

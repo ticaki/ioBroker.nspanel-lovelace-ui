@@ -1013,7 +1013,9 @@ class Panel extends import_library.BaseClass {
         this.sendtempOffsetToPanel = (_val) => {
         };
         this.restartLoops();
-        this.log.warn("is offline!");
+        if (!this.isVirtual && !this.info.tasmota.safeboot) {
+          this.log.warn("is offline!");
+        }
         void this.setStatus("offline");
         this._isOnline = s;
       }
@@ -1107,6 +1109,7 @@ class Panel extends import_library.BaseClass {
       }
     } else if (topic.endsWith("/tele/LWT")) {
     } else if (topic.endsWith("/tele/INFO1")) {
+      await this.handleInfo1(message);
       this.restartLoops();
     } else if (topic.endsWith("/tele/STATE")) {
       this.info.tasmota.sts = JSON.parse(message);
@@ -1177,7 +1180,7 @@ class Panel extends import_library.BaseClass {
             this.info.tasmota.mqttClient = data.StatusMQT.MqttClient;
             this.info.tasmota.net = data.StatusNET;
             this.info.tasmota.firmwareversion = data.StatusFWR.Version;
-            this.info.tasmota.safeboot = data.StatusFWR.Version.includes("Safeboot");
+            this.setSafeboot((0, import_display_diagnosis.isSafebootVersion)(data.StatusFWR.Version), data.StatusFWR.Version);
             this.info.tasmota.uptime = data.StatusSTS.Uptime;
             this.info.tasmota.sts = data.StatusSTS;
             this.info.tasmota.sensors = data.StatusSNS;
@@ -1589,16 +1592,13 @@ class Panel extends import_library.BaseClass {
     }, 200);
   }
   loop = () => {
-    var _a, _b;
     this.pages = this.pages.filter((a) => a && !a.unload);
     let t = Math.random() * 3e4 + 1e4;
     if (!this.isOnline) {
       t = 5e3;
       if (!this.flashing) {
         this.panelSend.resetMessageDB();
-        if (((_b = (_a = this.channel).hasReceiver) == null ? void 0 : _b.call(_a)) !== false) {
-          this.sendToPanel("pageType~pageStartup", false, true, { retain: true });
-        }
+        this.offerStartupPage();
       }
     }
     if (this.unload || this.adapter.unload) {
@@ -1609,6 +1609,46 @@ class Panel extends import_library.BaseClass {
       this.loop();
     }, t);
   };
+  /** Offers `pageType~pageStartup` to a panel that can receive it */
+  offerStartupPage() {
+    var _a, _b;
+    if (((_b = (_a = this.channel).hasReceiver) == null ? void 0 : _b.call(_a)) !== false && !this.info.tasmota.safeboot) {
+      this.sendToPanel("pageType~pageStartup", false, true, { retain: true });
+    }
+  }
+  /**
+   * `tele/INFO1` tells the running firmware after every Tasmota start, also in safeboot.
+   *
+   * @param message raw payload
+   */
+  async handleInfo1(message) {
+    const version = (0, import_display_diagnosis.parseInfo1Version)(message);
+    if (version !== null && this.setSafeboot((0, import_display_diagnosis.isSafebootVersion)(version), version)) {
+      await this.writeInfo();
+    }
+  }
+  /**
+   * Keeps track of the safeboot image: warns once when the panel enters it and stops everything that
+   * needs the normal firmware. `loop()` offers the startup page again as soon as the flag is gone.
+   *
+   * @param safeboot true if the safeboot image is running
+   * @param version firmware version as reported by Tasmota, for the warning
+   * @returns true if the state changed
+   */
+  setSafeboot(safeboot, version) {
+    if (safeboot === this.info.tasmota.safeboot) {
+      return false;
+    }
+    this.info.tasmota.safeboot = safeboot;
+    if (safeboot) {
+      this.log.warn((0, import_display_diagnosis.buildSafebootMessage)(this.topic, version));
+      this.resetDisplayDiagnosis();
+      this.isOnline = false;
+    } else {
+      this.log.info("Tasmota left safeboot");
+    }
+    return true;
+  }
   /**
    * Called by the loop: if a hardware panel has been offered `pageType~pageStartup` for
    * {@link DISPLAY_DIAGNOSIS_DELAY_MS} without a startup event, ask Tasmota for `Module` and
@@ -1616,7 +1656,7 @@ class Panel extends import_library.BaseClass {
    */
   checkDisplayNotAnswering() {
     const now = Date.now();
-    if (this.isOnline || this.flashing || !this.initDone || this.isVirtual) {
+    if (this.isOnline || this.flashing || !this.initDone || this.isVirtual || this.info.tasmota.safeboot) {
       this.displayOfflineSinceTs = 0;
       return;
     }
@@ -1865,6 +1905,7 @@ class Panel extends import_library.BaseClass {
           this.blockStartup = null;
         }, 1e4);
         this.resetDisplayDiagnosis();
+        this.setSafeboot(false, "");
         this.isOnline = true;
         this.info.nspanel.displayVersion = event.opt;
         if (this.isVirtual) {

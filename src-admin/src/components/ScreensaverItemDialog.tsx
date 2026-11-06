@@ -55,8 +55,11 @@ import {
     getScreensaverItemDefaultsByRole,
     getShutterIconByPosition,
     isScreensaverBlindPosition,
+    pageItemDefaults,
     type PageItemRoleDefaults,
 } from '../../../src/lib/const/page-item-defaults';
+import { Color, type ColorThemenInterface } from '../../../src/lib/const/Color';
+import { loadAdapterColorTheme, themeColorHex } from '../adapterColorTheme';
 import { screensaverItemToScript } from '../../../src/lib/configuration/admin-screensaver-item';
 
 export interface ScreensaverItemDialogProps {
@@ -100,6 +103,8 @@ interface ScreensaverItemDialogState {
     colorMode: 'fixed' | 'scale' | 'state';
     /** radio at the top: one state with own fields or a page item template */
     source: ScreensaverItemSource;
+    /** color theme of the adapter - the default colors of the item */
+    colorTheme: ColorThemenInterface;
 }
 
 let iconMap: Map<string, string> | null = null;
@@ -159,8 +164,6 @@ function objectName(obj: ioBroker.Object | null | undefined, lang: string): stri
 }
 
 const EMPTY_COMMON: ioBroker.InstanceCommon = {} as ioBroker.InstanceCommon;
-const DEFAULT_ON = '#ffffff';
-const DEFAULT_OFF = '#888888';
 
 export class ScreensaverItemDialog extends React.Component<ScreensaverItemDialogProps, ScreensaverItemDialogState> {
     private colorDialogRef = React.createRef<ChannelColorDialog>();
@@ -181,11 +184,13 @@ export class ScreensaverItemDialog extends React.Component<ScreensaverItemDialog
             colorObj: undefined,
             colorMode: 'fixed',
             source: 'state',
+            colorTheme: Color.defaultTheme,
         };
     }
 
     componentDidUpdate(prev: ScreensaverItemDialogProps): void {
         if (this.props.open && !prev.open) {
+            void this.loadColorTheme();
             const draft: ScreensaverItemConfig = this.props.item ? structuredClone(this.props.item) : { state: '' };
             if (typeof draft.state !== 'string') {
                 // an item stored without a state (older or hand-edited config) must not crash the tab
@@ -211,6 +216,34 @@ export class ScreensaverItemDialog extends React.Component<ScreensaverItemDialog
 
     private getText(key: string): string {
         return this.props.getText(key);
+    }
+
+    private async loadColorTheme(): Promise<void> {
+        const { oContext } = this.props;
+        this.setState({
+            colorTheme: await loadAdapterColorTheme(oContext?.socket, oContext?.adapterName, oContext?.instance),
+        });
+    }
+
+    /**
+     * keys of the colors the adapter uses for an item without own colors (config manager getEntityData):
+     * those of a blind for its position, else on/off - the role colors do not count on the screensaver
+     *
+     * @returns keys in the color theme
+     */
+    private defaultColorKeys(): Pick<PageItemRoleDefaults, 'colorOn' | 'colorOff'> {
+        return this.blindPosition() ? pageItemDefaults.blind : { colorOn: 'on', colorOff: 'off' };
+    }
+
+    /**
+     * default color of the item as hex color
+     *
+     * @param field on or off color
+     * @returns hex color from the color theme
+     */
+    private defaultColor(field: 'colorOn' | 'colorOff'): string {
+        const theme = this.state.colorTheme;
+        return themeColorHex(theme, this.defaultColorKeys()[field], field === 'colorOn' ? theme.on : theme.off);
     }
 
     private lang(): string {
@@ -1006,10 +1039,14 @@ export class ScreensaverItemDialog extends React.Component<ScreensaverItemDialog
                         {this.renderColorField(
                             'colorOn',
                             kind === 'boolean' ? 'screensaver_item_colorOn' : 'screensaver_item_color',
-                            DEFAULT_ON,
+                            this.defaultColor('colorOn'),
                         )}
                         {kind === 'boolean' &&
-                            this.renderColorField('colorOff', 'screensaver_item_colorOff', DEFAULT_OFF)}
+                            this.renderColorField(
+                                'colorOff',
+                                'screensaver_item_colorOff',
+                                this.defaultColor('colorOff'),
+                            )}
                     </Box>
                 ) : (
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
@@ -1019,8 +1056,8 @@ export class ScreensaverItemDialog extends React.Component<ScreensaverItemDialog
                             startIcon={<PaletteIcon />}
                             onClick={() =>
                                 this.colorDialogRef.current?.openWith({
-                                    trueColor: draft.colorOn ?? DEFAULT_ON,
-                                    falseColor: draft.colorOff ?? DEFAULT_OFF,
+                                    trueColor: draft.colorOn ?? '',
+                                    falseColor: draft.colorOff ?? '',
                                     scale: draft.colorScale ?? { val_min: 0, val_max: 100 },
                                 })
                             }
@@ -1282,7 +1319,7 @@ export class ScreensaverItemDialog extends React.Component<ScreensaverItemDialog
                     </Box>
                 )}
                 {src ? (
-                    ScreensaverItemDialog.coloredIcon(src, size, draft.colorOn || DEFAULT_ON)
+                    ScreensaverItemDialog.coloredIcon(src, size, draft.colorOn || this.defaultColor('colorOn'))
                 ) : (
                     <Box sx={{ width: size, height: size, borderRadius: '50%', border: '1px dashed #666' }} />
                 )}
@@ -1592,21 +1629,28 @@ export class ScreensaverItemDialog extends React.Component<ScreensaverItemDialog
                 <ChannelColorDialog
                     ref={this.colorDialogRef}
                     socket={this.props.oContext?.socket}
+                    adapterName={this.props.oContext?.adapterName}
+                    instance={this.props.oContext?.instance}
                     channelRole={null}
                     isNavigation={false}
-                    roleDefaults={roleDefaults}
-                    trueColor={draft.colorOn ?? DEFAULT_ON}
-                    falseColor={draft.colorOff ?? DEFAULT_OFF}
+                    roleDefaults={this.defaultColorKeys()}
+                    trueColor={draft.colorOn ?? ''}
+                    falseColor={draft.colorOff ?? ''}
                     onSave={cfg => {
                         const d = { ...this.state.draft };
                         if (cfg.scale && 'val_min' in cfg.scale) {
                             d.colorScale = cfg.scale;
                         }
+                        // empty = default color of the dialog, also after a reset there
                         if (cfg.trueColor) {
                             d.colorOn = cfg.trueColor;
+                        } else {
+                            delete d.colorOn;
                         }
                         if (cfg.falseColor) {
                             d.colorOff = cfg.falseColor;
+                        } else {
+                            delete d.colorOff;
                         }
                         this.setState({ draft: d });
                     }}

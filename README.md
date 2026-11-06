@@ -158,6 +158,13 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
     Placeholder for the next version (at the beginning of the line):
     ### **WORK IN PROGRESS**
 -->
+### **WORK IN PROGRESS**
+- (ticaki) admin: color suggestions and default colors show the colors the panel really uses and follow the color theme of the instance, including the custom theme; the color scale of a screensaver item no longer stores colors nobody chose
+- (ticaki) screensaver: new templates `text.trash.next` and `text.trash.afterNext` show the next two dates of a trash page in the bottom area; the trash dates are also updated daily at 00:01 local time; a date appears there in short form as day.month
+- (ticaki) web panel: a panel without a browser no longer writes a warning and no longer fills the log while the browser retries, it reports at most one message
+- (ticaki) panel in Tasmota safeboot: the adapter recognises it from `tele/INFO1`, warns once with a hint how to flash the firmware again and stops the startup offers and the display diagnosis until the normal firmware is back
+- (ticaki) admin: the color picker of the trash page offers five preset colors (yellow, brown, blue, dark gray, green)
+
 ### 2.1.0 (2026-11-05)
 - (ticaki) screensaver: a timer can replace the clock - from an on/off and a data state, from patterns for timers in changing slots or from a page item with a timer popup; it shows the remaining minutes in the color of the timer, the first tap switches to the clock; all screensaver modes and the web panel
 - (ticaki) popupTimer repaired: an internal timer shows its time in the list, stays at 00:00 with Finish until confirmed and can be controlled through SET and STATUS; external timers count in seconds (ms with unit ms), the alarm clock uses local time and On/Off; a `level.timer` item can use the timer of the screensaver of its panel

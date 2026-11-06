@@ -54,6 +54,52 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 }
 
 /**
+ * Does this Tasmota version belong to the safeboot image, e.g. `15.3.0(release-safeboot)single-core`?
+ *
+ * @param version firmware version as reported by Tasmota
+ * @returns true for a safeboot image, whatever its case
+ */
+export function isSafebootVersion(version: string): boolean {
+    return version.toLowerCase().includes('safeboot');
+}
+
+/**
+ * Reads the firmware version from `tele/INFO1`, e.g. `{"Info1":{"Module":"ESP32-DevKit","Version":"15.3.0(…)",…}}`.
+ * Older Tasmota versions send the fields without the `Info1` level.
+ *
+ * @param message raw payload of `tele/INFO1`
+ * @returns the version, null if the payload contains none
+ */
+export function parseInfo1Version(message: string): string | null {
+    let msg: unknown;
+    try {
+        msg = JSON.parse(message);
+    } catch {
+        return null;
+    }
+    if (!isRecord(msg)) {
+        return null;
+    }
+    const info = isRecord(msg.Info1) ? msg.Info1 : msg;
+    return typeof info.Version === 'string' ? info.Version : null;
+}
+
+/**
+ * Log message for a panel that started its safeboot image.
+ *
+ * @param topic mqtt topic of the panel
+ * @param version firmware version as reported by Tasmota
+ * @returns the message
+ */
+export function buildSafebootMessage(topic: string, version: string): string {
+    return (
+        `Panel with topic ${topic} is in Tasmota safeboot (${version}): the normal firmware is not active, ` +
+        `so neither the display nor the berry driver work. ` +
+        `Flash the firmware again in the Tasmota web interface or with the console command "Upgrade 1".`
+    );
+}
+
+/**
  * Reads the answer to `Module`, e.g. `{"Module":{"0":"NSPanel"}}` or `{"Module":{"1":"ESP32-DevKit"}}`.
  *
  * @param msg parsed `stat/RESULT` payload

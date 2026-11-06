@@ -1,5 +1,6 @@
 import { expect } from 'chai';
 import type { Controller } from '../controller/controller';
+import { Panel as PanelClass } from '../controller/panel';
 import type { Panel, panelConfigPartial } from '../controller/panel';
 import type { PanelChannel } from '../classes/panel-channel';
 import {
@@ -130,6 +131,18 @@ function client(): WebClient & { frames: ServerFrame[]; closed: string[] } {
         },
     };
     return c;
+}
+
+/**
+ * Collect the debug lines of the fake adapter (the other levels are in `adapter.logs`).
+ *
+ * @param adapter the fake adapter
+ * @returns the lines, filled from now on
+ */
+function captureDebug(adapter: any): string[] {
+    const lines: string[] = [];
+    adapter.log.debug = (m: string): void => void lines.push(m);
+    return lines;
 }
 
 function setup(): { adapter: any; ctrl: any; manager: VirtualPanelManager; real: FakePanel } {
@@ -296,6 +309,28 @@ describe('lib/web/virtual-panel-manager - clones', () => {
         expect(manager.hasPanel(WEB_ID)).to.equal(true);
     });
 
+    it('reports a hardware panel that is not running once per topic, again after a browser could connect', async () => {
+        const { adapter, ctrl, manager, real } = setup();
+        const debug = captureDebug(adapter);
+        const line = `[WebPanels] Panel ${REAL_TOPIC} is not running - browser closed`;
+        ctrl.panels = ctrl.panels.filter((p: FakePanel) => p !== real);
+
+        const retries = [client(), client(), client()];
+        for (const c of retries) {
+            expect(await manager.attach(REAL_TOPIC, c)).to.equal(undefined);
+            expect(c.closed).to.deep.equal(['panel not running']);
+        }
+        expect(debug.filter(l => l === line).length).to.equal(1);
+
+        ctrl.panels.push(real);
+        expect(await manager.attach(REAL_TOPIC, client())).to.not.equal(undefined);
+
+        ctrl.panels = ctrl.panels.filter((p: FakePanel) => p !== real);
+        await manager.attach(REAL_TOPIC, client());
+        await manager.attach(REAL_TOPIC, client());
+        expect(debug.filter(l => l === line).length).to.equal(2);
+    });
+
     it('says goodbye to everyone on deleteAll', async () => {
         const { ctrl, manager } = setup();
         const a = client();
@@ -345,6 +380,78 @@ describe('lib/web/virtual-panel-manager - standalone web panels', () => {
         // a clone removal does not touch it
         await manager.removeClonesOf(WEB_TOPIC);
         expect(manager.channelFor(WEB_TOPIC)).to.equal(channel);
+    });
+});
+
+describe('lib/web/virtual-panel-manager - standalone web panel that is not running', () => {
+    it('is reported once per topic, independent of other topics, again after a browser could connect', async () => {
+        const { adapter, ctrl, manager, real } = setup();
+        const debug = captureDebug(adapter);
+        const line = `[WebPanels] Web panel ${WEB_TOPIC} is not running - browser closed`;
+        const channel = manager.channelFor(WEB_TOPIC);
+
+        const retries = [client(), client()];
+        for (const c of retries) {
+            expect(await manager.attach(WEB_TOPIC, c)).to.equal(undefined);
+            expect(c.closed).to.deep.equal(['panel not running']);
+        }
+        expect(debug.filter(l => l === line).length).to.equal(1);
+
+        // another topic has its own mark
+        ctrl.panels = ctrl.panels.filter((p: FakePanel) => p !== real);
+        await manager.attach(REAL_TOPIC, client());
+        expect(debug.filter(l => l.includes(`Panel ${REAL_TOPIC} is not running`)).length).to.equal(1);
+        expect(debug.filter(l => l === line).length).to.equal(1);
+
+        const panel: FakePanel = await ctrl.createPanel(
+            { name: WEB_ID, friendlyName: 'Webtest', topic: WEB_TOPIC, kind: 'web' },
+            channel,
+        );
+        expect(await manager.attach(WEB_TOPIC, client())).to.not.equal(undefined);
+
+        ctrl.panels = ctrl.panels.filter((p: FakePanel) => p !== panel);
+        await manager.attach(WEB_TOPIC, client());
+        await manager.attach(WEB_TOPIC, client());
+        expect(debug.filter(l => l === line).length).to.equal(2);
+    });
+});
+
+describe('lib/controller/panel - going offline', () => {
+    function panelOf(kind: string | undefined): { panel: Panel; logged: string[] } {
+        const logged: string[] = [];
+        const noop = (): void => undefined;
+        const panel = Object.create(PanelClass.prototype) as Panel;
+        Object.assign(panel, {
+            name: 'p',
+            options: { kind },
+            info: { tasmota: { safeboot: false } },
+            _isOnline: true,
+            _activePage: undefined,
+            log: {
+                debug: noop,
+                info: (m: string): void => void logged.push(`info:${m}`),
+                warn: (m: string): void => void logged.push(`warn:${m}`),
+                error: (m: string): void => void logged.push(`error:${m}`),
+            },
+            library: { writedp: async (): Promise<void> => undefined },
+            restartLoops: noop,
+            setStatus: async (): Promise<void> => undefined,
+        });
+        return { panel, logged };
+    }
+
+    it('a hardware panel warns', () => {
+        const { panel, logged } = panelOf(undefined);
+        panel.isOnline = false;
+        expect(panel.isOnline).to.equal(false);
+        expect(logged).to.deep.equal(['warn:is offline!']);
+    });
+
+    it('a web panel stays silent, the rest is the same', () => {
+        const { panel, logged } = panelOf('web');
+        panel.isOnline = false;
+        expect(panel.isOnline).to.equal(false);
+        expect(logged).to.deep.equal([]);
     });
 });
 

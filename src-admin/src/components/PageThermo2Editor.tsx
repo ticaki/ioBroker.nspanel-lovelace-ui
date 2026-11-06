@@ -2156,6 +2156,8 @@ export class PageThermo2Editor extends ConfigGeneric<
                 <ChannelConfigDialog
                     ref={this.dialogRef}
                     socket={oContext?.socket}
+                    adapterName={oContext?.adapterName}
+                    instance={oContext?.instance}
                     theme={theme}
                     themeType={oContext?.themeType}
                     oContext={oContext}

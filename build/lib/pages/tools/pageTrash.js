@@ -28,6 +28,7 @@ var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__ge
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 var pageTrash_exports = {};
 __export(pageTrash_exports, {
+  getNextTrashRefresh: () => getNextTrashRefresh,
   getTrashDataFromFile: () => getTrashDataFromFile,
   getTrashDataFromState: () => getTrashDataFromState
 });
@@ -35,6 +36,10 @@ module.exports = __toCommonJS(pageTrash_exports);
 var import_Color = require("../../const/Color");
 var import_node_ical = __toESM(require("node-ical"));
 var import_adminShareConfig = require("../../types/adminShareConfig");
+function getNextTrashRefresh(now) {
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 1, 0, 0);
+  return today.getTime() > now.getTime() ? today : new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 0, 1, 0, 0);
+}
 async function getTrashDataFromState(trashJSON, entry) {
   var _a;
   const items = [];
@@ -168,6 +173,7 @@ function getTrashItem(event, countItems, items) {
 }
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
+  getNextTrashRefresh,
   getTrashDataFromFile,
   getTrashDataFromState
 });

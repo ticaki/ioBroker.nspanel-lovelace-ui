@@ -105,6 +105,8 @@ export class VirtualPanelManager extends BaseClass {
     private readonly controller: Controller;
     /** endpoint topic -> web panel */
     private entries: Map<string, WebPanelEntry> = new Map();
+    /** topics already reported as not running - the browser retries every second, the log hears it once */
+    private notRunningReported: Set<string> = new Set();
 
     constructor(adapter: AdapterClassDefinition, controller: Controller) {
         super(adapter, 'WebPanels');
@@ -186,7 +188,7 @@ export class VirtualPanelManager extends BaseClass {
             panel = this.controller.panels.find(p => p.isVirtual && p.topic === target.topic);
             if (!panel) {
                 // deactivated or not (yet) created - the browser tries again later
-                this.log.debug(`Web panel ${target.topic} is not running - browser closed`);
+                this.reportNotRunning(target.topic, `Web panel ${target.topic} is not running - browser closed`);
                 client.close('panel not running');
                 return undefined;
             }
@@ -194,7 +196,7 @@ export class VirtualPanelManager extends BaseClass {
             const real = this.controller.panels.find(p => !p.isVirtual && p.topic === target.topic);
             if (!real) {
                 // the hardware panel is being reloaded or is deactivated - the browser tries again later
-                this.log.debug(`Panel ${target.topic} is not running - browser closed`);
+                this.reportNotRunning(target.topic, `Panel ${target.topic} is not running - browser closed`);
                 client.close('panel not running');
                 return undefined;
             }
@@ -225,6 +227,7 @@ export class VirtualPanelManager extends BaseClass {
         }
         entry.clients.add(client);
         entry.channel.setReceiverConnected(entry.clients.size > 0);
+        this.notRunningReported.delete(target.topic);
         client.send({
             t: 'hello',
             model: panel.info.nspanel.model,
@@ -355,6 +358,19 @@ export class VirtualPanelManager extends BaseClass {
             return undefined;
         }
         return { topic: row.topic, id: row.id, name: row.name, kind: 'clone' };
+    }
+
+    /**
+     * Log that a panel is not running: once per topic until a browser could connect to it again.
+     *
+     * @param topic topic of the endpoint
+     * @param message the log line
+     */
+    private reportNotRunning(topic: string, message: string): void {
+        if (!this.notRunningReported.has(topic)) {
+            this.notRunningReported.add(topic);
+            this.log.debug(message);
+        }
     }
 
     private channelForEntry(topic: string): WebPanelEntry {

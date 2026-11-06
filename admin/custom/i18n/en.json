@@ -1057,6 +1057,7 @@
     "screensaver_item_notState": "%s is not a state (object type: %s) - please choose a state",
     "screensaver_item_option_socMax": "SOC upper limit (%)",
     "screensaver_item_option_socMin": "SOC lower limit (%)",
+    "screensaver_item_option_trashPage": "Trash page (unique ID, empty = first page)",
     "screensaver_item_pickState": "choose a state - the fields follow its type",
     "screensaver_item_pickTemplate": "choose a template - it brings icon, colors and texts; then pick the object it reads",
     "screensaver_item_preview_true": "on",

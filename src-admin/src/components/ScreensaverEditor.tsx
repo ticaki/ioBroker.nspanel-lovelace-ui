@@ -50,6 +50,8 @@ import { ScreensaverItemDialog } from './ScreensaverItemDialog';
 import ScreensaverNotifyListDialog from './ScreensaverNotifyListDialog';
 import IconSelect from '../IconSelect';
 import { commonNameText, screensaverEntryObjectIds, screensaverItemLabel } from '../screensaverItemLabel';
+import { loadAdapterColorTheme, rgbToHex } from '../adapterColorTheme';
+import { Color, type ColorThemenInterface } from '../../../src/lib/const/Color';
 import icons from '../icons.json';
 import {
     type ScreensaverClockTimer,
@@ -96,6 +98,9 @@ const WEATHER_ICONS: Record<string, string> = {
     solar: 'solar-power',
 };
 const WEATHER_COLOR = '#8ab4f8';
+/** default colors of a status icon - fixed in the adapter (config manager), not part of the color theme */
+const MR_ICON_DEFAULT_ON = rgbToHex(Color.Yellow);
+const MR_ICON_DEFAULT_OFF = rgbToHex(Color.HMIOff);
 /** width (height for vertical pagers) of the paging arrows next to the places and their icon size, px */
 const PAGER_SIZE = 28;
 const PAGER_ICON = 24;
@@ -484,6 +489,8 @@ interface ScreensaverEditorState {
     windows: Partial<Record<ListArea, number>>;
     /** common.name per object id of the items (labels of the places), as far as loaded */
     objectNames: Record<string, string>;
+    /** color theme of the adapter - the color of an item without own color */
+    colorTheme: ColorThemenInterface;
 }
 
 export class ScreensaverEditor extends React.Component<ScreensaverEditorProps, ScreensaverEditorState> {
@@ -500,6 +507,7 @@ export class ScreensaverEditor extends React.Component<ScreensaverEditorProps, S
             dragOverKey: null,
             windows: {},
             objectNames: {},
+            colorTheme: Color.defaultTheme,
         };
     }
 
@@ -534,6 +542,15 @@ export class ScreensaverEditor extends React.Component<ScreensaverEditorProps, S
 
     componentDidMount(): void {
         this.loadObjectNames();
+        void this.loadColorTheme();
+    }
+
+    private async loadColorTheme(): Promise<void> {
+        const { oContext } = this.props;
+        const colorTheme = await loadAdapterColorTheme(oContext?.socket, oContext?.adapterName, oContext?.instance);
+        if (!this.unmounted) {
+            this.setState({ colorTheme });
+        }
     }
 
     componentDidUpdate(prevProps: ScreensaverEditorProps): void {
@@ -1401,8 +1418,8 @@ export class ScreensaverEditor extends React.Component<ScreensaverEditorProps, S
                             {this.renderIconField('iconOff', 'screensaver_mricon_iconOff')}
                         </Box>
                     </Box>
-                    {this.renderColorField('onColor', 'screensaver_mricon_onColor', '#ffffff')}
-                    {this.renderColorField('offColor', 'screensaver_mricon_offColor', '#888888')}
+                    {this.renderColorField('onColor', 'screensaver_mricon_onColor', MR_ICON_DEFAULT_ON)}
+                    {this.renderColorField('offColor', 'screensaver_mricon_offColor', MR_ICON_DEFAULT_OFF)}
                     {this.renderStateField('value', 'screensaver_mricon_value')}
                     <Box sx={{ display: 'flex', gap: 2 }}>
                         <TextField
@@ -1753,7 +1770,11 @@ export class ScreensaverEditor extends React.Component<ScreensaverEditorProps, S
                     data-ss={key}
                 >
                     {src ? (
-                        ScreensaverItemDialog.coloredIcon(src, big ? 34 : 22, item.colorOn || '#ffffff')
+                        ScreensaverItemDialog.coloredIcon(
+                            src,
+                            big ? 34 : 22,
+                            item.colorOn || rgbToHex(this.state.colorTheme.on),
+                        )
                     ) : (
                         <Typography sx={{ fontSize: 10, color: '#bbb' }}>{icon || '·'}</Typography>
                     )}
@@ -2056,7 +2077,7 @@ export class ScreensaverEditor extends React.Component<ScreensaverEditorProps, S
         const used = !!icon?.entity;
         return this.renderArea(
             which,
-            { ...pos, color: used ? icon?.onColor || '#fff' : '#555' },
+            { ...pos, color: used ? icon?.onColor || MR_ICON_DEFAULT_ON : '#555' },
             'screensaver_mricon_hint',
             which === 'mrIcon1' ? 'mricon1' : 'mricon2',
             src ? (

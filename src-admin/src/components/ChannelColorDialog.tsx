@@ -14,7 +14,8 @@ import {
     MenuItem,
     type SelectChangeEvent,
 } from '@mui/material';
-import { Color, type RGB } from '../../../src/lib/const/Color';
+import { Color, type ColorThemenInterface, type RGB } from '../../../src/lib/const/Color';
+import { loadAdapterColorTheme, resolveThemeColor } from '../adapterColorTheme';
 import { type PageItemRoleDefaults } from '../../../src/lib/const/page-item-defaults';
 import { I18n } from '@iobroker/gui-components';
 import type { ChannelColorConfig, IconColorElement } from '../../../src/lib/types/adminShareConfig';
@@ -28,8 +29,8 @@ export interface ChannelColorDialogProps {
     channelRole: string | null;
     /** Ist der Channel eine Navigation? */
     isNavigation: boolean;
-    /** Default-Colors für die gewählte Rolle */
-    roleDefaults: PageItemRoleDefaults | null;
+    /** Default-Farben (Schlüssel im Farbthema bzw. Color-Klasse) für die gewählte Rolle */
+    roleDefaults: Pick<PageItemRoleDefaults, 'colorOn' | 'colorOff'> | null;
     /** TrueColor (ColorMax) aus Hauptdialog */
     trueColor: string;
     /** FalseColor (ColorMin) aus Hauptdialog */
@@ -54,8 +55,8 @@ interface ChannelColorDialogState {
     valIconMin: number;
     /** Icon-Skala Maximum */
     valIconMax: number;
-    /** Farbthema-ID aus der Adapter-Konfiguration (0=default,1=topical,2=technical,3=sunset,4=volcano,5=custom) */
-    adapterColorTheme: number;
+    /** Farbthema aus der Adapter-Konfiguration */
+    adapterColorTheme: ColorThemenInterface;
     /** Lokale Kopie von trueColor */
     localTrueColor: string;
     /** Lokale Kopie von falseColor */
@@ -79,7 +80,7 @@ class ChannelColorDialog extends React.Component<ChannelColorDialogProps, Channe
             valBest: undefined,
             valIconMin: 0,
             valIconMax: 100,
-            adapterColorTheme: 0,
+            adapterColorTheme: Color.defaultTheme,
             localTrueColor: props.trueColor,
             localFalseColor: props.falseColor,
         };
@@ -104,23 +105,12 @@ class ChannelColorDialog extends React.Component<ChannelColorDialogProps, Channe
     }
 
     private async loadAdapterColorTheme(): Promise<void> {
-        const { socket, adapterName = 'nspanel-lovelace-ui', instance = 0 } = this.props;
-        if (!socket) {
-            return;
-        }
-        try {
-            const obj: ioBroker.Object | null | undefined = await socket.getObject(
-                `system.adapter.${adapterName}.${instance}`,
-            );
-            const t = (obj as any)?.native?.colorTheme;
-            this.setState({ adapterColorTheme: typeof t === 'number' ? t : 0 });
-        } catch {
-            /* keep default 0 */
-        }
+        const { socket, adapterName, instance } = this.props;
+        this.setState({ adapterColorTheme: await loadAdapterColorTheme(socket, adapterName, instance) });
     }
 
     private getThemeColors(): { on: RGB; off: RGB } {
-        const theme = Color.getThemeByIndex(this.state.adapterColorTheme);
+        const theme = this.state.adapterColorTheme;
         return { on: theme.on, off: theme.off };
     }
 
@@ -146,22 +136,7 @@ class ChannelColorDialog extends React.Component<ChannelColorDialogProps, Channe
      * @param colorKey The color key to resolve
      */
     private getThemeColorForKey(colorKey: string): RGB | null {
-        const theme = Color.getThemeByIndex(this.state.adapterColorTheme);
-        // Theme keys (lowercase, e.g. 'on', 'activated', 'open')
-        if (colorKey in theme) {
-            const val = (theme as unknown as Record<string, unknown>)[colorKey];
-            if (typeof val === 'object' && val !== null && 'r' in val) {
-                return val as RGB;
-            }
-        }
-        // Named Color statics (PascalCase, e.g. 'Green', 'Red')
-        if (colorKey in Color) {
-            const val = (Color as unknown as Record<string, unknown>)[colorKey];
-            if (typeof val === 'object' && val !== null && 'r' in val) {
-                return val as RGB;
-            }
-        }
-        return null;
+        return resolveThemeColor(this.state.adapterColorTheme, colorKey);
     }
 
     private handleSave = (): void => {
@@ -199,6 +174,7 @@ class ChannelColorDialog extends React.Component<ChannelColorDialogProps, Channe
      * @param config  Optional existing configuration to restore
      */
     public openWith(config?: Partial<ChannelColorConfig>): void {
+        void this.loadAdapterColorTheme();
         if (config?.scale) {
             const scale = config.scale;
             this.setState({

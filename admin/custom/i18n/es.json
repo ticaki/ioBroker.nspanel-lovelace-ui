@@ -1022,6 +1022,7 @@
     "screensaver_item_notState": "%s no es un punto de datos (tipo de objeto: %s) – elija un punto de datos",
     "screensaver_item_option_socMax": "Límite superior de SOC (%)",
     "screensaver_item_option_socMin": "Límite inferior de SOC (%)",
+    "screensaver_item_option_trashPage": "Página de basura (ID único, vacío = primera página)",
     "screensaver_item_pickState": "elige un estado: los campos dependen de su tipo",
     "screensaver_item_pickTemplate": "elige una plantilla – aporta icono, colores y textos; después el objeto que lee",
     "screensaver_item_preview_true": "on",

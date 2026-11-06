@@ -1201,6 +1201,8 @@ export class PageMenuEditor extends ConfigGeneric<ConfigGenericProps & PageMenuE
                 <ChannelConfigDialog
                     ref={this.dialogRef}
                     socket={this.props.oContext?.socket}
+                    adapterName={this.props.oContext?.adapterName}
+                    instance={this.props.oContext?.instance}
                     theme={this.props.theme}
                     themeType={this.props.oContext?.themeType}
                     oContext={this.props.oContext}

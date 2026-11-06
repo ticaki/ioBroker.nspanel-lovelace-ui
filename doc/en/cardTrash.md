@@ -153,7 +153,7 @@ Internally the adapter keeps up to six dates ready; with the setting *4 trash en
 
 ## 9. When the dates are refreshed
 
-The adapter fetches the dates **when the instance starts** and after that in the hourly loop **every six hours** — on the full hours 0, 6, 12 and 18. There is no monitoring of the ical state: a new date in the calendar or a newly uploaded file only becomes visible with the next run. If you do not want to wait, restart the instance.
+The adapter fetches the dates **when the instance starts** and after that in the hourly loop **every six hours** — on the full hours 0, 6, 12 and 18 —, and also daily at **00:01** local time. There is no monitoring of the ical state: a new date in the calendar or a newly uploaded file only becomes visible with the next run. If you do not want to wait, restart the instance.
 
 Every run writes the result into the internal state `pageTrash_<Unique ID>`. Problems with the source appear as a warning or an error in the ioBroker log, for example *"No trash state defined for entry …"*, *"Trash state … has no data ."* or *"No trash .ics-file defined for entry …"*.
 
@@ -171,6 +171,10 @@ Nothing changed on the trash page itself between 2.0.0 and 2.0.2. Three general 
 - The **Documentation** link below the page list leads to the wiki page of the chosen card type — for this page type therefore to `cardTrash`.
 - The new page type **Page link** ([pageLink](pageLink)) can show a trash page under a second name on another panel. Content and dates stay those of the original page.
 
+## Dates on the screensaver
+
+The templates `text.trash.next` and `text.trash.afterNext` show the next and the one after next date in the bottom area of the screensaver, see [Screensaver](screensaver). Today, tomorrow and the weekday appear as on the page, a date in short form as day.month (`06.12`). If a date is missing, the item hides itself, without a message in the log.
+
 ## Pitfalls
 
 - **Nothing works without a running instance.** All fields are locked, search and upload do not run. Unlike other page types, the editor gives no hint about the reason here.
@@ -183,6 +187,6 @@ Nothing changed on the trash page itself between 2.0.0 and 2.0.2. Three general 
 - **The state has to deliver `_date` and `event`.** With `_date` missing — because the state only knows `date`, for instance — the filter on past dates does not catch and the panel reads `01.01.1970`.
 - **There is no sorting on the state way.** If the ical adapter delivers the table unsorted, the lines appear in that order on the panel too. Only the file way sorts by date.
 - **The field ".ics file including path" means the file area of the instance**, not the file system of the server. A file of the same name is overwritten on upload.
-- **Up to six hours of delay.** Neither a change in the calendar nor a newly uploaded file takes effect immediately; the dates are only fetched at the start and on the hours 0, 6, 12 and 18.
+- **Up to six hours of delay.** Neither a change in the calendar nor a newly uploaded file takes effect immediately; the dates are only fetched at the start, on the hours 0, 6, 12 and 18 and daily at 00:01.
 - **Messages in two languages.** The notice windows of the event search are partly German, partly English hard-coded; the log messages are English.
 - **An entry from an older admin version without the list of waste types arrives empty.** The adapter then fills six empty blocks with the default colours — there is no conversion of old single fields, the waste types have to be entered again.

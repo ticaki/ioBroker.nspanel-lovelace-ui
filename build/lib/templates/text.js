@@ -22,6 +22,7 @@ __export(text_exports, {
 });
 module.exports = __toCommonJS(text_exports);
 var import_Color = require("../const/Color");
+var import_definition = require("../const/definition");
 const brightskyIconRead = `
     switch (val) {
         case 'weather-cloudy':
@@ -87,6 +88,45 @@ const brightskyIconColorRead = `
         default:
             return Color.White;
     }`;
+function trashDataItem(index, result) {
+  return {
+    type: "internal",
+    dp: import_definition.trashPagesState,
+    read: `
+            const pages = val && typeof val === 'object' ? val : {};
+            const wanted = options?.page != null ? String(options.page).trim() : '';
+            const id = wanted !== '' ? wanted : Object.keys(pages)[0];
+            const dates = id !== undefined && Object.hasOwn(pages, id) ? pages[id] : null;
+            const entry = Array.isArray(dates) ? dates[${index}] : undefined;
+            return ${result};`
+  };
+}
+const trashShortDate = `typeof entry?.text1 === 'string'
+                ? entry.text1.replace(/^(\\d{2}\\.\\d{2})\\.(?:\\d{2}|\\d{4})$/, '$1')
+                : (entry?.text1 ?? null)`;
+function trashTemplate(index) {
+  return {
+    role: "text",
+    type: "text",
+    modeScr: "bottom",
+    adapter: "",
+    dpInit: "",
+    screensaverAreas: ["bottom"],
+    adminOptions: [{ key: "page", type: "text", label: "screensaver_item_option_trashPage" }],
+    data: {
+      enabled: trashDataItem(index, "!!entry"),
+      entity1: { value: { type: "const", constVal: true } },
+      icon: {
+        true: {
+          value: trashDataItem(index, "entry?.icon ?? null"),
+          color: trashDataItem(index, "entry?.color ?? null")
+        }
+      },
+      text: { true: { type: "const", constVal: "page_type_trash" }, false: void 0 },
+      text1: { true: trashDataItem(index, trashShortDate), false: void 0 }
+    }
+  };
+}
 const textTemplates = {
   "text.clock": {
     role: "text",
@@ -4160,7 +4200,9 @@ const textTemplates = {
         false: void 0
       }
     }
-  }
+  },
+  "text.trash.next": trashTemplate(0),
+  "text.trash.afterNext": trashTemplate(1)
 };
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {

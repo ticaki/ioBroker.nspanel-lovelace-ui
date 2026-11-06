@@ -65,6 +65,8 @@ class VirtualPanelManager extends import_library.BaseClass {
   controller;
   /** endpoint topic -> web panel */
   entries = /* @__PURE__ */ new Map();
+  /** topics already reported as not running - the browser retries every second, the log hears it once */
+  notRunningReported = /* @__PURE__ */ new Set();
   constructor(adapter, controller) {
     super(adapter, "WebPanels");
     this.controller = controller;
@@ -141,14 +143,14 @@ class VirtualPanelManager extends import_library.BaseClass {
       entry = this.channelForEntry(target.topic);
       panel = this.controller.panels.find((p) => p.isVirtual && p.topic === target.topic);
       if (!panel) {
-        this.log.debug(`Web panel ${target.topic} is not running - browser closed`);
+        this.reportNotRunning(target.topic, `Web panel ${target.topic} is not running - browser closed`);
         client.close("panel not running");
         return void 0;
       }
     } else {
       const real = this.controller.panels.find((p) => !p.isVirtual && p.topic === target.topic);
       if (!real) {
-        this.log.debug(`Panel ${target.topic} is not running - browser closed`);
+        this.reportNotRunning(target.topic, `Panel ${target.topic} is not running - browser closed`);
         client.close("panel not running");
         return void 0;
       }
@@ -177,6 +179,7 @@ class VirtualPanelManager extends import_library.BaseClass {
     }
     entry.clients.add(client);
     entry.channel.setReceiverConnected(entry.clients.size > 0);
+    this.notRunningReported.delete(target.topic);
     client.send({
       t: "hello",
       model: panel.info.nspanel.model,
@@ -298,6 +301,18 @@ class VirtualPanelManager extends import_library.BaseClass {
       return void 0;
     }
     return { topic: row.topic, id: row.id, name: row.name, kind: "clone" };
+  }
+  /**
+   * Log that a panel is not running: once per topic until a browser could connect to it again.
+   *
+   * @param topic topic of the endpoint
+   * @param message the log line
+   */
+  reportNotRunning(topic, message) {
+    if (!this.notRunningReported.has(topic)) {
+      this.notRunningReported.add(topic);
+      this.log.debug(message);
+    }
   }
   channelForEntry(topic) {
     let entry = this.entries.get(topic);

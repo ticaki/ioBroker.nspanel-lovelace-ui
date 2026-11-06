@@ -870,6 +870,58 @@ class Color extends ColorBase {
     }
   }
   /**
+   * Builds the custom color theme (index 5): the default theme, overridden by the `col*` fields of the
+   * color groups (colGood -> good). Neither the configuration nor the default theme is changed.
+   *
+   * @param config Native configuration of the adapter
+   * @param onInvalid Called for each non-empty `col*` field that is not a hex color; such a field is ignored
+   * @returns The complete theme
+   */
+  static buildCustomTheme(config, onInvalid) {
+    const result = { ...Color.defaultTheme };
+    const groups = [
+      config.colorStates,
+      config.colorNavigation,
+      config.colorWeatherIcon,
+      config.colorDisplay,
+      config.colorWeatherForecast,
+      config.colorScreensaver,
+      config.colorCardMedia
+    ];
+    for (const group of groups) {
+      if (!Array.isArray(group) || !group[0]) {
+        continue;
+      }
+      for (const [k, v] of Object.entries(group[0])) {
+        if (typeof v !== "string" || v.trim() === "" || !/^col[A-Z]/.test(k)) {
+          continue;
+        }
+        if (!Color.isHex(v)) {
+          onInvalid == null ? void 0 : onInvalid(k, v);
+          continue;
+        }
+        const key = k.charAt(3).toLowerCase() + k.slice(4);
+        const rgb = Color.ConvertHexToRgb(v);
+        if (Color.isRGB(rgb) && key in result) {
+          result[key] = rgb;
+        }
+      }
+    }
+    return result;
+  }
+  /**
+   * The theme the adapter uses for a native configuration: `colorTheme` 0-4 as in
+   * {@link Color.getThemeByIndex}, 5 = {@link Color.buildCustomTheme}, anything else the default theme.
+   *
+   * @param native Native configuration of the adapter, may be missing
+   * @param onInvalid See {@link Color.buildCustomTheme}
+   * @returns The theme
+   */
+  static getThemeFromNative(native, onInvalid) {
+    const index = typeof (native == null ? void 0 : native.colorTheme) === "number" ? native.colorTheme : 0;
+    return native && index === 5 ? Color.buildCustomTheme(native, onInvalid) : Color.getThemeByIndex(index);
+  }
+  /**
    * set color theme...
    *
    * @param s ColorThemenInterface

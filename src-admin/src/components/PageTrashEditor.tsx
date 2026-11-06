@@ -29,6 +29,10 @@ import IconSelect from '../IconSelect';
 import type { TrashEntry, TrashItem } from '../../../src/lib/types/adminShareConfig';
 import { isMainPageEntry, normalizeTrashItems } from '../../../src/lib/types/adminShareConfig';
 
+/** Datalist id and swatches offered by the browser's native color picker: yellow, brown, blue, dark gray, green. */
+const TRASH_COLOR_PRESETS_ID = 'trash-color-presets';
+const TRASH_COLOR_PRESETS: readonly string[] = ['#ffff00', '#8b4513', '#0050ff', '#404040', '#00a000'];
+
 export interface PageTrashEditorProps {
     entry: TrashEntry;
     onEntryChange: (updated: TrashEntry) => void;
@@ -576,6 +580,14 @@ export class PageTrashEditor extends ConfigGeneric<ConfigGenericProps & PageTras
 
                 {/* Trash entry fields (color, icon, trash name, custom name) */}
                 <Box sx={{ mb: 2 }}>
+                    <datalist id={TRASH_COLOR_PRESETS_ID}>
+                        {TRASH_COLOR_PRESETS.map(color => (
+                            <option
+                                key={color}
+                                value={color}
+                            />
+                        ))}
+                    </datalist>
                     {normalizeTrashItems(entry.items).map((item, index) => (
                         <Box
                             key={`${entry.uniqueName}-${index}`}
@@ -605,6 +617,7 @@ export class PageTrashEditor extends ConfigGeneric<ConfigGenericProps & PageTras
                                     input: {
                                         sx: { backgroundColor: 'transparent', px: 1 },
                                     },
+                                    htmlInput: { list: TRASH_COLOR_PRESETS_ID },
                                 }}
                                 sx={{ minWidth: 100, flexShrink: 0 }}
                             />

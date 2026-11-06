@@ -149,6 +149,7 @@ With the source **Template** a place takes a page item template of the adapter (
 - Below the selection stand *Type · expects role · adapter*.
 - Most templates search their states **below an object**: then a **Channel or alias the template searches its states in** is chosen (the object tree shows channels, devices and folders), and the dialog names what the template searches for below it (for example `.ACTUAL`, `switch.lock | state`). A single state in this spot is reported as a warning.
 - Templates without an object (`text.clock`, `text.wlan`, `button.service.*` …) need none – then it says *This template needs no object - it brings its own data*.
+- `text.trash.next` and `text.trash.afterNext` (**bottom** area only) show the next and the one after next date of a [trash page](cardTrash): icon and color of the date, *Trash* above, below it today, tomorrow or the weekday as on the page, a date in short form as day.month (`06.12`). The field *Trash page* takes the unique ID of the page, empty means the first configured trash page. Without a date or with an unknown ID the item hides itself. A **visibility** setting of your own replaces this hiding.
 
 ## 6. Raw data (JSON)
 

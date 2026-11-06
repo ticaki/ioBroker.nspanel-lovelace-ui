@@ -19,7 +19,8 @@ import {
     Select,
     MenuItem,
 } from '@mui/material';
-import { Color, type RGB } from '../../../src/lib/const/Color';
+import { Color, type ColorThemenInterface, type RGB } from '../../../src/lib/const/Color';
+import { loadAdapterColorTheme, resolveThemeColor } from '../adapterColorTheme';
 import {
     getPageItemDefaultsByRole,
     getPageNaviItemDefaultsByRole,
@@ -202,8 +203,8 @@ interface ChannelConfigDialogState {
     useValue: boolean;
     /** Textgröße 0–5 (undefined = Standard) */
     textSize: HmiTextSize | undefined;
-    /** Farbthema-ID aus der Adapter-Konfiguration (0=default,1=topical,2=technical,3=sunset,4=volcano,5=custom) */
-    adapterColorTheme: number;
+    /** Farbthema aus der Adapter-Konfiguration */
+    adapterColorTheme: ColorThemenInterface;
     scale?: IconScaleElement;
     hasProblems: boolean;
     colorFieldDisabled: boolean;
@@ -307,7 +308,7 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
             useValue: false,
             textSize: undefined,
             colorFieldDisabled: false,
-            adapterColorTheme: 0,
+            adapterColorTheme: Color.defaultTheme,
             inSel_Alias: undefined,
             modeList: undefined,
             filter: undefined,
@@ -508,23 +509,12 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
     }
 
     private async loadAdapterColorTheme(): Promise<void> {
-        const { socket, adapterName = ADAPTER_NAME, instance = 0 } = this.props;
-        if (!socket) {
-            return;
-        }
-        try {
-            const obj: ioBroker.Object | null | undefined = await socket.getObject(
-                `system.adapter.${adapterName}.${instance}`,
-            );
-            const t = (obj as any)?.native?.colorTheme;
-            this.setState({ adapterColorTheme: typeof t === 'number' ? t : 0 });
-        } catch {
-            /* keep default 0 */
-        }
+        const { socket, adapterName, instance } = this.props;
+        this.setState({ adapterColorTheme: await loadAdapterColorTheme(socket, adapterName, instance) });
     }
 
     private getThemeColors(): { on: RGB; off: RGB } {
-        const theme = Color.getThemeByIndex(this.state.adapterColorTheme);
+        const theme = this.state.adapterColorTheme;
         return { on: theme.on, off: theme.off };
     }
 
@@ -550,22 +540,7 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
      * @param colorKey
      */
     private getThemeColorForKey(colorKey: string): RGB | null {
-        const theme = Color.getThemeByIndex(this.state.adapterColorTheme);
-        // Theme keys (lowercase, e.g. 'on', 'activated', 'open')
-        if (colorKey in theme) {
-            const val = (theme as unknown as Record<string, unknown>)[colorKey];
-            if (typeof val === 'object' && val !== null && 'r' in val) {
-                return val as RGB;
-            }
-        }
-        // Named Color statics (PascalCase, e.g. 'Green', 'Red')
-        if (colorKey in Color) {
-            const val = (Color as unknown as Record<string, unknown>)[colorKey];
-            if (typeof val === 'object' && val !== null && 'r' in val) {
-                return val as RGB;
-            }
-        }
-        return null;
+        return resolveThemeColor(this.state.adapterColorTheme, colorKey);
     }
 
     /**

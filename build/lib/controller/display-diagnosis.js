@@ -24,8 +24,11 @@ __export(display_diagnosis_exports, {
   GPIO_OUTPUT_LO: () => GPIO_OUTPUT_LO,
   NSPANEL_TEMPLATE_GPIO: () => NSPANEL_TEMPLATE_GPIO,
   buildDisplayDiagnosisMessage: () => buildDisplayDiagnosisMessage,
+  buildSafebootMessage: () => buildSafebootMessage,
   evaluateDisplayDiagnosis: () => evaluateDisplayDiagnosis,
+  isSafebootVersion: () => isSafebootVersion,
   parseGpio4Answer: () => parseGpio4Answer,
+  parseInfo1Version: () => parseInfo1Version,
   parseModuleAnswer: () => parseModuleAnswer
 });
 module.exports = __toCommonJS(display_diagnosis_exports);
@@ -36,6 +39,25 @@ const DISPLAY_DIAGNOSIS_ANSWER_TIMEOUT_MS = 1e4;
 const DISPLAY_DIAGNOSIS_RETRY_MS = 3e5;
 function isRecord(value) {
   return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+function isSafebootVersion(version) {
+  return version.toLowerCase().includes("safeboot");
+}
+function parseInfo1Version(message) {
+  let msg;
+  try {
+    msg = JSON.parse(message);
+  } catch {
+    return null;
+  }
+  if (!isRecord(msg)) {
+    return null;
+  }
+  const info = isRecord(msg.Info1) ? msg.Info1 : msg;
+  return typeof info.Version === "string" ? info.Version : null;
+}
+function buildSafebootMessage(topic, version) {
+  return `Panel with topic ${topic} is in Tasmota safeboot (${version}): the normal firmware is not active, so neither the display nor the berry driver work. Flash the firmware again in the Tasmota web interface or with the console command "Upgrade 1".`;
 }
 function parseModuleAnswer(msg) {
   if (!isRecord(msg) || !isRecord(msg.Module)) {
@@ -92,8 +114,11 @@ function buildDisplayDiagnosisMessage(result, topic, seconds) {
   GPIO_OUTPUT_LO,
   NSPANEL_TEMPLATE_GPIO,
   buildDisplayDiagnosisMessage,
+  buildSafebootMessage,
   evaluateDisplayDiagnosis,
+  isSafebootVersion,
   parseGpio4Answer,
+  parseInfo1Version,
   parseModuleAnswer
 });
 //# sourceMappingURL=display-diagnosis.js.map
