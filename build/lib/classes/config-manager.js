@@ -4065,7 +4065,7 @@ class ConfigManager extends import_library.BaseClass {
           if (want("sunriseSet")) {
             toAdd.push({
               template: "text.brightsky.sunriseset",
-              dpInit: `/^brightsky\\.${instance}\\.daily\\.00.+/`,
+              dpInit: `/^brightsky\\.${instance}\\.daily\\.0[01]\\..+/`,
               modeScr: "bottom"
             });
           }

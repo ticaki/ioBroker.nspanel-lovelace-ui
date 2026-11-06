@@ -159,6 +159,7 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
     ### **WORK IN PROGRESS**
 -->
 ### **WORK IN PROGRESS**
+- (ticaki) screensaver: the default Bright Sky item for sunrise and sunset no longer stays empty after sunset, it shows the sunrise of the next day
 - (ticaki) admin: color suggestions and default colors show the colors the panel really uses and follow the color theme of the instance, including the custom theme; the color scale of a screensaver item no longer stores colors nobody chose
 - (ticaki) screensaver: new templates `text.trash.next` and `text.trash.afterNext` show the next two dates of a trash page in the bottom area with the optional name or else the waste type as headline, the admin lists them as next date and date after next once per trash page; the trash dates are also updated daily at 00:01 local time; a date appears there in short form as day.month
 - (ticaki) web panel: a panel without a browser no longer writes a warning and no longer fills the log while the browser retries, it reports at most one message
