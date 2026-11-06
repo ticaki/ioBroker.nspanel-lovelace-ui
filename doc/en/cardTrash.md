@@ -173,7 +173,7 @@ Nothing changed on the trash page itself between 2.0.0 and 2.0.2. Three general 
 
 ## Dates on the screensaver
 
-The templates `text.trash.next` and `text.trash.afterNext` show the next and the one after next date in the bottom area of the screensaver, see [Screensaver](screensaver). Today, tomorrow and the weekday appear as on the page, a date in short form as day.month (`06.12`). If a date is missing, the item hides itself, without a message in the log.
+The templates `text.trash.next` and `text.trash.afterNext` show the next and the one after next date in the bottom area of the screensaver, see [Screensaver](screensaver). At the top is the optional name of the date, otherwise the waste type; a long name can be cut off there and can be shortened with the optional name. Today, tomorrow and the weekday appear as on the page, a date in short form as day.month (`06.12`). If a date is missing, the item hides itself, without a message in the log. The template list of the item offers both dates for each trash page separately, as *Next date (page)* and *Date after next (page)*. The unique ID of a page is fixed: if the page is deleted and created again, the item has to choose the new page again.
 
 ## Pitfalls
 

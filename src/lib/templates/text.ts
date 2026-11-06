@@ -1,5 +1,6 @@
 import { Color } from '../const/Color';
 import { trashPagesState } from '../const/definition';
+import { trashTemplateLabels } from '../types/adminShareConfig';
 import type { NSPanel } from '../types/NSPanel';
 import type { TemplateItems } from '../types/types';
 
@@ -108,13 +109,14 @@ const trashShortDate = `typeof entry?.text1 === 'string'
                 : (entry?.text1 ?? null)`;
 
 /**
- * Bottom item of the screensaver with a date of a trash page: icon and color of the date, the headline and
- * the date in short form (see {@link trashShortDate}). Without a date the item hides itself.
+ * Bottom item of the screensaver with a date of a trash page: icon and color of the date, its name (optional name
+ * of the page, else the waste type; `text` of the date, not shortened) and the date in short form (see {@link trashShortDate}). Without a date the item hides itself.
  *
  * @param index position of the date on the trash page
+ * @param adminLabel i18n key of the display name in the admin
  * @returns the template
  */
-function trashTemplate(index: number): NSPanel.PageItemOptionsTemplate {
+function trashTemplate(index: number, adminLabel: string): NSPanel.PageItemOptionsTemplate {
     return {
         role: 'text',
         type: 'text',
@@ -122,7 +124,7 @@ function trashTemplate(index: number): NSPanel.PageItemOptionsTemplate {
         adapter: '',
         dpInit: '',
         screensaverAreas: ['bottom'],
-        adminOptions: [{ key: 'page', type: 'text', label: 'screensaver_item_option_trashPage' }],
+        adminLabel,
         data: {
             enabled: trashDataItem(index, '!!entry'),
             entity1: { value: { type: 'const', constVal: true } },
@@ -132,7 +134,7 @@ function trashTemplate(index: number): NSPanel.PageItemOptionsTemplate {
                     color: trashDataItem(index, 'entry?.color ?? null'),
                 },
             },
-            text: { true: { type: 'const', constVal: 'page_type_trash' }, false: undefined },
+            text: { true: trashDataItem(index, 'entry?.text ?? null'), false: undefined },
             text1: { true: trashDataItem(index, trashShortDate), false: undefined },
         },
     };
@@ -4245,6 +4247,6 @@ export const textTemplates: TemplateItems = {
             },
         },
     },
-    'text.trash.next': trashTemplate(0),
-    'text.trash.afterNext': trashTemplate(1),
+    'text.trash.next': trashTemplate(0, trashTemplateLabels['text.trash.next']),
+    'text.trash.afterNext': trashTemplate(1, trashTemplateLabels['text.trash.afterNext']),
 };

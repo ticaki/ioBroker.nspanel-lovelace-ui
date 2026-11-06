@@ -748,6 +748,15 @@ export function screensaverItemSource(
     return item?.template ? 'template' : 'state';
 }
 
+/**
+ * The trash templates in the order of the admin list, with the i18n key of their display name. Shared so that the
+ * admin knows the names without the adapter as well (adapter offline).
+ */
+export const trashTemplateLabels = {
+    'text.trash.next': 'screensaver_template_trashNext',
+    'text.trash.afterNext': 'screensaver_template_trashAfterNext',
+} as const;
+
 /** an option of a page item template the admin offers as a field; the value goes to `readOptions` under `key` */
 export type PageItemTemplateOption = {
     key: string;
@@ -773,6 +782,8 @@ export type PageItemTemplateInfo = {
     looksFor: string[];
     areas: ScreensaverArea[];
     options: PageItemTemplateOption[];
+    /** i18n key of the display name, without it the admin shows the technical `name` */
+    label?: string;
 };
 
 export type ScreensaverTemplateNeed = 'channel' | 'none';

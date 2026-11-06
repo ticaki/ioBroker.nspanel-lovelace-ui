@@ -1033,6 +1033,10 @@ export namespace NSPanel {
          * Admin only: the options the template reads from `readOptions`, shown as fields.
          */
         adminOptions?: PageItemTemplateOption[];
+        /**
+         * Admin only: i18n key of the display name in the template list, without it the technical name is shown.
+         */
+        adminLabel?: string;
     } & (
         | ({ template?: undefined } & Omit<PageItemUnion, 'template' | 'data' | 'type' | 'dpInit' | 'modeScr'> &
               (

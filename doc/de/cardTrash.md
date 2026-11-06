@@ -173,7 +173,7 @@ An der Abfall-Seite selbst hat sich in 2.0.0 bis 2.0.2 nichts geändert. Für di
 
 ## Termine auf dem Screensaver
 
-Die Templates `text.trash.next` und `text.trash.afterNext` zeigen den nächsten und den übernächsten Termin im unteren Bereich des Screensavers, siehe [Screensaver](screensaver). Heute, morgen und der Wochentag erscheinen wie auf der Seite, ein Datum kurz als Tag.Monat (`06.12`). Fehlt ein Termin, blendet sich das Item aus, ohne Meldung im Log.
+Die Templates `text.trash.next` und `text.trash.afterNext` zeigen den nächsten und den übernächsten Termin im unteren Bereich des Screensavers, siehe [Screensaver](screensaver). Oben steht der optionale Name des Termins, sonst die Abfallart; ein langer Name kann dort abgeschnitten werden und lässt sich über den optionalen Namen kürzen. Heute, morgen und der Wochentag erscheinen wie auf der Seite, ein Datum kurz als Tag.Monat (`06.12`). Fehlt ein Termin, blendet sich das Item aus, ohne Meldung im Log. Die Template-Auswahl des Items bietet beide Termine für jede Abfall-Seite einzeln an, als *Nächster Termin (Seite)* und *Übernächster Termin (Seite)*. Die Eindeutige ID einer Seite ist fest: Wird die Seite gelöscht und neu angelegt, muss das Item die neue Seite neu auswählen.
 
 ## Fallstricke
 

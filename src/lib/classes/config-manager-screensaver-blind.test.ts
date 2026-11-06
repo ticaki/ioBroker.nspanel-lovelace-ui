@@ -262,6 +262,7 @@ describe('lib/classes/config-manager - template element', () => {
         expect(item.data.icon.true.value.regexp.source).to.equal('\\.State\\.SOC$');
         expect(item.readOptions).to.deep.equal({ min: 5 });
         expect(item).to.not.have.property('adminOptions');
+        expect(item).to.not.have.property('adminLabel');
         expect(item).to.not.have.property('screensaverAreas');
     });
 });

@@ -228,6 +228,7 @@ export class Page extends BaseClassPage {
             // admin only, the runtime item does not need them
             delete newTemplate.screensaverAreas;
             delete newTemplate.adminOptions;
+            delete newTemplate.adminLabel;
             if (
                 options.type &&
                 options.type !== template.type &&

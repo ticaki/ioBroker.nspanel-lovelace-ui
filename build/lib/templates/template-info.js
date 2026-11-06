@@ -65,7 +65,8 @@ function pageItemTemplateInfos(templates = import_templateArray.pageItemTemplate
       need: channel ? "channel" : "none",
       looksFor,
       areas: template.type === "text" || template.type === "button" ? [...(_d = template.screensaverAreas) != null ? _d : import_adminShareConfig.screensaverAreas] : [],
-      options: template.adminOptions ? [...template.adminOptions] : []
+      options: template.adminOptions ? [...template.adminOptions] : [],
+      ...template.adminLabel ? { label: template.adminLabel } : {}
     });
   }
   return result.sort((a, b) => a.name.localeCompare(b.name));

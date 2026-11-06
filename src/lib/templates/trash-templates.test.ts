@@ -138,7 +138,7 @@ async function buildItem(
 }
 
 const payload = (m: Message, text: string): string =>
-    ['text', '0?4', Icons.GetIcon(m.icon), String(Color.rgb_dec565(m.color)), 'Abfall', text].join('~');
+    ['text', '0?4', Icons.GetIcon(m.icon), String(Color.rgb_dec565(m.color)), m.text, text].join('~');
 
 async function runningFixture(pages: Record<string, unknown>): Promise<Fixture> {
     const fixture = setup();
@@ -273,7 +273,7 @@ describe('lib/templates - text.trash.*', () => {
                     '',
                     Icons.GetIcon(yellow.icon),
                     String(Color.rgb_dec565(yellow.color)),
-                    'Abfall',
+                    yellow.text,
                     german.today,
                 ].join('~'),
             );
@@ -321,7 +321,31 @@ describe('lib/templates - text.trash.*', () => {
             expect(fixture.logged).to.deep.equal([]);
             expect(updates).to.deep.equal([item]);
             expect(await item.isEnabled()).to.equal(true);
-            expect((await item.getPageItemPayload()).split('~').slice(4)).to.deep.equal(['Abfall', german.today]);
+            expect((await item.getPageItemPayload()).split('~').slice(4)).to.deep.equal(['Gelb', german.today]);
+            expect(fixture.logged).to.deep.equal([]);
+        });
+
+        it('the headline is the optional name, else the waste type, unchanged; a missing date stays hidden', async () => {
+            const page = trashEntry('a', 'ical.0.table');
+            page.items = [
+                { textTrash: 'Gelb', customTrash: 'Gelbe Tonne', iconColor: '#ffff00', icon: 'trash-can' },
+                { textTrash: 'Bio', customTrash: '', iconColor: '#784614', icon: 'recycle' },
+            ];
+            const fixture = setup([page]);
+            await fixture.controller.initTrashPagesState();
+            fixture.foreign['ical.0.table'] = [
+                { _date: dateIn(0), event: 'Gelb' },
+                { _date: dateIn(1), event: 'Bio' },
+            ];
+            const next = await buildItem(fixture, 'text.trash.next');
+            const afterNext = await buildItem(fixture, 'text.trash.afterNext');
+            await fixture.controller.getTrashDaten(true);
+            expect((await next.getPageItemPayload()).split('~')[4]).to.equal('Gelbe Tonne');
+            expect((await afterNext.getPageItemPayload()).split('~')[4]).to.equal('Bio');
+
+            fixture.foreign['ical.0.table'] = [{ _date: dateIn(0), event: 'Gelb' }];
+            await fixture.controller.getTrashDaten(true);
+            expect(await afterNext.isEnabled()).to.equal(false);
             expect(fixture.logged).to.deep.equal([]);
         });
     });

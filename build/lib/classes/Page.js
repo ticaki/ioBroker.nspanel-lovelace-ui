@@ -214,6 +214,7 @@ class Page extends import_baseClassPage.BaseClassPage {
       delete newTemplate.adapter;
       delete newTemplate.screensaverAreas;
       delete newTemplate.adminOptions;
+      delete newTemplate.adminLabel;
       if (options.type && options.type !== template.type && !(options.type == "button" && template.type == "text")) {
         this.log.error(`Type: ${JSON.stringify(options.type)} is not equal with ${template.type}`);
         return void 0;

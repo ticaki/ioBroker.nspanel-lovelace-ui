@@ -160,10 +160,11 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
 -->
 ### **WORK IN PROGRESS**
 - (ticaki) admin: color suggestions and default colors show the colors the panel really uses and follow the color theme of the instance, including the custom theme; the color scale of a screensaver item no longer stores colors nobody chose
-- (ticaki) screensaver: new templates `text.trash.next` and `text.trash.afterNext` show the next two dates of a trash page in the bottom area; the trash dates are also updated daily at 00:01 local time; a date appears there in short form as day.month
+- (ticaki) screensaver: new templates `text.trash.next` and `text.trash.afterNext` show the next two dates of a trash page in the bottom area with the optional name or else the waste type as headline, the admin lists them as next date and date after next once per trash page; the trash dates are also updated daily at 00:01 local time; a date appears there in short form as day.month
 - (ticaki) web panel: a panel without a browser no longer writes a warning and no longer fills the log while the browser retries, it reports at most one message
 - (ticaki) panel in Tasmota safeboot: the adapter recognises it from `tele/INFO1`, warns once with a hint how to flash the firmware again and stops the startup offers and the display diagnosis until the normal firmware is back
 - (ticaki) admin: the color picker of the trash page offers five preset colors (yellow, brown, blue, dark gray, green)
+- (ticaki) admin: screensaver places with `text.trash.next` / `text.trash.afterNext` show a readable name instead of the last part of a leftover state; choosing a template that needs no object removes the old state from the item
 
 ### 2.1.0 (2026-11-05)
 - (ticaki) screensaver: a timer can replace the clock - from an on/off and a data state, from patterns for timers in changing slots or from a page item with a timer popup; it shows the remaining minutes in the color of the timer, the first tap switches to the clock; all screensaver modes and the web panel

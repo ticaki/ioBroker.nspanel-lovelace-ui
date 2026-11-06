@@ -23,6 +23,7 @@ __export(text_exports, {
 module.exports = __toCommonJS(text_exports);
 var import_Color = require("../const/Color");
 var import_definition = require("../const/definition");
+var import_adminShareConfig = require("../types/adminShareConfig");
 const brightskyIconRead = `
     switch (val) {
         case 'weather-cloudy':
@@ -104,7 +105,7 @@ function trashDataItem(index, result) {
 const trashShortDate = `typeof entry?.text1 === 'string'
                 ? entry.text1.replace(/^(\\d{2}\\.\\d{2})\\.(?:\\d{2}|\\d{4})$/, '$1')
                 : (entry?.text1 ?? null)`;
-function trashTemplate(index) {
+function trashTemplate(index, adminLabel) {
   return {
     role: "text",
     type: "text",
@@ -112,7 +113,7 @@ function trashTemplate(index) {
     adapter: "",
     dpInit: "",
     screensaverAreas: ["bottom"],
-    adminOptions: [{ key: "page", type: "text", label: "screensaver_item_option_trashPage" }],
+    adminLabel,
     data: {
       enabled: trashDataItem(index, "!!entry"),
       entity1: { value: { type: "const", constVal: true } },
@@ -122,7 +123,7 @@ function trashTemplate(index) {
           color: trashDataItem(index, "entry?.color ?? null")
         }
       },
-      text: { true: { type: "const", constVal: "page_type_trash" }, false: void 0 },
+      text: { true: trashDataItem(index, "entry?.text ?? null"), false: void 0 },
       text1: { true: trashDataItem(index, trashShortDate), false: void 0 }
     }
   };
@@ -4201,8 +4202,8 @@ const textTemplates = {
       }
     }
   },
-  "text.trash.next": trashTemplate(0),
-  "text.trash.afterNext": trashTemplate(1)
+  "text.trash.next": trashTemplate(0, import_adminShareConfig.trashTemplateLabels["text.trash.next"]),
+  "text.trash.afterNext": trashTemplate(1, import_adminShareConfig.trashTemplateLabels["text.trash.afterNext"])
 };
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {

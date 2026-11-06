@@ -3,6 +3,8 @@
  *
  * Order for the short label of a place in the mock:
  * 1. headline of the item (ScreensaverEntityText for a raw script item)
+ * - a template with a name of its own (see screensaverTemplateNameKeys) comes next: it uses no object, so a
+ *   state left on the item names nothing, neither here nor in the tooltip; the tooltip adds its page
  * 2. a plain state / object id: its common.name (when loaded), else the last part of the id
  *    - only the instance of a template (`bydhvs.0`) says nothing as a name: its template name is used
  * 3. a template: the template name without its type (`text.pirate-weather.favorit` → `pirate-weather favorit`)
@@ -11,8 +13,12 @@
  * A regexp is never shown as such: `/^pirate-weather\.0\.weather\.currently\./` reads
  * `pirate-weather.0.weather.currently`. The full label (tooltip) adds template and state / prefix.
  */
-import type { ScreensaverEntry, ScreensaverItemConfig } from '../../src/lib/types/adminShareConfig';
-import { screensaverAlternateItems } from '../../src/lib/types/adminShareConfig';
+import type {
+    PageItemTemplateInfo,
+    ScreensaverEntry,
+    ScreensaverItemConfig,
+} from '../../src/lib/types/adminShareConfig';
+import { screensaverAlternateItems, trashTemplateLabels } from '../../src/lib/types/adminShareConfig';
 
 /** short and full name of an item: short for the place of the mock, full for its tooltip */
 export interface ScreensaverItemLabel {
@@ -25,6 +31,28 @@ interface LabelSource {
     headline: string;
     template: string;
     state: string;
+    /** page of a template with a name of its own, '' = none */
+    page: string;
+}
+
+/** translator of the admin: i18n key to text */
+export type ScreensaverLabelTranslator = (key: string) => string;
+
+/**
+ * templates that use no object: template name to i18n key of the display name. Besides that the names of
+ * `PageItemTemplateInfo.label` count; these here are also known while the adapter is offline.
+ */
+export const screensaverTemplateNameKeys: ReadonlyMap<string, string> = new Map(Object.entries(trashTemplateLabels));
+
+/**
+ * the page a trash template reads, normalized like its `read` function does it
+ *
+ * @param readOptions options of the item
+ * @returns the unique id of the page, '' without one
+ */
+export function templatePageOption(readOptions: unknown): string {
+    const page = isRecord(readOptions) ? readOptions.page : undefined;
+    return typeof page === 'string' || typeof page === 'number' ? String(page).trim() : '';
 }
 
 /** characters that end the literal start of a regexp when they are not escaped */
@@ -169,12 +197,13 @@ function isRecord(value: unknown): value is Record<string, unknown> {
  */
 function rawSource(config: unknown): LabelSource {
     if (!isRecord(config)) {
-        return { headline: '', template: '', state: '' };
+        return { headline: '', template: '', state: '', page: '' };
     }
     const own: LabelSource = {
         headline: firstString(config, ['ScreensaverEntityText']),
         template: firstString(config, ['template']),
         state: firstString(config, ['dpInit', 'ScreensaverEntity', 'id']),
+        page: templatePageOption(config.readOptions),
     };
     if (!own.headline && !own.template && !own.state && isRecord(config.native)) {
         return rawSource(config.native);
@@ -183,16 +212,22 @@ function rawSource(config: unknown): LabelSource {
 }
 
 /**
- * headline, template and state of an item
+ * headline, template and state of an item; the state of a template with a name of its own is left out,
+ * that template does not use it
  *
  * @param item stored item
  * @returns the source of the name
  */
 function sourceOf(item: ScreensaverItemConfig): LabelSource {
-    if (item.raw) {
-        return rawSource(item.raw.config);
-    }
-    return { headline: (item.headline ?? '').trim(), template: (item.template ?? '').trim(), state: item.state.trim() };
+    const source: LabelSource = item.raw
+        ? rawSource(item.raw.config)
+        : {
+              headline: (item.headline ?? '').trim(),
+              template: (item.template ?? '').trim(),
+              state: item.state.trim(),
+              page: templatePageOption(item.readOptions),
+          };
+    return screensaverTemplateNameKeys.has(source.template) ? { ...source, state: '' } : source;
 }
 
 /**
@@ -235,16 +270,23 @@ export function screensaverEntryObjectIds(entry: ScreensaverEntry): string[] {
  *
  * @param item stored item
  * @param names common.name per object id, as far as loaded
+ * @param translate translator for the templates with a name of their own; without it they read like any
+ *   other template
+ * @param templates templates of the adapter with their display names, undefined while unknown
  * @returns short label (place) and full label (tooltip)
  */
 export function screensaverItemLabel(
     item: ScreensaverItemConfig,
     names: Readonly<Record<string, string>> = {},
+    translate?: ScreensaverLabelTranslator,
+    templates?: readonly PageItemTemplateInfo[],
 ): ScreensaverItemLabel {
-    const { headline, template, state } = sourceOf(item);
+    const { headline, template, state, page } = sourceOf(item);
     const regex = !!state && isRegexId(state);
     const readableState = readableIdPattern(state);
-    const templateName = template ? readableTemplateName(template) : '';
+    const templateKey = templates?.find(t => t.name === template)?.label ?? screensaverTemplateNameKeys.get(template);
+    const templateName =
+        templateKey && translate ? translate(templateKey) : template ? readableTemplateName(template) : '';
 
     let short = headline;
     if (!short && state && !regex && !(templateName && ADAPTER_INSTANCE.test(state))) {
@@ -257,7 +299,9 @@ export function screensaverItemLabel(
         short = lastSegment(readableState);
     }
 
-    const details = [templateName, readableState].filter(d => !!d && d !== short);
+    const details = [templateName, screensaverTemplateNameKeys.has(template) ? page : '', readableState].filter(
+        d => !!d && d !== short,
+    );
     let full = short || '?';
     if (details.length) {
         full = short ? `${short} (${details.join(' · ')})` : details.join(' · ');

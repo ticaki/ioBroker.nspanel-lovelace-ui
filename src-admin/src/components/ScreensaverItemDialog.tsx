@@ -31,7 +31,8 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import PaletteIcon from '@mui/icons-material/Palette';
 import TuneIcon from '@mui/icons-material/Tune';
 import { EntitySelector } from './EntitySelector';
-import { TemplateSelector, pageItemTemplateInfoOf } from './TemplateSelector';
+import { TemplateSelector } from './TemplateSelector';
+import { applyTemplateChoice, pageItemTemplateInfoOf } from '../templateList';
 import RawItemConfigDialog, { RawItemButton, RawItemNotice, type RawItemValue } from './RawItemConfigDialog';
 import ChannelColorDialog from './ChannelColorDialog';
 import ScreensaverIconSelectDialog from './ScreensaverIconSelectDialog';
@@ -83,6 +84,8 @@ export interface ScreensaverItemDialogProps {
     pagesList?: string[];
     /** page item templates of the adapter, undefined while unknown (adapter offline) */
     templates?: PageItemTemplateInfo[];
+    /** unique ids of the trash pages of the configuration */
+    trashPages?: readonly string[];
 }
 
 interface ScreensaverItemDialogState {
@@ -717,19 +720,20 @@ export class ScreensaverItemDialog extends React.Component<ScreensaverItemDialog
     }
 
     /**
-     * the template changes: its options belong to the old template
+     * the template changes: its options belong to the old template; a template that needs no object drops
+     * the old one - an unknown template (adapter offline) counts as `channel` and keeps it
      *
      * @param name name of the new template
+     * @param readOptions options the chosen list entry comes with
      */
-    private handleTemplateChange = (name: string | undefined): void => {
-        const draft = { ...this.state.draft };
-        if (name) {
-            draft.template = name;
-        } else {
-            delete draft.template;
-        }
-        delete draft.readOptions;
+    private handleTemplateChange = (name: string | undefined, readOptions?: Record<string, string | number>): void => {
+        const draft = applyTemplateChoice(this.state.draft, this.props.templates, name, readOptions);
+        const dropObject = !!this.state.draft.state && !draft.state;
         this.setState({ draft });
+        if (dropObject) {
+            // also forgets what was read of the old object
+            void this.loadObject('');
+        }
     };
 
     /**
@@ -1382,6 +1386,7 @@ export class ScreensaverItemDialog extends React.Component<ScreensaverItemDialog
                             objectId={draft.state}
                             readOptions={draft.readOptions}
                             area={area}
+                            trashPages={this.props.trashPages}
                             onTemplateChange={this.handleTemplateChange}
                             onObjectChange={this.handleTemplateObjectChange}
                             onReadOptionsChange={v => this.set('readOptions', v)}

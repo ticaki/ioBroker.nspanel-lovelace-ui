@@ -47,6 +47,7 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined';
 import { EntitySelector } from './EntitySelector';
 import { ScreensaverItemDialog } from './ScreensaverItemDialog';
+import { trashPageNames } from '../templateList';
 import ScreensaverNotifyListDialog from './ScreensaverNotifyListDialog';
 import IconSelect from '../IconSelect';
 import { commonNameText, screensaverEntryObjectIds, screensaverItemLabel } from '../screensaverItemLabel';
@@ -133,7 +134,7 @@ export interface ScreensaverEditorProps {
     expertMode?: boolean;
     /** pages the adapter knows - navigation targets in the item dialog */
     pagesList?: string[];
-    /** native.pageConfig: the page items that can be the source of the timer */
+    /** native.pageConfig: the page items that can be the source of the timer, the trash pages of the item dialog */
     pageEntries?: readonly unknown[];
     /** installed instances of the supported weather adapters, undefined while unknown (adapter offline) */
     weatherEntities?: { value: string; label: string }[];
@@ -1717,7 +1718,12 @@ export class ScreensaverEditor extends React.Component<ScreensaverEditorProps, S
         }
         const icon = itemIcon(item);
         const src = iconSrc(icon);
-        const { short: label, full: fullLabel } = screensaverItemLabel(item, this.state.objectNames);
+        const { short: label, full: fullLabel } = screensaverItemLabel(
+            item,
+            this.state.objectNames,
+            this.props.getText,
+            this.props.templates,
+        );
         const dragging = !!dragSource && this.slotKey(dragSource) === key;
         // indicators: the frame tells what the key does
         const action =
@@ -2736,6 +2742,7 @@ export class ScreensaverEditor extends React.Component<ScreensaverEditorProps, S
                     expertMode={this.props.expertMode ?? false}
                     pagesList={this.props.pagesList ?? []}
                     templates={this.props.templates}
+                    trashPages={trashPageNames(this.props.pageEntries ?? [])}
                 />
             </Box>
         );

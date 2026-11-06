@@ -4,15 +4,21 @@
  * Knows nothing about the dialog around it, the optional `area` only filters the list.
  */
 import React from 'react';
-import { Alert, Autocomplete, Box, Chip, TextField, Typography } from '@mui/material';
+import { Alert, Autocomplete, Box, Chip, TextField, Typography, createFilterOptions } from '@mui/material';
 import type { ThemeType } from '@iobroker/gui-components';
 import { EntitySelector } from './EntitySelector';
 import { objectName } from './mediaPlayerShared';
 import {
-    type PageItemTemplateInfo,
-    type PageItemTemplateOption,
-    type ScreensaverArea,
-    screensaverAreas,
+    type TemplateListEntry,
+    buildTemplateList,
+    pageItemTemplateInfoOf,
+    templateEntryHelpText,
+    templateEntrySearchText,
+} from '../templateList';
+import type {
+    PageItemTemplateInfo,
+    PageItemTemplateOption,
+    ScreensaverArea,
 } from '../../../src/lib/types/adminShareConfig';
 
 export interface TemplateSelectorProps {
@@ -26,8 +32,13 @@ export interface TemplateSelectorProps {
     readOptions: Record<string, string | number> | undefined;
     /** place of the screensaver: only templates for this place are offered, a stored one stays selectable */
     area?: ScreensaverArea;
-    /** the options belong to the template - the owner drops `readOptions` when the template changes */
-    onTemplateChange: (name: string | undefined) => void;
+    /** unique ids of the trash pages: one entry per page and trash template; undefined = plain template list */
+    trashPages?: readonly string[];
+    /**
+     * the options belong to the template - the owner replaces `readOptions` when the template changes,
+     * `readOptions` are those of the chosen list entry
+     */
+    onTemplateChange: (name: string | undefined, readOptions?: Record<string, string | number>) => void;
     onObjectChange: (id: string) => void;
     /** undefined = no option left */
     onReadOptionsChange: (readOptions: Record<string, string | number> | undefined) => void;
@@ -53,6 +64,11 @@ interface TemplateSelectorState {
 
 const ADAPTER_PREFIX = 'system.adapter.';
 const RANGE_END = '香';
+
+/** the typed text also finds an entry by the name of its template (`text.trash.next`) */
+const filterTemplateEntries = createFilterOptions<TemplateListEntry>({
+    stringify: templateEntrySearchText,
+});
 
 /**
  * object types a template with `need: 'channel'` works on - like the heat circuit picker of the Thermo2
@@ -90,35 +106,6 @@ function templateObjectFilter(template: PageItemTemplateInfo | null): (obj: ioBr
     }
     const prefix = adapter.endsWith('.') ? adapter : `${adapter}.`;
     return (obj: ioBroker.Object): boolean => isChannelLike(obj) && (obj._id === adapter || obj._id.startsWith(prefix));
-}
-
-/**
- * the template as the adapter describes it; a name the list does not know (adapter offline, removed
- * template) counts as a template that searches a channel and fits every place
- *
- * @param templates templates of the adapter
- * @param name name of the template
- * @returns the description, null without a name
- */
-export function pageItemTemplateInfoOf(
-    templates: PageItemTemplateInfo[] | undefined,
-    name: string | undefined,
-): PageItemTemplateInfo | null {
-    if (!name) {
-        return null;
-    }
-    return (
-        templates?.find(t => t.name === name) ?? {
-            name,
-            type: '',
-            role: '',
-            adapter: '',
-            need: 'channel',
-            looksFor: [],
-            areas: [...screensaverAreas],
-            options: [],
-        }
-    );
 }
 
 export class TemplateSelector extends React.Component<TemplateSelectorProps, TemplateSelectorState> {
@@ -229,20 +216,6 @@ export class TemplateSelector extends React.Component<TemplateSelectorProps, Tem
             delete next[option.key];
         }
         this.props.onReadOptionsChange(Object.keys(next).length > 0 ? next : undefined);
-    }
-
-    /**
-     * the list of the autocomplete: the templates of the place; the chosen template stays in it
-     *
-     * @param selected the chosen template
-     */
-    private listOptions(selected: PageItemTemplateInfo | null): PageItemTemplateInfo[] {
-        const { templates, area } = this.props;
-        const list = area ? (templates ?? []).filter(t => t.areas.includes(area)) : (templates ?? []);
-        if (!selected || list.some(t => t.name === selected.name)) {
-            return list;
-        }
-        return [...list, selected].sort((a, b) => a.name.localeCompare(b.name));
     }
 
     /** the instances of the adapter as chips */
@@ -387,6 +360,23 @@ export class TemplateSelector extends React.Component<TemplateSelectorProps, Tem
     render(): React.JSX.Element {
         const { templates, getText } = this.props;
         const selected = this.selected();
+        const list = buildTemplateList({
+            templates,
+            area: this.props.area,
+            selected,
+            readOptions: this.props.readOptions,
+            trashPages: this.props.trashPages,
+            getText,
+        });
+        const helpText = templateEntryHelpText(
+            list.selected,
+            selected && (selected.type || selected.role || selected.adapter)
+                ? getText('screensaver_item_templateInfo')
+                      .replace('%s', selected.type || '-')
+                      .replace('%s', selected.role || '-')
+                      .replace('%s', selected.adapter || '-')
+                : '',
+        );
         return (
             <Box sx={{ mb: 2 }}>
                 {templates === undefined && (
@@ -398,12 +388,23 @@ export class TemplateSelector extends React.Component<TemplateSelectorProps, Tem
                     </Alert>
                 )}
                 <Autocomplete
-                    options={this.listOptions(selected)}
-                    value={selected}
-                    groupBy={o => o.name.split('.')[0]}
-                    getOptionLabel={o => o.name}
-                    isOptionEqualToValue={(a, b) => a.name === b.name}
-                    onChange={(_e, v) => this.props.onTemplateChange(v?.name)}
+                    options={list.entries}
+                    value={list.selected}
+                    groupBy={o => o.template.name.split('.')[0]}
+                    getOptionLabel={o => o.label}
+                    getOptionKey={o => o.key}
+                    isOptionEqualToValue={(a, b) => a.key === b.key}
+                    filterOptions={filterTemplateEntries}
+                    renderOption={({ key, ...optionProps }, option) => (
+                        <li
+                            key={key}
+                            {...optionProps}
+                            title={option.technicalName}
+                        >
+                            {option.label}
+                        </li>
+                    )}
+                    onChange={(_e, v) => this.props.onTemplateChange(v?.template.name, v?.readOptions)}
                     renderInput={params => (
                         <TextField
                             {...params}
@@ -414,16 +415,14 @@ export class TemplateSelector extends React.Component<TemplateSelectorProps, Tem
                     sx={{ mb: 2, maxWidth: 480 }}
                     data-ss="template"
                 />
-                {selected && (selected.type || selected.role || selected.adapter) && (
+                {helpText && (
                     <Typography
                         variant="caption"
                         color="text.secondary"
                         sx={{ display: 'block', mb: 2 }}
+                        data-ss="template-info"
                     >
-                        {getText('screensaver_item_templateInfo')
-                            .replace('%s', selected.type || '-')
-                            .replace('%s', selected.role || '-')
-                            .replace('%s', selected.adapter || '-')}
+                        {helpText}
                     </Typography>
                 )}
                 {!selected && (

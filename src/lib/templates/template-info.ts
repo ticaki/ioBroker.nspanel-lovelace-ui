@@ -66,6 +66,7 @@ export function pageItemTemplateInfos(
                     ? [...(template.screensaverAreas ?? screensaverAreas)]
                     : [],
             options: template.adminOptions ? [...template.adminOptions] : [],
+            ...(template.adminLabel ? { label: template.adminLabel } : {}),
         });
     }
     return result.sort((a, b) => a.name.localeCompare(b.name));

@@ -59,15 +59,21 @@ describe('lib/templates - template info (screensaver item dialog)', () => {
         );
     });
 
-    it('offers the trash templates on bottom only, without an object, with the page as option', () => {
+    it('offers the trash templates on bottom only, without an object, without an option field', () => {
         for (const name of ['text.trash.next', 'text.trash.afterNext']) {
             expect(byName.get(name), name).to.include({ need: 'none', type: 'text', adapter: '' });
             expect(byName.get(name)?.looksFor, name).to.deep.equal([]);
             expect(byName.get(name)?.areas, name).to.deep.equal(['bottom']);
-            expect(byName.get(name)?.options, name).to.deep.equal([
-                { key: 'page', type: 'text', label: 'screensaver_item_option_trashPage' },
-            ]);
+            expect(byName.get(name)?.options, name).to.deep.equal([]); // the admin lists one entry per trash page
         }
+    });
+
+    it('gives only the trash templates a display name', () => {
+        expect(infos.filter(i => i.label !== undefined).map(i => [i.name, i.label])).to.have.deep.members([
+            ['text.trash.next', 'screensaver_template_trashNext'],
+            ['text.trash.afterNext', 'screensaver_template_trashAfterNext'],
+        ]);
+        expect(byName.get('text.clock')).to.not.have.property('label');
     });
 
     it('reports the options of a template', () => {
@@ -78,7 +84,7 @@ describe('lib/templates - template info (screensaver item dialog)', () => {
         expect(byName.get('text.battery')?.options).to.deep.equal([]);
     });
 
-    it('has the label of every option in all translations', () => {
+    it('has the label of every option and template in all translations', () => {
         for (const language of fs.readdirSync(path.join(__dirname, '../../../admin/i18n'))) {
             const translations = JSON.parse(
                 fs.readFileSync(path.join(__dirname, `../../../admin/i18n/${language}/translations.json`), 'utf8'),
@@ -86,6 +92,9 @@ describe('lib/templates - template info (screensaver item dialog)', () => {
             for (const info of infos) {
                 for (const option of info.options) {
                     expect(translations, `${language}: ${option.label}`).to.have.property(option.label);
+                }
+                if (info.label) {
+                    expect(translations, `${language}: ${info.label}`).to.have.property(info.label);
                 }
             }
         }

@@ -168,7 +168,8 @@ __export(adminShareConfig_exports, {
   thermo2SortOrders: () => thermo2SortOrders,
   thermoChannelRoles: () => thermoChannelRoles,
   toMediaPlayerDefinition: () => toMediaPlayerDefinition,
-  trashItemCount: () => trashItemCount
+  trashItemCount: () => trashItemCount,
+  trashTemplateLabels: () => trashTemplateLabels
 });
 module.exports = __toCommonJS(adminShareConfig_exports);
 var import_Color = require("../const/Color");
@@ -394,6 +395,10 @@ function screensaverChannelIdOf(stateId) {
 function screensaverItemSource(item) {
   return (item == null ? void 0 : item.template) ? "template" : "state";
 }
+const trashTemplateLabels = {
+  "text.trash.next": "screensaver_template_trashNext",
+  "text.trash.afterNext": "screensaver_template_trashAfterNext"
+};
 const screensaverDateFormats = [
   { key: "dateFormatShort", options: { dateStyle: "short" } },
   { key: "dateFormatYearMonthDay", options: { year: "numeric", month: "2-digit", day: "2-digit" } },
@@ -2277,6 +2282,7 @@ const CONVERT_GLOBAL_DEFAULT_DECISION = "keepAdmin";
   thermo2SortOrders,
   thermoChannelRoles,
   toMediaPlayerDefinition,
-  trashItemCount
+  trashItemCount,
+  trashTemplateLabels
 });
 //# sourceMappingURL=adminShareConfig.js.map

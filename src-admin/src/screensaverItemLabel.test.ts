@@ -154,6 +154,135 @@ describe('screensaverItemLabel', () => {
         });
     });
 
+    describe('templates with a name of their own', () => {
+        const stale = 'alias.0.NSPanel.allgemein.Abfall.event1.INFO';
+        const texts: Record<string, string> = {
+            screensaver_template_trashNext: 'Nächster Termin',
+            screensaver_template_trashAfterNext: 'Übernächster Termin',
+        };
+        const translate = (key: string): string => texts[key] ?? key;
+
+        it('a state left on the item names nothing, not even with a loaded object name', () => {
+            expect(
+                screensaverItemLabel({ state: stale, template: 'text.trash.next' }, { [stale]: 'Info' }, translate),
+            ).to.deep.equal({ short: 'Nächster Termin', full: 'Nächster Termin' });
+            expect(
+                screensaverItemLabel(
+                    { state: 'alias.0.Abfall.ACTUAL', template: 'text.trash.afterNext' },
+                    {},
+                    translate,
+                ),
+            ).to.deep.equal({ short: 'Übernächster Termin', full: 'Übernächster Termin' });
+        });
+        it('without a state', () => {
+            expect(screensaverItemLabel({ state: '', template: 'text.trash.next' }, {}, translate)).to.deep.equal({
+                short: 'Nächster Termin',
+                full: 'Nächster Termin',
+            });
+        });
+        it('a headline wins, the tooltip adds the name and not the state', () => {
+            expect(
+                screensaverItemLabel({ state: stale, template: 'text.trash.next', headline: 'Müll' }, {}, translate),
+            ).to.deep.equal({ short: 'Müll', full: 'Müll (Nächster Termin)' });
+        });
+        it('the tooltip adds the page, the short label stays', () => {
+            expect(
+                screensaverItemLabel(
+                    { state: '', template: 'text.trash.next', readOptions: { page: ' kueche ' } },
+                    {},
+                    translate,
+                ),
+            ).to.deep.equal({ short: 'Nächster Termin', full: 'Nächster Termin (kueche)' });
+            expect(
+                screensaverItemLabel(
+                    { state: stale, template: 'text.trash.afterNext', headline: 'Müll', readOptions: { page: 5 } },
+                    {},
+                    translate,
+                ),
+            ).to.deep.equal({ short: 'Müll', full: 'Müll (Übernächster Termin · 5)' });
+        });
+        it('the tooltip of a raw item adds the page as well', () => {
+            const config = { template: 'text.trash.next', readOptions: { page: 'bad' } };
+            for (const raw of [config, { type: 'native', native: config }]) {
+                expect(
+                    screensaverItemLabel({ state: '', raw: { format: 'native' as const, config: raw } }, {}, translate)
+                        .full,
+                ).to.equal('{ } Nächster Termin (bad)');
+            }
+        });
+        it('the display name of the adapter counts, for another template too, a state stays its name', () => {
+            const templates = [
+                {
+                    name: 'text.window.isOpen',
+                    label: 'label_window',
+                    type: 'text',
+                    role: '',
+                    adapter: '',
+                    need: 'channel' as const,
+                    looksFor: [],
+                    areas: [],
+                    options: [],
+                },
+            ];
+            const tr = (key: string): string => (key === 'label_window' ? 'Fenster' : key);
+            expect(
+                screensaverItemLabel({ state: 'alias.0.W', template: 'text.window.isOpen' }, {}, tr, templates),
+            ).to.deep.equal({ short: 'W', full: 'W (Fenster · alias.0.W)' });
+            expect(
+                screensaverItemLabel({ state: '', template: 'text.window.isOpen' }, {}, tr, templates).short,
+            ).to.equal('Fenster');
+        });
+        it('the adapter offline: templates undefined keeps the name of the trash templates', () => {
+            expect(
+                screensaverItemLabel({ state: '', template: 'text.trash.next' }, {}, translate, undefined).short,
+            ).to.equal('Nächster Termin');
+        });
+        it('another template with a page option shows no page', () => {
+            expect(
+                screensaverItemLabel({ state: '', template: 'text.clock', readOptions: { page: 'x' } }, {}, translate)
+                    .full,
+            ).to.equal('clock');
+        });
+        it('a raw item drops the state as well', () => {
+            const item = {
+                state: '',
+                raw: { format: 'native' as const, config: { template: 'text.trash.next', dpInit: stale } },
+            };
+            expect(screensaverItemLabel(item, {}, translate)).to.deep.equal({
+                short: '{ } Nächster Termin',
+                full: '{ } Nächster Termin',
+            });
+            expect(screensaverItemObjectId(item)).to.equal('');
+        });
+        it('without a translator the readable template name, still no state', () => {
+            expect(screensaverItemLabel({ state: stale, template: 'text.trash.next' })).to.deep.equal({
+                short: 'trash next',
+                full: 'trash next',
+            });
+        });
+        it('other templates stay as they are, also with a translator', () => {
+            expect(
+                screensaverItemLabel({ state: 'alias.0.Window', template: 'text.window.isOpen' }, {}, translate),
+            ).to.deep.equal({ short: 'Window', full: 'Window (window isOpen · alias.0.Window)' });
+            expect(screensaverItemLabel({ state: '', template: 'text.clock' }, {}, translate)).to.deep.equal({
+                short: 'clock',
+                full: 'clock',
+            });
+        });
+        it('no object name is loaded for them', () => {
+            expect(screensaverItemObjectId({ state: stale, template: 'text.trash.next' })).to.equal('');
+            expect(screensaverItemObjectId({ state: stale, template: 'text.trash.afterNext' })).to.equal('');
+            expect(
+                screensaverEntryObjectIds({
+                    bottom: [
+                        { state: stale, template: 'text.trash.next' },
+                        { state: 'alias.0.Window', template: 'text.window.isOpen' },
+                    ],
+                } as unknown as ScreensaverEntry),
+            ).to.deep.equal(['alias.0.Window']);
+        });
+    });
+
     it('object ids: plain ids only, no doubles', () => {
         expect(screensaverItemObjectId({ state: '/^a\\.b/', template: 'text.x' })).to.equal('');
         const entry = {
