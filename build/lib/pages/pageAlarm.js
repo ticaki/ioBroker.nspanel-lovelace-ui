@@ -348,7 +348,7 @@ class PageAlarm extends import_Page.Page {
     let result = PageAlarmMessageDefault;
     result = { ...result, ...message };
     return (0, import_tools.getPayload)(
-      (0, import_tools.getPayloadRemoveTilde)("entityUpd", result.headline),
+      (0, import_tools.getPayloadRemoveTilde)("entityUpd", this.shortHeadline(result.headline)),
       result.navigation,
       (0, import_tools.getPayloadRemoveTilde)(
         result.intNameEntity,

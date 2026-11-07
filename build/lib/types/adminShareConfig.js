@@ -77,6 +77,7 @@ __export(adminShareConfig_exports, {
   findChartEntryForScript: () => findChartEntryForScript,
   findPowerEntryForScript: () => findPowerEntryForScript,
   formatEntryNumber: () => formatEntryNumber,
+  hardwarePanelModels: () => hardwarePanelModels,
   isAsciiOnlyTextSize: () => isAsciiOnlyTextSize,
   isClockTimerComplete: () => isClockTimerComplete,
   isClockTimerSourceItem: () => isClockTimerSourceItem,
@@ -90,12 +91,14 @@ __export(adminShareConfig_exports, {
   isNameOnlyPopupTitle: () => isNameOnlyPopupTitle,
   isPChartRangeKey: () => isPChartRangeKey,
   isPageLinkEntry: () => isPageLinkEntry,
+  isPanelModel: () => isPanelModel,
   isRawItemFormat: () => isRawItemFormat,
   isRawItemObject: () => isRawItemObject,
   isScriptNavigatedChart: () => isScriptNavigatedChart,
   isScriptNavigatedPower: () => isScriptNavigatedPower,
   isScrollCard: () => isScrollCard,
   isSelectableMediaPlayer: () => isSelectableMediaPlayer,
+  isWebPanelModel: () => isWebPanelModel,
   legacyPowerStates: () => legacyPowerStates,
   loadClockTimerChannels: () => loadClockTimerChannels,
   longPressCards: () => longPressCards,
@@ -109,6 +112,8 @@ __export(adminShareConfig_exports, {
   mediaPlayerIdOf: () => mediaPlayerIdOf,
   mediaVisibleToolbarItems: () => mediaVisibleToolbarItems,
   mediaVolumeDefaults: () => mediaVolumeDefaults,
+  menuCardGridColumns: () => menuCardGridColumns,
+  menuCardItemLimits: () => menuCardItemLimits,
   migrateLegacyCharts: () => migrateLegacyCharts,
   migrateLegacyPower: () => migrateLegacyPower,
   migrateScreensaverNotify: () => migrateScreensaverNotify,
@@ -123,6 +128,7 @@ __export(adminShareConfig_exports, {
   pageItemRawFormat: () => pageItemRawFormat,
   pageLinkCard: () => pageLinkCard,
   pageLinkProblem: () => pageLinkProblem,
+  panelModels: () => panelModels,
   panelStatusColors: () => panelStatusColors,
   panelStatusStates: () => panelStatusStates,
   panelStatusTranslationKeys: () => panelStatusTranslationKeys,
@@ -169,7 +175,8 @@ __export(adminShareConfig_exports, {
   thermoChannelRoles: () => thermoChannelRoles,
   toMediaPlayerDefinition: () => toMediaPlayerDefinition,
   trashItemCount: () => trashItemCount,
-  trashTemplateLabels: () => trashTemplateLabels
+  trashTemplateLabels: () => trashTemplateLabels,
+  webPanelButtonsDefault: () => webPanelButtonsDefault
 });
 module.exports = __toCommonJS(adminShareConfig_exports);
 var import_Color = require("../const/Color");
@@ -196,12 +203,23 @@ const servicePageName = "///unlock";
 const screensaverTargetPage = "///screensaver";
 const screensaverModes = ["standard", "alternate", "advanced", "easyview", "tiles"];
 const screensaverAreas = ["favorit", "alternate", "left", "bottom", "indicator"];
+const panelModels = ["eu", "us-l", "us-p", "web-p", "web-l"];
+const hardwarePanelModels = ["eu", "us-l", "us-p"];
+function isPanelModel(value) {
+  return typeof value === "string" && panelModels.includes(value);
+}
+function isWebPanelModel(model) {
+  return model === "web-p" || model === "web-l";
+}
+function webPanelButtonsDefault(model) {
+  return !isWebPanelModel(model);
+}
 const screensaverSlotLimits = {
   standard: {
     favorit: { eu: 1 },
     alternate: { eu: 0 },
     left: { eu: 0 },
-    bottom: { eu: 4 },
+    bottom: { eu: 4, "web-l": 6, "web-p": 8 },
     indicator: { eu: 0 },
     mricon: { eu: 2 }
   },
@@ -209,23 +227,23 @@ const screensaverSlotLimits = {
     favorit: { eu: 1 },
     alternate: { eu: 1 },
     left: { eu: 0 },
-    bottom: { eu: 3 },
+    bottom: { eu: 3, "web-l": 5, "web-p": 7 },
     indicator: { eu: 0 },
     mricon: { eu: 2 }
   },
   advanced: {
     favorit: { eu: 1 },
     alternate: { eu: 0 },
-    left: { eu: 3 },
-    bottom: { eu: 6 },
-    indicator: { eu: 5 },
+    left: { eu: 3, "web-l": 3, "web-p": 4 },
+    bottom: { eu: 6, "web-l": 8, "web-p": 8 },
+    indicator: { eu: 5, "web-l": 8, "web-p": 12 },
     mricon: { eu: 2 }
   },
   easyview: {
     favorit: { eu: 1 },
     alternate: { eu: 0 },
     left: { eu: 0 },
-    bottom: { eu: 3, "us-p": 4, "us-l": 3 },
+    bottom: { eu: 3, "us-p": 4, "us-l": 3, "web-l": 4, "web-p": 8 },
     indicator: { eu: 0 },
     mricon: { eu: 2 }
   },
@@ -233,8 +251,8 @@ const screensaverSlotLimits = {
     favorit: { eu: 0 },
     alternate: { eu: 0 },
     left: { eu: 0 },
-    bottom: { eu: 5, "us-p": 4 },
-    indicator: { eu: 7, "us-p": 8 },
+    bottom: { eu: 5, "us-p": 4, "web-l": 7, "web-p": 8 },
+    indicator: { eu: 7, "us-p": 8, "web-l": 11, "web-p": 8 },
     mricon: { eu: 2 }
   }
 };
@@ -773,6 +791,20 @@ const scrollCards = [
   "cardThermo2",
   "cardMedia"
 ];
+const menuCardItemLimits = {
+  cardEntities: { eu: 4, "us-l": 4, "us-p": 5, "web-l": 4, "web-p": 8 },
+  cardSchedule: { eu: 6, "us-l": 6, "us-p": 6, "web-l": 6, "web-p": 11 },
+  cardGrid: { eu: 6, "us-l": 6, "us-p": 6, "web-l": 8, "web-p": 10 },
+  cardGrid2: { eu: 8, "us-l": 8, "us-p": 9, "web-l": 10, "web-p": 15 },
+  cardGrid3: { eu: 4, "us-l": 4, "us-p": 4, "web-l": 6, "web-p": 8 },
+  cardMedia: { eu: 5, "us-l": 5, "us-p": 5, "web-l": 6, "web-p": 8 },
+  cardThermo2: { eu: 9, "us-l": 9, "us-p": 9, "web-l": 9, "web-p": 9 }
+};
+const menuCardGridColumns = {
+  cardGrid: { eu: 3, "us-l": 3, "us-p": 2, "web-l": 4, "web-p": 2 },
+  cardGrid2: { eu: 4, "us-l": 4, "us-p": 3, "web-l": 5, "web-p": 3 },
+  cardGrid3: { eu: 2, "us-l": 2, "us-p": 2, "web-l": 3, "web-p": 2 }
+};
 const scrollHalfCards = ["cardGrid", "cardGrid2", "cardGrid3", "cardThermo2"];
 const scrollAutoTimingDefault = 15;
 function isScrollCard(card) {
@@ -2191,6 +2223,7 @@ const CONVERT_GLOBAL_DEFAULT_DECISION = "keepAdmin";
   findChartEntryForScript,
   findPowerEntryForScript,
   formatEntryNumber,
+  hardwarePanelModels,
   isAsciiOnlyTextSize,
   isClockTimerComplete,
   isClockTimerSourceItem,
@@ -2204,12 +2237,14 @@ const CONVERT_GLOBAL_DEFAULT_DECISION = "keepAdmin";
   isNameOnlyPopupTitle,
   isPChartRangeKey,
   isPageLinkEntry,
+  isPanelModel,
   isRawItemFormat,
   isRawItemObject,
   isScriptNavigatedChart,
   isScriptNavigatedPower,
   isScrollCard,
   isSelectableMediaPlayer,
+  isWebPanelModel,
   legacyPowerStates,
   loadClockTimerChannels,
   longPressCards,
@@ -2223,6 +2258,8 @@ const CONVERT_GLOBAL_DEFAULT_DECISION = "keepAdmin";
   mediaPlayerIdOf,
   mediaVisibleToolbarItems,
   mediaVolumeDefaults,
+  menuCardGridColumns,
+  menuCardItemLimits,
   migrateLegacyCharts,
   migrateLegacyPower,
   migrateScreensaverNotify,
@@ -2237,6 +2274,7 @@ const CONVERT_GLOBAL_DEFAULT_DECISION = "keepAdmin";
   pageItemRawFormat,
   pageLinkCard,
   pageLinkProblem,
+  panelModels,
   panelStatusColors,
   panelStatusStates,
   panelStatusTranslationKeys,
@@ -2283,6 +2321,7 @@ const CONVERT_GLOBAL_DEFAULT_DECISION = "keepAdmin";
   thermoChannelRoles,
   toMediaPlayerDefinition,
   trashItemCount,
-  trashTemplateLabels
+  trashTemplateLabels,
+  webPanelButtonsDefault
 });
 //# sourceMappingURL=adminShareConfig.js.map

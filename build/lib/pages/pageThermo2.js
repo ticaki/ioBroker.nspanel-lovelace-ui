@@ -69,7 +69,6 @@ class PageThermo2 extends import_pageMenu.PageMenu {
   //config: pages.cardThermoDataItemOptions;
   items;
   heatCycles = 1;
-  maxItems = 8;
   headlinePos = 0;
   titelPos = 0;
   convertValue = 1;
@@ -245,7 +244,7 @@ class PageThermo2 extends import_pageMenu.PageMenu {
       }
       let arr = (await this.getOptions([])).slice(0, this.maxItems);
       if (arr && this.config.sortOrder !== "V") {
-        const temp = ["~~~~~", "~~~~~", "~~~~~", "~~~~~", "~~~~~", "~~~~~", "~~~~~", "~~~~~"];
+        const temp = new Array(this.maxItems).fill("~~~~~");
         let sort = [];
         switch (this.config.sortOrder) {
           case "H":
@@ -267,8 +266,8 @@ class PageThermo2 extends import_pageMenu.PageMenu {
             sort = [0, 1, 2, 3, 4, 5, 6, 7];
             break;
         }
-        for (let i = 0; i < 8; i++) {
-          const index = sort[i];
+        for (let i = 0; i < temp.length; i++) {
+          const index = i < sort.length ? sort[i] : i;
           temp[i] = arr[index] ? arr[index] : "~~~~~";
         }
         arr = temp;
@@ -302,7 +301,7 @@ class PageThermo2 extends import_pageMenu.PageMenu {
   }
   getMessage(message) {
     return tools.getPayload(
-      tools.getPayloadRemoveTilde("entityUpd", message.headline),
+      tools.getPayloadRemoveTilde("entityUpd", this.shortHeadline(message.headline)),
       message.navigation,
       tools.getPayloadRemoveTilde(
         String(this.name),
