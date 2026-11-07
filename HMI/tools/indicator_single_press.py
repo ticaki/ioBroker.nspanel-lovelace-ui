@@ -8,7 +8,8 @@ tc0 'up' only sends a tSend with text. A swipe still writes its text into tSend,
 text with every touch and runs before f<N>Icon 'down'.
 
 Only the pages with indicator events change: screensaver5, and screensaver2 where its icons send events (EU; the
-icons of us-l and us-p have no code, their tc0 stays as well). What is already there stays, so the output of the
+icons of us-l and us-p 6.0.7 have no code, their tc0 stays as well, advanced_indicators_us.py adds both on top of
+this). What is already there stays, so the output of the
 generators screensaver5*.py (they already write this for screensaver5, the version stays theirs) goes through this
 script as well. pageStartup.tRelease gets the new version, tVersion stays: the adapter does not read that number.
 """
