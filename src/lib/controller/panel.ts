@@ -1868,7 +1868,7 @@ export class Panel extends BaseClass {
                         icon:
                             (this.library.readdb(`panels.${this.name}.cmd.pagePopup.icon`)?.val as AllIcons) ||
                             undefined,
-                        textSize: String(this.library.readdb(`panels.${this.name}.cmd.pagePopup.textSize`)?.val) || '3',
+                        textSize: String(this.library.readdb(`panels.${this.name}.cmd.pagePopup.textSize`)?.val ?? 3),
                         iconColor: getRGBFromValue(
                             this.library.readdb(`panels.${this.name}.cmd.pagePopup.iconColor`)?.val || '#FFFFFF',
                         ),
