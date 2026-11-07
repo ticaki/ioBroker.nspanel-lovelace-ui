@@ -160,6 +160,7 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
 -->
 ### **WORK IN PROGRESS**
 - (tt-tom17) system notifications: an acknowledged notification of the ioBroker host no longer comes back - also when it was acknowledged in ioBroker itself
+- (tt-tom17) popup notification: the left button now writes the plain id to `setStateID` and the id with the panel name to `setGlobalID`, like the middle and right button - scripts that checked the local point for the prefixed value must look at the global point instead
 
 ### 2.2.0 (2026-11-12)
 - (ticaki) web panel: smartphone models `web-p` and `web-l`, portrait layout for all cards, popups and screensavers on us-p/web-p, hardware buttons can be switched off, many layout fixes; no crash on the first connection, less log noise without browser
