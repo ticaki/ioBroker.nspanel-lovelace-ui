@@ -35,6 +35,7 @@ var import_Color = require("../const/Color");
 var configManagerConst = __toESM(require("../const/config-manager-const"));
 var import_page_item_defaults = require("../const/page-item-defaults");
 var import_default_pages = require("../const/default-pages");
+var import_screensaver_cycle = require("../const/screensaver-cycle");
 var import_states_controller = require("../controller/states-controller");
 var import_pagePower = require("../pages/pagePower");
 var import_pageChart = require("../pages/pageChart");
@@ -4502,7 +4503,8 @@ class ConfigManager extends import_library.BaseClass {
     return result;
   }
   /**
-   * What an indicator does when tapped, as data items of a button page item: the first of button, switch and page.
+   * What an indicator does when tapped, as data items of a button page item: the first of button, switch, cycle
+   * and page. A cycle without values counts as not set.
    *
    * @param entity element of the script (script or template)
    * @returns the data items to set, null when the element has no action; a state that does not exist or is not
@@ -4518,6 +4520,15 @@ class ConfigManager extends import_library.BaseClass {
       return {
         setValue1: await this.existsAndWriteableState(entity.ScreensaverEntitySwitch) ? { type: "state", dp: entity.ScreensaverEntitySwitch } : void 0
       };
+    }
+    if (entity.ScreensaverEntityCycle) {
+      const values = (0, import_screensaver_cycle.normalizeCycleValues)(entity.ScreensaverEntityCycleValues);
+      if (values.length > 0) {
+        return {
+          setValue3: await this.existsAndWriteableState(entity.ScreensaverEntityCycle) ? { type: "state", dp: entity.ScreensaverEntityCycle } : void 0,
+          valueList: { type: "const", constVal: JSON.stringify(values) }
+        };
+      }
     }
     if (entity.ScreensaverEntityNaviToPage) {
       return { setNavi: { type: "const", constVal: entity.ScreensaverEntityNaviToPage } };
@@ -4579,7 +4590,13 @@ class ConfigManager extends import_library.BaseClass {
       }
       "visibleCondition" in temp && delete temp.visibleCondition;
       "enabled" in temp && delete temp.enabled;
-      for (const key of ["ScreensaverEntityNaviToPage", "ScreensaverEntityButton", "ScreensaverEntitySwitch"]) {
+      for (const key of [
+        "ScreensaverEntityNaviToPage",
+        "ScreensaverEntityButton",
+        "ScreensaverEntitySwitch",
+        "ScreensaverEntityCycle",
+        "ScreensaverEntityCycleValues"
+      ]) {
         delete temp[key];
       }
       const action = mode === "indicator" ? await this.getScreensaverIndicatorAction(entity) : null;

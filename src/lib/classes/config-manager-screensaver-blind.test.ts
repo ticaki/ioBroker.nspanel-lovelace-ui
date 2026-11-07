@@ -236,6 +236,85 @@ describe('lib/classes/config-manager - template element', () => {
         expect(readOnly.data.setValue2).to.equal(undefined);
     });
 
+    it('cycle on an indicator: state and values as data items, the action fields do not reach the runtime item', async () => {
+        const r = await entityData(
+            {
+                ...element,
+                modeScr: 'indicator',
+                ScreensaverEntityCycle: WRITABLE,
+                ScreensaverEntityCycleValues: [-1, ' 0 ', '', true],
+            },
+            'indicator',
+        );
+        expect(r.type).to.equal('button');
+        expect(r.data.setValue3).to.deep.equal({ type: 'state', dp: WRITABLE });
+        expect(r.data.valueList).to.deep.equal({ type: 'const', constVal: '["-1","0","true"]' });
+        expect(r).to.not.have.property('ScreensaverEntityCycle');
+        expect(r).to.not.have.property('ScreensaverEntityCycleValues');
+        // the template system keeps them
+        const page: any = {
+            log: { error: (): void => undefined, warn: (): void => undefined },
+            getItemFromTemplate: Page.prototype.getItemFromTemplate,
+        };
+        const item: any = await page.getItemFromTemplate(r);
+        expect(item.data.setValue3).to.deep.equal({ type: 'state', dp: WRITABLE });
+        expect(item.data.valueList).to.deep.equal({ type: 'const', constVal: '["-1","0","true"]' });
+    });
+
+    it('cycle: a state that cannot be written is left out, button and switch come first, no values = no cycle', async () => {
+        const readOnly = await entityData(
+            {
+                ...element,
+                modeScr: 'indicator',
+                ScreensaverEntityCycle: 'alias.0.nurLesen',
+                ScreensaverEntityCycleValues: ['1'],
+            },
+            'indicator',
+        );
+        expect(readOnly.data.setValue3).to.equal(undefined);
+        expect(readOnly.data.valueList).to.deep.equal({ type: 'const', constVal: '["1"]' });
+        const cycle = { ScreensaverEntityCycle: WRITABLE, ScreensaverEntityCycleValues: ['1'] };
+        const sw = await entityData(
+            { ...element, modeScr: 'indicator', ...cycle, ScreensaverEntitySwitch: WRITABLE },
+            'indicator',
+        );
+        expect(sw.data.setValue1).to.deep.equal({ type: 'state', dp: WRITABLE });
+        expect(sw.data.setValue3).to.equal(undefined);
+        const navi = await entityData(
+            { ...element, modeScr: 'indicator', ...cycle, ScreensaverEntityNaviToPage: 'power' },
+            'indicator',
+        );
+        expect(navi.data.setValue3).to.deep.equal({ type: 'state', dp: WRITABLE });
+        expect(navi.data.setNavi).to.equal(undefined);
+        const empty = await entityData(
+            {
+                ...element,
+                modeScr: 'indicator',
+                ScreensaverEntityCycle: WRITABLE,
+                ScreensaverEntityCycleValues: [' '],
+                ScreensaverEntityNaviToPage: 'power',
+            },
+            'indicator',
+        );
+        expect(empty.data.setValue3).to.equal(undefined);
+        expect(empty.data.valueList).to.equal(undefined);
+        expect(empty.data.setNavi).to.deep.equal({ type: 'const', constVal: 'power' });
+    });
+
+    it('cycle on a script element of the indicator', async () => {
+        const r = await entityData(
+            {
+                ScreensaverEntity: 'alias.0.wetter.Temperatur',
+                ScreensaverEntityCycle: WRITABLE,
+                ScreensaverEntityCycleValues: [-1, 1],
+            },
+            'indicator',
+        );
+        expect(r.type).to.equal('button');
+        expect(r.data.setValue3).to.deep.equal({ type: 'state', dp: WRITABLE });
+        expect(r.data.valueList).to.deep.equal({ type: 'const', constVal: '["-1","1"]' });
+    });
+
     it('outside the indicator the action is ignored', async () => {
         const r = await entityData({ ...element, modeScr: 'bottom', ScreensaverEntityNaviToPage: 'power' }, 'bottom');
         expect(r).to.deep.equal({

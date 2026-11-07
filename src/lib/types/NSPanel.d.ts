@@ -1164,6 +1164,8 @@ export namespace NSPanel {
         | 'filter'
         | 'setValue1'
         | 'setValue2'
+        | 'setValue3'
+        | 'valueList'
         | 'text'
         | 'text1'
         | 'icon'

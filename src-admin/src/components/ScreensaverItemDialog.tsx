@@ -35,6 +35,7 @@ import { TemplateSelector } from './TemplateSelector';
 import { applyTemplateChoice, pageItemTemplateInfoOf } from '../templateList';
 import RawItemConfigDialog, { RawItemButton, RawItemNotice, type RawItemValue } from './RawItemConfigDialog';
 import ChannelColorDialog from './ChannelColorDialog';
+import ScreensaverCycleValuesDialog from './ScreensaverCycleValuesDialog';
 import ScreensaverIconSelectDialog from './ScreensaverIconSelectDialog';
 import IconSelect from '../IconSelect';
 import icons from '../icons.json';
@@ -62,6 +63,7 @@ import {
 import { Color, type ColorThemenInterface } from '../../../src/lib/const/Color';
 import { loadAdapterColorTheme, themeColorHex } from '../adapterColorTheme';
 import { screensaverItemToScript } from '../../../src/lib/configuration/admin-screensaver-item';
+import { cycleValueToState } from '../../../src/lib/const/screensaver-cycle';
 
 export interface ScreensaverItemDialogProps {
     open: boolean;
@@ -99,8 +101,8 @@ interface ScreensaverItemDialogState {
     channelRole: string;
     /** type of the object (state, channel, ...) - the template dialog warns about a state */
     objKind: string;
-    /** the state of a button / switch action: type and common.write; null = not found, undefined = not checked */
-    actionObj: { kind: string; write: boolean } | null | undefined;
+    /** the state of a button / switch / cycle action: type, common.write and common.type; null = not found, undefined = not checked */
+    actionObj: { kind: string; write: boolean; type: string } | null | undefined;
     /** the state the color comes from: type; null = not found, undefined = not checked */
     colorObj: { kind: string } | null | undefined;
     colorMode: 'fixed' | 'scale' | 'state';
@@ -171,6 +173,7 @@ const EMPTY_COMMON: ioBroker.InstanceCommon = {} as ioBroker.InstanceCommon;
 export class ScreensaverItemDialog extends React.Component<ScreensaverItemDialogProps, ScreensaverItemDialogState> {
     private colorDialogRef = React.createRef<ChannelColorDialog>();
     private iconSelectDialogRef = React.createRef<ScreensaverIconSelectDialog>();
+    private cycleValuesDialogRef = React.createRef<ScreensaverCycleValuesDialog>();
     private rawDialogRef = React.createRef<RawItemConfigDialog>();
 
     constructor(props: ScreensaverItemDialogProps) {
@@ -316,7 +319,7 @@ export class ScreensaverItemDialog extends React.Component<ScreensaverItemDialog
     }
 
     /**
-     * reads type and common.write of the state a button / switch action writes to
+     * reads type, common.write and common.type of the state a button / switch / cycle action writes to
      *
      * @param id state id, empty = nothing to check
      */
@@ -332,7 +335,13 @@ export class ScreensaverItemDialog extends React.Component<ScreensaverItemDialog
                 return;
             }
             this.setState({
-                actionObj: obj ? { kind: String(obj.type ?? ''), write: obj.common?.write === true } : null,
+                actionObj: obj
+                    ? {
+                          kind: String(obj.type ?? ''),
+                          write: obj.common?.write === true,
+                          type: String(obj.common?.type ?? ''),
+                      }
+                    : null,
             });
         } catch {
             this.setState({ actionObj: null });
@@ -394,7 +403,7 @@ export class ScreensaverItemDialog extends React.Component<ScreensaverItemDialog
 
     /**
      * why the item cannot be applied yet: the state of a state item must exist and be a state with an
-     * icon, the state of a button / switch action must exist and be writable; a template needs its
+     * icon, the state of a button / switch / cycle action must exist and be writable; a template needs its
      * name and - if it searches states - its object
      */
     private blocked(): boolean {
@@ -423,19 +432,29 @@ export class ScreensaverItemDialog extends React.Component<ScreensaverItemDialog
         return this.actionBlocked();
     }
 
-    /** the state of a button / switch action must exist and be writable */
+    /**
+     * the state of a button / switch / cycle action must exist and be writable; a cycle needs a state and values
+     * that fit the type of the state
+     */
     private actionBlocked(): boolean {
         const { draft, actionObj } = this.state;
         const action = draft.action;
-        if (
-            screensaverItemFields(this.props.area).action &&
-            action &&
-            (action.kind === 'button' || action.kind === 'switch') &&
-            action.state?.trim()
-        ) {
+        if (!screensaverItemFields(this.props.area).action || !action) {
+            return false;
+        }
+        if (action.kind === 'cycle' && (!action.values?.length || !action.state?.trim() || this.cycleValueInvalid())) {
+            return true;
+        }
+        if ((action.kind === 'button' || action.kind === 'switch' || action.kind === 'cycle') && action.state?.trim()) {
             return !actionObj || actionObj.kind !== 'state' || !actionObj.write;
         }
         return false;
+    }
+
+    /** a value of the cycle does not fit the type of its state - unknown state: not decided yet */
+    private cycleValueInvalid(): boolean {
+        const { draft, actionObj } = this.state;
+        return !!actionObj && !!draft.action?.values?.some(value => cycleValueToState(value, actionObj.type) === null);
     }
 
     /**
@@ -449,7 +468,8 @@ export class ScreensaverItemDialog extends React.Component<ScreensaverItemDialog
             !screensaverItemFields(this.props.area).action ||
             !action ||
             (action.kind !== 'navigate' && !action.state) ||
-            (action.kind === 'navigate' && !action.page)
+            (action.kind === 'navigate' && !action.page) ||
+            (action.kind === 'cycle' && !action.values?.length)
         ) {
             return undefined;
         }
@@ -457,7 +477,7 @@ export class ScreensaverItemDialog extends React.Component<ScreensaverItemDialog
     }
 
     /**
-     * the warning of a button / switch action whose state is missing, no state or read-only
+     * the warning of a button / switch / cycle action whose state is missing, no state or read-only
      *
      * @param action action of the item
      */
@@ -598,8 +618,7 @@ export class ScreensaverItemDialog extends React.Component<ScreensaverItemDialog
         delete draft.readOptions;
         switch (this.state.colorMode) {
             case 'scale':
-                delete draft.colorOn;
-                delete draft.colorOff;
+                // colorOn / colorOff are the ends of the scale, empty = default color of the theme
                 delete draft.colorState;
                 break;
             case 'state':
@@ -614,7 +633,10 @@ export class ScreensaverItemDialog extends React.Component<ScreensaverItemDialog
         const kind = this.kind();
         if (kind !== 'boolean') {
             delete draft.iconOff;
-            delete draft.colorOff;
+            // a number with a scale: colorOff is the color of the lower end
+            if (kind !== 'number' || this.state.colorMode !== 'scale') {
+                delete draft.colorOff;
+            }
             delete draft.textOn;
             delete draft.textOff;
         }
@@ -1096,22 +1118,28 @@ export class ScreensaverItemDialog extends React.Component<ScreensaverItemDialog
                         value={kind}
                         onChange={e => {
                             const v = String(e.target.value);
-                            this.set(
-                                'action',
-                                v === 'none' ? undefined : { ...action, kind: v as ScreensaverItemAction['kind'] },
-                            );
+                            if (v === 'none') {
+                                this.set('action', undefined);
+                                return;
+                            }
+                            const next: ScreensaverItemAction = { ...action, kind: v as ScreensaverItemAction['kind'] };
+                            if (next.kind !== 'cycle') {
+                                delete next.values;
+                            }
+                            this.set('action', next);
                         }}
                     >
                         <MenuItem value="none">{this.getText('screensaver_item_action_none')}</MenuItem>
                         <MenuItem value="button">{this.getText('screensaver_item_action_button')}</MenuItem>
                         <MenuItem value="switch">{this.getText('screensaver_item_action_switch')}</MenuItem>
+                        <MenuItem value="cycle">{this.getText('screensaver_item_action_cycle')}</MenuItem>
                         <MenuItem value="navigate">{this.getText('screensaver_item_action_navigate')}</MenuItem>
                     </Select>
                 </FormControl>
-                {kind === 'button' || kind === 'switch'
+                {kind === 'button' || kind === 'switch' || kind === 'cycle'
                     ? this.renderStateField(
                           this.getText(
-                              kind === 'button'
+                              kind === 'button' || kind === 'cycle'
                                   ? 'screensaver_item_action_buttonState'
                                   : 'screensaver_item_action_switchState',
                           ),
@@ -1124,7 +1152,8 @@ export class ScreensaverItemDialog extends React.Component<ScreensaverItemDialog
                           isWritableState,
                       )
                     : null}
-                {(kind === 'button' || kind === 'switch') && this.renderActionStateWarning(action)}
+                {(kind === 'button' || kind === 'switch' || kind === 'cycle') && this.renderActionStateWarning(action)}
+                {kind === 'cycle' && this.renderCycleValues(action)}
                 {kind === 'navigate' && (
                     <FormControl
                         variant="standard"
@@ -1153,6 +1182,48 @@ export class ScreensaverItemDialog extends React.Component<ScreensaverItemDialog
                 >
                     {this.getText('screensaver_item_action_hint')}
                 </Typography>
+            </Box>
+        );
+    }
+
+    /**
+     * the values of a cycle action: a button opens the list, the list is shown in its order
+     *
+     * @param action action of the item
+     */
+    private renderCycleValues(action: ScreensaverItemAction): React.JSX.Element {
+        const values = action.values ?? [];
+        return (
+            <Box sx={{ mb: 2 }}>
+                <Box
+                    sx={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 1 }}
+                    data-ss="cycle-values"
+                >
+                    <Button
+                        size="small"
+                        variant="outlined"
+                        startIcon={<TuneIcon />}
+                        onClick={() => this.cycleValuesDialogRef.current?.openWith(values, this.state.actionObj?.type)}
+                    >
+                        {this.getText('screensaver_cycle_edit')}
+                    </Button>
+                    <Typography
+                        variant="caption"
+                        color="text.secondary"
+                        data-ss="cycle-preview"
+                    >
+                        {values.length ? `${values.join(' → ')} ↺` : this.getText('screensaver_cycle_none')}
+                    </Typography>
+                </Box>
+                {this.cycleValueInvalid() && (
+                    <Alert
+                        severity="warning"
+                        sx={{ mt: 1 }}
+                        data-ss="cycle-invalid"
+                    >
+                        {this.getText('screensaver_cycle_invalid').replace('%s', this.state.actionObj?.type || '-')}
+                    </Alert>
+                )}
             </Box>
         );
     }
@@ -1630,6 +1701,16 @@ export class ScreensaverItemDialog extends React.Component<ScreensaverItemDialog
                     oContext={this.props.oContext}
                     themeName={this.props.themeName}
                     onSave={list => this.set('iconSelect', list)}
+                />
+                <ScreensaverCycleValuesDialog
+                    ref={this.cycleValuesDialogRef}
+                    getText={this.props.getText}
+                    onSave={values => {
+                        const current = this.state.draft.action;
+                        if (current) {
+                            this.set('action', { ...current, values });
+                        }
+                    }}
                 />
                 <ChannelColorDialog
                     ref={this.colorDialogRef}

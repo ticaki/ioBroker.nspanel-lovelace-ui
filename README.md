@@ -159,6 +159,7 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
     ### **WORK IN PROGRESS**
 -->
 ### **WORK IN PROGRESS**
+- (ticaki) screensaver: with the TFT 6.0.8 an indicator sends one event per press, a long press no longer switches twice
 - (ticaki) screensaver: the default Bright Sky item for sunrise and sunset no longer stays empty after sunset, it shows the sunrise of the next day
 - (ticaki) admin: color suggestions and default colors show the colors the panel really uses and follow the color theme of the instance, including the custom theme; the color scale of a screensaver item no longer stores colors nobody chose
 - (ticaki) screensaver: new templates `text.trash.next` and `text.trash.afterNext` show the next two dates of a trash page in the bottom area with the optional name or else the waste type as headline, the admin lists them as next date and date after next once per trash page; the trash dates are also updated daily at 00:01 local time; a date appears there in short form as day.month
@@ -166,6 +167,9 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
 - (ticaki) panel in Tasmota safeboot: the adapter recognises it from `tele/INFO1`, warns once with a hint how to flash the firmware again and stops the startup offers and the display diagnosis until the normal firmware is back
 - (ticaki) admin: the color picker of the trash page offers five preset colors (yellow, brown, blue, dark gray, green)
 - (ticaki) admin: screensaver places with `text.trash.next` / `text.trash.afterNext` show a readable name instead of the last part of a leftover state; choosing a template that needs no object removes the old state from the item
+- (ticaki) screensaver: new action `values to cycle through` for indicators: you maintain an ordered list of values (e.g. `-1,0,1`), each press writes the next value to the state and after the last one it starts again with the first
+- (ticaki) screensaver: values, colors, status icons and notifications are only sent when they changed, the display no longer gets the same messages again and again; a press on an indicator shows its new icon without the delay of up to 3 s
+- (ticaki) admin: colors chosen for the color scale of a screensaver item are saved now, they were dropped when the dialog was applied
 
 ### 2.1.0 (2026-11-05)
 - (ticaki) screensaver: a timer can replace the clock - from an on/off and a data state, from patterns for timers in changing slots or from a page item with a timer popup; it shows the remaining minutes in the color of the timer, the first tap switches to the clock; all screensaver modes and the web panel

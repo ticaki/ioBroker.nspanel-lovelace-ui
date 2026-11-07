@@ -106,10 +106,11 @@ const MR_ICON_DEFAULT_OFF = rgbToHex(Color.HMIOff);
 const PAGER_SIZE = 28;
 const PAGER_ICON = 24;
 /** frame of an indicator by what its key does - grey = no key (no action or the option is off) */
-const INDICATOR_COLORS: Record<'none' | 'button' | 'switch' | 'navigate', string> = {
+const INDICATOR_COLORS: Record<'none' | 'button' | 'switch' | 'cycle' | 'navigate', string> = {
     none: '#888',
     button: '#e53935',
     switch: '#43a047',
+    cycle: '#fb8c00',
     navigate: '#1e88e5',
 };
 

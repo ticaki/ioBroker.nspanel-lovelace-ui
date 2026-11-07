@@ -166,6 +166,10 @@ function setScreensaverIndicatorAction(
         case 'switch':
             element.ScreensaverEntitySwitch = action.state || null;
             break;
+        case 'cycle':
+            element.ScreensaverEntityCycle = action.state || null;
+            element.ScreensaverEntityCycleValues = action.values?.length ? [...action.values] : null;
+            break;
         case 'navigate':
             element.ScreensaverEntityNaviToPage = action.page || null;
             break;
