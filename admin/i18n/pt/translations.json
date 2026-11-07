@@ -1678,6 +1678,7 @@
     "unlock_unlock": "Desbloquear",
     "up/down": "para cima/para baixo",
     "updateAllScripts": "Atualizar scripts para todos os painéis",
+    "updateAllScriptsFailed": "A atualização do script falhou para estes painéis: %s",
     "updateAvailable": "Atualização disponível",
     "updateTasmotaText": "Deseja atualizar o firmware Tasmota neste painel?\n\nO painel será reiniciado e ficará indisponível por cerca de 40 segundos.",
     "upload_file": "Carregar arquivo",
