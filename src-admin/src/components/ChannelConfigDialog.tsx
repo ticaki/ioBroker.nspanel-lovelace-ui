@@ -312,7 +312,8 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
             valueEntryPreview: '',
             useValue: false,
             textSize: undefined,
-            colorFieldDisabled: false,
+            // the color button is hidden until checkDatapoints has looked at the channel
+            colorFieldDisabled: true,
             adapterColorTheme: Color.defaultTheme,
             inSel_Alias: undefined,
             modeList: undefined,
@@ -419,7 +420,8 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
             checkResultIsError: false,
             checkResultPendingConfig: null,
             isSaving: false,
-            colorFieldDisabled: false,
+            // the color button is hidden until checkDatapoints has looked at the channel
+            colorFieldDisabled: true,
             isGridCard: isGridCard ?? false,
             hasProblems: false,
             inSel_Alias:
@@ -964,6 +966,8 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
             datapointErrors: [],
             datapointDuplicates: [],
             channelNameSuggestion: '',
+            // the color button waits for checkDatapoints instead of showing the verdict of the previous channel
+            colorFieldDisabled: true,
         });
         if (this.datapointCheckTimer !== null) {
             clearTimeout(this.datapointCheckTimer);
@@ -992,6 +996,7 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                 roleIsValid: null,
                 datapointErrors: [],
                 datapointDuplicates: [],
+                colorFieldDisabled: true,
             });
         }
     };
@@ -1000,7 +1005,7 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
         const { socket } = this.props;
         this.setState({ checkingChannel: true });
         if (!socket) {
-            this.setState({ channelExists: false, checkingChannel: false });
+            this.setState({ channelExists: false, checkingChannel: false, colorFieldDisabled: true });
             return;
         }
         try {
@@ -1041,7 +1046,7 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
             );
         } catch (e) {
             console.error('[ChannelConfigDialog] checkChannelExists failed for', objectId, e);
-            this.setState({ channelExists: false, checkingChannel: false });
+            this.setState({ channelExists: false, checkingChannel: false, colorFieldDisabled: true });
         }
     }
 
