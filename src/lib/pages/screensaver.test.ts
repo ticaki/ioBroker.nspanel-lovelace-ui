@@ -1381,8 +1381,8 @@ describe('lib/pages/screensaver - timer instead of the clock', () => {
                     await s.saver.onButtonEvent(press);
                 });
                 expect(s.kinds(sent)).to.not.include('notify');
-                // deactivateNotify keeps swallowing the tap
-                expect(swallowed).to.equal(true);
+                // the notification cannot be dismissed - the tap is not swallowed, it goes on to the navigation
+                expect(swallowed).to.equal(false);
                 expect(s.timers.slice(from).filter(t => t.ms === 15_000)).to.deep.equal([]);
                 at(20_000);
                 // the press changed the value of the item, the only thing that goes out
@@ -1409,6 +1409,22 @@ describe('lib/pages/screensaver - timer instead of the clock', () => {
                     await s.saver.onButtonEvent(press);
                 });
                 expect(s.kinds(sent)).to.not.include('notify');
+            });
+
+            it('swallows the tap only when it dismisses the notification', async () => {
+                const s = await scene({ notify: true });
+                await s.show();
+                // a notification that cannot be dismissed stays, the tap goes on to the navigation
+                s.notify().config.role = '';
+                expect(await s.saver.onScreensaverTap()).to.equal(false);
+                expect(s.now.dismissed).to.equal(false);
+                expect(await s.saver.onScreensaverTap()).to.equal(false);
+                // a dismissible one takes the tap
+                s.notify().config.role = 'isDismissiblePerEvent';
+                expect(await s.saver.onScreensaverTap()).to.equal(true);
+                expect(s.now.dismissed).to.equal(true);
+                // nothing is shown any more - the next tap goes on to the navigation
+                expect(await s.saver.onScreensaverTap()).to.equal(false);
             });
 
             it('a dismissed one does not come back, clearing is one empty notify', async () => {

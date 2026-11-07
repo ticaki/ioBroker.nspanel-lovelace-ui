@@ -1183,14 +1183,22 @@ const _Screensaver = class _Screensaver extends import_Page.Page {
     }
     await this.HandleNotification();
   }
+  /**
+   * A tap on the shown notification dismisses it when it can be dismissed.
+   *
+   * @returns true when the tap did something - it dismissed the notification or nothing is left to show.
+   *          A notification that cannot be dismissed stays and the tap goes on to the navigation.
+   */
   async deactivateNotify() {
     var _a, _b;
     if (this.activeNotifyId) {
+      let dismissed = false;
       const id = this.activeNotifyId.split("?")[1];
       if (id && !isNaN(parseInt(id, 10))) {
         const item = (_a = this.pageItems) == null ? void 0 : _a[parseInt(id, 10)];
         if (item && ((_b = item.config) == null ? void 0 : _b.role) === "isDismissiblePerEvent") {
           item.setDismissiblePerEvent();
+          dismissed = true;
           const globalId = item.getGlobalDismissibleID();
           if (globalId) {
             await this.controller.setGlobalNotificationDismiss(globalId);
@@ -1199,7 +1207,7 @@ const _Screensaver = class _Screensaver extends import_Page.Page {
       }
       this.activeNotifyId = "";
       await this.HandleNotification();
-      return true;
+      return dismissed || this.activeNotifyId === "";
     }
     return false;
   }

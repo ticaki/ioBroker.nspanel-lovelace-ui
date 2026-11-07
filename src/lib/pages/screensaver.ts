@@ -1419,13 +1419,21 @@ export class Screensaver extends Page {
         await this.HandleNotification();
     }
 
+    /**
+     * A tap on the shown notification dismisses it when it can be dismissed.
+     *
+     * @returns true when the tap did something - it dismissed the notification or nothing is left to show.
+     *          A notification that cannot be dismissed stays and the tap goes on to the navigation.
+     */
     async deactivateNotify(): Promise<boolean> {
         if (this.activeNotifyId) {
+            let dismissed = false;
             const id = this.activeNotifyId.split('?')[1];
             if (id && !isNaN(parseInt(id, 10))) {
                 const item = this.pageItems?.[parseInt(id, 10)];
                 if (item && item.config?.role === 'isDismissiblePerEvent') {
                     item.setDismissiblePerEvent();
+                    dismissed = true;
                     const globalId = item.getGlobalDismissibleID();
                     if (globalId) {
                         await this.controller.setGlobalNotificationDismiss(globalId);
@@ -1433,8 +1441,9 @@ export class Screensaver extends Page {
                 }
             }
             this.activeNotifyId = '';
+            // HandleNotification fills activeNotifyId again when a notification still stands
             await this.HandleNotification();
-            return true;
+            return dismissed || this.activeNotifyId === '';
         }
         return false;
     }
