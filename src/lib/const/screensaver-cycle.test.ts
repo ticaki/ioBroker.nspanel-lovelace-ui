@@ -60,6 +60,21 @@ describe('lib/const/screensaver-cycle - nextCycleIndex', () => {
         expect(nextCycleIndex(['-1', '1'], { val: 1 }, 'number', undefined)).to.equal(0);
         expect(nextCycleIndex(['-1', '1'], '', 'string', undefined)).to.equal(0);
     });
+    it('a state value that is not in the list falls back to the first value, also with a last index', () => {
+        const values = ['0', '2', '3', '4'];
+        expect(nextCycleIndex(values, 1, 'number', undefined)).to.equal(0);
+        expect(nextCycleIndex(values, 1, 'number', 2)).to.equal(0);
+        expect(nextCycleIndex(values, '1', 'string', undefined)).to.equal(0);
+    });
+
+    it('the type of the state value does not count: "0" is 0', () => {
+        const values = ['0', '2', '3', '4'];
+        for (const type of ['number', 'string', 'mixed', undefined]) {
+            expect(nextCycleIndex(values, 0, type, undefined)).to.equal(1);
+            expect(nextCycleIndex(values, '0', type, undefined)).to.equal(1);
+        }
+    });
+
     it('repeated values: the last index counts while it fits the state', () => {
         const values = ['0', '1', '0', '-1'];
         expect(nextCycleIndex(values, 0, 'number', 0)).to.equal(1);
