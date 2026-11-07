@@ -1253,14 +1253,30 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
         }
     }
 
+    // "is a navigation" and "custom button" exclude each other: the adapter follows the navigation and
+    // drops the role fields of a custom item, so the two checkboxes take each other back
     private handleNavigationChange = (event: React.ChangeEvent<HTMLInputElement>): void => {
         const checked = event.target.checked;
-        this.setState({ isNavigation: checked, targetPage: checked ? this.state.targetPage : '' });
+        const dropCustom = checked && this.state.isCustom;
+        this.setState({
+            isNavigation: checked,
+            targetPage: checked ? this.state.targetPage : '',
+            isCustom: dropCustom ? false : this.state.isCustom,
+        });
+        if (dropCustom) {
+            void this.checkChannelExists(this.state.channelId.valueStateId, false);
+        }
     };
 
     private handleCustomChange = (event: React.ChangeEvent<HTMLInputElement>): void => {
         const checked = event.target.checked;
-        this.setState({ isCustom: checked, checkingChannel: true });
+        const dropNavigation = checked && this.state.isNavigation;
+        this.setState({
+            isCustom: checked,
+            checkingChannel: true,
+            isNavigation: dropNavigation ? false : this.state.isNavigation,
+            targetPage: dropNavigation ? '' : this.state.targetPage,
+        });
         void this.checkChannelExists(this.state.channelId.valueStateId, checked);
     };
 

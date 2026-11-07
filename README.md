@@ -172,6 +172,7 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
 - (tt-tom17) admin: the color options of a page item have a checkbox for the color scale - apply without it stores no scale and removes an existing one, and the scale fields no longer keep the values of the item edited before
 - (tt-tom17) admin: navigation items with the roles airCondition, temperature, value.temperature and value.humidity offer the condition for the value, as the adapter evaluates it for them
 - (tt-tom17) admin: the color settings button of the item dialog no longer flickers while a channel id is typed and no longer shows the verdict of the previous channel
+- (tt-tom17) admin: in the item dialog "is a navigation" and "custom button" exclude each other, checking one takes the other back
 
 ### 2.2.0 (2026-11-12)
 - (ticaki) web panel: smartphone models `web-p` and `web-l`, portrait layout for all cards, popups and screensavers on us-p/web-p, hardware buttons can be switched off, many layout fixes; no crash on the first connection, less log noise without browser
