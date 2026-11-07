@@ -133,6 +133,8 @@ The first tab of the right-hand column decides **on which panel** a page appears
 
 The choices are the pages this panel knows about and the admin pages assigned to it — the page itself is excluded. The **Show system pages** checkbox adds the internal pages (`///…`) to the list; the unlock page `///unlock` is never hidden. A target already entered always stays visible, even when it is a system page.
 
+At the end of every list there is also **Screensaver**: the gesture then shows the screensaver at once, and the arrow on the panel carries the icon `power-sleep` for it (see [showing the screensaver at once](screensaver#15-showing-the-screensaver-at-once)). This target counts as present on every panel and raises no collision notes — any number of pages may lead there.
+
 Below the fields there is a **summary** per assigned panel: a dot (green as soon as any target is set, otherwise red), the panel name and the four values.
 
 **Resolved neighbours as a placeholder:** a field **without** a value of its own shows, in grey italics, the neighbour the **running** adapter resolved for this panel — the page whose *next* points here, for instance. That is not a stored value, and the tooltip says so: *"Determined from the navigation of the running adapter, not stored. Choose a value to store it."* Only a choice of your own is stored; an empty field stays empty, nothing is written back. Without a running instance the placeholders stay empty, and so they do with the assignment **(all)** — there the neighbours can differ per panel. After a restart of the adapter they fill with a delay: the admin asks for the navigation from the third second on, for up to a minute.

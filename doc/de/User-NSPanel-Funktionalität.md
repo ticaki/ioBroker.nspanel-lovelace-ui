@@ -63,13 +63,13 @@ Zwei Karten sind laut Projekt-README noch in Arbeit: `cardLChart2` und das Farbw
 
 ## 5. Popups
 
-Popups öffnen sich aus einer Seite heraus und bedienen ein einzelnes Gerät im Detail: `popupLight` und `popupLightNew` (Helligkeit, Farbe, Farbtemperatur), `popupShutter` und `popupShutter2` (Rollläden, Lamellen), `popupThermo` (Thermostat), `popupFan` (Lüfter), `popupInSel` (Auswahllisten), `popupTimer` und `popupSlider`. Welche Fassung der Adapter nimmt, entscheidet er selbst — die neue, außer beim Rollladen mit Lamellen.
+Popups öffnen sich aus einer Seite heraus und bedienen ein einzelnes Gerät im Detail: `popupLight` und `popupLightNew` (Helligkeit, Farbe, Farbtemperatur), `popupShutter` und `popupShutter2` (Rollläden, Lamellen), `popupThermo` (Thermostat), `popupFan` (Lüfter), `popupInSel` (Auswahllisten), `popupTimer` (Timer und Wecker, siehe [Timer-Popup](popupTimer)) und `popupSlider`. Welche Fassung der Adapter nimmt, entscheidet er selbst — die neue, außer beim Rollladen mit Lamellen.
 
 Davon zu trennen ist das **Meldungs-Popup** (`popupNotify`): keine Detailansicht eines Geräts, sondern eine Systemseite, die eine Nachricht über alles andere legt. Sie wird über Datenpunkte oder `sendTo` gesteuert und ist unter [Popups](pagePopup) beschrieben.
 
 ## 6. Bildschirmschoner
 
-Im Ruhezustand zeigt das Panel einen Bildschirmschoner mit Uhrzeit, Datum, Wetter und frei belegbaren Werteplätzen, dazu Statussymbole und Indikator-Tasten. Es gibt mehrere Versionen mit unterschiedlicher Aufteilung (Standard, Alternativ, Advanced, EasyView). Einrichten geht im Admin (Screensaver – Admin) oder im Skript (Screensaver).
+Im Ruhezustand zeigt das Panel einen Bildschirmschoner mit Uhrzeit, Datum, Wetter und frei belegbaren Werteplätzen, dazu Statussymbole und Indikator-Tasten. Es gibt mehrere Versionen mit unterschiedlicher Aufteilung (Standard, Alternativ, Advanced, EasyView). Einrichten geht im Admin ([Screensaver im Admin](screensaver)) oder im Skript (Screensaver). Statt der Uhrzeit kann der Bildschirmschoner die Restzeit eines laufenden Timers zeigen, und er lässt sich von einer Fläche, einem Navigationspfeil oder einem Datenpunkt aus sofort aufrufen.
 
 ## 7. Konfiguration im Admin — und wann das Skript
 

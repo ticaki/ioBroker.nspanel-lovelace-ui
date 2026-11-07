@@ -51,6 +51,7 @@
 
 **Auf dem Panel**  
 - [Popups](pagePopup)  
+- [Timer-Popup](popupTimer)  
 
 **Nachschlagen**  
 - [Alias-Tabelle](ALIAS)  

@@ -136,10 +136,10 @@
 ### level.timer
 | Channel role | State ID | common.type | common.role | required | common.write | description |
 | :---: | :--- | :--- | :--- | :---: | :---: | :--- |
-| **level.timer** | ~~ACTUAL~~ | number | value.timer, level.timer, date |  |  | Das wird angezeigt - date in hh:mm, timer in mm:ss |
-| " | ~~SET~~ | number | level.timer, date |  | X | Hier wird ein geänderter Wert hingeschrieben |
-| " | ~~STATE~~ | boolean | button |  | X | wenn die oberen nicht benutzt wird hier getriggert wenn ein interner Timer endet. |
-| " | ~~STATUS~~ | number | level.mode |  | X | 0: OFF , 1: PAUSE, 2: ON/RUNNING |
+| **level.timer** | ~~ACTUAL~~ | number | value.timer, level.timer, date |  |  | Wird angezeigt. Timer: Restzeit in Sekunden (Einheit `ms`: Millisekunden), Liste HH:MM:SS. Wecker (Rolle `date`): Zeitstempel in ms, Anzeige HH:MM. Ohne ACTUAL zählt der Adapter selbst. Einzelheiten: [Timer-Popup](popupTimer) |
+| " | ~~SET~~ | number | level.timer, date |  | X | Ziel für eine im Popup eingestellte Zeit, gleiche Einheit wie ACTUAL; Wecker: nächster Zeitpunkt der Uhrzeit als Zeitstempel in ms. Beim internen Timer stellt ein Wert von außen die Zeit, 0 bricht ab. |
+| " | ~~STATE~~ | boolean | button |  | X | Wird `true`, wenn ein interner Timer abläuft und wenn **Fertig** gedrückt wird – nie bei Abbrechen oder Löschen. |
+| " | ~~STATUS~~ | number | level.mode |  | X | 0: aus, 1: Pause, 2: läuft. Bei externem Timer und Wecker nötig für Start, Pause und An/Aus; beim internen Timer auch von außen (2 startet, 1 pausiert, 0 bricht ab), der Adapter spiegelt seinen Zustand hinein. |
 
 ### light
 | Channel role | State ID | common.type | common.role | required | common.write | description |
