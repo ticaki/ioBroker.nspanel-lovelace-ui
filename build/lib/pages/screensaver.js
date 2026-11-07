@@ -114,8 +114,15 @@ const _Screensaver = class _Screensaver extends import_Page.Page {
     __publicField(this, "screensaverSwipe", false);
     __publicField(this, "_infoIcon", "");
     __publicField(this, "timeoutRotation");
+    /** time of the last burst that was really sent, a press on an item sets it back to 0 */
     __publicField(this, "lastUpdateTs", 0);
     __publicField(this, "updateThrottle");
+    /** counts the runs of update(): only the newest may send, an older one read older values */
+    __publicField(this, "updateRun", 0);
+    /** last sent message per type, see {@link sendIfChanged} */
+    __publicField(this, "lastSent", /* @__PURE__ */ new Map());
+    /** a touch cleared the active notification on the HMI: it takes `weatherUpdate` and `color~` again */
+    __publicField(this, "notifyHidden", false);
     __publicField(this, "headingNotification", "");
     __publicField(this, "textNotification", "");
     __publicField(this, "customNotification", false);
@@ -145,6 +152,8 @@ const _Screensaver = class _Screensaver extends import_Page.Page {
     __publicField(this, "colorTimerShown", false);
     /** the HMI drops `color~` while a notification is shown */
     __publicField(this, "colorsDropped", false);
+    /** the HMI drops `weatherUpdate` while a notification is shown */
+    __publicField(this, "weatherDropped", false);
     __publicField(this, "onTimerItemChange", () => {
       this.clockTimerListeners.forEach((listener) => listener());
       void this.onStateTriggerSuperDoNotOverride("timer", this);
@@ -807,6 +816,107 @@ const _Screensaver = class _Screensaver extends import_Page.Page {
     this.customNotification = enabled && (this.headingNotification !== "" || this.textNotification !== "");
     void this.HandleNotification();
   }
+  notifyPayload(enabled, heading, text) {
+    return enabled ? tools.getPayloadRemoveTilde("notify", heading, text) : tools.getPayload("notify", "", "");
+  }
+  /**
+   * Sends a message of a filtered type when it differs from the last one of that type.
+   *
+   * @param kind type of the message
+   * @param payload the message
+   * @returns true when it was sent
+   */
+  sendIfChanged(kind, payload) {
+    if (this.lastSent.get(kind) === payload) {
+      return false;
+    }
+    this.lastSent.set(kind, payload);
+    super.resetLastMessage();
+    this.sendToPanel(payload, false);
+    return true;
+  }
+  /**
+   * Sends again what the HMI dropped while a notification was shown (`tNotifyHead`/`tNotifyText` not empty): the
+   * memory holds these messages as sent. Only useful as soon as the notification is gone from the display.
+   */
+  resendDropped() {
+    const weather = this.lastSent.get("weatherUpdate");
+    if (this.weatherDropped && weather !== void 0) {
+      this.lastSent.delete("weatherUpdate");
+      this.weatherDropped = false;
+      this.sendWeather(weather);
+    }
+    if (this.colorsDropped) {
+      this.lastSent.delete("color");
+      this.sendColors();
+    }
+  }
+  sendWeather(payload) {
+    if (this.sendIfChanged("weatherUpdate", payload)) {
+      this.weatherDropped = this.dropsValues();
+    }
+  }
+  /**
+   * Any touch makes the HMI clear a notification by itself (`tc0` press, unless the display is off) - and the adapter
+   * only hears of `bExit` or of the indicator. The notification stays active here and is not sent again: it comes
+   * back with the next `pageType~` or a new content. What the HMI dropped behind it can go out now. With a standby
+   * brightness of 0 the touch may have hit a dark display and cleared nothing: then what follows still counts as
+   * dropped and is repeated with the next touch or the end of the notification.
+   */
+  onTouch() {
+    if (!this.activeNotification) {
+      return;
+    }
+    const dim = this.basePanel.dim;
+    this.notifyHidden = (dim.dayMode ? dim.standby : dim.nightStandby) > 0;
+    this.resendDropped();
+  }
+  /**
+   * @returns true while the HMI drops `weatherUpdate` and `color~`
+   */
+  dropsValues() {
+    return this.activeNotification && !this.notifyHidden;
+  }
+  /**
+   * The memory of the filtered messages goes with the one of the base class.
+   */
+  resetLastMessage() {
+    super.resetLastMessage();
+    this.lastSent.clear();
+  }
+  /**
+   * A wanted `pageType~` must reach the panel, also when it is the last message: nothing else was sent since then.
+   *
+   * @param force see {@link Page.sendType}
+   */
+  sendType(force) {
+    if (force || this.basePanel.lastCard !== this.card) {
+      super.resetLastMessage();
+    }
+    super.sendType(force);
+  }
+  /**
+   * Every `pageType~` loads the page again on the HMI: empty values, default colors and no notification
+   * (`vscope` 0, `txt` empty in tNotifyHead and tNotifyText, `load` hides both), whoever asked for it.
+   * Everything follows with the next update(), each way that sends a pageType runs one.
+   *
+   * @param payload the message
+   * @param ackForType see {@link BaseTriggeredPage.sendToPanelClass}
+   * @param force see {@link BaseTriggeredPage.sendToPanelClass}
+   * @param opt see {@link BaseTriggeredPage.sendToPanelClass}
+   */
+  sendToPanelClass(payload, ackForType, force, opt) {
+    if (payload.startsWith("pageType~")) {
+      this.lastSent.clear();
+      this.activeNotification = false;
+      this.colorsDropped = false;
+      this.weatherDropped = false;
+      this.lastTimerPayload = "";
+      this.notifyHidden = false;
+      this.lastUpdateTs = 0;
+    }
+    super.sendToPanelClass(payload, ackForType, force, opt);
+  }
   /** Current info icon (readonly property wrapper). */
   get infoIcon() {
     return this._infoIcon;
@@ -819,31 +929,22 @@ const _Screensaver = class _Screensaver extends import_Page.Page {
     void this.HandleTime();
   }
   /**
-   * Update the screensaver view with data for selected places and refresh status icons.
+   * Update the screensaver view with data for selected places.
    * - Prepends an empty payload to 'alternate' if it contains entries
-   * - Sends a 'weatherUpdate' payload with concatenated place arrays
-   * - At most one update every 3 s: triggers arriving earlier are merged into one deferred update.
-   *   Nothing is sent without a trigger, and time/date updates are not affected.
+   * - Sends a 'weatherUpdate' payload with concatenated place arrays and the colors, only when they changed: the same
+   *   content sends nothing and starts no pause
+   * - At most one burst every 2 s: a change arriving earlier waits for one deferred update, which reads the values
+   *   again. Time/date updates are not affected, a press on an item ends the pause.
+   * - Status icons and notifications come along with every update that is not deferred, only when they changed.
    */
   async update() {
     if (!this.visibility) {
       return;
     }
-    const now = Date.now();
-    const wait = this.lastUpdateTs + _Screensaver.minUpdateInterval - now;
-    if (wait > 0) {
-      if (!this.updateThrottle && !this.unload && !this.adapter.unload) {
-        this.updateThrottle = this.adapter.setTimeout(() => {
-          this.updateThrottle = void 0;
-          void this.update();
-        }, wait);
-      }
-      return;
-    }
-    this.lastUpdateTs = now;
+    const run = ++this.updateRun;
     await super.update();
     const message = await this.getData(["left", "bottom", "indicator", "alternate", "favorit"]);
-    if (message === null) {
+    if (message === null || run !== this.updateRun || !this.visibility) {
       return;
     }
     if (message.options.alternate.length > 0) {
@@ -857,8 +958,22 @@ const _Screensaver = class _Screensaver extends import_Page.Page {
       ...message.options.indicator || []
     ];
     const msg = tools.getPayload("weatherUpdate", tools.getPayloadArray(arr));
-    this.sendToPanel(msg, false);
-    this.sendColors();
+    if (this.lastSent.get("weatherUpdate") !== msg || this.lastSent.get("color") !== this.colorPayload()) {
+      const now = Date.now();
+      const wait = this.lastUpdateTs + _Screensaver.minUpdateInterval - now;
+      if (wait > 0) {
+        if (!this.updateThrottle && !this.unload && !this.adapter.unload) {
+          this.updateThrottle = this.adapter.setTimeout(() => {
+            this.updateThrottle = void 0;
+            void this.update();
+          }, wait);
+        }
+        return;
+      }
+      this.lastUpdateTs = now;
+      this.sendWeather(msg);
+      this.sendColors();
+    }
     await this.HandleScreensaverStatusIcons();
     await this.HandleNotification();
   }
@@ -867,11 +982,15 @@ const _Screensaver = class _Screensaver extends import_Page.Page {
   }
   sendColors() {
     var _a, _b;
-    const colorPayload = `color~${import_Color.Color.rgb_dec565(import_Color.Color.background)}~${import_Color.Color.rgb_dec565(this.timeColor())}~${import_Color.Color.rgb_dec565(import_Color.Color.fgTimeAmPm)}~${import_Color.Color.rgb_dec565(import_Color.Color.fgDate)}~${import_Color.Color.rgb_dec565(import_Color.Color.fgMain)}~${import_Color.Color.rgb_dec565(import_Color.Color.fgForecast)}~${import_Color.Color.rgb_dec565(import_Color.Color.fgForecast)}~${import_Color.Color.rgb_dec565(import_Color.Color.fgForecast)}~${import_Color.Color.rgb_dec565(import_Color.Color.fgForecast)}~${import_Color.Color.rgb_dec565(import_Color.Color.fgForecast)}~${import_Color.Color.rgb_dec565(import_Color.Color.fgForecast)}~${import_Color.Color.rgb_dec565(import_Color.Color.fgForecast)}~${import_Color.Color.rgb_dec565(import_Color.Color.fgForecast)}~${import_Color.Color.rgb_dec565(import_Color.Color.fgBar)}~${import_Color.Color.rgb_dec565(import_Color.Color.fgMainAlt)}~${import_Color.Color.rgb_dec565(this.timeAddColor())}`;
+    const colorPayload = this.colorPayload();
     this.colorTimerStatus = (_b = (_a = this.timerSelection) == null ? void 0 : _a.status) != null ? _b : "off";
     this.colorTimerShown = this.isTimerShown();
-    this.colorsDropped = !!this.clockTimer && this.activeNotification;
-    this.sendToPanel(colorPayload, false);
+    if (this.sendIfChanged("color", colorPayload)) {
+      this.colorsDropped = this.dropsValues();
+    }
+  }
+  colorPayload() {
+    return `color~${import_Color.Color.rgb_dec565(import_Color.Color.background)}~${import_Color.Color.rgb_dec565(this.timeColor())}~${import_Color.Color.rgb_dec565(import_Color.Color.fgTimeAmPm)}~${import_Color.Color.rgb_dec565(import_Color.Color.fgDate)}~${import_Color.Color.rgb_dec565(import_Color.Color.fgMain)}~${import_Color.Color.rgb_dec565(import_Color.Color.fgForecast)}~${import_Color.Color.rgb_dec565(import_Color.Color.fgForecast)}~${import_Color.Color.rgb_dec565(import_Color.Color.fgForecast)}~${import_Color.Color.rgb_dec565(import_Color.Color.fgForecast)}~${import_Color.Color.rgb_dec565(import_Color.Color.fgForecast)}~${import_Color.Color.rgb_dec565(import_Color.Color.fgForecast)}~${import_Color.Color.rgb_dec565(import_Color.Color.fgForecast)}~${import_Color.Color.rgb_dec565(import_Color.Color.fgForecast)}~${import_Color.Color.rgb_dec565(import_Color.Color.fgBar)}~${import_Color.Color.rgb_dec565(import_Color.Color.fgMainAlt)}~${import_Color.Color.rgb_dec565(this.timeAddColor())}`;
   }
   /**
    * @returns color of the info icon: the timer overrides it as long as it is active
@@ -907,6 +1026,7 @@ const _Screensaver = class _Screensaver extends import_Page.Page {
     this.step = 0;
     if (v) {
       this.lastUpdateTs = 0;
+      this.resetLastMessage();
       this.timerTappedAway = false;
       this.lastTimerTap = 0;
       this.lastTimerPayload = "";
@@ -1003,7 +1123,7 @@ const _Screensaver = class _Screensaver extends import_Page.Page {
       this.basePanel.info.nspanel.bigIconRight ? "1" : ""
     ];
     const msg = tools.getPayloadArrayRemoveTilde(msgArray);
-    this.sendToPanel(msg, false);
+    this.sendIfChanged("statusUpdate", msg);
   }
   async HandleNotification() {
     if (this.basePanel.isOnline === false) {
@@ -1027,13 +1147,13 @@ const _Screensaver = class _Screensaver extends import_Page.Page {
       const heading = notifyList[0].heading;
       const text = notifyList[0].text;
       if (heading !== "" || text !== "") {
-        if (this.activeNotifyId != notifyList[0].id && notifyList[0].buzzer && this.basePanel.dim.dayMode && this.basePanel.isBuzzerAllowed) {
+        if (this.activeNotifyId != notifyList[0].id && this.lastSent.get("notify") !== this.notifyPayload(true, heading, text) && notifyList[0].buzzer && this.basePanel.dim.dayMode && this.basePanel.isBuzzerAllowed) {
           this.basePanel.sendToTasmota(`${this.basePanel.topic}/cmnd/Buzzer`, notifyList[0].buzzer.trim());
         }
         this.activeNotifyId = notifyList[0].id;
         __privateMethod(this, _Screensaver_instances, sendNotify_fn).call(this, true, heading, text);
       }
-    } else if (this.activeNotification) {
+    } else {
       this.activeNotifyId = "";
       __privateMethod(this, _Screensaver_instances, sendNotify_fn).call(this, false);
     }
@@ -1082,6 +1202,7 @@ const _Screensaver = class _Screensaver extends import_Page.Page {
    * @returns true when the tap is done
    */
   async onTimerTap(action, opt) {
+    this.onTouch();
     if (action !== "bExit" || !this.clockTimer) {
       return false;
     }
@@ -1091,6 +1212,7 @@ const _Screensaver = class _Screensaver extends import_Page.Page {
       this.timerTappedAway = true;
       this.lastTimerTap = now;
       await this.HandleTime();
+      this.lastSent.delete("notify");
       await this.HandleNotification();
       return true;
     }
@@ -1133,9 +1255,15 @@ const _Screensaver = class _Screensaver extends import_Page.Page {
   }
   async onButtonEvent(event) {
     if (event.page !== void 0 && event.id && this.pageItems && this.pageItems[event.id]) {
-      if (this.blockButtons) {
+      if (this.blockButtons || this.unload || this.adapter.unload) {
         return;
       }
+      this.blockButtons = this.adapter.setTimeout(() => {
+        this.blockButtons = void 0;
+      }, 500);
+      this.onTouch();
+      this.lastUpdateTs = 0;
+      await this.releaseTriggerThrottle();
       const indicators = this.pageItems.filter((x) => x && x.config && x.config.modeScr === "indicator");
       for (let a = 0; a < indicators.length; a++) {
         if (indicators[a] === this.pageItems[event.id]) {
@@ -1147,12 +1275,6 @@ const _Screensaver = class _Screensaver extends import_Page.Page {
         }
       }
       await this.pageItems[event.id].onCommand(event.action, event.opt);
-      if (this.unload || this.adapter.unload) {
-        return;
-      }
-      this.blockButtons = this.adapter.setTimeout(() => {
-        this.blockButtons = void 0;
-      }, 500);
     }
   }
   async delete() {
@@ -1260,15 +1382,20 @@ sendNotify_fn = function(enabled, heading = "", text = "") {
   if (!this.basePanel.isOnline) {
     return;
   }
+  const wasActive = this.activeNotification;
   this.activeNotification = enabled && (heading !== "" || text !== "");
-  const msg = this.activeNotification ? tools.getPayloadRemoveTilde("notify", heading, text) : tools.getPayload("notify", "", "");
-  this.sendToPanel(msg, false);
-  if (!this.activeNotification && this.colorsDropped) {
-    this.sendColors();
+  if (!this.activeNotification && !wasActive) {
+    return;
+  }
+  if (this.sendIfChanged("notify", this.notifyPayload(this.activeNotification, heading, text))) {
+    this.notifyHidden = false;
+  }
+  if (!this.activeNotification) {
+    this.resendDropped();
   }
 };
 /** Minimum pause between two weatherUpdate/color bursts - protects the Nextion serial buffer */
-__publicField(_Screensaver, "minUpdateInterval", 3e3);
+__publicField(_Screensaver, "minUpdateInterval", 2e3);
 /**
  * A tap that follows a tap on the timer is still the same double click up to this long after it (and the one
  * before, for more than two taps). The HMI has no limit of its own - all screensaver pages: `tc0` press does

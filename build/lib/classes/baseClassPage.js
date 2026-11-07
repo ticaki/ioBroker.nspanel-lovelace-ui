@@ -169,6 +169,17 @@ class BaseTriggeredPage extends import_library.BaseClass {
       await this.onStateTrigger(dp, from);
     }
   }
+  /**
+   * Ends the pause between two triggers: what waited runs now, the next trigger comes through at once.
+   */
+  async releaseTriggerThrottle() {
+    if (!this.updateTimeout) {
+      return;
+    }
+    this.adapter.clearTimeout(this.updateTimeout);
+    this.updateTimeout = void 0;
+    await this.runPendingTriggers();
+  }
   async onStateTrigger(_dp, _from) {
     this.adapter.log.warn(
       `<- instance of [${Object.getPrototypeOf(this)}] is triggert but dont react or call super.onStateTrigger()`

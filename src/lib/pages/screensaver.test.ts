@@ -1,5 +1,6 @@
 import { expect } from 'chai';
 import { resolveScreensaverOptions, Screensaver } from './screensaver';
+import { PageItem } from './pageItem';
 import type * as Types from '../types/types';
 import type * as pages from '../types/pages';
 import type { PageInterface } from '../classes/PageInterface';
@@ -422,6 +423,7 @@ describe('lib/pages/screensaver - timer instead of the clock', () => {
             isVirtual: true,
             screenSaverDoubleClick: true,
             info: { nspanel: {} },
+            dim: { dayMode: true, standby: 0, nightStandby: 0 },
             panelSend: { addMessage: (payload: string): void => void sent.push(payload) },
         };
         const config = {
@@ -943,6 +945,577 @@ describe('lib/pages/screensaver - timer instead of the clock', () => {
             await f.saver.delete();
             expect(f.patterns).to.deep.equal([]);
             expect(tick.cleared).to.equal(true);
+        });
+    });
+
+    describe('only what changed', () => {
+        const off: ScreensaverClockTimer = { ...simple, enabled: false };
+
+        type Scene = Fixture & {
+            /** what the items show, changed by the tests */
+            now: { value: string; mr: string; notify: boolean; dismissed: boolean; text: string };
+            indicator: () => any;
+            mricon: () => any;
+            notify: () => any;
+            kinds: (messages: string[]) => string[];
+            show: () => Promise<string[]>;
+            sleepReachedOnSamePage: () => Promise<string[]>;
+            lockTimers: () => Fixture['timers'];
+        };
+
+        async function scene(start: Partial<Scene['now']> = {}): Promise<Scene> {
+            const f = await setup(off, {});
+            const now = { value: 'A', mr: 'lamp', notify: false, dismissed: false, text: 'Text', ...start };
+            const item = (modeScr: string, id: number, payload: () => string, extra: object = {}): any =>
+                Object.assign(Object.create(PageItem.prototype), {
+                    id: `scr?${id}`,
+                    config: { modeScr },
+                    dataItems: { data: {} },
+                    isEnabled: async (): Promise<boolean> => Promise.resolve(true),
+                    getPageItemPayload: async (): Promise<string> => Promise.resolve(payload()),
+                    onCommand: async (): Promise<boolean> => {
+                        now.value = `${now.value}+`;
+                        return Promise.resolve(false);
+                    },
+                    delete: async (): Promise<void> => Promise.resolve(),
+                    ...extra,
+                });
+            const notifyItem = item('notify', 2, () => `~scr?2~~~${now.text}~Head<sp!it>1<sp!it>1,2`, {
+                config: { modeScr: 'notify', role: 'isDismissiblePerEvent' },
+                isEnabled: async (): Promise<boolean> => Promise.resolve(now.notify && !now.dismissed),
+                getGlobalDismissibleID: (): null => null,
+                setDismissiblePerEvent: (): void => {
+                    now.dismissed = true;
+                },
+            });
+            f.saver.pageItems = [
+                item('bottom', 0, () => `~~icon~1~name~${now.value}`),
+                item('mricon', 1, () => `~~${now.mr}~2~~`),
+                notifyItem,
+            ];
+            f.saver.library = { writedp: async (): Promise<void> => Promise.resolve() };
+            f.saver.basePanel.lastCard = 'screensaver';
+            f.saver.basePanel.timeout = 15;
+            f.saver.basePanel.sendToTasmota = (topic: string): void => void f.sent.push(`buzzer ${topic}`);
+            f.saver.basePanel.isBuzzerAllowed = true;
+            f.saver.basePanel.dim = { dayMode: true, standby: 10, nightStandby: 10 };
+            f.saver.basePanel.topic = 't';
+            const during = f.during;
+            return {
+                ...f,
+                now,
+                indicator: () => f.saver.pageItems[0],
+                mricon: () => f.saver.pageItems[1],
+                notify: () => f.saver.pageItems[2],
+                kinds: (messages: string[]): string[] => messages.map(m => m.split('~')[0]),
+                // Panel.setActivePage with another page before: visibility turns on
+                show: async (): Promise<string[]> => {
+                    f.saver.basePanel.lastCard = 'cardGrid';
+                    f.saver.resetLastMessage();
+                    return during(() => f.saver.onVisibilityChange(true));
+                },
+                // Panel.setActivePage with the active page: no onVisibilityChange
+                sleepReachedOnSamePage: async (): Promise<string[]> =>
+                    during(async () => {
+                        f.saver.sendType(true);
+                        await f.saver.update();
+                    }),
+                lockTimers: () => f.timers.filter(t => t.ms <= 2000),
+            };
+        }
+        const press = { page: 0, id: '0', action: 'button', opt: '' };
+        const at = (ms: number): void => {
+            Date.now = (): number => NOW + ms;
+        };
+
+        describe('update()', () => {
+            it('the same content sends nothing and starts no pause', async () => {
+                const s = await scene();
+                await s.show();
+                at(5000);
+                expect(await s.during(() => s.saver.update())).to.deep.equal([]);
+                s.now.value = 'B';
+                at(5100);
+                expect(s.kinds(await s.during(() => s.saver.update()))).to.deep.equal(['weatherUpdate']);
+            });
+
+            it('a change within the 2 s waits with one timer and reads the values again', async () => {
+                const s = await scene();
+                await s.show();
+                s.now.value = 'B';
+                at(1000);
+                expect(await s.during(() => s.saver.update())).to.deep.equal([]);
+                s.now.value = 'C';
+                expect(await s.during(() => s.saver.update())).to.deep.equal([]);
+                const waiting = s.lockTimers();
+                expect(waiting.map(t => t.ms)).to.deep.equal([1000]);
+                at(2000);
+                const sent = await s.during(async () => {
+                    waiting[0].fn();
+                    await new Promise(resolve => setImmediate(resolve));
+                });
+                expect(s.kinds(sent)).to.deep.equal(['weatherUpdate']);
+                expect(sent[0]).to.include('~C');
+            });
+
+            it('nothing is left when the value is back at the end of the wait', async () => {
+                const s = await scene();
+                await s.show();
+                s.now.value = 'B';
+                at(1000);
+                await s.saver.update();
+                s.now.value = 'A';
+                at(2000);
+                const sent = await s.during(async () => {
+                    s.lockTimers()[0].fn();
+                    await new Promise(resolve => setImmediate(resolve));
+                });
+                expect(sent).to.deep.equal([]);
+            });
+
+            it('an older run that ends last does not overwrite a newer one', async () => {
+                const s = await scene();
+                await s.show();
+                at(5000);
+                const original = s.indicator().getPageItemPayload;
+                let finish: (value: string) => void = () => undefined;
+                s.indicator().getPageItemPayload = async (): Promise<string> =>
+                    new Promise<string>(resolve => {
+                        finish = resolve;
+                    });
+                const older = s.saver.update();
+                await new Promise(resolve => setImmediate(resolve));
+                s.indicator().getPageItemPayload = original;
+                s.now.value = 'NEW';
+                await s.saver.update();
+                finish('~~icon~1~name~OLD');
+                await older;
+                const weather = s.sent.filter(m => m.startsWith('weatherUpdate'));
+                expect(weather.at(-1)).to.include('NEW');
+                expect(weather.join()).to.not.include('OLD');
+            });
+
+            it('statusUpdate and notify: nothing with the same content, with a change also without a trigger', async () => {
+                const s = await scene({ notify: true });
+                await s.show();
+                at(5000);
+                expect(await s.during(() => s.saver.update())).to.deep.equal([]);
+
+                s.now.mr = 'other';
+                expect(s.kinds(await s.during(() => s.saver.update()))).to.deep.equal(['statusUpdate']);
+                expect(await s.during(() => s.saver.update())).to.deep.equal([]);
+
+                s.now.text = 'Other';
+                expect(await s.during(() => s.saver.update())).to.deep.equal(['notify~Head~Other']);
+                expect(await s.during(() => s.saver.update())).to.deep.equal([]);
+            });
+
+            it('their own triggers still send a change at once', async () => {
+                const s = await scene();
+                await s.show();
+                s.now.mr = 'other';
+                s.now.notify = true;
+                expect(s.kinds(await s.during(() => s.saver.onStateTrigger('x', s.mricon())))).to.deep.equal([
+                    'statusUpdate',
+                ]);
+                const notify = await s.during(() => s.saver.onStateTrigger('x', s.notify()));
+                expect(notify.filter(m => m.startsWith('notify~'))).to.deep.equal(['notify~Head~Text']);
+                expect(await s.during(() => s.saver.onStateTrigger('x', s.notify()))).to.deep.equal([]);
+            });
+
+            it('a deferred update sends neither of them', async () => {
+                const s = await scene({ notify: true });
+                await s.show();
+                s.now.value = 'B';
+                s.now.mr = 'other';
+                s.now.text = 'Other';
+                at(1000);
+                expect(await s.during(() => s.saver.update())).to.deep.equal([]);
+            });
+
+            it('sends no empty notify without a notification shown before', async () => {
+                const s = await scene();
+                await s.show();
+                at(5000);
+                s.now.value = 'B';
+                expect(s.kinds(await s.during(() => s.saver.update()))).to.deep.equal(['weatherUpdate']);
+                expect(s.sent).to.not.include('notify~~');
+            });
+
+            it('the big icons of the status come through without a trigger of an item', async () => {
+                const s = await scene();
+                await s.show();
+                s.saver.basePanel.info.nspanel.bigIconLeft = true;
+                const sent = await s.during(() => s.saver.HandleScreensaverStatusIcons());
+                expect(s.kinds(sent)).to.deep.equal(['statusUpdate']);
+            });
+
+            it('resetLastMessage empties the memory', async () => {
+                const s = await scene();
+                await s.show();
+                at(5000);
+                s.saver.resetLastMessage();
+                expect(s.kinds(await s.during(() => s.saver.update()))).to.deep.equal([
+                    'weatherUpdate',
+                    'color',
+                    'statusUpdate',
+                ]);
+            });
+        });
+
+        describe('press', () => {
+            it('a repeated event during the first one does not run the command again', async () => {
+                for (const hangsIn of ['releaseTriggerThrottle', 'onCommand']) {
+                    const s = await scene();
+                    let commands = 0;
+                    let go: () => void = () => undefined;
+                    const hang = async (): Promise<void> =>
+                        new Promise<void>(resolve => {
+                            go = resolve;
+                        });
+                    if (hangsIn === 'releaseTriggerThrottle') {
+                        s.saver.releaseTriggerThrottle = hang;
+                    }
+                    s.indicator().onCommand = async (): Promise<boolean> => {
+                        commands++;
+                        if (hangsIn === 'onCommand') {
+                            await hang();
+                        }
+                        return false;
+                    };
+                    const first = s.saver.onButtonEvent(press);
+                    await new Promise(resolve => setImmediate(resolve));
+                    await s.saver.onButtonEvent(press);
+                    go();
+                    await first;
+                    expect(commands, hangsIn).to.equal(1);
+                }
+            });
+
+            it('the block ends after 500 ms and goes with the page', async () => {
+                const s = await scene();
+                const from = s.timers.length;
+                await s.saver.onButtonEvent(press);
+                const block = s.timers.slice(from).find(t => t.ms === 500);
+                expect(block).to.not.equal(undefined);
+                block?.fn();
+                expect(s.saver.blockButtons).to.equal(undefined);
+
+                await s.saver.onButtonEvent(press);
+                const second = s.timers
+                    .slice(from)
+                    .filter(t => t.ms === 500)
+                    .at(-1);
+                await s.saver.delete();
+                expect(second?.cleared).to.equal(true);
+            });
+
+            it('no block and no command while unloading', async () => {
+                const s = await scene();
+                let commands = 0;
+                s.indicator().onCommand = async (): Promise<boolean> => {
+                    commands++;
+                    return Promise.resolve(false);
+                };
+                s.saver.adapter.unload = true;
+                await s.saver.onButtonEvent(press);
+                expect(commands).to.equal(0);
+                expect(s.saver.blockButtons).to.equal(undefined);
+            });
+
+            it('goes out at once within the pause, the ack after it sends nothing', async () => {
+                const s = await scene();
+                await s.show();
+                at(500);
+                await s.saver.onButtonEvent(press);
+                const sent = await s.during(() => s.saver.onStateTrigger('x', s.indicator()));
+                expect(s.kinds(sent)).to.deep.equal(['weatherUpdate']);
+                expect(sent[0]).to.include('A+');
+                expect(s.lockTimers().filter(t => !t.cleared && t.ms === 1500)).to.deep.equal([]);
+
+                at(600);
+                expect(await s.during(() => s.saver.onStateTrigger('x', s.indicator()))).to.deep.equal([]);
+            });
+
+            it('a trigger just before it does not hold back the next one', async () => {
+                const s = await scene();
+                const seen: string[] = [];
+                s.saver.onStateTrigger = async (dp: string): Promise<void> => void seen.push(dp);
+                const source = s.indicator();
+                await s.saver.onStateTriggerSuperDoNotOverride('first', source);
+                await s.saver.onStateTriggerSuperDoNotOverride('waits', source);
+                expect(seen).to.deep.equal(['first']);
+                await s.saver.onButtonEvent(press);
+                expect(seen).to.deep.equal(['first', 'waits']);
+                await s.saver.onStateTriggerSuperDoNotOverride('of the press', source);
+                expect(seen).to.deep.equal(['first', 'waits', 'of the press']);
+            });
+        });
+
+        describe('show', () => {
+            it('sends everything in the known order, also with the same content', async () => {
+                const s = await scene({ notify: true });
+                await s.show();
+                const again = await s.show();
+                expect(s.kinds(again)).to.deep.equal([
+                    'pageType',
+                    'time',
+                    'weatherUpdate',
+                    'color',
+                    'statusUpdate',
+                    'notify',
+                ]);
+            });
+
+            it('sends no empty notify', async () => {
+                const s = await scene();
+                expect(s.kinds(await s.show())).to.not.include('notify');
+                expect(s.kinds(await s.show())).to.not.include('notify');
+            });
+
+            it('sends no empty notify when the notification went away while the page was left', async () => {
+                const s = await scene({ notify: true });
+                await s.show();
+                expect(s.saver.activeNotification).to.equal(true);
+                await s.saver.onTimerTap('swipeUp', '');
+                s.saver.sendColors();
+                await s.saver.onVisibilityChange(false);
+                s.now.notify = false;
+                const sent = await s.show();
+                expect(s.kinds(sent)).to.not.include('notify');
+                expect(s.saver.activeNotification).to.equal(false);
+                expect(s.saver.colorsDropped).to.equal(false);
+                expect(s.saver.activeNotifyId).to.equal('');
+                // and nothing is left to clear afterwards
+                expect(await s.during(() => s.saver.HandleNotification())).to.deep.equal([]);
+            });
+
+            it('without a new pageType the display still shows it: clears it once', async () => {
+                const s = await scene({ notify: true });
+                await s.show();
+                s.now.notify = false;
+                s.saver.sendType = (): void => undefined;
+                const sent = await s.during(() => s.saver.onVisibilityChange(true));
+                expect(sent.filter(m => m.startsWith('notify~'))).to.deep.equal(['notify~~']);
+            });
+
+            it('sleepReached on the active page shows the notification again and everything else', async () => {
+                const s = await scene({ notify: true });
+                await s.show();
+                at(500);
+                await s.saver.onTimerTap('bExit', '1');
+                expect(await s.during(() => s.saver.HandleNotification())).to.deep.equal([]);
+                const sent = await s.sleepReachedOnSamePage();
+                expect(s.kinds(sent)).to.deep.equal(['pageType', 'weatherUpdate', 'color', 'statusUpdate', 'notify']);
+            });
+
+            it('sleepReached on the active page sends the pageType also right behind another one', async () => {
+                const s = await scene();
+                s.saver.sendType(true);
+                expect(s.kinds(await s.during(async () => s.saver.sendType(true)))).to.deep.equal(['pageType']);
+            });
+
+            it('sends no empty notify after sleepReached on the active page', async () => {
+                const s = await scene();
+                await s.show();
+                expect(s.kinds(await s.sleepReachedOnSamePage())).to.not.include('notify');
+            });
+        });
+
+        describe('notification', () => {
+            it('a touch does not bring it back, also not after the timeout of the panel', async () => {
+                const s = await scene({ notify: true });
+                await s.show();
+                s.notify().config.role = '';
+                const from = s.timers.length;
+                let swallowed = false;
+                const sent = await s.during(async () => {
+                    await s.saver.onTimerTap('bExit', '1');
+                    swallowed = await s.saver.onScreensaverTap();
+                    await s.saver.onButtonEvent(press);
+                });
+                expect(s.kinds(sent)).to.not.include('notify');
+                // deactivateNotify keeps swallowing the tap
+                expect(swallowed).to.equal(true);
+                expect(s.timers.slice(from).filter(t => t.ms === 15_000)).to.deep.equal([]);
+                at(20_000);
+                // the press changed the value of the item, the only thing that goes out
+                expect(s.kinds(await s.during(() => s.saver.update()))).to.deep.equal(['weatherUpdate']);
+                expect(await s.during(() => s.saver.HandleNotification())).to.deep.equal([]);
+            });
+
+            it('comes back after a touch with a new content or a pageType', async () => {
+                const s = await scene({ notify: true });
+                await s.show();
+                await s.saver.onTimerTap('bExit', '1');
+                s.now.text = 'Other';
+                expect(await s.during(() => s.saver.HandleNotification())).to.deep.equal(['notify~Head~Other']);
+                await s.saver.onTimerTap('bExit', '1');
+                expect(s.kinds(await s.sleepReachedOnSamePage())).to.include('notify');
+            });
+
+            it('a tap without a notification sends no empty notify', async () => {
+                const s = await scene();
+                await s.show();
+                const sent = await s.during(async () => {
+                    await s.saver.onTimerTap('bExit', '1');
+                    await s.saver.onScreensaverTap();
+                    await s.saver.onButtonEvent(press);
+                });
+                expect(s.kinds(sent)).to.not.include('notify');
+            });
+
+            it('a dismissed one does not come back, clearing is one empty notify', async () => {
+                const s = await scene({ notify: true });
+                await s.show();
+                await s.saver.onTimerTap('bExit', '1');
+                const sent = await s.during(() => s.saver.onScreensaverTap());
+                expect(sent.filter(m => m.startsWith('notify~'))).to.deep.equal(['notify~~']);
+                expect(await s.sleepReachedOnSamePage()).to.not.include('notify~Head~Text');
+            });
+
+            it('is cleared with exactly one empty notify when it goes away', async () => {
+                const s = await scene({ notify: true });
+                await s.show();
+                s.now.notify = false;
+                const sent = await s.during(() => s.saver.onStateTrigger('x', s.notify()));
+                expect(sent.filter(m => m.startsWith('notify~'))).to.deep.equal(['notify~~']);
+                expect(await s.during(() => s.saver.onStateTrigger('x', s.notify()))).to.deep.equal([]);
+            });
+
+            it('rings once, a touch and the way back with a pageType are no new notification', async () => {
+                const s = await scene({ notify: true });
+                await s.show();
+                expect(s.sent.filter(m => m.startsWith('buzzer'))).to.have.length(1);
+                s.notify().config.role = '';
+                await s.saver.onScreensaverTap();
+                await s.saver.onTimerTap('bExit', '1');
+                await s.sleepReachedOnSamePage();
+                expect(s.sent.filter(m => m === 'notify~Head~Text')).to.have.length(2);
+                expect(s.sent.filter(m => m.startsWith('buzzer'))).to.have.length(1);
+            });
+
+            it('an update does not bring a touched one back, without ringing', async () => {
+                const s = await scene({ notify: true });
+                await s.show();
+                s.notify().config.role = '';
+                at(5000);
+                const sent = await s.during(async () => {
+                    await s.saver.onTimerTap('bExit', '1');
+                    await s.saver.onScreensaverTap();
+                    await s.saver.update();
+                    s.now.value = 'B';
+                    await s.saver.update();
+                });
+                expect(s.kinds(sent)).to.deep.equal(['weatherUpdate']);
+                expect(s.sent.filter(m => m.startsWith('buzzer'))).to.have.length(1);
+            });
+
+            it('after a touch the values reach the HMI and count as sent, nothing hangs', async () => {
+                const s = await scene({ notify: true });
+                await s.show();
+                s.now.value = 'B';
+                at(5000);
+                await s.saver.update();
+                expect(s.saver.weatherDropped).to.equal(true);
+
+                // what the HMI dropped behind the notification follows the touch once
+                expect(s.kinds(await s.during(() => s.saver.onTimerTap('swipeUp', '')))).to.deep.equal([
+                    'weatherUpdate',
+                ]);
+                expect(s.saver.weatherDropped).to.equal(false);
+                expect(s.saver.activeNotification).to.equal(true);
+
+                s.now.value = 'C';
+                s.saver.timeColor = (): RGB => Color.Red;
+                at(10_000);
+                expect(s.kinds(await s.during(() => s.saver.update()))).to.deep.equal(['weatherUpdate', 'color']);
+                expect(s.saver.weatherDropped).to.equal(false);
+                expect(s.saver.colorsDropped).to.equal(false);
+                // no repeat with the next touch, and none when the notification ends
+                expect(await s.during(() => s.saver.onTimerTap('swipeUp', ''))).to.deep.equal([]);
+                s.now.notify = false;
+                expect(await s.during(() => s.saver.HandleNotification())).to.deep.equal(['notify~~']);
+            });
+
+            it('a new notification after a touch makes the HMI drop values again', async () => {
+                const s = await scene({ notify: true });
+                await s.show();
+                await s.saver.onTimerTap('swipeUp', '');
+                s.now.text = 'Other';
+                await s.saver.HandleNotification();
+                s.now.value = 'B';
+                at(5000);
+                await s.saver.update();
+                expect(s.saver.weatherDropped).to.equal(true);
+            });
+
+            it('a touch on a dark display may have cleared nothing: nothing gets lost', async () => {
+                const s = await scene({ notify: true });
+                s.saver.basePanel.dim.standby = 0;
+                await s.show();
+                await s.saver.onTimerTap('swipeUp', '');
+                s.now.value = 'B';
+                at(5000);
+                await s.saver.update();
+                expect(s.saver.weatherDropped).to.equal(true);
+                s.now.notify = false;
+                const sent = await s.during(() => s.saver.HandleNotification());
+                expect(s.kinds(sent)).to.deep.equal(['notify', 'weatherUpdate']);
+            });
+
+            it('an empty custom notification sends nothing', async () => {
+                const s = await scene();
+                await s.show();
+                s.saver.customNotification = true;
+                expect(await s.during(() => s.saver.HandleNotification())).to.deep.equal([]);
+            });
+
+            it('values and colors the HMI dropped behind a notification follow when it goes away', async () => {
+                const s = await scene({ notify: true });
+                await s.show();
+                s.now.value = 'B';
+                at(5000);
+                s.saver.timeColor = (): RGB => Color.Red;
+                await s.saver.update();
+                expect(s.saver.weatherDropped).to.equal(true);
+                expect(s.saver.colorsDropped).to.equal(true);
+                s.now.notify = false;
+                const sent = await s.during(() => s.saver.onStateTrigger('x', s.notify()));
+                expect(s.kinds(sent)).to.deep.equal(['notify', 'weatherUpdate', 'color']);
+                expect(sent[1]).to.include('~B');
+                expect(s.saver.weatherDropped).to.equal(false);
+                expect(s.saver.colorsDropped).to.equal(false);
+            });
+
+            it('values the HMI dropped follow right after the touch that cleared it', async () => {
+                const s = await scene({ notify: true });
+                await s.show();
+                s.now.value = 'B';
+                at(5000);
+                await s.saver.update();
+                const sent = await s.during(() => s.saver.onTimerTap('swipeUp', ''));
+                expect(s.kinds(sent)).to.deep.equal(['weatherUpdate']);
+            });
+
+            it('nothing is repeated when nothing was dropped', async () => {
+                const s = await scene({ notify: true });
+                await s.show();
+                s.now.notify = false;
+                const sent = await s.during(() => s.saver.onStateTrigger('x', s.notify()));
+                expect(s.kinds(sent)).to.deep.equal(['notify']);
+            });
+
+            it('the tap on a timer shows it again at once, although its content is the same', async () => {
+                const f = await setup(simple, { 'x.0.on': true, 'x.0.ts': NOW + 600_000 });
+                f.saver.customNotification = true;
+                f.saver.headingNotification = 'Head';
+                f.saver.textNotification = 'Text';
+                await f.saver.HandleNotification();
+                await f.saver.HandleTime();
+                const sent = await f.during(() => f.saver.onTimerTap('bExit', '1'));
+                expect(sent.filter(m => m.startsWith('notify~'))).to.deep.equal(['notify~Head~Text']);
+            });
         });
     });
 });
