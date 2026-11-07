@@ -4,6 +4,7 @@ import {
     Alert,
     Checkbox,
     FormControlLabel,
+    FormHelperText,
     Autocomplete,
     Box,
     Select,
@@ -38,7 +39,13 @@ import {
 } from './webPanelUrl';
 import ConfigIP from './components/ConfigIP';
 import PanelButtonDialog, { type PanelButtonSide } from './components/PanelButtonDialog';
-import type { AdminButtonFunction } from '../../src/lib/types/adminShareConfig';
+import type { AdminButtonFunction, PanelModel } from '../../src/lib/types/adminShareConfig';
+import {
+    hardwarePanelModels,
+    isPanelModel,
+    panelModels,
+    webPanelButtonsDefault,
+} from '../../src/lib/types/adminShareConfig';
 import { PanelStatusBadge } from './components/PanelStatusBadge';
 import { resolveTasmotaTimeZone, uniqueTasmotaTimeZones, type TasmotaTimeZone } from './tasmotaTimeZones';
 import { docUrl } from './docLink';
@@ -57,14 +64,8 @@ interface PanelConfig {
     buttonRight?: AdminButtonFunction;
     /** "panel uses no script": configured in the admin (+ global script) only, a local panel script is rejected */
     noScript?: boolean;
-}
-
-/** the three hardware models a panel (and a web panel) can have */
-const panelModels = ['eu', 'us-l', 'us-p'] as const;
-type PanelModel = (typeof panelModels)[number];
-
-function isPanelModel(value: unknown): value is PanelModel {
-    return typeof value === 'string' && (panelModels as readonly string[]).includes(value);
+    /** web panel only: show the two hardware buttons below the display; missing = default of the model */
+    webButtons?: boolean;
 }
 
 /**
@@ -100,9 +101,21 @@ interface WebPanelDialogState {
     name: string;
     topic: string;
     model: PanelModel;
+    /** show the hardware buttons below the display */
+    webButtons: boolean;
+    /** the user changed webButtons in this dialog - a model change no longer resets it to the default */
+    webButtonsTouched: boolean;
 }
 
-const closedWebPanelDialog: WebPanelDialogState = { open: false, editId: null, name: '', topic: '', model: 'eu' };
+const closedWebPanelDialog: WebPanelDialogState = {
+    open: false,
+    editId: null,
+    name: '',
+    topic: '',
+    model: 'eu',
+    webButtons: webPanelButtonsDefault('eu'),
+    webButtonsTouched: false,
+};
 
 /** Antwort eines der drei Einrichtungsschritte, siehe `runInitStep` */
 interface InitStepAnswer {
@@ -848,13 +861,16 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
      * @param panel the web panel to edit, undefined = create a new one
      */
     private handleWebPanelDialogOpen = (panel?: PanelConfig): void => {
+        const model: PanelModel = isPanelModel(panel?.model) ? panel.model : 'eu';
         this.setState({
             webPanelDialog: {
                 open: true,
                 editId: panel?.id ?? null,
                 name: panel?.name ?? '',
                 topic: panel?.topic ?? '',
-                model: isPanelModel(panel?.model) ? panel.model : 'eu',
+                model,
+                webButtons: typeof panel?.webButtons === 'boolean' ? panel.webButtons : webPanelButtonsDefault(model),
+                webButtonsTouched: false,
             },
         });
     };
@@ -886,8 +902,23 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
     private handleWebPanelModelChange = (event: SelectChangeEvent<string>): void => {
         const value = event.target.value;
         if (isPanelModel(value)) {
-            this.setState(prev => ({ webPanelDialog: { ...prev.webPanelDialog, model: value } }));
+            this.setState(prev => ({
+                webPanelDialog: {
+                    ...prev.webPanelDialog,
+                    model: value,
+                    webButtons: prev.webPanelDialog.webButtonsTouched
+                        ? prev.webPanelDialog.webButtons
+                        : webPanelButtonsDefault(value),
+                },
+            }));
         }
+    };
+
+    private handleWebPanelButtonsChange = (event: React.ChangeEvent<HTMLInputElement>): void => {
+        const checked = event.target.checked;
+        this.setState(prev => ({
+            webPanelDialog: { ...prev.webPanelDialog, webButtons: checked, webButtonsTouched: true },
+        }));
     };
 
     /**
@@ -923,9 +954,9 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
         if (!this.isWebPanelDialogValid()) {
             return;
         }
-        const { editId, name, topic, model } = this.state.webPanelDialog;
+        const { editId, name, topic, model, webButtons } = this.state.webPanelDialog;
         const panels: PanelConfig[] = this.props.data.panels || [];
-        const values = { name: name.trim(), topic: topic.trim(), model };
+        const values = { name: name.trim(), topic: topic.trim(), model, webButtons: webButtons === true };
         const updatedPanels =
             editId === null
                 ? [...panels, { ...values, kind: 'web' as const, id: newWebPanelId(panels), ip: '' }]
@@ -1265,9 +1296,14 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
                             value={panelModel}
                             onChange={this.handleSelectStringChange('_nsPanelModel')}
                         >
-                            <MenuItem value="eu">{this.getText('eu-Version')}</MenuItem>
-                            <MenuItem value="us-l">{this.getText('us-l-Version')}</MenuItem>
-                            <MenuItem value="us-p">{this.getText('us-p-Version')}</MenuItem>
+                            {hardwarePanelModels.map(model => (
+                                <MenuItem
+                                    key={model}
+                                    value={model}
+                                >
+                                    {this.getText(`${model}-Version`)}
+                                </MenuItem>
+                            ))}
                         </Select>
                     </FormControl>
                     {/* Zeitzone: Autocomplete statt Select – 562 MenuItems auf einmal frieren den Browser ein.
@@ -1679,6 +1715,7 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
                                     value={webPanelDialog.model}
                                     onChange={this.handleWebPanelModelChange}
                                 >
+                                    {/* a web panel offers the hardware models plus the smartphone models web-p and web-l */}
                                     {panelModels.map(model => (
                                         <MenuItem
                                             key={model}
@@ -1689,6 +1726,18 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
                                     ))}
                                 </Select>
                             </FormControl>
+                            <FormControlLabel
+                                control={
+                                    <Checkbox
+                                        size="small"
+                                        checked={webPanelDialog.webButtons}
+                                        onChange={this.handleWebPanelButtonsChange}
+                                    />
+                                }
+                                label={this.getText('webPanelButtons')}
+                                title={this.getText('webPanelButtonsHelp')}
+                            />
+                            <FormHelperText sx={{ mt: -1 }}>{this.getText('webPanelButtonsHelp')}</FormHelperText>
                         </Box>
                     </DialogContent>
                     <DialogActions>

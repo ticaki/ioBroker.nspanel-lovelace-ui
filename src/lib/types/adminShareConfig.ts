@@ -73,6 +73,8 @@ export type AdminPanelConfig = {
     model?: string;
     /** "panel uses no script": configured in the admin (+ global script) only, a local panel script is rejected */
     noScript?: boolean;
+    /** web panel only: show the two hardware buttons below the display; missing = {@link webPanelButtonsDefault} */
+    webButtons?: boolean;
 };
 
 export type PanelsResponse = PanelInfo[];
@@ -315,19 +317,60 @@ export type ScreensaverCard = Extract<AdminCardTypes, 'screensaver' | 'screensav
 export type ScreensaverArea = 'favorit' | 'alternate' | 'left' | 'bottom' | 'indicator';
 export const screensaverAreas: readonly ScreensaverArea[] = ['favorit', 'alternate', 'left', 'bottom', 'indicator'];
 
-/** panel models that change the number of places (ScreenSaverConst in definition.ts); same values as NSpanelModel in types.ts */
-export type ScreensaverPanelModel = 'eu' | 'us-p' | 'us-l';
+/**
+ * Panel models; same values as NSpanelModel in types.ts (a test keeps both equal). The web models
+ * `web-p` (smartphone portrait) and `web-l` (smartphone landscape) exist only for standalone web panels.
+ */
+export type PanelModel = 'eu' | 'us-p' | 'us-l' | 'web-p' | 'web-l';
+/** panel models that change the number of places (ScreenSaverConst in definition.ts) */
+export type ScreensaverPanelModel = PanelModel;
+
+/** all panel models; the web models (smartphone) exist only for standalone web panels */
+export const panelModels: readonly PanelModel[] = ['eu', 'us-l', 'us-p', 'web-p', 'web-l'];
+/** panel models a hardware panel can have */
+export const hardwarePanelModels: readonly PanelModel[] = ['eu', 'us-l', 'us-p'];
+
+/**
+ * Type guard for a panel model string.
+ *
+ * @param value value to check
+ * @returns true if the value is one of the panel models
+ */
+export function isPanelModel(value: unknown): value is PanelModel {
+    return typeof value === 'string' && (panelModels as readonly string[]).includes(value);
+}
+
+/**
+ * Tells a smartphone model of the web panel from a hardware model.
+ *
+ * @param model panel model
+ * @returns true for web-p and web-l
+ */
+export function isWebPanelModel(model: PanelModel): boolean {
+    return model === 'web-p' || model === 'web-l';
+}
+
+/**
+ * Whether a web panel shows the two hardware buttons below the display when `webButtons` is not set:
+ * on for the hardware models (eu, us-l, us-p), off for the smartphone models.
+ *
+ * @param model panel model of the web panel
+ * @returns default of `webButtons`
+ */
+export function webPanelButtonsDefault(model: PanelModel): boolean {
+    return !isWebPanelModel(model);
+}
 
 /** maximum number of items per area, mode and panel model - copy of ScreenSaverConst (definition.ts), kept equal by a test */
 export const screensaverSlotLimits: Record<
     ScreensaverMode,
-    Record<ScreensaverArea | 'mricon', { eu: number; 'us-p'?: number; 'us-l'?: number }>
+    Record<ScreensaverArea | 'mricon', { eu: number } & Partial<Record<Exclude<ScreensaverPanelModel, 'eu'>, number>>>
 > = {
     standard: {
         favorit: { eu: 1 },
         alternate: { eu: 0 },
         left: { eu: 0 },
-        bottom: { eu: 4 },
+        bottom: { eu: 4, 'web-l': 6, 'web-p': 8 },
         indicator: { eu: 0 },
         mricon: { eu: 2 },
     },
@@ -335,23 +378,23 @@ export const screensaverSlotLimits: Record<
         favorit: { eu: 1 },
         alternate: { eu: 1 },
         left: { eu: 0 },
-        bottom: { eu: 3 },
+        bottom: { eu: 3, 'web-l': 5, 'web-p': 7 },
         indicator: { eu: 0 },
         mricon: { eu: 2 },
     },
     advanced: {
         favorit: { eu: 1 },
         alternate: { eu: 0 },
-        left: { eu: 3 },
-        bottom: { eu: 6 },
-        indicator: { eu: 5 },
+        left: { eu: 3, 'web-l': 3, 'web-p': 4 },
+        bottom: { eu: 6, 'web-l': 8, 'web-p': 8 },
+        indicator: { eu: 5, 'web-l': 8, 'web-p': 12 },
         mricon: { eu: 2 },
     },
     easyview: {
         favorit: { eu: 1 },
         alternate: { eu: 0 },
         left: { eu: 0 },
-        bottom: { eu: 3, 'us-p': 4, 'us-l': 3 },
+        bottom: { eu: 3, 'us-p': 4, 'us-l': 3, 'web-l': 4, 'web-p': 8 },
         indicator: { eu: 0 },
         mricon: { eu: 2 },
     },
@@ -359,8 +402,8 @@ export const screensaverSlotLimits: Record<
         favorit: { eu: 0 },
         alternate: { eu: 0 },
         left: { eu: 0 },
-        bottom: { eu: 5, 'us-p': 4 },
-        indicator: { eu: 7, 'us-p': 8 },
+        bottom: { eu: 5, 'us-p': 4, 'web-l': 7, 'web-p': 8 },
+        indicator: { eu: 7, 'us-p': 8, 'web-l': 11, 'web-p': 8 },
         mricon: { eu: 2 },
     },
 };
@@ -1733,6 +1776,27 @@ export const scrollCards = [
     'cardMedia',
 ] as const;
 export type ScrollCard = (typeof scrollCards)[number];
+
+/**
+ * Items per page of the menu cards for every panel model (doc/web-panel/SMARTPHONE.md, section Menü-Karten).
+ * The adapter (pageMenu.ts) uses the same numbers; a test can compare both. us-l is the same as eu.
+ */
+export const menuCardItemLimits: Record<ScrollCard, Record<PanelModel, number>> = {
+    cardEntities: { eu: 4, 'us-l': 4, 'us-p': 5, 'web-l': 4, 'web-p': 8 },
+    cardSchedule: { eu: 6, 'us-l': 6, 'us-p': 6, 'web-l': 6, 'web-p': 11 },
+    cardGrid: { eu: 6, 'us-l': 6, 'us-p': 6, 'web-l': 8, 'web-p': 10 },
+    cardGrid2: { eu: 8, 'us-l': 8, 'us-p': 9, 'web-l': 10, 'web-p': 15 },
+    cardGrid3: { eu: 4, 'us-l': 4, 'us-p': 4, 'web-l': 6, 'web-p': 8 },
+    cardMedia: { eu: 5, 'us-l': 5, 'us-p': 5, 'web-l': 6, 'web-p': 8 },
+    cardThermo2: { eu: 9, 'us-l': 9, 'us-p': 9, 'web-l': 9, 'web-p': 9 },
+};
+
+/** columns of the grid cards per panel model (the list cards have one column) */
+export const menuCardGridColumns: Record<'cardGrid' | 'cardGrid2' | 'cardGrid3', Record<PanelModel, number>> = {
+    cardGrid: { eu: 3, 'us-l': 3, 'us-p': 2, 'web-l': 4, 'web-p': 2 },
+    cardGrid2: { eu: 4, 'us-l': 4, 'us-p': 3, 'web-l': 5, 'web-p': 3 },
+    cardGrid3: { eu: 2, 'us-l': 2, 'us-p': 2, 'web-l': 3, 'web-p': 2 },
+};
 
 /** cards that can scroll by half a page - same list as CARD_MENU_HALF_PAGE_SCROLL_TYPES of the adapter */
 export const scrollHalfCards: readonly ScrollCard[] = ['cardGrid', 'cardGrid2', 'cardGrid3', 'cardThermo2'];
