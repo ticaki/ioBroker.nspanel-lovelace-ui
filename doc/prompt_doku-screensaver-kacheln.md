@@ -28,15 +28,26 @@ beschreiben noch vier Versionen. Es geht nur um die Konfiguration im Adapter, ni
    `src/lib/const/definition.ts`, `src/lib/pages/screensaver.ts`, `src/lib/classes/config-manager.ts`,
    `src-admin/src/components/ScreensaverEditor.tsx`, `src-admin/src/components/ScreensaverItemDialog.tsx`,
    `HMI/tools/screensaver5.py`, `json/version.json`.
-4. **Schreiben.** Stil der bestehenden Seiten: sachlich, kurze Absätze, Tabellen für Felder, Backticks für Datenpunkte
+4. **Nach weiteren Änderungen suchen.** Dieser Prompt kann älter sein als der Code. Suche deshalb selbst nach Änderungen
+   am Modus und am Screensaver, die hier fehlen, und arbeite sie mit ein:
+   - Liste die Commits seit diesem Prompt:
+     `git log --oneline "$(git log -1 --format=%H -- doc/prompt_doku-screensaver-kacheln.md)"..HEAD -- src/lib/pages/screensaver.ts src/lib/pages/pageItem.ts src/lib/classes/config-manager.ts src/lib/const/definition.ts src/lib/types/adminShareConfig.ts src-admin/src/components/ScreensaverEditor.tsx src-admin/src/components/ScreensaverItemDialog.tsx HMI/tools json/version.json`.
+     Lies bei allem, was den Screensaver betrifft, auch den Diff.
+   - Lies in `README.md` unter `## Changelog` den Abschnitt `WORK IN PROGRESS` und die Einträge der Versionen ab dem
+     Eintrag „new mode tiles“ auf Screensaver, Kacheln, Tiles und `screensaver5`.
+   - Vergleiche `screensaver_*` in `admin/i18n/de/translations.json` mit dieser Doku: Ein Dialogfeld oder eine Option, die
+     in `screensaver.md` fehlt, gehört geprüft, auch wenn sie nicht nur Kacheln betrifft.
+   - Nimm auf, was Nutzer beim Einrichten wissen müssen. Liste am Ende alle so gefundenen Punkte auf, auch die, die du
+     bewusst nicht aufgenommen hast, mit Begründung.
+5. **Schreiben.** Stil der bestehenden Seiten: sachlich, kurze Absätze, Tabellen für Felder, Backticks für Datenpunkte
    und IDs, kein Marketing. Deutsch und Englisch gleichwertig, gleiche Gliederung. Beschreibe, was der Nutzer tut und
    was dann passiert.
-5. **Bilder.** Du kannst keine Screenshots vom Admin oder Panel erstellen. Erfinde keine Bildpfade. Nenne am Ende die
+6. **Bilder.** Du kannst keine Screenshots vom Admin oder Panel erstellen. Erfinde keine Bildpfade. Nenne am Ende die
    Stellen, an denen ein Bild fehlt, mit Vorschlag für den Inhalt.
-6. **Prüfen.** Führe `npx tsx script/build-doc-page.ts _site --strict` aus. Tote Links und Anker müssen behoben sein.
+7. **Prüfen.** Führe `npx tsx script/build-doc-page.ts _site --strict` aus. Tote Links und Anker müssen behoben sein.
    Lösche danach `_site`, falls es nicht ignoriert wird, und ändere außerhalb von `doc/de` und `doc/en` nichts.
-7. **Abschluss.** Nicht committen. Nenne die geänderten Dateien, die Bildstellen, jede Abweichung zwischen Prompt und Code
-   und die offenen Fragen aus dem Abschnitt „Voraussetzung“. Was du nicht prüfen konntest, nennst du ausdrücklich.
+8. **Abschluss.** Nicht committen. Nenne die geänderten Dateien, die Bildstellen, jede Abweichung zwischen Prompt und Code,
+   die zusätzlich gefundenen Änderungen und die offenen Fragen aus dem Abschnitt „Voraussetzung“. Was du nicht prüfen konntest, nennst du ausdrücklich.
 
 ## Was geändert werden muss
 
