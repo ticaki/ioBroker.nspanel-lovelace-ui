@@ -825,7 +825,7 @@ class ConfigManager extends import_library.BaseClass {
         });
       }
     } else if ((_a = foundedStates[role]) == null ? void 0 : _a.MODE) {
-      let states = ["OFF", "AUTO", "COOL", "HEAT", "ECO", "FAN", "DRY"];
+      let states = ["OFF", "AUTO", "COOL", "HEAT", "ECO", "FAN_ONLY", "DRY"];
       if (foundedStates[role].MODE.dp) {
         const o2 = await this.adapter.getForeignObjectAsync(foundedStates[role].MODE.dp);
         if ((_b = o2 == null ? void 0 : o2.common) == null ? void 0 : _b.states) {

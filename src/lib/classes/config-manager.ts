@@ -964,7 +964,7 @@ export class ConfigManager extends BaseClass {
             }
         } else if (foundedStates[role]?.MODE) {
             // airCondition with mode
-            let states: string[] | Record<string, string> = ['OFF', 'AUTO', 'COOL', 'HEAT', 'ECO', 'FAN', 'DRY'];
+            let states: string[] | Record<string, string> = ['OFF', 'AUTO', 'COOL', 'HEAT', 'ECO', 'FAN_ONLY', 'DRY'];
             if (foundedStates[role].MODE.dp) {
                 const o = await this.adapter.getForeignObjectAsync(foundedStates[role].MODE.dp);
                 if (o?.common?.states) {
