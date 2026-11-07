@@ -21,6 +21,7 @@ Contents:
 - [Notifications](#13-notifications)
 - [Saving – what the adapter does with it](#14-saving--what-the-adapter-does-with-it)
 - [Showing the screensaver at once](#15-showing-the-screensaver-at-once)
+- [Tiles](#16-tiles)
 - [Pitfalls](#pitfalls)
 
 ## 1. Creating a screensaver
@@ -38,7 +39,7 @@ Every row of the list names the version and the assigned panels below the name, 
 | Element | Meaning |
 |---|---|
 | **Name** | Name of the entry (can be renamed, has to stay unique). |
-| **Version** | `Standard`, `Alternate`, `Advanced` or `Easyview` – the card (`screensaver`, `screensaver2`, `screensaver3`) follows from it. The line below names the card and the panel model the places are drawn for. |
+| **Version** | `Standard`, `Alternate`, `Advanced`, `Easyview` or `Tiles` – the card (`screensaver`, `screensaver2`, `screensaver3`, `screensaver5`) follows from it. The line below names the card and the panel model the places are drawn for. For **Tiles** see [section 16](#16-tiles). |
 | **Panels** | Multi select of the panels that show this screensaver. A panel can have only one. |
 | **Panel picture** | The places of the chosen version and panel model: **Favorite**, **Left**, **Bottom**, **Indicators** or **Alternate**. Dashed with **+** = free (a click adds an item), occupied = a click edits it. |
 | **Dragging** | An item can be dragged onto another place – also into another area. If an item lies there already, the two **swap** places. |
@@ -47,9 +48,9 @@ Every row of the list names the version and the assigned panels below the name, 
 | **Eye on an item** | Small yellow eye icon: the item is only shown under a condition. The tooltip of the place names it in plain words – *Shown only while … is true* or *Shown only while: …*. |
 | **`{ }` in front of the label** | The item is configured through [raw data](#6-raw-data-json). |
 | **Paging arrows** | If a list area has more than one window, arrows with a counter stand to its left and right (above and below with narrow columns) – see [windows and paging](#7-more-items-than-places-windows-and-paging). |
-| **Frame of the indicators** | grey = no key, red = button, green = switch, blue = open page. Grey also stands when the option **Indicators act as buttons** is off (see [Indicators](#8-indicators-and-buttons)). |
+| **Frame of the indicators** | grey = no key, red = button, green = switch, orange = cycle values, blue = open page. Grey also stands when the option **Indicators act as buttons** is off (see [Indicators](#8-indicators-and-buttons)). |
 | **Time**, **Date** | A click opens the dialog for 12h/24h and the [timer instead of the clock](#timer-instead-of-the-clock), or the date format. |
-| **Two status icons** | `mrIcon1` and `mrIcon2`; a click opens their dialog, grey = not used. Where they sit depends on the version: with Standard, Alternate and Easyview in the upper corners, with Advanced at the bottom next to the date. |
+| **Two status icons** | `mrIcon1` and `mrIcon2`; a click opens their dialog, grey = not used. Where they sit depends on the version: with Standard, Alternate and Easyview in the upper corners, with Advanced at the bottom next to the date, with Tiles as two color bars at the lower edge. |
 | **Button bar below the picture** | **Notifications** (with the number of messages switched on for this screensaver) and **Options** (rotation time, swipe gestures, indicator buttons). Up to 2.0.2 both buttons sat **in** the panel picture as a bell and a gear. |
 | **Weather** (right column) | Weather adapter and its extra items, see [Weather](#11-weather). |
 
@@ -81,8 +82,9 @@ Places per version (model `eu`, differing values in brackets):
 | **Alternate** | 1 | 1 | – | 3 | – | 2 |
 | **Advanced** | 1 | – | 3 | 6 | 5 | 2 |
 | **Easyview** | – | – | – | 3 (`us-p`: 4) | – | 2 |
+| **Tiles** | – | – | – | 5 (`us-p`: 4) | 7 (`us-p`: 8) | 2 |
 
-The number holds per window: **Left**, **Bottom** and **Indicators** take more items than they have places (see [windows and paging](#7-more-items-than-places-windows-and-paging)). **Favorite** and **Alternate** hold exactly one item.
+The number holds per window: **Left**, **Bottom**, **Indicators** and **Alternate** take more items than they have places (see [windows and paging](#7-more-items-than-places-windows-and-paging)). Only **Favorite** holds exactly one item. The version **Tiles** has the areas **Bottom** and **Indicators** only – see [Tiles](#16-tiles).
 
 ## 4. Items: the item dialog
 
@@ -123,6 +125,13 @@ Third choice *color from a state*: a state whose value is the color – `#rrggbb
 - **Add entry** appends a row, the bin on the right removes it. **Sort by value** (from two rows on) orders the list for the overview only – the order does not matter, the adapter sorts it itself.
 - **Apply** stays disabled while a started row is incomplete (*Every entry needs a numeric value and an icon*); rows without a value **and** without an icon are ignored. If a value appears twice, the dialog reports it – only one of those entries then takes effect, but it is not disabled because of it. An empty list removes the setting.
 - The list **replaces the icon** of the field above and counts as the icon: an item with an icon list needs no icon of its own. Color or color scale, unit, factor and decimals keep working as before.
+
+**Blind (position)**: If the chosen state is the position of a blind, the dialog treats it in its own way. A position is a **number** with the role `level.blind` or `value.blind` as well as a number below a channel or device with the role `blind` (the dialog then takes its `.ACTUAL` or `.SET`). A tilt (`tilt`) is no position.
+
+- Without an icon of its own **the icon follows the position** – five icons from closed to open. Such an item therefore needs no icon, **Apply** stays open. Icons of your own or an icon list keep working as before.
+- The value stands in **%** without decimals as long as **Unit** and **Decimals** stay empty. Whether 0 % means "closed" or "open" is decided by the **Shutter control** in the [Global Settings](globelSettings).
+- A tap opens **no** popup and never moves the blind. On an indicator only the configured **Action on press** runs.
+- Below the fields the note says *Blind: without an icon of its own the icon shows the position (5 icons from closed to open); bottom and left show the position in %. Tapping an indicator only does the chosen action, it never moves the blind.* – with icons of your own it ends with *Remove the icons to get the icon by position.* instead.
 
 **Text instead of the value** (boolean): Instead of `true`/`false` the panel shows the **Text while true** or **Text while false**. Each field may also hold the **id of a state** – then its value is shown. An empty field keeps the raw value.
 
@@ -214,7 +223,7 @@ Example in the format **script** – a template with an option on an indicator p
 
 ## 7. More items than places: windows and paging
 
-The editor draws the list areas **Left**, **Bottom** and **Indicators** in **windows** of as many places as the version and the panel model allow. When the last window is full, it appends another one – so any number of items beyond the number of places can be created.
+The editor draws the list areas **Left**, **Bottom**, **Indicators** and **Alternate** in **windows** of as many places as the version and the panel model allow. When the last window is full, it appends another one – so any number of items beyond the number of places can be created.
 
 ![The bottom area with the paging counter and the button bar below it](../Pictures/screensaverAdmin/admin-18-bereich-unten.png)
 
@@ -228,7 +237,7 @@ Surplus items are therefore **not an error**. The warning *… item(s) have no p
 
 ## 8. Indicators and buttons
 
-The indicators (version Advanced) show an icon only. For them the item dialog has the **Action on press**:
+The indicators (versions Advanced and [Tiles](#16-tiles)) show an icon only. For them the item dialog has the **Action on press**:
 
 ![Indicator with an action](../Pictures/screensaverAdmin/admin-08-indikator-aktion.png)
 
@@ -237,19 +246,40 @@ The indicators (version Advanced) show an icon only. For them the item dialog ha
 | **none** | A tap leads to the main page. |
 | **button (writes true)** | writes `true` into the chosen state. |
 | **switch (toggles)** | toggles the chosen state between `true` and `false`. |
+| **values to cycle through** | writes the next value of a list of your own into the chosen state on every press. |
 | **open a page** | opens the chosen page of the instance. |
 
-Button and switch need a **writable** state; if it is not writable, the dialog says *… is not writable (common.write) - button and switch need a writable state* and does not allow applying. Below the field stands the note *Works only with the option "Indicators act as buttons"*. In the panel picture the frame shows the action: red = button, green = switch, blue = page, grey = none or the option is off. A [template](#5-templates-as-items) on an indicator place gets the action as well – its icon becomes a button with it.
+Button, switch and values to cycle through need a **writable** state; if it is not writable, the dialog says *… is not writable (common.write) - this action needs a writable state* and does not allow applying. Below the field stands the note *Works only with the option "Indicators act as buttons"*. In the panel picture the frame shows the action: red = button, green = switch, orange = cycle values, blue = page, grey = none or the option is off. A [template](#5-templates-as-items) on an indicator place gets the action as well – its icon becomes a button with it.
+
+**Values to cycle through.** This action switches a state through a list of values of your own, one after the other. Below the field **State written on press** the button **Edit values…** stands for it; next to it the dialog shows the list in its order (`-1 → 0 → 1 ↺`) or *No values yet – at least one is required*. The action works in every version with indicators.
+
+![An indicator with the action "values to cycle through"](../Pictures/screensaverAdmin/admin-20-item-werte-umschalten.png)
+
+In the dialog **Values to cycle through** every row has a field **Value**, a handle to drag it in front of it and the arrows **Move up** / **Move down**, the bin behind it. **Add value** appends a row; empty rows are left out when it is applied. The order counts: every press writes the next value, after the last one it starts again with the first. A single value is allowed – every press then writes the same value.
+
+![The dialog "Values to cycle through"](../Pictures/screensaverAdmin/admin-21-werte-dialog.png)
+
+The typed text is converted by the **type of the state**: for a number a number (a comma counts as the decimal separator), for an on/off state `true` and `1` as true, `false` and `0` as false, for text the text as typed. If the state has no fixed type, `true` and `false` become booleans, numbers become numbers, and anything else stays text. If a value does not fit the type, the dialog says *At least one value does not fit the type of the state (…)* and **Apply** stays disabled – in the value dialog as well as in the item dialog. Without a state or without a single value the item cannot be applied either.
+
+Which value comes next is read by the adapter from the state: it looks for the current value in the list and writes the entry after it. If the value is not in the list – no value yet, or set to something else from outside – the next press starts with the first entry again. The place written last counts first as long as its value is still in the state; that is why the same value may stand in the list several times (`0`, `1`, `0`, `-1`).
+
+> **Example:** A number state `0_userdata.0.scene` lies on the screensaver as an indicator, with an icon per scene through **Icon per value…**. The action **Values to cycle through** with `-1`, `0` and `1` switches the scenes one after the other, and the icon follows the new value.
 
 **One state per indicator.** The adapter creates a state of its own for every indicator item: `panels.<panel>.buttons.indicator-1`, `-2`, `-3` … in the order in which the items stand in the area **Indicators**. The states are `boolean`, read-only and carry the role `button.press`. A tap on the indicator **always** writes `true` into its state – independently of the option. That makes them usable as triggers for own scripts, even without an action in the dialog.
 
-The option **Indicators act as buttons** only decides what happens *afterwards*: switched on, the configured command runs (button, switch, page); switched off, the panel jumps to the main page.
+The option **Indicators act as buttons** only decides what happens *afterwards*: switched on, the configured command runs (button, switch, values, page); switched off, the panel jumps to the main page.
+
+**The result appears at once.** Between two updates of the screensaver the adapter keeps a short pause. A press on an indicator ends it – the new icon and the new color go to the panel without a wait.
+
+**One press, one event.** Up to the TFT 6.0.7 an indicator reported its press twice, when the finger touched it and when it was lifted; a long press therefore switched twice. From the TFT 6.0.8 on it reports exactly one press – that concerns `screensaver5` on all models and `screensaver2` on the EU panel.
 
 ## 9. Status icons
 
-The two status icons (`mrIcon1`, `mrIcon2`) each follow one state: **Icon on** while `true`, otherwise **Icon off**, each with a **Color on** / **Color off** of its own. An optional second **State shown as value (optional)** next to it is shown with **Decimals** and **Unit**. Without a state the icon stays unused and is grey in the panel picture.
+The two status icons (`mrIcon1`, `mrIcon2`) each follow one state: **Icon on** while `true`, otherwise **Icon off**, each with a **Color on** / **Color off** of its own. An optional second **State shown as value (optional)** next to it is shown with **Decimals** and **Unit**. Without a state the icon stays unused and is grey in the panel picture. A newly created entry fills both status icons with the relays of the panel (`Relay.1` and `Relay.2`, bulb on/off) – so the panel shows a color from the start; both can be changed or switched off by emptying the state.
 
 ![Status icon](../Pictures/screensaverAdmin/admin-09-statussymbol.png)
+
+In the version **Tiles** the panel shows only the color of a status icon – as a bar at the lower edge, without icon, value and unit (see [Tiles](#16-tiles)).
 
 ## 10. Time and date
 
@@ -260,6 +290,8 @@ Click on the time: **Adapter default**, **24 hours** or **12 hours**, with a pre
 ### Timer instead of the clock
 
 In the dialog of the time, below the format choice, stands the checkbox **Show timer**. While a timer is active, the panel shows its remaining time in the place of the clock; without an active timer the clock stands there as usual. This holds for every version of the screensaver and for the [web panel](WebPanel) as well.
+
+![The dialog of the time with the timer switched on](../Pictures/screensaverAdmin/admin-22-uhrzeit-timer.png)
 
 With the checkbox the field **Source of the timer** appears with two choices:
 
@@ -302,6 +334,8 @@ javascript.0.timer.global.*.targetTs
 - Shown is an expired active slot, otherwise the running slot with the shortest remaining time. Slots that come into being later are recognised by the adapter on its own.
 - The dialog checks the patterns and says *Both patterns are required.*, *Each pattern needs exactly one \*.*, *The \* needs a path before it, e.g. adapter.0.\*.* or *The two patterns must be different.* Leave both fields empty to use the two states again.
 - With patterns set, the time dialog says so: *Slot patterns are set in Advanced - they replace the two data points above.*
+
+![The dialog "Timers in changing slots"](../Pictures/screensaverAdmin/admin-23-timer-slots.png)
 
 #### Source: page item with timer popup
 
@@ -408,12 +442,74 @@ Limits: there is no such target for the start page, and for the action of an ind
 
 > **Two quick taps on a navigation arrow:** The second tap can arrive before the new page is fully drawn and then hits the symbol in the same place of the new page. If that symbol leads to the screensaver, it looks as if the screensaver had activated by itself. Observed with 0.26 s between two taps – the adapter only discards taps that arrive within 0.2 s after the page change.
 
+## 16. Tiles
+
+The version **Tiles** draws the screensaver as a grid of areas: a row of indicators at the top, a large clock with the date in the middle, a row of values below it and two color bars at the lower edge. Behind it stands the card `screensaver5`.
+
+### Requirement: a TFT with the page screensaver5
+
+This version needs a TFT that holds the page `screensaver5`. The official `nspanel-v6.0.7.HMI` does not have it; it only sits in the project files of the repository (`HMI/nspanel-v6.0.8.screensaver5.HMI` and the same files under `HMI/us-l/` and `HMI/us-p/`). The version list of the adapter names **5.1.1** as the TFT (model `us-p`: 5.1.3) and **6.0.7** as the beta – neither of them has the page.
+
+- The **TFT UPDATE** in the tab [Maintain](Maintain) loads the file `nspanel[-model]-v<version>.tft` from the TFT server; the version comes from the version list, from the tick box *Beta firmware* or from the pinned version in the [Global Settings](globelSettings). Which published TFT holds the page `screensaver5` is not stated in the repository – with the versions named there the normal update path does not lead to it.
+- The page `screensaver4` of the official HMI 6.0.7 is an unrelated animation and has nothing to do with this version.
+- The admin does **not** check the TFT: the version can be chosen even when the panel does not have the page. The adapter then sends `pageType~screensaver5` to a panel that does not know the page – what it shows afterwards is not documented.
+- 6.0.8 differs from 6.0.7 only in the version text and in this: an indicator reports its press exactly once (see [indicators and buttons](#8-indicators-and-buttons)).
+
+### Setting it up
+
+Tab **Screensaver** → choose or create an entry → **Version** to **Tiles** → assign the **panels** → fill the places. As in the other versions the **model of the first chosen panel** decides how many places the areas have; the line below the version then names `card screensaver5` and the model the places are drawn for.
+
+### Places and the layout on the panel
+
+| Model | Favorite | Alternate | Left | Bottom | Indicators | Status icons |
+|---|---|---|---|---|---|---|
+| `eu`, `us-l` | – | – | – | 5 | 7 | 2 |
+| `us-p` | – | – | – | 4 | 8 | 2 |
+
+From top to bottom:
+
+| `eu`, `us-l` (landscape, 5 columns) | `us-p` (portrait, 4 columns) |
+|---|---|
+| indicators 1 to 5 | indicators 1 to 4 |
+| indicator 6, time with the info icon, date, indicator 7 | time with the info icon |
+| | date |
+| | indicators 5 to 8 |
+| bottom values 1 to 5 | bottom values 1 to 4 |
+| two status bars | two status bars |
+
+The order of the items in the area **Indicators** decides the place. On `eu` and `us-l` the places 6 and 7 are the areas left and right of the clock. More items than places are paged through by the panel as in the other versions – in the area **Bottom** just as with the indicators (see [windows and paging](#7-more-items-than-places-windows-and-paging)).
+
+![The editor with the version Tiles](../Pictures/screensaverAdmin/admin-19-kacheln-editor.png)
+
+### What the places show
+
+![The screensaver in the version Tiles](../Pictures/screensaver/screensaverTiles.png)
+
+**Indicators:** An indicator shows its icon only, without a headline and without a value; the whole tile is the touch area. Everything from [indicators and buttons](#8-indicators-and-buttons) holds unchanged – the **Action on press**, the option **Indicators act as buttons** and the states `panels.<panel>.buttons.indicator-<n>`.
+
+**Bottom values:** Headline, icon and value as in the other versions. A notification covers exactly this row (see [notifications](#13-notifications)).
+
+**Status icons:** `mrIcon1` and `mrIcon2` do not appear as icons here but as the two color bars at the lower edge. Only the color is visible (**Color on** / **Color off**); icon, value and unit are not shown by the panel in this version. A status icon without a state leaves its bar black. In the panel picture of the editor the two therefore stand as wide bars at the bottom as well (see [status icons](#9-status-icons)).
+
+**Time and date:** The clock is larger than in the other versions and has a font of its own; the info icon stands to the left of the time. The [timer instead of the clock](#timer-instead-of-the-clock) works here too, and unlike in the version Advanced the time and the info icon take the color of the timer.
+
+**No favorite:** Tiles has no favorite place. With it the current weather the other versions show there is gone as well – the ticked **Extra items at the bottom** from [weather](#11-weather), on the other hand, attach themselves behind the last own item in the area **Bottom** as usual.
+
+**Blind:** A blind can be used here as an indicator or at the bottom as in the other versions; without an icon of its own the icon follows the position, at the bottom the position stands in % (see [blind](#4-items-the-item-dialog)).
+
+### Limits and changing the version
+
+- Items in areas Tiles does not have (**Favorite**, **Alternate**, **Left**) are kept on the change and reported at the top of the editor (see [version and panels](#3-version-and-panels)). They do not reach the panel; back on Standard, Alternate or Advanced they are there again.
+- **Switching at runtime:** The state `panels.<panel>.cmd.screenSaver.layout` takes the version as a number – `0` Standard, `1` Alternate, `2` Advanced, `3` Easyview, `4` Tiles. When it is written, the panel changes the version at once; the stored entry stays as it is and applies again with the next start of the adapter.
+- **Older adapter version (downgrade):** An adapter version that does not know Tiles shows the screensaver as **Standard** and writes a warning into the log (`mode 'tiles' (card 'screensaver5') is not known to this adapter version - using 'standard' instead. The stored configuration stays unchanged.`). The stored configuration stays unchanged, after an upgrade Tiles applies again.
+- **Web panel:** The [web panel](WebPanel) draws Tiles as well – so far in landscape only (`eu`, `us-l`). For the portrait model `us-p` the web panel has no layout of this version yet.
+
 ## Pitfalls
 
 - **The Screensaver tab is missing:** It only appears once the MQTT settings are complete (server or IP, port and credentials) **and at least one panel** stands in the panel table under [NSPanelsetting](NSPanelsetting). Central credentials only count as long as the adapter does **not** provide the MQTT server itself – in server mode the user name and the password have to stand in the fields.
 - **Everything greyed out:** The instance is not running. The editor only works with a running instance, and the template list comes from the running adapter too.
 - **No places in the panel picture:** No panel chosen yet.
-- **Apply stays disabled:** state missing or not a state (channel chosen?), no icon and no icon list, no writable state for button/switch, no valid state for *color from a state*, a missing template or a missing object with a template – the dialog names the reason in a yellow line. A raw data item is not affected by this.
+- **Apply stays disabled:** state missing or not a state (channel chosen?), no icon and no icon list, no writable state for button/switch/values to cycle through, with *values to cycle through* in addition an empty list or a value that does not fit the type of the state, no valid state for *color from a state*, a missing template or a missing object with a template – the dialog names the reason in a yellow line. A raw data item is not affected by this.
 - **The icon does not change with the value:** An icon list exists for number states only, and every icon applies up to and including its value – above the highest value its icon stays. Duplicate values are reported by the dialog, only one of them takes effect.
 - **Wrong icon preset:** The role of the channel above the state counts first – just change the icon.
 - **The panel shows the script screensaver:** The panel stands in no entry, or it stands in a second entry further down (the first wins) – see the log.
@@ -421,7 +517,11 @@ Limits: there is no such target for the start page, and for the action of an ind
 - **An item is missing on the panel but has a place in the editor:** If it carries the eye icon, its condition is not met – the tooltip of the place names it.
 - **Items are reported after a version change:** They lie in areas the new version does not have (message at the top of the editor); switch the version back or **Remove them**. More items than places **in an existing** area does not trigger this message.
 - **Easyview has no favorite:** For Easyview the editor only draws the area **Bottom**. A favorite item from another version is therefore reported as an item without a place on the change.
+- **Tiles is chosen, the panel does not show it:** The TFT of the panel does not have the page `screensaver5`. The admin does not warn about it – see [Tiles](#16-tiles).
+- **Tiles shows no weather in the middle:** This version has no favorite place, the one the others show the current weather on. The ticked extra items still arrive at the bottom.
+- **A status icon looks empty with Tiles:** Only its color is visible there; without a state the bar stays black.
 - **The indicator does not react to its action:** The state `panels.<panel>.buttons.indicator-<n>` arrives nevertheless – the panel only jumps to the main page instead of carrying out the command. Then the option **Indicators act as buttons** is missing.
+- **The indicator always writes the same value:** The list of the action **Values to cycle through** has one entry only – or something else keeps setting the state to a value that is not in the list; then every press starts with the first entry again.
 - **`buttons.screensaverGesture` stays empty:** Either **Swipe gestures on the screensaver** is off or the state `cmd.screenSaver.doubleClick` of the panel is.
 - **After "Remove raw data" the item is empty:** The standard fields come back, not the contents of the JSON – an item originally created as raw data has to be filled in anew afterwards. Save the JSON before removing it.
 - **The panel shows the clock instead of the timer:** The on/off state is not true, the data state is empty or holds unknown text, or it stands at 0 without the timer having counted since the adapter start (with a number without a unit of time 0 means "no timer"). With the source *page item* the item no longer exists – the log warns once, the time dialog says so. See [timer instead of the clock](#timer-instead-of-the-clock).
