@@ -283,7 +283,7 @@ export namespace NSPanel {
         | 'date'
         | 'notify';
 
-    type NSpanelModel = 'eu' | 'us-p' | 'us-l';
+    type NSpanelModel = 'eu' | 'us-p' | 'us-l' | 'web-p' | 'web-l';
 
     type IconScaleElement = IconColorElement | IconSelectElement;
 

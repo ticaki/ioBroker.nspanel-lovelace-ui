@@ -2,7 +2,7 @@ import { Page } from '../classes/Page';
 import { type PageInterface } from '../classes/PageInterface';
 import { Color, type RGB } from '../const/Color';
 import { Icons } from '../const/icon_mapping';
-import { getPayload, getPayloadArray, getPayloadRemoveTilde, getRegExp } from '../const/tools';
+import { getPayload, getPayloadArray, getPayloadRemoveTilde, getRegExp, menuMaxItems } from '../const/tools';
 import type * as pages from '../types/pages';
 import * as globals from '../types/function-and-const';
 import type { IncomingEvent, nsPanelState, nsPanelStateVal } from '../types/types';
@@ -36,22 +36,12 @@ export class PageMenu extends Page {
             switch (options.config.card) {
                 case 'cardSchedule':
                 case 'cardGrid':
-                    this.maxItems = 6;
-                    break;
                 case 'cardGrid2':
-                    this.maxItems = this.basePanel.info.nspanel.model === 'us-p' ? 9 : 8;
-                    break;
                 case 'cardGrid3':
-                    this.maxItems = 4;
-                    break;
                 case 'cardEntities':
-                    this.maxItems = this.basePanel.info.nspanel.model === 'us-p' ? 5 : 4;
-                    break;
                 case 'cardThermo2':
-                    this.maxItems = 9;
-                    break;
                 case 'cardMedia':
-                    this.maxItems = 5;
+                    this.maxItems = menuMaxItems(options.config.card, this.basePanel.info.nspanel.model);
                     break;
                 case 'cardChart':
                 case 'cardLChart':
@@ -336,22 +326,12 @@ export class PageMenu extends Page {
                 switch (this.config.card) {
                     case 'cardSchedule':
                     case 'cardGrid':
-                        this.maxItems = 6;
-                        break;
                     case 'cardGrid2':
-                        this.maxItems = this.basePanel.info.nspanel.model === 'us-p' ? 9 : 8;
-                        break;
                     case 'cardGrid3':
-                        this.maxItems = 4;
-                        break;
                     case 'cardEntities':
-                        this.maxItems = this.basePanel.info.nspanel.model === 'us-p' ? 5 : 4;
-                        break;
                     case 'cardThermo2':
-                        this.maxItems = 9;
-                        break;
                     case 'cardMedia':
-                        this.maxItems = 5;
+                        this.maxItems = menuMaxItems(this.config.card, this.basePanel.info.nspanel.model);
                         break;
                     default:
                         this.log.error(`PageMenu: ${card} is not supported in onVisibilityChange!`);
@@ -510,7 +490,7 @@ export class PageMenu extends Page {
 
     protected getMessage(message: any): string {
         return getPayload(
-            getPayloadRemoveTilde('entityUpd', message.headline),
+            getPayloadRemoveTilde('entityUpd', this.shortHeadline(message.headline)),
             message.navigation,
             getPayloadArray(message.options),
         );

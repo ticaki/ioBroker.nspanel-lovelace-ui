@@ -159,6 +159,12 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
     ### **WORK IN PROGRESS**
 -->
 ### **WORK IN PROGRESS**
+- (ticaki) pages: a long headline is shortened with … to the width of the title line of the panel model instead of being cut by the display
+- (ticaki) web panel: smartphone models `web-p` (portrait, 320x640) and `web-l` (landscape, 640x320) for standalone web panels; the menu cards, the screensaver and the popups show more items there, the admin shows the places per model
+- (ticaki) web panel: the two hardware buttons below the display can be switched off per web panel (off by default on the smartphone models)
+- (ticaki) web panel: popups, cardMedia and cardThermo2 use a portrait layout on the us-p model instead of the cut off landscape one; the tiles screensaver shows the 4 bottom and 8 indicator places of us-p
+- (ticaki) web panel: cardAlarm, cardUnlock, cardThermo, cardPower, cardQR, cardChart and cardLChart use the portrait layout of the us-p display on us-p and web-p, they were cut off on the right and the right arrow could not be reached
+- (ticaki) web panel: the color wheel of popupLight sends the color in the scale the adapter expects, whatever its size on the screen
 - (ticaki) screensaver: with the TFT 6.0.8 an indicator sends one event per press, a long press no longer switches twice
 - (ticaki) screensaver: with the TFT 6.0.8 the indicators of the advanced screensaver also react to a press on the us-l and us-p panels
 - (ticaki) screensaver: the default Bright Sky item for sunrise and sunset no longer stays empty after sunset, it shows the sunrise of the next day

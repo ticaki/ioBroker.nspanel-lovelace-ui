@@ -2,25 +2,15 @@ import type { PageInterface } from '../classes/PageInterface';
 import type * as pages from '../types/pages';
 import { PageMenu } from './pageMenu';
 
+/**
+ * Defaults for the entityUpd message. `options` is always replaced by the payload of
+ * `getOptions()`, which fills exactly `maxItems` slots for the card and model.
+ */
 const PageGridMessageDefault: pages.PageGridMessage = {
     event: 'entityUpd',
     headline: 'Page Grid',
     navigation: 'button~bSubPrev~~~~~button~bSubNext~~~~',
-    options: ['~~~~~', '~~~~~', '~~~~~', '~~~~~', '~~~~~', '~~~~~'],
-};
-const PageGrid2MessageDefault: pages.PageGridMessage = {
-    ...PageGridMessageDefault,
-    options: ['~~~~~', '~~~~~', '~~~~~', '~~~~~', '~~~~~', '~~~~~', '~~~~~', '~~~~~'],
-};
-
-const PageGrid2USPMessageDefault: pages.PageGridMessage = {
-    ...PageGridMessageDefault,
-    options: ['~~~~~', '~~~~~', '~~~~~', '~~~~~', '~~~~~', '~~~~~', '~~~~~', '~~~~~', '~~~~~'],
-};
-
-const PageGrid3MessageDefault: pages.PageGridMessage = {
-    ...PageGridMessageDefault,
-    options: ['~~~~~', '~~~~~', '~~~~~'],
+    options: [],
 };
 export class PageGrid extends PageMenu {
     config: pages.cardGridDataItemOptions;
@@ -91,20 +81,14 @@ export class PageGrid extends PageMenu {
             return;
         }
         const arr = (await this.getOptions([])).slice(0, this.maxItems);
-        message.options = arr as typeof message.options;
+        message.options = arr;
 
         message.headline = this.library.getTranslation(
             (this.items && this.items.data.headline && (await this.items.data.headline.getString())) ?? '',
         );
         message.navigation = this.getNavigation();
         const msg: pages.PageGridMessage = {
-            ...(this.card === 'cardGrid'
-                ? PageGridMessageDefault
-                : this.card === 'cardGrid2'
-                  ? this.basePanel.info.nspanel.model === 'us-p'
-                      ? PageGrid2USPMessageDefault
-                      : PageGrid2MessageDefault
-                  : PageGrid3MessageDefault),
+            ...PageGridMessageDefault,
             ...message,
         };
 

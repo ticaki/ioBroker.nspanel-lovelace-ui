@@ -287,7 +287,7 @@ export class PageQR extends Page {
         let result: pages.PageQRMessage = PageQRMessageDefault;
         result = { ...result, ..._message };
         return getPayload(
-            getPayloadRemoveTilde('entityUpd', result.headline),
+            getPayloadRemoveTilde('entityUpd', this.shortHeadline(result.headline)),
             result.navigation,
             getPayloadRemoveTilde(
                 result.textQR,

@@ -50,7 +50,6 @@ export class PageThermo2 extends PageMenu {
     //config: pages.cardThermoDataItemOptions;
     items: pages.cardThermo2DataItems | undefined;
     heatCycles: number = 1;
-    protected maxItems: number = 8;
     private headlinePos: number = 0;
     private titelPos: number = 0;
     public convertValue: 1 | 10 = 1;
@@ -259,8 +258,8 @@ export class PageThermo2 extends PageMenu {
             }
             let arr = (await this.getOptions([])).slice(0, this.maxItems);
             if (arr && this.config.sortOrder !== 'V') {
-                const temp = ['~~~~~', '~~~~~', '~~~~~', '~~~~~', '~~~~~', '~~~~~', '~~~~~', '~~~~~'];
-                // fill up to 8 items
+                // slots 0-7 (left and right column) follow the sort order, slot 8 (between minus and plus) stays
+                const temp: string[] = new Array<string>(this.maxItems).fill('~~~~~');
                 let sort = [];
                 switch (this.config.sortOrder) {
                     case 'H':
@@ -282,13 +281,13 @@ export class PageThermo2 extends PageMenu {
                         sort = [0, 1, 2, 3, 4, 5, 6, 7];
                         break;
                 }
-                for (let i = 0; i < 8; i++) {
-                    const index = sort[i];
+                for (let i = 0; i < temp.length; i++) {
+                    const index = i < sort.length ? sort[i] : i;
                     temp[i] = arr[index] ? arr[index] : '~~~~~';
                 }
                 arr = temp;
             }
-            message.options = message.options.concat(arr) as typeof message.options;
+            message.options = message.options.concat(arr);
 
             const msg: pages.PageThermo2Message = { ...PageThermo2MessageDefault, ...message };
             const msg2 = this.getMessage(msg);
@@ -327,7 +326,7 @@ export class PageThermo2 extends PageMenu {
 
     protected getMessage(message: pages.PageThermo2Message): string {
         return tools.getPayload(
-            tools.getPayloadRemoveTilde('entityUpd', message.headline),
+            tools.getPayloadRemoveTilde('entityUpd', this.shortHeadline(message.headline)),
             message.navigation,
             tools.getPayloadRemoveTilde(
                 String(this.name),

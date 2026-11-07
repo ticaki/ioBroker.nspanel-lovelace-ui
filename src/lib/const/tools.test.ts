@@ -14,11 +14,21 @@ import {
     getPayloadRemoveTilde,
     getRegExp,
     getVersionAsNumber,
+    headlineMaxChars,
     insertLinebreak,
+    isPortraitModel,
     isValidDate,
     isVersionGreaterOrEqual,
+    isWebModel,
+    menuMaxItems,
+    notifyLines,
+    webButtonsVisible,
     setTriggeredToState,
+    shortenHeadline,
 } from './tools';
+import { ScreenSaverConst } from './definition';
+import { menuCardItemLimits } from '../types/adminShareConfig';
+import type { NSPanel } from '../types/NSPanel';
 
 /**
  * Minimal stand-in for a const Dataitem - getIconEntryValue() reads it via getString()/getNumber().
@@ -335,6 +345,124 @@ describe('lib/const/tools', () => {
         it('appends no suffix without textSize', async () => {
             const i = { true: { value: constItem('lightbulb') }, false: { value: constItem('lightbulb-outline') } };
             expect(await getIconEntryValue(i, false, '')).to.equal(Icons.GetIcon('lightbulb-outline'));
+        });
+    });
+
+    describe('panel models', () => {
+        const models: NSPanel.NSpanelModel[] = ['eu', 'us-l', 'us-p', 'web-l', 'web-p'];
+
+        it('isPortraitModel is true for us-p and web-p only', () => {
+            expect(models.filter(m => isPortraitModel(m))).to.deep.equal(['us-p', 'web-p']);
+        });
+
+        it('isWebModel is true for web-l and web-p only', () => {
+            expect(models.filter(m => isWebModel(m))).to.deep.equal(['web-l', 'web-p']);
+        });
+
+        it('menuMaxItems follows the table of SMARTPHONE.md (eu, us-l, us-p, web-l, web-p)', () => {
+            const table: Record<Parameters<typeof menuMaxItems>[0], number[]> = {
+                cardEntities: [4, 4, 5, 4, 8],
+                cardSchedule: [6, 6, 6, 6, 11],
+                cardGrid: [6, 6, 6, 8, 10],
+                cardGrid2: [8, 8, 9, 10, 15],
+                cardGrid3: [4, 4, 4, 6, 8],
+                cardMedia: [5, 5, 5, 6, 8],
+                cardThermo2: [9, 9, 9, 9, 9],
+            };
+            for (const card of Object.keys(table) as (keyof typeof table)[]) {
+                expect(
+                    models.map(m => menuMaxItems(card, m)),
+                    card,
+                ).to.deep.equal(table[card]);
+            }
+        });
+
+        it('menuMaxItems equals menuCardItemLimits of the admin', () => {
+            for (const card of Object.keys(menuCardItemLimits) as (keyof typeof menuCardItemLimits)[]) {
+                for (const m of models) {
+                    expect(menuMaxItems(card, m), `${card}/${m}`).to.equal(menuCardItemLimits[card][m]);
+                }
+            }
+        });
+
+        it('webButtonsVisible follows the model unless the option is set', () => {
+            expect(models.map(m => webButtonsVisible(m))).to.deep.equal([true, true, true, false, false]);
+            expect(models.map(m => webButtonsVisible(m, true))).to.deep.equal([true, true, true, true, true]);
+            expect(models.map(m => webButtonsVisible(m, false))).to.deep.equal([false, false, false, false, false]);
+        });
+
+        it('headlineMaxChars: eu/us-l 28, us-p 13, web-p 16, web-l 45', () => {
+            expect(models.map(m => headlineMaxChars(m))).to.deep.equal([28, 28, 13, 45, 16]);
+        });
+
+        it('shortenHeadline keeps a headline of exactly the limit and a shorter one', () => {
+            for (const m of models) {
+                const exact = 'x'.repeat(headlineMaxChars(m));
+                expect(shortenHeadline(exact, m), m).to.equal(exact);
+                expect(shortenHeadline('Kitchen', m), m).to.equal('Kitchen');
+            }
+        });
+
+        it('shortenHeadline ends a longer headline with … at the limit', () => {
+            const text = 'Living room ground floor west side';
+            for (const m of models) {
+                const max = headlineMaxChars(m);
+                const short = shortenHeadline(text, m);
+                if (text.length > max) {
+                    expect(short, m).to.equal(`${text.slice(0, max - 1)}\u2026`);
+                    expect(Array.from(short).length, m).to.equal(max);
+                } else {
+                    expect(short, m).to.equal(text);
+                }
+            }
+            expect(shortenHeadline('Wohnzimmer Erdgeschoss', 'us-p')).to.equal('Wohnzimmer E\u2026');
+        });
+
+        it('shortenHeadline counts a surrogate pair as one character', () => {
+            expect(shortenHeadline(`${'\u{1F600}'.repeat(14)}`, 'us-p')).to.equal(`${'\u{1F600}'.repeat(12)}\u2026`);
+        });
+
+        it('shortenHeadline returns an empty string for empty and undefined', () => {
+            expect(shortenHeadline('', 'eu')).to.equal('');
+            expect(shortenHeadline(undefined, 'web-p')).to.equal('');
+        });
+
+        it('notifyLines gives the lines per textSize and model', () => {
+            for (const m of ['eu', 'us-l', 'us-p', 'web-l'] as const) {
+                expect(
+                    [0, 1, 2, 3, 4, 5].map(t => notifyLines(t, m)),
+                    m,
+                ).to.deep.equal([7, 5, 5, 4, 2, 1]);
+            }
+            expect([0, 1, 2, 3, 4, 5].map(t => notifyLines(t, 'web-p'))).to.deep.equal([20, 15, 15, 10, 6, 3]);
+        });
+
+        it('notifyLines falls back to textSize 0 for unknown sizes', () => {
+            expect(notifyLines(Number(undefined), 'eu')).to.equal(7);
+            expect(notifyLines(9, 'web-p')).to.equal(20);
+        });
+
+        it('ScreenSaverConst has the web slots of SMARTPHONE.md (bottom / indicator / left)', () => {
+            const slots = (
+                mode: keyof typeof ScreenSaverConst,
+                model: NSPanel.NSpanelModel,
+            ): [number, number, number] => {
+                const get = (place: 'bottom' | 'indicator' | 'left'): number => {
+                    const max = ScreenSaverConst[mode][place].maxEntries;
+                    return max[model] ?? max.eu;
+                };
+                return [get('bottom'), get('indicator'), get('left')];
+            };
+            expect(slots('standard', 'web-l')).to.deep.equal([6, 0, 0]);
+            expect(slots('standard', 'web-p')).to.deep.equal([8, 0, 0]);
+            expect(slots('alternate', 'web-l')).to.deep.equal([5, 0, 0]);
+            expect(slots('alternate', 'web-p')).to.deep.equal([7, 0, 0]);
+            expect(slots('advanced', 'web-l')).to.deep.equal([8, 8, 3]);
+            expect(slots('advanced', 'web-p')).to.deep.equal([8, 12, 4]);
+            expect(slots('easyview', 'web-l')).to.deep.equal([4, 0, 0]);
+            expect(slots('easyview', 'web-p')).to.deep.equal([8, 0, 0]);
+            expect(slots('tiles', 'web-l')).to.deep.equal([7, 11, 0]);
+            expect(slots('tiles', 'web-p')).to.deep.equal([8, 8, 0]);
         });
     });
 });

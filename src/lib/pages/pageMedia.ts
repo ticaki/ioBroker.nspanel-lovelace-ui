@@ -44,7 +44,7 @@ const PageMediaMessageDefault: pages.PageMediaMessage = {
     onoffbuttonColor: '',
     shuffle_icon: '',
     logo: '~~~~~',
-    options: ['', '', '', '', ''],
+    options: [],
 };
 
 /**
@@ -477,7 +477,8 @@ export class PageMedia extends PageMenu {
         // ---------------------
         if (message.headline) {
             const { text, nextPos } = tools.buildScrollingText(message.headline, {
-                maxSize: 28,
+                // scroll within the title line of the model, shortHeadline() then leaves it unchanged
+                maxSize: tools.headlineMaxChars(this.basePanel.info.nspanel.model),
                 pos: this.headlinePos,
             });
             message.headline = text;
@@ -638,18 +639,17 @@ export class PageMedia extends PageMenu {
         // ---------------------
         // Options / Navigation
         // ---------------------
-        const opts: string[] = ['~~~~~', '~~~~~', '~~~~~', '~~~~~', '~~~~~'];
         const pageItems = (await this.getOptions([])).slice(0, this.maxItems);
+        while (pageItems.length < this.maxItems) {
+            pageItems.push('~~~~~');
+        }
         message.navigation = this.getNavigation();
 
         const msg: pages.PageMediaMessage = {
             ...PageMediaMessageDefault,
             ...message,
             id: 'media',
-            options: pageItems
-                .concat(opts)
-                .slice(0, 5)
-                .map(o => (o ? o : '~~~~~')) as [string, string, string, string, string],
+            options: pageItems.map(o => (o ? o : '~~~~~')),
         };
 
         this.sendToPanel(this.getMessage(msg), false);
@@ -688,7 +688,7 @@ export class PageMedia extends PageMenu {
 
     protected getMessage(message: pages.PageMediaMessage): string {
         return tools.getPayload(
-            tools.getPayloadRemoveTilde('entityUpd', message.headline),
+            tools.getPayloadRemoveTilde('entityUpd', this.shortHeadline(message.headline)),
             message.navigation,
             tools.getPayloadRemoveTilde(
                 message.id,

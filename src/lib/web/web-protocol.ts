@@ -18,6 +18,8 @@ export type HelloFrame = {
     friendlyName: string;
     tftVersion: string;
     kind: WebPanelKind;
+    /** show the two virtual hardware buttons below the display (always true for a clone) */
+    buttons: boolean;
 };
 
 export type ServerFrame =

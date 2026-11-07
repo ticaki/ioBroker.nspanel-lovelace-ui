@@ -1171,6 +1171,8 @@ export const genericStateObjects: {
                                 eu: 'eu-Version',
                                 'us-p': 'us-p-Version',
                                 'us-l': 'us-l-Version',
+                                'web-p': 'web-p-Version',
+                                'web-l': 'web-l-Version',
                             },
                         },
                         native: {},
@@ -2563,7 +2565,7 @@ export const ScreenSaverConst: Record<
             maxEntries: { eu: 0 },
         },
         bottom: {
-            maxEntries: { eu: 4 },
+            maxEntries: { eu: 4, 'web-l': 6, 'web-p': 8 },
         },
         alternate: {
             maxEntries: { eu: 0 },
@@ -2592,7 +2594,7 @@ export const ScreenSaverConst: Record<
             maxEntries: { eu: 0 },
         },
         bottom: {
-            maxEntries: { eu: 3 },
+            maxEntries: { eu: 3, 'web-l': 5, 'web-p': 7 },
         },
         alternate: {
             maxEntries: { eu: 1 },
@@ -2618,16 +2620,16 @@ export const ScreenSaverConst: Record<
     },
     advanced: {
         left: {
-            maxEntries: { eu: 3 },
+            maxEntries: { eu: 3, 'web-l': 3, 'web-p': 4 },
         },
         bottom: {
-            maxEntries: { eu: 6 },
+            maxEntries: { eu: 6, 'web-l': 8, 'web-p': 8 },
         },
         alternate: {
             maxEntries: { eu: 0 },
         },
         indicator: {
-            maxEntries: { eu: 5 },
+            maxEntries: { eu: 5, 'web-l': 8, 'web-p': 12 },
         },
         mricon: {
             maxEntries: { eu: 2 },
@@ -2650,7 +2652,7 @@ export const ScreenSaverConst: Record<
             maxEntries: { eu: 0 },
         },
         bottom: {
-            maxEntries: { eu: 3, 'us-p': 4, 'us-l': 3 },
+            maxEntries: { eu: 3, 'us-p': 4, 'us-l': 3, 'web-l': 4, 'web-p': 8 },
         },
         alternate: {
             maxEntries: { eu: 0 },
@@ -2679,13 +2681,13 @@ export const ScreenSaverConst: Record<
             maxEntries: { eu: 0 },
         },
         bottom: {
-            maxEntries: { eu: 5, 'us-p': 4 },
+            maxEntries: { eu: 5, 'us-p': 4, 'web-l': 7, 'web-p': 8 },
         },
         alternate: {
             maxEntries: { eu: 0 },
         },
         indicator: {
-            maxEntries: { eu: 7, 'us-p': 8 },
+            maxEntries: { eu: 7, 'us-p': 8, 'web-l': 11, 'web-p': 8 },
         },
         mricon: {
             maxEntries: { eu: 2 },
