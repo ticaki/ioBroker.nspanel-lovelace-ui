@@ -893,6 +893,7 @@
     "powerState": "Point de données d'alimentation",
     "powerStateHomeBottom": "Point de données pour le bas de la maison Power",
     "powerStateHomeTop": "Point de données pour Power Home Top",
+    "power_negate_supply": "Emplacements pris en compte dans la somme",
     "power_script_navigation_hint": "Migrée depuis l'ancien tableau « Page Power » : cette page reçoit encore sa navigation du script (page « %s »). C'est obsolète – attribuez ici une navigation et retirez la page du script.",
     "press": "presse",
     "pwdHidden": "mot de passe wifi caché",

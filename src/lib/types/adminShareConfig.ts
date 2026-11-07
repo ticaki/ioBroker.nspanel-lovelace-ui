@@ -1903,7 +1903,7 @@ export type PowerHomeBotConfig = {
     /** When true, ignore `state` and compute the sum from selPowerSupply */
     selInternalCalculation?: boolean;
     state?: string;
-    /** 1-based slot indices (1..6) treated as negative contributions to the sum */
+    /** 1-based slot indices (1..6) that contribute to the internal sum, all others count as 0 (nothing is negated) */
     selPowerSupply?: number[];
     valueDecimal?: number;
     valueUnit?: string;

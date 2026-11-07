@@ -893,6 +893,7 @@
     "powerState": "电源数据点",
     "powerStateHomeBottom": "电源家底部的数据点",
     "powerStateHomeTop": "电源主场的数据点",
+    "power_negate_supply": "计入总和的槽位",
     "power_script_navigation_hint": "从旧表格“Page Power”迁移：此页面的导航仍来自脚本（页面“%s”）。此方式已弃用 - 请在此处分配导航并从脚本中删除该页面。",
     "press": "按",
     "pwdHidden": "隐藏的WiFi密码",

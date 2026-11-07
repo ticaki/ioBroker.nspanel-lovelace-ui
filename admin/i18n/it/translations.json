@@ -893,6 +893,7 @@
     "powerState": "Power Data Point",
     "powerStateHomeBottom": "Punto dati per Power Home Bottom",
     "powerStateHomeTop": "Punto dati per Power Home Top",
+    "power_negate_supply": "Slot che entrano nella somma",
     "power_script_navigation_hint": "Migrata dalla vecchia tabella \"Page Power\": questa pagina riceve ancora la navigazione dallo script (pagina \"%s\"). È obsoleto: assegna qui una navigazione e rimuovi la pagina dallo script.",
     "press": "premere",
     "pwdHidden": "password wifi nascosta",

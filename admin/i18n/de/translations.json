@@ -921,7 +921,7 @@
     "power_iconColor": "Iconfarbe",
     "power_iconColor_hint": "Deaktiviert, wenn Farbskala aktiv ist",
     "power_internal_calculation": "Interne Summe verwenden (Haus unten)",
-    "power_negate_supply": "Slots, die negativ in die Summe gehen",
+    "power_negate_supply": "Slots, die in die Summe eingehen",
     "power_script_navigation_hint": "Aus der alten Tabelle „Page Power“ übernommen: Diese Seite bekommt ihre Navigation noch aus dem Skript (Seite „%s“). Das ist veraltet – bitte hier eine Navigation zuweisen und die Seite aus dem Skript entfernen.",
     "power_slot_edit": "Leistungs-Slot bearbeiten",
     "power_slot_empty": "(leer - zum Konfigurieren klicken)",

@@ -893,6 +893,7 @@
     "powerState": "Power Data Point",
     "powerStateHomeBottom": "Gegevenspunt voor de bodem van het vermogen",
     "powerStateHomeTop": "Gegevenspunt voor Power Home Top",
+    "power_negate_supply": "Slots die meetellen in de som",
     "power_script_navigation_hint": "Overgenomen uit de oude tabel \"Page Power\": deze pagina krijgt haar navigatie nog uit het script (pagina \"%s\"). Dit is verouderd - wijs hier een navigatie toe en verwijder de pagina uit het script.",
     "press": "drukken",
     "pwdHidden": "verborgen wifi -wachtwoord",

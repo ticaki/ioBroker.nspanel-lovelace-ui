@@ -893,6 +893,7 @@
     "powerState": "Punkt danych mocy",
     "powerStateHomeBottom": "Punkt danych dla Power Home Bottom",
     "powerStateHomeTop": "Punkt danych dla Power Home Top",
+    "power_negate_supply": "Sloty wliczane do sumy",
     "power_script_navigation_hint": "Przeniesiona ze starej tabeli \"Page Power\": ta strona nadal otrzymuje nawigację ze skryptu (strona \"%s\"). Jest to przestarzałe – przypisz tutaj nawigację i usuń stronę ze skryptu.",
     "press": "naciskać",
     "pwdHidden": "Ukryte hasło Wi -Fi",

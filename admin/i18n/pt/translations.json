@@ -893,6 +893,7 @@
     "powerState": "Ponto de dados de energia",
     "powerStateHomeBottom": "Data Point for Power Home Bottom",
     "powerStateHomeTop": "Data Point for Power Home Top",
+    "power_negate_supply": "Slots que entram na soma",
     "power_script_navigation_hint": "Migrada da antiga tabela \"Page Power\": esta página ainda obtém a sua navegação do script (página \"%s\"). Isto está obsoleto - atribua aqui uma navegação e remova a página do script.",
     "press": "imprensa",
     "pwdHidden": "Senha oculta de wifi",

@@ -893,6 +893,7 @@
     "powerState": "Punto de datos de potencia",
     "powerStateHomeBottom": "Punto de datos para el fondo del hogar de energía",
     "powerStateHomeTop": "Punto de datos para la parte superior del hogar de energía",
+    "power_negate_supply": "Slots que entran en la suma",
     "power_script_navigation_hint": "Migrada desde la antigua tabla \"Page Power\": esta página aún obtiene su navegación del script (página \"%s\"). Esto está obsoleto: asigne aquí una navegación y elimine la página del script.",
     "press": "prensa",
     "pwdHidden": "contraseña de wifi oculta",
