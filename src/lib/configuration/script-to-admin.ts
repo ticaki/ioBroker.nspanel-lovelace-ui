@@ -14,6 +14,7 @@
  */
 import { isButton } from '../const/config-manager-const';
 import { mainPageName } from '../const/default-pages';
+import { normalizeCycleValues } from '../const/screensaver-cycle';
 import {
     ALL_PANELS_SPECIAL_ID,
     dropScriptNavigation,
@@ -1474,6 +1475,8 @@ const screensaverStateKeys = [
     'ScreensaverEntityNaviToPage',
     'ScreensaverEntityButton',
     'ScreensaverEntitySwitch',
+    'ScreensaverEntityCycle',
+    'ScreensaverEntityCycleValues',
     'ScreensaverEntityIconSelect',
     'ScreensaverEntityEnabled',
     'ScreensaverEntityVisibleCondition',
@@ -1490,6 +1493,8 @@ const screensaverTemplateKeys = [
     'ScreensaverEntityNaviToPage',
     'ScreensaverEntityButton',
     'ScreensaverEntitySwitch',
+    'ScreensaverEntityCycle',
+    'ScreensaverEntityCycleValues',
 ] as const;
 /** keys of a native screensaver element that make it the same as a template element (see convertScreensaverItem) */
 const nativeTemplateKeys: readonly string[] = ['template', 'dpInit', 'modeScr', 'readOptions'];
@@ -1527,8 +1532,8 @@ function convertReadOptions(
 }
 
 /**
- * The action of an indicator as the admin stores it. The config manager takes the first of button, switch
- * and page - the others have no effect.
+ * The action of an indicator as the admin stores it. The config manager takes the first of button, switch,
+ * cycle and page - the others have no effect. A cycle without values counts as not set there as well.
  *
  * @param element Element of the script (script or template).
  * @param reason Reason to report when a field is no text.
@@ -1542,12 +1547,28 @@ function convertIndicatorAction(
 ): ScreensaverItemConfig['action'] {
     const button = str(element.ScreensaverEntityButton, reason, `${where}.ScreensaverEntityButton`);
     const switchState = str(element.ScreensaverEntitySwitch, reason, `${where}.ScreensaverEntitySwitch`);
+    const cycle = str(element.ScreensaverEntityCycle, reason, `${where}.ScreensaverEntityCycle`);
     const navi = str(element.ScreensaverEntityNaviToPage, reason, `${where}.ScreensaverEntityNaviToPage`);
     if (button) {
         return { kind: 'button', state: button };
     }
     if (switchState) {
         return { kind: 'switch', state: switchState };
+    }
+    if (cycle) {
+        const list = element.ScreensaverEntityCycleValues;
+        if (
+            list !== undefined &&
+            list !== null &&
+            (!Array.isArray(list) ||
+                list.some(v => typeof v !== 'string' && typeof v !== 'number' && typeof v !== 'boolean'))
+        ) {
+            throw new ConvertError(reason, `${where}.ScreensaverEntityCycleValues: expected a list of values`);
+        }
+        const values = normalizeCycleValues(list);
+        if (values.length > 0) {
+            return { kind: 'cycle', state: cycle, values };
+        }
     }
     return navi ? { kind: 'navigate', page: navi } : undefined;
 }

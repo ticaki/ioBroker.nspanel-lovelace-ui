@@ -119,12 +119,17 @@ function screensaverItemToScript(item, area, info = {}) {
   return element;
 }
 function setScreensaverIndicatorAction(element, action) {
+  var _a;
   switch (action.kind) {
     case "button":
       element.ScreensaverEntityButton = action.state || null;
       break;
     case "switch":
       element.ScreensaverEntitySwitch = action.state || null;
+      break;
+    case "cycle":
+      element.ScreensaverEntityCycle = action.state || null;
+      element.ScreensaverEntityCycleValues = ((_a = action.values) == null ? void 0 : _a.length) ? [...action.values] : null;
       break;
     case "navigate":
       element.ScreensaverEntityNaviToPage = action.page || null;

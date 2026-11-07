@@ -3155,6 +3155,78 @@ describe('lib/configuration - planScriptToAdmin: screensaver', () => {
         ]);
         expect(entry.left[0]).to.not.have.property('action');
     });
+
+    it('converts a cycle to the admin action: values as texts in their order, after button and switch', () => {
+        const base = templateConfig().indicatorScreensaverEntity[0] as Extract<
+            ScriptConfig.ScreenSaverElement,
+            { type: 'script' }
+        >;
+        const cycle = { ScreensaverEntityCycle: 'alias.0.Tests.button.SET' };
+        const result = plan(
+            baseConfig({
+                indicatorScreensaverEntity: [
+                    { ...base, ...cycle, ScreensaverEntityCycleValues: [1, ' -1 ', true, '', 'Szene'] },
+                    { ...base, ...cycle, ScreensaverEntityCycleValues: ['1'], ScreensaverEntityButton: 'a.0.b' },
+                    { ...base, ...cycle, ScreensaverEntityCycleValues: ['1'], ScreensaverEntityNaviToPage: 'main' },
+                    // no values: the config manager goes on with the page
+                    { ...base, ...cycle, ScreensaverEntityCycleValues: [], ScreensaverEntityNaviToPage: 'main' },
+                ],
+            }),
+        );
+        expect(result.screensaverEntry!.indicator.map(i => i?.action)).to.deep.equal([
+            { kind: 'cycle', state: 'alias.0.Tests.button.SET', values: ['1', '-1', 'true', 'Szene'] },
+            { kind: 'button', state: 'a.0.b' },
+            { kind: 'cycle', state: 'alias.0.Tests.button.SET', values: ['1'] },
+            { kind: 'navigate', page: 'main' },
+        ]);
+    });
+
+    it('keeps the cycle of a template element', () => {
+        const result = plan(
+            baseConfig({
+                indicatorScreensaverEntity: [
+                    {
+                        type: 'template',
+                        template: 'text.battery.bydhvs',
+                        dpInit: 'bydhvs.0',
+                        modeScr: 'indicator',
+                        ScreensaverEntityCycle: 'a.0.c',
+                        ScreensaverEntityCycleValues: [-1, 1],
+                    },
+                ],
+            }),
+        );
+        expect(result.screensaverEntry!.indicator[0]?.action).to.deep.equal({
+            kind: 'cycle',
+            state: 'a.0.c',
+            values: ['-1', '1'],
+        });
+    });
+
+    it('an unsuitable list of a cycle keeps the element as raw item, the panel stays unchanged', () => {
+        const base = templateConfig().indicatorScreensaverEntity[0] as Extract<
+            ScriptConfig.ScreenSaverElement,
+            { type: 'script' }
+        >;
+        for (const list of ['-1,1', [{ value: 1 }], [null]]) {
+            const result = plan(
+                baseConfig({
+                    indicatorScreensaverEntity: [
+                        {
+                            ...base,
+                            ScreensaverEntityCycle: 'a.0.c',
+                            ScreensaverEntityCycleValues: list as unknown as string[],
+                        },
+                    ],
+                }),
+            );
+            expect(result.plan.screensaverSkipped).to.equal(undefined);
+            const rawItems = result.plan.screensaver!.rawItems!;
+            expect(rawItems.map(r => [r.item, r.format])).to.deep.equal([['indicator[0]', 'script']]);
+            expect(rawItems[0].detail).to.contain('ScreensaverEntityCycleValues');
+            expect(result.screensaverEntry!.indicator[0]?.raw?.config.ScreensaverEntityCycleValues).to.deep.equal(list);
+        }
+    });
 });
 
 describe('lib/configuration - planScriptToAdmin: buttons', () => {

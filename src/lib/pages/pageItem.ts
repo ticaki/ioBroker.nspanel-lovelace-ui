@@ -6,6 +6,7 @@ import * as tools from '../const/tools';
 import type { nsPanelState, PopupType } from '../types/types';
 import { Icons } from '../const/icon_mapping';
 import { SHUTTER_POSITION_ICON } from '../const/page-item-defaults';
+import { cycleValueToState, nextCycleIndex } from '../const/screensaver-cycle';
 import { isDataItem, type Dataitem } from '../controller/data-item';
 import { type ChangeTypeOfKeys, type DeviceRole, type PageBase } from '../types/pages';
 import { isCardEntitiesType, isCardGridType } from '../types/function-and-const';
@@ -48,6 +49,8 @@ export class PageItem extends BaseTriggeredPage {
     private updateCommon: { lastRequest: number; counts: number } = { lastRequest: 0, counts: 0 };
     /** the screensaver this item listens to (`useScreensaverTimer`) */
     private clockTimerSaver: Screensaver | undefined;
+    /** index of the value a button with a value list wrote last, see {@link writeNextCycleValue} */
+    private cycleLastIndex: number | undefined;
     /** the screensaver uses this item as the source of its timer */
     private clockSourceListeners: Set<() => void> = new Set();
 
@@ -2404,6 +2407,36 @@ export class PageItem extends BaseTriggeredPage {
         return done;
     }
 
+    /**
+     * A button with a value list (screensaver indicator): writes the next value of the list to the state, also when
+     * the list has one value only or the value is already set.
+     *
+     * @param target state to write
+     * @param list the values, a JSON array of texts
+     * @returns true when the press was handled, false when the item is no such button
+     */
+    private async writeNextCycleValue(target: Dataitem | undefined, list: Dataitem | undefined): Promise<boolean> {
+        if (!target?.writeable || !list) {
+            return false;
+        }
+        const raw = await list.getObject();
+        if (!Array.isArray(raw) || raw.length === 0) {
+            return false;
+        }
+        const values = raw.map(v => String(v));
+        const type = target.trueType();
+        const current = await target.getState();
+        const index = nextCycleIndex(values, current?.val, type, this.cycleLastIndex);
+        const value = cycleValueToState(values[index], type);
+        if (value === null) {
+            this.log.warn(`Button ${this.id}: the value "${values[index]}" does not fit the state type ${type}!`);
+            return true;
+        }
+        await target.setState(value);
+        this.cycleLastIndex = index;
+        return true;
+    }
+
     async onCommand(action: string, value: string): Promise<boolean> {
         if (value === undefined || this.dataItems === undefined) {
             return false;
@@ -2433,6 +2466,12 @@ export class PageItem extends BaseTriggeredPage {
                             await this.parent.basePanel.navigation.setCurrentPage();
                             break;
                         }
+                    }
+                    if (
+                        entry.type === 'button' &&
+                        (await this.writeNextCycleValue(entry.data.setValue3, entry.data.valueList))
+                    ) {
+                        break;
                     }
                     if (entry.role === 'indicator') {
                         if (this.parent.card === 'cardThermo') {

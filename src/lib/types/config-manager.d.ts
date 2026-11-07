@@ -816,11 +816,15 @@ declare namespace ScriptConfig {
     };
 
     export type ScreenSaverElementWithUndefined = null | undefined | ScreenSaverElement;
-    /** what an element does when tapped - indicator place only, the first of button, switch and page counts */
+    /** what an element does when tapped - indicator place only, the first of button, switch, cycle and page counts */
     export type ScreenSaverIndicatorAction = {
         ScreensaverEntityNaviToPage?: string | null;
         ScreensaverEntityButton?: string | null;
         ScreensaverEntitySwitch?: string | null;
+        /** state that gets the next value of ScreensaverEntityCycleValues on each tap */
+        ScreensaverEntityCycle?: string | null;
+        /** values of ScreensaverEntityCycle in the order they are written, after the last one the first follows */
+        ScreensaverEntityCycleValues?: (string | number | boolean)[] | null;
     };
     export type ScreenSaverElement = { type: ScreenSaverType } & (
         | ({
@@ -844,6 +848,8 @@ declare namespace ScriptConfig {
               ScreensaverEntityNaviToPage?: string | null;
               ScreensaverEntityButton?: string | null;
               ScreensaverEntitySwitch?: string | null;
+              ScreensaverEntityCycle?: string | null;
+              ScreensaverEntityCycleValues?: (string | number | boolean)[] | null;
               /**
                * To show different icons for different values in the screensaver
                * 
