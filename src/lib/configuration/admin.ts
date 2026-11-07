@@ -510,7 +510,7 @@ export class AdminConfiguration extends BaseClass {
                                 headline: { type: 'const', constVal: entry.headline || 'Page QR' },
                                 selType: { type: 'const', constVal: entry.selType || 0 },
                                 ssidUrlTel: { type: 'const', constVal: entry.ssidUrlTel || '' },
-                                wlantype: { type: 'const', constVal: entry.wlantype || 'WPA' },
+                                wlantype: { type: 'const', constVal: entry.wlantype || 'WPA2' },
                                 wlanhidden: { type: 'const', constVal: !!entry.wlanhidden || false },
                                 password: { type: 'const', constVal: qrPassword?.secret ?? '' },
                                 pwdhidden: { type: 'const', constVal: !!entry.pwdhidden || false },

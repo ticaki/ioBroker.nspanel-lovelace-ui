@@ -357,6 +357,7 @@ class PageConfigManager extends ConfigGeneric<ConfigGenericProps & { theme?: any
                 uniqueName: name,
                 headline: name,
                 ssidUrlTel: '',
+                wlantype: 'WPA2',
                 wlanhidden: false,
                 pwdhidden: false,
                 setState: '',

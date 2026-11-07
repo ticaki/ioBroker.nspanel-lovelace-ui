@@ -434,7 +434,7 @@ Stack: ${stack}`
                 headline: { type: "const", constVal: entry.headline || "Page QR" },
                 selType: { type: "const", constVal: entry.selType || 0 },
                 ssidUrlTel: { type: "const", constVal: entry.ssidUrlTel || "" },
-                wlantype: { type: "const", constVal: entry.wlantype || "WPA" },
+                wlantype: { type: "const", constVal: entry.wlantype || "WPA2" },
                 wlanhidden: { type: "const", constVal: !!entry.wlanhidden || false },
                 password: { type: "const", constVal: (_b = qrPassword == null ? void 0 : qrPassword.secret) != null ? _b : "" },
                 pwdhidden: { type: "const", constVal: !!entry.pwdhidden || false },
