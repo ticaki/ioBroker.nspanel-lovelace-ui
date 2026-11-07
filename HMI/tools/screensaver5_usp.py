@@ -7,7 +7,7 @@ TOOLS = HERE
 sys.path.insert(0, TOOLS)
 from hmi import Hmi
 from pagefile import Page, block, find
-from screensaver5 import SEND, fix_pie_rim, text_obj, var_obj, status_lines, insert_entry
+from screensaver5 import indicator_down, send_if_text, fix_pie_rim, text_obj, var_obj, status_lines, insert_entry
 
 R = os.path.join(HERE, '..', '')
 RELEASE, GENERATION = '6.0.7', '62'
@@ -174,6 +174,7 @@ def build_ss5(us_ss, us_ss2, us_ss3, clock_font):
     src['tDate'].set('font', 0)
     src['tDate'].set('ycen', 1)
     src['strCommand'].set('txt_maxl', 1800)
+    src['tc0'].set_code('up', send_if_text(src['tc0'].code('up')))
     bottom = []
     for k in range(N_BOTTOM):
         n = k + 1
@@ -186,7 +187,7 @@ def build_ss5(us_ss, us_ss2, us_ss3, clock_font):
     for j, (x, y, h) in enumerate(cells):
         n = j + 1
         o = text_obj(template, f'f{n}Icon', x, y, COL, h, 4, 4)
-        o.set_code('down', [f'tSend.txt="event,buttonPress2,"+entn{n}.txt+",button"'] + SEND)
+        o.set_code('down', indicator_down(n))
         inds.append(o)
         names.append(var_obj(var, f'entn{n}', 14))
     bars = [us_ss3.obj('tRelay1').copy(), us_ss3.obj('tRelay2').copy()]
