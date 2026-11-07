@@ -170,6 +170,7 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
 - (tt-tom17) admin: the field IP of ioBroker in the NSPanel settings shows a hint while no address is selected instead of an empty box
 - (tt-tom17) admin: the German label of the slot selection for the internal sum of the power page said the slots were negated, they are summed; the label now exists in all languages
 - (tt-tom17) admin: the confirmation dialogs of the Tasmota tools (restart, reset) and the texts of the icon overview are translated instead of fixed English or German
+- (tt-tom17) admin: the checkbox `Hide Password` of the QR page is now called `Do not show the password on the panel` and a note below it says that the QR code still contains the password - the behaviour is unchanged
 - (tt-tom17) pageQR: a new QR page stores WPA2 as wifi encryption and the fallback for a page without a stored value is WPA2 as well, so the QR code matches what the admin shows - an existing page that never had the field set now writes WPA2 instead of WPA into the code; the migration of the old table `pageQRdata` keeps the encryption type and warns in the log that the wifi password has to be entered again
 - (ticaki) screensaver: with the TFT 6.0.8 an indicator sends one event per press, a long press no longer switches twice
 - (ticaki) screensaver: with the TFT 6.0.8 the indicators of the advanced screensaver also react to a press on the us-l and us-p panels
