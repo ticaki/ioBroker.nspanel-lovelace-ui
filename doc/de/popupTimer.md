@@ -90,8 +90,10 @@ Der Adapter spiegelt jeden Zustandswechsel in `STATUS`. Beim Ablauf bleibt `STAT
 
 Das Häkchen **Timer aus dem Screensaver verwenden** steht in der Pageitem-Konfiguration nur bei einem Kanal der Rolle `level.timer`. Darunter steht: *Item und Popup zeigen den Timer des Screensavers dieses Panels (Dialog der Uhrzeit). Die Datenpunkte dieses Channels werden dafür nicht verwendet.* Gemeint ist der Timer, der im [Screensaver-Editor](screensaver#timer-statt-uhrzeit) über die Uhrzeit eingestellt wird.
 
+![Das Häkchen „Timer aus dem Screensaver verwenden" im Item-Dialog](../Pictures/screensaverAdmin/admin-25-item-screensaver-timer.png)
+
 - Liste und Popup zeigen denselben Timer wie der Bildschirmschoner dieses Panels – auch, wenn er dort weggetippt ist; bei Slot-Mustern den dort gerade gewählten Slot.
-- Die Datenpunkte des Kanals werden nicht verwendet; der Kanal braucht nur die Rolle.
+- Die Datenpunkte des Kanals wertet das Item nicht aus – es braucht sie nicht. Der Admin prüft den Kanal aber wie jeden anderen: Hat er die Pflicht-Datenpunkte der Rolle `level.timer` nicht, steht am Feld das rote ✖ (siehe [Prüfzeichen](PageConfig-Dialoge#der-iobroker-kanal-und-seine-prüfzeichen)). Am Panel arbeitet das Item trotzdem.
 - Das Häkchen ist gesperrt, wenn der Bildschirmschoner dieses Panels genau dieses Item als Quelle seines Timers nutzt: *Nicht möglich: Der Screensaver dieses Panels nutzt genau dieses Item als Quelle seines Timers, das wäre ein Kreis.*
 
 **Start** schreibt zuerst den Daten-Datenpunkt des Bildschirmschoner-Timers und dann den An/Aus-Datenpunkt. Welcher Wert in die Daten kommt, richtet sich nach dem Datenpunkt: die Restzeit bei der Einheit `s`, `sec` oder `ms` oder der Rolle `value.timer` oder `level.timer`, ein ISO-Datum bei einem Text-Datenpunkt, sonst die Endzeit als Zeitstempel in Millisekunden. Bei Slot-Mustern nimmt Start den niedrigsten Slot, dessen An/Aus nicht wahr ist – gibt es keinen, ist kein Start möglich. **Abbrechen** und **Fertig** setzen An/Aus des angezeigten Slots auf falsch. Eine Pause gibt es hier nicht. Ist die Quelle des Bildschirmschoners ein Pageitem, startet und beendet das Häkchen-Item dieses Pageitem.

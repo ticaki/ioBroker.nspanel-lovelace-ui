@@ -339,6 +339,8 @@ javascript.0.timer.global.*.targetTs
 
 #### Quelle: Pageitem mit Timer-Popup
 
+![Der Uhrzeit-Dialog mit einem Pageitem als Quelle des Timers](../Pictures/screensaverAdmin/admin-24-timer-quelle-pageitem.png)
+
 Das Feld **Pageitem** listet die Timer-Items auf den Seiten der Panels dieses Bildschirmschoners, als *Seite - Name des Items* (bei gleichen Namen auf einer Seite mit der Platznummer dahinter). Angeboten werden nur Items, die wirklich herunterzählen: interne Timer und externe Timer mit `STATUS`. Wecker, reine Zeitanzeigen und Items mit dem Häkchen **Timer aus dem Screensaver verwenden** fehlen in der Liste. Das gewählte Item arbeitet auch, wenn seine Seite nie geöffnet wurde.
 
 - *Einige Timer sind erst auswählbar, nachdem eine Seite geändert und gespeichert wurde.* – ältere Items bekommen ihre interne Kennung erst beim nächsten Speichern im Tab PageConfig und erscheinen dann in der Liste.

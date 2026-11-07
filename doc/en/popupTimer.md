@@ -90,8 +90,10 @@ The adapter mirrors every change of its state into `STATUS`. When the time is ov
 
 The checkbox **Use the timer of the screensaver** stands in the Pageitem Configuration for a channel of the role `level.timer` only. Below it says: *The item and its popup show the timer of the screensaver of this panel (time dialog). The states of this channel are not used for it.* Meant is the timer that is set up through the time in the [screensaver editor](screensaver#timer-instead-of-the-clock).
 
+![The checkbox "Use the timer of the screensaver" in the item dialog](../Pictures/screensaverAdmin/admin-25-item-screensaver-timer.png)
+
 - List and popup show the same timer as the screensaver of this panel – also while it is tapped away there; with slot patterns the slot chosen there right now.
-- The states of the channel are not used; the channel only needs the role.
+- The item does not read the states of the channel – it does not need them. The admin checks the channel like any other one though: without the mandatory states of the role `level.timer` the red ✖ stands at the field (see [check marks](PageConfig-Dialoge#the-iobroker-channel-and-its-check-marks)). The item still works on the panel.
 - The checkbox is locked when the screensaver of this panel uses exactly this item as the source of its timer: *Not possible: the screensaver of this panel uses this item as the source of its timer, that would be a circle.*
 
 **Start** writes the data state of the screensaver timer first and then its on/off state. Which value goes into the data depends on the state: the remaining time with the unit `s`, `sec` or `ms` or the role `value.timer` or `level.timer`, an ISO date for a text state, otherwise the end as a timestamp in milliseconds. With slot patterns Start takes the lowest slot whose on/off is not true – without one no start is possible. **Cancel** and **Finish** set the on/off state of the shown slot to false. There is no pause here. If the source of the screensaver is a page item, the checkbox item starts and stops that page item.

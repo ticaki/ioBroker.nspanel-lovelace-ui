@@ -339,6 +339,8 @@ javascript.0.timer.global.*.targetTs
 
 #### Source: page item with timer popup
 
+![The clock dialog with a page item as the source of the timer](../Pictures/screensaverAdmin/admin-24-timer-quelle-pageitem.png)
+
 The field **Page item** lists the timer items on the pages of the panels of this screensaver, as *page - name of the item* (items of the same name on one page with their place number behind it). Offered are only items that really count down: internal timers and external timers with `STATUS`. Alarm clocks, plain time displays and items with the checkbox **Use the timer of the screensaver** are missing from the list. The chosen item works even if its page has never been opened.
 
 - *Some timers can only be selected after a page has been changed and saved.* – older items get their internal id with the next save in the PageConfig tab and appear in the list then.
