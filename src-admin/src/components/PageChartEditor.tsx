@@ -49,6 +49,13 @@ interface PageChartEditorState extends ConfigGenericState {
 
 type NumberField = 'rangeHours' | 'maxXAxisTicks' | 'maxXAxisLabels';
 
+/** limits of the number fields: 0 and negative values are not meaningful, ticks and labels follow the old table (1-8 hours) */
+const NUMBER_LIMITS: Record<NumberField, { min: number; max?: number }> = {
+    rangeHours: { min: 1 },
+    maxXAxisTicks: { min: 1, max: 8 },
+    maxXAxisLabels: { min: 1, max: 8 },
+};
+
 /**
  * script source: every state, like the classic table (no `common.read` check, many script states lack it)
  *
@@ -135,6 +142,7 @@ export class PageChartEditor extends ConfigGeneric<ConfigGenericProps & PageChar
                 }}
                 slotProps={{
                     input: { sx: { backgroundColor: 'transparent', px: 1, width: '50%' } },
+                    htmlInput: { min: NUMBER_LIMITS[field].min, max: NUMBER_LIMITS[field].max },
                     inputLabel: { shrink: true },
                 }}
                 sx={{ mb: 2 }}
@@ -409,24 +417,30 @@ export class PageChartEditor extends ConfigGeneric<ConfigGenericProps & PageChar
                 {useDb && this.renderNumberField('rangeHours', 'chart_Hours')}
 
                 {useDb && chartType === 'cardChart' && (
-                    <FormControl
-                        variant="standard"
-                        sx={{ mb: 2, minWidth: 240 }}
-                        disabled={!alive}
+                    <Tooltip
+                        title={this.getText('chart_FactorTooltip')}
+                        placement="top"
+                        arrow
                     >
-                        <InputLabel>{this.getText('chart_Factor')}</InputLabel>
-                        <Select
-                            value={entry.factorCardChart ?? chartDefaults.factorCardChart}
-                            onChange={e => {
-                                this.handleFieldChange('factorCardChart', Number(e.target.value));
-                            }}
+                        <FormControl
+                            variant="standard"
+                            sx={{ mb: 2, minWidth: 240 }}
+                            disabled={!alive}
                         >
-                            <MenuItem value={1}>1</MenuItem>
-                            <MenuItem value={10}>0,1</MenuItem>
-                            <MenuItem value={100}>0,01</MenuItem>
-                            <MenuItem value={1000}>0,001</MenuItem>
-                        </Select>
-                    </FormControl>
+                            <InputLabel>{this.getText('chart_Factor')}</InputLabel>
+                            <Select
+                                value={entry.factorCardChart ?? chartDefaults.factorCardChart}
+                                onChange={e => {
+                                    this.handleFieldChange('factorCardChart', Number(e.target.value));
+                                }}
+                            >
+                                <MenuItem value={1}>1</MenuItem>
+                                <MenuItem value={10}>0,1</MenuItem>
+                                <MenuItem value={100}>0,01</MenuItem>
+                                <MenuItem value={1000}>0,001</MenuItem>
+                            </Select>
+                        </FormControl>
+                    </Tooltip>
                 )}
 
                 {useDb &&
