@@ -1232,6 +1232,7 @@
     "scroll_type_half": "半页",
     "scroll_type_page": "整页",
     "selectColorForIcon": "选择图标的颜色",
+    "selectIpPlaceholder": "选择 IP 地址",
     "selectTool": "选择tasmota工具",
     "select_description": "从左侧列表中选择一个项目以编辑其配置。",
     "select_item": "选择一个项目",

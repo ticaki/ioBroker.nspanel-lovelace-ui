@@ -1232,6 +1232,7 @@
     "scroll_type_half": "Une demi-page",
     "scroll_type_page": "Une page entière",
     "selectColorForIcon": "Sélectionnez la couleur pour l'icône",
+    "selectIpPlaceholder": "Sélectionner une adresse IP",
     "selectTool": "Sélectionnez l'outil Tasmota",
     "select_description": "Sélectionnez un élément dans la liste de gauche pour modifier sa configuration.",
     "select_item": "Sélectionnez un élément",

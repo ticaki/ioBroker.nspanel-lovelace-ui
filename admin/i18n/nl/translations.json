@@ -1232,6 +1232,7 @@
     "scroll_type_half": "Een halve pagina",
     "scroll_type_page": "Een hele pagina",
     "selectColorForIcon": "Selecteer kleur voor pictogram",
+    "selectIpPlaceholder": "Kies een IP-adres",
     "selectTool": "Selecteer Tasmota -tool",
     "select_description": "Selecteer een item uit de lijst aan de linkerkant om de configuratie ervan te bewerken.",
     "select_item": "Selecteer een artikel",

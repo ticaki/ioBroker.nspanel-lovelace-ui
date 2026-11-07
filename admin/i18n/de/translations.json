@@ -1266,6 +1266,7 @@
     "scroll_type_half": "Eine halbe Seite",
     "scroll_type_page": "Eine ganze Seite",
     "selectColorForIcon": "Farbe für Icon auswählen",
+    "selectIpPlaceholder": "IP-Adresse auswählen",
     "selectTool": "Wählen Sie ein Tasmota Tool",
     "select_description": "Wählen Sie ein Element aus der Liste links aus, um seine Konfiguration zu bearbeiten.",
     "select_item": "Wählen Sie eine Seite aus",

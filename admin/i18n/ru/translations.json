@@ -1232,6 +1232,7 @@
     "scroll_type_half": "Полстраницы",
     "scroll_type_page": "Целую страницу",
     "selectColorForIcon": "Выберите цвет для значка",
+    "selectIpPlaceholder": "Выберите IP-адрес",
     "selectTool": "Выберите инструмент TASMOTA",
     "select_description": "Выберите элемент из списка слева, чтобы изменить его конфигурацию.",
     "select_item": "Выберите элемент",

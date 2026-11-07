@@ -161,6 +161,7 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
 ### **WORK IN PROGRESS**
 - (ticaki) screensaver: with the new HMI (screensaver tiles and advanced) a tap on an indicator counts like a tap on the screensaver; an indicator without action (and, with "indicators act as buttons", without a state to switch) no longer leaves the screensaver at once but follows the double click setting, `buttons.indicator-N` is still written; a long press is recognised by the panel but not used yet; the web panel counts the taps the same way
 - (ticaki) screensaver tiles: the indicators can get their own icon font (admin field "icon font"); needs the new screensaver5 page of the HMI, the other screensavers ignore it
+- (tt-tom17) admin: the field IP of ioBroker in the NSPanel settings shows a hint while no address is selected instead of an empty box
 - (tt-tom17) admin: the German label of the slot selection for the internal sum of the power page said the slots were negated, they are summed; the label now exists in all languages
 - (tt-tom17) admin: the confirmation dialogs of the Tasmota tools (restart, reset) and the texts of the icon overview are translated instead of fixed English or German
 - (ticaki) screensaver: with the TFT 6.0.8 an indicator sends one event per press, a long press no longer switches twice

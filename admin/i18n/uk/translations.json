@@ -1232,6 +1232,7 @@
     "scroll_type_half": "Пів сторінки",
     "scroll_type_page": "Цілу сторінку",
     "selectColorForIcon": "Виберіть колір для значка",
+    "selectIpPlaceholder": "Виберіть IP-адресу",
     "selectTool": "Виберіть інструмент Tasmota",
     "select_description": "Виберіть елемент зі списку ліворуч, щоб змінити його конфігурацію.",
     "select_item": "Виберіть елемент",
