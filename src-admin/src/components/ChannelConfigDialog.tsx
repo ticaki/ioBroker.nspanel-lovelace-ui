@@ -95,8 +95,15 @@ const USE_VALUE_CONDITIONS_ROLES: readonly string[] = [
     'value.humidity',
 ];
 
-/** Same for navigation items (getPageNaviItemConfig): only these two roles hand the condition on. */
-const USE_VALUE_CONDITIONS_NAVI_ROLES: readonly string[] = ['thermostat', 'humidity'];
+/** Same for navigation items (getPageNaviItemConfig): the humidity and temperature cases hand the condition on. */
+const USE_VALUE_CONDITIONS_NAVI_ROLES: readonly string[] = [
+    'thermostat',
+    'airCondition',
+    'temperature',
+    'value.temperature',
+    'humidity',
+    'value.humidity',
+];
 
 /** Channel roles whose page item reads `minValue` / `maxValue` (config-manager.ts, case 'volume'). */
 const VALUE_RANGE_ROLES: readonly string[] = ['volume'];
