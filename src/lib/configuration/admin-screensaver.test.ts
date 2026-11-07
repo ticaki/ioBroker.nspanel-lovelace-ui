@@ -171,6 +171,18 @@ describe('lib/configuration - admin screensaver (entry -> script configuration)'
         expect(sw).to.include({ ScreensaverEntitySwitch: 's' });
         const nav = screensaverItemToScript({ state: 'a', action: { kind: 'navigate', page: 'Klima' } }, 'indicator');
         expect(nav).to.include({ ScreensaverEntityNaviToPage: 'Klima' });
+        const cycle = screensaverItemToScript(
+            { state: 'a', action: { kind: 'cycle', state: 'c', values: ['-1', '1'] } },
+            'indicator',
+        );
+        expect(cycle).to.deep.include({ ScreensaverEntityCycle: 'c', ScreensaverEntityCycleValues: ['-1', '1'] });
+        const noValues = screensaverItemToScript({ state: 'a', action: { kind: 'cycle', state: 'c' } }, 'indicator');
+        expect(noValues).to.include({ ScreensaverEntityCycle: 'c', ScreensaverEntityCycleValues: null });
+        const cycleBottom = screensaverItemToScript(
+            { state: 'a', action: { kind: 'cycle', state: 'c', values: ['1'] } },
+            'bottom',
+        );
+        expect('ScreensaverEntityCycle' in cycleBottom).to.equal(false);
         const bottom = screensaverItemToScript({ state: 'a', action: { kind: 'button', state: 'b' } }, 'bottom');
         expect('ScreensaverEntityButton' in bottom).to.equal(false);
     });

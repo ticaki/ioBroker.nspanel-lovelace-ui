@@ -23,6 +23,7 @@ __export(script_to_admin_exports, {
 module.exports = __toCommonJS(script_to_admin_exports);
 var import_config_manager_const = require("../const/config-manager-const");
 var import_default_pages = require("../const/default-pages");
+var import_screensaver_cycle = require("../const/screensaver-cycle");
 var import_adminShareConfig = require("../types/adminShareConfig");
 var import_function_and_const = require("../types/function-and-const");
 var import_admin_screensaver = require("./admin-screensaver");
@@ -998,6 +999,8 @@ const screensaverStateKeys = [
   "ScreensaverEntityNaviToPage",
   "ScreensaverEntityButton",
   "ScreensaverEntitySwitch",
+  "ScreensaverEntityCycle",
+  "ScreensaverEntityCycleValues",
   "ScreensaverEntityIconSelect",
   "ScreensaverEntityEnabled",
   "ScreensaverEntityVisibleCondition",
@@ -1013,7 +1016,9 @@ const screensaverTemplateKeys = [
   "readOptions",
   "ScreensaverEntityNaviToPage",
   "ScreensaverEntityButton",
-  "ScreensaverEntitySwitch"
+  "ScreensaverEntitySwitch",
+  "ScreensaverEntityCycle",
+  "ScreensaverEntityCycleValues"
 ];
 const nativeTemplateKeys = ["template", "dpInit", "modeScr", "readOptions"];
 function convertReadOptions(value, reason, where) {
@@ -1035,12 +1040,23 @@ function convertReadOptions(value, reason, where) {
 function convertIndicatorAction(element, reason, where) {
   const button = str(element.ScreensaverEntityButton, reason, `${where}.ScreensaverEntityButton`);
   const switchState = str(element.ScreensaverEntitySwitch, reason, `${where}.ScreensaverEntitySwitch`);
+  const cycle = str(element.ScreensaverEntityCycle, reason, `${where}.ScreensaverEntityCycle`);
   const navi = str(element.ScreensaverEntityNaviToPage, reason, `${where}.ScreensaverEntityNaviToPage`);
   if (button) {
     return { kind: "button", state: button };
   }
   if (switchState) {
     return { kind: "switch", state: switchState };
+  }
+  if (cycle) {
+    const list = element.ScreensaverEntityCycleValues;
+    if (list !== void 0 && list !== null && (!Array.isArray(list) || list.some((v) => typeof v !== "string" && typeof v !== "number" && typeof v !== "boolean"))) {
+      throw new ConvertError(reason, `${where}.ScreensaverEntityCycleValues: expected a list of values`);
+    }
+    const values = (0, import_screensaver_cycle.normalizeCycleValues)(list);
+    if (values.length > 0) {
+      return { kind: "cycle", state: cycle, values };
+    }
   }
   return navi ? { kind: "navigate", page: navi } : void 0;
 }

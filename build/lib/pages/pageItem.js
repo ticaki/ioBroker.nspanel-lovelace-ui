@@ -36,6 +36,7 @@ var typePageItem = __toESM(require("../types/type-pageItem"));
 var tools = __toESM(require("../const/tools"));
 var import_icon_mapping = require("../const/icon_mapping");
 var import_page_item_defaults = require("../const/page-item-defaults");
+var import_screensaver_cycle = require("../const/screensaver-cycle");
 var import_data_item = require("../controller/data-item");
 var import_function_and_const = require("../types/function-and-const");
 var import_baseClassPage = require("../classes/baseClassPage");
@@ -57,6 +58,8 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
   updateCommon = { lastRequest: 0, counts: 0 };
   /** the screensaver this item listens to (`useScreensaverTimer`) */
   clockTimerSaver;
+  /** index of the value a button with a value list wrote last, see {@link writeNextCycleValue} */
+  cycleLastIndex;
   /** the screensaver uses this item as the source of its timer */
   clockSourceListeners = /* @__PURE__ */ new Set();
   constructor(config, options) {
@@ -2109,6 +2112,35 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
     }
     return done;
   }
+  /**
+   * A button with a value list (screensaver indicator): writes the next value of the list to the state, also when
+   * the list has one value only or the value is already set.
+   *
+   * @param target state to write
+   * @param list the values, a JSON array of texts
+   * @returns true when the press was handled, false when the item is no such button
+   */
+  async writeNextCycleValue(target, list) {
+    if (!(target == null ? void 0 : target.writeable) || !list) {
+      return false;
+    }
+    const raw = await list.getObject();
+    if (!Array.isArray(raw) || raw.length === 0) {
+      return false;
+    }
+    const values = raw.map((v) => String(v));
+    const type = target.trueType();
+    const current = await target.getState();
+    const index = (0, import_screensaver_cycle.nextCycleIndex)(values, current == null ? void 0 : current.val, type, this.cycleLastIndex);
+    const value = (0, import_screensaver_cycle.cycleValueToState)(values[index], type);
+    if (value === null) {
+      this.log.warn(`Button ${this.id}: the value "${values[index]}" does not fit the state type ${type}!`);
+      return true;
+    }
+    await target.setState(value);
+    this.cycleLastIndex = index;
+    return true;
+  }
   async onCommand(action, value) {
     var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N, _O, _P, _Q, _R, _S, _T, _U;
     if (value === void 0 || this.dataItems === void 0) {
@@ -2137,6 +2169,9 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
               await this.parent.basePanel.navigation.setCurrentPage();
               break;
             }
+          }
+          if (entry.type === "button" && await this.writeNextCycleValue(entry.data.setValue3, entry.data.valueList)) {
+            break;
           }
           if (entry.role === "indicator") {
             if (this.parent.card === "cardThermo") {

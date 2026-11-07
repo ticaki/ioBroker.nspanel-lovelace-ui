@@ -2,6 +2,7 @@ import { Color, type RGB } from '../const/Color';
 import * as configManagerConst from '../const/config-manager-const';
 import { isScreensaverBlindPosition, pageItemDefaults, SHUTTER_POSITION_ICON } from '../const/page-item-defaults';
 import { mainPageName } from '../const/default-pages';
+import { normalizeCycleValues } from '../const/screensaver-cycle';
 import type { panelConfigPartial } from '../controller/panel';
 import { StatesControler } from '../controller/states-controller';
 import { PagePower } from '../pages/pagePower';
@@ -5390,7 +5391,8 @@ export class ConfigManager extends BaseClass {
     }
 
     /**
-     * What an indicator does when tapped, as data items of a button page item: the first of button, switch and page.
+     * What an indicator does when tapped, as data items of a button page item: the first of button, switch, cycle
+     * and page. A cycle without values counts as not set.
      *
      * @param entity element of the script (script or template)
      * @returns the data items to set, null when the element has no action; a state that does not exist or is not
@@ -5398,7 +5400,9 @@ export class ConfigManager extends BaseClass {
      */
     private async getScreensaverIndicatorAction(
         entity: ScriptConfig.ScreenSaverIndicatorAction,
-    ): Promise<Partial<Record<'setValue1' | 'setValue2' | 'setNavi', NSPanel.DataItemsOptions>> | null> {
+    ): Promise<Partial<
+        Record<'setValue1' | 'setValue2' | 'setValue3' | 'valueList' | 'setNavi', NSPanel.DataItemsOptions>
+    > | null> {
         if (entity.ScreensaverEntityButton) {
             return {
                 setValue2: (await this.existsAndWriteableState(entity.ScreensaverEntityButton))
@@ -5412,6 +5416,17 @@ export class ConfigManager extends BaseClass {
                     ? { type: 'state', dp: entity.ScreensaverEntitySwitch }
                     : undefined,
             };
+        }
+        if (entity.ScreensaverEntityCycle) {
+            const values = normalizeCycleValues(entity.ScreensaverEntityCycleValues);
+            if (values.length > 0) {
+                return {
+                    setValue3: (await this.existsAndWriteableState(entity.ScreensaverEntityCycle))
+                        ? { type: 'state', dp: entity.ScreensaverEntityCycle }
+                        : undefined,
+                    valueList: { type: 'const', constVal: JSON.stringify(values) },
+                };
+            }
         }
         if (entity.ScreensaverEntityNaviToPage) {
             return { setNavi: { type: 'const', constVal: entity.ScreensaverEntityNaviToPage } };
@@ -5488,7 +5503,13 @@ export class ConfigManager extends BaseClass {
             'visibleCondition' in temp && delete temp.visibleCondition;
             'enabled' in temp && delete temp.enabled;
             // the action fields belong to the element, not to the runtime item
-            for (const key of ['ScreensaverEntityNaviToPage', 'ScreensaverEntityButton', 'ScreensaverEntitySwitch']) {
+            for (const key of [
+                'ScreensaverEntityNaviToPage',
+                'ScreensaverEntityButton',
+                'ScreensaverEntitySwitch',
+                'ScreensaverEntityCycle',
+                'ScreensaverEntityCycleValues',
+            ]) {
                 delete (temp as Record<string, unknown>)[key];
             }
             const action = mode === 'indicator' ? await this.getScreensaverIndicatorAction(entity) : null;

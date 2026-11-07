@@ -166,6 +166,7 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
 - (ticaki) panel in Tasmota safeboot: the adapter recognises it from `tele/INFO1`, warns once with a hint how to flash the firmware again and stops the startup offers and the display diagnosis until the normal firmware is back
 - (ticaki) admin: the color picker of the trash page offers five preset colors (yellow, brown, blue, dark gray, green)
 - (ticaki) admin: screensaver places with `text.trash.next` / `text.trash.afterNext` show a readable name instead of the last part of a leftover state; choosing a template that needs no object removes the old state from the item
+- (ticaki) screensaver: new action `values to cycle through` for indicators: you maintain an ordered list of values (e.g. `-1,0,1`), each press writes the next value to the state and after the last one it starts again with the first
 
 ### 2.1.0 (2026-11-05)
 - (ticaki) screensaver: a timer can replace the clock - from an on/off and a data state, from patterns for timers in changing slots or from a page item with a timer popup; it shows the remaining minutes in the color of the timer, the first tap switches to the clock; all screensaver modes and the web panel

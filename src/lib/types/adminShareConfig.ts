@@ -660,11 +660,13 @@ export type ScreensaverItemRaw = {
     config: Record<string, unknown>;
 };
 
-/** what an indicator does when it is pressed (ScreensaverEntityButton / ...Switch / ...NaviToPage of the script) */
+/** what an indicator does when it is pressed (ScreensaverEntityButton / ...Switch / ...Cycle / ...NaviToPage of the script) */
 export type ScreensaverItemAction = {
-    kind: 'button' | 'switch' | 'navigate';
-    /** state written on press (button: true, switch: toggled) */
+    kind: 'button' | 'switch' | 'cycle' | 'navigate';
+    /** state written on press (button: true, switch: toggled, cycle: the next of `values`) */
     state?: string;
+    /** cycle: the values to write one after the other - the order counts, text as entered */
+    values?: string[];
     /** page opened on press */
     page?: string;
 };
