@@ -350,6 +350,8 @@ Das Feld **Pageitem** listet die Timer-Items auf den Seiten der Panels dieses Bi
 
 #### Anzeige am Panel
 
+![Der Bildschirmschoner zeigt die Restzeit statt der Uhrzeit](../Pictures/screensaver/screensaverTimer.png)
+
 Die Restzeit steht in **Minuten mit Punkt**, damit sie sich nicht mit der Uhrzeit verwechseln lässt:
 
 | Restzeit | Anzeige |

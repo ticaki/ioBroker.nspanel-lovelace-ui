@@ -26,6 +26,8 @@ Welche Betriebsart ein Item hat, liest der Adapter aus den Datenpunkten des Kana
 
 Ein Kanal, der nur einen `SET` hat, ist ein interner Timer – außer `SET` trägt die Rolle `date`, dann ist es ein Wecker. Ein externer Timer oder Wecker, bei dem nichts beschreibbar ist und der keinen `STATUS` hat, ist eine reine Zeitanzeige: Das Popup zeigt die Zeit, hat aber keine Tasten.
 
+![Vier Timer in der Liste einer Seite: intern, extern, Wecker und der Timer des Bildschirmschoners](../Pictures/popupTimer/timer-01-liste.png)
+
 ## 2. Datenpunkte
 
 | Datenpunkt | Bedeutung |
@@ -40,6 +42,8 @@ Von außen geschriebene Werte wirken nur, wenn sie bestätigt sind (`ack`) oder 
 ## 3. Tasten
 
 Welche Tasten das Popup zeigt und ob sich die Zeit bearbeiten lässt, hängt an Betriebsart und Zustand:
+
+![Das Popup eines laufenden internen Timers](../Pictures/popupTimer/timer-02-intern-laeuft.png)
 
 | Betriebsart und Zustand | Tasten | Zeit bearbeitbar |
 |---|---|---|
@@ -64,6 +68,8 @@ Welche Tasten das Popup zeigt und ob sich die Zeit bearbeiten lässt, hängt an 
 Das Schließen der Zeitfelder startet nichts. Beim externen Timer und beim Wecker schreibt der Adapter die Zeit sofort in `SET` (oder `ACTUAL`); beim internen Timer merkt er sie sich und schreibt sie zusätzlich in `SET`, falls es den gibt; bei *Vom Screensaver* merkt er sie sich nur. Gestartet wird erst mit **Start**.
 
 **Abbrechen** und **Löschen** setzen `STATUS` auf 0 und beim externen Timer `SET` und `ACTUAL` auf 0; `STATE` bleibt unberührt. **Fertig** tut dasselbe und setzt zusätzlich `STATE` auf `true`.
+
+![Das Popup eines Weckers – die Taste schaltet ihn aus](../Pictures/popupTimer/timer-03-wecker.png)
 
 ## 4. Den internen Timer von außen steuern
 

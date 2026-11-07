@@ -26,6 +26,8 @@ The adapter reads the operating mode of an item from the states of its channel:
 
 A channel with a `SET` only is an internal timer – unless `SET` carries the role `date`, then it is an alarm clock. An external timer or alarm clock with nothing writable and no `STATUS` is a plain time display: the popup shows the time but has no buttons.
 
+![Four timers in the list of a page: internal, external, alarm clock and the timer of the screensaver](../Pictures/popupTimer/timer-01-liste.png)
+
 ## 2. States
 
 | State | Meaning |
@@ -40,6 +42,8 @@ Values written from outside only count when they are confirmed (`ack`) or the st
 ## 3. Buttons
 
 Which buttons the popup shows and whether the time can be edited depends on the mode and the state:
+
+![The popup of a running internal timer](../Pictures/popupTimer/timer-02-intern-laeuft.png)
 
 | Mode and state | Buttons | Time editable |
 |---|---|---|
@@ -64,6 +68,8 @@ Which buttons the popup shows and whether the time can be edited depends on the 
 Closing the time fields starts nothing. For an external timer and an alarm clock the adapter writes the time to `SET` (or `ACTUAL`) at once; for an internal timer it remembers it and writes it to `SET` as well, if there is one; with *From the screensaver* it only remembers it. Counting begins with **Start** only.
 
 **Cancel** and **Clear** set `STATUS` to 0 and, for an external timer, `SET` and `ACTUAL` to 0; `STATE` is left alone. **Finish** does the same and sets `STATE` to `true` in addition.
+
+![The popup of an alarm clock – the button switches it off](../Pictures/popupTimer/timer-03-wecker.png)
 
 ## 4. Controlling the internal timer from outside
 

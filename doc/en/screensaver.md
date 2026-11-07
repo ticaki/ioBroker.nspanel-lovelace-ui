@@ -350,6 +350,8 @@ The field **Page item** lists the timer items on the pages of the panels of this
 
 #### Display on the panel
 
+![The screensaver shows the remaining time instead of the clock](../Pictures/screensaver/screensaverTimer.png)
+
 The remaining time stands in **minutes with a point**, so it cannot be mistaken for the clock:
 
 | Remaining time | Display |
