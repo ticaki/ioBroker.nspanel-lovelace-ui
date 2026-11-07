@@ -9,6 +9,8 @@ import {
     TextField,
     Typography,
     FormControl,
+    FormControlLabel,
+    Checkbox,
     InputLabel,
     Select,
     MenuItem,
@@ -39,6 +41,8 @@ export interface ChannelColorDialogProps {
 
 interface ChannelColorDialogState {
     open: boolean;
+    /** Color scale on/off - unchecked, apply stores no scale and removes an existing one */
+    useScale: boolean;
     /** ColorBest für IconScaleElement */
     colorBest: string;
     /** Farbmodus */
@@ -63,6 +67,20 @@ interface ChannelColorDialogState {
     localFalseColor: string;
 }
 
+/** Start values of the scale fields; the dialog is mounted once, so every open without a scale returns to them */
+const SCALE_DEFAULTS: Pick<
+    ChannelColorDialogState,
+    'useScale' | 'colorBest' | 'colorMode' | 'colorLog10' | 'valMin' | 'valMax' | 'valBest'
+> = {
+    useScale: false,
+    colorBest: '',
+    colorMode: 'mixed',
+    colorLog10: '',
+    valMin: 0,
+    valMax: 100,
+    valBest: undefined,
+};
+
 /**
  * Dialog zum Konfigurieren von Farbeinstellungen für PageItems
  * mit IconScaleElement-Unterstützung.
@@ -72,12 +90,7 @@ class ChannelColorDialog extends React.Component<ChannelColorDialogProps, Channe
         super(props);
         this.state = {
             open: false,
-            colorBest: '',
-            colorMode: 'mixed',
-            colorLog10: '',
-            valMin: 0,
-            valMax: 100,
-            valBest: undefined,
+            ...SCALE_DEFAULTS,
             valIconMin: 0,
             valIconMax: 100,
             adapterColorTheme: Color.defaultTheme,
@@ -140,7 +153,7 @@ class ChannelColorDialog extends React.Component<ChannelColorDialogProps, Channe
     }
 
     private handleSave = (): void => {
-        const { colorBest, colorMode, colorLog10, valMin, valMax, valBest, localTrueColor, localFalseColor } =
+        const { useScale, colorBest, colorMode, colorLog10, valMin, valMax, valBest, localTrueColor, localFalseColor } =
             this.state;
         const scale: IconColorElement = {
             color_best: colorBest ? Color.ConvertHexToRgb(colorBest) : undefined,
@@ -151,7 +164,8 @@ class ChannelColorDialog extends React.Component<ChannelColorDialogProps, Channe
             val_best: valBest,
         };
         this.props.onSave?.({
-            scale,
+            // unchecked: no scale is stored, an existing one is removed
+            scale: useScale ? scale : undefined,
             trueColor: localTrueColor,
             falseColor: localFalseColor,
         });
@@ -181,6 +195,7 @@ class ChannelColorDialog extends React.Component<ChannelColorDialogProps, Channe
                 open: true,
                 localFalseColor: config?.falseColor ?? this.props.falseColor,
                 localTrueColor: config?.trueColor ?? this.props.trueColor,
+                useScale: true,
                 colorBest:
                     scale && `color_best` in scale && scale.color_best
                         ? Color.ConvertRGBtoHex(scale.color_best.r, scale.color_best.g, scale.color_best.b)
@@ -193,10 +208,12 @@ class ChannelColorDialog extends React.Component<ChannelColorDialogProps, Channe
             });
             return;
         }
+        // no scale: start values, not the fields of the item edited before
         this.setState({
             open: true,
             localFalseColor: config?.falseColor ?? this.props.falseColor,
             localTrueColor: config?.trueColor ?? this.props.trueColor,
+            ...SCALE_DEFAULTS,
         });
     }
     /** Berechnet die Ganzzahl-Werte für die Farbvorschau-Tabelle. */
@@ -395,8 +412,16 @@ class ChannelColorDialog extends React.Component<ChannelColorDialogProps, Channe
     }
 
     render(): React.JSX.Element {
-        const { open, colorBest, colorMode, colorLog10, valMin, valMax, valBest /*, valIconMin, valIconMax*/ } =
-            this.state;
+        const {
+            open,
+            useScale,
+            colorBest,
+            colorMode,
+            colorLog10,
+            valMin,
+            valMax,
+            valBest /*, valIconMin, valIconMax*/,
+        } = this.state;
 
         return (
             <Dialog
@@ -426,6 +451,19 @@ class ChannelColorDialog extends React.Component<ChannelColorDialogProps, Channe
                                 gap: 2,
                             }}
                         >
+                            {/* Color scale on/off - Color Best and the scale fields below belong to it, Color Min/Max stay */}
+                            <FormControlLabel
+                                control={
+                                    <Checkbox
+                                        checked={useScale}
+                                        onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                                            this.setState({ useScale: e.target.checked })
+                                        }
+                                    />
+                                }
+                                label={I18n.t('channelConfigColor_useColorLabel')}
+                            />
+
                             {/* Farbfelder */}
                             <Box sx={{ display: 'flex', gap: 2 }}>
                                 {/* Color Min (falseColor) */}
@@ -528,6 +566,7 @@ class ChannelColorDialog extends React.Component<ChannelColorDialogProps, Channe
                                             <Button
                                                 size="small"
                                                 variant="outlined"
+                                                disabled={!useScale}
                                                 onClick={() => this.setState({ colorBest: '#ffaa00' })}
                                                 sx={{ mt: 1 }}
                                             >
@@ -541,6 +580,7 @@ class ChannelColorDialog extends React.Component<ChannelColorDialogProps, Channe
                                                 type="color"
                                                 label={I18n.t('channelConfigColor_colorBest')}
                                                 value={colorBest}
+                                                disabled={!useScale}
                                                 onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                                                     this.setState({ colorBest: e.target.value })
                                                 }
@@ -549,6 +589,7 @@ class ChannelColorDialog extends React.Component<ChannelColorDialogProps, Channe
                                             <Button
                                                 size="small"
                                                 variant="text"
+                                                disabled={!useScale}
                                                 onClick={() => this.setState({ colorBest: '' })}
                                                 sx={{ mt: 1 }}
                                             >
@@ -566,6 +607,7 @@ class ChannelColorDialog extends React.Component<ChannelColorDialogProps, Channe
                                     type="number"
                                     label={I18n.t('channelConfigColor_valMin')}
                                     value={valMin}
+                                    disabled={!useScale}
                                     onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                                         this.setState({ valMin: Number(e.target.value) })
                                     }
@@ -576,6 +618,7 @@ class ChannelColorDialog extends React.Component<ChannelColorDialogProps, Channe
                                     type="number"
                                     label={I18n.t('channelConfigColor_valMax')}
                                     value={valMax}
+                                    disabled={!useScale}
                                     onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                                         this.setState({ valMax: Number(e.target.value) })
                                     }
@@ -586,6 +629,7 @@ class ChannelColorDialog extends React.Component<ChannelColorDialogProps, Channe
                                     type="number"
                                     label={I18n.t('channelConfigColor_valBest')}
                                     value={valBest ?? ''}
+                                    disabled={!useScale}
                                     onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                                         const v = e.target.value;
                                         this.setState({ valBest: v === '' ? undefined : Number(v) });
@@ -599,6 +643,7 @@ class ChannelColorDialog extends React.Component<ChannelColorDialogProps, Channe
                             <FormControl
                                 variant="standard"
                                 fullWidth
+                                disabled={!useScale}
                             >
                                 <InputLabel>{I18n.t('channelConfigColor_colorMode')}</InputLabel>
                                 <Select
@@ -632,6 +677,7 @@ class ChannelColorDialog extends React.Component<ChannelColorDialogProps, Channe
                             <FormControl
                                 variant="standard"
                                 fullWidth
+                                disabled={!useScale}
                             >
                                 <InputLabel>{I18n.t('channelConfigColor_log10')}</InputLabel>
                                 <Select
