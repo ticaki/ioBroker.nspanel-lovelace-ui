@@ -163,6 +163,7 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
 - (tt-tom17) popup notification: the left button now writes the plain id to `setStateID` and the id with the panel name to `setGlobalID`, like the middle and right button - scripts that checked the local point for the prefixed value must look at the global point instead
 - (tt-tom17) popup notification: a missing `textSize` state falls back to size 3 instead of sending `undefined` to the panel
 - (tt-tom17) screensaver: a tap on a notification that cannot be dismissed no longer gets lost - the panel changes to the main page as usual; only a dismissible notification takes the tap
+- (tt-tom17) cardThermo: with `AUTO` in `common.states` the inactive mode icons no longer show the outline A of the automatic mode
 
 ### 2.2.0 (2026-11-12)
 - (ticaki) web panel: smartphone models `web-p` and `web-l`, portrait layout for all cards, popups and screensavers on us-p/web-p, hardware buttons can be switched off, many layout fixes; no crash on the first connection, less log noise without browser

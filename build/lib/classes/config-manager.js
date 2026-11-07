@@ -869,6 +869,7 @@ class ConfigManager extends import_library.BaseClass {
           tempItem.data.entity1.set = { ...foundedStates[role].MODE, write: `return ${index}` };
           gridItem.pageItems.push(JSON.parse(JSON.stringify(tempItem)));
         }
+        tempItem.data.icon.false.value = void 0;
         index = typeof states == "object" ? Array.isArray(states) ? states.findIndex((item2) => item2 === "COOL") : states.COOL !== void 0 ? "COOL" : -1 : -1;
         if (index != -1) {
           tempItem.data.icon.true.value = { type: "const", constVal: "snowflake" };

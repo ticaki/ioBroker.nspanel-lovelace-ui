@@ -1023,6 +1023,8 @@ export class ConfigManager extends BaseClass {
                     tempItem.data.entity1.set = { ...foundedStates[role].MODE, write: `return ${index}` };
                     gridItem.pageItems.push(JSON.parse(JSON.stringify(tempItem)));
                 }
+                // the other modes have no inactive icon of their own - do not inherit the outline A of AUTO
+                tempItem.data.icon.false.value = undefined;
                 index =
                     typeof states == 'object'
                         ? Array.isArray(states)
