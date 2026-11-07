@@ -2345,9 +2345,14 @@ class NavigationAssignmentPanel extends ConfigGeneric<
 
                                       const isAllThis = topic === ALL_PANELS_SPECIAL_ID;
                                       const showNotice = !lockAssignment && !nextValue && !prevValue;
+                                      // the adapter excludes a panel from an "all panels" row only when its row
+                                      // has no navigation object at all - once a link was set, the (even empty)
+                                      // object stays and the page is built on this panel
+                                      const rowHasNavigation =
+                                          this.state.assignments.find(p => p.topic === topic)?.navigation !== undefined;
                                       const noticeKey = isAllThis
                                           ? 'nav_all_requires_prev_next'
-                                          : hasAll
+                                          : hasAll && !rowHasNavigation
                                             ? 'nav_remove_from_all_notice'
                                             : 'nav_target_only_notice';
 
@@ -2421,7 +2426,9 @@ class NavigationAssignmentPanel extends ConfigGeneric<
                                                                       </Tooltip>
                                                                   ) : lockAssignment && val ? (
                                                                       <Tooltip
-                                                                          title={I18n.t('nav_resolved_not_stored')}
+                                                                          title={I18n.t(
+                                                                              'main_page_resolved_neighbours',
+                                                                          )}
                                                                       >
                                                                           <Typography
                                                                               variant="body2"
