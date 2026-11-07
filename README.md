@@ -194,6 +194,7 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
 - (tt-tom17) admin: the summary of the start page in the navigation panel explains the resolved neighbours instead of asking to choose a value; the notice "page is not added on this panel" only appears when the panel row has no navigation at all - the only case in which the adapter leaves the page out
 - (tt-tom17) admin: "update scripts for all panels" in maintain reports the panels whose script update failed
 - (tt-tom17) admin: the timezone field explains when the value reaches a panel; the start dialog of the panel setup warns when the panel table has unsaved changes
+- (tt-tom17) maintain: a failed update of the global script is reported to the admin after the panel script was written and is logged as error
 
 ### 2.2.0 (2026-11-12)
 - (ticaki) web panel: smartphone models `web-p` and `web-l`, portrait layout for all cards, popups and screensavers on us-p/web-p, hardware buttons can be switched off, many layout fixes; no crash on the first connection, less log noise without browser
