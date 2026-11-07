@@ -175,7 +175,6 @@ declare namespace ScriptConfig {
         | 'notifyAction'
         | 'OnOff'
         | 'button'
-        | 'release'
         | 'up'
         | 'stop'
         | 'down'

@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import { indicatorPressKind, resolveScreensaverOptions, Screensaver } from './screensaver';
+import { resolveScreensaverOptions, Screensaver } from './screensaver';
 import { PageItem } from './pageItem';
 import type * as Types from '../types/types';
 import type * as pages from '../types/pages';
@@ -110,120 +110,6 @@ describe('lib/pages/screensaver - indicator tap', () => {
         await f.saver.onPopupRequest('12', 'popupLight', 'brightnessSlider', '50', null);
 
         expect(f.commands).to.deep.equal(['12:brightnessSlider:50']);
-        expect(f.writes).to.deep.equal([]);
-    });
-});
-
-describe('lib/pages/screensaver - release of an indicator (TFT 6.0.8)', () => {
-    const NOW = 1_000_000;
-    const realNow = Date.now;
-    const release: Types.IncomingEvent = { ...tap, action: 'release' };
-
-    type ReleaseFixture = Fixture & { logged: string[]; blocks: () => number };
-
-    /**
-     * @param indicatorButtons see {@link setup}
-     * @returns the fixture with the debug log and a counter of the started blocks
-     */
-    function pressSetup(indicatorButtons = true): ReleaseFixture {
-        const f = setup(indicatorButtons);
-        const logged: string[] = [];
-        const saver = f.saver as any;
-        saver.log.debug = (message: string): void => void logged.push(message);
-        let blocks = 0;
-        saver.adapter.setTimeout = (): number => ++blocks;
-        return { ...f, logged, blocks: () => blocks };
-    }
-    const at = (ms: number): void => {
-        Date.now = (): number => NOW + ms;
-    };
-
-    beforeEach(() => at(0));
-    afterEach(() => {
-        Date.now = realNow;
-    });
-
-    it('classifies by the named hold time', () => {
-        expect(indicatorPressKind(0)).to.equal('short');
-        expect(indicatorPressKind(599)).to.equal('short');
-        expect(indicatorPressKind(600)).to.equal('long');
-    });
-
-    it('a short press: reports short, the command ran once at the press', async () => {
-        const f = pressSetup();
-        await tapLikeThePanel(f, tap);
-        at(599);
-        await f.saver.onButtonEvent(release);
-
-        expect(f.logged).to.deep.equal(['Indicator 12: short press']);
-        expect(f.commands).to.deep.equal(['12:button:']);
-        expect(f.writes.length).to.equal(1);
-    });
-
-    it('a long press: reports long and switches only once', async () => {
-        const f = pressSetup();
-        await tapLikeThePanel(f, tap);
-        at(2000);
-        await f.saver.onButtonEvent(release);
-
-        expect(f.logged).to.deep.equal(['Indicator 12: long press']);
-        expect(f.commands).to.deep.equal(['12:button:']);
-        expect(f.writes.length).to.equal(1);
-    });
-
-    it('runs no command, writes nothing and starts no block', async () => {
-        const f = pressSetup();
-        await f.saver.onButtonEvent(tap);
-        const blocks = f.blocks();
-        const block = (f.saver as any).blockButtons;
-        await f.saver.onButtonEvent(release);
-
-        expect(f.blocks()).to.equal(blocks);
-        expect((f.saver as any).blockButtons).to.equal(block);
-        expect(f.commands).to.deep.equal(['12:button:']);
-        expect(f.writes.length).to.equal(1);
-    });
-
-    it('does nothing without a press, for another item and a second time', async () => {
-        const f = pressSetup();
-        await f.saver.onButtonEvent(release);
-        expect(f.logged).to.deep.equal([]);
-
-        await f.saver.onButtonEvent(tap);
-        await f.saver.onButtonEvent({ ...release, id: '13' });
-        await f.saver.onButtonEvent(release);
-        expect(f.logged).to.deep.equal([]);
-        expect(f.commands).to.deep.equal(['12:button:']);
-    });
-
-    it('measures a press the block drops as well', async () => {
-        const f = pressSetup();
-        await f.saver.onButtonEvent(tap);
-        at(100);
-        await f.saver.onButtonEvent(tap);
-        at(800);
-        await f.saver.onButtonEvent(release);
-
-        expect(f.commands).to.deep.equal(['12:button:']);
-        expect(f.logged).to.deep.equal(['Indicator 12: long press']);
-    });
-
-    it('is ignored after the screensaver was hidden', async () => {
-        const f = pressSetup();
-        (f.saver as any).clearTimerTick = (): void => undefined;
-        await f.saver.onButtonEvent(tap);
-        await f.saver.onVisibilityChange(false);
-        await f.saver.onButtonEvent(release);
-
-        expect(f.logged).to.deep.equal([]);
-    });
-
-    it('onPopupRequest does nothing with it', async () => {
-        const f = pressSetup();
-        await f.saver.onPopupRequest('12', undefined, 'release', '', release);
-        await f.saver.onPopupRequest('12', 'popupLight', 'release', '', release);
-
-        expect(f.commands).to.deep.equal([]);
         expect(f.writes).to.deep.equal([]);
     });
 });
@@ -1322,24 +1208,6 @@ describe('lib/pages/screensaver - timer instead of the clock', () => {
                     .at(-1);
                 await s.saver.delete();
                 expect(second?.cleared).to.equal(true);
-            });
-
-            it('a pageType forgets the press, its release reports nothing', async () => {
-                const s = await scene();
-                const logged: string[] = [];
-                s.saver.log.debug = (message: string): void => {
-                    if (message.startsWith('Indicator')) {
-                        logged.push(message);
-                    }
-                };
-                await s.saver.onButtonEvent(press);
-                s.saver.sendType(true);
-                await s.saver.onButtonEvent({ ...press, action: 'release' });
-                expect(logged).to.deep.equal([]);
-
-                await s.saver.onButtonEvent(press);
-                await s.saver.onButtonEvent({ ...press, action: 'release' });
-                expect(logged).to.deep.equal(['Indicator 0: short press']);
             });
 
             it('no block and no command while unloading', async () => {

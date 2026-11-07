@@ -8,8 +8,8 @@ A page 'screensaver4' (HMI 6.0.7: an animated Julia set) is not touched, the new
 The script rebuilds that page and adds 'screensaver5' to the pageType switch of every page.
 
 Layout, 3 rows x 5 columns of 90 x 107 px:
-  top     f1..f5   indicators, icon only, a touch sends event,buttonPress2,<id>,button,
-                   lifting the finger event,buttonPress2,<id>,release (sent by tc0 'up', a swipe replaces it)
+  top     f1..f5   indicators, icon only, a touch sends event,buttonPress2,<id>,button once: it empties tSend,
+                   tc0 'up' only sends a tSend with text (a swipe writes its text into it)
   middle  f6 | info icon, time, AM/PM, date (3 columns) | f7
   bottom  e1..e5   name / icon / value like the forecast items of the standard screensaver
   bottom edge      tRelay1, tRelay2 - the status icons as two color bars, like screensaver3
@@ -56,16 +56,22 @@ SEND = [
 
 
 PRESS_PREFIX = 'tSend.txt="event,buttonPress2,"+entn'
-
-
-def release_line(n):
-    """last line of f<n>Icon 'down': tc0 'up' sends what stays in tSend when the finger is lifted"""
-    return f'{PRESS_PREFIX}{n}.txt+",release"'
+CLEAR_SEND = 'tSend.txt=""'
+IF_TEXT = 'if(tSend.txt!="")'
 
 
 def indicator_down(n):
-    """code 'down' of the indicator f<n>Icon"""
-    return [f'{PRESS_PREFIX}{n}.txt+",button"'] + SEND + [release_line(n)]
+    """code 'down' of the indicator f<n>Icon: sends the press and leaves nothing for tc0 'up'"""
+    return [f'{PRESS_PREFIX}{n}.txt+",button"'] + SEND + [CLEAR_SEND]
+
+
+def send_if_text(lines):
+    """code 'up' of tc0 with the send block at its end inside if(tSend.txt!=""); already inside: unchanged"""
+    if IF_TEXT in lines:
+        return list(lines)
+    if lines[-len(SEND):] != SEND:
+        raise ValueError('tc0 up does not end with the send block')
+    return lines[:-len(SEND)] + [IF_TEXT, '{'] + ['  ' + line for line in SEND] + ['}']
 
 
 def text_obj(template, name, x, y, w, h, font, maxl, xcen=1, ycen=1):
@@ -181,6 +187,7 @@ def build_page(page, adv, easy, clock_font):
     src['tDate'].set('font', 0)
     src['tDate'].set('ycen', 1)
     src['strCommand'].set('txt_maxl', 1800)
+    src['tc0'].set_code('up', send_if_text(src['tc0'].code('up')))
 
     # bottom items like the standard forecast items
     bottom = []

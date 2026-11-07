@@ -83,20 +83,6 @@ export function resolveScreensaverOptions(options: pages.PageBase): {
     };
 }
 
-/** Hold time from which on a press of an indicator counts as long, the same as "hold" in the web panel */
-const INDICATOR_LONG_PRESS_MS = 600;
-
-/** How long an indicator was held, known when the finger is lifted (TFT 6.0.8, action `release`) */
-export type IndicatorPressKind = 'short' | 'long';
-
-/**
- * @param heldMs time between `button` and `release`
- * @returns the kind of the press
- */
-export function indicatorPressKind(heldMs: number): IndicatorPressKind {
-    return heldMs >= INDICATOR_LONG_PRESS_MS ? 'long' : 'short';
-}
-
 /** Messages of the screensaver that are only sent when their content changed */
 type FilteredMessage = 'weatherUpdate' | 'color' | 'statusUpdate' | 'notify';
 
@@ -104,8 +90,6 @@ export class Screensaver extends Page {
     items: undefined;
     private step: number = 0;
     private blockButtons: ioBroker.Timeout | undefined;
-    /** the press of an indicator whose `release` is still to come */
-    private indicatorPress: { id: string; since: number } | undefined;
     rotationTime: number = 300_000;
     public screensaverIndicatorButtons: boolean = false;
     public screensaverSwipe: boolean = false;
@@ -1011,8 +995,6 @@ export class Screensaver extends Page {
             this.lastTimerPayload = '';
             this.notifyHidden = false;
             this.lastUpdateTs = 0;
-            // the HMI has loaded the page: tc0 'up' of the old page will not run
-            this.indicatorPress = undefined;
         }
         super.sendToPanelClass(payload, ackForType, force, opt);
     }
@@ -1168,7 +1150,6 @@ export class Screensaver extends Page {
     async onVisibilityChange(v: boolean): Promise<void> {
         //await super.onVisibilityChange(v);
         this.step = 0;
-        this.indicatorPress = undefined;
         if (v) {
             // a freshly shown screensaver must be rendered immediately and completely
             this.lastUpdateTs = 0;
@@ -1511,7 +1492,7 @@ export class Screensaver extends Page {
         value: string | undefined,
         event: Types.IncomingEvent | null = null,
     ): Promise<void> {
-        if (action === 'button' || action === 'release') {
+        if (action === 'button') {
             return;
         }
         // a blind on the screensaver shows its position only - it opens no shutter popup
@@ -1525,16 +1506,8 @@ export class Screensaver extends Page {
     }
 
     async onButtonEvent(event: Types.IncomingEvent): Promise<void> {
-        if (event.action === 'release') {
-            this.onIndicatorRelease(event.id);
-            return;
-        }
         // page is the index of the page in the configuration - 0 is a valid page (screensaver first)
         if (event.page !== undefined && event.id && this.pageItems && this.pageItems[event.id as any]) {
-            if (event.action === 'button') {
-                // also a press the block below drops: the finger is on the indicator and its release will come
-                this.indicatorPress = { id: event.id, since: Date.now() };
-            }
             if (this.blockButtons || this.unload || this.adapter.unload) {
                 return;
             }
@@ -1558,32 +1531,6 @@ export class Screensaver extends Page {
             }
             await this.pageItems[event.id as any]!.onCommand(event.action, event.opt);
         }
-    }
-
-    /**
-     * The finger left an indicator, the event of TFT 6.0.8. The command of the press already ran at `button`: this
-     * only ends the press and never runs a command, writes a state or starts a block. Without a press of this
-     * indicator (swiped, page changed, screensaver hidden) nothing happens.
-     *
-     * @param id item id of the event
-     */
-    private onIndicatorRelease(id: string): void {
-        const press = this.indicatorPress;
-        this.indicatorPress = undefined;
-        if (press?.id === id) {
-            this.onIndicatorPressEnd(id, indicatorPressKind(Date.now() - press.since));
-        }
-    }
-
-    /**
-     * What a finished press of an indicator does beyond the command of `button`: so far nothing, it is only reported.
-     * A configurable long press belongs here.
-     *
-     * @param id item id
-     * @param kind short or long press
-     */
-    private onIndicatorPressEnd(id: string, kind: IndicatorPressKind): void {
-        this.log.debug(`Indicator ${id}: ${kind} press`);
     }
 
     async delete(): Promise<void> {
