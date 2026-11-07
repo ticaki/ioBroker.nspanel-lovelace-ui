@@ -168,6 +168,7 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
 - (ticaki) admin: screensaver places with `text.trash.next` / `text.trash.afterNext` show a readable name instead of the last part of a leftover state; choosing a template that needs no object removes the old state from the item
 - (ticaki) screensaver: new action `values to cycle through` for indicators: you maintain an ordered list of values (e.g. `-1,0,1`), each press writes the next value to the state and after the last one it starts again with the first
 - (ticaki) screensaver: values, colors, status icons and notifications are only sent when they changed, the display no longer gets the same messages again and again; a press on an indicator shows its new icon without the delay of up to 3 s
+- (ticaki) admin: colors chosen for the color scale of a screensaver item are saved now, they were dropped when the dialog was applied
 
 ### 2.1.0 (2026-11-05)
 - (ticaki) screensaver: a timer can replace the clock - from an on/off and a data state, from patterns for timers in changing slots or from a page item with a timer popup; it shows the remaining minutes in the color of the timer, the first tap switches to the clock; all screensaver modes and the web panel

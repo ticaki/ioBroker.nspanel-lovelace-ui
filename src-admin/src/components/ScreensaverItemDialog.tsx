@@ -618,8 +618,7 @@ export class ScreensaverItemDialog extends React.Component<ScreensaverItemDialog
         delete draft.readOptions;
         switch (this.state.colorMode) {
             case 'scale':
-                delete draft.colorOn;
-                delete draft.colorOff;
+                // colorOn / colorOff are the ends of the scale, empty = default color of the theme
                 delete draft.colorState;
                 break;
             case 'state':
@@ -634,7 +633,10 @@ export class ScreensaverItemDialog extends React.Component<ScreensaverItemDialog
         const kind = this.kind();
         if (kind !== 'boolean') {
             delete draft.iconOff;
-            delete draft.colorOff;
+            // a number with a scale: colorOff is the color of the lower end
+            if (kind !== 'number' || this.state.colorMode !== 'scale') {
+                delete draft.colorOff;
+            }
             delete draft.textOn;
             delete draft.textOff;
         }
