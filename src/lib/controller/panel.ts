@@ -2284,6 +2284,12 @@ export class Panel extends BaseClass {
             }
             case 'buttonPress3':
             case 'buttonPress2': {
+                // TFT 6.0.8: the finger left an indicator. It belongs to the screensaver, whichever page is active by
+                // now, and it comes with the time of the lift: no touch block, no popup, no command
+                if (event.action === 'release') {
+                    await this.screenSaver.onButtonEvent(event);
+                    break;
+                }
                 if (event.id == 'screensaver') {
                     // before the gesture and notification states: this tap only switches the timer to the clock
                     if (await this.screenSaver.onTimerTap(event.action, event.opt)) {

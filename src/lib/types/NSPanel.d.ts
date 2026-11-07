@@ -211,6 +211,7 @@ export namespace NSPanel {
         | 'notifyAction'
         | 'OnOff'
         | 'button'
+        | 'release'
         | 'up'
         | 'stop'
         | 'down'

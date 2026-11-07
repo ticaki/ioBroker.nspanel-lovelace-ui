@@ -8,7 +8,8 @@ A page 'screensaver4' (HMI 6.0.7: an animated Julia set) is not touched, the new
 The script rebuilds that page and adds 'screensaver5' to the pageType switch of every page.
 
 Layout, 3 rows x 5 columns of 90 x 107 px:
-  top     f1..f5   indicators, icon only, a touch sends event,buttonPress2,<id>,button
+  top     f1..f5   indicators, icon only, a touch sends event,buttonPress2,<id>,button,
+                   lifting the finger event,buttonPress2,<id>,release (sent by tc0 'up', a swipe replaces it)
   middle  f6 | info icon, time, AM/PM, date (3 columns) | f7
   bottom  e1..e5   name / icon / value like the forecast items of the standard screensaver
   bottom edge      tRelay1, tRelay2 - the status icons as two color bars, like screensaver3
@@ -52,6 +53,19 @@ SEND = [
     'prints tSend.txt,0',
     'prints crcval,2',
 ]
+
+
+PRESS_PREFIX = 'tSend.txt="event,buttonPress2,"+entn'
+
+
+def release_line(n):
+    """last line of f<n>Icon 'down': tc0 'up' sends what stays in tSend when the finger is lifted"""
+    return f'{PRESS_PREFIX}{n}.txt+",release"'
+
+
+def indicator_down(n):
+    """code 'down' of the indicator f<n>Icon"""
+    return [f'{PRESS_PREFIX}{n}.txt+",button"'] + SEND + [release_line(n)]
 
 
 def text_obj(template, name, x, y, w, h, font, maxl, xcen=1, ycen=1):
@@ -188,7 +202,7 @@ def build_page(page, adv, easy, clock_font):
     for j, (x, y, cw, h) in enumerate(cells):
         n = j + 1
         o = text_obj(template, f'f{n}Icon', x, y, cw, h, 4, 4)
-        o.set_code('down', [f'tSend.txt="event,buttonPress2,"+entn{n}.txt+",button"'] + SEND)
+        o.set_code('down', indicator_down(n))
         indicators.append(o)
         names.append(var_obj(var, f'entn{n}', 14))
 

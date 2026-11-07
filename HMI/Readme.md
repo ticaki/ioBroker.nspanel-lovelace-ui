@@ -544,13 +544,15 @@ Screensaver in a grid of tiles. The page is part of these project files, the off
 
 | Panel | File | Page size | Grid |
 |---|---|---|---|
-| eu | `HMI/nspanel-v6.0.7.screensaver5.HMI` | 480 x 320, used x 0..449 | 5 columns of 90 px |
-| us-l | `HMI/us-l/nspanel-us-l-v6.0.7.screensaver5.HMI` | 480 x 320, used x 15..464 | 5 columns of 90 px |
-| us-p | `HMI/us-p/nspanel-us-p-v6.0.7.screensaver5.HMI` | 320 x 480 | 4 columns of 80 px |
+| eu | `HMI/nspanel-v6.0.8.screensaver5.HMI` (before: `HMI/nspanel-v6.0.7.screensaver5.HMI`) | 480 x 320, used x 0..449 | 5 columns of 90 px |
+| us-l | `HMI/us-l/nspanel-us-l-v6.0.8.screensaver5.HMI` (before: `HMI/us-l/nspanel-us-l-v6.0.7.screensaver5.HMI`) | 480 x 320, used x 15..464 | 5 columns of 90 px |
+| us-p | `HMI/us-p/nspanel-us-p-v6.0.8.screensaver5.HMI` (before: `HMI/us-p/nspanel-us-p-v6.0.7.screensaver5.HMI`) | 320 x 480 | 4 columns of 80 px |
+
+6.0.8 differs from 6.0.7 only in the event `event,buttonPress2,<id>,release` of the indicators, see [screensaver page](#screensaver-page) in the events, and the version text.
 
 The page `screensaver4` of the official HMI 6.0.7 is an unrelated animation without an entry in the `pageType` switch.
 
-The generators in `HMI/tools` create the files: `screensaver5.py` (eu), `screensaver5_usl.py`, `screensaver5_usp.py`.
+The generators in `HMI/tools` create the files: `screensaver5.py` (eu), `screensaver5_usl.py`, `screensaver5_usp.py`. `indicator_release.py` makes 6.0.8 out of their result or a 6.0.7 file.
 
 Layout from top to bottom:
 
@@ -2720,6 +2722,8 @@ Actions of the adapter: `begin`, `pause`, `clear`, `finish`; the button press ar
 `event,screensaverOpen` - Screensaver has opened
 
 `event,buttonPress2,<id>,button` - Touch on an indicator of screensaver2 or screensaver5
+
+`event,buttonPress2,<id>,release` - The finger left an indicator after a touch on it. Only `screensaver5` of the files `*-v6.0.8.screensaver5.HMI` and `screensaver2` of the eu file. No event after a swipe (the swipe event comes instead) or when the page changed in the meantime
 
 
 ### cardEntities Page

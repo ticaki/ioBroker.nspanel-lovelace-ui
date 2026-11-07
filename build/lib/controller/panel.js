@@ -1971,6 +1971,10 @@ class Panel extends import_library.BaseClass {
       }
       case "buttonPress3":
       case "buttonPress2": {
+        if (event.action === "release") {
+          await this.screenSaver.onButtonEvent(event);
+          break;
+        }
         if (event.id == "screensaver") {
           if (await this.screenSaver.onTimerTap(event.action, event.opt)) {
             break;

@@ -37,6 +37,7 @@ var __privateMethod = (obj, member, method) => (__accessCheck(obj, member, "acce
 var screensaver_exports = {};
 __export(screensaver_exports, {
   Screensaver: () => Screensaver,
+  indicatorPressKind: () => indicatorPressKind,
   resolveScreensaverOptions: () => resolveScreensaverOptions
 });
 module.exports = __toCommonJS(screensaver_exports);
@@ -67,6 +68,10 @@ function resolveScreensaverOptions(options) {
     options: { ...options, config: { ...config, card: "screensaver", mode: "standard" } },
     rejected: { mode, card }
   };
+}
+const INDICATOR_LONG_PRESS_MS = 600;
+function indicatorPressKind(heldMs) {
+  return heldMs >= INDICATOR_LONG_PRESS_MS ? "long" : "short";
 }
 const _Screensaver = class _Screensaver extends import_Page.Page {
   //readonly mode: Types.ScreensaverModeType = 'standard';
@@ -109,6 +114,8 @@ const _Screensaver = class _Screensaver extends import_Page.Page {
     __publicField(this, "items");
     __publicField(this, "step", 0);
     __publicField(this, "blockButtons");
+    /** the press of an indicator whose `release` is still to come */
+    __publicField(this, "indicatorPress");
     __publicField(this, "rotationTime", 3e5);
     __publicField(this, "screensaverIndicatorButtons", false);
     __publicField(this, "screensaverSwipe", false);
@@ -914,6 +921,7 @@ const _Screensaver = class _Screensaver extends import_Page.Page {
       this.lastTimerPayload = "";
       this.notifyHidden = false;
       this.lastUpdateTs = 0;
+      this.indicatorPress = void 0;
     }
     super.sendToPanelClass(payload, ackForType, force, opt);
   }
@@ -1024,6 +1032,7 @@ const _Screensaver = class _Screensaver extends import_Page.Page {
   }
   async onVisibilityChange(v) {
     this.step = 0;
+    this.indicatorPress = void 0;
     if (v) {
       this.lastUpdateTs = 0;
       this.resetLastMessage();
@@ -1245,7 +1254,7 @@ const _Screensaver = class _Screensaver extends import_Page.Page {
    */
   async onPopupRequest(id, popup, action, value, event = null) {
     var _a, _b, _c;
-    if (action === "button") {
+    if (action === "button" || action === "release") {
       return;
     }
     if ((popup === "popupShutter" || popup === "popupShutter2") && ((_c = (_b = (_a = this.pageItems) == null ? void 0 : _a[Number(id)]) == null ? void 0 : _b.dataItems) == null ? void 0 : _c.role) === "blind") {
@@ -1254,7 +1263,14 @@ const _Screensaver = class _Screensaver extends import_Page.Page {
     await super.onPopupRequest(id, popup, action, value, event);
   }
   async onButtonEvent(event) {
+    if (event.action === "release") {
+      this.onIndicatorRelease(event.id);
+      return;
+    }
     if (event.page !== void 0 && event.id && this.pageItems && this.pageItems[event.id]) {
+      if (event.action === "button") {
+        this.indicatorPress = { id: event.id, since: Date.now() };
+      }
       if (this.blockButtons || this.unload || this.adapter.unload) {
         return;
       }
@@ -1276,6 +1292,30 @@ const _Screensaver = class _Screensaver extends import_Page.Page {
       }
       await this.pageItems[event.id].onCommand(event.action, event.opt);
     }
+  }
+  /**
+   * The finger left an indicator, the event of TFT 6.0.8. The command of the press already ran at `button`: this
+   * only ends the press and never runs a command, writes a state or starts a block. Without a press of this
+   * indicator (swiped, page changed, screensaver hidden) nothing happens.
+   *
+   * @param id item id of the event
+   */
+  onIndicatorRelease(id) {
+    const press = this.indicatorPress;
+    this.indicatorPress = void 0;
+    if ((press == null ? void 0 : press.id) === id) {
+      this.onIndicatorPressEnd(id, indicatorPressKind(Date.now() - press.since));
+    }
+  }
+  /**
+   * What a finished press of an indicator does beyond the command of `button`: so far nothing, it is only reported.
+   * A configurable long press belongs here.
+   *
+   * @param id item id
+   * @param kind short or long press
+   */
+  onIndicatorPressEnd(id, kind) {
+    this.log.debug(`Indicator ${id}: ${kind} press`);
   }
   async delete() {
     var _a;
@@ -1408,6 +1448,7 @@ let Screensaver = _Screensaver;
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
   Screensaver,
+  indicatorPressKind,
   resolveScreensaverOptions
 });
 //# sourceMappingURL=screensaver.js.map

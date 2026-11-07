@@ -209,6 +209,7 @@ const BUTTON_ACTION_TYPES = new Set([
     'notifyAction',
     'OnOff',
     'button',
+    'release',
     'up',
     'stop',
     'down',

@@ -133,6 +133,7 @@ describe('lib/types/function-and-const', () => {
         it('accepts known button actions', () => {
             expect(isButtonActionType('OnOff')).to.equal(true);
             expect(isButtonActionType('bExit')).to.equal(true);
+            expect(isButtonActionType('release')).to.equal(true);
             expect(isButtonActionType('media-pause')).to.equal(true);
             expect(isButtonActionType('volumeSlider')).to.equal(true);
         });
