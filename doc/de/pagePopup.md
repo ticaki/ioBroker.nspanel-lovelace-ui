@@ -4,7 +4,8 @@ Im Adapter heißen **zwei verschiedene Dinge** Popup:
 
 1. **Detail-Popups einer Fläche** — Licht, Rollladen, Thermostat, Timer, Auswahlliste. Sie gehen auf, wenn
    man auf einer Seite länger oder gezielt auf eine Fläche tippt, und gehören zum jeweiligen Pageitem;
-   eingestellt werden sie dort (siehe [Wiederkehrende Dialoge](PageConfig-Dialoge)).
+   eingestellt werden sie dort (siehe [Wiederkehrende Dialoge](PageConfig-Dialoge)). Das Timer-Popup hat
+   eine eigene Seite: [Timer-Popup](popupTimer).
 2. **Das Meldungs-Popup** — eine eigene Seite, die eine Nachricht über alles andere legt. Um die geht es
    hier.
 

@@ -51,6 +51,7 @@
 
 **On the panel**  
 - [Popups](pagePopup)  
+- [Timer popup](popupTimer)  
 
 **Reference**  
 - [Alias table](ALIAS)  

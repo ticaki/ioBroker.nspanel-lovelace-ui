@@ -42,6 +42,8 @@ Two checkboxes at the head of the dialog decide which kind of element you get:
 
 With *Is a navigation* ticked, the field **Target page** appears. It lists the pages this panel knows about — the page itself is taken out of the list, `main` comes first, the rest alphabetically. The field also accepts a freely typed name; handy for a page that does not exist yet, and also the place where a typo goes unnoticed.
 
+At the end of the list stands the entry **Screensaver**: the slot then shows the screensaver at once, as if the timeout of the panel had run out (see [showing the screensaver at once](screensaver#15-showing-the-screensaver-at-once)). The same entry stands in the target page of the long press and in the *Target page after pressing*.
+
 ### The ioBroker channel and its check marks
 
 ![The red error mark next to the channel field with its tooltip](../Pictures/pageConfigDialoge/dialoge-02-fehlerzeichen.png)
@@ -111,6 +113,7 @@ These fields only appear for a page item with a valid channel ID and a matching 
 | **Minimum / Maximum color temperature** | `ct`, `rgb`, `rgbSingle`, `hue` | The same for the colour temperature slider. |
 | **Color mode (colormode)** | `dimmer`, `ct`, `rgb`, `rgbSingle`, `hue` | Set: the panel always colours the icon from **hue/RGB**. Not set: the adapter decides by itself — it takes the source whose state was written last (colour temperature or colour). |
 | **Target page after pressing** | `button` (no navigation item, no custom button) | A press switches the button **and** changes to this page — typically to return to the previous page after choosing an option. Like the navigation target page, the field also accepts a freely typed page name. |
+| **Use the timer of the screensaver** | `level.timer` | Checkbox: the item and its popup show the timer of the screensaver of this panel instead of their own states. Help text: *The item and its popup show the timer of the screensaver of this panel (time dialog). The states of this channel are not used for it.* Locked when the screensaver uses exactly this item as the source of its timer (*Not possible: … that would be a circle.*). Details under [timer popup](popupTimer#5-use-the-timer-of-the-screensaver). |
 
 ### Icon and colour for "true" and "false"
 
@@ -153,6 +156,7 @@ The **`{ }`** button on the right of the title row of the Pageitem Configuration
 - The icon above the editor (**Format JSON**) re-indents valid JSON.
 - On first opening it does not read `{}` but shows a **suggestion**: the script item the adapter would build from the fields already filled in, in the *script* format. Only when neither a channel ID nor a navigation target is set does the dialog start empty in the *native* format.
 - **Remove raw data (back to standard)** (bottom left, only with raw mode already active) brings the item back to the fields of the dialog. The standard fields are in fact kept in the background while raw mode runs.
+- In the format *script* the fields of the configuration script apply. Three of them belong to the timer functions: `"targetPage": "///screensaver"` (also for `prev`, `next`, `parent` and `home` of a page) shows the screensaver at once; `"useScreensaverTimer": true` lets a `level.timer` item use the timer of the screensaver; `"itemId"` is only needed by a script item a screensaver is to use as the source of its timer — the value has to be unique within the instance. In the admin the adapter assigns this id itself.
 
 **While raw data is active**, the `{ }` button is **orange** and the whole content of the Pageitem Configuration is replaced by a warning box: *"Raw configuration active (format …)"*, below it the recognisable ID or the template and the sentence *"The item is built from the raw data alone, the fields of this dialog are not used."* A button **Edit raw data** leads back into the JSON editor. A raw data item needs **no channel ID** — **Apply** is therefore possible without a channel, and the role and state checks are skipped.
 

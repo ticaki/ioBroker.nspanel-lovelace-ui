@@ -4,7 +4,7 @@
 
 1. **The detail popup of a tile** — light, shutter, thermostat, timer, selection list. It opens from a page
    when you tap a tile, it belongs to that page item, and it is configured there (see
-   [recurring dialogs](PageConfig-Dialoge)).
+   [recurring dialogs](PageConfig-Dialoge)). The timer popup has a page of its own: [timer popup](popupTimer).
 2. **The notification popup** — a page of its own that puts a message on top of everything else. That is
    what this page is about.
 

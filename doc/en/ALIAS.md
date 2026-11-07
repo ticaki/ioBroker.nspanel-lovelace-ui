@@ -136,10 +136,10 @@
 ### level.timer
 | Channel role | State ID | common.type | common.role | required | common.write | description |
 | :---: | :--- | :--- | :--- | :---: | :---: | :--- |
-| **level.timer** | ~~ACTUAL~~ | number | value.timer, level.timer, date |  |  | This is what is displayed - date in hh:mm, timer in mm:ss |
-| " | ~~SET~~ | number | level.timer, date |  | X | A changed value is written here |
-| " | ~~STATE~~ | boolean | button |  | X | if the states above are not used, this one is triggered when an internal timer ends. |
-| " | ~~STATUS~~ | number | level.mode |  | X | 0: OFF , 1: PAUSE, 2: ON/RUNNING |
+| **level.timer** | ~~ACTUAL~~ | number | value.timer, level.timer, date |  |  | What is shown. Timer: remaining time in seconds (unit `ms`: milliseconds), list HH:MM:SS. Alarm clock (role `date`): timestamp in ms, shown as HH:MM. Without ACTUAL the adapter counts itself. Details: [timer popup](popupTimer) |
+| " | ~~SET~~ | number | level.timer, date |  | X | Target of a time set in the popup, same unit as ACTUAL; alarm clock: the next point in time of that clock time as a timestamp in ms. For an internal timer a value from outside sets the time, 0 cancels. |
+| " | ~~STATE~~ | boolean | button |  | X | Becomes `true` when an internal timer runs out and when **Finish** is pressed – never with Cancel or Clear. |
+| " | ~~STATUS~~ | number | level.mode |  | X | 0: off, 1: pause, 2: running. Needed for Start, Pause and On/Off of an external timer and an alarm clock; for an internal timer also from outside (2 starts, 1 pauses, 0 cancels), the adapter mirrors its state into it. |
 
 ### light
 | Channel role | State ID | common.type | common.role | required | common.write | description |

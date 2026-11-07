@@ -23,6 +23,7 @@ The graph shows **what the adapter really built at its last start** — not the 
 - **Pages** as nodes, with the name the page is addressed with in the navigation (the start page always as `main`).
 - **Navigation links** as coloured lines: `prev`, `next`, `home`, `parent`.
 - **Target pages** of page items: a short press on a page item leads to one page, a long press to a second one. A target reachable both ways is drawn only once (as a short press).
+- The node **Screensaver**, as soon as a link or a page item calls up the screensaver at once (see [showing the screensaver at once](screensaver#15-showing-the-screensaver-at-once)). It is a system page without navigation of its own, carries the lock and stays visible even without the tick box *Show system pages*.
 - **States and channels** a page works with — as nodes of their own if wanted. A navigation target that is read from a state gets such a node too: where it leads is only decided at runtime, but where it comes from is visible.
 
 The tab needs a **running instance**. At the top right it says **Adapter online** or **Adapter offline**; if the adapter does not answer within three seconds, "No data - Adapter might be offline or no panel configured." appears instead of the graph.

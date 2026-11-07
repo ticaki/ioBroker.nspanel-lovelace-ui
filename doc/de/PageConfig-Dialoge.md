@@ -42,6 +42,8 @@ Zwei Haken am Kopf des Dialogs entscheiden, welche Art von Element entsteht:
 
 Ist *Ist eine Navigation* gesetzt, erscheint das Feld **Zielseite**. Es listet die Seiten auf, die dieses Panel kennt — die eigene Seite ist aus der Liste genommen, `main` steht vorn, der Rest alphabetisch. Das Feld nimmt auch einen frei getippten Namen an; praktisch für eine Seite, die erst noch entsteht, aber auch die Stelle, an der ein Tippfehler unbemerkt bleibt.
 
+Am Ende der Liste steht der Eintrag **Screensaver**: Die Fläche zeigt dann sofort den Bildschirmschoner, so als wäre der Timeout des Panels abgelaufen (siehe [Bildschirmschoner sofort anzeigen](screensaver#15-bildschirmschoner-sofort-anzeigen)). Derselbe Eintrag steht in der Zielseite des langen Drucks und in der *Zielseite nach dem Drücken*.
+
 ### Der ioBroker-Kanal und seine Prüfzeichen
 
 ![Das rote Fehlerzeichen am Kanalfeld mit seinem Tooltip](../Pictures/pageConfigDialoge/dialoge-02-fehlerzeichen.png)
@@ -111,6 +113,7 @@ Diese Felder erscheinen nur bei einem Pageitem mit gültiger Kanal-ID und passen
 | **Minimale / Maximale Farbtemperatur** | `ct`, `rgb`, `rgbSingle`, `hue` | Dasselbe für den Farbtemperatur-Schieber. |
 | **Farbmodus (colormode)** | `dimmer`, `ct`, `rgb`, `rgbSingle`, `hue` | Gesetzt: das Panel färbt das Symbol immer aus **Farbton/RGB**. Nicht gesetzt: der Adapter entscheidet selbst — er nimmt die Quelle, deren Datenpunkt zuletzt geschrieben wurde (Farbtemperatur oder Farbe). |
 | **Zielseite nach dem Drücken** | `button` (kein Navigations-Item, kein benutzerdefinierter Knopf) | Ein Druck schaltet den Button **und** wechselt auf diese Seite — typisch, um nach der Auswahl einer Option zur vorigen Seite zurückzukehren. Das Feld nimmt wie die Navigations-Zielseite auch einen frei getippten Seitennamen. |
+| **Timer aus dem Screensaver verwenden** | `level.timer` | Häkchen: Das Item und sein Popup zeigen den Timer des Bildschirmschoners dieses Panels statt der eigenen Datenpunkte. Hilfstext: *Item und Popup zeigen den Timer des Screensavers dieses Panels (Dialog der Uhrzeit). Die Datenpunkte dieses Channels werden dafür nicht verwendet.* Gesperrt, wenn der Bildschirmschoner genau dieses Item als Quelle seines Timers nutzt (*Nicht möglich: … das wäre ein Kreis.*). Einzelheiten unter [Timer-Popup](popupTimer#5-timer-aus-dem-screensaver-verwenden). |
 
 ### Symbol und Farbe für „wahr" und „unwahr"
 
@@ -153,6 +156,7 @@ Der Knopf **`{ }`** rechts in der Titelzeile der Pageitem-Konfiguration (Tooltip
 - Das Symbol über dem Editor (**JSON formatieren**) rückt gültiges JSON neu ein.
 - Beim ersten Öffnen steht nicht `{}` da, sondern ein **Vorschlag**: das Skript-Item, das der Adapter aus den bereits gefüllten Feldern bauen würde, im Format *script*. Nur wenn weder eine Kanal-ID noch ein Navigationsziel gesetzt ist, startet der Dialog leer im Format *native*.
 - **Rohdaten entfernen (zurück zum Standard)** (links unten, nur bei bereits aktivem Rohmodus) bringt das Item zu den Feldern des Dialogs zurück. Die Standardfelder bleiben nämlich im Hintergrund erhalten, solange der Rohmodus läuft.
+- Im Format *script* gelten die Felder des Konfigurationsskripts. Drei davon gehören zu den Timer-Funktionen: `"targetPage": "///screensaver"` (auch für `prev`, `next`, `parent` und `home` einer Seite) zeigt den Bildschirmschoner sofort; `"useScreensaverTimer": true` lässt ein `level.timer`-Item den Timer des Bildschirmschoners nutzen; `"itemId"` braucht nur ein Skript-Item, das ein Bildschirmschoner als Quelle seines Timers nutzen soll — der Wert muss in der Instanz eindeutig sein. Im Admin vergibt der Adapter diese Kennung selbst.
 
 **Solange Rohdaten aktiv sind**, ist der `{ }`-Knopf **orange**, und der ganze Inhalt der Pageitem-Konfiguration ist durch einen Warnkasten ersetzt: *„Rohkonfiguration aktiv (Format …)"*, darunter die erkennbare ID bzw. das Template und der Satz *„Das Item wird allein aus den Rohdaten gebaut, die Felder dieses Dialogs werden nicht verwendet."* Ein Knopf **Rohdaten bearbeiten** führt zurück in den JSON-Editor. Ein Rohdaten-Item braucht **keine Kanal-ID** — **Übernehmen** ist deshalb auch ohne Kanal möglich, und die Rollen- und Datenpunktprüfungen entfallen.
 

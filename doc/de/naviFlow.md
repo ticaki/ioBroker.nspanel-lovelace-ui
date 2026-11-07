@@ -23,6 +23,7 @@ Der Graph zeigt **das, was der Adapter beim letzten Start wirklich gebaut hat** 
 - **Seiten** als Knoten, mit dem Namen, unter dem die Seite in der Navigation angesprochen wird (die Startseite immer als `main`).
 - **Navigationsverweise** als farbige Linien: `prev`, `next`, `home`, `parent`.
 - **Zielseiten** von Flächen: der kurze Druck auf ein PageItem führt zu einer Seite, der lange Druck zu einer zweiten. Ein Ziel, das auf beiden Wegen erreichbar ist, wird nur einmal gezeichnet (als kurzer Druck).
+- Der Knoten **Screensaver**, sobald ein Verweis oder eine Fläche den Bildschirmschoner sofort aufruft (siehe [Bildschirmschoner sofort anzeigen](screensaver#15-bildschirmschoner-sofort-anzeigen)). Er ist eine Systemseite ohne eigene Navigation, trägt das Schloss und bleibt auch ohne den Haken *Systemseiten anzeigen* sichtbar.
 - **Datenpunkte und Channels**, mit denen eine Seite arbeitet — auf Wunsch als eigene Knoten. Auch ein Navigationsziel, das aus einem Datenpunkt gelesen wird, bekommt so einen Knoten: wohin es führt, steht erst zur Laufzeit fest, woher es kommt, ist aber zu sehen.
 
 Der Tab braucht eine **laufende Instanz**. Oben rechts steht **Adapter online** bzw. **Adapter offline**; antwortet der Adapter nicht innerhalb von drei Sekunden, erscheint statt des Graphen „Keine Daten – Der Adapter ist möglicherweise offline oder es ist kein Panel konfiguriert."

@@ -63,13 +63,13 @@ Two items are still in progress according to the project README: `cardLChart2` a
 
 ## 5. Popups
 
-Popups open from within a page and control a single device in detail: `popupLight` and `popupLightNew` (brightness, colour, colour temperature), `popupShutter` and `popupShutter2` (shutters, slats), `popupThermo` (thermostat), `popupFan` (fan), `popupInSel` (selection lists), `popupTimer` and `popupSlider`. Which variant is used is decided by the adapter itself — the new one, except for a shutter with slats.
+Popups open from within a page and control a single device in detail: `popupLight` and `popupLightNew` (brightness, colour, colour temperature), `popupShutter` and `popupShutter2` (shutters, slats), `popupThermo` (thermostat), `popupFan` (fan), `popupInSel` (selection lists), `popupTimer` (timers and alarm clocks, see [timer popup](popupTimer)) and `popupSlider`. Which variant is used is decided by the adapter itself — the new one, except for a shutter with slats.
 
 A different thing altogether is the **notification popup** (`popupNotify`): not a detail view of a device but a system page that puts a message on top of everything else. It is driven by states or `sendTo` and described under [Popups](pagePopup).
 
 ## 6. Screensaver
 
-When idle, the panel shows a screensaver with time, date, weather and freely assignable value slots, plus status badges and indicator buttons. Several versions with different layouts exist (standard, alternate, advanced, easyview). It can be set up in the admin (screensaver – admin) or in the script.
+When idle, the panel shows a screensaver with time, date, weather and freely assignable value slots, plus status badges and indicator buttons. Several versions with different layouts exist (standard, alternate, advanced, easyview). It can be set up in the admin ([screensaver in the admin](screensaver)) or in the script. Instead of the clock the screensaver can show the remaining time of a running timer, and it can be called up at once from a slot, a navigation arrow or a state.
 
 ## 7. Configuration in the admin — and when the script
 

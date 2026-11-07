@@ -15,10 +15,12 @@ Inhalt:
 - [Indikatoren und Tasten](#8-indikatoren-und-tasten)
 - [Statussymbole](#9-statussymbole)
 - [Uhrzeit und Datum](#10-uhrzeit-und-datum)
+  - [Timer statt Uhrzeit](#timer-statt-uhrzeit)
 - [Wetter](#11-wetter)
 - [Optionen: Rotation, Wischen, Indikator-Tasten](#12-optionen-rotation-wischen-indikator-tasten)
 - [Benachrichtigungen](#13-benachrichtigungen)
 - [Speichern – was der Adapter daraus macht](#14-speichern--was-der-adapter-daraus-macht)
+- [Bildschirmschoner sofort anzeigen](#15-bildschirmschoner-sofort-anzeigen)
 - [Fallstricke](#fallstricke)
 
 ## 1. Bildschirmschoner anlegen
@@ -46,7 +48,7 @@ Jede Zeile der Liste nennt unter dem Namen die Version und die zugeordneten Pane
 | **`{ }` vor der Beschriftung** | Das Item ist über [Rohdaten](#6-rohdaten-json) konfiguriert. |
 | **Blätterpfeile** | Hat ein Listenbereich mehr als ein Fenster, stehen links und rechts (bei schmalen Spalten darüber und darunter) Pfeile mit einem Zähler – siehe [Fenster und Blättern](#7-mehr-items-als-plätze-fenster-und-blättern). |
 | **Rahmen der Indikatoren** | grau = keine Taste, rot = Taste, grün = Schalter, blau = Seite öffnen. Grau steht auch, wenn die Option **Indikatoren wirken als Tasten** aus ist (siehe [Indikatoren](#8-indikatoren-und-tasten)). |
-| **Uhrzeit**, **Datum** | Klick öffnet den Dialog für 12h/24h bzw. das Datumsformat. |
+| **Uhrzeit**, **Datum** | Klick öffnet den Dialog für 12h/24h und den [Timer statt Uhrzeit](#timer-statt-uhrzeit) bzw. das Datumsformat. |
 | **Zwei Statussymbole** | `mrIcon1` und `mrIcon2`; Klick öffnet ihren Dialog, grau = nicht belegt. Ihre Lage hängt von der Version ab: bei Standard, Alternate und Easyview in den oberen Ecken, bei Advanced unten neben dem Datum. |
 | **Knopfleiste unter dem Bild** | **Benachrichtigungen** (mit der Zahl der auf diesem Bildschirmschoner eingeschalteten Meldungen) und **Optionen** (Rotationszeit, Wischgesten, Indikator-Tasten). Beide Knöpfe lagen bis 2.0.2 als Glocke und Zahnrad **im** Panelbild. |
 | **Wetter** (rechte Spalte) | Wetter-Adapter und seine Zusatz-Items, siehe [Wetter](#11-wetter). |
@@ -149,6 +151,11 @@ Mit der Quelle **Template** nimmt ein Platz ein PageItem-Template des Adapters (
 - Unter der Auswahl stehen *Typ · erwartete Rolle · Adapter*.
 - Die meisten Templates suchen ihre Datenpunkte **unterhalb eines Objekts**: Dann wird ein **Kanal oder Alias, in dem das Template seine Datenpunkte sucht** gewählt (der Objektbaum zeigt Kanäle, Geräte und Ordner), und der Dialog nennt, wonach das Template darunter sucht (z. B. `.ACTUAL`, `switch.lock | state`). Ein einzelner Datenpunkt an dieser Stelle wird als Warnung gemeldet.
 - Templates ohne Objekt (`text.clock`, `text.wlan`, `button.service.*` …) brauchen keines – dann steht *Dieses Template braucht kein Objekt – es bringt seine Daten selbst mit*.
+- Die Liste bietet **je Platz nur passende Templates** an: Text- und Tasten-Templates passen auf jeden Platz, sofern das Template die Plätze nicht selbst einschränkt; ein bereits gespeichertes Template bleibt wählbar. Der getippte Text findet einen Eintrag auch über seinen technischen Namen.
+- Liegen die Datenpunkte unter einer **Adapter-Instanz** – etwa `text.battery.bydhvs` unter `bydhvs.0` –, stehen die passenden Instanzen hinter *Instanzen des Adapters:* als Knöpfe unter dem Objektfeld; gibt es genau eine und das Feld ist leer, trägt der Dialog sie gleich ein. So eine Instanz existiert oft nicht als eigenes Objekt – das Feld ist trotzdem richtig ausgefüllt, der Dialog warnt in diesem Fall nicht.
+- Templates mit **Optionen** zeigen eigene Felder unter der Auswahl, zum Beispiel **SOC-Untergrenze (%)** und **SOC-Obergrenze (%)** bei `text.battery.bydhvs` (der Füllstand wird auf diesen Bereich gestreckt). Ein leeres Feld entfernt die Option wieder; beim Wechsel des Templates gehen die Optionen des alten verloren.
+- Auf einem **Indikator**-Platz hat auch ein Template die **Aktion beim Drücken** (siehe [Indikatoren](#8-indikatoren-und-tasten)) – zum Beispiel **Seite öffnen** zur [Energie-Seite](cardPower). Sie wirkt nur mit der Option **Indikatoren wirken als Tasten**.
+- Im Panelbild heißt ein Template-Item nach seinem Template ohne den Typ, zum Beispiel `battery bydhvs`; eine Instanz wie `bydhvs.0` gibt keinen Namen her.
 - `text.trash.next` und `text.trash.afterNext` (nur im Bereich **unten**) zeigen den nächsten und den übernächsten Termin einer [Abfall-Seite](cardTrash): Symbol und Farbe des Termins, darüber der Name des Termins (der optionale Name, sonst die Abfallart), darunter heute, morgen oder der Wochentag wie auf der Seite, ein Datum kurz als Tag.Monat (`06.12`). In der Template-Auswahl erscheinen sie als *Nächster Termin (Seite)* und *Übernächster Termin (Seite)*, je einmal pro Abfall-Seite, der technische Name steht im Tooltip des Eintrags und im Hilfstext darunter; ohne Abfall-Seite gibt es diese Einträge nicht. Ein älteres Item ohne Seitenangabe zeigt weiter die erste konfigurierte Abfall-Seite und steht in der Auswahl als deren Eintrag. Ein Item, dessen Seite es nicht mehr gibt, bleibt als eigener Eintrag mit der gespeicherten ID sichtbar (*unbekannte Seite: ID*) und wird nicht auf eine andere Seite umgestellt. Gibt es keinen Termin oder ist die Seite unbekannt, blendet sich das Item aus. Ein langer Name kann im unteren Bereich abgeschnitten werden; der optionale Name der Abfallart kann ihn kürzen. Eine eigene **Sichtbarkeits**-Einstellung ersetzt dieses Ausblenden.
 
 ## 6. Rohdaten (JSON)
@@ -187,6 +194,19 @@ Beispiel im Format **script** – ein einzelner Datenpunkt mit eigenen Feldern:
 }
 ```
 
+Beispiel im Format **script** – ein Template mit Option auf einem Indikator-Platz, dessen Tipp die Energie-Seite `cardPower_Haus` öffnet (so stünde es auch im Konfigurationsskript):
+
+```json
+{
+  "type": "template",
+  "template": "text.battery.bydhvs",
+  "dpInit": "bydhvs.0",
+  "readOptions": { "min": 5 },
+  "modeScr": "indicator",
+  "ScreensaverEntityNaviToPage": "cardPower_Haus"
+}
+```
+
 - **Der Bereich kommt vom Platz**: `modeScr` wird immer auf den Bereich gesetzt, in dem das Item im Editor liegt. Ein abweichendes `modeScr` in der Eingabe wird überschrieben – sonst stünde das Item auf dem Panel woanders als im Editor. Bei einem `script`-Element vom Typ `'script'` ergibt sich der Bereich ohnehin aus der Liste.
 - **Standardfelder gelten nicht**: Solange Rohdaten aktiv sind, verschwinden die Quellenumschalter und alle Felder; an ihrer Stelle steht der Hinweis *Rohkonfiguration aktiv (Format …)* mit dem Knopf **Rohdaten bearbeiten**. Ein Rohdaten-Item braucht weder Datenpunkt noch Symbol – **Übernehmen** ist nie gesperrt.
 - **Rückweg**: **Rohdaten entfernen (zurück zum Standard)** im Dialog. Danach gelten wieder die Standardfelder; ein Item, das von Anfang an als Rohdaten angelegt wurde, hat dort nichts stehen – auch keine Sichtbarkeits-Bedingung – und muss neu ausgefüllt werden.
@@ -219,7 +239,7 @@ Die Indikatoren (Version Advanced) zeigen nur ein Symbol. Im Item-Dialog gibt es
 | **Schalter (wechselt)** | kippt den gewählten Datenpunkt zwischen `true` und `false`. |
 | **Seite öffnen** | öffnet die gewählte Seite der Instanz. |
 
-Taste und Schalter brauchen einen **beschreibbaren** Datenpunkt; ist er das nicht, meldet der Dialog *… ist nicht beschreibbar (common.write) – Taste und Schalter brauchen einen beschreibbaren Datenpunkt* und lässt nicht übernehmen. Unter dem Feld steht der Hinweis *Wirkt nur mit der Option „Indikatoren wirken als Tasten“*. Im Panelbild zeigt der Rahmen die Aktion: rot = Taste, grün = Schalter, blau = Seite, grau = keine oder Option aus.
+Taste und Schalter brauchen einen **beschreibbaren** Datenpunkt; ist er das nicht, meldet der Dialog *… ist nicht beschreibbar (common.write) – Taste und Schalter brauchen einen beschreibbaren Datenpunkt* und lässt nicht übernehmen. Unter dem Feld steht der Hinweis *Wirkt nur mit der Option „Indikatoren wirken als Tasten“*. Im Panelbild zeigt der Rahmen die Aktion: rot = Taste, grün = Schalter, blau = Seite, grau = keine oder Option aus. Auch ein [Template](#5-templates-als-item) auf einem Indikator-Platz bekommt die Aktion – sein Symbol wird damit zur Taste.
 
 **Ein State je Indikator.** Der Adapter legt für jedes Indikator-Item einen eigenen Datenpunkt an: `panels.<Panel>.buttons.indicator-1`, `-2`, `-3` … in der Reihenfolge, in der die Items im Bereich **Indikatoren** stehen. Die States sind `boolean`, nur lesbar und tragen die Rolle `button.press`. Ein Tipp auf den Indikator schreibt **immer** `true` in seinen State – unabhängig von der Option. Damit taugen sie als Auslöser für eigene Skripte, auch ohne eine Aktion im Dialog.
 
@@ -236,6 +256,88 @@ Die beiden Statussymbole (`mrIcon1`, `mrIcon2`) folgen je einem Datenpunkt: **Sy
 Klick auf die Uhrzeit: **Adapter-Standard**, **24 Stunden** oder **12 Stunden**, mit Vorschau.
 
 ![Uhrzeit](../Pictures/screensaverAdmin/admin-10-uhr.png)
+
+### Timer statt Uhrzeit
+
+Im Dialog der Uhrzeit steht unter der Formatwahl das Häkchen **Timer anzeigen**. Solange ein Timer aktiv ist, zeigt das Panel an der Stelle der Uhrzeit seine Restzeit; ohne aktiven Timer steht dort die Uhrzeit wie gewohnt. Das gilt für alle Versionen des Bildschirmschoners und auch im [Web-Panel](WebPanel).
+
+Mit dem Häkchen erscheint das Feld **Quelle des Timers** mit zwei Möglichkeiten:
+
+| Quelle | Was dahinter steckt |
+|---|---|
+| **Datenpunkte oder Slot-Muster** | Zwei Datenpunkte, die ein eigenes Skript pflegt – oder, hinter **Erweitert**, zwei Muster für Timer in wechselnden Slots. |
+| **Pageitem mit Timer-Popup** | Ein Timer-Item von einer Seite dieses Panels, siehe [Timer-Popup](popupTimer). |
+
+**Übernehmen** bleibt gesperrt, solange der Timer unvollständig ist – der Dialog meldet *Ein Timer braucht beide Datenpunkte oder zwei gültige Muster.*
+
+#### Quelle: zwei Datenpunkte
+
+| Feld | Bedeutung |
+|---|---|
+| **An/Aus-Datenpunkt (true = Timer aktiv)** | Nur solange dieser Datenpunkt wahr ist, gibt es einen Timer. Ist er falsch, gilt der Timer als erledigt – egal, was in den Daten steht – und es gibt keinen Alarm. |
+| **Daten-Datenpunkt (Endzeit oder Restzeit)** | Wann der Timer endet oder wie lange er noch läuft. Das Format erkennt der Adapter selbst. |
+
+Was im Daten-Datenpunkt stehen darf:
+
+| Wert | Bedeutung |
+|---|---|
+| Zahl ab 100 000 000 000 | Endzeit als Zeitstempel in Millisekunden |
+| Zahl ab 1 000 000 000 | Endzeit als Zeitstempel in Sekunden |
+| kleinere Zahl über 0 | verbleibende Sekunden eines Datenpunkts, der selbst herunterzählt – mit der Einheit `ms` Millisekunden |
+| Text | ein ISO-Datum (`2026-11-07T18:30`) oder eine Uhrzeit `HH:MM`; ist die Uhrzeit heute schon vorbei, gilt sie für morgen |
+| leer oder anderer Text | kein Timer |
+
+**Der Wert 0 bei wahrem An/Aus:** Hat der Timer seit dem Start des Adapters schon einmal gezählt, gilt er mit 0 als abgelaufen. Trägt der Datenpunkt die Einheit `s`, `sec` oder `ms` oder die Rolle `value.timer` oder `level.timer`, heißt 0 immer abgelaufen – auch direkt nach einem Neustart des Adapters. Sonst heißt 0 „noch kein Timer“, und das Panel zeigt die Uhrzeit.
+
+Der Hilfstext im Dialog fasst das zusammen: *Die Formate werden automatisch erkannt: Endzeit als Unix-ms oder Unix-Sekunden (0 = kein Timer), verbleibende Sekunden eines herunterzählenden States (Einheit ms: Millisekunden), ISO-Datum oder HH:MM. Ist die Zeit vorbei: 0.0 mit Alarm-Icon, bis der An/Aus-Datenpunkt false ist. Die Anzeige zeigt die Restzeit in Minuten, z. B. 125.5, ab 1000 Minuten 1234.*
+
+**Erweitert – Timer in wechselnden Slots:** Der Knopf **Erweitert** öffnet den Dialog **Timer in wechselnden Slots**, einen Sonderfall für Skripte, die ihre Timer unter einem festen Pfad in wechselnden Unterordnern ablegen. Statt der beiden Datenpunkte werden zwei Muster eingetragen, **Muster An/Aus** und **Muster Daten**, jedes mit genau einem `*` und einem Pfad davor:
+
+```text
+javascript.0.timer.global.*.aktiv
+javascript.0.timer.global.*.targetTs
+```
+
+- An/Aus und Daten gehören zusammen, wenn der Teil an der Stelle des `*` gleich ist.
+- Angezeigt wird ein abgelaufener aktiver Slot, sonst der laufende Slot mit der kürzesten Restzeit. Slots, die erst später entstehen, erkennt der Adapter von selbst.
+- Der Dialog prüft die Muster und meldet *Beide Muster sind nötig.*, *Jedes Muster braucht genau ein \*.*, *Vor dem \* muss ein Pfad stehen, z. B. adapter.0.\*.* oder *Die beiden Muster müssen sich unterscheiden.* Beide Felder leer lassen, um wieder die zwei Datenpunkte zu nutzen.
+- Sind Muster gesetzt, sagt es der Uhrzeit-Dialog: *Unter Erweitert sind Slot-Muster gesetzt - sie ersetzen die beiden Datenpunkte oben.*
+
+#### Quelle: Pageitem mit Timer-Popup
+
+Das Feld **Pageitem** listet die Timer-Items auf den Seiten der Panels dieses Bildschirmschoners, als *Seite - Name des Items* (bei gleichen Namen auf einer Seite mit der Platznummer dahinter). Angeboten werden nur Items, die wirklich herunterzählen: interne Timer und externe Timer mit `STATUS`. Wecker, reine Zeitanzeigen und Items mit dem Häkchen **Timer aus dem Screensaver verwenden** fehlen in der Liste. Das gewählte Item arbeitet auch, wenn seine Seite nie geöffnet wurde.
+
+- *Einige Timer sind erst auswählbar, nachdem eine Seite geändert und gespeichert wurde.* – ältere Items bekommen ihre interne Kennung erst beim nächsten Speichern im Tab PageConfig und erscheinen dann in der Liste.
+- Der Bezug bleibt beim Umsortieren und Umbenennen des Items bestehen. Ein Item lässt sich nicht auf eine andere Seite verschieben, nur kopieren – die Kopie ist ein neues Item und muss neu gewählt werden.
+- Wird das Item gelöscht, zeigt das Panel die Uhrzeit, das Log warnt einmal, und der Dialog meldet *Das gewählte Item gibt es nicht mehr oder es passt nicht mehr. Am Panel bleibt die Uhrzeit, bis ein anderes gewählt wird.*
+- Gibt es kein passendes Item, steht dort *Kein passendes Pageitem auf den Seiten der Panels dieses Screensavers.*
+
+**Kein Kreis:** Ein Bildschirmschoner kann kein Item als Quelle nehmen, das selbst den Timer dieses Bildschirmschoners verwendet. Der Dialog bietet solche Items nicht an, und im Item-Dialog ist das Häkchen gesperrt, sobald der Bildschirmschoner dieses Item als Quelle nutzt. Käme es trotzdem dazu, zeigt das Panel die Uhrzeit, das Log warnt, und das Item hat keine Tasten. Erlaubt ist die Kette: Item A nutzt den Bildschirmschoner, der Bildschirmschoner nutzt ein anderes Item B.
+
+#### Anzeige am Panel
+
+Die Restzeit steht in **Minuten mit Punkt**, damit sie sich nicht mit der Uhrzeit verwechseln lässt:
+
+| Restzeit | Anzeige |
+|---|---|
+| unter 1000 Minuten | eine Nachkommastelle, immer mit Punkt, aufgerundet auf 6 Sekunden: 90 s → `1.5`, 7 s → `0.2`, die letzten 6 s → `0.1`, 125 min 30 s → `125.5` |
+| ab 1000 Minuten | aufgerundete ganze Minuten, z. B. `1234`, höchstens `9999` |
+| abgelaufen | `0.0` |
+
+| Zustand | Uhrzeit-Feld | Infoicon |
+|---|---|---|
+| läuft | Restzeit in Orange | `timer-sand` in Orange |
+| pausiert (nur mit einem Pageitem als Quelle) | stehende Restzeit in Orange | `timer-pause` in Orange |
+| abgelaufen | `0.0` in Rot | `timer-alert` in Rot |
+| weggetippt | Uhrzeit in ihrer normalen Farbe | bleibt stehen, solange der Timer aktiv ist |
+
+- Das Infoicon des Timers hat Vorrang vor dem eigenen Infoicon und vor den Update-Symbolen.
+- Eine AM/PM-Angabe gibt es beim Timer nicht, auch nicht im 12-Stunden-Format.
+- In der Version **Advanced** behalten Uhrzeit und Infoicon ihre gewohnte Farbe – diese Seite des Panels kennt den Farbbefehl nicht.
+
+**Abgelaufen** bleibt stehen, bis der An/Aus-Datenpunkt falsch wird. Neue Daten beenden den Alarm nur, wenn sie in der Zukunft liegen.
+
+**Tippen:** Der erste Tipp auf einen angezeigten Timer schaltet auf die Uhrzeit um – auch ohne Doppelklick und noch vor dem Wegtippen einer Benachrichtigung. Er löst weder eine Geste noch einen Seitenwechsel aus. Das Panel zählt die Tipps aber weiter, bis das Display abdunkelt: Ist der Doppelklick aktiv (`cmd.screenSaver.doubleClick`), führt deshalb der nächste Tipp zur Hauptseite, sobald er mehr als eine Sekunde später kommt. Der Timer erscheint wieder, sobald der Bildschirmschoner neu startet oder ein neuer Timer beginnt.
 
 Klick auf das Datum: Format von **Wochentag**, **Monat** und **Jahr** (lang, kurz, numerisch, zweistellig …). *Globale Einstellung* nimmt das Format aus den Instanzeinstellungen; ein Wert hier gilt nur für diesen Bildschirmschoner. Die Vorschau zeigt das Ergebnis mit dem heutigen Datum.
 
@@ -286,8 +388,25 @@ Hatte das Panel vorher keinen eigenen Bildschirmschoner, endet die Zeile mit `is
 - Version, Rotationszeit, Wischgesten und Indikator-Tasten kommen aus dem Eintrag; die States `panels.<Panel>.cmd.screenSaver.layout` und `…rotationTime` folgen ihm (sie überschreiben den Eintrag nicht).
 - Ein Item ohne Symbol und ohne Icon-Liste bekommt die Standardsymbole seiner Rolle, ohne bekannte Rolle `help-circle-outline` – der Dialog lässt es allerdings gar nicht erst ohne Symbol zu.
 - Für jedes Indikator-Item entsteht `panels.<Panel>.buttons.indicator-<n>`.
+- Ein Timer auf der Uhrzeit, der nicht laufen kann (Datenpunkt fehlt, Muster ungültig, Item nicht mehr da), wird mit einer Warnung im Log verworfen – das Panel zeigt dann die Uhrzeit.
+- `panels.<Panel>.cmd.screenSaver.activate` zeigt den Bildschirmschoner sofort (siehe [Abschnitt 15](#15-bildschirmschoner-sofort-anzeigen)).
 - Ein [Web-Panel](WebPanel) ist eine Kopie seines Panels: der Eintrag wird über das Topic des echten Panels gefunden und gilt für beide.
 - Die gespeicherte Form liegt unter `native.screensaverConfig` der Instanz (ein Objekt je Eintrag). Die **Benachrichtigungen** stehen getrennt davon unter `native.screensaverNotify`; der Eintrag merkt sich nur die IDs derjenigen, die auf ihm erscheinen sollen.
+
+## 15. Bildschirmschoner sofort anzeigen
+
+Der Bildschirmschoner lässt sich auch aufrufen, ohne den Timeout des Panels abzuwarten – mit demselben Verhalten wie beim Ablauf des Timeouts. Vier Wege führen dorthin:
+
+| Weg | Wo |
+|---|---|
+| **Fläche einer Seite** | In der [Pageitem-Konfiguration](PageConfig-Dialoge#1-pageitem-konfiguration) steht in der Auswahl der **Zielseite** – auch beim langen Druck – der Eintrag **Screensaver**. |
+| **Navigation einer Seite** | Die vier Felder *prev*, *next*, *home* und *parent* unter [Panelzuweisung und Navigation](PageConfig#panelzuweisung-und-navigation) bieten ebenfalls **Screensaver** an. Der Pfeil auf dem Panel zeigt dafür das Symbol `power-sleep`. |
+| **Datenpunkt** | `panels.<Panel>.cmd.screenSaver.activate` (Rolle `button`) auf `true` setzen; der Adapter setzt ihn danach selbst auf `false` zurück. |
+| **Navigation Flow** | Im [Navigation Flow](naviFlow) erscheint ein eigener Knoten **Screensaver**, sobald etwas dorthin führt – nur als Ziel, nicht bearbeitbar. |
+
+Grenzen: Als Startseite gibt es das Ziel nicht, und für die Aktion eines Indikators auf dem Bildschirmschoner selbst wird es nicht angeboten. Ist das Panel offline oder zeigt es den Bildschirmschoner bereits, passiert nichts.
+
+> **Zwei schnelle Tipps auf einen Navigationspfeil:** Der zweite Tipp kann ankommen, bevor die neue Seite fertig gezeichnet ist, und trifft dann das Symbol an derselben Stelle der neuen Seite. Führt dieses Symbol zum Bildschirmschoner, wirkt es, als hätte er sich von selbst aktiviert. Beobachtet mit 0,26 s zwischen zwei Tipps – der Adapter verwirft nur Tipps, die innerhalb von 0,2 s nach dem Seitenwechsel eintreffen.
 
 ## Fallstricke
 
@@ -305,3 +424,7 @@ Hatte das Panel vorher keinen eigenen Bildschirmschoner, endet die Zeile mit `is
 - **Indikator reagiert nicht auf die Aktion:** Der State `panels.<Panel>.buttons.indicator-<n>` kommt trotzdem – das Panel springt nur auf die Hauptseite, statt den Befehl auszuführen. Dann fehlt die Option **Indikatoren wirken als Tasten**.
 - **`buttons.screensaverGesture` bleibt leer:** Entweder ist **Wischgesten auf dem Bildschirmschoner** aus oder der State `cmd.screenSaver.doubleClick` des Panels.
 - **Nach „Rohdaten entfernen“ ist das Item leer:** Die Standardfelder kommen zurück, nicht die Inhalte des JSON – ein ursprünglich als Rohdaten angelegtes Item muss danach neu ausgefüllt werden. Vor dem Entfernen das JSON sichern.
+- **Das Panel zeigt die Uhrzeit statt des Timers:** Der An/Aus-Datenpunkt ist nicht wahr, der Daten-Datenpunkt ist leer oder enthält unbekannten Text, oder er steht auf 0, ohne dass der Timer seit dem Adapterstart gezählt hätte (bei einer Zahl ohne Zeiteinheit heißt 0 „kein Timer“). Bei der Quelle *Pageitem* gibt es das Item nicht mehr – das Log warnt einmal, der Uhrzeit-Dialog meldet es. Siehe [Timer statt Uhrzeit](#timer-statt-uhrzeit).
+- **Der Timer bleibt auf `0.0` in Rot:** Das ist der Alarm. Er endet erst, wenn der An/Aus-Datenpunkt falsch wird oder neue Daten in der Zukunft liegen; ein Tipp blendet nur die Uhrzeit ein, das rote Infoicon bleibt.
+- **Übernehmen im Uhrzeit-Dialog ist gesperrt:** *Timer anzeigen* ist gesetzt, aber ein Datenpunkt fehlt, ein Muster ist ungültig oder kein Pageitem gewählt. Häkchen abwählen oder die Felder füllen.
+- **Ein Timer-Item auf einer Seite hat keine Tasten:** Es nutzt den Timer des Bildschirmschoners, der aber keinen vollständigen Timer hat – oder es ist zugleich dessen Quelle (Kreis). Das Log nennt den Grund einmal; Einzelheiten unter [Timer-Popup](popupTimer).
