@@ -1939,7 +1939,7 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                                             <Tooltip
                                                 title={
                                                     errorSaveDetails
-                                                        ? 'Press Button Details'
+                                                        ? I18n.t('channelConfigDialog_pressDetails')
                                                         : `${I18n.t('channelConfigDialog_duplicateDps')}: ${this.state.datapointDuplicates.join(', ')}`
                                                 }
                                             >
