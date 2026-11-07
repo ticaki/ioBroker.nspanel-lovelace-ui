@@ -6,15 +6,36 @@ import {
     parseEntityUpdHeader,
     toNumber,
 } from '../../protocol/split';
-import type { Entity6, Navigation } from '../../protocol/types';
+import type { Entity6, Navigation, PanelModel } from '../../protocol/types';
 import type { ParseContext } from '../CardContract';
 
-/** number of entity slots in the bottom row */
-export const MEDIA_OPTIONS = 5;
+/**
+ * Option buttons per model (`PageMedia.maxItems`, table in `doc/web-panel/SMARTPHONE.md`):
+ * 5 on the hardware models, 6 on web-l (one row of 106 px), 8 on web-p (two rows of 4).
+ */
+const MEDIA_OPTIONS_BY_MODEL: Readonly<Record<PanelModel, number>> = {
+    eu: 5,
+    'us-l': 5,
+    'us-p': 5,
+    'web-l': 6,
+    'web-p': 8,
+};
+
+/** the most option slots of any model: the parser reads (and pads) this many */
+export const MEDIA_OPTIONS = Math.max(...Object.values(MEDIA_OPTIONS_BY_MODEL));
+
+/**
+ * Number of option buttons the card shows on a model (the adapter sends as many)
+ *
+ * @param model the panel model
+ */
+export function mediaOptionCount(model: PanelModel): number {
+    return MEDIA_OPTIONS_BY_MODEL[model];
+}
 
 /**
  * Model of `cardMedia`, built from what `PageMedia.getMessage` sends:
- * `entityUpd~headline~<nav left>~<nav right>~id~name~nameColor~artist~artistColor~volume~playPauseIcon~onOffColor~shuffleIcon~<logo>~<5 options>`
+ * `entityUpd~headline~<nav left>~<nav right>~id~name~nameColor~artist~artistColor~volume~playPauseIcon~onOffColor~shuffleIcon~<logo>~<5..8 options>`
  */
 export interface CardMediaModel {
     title: string;
@@ -39,7 +60,7 @@ export interface CardMediaModel {
     shuffleIcon: string;
     /** media logo in the upper left corner */
     logo: Entity6;
-    /** the bottom row, always {@link MEDIA_OPTIONS} entries */
+    /** the option buttons, always {@link MEDIA_OPTIONS} entries; the card shows {@link mediaOptionCount} */
     options: Entity6[];
     /** commands other than entityUpd received on this page (counted for diagnostics only) */
     otherCommands: number;

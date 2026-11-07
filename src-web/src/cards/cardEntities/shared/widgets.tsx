@@ -383,12 +383,14 @@ export interface TextButtonProps {
     /** css colour of the text; the HMI draws button and input_sel in its blue, the timer in white */
     color?: string;
     fontSize?: number;
+    /** the text is cut beyond this width, 240 px by default */
+    maxWidth?: number;
 }
 
 /** A text at the right of a row that can be pressed (button, input_sel, timer) */
 export class TextButton extends React.Component<TextButtonProps> {
     render(): React.JSX.Element {
-        const { text, onPress, color = theme.foreground, fontSize = 18 } = this.props;
+        const { text, onPress, color = theme.foreground, fontSize = 18, maxWidth = 240 } = this.props;
         return (
             <Pressable
                 data-role="text-button"
@@ -398,7 +400,7 @@ export class TextButton extends React.Component<TextButtonProps> {
                     lineHeight: 1,
                     color,
                     padding: '8px 0',
-                    maxWidth: 240,
+                    maxWidth,
                     whiteSpace: 'nowrap',
                     overflow: 'hidden',
                     flex: '0 0 auto',

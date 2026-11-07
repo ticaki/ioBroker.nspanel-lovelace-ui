@@ -1,6 +1,14 @@
 import { describe, expect, it } from 'vitest';
 import { entityTouch } from './entityPress';
-import { handleCommand, initial, MEDIA_OPTIONS, parseEntityUpd, parseEntityUpdateDetail, parseOnOff } from './parse';
+import {
+    handleCommand,
+    initial,
+    MEDIA_OPTIONS,
+    mediaOptionCount,
+    parseEntityUpd,
+    parseEntityUpdateDetail,
+    parseOnOff,
+} from './parse';
 
 const ctx = { pageType: 'cardMedia', pageArgs: [] };
 
@@ -17,6 +25,21 @@ function args(payload: string): string[] {
 }
 
 describe('cardMedia parse', () => {
+    it('shows 5 options on the hardware models, 6 on web-l and 8 on web-p', () => {
+        expect(mediaOptionCount('eu')).toBe(5);
+        expect(mediaOptionCount('us-l')).toBe(5);
+        expect(mediaOptionCount('us-p')).toBe(5);
+        expect(mediaOptionCount('web-l')).toBe(6);
+        expect(mediaOptionCount('web-p')).toBe(8);
+        expect(MEDIA_OPTIONS).toBe(8);
+    });
+
+    it('reads up to 8 options (web-p)', () => {
+        const extra = '~button~5~~2016~Five~~button~6~~2016~Six~~button~7~~2016~Seven~';
+        const m = parseEntityUpd(args(SPOTIFY + extra), initial(), ctx);
+        expect(m.options.map(o => o.id)).toEqual(['0', '1', '2', '3', '4', '5', '6', '7']);
+    });
+
     it('parses the adapter payload', () => {
         const m = parseEntityUpd(args(SPOTIFY), initial(), ctx);
         expect(m.title).toBe('Spotify: Küche');

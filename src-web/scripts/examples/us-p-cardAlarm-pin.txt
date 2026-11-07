@@ -1,0 +1,9 @@
+# cardAlarm on a portrait panel (us-p, web-p) while a PIN is typed: the title stays in the title bar,
+# the asterisks appear in the PIN field below it (tCode of the us-p HMI), left of the status icon.
+# node scripts/screenshot.mjs --model us-p --in scripts/examples/us-p-cardAlarm-pin.txt --out /tmp/x.png
+pageType~cardAlarm
+entityUpd~Alarm~button~bSubPrev~~1592~~~button~bSubNext~~1592~~~alarm.haus~Aktivieren - Zuhause~A1~Aktivieren - Nacht~A2~Aktivieren - Unterwegs~A3~Aktivieren - Urlaub~A4~~63488~enable~disable
+@click [data-key="1"]
+@click [data-key="2"]
+@click [data-key="3"]
+@click [data-key="4"]

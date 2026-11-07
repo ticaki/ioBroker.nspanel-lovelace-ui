@@ -1,0 +1,5 @@
+# cardThermo2 with all 9 slots (4 + 4 + 1) filled with icons and values
+pageType~cardThermo2
+entityUpd~Bad~button~bSubPrev~~1055~~~button~bSubNext~~1055~~~bad~285~150~300~5~°C~1~text~bad.0~~2016~~~text~bad.1~240~2016~~~text~bad.2~°C~2016~~~text~bad.3~~63519~~~text~bad.4~300~63519~~~text~bad.5~%~63519~~~text~bad.6~MANUAL~65363~~1~button~bad?0~¬4~63488~~1~button~bad?1~21,4°C¬1~35921~~1~button~bad?2~¬4~35921~~1~button~bad?3~48%¬1~63488~~1~button~bad?4~¬3~35921~~1~button~bad?5~35%¬1~35921~~1~button~bad?6~¬4~2016~~1~button~bad?7~21,4°C~2016~~1~button~bad?8~¬2~2016~~1
+time~12:26
+@sleep 300

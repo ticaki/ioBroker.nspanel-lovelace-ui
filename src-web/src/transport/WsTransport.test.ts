@@ -1,5 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { AUTH_CHECK_PATH, forgetLegacySession, websocketUrl, WsTransport } from './WsTransport';
+import type { HelloFrame } from '../protocol/types';
+import { helloShowsButtons } from '../protocol/types';
 
 /** minimal WebSocket stand-in: the test opens, closes and feeds messages by hand */
 class FakeWebSocket {
@@ -112,6 +114,23 @@ describe('WsTransport', () => {
             },
         });
         expect(() => forgetLegacySession()).not.toThrow();
+    });
+
+    it('passes the buttons flag of the hello on, missing means shown', () => {
+        const { transport } = make();
+        const hellos: HelloFrame[] = [];
+        transport.onHello(hello => hellos.push(hello));
+        transport.connect();
+        const ws = FakeWebSocket.instances[0];
+        ws.open();
+        const base = { t: 'hello', model: 'web-p', topic: 't', name: 'n', friendlyName: 'f', tftVersion: '1.0.0' };
+        ws.message({ ...base, kind: 'web', buttons: false });
+        ws.message({ ...base, kind: 'web', buttons: true });
+        // an older adapter does not send the field
+        ws.message({ ...base, kind: 'web' });
+        expect(hellos.map(h => h.buttons)).toEqual([false, true, undefined]);
+        expect(hellos.map(h => helloShowsButtons(h))).toEqual([false, true, true]);
+        expect(helloShowsButtons(undefined)).toBe(true);
     });
 
     it('delivers frames with their seq and sends ack/recv as json', () => {

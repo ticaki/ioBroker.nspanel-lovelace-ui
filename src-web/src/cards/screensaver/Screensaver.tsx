@@ -1,10 +1,24 @@
 import React from 'react';
 import { Icon } from '../../components/Icon';
 import { color565ToCss } from '../../protocol/color';
-import type { Entity6 } from '../../protocol/types';
-import { theme } from '../../style/theme';
+import type { Entity6, GlobalState } from '../../protocol/types';
+import { isPortrait, stageSize, theme } from '../../style/theme';
 import type { CardProps } from '../CardContract';
 import { indicatorTapTarget, nextTap, swipeAction, type TapState } from './interaction';
+import {
+    ADVANCED_PORTRAIT_SEPARATOR,
+    advancedIndicatorCells,
+    easyviewColumns,
+    isWebPortrait,
+    landscapeWidth,
+    notifyTextBox,
+    portraitColumns,
+    rowColumns,
+    standardColumns,
+    tilesGeometry,
+    type Box,
+    type Column,
+} from './layout';
 import {
     isBlankEntity,
     splitAreas,
@@ -22,17 +36,13 @@ import {
  */
 const CAP_TOP = 0.13;
 
-/** x of the first column of the tiles layout: the HMI draws on 450 of the 480 px */
-const TILES_LEFT = 16;
-const TILES_COLUMN = 90;
-const TILES_ROW = 107;
+/** Size of the indicator icons of the tiles layout */
+const TILES_ICON = 66;
 
-/** Column of the bottom area: `left` and `width` in stage pixels */
-interface Column {
-    left: number;
-    width: number;
-}
+/** web-p: the bottom rows of the standard and alternate layout (107 px each, like tiles) */
+const PORTRAIT_STANDARD_ROWS: readonly number[] = [420, 527];
 
+/** Positions of label, icon and value of a bottom column; relative to `Column.top` in the portrait layouts */
 interface BottomStyle {
     labelTop: number;
     labelSize: number;
@@ -41,6 +51,16 @@ interface BottomStyle {
     valueTop: number;
     valueSize: number;
 }
+
+/** web-p: label, icon and value of a bottom column relative to its row (107 px, like the tiles bottom row) */
+const PORTRAIT_BOTTOM: BottomStyle = {
+    labelTop: 7,
+    labelSize: 18,
+    iconTop: 34,
+    iconSize: 30,
+    valueTop: 73,
+    valueSize: 18,
+};
 
 /** Position of the heading and the text of a notification */
 interface NotifyStyle {
@@ -54,6 +74,8 @@ interface NotifyStyle {
     lines: number;
     /** `undefined` = transparent (the notification replaces the row), otherwise drawn over the page */
     cover?: { top: number; height: number };
+    /** `true` in a portrait layout (full stage width), landscape otherwise */
+    portrait?: boolean;
 }
 
 interface PointerStart {
@@ -322,7 +344,19 @@ export class Screensaver extends React.Component<CardProps<ScreensaverModel>> {
         return result;
     }
 
-    /** The bottom area: label, icon and value per column */
+    /** The model the card is drawn for */
+    private panelModel(): GlobalState['model'] {
+        return this.props.global.model;
+    }
+
+    /**
+     * The bottom area: label, icon and value per column. In the portrait layouts the column carries
+     * the top of its row, the style positions are relative to it.
+     *
+     * @param entities the bottom entities
+     * @param columns position of every column
+     * @param style positions and sizes of label, icon and value
+     */
     private renderBottom(entities: Entity6[], columns: Column[], style: BottomStyle): React.JSX.Element[] {
         const colors = this.props.model.colors;
         const result: React.JSX.Element[] = [];
@@ -331,6 +365,7 @@ export class Screensaver extends React.Component<CardProps<ScreensaverModel>> {
             if (!column || isBlankEntity(entity)) {
                 return;
             }
+            const rowTop = column.top ?? 0;
             const centered: React.CSSProperties = {
                 left: column.left,
                 width: column.width,
@@ -345,18 +380,18 @@ export class Screensaver extends React.Component<CardProps<ScreensaverModel>> {
                 >
                     {this.renderText(entity.displayName, {
                         ...centered,
-                        top: textTop(style.labelTop, style.labelSize),
+                        top: rowTop + textTop(style.labelTop, style.labelSize),
                         fontSize: style.labelSize,
                         color: this.color(colors?.forecast[i] ?? colors?.forecast[0]),
                     })}
                     {this.renderIcon(entity, style.iconSize, {
                         position: 'absolute',
-                        top: style.iconTop,
+                        top: rowTop + style.iconTop,
                         left: column.left + Math.round((column.width - style.iconSize) / 2),
                     })}
                     {this.renderText(entity.optionalValue, {
                         ...centered,
-                        top: textTop(style.valueTop, style.valueSize),
+                        top: rowTop + textTop(style.valueTop, style.valueSize),
                         fontSize: style.valueSize,
                         color: this.color(colors?.forecastVal[i] ?? colors?.forecastVal[0]),
                     })}
@@ -377,20 +412,23 @@ export class Screensaver extends React.Component<CardProps<ScreensaverModel>> {
         if (!notify) {
             return null;
         }
+        const stage = stageSize(this.panelModel());
+        const width = style.portrait ? stage.width : landscapeWidth(this.panelModel());
+        const text = notifyTextBox(width, style.portrait === true);
         const cover: React.CSSProperties = style.cover
             ? {
                   top: style.cover.top,
                   height: style.cover.height,
                   background: this.background(),
               }
-            : { top: 0, height: 320, pointerEvents: 'none' };
+            : { top: 0, height: stage.height, pointerEvents: 'none' };
         return (
             <div
                 data-role="notify"
                 style={{
                     position: 'absolute',
                     left: 0,
-                    width: 480,
+                    width,
                     color: this.color(colors?.mainText),
                     overflow: 'hidden',
                     ...cover,
@@ -401,7 +439,7 @@ export class Screensaver extends React.Component<CardProps<ScreensaverModel>> {
                         position: 'absolute',
                         top: textTop(style.headingTop, style.headingSize) - (style.cover?.top ?? 0),
                         left: 8,
-                        width: 464,
+                        width: width - 16,
                         fontSize: style.headingSize,
                         lineHeight: 1,
                         textAlign: 'center',
@@ -419,8 +457,8 @@ export class Screensaver extends React.Component<CardProps<ScreensaverModel>> {
                             textTop(style.textTop, style.textSize) -
                             Math.round((style.lineHeight - style.textSize) / 2) -
                             (style.cover?.top ?? 0),
-                        left: 88,
-                        width: 304,
+                        left: text.left,
+                        width: text.width,
                         height: style.lines * style.lineHeight,
                         fontSize: style.textSize,
                         lineHeight: `${style.lineHeight}px`,
@@ -460,8 +498,54 @@ export class Screensaver extends React.Component<CardProps<ScreensaverModel>> {
     }
 
     /**
+     * An icon and a value side by side, centred in a row of the stage (web-p: favorit and alternate
+     * entity of the alternate layout).
+     *
+     * @param entity the entity
+     * @param role `data-role` of the row
+     * @param top top edge of the row
+     * @param iconSize size of the icon
+     * @param valueSize font size of the value
+     * @param color colour of the value
+     */
+    private renderIconValueRow(
+        entity: Entity6,
+        role: string,
+        top: number,
+        iconSize: number,
+        valueSize: number,
+        color: number | undefined,
+    ): React.JSX.Element {
+        return (
+            <div
+                data-role={role}
+                style={{
+                    position: 'absolute',
+                    top,
+                    left: 0,
+                    width: stageSize(this.panelModel()).width,
+                    height: iconSize,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: 12,
+                    whiteSpace: 'nowrap',
+                }}
+            >
+                {this.renderIcon(entity, iconSize)}
+                {entity.optionalValue !== '' ? (
+                    <span style={{ fontSize: valueSize, lineHeight: 1, color: this.color(color) }}>
+                        {entity.optionalValue}
+                    </span>
+                ) : null}
+            </div>
+        );
+    }
+
+    /**
      * Time, date and bar shared by the standard and alternate layout. The notification
-     * replaces everything below the bar.
+     * replaces everything below the bar. Landscape: eu geometry, centred on the width of the model
+     * (web-l 640); web-p: same top part on 320 px, favorit and the two bottom rows below.
      *
      * @param areas the entities of the page
      * @param columns the bottom columns of the layout
@@ -473,13 +557,16 @@ export class Screensaver extends React.Component<CardProps<ScreensaverModel>> {
         favorit: React.JSX.Element | null,
     ): React.JSX.Element {
         const { model } = this.props;
+        const portrait = isWebPortrait(this.panelModel());
+        const width = portrait ? stageSize(this.panelModel()).width : landscapeWidth(this.panelModel());
+        const barLeft = portrait ? 20 : 60;
         return (
             <>
                 {this.renderTopStatusIcons()}
-                {this.renderTime({ top: 32, left: 0, width: 480, height: 110, align: 'center' }, 116)}
-                {this.renderTimeIcon(138, 226, 28)}
-                {this.renderDate({ top: textTop(172, 29), left: 0, width: 480, textAlign: 'center', fontSize: 29 })}
-                {this.renderBar(201, 60, 360)}
+                {this.renderTime({ top: 32, left: 0, width, height: 110, align: 'center' }, 116)}
+                {this.renderTimeIcon(138, Math.round(width / 2) - 14, 28)}
+                {this.renderDate({ top: textTop(172, 29), left: 0, width, textAlign: 'center', fontSize: 29 })}
+                {this.renderBar(201, barLeft, width - 2 * barLeft)}
                 {model.notify ? (
                     this.renderNotify({
                         headingTop: 216,
@@ -487,19 +574,26 @@ export class Screensaver extends React.Component<CardProps<ScreensaverModel>> {
                         textTop: 270,
                         textSize: 17,
                         lineHeight: 24,
-                        lines: 2,
+                        lines: portrait ? 6 : 2,
+                        portrait,
                     })
                 ) : (
                     <>
                         {favorit}
-                        {this.renderBottom(areas.bottom, columns, {
-                            labelTop: 221,
-                            labelSize: 18,
-                            iconTop: 248,
-                            iconSize: 30,
-                            valueTop: 289,
-                            valueSize: 18,
-                        })}
+                        {this.renderBottom(
+                            areas.bottom,
+                            columns,
+                            portrait
+                                ? PORTRAIT_BOTTOM
+                                : {
+                                      labelTop: 221,
+                                      labelSize: 18,
+                                      iconTop: 248,
+                                      iconSize: 30,
+                                      valueTop: 289,
+                                      valueSize: 18,
+                                  },
+                        )}
                     </>
                 )}
             </>
@@ -507,15 +601,40 @@ export class Screensaver extends React.Component<CardProps<ScreensaverModel>> {
     }
 
     private renderStandard(areas: ScreensaverAreas): React.JSX.Element {
-        const columns: Column[] = [0, 1, 2, 3].map(i => ({ left: 137 + i * 82, width: 82 }));
-        return this.renderStandardLike(areas, columns, this.renderFavoritStacked(areas.favorit));
+        if (isWebPortrait(this.panelModel())) {
+            const favorit =
+                areas.favorit && !isBlankEntity(areas.favorit) ? (
+                    <div data-role="favorit">
+                        {this.renderIcon(areas.favorit, 64, { position: 'absolute', top: 252, left: 128 })}
+                        {this.renderText(areas.favorit.optionalValue, {
+                            top: textTop(330, 35),
+                            left: 0,
+                            width: 320,
+                            textAlign: 'center',
+                            fontSize: 35,
+                            color: this.color(this.props.model.colors?.mainText),
+                        })}
+                    </div>
+                ) : null;
+            return this.renderStandardLike(
+                areas,
+                portraitColumns(areas.bottom.length, PORTRAIT_STANDARD_ROWS),
+                favorit,
+            );
+        }
+        return this.renderStandardLike(
+            areas,
+            standardColumns(areas.bottom.length, false),
+            this.renderFavoritStacked(areas.favorit),
+        );
     }
 
     /**
      * Alternate layout. Without an alternate entity the page looks like the standard layout
-     * with three bottom columns. With one, the favorit moves into one row (icon left, value
-     * right of it), the alternate entity takes the row below and the three bottom columns
-     * sit in the columns 2-4 of the standard layout (wiki: screensaverAlt.png).
+     * with one bottom column less. With one, the favorit moves into one row (icon left, value
+     * right of it), the alternate entity takes the row below and the bottom columns
+     * sit in the columns 2… of the standard layout (wiki: screensaverAlt.png). web-p: favorit and
+     * alternate entity as two centred rows between bar and bottom rows, the bottom rows stay 4 + 3.
      *
      * @param areas the entities of the page
      */
@@ -523,27 +642,37 @@ export class Screensaver extends React.Component<CardProps<ScreensaverModel>> {
         const colors = this.props.model.colors;
         const alternate = areas.alternate && !isBlankEntity(areas.alternate) ? areas.alternate : undefined;
         if (!alternate) {
-            const columns: Column[] = [0, 1, 2].map(i => ({ left: 137 + i * 82, width: 82 }));
-            return this.renderStandardLike(areas, columns, this.renderFavoritStacked(areas.favorit));
+            return this.renderStandard(areas);
         }
-        const columns: Column[] = [1, 2, 3].map(i => ({ left: 137 + i * 82, width: 82 }));
-        const favorit =
-            areas.favorit && !isBlankEntity(areas.favorit) ? (
-                <div data-role="favorit">
-                    {this.renderIcon(areas.favorit, 44, { position: 'absolute', top: 236, left: 23 })}
-                    {this.renderText(areas.favorit.optionalValue, {
-                        top: textTop(233, 34),
-                        left: 76,
-                        width: 134,
-                        textAlign: 'right',
-                        fontSize: 34,
-                        color: this.color(colors?.mainText),
-                    })}
-                </div>
-            ) : null;
+        const favoritEntity = areas.favorit && !isBlankEntity(areas.favorit) ? areas.favorit : undefined;
+        if (isWebPortrait(this.panelModel())) {
+            return this.renderStandardLike(
+                areas,
+                portraitColumns(areas.bottom.length, PORTRAIT_STANDARD_ROWS),
+                <>
+                    {favoritEntity
+                        ? this.renderIconValueRow(favoritEntity, 'favorit', 246, 44, 34, colors?.mainText)
+                        : null}
+                    {this.renderIconValueRow(alternate, 'alternate', 320, 34, 35, colors?.mainTextAlt2)}
+                </>,
+            );
+        }
+        const favorit = favoritEntity ? (
+            <div data-role="favorit">
+                {this.renderIcon(favoritEntity, 44, { position: 'absolute', top: 236, left: 23 })}
+                {this.renderText(favoritEntity.optionalValue, {
+                    top: textTop(233, 34),
+                    left: 76,
+                    width: 134,
+                    textAlign: 'right',
+                    fontSize: 34,
+                    color: this.color(colors?.mainText),
+                })}
+            </div>
+        ) : null;
         return this.renderStandardLike(
             areas,
-            columns,
+            standardColumns(areas.bottom.length, true),
             <>
                 {favorit}
                 <div data-role="alternate">
@@ -598,61 +727,148 @@ export class Screensaver extends React.Component<CardProps<ScreensaverModel>> {
         );
     }
 
+    /**
+     * The indicators of the advanced layout: one row on eu / web-l, two rows of 4 on web-p.
+     *
+     * @param areas the areas of the payload
+     */
+    private renderAdvancedIndicators(areas: ScreensaverAreas): (React.JSX.Element | null)[] {
+        const cells = advancedIndicatorCells(this.panelModel(), areas.indicator.length);
+        return areas.indicator.map((entity, i) => {
+            const cell: Box | undefined = cells[i];
+            return cell
+                ? this.renderIndicator(
+                      entity,
+                      i,
+                      { ...cell, display: 'flex', alignItems: 'center', justifyContent: 'center' },
+                      this.renderIcon(entity, 44),
+                  )
+                : null;
+        });
+    }
+
+    /**
+     * The two MR icons in the lower corners of the advanced layout, each centred in one half.
+     *
+     * @param top top edge of the row
+     * @param width width of the layout
+     */
+    private renderBottomStatusIcons(top: number, width: number): (React.JSX.Element | null)[] {
+        const { status } = this.props.model;
+        const half = Math.round((width - 28) / 2);
+        return [0, 1].map(i =>
+            this.renderStatusIcon(
+                status[i],
+                { top, left: 6 + i * half, width: Math.round(width / 2), height: 28, justifyContent: 'center' },
+                `mrIcon${i + 1}`,
+            ),
+        );
+    }
+
+    /**
+     * The left column of the advanced layout: icon and value per row (33 px).
+     *
+     * @param left the left entities
+     * @param top top edge of the first icon
+     * @param valueWidth width of the value
+     */
+    private renderLeft(left: Entity6[], top: number, valueWidth: number): (React.JSX.Element | null)[] {
+        const colors = this.props.model.colors;
+        return left.map((entity, i) =>
+            isBlankEntity(entity) ? null : (
+                <div
+                    key={i}
+                    data-role={`left${i + 1}`}
+                >
+                    {this.renderIcon(entity, 28, { position: 'absolute', top: top + i * 33, left: 28 })}
+                    {this.renderText(entity.optionalValue, {
+                        top: textTop(top + 5 + i * 33, 17),
+                        left: 66,
+                        width: valueWidth,
+                        fontSize: 17,
+                        color: this.color(colors?.mainText),
+                    })}
+                </div>
+            ),
+        );
+    }
+
+    /**
+     * The favorit of the advanced layout: icon top left, the value right of it.
+     *
+     * @param favorit the favorit entity
+     * @param iconLeft x of the icon
+     * @param valueLeft x of the value
+     */
+    private renderAdvancedFavorit(
+        favorit: Entity6 | undefined,
+        iconLeft: number,
+        valueLeft: number,
+    ): React.JSX.Element | null {
+        if (!favorit || isBlankEntity(favorit)) {
+            return null;
+        }
+        return (
+            <div data-role="favorit">
+                {this.renderIcon(favorit, 64, { position: 'absolute', top: 15, left: iconLeft })}
+                {this.renderText(favorit.optionalValue, {
+                    top: textTop(58, 25),
+                    left: valueLeft,
+                    width: 72,
+                    fontSize: 25,
+                    color: this.color(this.props.model.colors?.mainText),
+                })}
+            </div>
+        );
+    }
+
+    /**
+     * The favorit of the advanced layout on web-p: the value below the icon (no room right of it
+     * next to the time).
+     *
+     * @param favorit the favorit entity
+     */
+    private renderFavoritPortrait(favorit: Entity6 | undefined): React.JSX.Element | null {
+        if (!favorit || isBlankEntity(favorit)) {
+            return null;
+        }
+        return (
+            <div data-role="favorit">
+                {this.renderIcon(favorit, 56, { position: 'absolute', top: 6, left: 20 })}
+                {this.renderText(favorit.optionalValue, {
+                    top: textTop(70, 25),
+                    left: 0,
+                    width: 96,
+                    textAlign: 'center',
+                    fontSize: 25,
+                    color: this.color(this.props.model.colors?.mainText),
+                })}
+            </div>
+        );
+    }
+
     private renderAdvanced(areas: ScreensaverAreas): React.JSX.Element {
-        const { model } = this.props;
-        const colors = model.colors;
-        const columns: Column[] = [0, 1, 2, 3, 4, 5].map(i => ({ left: 16 + i * 75, width: 75 }));
+        if (isWebPortrait(this.panelModel())) {
+            return this.renderAdvancedPortrait(areas);
+        }
+        const width = landscapeWidth(this.panelModel());
+        // web-l: time and date keep their distance to the right edge, the indicators and bottom columns grow
+        const dx = width - 480;
         return (
             <>
-                {this.renderTime({ top: 13, left: 180, width: 279, height: 64, align: 'right' }, 57)}
-                {this.renderTimeIcon(19, 226, 28)}
-                {this.renderDate({ top: textTop(85, 16), left: 180, width: 271, textAlign: 'right', fontSize: 16 })}
-                {areas.favorit && !isBlankEntity(areas.favorit) ? (
-                    <div data-role="favorit">
-                        {this.renderIcon(areas.favorit, 64, { position: 'absolute', top: 15, left: 30 })}
-                        {this.renderText(areas.favorit.optionalValue, {
-                            top: textTop(58, 25),
-                            left: 108,
-                            width: 72,
-                            fontSize: 25,
-                            color: this.color(colors?.mainText),
-                        })}
-                    </div>
-                ) : null}
-                {areas.left.map((entity, i) =>
-                    isBlankEntity(entity) ? null : (
-                        <div
-                            key={i}
-                            data-role={`left${i + 1}`}
-                        >
-                            {this.renderIcon(entity, 28, { position: 'absolute', top: 89 + i * 33, left: 28 })}
-                            {this.renderText(entity.optionalValue, {
-                                top: textTop(94 + i * 33, 17),
-                                left: 66,
-                                width: 114,
-                                fontSize: 17,
-                                color: this.color(colors?.mainText),
-                            })}
-                        </div>
-                    ),
-                )}
-                {areas.indicator.map((entity, i) =>
-                    this.renderIndicator(
-                        entity,
-                        i,
-                        {
-                            top: 128,
-                            left: 178 + i * 56,
-                            width: 56,
-                            height: 48,
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                        },
-                        this.renderIcon(entity, 44),
-                    ),
-                )}
-                {this.renderBottom(areas.bottom, columns, {
+                {this.renderTime({ top: 13, left: 180, width: 279 + dx, height: 64, align: 'right' }, 57)}
+                {this.renderTimeIcon(19, 226 + dx, 28)}
+                {this.renderDate({
+                    top: textTop(85, 16),
+                    left: 180,
+                    width: 271 + dx,
+                    textAlign: 'right',
+                    fontSize: 16,
+                })}
+                {this.renderAdvancedFavorit(areas.favorit, 30, 108)}
+                {this.renderLeft(areas.left, 89, 114)}
+                {this.renderAdvancedIndicators(areas)}
+                {this.renderBottom(areas.bottom, rowColumns(areas.bottom.length, 16, 75), {
                     labelTop: 200,
                     labelSize: 18,
                     iconTop: 225,
@@ -660,16 +876,7 @@ export class Screensaver extends React.Component<CardProps<ScreensaverModel>> {
                     valueTop: 256,
                     valueSize: 18,
                 })}
-                {this.renderStatusIcon(
-                    model.status[0],
-                    { top: 284, left: 6, width: 240, height: 28, justifyContent: 'center' },
-                    'mrIcon1',
-                )}
-                {this.renderStatusIcon(
-                    model.status[1],
-                    { top: 284, left: 232, width: 240, height: 28, justifyContent: 'center' },
-                    'mrIcon2',
-                )}
+                {this.renderBottomStatusIcons(284, width)}
                 {this.renderNotify({
                     headingTop: 200,
                     headingSize: 30,
@@ -683,18 +890,73 @@ export class Screensaver extends React.Component<CardProps<ScreensaverModel>> {
         );
     }
 
-    private renderEasyview(areas: ScreensaverAreas): React.JSX.Element {
-        const { model } = this.props;
-        const count = Math.max(1, areas.bottom.length);
-        // the three columns of the eu panel sit at 95, 240 and 385 - narrower than a third of the width
-        const width = Math.floor(434 / count);
-        const columns: Column[] = areas.bottom.map((_, i) => ({ left: 23 + i * width, width }));
+    /**
+     * Advanced layout on web-p: favorit top left, time and date top right, the left column (4 rows)
+     * below with the indicators 1-4 as a 2 x 2 block right of it, the indicators 5-12 in two rows of 4,
+     * a separator line, the two bottom rows and the MR icons at the lower edge.
+     *
+     * @param areas the areas of the payload
+     */
+    private renderAdvancedPortrait(areas: ScreensaverAreas): React.JSX.Element {
+        const stage = stageSize(this.panelModel());
         return (
             <>
-                {this.renderTime({ top: 6, left: 0, width: 480, height: 108, align: 'center' }, 116)}
-                {this.renderTimeIcon(45, 31, 40)}
-                {this.renderDate({ top: textTop(127, 36), left: 0, width: 480, textAlign: 'center', fontSize: 36 })}
-                {this.renderBar(167, 60, 360)}
+                {this.renderTime({ top: 13, left: 128, width: 180, height: 64, align: 'right' }, 57)}
+                {this.renderTimeIcon(19, 100, 28)}
+                {this.renderDate({ top: textTop(85, 16), left: 100, width: 200, textAlign: 'right', fontSize: 16 })}
+                {this.renderFavoritPortrait(areas.favorit)}
+                {/* the value ends at the 2 x 2 indicator block (x 160) */}
+                {this.renderLeft(areas.left, 105, 94)}
+                {this.renderAdvancedIndicators(areas)}
+                {/* 1 px line where the indicators end, colour of the bar of the standard layout */}
+                <div
+                    data-role="separator"
+                    style={{
+                        position: 'absolute',
+                        top: ADVANCED_PORTRAIT_SEPARATOR,
+                        left: 20,
+                        width: stage.width - 40,
+                        height: 1,
+                        background: this.color(this.props.model.colors?.bar),
+                    }}
+                />
+                {this.renderBottom(areas.bottom, portraitColumns(areas.bottom.length, [346, 456]), {
+                    labelTop: 10,
+                    labelSize: 18,
+                    iconTop: 35,
+                    iconSize: 28,
+                    valueTop: 66,
+                    valueSize: 18,
+                })}
+                {this.renderBottomStatusIcons(stage.height - 36, stage.width)}
+                {this.renderNotify({
+                    headingTop: 352,
+                    headingSize: 30,
+                    textTop: 398,
+                    textSize: 17,
+                    lineHeight: 24,
+                    lines: 6,
+                    cover: { top: 336, height: stage.height - 336 },
+                    portrait: true,
+                })}
+            </>
+        );
+    }
+
+    private renderEasyview(areas: ScreensaverAreas): React.JSX.Element {
+        if (isWebPortrait(this.panelModel())) {
+            return this.renderEasyviewPortrait(areas);
+        }
+        const { model } = this.props;
+        const width = landscapeWidth(this.panelModel());
+        // the three columns of the eu panel sit at 95, 240 and 385 - narrower than a third of the width
+        const columns = easyviewColumns(areas.bottom.length, width);
+        return (
+            <>
+                {this.renderTime({ top: 6, left: 0, width, height: 108, align: 'center' }, 116)}
+                {this.renderTimeIcon(45, 31 + Math.round((width - 480) / 2), 40)}
+                {this.renderDate({ top: textTop(127, 36), left: 0, width, textAlign: 'center', fontSize: 36 })}
+                {this.renderBar(167, 60, width - 120)}
                 {model.notify
                     ? this.renderNotify({
                           headingTop: 182,
@@ -717,77 +979,113 @@ export class Screensaver extends React.Component<CardProps<ScreensaverModel>> {
     }
 
     /**
-     * Tiles (`screensaver5`, HMI/tools/screensaver5.py): 3 rows x 5 columns of 90 x 107 px. Indicators f1-f5 on
+     * EasyView on web-p: info icon, time and date on top, two rows of 4 big entities below the bar
+     * (label 20 px and value 24 px instead of 25 / 36 on eu, so they fit the 80 px columns).
+     *
+     * @param areas the areas of the payload
+     */
+    private renderEasyviewPortrait(areas: ScreensaverAreas): React.JSX.Element {
+        const { model } = this.props;
+        const width = stageSize(this.panelModel()).width;
+        return (
+            <>
+                {this.renderTimeIcon(6, Math.round(width / 2) - 20, 40)}
+                {this.renderTime({ top: 44, left: 0, width, height: 108, align: 'center' }, 116)}
+                {this.renderDate({ top: textTop(165, 36), left: 0, width, textAlign: 'center', fontSize: 36 })}
+                {this.renderBar(205, 20, width - 40)}
+                {model.notify
+                    ? this.renderNotify({
+                          headingTop: 220,
+                          headingSize: 38,
+                          textTop: 274,
+                          textSize: 17,
+                          lineHeight: 24,
+                          lines: 6,
+                          portrait: true,
+                      })
+                    : this.renderBottom(areas.bottom, portraitColumns(areas.bottom.length, [212, 412]), {
+                          labelTop: 14,
+                          labelSize: 20,
+                          iconTop: 40,
+                          iconSize: 64,
+                          valueTop: 113,
+                          // 36 px (eu) and 30 px overflow the 80 px column with values like `2,4m/s`
+                          valueSize: 24,
+                      })}
+            </>
+        );
+    }
+
+    /**
+     * Tiles (`screensaver5`, HMI/tools/screensaver5.py): eu 3 rows x 5 columns of 90 x 107 px. Indicators f1-f5 on
      * top, f6 | time and date | f7 in the middle, the bottom items below, two status bars at the lower edge.
+     * web-l: 7 columns, two indicators each left and right of the clock. us-p / web-p: 4 columns of 80 px
+     * (`HMI/tools/screensaver5_usp.py`), see {@link tilesGeometry}.
      *
      * @param areas the areas of the payload
      */
     private renderTiles(areas: ScreensaverAreas): React.JSX.Element {
         const { model } = this.props;
-        const column = (i: number): number => TILES_LEFT + i * TILES_COLUMN;
-        const cells = [0, 1, 2, 3, 4]
-            .map(i => ({ left: column(i), top: 0 }))
-            .concat([
-                { left: column(0), top: TILES_ROW },
-                { left: column(4), top: TILES_ROW },
-            ]);
-        const iconStyle: React.CSSProperties = { position: 'absolute', top: 14, left: 12 };
+        const geo = tilesGeometry(this.panelModel());
+        const portrait = isPortrait(this.panelModel());
         return (
             <>
-                {this.renderTime(
-                    { top: 112, left: column(1), width: 3 * TILES_COLUMN, height: 81, align: 'center' },
-                    86,
-                    700,
-                )}
-                {this.renderTimeIcon(141, 99, 28)}
+                {this.renderTime({ ...geo.clock, align: 'center' }, 86, 700)}
+                {this.renderTimeIcon(geo.timeIcon.top, geo.timeIcon.left, 28)}
                 {this.renderDate({
-                    top: textTop(192, 18),
-                    left: column(1),
-                    width: 3 * TILES_COLUMN,
+                    top: textTop(geo.date.capTop, 18),
+                    left: geo.date.left,
+                    width: geo.date.width,
                     textAlign: 'center',
                     fontSize: 18,
                 })}
                 {areas.indicator.map((entity, i) => {
-                    const cell = cells[i];
+                    const cell: Box | undefined = geo.indicators[i];
                     return cell
                         ? this.renderIndicator(
                               entity,
                               i,
-                              { ...cell, width: TILES_COLUMN, height: TILES_ROW },
-                              this.renderIcon(entity, 66, iconStyle),
+                              cell,
+                              this.renderIcon(entity, TILES_ICON, {
+                                  position: 'absolute',
+                                  top: Math.floor((cell.height - TILES_ICON) / 2) - 6,
+                                  left: Math.floor((cell.width - TILES_ICON) / 2),
+                              }),
                           )
                         : null;
                 })}
                 {model.notify
                     ? this.renderNotify({
-                          headingTop: 216,
+                          headingTop: geo.notify.headingTop,
                           headingSize: 38,
-                          textTop: 270,
+                          textTop: geo.notify.textTop,
                           textSize: 17,
                           lineHeight: 24,
-                          lines: 2,
+                          lines: geo.notify.lines,
+                          portrait,
                       })
-                    : this.renderBottom(
-                          areas.bottom,
-                          areas.bottom.map((_, i) => ({ left: column(i), width: TILES_COLUMN })),
-                          { labelTop: 221, labelSize: 18, iconTop: 248, iconSize: 30, valueTop: 287, valueSize: 18 },
-                      )}
-                {model.status.map((status, i) =>
-                    status.icon === '' ? null : (
+                    : this.renderBottom(areas.bottom, geo.bottom, {
+                          labelTop: 7,
+                          labelSize: 18,
+                          iconTop: 34,
+                          iconSize: 30,
+                          valueTop: 73,
+                          valueSize: 18,
+                      })}
+                {model.status.map((status, i) => {
+                    const bar: Box | undefined = geo.bars[i];
+                    return status.icon === '' || !bar ? null : (
                         <div
                             key={i}
                             data-role={`statusBar${i + 1}`}
                             style={{
                                 position: 'absolute',
-                                top: 315,
-                                left: TILES_LEFT + (i === 0 ? 1 : 265),
-                                width: 184,
-                                height: 5,
+                                ...bar,
                                 background: color565ToCss(status.color),
                             }}
                         />
-                    ),
-                )}
+                    );
+                })}
             </>
         );
     }

@@ -4,24 +4,20 @@ import { color565ToCss } from '../../protocol/color';
 import { theme } from '../../style/theme';
 import type { CardProps } from '../CardContract';
 import { popupHeaderIconColor } from '../popupSlider/fields';
-import { CLOSE_CENTER, POPUP_FONT_SIZE, PopupHeader, TAP_SIZE } from '../popupSlider/PopupHeader';
-import { pageCount, pageEntries, type PopupInSelModel } from './parse';
+import { closeCenter } from '../popupSlider/layout';
+import { POPUP_FONT_SIZE, PopupHeader, TAP_SIZE } from '../popupSlider/PopupHeader';
+import { entriesPerPage, inSelGrid, pageCount, pageEntries, type PopupInSelModel } from './parse';
 
-/** the 3 x 4 grid of the HMI: columns of 124 px from x 8, rows of 63 px centred at y 92 */
-const COLUMNS = 3;
-const COLUMN_LEFT = 8;
-const COLUMN_WIDTH = 124;
-const ROW_CENTER_Y = 92;
-const ROW_PITCH = 63;
-/** the page arrow sits between the title and the X */
-const NEXT_CENTER = { x: CLOSE_CENTER.x - 50, y: CLOSE_CENTER.y };
+/** the page arrow sits between the title and the X: 50 px left of the X */
+const NEXT_LEFT_OF_CLOSE = 50;
 /** RGB565 of the selected entry in the HMI (`bMode.pco=1374`) */
 const SELECTED_COLOR = color565ToCss(1374);
 
 /**
  * The selection popup (input_select, media lists, …): icon and headline at the top, the
- * X, and the entries in a 3 x 4 grid. More than 12 entries are paged with the arrow next
- * to the X (or the mouse wheel), like `bModeNext` of the HMI.
+ * X, and the entries in a grid per model ({@link inSelGrid}: eu 3 x 4, web-l 4 x 4, web-p 2 x 8,
+ * us-p 2 x 6). Longer lists are paged with the arrow next to the X (or the mouse wheel),
+ * cyclic like `bModeNext` of the HMI.
  *
  * Events: entry -> `event,buttonPress2,<id>,mode-<type>,<index>` (index in the whole list);
  * next page -> `event,pageOpenDetail,popupInSel,<id>,bModeNext,<page>`;
@@ -33,12 +29,17 @@ export class PopupInSel extends React.Component<CardProps<PopupInSelModel>, { pa
         this.state = { page: 0 };
     }
 
+    /** entries per page on the model of the panel */
+    private get perPage(): number {
+        return entriesPerPage(this.props.global.model);
+    }
+
     /** a list of another length starts at page 0 again (the HMI keeps its buttons otherwise) */
     componentDidUpdate(prevProps: CardProps<PopupInSelModel>): void {
         const { model } = this.props;
         if (model !== prevProps.model) {
             const page = model.list.length === prevProps.model.list.length ? this.state.page : 0;
-            const clamped = Math.min(page, pageCount(model) - 1);
+            const clamped = Math.min(page, pageCount(model, this.perPage) - 1);
             if (clamped !== this.state.page) {
                 this.setState({ page: clamped });
             }
@@ -46,14 +47,14 @@ export class PopupInSel extends React.Component<CardProps<PopupInSelModel>, { pa
     }
 
     private readonly nextPage = (): void => {
-        const pages = pageCount(this.props.model);
+        const pages = pageCount(this.props.model, this.perPage);
         const page = (this.state.page + 1) % pages;
         this.setState({ page });
         this.props.send(`event,pageOpenDetail,popupInSel,${this.props.model.entityName},bModeNext,${page}`);
     };
 
     private readonly onWheel = (e: React.WheelEvent): void => {
-        if (pageCount(this.props.model) > 1 && Math.abs(e.deltaY) > 0) {
+        if (pageCount(this.props.model, this.perPage) > 1 && Math.abs(e.deltaY) > 0) {
             this.nextPage();
         }
     };
@@ -70,18 +71,19 @@ export class PopupInSel extends React.Component<CardProps<PopupInSelModel>, { pa
     private renderEntry(entry: { index: number; text: string }, slot: number): React.JSX.Element {
         const { model } = this.props;
         const selected = entry.text === model.current;
-        const col = slot % COLUMNS;
-        const row = Math.floor(slot / COLUMNS);
+        const grid = inSelGrid(this.props.global.model);
+        const col = slot % grid.columns;
+        const row = Math.floor(slot / grid.columns);
         return (
             <div
                 key={entry.index}
                 data-entry={entry.index}
                 style={{
                     position: 'absolute',
-                    left: COLUMN_LEFT + col * COLUMN_WIDTH,
-                    width: COLUMN_WIDTH,
-                    top: ROW_CENTER_Y + row * ROW_PITCH - ROW_PITCH / 2,
-                    height: ROW_PITCH,
+                    left: grid.columnLeft + col * grid.columnWidth,
+                    width: grid.columnWidth,
+                    top: grid.rowCenterY + row * grid.rowPitch - grid.rowPitch / 2,
+                    height: grid.rowPitch,
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
@@ -103,10 +105,12 @@ export class PopupInSel extends React.Component<CardProps<PopupInSelModel>, { pa
     }
 
     render(): React.JSX.Element {
-        const { model, ctx } = this.props;
+        const { model, ctx, global } = this.props;
         const title = model.type || ctx.pageArgs[1] || '';
-        const pages = pageCount(model);
-        const entries = pageEntries(model, this.state.page);
+        const pages = pageCount(model, this.perPage);
+        const entries = pageEntries(model, this.state.page, this.perPage);
+        const close = closeCenter(global.model);
+        const next = { x: close.x - NEXT_LEFT_OF_CLOSE, y: close.y };
         return (
             <div
                 data-page={ctx.pageType}
@@ -120,6 +124,7 @@ export class PopupInSel extends React.Component<CardProps<PopupInSelModel>, { pa
                     // arrives the colour of the tapped entity (pageArgs[3])
                     iconColor={popupHeaderIconColor(ctx, model.received ? model.iconColor : undefined)}
                     onClose={this.close}
+                    model={global.model}
                 />
                 {pages > 1 ? (
                     <div
@@ -127,8 +132,8 @@ export class PopupInSel extends React.Component<CardProps<PopupInSelModel>, { pa
                         title={`${this.state.page + 1}/${pages}`}
                         style={{
                             position: 'absolute',
-                            left: NEXT_CENTER.x - TAP_SIZE / 2,
-                            top: NEXT_CENTER.y - TAP_SIZE / 2,
+                            left: next.x - TAP_SIZE / 2,
+                            top: next.y - TAP_SIZE / 2,
                             width: TAP_SIZE,
                             height: TAP_SIZE,
                             display: 'flex',

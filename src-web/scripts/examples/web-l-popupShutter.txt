@@ -1,0 +1,4 @@
+# popupShutter of the tile "Jalousie": position and tilt
+pageType~popupShutter~4?2~Jalousie~~2047
+entityUpdateDetail~4?2~50~offen~Jalousie~~~~~enable~enable~enable~Lamellen~~~~enable~enable~enable~50
+@sleep 300

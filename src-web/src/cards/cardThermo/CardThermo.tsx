@@ -4,6 +4,7 @@ import { TitleBar } from '../../components/TitleBar';
 import { color565ToCss } from '../../protocol/color';
 import { theme } from '../../style/theme';
 import type { CardProps } from '../CardContract';
+import { thermoLayout, type TargetGeometry, type TextBox, type ThermoLayout } from './layout';
 import { clampTemp, formatTenths, type CardThermoModel, type ThermoAction } from './parse';
 
 /**
@@ -20,53 +21,16 @@ interface CardThermoState {
 }
 
 const INACTIVE_COLOR = theme.muted;
-
-/*
- * Geometry measured on the emulator picture of the HMI (480x320, stage pixels).
- */
-
-/** the two text boxes on the left: label and value centred in a column 0..140 */
-const TEXT_BOX = { left: 0, width: 140, fontSize: 17, lineHeight: 20 } as const;
-/** tops of label 1, value 1, label 2, value 2 */
-const TEXT_TOPS = [90, 124, 159, 192] as const;
-
-/** y centre of the target temperature and its arrows */
-const TARGET_Y = 163;
-/** single target: x centre of the digits, arrow down left of it, arrow up right of it */
-const TARGET_X = 277;
-const ARROW_DOWN_X = 173;
-const ARROW_UP_X = 401;
-/** the chevrons of the HMI are big: 33 px wide */
-const ARROW_SIZE = 68;
-const ARROW_HIT = 72;
-const DIGITS_FONT = 62;
-const UNIT_FONT = 18;
-
-/** two targets (heat/cool): x centres of the two groups, each with its own arrows */
-const DUAL_X = [228, 390] as const;
-const DUAL_ARROW_OFFSET = 68;
-const DUAL_ARROW_SIZE = 40;
-const DUAL_DIGITS_FONT = 32;
-const DUAL_UNIT_FONT = 13;
-/** compact: the digits move left so that digits and unit together are centred */
-const DUAL_DIGITS_SHIFT = -8;
-
-/** the three dots of the detail button (opens popupThermo), centred under the digits */
-const DETAIL = { x: 278, y: 224, size: 42, hit: 48 } as const;
-
-/** 8 fixed slots of 54 px for the hvac mode icons, 8 px from the left edge */
-const ACTION_LEFT = 8;
-const ACTION_CELL = 54;
-const ACTION_TOP = 252;
-const ACTION_HEIGHT = 56;
-const ACTION_ICON_SIZE = 44;
+/** label and value lines of the info block */
+const TEXT_FONT = 17;
+const TEXT_LINE = 20;
 
 /**
  * cardThermo: the classic thermostat. Two text boxes on the left (label + value, e.g.
  * `Currently` and `State`), a large target temperature in the centre right with the arrow
  * down left of it and the arrow up right of it (two smaller groups with `temp2`), the
  * detail button (three dots) below the digits and 8 fixed slots for the hvac mode icons
- * in the bottom row.
+ * in the bottom row. Portrait models get the layout of the us-p HMI (see `layout.ts`).
  */
 export class CardThermo extends React.Component<CardProps<CardThermoModel>, CardThermoState> {
     state: CardThermoState = { dst: undefined, dst2: undefined };
@@ -136,18 +100,18 @@ export class CardThermo extends React.Component<CardProps<CardThermoModel>, Card
     };
 
     /** one line of the left column, centred like the text boxes of the HMI */
-    private renderText(text: string, top: number, key: string): React.JSX.Element {
+    private renderText(text: string, box: TextBox, key: string): React.JSX.Element {
         return (
             <div
                 key={key}
                 data-thermo-text={key}
                 style={{
                     position: 'absolute',
-                    left: TEXT_BOX.left,
-                    top,
-                    width: TEXT_BOX.width,
-                    fontSize: TEXT_BOX.fontSize,
-                    lineHeight: `${TEXT_BOX.lineHeight}px`,
+                    left: box.left,
+                    top: box.top,
+                    width: box.width,
+                    fontSize: TEXT_FONT,
+                    lineHeight: `${TEXT_LINE}px`,
                     textAlign: 'center',
                     color: theme.foreground,
                     whiteSpace: 'nowrap',
@@ -162,7 +126,7 @@ export class CardThermo extends React.Component<CardProps<CardThermoModel>, Card
     private renderArrow(
         which: 1 | 2,
         direction: 1 | -1,
-        centerX: number,
+        centre: { x: number; y: number },
         size: number,
         hit: number,
     ): React.JSX.Element {
@@ -172,8 +136,8 @@ export class CardThermo extends React.Component<CardProps<CardThermoModel>, Card
                 data-thermo-button={`${which}${direction > 0 ? 'up' : 'down'}`}
                 style={{
                     position: 'absolute',
-                    left: centerX - hit / 2,
-                    top: TARGET_Y - hit / 2,
+                    left: centre.x - hit / 2,
+                    top: centre.y - hit / 2,
                     width: hit,
                     height: hit,
                     display: 'flex',
@@ -192,36 +156,26 @@ export class CardThermo extends React.Component<CardProps<CardThermoModel>, Card
     }
 
     /**
-     * A target temperature: the digits centred at `centerX`, the unit top aligned right of them,
-     * the arrow down left and the arrow up right of the group.
+     * A target temperature: the digits centred at the centre of `geometry`, the unit top aligned
+     * right of them, the arrow down and the arrow up where `geometry` puts them.
      *
      * @param which 1 = `dstTemp` (`btUp`/`btDown`), 2 = `temp2` (`bUp2`/`bDown2`)
-     * @param centerX x of the digits' centre in stage pixels
-     * @param arrows x centres of the arrow down and the arrow up
-     * @param compact smaller digits when two targets share the width
+     * @param geometry position and sizes of digits and arrows
      */
-    private renderTarget(
-        which: 1 | 2,
-        centerX: number,
-        arrows: readonly [number, number],
-        compact: boolean,
-    ): React.JSX.Element {
+    private renderTarget(which: 1 | 2, geometry: TargetGeometry): React.JSX.Element {
         const value = which === 1 ? this.dst : this.dst2;
         const { unit } = this.props.model;
-        const digitsFont = compact ? DUAL_DIGITS_FONT : DIGITS_FONT;
-        const unitFont = compact ? DUAL_UNIT_FONT : UNIT_FONT;
-        const arrowSize = compact ? DUAL_ARROW_SIZE : ARROW_SIZE;
-        const arrowHit = compact ? DUAL_ARROW_SIZE + 8 : ARROW_HIT;
+        const { digitsFont, unitFont, arrowSize, arrowHit } = geometry;
         const height = Math.round(digitsFont * 1.15);
         return (
             <React.Fragment key={which}>
-                {this.renderArrow(which, -1, arrows[0], arrowSize, arrowHit)}
+                {this.renderArrow(which, -1, geometry.down, arrowSize, arrowHit)}
                 <div
                     data-thermo-target={which}
                     style={{
                         position: 'absolute',
-                        left: centerX + (compact ? DUAL_DIGITS_SHIFT : 0),
-                        top: TARGET_Y - height / 2,
+                        left: geometry.x + geometry.digitsShift,
+                        top: geometry.y - height / 2,
                         width: 0,
                         height,
                         display: 'flex',
@@ -247,8 +201,8 @@ export class CardThermo extends React.Component<CardProps<CardThermoModel>, Card
                             style={{
                                 position: 'absolute',
                                 left: '100%',
-                                top: compact ? 2 : 4,
-                                marginLeft: compact ? 3 : 6,
+                                top: geometry.unitTop,
+                                marginLeft: geometry.unitGap,
                                 fontSize: unitFont,
                                 fontWeight: 400,
                                 lineHeight: 1,
@@ -259,52 +213,57 @@ export class CardThermo extends React.Component<CardProps<CardThermoModel>, Card
                         </span>
                     </span>
                 </div>
-                {this.renderArrow(which, 1, arrows[1], arrowSize, arrowHit)}
+                {this.renderArrow(which, 1, geometry.up, arrowSize, arrowHit)}
             </React.Fragment>
         );
     }
 
-    private renderActions(actions: ThermoAction[]): React.JSX.Element {
+    private renderActions(actions: ThermoAction[], layout: ThermoLayout): React.JSX.Element {
         return (
             <div
                 data-thermo-actions=""
-                style={{
-                    position: 'absolute',
-                    left: ACTION_LEFT,
-                    top: ACTION_TOP,
-                    height: ACTION_HEIGHT,
-                    display: 'flex',
-                }}
+                style={{ position: 'absolute', left: 0, top: 0 }}
             >
-                {actions.map((action, i) => (
-                    <div
-                        key={i}
-                        data-pressable={action.icon === '' ? undefined : ''}
-                        data-thermo-action={i}
-                        style={{
-                            width: ACTION_CELL,
-                            height: ACTION_HEIGHT,
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            visibility: action.icon === '' ? 'hidden' : 'visible',
-                        }}
-                        onClick={action.icon === '' ? undefined : (): void => this.onAction(action)}
-                    >
-                        <Icon
-                            glyph={action.icon}
-                            size={ACTION_ICON_SIZE}
-                            color={action.active ? color565ToCss(action.color) : INACTIVE_COLOR}
-                        />
-                    </div>
-                ))}
+                {actions.map((action, i) => {
+                    const cell = layout.actions[i];
+                    if (cell === undefined) {
+                        return null;
+                    }
+                    return (
+                        <div
+                            key={i}
+                            data-pressable={action.icon === '' ? undefined : ''}
+                            data-thermo-action={i}
+                            style={{
+                                position: 'absolute',
+                                left: cell.x,
+                                top: cell.y,
+                                width: layout.actionWidth,
+                                height: layout.actionHeight,
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                visibility: action.icon === '' ? 'hidden' : 'visible',
+                            }}
+                            onClick={action.icon === '' ? undefined : (): void => this.onAction(action)}
+                        >
+                            <Icon
+                                glyph={action.icon}
+                                size={layout.actionIconSize}
+                                color={action.active ? color565ToCss(action.color) : INACTIVE_COLOR}
+                            />
+                        </div>
+                    );
+                })}
             </div>
         );
     }
 
     render(): React.JSX.Element {
-        const { model, ctx, press } = this.props;
+        const { model, ctx, global, press } = this.props;
         const dual = model.temp2 !== undefined;
+        const layout = thermoLayout(global.model);
+        const { detail } = layout;
         return (
             <div
                 data-page={ctx.pageType}
@@ -321,26 +280,25 @@ export class CardThermo extends React.Component<CardProps<CardThermoModel>, Card
                     title={model.title}
                     navigation={model.navigation}
                     press={press}
+                    model={global.model}
                 />
-                {this.renderText(model.curTempLabel, TEXT_TOPS[0], 'label1')}
-                {this.renderText(model.currentTemp, TEXT_TOPS[1], 'value1')}
-                {this.renderText(model.stateLabel, TEXT_TOPS[2], 'label2')}
-                {this.renderText(model.status, TEXT_TOPS[3], 'value2')}
+                {this.renderText(model.curTempLabel, layout.texts[0], 'label1')}
+                {this.renderText(model.currentTemp, layout.texts[1], 'value1')}
+                {this.renderText(model.stateLabel, layout.texts[2], 'label2')}
+                {this.renderText(model.status, layout.texts[3], 'value2')}
                 {dual
-                    ? DUAL_X.map((x, i) =>
-                          this.renderTarget(i === 0 ? 1 : 2, x, [x - DUAL_ARROW_OFFSET, x + DUAL_ARROW_OFFSET], true),
-                      )
-                    : this.renderTarget(1, TARGET_X, [ARROW_DOWN_X, ARROW_UP_X], false)}
+                    ? [this.renderTarget(1, layout.dual[0]), this.renderTarget(2, layout.dual[1])]
+                    : this.renderTarget(1, layout.single)}
                 {model.detail ? (
                     <div
                         data-pressable=""
                         data-thermo-detail=""
                         style={{
                             position: 'absolute',
-                            left: DETAIL.x - DETAIL.hit / 2,
-                            top: DETAIL.y - DETAIL.hit / 2,
-                            width: DETAIL.hit,
-                            height: DETAIL.hit,
+                            left: detail.x - detail.hit / 2,
+                            top: detail.y - detail.hit / 2,
+                            width: detail.hit,
+                            height: detail.hit,
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
@@ -349,12 +307,12 @@ export class CardThermo extends React.Component<CardProps<CardThermoModel>, Card
                     >
                         <Icon
                             name="dots-vertical"
-                            size={DETAIL.size}
+                            size={detail.size}
                             color={theme.foreground}
                         />
                     </div>
                 ) : null}
-                {this.renderActions(model.actions)}
+                {this.renderActions(model.actions, layout)}
             </div>
         );
     }

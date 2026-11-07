@@ -1,0 +1,7 @@
+# popupLightNew: brightness, colour temperature, colour wheel and effect list; the palette switches
+# to the colour temperature slider
+pageType~popupLightNew~light.ceiling~Deckenlicht~
+entityUpdateDetail~light.ceiling~~2016~1~60~30~enable~Farbe~Temperatur~Helligkeit~enable
+@sleep 200
+@click [data-palette]
+@sleep 300

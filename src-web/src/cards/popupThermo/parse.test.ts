@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { handleCommand, initial, pageCount, pageModes, parseEntityUpdateDetail } from './parse';
+import { handleCommand, initial, modesPerPage, pageCount, pageModes, parseEntityUpdateDetail } from './parse';
 
 const ctx = { pageType: 'popupThermo', pageArgs: [] };
 
@@ -32,6 +32,13 @@ describe('popupThermo', () => {
         expect(pageModes(m.rows[0], 1)).toEqual([{ index: 3, text: 'Auto' }]);
         expect(pageCount(m.rows[2])).toBe(1);
         expect(pageModes(m.rows[2], 0)).toEqual([]);
+        // four modes per page on the web models and us-p
+        expect(modesPerPage('eu')).toBe(3);
+        expect(modesPerPage('us-l')).toBe(3);
+        expect(modesPerPage('web-l')).toBe(4);
+        expect(modesPerPage('web-p')).toBe(4);
+        expect(pageCount(m.rows[0], 4)).toBe(1);
+        expect(pageModes(m.rows[0], 0, 4).map(e => e.index)).toEqual([0, 1, 2, 3]);
     });
 
     it('drops the trailing CR LF of the modes (emu recording)', () => {

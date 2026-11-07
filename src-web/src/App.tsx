@@ -1,11 +1,12 @@
 import React from 'react';
 import { Buzzer } from './audio/buzzer';
 import { registry } from './cards/registry';
+import { cardStage } from './cards/stageLayout';
 import { DeviceFrame } from './components/DeviceFrame';
 import { loadIconPaths } from './icons/iconData';
 import { hardwareButtonEvent } from './protocol/commands';
 import type { ConnectionStatus, HelloFrame, PanelModel } from './protocol/types';
-import { isPanelModel } from './protocol/types';
+import { helloShowsButtons, isPanelModel } from './protocol/types';
 import { PanelStore, type StoreSnapshot } from './store/PanelStore';
 import type { PanelTransport } from './transport/Transport';
 import { WsTransport } from './transport/WsTransport';
@@ -31,6 +32,8 @@ export interface AppProps {
     mock?: boolean;
     /** overrides for the mock hello */
     mockModel?: PanelModel;
+    /** `buttons` of the mock hello (`?buttons=0` hides the hardware buttons), default true */
+    mockButtons?: boolean;
 }
 
 interface AppState {
@@ -86,10 +89,16 @@ export function mockFromLocation(location: Location = window.location): boolean 
     return mock !== null && mock !== '0' && mock !== 'false';
 }
 
-/** `?model=us-p` - model of the mock hello, `eu` by default */
+/** `?model=us-p` (or `web-p`, `web-l`, …) - model of the mock hello, `eu` by default */
 export function mockModelFromLocation(location: Location = window.location): PanelModel {
     const model = new URLSearchParams(location.search).get('model');
     return isPanelModel(model) ? model : 'eu';
+}
+
+/** `?buttons=0` (or `false`) - the mock hello hides the hardware buttons, shown by default */
+export function mockButtonsFromLocation(location: Location = window.location): boolean {
+    const buttons = new URLSearchParams(location.search).get('buttons');
+    return buttons !== '0' && buttons !== 'false';
 }
 
 export class App extends React.Component<AppProps, AppState> {
@@ -124,6 +133,7 @@ export class App extends React.Component<AppProps, AppState> {
                 friendlyName: 'Mock panel',
                 tftVersion: '5.1.1',
                 kind: 'web',
+                buttons: props.mockButtons ?? true,
             };
             window.__panel = {
                 dispatch: (raw: string, seq?: number): void => this.store.dispatch(raw, seq),
@@ -131,6 +141,8 @@ export class App extends React.Component<AppProps, AppState> {
                 hello,
             };
             this.onHello(hello);
+            // setState is not applied in the constructor: keep the mock hello in the initial state
+            this.state = { ...this.state, hello, snapshot: this.store.getSnapshot() };
         }
     }
 
@@ -179,16 +191,31 @@ export class App extends React.Component<AppProps, AppState> {
             );
         }
         const Component = page.module.Component;
+        // a card without a layout of its own for a web model is drawn in its base geometry,
+        // centred on the stage (see `cards/stageLayout.ts`)
+        const stage = cardStage(page.pageType, global.model);
         return (
-            <Component
-                key={page.pageType}
-                model={page.model}
-                ctx={{ pageType: page.pageType, pageArgs: page.pageArgs }}
-                global={global}
-                send={this.store.send}
-                press={this.store.press}
-                openPopup={this.store.openPopup}
-            />
+            <div
+                data-card-stage={stage.model}
+                style={{
+                    position: 'absolute',
+                    left: stage.left,
+                    top: stage.top,
+                    width: stage.width,
+                    height: stage.height,
+                    overflow: 'hidden',
+                }}
+            >
+                <Component
+                    key={page.pageType}
+                    model={page.model}
+                    ctx={{ pageType: page.pageType, pageArgs: page.pageArgs }}
+                    global={stage.model === global.model ? global : { ...global, model: stage.model }}
+                    send={this.store.send}
+                    press={this.store.press}
+                    openPopup={this.store.openPopup}
+                />
+            </div>
         );
     }
 
@@ -202,6 +229,7 @@ export class App extends React.Component<AppProps, AppState> {
                 byeReason={byeReason}
                 onTouch={this.onTouch}
                 onHardwareButton={this.onHardwareButton}
+                showButtons={helloShowsButtons(this.state.hello)}
             >
                 {this.state.iconsLoaded ? this.renderPage() : null}
             </DeviceFrame>

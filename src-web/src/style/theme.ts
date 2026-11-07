@@ -5,20 +5,50 @@ export interface StageSize {
     height: number;
 }
 
-/** Native resolution of the display per model */
+const STAGE_SIZES: Readonly<Record<PanelModel, StageSize>> = {
+    eu: { width: 480, height: 320 },
+    'us-l': { width: 480, height: 320 },
+    'us-p': { width: 320, height: 480 },
+    'web-p': { width: 320, height: 640 },
+    'web-l': { width: 640, height: 320 },
+};
+
+/** Native resolution of the display (the logical stage of a web model) per model */
 export function stageSize(model: PanelModel): StageSize {
-    return model === 'us-p' ? { width: 320, height: 480 } : { width: 480, height: 320 };
+    return STAGE_SIZES[model];
+}
+
+/**
+ * `true` for the portrait models (`us-p`, `web-p`) - use this instead of comparing with `'us-p'`.
+ *
+ * @param model the panel model
+ */
+export function isPortrait(model: PanelModel): boolean {
+    return model === 'us-p' || model === 'web-p';
+}
+
+/**
+ * `true` for the models of standalone web panels (`web-p`, `web-l`), which have no hardware
+ * counterpart and a bigger stage.
+ *
+ * @param model the panel model
+ */
+export function isWebModel(model: PanelModel): boolean {
+    return model === 'web-p' || model === 'web-l';
 }
 
 /**
  * Width of the area the HMI lays its pages out in. On the eu display (480 px) the title is
  * centred at x 223, the tiles of the grids and the navigation icons are centred in the same
- * 447 px, the rightmost 33 px stay empty (measured on the emulator pictures).
+ * 447 px, the rightmost 33 px stay empty (measured on the emulator pictures). The web models
+ * (`web-p`, `web-l`) use the full width of the stage.
  *
  * @param model the panel model
  */
 export function contentWidth(model: PanelModel): number {
-    return stageSize(model).width - 33;
+    const { width } = stageSize(model);
+    // the web models have no reason for the empty strip of the HMI
+    return isWebModel(model) ? width : width - 33;
 }
 
 export const theme = {

@@ -1,0 +1,4 @@
+# cardSchedule on web-p: 11 entries (rows of cardSchedule.txt, repeated)
+pageType~cardSchedule
+entityUpd~Zeitplan~button~bSubPrev~~1592~~~button~bSubNext~~1592~~~text~4?1?0~~63488~Feuchte~1%~text~4?1?1~~2016~4~0%~text~4?1?2~~63488~auf~geschlossen~text~4?1?3~~2016~zu~geöffnet~text~4?1?4~~1087~Bewegung~motion~text~4?1?5~~1087~Temperatur~0°C~text~4?1?6~~63488~Feuchte 2~1%~text~4?1?7~~2016~4 2~0%~text~4?1?8~~63488~auf 2~geschlossen~text~4?1?9~~2016~zu 2~geöffnet~text~4?1?10~~1087~Bewegung 2~motion
+@sleep 300

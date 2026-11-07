@@ -21,6 +21,8 @@ export interface LightSliderProps {
     onCommit: (value: number) => void;
     /** `data-slider` attribute */
     name?: string;
+    /** height in stage pixels, {@link LIGHT_SLIDER_HEIGHT} by default (the portrait popups use more) */
+    height?: number;
 }
 
 interface LightSliderState {
@@ -28,7 +30,8 @@ interface LightSliderState {
 }
 
 /**
- * The vertical slider of the light popup (100 x 240 like the Nextion slider): the part
+ * The vertical slider of the light popup (100 x 240 like the Nextion slider, taller on the
+ * portrait models): the part
  * below the knob is filled with the colour of the light, the part above is dark. The
  * value is sent on release only, like the HMI.
  */
@@ -41,6 +44,10 @@ export class LightSlider extends React.Component<LightSliderProps, LightSliderSt
         this.state = { dragValue: undefined };
     }
 
+    private get height(): number {
+        return this.props.height ?? LIGHT_SLIDER_HEIGHT;
+    }
+
     /** value from a pointer position; the knob centre travels between KNOB_HEIGHT/2 and height - KNOB_HEIGHT/2 */
     private valueAt(clientY: number): number {
         const el = this.root.current;
@@ -48,7 +55,7 @@ export class LightSlider extends React.Component<LightSliderProps, LightSliderSt
             return this.props.value;
         }
         const rect = el.getBoundingClientRect();
-        const scale = rect.height / LIGHT_SLIDER_HEIGHT;
+        const scale = rect.height / this.height;
         const start = (KNOB_HEIGHT / 2) * scale;
         const travel = Math.max(1, rect.height - KNOB_HEIGHT * scale);
         const ratio = Math.max(0, Math.min(1, (clientY - rect.top - start) / travel));
@@ -99,7 +106,7 @@ export class LightSlider extends React.Component<LightSliderProps, LightSliderSt
     render(): React.JSX.Element {
         const { fill = KNOB_COLOR, track, name } = this.props;
         const value = Math.max(0, Math.min(100, this.state.dragValue ?? this.props.value));
-        const centre = KNOB_HEIGHT / 2 + (1 - value / 100) * (LIGHT_SLIDER_HEIGHT - KNOB_HEIGHT);
+        const centre = KNOB_HEIGHT / 2 + (1 - value / 100) * (this.height - KNOB_HEIGHT);
         return (
             <div
                 ref={this.root}
@@ -112,7 +119,7 @@ export class LightSlider extends React.Component<LightSliderProps, LightSliderSt
                 style={{
                     position: 'relative',
                     width: LIGHT_SLIDER_WIDTH,
-                    height: LIGHT_SLIDER_HEIGHT,
+                    height: this.height,
                     background: track ?? EMPTY_COLOR,
                     cursor: 'pointer',
                     touchAction: 'none',
