@@ -2717,6 +2717,7 @@ export class ScreensaverEditor extends React.Component<ScreensaverEditorProps, S
                 <ScreensaverItemDialog
                     open={!!editing}
                     area={editing?.area ?? 'bottom'}
+                    mode={this.props.entry.mode}
                     index={editing?.index ?? 0}
                     count={editing ? this.placeCount(editing.area) : 0}
                     inline={

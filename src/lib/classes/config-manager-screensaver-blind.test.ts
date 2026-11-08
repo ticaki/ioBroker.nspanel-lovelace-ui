@@ -345,3 +345,87 @@ describe('lib/classes/config-manager - template element', () => {
         expect(item).to.not.have.property('screensaverAreas');
     });
 });
+
+describe('lib/classes/config-manager - font of the icon field (tiles)', () => {
+    const size3 = { type: 'const', constVal: 3 };
+
+    it('indicator: the font goes to icon.textSize, the icon stays', async () => {
+        for (const mode of ['indicator'] as const) {
+            const r = await entityData(
+                {
+                    ScreensaverEntity: 'alias.0.wetter.Temperatur',
+                    ScreensaverEntityIconOn: 'sun',
+                    ScreensaverEntityIconTextSize: 3,
+                },
+                mode,
+            );
+            expect(r.data.icon.textSize, mode).to.deep.equal(size3);
+            expect(r.data.icon.true.value, mode).to.deep.equal({ type: 'const', constVal: 'sun' });
+            expect(r.data.icon.true.color, mode).to.not.equal(undefined);
+        }
+    });
+
+    it('a blind keeps its icon by position and gets the font', async () => {
+        const r = await entityData(
+            { ScreensaverEntity: `${CHANNEL}.ACTUAL`, ScreensaverEntityIconTextSize: 4 },
+            'indicator',
+        );
+        expect(r.role).to.equal('blind');
+        expect(r.data.icon.true.value).to.deep.equal({ type: 'const', constVal: SHUTTER_POSITION_ICON });
+        expect(r.data.icon.textSize).to.deep.equal({ type: 'const', constVal: 4 });
+    });
+
+    it('other places (bottom too), no font and an invalid font id give no textSize', async () => {
+        for (const mode of ['left', 'bottom'] as const) {
+            const other = await entityData(
+                { ScreensaverEntity: 'alias.0.wetter.Temperatur', ScreensaverEntityIconTextSize: 3 },
+                mode,
+            );
+            expect(other.data.icon, mode).to.not.have.property('textSize');
+        }
+        const none = await entityData({ ScreensaverEntity: 'alias.0.wetter.Temperatur' }, 'indicator');
+        expect(none.data.icon).to.not.have.property('textSize');
+        const invalid = await entityData(
+            { ScreensaverEntity: 'alias.0.wetter.Temperatur', ScreensaverEntityIconTextSize: 7 },
+            'indicator',
+        );
+        expect(invalid.data.icon).to.not.have.property('textSize');
+    });
+
+    it('template element: the font joins the icon of the template, the field does not reach the runtime item', async () => {
+        const r = await entityData(
+            {
+                type: 'template',
+                template: 'text.battery.bydhvs',
+                dpInit: 'bydhvs.0',
+                modeScr: 'indicator',
+                ScreensaverEntityIconTextSize: 1,
+            },
+            'indicator',
+        );
+        expect(r).to.not.have.property('ScreensaverEntityIconTextSize');
+        expect(r.data.icon).to.deep.equal({ textSize: { type: 'const', constVal: 1 } });
+        const page: any = {
+            log: { error: (): void => undefined, warn: (): void => undefined },
+            getItemFromTemplate: Page.prototype.getItemFromTemplate,
+        };
+        const item: any = await page.getItemFromTemplate(r);
+        expect(item.data.icon.textSize).to.deep.equal({ type: 'const', constVal: 1 });
+        expect(item.data.icon.true.value.regexp.source).to.equal('\\.State\\.SOC$');
+    });
+});
+
+describe('lib/configuration/admin-screensaver-item - font of the icon field', () => {
+    it('state and template items of the indicator take the font, the other areas (bottom too) not', () => {
+        const state = { state: 'alias.0.wetter.Temperatur', iconOn: 'sun', iconTextSize: 3 } as const;
+        expect(screensaverItemToScript(state, 'bottom')).to.not.have.property('ScreensaverEntityIconTextSize');
+        expect(screensaverItemToScript(state, 'indicator')).to.have.property('ScreensaverEntityIconTextSize', 3);
+        expect(screensaverItemToScript(state, 'left')).to.not.have.property('ScreensaverEntityIconTextSize');
+        expect(screensaverItemToScript(state, 'favorit')).to.not.have.property('ScreensaverEntityIconTextSize');
+        const template = { state: 'bydhvs.0', template: 'text.battery.bydhvs', iconTextSize: 4 } as const;
+        expect(screensaverItemToScript(template, 'indicator')).to.have.property('ScreensaverEntityIconTextSize', 4);
+        expect(screensaverItemToScript({ state: 'alias.0.x', iconOn: 'sun' }, 'indicator')).to.not.have.property(
+            'ScreensaverEntityIconTextSize',
+        );
+    });
+});

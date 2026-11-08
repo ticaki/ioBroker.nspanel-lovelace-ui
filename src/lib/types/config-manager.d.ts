@@ -914,6 +914,11 @@ declare namespace ScriptConfig {
                */
               ScreensaverEntityVisibleCondition?: string;
               ScreensaverEntityFillIfBelowMin?: boolean;
+              /**
+               * font id of the icon field (1, 3 or 4 - the fonts with the icon glyphs), sent as suffix `¬<id>` of
+               * the icon. Only the screensaver `tiles` (HMI page screensaver5) reads it, place indicator.
+               */
+              ScreensaverEntityIconTextSize?: number;
           })
         | { type: 'native'; native: any }
         | ({
@@ -924,6 +929,8 @@ declare namespace ScriptConfig {
               visibleCondition?: string;
               /** options of the template, its `read` functions get them as `options` */
               readOptions?: Record<string, string | number>;
+              /** font id of the icon field, see the script element */
+              ScreensaverEntityIconTextSize?: number;
               modeScr: 'left' | 'bottom' | 'indicator' | 'favorit' | 'alternate';
           } & ScreenSaverIndicatorAction &
               ({ enabled: string; visibleCondition?: string } | { enabled?: string }))

@@ -1060,6 +1060,8 @@
     "screensaver_item_enabled": "Datenpunkt, der das Item bei false ausblendet",
     "screensaver_item_factor": "Faktor",
     "screensaver_item_headline": "Überschrift (leer = Name des Datenpunkts)",
+    "screensaver_item_iconFont": "Icon-Schrift",
+    "screensaver_item_iconFontHint": "Nur der Bildschirmschoner 'Kacheln' ändert die Schrift des Icon-Felds. Leer = Schrift des Panels.",
     "screensaver_item_iconOff": "Symbol aus (false / 0)",
     "screensaver_item_iconOn": "Symbol (an / Wert)",
     "screensaver_item_iconRequired": "Ohne Symbol kann das Panel das Item nicht darstellen – bitte ein Symbol wählen",

@@ -4,7 +4,7 @@
  * Pure functions without adapter or page types - shared by the adapter (admin-screensaver.ts re-exports them)
  * and the admin (the raw data dialog starts with the script element of a standard item).
  */
-import { isRawItemObject } from '../types/adminShareConfig';
+import { isHmiTextSize, isRawItemObject } from '../types/adminShareConfig';
 import type { ScreensaverItemAction, ScreensaverItemConfig, ScreensaverItemRaw } from '../types/adminShareConfig';
 import { Color } from '../const/Color';
 import {
@@ -80,6 +80,7 @@ export function screensaverItemToScript(
         if (area === 'indicator' && item.action) {
             setScreensaverIndicatorAction(element, item.action);
         }
+        setScreensaverIconTextSize(element, item, area);
         return element;
     }
     let iconOn = item.iconOn || null;
@@ -146,7 +147,29 @@ export function screensaverItemToScript(
     if (area === 'indicator' && item.action) {
         setScreensaverIndicatorAction(element, item.action);
     }
+    setScreensaverIconTextSize(element, item, area);
     return element;
+}
+
+/** the field of a script or template element that holds the font of the icon field */
+type ScreensaverIconTextSizeField = { ScreensaverEntityIconTextSize?: number };
+
+/**
+ * The font of the icon field as the field of the script element - indicator only, the area whose icon fields
+ * the screensaver `tiles` can change (the page strips it on the other screensaver pages)
+ *
+ * @param element script or template element, gets the field
+ * @param item stored item
+ * @param area area of the item
+ */
+function setScreensaverIconTextSize(
+    element: ScreensaverIconTextSizeField,
+    item: ScreensaverItemConfig,
+    area: ScreensaverScriptArea,
+): void {
+    if (area === 'indicator' && isHmiTextSize(item.iconTextSize)) {
+        element.ScreensaverEntityIconTextSize = item.iconTextSize;
+    }
 }
 
 /**

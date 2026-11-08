@@ -59,6 +59,7 @@ function screensaverItemToScript(item, area, info = {}) {
     if (area === "indicator" && item.action) {
       setScreensaverIndicatorAction(element2, item.action);
     }
+    setScreensaverIconTextSize(element2, item, area);
     return element2;
   }
   let iconOn = item.iconOn || null;
@@ -116,7 +117,13 @@ function screensaverItemToScript(item, area, info = {}) {
   if (area === "indicator" && item.action) {
     setScreensaverIndicatorAction(element, item.action);
   }
+  setScreensaverIconTextSize(element, item, area);
   return element;
+}
+function setScreensaverIconTextSize(element, item, area) {
+  if (area === "indicator" && (0, import_adminShareConfig.isHmiTextSize)(item.iconTextSize)) {
+    element.ScreensaverEntityIconTextSize = item.iconTextSize;
+  }
 }
 function setScreensaverIndicatorAction(element, action) {
   var _a;

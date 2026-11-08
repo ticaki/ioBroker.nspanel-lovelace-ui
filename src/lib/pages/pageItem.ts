@@ -2442,6 +2442,8 @@ export class PageItem extends BaseTriggeredPage {
             return false;
         }
         const entry = this.dataItems;
+        /** value of the event as sent - a `case` below has its own `value` */
+        const eventValue = value;
         if (action.startsWith('mode-')) {
             action = 'mode';
         }
@@ -2461,7 +2463,9 @@ export class PageItem extends BaseTriggeredPage {
                 if (entry.type === 'button' || entry.type === 'switch') {
                     this.log.debug(`Button ${this.id} was pressed!`);
                     if (this.parent.isScreensaver) {
-                        if (!(this.parent as Screensaver).screensaverIndicatorButtons) {
+                        // TFT 6.0.8+ sends the taps as value: the screensaver only passes keys
+                        // (Screensaver.onIndicatorTap), an older TFT jumps to the main page with the option off
+                        if (!(this.parent as Screensaver).screensaverIndicatorButtons && eventValue === '') {
                             this.parent.basePanel.navigation.resetPosition();
                             await this.parent.basePanel.navigation.setCurrentPage();
                             break;
