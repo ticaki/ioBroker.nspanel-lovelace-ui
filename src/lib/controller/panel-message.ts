@@ -1,5 +1,5 @@
 import type { IClientPublishOptions } from 'mqtt';
-import { SendTopicAppendix } from '../const/definition';
+import { MAX_PANEL_PAYLOAD_BYTES, SendTopicAppendix } from '../const/definition';
 import { BaseClass, type AdapterClassDefinition } from './library';
 import type { callbackMessageType } from '../classes/mqtt';
 import type { PanelChannel } from '../classes/panel-channel';
@@ -157,6 +157,7 @@ export class PanelSend extends BaseClass {
         force?: boolean,
         opt?: IClientPublishOptions,
     ): void => {
+        this.warnIfTooLong(payload);
         // a pageType clears the page on the panel - only messages queued after the last pageType are real
         // duplicates, otherwise a resent pageType~X would be left without its content (black page)
         const lastPageType = this.messageDb.findLastIndex(a => a.payload.startsWith('pageType~'));
@@ -283,6 +284,24 @@ export class PanelSend extends BaseClass {
         msg.sent++;
         this.addMessageTasmota(this.topic, msg.payload, msg.opt);
     };
+
+    /**
+     * Logs a warning when the payload does not fit into the receive buffer of the display.
+     * Only a warning - the message is sent anyway.
+     *
+     * @param payload the message for the panel
+     */
+    private warnIfTooLong(payload: string): void {
+        if (this.panel?.isVirtual) {
+            return;
+        }
+        const bytes = Buffer.byteLength(payload, 'utf8');
+        if (bytes > MAX_PANEL_PAYLOAD_BYTES) {
+            this.log.warn(
+                `Message to the panel has ${bytes} bytes, the display can receive only ${MAX_PANEL_PAYLOAD_BYTES} bytes: ${payload.slice(0, 60)}...`,
+            );
+        }
+    }
 
     readonly addMessageTasmota = (topic: string, payload: string, opt?: IClientPublishOptions): void => {
         if (

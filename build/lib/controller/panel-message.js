@@ -138,6 +138,7 @@ class PanelSend extends import_library.BaseClass {
   };
   addMessage = (payload, ackForType, force, opt) => {
     var _a;
+    this.warnIfTooLong(payload);
     const lastPageType = this.messageDb.findLastIndex((a) => a.payload.startsWith("pageType~"));
     if (this.messageTimeout !== void 0 && this.messageDb.length > 0 && this.messageDb.slice(lastPageType + 1).some((a) => a.payload === payload && a.opt === opt)) {
       if (this.adapter.config.debugLogMqtt) {
@@ -243,6 +244,24 @@ class PanelSend extends import_library.BaseClass {
     msg.sent++;
     this.addMessageTasmota(this.topic, msg.payload, msg.opt);
   };
+  /**
+   * Logs a warning when the payload does not fit into the receive buffer of the display.
+   * Only a warning - the message is sent anyway.
+   *
+   * @param payload the message for the panel
+   */
+  warnIfTooLong(payload) {
+    var _a;
+    if ((_a = this.panel) == null ? void 0 : _a.isVirtual) {
+      return;
+    }
+    const bytes = Buffer.byteLength(payload, "utf8");
+    if (bytes > import_definition.MAX_PANEL_PAYLOAD_BYTES) {
+      this.log.warn(
+        `Message to the panel has ${bytes} bytes, the display can receive only ${import_definition.MAX_PANEL_PAYLOAD_BYTES} bytes: ${payload.slice(0, 60)}...`
+      );
+    }
+  }
   addMessageTasmota = (topic, payload, opt) => {
     if (this.messageDbTasmota.length > 0 && this.messageDbTasmota.some((a) => a.topic === topic && a.payload === payload && a.opt === opt)) {
       if (this.adapter.config.debugLogMqtt) {

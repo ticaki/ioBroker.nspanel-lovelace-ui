@@ -30,6 +30,7 @@ var definition_exports = {};
 __export(definition_exports, {
   Defaults: () => Defaults,
   InternalStates: () => InternalStates,
+  MAX_PANEL_PAYLOAD_BYTES: () => MAX_PANEL_PAYLOAD_BYTES,
   ReiveTopicAppendix: () => ReiveTopicAppendix,
   ScreenSaverConst: () => ScreenSaverConst,
   SendTopicAppendix: () => SendTopicAppendix,
@@ -2622,6 +2623,7 @@ const ScreenSaverConst = {
 };
 const ReiveTopicAppendix = "/tele/RESULT";
 const SendTopicAppendix = "/cmnd/CustomSend";
+const MAX_PANEL_PAYLOAD_BYTES = 1017;
 const tasmotaTimeZones = [
   {
     label: "Africa/Abidjan",
@@ -5436,6 +5438,7 @@ function isDimValueForKey(key, val) {
 0 && (module.exports = {
   Defaults,
   InternalStates,
+  MAX_PANEL_PAYLOAD_BYTES,
   ReiveTopicAppendix,
   ScreenSaverConst,
   SendTopicAppendix,

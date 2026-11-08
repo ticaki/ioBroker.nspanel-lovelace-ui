@@ -2743,6 +2743,11 @@ export const ScreenSaverConst: Record<
 
 export const ReiveTopicAppendix = '/tele/RESULT';
 export const SendTopicAppendix = '/cmnd/CustomSend';
+/**
+ * Largest CustomSend payload in bytes (UTF-8) the display can receive:
+ * the Nextion receive buffer holds 1023 bytes, each frame adds 6 bytes of overhead.
+ */
+export const MAX_PANEL_PAYLOAD_BYTES = 1017;
 
 export const tasmotaTimeZones = [
     {
