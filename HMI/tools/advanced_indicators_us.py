@@ -10,6 +10,7 @@ The page has f1Icon..f5Icon, but they had no code and no variables with the id o
 
 Only screensaver2 changes. The hint m0 ('change model conf to us-l/p') and its 'click m0,1' stay EU only.
 The version stays: this belongs to the unpublished 6.0.8.
+indicator_long_press.py adds the tap counter and the long press on top (screensaver2 and screensaver5).
 """
 import os
 import sys

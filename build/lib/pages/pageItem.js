@@ -2147,6 +2147,7 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
       return false;
     }
     const entry = this.dataItems;
+    const eventValue = value;
     if (action.startsWith("mode-")) {
       action = "mode";
     }
@@ -2164,7 +2165,7 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
         if (entry.type === "button" || entry.type === "switch") {
           this.log.debug(`Button ${this.id} was pressed!`);
           if (this.parent.isScreensaver) {
-            if (!this.parent.screensaverIndicatorButtons) {
+            if (!this.parent.screensaverIndicatorButtons && eventValue === "") {
               this.parent.basePanel.navigation.resetPosition();
               await this.parent.basePanel.navigation.setCurrentPage();
               break;

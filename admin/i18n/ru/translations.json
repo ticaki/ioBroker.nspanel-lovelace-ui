@@ -1028,6 +1028,8 @@
     "screensaver_item_enabled": "Состояние, скрывающее элемент при false",
     "screensaver_item_factor": "Множитель",
     "screensaver_item_headline": "Заголовок (пусто = имя состояния)",
+    "screensaver_item_iconFont": "Шрифт значка",
+    "screensaver_item_iconFontHint": "Шрифт поля значка меняет только заставка 'Плитки'. Пусто = шрифт панели.",
     "screensaver_item_iconOff": "Значок выкл (false / 0)",
     "screensaver_item_iconOn": "Значок (вкл / значение)",
     "screensaver_item_iconRequired": "Без значка панель не может отобразить элемент – выберите значок",

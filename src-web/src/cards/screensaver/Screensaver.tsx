@@ -4,7 +4,7 @@ import { color565ToCss } from '../../protocol/color';
 import type { Entity6, GlobalState } from '../../protocol/types';
 import { isPortrait, stageSize, theme } from '../../style/theme';
 import type { CardProps } from '../CardContract';
-import { indicatorTapTarget, nextTap, swipeAction, type TapState } from './interaction';
+import { indicatorRelease, nextTap, swipeAction, type TapState } from './interaction';
 import {
     ADVANCED_PORTRAIT_SEPARATOR,
     advancedIndicatorCells,
@@ -24,6 +24,7 @@ import {
     splitAreas,
     splitRuns,
     splitTime,
+    tilesIconSize,
     type ScreensaverAreas,
     type ScreensaverLayout,
     type ScreensaverModel,
@@ -36,8 +37,11 @@ import {
  */
 const CAP_TOP = 0.13;
 
-/** Size of the indicator icons of the tiles layout */
+/** Size of the indicator icons of the tiles layout (in the font of the HMI fields f1Icon..) */
 const TILES_ICON = 66;
+
+/** font of the indicator fields f1Icon..f7Icon of screensaver5 */
+const TILES_INDICATOR_FONT = 4;
 
 /** web-p: the bottom rows of the standard and alternate layout (107 px each, like tiles) */
 const PORTRAIT_STANDARD_ROWS: readonly number[] = [420, 527];
@@ -133,14 +137,24 @@ export class Screensaver extends React.Component<CardProps<ScreensaverModel>> {
     }
 
     /**
-     * A tap on an indicator icon sends the indicator press, dimmed or awake (the real display
-     * does the same); the wake-up happens in the store with the press.
+     * The release of a touch that started on an indicator icon: the tile tap counts with the taps of the background
+     * and sends `<id>,button,<taps>`, a swipe from the tile is a swipe ({@link indicatorRelease}); the wake-up
+     * happens in the store with the press.
      *
      * @param entityId id of the indicator entity (empty when none)
+     * @param e the pointer event of the release
      */
-    private indicatorTap(entityId: string): void {
-        if (indicatorTapTarget(entityId) === 'indicator') {
-            this.props.press(entityId, 'button');
+    private indicatorTap(entityId: string, e: React.PointerEvent): void {
+        const start = this.pointerStart;
+        const { tap, press } = indicatorRelease(
+            this.tap,
+            entityId,
+            start ? e.clientX - start.x : 0,
+            start ? e.clientY - start.y : 0,
+        );
+        this.tap = tap;
+        if (press) {
+            this.props.press(...press);
         }
     }
 
@@ -713,8 +727,8 @@ export class Screensaver extends React.Component<CardProps<ScreensaverModel>> {
                 data-role={`indicator${index + 1}`}
                 onPointerUp={(e): void => {
                     e.stopPropagation();
+                    this.indicatorTap(entity.id, e);
                     this.pointerStart = undefined;
-                    this.indicatorTap(entity.id);
                 }}
                 style={{
                     position: 'absolute',
@@ -1028,6 +1042,16 @@ export class Screensaver extends React.Component<CardProps<ScreensaverModel>> {
         const { model } = this.props;
         const geo = tilesGeometry(this.panelModel());
         const portrait = isPortrait(this.panelModel());
+        // an icon in another font (`¬<n>`) keeps the centre of the icon in font 4 in the middle of its cell
+        const iconOf = (entity: Entity6, cell: Box): React.JSX.Element | null => {
+            const size = tilesIconSize(entity.icon, TILES_ICON, TILES_INDICATOR_FONT);
+            const shift = Math.round((TILES_ICON - size) / 2);
+            return this.renderIcon(entity, size, {
+                position: 'absolute',
+                top: Math.floor((cell.height - TILES_ICON) / 2) - 6 + shift,
+                left: Math.floor((cell.width - TILES_ICON) / 2) + shift,
+            });
+        };
         return (
             <>
                 {this.renderTime({ ...geo.clock, align: 'center' }, 86, 700)}
@@ -1041,18 +1065,7 @@ export class Screensaver extends React.Component<CardProps<ScreensaverModel>> {
                 })}
                 {areas.indicator.map((entity, i) => {
                     const cell: Box | undefined = geo.indicators[i];
-                    return cell
-                        ? this.renderIndicator(
-                              entity,
-                              i,
-                              cell,
-                              this.renderIcon(entity, TILES_ICON, {
-                                  position: 'absolute',
-                                  top: Math.floor((cell.height - TILES_ICON) / 2) - 6,
-                                  left: Math.floor((cell.width - TILES_ICON) / 2),
-                              }),
-                          )
-                        : null;
+                    return cell ? this.renderIndicator(entity, i, cell, iconOf(entity, cell)) : null;
                 })}
                 {model.notify
                     ? this.renderNotify({

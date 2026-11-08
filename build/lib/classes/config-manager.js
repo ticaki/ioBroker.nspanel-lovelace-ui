@@ -4535,6 +4535,29 @@ class ConfigManager extends import_library.BaseClass {
     }
     return null;
   }
+  /**
+   * Font of the icon field of a screensaver element as data item of `icon.textSize` (tools.getIconEntryValue
+   * appends `¬<id>` to the icon). Place indicator only; the screensaver page strips the suffix
+   * again on every HMI page except screensaver5, which alone reads it.
+   *
+   * @param entity script or template element
+   * @param mode place of the element
+   * @returns the data item, undefined without a valid font id
+   */
+  getScreensaverIconTextSize(entity, mode) {
+    if (mode !== "indicator" || entity.type === "native") {
+      return void 0;
+    }
+    const size = entity.ScreensaverEntityIconTextSize;
+    if (size === void 0) {
+      return void 0;
+    }
+    if (!(0, import_adminShareConfig.isHmiTextSize)(size)) {
+      this.log.warn(`ScreensaverEntityIconTextSize ${String(size)} is no font id 0-5 - ignored`);
+      return void 0;
+    }
+    return { type: "const", constVal: size };
+  }
   async getEntityData(entity, mode, defaultColors) {
     var _a, _b;
     const result = {
@@ -4598,6 +4621,12 @@ class ConfigManager extends import_library.BaseClass {
         "ScreensaverEntityCycleValues"
       ]) {
         delete temp[key];
+      }
+      delete temp.ScreensaverEntityIconTextSize;
+      const iconTextSize2 = this.getScreensaverIconTextSize(entity, mode);
+      if (iconTextSize2) {
+        temp.data = temp.data || {};
+        temp.data.icon = { ...temp.data.icon, textSize: iconTextSize2 };
       }
       const action = mode === "indicator" ? await this.getScreensaverIndicatorAction(entity) : null;
       if (action) {
@@ -4770,6 +4799,10 @@ class ConfigManager extends import_library.BaseClass {
           constVal: entity.ScreensaverEntityIconColor
         }
       };
+    }
+    const iconTextSize = this.getScreensaverIconTextSize(entity, mode);
+    if (iconTextSize) {
+      result.data.icon = { ...result.data.icon, textSize: iconTextSize };
     }
     if (entity.ScreensaverEntityText) {
       result.data.text = { true: await this.getFieldAsDataItemConfig(entity.ScreensaverEntityText) };

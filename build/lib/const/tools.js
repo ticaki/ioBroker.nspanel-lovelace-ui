@@ -81,6 +81,7 @@ __export(tools_exports, {
   setValueEntry: () => setValueEntry,
   shortenHeadline: () => shortenHeadline,
   siPrefixes: () => siPrefixes,
+  stripIconFontSuffix: () => stripIconFontSuffix,
   webButtonsVisible: () => webButtonsVisible
 });
 module.exports = __toCommonJS(tools_exports);
@@ -302,6 +303,9 @@ async function setScaledNumber(i, value) {
   } else if ((_f = i.value) == null ? void 0 : _f.writeable) {
     await i.value.setState(value);
   }
+}
+function stripIconFontSuffix(text) {
+  return text.replace(/¬\d+$/, "");
 }
 async function getIconEntryValue(i, on, def, defOff = null, getText = false) {
   var _a, _b;
@@ -1261,6 +1265,7 @@ function shortenHeadline(text, model) {
   setValueEntry,
   shortenHeadline,
   siPrefixes,
+  stripIconFontSuffix,
   webButtonsVisible
 });
 //# sourceMappingURL=tools.js.map

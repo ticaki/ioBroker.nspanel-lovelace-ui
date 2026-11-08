@@ -10,6 +10,7 @@ The script rebuilds that page and adds 'screensaver5' to the pageType switch of 
 Layout, 3 rows x 5 columns of 90 x 107 px:
   top     f1..f5   indicators, icon only, a touch sends event,buttonPress2,<id>,button once: it empties tSend,
                    tc0 'up' only sends a tSend with text (a swipe writes its text into it)
+                   (6.0.8: indicator_single_press.py; tap counter and long press: indicator_long_press.py on top)
   middle  f6 | info icon, time, AM/PM, date (3 columns) | f7
   bottom  e1..e5   name / icon / value like the forecast items of the standard screensaver
   bottom edge      tRelay1, tRelay2 - the status icons as two color bars, like screensaver3
@@ -17,6 +18,8 @@ Layout, 3 rows x 5 columns of 90 x 107 px:
 weatherUpdate~<5 bottom slots>~<7 indicator slots>, each slot type~id~icon~color~name~value:
   bottom k (0..4)    fields 1+6k ..  icon 3+6k, color 4+6k, name 5+6k, value 6+6k
   indicator j (0..6) fields 31+6j .. id 32+6j, icon 33+6j, color 34+6j
+  an indicator icon may end with '\u00ac<font id>' (like the icons of cardGrid): f<n>Icon gets that font and the suffix
+  is cut, without it the field gets its default font 4 back, see icon_font_lines; the bottom icons have no font code
 color~ like the standard screensaver: 1 background, 2 time, 3 AM/PM, 4 date,
   6..9 names of item 1..4, 10..13 values of item 1..4 (item 5 uses 9 and 13)
 statusUpdate~icon1~color1~icon2~color2~..: only the colors 2 and 4 are used, for the bars
@@ -25,6 +28,7 @@ The time uses the font clock96.zi (clockfont.py), added as last font of the proj
 The page cardPChart gets the rim fix of fix_pie_rim.
 """
 import os
+import re
 import struct
 import sys
 
@@ -74,6 +78,57 @@ def send_if_text(lines):
     return lines[:-len(SEND)] + [IF_TEXT, '{'] + ['  ' + line for line in SEND] + ['}']
 
 
+# indicator fields: the icon (3 bytes UTF-8) plus '\u00ac<font id>' (3 bytes) - or a short value text instead of an
+# icon; ICON_MAXL see BUFFER_MAXL
+ICON_FONT_MARK = '\u00ac'
+
+
+def icon_font_lines(ind, name, default):
+    """after 'spstr ..,<name>.txt,..': '<icon>\u00ac<font id>' sets that font and cuts the suffix (the code of the cardGrid
+    icons), else <name> gets its default font back; texts shorter than 2 characters are left alone"""
+    return [
+        f'{ind}{name}.font={default}',
+        f'{ind}strlen {name}.txt,sys0',
+        f'{ind}if(sys0>1)',
+        f'{ind}{{',
+        f'{ind}  substr {name}.txt,tTmp.txt,sys0-2,1',
+        f'{ind}  if(tTmp.txt=="{ICON_FONT_MARK}")',
+        f'{ind}  {{',
+        f'{ind}    substr {name}.txt,tTmp.txt,sys0-1,1',
+        f'{ind}    covx tTmp.txt,sys1,0,0',
+        f'{ind}    {name}.font=sys1',
+        f'{ind}    substr {name}.txt,{name}.txt,0,sys0-2',
+        f'{ind}  }}',
+        f'{ind}}}',
+    ]
+
+
+ICON_SPSTR = re.compile(r'(\s*)spstr strCommand\.txt,(f\d+Icon)\.txt,"~",\d+')
+
+
+def add_icon_font(page):
+    """inserts icon_font_lines behind every spstr into an indicator field f<n>Icon of the weatherUpdate block of
+    the screensaver5 page (default = the font of the object) and raises txt_maxl of those fields to ICON_MAXL;
+    returns the number of icon fields, 0 if the page already has the code"""
+    lines = page.obj('tmSerial').code('timer')
+    a, b = block(lines, find(lines, 'if(tInstruction.txt=="weatherUpdate"&&tNotifyHead.txt==""&&tNotifyText.txt=="")'))
+    if any(ICON_FONT_MARK in line for line in lines[a:b]):
+        return 0
+    out, names = [], []
+    for line in lines[a:b]:
+        out.append(line)
+        match = ICON_SPSTR.fullmatch(line)
+        if match:
+            obj = page.obj(match.group(2))
+            out += icon_font_lines(match.group(1), obj.name, obj.get('font'))
+            obj.set('txt_maxl', max(ICON_MAXL, obj.get('txt_maxl')))
+            names.append(obj.name)
+    lines[a:b] = out
+    # the icon fields grow by 6 x 12 bytes: the oversized buffers give the room back
+    shrink_buffers(page)
+    return len(names)
+
+
 def text_obj(template, name, x, y, w, h, font, maxl, xcen=1, ycen=1):
     o = template.copy()
     o.set('objname', name)
@@ -88,6 +143,92 @@ def text_obj(template, name, x, y, w, h, font, maxl, xcen=1, ycen=1):
     o.set_code('down', [])
     o.set_code('up', [])
     return o
+
+
+# RAM of a page (Nextion: global + page <= 3584 bytes). A text buffer costs ceil((txt_maxl + 1) / 4) * 4 bytes
+# (measured on the compiled TFT), so 4k-1 (3, 7, 11, 15, ..., 47, 119) is the cheapest length of its cost.
+# The buffers of the screensaver pages, set to what they hold:
+#   tId           page name of pageType (longest popupShutter2/screensaver5)
+#   tInstruction  first field of a message (longest weatherUpdate)
+#   tTmp          numbers, colors, flags, the tap count (the EU hint of m0 no longer uses it, see m0_hint_global)
+#   tSend         the longest event (bExit + tap count 42, buttonPress3 + id 7 + count)
+#   tTimeAdd      info icon of time~ (one glyph, 3 bytes)
+#   tIcon1/2      status icons of screensaver2
+#   tNotifyText   notification text, tDate (screensaver5) the date
+#   m0            the EU hint draws with xstr, its own txt is never used; tRelay1/2 (screensaver5) show a static '|'
+#   entn<N>, tLPId  the id '<page>?<index>' of an indicator, e.g. 29?10
+#   f<N>Icon      screensaver5 indicators with font suffix (ICON_MAXL)
+# A buffer is lowered to its value, or raised to it when that costs nothing more (10 -> 11, 45 -> 47); a text
+# literal the code of the page writes into it keeps its room.
+ICON_MAXL = 11
+ID_MAXL = 7
+BUFFER_MAXL = [
+    ('tId', 15), ('tInstruction', 15), ('tTmp', 11), ('tSend', 47), ('tTimeAdd', 7), ('tIcon1', 15), ('tIcon2', 15),
+    ('tNotifyText', 119), ('tDate', 39), ('m0', 0), ('tRelay1', 1), ('tRelay2', 1), (r'entn\d+', ID_MAXL),
+    ('tLPId', ID_MAXL), (r'f\d+Icon', ICON_MAXL),
+]
+
+
+def text_cost(maxl):
+    """RAM of a text buffer"""
+    return -(-(maxl + 1) // 4) * 4
+
+
+LITERAL = re.compile(r'^\s*(\w+)\.txt="([^"]*)"\s*$')
+
+
+# the EU hint m0 ('change model conf to us-l/p') drew its text from tTmp: the global pageIcons.tTmp1 (80) only
+# carries the argument of a popup right before 'page popup..', so m0 takes it and tTmp can be small
+M0_TEXT = 'pageIcons.tTmp1.txt'
+
+
+def m0_hint_global(page):
+    """m0 'down' with the global pageIcons.tTmp1 instead of tTmp; returns True when it changed"""
+    try:
+        m0 = page.obj('m0')
+    except KeyError:
+        return False
+    lines = m0.code('down')
+    if not any('tTmp.txt' in line for line in lines):
+        return False
+    m0.set_code('down', [line.replace('tTmp.txt', M0_TEXT) for line in lines])
+    return True
+
+
+def shrink_buffers(page):
+    """sets txt_maxl of the buffers BUFFER_MAXL to what they hold (lower, or higher at the same cost), never below the
+    static txt or a text literal the code of the page writes into them; returns {name: (old, new)} of what changed"""
+    m0_hint_global(page)
+    longest = {}
+    for o in page.objs:
+        for item in o.items:
+            if item[0] == 'code':
+                for line in item[2]:
+                    match = LITERAL.match(line)
+                    if match:
+                        size = len(match.group(2).encode('utf-8'))
+                        longest[match.group(1)] = max(longest.get(match.group(1), 0), size)
+    changed = {}
+    for o in page.objs:
+        if not o.has('txt_maxl'):
+            continue
+        rule = next((maxl for pattern, maxl in BUFFER_MAXL if re.fullmatch(pattern, o.name)), None)
+        if rule is None:
+            continue
+        old = o.get('txt_maxl')
+        floor = len(o.get('txt').encode('utf-8')) if o.has('txt') else 0
+        if o.name in longest:
+            floor = max(floor, longest[o.name] + 2)
+        new = max(rule, floor)
+        if new < old or (new > old and text_cost(new) == text_cost(old)):
+            o.set('txt_maxl', new)
+            changed[o.name] = (old, new)
+    return changed
+
+
+def txt_sum(page):
+    """sum of txt_maxl of the page - the part of its RAM the texts take"""
+    return sum(o.get('txt_maxl') for o in page.objs if o.has('txt_maxl') and (o.get('type') != 52 or o.get('sta') == 1))
 
 
 def var_obj(template, name, maxl):
@@ -117,6 +258,7 @@ def weather_lines(ind):
         out += [
             f'{i}spstr strCommand.txt,entn{n}.txt,"~",{s + 1}',
             f'{i}spstr strCommand.txt,f{n}Icon.txt,"~",{s + 2}',
+            *icon_font_lines(i, f'f{n}Icon', 4),
             f'{i}spstr strCommand.txt,tTmp.txt,"~",{s + 3}',
             f'{i}covx tTmp.txt,f{n}Icon.pco,0,0',
         ]
@@ -208,10 +350,10 @@ def build_page(page, adv, easy, clock_font):
     indicators, names = [], []
     for j, (x, y, cw, h) in enumerate(cells):
         n = j + 1
-        o = text_obj(template, f'f{n}Icon', x, y, cw, h, 4, 4)
+        o = text_obj(template, f'f{n}Icon', x, y, cw, h, 4, ICON_MAXL)
         o.set_code('down', indicator_down(n))
         indicators.append(o)
-        names.append(var_obj(var, f'entn{n}', 14))
+        names.append(var_obj(var, f'entn{n}', ID_MAXL))
 
     # status icons as color bars: same objects, place and z-order (above the notification) as screensaver3
     bars = [easy.obj('tRelay1').copy(), easy.obj('tRelay2').copy()]
@@ -234,6 +376,7 @@ def build_page(page, adv, easy, clock_font):
     lines[a:b] = [x for x in lines[a:b] if x.strip() not in ('ref tIcon1', 'ref tIcon2')]
     add_page_switch(lines)
     src['tmSerial'].set_code('timer', lines)
+    shrink_buffers(page)
 
 
 def fix_pie_rim(ser, tm):

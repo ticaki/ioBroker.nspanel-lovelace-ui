@@ -62,12 +62,10 @@ import {
     isNameOnlyPopupTitle,
     normalizeChannelId,
     pageItemRawFormat,
-    HMI_FONTS,
-    HMI_TEXT_SIZES,
     isAsciiOnlyTextSize,
-    isHmiTextSize,
     isIconTextSize,
 } from '../../../src/lib/types/adminShareConfig';
+import { textSizeLabel, textSizeOfOption, textSizeOptions } from '../textSizeOptions';
 import { adminPageItemToScriptItem } from '../../../src/lib/configuration/admin-page-item';
 import ChannelColorDialog from './ChannelColorDialog';
 import ChannelModeListDialog from './ChannelModeListDialog';
@@ -641,39 +639,18 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
         return this.state.isGridCard && this.state.useValue;
     }
 
-    /**
-     * The text sizes offered in the select: with an icon only the fonts that contain the icon glyphs (1, 3, 4),
-     * a stored value outside of them stays in the list so it is not silently dropped.
-     */
+    /** The text sizes offered in the select ({@link textSizeOptions}) */
     private textSizeOptions(): string[] {
-        const { textSize } = this.state;
-        const sizes = this.showsValueText()
-            ? HMI_TEXT_SIZES
-            : HMI_TEXT_SIZES.filter(n => isIconTextSize(n) || n === textSize);
-        return ['', ...sizes.map(n => String(n))];
+        return textSizeOptions(this.state.textSize, this.showsValueText());
     }
 
     /**
-     * Label of a text size option, built from the font table: `0 – 24 px (text only)`, `4 – 80 px bold`, …
+     * Label of a text size option ({@link textSizeLabel})
      *
      * @param option the option value ('' = default)
      */
     private textSizeLabel(option: string): string {
-        const n = Number(option);
-        if (option === '' || !isHmiTextSize(n)) {
-            return I18n.t('valueEntryDialog_textSizeDefault');
-        }
-        const font = HMI_FONTS[n];
-        let label = `${n} – ${font.px} px`;
-        if (font.bold) {
-            label += ` ${I18n.t('valueEntryDialog_textSizeBold')}`;
-        }
-        if (font.asciiOnly) {
-            label += ` (${I18n.t('valueEntryDialog_textSizeAsciiOnly')})`;
-        } else if (!font.icons) {
-            label += ` (${I18n.t('valueEntryDialog_textSizeTextOnly')})`;
-        }
-        return label;
+        return textSizeLabel(option, key => I18n.t(key));
     }
 
     /** Hint below the text size select: an icon in a font without icons, or a value in the ASCII-only font */
@@ -2176,13 +2153,7 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                                                     this.state.textSize !== undefined ? String(this.state.textSize) : ''
                                                 }
                                                 onChange={(_e, val) => {
-                                                    const n = Number(val);
-                                                    this.setState({
-                                                        textSize:
-                                                            val !== '' && val !== null && isHmiTextSize(n)
-                                                                ? n
-                                                                : undefined,
-                                                    });
+                                                    this.setState({ textSize: textSizeOfOption(val) });
                                                 }}
                                                 disabled={fieldsDisabled}
                                                 disableClearable={false}

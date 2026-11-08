@@ -1,6 +1,7 @@
 import type { ParseContext } from '../CardContract';
 import { field, parseEntityList, toNumber } from '../../protocol/split';
 import type { Entity6, PanelModel } from '../../protocol/types';
+import { nextionFont, splitFontSuffix } from '../../protocol/fonts';
 
 /**
  * The five layouts of the screensaver (`tiles` = pageType `screensaver5`). `standard` and `alternate` share the pageType
@@ -270,6 +271,23 @@ export function splitAreas(pageType: string, entities: readonly Entity6[], model
 }
 
 /** `true` when the entity shows nothing (no icon, no name, no value) */
+/**
+ * Size of an indicator icon of the tiles layout (screensaver5): an icon with `¬<n>` (admin field "icon font") is
+ * drawn in that font, scaled from the size the card uses for the font of the HMI field. Without suffix the size
+ * stays. The bottom icons of the HMI have no font code.
+ *
+ * @param icon the icon field as the adapter sends it
+ * @param size size of the icon in the font of the HMI field
+ * @param fieldFont font of the HMI field (indicators 4)
+ */
+export function tilesIconSize(icon: string, size: number, fieldFont: number): number {
+    const { font } = splitFontSuffix(icon);
+    if (font === undefined || font === fieldFont) {
+        return size;
+    }
+    return Math.round((size * nextionFont(font, fieldFont).iconSize) / nextionFont(fieldFont, fieldFont).iconSize);
+}
+
 export function isBlankEntity(entity: Entity6 | undefined): boolean {
     return !entity || (entity.icon === '' && entity.displayName === '' && entity.optionalValue === '');
 }

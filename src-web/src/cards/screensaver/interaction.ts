@@ -27,14 +27,44 @@ export function nextTap(prev: TapState): TapState {
  * What a tap on an indicator icon (advanced layout, bottom row) does.
  *
  * The real display sends the indicator press (`event,buttonPress2,<id>,button`) dimmed or
- * not (seen in the adapter log of a hardware panel), it never counts as a screensaver tap.
- * The tap wakes the display like every other touch. An indicator without an id has nothing
- * to send; the tap is swallowed (the real HMI ignores it).
+ * not (seen in the adapter log of a hardware panel). The tap wakes the display like every other touch.
+ * An indicator without an id has nothing to send; the tap is swallowed (the real HMI ignores it).
  *
  * @param entityId id of the indicator entity, empty when none
  */
 export function indicatorTapTarget(entityId: string): 'indicator' | 'none' {
     return entityId !== '' ? 'indicator' : 'none';
+}
+
+/** what the release on an indicator tile sends: `[id, action, taps]` */
+export type IndicatorPress = [string, string, number?];
+
+/**
+ * The release of a touch that started on an indicator tile (HMI 6.0.8+, `indicator_long_press.py`): the HMI counts
+ * every touch in the same counter (`tc0` 'down', also tiles), so the tile tap sends
+ * `buttonPress2,<id>,button,<taps>`. A swipe that starts on the tile is sent as swipe, the tile tap is dropped. A
+ * tile without id counts but sends nothing. The long press of the HMI is not done here.
+ *
+ * @param prev the tap state before the touch
+ * @param entityId id of the indicator entity, empty when none
+ * @param dx horizontal movement in px since the touch started
+ * @param dy vertical movement in px
+ */
+export function indicatorRelease(
+    prev: TapState,
+    entityId: string,
+    dx: number,
+    dy: number,
+): { tap: TapState; press: IndicatorPress | undefined } {
+    const tap = nextTap(prev);
+    const swipe = swipeAction(dx, dy);
+    if (swipe) {
+        return { tap, press: ['screensaver', swipe] };
+    }
+    return {
+        tap,
+        press: indicatorTapTarget(entityId) === 'indicator' ? [entityId, 'button', tap.tapCount] : undefined,
+    };
 }
 
 /**

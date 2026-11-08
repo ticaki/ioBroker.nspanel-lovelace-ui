@@ -25,6 +25,7 @@ import {
     webButtonsVisible,
     setTriggeredToState,
     shortenHeadline,
+    stripIconFontSuffix,
 } from './tools';
 import { ScreenSaverConst } from './definition';
 import { menuCardItemLimits } from '../types/adminShareConfig';
@@ -463,6 +464,18 @@ describe('lib/const/tools', () => {
             expect(slots('easyview', 'web-p')).to.deep.equal([8, 0, 0]);
             expect(slots('tiles', 'web-l')).to.deep.equal([7, 11, 0]);
             expect(slots('tiles', 'web-p')).to.deep.equal([8, 8, 0]);
+        });
+    });
+
+    describe('stripIconFontSuffix', () => {
+        it('removes a trailing font suffix', () => {
+            expect(stripIconFontSuffix(`${Icons.GetIcon('lightbulb')}¬3`)).to.equal(Icons.GetIcon('lightbulb'));
+            expect(stripIconFontSuffix('21.5°C¬4')).to.equal('21.5°C');
+        });
+        it('leaves a text without suffix alone', () => {
+            expect(stripIconFontSuffix('')).to.equal('');
+            expect(stripIconFontSuffix('a¬b')).to.equal('a¬b');
+            expect(stripIconFontSuffix(Icons.GetIcon('lightbulb'))).to.equal(Icons.GetIcon('lightbulb'));
         });
     });
 });

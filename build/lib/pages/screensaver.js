@@ -798,6 +798,9 @@ const _Screensaver = class _Screensaver extends import_Page.Page {
           if (place !== "indicator" && place !== "notify") {
             arr[1] = "";
           }
+          if (place !== "notify" && arr.length > 2 && !this.readsIconFont(place)) {
+            arr[2] = tools.stripIconFontSuffix(arr[2]);
+          }
           message.options[place][i] = tools.getPayloadArrayRemoveTilde(arr);
         }
       }
@@ -1264,18 +1267,83 @@ const _Screensaver = class _Screensaver extends import_Page.Page {
       this.onTouch();
       this.lastUpdateTs = 0;
       await this.releaseTriggerThrottle();
-      const indicators = this.pageItems.filter((x) => x && x.config && x.config.modeScr === "indicator");
-      for (let a = 0; a < indicators.length; a++) {
-        if (indicators[a] === this.pageItems[event.id]) {
-          await this.library.writedp(
-            `panels.${this.basePanel.name}.buttons.indicator-${a + 1}`,
-            true,
-            Definition.genericStateObjects.panel.panels.buttons.indicator
-          );
-        }
-      }
+      await this.writeIndicatorButton(this.pageItems[event.id]);
       await this.pageItems[event.id].onCommand(event.action, event.opt);
     }
+  }
+  /**
+   * Writes `buttons.indicator-N` for an indicator item (nothing for other items)
+   *
+   * @param item the tapped item
+   */
+  async writeIndicatorButton(item) {
+    if (!item || !this.pageItems) {
+      return;
+    }
+    const indicators = this.pageItems.filter((x) => x && x.config && x.config.modeScr === "indicator");
+    for (let a = 0; a < indicators.length; a++) {
+      if (indicators[a] === item) {
+        await this.library.writedp(
+          `panels.${this.basePanel.name}.buttons.indicator-${a + 1}`,
+          true,
+          Definition.genericStateObjects.panel.panels.buttons.indicator
+        );
+      }
+    }
+  }
+  /**
+   * true for an event of an item of this screensaver (`<page>?<n>,button`)
+   *
+   * @param event the event of the panel
+   */
+  isIndicatorEvent(event) {
+    var _a;
+    return event.page !== void 0 && !!event.id && !!((_a = this.pageItems) == null ? void 0 : _a[Number(event.id)]);
+  }
+  /**
+   * true when a tap on the indicator does something itself: an action of the item (button, switch, cycle, page) or,
+   * with "indicators act as buttons", the state the item flips ({@link PageItem.onCommand}). A blind never moves.
+   *
+   * @param item the indicator item
+   */
+  isIndicatorKey(item) {
+    var _a, _b, _c, _d, _e, _f, _g, _h, _i;
+    const entry = item == null ? void 0 : item.dataItems;
+    if (!entry || entry.type !== "button" && entry.type !== "switch") {
+      return false;
+    }
+    const data = entry.data;
+    if (data.setNavi || ((_a = data.setValue1) == null ? void 0 : _a.writeable) || ((_b = data.setValue2) == null ? void 0 : _b.writeable) || entry.type === "button" && ((_c = data.setValue3) == null ? void 0 : _c.writeable) && data.valueList) {
+      return true;
+    }
+    if (!this.screensaverIndicatorButtons || entry.role === "blind") {
+      return false;
+    }
+    return !!(((_e = (_d = data.entity1) == null ? void 0 : _d.set) == null ? void 0 : _e.writeable) || ((_g = (_f = data.entity1) == null ? void 0 : _f.value) == null ? void 0 : _g.writeable) || ((_h = data.setTrue) == null ? void 0 : _h.writeable) && ((_i = data.setFalse) == null ? void 0 : _i.writeable) || data.popup || data.confirm);
+  }
+  /**
+   * A short tap on a tile of the TFT 6.0.8+ (`<page>?<n>,button,<taps>`, the taps counted together with the
+   * background): `buttons.indicator-N` is always written, a key runs its command.
+   *
+   * @param event the event of the panel
+   * @returns true when the item is a key and ran its command, false: the caller treats the tap like a touch of the
+   *     background
+   */
+  async onIndicatorTap(event) {
+    var _a;
+    const item = (_a = this.pageItems) == null ? void 0 : _a[Number(event.id)];
+    if (!item || this.unload || this.adapter.unload) {
+      return false;
+    }
+    await this.writeIndicatorButton(item);
+    if (!this.isIndicatorKey(item)) {
+      return false;
+    }
+    this.onTouch();
+    this.lastUpdateTs = 0;
+    await this.releaseTriggerThrottle();
+    await item.onCommand(event.action, event.opt);
+    return true;
   }
   async delete() {
     var _a;
@@ -1298,6 +1366,16 @@ const _Screensaver = class _Screensaver extends import_Page.Page {
   goLeft() {
   }
   goRight() {
+  }
+  /**
+   * true when the HMI page of this screensaver reads the font suffix `¬<id>` of the icons of a place:
+   * screensaver5 (`tiles`) in its indicator fields
+   *
+   * @param place place of the items
+   */
+  readsIconFont(place) {
+    var _a;
+    return ((_a = this.config) == null ? void 0 : _a.card) === "screensaver5" && place === "indicator";
   }
   get mode() {
     if (!this.config || this.config.card !== "screensaver" && this.config.card !== "screensaver2" && this.config.card !== "screensaver3" && this.config.card !== "screensaver5") {

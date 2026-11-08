@@ -1028,6 +1028,8 @@
     "screensaver_item_enabled": "Estado que oculta el elemento si es falso",
     "screensaver_item_factor": "Factor",
     "screensaver_item_headline": "Título (vacío = nombre del estado)",
+    "screensaver_item_iconFont": "Fuente del icono",
+    "screensaver_item_iconFontHint": "Solo el salvapantallas 'Mosaicos' cambia la fuente del campo de icono. Vacío = fuente del panel.",
     "screensaver_item_iconOff": "Icono apagado (false / 0)",
     "screensaver_item_iconOn": "Icono (encendido / valor)",
     "screensaver_item_iconRequired": "Sin icono el panel no puede mostrar el elemento – elija un icono",
