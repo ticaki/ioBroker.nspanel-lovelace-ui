@@ -49,7 +49,7 @@ interface PageChartEditorState extends ConfigGenericState {
 
 type NumberField = 'rangeHours' | 'maxXAxisTicks' | 'maxXAxisLabels';
 
-/** limits of the number fields: 0 and negative values are not meaningful, ticks and labels follow the old table (1-8 hours) */
+/** limits of the number fields: 0 and negative values are not meaningful, ticks and labels follow the old table (1-8) */
 const NUMBER_LIMITS: Record<NumberField, { min: number; max?: number }> = {
     rangeHours: { min: 1 },
     maxXAxisTicks: { min: 1, max: 8 },
