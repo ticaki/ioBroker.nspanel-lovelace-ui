@@ -4,12 +4,13 @@ import { color565ToCss } from '../../protocol/color';
 import type { Entity6 } from '../../protocol/types';
 import { theme } from '../../style/theme';
 import type { CardProps } from '../CardContract';
-import { indicatorTapTarget, nextTap, swipeAction, type TapState } from './interaction';
+import { indicatorRelease, nextTap, swipeAction, type TapState } from './interaction';
 import {
     isBlankEntity,
     splitAreas,
     splitRuns,
     splitTime,
+    tilesIconSize,
     type ScreensaverAreas,
     type ScreensaverLayout,
     type ScreensaverModel,
@@ -41,6 +42,10 @@ interface BottomStyle {
     valueTop: number;
     valueSize: number;
 }
+
+/** font of the indicator fields f1Icon..f7Icon of screensaver5 */
+const TILES_INDICATOR_FONT = 4;
+const TILES_INDICATOR_ICON = 66;
 
 /** Position of the heading and the text of a notification */
 interface NotifyStyle {
@@ -111,14 +116,24 @@ export class Screensaver extends React.Component<CardProps<ScreensaverModel>> {
     }
 
     /**
-     * A tap on an indicator icon sends the indicator press, dimmed or awake (the real display
-     * does the same); the wake-up happens in the store with the press.
+     * The release of a touch that started on an indicator icon: the tile tap counts with the taps of the background
+     * and sends `<id>,button,<taps>`, a swipe from the tile is a swipe ({@link indicatorRelease}); the wake-up
+     * happens in the store with the press.
      *
      * @param entityId id of the indicator entity (empty when none)
+     * @param e the pointer event of the release
      */
-    private indicatorTap(entityId: string): void {
-        if (indicatorTapTarget(entityId) === 'indicator') {
-            this.props.press(entityId, 'button');
+    private indicatorTap(entityId: string, e: React.PointerEvent): void {
+        const start = this.pointerStart;
+        const { tap, press } = indicatorRelease(
+            this.tap,
+            entityId,
+            start ? e.clientX - start.x : 0,
+            start ? e.clientY - start.y : 0,
+        );
+        this.tap = tap;
+        if (press) {
+            this.props.press(...press);
         }
     }
 
@@ -584,8 +599,8 @@ export class Screensaver extends React.Component<CardProps<ScreensaverModel>> {
                 data-role={`indicator${index + 1}`}
                 onPointerUp={(e): void => {
                     e.stopPropagation();
+                    this.indicatorTap(entity.id, e);
                     this.pointerStart = undefined;
-                    this.indicatorTap(entity.id);
                 }}
                 style={{
                     position: 'absolute',
@@ -731,7 +746,12 @@ export class Screensaver extends React.Component<CardProps<ScreensaverModel>> {
                 { left: column(0), top: TILES_ROW },
                 { left: column(4), top: TILES_ROW },
             ]);
-        const iconStyle: React.CSSProperties = { position: 'absolute', top: 14, left: 12 };
+        // an icon in another font (`¬<n>`) keeps the centre of the icon in font 4
+        const iconOf = (entity: Entity6): React.JSX.Element | null => {
+            const size = tilesIconSize(entity.icon, TILES_INDICATOR_ICON, TILES_INDICATOR_FONT);
+            const shift = Math.round((TILES_INDICATOR_ICON - size) / 2);
+            return this.renderIcon(entity, size, { position: 'absolute', top: 14 + shift, left: 12 + shift });
+        };
         return (
             <>
                 {this.renderTime(
@@ -754,7 +774,7 @@ export class Screensaver extends React.Component<CardProps<ScreensaverModel>> {
                               entity,
                               i,
                               { ...cell, width: TILES_COLUMN, height: TILES_ROW },
-                              this.renderIcon(entity, 66, iconStyle),
+                              iconOf(entity),
                           )
                         : null;
                 })}

@@ -944,6 +944,87 @@ class Panel extends import_library.BaseClass {
     }
     await this.showScreensaverNow();
   }
+  /**
+   * A touch of the screensaver background (`buttonPress2,screensaver,<action>,<taps>`): timer tap, notification,
+   * gestures, double click to the main page. A tile tap of the TFT 6.0.8+ that is no key of the indicator comes here
+   * as `bExit` as well ({@link Screensaver.onIndicatorTap}).
+   *
+   * @param event the event of the panel
+   */
+  async onScreensaverTouch(event) {
+    if (!this.screenSaver) {
+      return;
+    }
+    if (await this.screenSaver.onTimerTap(event.action, event.opt)) {
+      return;
+    }
+    await this.library.writedp(
+      `panels.${this.name}.cmd.screenSaver.activateNotification`,
+      false,
+      definition.genericStateObjects.panel.panels.cmd.screenSaver.activateNotification
+    );
+    if (this.screenSaverDoubleClick && this.screenSaver.screensaverSwipe) {
+      switch (event.action) {
+        case "bExit": {
+          await this.library.writedp(
+            `panels.${this.name}.buttons.screensaverGesture`,
+            2,
+            definition.genericStateObjects.panel.panels.buttons.screensaverGesture
+          );
+          break;
+        }
+        case "swipeUp": {
+          await this.library.writedp(
+            `panels.${this.name}.buttons.screensaverGesture`,
+            3,
+            definition.genericStateObjects.panel.panels.buttons.screensaverGesture
+          );
+          break;
+        }
+        case "swipeDown": {
+          await this.library.writedp(
+            `panels.${this.name}.buttons.screensaverGesture`,
+            4,
+            definition.genericStateObjects.panel.panels.buttons.screensaverGesture
+          );
+          break;
+        }
+        case "swipeLeft": {
+          await this.library.writedp(
+            `panels.${this.name}.buttons.screensaverGesture`,
+            5,
+            definition.genericStateObjects.panel.panels.buttons.screensaverGesture
+          );
+          break;
+        }
+        case "swipeRight": {
+          await this.library.writedp(
+            `panels.${this.name}.buttons.screensaverGesture`,
+            6,
+            definition.genericStateObjects.panel.panels.buttons.screensaverGesture
+          );
+          break;
+        }
+      }
+    }
+    if (await this.screenSaver.onScreensaverTap()) {
+      return;
+    }
+    if (this.screenSaverDoubleClick && parseInt(event.opt) > 1 || !this.screenSaverDoubleClick) {
+      if (this.lastSendTypeDate + this.blockScreensaverTouchEventsForMs > Date.now()) {
+        this.log.debug(
+          `Ignore event because of blockScreensaverTouchEventsForMs ${this.blockScreensaverTouchEventsForMs}ms`
+        );
+        return;
+      }
+      this.navigation.resetPosition();
+      await this.navigation.setCurrentPage();
+      const popup = this.pages.find((a) => a && a.name === "///popupNotificationCustom");
+      if (popup && "showPopup" in popup && typeof popup.showPopup === "function") {
+        popup.showPopup();
+      }
+    }
+  }
   getActivePage() {
     if (!this._activePage) {
       throw new Error(`No active page here panel ${this.friendlyName}, check code!`);
@@ -1972,76 +2053,7 @@ class Panel extends import_library.BaseClass {
       case "buttonPress3":
       case "buttonPress2": {
         if (event.id == "screensaver") {
-          if (await this.screenSaver.onTimerTap(event.action, event.opt)) {
-            break;
-          }
-          await this.library.writedp(
-            `panels.${this.name}.cmd.screenSaver.activateNotification`,
-            false,
-            definition.genericStateObjects.panel.panels.cmd.screenSaver.activateNotification
-          );
-          if (this.screenSaverDoubleClick && this.screenSaver.screensaverSwipe) {
-            switch (event.action) {
-              case "bExit": {
-                await this.library.writedp(
-                  `panels.${this.name}.buttons.screensaverGesture`,
-                  2,
-                  definition.genericStateObjects.panel.panels.buttons.screensaverGesture
-                );
-                break;
-              }
-              case "swipeUp": {
-                await this.library.writedp(
-                  `panels.${this.name}.buttons.screensaverGesture`,
-                  3,
-                  definition.genericStateObjects.panel.panels.buttons.screensaverGesture
-                );
-                break;
-              }
-              case "swipeDown": {
-                await this.library.writedp(
-                  `panels.${this.name}.buttons.screensaverGesture`,
-                  4,
-                  definition.genericStateObjects.panel.panels.buttons.screensaverGesture
-                );
-                break;
-              }
-              case "swipeLeft": {
-                await this.library.writedp(
-                  `panels.${this.name}.buttons.screensaverGesture`,
-                  5,
-                  definition.genericStateObjects.panel.panels.buttons.screensaverGesture
-                );
-                break;
-              }
-              case "swipeRight": {
-                await this.library.writedp(
-                  `panels.${this.name}.buttons.screensaverGesture`,
-                  6,
-                  definition.genericStateObjects.panel.panels.buttons.screensaverGesture
-                );
-                break;
-              }
-            }
-          }
-          if (await this.screenSaver.onScreensaverTap()) {
-            break;
-          }
-          if (this.screenSaverDoubleClick && parseInt(event.opt) > 1 || !this.screenSaverDoubleClick) {
-            if (this.lastSendTypeDate + this.blockScreensaverTouchEventsForMs > Date.now()) {
-              this.log.debug(
-                `Ignore event because of blockScreensaverTouchEventsForMs ${this.blockScreensaverTouchEventsForMs}ms`
-              );
-              break;
-            }
-            this.navigation.resetPosition();
-            await this.navigation.setCurrentPage();
-            const popup = this.pages.find((a) => a && a.name === "///popupNotificationCustom");
-            if (popup && "showPopup" in popup && typeof popup.showPopup === "function") {
-              popup.showPopup();
-            }
-            break;
-          }
+          await this.onScreensaverTouch(event);
         } else if (event.action === "bExit") {
           if (event.id !== "popupNotify") {
             await this.setActivePage(true);
@@ -2066,6 +2078,16 @@ class Panel extends import_library.BaseClass {
               this.getActivePage().goLeft(event.method === "buttonPress2");
             } else if (["bNext", "bHome", "bSubNext"].indexOf(event.id) != -1) {
               this.getActivePage().goRight(event.method === "buttonPress2");
+            }
+            break;
+          }
+          if (this._activePage === this.screenSaver && event.action === "button" && event.opt !== "" && this.screenSaver.isIndicatorEvent(event)) {
+            if (event.method === "buttonPress3") {
+              this.log.debug(`Screensaver tile ${event.id}: long press is not used yet`);
+              break;
+            }
+            if (!await this.screenSaver.onIndicatorTap(event)) {
+              await this.onScreensaverTouch({ ...event, id: "screensaver", action: "bExit" });
             }
             break;
           }

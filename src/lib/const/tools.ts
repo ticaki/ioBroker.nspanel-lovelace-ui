@@ -267,6 +267,16 @@ export async function setScaledNumber(
     }
 }
 
+/**
+ * The icon text without the font suffix `¬<font id>` of getIconEntryValue - for HMI fields that do not read it
+ *
+ * @param text icon (or value text) as getIconEntryValue returns it
+ * @returns the text without a trailing `¬<digits>`
+ */
+export function stripIconFontSuffix(text: string): string {
+    return text.replace(/¬\d+$/, '');
+}
+
 export async function getIconEntryValue(
     i: ChangeTypeOfKeys<NSPanel.IconEntryType, Dataitem | undefined> | undefined,
     on: boolean | number | null,

@@ -74,7 +74,8 @@ __export(tools_exports, {
   setSliderCTFromValue: () => setSliderCTFromValue,
   setTriggeredToState: () => setTriggeredToState,
   setValueEntry: () => setValueEntry,
-  siPrefixes: () => siPrefixes
+  siPrefixes: () => siPrefixes,
+  stripIconFontSuffix: () => stripIconFontSuffix
 });
 module.exports = __toCommonJS(tools_exports);
 var import_data_item = require("../controller/data-item");
@@ -295,6 +296,9 @@ async function setScaledNumber(i, value) {
   } else if ((_f = i.value) == null ? void 0 : _f.writeable) {
     await i.value.setState(value);
   }
+}
+function stripIconFontSuffix(text) {
+  return text.replace(/¬\d+$/, "");
 }
 async function getIconEntryValue(i, on, def, defOff = null, getText = false) {
   var _a, _b;
@@ -1193,6 +1197,7 @@ function getTasmotaVersionFromJson(json, beta) {
   setSliderCTFromValue,
   setTriggeredToState,
   setValueEntry,
-  siPrefixes
+  siPrefixes,
+  stripIconFontSuffix
 });
 //# sourceMappingURL=tools.js.map

@@ -143,6 +143,7 @@ __export(adminShareConfig_exports, {
   screensaverDateFormats: () => screensaverDateFormats,
   screensaverItemCondition: () => screensaverItemCondition,
   screensaverItemFields: () => screensaverItemFields,
+  screensaverItemHasIconFont: () => screensaverItemHasIconFont,
   screensaverItemSource: () => screensaverItemSource,
   screensaverMaxEntries: () => screensaverMaxEntries,
   screensaverModes: () => screensaverModes,
@@ -387,6 +388,9 @@ function screensaverItemCondition(item) {
     out.visibleCondition = visible;
   }
   return enabled || visible ? out : void 0;
+}
+function screensaverItemHasIconFont(mode, area) {
+  return mode === "tiles" && area === "indicator";
 }
 function screensaverChannelIdOf(stateId) {
   const parts = stateId.split(".");
@@ -2257,6 +2261,7 @@ const CONVERT_GLOBAL_DEFAULT_DECISION = "keepAdmin";
   screensaverDateFormats,
   screensaverItemCondition,
   screensaverItemFields,
+  screensaverItemHasIconFont,
   screensaverItemSource,
   screensaverMaxEntries,
   screensaverModes,

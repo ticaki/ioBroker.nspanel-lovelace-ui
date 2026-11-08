@@ -1025,6 +1025,8 @@
     "screensaver_item_enabled": "Stan ukrywający element gdy fałsz",
     "screensaver_item_factor": "Mnożnik",
     "screensaver_item_headline": "Nagłówek (pusty = nazwa stanu)",
+    "screensaver_item_iconFont": "Czcionka ikony",
+    "screensaver_item_iconFontHint": "Tylko wygaszacz ekranu 'Kafelki' zmienia czcionkę pola ikony. Puste = czcionka panelu.",
     "screensaver_item_iconOff": "Ikona wył. (false / 0)",
     "screensaver_item_iconOn": "Ikona (wł. / wartość)",
     "screensaver_item_iconRequired": "Bez ikony panel nie może wyświetlić elementu – wybierz ikonę",

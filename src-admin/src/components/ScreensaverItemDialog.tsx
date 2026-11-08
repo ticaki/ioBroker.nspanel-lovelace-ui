@@ -41,6 +41,7 @@ import IconSelect from '../IconSelect';
 import icons from '../icons.json';
 import {
     type ScreensaverArea,
+    type ScreensaverMode,
     type ScreensaverItemAction,
     type ScreensaverItemConfig,
     type IconColorElement,
@@ -51,8 +52,10 @@ import {
     screensaverChannelIdOf,
     screensaverDateFormats,
     screensaverItemFields,
+    screensaverItemHasIconFont,
     screensaverItemSource,
 } from '../../../src/lib/types/adminShareConfig';
+import { textSizeLabel, textSizeOfOption, textSizeOptions } from '../textSizeOptions';
 import {
     getScreensaverItemDefaultsByRole,
     getShutterIconByPosition,
@@ -68,6 +71,8 @@ import { cycleValueToState } from '../../../src/lib/const/screensaver-cycle';
 export interface ScreensaverItemDialogProps {
     open: boolean;
     area: ScreensaverArea;
+    /** mode of the screensaver - the font of the icon field is offered for `tiles` only */
+    mode?: ScreensaverMode;
     /** place within the area (0-based) and number of places */
     index: number;
     count: number;
@@ -609,6 +614,9 @@ export class ScreensaverItemDialog extends React.Component<ScreensaverItemDialog
             if (action) {
                 kept.action = action;
             }
+            if (draft.iconTextSize !== undefined) {
+                kept.iconTextSize = draft.iconTextSize;
+            }
             return kept;
         }
         if (!draft.state) {
@@ -974,6 +982,46 @@ export class ScreensaverItemDialog extends React.Component<ScreensaverItemDialog
     }
 
     /** the state the color comes from, with the hint on the value format and the warning if it is no state */
+    /**
+     * font of the icon field - the screensaver `tiles` only, area indicator: only icon fonts are
+     * offered, a stored other font stays in the list
+     */
+    private renderIconFontField(): React.JSX.Element | null {
+        if (!screensaverItemHasIconFont(this.props.mode, this.props.area)) {
+            return null;
+        }
+        const current = this.state.draft.iconTextSize;
+        return (
+            <FormControl
+                variant="standard"
+                sx={{ minWidth: 260, mb: 2 }}
+                data-ss="icon-font"
+            >
+                <InputLabel shrink>{this.getText('screensaver_item_iconFont')}</InputLabel>
+                <Select
+                    value={current !== undefined ? String(current) : ''}
+                    displayEmpty
+                    onChange={e => this.set('iconTextSize', textSizeOfOption(String(e.target.value)))}
+                >
+                    {textSizeOptions(current, false).map(opt => (
+                        <MenuItem
+                            key={opt}
+                            value={opt}
+                        >
+                            {textSizeLabel(opt, key => this.getText(key))}
+                        </MenuItem>
+                    ))}
+                </Select>
+                <Typography
+                    variant="caption"
+                    color="text.secondary"
+                >
+                    {this.getText('screensaver_item_iconFontHint')}
+                </Typography>
+            </FormControl>
+        );
+    }
+
     private renderColorStateField(): React.JSX.Element {
         const { draft, colorObj } = this.state;
         const id = (draft.colorState ?? '').trim();
@@ -1451,23 +1499,28 @@ export class ScreensaverItemDialog extends React.Component<ScreensaverItemDialog
                             onEdit={this.handleRawOpen}
                         />
                     ) : template ? (
-                        <TemplateSelector
-                            templates={this.props.templates}
-                            template={draft.template}
-                            objectId={draft.state}
-                            readOptions={draft.readOptions}
-                            area={area}
-                            trashPages={this.props.trashPages}
-                            onTemplateChange={this.handleTemplateChange}
-                            onObjectChange={this.handleTemplateObjectChange}
-                            onReadOptionsChange={v => this.set('readOptions', v)}
-                            getText={this.props.getText}
-                            lang={this.lang()}
-                            socket={this.props.oContext?.socket}
-                            theme={this.props.theme}
-                            themeType={this.props.oContext?.themeType ?? (this.props.theme?.palette?.mode || 'light')}
-                            dialogName="selectScreensaverItem_dpInit"
-                        />
+                        <>
+                            <TemplateSelector
+                                templates={this.props.templates}
+                                template={draft.template}
+                                objectId={draft.state}
+                                readOptions={draft.readOptions}
+                                area={area}
+                                trashPages={this.props.trashPages}
+                                onTemplateChange={this.handleTemplateChange}
+                                onObjectChange={this.handleTemplateObjectChange}
+                                onReadOptionsChange={v => this.set('readOptions', v)}
+                                getText={this.props.getText}
+                                lang={this.lang()}
+                                socket={this.props.oContext?.socket}
+                                theme={this.props.theme}
+                                themeType={
+                                    this.props.oContext?.themeType ?? (this.props.theme?.palette?.mode || 'light')
+                                }
+                                dialogName="selectScreensaverItem_dpInit"
+                            />
+                            {draft.template && this.renderIconFontField()}
+                        </>
                     ) : (
                         <Box sx={{ display: 'flex', gap: 3, alignItems: 'flex-start' }}>
                             <Box sx={{ flex: 1, minWidth: 0 }}>
@@ -1560,6 +1613,7 @@ export class ScreensaverItemDialog extends React.Component<ScreensaverItemDialog
                                 )}
                                 {kind === 'boolean' && this.renderIconField('iconOff', 'screensaver_item_iconOff')}
                             </Box>
+                            {this.renderIconFontField()}
                             {kind === 'number' && this.renderIconSelectSection()}
                             {this.blindPosition() && (
                                 <Alert

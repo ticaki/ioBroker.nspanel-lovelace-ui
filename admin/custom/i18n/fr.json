@@ -1025,6 +1025,8 @@
     "screensaver_item_enabled": "État qui masque l’élément si faux",
     "screensaver_item_factor": "Facteur",
     "screensaver_item_headline": "Titre (vide = nom de l’état)",
+    "screensaver_item_iconFont": "Police de l'icône",
+    "screensaver_item_iconFontHint": "Seul l'économiseur d'écran 'Tuiles' modifie la police du champ d'icône. Vide = police du panneau.",
     "screensaver_item_iconOff": "Icône off (false / 0)",
     "screensaver_item_iconOn": "Icône (on / valeur)",
     "screensaver_item_iconRequired": "Sans icône, le panneau ne peut pas afficher l'élément – veuillez choisir une icône",

@@ -715,6 +715,12 @@ export type ScreensaverItemConfig = {
     /** expression over `val` that hides the item while false (ScreensaverEntityVisibleCondition) */
     visibleCondition?: string;
     /**
+     * font of the icon field (ScreensaverEntityIconTextSize), empty = font of the HMI field. Only the screensaver
+     * `tiles` (HMI page screensaver5) reads it, in the area indicator ({@link screensaverItemHasIconFont}); state
+     * and template items. A value stored on another area is ignored.
+     */
+    iconTextSize?: HmiTextSize;
+    /**
      * raw item: the item is taken from this configuration as entered (dialog "raw data"), every other field
      * is ignored then. The area of the item is where it is placed in the admin: `modeScr` of a template
      * element or a runtime item is set to that area ({@link screensaverItemToScript}).
@@ -723,6 +729,17 @@ export type ScreensaverItemConfig = {
 };
 
 export type ScreensaverItemField = 'headline' | 'value' | 'text' | 'action';
+
+/**
+ * true where the font of the icon field of an item can be chosen: the screensaver `tiles` (HMI page
+ * screensaver5) in the area indicator - the other screensaver pages and the bottom icons cannot change it
+ *
+ * @param mode mode of the screensaver
+ * @param area area of the item
+ */
+export function screensaverItemHasIconFont(mode: ScreensaverMode | undefined, area: string): boolean {
+    return mode === 'tiles' && area === 'indicator';
+}
 
 /**
  * id of the channel / device a state belongs to - the object above it; '' when the state sits directly

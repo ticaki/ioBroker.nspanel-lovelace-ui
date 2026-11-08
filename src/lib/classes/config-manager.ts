@@ -10,6 +10,7 @@ import { PageChart } from '../pages/pageChart';
 import {
     findChartEntryForScript,
     findPowerEntryForScript,
+    isHmiTextSize,
     isScriptNavigatedChart,
     isScriptNavigatedPower,
     screensaverChannelIdOf,
@@ -5434,6 +5435,33 @@ export class ConfigManager extends BaseClass {
         return null;
     }
 
+    /**
+     * Font of the icon field of a screensaver element as data item of `icon.textSize` (tools.getIconEntryValue
+     * appends `¬<id>` to the icon). Place indicator only; the screensaver page strips the suffix
+     * again on every HMI page except screensaver5, which alone reads it.
+     *
+     * @param entity script or template element
+     * @param mode place of the element
+     * @returns the data item, undefined without a valid font id
+     */
+    private getScreensaverIconTextSize(
+        entity: ScriptConfig.ScreenSaverElement,
+        mode: NSPanel.ScreenSaverPlaces,
+    ): NSPanel.DataItemsOptions | undefined {
+        if (mode !== 'indicator' || entity.type === 'native') {
+            return undefined;
+        }
+        const size = entity.ScreensaverEntityIconTextSize;
+        if (size === undefined) {
+            return undefined;
+        }
+        if (!isHmiTextSize(size)) {
+            this.log.warn(`ScreensaverEntityIconTextSize ${String(size)} is no font id 0-5 - ignored`);
+            return undefined;
+        }
+        return { type: 'const', constVal: size };
+    }
+
     async getEntityData(
         entity: ScriptConfig.ScreenSaverElement,
         mode: NSPanel.ScreenSaverPlaces,
@@ -5511,6 +5539,13 @@ export class ConfigManager extends BaseClass {
                 'ScreensaverEntityCycleValues',
             ]) {
                 delete (temp as Record<string, unknown>)[key];
+            }
+            delete (temp as Record<string, unknown>).ScreensaverEntityIconTextSize;
+            const iconTextSize = this.getScreensaverIconTextSize(entity, mode);
+            if (iconTextSize) {
+                // Page.getItemFromTemplate merges it into the icon of the template
+                temp.data = temp.data || {};
+                temp.data.icon = { ...temp.data.icon, textSize: iconTextSize };
             }
             const action = mode === 'indicator' ? await this.getScreensaverIndicatorAction(entity) : null;
             if (action) {
@@ -5720,6 +5755,11 @@ export class ConfigManager extends BaseClass {
                     constVal: entity.ScreensaverEntityIconColor,
                 },
             };
+        }
+
+        const iconTextSize = this.getScreensaverIconTextSize(entity, mode);
+        if (iconTextSize) {
+            result.data.icon = { ...result.data.icon, textSize: iconTextSize };
         }
 
         // headline of the item (the bottom places show it)
