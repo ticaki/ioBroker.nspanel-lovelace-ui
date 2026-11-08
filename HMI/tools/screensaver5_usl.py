@@ -2,7 +2,8 @@
 Writes nspanel-us-l-v6.0.7.screensaver5.HMI, the repo stays untouched.
 
 us-l has the EU layout moved by 15 px to the right (usable 15..464 instead of 0..449), so the EU pages are taken over
-with x+15 for the shared geometry; the payload of screensaver5 stays the one of EU. Armilar's screensaver4 is left out.
+with x+15 for the shared geometry; the payload of screensaver5 stays the one of EU (including the font suffix of the indicator fields). Armilar's
+screensaver4 is left out.
 """
 import os
 import sys

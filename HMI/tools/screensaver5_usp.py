@@ -1,5 +1,7 @@
 """us-p 6.0.2 -> 6.0.7 + screensaver5 (4 columns). Usage: python3 -I -B build_usp.py [outdir]
-Writes nspanel-us-p-v6.0.7.ohne-screensaver5.HMI and nspanel-us-p-v6.0.7.HMI, repo stays untouched."""
+Writes nspanel-us-p-v6.0.7.ohne-screensaver5.HMI and nspanel-us-p-v6.0.7.HMI, repo stays untouched.
+The indicator fields f1Icon..f8Icon (font 4) take a font suffix '\u00ac<font id>' like EU
+(screensaver5.icon_font_lines); screensaver5_iconfont.py adds it to an already built file."""
 import os, struct, sys
 sys.dont_write_bytecode = True
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -7,7 +9,7 @@ TOOLS = HERE
 sys.path.insert(0, TOOLS)
 from hmi import Hmi
 from pagefile import Page, block, find
-from screensaver5 import indicator_down, send_if_text, fix_pie_rim, text_obj, var_obj, status_lines, insert_entry
+from screensaver5 import ICON_MAXL, ID_MAXL, icon_font_lines, shrink_buffers, indicator_down, send_if_text, fix_pie_rim, text_obj, var_obj, status_lines, insert_entry
 
 R = os.path.join(HERE, '..', '')
 RELEASE, GENERATION = '6.0.7', '62'
@@ -131,6 +133,7 @@ def weather_lines(ind):
         s, n = 6 * j, j + 1
         out += [f'{i}spstr strCommand.txt,entn{n}.txt,"~",{s + 26}',
                 f'{i}spstr strCommand.txt,f{n}Icon.txt,"~",{s + 27}',
+                *icon_font_lines(i, f'f{n}Icon', 4),
                 f'{i}spstr strCommand.txt,tTmp.txt,"~",{s + 28}',
                 f'{i}covx tTmp.txt,f{n}Icon.pco,0,0']
     return out + [ind + '}']
@@ -186,10 +189,10 @@ def build_ss5(us_ss, us_ss2, us_ss3, clock_font):
     inds, names = [], []
     for j, (x, y, h) in enumerate(cells):
         n = j + 1
-        o = text_obj(template, f'f{n}Icon', x, y, COL, h, 4, 4)
+        o = text_obj(template, f'f{n}Icon', x, y, COL, h, 4, ICON_MAXL)
         o.set_code('down', indicator_down(n))
         inds.append(o)
-        names.append(var_obj(var, f'entn{n}', 14))
+        names.append(var_obj(var, f'entn{n}', ID_MAXL))
     bars = [us_ss3.obj('tRelay1').copy(), us_ss3.obj('tRelay2').copy()]
     bars[0].geometry(1, BARS, 130, 5)
     bars[1].geometry(189, BARS, 130, 5)
@@ -206,6 +209,7 @@ def build_ss5(us_ss, us_ss2, us_ss3, clock_font):
     lines[a:b] = color_lines(ind, ['tAMPM', 'tTimeAdd', 'tDate'] + [o.name for o in bottom + inds])
     a, b = block(lines, find(lines, 'if(tInstruction.txt=="time")'))
     lines[a:b] = [x for x in lines[a:b] if x.strip() not in ('ref tIcon1', 'ref tIcon2')]
+    shrink_buffers(page)
     return page
 
 
