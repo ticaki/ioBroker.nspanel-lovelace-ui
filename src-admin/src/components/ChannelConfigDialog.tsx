@@ -1723,7 +1723,6 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
          */
         const modeListVisible =
             channelRole !== null && MODE_LIST_ROLES.includes(channelRole) && channelIdValid && !isCustom && !rawMode;
-        const longPressEnabled = channelRole === 'button' || isCustom || isNavigation;
         const longPressVisible = this.isLongPressVisible();
         const buttonTargetPageVisible = this.isButtonTargetPageVisible();
         /** Buttons turn green (theme palette "success", works in light and dark mode) once their settings hold data */
@@ -1763,9 +1762,6 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
         const brightnessVisible = pageItemOfRole(BRIGHTNESS_ROLES);
         const colorTempVisible = pageItemOfRole(COLOR_TEMP_ROLES);
 
-        console.log(
-            `[ChannelConfigDialog] render: channelId=${channelId.valueStateId}, channelExists=${channelExists}, channelRole=${channelRole}, roleIsValid=${roleIsValid}, datapointErrors=${this.state.datapointErrors.join(',')}, datapointDuplicates=${this.state.datapointDuplicates.join(',')}, rawMode=${rawMode}, hasDatapointProblems=${hasDatapointProblems}, hasProblems=${this.state.hasProblems}, errorSaveDetails=${errorSaveDetails} standardCanSave=${standardCanSave}, canSave=${canSave} fieldsDisabled=${fieldsDisabled}, longPressEnabled=${longPressEnabled}, channelIdValid=${channelIdValid}`,
-        );
         // Untertitel neben dem Titel
         const titleSuffix =
             channelId.valueStateId === ''
@@ -1943,7 +1939,7 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                                             <Tooltip
                                                 title={
                                                     errorSaveDetails
-                                                        ? 'Press Button Details'
+                                                        ? I18n.t('channelConfigDialog_pressDetails')
                                                         : `${I18n.t('channelConfigDialog_duplicateDps')}: ${this.state.datapointDuplicates.join(', ')}`
                                                 }
                                             >
