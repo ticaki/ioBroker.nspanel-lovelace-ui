@@ -210,6 +210,19 @@ const genericStateObjects = {
           },
           native: {}
         },
+        indicatorLong: {
+          _id: "",
+          type: "state",
+          common: {
+            name: "StateObjects.buttons.indicatorLong",
+            type: "boolean",
+            role: "button.long",
+            read: true,
+            write: false,
+            def: true
+          },
+          native: {}
+        },
         screensaverGesture: {
           _id: "",
           type: "state",

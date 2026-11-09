@@ -3156,6 +3156,45 @@ describe('lib/configuration - planScriptToAdmin: screensaver', () => {
         expect(entry.left[0]).to.not.have.property('action');
     });
 
+    it('keeps the long press of an indicator with the priority of the config manager (script and template)', () => {
+        const base = templateConfig().indicatorScreensaverEntity[0] as Extract<
+            ScriptConfig.ScreenSaverElement,
+            { type: 'script' }
+        >;
+        const template: ScriptConfig.ScreenSaverElement = {
+            type: 'template',
+            template: 'text.battery.bydhvs',
+            dpInit: 'bydhvs.0',
+            modeScr: 'indicator',
+            ScreensaverEntityLongPressNaviToPage: 'main',
+        };
+        const result = plan(
+            baseConfig({
+                indicatorScreensaverEntity: [
+                    {
+                        ...base,
+                        ScreensaverEntityNaviToPage: 'main',
+                        ScreensaverEntityLongPressSwitch: 'a.0.s',
+                        ScreensaverEntityLongPressNaviToPage: 'main',
+                    },
+                    { ...base, ScreensaverEntityLongPressButton: 'a.0.b', ScreensaverEntityLongPressSwitch: 'a.0.s' },
+                    template,
+                ],
+                leftScreensaverEntity: [{ ...base, ScreensaverEntityLongPressButton: 'ignored outside the indicator' }],
+            }),
+        );
+        const entry = result.screensaverEntry!;
+        expect(entry.indicator.slice(0, 3).map(i => i?.longPress)).to.deep.equal([
+            { kind: 'switch', state: 'a.0.s' },
+            { kind: 'button', state: 'a.0.b' },
+            { kind: 'navigate', page: 'main' },
+        ]);
+        expect(entry.indicator[0]!.action).to.deep.equal({ kind: 'navigate', page: 'main' });
+        expect(entry.left[0]).to.not.have.property('longPress');
+        // round trip: the admin builds the same template element again
+        expect(screensaverItemToScript(entry.indicator[2]!, 'indicator')).to.deep.equal(template);
+    });
+
     it('converts a cycle to the admin action: values as texts in their order, after button and switch', () => {
         const base = templateConfig().indicatorScreensaverEntity[0] as Extract<
             ScriptConfig.ScreenSaverElement,

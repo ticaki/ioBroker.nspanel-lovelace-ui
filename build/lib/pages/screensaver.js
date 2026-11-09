@@ -253,6 +253,11 @@ const _Screensaver = class _Screensaver extends import_Page.Page {
           void 0,
           Definition.genericStateObjects.panel.panels.buttons.indicator
         );
+        await this.library.writedp(
+          `panels.${this.basePanel.name}.buttons.indicatorLong-${a + 1}`,
+          void 0,
+          Definition.genericStateObjects.panel.panels.buttons.indicatorLong
+        );
       }
     }
     await this.initClockTimer();
@@ -1272,11 +1277,13 @@ const _Screensaver = class _Screensaver extends import_Page.Page {
     }
   }
   /**
-   * Writes `buttons.indicator-N` for an indicator item (nothing for other items)
+   * Writes `buttons.indicator-N` (tap) or `buttons.indicatorLong-N` (long press) for an indicator item (nothing for
+   * other items)
    *
-   * @param item the tapped item
+   * @param item the pressed item
+   * @param state `indicator` for a tap, `indicatorLong` for a long press
    */
-  async writeIndicatorButton(item) {
+  async writeIndicatorButton(item, state = "indicator") {
     if (!item || !this.pageItems) {
       return;
     }
@@ -1284,9 +1291,9 @@ const _Screensaver = class _Screensaver extends import_Page.Page {
     for (let a = 0; a < indicators.length; a++) {
       if (indicators[a] === item) {
         await this.library.writedp(
-          `panels.${this.basePanel.name}.buttons.indicator-${a + 1}`,
+          `panels.${this.basePanel.name}.buttons.${state}-${a + 1}`,
           true,
-          Definition.genericStateObjects.panel.panels.buttons.indicator
+          Definition.genericStateObjects.panel.panels.buttons[state]
         );
       }
     }
@@ -1343,6 +1350,44 @@ const _Screensaver = class _Screensaver extends import_Page.Page {
     this.lastUpdateTs = 0;
     await this.releaseTriggerThrottle();
     await item.onCommand(event.action, event.opt);
+    return true;
+  }
+  /**
+   * true when the indicator has a long press of its own (`setNaviLongPress` or `longPress`,
+   * config-manager getScreensaverIndicatorLongPress)
+   *
+   * @param item the indicator item
+   */
+  hasIndicatorLongPress(item) {
+    const entry = item == null ? void 0 : item.dataItems;
+    if (!entry || entry.type !== "button" && entry.type !== "switch") {
+      return false;
+    }
+    return !!(entry.data.setNaviLongPress || entry.data.longPress);
+  }
+  /**
+   * A long press on a tile of the TFT 6.0.9+ (`buttonPress3,<page>?<n>,button,<taps>`, sent while the finger is
+   * still down): `buttons.indicatorLong-N` is always written; an indicator with a long press of its own runs it
+   * ({@link PageItem.onCommandLongPress}) - the short press is not run then.
+   *
+   * @param event the event of the panel
+   * @returns true when the long press of the item ran, false: the caller treats it like a tap
+   *     ({@link onIndicatorTap})
+   */
+  async onIndicatorLongPress(event) {
+    var _a;
+    const item = (_a = this.pageItems) == null ? void 0 : _a[Number(event.id)];
+    if (!item || this.unload || this.adapter.unload) {
+      return false;
+    }
+    await this.writeIndicatorButton(item, "indicatorLong");
+    if (!this.hasIndicatorLongPress(item)) {
+      return false;
+    }
+    this.onTouch();
+    this.lastUpdateTs = 0;
+    await this.releaseTriggerThrottle();
+    await item.onCommandLongPress(event.action, event.opt);
     return true;
   }
   async delete() {

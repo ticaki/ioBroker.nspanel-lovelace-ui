@@ -1001,6 +1001,9 @@ const screensaverStateKeys = [
   "ScreensaverEntitySwitch",
   "ScreensaverEntityCycle",
   "ScreensaverEntityCycleValues",
+  "ScreensaverEntityLongPressNaviToPage",
+  "ScreensaverEntityLongPressButton",
+  "ScreensaverEntityLongPressSwitch",
   "ScreensaverEntityIconSelect",
   "ScreensaverEntityEnabled",
   "ScreensaverEntityVisibleCondition",
@@ -1018,7 +1021,10 @@ const screensaverTemplateKeys = [
   "ScreensaverEntityButton",
   "ScreensaverEntitySwitch",
   "ScreensaverEntityCycle",
-  "ScreensaverEntityCycleValues"
+  "ScreensaverEntityCycleValues",
+  "ScreensaverEntityLongPressNaviToPage",
+  "ScreensaverEntityLongPressButton",
+  "ScreensaverEntityLongPressSwitch"
 ];
 const nativeTemplateKeys = ["template", "dpInit", "modeScr", "readOptions"];
 function convertReadOptions(value, reason, where) {
@@ -1057,6 +1063,26 @@ function convertIndicatorAction(element, reason, where) {
     if (values.length > 0) {
       return { kind: "cycle", state: cycle, values };
     }
+  }
+  return navi ? { kind: "navigate", page: navi } : void 0;
+}
+function convertIndicatorLongPress(element, reason, where) {
+  const button = str(element.ScreensaverEntityLongPressButton, reason, `${where}.ScreensaverEntityLongPressButton`);
+  const switchState = str(
+    element.ScreensaverEntityLongPressSwitch,
+    reason,
+    `${where}.ScreensaverEntityLongPressSwitch`
+  );
+  const navi = str(
+    element.ScreensaverEntityLongPressNaviToPage,
+    reason,
+    `${where}.ScreensaverEntityLongPressNaviToPage`
+  );
+  if (button) {
+    return { kind: "button", state: button };
+  }
+  if (switchState) {
+    return { kind: "switch", state: switchState };
   }
   return navi ? { kind: "navigate", page: navi } : void 0;
 }
@@ -1104,6 +1130,10 @@ function convertScreensaverItem(element, area, where, defaults) {
       const action = convertIndicatorAction(element, reason, where);
       if (action) {
         item2.action = action;
+      }
+      const longPress = convertIndicatorLongPress(element, reason, where);
+      if (longPress) {
+        item2.longPress = longPress;
       }
     }
     return item2;
@@ -1231,6 +1261,10 @@ function convertScreensaverItem(element, area, where, defaults) {
     const action = convertIndicatorAction(element, reason, where);
     if (action) {
       item.action = action;
+    }
+    const longPress = convertIndicatorLongPress(element, reason, where);
+    if (longPress) {
+      item.longPress = longPress;
     }
   }
   return item;
