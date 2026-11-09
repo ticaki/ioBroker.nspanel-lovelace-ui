@@ -1177,6 +1177,7 @@ export namespace NSPanel {
         | 'setNavi'
         | 'setNaviLongPress'
         | 'longPress'
+        | 'longPressMode'
         | 'confirm'
         | 'entity4'
         | 'popup'
@@ -1386,6 +1387,11 @@ export namespace NSPanel {
         setNavi?: number;
         setNaviLongPress?: number;
         longPress?: boolean;
+        /**
+         * how a long press writes `longPress`: `push` = true, `toggle` = flips it; without it the type of the item
+         * decides (button: push, switch: toggle) - a screensaver indicator is always a button and sets it
+         */
+        longPressMode?: string;
         confirm?: string;
         setList?: number;
         popup?: PopupEntryType;

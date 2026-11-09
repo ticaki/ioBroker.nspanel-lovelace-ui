@@ -827,6 +827,18 @@ declare namespace ScriptConfig {
         /** values of ScreensaverEntityCycle in the order they are written, after the last one the first follows */
         ScreensaverEntityCycleValues?: (string | number | boolean)[] | null;
     };
+    /**
+     * what an element does when held (TFT 6.0.9+) - indicator place only, the first of button, switch and page counts.
+     * Without one a long press acts like a tap.
+     */
+    export type ScreenSaverIndicatorLongPress = {
+        /** page opened on a long press */
+        ScreensaverEntityLongPressNaviToPage?: string | null;
+        /** state set to true on a long press */
+        ScreensaverEntityLongPressButton?: string | null;
+        /** state toggled on a long press */
+        ScreensaverEntityLongPressSwitch?: string | null;
+    };
     export type ScreenSaverElement = { type: ScreenSaverType } & (
         | ({
               type: 'script';
@@ -920,7 +932,7 @@ declare namespace ScriptConfig {
                * the icon. Only the screensaver `tiles` (HMI page screensaver5) reads it, place indicator.
                */
               ScreensaverEntityIconTextSize?: number;
-          })
+          } & ScreenSaverIndicatorLongPress)
         | { type: 'native'; native: any }
         | ({
               type: 'template';
@@ -934,6 +946,7 @@ declare namespace ScriptConfig {
               ScreensaverEntityIconTextSize?: number;
               modeScr: 'left' | 'bottom' | 'indicator' | 'favorit' | 'alternate';
           } & ScreenSaverIndicatorAction &
+              ScreenSaverIndicatorLongPress &
               ({ enabled: string; visibleCondition?: string } | { enabled?: string }))
     );
 

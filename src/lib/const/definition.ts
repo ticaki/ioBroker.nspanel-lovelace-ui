@@ -89,6 +89,7 @@ export const genericStateObjects: {
                 left: ioBroker.StateObject;
                 right: ioBroker.StateObject;
                 indicator: ioBroker.StateObject;
+                indicatorLong: ioBroker.StateObject;
                 screensaverGesture: ioBroker.StateObject;
             };
             pagePopup: customChannelType & {
@@ -264,6 +265,19 @@ export const genericStateObjects: {
                         name: 'StateObjects.buttons.indicator',
                         type: 'boolean',
                         role: 'button.press',
+                        read: true,
+                        write: false,
+                        def: true,
+                    },
+                    native: {},
+                },
+                indicatorLong: {
+                    _id: '',
+                    type: 'state',
+                    common: {
+                        name: 'StateObjects.buttons.indicatorLong',
+                        type: 'boolean',
+                        role: 'button.long',
                         read: true,
                         write: false,
                         def: true,

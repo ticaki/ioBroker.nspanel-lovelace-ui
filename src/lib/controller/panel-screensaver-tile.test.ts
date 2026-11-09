@@ -1,7 +1,7 @@
 /**
  * A tile of the screensaver with the TFT 6.0.8+ (`buttonPress2,<page>?<n>,button,<taps>`): a key runs its command,
- * any other tile counts like a touch of the background (`buttonPress2,screensaver,bExit,<taps>`), the long press
- * (`buttonPress3`) is only logged. An older TFT (no taps) keeps the old way. Panel.HandleIncomingMessage with a bare
+ * any other tile counts like a touch of the background (`buttonPress2,screensaver,bExit,<taps>`). The long press
+ * (`buttonPress3`, TFT 6.0.9) runs the long press of the item, without one it acts like the tap. An older TFT (no taps) keeps the old way. Panel.HandleIncomingMessage with a bare
  * Panel prototype and a fake screensaver.
  */
 import { expect } from 'chai';
@@ -13,6 +13,7 @@ type Calls = string[];
 function setup(
     key: boolean,
     doubleClick = true,
+    longPress = false,
 ): { panel: Panel; calls: Calls; writes: { id: string; val: unknown }[] } {
     const calls: Calls = [];
     const writes: { id: string; val: unknown }[] = [];
@@ -20,6 +21,10 @@ function setup(
     const screenSaver: any = {
         screensaverSwipe: false,
         isIndicatorEvent: (event: Types.IncomingEvent): boolean => event.id === '12',
+        onIndicatorLongPress: async (event: Types.IncomingEvent): Promise<boolean> => {
+            calls.push(`long:${event.id}:${event.opt}`);
+            return Promise.resolve(longPress);
+        },
         onIndicatorTap: async (event: Types.IncomingEvent): Promise<boolean> => {
             calls.push(`tap:${event.id}:${event.opt}`);
             return Promise.resolve(key);
@@ -117,12 +122,29 @@ describe('lib/controller/panel - screensaver tile with tap counter (TFT 6.0.8+)'
         expect(calls).to.include('mainPage');
     });
 
-    it('a long press is only logged: no command, no popup, no background', async () => {
-        const { panel, calls, writes } = setup(true);
+    it('a long press with one of its own runs it only: no tap, no popup, no background', async () => {
+        const { panel, calls, writes } = setup(true, true, true);
         await panel.HandleIncomingMessage(tile('1', 'buttonPress3'));
-        expect(calls.filter(c => !c.startsWith('debug:'))).to.deep.equal([]);
-        expect(calls.some(c => c.startsWith('debug:Screensaver tile 12'))).to.equal(true);
+        expect(calls).to.deep.equal(['long:12:1']);
         expect(writes).to.deep.equal([]);
+    });
+
+    it('a long press without one of its own acts like the tap: a key runs its command', async () => {
+        const { panel, calls } = setup(true);
+        await panel.HandleIncomingMessage(tile('1', 'buttonPress3'));
+        expect(calls).to.deep.equal(['long:12:1', 'tap:12:1']);
+    });
+
+    it('a long press without one of its own on no key counts like a touch of the background', async () => {
+        const { panel, calls } = setup(false);
+        await panel.HandleIncomingMessage(tile('2', 'buttonPress3'));
+        expect(calls).to.deep.equal(['long:12:2', 'tap:12:2', 'timer:bExit:2', 'resetPosition', 'mainPage']);
+    });
+
+    it('a tap never asks for the long press', async () => {
+        const { panel, calls } = setup(true, true, true);
+        await panel.HandleIncomingMessage(tile('1'));
+        expect(calls).to.deep.equal(['tap:12:1']);
     });
 
     it('an older TFT (no taps) keeps the old way: popup request and button event of the page', async () => {

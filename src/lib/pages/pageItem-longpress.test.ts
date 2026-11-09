@@ -14,11 +14,12 @@ interface Calls {
  * @param opts which long press targets are configured
  * @param opts.navi target page for setNaviLongPress
  * @param opts.state configure a longPress state
+ * @param opts.mode value of longPressMode (push / toggle)
  * @returns the item and the recorded calls
  */
 function makeItem(
     type: 'button' | 'switch',
-    opts: { navi?: string; state?: boolean },
+    opts: { navi?: string; state?: boolean; mode?: string },
 ): { item: PageItem; calls: Calls } {
     const noop = (): void => undefined;
     const calls: Calls = { navigate: [], setTrue: 0, flip: 0 };
@@ -26,6 +27,9 @@ function makeItem(
     const data: Record<string, unknown> = {};
     if (opts.navi !== undefined) {
         data.setNaviLongPress = { getString: async (): Promise<string> => opts.navi ?? '' };
+    }
+    if (opts.mode !== undefined) {
+        data.longPressMode = { getString: async (): Promise<string> => opts.mode ?? '' };
     }
     if (opts.state) {
         data.longPress = {
@@ -71,4 +75,16 @@ describe('lib/pages/pageItem - onCommandLongPress', () => {
             expect(await item.onCommandLongPress('button', '')).to.equal(false);
         });
     }
+    it('longPressMode toggle flips the state of a button (screensaver indicator, switch)', async () => {
+        const { item, calls } = makeItem('button', { state: true, mode: 'toggle' });
+        expect(await item.onCommandLongPress('button', '1')).to.equal(true);
+        expect(calls.flip).to.equal(1);
+        expect(calls.setTrue).to.equal(0);
+    });
+    it('longPressMode push sets the state of a switch to true', async () => {
+        const { item, calls } = makeItem('switch', { state: true, mode: 'push' });
+        expect(await item.onCommandLongPress('button', '1')).to.equal(true);
+        expect(calls.setTrue).to.equal(1);
+        expect(calls.flip).to.equal(0);
+    });
 });

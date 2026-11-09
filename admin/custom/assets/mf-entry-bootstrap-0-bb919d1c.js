@@ -37,4 +37,4 @@ const __mfImport = (src) =>
   if (__mfReactServerModuleCache?.pendingShareLoads) {
     await Promise.all(__mfReactServerModuleCache.pendingShareLoads);
   }
-})().then(() => __mfImport("./index-C8_QuZrg.js"));
+})().then(() => __mfImport("./index-BK_h-iwu.js"));

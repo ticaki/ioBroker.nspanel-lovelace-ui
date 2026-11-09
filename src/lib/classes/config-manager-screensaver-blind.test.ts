@@ -346,6 +346,80 @@ describe('lib/classes/config-manager - template element', () => {
     });
 });
 
+describe('lib/classes/config-manager - long press of an indicator', () => {
+    const template = {
+        type: 'template',
+        template: 'text.battery.bydhvs',
+        dpInit: 'bydhvs.0',
+        modeScr: 'indicator',
+    } as const;
+    const WRITABLE = 'alias.0.wetter.Temperatur';
+    const SCRIPT = { ScreensaverEntity: 'alias.0.wetter.Temperatur' };
+
+    it('button: longPress with mode push, besides the short action', async () => {
+        const r = await entityData(
+            { ...SCRIPT, ScreensaverEntityNaviToPage: 'power', ScreensaverEntityLongPressButton: WRITABLE },
+            'indicator',
+        );
+        expect(r.type).to.equal('button');
+        expect(r.data.setNavi).to.deep.equal({ type: 'const', constVal: 'power' });
+        expect(r.data.longPress).to.deep.equal({ type: 'state', dp: WRITABLE });
+        expect(r.data.longPressMode).to.deep.equal({ type: 'const', constVal: 'push' });
+        expect(r.data.setNaviLongPress).to.equal(undefined);
+    });
+
+    it('switch: longPress with mode toggle; button comes first, then switch, then page', async () => {
+        const sw = await entityData(
+            { ...SCRIPT, ScreensaverEntityLongPressSwitch: WRITABLE, ScreensaverEntityLongPressNaviToPage: 'power' },
+            'indicator',
+        );
+        expect(sw.data.longPress).to.deep.equal({ type: 'state', dp: WRITABLE });
+        expect(sw.data.longPressMode).to.deep.equal({ type: 'const', constVal: 'toggle' });
+        expect(sw.data.setNaviLongPress).to.equal(undefined);
+        const both = await entityData(
+            { ...SCRIPT, ScreensaverEntityLongPressButton: WRITABLE, ScreensaverEntityLongPressSwitch: WRITABLE },
+            'indicator',
+        );
+        expect(both.data.longPressMode).to.deep.equal({ type: 'const', constVal: 'push' });
+    });
+
+    it('page: setNaviLongPress; a state that cannot be written gives no long press', async () => {
+        const navi = await entityData({ ...SCRIPT, ScreensaverEntityLongPressNaviToPage: 'power' }, 'indicator');
+        expect(navi.data.setNaviLongPress).to.deep.equal({ type: 'const', constVal: 'power' });
+        expect(navi.data.longPress).to.equal(undefined);
+        const readOnly = await entityData(
+            { ...SCRIPT, ScreensaverEntityLongPressButton: 'alias.0.nurLesen' },
+            'indicator',
+        );
+        expect(readOnly.data.longPress).to.equal(undefined);
+        expect(readOnly.data.longPressMode).to.equal(undefined);
+    });
+
+    it('outside the indicator the long press is ignored', async () => {
+        const r = await entityData({ ...SCRIPT, ScreensaverEntityLongPressNaviToPage: 'power' }, 'bottom');
+        expect(r.data.setNaviLongPress).to.equal(undefined);
+    });
+
+    it('template: a long press alone makes it a button, the fields do not reach the runtime item', async () => {
+        const r = await entityData({ ...template, ScreensaverEntityLongPressSwitch: WRITABLE }, 'indicator');
+        expect(r.type).to.equal('button');
+        expect(r.data.longPress).to.deep.equal({ type: 'state', dp: WRITABLE });
+        expect(r.data.longPressMode).to.deep.equal({ type: 'const', constVal: 'toggle' });
+        expect(r).to.not.have.property('ScreensaverEntityLongPressSwitch');
+        const page: any = {
+            log: { error: (): void => undefined, warn: (): void => undefined },
+            getItemFromTemplate: Page.prototype.getItemFromTemplate,
+        };
+        const item: any = await page.getItemFromTemplate(r);
+        expect(item.type).to.equal('button');
+        expect(item.data.longPress).to.deep.equal({ type: 'state', dp: WRITABLE });
+        expect(item.data.longPressMode).to.deep.equal({ type: 'const', constVal: 'toggle' });
+        const navi = await entityData({ ...template, ScreensaverEntityLongPressNaviToPage: 'power' }, 'indicator');
+        expect(navi.data.setNaviLongPress).to.deep.equal({ type: 'const', constVal: 'power' });
+        expect(navi).to.not.have.property('ScreensaverEntityLongPressNaviToPage');
+    });
+});
+
 describe('lib/classes/config-manager - font of the icon field (tiles)', () => {
     const size3 = { type: 'const', constVal: 3 };
 

@@ -2422,8 +2422,8 @@ export class Panel extends BaseClass {
                         event.opt !== '' &&
                         this.screenSaver.isIndicatorEvent(event)
                     ) {
-                        if (event.method === 'buttonPress3') {
-                            this.log.debug(`Screensaver tile ${event.id}: long press is not used yet`);
+                        // a long press (TFT 6.0.9+) without one of its own acts like a tap
+                        if (event.method === 'buttonPress3' && (await this.screenSaver.onIndicatorLongPress(event))) {
                             break;
                         }
                         if (!(await this.screenSaver.onIndicatorTap(event))) {
