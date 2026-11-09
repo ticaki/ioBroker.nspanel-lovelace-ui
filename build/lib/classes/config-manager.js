@@ -2121,7 +2121,7 @@ class ConfigManager extends import_library.BaseClass {
               messages.push(
                 `Optional: ${String(dp)}: ${dpInit}, channel role: ${role} - not found, using ${String(alternate)} instead (searching for type: ${JSON.stringify(entry.type)}, role: ${JSON.stringify(entry.role)})`
               );
-              this.log.info(messages[messages.length - 1]);
+              this.log.debug(messages[messages.length - 1]);
             }
           }
           if (!result[role][dp2]) {

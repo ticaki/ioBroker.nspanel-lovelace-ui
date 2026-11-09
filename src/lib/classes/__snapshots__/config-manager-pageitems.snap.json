@@ -50987,12 +50987,7 @@
     "messages": [
       "Optional: ACTUAL: alias.0.min.level_mode_fan, channel role: level.mode.fan - not found, using SET instead (searching for type: \"boolean\", role: [\"sensor.switch\",\"state\"])"
     ],
-    "logs": [
-      [
-        "info",
-        "[config-manager] Optional: ACTUAL: alias.0.min.level_mode_fan, channel role: level.mode.fan - not found, using SET instead (searching for type: \"boolean\", role: [\"sensor.switch\",\"state\"])"
-      ]
-    ],
+    "logs": [],
     "itemAfter": {
       "id": "alias.0.min.level_mode_fan"
     }
@@ -51094,12 +51089,7 @@
     "messages": [
       "Optional: ACTUAL: alias.0.min.level_mode_fan, channel role: level.mode.fan - not found, using SET instead (searching for type: \"boolean\", role: [\"sensor.switch\",\"state\"])"
     ],
-    "logs": [
-      [
-        "info",
-        "[config-manager] Optional: ACTUAL: alias.0.min.level_mode_fan, channel role: level.mode.fan - not found, using SET instead (searching for type: \"boolean\", role: [\"sensor.switch\",\"state\"])"
-      ]
-    ],
+    "logs": [],
     "itemAfter": {
       "name": "Kitchen",
       "icon": "lightbulb",
@@ -51295,12 +51285,7 @@
     "messages": [
       "Optional: ACTUAL: alias.0.min.level_mode_fan, channel role: level.mode.fan - not found, using SET instead (searching for type: \"boolean\", role: [\"sensor.switch\",\"state\"])"
     ],
-    "logs": [
-      [
-        "info",
-        "[config-manager] Optional: ACTUAL: alias.0.min.level_mode_fan, channel role: level.mode.fan - not found, using SET instead (searching for type: \"boolean\", role: [\"sensor.switch\",\"state\"])"
-      ]
-    ],
+    "logs": [],
     "itemAfter": {
       "name": "alias.0.helper.text",
       "icon": "alias.0.helper.icon",
@@ -52627,12 +52612,7 @@
     "messages": [
       "Optional: ACTUAL: alias.0.min.level_mode_fan, channel role: level.mode.fan - not found, using SET instead (searching for type: \"boolean\", role: [\"sensor.switch\",\"state\"])"
     ],
-    "logs": [
-      [
-        "info",
-        "[config-manager] Optional: ACTUAL: alias.0.min.level_mode_fan, channel role: level.mode.fan - not found, using SET instead (searching for type: \"boolean\", role: [\"sensor.switch\",\"state\"])"
-      ]
-    ],
+    "logs": [],
     "itemAfter": {
       "id": "alias.0.min.level_mode_fan"
     }
@@ -54474,12 +54454,7 @@
         }
       }
     },
-    "logs": [
-      [
-        "info",
-        "[config-manager] Optional: ACTUAL: alias.0.min.level_mode_fan, channel role: level.mode.fan - not found, using SET instead (searching for type: \"boolean\", role: [\"sensor.switch\",\"state\"])"
-      ]
-    ],
+    "logs": [],
     "itemAfter": {
       "navigate": true,
       "targetPage": "naviTarget",
@@ -63160,12 +63135,7 @@
     "messages": [
       "Optional: ACTUAL: alias.0.min.lock, channel role: lock - not found, using SET instead (searching for type: \"boolean\", role: [\"state\",\"sensor.lock\"])"
     ],
-    "logs": [
-      [
-        "info",
-        "[config-manager] Optional: ACTUAL: alias.0.min.lock, channel role: lock - not found, using SET instead (searching for type: \"boolean\", role: [\"state\",\"sensor.lock\"])"
-      ]
-    ],
+    "logs": [],
     "itemAfter": {
       "id": "alias.0.min.lock"
     }
@@ -63275,12 +63245,7 @@
     "messages": [
       "Optional: ACTUAL: alias.0.min.lock, channel role: lock - not found, using SET instead (searching for type: \"boolean\", role: [\"state\",\"sensor.lock\"])"
     ],
-    "logs": [
-      [
-        "info",
-        "[config-manager] Optional: ACTUAL: alias.0.min.lock, channel role: lock - not found, using SET instead (searching for type: \"boolean\", role: [\"state\",\"sensor.lock\"])"
-      ]
-    ],
+    "logs": [],
     "itemAfter": {
       "name": "Kitchen",
       "icon": "lightbulb",
@@ -63484,12 +63449,7 @@
     "messages": [
       "Optional: ACTUAL: alias.0.min.lock, channel role: lock - not found, using SET instead (searching for type: \"boolean\", role: [\"state\",\"sensor.lock\"])"
     ],
-    "logs": [
-      [
-        "info",
-        "[config-manager] Optional: ACTUAL: alias.0.min.lock, channel role: lock - not found, using SET instead (searching for type: \"boolean\", role: [\"state\",\"sensor.lock\"])"
-      ]
-    ],
+    "logs": [],
     "itemAfter": {
       "name": "alias.0.helper.text",
       "icon": "alias.0.helper.icon",
@@ -64692,12 +64652,7 @@
     "messages": [
       "Optional: ACTUAL: alias.0.min.lock, channel role: lock - not found, using SET instead (searching for type: \"boolean\", role: [\"state\",\"sensor.lock\"])"
     ],
-    "logs": [
-      [
-        "info",
-        "[config-manager] Optional: ACTUAL: alias.0.min.lock, channel role: lock - not found, using SET instead (searching for type: \"boolean\", role: [\"state\",\"sensor.lock\"])"
-      ]
-    ],
+    "logs": [],
     "itemAfter": {
       "id": "alias.0.min.lock"
     }
@@ -66344,12 +66299,7 @@
         }
       }
     },
-    "logs": [
-      [
-        "info",
-        "[config-manager] Optional: ACTUAL: alias.0.min.lock, channel role: lock - not found, using SET instead (searching for type: \"boolean\", role: [\"state\",\"sensor.lock\"])"
-      ]
-    ],
+    "logs": [],
     "itemAfter": {
       "navigate": true,
       "targetPage": "naviTarget",
@@ -91143,12 +91093,7 @@
     "messages": [
       "Optional: ACTUAL: alias.0.min.slider, channel role: slider - not found, using SET instead (searching for type: \"number\", role: [\"value\",\"level\"])"
     ],
-    "logs": [
-      [
-        "info",
-        "[config-manager] Optional: ACTUAL: alias.0.min.slider, channel role: slider - not found, using SET instead (searching for type: \"number\", role: [\"value\",\"level\"])"
-      ]
-    ],
+    "logs": [],
     "itemAfter": {
       "id": "alias.0.min.slider"
     }
@@ -91316,12 +91261,7 @@
     "messages": [
       "Optional: ACTUAL: alias.0.min.slider, channel role: slider - not found, using SET instead (searching for type: \"number\", role: [\"value\",\"level\"])"
     ],
-    "logs": [
-      [
-        "info",
-        "[config-manager] Optional: ACTUAL: alias.0.min.slider, channel role: slider - not found, using SET instead (searching for type: \"number\", role: [\"value\",\"level\"])"
-      ]
-    ],
+    "logs": [],
     "itemAfter": {
       "name": "Kitchen",
       "icon": "lightbulb",
@@ -91561,12 +91501,7 @@
     "messages": [
       "Optional: ACTUAL: alias.0.min.slider, channel role: slider - not found, using SET instead (searching for type: \"number\", role: [\"value\",\"level\"])"
     ],
-    "logs": [
-      [
-        "info",
-        "[config-manager] Optional: ACTUAL: alias.0.min.slider, channel role: slider - not found, using SET instead (searching for type: \"number\", role: [\"value\",\"level\"])"
-      ]
-    ],
+    "logs": [],
     "itemAfter": {
       "name": "alias.0.helper.text",
       "icon": "alias.0.helper.icon",
@@ -93136,12 +93071,7 @@
     "messages": [
       "Optional: ACTUAL: alias.0.min.slider, channel role: slider - not found, using SET instead (searching for type: \"number\", role: [\"value\",\"level\"])"
     ],
-    "logs": [
-      [
-        "info",
-        "[config-manager] Optional: ACTUAL: alias.0.min.slider, channel role: slider - not found, using SET instead (searching for type: \"number\", role: [\"value\",\"level\"])"
-      ]
-    ],
+    "logs": [],
     "itemAfter": {
       "id": "alias.0.min.slider"
     }
@@ -94999,12 +94929,7 @@
         }
       }
     },
-    "logs": [
-      [
-        "info",
-        "[config-manager] Optional: ACTUAL: alias.0.min.slider, channel role: slider - not found, using SET instead (searching for type: \"number\", role: [\"value\",\"level\"])"
-      ]
-    ],
+    "logs": [],
     "itemAfter": {
       "navigate": true,
       "targetPage": "naviTarget",
@@ -95896,12 +95821,7 @@
     "messages": [
       "Optional: ACTUAL: alias.0.min.socket, channel role: socket - not found, using SET instead (searching for type: \"boolean\", role: \"sensor.switch\")"
     ],
-    "logs": [
-      [
-        "info",
-        "[config-manager] Optional: ACTUAL: alias.0.min.socket, channel role: socket - not found, using SET instead (searching for type: \"boolean\", role: \"sensor.switch\")"
-      ]
-    ],
+    "logs": [],
     "itemAfter": {
       "id": "alias.0.min.socket"
     }
@@ -96011,12 +95931,7 @@
     "messages": [
       "Optional: ACTUAL: alias.0.min.socket, channel role: socket - not found, using SET instead (searching for type: \"boolean\", role: \"sensor.switch\")"
     ],
-    "logs": [
-      [
-        "info",
-        "[config-manager] Optional: ACTUAL: alias.0.min.socket, channel role: socket - not found, using SET instead (searching for type: \"boolean\", role: \"sensor.switch\")"
-      ]
-    ],
+    "logs": [],
     "itemAfter": {
       "name": "Kitchen",
       "icon": "lightbulb",
@@ -96212,12 +96127,7 @@
     "messages": [
       "Optional: ACTUAL: alias.0.min.socket, channel role: socket - not found, using SET instead (searching for type: \"boolean\", role: \"sensor.switch\")"
     ],
-    "logs": [
-      [
-        "info",
-        "[config-manager] Optional: ACTUAL: alias.0.min.socket, channel role: socket - not found, using SET instead (searching for type: \"boolean\", role: \"sensor.switch\")"
-      ]
-    ],
+    "logs": [],
     "itemAfter": {
       "name": "alias.0.helper.text",
       "icon": "alias.0.helper.icon",
@@ -97152,12 +97062,7 @@
     "messages": [
       "Optional: ACTUAL: alias.0.min.socket, channel role: socket - not found, using SET instead (searching for type: \"boolean\", role: \"sensor.switch\")"
     ],
-    "logs": [
-      [
-        "info",
-        "[config-manager] Optional: ACTUAL: alias.0.min.socket, channel role: socket - not found, using SET instead (searching for type: \"boolean\", role: \"sensor.switch\")"
-      ]
-    ],
+    "logs": [],
     "itemAfter": {
       "id": "alias.0.min.socket"
     }
@@ -98870,12 +98775,7 @@
         }
       }
     },
-    "logs": [
-      [
-        "info",
-        "[config-manager] Optional: ACTUAL: alias.0.min.socket, channel role: socket - not found, using SET instead (searching for type: \"boolean\", role: \"sensor.switch\")"
-      ]
-    ],
+    "logs": [],
     "itemAfter": {
       "navigate": true,
       "targetPage": "naviTarget",
@@ -105337,12 +105237,7 @@
     "messages": [
       "Optional: ACTUAL: alias.0.min.thermostat, channel role: thermostat - not found, using SET instead (searching for type: \"number\", role: \"value.temperature\")"
     ],
-    "logs": [
-      [
-        "info",
-        "[config-manager] Optional: ACTUAL: alias.0.min.thermostat, channel role: thermostat - not found, using SET instead (searching for type: \"number\", role: \"value.temperature\")"
-      ]
-    ],
+    "logs": [],
     "itemAfter": {
       "id": "alias.0.min.thermostat"
     }
@@ -105511,12 +105406,7 @@
     "messages": [
       "Optional: ACTUAL: alias.0.min.thermostat, channel role: thermostat - not found, using SET instead (searching for type: \"number\", role: \"value.temperature\")"
     ],
-    "logs": [
-      [
-        "info",
-        "[config-manager] Optional: ACTUAL: alias.0.min.thermostat, channel role: thermostat - not found, using SET instead (searching for type: \"number\", role: \"value.temperature\")"
-      ]
-    ],
+    "logs": [],
     "itemAfter": {
       "name": "Kitchen",
       "icon": "lightbulb",
@@ -105772,12 +105662,7 @@
     "messages": [
       "Optional: ACTUAL: alias.0.min.thermostat, channel role: thermostat - not found, using SET instead (searching for type: \"number\", role: \"value.temperature\")"
     ],
-    "logs": [
-      [
-        "info",
-        "[config-manager] Optional: ACTUAL: alias.0.min.thermostat, channel role: thermostat - not found, using SET instead (searching for type: \"number\", role: \"value.temperature\")"
-      ]
-    ],
+    "logs": [],
     "itemAfter": {
       "name": "alias.0.helper.text",
       "icon": "alias.0.helper.icon",
@@ -107083,12 +106968,7 @@
     "messages": [
       "Optional: ACTUAL: alias.0.min.thermostat, channel role: thermostat - not found, using SET instead (searching for type: \"number\", role: \"value.temperature\")"
     ],
-    "logs": [
-      [
-        "info",
-        "[config-manager] Optional: ACTUAL: alias.0.min.thermostat, channel role: thermostat - not found, using SET instead (searching for type: \"number\", role: \"value.temperature\")"
-      ]
-    ],
+    "logs": [],
     "itemAfter": {
       "id": "alias.0.min.thermostat"
     }
@@ -109197,12 +109077,7 @@
         }
       }
     },
-    "logs": [
-      [
-        "info",
-        "[config-manager] Optional: ACTUAL: alias.0.min.thermostat, channel role: thermostat - not found, using SET instead (searching for type: \"number\", role: \"value.temperature\")"
-      ]
-    ],
+    "logs": [],
     "itemAfter": {
       "navigate": true,
       "targetPage": "naviTarget",

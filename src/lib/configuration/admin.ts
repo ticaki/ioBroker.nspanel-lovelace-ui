@@ -732,7 +732,7 @@ export class AdminConfiguration extends BaseClass {
             ) {
                 overrideExisting = true;
                 replacesGlobal = true;
-                this.log.info(
+                this.log.debug(
                     `Page '${newPage.uniqueID}' of the global script configuration is replaced by the admin page assigned to this panel.`,
                 );
             }
@@ -750,7 +750,7 @@ export class AdminConfiguration extends BaseClass {
                         this.log.warn(`Page with name ${newPage.uniqueID} already exists, skipping!`);
                         continue;
                     }
-                    this.log.info(
+                    this.log.debug(
                         `Page '${newPage.uniqueID}' of another panel's script is replaced by the admin page configured for this panel.`,
                     );
                     option.pages = option.pages.filter((a: PageBase) => a.uniqueID !== newPage.uniqueID);
@@ -762,7 +762,7 @@ export class AdminConfiguration extends BaseClass {
                 const pageCount = option.pages.length;
                 option.pages = option.pages.filter((a: PageBase) => a.uniqueID !== newPage.uniqueID);
                 if (option.pages.length !== pageCount) {
-                    this.log.info(`Page '${newPage.uniqueID}' is overridden by the admin configuration.`);
+                    this.log.debug(`Page '${newPage.uniqueID}' is overridden by the admin configuration.`);
                 }
                 replacedIndex = option.navigation.findIndex(b => b && b.name === newPage.uniqueID);
                 if (replacedIndex !== -1) {
