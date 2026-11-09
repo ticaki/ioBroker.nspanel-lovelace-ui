@@ -1989,6 +1989,17 @@ class Panel extends import_library.BaseClass {
         this.resetDisplayDiagnosis();
         this.setSafeboot(false, "");
         this.isOnline = true;
+        if (!this.isClone) {
+          const fwState = this.library.readdb(`panels.${this.name}.info.nspanel.firmwareUpdate`);
+          if (fwState && typeof fwState.val === "number" && fwState.val < 100) {
+            this.flashing = false;
+            await this.library.writedp(
+              `panels.${this.name}.info.nspanel.firmwareUpdate`,
+              100,
+              definition.genericStateObjects.panel.panels.info.nspanel.firmwareUpdate
+            );
+          }
+        }
         this.info.nspanel.displayVersion = event.opt;
         if (this.isVirtual) {
           await this.setStatus("connected");

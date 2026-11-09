@@ -163,6 +163,8 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
 - (ticaki) screensaver: after the page is loaded the colors and the content are sent first, the time follows; with the TFT 6.1.0 the page takes its background and clock colors with the page change and is drawn only once, no black flash before the background color
 - (ticaki) screensaver advanced: with the TFT 6.1.0 it follows the colors of the color theme like the other screensavers
 - (ticaki) berry driver 12: the checksum of a message is computed about five times faster, and the adapter can hand it over ready-made - large messages reach the display about 0.2 s earlier
+- (ticaki) panel: a restart of the adapter during the first seconds of a TFT update no longer restarts Tasmota and breaks the update
+- (ticaki) screensaver: the update symbol next to the clock only shows when the TFT is older than the recommended one, not for a newer TFT
 - (ticaki) admin: the maintain tab shows the berry driver of every panel and offers an update like for TFT and script; Tasmota restarts after a successful download
 - (ticaki) panel: a warning is logged when a message to the panel is longer than the 1017 bytes the display can receive
 - (ticaki) screensaver: with the new HMI (screensaver tiles and advanced) a tap on an indicator counts like a tap on the screensaver; an indicator without action (and, with "indicators act as buttons", without a state to switch) no longer leaves the screensaver at once but follows the double click setting, `buttons.indicator-N` is still written; a long press is recognised by the panel but not used yet; the web panel counts the taps the same way

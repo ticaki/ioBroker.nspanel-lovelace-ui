@@ -1925,6 +1925,9 @@ class NspanelLovelaceUi extends utils.Adapter {
                                     `${this.config.useTasmotaAdmin ? `user=admin&password=${this.config.tasmotaAdminPassword}` : ``}` +
                                     `&cmnd=Backlog ${cmnd}`;
                                 this.log.debug(redactSecretsInText(url));
+                                await this.markTftFlashStarting(
+                                    this.config.panels.find(p => p && p.ip === obj.message.tasmotaIP)?.id,
+                                );
                                 await this.fetch(url);
 
                                 if (obj.callback) {
@@ -1970,6 +1973,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                                     const index = this.controller.panels.findIndex(a => a.topic === obj.message.topic);
                                     if (index !== -1) {
                                         const panel = this.controller.panels[index];
+                                        await this.markTftFlashStarting(panel.name);
                                         panel.sendToTasmota(`${panel.topic}/cmnd/Backlog`, cmnd);
                                         await this.delay(100);
                                         panel.sendToTasmota(`${panel.topic}/cmnd/Backlog`, ``);
@@ -2970,6 +2974,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                         return;
                     }
                     if (this.mqttClient) {
+                        await this.markTftFlashStarting(session.item.id);
                         await this.mqttClient.publish(`${topic}/cmnd/Backlog`, `${cmnd}`);
                         await this.delay(100);
                         await this.mqttClient.publish(`${topic}/cmnd/Backlog`, ``);
@@ -3169,6 +3174,24 @@ class NspanelLovelaceUi extends utils.Adapter {
 
         this.log.debug(cmnd);
         return cmnd;
+    }
+    /**
+     * Sets `firmwareUpdate` to 0 right before a TFT flash is sent: the panel reports its first
+     * progress only after skipping the unchanged data (often 45 s or more), until then the value of
+     * the last flash (100) would let `onMqttConnect` restart Tasmota in the middle of the flash.
+     * The panel sets 100 again with `Flashing: done` or with its next startup event.
+     *
+     * @param panelId id of the panel (`panels.<id>`), nothing happens without one
+     */
+    private async markTftFlashStarting(panelId: string | undefined): Promise<void> {
+        if (!panelId) {
+            return;
+        }
+        await this.library.writedp(
+            `panels.${panelId}.info.nspanel.firmwareUpdate`,
+            0,
+            definition.genericStateObjects.panel.panels.info.nspanel.firmwareUpdate,
+        );
     }
     getBerryInstallUrl(tasmotaIP: string, version: string): string {
         return (

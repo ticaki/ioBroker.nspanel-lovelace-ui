@@ -2294,6 +2294,19 @@ export class Panel extends BaseClass {
                 // a display only answers through the normal firmware, in case its INFO1 got lost
                 this.setSafeboot(false, '');
                 this.isOnline = true;
+                // the display runs its normal firmware again: a flash that never started (e.g. download
+                // error) must not leave firmwareUpdate below 100, else onMqttConnect never restarts the panel
+                if (!this.isClone) {
+                    const fwState = this.library.readdb(`panels.${this.name}.info.nspanel.firmwareUpdate`);
+                    if (fwState && typeof fwState.val === 'number' && fwState.val < 100) {
+                        this.flashing = false;
+                        await this.library.writedp(
+                            `panels.${this.name}.info.nspanel.firmwareUpdate`,
+                            100,
+                            definition.genericStateObjects.panel.panels.info.nspanel.firmwareUpdate,
+                        );
+                    }
+                }
                 this.info.nspanel.displayVersion = event.opt;
                 if (this.isVirtual) {
                     // no Tasmota status will ever arrive - the startup event is the connection

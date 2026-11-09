@@ -1338,8 +1338,11 @@ export class Screensaver extends Page {
             if (!this.adapter.config.hideDeveloperSymbols) {
                 icon = `~${Icons.GetIcon('cog-refresh-outline')}`;
             }
-        } else if (!icon && this.basePanel.info.nspanel.onlineVersion !== this.basePanel.info.nspanel.displayVersion) {
-            // only for newer firmwares
+        } else if (
+            !icon &&
+            tools.isVersionOlder(this.basePanel.info.nspanel.displayVersion, this.basePanel.info.nspanel.onlineVersion)
+        ) {
+            // only if a newer firmware is available - not for a newer TFT on the display or an unknown version
             icon = `~${Icons.GetIcon('wrench-clock')}`;
         }
 

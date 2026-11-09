@@ -1123,7 +1123,7 @@ const _Screensaver = class _Screensaver extends import_Page.Page {
       if (!this.adapter.config.hideDeveloperSymbols) {
         icon = `~${import_icon_mapping.Icons.GetIcon("cog-refresh-outline")}`;
       }
-    } else if (!icon && this.basePanel.info.nspanel.onlineVersion !== this.basePanel.info.nspanel.displayVersion) {
+    } else if (!icon && tools.isVersionOlder(this.basePanel.info.nspanel.displayVersion, this.basePanel.info.nspanel.onlineVersion)) {
       icon = `~${import_icon_mapping.Icons.GetIcon("wrench-clock")}`;
     }
     const colorsChanged = !!this.clockTimer && this.visibility && (this.colorTimerStatus !== timer.status || this.colorTimerShown !== showTimer);

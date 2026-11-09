@@ -542,6 +542,24 @@ describe('lib/pages/screensaver - timer instead of the clock', () => {
             expect(timesOf(sent)).to.deep.equal([`time~0.0~${ALERT}`]);
         });
 
+        it('shows the update symbol only if the display has an older TFT', async () => {
+            const WRENCH = Icons.GetIcon('wrench-clock');
+            const cases: [string, string, string][] = [
+                ['6.0.8', '6.0.9', `time~12:34~${WRENCH}`],
+                ['6.0.9', '6.0.9', 'time~12:34'],
+                ['6.1.0', '6.0.9', 'time~12:34'],
+                ['', '6.0.9', 'time~12:34'],
+                ['6.0.8', '', 'time~12:34'],
+            ];
+            for (const [displayVersion, onlineVersion, expected] of cases) {
+                const f = await setup(simple, { 'x.0.on': false, 'x.0.ts': 0 });
+                f.saver.basePanel.isVirtual = false;
+                f.saver.basePanel.info.nspanel = { displayVersion, onlineVersion };
+                const sent = await f.during(() => f.saver.HandleTime());
+                expect(timesOf(sent), `${displayVersion} / ${onlineVersion}`).to.deep.equal([expected]);
+            }
+        });
+
         it('shows the clock with the info icon while the on/off state is off', async () => {
             const f = await setup(simple, { 'x.0.on': false, 'x.0.ts': NOW + 90_000 });
             f.saver._infoIcon = 'wrench';

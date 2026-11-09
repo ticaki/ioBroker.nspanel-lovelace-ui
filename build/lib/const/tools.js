@@ -31,6 +31,7 @@ __export(tools_exports, {
   GetIconColor: () => GetIconColor,
   alignText: () => alignText,
   buildScrollingText: () => buildScrollingText,
+  compareVersions: () => compareVersions,
   deepAssign: () => deepAssign,
   default: () => tools_default,
   formatHMS: () => formatHMS,
@@ -67,6 +68,7 @@ __export(tools_exports, {
   insertLinebreak: () => insertLinebreak,
   isValidDate: () => isValidDate,
   isVersionGreaterOrEqual: () => isVersionGreaterOrEqual,
+  isVersionOlder: () => isVersionOlder,
   messageItemDefault: () => messageItemDefault,
   setHuefromRGB: () => setHuefromRGB,
   setRGBThreefromRGB: () => setRGBThreefromRGB,
@@ -1070,6 +1072,27 @@ function isVersionGreaterOrEqual(a, b) {
   const bNum = getVersionAsNumber(b);
   return aNum >= bNum;
 }
+function compareVersions(a, b) {
+  const parse = (v) => {
+    const m = typeof v === "string" ? v.match(/(\d+)\.(\d+)\.(\d+)/) : null;
+    return m ? [Number(m[1]), Number(m[2]), Number(m[3])] : null;
+  };
+  const pa = parse(a);
+  const pb = parse(b);
+  if (!pa || !pb) {
+    return null;
+  }
+  for (let i = 0; i < 3; i++) {
+    if (pa[i] !== pb[i]) {
+      return pa[i] - pb[i];
+    }
+  }
+  return 0;
+}
+function isVersionOlder(installed, available) {
+  const cmp = compareVersions(installed, available);
+  return cmp !== null && cmp < 0;
+}
 function buildScrollingText(title, options = {}) {
   var _a;
   const {
@@ -1155,6 +1178,7 @@ function getTasmotaVersionFromJson(json, beta) {
   GetIconColor,
   alignText,
   buildScrollingText,
+  compareVersions,
   deepAssign,
   formatHMS,
   formatInSelText,
@@ -1190,6 +1214,7 @@ function getTasmotaVersionFromJson(json, beta) {
   insertLinebreak,
   isValidDate,
   isVersionGreaterOrEqual,
+  isVersionOlder,
   messageItemDefault,
   setHuefromRGB,
   setRGBThreefromRGB,
