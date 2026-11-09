@@ -2486,7 +2486,7 @@ export class ConfigManager extends BaseClass {
                                 `Optional: ${String(dp)}: ${dpInit}, channel role: ${role} - not found, using ${String(alternate)} instead` +
                                     ` (searching for type: ${JSON.stringify(entry.type)}, role: ${JSON.stringify(entry.role)})`,
                             );
-                            this.log.info(messages[messages.length - 1]);
+                            this.log.debug(messages[messages.length - 1]);
                         }
                     }
 
