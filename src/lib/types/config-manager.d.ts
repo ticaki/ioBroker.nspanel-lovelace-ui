@@ -64,6 +64,7 @@ declare namespace ScriptConfig {
         | 'buttonPress2'
         | 'buttonPress3'
         | 'renderCurrentPage'
+        | 'ack'
         | 'button1'
         | 'button2';
     export type panelRecvType = {

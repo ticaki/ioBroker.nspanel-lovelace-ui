@@ -145,6 +145,11 @@ export class Screensaver extends Page {
     private colorsDropped: boolean = false;
     /** the HMI drops `weatherUpdate` while a notification is shown */
     private weatherDropped: boolean = false;
+    /**
+     * The page was loaded again (`pageType~`): `time~` follows the content of the next update(), behind `color~` and
+     * `weatherUpdate~` - the HMI sets the clock from a global variable while loading the page, it is not urgent.
+     */
+    private timeAfterRender: boolean = false;
     //readonly mode: Types.ScreensaverModeType = 'standard';
     constructor(config: PageInterface, pageOptions: pages.PageBase) {
         const { options, rejected } = resolveScreensaverOptions(pageOptions);
@@ -999,6 +1004,7 @@ export class Screensaver extends Page {
             this.lastTimerPayload = '';
             this.notifyHidden = false;
             this.lastUpdateTs = 0;
+            this.timeAfterRender = true;
         }
         super.sendToPanelClass(payload, ackForType, force, opt);
     }
@@ -1024,6 +1030,8 @@ export class Screensaver extends Page {
      * - At most one burst every 2 s: a change arriving earlier waits for one deferred update, which reads the values
      *   again. Time/date updates are not affected, a press on an item ends the pause.
      * - Status icons and notifications come along with every update that is not deferred, only when they changed.
+     * - After a `pageType~` the order is `color~` (draws the empty page with its background), `weatherUpdate~`,
+     *   `time~` and then everything else.
      */
     async update(): Promise<void> {
         if (!this.visibility) {
@@ -1033,7 +1041,12 @@ export class Screensaver extends Page {
         await super.update();
 
         const message = await this.getData(['left', 'bottom', 'indicator', 'alternate', 'favorit']);
-        if (message === null || run !== this.updateRun || !this.visibility) {
+        if (run !== this.updateRun || !this.visibility) {
+            // a newer update takes over, also the time after a pageType
+            return;
+        }
+        if (message === null) {
+            await this.sendTimeAfterRender();
             return;
         }
 
@@ -1060,15 +1073,29 @@ export class Screensaver extends Page {
                         void this.update();
                     }, wait);
                 }
+                await this.sendTimeAfterRender();
                 return;
             }
             this.lastUpdateTs = now;
-            this.sendWeather(msg);
+            // the color first: with a colored background it draws the whole page - on the empty page that is cheap
             this.sendColors();
+            this.sendWeather(msg);
         }
+        await this.sendTimeAfterRender();
         // not all of their data has a trigger: the filter of these messages sends only what changed
         await this.HandleScreensaverStatusIcons();
         await this.HandleNotification();
+    }
+
+    /**
+     * Sends `time~` once after a `pageType~`, see {@link timeAfterRender}.
+     */
+    private async sendTimeAfterRender(): Promise<void> {
+        if (!this.timeAfterRender) {
+            return;
+        }
+        this.timeAfterRender = false;
+        await this.HandleTime();
     }
 
     public async createPageItems(
@@ -1161,10 +1188,12 @@ export class Screensaver extends Page {
             this.timerTappedAway = false;
             this.lastTimerTap = 0;
             this.lastTimerPayload = '';
+            // also without a pageType (same card as before) the time follows the content of the update
+            this.timeAfterRender = true;
             this.sendType();
-            //await this.update();
-            await this.HandleTime();
             await this.restartRotationLoop();
+            // in case the update could not send it
+            await this.sendTimeAfterRender();
         } else {
             if (this.timeoutRotation) {
                 this.adapter.clearTimeout(this.timeoutRotation);
@@ -1723,13 +1752,9 @@ export class Screensaver extends Page {
         }
         this.mode = Screensaver.mapNumberToMode(mode);
         if (!init && this.visibility) {
+            // the HMI loads another page, the info icon is empty there: time~ follows the content of the update
             this.sendType();
             void this.update();
-            if (this.clockTimer) {
-                // the HMI loads another page, the info icon is empty there
-                this.lastTimerPayload = '';
-                void this.HandleTime();
-            }
         }
     }
 

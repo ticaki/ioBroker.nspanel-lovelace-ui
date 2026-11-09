@@ -1852,6 +1852,36 @@ class NspanelLovelaceUi extends utils.Adapter {
 
                                 this.log.info(`Installing berry on tasmota with IP ${obj.message.tasmotaIP}`);
                                 await this.fetch(url);
+                                if (obj.message.restart === true) {
+                                    // the new driver only runs after a Tasmota restart (Maintain tab).
+                                    // Restart only after the download is confirmed - autoexec.be was
+                                    // renamed before the fetch, a restart without a new file leaves
+                                    // Tasmota without a driver.
+                                    if (this.mqttClient && typeof obj.message.topic === 'string' && obj.message.topic) {
+                                        try {
+                                            await this.mqttClient.waitTasmotaUrlFetch(obj.message.topic, 10_000);
+                                        } catch {
+                                            this.log.error(
+                                                `Did not receive download confirmation from tasmota ${obj.message.tasmotaIP} after berry install - no restart.`,
+                                            );
+                                            if (obj.callback) {
+                                                this.sendTo(
+                                                    obj.from,
+                                                    obj.command,
+                                                    { error: 'sendToRequestFailBerry' },
+                                                    obj.callback,
+                                                );
+                                            }
+                                            break;
+                                        }
+                                    } else {
+                                        await this.delay(3000);
+                                    }
+                                    this.log.info(
+                                        `Restarting tasmota with IP ${obj.message.tasmotaIP} after berry install`,
+                                    );
+                                    await this.fetch(this.getRestartTasmotaUrl(obj.message.tasmotaIP));
+                                }
                                 if (obj.callback) {
                                     this.sendTo(obj.from, obj.command, [], obj.callback);
                                 }
@@ -2103,6 +2133,19 @@ class NspanelLovelaceUi extends utils.Adapter {
                         return 0;
                     };
 
+                    // Berry driver generation online ("11" or "11_…"), only fetched if a Tasmota panel exists
+                    let berryOnline = 0;
+                    if (this.controller?.panels.some(a => !a.isVirtual)) {
+                        const versions = await this.getVersionsJson();
+                        const useBeta =
+                            typeof obj.message?.useBetaTFT === 'boolean'
+                                ? obj.message.useBetaTFT
+                                : !!this.config.useBetaTFT;
+                        const entry = versions ? (useBeta ? versions['berry-beta'] : versions.berry) : undefined;
+                        const parsed = entry ? parseInt(String(entry).split('_')[0]) : NaN;
+                        berryOnline = Number.isFinite(parsed) && parsed > 0 ? parsed : 0;
+                    }
+
                     if (this.controller?.panels) {
                         const updateText = this.library.getTranslation('updateAvailable');
                         const downgradeText = this.library.getTranslation('downgradeAvailable');
@@ -2186,6 +2229,22 @@ class NspanelLovelaceUi extends utils.Adapter {
                                 }
                                 nv = nv ? `v${nv}` : '';
                             }
+                            // Berry driver: integer generation from nlui_driver_version, -1 = emulator, 0 = unknown
+                            const bvRaw = a.info?.nspanel?.berryDriverVersion;
+                            const bv = typeof bvRaw === 'number' && Number.isFinite(bvRaw) ? bvRaw : 0;
+                            const noBerry = a.isVirtual || bv === -1;
+                            let check_berry = false;
+                            let bvText = '???';
+                            if (noBerry) {
+                                bvText = '---';
+                            } else if (bv > 0) {
+                                bvText = `${bv}`;
+                                if (berryOnline > 0 && berryOnline !== bv) {
+                                    bvText += ` (${berryOnline > bv ? updateText : downgradeText}: ${berryOnline})`;
+                                    check = true;
+                                    check_berry = true;
+                                }
+                            }
                             added.push(a.topic);
 
                             temp.push({
@@ -2193,6 +2252,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                                 _check_tasmota: check_tasmota,
                                 _check_tft: check_tft,
                                 _check_script: check_script,
+                                _check_berry: check_berry,
                                 _Headline: `${a.friendlyName} (${ft ? ft : `${check ? checkText : `${a.isOnline ? 'online' : a.flashing ? `flashing` : 'offline'}`}`})`,
                                 _name: a.friendlyName,
                                 _ip: a.isVirtual
@@ -2206,6 +2266,9 @@ class NspanelLovelaceUi extends utils.Adapter {
                                 _id: a.info?.tasmota?.net?.Mac ? a.info.tasmota.net.Mac : '',
                                 _tftVersion: nv ? nv : '???',
                                 _tasmotaVersion: tv ? tv : '???',
+                                _berryVersion: bvText,
+                                _noBerry: noBerry,
+                                _isEmulator: bv === -1,
                                 _ScriptVersion: noScript ? '---' : sv ? `v${sv}` : '???',
                                 _noScript: noScript,
                                 _nsPanelModel: a.isVirtual
@@ -2262,6 +2325,8 @@ class NspanelLovelaceUi extends utils.Adapter {
                                 _id: '',
                                 _tftVersion: '---',
                                 _tasmotaVersion: '---',
+                                _berryVersion: '---',
+                                _noBerry: a.kind === 'web',
                                 _ScriptVersion: noScript ? '---' : sv ? `v${sv}` : '???',
                                 _noScript: noScript,
                                 _nsPanelModel: a.model,

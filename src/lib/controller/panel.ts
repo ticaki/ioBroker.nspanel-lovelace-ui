@@ -2269,6 +2269,8 @@ export class Panel extends BaseClass {
 
         switch (event.method) {
             case 'startup': {
+                // a restarted display may run another TFT - it shows the ack mode again with its first renderCurrentPage
+                this.panelSend.displayAck = false;
                 if (!this.initDone) {
                     return;
                 }
@@ -2442,7 +2444,22 @@ export class Panel extends BaseClass {
                 break;
             }
             case 'renderCurrentPage': {
-                await this.panelSend.onMessage('/stat/RESULT', `{ "CustomSend": "${event.method}" }`);
+                // TFT 6.1.0+: `renderCurrentPage,<crc>` - older TFTs and web panels send no crc
+                // (a web panel sends the page type in this field)
+                const crc = Panel.parseDisplayAckCrc(event.id);
+                if (crc === null) {
+                    await this.panelSend.onMessage('/stat/RESULT', `{ "CustomSend": "${event.method}" }`);
+                } else {
+                    this.panelSend.onDisplayAck('renderCurrentPage', crc);
+                }
+                break;
+            }
+            case 'ack': {
+                // TFT 6.1.0+: the display processed the message with this crc
+                const crc = Panel.parseDisplayAckCrc(event.id);
+                if (crc !== null) {
+                    this.panelSend.onDisplayAck('ack', crc);
+                }
                 break;
             }
             case 'button1': {
@@ -2978,6 +2995,20 @@ export class Panel extends BaseClass {
         }
         return null;
     };
+
+    /**
+     * The crc field of `event,ack,<crc>` and `event,renderCurrentPage,<crc>`.
+     *
+     * @param field the field after the method
+     * @returns the crc or null when the field is no crc (older TFT, web panel)
+     */
+    static parseDisplayAckCrc(field: string | undefined): number | null {
+        if (field === undefined || !/^\d{1,5}$/.test(field)) {
+            return null;
+        }
+        const crc = parseInt(field, 10);
+        return crc <= 0xff_ff ? crc : null;
+    }
 
     /**
      * Convert incoming string to event msg object

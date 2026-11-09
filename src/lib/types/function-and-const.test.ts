@@ -213,6 +213,7 @@ describe('lib/types/function-and-const', () => {
             expect(isEventMethod('startup')).to.equal(true);
             expect(isEventMethod('button1')).to.equal(true);
             expect(isEventMethod('renderCurrentPage')).to.equal(true);
+            expect(isEventMethod('ack')).to.equal(true);
         });
         it('throws for unknown methods', () => {
             expect(() => isEventMethod('something-else')).to.throw(/Unknown EventMethod/);

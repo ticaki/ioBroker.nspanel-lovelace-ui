@@ -143,6 +143,7 @@ export type EventMethod =
     | 'buttonPress2'
     | 'buttonPress3'
     | 'renderCurrentPage'
+    | 'ack'
     | 'button1'
     | 'button2';
 

@@ -1180,8 +1180,8 @@ describe('lib/pages/screensaver - timer instead of the clock', () => {
                 at(5000);
                 s.saver.resetLastMessage();
                 expect(s.kinds(await s.during(() => s.saver.update()))).to.deep.equal([
-                    'weatherUpdate',
                     'color',
+                    'weatherUpdate',
                     'statusUpdate',
                 ]);
             });
@@ -1281,14 +1281,48 @@ describe('lib/pages/screensaver - timer instead of the clock', () => {
                 const s = await scene({ notify: true });
                 await s.show();
                 const again = await s.show();
+                // color~ first (draws the empty page), then the content, the time and the rest
                 expect(s.kinds(again)).to.deep.equal([
                     'pageType',
-                    'time',
-                    'weatherUpdate',
                     'color',
+                    'weatherUpdate',
+                    'time',
                     'statusUpdate',
                     'notify',
                 ]);
+            });
+
+            it('a change of the mode sends the new page in the same order', async () => {
+                const s = await scene({ notify: true });
+                await s.show();
+                const sent = await s.during(async () => {
+                    s.saver.overwriteModel(4);
+                    for (let i = 0; i < 20; i++) {
+                        await new Promise(resolve => setImmediate(resolve));
+                    }
+                });
+                expect(s.kinds(sent)).to.deep.equal([
+                    'pageType',
+                    'color',
+                    'weatherUpdate',
+                    'time',
+                    'statusUpdate',
+                    'notify',
+                ]);
+            });
+
+            it('the time follows the content also when the update has nothing to send', async () => {
+                const s = await scene();
+                await s.show();
+                const getData = s.saver.getData.bind(s.saver);
+                // no data for the content, the time is there
+                s.saver.getData = async (places: string[]): Promise<unknown> =>
+                    places.includes('left') ? Promise.resolve(null) : getData(places);
+                const sent = await s.during(async () => {
+                    s.saver.sendType(true);
+                    await s.saver.update();
+                });
+                expect(s.kinds(sent)).to.deep.equal(['pageType', 'time']);
             });
 
             it('sends no empty notify', async () => {
@@ -1330,7 +1364,14 @@ describe('lib/pages/screensaver - timer instead of the clock', () => {
                 await s.saver.onTimerTap('bExit', '1');
                 expect(await s.during(() => s.saver.HandleNotification())).to.deep.equal([]);
                 const sent = await s.sleepReachedOnSamePage();
-                expect(s.kinds(sent)).to.deep.equal(['pageType', 'weatherUpdate', 'color', 'statusUpdate', 'notify']);
+                expect(s.kinds(sent)).to.deep.equal([
+                    'pageType',
+                    'color',
+                    'weatherUpdate',
+                    'time',
+                    'statusUpdate',
+                    'notify',
+                ]);
             });
 
             it('sleepReached on the active page sends the pageType also right behind another one', async () => {
@@ -1453,7 +1494,7 @@ describe('lib/pages/screensaver - timer instead of the clock', () => {
                 s.now.value = 'C';
                 s.saver.timeColor = (): RGB => Color.Red;
                 at(10_000);
-                expect(s.kinds(await s.during(() => s.saver.update()))).to.deep.equal(['weatherUpdate', 'color']);
+                expect(s.kinds(await s.during(() => s.saver.update()))).to.deep.equal(['color', 'weatherUpdate']);
                 expect(s.saver.weatherDropped).to.equal(false);
                 expect(s.saver.colorsDropped).to.equal(false);
                 // no repeat with the next touch, and none when the notification ends
