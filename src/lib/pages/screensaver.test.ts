@@ -627,6 +627,23 @@ describe('lib/pages/screensaver - timer instead of the clock', () => {
     });
 
     describe('color', () => {
+        it('the pageType carries background, time, AM/PM and date color of color~ (TFT 6.1.0)', async () => {
+            const f = await setup(simple, { 'x.0.on': true, 'x.0.ts': NOW + 120_000 });
+            await f.saver.HandleTime();
+            f.saver.basePanel.lastCard = 'cardGrid';
+            const sent = await f.during(async () => f.saver.sendType());
+            const pageType = sent.find(m => m.startsWith('pageType~'))!;
+            const fields = pageType.split('~');
+            // field 1 stays the page for older TFTs, field 2 is empty
+            expect(fields[1]).to.equal(f.saver.card);
+            expect(fields[2]).to.equal('');
+            const color = f.saver.colorPayload().split('~');
+            expect(fields[3]).to.equal(color.slice(1, 5).join('?'));
+            // the clock shows the running timer
+            expect(fields[3].split('?')[1]).to.equal(ORANGE);
+            expect(fields).to.have.length(4);
+        });
+
         it('holds the override and is sent once per change of the status, not per minute', async () => {
             const f = await setup(simple, { 'x.0.on': true, 'x.0.ts': NOW + 120_000 });
             const start = await f.during(() => f.saver.HandleTime());

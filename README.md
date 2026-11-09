@@ -160,7 +160,8 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
 -->
 ### **WORK IN PROGRESS**
 - (ticaki) panel: with the TFT 6.1.0 the display confirms every message it processed, the adapter sends the next one right away instead of waiting a fixed 250 ms - pages, and the screensaver in particular, build up noticeably faster
-- (ticaki) screensaver: after the page is loaded the colors and the content are sent first, the time follows; the background is no longer drawn twice
+- (ticaki) screensaver: after the page is loaded the colors and the content are sent first, the time follows; with the TFT 6.1.0 the page takes its background and clock colors with the page change and is drawn only once, no black flash before the background color
+- (ticaki) screensaver advanced: with the TFT 6.1.0 it follows the colors of the color theme like the other screensavers
 - (ticaki) berry driver 12: the checksum of a message is computed about five times faster, and the adapter can hand it over ready-made - large messages reach the display about 0.2 s earlier
 - (ticaki) admin: the maintain tab shows the berry driver of every panel and offers an update like for TFT and script; Tasmota restarts after a successful download
 - (ticaki) panel: a warning is logged when a message to the panel is longer than the 1017 bytes the display can receive

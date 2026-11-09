@@ -904,6 +904,27 @@ const _Screensaver = class _Screensaver extends import_Page.Page {
     super.sendType(force);
   }
   /**
+   * The screensaver takes its first colors along with the pageType: `pageType~<card>~~<bg>?<time>?<ampm>?<date>`
+   * (the values of the fields 1-4 of `color~`). TFT 6.1.0+ sets them while loading the page, before it is drawn the
+   * first time - without them `color~` draws the whole page again. Older TFTs only read field 1 and keep field 3 in
+   * a variable the screensavers do not use. `color~` still follows for all other colors.
+   *
+   * @returns the pageType message with the colors
+   */
+  getPageTypePayload() {
+    const payload = super.getPageTypePayload();
+    if (!globals.isScreenSaverCardType(this.card)) {
+      return payload;
+    }
+    return `${payload}~~${this.pageTypeColors()}`;
+  }
+  /**
+   * @returns background, time, AM/PM and date color as RGB565, separated by `?`
+   */
+  pageTypeColors() {
+    return [import_Color.Color.background, this.timeColor(), import_Color.Color.fgTimeAmPm, import_Color.Color.fgDate].map((color) => import_Color.Color.rgb_dec565(color)).join("?");
+  }
+  /**
    * Every `pageType~` loads the page again on the HMI: empty values, default colors and no notification
    * (`vscope` 0, `txt` empty in tNotifyHead and tNotifyText, `load` hides both), whoever asked for it.
    * Everything follows with the next update(), each way that sends a pageType runs one.

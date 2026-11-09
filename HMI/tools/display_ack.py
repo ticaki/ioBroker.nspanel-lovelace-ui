@@ -34,7 +34,13 @@ bytes before it. Every page with tmSerial checks the CRC of a message and keeps 
    assignment redraws the object, after the page load txt is empty. The indicators f<N>Icon of screensaver5 parse
    their text into tFIcon first (font suffix '¬<font id>', else the default font), assign the font only when
    it changes, then pco, then txt. Field indexes unchanged.
-5. Version: pageStartup tRelease 6.0.9 -> 6.1.0 (event,startup,<tVersion>,<model>,<tRelease>).
+5. pageType colors: screensaver2 gets a color branch (it had none for lack of RAM; behind weatherUpdate, mapping
+   see SS2_BCO/SS2_PCO). The load of screensaver, screensaver2, screensaver3 and screensaver5 (not screensaver4) reads field 3 of the pageType from pageIcons.tTmp2
+   ('pageType~screensaver5~~<bg>?<tTime.pco>?<tAMPM.pco>?<tDate.pco>', decimal rgb565 like color~ fields 1-4) right
+   after renderCurrentPage, before the first draw: bco of tTime and of exactly the objects the color branch sets in
+   its if(tTime.bco!=<page>.bco) block (so color~ skips its redraw), the three pco; empty fields leave everything as
+   before (older adapter). Then pageIcons.tTmp2 is emptied (pageTest opens screensaver by itself).
+6. Version: pageStartup tRelease 6.0.9 -> 6.1.0 (event,startup,<tVersion>,<model>,<tRelease>).
 """
 import os
 import re
@@ -305,6 +311,110 @@ def patch_weather(page):
     return icons, moved, added
 
 
+COLOR_IF = re.compile(r'if\(tInstruction\.txt=="color"')
+BCO_FROM_TIME = re.compile(r'^\s*(\w+)\.bco=tTime\.bco$')
+COLOR_PAGES = ('screensaver', 'screensaver2', 'screensaver3', 'screensaver5')
+
+# screensaver2 had no color branch (RAM); the new one follows screensaver/screensaver5. color~ fields (adapter
+# Screensaver.colorPayload): 1 background, 2 tTime, 3 tAMPM, 4 tDate, 5 tMainText, 6-9 tForecast1-4,
+# 10-13 tForecast1-4Val, 14 bar, 15 tMainTextAlt2, 16 tTimeAdd. Icons get their pco from weatherUpdate/statusUpdate.
+SS2_BCO = ['tAMPM', 'tDate', 'tTimeAdd', 'tMainIcon', 'tMainText', 'tIcon1', 'tIcon2',
+           'd1Icon', 'd1Val', 'd2Icon', 'd2Val', 'd3Icon', 'd3Val',
+           *[f'e{n}{part}' for n in range(1, 7) for part in ('Name', 'Icon', 'Val')],
+           *[f'f{n}Icon' for n in range(1, 6)]]
+SS2_PCO = [(2, 'tTime'), (3, 'tAMPM'), (4, 'tDate'), (16, 'tTimeAdd'), (5, 'tMainText'),
+           # d1-d3: entity slots 1-3 of weatherUpdate (fields 9-24) = tForecast1-3 of screensaver, the values
+           (10, 'd1Val'), (11, 'd2Val'), (12, 'd3Val'),
+           # e1-e6 like the eN of screensaver5: names tForecast1-4 (6-9), values tForecast1-4Val (10-13)
+           (6, 'e1Name'), (7, 'e2Name'), (8, 'e3Name'), (9, 'e4Name'), (9, 'e5Name'), (9, 'e6Name'),
+           (10, 'e1Val'), (11, 'e2Val'), (12, 'e3Val'), (13, 'e4Val'), (13, 'e5Val'), (13, 'e6Val')]
+
+
+def add_color_branch_ss2(page):
+    """gives screensaver2 a color branch behind its weatherUpdate block; returns (bco objects, pco pairs)"""
+    name = page.objs[0].name
+    ser = page.obj('tmSerial')
+    lines = ser.code('timer')
+    if any(COLOR_IF.search(line) for line in lines):
+        raise SystemExit(f'{name}: already has a color branch')
+    names = {o.name for o in page.objs}
+    missing = [n for n in SS2_BCO + [n for _, n in SS2_PCO] if n not in names]
+    if missing:
+        raise SystemExit(f'{name}: objects missing: {missing}')
+    hits = [i for i, line in enumerate(lines) if WEATHER_IF.search(line)]
+    a, b = block(lines, hits[0])
+    out = ['if(tInstruction.txt=="color"&&tNotifyHead.txt==""&&tNotifyText.txt=="")', '{',
+           '  spstr strCommand.txt,tTmp.txt,"~",1',
+           '  covx tTmp.txt,tTime.bco,0,0',
+           f'  if(tTime.bco!={name}.bco)',
+           '  {',
+           f'    {name}.bco=tTime.bco']
+    out += [f'    {n}.bco=tTime.bco' for n in SS2_BCO]
+    out.append('  }')
+    for field, n in SS2_PCO:
+        out += [f'  spstr strCommand.txt,tTmp.txt,"~",{field}', f'  covx tTmp.txt,{n}.pco,0,0']
+    out.append('}')
+    lines[b:b] = [indent(lines[a]) + line for line in out]
+    ser.set_code('timer', lines)
+    return SS2_BCO, SS2_PCO
+COLOR_FIELDS = {2: 'tTime', 3: 'tAMPM', 4: 'tDate'}
+
+
+def patch_pagetype_colors(page):
+    """load of a screensaver with a color branch: takes the colors of the pageType (field 3, in pageIcons.tTmp2:
+    <bg>?<tTime.pco>?<tAMPM.pco>?<tDate.pco>, like color~ fields 1-4) before the first draw; the bco goes to tTime
+    and exactly the objects the color branch sets from tTime.bco, so the later color~ finds tTime.bco equal and skips
+    the redraw. Empty fields (older adapter) leave everything as it was. Returns the bco objects."""
+    name = page.objs[0].name
+    lines = page.obj('tmSerial').code('timer')
+    hits = [i for i, line in enumerate(lines) if COLOR_IF.search(line)]
+    if len(hits) != 1:
+        raise SystemExit(f'{name}: color branch found {len(hits)} times')
+    a, b = block(lines, hits[0])
+    branch = [line.strip() for line in lines[a:b]]
+    if branch[2:5] != ['spstr strCommand.txt,tTmp.txt,"~",1', 'covx tTmp.txt,tTime.bco,0,0',
+                       f'if(tTime.bco!={name}.bco)']:
+        raise SystemExit(f'{name}: unexpected start of the color branch')
+    _, end = block(branch, 4)
+    bco = []
+    for line in branch[6:end - 1]:
+        match = BCO_FROM_TIME.match(line)
+        if not match:
+            raise SystemExit(f'{name}: unexpected line in the bco block: {line}')
+        bco.append(match.group(1))
+    if bco[0] != name:
+        raise SystemExit(f'{name}: the bco block does not start with the page')
+    for field, obj in COLOR_FIELDS.items():
+        pair = [f'spstr strCommand.txt,tTmp.txt,"~",{field}', f'covx tTmp.txt,{obj}.pco,0,0']
+        if not any(branch[i:i + 2] == pair for i in range(len(branch))):
+            raise SystemExit(f'{name}: color field {field} is not {obj}.pco')
+    names = {o.name for o in page.objs}
+    out = ['// colors of the pageType (field 3: <bg>?<tTime.pco>?<tAMPM.pco>?<tDate.pco>, like color~ 1-4): set before',
+           '// the first draw; tTime.bco equal, so the color~ that follows skips the redraw. Empty: as before',
+           'spstr pageIcons.tTmp2.txt,tTmp.txt,"?",0',
+           'if(tTmp.txt!="")',
+           '{',
+           '  covx tTmp.txt,tTime.bco,0,0']
+    out += [f'  {obj}.bco=tTime.bco' for obj in bco]
+    out.append('}')
+    for field, obj in COLOR_FIELDS.items():
+        if obj not in names:
+            continue
+        out += [f'spstr pageIcons.tTmp2.txt,tTmp.txt,"?",{field - 1}',
+                'if(tTmp.txt!="")',
+                '{',
+                f'  covx tTmp.txt,{obj}.pco,0,0',
+                '}']
+    out += ['// used: an HMI-internal opening (pageTest) must not take it again', 'pageIcons.tTmp2.txt=""']
+    head = page.objs[0]
+    load = head.code('load')
+    start = find(load, 'tSend.txt="event,renderCurrentPage,"+tTmp.txt')
+    send_end = find(load, 'prints crcval,2', start) + 1
+    load[send_end:send_end] = out
+    head.set_code('load', load)
+    return bco
+
+
 def patch_release(page):
     o = page.obj('tRelease')
     if o.get('txt') != OLD_RELEASE:
@@ -351,6 +461,12 @@ def main(source, target):
             notes.append('renderCurrentPage,<crc>')
         elif load == 'ack':
             notes.append('load acks its pageType')
+        if name == 'screensaver2':
+            bco, pco = add_color_branch_ss2(page)
+            notes.append(f'new color branch ({len(bco) + 1} bco, {len(pco)} pco)')
+        if name in COLOR_PAGES:
+            bco = patch_pagetype_colors(page)
+            notes.append(f'pageType colors ({len(bco)} bco)')
         if name in WEATHER_PAGES:
             icons, moved, added = patch_weather(page)
             notes.append(f'weatherUpdate color first {len(moved)}, font-checked indicators {len(icons)}'

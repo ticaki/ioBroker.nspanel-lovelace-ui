@@ -276,6 +276,14 @@ class Page extends import_baseClassPage.BaseClassPage {
     this.log.warn(`Event received but no handler! ${JSON.stringify(event)}`);
   }
   /**
+   * The message that loads this page on the panel. Field 1 is the page, a page may add fields behind it.
+   *
+   * @returns `pageType~<card>`
+   */
+  getPageTypePayload() {
+    return `pageType~${this.card}`;
+  }
+  /**
    * Sends the page type command to the NSPanel to prepare the display.
    * Determines whether to force-send based on card type and panel state.
    * Some card types (Chart, Thermo) always force-send to ensure correct rendering.
@@ -324,7 +332,7 @@ class Page extends import_baseClassPage.BaseClassPage {
       this.log.debug(
         `Register last send type ${this.basePanel.name}-${this.card} block for ${this.basePanel.blockTouchEventsForMs}ms`
       );
-      this.sendToPanel(`pageType~${this.card}`, renderCurrentPage);
+      this.sendToPanel(this.getPageTypePayload(), renderCurrentPage);
     } else {
       if (this.lastCardCounter++ > 31) {
         this.lastCardCounter = 0;
@@ -332,7 +340,7 @@ class Page extends import_baseClassPage.BaseClassPage {
         this.log.debug(
           `Register last send type ${this.card} block for ${this.basePanel.blockTouchEventsForMs}ms`
         );
-        this.sendToPanel(`pageType~${this.card}`, renderCurrentPage);
+        this.sendToPanel(this.getPageTypePayload(), renderCurrentPage);
       }
     }
     this.basePanel.lastCard = this.card;
