@@ -59,6 +59,9 @@ function screensaverItemToScript(item, area, info = {}) {
     if (area === "indicator" && item.action) {
       setScreensaverIndicatorAction(element2, item.action);
     }
+    if (area === "indicator" && item.longPress) {
+      setScreensaverIndicatorLongPress(element2, item.longPress);
+    }
     setScreensaverIconTextSize(element2, item, area);
     return element2;
   }
@@ -117,6 +120,9 @@ function screensaverItemToScript(item, area, info = {}) {
   if (area === "indicator" && item.action) {
     setScreensaverIndicatorAction(element, item.action);
   }
+  if (area === "indicator" && item.longPress) {
+    setScreensaverIndicatorLongPress(element, item.longPress);
+  }
   setScreensaverIconTextSize(element, item, area);
   return element;
 }
@@ -140,6 +146,19 @@ function setScreensaverIndicatorAction(element, action) {
       break;
     case "navigate":
       element.ScreensaverEntityNaviToPage = action.page || null;
+      break;
+  }
+}
+function setScreensaverIndicatorLongPress(element, longPress) {
+  switch (longPress.kind) {
+    case "button":
+      element.ScreensaverEntityLongPressButton = longPress.state || null;
+      break;
+    case "switch":
+      element.ScreensaverEntityLongPressSwitch = longPress.state || null;
+      break;
+    case "navigate":
+      element.ScreensaverEntityLongPressNaviToPage = longPress.page || null;
       break;
   }
 }

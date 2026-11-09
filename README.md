@@ -159,8 +159,9 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
     ### **WORK IN PROGRESS**
 -->
 ### **WORK IN PROGRESS**
+- (ticaki) screensaver: a long press on an indicator (TFT 6.0.9, screensaver tiles and advanced) can get its own action - set a state, toggle a state or open a page (admin: "Action on long press"); without one it acts like a tap; every long press writes `buttons.indicatorLong-N`; the web panel sends the long press as well; the script templates know the long press fields (`ScreensaverEntityLongPress…`) and `ScreensaverEntityCycle`/`ScreensaverEntityCycleValues`
 - (ticaki) panel: a warning is logged when a message to the panel is longer than the 1017 bytes the display can receive
-- (ticaki) screensaver: with the new HMI (screensaver tiles and advanced) a tap on an indicator counts like a tap on the screensaver; an indicator without action (and, with "indicators act as buttons", without a state to switch) no longer leaves the screensaver at once but follows the double click setting, `buttons.indicator-N` is still written; a long press is recognised by the panel but not used yet; the web panel counts the taps the same way
+- (ticaki) screensaver: with the new HMI (screensaver tiles and advanced) a tap on an indicator counts like a tap on the screensaver; an indicator without action (and, with "indicators act as buttons", without a state to switch) no longer leaves the screensaver at once but follows the double click setting, `buttons.indicator-N` is still written; the web panel counts the taps the same way
 - (ticaki) screensaver tiles: the indicators can get their own icon font (admin field "icon font"); needs the new screensaver5 page of the HMI, the other screensavers ignore it
 - (tt-tom17) admin: the hint for a page name that already exists as a panel page describes what the adapter really does - a page from the script of the same panel wins, a global one or one of another panel is replaced
 - (tt-tom17) admin: the tooltip of the warning sign in the item dialog that asks to press Details... is translated

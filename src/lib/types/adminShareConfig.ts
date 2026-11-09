@@ -672,6 +672,18 @@ export type ScreensaverItemAction = {
 };
 
 /**
+ * what an indicator does when it is held (TFT 6.0.9+; ScreensaverEntityLongPressButton / ...Switch / ...NaviToPage
+ * of the script). Without one a long press acts like a tap.
+ */
+export type ScreensaverItemLongPressAction = {
+    kind: 'button' | 'switch' | 'navigate';
+    /** state written on a long press (button: true, switch: toggled) */
+    state?: string;
+    /** page opened on a long press */
+    page?: string;
+};
+
+/**
  * an item on a place of the screensaver - one state, mapped 1:1 to a ScreenSaverElement of the script
  * (config-manager getEntityData); which fields the panel shows depends on the area ({@link screensaverItemFields})
  */
@@ -708,6 +720,8 @@ export type ScreensaverItemConfig = {
     textOff?: string;
     /** indicator area only */
     action?: ScreensaverItemAction;
+    /** indicator area only: the action of a long press, without one a long press acts like a tap */
+    longPress?: ScreensaverItemLongPressAction;
     /** template item only: options of the template, its `read` functions get them as `options` (readOptions of the script) */
     readOptions?: Record<string, string | number>;
     /** state that hides the item while false (ScreensaverEntityEnabled) */

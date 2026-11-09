@@ -211,6 +211,11 @@ export class Screensaver extends Page {
                     undefined,
                     Definition.genericStateObjects.panel.panels.buttons.indicator,
                 );
+                await this.library.writedp(
+                    `panels.${this.basePanel.name}.buttons.indicatorLong-${a + 1}`,
+                    undefined,
+                    Definition.genericStateObjects.panel.panels.buttons.indicatorLong,
+                );
             }
         }
         await this.initClockTimer();
@@ -1529,11 +1534,16 @@ export class Screensaver extends Page {
     }
 
     /**
-     * Writes `buttons.indicator-N` for an indicator item (nothing for other items)
+     * Writes `buttons.indicator-N` (tap) or `buttons.indicatorLong-N` (long press) for an indicator item (nothing for
+     * other items)
      *
-     * @param item the tapped item
+     * @param item the pressed item
+     * @param state `indicator` for a tap, `indicatorLong` for a long press
      */
-    private async writeIndicatorButton(item: PageItem | undefined): Promise<void> {
+    private async writeIndicatorButton(
+        item: PageItem | undefined,
+        state: 'indicator' | 'indicatorLong' = 'indicator',
+    ): Promise<void> {
         if (!item || !this.pageItems) {
             return;
         }
@@ -1541,9 +1551,9 @@ export class Screensaver extends Page {
         for (let a = 0; a < indicators.length; a++) {
             if (indicators[a] === item) {
                 await this.library.writedp(
-                    `panels.${this.basePanel.name}.buttons.indicator-${a + 1}`,
+                    `panels.${this.basePanel.name}.buttons.${state}-${a + 1}`,
                     true,
-                    Definition.genericStateObjects.panel.panels.buttons.indicator,
+                    Definition.genericStateObjects.panel.panels.buttons[state],
                 );
             }
         }
@@ -1612,6 +1622,46 @@ export class Screensaver extends Page {
         this.lastUpdateTs = 0;
         await this.releaseTriggerThrottle();
         await item.onCommand(event.action, event.opt);
+        return true;
+    }
+
+    /**
+     * true when the indicator has a long press of its own (`setNaviLongPress` or `longPress`,
+     * config-manager getScreensaverIndicatorLongPress)
+     *
+     * @param item the indicator item
+     */
+    hasIndicatorLongPress(item: PageItem | undefined): boolean {
+        const entry = item?.dataItems;
+        if (!entry || (entry.type !== 'button' && entry.type !== 'switch')) {
+            return false;
+        }
+        return !!(entry.data.setNaviLongPress || entry.data.longPress);
+    }
+
+    /**
+     * A long press on a tile of the TFT 6.0.9+ (`buttonPress3,<page>?<n>,button,<taps>`, sent while the finger is
+     * still down): `buttons.indicatorLong-N` is always written; an indicator with a long press of its own runs it
+     * ({@link PageItem.onCommandLongPress}) - the short press is not run then.
+     *
+     * @param event the event of the panel
+     * @returns true when the long press of the item ran, false: the caller treats it like a tap
+     *     ({@link onIndicatorTap})
+     */
+    async onIndicatorLongPress(event: Types.IncomingEvent): Promise<boolean> {
+        const item = this.pageItems?.[Number(event.id)];
+        if (!item || this.unload || this.adapter.unload) {
+            return false;
+        }
+        await this.writeIndicatorButton(item, 'indicatorLong');
+        if (!this.hasIndicatorLongPress(item)) {
+            return false;
+        }
+        this.onTouch();
+        // the result of this press goes out at once, also with a burst or a trigger just before it
+        this.lastUpdateTs = 0;
+        await this.releaseTriggerThrottle();
+        await item.onCommandLongPress(event.action, event.opt);
         return true;
     }
 

@@ -5,7 +5,12 @@
  * and the admin (the raw data dialog starts with the script element of a standard item).
  */
 import { isHmiTextSize, isRawItemObject } from '../types/adminShareConfig';
-import type { ScreensaverItemAction, ScreensaverItemConfig, ScreensaverItemRaw } from '../types/adminShareConfig';
+import type {
+    ScreensaverItemAction,
+    ScreensaverItemConfig,
+    ScreensaverItemLongPressAction,
+    ScreensaverItemRaw,
+} from '../types/adminShareConfig';
 import { Color } from '../const/Color';
 import {
     getScreensaverItemDefaultsByRole,
@@ -80,6 +85,9 @@ export function screensaverItemToScript(
         if (area === 'indicator' && item.action) {
             setScreensaverIndicatorAction(element, item.action);
         }
+        if (area === 'indicator' && item.longPress) {
+            setScreensaverIndicatorLongPress(element, item.longPress);
+        }
         setScreensaverIconTextSize(element, item, area);
         return element;
     }
@@ -147,6 +155,9 @@ export function screensaverItemToScript(
     if (area === 'indicator' && item.action) {
         setScreensaverIndicatorAction(element, item.action);
     }
+    if (area === 'indicator' && item.longPress) {
+        setScreensaverIndicatorLongPress(element, item.longPress);
+    }
     setScreensaverIconTextSize(element, item, area);
     return element;
 }
@@ -195,6 +206,29 @@ function setScreensaverIndicatorAction(
             break;
         case 'navigate':
             element.ScreensaverEntityNaviToPage = action.page || null;
+            break;
+    }
+}
+
+/**
+ * The long press of an indicator as the field of the script element
+ *
+ * @param element script or template element, gets the field
+ * @param longPress long press of the item
+ */
+function setScreensaverIndicatorLongPress(
+    element: ScriptConfig.ScreenSaverIndicatorLongPress,
+    longPress: ScreensaverItemLongPressAction,
+): void {
+    switch (longPress.kind) {
+        case 'button':
+            element.ScreensaverEntityLongPressButton = longPress.state || null;
+            break;
+        case 'switch':
+            element.ScreensaverEntityLongPressSwitch = longPress.state || null;
+            break;
+        case 'navigate':
+            element.ScreensaverEntityLongPressNaviToPage = longPress.page || null;
             break;
     }
 }

@@ -44,6 +44,7 @@ import {
     type ScreensaverMode,
     type ScreensaverItemAction,
     type ScreensaverItemConfig,
+    type ScreensaverItemLongPressAction,
     type IconColorElement,
     type ScreensaverItemSource,
     type PageItemTemplateInfo,
@@ -108,6 +109,8 @@ interface ScreensaverItemDialogState {
     objKind: string;
     /** the state of a button / switch / cycle action: type, common.write and common.type; null = not found, undefined = not checked */
     actionObj: { kind: string; write: boolean; type: string } | null | undefined;
+    /** the state of a button / switch long press, like actionObj */
+    longPressObj: { kind: string; write: boolean; type: string } | null | undefined;
     /** the state the color comes from: type; null = not found, undefined = not checked */
     colorObj: { kind: string } | null | undefined;
     colorMode: 'fixed' | 'scale' | 'state';
@@ -118,6 +121,15 @@ interface ScreensaverItemDialogState {
 }
 
 let iconMap: Map<string, string> | null = null;
+
+/**
+ * true for a kind of long press of an indicator
+ *
+ * @param value value of the select
+ */
+function isLongPressKind(value: string): value is ScreensaverItemLongPressAction['kind'] {
+    return value === 'button' || value === 'switch' || value === 'navigate';
+}
 
 /**
  * base64 source of an icon of the icon list
@@ -192,6 +204,7 @@ export class ScreensaverItemDialog extends React.Component<ScreensaverItemDialog
             channelRole: '',
             objKind: '',
             actionObj: undefined,
+            longPressObj: undefined,
             colorObj: undefined,
             colorMode: 'fixed',
             source: 'state',
@@ -213,12 +226,14 @@ export class ScreensaverItemDialog extends React.Component<ScreensaverItemDialog
                     colorMode: draft.colorScale ? 'scale' : draft.colorState ? 'state' : 'fixed',
                     objType: undefined,
                     actionObj: undefined,
+                    longPressObj: undefined,
                     colorObj: undefined,
                     source: screensaverItemSource(draft),
                 },
                 () => {
                     void this.loadObject(draft.state);
                     void this.loadActionObject(draft.action?.state);
+                    void this.loadLongPressObject(draft.longPress?.state);
                     void this.loadColorObject(draft.colorState);
                 },
             );
@@ -354,6 +369,36 @@ export class ScreensaverItemDialog extends React.Component<ScreensaverItemDialog
     }
 
     /**
+     * reads type, common.write and common.type of the state a button / switch long press writes to
+     *
+     * @param id state id, empty = nothing to check
+     */
+    private async loadLongPressObject(id: string | undefined): Promise<void> {
+        const trimmed = (id ?? '').trim();
+        if (!trimmed) {
+            this.setState({ longPressObj: undefined });
+            return;
+        }
+        try {
+            const obj: ioBroker.Object | null | undefined = await this.props.oContext?.socket?.getObject(trimmed);
+            if ((this.state.draft.longPress?.state ?? '').trim() !== trimmed) {
+                return;
+            }
+            this.setState({
+                longPressObj: obj
+                    ? {
+                          kind: String(obj.type ?? ''),
+                          write: obj.common?.write === true,
+                          type: String(obj.common?.type ?? ''),
+                      }
+                    : null,
+            });
+        } catch {
+            this.setState({ longPressObj: null });
+        }
+    }
+
+    /**
      * reads the type of the state the color comes from
      *
      * @param id state id, empty = nothing to check
@@ -419,7 +464,10 @@ export class ScreensaverItemDialog extends React.Component<ScreensaverItemDialog
         }
         if (this.state.source === 'template') {
             return (
-                !draft.template || (this.templateNeed() === 'channel' && !draft.state.trim()) || this.actionBlocked()
+                !draft.template ||
+                (this.templateNeed() === 'channel' && !draft.state.trim()) ||
+                this.actionBlocked() ||
+                this.longPressBlocked()
             );
         }
         if (!draft.state.trim() || objType === undefined || objType === null || objKind !== 'state') {
@@ -434,7 +482,37 @@ export class ScreensaverItemDialog extends React.Component<ScreensaverItemDialog
                 return true;
             }
         }
-        return this.actionBlocked();
+        return this.actionBlocked() || this.longPressBlocked();
+    }
+
+    /** the state of a button / switch long press must exist and be writable */
+    private longPressBlocked(): boolean {
+        const { draft, longPressObj } = this.state;
+        const longPress = draft.longPress;
+        if (!screensaverItemFields(this.props.area).action || !longPress || longPress.kind === 'navigate') {
+            return false;
+        }
+        if (longPress.state?.trim()) {
+            return !longPressObj || longPressObj.kind !== 'state' || !longPressObj.write;
+        }
+        return false;
+    }
+
+    /**
+     * the long press of the draft as it is stored
+     *
+     * @returns the long press, undefined when the place has none or the state / page is missing
+     */
+    private completeLongPress(): ScreensaverItemLongPressAction | undefined {
+        const longPress = this.state.draft.longPress;
+        if (
+            !screensaverItemFields(this.props.area).action ||
+            !longPress ||
+            (longPress.kind === 'navigate' ? !longPress.page : !longPress.state)
+        ) {
+            return undefined;
+        }
+        return longPress;
     }
 
     /**
@@ -482,13 +560,16 @@ export class ScreensaverItemDialog extends React.Component<ScreensaverItemDialog
     }
 
     /**
-     * the warning of a button / switch / cycle action whose state is missing, no state or read-only
+     * the warning of a button / switch / cycle action or long press whose state is missing, no state or read-only
      *
-     * @param action action of the item
+     * @param state state of the action
+     * @param actionObj what was read about the state
      */
-    private renderActionStateWarning(action: ScreensaverItemAction): React.JSX.Element | null {
-        const id = (action.state ?? '').trim();
-        const { actionObj } = this.state;
+    private renderActionStateWarning(
+        state: string | undefined,
+        actionObj: ScreensaverItemDialogState['actionObj'],
+    ): React.JSX.Element | null {
+        const id = (state ?? '').trim();
         if (!id || actionObj === undefined) {
             return null;
         }
@@ -614,6 +695,10 @@ export class ScreensaverItemDialog extends React.Component<ScreensaverItemDialog
             if (action) {
                 kept.action = action;
             }
+            const longPress = this.completeLongPress();
+            if (longPress) {
+                kept.longPress = longPress;
+            }
             if (draft.iconTextSize !== undefined) {
                 kept.iconTextSize = draft.iconTextSize;
             }
@@ -675,6 +760,9 @@ export class ScreensaverItemDialog extends React.Component<ScreensaverItemDialog
         }
         if (!this.completeAction()) {
             delete draft.action;
+        }
+        if (!this.completeLongPress()) {
+            delete draft.longPress;
         }
         return draft;
     }
@@ -1200,7 +1288,8 @@ export class ScreensaverItemDialog extends React.Component<ScreensaverItemDialog
                           isWritableState,
                       )
                     : null}
-                {(kind === 'button' || kind === 'switch' || kind === 'cycle') && this.renderActionStateWarning(action)}
+                {(kind === 'button' || kind === 'switch' || kind === 'cycle') &&
+                    this.renderActionStateWarning(action.state, this.state.actionObj)}
                 {kind === 'cycle' && this.renderCycleValues(action)}
                 {kind === 'navigate' && (
                     <FormControl
@@ -1229,6 +1318,89 @@ export class ScreensaverItemDialog extends React.Component<ScreensaverItemDialog
                     sx={{ display: 'block' }}
                 >
                     {this.getText('screensaver_item_action_hint')}
+                </Typography>
+            </Box>
+        );
+    }
+
+    /**
+     * the long press of an indicator (TFT 6.0.9+): button, switch or page - without one a long press acts like a tap
+     */
+    private renderLongPressSection(): React.JSX.Element {
+        const longPress: ScreensaverItemLongPressAction = this.state.draft.longPress ?? { kind: 'button' };
+        const kind = this.state.draft.longPress ? longPress.kind : 'none';
+        return (
+            <Box
+                sx={{ mb: 2 }}
+                data-ss="long-press"
+            >
+                <FormControl
+                    variant="standard"
+                    sx={{ minWidth: 260, mb: 2 }}
+                >
+                    <InputLabel>{this.getText('screensaver_item_longPress')}</InputLabel>
+                    <Select
+                        value={kind}
+                        onChange={e => {
+                            const v = String(e.target.value);
+                            if (!isLongPressKind(v)) {
+                                this.set('longPress', undefined);
+                                return;
+                            }
+                            this.set('longPress', { ...longPress, kind: v });
+                        }}
+                    >
+                        <MenuItem value="none">{this.getText('screensaver_item_action_none')}</MenuItem>
+                        <MenuItem value="button">{this.getText('screensaver_item_action_button')}</MenuItem>
+                        <MenuItem value="switch">{this.getText('screensaver_item_action_switch')}</MenuItem>
+                        <MenuItem value="navigate">{this.getText('screensaver_item_action_navigate')}</MenuItem>
+                    </Select>
+                </FormControl>
+                {kind === 'button' || kind === 'switch'
+                    ? this.renderStateField(
+                          this.getText(
+                              kind === 'button'
+                                  ? 'screensaver_item_longPress_buttonState'
+                                  : 'screensaver_item_longPress_switchState',
+                          ),
+                          longPress.state ?? '',
+                          v => {
+                              this.set('longPress', { ...longPress, state: v });
+                              void this.loadLongPressObject(v);
+                          },
+                          'longPress',
+                          isWritableState,
+                      )
+                    : null}
+                {(kind === 'button' || kind === 'switch') &&
+                    this.renderActionStateWarning(longPress.state, this.state.longPressObj)}
+                {kind === 'navigate' && (
+                    <FormControl
+                        variant="standard"
+                        sx={{ minWidth: 260 }}
+                    >
+                        <InputLabel>{this.getText('screensaver_item_action_page')}</InputLabel>
+                        <Select
+                            value={longPress.page ?? ''}
+                            onChange={e => this.set('longPress', { ...longPress, page: String(e.target.value) })}
+                        >
+                            {(this.props.pagesList ?? []).map(p => (
+                                <MenuItem
+                                    key={p}
+                                    value={p}
+                                >
+                                    {p}
+                                </MenuItem>
+                            ))}
+                        </Select>
+                    </FormControl>
+                )}
+                <Typography
+                    variant="caption"
+                    color="text.secondary"
+                    sx={{ display: 'block' }}
+                >
+                    {this.getText('screensaver_item_longPress_hint')}
                 </Typography>
             </Box>
         );
@@ -1697,6 +1869,7 @@ export class ScreensaverItemDialog extends React.Component<ScreensaverItemDialog
                     )}
 
                     {fields.action && (known || templateActs) && this.renderActionSection()}
+                    {fields.action && (known || templateActs) && this.renderLongPressSection()}
 
                     {visibility && (
                         <Box sx={{ mb: 1 }}>

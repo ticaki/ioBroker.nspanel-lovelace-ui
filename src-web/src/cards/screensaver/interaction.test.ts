@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { indicatorRelease, indicatorTapTarget, nextTap, swipeAction } from './interaction';
+import {
+    indicatorLongPress,
+    indicatorRelease,
+    indicatorTapTarget,
+    longPressStillPossible,
+    nextTap,
+    swipeAction,
+} from './interaction';
 
 describe('screensaver interaction', () => {
     describe('indicatorTapTarget', () => {
@@ -30,6 +37,29 @@ describe('screensaver interaction', () => {
             const r = indicatorRelease({ tapCount: 1 }, '', 0, 0);
             expect(r.press).toBeUndefined();
             expect(r.tap.tapCount).toBe(2);
+        });
+    });
+
+    describe('indicatorLongPress', () => {
+        it('sends buttonPress3 with the taps, the held touch counts as a tap', () => {
+            const r = indicatorLongPress({ tapCount: 2 }, '0?10');
+            expect(r.event).toBe('event,buttonPress3,0?10,button,3');
+            expect(r.tap.tapCount).toBe(3);
+        });
+
+        it('a tile without id counts but sends nothing', () => {
+            const r = indicatorLongPress({ tapCount: 0 }, '');
+            expect(r.event).toBeUndefined();
+            expect(r.tap.tapCount).toBe(1);
+        });
+    });
+
+    describe('longPressStillPossible', () => {
+        it('a small movement keeps the long press, a clear one (towards a swipe) cancels it', () => {
+            expect(longPressStillPossible(0, 0)).toBe(true);
+            expect(longPressStillPossible(8, -8)).toBe(true);
+            expect(longPressStillPossible(25, 0)).toBe(false);
+            expect(longPressStillPossible(0, -60)).toBe(false);
         });
     });
 

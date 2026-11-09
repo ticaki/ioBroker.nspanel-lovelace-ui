@@ -63,7 +63,7 @@ async function configuration (): Promise<void> {
 }
 
 
-const version = '0.13.1';
+const version = '0.13.2';
 const HMIOff = {red: 68, green: 115, blue: 158};     // Blue-Off - Original Entity Off
 const HMIOn = {red: 3, green: 169, blue: 244};     // Blue-On
 const HMIDark = {red: 29, green: 29, blue: 29};     // Original Background Color
@@ -884,6 +884,20 @@ declare namespace ScriptConfig {
             ScreensaverEntityNaviToPage?: string | null;
             ScreensaverEntityButton?: string | null;
             ScreensaverEntitySwitch?: string | null;
+            /** state that gets the next value of ScreensaverEntityCycleValues on each tap */
+            ScreensaverEntityCycle?: string | null;
+            /** values of ScreensaverEntityCycle in the order they are written, after the last one the first follows */
+            ScreensaverEntityCycleValues?: (string | number | boolean)[] | null;
+            /**
+             * page opened on a long press.
+             * Only for modeScr 'indicator': what a long press does (TFT 6.0.9+, the first of button, switch and page counts).
+             * Without one a long press acts like a tap.
+             */
+            ScreensaverEntityLongPressNaviToPage?: string | null;
+            /** state set to true on a long press */
+            ScreensaverEntityLongPressButton?: string | null;
+            /** state toggled on a long press */
+            ScreensaverEntityLongPressSwitch?: string | null;
             /**
              * To show different icons for different values in the screensaver
              * 
@@ -957,11 +971,25 @@ declare namespace ScriptConfig {
             readOptions?: Record<string, any>;
             modeScr: 'left' | 'bottom' | 'indicator' | 'favorit' | 'alternate';
             /**
-             * Only for modeScr 'indicator': what a tap does (the first of button, switch and page counts).
+             * Only for modeScr 'indicator': what a tap does (the first of button, switch, cycle and page counts).
              */
             ScreensaverEntityNaviToPage?: string | null;
             ScreensaverEntityButton?: string | null;
             ScreensaverEntitySwitch?: string | null;
+            /** state that gets the next value of ScreensaverEntityCycleValues on each tap */
+            ScreensaverEntityCycle?: string | null;
+            /** values of ScreensaverEntityCycle in the order they are written, after the last one the first follows */
+            ScreensaverEntityCycleValues?: (string | number | boolean)[] | null;
+            /**
+             * page opened on a long press.
+             * Only for modeScr 'indicator': what a long press does (TFT 6.0.9+, the first of button, switch and page counts).
+             * Without one a long press acts like a tap.
+             */
+            ScreensaverEntityLongPressNaviToPage?: string | null;
+            /** state set to true on a long press */
+            ScreensaverEntityLongPressButton?: string | null;
+            /** state toggled on a long press */
+            ScreensaverEntityLongPressSwitch?: string | null;
         } & ({enabled: string; visibleCondition?: string} | {enabled?: string}))
     );
 
