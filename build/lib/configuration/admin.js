@@ -1228,6 +1228,9 @@ function qrUsesPassword(entry) {
 }
 function dataForcardTrash(entry) {
   let newPage;
+  if (!(entry.countItems >= 1 && entry.countItems <= 6)) {
+    entry.countItems = 6;
+  }
   const pageItems = Array.from({ length: entry.countItems }, (_, i) => {
     return {
       id: `pageItem${i}`,
@@ -1270,9 +1273,6 @@ function dataForcardTrash(entry) {
       }
     };
   });
-  if (entry.countItems < 1 || entry.countItems > 6) {
-    entry.countItems = 6;
-  }
   if (entry.countItems < 6) {
     newPage = {
       uniqueID: entry.uniqueName,
