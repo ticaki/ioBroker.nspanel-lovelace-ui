@@ -34,6 +34,33 @@ class IconSelect extends ConfigGeneric<IconSelectProps, IconSelectState> {
     }
 
     /**
+     * Follow a value that was changed outside the field.
+     *
+     * The constructor reads the stored icon once. An editor that sets the icon itself - e.g. "apply selection"
+     * of a trash page, which clears the icons of the slots it does not fill - would otherwise keep showing the
+     * old icon, because the component only knows its own state.
+     *
+     * @param prevProps Props of the previous render
+     */
+    override componentDidUpdate(prevProps: IconSelectProps): void {
+        const before = ConfigGeneric.getValue(prevProps.data, prevProps.attr);
+        const now = ConfigGeneric.getValue(this.props.data, this.props.attr);
+        if (before === now) {
+            return;
+        }
+        // only follow a change of the stored value, never the text the user is typing
+        const value = typeof now === 'string' ? now : '';
+        if (value === this.state.iconValue || (!value && this.state.iconValue === null)) {
+            return;
+        }
+        this.setState({
+            iconValue: value || null,
+            inputValue: value,
+            filteredIcons: this.filterIcons(this.state.icons, value),
+        });
+    }
+
+    /**
      * Filter icons based on input string.
      *
      * @param allIcons - full icon list
