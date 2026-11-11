@@ -15,3 +15,4 @@ A lookup aid: it lists every icon the adapter ships with, together with its name
 - The collection is large (several thousand icons); the filter is the fastest way in. Typing `thermometer`, for instance, leaves the temperature variants.
 - The icons take the text colour of the interface, so they are visible in dark mode too. Which colour an icon gets on the panel is set where the icon is used.
 - While this tab is open, `Ctrl + F` is captured by the interface — the browser's own search is available again once you leave the tab.
+- Besides the Material Design Icons there are a few own icons: window and roller shutter variants (e.g. `window-tilt-variant`, `window-shutter-50`) and, from TFT 6.1.0 on, the media players `alexa`, `mpd`, `sonos`, `bose` and `volumio` (`spotify` and `dlna` come from MDI). A TFT before 6.1.0 shows nothing for the player icons.
