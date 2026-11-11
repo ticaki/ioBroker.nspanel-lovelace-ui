@@ -1,4 +1,6 @@
 import { expect } from 'chai';
+import * as fs from 'node:fs';
+import * as path from 'node:path';
 import { Navigation } from './navigation';
 import { navigationErrorPageName } from '../types/adminShareConfig';
 import { systemNavigation, systemPages } from '../templates/system-templates';
@@ -83,6 +85,28 @@ describe('lib/classes/navigation - target without page', () => {
         const node = systemNavigation.find(n => n && n.name === navigationErrorPageName);
         expect(node?.page).to.equal(navigationErrorPageName);
         expect(node?.right?.double).to.equal('main');
+    });
+
+    it('shows the page names as they are, only the labels are translated', () => {
+        const page = systemPages.find(p => p.uniqueID === navigationErrorPageName);
+        const roles = (page?.pageItems ?? []).map(i => ('role' in i ? i.role : undefined));
+        // target and origin are page names, the hint has no value
+        expect(roles).to.deep.equal(['textRawValue', 'textRawValue', 'textRawValue']);
+    });
+
+    it('the texts fit the title and the label column of the portrait models in every language', () => {
+        const dir = path.join(__dirname, '../../../admin/i18n');
+        for (const lang of fs.readdirSync(dir)) {
+            const t = JSON.parse(fs.readFileSync(path.join(dir, lang, 'translations.json'), 'utf8')) as Record<
+                string,
+                string
+            >;
+            // us-p title line: 13 characters; label column of us-p / web-p: 121 px of 18 px Noto Sans (~ 11-13)
+            expect(Array.from(t.navigationError_headline).length, lang).to.be.at.most(13);
+            for (const key of ['navigationError_target', 'navigationError_origin', 'navigationError_hint']) {
+                expect(Array.from(t[key]).length, `${lang} ${key}`).to.be.at.most(13);
+            }
+        }
     });
 
     it('keeps the arrow and warns once per link at start', async () => {

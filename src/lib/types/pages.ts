@@ -185,6 +185,8 @@ export type DeviceRole =
     | 'text'
     | 'text.list'
     | 'textNotIcon'
+    /** text item whose value is a name (e.g. a page name): shown as it is, not looked up in the translations */
+    | 'textRawValue'
     | 'timer'
     | 'window'
     | 'info'

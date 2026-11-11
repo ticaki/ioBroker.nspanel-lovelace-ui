@@ -1384,7 +1384,8 @@ function navigationErrorLine(
     dp: 'info/navigationErrorTarget' | 'info/navigationErrorOrigin' | undefined,
 ): NSPanel.PageItemDataItemsOptions {
     return {
-        role: '',
+        // the value is a page name: shown as it is, not translated
+        role: 'textRawValue',
         type: 'text',
         dpInit: '',
         data: {

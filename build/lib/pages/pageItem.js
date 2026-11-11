@@ -494,9 +494,8 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
                   break;
                 }
                 default: {
-                  message.optionalValue = this.library.getTranslation(
-                    (_J = (_I = await tools.getValueEntryString(item.entity2)) != null ? _I : await tools.getEntryTextOnOff(item.text1, value)) != null ? _J : ""
-                  );
+                  const optionalValue = (_J = (_I = await tools.getValueEntryString(item.entity2)) != null ? _I : await tools.getEntryTextOnOff(item.text1, value)) != null ? _J : "";
+                  message.optionalValue = entry.role === "textRawValue" ? optionalValue : this.library.getTranslation(optionalValue);
                 }
               }
             }
