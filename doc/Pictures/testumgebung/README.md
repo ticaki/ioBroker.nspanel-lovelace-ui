@@ -58,15 +58,38 @@ des Adapters gilt wieder advanced (der Modus des Admin-Eintrags).
 
 ## Bildschirmschoner-Modi (Web-Ansicht)
 
-| Modus | web-l | web-p |
-| --- | --- | --- |
-| standard | ![web-l standard](web-l-schoner-standard.png) | ![web-p standard](web-p-schoner-standard.png) |
-| alternate | ![web-l alternate](web-l-schoner-alternate.png) | ![web-p alternate](web-p-schoner-alternate.png) |
-| advanced | ![web-l advanced](web-l-schoner-advanced.png) | ![web-p advanced](web-p-schoner-advanced.png) |
-| easyview | ![web-l easyview](web-l-schoner-easyview.png) | ![web-p easyview](web-p-schoner-easyview.png) |
-| tiles | ![web-l tiles](web-l-schoner-tiles.png) | ![web-p tiles](web-p-schoner-tiles.png) |
+Alle fünf Modi je Modell, voll belegt. us-p zeichnet jetzt jeden Modus hochkant wie die us-p-HMI.
 
-EU zum Vergleich: ![eu advanced](eu-schoner-advanced.png) ![eu tiles](eu-schoner-tiles.png)
+| Modus | EU | US quer | US hochkant | Smartphone quer | Smartphone hochkant |
+| --- | --- | --- | --- | --- | --- |
+| standard | ![eu standard](eu-schoner-standard.png) | ![us-l standard](us-l-schoner-standard.png) | ![us-p standard](us-p-schoner-standard.png) | ![web-l standard](web-l-schoner-standard.png) | ![web-p standard](web-p-schoner-standard.png) |
+| alternate | ![eu alternate](eu-schoner-alternate.png) | ![us-l alternate](us-l-schoner-alternate.png) | ![us-p alternate](us-p-schoner-alternate.png) | ![web-l alternate](web-l-schoner-alternate.png) | ![web-p alternate](web-p-schoner-alternate.png) |
+| advanced | ![eu advanced](eu-schoner-advanced.png) | ![us-l advanced](us-l-schoner-advanced.png) | ![us-p advanced](us-p-schoner-advanced.png) | ![web-l advanced](web-l-schoner-advanced.png) | ![web-p advanced](web-p-schoner-advanced.png) |
+| easyview | ![eu easyview](eu-schoner-easyview.png) | ![us-l easyview](us-l-schoner-easyview.png) | ![us-p easyview](us-p-schoner-easyview.png) | ![web-l easyview](web-l-schoner-easyview.png) | ![web-p easyview](web-p-schoner-easyview.png) |
+| tiles | ![eu tiles](eu-schoner-tiles.png) | ![us-l tiles](us-l-schoner-tiles.png) | ![us-p tiles](us-p-schoner-tiles.png) | ![web-l tiles](web-l-schoner-tiles.png) | ![web-p tiles](web-p-schoner-tiles.png) |
+| mit Hinweis | – | – | ![us-p-schoner-advanced-hinweis](us-p-schoner-advanced-hinweis.png) ![us-p-schoner-easyview-hinweis](us-p-schoner-easyview-hinweis.png) ![us-p-schoner-standard-hinweis](us-p-schoner-standard-hinweis.png) ![us-p-schoner-tiles-hinweis](us-p-schoner-tiles-hinweis.png) | – | ![web-p-schoner-advanced-hinweis](web-p-schoner-advanced-hinweis.png) ![web-p-schoner-easyview-hinweis](web-p-schoner-easyview-hinweis.png) ![web-p-schoner-standard-hinweis](web-p-schoner-standard-hinweis.png) ![web-p-schoner-tiles-hinweis](web-p-schoner-tiles-hinweis.png) |
+
+## Weitere Seiten (nach den Korrekturen)
+
+| Modell | Messwerte (cardGrid3) | Medien | Details (cardEntities) |
+| --- | --- | --- | --- |
+| EU | ![eu messwerte](eu-messwerte.png) | ![eu medien](eu-medien.png) | ![eu details](eu-details.png) |
+| US quer | ![us-l messwerte](us-l-messwerte.png) | ![us-l medien](us-l-medien.png) | ![us-l details](us-l-details.png) |
+| US hochkant | ![us-p messwerte](us-p-messwerte.png) | ![us-p medien](us-p-medien.png) | ![us-p details](us-p-details.png) |
+| Smartphone quer | ![web-l messwerte](web-l-messwerte.png) | ![web-l medien](web-l-medien.png) | ![web-l details](web-l-details.png) |
+| Smartphone hochkant | ![web-p messwerte](web-p-messwerte.png) | ![web-p medien](web-p-medien.png) | ![web-p details](web-p-details.png) |
+
+## Vorher / nachher
+
+| Befund | vorher | nachher |
+| --- | --- | --- |
+| us-p advanced: Querformat, rechts abgeschnitten, Hinweis-Symbol als Kästchen | ![vorher](us-p-schoner-advanced-vorher.png) | ![nachher](us-p-schoner-advanced.png) |
+| us-p cardGrid3: große Werte überlappen und werden abgeschnitten | ![vorher](us-p-messwerte-vorher.png) | ![nachher](us-p-messwerte.png) |
+| web-p cardGrid3: Werte abgeschnitten (`0,31€`, `42mi`) | ![vorher](web-p-messwerte-vorher.png) | ![nachher](web-p-messwerte.png) |
+| us-p cardGrid2: Namen stoßen aneinander, Inhalt 16 px nach links verschoben | ![vorher](us-p-haus-vorher.png) | ![nachher](us-p-haus.png) |
+| us-p cardEntities: Werte mitten im Buchstaben abgeschnitten | ![vorher](us-p-details-vorher.png) | ![nachher](us-p-details.png) |
+| eu cardMedia: untere Optionszeile unten abgeschnitten, Restzeit `14:1` abgeschnitten | ![vorher](eu-medien-vorher.png) | ![nachher](eu-medien.png) |
+| eu EasyView: MR-Balken fehlten, breite Werte abgeschnitten | ![vorher](eu-schoner-easyview-vorher.png) | ![nachher](eu-schoner-easyview.png) |
 
 ## Prüftabelle
 
@@ -80,7 +103,9 @@ EU zum Vergleich: ![eu advanced](eu-schoner-advanced.png) ![eu tiles](eu-schoner
 | `<modell>-alle-rollen` | cardEntities mit einem Kanal je Rolle | Blätterpfeil, Zeilen pro Modell (4 / 4 / 5 / 4 / 8) |
 | `<modell>-heizkreise` | cardThermo2 mit 6 Kreisen (Klimaanlage = 2) | Kreiswahl und Elemente |
 | `<modell>-energie` | cardPower | 6 Zweige, Akku-Ladestand oben, Hausverbrauch unten |
-| `web-l/web-p-schoner-*` | Modus per `cmd.screenSaver.layout` gewechselt | jeder Platz des Modus belegt (z. B. web-p advanced 4 links, 12 Indikatoren, 8 unten; tiles 8 + 8) |
-| us-p-schoner-advanced-abgeschnitten | us-p im Modus advanced | **Befund**: die Web-Ansicht zeichnet standard/alternate/advanced/easyview auf us-p im Querformat und schneidet rechts ab, nur tiles ist hochkant |
-
-![us-p advanced abgeschnitten](us-p-schoner-advanced-abgeschnitten.png)
+| `<modell>-schoner-*` | Modus per `cmd.screenSaver.layout` gewechselt | jeder Platz des Modus belegt, nichts abgeschnitten; us-p hochkant mit den Plätzen der us-p-HMI (standard 4 unten, alternate Favorit + Alternativ nebeneinander, advanced 3 links / 6 unten / 5 Indikatoren rechts, EasyView 2 × 2) |
+| `<modell>-schoner-*-hinweis` | Benachrichtigung aktiv (`Hinweis.Waschmaschine_fertig` = true) | Überschrift mit Symbol (kein Kästchen), Text lesbar, nichts überdeckt halb |
+| `<modell>-messwerte` | cardGrid3 mit großen Werten | Werte werden kleiner statt abgeschnitten, keine Überlappung |
+| `<modell>-medien` | cardMedia | Optionszeile vollständig sichtbar, Restzeit als Text lesbar |
+| `<modell>-details` | cardEntities mit langen Namen/Werten | lange Texte enden mit „…“ statt mitten im Buchstaben |
+| `*-vorher` | Stand vor der Korrektur | zum Vergleich mit dem Bild ohne `-vorher` |

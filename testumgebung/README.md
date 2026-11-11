@@ -81,10 +81,6 @@ oder `0_userdata.0.NSPanelTest.Hinweis.Fenster_offen` größer 0 gesetzt wird.
 
 ## Grenzen
 
-- **us-p in der Web-Ansicht**: die Bildschirmschoner-Modi standard, alternate, advanced und easyview werden
-  auf us-p noch im Querformat gezeichnet und rechts abgeschnitten (nur tiles ist hochkant). Die Hardware
-  ist davon nicht betroffen.
-
 - **Medien**: die Medienseite braucht einen echten Player (alexa2, sonos, spotify-premium, mpd, squeezeboxrpc).
   Die Dateien verweisen auf `squeezeboxrpc.0.Players.Familienzimmer`; nach dem Import im Admin den eigenen Player
   wählen oder die Seite ausblenden.
