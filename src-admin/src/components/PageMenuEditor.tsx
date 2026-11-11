@@ -1034,7 +1034,16 @@ export class PageMenuEditor extends ConfigGeneric<ConfigGenericProps & PageMenuE
                         disabled={!this.state.alive}
                     >
                         <FormLabel component="legend">{this.getText('pageMenu_card_type')}</FormLabel>
-                        <Box sx={{ display: 'flex', gap: 4, mt: 1 }}>
+                        {/* die Modellangabe im Text darf die Auswahl nicht auseinanderziehen: nicht umbrechen */}
+                        <Box
+                            sx={{
+                                display: 'flex',
+                                gap: 4,
+                                mt: 1,
+                                alignItems: 'flex-start',
+                                '& .MuiFormControlLabel-label': { whiteSpace: 'nowrap' },
+                            }}
+                        >
                             {/* Linke Spalte: Grid-Varianten */}
                             <Box>
                                 <Typography
@@ -1073,14 +1082,6 @@ export class PageMenuEditor extends ConfigGeneric<ConfigGenericProps & PageMenuE
                                         label={this.getText('pageMenu_cardGrid3')}
                                     />
                                 </RadioGroup>
-                                {grid2Conflict && (
-                                    <Alert
-                                        severity="warning"
-                                        sx={{ mt: 1, fontSize: '0.75rem', py: 0.5 }}
-                                    >
-                                        {this.getText('pageMenu_cardGrid2_conflict')}
-                                    </Alert>
-                                )}
                             </Box>
 
                             {/* Rechte Spalte: Entities & Schedule */}
@@ -1115,6 +1116,14 @@ export class PageMenuEditor extends ConfigGeneric<ConfigGenericProps & PageMenuE
                                 </RadioGroup>
                             </Box>
                         </Box>
+                        {grid2Conflict && (
+                            <Alert
+                                severity="warning"
+                                sx={{ mt: 1, fontSize: '0.75rem', py: 0.5, maxWidth: 560 }}
+                            >
+                                {this.getText('pageMenu_cardGrid2_conflict')}
+                            </Alert>
+                        )}
                     </FormControl>
                 </Box>
 
