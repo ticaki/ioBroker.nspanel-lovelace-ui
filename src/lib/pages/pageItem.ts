@@ -2463,17 +2463,18 @@ export class PageItem extends BaseTriggeredPage {
                 break;
 
             case 'button': {
+                if (this.parent.isScreensaver && !(this.parent as Screensaver).isIndicatorKey(this)) {
+                    // TFT 6.0.8+ sends the taps as value: the screensaver only passes keys
+                    // (Screensaver.onIndicatorTap); an older TFT sends every tap here - an indicator without an
+                    // action counts like a touch of the background and opens the main page, it never writes a state
+                    if (eventValue === '') {
+                        this.parent.basePanel.navigation.resetPosition();
+                        await this.parent.basePanel.navigation.setCurrentPage();
+                    }
+                    break;
+                }
                 if (entry.type === 'button' || entry.type === 'switch') {
                     this.log.debug(`Button ${this.id} was pressed!`);
-                    if (this.parent.isScreensaver) {
-                        // TFT 6.0.8+ sends the taps as value: the screensaver only passes keys
-                        // (Screensaver.onIndicatorTap), an older TFT jumps to the main page with the option off
-                        if (!(this.parent as Screensaver).screensaverIndicatorButtons && eventValue === '') {
-                            this.parent.basePanel.navigation.resetPosition();
-                            await this.parent.basePanel.navigation.setCurrentPage();
-                            break;
-                        }
-                    }
                     if (
                         entry.type === 'button' &&
                         (await this.writeNextCycleValue(entry.data.setValue3, entry.data.valueList))
@@ -2598,11 +2599,20 @@ export class PageItem extends BaseTriggeredPage {
                         nav = true;
                     }
 
-                    if (item.entity1 && item.entity1.set && item.entity1.set.writeable) {
+                    // a screensaver indicator only runs the actions configured at it: a state that is merely
+                    // writable (shown state, setTrue/setFalse) is never switched (Screensaver.isIndicatorKey)
+                    const implicit = !this.parent.isScreensaver;
+                    if (implicit && item.entity1 && item.entity1.set && item.entity1.set.writeable) {
                         await item.entity1.set.setStateFlip();
                         break;
                     }
-                    if (item.setTrue && item.setFalse && item.setTrue.writeable && item.setFalse.writeable) {
+                    if (
+                        implicit &&
+                        item.setTrue &&
+                        item.setFalse &&
+                        item.setTrue.writeable &&
+                        item.setFalse.writeable
+                    ) {
                         value = (item.entity1 && (await item.entity1.value?.getBoolean())) ?? false;
                         if (value) {
                             await item.setFalse.setStateTrue();
@@ -2621,7 +2631,7 @@ export class PageItem extends BaseTriggeredPage {
                         break;
                     }
                     // a blind (screensaver item) shows its position only - a tap never moves it
-                    if (nav || entry.role === 'blind') {
+                    if (nav || !implicit || entry.role === 'blind') {
                         break;
                     }
                     if (item.entity1?.value?.writeable) {

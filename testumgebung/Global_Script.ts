@@ -1245,7 +1245,8 @@ declare namespace ScriptConfig {
              */
             screensaverSwipe?: boolean;
             /**
-             * active the button function for the indicator of the screensaver
+             * @deprecated no effect - an indicator acts when an action is configured at it (ScreensaverEntityButton,
+             * ScreensaverEntitySwitch, ScreensaverEntityCycle, ScreensaverEntityNaviToPage)
              */
             screensaverIndicatorButtons?: boolean;
             /**

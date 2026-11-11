@@ -65,6 +65,7 @@ const SCREENSAVER_ARRAY_PROPS = [
     'notifyScreensaverEntity',
 ] as const;
 const SCREENSAVER_MR_PROPS = ['mrIcon1ScreensaverEntity', 'mrIcon2ScreensaverEntity'] as const;
+/** `screensaverIndicatorButtons` is an obsolete option of older scripts - removed as well when it is still there */
 const SCREENSAVER_ADVANCED_PROPS = new Set<string>(['screensaverSwipe', 'screensaverIndicatorButtons']);
 
 // ---------------------------------------------------------------------------------------------------------

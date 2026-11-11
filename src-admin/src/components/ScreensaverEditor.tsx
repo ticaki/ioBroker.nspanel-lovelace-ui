@@ -874,7 +874,6 @@ export class ScreensaverEditor extends React.Component<ScreensaverEditorProps, S
                 yearFormat: entry.yearFormat,
                 rotationTime: entry.rotationTime,
                 screensaverSwipe: entry.screensaverSwipe,
-                screensaverIndicatorButtons: entry.screensaverIndicatorButtons,
             },
         });
     }
@@ -1545,16 +1544,6 @@ export class ScreensaverEditor extends React.Component<ScreensaverEditorProps, S
                         label={this.getText('screensaver_swipe')}
                         sx={{ display: 'flex' }}
                     />
-                    <FormControlLabel
-                        control={
-                            <Checkbox
-                                checked={!!draftEntry.screensaverIndicatorButtons}
-                                onChange={e => this.setEntryDraft('screensaverIndicatorButtons', e.target.checked)}
-                            />
-                        }
-                        label={this.getText('screensaver_indicatorButtons')}
-                        sx={{ display: 'flex' }}
-                    />
                 </Box>
             );
         }
@@ -1726,13 +1715,8 @@ export class ScreensaverEditor extends React.Component<ScreensaverEditorProps, S
             this.props.templates,
         );
         const dragging = !!dragSource && this.slotKey(dragSource) === key;
-        // indicators: the frame tells what the key does
-        const action =
-            ref.area === 'indicator'
-                ? this.props.entry.screensaverIndicatorButtons && item.action?.kind
-                    ? item.action.kind
-                    : 'none'
-                : undefined;
+        // indicators: the frame tells what a tap does - grey without an action
+        const action = ref.area === 'indicator' ? (item.action?.kind ?? 'none') : undefined;
         const text = action
             ? `${this.getText('screensaver_slot_item').replace('%s', fullLabel)} · ${this.getText(`screensaver_item_action_${action}`)}`
             : this.getText('screensaver_slot_item').replace('%s', fullLabel);
