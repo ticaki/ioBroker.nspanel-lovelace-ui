@@ -47,6 +47,8 @@ import {
 import {
     applyPanelImport,
     configDiff,
+    importSecretPages,
+    panelImportChanges,
     navigationDiff,
     panelConfiguredGroups,
     parsePanelConfigImport,
@@ -280,6 +282,10 @@ export default class PanelImportDialog extends React.Component<PanelImportDialog
         const statesSkipped: string[] = [];
         const ids = panelSettingStateIds(this.state.panel.id, `${this.props.adapterName}.${this.props.instance}`);
         for (const [key, val] of Object.entries(result.states)) {
+            if (this.state.targetStates[key] === val) {
+                // same value on the target already - nothing to write
+                continue;
+            }
             try {
                 const obj = await this.props.socket.getObject(ids[key]);
                 if (!obj) {
@@ -402,22 +408,57 @@ export default class PanelImportDialog extends React.Component<PanelImportDialog
                 />
             );
         }
-        if (row.action === 'skip') {
-            return (
-                <Chip
-                    size="small"
-                    label={I18n.t('importActionSkip')}
-                />
-            );
-        }
+        const status = PanelImportDialog.rowStatus(r);
         return (
             <Chip
                 size="small"
-                color={row.conflict === 'identical' ? 'success' : 'info'}
+                color={status.color}
                 variant="outlined"
-                label={I18n.t(row.conflict === 'identical' ? 'importActionMerge' : 'importActionAdd')}
+                label={I18n.t(status.key)}
             />
         );
+    }
+
+    /**
+     * Status of a row without conflict.
+     *
+     * @param r the row
+     * @returns translation key and chip color
+     */
+    private static rowStatus(r: ReviewRow): {
+        key: string;
+        color: 'default' | 'success' | 'info' | 'warning';
+    } {
+        const { row } = r;
+        if (row.action === 'skip') {
+            return { key: 'importActionSkip', color: 'default' };
+        }
+        if (row.action !== 'merge') {
+            return { key: 'importActionAdd', color: 'info' };
+        }
+        switch (row.status) {
+            case 'unchanged':
+                return { key: 'importStatusUnchanged', color: 'default' };
+            case 'navigation':
+                return { key: 'importStatusNavigation', color: 'info' };
+            case 'unassign':
+                return { key: 'importStatusUnassign', color: 'warning' };
+            default:
+                return { key: 'importActionMerge', color: 'success' };
+        }
+    }
+
+    /**
+     * @param rows rows without conflict
+     * @returns e.g. "20 unverändert, 3 Zuweisung ergänzen"
+     */
+    private static statusCounts(rows: ReviewRow[]): string {
+        const counts = new Map<string, number>();
+        for (const r of rows) {
+            const key = PanelImportDialog.rowStatus(r).key;
+            counts.set(key, (counts.get(key) ?? 0) + 1);
+        }
+        return [...counts.entries()].map(([key, n]) => `${n} ${I18n.t(key)}`).join(', ');
     }
 
     private renderConflictRow(r: ReviewRow): React.JSX.Element {
@@ -470,14 +511,15 @@ export default class PanelImportDialog extends React.Component<PanelImportDialog
         const rows = this.reviewRows(plan);
         const conflicts = rows.filter(r => r.row.conflict === 'different');
         const plain = rows.filter(r => r.row.conflict !== 'different');
+        // a hint only for groups that hold an own configuration of the target and that the import really changes
+        const input = this.input();
+        const changes = input ? panelImportChanges(input, plan, this.state.targetStates) : [];
         const overwritten = panelConfiguredGroups(this.props.data, panel.topic ?? '', this.state.targetStates).filter(
-            g => plan.groups.includes(g),
+            g => changes.includes(g),
         );
         const targetModel = panel.model || 'eu';
         // existing pages keep their secrets - only pages created by the import need them again
-        const stripped = plan.pages.filter(
-            p => p.strippedSecrets.length && (p.action === 'add' || p.action === 'rename'),
-        );
+        const secretPages = input ? importSecretPages(input, plan) : [];
         return (
             <>
                 <DialogContent>
@@ -518,12 +560,9 @@ export default class PanelImportDialog extends React.Component<PanelImportDialog
                                 )}
                             </Alert>
                         ) : null}
-                        {!file.secretsIncluded && stripped.length ? (
+                        {secretPages.length ? (
                             <Alert severity="info">
-                                {I18n.t('importSecretsStripped').replace(
-                                    '%s',
-                                    stripped.map(p => p.original).join(', '),
-                                )}
+                                {I18n.t('importSecretsStripped').replace('%s', secretPages.map(p => p.page).join(', '))}
                             </Alert>
                         ) : null}
                     </Box>
@@ -557,7 +596,7 @@ export default class PanelImportDialog extends React.Component<PanelImportDialog
                                 onClick={(): void => this.setState(prev => ({ showUnchanged: !prev.showUnchanged }))}
                                 endIcon={this.state.showUnchanged ? <ExpandLessIcon /> : <ExpandMoreIcon />}
                             >
-                                {I18n.t('importWithoutConflict').replace('%s', String(plain.length))}
+                                {`${I18n.t('importWithoutConflict').replace('%s', String(plain.length))} (${PanelImportDialog.statusCounts(plain)})`}
                             </Button>
                             <Collapse in={this.state.showUnchanged}>
                                 <Table size="small">
@@ -599,15 +638,15 @@ export default class PanelImportDialog extends React.Component<PanelImportDialog
     private diffCells(entry: ConfigDiffEntry): [string, string, string] {
         switch (entry.kind) {
             case 'field':
-                return [entry.field, entry.existing || '–', entry.imported || '–'];
+                return [fieldLabel(entry.field), entry.existing || '–', entry.imported || '–'];
             case 'navigation':
                 return [
-                    `${I18n.t('importDiffNavigation')} ${entry.link}`,
+                    `${I18n.t('importDiffNavigation')}: ${fieldLabel(entry.link)}`,
                     entry.existing || '–',
                     entry.imported || '–',
                 ];
             case 'item': {
-                const what = `${entry.list} #${entry.position}${entry.label ? ` (${entry.label})` : ''}`;
+                const what = `${fieldLabel(entry.list)} #${entry.position}${entry.label ? ` (${entry.label})` : ''}`;
                 if (entry.change === 'added') {
                     return [what, '–', I18n.t('importDiffAdded')];
                 }
@@ -617,8 +656,8 @@ export default class PanelImportDialog extends React.Component<PanelImportDialog
                 const values = entry.values ?? [];
                 return [
                     what,
-                    values.map(v => `${v.field}: ${v.existing || '–'}`).join('\n'),
-                    values.map(v => `${v.field}: ${v.imported || '–'}`).join('\n'),
+                    values.map(v => `${fieldLabel(v.field)}: ${v.existing || '–'}`).join('\n'),
+                    values.map(v => `${fieldLabel(v.field)}: ${v.imported || '–'}`).join('\n'),
                 ];
             }
         }
@@ -850,6 +889,7 @@ export default class PanelImportDialog extends React.Component<PanelImportDialog
                     ) : null}
                     {this.resultSection('importResultAdded', report.added)}
                     {this.resultSection('importResultMerged', report.merged)}
+                    {this.resultSection('importResultUnchanged', report.unchanged)}
                     {this.resultSection(
                         'importResultRenamed',
                         report.renamed.map(r => `${r.from} → ${r.to}`),
@@ -934,8 +974,10 @@ export default class PanelImportDialog extends React.Component<PanelImportDialog
  * @param action action of a row
  * @returns its translation key
  */
-function actionLabel(action: ImportAction): string {
+function actionLabel(action: ImportAction | 'unchanged'): string {
     switch (action) {
+        case 'unchanged':
+            return 'importStatusUnchanged';
         case 'add':
             return 'importActionAdd';
         case 'merge':
@@ -955,4 +997,21 @@ function actionLabel(action: ImportAction): string {
  */
 function isImportAction(value: unknown): value is ImportAction {
     return value === 'add' || value === 'merge' || value === 'rename' || value === 'replace' || value === 'skip';
+}
+
+/**
+ * Readable name of a configuration field for the difference dialog (`importField_<key>`), the key itself for
+ * fields without a translation. `button1` … `button8` of the alarm page share one text.
+ *
+ * @param key field name
+ * @returns the label
+ */
+function fieldLabel(key: string): string {
+    const button = /^button(\d)$/.exec(key);
+    if (button) {
+        return I18n.t('importField_button').replace('%s', button[1]);
+    }
+    const translationKey = `importField_${key}`;
+    const text = I18n.t(translationKey);
+    return text && text !== translationKey ? text : key;
 }

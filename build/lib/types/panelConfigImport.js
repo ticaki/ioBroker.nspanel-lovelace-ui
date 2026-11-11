@@ -21,8 +21,10 @@ __export(panelConfigImport_exports, {
   SCREENSAVER_CHOICE_KEY: () => SCREENSAVER_CHOICE_KEY,
   applyPanelImport: () => applyPanelImport,
   configDiff: () => configDiff,
+  importSecretPages: () => importSecretPages,
   navigationDiff: () => navigationDiff,
   panelConfiguredGroups: () => panelConfiguredGroups,
+  panelImportChanges: () => panelImportChanges,
   panelSettingDefaults: () => panelSettingDefaults,
   parsePanelConfigImport: () => parsePanelConfigImport,
   planPanelImport: () => planPanelImport,
@@ -513,7 +515,7 @@ function comparableScreensaver(entry, list) {
   return copy;
 }
 function planPanelImport(input) {
-  var _a, _b, _c, _d, _e, _f;
+  var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j;
   const { native, topic, file } = input;
   const choices = (_a = input.choices) != null ? _a : {};
   const { present, missing } = splitImportGroups(file, input.groups);
@@ -596,15 +598,30 @@ function planPanelImport(input) {
         plan.valid = false;
       }
     }
+    for (const row of rows) {
+      const ex = byName.get(row.original);
+      if (row.action !== "merge" || !ex) {
+        continue;
+      }
+      const imp = imported[row.index];
+      const before = (0, import_panelConfigExport.effectivePageAssignment)(ex, topic);
+      if (imp.assignment === "none") {
+        row.status = (before == null ? void 0 : before.kind) === "own" ? "unassign" : "unchanged";
+      } else if (!before) {
+        row.status = "assign";
+      } else {
+        row.status = sameConfig((_c = before.navigation) != null ? _c : {}, (_d = remapNavigation(imp.navigation, renames)) != null ? _d : {}) ? "unchanged" : "navigation";
+      }
+    }
     plan.pages = rows;
   }
   plan.renames = Object.fromEntries(renames);
   const ssFile = file.groups.screensaver;
   if (present.includes("screensaver") && (ssFile == null ? void 0 : ssFile.entry)) {
-    const entries = ((_c = native.screensaverConfig) != null ? _c : []).filter(
+    const entries = ((_e = native.screensaverConfig) != null ? _e : []).filter(
       (e) => !!e && typeof e.name === "string"
     );
-    const list = (_d = native.screensaverNotify) != null ? _d : [];
+    const list = (_f = native.screensaverNotify) != null ? _f : [];
     const itemIds = /* @__PURE__ */ new Map();
     for (const row of plan.pages) {
       const ex = byName.get(row.original);
@@ -615,7 +632,12 @@ function planPanelImport(input) {
     const imp = remapScreensaver(ssFile.entry, renames, itemIds, /* @__PURE__ */ new Map());
     const impComparable = comparableScreensaver(imp, ssFile.notify);
     const original = ssFile.entry.name;
-    const identical = (_e = entries.find((e) => e.name === original && sameConfig(comparableScreensaver(e, list), impComparable))) != null ? _e : entries.find((e) => sameConfig(comparableScreensaver(e, list), impComparable));
+    const identical = (_h = (_g = entries.find(
+      (e) => {
+        var _a2;
+        return ((_a2 = e.panels) != null ? _a2 : []).includes(topic) && sameConfig(comparableScreensaver(e, list), impComparable);
+      }
+    )) != null ? _g : entries.find((e) => e.name === original && sameConfig(comparableScreensaver(e, list), impComparable))) != null ? _h : entries.find((e) => sameConfig(comparableScreensaver(e, list), impComparable));
     const sameName = entries.find((e) => e.name === original);
     const choice = choices[SCREENSAVER_CHOICE_KEY];
     const sharedWith = (e) => {
@@ -629,7 +651,8 @@ function planPanelImport(input) {
         action: (choice == null ? void 0 : choice.action) === "skip" ? "skip" : "merge",
         name: identical.name,
         existing: identical.name,
-        sharedWith: sharedWith(identical)
+        sharedWith: sharedWith(identical),
+        status: ((_i = identical.panels) != null ? _i : []).includes(topic) ? "unchanged" : "assign"
       };
     } else if (!sameName) {
       plan.screensaver = {
@@ -642,7 +665,7 @@ function planPanelImport(input) {
     } else {
       const action = choice && ["rename", "replace", "skip"].includes(choice.action) ? choice.action : "rename";
       const names = new Set(entries.map((e) => e.name));
-      const name = action === "rename" ? (_f = choice == null ? void 0 : choice.name) != null ? _f : proposeName(original, topic, names) : original;
+      const name = action === "rename" ? (_j = choice == null ? void 0 : choice.name) != null ? _j : proposeName(original, topic, names) : original;
       const row = {
         original,
         conflict: "different",
@@ -696,13 +719,14 @@ function assignItemIds(page, used, map, preferred = []) {
   });
 }
 function applyPanelImport(input, plan) {
-  var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r, _s, _t, _u, _v;
+  var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x;
   const { native, topic, file } = input;
   const renames = new Map(Object.entries(plan.renames));
   const report = {
     skippedGroups: [...plan.missingGroups],
     added: [],
     merged: [],
+    unchanged: [],
     renamed: [],
     replaced: [],
     skipped: [],
@@ -749,7 +773,7 @@ function applyPanelImport(input, plan) {
           }
           touched.add(ex.uniqueName);
         }
-        report.merged.push(row.original);
+        (row.status === "unchanged" ? report.unchanged : report.merged).push(row.original);
         continue;
       }
       const assignment = imp.assignment === "none" ? [] : [{ topic, navigation }];
@@ -770,20 +794,14 @@ function applyPanelImport(input, plan) {
         final.navigationAssignment = [...(_d = ex.navigationAssignment) != null ? _d : [], ...assignment];
         pages[index] = final;
         report.replaced.push(row.original);
-        if (row.strippedSecrets.some((f) => !(f in ex))) {
-          report.secrets.push({ page: row.name, fields: row.strippedSecrets.filter((f) => !(f in ex)) });
-          setSafeSecrets(
-            final,
-            row.strippedSecrets.filter((f) => !(f in ex))
-          );
-        }
+        setSafeSecrets(
+          final,
+          row.strippedSecrets.filter((f) => !(f in ex))
+        );
       } else {
         assignItemIds(final, used, itemIds);
         final.navigationAssignment = assignment;
-        if (row.strippedSecrets.length) {
-          setSafeSecrets(final, row.strippedSecrets);
-          report.secrets.push({ page: row.name, fields: [...row.strippedSecrets] });
-        }
+        setSafeSecrets(final, row.strippedSecrets);
         pages.push(final);
         if (row.action === "rename") {
           report.renamed.push({ from: row.original, to: row.name });
@@ -809,33 +827,39 @@ function applyPanelImport(input, plan) {
     }
     const main = pages.find((p) => touched.has(p.uniqueName) && p.isMainPage && (0, import_panelConfigExport.effectivePageAssignment)(p, topic));
     if (main) {
-      report.mainPage = main.uniqueName;
+      const before = (_i = ((_h = native.pageConfig) != null ? _h : []).find(
+        (p) => p && p.isMainPage && (0, import_panelConfigExport.effectivePageAssignment)(p, topic)
+      )) == null ? void 0 : _i.uniqueName;
+      if (before !== main.uniqueName) {
+        report.mainPage = main.uniqueName;
+      }
       for (const p of pages) {
         if (p === main || !p.isMainPage || !(0, import_panelConfigExport.effectivePageAssignment)(p, topic)) {
           continue;
         }
-        const own = ((_h = p.navigationAssignment) != null ? _h : []).some((a) => a.topic === topic);
-        p.navigationAssignment = own ? ((_i = p.navigationAssignment) != null ? _i : []).filter((a) => a.topic !== topic) : [...(_j = p.navigationAssignment) != null ? _j : [], { topic }];
+        const own = ((_j = p.navigationAssignment) != null ? _j : []).some((a) => a.topic === topic);
+        p.navigationAssignment = own ? ((_k = p.navigationAssignment) != null ? _k : []).filter((a) => a.topic !== topic) : [...(_l = p.navigationAssignment) != null ? _l : [], { topic }];
         report.mainPageRemoved.push(p.uniqueName);
       }
     }
     result.native.pageConfig = pages;
+    report.secrets = importSecretPages(input, plan);
   }
   const ss = plan.screensaver;
   if (plan.groups.includes("screensaver") && file.groups.screensaver) {
-    const entries = structuredClone(((_k = native.screensaverConfig) != null ? _k : []).filter((e) => !!e));
+    const entries = structuredClone(((_m = native.screensaverConfig) != null ? _m : []).filter((e) => !!e));
     for (const e of entries) {
       if (Array.isArray(e.panels)) {
         e.panels = e.panels.filter((t) => t !== topic);
       }
     }
-    const list = structuredClone((_l = native.screensaverNotify) != null ? _l : []);
+    const list = structuredClone((_n = native.screensaverNotify) != null ? _n : []);
     const entry = file.groups.screensaver.entry;
     if (!entry) {
       report.screensaver = { action: "removed", name: "" };
     } else if (ss && ss.action !== "skip") {
       const notifyIds = /* @__PURE__ */ new Map();
-      const wanted = new Set((_m = entry.notify) != null ? _m : []);
+      const wanted = new Set((_o = entry.notify) != null ? _o : []);
       for (const n of file.groups.screensaver.notify.filter((x) => wanted.has(x.id))) {
         const ex = list.find((x) => x.id === n.id);
         if (ex && sameConfig(ex, n)) {
@@ -854,12 +878,12 @@ function applyPanelImport(input, plan) {
       if (ss.action === "merge") {
         const target = entries.find((e) => e.name === ss.existing);
         if (target) {
-          target.panels = [...(_n = target.panels) != null ? _n : [], topic];
+          target.panels = [...(_p = target.panels) != null ? _p : [], topic];
         }
       } else if (ss.action === "replace") {
         const index = entries.findIndex((e) => e.name === ss.existing);
-        const panels = index !== -1 ? (_o = entries[index].panels) != null ? _o : [] : [];
-        const replacement = { ...imp, name: (_p = ss.existing) != null ? _p : ss.original, panels: [...panels, topic] };
+        const panels = index !== -1 ? (_q = entries[index].panels) != null ? _q : [] : [];
+        const replacement = { ...imp, name: (_r = ss.existing) != null ? _r : ss.original, panels: [...panels, topic] };
         if (index !== -1) {
           entries[index] = replacement;
         } else {
@@ -869,8 +893,8 @@ function applyPanelImport(input, plan) {
         entries.push({ ...imp, name: ss.name, panels: [topic] });
       }
       report.screensaver = {
-        action: ss.action,
-        name: ss.action === "replace" ? (_q = ss.existing) != null ? _q : ss.name : ss.name
+        action: ss.action === "merge" && ss.status === "unchanged" ? "unchanged" : ss.action,
+        name: ss.action === "replace" ? (_s = ss.existing) != null ? _s : ss.name : ss.name
       };
       result.native.screensaverNotify = list;
     } else if (ss) {
@@ -880,7 +904,7 @@ function applyPanelImport(input, plan) {
   }
   if (plan.groups.includes("misc") && file.groups.misc) {
     const misc = file.groups.misc;
-    const panels = structuredClone((_r = native.panels) != null ? _r : []);
+    const panels = structuredClone((_t = native.panels) != null ? _t : []);
     const panel = panels.find((p) => p && p.topic === topic);
     if (panel) {
       for (const key of ["buttonLeft", "buttonRight"]) {
@@ -898,7 +922,7 @@ function applyPanelImport(input, plan) {
       result.native.panels = panels;
     }
     result.native.navigationOverrides = [
-      ...structuredClone(((_s = native.navigationOverrides) != null ? _s : []).filter((o) => o && o.panelTopic !== topic)),
+      ...structuredClone(((_u = native.navigationOverrides) != null ? _u : []).filter((o) => o && o.panelTopic !== topic)),
       ...misc.navigationOverrides.map((o) => {
         var _a2, _b2;
         return {
@@ -909,7 +933,7 @@ function applyPanelImport(input, plan) {
         };
       })
     ];
-    const adminScreensaver = ((_u = (_t = result.native.screensaverConfig) != null ? _t : native.screensaverConfig) != null ? _u : []).some(
+    const adminScreensaver = ((_w = (_v = result.native.screensaverConfig) != null ? _v : native.screensaverConfig) != null ? _w : []).some(
       (e) => e && Array.isArray(e.panels) && e.panels.includes(topic)
     );
     for (const s of import_panelConfigExport.panelSettingStates) {
@@ -920,7 +944,7 @@ function applyPanelImport(input, plan) {
       if (adminScreensaver && (s.id === "screenSaver.layout" || s.id === "screenSaver.rotationTime")) {
         continue;
       }
-      result.states[s.id] = s.id === "mainNavigationPoint" && typeof val === "string" ? (_v = renames.get(val)) != null ? _v : val : val;
+      result.states[s.id] = s.id === "mainNavigationPoint" && typeof val === "string" ? (_x = renames.get(val)) != null ? _x : val : val;
     }
   }
   return result;
@@ -947,13 +971,83 @@ function plannedScreensaverContent(file, plan) {
   const entry = (_a = file.groups.screensaver) == null ? void 0 : _a.entry;
   return entry ? remapScreensaver(entry, new Map(Object.entries(plan.renames)), /* @__PURE__ */ new Map(), /* @__PURE__ */ new Map()) : void 0;
 }
+function importSecretPages(input, plan) {
+  var _a;
+  if (!plan.groups.includes("pages")) {
+    return [];
+  }
+  const out = [];
+  for (const row of plan.pages) {
+    if (!row.strippedSecrets.length) {
+      continue;
+    }
+    if (row.action === "add" || row.action === "rename") {
+      out.push({ page: row.name, fields: [...row.strippedSecrets] });
+    } else if (row.action === "replace") {
+      const ex = ((_a = input.native.pageConfig) != null ? _a : []).find((p) => p && p.uniqueName === row.original);
+      const missing = row.strippedSecrets.filter((f) => !ex || !(f in ex));
+      if (missing.length) {
+        out.push({ page: row.name, fields: missing });
+      }
+    }
+  }
+  return out;
+}
+function targetPageView(pages, topic) {
+  var _a;
+  const out = {};
+  for (const p of pages) {
+    const effective = p ? (0, import_panelConfigExport.effectivePageAssignment)(p, topic) : void 0;
+    if (effective) {
+      out[p.uniqueName] = { page: comparablePage(p, []), navigation: (_a = effective.navigation) != null ? _a : {} };
+    }
+  }
+  return out;
+}
+function targetScreensaverView(entries, list, topic) {
+  const entry = entries.find((e) => e && Array.isArray(e.panels) && e.panels.includes(topic));
+  return entry ? comparableScreensaver(entry, list) : null;
+}
+function panelImportChanges(input, plan, targetStates) {
+  var _a, _b, _c, _d, _e;
+  const { native, topic } = input;
+  const result = applyPanelImport(input, plan);
+  const out = [];
+  const after = result.native;
+  if (after.pageConfig && !sameConfig(targetPageView((_a = native.pageConfig) != null ? _a : [], topic), targetPageView(after.pageConfig, topic))) {
+    out.push("pages");
+  }
+  if (after.screensaverConfig && !sameConfig(
+    targetScreensaverView((_b = native.screensaverConfig) != null ? _b : [], (_c = native.screensaverNotify) != null ? _c : [], topic),
+    targetScreensaverView(
+      after.screensaverConfig,
+      (_e = (_d = after.screensaverNotify) != null ? _d : native.screensaverNotify) != null ? _e : [],
+      topic
+    )
+  )) {
+    out.push("screensaver");
+  }
+  if (plan.groups.includes("misc")) {
+    const panelView = (panels) => {
+      const p = (panels != null ? panels : []).find((x) => x && x.topic === topic);
+      return { buttonLeft: p == null ? void 0 : p.buttonLeft, buttonRight: p == null ? void 0 : p.buttonRight, noScript: !!(p == null ? void 0 : p.noScript) };
+    };
+    const overrides = (list) => (list != null ? list : []).filter((o) => o && o.panelTopic === topic).map((o) => ({ page: o.page, navigation: o.navigation, scriptLinks: o.scriptLinks })).sort((a, b) => a.page.localeCompare(b.page));
+    if (after.panels && !sameConfig(panelView(native.panels), panelView(after.panels)) || after.navigationOverrides && !sameConfig(overrides(native.navigationOverrides), overrides(after.navigationOverrides)) || Object.entries(result.states).some(([id, val]) => targetStates[id] !== val)) {
+      out.push("misc");
+    }
+  }
+  return out;
+}
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
   SCREENSAVER_CHOICE_KEY,
   applyPanelImport,
   configDiff,
+  importSecretPages,
   navigationDiff,
   panelConfiguredGroups,
+  panelImportChanges,
   panelSettingDefaults,
   parsePanelConfigImport,
   planPanelImport,

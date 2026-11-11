@@ -12,6 +12,8 @@ import { buildPanelConfigExport, type ExportPanel } from './panelConfigExport';
 import {
     applyPanelImport,
     configDiff,
+    importSecretPages,
+    panelImportChanges,
     navigationDiff,
     panelConfiguredGroups,
     panelSettingDefaults,
@@ -767,6 +769,102 @@ describe('lib/types/panelConfigImport', () => {
             );
             expect(r.native.pageConfig).to.equal(undefined);
             expect(r.native.screensaverConfig).to.equal(undefined);
+        });
+    });
+
+    describe('row status, secret pages and real changes', () => {
+        const native: ImportNative = {
+            panels,
+            pageConfig: [
+                menu('one', [{ topic: SRC, navigation: { next: 'two' } }]),
+                menu('two', [{ topic: SRC, navigation: { prev: 'one' } }]),
+                menu('all', [{ topic: ALL_PANELS_SPECIAL_ID, navigation: { prev: 'one' } }]),
+                alarm('lock', 1234, [{ topic: SRC }]),
+            ],
+            screensaverConfig: [screensaver('ss', [SRC])],
+        };
+        const states = { 'screenSaver.timeout': 20, 'dim.standby': 15 };
+        const file = exportOf(native, states);
+
+        it('re-import of an unchanged backup: everything unchanged, no secrets, no change', () => {
+            const inp = input(native, file, SRC);
+            const plan = planPanelImport(inp);
+            expect(plan.pages.map(p => p.status)).to.deep.equal(['unchanged', 'unchanged', 'unchanged', 'unchanged']);
+            expect(plan.screensaver?.status).to.equal('unchanged');
+            expect(importSecretPages(inp, plan)).to.deep.equal([]);
+            const report = applyPanelImport(inp, plan).report;
+            expect(report.secrets).to.deep.equal([]);
+            expect(report.merged).to.deep.equal([]);
+            expect(report.unchanged).to.deep.equal(['one', 'two', 'all', 'lock']);
+            expect(report.screensaver).to.deep.equal({ action: 'unchanged', name: 'ss' });
+            expect(report.mainPage).to.equal(undefined);
+            expect(panelImportChanges(inp, plan, states)).to.deep.equal([]);
+        });
+        it('other states on the target: only misc changes', () => {
+            const inp = input(native, file, SRC);
+            expect(
+                panelImportChanges(inp, planPanelImport(inp), { ...states, 'screenSaver.timeout': 99 }),
+            ).to.deep.equal(['misc']);
+        });
+        it('import into another panel: assignment to add, all pages and screensaver', () => {
+            const inp = input(native, file, DST);
+            const plan = planPanelImport(inp);
+            expect(plan.pages.map(p => p.status)).to.deep.equal(['assign', 'assign', 'unchanged', 'assign']);
+            expect(plan.screensaver?.status).to.equal('assign');
+            expect(panelImportChanges(inp, plan, states)).to.deep.equal(['pages', 'screensaver']);
+        });
+        it('other navigation on the target', () => {
+            const target: ImportNative = {
+                ...native,
+                pageConfig: [
+                    menu('one', [
+                        { topic: SRC, navigation: { next: 'two' } },
+                        { topic: DST, navigation: { next: 'all' } },
+                    ]),
+                    ...(native.pageConfig ?? []).slice(1),
+                ],
+            };
+            const inp = input(target, file, DST);
+            const plan = planPanelImport(inp);
+            expect(plan.pages[0].status).to.equal('navigation');
+            expect(
+                panelImportChanges({ ...inp, groups: ['pages'] }, planPanelImport({ ...inp, groups: ['pages'] }), {}),
+            ).to.deep.equal(['pages']);
+        });
+        it('link target that the target has as own page: unassign', () => {
+            const source: ImportNative = {
+                panels,
+                pageConfig: [
+                    { card: 'pageLink', uniqueName: 'link', target: 'tgt', navigationAssignment: [{ topic: SRC }] },
+                    menu('tgt', [{ topic: OTHER }]),
+                ],
+            };
+            const f = exportOf(source);
+            const target: ImportNative = { panels, pageConfig: [menu('tgt', [{ topic: DST }])] };
+            const plan = planPanelImport(input(target, f));
+            expect(plan.pages.find(p => p.original === 'tgt')?.status).to.equal('unassign');
+        });
+        it('secret pages: only created or renamed pages, same list as the result', () => {
+            const target: ImportNative = { panels, pageConfig: [] };
+            const inp = input(target, file, DST);
+            const plan = planPanelImport(inp);
+            expect(importSecretPages(inp, plan)).to.deep.equal([{ page: 'lock', fields: ['pin'] }]);
+            expect(applyPanelImport(inp, plan).report.secrets).to.deep.equal(importSecretPages(inp, plan));
+            const renamedTarget: ImportNative = {
+                panels,
+                pageConfig: [{ ...alarm('lock', 1, [{ topic: OTHER }]), headline: 'X' }],
+            };
+            const inp2 = input(renamedTarget, file, DST);
+            const plan2 = planPanelImport(inp2);
+            expect(importSecretPages(inp2, plan2)).to.deep.equal([{ page: 'lock_dst', fields: ['pin'] }]);
+            const choices = { lock: { action: 'replace' as const } };
+            const inp3 = input(renamedTarget, file, DST, choices);
+            expect(importSecretPages(inp3, planPanelImport(inp3))).to.deep.equal([]);
+        });
+        it('import into an empty panel changes, but there is nothing configured to overwrite', () => {
+            const inp = input(native, file, DST);
+            expect(panelConfiguredGroups(native, DST, {})).to.deep.equal([]);
+            expect(panelImportChanges(inp, planPanelImport(inp), {})).to.include('pages');
         });
     });
 });
