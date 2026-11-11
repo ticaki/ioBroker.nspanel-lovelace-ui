@@ -514,9 +514,11 @@ export class Panel extends BaseClass {
         });
         this.info.internal.pageCount = options.pages.length;
         this.info.internal.servicePageCount = systemPages.length;
-        options.pages = options.pages.concat(systemPages);
+        // clones: pages and nodes are changed per panel (Page.init() replaces the item configs, Navigation
+        // patches the service node), the templates are shared by all panels
+        options.pages = options.pages.concat(structuredClone(systemPages));
         this.pageOrigins.classify(options.pages, 'system');
-        options.navigation = (options.navigation || []).concat(systemNavigation);
+        options.navigation = (options.navigation || []).concat(structuredClone(systemNavigation));
 
         let scsFound = 0;
         for (let a = 0; a < options.pages.length; a++) {

@@ -409,9 +409,9 @@ class Panel extends import_library.BaseClass {
     });
     this.info.internal.pageCount = options.pages.length;
     this.info.internal.servicePageCount = import_system_templates.systemPages.length;
-    options.pages = options.pages.concat(import_system_templates.systemPages);
+    options.pages = options.pages.concat(structuredClone(import_system_templates.systemPages));
     this.pageOrigins.classify(options.pages, "system");
-    options.navigation = (options.navigation || []).concat(import_system_templates.systemNavigation);
+    options.navigation = (options.navigation || []).concat(structuredClone(import_system_templates.systemNavigation));
     let scsFound = 0;
     for (let a = 0; a < options.pages.length; a++) {
       const pageConfig = options.pages[a] ? Panel.getPage(options.pages[a], this) : options.pages[a];
