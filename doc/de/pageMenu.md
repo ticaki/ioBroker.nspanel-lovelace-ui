@@ -68,7 +68,7 @@ Welche Felder des Dialogs eine Menü-Seite zusätzlich anbietet, hängt an der V
 | **Langer Druck (entweder State bedienen oder Navigation)** | nur Grid, Grid2, Grid3 | Zweite Funktion derselben Fläche — entweder einen Datenpunkt schalten **oder** auf eine Seite springen. Nur für Navigations-Flächen, den benutzerdefinierten Knopf und Datenpunkte mit `role=button`; ein Element mit Popup würde mit dem langen Druck zusammenstoßen. |
 | **Präfix** und **Suffix** des Wertes (Zahnrad an der Kanal-ID) | nur Entities, Schedule | Der Adapter setzt sie ausschließlich auf den Listen-Karten vor und hinter den Wert. Auf einer Grid-Variante bleiben beide Eingaben wirkungslos. |
 
-Der lange Druck fehlt auf **Entities** und **Schedule** nicht aus Nachlässigkeit: Nur die Flächen der drei Grid-Varianten melden am HMI ein `buttonPress3`; die Zeilen der Listen melden immer einen kurzen Druck.
+Der lange Druck fehlt auf **Entities** und **Schedule** nicht aus Nachlässigkeit: Von den Seiten-Karten melden nur die Flächen der drei Grid-Varianten am HMI ein `buttonPress3`; die Zeilen der Listen melden immer einen kurzen Druck. (Außerhalb der Seiten kennen ihn ab der TFT 6.0.9 auch die Indikatoren des [Bildschirmschoners](screensaver#aktion-bei-langem-drücken).)
 
 Eine Fläche, die der Dialog nicht abbilden kann, nimmt über **Item als Rohdaten (JSON) eingeben** das rohe Element auf. Sie heißt im Raster dann **Rohdaten: …**; die Felder des Dialogs werden für sie nicht mehr verwendet.
 

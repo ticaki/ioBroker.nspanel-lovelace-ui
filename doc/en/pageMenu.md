@@ -68,7 +68,7 @@ Which fields of the dialog a menu page offers in addition depends on the variant
 | **Long press** | Grid, Grid2, Grid3 only | A second function on the same tile — either switch a state **or** jump to a page. Only for navigation tiles, the user-defined button and states with `role=button`; an item with a popup would collide with the long press. |
 | **Prefix** and **Suffix** of the value (gear icon on the channel ID) | Entities, Schedule only | The adapter puts them before and after the value on the list cards only. On a grid variant both entries have no effect. |
 
-The long press is not missing on **Entities** and **Schedule** out of negligence: only the tiles of the three grid variants report a `buttonPress3` at the HMI; the rows of the lists always report a short press.
+The long press is not missing on **Entities** and **Schedule** out of negligence: of the page cards only the tiles of the three grid variants report a `buttonPress3` at the HMI; the rows of the lists always report a short press. (Outside the pages the indicators of the [screensaver](screensaver#action-on-long-press) know it as well from the TFT 6.0.9 on.)
 
 A tile the dialog cannot represent takes the raw item through **Enter the item as raw data (JSON)**. In the grid it is then called **Raw data: …**; the fields of the dialog are no longer used for it.
 
