@@ -551,7 +551,7 @@ The order of the items in the area **Indicators** decides the place. On `eu` and
 - Items in areas Tiles does not have (**Favorite**, **Alternate**, **Left**) are kept on the change and reported at the top of the editor (see [version and panels](#3-version-and-panels)). They do not reach the panel; back on Standard, Alternate or Advanced they are there again.
 - **Switching at runtime:** The state `panels.<panel>.cmd.screenSaver.layout` takes the version as a number – `0` Standard, `1` Alternate, `2` Advanced, `3` Easyview, `4` Tiles. When it is written, the panel changes the version at once; the stored entry stays as it is and applies again with the next start of the adapter.
 - **Older adapter version (downgrade):** An adapter version that does not know Tiles shows the screensaver as **Standard** and writes a warning into the log (`mode 'tiles' (card 'screensaver5') is not known to this adapter version - using 'standard' instead. The stored configuration stays unchanged.`). The stored configuration stays unchanged, after an upgrade Tiles applies again.
-- **Web panel:** The [web panel](WebPanel) draws Tiles as well – so far in landscape only (`eu`, `us-l`). For the portrait model `us-p` the web panel has no layout of this version yet.
+- **Web panel:** The [web panel](WebPanel) draws Tiles as well – since the portrait layouts also for `us-p` and for the smartphone model `web-p` (four columns at the bottom instead of five). How many places there are follows the model, as on the panel (see [web panel](WebPanel)).
 
 ## Pitfalls
 
