@@ -551,7 +551,7 @@ Die Reihenfolge der Items im Bereich **Indikatoren** bestimmt den Platz. Auf `eu
 - Items in Bereichen, die Kacheln nicht hat (**Favorit**, **Alternate**, **Links**), bleiben beim Wechsel erhalten und werden oben im Editor gemeldet (siehe [Version und Panels](#3-version-und-panels)). Auf das Panel kommen sie nicht; zurück auf Standard, Alternate oder Advanced sind sie wieder da.
 - **Im Betrieb umschalten:** Der State `panels.<Panel>.cmd.screenSaver.layout` nimmt die Version als Zahl – `0` Standard, `1` Alternate, `2` Advanced, `3` Easyview, `4` Kacheln. Wird er geschrieben, wechselt das Panel die Version sofort; der gespeicherte Eintrag bleibt unverändert und gilt beim nächsten Start des Adapters wieder.
 - **Alte Adapterversion (Downgrade):** Eine Adapterversion, die Kacheln nicht kennt, zeigt den Bildschirmschoner als **Standard** und schreibt eine Warnung ins Log (`mode 'tiles' (card 'screensaver5') is not known to this adapter version - using 'standard' instead. The stored configuration stays unchanged.`). Die gespeicherte Konfiguration bleibt unverändert, nach einem Upgrade gilt Kacheln wieder.
-- **Web-Panel:** Das [Web-Panel](WebPanel) zeichnet Kacheln ebenfalls – bisher nur im Querformat (`eu`, `us-l`). Für das Hochformat `us-p` gibt es im Web-Panel noch kein Layout dieser Version.
+- **Web-Panel:** Das [Web-Panel](WebPanel) zeichnet Kacheln ebenfalls – seit den Hochformat-Layouts auch für `us-p` und für das Smartphone-Modell `web-p` (unten vier Spalten statt fünf). Wie viele Plätze es sind, richtet sich wie am Panel nach dem Modell (siehe [Web-Panel](WebPanel)).
 
 ## Fallstricke
 

@@ -22,6 +22,7 @@
 - [Global settings](globelSettings)  
 - [Maintain](Maintain)  
 - [Script migration](Migration)  
+- [Transfer a panel configuration](panelConfigTransfer)  
 - [Navigation flow](naviFlow)  
 - [Icon overview](symbolOverview)  
 - [Tasmota tools](tasmotatools) 🔒  

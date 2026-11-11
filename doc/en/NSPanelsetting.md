@@ -59,6 +59,8 @@ The head of the card holds the panel name, for a web panel the **Web** label, an
 | Control | Effect |
 |---|---|
 | **⧉ (Open web panel in a new tab)** | Appears when the web panels are switched on and the panel has a topic — for a real NSPanel as well. Opens `http(s)://<host>:<port>/<topic>` in a new tab; a stored PIN is built into the address by the admin. More under [web panel](WebPanel). |
+| **↓ (Export panel configuration)** | Writes the configuration of this panel as a JSON file — pages, screensaver, hardware buttons and panel settings. Only active when the panel has an id and a topic. See [export and import a panel configuration](panelConfigTransfer). |
+| **↑ (Import panel configuration)** | Reads such a file back in. Before applying it, the admin shows a review with every single page, the import mode and the conflicts. See [export and import a panel configuration](panelConfigTransfer). |
 | **Pencil** | For an NSPanel: copies IP, name, topic and model up into the form, the frame blinks briefly. **The change itself only happens** when *NSPanel configuration update* is run afterwards. For a web panel the pencil opens its dialog — that works with the instance stopped as well. |
 | **Bin** | Asks for confirmation and then removes the entry **from the panel table**. Only with the instance running. The device keeps its Tasmota settings; to really wipe it, use the factory reset in the [Tasmota tools](tasmotatools). |
 
