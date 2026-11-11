@@ -762,6 +762,7 @@
     "pageMenu_add_item": "Dodaj element",
     "pageMenu_add_page": "Dodaj stronę",
     "pageMenu_cardEntities": "Elementy (4 rzędy)",
+    "pageMenu_cardEntities_usp": "Elementy (5 rzędów)",
     "pageMenu_cardGrid": "Siatka (6 miejsc)",
     "pageMenu_cardGrid2": "Siatka2 (8 gniazd)",
     "pageMenu_cardGrid2_conflict": "cardGrid2 jest wyłączony: przypisane panele mają różne modele (niektóre us-p, inne nie). cardGrid2 wymaga, aby wszystkie panele korzystały z tego samego modelu. Przełączono na cardGrid.",

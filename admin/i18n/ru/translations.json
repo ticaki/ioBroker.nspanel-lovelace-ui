@@ -762,6 +762,7 @@
     "pageMenu_add_item": "Добавить элемент",
     "pageMenu_add_page": "Добавить страницу",
     "pageMenu_cardEntities": "Сущности (4 строки)",
+    "pageMenu_cardEntities_usp": "Сущности (5 строк)",
     "pageMenu_cardGrid": "Сетка (6 слотов)",
     "pageMenu_cardGrid2": "Grid2 (8 слотов)",
     "pageMenu_cardGrid2_conflict": "cardGrid2 отключен: назначенные панели имеют разные модели (некоторые из них us-p, некоторые нет). cardGrid2 требует, чтобы все панели использовали одну и ту же модель. Перешел на cardGrid.",

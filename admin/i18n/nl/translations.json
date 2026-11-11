@@ -762,6 +762,7 @@
     "pageMenu_add_item": "Artikel toevoegen",
     "pageMenu_add_page": "Pagina toevoegen",
     "pageMenu_cardEntities": "Entiteiten (4 rijen)",
+    "pageMenu_cardEntities_usp": "Entiteiten (5 rijen)",
     "pageMenu_cardGrid": "Raster (6 slots)",
     "pageMenu_cardGrid2": "Raster2 (8 slots)",
     "pageMenu_cardGrid2_conflict": "cardGrid2 is uitgeschakeld: de toegewezen panelen hebben verschillende modellen (sommige us-p, andere niet). cardGrid2 vereist dat alle panelen hetzelfde model gebruiken. Overgestapt naar cardGrid.",

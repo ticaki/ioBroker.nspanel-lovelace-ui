@@ -762,6 +762,7 @@
     "pageMenu_add_item": "Ajouter un article",
     "pageMenu_add_page": "Ajouter une page",
     "pageMenu_cardEntities": "Entités (4 lignes)",
+    "pageMenu_cardEntities_usp": "Entités (5 lignes)",
     "pageMenu_cardGrid": "Grille (6 emplacements)",
     "pageMenu_cardGrid2": "Grille2 (8 emplacements)",
     "pageMenu_cardGrid2_conflict": "cardGrid2 est désactivé : les panneaux attribués ont des modèles différents (certains us-p, d'autres non). cardGrid2 nécessite que tous les panneaux utilisent le même modèle. Passé à cardGrid.",

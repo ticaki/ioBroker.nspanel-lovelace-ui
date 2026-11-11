@@ -762,6 +762,7 @@
     "pageMenu_add_item": "Додати товар",
     "pageMenu_add_page": "Додати сторінку",
     "pageMenu_cardEntities": "Сутності (4 рядки)",
+    "pageMenu_cardEntities_usp": "Сутності (5 рядків)",
     "pageMenu_cardGrid": "Сітка (6 слотів)",
     "pageMenu_cardGrid2": "Grid2 (8 слотів)",
     "pageMenu_cardGrid2_conflict": "cardGrid2 вимкнено: призначені панелі мають різні моделі (деякі us-p, деякі ні). cardGrid2 вимагає, щоб усі панелі використовували одну модель. Перейшов на cardGrid.",

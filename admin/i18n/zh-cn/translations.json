@@ -762,6 +762,7 @@
     "pageMenu_add_item": "添加项目",
     "pageMenu_add_page": "添加页面",
     "pageMenu_cardEntities": "实体（4 行）",
+    "pageMenu_cardEntities_usp": "实体（5 行）",
     "pageMenu_cardGrid": "网格（6 个插槽）",
     "pageMenu_cardGrid2": "网格2（8个插槽）",
     "pageMenu_cardGrid2_conflict": "cardGrid2 被禁用：分配的面板具有不同的型号（有些是 us-p，有些不是）。 cardGrid2 要求所有面板使用相同的模型。切换到卡网格。",

@@ -762,6 +762,7 @@
     "pageMenu_add_item": "Adicionar item",
     "pageMenu_add_page": "Adicionar página",
     "pageMenu_cardEntities": "Entidades (4 linhas)",
+    "pageMenu_cardEntities_usp": "Entidades (5 linhas)",
     "pageMenu_cardGrid": "Grade (6 slots)",
     "pageMenu_cardGrid2": "Grade2 (8 slots)",
     "pageMenu_cardGrid2_conflict": "cardGrid2 está desabilitado: os painéis atribuídos possuem modelos diferentes (alguns us-p, outros não). cardGrid2 exige que todos os painéis usem o mesmo modelo. Mudou para cardGrid.",

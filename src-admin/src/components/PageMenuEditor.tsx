@@ -1101,7 +1101,11 @@ export class PageMenuEditor extends ConfigGeneric<ConfigGenericProps & PageMenuE
                                     <FormControlLabel
                                         value="cardEntities"
                                         control={<Radio />}
-                                        label={this.getText('pageMenu_cardEntities')}
+                                        label={
+                                            grid2Status === 'all-usp'
+                                                ? this.getText('pageMenu_cardEntities_usp')
+                                                : this.getText('pageMenu_cardEntities')
+                                        }
                                     />
                                     <FormControlLabel
                                         value="cardSchedule"

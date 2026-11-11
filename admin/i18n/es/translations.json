@@ -762,6 +762,7 @@
     "pageMenu_add_item": "Agregar artículo",
     "pageMenu_add_page": "Agregar página",
     "pageMenu_cardEntities": "Entidades (4 filas)",
+    "pageMenu_cardEntities_usp": "Entidades (5 filas)",
     "pageMenu_cardGrid": "Cuadrícula (6 ranuras)",
     "pageMenu_cardGrid2": "Grid2 (8 ranuras)",
     "pageMenu_cardGrid2_conflict": "cardGrid2 está deshabilitado: los paneles asignados tienen diferentes modelos (algunos us-p, otros no). cardGrid2 requiere que todos los paneles utilicen el mismo modelo. Cambió a cardGrid.",

@@ -774,6 +774,7 @@
     "pageMenu_add_item": "Eintrag hinzufügen",
     "pageMenu_add_page": "Seite hinzufügen",
     "pageMenu_cardEntities": "Entities (4 Zeilen)",
+    "pageMenu_cardEntities_usp": "Entities (5 Zeilen)",
     "pageMenu_cardGrid": "Grid (6 Felder)",
     "pageMenu_cardGrid2": "Grid2 (8 Felder)",
     "pageMenu_cardGrid2_conflict": "cardGrid2 ist deaktiviert: Die zugewiesenen Panels haben unterschiedliche Modelle (teils us-p, teils nicht). cardGrid2 erfordert identische Panel-Modelle. Es wurde auf cardGrid zurückgefallen.",

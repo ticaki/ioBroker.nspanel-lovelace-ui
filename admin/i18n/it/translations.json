@@ -762,6 +762,7 @@
     "pageMenu_add_item": "Aggiungi elemento",
     "pageMenu_add_page": "Aggiungi pagina",
     "pageMenu_cardEntities": "Entità (4 righe)",
+    "pageMenu_cardEntities_usp": "Entità (5 righe)",
     "pageMenu_cardGrid": "Griglia (6 slot)",
     "pageMenu_cardGrid2": "Griglia2 (8 slot)",
     "pageMenu_cardGrid2_conflict": "cardGrid2 è disabilitato: i pannelli assegnati hanno modelli diversi (alcuni us-p, altri no). cardGrid2 richiede che tutti i pannelli utilizzino lo stesso modello. Passato a cardGrid.",

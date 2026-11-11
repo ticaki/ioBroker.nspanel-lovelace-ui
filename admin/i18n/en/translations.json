@@ -774,6 +774,7 @@
     "pageMenu_add_item": "Add item",
     "pageMenu_add_page": "Add page",
     "pageMenu_cardEntities": "Entities (4 rows)",
+    "pageMenu_cardEntities_usp": "Entities (5 rows)",
     "pageMenu_cardGrid": "Grid (6 slots)",
     "pageMenu_cardGrid2": "Grid2 (8 slots)",
     "pageMenu_cardGrid2_conflict": "cardGrid2 is disabled: the assigned panels have different models (some us-p, some not). cardGrid2 requires all panels to use the same model. Switched to cardGrid.",
