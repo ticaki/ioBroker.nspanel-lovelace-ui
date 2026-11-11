@@ -39,14 +39,15 @@ export class CardChart extends React.Component<CardProps<ChartModel>, CardChartS
         if (!svg || model.kind !== 'bar') {
             return;
         }
-        const layout = layoutChart(model);
+        const plot = plotFor(model.kind, global.model);
+        const layout = layoutChart(model, plot);
         if (!layout.bar) {
             return;
         }
         const rect = svg.getBoundingClientRect();
         const { width } = stageSize(global.model);
         const touchX = ((event.clientX - rect.left) * width) / Math.max(1, rect.width);
-        this.setState({ selected: barAt(layout.bar, touchX, model.bars.length) });
+        this.setState({ selected: barAt(layout.bar, touchX, model.bars.length, plot) });
     };
 
     private renderPrimitive(p: Primitive, index: number, textColor: string): React.JSX.Element {
@@ -137,7 +138,7 @@ export class CardChart extends React.Component<CardProps<ChartModel>, CardChartS
         if (!bar) {
             return null;
         }
-        const plot = plotFor(model.kind);
+        const plot = plotFor(model.kind, this.props.global.model);
         const value = (Math.abs(bar.value) / 10).toFixed(1);
         return (
             <text
@@ -161,8 +162,8 @@ export class CardChart extends React.Component<CardProps<ChartModel>, CardChartS
         const { width, height } = stageSize(global.model);
         const textColor = color565ToCss(global.dim.text, theme.foreground);
         const background = color565ToCss(global.dim.background, theme.background);
-        const plot = plotFor(model.kind);
-        const layout: ChartLayout = model.received ? layoutChart(model) : { primitives: [], bar: undefined };
+        const plot = plotFor(model.kind, global.model);
+        const layout: ChartLayout = model.received ? layoutChart(model, plot) : { primitives: [], bar: undefined };
         const highlight =
             layout.bar && this.state.selected !== -1 ? highlightBar(model, layout.bar, this.state.selected) : [];
         return (
@@ -181,6 +182,7 @@ export class CardChart extends React.Component<CardProps<ChartModel>, CardChartS
                     title={model.title}
                     navigation={model.navigation}
                     press={press}
+                    model={global.model}
                     titleColor={textColor}
                 />
                 <svg

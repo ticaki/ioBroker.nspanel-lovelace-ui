@@ -60,12 +60,29 @@ describe('cardEntities parse', () => {
         expect(m.entities.every(isEmptySlot)).toBe(true);
     });
 
-    it('cuts entities beyond 5 (never sent by the adapter)', () => {
+    it('cuts entities beyond 8 (web-p, never sent by the adapter)', () => {
         const many = ['T', ...Array<string>(12).fill('')];
-        for (let i = 0; i < 7; i++) {
+        for (let i = 0; i < 10; i++) {
             many.push('text', `id${i}`, '', '65535', `n${i}`, 'v');
         }
-        expect(parseEntityUpd(many, initial(), ctx).entities).toHaveLength(5);
+        expect(parseEntityUpd(many, initial(), ctx).entities).toHaveLength(8);
+    });
+
+    it('knows the slot count of every menu card per model (doc/web-panel/SMARTPHONE.md)', () => {
+        const table: Record<string, [number, number, number, number, number]> = {
+            // eu, us-l, us-p, web-l, web-p
+            cardEntities: [4, 4, 5, 4, 8],
+            cardSchedule: [6, 6, 6, 6, 11],
+            cardGrid: [6, 6, 6, 8, 10],
+            cardGrid2: [8, 8, 9, 10, 15],
+            cardGrid3: [4, 4, 4, 6, 8],
+        };
+        for (const [pageType, counts] of Object.entries(table)) {
+            const models = ['eu', 'us-l', 'us-p', 'web-l', 'web-p'] as const;
+            models.forEach((model, i) =>
+                expect(menuSlotCount(pageType, model), `${pageType} ${model}`).toBe(counts[i]),
+            );
+        }
     });
 
     it('does not handle entityUpdateDetail (popups are separate pages)', () => {

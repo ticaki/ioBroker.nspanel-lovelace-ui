@@ -82,6 +82,7 @@ function fakePage(
         getForeignObjectAsync: async (id: string) =>
             fake.objects[id] ? { _id: id, common: { ...fake.objects[id] } } : null,
     };
+    page.basePanel = { info: { nspanel: { model: 'eu' } } };
     page.getNavigation = (): string => 'button~bSubPrev~~~~~button~bSubNext~~~~';
     page.visibility = true;
     page.refreshInterval = 1000;
@@ -367,7 +368,10 @@ describe('lib/pages - PageChartPie', () => {
         it('forgets the last payload on delete', async () => {
             const fake = fakePage(slots);
             const page: any = fake.page;
-            page.basePanel = { statesControler: { deletePageLoop: (): void => undefined } };
+            page.basePanel = {
+                info: { nspanel: { model: 'eu' } },
+                statesControler: { deletePageLoop: (): void => undefined },
+            };
 
             await page.update();
             try {

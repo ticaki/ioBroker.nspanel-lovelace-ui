@@ -62,11 +62,17 @@ export interface ScreensaverAreas {
     indicator: Entity6[];
 }
 
-/** Number of entities per area and layout (`ScreenSaverConst` of the adapter) */
-export const AREA_SIZES: Record<
-    ScreensaverLayout,
-    { favorit: number; left: number; bottom: number; alternate: number; indicator: number }
-> = {
+/** Number of entities per area of one layout */
+export interface AreaSize {
+    favorit: number;
+    left: number;
+    bottom: number;
+    alternate: number;
+    indicator: number;
+}
+
+/** Number of entities per area and layout on the eu panel (`ScreenSaverConst` of the adapter, key `eu`) */
+export const AREA_SIZES: Record<ScreensaverLayout, AreaSize> = {
     standard: { favorit: 1, left: 0, bottom: 4, alternate: 0, indicator: 0 },
     alternate: { favorit: 1, left: 0, bottom: 3, alternate: 1, indicator: 0 },
     advanced: { favorit: 1, left: 3, bottom: 6, alternate: 0, indicator: 5 },
@@ -74,8 +80,52 @@ export const AREA_SIZES: Record<
     tiles: { favorit: 0, left: 0, bottom: 5, alternate: 0, indicator: 7 },
 };
 
-/** The alternate layout sends favorit + 3 bottom + an empty entity + the alternate entity */
-const ALTERNATE_ENTITY_COUNT = 6;
+/**
+ * The places that differ from {@link AREA_SIZES} per model - the same numbers as the other keys of
+ * `ScreenSaverConst` in `src/lib/const/definition.ts` (see `doc/web-panel/SMARTPHONE.md`).
+ */
+const MODEL_AREA_SIZES: Partial<Record<PanelModel, Partial<Record<ScreensaverLayout, Partial<AreaSize>>>>> = {
+    'us-p': {
+        easyview: { bottom: 4 },
+        tiles: { bottom: 4, indicator: 8 },
+    },
+    'web-l': {
+        standard: { bottom: 6 },
+        alternate: { bottom: 5 },
+        advanced: { bottom: 8, indicator: 8, left: 3 },
+        easyview: { bottom: 4 },
+        tiles: { bottom: 7, indicator: 11 },
+    },
+    'web-p': {
+        standard: { bottom: 8 },
+        alternate: { bottom: 7 },
+        advanced: { bottom: 8, indicator: 12, left: 4 },
+        easyview: { bottom: 8 },
+        tiles: { bottom: 8, indicator: 8 },
+    },
+};
+
+/**
+ * Number of entities per area of the layout on the given model.
+ *
+ * @param layout the screensaver layout
+ * @param model the panel model
+ */
+export function areaSizes(layout: ScreensaverLayout, model: PanelModel): AreaSize {
+    return { ...AREA_SIZES[layout], ...MODEL_AREA_SIZES[model]?.[layout] };
+}
+
+/**
+ * Number of entities from which on a `weatherUpdate` of the pageType `screensaver` is the alternate
+ * layout: the alternate layout sends favorit + bottom + an empty entity + the alternate entity
+ * (eu: 1 + 3 + 2 = 6), the standard layout only favorit + bottom (eu: 1 + 4 = 5).
+ *
+ * @param model the panel model
+ */
+export function alternateEntityCount(model: PanelModel): number {
+    const alt = areaSizes('alternate', model);
+    return alt.favorit + alt.bottom + 1 + alt.alternate;
+}
 
 export function emptyStatusIcon(): StatusIcon {
     return { icon: '', color: 65535, big: false };
@@ -165,10 +215,13 @@ export function handleCommand(
  * The layout of the page: `screensaver2` = advanced, `screensaver3` = easyview, `screensaver5` = tiles, `screensaver`
  * = alternate when the `weatherUpdate` carried 6 entities, standard otherwise.
  *
+ * The number of entities depends on the model (see {@link alternateEntityCount}).
+ *
  * @param pageType the active pageType
  * @param entities the entities of the last `weatherUpdate`
+ * @param model the panel model, `eu` when omitted
  */
-export function layoutOf(pageType: string, entities: readonly Entity6[]): ScreensaverLayout {
+export function layoutOf(pageType: string, entities: readonly Entity6[], model: PanelModel = 'eu'): ScreensaverLayout {
     switch (pageType) {
         case 'screensaver2':
             return 'advanced';
@@ -177,16 +230,18 @@ export function layoutOf(pageType: string, entities: readonly Entity6[]): Screen
         case 'screensaver5':
             return 'tiles';
         default:
-            return entities.length >= ALTERNATE_ENTITY_COUNT ? 'alternate' : 'standard';
+            return entities.length >= alternateEntityCount(model) ? 'alternate' : 'standard';
     }
 }
 
-/** Number of bottom entities of the layout on the given hardware model (EasyView has 4 on `us-p`) */
+/**
+ * Number of bottom entities of the layout on the given model (e.g. EasyView: 3 on eu, 4 on `us-p`).
+ *
+ * @param layout the screensaver layout
+ * @param model the panel model
+ */
 export function bottomCount(layout: ScreensaverLayout, model: PanelModel): number {
-    if (layout === 'easyview' && model === 'us-p') {
-        return 4;
-    }
-    return AREA_SIZES[layout].bottom;
+    return areaSizes(layout, model).bottom;
 }
 
 /**
@@ -195,12 +250,11 @@ export function bottomCount(layout: ScreensaverLayout, model: PanelModel): numbe
  *
  * @param pageType the active pageType
  * @param entities the entities of the last `weatherUpdate`
- * @param model the hardware model
+ * @param model the panel model: the number of entities per area depends on it ({@link areaSizes})
  */
 export function splitAreas(pageType: string, entities: readonly Entity6[], model: PanelModel): ScreensaverAreas {
-    const layout = layoutOf(pageType, entities);
-    const sizes = AREA_SIZES[layout];
-    const bottom = bottomCount(layout, model);
+    const layout = layoutOf(pageType, entities, model);
+    const sizes = areaSizes(layout, model);
     let i = 0;
     const take = (n: number): Entity6[] => {
         const slice = entities.slice(i, i + n);
@@ -209,7 +263,7 @@ export function splitAreas(pageType: string, entities: readonly Entity6[], model
     };
     const favorit = take(sizes.favorit)[0];
     const left = take(sizes.left);
-    const bottomEntities = take(bottom);
+    const bottomEntities = take(sizes.bottom);
     // alternate: one empty entity in front of the alternate entity
     const alternate = sizes.alternate > 0 ? take(1 + sizes.alternate)[1] : undefined;
     const indicator = take(sizes.indicator);

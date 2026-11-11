@@ -1,0 +1,4 @@
+# popupShutter2 of the tile "Rollladen": window picture and three extra buttons
+pageType~popupShutter2~4?3~Rollladen~~2047
+entityUpdateDetail~4?3~30~~Rollladen~~~~~enable~enable~enable~~65535~enable~撚~65535~enable~~65535~enable~shutter~1
+@sleep 300

@@ -1,10 +1,10 @@
 import type { ParseContext } from '../CardContract';
-import { initialMenuPage, parseMenuEntityUpd, type MenuPageModel } from './shared/menuParse';
+import { initialMenuPage, maxMenuSlots, parseMenuEntityUpd, type MenuPageModel } from './shared/menuParse';
 
 export type CardEntitiesModel = MenuPageModel;
 
-/** cardEntities shows at most 5 rows (us-p), the adapter never sends more */
-const MAX_ENTITIES = 5;
+/** cardEntities shows at most 8 rows (web-p), the adapter never sends more */
+const MAX_ENTITIES = maxMenuSlots('cardEntities');
 
 export function initial(): CardEntitiesModel {
     return initialMenuPage();

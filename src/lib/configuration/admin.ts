@@ -77,6 +77,28 @@ function belongsToPanel(option: panelConfigPartial, page: PageBase): boolean {
     );
 }
 
+/**
+ * Checks a navigation target of the admin configuration: the node must exist and a page must stand behind
+ * it. System nodes and the screensaver are always valid - they are added to the panel later.
+ *
+ * @param option Panel configuration partial (pages and navigation of the script and the admin).
+ * @param target Name of the target node, `undefined` for no target.
+ * @returns `undefined` when the target is fine, otherwise the reason for the log.
+ */
+export function navigationTargetProblem(option: panelConfigPartial, target: string | undefined): string | undefined {
+    if (target === undefined || systemNavigationNodeNames.has(target) || target === ShareConfig.screensaverTargetPage) {
+        return undefined;
+    }
+    const node = option.navigation.find(b => b?.name === target);
+    if (!node) {
+        return 'not found';
+    }
+    if (!option.pages.some(p => p && p.uniqueID === node.page)) {
+        return 'has no page (script page dropped or admin page missing)';
+    }
+    return undefined;
+}
+
 function shallowDescribe(value: unknown): string {
     if (value === null) {
         return 'null';
@@ -1052,18 +1074,18 @@ export class AdminConfiguration extends BaseClass {
         }
 
         // Log unresolved references. System nodes are not part of option.navigation yet, a
-        // reference to one of them is valid and must not be reported.
-        const isUnresolved = (target: string | undefined): target is string =>
-            target !== undefined &&
-            !systemNavigationNodeNames.has(target) &&
-            !option.navigation.find(b => b?.name === target);
-
+        // reference to one of them is valid and must not be reported. A node only counts when a page
+        // stands behind it - a script page dropped during the conversion leaves its node behind, a link
+        // to it opens the system page "navigation faulty" at runtime.
         for (const pending of pendingNavs) {
-            if (isUnresolved(pending.prev)) {
-                this.log.warn(`Navigation unresolved for '${pending.pageId}': prev page '${pending.prev}' not found.`);
-            }
-            if (isUnresolved(pending.next)) {
-                this.log.warn(`Navigation unresolved for '${pending.pageId}': next page '${pending.next}' not found.`);
+            for (const side of ['prev', 'next'] as const) {
+                const target = pending[side];
+                const problem = navigationTargetProblem(option, target);
+                if (target !== undefined && problem) {
+                    this.log.warn(
+                        `Navigation unresolved for '${pending.pageId}': ${side} page '${target}' ${problem}.`,
+                    );
+                }
             }
         }
     }

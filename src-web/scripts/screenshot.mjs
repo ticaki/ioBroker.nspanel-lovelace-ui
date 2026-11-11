@@ -3,9 +3,13 @@
 /* global window, document, PointerEvent */
 /**
  * Renders a list of CustomSend payloads in the web panel (mock mode) and saves a
- * screenshot of the 480x320 stage at 2x.
+ * screenshot of the stage (native size of the model) at 2x.
  *
- *   node scripts/screenshot.mjs --in commands.txt --out shot.png [--port 4174] [--wait 300] [--model eu|us-l|us-p]
+ *   node scripts/screenshot.mjs --in commands.txt --out shot.png [--port 4174] [--wait 300] [--model eu|us-l|us-p|web-p|web-l]
+ *       [--frame] [--buttons 0]
+ *
+ * `--frame` saves the whole device (stage plus the two hardware buttons below it) instead of
+ * the stage alone; `--buttons 0` opens the mock with `?buttons=0` (no hardware buttons).
  *
  * Needs a running `npm start` (vite dev server) or `vite preview` on the port and the
  * globally installed puppeteer (`npm i -g puppeteer`). One payload per line, empty lines
@@ -33,8 +37,18 @@ const waitMs = Number(arg('wait', '700'));
 const scale = Number(arg('scale', '2'));
 const model = arg('model', 'eu');
 // viewport = stage in native size + hardware buttons below, so the stage renders at 1x
-const stage = model === 'us-p' ? { width: 320, height: 480 } : { width: 480, height: 320 };
-const HARDWARE_BUTTONS_HEIGHT = 48;
+const STAGES = {
+    eu: { width: 480, height: 320 },
+    'us-l': { width: 480, height: 320 },
+    'us-p': { width: 320, height: 480 },
+    'web-p': { width: 320, height: 640 },
+    'web-l': { width: 640, height: 320 },
+};
+const stage = STAGES[model] ?? STAGES.eu;
+const frame = process.argv.includes('--frame');
+const showButtons = arg('buttons', '1') !== '0';
+// theme.hardwareButtonsHeight
+const HARDWARE_BUTTONS_HEIGHT = 68;
 if (!input) {
     console.error('usage: node scripts/screenshot.mjs --in commands.txt --out shot.png [--port 4174]');
     process.exit(2);
@@ -60,11 +74,13 @@ try {
     const page = await browser.newPage();
     await page.setViewport({
         width: stage.width,
-        height: stage.height + HARDWARE_BUTTONS_HEIGHT,
+        height: stage.height + (showButtons ? HARDWARE_BUTTONS_HEIGHT : 0),
         deviceScaleFactor: scale,
     });
     page.on('pageerror', err => console.error(`page error: ${err.message}`));
-    await page.goto(`http://localhost:${port}/demo?mock=1&model=${model}`, { waitUntil: 'networkidle0' });
+    await page.goto(`http://localhost:${port}/demo?mock=1&model=${model}${showButtons ? '' : '&buttons=0'}`, {
+        waitUntil: 'networkidle0',
+    });
     await page.waitForFunction(() => window.__panel !== undefined, { timeout: 10_000 });
     // icons are fetched after mount - wait until the page renders
     await page.waitForSelector('[data-stage] [data-page]', { timeout: 10_000 });
@@ -93,14 +109,27 @@ try {
     }
     await new Promise(r => setTimeout(r, waitMs));
 
-    const box = await page.evaluate(() => {
+    const box = await page.evaluate(withFrame => {
         const el = document.querySelector('[data-stage]');
         if (!el) {
             return null;
         }
         const r = el.getBoundingClientRect();
-        return { x: r.left, y: r.top, width: r.width, height: r.height };
-    });
+        const buttons = withFrame ? document.querySelector('[data-hardware-buttons]') : null;
+        if (!buttons) {
+            return { x: r.left, y: r.top, width: r.width, height: r.height };
+        }
+        // stage plus the hardware buttons below it
+        const b = buttons.getBoundingClientRect();
+        const left = Math.min(r.left, b.left);
+        const top = Math.min(r.top, b.top);
+        return {
+            x: left,
+            y: top,
+            width: Math.max(r.right, b.right) - left,
+            height: Math.max(r.bottom, b.bottom) - top,
+        };
+    }, frame);
     if (!box) {
         throw new Error('stage not found');
     }

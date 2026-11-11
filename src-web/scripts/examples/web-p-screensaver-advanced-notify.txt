@@ -1,0 +1,11 @@
+# Screensaver advanced on web-p with every place filled: 4 left, 8 bottom, 12 indicators and a notification
+# (counts after ScreenSaverConst / doc/web-panel/SMARTPHONE.md; dimmode standby 100 for the screenshot)
+timeout~20
+dimmode~100~100~2147~53247~1
+pageType~screensaver2
+time~23:36~
+date~Sa., 24. Oktober 26
+weatherUpdate~~~~17299~~13,1°C~~~~17299~~21,4°C~~~~65504~~594 W~~~~65504~~48%~~~~64512~~Heute~~~~65504~Sonne~17:05~~~~64512~Wind~2,4m/s~~~~64512~Böen~3,9m/s~~~~65535~Windr.~NO~~~~64835~Feuchte~82%~~~~65504~UV~1,44~~~~17299~Innen~21,4°C~~~~65504~Regen~40%~~29?9~~65222~~1~~29?10~~64512~~0~~29?11~~64512~~0~~29?12~~64512~~0~~29?13~~18~~0~~29?14~~64512~~0~~29?15~~65222~~1~~29?16~~64512~~0~~29?17~~65504~~0~~29?18~~65222~~1~~29?19~~64512~~0~~29?20~~65504~~0
+color~2147~53247~2047~54938~65535~34431~34431~34431~34431~34431~34431~34431~34431~16904~2047~2047
+statusUpdate~~65222~~65222~~
+notify~Müllabfuhr~Morgen wird die Biotonne abgeholt.\r\nBitte heute Abend rausstellen.\r\nDie gelbe Tonne kommt am Freitag.\r\nDer Termin für den Sperrmüll ist am 12. November.\r\nZeile fünf\r\nZeile sechs\r\nZeile sieben wird abgeschnitten

@@ -1,0 +1,599 @@
+{
+    "$comment": "Test environment of nspanel-lovelace-ui: objects created by the developer button 'create test states' (sendTo createTestStates). Layout: see testumgebung/README.md",
+    "version": 1,
+    "userdata": "0_userdata.0.NSPanelTest",
+    "alias": "alias.0.NSPanelTest",
+    "channels": [
+        {
+            "id": "Licht.Wohnzimmer_Decke",
+            "role": "light",
+            "name": "Deckenlicht",
+            "states": { "ON_ACTUAL": true, "SET": true }
+        },
+        {
+            "id": "Licht.Flur",
+            "role": "light",
+            "name": "Flurlicht",
+            "states": { "ON_ACTUAL": false, "SET": false }
+        },
+        {
+            "id": "Licht.Garten",
+            "role": "light",
+            "name": "Gartenlicht",
+            "states": { "ON_ACTUAL": false, "SET": false, "BUTTONTEXT": "Garten" }
+        },
+        {
+            "id": "Licht.Stehlampe",
+            "role": "dimmer",
+            "name": "Stehlampe",
+            "states": {
+                "SET": { "val": 60, "unit": "%", "min": 0, "max": 100 },
+                "ACTUAL": { "val": 60, "unit": "%", "min": 0, "max": 100 },
+                "ON_SET": true,
+                "ON_ACTUAL": true
+            }
+        },
+        {
+            "id": "Licht.Bad_Spiegel",
+            "role": "dimmer",
+            "name": "Spiegellicht",
+            "states": {
+                "SET": { "val": 0, "unit": "%", "min": 0, "max": 100 },
+                "ACTUAL": { "val": 0, "unit": "%", "min": 0, "max": 100 },
+                "ON_SET": false,
+                "ON_ACTUAL": false
+            }
+        },
+        {
+            "id": "Licht.Kueche_Arbeitslicht",
+            "role": "ct",
+            "name": "Arbeitslicht",
+            "states": {
+                "DIMMER": { "val": 100, "unit": "%", "min": 0, "max": 100 },
+                "ON": true,
+                "ON_ACTUAL": true,
+                "TEMPERATURE": { "val": 4000, "unit": "K", "min": 2700, "max": 6500 }
+            }
+        },
+        {
+            "id": "Licht.Schlafzimmer_Farbe",
+            "role": "rgb",
+            "name": "Farblicht",
+            "states": {
+                "RED": { "val": 255, "min": 0, "max": 255 },
+                "GREEN": { "val": 96, "min": 0, "max": 255 },
+                "BLUE": { "val": 160, "min": 0, "max": 255 },
+                "ON_ACTUAL": true,
+                "ON": true,
+                "DIMMER": { "val": 45, "unit": "%", "min": 0, "max": 100 },
+                "TEMPERATURE": { "val": 3000, "unit": "K", "min": 2700, "max": 6500 }
+            }
+        },
+        {
+            "id": "Licht.LED_Leiste",
+            "role": "rgbSingle",
+            "name": "LED-Leiste",
+            "states": {
+                "RGB": "#FF8800",
+                "ON": true,
+                "DIMMER": { "val": 80, "unit": "%", "min": 0, "max": 100 },
+                "TEMPERATURE": { "val": 2700, "unit": "K", "min": 2700, "max": 6500 },
+                "ON_ACTUAL": true
+            }
+        },
+        {
+            "id": "Licht.Esszimmer_Hue",
+            "role": "hue",
+            "name": "Esstisch",
+            "states": {
+                "DIMMER": { "val": 70, "unit": "%", "min": 0, "max": 100 },
+                "ON": true,
+                "ON_ACTUAL": true,
+                "TEMPERATURE": { "val": 3500, "unit": "K", "min": 2700, "max": 6500 },
+                "HUE": { "val": 210, "unit": "°", "min": 0, "max": 360 }
+            }
+        },
+        {
+            "id": "Schalter.Steckdose_TV",
+            "role": "socket",
+            "name": "Fernseher",
+            "states": { "ACTUAL": true, "SET": true, "BUTTONTEXT": "TV" }
+        },
+        {
+            "id": "Schalter.Steckdose_Buero",
+            "role": "socket",
+            "name": "Schreibtisch",
+            "states": { "ACTUAL": false, "SET": false }
+        },
+        {
+            "id": "Schalter.Kaffeemaschine",
+            "role": "socket",
+            "name": "Kaffeemaschine",
+            "states": { "ACTUAL": false, "SET": false }
+        },
+        {
+            "id": "Szene.Alles_aus",
+            "role": "button",
+            "name": "Alles aus",
+            "states": { "SET": false }
+        },
+        {
+            "id": "Szene.Kino",
+            "role": "button",
+            "name": "Kinoabend",
+            "states": { "SET": false }
+        },
+        {
+            "id": "Rollladen.Wohnzimmer",
+            "role": "blind",
+            "name": "Rollo Wohnen",
+            "states": {
+                "ACTUAL": { "val": 40, "unit": "%", "min": 0, "max": 100 },
+                "SET": { "val": 40, "unit": "%", "min": 0, "max": 100 },
+                "CLOSE": false,
+                "OPEN": false,
+                "STOP": false,
+                "TILT_ACTUAL": { "val": 50, "unit": "%", "min": 0, "max": 100 },
+                "TILT_SET": { "val": 50, "unit": "%", "min": 0, "max": 100 },
+                "TILT_CLOSE": false,
+                "TILT_OPEN": false,
+                "TILT_STOP": false
+            }
+        },
+        {
+            "id": "Rollladen.Kueche",
+            "role": "blind",
+            "name": "Rollo Küche",
+            "states": {
+                "ACTUAL": { "val": 100, "unit": "%", "min": 0, "max": 100 },
+                "SET": { "val": 100, "unit": "%", "min": 0, "max": 100 },
+                "CLOSE": false,
+                "OPEN": false,
+                "STOP": false
+            }
+        },
+        {
+            "id": "Rollladen.Schlafzimmer",
+            "role": "blind",
+            "name": "Rollo Schlafen",
+            "states": {
+                "ACTUAL": { "val": 0, "unit": "%", "min": 0, "max": 100 },
+                "SET": { "val": 0, "unit": "%", "min": 0, "max": 100 },
+                "CLOSE": false,
+                "OPEN": false,
+                "STOP": false
+            }
+        },
+        {
+            "id": "Tor.Garage",
+            "role": "gate",
+            "name": "Garagentor",
+            "states": {
+                "ACTUAL": { "val": 0, "unit": "%", "min": 0, "max": 100 },
+                "SET": false,
+                "STOP": false
+            }
+        },
+        {
+            "id": "Tuer.Haustuer_Schloss",
+            "role": "lock",
+            "name": "Haustür",
+            "states": { "ACTUAL": true, "OPEN": false, "SET": true }
+        },
+        {
+            "id": "Heizung.Wohnzimmer",
+            "role": "thermostat",
+            "name": "Wohnzimmer",
+            "states": {
+                "ACTUAL": { "val": 21.3, "unit": "°C" },
+                "SET": { "val": 21.5, "unit": "°C", "min": 5, "max": 30, "step": 0.5 },
+                "MODE": {
+                    "val": 3,
+                    "type": "number",
+                    "states": { "0": "OFF", "1": "AUTO", "3": "HEAT", "4": "ECO" }
+                },
+                "MODESET": {
+                    "val": 3,
+                    "states": { "0": "OFF", "1": "AUTO", "3": "HEAT", "4": "ECO" }
+                },
+                "BOOST": false,
+                "ERROR": false,
+                "LOWBAT": false,
+                "UNREACH": false,
+                "HUMIDITY": { "val": 46, "unit": "%" },
+                "MAINTAIN": false,
+                "PARTY": false,
+                "POWER": true,
+                "VACATION": false,
+                "WINDOWOPEN": false,
+                "WORKING": true
+            }
+        },
+        {
+            "id": "Heizung.Bad",
+            "role": "thermostat",
+            "name": "Bad",
+            "states": {
+                "ACTUAL": { "val": 23.1, "unit": "°C" },
+                "SET": { "val": 23, "unit": "°C", "min": 5, "max": 30, "step": 0.5 },
+                "HUMIDITY": { "val": 64, "unit": "%" },
+                "MODE": { "val": "Komfort", "type": "string" },
+                "BOOST": true,
+                "WINDOWOPEN": false
+            }
+        },
+        {
+            "id": "Heizung.Kinderzimmer",
+            "role": "thermostat",
+            "name": "Kinderzimmer",
+            "states": {
+                "ACTUAL": { "val": 20.4, "unit": "°C" },
+                "SET": { "val": 20, "unit": "°C", "min": 5, "max": 30, "step": 0.5 },
+                "HUMIDITY": { "val": 51, "unit": "%" },
+                "WINDOWOPEN": true
+            }
+        },
+        {
+            "id": "Heizung.Schlafzimmer",
+            "role": "thermostat",
+            "name": "Schlafzimmer",
+            "states": {
+                "ACTUAL": { "val": 18.2, "unit": "°C" },
+                "SET": { "val": 18, "unit": "°C", "min": 5, "max": 30, "step": 0.5 },
+                "HUMIDITY": { "val": 55, "unit": "%" },
+                "LOWBAT": true
+            }
+        },
+        {
+            "id": "Klima.Buero",
+            "role": "airCondition",
+            "name": "Klima Büro",
+            "states": {
+                "ACTUAL": { "val": 24.8, "unit": "°C" },
+                "SET": { "val": 22, "unit": "°C", "min": 16, "max": 30, "step": 0.5 },
+                "SET2": { "val": 26, "unit": "°C", "min": 16, "max": 30, "step": 0.5 },
+                "BOOST": false,
+                "ERROR": false,
+                "HUMIDITY": { "val": 41, "unit": "%" },
+                "MAINTAIN": false,
+                "MODE": {
+                    "val": 2,
+                    "type": "number",
+                    "states": {
+                        "0": "OFF",
+                        "1": "AUTO",
+                        "2": "COOL",
+                        "3": "HEAT",
+                        "4": "ECO",
+                        "5": "FAN_ONLY",
+                        "6": "DRY"
+                    }
+                },
+                "MODESET": {
+                    "val": 2,
+                    "states": {
+                        "0": "OFF",
+                        "1": "AUTO",
+                        "2": "COOL",
+                        "3": "HEAT",
+                        "4": "ECO",
+                        "5": "FAN_ONLY",
+                        "6": "DRY"
+                    }
+                },
+                "POWER": true,
+                "SPEED": { "val": 2, "min": 0, "max": 4, "states": { "0": "Auto", "1": "Leise", "2": "Mittel", "3": "Hoch", "4": "Turbo" } },
+                "SWING": { "val": 1, "min": 0, "max": 2, "states": { "0": "Aus", "1": "Vertikal", "2": "Horizontal" } },
+                "SWING2": false,
+                "UNREACH": false
+            }
+        },
+        {
+            "id": "Lueftung.Bad",
+            "role": "level.mode.fan",
+            "name": "Badlüfter",
+            "states": {
+                "ACTUAL": true,
+                "MODE": { "val": 1, "states": { "0": "Auto", "1": "Feuchte", "2": "Dauer", "3": "Nacht" } },
+                "SET": true,
+                "SPEED": { "val": 60, "unit": "%", "min": 0, "max": 100 }
+            }
+        },
+        {
+            "id": "Lueftung.Deckenventilator",
+            "role": "level.mode.fan",
+            "name": "Deckenventilator",
+            "states": {
+                "ACTUAL": false,
+                "MODE": { "val": 0, "states": { "0": "Normal", "1": "Brise", "2": "Schlaf" } },
+                "SET": false,
+                "SPEED": { "val": 2, "min": 0, "max": 5 }
+            }
+        },
+        {
+            "id": "Sensor.Wohnzimmer_Temperatur",
+            "role": "temperature",
+            "name": "Temp. Wohnen",
+            "states": { "ACTUAL": { "val": 21.4, "unit": "°C" } }
+        },
+        {
+            "id": "Sensor.Aussen_Temperatur",
+            "role": "value.temperature",
+            "name": "Außen",
+            "states": { "ACTUAL": { "val": 8.6, "unit": "°C" } }
+        },
+        {
+            "id": "Sensor.Wohnzimmer_Feuchte",
+            "role": "humidity",
+            "name": "Feuchte Wohnen",
+            "states": { "ACTUAL": { "val": 47, "unit": "%" } }
+        },
+        {
+            "id": "Sensor.Keller_Feuchte",
+            "role": "value.humidity",
+            "name": "Feuchte Keller",
+            "states": { "ACTUAL": { "val": 63, "unit": "%" } }
+        },
+        {
+            "id": "Sensor.Fenster_Wohnzimmer",
+            "role": "window",
+            "name": "Fenster Wohnzimmer",
+            "states": { "ACTUAL": true, "BUTTONTEXT": "Wohnzimmer" }
+        },
+        {
+            "id": "Sensor.Fenster_Kueche",
+            "role": "window",
+            "name": "Fenster Küche",
+            "states": { "ACTUAL": false }
+        },
+        {
+            "id": "Sensor.Haustuer",
+            "role": "door",
+            "name": "Haustür",
+            "states": { "ACTUAL": false, "BUTTONTEXT": "Haustür" }
+        },
+        {
+            "id": "Sensor.Terrassentuer",
+            "role": "door",
+            "name": "Terrassentür",
+            "states": { "ACTUAL": true }
+        },
+        {
+            "id": "Sensor.Bewegung_Flur",
+            "role": "motion",
+            "name": "Bewegung Flur",
+            "states": { "ACTUAL": true }
+        },
+        {
+            "id": "Sensor.Wassermelder_Keller",
+            "role": "sensor.alarm.flood",
+            "name": "Wassermelder",
+            "states": { "ACTUAL": false }
+        },
+        {
+            "id": "Sensor.Unwetterwarnung",
+            "role": "warning",
+            "name": "Unwetterwarnung",
+            "states": {
+                "INFO": "Es treten Sturmböen mit Geschwindigkeiten um 70 km/h aus westlicher Richtung auf.",
+                "LEVEL": { "val": 2, "min": 0, "max": 4 },
+                "TITLE": "Sturmböen"
+            }
+        },
+        {
+            "id": "Medien.Lautstaerke",
+            "role": "volume",
+            "name": "Lautstärke",
+            "states": {
+                "ACTUAL": { "val": 35, "unit": "%", "min": 0, "max": 100 },
+                "SET": { "val": 35, "unit": "%", "min": 0, "max": 100 },
+                "MUTE": false
+            }
+        },
+        {
+            "id": "Medien.Wiedergabe",
+            "role": "media",
+            "name": "Wiedergabe",
+            "states": { "STATE": true }
+        },
+        {
+            "id": "Steuerung.Ventil_Fussbodenheizung",
+            "role": "slider",
+            "name": "Fußboden",
+            "states": {
+                "SET": { "val": 40, "unit": "%", "min": 0, "max": 100 },
+                "ACTUAL": { "val": 40, "unit": "%", "min": 0, "max": 100 },
+                "SET2": { "val": 25, "unit": "%", "min": 0, "max": 100 },
+                "ACTUAL2": { "val": 25, "unit": "%", "min": 0, "max": 100 },
+                "SET3": { "val": 70, "unit": "%", "min": 0, "max": 100 },
+                "ACTUAL3": { "val": 70, "unit": "%", "min": 0, "max": 100 }
+            }
+        },
+        {
+            "id": "Steuerung.Haus_Modus",
+            "role": "select",
+            "name": "Hausmodus",
+            "states": {
+                "ACTUAL": {
+                    "val": 0,
+                    "type": "number",
+                    "states": { "0": "Zuhause", "1": "Abwesend", "2": "Urlaub", "3": "Nacht" }
+                },
+                "SET": {
+                    "val": 0,
+                    "type": "number",
+                    "states": { "0": "Zuhause", "1": "Abwesend", "2": "Urlaub", "3": "Nacht" }
+                }
+            }
+        },
+        {
+            "id": "Steuerung.Eieruhr",
+            "role": "level.timer",
+            "name": "Eieruhr",
+            "states": {
+                "ACTUAL": { "val": 300, "unit": "s", "min": 0 },
+                "SET": { "val": 300, "unit": "s", "min": 0 },
+                "STATE": false,
+                "STATUS": { "val": 0, "min": 0, "max": 2, "states": { "0": "OFF", "1": "PAUSE", "2": "RUNNING" } }
+            }
+        },
+        {
+            "id": "Info.Status",
+            "role": "info",
+            "name": "Systemstatus",
+            "states": {
+                "ACTUAL": "Alles in Ordnung",
+                "COLORDEC": 65280,
+                "BUTTONTEXT": "Status",
+                "USERICON": "check-circle"
+            }
+        },
+        {
+            "id": "Info.Strompreis",
+            "role": "info",
+            "name": "Strompreis",
+            "states": { "ACTUAL": { "val": 0.31, "unit": "€/kWh" } }
+        },
+        {
+            "id": "Info.Anwesenheit",
+            "role": "info",
+            "name": "Jemand zu Hause",
+            "states": { "ACTUAL": true }
+        },
+        {
+            "id": "Info.Waschmaschine",
+            "role": "info",
+            "name": "Waschmaschine",
+            "states": { "ACTUAL": { "val": 42, "unit": "min" }, "USERICON": "washing-machine" }
+        },
+        {
+            "id": "Fahrplan.Bus_Abfahrt1",
+            "role": "timeTable",
+            "name": "Bus 1",
+            "states": {
+                "VEHICLE": { "val": "bus", "type": "string", "role": "state" },
+                "DELAY": { "val": false, "type": "boolean", "role": "state" },
+                "DEPARTURE": { "val": "{{ts:+12m}}", "type": "number", "role": "date" },
+                "DIRECTION": { "val": "Hauptbahnhof", "type": "string", "role": "state" },
+                "ACTUAL": { "val": "{{ts:+12m}}", "type": "number", "role": "date" }
+            }
+        },
+        {
+            "id": "Fahrplan.Bus_Abfahrt2",
+            "role": "timeTable",
+            "name": "Bus 2",
+            "states": {
+                "VEHICLE": { "val": "bus", "type": "string", "role": "state" },
+                "DELAY": { "val": true, "type": "boolean", "role": "state" },
+                "DEPARTURE": { "val": "{{ts:+27m}}", "type": "number", "role": "date" },
+                "DIRECTION": { "val": "Universität", "type": "string", "role": "state" },
+                "ACTUAL": { "val": "{{ts:+31m}}", "type": "number", "role": "date" }
+            }
+        },
+        {
+            "id": "Fahrplan.Bahn_Abfahrt1",
+            "role": "timeTable",
+            "name": "S-Bahn",
+            "states": {
+                "VEHICLE": { "val": "train", "type": "string", "role": "state" },
+                "DELAY": { "val": false, "type": "boolean", "role": "state" },
+                "DEPARTURE": { "val": "{{ts:+44m}}", "type": "number", "role": "date" },
+                "DIRECTION": { "val": "Flughafen", "type": "string", "role": "state" },
+                "ACTUAL": { "val": "{{ts:+44m}}", "type": "number", "role": "date" }
+            }
+        },
+        {
+            "id": "Fahrplan.Bahn_Abfahrt2",
+            "role": "timeTable",
+            "name": "S-Bahn 2",
+            "states": {
+                "VEHICLE": { "val": "train", "type": "string", "role": "state" },
+                "DELAY": { "val": true, "type": "boolean", "role": "state" },
+                "DEPARTURE": { "val": "{{ts:+58m}}", "type": "number", "role": "date" },
+                "DIRECTION": { "val": "Messe", "type": "string", "role": "state" },
+                "ACTUAL": { "val": "{{ts:+63m}}", "type": "number", "role": "date" }
+            }
+        },
+        {
+            "id": "Fahrplan.Tram_Abfahrt1",
+            "role": "timeTable",
+            "name": "Straßenbahn 1",
+            "states": {
+                "VEHICLE": { "val": "tram", "type": "string", "role": "state" },
+                "DELAY": { "val": false, "type": "boolean", "role": "state" },
+                "DEPARTURE": { "val": "{{ts:+6m}}", "type": "number", "role": "date" },
+                "DIRECTION": { "val": "Altstadt", "type": "string", "role": "state" },
+                "ACTUAL": { "val": "{{ts:+6m}}", "type": "number", "role": "date" }
+            }
+        },
+        {
+            "id": "Fahrplan.Tram_Abfahrt2",
+            "role": "timeTable",
+            "name": "Straßenbahn 2",
+            "states": {
+                "VEHICLE": { "val": "tram", "type": "string", "role": "state" },
+                "DELAY": { "val": false, "type": "boolean", "role": "state" },
+                "DEPARTURE": { "val": "{{ts:+21m}}", "type": "number", "role": "date" },
+                "DIRECTION": { "val": "Zoo", "type": "string", "role": "state" },
+                "ACTUAL": { "val": "{{ts:+21m}}", "type": "number", "role": "date" }
+            }
+        }
+    ],
+    "states": [
+        { "id": "Energie.PV", "name": "PV-Erzeugung", "type": "number", "role": "value.power", "unit": "W", "val": 4280 },
+        { "id": "Energie.Batterie", "name": "Batterie", "type": "number", "role": "value.power", "unit": "W", "val": -850 },
+        { "id": "Energie.Netz", "name": "Netzbezug", "type": "number", "role": "value.power", "unit": "W", "val": 120 },
+        { "id": "Energie.Wallbox", "name": "Wallbox", "type": "number", "role": "value.power", "unit": "W", "val": 2100 },
+        { "id": "Energie.Waermepumpe", "name": "Wärmepumpe", "type": "number", "role": "value.power", "unit": "W", "val": 640 },
+        { "id": "Energie.Haushalt", "name": "Haushalt", "type": "number", "role": "value.power", "unit": "W", "val": 810 },
+        { "id": "Energie.Hausverbrauch", "name": "Hausverbrauch", "type": "number", "role": "value.power", "unit": "W", "val": 3550 },
+        { "id": "Energie.Batterie_SOC", "name": "Batterie-Ladestand", "type": "number", "role": "value.battery", "unit": "%", "val": 78 },
+        { "id": "Energie.Heute.Eigenverbrauch", "name": "Eigenverbrauch", "type": "number", "role": "value.energy", "unit": "kWh", "val": 12.8 },
+        { "id": "Energie.Heute.Einspeisung", "name": "Einspeisung", "type": "number", "role": "value.energy", "unit": "kWh", "val": 6.1 },
+        { "id": "Energie.Heute.Netzbezug", "name": "Netzbezug", "type": "number", "role": "value.energy", "unit": "kWh", "val": 4.2 },
+        { "id": "Energie.Heute.Batterie", "name": "Batterie", "type": "number", "role": "value.energy", "unit": "kWh", "val": 3.4 },
+        { "id": "Energie.Heute.Wallbox", "name": "Wallbox", "type": "number", "role": "value.energy", "unit": "kWh", "val": 7.5 },
+        {
+            "id": "Diagramm.Stromverbrauch.Ticks",
+            "name": "Stromverbrauch Skala",
+            "type": "string",
+            "role": "json",
+            "val": "[0,10,20,30,40,50]"
+        },
+        {
+            "id": "Diagramm.Stromverbrauch.Werte",
+            "name": "Stromverbrauch 24 h in 0,1 kWh (Balken)",
+            "type": "string",
+            "role": "text",
+            "val": "12^0~10~8~7~7~9~18^6~32~41~26~21~24~30^12~28~25~23~27~35~42^18~46~39~31~28~25"
+        },
+        {
+            "id": "Diagramm.Aussentemperatur.Ticks",
+            "name": "Außentemperatur Skala",
+            "type": "string",
+            "role": "json",
+            "val": "[0,50,100,150,200]"
+        },
+        {
+            "id": "Diagramm.Aussentemperatur.Werte",
+            "name": "Außentemperatur 24 h (Linie)",
+            "type": "string",
+            "role": "text",
+            "val": "0^00:00+360^06:00+720^12:00+1080^18:00+1439^24:00~0:62~60:58~120:55~180:51~240:49~300:47~360:46~420:52~480:63~540:78~600:96~660:112~720:128~780:139~840:146~900:149~960:144~1020:131~1080:115~1140:101~1200:90~1260:81~1320:74~1380:68~1439:64"
+        },
+        {
+            "id": "Abfall.Termine",
+            "name": "Abfallkalender (Format iCal data.table)",
+            "type": "string",
+            "role": "json",
+            "val": "[{\"_date\":\"{{date:+1d}}\",\"event\":\"Restmüll\"},{\"_date\":\"{{date:+3d}}\",\"event\":\"Biotonne\"},{\"_date\":\"{{date:+6d}}\",\"event\":\"Gelber Sack\"},{\"_date\":\"{{date:+9d}}\",\"event\":\"Papiertonne\"},{\"_date\":\"{{date:+15d}}\",\"event\":\"Restmüll\"},{\"_date\":\"{{date:+17d}}\",\"event\":\"Biotonne\"},{\"_date\":\"{{date:+20d}}\",\"event\":\"Gelber Sack\"},{\"_date\":\"{{date:+23d}}\",\"event\":\"Papiertonne\"}]"
+        },
+        { "id": "Gaeste_WLAN.Aktiv", "name": "Gäste-WLAN aktiv", "type": "boolean", "role": "switch", "val": true },
+        { "id": "Hinweis.Waschmaschine_fertig", "name": "Waschmaschine fertig", "type": "boolean", "role": "indicator", "val": false },
+        { "id": "Hinweis.Fenster_offen", "name": "Anzahl offener Fenster", "type": "number", "role": "value", "val": 0 },
+        { "id": "Wetter.Wind", "name": "Windgeschwindigkeit", "type": "number", "role": "value.speed.wind", "unit": "km/h", "val": 18 },
+        { "id": "Wetter.Luftdruck", "name": "Luftdruck", "type": "number", "role": "value.pressure", "unit": "hPa", "val": 1013 },
+        { "id": "Wetter.Regen", "name": "Regen heute", "type": "number", "role": "value.precipitation", "unit": "mm", "val": 1.2 },
+        { "id": "Wetter.UV_Index", "name": "UV-Index", "type": "number", "role": "value.uv", "val": 3 }
+    ]
+}

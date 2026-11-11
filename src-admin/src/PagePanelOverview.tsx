@@ -4,6 +4,7 @@ import {
     Alert,
     Checkbox,
     FormControlLabel,
+    FormHelperText,
     Autocomplete,
     Box,
     Select,
@@ -27,6 +28,8 @@ import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import AddIcon from '@mui/icons-material/Add';
+import FileDownloadIcon from '@mui/icons-material/FileDownload';
+import FileUploadIcon from '@mui/icons-material/FileUpload';
 import {
     defaultWebLinkSettings,
     loadWebLinkSettings,
@@ -38,7 +41,23 @@ import {
 } from './webPanelUrl';
 import ConfigIP from './components/ConfigIP';
 import PanelButtonDialog, { type PanelButtonSide } from './components/PanelButtonDialog';
-import type { AdminButtonFunction } from '../../src/lib/types/adminShareConfig';
+import type { AdminButtonFunction, PanelModel } from '../../src/lib/types/adminShareConfig';
+import {
+    hardwarePanelModels,
+    isPanelModel,
+    panelModels,
+    webPanelButtonsDefault,
+} from '../../src/lib/types/adminShareConfig';
+import {
+    buildPanelConfigExport,
+    pagesWithStrippedSecrets,
+    panelConfigExportFileName,
+    panelPagesWithSecrets,
+    panelSettingStateIds,
+    type PageSecretField,
+} from '../../src/lib/types/panelConfigExport';
+import PanelExportSecretsDialog from './components/PanelExportSecretsDialog';
+import PanelImportDialog, { type PanelImportNativeValues } from './components/PanelImportDialog';
 import { PanelStatusBadge } from './components/PanelStatusBadge';
 import { resolveTasmotaTimeZone, uniqueTasmotaTimeZones, type TasmotaTimeZone } from './tasmotaTimeZones';
 import { docUrl } from './docLink';
@@ -57,14 +76,8 @@ interface PanelConfig {
     buttonRight?: AdminButtonFunction;
     /** "panel uses no script": configured in the admin (+ global script) only, a local panel script is rejected */
     noScript?: boolean;
-}
-
-/** the three hardware models a panel (and a web panel) can have */
-const panelModels = ['eu', 'us-l', 'us-p'] as const;
-type PanelModel = (typeof panelModels)[number];
-
-function isPanelModel(value: unknown): value is PanelModel {
-    return typeof value === 'string' && (panelModels as readonly string[]).includes(value);
+    /** web panel only: show the two hardware buttons below the display; missing = default of the model */
+    webButtons?: boolean;
 }
 
 /**
@@ -100,9 +113,21 @@ interface WebPanelDialogState {
     name: string;
     topic: string;
     model: PanelModel;
+    /** show the hardware buttons below the display */
+    webButtons: boolean;
+    /** the user changed webButtons in this dialog - a model change no longer resets it to the default */
+    webButtonsTouched: boolean;
 }
 
-const closedWebPanelDialog: WebPanelDialogState = { open: false, editId: null, name: '', topic: '', model: 'eu' };
+const closedWebPanelDialog: WebPanelDialogState = {
+    open: false,
+    editId: null,
+    name: '',
+    topic: '',
+    model: 'eu',
+    webButtons: webPanelButtonsDefault('eu'),
+    webButtonsTouched: false,
+};
 
 /** Antwort eines der drei Einrichtungsschritte, siehe `runInitStep` */
 interface InitStepAnswer {
@@ -171,11 +196,17 @@ interface PagePanelOverviewState extends ConfigGenericState {
     showMessageConfirm: boolean;
     /** dialog to create or edit a web panel (kind 'web') */
     webPanelDialog: WebPanelDialogState;
+    /** result of the last export of a panel configuration, null = nothing to show */
+    exportNotice: { severity: 'success' | 'warning' | 'error'; text: string } | null;
+    /** export waiting for the answer whether PINs and passwords go into the file, null = no question open */
+    exportSecrets: { panel: PanelConfig; pages: { uniqueName: string; fields: PageSecretField[] }[] } | null;
 }
 
 class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any }, PagePanelOverviewState> {
     /** dialog that configures the action of one hardware button of one panel */
     private buttonDialogRef = React.createRef<PanelButtonDialog>();
+    /** dialog that imports a panel configuration file into one panel */
+    private importDialogRef = React.createRef<PanelImportDialog>();
     private pagesRetryTimeout?: NodeJS.Timeout;
     private blinkTimeout?: NodeJS.Timeout;
     private instance = this.props.oContext.instance ?? '0';
@@ -210,7 +241,146 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
             showMessageConfirm: false,
             webPanelDialog: closedWebPanelDialog,
             webLink: webLinkSettingsOf(props.data, defaultWebLinkSettings()),
+            exportNotice: null,
+            exportSecrets: null,
         };
+    }
+
+    /**
+     * Reads the settings states of a panel (`cmd.*`, see `panelSettingStates`); states that do not exist or
+     * cannot be read are left out.
+     *
+     * @param panelId id of the panel
+     * @returns values by id below `cmd.`
+     */
+    private async readPanelSettingStates(panelId: string): Promise<Record<string, unknown>> {
+        const ids = panelSettingStateIds(panelId, `${this.adapterName}.${this.instance}`);
+        const out: Record<string, unknown> = {};
+        for (const [key, id] of Object.entries(ids)) {
+            try {
+                const state = await this.props.oContext.socket.getState(id);
+                if (state && state.val != null) {
+                    out[key] = state.val;
+                }
+            } catch {
+                // not readable - left out of the export
+            }
+        }
+        return out;
+    }
+
+    /** @returns version of the installed adapter, undefined when it cannot be read */
+    private async readAdapterVersion(): Promise<string | undefined> {
+        try {
+            const obj = await this.props.oContext.socket.getObject(
+                `system.adapter.${this.adapterName}.${this.instance}`,
+            );
+            const version: unknown = obj?.common?.version;
+            return typeof version === 'string' ? version : undefined;
+        } catch {
+            return undefined;
+        }
+    }
+
+    /**
+     * Hands the tables changed by an import to the admin in one change: two onChange calls in a row would lose the
+     * first one. The user saves afterwards.
+     *
+     * @param values the changed native tables
+     */
+    private applyImportNative = async (values: PanelImportNativeValues): Promise<void> => {
+        const data = JSON.parse(JSON.stringify(this.props.data ?? {}));
+        for (const [key, value] of Object.entries(values)) {
+            if (value !== undefined) {
+                ConfigGeneric.setValue(data, key, value);
+            }
+        }
+        await new Promise<void>(resolve => this.props.onChange(data, undefined, resolve));
+        this.forceUpdate();
+    };
+
+    /**
+     * Export button of a tile: asks first when pages of the panel hold PINs or passwords, else exports at once.
+     *
+     * @param panel the panel of the tile
+     */
+    private handleExportPanel = (panel: PanelConfig): void => {
+        if (!panel.id || !panel.topic) {
+            return;
+        }
+        const pages = panelPagesWithSecrets(this.props.data, panel.topic);
+        if (pages.length) {
+            this.setState({ exportSecrets: { panel, pages } });
+            return;
+        }
+        void this.exportPanel(panel, false);
+    };
+
+    /**
+     * Answer of the secrets dialog.
+     *
+     * @param includeSecrets true = PINs and passwords go into the file (explicit choice)
+     */
+    private handleExportSecretsAnswer = (includeSecrets: boolean): void => {
+        const pending = this.state.exportSecrets;
+        this.setState({ exportSecrets: null });
+        if (pending) {
+            void this.exportPanel(pending.panel, includeSecrets);
+        }
+    };
+
+    /**
+     * Writes the configuration of one panel (pages, screensaver, buttons and settings) into a JSON file the
+     * browser downloads. Takes the configuration as shown, unsaved changes included.
+     *
+     * @param panel the panel of the tile
+     * @param includeSecrets true = PINs and passwords go into the file
+     */
+    private async exportPanel(panel: PanelConfig, includeSecrets: boolean): Promise<void> {
+        if (!panel.id || !panel.topic) {
+            return;
+        }
+        try {
+            const now = new Date();
+            const data = buildPanelConfigExport({
+                native: this.props.data,
+                panel,
+                states: await this.readPanelSettingStates(panel.id),
+                adapterVersion: await this.readAdapterVersion(),
+                includeSecrets,
+                now,
+            });
+            const fileName = panelConfigExportFileName(panel.name || panel.topic, now);
+            const url = URL.createObjectURL(
+                new Blob([`${JSON.stringify(data, null, 2)}\n`], { type: 'application/json' }),
+            );
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = fileName;
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            setTimeout(() => URL.revokeObjectURL(url), 1000);
+            const secrets = pagesWithStrippedSecrets(data);
+            const done = this.getText('exportPanelDone').replace('%s', fileName);
+            this.setState({
+                exportNotice: includeSecrets
+                    ? { severity: 'warning', text: `${done} ${this.getText('exportPanelSecretsIncluded')}` }
+                    : secrets.length
+                      ? {
+                            severity: 'warning',
+                            text: `${done} ${this.getText('exportPanelSecrets').replace('%s', secrets.join(', '))}`,
+                        }
+                      : { severity: 'success', text: done },
+            });
+        } catch (e) {
+            this.setState({
+                exportNotice: {
+                    severity: 'error',
+                    text: this.getText('exportPanelFailed').replace('%s', e instanceof Error ? e.message : String(e)),
+                },
+            });
+        }
     }
 
     /**
@@ -848,13 +1018,16 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
      * @param panel the web panel to edit, undefined = create a new one
      */
     private handleWebPanelDialogOpen = (panel?: PanelConfig): void => {
+        const model: PanelModel = isPanelModel(panel?.model) ? panel.model : 'eu';
         this.setState({
             webPanelDialog: {
                 open: true,
                 editId: panel?.id ?? null,
                 name: panel?.name ?? '',
                 topic: panel?.topic ?? '',
-                model: isPanelModel(panel?.model) ? panel.model : 'eu',
+                model,
+                webButtons: typeof panel?.webButtons === 'boolean' ? panel.webButtons : webPanelButtonsDefault(model),
+                webButtonsTouched: false,
             },
         });
     };
@@ -886,8 +1059,23 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
     private handleWebPanelModelChange = (event: SelectChangeEvent<string>): void => {
         const value = event.target.value;
         if (isPanelModel(value)) {
-            this.setState(prev => ({ webPanelDialog: { ...prev.webPanelDialog, model: value } }));
+            this.setState(prev => ({
+                webPanelDialog: {
+                    ...prev.webPanelDialog,
+                    model: value,
+                    webButtons: prev.webPanelDialog.webButtonsTouched
+                        ? prev.webPanelDialog.webButtons
+                        : webPanelButtonsDefault(value),
+                },
+            }));
         }
+    };
+
+    private handleWebPanelButtonsChange = (event: React.ChangeEvent<HTMLInputElement>): void => {
+        const checked = event.target.checked;
+        this.setState(prev => ({
+            webPanelDialog: { ...prev.webPanelDialog, webButtons: checked, webButtonsTouched: true },
+        }));
     };
 
     /**
@@ -923,9 +1111,9 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
         if (!this.isWebPanelDialogValid()) {
             return;
         }
-        const { editId, name, topic, model } = this.state.webPanelDialog;
+        const { editId, name, topic, model, webButtons } = this.state.webPanelDialog;
         const panels: PanelConfig[] = this.props.data.panels || [];
-        const values = { name: name.trim(), topic: topic.trim(), model };
+        const values = { name: name.trim(), topic: topic.trim(), model, webButtons: webButtons === true };
         const updatedPanels =
             editId === null
                 ? [...panels, { ...values, kind: 'web' as const, id: newWebPanelId(panels), ip: '' }]
@@ -1265,9 +1453,14 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
                             value={panelModel}
                             onChange={this.handleSelectStringChange('_nsPanelModel')}
                         >
-                            <MenuItem value="eu">{this.getText('eu-Version')}</MenuItem>
-                            <MenuItem value="us-l">{this.getText('us-l-Version')}</MenuItem>
-                            <MenuItem value="us-p">{this.getText('us-p-Version')}</MenuItem>
+                            {hardwarePanelModels.map(model => (
+                                <MenuItem
+                                    key={model}
+                                    value={model}
+                                >
+                                    {this.getText(`${model}-Version`)}
+                                </MenuItem>
+                            ))}
                         </Select>
                     </FormControl>
                     {/* Zeitzone: Autocomplete statt Select – 562 MenuItems auf einmal frieren den Browser ein.
@@ -1315,6 +1508,16 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
                         sx={{ mt: 2 }}
                     >
                         {error}
+                    </Alert>
+                )}
+                {/* result of the last panel export */}
+                {this.state.exportNotice && (
+                    <Alert
+                        severity={this.state.exportNotice.severity}
+                        onClose={() => this.setState({ exportNotice: null })}
+                        sx={{ mt: 2 }}
+                    >
+                        {this.state.exportNotice.text}
                     </Alert>
                 )}
                 {/* Init/Update Button + Web panel button */}
@@ -1413,6 +1616,26 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
                                             <OpenInNewIcon />
                                         </IconButton>
                                     ) : null}
+                                    <IconButton
+                                        size="small"
+                                        color="primary"
+                                        onClick={(): void => this.handleExportPanel(panel)}
+                                        disabled={!panel.id || !panel.topic}
+                                        title={this.getText('exportPanel')}
+                                        aria-label={this.getText('exportPanel')}
+                                    >
+                                        <FileDownloadIcon />
+                                    </IconButton>
+                                    <IconButton
+                                        size="small"
+                                        color="primary"
+                                        onClick={(): void => this.importDialogRef.current?.openFor(panel)}
+                                        disabled={!panel.id || !panel.topic}
+                                        title={this.getText('importPanel')}
+                                        aria-label={this.getText('importPanel')}
+                                    >
+                                        <FileUploadIcon />
+                                    </IconButton>
                                     <IconButton
                                         size="small"
                                         color="primary"
@@ -1543,6 +1766,21 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
                 </Box>
 
                 {/* Action of one hardware button (native.panels[].buttonLeft/buttonRight) */}
+                <PanelImportDialog
+                    ref={this.importDialogRef}
+                    socket={this.props.oContext.socket}
+                    adapterName={this.adapterName}
+                    instance={this.instance}
+                    data={this.props.data}
+                    onApplyNative={this.applyImportNative}
+                />
+                <PanelExportSecretsDialog
+                    open={!!this.state.exportSecrets}
+                    panelName={this.state.exportSecrets?.panel.name || this.state.exportSecrets?.panel.topic || ''}
+                    pages={this.state.exportSecrets?.pages ?? []}
+                    onCancel={(): void => this.setState({ exportSecrets: null })}
+                    onExport={this.handleExportSecretsAnswer}
+                />
                 <PanelButtonDialog
                     ref={this.buttonDialogRef}
                     socket={this.props.oContext.socket}
@@ -1679,6 +1917,7 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
                                     value={webPanelDialog.model}
                                     onChange={this.handleWebPanelModelChange}
                                 >
+                                    {/* a web panel offers the hardware models plus the smartphone models web-p and web-l */}
                                     {panelModels.map(model => (
                                         <MenuItem
                                             key={model}
@@ -1689,6 +1928,18 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
                                     ))}
                                 </Select>
                             </FormControl>
+                            <FormControlLabel
+                                control={
+                                    <Checkbox
+                                        size="small"
+                                        checked={webPanelDialog.webButtons}
+                                        onChange={this.handleWebPanelButtonsChange}
+                                    />
+                                }
+                                label={this.getText('webPanelButtons')}
+                                title={this.getText('webPanelButtonsHelp')}
+                            />
+                            <FormHelperText sx={{ mt: -1 }}>{this.getText('webPanelButtonsHelp')}</FormHelperText>
                         </Box>
                     </DialogContent>
                     <DialogActions>

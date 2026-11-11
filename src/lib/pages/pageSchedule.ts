@@ -6,7 +6,7 @@ const PageScheduleMessageDefault: pages.PageScheduleMessage = {
     event: 'entityUpd',
     headline: 'Page Entities',
     navigation: 'button~bSubPrev~~~~~button~bSubNext~~~~',
-    options: ['~~~~~', '~~~~~', '~~~~~', '~~~~~', '~~~~~', '~~~~~'],
+    options: [],
 };
 
 export class PageSchedule extends PageMenu {
@@ -56,7 +56,7 @@ export class PageSchedule extends PageMenu {
         await super.update();
         const message: Partial<pages.PageScheduleMessage> = {};
         const arr = (await this.getOptions([])).slice(0, this.maxItems);
-        message.options = arr as typeof message.options;
+        message.options = arr;
 
         message.headline = this.library.getTranslation(
             (this.items && this.items.data.headline && (await this.items.data.headline.getString())) ?? '',

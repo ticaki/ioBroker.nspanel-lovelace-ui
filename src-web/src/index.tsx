@@ -1,7 +1,7 @@
 import './style/panel.css';
 import React from 'react';
 import { createRoot } from 'react-dom/client';
-import { App, mockFromLocation, mockModelFromLocation, topicFromLocation } from './App';
+import { App, mockButtonsFromLocation, mockFromLocation, mockModelFromLocation, topicFromLocation } from './App';
 
 const container = document.getElementById('root');
 if (container) {
@@ -11,6 +11,7 @@ if (container) {
                 topic={topicFromLocation()}
                 mock={mockFromLocation()}
                 mockModel={mockModelFromLocation()}
+                mockButtons={mockButtonsFromLocation()}
             />
         </React.StrictMode>,
     );

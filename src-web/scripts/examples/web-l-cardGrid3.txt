@@ -1,0 +1,4 @@
+# cardGrid3 on web-l: 6 entries (tiles of cardGrid3.txt, repeated)
+pageType~cardGrid3
+entityUpd~Klima~button~bSubPrev~~65535~~~button~bSubNext~~65535~~~text~3?1?0~~9406~Außen~15.6 °C~text~3?1?1~~9406~Luftfeuchte~62 %~number~3?1?2~~65222~Lautstärke~35|0|100~input_sel~3?1?3~~17299~Heizmodus~Komfort~text~3?1?4~~9406~Außen 2~15.6 °C~text~3?1?5~~9406~Luftfeuchte 2~62 %
+@sleep 300

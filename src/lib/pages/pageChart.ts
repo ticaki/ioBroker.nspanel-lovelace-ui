@@ -357,7 +357,7 @@ export class PageChart extends Page {
         result = { ...result, ..._message };
         return getPayload(
             'entityUpd',
-            result.headline,
+            this.shortHeadline(result.headline),
             result.navigation,
             result.color,
             result.text,

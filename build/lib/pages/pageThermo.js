@@ -307,7 +307,7 @@ class PageThermo extends import_Page.Page {
   }
   getMessage(message) {
     return (0, import_tools.getPayload)(
-      (0, import_tools.getPayloadRemoveTilde)("entityUpd", message.headline),
+      (0, import_tools.getPayloadRemoveTilde)("entityUpd", this.shortHeadline(message.headline)),
       message.navigation,
       (0, import_tools.getPayloadRemoveTilde)(
         message.intNameEntity,

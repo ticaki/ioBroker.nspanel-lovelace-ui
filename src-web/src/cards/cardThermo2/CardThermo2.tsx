@@ -3,11 +3,13 @@ import { Icon } from '../../components/Icon';
 import { TitleBar } from '../../components/TitleBar';
 import { color565ToCss } from '../../protocol/color';
 import { isEmptyEntity } from '../../protocol/split';
-import type { Entity6 } from '../../protocol/types';
-import { theme } from '../../style/theme';
+import type { Entity6, PanelModel } from '../../protocol/types';
+import { isPortrait, stageSize, theme } from '../../style/theme';
 import type { CardProps } from '../CardContract';
 import { Pressable } from '../cardEntities/shared/Pressable';
+import { splitIconField } from '../cardEntities/shared/entityTypes';
 import { HmiTextBox } from '../cardEntities/shared/widgets';
+import { nextionFont } from '../../protocol/fonts';
 import { entityPressProps } from '../cardMedia/entityPress';
 import {
     RING_START,
@@ -57,14 +59,106 @@ interface SlotBox {
  * column x 10, `bEntity5..8` right column x 341, y 72 / 129 / 186 / 243, 100 x 55, font 3;
  * `bPopup` (9th item) x 198 y 266, 55 x 40, font 1. All with xcen=1, ycen=1, isbr=0. The page
  * code resets `.font` to these defaults on every `entityUpd` and sets the `¬<n>` font instead.
- * us-l: the same boxes 15 px to the right. us-p has its own layout (55 x 55 boxes in two rows
- * at y 72 / 396), not implemented by the web panel - it uses the eu boxes.
+ * us-l: the same boxes 15 px to the right. The other models: {@link thermo2Geometry}.
  */
 export const SLOT_BOXES: readonly SlotBox[] = [
     ...[72, 129, 186, 243].map(y => ({ x: 10, y, w: 100, h: 55, font: 3 })),
     ...[72, 129, 186, 243].map(y => ({ x: 341, y, w: 100, h: 55, font: 3 })),
     { x: 198, y: 266, w: 55, h: 40, font: 1 },
 ];
+
+/** geometry of cardThermo2 in stage pixels */
+export interface Thermo2Geometry {
+    /** centre of the ring */
+    cx: number;
+    cy: number;
+    /** the 9 page item boxes */
+    slots: readonly SlotBox[];
+    /**
+     * shrink a slot content that is wider or higher than its box until it fits (portrait: the
+     * boxes are narrower than the HMI fonts); otherwise it is cut at the box like on the HMI
+     */
+    fit: boolean;
+}
+
+/** average advance of a Noto Sans character in em, used to estimate the width of a slot value */
+const CHAR_ADVANCE_EM = 0.6;
+
+/**
+ * The factor (<= 1) a slot content has to be scaled with to fit into its box: the glyph and the
+ * text of the field in the font of the field (`¬<n>`) or of the box, the width of the text
+ * estimated with an average character advance.
+ *
+ * @param field the icon field of the slot
+ * @param box the box of the slot
+ */
+export function slotFitScale(field: string, box: SlotBox): number {
+    const { glyph, text, font } = splitIconField(field);
+    const nf = nextionFont(font, box.font);
+    const width = (glyph !== undefined ? nf.iconSize : 0) + [...text].length * nf.fontSize * CHAR_ADVANCE_EM;
+    const height = Math.max(nf.px, glyph !== undefined ? nf.iconSize + nf.iconTop : 0);
+    if (width <= 0) {
+        return 1;
+    }
+    return Math.min(1, box.w / width, box.h / height);
+}
+
+/** offsets against the ring centre (eu: CY 165): mode text top, centre of -/+, top of the 9th item */
+const MODE_TOP_FROM_CY = 73;
+const BUTTONS_FROM_CY = 118;
+const SLOT9_FROM_CY = 101;
+/** distance of -/+ from the ring centre */
+const BUTTONS_DX = 58;
+/** the 9th item between minus and plus */
+function slot9(cx: number, cy: number): SlotBox {
+    return { x: Math.round(cx - 27), y: cy + SLOT9_FROM_CY, w: 55, h: 40, font: 1 };
+}
+
+/**
+ * The layout of cardThermo2 per model, 9 slots everywhere. eu like the HMI ({@link SLOT_BOXES},
+ * ring at 225/165), us-l the same 15 px to the right. web-l: the ring in the middle of the 607 px
+ * content (x 305), 4 slots left (x 10), 4 right (x 500), the 9th below the ring. Portrait like
+ * the us-p HMI: 4 slots of 80 px over the full width above the ring and 4 below it (80 px high on
+ * web-p, 60 on us-p), the ring in the middle (x 160) with the 9th item between minus and plus;
+ * the three blocks are spread with equal gaps over the height below the title bar, slot contents
+ * wider than the box are shrunk into it ({@link slotFitScale}).
+ *
+ * @param model the panel model the card sees
+ */
+export function thermo2Geometry(model: PanelModel): Thermo2Geometry {
+    const { width, height } = stageSize(model);
+    if (isPortrait(model)) {
+        // top row, ring block (ring, mode text, -/+ and the 9th item) and bottom row with equal
+        // gaps over the height below the title bar
+        const slotHeight = height >= 640 ? 80 : 60;
+        const ringBlock = RING_BOX + BUTTONS_FROM_CY + 26;
+        const gap = Math.floor((height - theme.titleBarHeight - 2 * slotHeight - ringBlock) / 4);
+        const topY = theme.titleBarHeight + gap;
+        const cy = topY + slotHeight + gap + RING_BOX;
+        const bottomY = cy - RING_BOX + ringBlock + gap;
+        const cx = width / 2;
+        const slotWidth = Math.floor(width / 4);
+        const row = (y: number): SlotBox[] =>
+            [0, 1, 2, 3].map(i => ({ x: i * slotWidth, y, w: slotWidth, h: slotHeight, font: 3 }));
+        return { cx, cy, slots: [...row(topY), ...row(bottomY), slot9(cx, cy)], fit: true };
+    }
+    if (model === 'web-l') {
+        const cx = 305;
+        const ys = [72, 129, 186, 243];
+        return {
+            cx,
+            cy: CY,
+            slots: [
+                ...ys.map(y => ({ x: 10, y, w: 100, h: 55, font: 3 })),
+                ...ys.map(y => ({ x: 500, y, w: 100, h: 55, font: 3 })),
+                slot9(cx, CY),
+            ],
+            fit: false,
+        };
+    }
+    const shift = model === 'us-l' ? US_L_SHIFT : 0;
+    return { cx: CX_EU + shift, cy: CY, slots: SLOT_BOXES.map(b => ({ ...b, x: b.x + shift })), fit: false };
+}
 
 /** colour stops of the ring: blue (cold) over cyan and yellow to red (hot) */
 const GRADIENT: readonly (readonly [number, [number, number, number]])[] = [
@@ -138,14 +232,18 @@ export class CardThermo2 extends React.Component<CardProps<CardThermo2Model>, Ca
         this.stopRepeat();
     }
 
-    /** horizontal shift of the layout against eu: us-l is 15 px to the right */
-    private get shift(): number {
-        return this.props.global.model === 'us-l' ? US_L_SHIFT : 0;
+    private get geometry(): Thermo2Geometry {
+        return thermo2Geometry(this.props.global.model);
     }
 
     /** x of the ring centre */
     private get cx(): number {
-        return CX_EU + this.shift;
+        return this.geometry.cx;
+    }
+
+    /** y of the ring centre */
+    private get cy(): number {
+        return this.geometry.cy;
     }
 
     private get dst(): number {
@@ -304,7 +402,7 @@ export class CardThermo2 extends React.Component<CardProps<CardThermo2Model>, Ca
                 style={{
                     position: 'absolute',
                     left: this.cx - RING_BOX,
-                    top: CY - RING_BOX,
+                    top: this.cy - RING_BOX,
                     touchAction: 'none',
                     cursor: 'pointer',
                 }}
@@ -392,7 +490,7 @@ export class CardThermo2 extends React.Component<CardProps<CardThermo2Model>, Ca
                     position: 'absolute',
                     left: this.cx - 70,
                     width: 140,
-                    top: CY - 26,
+                    top: this.cy - 26,
                     height: 52,
                     display: 'flex',
                     alignItems: 'center',
@@ -429,9 +527,12 @@ export class CardThermo2 extends React.Component<CardProps<CardThermo2Model>, Ca
      * holding a light, fan or number opens its popup - see {@link entityPressProps}.
      */
     private renderSlot(entity: Entity6, index: number): React.JSX.Element {
-        const box = SLOT_BOXES[index];
+        const { slots, fit } = this.geometry;
+        const box = slots[index];
         const empty = isEmptyEntity(entity) || entity.icon === '';
         const handlers = empty ? undefined : entityPressProps('cardThermo2', entity, this.props);
+        // portrait: shrink the content into the box (the HMI fonts are wider than the 80 px boxes)
+        const scale = fit && !empty ? slotFitScale(entity.icon, box) : 1;
         return (
             <Pressable
                 key={index}
@@ -440,22 +541,34 @@ export class CardThermo2 extends React.Component<CardProps<CardThermo2Model>, Ca
                 {...handlers}
                 style={{
                     position: 'absolute',
-                    left: box.x + this.shift,
+                    left: box.x,
                     top: box.y,
                     width: box.w,
                     height: box.h,
                     visibility: empty ? 'hidden' : 'visible',
                 }}
             >
-                <HmiTextBox
-                    field={entity.icon}
-                    color={color565ToCss(entity.iconColor)}
-                    x={0}
-                    y={0}
-                    w={box.w}
-                    h={box.h}
-                    font={box.font}
-                />
+                <div
+                    style={{
+                        position: 'absolute',
+                        left: 0,
+                        top: 0,
+                        width: box.w / scale,
+                        height: box.h / scale,
+                        transform: scale < 1 ? `scale(${scale})` : undefined,
+                        transformOrigin: 'top left',
+                    }}
+                >
+                    <HmiTextBox
+                        field={entity.icon}
+                        color={color565ToCss(entity.iconColor)}
+                        x={0}
+                        y={0}
+                        w={box.w / scale}
+                        h={box.h / scale}
+                        font={box.font}
+                    />
+                </div>
             </Pressable>
         );
     }
@@ -468,7 +581,7 @@ export class CardThermo2 extends React.Component<CardProps<CardThermo2Model>, Ca
                 style={{
                     position: 'absolute',
                     left: x - 26,
-                    top: 283 - 26,
+                    top: this.cy + BUTTONS_FROM_CY - 26,
                     width: 52,
                     height: 52,
                     display: 'flex',
@@ -490,7 +603,8 @@ export class CardThermo2 extends React.Component<CardProps<CardThermo2Model>, Ca
     }
 
     render(): React.JSX.Element {
-        const { model, ctx, press } = this.props;
+        const { model, ctx, press, global } = this.props;
+        const { cx, cy, slots } = this.geometry;
         return (
             <div
                 data-page={ctx.pageType}
@@ -508,18 +622,19 @@ export class CardThermo2 extends React.Component<CardProps<CardThermo2Model>, Ca
                     title={model.title}
                     navigation={model.navigation}
                     press={press}
+                    model={global.model}
                 />
                 {this.renderRing()}
-                {this.renderLine(model.line1, CY - 55)}
+                {this.renderLine(model.line1, cy - 55)}
                 {this.renderTarget()}
-                {this.renderLine(model.line2, CY + 25)}
+                {this.renderLine(model.line2, cy + 25)}
                 <div
                     data-thermo-mode=""
                     style={{
                         position: 'absolute',
-                        left: this.cx - 100,
+                        left: cx - 100,
                         width: 200,
-                        top: 238,
+                        top: cy + MODE_TOP_FROM_CY,
                         textAlign: 'center',
                         fontSize: 20,
                         color: color565ToCss(model.modeColor),
@@ -531,9 +646,9 @@ export class CardThermo2 extends React.Component<CardProps<CardThermo2Model>, Ca
                 >
                     {model.mode}
                 </div>
-                {this.renderStepButton(-1, this.cx - 58)}
-                {this.renderStepButton(1, this.cx + 58)}
-                {model.slots.slice(0, SLOT_BOXES.length).map((slot, i) => this.renderSlot(slot, i))}
+                {this.renderStepButton(-1, cx - BUTTONS_DX)}
+                {this.renderStepButton(1, cx + BUTTONS_DX)}
+                {model.slots.slice(0, slots.length).map((slot, i) => this.renderSlot(slot, i))}
             </div>
         );
     }
