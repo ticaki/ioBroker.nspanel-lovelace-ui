@@ -185,3 +185,31 @@ von `e2eLong`, `Unlock1` und `tom`).
 | `12-mode-overwrite.png` | dieselbe Datei, Modus „Komplett überschreiben“ | Erklärtext, „Bleibt zusätzlich auf dem Panel“ nennt die globalen Skriptseiten ohne die überschriebenen; Importieren-Knopf rot |
 | `13-overwrite-confirm.png` | Sicherheitsabfrage, Liste der entfernten Seiten aufgeklappt | 12 eigene Seiten, Skript aus + Skriptseiten `entities1`, `entities2`, `thermo`, Overrides, „alle Panels“/global bleiben; Fokus auf Abbrechen |
 | `14-overwrite-result.png` | Ergebnis nach „Komplett überschreiben“ (nicht gespeichert) | „Panel-Skript abgeschaltet“, toter Verweis `testrole2 – weiter → telefon` |
+| `15-e2e-overwrite-review.png` | E2E mit Speichern: Datei = Export von **Test Web-P** plus Admin-Seite `wecker` (Name einer globalen Skriptseite), Modus „Komplett überschreiben“ | `wecker` „neu anlegen“ + „ersetzt globale Skriptseite“; `testAbfall` (alle Panels) und 15 globale Skriptseiten bleiben |
+| `16-e2e-overwrite-confirm.png` | Sicherheitsabfrage dazu (Test Web-P hatte für den Test ein Panel-Skript mit `entities1`, `entities2`, `thermo`) | Skript aus, genau diese 3 Skriptseiten verschwinden |
+| `17-e2e-overwrite-result.png` | Ergebnis, danach gespeichert | „Panel-Skript abgeschaltet“, `wecker` neu |
+| `18-e2e-wecker-vorher.png`, `19-e2e-wecker-nachher.png` | Web-Ansicht von Test Web-P, `cmd.goToNavigationPoint` = `wecker` vor bzw. nach dem Import | vorher globale Skriptseite (cardGrid „Wecker“), nachher die importierte Admin-Seite (cardEntities „Wecker Admin“) |
+| `20-e2e-merge-review.png`, `21-e2e-merge-result.png` | E2E „Zusammenführen“ mit Speichern; Datei mit `noScript: true`, einem fremden Navigations-Override und einer neuen Seite `e2eMergeNeu` | Hinweistext: Skriptseiten, Overrides und „kein Skript“ bleiben; nur `e2eMergeNeu` neu |
+
+### E2E mit Speichern (2026-11-11)
+
+Dev-Server, Admin per Puppeteer, nach dem Speichern Neustart des Adapters abgewartet; geprüft über die
+Instanzkonfiguration (vorher/nachher), das Log und die Web-Ansicht.
+
+**Komplett überschreiben** (Test Web-P, Panel-Skript eingeschaltet):
+
+- `panels[Test Web-P].noScript` = true, Log „Panel Test Web-P without script - admin configuration only“;
+  `entities1` und `thermo` sind auf dem Panel nicht mehr erreichbar.
+- `wecker` zeigt die importierte Admin-Seite statt der globalen Skriptseite; die Log-Warnung „Navigation of page
+  "wecker": target "heizung" has no page“ entfällt für dieses Panel.
+- `testAbfall` (alle Panels), `media`, `heizkreise`, `lichttest1` (globales Skript) bleiben; `main` unverändert.
+- Andere Panels unverändert: einzige Änderungen in der Konfiguration sind `noScript` und die Zuweisung `wecker` von
+  Test Web-P; Test US-P zeigt unter `wecker` weiter die globale Skriptseite. Im gemeinsamen Screensaver-Eintrag
+  „Test webp“ ist nur die Reihenfolge der Panels getauscht.
+- Keine neuen Warnungen/Fehler durch den Import.
+
+**Zusammenführen** (Test Web-P, Skript wieder eingeschaltet, Override für `lichttest1` gesetzt):
+
+- `noScript` bleibt aus, obwohl die Datei `noScript: true` enthält; der vorhandene Override bleibt unverändert,
+  der Override aus der Datei wird nicht übernommen; nur `e2eMergeNeu` kommt hinzu.
+- `entities1`, `thermo` (Panel-Skript), `wecker` (Admin), `lichttest1` weiter erreichbar; keine neuen Warnungen.
