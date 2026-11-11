@@ -1607,7 +1607,7 @@ describe('lib/pages/screensaver - tile tap of the TFT 6.0.8+ (taps counted)', ()
             { type: 'button', data: { setValue1: writable(calls, 'switch') } },
             { type: 'button', data: { setValue3: writable(calls, 'cycle'), valueList: {} } },
             { type: 'button', data: { popup: { setMessage: writable(calls, 'popup') } } },
-            { type: 'button', data: { confirm: { type: 'const' }, entity1: { value: writable(calls, 'state') } } },
+            { type: 'button', data: { confirm: { type: 'const' }, setValue2: writable(calls, 'confirmed') } },
         ]);
         for (const id of ['0', '1', '2', '3', '4', '5']) {
             expect(await saver.onIndicatorTap(event(id, '2')), id).to.equal(true);
@@ -1627,13 +1627,15 @@ describe('lib/pages/screensaver - tile tap of the TFT 6.0.8+ (taps counted)', ()
             { type: 'button', data: { entity1: { value: { writeable: false } } } },
             // a state of an action that does not exist or is not writable gives no data item
             { type: 'button', data: { setValue1: undefined } },
+            // confirm only guards an action, alone it is none
+            { type: 'button', data: { confirm: { type: 'const' }, entity1: { value: writable(calls, 'confirm') } } },
         ]);
-        for (const id of ['0', '1', '2', '3', '4', '5', '6']) {
+        for (const id of ['0', '1', '2', '3', '4', '5', '6', '7']) {
             expect(await saver.onIndicatorTap(event(id)), id).to.equal(false);
         }
         expect(commands).to.deep.equal([]);
         expect(calls).to.deep.equal([]);
-        expect(writes).to.have.length(7);
+        expect(writes).to.have.length(8);
     });
 
     /**
@@ -1792,5 +1794,34 @@ describe('lib/pages/pageItem - indicator command on the screensaver', () => {
         }));
         await i.onCommand('button', '');
         expect(calls).to.deep.equal(['popup:{"headline":"","message":"msg"}']);
+    });
+    it('confirm alone is no action: older TFT jumps to the main page, TFT 6.0.8+ writes nothing', async () => {
+        const confirmOnly = (c: string[]): Record<string, unknown> => ({
+            ...writableOnly(c),
+            confirm: state(c, 'confirm'),
+        });
+        const old = item(confirmOnly);
+        await old.item.onCommand('button', '');
+        expect(old.calls).to.deep.equal(['reset', 'mainPage']);
+        const tft = item(confirmOnly);
+        await tft.item.onCommand('button', '1');
+        expect(tft.calls).to.deep.equal([]);
+    });
+
+    it('confirm with an action: the first tap asks, the action runs after the confirmation', async () => {
+        const { item: i, calls } = item(c => ({ ...button(c), confirm: state(c, 'confirm') }));
+        const noop = (): void => undefined;
+        Object.assign(i, {
+            timeouts: {},
+            adapter: { setTimeout: (): number => 1, clearTimeout: noop },
+            confirmClick: 'lock',
+        });
+        Object.assign(i.parent, { update: async (): Promise<void> => void calls.push('update') });
+        await i.onCommand('button', '');
+        expect(calls).to.deep.equal(['update']);
+        // PageItem.getPageItemPayload stores the time of the confirmation
+        i.confirmClick = Date.now() - 1000;
+        await i.onCommand('button', '');
+        expect(calls).to.deep.equal(['update', 'update', 'button:true']);
     });
 });

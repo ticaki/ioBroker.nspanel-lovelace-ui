@@ -159,7 +159,7 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
     ### **WORK IN PROGRESS**
 -->
 ### **WORK IN PROGRESS**
-- (ticaki) screensaver: an indicator only acts when an action is configured (press, switch, cycle values, open page, popup, confirm); a writable state alone is no longer switched, also not with an older TFT (there a tap on an indicator without action opens the main page); the option "indicators act as buttons" is removed, a value in an older configuration or script is ignored
+- (ticaki) screensaver: an indicator only acts when an action is configured (press, switch, cycle values, open page, popup - a confirmation only guards one of them); a writable state alone is no longer switched, also not with an older TFT (there a tap on an indicator without action opens the main page); the option "indicators act as buttons" is removed, a value in an older configuration or script is ignored
 - (ticaki) web panel: the adapter no longer crashes on the first connection of a new web panel (two startups of the browser ran at the same time)
 - (ticaki) alarm/unlock page: the status datapoint works on the first start of a new page (writes to it were ignored until the next restart)
 - (ticaki) log: the notes at startup that an admin page replaces a script page and that an optional data point falls back to another one are logged as debug instead of info

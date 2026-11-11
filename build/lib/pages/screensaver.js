@@ -1307,7 +1307,8 @@ const _Screensaver = class _Screensaver extends import_Page.Page {
   }
   /**
    * true when a tap on the indicator does something itself: an action configured at the item - button, switch,
-   * cycle values, page, popup or confirm. A state that is merely writable is no action (a blind never moves).
+   * cycle values, page or popup. `confirm` only guards such an action, alone it is none; a state that is merely
+   * writable is no action either (a blind never moves).
    *
    * @param item the indicator item
    */
@@ -1318,7 +1319,7 @@ const _Screensaver = class _Screensaver extends import_Page.Page {
       return false;
     }
     const data = entry.data;
-    return !!(data.setNavi || ((_a = data.setValue1) == null ? void 0 : _a.writeable) || ((_b = data.setValue2) == null ? void 0 : _b.writeable) || entry.type === "button" && ((_c = data.setValue3) == null ? void 0 : _c.writeable) && data.valueList || data.popup || data.confirm);
+    return !!(data.setNavi || ((_a = data.setValue1) == null ? void 0 : _a.writeable) || ((_b = data.setValue2) == null ? void 0 : _b.writeable) || entry.type === "button" && ((_c = data.setValue3) == null ? void 0 : _c.writeable) && data.valueList || data.popup);
   }
   /**
    * A short tap on a tile of the TFT 6.0.8+ (`<page>?<n>,button,<taps>`, the taps counted together with the

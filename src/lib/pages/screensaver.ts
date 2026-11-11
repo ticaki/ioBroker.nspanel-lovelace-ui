@@ -1568,7 +1568,8 @@ export class Screensaver extends Page {
 
     /**
      * true when a tap on the indicator does something itself: an action configured at the item - button, switch,
-     * cycle values, page, popup or confirm. A state that is merely writable is no action (a blind never moves).
+     * cycle values, page or popup. `confirm` only guards such an action, alone it is none; a state that is merely
+     * writable is no action either (a blind never moves).
      *
      * @param item the indicator item
      */
@@ -1583,8 +1584,7 @@ export class Screensaver extends Page {
             data.setValue1?.writeable ||
             data.setValue2?.writeable ||
             (entry.type === 'button' && data.setValue3?.writeable && data.valueList) ||
-            data.popup ||
-            data.confirm
+            data.popup
         );
     }
 
