@@ -79,6 +79,16 @@ Alle fünf Modi je Modell, voll belegt. us-p zeichnet jetzt jeden Modus hochkant
 | Smartphone quer | ![web-l messwerte](web-l-messwerte.png) | ![web-l medien](web-l-medien.png) | ![web-l details](web-l-details.png) |
 | Smartphone hochkant | ![web-p messwerte](web-p-messwerte.png) | ![web-p medien](web-p-medien.png) | ![web-p details](web-p-details.png) |
 
+## Systemseite „Navigation fehlerhaft“ (Web-Ansicht)
+
+Auf allen Test-Panels zeigt die Seite `wecker` (globales Skript) nach links auf `heizung`, eine Seite ohne Inhalt.
+Ein Druck auf den Pfeil nach links öffnet die Systemseite „Navigation fehlerhaft“; ihr Pfeil zurück führt wieder zu
+`wecker`.
+
+| EU | US-L | US-P | Web-L | Web-P |
+| --- | --- | --- | --- | --- |
+| ![eu](navigation-fehlerhaft-eu.png) | ![us-l](navigation-fehlerhaft-us-l.png) | ![us-p](navigation-fehlerhaft-us-p.png) | ![web-l](navigation-fehlerhaft-web-l.png) | ![web-p](navigation-fehlerhaft-web-p.png) |
+
 ## Vorher / nachher
 
 | Befund | vorher | nachher |
@@ -109,3 +119,4 @@ Alle fünf Modi je Modell, voll belegt. us-p zeichnet jetzt jeden Modus hochkant
 | `<modell>-medien` | cardMedia | Optionszeile vollständig sichtbar, Restzeit als Text lesbar |
 | `<modell>-details` | cardEntities mit langen Namen/Werten | lange Texte enden mit „…“ statt mitten im Buchstaben |
 | `*-vorher` | Stand vor der Korrektur | zum Vergleich mit dem Bild ohne `-vorher` |
+| `navigation-fehlerhaft-<modell>` | `wecker` → Pfeil links (Ziel `heizung` ohne Seite) | Überschrift, „Fehlende Seite: heizung“, „Von Seite: wecker“, Hinweis; Pfeil zurück führt zu `wecker`. Auf us-p und web-p sind Überschrift und Bezeichnungen gekürzt („Navigation f…“, „Fehlende Se…“, „Konfiguratio…“) |
