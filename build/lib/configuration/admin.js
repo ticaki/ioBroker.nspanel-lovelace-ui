@@ -33,6 +33,7 @@ __export(admin_exports, {
   buildMediaScriptPage: () => buildMediaScriptPage,
   buildThermo2ScriptPage: () => buildThermo2ScriptPage,
   buildThermoScriptPage: () => buildThermoScriptPage,
+  navigationTargetProblem: () => navigationTargetProblem,
   qrUsesPassword: () => qrUsesPassword
 });
 module.exports = __toCommonJS(admin_exports);
@@ -61,6 +62,19 @@ function resolveNavigationTarget(name) {
 function belongsToPanel(option, page) {
   var _a;
   return option.navigation.some((b) => b && b.name === page.uniqueID) || (0, import_admin_screensaver.isScreensaverPage)(page) || !!((_a = option.generatedPageIds) == null ? void 0 : _a.includes(page.uniqueID));
+}
+function navigationTargetProblem(option, target) {
+  if (target === void 0 || systemNavigationNodeNames.has(target) || target === ShareConfig.screensaverTargetPage) {
+    return void 0;
+  }
+  const node = option.navigation.find((b) => (b == null ? void 0 : b.name) === target);
+  if (!node) {
+    return "not found";
+  }
+  if (!option.pages.some((p) => p && p.uniqueID === node.page)) {
+    return "has no page (script page dropped or admin page missing)";
+  }
+  return void 0;
 }
 function shallowDescribe(value) {
   if (value === null) {
@@ -434,7 +448,7 @@ Stack: ${stack}`
                 headline: { type: "const", constVal: entry.headline || "Page QR" },
                 selType: { type: "const", constVal: entry.selType || 0 },
                 ssidUrlTel: { type: "const", constVal: entry.ssidUrlTel || "" },
-                wlantype: { type: "const", constVal: entry.wlantype || "WPA" },
+                wlantype: { type: "const", constVal: entry.wlantype || "WPA2" },
                 wlanhidden: { type: "const", constVal: !!entry.wlanhidden || false },
                 password: { type: "const", constVal: (_b = qrPassword == null ? void 0 : qrPassword.secret) != null ? _b : "" },
                 pwdhidden: { type: "const", constVal: !!entry.pwdhidden || false },
@@ -881,13 +895,15 @@ Stack: ${stack}`
         }
       }
     }
-    const isUnresolved = (target) => target !== void 0 && !systemNavigationNodeNames.has(target) && !option.navigation.find((b) => (b == null ? void 0 : b.name) === target);
     for (const pending of pendingNavs) {
-      if (isUnresolved(pending.prev)) {
-        this.log.warn(`Navigation unresolved for '${pending.pageId}': prev page '${pending.prev}' not found.`);
-      }
-      if (isUnresolved(pending.next)) {
-        this.log.warn(`Navigation unresolved for '${pending.pageId}': next page '${pending.next}' not found.`);
+      for (const side of ["prev", "next"]) {
+        const target = pending[side];
+        const problem = navigationTargetProblem(option, target);
+        if (target !== void 0 && problem) {
+          this.log.warn(
+            `Navigation unresolved for '${pending.pageId}': ${side} page '${target}' ${problem}.`
+          );
+        }
       }
     }
   }
@@ -1228,6 +1244,9 @@ function qrUsesPassword(entry) {
 }
 function dataForcardTrash(entry) {
   let newPage;
+  if (!(entry.countItems >= 1 && entry.countItems <= 6)) {
+    entry.countItems = 6;
+  }
   const pageItems = Array.from({ length: entry.countItems }, (_, i) => {
     return {
       id: `pageItem${i}`,
@@ -1270,9 +1289,6 @@ function dataForcardTrash(entry) {
       }
     };
   });
-  if (entry.countItems < 1 || entry.countItems > 6) {
-    entry.countItems = 6;
-  }
   if (entry.countItems < 6) {
     newPage = {
       uniqueID: entry.uniqueName,
@@ -1313,6 +1329,7 @@ function dataForcardTrash(entry) {
   buildMediaScriptPage,
   buildThermo2ScriptPage,
   buildThermoScriptPage,
+  navigationTargetProblem,
   qrUsesPassword
 });
 //# sourceMappingURL=admin.js.map

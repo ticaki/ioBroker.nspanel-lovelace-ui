@@ -38,6 +38,7 @@ var import_template_info = require("./lib/templates/template-info");
 var import_admin_media = require("./lib/configuration/admin-media");
 var import_readme = require("./lib/tools/readme");
 var import_redact = require("./lib/tools/redact");
+var import_test_states = require("./lib/tools/test-states");
 var import_credentials = require("./lib/credentials");
 var import_node_url = require("node:url");
 var fs = __toESM(require("node:fs"));
@@ -338,6 +339,7 @@ class NspanelLovelaceUi extends utils.Adapter {
         change = true;
       }
       if (native.pageQRdata) {
+        const pagesWithoutPassword = [];
         native.pageQRdata.forEach((page) => {
           const temp = {
             card: "cardQR",
@@ -345,14 +347,23 @@ class NspanelLovelaceUi extends utils.Adapter {
             headline: page.headline,
             selType: page.selType,
             ssidUrlTel: page.SSIDURLTEL,
+            wlantype: page.wlantype,
             setState: page.setState || "",
             wlanhidden: page.wlanhidden || false,
             pwdhidden: page.pwdhidden || false,
             hidden: page.hiddenByTrigger || false,
             alwaysOn: page.alwaysOnDisplay ? "always" : "none"
           };
+          if (page.selType === 1 && page.wlantype !== "nopass") {
+            pagesWithoutPassword.push(page.pageName);
+          }
           native.pageConfig.push(temp);
         });
+        if (pagesWithoutPassword.length > 0) {
+          this.log.warn(
+            `QR pages moved from the old table to the page configuration: ${pagesWithoutPassword.join(", ")}. The wifi password was not taken over - please enter it again in the admin (page editor, wifi password or credential).`
+          );
+        }
         delete native.pageQRdata;
         change = true;
       }
@@ -1453,6 +1464,30 @@ class NspanelLovelaceUi extends utils.Adapter {
         case "testCase": {
           if (obj.callback) {
             this.sendTo(obj.from, obj.command, { testSuccessful: this.testSuccessful }, obj.callback);
+          }
+          break;
+        }
+        case import_test_states.CREATE_TEST_STATES_COMMAND: {
+          try {
+            const file = import_node_path.default.join(__dirname, "..", "templates", "test-states.json");
+            const data = (0, import_test_states.parseTestStatesFile)(await fs.promises.readFile(file, "utf-8"));
+            const result = await (0, import_test_states.createTestObjects)(
+              this,
+              (0, import_test_states.buildTestObjects)(data),
+              (id, error) => this.log.warn(`Test states: ${id} not created: ${String(error)}`)
+            );
+            this.log.info(
+              `Test states: ${result.created} objects created (${result.values} values set), ${result.skipped} existed already, ${result.failed} failed`
+            );
+            const text = this.library.getTranslation("createTestStatesResult").replace("%c", String(result.created)).replace("%s", String(result.skipped)).replace("%f", String(result.failed));
+            if (obj.callback) {
+              this.sendTo(obj.from, obj.command, { result: text }, obj.callback);
+            }
+          } catch (error) {
+            this.log.error(`Test states: ${String(error)}`);
+            if (obj.callback) {
+              this.sendTo(obj.from, obj.command, { error: String(error) }, obj.callback);
+            }
           }
           break;
         }

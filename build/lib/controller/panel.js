@@ -87,6 +87,10 @@ class Panel extends import_library.BaseClass {
   _activePage = void 0;
   data = {};
   blockStartup = null;
+  /** web panel: the startup that is running, see handleVirtualStartup */
+  startupInProgress = null;
+  /** web panel: a startup that arrived while one was running and is done after it */
+  startupRepeat = null;
   _isOnline = false;
   _status = "offline";
   _statusUpdateQueue = Promise.resolve();
@@ -309,6 +313,27 @@ class Panel extends import_library.BaseClass {
   get isClone() {
     return this.isVirtual && !!this.options.sourceTopic;
   }
+  /**
+   * The model of the panel configuration. An empty model is `eu` (the default of old configurations); a value
+   * that is no panel model (e.g. a hand-edited configuration) is reported and also replaced by `eu` - the web
+   * panel would otherwise draw every page in a geometry that does not fit the display.
+   *
+   * @param model the model of the configuration
+   * @param name name of the panel for the warning
+   * @param warn logs the warning
+   */
+  static checkedModel(model, name, warn) {
+    if (model === void 0 || model === null || model === "") {
+      return "eu";
+    }
+    if (adminShareConfig.isPanelModel(model)) {
+      return model;
+    }
+    warn(
+      `Panel ${name}: unknown model ${JSON.stringify(model)} - using "eu". Valid models: ${adminShareConfig.panelModels.join(", ")}. Check the panel in the instance settings.`
+    );
+    return "eu";
+  }
   constructor(adapter, options) {
     var _a, _b, _c;
     super(adapter, options.name, (_a = options.friendlyName) != null ? _a : options.name);
@@ -328,7 +353,7 @@ class Panel extends import_library.BaseClass {
     this.controller = options.controller;
     this.topic = options.topic;
     this.info.internal.scriptName = options.scriptName.split(".").slice(2).join(".") || options.scriptName;
-    this.info.nspanel.model = options.model || "eu";
+    this.info.nspanel.model = Panel.checkedModel(options.model, this.friendlyName, (msg) => this.log.warn(msg));
     if (typeof this.panelSend.addMessage === "function") {
       this.sendToPanelClass = this.panelSend.addMessage;
     }
@@ -1947,6 +1972,114 @@ class Panel extends import_library.BaseClass {
     await this.library.writeFromJson(`panels.${this.name}.info`, "panel.panels.info", def, this.info);
   }
   /**
+   * Startup events of a web panel run one after the other. A browser sends `event,startup` after its
+   * hello and again for every `pageType~pageStartup` it gets (the offer of the loop), so two of them
+   * arrive almost together on the first connection. Running both at once let the second one write
+   * states the first one had not created yet. A startup that arrives while one runs is done once
+   * more afterwards (the browser may show the startup page again), further ones collapse into it.
+   *
+   * @param event the startup event
+   * @returns resolves when this startup (and a repeat requested meanwhile) is done
+   */
+  async handleVirtualStartup(event) {
+    if (this.startupInProgress) {
+      this.startupRepeat = event;
+      return this.startupInProgress;
+    }
+    const run = async () => {
+      try {
+        let next = event;
+        while (next) {
+          this.startupRepeat = null;
+          await this.handleStartup(next);
+          next = this.startupRepeat;
+        }
+      } finally {
+        this.startupInProgress = null;
+        this.startupRepeat = null;
+      }
+    };
+    this.startupInProgress = run();
+    return this.startupInProgress;
+  }
+  /**
+   * The startup event: the display (or browser) shows the startup page and waits for its first page.
+   *
+   * @param event the startup event
+   */
+  async handleStartup(event) {
+    if (this.blockStartup) {
+      if (!this.isVirtual) {
+        return;
+      }
+      this.adapter.clearTimeout(this.blockStartup);
+      this.blockStartup = null;
+    }
+    if (this.unload || this.adapter.unload) {
+      return;
+    }
+    this.blockStartup = this.adapter.setTimeout(() => {
+      this.blockStartup = null;
+    }, 1e4);
+    this.resetDisplayDiagnosis();
+    this.setSafeboot(false, "");
+    this.isOnline = true;
+    if (!this.isClone) {
+      const fwState = this.library.readdb(`panels.${this.name}.info.nspanel.firmwareUpdate`);
+      if (fwState && typeof fwState.val === "number" && fwState.val < 100) {
+        this.flashing = false;
+        await this.library.writedp(
+          `panels.${this.name}.info.nspanel.firmwareUpdate`,
+          100,
+          definition.genericStateObjects.panel.panels.info.nspanel.firmwareUpdate
+        );
+      }
+    }
+    this.info.nspanel.displayVersion = event.opt;
+    if (this.isVirtual) {
+      await this.setStatus("connected");
+    } else if (this.info.nspanel.model !== event.action) {
+      this.log.error(
+        `Model missmatch! Config model is ${this.info.nspanel.model} but panel send ${event.action}. Check your config!`
+      );
+      await this.controller.removePanel(this);
+      await this.setStatus("error");
+      return;
+    }
+    if (!this.isVirtual) {
+      this.requestStatusTasmota();
+      this.sendToTasmota(`${this.topic}/cmnd/POWER1`, "");
+      this.sendToTasmota(`${this.topic}/cmnd/POWER2`, "");
+      this.sendToTasmota(`${this.topic}/cmnd/GetDriverVersion`, "");
+      this.sendRules();
+      await this.adapter.delay(100);
+    }
+    await this.writeInfo();
+    this.sendDimmode();
+    this.navigation.resetPosition(true);
+    const start = this.navigation.getCurrentMainPage();
+    if (start === void 0) {
+      this.log.error("No start page defined!");
+      return;
+    }
+    if (this._activePage) {
+      await this._activePage.setVisibility(false);
+    }
+    this.lastCard = "";
+    await start.setVisibility(true);
+    this._activePage = start;
+    if (this.screenSaver) {
+      this.screenSaver.pageItems = await this.screenSaver.createPageItems(this.screenSaver.pageItemConfig);
+      await this.screenSaver.HandleDate();
+      await this.screenSaver.HandleTime();
+    }
+    if (start.alwaysOn === "none") {
+      this.sendScreensaverTimeout(2);
+    }
+    await this.setStatus("online");
+    this.log.info("Panel startup finished!");
+  }
+  /**
    *  Handle incoming messages from panel
    *
    * @param event incoming event...
@@ -1973,78 +2106,11 @@ class Panel extends import_library.BaseClass {
         if (!this.initDone) {
           return;
         }
-        if (this.blockStartup) {
-          if (!this.isVirtual) {
-            return;
-          }
-          this.adapter.clearTimeout(this.blockStartup);
-          this.blockStartup = null;
-        }
-        if (this.unload || this.adapter.unload) {
-          return;
-        }
-        this.blockStartup = this.adapter.setTimeout(() => {
-          this.blockStartup = null;
-        }, 1e4);
-        this.resetDisplayDiagnosis();
-        this.setSafeboot(false, "");
-        this.isOnline = true;
-        if (!this.isClone) {
-          const fwState = this.library.readdb(`panels.${this.name}.info.nspanel.firmwareUpdate`);
-          if (fwState && typeof fwState.val === "number" && fwState.val < 100) {
-            this.flashing = false;
-            await this.library.writedp(
-              `panels.${this.name}.info.nspanel.firmwareUpdate`,
-              100,
-              definition.genericStateObjects.panel.panels.info.nspanel.firmwareUpdate
-            );
-          }
-        }
-        this.info.nspanel.displayVersion = event.opt;
         if (this.isVirtual) {
-          await this.setStatus("connected");
-        } else if (this.info.nspanel.model !== event.action) {
-          this.log.error(
-            `Model missmatch! Config model is ${this.info.nspanel.model} but panel send ${event.action}. Check your config!`
-          );
-          await this.controller.removePanel(this);
-          await this.setStatus("error");
-          return;
+          await this.handleVirtualStartup(event);
+        } else {
+          await this.handleStartup(event);
         }
-        if (!this.isVirtual) {
-          this.requestStatusTasmota();
-          this.sendToTasmota(`${this.topic}/cmnd/POWER1`, "");
-          this.sendToTasmota(`${this.topic}/cmnd/POWER2`, "");
-          this.sendToTasmota(`${this.topic}/cmnd/GetDriverVersion`, "");
-          this.sendRules();
-          await this.adapter.delay(100);
-        }
-        await this.writeInfo();
-        this.sendDimmode();
-        this.navigation.resetPosition(true);
-        const start = this.navigation.getCurrentMainPage();
-        if (start === void 0) {
-          this.log.error("No start page defined!");
-          return;
-        }
-        if (this._activePage) {
-          await this._activePage.setVisibility(false);
-        }
-        this.lastCard = "";
-        await start.setVisibility(true);
-        this._activePage = start;
-        if (this.screenSaver) {
-          this.screenSaver.pageItems = await this.screenSaver.createPageItems(
-            this.screenSaver.pageItemConfig
-          );
-          await this.screenSaver.HandleDate();
-          await this.screenSaver.HandleTime();
-        }
-        if (start.alwaysOn === "none") {
-          this.sendScreensaverTimeout(2);
-        }
-        await this.setStatus("online");
-        this.log.info("Panel startup finished!");
         break;
       }
       case "sleepReached": {

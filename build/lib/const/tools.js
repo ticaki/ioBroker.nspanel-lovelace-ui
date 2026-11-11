@@ -64,20 +64,27 @@ __export(tools_exports, {
   getValueEntryNumber: () => getValueEntryNumber,
   getValueEntryString: () => getValueEntryString,
   getVersionAsNumber: () => getVersionAsNumber,
+  headlineMaxChars: () => headlineMaxChars,
   ifValueEntryIs: () => ifValueEntryIs,
   insertLinebreak: () => insertLinebreak,
+  isPortraitModel: () => isPortraitModel,
   isValidDate: () => isValidDate,
   isVersionGreaterOrEqual: () => isVersionGreaterOrEqual,
   isVersionOlder: () => isVersionOlder,
+  isWebModel: () => isWebModel,
+  menuMaxItems: () => menuMaxItems,
   messageItemDefault: () => messageItemDefault,
+  notifyLines: () => notifyLines,
   setHuefromRGB: () => setHuefromRGB,
   setRGBThreefromRGB: () => setRGBThreefromRGB,
   setScaledNumber: () => setScaledNumber,
   setSliderCTFromValue: () => setSliderCTFromValue,
   setTriggeredToState: () => setTriggeredToState,
   setValueEntry: () => setValueEntry,
+  shortenHeadline: () => shortenHeadline,
   siPrefixes: () => siPrefixes,
-  stripIconFontSuffix: () => stripIconFontSuffix
+  stripIconFontSuffix: () => stripIconFontSuffix,
+  webButtonsVisible: () => webButtonsVisible
 });
 module.exports = __toCommonJS(tools_exports);
 var import_data_item = require("../controller/data-item");
@@ -1173,6 +1180,60 @@ function getTasmotaVersionFromJson(json, beta) {
   const v = json.tasmota;
   return typeof v === "string" ? v.trim() : "";
 }
+function isPortraitModel(model) {
+  return model === "us-p" || model === "web-p";
+}
+function isWebModel(model) {
+  return model === "web-p" || model === "web-l";
+}
+const MENU_MAX_ITEMS = {
+  cardEntities: { eu: 4, "us-l": 4, "us-p": 5, "web-l": 4, "web-p": 8 },
+  cardSchedule: { eu: 6, "us-l": 6, "us-p": 6, "web-l": 6, "web-p": 11 },
+  cardGrid: { eu: 6, "us-l": 6, "us-p": 6, "web-l": 8, "web-p": 10 },
+  cardGrid2: { eu: 8, "us-l": 8, "us-p": 9, "web-l": 10, "web-p": 15 },
+  cardGrid3: { eu: 4, "us-l": 4, "us-p": 4, "web-l": 6, "web-p": 8 },
+  cardMedia: { eu: 5, "us-l": 5, "us-p": 5, "web-l": 6, "web-p": 8 },
+  cardThermo2: { eu: 9, "us-l": 9, "us-p": 9, "web-l": 9, "web-p": 9 }
+};
+function menuMaxItems(card, model) {
+  return MENU_MAX_ITEMS[card][model];
+}
+const NOTIFY_LINES = {
+  eu: [7, 5, 5, 4, 2, 1],
+  "us-l": [7, 5, 5, 4, 2, 1],
+  "us-p": [7, 5, 5, 4, 2, 1],
+  "web-l": [7, 5, 5, 4, 2, 1],
+  "web-p": [20, 15, 15, 10, 6, 3]
+};
+function notifyLines(textSize, model) {
+  var _a;
+  const lines = NOTIFY_LINES[model];
+  return (_a = lines[textSize]) != null ? _a : lines[0];
+}
+function webButtonsVisible(model, webButtons) {
+  return webButtons != null ? webButtons : !isWebModel(model);
+}
+const HEADLINE_MAX_CHARS = {
+  eu: 28,
+  "us-l": 28,
+  "us-p": 13,
+  "web-p": 16,
+  "web-l": 45
+};
+function headlineMaxChars(model) {
+  return HEADLINE_MAX_CHARS[model];
+}
+function shortenHeadline(text, model) {
+  if (!text) {
+    return "";
+  }
+  const max = headlineMaxChars(model);
+  const chars = Array.from(text);
+  if (chars.length <= max) {
+    return text;
+  }
+  return `${chars.slice(0, max - 1).join("")}\u2026`;
+}
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
   GetIconColor,
@@ -1210,19 +1271,26 @@ function getTasmotaVersionFromJson(json, beta) {
   getValueEntryNumber,
   getValueEntryString,
   getVersionAsNumber,
+  headlineMaxChars,
   ifValueEntryIs,
   insertLinebreak,
+  isPortraitModel,
   isValidDate,
   isVersionGreaterOrEqual,
   isVersionOlder,
+  isWebModel,
+  menuMaxItems,
   messageItemDefault,
+  notifyLines,
   setHuefromRGB,
   setRGBThreefromRGB,
   setScaledNumber,
   setSliderCTFromValue,
   setTriggeredToState,
   setValueEntry,
+  shortenHeadline,
   siPrefixes,
-  stripIconFontSuffix
+  stripIconFontSuffix,
+  webButtonsVisible
 });
 //# sourceMappingURL=tools.js.map

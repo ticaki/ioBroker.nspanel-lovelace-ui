@@ -84,6 +84,15 @@ class Page extends import_baseClassPage.BaseClassPage {
    * @param pageItemsConfig - Optional page configuration including items, enums, device references
    * @param isScreensaver - Whether this page is a screensaver (default: false)
    */
+  /**
+   * The headline of the title line, shortened with … to the width of the panel model.
+   * All cards use it when they build their entityUpd message; popups have their own widths.
+   *
+   * @param text headline
+   */
+  shortHeadline(text) {
+    return (0, import_tools.shortenHeadline)(text, this.basePanel.info.nspanel.model);
+  }
   constructor(card, pageItemsConfig, isScreensaver = false) {
     var _a;
     super(card, pageItemsConfig && pageItemsConfig.alwaysOn, pageItemsConfig && pageItemsConfig.pageItems);

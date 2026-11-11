@@ -71,7 +71,7 @@ function resolveScreensaverOptions(options) {
 const _Screensaver = class _Screensaver extends import_Page.Page {
   //readonly mode: Types.ScreensaverModeType = 'standard';
   constructor(config, pageOptions) {
-    var _a, _b, _c;
+    var _a, _b;
     const { options, rejected } = resolveScreensaverOptions(pageOptions);
     if (rejected) {
       config.adapter.log.warn(
@@ -110,7 +110,6 @@ const _Screensaver = class _Screensaver extends import_Page.Page {
     __publicField(this, "step", 0);
     __publicField(this, "blockButtons");
     __publicField(this, "rotationTime", 3e5);
-    __publicField(this, "screensaverIndicatorButtons", false);
     __publicField(this, "screensaverSwipe", false);
     __publicField(this, "_infoIcon", "");
     __publicField(this, "timeoutRotation");
@@ -239,9 +238,8 @@ const _Screensaver = class _Screensaver extends import_Page.Page {
         }
       }
     });
-    this.screensaverIndicatorButtons = (_a = options.config.screensaverIndicatorButtons) != null ? _a : false;
-    this.screensaverSwipe = (_b = options.config.screensaverSwipe) != null ? _b : false;
-    this.clockTimer = ((_c = options.config.clockTimer) == null ? void 0 : _c.enabled) ? options.config.clockTimer : void 0;
+    this.screensaverSwipe = (_a = options.config.screensaverSwipe) != null ? _a : false;
+    this.clockTimer = ((_b = options.config.clockTimer) == null ? void 0 : _b.enabled) ? options.config.clockTimer : void 0;
     this.rotationTime = options.config.rotationTime !== 0 && options.config.rotationTime < 3 ? 3e3 : options.config.rotationTime * 1e3;
     this.neverDeactivateTrigger = true;
     this.replayTriggerPerSource = true;
@@ -1354,25 +1352,20 @@ const _Screensaver = class _Screensaver extends import_Page.Page {
     return event.page !== void 0 && !!event.id && !!((_a = this.pageItems) == null ? void 0 : _a[Number(event.id)]);
   }
   /**
-   * true when a tap on the indicator does something itself: an action of the item (button, switch, cycle, page) or,
-   * with "indicators act as buttons", the state the item flips ({@link PageItem.onCommand}). A blind never moves.
+   * true when a tap on the indicator does something itself: an action configured at the item - button, switch,
+   * cycle values, page or popup. `confirm` only guards such an action, alone it is none; a state that is merely
+   * writable is no action either (a blind never moves).
    *
    * @param item the indicator item
    */
   isIndicatorKey(item) {
-    var _a, _b, _c, _d, _e, _f, _g, _h, _i;
+    var _a, _b, _c;
     const entry = item == null ? void 0 : item.dataItems;
     if (!entry || entry.type !== "button" && entry.type !== "switch") {
       return false;
     }
     const data = entry.data;
-    if (data.setNavi || ((_a = data.setValue1) == null ? void 0 : _a.writeable) || ((_b = data.setValue2) == null ? void 0 : _b.writeable) || entry.type === "button" && ((_c = data.setValue3) == null ? void 0 : _c.writeable) && data.valueList) {
-      return true;
-    }
-    if (!this.screensaverIndicatorButtons || entry.role === "blind") {
-      return false;
-    }
-    return !!(((_e = (_d = data.entity1) == null ? void 0 : _d.set) == null ? void 0 : _e.writeable) || ((_g = (_f = data.entity1) == null ? void 0 : _f.value) == null ? void 0 : _g.writeable) || ((_h = data.setTrue) == null ? void 0 : _h.writeable) && ((_i = data.setFalse) == null ? void 0 : _i.writeable) || data.popup || data.confirm);
+    return !!(data.setNavi || ((_a = data.setValue1) == null ? void 0 : _a.writeable) || ((_b = data.setValue2) == null ? void 0 : _b.writeable) || entry.type === "button" && ((_c = data.setValue3) == null ? void 0 : _c.writeable) && data.valueList || data.popup);
   }
   /**
    * A short tap on a tile of the TFT 6.0.8+ (`<page>?<n>,button,<taps>`, the taps counted together with the
