@@ -159,6 +159,7 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
     ### **WORK IN PROGRESS**
 -->
 ### **WORK IN PROGRESS**
+- (ticaki) navigation: the arrows of the service page no longer take over the navigation of another panel (warning "Didn't find a navigation node" with page names of another panel, or a wrong arrow target)
 - (ticaki) screensaver: an indicator only acts when an action is configured (press, switch, cycle values, open page, popup - a confirmation only guards one of them); a writable state alone is no longer switched, also not with an older TFT (there a tap on an indicator without action opens the main page); the option "indicators act as buttons" is removed, a value in an older configuration or script is ignored
 - (ticaki) web panel: the adapter no longer crashes on the first connection of a new web panel (two startups of the browser ran at the same time)
 - (ticaki) alarm/unlock page: the status datapoint works on the first start of a new page (writes to it were ignored until the next restart)

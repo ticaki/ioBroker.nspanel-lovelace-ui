@@ -126,7 +126,11 @@ export class Navigation extends BaseClass {
     constructor(config: NavigationConfig) {
         super(config.adapter, `${config.panel.friendlyName}-navigation`);
         this.panel = config.panel;
-        this.navigationConfig = config.navigationConfig.filter(a => a !== null && a != null);
+        // Deep copy: the system nodes (e.g. `///service`) are module-level objects shared by all panels,
+        // and init() patches nodes - a panel must never change what another panel reads.
+        this.navigationConfig = structuredClone(config.navigationConfig).filter(
+            (a): a is NavigationItemConfigNonNull => a != null,
+        );
     }
 
     async init(): Promise<void> {
@@ -186,11 +190,13 @@ export class Navigation extends BaseClass {
         if (serviceID !== null) {
             const c = this.navigationConfig[serviceID];
             if (c) {
-                if (serviceLeft) {
-                    c.left = { single: serviceLeft };
-                }
+                // Without a node pointing here, fall back to the template default (back to the start
+                // page), never to whatever the node object held before.
+                c.left = { single: serviceLeft || mainPageName };
                 if (serviceRight) {
                     c.right = { single: serviceRight };
+                } else {
+                    delete c.right;
                 }
             }
         }

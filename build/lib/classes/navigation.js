@@ -100,7 +100,9 @@ class Navigation extends import_library.BaseClass {
   constructor(config) {
     super(config.adapter, `${config.panel.friendlyName}-navigation`);
     this.panel = config.panel;
-    this.navigationConfig = config.navigationConfig.filter((a) => a !== null && a != null);
+    this.navigationConfig = structuredClone(config.navigationConfig).filter(
+      (a) => a != null
+    );
   }
   async init() {
     var _a, _b;
@@ -149,11 +151,11 @@ class Navigation extends import_library.BaseClass {
     if (serviceID !== null) {
       const c = this.navigationConfig[serviceID];
       if (c) {
-        if (serviceLeft) {
-          c.left = { single: serviceLeft };
-        }
+        c.left = { single: serviceLeft || import_default_pages.mainPageName };
         if (serviceRight) {
           c.right = { single: serviceRight };
+        } else {
+          delete c.right;
         }
       }
     }
