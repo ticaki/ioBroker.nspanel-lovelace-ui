@@ -1,4 +1,5 @@
 import React from 'react';
+import { FitBox } from '../../components/FitBox';
 import { TitleBar } from '../../components/TitleBar';
 import { color565ToCss } from '../../protocol/color';
 import type { Entity6, PanelModel } from '../../protocol/types';
@@ -196,19 +197,22 @@ export class CardGrid extends React.Component<CardProps<CardGridModel>> {
                         overflow: 'hidden',
                     }}
                 >
-                    <EntityIcon
-                        icon={entity.icon}
-                        color={color}
-                        font={TILE_DEFAULT_FONT}
-                        style={{
-                            position: 'absolute',
-                            left: 0,
-                            width: layout.valueWidth,
-                            top: center - nf.fontSize / 2,
-                            height: nf.fontSize,
-                            overflow: 'visible',
-                        }}
-                    />
+                    {/* a value (useValue) wider than the tile gets smaller instead of being cut */}
+                    <FitBox>
+                        <EntityIcon
+                            icon={entity.icon}
+                            color={color}
+                            font={TILE_DEFAULT_FONT}
+                            style={{
+                                position: 'absolute',
+                                left: 0,
+                                width: layout.valueWidth,
+                                top: center - nf.fontSize / 2,
+                                height: nf.fontSize,
+                                overflow: 'visible',
+                            }}
+                        />
+                    </FitBox>
                 </div>
                 <div
                     data-role="name"
@@ -223,6 +227,10 @@ export class CardGrid extends React.Component<CardProps<CardGridModel>> {
                         textAlign: 'center',
                         whiteSpace: 'nowrap',
                         overflow: 'hidden',
+                        // neighbouring names keep a gap, a long name ends with an ellipsis
+                        padding: '0 3px',
+                        boxSizing: 'border-box',
+                        textOverflow: 'ellipsis',
                     }}
                 >
                     {entity.displayName}

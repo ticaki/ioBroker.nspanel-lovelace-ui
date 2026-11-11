@@ -13,7 +13,7 @@ describe('theme', () => {
     it('keeps the empty strip of the HMI on the hardware, the web models use the full width', () => {
         expect(contentWidth('eu')).toBe(447);
         expect(contentWidth('us-l')).toBe(447);
-        expect(contentWidth('us-p')).toBe(287);
+        expect(contentWidth('us-p')).toBe(320);
         expect(contentWidth('web-p')).toBe(320);
         expect(contentWidth('web-l')).toBe(640);
     });

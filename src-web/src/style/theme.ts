@@ -40,15 +40,16 @@ export function isWebModel(model: PanelModel): boolean {
 /**
  * Width of the area the HMI lays its pages out in. On the eu display (480 px) the title is
  * centred at x 223, the tiles of the grids and the navigation icons are centred in the same
- * 447 px, the rightmost 33 px stay empty (measured on the emulator pictures). The web models
+ * 447 px, the rightmost 33 px stay empty (measured on the emulator pictures). us-p and the web models
  * (`web-p`, `web-l`) use the full width of the stage.
  *
  * @param model the panel model
  */
 export function contentWidth(model: PanelModel): number {
     const { width } = stageSize(model);
-    // the web models have no reason for the empty strip of the HMI
-    return isWebModel(model) ? width : width - 33;
+    // the web models have no reason for the empty strip of the HMI; the us-p HMI lays its pages out on the
+    // full 320 px (navigation icons centred at x 34 / 286, the grid columns at x 83 / 238)
+    return isWebModel(model) || isPortrait(model) ? width : width - 33;
 }
 
 export const theme = {

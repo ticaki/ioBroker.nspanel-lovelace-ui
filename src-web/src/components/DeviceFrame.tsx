@@ -46,11 +46,15 @@ const BYE_TEXT: Record<'de' | 'en', Record<string, string>> = {
         'unknown panel': 'Unbekanntes Panel: die Adresse passt zu keinem Panel des Adapters.',
         'panel removed': 'Das Panel wurde aus dem Adapter entfernt.',
         shutdown: 'Der Adapter wurde beendet – warte auf Neustart …',
+        'unknown model':
+            'Unbekanntes Panel-Modell: Web-Ansicht und Adapter haben verschiedene Versionen (Browser-Cache leeren) oder das Modell des Panels in den Instanz-Einstellungen ist ungültig.',
     },
     en: {
         'unknown panel': 'Unknown panel: the address matches no panel of the adapter.',
         'panel removed': 'The panel was removed from the adapter.',
         shutdown: 'The adapter was stopped – waiting for the restart …',
+        'unknown model':
+            'Unknown panel model: web view and adapter have different versions (clear the browser cache) or the model of the panel in the instance settings is invalid.',
     },
 };
 const RELOAD_TEXT: Record<'de' | 'en', string> = {

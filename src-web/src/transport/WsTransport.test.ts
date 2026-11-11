@@ -1,5 +1,12 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { AUTH_CHECK_PATH, forgetLegacySession, websocketUrl, WsTransport } from './WsTransport';
+import {
+    AUTH_CHECK_PATH,
+    forgetLegacySession,
+    isUnknownModelHello,
+    UNKNOWN_MODEL_REASON,
+    websocketUrl,
+    WsTransport,
+} from './WsTransport';
 import type { HelloFrame } from '../protocol/types';
 import { helloShowsButtons } from '../protocol/types';
 
@@ -170,6 +177,52 @@ describe('WsTransport', () => {
             '{"t":"ack"}',
             '{"t":"recv","p":"event,startup,55,eu,1.0.0"}',
         ]);
+    });
+
+    it('drops commands until the hello of the connection arrived', () => {
+        const { transport, events } = make();
+        transport.connect();
+        const ws = FakeWebSocket.instances[0];
+        ws.open();
+        // without the hello the store would draw the page for the default model eu
+        ws.message({ t: 'cmd', p: 'pageType~cardGrid', seq: 1 });
+        ws.message({
+            t: 'hello',
+            model: 'web-p',
+            topic: 't',
+            name: 'n',
+            friendlyName: 'f',
+            tftVersion: '1.0.0',
+            kind: 'web',
+        });
+        ws.message({ t: 'cmd', p: 'pageType~cardGrid', seq: 2 });
+        expect(events).toEqual(['hello:web-p:1.0.0:web', 'cmd:pageType~cardGrid:2']);
+    });
+
+    it('ends the connection with a notice when the hello names an unknown model', () => {
+        const { transport, events, status } = make();
+        transport.connect();
+        const ws = FakeWebSocket.instances[0];
+        ws.open();
+        ws.message({
+            t: 'hello',
+            model: 'web-x',
+            topic: 't',
+            name: 'n',
+            friendlyName: 'f',
+            tftVersion: '1.0.0',
+            kind: 'web',
+        });
+        ws.message({ t: 'cmd', p: 'pageType~cardGrid', seq: 1 });
+        expect(events).toEqual([`bye:${UNKNOWN_MODEL_REASON}`]);
+        expect(transport.endedBy).toBe(UNKNOWN_MODEL_REASON);
+        expect(status).toEqual(['connecting', 'open', 'closed']);
+        // no reconnect: the page has to be reloaded
+        vi.advanceTimersByTime(60_000);
+        expect(FakeWebSocket.instances).toHaveLength(1);
+        expect(isUnknownModelHello({ t: 'hello', model: 'us-p' })).toBe(false);
+        expect(isUnknownModelHello({ t: 'cmd', p: 'x' })).toBe(false);
+        expect(isUnknownModelHello({ t: 'hello' })).toBe(true);
     });
 
     it('checks the pin before every reconnect and reopens with backoff', async () => {

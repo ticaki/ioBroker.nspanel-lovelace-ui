@@ -13,6 +13,9 @@ describe('DeviceFrame offline state', () => {
         expect(offlineNotice('open', undefined, 'en')).toBe('');
         expect(offlineNotice('connecting', undefined, 'en')).toBe('Connecting to the adapter …');
         expect(offlineNotice('closed', undefined, 'de')).toBe('Verbindung zum Adapter verloren – neuer Versuch …');
+        // an unknown model of the hello (version mismatch, broken configuration) ends the connection with a reason
+        expect(offlineNotice('closed', 'unknown model', 'en')).toContain('Unknown panel model');
+        expect(offlineNotice('closed', 'unknown model', 'de')).toContain('Seite neu laden');
         // shutdown is followed by a reconnect - no "reload the page"
         expect(offlineNotice('closed', 'shutdown', 'de')).toBe('Der Adapter wurde beendet – warte auf Neustart …');
         expect(offlineNotice('closed', 'shutdown', 'en')).not.toContain('reload');

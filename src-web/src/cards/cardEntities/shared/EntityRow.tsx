@@ -339,7 +339,12 @@ export class EntityRow extends React.Component<EntityRowProps> {
                                 flex: '0 0 auto',
                             }}
                         >
-                            <span style={{ flex: '0 0 auto' }}>{entity.optionalValue}</span>
+                            {/* a value wider than the column ends with an ellipsis instead of a cut letter */}
+                            <span
+                                style={{ flex: '0 1 auto', minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis' }}
+                            >
+                                {entity.optionalValue}
+                            </span>
                         </div>
                     ),
                 };
@@ -415,7 +420,9 @@ export class EntityRow extends React.Component<EntityRowProps> {
                         overflow: 'hidden',
                     }}
                 >
-                    {entity.displayName}
+                    <span style={{ minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                        {entity.displayName}
+                    </span>
                 </div>
                 {control ? (
                     <div

@@ -6,14 +6,25 @@ import {
     ADVANCED_PORTRAIT_SEPARATOR,
     advancedIndicatorCells,
     easyviewColumns,
+    easyviewBars,
+    isHmiPortrait,
     isWebPortrait,
     landscapeWidth,
     notifyTextBox,
     portraitColumns,
     standardColumns,
     tilesGeometry,
+    uspAdvancedColumns,
+    uspEasyviewColumns,
+    uspStandardColumns,
     type Box,
+    type Column,
 } from './layout';
+
+/** the box of a bottom column with the given height below the top of its row */
+function columnBox(c: Column, top: number, height: number): Box {
+    return { left: c.left, top: top + (c.top ?? 0), width: c.width, height };
+}
 
 /** `true` when the two boxes overlap */
 function overlaps(a: Box, b: Box): boolean {
@@ -31,9 +42,13 @@ function onStage(boxes: readonly Box[], model: PanelModel): boolean {
 }
 
 describe('screensaver layout', () => {
-    it('uses the portrait layouts only on web-p, the eu width on us-p', () => {
+    it('gives both portrait models a portrait layout: web-p its own, us-p the one of the us-p HMI', () => {
         expect(isWebPortrait('web-p')).toBe(true);
         expect(isWebPortrait('us-p')).toBe(false);
+        expect(isHmiPortrait('us-p')).toBe(true);
+        for (const model of ['eu', 'us-l', 'web-l', 'web-p'] as const) {
+            expect(isHmiPortrait(model), model).toBe(false);
+        }
         expect(isWebPortrait('web-l')).toBe(false);
         expect(landscapeWidth('eu')).toBe(480);
         expect(landscapeWidth('us-l')).toBe(480);
@@ -170,5 +185,53 @@ describe('screensaver layout', () => {
         expect(notifyTextBox(480, false)).toEqual({ left: 88, width: 304 });
         expect(notifyTextBox(640, false)).toEqual({ left: 168, width: 304 });
         expect(notifyTextBox(320, true)).toEqual({ left: 8, width: 304 });
+    });
+
+    it('lays the us-p screensavers out like the us-p HMI, inside the 320 x 480 stage', () => {
+        // standard / alternate: tForecast1..4 as 4 columns of 80 px
+        const standard = uspStandardColumns(4);
+        expect(standard.map(c => c.left)).toEqual([0, 80, 160, 240]);
+        expect(uspStandardColumns(3)).toHaveLength(3);
+        expect(
+            onStage(
+                standard.map(c => columnBox(c, 386, 90)),
+                'us-p',
+            ),
+        ).toBe(true);
+        // advanced: e1..e6 as 2 rows of 3 (centres 55 / 129 / 203 like the HMI fields), f1..f5 a column at the right
+        const advanced = uspAdvancedColumns(6);
+        expect(advanced.map(c => c.left + c.width / 2)).toEqual([55, 129, 203, 55, 129, 203]);
+        expect(advanced.map(c => c.top)).toEqual([0, 0, 0, 86, 86, 86]);
+        const indicators = advancedIndicatorCells('us-p', 5);
+        expect(indicators.map(b => b.left)).toEqual([256, 256, 256, 256, 256]);
+        expect(onStage(indicators, 'us-p')).toBe(true);
+        const bottom = advanced.map(c => columnBox(c, 262, 70));
+        expect(onStage(bottom, 'us-p')).toBe(true);
+        // the indicator column does not run into the bottom columns
+        expect(bottom.some(b => indicators.some(i => overlaps(b, i)))).toBe(false);
+        // EasyView: 2 x 2 boxes of 140 px
+        const easy = uspEasyviewColumns(4);
+        expect(easy.map(c => [c.left, c.top])).toEqual([
+            [8, 0],
+            [168, 0],
+            [8, 156],
+            [168, 156],
+        ]);
+        expect(
+            onStage(
+                easy.map(c => columnBox(c, 180, 140)),
+                'us-p',
+            ),
+        ).toBe(true);
+        expect(onStage(easyviewBars('us-p'), 'us-p')).toBe(true);
+    });
+
+    it('puts the EasyView MR bars at the lower edge of every model', () => {
+        for (const model of ['eu', 'us-l', 'us-p', 'web-l', 'web-p'] as const) {
+            const bars = easyviewBars(model);
+            expect(onStage(bars, model), model).toBe(true);
+            expect(overlaps(bars[0], bars[1]), model).toBe(false);
+            expect(bars[0].top + bars[0].height, model).toBeGreaterThanOrEqual(stageSize(model).height - 10);
+        }
     });
 });

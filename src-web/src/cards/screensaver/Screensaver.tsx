@@ -1,4 +1,5 @@
 import React from 'react';
+import { FitText } from '../../components/FitText';
 import { Icon } from '../../components/Icon';
 import { color565ToCss } from '../../protocol/color';
 import type { Entity6, GlobalState } from '../../protocol/types';
@@ -16,7 +17,9 @@ import {
 import {
     ADVANCED_PORTRAIT_SEPARATOR,
     advancedIndicatorCells,
+    easyviewBars,
     easyviewColumns,
+    isHmiPortrait,
     isWebPortrait,
     landscapeWidth,
     notifyTextBox,
@@ -24,6 +27,9 @@ import {
     rowColumns,
     standardColumns,
     tilesGeometry,
+    uspAdvancedColumns,
+    uspEasyviewColumns,
+    uspStandardColumns,
     type Box,
     type Column,
 } from './layout';
@@ -278,16 +284,20 @@ export class Screensaver extends React.Component<CardProps<ScreensaverModel>> {
      * @param box.align whether the row is centred or right aligned
      * @param fontSize font size of the time
      * @param fontWeight font weight of the time
+     * @param ampmBelow us-p: AM/PM centred in its own row below the time (`tAMPM` of the HMI)
+     * @param ampmBelow.capTop cap top of AM/PM
+     * @param ampmBelow.size font size of AM/PM
      */
     private renderTime(
         box: { top: number; left: number; width: number; height: number; align: 'center' | 'right' },
         fontSize: number,
         fontWeight?: number,
+        ampmBelow?: { capTop: number; size: number },
     ): React.JSX.Element {
         const { global, model } = this.props;
         const colors = model.colors;
         const { time, ampm } = splitTime(global.time);
-        return (
+        const row = (
             <div
                 data-role="time"
                 style={{
@@ -304,7 +314,7 @@ export class Screensaver extends React.Component<CardProps<ScreensaverModel>> {
                 }}
             >
                 <span style={{ fontSize, fontWeight, lineHeight: 1, color: this.color(colors?.time) }}>{time}</span>
-                {ampm !== '' ? (
+                {ampm !== '' && !ampmBelow ? (
                     <span
                         style={{
                             fontSize: Math.round(fontSize * 0.3),
@@ -318,6 +328,27 @@ export class Screensaver extends React.Component<CardProps<ScreensaverModel>> {
                     </span>
                 ) : null}
             </div>
+        );
+        if (!ampmBelow || ampm === '') {
+            return row;
+        }
+        return (
+            <>
+                {row}
+                {this.renderText(
+                    ampm,
+                    {
+                        top: textTop(ampmBelow.capTop, ampmBelow.size),
+                        left: box.left,
+                        width: box.width,
+                        textAlign: 'center',
+                        fontSize: ampmBelow.size,
+                        color: this.color(colors?.timeAmPm),
+                    },
+                    undefined,
+                    'ampm',
+                )}
+            </>
         );
     }
 
@@ -345,12 +376,19 @@ export class Screensaver extends React.Component<CardProps<ScreensaverModel>> {
         );
     }
 
-    private renderDate(style: React.CSSProperties): React.JSX.Element | null {
-        return this.renderText(
-            this.props.global.date,
-            { color: this.color(this.props.model.colors?.date), ...style },
-            undefined,
-            'date',
+    /**
+     * The date; a long date (e.g. `Mittwoch, 11. November 2026` in a narrow layout) gets a smaller font instead of
+     * running over the edge of the stage.
+     *
+     * @param style position and font of the date box (`width` and `fontSize` are needed)
+     */
+    private renderDate(style: React.CSSProperties & { fontSize: number }): React.JSX.Element | null {
+        return (
+            <FitText
+                text={this.props.global.date}
+                role="date"
+                style={{ color: this.color(this.props.model.colors?.date), ...style }}
+            />
         );
     }
 
@@ -367,6 +405,30 @@ export class Screensaver extends React.Component<CardProps<ScreensaverModel>> {
                     background: this.color(this.props.model.colors?.bar),
                 }}
             />
+        );
+    }
+
+    /**
+     * A text that may contain icon glyphs (e.g. the heading of a notification `<glyph> Washing machine`): the glyphs
+     * as icons in the size of the text, the rest as text.
+     *
+     * @param text the text
+     * @param size font size of the text
+     * @param color css colour of text and icons
+     */
+    private renderRuns(text: string, size: number, color: string): React.ReactNode[] {
+        return splitRuns(text).map((run, i) =>
+            run.kind === 'icon' ? (
+                <Icon
+                    key={i}
+                    glyph={run.glyph}
+                    size={size}
+                    color={color}
+                    style={{ display: 'inline-block', verticalAlign: 'top' }}
+                />
+            ) : (
+                <span key={i}>{run.text}</span>
+            ),
         );
     }
 
@@ -408,12 +470,21 @@ export class Screensaver extends React.Component<CardProps<ScreensaverModel>> {
         );
     }
 
-    /** The two MR icons in the top corners (standard and alternate layout) */
-    private renderTopStatusIcons(): React.JSX.Element[] {
+    /**
+     * The two MR icons in the top corners (standard and alternate layout); us-p: at the edges beside the bar
+     * (`tIcon1` / `tIcon2` at y 227).
+     *
+     * @param top top edge of the icons
+     * @param inset distance of the icons from the left / right edge
+     * @param onBar the icons sit on the line of the bar (us-p): they get the background, so an icon with a text
+     *     (e.g. `<glyph>3550W`) interrupts the bar instead of being crossed by it
+     */
+    private renderTopStatusIcons(top = 4, inset: [number, number] = [14, 15], onBar = false): React.JSX.Element[] {
         const { status } = this.props.model;
         const result: React.JSX.Element[] = [];
-        const left = this.renderStatusIcon(status[0], { top: 4, left: 14, height: 28 }, 'mrIcon1');
-        const right = this.renderStatusIcon(status[1], { top: 4, right: 15, height: 28 }, 'mrIcon2');
+        const back: React.CSSProperties = onBar ? { background: this.background(), padding: '0 3px' } : {};
+        const left = this.renderStatusIcon(status[0], { top, left: inset[0], height: 28, ...back }, 'mrIcon1');
+        const right = this.renderStatusIcon(status[1], { top, right: inset[1], height: 28, ...back }, 'mrIcon2');
         if (left) {
             result.push(left);
         }
@@ -468,12 +539,18 @@ export class Screensaver extends React.Component<CardProps<ScreensaverModel>> {
                         top: rowTop + style.iconTop,
                         left: column.left + Math.round((column.width - style.iconSize) / 2),
                     })}
-                    {this.renderText(entity.optionalValue, {
-                        ...centered,
-                        top: rowTop + textTop(style.valueTop, style.valueSize),
-                        fontSize: style.valueSize,
-                        color: this.color(colors?.forecastVal[i] ?? colors?.forecastVal[0]),
-                    })}
+                    <FitText
+                        text={entity.optionalValue}
+                        style={{
+                            // 2 px on each side: neighbouring values that fill their columns keep a gap
+                            left: column.left + 2,
+                            width: column.width - 4,
+                            textAlign: 'center',
+                            top: rowTop + textTop(style.valueTop, style.valueSize),
+                            fontSize: style.valueSize,
+                            color: this.color(colors?.forecastVal[i] ?? colors?.forecastVal[0]),
+                        }}
+                    />
                 </div>,
             );
         });
@@ -527,7 +604,7 @@ export class Screensaver extends React.Component<CardProps<ScreensaverModel>> {
                         textOverflow: 'ellipsis',
                     }}
                 >
-                    {notify.heading}
+                    {this.renderRuns(notify.heading, style.headingSize, this.color(colors?.mainText))}
                 </div>
                 <div
                     style={{
@@ -680,6 +757,9 @@ export class Screensaver extends React.Component<CardProps<ScreensaverModel>> {
     }
 
     private renderStandard(areas: ScreensaverAreas): React.JSX.Element {
+        if (isHmiPortrait(this.panelModel())) {
+            return this.renderStandardUsp(areas, undefined);
+        }
         if (isWebPortrait(this.panelModel())) {
             const favorit =
                 areas.favorit && !isBlankEntity(areas.favorit) ? (
@@ -724,6 +804,9 @@ export class Screensaver extends React.Component<CardProps<ScreensaverModel>> {
             return this.renderStandard(areas);
         }
         const favoritEntity = areas.favorit && !isBlankEntity(areas.favorit) ? areas.favorit : undefined;
+        if (isHmiPortrait(this.panelModel())) {
+            return this.renderStandardUsp(areas, alternate);
+        }
         if (isWebPortrait(this.panelModel())) {
             return this.renderStandardLike(
                 areas,
@@ -755,7 +838,8 @@ export class Screensaver extends React.Component<CardProps<ScreensaverModel>> {
             <>
                 {favorit}
                 <div data-role="alternate">
-                    {this.renderIcon(alternate, 34, { position: 'absolute', top: 288, left: 28 })}
+                    {/* 288 (emulator picture) ran 2 px over the lower edge */}
+                    {this.renderIcon(alternate, 34, { position: 'absolute', top: 284, left: 28 })}
                     {this.renderText(alternate.optionalValue, {
                         top: textTop(286, 35),
                         left: 76,
@@ -858,8 +942,16 @@ export class Screensaver extends React.Component<CardProps<ScreensaverModel>> {
      * @param left the left entities
      * @param top top edge of the first icon
      * @param valueWidth width of the value
+     * @param iconLeft x of the icons
+     * @param valueLeft x of the values
      */
-    private renderLeft(left: Entity6[], top: number, valueWidth: number): (React.JSX.Element | null)[] {
+    private renderLeft(
+        left: Entity6[],
+        top: number,
+        valueWidth: number,
+        iconLeft = 28,
+        valueLeft = 66,
+    ): (React.JSX.Element | null)[] {
         const colors = this.props.model.colors;
         return left.map((entity, i) =>
             isBlankEntity(entity) ? null : (
@@ -867,10 +959,12 @@ export class Screensaver extends React.Component<CardProps<ScreensaverModel>> {
                     key={i}
                     data-role={`left${i + 1}`}
                 >
-                    {this.renderIcon(entity, 28, { position: 'absolute', top: top + i * 33, left: 28 })}
+                    {this.renderIcon(entity, 28, { position: 'absolute', top: top + i * 33, left: iconLeft })}
                     {this.renderText(entity.optionalValue, {
                         top: textTop(top + 5 + i * 33, 17),
-                        left: 66,
+                        left: valueLeft,
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
                         width: valueWidth,
                         fontSize: 17,
                         color: this.color(colors?.mainText),
@@ -935,6 +1029,9 @@ export class Screensaver extends React.Component<CardProps<ScreensaverModel>> {
     }
 
     private renderAdvanced(areas: ScreensaverAreas): React.JSX.Element {
+        if (isHmiPortrait(this.panelModel())) {
+            return this.renderAdvancedUsp(areas);
+        }
         if (isWebPortrait(this.panelModel())) {
             return this.renderAdvancedPortrait(areas);
         }
@@ -1030,7 +1127,217 @@ export class Screensaver extends React.Component<CardProps<ScreensaverModel>> {
         );
     }
 
+    /**
+     * An icon with its value centred below it (favorit and alternate entity of the us-p screensaver).
+     *
+     * @param entity the entity
+     * @param role `data-role` of the element
+     * @param icon top, left and size of the icon
+     * @param icon.top top edge of the icon
+     * @param icon.left left edge of the icon
+     * @param icon.size size of the icon
+     * @param value cap top, box and font size of the value
+     * @param value.capTop cap top of the value
+     * @param value.left left edge of the value box
+     * @param value.width width of the value box
+     * @param value.size font size of the value
+     * @param color colour field of the value
+     */
+    private renderIconAboveValue(
+        entity: Entity6 | undefined,
+        role: string,
+        icon: { top: number; left: number; size: number },
+        value: { capTop: number; left: number; width: number; size: number },
+        color: number | undefined,
+    ): React.JSX.Element | null {
+        if (!entity || isBlankEntity(entity)) {
+            return null;
+        }
+        return (
+            <div data-role={role}>
+                {this.renderIcon(entity, icon.size, { position: 'absolute', top: icon.top, left: icon.left })}
+                <FitText
+                    text={entity.optionalValue}
+                    style={{
+                        top: textTop(value.capTop, value.size),
+                        left: value.left,
+                        width: value.width,
+                        textAlign: 'center',
+                        fontSize: value.size,
+                        color: this.color(color),
+                    }}
+                />
+            </div>
+        );
+    }
+
+    /**
+     * Standard and alternate layout of the us-p HMI (page `screensaver`, 320 x 480): time, info icon, date and bar on
+     * top, the MR icons at the edges beside the bar, the favorit in the middle (alternate: favorit left, alternate
+     * entity right, both as icon above value), the bottom row of 4 (alternate 3) columns at the lower edge. A
+     * notification replaces favorit and alternate entity (`tNotifyHead` y 272, `tNotifyText` y 330), the bottom row stays.
+     *
+     * @param areas the entities of the page
+     * @param alternate the alternate entity, `undefined` for the standard layout
+     */
+    private renderStandardUsp(areas: ScreensaverAreas, alternate: Entity6 | undefined): React.JSX.Element {
+        const { model } = this.props;
+        const colors = model.colors;
+        const width = stageSize(this.panelModel()).width;
+        return (
+            <>
+                {this.renderTime({ top: 15, left: 0, width, height: 110, align: 'center' }, 116, undefined, {
+                    capTop: 124,
+                    size: 35,
+                })}
+                {this.renderTimeIcon(167, Math.round(width / 2) - 14, 28)}
+                {this.renderDate({ top: textTop(202, 29), left: 0, width, textAlign: 'center', fontSize: 29 })}
+                {this.renderBar(245, 53, 215)}
+                {this.renderTopStatusIcons(235, [0, 0], true)}
+                {model.notify ? null : alternate ? (
+                    <>
+                        {this.renderIconAboveValue(
+                            areas.favorit,
+                            'favorit',
+                            { top: 257, left: 50, size: 64 },
+                            { capTop: 337, left: 0, width: 160, size: 35 },
+                            colors?.mainText,
+                        )}
+                        {this.renderIconAboveValue(
+                            alternate,
+                            'alternate',
+                            { top: 257, left: 206, size: 64 },
+                            { capTop: 337, left: 160, width: 160, size: 35 },
+                            colors?.mainTextAlt2,
+                        )}
+                    </>
+                ) : (
+                    this.renderIconAboveValue(
+                        areas.favorit,
+                        'favorit',
+                        { top: 260, left: 128, size: 64 },
+                        { capTop: 334, left: 111, width: 110, size: 35 },
+                        colors?.mainText,
+                    )
+                )}
+                {this.renderBottom(areas.bottom, uspStandardColumns(areas.bottom.length), {
+                    labelTop: 389,
+                    labelSize: 18,
+                    iconTop: 416,
+                    iconSize: 30,
+                    valueTop: 456,
+                    valueSize: 18,
+                })}
+                {this.renderNotify({
+                    headingTop: 281,
+                    headingSize: 38,
+                    textTop: 336,
+                    textSize: 17,
+                    lineHeight: 24,
+                    lines: 2,
+                    portrait: true,
+                })}
+            </>
+        );
+    }
+
+    /**
+     * Advanced layout of the us-p HMI (page `screensaver2`): favorit top left with the value below the icon, time and
+     * date top right, the info icon below the date, the left entities (`d1..d3`) below, the 5 indicators
+     * (`f1..f5`) as a column at the right edge, the bottom entities as 2 rows of 3 and the MR icons at the lower edge.
+     *
+     * @param areas the areas of the payload
+     */
+    private renderAdvancedUsp(areas: ScreensaverAreas): React.JSX.Element {
+        const width = stageSize(this.panelModel()).width;
+        return (
+            <>
+                {this.renderTime({ top: 13, left: 100, width: 217, height: 64, align: 'right' }, 57)}
+                {this.renderTimeIcon(112, 145, 28)}
+                {this.renderDate({ top: textTop(85, 16), left: 95, width: 219, textAlign: 'right', fontSize: 16 })}
+                {this.renderIconAboveValue(
+                    areas.favorit,
+                    'favorit',
+                    { top: 15, left: 17, size: 64 },
+                    { capTop: 94, left: 8, width: 82, size: 25 },
+                    this.props.model.colors?.mainText,
+                )}
+                {this.renderLeft(areas.left, 155, 195, 12, 50)}
+                {this.renderAdvancedIndicators(areas)}
+                {this.renderBottom(areas.bottom, uspAdvancedColumns(areas.bottom.length), {
+                    labelTop: 265,
+                    labelSize: 18,
+                    iconTop: 290,
+                    iconSize: 28,
+                    valueTop: 321,
+                    valueSize: 18,
+                })}
+                {this.renderBottomStatusIcons(444, width)}
+                {this.renderNotify({
+                    headingTop: 268,
+                    headingSize: 30,
+                    textTop: 314,
+                    textSize: 17,
+                    lineHeight: 24,
+                    lines: 5,
+                    cover: { top: 252, height: 186 },
+                    portrait: true,
+                })}
+            </>
+        );
+    }
+
+    /**
+     * EasyView of the us-p HMI (page `screensaver3`): time, AM/PM, date and bar on top, the 4 entities as 2 x 2 big
+     * boxes of 140 px, the MR icons as colour bars at the lower edge. The HMI has no room for the info icon
+     * (`tTimeAdd` is 2 px wide), so it is not drawn either.
+     *
+     * @param areas the areas of the payload
+     */
+    private renderEasyviewUsp(areas: ScreensaverAreas): React.JSX.Element {
+        const { model } = this.props;
+        const width = stageSize(this.panelModel()).width;
+        return (
+            <>
+                {this.renderTime({ top: 9, left: 0, width, height: 108, align: 'center' }, 116, undefined, {
+                    capTop: 110,
+                    size: 26,
+                })}
+                {this.renderDate({
+                    top: textTop(135, 36),
+                    left: 4,
+                    width: width - 8,
+                    textAlign: 'center',
+                    fontSize: 36,
+                })}
+                {this.renderBar(172, 20, 280)}
+                {model.notify
+                    ? this.renderNotify({
+                          headingTop: 185,
+                          headingSize: 38,
+                          textTop: 239,
+                          textSize: 17,
+                          lineHeight: 24,
+                          lines: 9,
+                          portrait: true,
+                      })
+                    : this.renderBottom(areas.bottom, uspEasyviewColumns(areas.bottom.length), {
+                          labelTop: 184,
+                          labelSize: 25,
+                          iconTop: 210,
+                          iconSize: 64,
+                          valueTop: 284,
+                          valueSize: 36,
+                      })}
+                {this.renderStatusBars(easyviewBars(this.panelModel()))}
+            </>
+        );
+    }
+
     private renderEasyview(areas: ScreensaverAreas): React.JSX.Element {
+        if (isHmiPortrait(this.panelModel())) {
+            return this.renderEasyviewUsp(areas);
+        }
         if (isWebPortrait(this.panelModel())) {
             return this.renderEasyviewPortrait(areas);
         }
@@ -1061,6 +1368,7 @@ export class Screensaver extends React.Component<CardProps<ScreensaverModel>> {
                           valueTop: 280,
                           valueSize: 36,
                       })}
+                {this.renderStatusBars(easyviewBars(this.panelModel()))}
             </>
         );
     }
@@ -1078,7 +1386,13 @@ export class Screensaver extends React.Component<CardProps<ScreensaverModel>> {
             <>
                 {this.renderTimeIcon(6, Math.round(width / 2) - 20, 40)}
                 {this.renderTime({ top: 44, left: 0, width, height: 108, align: 'center' }, 116)}
-                {this.renderDate({ top: textTop(165, 36), left: 0, width, textAlign: 'center', fontSize: 36 })}
+                {this.renderDate({
+                    top: textTop(165, 36),
+                    left: 4,
+                    width: width - 8,
+                    textAlign: 'center',
+                    fontSize: 36,
+                })}
                 {this.renderBar(205, 20, width - 40)}
                 {model.notify
                     ? this.renderNotify({
@@ -1099,6 +1413,7 @@ export class Screensaver extends React.Component<CardProps<ScreensaverModel>> {
                           // 36 px (eu) and 30 px overflow the 80 px column with values like `2,4m/s`
                           valueSize: 24,
                       })}
+                {this.renderStatusBars(easyviewBars(this.panelModel()))}
             </>
         );
     }
@@ -1158,22 +1473,32 @@ export class Screensaver extends React.Component<CardProps<ScreensaverModel>> {
                           valueTop: 73,
                           valueSize: 18,
                       })}
-                {model.status.map((status, i) => {
-                    const bar: Box | undefined = geo.bars[i];
-                    return status.icon === '' || !bar ? null : (
-                        <div
-                            key={i}
-                            data-role={`statusBar${i + 1}`}
-                            style={{
-                                position: 'absolute',
-                                ...bar,
-                                background: color565ToCss(status.color),
-                            }}
-                        />
-                    );
-                })}
+                {this.renderStatusBars(geo.bars)}
             </>
         );
+    }
+
+    /**
+     * The MR icons as two colour bars at the lower edge (`tRelay1` / `tRelay2` of EasyView and tiles), shown
+     * while the MR icon has a glyph, in its colour.
+     *
+     * @param bars position of the two bars
+     */
+    private renderStatusBars(bars: readonly Box[]): (React.JSX.Element | null)[] {
+        return this.props.model.status.map((status, i) => {
+            const bar: Box | undefined = bars[i];
+            return status.icon === '' || !bar ? null : (
+                <div
+                    key={`statusBar${i}`}
+                    data-role={`statusBar${i + 1}`}
+                    style={{
+                        position: 'absolute',
+                        ...bar,
+                        background: color565ToCss(status.color),
+                    }}
+                />
+            );
+        });
     }
 
     private renderLayout(areas: ScreensaverAreas): React.JSX.Element {

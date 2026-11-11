@@ -30,13 +30,14 @@ describe('entityListLayout', () => {
             fit: false,
             margin: 33,
         });
+        // us-p: the full 320 px like its HMI (text 49..310), the value column of 110 px (HMI bText 145 px)
         expect(entities('us-p')).toEqual({
             count: 5,
             rowHeight: 74,
             compact: true,
-            valueWidth: undefined,
+            valueWidth: 110,
             fit: true,
-            margin: 33,
+            margin: 0,
         });
         expect(schedule('eu')).toEqual({
             count: 6,
@@ -58,9 +59,9 @@ describe('entityListLayout', () => {
             count: 6,
             rowHeight: 46,
             compact: true,
-            valueWidth: undefined,
+            valueWidth: 110,
             fit: true,
-            margin: 33,
+            margin: 0,
         });
     });
 

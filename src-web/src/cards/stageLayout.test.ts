@@ -1,8 +1,26 @@
 import { describe, expect, it } from 'vitest';
 import { baseModel, CENTERED_ON_WEB, cardStage } from './stageLayout';
 import { registry } from './registry';
+import { isPortrait } from '../style/theme';
 
 describe('cardStage', () => {
+    it('never draws a page of a portrait model in a landscape geometry', () => {
+        // every registered pageType (cards, popups, screensavers) on us-p / web-p: the card sees a portrait model
+        // and gets a portrait area, landscape models keep landscape
+        for (const pageType of Object.keys(registry)) {
+            for (const model of ['us-p', 'web-p'] as const) {
+                const stage = cardStage(pageType, model);
+                expect(isPortrait(stage.model), `${pageType} on ${model}`).toBe(true);
+                expect(stage.height, `${pageType} on ${model}`).toBeGreaterThan(stage.width);
+            }
+            for (const model of ['eu', 'us-l', 'web-l'] as const) {
+                const stage = cardStage(pageType, model);
+                expect(isPortrait(stage.model), `${pageType} on ${model}`).toBe(false);
+                expect(stage.width, `${pageType} on ${model}`).toBeGreaterThan(stage.height);
+            }
+        }
+    });
+
     it('draws every page on the full stage of a hardware model', () => {
         expect(cardStage('cardThermo', 'eu')).toEqual({ model: 'eu', left: 0, top: 0, width: 480, height: 320 });
         expect(cardStage('cardThermo', 'us-l')).toEqual({ model: 'us-l', left: 0, top: 0, width: 480, height: 320 });

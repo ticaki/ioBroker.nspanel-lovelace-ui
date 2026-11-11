@@ -51,8 +51,11 @@ const LANDSCAPE_ROW_HEIGHT: Readonly<Record<string, Readonly<Partial<Record<Pane
     cardSchedule: { 'web-l': 38 },
 };
 
-/** The wider value column of the web models (the HMI column of 66 px cuts "geschlossen") */
-const VALUE_WIDTH: Readonly<Partial<Record<PanelModel, number>>> = { 'web-l': 220, 'web-p': 110 };
+/**
+ * The wider value column of us-p (its HMI column `bText` is 145 px) and the web models (the column of 66 px
+ * cuts "geschlossen")
+ */
+const VALUE_WIDTH: Readonly<Partial<Record<PanelModel, number>>> = { 'us-p': 110, 'web-l': 220, 'web-p': 110 };
 
 /**
  * Rows of an entity list: the landscape models (eu, us-l, web-l) use the row height of the eu

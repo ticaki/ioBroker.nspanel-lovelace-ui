@@ -403,6 +403,7 @@ export class TextButton extends React.Component<TextButtonProps> {
                     maxWidth,
                     whiteSpace: 'nowrap',
                     overflow: 'hidden',
+                    textOverflow: 'ellipsis',
                     flex: '0 0 auto',
                 }}
             >

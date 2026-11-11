@@ -167,6 +167,11 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
 - (ticaki) web panel: cardAlarm, cardUnlock, cardThermo, cardPower, cardQR, cardChart and cardLChart use the portrait layout of the us-p display on us-p and web-p, they were cut off on the right and the right arrow could not be reached
 - (ticaki) web panel: cardPChart lays out its title bar in the width of the portrait models, the right arrow could not be reached on us-p and web-p
 - (ticaki) web panel: the color wheel of popupLight sends the color in the scale the adapter expects, whatever its size on the screen
+- (ticaki) web panel: the screensaver modes standard, alternate, advanced and EasyView are drawn in the portrait layout of the us-p display on us-p (they were drawn in landscape and cut off)
+- (ticaki) web panel: us-p uses the full display width like the us-p HMI (grids, lists and the right arrow were shifted to the left)
+- (ticaki) web panel: long names and values end with … instead of a cut letter, big values (cardGrid3, screensaver) and long dates get smaller instead of overlapping, the bottom row of cardMedia and the EasyView MR bars are fully visible, icons in the heading of a screensaver notification are drawn
+- (ticaki) web panel: an unknown panel model is reported (adapter log, notice in the browser) instead of drawing the pages for the eu panel
+- (ticaki) admin: the developer tab is translated
 - (ticaki) screensaver tiles: the indicators can get their own icon font (admin field "icon font"); needs the new screensaver5 page of the HMI, the other screensavers ignore it
 - (ticaki) admin: export the configuration of one panel (pages, screensaver with its notifications, hardware buttons, navigation overrides and panel settings) as a JSON file from the panel tile; PINs and passwords are only included after an explicit confirmation
 - (ticaki) admin: import a panel configuration file into a panel from the panel tile: choose pages / screensaver / other settings, review the plan (pages without conflict add an assignment or are created, differing pages are renamed, replace the existing one or are skipped, with a list of the differences), the result lists what to check (PINs and passwords to enter again, start page)

@@ -5,7 +5,8 @@ import { isPortrait, isWebModel, stageSize } from '../../style/theme';
  * Geometry of the screensaver layouts per model, in stage pixels. Kept free of React so the
  * positions can be tested without a DOM.
  *
- * - eu, us-l and (except tiles) us-p: the eu layout of 480 px width (the HMI measurements).
+ * - eu, us-l: the eu layout of 480 px width (the HMI measurements, stage x = HMI x + 16).
+ * - us-p: the portrait pages of the us-p HMI (`HMI/us-p/nspanel-us-p-v6.0.9.HMI`, stage x = HMI x).
  * - web-l: the eu layout, the 160 px more width go into the columns.
  * - web-p: own portrait layouts, the bottom area always two rows of 4 columns of 80 px.
  * - tiles on us-p / web-p: 4 columns of 80 px after `HMI/tools/screensaver5_usp.py`.
@@ -34,6 +35,49 @@ export const PORTRAIT_PER_ROW = 4;
 /** `true` when the model gets the portrait layouts of `web-p` (all screensaver modes) */
 export function isWebPortrait(model: PanelModel): boolean {
     return isPortrait(model) && isWebModel(model);
+}
+
+/** `true` when the model gets the portrait layouts of the us-p HMI (all screensaver modes) */
+export function isHmiPortrait(model: PanelModel): boolean {
+    return isPortrait(model) && !isWebModel(model);
+}
+
+/**
+ * us-p standard and alternate: the bottom row (`tForecast1..4`, x 5 / 86 / 167 / 247, about 71 px wide) as
+ * 4 columns of 80 px, label cap top 389, icon 416, value 456. The alternate layout keeps the columns 1-3
+ * (the HMI only moves them right when `p0.w != 320`).
+ *
+ * @param count number of bottom entities
+ */
+export function uspStandardColumns(count: number): Column[] {
+    return rowColumns(Math.min(count, PORTRAIT_PER_ROW), 0, PORTRAIT_COLUMN);
+}
+
+/**
+ * us-p advanced: `e1..e6` as two rows of 3 columns (HMI x 20 / 94 / 168, 70 wide, rows y 260 and 346);
+ * the columns are 74 px wide around the centres of the HMI fields.
+ *
+ * @param count number of bottom entities
+ */
+export function uspAdvancedColumns(count: number): Column[] {
+    return Array.from({ length: Math.min(count, 6) }, (_, i) => ({
+        left: 18 + (i % 3) * 74,
+        width: 74,
+        top: Math.floor(i / 3) * 86,
+    }));
+}
+
+/**
+ * us-p EasyView: `tForecast1..4` as 2 x 2 boxes of 140 px (x 8 / 168, rows y 177 and 333).
+ *
+ * @param count number of bottom entities
+ */
+export function uspEasyviewColumns(count: number): Column[] {
+    return Array.from({ length: Math.min(count, 4) }, (_, i) => ({
+        left: 8 + (i % 2) * 160,
+        width: 140,
+        top: Math.floor(i / 2) * 156,
+    }));
 }
 
 /**
@@ -109,7 +153,8 @@ const ADVANCED_ROW = 48;
 export const ADVANCED_PORTRAIT_SEPARATOR = 340;
 
 /**
- * Positions of the advanced layout's indicators: one row of 56 px from x 178 (eu, web-l). web-p: 1-4 as a
+ * Positions of the advanced layout's indicators: one row of 56 px from x 178 (eu, web-l). us-p: one column at
+ * the right edge like the HMI (`f1Icon..f5Icon`). web-p: 1-4 as a
  * 2 x 2 block (80 x 60) right aligned next to the left column below time and date, 5-12 as two rows of 4
  * (80 x 48) below.
  *
@@ -117,6 +162,15 @@ export const ADVANCED_PORTRAIT_SEPARATOR = 340;
  * @param count number of indicators
  */
 export function advancedIndicatorCells(model: PanelModel, count: number): Box[] {
+    if (isHmiPortrait(model)) {
+        // us-p: f1..f5 one below the other at x 259 (50 x 50, every 57 px from y 152)
+        return Array.from({ length: Math.min(count, 5) }, (_, i) => ({
+            left: 256,
+            top: 153 + i * 57,
+            width: 56,
+            height: 48,
+        }));
+    }
     if (isWebPortrait(model)) {
         const right = stageSize(model).width;
         return Array.from({ length: count }, (_, i) => {
@@ -260,4 +314,28 @@ export function notifyTextBox(width: number, portrait: boolean): { left: number;
         return { left: 8, width: width - 16 };
     }
     return { left: Math.floor((width - 304) / 2), width: 304 };
+}
+
+/**
+ * The two MR colour bars of EasyView (`tRelay1` / `tRelay2`): eu HMI x 1 / 265, y 315, 184 x 5 (stage x + 16);
+ * web-l the right bar at the same distance from the right edge; us-p HMI x 0 / 188, y 475, 130 x 5; web-p like
+ * the bars of its tiles layout.
+ *
+ * @param model the panel model
+ */
+export function easyviewBars(model: PanelModel): [Box, Box] {
+    if (isHmiPortrait(model)) {
+        return [
+            { left: 0, top: 475, width: 130, height: 5 },
+            { left: 188, top: 475, width: 130, height: 5 },
+        ];
+    }
+    if (isWebPortrait(model)) {
+        return tilesGeometry(model).bars;
+    }
+    const width = stageSize(model).width;
+    return [
+        { left: 17, top: 315, width: 184, height: 5 },
+        { left: width - 15 - 184, top: 315, width: 184, height: 5 },
+    ];
 }

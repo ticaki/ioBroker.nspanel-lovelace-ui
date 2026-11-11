@@ -95,12 +95,18 @@ describe('cardGrid parse', () => {
 
     it('keeps the hardware layouts', () => {
         expect(gridLayout('cardGrid', 'us-l')).toMatchObject({ columns: 3, left: 1, columnWidth: 147 });
-        expect(gridLayout('cardGrid', 'us-p')).toMatchObject({ columns: 2, rows: 3, columnWidth: 143, rowHeight: 133 });
-        expect(gridLayout('cardGrid2', 'us-p')).toMatchObject({ columns: 3, rows: 3, columnWidth: 95, rowHeight: 133 });
+        // us-p uses the full 320 px like its HMI (tile centres 83 / 238 and 53 / 159 / 267)
+        expect(gridLayout('cardGrid', 'us-p')).toMatchObject({ columns: 2, rows: 3, columnWidth: 160, rowHeight: 133 });
+        expect(gridLayout('cardGrid2', 'us-p')).toMatchObject({
+            columns: 3,
+            rows: 3,
+            columnWidth: 106,
+            rowHeight: 133,
+        });
         expect(gridLayout('cardGrid3', 'us-p')).toMatchObject({
             columns: 2,
             rows: 2,
-            columnWidth: 143,
+            columnWidth: 160,
             rowHeight: 200,
         });
     });
