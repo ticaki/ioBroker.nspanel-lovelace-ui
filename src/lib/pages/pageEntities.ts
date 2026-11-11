@@ -6,7 +6,7 @@ const PageEntitiesMessageDefault: pages.PageEntitiesMessage = {
     event: 'entityUpd',
     headline: 'Page Entities',
     navigation: 'button~bSubPrev~~~~~button~bSubNext~~~~',
-    options: ['~~~~~', '~~~~~', '~~~~~', '~~~~~', '~~~~~'],
+    options: [],
 };
 
 export class PageEntities extends PageMenu {
@@ -56,7 +56,7 @@ export class PageEntities extends PageMenu {
         await super.update();
         const message: Partial<pages.PageEntitiesMessage> = {};
         const arr = (await this.getOptions([])).slice(0, this.maxItems);
-        message.options = arr as typeof message.options;
+        message.options = arr;
 
         message.headline = this.library.getTranslation(
             (this.items && this.items.data.headline && (await this.items.data.headline.getString())) ?? '',

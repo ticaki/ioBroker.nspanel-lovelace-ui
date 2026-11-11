@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { initial, parseEntityUpd, parseEntityUpdateDetail } from './parse';
-import { colorToWheelPosition, wheelPositionToColor } from './ColorWheel';
+import { colorToWheelPosition, toHmiWheel, wheelPositionToColor } from './ColorWheel';
 
 const ctx = { pageType: 'popupLight', pageArgs: ['light.desk', 'Schreibtischlampe'] };
 
@@ -76,5 +76,12 @@ describe('colour wheel', () => {
         expect(pos.y).toBeCloseTo(80, 0);
         const back = wheelPositionToColor(pos.x, pos.y, 160);
         expect(back).toEqual({ r: 0, g: 255, b: 255 });
+    });
+
+    it('sends the taps of a smaller wheel in the 160 px space of the HMI (the adapter assumes radius 80)', () => {
+        expect(toHmiWheel(70, 70, 140)).toEqual({ x: 80, y: 80, size: 160 });
+        expect(toHmiWheel(140, 70, 140)).toEqual({ x: 160, y: 80, size: 160 });
+        expect(toHmiWheel(0, 35, 140)).toEqual({ x: 0, y: 40, size: 160 });
+        expect(toHmiWheel(37, 123, 160)).toEqual({ x: 37, y: 123, size: 160 });
     });
 });

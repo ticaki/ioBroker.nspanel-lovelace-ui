@@ -1,5 +1,6 @@
 import type { ParseContext } from '../CardContract';
 import { field, toNumber } from '../../protocol/split';
+import type { PanelModel } from '../../protocol/types';
 
 /** One of the three buttons at the bottom of the popup: hidden when `text` is empty */
 export interface NotifyButton {
@@ -41,8 +42,17 @@ export interface PopupNotifyModel {
 
 /** Font ids of the HMI (`fontIdText`) -> size in stage pixels */
 const FONT_SIZES: Readonly<Record<number, number>> = { 0: 24, 1: 32, 2: 32, 3: 48, 4: 80, 5: 128 };
-/** lines the adapter fits into the text box per font (`maxLineCount` in `pagePopup.ts`) */
-const MAX_LINES: Readonly<Record<number, number>> = { 0: 7, 1: 5, 2: 5, 3: 4, 4: 2, 5: 1 };
+/**
+ * lines the adapter fits into the text box per font and model (`notifyLines` in
+ * `src/lib/const/tools.ts`, used by `pagePopup.ts`); web-p has the higher text box
+ */
+const MAX_LINES: Readonly<Record<PanelModel, readonly number[]>> = {
+    eu: [7, 5, 5, 4, 2, 1],
+    'us-l': [7, 5, 5, 4, 2, 1],
+    'us-p': [7, 5, 5, 4, 2, 1],
+    'web-l': [7, 5, 5, 4, 2, 1],
+    'web-p': [20, 15, 15, 10, 6, 3],
+};
 
 /** Height of the Nextion font of a font id (24, 32, 32, 48, 80, 128), unknown ids -> 24 */
 export function fontSize(font: number): number {
@@ -62,9 +72,15 @@ export function cssFontSize(font: number): number {
     return Math.round(fontSize(font) * 0.75);
 }
 
-/** Lines the adapter sends at most for a font (longer texts are rotated every 3 s) */
-export function maxLines(font: number): number {
-    return MAX_LINES[font] ?? 7;
+/**
+ * Lines the adapter sends at most for a font (longer texts are rotated every 3 s)
+ *
+ * @param font the font id (`textSize`)
+ * @param model the panel model
+ */
+export function maxLines(font: number, model: PanelModel = 'eu'): number {
+    const lines = MAX_LINES[model];
+    return lines[font] ?? lines[0];
 }
 
 export function initial(): PopupNotifyModel {

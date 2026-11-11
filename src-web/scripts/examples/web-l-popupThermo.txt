@@ -1,0 +1,4 @@
+# popupThermo with three rows of 5 modes each (four per page on the web models, the arrow pages)
+pageType~popupThermo~thermo~Thermostat~
+entityUpdateDetail~thermo~~9308~Modus~0?1~Auto~Aus?Heizen?Kühlen?Auto?Lüften~Lüfter~0?2~Mittel~Aus?Niedrig?Mittel?Hoch?Turbo~Preset~0?3~Eco~Eco?Komfort?Boost?Abwesend?Nacht
+@sleep 300

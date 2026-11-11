@@ -1,9 +1,11 @@
 import React from 'react';
 import { Icon } from '../../components/Icon';
 import { color565ToCss } from '../../protocol/color';
+import type { PanelModel } from '../../protocol/types';
 import { theme } from '../../style/theme';
 import type { CardProps } from '../CardContract';
 import { popupHeaderIconColor } from '../popupSlider/fields';
+import { popupFrame, spreadCenters } from '../popupSlider/layout';
 import { POPUP_FONT_SIZE, PopupHeader } from '../popupSlider/PopupHeader';
 import { clampTime, pad2, type PopupTimerModel, type TimerButton } from './parse';
 
@@ -12,23 +14,71 @@ const EDIT_COLOR = color565ToCss(63488);
 /** the +/- steps of the HMI (bZ1..bZ4) */
 const STEPS = [1, 5, 10, 15] as const;
 
-/** geometry of the HMI (stage pixels) */
-const DIGIT_BOX = { top: 66, width: 132, height: 111, minutesLeft: 76, secondsLeft: 241 };
-const DIGIT_FONT_SIZE = 120;
 const DIGIT_COLOR = '#ffffff';
 const BOX_COLOR = '#1e1e1e';
-/** the colon is drawn as two squares */
-const COLON = { left: 218, size: 14, tops: [107, 154] as const };
-/** the three action buttons: centres at x 84/222/360, y 224 */
-const ACTION_CENTERS_X = [84, 222, 360] as const;
-const ACTION_CENTER_Y = 224;
-const ACTION_WIDTH = 138;
-/** edit mode: four columns with an up box, the step label and a down box */
-const STEP_CENTERS_X = [188, 257, 326, 395] as const;
-const STEP_BOX = { size: 50, upTop: 187, downTop: 260 };
-const STEP_LABEL_CENTER_Y = 251;
-/** the current time at the bottom left */
-const CLOCK = { left: 13, centerY: 294, fontSize: 36 };
+
+/** geometry of popupTimer in stage pixels */
+export interface TimerGeometry {
+    /** the two number boxes */
+    digits: { top: number; width: number; height: number; minutesLeft: number; secondsLeft: number; fontSize: number };
+    /** the colon is drawn as two squares */
+    colon: { left: number; size: number; tops: [number, number] };
+    /** the three action buttons */
+    actions: { centersX: number[]; centerY: number; width: number };
+    /** edit mode: four columns with an up box, the step label and a down box */
+    steps: { centersX: number[]; size: number; upTop: number; downTop: number; labelCenterY: number };
+    /** the current time at the bottom left */
+    clock: { left: number; centerY: number; fontSize: number };
+}
+
+/**
+ * The layout of popupTimer per model. Landscape like the HMI (eu: boxes of 132 x 111 at x 76
+ * and 241, y 66; buttons centred at x 84/222/360, y 224; step columns at x 188..395), centred
+ * on `web-l` (the clock stays at the left edge). Portrait (us-p, web-p): the numbers centred
+ * (boxes of 120 x 111), the buttons in one row below them, the four step columns below the
+ * numbers, the clock at the bottom left.
+ *
+ * @param model the panel model the popup sees
+ */
+export function timerGeometry(model: PanelModel): TimerGeometry {
+    const { width, height, portrait, euLeft } = popupFrame(model);
+    const clock = { left: 13, centerY: height - 26, fontSize: 36 };
+    if (portrait) {
+        const top = height >= 640 ? 140 : 90;
+        const boxWidth = 120;
+        const boxHeight = 111;
+        const center = width / 2;
+        const upTop = top + boxHeight + 20;
+        return {
+            digits: {
+                top,
+                width: boxWidth,
+                height: boxHeight,
+                minutesLeft: center - 14 - boxWidth,
+                secondsLeft: center + 14,
+                fontSize: 104,
+            },
+            colon: { left: center - 7, size: 14, tops: [top + 34, top + 74] },
+            actions: { centersX: spreadCenters(3, 0, width), centerY: top + boxHeight + 60, width: 100 },
+            steps: {
+                centersX: spreadCenters(4, 16, width - 32),
+                size: 50,
+                upTop,
+                downTop: upTop + 73,
+                labelCenterY: upTop + 64,
+            },
+            clock,
+        };
+    }
+    const x = (v: number): number => v + euLeft;
+    return {
+        digits: { top: 66, width: 132, height: 111, minutesLeft: x(76), secondsLeft: x(241), fontSize: 120 },
+        colon: { left: x(218), size: 14, tops: [107, 154] },
+        actions: { centersX: [84, 222, 360].map(x), centerY: 224, width: 138 },
+        steps: { centersX: [188, 257, 326, 395].map(x), size: 50, upTop: 187, downTop: 260, labelCenterY: 251 },
+        clock,
+    };
+}
 
 type EditField = 'minutes' | 'seconds' | undefined;
 
@@ -96,23 +146,28 @@ export class PopupTimer extends React.Component<CardProps<PopupTimerModel>, Popu
         }
     }
 
+    private get geometry(): TimerGeometry {
+        return timerGeometry(this.props.global.model);
+    }
+
     private renderNumber(fieldName: 'minutes' | 'seconds'): React.JSX.Element {
         const editing = this.state.edit === fieldName;
+        const digits = this.geometry.digits;
         return (
             <div
                 data-field={fieldName}
                 style={{
                     position: 'absolute',
-                    left: fieldName === 'minutes' ? DIGIT_BOX.minutesLeft : DIGIT_BOX.secondsLeft,
-                    top: DIGIT_BOX.top,
-                    width: DIGIT_BOX.width,
-                    height: DIGIT_BOX.height,
+                    left: fieldName === 'minutes' ? digits.minutesLeft : digits.secondsLeft,
+                    top: digits.top,
+                    width: digits.width,
+                    height: digits.height,
                     background: BOX_COLOR,
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    fontSize: DIGIT_FONT_SIZE,
-                    lineHeight: `${DIGIT_BOX.height}px`,
+                    fontSize: digits.fontSize,
+                    lineHeight: `${digits.height}px`,
                     fontWeight: 400,
                     color: editing ? EDIT_COLOR : DIGIT_COLOR,
                     cursor: this.props.model.editable ? 'pointer' : 'default',
@@ -126,17 +181,18 @@ export class PopupTimer extends React.Component<CardProps<PopupTimerModel>, Popu
     }
 
     private renderStepColumn(step: number, index: number): React.JSX.Element {
-        const cx = STEP_CENTERS_X[index] ?? 0;
+        const steps = this.geometry.steps;
+        const cx = steps.centersX[index] ?? 0;
         const box = (delta: number, top: number): React.JSX.Element => (
             <div
                 data-step={delta}
                 onClick={(): void => this.step(delta)}
                 style={{
                     position: 'absolute',
-                    left: cx - STEP_BOX.size / 2,
+                    left: cx - steps.size / 2,
                     top,
-                    width: STEP_BOX.size,
-                    height: STEP_BOX.size,
+                    width: steps.size,
+                    height: steps.size,
                     background: BOX_COLOR,
                     display: 'flex',
                     alignItems: 'center',
@@ -153,13 +209,13 @@ export class PopupTimer extends React.Component<CardProps<PopupTimerModel>, Popu
         );
         return (
             <React.Fragment key={step}>
-                {box(step, STEP_BOX.upTop)}
+                {box(step, steps.upTop)}
                 <div
                     style={{
                         position: 'absolute',
-                        left: cx - STEP_BOX.size / 2 - 8,
-                        width: STEP_BOX.size + 16,
-                        top: STEP_LABEL_CENTER_Y - 11,
+                        left: cx - steps.size / 2 - 8,
+                        width: steps.size + 16,
+                        top: steps.labelCenterY - 11,
                         height: 22,
                         lineHeight: '22px',
                         textAlign: 'center',
@@ -170,7 +226,7 @@ export class PopupTimer extends React.Component<CardProps<PopupTimerModel>, Popu
                 >
                     {`+/- ${step}`}
                 </div>
-                {box(-step, STEP_BOX.downTop)}
+                {box(-step, steps.downTop)}
             </React.Fragment>
         );
     }
@@ -178,16 +234,17 @@ export class PopupTimer extends React.Component<CardProps<PopupTimerModel>, Popu
     private renderActionButton(button: TimerButton, index: number): React.JSX.Element {
         const visible = button.action !== '';
         const disabled = button.action === 'disable';
-        const cx = ACTION_CENTERS_X[index] ?? 0;
+        const actions = this.geometry.actions;
+        const cx = actions.centersX[index] ?? 0;
         return (
             <div
                 key={index}
                 data-button={`b${index + 1}`}
                 style={{
                     position: 'absolute',
-                    left: cx - ACTION_WIDTH / 2,
-                    width: ACTION_WIDTH,
-                    top: ACTION_CENTER_Y - 22,
+                    left: cx - actions.width / 2,
+                    width: actions.width,
+                    top: actions.centerY - 22,
                     height: 44,
                     display: 'flex',
                     alignItems: 'center',
@@ -215,6 +272,7 @@ export class PopupTimer extends React.Component<CardProps<PopupTimerModel>, Popu
         const { model, ctx, global } = this.props;
         const title = ctx.pageArgs[1] ?? '';
         const editing = this.state.edit !== undefined;
+        const { colon, clock } = this.geometry;
         return (
             <div
                 data-page={ctx.pageType}
@@ -227,18 +285,19 @@ export class PopupTimer extends React.Component<CardProps<PopupTimerModel>, Popu
                     // tapped entity (pageArgs[3])
                     iconColor={popupHeaderIconColor(ctx, model.updates > 0 ? model.iconColor : undefined)}
                     onClose={this.close}
+                    model={global.model}
                 />
                 <div data-time="">
                     {this.renderNumber('minutes')}
-                    {COLON.tops.map(top => (
+                    {colon.tops.map(top => (
                         <div
                             key={top}
                             style={{
                                 position: 'absolute',
-                                left: COLON.left,
+                                left: colon.left,
                                 top,
-                                width: COLON.size,
-                                height: COLON.size,
+                                width: colon.size,
+                                height: colon.size,
                                 background: DIGIT_COLOR,
                             }}
                         />
@@ -254,11 +313,11 @@ export class PopupTimer extends React.Component<CardProps<PopupTimerModel>, Popu
                     data-clock=""
                     style={{
                         position: 'absolute',
-                        left: CLOCK.left,
-                        top: CLOCK.centerY - 22,
+                        left: clock.left,
+                        top: clock.centerY - 22,
                         height: 44,
                         lineHeight: '44px',
-                        fontSize: CLOCK.fontSize,
+                        fontSize: clock.fontSize,
                         color: theme.foreground,
                         whiteSpace: 'nowrap',
                     }}

@@ -1,10 +1,15 @@
 import type { ParseContext } from '../CardContract';
-import { initialMenuPage, parseMenuEntityUpd, type MenuPageModel } from '../cardEntities/shared/menuParse';
+import {
+    initialMenuPage,
+    maxMenuSlots,
+    parseMenuEntityUpd,
+    type MenuPageModel,
+} from '../cardEntities/shared/menuParse';
 
 export type CardScheduleModel = MenuPageModel;
 
-/** cardSchedule shows 6 rows (`PageMenu.maxItems`) */
-const MAX_ENTITIES = 6;
+/** cardSchedule shows 6 rows (`PageMenu.maxItems`), 11 on web-p */
+const MAX_ENTITIES = maxMenuSlots('cardSchedule');
 
 export function initial(): CardScheduleModel {
     return initialMenuPage();

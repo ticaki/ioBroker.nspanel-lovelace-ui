@@ -125,30 +125,7 @@ class PagePopup extends import_Page.Page {
     if (message.text) {
       message.text = message.text.replaceAll("\n", "\r\n").replaceAll("/r/n", "\r\n");
     }
-    let maxLineCount = 7;
-    switch (details.textSize) {
-      case "0":
-        maxLineCount = 7;
-        break;
-      case "1":
-        maxLineCount = 5;
-        break;
-      case "2":
-        maxLineCount = 5;
-        break;
-      case "3":
-        maxLineCount = 4;
-        break;
-      case "4":
-        maxLineCount = 2;
-        break;
-      case "5":
-        maxLineCount = 1;
-        break;
-      default:
-        maxLineCount = 7;
-        break;
-    }
+    const maxLineCount = (0, import_tools.notifyLines)(Number(details.textSize), this.basePanel.info.nspanel.model);
     let lines = 0;
     if (message.text && (lines = message.text.split("\r\n").length) > maxLineCount) {
       let test = 0;

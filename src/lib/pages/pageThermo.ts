@@ -361,7 +361,7 @@ export class PageThermo extends Page {
 
     private getMessage(message: pages.PageThermoMessage): string {
         return getPayload(
-            getPayloadRemoveTilde('entityUpd', message.headline),
+            getPayloadRemoveTilde('entityUpd', this.shortHeadline(message.headline)),
             message.navigation,
             getPayloadRemoveTilde(
                 message.intNameEntity,

@@ -9,8 +9,25 @@ export interface ColorWheelProps {
     size?: number;
     /** current colour, draws the marker */
     color?: RGB;
-    /** the user tapped the wheel: x, y in wheel pixels (0..size) and the diameter */
+    /**
+     * the user tapped the wheel: x, y scaled to the 160 px wheel of the HMI (0..160) and the
+     * diameter 160 - whatever `size` the wheel is drawn with, see {@link toHmiWheel}
+     */
     onPick: (x: number, y: number, size: number) => void;
+}
+
+/**
+ * Scales a tap on a wheel of `size` px to the 160 px wheel of the HMI. The adapter ignores the
+ * diameter of `colorWheel,x|y|size` (`Color.pos_to_color` assumes a radius of 80), so a smaller
+ * wheel (portrait popups) has to send 160 px coordinates.
+ *
+ * @param x tap position in wheel pixels (0..size)
+ * @param y tap position in wheel pixels (0..size)
+ * @param size diameter of the drawn wheel
+ */
+export function toHmiWheel(x: number, y: number, size: number): { x: number; y: number; size: number } {
+    const scale = size > 0 ? WHEEL_SIZE / size : 1;
+    return { x: Math.round(x * scale), y: Math.round(y * scale), size: WHEEL_SIZE };
 }
 
 /**
@@ -111,7 +128,8 @@ export class ColorWheel extends React.Component<ColorWheelProps> {
         if ((x - r) * (x - r) + (y - r) * (y - r) > r * r) {
             return;
         }
-        this.props.onPick(x, y, size);
+        const hmi = toHmiWheel(x, y, size);
+        this.props.onPick(hmi.x, hmi.y, hmi.size);
     };
 
     render(): React.JSX.Element {

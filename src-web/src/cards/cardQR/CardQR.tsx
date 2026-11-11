@@ -5,24 +5,29 @@ import { color565ToCss } from '../../protocol/color';
 import type { Entity6 } from '../../protocol/types';
 import { theme } from '../../style/theme';
 import type { CardProps } from '../CardContract';
+import { qrLayout, type QRLayout } from './layout';
 import { isQREntityVisible, type CardQRModel } from './parse';
 import { qrModules, qrPath } from './qr';
 
-/** side of the white QR box in stage pixels */
-const QR_BOX = 200;
+/** width of the switch icon (and its touch area) */
+const SWITCH_WIDTH = 56;
 /** light modules around the code inside the white box */
 const QUIET_ZONE = 2;
 
-/** The QR card: the code on the left, up to two text rows (or a switch) on the right */
+/**
+ * The QR card: the code on the left, up to two text rows (or a switch) on the right; on the
+ * portrait models the code on top and the rows below it (see `layout.ts`)
+ */
 export class CardQR extends React.Component<CardProps<CardQRModel>> {
-    private renderCode(): React.JSX.Element {
+    private renderCode(layout: QRLayout): React.JSX.Element {
         const qr = qrModules(this.props.model.text);
+        const size = layout.codeSize;
         const box: React.CSSProperties = {
             position: 'absolute',
-            left: 12,
-            top: 88,
-            width: QR_BOX,
-            height: QR_BOX,
+            left: layout.code.left,
+            top: layout.code.top,
+            width: size,
+            height: size,
             background: qr ? '#ffffff' : 'transparent',
         };
         if (!qr) {
@@ -44,8 +49,8 @@ export class CardQR extends React.Component<CardProps<CardQRModel>> {
             <svg
                 data-qr-code=""
                 viewBox={`${-QUIET_ZONE} ${-QUIET_ZONE} ${units} ${units}`}
-                width={QR_BOX}
-                height={QR_BOX}
+                width={size}
+                height={size}
                 shapeRendering="crispEdges"
                 style={box}
             >
@@ -57,11 +62,12 @@ export class CardQR extends React.Component<CardProps<CardQRModel>> {
         );
     }
 
-    private renderEntity(entity: Entity6, index: number): React.JSX.Element | null {
-        if (!isQREntityVisible(entity)) {
+    private renderEntity(entity: Entity6, index: number, layout: QRLayout): React.JSX.Element | null {
+        const row = layout.entities[index];
+        if (!isQREntityVisible(entity) || row === undefined) {
             return null;
         }
-        const top = 96 + index * 100;
+        const beside = layout.switchBesideName;
         const color = color565ToCss(entity.iconColor);
         const isSwitch = entity.type === 'switch';
         const on = entity.optionalValue === '1';
@@ -69,9 +75,23 @@ export class CardQR extends React.Component<CardProps<CardQRModel>> {
             <div
                 key={index}
                 data-qr-entity={index}
-                style={{ position: 'absolute', left: 230, right: 8, top, height: 96 }}
+                style={{
+                    position: 'absolute',
+                    left: row.left,
+                    right: row.right,
+                    top: row.top,
+                    height: layout.entityHeight,
+                }}
             >
-                <div style={{ display: 'flex', alignItems: 'center', gap: 16, height: 40 }}>
+                <div
+                    style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 16,
+                        height: 40,
+                        paddingRight: isSwitch && beside ? SWITCH_WIDTH + 8 : undefined,
+                    }}
+                >
                     <Icon
                         glyph={entity.icon}
                         size={36}
@@ -92,7 +112,13 @@ export class CardQR extends React.Component<CardProps<CardQRModel>> {
                 {isSwitch ? (
                     <div
                         data-pressable=""
-                        style={{ position: 'absolute', right: 8, top: 44, width: 56, height: 48 }}
+                        style={{
+                            position: 'absolute',
+                            right: 8,
+                            top: beside ? -4 : 44,
+                            width: SWITCH_WIDTH,
+                            height: 48,
+                        }}
                         onClick={(): void => this.props.press(entity.id, 'OnOff', on ? 0 : 1)}
                     >
                         <Icon
@@ -122,7 +148,8 @@ export class CardQR extends React.Component<CardProps<CardQRModel>> {
     }
 
     render(): React.JSX.Element {
-        const { model, ctx, press } = this.props;
+        const { model, ctx, global, press } = this.props;
+        const layout = qrLayout(global.model);
         return (
             <div
                 data-page={ctx.pageType}
@@ -132,9 +159,10 @@ export class CardQR extends React.Component<CardProps<CardQRModel>> {
                     title={model.title}
                     navigation={model.navigation}
                     press={press}
+                    model={global.model}
                 />
-                {this.renderCode()}
-                {model.entities.map((entity, i) => this.renderEntity(entity, i))}
+                {this.renderCode(layout)}
+                {model.entities.map((entity, i) => this.renderEntity(entity, i, layout))}
             </div>
         );
     }

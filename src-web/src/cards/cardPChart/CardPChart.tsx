@@ -115,6 +115,7 @@ export class CardPChart extends React.Component<CardProps<PieModel>> {
                     title={model.title}
                     navigation={model.navigation}
                     press={press}
+                    model={global.model}
                     titleColor={textColor}
                 />
                 {layout ? (

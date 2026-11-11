@@ -1,37 +1,130 @@
 import React from 'react';
 import { Icon } from '../../components/Icon';
 import { color565ToCss } from '../../protocol/color';
+import type { PanelModel } from '../../protocol/types';
 import { theme } from '../../style/theme';
 import type { CardProps } from '../CardContract';
 import { popupEntityId, popupHeaderIconColor, popupTitle } from '../popupSlider/fields';
+import { popupFrame, spreadCenters } from '../popupSlider/layout';
 import { CloseButton, HEADER_ICON_SIZE, POPUP_FONT_SIZE, PopupHeader, TAP_SIZE } from '../popupSlider/PopupHeader';
 import { Slider } from '../popupSlider/Slider';
 import { coveredPercent, shownPercent, type ButtonTriple, type PopupShutterModel } from './parse';
 import shutterClosedPicture from './shutter-closed.png';
 import windowOpenPicture from './window-open.png';
 
-/** geometry of `popupShutter` on the HMI (stage pixels) */
-const SHUTTER = {
-    iconCenter: { x: 34, y: 80 },
-    textLeft: 65,
-    textCenterY: 64,
-    buttonCentersX: [306, 358, 410] as const,
-    buttonsCenterY: 121,
-    sliderLeft: 70,
-    sliderLength: 320,
-    sliderCenterY: 173,
-    tiltButtonsCenterY: 231,
-    tiltSliderCenterY: 282,
-};
+type Point = { x: number; y: number };
+type Triple<T> = [T, T, T];
 
-/** geometry of `popupShutter2` on the HMI: buttons left and right of the window picture */
-const SHUTTER2 = {
-    leftButtonsCenterX: 46,
-    rightButtonsCenterX: 336,
-    buttonCentersY: [119, 181, 243] as const,
-    window: { left: 116, top: 99, width: 153, height: 151 },
-    percentCenterY: 278,
-};
+/** geometry of `popupShutter` in stage pixels */
+export interface ShutterGeometry {
+    iconCenter: Point;
+    textLeft: number;
+    /** css `right` of the two text lines */
+    textRight: number;
+    textCenterY: number;
+    buttonCentersX: Triple<number>;
+    buttonsCenterY: number;
+    sliderLeft: number;
+    sliderLength: number;
+    sliderCenterY: number;
+    tiltButtonsCenterY: number;
+    tiltSliderCenterY: number;
+}
+
+/** geometry of `popupShutter2` in stage pixels */
+export interface Shutter2Geometry {
+    /** up / stop / down */
+    buttons: Triple<Point>;
+    /** the three extra buttons */
+    extra: Triple<Point>;
+    window: { left: number; top: number; width: number; height: number };
+    percentCenterY: number;
+}
+
+/**
+ * The layout of `popupShutter` per model. Landscape like the HMI (eu: buttons centred at x
+ * 306/358/410, y 121; slider from x 70, 320 px, at y 173; tilt row at y 231/282); on `web-l` the
+ * buttons stay at the right edge and the sliders grow to 480 px. Portrait (us-p, web-p): the
+ * buttons in one row below the name, the sliders (240 px) below them.
+ *
+ * @param model the panel model the popup sees
+ */
+export function shutterGeometry(model: PanelModel): ShutterGeometry {
+    const { width, height, portrait } = popupFrame(model);
+    if (portrait) {
+        const tall = height >= 640;
+        const [x1, x2, x3] = spreadCenters(3, 40, width - 80);
+        return {
+            iconCenter: { x: 34, y: 80 },
+            textLeft: 65,
+            textRight: 20,
+            textCenterY: 64,
+            buttonCentersX: [x1, x2, x3],
+            buttonsCenterY: tall ? 150 : 140,
+            sliderLeft: 40,
+            sliderLength: width - 80,
+            sliderCenterY: tall ? 215 : 195,
+            tiltButtonsCenterY: tall ? 305 : 265,
+            tiltSliderCenterY: tall ? 370 : 320,
+        };
+    }
+    const x1 = width - 174;
+    return {
+        iconCenter: { x: 34, y: 80 },
+        textLeft: 65,
+        textRight: width - x1 + TAP_SIZE / 2,
+        textCenterY: 64,
+        buttonCentersX: [x1, width - 122, width - 70],
+        buttonsCenterY: 121,
+        sliderLeft: 70,
+        sliderLength: width - 160,
+        sliderCenterY: 173,
+        tiltButtonsCenterY: 231,
+        tiltSliderCenterY: 282,
+    };
+}
+
+/**
+ * The layout of `popupShutter2` per model. Landscape like the HMI (eu: up/stop/down at x 46,
+ * the window picture 153 x 151 at 116/99, the extra buttons at x 336, y 119/181/243), centred
+ * on `web-l`. Portrait (us-p, web-p): the window centred below the header (web-p bigger), the
+ * percentage below it, up/stop/down and the extra buttons in a row each below.
+ *
+ * @param model the panel model the popup sees
+ */
+export function shutter2Geometry(model: PanelModel): Shutter2Geometry {
+    const { width, height, portrait, euLeft } = popupFrame(model);
+    if (portrait) {
+        const tall = height >= 640;
+        const win = tall ? { width: 200, height: 197, top: 90 } : { width: 153, height: 151, top: 76 };
+        const percentCenterY = win.top + win.height + 22;
+        const buttonsY = percentCenterY + (tall ? 70 : 50);
+        const extraY = buttonsY + (tall ? 80 : 62);
+        const xs = spreadCenters(3, 40, width - 80);
+        const row = (y: number): Triple<Point> => [
+            { x: xs[0], y },
+            { x: xs[1], y },
+            { x: xs[2], y },
+        ];
+        return {
+            buttons: row(buttonsY),
+            extra: row(extraY),
+            window: { left: Math.round((width - win.width) / 2), ...win },
+            percentCenterY,
+        };
+    }
+    const column = (x: number): Triple<Point> => [
+        { x: euLeft + x, y: 119 },
+        { x: euLeft + x, y: 181 },
+        { x: euLeft + x, y: 243 },
+    ];
+    return {
+        buttons: column(46),
+        extra: column(336),
+        window: { left: euLeft + 116, top: 99, width: 153, height: 151 },
+        percentCenterY: 278,
+    };
+}
 
 const BUTTON_ICON_SIZE = HEADER_ICON_SIZE;
 
@@ -122,7 +215,7 @@ export class PopupShutter extends React.Component<CardProps<PopupShutterModel>> 
     private renderTriple(
         triple: ButtonTriple,
         actions: [string, string, string],
-        centres: [{ x: number; y: number }, { x: number; y: number }, { x: number; y: number }],
+        centres: Triple<Point>,
     ): React.JSX.Element[] {
         return triple.icons.map((glyph, i) => (
             <IconButton
@@ -138,18 +231,19 @@ export class PopupShutter extends React.Component<CardProps<PopupShutterModel>> 
     }
 
     private renderSlider(top: number, value: number, action: string): React.JSX.Element {
+        const g = shutterGeometry(this.props.global.model);
         return (
             <div
                 key={action}
                 data-block={action}
-                style={{ position: 'absolute', left: SHUTTER.sliderLeft, top: top - 11 }}
+                style={{ position: 'absolute', left: g.sliderLeft, top: top - 11 }}
             >
                 <Slider
                     name={action}
                     value={value}
                     min={0}
                     max={100}
-                    length={SHUTTER.sliderLength}
+                    length={g.sliderLength}
                     onCommit={(v): void => this.props.press(this.id, action, v)}
                 />
             </div>
@@ -157,11 +251,12 @@ export class PopupShutter extends React.Component<CardProps<PopupShutterModel>> 
     }
 
     private renderShutter(): React.JSX.Element {
-        const { model, ctx } = this.props;
+        const { model, ctx, global } = this.props;
+        const g = shutterGeometry(global.model);
         const hasTilt = model.tilt !== undefined || model.tiltButtons.icons.some(i => i !== '');
-        const y = SHUTTER.buttonsCenterY;
-        const ty = SHUTTER.tiltButtonsCenterY;
-        const [x1, x2, x3] = SHUTTER.buttonCentersX;
+        const y = g.buttonsCenterY;
+        const ty = g.tiltButtonsCenterY;
+        const [x1, x2, x3] = g.buttonCentersX;
         // the HMI shows the text of the position row (the name of the entity) next to the icon
         const text = model.positionLabel || popupTitle(ctx, model.entityName);
         // the payload has an icon field but no colour: the icon is drawn in the colour of the
@@ -170,12 +265,15 @@ export class PopupShutter extends React.Component<CardProps<PopupShutterModel>> 
         const iconColor = popupHeaderIconColor(ctx);
         return (
             <>
-                <CloseButton onClose={(): void => this.onPress('bExit')} />
+                <CloseButton
+                    onClose={(): void => this.onPress('bExit')}
+                    model={global.model}
+                />
                 <div
                     style={{
                         position: 'absolute',
-                        left: SHUTTER.iconCenter.x - TAP_SIZE / 2,
-                        top: SHUTTER.iconCenter.y - TAP_SIZE / 2,
+                        left: g.iconCenter.x - TAP_SIZE / 2,
+                        top: g.iconCenter.y - TAP_SIZE / 2,
                         width: TAP_SIZE,
                         height: TAP_SIZE,
                         display: 'flex',
@@ -195,9 +293,9 @@ export class PopupShutter extends React.Component<CardProps<PopupShutterModel>> 
                     data-text=""
                     style={{
                         position: 'absolute',
-                        left: SHUTTER.textLeft,
-                        right: 480 - x1 + TAP_SIZE / 2,
-                        top: SHUTTER.textCenterY - 12,
+                        left: g.textLeft,
+                        right: g.textRight,
+                        top: g.textCenterY - 12,
                         height: 24,
                         lineHeight: '24px',
                         fontSize: POPUP_FONT_SIZE,
@@ -214,9 +312,9 @@ export class PopupShutter extends React.Component<CardProps<PopupShutterModel>> 
                         data-state=""
                         style={{
                             position: 'absolute',
-                            left: SHUTTER.textLeft,
-                            right: 480 - x1 + TAP_SIZE / 2,
-                            top: SHUTTER.textCenterY + 14,
+                            left: g.textLeft,
+                            right: g.textRight,
+                            top: g.textCenterY + 14,
                             height: 24,
                             lineHeight: '24px',
                             fontSize: POPUP_FONT_SIZE,
@@ -239,7 +337,7 @@ export class PopupShutter extends React.Component<CardProps<PopupShutterModel>> 
                     ],
                 )}
                 {model.position !== undefined
-                    ? this.renderSlider(SHUTTER.sliderCenterY, model.position, 'positionSlider')
+                    ? this.renderSlider(g.sliderCenterY, model.position, 'positionSlider')
                     : null}
                 {hasTilt
                     ? this.renderTriple(
@@ -253,7 +351,7 @@ export class PopupShutter extends React.Component<CardProps<PopupShutterModel>> 
                       )
                     : null}
                 {hasTilt && model.tilt !== undefined
-                    ? this.renderSlider(SHUTTER.tiltSliderCenterY, model.tilt, 'tiltSlider')
+                    ? this.renderSlider(g.tiltSliderCenterY, model.tilt, 'tiltSlider')
                     : null}
             </>
         );
@@ -266,7 +364,7 @@ export class PopupShutter extends React.Component<CardProps<PopupShutterModel>> 
      * housing at the top, so 0 % still shows it.
      */
     private renderWindow(): React.JSX.Element {
-        const { left, top, width, height } = SHUTTER2.window;
+        const { left, top, width, height } = shutter2Geometry(this.props.global.model).window;
         const covered = this.covered;
         const canMove = this.props.model.position !== undefined;
         return (
@@ -307,10 +405,8 @@ export class PopupShutter extends React.Component<CardProps<PopupShutterModel>> 
     }
 
     private renderShutter2(): React.JSX.Element {
-        const { model, ctx } = this.props;
-        const lx = SHUTTER2.leftButtonsCenterX;
-        const rx = SHUTTER2.rightButtonsCenterX;
-        const [y1, y2, y3] = SHUTTER2.buttonCentersY;
+        const { model, ctx, global } = this.props;
+        const g2 = shutter2Geometry(global.model);
         return (
             <>
                 {/* no colour in the payload (see renderShutter): the colour of the tapped entity */}
@@ -319,24 +415,17 @@ export class PopupShutter extends React.Component<CardProps<PopupShutterModel>> 
                     icon={model.icon || ctx.pageArgs[2] || ''}
                     iconColor={popupHeaderIconColor(ctx)}
                     onClose={(): void => this.onPress('bExit')}
+                    model={global.model}
                 />
-                {this.renderTriple(
-                    model.buttons,
-                    ['up', 'stop', 'down'],
-                    [
-                        { x: lx, y: y1 },
-                        { x: lx, y: y2 },
-                        { x: lx, y: y3 },
-                    ],
-                )}
+                {this.renderTriple(model.buttons, ['up', 'stop', 'down'], g2.buttons)}
                 {this.renderWindow()}
                 <div
                     data-percent=""
                     style={{
                         position: 'absolute',
-                        left: SHUTTER2.window.left,
-                        width: SHUTTER2.window.width,
-                        top: SHUTTER2.percentCenterY - 12,
+                        left: g2.window.left,
+                        width: g2.window.width,
+                        top: g2.percentCenterY - 12,
                         height: 24,
                         lineHeight: '24px',
                         fontSize: POPUP_FONT_SIZE,
@@ -354,7 +443,7 @@ export class PopupShutter extends React.Component<CardProps<PopupShutterModel>> 
                         size={BUTTON_ICON_SIZE}
                         color={b.color !== undefined ? color565ToCss(b.color) : undefined}
                         action={`button${i + 1}Press`}
-                        centre={{ x: rx, y: SHUTTER2.buttonCentersY[i] ?? y3 }}
+                        centre={g2.extra[i] ?? g2.extra[2]}
                         onPress={this.onPress}
                     />
                 ))}

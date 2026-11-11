@@ -3,15 +3,116 @@ import { Icon } from '../../components/Icon';
 import { TitleBar } from '../../components/TitleBar';
 import { color565ToCss } from '../../protocol/color';
 import { isEmptyEntity } from '../../protocol/split';
-import type { Entity6 } from '../../protocol/types';
-import { theme } from '../../style/theme';
+import type { Entity6, PanelModel } from '../../protocol/types';
+import { isPortrait, stageSize, theme } from '../../style/theme';
 import type { CardProps } from '../CardContract';
+import { splitIconField } from '../cardEntities/shared/entityTypes';
 import { Pressable } from '../cardEntities/shared/Pressable';
 import { entityPressProps } from './entityPress';
-import type { CardMediaModel } from './parse';
+import { mediaOptionCount, type CardMediaModel } from './parse';
 
 /** step of the volume buttons left and right of the slider */
 const VOLUME_STEP = 5;
+
+/** height of a text row (name, artist) */
+const TEXT_ROW_HEIGHT = 28;
+/** height of the row of transport buttons */
+const CONTROLS_HEIGHT = 56;
+/** height of the volume row */
+const VOLUME_HEIGHT = 36;
+
+/** geometry of cardMedia in stage pixels */
+export interface MediaGeometry {
+    /** the logo: box and glyph size; `left` undefined = centred */
+    logo: { left: number | undefined; top: number; box: number; iconSize: number };
+    /** the two text rows (css left/right) */
+    text: { left: number; right: number; nameTop: number; artistTop: number; fontSize: number };
+    controlsTop: number;
+    volumeTop: number;
+    /** the option buttons: one cell per option, row by row */
+    options: {
+        columns: number;
+        width: number;
+        height: number;
+        top: number;
+        rowPitch: number;
+        gap: number;
+        /** font size of a text option (an option without icon shows its value or name) */
+        fontSize: number;
+    };
+}
+
+/**
+ * The layout of cardMedia per model. Landscape like the HMI (eu: logo at the upper left, name and
+ * artist next to it at y 82 / 116, controls at y 156, volume at y 226, five options of 96 px at
+ * y 278); `web-l` stretches the rows to 640 px and shows six options of 106 px. Portrait (us-p,
+ * web-p): logo, name/artist, controls, volume and the option rows (web-p two rows of four of
+ * 80 px, us-p one row of five) below each other, spread with equal gaps over the height below
+ * the title bar.
+ *
+ * @param model the panel model the card sees
+ */
+export function mediaGeometry(model: PanelModel): MediaGeometry {
+    const { width, height } = stageSize(model);
+    const count = mediaOptionCount(model);
+    if (isPortrait(model)) {
+        const tall = height >= 640;
+        const columns = count <= 5 ? count : 4;
+        const rows = Math.ceil(count / columns);
+        const logo = tall ? { box: 100, iconSize: 90 } : { box: 64, iconSize: 58 };
+        /** name and artist: two rows of 28 px */
+        const textPitch = tall ? 36 : 32;
+        const optionHeight = tall ? 64 : 56;
+        // the blocks from top to bottom; the free height below the title bar is split into equal
+        // gaps between them and above / below them
+        const blocks = [logo.box, textPitch + TEXT_ROW_HEIGHT, CONTROLS_HEIGHT, VOLUME_HEIGHT];
+        for (let r = 0; r < rows; r++) {
+            blocks.push(optionHeight);
+        }
+        const used = blocks.reduce((sum, h) => sum + h, 0);
+        const gap = Math.floor((height - theme.titleBarHeight - used) / (blocks.length + 1));
+        const tops: number[] = [];
+        let y = theme.titleBarHeight + gap;
+        for (const h of blocks) {
+            tops.push(y);
+            y += h + gap;
+        }
+        return {
+            logo: { left: undefined, top: tops[0], ...logo },
+            // the adapter scrolls name and artist in windows of 36 characters: 16 px fit them into 308 px
+            text: { left: 6, right: 6, nameTop: tops[1], artistTop: tops[1] + textPitch, fontSize: 16 },
+            controlsTop: tops[2],
+            volumeTop: tops[3],
+            options: {
+                columns,
+                width: Math.floor(width / columns),
+                height: optionHeight,
+                top: tops[4],
+                rowPitch: optionHeight + gap,
+                gap: 0,
+                // 80 px cells: "22:15" has to fit
+                fontSize: 20,
+            },
+        };
+    }
+    const optionWidth = count > 5 ? 106 : 96;
+    return {
+        logo: { left: 10, top: 78, box: 64, iconSize: 58 },
+        text: { left: 84, right: 6, nameTop: 82, artistTop: 116, fontSize: 21 },
+        controlsTop: 156,
+        volumeTop: 226,
+        options: {
+            columns: count,
+            width: optionWidth,
+            height: 48,
+            // 278 ran the row 6 px below the stage (icons cut at the lower edge)
+            top: 272,
+            rowPitch: 48,
+            gap: count > 1 ? (width - count * optionWidth) / (count - 1) : 0,
+            fontSize: 24,
+        },
+    };
+}
 
 interface VolumeSliderProps {
     /** 0-100 */
@@ -124,8 +225,15 @@ class VolumeSlider extends React.Component<VolumeSliderProps, VolumeSliderState>
     }
 }
 
-/** The media card: logo, two text rows, transport buttons, volume slider and five option buttons */
+/**
+ * The media card: logo, two text rows, transport buttons, volume slider and the option buttons
+ * (5, web-l 6, web-p 8), laid out per model by {@link mediaGeometry}
+ */
 export class CardMedia extends React.Component<CardProps<CardMediaModel>> {
+    private get geometry(): MediaGeometry {
+        return mediaGeometry(this.props.global.model);
+    }
+
     private renderControl(
         glyph: string | undefined,
         name: string | undefined,
@@ -162,7 +270,12 @@ export class CardMedia extends React.Component<CardProps<CardMediaModel>> {
         const empty = isEmptyEntity(entity);
         const handlers = empty ? undefined : entityPressProps('cardMedia', entity, this.props);
         const color = color565ToCss(entity.iconColor);
-        const text = entity.icon === '' ? entity.optionalValue || entity.displayName : '';
+        // the icon field may carry a text (e.g. the remaining time `14:00` of a sleep timer, with or without glyph)
+        const field = entity.icon !== '' ? splitIconField(entity.icon) : undefined;
+        const text = field ? field.text : entity.optionalValue || entity.displayName;
+        const g = this.geometry.options;
+        const col = index % g.columns;
+        const row = Math.floor(index / g.columns);
         return (
             <Pressable
                 key={index}
@@ -170,25 +283,49 @@ export class CardMedia extends React.Component<CardProps<CardMediaModel>> {
                 data-id={String(index)}
                 {...handlers}
                 style={{
-                    width: 96,
-                    height: 48,
+                    position: 'absolute',
+                    left: Math.round(col * (g.width + g.gap)),
+                    top: row * g.rowPitch,
+                    width: g.width,
+                    height: g.height,
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
                     color,
-                    fontSize: 24,
+                    fontSize: g.fontSize,
                     whiteSpace: 'nowrap',
                     overflow: 'hidden',
                 }}
             >
-                {empty ? null : entity.icon !== '' ? (
+                {empty ? null : field && field.text === '' ? (
                     <Icon
                         glyph={entity.icon}
                         size={40}
                         color={color}
                     />
                 ) : (
-                    text
+                    // a text never leaves the cell: cut with an ellipsis
+                    <span
+                        data-option-text=""
+                        style={{
+                            maxWidth: '100%',
+                            padding: '0 2px',
+                            boxSizing: 'border-box',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            whiteSpace: 'nowrap',
+                        }}
+                    >
+                        {field?.glyph !== undefined ? (
+                            <Icon
+                                glyph={field.glyph}
+                                size={g.fontSize}
+                                color={color}
+                                style={{ display: 'inline-block', verticalAlign: 'middle' }}
+                            />
+                        ) : null}
+                        {text}
+                    </span>
                 )}
             </Pressable>
         );
@@ -200,16 +337,18 @@ export class CardMedia extends React.Component<CardProps<CardMediaModel>> {
             return null;
         }
         const handlers = entityPressProps('cardMedia', logo, this.props);
+        const g = this.geometry.logo;
+        const left = g.left ?? Math.round((stageSize(this.props.global.model).width - g.box) / 2);
         return (
             <Pressable
                 data-role="media-logo"
                 {...handlers}
                 style={{
                     position: 'absolute',
-                    left: 10,
-                    top: 78,
-                    width: 64,
-                    height: 64,
+                    left,
+                    top: g.top,
+                    width: g.box,
+                    height: g.box,
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
@@ -217,7 +356,7 @@ export class CardMedia extends React.Component<CardProps<CardMediaModel>> {
             >
                 <Icon
                     glyph={logo.icon}
-                    size={58}
+                    size={g.iconSize}
                     color={color565ToCss(logo.iconColor)}
                 />
             </Pressable>
@@ -225,17 +364,18 @@ export class CardMedia extends React.Component<CardProps<CardMediaModel>> {
     }
 
     private renderTextRow(text: string, color: number, top: number): React.JSX.Element {
+        const g = this.geometry.text;
         return (
             <div
                 style={{
                     position: 'absolute',
-                    left: 84,
-                    right: 6,
+                    left: g.left,
+                    right: g.right,
                     top,
-                    height: 28,
-                    lineHeight: '28px',
+                    height: TEXT_ROW_HEIGHT,
+                    lineHeight: `${TEXT_ROW_HEIGHT}px`,
                     textAlign: 'center',
-                    fontSize: 21,
+                    fontSize: this.geometry.text.fontSize,
                     color: color565ToCss(color),
                     whiteSpace: 'pre',
                     overflow: 'hidden',
@@ -260,8 +400,8 @@ export class CardMedia extends React.Component<CardProps<CardMediaModel>> {
                     position: 'absolute',
                     left: 8,
                     right: 8,
-                    top: 226,
-                    height: 36,
+                    top: this.geometry.volumeTop,
+                    height: VOLUME_HEIGHT,
                     display: 'flex',
                     alignItems: 'center',
                     gap: 10,
@@ -290,8 +430,9 @@ export class CardMedia extends React.Component<CardProps<CardMediaModel>> {
     }
 
     render(): React.JSX.Element {
-        const { model, ctx, press } = this.props;
+        const { model, ctx, press, global } = this.props;
         const white = theme.foreground;
+        const g = this.geometry;
         return (
             <div
                 data-page={ctx.pageType}
@@ -301,18 +442,19 @@ export class CardMedia extends React.Component<CardProps<CardMediaModel>> {
                     title={model.title}
                     navigation={model.navigation}
                     press={press}
+                    model={global.model}
                 />
                 {this.renderLogo()}
-                {this.renderTextRow(model.name, model.nameColor, 82)}
-                {this.renderTextRow(model.artist, model.artistColor, 116)}
+                {this.renderTextRow(model.name, model.nameColor, g.text.nameTop)}
+                {this.renderTextRow(model.artist, model.artistColor, g.text.artistTop)}
                 <div
                     data-media-controls=""
                     style={{
                         position: 'absolute',
                         left: 8,
                         right: 8,
-                        top: 156,
-                        height: 56,
+                        top: g.controlsTop,
+                        height: CONTROLS_HEIGHT,
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'space-between',
@@ -339,13 +481,13 @@ export class CardMedia extends React.Component<CardProps<CardMediaModel>> {
                         position: 'absolute',
                         left: 0,
                         right: 0,
-                        top: 278,
-                        height: 48,
-                        display: 'flex',
-                        justifyContent: 'space-between',
+                        top: g.options.top,
+                        height: g.options.height,
                     }}
                 >
-                    {model.options.map((entity, i) => this.renderOption(entity, i))}
+                    {model.options
+                        .slice(0, mediaOptionCount(global.model))
+                        .map((entity, i) => this.renderOption(entity, i))}
                 </div>
             </div>
         );

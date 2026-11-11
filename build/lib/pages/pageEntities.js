@@ -26,7 +26,7 @@ const PageEntitiesMessageDefault = {
   event: "entityUpd",
   headline: "Page Entities",
   navigation: "button~bSubPrev~~~~~button~bSubNext~~~~",
-  options: ["~~~~~", "~~~~~", "~~~~~", "~~~~~", "~~~~~"]
+  options: []
 };
 class PageEntities extends import_pageMenu.PageMenu {
   config;

@@ -1,0 +1,4 @@
+# popupFan: switch, speed slider and 10 preset modes (8 per page on the web models, the arrow pages)
+pageType~popupFan~4?4~Ventilator~
+entityUpdateDetail~4?4~~2016~1~2~5~Speed~Nacht~Auto?Nacht?Turbo?Eco?Leise?Normal?Brise?Sturm?Schlaf?Kinder
+@sleep 300

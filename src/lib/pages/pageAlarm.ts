@@ -360,7 +360,7 @@ export class PageAlarm extends Page {
         let result: pages.PageAlarmMessage = PageAlarmMessageDefault;
         result = { ...result, ...message };
         return getPayload(
-            getPayloadRemoveTilde('entityUpd', result.headline),
+            getPayloadRemoveTilde('entityUpd', this.shortHeadline(result.headline)),
             result.navigation,
             getPayloadRemoveTilde(
                 result.intNameEntity,

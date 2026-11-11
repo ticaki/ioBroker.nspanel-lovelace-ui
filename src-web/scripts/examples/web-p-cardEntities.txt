@@ -1,0 +1,4 @@
+# cardEntities on web-p: 8 entries (rows of cardEntities.txt and cardGrid2.txt, repeated)
+pageType~cardEntities
+entityUpd~Test Entities Card~button~bSubPrev~~65535~~~button~bSubNext~~65535~~~light~0?1?0~~64704~Bed Light~1~switch~0?1?1~~65222~Decorative Lights~1~shutter~0?1?2~~65535~Hall Window~|||enable|enable|disable~text~0?1?3~~9406~Outside Temperature~15.6 °C~switch~2?1?4~~65222~Decke~1~switch~2?1?5~~17299~Stehlampe~0~shutter~2?1?6~~65535~Rollo~|||enable|enable|enable~fan~2?1?7~~17299~Lüfter~0
+@sleep 300

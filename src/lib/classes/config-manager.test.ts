@@ -156,6 +156,34 @@ describe('lib/classes/config-manager - setScriptConfig with a global configurati
     });
 });
 
+describe('lib/classes/config-manager - dropped script page', () => {
+    it('warns about the navigation node a dropped sub page leaves behind', async () => {
+        const adapter = fakeScriptAdapter({
+            type: 'globalConfig',
+            version: '0.0.0',
+            subPages: [{ type: 'cardChart', uniqueName: 'heizung', heading: 'stub', prev: 'main', items: [] }],
+            navigation: [],
+        });
+        const warnings: string[] = [];
+        adapter.log.warn = (m: string): void => {
+            warnings.push(m);
+        };
+        adapter.config.pageConfig = [];
+        const manager = new ConfigManager(adapter, true);
+        const result = await manager.setScriptConfig({
+            panelTopic: 'panel/a',
+            panelName: 'a',
+            version: '99.99.99',
+            pages: [{ type: 'cardGrid', uniqueName: 'main', heading: 'main', items: [] }],
+            subPages: [],
+        } as any);
+        expect((result.panelConfig?.navigation ?? []).some(n => n && n.name === 'heizung')).to.equal(true);
+        expect((result.panelConfig?.pages ?? []).some(p => p.uniqueID === 'heizung')).to.equal(false);
+        expect(warnings.filter(w => w.includes(`Script page 'heizung' was dropped`))).to.have.length(1);
+        await manager.delete();
+    });
+});
+
 describe('lib/classes/config-manager - getDefaultScriptConfig', () => {
     it('matches the version of the script template', () => {
         const version = ConfigManager.getTemplateScriptVersion();

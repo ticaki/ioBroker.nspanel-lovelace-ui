@@ -1,0 +1,4 @@
+# popupLight: colour light with switch, brightness and colour wheel
+pageType~popupLight~alias.0.Hue~Hue~
+entityUpdateDetail~alias.0.Hue~~35690~1~50~42~enable~Farbe~Temperatur~Helligkeit~disable
+@sleep 300

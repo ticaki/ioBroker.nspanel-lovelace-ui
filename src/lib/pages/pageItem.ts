@@ -597,11 +597,15 @@ export class PageItem extends BaseTriggeredPage {
                                     break;
                                 }
                                 default: {
-                                    message.optionalValue = this.library.getTranslation(
+                                    const optionalValue =
                                         (await tools.getValueEntryString(item.entity2)) ??
-                                            (await tools.getEntryTextOnOff(item.text1, value)) ??
-                                            '',
-                                    );
+                                        (await tools.getEntryTextOnOff(item.text1, value)) ??
+                                        '';
+                                    // textRawValue: a name (e.g. of a page) named like a translation key stays the name
+                                    message.optionalValue =
+                                        entry.role === 'textRawValue'
+                                            ? optionalValue
+                                            : this.library.getTranslation(optionalValue);
                                 }
                             }
                         }

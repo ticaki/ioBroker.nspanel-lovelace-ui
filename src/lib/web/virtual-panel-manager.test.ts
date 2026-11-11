@@ -196,6 +196,7 @@ describe('lib/web/virtual-panel-manager - clones', () => {
             friendlyName: 'emu (Web)',
             tftVersion: '5.1.1',
             kind: 'clone',
+            buttons: true,
         });
         expect(b.frames[0]).to.deep.equal(a.frames[0]);
         expect(manager.listPanels()).to.deep.equal([
@@ -367,6 +368,7 @@ describe('lib/web/virtual-panel-manager - standalone web panels', () => {
             friendlyName: 'Webtest',
             tftVersion: '1.0.0',
             kind: 'web',
+            buttons: true,
         });
         await channel.publish(`${WEB_TOPIC}/cmnd/CustomSend`, 'pageType~pageStartup');
         expect(a.frames[1]).to.deep.equal({ t: 'cmd', p: 'pageType~pageStartup', seq: 1 });
@@ -380,6 +382,25 @@ describe('lib/web/virtual-panel-manager - standalone web panels', () => {
         // a clone removal does not touch it
         await manager.removeClonesOf(WEB_TOPIC);
         expect(manager.channelFor(WEB_TOPIC)).to.equal(channel);
+    });
+});
+
+describe('lib/web/virtual-panel-manager - virtual hardware buttons in hello', () => {
+    it('hides them for a web model, unless the option webButtons of the panel table shows them', async () => {
+        const { adapter, ctrl, manager } = setup();
+        const channel = manager.channelFor(WEB_TOPIC);
+        await ctrl.createPanel(
+            { name: WEB_ID, friendlyName: 'Webtest', topic: WEB_TOPIC, kind: 'web', model: 'web-p' },
+            channel,
+        );
+        const a = client();
+        await manager.attach(WEB_TOPIC, a);
+        expect(a.frames[0]).to.include({ t: 'hello', model: 'web-p', buttons: false, tftVersion: '1.0.0' });
+
+        adapter.config.panels.find((p: { topic: string }) => p.topic === WEB_TOPIC).webButtons = true;
+        const b = client();
+        await manager.attach(WEB_TOPIC, b);
+        expect(b.frames[0]).to.include({ t: 'hello', buttons: true });
     });
 });
 

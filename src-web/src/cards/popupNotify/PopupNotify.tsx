@@ -1,18 +1,74 @@
 import React from 'react';
 import { Icon } from '../../components/Icon';
 import { color565ToCss } from '../../protocol/color';
+import type { PanelModel } from '../../protocol/types';
 import { theme } from '../../style/theme';
 import type { CardProps } from '../CardContract';
-import { CloseButton } from '../popupSlider/PopupHeader';
+import { popupFrame } from '../popupSlider/layout';
+import { CloseButton, POPUP_FONT_SIZE } from '../popupSlider/PopupHeader';
 import { cssFontSize, lineHeight, maxLines, type NotifyButton, type PopupNotifyModel } from './parse';
 
-/** geometry of the HMI (stage pixels) */
-const HEADING = { left: 24, centerY: 42, fontSize: 24 };
-const ICON = { centerX: 76, centerY: 152, size: 64 };
-/** the text box: next to the icon, from the left margin without one */
-const TEXT = { top: 74, leftWithIcon: 138, left: 24, right: 424 };
-/** three buttons of 160 px, the text left aligned like on the HMI */
-const BUTTON = { width: 160, centerY: 285, height: 44, paddingLeft: 25, fontSize: 24 };
+/** geometry of the notification popup in stage pixels */
+export interface NotifyGeometry {
+    heading: { left: number; centerY: number; fontSize: number; right: number };
+    /** the icon; `inHeading`: small icon left of the heading (portrait), else big icon left of the text */
+    icon: { centerX: number; centerY: number; size: number; inHeading: boolean };
+    /** the text box: next to the icon (landscape), from the left margin without one */
+    text: { top: number; leftWithIcon: number; left: number; right: number };
+    /** the three buttons: left edges, width, vertical centre */
+    button: { lefts: number[]; width: number; centerY: number; height: number; centered: boolean; fontSize: number };
+}
+
+/** button width of the HMI (eu: three buttons of 160 px, text left aligned) */
+const BUTTON_WIDTH = 160;
+/** the portrait buttons: three of 90 px in one row at the bottom */
+const PORTRAIT_BUTTON_WIDTH = 90;
+const BUTTON_FONT_SIZE = 24;
+const BUTTON_PADDING_LEFT = 25;
+
+/**
+ * The layout of popupNotify per model. Landscape like the HMI (eu: icon 64 px at 76/152, text
+ * from x 138 (24 without icon) to 424, buttons of 160 px at y 285); `web-l` widens the text box
+ * to x 584 and spreads the buttons over the 640 px. Portrait (us-p, web-p): the text box is
+ * 272 px wide (x 24..296) from y 74, the icon moves small into the heading line, three
+ * buttons of 90 px in one row at the bottom (web-p y 605).
+ *
+ * @param model the panel model the popup sees
+ */
+export function notifyGeometry(model: PanelModel): NotifyGeometry {
+    const { width, height, portrait } = popupFrame(model);
+    if (portrait) {
+        const share = width / 3;
+        return {
+            heading: { left: 24, centerY: 42, fontSize: 24, right: 90 },
+            icon: { centerX: 42, centerY: 42, size: 36, inHeading: true },
+            text: { top: 74, leftWithIcon: 24, left: 24, right: width - 24 },
+            button: {
+                lefts: [0, 1, 2].map(i => Math.round(i * share + (share - PORTRAIT_BUTTON_WIDTH) / 2)),
+                width: PORTRAIT_BUTTON_WIDTH,
+                centerY: height - 35,
+                height: 44,
+                centered: true,
+                // three buttons of 90 px: the small popup font, so "Ignorieren" still fits
+                fontSize: POPUP_FONT_SIZE,
+            },
+        };
+    }
+    const share = width / 3;
+    return {
+        heading: { left: 24, centerY: 42, fontSize: 24, right: 90 },
+        icon: { centerX: 76, centerY: 152, size: 64, inHeading: false },
+        text: { top: 74, leftWithIcon: 138, left: 24, right: width - 56 },
+        button: {
+            lefts: [0, 1, 2].map(i => Math.round(i * share + (share - BUTTON_WIDTH) / 2)),
+            width: BUTTON_WIDTH,
+            centerY: 285,
+            height: 44,
+            centered: false,
+            fontSize: BUTTON_FONT_SIZE,
+        },
+    };
+}
 
 /**
  * The notification popup like the HMI: small heading at the top left (coloured), the X,
@@ -75,25 +131,27 @@ export class PopupNotify extends React.Component<CardProps<PopupNotifyModel>> {
         this.armTimer();
     };
 
-    private renderButton(button: NotifyButton, index: number): React.JSX.Element {
+    private renderButton(button: NotifyButton, index: number, geometry: NotifyGeometry): React.JSX.Element {
         const visible = button.text !== '';
+        const g = geometry.button;
         return (
             <div
                 key={index}
                 data-button={`button${index + 1}`}
                 style={{
                     position: 'absolute',
-                    left: index * BUTTON.width,
-                    width: BUTTON.width,
-                    top: BUTTON.centerY - BUTTON.height / 2,
-                    height: BUTTON.height,
+                    left: g.lefts[index] ?? 0,
+                    width: g.width,
+                    top: g.centerY - g.height / 2,
+                    height: g.height,
                     boxSizing: 'border-box',
-                    paddingLeft: BUTTON.paddingLeft,
+                    paddingLeft: g.centered ? 4 : BUTTON_PADDING_LEFT,
                     paddingRight: 4,
                     display: 'flex',
                     alignItems: 'center',
+                    justifyContent: g.centered ? 'center' : 'flex-start',
                     color: color565ToCss(button.color),
-                    fontSize: BUTTON.fontSize,
+                    fontSize: g.fontSize,
                     whiteSpace: 'nowrap',
                     overflow: 'hidden',
                     textOverflow: 'ellipsis',
@@ -113,8 +171,12 @@ export class PopupNotify extends React.Component<CardProps<PopupNotifyModel>> {
     }
 
     render(): React.JSX.Element {
-        const { model, ctx } = this.props;
+        const { model, ctx, global } = this.props;
+        const g = notifyGeometry(global.model);
+        const { heading: headingBox, icon: iconBox, text: textBox } = g;
         const hasIcon = model.icon !== '';
+        const headingLeft = hasIcon && iconBox.inHeading ? iconBox.centerX + iconBox.size / 2 + 8 : headingBox.left;
+        const textLeft = hasIcon && !iconBox.inHeading ? textBox.leftWithIcon : textBox.left;
         const size = cssFontSize(model.font);
         const line = lineHeight(model.font);
         return (
@@ -127,13 +189,13 @@ export class PopupNotify extends React.Component<CardProps<PopupNotifyModel>> {
                     data-heading=""
                     style={{
                         position: 'absolute',
-                        top: HEADING.centerY - 16,
-                        left: HEADING.left,
-                        right: 90,
+                        top: headingBox.centerY - 16,
+                        left: headingLeft,
+                        right: headingBox.right,
                         height: 32,
                         lineHeight: '32px',
                         color: color565ToCss(model.headingColor),
-                        fontSize: HEADING.fontSize,
+                        fontSize: headingBox.fontSize,
                         whiteSpace: 'nowrap',
                         overflow: 'hidden',
                         textOverflow: 'ellipsis',
@@ -141,16 +203,19 @@ export class PopupNotify extends React.Component<CardProps<PopupNotifyModel>> {
                 >
                     {model.heading}
                 </div>
-                <CloseButton onClose={this.exit} />
+                <CloseButton
+                    onClose={this.exit}
+                    model={global.model}
+                />
                 {hasIcon ? (
                     <div
                         data-icon=""
                         style={{
                             position: 'absolute',
-                            left: ICON.centerX - ICON.size / 2,
-                            top: ICON.centerY - ICON.size / 2,
-                            width: ICON.size,
-                            height: ICON.size,
+                            left: iconBox.centerX - iconBox.size / 2,
+                            top: iconBox.centerY - iconBox.size / 2,
+                            width: iconBox.size,
+                            height: iconBox.size,
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
@@ -158,7 +223,7 @@ export class PopupNotify extends React.Component<CardProps<PopupNotifyModel>> {
                     >
                         <Icon
                             glyph={model.icon}
-                            size={ICON.size}
+                            size={iconBox.size}
                             color={color565ToCss(model.iconColor)}
                         />
                     </div>
@@ -167,10 +232,10 @@ export class PopupNotify extends React.Component<CardProps<PopupNotifyModel>> {
                     data-text=""
                     style={{
                         position: 'absolute',
-                        left: hasIcon ? TEXT.leftWithIcon : TEXT.left,
-                        width: TEXT.right - (hasIcon ? TEXT.leftWithIcon : TEXT.left),
-                        top: TEXT.top,
-                        height: line * maxLines(model.font),
+                        left: textLeft,
+                        width: textBox.right - textLeft,
+                        top: textBox.top,
+                        height: line * maxLines(model.font, global.model),
                         color: color565ToCss(model.textColor),
                         fontSize: size,
                         lineHeight: `${line}px`,
@@ -181,7 +246,7 @@ export class PopupNotify extends React.Component<CardProps<PopupNotifyModel>> {
                 >
                     {model.text}
                 </div>
-                <div data-buttons="">{model.buttons.map((b, i) => this.renderButton(b, i))}</div>
+                <div data-buttons="">{model.buttons.map((b, i) => this.renderButton(b, i, g))}</div>
             </div>
         );
     }

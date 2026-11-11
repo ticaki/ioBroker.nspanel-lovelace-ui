@@ -30,12 +30,12 @@ describe('cardGrid parse', () => {
         expect(m.entities[4].type).toBe('');
     });
 
-    it('keeps at most 9 tiles (cardGrid2 on us-p)', () => {
+    it('keeps at most 15 tiles (cardGrid2 on web-p)', () => {
         const many = ['T', ...Array<string>(12).fill('')];
-        for (let i = 0; i < 12; i++) {
+        for (let i = 0; i < 18; i++) {
             many.push('switch', `id${i}`, '', '65535', `n${i}`, '1');
         }
-        expect(parseEntityUpd(many, initial(), ctx).entities).toHaveLength(9);
+        expect(parseEntityUpd(many, initial(), ctx).entities).toHaveLength(15);
     });
 
     it('lays the tiles out as 3x2, 4x2 (us-p 3x3) and 2x2', () => {
@@ -47,6 +47,67 @@ describe('cardGrid parse', () => {
             rows: 2,
             columnWidth: 223,
             nameFontSize: 24,
+        });
+    });
+
+    it('lays the tiles out on the web models (doc/web-panel/SMARTPHONE.md)', () => {
+        // web-l: contentWidth 640 (no empty strip), rows of 119
+        expect(gridLayout('cardGrid', 'web-l')).toMatchObject({
+            columns: 4,
+            rows: 2,
+            columnWidth: 160,
+            rowHeight: 119,
+        });
+        expect(gridLayout('cardGrid2', 'web-l')).toMatchObject({
+            columns: 5,
+            rows: 2,
+            columnWidth: 128,
+            rowHeight: 119,
+        });
+        expect(gridLayout('cardGrid3', 'web-l')).toMatchObject({
+            columns: 3,
+            rows: 2,
+            columnWidth: 213,
+            rowHeight: 119,
+            valueWidth: 140,
+            nameFontSize: 24,
+        });
+        // web-p: contentWidth 320, rows share 640 - 62 - 18 = 560
+        expect(gridLayout('cardGrid', 'web-p')).toMatchObject({
+            columns: 2,
+            rows: 5,
+            columnWidth: 160,
+            rowHeight: 112,
+        });
+        expect(gridLayout('cardGrid2', 'web-p')).toMatchObject({
+            columns: 3,
+            rows: 5,
+            columnWidth: 106,
+            rowHeight: 112,
+        });
+        expect(gridLayout('cardGrid3', 'web-p')).toMatchObject({
+            columns: 2,
+            rows: 4,
+            columnWidth: 160,
+            rowHeight: 140,
+        });
+    });
+
+    it('keeps the hardware layouts', () => {
+        expect(gridLayout('cardGrid', 'us-l')).toMatchObject({ columns: 3, left: 1, columnWidth: 147 });
+        // us-p uses the full 320 px like its HMI (tile centres 83 / 238 and 53 / 159 / 267)
+        expect(gridLayout('cardGrid', 'us-p')).toMatchObject({ columns: 2, rows: 3, columnWidth: 160, rowHeight: 133 });
+        expect(gridLayout('cardGrid2', 'us-p')).toMatchObject({
+            columns: 3,
+            rows: 3,
+            columnWidth: 106,
+            rowHeight: 133,
+        });
+        expect(gridLayout('cardGrid3', 'us-p')).toMatchObject({
+            columns: 2,
+            rows: 2,
+            columnWidth: 160,
+            rowHeight: 200,
         });
     });
 

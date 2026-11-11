@@ -25,6 +25,7 @@ __export(virtual_panel_manager_exports, {
 });
 module.exports = __toCommonJS(virtual_panel_manager_exports);
 var import_library = require("../controller/library");
+var import_tools = require("../const/tools");
 var import_virtual_panel_channel = require("./virtual-panel-channel");
 const WEB_PANEL_GRACE_MS = 24 * 60 * 60 * 1e3;
 const MAX_PENDING_ACKS = 256;
@@ -125,6 +126,7 @@ class VirtualPanelManager extends import_library.BaseClass {
    * with `bye`, or just closed so it tries again when the panel is not running right now)
    */
   async attach(topicOrId, client) {
+    var _a;
     if (this.unload || this.adapter.unload) {
       client.send({ t: "bye", reason: "shutdown" });
       client.close("shutdown");
@@ -187,7 +189,11 @@ class VirtualPanelManager extends import_library.BaseClass {
       name: panel.name,
       friendlyName: panel.friendlyName,
       tftVersion: this.tftVersion(panel.info.nspanel.model),
-      kind: entry.kind
+      kind: entry.kind,
+      buttons: entry.kind === "clone" ? true : (0, import_tools.webButtonsVisible)(
+        panel.info.nspanel.model,
+        (_a = this.adapter.config.panels.find((p) => p.topic === entry.topic)) == null ? void 0 : _a.webButtons
+      )
     });
     this.log.debug(`Browser connected to ${panel.friendlyName} (${entry.clients.size} connected)`);
     return entry;
@@ -417,6 +423,9 @@ class VirtualPanelManager extends import_library.BaseClass {
     return this.controller.panels.find((p) => p.isVirtual && p.topic === entry.channel.topic);
   }
   tftVersion(model) {
+    if ((0, import_tools.isWebModel)(model)) {
+      return WEB_PANEL_FALLBACK_TFT_VERSION;
+    }
     const suffix = model === "eu" ? "" : `-${model}`;
     const key = this.adapter.config.useBetaTFT ? `tft${suffix}-beta` : `tft${suffix}`;
     return this.controller.globalPanelInfo.availableTftFirmwareVersion[key] || WEB_PANEL_FALLBACK_TFT_VERSION;

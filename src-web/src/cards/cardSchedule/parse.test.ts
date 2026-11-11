@@ -22,7 +22,7 @@ describe('cardSchedule parse', () => {
         });
     });
 
-    it('fills missing rows as empty and cuts beyond 6', () => {
+    it('fills missing rows as empty and cuts beyond 11 (web-p)', () => {
         const short = parseEntityUpd(
             ['T', ...Array<string>(12).fill(''), 'text', 'a', '', '1', 'n', 'v'],
             initial(),
@@ -30,10 +30,10 @@ describe('cardSchedule parse', () => {
         );
         expect(short.entities).toHaveLength(1);
         const many = ['T', ...Array<string>(12).fill('')];
-        for (let i = 0; i < 8; i++) {
+        for (let i = 0; i < 14; i++) {
             many.push('text', `id${i}`, '', '65535', `n${i}`, 'v');
         }
-        expect(parseEntityUpd(many, initial(), ctx).entities).toHaveLength(6);
+        expect(parseEntityUpd(many, initial(), ctx).entities).toHaveLength(11);
     });
 
     it('does not handle entityUpdateDetail', () => {
