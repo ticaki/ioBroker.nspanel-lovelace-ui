@@ -17,7 +17,7 @@ Contents:
 - [Time and date](#10-time-and-date)
   - [Timer instead of the clock](#timer-instead-of-the-clock)
 - [Weather](#11-weather)
-- [Options: rotation, swipe, indicator buttons](#12-options-rotation-swipe-indicator-buttons)
+- [Options: rotation and swipe](#12-options-rotation-and-swipe)
 - [Notifications](#13-notifications)
 - [Saving – what the adapter does with it](#14-saving--what-the-adapter-does-with-it)
 - [Showing the screensaver at once](#15-showing-the-screensaver-at-once)
@@ -48,7 +48,7 @@ Every row of the list names the version and the assigned panels below the name, 
 | **Eye on an item** | Small yellow eye icon: the item is only shown under a condition. The tooltip of the place names it in plain words – *Shown only while … is true* or *Shown only while: …*. |
 | **`{ }` in front of the label** | The item is configured through [raw data](#6-raw-data-json). |
 | **Paging arrows** | If a list area has more than one window, arrows with a counter stand to its left and right (above and below with narrow columns) – see [windows and paging](#7-more-items-than-places-windows-and-paging). |
-| **Frame of the indicators** | grey = no key, red = button, green = switch, orange = cycle values, blue = open page. Grey also stands when the option **Indicators act as buttons** is off. The frame shows the **short** press only – an action on long press does not color it (see [Indicators](#8-indicators-and-buttons)). |
+| **Frame of the indicators** | grey = no action, red = button, green = switch, orange = cycle values, blue = open page. The frame shows the **short** press only – an action on long press does not color it (see [Indicators](#8-indicators-and-buttons)). |
 | **Time**, **Date** | A click opens the dialog for 12h/24h and the [timer instead of the clock](#timer-instead-of-the-clock), or the date format. |
 | **Two status icons** | `mrIcon1` and `mrIcon2`; a click opens their dialog, grey = not used. Where they sit depends on the version: with Standard, Alternate and Easyview in the upper corners, with Advanced at the bottom next to the date, with Tiles as two color bars at the lower edge. |
 | **Button bar below the picture** | **Notifications** (with the number of messages switched on for this screensaver) and **Options** (rotation time, swipe gestures, indicator buttons). Up to 2.0.2 both buttons sat **in** the panel picture as a bell and a gear. |
@@ -166,7 +166,7 @@ With the source **Template** a place takes a page item template of the adapter (
 - If the states lie below an **adapter instance** – `text.battery.bydhvs` below `bydhvs.0`, for example – the fitting instances stand behind *Instances of the adapter:* as buttons below the object field; with exactly one and an empty field the dialog enters it right away. Such an instance often does not exist as an object of its own – the field is filled in correctly all the same, the dialog does not warn in this case.
 - Templates with **options** show fields of their own below the selection, for example **SOC lower limit (%)** and **SOC upper limit (%)** with `text.battery.bydhvs` (the charge level is stretched over that range). An empty field removes the option again; changing the template drops the options of the old one.
 - Below the selection it says **what the template searches for below the object** – with `text.battery.bydhvs` these are `.State.SOC` and `.State.Power`. A **negative** value in `.State.Power` counts as charging: the icon then switches to the charging one (`battery-charging-…`).
-- On an **indicator** place a template has the **Action on press** too (see [Indicators](#8-indicators-and-buttons)) – for example **open a page** leading to the [power page](cardPower) – and the **Action on long press** as well. When the option **Indicators act as buttons** is needed for it is described under [indicators and buttons](#8-indicators-and-buttons).
+- On an **indicator** place a template has the **Action on press** too (see [Indicators](#8-indicators-and-buttons)) – for example **open a page** leading to the [power page](cardPower) – and the **Action on long press** as well.
 - In the panel picture a template item is named after its template without the type, for example `battery bydhvs`; an instance such as `bydhvs.0` gives no name.
 - `text.trash.next` and `text.trash.afterNext` (**bottom** area only) show the next and the one after next date of a [trash page](cardTrash): icon and color of the date, the name of the date above (the optional name, otherwise the waste type), below it today, tomorrow or the weekday as on the page, a date in short form as day.month (`06.12`). The template list shows them as *Next date (page)* and *Date after next (page)*, once per trash page, the technical name is in the tooltip of the entry and in the help text below; without a trash page these entries do not exist. An older item without a page keeps showing the first configured trash page and appears in the list as its entry. An item whose page no longer exists stays visible as an entry of its own with the stored ID (*unknown page: ID*) and is not moved to another page. Without a date or with an unknown page the item hides itself. A long name can be cut off in the bottom area; the optional name of the waste type can shorten it. A **visibility** setting of your own replaces this hiding.
 
@@ -235,7 +235,7 @@ The editor draws the list areas **Left**, **Bottom**, **Indicators** and **Alter
 - **Paging in the editor**: From the second window on, arrows stand next to the places (above and below with narrow columns), tooltips *Previous places* and *Next places*. Next to them stands the counter `1/3`, whose tooltip writes it out: *Places 1-4 · page 1 of 3*.
 - **Moving items between windows**: Drag an item over an arrow – the editor pages on while doing so (about one window per three quarters of a second) and the item can be dropped in the target window.
 - **Note below the panel picture**: one line per area with more items than places, for example *Bottom: 7 items on 4 places - only visible items (condition met) take places, the panel pages through them. Here the arrows next to the places page.*
-- **Paging on the panel**: The panel changes the window at the beat of the **rotation time** (see [Options](#12-options-rotation-swipe-indicator-buttons)).
+- **Paging on the panel**: The panel changes the window at the beat of the **rotation time** (see [Options](#12-options-rotation-and-swipe)).
 - **Conditional items take no place**: An item whose visibility condition is not met drops out completely – the number of windows on the panel follows the visible items only.
 
 Surplus items are therefore **not an error**. The warning *… item(s) have no place in this version* only concerns areas the chosen version **does not have at all** – indicators after switching from Advanced to Standard, for example.
@@ -254,7 +254,7 @@ The indicators (versions Advanced and [Tiles](#16-tiles)) show an icon only. For
 | **values to cycle through** | writes the next value of a list of your own into the chosen state on every press. |
 | **open a page** | opens the chosen page of the instance. |
 
-Button, switch and values to cycle through need a **writable** state; if it is not writable, the dialog says *… is not writable (common.write) - this action needs a writable state* and does not allow applying. Below the field stands the note *Works only with the option "Indicators act as buttons"*. In the panel picture the frame shows the action: red = button, green = switch, orange = cycle values, blue = page, grey = none or the option is off. A [template](#5-templates-as-items) on an indicator place gets the action as well – its icon becomes a button with it.
+Button, switch and values to cycle through need a **writable** state; if it is not writable, the dialog says *… is not writable (common.write) - this action needs a writable state* and does not allow applying. In the panel picture the frame shows the action: red = button, green = switch, orange = cycle values, blue = page, grey = no action. A [template](#5-templates-as-items) on an indicator place gets the action as well – its icon becomes a button with it.
 
 **Values to cycle through.** This action switches a state through a list of values of your own, one after the other. Below the field **State written on press** the button **Edit values…** stands for it; next to it the dialog shows the list in its order (`-1 → 0 → 1 ↺`) or *No values yet – at least one is required*. The action works in every version with indicators.
 
@@ -272,12 +272,9 @@ Which value comes next is read by the adapter from the state: it looks for the c
 
 **One state per indicator.** The adapter creates a state of its own for every indicator item: `panels.<panel>.buttons.indicator-1`, `-2`, `-3` … in the order in which the items stand in the area **Indicators**. The states are `boolean`, read-only and carry the role `button.press`. A tap on the indicator **always** writes `true` into its state – independently of the option. That makes them usable as triggers for own scripts, even without an action in the dialog. A long press writes a state of its own, see [action on long press](#action-on-long-press).
 
-What the option **Indicators act as buttons** decides depends on the TFT:
+**Only an action that is set has an effect.** An indicator switches nothing by itself: without an **Action on press** nothing happens to its state, even when that state is writable. A [blind](#4-items-the-item-dialog) is never moved by a tap.
 
-- **Up to the TFT 6.0.8:** switched on, the configured command runs (button, switch, values, page); switched off, the panel jumps to the main page – even with an action set.
-- **From the TFT 6.0.9 on:** an **Action on press** that is set always runs, with the option switched off as well. On top of that the option turns an indicator **without** an action of its own into a key, as long as it can toggle its state; a [blind](#4-items-the-item-dialog) stays excluded.
-
-The note in the dialog (*Works only with the option "Indicators act as buttons"*) and the grey frame in the panel picture still describe the state up to the TFT 6.0.8.
+> Up to version 2.1.0 there was the option **Indicators act as buttons** for this. It is gone: a stored value is ignored, and a state that is merely writable is no longer switched by accident.
 
 **The result appears at once.** Between two updates of the screensaver the adapter keeps a short pause. A press on an indicator ends it – the new icon and the new color go to the panel without a wait.
 
@@ -289,12 +286,12 @@ The note in the dialog (*Works only with the option "Indicators act as buttons"*
 
 From the TFT 6.0.9 on the panel reports the press on an indicator when the finger is **lifted** and sends the number of taps with it; taps on indicators and on the background are counted **together**. For the short tap that means:
 
-- **If the indicator is a key**, its action runs as before. It is a key with an **Action on press** that is set – and with the option **Indicators act as buttons** also when it can toggle a writable state. A blind without an action of its own is never a key.
+- **If the indicator is a key**, its action runs. It is a key exactly when an **Action on press** is set – button, switch, values to cycle through or open a page.
 - **If it is no key**, the tap acts like a tap on the **background** of the screensaver: it follows the double click setting, switches a [timer](#timer-instead-of-the-clock) back to the clock, acknowledges a [notification](#13-notifications) and counts for the gestures. The screensaver is no longer left at once.
 - `panels.<panel>.buttons.indicator-<n>` is still written on **every** tap.
 - A **swipe** that starts on an indicator sends the gesture only.
 
-With an older TFT everything stays as before: the press arrives without the counter, and without the option **Indicators act as buttons** the panel jumps to the main page.
+With an older TFT the press arrives without the counter: an indicator **with** an action runs it, an indicator **without** one sends the panel to the main page.
 
 ### Action on long press
 
@@ -311,7 +308,6 @@ In the item dialog of an indicator a second block **Action on long press** stand
 
 - The long press fires after **500 ms**, while the finger is still down; the release sends nothing after that. With an action set **only** that action runs – the action of the short press stays out.
 - **Values to cycle through** does not exist for the long press.
-- The long press does **not** need the option **Indicators act as buttons**.
 - Button and switch need a **writable** state; otherwise the dialog says the same as for the action of the short press and does not allow applying. If the state is missing at runtime or is not writable, the adapter warns in the log (*the long press state … does not exist or is not writable - a long press acts like a tap*), and the long press acts like a short one.
 - A [template](#5-templates-as-items) on an indicator place gets the long press as well.
 - In the [raw data](#6-raw-data-json) and in the configuration script the fields are called `ScreensaverEntityLongPressButton`, `ScreensaverEntityLongPressSwitch` and `ScreensaverEntityLongPressNaviToPage`; with several of them set, that is the order.
@@ -440,9 +436,9 @@ To the right of the panel picture stands the **Weather adapter** of this screens
 - The **Favorite** shows the current weather as long as no own item lies there – an own item replaces it.
 - An instance that is entered but no longer installed is reported (*The instance "…" is not installed (anymore).*).
 
-## 12. Options: rotation, swipe, indicator buttons
+## 12. Options: rotation and swipe
 
-The button **Options** below the panel picture opens three settings (up to 2.0.2 it was the gear in the picture):
+The button **Options** below the panel picture opens two settings (up to 2.0.2 it was the gear in the picture):
 
 ![Options](../Pictures/screensaverAdmin/admin-13-optionen.png)
 
@@ -450,7 +446,6 @@ The button **Options** below the panel picture opens three settings (up to 2.0.2
 |---|---|
 | **Rotation time (s)** | The beat at which the panel pages on through the windows of an area with more items than places. `0` = off; values of 1 and 2 seconds are treated as 3 seconds by the adapter. |
 | **Swipe gestures on the screensaver** | A gesture on the screensaver writes its number into `panels.<panel>.buttons.screensaverGesture`: `2` = leave (bExit), `3` = up, `4` = down, `5` = left, `6` = right. |
-| **Indicators act as buttons** | Makes an indicator a key: up to the TFT 6.0.8 the precondition for its action being carried out at all, from the TFT 6.0.9 on only for indicators **without** an action of their own (see [Indicators](#8-indicators-and-buttons)). |
 
 The gesture number only arrives when the state `panels.<panel>.cmd.screenSaver.doubleClick` of the panel is on as well (default: on). If it is off, the adapter sets `buttons.screensaverGesture` to `0` (`inactive`) at the start and writes nothing into it afterwards.
 
@@ -539,7 +534,7 @@ The order of the items in the area **Indicators** decides the place. On `eu` and
 
 ![The screensaver in the version Tiles](../Pictures/screensaver/screensaverTiles.png)
 
-**Indicators:** An indicator shows its icon only, without a headline and without a value; the whole tile is the touch area. Everything from [indicators and buttons](#8-indicators-and-buttons) holds unchanged – the **Action on press**, the **Action on long press**, the option **Indicators act as buttons** and the states `panels.<panel>.buttons.indicator-<n>` and `indicatorLong-<n>`.
+**Indicators:** An indicator shows its icon only, without a headline and without a value; the whole tile is the touch area. Everything from [indicators and buttons](#8-indicators-and-buttons) holds unchanged – the **Action on press**, the **Action on long press** and the states `panels.<panel>.buttons.indicator-<n>` and `indicatorLong-<n>`.
 
 **Bottom values:** Headline, icon and value as in the other versions. A notification covers exactly this row (see [notifications](#13-notifications)).
 
@@ -574,7 +569,7 @@ The order of the items in the area **Indicators** decides the place. On `eu` and
 - **Tiles is chosen, the panel does not show it:** The TFT of the panel does not have the page `screensaver5`. The admin does not warn about it – see [Tiles](#16-tiles).
 - **Tiles shows no weather in the middle:** This version has no favorite place, the one the others show the current weather on. The ticked extra items still arrive at the bottom.
 - **A status icon looks empty with Tiles:** Only its color is visible there; without a state the bar stays black.
-- **The indicator does not react to its action:** The state `panels.<panel>.buttons.indicator-<n>` arrives nevertheless – the panel only jumps to the main page instead of carrying out the command. Then the option **Indicators act as buttons** is missing and the TFT is older than 6.0.9; from 6.0.9 on an action that is set runs without the option as well.
+- **A tap on the indicator does nothing:** Then no **Action on press** is set – a writable state alone is not enough. The state `panels.<panel>.buttons.indicator-<n>` arrives nevertheless; from the TFT 6.0.9 on the tap acts like one on the background, with an older TFT the panel jumps to the main page.
 - **The long press does nothing:** It needs the **TFT 6.0.9** (the dialog says so). `buttons.indicatorLong-<n>` stays empty then. If the state of the action is not writable or does not exist, the log warns and the long press acts like a tap.
 - **The indicator always writes the same value:** The list of the action **Values to cycle through** has one entry only – or something else keeps setting the state to a value that is not in the list; then every press starts with the first entry again.
 - **`buttons.screensaverGesture` stays empty:** Either **Swipe gestures on the screensaver** is off or the state `cmd.screenSaver.doubleClick` of the panel is.

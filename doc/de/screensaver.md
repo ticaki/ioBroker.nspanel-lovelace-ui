@@ -17,7 +17,7 @@ Inhalt:
 - [Uhrzeit und Datum](#10-uhrzeit-und-datum)
   - [Timer statt Uhrzeit](#timer-statt-uhrzeit)
 - [Wetter](#11-wetter)
-- [Optionen: Rotation, Wischen, Indikator-Tasten](#12-optionen-rotation-wischen-indikator-tasten)
+- [Optionen: Rotation und Wischen](#12-optionen-rotation-und-wischen)
 - [Benachrichtigungen](#13-benachrichtigungen)
 - [Speichern – was der Adapter daraus macht](#14-speichern--was-der-adapter-daraus-macht)
 - [Bildschirmschoner sofort anzeigen](#15-bildschirmschoner-sofort-anzeigen)
@@ -48,7 +48,7 @@ Jede Zeile der Liste nennt unter dem Namen die Version und die zugeordneten Pane
 | **Auge an einem Item** | Kleines gelbes Augen-Symbol: das Item wird nur unter einer Bedingung gezeigt. Der Tooltip des Platzes nennt sie im Klartext – *Nur sichtbar, solange … wahr ist* bzw. *Nur sichtbar, wenn: …*. |
 | **`{ }` vor der Beschriftung** | Das Item ist über [Rohdaten](#6-rohdaten-json) konfiguriert. |
 | **Blätterpfeile** | Hat ein Listenbereich mehr als ein Fenster, stehen links und rechts (bei schmalen Spalten darüber und darunter) Pfeile mit einem Zähler – siehe [Fenster und Blättern](#7-mehr-items-als-plätze-fenster-und-blättern). |
-| **Rahmen der Indikatoren** | grau = keine Taste, rot = Taste, grün = Schalter, orange = Werte umschalten, blau = Seite öffnen. Grau steht auch, wenn die Option **Indikatoren wirken als Tasten** aus ist. Der Rahmen zeigt nur den **kurzen** Druck – eine Aktion bei langem Drücken färbt ihn nicht (siehe [Indikatoren](#8-indikatoren-und-tasten)). |
+| **Rahmen der Indikatoren** | grau = keine Aktion, rot = Taste, grün = Schalter, orange = Werte umschalten, blau = Seite öffnen. Der Rahmen zeigt nur den **kurzen** Druck – eine Aktion bei langem Drücken färbt ihn nicht (siehe [Indikatoren](#8-indikatoren-und-tasten)). |
 | **Uhrzeit**, **Datum** | Klick öffnet den Dialog für 12h/24h und den [Timer statt Uhrzeit](#timer-statt-uhrzeit) bzw. das Datumsformat. |
 | **Zwei Statussymbole** | `mrIcon1` und `mrIcon2`; Klick öffnet ihren Dialog, grau = nicht belegt. Ihre Lage hängt von der Version ab: bei Standard, Alternate und Easyview in den oberen Ecken, bei Advanced unten neben dem Datum, bei Kacheln als zwei Farbbalken am unteren Rand. |
 | **Knopfleiste unter dem Bild** | **Benachrichtigungen** (mit der Zahl der auf diesem Bildschirmschoner eingeschalteten Meldungen) und **Optionen** (Rotationszeit, Wischgesten, Indikator-Tasten). Beide Knöpfe lagen bis 2.0.2 als Glocke und Zahnrad **im** Panelbild. |
@@ -166,7 +166,7 @@ Mit der Quelle **Template** nimmt ein Platz ein PageItem-Template des Adapters (
 - Liegen die Datenpunkte unter einer **Adapter-Instanz** – etwa `text.battery.bydhvs` unter `bydhvs.0` –, stehen die passenden Instanzen hinter *Instanzen des Adapters:* als Knöpfe unter dem Objektfeld; gibt es genau eine und das Feld ist leer, trägt der Dialog sie gleich ein. So eine Instanz existiert oft nicht als eigenes Objekt – das Feld ist trotzdem richtig ausgefüllt, der Dialog warnt in diesem Fall nicht.
 - Templates mit **Optionen** zeigen eigene Felder unter der Auswahl, zum Beispiel **SOC-Untergrenze (%)** und **SOC-Obergrenze (%)** bei `text.battery.bydhvs` (der Füllstand wird auf diesen Bereich gestreckt). Ein leeres Feld entfernt die Option wieder; beim Wechsel des Templates gehen die Optionen des alten verloren.
 - Unter der Auswahl steht, **wonach das Template unterhalb des Objekts sucht** – bei `text.battery.bydhvs` sind das `.State.SOC` und `.State.Power`. Ein **negativer** Wert in `.State.Power` gilt als Laden: Das Symbol wechselt dann auf die Ladeanzeige (`battery-charging-…`).
-- Auf einem **Indikator**-Platz hat auch ein Template die **Aktion beim Drücken** (siehe [Indikatoren](#8-indikatoren-und-tasten)) – zum Beispiel **Seite öffnen** zur [Energie-Seite](cardPower) – und ebenso die **Aktion bei langem Drücken**. Wann die Option **Indikatoren wirken als Tasten** dafür nötig ist, steht unter [Indikatoren und Tasten](#8-indikatoren-und-tasten).
+- Auf einem **Indikator**-Platz hat auch ein Template die **Aktion beim Drücken** (siehe [Indikatoren](#8-indikatoren-und-tasten)) – zum Beispiel **Seite öffnen** zur [Energie-Seite](cardPower) – und ebenso die **Aktion bei langem Drücken**.
 - Im Panelbild heißt ein Template-Item nach seinem Template ohne den Typ, zum Beispiel `battery bydhvs`; eine Instanz wie `bydhvs.0` gibt keinen Namen her.
 - `text.trash.next` und `text.trash.afterNext` (nur im Bereich **unten**) zeigen den nächsten und den übernächsten Termin einer [Abfall-Seite](cardTrash): Symbol und Farbe des Termins, darüber der Name des Termins (der optionale Name, sonst die Abfallart), darunter heute, morgen oder der Wochentag wie auf der Seite, ein Datum kurz als Tag.Monat (`06.12`). In der Template-Auswahl erscheinen sie als *Nächster Termin (Seite)* und *Übernächster Termin (Seite)*, je einmal pro Abfall-Seite, der technische Name steht im Tooltip des Eintrags und im Hilfstext darunter; ohne Abfall-Seite gibt es diese Einträge nicht. Ein älteres Item ohne Seitenangabe zeigt weiter die erste konfigurierte Abfall-Seite und steht in der Auswahl als deren Eintrag. Ein Item, dessen Seite es nicht mehr gibt, bleibt als eigener Eintrag mit der gespeicherten ID sichtbar (*unbekannte Seite: ID*) und wird nicht auf eine andere Seite umgestellt. Gibt es keinen Termin oder ist die Seite unbekannt, blendet sich das Item aus. Ein langer Name kann im unteren Bereich abgeschnitten werden; der optionale Name der Abfallart kann ihn kürzen. Eine eigene **Sichtbarkeits**-Einstellung ersetzt dieses Ausblenden.
 
@@ -235,7 +235,7 @@ Die Listenbereiche **Links**, **Unten**, **Indikatoren** und **Alternate** zeich
 - **Blättern im Editor**: Ab dem zweiten Fenster stehen Pfeile neben den Plätzen (bei schmalen Spalten darüber und darunter), Tooltips *Vorherige Plätze* und *Nächste Plätze*. Daneben steht der Zähler `1/3`, dessen Tooltip ihn ausschreibt: *Plätze 1-4 · Seite 1 von 3*.
 - **Items zwischen Fenstern verschieben**: Ein Item über einen Pfeil ziehen – der Editor blättert dabei weiter (etwa ein Fenster pro Dreivierteltelsekunde) und das Item lässt sich im Zielfenster ablegen.
 - **Hinweis unter dem Panelbild**: Je Bereich mit mehr Items als Plätzen eine Zeile, z. B. *Unten: 7 Items auf 4 Plätzen – nur sichtbare Einträge (Bedingung erfüllt) belegen Plätze, das Panel blättert durch. Hier blättern die Pfeile neben den Plätzen.*
-- **Blättern auf dem Panel**: Das Panel wechselt das Fenster im Takt der **Rotationszeit** (siehe [Optionen](#12-optionen-rotation-wischen-indikator-tasten)).
+- **Blättern auf dem Panel**: Das Panel wechselt das Fenster im Takt der **Rotationszeit** (siehe [Optionen](#12-optionen-rotation-und-wischen)).
 - **Bedingte Items belegen keinen Platz**: Ein Item, dessen Sichtbarkeits-Bedingung nicht erfüllt ist, fällt ganz heraus – die Zahl der Fenster auf dem Panel richtet sich nur nach den sichtbaren Items.
 
 Überzählige Items sind damit **kein Fehler**. Die Warnung *… Item(s) haben in dieser Version keinen Platz* gilt nur für Bereiche, die die gewählte Version **gar nicht hat** – etwa Indikatoren nach dem Wechsel von Advanced auf Standard.
@@ -254,7 +254,7 @@ Die Indikatoren (Versionen Advanced und [Kacheln](#16-kacheln)) zeigen nur ein S
 | **Werte zum Umschalten** | schreibt bei jedem Druck den nächsten Wert einer eigenen Liste in den gewählten Datenpunkt. |
 | **Seite öffnen** | öffnet die gewählte Seite der Instanz. |
 
-Taste, Schalter und Werte zum Umschalten brauchen einen **beschreibbaren** Datenpunkt; ist er das nicht, meldet der Dialog *… ist nicht beschreibbar (common.write) – diese Aktion braucht einen beschreibbaren Datenpunkt* und lässt nicht übernehmen. Unter dem Feld steht der Hinweis *Wirkt nur mit der Option „Indikatoren wirken als Tasten“*. Im Panelbild zeigt der Rahmen die Aktion: rot = Taste, grün = Schalter, orange = Werte umschalten, blau = Seite, grau = keine oder Option aus. Auch ein [Template](#5-templates-als-item) auf einem Indikator-Platz bekommt die Aktion – sein Symbol wird damit zur Taste.
+Taste, Schalter und Werte zum Umschalten brauchen einen **beschreibbaren** Datenpunkt; ist er das nicht, meldet der Dialog *… ist nicht beschreibbar (common.write) – diese Aktion braucht einen beschreibbaren Datenpunkt* und lässt nicht übernehmen. Im Panelbild zeigt der Rahmen die Aktion: rot = Taste, grün = Schalter, orange = Werte umschalten, blau = Seite, grau = keine Aktion. Auch ein [Template](#5-templates-als-item) auf einem Indikator-Platz bekommt die Aktion – sein Symbol wird damit zur Taste.
 
 **Werte zum Umschalten.** Diese Aktion schaltet einen Datenpunkt der Reihe nach durch eine eigene Liste von Werten. Unter dem Feld **Datenpunkt, der beim Drücken geschrieben wird** steht dafür der Knopf **Werte bearbeiten…**; daneben zeigt der Dialog die Liste in ihrer Reihenfolge (`-1 → 0 → 1 ↺`) oder *Noch keine Werte – mindestens einer ist nötig*. Die Aktion gilt in jeder Version mit Indikatoren.
 
@@ -272,12 +272,9 @@ Welcher Wert als nächster kommt, liest der Adapter am Datenpunkt ab: Er sucht d
 
 **Ein State je Indikator.** Der Adapter legt für jedes Indikator-Item einen eigenen Datenpunkt an: `panels.<Panel>.buttons.indicator-1`, `-2`, `-3` … in der Reihenfolge, in der die Items im Bereich **Indikatoren** stehen. Die States sind `boolean`, nur lesbar und tragen die Rolle `button.press`. Ein Tipp auf den Indikator schreibt **immer** `true` in seinen State – unabhängig von der Option. Damit taugen sie als Auslöser für eigene Skripte, auch ohne eine Aktion im Dialog. Der lange Druck schreibt einen eigenen State, siehe [Aktion bei langem Drücken](#aktion-bei-langem-drücken).
 
-Was die Option **Indikatoren wirken als Tasten** entscheidet, hängt an der TFT:
+**Nur eine eingestellte Aktion wirkt.** Ein Indikator schaltet nichts von sich aus: Ohne **Aktion beim Drücken** passiert an seinem Datenpunkt nichts, auch wenn dieser beschreibbar ist. Ein [Rollladen](#4-items-der-item-dialog) bewegt sich durch einen Tipp nie.
 
-- **Bis zur TFT 6.0.8:** Ist sie an, läuft der konfigurierte Befehl (Taste, Schalter, Werte, Seite); ist sie aus, springt das Panel auf die Hauptseite – auch bei eingestellter Aktion.
-- **Ab der TFT 6.0.9:** Eine eingestellte **Aktion beim Drücken** läuft immer, auch mit ausgeschalteter Option. Die Option macht zusätzlich einen Indikator **ohne** eigene Aktion zur Taste, sofern sich sein Datenpunkt umschalten lässt; ein [Rollladen](#4-items-der-item-dialog) bleibt davon ausgenommen.
-
-Der Hinweis im Dialog (*Wirkt nur mit der Option „Indikatoren wirken als Tasten“*) und der graue Rahmen im Panelbild beschreiben noch den Stand bis zur TFT 6.0.8.
+> In Versionen bis 2.1.0 gab es dafür die Option **Indikatoren wirken als Tasten**. Sie ist entfallen: Ein gespeicherter Wert wird ignoriert, und ein nur beschreibbarer Datenpunkt wird seitdem nicht mehr versehentlich umgeschaltet.
 
 **Das Ergebnis erscheint sofort.** Zwischen zwei Aktualisierungen des Bildschirmschoners hält der Adapter eine kurze Pause ein. Ein Druck auf einen Indikator beendet sie – das neue Symbol und die neue Farbe gehen ohne Wartezeit an das Panel.
 
@@ -289,12 +286,12 @@ Der Hinweis im Dialog (*Wirkt nur mit der Option „Indikatoren wirken als Taste
 
 Ab der TFT 6.0.9 meldet das Panel den Druck auf einen Indikator erst beim **Loslassen** und schickt die Zahl der Tipps mit; Tipps auf Indikatoren und auf den Hintergrund zählen **gemeinsam**. Für den kurzen Tipp heißt das:
 
-- **Ist der Indikator eine Taste**, läuft wie bisher seine Aktion. Eine Taste ist er mit einer eingestellten **Aktion beim Drücken** – und mit der Option **Indikatoren wirken als Tasten** zusätzlich dann, wenn er einen beschreibbaren Datenpunkt umschalten kann. Ein Rollladen ist ohne eigene Aktion nie eine Taste.
+- **Ist der Indikator eine Taste**, läuft seine Aktion. Eine Taste ist er genau dann, wenn eine **Aktion beim Drücken** eingestellt ist – Taste, Schalter, Werte zum Umschalten oder Seite öffnen.
 - **Ist er keine Taste**, wirkt der Tipp wie ein Tipp auf den **Hintergrund** des Bildschirmschoners: Er folgt der Einstellung für den Doppelklick, blendet einen [Timer](#timer-statt-uhrzeit) zurück auf die Uhrzeit, quittiert eine [Benachrichtigung](#13-benachrichtigungen) und zählt für die Gesten. Der Bildschirmschoner wird damit nicht mehr sofort verlassen.
 - `panels.<Panel>.buttons.indicator-<n>` wird weiterhin bei **jedem** Tipp geschrieben.
 - Eine **Wischgeste**, die auf einem Indikator beginnt, sendet nur die Geste.
 
-Mit einer älteren TFT bleibt alles wie zuvor: Der Druck kommt ohne Zähler an, und ohne die Option **Indikatoren wirken als Tasten** springt das Panel auf die Hauptseite.
+Mit einer älteren TFT kommt der Druck ohne Zähler an: Ein Indikator **mit** Aktion führt sie aus, ein Indikator **ohne** Aktion schickt das Panel auf die Hauptseite.
 
 ### Aktion bei langem Drücken
 
@@ -311,7 +308,6 @@ Im Item-Dialog eines Indikators steht unter der **Aktion beim Drücken** ein zwe
 
 - Der lange Druck löst nach **500 ms** aus, noch während der Finger liegt; das Loslassen sendet danach nichts mehr. Ist eine Aktion eingestellt, läuft **nur** sie – die Aktion des kurzen Drucks bleibt aus.
 - **Werte zum Umschalten** gibt es beim langen Druck nicht.
-- Die Option **Indikatoren wirken als Tasten** braucht der lange Druck **nicht**.
 - Taste und Schalter brauchen einen **beschreibbaren** Datenpunkt; sonst meldet der Dialog dasselbe wie bei der Aktion des kurzen Drucks und lässt nicht übernehmen. Fehlt der Datenpunkt zur Laufzeit oder ist er nicht beschreibbar, warnt der Adapter im Log (*the long press state … does not exist or is not writable – a long press acts like a tap*), und der lange Druck wirkt wie ein kurzer.
 - Auch ein [Template](#5-templates-als-item) auf einem Indikator-Platz bekommt den langen Druck.
 - In den [Rohdaten](#6-rohdaten-json) und im Konfigurationsskript heißen die Felder `ScreensaverEntityLongPressButton`, `ScreensaverEntityLongPressSwitch` und `ScreensaverEntityLongPressNaviToPage`; sind mehrere gesetzt, gilt diese Reihenfolge.
@@ -440,9 +436,9 @@ Rechts neben dem Panelbild steht der **Wetter-Adapter** dieses Bildschirmschoner
 - Der **Favorit** zeigt das aktuelle Wetter, solange dort kein eigenes Item liegt – ein eigenes Item verdrängt es.
 - Eine eingetragene, aber nicht mehr installierte Instanz wird gemeldet (*Die Instanz „…“ ist nicht (mehr) installiert.*).
 
-## 12. Optionen: Rotation, Wischen, Indikator-Tasten
+## 12. Optionen: Rotation und Wischen
 
-Der Knopf **Optionen** unter dem Panelbild öffnet drei Einstellungen (bis 2.0.2 war es das Zahnrad im Bild):
+Der Knopf **Optionen** unter dem Panelbild öffnet zwei Einstellungen (bis 2.0.2 war es das Zahnrad im Bild):
 
 ![Optionen](../Pictures/screensaverAdmin/admin-13-optionen.png)
 
@@ -450,7 +446,6 @@ Der Knopf **Optionen** unter dem Panelbild öffnet drei Einstellungen (bis 2.0.2
 |---|---|
 | **Rotationszeit (s)** | Takt, in dem das Panel die Fenster eines Bereichs mit mehr Items als Plätzen weiterblättert. `0` = aus; Werte von 1 und 2 Sekunden behandelt der Adapter als 3 Sekunden. |
 | **Wischgesten auf dem Bildschirmschoner** | Eine Geste auf dem Bildschirmschoner schreibt ihre Kennzahl in `panels.<Panel>.buttons.screensaverGesture`: `2` = Verlassen (bExit), `3` = nach oben, `4` = nach unten, `5` = nach links, `6` = nach rechts. |
-| **Indikatoren wirken als Tasten** | Macht einen Indikator zur Taste: bis zur TFT 6.0.8 Voraussetzung dafür, dass seine Aktion überhaupt ausgeführt wird, ab der TFT 6.0.9 nur noch für Indikatoren **ohne** eigene Aktion (siehe [Indikatoren](#8-indikatoren-und-tasten)). |
 
 Die Gesten-Kennzahl kommt nur an, wenn zusätzlich der State `panels.<Panel>.cmd.screenSaver.doubleClick` des Panels an ist (Vorgabe: an). Ist er aus, setzt der Adapter `buttons.screensaverGesture` beim Start auf `0` (`inactive`) und schreibt danach nichts mehr hinein.
 
@@ -539,7 +534,7 @@ Die Reihenfolge der Items im Bereich **Indikatoren** bestimmt den Platz. Auf `eu
 
 ![Der Bildschirmschoner in der Version Kacheln](../Pictures/screensaver/screensaverTiles.png)
 
-**Indikatoren:** Ein Indikator zeigt nur sein Symbol, ohne Überschrift und ohne Wert; die ganze Kachel ist die Tippfläche. Alles aus [Indikatoren und Tasten](#8-indikatoren-und-tasten) gilt unverändert – die **Aktion beim Drücken**, die **Aktion bei langem Drücken**, die Option **Indikatoren wirken als Tasten** und die States `panels.<Panel>.buttons.indicator-<n>` und `indicatorLong-<n>`.
+**Indikatoren:** Ein Indikator zeigt nur sein Symbol, ohne Überschrift und ohne Wert; die ganze Kachel ist die Tippfläche. Alles aus [Indikatoren und Tasten](#8-indikatoren-und-tasten) gilt unverändert – die **Aktion beim Drücken**, die **Aktion bei langem Drücken** und die States `panels.<Panel>.buttons.indicator-<n>` und `indicatorLong-<n>`.
 
 **Werte unten:** Überschrift, Symbol und Wert wie in den anderen Versionen. Eine Benachrichtigung legt sich über genau diese Zeile (siehe [Benachrichtigungen](#13-benachrichtigungen)).
 
@@ -574,7 +569,7 @@ Die Reihenfolge der Items im Bereich **Indikatoren** bestimmt den Platz. Auf `eu
 - **Kacheln sind gewählt, das Panel zeigt sie nicht:** Die TFT des Panels hat die Seite `screensaver5` nicht. Der Admin warnt davor nicht – siehe [Kacheln](#16-kacheln).
 - **Kacheln zeigen in der Mitte kein Wetter:** Diese Version hat keinen Favorit-Platz, auf dem die anderen das aktuelle Wetter zeigen. Die angehakten Zusatz-Items kommen unten weiterhin an.
 - **Ein Statussymbol wirkt bei Kacheln leer:** Dort ist von ihm nur die Farbe zu sehen; ohne Datenpunkt bleibt der Balken schwarz.
-- **Indikator reagiert nicht auf die Aktion:** Der State `panels.<Panel>.buttons.indicator-<n>` kommt trotzdem – das Panel springt nur auf die Hauptseite, statt den Befehl auszuführen. Dann fehlt die Option **Indikatoren wirken als Tasten** und die TFT ist älter als 6.0.9; ab 6.0.9 läuft eine eingestellte Aktion auch ohne die Option.
+- **Ein Tipp auf den Indikator tut nichts:** Dann ist keine **Aktion beim Drücken** eingestellt – ein beschreibbarer Datenpunkt allein genügt nicht. Der State `panels.<Panel>.buttons.indicator-<n>` kommt trotzdem; ab der TFT 6.0.9 wirkt der Tipp wie einer auf den Hintergrund, mit älterer TFT springt das Panel auf die Hauptseite.
 - **Der lange Druck tut nichts:** Er braucht die **TFT 6.0.9** (im Dialog steht der Hinweis). `buttons.indicatorLong-<n>` bleibt dann leer. Ist der State der Aktion nicht beschreibbar oder gar nicht vorhanden, warnt das Log und der lange Druck wirkt wie ein Tipp.
 - **Der Indikator schreibt immer denselben Wert:** Die Liste der Aktion **Werte zum Umschalten** hat nur einen Eintrag – oder etwas anderes setzt den Datenpunkt laufend auf einen Wert, der nicht in der Liste steht; dann beginnt jeder Druck wieder beim ersten Eintrag.
 - **`buttons.screensaverGesture` bleibt leer:** Entweder ist **Wischgesten auf dem Bildschirmschoner** aus oder der State `cmd.screenSaver.doubleClick` des Panels.
