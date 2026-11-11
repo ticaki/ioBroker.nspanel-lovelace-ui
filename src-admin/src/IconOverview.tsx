@@ -1,6 +1,7 @@
 import icons from './icons.json';
 import { Grid, Typography, Box, useTheme, TextField, InputAdornment, IconButton, Snackbar, Alert } from '@mui/material';
 import ClearIcon from '@mui/icons-material/Clear';
+import { I18n } from '@iobroker/gui-components';
 import React, { useRef, useState, useEffect } from 'react';
 interface Icon {
     name: string;
@@ -40,7 +41,7 @@ const IconOverview: React.FC = () => {
                     inputRef={filterRef}
                     value={filter}
                     onChange={e => setFilter(e.target.value)}
-                    label="Icons filtern"
+                    label={I18n.t('iconOverviewFilterLabel')}
                     variant="outlined"
                     size="small"
                     sx={{ mb: 2, width: 300 }}
@@ -84,7 +85,7 @@ const IconOverview: React.FC = () => {
                                 void navigator.clipboard.writeText(icon.name);
                                 setSnackbar({ open: true, label: icon.name });
                             }}
-                            title={`Klicken zum Kopieren: ${icon.name}`}
+                            title={I18n.t('iconOverviewCopyHint', icon.name)}
                         >
                             <span
                                 style={{
@@ -131,7 +132,7 @@ const IconOverview: React.FC = () => {
                     sx={{ width: '100%' }}
                     onClose={() => setSnackbar({ open: false, label: '' })}
                 >
-                    {snackbar.label} copied
+                    {I18n.t('iconOverviewCopied', snackbar.label)}
                 </Alert>
             </Snackbar>
         </Box>

@@ -7,13 +7,15 @@ const TOPIC = 'tasmota/test';
 /**
  * PanelSend with fake adapter/mqtt client - every payload handed to mqtt ends up in `published`.
  *
- * @returns the PanelSend and the published payloads
+ * @param panel additional properties of the fake panel
+ * @returns the PanelSend, the published payloads and the logged warnings
  */
-function setup(): { send: PanelSend; published: string[] } {
+function setup(panel: Record<string, unknown> = {}): { send: PanelSend; published: string[]; warnings: string[] } {
     const noop = (): void => undefined;
     const published: string[] = [];
+    const warnings: string[] = [];
     const adapter: any = {
-        log: { silly: noop, debug: noop, info: noop, warn: noop, error: noop },
+        log: { silly: noop, debug: noop, info: noop, warn: (m: string) => warnings.push(m), error: noop },
         config: { debugLogMqtt: false, additionalLog: false },
         unload: false,
         setTimeout: (fn: () => void, ms: number) => setTimeout(fn, ms),
@@ -26,8 +28,13 @@ function setup(): { send: PanelSend; published: string[] } {
             published.push(payload);
         },
     };
-    const send = new PanelSend(adapter, { name: 'test', channel, topic: TOPIC, panel: { isOnline: true } as any });
-    return { send, published };
+    const send = new PanelSend(adapter, {
+        name: 'test',
+        channel,
+        topic: TOPIC,
+        panel: { isOnline: true, ...panel } as any,
+    });
+    return { send, published, warnings };
 }
 
 describe('lib/controller/panel-message - PanelSend ack handling', () => {
@@ -263,5 +270,39 @@ describe('lib/controller/panel-message - PanelSend newest state only', () => {
         await send.onMessage(`${TOPIC}/stat/RESULT`, '{"CustomSend":"renderCurrentPage"}');
         await clock.tickAsync(250);
         expect(published).to.deep.equal(['first', 'entityUpd~a', 'entityUpd~b']);
+    });
+});
+
+describe('lib/controller/panel-message - PanelSend message size', () => {
+    let clock: sinon.SinonFakeTimers;
+
+    beforeEach(() => {
+        clock = sinon.useFakeTimers();
+    });
+    afterEach(() => {
+        clock.restore();
+    });
+
+    it('warns once for a message longer than 1017 bytes and sends it anyway', async () => {
+        const { send, published, warnings } = setup();
+        // 339 icons of 3 bytes each = 1017 bytes - fits
+        send.addMessage('\ue000'.repeat(339), false);
+        expect(warnings).to.have.length(0);
+        const long = `entityUpd~${'\ue000'.repeat(339)}`;
+        send.addMessage(long, false);
+        expect(warnings).to.have.length(1);
+        expect(warnings[0]).to.contain('1027 bytes').and.contain('1017');
+        await send.onMessage(`${TOPIC}/stat/RESULT`, '{"CustomSend":"Done"}');
+        await clock.tickAsync(300);
+        expect(published).to.include(long);
+        expect(warnings).to.have.length(1);
+        await send.delete();
+    });
+
+    it('does not warn for a virtual panel', async () => {
+        const { send, warnings } = setup({ isVirtual: true });
+        send.addMessage('x'.repeat(2000), false);
+        expect(warnings).to.have.length(0);
+        await send.delete();
     });
 });

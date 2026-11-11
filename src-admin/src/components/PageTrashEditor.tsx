@@ -288,8 +288,6 @@ export class PageTrashEditor extends ConfigGeneric<ConfigGenericProps & PageTras
         const { entry, oContext, theme, themeName } = this.props;
         const { alive } = this.state;
 
-        console.log('Rendering PageTrashEditor with entry:', entry, 'alive:', alive, 'themeName:', themeName);
-
         return (
             <Box>
                 {/* UniqueName display */}

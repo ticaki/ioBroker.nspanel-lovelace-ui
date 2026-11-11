@@ -143,6 +143,25 @@ export class PageAlarm extends Page {
             throw new Error('PageAlarm: invalid configuration');
         }
         await this.library.writedp(this.approveId, false, genericStateObjects.panel.panels.alarm.cardAlarm.approve);
+        await this.library.writedp(
+            `panels.${this.basePanel.name}.alarm`,
+            undefined,
+            genericStateObjects.panel.panels.alarm._channel,
+        );
+        await this.library.writedp(`alarm`, undefined, genericStateObjects.panel.panels.alarm._channel);
+        await this.library.writedp(
+            `${this.pathToStates}`,
+            undefined,
+            genericStateObjects.panel.panels.alarm.cardAlarm._channel,
+        );
+        // The status object must exist before the data items are created, otherwise the triggered
+        // status data item finds no object and is dropped on the first start of a new page.
+        // No value here: an existing status is kept and read by getStatus() below.
+        await this.library.writedp(
+            this.statusState,
+            undefined,
+            genericStateObjects.panel.panels.alarm.cardAlarm.status,
+        );
 
         config.data.approveState = {
             type: 'triggered',
@@ -170,21 +189,6 @@ export class PageAlarm extends Page {
         await super.init();
         this.useStates = true;
         this.alarmType = (this.items?.data?.alarmType && (await this.items.data.alarmType.getString())) ?? 'alarm';
-        /*if (this.alarmType === 'unlock' && this.items?.data?.setNavi) {
-            this.useStates = true;
-        } else */ {
-            await this.library.writedp(
-                `panels.${this.basePanel.name}.alarm`,
-                undefined,
-                genericStateObjects.panel.panels.alarm._channel,
-            );
-            await this.library.writedp(`alarm`, undefined, genericStateObjects.panel.panels.alarm._channel);
-            await this.library.writedp(
-                `${this.pathToStates}`,
-                undefined,
-                genericStateObjects.panel.panels.alarm.cardAlarm._channel,
-            );
-        }
         if (this.alarmType === 'alarm') {
             const status = await this.getStatus();
             if (status === 'pending') {

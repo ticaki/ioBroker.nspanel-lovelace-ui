@@ -2100,7 +2100,9 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
             done = true;
           }
           if (item.longPress) {
-            if (entry.type === "button") {
+            const mode = item.longPressMode ? await item.longPressMode.getString() : null;
+            const push = mode === "push" || mode !== "toggle" && entry.type === "button";
+            if (push) {
               await item.longPress.setStateTrue();
             } else {
               await item.longPress.setStateFlip();

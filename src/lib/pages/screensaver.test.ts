@@ -1572,6 +1572,10 @@ describe('lib/pages/screensaver - tile tap of the TFT 6.0.8+ (taps counted)', ()
                 commands.push(`${i}:${action}:${value}`);
                 return Promise.resolve(true);
             },
+            onCommandLongPress: async (action: string, value: string): Promise<boolean> => {
+                commands.push(`${i}:long:${action}:${value}`);
+                return Promise.resolve(true);
+            },
         }));
         Object.assign(saver, {
             pageItems,
@@ -1641,6 +1645,70 @@ describe('lib/pages/screensaver - tile tap of the TFT 6.0.8+ (taps counted)', ()
         }
         expect(on.commands).to.deep.equal(['0:button:1']);
         expect(on.writes).to.have.length(4);
+    });
+
+    /**
+     * the branch of Panel.HandleIncomingMessage for a tile: buttonPress3 runs the long press of the item, without
+     * one it goes on like buttonPress2; no key: the tap counts as bExit
+     *
+     * @param saver the screensaver
+     * @param e the event
+     */
+    async function pressLikeThePanel(saver: Screensaver, e: Types.IncomingEvent): Promise<'long' | 'tap' | 'bExit'> {
+        if (e.method === 'buttonPress3' && (await saver.onIndicatorLongPress(e))) {
+            return 'long';
+        }
+        return (await saver.onIndicatorTap(e)) ? 'tap' : 'bExit';
+    }
+    const longEvent = (id: string, opt = '1'): Types.IncomingEvent => ({ ...event(id, opt), method: 'buttonPress3' });
+
+    it('long press with an own long press: runs it, not the short action; indicatorLong-N only', async () => {
+        const calls: string[] = [];
+        const { saver, writes, commands } = tileSaver(
+            [
+                { type: 'button', data: { setValue2: writable(calls, 'short'), longPress: writable(calls, 'long') } },
+                { type: 'button', data: { setNavi: { type: 'const' }, setNaviLongPress: { type: 'const' } } },
+                { type: 'button', data: { longPress: writable(calls, 'long') } },
+            ],
+            false,
+        );
+        for (const id of ['0', '1', '2']) {
+            expect(await pressLikeThePanel(saver, longEvent(id, '3')), id).to.equal('long');
+        }
+        expect(commands).to.deep.equal(['0:long:button:3', '1:long:button:3', '2:long:button:3']);
+        expect(writes.map(w => w.id)).to.deep.equal([1, 2, 3].map(n => `panels.A0.buttons.indicatorLong-${n}`));
+    });
+
+    it('long press without an own long press acts like a tap and writes indicatorLong-N and indicator-N', async () => {
+        const calls: string[] = [];
+        const { saver, writes, commands } = tileSaver(
+            [
+                { type: 'button', data: { setValue2: writable(calls, 'short') } },
+                { type: 'button', data: { entity1: { value: writable(calls, 'state') } } },
+            ],
+            false,
+        );
+        expect(await pressLikeThePanel(saver, longEvent('0', '2'))).to.equal('tap');
+        // no key: the long press counts like a touch of the background
+        expect(await pressLikeThePanel(saver, longEvent('1', '3'))).to.equal('bExit');
+        expect(commands).to.deep.equal(['0:button:2']);
+        expect(writes.map(w => w.id)).to.deep.equal([
+            'panels.A0.buttons.indicatorLong-1',
+            'panels.A0.buttons.indicator-1',
+            'panels.A0.buttons.indicatorLong-2',
+            'panels.A0.buttons.indicator-2',
+        ]);
+    });
+
+    it('a short tap never runs the long press', async () => {
+        const calls: string[] = [];
+        const { saver, writes, commands } = tileSaver(
+            [{ type: 'button', data: { setValue2: writable(calls, 'short'), longPress: writable(calls, 'long') } }],
+            false,
+        );
+        expect(await pressLikeThePanel(saver, event('0', '1'))).to.equal('tap');
+        expect(commands).to.deep.equal(['0:button:1']);
+        expect(writes.map(w => w.id)).to.deep.equal(['panels.A0.buttons.indicator-1']);
     });
 
     it('knows the items of the page only', () => {

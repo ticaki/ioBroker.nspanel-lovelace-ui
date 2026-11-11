@@ -979,8 +979,8 @@
                     "disabled": "!data._selectIpForTools || data._selectIpForTools.search(/^[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}$/g) === -1",
                     "variant": "outlined",
                     "confirm": {
-                        "title": "Tasmota restart",
-                        "text": "Restart the Tasmota NS panel.",
+                        "title": "tasmotaRestartConfirmTitle",
+                        "text": "tasmotaRestartConfirmText",
                         "ok": "Restart",
                         "cancel": "Cancel"
                     },
@@ -1055,8 +1055,8 @@
                     "variant": "contained",
                     "expertMode": true,
                     "confirm": {
-                        "title": "NSPanel Reset!!!",
-                        "text": "Reset NSPanel configuration on the external device to factory defaults(Wifi not touched).",
+                        "title": "tasmotaResetConfirmTitle",
+                        "text": "tasmotaResetConfirmText",
                         "ok": "Reset",
                         "cancel": "Cancel"
                     },
@@ -1502,7 +1502,7 @@
                 },
                 "_staticTextIcon": {
                     "type": "staticText",
-                    "label": "use Strg+f (Win/Linux) or Cmd+f (Mac) to filter for icons",
+                    "label": "iconOverviewFilterHint",
                     "newLine": true,
                     "xs": 12,
                     "sm": 12,

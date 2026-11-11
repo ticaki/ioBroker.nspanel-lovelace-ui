@@ -18,7 +18,7 @@ type LogEntry = [level: string, text: string];
  * Minimal adapter stub - AdminConfiguration only uses `log`, `library` and `config`.
  *
  * @param pageConfig Admin page entries the stub reports.
- * @param logs Receives info and warn output.
+ * @param logs Receives debug, info and warn output.
  * @returns An object usable as adapter for AdminConfiguration.
  */
 function fakeAdapter(pageConfig: ShareConfig.PageConfig[], logs: LogEntry[]): any {
@@ -26,7 +26,7 @@ function fakeAdapter(pageConfig: ShareConfig.PageConfig[], logs: LogEntry[]): an
     return {
         log: {
             silly: noop,
-            debug: noop,
+            debug: (t: string): number => logs.push(['debug', t]),
             info: (t: string): number => logs.push(['info', t]),
             warn: (t: string): number => logs.push(['warn', t]),
             error: noop,
@@ -134,7 +134,7 @@ describe('lib/configuration - admin page replaces a page of the global script', 
         expect(
             result.logs.some(
                 l =>
-                    l[0] === 'info' &&
+                    l[0] === 'debug' &&
                     l[1].includes(
                         "Page 'g1' of the global script configuration is replaced by the admin page assigned to this panel.",
                     ),

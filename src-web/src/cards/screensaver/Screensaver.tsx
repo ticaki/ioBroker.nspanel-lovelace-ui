@@ -4,7 +4,15 @@ import { color565ToCss } from '../../protocol/color';
 import type { Entity6, GlobalState } from '../../protocol/types';
 import { isPortrait, stageSize, theme } from '../../style/theme';
 import type { CardProps } from '../CardContract';
-import { indicatorRelease, nextTap, swipeAction, type TapState } from './interaction';
+import {
+    INDICATOR_LONG_PRESS_MS,
+    indicatorLongPress,
+    indicatorRelease,
+    longPressStillPossible,
+    nextTap,
+    swipeAction,
+    type TapState,
+} from './interaction';
 import {
     ADVANCED_PORTRAIT_SEPARATOR,
     advancedIndicatorCells,
@@ -106,6 +114,55 @@ function textTop(capTop: number, fontSize: number): number {
 export class Screensaver extends React.Component<CardProps<ScreensaverModel>> {
     private tap: TapState = { tapCount: 0 };
     private pointerStart: PointerStart | undefined;
+    /** timer of the long press of a held indicator tile ({@link INDICATOR_LONG_PRESS_MS}) */
+    private longPressTimer: ReturnType<typeof setTimeout> | undefined;
+    /** where the held indicator tile was touched - a clear movement cancels the long press */
+    private longPressStart: PointerStart | undefined;
+    /** the long press of the current touch was sent: its release sends nothing more */
+    private longPressFired = false;
+
+    componentWillUnmount(): void {
+        this.clearLongPress();
+    }
+
+    private clearLongPress(): void {
+        if (this.longPressTimer !== undefined) {
+            clearTimeout(this.longPressTimer);
+            this.longPressTimer = undefined;
+        }
+        this.longPressStart = undefined;
+    }
+
+    /**
+     * A touch on an indicator tile starts the long press timer like the HMI (`tmLP`): after
+     * {@link INDICATOR_LONG_PRESS_MS} `event,buttonPress3,<id>,button,<taps>` goes out while the finger is still down.
+     *
+     * @param entityId id of the indicator entity (empty when none)
+     * @param e the pointer event of the touch
+     */
+    private indicatorDown(entityId: string, e: React.PointerEvent): void {
+        this.clearLongPress();
+        this.longPressFired = false;
+        this.longPressStart = { x: e.clientX, y: e.clientY };
+        this.longPressTimer = setTimeout(() => {
+            this.longPressTimer = undefined;
+            this.longPressStart = undefined;
+            this.longPressFired = true;
+            const { tap, event } = indicatorLongPress(this.tap, entityId);
+            this.tap = tap;
+            if (event) {
+                this.props.send(event);
+            }
+        }, INDICATOR_LONG_PRESS_MS);
+    }
+
+    /** a finger that moves clearly away (towards a swipe) does not become a long press */
+    private readonly onPointerMove = (e: React.PointerEvent): void => {
+        const start = this.longPressStart;
+        if (start && !longPressStillPossible(e.clientX - start.x, e.clientY - start.y)) {
+            this.clearLongPress();
+        }
+    };
 
     /** css colour of a `color~` field, the text colour of `dimmode` when the field is missing */
     private color(value: number | undefined): string {
@@ -119,6 +176,12 @@ export class Screensaver extends React.Component<CardProps<ScreensaverModel>> {
     private readonly onPointerUp = (e: React.PointerEvent): void => {
         const start = this.pointerStart;
         this.pointerStart = undefined;
+        // the release of a held indicator tile outside of it (mouse): the timer stops, a sent long press ends it
+        this.clearLongPress();
+        if (this.longPressFired) {
+            this.longPressFired = false;
+            return;
+        }
         if (!start) {
             return;
         }
@@ -160,6 +223,8 @@ export class Screensaver extends React.Component<CardProps<ScreensaverModel>> {
 
     private readonly onPointerCancel = (): void => {
         this.pointerStart = undefined;
+        this.clearLongPress();
+        this.longPressFired = false;
     };
 
     private renderIcon(entity: Entity6, size: number, style?: React.CSSProperties): React.JSX.Element | null {
@@ -705,7 +770,8 @@ export class Screensaver extends React.Component<CardProps<ScreensaverModel>> {
     }
 
     /**
-     * An indicator: a tap on its box sends `event,buttonPress2,<id>,button`.
+     * An indicator: a tap on its box sends `event,buttonPress2,<id>,button,<taps>`, holding it
+     * `event,buttonPress3,<id>,button,<taps>` (then the release sends nothing).
      *
      * @param entity the indicator
      * @param index position in the indicator area
@@ -725,9 +791,16 @@ export class Screensaver extends React.Component<CardProps<ScreensaverModel>> {
             <div
                 key={index}
                 data-role={`indicator${index + 1}`}
+                onPointerDown={(e): void => this.indicatorDown(entity.id, e)}
                 onPointerUp={(e): void => {
                     e.stopPropagation();
-                    this.indicatorTap(entity.id, e);
+                    this.clearLongPress();
+                    if (this.longPressFired) {
+                        // the long press went out while the finger was down - the release sends nothing
+                        this.longPressFired = false;
+                    } else {
+                        this.indicatorTap(entity.id, e);
+                    }
                     this.pointerStart = undefined;
                 }}
                 style={{
@@ -1127,6 +1200,7 @@ export class Screensaver extends React.Component<CardProps<ScreensaverModel>> {
                 data-page={ctx.pageType}
                 data-layout={areas.layout}
                 onPointerDown={this.onPointerDown}
+                onPointerMove={this.onPointerMove}
                 onPointerUp={this.onPointerUp}
                 onPointerCancel={this.onPointerCancel}
                 style={{

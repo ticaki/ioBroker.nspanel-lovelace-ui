@@ -155,6 +155,22 @@ class PageAlarm extends import_Page.Page {
       throw new Error("PageAlarm: invalid configuration");
     }
     await this.library.writedp(this.approveId, false, import_definition.genericStateObjects.panel.panels.alarm.cardAlarm.approve);
+    await this.library.writedp(
+      `panels.${this.basePanel.name}.alarm`,
+      void 0,
+      import_definition.genericStateObjects.panel.panels.alarm._channel
+    );
+    await this.library.writedp(`alarm`, void 0, import_definition.genericStateObjects.panel.panels.alarm._channel);
+    await this.library.writedp(
+      `${this.pathToStates}`,
+      void 0,
+      import_definition.genericStateObjects.panel.panels.alarm.cardAlarm._channel
+    );
+    await this.library.writedp(
+      this.statusState,
+      void 0,
+      import_definition.genericStateObjects.panel.panels.alarm.cardAlarm.status
+    );
     config.data.approveState = {
       type: "triggered",
       dp: `${this.adapter.namespace}.${this.approveId}`
@@ -173,19 +189,6 @@ class PageAlarm extends import_Page.Page {
     await super.init();
     this.useStates = true;
     this.alarmType = (_c = ((_b = (_a = this.items) == null ? void 0 : _a.data) == null ? void 0 : _b.alarmType) && await this.items.data.alarmType.getString()) != null ? _c : "alarm";
-    {
-      await this.library.writedp(
-        `panels.${this.basePanel.name}.alarm`,
-        void 0,
-        import_definition.genericStateObjects.panel.panels.alarm._channel
-      );
-      await this.library.writedp(`alarm`, void 0, import_definition.genericStateObjects.panel.panels.alarm._channel);
-      await this.library.writedp(
-        `${this.pathToStates}`,
-        void 0,
-        import_definition.genericStateObjects.panel.panels.alarm.cardAlarm._channel
-      );
-    }
     if (this.alarmType === "alarm") {
       const status = await this.getStatus();
       if (status === "pending") {

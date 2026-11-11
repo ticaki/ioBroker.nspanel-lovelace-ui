@@ -631,7 +631,7 @@ Stack: ${stack}`
       if (!overrideExisting && panelAssignment !== void 0 && ((_e = option.globalPageIds) == null ? void 0 : _e.includes(newPage.uniqueID)) && !((_f = option.generatedPageIds) == null ? void 0 : _f.includes(newPage.uniqueID)) && option.pages.some((a) => a.uniqueID === newPage.uniqueID)) {
         overrideExisting = true;
         replacesGlobal = true;
-        this.log.info(
+        this.log.debug(
           `Page '${newPage.uniqueID}' of the global script configuration is replaced by the admin page assigned to this panel.`
         );
       }
@@ -644,7 +644,7 @@ Stack: ${stack}`
             this.log.warn(`Page with name ${newPage.uniqueID} already exists, skipping!`);
             continue;
           }
-          this.log.info(
+          this.log.debug(
             `Page '${newPage.uniqueID}' of another panel's script is replaced by the admin page configured for this panel.`
           );
           option.pages = option.pages.filter((a) => a.uniqueID !== newPage.uniqueID);
@@ -653,7 +653,7 @@ Stack: ${stack}`
         const pageCount = option.pages.length;
         option.pages = option.pages.filter((a) => a.uniqueID !== newPage.uniqueID);
         if (option.pages.length !== pageCount) {
-          this.log.info(`Page '${newPage.uniqueID}' is overridden by the admin configuration.`);
+          this.log.debug(`Page '${newPage.uniqueID}' is overridden by the admin configuration.`);
         }
         replacedIndex = option.navigation.findIndex((b) => b && b.name === newPage.uniqueID);
         if (replacedIndex !== -1) {

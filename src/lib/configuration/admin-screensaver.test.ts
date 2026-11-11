@@ -187,6 +187,35 @@ describe('lib/configuration - admin screensaver (entry -> script configuration)'
         expect('ScreensaverEntityButton' in bottom).to.equal(false);
     });
 
+    it('maps the long press to button, switch and page - on the indicator only, script and template', () => {
+        const button = screensaverItemToScript(
+            { state: 'a', action: { kind: 'navigate', page: 'Klima' }, longPress: { kind: 'button', state: 'b' } },
+            'indicator',
+        );
+        expect(button).to.include({ ScreensaverEntityNaviToPage: 'Klima', ScreensaverEntityLongPressButton: 'b' });
+        const sw = screensaverItemToScript({ state: 'a', longPress: { kind: 'switch', state: 's' } }, 'indicator');
+        expect(sw).to.include({ ScreensaverEntityLongPressSwitch: 's' });
+        const nav = screensaverItemToScript(
+            { state: 'a', longPress: { kind: 'navigate', page: 'Klima' } },
+            'indicator',
+        );
+        expect(nav).to.include({ ScreensaverEntityLongPressNaviToPage: 'Klima' });
+        const bottom = screensaverItemToScript({ state: 'a', longPress: { kind: 'button', state: 'b' } }, 'bottom');
+        expect('ScreensaverEntityLongPressButton' in bottom).to.equal(false);
+        expect(
+            screensaverItemToScript(
+                { state: 'bydhvs.0', template: 'text.battery.bydhvs', longPress: { kind: 'switch', state: 'a.0.b' } },
+                'indicator',
+            ),
+        ).to.deep.equal({
+            type: 'template',
+            template: 'text.battery.bydhvs',
+            dpInit: 'bydhvs.0',
+            modeScr: 'indicator',
+            ScreensaverEntityLongPressSwitch: 'a.0.b',
+        });
+    });
+
     it('turns a template item into the template element with the object as dpInit', () => {
         expect(
             screensaverItemToScript(

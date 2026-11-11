@@ -1477,6 +1477,9 @@ const screensaverStateKeys = [
     'ScreensaverEntitySwitch',
     'ScreensaverEntityCycle',
     'ScreensaverEntityCycleValues',
+    'ScreensaverEntityLongPressNaviToPage',
+    'ScreensaverEntityLongPressButton',
+    'ScreensaverEntityLongPressSwitch',
     'ScreensaverEntityIconSelect',
     'ScreensaverEntityEnabled',
     'ScreensaverEntityVisibleCondition',
@@ -1495,6 +1498,9 @@ const screensaverTemplateKeys = [
     'ScreensaverEntitySwitch',
     'ScreensaverEntityCycle',
     'ScreensaverEntityCycleValues',
+    'ScreensaverEntityLongPressNaviToPage',
+    'ScreensaverEntityLongPressButton',
+    'ScreensaverEntityLongPressSwitch',
 ] as const;
 /** keys of a native screensaver element that make it the same as a template element (see convertScreensaverItem) */
 const nativeTemplateKeys: readonly string[] = ['template', 'dpInit', 'modeScr', 'readOptions'];
@@ -1574,6 +1580,40 @@ function convertIndicatorAction(
 }
 
 /**
+ * The long press of an indicator as the admin stores it. The config manager takes the first of button, switch and
+ * page - the others have no effect.
+ *
+ * @param element Element of the script (script or template).
+ * @param reason Reason to report when a field is no text.
+ * @param where Prefix for the detail.
+ * @returns the long press, undefined when the element has none
+ */
+function convertIndicatorLongPress(
+    element: Dict,
+    reason: ConvertSkipReason,
+    where: string,
+): ScreensaverItemConfig['longPress'] {
+    const button = str(element.ScreensaverEntityLongPressButton, reason, `${where}.ScreensaverEntityLongPressButton`);
+    const switchState = str(
+        element.ScreensaverEntityLongPressSwitch,
+        reason,
+        `${where}.ScreensaverEntityLongPressSwitch`,
+    );
+    const navi = str(
+        element.ScreensaverEntityLongPressNaviToPage,
+        reason,
+        `${where}.ScreensaverEntityLongPressNaviToPage`,
+    );
+    if (button) {
+        return { kind: 'button', state: button };
+    }
+    if (switchState) {
+        return { kind: 'switch', state: switchState };
+    }
+    return navi ? { kind: 'navigate', page: navi } : undefined;
+}
+
+/**
  * One screensaver element of the script as the admin stores it - inverse of `screensaverItemToScript`
  * (admin-screensaver.ts).
  *
@@ -1644,6 +1684,10 @@ function convertScreensaverItem(
             const action = convertIndicatorAction(element, reason, where);
             if (action) {
                 item.action = action;
+            }
+            const longPress = convertIndicatorLongPress(element, reason, where);
+            if (longPress) {
+                item.longPress = longPress;
             }
         }
         return item;
@@ -1778,6 +1822,10 @@ function convertScreensaverItem(
         const action = convertIndicatorAction(element, reason, where);
         if (action) {
             item.action = action;
+        }
+        const longPress = convertIndicatorLongPress(element, reason, where);
+        if (longPress) {
+            item.longPress = longPress;
         }
     }
     return item;

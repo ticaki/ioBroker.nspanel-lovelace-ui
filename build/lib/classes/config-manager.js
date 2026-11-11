@@ -2121,7 +2121,7 @@ class ConfigManager extends import_library.BaseClass {
               messages.push(
                 `Optional: ${String(dp)}: ${dpInit}, channel role: ${role} - not found, using ${String(alternate)} instead (searching for type: ${JSON.stringify(entry.type)}, role: ${JSON.stringify(entry.role)})`
               );
-              this.log.info(messages[messages.length - 1]);
+              this.log.debug(messages[messages.length - 1]);
             }
           }
           if (!result[role][dp2]) {
@@ -4536,6 +4536,37 @@ class ConfigManager extends import_library.BaseClass {
     return null;
   }
   /**
+   * What an indicator does when held (TFT 6.0.9+), as data items of a button page item
+   * (`PageItem.onCommandLongPress`): the first of button, switch and page. The item is always a button, so
+   * `longPressMode` tells whether the state is set to true or toggled.
+   *
+   * @param entity element of the script (script or template)
+   * @returns the data items to set, null when the element has no long press or its state does not exist or is
+   * not writable (then a long press acts like a tap)
+   */
+  async getScreensaverIndicatorLongPress(entity) {
+    const state = entity.ScreensaverEntityLongPressButton || entity.ScreensaverEntityLongPressSwitch;
+    if (state) {
+      if (!await this.existsAndWriteableState(state)) {
+        this.log.warn(
+          `Screensaver indicator: the long press state ${state} does not exist or is not writable - a long press acts like a tap`
+        );
+        return null;
+      }
+      return {
+        longPress: { type: "state", dp: state },
+        longPressMode: {
+          type: "const",
+          constVal: entity.ScreensaverEntityLongPressButton ? "push" : "toggle"
+        }
+      };
+    }
+    if (entity.ScreensaverEntityLongPressNaviToPage) {
+      return { setNaviLongPress: { type: "const", constVal: entity.ScreensaverEntityLongPressNaviToPage } };
+    }
+    return null;
+  }
+  /**
    * Font of the icon field of a screensaver element as data item of `icon.textSize` (tools.getIconEntryValue
    * appends `¬<id>` to the icon). Place indicator only; the screensaver page strips the suffix
    * again on every HMI page except screensaver5, which alone reads it.
@@ -4618,7 +4649,10 @@ class ConfigManager extends import_library.BaseClass {
         "ScreensaverEntityButton",
         "ScreensaverEntitySwitch",
         "ScreensaverEntityCycle",
-        "ScreensaverEntityCycleValues"
+        "ScreensaverEntityCycleValues",
+        "ScreensaverEntityLongPressNaviToPage",
+        "ScreensaverEntityLongPressButton",
+        "ScreensaverEntityLongPressSwitch"
       ]) {
         delete temp[key];
       }
@@ -4629,10 +4663,11 @@ class ConfigManager extends import_library.BaseClass {
         temp.data.icon = { ...temp.data.icon, textSize: iconTextSize2 };
       }
       const action = mode === "indicator" ? await this.getScreensaverIndicatorAction(entity) : null;
-      if (action) {
+      const longPress = mode === "indicator" ? await this.getScreensaverIndicatorLongPress(entity) : null;
+      if (action || longPress) {
         temp.type = "button";
         temp.data = temp.data || {};
-        Object.assign(temp.data, action);
+        Object.assign(temp.data, action, longPress);
       } else {
         delete temp.type;
       }
@@ -4658,6 +4693,10 @@ class ConfigManager extends import_library.BaseClass {
       const action = await this.getScreensaverIndicatorAction(entity);
       if (action) {
         Object.assign(result.data, action);
+      }
+      const longPress = await this.getScreensaverIndicatorLongPress(entity);
+      if (longPress) {
+        Object.assign(result.data, longPress);
       }
     }
     const dataType = obj && obj.common && obj.common.type ? obj.common.type : void 0;

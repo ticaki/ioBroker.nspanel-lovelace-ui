@@ -100,7 +100,7 @@ class ConfigIP extends ConfigGeneric<ConfigIPProps, ConfigIPState> {
                 variant="standard"
             >
                 {ips.length > 0 && this.props.schema.label ? (
-                    <InputLabel>{this.getText(this.props.schema.label)}</InputLabel>
+                    <InputLabel shrink>{this.getText(this.props.schema.label)}</InputLabel>
                 ) : null}
                 {isLoading || ips.length === 0 ? (
                     <TextField
@@ -120,7 +120,9 @@ class ConfigIP extends ConfigGeneric<ConfigIPProps, ConfigIPState> {
                         error={!!error}
                         disabled={disabled}
                         value={value}
-                        renderValue={(val): string => item?.name || val}
+                        // without displayEmpty MUI shows nothing for the empty value - the placeholder of renderValue would never appear
+                        displayEmpty
+                        renderValue={(val): string => (val ? item?.name || val : this.getText('selectIpPlaceholder'))}
                         onChange={(e): void => {
                             void this.onChange(attr, e.target.value);
                         }}
