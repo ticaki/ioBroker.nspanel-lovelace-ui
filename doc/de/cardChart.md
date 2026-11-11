@@ -8,7 +8,7 @@ Inhalt:
 - [Seite anlegen](#1-seite-anlegen)
 - [Diagrammtyp: Säulen oder Linie](#2-diagrammtyp-säulen-oder-linie)
 - [Überschrift, Farbe, Achsenbeschriftung](#3-überschrift-farbe-achsenbeschriftung)
-- [Datenaufbereitung: die Weiche](#4-datenaufbereitung-die-weiche)
+- [Datenquelle: die Weiche](#4-datenquelle-die-weiche)
 - [Weg A: Daten aus einem Verlaufsadapter](#5-weg-a-daten-aus-einem-verlaufsadapter)
 - [Weg B: Daten aus eigenen Datenpunkten](#6-weg-b-daten-aus-eigenen-datenpunkten)
 - [Die Y-Achse und die Zwei-Zeichen-Regel](#7-die-y-achse-und-die-zwei-zeichen-regel)
@@ -54,20 +54,20 @@ Intern tragen beide Varianten denselben Kartentyp `cardChart`; der Diagrammtyp i
 | **Eindeutige ID** | Seitenname; unter ihm sprechen andere Seiten die Seite in ihren Navigationszielen an. Nur lesbar — der Name ist nach dem Anlegen fest (*„Der Name ist nach dem Anlegen fest – andere Seiten verweisen darauf."*); bei der Startseite steht dort ihr eigener Hinweis: *Startseite – wird unter der ID „main" veröffentlicht.* Siehe [PageConfig – Übersicht](PageConfig#seiten-anlegen-und-löschen). |
 | **Überschrift** | Kopfzeile am Panel. Leer zeigt das Panel `Page Chart`. |
 | **Farbe für Diagramm auswählen** | Farbe der Kurve beziehungsweise der Säulen, als Farbwähler. Vorgabe Gelb. |
-| **Bezeichnung Y-Achse** | Text neben der Achse, zum Beispiel `W`. Das Liniendiagramm hängt hier bei Bedarf seinen automatischen Faktor an — aus `W` wird dann `W x10`. Das Feld steht in beiden Wegen der Datenaufbereitung. |
+| **Bezeichnung Y-Achse** | Text neben der Achse, zum Beispiel `W`. Das Liniendiagramm hängt hier bei Bedarf seinen automatischen Faktor an — aus `W` wird dann `W x10`. Das Feld steht bei beiden Datenquellen. |
 
 > Es gibt **eine** Farbe und **eine** Messreihe je Seite. Mehrere Kurven in einem Diagramm kann die Karte nicht, eine Legende gibt es entsprechend auch nicht — die „Legende" besteht aus Überschrift und Achsenbeschriftung.
 
-## 4. Datenaufbereitung: die Weiche
+## 4. Datenquelle: die Weiche
 
-Die Auswahl **Datenaufbereitung** entscheidet, woher die Werte kommen:
+Die Auswahl **Datenquelle** entscheidet, woher die Werte kommen:
 
 | Auswahl | Bedeutung |
 |---|---|
-| **Datenbankadapter** | Der Adapter fragt selbst einen Verlaufsadapter ab und rechnet die Darstellung aus. Erst damit erscheinen Zeitraum, Wertefaktor und die Achseneinteilung. |
+| **Datenbankadapter** | Der Adapter fragt selbst einen Verlaufsadapter ab und rechnet die Darstellung aus. Erst damit erscheinen die **Datenbank-Instanz**, der Zeitraum, der Wertefaktor und die Achseneinteilung. |
 | **Skriptversion** | Achse und Werte kommen fertig aus zwei eigenen Datenpunkten. Für Sonderfälle, die die Automatik nicht abdeckt. |
 
-> Die Beschriftungen sind hier **vertauscht und verwirrend**: Die Auswahl heißt *Datenaufbereitung*, entscheidet aber über die **Datenquelle**; das Feld darunter heißt *Datenquelle*, meint aber die **Instanz des Datenbankadapters**. Beim Lesen also auf die Funktion achten, nicht auf den Namen.
+> Welche Felder darunter stehen, hängt allein an dieser Auswahl; die beiden folgenden Abschnitte beschreiben die zwei Wege. Ein Wechsel blendet die Felder des anderen Wegs nur aus — ihre Werte bleiben gespeichert und sind nach dem Zurückschalten wieder da.
 
 ## 5. Weg A: Daten aus einem Verlaufsadapter
 
@@ -75,10 +75,10 @@ Die Auswahl **Datenaufbereitung** entscheidet, woher die Werte kommen:
 
 | Feld | Wirkung |
 |---|---|
-| **Datenquelle** | Die Instanz des Verlaufsadapters. Die Liste enthält die **aktivierten** Instanzen von **InfluxDB**, **History** und **SQL** — andere Verlaufsadapter kennt der Editor nicht. Gibt es keine, steht dort *Keine Instanz gefunden*. |
-| **Datenpunkt für archiviere Werte** | Der Messwert (der Grammatikfehler steht so in der Oberfläche). Der Auswahldialog zeigt **nur Datenpunkte, die in der gewählten Instanz tatsächlich aufgezeichnet werden**; ohne gewählte Instanz alle, die irgendein Verlaufsadapter aufzeichnet. Das ist die nützlichste Prüfung des ganzen Editors. |
-| **Zeitraum in Stunden** | Wie weit zurück gezeichnet wird; das Fenster endet immer „jetzt". Vorgabe 24. |
-| **Wertefaktor für Diagramm** | Nur beim **Säulendiagramm**. Teilt die Werte, bevor sie ans Panel gehen — Watt zu Kilowatt, damit die Beschriftung der Y-Achse in zwei Zeichen passt (siehe [Abschnitt 7](#7-die-y-achse-und-die-zwei-zeichen-regel)). |
+| **Datenbank-Instanz** | Die Instanz des Verlaufsadapters. Die Liste enthält die **aktivierten** Instanzen von **InfluxDB**, **History** und **SQL** — andere Verlaufsadapter kennt der Editor nicht. Gibt es keine, steht dort *Keine Instanz gefunden*. |
+| **Datenpunkt für archivierte Werte** | Der Messwert. Der Auswahldialog zeigt **nur Datenpunkte, die in der gewählten Instanz tatsächlich aufgezeichnet werden**; ohne gewählte Instanz alle, die irgendein Verlaufsadapter aufzeichnet. Das ist die nützlichste Prüfung des ganzen Editors. |
+| **Zeitraum in Stunden** | Wie weit zurück gezeichnet wird; das Fenster endet immer „jetzt". Vorgabe 24, kleinster Wert 1 — nach oben gibt es keine Grenze. |
+| **Wertefaktor für Diagramm** | Nur beim **Säulendiagramm**. Rechnet die Werte um, bevor sie ans Panel gehen — `0,001` macht aus Watt Kilowatt, damit die Beschriftung der Y-Achse in zwei Zeichen passt (siehe [Abschnitt 7](#7-die-y-achse-und-die-zwei-zeichen-regel)). Ein Tooltip am Feld nennt die Richtung. |
 
 Der Adapter fragt die Daten als Mittelwerte ab (`getHistory` mit `aggregate: average`) — beim Säulendiagramm einen Wert je Stunde, beim Liniendiagramm im 5-Minuten-Raster und höchstens 500 Punkte. Läuft die gewählte Instanz gerade nicht, bleibt das Diagramm leer und es gibt nur eine Warnung im Log. Antwortet sie nicht, bricht die Abfrage nach 15 Sekunden mit einem Fehler im Log ab.
 
@@ -86,7 +86,7 @@ Der Adapter fragt die Daten als Mittelwerte ab (`getHistory` mit `aggregate: ave
 
 > **Verschwundene Instanz:** Wird die gewählte Instanz später deaktiviert oder entfernt, zeigt das Feld **leer** — gespeichert ist sie aber weiterhin. Die Seite sieht dann unkonfiguriert aus, obwohl sie es nicht ist.
 
-> Der **Wertefaktor** zeigt `1`, `0,1`, `0,01`, `0,001` — gemeint ist ein **Teiler**: `0,001` bedeutet „durch 1000", also Watt → Kilowatt. Ein Tooltip fehlt, die Richtung ist aus der Beschriftung nicht zu erraten.
+> Der **Wertefaktor** bietet `1`, `0,1`, `0,01`, `0,001`. Der gewählte Faktor wird auf den Messwert angewendet, bevor er ans Panel geht: `0,001` bedeutet „durch 1000", also Watt → Kilowatt. Der Tooltip am Feld sagt es wörtlich: *Die Werte aus der Datenbank werden vor der Anzeige mit diesem Faktor multipliziert (0,1 = durch 10 geteilt).*
 
 ## 6. Weg B: Daten aus eigenen Datenpunkten
 
@@ -96,7 +96,7 @@ Bei **Skriptversion** erscheinen zwei andere Felder. Hier rechnet der Adapter **
 
 | Feld | Wirkung |
 |---|---|
-| **Datenpunkt für Scale** | Ein **JSON-Array** mit den Werten der Y-Achse. Ist der Inhalt kein Array oder leer, wird er ignoriert. |
+| **Datenpunkt für die Achsenteilung** | Ein **JSON-Array** mit den Werten der Y-Achse. Ist der Inhalt kein Array oder leer, wird er ignoriert. |
 | **Datenpunkt für Daten** | Eine **Zeichenkette im Panel-Format**, die unverändert ans Panel geht: beim Säulendiagramm `wert^beschriftung~wert~…`, beim Liniendiagramm `striche+beschriftungen~position:wert~…`. |
 
 Beide Datenpunkte werden beobachtet (siehe [Abschnitt 9](#9-wann-das-panel-neu-zeichnet)). Zeitraum, Wertefaktor und Achseneinteilung gibt es in diesem Weg nicht — sie stecken in den gelieferten Werten.
@@ -131,7 +131,7 @@ Zwei Felder, beide nur im Weg **Datenbankadapter**:
 
 > Beim **Liniendiagramm** sitzen die Beschriftungen **auf den Strichen**: Beschriftet wird nur ein Strich, dessen Abstand zum Anfang durch den Beschriftungsabstand teilbar ist. Ist der Beschriftungsabstand **kein Vielfaches** des Strichabstands — etwa Striche 4, Beschriftungen 6 —, fallen Beschriftungen aus; beschriftet wird dann nur noch im kleinsten gemeinsamen Vielfachen, hier alle 12 Stunden.
 
-> Beide Felder nehmen **jede** Zahl größer null an; eine Obergrenze gibt es nicht. `0`, negative Werte und Text leeren das Feld, das dann die Vorgabe als blassen Platzhalter zeigt — und die Vorgabe gilt auch. Die alte Tabelle begrenzte dieselben Felder auf 1 bis 8 — ein guter Anhalt für sinnvolle Werte.
+> Beide Felder sind auf **1 bis 8** gestellt: Die Pfeile am Feld laufen nicht darüber hinaus. Ein von Hand getippter Wert außerhalb wird trotzdem übernommen, ohne Meldung — das Diagramm zeigt dann, was dabei herauskommt. `0`, negative Werte und Text leeren das Feld, das dann die Vorgabe als blassen Platzhalter zeigt — und die Vorgabe gilt auch. **Zeitraum in Stunden** hat nur die Untergrenze 1, nach oben keine.
 
 **Zeitraum und Auflösung hängen zusammen**, ohne dass der Editor darauf hinweist: Das Liniendiagramm holt höchstens 500 Punkte, also wird das 5-Minuten-Raster ab 42 Stunden gröber. Das Säulendiagramm erzeugt eine Säule je Stunde — bei einem Zeitraum von einer Woche sind das 168 Säulen auf einem schmalen Display.
 
@@ -140,7 +140,7 @@ Zwei Felder, beide nur im Weg **Datenbankadapter**:
 Die Seite zeichnet nicht in festem Takt, sondern auf Anlass:
 
 - **Beim Aufruf der Seite.** Wird die Seite am Panel sichtbar, holt der Adapter die Daten neu. Das Zeitfenster endet also immer beim Öffnen.
-- **Bei einer Wertänderung.** Im Weg *Datenbankadapter* ist der gewählte **Datenpunkt für archiviere Werte** selbst der Auslöser; im Weg *Skriptversion* sind es die beiden Datenpunkte für Scale und Daten.
+- **Bei einer Wertänderung.** Im Weg *Datenbankadapter* ist der gewählte **Datenpunkt für archivierte Werte** selbst der Auslöser; im Weg *Skriptversion* sind es die beiden Datenpunkte für Achsenteilung und Daten.
 - **Höchstens einmal pro Minute.** Weitere Auslöser innerhalb der Minute werden gesammelt und danach in einem Durchgang nachgeholt.
 - **Nur bei sichtbarer Seite.** Solange eine andere Seite oder der [screensaver](screensaver) am Panel steht, werden Auslöser verworfen.
 
@@ -176,13 +176,13 @@ Wie die Übernahme abläuft, welche Suffixe entstehen und wie der Knopf **Skript
 
 ## Fallstricke
 
-> ⚠️ **Leeres Diagramm trotz gewählter Datenbank.** Fehlt die **Datenquelle** oder der **Datenpunkt für archiviere Werte**, arbeitet die Seite stillschweigend als *Skriptversion* — mit leeren Datenpunkten und damit leerem Diagramm. Im Admin erscheint dazu keine Meldung.
+> ⚠️ **Leeres Diagramm trotz gewählter Datenbank.** Fehlt die **Datenbank-Instanz** oder der **Datenpunkt für archivierte Werte**, arbeitet die Seite stillschweigend als *Skriptversion* — mit leeren Datenpunkten und damit leerem Diagramm. Im Admin erscheint dazu keine Meldung.
 
-> **Die Liste der Datenquellen zeigt aktivierte, nicht laufende Instanzen.** Der Editor liest die Instanzobjekte und filtert auf „aktiviert"; ob die Instanz läuft, prüft erst der Adapter. Eine aktivierte, aber hängende Instanz steht in der Liste und ergibt zur Laufzeit nur eine Log-Warnung und ein leeres Diagramm.
+> **Die Liste der Datenbank-Instanzen zeigt aktivierte, nicht laufende Instanzen.** Der Editor liest die Instanzobjekte und filtert auf „aktiviert"; ob die Instanz läuft, prüft erst der Adapter. Eine aktivierte, aber hängende Instanz steht in der Liste und ergibt zur Laufzeit nur eine Log-Warnung und ein leeres Diagramm.
 
 > **Das Datenpunktfeld lässt sich von Hand füllen.** Der Filter „nur aufgezeichnete Datenpunkte" gilt nur im Auswahldialog hinter **…**; eine getippte ID wird ungeprüft übernommen. Dann ist das leere Diagramm die einzige Rückmeldung.
 
-> **Der Wertefaktor ist ein Teiler.** `0,001` heißt „durch 1000". Er gibt es nur beim Säulendiagramm im Datenbank-Weg und ist dort der einzige Schutz gegen zu lange Achsenbeschriftungen.
+> **Der Wertefaktor wirkt als Teiler.** `0,001` heißt „durch 1000" — so steht es auch im Tooltip des Felds. Ihn gibt es nur beim Säulendiagramm im Datenbank-Weg, und dort ist er der einzige Schutz gegen zu lange Achsenbeschriftungen.
 
 > **Luft über oder unter der Kurve gibt es nicht.** Das Panel spannt die Y-Achse genau über die Daten und zeigt nur Marken in diesem Bereich. Mehr Marken zu setzen hilft nicht — das gilt auch für die Skriptversion.
 
