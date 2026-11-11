@@ -570,7 +570,6 @@ export type screensaverDataItemOptions = {
     rotationTime: number;
     model: NSPanel.NSpanelModel;
     screensaverSwipe: boolean;
-    screensaverIndicatorButtons: boolean;
     /** only from the admin: timer instead of the clock */
     clockTimer?: ScreensaverClockTimer;
     data: undefined;

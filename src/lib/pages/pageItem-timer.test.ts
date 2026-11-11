@@ -241,7 +241,6 @@ async function makeSaver(
                 model: 'eu',
                 data: undefined,
                 screensaverSwipe: false,
-                screensaverIndicatorButtons: false,
                 clockTimer,
             },
         } as unknown as pages.PageBase,

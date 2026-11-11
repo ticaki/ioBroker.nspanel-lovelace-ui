@@ -283,7 +283,6 @@ export class ConfigManager extends BaseClass {
                 config.advancedOptions
             ) {
                 screensaver.config.screensaverSwipe = !!config.advancedOptions.screensaverSwipe;
-                screensaver.config.screensaverIndicatorButtons = !!config.advancedOptions.screensaverIndicatorButtons;
             }
             panelConfig.pages.push(screensaver);
         } catch (error: any) {
@@ -5105,7 +5104,6 @@ export class ConfigManager extends BaseClass {
                 rotationTime: 0,
                 model: 'eu',
                 data: undefined,
-                screensaverIndicatorButtons: false,
                 screensaverSwipe: false,
             },
             pageItems: pageItems,
