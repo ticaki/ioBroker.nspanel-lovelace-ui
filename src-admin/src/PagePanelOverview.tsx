@@ -29,6 +29,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import AddIcon from '@mui/icons-material/Add';
 import FileDownloadIcon from '@mui/icons-material/FileDownload';
+import FileUploadIcon from '@mui/icons-material/FileUpload';
 import {
     defaultWebLinkSettings,
     loadWebLinkSettings,
@@ -56,6 +57,7 @@ import {
     type PageSecretField,
 } from '../../src/lib/types/panelConfigExport';
 import PanelExportSecretsDialog from './components/PanelExportSecretsDialog';
+import PanelImportDialog, { type PanelImportNativeValues } from './components/PanelImportDialog';
 import { PanelStatusBadge } from './components/PanelStatusBadge';
 import { resolveTasmotaTimeZone, uniqueTasmotaTimeZones, type TasmotaTimeZone } from './tasmotaTimeZones';
 import { docUrl } from './docLink';
@@ -203,6 +205,8 @@ interface PagePanelOverviewState extends ConfigGenericState {
 class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any }, PagePanelOverviewState> {
     /** dialog that configures the action of one hardware button of one panel */
     private buttonDialogRef = React.createRef<PanelButtonDialog>();
+    /** dialog that imports a panel configuration file into one panel */
+    private importDialogRef = React.createRef<PanelImportDialog>();
     private pagesRetryTimeout?: NodeJS.Timeout;
     private blinkTimeout?: NodeJS.Timeout;
     private instance = this.props.oContext.instance ?? '0';
@@ -277,6 +281,23 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
             return undefined;
         }
     }
+
+    /**
+     * Hands the tables changed by an import to the admin in one change: two onChange calls in a row would lose the
+     * first one. The user saves afterwards.
+     *
+     * @param values the changed native tables
+     */
+    private applyImportNative = async (values: PanelImportNativeValues): Promise<void> => {
+        const data = JSON.parse(JSON.stringify(this.props.data ?? {}));
+        for (const [key, value] of Object.entries(values)) {
+            if (value !== undefined) {
+                ConfigGeneric.setValue(data, key, value);
+            }
+        }
+        await new Promise<void>(resolve => this.props.onChange(data, undefined, resolve));
+        this.forceUpdate();
+    };
 
     /**
      * Export button of a tile: asks first when pages of the panel hold PINs or passwords, else exports at once.
@@ -1608,6 +1629,16 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
                                     <IconButton
                                         size="small"
                                         color="primary"
+                                        onClick={(): void => this.importDialogRef.current?.openFor(panel)}
+                                        disabled={!panel.id || !panel.topic}
+                                        title={this.getText('importPanel')}
+                                        aria-label={this.getText('importPanel')}
+                                    >
+                                        <FileUploadIcon />
+                                    </IconButton>
+                                    <IconButton
+                                        size="small"
+                                        color="primary"
                                         onClick={() => this.handleEditPanel(panel)}
                                         disabled={!alive && !isWebPanel}
                                         title={this.getText('editPanel')}
@@ -1735,6 +1766,14 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
                 </Box>
 
                 {/* Action of one hardware button (native.panels[].buttonLeft/buttonRight) */}
+                <PanelImportDialog
+                    ref={this.importDialogRef}
+                    socket={this.props.oContext.socket}
+                    adapterName={this.adapterName}
+                    instance={this.instance}
+                    data={this.props.data}
+                    onApplyNative={this.applyImportNative}
+                />
                 <PanelExportSecretsDialog
                     open={!!this.state.exportSecrets}
                     panelName={this.state.exportSecrets?.panel.name || this.state.exportSecrets?.panel.topic || ''}
