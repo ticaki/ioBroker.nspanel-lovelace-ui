@@ -40,7 +40,7 @@ Vier Auswahlknöpfe unter **QR-Code-Typ** entscheiden, **was** der Code enthält
 | Typ | Zeichenkette im Code | Weitere Felder |
 |---|---|---|
 | **Freitext** | der Inhalt unverändert | keine |
-| **WLAN** | `WIFI:T:<Verschlüsselung>;S:<SSID>;P:<Passwort>;H:true;` — ohne den Haken *Verstecktes Netzwerk* endet sie auf `H:;` | WLAN-Verschlüsselung, zentrale Zugangsdaten, WLAN-Passwort, Verstecktes Netzwerk, Passwort verbergen, Schalter |
+| **WLAN** | `WIFI:T:<Verschlüsselung>;S:<SSID>;P:<Passwort>;H:true;` — ohne den Haken *Verstecktes Netzwerk* endet sie auf `H:;` | WLAN-Verschlüsselung, zentrale Zugangsdaten, WLAN-Passwort, Verstecktes Netzwerk, Passwort nicht am Panel anzeigen, Schalter |
 | **URL** | `URL:<Adresse>` | keine |
 | **Telefon** | `TEL:<Nummer>` | keine |
 
@@ -65,9 +65,7 @@ Drei Dinge, die der Adapter mit den Texten macht und die man wissen muss, wenn e
 
 Diese Felder erscheinen nur beim Typ **WLAN**, in dieser Reihenfolge: WLAN-Verschlüsselung, zentrale Zugangsdaten, WLAN-Passwort, die beiden Haken, Schalter.
 
-**WLAN-Verschlüsselung** — zur Wahl stehen *No Password*, *WPA*, *WPA2*, *WPA3* und *WEP*. Die Einträge sind in der Oberfläche englisch, auch in der deutschen Fassung.
-
-> ⚠️ **Solange das Feld nicht angefasst wurde, zeigt die Oberfläche `WPA2`, in den QR-Code schreibt der Adapter aber `WPA`.** Die Anzeige ist eine Vorbelegung der Oberfläche, gespeichert wird erst beim Anfassen; ohne gespeicherten Wert greift der Fallback `WPA` — und zwar zweimal, beim Bauen der Seite und beim Senden. Viele Geräte verbinden sich trotzdem, manche nicht — und dann sucht man den Fehler bei der SSID. **Das Feld deshalb einmal bewusst setzen**, auch wenn „WPA2" schon dasteht.
+**WLAN-Verschlüsselung** — zur Wahl stehen *No Password*, *WPA*, *WPA2*, *WPA3* und *WEP*. Die Einträge sind in der Oberfläche englisch, auch in der deutschen Fassung. Eine neue Seite wird mit **WPA2** angelegt; genau dieser Wert steht dann auch im QR-Code. Dasselbe gilt für Seiten ohne gespeicherte Verschlüsselung, etwa aus der alten Tabelle (siehe [Abschnitt 9](#9-übernahme-aus-der-alten-tabelle)): Oberfläche und Code zeigen `WPA2`. Ein reines WPA- oder WEP-Netz braucht also eine bewusste Wahl.
 
 **WLAN-Passwort** — das Passwort im Klartext; das Augensymbol schaltet die Anzeige um. Das Feld entfällt, wenn als Verschlüsselung *No Password* gewählt ist, und ist gesperrt, solange unter *WLAN-Passwort aus den zentralen Zugangsdaten* ein Eintrag gewählt ist (siehe [Abschnitt 5](#5-das-passwort-aus-den-zentralen-zugangsdaten)).
 
@@ -77,9 +75,9 @@ Diese Felder erscheinen nur beim Typ **WLAN**, in dieser Reihenfolge: WLAN-Versc
 
 **Verstecktes Netzwerk** — schreibt `H:true` in den Code, damit sich der Scanner auch mit einem Netz verbindet, das seinen Namen nicht aussendet. Ohne den Haken endet die Zeichenkette auf `H:;`.
 
-**Passwort verbergen** — lässt die Passwortzeile am Panel leer.
+**Passwort nicht am Panel anzeigen** — lässt die Passwortzeile am Panel leer. Darunter steht als Hinweis *Der QR-Code enthält das Passwort weiterhin.*
 
-> ⚠️ **Das ist keine Sicherheitsfunktion.** Der Haken verbirgt nur die Textzeile; **im QR-Code steht das Passwort weiterhin** und jeder Scanner liest es aus. Genau dafür ist die Karte da. Der Haken hilft gegen Mitlesen über die Schulter, nicht gegen Abfotografieren des Codes.
+> ⚠️ **Das ist keine Sicherheitsfunktion.** Der Haken leert nur die Textzeile; **im QR-Code steht das Passwort weiterhin** und jeder Scanner liest es aus. Genau dafür ist die Karte da. Der Haken hilft gegen Mitlesen über die Schulter, nicht gegen Abfotografieren des Codes.
 
 ## 5. Das Passwort aus den zentralen Zugangsdaten
 
@@ -118,7 +116,7 @@ Der Adapter beobachtet jeden benutzten Eintrag: **Ändert sich sein Wert, starte
 Was dieser Datenpunkt **wirklich** bewirkt, steht so nicht in der Oberfläche:
 
 - Die **zweite Zeile der Karte wird zum Schalter**. Sie zeigt ein grünes `wifi`-Symbol mit `WlanOn` bzw. ein graues `wifi-off` mit `WlanOff`, und ein Druck darauf schaltet den Datenpunkt um.
-- **Die Passwortzeile verschwindet damit**, denn es gibt nur diese eine Zeile. Wer Schalter *und* Passwortanzeige möchte, kann das auf dieser Karte nicht haben. Der Haken *Passwort verbergen* ist in dieser Variante ohne Wirkung.
+- **Die Passwortzeile verschwindet damit**, denn es gibt nur diese eine Zeile. Wer Schalter *und* Passwortanzeige möchte, kann das auf dieser Karte nicht haben. Der Haken *Passwort nicht am Panel anzeigen* ist in dieser Variante ohne Wirkung.
 - Der QR-Code selbst bleibt unverändert sichtbar — auch wenn das Netz gerade aus ist.
 
 > ⚠️ **Das Feld erscheint nur bei WLAN, wirkt aber bei jedem Typ.** Wird der QR-Typ später auf *Freitext*, *URL* oder *Telefon* umgestellt, bleibt der Datenpunkt gespeichert, und die zweite Zeile zeigt weiter den WLAN-Schalter mit `WlanOn`/`WlanOff` — auf einer URL-Karte. Zum Entfernen den Typ wieder auf **WLAN** stellen und das Feld leeren.
@@ -134,7 +132,7 @@ Die Karte ist fest aufgebaut: Überschrift, QR-Code, darunter **genau zwei Zeile
 | Zeile | Inhalt |
 |---|---|
 | **1** | Symbol und Beschriftung je Typ — **Freitext**: `qrcode-scan`, *ohne* Beschriftung und **ohne Wert** · **WLAN**: `wifi` mit „SSID" · **URL**: `web` mit „URL / Website" · **Telefon**: `phone` mit „Telephone". Bei WLAN, URL und Telefon steht der eingetragene Inhalt als Wert. |
-| **2** | Ohne Schalter: Symbol `key-wireless` mit „Password" und dem Passwort als Wert — leer, wenn *Passwort verbergen* gesetzt ist. Bei Freitext, URL und Telefon bleibt diese Zeile ohne Symbol und ohne Text. Mit Schalter: die Schaltfläche aus [Abschnitt 6](#6-das-wlan-per-schalter-freigeben). |
+| **2** | Ohne Schalter: Symbol `key-wireless` mit „Password" und dem Passwort als Wert — leer, wenn *Passwort nicht am Panel anzeigen* gesetzt ist. Bei Freitext, URL und Telefon bleibt diese Zeile ohne Symbol und ohne Text. Mit Schalter: die Schaltfläche aus [Abschnitt 6](#6-das-wlan-per-schalter-freigeben). |
 
 Dieselbe Karte als Telefonnummer und als Internetadresse:
 
@@ -154,18 +152,19 @@ Erinnerung: Eine Seite **ohne Panel-Zuweisung** wird nicht gebaut und ist am Pan
 
 Wer die QR-Seiten früher in der eigenen Tabelle `pageQRdata` gepflegt hat, findet sie nach dem Update als Seiten im Tab PageConfig wieder. Die Umstellung passiert beim ersten Start von selbst, die alte Tabelle wird danach entfernt.
 
-Übernommen werden: eindeutige ID, Überschrift, QR-Code-Typ, Inhalt, Schalter-Datenpunkt, *Verstecktes Netzwerk*, *Passwort verbergen*, *Versteckt* und *Verhalten des Bildschirmschoners*.
+Übernommen werden: eindeutige ID, Überschrift, QR-Code-Typ, Inhalt, WLAN-Verschlüsselung, Schalter-Datenpunkt, *Verstecktes Netzwerk*, *Passwort nicht am Panel anzeigen*, *Versteckt* und *Verhalten des Bildschirmschoners*. Stand in der alten Tabelle keine Verschlüsselung, gilt wie bei einer neuen Seite `WPA2`.
 
-> ⚠️ **Passwort und Verschlüsselungsart sind neu einzutragen.** Beide überträgt die Umstellung **nicht**. Danach steht das Passwortfeld leer und die Verschlüsselung fällt auf `WPA` zurück. Der QR-Code wird trotzdem gebaut und sieht gültig aus; nur verbindet sich niemand mehr. Eine Log-Meldung dazu gibt es nicht — anders als bei den später umgezogenen Tabellen *Page Power* und *Page Chart*, die ihre Übernahme melden.
+> ⚠️ **Das WLAN-Passwort ist neu einzutragen.** In der alten Tabelle lag es an anderer Stelle und wird **nicht** übertragen; danach steht das Passwortfeld leer. Der QR-Code wird trotzdem gebaut und sieht gültig aus; nur verbindet sich niemand mehr.
 >
-> Nach einem Update einer bestehenden Anlage also: **jede QR-Seite einmal öffnen**, Passwort eintragen und die Verschlüsselung bewusst setzen.
+> Der Adapter nennt die betroffenen Seiten einmal als Warnung im Log: `QR pages moved from the old table to the page configuration: <Namen>. The wifi password was not taken over - please enter it again in the admin (page editor, wifi password or credential).` Aufgeführt werden nur WLAN-Seiten mit Verschlüsselung — bei *No Password* und bei den übrigen Typen fehlt nichts.
+>
+> Nach einem Update einer bestehenden Anlage also: **jede genannte QR-Seite einmal öffnen** und das Passwort eintragen oder einen Eintrag aus den zentralen Zugangsdaten wählen ([Abschnitt 5](#5-das-passwort-aus-den-zentralen-zugangsdaten)).
 
 Seit **2.0.0** räumt der Knopf **Skript in Admin übernehmen** im Tab `Maintain` auch die Verweise auf QR-Seiten aus einem Konfigurationsskript heraus. In der Vorschau steht dazu *Dieser Seitentyp wird nur im Admin konfiguriert – der Verweis im Skript ist tot und wird entfernt*; ein Admin-Eintrag entsteht dabei nicht, die Seite selbst war ja schon immer nur im Admin konfigurierbar. Der Ablauf steht unter [Migration](Migration). Anschließend lässt sich das Panel mit **Panel benutzt kein Skript** (siehe [NSPanelsetting](NSPanelsetting)) ganz vom Skript lösen.
 
 ## Fallstricke
 
-- **`WPA2` steht da, `WPA` wird gesendet.** Die Vorbelegung der Oberfläche ist nicht gespeichert; ohne gespeicherten Wert schreibt der Adapter `WPA`. Das Feld **WLAN-Verschlüsselung** einmal bewusst setzen.
-- **Nach der Übernahme aus `pageQRdata` fehlen Passwort und Verschlüsselungsart.** Beide neu eintragen, siehe [Abschnitt 9](#9-übernahme-aus-der-alten-tabelle).
+- **Nach der Übernahme aus `pageQRdata` fehlt das WLAN-Passwort.** Neu eintragen, siehe [Abschnitt 9](#9-übernahme-aus-der-alten-tabelle).
 - **`No Password` löscht das gespeicherte Passwort nicht.** Aufs Panel gelangt es nicht mehr, in der Konfiguration bleibt es stehen und erscheint wieder, sobald eine Verschlüsselung gewählt wird.
 - **Ein gesetzter Schalter-Datenpunkt wirkt auch nach einem Typwechsel.** Dann hängt ein WLAN-Schalter an einer URL- oder Telefonkarte.
 - **Gesperrtes Passwortfeld trotz fehlendem Zugangsdaten-Eintrag.** Erst das Auswahlfeld auf **Login / Passwort-Feld nutzen** zurückstellen.

@@ -41,7 +41,7 @@ Four radio buttons under **QR Code Type** decide **what** the code contains. Whi
 | Type | String in the code | Further fields |
 |---|---|---|
 | **Free Text** | the content unchanged | none |
-| **WiFi** | `WIFI:T:<encryption>;S:<SSID>;P:<password>;H:true;` — without the checkbox *Hidden Network* it ends with `H:;` | WiFi Encryption, central credentials, WiFi Password, Hidden Network, Hide Password, switch |
+| **WiFi** | `WIFI:T:<encryption>;S:<SSID>;P:<password>;H:true;` — without the checkbox *Hidden Network* it ends with `H:;` | WiFi Encryption, central credentials, WiFi Password, Hidden Network, Do not show the password on the panel, switch |
 | **URL** | `URL:<address>` | none |
 | **Phone** | `TEL:<number>` | none |
 
@@ -67,9 +67,7 @@ Three things the adapter does with the texts, worth knowing when a code does not
 
 These fields only appear for the type **WiFi**, in this order: WiFi Encryption, central credentials, WiFi Password, the two checkboxes, switch.
 
-**WiFi Encryption** — the choices are *No Password*, *WPA*, *WPA2*, *WPA3* and *WEP*.
-
-> ⚠️ **As long as the field has not been touched, the interface shows `WPA2`, but the adapter writes `WPA` into the QR code.** The displayed value is only a preset of the interface, nothing is stored until you touch it; without a stored value the fallback `WPA` applies — twice, when building the page and when sending it. Many devices connect anyway, some do not — and then you go looking for the mistake in the SSID. **So set the field deliberately once**, even if "WPA2" is already showing.
+**WiFi Encryption** — the choices are *No Password*, *WPA*, *WPA2*, *WPA3* and *WEP*. A new page is created with **WPA2**, and exactly that value goes into the QR code. The same applies to pages without a stored encryption, for instance from the old table (see [section 9](#9-taken-over-from-the-old-table)): interface and code both read `WPA2`. A WPA-only or WEP network therefore needs a deliberate choice.
 
 **WiFi Password** — the password in clear text; the eye icon toggles the display. The field falls away when the encryption is set to *No Password*, and it is locked while an entry is selected under *Wifi password from the central credentials* (see [section 5](#5-the-password-from-the-central-credentials)).
 
@@ -79,9 +77,9 @@ These fields only appear for the type **WiFi**, in this order: WiFi Encryption, 
 
 **Hidden Network** — writes `H:true` into the code so the scanner also connects to a network that does not broadcast its name. Without the checkbox the string ends with `H:;`.
 
-**Hide Password** — leaves the password line on the panel empty.
+**Do not show the password on the panel** — leaves the password line on the panel empty. Below it the hint reads *The QR code still contains the password.*
 
-> ⚠️ **This is not a security feature.** The checkbox only hides the text line; **the QR code still contains the password** and any scanner reads it out. That is exactly what the card is for. The checkbox helps against someone reading over your shoulder, not against a photo of the code.
+> ⚠️ **This is not a security feature.** The checkbox only clears the text line; **the QR code still contains the password** and any scanner reads it out. That is exactly what the card is for. The checkbox helps against someone reading over your shoulder, not against a photo of the code.
 
 ## 5. The password from the central credentials
 
@@ -120,7 +118,7 @@ The adapter watches every entry in use: **if its value changes, the instance res
 What this state **really** does is not stated like that in the interface:
 
 - The **second line of the card turns into a switch**. It shows a green `wifi` icon with `WlanOn` or a grey `wifi-off` with `WlanOff`, and a press on it toggles the state.
-- **The password line disappears with it**, because there is only this one line. Whoever wants the switch *and* the password display cannot have both on this card. The checkbox *Hide Password* is without effect in this variant.
+- **The password line disappears with it**, because there is only this one line. Whoever wants the switch *and* the password display cannot have both on this card. The checkbox *Do not show the password on the panel* is without effect in this variant.
 - The QR code itself stays visible unchanged — even while the network is off.
 
 > ⚠️ **The field only appears with WiFi, but it works with every type.** If the QR type is later switched to *Free Text*, *URL* or *Phone*, the state stays stored and the second line keeps showing the WiFi switch with `WlanOn`/`WlanOff` — on a URL card. To remove it, set the type back to **WiFi** and clear the field.
@@ -136,7 +134,7 @@ The card has a fixed layout: headline, QR code, and below it **exactly two lines
 | Line | Content |
 |---|---|
 | **1** | Icon and label per type — **Free Text**: `qrcode-scan`, *without* a label and **without a value** · **WiFi**: `wifi` with "SSID" · **URL**: `web` with "URL / Website" · **Phone**: `phone` with "Telephone". With WiFi, URL and Phone the entered content is shown as the value. |
-| **2** | Without a switch: icon `key-wireless` with "Password" and the password as the value — empty when *Hide Password* is set. With Free Text, URL and Phone this line stays without an icon and without a text. With a switch: the button from [section 6](#6-enabling-the-wifi-with-a-switch). |
+| **2** | Without a switch: icon `key-wireless` with "Password" and the password as the value — empty when *Do not show the password on the panel* is set. With Free Text, URL and Phone this line stays without an icon and without a text. With a switch: the button from [section 6](#6-enabling-the-wifi-with-a-switch). |
 
 The same card as a phone number and as a web address:
 
@@ -156,18 +154,19 @@ A reminder: a page **without a panel assignment** is not built and does not exis
 
 Whoever used to keep the QR pages in the separate table `pageQRdata` will find them as pages in the PageConfig tab after the update. The conversion happens by itself on the first start, the old table is removed afterwards.
 
-Taken over are: unique ID, headline, QR code type, content, switch state, *Hidden Network*, *Hide Password*, *Hidden* and *Screensaver behavior*.
+Taken over are: unique ID, headline, QR code type, content, WiFi encryption, switch state, *Hidden Network*, *Do not show the password on the panel*, *Hidden* and *Screensaver behavior*. If the old table held no encryption, `WPA2` applies, just as on a new page.
 
-> ⚠️ **Password and encryption type have to be entered anew.** The conversion carries over **neither** of them. Afterwards the password field is empty and the encryption falls back to `WPA`. The QR code is still built and looks valid; only nobody connects any more. There is no log message about it — unlike the tables *Page Power* and *Page Chart* that moved later and do report their take-over.
+> ⚠️ **The WiFi password has to be entered anew.** In the old table it was kept elsewhere and is **not** carried over; afterwards the password field is empty. The QR code is still built and looks valid; only nobody connects any more.
 >
-> So after updating an existing installation: **open every QR page once**, enter the password and set the encryption deliberately.
+> The adapter names the affected pages once as a warning in the log: `QR pages moved from the old table to the page configuration: <names>. The wifi password was not taken over - please enter it again in the admin (page editor, wifi password or credential).` Only WiFi pages with an encryption are listed — with *No Password* and with the other types nothing is missing.
+>
+> So after updating an existing installation: **open every QR page named there once** and enter the password or pick an entry from the central credentials ([section 5](#5-the-password-from-the-central-credentials)).
 
 Since **2.0.0** the button **Take script over into admin** in the tab `Maintain` also clears out the references to QR pages from a configuration script. The preview says *This page type is configured in the admin only – the reference in the script is dead and is removed*; no admin entry is created in the process, as the page itself was always configurable in the admin only. The procedure is described under [Migration](Migration). Afterwards the panel can be detached from the script completely with **Panel uses no script** (see [NSPanelsetting](NSPanelsetting)).
 
 ## Pitfalls
 
-- **`WPA2` is shown, `WPA` is sent.** The preset of the interface is not stored; without a stored value the adapter writes `WPA`. Set the field **WiFi Encryption** deliberately once.
-- **After the take-over from `pageQRdata` password and encryption type are missing.** Enter both anew, see [section 9](#9-taken-over-from-the-old-table).
+- **After the take-over from `pageQRdata` the WiFi password is missing.** Enter it anew, see [section 9](#9-taken-over-from-the-old-table).
 - **`No Password` does not delete the stored password.** It no longer reaches the panel, but it stays in the configuration and shows up again as soon as an encryption is chosen.
 - **A switch state once set also works after a type change.** Then a WiFi switch hangs on a URL or phone card.
 - **Locked password field although no credential entry exists.** Set the select box back to **Use the login / password field** first.

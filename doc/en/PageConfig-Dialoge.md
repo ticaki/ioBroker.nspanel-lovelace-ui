@@ -56,7 +56,7 @@ While and after you type, the admin checks the channel and shows the result **to
 |---|---|
 | Spinner | The check is still running. It starts after a short pause while typing, and immediately when the field is left. |
 | Red ✖ | **Missing required states.** The tooltip names them. The role requires states the channel does not have. |
-| Red ⚠ | **Duplicate states** — several states of the channel match the same role and the adapter cannot decide. The tooltip names them. The same mark also appears when the button at the foot reads **Details…**. |
+| Red ⚠ | **Duplicate states** — several states of the channel match the same role and the adapter cannot decide. The tooltip names them. The same mark also appears when the button at the foot reads **Details…**; that case takes precedence, the tooltip then names no states but reads *Press the Details... button at the bottom of the dialog*. |
 
 Below the field there is one more line in plain words: *ok (role=…)* when everything fits, *Object not found in ioBroker*, *Missing ID*, the hint text of the custom button, or — when the role matches no known channel role — *The object's role is not a recognized device type*. In that last case the page item cannot be saved usefully; the button at the foot turns into **Details…**.
 

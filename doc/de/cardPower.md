@@ -135,13 +135,11 @@ Die Laufrichtung kommt aus dem **Vorzeichen**: Ein negativer Messwert lässt den
 
 ## 7. Die interne Summe
 
-Statt eines eigenen Datenpunkts kann **Haus unten** eine Summe aus den sechs Flüssen zeigen. Dafür den Haken **Interne Summe verwenden (Haus unten)** setzen; das Feld für den Datenpunkt verschwindet, stattdessen erscheint eine Mehrfachauswahl mit den Einträgen **Leistung 1** bis **Leistung 6**.
+Statt eines eigenen Datenpunkts kann **Haus unten** eine Summe aus den sechs Flüssen zeigen. Dafür den Haken **Interne Summe verwenden (Haus unten)** setzen; das Feld für den Datenpunkt verschwindet, stattdessen erscheint die Mehrfachauswahl **Slots, die in die Summe eingehen** mit den Einträgen **Leistung 1** bis **Leistung 6**.
 
 <img alt="Dialog Haus unten mit eingeschalteter interner Summe und der Mehrfachauswahl der Flächen" src="../Pictures/cardPower/cardpower-04-haus-unten.png" width="100%"/>
 
-Die ausgewählten Flächen werden **addiert**, die übrigen zählen als null.
-
-> ⚠️ **Die deutsche Beschriftung sagt das Gegenteil.** Dort steht *Slots, die negativ in die Summe gehen* — tatsächlich gehen die ausgewählten Flächen **unverändert, also positiv** in die Summe ein, und alle nicht ausgewählten mit null. Negiert wird nichts. Die englische Fassung (*Slots that contribute to the sum*) beschreibt es richtig. Beim Einrichten also: **die Flächen auswählen, die zur Summe beitragen sollen.**
+Die ausgewählten Flächen werden **addiert**, die übrigen zählen als null. Negiert wird nichts: Die Auswahl entscheidet allein darüber, welche Flächen überhaupt in die Summe eingehen.
 
 > **Leere Auswahl bedeutet „alle sechs".** Setzt man den Haken und wählt nichts aus, summiert der Adapter **alle** Flächen. Der Haken liefert also sofort ein Ergebnis, das man so nicht ausgewählt hat.
 
@@ -176,7 +174,6 @@ Soll eine Seite, die heute noch aus einem Skript kommt, hier verwaltet werden, f
 - **Ein Messwert außerhalb der Farbskala dehnt sie**, statt am Rand stehen zu bleiben — die Farben verschieben sich dann für alle anderen Werte mit.
 - **„maximale Leistung" steht zweimal im Dialog** — einmal für die Farbe, einmal für die Geschwindigkeit. Nur die Abschnittsüberschrift unterscheidet sie.
 - **Die Hauswerte kürzen nicht und rechnen nicht um.** Ein zu langer Wert läuft dort über, und eine falsche Einheit fällt nicht auf, weil niemand sie prüft.
-- **„Slots, die negativ in die Summe gehen" ist falsch beschriftet.** Ausgewählt werden die Flächen, die **beitragen**.
 - **Haken für die interne Summe ohne Auswahl summiert alle sechs Flächen.**
 - **Die interne Summe addiert nackte Zahlen** — gemischte Einheiten und *Flussrichtung umkehren* bleiben dabei unberücksichtigt.
 - **Ohne Datenpunkt bleibt eine Fläche am Panel leer**, ohne Hinweis im Admin.

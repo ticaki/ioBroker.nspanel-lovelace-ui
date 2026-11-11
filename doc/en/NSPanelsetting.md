@@ -31,7 +31,7 @@ Above the form sits the red link **Help for adapter installation** (opens the wi
 
 | Field | Meaning |
 |---|---|
-| **IP of the ioBroker** | Only with the built-in MQTT server: the address under which the panel reaches ioBroker. Has to be a complete IPv4 address. |
+| **IP of the ioBroker** | Only with the built-in MQTT server: the address under which the panel reaches ioBroker. A select list with the addresses of the ioBroker host; while nothing is selected the field shows the placeholder *Select an IP address*. If the admin finds no addresses, it becomes a text field. Has to be a complete IPv4 address. |
 | **IP of the panel** | The panel's fixed IP; checked for a complete IPv4 format. |
 | **Panel name (unique)** | Name of the panel; it appears as the name of the states and of the configuration script. |
 | **Mqtt topic (unique)** | Topic of the panel. At least four characters, starts with a letter, then letters, digits, `_` and `/`. |

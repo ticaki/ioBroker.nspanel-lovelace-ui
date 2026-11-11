@@ -31,7 +31,7 @@ Der Tab ist sichtbar, sobald die MQTT-Angaben vollständig sind: ein Broker (ein
 
 | Feld | Bedeutung |
 |---|---|
-| **IP von ioBroker** | Nur beim eingebauten MQTT-Server: die Adresse, unter der das Panel den ioBroker erreicht. Muss eine vollständige IPv4-Adresse sein. |
+| **IP von ioBroker** | Nur beim eingebauten MQTT-Server: die Adresse, unter der das Panel den ioBroker erreicht. Eine Auswahlliste mit den Adressen des ioBroker-Hosts; solange nichts gewählt ist, steht im Feld der Platzhalter *IP-Adresse auswählen*. Findet der Admin keine Adressen, wird daraus ein Eingabefeld. Muss eine vollständige IPv4-Adresse sein. |
 | **IP des Panel** | Feste IP des Panels; wird auf vollständiges IPv4-Format geprüft. |
 | **Panelname (eindeutig)** | Name des Panels; er taucht als Name der Datenpunkte und des Konfigurationsskripts auf. |
 | **MQTT-Topic (eindeutig)** | Topic des Panels. Mindestens vier Zeichen, beginnt mit einem Buchstaben, danach Buchstaben, Ziffern, `_` und `/`. |

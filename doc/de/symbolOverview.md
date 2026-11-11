@@ -6,8 +6,8 @@ Eine Nachschlagehilfe: Hier stehen alle Symbole, die der Adapter mitbringt, mit 
 
 ## Suchen und übernehmen
 
-- **Suchfeld einblenden:** `Strg + F` (Windows/Linux) beziehungsweise `Cmd + F` (Mac). Das Feld filtert die Liste nach einem Namensteil, Groß- und Kleinschreibung spielen keine Rolle. Das **X** im Feld setzt den Filter zurück.
-- **Name kopieren:** Ein Klick auf ein Symbol legt **den Namen** in die Zwischenablage (nicht das Bild); eine kurze Meldung bestätigt es. Von dort lässt er sich in jedes Symbolfeld einfügen.
+- **Suchfeld einblenden:** `Strg + F` (Windows/Linux) beziehungsweise `Cmd + F` (Mac). Über der Liste steht derselbe Hinweis: *Mit Strg+F (Windows/Linux) oder Cmd+F (Mac) nach Symbolen filtern*. Das Feld heißt **Symbole filtern** und filtert die Liste nach einem Namensteil, Groß- und Kleinschreibung spielen keine Rolle. Das **X** im Feld leert den Filter und blendet das Feld wieder aus.
+- **Name kopieren:** Ein Klick auf ein Symbol legt **den Namen** in die Zwischenablage (nicht das Bild). Der Tooltip am Symbol lautet `Zum Kopieren klicken: <Name>`, nach dem Klick bestätigt kurz die Meldung `<Name> kopiert`. Von dort lässt sich der Name in jedes Symbolfeld einfügen.
 - Die Übersicht ist reine Anzeige — ein Klick verändert nichts an der Konfiguration.
 
 ## Hinweise

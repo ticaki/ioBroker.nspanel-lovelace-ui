@@ -36,7 +36,7 @@ Below the page list the **Documentation** link leads straight to this page.
 
 There is no card type `cardTrash` on the panel. From the entry the adapter builds an ordinary list page based on the template `entities.waste-calendar`:
 
-| Setting **Layout** | Card on the panel | Lines |
+| Setting **Number of trash entries on the page** | Card on the panel | Lines |
 |---|---|---|
 | *4 trash entries* | `cardEntities` | 4 |
 | *6 trash entries* | `cardSchedule` | 6 |
@@ -46,7 +46,8 @@ Each line becomes a page item with the role `text.list` that reads icon, colour,
 From this follows:
 
 - The number of date lines is tied to the card type and cannot be chosen freely.
-- The **Layout** setting also changes the way the date is written (see [section 8](#8-what-appears-on-the-panel)).
+- The setting **Number of trash entries on the page** also changes the way the date is written (see [section 8](#8-what-appears-on-the-panel)).
+- The number is clamped to **1 to 6** before the page is built. An entry from an older admin version that stored no number at all or a nonsensical one gets six lines.
 - A trash page can only be created **in the admin**. The configuration script does not know the page type; a trash page is a hand-built list page with states of its own there. Such a script page can **not** be converted into the page type **Trash** through the [Migration](Migration) either — the admin cannot represent the template of a page, and the migration reports *"A field of the page cannot be represented in the admin"* for it.
 
 ## 3. The editor at a glance
@@ -59,13 +60,11 @@ The editor is a form, from top to bottom:
 |---|---|
 | **Unique ID** | Page name; read-only, fixed once the page exists. |
 | **Headline** | Header line on the panel; empty → `Trash`. |
-| **Layout** | Number of date lines: *4 trash entries* or *6 trash entries*. |
+| **Number of trash entries on the page** | Number of date lines: *4 trash entries* or *6 trash entries*. It also decides the card type and the way the date is written. |
 | **Import type** | *Import via iCal Adapter State* or *Import via .ics file*. |
 | **JSON State** or **.ics file including path** | The source of the dates, depending on the import type (see [section 4](#4-where-the-dates-come-from)). |
 | **Search events** / **Upload file** | Reads the source and lists the event names occurring in it. |
 | Six blocks **Color/Icon/Trash type/Optional label** | One block per waste type (see [section 6](#6-the-six-waste-types)). |
-
-> The label **Layout** is misleading — what is meant is the **number** of dates. The proper text only sits in the tooltip (*Number of trash entries on the page*) and is therefore practically invisible. The word "Layout" is also hard-coded in English and is not translated in any language.
 
 ## 4. Where the dates come from
 
@@ -95,15 +94,15 @@ For the page to show anything, the adapter has to know **which event name belong
 
 1. On the state way press the button **Search events**: the editor reads the state and collects the values of `event` occurring in it, each one once. On the file way the same list appears **already at the upload**; there is no search button there.
 2. The names appear as a list of checkboxes — heading **Found events, please select** (state way) or **Select events** (file way). **At most six** can be ticked; after that the remaining lines are locked.
-3. **Apply selection** enters the ticked names into the fields *Trash type 1* to *6* — in the order in which they were ticked, not in the order of the list.
+3. **Apply selection** enters the ticked names into the fields *Trash type 1* to *6* — in the order in which they were ticked, not in the order of the list. All six blocks are filled anew in the process (see below).
 
 ![The events found, with checkboxes and the "Apply selection" button](../Pictures/pageTrash/trash-04-ereignisliste.png)
 
-> ⚠️ **"Apply selection" overwrites all six trash type fields.** Every field without a ticked name is **cleared**. Colours, icons and the optional labels stay untouched. If you have already curated the waste types by hand, it is better to add entries by hand.
+> ⚠️ **"Apply selection" writes the six blocks from scratch.** The button rebuilds the waste types of the page from the selection instead of adding to them - so everything that does not come from the selection is cleared. Every slot with a ticked name gets the trash type and the standard icon `trash-can-outline`; every other slot loses trash type and icon. The **optional label is cleared in all six blocks**, the colours you set **stay**. Icons and optional labels picked by hand therefore have to be entered again; if you have already curated your waste types, it is better to add entries by hand.
 
 > After applying, the event list is gone (it is reset together with the selection). For a second round you have to search or upload again. The same happens when the **Import type** is changed.
 
-> The error messages of this search are hard-coded notice windows and **partly German, partly English** — regardless of the language of the admin: *"Bitte wählen Sie zuerst einen State aus"*, *"State enthält keine Daten"*, *"State enthält kein Array"*, but then *"Upload failed: …"* and *"Failed to read file"*.
+> Errors of the search and of the upload appear in the language of the admin as a coloured **status line in the form** — below the button **Search events** or in the area of the file picker —, with a cross to close it: *"Please select a state first."*, *"The state contains no data."*, *"The state does not contain an array."*, *"Reading the state failed: …"*, *"Upload failed: …"*, *"Upload failed: the file is empty."* and *"The file could not be read."* A successful search clears the line.
 
 ## 6. The six waste types
 
@@ -147,7 +146,7 @@ The date is shown in stages:
 | in 2 to 7 days | long weekday (`Donnerstag`) | short weekday (`Do`) |
 | later | `15.11.2026` | `15.11.26` |
 
-> The words for today and tomorrow are hard-coded **in English** (`today`, `tomorrow`), while weekday and date are fixed to **German** (`de-DE`). On a German panel it therefore reads "today" above a date `15.11.2026`, on an English one the weekdays are German. The language of the adapter is not evaluated here.
+> The words for today and tomorrow **follow the language of the adapter** and exist in all eleven languages (English *today* and *tomorrow*, German *Heute* and *morgen*, Spanish *hoy* and *mañana* …). Weekday and date, on the other hand, are fixed to **German** (`de-DE`) and do not follow the language setting: on an English panel "today" stands above the weekday `Do` and the date `15.11.2026`.
 
 Internally the adapter keeps up to six dates ready; with the setting *4 trash entries* the panel shows the first four.
 
@@ -178,15 +177,15 @@ The templates `text.trash.next` and `text.trash.afterNext` show the next and the
 ## Pitfalls
 
 - **Nothing works without a running instance.** All fields are locked, search and upload do not run. Unlike other page types, the editor gives no hint about the reason here.
-- **"today" and "tomorrow" stay English, weekday and date stay German.** Both are hard-coded and do not follow the language of the adapter.
+- **Weekday and date stay German.** Today and tomorrow appear translated, while the weekday (`Donnerstag`, `Do`) and the date (`15.11.2026`) are hard-wired to `de-DE` and do not follow the language of the adapter.
 - **No trash type entered = permanently empty page.** Without a search term no date matches; neither the editor nor the log points it out.
 - **Fewer matching dates than lines fills the log.** Every line reads its entry by index; if it is missing, the adapter reports *"Read for dp: ///pageTrash_… is invalid! … Error: TypeError …"* for each missing line. The affected line shows nothing meaningful. To avoid that, pick *4 trash entries* and keep at least four trash types curated.
-- **"Apply selection" clears whatever is not ticked** — in all six trash type fields, the hand-filled ones included. The transfer follows the order of clicking.
+- **"Apply selection" fills the page anew.** Occupied slots get the trash type and the standard icon, the remaining ones are cleared, and the optional labels disappear in all six blocks; only the colours stay. The transfer follows the order of clicking.
 - **All six trash types take effect, even with four date lines.** Blocks 5 and 6 are not ineffective; a match there takes one of the four places.
 - **The object picker filters hard on `ical.`.** Any other source (script, `0_userdata`) can only be reached by typing the ID.
 - **The state has to deliver `_date` and `event`.** With `_date` missing — because the state only knows `date`, for instance — the filter on past dates does not catch and the panel reads `01.01.1970`.
 - **There is no sorting on the state way.** If the ical adapter delivers the table unsorted, the lines appear in that order on the panel too. Only the file way sorts by date.
 - **The field ".ics file including path" means the file area of the instance**, not the file system of the server. A file of the same name is overwritten on upload.
 - **Up to six hours of delay.** Neither a change in the calendar nor a newly uploaded file takes effect immediately; the dates are only fetched at the start, on the hours 0, 6, 12 and 18 and daily at 00:01.
-- **Messages in two languages.** The notice windows of the event search are partly German, partly English hard-coded; the log messages are English.
+- **The messages stand in the form, not in a window.** They appear translated, but they are easy to miss and gone once closed; the messages in the ioBroker log stay English.
 - **An entry from an older admin version without the list of waste types arrives empty.** The adapter then fills six empty blocks with the default colours — there is no conversion of old single fields, the waste types have to be entered again.
