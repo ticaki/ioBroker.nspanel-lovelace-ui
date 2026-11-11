@@ -2546,10 +2546,6 @@ export class Panel extends BaseClass {
                 }
                 break;
             }
-            case 'ack': {
-                // TFT 6.1.0+: the display acknowledges every message with its crc - not used yet
-                break;
-            }
             case 'button1': {
                 await this.onDetachButtonEvent('left');
                 break;
