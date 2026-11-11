@@ -63,6 +63,7 @@ var import_page_targets = require("../configuration/page-targets");
 var import_page_states = require("../configuration/page-states");
 var import_default_pages = require("../const/default-pages");
 var import_no_script = require("../configuration/no-script");
+var import_berry_driver = require("../const/berry-driver");
 var import_display_diagnosis = require("./display-diagnosis");
 const DefaultOptions = {
   format: {
@@ -1199,7 +1200,7 @@ class Panel extends import_library.BaseClass {
         } else if (this.handleDisplayDiagnosisAnswer(msg)) {
           return;
         } else if ("nlui_driver_version" in msg) {
-          this.info.nspanel.berryDriverVersion = parseInt(msg.nlui_driver_version);
+          this.info.nspanel.berryDriverVersion = (0, import_berry_driver.parseDriverVersion)(msg.nlui_driver_version);
           await this.library.writedp(
             `panels.${this.name}.info.nspanel.berryDriverVersion`,
             this.info.nspanel.berryDriverVersion,
@@ -1208,7 +1209,7 @@ class Panel extends import_library.BaseClass {
           if (this.unload || this.adapter.unload) {
             return;
           }
-          if (msg.nlui_driver_version === -1) {
+          if ((0, import_berry_driver.isEmulatorDriverVersion)(this.info.nspanel.berryDriverVersion)) {
             return;
           }
         }
@@ -1766,7 +1767,7 @@ class Panel extends import_library.BaseClass {
       this.displayOfflineSinceTs = 0;
       return;
     }
-    if (this.info.nspanel.berryDriverVersion === -1) {
+    if ((0, import_berry_driver.isEmulatorDriverVersion)(this.info.nspanel.berryDriverVersion)) {
       return;
     }
     if (this.displayOfflineSinceTs === 0) {

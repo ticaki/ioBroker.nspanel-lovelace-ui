@@ -158,6 +158,7 @@
     "auto_layout_place_new_hint": "Posiziona solo i nodi senza posizione salvata accanto alla pagina che vi conduce - tutti gli altri nodi restano dove sono",
     "bass": "Basso",
     "berryEmulator": "Emulatore - nessun driver Berry",
+    "berryEmulatorShort": "Emulatore",
     "berryInstallSendTo": "Installa driver di bacche",
     "berryTool": "Installa driver di bacche",
     "berryUpdate": "BERRY UPDATE",

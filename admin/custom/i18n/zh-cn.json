@@ -158,6 +158,7 @@
     "auto_layout_place_new_hint": "只将没有已保存位置的节点放在指向它们的页面旁边，其他节点保持不动",
     "bass": "低音",
     "berryEmulator": "模拟器 - 无 Berry 驱动",
+    "berryEmulatorShort": "模拟器",
     "berryInstallSendTo": "安装浆果驱动程序",
     "berryTool": "安装浆果驱动程序",
     "berryUpdate": "BERRY UPDATE",

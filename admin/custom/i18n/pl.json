@@ -158,6 +158,7 @@
     "auto_layout_place_new_hint": "Umieszcza tylko węzły bez zapisanej pozycji obok strony, która do nich prowadzi – pozostałe węzły zostają na miejscu",
     "bass": "Bas",
     "berryEmulator": "Emulator - brak sterownika Berry",
+    "berryEmulatorShort": "Emulator",
     "berryInstallSendTo": "Zainstaluj sterownik Berry",
     "berryTool": "Zainstaluj sterownik Berry",
     "berryUpdate": "BERRY UPDATE",

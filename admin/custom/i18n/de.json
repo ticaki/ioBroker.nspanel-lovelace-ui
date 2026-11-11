@@ -163,6 +163,7 @@
     "auto_layout_place_new_hint": "Platziert nur Knoten ohne gespeicherte Position neben der Seite, die zu ihnen führt – alle anderen Knoten bleiben, wo sie sind",
     "bass": "Bass",
     "berryEmulator": "Emulator - kein Berry-Treiber",
+    "berryEmulatorShort": "Emulator",
     "berryInstallSendTo": "Berry Treiber installieren",
     "berryTool": "Berry Treiber installieren",
     "berryUpdate": "BERRY UPDATE",

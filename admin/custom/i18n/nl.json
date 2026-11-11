@@ -158,6 +158,7 @@
     "auto_layout_place_new_hint": "Plaatst alleen knooppunten zonder opgeslagen positie naast de pagina die ernaar leidt - alle andere knooppunten blijven staan",
     "bass": "Bas",
     "berryEmulator": "Emulator - geen Berry-driver",
+    "berryEmulatorShort": "Emulator",
     "berryInstallSendTo": "Installeer Berry Driver",
     "berryTool": "Installeer Berry Driver",
     "berryUpdate": "BERRY UPDATE",

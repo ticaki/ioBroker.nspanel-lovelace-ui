@@ -158,6 +158,7 @@
     "auto_layout_place_new_hint": "Размещает только узлы без сохранённой позиции рядом со страницей, которая к ним ведёт, – остальные узлы остаются на месте",
     "bass": "Басс",
     "berryEmulator": "Эмулятор - без драйвера Berry",
+    "berryEmulatorShort": "Эмулятор",
     "berryInstallSendTo": "Установите ягодный драйвер",
     "berryTool": "Установите ягодный драйвер",
     "berryUpdate": "BERRY UPDATE",

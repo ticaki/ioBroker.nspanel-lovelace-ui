@@ -5,6 +5,7 @@ import type { callbackMessageType } from '../classes/mqtt';
 import type { PanelChannel } from '../classes/panel-channel';
 import type { Panel } from './panel';
 import { crcPrefix, panelFrameCrc } from '../tools/crc16';
+import { driverGeneration } from '../const/berry-driver';
 
 type QueuedMessage = {
     payload: string;
@@ -428,14 +429,19 @@ export class PanelSend extends BaseClass {
 
     /**
      * A Berry driver of generation {@link BERRY_DRIVER_CRC_PREFIX} or newer takes the crc from the adapter:
-     * `^XXXX^<payload>`. A web panel gets the payload as it is.
+     * `^XXXX^<payload>`. The emulator counts with its generation (-12 yes, -1 no).
+     * A web panel gets the payload as it is.
      *
      * @param msg the queued message
      * @returns what goes to the CustomSend topic
      */
     private withCrcPrefix(msg: QueuedMessage): string {
         const panel = this.panel;
-        if (!panel || panel.isVirtual || !(panel.info?.nspanel?.berryDriverVersion >= BERRY_DRIVER_CRC_PREFIX)) {
+        if (
+            !panel ||
+            panel.isVirtual ||
+            !(driverGeneration(panel.info?.nspanel?.berryDriverVersion) >= BERRY_DRIVER_CRC_PREFIX)
+        ) {
             return msg.payload;
         }
         return `${crcPrefix(msg.crc)}${msg.payload}`;

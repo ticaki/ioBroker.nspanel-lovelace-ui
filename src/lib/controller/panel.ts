@@ -49,6 +49,7 @@ import { collectNavigationTargets } from '../configuration/page-targets';
 import { collectPageStates, emptyStateNode, mergeStateInfo, type PageStateNode } from '../configuration/page-states';
 import { mainPageName } from '../const/default-pages';
 import { isNoScriptPanel } from '../configuration/no-script';
+import { isEmulatorDriverVersion, parseDriverVersion } from '../const/berry-driver';
 import type { NSPanel } from '../types/NSPanel';
 import {
     buildDisplayDiagnosisMessage,
@@ -1398,7 +1399,7 @@ export class Panel extends BaseClass {
                 } else if (this.handleDisplayDiagnosisAnswer(msg)) {
                     return;
                 } else if ('nlui_driver_version' in msg) {
-                    this.info.nspanel.berryDriverVersion = parseInt(msg.nlui_driver_version);
+                    this.info.nspanel.berryDriverVersion = parseDriverVersion(msg.nlui_driver_version);
                     await this.library.writedp(
                         `panels.${this.name}.info.nspanel.berryDriverVersion`,
                         this.info.nspanel.berryDriverVersion,
@@ -1407,7 +1408,7 @@ export class Panel extends BaseClass {
                     if (this.unload || this.adapter.unload) {
                         return;
                     }
-                    if (msg.nlui_driver_version === -1) {
+                    if (isEmulatorDriverVersion(this.info.nspanel.berryDriverVersion)) {
                         return;
                     }
                     /*this.adapter.setTimeout(async () => {
@@ -2052,7 +2053,7 @@ export class Panel extends BaseClass {
             this.displayOfflineSinceTs = 0;
             return;
         }
-        if (this.info.nspanel.berryDriverVersion === -1) {
+        if (isEmulatorDriverVersion(this.info.nspanel.berryDriverVersion)) {
             // emulator - no real display behind it
             return;
         }

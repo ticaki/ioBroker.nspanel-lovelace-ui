@@ -3,14 +3,16 @@
 # Sonoff NSPanel Tasmota driver v0.47 | code by blakadder and s-hadinger
 #
 # Emulator driver: Tasmota on an ESP32 with the Nextion editor/simulator on the serial port
-# instead of a real NSPanel. GetDriverVersion answers -1 (= emulator), there is no flashing.
+# instead of a real NSPanel. GetDriverVersion answers a negative number (= emulator), its absolute
+# value is the driver generation with the same features: -12 = generation 12. The old emulator
+# answered -1. There is no flashing.
 #
 # Changes taken over from driver generation 12 (TFT 6.1.0, display ack with crc):
 #  - crc16: table-driven CRC-16 Modbus (constant table, ~5x faster than bitwise)
 #  - CustomSend: optional precomputed CRC field '^XXXX^' (4 hex digits) at the start
 #    of the payload; the field is stripped and XXXX is used as CRC without computing it.
-#    The adapter sends the field only to driver 12+, the emulator (-1) normally gets
-#    plain payloads - the driver accepts both.
+#    The adapter sends the field to driver generation 12+, i.e. also to this emulator (-12);
+#    the old emulator (-1) gets plain payloads - the driver accepts both.
 #
 # Changes taken over from the generations 10 and 11:
 #  - every_100ms: every read is split into frames (55 BB ...), not only when it starts with 55 BB
@@ -246,7 +248,7 @@ var nextion = Nextion()
 
 def get_current_version(cmd, idx, payload, payload_json)
     import string
-    var version_of_this_script = -1
+    var version_of_this_script = -12
     var jm = string.format("{\"nlui_driver_version\":\"%s\"}", version_of_this_script)
     tasmota.publish_result(jm, "RESULT")
 end

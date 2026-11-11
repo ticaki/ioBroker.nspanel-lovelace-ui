@@ -52,6 +52,7 @@ var import_test = require("./lib/const/test");
 var import_function_and_const = require("./lib/types/function-and-const");
 var import_node_ical = __toESM(require("node-ical"));
 var import_tools = require("./lib/const/tools");
+var import_berry_driver = require("./lib/const/berry-driver");
 const NS_PANEL_INIT_SESSION_TTL = 6e5;
 class NspanelLovelaceUi extends utils.Adapter {
   library;
@@ -1941,12 +1942,15 @@ class NspanelLovelaceUi extends utils.Adapter {
                 }
                 nv = nv ? `v${nv}` : "";
               }
-              const bvRaw = (_w = (_v = a.info) == null ? void 0 : _v.nspanel) == null ? void 0 : _w.berryDriverVersion;
-              const bv = typeof bvRaw === "number" && Number.isFinite(bvRaw) ? bvRaw : 0;
-              const noBerry = a.isVirtual || bv === -1;
+              const bv = (0, import_berry_driver.parseDriverVersion)((_w = (_v = a.info) == null ? void 0 : _v.nspanel) == null ? void 0 : _w.berryDriverVersion);
+              const isEmulator = (0, import_berry_driver.isEmulatorDriverVersion)(bv);
+              const noBerry = a.isVirtual || isEmulator;
               let check_berry = false;
               let bvText = "???";
-              if (noBerry) {
+              if (isEmulator) {
+                const gen = (0, import_berry_driver.driverGeneration)(bv);
+                bvText = gen > 1 ? `${gen}` : "";
+              } else if (noBerry) {
                 bvText = "---";
               } else if (bv > 0) {
                 bvText = `${bv}`;
@@ -1974,7 +1978,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                 _tasmotaVersion: tv ? tv : "???",
                 _berryVersion: bvText,
                 _noBerry: noBerry,
-                _isEmulator: bv === -1,
+                _isEmulator: isEmulator,
                 _ScriptVersion: noScript ? "---" : sv ? `v${sv}` : "???",
                 _noScript: noScript,
                 _nsPanelModel: a.isVirtual ? a.info.nspanel.model : ((_E = (_D = a.info) == null ? void 0 : _D.nspanel) == null ? void 0 : _E.model) ? a.info.nspanel.model == "eu" ? "" : a.info.nspanel.model : ""
@@ -2512,7 +2516,7 @@ class NspanelLovelaceUi extends utils.Adapter {
         );
       } catch {
       }
-      session.isEmulator = (driver == null ? void 0 : driver.nlui_driver_version) === "-1";
+      session.isEmulator = (0, import_berry_driver.isEmulatorDriverVersion)(driver == null ? void 0 : driver.nlui_driver_version);
       session.ts = Date.now();
       this.answerMessage(obj, { result: "sendToNSPanelInitStep2Done", step: 2 });
     } catch (e) {

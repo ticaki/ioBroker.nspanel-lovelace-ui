@@ -158,6 +158,7 @@
     "auto_layout_place_new_hint": "Place uniquement les nœuds sans position enregistrée à côté de la page qui y mène - tous les autres nœuds restent en place",
     "bass": "Basse",
     "berryEmulator": "Émulateur - pas de pilote Berry",
+    "berryEmulatorShort": "Émulateur",
     "berryInstallSendTo": "Installer Berry Driver",
     "berryTool": "Installer Berry Driver",
     "berryUpdate": "BERRY UPDATE",

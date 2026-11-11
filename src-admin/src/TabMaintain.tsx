@@ -507,6 +507,18 @@ class MaintainPanel extends ConfigGeneric<ConfigGenericProps & MaintainPanelProp
     }
 
     /**
+     * Text of the berry field for an emulator: "Emulator (12)" for an emulator driver of generation 12,
+     * the old emulator (-1) reports no generation.
+     *
+     * @param panel row of the maintain table
+     */
+    private getEmulatorBerryText(panel: MaintainPanelInfo): string {
+        return panel._berryVersion
+            ? `${this.getText('berryEmulatorShort')} (${panel._berryVersion})`
+            : this.getText('berryEmulator');
+    }
+
+    /**
      * Berry driver install needs a reachable Tasmota (valid IP), the display itself may be offline -
      * a missing or broken driver is exactly what keeps it offline.
      *
@@ -928,7 +940,7 @@ class MaintainPanel extends ConfigGeneric<ConfigGenericProps & MaintainPanelProp
                                                 label={this.getText('vBerry')}
                                                 value={
                                                     panel._isEmulator
-                                                        ? this.getText('berryEmulator')
+                                                        ? this.getEmulatorBerryText(panel)
                                                         : (panel._berryVersion ?? '???')
                                                 }
                                                 slotProps={{ input: { readOnly: true } }}

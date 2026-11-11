@@ -158,6 +158,7 @@
     "auto_layout_place_new_hint": "Розміщує лише вузли без збереженої позиції поруч зі сторінкою, що до них веде, – решта вузлів лишається на місці",
     "bass": "Баса",
     "berryEmulator": "Емулятор - без драйвера Berry",
+    "berryEmulatorShort": "Емулятор",
     "berryInstallSendTo": "Встановіть драйвер Berry",
     "berryTool": "Встановіть драйвер Berry",
     "berryUpdate": "BERRY UPDATE",

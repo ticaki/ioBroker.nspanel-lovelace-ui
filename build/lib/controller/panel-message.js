@@ -26,6 +26,7 @@ module.exports = __toCommonJS(panel_message_exports);
 var import_definition = require("../const/definition");
 var import_library = require("./library");
 var import_crc16 = require("../tools/crc16");
+var import_berry_driver = require("../const/berry-driver");
 const STALE_DONE_WINDOW = 1e3;
 const DONE_NEXT_DELAY = 250;
 const DISPLAY_ACK_NEXT_DELAY = 0;
@@ -369,7 +370,8 @@ class PanelSend extends import_library.BaseClass {
   };
   /**
    * A Berry driver of generation {@link BERRY_DRIVER_CRC_PREFIX} or newer takes the crc from the adapter:
-   * `^XXXX^<payload>`. A web panel gets the payload as it is.
+   * `^XXXX^<payload>`. The emulator counts with its generation (-12 yes, -1 no).
+   * A web panel gets the payload as it is.
    *
    * @param msg the queued message
    * @returns what goes to the CustomSend topic
@@ -377,7 +379,7 @@ class PanelSend extends import_library.BaseClass {
   withCrcPrefix(msg) {
     var _a, _b;
     const panel = this.panel;
-    if (!panel || panel.isVirtual || !(((_b = (_a = panel.info) == null ? void 0 : _a.nspanel) == null ? void 0 : _b.berryDriverVersion) >= BERRY_DRIVER_CRC_PREFIX)) {
+    if (!panel || panel.isVirtual || !((0, import_berry_driver.driverGeneration)((_b = (_a = panel.info) == null ? void 0 : _a.nspanel) == null ? void 0 : _b.berryDriverVersion) >= BERRY_DRIVER_CRC_PREFIX)) {
       return msg.payload;
     }
     return `${(0, import_crc16.crcPrefix)(msg.crc)}${msg.payload}`;

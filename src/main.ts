@@ -75,6 +75,7 @@ import type { oldQRType } from './lib/types/types';
 import iCal from 'node-ical';
 import type { NSPanel } from './lib/types/NSPanel';
 import { getTasmotaVersionFromJson } from './lib/const/tools';
+import { driverGeneration, isEmulatorDriverVersion, parseDriverVersion } from './lib/const/berry-driver';
 
 /** Zwischenstand einer laufenden Panel-Einrichtung, siehe `nsPanelInitStep1` */
 interface NsPanelInitSession {
@@ -2279,13 +2280,18 @@ class NspanelLovelaceUi extends utils.Adapter {
                                 }
                                 nv = nv ? `v${nv}` : '';
                             }
-                            // Berry driver: integer generation from nlui_driver_version, -1 = emulator, 0 = unknown
-                            const bvRaw = a.info?.nspanel?.berryDriverVersion;
-                            const bv = typeof bvRaw === 'number' && Number.isFinite(bvRaw) ? bvRaw : 0;
-                            const noBerry = a.isVirtual || bv === -1;
+                            // Berry driver: integer generation from nlui_driver_version,
+                            // negative = emulator (absolute value = generation, -1 = old emulator), 0 = unknown
+                            const bv = parseDriverVersion(a.info?.nspanel?.berryDriverVersion);
+                            const isEmulator = isEmulatorDriverVersion(bv);
+                            const noBerry = a.isVirtual || isEmulator;
                             let check_berry = false;
                             let bvText = '???';
-                            if (noBerry) {
+                            if (isEmulator) {
+                                // generation of the emulator driver, empty for the old emulator (-1); no update hint
+                                const gen = driverGeneration(bv);
+                                bvText = gen > 1 ? `${gen}` : '';
+                            } else if (noBerry) {
                                 bvText = '---';
                             } else if (bv > 0) {
                                 bvText = `${bv}`;
@@ -2318,7 +2324,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                                 _tasmotaVersion: tv ? tv : '???',
                                 _berryVersion: bvText,
                                 _noBerry: noBerry,
-                                _isEmulator: bv === -1,
+                                _isEmulator: isEmulator,
                                 _ScriptVersion: noScript ? '---' : sv ? `v${sv}` : '???',
                                 _noScript: noScript,
                                 _nsPanelModel: a.isVirtual
@@ -2927,7 +2933,7 @@ class NspanelLovelaceUi extends utils.Adapter {
             } catch {
                 //ignore
             }
-            session.isEmulator = driver?.nlui_driver_version === '-1';
+            session.isEmulator = isEmulatorDriverVersion(driver?.nlui_driver_version);
             session.ts = Date.now();
 
             this.answerMessage(obj, { result: 'sendToNSPanelInitStep2Done', step: 2 });

@@ -158,6 +158,7 @@
     "auto_layout_place_new_hint": "Posiciona apenas os nós sem posição guardada ao lado da página que leva a eles - todos os outros nós ficam onde estão",
     "bass": "Baixo",
     "berryEmulator": "Emulador - sem driver Berry",
+    "berryEmulatorShort": "Emulador",
     "berryInstallSendTo": "Instale o driver da baga",
     "berryTool": "Instale o driver da baga",
     "berryUpdate": "BERRY UPDATE",

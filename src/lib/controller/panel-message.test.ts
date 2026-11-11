@@ -481,8 +481,16 @@ describe('lib/controller/panel-message - PanelSend crc prefix for the Berry driv
         await send.delete();
     });
 
-    it('driver 11, an unknown driver and a web panel get the payload as it is', async () => {
-        for (const panel of [panelWith(11), panelWith(-1), panelWith(0), panelWith(12, true)]) {
+    it('the emulator of generation 12 (-12) gets ^XXXX^ as well', async () => {
+        const { send, published } = setup(panelWith(-12));
+        send.addMessage('time~12:00', false);
+        await clock.tickAsync(20);
+        expect(published).to.deep.equal([`${crcPrefix(panelFrameCrc('time~12:00'))}time~12:00`]);
+        await send.delete();
+    });
+
+    it('driver 11, the old emulator (-1), an unknown driver and a web panel get the payload as it is', async () => {
+        for (const panel of [panelWith(11), panelWith(-1), panelWith(-11), panelWith(0), panelWith(12, true)]) {
             const { send, published } = setup(panel);
             send.addMessage('time~12:00', false);
             await clock.tickAsync(20);
