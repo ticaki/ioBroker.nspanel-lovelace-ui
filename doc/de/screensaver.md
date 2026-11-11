@@ -133,6 +133,8 @@ Dritte Möglichkeit *Farbe aus Datenpunkt*: ein State, dessen Wert die Farbe ist
 - Ein Tipp öffnet **kein** Popup und bewegt den Rollladen nie. Auf einem Indikator läuft nur die eingestellte **Aktion beim Drücken**.
 - Unter den Feldern steht dazu der Hinweis *Rollladen: Ohne eigenes Symbol zeigt das Symbol die Position (5 Symbole von zu bis offen); unten und links steht die Position in %. Ein Tipp auf einen Indikator führt nur die gewählte Aktion aus und bewegt den Rollladen nie.* – mit eigenen Symbolen endet er stattdessen mit *Ohne Symbole zeigt das Symbol die Position.*
 
+![Ein Item mit der Position eines Rollladens](../Pictures/screensaverAdmin/admin-27-item-rollladen.png)
+
 **Text statt Wert** (boolean): Statt `true`/`false` zeigt das Panel den **Text bei wahr** bzw. **Text bei falsch**. In jedes Feld kann auch die **ID eines Datenpunkts** – dann wird dessen Wert gezeigt. Ein leeres Feld lässt den Rohwert stehen.
 
 **Sichtbarkeit**: Dieser Block steht unter den übrigen Feldern, sobald der Datenpunkt bekannt ist (bei einem Template, sobald Vorlage und – falls nötig – Objekt eingetragen sind). Auch er braucht **keinen Expertenmodus**. Er hat zwei Felder:
@@ -489,6 +491,8 @@ Von oben nach unten:
 Die Reihenfolge der Items im Bereich **Indikatoren** bestimmt den Platz. Auf `eu` und `us-l` sind die Plätze 6 und 7 die Flächen links und rechts neben der Uhr. Mehr Items als Plätze blättert das Panel wie in den anderen Versionen durch – im Bereich **Unten** ebenso wie bei den Indikatoren (siehe [Fenster und Blättern](#7-mehr-items-als-plätze-fenster-und-blättern)).
 
 ![Der Editor mit der Version Kacheln](../Pictures/screensaverAdmin/admin-19-kacheln-editor.png)
+
+![Der Editor mit der Version Kacheln auf einem Panel `us-p`](../Pictures/screensaverAdmin/admin-28-kacheln-editor-us-p.png)
 
 ### Was die Plätze zeigen
 

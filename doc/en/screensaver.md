@@ -133,6 +133,8 @@ Third choice *color from a state*: a state whose value is the color – `#rrggbb
 - A tap opens **no** popup and never moves the blind. On an indicator only the configured **Action on press** runs.
 - Below the fields the note says *Blind: without an icon of its own the icon shows the position (5 icons from closed to open); bottom and left show the position in %. Tapping an indicator only does the chosen action, it never moves the blind.* – with icons of your own it ends with *Remove the icons to get the icon by position.* instead.
 
+![An item with the position of a blind](../Pictures/screensaverAdmin/admin-27-item-rollladen.png)
+
 **Text instead of the value** (boolean): Instead of `true`/`false` the panel shows the **Text while true** or **Text while false**. Each field may also hold the **id of a state** – then its value is shown. An empty field keeps the raw value.
 
 **Visibility**: This block stands below the other fields as soon as the state is known (with a template, as soon as the template and – if needed – the object are entered). It needs **no expert mode** either. It has two fields:
@@ -489,6 +491,8 @@ From top to bottom:
 The order of the items in the area **Indicators** decides the place. On `eu` and `us-l` the places 6 and 7 are the areas left and right of the clock. More items than places are paged through by the panel as in the other versions – in the area **Bottom** just as with the indicators (see [windows and paging](#7-more-items-than-places-windows-and-paging)).
 
 ![The editor with the version Tiles](../Pictures/screensaverAdmin/admin-19-kacheln-editor.png)
+
+![The editor with the version Tiles on a `us-p` panel](../Pictures/screensaverAdmin/admin-28-kacheln-editor-us-p.png)
 
 ### What the places show
 
