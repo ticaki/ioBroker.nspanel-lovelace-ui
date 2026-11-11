@@ -163,6 +163,7 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
 - (ticaki) screensaver: after the page is loaded the colors and the content are sent first, the time follows; with the TFT 6.1.0 the page takes its background and clock colors with the page change and is drawn only once, no black flash before the background color
 - (ticaki) screensaver advanced: with the TFT 6.1.0 it follows the colors of the color theme like the other screensavers
 - (ticaki) berry driver 12: the checksum of a message is computed about five times faster, and the adapter can hand it over ready-made - large messages reach the display about 0.2 s earlier
+- (ticaki) emulator berry (`tasmota/Emulator/autoexec.be`): brought up to driver 12 - splits every read into single messages, so several acknowledgements of the TFT 6.1.0 in one read no longer arrive as raw `nextion` data, takes the ready-made checksum, uses the faster checksum and keeps running after an error; the raw traffic is now in the log at level 4 instead of the console
 - (ticaki) icons: the media players of cardMedia as normal icons `alexa`, `mpd`, `sonos`, `bose` and `volumio` (TFT 6.1.0, `spotify` and `dlna` already existed); the web panel draws the player logos with them
 - (ticaki) panel: a restart of the adapter during the first seconds of a TFT update no longer restarts Tasmota and breaks the update
 - (ticaki) screensaver: the update symbol next to the clock only shows when the TFT is older than the recommended one, not for a newer TFT
