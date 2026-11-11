@@ -192,7 +192,7 @@ export class App extends React.Component<AppProps, AppState> {
         }
         const Component = page.module.Component;
         // a card without a layout of its own for a web model is drawn in its base geometry,
-        // centred on the stage (see `cards/stageLayout.ts`)
+        // centred horizontally at the top of the stage (see `cards/stageLayout.ts`)
         const stage = cardStage(page.pageType, global.model);
         return (
             <div

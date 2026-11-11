@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { baseModel, CENTERED_ON_WEB, cardStage } from './stageLayout';
+import { baseModel, CENTERED_ON_WEB, CENTERED_VERTICALLY, cardStage } from './stageLayout';
 import { registry } from './registry';
 import { isPortrait } from '../style/theme';
 
@@ -28,9 +28,32 @@ describe('cardStage', () => {
         expect(cardStage('cardGrid', 'us-p')).toEqual({ model: 'us-p', left: 0, top: 0, width: 320, height: 480 });
     });
 
-    it('centres a card without web layout in its base geometry', () => {
-        expect(cardStage('cardThermo', 'web-l')).toEqual({ model: 'eu', left: 80, top: 0, width: 480, height: 320 });
-        expect(cardStage('cardThermo', 'web-p')).toEqual({
+    it('draws a card without web layout in its base geometry, centred horizontally, at the top', () => {
+        for (const pageType of CENTERED_ON_WEB) {
+            if (CENTERED_VERTICALLY.has(pageType)) {
+                continue;
+            }
+            expect(cardStage(pageType, 'web-l'), pageType).toEqual({
+                model: 'eu',
+                left: 80,
+                top: 0,
+                width: 480,
+                height: 320,
+            });
+            expect(cardStage(pageType, 'web-p'), pageType).toEqual({
+                model: 'us-p',
+                left: 0,
+                top: 0,
+                width: 320,
+                height: 480,
+            });
+        }
+    });
+
+    it('centres the startup page vertically as well', () => {
+        expect([...CENTERED_VERTICALLY].every(p => CENTERED_ON_WEB.has(p))).toBe(true);
+        expect(cardStage('pageStartup', 'web-l')).toEqual({ model: 'eu', left: 80, top: 0, width: 480, height: 320 });
+        expect(cardStage('pageStartup', 'web-p')).toEqual({
             model: 'us-p',
             left: 0,
             top: 80,

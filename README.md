@@ -164,7 +164,7 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
 - (ticaki) web panel: smartphone models `web-p` (portrait, 320x640) and `web-l` (landscape, 640x320) for standalone web panels; the menu cards, the screensaver and the popups show more items there, the admin shows the places per model
 - (ticaki) web panel: the two hardware buttons below the display can be switched off per web panel (off by default on the smartphone models)
 - (ticaki) web panel: popups, cardMedia and cardThermo2 use a portrait layout on the us-p model instead of the cut off landscape one; the tiles screensaver shows the 4 bottom and 8 indicator places of us-p
-- (ticaki) web panel: cardAlarm, cardUnlock, cardThermo, cardPower, cardQR, cardChart and cardLChart use the portrait layout of the us-p display on us-p and web-p, they were cut off on the right and the right arrow could not be reached
+- (ticaki) web panel: cardAlarm, cardUnlock, cardThermo, cardPower, cardQR, cardChart and cardLChart use the portrait layout of the us-p display on us-p and web-p, they were cut off on the right and the right arrow could not be reached; on web-p they start at the top of the screen, headline and navigation no longer move when paging
 - (ticaki) web panel: cardPChart lays out its title bar in the width of the portrait models, the right arrow could not be reached on us-p and web-p
 - (ticaki) web panel: the color wheel of popupLight sends the color in the scale the adapter expects, whatever its size on the screen
 - (ticaki) web panel: the screensaver modes standard, alternate, advanced and EasyView are drawn in the portrait layout of the us-p display on us-p (they were drawn in landscape and cut off)

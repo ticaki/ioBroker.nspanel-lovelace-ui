@@ -94,12 +94,12 @@ function boxes(html: string): { left: number; top: number; width: number; height
 }
 
 describe('fixed cards on the portrait models', () => {
-    it('are drawn as us-p on web-p, centred vertically', () => {
+    it('are drawn as us-p on web-p, at the top of the stage', () => {
         for (const c of CASES) {
             expect(cardStage(c.pageType, 'web-p')).toEqual({
                 model: 'us-p',
                 left: 0,
-                top: 80,
+                top: 0,
                 width: 320,
                 height: 480,
             });
