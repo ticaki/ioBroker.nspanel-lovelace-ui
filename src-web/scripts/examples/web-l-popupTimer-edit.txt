@@ -1,0 +1,7 @@
+# popupTimer: stopped, editable; a tap on the minutes shows the +/- columns
+time~23:20
+pageType~popupTimer~alias.0.Timer~Timer~
+entityUpdateDetail~alias.0.Timer~~29582~alias.0.Timer~5~0~1~begin~~clear~start~~clear
+@sleep 200
+@click [data-field="minutes"]
+@sleep 300

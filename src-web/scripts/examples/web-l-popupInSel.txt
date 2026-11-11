@@ -1,0 +1,4 @@
+# popupInSel of the tile "Auswahl" with 20 entries: a full first page (16) and the page arrow
+pageType~popupInSel~4?6~Auswahl~~63488
+entityUpdateDetail2~4?6~~63488~Auswahl~Komfort~Aus?Eco?Komfort?Boost?Nacht?Urlaub?Party?Frost?Auto?Manuell?Lüften?Kochen?Gäste?Kino?Lesen?Schlafen?Morgen?Abend?Sauna?Sport
+@sleep 300

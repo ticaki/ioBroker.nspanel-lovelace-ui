@@ -2236,7 +2236,6 @@ function convertScreensaver(input: ScriptToAdminInput): ScreensaverResult {
             indicator,
             rotationTime: 0,
             screensaverSwipe: !!raw.advancedOptions?.screensaverSwipe,
-            screensaverIndicatorButtons: !!raw.advancedOptions?.screensaverIndicatorButtons,
         };
         if (favorit) {
             entry.favorit = favorit;
@@ -3007,8 +3006,9 @@ export function planScriptToAdmin(input: ScriptToAdminInput): ScriptToAdminResul
             cleanedRaw.advancedOptions = {
                 ...cleanedRaw.advancedOptions,
                 screensaverSwipe: false,
-                screensaverIndicatorButtons: false,
             };
+            // the option `screensaverIndicatorButtons` of older scripts is gone - not written again
+            Reflect.deleteProperty(cleanedRaw.advancedOptions, 'screensaverIndicatorButtons');
         }
     }
     for (const side of clearButtonsInScript) {

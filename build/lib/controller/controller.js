@@ -483,6 +483,7 @@ class Controller extends Library.BaseClass {
     );
   };
   addPanel = async (panel) => {
+    var _a;
     let index = this.panels.findIndex((p) => p.topic === panel.topic);
     if (index !== -1) {
       this.adapter.testSuccessful = false;
@@ -512,6 +513,14 @@ class Controller extends Library.BaseClass {
       }
       panel.kind = "web";
       panel.channel = this.virtualPanelManager.channelFor(this.adapter.config.panels[index].topic);
+    }
+    const model = (_a = panel.model) != null ? _a : this.adapter.config.panels[index].model;
+    if (panel.kind !== "web" && model && (0, import_tools.isWebModel)(model)) {
+      this.adapter.testSuccessful = false;
+      this.log.error(
+        `Panel ${panel.friendlyName} (${panel.topic}) is a hardware panel with the web model ${model} - not created. Choose eu, us-l or us-p.`
+      );
+      return false;
     }
     const newPanel = await Panel.Panel.create(this.adapter, panel);
     if (await newPanel.isValid()) {

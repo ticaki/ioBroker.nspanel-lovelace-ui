@@ -2788,8 +2788,8 @@ describe('lib/configuration - planScriptToAdmin: screensaver', () => {
             // the trailing dot of the script is dropped - the admin lists the instance without it
             weatherEntity: 'pirate-weather.0',
             screensaverSwipe: false,
-            screensaverIndicatorButtons: false,
         });
+        expect(entry).to.not.have.property('screensaverIndicatorButtons');
         expect(entry.favorit).to.deep.equal({
             state: '/^pirate-weather\\.0\\.weather\\.currently\\./',
             template: 'text.pirate-weather.favorit',
@@ -2848,6 +2848,14 @@ describe('lib/configuration - planScriptToAdmin: screensaver', () => {
         expect(result.screensaverEntry).to.not.have.property('weatherEntity');
         const all = plan({ ...templateConfig(), weatherAddDefaultItems: true });
         expect(Object.keys(all.screensaverEntry!.weatherAddDefaultItems!)).to.have.length(12);
+    });
+
+    it('ignores the removed option screensaverIndicatorButtons of an older script and does not write it back', () => {
+        const advancedOptions = { screensaverSwipe: true };
+        Object.assign(advancedOptions, { screensaverIndicatorButtons: true });
+        const result = plan({ ...templateConfig(), advancedOptions });
+        expect(result.screensaverEntry).to.not.have.property('screensaverIndicatorButtons');
+        expect(result.cleanedRaw.advancedOptions).to.deep.equal({ screensaverSwipe: false });
     });
 
     it('takes several alternate items over as the rotating alternate list', () => {

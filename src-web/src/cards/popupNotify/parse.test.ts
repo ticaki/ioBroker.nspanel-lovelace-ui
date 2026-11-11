@@ -72,6 +72,16 @@ describe('popupNotify', () => {
         expect([0, 1, 2, 3, 4, 5, 9].map(fontSize)).toEqual([24, 32, 32, 48, 80, 128, 24]);
         expect([0, 3, 5].map(lineHeight)).toEqual([24, 48, 128]);
         expect([0, 1, 3, 4, 5].map(cssFontSize)).toEqual([18, 24, 36, 60, 96]);
-        expect([0, 1, 2, 3, 4, 5, 9].map(maxLines)).toEqual([7, 5, 5, 4, 2, 1, 7]);
+        expect([0, 1, 2, 3, 4, 5, 9].map(f => maxLines(f))).toEqual([7, 5, 5, 4, 2, 1, 7]);
+    });
+
+    it('takes the line count of the adapter per model (web-p has the higher text box)', () => {
+        expect([0, 1, 2, 3, 4, 5, 9].map(f => maxLines(f, 'web-p'))).toEqual([20, 15, 15, 10, 6, 3, 20]);
+        expect([0, 3, 5].map(f => maxLines(f, 'web-l'))).toEqual([7, 4, 1]);
+        expect([0, 3, 5].map(f => maxLines(f, 'us-p'))).toEqual([7, 4, 1]);
+        // the box of web-p ends above the buttons (text from y 74, buttons from y 583)
+        for (const f of [0, 1, 2, 3, 4, 5]) {
+            expect(74 + maxLines(f, 'web-p') * lineHeight(f), String(f)).toBeLessThanOrEqual(583);
+        }
     });
 });

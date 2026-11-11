@@ -4,7 +4,7 @@ import { StatesControler } from './states-controller';
 import * as Panel from './panel';
 import { genericStateObjects } from '../const/definition';
 import { SystemNotifications } from '../classes/system-notifications';
-import { getInternalDefaults, getRGBFromValue, getTasmotaVersionFromJson } from '../const/tools';
+import { getInternalDefaults, getRGBFromValue, getTasmotaVersionFromJson, isWebModel } from '../const/tools';
 import type { nsPanelState, nsPanelStateVal } from '../types/types';
 import type { ColorThemenInterface } from '../const/Color';
 import { Color } from '../const/Color';
@@ -548,6 +548,15 @@ export class Controller extends Library.BaseClass {
             }
             panel.kind = 'web';
             panel.channel = this.virtualPanelManager.channelFor(this.adapter.config.panels[index].topic);
+        }
+        const model = panel.model ?? this.adapter.config.panels[index].model;
+        if (panel.kind !== 'web' && model && isWebModel(model)) {
+            // the smartphone models exist only for standalone web panels
+            this.adapter.testSuccessful = false;
+            this.log.error(
+                `Panel ${panel.friendlyName} (${panel.topic}) is a hardware panel with the web model ${model} - not created. Choose eu, us-l or us-p.`,
+            );
+            return false;
         }
 
         const newPanel = await Panel.Panel.create(this.adapter, panel as Panel.panelConfigPartial);

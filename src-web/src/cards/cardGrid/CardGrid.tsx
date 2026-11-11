@@ -1,8 +1,9 @@
 import React from 'react';
+import { FitBox } from '../../components/FitBox';
 import { TitleBar } from '../../components/TitleBar';
 import { color565ToCss } from '../../protocol/color';
 import type { Entity6, PanelModel } from '../../protocol/types';
-import { contentWidth, stageSize, theme } from '../../style/theme';
+import { contentWidth, isPortrait, stageSize, theme } from '../../style/theme';
 import type { CardProps } from '../CardContract';
 import { nextionFont, popupForType, splitIconField } from '../cardEntities/shared/entityTypes';
 import { isEmptySlot, menuSlotCount, menuSlots } from '../cardEntities/shared/menuParse';
@@ -39,6 +40,23 @@ export interface GridLayout {
     nameFontSize: number;
 }
 
+/** Columns per grid type and model; the rows follow from `menuSlotCount` */
+const GRID_COLUMNS: Readonly<Record<string, Readonly<Record<PanelModel, number>>>> = {
+    cardGrid: { eu: 3, 'us-l': 3, 'us-p': 2, 'web-l': 4, 'web-p': 2 },
+    cardGrid2: { eu: 4, 'us-l': 4, 'us-p': 3, 'web-l': 5, 'web-p': 3 },
+    cardGrid3: { eu: 2, 'us-l': 2, 'us-p': 2, 'web-l': 3, 'web-p': 2 },
+};
+
+/**
+ * Columns of the eu HMI (measured on the emulator pictures): width of a column and left edge
+ * of the first one. eu and us-l use them, every other model spreads `contentWidth` evenly.
+ */
+const LANDSCAPE_HMI_COLUMNS: Readonly<Record<string, { columnWidth: number; left: number }>> = {
+    cardGrid: { columnWidth: 147, left: 1 },
+    cardGrid2: { columnWidth: 112, left: 0 },
+    cardGrid3: { columnWidth: 223, left: 4 },
+};
+
 /**
  * Tile arrangement per grid type as the HMI draws it (eu, measured on the emulator pictures):
  * cardGrid 3x2 columns of 147 px (centres 74, 221, 368), cardGrid2 4x2 of 112 px, cardGrid3
@@ -46,36 +64,24 @@ export interface GridLayout {
  * write the name in the 24 px font, cardGrid3 in the 32 px font. On us-p cardGrid has
  * 2 columns and cardGrid2 3x3 (`PageMenu.maxItems`).
  *
+ * The web models (`doc/web-panel/SMARTPHONE.md`): web-l 4x2 / 5x2 / 3x2 with rows of 119 px,
+ * web-p 2x5 / 3x5 / 2x4; the columns share `contentWidth` evenly, the rows of a portrait
+ * model share the height below the title bar (`floor((height - 62 - 18) / rows)`).
+ *
  * @param pageType the grid type
  * @param model the panel model
  */
 export function gridLayout(pageType: string, model: PanelModel): GridLayout {
-    const count = menuSlotCount(pageType, model);
+    const type = pageType in GRID_COLUMNS ? pageType : 'cardGrid';
+    const count = menuSlotCount(type, model);
     const stage = stageSize(model);
-    const content = contentWidth(model);
-    const portrait = model === 'us-p';
-    let columns: number;
-    let columnWidth: number;
-    let left = 0;
-    switch (pageType) {
-        case 'cardGrid2':
-            columns = portrait ? 3 : 4;
-            columnWidth = portrait ? Math.floor(content / columns) : 112;
-            break;
-        case 'cardGrid3':
-            columns = 2;
-            columnWidth = portrait ? Math.floor(content / columns) : 223;
-            left = portrait ? 0 : 4;
-            break;
-        default:
-            columns = portrait ? 2 : 3;
-            columnWidth = portrait ? Math.floor(content / columns) : 147;
-            left = portrait ? 0 : 1;
-            break;
-    }
+    const columns = GRID_COLUMNS[type][model];
+    const hmi = model === 'eu' || model === 'us-l' ? LANDSCAPE_HMI_COLUMNS[type] : undefined;
+    const columnWidth = hmi ? hmi.columnWidth : Math.floor(contentWidth(model) / columns);
+    const left = hmi ? hmi.left : 0;
     const rows = Math.max(1, Math.ceil(count / columns));
-    const rowHeight = portrait ? Math.floor((stage.height - GRID_TOP - 18) / rows) : 119;
-    const grid3 = pageType === 'cardGrid3';
+    const rowHeight = isPortrait(model) ? Math.floor((stage.height - GRID_TOP - 18) / rows) : 119;
+    const grid3 = type === 'cardGrid3';
     return {
         columns,
         rows,
@@ -191,19 +197,22 @@ export class CardGrid extends React.Component<CardProps<CardGridModel>> {
                         overflow: 'hidden',
                     }}
                 >
-                    <EntityIcon
-                        icon={entity.icon}
-                        color={color}
-                        font={TILE_DEFAULT_FONT}
-                        style={{
-                            position: 'absolute',
-                            left: 0,
-                            width: layout.valueWidth,
-                            top: center - nf.fontSize / 2,
-                            height: nf.fontSize,
-                            overflow: 'visible',
-                        }}
-                    />
+                    {/* a value (useValue) wider than the tile gets smaller instead of being cut */}
+                    <FitBox>
+                        <EntityIcon
+                            icon={entity.icon}
+                            color={color}
+                            font={TILE_DEFAULT_FONT}
+                            style={{
+                                position: 'absolute',
+                                left: 0,
+                                width: layout.valueWidth,
+                                top: center - nf.fontSize / 2,
+                                height: nf.fontSize,
+                                overflow: 'visible',
+                            }}
+                        />
+                    </FitBox>
                 </div>
                 <div
                     data-role="name"
@@ -218,6 +227,10 @@ export class CardGrid extends React.Component<CardProps<CardGridModel>> {
                         textAlign: 'center',
                         whiteSpace: 'nowrap',
                         overflow: 'hidden',
+                        // neighbouring names keep a gap, a long name ends with an ellipsis
+                        padding: '0 3px',
+                        boxSizing: 'border-box',
+                        textOverflow: 'ellipsis',
                     }}
                 >
                     {entity.displayName}

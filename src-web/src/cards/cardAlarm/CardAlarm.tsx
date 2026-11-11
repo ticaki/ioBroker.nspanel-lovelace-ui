@@ -4,6 +4,7 @@ import { TitleBar } from '../../components/TitleBar';
 import { color565ToCss } from '../../protocol/color';
 import { theme } from '../../style/theme';
 import type { CardProps } from '../CardContract';
+import { alarmLayout, type AlarmLayout } from './layout';
 import type { CardAlarmModel } from './parse';
 
 /** maximum number of digits of the PIN (the HMI field holds about this many) */
@@ -17,33 +18,9 @@ const KEYS: readonly (readonly string[])[] = [
     ['', '0', 'CLR'],
 ];
 
-/*
- * Geometry measured on the emulator pictures of the HMI (480x320, stage pixels).
- */
-
-/** x centre of the three numpad columns */
-const KEY_COLUMNS = [62, 154, 246] as const;
-/** y centre of the four numpad rows / action buttons */
-const KEY_ROWS = [118, 176, 234, 290] as const;
-const KEY_WIDTH = 80;
-const KEY_HEIGHT = 50;
 /** the digits are drawn in the 32 px Nextion font (digit height 17 px) */
 const KEY_FONT = 24;
-
-/** area of the action buttons on the right side, the text is centred at x 367 */
-const BUTTON_LEFT = 300;
-const BUTTON_WIDTH = 134;
 const BUTTON_FONT = 17;
-
-/**
- * The text field of the title bar: it shows the title and, while digits are entered, the
- * code as asterisks. It is centred at x 177 between the left navigation icon and the status icon.
- */
-const TITLE_BOX = { left: 60, width: 234 } as const;
-/** status icon right of the text field, centred at x 331 */
-const STATUS_ICON = { center: 331, size: 44 } as const;
-/** optional button in the bottom left corner */
-const CORNER = { left: 12, top: 268, size: 40 } as const;
 
 interface CardAlarmState {
     /** digits entered so far */
@@ -88,7 +65,11 @@ export class CardAlarm extends React.Component<CardProps<CardAlarmModel>, CardAl
         this.setState({ pin: '' });
     }
 
-    private renderKeys(): React.JSX.Element[] {
+    private get layout(): AlarmLayout {
+        return alarmLayout(this.props.global.model);
+    }
+
+    private renderKeys(layout: AlarmLayout): React.JSX.Element[] {
         const enabled = this.props.model.numpadEnabled;
         const cells: React.JSX.Element[] = [];
         KEYS.forEach((row, r) => {
@@ -104,10 +85,10 @@ export class CardAlarm extends React.Component<CardProps<CardAlarmModel>, CardAl
                         onClick={(): void => this.onKey(key)}
                         style={{
                             position: 'absolute',
-                            left: KEY_COLUMNS[c] - KEY_WIDTH / 2,
-                            top: KEY_ROWS[r] - KEY_HEIGHT / 2,
-                            width: KEY_WIDTH,
-                            height: KEY_HEIGHT,
+                            left: layout.keyColumns[c] - layout.keyWidth / 2,
+                            top: layout.keyRows[r] - layout.keyHeight / 2,
+                            width: layout.keyWidth,
+                            height: layout.keyHeight,
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
@@ -123,9 +104,10 @@ export class CardAlarm extends React.Component<CardProps<CardAlarmModel>, CardAl
         return cells;
     }
 
-    private renderButtons(): React.JSX.Element[] {
+    private renderButtons(layout: AlarmLayout): React.JSX.Element[] {
         return this.props.model.buttons.map((button, i) => {
-            if (button.label === '') {
+            const centre = layout.buttons[i];
+            if (button.label === '' || centre === undefined) {
                 return <React.Fragment key={i} />;
             }
             const active = button.action !== '';
@@ -137,10 +119,10 @@ export class CardAlarm extends React.Component<CardProps<CardAlarmModel>, CardAl
                     onClick={(): void => this.onAction(button.action)}
                     style={{
                         position: 'absolute',
-                        left: BUTTON_LEFT,
-                        top: KEY_ROWS[i] - KEY_HEIGHT / 2,
-                        width: BUTTON_WIDTH,
-                        height: KEY_HEIGHT,
+                        left: centre.x - layout.buttonWidth / 2,
+                        top: centre.y - layout.buttonHeight / 2,
+                        width: layout.buttonWidth,
+                        height: layout.buttonHeight,
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
@@ -168,8 +150,12 @@ export class CardAlarm extends React.Component<CardProps<CardAlarmModel>, CardAl
     }
 
     render(): React.JSX.Element {
-        const { model, ctx, press } = this.props;
+        const { model, ctx, global, press } = this.props;
         const iconColor = color565ToCss(model.iconColor);
+        const layout = this.layout;
+        const { pinBox, statusIcon, corner } = layout;
+        const pinText =
+            this.state.pin === '' ? (layout.titleInBar ? '' : model.title) : '*'.repeat(this.state.pin.length);
         return (
             <div
                 data-page={ctx.pageType}
@@ -177,19 +163,20 @@ export class CardAlarm extends React.Component<CardProps<CardAlarmModel>, CardAl
             >
                 <style>{`@keyframes alarmFlash { 0%, 49% { opacity: 1; } 50%, 100% { opacity: 0.15; } }`}</style>
                 <TitleBar
-                    title=""
+                    title={layout.titleInBar ? model.title : ''}
                     navigation={model.navigation}
                     press={press}
+                    model={global.model}
                 />
                 <div
                     data-pin=""
                     data-pin-length={this.state.pin.length}
                     style={{
                         position: 'absolute',
-                        left: TITLE_BOX.left,
-                        top: theme.titleBarCenter - theme.titleBarHeight / 2,
-                        width: TITLE_BOX.width,
-                        height: theme.titleBarHeight,
+                        left: pinBox.left,
+                        top: pinBox.top,
+                        width: pinBox.width,
+                        height: pinBox.height,
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
@@ -200,7 +187,7 @@ export class CardAlarm extends React.Component<CardProps<CardAlarmModel>, CardAl
                         whiteSpace: 'nowrap',
                     }}
                 >
-                    {this.state.pin === '' ? model.title : '*'.repeat(this.state.pin.length)}
+                    {pinText}
                 </div>
                 {model.icon !== '' ? (
                     <div
@@ -208,32 +195,32 @@ export class CardAlarm extends React.Component<CardProps<CardAlarmModel>, CardAl
                         data-flashing={model.flashing ? '' : undefined}
                         style={{
                             position: 'absolute',
-                            left: STATUS_ICON.center - STATUS_ICON.size / 2,
-                            top: theme.titleBarCenter - STATUS_ICON.size / 2,
-                            width: STATUS_ICON.size,
-                            height: STATUS_ICON.size,
+                            left: statusIcon.x - statusIcon.size / 2,
+                            top: statusIcon.y - statusIcon.size / 2,
+                            width: statusIcon.size,
+                            height: statusIcon.size,
                             animation: model.flashing ? 'alarmFlash 1s step-end infinite' : undefined,
                         }}
                     >
                         <Icon
                             glyph={model.icon}
-                            size={STATUS_ICON.size}
+                            size={statusIcon.size}
                             color={iconColor}
                         />
                     </div>
                 ) : null}
-                {this.renderKeys()}
-                {this.renderButtons()}
+                {this.renderKeys(layout)}
+                {this.renderButtons(layout)}
                 {model.cornerButton ? (
                     <div
                         data-corner={model.cornerButton.id}
                         data-pressable=""
                         onClick={(): void => press(model.cornerButton?.id ?? '', 'button')}
-                        style={{ position: 'absolute', left: CORNER.left, top: CORNER.top }}
+                        style={{ position: 'absolute', left: corner.left, top: corner.top }}
                     >
                         <Icon
                             glyph={model.cornerButton.icon}
-                            size={CORNER.size}
+                            size={corner.size}
                             color={color565ToCss(model.cornerButton.iconColor)}
                         />
                     </div>

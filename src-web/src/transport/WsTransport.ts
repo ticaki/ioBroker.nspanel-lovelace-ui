@@ -1,5 +1,11 @@
 import type { ClientFrame, ConnectionStatus, HelloFrame } from '../protocol/types';
-import { isServerFrame } from '../protocol/types';
+import { isPanelModel, isServerFrame } from '../protocol/types';
+
+/**
+ * `bye` reason the transport reports itself when the adapter announces a model this frontend does not know
+ * (frontend and adapter of different versions, e.g. a kiosk browser that kept an old page open over an update).
+ */
+export const UNKNOWN_MODEL_REASON = 'unknown model';
 import type { PanelTransport } from './Transport';
 
 /** localStorage key of the session id older frontends kept - sessions no longer exist */
@@ -21,6 +27,20 @@ export interface WsTransportOptions {
     fetch?: (url: string, init: RequestInit) => Promise<{ status: number }>;
     /** reloads the page so the server can show the PIN page, defaults to `location.reload()` */
     reload?: () => void;
+}
+
+/**
+ * `true` for a `hello` frame whose model is no model of this frontend.
+ *
+ * @param value the parsed frame
+ */
+export function isUnknownModelHello(value: unknown): boolean {
+    return (
+        !!value &&
+        typeof value === 'object' &&
+        (value as { t?: unknown }).t === 'hello' &&
+        !isPanelModel((value as { model?: unknown }).model)
+    );
 }
 
 /** Removes the session id of older frontends, nothing else is stored */
@@ -55,6 +75,8 @@ export class WsTransport implements PanelTransport {
     private checkingAuth = false;
     private stopped = true;
     private byeReason: string | undefined;
+    /** a valid `hello` arrived on the current connection - commands before it are dropped */
+    private helloSeen = false;
     private helloCb: ((hello: HelloFrame) => void) | undefined;
     private commandCb: ((payload: string, seq: number | undefined) => void) | undefined;
     private buzzerCb: ((payload: string) => void) | undefined;
@@ -131,6 +153,7 @@ export class WsTransport implements PanelTransport {
         const socket = new WebSocket(this.url);
         this.socket = socket;
         socket.onopen = (): void => {
+            this.helloSeen = false;
             this.reconnectDelay = RECONNECT_MIN_MS;
             this.byeReason = undefined;
             this.statusCb?.('open');
@@ -157,15 +180,29 @@ export class WsTransport implements PanelTransport {
         } catch {
             return;
         }
+        if (isUnknownModelHello(parsed)) {
+            // drawing the pages in the geometry of a guessed model (eu) would show a portrait panel in landscape -
+            // end the connection with a notice instead
+            this.stopped = true;
+            this.clearReconnectTimer();
+            this.byeReason = UNKNOWN_MODEL_REASON;
+            this.byeCb?.(UNKNOWN_MODEL_REASON);
+            this.socket?.close();
+            return;
+        }
         if (!isServerFrame(parsed)) {
             return;
         }
         switch (parsed.t) {
             case 'hello':
+                this.helloSeen = true;
                 this.helloCb?.(parsed);
                 break;
             case 'cmd':
-                this.commandCb?.(parsed.p, parsed.seq);
+                // the store knows the model only from the hello - a page before it would be drawn for eu
+                if (this.helloSeen) {
+                    this.commandCb?.(parsed.p, parsed.seq);
+                }
                 break;
             case 'buzzer':
                 this.buzzerCb?.(parsed.p);

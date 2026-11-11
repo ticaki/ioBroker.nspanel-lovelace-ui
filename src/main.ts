@@ -37,6 +37,12 @@ import { mediaPlayerInfo } from './lib/configuration/admin-media';
 import type { Panel, panelConfigPartial } from './lib/controller/panel';
 import { generateAliasDocumentation } from './lib/tools/readme';
 import { redactSecretsInText, stringifyForLog } from './lib/tools/redact';
+import {
+    buildTestObjects,
+    createTestObjects,
+    CREATE_TEST_STATES_COMMAND,
+    parseTestStatesFile,
+} from './lib/tools/test-states';
 import { fingerprintCredential, isCredentialId, resolveLogin, resolveSecret } from './lib/credentials';
 import { URL } from 'node:url';
 import type * as pages from './lib/types/pages';
@@ -415,6 +421,9 @@ class NspanelLovelaceUi extends utils.Adapter {
                 change = true;
             }
             if (native.pageQRdata) {
+                // the old table kept the wifi password as an index into the encrypted fields pageQRpwd1..3,
+                // the new entry has no counterpart for that - the password has to be entered again
+                const pagesWithoutPassword: string[] = [];
                 native.pageQRdata.forEach((page: oldQRType) => {
                     const temp: PageConfig = {
                         card: 'cardQR',
@@ -422,15 +431,24 @@ class NspanelLovelaceUi extends utils.Adapter {
                         headline: page.headline,
                         selType: page.selType,
                         ssidUrlTel: page.SSIDURLTEL,
+                        wlantype: page.wlantype,
                         setState: page.setState || '',
                         wlanhidden: page.wlanhidden || false,
                         pwdhidden: page.pwdhidden || false,
                         hidden: page.hiddenByTrigger || false,
                         alwaysOn: page.alwaysOnDisplay ? 'always' : 'none',
                     };
+                    if (page.selType === 1 && page.wlantype !== 'nopass') {
+                        pagesWithoutPassword.push(page.pageName);
+                    }
 
                     native.pageConfig.push(temp);
                 });
+                if (pagesWithoutPassword.length > 0) {
+                    this.log.warn(
+                        `QR pages moved from the old table to the page configuration: ${pagesWithoutPassword.join(', ')}. The wifi password was not taken over - please enter it again in the admin (page editor, wifi password or credential).`,
+                    );
+                }
                 delete native.pageQRdata;
                 change = true;
             }
@@ -1730,6 +1748,34 @@ class NspanelLovelaceUi extends utils.Adapter {
                 case 'testCase': {
                     if (obj.callback) {
                         this.sendTo(obj.from, obj.command, { testSuccessful: this.testSuccessful }, obj.callback);
+                    }
+                    break;
+                }
+                case CREATE_TEST_STATES_COMMAND: {
+                    // developer button: objects of the test environment, only the missing ones
+                    try {
+                        const file = path.join(__dirname, '..', 'templates', 'test-states.json');
+                        const data = parseTestStatesFile(await fs.promises.readFile(file, 'utf-8'));
+                        const result = await createTestObjects(this, buildTestObjects(data), (id, error) =>
+                            this.log.warn(`Test states: ${id} not created: ${String(error)}`),
+                        );
+                        this.log.info(
+                            `Test states: ${result.created} objects created (${result.values} values set), ` +
+                                `${result.skipped} existed already, ${result.failed} failed`,
+                        );
+                        const text = this.library
+                            .getTranslation('createTestStatesResult')
+                            .replace('%c', String(result.created))
+                            .replace('%s', String(result.skipped))
+                            .replace('%f', String(result.failed));
+                        if (obj.callback) {
+                            this.sendTo(obj.from, obj.command, { result: text }, obj.callback);
+                        }
+                    } catch (error) {
+                        this.log.error(`Test states: ${String(error)}`);
+                        if (obj.callback) {
+                            this.sendTo(obj.from, obj.command, { error: String(error) }, obj.callback);
+                        }
                     }
                     break;
                 }

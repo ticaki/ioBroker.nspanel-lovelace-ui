@@ -3,7 +3,7 @@ import { type PageInterface } from '../classes/PageInterface';
 import type { RGB } from '../const/Color';
 import { Color } from '../const/Color';
 import { Icons } from '../const/icon_mapping';
-import { getPayloadRemoveTilde, setTriggeredToState } from '../const/tools';
+import { getPayloadRemoveTilde, notifyLines, setTriggeredToState } from '../const/tools';
 import type * as pages from '../types/pages';
 import type { IncomingEvent } from '../types/types';
 import type { PageItem } from './pageItem';
@@ -123,36 +123,8 @@ export class PagePopup extends Page {
         if (message.text) {
             message.text = message.text.replaceAll('\n', '\r\n').replaceAll('/r/n', '\r\n');
         }
-        // 0 -> 7
-        // 1 -> 5
-        // 2 -> 5
-        // 3 -> 4
-        // 4 -> 2
-        // 5 -> 1
-        let maxLineCount = 7;
-        switch (details.textSize) {
-            case '0':
-                maxLineCount = 7;
-                break;
-            case '1':
-                maxLineCount = 5;
-                break;
-            case '2':
-                maxLineCount = 5;
-                break;
-            case '3':
-                maxLineCount = 4;
-                break;
-            case '4':
-                maxLineCount = 2;
-                break;
-            case '5':
-                maxLineCount = 1;
-                break;
-            default:
-                maxLineCount = 7;
-                break;
-        }
+        // visible lines per textSize and model (web-p shows more lines, see notifyLines)
+        const maxLineCount = notifyLines(Number(details.textSize), this.basePanel.info.nspanel.model);
         let lines = 0;
         if (message.text && (lines = message.text.split('\r\n').length) > maxLineCount) {
             let test = 0;

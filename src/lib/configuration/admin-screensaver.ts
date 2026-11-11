@@ -213,7 +213,6 @@ export function buildScreensaverScriptConfig(
         buttonRight: null,
         advancedOptions: {
             screensaverSwipe: !!entry.screensaverSwipe,
-            screensaverIndicatorButtons: !!entry.screensaverIndicatorButtons,
         },
     };
     return config as unknown as ScriptConfig.Config;
@@ -259,14 +258,12 @@ export function applyScreensaverEntry(page: pages.PageBase, entry: ScreensaverEn
         mode: string;
         rotationTime: number;
         screensaverSwipe: boolean;
-        screensaverIndicatorButtons: boolean;
         clockTimer?: ScreensaverClockTimer;
     };
     config.card = screensaverCardOfMode(entry.mode);
     config.mode = entry.mode;
     config.rotationTime = typeof entry.rotationTime === 'number' && entry.rotationTime > 0 ? entry.rotationTime : 0;
     config.screensaverSwipe = !!entry.screensaverSwipe;
-    config.screensaverIndicatorButtons = !!entry.screensaverIndicatorButtons;
     if (entry.clockTimer?.enabled) {
         config.clockTimer = entry.clockTimer;
     }

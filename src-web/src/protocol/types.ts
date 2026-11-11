@@ -1,7 +1,11 @@
-/** NSPanel hardware models - `eu` and `us-l` are landscape 480x320, `us-p` is portrait 320x480 */
-export type PanelModel = 'eu' | 'us-l' | 'us-p';
+/**
+ * Panel models - the NSPanel hardware `eu` and `us-l` (landscape 480x320) and `us-p` (portrait
+ * 320x480), plus the models of standalone web panels on phones and tablets: `web-p` (portrait
+ * 320x640) and `web-l` (landscape 640x320), see `doc/web-panel/SMARTPHONE.md`.
+ */
+export type PanelModel = 'eu' | 'us-l' | 'us-p' | 'web-p' | 'web-l';
 
-export const PANEL_MODELS: readonly PanelModel[] = ['eu', 'us-l', 'us-p'];
+export const PANEL_MODELS: readonly PanelModel[] = ['eu', 'us-l', 'us-p', 'web-p', 'web-l'];
 
 export function isPanelModel(value: unknown): value is PanelModel {
     return typeof value === 'string' && (PANEL_MODELS as readonly string[]).includes(value);
@@ -97,6 +101,21 @@ export interface HelloFrame {
     /** known TFT version of the model, `1.0.0` if unknown */
     tftVersion: string;
     kind: WebPanelKind;
+    /**
+     * show the two hardware buttons below the stage; missing (older adapter) = shown,
+     * read it with {@link helloShowsButtons}
+     */
+    buttons?: boolean;
+}
+
+/**
+ * `true` when the hardware buttons are shown: only an explicit `buttons: false` in the
+ * `hello` hides them, an older backend without the field keeps them.
+ *
+ * @param hello the hello frame, `undefined` before it arrived
+ */
+export function helloShowsButtons(hello: Pick<HelloFrame, 'buttons'> | undefined): boolean {
+    return hello?.buttons !== false;
 }
 export interface CmdFrame {
     t: 'cmd';

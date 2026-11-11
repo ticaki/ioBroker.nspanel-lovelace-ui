@@ -2,7 +2,7 @@ import { isDataItem, type Dataitem } from '../controller/data-item';
 import type { Library } from '../controller/library';
 import { Color, type RGB } from '../const/Color';
 import { Icons } from './icon_mapping';
-import type { ChangeTypeOfKeys } from '../types/pages';
+import type { ChangeTypeOfKeys, cardEntitiesTypes, cardGridTypes } from '../types/pages';
 import * as globals from '../types/function-and-const';
 import type { NSPanel } from '../types/NSPanel';
 import { formatEntryNumber } from '../types/adminShareConfig';
@@ -1554,4 +1554,114 @@ export function getTasmotaVersionFromJson(json: Record<string, unknown> | undefi
     }
     const v = json.tasmota;
     return typeof v === 'string' ? v.trim() : '';
+}
+
+/**
+ * True for the portrait models (`us-p`, `web-p`).
+ *
+ * @param model panel model
+ */
+export function isPortraitModel(model: NSPanel.NSpanelModel): boolean {
+    return model === 'us-p' || model === 'web-p';
+}
+
+/**
+ * True for the smartphone models of standalone web panels (`web-p`, `web-l`).
+ *
+ * @param model panel model
+ */
+export function isWebModel(model: NSPanel.NSpanelModel): boolean {
+    return model === 'web-p' || model === 'web-l';
+}
+
+/** Menu cards whose number of items depends on the panel model. */
+export type MenuCard = cardEntitiesTypes | cardGridTypes;
+
+/** Number of items per menu card and model (see doc/web-panel/SMARTPHONE.md). */
+const MENU_MAX_ITEMS: Record<MenuCard, Record<NSPanel.NSpanelModel, number>> = {
+    cardEntities: { eu: 4, 'us-l': 4, 'us-p': 5, 'web-l': 4, 'web-p': 8 },
+    cardSchedule: { eu: 6, 'us-l': 6, 'us-p': 6, 'web-l': 6, 'web-p': 11 },
+    cardGrid: { eu: 6, 'us-l': 6, 'us-p': 6, 'web-l': 8, 'web-p': 10 },
+    cardGrid2: { eu: 8, 'us-l': 8, 'us-p': 9, 'web-l': 10, 'web-p': 15 },
+    cardGrid3: { eu: 4, 'us-l': 4, 'us-p': 4, 'web-l': 6, 'web-p': 8 },
+    cardMedia: { eu: 5, 'us-l': 5, 'us-p': 5, 'web-l': 6, 'web-p': 8 },
+    cardThermo2: { eu: 9, 'us-l': 9, 'us-p': 9, 'web-l': 9, 'web-p': 9 },
+};
+
+/**
+ * Number of items a menu card shows on a model.
+ *
+ * @param card menu card
+ * @param model panel model
+ */
+export function menuMaxItems(card: MenuCard, model: NSPanel.NSpanelModel): number {
+    return MENU_MAX_ITEMS[card][model];
+}
+
+/** popupNotify: visible lines per textSize 0…5 and model. */
+const NOTIFY_LINES: Record<NSPanel.NSpanelModel, readonly number[]> = {
+    eu: [7, 5, 5, 4, 2, 1],
+    'us-l': [7, 5, 5, 4, 2, 1],
+    'us-p': [7, 5, 5, 4, 2, 1],
+    'web-l': [7, 5, 5, 4, 2, 1],
+    'web-p': [20, 15, 15, 10, 6, 3],
+};
+
+/**
+ * Lines popupNotify shows for a text size on a model.
+ *
+ * @param textSize text size 0…5 (other values fall back to 0)
+ * @param model panel model
+ */
+export function notifyLines(textSize: number, model: NSPanel.NSpanelModel): number {
+    const lines = NOTIFY_LINES[model];
+    return lines[textSize] ?? lines[0];
+}
+
+/**
+ * Whether a web panel shows the two virtual hardware buttons below the display.
+ *
+ * @param model panel model
+ * @param webButtons option of the panel table entry; undefined = by model (hardware models true, web models false)
+ */
+export function webButtonsVisible(model: NSPanel.NSpanelModel, webButtons?: boolean): boolean {
+    return webButtons ?? !isWebModel(model);
+}
+
+/** characters of a page headline (title line) per model, longer headlines are shortened with … */
+const HEADLINE_MAX_CHARS: Record<NSPanel.NSpanelModel, number> = {
+    eu: 28,
+    'us-l': 28,
+    'us-p': 13,
+    'web-p': 16,
+    'web-l': 45,
+};
+
+/**
+ * Characters that fit into the title line of a page on a model.
+ *
+ * @param model panel model
+ */
+export function headlineMaxChars(model: NSPanel.NSpanelModel): number {
+    return HEADLINE_MAX_CHARS[model];
+}
+
+/**
+ * Shortens a page headline to the width of the title line of the model: a longer text ends with … (U+2026)
+ * at the last place, instead of being cut by the display in the middle of a character.
+ *
+ * @param text headline
+ * @param model panel model
+ */
+export function shortenHeadline(text: string | undefined, model: NSPanel.NSpanelModel): string {
+    if (!text) {
+        return '';
+    }
+    const max = headlineMaxChars(model);
+    // count code points, a surrogate pair is one character
+    const chars = Array.from(text);
+    if (chars.length <= max) {
+        return text;
+    }
+    return `${chars.slice(0, max - 1).join('')}\u2026`;
 }

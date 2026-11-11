@@ -62,7 +62,7 @@ const PageMediaMessageDefault = {
   onoffbuttonColor: "",
   shuffle_icon: "",
   logo: "~~~~~",
-  options: ["", "", "", "", ""]
+  options: []
 };
 class PageMedia extends import_pageMenu.PageMenu {
   config;
@@ -400,7 +400,8 @@ class PageMedia extends import_pageMenu.PageMenu {
     }
     if (message.headline) {
       const { text, nextPos } = tools.buildScrollingText(message.headline, {
-        maxSize: 28,
+        // scroll within the title line of the model, shortHeadline() then leaves it unchanged
+        maxSize: tools.headlineMaxChars(this.basePanel.info.nspanel.model),
         pos: this.headlinePos
       });
       message.headline = text;
@@ -526,14 +527,16 @@ class PageMedia extends import_pageMenu.PageMenu {
     if (item.logoItem) {
       message.logo = tools.getPayload(await item.logoItem.getPageItemPayload());
     }
-    const opts = ["~~~~~", "~~~~~", "~~~~~", "~~~~~", "~~~~~"];
     const pageItems = (await this.getOptions([])).slice(0, this.maxItems);
+    while (pageItems.length < this.maxItems) {
+      pageItems.push("~~~~~");
+    }
     message.navigation = this.getNavigation();
     const msg = {
       ...PageMediaMessageDefault,
       ...message,
       id: "media",
-      options: pageItems.concat(opts).slice(0, 5).map((o) => o ? o : "~~~~~")
+      options: pageItems.map((o) => o ? o : "~~~~~")
     };
     this.sendToPanel(this.getMessage(msg), false);
   }
@@ -569,7 +572,7 @@ class PageMedia extends import_pageMenu.PageMenu {
   }
   getMessage(message) {
     return tools.getPayload(
-      tools.getPayloadRemoveTilde("entityUpd", message.headline),
+      tools.getPayloadRemoveTilde("entityUpd", this.shortHeadline(message.headline)),
       message.navigation,
       tools.getPayloadRemoveTilde(
         message.id,

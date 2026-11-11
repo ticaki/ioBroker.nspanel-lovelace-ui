@@ -1,0 +1,5 @@
+# popupTimer of the tile "Timer": running countdown with three buttons
+time~23:20
+pageType~popupTimer~4?7~Timer~~63488
+entityUpdateDetail~4?7~~63488~4?7~4~59~0~start~pause~clear~Start~Pause~Löschen
+@sleep 300

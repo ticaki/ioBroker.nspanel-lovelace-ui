@@ -13,6 +13,7 @@ import {
     MenuItem,
     IconButton,
     InputAdornment,
+    FormHelperText,
 } from '@mui/material';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
 import { EntitySelector } from './EntitySelector';
@@ -308,18 +309,22 @@ export class PageQREditor extends ConfigGeneric<ConfigGenericProps & PageQREdito
                                 label={this.getText('qr_wlan_hidden')}
                                 disabled={!this.state.alive}
                             />
-                            <FormControlLabel
-                                control={
-                                    <Checkbox
-                                        checked={!!entry.pwdhidden}
-                                        onChange={(_e, checked) => {
-                                            this.handleFieldChange('pwdhidden', checked);
-                                        }}
-                                    />
-                                }
-                                label={this.getText('qr_pwd_hidden')}
-                                disabled={!this.state.alive}
-                            />
+                            <Box>
+                                <FormControlLabel
+                                    control={
+                                        <Checkbox
+                                            checked={!!entry.pwdhidden}
+                                            onChange={(_e, checked) => {
+                                                this.handleFieldChange('pwdhidden', checked);
+                                            }}
+                                        />
+                                    }
+                                    label={this.getText('qr_pwd_hidden')}
+                                    disabled={!this.state.alive}
+                                />
+                                {/* the checkbox only clears the text line on the panel, the code keeps the password */}
+                                <FormHelperText sx={{ mt: -0.5 }}>{this.getText('qr_pwd_hidden_hint')}</FormHelperText>
+                            </Box>
                         </Box>
 
                         {/* Set State field */}

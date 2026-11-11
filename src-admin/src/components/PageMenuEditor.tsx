@@ -1,6 +1,5 @@
 import React from 'react';
 import {
-    Alert,
     Box,
     Button,
     TextField,
@@ -25,10 +24,16 @@ import WidgetsIcon from '@mui/icons-material/Widgets';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import ContentPasteIcon from '@mui/icons-material/ContentPaste';
 import SubdirectoryArrowRightIcon from '@mui/icons-material/SubdirectoryArrowRight';
+import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
+import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 import {
     type MenuEntry,
     type AdminPageItemConfig,
     type AdminPanelConfig,
+    type PanelModel,
+    isPanelModel,
+    menuCardGridColumns,
+    menuCardItemLimits,
     normalizeChannelId,
     ADAPTER_NAME,
     ALL_PANELS_SPECIAL_ID,
@@ -41,17 +46,40 @@ import { rawItemListLabel } from './RawItemConfigDialog';
 import { getPageItemDefaultsByRole, getPageNaviItemDefaultsByRole } from '../../../src/lib/const/page-item-defaults';
 import { ConfigGeneric, type ConfigGenericProps, type ConfigGenericState } from '@iobroker/json-config';
 
-/** Basis-Slot-Anzahl pro Kartentyp (cardGrid2: eu/us-l = 8, us-p = 9) */
-const SLOT_COUNTS_BASE: Record<MenuEntry['card'], number> = {
-    cardGrid: 6,
-    cardGrid2: 8,
-    cardGrid3: 4,
-    cardEntities: 4,
-    cardSchedule: 6,
-};
+/** Elementzahl einer Karte für ein Panel-Modell */
+interface ModelItemCount {
+    model: PanelModel;
+    count: number;
+}
 
-/** Ergebnis der Panel-Modell-Auswertung für cardGrid2 */
-type Grid2ModelStatus = 'all-usp' | 'none-usp' | 'conflict' | 'unknown';
+/** Slot-Auswertung einer Karte für die zugewiesenen Panels */
+interface CardSlotInfo {
+    /** Elementzahl je zugewiesenem Modell (leer = kein Panel zugewiesen, es gilt eu) */
+    counts: ModelItemCount[];
+    /** angezeigte Slots pro Seite: das Maximum der zugewiesenen Modelle */
+    slots: number;
+    /** Spalten der Vorschau (Listenkarten: 1) */
+    columns: number;
+    /** die zugewiesenen Modelle zeigen unterschiedlich viele Elemente */
+    mixed: boolean;
+}
+
+/**
+ * Spalten einer Karte für ein Modell; Listenkarten haben eine Spalte.
+ *
+ * @param card Kartentyp
+ * @param model Panel-Modell
+ */
+function columnsOf(card: MenuEntry['card'], model: PanelModel): number {
+    switch (card) {
+        case 'cardGrid':
+        case 'cardGrid2':
+        case 'cardGrid3':
+            return menuCardGridColumns[card][model];
+        default:
+            return 1;
+    }
+}
 
 export interface PageMenuEditorProps {
     entry: MenuEntry;
@@ -160,34 +188,97 @@ export class PageMenuEditor extends ConfigGeneric<ConfigGenericProps & PageMenuE
     }
 
     /**
-     * Berechnet den Modell-Status für cardGrid2 anhand der zugewiesenen Panels.
-     * - Keine Zuweisung → alle konfigurierten Panels werden herangezogen.
-     * - Gemischt us-p/non-usp → 'conflict'.
+     * Modelle der zugewiesenen Panels (ohne Doppelte, in Zuweisungsreihenfolge).
+     * „Alle Panels“ nimmt alle konfigurierten Panels; ein Panel ohne gültiges Modell zählt als eu.
      */
-    private getGrid2ModelStatus(): Grid2ModelStatus {
+    private getAssignedModels(): PanelModel[] {
         const panels = this.props.panels ?? [];
-        const assignment = this.props.entry.navigationAssignment;
+        const assignment = this.props.entry.navigationAssignment ?? [];
+        const activePanels = assignment.some(a => a.topic === ALL_PANELS_SPECIAL_ID)
+            ? panels
+            : assignment
+                  .map(a => panels.find(p => p.topic === a.topic))
+                  .filter((p): p is AdminPanelConfig => p !== undefined);
+        const models: PanelModel[] = [];
+        for (const panel of activePanels) {
+            const model: PanelModel = isPanelModel(panel.model) ? panel.model : 'eu';
+            if (!models.includes(model)) {
+                models.push(model);
+            }
+        }
+        return models;
+    }
 
-        // Keine Zuweisung → kein Konflikt anzeigen
-        if (!assignment || assignment.length === 0) {
-            return 'unknown';
+    /**
+     * Elementzahl einer Karte je zugewiesenem Modell. Die Vorschau zeigt das Maximum (bei gleichen Modellen
+     * also deren Zahl); ohne Zuweisung gilt eu.
+     *
+     * @param card Kartentyp
+     * @param models Modelle der zugewiesenen Panels
+     */
+    private getCardSlotInfo(card: MenuEntry['card'], models: PanelModel[]): CardSlotInfo {
+        const counts = models.map(model => ({ model, count: menuCardItemLimits[card][model] }));
+        if (counts.length === 0) {
+            return { counts, slots: menuCardItemLimits[card].eu, columns: columnsOf(card, 'eu'), mixed: false };
         }
+        const widest = counts.reduce((acc, cur) => (cur.count > acc.count ? cur : acc));
+        return {
+            counts,
+            slots: widest.count,
+            columns: columnsOf(card, widest.model),
+            mixed: counts.some(c => c.count !== widest.count),
+        };
+    }
 
-        const activePanels = assignment
-            .map(a => panels.find(p => p.topic === a.topic))
-            .filter((p): p is AdminPanelConfig => p !== undefined);
+    /**
+     * Beschriftung einer Karte in der Auswahl: Name und Slot-/Zeilenzahl für die zugewiesenen Panels.
+     *
+     * @param card Kartentyp
+     * @param models Modelle der zugewiesenen Panels
+     */
+    private cardLabel(card: MenuEntry['card'], models: PanelModel[]): string {
+        const { slots, mixed } = this.getCardSlotInfo(card, models);
+        const list = card === 'cardEntities' || card === 'cardSchedule';
+        const count = this.getText(list ? 'pageMenu_rows' : 'pageMenu_slots').replace(
+            '%s',
+            `${mixed ? '≤ ' : ''}${slots}`,
+        );
+        return `${this.getText(`pageMenu_name_${card}`)} (${count})`;
+    }
 
-        if (activePanels.length === 0) {
-            return 'unknown';
-        }
-        const uspCount = activePanels.filter(p => p.model === 'us-p').length;
-        if (uspCount === 0) {
-            return 'none-usp';
-        }
-        if (uspCount === activePanels.length) {
-            return 'all-usp';
-        }
-        return 'conflict';
+    /**
+     * Hinweissymbol neben der Slot-Anzeige: Elementzahl je zugewiesenem Modell, Warnung bei unterschiedlichen Zahlen.
+     *
+     * @param info Slot-Auswertung der Karte
+     */
+    private renderModelHint(info: CardSlotInfo): React.JSX.Element {
+        const perModel = info.counts.map(c => `${c.model}: ${c.count}`).join(', ');
+        const text =
+            info.counts.length === 0
+                ? this.getText('pageMenu_items_no_panel')
+                : this.getText('pageMenu_items_per_model').replace('%s', perModel);
+        const title = info.mixed ? `${text} ${this.getText('pageMenu_items_models_differ')}` : text;
+        return (
+            <Tooltip title={title}>
+                <Box
+                    component="span"
+                    data-menu="model-hint"
+                    sx={{ display: 'inline-flex', alignItems: 'center', ml: 0.5, verticalAlign: 'middle' }}
+                >
+                    {info.mixed ? (
+                        <WarningAmberIcon
+                            fontSize="small"
+                            color="warning"
+                        />
+                    ) : (
+                        <InfoOutlinedIcon
+                            fontSize="small"
+                            color="action"
+                        />
+                    )}
+                </Box>
+            </Tooltip>
+        );
     }
 
     /**
@@ -340,16 +431,6 @@ export class PageMenuEditor extends ConfigGeneric<ConfigGenericProps & PageMenuE
     }
 
     componentDidUpdate(prevProps: PageMenuEditorProps): void {
-        // Wenn cardGrid2 gerade aktiv ist und ein Konflikt entsteht → automatisch auf cardGrid wechseln
-        if (
-            this.props.entry.card === 'cardGrid2' &&
-            this.getGrid2ModelStatus() === 'conflict' &&
-            (prevProps.entry.navigationAssignment !== this.props.entry.navigationAssignment ||
-                prevProps.panels !== this.props.panels)
-        ) {
-            this.props.onEntryChange({ ...this.props.entry, card: 'cardGrid' });
-        }
-
         if (this.props.panelPagesMap) {
             // Parent verwaltet Subscriptions: gefilterte Seiten synchron neu berechnen
             if (
@@ -606,23 +687,11 @@ export class PageMenuEditor extends ConfigGeneric<ConfigGenericProps & PageMenuE
         this.props.onEntryChange({ ...this.props.entry, pageItems });
     };
 
-    private getGridConfig(card: MenuEntry['card'], grid2Status: Grid2ModelStatus): { columns: string; wide: boolean } {
-        switch (card) {
-            case 'cardGrid':
-                return { columns: 'repeat(3, 1fr)', wide: false };
-            case 'cardGrid2':
-                return grid2Status === 'all-usp'
-                    ? { columns: 'repeat(3, 1fr)', wide: false }
-                    : { columns: 'repeat(4, 1fr)', wide: false };
-            case 'cardGrid3':
-                return { columns: 'repeat(2, 1fr)', wide: false };
-            case 'cardEntities':
-                return { columns: '1fr', wide: true };
-            case 'cardSchedule':
-                return { columns: '1fr', wide: true };
-            default:
-                return { columns: 'repeat(3, 1fr)', wide: false };
+    private getGridConfig(card: MenuEntry['card'], columns: number): { columns: string; wide: boolean } {
+        if (card === 'cardEntities' || card === 'cardSchedule') {
+            return { columns: '1fr', wide: true };
         }
+        return { columns: `repeat(${columns}, 1fr)`, wide: false };
     }
 
     private renderSlot(index: number, totalSlots: number, wide: boolean, isGridCard: boolean): React.JSX.Element {
@@ -870,12 +939,12 @@ export class PageMenuEditor extends ConfigGeneric<ConfigGenericProps & PageMenuE
         effectiveSlots: number,
         arrowMode: boolean,
         card: MenuEntry['card'],
-        grid2Status: Grid2ModelStatus,
+        gridColumns: number,
         totalRealSlots: number,
         isGridCard: boolean,
         onRemovePage?: () => void,
     ): React.JSX.Element {
-        const { columns, wide } = this.getGridConfig(card, grid2Status);
+        const { columns, wide } = this.getGridConfig(card, gridColumns);
         const startIdx = pageIndex * effectiveSlots;
 
         return (
@@ -950,16 +1019,15 @@ export class PageMenuEditor extends ConfigGeneric<ConfigGenericProps & PageMenuE
     render(): React.JSX.Element {
         const { entry } = this.props;
 
-        // Grid2-Modell-Status berechnen (relevant für Slot-Anzahl und Warnung)
-        const grid2Status = this.getGrid2ModelStatus();
-        const grid2Conflict = grid2Status === 'conflict';
-        const grid2Slots = grid2Status === 'all-usp' ? 9 : 8;
-
-        const baseSlots = entry.card === 'cardGrid2' ? grid2Slots : SLOT_COUNTS_BASE[entry.card];
+        // Elementzahl je zugewiesenem Panel-Modell (Slot-Anzahl, Spalten und Hinweis)
+        const models = this.getAssignedModels();
+        const slotInfo = this.getCardSlotInfo(entry.card, models);
+        const baseSlots = slotInfo.slots;
         const isGridCard = ['cardGrid', 'cardGrid2', 'cardGrid3'].includes(entry.card);
         // adapter default is classic, the setting itself lives in the page details
         const scrollPresentation = entry.scrollPresentation ?? 'classic';
-        const potentialArrow = isGridCard && scrollPresentation === 'arrow';
+        // the panel reserves the arrow on every scroll card (pageMenu.ts), not only on the grids
+        const potentialArrow = scrollPresentation === 'arrow';
         const pageItems = entry.pageItems ?? [];
 
         // Letzter tatsächlich befüllter Index – trailing undefineds durch Drag/Drop ignorieren
@@ -1026,7 +1094,16 @@ export class PageMenuEditor extends ConfigGeneric<ConfigGenericProps & PageMenuE
                         disabled={!this.state.alive}
                     >
                         <FormLabel component="legend">{this.getText('pageMenu_card_type')}</FormLabel>
-                        <Box sx={{ display: 'flex', gap: 4, mt: 1 }}>
+                        {/* die Modellangabe im Text darf die Auswahl nicht auseinanderziehen: nicht umbrechen */}
+                        <Box
+                            sx={{
+                                display: 'flex',
+                                gap: 4,
+                                mt: 1,
+                                alignItems: 'flex-start',
+                                '& .MuiFormControlLabel-label': { whiteSpace: 'nowrap' },
+                            }}
+                        >
                             {/* Linke Spalte: Grid-Varianten */}
                             <Box>
                                 <Typography
@@ -1047,32 +1124,19 @@ export class PageMenuEditor extends ConfigGeneric<ConfigGenericProps & PageMenuE
                                     <FormControlLabel
                                         value="cardGrid"
                                         control={<Radio />}
-                                        label={this.getText('pageMenu_cardGrid')}
+                                        label={this.cardLabel('cardGrid', models)}
                                     />
                                     <FormControlLabel
                                         value="cardGrid2"
-                                        disabled={grid2Conflict || !this.state.alive}
                                         control={<Radio />}
-                                        label={
-                                            grid2Status === 'all-usp'
-                                                ? this.getText('pageMenu_cardGrid2_usp')
-                                                : this.getText('pageMenu_cardGrid2')
-                                        }
+                                        label={this.cardLabel('cardGrid2', models)}
                                     />
                                     <FormControlLabel
                                         value="cardGrid3"
                                         control={<Radio />}
-                                        label={this.getText('pageMenu_cardGrid3')}
+                                        label={this.cardLabel('cardGrid3', models)}
                                     />
                                 </RadioGroup>
-                                {grid2Conflict && (
-                                    <Alert
-                                        severity="warning"
-                                        sx={{ mt: 1, fontSize: '0.75rem', py: 0.5 }}
-                                    >
-                                        {this.getText('pageMenu_cardGrid2_conflict')}
-                                    </Alert>
-                                )}
                             </Box>
 
                             {/* Rechte Spalte: Entities & Schedule */}
@@ -1093,12 +1157,12 @@ export class PageMenuEditor extends ConfigGeneric<ConfigGenericProps & PageMenuE
                                     <FormControlLabel
                                         value="cardEntities"
                                         control={<Radio />}
-                                        label={this.getText('pageMenu_cardEntities')}
+                                        label={this.cardLabel('cardEntities', models)}
                                     />
                                     <FormControlLabel
                                         value="cardSchedule"
                                         control={<Radio />}
-                                        label={this.getText('pageMenu_cardSchedule')}
+                                        label={this.cardLabel('cardSchedule', models)}
                                     />
                                 </RadioGroup>
                             </Box>
@@ -1116,6 +1180,7 @@ export class PageMenuEditor extends ConfigGeneric<ConfigGenericProps & PageMenuE
                         sx={{ mb: 1 }}
                     >
                         {this.getText('pageMenu_items')} ({filledCount}/{totalRealSlots})
+                        {this.renderModelHint(slotInfo)}
                     </Typography>
                     {Array.from({ length: totalPages }, (_, pageIdx) => {
                         const startIdx = pageIdx * effectiveSlots;
@@ -1150,7 +1215,7 @@ export class PageMenuEditor extends ConfigGeneric<ConfigGenericProps & PageMenuE
                             effectiveSlots,
                             arrowMode,
                             entry.card,
-                            grid2Status,
+                            slotInfo.columns,
                             totalRealSlots,
                             isGridCard,
                             onRemovePage,

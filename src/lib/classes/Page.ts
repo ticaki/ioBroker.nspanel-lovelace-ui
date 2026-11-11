@@ -3,7 +3,7 @@ import * as convertColorScaleBest from '../types/function-and-const';
 import { BaseClassPage } from './baseClassPage';
 import type * as types from '../types/types';
 import { PageItem } from '../pages/pageItem';
-import { deepAssign, getPayload, getPayloadRemoveTilde, getRegExp } from '../const/tools';
+import { deepAssign, getPayload, getPayloadRemoveTilde, getRegExp, shortenHeadline } from '../const/tools';
 import { pageItemTemplates } from '../templates/templateArray';
 import type { PageInterface, PageItemInterface } from './PageInterface';
 import { Icons } from '../const/icon_mapping';
@@ -61,6 +61,16 @@ export class Page extends BaseClassPage {
      * @param pageItemsConfig - Optional page configuration including items, enums, device references
      * @param isScreensaver - Whether this page is a screensaver (default: false)
      */
+    /**
+     * The headline of the title line, shortened with … to the width of the panel model.
+     * All cards use it when they build their entityUpd message; popups have their own widths.
+     *
+     * @param text headline
+     */
+    protected shortHeadline(text: string | undefined): string {
+        return shortenHeadline(text, this.basePanel.info.nspanel.model);
+    }
+
     constructor(card: PageInterface, pageItemsConfig: pages.PageBase | undefined, isScreensaver: boolean = false) {
         super(card, pageItemsConfig && pageItemsConfig.alwaysOn, pageItemsConfig && pageItemsConfig.pageItems);
         this.isScreensaver = isScreensaver;

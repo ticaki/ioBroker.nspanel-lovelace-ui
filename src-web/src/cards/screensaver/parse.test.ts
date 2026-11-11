@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest';
 import { parseCommand } from '../../protocol/commands';
 import type { Entity6 } from '../../protocol/types';
 import {
+    alternateEntityCount,
+    areaSizes,
     bottomCount,
     handleCommand,
     initial,
@@ -187,6 +189,131 @@ describe('screensaver parse', () => {
         expect(areas.favorit).toBeUndefined();
         expect(areas.bottom.map(b => b.optionalValue)).toEqual(['1', '2', '3', '4', '5']);
         expect(areas.indicator.map(i => i.id)).toEqual(['0?10', '0?11', '0?12', '0?13', '0?14', '0?15', '0?16']);
+    });
+
+    it('knows the places of every layout per model (ScreenSaverConst of the adapter)', () => {
+        const table = (model: 'eu' | 'us-l' | 'us-p' | 'web-l' | 'web-p'): string[] =>
+            (['standard', 'alternate', 'advanced', 'easyview', 'tiles'] as const).map(layout => {
+                const s = areaSizes(layout, model);
+                return `${layout} ${s.bottom}/${s.indicator}/${s.left}`;
+            });
+        expect(table('eu')).toEqual([
+            'standard 4/0/0',
+            'alternate 3/0/0',
+            'advanced 6/5/3',
+            'easyview 3/0/0',
+            'tiles 5/7/0',
+        ]);
+        expect(table('us-l')).toEqual(table('eu'));
+        expect(table('us-p')).toEqual([
+            'standard 4/0/0',
+            'alternate 3/0/0',
+            'advanced 6/5/3',
+            'easyview 4/0/0',
+            'tiles 4/8/0',
+        ]);
+        expect(table('web-l')).toEqual([
+            'standard 6/0/0',
+            'alternate 5/0/0',
+            'advanced 8/8/3',
+            'easyview 4/0/0',
+            'tiles 7/11/0',
+        ]);
+        expect(table('web-p')).toEqual([
+            'standard 8/0/0',
+            'alternate 7/0/0',
+            'advanced 8/12/4',
+            'easyview 8/0/0',
+            'tiles 8/8/0',
+        ]);
+        for (const model of ['web-l', 'web-p'] as const) {
+            expect(areaSizes('alternate', model).alternate).toBe(1);
+            expect(areaSizes('tiles', model).favorit).toBe(0);
+            expect(areaSizes('standard', model).favorit).toBe(1);
+        }
+    });
+
+    it('tells standard from alternate by the entity count of the model', () => {
+        expect(alternateEntityCount('eu')).toBe(6);
+        expect(alternateEntityCount('web-l')).toBe(8);
+        expect(alternateEntityCount('web-p')).toBe(10);
+        const n = (count: number): Entity6[] =>
+            parseWeatherUpdate(
+                parseCommand(wu(...Array.from({ length: count }, (_, i) => e('X', 1, `n${i}`, `${i}`)))).args,
+            );
+        // web-l: standard = favorit + 6 bottom = 7, alternate = favorit + 5 + empty + alternate = 8
+        expect(layoutOf('screensaver', n(7), 'web-l')).toBe('standard');
+        expect(layoutOf('screensaver', n(8), 'web-l')).toBe('alternate');
+        expect(layoutOf('screensaver', n(9), 'web-p')).toBe('standard');
+        expect(layoutOf('screensaver', n(10), 'web-p')).toBe('alternate');
+        // without a model the eu count applies
+        expect(layoutOf('screensaver', n(6))).toBe('alternate');
+    });
+
+    it('splits the areas by the places of the model', () => {
+        const ent = (prefix: string, count: number, id = false): string[] =>
+            Array.from({ length: count }, (_, i) => e('X', 1, `${prefix}${i + 1}`, `${i + 1}`, id ? `0?${i}` : ''));
+        // tiles us-p: 4 bottom, 8 indicators (the parser used to take 5 / 7)
+        const usp = splitAreas(
+            'screensaver5',
+            parseWeatherUpdate(parseCommand(wu(...ent('b', 4), ...ent('i', 8, true))).args),
+            'us-p',
+        );
+        expect(usp.bottom.map(b => b.displayName)).toEqual(['b1', 'b2', 'b3', 'b4']);
+        expect(usp.indicator).toHaveLength(8);
+        expect(usp.indicator[7].displayName).toBe('i8');
+        // tiles web-l: 7 bottom, 11 indicators
+        const webl = splitAreas(
+            'screensaver5',
+            parseWeatherUpdate(parseCommand(wu(...ent('b', 7), ...ent('i', 11, true))).args),
+            'web-l',
+        );
+        expect(webl.bottom).toHaveLength(7);
+        expect(webl.indicator.map(i => i.displayName)).toEqual([
+            'i1',
+            'i2',
+            'i3',
+            'i4',
+            'i5',
+            'i6',
+            'i7',
+            'i8',
+            'i9',
+            'i10',
+            'i11',
+        ]);
+        // advanced web-p: favorit, 4 left, 8 bottom, 12 indicators
+        const adv = splitAreas(
+            'screensaver2',
+            parseWeatherUpdate(
+                parseCommand(wu(...ent('f', 1), ...ent('l', 4), ...ent('b', 8), ...ent('i', 12, true))).args,
+            ),
+            'web-p',
+        );
+        expect(adv.favorit?.displayName).toBe('f1');
+        expect(adv.left.map(l => l.displayName)).toEqual(['l1', 'l2', 'l3', 'l4']);
+        expect(adv.bottom).toHaveLength(8);
+        expect(adv.bottom[7].displayName).toBe('b8');
+        expect(adv.indicator).toHaveLength(12);
+        expect(adv.indicator[11].id).toBe('0?11');
+        expect(adv.bottom[7].displayName).toBe('b8');
+        // alternate web-p: favorit, 7 bottom, empty, alternate
+        const alt = splitAreas(
+            'screensaver',
+            parseWeatherUpdate(parseCommand(wu(...ent('f', 1), ...ent('b', 7), EMPTY, ...ent('a', 1))).args),
+            'web-p',
+        );
+        expect(alt.layout).toBe('alternate');
+        expect(alt.bottom).toHaveLength(7);
+        expect(alt.alternate?.displayName).toBe('a1');
+        // easyview web-p: favorit + 8 bottom
+        const easy = splitAreas(
+            'screensaver3',
+            parseWeatherUpdate(parseCommand(wu(EMPTY, ...ent('b', 8))).args),
+            'web-p',
+        );
+        expect(easy.bottom).toHaveLength(8);
+        expect(bottomCount('easyview', 'web-p')).toBe(8);
     });
 
     it('tolerates a short or empty weatherUpdate', () => {

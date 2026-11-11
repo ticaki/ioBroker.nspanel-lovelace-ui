@@ -1,3 +1,5 @@
+import type { PanelModel } from '../../protocol/types';
+import { isPortrait } from '../../style/theme';
 import type { ChartModel } from './parse';
 import { leadingInt } from './parse';
 
@@ -23,8 +25,26 @@ export const PLOT: PlotArea = { x: 20, y: 90, w: 410, h: 220 };
  */
 export const PLOT_BAR: PlotArea = { x: 8, y: 75, w: 433, h: 235 };
 
-/** the plot area of a chart kind */
-export function plotFor(kind: 'bar' | 'line'): PlotArea {
+/**
+ * Portrait (us-p 320x480, also web-p, which draws the charts as us-p): the hotspot `m0` of
+ * `cardChart` and `cardLChart` in `HMI/us-p/nspanel-us-p-v6.0.8.screensaver5.HMI` is 10,90 300x370
+ * (eu: 8,75 434x235); the drawing code of both pages is the same as on eu, only relative to `m0`.
+ * The bar chart uses `m0` like on eu, the line chart keeps the offset of the eu plot to its `m0`
+ * (+12, +15, -24, -15).
+ */
+export const PLOT_BAR_PORTRAIT: PlotArea = { x: 10, y: 90, w: 300, h: 370 };
+export const PLOT_PORTRAIT: PlotArea = { x: 22, y: 105, w: 276, h: 355 };
+
+/**
+ * the plot area of a chart kind on a model (portrait models get the us-p geometry)
+ *
+ * @param kind bar or line chart
+ * @param model the panel model the card sees, `eu` when omitted
+ */
+export function plotFor(kind: 'bar' | 'line', model: PanelModel = 'eu'): PlotArea {
+    if (isPortrait(model)) {
+        return kind === 'bar' ? PLOT_BAR_PORTRAIT : PLOT_PORTRAIT;
+    }
     return kind === 'bar' ? PLOT_BAR : PLOT;
 }
 

@@ -59,22 +59,12 @@ class PageMenu extends import_Page.Page {
       switch (options.config.card) {
         case "cardSchedule":
         case "cardGrid":
-          this.maxItems = 6;
-          break;
         case "cardGrid2":
-          this.maxItems = this.basePanel.info.nspanel.model === "us-p" ? 9 : 8;
-          break;
         case "cardGrid3":
-          this.maxItems = 4;
-          break;
         case "cardEntities":
-          this.maxItems = this.basePanel.info.nspanel.model === "us-p" ? 5 : 4;
-          break;
         case "cardThermo2":
-          this.maxItems = 9;
-          break;
         case "cardMedia":
-          this.maxItems = 5;
+          this.maxItems = (0, import_tools.menuMaxItems)(options.config.card, this.basePanel.info.nspanel.model);
           break;
         case "cardChart":
         case "cardLChart":
@@ -293,22 +283,12 @@ class PageMenu extends import_Page.Page {
         switch (this.config.card) {
           case "cardSchedule":
           case "cardGrid":
-            this.maxItems = 6;
-            break;
           case "cardGrid2":
-            this.maxItems = this.basePanel.info.nspanel.model === "us-p" ? 9 : 8;
-            break;
           case "cardGrid3":
-            this.maxItems = 4;
-            break;
           case "cardEntities":
-            this.maxItems = this.basePanel.info.nspanel.model === "us-p" ? 5 : 4;
-            break;
           case "cardThermo2":
-            this.maxItems = 9;
-            break;
           case "cardMedia":
-            this.maxItems = 5;
+            this.maxItems = (0, import_tools.menuMaxItems)(this.config.card, this.basePanel.info.nspanel.model);
             break;
           default:
             this.log.error(`PageMenu: ${card} is not supported in onVisibilityChange!`);
@@ -438,7 +418,7 @@ class PageMenu extends import_Page.Page {
   }
   getMessage(message) {
     return (0, import_tools.getPayload)(
-      (0, import_tools.getPayloadRemoveTilde)("entityUpd", message.headline),
+      (0, import_tools.getPayloadRemoveTilde)("entityUpd", this.shortHeadline(message.headline)),
       message.navigation,
       (0, import_tools.getPayloadArray)(message.options)
     );

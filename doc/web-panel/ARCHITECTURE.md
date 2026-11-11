@@ -329,9 +329,12 @@ Server → Client:
 
 ```jsonc
 { "t": "hello", "model": "eu", "topic": "…", "name": "…",
-  "friendlyName": "…", "tftVersion": "5.1.1", "kind": "clone" | "web" }
+  "friendlyName": "…", "tftVersion": "5.1.1", "kind": "clone" | "web", "buttons": true }
 // topic = Topic des Endpoints (echtes Panel bzw. eigenständiges Web-Panel), name = Name des
 // Panels (= id), tftVersion = bekannte TFT-Version des Modells, sonst "1.0.0"
+// buttons = die zwei virtuellen Hardware-Tasten unter dem Display zeigen: bei Klonen immer true,
+// bei eigenständigen Web-Panels die Option `webButtons` des Tabelleneintrags, ohne Option nach
+// Modell (eu/us-l/us-p true, web-p/web-l false)
 { "t": "cmd", "p": "entityUpd~…", "seq": 17 }   // CustomSend-Payload, unverändert
 { "t": "buzzer", "p": "1,1,1" }                 // Tasmota-Buzzer-Argument, unverändert
 { "t": "bye", "reason": "…" }
@@ -563,8 +566,13 @@ Komponente, damit `brightness` (DeviceFrame) und die Karte dieselbe Quelle lesen
 
 ### 3.5 Darstellung
 
-- Bühne 480×320 (`eu`, `us-l`) bzw. 320×480 (`us-p`), schwarzer Hintergrund, Skalierung
-  per `transform: scale()` auf die Viewport-Größe, Seitenverhältnis bleibt.
+- Bühne 480×320 (`eu`, `us-l`) bzw. 320×480 (`us-p`), bei den Web-Modellen 320×640 (`web-p`)
+  bzw. 640×320 (`web-l`, siehe `SMARTPHONE.md`); schwarzer Hintergrund, Skalierung per
+  `transform: scale()` auf die Viewport-Größe (`DeviceFrame.stageScale`), Seitenverhältnis bleibt.
+  Bühnengröße nur über `stageSize(model)`, Ausrichtung über `isPortrait(model)` (us-p, web-p),
+  Web-Modell über `isWebModel(model)` (alle in `style/theme.ts`) – keine Vergleiche mit `'us-p'`.
+  `contentWidth(model)` ist auf der Hardware Bühne − 33 (leerer Rand der HMI), bei den Web-Modellen
+  die volle Bühnenbreite (TitleBar, Grid-Spalten, Zeilen von cardEntities/cardSchedule richten sich danach).
 - Farben kommen als RGB565-Dezimalzahl (`color565ToCss`).
 - Icons sind Glyphen aus dem Private-Use-Bereich; `Icon` löst Glyphe → MDI-Name
   (`glyph-map.json`, generiert aus `src/lib/const/icon_mapping.ts`) → SVG-Pfad
@@ -576,8 +584,45 @@ Komponente, damit `brightness` (DeviceFrame) und die Karte dieselbe Quelle lesen
   das Material vorliegt, zeigt die Startseite ein Provisorium (Logo-Platzhalter); die
   Komponente ist so gebaut, dass später eine Mediendatei aus `www/` eingehängt wird.
 - Hardware-Buttons: zwei Flächen unterhalb der Bühne, senden `event,button1` /
-  `event,button2`.
+  `event,button2`. Abschaltbar pro Web-Panel über `hello.buttons` (`false` = keine Tasten, die
+  Bühne bekommt die ganze Höhe; fehlt das Feld, bleiben sie, `helloShowsButtons`). Im Mock-Modus
+  `?buttons=0`.
 - Buzzer: `buzzer`-Frame → `audio/buzzer.ts` (Tasmota-Syntax `count,beep,silence[,tune]`).
+
+### 3.5.1 Zentrierte Karten auf den Web-Bühnen (`cards/stageLayout.ts`)
+
+Karten ohne eigenes Layout für `web-p`/`web-l` werden in der Geometrie ihres **Basismodells**
+gezeichnet und auf der größeren Bühne zentriert: `web-l` → `eu` (480×320 bei x 80), `web-p` →
+`us-p` (320×480 bei y 80). Welche pageTypes das betrifft, steht in der Menge `CENTERED_ON_WEB`.
+
+- `App.renderPage` legt jede Seite in einen Rahmen `div[data-card-stage]` mit Position und Größe aus
+  `cardStage(pageType, model)` und reicht der Karte `global.model` = `cardStage(…).model` weiter.
+  Eine zentrierte Karte sieht also `eu` bzw. `us-p` und merkt von der Web-Bühne nichts; Karten
+  mit Web-Layout sehen `web-p`/`web-l` und bekommen die ganze Bühne.
+- Der Store und das Startup-Event behalten das echte Modell (`global.model` im Store).
+- **Eigenes Web-Layout einführen:** die pageTypes der Karte aus `CENTERED_ON_WEB` streichen und in
+  der Karte die Web-Modelle behandeln (Tabellen pro Modell, `isPortrait`, `stageSize`). Sonst ist
+  nichts zu ändern; `stageLayout.test.ts` prüft, dass die Menü-Karten nicht zentriert werden und
+  die Liste nur registrierte pageTypes enthält.
+- Stand 2026-11-07: eigenes Web-Layout haben cardEntities, cardSchedule (auch cardTrash, das als
+  cardSchedule kommt), cardGrid/cardGrid2/cardGrid3, cardMedia, cardThermo2, alle Screensaver
+  (`cards/screensaver/layout.ts`) und alle Popups (`cards/popupSlider/layout.ts`); zentriert sind
+  pageStartup, cardThermo, cardAlarm, cardUnlock, cardQR, cardPower, cardChart, cardLChart und
+  cardPChart. Popups, cardMedia und cardThermo2 zeichnen seitdem auch auf `us-p` hochkant (vorher
+  eu-Koordinaten, abgeschnitten).
+- Stand 2026-11-07 (später): Die zentrierten festen Karten cardAlarm/cardUnlock, cardThermo, cardPower,
+  cardQR, cardChart und cardLChart haben ein **Hochkant-Layout nach der us-p-HMI**
+  (`HMI/us-p/nspanel-us-p-v6.0.8.screensaver5.HMI`, Objekttabellen der Seiten): je Karte eine
+  Layout-Tabelle `layout.ts` (`alarmLayout`, `thermoLayout`, `powerLayout`, `qrLayout`,
+  `plotFor(kind, model)`), Auswahl über `isPortrait(model)`, eu/us-l bleiben pixelgleich. Auf `web-p`
+  sehen sie über `cardStage` das Modell `us-p` und liegen bei y 80 (320×480), es braucht also nur das
+  us-p-Layout. Die TitleBar bekommt `model`, der rechte Pfeil liegt damit bei `contentWidth − 33`.
+  Inhalt: cardAlarm Titel in der TitleBar, PIN-Feld und Status-Icon darunter, Aktionstasten 2×2,
+  Ziffernblock unten; cardThermo Info als zwei Spalten, Zieltemperatur mit Pfeilen links/rechts
+  (bei zwei Zielen Pfeile darüber/darunter), Modi 2×4; cardPower Haus als breiter Balken, je drei
+  Elemente darüber und darunter mit senkrechten Flusslinien (die us-p-HMI zeigt keine Namen der
+  Elemente); cardQR Code oben, Zeilen darunter, Schalter neben dem Namen; Charts im Hotspot `m0`
+  (10,90 300×370). cardPChart hatte sein Hochkant-Layout schon (`cardPChart/layout.ts`).
 
 ### 3.6 Transport-Vertrag (`transport/Transport.ts`)
 
@@ -607,8 +652,8 @@ Spätere Varianten (Token, ioBroker-Socket) implementieren dasselbe Interface.
 ### 3.7 Screenshots mit Puppeteer
 
 Zum Vergleich einer Karte mit den Wiki-Bildern rendert `src-web/scripts/screenshot.mjs`
-eine Liste von CustomSend-Payloads im Mock-Modus und speichert die Bühne (480×320, 2x) als
-PNG. Voraussetzungen: global installiertes `puppeteer` (`npm i -g puppeteer`) und ein
+eine Liste von CustomSend-Payloads im Mock-Modus und speichert die Bühne (native Größe des
+Modells, `--model eu|us-l|us-p|web-p|web-l`, 2x) als PNG. Voraussetzungen: global installiertes `puppeteer` (`npm i -g puppeteer`) und ein
 laufender Vite-Server in `src-web` (`npm start`, Port 4174).
 
 ```bash
@@ -623,6 +668,9 @@ tippt das erste passende Element in der Bühne an (z. B. `[data-role="tile"][dat
 das Frontend öffnet dann selbst das Popup, die folgenden Zeilen spielen die Antwort des
 Adapters ein). Das Skript gibt am Ende aus, welche Events das Frontend gesendet hätte
 (`ack`, `event,…`).
+
+`--frame` nimmt den ganzen Geräterahmen samt Hardware-Tasten auf, `--buttons 0` öffnet den Mock
+ohne Tasten.
 
 Mock-Modus: `http://localhost:4174/<topic>?mock=1` öffnet keinen WebSocket; stattdessen gibt
 es `window.__panel = { dispatch(raw), sent, hello }` (Hello-Default: Modell `eu`,

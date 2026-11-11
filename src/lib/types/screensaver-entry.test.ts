@@ -10,6 +10,12 @@ import {
     screensaverAlternateItems,
     screensaverItemCondition,
     formatEntryNumber,
+    hardwarePanelModels,
+    isPanelModel,
+    isWebPanelModel,
+    menuCardGridColumns,
+    menuCardItemLimits,
+    panelModels,
     screensaverNotifyLines,
     screensaverAreas,
     screensaverCardOfMode,
@@ -84,6 +90,54 @@ describe('lib/types - screensaver entry (admin tab)', () => {
         expect(screensaverMaxEntries('tiles', 'indicator', 'us-p')).to.equal(8);
         expect(screensaverMaxEntries('tiles', 'favorit')).to.equal(0);
         expect(screensaverMaxEntries('tiles', 'mricon')).to.equal(2);
+    });
+
+    it('knows the places of the smartphone models web-l and web-p', () => {
+        expect(screensaverMaxEntries('standard', 'bottom', 'web-l')).to.equal(6);
+        expect(screensaverMaxEntries('standard', 'bottom', 'web-p')).to.equal(8);
+        expect(screensaverMaxEntries('alternate', 'bottom', 'web-l')).to.equal(5);
+        expect(screensaverMaxEntries('alternate', 'bottom', 'web-p')).to.equal(7);
+        expect(screensaverMaxEntries('advanced', 'indicator', 'web-l')).to.equal(8);
+        expect(screensaverMaxEntries('advanced', 'indicator', 'web-p')).to.equal(12);
+        expect(screensaverMaxEntries('advanced', 'left', 'web-l')).to.equal(3);
+        expect(screensaverMaxEntries('advanced', 'left', 'web-p')).to.equal(4);
+        expect(screensaverMaxEntries('easyview', 'bottom', 'web-l')).to.equal(4);
+        expect(screensaverMaxEntries('easyview', 'bottom', 'web-p')).to.equal(8);
+        expect(screensaverMaxEntries('tiles', 'bottom', 'web-l')).to.equal(7);
+        expect(screensaverMaxEntries('tiles', 'indicator', 'web-l')).to.equal(11);
+        expect(screensaverMaxEntries('tiles', 'indicator', 'web-p')).to.equal(8);
+        // places not named in the table stay as eu
+        expect(screensaverMaxEntries('standard', 'favorit', 'web-p')).to.equal(1);
+        expect(screensaverMaxEntries('alternate', 'alternate', 'web-l')).to.equal(1);
+        expect(screensaverMaxEntries('tiles', 'mricon', 'web-p')).to.equal(2);
+    });
+
+    it('tells the panel models and the web models apart', () => {
+        for (const model of panelModels) {
+            expect(isPanelModel(model), model).to.equal(true);
+            const toAdapter: NSpanelModel = model;
+            void toAdapter;
+        }
+        expect(isPanelModel('us')).to.equal(false);
+        expect(isPanelModel(undefined)).to.equal(false);
+        expect(hardwarePanelModels).to.not.include('web-p');
+        expect(hardwarePanelModels).to.not.include('web-l');
+        expect(isWebPanelModel('web-p')).to.equal(true);
+        expect(isWebPanelModel('us-p')).to.equal(false);
+    });
+
+    it('has the menu card items per model of SMARTPHONE.md', () => {
+        expect(menuCardItemLimits.cardGrid2).to.deep.equal({ eu: 8, 'us-l': 8, 'us-p': 9, 'web-l': 10, 'web-p': 15 });
+        expect(menuCardItemLimits.cardEntities['web-p']).to.equal(8);
+        expect(menuCardItemLimits.cardSchedule['web-p']).to.equal(11);
+        for (const card of ['cardGrid', 'cardGrid2', 'cardGrid3'] as const) {
+            for (const model of panelModels) {
+                // columns x rows fill the page exactly
+                expect(menuCardItemLimits[card][model] % menuCardGridColumns[card][model], `${card}/${model}`).to.equal(
+                    0,
+                );
+            }
+        }
     });
 
     it('maps the five versions to the four cards like screensaver.ts', () => {

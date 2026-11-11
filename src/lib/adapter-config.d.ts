@@ -84,6 +84,11 @@ declare global {
                  * panel script is rejected, its version is not checked and no script update is offered
                  */
                 noScript?: boolean,
+                /**
+                 * standalone web panel only: show the two virtual hardware buttons below the display;
+                 * missing = by model (true for eu/us-l/us-p, false for web-p/web-l)
+                 */
+                webButtons?: boolean,
             }[];
             pw1: string;
 

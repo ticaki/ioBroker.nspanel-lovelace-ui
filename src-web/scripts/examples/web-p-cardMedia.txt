@@ -1,0 +1,4 @@
+# cardMedia with all 8 option slots of the model (PageMedia sends maxItems options)
+pageType~cardMedia
+entityUpd~Spotify: Küche~button~bSubPrev~~2047~~~button~bSubNext~~2047~~~media~Your Best Excuse | 0:14-4:17~63488~Hands on the Wheel | Hartmann~65535~45~~2016~~number~logo~~2016~Seek~~input_sel~0~~2016~Speaker~PRESS~input_sel~1~~2016~Playlist~PRESS~input_sel~2~~2016~Tracks~PRESS~number~3~~2016~Equalizer~~button~4~~2016~Repeat~1~button~5~~2016~Favorit~~button~6~~2016~Mix~~button~7~~2016~Sleep~22:15
+@sleep 300

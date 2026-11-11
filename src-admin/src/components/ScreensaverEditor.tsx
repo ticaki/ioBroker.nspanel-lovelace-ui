@@ -73,6 +73,7 @@ import {
     type ClockTimerChannelInfo,
     clockTimerUsesSlots,
     isClockTimerComplete,
+    isPanelModel,
     screensaverAreas,
     screensaverCardOfMode,
     screensaverItemCondition,
@@ -201,8 +202,11 @@ type Layout = {
     areas: Partial<Record<ScreensaverArea, AreaBox>>;
 };
 
-/** the two panel shapes: eu and us-l are landscape, us-p is portrait */
-type LayoutModel = 'eu' | 'us-p';
+/**
+ * the four panel shapes: eu and us-l are landscape (3 : 2), us-p is portrait (2 : 3), the smartphone
+ * web panels web-l (2 : 1) and web-p (1 : 2)
+ */
+type LayoutModel = 'eu' | 'us-p' | 'web-l' | 'web-p';
 
 /** tiles (screensaver5) on the landscape panels - 3 rows x 5 columns of 90 x 107 px */
 const TILES_LAYOUT: Layout = {
@@ -277,8 +281,224 @@ const TILES_LAYOUT_PORTRAIT: Layout = {
     },
 };
 
+/**
+ * web-l (smartphone landscape, stage 640 x 320): the eu layout, the extra width goes into the columns
+ * (doc/web-panel/SMARTPHONE.md, section Screensaver)
+ */
+const WEB_L_LAYOUTS: Record<ScreensaverMode, Layout> = {
+    standard: {
+        aspect: '2 / 1',
+        maxWidth: 880,
+        mricon: [
+            { top: '3%', left: '1.5%', width: '8%', height: '15%' },
+            { top: '3%', left: '90.5%', width: '8%', height: '15%' },
+        ],
+        time: { top: '12%', left: '25%', width: '50%', height: '40%', fontSize: 58 },
+        date: { top: '54%', left: '15%', width: '70%', height: '12%' },
+        separator: { top: '68%', left: '10%', width: '80%' },
+        areas: {
+            // bottom: 6 columns of 82 px from x 137
+            favorit: { top: '70%', left: '1.5%', width: '19.5%', height: '28%', direction: 'column' },
+            bottom: { top: '70%', left: '21.4%', width: '77%', height: '28%', direction: 'row' },
+        },
+    },
+    alternate: {
+        aspect: '2 / 1',
+        maxWidth: 880,
+        mricon: [
+            { top: '3%', left: '1.5%', width: '8%', height: '15%' },
+            { top: '3%', left: '90.5%', width: '8%', height: '15%' },
+        ],
+        time: { top: '12%', left: '25%', width: '50%', height: '40%', fontSize: 58 },
+        date: { top: '54%', left: '15%', width: '70%', height: '12%' },
+        separator: { top: '68%', left: '10%', width: '80%' },
+        areas: {
+            // bottom: 5 columns of 82 px
+            favorit: { top: '70%', left: '1.5%', width: '33%', height: '14%', direction: 'row' },
+            alternate: { top: '85%', left: '1.5%', width: '33%', height: '13%', direction: 'row' },
+            bottom: { top: '70%', left: '35.5%', width: '63%', height: '28%', direction: 'row' },
+        },
+    },
+    advanced: {
+        aspect: '2 / 1',
+        maxWidth: 880,
+        mricon: [
+            { top: '85%', left: '25%', width: '18%', height: '13%' },
+            { top: '85%', left: '57%', width: '18%', height: '13%' },
+        ],
+        time: { top: '2%', left: '66%', width: '32%', height: '22%', fontSize: 40 },
+        date: { top: '24%', left: '55%', width: '43%', height: '10%' },
+        areas: {
+            favorit: { top: '2%', left: '2.5%', width: '25%', height: '22%', direction: 'row' },
+            left: { top: '25%', left: '2.5%', width: '25%', height: '30%', direction: 'column' },
+            // 8 indicators of 56 px from x 178
+            indicator: { top: '36%', left: '27.8%', width: '70%', height: '19%', direction: 'row' },
+            // 8 places of 75 px from x 16
+            bottom: { top: '56%', left: '2.5%', width: '95%', height: '28%', direction: 'row' },
+        },
+    },
+    easyview: {
+        aspect: '2 / 1',
+        maxWidth: 880,
+        mricon: [
+            { top: '3%', left: '1.5%', width: '8%', height: '15%' },
+            { top: '3%', left: '90.5%', width: '8%', height: '15%' },
+        ],
+        time: { top: '4%', left: '20%', width: '60%', height: '42%', fontSize: 64 },
+        date: { top: '46%', left: '10%', width: '80%', height: '12%' },
+        separator: { top: '60%', left: '10%', width: '80%' },
+        areas: {
+            bottom: { top: '62%', left: '2%', width: '96%', height: '36%', direction: 'row' },
+        },
+    },
+    // 3 rows x 7 columns of 90 px from x 5: 7 indicators, 2 + 2 indicators beside the clock, 7 bottom items
+    tiles: {
+        aspect: '2 / 1',
+        maxWidth: 880,
+        mricon: [
+            { top: '94%', left: '2%', width: '39%', height: '6%' },
+            { top: '94%', left: '59%', width: '39%', height: '6%' },
+        ],
+        time: { top: '35%', left: '29%', width: '42%', height: '20%', fontSize: 44 },
+        date: { top: '55%', left: '29%', width: '42%', height: '11%' },
+        areas: {
+            indicator: {
+                top: '1%',
+                left: '0.8%',
+                width: '98.4%',
+                height: '65%',
+                direction: 'row',
+                columns: 7,
+                cells: [
+                    { row: 1, column: 1 },
+                    { row: 1, column: 2 },
+                    { row: 1, column: 3 },
+                    { row: 1, column: 4 },
+                    { row: 1, column: 5 },
+                    { row: 1, column: 6 },
+                    { row: 1, column: 7 },
+                    { row: 2, column: 1 },
+                    { row: 2, column: 2 },
+                    { row: 2, column: 6 },
+                    { row: 2, column: 7 },
+                ],
+            },
+            bottom: { top: '67%', left: '0.8%', width: '98.4%', height: '27%', direction: 'row' },
+        },
+    },
+};
+
+/**
+ * web-p (smartphone portrait, stage 320 x 640): clock and date on top, bottom always two rows of 4 columns
+ * (doc/web-panel/SMARTPHONE.md, section Screensaver)
+ */
+const WEB_P_LAYOUTS: Record<ScreensaverMode, Layout> = {
+    standard: {
+        aspect: '1 / 2',
+        maxWidth: 400,
+        mricon: [
+            { top: '28%', left: '1%', width: '10%', height: '5%' },
+            { top: '28%', left: '89%', width: '10%', height: '5%' },
+        ],
+        time: { top: '3%', left: '5%', width: '90%', height: '18%', fontSize: 64 },
+        date: { top: '22%', left: '10%', width: '80%', height: '5%' },
+        separator: { top: '34%', left: '17%', width: '66%' },
+        areas: {
+            favorit: { top: '36%', left: '15%', width: '70%', height: '24%', direction: 'column' },
+            bottom: { top: '62%', left: '2%', width: '96%', height: '36%', direction: 'row', columns: 4 },
+        },
+    },
+    alternate: {
+        aspect: '1 / 2',
+        maxWidth: 400,
+        mricon: [
+            { top: '28%', left: '1%', width: '10%', height: '5%' },
+            { top: '28%', left: '89%', width: '10%', height: '5%' },
+        ],
+        time: { top: '3%', left: '5%', width: '90%', height: '18%', fontSize: 64 },
+        date: { top: '22%', left: '10%', width: '80%', height: '5%' },
+        separator: { top: '34%', left: '17%', width: '66%' },
+        areas: {
+            favorit: { top: '36%', left: '15%', width: '70%', height: '12%', direction: 'row' },
+            alternate: { top: '49%', left: '15%', width: '70%', height: '11%', direction: 'row' },
+            bottom: { top: '62%', left: '2%', width: '96%', height: '36%', direction: 'row', columns: 4 },
+        },
+    },
+    // places 1-4 of the indicators as a 2 x 2 block beside the left column (below clock and date), 5-12 as two
+    // rows of 4 below; a thin line between the indicators and the two bottom rows
+    advanced: {
+        aspect: '1 / 2',
+        maxWidth: 400,
+        mricon: [
+            { top: '95%', left: '17%', width: '14%', height: '4%' },
+            { top: '95%', left: '69%', width: '14%', height: '4%' },
+        ],
+        time: { top: '2%', left: '50%', width: '48%', height: '10%', fontSize: 54 },
+        date: { top: '12%', left: '52%', width: '44%', height: '4%' },
+        separator: { top: '61%', left: '10%', width: '80%' },
+        areas: {
+            favorit: { top: '2%', left: '4%', width: '44%', height: '15%', direction: 'column' },
+            left: { top: '18%', left: '4%', width: '44%', height: '21%', direction: 'column' },
+            indicator: {
+                top: '18%',
+                left: '2%',
+                width: '96%',
+                height: '42%',
+                direction: 'row',
+                columns: 4,
+                cells: [
+                    { row: 1, column: 3 },
+                    { row: 1, column: 4 },
+                    { row: 2, column: 3 },
+                    { row: 2, column: 4 },
+                    { row: 3, column: 1 },
+                    { row: 3, column: 2 },
+                    { row: 3, column: 3 },
+                    { row: 3, column: 4 },
+                    { row: 4, column: 1 },
+                    { row: 4, column: 2 },
+                    { row: 4, column: 3 },
+                    { row: 4, column: 4 },
+                ],
+            },
+            bottom: { top: '62%', left: '4%', width: '92%', height: '32%', direction: 'row', columns: 4 },
+        },
+    },
+    easyview: {
+        aspect: '1 / 2',
+        maxWidth: 400,
+        mricon: [
+            { top: '28%', left: '1%', width: '9%', height: '4%' },
+            { top: '28%', left: '90%', width: '9%', height: '4%' },
+        ],
+        time: { top: '3%', left: '5%', width: '90%', height: '18%', fontSize: 72 },
+        date: { top: '22%', left: '10%', width: '80%', height: '5%' },
+        separator: { top: '33%', left: '6%', width: '88%' },
+        areas: {
+            bottom: { top: '35%', left: '4%', width: '92%', height: '63%', direction: 'row', columns: 4 },
+        },
+    },
+    // 4 columns of 80 px, rows from the top: indicators, indicators, clock + date, bottom, bottom, status bars
+    tiles: {
+        aspect: '1 / 2',
+        maxWidth: 400,
+        mricon: [
+            { top: '97.5%', left: '1%', width: '40%', height: '2.5%' },
+            { top: '97.5%', left: '59%', width: '40%', height: '2.5%' },
+        ],
+        time: { top: '45%', left: '10%', width: '80%', height: '11%', fontSize: 56 },
+        date: { top: '56%', left: '5%', width: '90%', height: '5%' },
+        areas: {
+            indicator: { top: '1%', left: '2%', width: '96%', height: '43%', direction: 'row', columns: 4 },
+            bottom: { top: '62%', left: '2%', width: '96%', height: '35%', direction: 'row', columns: 4 },
+        },
+    },
+};
+
 const LAYOUTS: Record<ScreensaverMode, Record<LayoutModel, Layout>> = {
     standard: {
+        'web-l': WEB_L_LAYOUTS.standard,
+        'web-p': WEB_P_LAYOUTS.standard,
         eu: {
             aspect: '3 / 2',
             maxWidth: 720,
@@ -311,6 +531,8 @@ const LAYOUTS: Record<ScreensaverMode, Record<LayoutModel, Layout>> = {
         },
     },
     alternate: {
+        'web-l': WEB_L_LAYOUTS.alternate,
+        'web-p': WEB_P_LAYOUTS.alternate,
         eu: {
             aspect: '3 / 2',
             maxWidth: 720,
@@ -345,6 +567,8 @@ const LAYOUTS: Record<ScreensaverMode, Record<LayoutModel, Layout>> = {
         },
     },
     advanced: {
+        'web-l': WEB_L_LAYOUTS.advanced,
+        'web-p': WEB_P_LAYOUTS.advanced,
         eu: {
             aspect: '3 / 2',
             maxWidth: 720,
@@ -386,6 +610,8 @@ const LAYOUTS: Record<ScreensaverMode, Record<LayoutModel, Layout>> = {
         },
     },
     easyview: {
+        'web-l': WEB_L_LAYOUTS.easyview,
+        'web-p': WEB_P_LAYOUTS.easyview,
         eu: {
             aspect: '3 / 2',
             maxWidth: 720,
@@ -415,7 +641,12 @@ const LAYOUTS: Record<ScreensaverMode, Record<LayoutModel, Layout>> = {
             },
         },
     },
-    tiles: { eu: TILES_LAYOUT, 'us-p': TILES_LAYOUT_PORTRAIT },
+    tiles: {
+        eu: TILES_LAYOUT,
+        'us-p': TILES_LAYOUT_PORTRAIT,
+        'web-l': WEB_L_LAYOUTS.tiles,
+        'web-p': WEB_P_LAYOUTS.tiles,
+    },
 };
 
 /**
@@ -425,7 +656,7 @@ const LAYOUTS: Record<ScreensaverMode, Record<LayoutModel, Layout>> = {
  * @param model panel model
  */
 function layoutOf(mode: ScreensaverMode, model: ScreensaverPanelModel): Layout {
-    return LAYOUTS[mode][model === 'us-p' ? 'us-p' : 'eu'];
+    return LAYOUTS[mode][model === 'us-l' ? 'eu' : model];
 }
 
 let iconMap: Map<string, string> | null = null;
@@ -600,7 +831,7 @@ export class ScreensaverEditor extends React.Component<ScreensaverEditorProps, S
 
     private modelOf(panel: AdminPanelConfig | undefined): ScreensaverPanelModel {
         const m = panel?.model;
-        return m === 'us-p' || m === 'us-l' ? m : 'eu';
+        return isPanelModel(m) ? m : 'eu';
     }
 
     /** model the places are drawn for: the first assigned panel */
@@ -874,7 +1105,6 @@ export class ScreensaverEditor extends React.Component<ScreensaverEditorProps, S
                 yearFormat: entry.yearFormat,
                 rotationTime: entry.rotationTime,
                 screensaverSwipe: entry.screensaverSwipe,
-                screensaverIndicatorButtons: entry.screensaverIndicatorButtons,
             },
         });
     }
@@ -1545,16 +1775,6 @@ export class ScreensaverEditor extends React.Component<ScreensaverEditorProps, S
                         label={this.getText('screensaver_swipe')}
                         sx={{ display: 'flex' }}
                     />
-                    <FormControlLabel
-                        control={
-                            <Checkbox
-                                checked={!!draftEntry.screensaverIndicatorButtons}
-                                onChange={e => this.setEntryDraft('screensaverIndicatorButtons', e.target.checked)}
-                            />
-                        }
-                        label={this.getText('screensaver_indicatorButtons')}
-                        sx={{ display: 'flex' }}
-                    />
                 </Box>
             );
         }
@@ -1726,13 +1946,8 @@ export class ScreensaverEditor extends React.Component<ScreensaverEditorProps, S
             this.props.templates,
         );
         const dragging = !!dragSource && this.slotKey(dragSource) === key;
-        // indicators: the frame tells what the key does
-        const action =
-            ref.area === 'indicator'
-                ? this.props.entry.screensaverIndicatorButtons && item.action?.kind
-                    ? item.action.kind
-                    : 'none'
-                : undefined;
+        // indicators: the frame tells what a tap does - grey without an action
+        const action = ref.area === 'indicator' ? (item.action?.kind ?? 'none') : undefined;
         const text = action
             ? `${this.getText('screensaver_slot_item').replace('%s', fullLabel)} · ${this.getText(`screensaver_item_action_${action}`)}`
             : this.getText('screensaver_slot_item').replace('%s', fullLabel);
@@ -1911,6 +2126,7 @@ export class ScreensaverEditor extends React.Component<ScreensaverEditorProps, S
                           gridRow: cells[i]?.row,
                           gridColumn: cells[i]?.column,
                           display: 'flex',
+                          pointerEvents: 'auto',
                           minWidth: 0,
                           minHeight: 0,
                       }}
@@ -1941,6 +2157,9 @@ export class ScreensaverEditor extends React.Component<ScreensaverEditorProps, S
                     boxSizing: 'border-box',
                     borderRadius: 1,
                     border: cells ? undefined : '1px solid rgba(255,255,255,0.08)',
+                    // a cells area may lie over another area (web-p advanced: the left column), only its
+                    // cells take the mouse; doubled selector beats the `& > *` rule of the pager box
+                    ...(cells ? { '&&': { pointerEvents: 'none' } } : {}),
                 }}
                 data-ss={`area-${area}`}
             >
@@ -1961,6 +2180,7 @@ export class ScreensaverEditor extends React.Component<ScreensaverEditorProps, S
                             flexDirection: box.verticalPager ? 'column' : 'row',
                             alignItems: 'stretch',
                             gap: '2px',
+                            ...(cells ? { pointerEvents: 'none', '& > *': { pointerEvents: 'auto' } } : {}),
                         }}
                         data-ss={`area-${area}-pager`}
                     >
@@ -2570,7 +2790,10 @@ export class ScreensaverEditor extends React.Component<ScreensaverEditorProps, S
                     {this.getText('screensaver_card_is').replace('%s', screensaverCardOfMode(entry.mode))}
                     {' · '}
                     {this.hasPanel()
-                        ? this.getText('screensaver_model_is').replace('%s', this.model())
+                        ? this.getText('screensaver_model_is').replace(
+                              '%s',
+                              `${this.getText(`${this.model()}-Version`)} (${this.model()})`,
+                          )
                         : this.getText('screensaver_model_pending')}
                 </Typography>
                 {selected.length === 0 && (

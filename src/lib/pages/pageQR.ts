@@ -63,7 +63,7 @@ export class PageQR extends Page {
         const selType = (await this.items.data.selType?.getNumber()) ?? 0;
         const ssidurltel = (await this.items.data.ssidUrlTel?.getString()) ?? '';
         const password = (await this.items.data.password?.getString()) ?? '';
-        const wlantype = (await this.items.data.wlantype?.getString()) ?? 'WPA';
+        const wlantype = (await this.items.data.wlantype?.getString()) ?? 'WPA2';
 
         let text1 = '';
         let text = '';
@@ -210,7 +210,7 @@ export class PageQR extends Page {
             const ssidurltel = (await items.data.ssidUrlTel?.getString()) || '';
             const password = (await items.data.password?.getString()) || '';
             const pwdhidden = (await items.data.pwdhidden?.getBoolean()) || false;
-            const wlantype = (await items.data.wlantype?.getString()) || 'WPA';
+            const wlantype = (await items.data.wlantype?.getString()) || 'WPA2';
             const wlanhidden = (await items.data.wlanhidden?.getBoolean()) || false;
 
             switch (selType) {
@@ -287,7 +287,7 @@ export class PageQR extends Page {
         let result: pages.PageQRMessage = PageQRMessageDefault;
         result = { ...result, ..._message };
         return getPayload(
-            getPayloadRemoveTilde('entityUpd', result.headline),
+            getPayloadRemoveTilde('entityUpd', this.shortHeadline(result.headline)),
             result.navigation,
             getPayloadRemoveTilde(
                 result.textQR,
