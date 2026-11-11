@@ -135,13 +135,11 @@ Common practice: at the top the current consumption of the house, at the bottom 
 
 ## 7. The internal sum
 
-Instead of a state of its own, **Home bottom** can show a sum of the six flows. Tick **Use internal sum (Home bottom)** for that; the field for the state disappears and a multiple selection with the entries **Power 1** to **Power 6** appears instead.
+Instead of a state of its own, **Home bottom** can show a sum of the six flows. Tick **Use internal sum (Home bottom)** for that; the field for the state disappears and the multiple selection **Slots that contribute to the sum** with the entries **Power 1** to **Power 6** appears instead.
 
 <img alt="Home bottom dialog with the internal sum switched on and the multiple selection of the tiles" src="../Pictures/cardPower/cardpower-04-haus-unten.png" width="100%"/>
 
-The selected tiles are **added up**, the remaining ones count as zero.
-
-> ⚠️ **The German label says the opposite.** There it reads *Slots, die negativ in die Summe gehen* ("slots that enter the sum negatively") — in fact the selected tiles enter the sum **unchanged, that is positively**, and all unselected ones as zero. Nothing is negated. The English label (*Slots that contribute to the sum*) describes it correctly. So when setting it up: **select the tiles that should contribute to the sum.**
+The selected tiles are **added up**, the remaining ones count as zero. Nothing is negated: the selection only decides which tiles enter the sum at all.
 
 > **An empty selection means "all six".** If you tick the box and select nothing, the adapter sums up **all** tiles. So the checkbox immediately delivers a result nobody selected.
 
@@ -176,7 +174,6 @@ If a page that still comes from a script is to be managed here, the way leads th
 - **A measurement outside the colour scale stretches it** instead of sticking at the end — the colours then shift for all other values too.
 - **"Maximum power" appears twice in the dialog** — once for the colour, once for the speed. Only the section heading tells them apart.
 - **The house values neither shorten nor convert.** A value that is too long overflows there, and a wrong unit goes unnoticed because nobody checks it.
-- **"Slots, die negativ in die Summe gehen" is mislabelled** in German. What you select are the tiles that **contribute**.
 - **The internal sum checkbox without a selection sums all six tiles.**
 - **The internal sum adds bare numbers** — mixed units and *Reverse flow direction* are not taken into account.
 - **Without a state a tile stays empty on the panel**, without a hint in the admin.

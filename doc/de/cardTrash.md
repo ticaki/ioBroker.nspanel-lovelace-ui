@@ -1,6 +1,6 @@
 # Abfall-Seite – Konfiguration im Admin
 
-Die Abfall-Seite zeigt die nächsten **Müllabfuhr-Termine**: je Zeile ein farbiges Symbol, der Name der Abfallart und wann abgeholt wird — „today", „tomorrow", der Wochentag oder das Datum. Die Termine kommen aus einem Datenpunkt des **ical-Adapters** oder aus einer hochgeladenen **`.ics`-Datei**.
+Die Abfall-Seite zeigt die nächsten **Müllabfuhr-Termine**: je Zeile ein farbiges Symbol, der Name der Abfallart und wann abgeholt wird — „Heute", „morgen", der Wochentag oder das Datum. Die Termine kommen aus einem Datenpunkt des **ical-Adapters** oder aus einer hochgeladenen **`.ics`-Datei**.
 
 Angelegt wird sie im Tab **PageConfig**, Seitentyp **Abfall**. Der Adapter baut daraus **keine eigene Kartenart**, sondern eine gewöhnliche Listenseite (siehe [Abschnitt 2](#2-was-der-adapter-aus-dem-eintrag-baut)).
 
@@ -36,7 +36,7 @@ Unter der Seitenliste führt der Verweis **Dokumentation** direkt auf diese Seit
 
 Eine Kartenart `cardTrash` gibt es am Panel nicht. Der Adapter erzeugt aus dem Eintrag eine gewöhnliche Listenseite auf Basis der Vorlage `entities.waste-calendar`:
 
-| Einstellung **Layout** | Karte am Panel | Zeilen |
+| Einstellung **Anzahl der Abfalltermine auf der Seite** | Karte am Panel | Zeilen |
 |---|---|---|
 | *4 Abfalltermine* | `cardEntities` | 4 |
 | *6 Abfalltermine* | `cardSchedule` | 6 |
@@ -46,7 +46,8 @@ Je Zeile entsteht ein Seitenelement der Rolle `text.list`, das Symbol, Farbe, Na
 Daraus folgt:
 
 - Die Zahl der Terminzeilen ist mit der Kartenart verkoppelt und nicht frei wählbar.
-- Die Einstellung **Layout** ändert zusätzlich die Schreibweise des Datums (siehe [Abschnitt 8](#8-was-auf-dem-panel-erscheint)).
+- Die Einstellung **Anzahl der Abfalltermine auf der Seite** ändert zusätzlich die Schreibweise des Datums (siehe [Abschnitt 8](#8-was-auf-dem-panel-erscheint)).
+- Die Anzahl wird vor dem Seitenbau auf **1 bis 6** begrenzt. Ein Eintrag aus einer älteren Admin-Version, der gar keine oder eine unsinnige Anzahl gespeichert hat, bekommt sechs Zeilen.
 - Eine Abfall-Seite entsteht **nur im Admin**. Im Konfigurationsskript gibt es den Seitentyp nicht; eine Abfall-Seite ist dort eine selbst gebaute Listenseite mit eigenen Datenpunkten. Eine solche Skript-Seite lässt sich auch **nicht** über die [Migration](Migration) in den Seitentyp **Abfall** umwandeln — die Vorlage einer Seite kann der Admin nicht abbilden, die Migration meldet dafür *„Ein Feld der Seite lässt sich im Admin nicht abbilden"*.
 
 ## 3. Der Editor im Überblick
@@ -59,13 +60,11 @@ Der Editor ist ein Formular, von oben nach unten:
 |---|---|
 | **Eindeutige ID** | Seitenname; nur lesbar, nach dem Anlegen fest. |
 | **Überschrift** | Kopfzeile am Panel; leer → `Trash`. |
-| **Layout** | Zahl der Terminzeilen: *4 Abfalltermine* oder *6 Abfalltermine*. |
+| **Anzahl der Abfalltermine auf der Seite** | Zahl der Terminzeilen: *4 Abfalltermine* oder *6 Abfalltermine*. Sie entscheidet zugleich über Kartenart und Schreibweise des Datums. |
 | **Importtyp** | *Import über iCal Adapter State* oder *Import über .ics-Datei*. |
 | **JSON State** bzw. **.ics-Datei inkl. Pfad** | Die Terminquelle, je nach Importtyp (siehe [Abschnitt 4](#4-woher-die-termine-kommen)). |
 | **Ereignisse suchen** / **Datei hochladen** | Liest die Quelle und listet die vorkommenden Ereignisnamen auf. |
 | Sechs Blöcke **Farbe/Icon/Abfallart/optionaler Name** | Je Abfallart ein Block (siehe [Abschnitt 6](#6-die-sechs-abfallarten)). |
-
-> Die Beschriftung **Layout** ist irreführend — gemeint ist die **Anzahl** der Termine. Der zutreffende Text steckt nur im Tooltip (*Anzahl der Abfalltemine auf der Seite*, mit Tippfehler) und ist damit praktisch unsichtbar. Das Wort „Layout" ist außerdem fest englisch eingebaut und wird in keiner Sprache übersetzt.
 
 ## 4. Woher die Termine kommen
 
@@ -95,15 +94,15 @@ Damit die Seite etwas anzeigen kann, muss der Adapter wissen, **welcher Ereignis
 
 1. Beim State-Weg den Knopf **Ereignisse suchen** drücken: Der Editor liest den Datenpunkt und sammelt die vorkommenden Werte von `event`, jeden einmal. Beim Datei-Weg entsteht dieselbe Liste **schon beim Hochladen**; einen Suchknopf gibt es dort nicht.
 2. Die Namen erscheinen als Liste zum Ankreuzen — Überschrift **Gefundene Ereignisse, bitte auswählen** (State-Weg) bzw. **Ereignisse auswählen** (Datei-Weg). **Höchstens sechs** lassen sich ankreuzen; danach sind die übrigen Zeilen gesperrt.
-3. **Auswahl übernehmen** trägt die angekreuzten Namen in die Felder *Abfallart 1* bis *6* ein — in der Reihenfolge, in der sie angekreuzt wurden, nicht in der Reihenfolge der Liste.
+3. **Auswahl übernehmen** trägt die angekreuzten Namen in die Felder *Abfallart 1* bis *6* ein — in der Reihenfolge, in der sie angekreuzt wurden, nicht in der Reihenfolge der Liste. Dabei werden alle sechs Blöcke neu gefüllt (siehe unten).
 
 ![Die gefundenen Ereignisse mit Kästchen und dem Knopf „Auswahl übernehmen"](../Pictures/pageTrash/trash-04-ereignisliste.png)
 
-> ⚠️ **„Auswahl übernehmen" überschreibt alle sechs Abfallart-Felder.** Jedes Feld, zu dem es keinen angekreuzten Namen gibt, wird **geleert**. Farben, Symbole und die optionalen Namen bleiben unberührt. Wer die Abfallarten schon von Hand gepflegt hat, trägt Ergänzungen besser von Hand nach.
+> ⚠️ **„Auswahl übernehmen" schreibt die sechs Blöcke komplett neu.** Der Knopf baut die Abfallarten der Seite aus der Auswahl neu auf, statt sie zu ergänzen — deshalb wird alles geleert, was nicht aus der Auswahl kommt. Jeder Platz, für den ein Name angekreuzt ist, bekommt die Abfallart und das Standardsymbol `trash-can-outline`; jeder übrige Platz verliert Abfallart und Symbol. Der **optionale Name wird in allen sechs Blöcken geleert**, die eingestellten **Farben bleiben**. Von Hand gewählte Symbole und optionale Namen sind danach also neu einzutragen; wer seine Abfallarten bereits gepflegt hat, ergänzt besser von Hand.
 
 > Nach der Übernahme ist die Ereignisliste verschwunden (sie wird mit der Auswahl zurückgesetzt). Für einen zweiten Durchgang ist erneut zu suchen bzw. hochzuladen. Dasselbe geschieht beim Wechsel des **Importtyps**.
 
-> Die Fehlermeldungen dieser Suche sind hartcodierte Hinweisfenster und **teils deutsch, teils englisch** — unabhängig von der Sprache des Admins: *„Bitte wählen Sie zuerst einen State aus"*, *„State enthält keine Daten"*, *„State enthält kein Array"*, dagegen *„Upload failed: …"* und *„Failed to read file"*.
+> Fehler der Suche und des Uploads erscheinen in der Sprache des Admins als farbige **Statuszeile im Formular** — unter dem Knopf **Ereignisse suchen** bzw. im Bereich der Datei-Auswahl —, mit einem Kreuz zum Schließen: *„Bitte zuerst einen Datenpunkt auswählen."*, *„Der Datenpunkt enthält keine Daten."*, *„Der Datenpunkt enthält kein Array."*, *„Der Datenpunkt konnte nicht gelesen werden: …"*, *„Upload fehlgeschlagen: …"*, *„Upload fehlgeschlagen: Die Datei ist leer."* und *„Die Datei konnte nicht gelesen werden."* Eine erfolgreiche Suche räumt die Zeile weg.
 
 ## 6. Die sechs Abfallarten
 
@@ -142,12 +141,12 @@ Der Termin wird abgestuft dargestellt:
 
 | Termin | bei *4 Abfalltermine* | bei *6 Abfalltermine* |
 |---|---|---|
-| heute | `today` | `today` |
-| morgen | `tomorrow` | `tomorrow` |
+| heute | `Heute` | `Heute` |
+| morgen | `morgen` | `morgen` |
 | in 2 bis 7 Tagen | langer Wochentag (`Donnerstag`) | kurzer Wochentag (`Do`) |
 | später | `15.11.2026` | `15.11.26` |
 
-> Die Wörter für heute und morgen sind **fest englisch** eingebaut (`today`, `tomorrow`), Wochentag und Datum dagegen fest auf **Deutsch** (`de-DE`). Auf einem deutschen Panel steht also „today" über einem Datum `15.11.2026`, auf einem englischen stehen deutsche Wochentage. Die Sprache des Adapters wird an dieser Stelle nicht ausgewertet.
+> Die Wörter für heute und morgen **folgen der Sprache des Adapters** und liegen in allen elf Sprachen vor (deutsch *Heute* und *morgen*, englisch *today* und *tomorrow*, spanisch *hoy* und *mañana* …). Wochentag und Datum sind dagegen fest **deutsch** (`de-DE`) und folgen der Spracheinstellung nicht: Auf einem englischen Panel steht „today" über dem Wochentag `Do` und dem Datum `15.11.2026`.
 
 Der Adapter hält intern bis zu sechs Termine bereit; bei der Einstellung *4 Abfalltermine* zeigt das Panel die ersten vier.
 
@@ -178,15 +177,15 @@ Die Templates `text.trash.next` und `text.trash.afterNext` zeigen den nächsten 
 ## Fallstricke
 
 - **Ohne laufende Instanz geht nichts.** Alle Felder sind gesperrt, Suche und Upload laufen nicht. Einen Hinweis auf den Grund gibt der Editor hier — anders als bei anderen Seitentypen — nicht.
-- **„today" und „tomorrow" bleiben englisch, Wochentag und Datum bleiben deutsch.** Beides ist fest eingebaut und folgt der Sprache des Adapters nicht.
+- **Wochentag und Datum bleiben deutsch.** Heute und morgen erscheinen übersetzt, der Wochentag (`Donnerstag`, `Do`) und das Datum (`15.11.2026`) sind fest auf `de-DE` verdrahtet und folgen der Sprache des Adapters nicht.
 - **Keine Abfallart eingetragen = dauerhaft leere Seite.** Ohne Suchbegriff passt kein Termin; weder Editor noch Log weisen darauf hin.
 - **Weniger passende Termine als Zeilen füllt das Log.** Jede Zeile liest ihren Eintrag über den Index; fehlt er, meldet der Adapter je fehlender Zeile *„Read for dp: ///pageTrash_… is invalid! … Error: TypeError …"*. Die betroffene Zeile zeigt nichts Sinnvolles. Wer das vermeiden will, wählt *4 Abfalltermine* und hält mindestens vier Abfallarten gepflegt.
-- **„Auswahl übernehmen" leert, was nicht angekreuzt ist** — in allen sechs Abfallart-Feldern, auch den von Hand gefüllten. Übernommen wird in der Anklick-Reihenfolge.
+- **„Auswahl übernehmen" füllt die Seite neu.** Belegte Plätze bekommen Abfallart und Standardsymbol, die übrigen werden geleert, die optionalen Namen verschwinden in allen sechs Blöcken; nur die Farben bleiben. Übernommen wird in der Anklick-Reihenfolge.
 - **Alle sechs Abfallarten wirken, auch bei vier Terminzeilen.** Die Blöcke 5 und 6 sind nicht wirkungslos; ein Treffer dort belegt einen der vier Plätze.
 - **Die Objektauswahl filtert hart auf `ical.`.** Jede andere Quelle (Skript, `0_userdata`) ist nur durch Eintippen der ID zu erreichen.
 - **Der Datenpunkt muss `_date` und `event` liefern.** Fehlt `_date` — etwa weil der Datenpunkt nur `date` kennt —, greift der Filter auf vergangene Termine nicht und am Panel steht `01.01.1970`.
 - **Beim State-Weg wird nicht sortiert.** Liefert der ical-Adapter die Tabelle unsortiert, stehen die Zeilen auch am Panel in dieser Reihenfolge. Nur der Datei-Weg sortiert nach Datum.
 - **Das Feld „.ics-Datei inkl. Pfad" meint den Dateibereich der Instanz**, nicht das Dateisystem des Servers. Eine Datei desselben Namens wird beim Hochladen überschrieben.
 - **Bis zu sechs Stunden Verzug.** Weder eine Änderung am Kalender noch eine neu hochgeladene Datei wirkt sofort; die Termine werden nur beim Start, zu den Stunden 0, 6, 12 und 18 Uhr und täglich um 00:01 Uhr geholt.
-- **Meldungen in zwei Sprachen.** Die Hinweisfenster der Ereignissuche sind teils deutsch, teils englisch hartcodiert; die Logmeldungen sind englisch.
+- **Die Meldungen stehen im Formular, nicht als Fenster.** Sie erscheinen übersetzt, sind aber leicht zu übersehen und nach dem Schließen weg; die Meldungen im ioBroker-Log bleiben englisch.
 - **Ein Eintrag aus einer älteren Admin-Version ohne die Liste der Abfallarten kommt leer an.** Der Adapter füllt in diesem Fall sechs leere Blöcke mit den Standardfarben — eine Umwandlung alter Einzelfelder gibt es nicht, die Abfallarten sind neu einzutragen.

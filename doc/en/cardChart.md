@@ -8,7 +8,7 @@ Contents:
 - [Creating the page](#1-creating-the-page)
 - [Chart type: columns or line](#2-chart-type-columns-or-line)
 - [Headline, colour, axis label](#3-headline-colour-axis-label)
-- [Data formatting: the switch](#4-data-formatting-the-switch)
+- [Data source: the switch](#4-data-source-the-switch)
 - [Way A: data from a history adapter](#5-way-a-data-from-a-history-adapter)
 - [Way B: data from your own states](#6-way-b-data-from-your-own-states)
 - [The y-axis and the two-character rule](#7-the-y-axis-and-the-two-character-rule)
@@ -54,20 +54,20 @@ Internally both variants carry the same card type `cardChart`; the chart type is
 | **Unique ID** | Page name; other pages address this page under it in their navigation targets. Read-only — the name is fixed once the page exists (*"The name is fixed once the page exists - other pages refer to it."*); on the start page its own note stands there: *Start page - published under the id „main".* See [PageConfig – Overview](PageConfig#creating-and-deleting-pages). |
 | **Headline** | Header line on the panel. Left empty, the panel shows `Page Chart`. |
 | **Select color for chart** | Colour of the curve or of the columns, as a colour picker. Default yellow. |
-| **y-axis label** | Text next to the axis, for example `W`. The line chart appends its automatic factor here when needed — `W` then becomes `W x10`. The field is present in both ways of data formatting. |
+| **y-axis label** | Text next to the axis, for example `W`. The line chart appends its automatic factor here when needed — `W` then becomes `W x10`. The field is present for both data sources. |
 
 > There is **one** colour and **one** series per page. The card cannot show several curves in one chart, and accordingly there is no legend — the "legend" consists of the headline and the axis label.
 
-## 4. Data formatting: the switch
+## 4. Data source: the switch
 
-The radio group **Data formatting** decides where the values come from:
+The radio group **Data source** decides where the values come from:
 
 | Choice | Meaning |
 |---|---|
-| **Database adapter** | The adapter queries a history adapter itself and works out the presentation. Only with this do range, factor and the axis spacing appear. |
+| **Database adapter** | The adapter queries a history adapter itself and works out the presentation. Only with this do the **Database instance**, the range, the factor and the axis spacing appear. |
 | **Script version** | Axis and values come ready-made from two states of your own. For special cases the automatic way does not cover. |
 
-> The labels here are **swapped and confusing**: the group is called *Data formatting* but decides the **data source**; the field below it is called *data source* but means the **instance of the database adapter**. So read for the function, not the name.
+> Which fields appear below depends on this choice alone; the next two sections describe the two ways. Switching only hides the fields of the other way — their values stay stored and are back after switching again.
 
 ## 5. Way A: data from a history adapter
 
@@ -75,10 +75,10 @@ The radio group **Data formatting** decides where the values come from:
 
 | Field | Effect |
 |---|---|
-| **data source** | The instance of the history adapter. The list holds the **enabled** instances of **InfluxDB**, **History** and **SQL** — the editor knows no other history adapters. With none present it says *No instance found*. |
-| **data point for values from the database** | The measurement. The picker only shows **states that are actually being logged in the selected instance**; without a selected instance, all those any history adapter records. That is the most useful check in the whole editor. |
-| **Range in hours** | How far back it draws; the window always ends "now". Default 24. |
-| **Factor for card chart** | Only for the **column chart**. Divides the values before they go to the panel — watts to kilowatts, so the y-axis labels fit into two characters (see [section 7](#7-the-y-axis-and-the-two-character-rule)). |
+| **Database instance** | The instance of the history adapter. The list holds the **enabled** instances of **InfluxDB**, **History** and **SQL** — the editor knows no other history adapters. With none present it says *No instance found*. |
+| **Data point for values from the database** | The measurement. The picker only shows **states that are actually being logged in the selected instance**; without a selected instance, all those any history adapter records. That is the most useful check in the whole editor. |
+| **Range in hours** | How far back it draws; the window always ends "now". Default 24, lowest value 1 — there is no upper limit. |
+| **Factor for card chart** | Only for the **column chart**. Converts the values before they go to the panel — `0.001` turns watts into kilowatts, so the y-axis labels fit into two characters (see [section 7](#7-the-y-axis-and-the-two-character-rule)). A tooltip on the field states the direction. |
 
 The adapter requests the data as averages (`getHistory` with `aggregate: average`) — one value per hour for the column chart, a 5-minute grid with at most 500 points for the line chart. If the selected instance is not running, the chart stays empty and there is only a warning in the log. If it does not answer, the query aborts after 15 seconds with an error in the log.
 
@@ -86,7 +86,7 @@ The adapter requests the data as averages (`getHistory` with `aggregate: average
 
 > **Vanished instance:** if the selected instance is later disabled or removed, the field shows **empty** — but it is still stored. The page then looks unconfigured when it is not.
 
-> The **factor** offers `1`, `0.1`, `0.01`, `0.001` — what is meant is a **divisor**: `0.001` means "divide by 1000", so watts → kilowatts. There is no tooltip and the direction cannot be guessed from the label.
+> The **factor** offers `1`, `0.1`, `0.01`, `0.001`. The chosen factor is applied to the measurement before it goes to the panel: `0.001` means "divide by 1000", so watts → kilowatts. The tooltip on the field says so literally: *The values from the database are multiplied by this factor before they are shown (0.1 = divided by 10).*
 
 ## 6. Way B: data from your own states
 
@@ -131,7 +131,7 @@ Two fields, both only in the **Database adapter** way:
 
 > For the **line chart** the labels sit **on the ticks**: only a tick whose distance from the start is divisible by the label spacing gets a label. If the label spacing is **not a multiple** of the tick spacing — ticks 4, labels 6, for instance — labels drop out; what remains is labelled only at the least common multiple, here every 12 hours.
 
-> Both fields accept **any** number greater than zero; there is no upper limit. `0`, negative values and text clear the field, which then shows the default as a pale placeholder — and the default applies as well. The old table limited the same fields to 1 to 8 — a good guide for sensible values.
+> Both fields are set to **1 to 8**: the arrows on the field do not go beyond that. A value typed by hand outside the range is still taken over, without a message — the chart then shows whatever comes out of it. `0`, negative values and text clear the field, which then shows the default as a pale placeholder — and the default applies as well. **Range in hours** only has the lower bound 1, none at the top.
 
 **Range and resolution are linked**, without the editor pointing it out: the line chart fetches at most 500 points, so the 5-minute grid gets coarser from 42 hours on. The column chart produces one column per hour — for a range of a week that is 168 columns on a narrow display.
 
@@ -140,7 +140,7 @@ Two fields, both only in the **Database adapter** way:
 The page does not draw on a fixed beat but on an occasion:
 
 - **When the page is opened.** As soon as the page becomes visible on the panel, the adapter fetches the data again. So the time window always ends at the moment of opening.
-- **On a value change.** In the *Database adapter* way the selected **data point for values from the database** is the trigger itself; in the *Script version* way it is the two states for ticks and values.
+- **On a value change.** In the *Database adapter* way the selected **Data point for values from the database** is the trigger itself; in the *Script version* way it is the two states for ticks and values.
 - **At most once per minute.** Further triggers within the minute are collected and caught up in one pass afterwards.
 - **Only while the page is visible.** As long as another page or the [screensaver](screensaver) is on the panel, triggers are discarded.
 
@@ -176,13 +176,13 @@ How the migration runs, which suffixes appear and how the button **Take script i
 
 ## Pitfalls
 
-> ⚠️ **Empty chart despite a selected database.** With the **data source** or the **data point for values from the database** missing, the page silently works as *Script version* — with empty states and therefore an empty chart. There is no message in the admin.
+> ⚠️ **Empty chart despite a selected database.** With the **Database instance** or the **Data point for values from the database** missing, the page silently works as *Script version* — with empty states and therefore an empty chart. There is no message in the admin.
 
-> **The list of data sources shows enabled instances, not running ones.** The editor reads the instance objects and filters on "enabled"; whether the instance runs is only checked by the adapter. An enabled but stalled instance appears in the list and yields nothing but a log warning and an empty chart at runtime.
+> **The list of database instances shows enabled instances, not running ones.** The editor reads the instance objects and filters on "enabled"; whether the instance runs is only checked by the adapter. An enabled but stalled instance appears in the list and yields nothing but a log warning and an empty chart at runtime.
 
 > **The state field can be filled by hand.** The filter "logged states only" applies only in the picker behind **…**; a typed ID is taken over unchecked. The empty chart is then the only feedback.
 
-> **The factor is a divisor.** `0.001` means "divide by 1000". It only exists for the column chart in the database way, and there it is the only protection against axis labels that are too long.
+> **The factor acts as a divisor.** `0.001` means "divide by 1000" — the tooltip on the field says the same. It only exists for the column chart in the database way, and there it is the only protection against axis labels that are too long.
 
 > **There is no headroom above or below the curve.** The panel spans the y-axis exactly across the data and shows only marks inside that range. Setting more marks does not help — that applies to the script version too.
 
