@@ -82,12 +82,16 @@ Alle fünf Modi je Modell, voll belegt. us-p zeichnet jetzt jeden Modus hochkant
 ## Systemseite „Navigation fehlerhaft“ (Web-Ansicht)
 
 Auf allen Test-Panels zeigt die Seite `wecker` (globales Skript) nach links auf `heizung`, eine Seite ohne Inhalt.
-Ein Druck auf den Pfeil nach links öffnet die Systemseite „Navigation fehlerhaft“; ihr Pfeil zurück führt wieder zu
+Ein Druck auf den Pfeil nach links öffnet die Systemseite „Navigation fehlerhaft“ (Titel „Navi-Fehler“); ihr Pfeil zurück führt wieder zu
 `wecker`.
 
 | EU | US-L | US-P | Web-L | Web-P |
 | --- | --- | --- | --- | --- |
 | ![eu](navigation-fehlerhaft-eu.png) | ![us-l](navigation-fehlerhaft-us-l.png) | ![us-p](navigation-fehlerhaft-us-p.png) | ![web-l](navigation-fehlerhaft-web-l.png) | ![web-p](navigation-fehlerhaft-web-p.png) |
+| ![eu en](navigation-fehlerhaft-eu-en.png) | ![us-l en](navigation-fehlerhaft-us-l-en.png) | ![us-p en](navigation-fehlerhaft-us-p-en.png) | ![web-l en](navigation-fehlerhaft-web-l-en.png) | ![web-p en](navigation-fehlerhaft-web-p-en.png) |
+
+Erste Zeile Systemsprache Deutsch, zweite Englisch. Die kurzen Texte passen in allen 11 Sprachen auf us-p und web-p
+(Titel höchstens 13 Zeichen, Bezeichnungen höchstens 121 px bei 18 px Noto Sans).
 
 ## Vorher / nachher
 
@@ -119,4 +123,4 @@ Ein Druck auf den Pfeil nach links öffnet die Systemseite „Navigation fehlerh
 | `<modell>-medien` | cardMedia | Optionszeile vollständig sichtbar, Restzeit als Text lesbar |
 | `<modell>-details` | cardEntities mit langen Namen/Werten | lange Texte enden mit „…“ statt mitten im Buchstaben |
 | `*-vorher` | Stand vor der Korrektur | zum Vergleich mit dem Bild ohne `-vorher` |
-| `navigation-fehlerhaft-<modell>` | `wecker` → Pfeil links (Ziel `heizung` ohne Seite) | Überschrift, „Fehlende Seite: heizung“, „Von Seite: wecker“, Hinweis; Pfeil zurück führt zu `wecker`. Auf us-p und web-p sind Überschrift und Bezeichnungen gekürzt („Navigation f…“, „Fehlende Se…“, „Konfiguratio…“) |
+| `navigation-fehlerhaft-<modell>` | `wecker` → Pfeil links (Ziel `heizung` ohne Seite) | „Navi-Fehler“, „Ziel fehlt: heizung“, „Von Seite: wecker“, „Konfig prüfen“ (en: „Nav error“, „Missing“, „From page“, „Check config“); Pfeil zurück führt zu `wecker`. Nichts gekürzt, Unterlängen (g, p) nicht abgeschnitten |

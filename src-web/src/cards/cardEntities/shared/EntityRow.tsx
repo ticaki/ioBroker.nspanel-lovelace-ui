@@ -420,7 +420,15 @@ export class EntityRow extends React.Component<EntityRowProps> {
                         overflow: 'hidden',
                     }}
                 >
-                    <span style={{ minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                    {/* the line box of the value: descenders (g, p, y) are not cut by `overflow` */}
+                    <span
+                        style={{
+                            minWidth: 0,
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            lineHeight: `${valueLineHeight(fontSize)}px`,
+                        }}
+                    >
                         {entity.displayName}
                     </span>
                 </div>
