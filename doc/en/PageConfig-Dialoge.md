@@ -56,7 +56,7 @@ While and after you type, the admin checks the channel and shows the result **to
 |---|---|
 | Spinner | The check is still running. It starts after a short pause while typing, and immediately when the field is left. |
 | Red ✖ | **Missing required states.** The tooltip names them. The role requires states the channel does not have. |
-| Red ⚠ | **Duplicate states** — several states of the channel match the same role and the adapter cannot decide. The tooltip names them. The same mark also appears when the button at the foot reads **Details…**. |
+| Red ⚠ | **Duplicate states** — several states of the channel match the same role and the adapter cannot decide. The tooltip names them. The same mark also appears when the button at the foot reads **Details…**; that case takes precedence, the tooltip then names no states but reads *Press the Details... button at the bottom of the dialog*. |
 
 Below the field there is one more line in plain words: *ok (role=…)* when everything fits, *Object not found in ioBroker*, *Missing ID*, the hint text of the custom button, or — when the role matches no known channel role — *The object's role is not a recognized device type*. In that last case the page item cannot be saved usefully; the button at the foot turns into **Details…**.
 
@@ -81,7 +81,7 @@ These fields only appear where the adapter evaluates them:
 | **Use Value Instead of Icon** | the same five card types, not for a custom button | The slot shows the value as text instead of the icon. The adapter only does that when the `ACTUAL` state is a number, a string or `mixed`; otherwise the icon stays. |
 | **Long press** | **only** on the three grid variants, and only for a navigation, a custom button or `role=button` | A second function on the same slot. |
 
-**Long press** is deliberately kept that narrow: only the grid pages report a long press to the adapter at all, and only items without a popup of their own can make use of it — on all others it would collide with the popup. It can **either** switch a state **or** jump to a page, never both; that is why the other field disappears as soon as one of them is filled. The state has to be `type=boolean` and `write=true`; the object picker only offers such states in the first place. If the group of fields is not visible, the dialog no longer stores an old value along with the item either.
+**Long press** is deliberately kept that narrow: of the pages only the grid pages report a long press to the adapter at all (since the TFT 6.0.9 the indicators of the [screensaver](screensaver#action-on-long-press) do as well), and only items without a popup of their own can make use of it — on all others it would collide with the popup. It can **either** switch a state **or** jump to a page, never both; that is why the other field disappears as soon as one of them is filled. The state has to be `type=boolean` and `write=true`; the object picker only offers such states in the first place. If the group of fields is not visible, the dialog no longer stores an old value along with the item either.
 
 ### The text/icon size
 

@@ -31,7 +31,7 @@ Above the form sits the red link **Help for adapter installation** (opens the wi
 
 | Field | Meaning |
 |---|---|
-| **IP of the ioBroker** | Only with the built-in MQTT server: the address under which the panel reaches ioBroker. Has to be a complete IPv4 address. |
+| **IP of the ioBroker** | Only with the built-in MQTT server: the address under which the panel reaches ioBroker. A select list with the addresses of the ioBroker host; while nothing is selected the field shows the placeholder *Select an IP address*. If the admin finds no addresses, it becomes a text field. Has to be a complete IPv4 address. |
 | **IP of the panel** | The panel's fixed IP; checked for a complete IPv4 format. |
 | **Panel name (unique)** | Name of the panel; it appears as the name of the states and of the configuration script. |
 | **Mqtt topic (unique)** | Topic of the panel. At least four characters, starts with a letter, then letters, digits, `_` and `/`. |
@@ -59,6 +59,8 @@ The head of the card holds the panel name, for a web panel the **Web** label, an
 | Control | Effect |
 |---|---|
 | **⧉ (Open web panel in a new tab)** | Appears when the web panels are switched on and the panel has a topic — for a real NSPanel as well. Opens `http(s)://<host>:<port>/<topic>` in a new tab; a stored PIN is built into the address by the admin. More under [web panel](WebPanel). |
+| **↓ (Export panel configuration)** | Writes the configuration of this panel as a JSON file — pages, screensaver, hardware buttons and panel settings. Only active when the panel has an id and a topic. See [export and import a panel configuration](panelConfigTransfer). |
+| **↑ (Import panel configuration)** | Reads such a file back in. Before applying it, the admin shows a review with every single page, the import mode and the conflicts. See [export and import a panel configuration](panelConfigTransfer). |
 | **Pencil** | For an NSPanel: copies IP, name, topic and model up into the form, the frame blinks briefly. **The change itself only happens** when *NSPanel configuration update* is run afterwards. For a web panel the pencil opens its dialog — that works with the instance stopped as well. |
 | **Bin** | Asks for confirmation and then removes the entry **from the panel table**. Only with the instance running. The device keeps its Tasmota settings; to really wipe it, use the factory reset in the [Tasmota tools](tasmotatools). |
 

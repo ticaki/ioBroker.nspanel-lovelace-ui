@@ -45,9 +45,12 @@ Under **Card type** they sit in two groups:
 
 **Switching the variant keeps every tile** — even when the new variant has fewer slots. Nothing is deleted and no warning is given: the surplus tiles move onto a second page (see [section 6](#6-more-entries-further-pages)).
 
-**Grid2 and the panel model:** the variant is only available when all assigned panels are of the same model. With mixed models it is disabled, and a Grid2 already set is **reset to Grid automatically** — the notice "cardGrid2 is disabled: the assigned panels have different models …" explains that while the conflict lasts. If all assigned panels are us-p, the entry reads **Grid2 (9 slots – us-p)** and the editor draws nine tiles in three columns. Without a panel assignment the editor assumes 8 slots.
+**Panel model and slots:** two variants depend on the model of the assigned panels, and the editor counts with both:
 
-> **With *Entities* the editor swallows one row on a us-p panel.** It always assumes four rows, but the panel shows **five** there. The fifth is only reachable in the editor through an extra page and paging. For Grid2 the model dependency is built in, for Entities it is not.
+- **Grid2** is only available when all assigned panels are of the same model. With mixed models the variant is disabled, and a Grid2 already set is **reset to Grid automatically**; the notice "cardGrid2 is disabled: the assigned panels have different models …" then stands **below both columns** of the selection while the conflict lasts. If all assigned panels are us-p, the entry reads **Grid2 (9 slots – us-p)** and the editor draws nine tiles in three columns. Without a panel assignment it assumes 8 slots.
+- **Entities** is labelled **Entities (5 rows)** as soon as all assigned panels are us-p; the editor then draws five rows — as many as the panel offers there. With mixed models and without a panel assignment it stays **Entities (4 rows)** and four rows; a us-p panel still shows five in that case.
+
+The selection keeps its two columns: the model note in the label does not wrap.
 
 ![Entities variant: rows instead of tiles](../Pictures/pageMenu/menu-02-liste.png)
 
@@ -68,7 +71,7 @@ Which fields of the dialog a menu page offers in addition depends on the variant
 | **Long press** | Grid, Grid2, Grid3 only | A second function on the same tile — either switch a state **or** jump to a page. Only for navigation tiles, the user-defined button and states with `role=button`; an item with a popup would collide with the long press. |
 | **Prefix** and **Suffix** of the value (gear icon on the channel ID) | Entities, Schedule only | The adapter puts them before and after the value on the list cards only. On a grid variant both entries have no effect. |
 
-The long press is not missing on **Entities** and **Schedule** out of negligence: only the tiles of the three grid variants report a `buttonPress3` at the HMI; the rows of the lists always report a short press.
+The long press is not missing on **Entities** and **Schedule** out of negligence: of the page cards only the tiles of the three grid variants report a `buttonPress3` at the HMI; the rows of the lists always report a short press. (Outside the pages the indicators of the [screensaver](screensaver#action-on-long-press) know it as well from the TFT 6.0.9 on.)
 
 A tile the dialog cannot represent takes the raw item through **Enter the item as raw data (JSON)**. In the grid it is then called **Raw data: …**; the fields of the dialog are no longer used for it.
 
@@ -110,6 +113,10 @@ More entries than slots? Then **further pages** are created, and the panel pages
 - A separator **Page *n* / *m*** shows where you are; an empty last page can be removed again with **Remove empty page**.
 - There is no upper limit on the number of entries.
 
+**With *Arrow* the preview shows the place of the paging arrow.** As soon as more than one page is created, the editor draws the last place of **every** preview page as a faint arrow; it cannot be filled. This holds for all five variants — including Entities and Schedule, which use a row for it on the panel as well. The count **Items (*filled* / *slots in total*)** above the grid counts the usable places only, not the arrow places.
+
+An extra page created by hand with **Add page** makes the placeholder appear as well, although the panel shows no arrow while no entries are left over.
+
 > **An empty page created with "Add page" is not permanent.** It only lives in the interface: after switching the variant, changing to another page type or reloading it is gone again. Only a **filled** tile makes a page permanent.
 >
 > When switching to **another menu page**, however, the counter travels along: an empty extra page then appears there as well, although it was never asked for. That one is display only too and disappears on a reload.
@@ -125,7 +132,7 @@ The radio group **Paging of the page items** has three values; the admin writes 
 | Choice | Notice in the admin | Behaviour on the panel |
 |---|---|---|
 | **Classic** (default) | "More items than places: the double arrows of the panel page through them." | The two navigation buttons of the header line become **up/down arrows**. A **short** press pages within the page, a **long** press leaves it through the normal navigation. On the first page the left button and on the last page the right button stay the ordinary navigation. All slots can be used. |
-| **Arrow** | "More items than places: the last place shows an arrow that pages on." | The **last place of every page** becomes the next-page arrow (circled arrow to the right, text "more") and is not available for an item. It only pages **forwards** and jumps from the last page back to the first. The navigation buttons of the header line keep their ordinary function. As long as all entries fit on one page, **no** arrow appears and the place is free to use. |
+| **Arrow** | "More items than places: the last place shows an arrow that pages on." | The **last place of every page** becomes the next-page arrow (circled arrow to the right, text "more") and is not available for an item. It only pages **forwards** and jumps from the last page back to the first. The navigation buttons of the header line keep their ordinary function. As long as all entries fit on one page, **no** arrow appears and the place is free to use. The preview in the editor reserves the same place (see [section 6](#6-more-entries-further-pages)). |
 | **Automatic** | "Like classic, the page also advances by itself after the set time." | The window moves on by itself after the set time, as long as the page is visible and the panel is awake. Paging by hand is **not** possible then: the navigation buttons stay the ordinary navigation. |
 
 **Scroll by** — appears only with *Classic* and *Automatic*, and only where the card can do it: **Grid, Grid2, Grid3** (and cardThermo2). On **Entities**, **Schedule** and cardMedia the field is missing.
@@ -176,7 +183,7 @@ For menu pages the panel assignment matters twice over: it decides not only wher
 
 ## Pitfalls
 
-> ⚠️ **With *Arrow*, editor and panel diverge as soon as it is a list.** On Entities and Schedule the editor draws **no** arrow placeholder and splits the pages into 4 or 6 rows, while the panel uses the last row for the arrow and splits into 3 or 5 rows. Nothing is lost, but the page split in the editor does not match the one on the panel. On the grid variants the editor draws the placeholder correctly — but only once there is more than one page.
+> **With *Arrow* the preview splits differently.** The arrow placeholder takes one place per page — in the editor as on the panel. Switching the presentation between *Classic* and *Arrow* therefore moves tiles onto other preview pages; the stored order of the entries is not changed by it.
 
 > ⚠️ **Half pages cannot be seen in the editor.** The editor always splits into full pages; half-page paging is a behaviour of the panel alone. Which tile sits next to which after a press can only be judged on the panel or in the [Web panel](WebPanel).
 

@@ -45,9 +45,12 @@ Unter **Kartentyp** stehen sie in zwei Gruppen:
 
 **Beim Umschalten der Variante bleiben alle Flächen erhalten** — auch wenn die neue Variante weniger Plätze hat. Es wird nichts gelöscht und nicht gewarnt: Die überzähligen Flächen rutschen auf eine zweite Seite (siehe [Abschnitt 6](#6-mehr-einträge-weitere-seiten)).
 
-**Grid2 und das Panelmodell:** Die Variante gibt es nur, wenn alle zugewiesenen Panels dasselbe Modell haben. Bei gemischten Modellen ist sie gesperrt, und ein bereits gesetztes Grid2 wird **selbsttätig auf Grid zurückgestellt** — der Hinweis „cardGrid2 ist deaktiviert: Die zugewiesenen Panels haben unterschiedliche Modelle …" erklärt das, solange der Konflikt besteht. Sind alle zugewiesenen Panels us-p, heißt der Eintrag **Grid2 (9 Felder – us-p)** und der Editor zeichnet neun Kacheln in drei Spalten. Ohne Panel-Zuweisung rechnet der Editor mit 8 Feldern.
+**Panelmodell und Plätze:** Zwei Varianten hängen am Modell der zugewiesenen Panels, und der Editor rechnet bei beiden mit:
 
-> **Bei *Entities* unterschlägt der Editor auf einem us-p-Panel eine Zeile.** Er rechnet immer mit vier Zeilen, das Panel zeigt dort aber **fünf**. Die fünfte ist im Editor nur über eine zusätzliche Seite und Blättern erreichbar. Bei Grid2 ist die Modellabhängigkeit eingebaut, bei Entities nicht.
+- **Grid2** gibt es nur, wenn alle zugewiesenen Panels dasselbe Modell haben. Bei gemischten Modellen ist die Variante gesperrt, und ein bereits gesetztes Grid2 wird **selbsttätig auf Grid zurückgestellt**; der Hinweis „cardGrid2 ist deaktiviert: Die zugewiesenen Panels haben unterschiedliche Modelle …" steht dann **unter beiden Spalten** der Auswahl, solange der Konflikt besteht. Sind alle zugewiesenen Panels us-p, heißt der Eintrag **Grid2 (9 Felder – us-p)** und der Editor zeichnet neun Kacheln in drei Spalten. Ohne Panel-Zuweisung rechnet er mit 8 Feldern.
+- **Entities** heißt **Entities (5 Zeilen)**, sobald alle zugewiesenen Panels us-p sind; der Editor zeichnet dann fünf Zeilen — so viele, wie das Panel dort anbietet. Bei gemischten Modellen und ohne Panel-Zuweisung bleibt es bei **Entities (4 Zeilen)** und vier Zeilen; ein us-p-Panel zeigt in diesem Fall trotzdem fünf.
+
+Die Auswahl behält dabei ihre zwei Spalten: Die Modellangabe in der Beschriftung bricht nicht um.
 
 ![Variante Entities: Zeilen statt Kacheln](../Pictures/pageMenu/menu-02-liste.png)
 
@@ -68,7 +71,7 @@ Welche Felder des Dialogs eine Menü-Seite zusätzlich anbietet, hängt an der V
 | **Langer Druck (entweder State bedienen oder Navigation)** | nur Grid, Grid2, Grid3 | Zweite Funktion derselben Fläche — entweder einen Datenpunkt schalten **oder** auf eine Seite springen. Nur für Navigations-Flächen, den benutzerdefinierten Knopf und Datenpunkte mit `role=button`; ein Element mit Popup würde mit dem langen Druck zusammenstoßen. |
 | **Präfix** und **Suffix** des Wertes (Zahnrad an der Kanal-ID) | nur Entities, Schedule | Der Adapter setzt sie ausschließlich auf den Listen-Karten vor und hinter den Wert. Auf einer Grid-Variante bleiben beide Eingaben wirkungslos. |
 
-Der lange Druck fehlt auf **Entities** und **Schedule** nicht aus Nachlässigkeit: Nur die Flächen der drei Grid-Varianten melden am HMI ein `buttonPress3`; die Zeilen der Listen melden immer einen kurzen Druck.
+Der lange Druck fehlt auf **Entities** und **Schedule** nicht aus Nachlässigkeit: Von den Seiten-Karten melden nur die Flächen der drei Grid-Varianten am HMI ein `buttonPress3`; die Zeilen der Listen melden immer einen kurzen Druck. (Außerhalb der Seiten kennen ihn ab der TFT 6.0.9 auch die Indikatoren des [Bildschirmschoners](screensaver#aktion-bei-langem-drücken).)
 
 Eine Fläche, die der Dialog nicht abbilden kann, nimmt über **Item als Rohdaten (JSON) eingeben** das rohe Element auf. Sie heißt im Raster dann **Rohdaten: …**; die Felder des Dialogs werden für sie nicht mehr verwendet.
 
@@ -110,6 +113,10 @@ Mehr Einträge als Plätze? Dann entstehen **weitere Seiten**, durch die das Pan
 - Ein Trenner **Seite *n* / *m*** zeigt, wo man sich befindet; eine leere letzte Seite lässt sich über **Leere Seite entfernen** wieder loswerden.
 - Eine Obergrenze für die Zahl der Einträge gibt es nicht.
 
+**Bei *Pfeil* zeigt die Vorschau den Platz des Blätterpfeils.** Sobald mehr als eine Seite entsteht, zeichnet der Editor auf **jeder** Vorschauseite den letzten Platz als blassen Pfeil; belegen lässt er sich nicht. Das gilt für alle fünf Varianten — auch für Entities und Schedule, die am Panel ebenso eine Zeile dafür verbrauchen. Die Zählung **Einträge (*belegt* / *Plätze insgesamt*)** über dem Raster zählt nur die belegbaren Plätze, die Pfeil-Plätze nicht mit.
+
+Eine von Hand über **Seite hinzufügen** angelegte Zusatzseite lässt den Platzhalter ebenfalls erscheinen, obwohl das Panel ohne überzählige Einträge keinen Pfeil zeigt.
+
 > **Eine per „Seite hinzufügen" angelegte leere Seite ist nicht dauerhaft.** Sie lebt nur in der Oberfläche: Beim Umschalten der Variante, beim Wechsel auf einen anderen Seitentyp und nach einem Neuladen ist sie wieder weg. Erst eine **belegte** Fläche macht eine Seite dauerhaft.
 >
 > Beim Wechsel auf eine **andere Menü-Seite** wandert der Zähler dagegen mit: Dort erscheint dann ebenfalls eine leere Zusatzseite, obwohl sie nie angefordert wurde. Auch sie ist nur Anzeige und verschwindet beim Neuladen.
@@ -125,7 +132,7 @@ Die Radiogruppe **Blättern der Seitenelemente** hat drei Werte; der Admin schre
 | Auswahl | Hinweis im Admin | Verhalten am Panel |
 |---|---|---|
 | **Klassisch** (Vorgabe) | „Mehr Elemente als Plätze: Die Doppelpfeile des Panels blättern weiter." | Die beiden Navigationsknöpfe der Kopfzeile werden zu **Aufwärts-/Abwärts-Pfeilen**. Ein **kurzer** Druck blättert innerhalb der Seite, ein **langer** Druck verlässt sie über die normale Navigation. Auf der ersten Seite bleibt der linke, auf der letzten der rechte Knopf die gewöhnliche Navigation. Alle Plätze sind belegbar. |
-| **Pfeil** | „Mehr Elemente als Plätze: Der letzte Platz zeigt einen Pfeil, der weiterblättert." | Der **letzte Platz jeder Seite** wird zum Weiter-Pfeil (Kreis-Pfeil nach rechts, Text „more") und steht nicht zur Belegung bereit. Er blättert nur **vorwärts** und springt von der letzten Seite zurück auf die erste. Die Navigationsknöpfe der Kopfzeile behalten ihre gewöhnliche Funktion. Solange alle Einträge auf eine Seite passen, erscheint **kein** Pfeil und der Platz ist frei nutzbar. |
+| **Pfeil** | „Mehr Elemente als Plätze: Der letzte Platz zeigt einen Pfeil, der weiterblättert." | Der **letzte Platz jeder Seite** wird zum Weiter-Pfeil (Kreis-Pfeil nach rechts, Text „more") und steht nicht zur Belegung bereit. Er blättert nur **vorwärts** und springt von der letzten Seite zurück auf die erste. Die Navigationsknöpfe der Kopfzeile behalten ihre gewöhnliche Funktion. Solange alle Einträge auf eine Seite passen, erscheint **kein** Pfeil und der Platz ist frei nutzbar. Die Vorschau im Editor reserviert denselben Platz (siehe [Abschnitt 6](#6-mehr-einträge-weitere-seiten)). |
 | **Automatisch** | „Wie klassisch, zusätzlich blättert die Seite nach der eingestellten Zeit von selbst weiter." | Das Fenster wandert nach der eingestellten Zeit von allein weiter, solange die Seite sichtbar und das Panel wach ist. Von Hand blättern lässt sich die Seite dabei **nicht**: Die Navigationsknöpfe bleiben die gewöhnliche Navigation. |
 
 **Weiterblättern um** — erscheint nur bei *Klassisch* und *Automatisch* und nur dort, wo die Karte es kann: **Grid, Grid2, Grid3** (und cardThermo2). Bei **Entities**, **Schedule** und cardMedia fehlt das Feld.
@@ -176,7 +183,7 @@ Für Menü-Seiten ist die Panel-Zuweisung doppelt wichtig: Sie entscheidet nicht
 
 ## Fallstricke
 
-> ⚠️ **Bei *Pfeil* weichen Editor und Panel auseinander, sobald es eine Liste ist.** Auf Entities und Schedule zeichnet der Editor **keinen** Pfeil-Platzhalter und teilt die Seiten in 4 bzw. 6 Zeilen, während das Panel die letzte Zeile für den Pfeil verbraucht und in 3 bzw. 5 Zeilen teilt. Verloren geht dabei nichts, aber der Seitenschnitt im Editor stimmt nicht mit dem am Panel überein. Auf den Grid-Varianten zeichnet der Editor den Platzhalter richtig — allerdings erst, sobald mehr als eine Seite vorhanden ist.
+> **Bei *Pfeil* teilt die Vorschau anders auf.** Der Pfeil-Platzhalter nimmt je Seite einen Platz weg — im Editor wie am Panel. Stellt man die Darstellung zwischen *Klassisch* und *Pfeil* um, rutschen Flächen deshalb auf andere Vorschauseiten; an der gespeicherten Reihenfolge der Einträge ändert das nichts.
 
 > ⚠️ **Halbe Seiten sieht man im Editor nicht.** Der Editor teilt immer in ganze Seiten; das Halbseiten-Blättern ist ausschließlich ein Verhalten des Panels. Welche Fläche nach einem Druck neben welcher steht, lässt sich nur am Panel oder im [Web-Panel](WebPanel) beurteilen.
 

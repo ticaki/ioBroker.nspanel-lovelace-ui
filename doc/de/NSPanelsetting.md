@@ -31,7 +31,7 @@ Der Tab ist sichtbar, sobald die MQTT-Angaben vollständig sind: ein Broker (ein
 
 | Feld | Bedeutung |
 |---|---|
-| **IP von ioBroker** | Nur beim eingebauten MQTT-Server: die Adresse, unter der das Panel den ioBroker erreicht. Muss eine vollständige IPv4-Adresse sein. |
+| **IP von ioBroker** | Nur beim eingebauten MQTT-Server: die Adresse, unter der das Panel den ioBroker erreicht. Eine Auswahlliste mit den Adressen des ioBroker-Hosts; solange nichts gewählt ist, steht im Feld der Platzhalter *IP-Adresse auswählen*. Findet der Admin keine Adressen, wird daraus ein Eingabefeld. Muss eine vollständige IPv4-Adresse sein. |
 | **IP des Panel** | Feste IP des Panels; wird auf vollständiges IPv4-Format geprüft. |
 | **Panelname (eindeutig)** | Name des Panels; er taucht als Name der Datenpunkte und des Konfigurationsskripts auf. |
 | **MQTT-Topic (eindeutig)** | Topic des Panels. Mindestens vier Zeichen, beginnt mit einem Buchstaben, danach Buchstaben, Ziffern, `_` und `/`. |
@@ -59,6 +59,8 @@ Im Kopf der Kachel stehen der Panelname, bei einem Web-Panel das Kennzeichen **W
 | Bedienelement | Wirkung |
 |---|---|
 | **⧉ (Web-Panel in neuem Tab öffnen)** | Erscheint, wenn die Web-Panels eingeschaltet sind und das Panel ein Topic hat — auch bei einem echten NSPanel. Öffnet `http(s)://<Host>:<Port>/<Topic>` in einem neuen Tab; eine hinterlegte PIN baut der Admin in die Adresse ein. Mehr unter [Web-Panel](WebPanel). |
+| **↓ (Panel-Konfiguration exportieren)** | Schreibt die Konfiguration dieses Panels als JSON-Datei — Seiten, Screensaver, Hardware-Tasten und Panel-Einstellungen. Nur aktiv, wenn das Panel eine ID und ein Topic hat. Siehe [Panel-Konfiguration exportieren und importieren](panelConfigTransfer). |
+| **↑ (Panel-Konfiguration importieren)** | Liest so eine Datei wieder ein. Vor der Übernahme zeigt der Admin eine Übersicht mit jeder einzelnen Seite, dem Importmodus und den Konflikten. Siehe [Panel-Konfiguration exportieren und importieren](panelConfigTransfer). |
 | **Stift** | Bei einem NSPanel: kopiert IP, Name, Topic und Modell nach oben ins Formular, der Rahmen blinkt kurz. **Die Änderung passiert erst**, wenn anschließend *NSPanelkonfiguration aktualisieren* läuft. Bei einem Web-Panel öffnet der Stift dessen Dialog — das geht auch bei stehender Instanz. |
 | **Papierkorb** | Fragt nach und entfernt den Eintrag danach **aus der Paneltabelle**. Nur bei laufender Instanz. Das Gerät behält seine Tasmota-Einstellungen; soll es wirklich leer sein, hilft der Werksreset in den [Tasmota-Tools](tasmotatools). |
 

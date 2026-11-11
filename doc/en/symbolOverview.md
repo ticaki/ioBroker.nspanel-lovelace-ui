@@ -6,8 +6,8 @@ A lookup aid: it lists every icon the adapter ships with, together with its name
 
 ## Searching and using a name
 
-- **Show the search field:** `Ctrl + F` (Windows/Linux) or `Cmd + F` (Mac). The field filters the list by part of a name, case does not matter. The **X** in the field clears the filter.
-- **Copy a name:** clicking an icon puts **its name** on the clipboard (not the image); a short message confirms it. From there it can be pasted into any icon field.
+- **Show the search field:** `Ctrl + F` (Windows/Linux) or `Cmd + F` (Mac). The same hint is printed above the list: *Use Ctrl+F (Windows/Linux) or Cmd+F (Mac) to filter the icons*. The field is labelled **Filter icons** and filters the list by part of a name, case does not matter. The **X** in the field clears the filter and hides the field again.
+- **Copy a name:** clicking an icon puts **its name** on the clipboard (not the image). The tooltip of the icon reads `Click to copy: <name>`, and after the click the message `<name> copied` confirms it briefly. From there the name can be pasted into any icon field.
 - The overview is read-only — clicking changes nothing in the configuration.
 
 ## Notes

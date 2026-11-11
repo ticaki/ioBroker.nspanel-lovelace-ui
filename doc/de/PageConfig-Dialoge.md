@@ -56,7 +56,7 @@ Während und nach der Eingabe prüft der Admin den Kanal und zeigt das Ergebnis 
 |---|---|
 | Drehender Kreis | Die Prüfung läuft noch. Beim Tippen startet sie nach einer kurzen Pause, beim Verlassen des Feldes sofort. |
 | Rotes ✖ | **Fehlende Pflicht-Datenpunkte.** Der Tooltip nennt sie namentlich. Die Rolle verlangt Datenpunkte, die der Kanal nicht hat. |
-| Rotes ⚠ | **Doppelte Datenpunkte** — mehrere Datenpunkte des Kanals passen auf dieselbe Rolle, der Adapter kann sich nicht entscheiden. Der Tooltip nennt sie. Dasselbe Zeichen erscheint auch, wenn der Knopf am Fuß auf **Details…** steht. |
+| Rotes ⚠ | **Doppelte Datenpunkte** — mehrere Datenpunkte des Kanals passen auf dieselbe Rolle, der Adapter kann sich nicht entscheiden. Der Tooltip nennt sie. Dasselbe Zeichen erscheint auch, wenn der Knopf am Fuß auf **Details…** steht; dieser Fall hat Vorrang, der Tooltip nennt dann keine Datenpunkte mehr, sondern lautet *Knopf „Details...“ unten im Dialog drücken*. |
 
 Unter dem Feld steht zusätzlich eine Zeile Klartext: *ok (role=…)* wenn alles passt, *Objekt nicht in ioBroker gefunden*, *Fehlende ID*, der Hinweistext des benutzerdefinierten Knopfs, oder — wenn die Rolle keiner bekannten Kanalrolle entspricht — *Die Objekt-Rolle entspricht keinem bekannten Gerätetyp*. Im letzten Fall lässt sich das Pageitem nicht sinnvoll speichern; der Knopf am Fuß wird zu **Details…**.
 
@@ -81,7 +81,7 @@ Diese Felder erscheinen nur dort, wo der Adapter sie auswertet:
 | **Wert statt Icon verwenden** | dieselben fünf Kartentypen, nicht beim benutzerdefinierten Knopf | Die Fläche zeigt den Wert als Text statt des Symbols. Der Adapter macht das nur, wenn der `ACTUAL`-Datenpunkt eine Zahl, eine Zeichenkette oder `mixed` ist; sonst bleibt es beim Symbol. |
 | **Langer Druck** | **nur** auf den drei Grid-Varianten, und nur bei Navigation, benutzerdefiniertem Knopf oder `role=button` | Zweite Funktion derselben Fläche. |
 
-**Langer Druck** ist mit Absicht so eng gefasst: Nur die Grid-Seiten melden dem Adapter überhaupt einen langen Druck, und nur Items ohne eigenes Popup können ihn gebrauchen — bei allen anderen würde er mit dem Popup kollidieren. Er kann **entweder** einen Datenpunkt schalten **oder** auf eine Seite springen, nie beides; darum verschwindet das jeweils andere Feld, sobald eines gefüllt ist. Der Datenpunkt muss `type=boolean` und `write=true` haben, die Objektauswahl zeigt von vornherein nur solche. Ist das Feldbündel nicht sichtbar, speichert der Dialog auch keinen alten Wert mehr mit.
+**Langer Druck** ist mit Absicht so eng gefasst: Von den Seiten melden nur die Grid-Seiten dem Adapter überhaupt einen langen Druck (seit der TFT 6.0.9 außerdem die Indikatoren des [Bildschirmschoners](screensaver#aktion-bei-langem-drücken)), und nur Items ohne eigenes Popup können ihn gebrauchen — bei allen anderen würde er mit dem Popup kollidieren. Er kann **entweder** einen Datenpunkt schalten **oder** auf eine Seite springen, nie beides; darum verschwindet das jeweils andere Feld, sobald eines gefüllt ist. Der Datenpunkt muss `type=boolean` und `write=true` haben, die Objektauswahl zeigt von vornherein nur solche. Ist das Feldbündel nicht sichtbar, speichert der Dialog auch keinen alten Wert mehr mit.
 
 ### Die Text-/Icongröße
 
