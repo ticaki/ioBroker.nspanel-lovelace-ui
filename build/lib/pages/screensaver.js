@@ -806,8 +806,12 @@ const _Screensaver = class _Screensaver extends import_Page.Page {
           if (place !== "indicator" && place !== "notify") {
             arr[1] = "";
           }
-          if (place !== "notify" && arr.length > 2 && !this.readsIconFont(place)) {
-            arr[2] = tools.stripIconFontSuffix(arr[2]);
+          if (place !== "notify" && arr.length > 2) {
+            if (!this.readsIconFont(place)) {
+              arr[2] = tools.stripIconFontSuffix(arr[2]);
+            } else {
+              arr[2] = tools.dropIconFontWithoutGlyphs(arr[2]);
+            }
           }
           message.options[place][i] = tools.getPayloadArrayRemoveTilde(arr);
         }

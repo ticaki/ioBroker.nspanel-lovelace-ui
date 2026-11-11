@@ -332,7 +332,6 @@ const textTemplates = {
             constVal: import_Color.Color.Green
           }
         },
-        textSize: { type: "const", constVal: 2 },
         false: {
           value: {
             type: "triggered",
@@ -456,7 +455,6 @@ const textTemplates = {
           },
           color: void 0
         },
-        textSize: { type: "const", constVal: 2 },
         false: {
           value: {
             type: "triggered",

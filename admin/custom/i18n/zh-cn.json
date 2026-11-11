@@ -1243,6 +1243,7 @@
     "screensaver_item_headline": "标题（留空 = 状态名称）",
     "screensaver_item_iconFont": "图标字体",
     "screensaver_item_iconFontHint": "只有屏保“磁贴”会更改图标字段的字体。留空 = 面板字体。",
+    "screensaver_item_iconFontNoIcons": "无图标 – 默认字体",
     "screensaver_item_iconOff": "关图标（false / 0）",
     "screensaver_item_iconOn": "图标（开 / 数值）",
     "screensaver_item_iconRequired": "没有图标面板无法显示该项目 – 请选择一个图标",

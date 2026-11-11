@@ -57,6 +57,7 @@ function pageItemTemplateInfos(templates = import_templateArray.pageItemTemplate
       }
     };
     walk(template.data);
+    const iconTextSize = templateIconTextSize(template, templates);
     result.push({
       name,
       type: String((_a = template.type) != null ? _a : ""),
@@ -66,10 +67,25 @@ function pageItemTemplateInfos(templates = import_templateArray.pageItemTemplate
       looksFor,
       areas: template.type === "text" || template.type === "button" ? [...(_d = template.screensaverAreas) != null ? _d : import_adminShareConfig.screensaverAreas] : [],
       options: template.adminOptions ? [...template.adminOptions] : [],
-      ...template.adminLabel ? { label: template.adminLabel } : {}
+      ...template.adminLabel ? { label: template.adminLabel } : {},
+      ...iconTextSize !== void 0 ? { iconTextSize } : {}
     });
   }
   return result.sort((a, b) => a.name.localeCompare(b.name));
+}
+function templateIconTextSize(template, templates) {
+  let current = template;
+  for (let loop = 0; current && loop <= 10; loop++) {
+    const data = current.data;
+    const icon = data && typeof data === "object" && "icon" in data ? data.icon : void 0;
+    const textSize = icon && typeof icon === "object" && "textSize" in icon ? icon.textSize : void 0;
+    if (textSize && typeof textSize === "object" && "type" in textSize && textSize.type === "const") {
+      const value = "constVal" in textSize ? textSize.constVal : void 0;
+      return (0, import_adminShareConfig.isHmiTextSize)(value) ? value : void 0;
+    }
+    current = current.template ? templates[current.template] : void 0;
+  }
+  return void 0;
 }
 function describeSearch(item, relative) {
   if (relative) {

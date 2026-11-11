@@ -169,6 +169,7 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
 - (ticaki) panel: a restart of the adapter during the first seconds of a TFT update no longer restarts Tasmota and breaks the update
 - (ticaki) screensaver: the update symbol next to the clock only shows when the TFT is older than the recommended one, not for a newer TFT
 - (ticaki) admin: the maintain tab shows the berry driver of every panel and offers an update like for TFT and script; Tasmota restarts after a successful download
+- (ticaki) battery templates no longer ask for a font without icons - the battery icon shows on cardGrid as well
 - (ticaki) emulator: every negative berry driver version (e.g. -12 of future emulator drivers, absolute value = driver generation) is recognized as emulator, not only -1
 - (ticaki) navigation: the arrows of the service page no longer take over the navigation of another panel (warning "Didn't find a navigation node" with page names of another panel, or a wrong arrow target)
 - (ticaki) developer tab: button "Create test states" creates the objects of the test environment (all channel roles, power, chart and trash data) below 0_userdata.0.NSPanelTest / alias.0.NSPanelTest, only the missing ones
