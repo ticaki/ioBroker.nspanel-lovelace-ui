@@ -82,8 +82,6 @@ Dazu:
 
 ## Seiten anlegen und löschen
 
-![Der Hinweis beim Anlegen eines Namens, den der Adapter schon kennt](../Pictures/pageConfig/pageconfig-03-anlegen-hinweis.png)
-
 **Anlegen:** Seitentyp wählen, im Feld *Neue Seite* einen Namen eintragen, **+** drücken. Der Name ist die **eindeutige ID** der Seite: Unter ihm sprechen andere Seiten sie in ihren Navigationszielen an, und unter ihm wird sie von einem Pageitem mit Navigationsziel oder aus einem Skript heraus angesprungen.
 
 - `main` ist reserviert; der **+**-Knopf bleibt gesperrt und ein Hinweis nennt den Grund — die Startseite entsteht über die Markierung, nicht über den Namen.

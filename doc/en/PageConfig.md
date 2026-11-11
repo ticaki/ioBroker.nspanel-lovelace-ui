@@ -82,8 +82,6 @@ In addition:
 
 ## Creating and deleting pages
 
-![The note when creating a name the adapter already knows](../Pictures/pageConfig/pageconfig-03-anlegen-hinweis.png)
-
 **Create:** pick a page type, enter a name in the *New Page* field, press **+**. The name is the **unique ID** of the page: it is how other pages address it in their navigation targets, and how a page item with a navigation target or a script jumps to it.
 
 - `main` is reserved; the **+** button stays disabled and a note names the reason — the start page is made with the marker, not with the name.
