@@ -52,6 +52,7 @@ var import_test = require("./lib/const/test");
 var import_function_and_const = require("./lib/types/function-and-const");
 var import_node_ical = __toESM(require("node-ical"));
 var import_tools = require("./lib/const/tools");
+var import_berry_driver = require("./lib/const/berry-driver");
 const NS_PANEL_INIT_SESSION_TTL = 6e5;
 class NspanelLovelaceUi extends utils.Adapter {
   library;
@@ -2453,7 +2454,7 @@ class NspanelLovelaceUi extends utils.Adapter {
         );
       } catch {
       }
-      session.isEmulator = (driver == null ? void 0 : driver.nlui_driver_version) === "-1";
+      session.isEmulator = (0, import_berry_driver.isEmulatorDriverVersion)(driver == null ? void 0 : driver.nlui_driver_version);
       session.ts = Date.now();
       this.answerMessage(obj, { result: "sendToNSPanelInitStep2Done", step: 2 });
     } catch (e) {

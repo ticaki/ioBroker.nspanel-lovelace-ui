@@ -75,6 +75,7 @@ import type { oldQRType } from './lib/types/types';
 import iCal from 'node-ical';
 import type { NSPanel } from './lib/types/NSPanel';
 import { getTasmotaVersionFromJson } from './lib/const/tools';
+import { isEmulatorDriverVersion } from './lib/const/berry-driver';
 
 /** Zwischenstand einer laufenden Panel-Einrichtung, siehe `nsPanelInitStep1` */
 interface NsPanelInitSession {
@@ -2858,7 +2859,7 @@ class NspanelLovelaceUi extends utils.Adapter {
             } catch {
                 //ignore
             }
-            session.isEmulator = driver?.nlui_driver_version === '-1';
+            session.isEmulator = isEmulatorDriverVersion(driver?.nlui_driver_version);
             session.ts = Date.now();
 
             this.answerMessage(obj, { result: 'sendToNSPanelInitStep2Done', step: 2 });
