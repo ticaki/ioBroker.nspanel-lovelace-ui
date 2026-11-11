@@ -49,6 +49,7 @@ import {
     type ScreensaverItemSource,
     type PageItemTemplateInfo,
     type ScreensaverTemplateNeed,
+    isIconTextSize,
     isRawItemObject,
     screensaverChannelIdOf,
     screensaverDateFormats,
@@ -1079,35 +1080,65 @@ export class ScreensaverItemDialog extends React.Component<ScreensaverItemDialog
             return null;
         }
         const current = this.state.draft.iconTextSize;
+        const noIcons = this.iconFontWithoutIcons();
         return (
-            <FormControl
-                variant="standard"
-                sx={{ minWidth: 260, mb: 2 }}
+            <Box
+                sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', columnGap: 2, mb: 2 }}
                 data-ss="icon-font"
             >
-                <InputLabel shrink>{this.getText('screensaver_item_iconFont')}</InputLabel>
-                <Select
-                    value={current !== undefined ? String(current) : ''}
-                    displayEmpty
-                    onChange={e => this.set('iconTextSize', textSizeOfOption(String(e.target.value)))}
+                <FormControl
+                    variant="standard"
+                    sx={{ minWidth: 260, maxWidth: '100%' }}
                 >
-                    {textSizeOptions(current, false).map(opt => (
-                        <MenuItem
-                            key={opt}
-                            value={opt}
-                        >
-                            {textSizeLabel(opt, key => this.getText(key))}
-                        </MenuItem>
-                    ))}
-                </Select>
-                <Typography
-                    variant="caption"
-                    color="text.secondary"
-                >
-                    {this.getText('screensaver_item_iconFontHint')}
-                </Typography>
-            </FormControl>
+                    <InputLabel shrink>{this.getText('screensaver_item_iconFont')}</InputLabel>
+                    <Select
+                        value={current !== undefined ? String(current) : ''}
+                        displayEmpty
+                        onChange={e => this.set('iconTextSize', textSizeOfOption(String(e.target.value)))}
+                    >
+                        {textSizeOptions(current, false).map(opt => (
+                            <MenuItem
+                                key={opt}
+                                value={opt}
+                                sx={opt !== '' && !isIconTextSize(Number(opt)) ? { color: 'warning.main' } : undefined}
+                            >
+                                {textSizeLabel(opt, key => this.getText(key))}
+                            </MenuItem>
+                        ))}
+                    </Select>
+                    <Typography
+                        variant="caption"
+                        color="text.secondary"
+                    >
+                        {this.getText('screensaver_item_iconFontHint')}
+                    </Typography>
+                </FormControl>
+                {noIcons && (
+                    <Typography
+                        variant="caption"
+                        color="warning.main"
+                        data-ss="icon-font-no-icons"
+                    >
+                        {this.getText('screensaver_item_iconFontNoIcons')}
+                    </Typography>
+                )}
+            </Box>
         );
+    }
+
+    /**
+     * true when the icon would get a font without icon glyphs: the chosen font, or with the default the
+     * font the chosen template asks for (e.g. 2 of `text.battery`)
+     */
+    private iconFontWithoutIcons(): boolean {
+        const current = this.state.draft.iconTextSize;
+        if (current !== undefined) {
+            return !isIconTextSize(current);
+        }
+        if (this.state.source !== 'template') {
+            return false;
+        }
+        return !isIconTextSize(this.selectedTemplate()?.iconTextSize);
     }
 
     private renderColorStateField(): React.JSX.Element {

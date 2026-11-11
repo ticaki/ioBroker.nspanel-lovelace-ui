@@ -1243,6 +1243,7 @@
     "screensaver_item_headline": "Título (vazio = nome do estado)",
     "screensaver_item_iconFont": "Fonte do ícone",
     "screensaver_item_iconFontHint": "Apenas o protetor de tela 'Blocos' altera a fonte do campo de ícone. Vazio = fonte do painel.",
+    "screensaver_item_iconFontNoIcons": "sem ícones – fonte padrão",
     "screensaver_item_iconOff": "Ícone desligado (false / 0)",
     "screensaver_item_iconOn": "Ícone (ligado / valor)",
     "screensaver_item_iconRequired": "Sem ícone o painel não consegue mostrar o item – escolha um ícone",

@@ -1,6 +1,6 @@
 import type { NSPanel } from '../types/NSPanel';
-import { screensaverAreas } from '../types/adminShareConfig';
-import type { PageItemTemplateInfo } from '../types/adminShareConfig';
+import { isHmiTextSize, screensaverAreas } from '../types/adminShareConfig';
+import type { HmiTextSize, PageItemTemplateInfo } from '../types/adminShareConfig';
 import { pageItemTemplates } from './templateArray';
 
 /**
@@ -54,6 +54,7 @@ export function pageItemTemplateInfos(
             }
         };
         walk(template.data);
+        const iconTextSize = templateIconTextSize(template, templates);
         result.push({
             name,
             type: String(template.type ?? ''),
@@ -67,9 +68,35 @@ export function pageItemTemplateInfos(
                     : [],
             options: template.adminOptions ? [...template.adminOptions] : [],
             ...(template.adminLabel ? { label: template.adminLabel } : {}),
+            ...(iconTextSize !== undefined ? { iconTextSize } : {}),
         });
     }
     return result.sort((a, b) => a.name.localeCompare(b.name));
+}
+
+/**
+ * the constant font of the icon of a template (`data.icon.textSize`); without one the font of the base
+ * template (`template`), like Page.getItemFromTemplate merges them
+ *
+ * @param template the template
+ * @param templates all templates, to find the base template
+ */
+function templateIconTextSize(
+    template: NSPanel.PageItemOptionsTemplate,
+    templates: Record<string, NSPanel.PageItemOptionsTemplate | undefined>,
+): HmiTextSize | undefined {
+    let current: NSPanel.PageItemOptionsTemplate | undefined = template;
+    for (let loop = 0; current && loop <= 10; loop++) {
+        const data: unknown = current.data;
+        const icon = data && typeof data === 'object' && 'icon' in data ? data.icon : undefined;
+        const textSize = icon && typeof icon === 'object' && 'textSize' in icon ? icon.textSize : undefined;
+        if (textSize && typeof textSize === 'object' && 'type' in textSize && textSize.type === 'const') {
+            const value = 'constVal' in textSize ? textSize.constVal : undefined;
+            return isHmiTextSize(value) ? value : undefined;
+        }
+        current = current.template ? templates[current.template] : undefined;
+    }
+    return undefined;
 }
 
 /**

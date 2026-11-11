@@ -159,6 +159,7 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
     ### **WORK IN PROGRESS**
 -->
 ### **WORK IN PROGRESS**
+- (ticaki) screensaver tiles: an icon whose template asks for a font without icons (battery) is shown in the default font; admin marks fonts without icons
 - (ticaki) panel: with the TFT 6.1.0 the display confirms every message it processed, the adapter sends the next one right away instead of waiting a fixed 250 ms - pages, and the screensaver in particular, build up noticeably faster
 - (ticaki) screensaver: after the page is loaded the colors and the content are sent first, the time follows; with the TFT 6.1.0 the page takes its background and clock colors with the page change and is drawn only once, no black flash before the background color
 - (ticaki) screensaver advanced: with the TFT 6.1.0 it follows the colors of the color theme like the other screensavers

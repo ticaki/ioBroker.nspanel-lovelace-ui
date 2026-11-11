@@ -5,7 +5,7 @@ import { Icons } from './icon_mapping';
 import type { ChangeTypeOfKeys, cardEntitiesTypes, cardGridTypes } from '../types/pages';
 import * as globals from '../types/function-and-const';
 import type { NSPanel } from '../types/NSPanel';
-import { formatEntryNumber } from '../types/adminShareConfig';
+import { formatEntryNumber, isIconTextSize } from '../types/adminShareConfig';
 import { getShutterIconByPosition, pageItemDefaults, SHUTTER_POSITION_ICON } from './page-item-defaults';
 
 export const messageItemDefault: NSPanel.MessageItem = {
@@ -275,6 +275,25 @@ export async function setScaledNumber(
  */
 export function stripIconFontSuffix(text: string): string {
     return text.replace(/¬\d+$/, '');
+}
+
+/** icon glyphs of the HMI fonts: U+E000-U+FDFF (MDI, own icons from FD40, reserved FD80-FDFF) */
+const ICON_GLYPHS = /^[\uE000-\uFDFF]+$/;
+
+/**
+ * The icon text without a font suffix `¬<font id>` that names a font without icon glyphs (0, 2, 5) -
+ * the HMI would draw an empty field, without suffix it uses the default font of the field. Only
+ * pure icon texts lose the suffix: a short value text may still use font 2.
+ *
+ * @param text icon (or value text) as getIconEntryValue returns it
+ * @returns the text, without the suffix when it is an icon in a font without icons
+ */
+export function dropIconFontWithoutGlyphs(text: string): string {
+    const m = /^(.+)¬(\d+)$/s.exec(text);
+    if (!m || isIconTextSize(Number(m[2])) || !ICON_GLYPHS.test(m[1])) {
+        return text;
+    }
+    return m[1];
 }
 
 export async function getIconEntryValue(

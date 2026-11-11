@@ -1243,6 +1243,7 @@
     "screensaver_item_headline": "Kop (leeg = naam van de status)",
     "screensaver_item_iconFont": "Lettertype van het icoon",
     "screensaver_item_iconFontHint": "Alleen de schermbeveiliging 'Tegels' wijzigt het lettertype van het icoonveld. Leeg = lettertype van het paneel.",
+    "screensaver_item_iconFontNoIcons": "zonder iconen – standaardlettertype",
     "screensaver_item_iconOff": "Pictogram uit (false / 0)",
     "screensaver_item_iconOn": "Pictogram (aan / waarde)",
     "screensaver_item_iconRequired": "Zonder pictogram kan het paneel het item niet weergeven – kies een pictogram",

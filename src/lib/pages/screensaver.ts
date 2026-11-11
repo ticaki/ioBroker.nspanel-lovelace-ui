@@ -850,9 +850,15 @@ export class Screensaver extends Page {
                     if (place !== 'indicator' && place !== 'notify') {
                         arr[1] = '';
                     }
-                    if (place !== 'notify' && arr.length > 2 && !this.readsIconFont(place)) {
-                        // only screensaver5 reads the font suffix of an icon, the other pages would show it
-                        arr[2] = tools.stripIconFontSuffix(arr[2]);
+                    if (place !== 'notify' && arr.length > 2) {
+                        if (!this.readsIconFont(place)) {
+                            // only screensaver5 reads the font suffix of an icon, the other pages would show it
+                            arr[2] = tools.stripIconFontSuffix(arr[2]);
+                        } else {
+                            // an icon in a font without icon glyphs (e.g. `¬2` of the battery templates)
+                            // stays empty - without the suffix the field draws it in its default font 4
+                            arr[2] = tools.dropIconFontWithoutGlyphs(arr[2]);
+                        }
                     }
                     message.options[place][i] = tools.getPayloadArrayRemoveTilde(arr);
                 }

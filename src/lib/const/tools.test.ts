@@ -28,6 +28,7 @@ import {
     setTriggeredToState,
     shortenHeadline,
     stripIconFontSuffix,
+    dropIconFontWithoutGlyphs,
 } from './tools';
 import { ScreenSaverConst } from './definition';
 import { menuCardItemLimits } from '../types/adminShareConfig';
@@ -509,6 +510,27 @@ describe('lib/const/tools', () => {
             expect(stripIconFontSuffix('')).to.equal('');
             expect(stripIconFontSuffix('a¬b')).to.equal('a¬b');
             expect(stripIconFontSuffix(Icons.GetIcon('lightbulb'))).to.equal(Icons.GetIcon('lightbulb'));
+        });
+    });
+
+    describe('dropIconFontWithoutGlyphs', () => {
+        const battery = Icons.GetIcon('battery-high');
+        it('drops the suffix of an icon in a font without icon glyphs (0, 2, 5)', () => {
+            expect(battery).to.match(/^[\uE000-\uFDFF]+$/);
+            expect(dropIconFontWithoutGlyphs(`${battery}¬2`)).to.equal(battery);
+            expect(dropIconFontWithoutGlyphs(`${battery}¬0`)).to.equal(battery);
+            expect(dropIconFontWithoutGlyphs(`${battery}¬5`)).to.equal(battery);
+            // own icons from FD40 are icons too
+            expect(dropIconFontWithoutGlyphs('\uFD40¬2')).to.equal('\uFD40');
+        });
+        it('keeps the suffix of an icon font and of a text', () => {
+            expect(dropIconFontWithoutGlyphs(`${battery}¬4`)).to.equal(`${battery}¬4`);
+            expect(dropIconFontWithoutGlyphs(`${battery}¬1`)).to.equal(`${battery}¬1`);
+            expect(dropIconFontWithoutGlyphs('85%¬2')).to.equal('85%¬2');
+            expect(dropIconFontWithoutGlyphs(`${battery}85%¬2`)).to.equal(`${battery}85%¬2`);
+            expect(dropIconFontWithoutGlyphs(battery)).to.equal(battery);
+            expect(dropIconFontWithoutGlyphs('¬2')).to.equal('¬2');
+            expect(dropIconFontWithoutGlyphs('')).to.equal('');
         });
     });
 });

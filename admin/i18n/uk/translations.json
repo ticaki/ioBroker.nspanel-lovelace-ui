@@ -1243,6 +1243,7 @@
     "screensaver_item_headline": "Заголовок (порожньо = назва стану)",
     "screensaver_item_iconFont": "Шрифт значка",
     "screensaver_item_iconFontHint": "Шрифт поля значка змінює лише заставка 'Плитки'. Порожньо = шрифт панелі.",
+    "screensaver_item_iconFontNoIcons": "без значків – стандартний шрифт",
     "screensaver_item_iconOff": "Значок вимк (false / 0)",
     "screensaver_item_iconOn": "Значок (увімк / значення)",
     "screensaver_item_iconRequired": "Без значка панель не може відобразити елемент – виберіть значок",
