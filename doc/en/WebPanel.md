@@ -104,7 +104,9 @@ Its states are under `panels.web_<…>.*`. When no browser is connected any more
 
 - **Tapping or clicking** acts like a press on the display — mouse and touch alike.
 - **Holding** (from about 0.6 seconds) is the long press: on a tile of a menu page a short press switches,
-  holding opens the detail popup — like on the real panel.
+  holding opens the detail popup — like on the real panel. On an **indicator of the screensaver** holding
+  fires the [action on long press](screensaver#action-on-long-press) after 0.5 seconds; unlike on the real
+  panel a movement of more than about 20 pixels cancels the long press.
 - **The two hardware buttons** are bars below the display. They trigger the action configured for the
   buttons and set `panels.<panel>.buttons.left`/`right`. **They do not switch relays.**
 - **Buzzer:** the browser plays the tones itself — but only after the first tap. Browsers require this;

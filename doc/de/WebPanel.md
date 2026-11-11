@@ -106,7 +106,9 @@ offline.
 
 - **Tippen oder Klicken** wirkt wie ein Druck aufs Display — mit Maus und Touch gleich.
 - **Halten** (ab etwa 0,6 Sekunden) ist der lange Druck: Auf einer Kachel einer Menüseite schaltet ein
-  kurzer Druck, Halten öffnet das Detail-Popup — wie am echten Panel.
+  kurzer Druck, Halten öffnet das Detail-Popup — wie am echten Panel. Auf einem **Indikator des
+  Bildschirmschoners** löst das Halten nach 0,5 Sekunden die [Aktion bei langem Drücken](screensaver#aktion-bei-langem-drücken)
+  aus; anders als am echten Panel bricht eine Bewegung von mehr als etwa 20 Pixeln den langen Druck ab.
 - **Die zwei Hardwaretasten** liegen als Leisten unter dem Display. Sie lösen die Aktion aus, die für die
   Tasten eingestellt ist, und setzen `panels.<Panel>.buttons.left`/`right`. **Relais schalten sie nicht.**
 - **Summer:** Der Browser spielt die Töne selbst ab — aber erst, nachdem einmal getippt wurde. Das ist eine
