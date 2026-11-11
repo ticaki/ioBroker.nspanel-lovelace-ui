@@ -421,6 +421,9 @@ class NspanelLovelaceUi extends utils.Adapter {
                 change = true;
             }
             if (native.pageQRdata) {
+                // the old table kept the wifi password as an index into the encrypted fields pageQRpwd1..3,
+                // the new entry has no counterpart for that - the password has to be entered again
+                const pagesWithoutPassword: string[] = [];
                 native.pageQRdata.forEach((page: oldQRType) => {
                     const temp: PageConfig = {
                         card: 'cardQR',
@@ -428,15 +431,24 @@ class NspanelLovelaceUi extends utils.Adapter {
                         headline: page.headline,
                         selType: page.selType,
                         ssidUrlTel: page.SSIDURLTEL,
+                        wlantype: page.wlantype,
                         setState: page.setState || '',
                         wlanhidden: page.wlanhidden || false,
                         pwdhidden: page.pwdhidden || false,
                         hidden: page.hiddenByTrigger || false,
                         alwaysOn: page.alwaysOnDisplay ? 'always' : 'none',
                     };
+                    if (page.selType === 1 && page.wlantype !== 'nopass') {
+                        pagesWithoutPassword.push(page.pageName);
+                    }
 
                     native.pageConfig.push(temp);
                 });
+                if (pagesWithoutPassword.length > 0) {
+                    this.log.warn(
+                        `QR pages moved from the old table to the page configuration: ${pagesWithoutPassword.join(', ')}. The wifi password was not taken over - please enter it again in the admin (page editor, wifi password or credential).`,
+                    );
+                }
                 delete native.pageQRdata;
                 change = true;
             }

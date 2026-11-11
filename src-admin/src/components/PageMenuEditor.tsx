@@ -1026,7 +1026,8 @@ export class PageMenuEditor extends ConfigGeneric<ConfigGenericProps & PageMenuE
         const isGridCard = ['cardGrid', 'cardGrid2', 'cardGrid3'].includes(entry.card);
         // adapter default is classic, the setting itself lives in the page details
         const scrollPresentation = entry.scrollPresentation ?? 'classic';
-        const potentialArrow = isGridCard && scrollPresentation === 'arrow';
+        // the panel reserves the arrow on every scroll card (pageMenu.ts), not only on the grids
+        const potentialArrow = scrollPresentation === 'arrow';
         const pageItems = entry.pageItems ?? [];
 
         // Letzter tatsächlich befüllter Index – trailing undefineds durch Drag/Drop ignorieren
@@ -1093,7 +1094,16 @@ export class PageMenuEditor extends ConfigGeneric<ConfigGenericProps & PageMenuE
                         disabled={!this.state.alive}
                     >
                         <FormLabel component="legend">{this.getText('pageMenu_card_type')}</FormLabel>
-                        <Box sx={{ display: 'flex', gap: 4, mt: 1 }}>
+                        {/* die Modellangabe im Text darf die Auswahl nicht auseinanderziehen: nicht umbrechen */}
+                        <Box
+                            sx={{
+                                display: 'flex',
+                                gap: 4,
+                                mt: 1,
+                                alignItems: 'flex-start',
+                                '& .MuiFormControlLabel-label': { whiteSpace: 'nowrap' },
+                            }}
+                        >
                             {/* Linke Spalte: Grid-Varianten */}
                             <Box>
                                 <Typography

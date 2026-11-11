@@ -147,6 +147,10 @@ export class Panel extends BaseClass {
     private _activePage: Page | undefined = undefined;
     private data: Record<string, any> = {};
     private blockStartup: ioBroker.Timeout | undefined = null;
+    /** web panel: the startup that is running, see handleVirtualStartup */
+    private startupInProgress: Promise<void> | null = null;
+    /** web panel: a startup that arrived while one was running and is done after it */
+    private startupRepeat: Types.IncomingEvent | null = null;
     private _isOnline: boolean = false;
     private _status: adminShareConfig.PanelStatus = 'offline';
     private _statusUpdateQueue: Promise<void> = Promise.resolve();
@@ -2268,6 +2272,120 @@ export class Panel extends BaseClass {
         await this.library.writeFromJson(`panels.${this.name}.info`, 'panel.panels.info', def, this.info);
     }
     /**
+     * Startup events of a web panel run one after the other. A browser sends `event,startup` after its
+     * hello and again for every `pageType~pageStartup` it gets (the offer of the loop), so two of them
+     * arrive almost together on the first connection. Running both at once let the second one write
+     * states the first one had not created yet. A startup that arrives while one runs is done once
+     * more afterwards (the browser may show the startup page again), further ones collapse into it.
+     *
+     * @param event the startup event
+     * @returns resolves when this startup (and a repeat requested meanwhile) is done
+     */
+    private async handleVirtualStartup(event: Types.IncomingEvent): Promise<void> {
+        if (this.startupInProgress) {
+            this.startupRepeat = event;
+            return this.startupInProgress;
+        }
+        const run = async (): Promise<void> => {
+            try {
+                let next: Types.IncomingEvent | null = event;
+                while (next) {
+                    this.startupRepeat = null;
+                    await this.handleStartup(next);
+                    next = this.startupRepeat;
+                }
+            } finally {
+                this.startupInProgress = null;
+                this.startupRepeat = null;
+            }
+        };
+        this.startupInProgress = run();
+        return this.startupInProgress;
+    }
+
+    /**
+     * The startup event: the display (or browser) shows the startup page and waits for its first page.
+     *
+     * @param event the startup event
+     */
+    private async handleStartup(event: Types.IncomingEvent): Promise<void> {
+        // a display repeats the startup event every few seconds while it shows the startup
+        // page - only the first one counts. A browser reloads at will, so a web panel
+        // takes every startup event (the page is rendered again) - one after the other, see handleVirtualStartup.
+        if (this.blockStartup) {
+            if (!this.isVirtual) {
+                return;
+            }
+            this.adapter.clearTimeout(this.blockStartup);
+            this.blockStartup = null;
+        }
+        if (this.unload || this.adapter.unload) {
+            return;
+        }
+        this.blockStartup = this.adapter.setTimeout(() => {
+            this.blockStartup = null;
+        }, 10_000);
+        this.resetDisplayDiagnosis();
+        // a display only answers through the normal firmware, in case its INFO1 got lost
+        this.setSafeboot(false, '');
+        this.isOnline = true;
+        this.info.nspanel.displayVersion = event.opt;
+        if (this.isVirtual) {
+            // no Tasmota status will ever arrive - the startup event is the connection
+            await this.setStatus('connected');
+        } else if (this.info.nspanel.model !== event.action) {
+            this.log.error(
+                `Model missmatch! Config model is ${this.info.nspanel.model} but panel send ${event.action}. Check your config!`,
+            );
+            await this.controller.removePanel(this);
+            await this.setStatus('error');
+            return;
+        }
+
+        if (!this.isVirtual) {
+            this.requestStatusTasmota();
+            this.sendToTasmota(`${this.topic}/cmnd/POWER1`, '');
+            this.sendToTasmota(`${this.topic}/cmnd/POWER2`, '');
+            this.sendToTasmota(`${this.topic}/cmnd/GetDriverVersion`, '');
+            this.sendRules();
+            // wait 0.1s to have tasmota time to be ready
+            await this.adapter.delay(100);
+        }
+        await this.writeInfo();
+
+        this.sendDimmode();
+
+        this.navigation.resetPosition(true);
+
+        const start = this.navigation.getCurrentMainPage();
+        if (start === undefined) {
+            this.log.error('No start page defined!');
+            return;
+        }
+        if (this._activePage) {
+            await this._activePage.setVisibility(false);
+        }
+
+        // set last card to nothing, else the card will not be loaded if it is the same as the last one
+        this.lastCard = '';
+        await start.setVisibility(true);
+        // too be sure, that the page is set correctly
+        this._activePage = start;
+
+        if (this.screenSaver) {
+            this.screenSaver.pageItems = await this.screenSaver.createPageItems(this.screenSaver.pageItemConfig);
+            await this.screenSaver.HandleDate();
+            await this.screenSaver.HandleTime();
+        }
+
+        if (start.alwaysOn === 'none') {
+            this.sendScreensaverTimeout(2);
+        }
+        await this.setStatus('online');
+        this.log.info('Panel startup finished!');
+    }
+
+    /**
      *  Handle incoming messages from panel
      *
      * @param event incoming event...
@@ -2294,82 +2412,11 @@ export class Panel extends BaseClass {
                 if (!this.initDone) {
                     return;
                 }
-                // a display repeats the startup event every few seconds while it shows the startup
-                // page - only the first one counts. A browser reloads at will, so a web panel
-                // takes every startup event (the page is rendered again).
-                if (this.blockStartup) {
-                    if (!this.isVirtual) {
-                        return;
-                    }
-                    this.adapter.clearTimeout(this.blockStartup);
-                    this.blockStartup = null;
-                }
-                if (this.unload || this.adapter.unload) {
-                    return;
-                }
-                this.blockStartup = this.adapter.setTimeout(() => {
-                    this.blockStartup = null;
-                }, 10_000);
-                this.resetDisplayDiagnosis();
-                // a display only answers through the normal firmware, in case its INFO1 got lost
-                this.setSafeboot(false, '');
-                this.isOnline = true;
-                this.info.nspanel.displayVersion = event.opt;
                 if (this.isVirtual) {
-                    // no Tasmota status will ever arrive - the startup event is the connection
-                    await this.setStatus('connected');
-                } else if (this.info.nspanel.model !== event.action) {
-                    this.log.error(
-                        `Model missmatch! Config model is ${this.info.nspanel.model} but panel send ${event.action}. Check your config!`,
-                    );
-                    await this.controller.removePanel(this);
-                    await this.setStatus('error');
-                    return;
+                    await this.handleVirtualStartup(event);
+                } else {
+                    await this.handleStartup(event);
                 }
-
-                if (!this.isVirtual) {
-                    this.requestStatusTasmota();
-                    this.sendToTasmota(`${this.topic}/cmnd/POWER1`, '');
-                    this.sendToTasmota(`${this.topic}/cmnd/POWER2`, '');
-                    this.sendToTasmota(`${this.topic}/cmnd/GetDriverVersion`, '');
-                    this.sendRules();
-                    // wait 0.1s to have tasmota time to be ready
-                    await this.adapter.delay(100);
-                }
-                await this.writeInfo();
-
-                this.sendDimmode();
-
-                this.navigation.resetPosition(true);
-
-                const start = this.navigation.getCurrentMainPage();
-                if (start === undefined) {
-                    this.log.error('No start page defined!');
-                    return;
-                }
-                if (this._activePage) {
-                    await this._activePage.setVisibility(false);
-                }
-
-                // set last card to nothing, else the card will not be loaded if it is the same as the last one
-                this.lastCard = '';
-                await start.setVisibility(true);
-                // too be sure, that the page is set correctly
-                this._activePage = start;
-
-                if (this.screenSaver) {
-                    this.screenSaver.pageItems = await this.screenSaver.createPageItems(
-                        this.screenSaver.pageItemConfig,
-                    );
-                    await this.screenSaver.HandleDate();
-                    await this.screenSaver.HandleTime();
-                }
-
-                if (start.alwaysOn === 'none') {
-                    this.sendScreensaverTimeout(2);
-                }
-                await this.setStatus('online');
-                this.log.info('Panel startup finished!');
                 break;
             }
             case 'sleepReached': {

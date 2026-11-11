@@ -434,7 +434,7 @@ Stack: ${stack}`
                 headline: { type: "const", constVal: entry.headline || "Page QR" },
                 selType: { type: "const", constVal: entry.selType || 0 },
                 ssidUrlTel: { type: "const", constVal: entry.ssidUrlTel || "" },
-                wlantype: { type: "const", constVal: entry.wlantype || "WPA" },
+                wlantype: { type: "const", constVal: entry.wlantype || "WPA2" },
                 wlanhidden: { type: "const", constVal: !!entry.wlanhidden || false },
                 password: { type: "const", constVal: (_b = qrPassword == null ? void 0 : qrPassword.secret) != null ? _b : "" },
                 pwdhidden: { type: "const", constVal: !!entry.pwdhidden || false },
@@ -1228,6 +1228,9 @@ function qrUsesPassword(entry) {
 }
 function dataForcardTrash(entry) {
   let newPage;
+  if (!(entry.countItems >= 1 && entry.countItems <= 6)) {
+    entry.countItems = 6;
+  }
   const pageItems = Array.from({ length: entry.countItems }, (_, i) => {
     return {
       id: `pageItem${i}`,
@@ -1270,9 +1273,6 @@ function dataForcardTrash(entry) {
       }
     };
   });
-  if (entry.countItems < 1 || entry.countItems > 6) {
-    entry.countItems = 6;
-  }
   if (entry.countItems < 6) {
     newPage = {
       uniqueID: entry.uniqueName,
