@@ -7,6 +7,7 @@ import { initialGlobalState } from '../store/PanelStore';
 import { contentWidth, stageSize, theme } from '../style/theme';
 import { cardAlarmModule } from './cardAlarm';
 import { cardChartModule } from './cardChart';
+import { cardPChartModule } from './cardPChart';
 import { cardPowerModule } from './cardPower';
 import { cardQRModule } from './cardQR';
 import { cardThermoModule } from './cardThermo';
@@ -57,6 +58,13 @@ const CASES: readonly { pageType: string; module: AnyCardModule; payload: string
         pageType: 'cardLChart',
         module: cardChartModule,
         payload: `entityUpd~Temp~${NAV}46500~°C~100:150:200:250~0^02:00+120+240^06:00~0:136~60:133~120:130~180:125~240:120`,
+    },
+    {
+        pageType: 'cardPChart',
+        module: cardPChartModule,
+        payload:
+            `entityUpd~Energie heute~${NAV}~3~~Eigenverbrauch~376471~12.8 kWh~1838~Einspeisung~179412~6.1 kWh~9406~` +
+            'Netzbezug~123529~4.2 kWh~62157~Batterie~100000~3.4 kWh~65184~Wallbox~220588~7.5 kWh~43575',
     },
 ];
 
