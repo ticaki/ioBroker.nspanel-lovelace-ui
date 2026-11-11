@@ -12,7 +12,6 @@ import {
     Button,
     Select,
     MenuItem,
-    Tooltip,
     Typography,
     Checkbox,
     List,
@@ -49,6 +48,9 @@ interface PageTrashEditorState extends ConfigGenericState {
     alive: boolean;
     uploadStatus: { severity: AlertColor; message: string } | null;
 }
+
+/** Icon a slot gets when "apply selection" fills it - the colour of the slot is not touched. */
+const trashDefaultIcon = 'trash-can-outline';
 
 export class PageTrashEditor extends ConfigGeneric<ConfigGenericProps & PageTrashEditorProps, PageTrashEditorState> {
     private fileInputRef = React.createRef<HTMLInputElement>();
@@ -121,7 +123,7 @@ export class PageTrashEditor extends ConfigGeneric<ConfigGenericProps & PageTras
             reader.onload = async (e: ProgressEvent<FileReader>) => {
                 const content = e.target?.result as string;
                 if (!content) {
-                    alert('Upload failed: No content');
+                    this.showStatus('error', 'trash_upload_no_content');
                     return;
                 }
 
@@ -155,22 +157,48 @@ export class PageTrashEditor extends ConfigGeneric<ConfigGenericProps & PageTras
                     }
                 } catch (error: any) {
                     console.error('File upload failed:', error);
-                    alert(`Upload failed: ${error.message}`);
+                    this.showStatus('error', 'trash_upload_failed', error.message);
                 }
             };
 
             reader.onerror = () => {
                 console.error('File reading failed');
-                alert('Failed to read file');
+                this.showStatus('error', 'trash_upload_read_failed');
             };
 
             // Lese Datei als Text
             reader.readAsText(file);
         } catch (error: any) {
             console.error('File upload failed:', error);
-            alert(`Upload failed: ${error.message}`);
+            this.showStatus('error', 'trash_upload_failed', error.message);
         }
     };
+
+    /**
+     * Meldung im Formular statt eines Browser-Dialogs (alert).
+     *
+     * @param severity Farbe des Alerts
+     * @param key i18n-Schlüssel, `%s` wird durch detail ersetzt
+     * @param detail Fehlertext o. ä.
+     */
+    private showStatus(severity: AlertColor, key: string, detail?: string): void {
+        this.setState({ uploadStatus: { severity, message: this.getText(key).replace('%s', detail ?? '') } });
+    }
+
+    private renderStatusAlert(): React.JSX.Element | null {
+        if (!this.state.uploadStatus) {
+            return null;
+        }
+        return (
+            <Alert
+                severity={this.state.uploadStatus.severity}
+                onClose={() => this.setState({ uploadStatus: null })}
+                sx={{ mt: 2 }}
+            >
+                {this.state.uploadStatus.message}
+            </Alert>
+        );
+    }
 
     private buildUploadStatus(fileName: string, count: number): { severity: AlertColor; message: string } {
         if (!count) {
@@ -213,11 +241,18 @@ export class PageTrashEditor extends ConfigGeneric<ConfigGenericProps & PageTras
         // Erstelle updated entry mit allen Änderungen
         const updated = { ...entry };
 
-        // Verteile auf die items im Array
-        updated.items = normalizeTrashItems(entry.items).map((item, index) => ({
-            ...item,
-            textTrash: selectedEvents[index] || '',
-        }));
+        // Verteile auf die items im Array - die Auswahl füllt die Seite komplett neu: nicht belegte Plätze
+        // verlieren Abfallart, optionalen Namen und Icon, sonst bliebe das der vorigen Abfallart stehen.
+        // Ein belegter Platz bekommt das Standardicon; die Farbe des Platzes bleibt, wie sie eingestellt ist.
+        updated.items = normalizeTrashItems(entry.items).map((item, index) => {
+            const textTrash = selectedEvents[index] || '';
+            return {
+                ...item,
+                textTrash,
+                customTrash: '',
+                icon: textTrash ? trashDefaultIcon : '',
+            };
+        });
 
         // Sende einmal alle Änderungen
         this.props.onEntryChange(updated);
@@ -245,7 +280,7 @@ export class PageTrashEditor extends ConfigGeneric<ConfigGenericProps & PageTras
         const { entry, oContext } = this.props;
 
         if (!entry.trashState) {
-            alert('Bitte wählen Sie zuerst einen State aus');
+            this.showStatus('warning', 'trash_state_missing');
             return;
         }
 
@@ -254,7 +289,7 @@ export class PageTrashEditor extends ConfigGeneric<ConfigGenericProps & PageTras
             const state = await oContext.socket.getState(entry.trashState);
 
             if (!state || !state.val) {
-                alert('State enthält keine Daten');
+                this.showStatus('warning', 'trash_state_empty');
                 return;
             }
 
@@ -262,7 +297,7 @@ export class PageTrashEditor extends ConfigGeneric<ConfigGenericProps & PageTras
             const data = typeof state.val === 'string' ? JSON.parse(state.val) : state.val;
 
             if (!Array.isArray(data)) {
-                alert('State enthält kein Array');
+                this.showStatus('error', 'trash_state_no_array');
                 return;
             }
 
@@ -277,10 +312,10 @@ export class PageTrashEditor extends ConfigGeneric<ConfigGenericProps & PageTras
             const events = Array.from(uniqueEvents).map(name => ({ summary: name }));
 
             // Speichere Events im State
-            this.setState({ uploadedEvents: events });
+            this.setState({ uploadedEvents: events, uploadStatus: null });
         } catch (error: any) {
             console.error('Fehler beim Lesen des States:', error);
-            alert(`Fehler: ${error.message}`);
+            this.showStatus('error', 'trash_state_read_failed', error.message);
         }
     };
 
@@ -346,15 +381,13 @@ export class PageTrashEditor extends ConfigGeneric<ConfigGenericProps & PageTras
                 <Box sx={{ mb: 2 }}>
                     {/* Select number of entities (4 or 6) */}
                     <Box sx={{ display: 'flex', alignItems: 'center', mb: 0.5 }}>
-                        <Tooltip title={this.getText('trash_number_of_entities')}>
-                            <Typography
-                                variant="caption"
-                                color="text.secondary"
-                                sx={{ mr: 0.5 }}
-                            >
-                                Layout
-                            </Typography>
-                        </Tooltip>
+                        <Typography
+                            variant="caption"
+                            color="text.secondary"
+                            sx={{ mr: 0.5 }}
+                        >
+                            {this.getText('trash_number_of_entities')}
+                        </Typography>
                     </Box>
                     <Select
                         size="small"
@@ -430,6 +463,7 @@ export class PageTrashEditor extends ConfigGeneric<ConfigGenericProps & PageTras
                         >
                             {this.getText('trash_search_events')}
                         </Button>
+                        {this.renderStatusAlert()}
                         {this.state.uploadedEvents.length > 0 && (
                             <Box sx={{ mt: 2 }}>
                                 <FormLabel>{this.getText('trash_found_events')}</FormLabel>
@@ -518,15 +552,7 @@ export class PageTrashEditor extends ConfigGeneric<ConfigGenericProps & PageTras
                             style={{ display: 'none' }}
                             onChange={this.handleFileSelect}
                         />
-                        {this.state.uploadStatus ? (
-                            <Alert
-                                severity={this.state.uploadStatus.severity}
-                                onClose={() => this.setState({ uploadStatus: null })}
-                                sx={{ mt: 2 }}
-                            >
-                                {this.state.uploadStatus.message}
-                            </Alert>
-                        ) : null}
+                        {this.renderStatusAlert()}
                         {this.state.uploadedEvents.length > 0 && (
                             <Box sx={{ mt: 2 }}>
                                 <FormLabel>{this.getText('trash_select_events')}</FormLabel>

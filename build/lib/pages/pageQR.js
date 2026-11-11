@@ -95,7 +95,7 @@ class PageQR extends import_Page.Page {
     const selType = (_c = await ((_b = this.items.data.selType) == null ? void 0 : _b.getNumber())) != null ? _c : 0;
     const ssidurltel = (_e = await ((_d = this.items.data.ssidUrlTel) == null ? void 0 : _d.getString())) != null ? _e : "";
     const password = (_g = await ((_f = this.items.data.password) == null ? void 0 : _f.getString())) != null ? _g : "";
-    const wlantype = (_i = await ((_h = this.items.data.wlantype) == null ? void 0 : _h.getString())) != null ? _i : "WPA";
+    const wlantype = (_i = await ((_h = this.items.data.wlantype) == null ? void 0 : _h.getString())) != null ? _i : "WPA2";
     let text1 = "";
     let text = "";
     let icon1 = "";
@@ -233,7 +233,7 @@ class PageQR extends import_Page.Page {
       const ssidurltel = await ((_c = items.data.ssidUrlTel) == null ? void 0 : _c.getString()) || "";
       const password = await ((_d = items.data.password) == null ? void 0 : _d.getString()) || "";
       const pwdhidden = await ((_e = items.data.pwdhidden) == null ? void 0 : _e.getBoolean()) || false;
-      const wlantype = await ((_f = items.data.wlantype) == null ? void 0 : _f.getString()) || "WPA";
+      const wlantype = await ((_f = items.data.wlantype) == null ? void 0 : _f.getString()) || "WPA2";
       const wlanhidden = await ((_g = items.data.wlanhidden) == null ? void 0 : _g.getBoolean()) || false;
       switch (selType) {
         case 0:

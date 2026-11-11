@@ -41,7 +41,7 @@ import { rawItemListLabel } from './RawItemConfigDialog';
 import { getPageItemDefaultsByRole, getPageNaviItemDefaultsByRole } from '../../../src/lib/const/page-item-defaults';
 import { ConfigGeneric, type ConfigGenericProps, type ConfigGenericState } from '@iobroker/json-config';
 
-/** Basis-Slot-Anzahl pro Kartentyp (cardGrid2: eu/us-l = 8, us-p = 9) */
+/** Basis-Slot-Anzahl pro Kartentyp (modellabhängig wie in pageMenu.ts: cardGrid2 eu/us-l = 8, us-p = 9; cardEntities us-p = 5) */
 const SLOT_COUNTS_BASE: Record<MenuEntry['card'], number> = {
     cardGrid: 6,
     cardGrid2: 8,
@@ -954,12 +954,20 @@ export class PageMenuEditor extends ConfigGeneric<ConfigGenericProps & PageMenuE
         const grid2Status = this.getGrid2ModelStatus();
         const grid2Conflict = grid2Status === 'conflict';
         const grid2Slots = grid2Status === 'all-usp' ? 9 : 8;
+        // cardEntities has five lines on us-p as well (pageMenu.ts); without assignment or with mixed models it stays at 4
+        const entitiesSlots = grid2Status === 'all-usp' ? 5 : 4;
 
-        const baseSlots = entry.card === 'cardGrid2' ? grid2Slots : SLOT_COUNTS_BASE[entry.card];
+        const baseSlots =
+            entry.card === 'cardGrid2'
+                ? grid2Slots
+                : entry.card === 'cardEntities'
+                  ? entitiesSlots
+                  : SLOT_COUNTS_BASE[entry.card];
         const isGridCard = ['cardGrid', 'cardGrid2', 'cardGrid3'].includes(entry.card);
         // adapter default is classic, the setting itself lives in the page details
         const scrollPresentation = entry.scrollPresentation ?? 'classic';
-        const potentialArrow = isGridCard && scrollPresentation === 'arrow';
+        // the panel reserves the arrow on every scroll card (pageMenu.ts), not only on the grids
+        const potentialArrow = scrollPresentation === 'arrow';
         const pageItems = entry.pageItems ?? [];
 
         // Letzter tatsächlich befüllter Index – trailing undefineds durch Drag/Drop ignorieren
@@ -1026,7 +1034,16 @@ export class PageMenuEditor extends ConfigGeneric<ConfigGenericProps & PageMenuE
                         disabled={!this.state.alive}
                     >
                         <FormLabel component="legend">{this.getText('pageMenu_card_type')}</FormLabel>
-                        <Box sx={{ display: 'flex', gap: 4, mt: 1 }}>
+                        {/* die Modellangabe im Text darf die Auswahl nicht auseinanderziehen: nicht umbrechen */}
+                        <Box
+                            sx={{
+                                display: 'flex',
+                                gap: 4,
+                                mt: 1,
+                                alignItems: 'flex-start',
+                                '& .MuiFormControlLabel-label': { whiteSpace: 'nowrap' },
+                            }}
+                        >
                             {/* Linke Spalte: Grid-Varianten */}
                             <Box>
                                 <Typography
@@ -1065,14 +1082,6 @@ export class PageMenuEditor extends ConfigGeneric<ConfigGenericProps & PageMenuE
                                         label={this.getText('pageMenu_cardGrid3')}
                                     />
                                 </RadioGroup>
-                                {grid2Conflict && (
-                                    <Alert
-                                        severity="warning"
-                                        sx={{ mt: 1, fontSize: '0.75rem', py: 0.5 }}
-                                    >
-                                        {this.getText('pageMenu_cardGrid2_conflict')}
-                                    </Alert>
-                                )}
                             </Box>
 
                             {/* Rechte Spalte: Entities & Schedule */}
@@ -1093,7 +1102,11 @@ export class PageMenuEditor extends ConfigGeneric<ConfigGenericProps & PageMenuE
                                     <FormControlLabel
                                         value="cardEntities"
                                         control={<Radio />}
-                                        label={this.getText('pageMenu_cardEntities')}
+                                        label={
+                                            grid2Status === 'all-usp'
+                                                ? this.getText('pageMenu_cardEntities_usp')
+                                                : this.getText('pageMenu_cardEntities')
+                                        }
                                     />
                                     <FormControlLabel
                                         value="cardSchedule"
@@ -1103,6 +1116,14 @@ export class PageMenuEditor extends ConfigGeneric<ConfigGenericProps & PageMenuE
                                 </RadioGroup>
                             </Box>
                         </Box>
+                        {grid2Conflict && (
+                            <Alert
+                                severity="warning"
+                                sx={{ mt: 1, fontSize: '0.75rem', py: 0.5, maxWidth: 560 }}
+                            >
+                                {this.getText('pageMenu_cardGrid2_conflict')}
+                            </Alert>
+                        )}
                     </FormControl>
                 </Box>
 

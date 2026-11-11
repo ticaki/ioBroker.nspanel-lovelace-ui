@@ -510,7 +510,7 @@ export class AdminConfiguration extends BaseClass {
                                 headline: { type: 'const', constVal: entry.headline || 'Page QR' },
                                 selType: { type: 'const', constVal: entry.selType || 0 },
                                 ssidUrlTel: { type: 'const', constVal: entry.ssidUrlTel || '' },
-                                wlantype: { type: 'const', constVal: entry.wlantype || 'WPA' },
+                                wlantype: { type: 'const', constVal: entry.wlantype || 'WPA2' },
                                 wlanhidden: { type: 'const', constVal: !!entry.wlanhidden || false },
                                 password: { type: 'const', constVal: qrPassword?.secret ?? '' },
                                 pwdhidden: { type: 'const', constVal: !!entry.pwdhidden || false },
@@ -1581,6 +1581,10 @@ export function qrUsesPassword(entry: ShareConfig.QREntry): boolean {
 function dataForcardTrash(entry: ShareConfig.TrashEntry): PageBase {
     let newPage: PageBase;
 
+    // clamp first - the number of page items below depends on it (an old configuration may carry undefined or 10)
+    if (!(entry.countItems >= 1 && entry.countItems <= 6)) {
+        entry.countItems = 6;
+    }
     const pageItems = Array.from({ length: entry.countItems }, (_, i) => {
         return {
             id: `pageItem${i}`,
@@ -1624,9 +1628,6 @@ function dataForcardTrash(entry: ShareConfig.TrashEntry): PageBase {
         };
     });
 
-    if (entry.countItems < 1 || entry.countItems > 6) {
-        entry.countItems = 6;
-    }
     if (entry.countItems < 6) {
         newPage = {
             uniqueID: entry.uniqueName,
