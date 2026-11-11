@@ -59,6 +59,7 @@ export function isEventMethod(F: string): F is EventMethod {
         case 'buttonPress2':
         case 'buttonPress3':
         case 'renderCurrentPage':
+        case 'ack':
         case 'button1':
         case 'button2':
             return true;

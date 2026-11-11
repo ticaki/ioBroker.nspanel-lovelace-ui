@@ -2182,6 +2182,9 @@ class Panel extends import_library.BaseClass {
         await this.panelSend.onMessage("/stat/RESULT", `{ "CustomSend": "${event.method}" }`);
         break;
       }
+      case "ack": {
+        break;
+      }
       case "button1": {
         await this.onDetachButtonEvent("left");
         break;

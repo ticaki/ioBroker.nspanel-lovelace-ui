@@ -180,6 +180,7 @@ export namespace NSPanel {
         | 'pageOpenDetail'
         | 'buttonPress2'
         | 'renderCurrentPage'
+        | 'ack'
         | 'button1'
         | 'button2';
 
