@@ -28,6 +28,7 @@ import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import AddIcon from '@mui/icons-material/Add';
+import FileDownloadIcon from '@mui/icons-material/FileDownload';
 import {
     defaultWebLinkSettings,
     loadWebLinkSettings,
@@ -46,6 +47,15 @@ import {
     panelModels,
     webPanelButtonsDefault,
 } from '../../src/lib/types/adminShareConfig';
+import {
+    buildPanelConfigExport,
+    pagesWithStrippedSecrets,
+    panelConfigExportFileName,
+    panelPagesWithSecrets,
+    panelSettingStateIds,
+    type PageSecretField,
+} from '../../src/lib/types/panelConfigExport';
+import PanelExportSecretsDialog from './components/PanelExportSecretsDialog';
 import { PanelStatusBadge } from './components/PanelStatusBadge';
 import { resolveTasmotaTimeZone, uniqueTasmotaTimeZones, type TasmotaTimeZone } from './tasmotaTimeZones';
 import { docUrl } from './docLink';
@@ -184,6 +194,10 @@ interface PagePanelOverviewState extends ConfigGenericState {
     showMessageConfirm: boolean;
     /** dialog to create or edit a web panel (kind 'web') */
     webPanelDialog: WebPanelDialogState;
+    /** result of the last export of a panel configuration, null = nothing to show */
+    exportNotice: { severity: 'success' | 'warning' | 'error'; text: string } | null;
+    /** export waiting for the answer whether PINs and passwords go into the file, null = no question open */
+    exportSecrets: { panel: PanelConfig; pages: { uniqueName: string; fields: PageSecretField[] }[] } | null;
 }
 
 class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any }, PagePanelOverviewState> {
@@ -223,7 +237,129 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
             showMessageConfirm: false,
             webPanelDialog: closedWebPanelDialog,
             webLink: webLinkSettingsOf(props.data, defaultWebLinkSettings()),
+            exportNotice: null,
+            exportSecrets: null,
         };
+    }
+
+    /**
+     * Reads the settings states of a panel (`cmd.*`, see `panelSettingStates`); states that do not exist or
+     * cannot be read are left out.
+     *
+     * @param panelId id of the panel
+     * @returns values by id below `cmd.`
+     */
+    private async readPanelSettingStates(panelId: string): Promise<Record<string, unknown>> {
+        const ids = panelSettingStateIds(panelId, `${this.adapterName}.${this.instance}`);
+        const out: Record<string, unknown> = {};
+        for (const [key, id] of Object.entries(ids)) {
+            try {
+                const state = await this.props.oContext.socket.getState(id);
+                if (state && state.val != null) {
+                    out[key] = state.val;
+                }
+            } catch {
+                // not readable - left out of the export
+            }
+        }
+        return out;
+    }
+
+    /** @returns version of the installed adapter, undefined when it cannot be read */
+    private async readAdapterVersion(): Promise<string | undefined> {
+        try {
+            const obj = await this.props.oContext.socket.getObject(
+                `system.adapter.${this.adapterName}.${this.instance}`,
+            );
+            const version: unknown = obj?.common?.version;
+            return typeof version === 'string' ? version : undefined;
+        } catch {
+            return undefined;
+        }
+    }
+
+    /**
+     * Export button of a tile: asks first when pages of the panel hold PINs or passwords, else exports at once.
+     *
+     * @param panel the panel of the tile
+     */
+    private handleExportPanel = (panel: PanelConfig): void => {
+        if (!panel.id || !panel.topic) {
+            return;
+        }
+        const pages = panelPagesWithSecrets(this.props.data, panel.topic);
+        if (pages.length) {
+            this.setState({ exportSecrets: { panel, pages } });
+            return;
+        }
+        void this.exportPanel(panel, false);
+    };
+
+    /**
+     * Answer of the secrets dialog.
+     *
+     * @param includeSecrets true = PINs and passwords go into the file (explicit choice)
+     */
+    private handleExportSecretsAnswer = (includeSecrets: boolean): void => {
+        const pending = this.state.exportSecrets;
+        this.setState({ exportSecrets: null });
+        if (pending) {
+            void this.exportPanel(pending.panel, includeSecrets);
+        }
+    };
+
+    /**
+     * Writes the configuration of one panel (pages, screensaver, buttons and settings) into a JSON file the
+     * browser downloads. Takes the configuration as shown, unsaved changes included.
+     *
+     * @param panel the panel of the tile
+     * @param includeSecrets true = PINs and passwords go into the file
+     */
+    private async exportPanel(panel: PanelConfig, includeSecrets: boolean): Promise<void> {
+        if (!panel.id || !panel.topic) {
+            return;
+        }
+        try {
+            const now = new Date();
+            const data = buildPanelConfigExport({
+                native: this.props.data,
+                panel,
+                states: await this.readPanelSettingStates(panel.id),
+                adapterVersion: await this.readAdapterVersion(),
+                includeSecrets,
+                now,
+            });
+            const fileName = panelConfigExportFileName(panel.name || panel.topic, now);
+            const url = URL.createObjectURL(
+                new Blob([`${JSON.stringify(data, null, 2)}\n`], { type: 'application/json' }),
+            );
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = fileName;
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            setTimeout(() => URL.revokeObjectURL(url), 1000);
+            const secrets = pagesWithStrippedSecrets(data);
+            const done = this.getText('exportPanelDone').replace('%s', fileName);
+            this.setState({
+                exportNotice: includeSecrets
+                    ? { severity: 'warning', text: `${done} ${this.getText('exportPanelSecretsIncluded')}` }
+                    : secrets.length
+                      ? {
+                            severity: 'warning',
+                            text: `${done} ${this.getText('exportPanelSecrets').replace('%s', secrets.join(', '))}`,
+                        }
+                      : { severity: 'success', text: done },
+            });
+        } catch (e) {
+            this.setState({
+                exportNotice: {
+                    severity: 'error',
+                    text: this.getText('exportPanelFailed').replace('%s', e instanceof Error ? e.message : String(e)),
+                },
+            });
+        }
     }
 
     /**
@@ -1353,6 +1489,16 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
                         {error}
                     </Alert>
                 )}
+                {/* result of the last panel export */}
+                {this.state.exportNotice && (
+                    <Alert
+                        severity={this.state.exportNotice.severity}
+                        onClose={() => this.setState({ exportNotice: null })}
+                        sx={{ mt: 2 }}
+                    >
+                        {this.state.exportNotice.text}
+                    </Alert>
+                )}
                 {/* Init/Update Button + Web panel button */}
                 <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, mt: 2 }}>
                     <Button
@@ -1449,6 +1595,16 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
                                             <OpenInNewIcon />
                                         </IconButton>
                                     ) : null}
+                                    <IconButton
+                                        size="small"
+                                        color="primary"
+                                        onClick={(): void => this.handleExportPanel(panel)}
+                                        disabled={!panel.id || !panel.topic}
+                                        title={this.getText('exportPanel')}
+                                        aria-label={this.getText('exportPanel')}
+                                    >
+                                        <FileDownloadIcon />
+                                    </IconButton>
                                     <IconButton
                                         size="small"
                                         color="primary"
@@ -1579,6 +1735,13 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
                 </Box>
 
                 {/* Action of one hardware button (native.panels[].buttonLeft/buttonRight) */}
+                <PanelExportSecretsDialog
+                    open={!!this.state.exportSecrets}
+                    panelName={this.state.exportSecrets?.panel.name || this.state.exportSecrets?.panel.topic || ''}
+                    pages={this.state.exportSecrets?.pages ?? []}
+                    onCancel={(): void => this.setState({ exportSecrets: null })}
+                    onExport={this.handleExportSecretsAnswer}
+                />
                 <PanelButtonDialog
                     ref={this.buttonDialogRef}
                     socket={this.props.oContext.socket}

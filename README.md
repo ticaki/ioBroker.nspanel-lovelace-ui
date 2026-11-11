@@ -167,6 +167,7 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
 - (ticaki) web panel: the color wheel of popupLight sends the color in the scale the adapter expects, whatever its size on the screen
 - (ticaki) screensaver: with the new HMI (screensaver tiles and advanced) a tap on an indicator counts like a tap on the screensaver; an indicator without action (and, with "indicators act as buttons", without a state to switch) no longer leaves the screensaver at once but follows the double click setting, `buttons.indicator-N` is still written; a long press is recognised by the panel but not used yet; the web panel counts the taps the same way
 - (ticaki) screensaver tiles: the indicators can get their own icon font (admin field "icon font"); needs the new screensaver5 page of the HMI, the other screensavers ignore it
+- (ticaki) admin: export the configuration of one panel (pages, screensaver with its notifications, hardware buttons, navigation overrides and panel settings) as a JSON file from the panel tile; PINs and passwords are only included after an explicit confirmation
 - (ticaki) screensaver: with the TFT 6.0.8 an indicator sends one event per press, a long press no longer switches twice
 - (ticaki) screensaver: with the TFT 6.0.8 the indicators of the advanced screensaver also react to a press on the us-l and us-p panels
 - (ticaki) screensaver: the default Bright Sky item for sunrise and sunset no longer stays empty after sunset, it shows the sunrise of the next day
