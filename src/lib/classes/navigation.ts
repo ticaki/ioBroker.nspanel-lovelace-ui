@@ -99,7 +99,8 @@ export class Navigation extends BaseClass {
     private navigationConfig: NavigationItemConfigNonNull[];
     private mainPage: string = mainPageName;
     private _currentItem: number = 0;
-    private initDone = false;
+    /** object definition of `cmd.goToNavigationPoint` of this panel, built with its states on the first write */
+    private navigationPointObject: ioBroker.StateObject | undefined;
     private infityCounter = 0;
     public get currentItem(): number {
         return this._currentItem;
@@ -107,20 +108,18 @@ export class Navigation extends BaseClass {
     public set currentItem(value: number) {
         const c = this.navigationConfig[value];
         if (c) {
-            if (!this.initDone) {
-                const states = this.buildCommonStates();
-                genericStateObjects.panel.panels.cmd.goToNavigationPoint.common.states = states;
-                void this.library
-                    .writedp(
-                        `panels.${this.panel.name}.cmd.goToNavigationPoint`,
-                        c.name,
-                        genericStateObjects.panel.panels.cmd.goToNavigationPoint,
-                    )
-                    .catch();
-                this.initDone = true;
-            } else {
-                void this.library.writedp(`panels.${this.panel.name}.cmd.goToNavigationPoint`, c.name).catch();
+            // always hand over the object definition: two startups of a web panel can set the position
+            // before the first write has created the state, and writedp throws for an unknown state without it
+            if (!this.navigationPointObject) {
+                const obj = structuredClone(genericStateObjects.panel.panels.cmd.goToNavigationPoint);
+                obj.common.states = this.buildCommonStates();
+                this.navigationPointObject = obj;
             }
+            this.library
+                .writedp(`panels.${this.panel.name}.cmd.goToNavigationPoint`, c.name, this.navigationPointObject)
+                .catch((e: unknown) => {
+                    this.log.error(`Cannot write navigation position: ${e instanceof Error ? e.message : String(e)}`);
+                });
         }
         this._currentItem = value;
     }

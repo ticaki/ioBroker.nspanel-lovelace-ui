@@ -159,6 +159,7 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
     ### **WORK IN PROGRESS**
 -->
 ### **WORK IN PROGRESS**
+- (ticaki) web panel: the adapter no longer crashes on the first connection of a new web panel (two startups of the browser ran at the same time)
 - (ticaki) alarm/unlock page: the status datapoint works on the first start of a new page (writes to it were ignored until the next restart)
 - (ticaki) log: the notes at startup that an admin page replaces a script page and that an optional data point falls back to another one are logged as debug instead of info
 - (ticaki) screensaver: a long press on an indicator (TFT 6.0.9, screensaver tiles and advanced) can get its own action - set a state, toggle a state or open a page (admin: "Action on long press"); without one it acts like a tap; every long press writes `buttons.indicatorLong-N`; the web panel sends the long press as well; the script templates know the long press fields (`ScreensaverEntityLongPress…`) and `ScreensaverEntityCycle`/`ScreensaverEntityCycleValues`

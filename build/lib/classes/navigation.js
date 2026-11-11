@@ -77,7 +77,8 @@ class Navigation extends import_library.BaseClass {
   navigationConfig;
   mainPage = import_default_pages.mainPageName;
   _currentItem = 0;
-  initDone = false;
+  /** object definition of `cmd.goToNavigationPoint` of this panel, built with its states on the first write */
+  navigationPointObject;
   infityCounter = 0;
   get currentItem() {
     return this._currentItem;
@@ -85,18 +86,14 @@ class Navigation extends import_library.BaseClass {
   set currentItem(value) {
     const c = this.navigationConfig[value];
     if (c) {
-      if (!this.initDone) {
-        const states = this.buildCommonStates();
-        import_definition.genericStateObjects.panel.panels.cmd.goToNavigationPoint.common.states = states;
-        void this.library.writedp(
-          `panels.${this.panel.name}.cmd.goToNavigationPoint`,
-          c.name,
-          import_definition.genericStateObjects.panel.panels.cmd.goToNavigationPoint
-        ).catch();
-        this.initDone = true;
-      } else {
-        void this.library.writedp(`panels.${this.panel.name}.cmd.goToNavigationPoint`, c.name).catch();
+      if (!this.navigationPointObject) {
+        const obj = structuredClone(import_definition.genericStateObjects.panel.panels.cmd.goToNavigationPoint);
+        obj.common.states = this.buildCommonStates();
+        this.navigationPointObject = obj;
       }
+      this.library.writedp(`panels.${this.panel.name}.cmd.goToNavigationPoint`, c.name, this.navigationPointObject).catch((e) => {
+        this.log.error(`Cannot write navigation position: ${e instanceof Error ? e.message : String(e)}`);
+      });
     }
     this._currentItem = value;
   }
