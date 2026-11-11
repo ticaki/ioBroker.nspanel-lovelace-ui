@@ -159,6 +159,7 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
     ### **WORK IN PROGRESS**
 -->
 ### **WORK IN PROGRESS**
+- (ticaki) emulator: every negative berry driver version (e.g. -12 of future emulator drivers, absolute value = driver generation) is recognized as emulator, not only -1
 - (ticaki) navigation: the arrows of the service page no longer take over the navigation of another panel (warning "Didn't find a navigation node" with page names of another panel, or a wrong arrow target)
 - (ticaki) developer tab: button "Create test states" creates the objects of the test environment (all channel roles, power, chart and trash data) below 0_userdata.0.NSPanelTest / alias.0.NSPanelTest, only the missing ones
 - (ticaki) pages: a long headline is shortened with … to the width of the title line of the panel model instead of being cut by the display
