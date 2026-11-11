@@ -265,6 +265,12 @@ export const servicePageName = '///unlock';
  */
 export const screensaverTargetPage = '///screensaver';
 
+/**
+ * System page and navigation node shown when a navigation link points to a node without page - instead
+ * of an arrow that does nothing. It names the missing target and leads back to the page it came from.
+ */
+export const navigationErrorPageName = '///navigationError';
+
 export interface PageConfigBaseFields {
     hidden?: boolean;
     alwaysOn?: 'none' | 'always' | 'action' | 'ignore';

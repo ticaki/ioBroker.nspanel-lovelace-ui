@@ -1,8 +1,9 @@
 import type { NavigationItemConfig } from '../classes/navigation';
 import type { PageBase } from '../types/pages';
-import { Color } from '../const/Color';
+import { Color, type RGB } from '../const/Color';
+import type { NSPanel } from '../types/NSPanel';
 import { mainPageName } from '../const/default-pages';
-import { serviceNodeName, servicePageName } from '../types/adminShareConfig';
+import { navigationErrorPageName, serviceNodeName, servicePageName } from '../types/adminShareConfig';
 
 const popupNotification: PageBase = {
     dpInit: '',
@@ -1367,6 +1368,65 @@ const SystemOption: PageBase = {
 };
 
 /**
+ * One line of the page {@link NavigationError}: icon, translated label and a value read from an
+ * internal state of the panel that the navigation fills before it shows the page.
+ *
+ * @param icon Icon of the line.
+ * @param color Icon color.
+ * @param label Translation key of the label.
+ * @param dp Internal state with the value, `undefined` for a line without value.
+ * @returns Page item configuration.
+ */
+function navigationErrorLine(
+    icon: string,
+    color: RGB | string,
+    label: string,
+    dp: 'info/navigationErrorTarget' | 'info/navigationErrorOrigin' | undefined,
+): NSPanel.PageItemDataItemsOptions {
+    return {
+        role: '',
+        type: 'text',
+        dpInit: '',
+        data: {
+            icon: {
+                true: {
+                    value: { type: 'const', constVal: icon },
+                    color: { type: 'const', constVal: color },
+                },
+                false: undefined,
+            },
+            entity1: { value: { type: 'const', constVal: true } },
+            text: { true: { type: 'const', constVal: label }, false: undefined },
+            text1: dp ? { true: { type: 'internal', dp }, false: undefined } : undefined,
+        },
+    };
+}
+
+/**
+ * System page shown when a navigation link points to a node without page (e.g. a script page that was
+ * dropped during the conversion). The navigation fills the missing target and the page it came from
+ * and points the back arrow of the node {@link navigationErrorPageName} at that page.
+ */
+const NavigationError: PageBase = {
+    dpInit: '',
+    alwaysOn: 'none',
+    uniqueID: navigationErrorPageName,
+    config: {
+        card: 'cardEntities',
+        scrollType: 'page',
+        data: {
+            headline: { type: 'const', constVal: 'navigationError_headline' },
+        },
+    },
+    pageItems: [
+        navigationErrorLine('link-variant-off', Color.Red, 'navigationError_target', 'info/navigationErrorTarget'),
+        navigationErrorLine('arrow-left-bold', Color.info, 'navigationError_origin', 'info/navigationErrorOrigin'),
+        navigationErrorLine('file-cog-outline', Color.Yellow, 'navigationError_hint', undefined),
+    ],
+    items: undefined,
+};
+
+/**
  * all pages from system
  */
 export const systemPages: PageBase[] = [
@@ -1385,6 +1445,7 @@ export const systemPages: PageBase[] = [
     DeviceOption,
     NetworkOption,
     SystemOption,
+    NavigationError,
 ];
 export const systemNavigation: NavigationItemConfig[] = [
     {
@@ -1459,5 +1520,12 @@ export const systemNavigation: NavigationItemConfig[] = [
         name: '///PopupInfo',
         page: '///PopupInfo',
         left: { double: '///Overview' },
+    },
+    {
+        name: navigationErrorPageName,
+        page: navigationErrorPageName,
+        // `left.single` is set at runtime by Navigation to the page the faulty link came from.
+        // Home button - resolved against the effective start page by Navigation.init().
+        right: { double: mainPageName },
     },
 ];
