@@ -1339,7 +1339,8 @@ const SystemOption = {
 };
 function navigationErrorLine(icon, color, label, dp) {
   return {
-    role: "",
+    // the value is a page name: shown as it is, not translated
+    role: "textRawValue",
     type: "text",
     dpInit: "",
     data: {

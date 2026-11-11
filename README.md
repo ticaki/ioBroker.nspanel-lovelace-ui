@@ -159,7 +159,7 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
     ### **WORK IN PROGRESS**
 -->
 ### **WORK IN PROGRESS**
-- (ticaki) navigation: a target without page (e.g. a script page dropped during the conversion) opens the system page "navigation faulty" naming the missing page, with a back arrow to the page it came from, instead of doing nothing; the start log warns about such links
+- (ticaki) navigation: a target without page (e.g. a script page dropped during the conversion) opens the system page "Nav error" naming the missing target and the page it came from (short texts that fit the portrait models in every language), with a back arrow to that page, instead of doing nothing; the start log warns about such links
 - (ticaki) web panel: the adapter no longer crashes on the first connection of a new web panel (two startups of the browser ran at the same time)
 - (ticaki) alarm/unlock page: the status datapoint works on the first start of a new page (writes to it were ignored until the next restart)
 - (ticaki) log: the notes at startup that an admin page replaces a script page and that an optional data point falls back to another one are logged as debug instead of info
