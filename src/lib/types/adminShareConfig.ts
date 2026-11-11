@@ -866,6 +866,11 @@ export type PageItemTemplateInfo = {
     options: PageItemTemplateOption[];
     /** i18n key of the display name, without it the admin shows the technical `name` */
     label?: string;
+    /**
+     * font of the icon (`icon.textSize` as constant, also from the base template) - the admin warns when it
+     * has no icon glyphs; undefined = the template sets none
+     */
+    iconTextSize?: HmiTextSize;
 };
 
 export type ScreensaverTemplateNeed = 'channel' | 'none';

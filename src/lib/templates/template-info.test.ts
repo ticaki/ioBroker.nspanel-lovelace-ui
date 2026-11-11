@@ -25,6 +25,17 @@ describe('lib/templates - template info (screensaver item dialog)', () => {
         expect(byName.get('text.pirate-weather.favorit')).to.include({ need: 'channel', adapter: 'pirate-weather' });
     });
 
+    it('names the constant icon font of a template, also from the base template', () => {
+        expect(byName.get('text.battery')?.iconTextSize).to.equal(2);
+        expect(byName.get('text.battery.bydhvs')?.iconTextSize).to.equal(2);
+        expect(byName.get('text.window.isOpen')?.iconTextSize).to.equal(undefined);
+        const infos = pageItemTemplateInfos({
+            base: { type: 'text', role: '', adapter: '', data: { icon: { textSize: { type: 'const', constVal: 3 } } } },
+            child: { type: 'text', role: '', adapter: '', template: 'base', data: {} },
+        } as any);
+        expect(infos.map(i => i.iconTextSize)).to.deep.equal([3, 3]);
+    });
+
     it('needs no object when the template brings its own data', () => {
         for (const name of ['text.clock', 'text.wlan', 'button.iconLeftSize', 'button.service.adapter.stopped']) {
             expect(byName.get(name), name).to.include({ need: 'none' });

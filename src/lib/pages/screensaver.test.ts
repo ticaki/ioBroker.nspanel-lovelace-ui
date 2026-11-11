@@ -213,6 +213,31 @@ describe('lib/pages/screensaver - tiles (screensaver5) payload', () => {
         expect(advanced!.options.indicator[0]).to.equal('~0?2~i2~2~indicator2~v2');
     });
 
+    it('drops the suffix of an indicator icon in a font without icons, keeps it for icon fonts and texts', async () => {
+        const icon = Icons.GetIcon('battery-high');
+        const withIcon = (n: number, text: string): any => ({
+            ...item('indicator', n),
+            getPageItemPayload: async (): Promise<string> => Promise.resolve(`text~0?${n}~${text}~${n}~ind${n}~v${n}`),
+        });
+        const items = [withIcon(0, `${icon}¬2`), withIcon(1, `${icon}¬4`), withIcon(2, '85%¬2')];
+        const tiles = await tilesSaver(items).getData(['indicator']);
+        expect(tiles!.options.indicator[0]).to.equal(`~0?0~${icon}~0~ind0~v0`);
+        expect(tiles!.options.indicator[1]).to.equal(`~0?1~${icon}¬4~1~ind1~v1`);
+        expect(tiles!.options.indicator[2]).to.equal('~0?2~85%¬2~2~ind2~v2');
+
+        // the other pages strip every suffix as before
+        const saver = Object.create(Screensaver.prototype) as Screensaver;
+        Object.assign(saver, {
+            pageItems: items,
+            config: { card: 'screensaver2', mode: 'advanced', model: 'eu' },
+            step: 0,
+        });
+        const advanced = await saver.getData(['indicator']);
+        expect(advanced!.options.indicator[0]).to.equal(`~0?0~${icon}~0~ind0~v0`);
+        expect(advanced!.options.indicator[1]).to.equal(`~0?1~${icon}~1~ind1~v1`);
+        expect(advanced!.options.indicator[2]).to.equal('~0?2~85%~2~ind2~v2');
+    });
+
     it('pages more than 7 indicators in windows of 7', async () => {
         const items = [];
         for (let i = 0; i < 9; i++) {

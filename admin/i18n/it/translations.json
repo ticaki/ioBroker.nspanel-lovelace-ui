@@ -1239,6 +1239,7 @@
     "screensaver_item_headline": "Titolo (vuoto = nome dello stato)",
     "screensaver_item_iconFont": "Carattere dell'icona",
     "screensaver_item_iconFontHint": "Solo lo screensaver 'Riquadri' cambia il carattere del campo icona. Vuoto = carattere del pannello.",
+    "screensaver_item_iconFontNoIcons": "senza icone – carattere predefinito",
     "screensaver_item_iconOff": "Icona off (false / 0)",
     "screensaver_item_iconOn": "Icona (on / valore)",
     "screensaver_item_iconRequired": "Senza icona il pannello non può mostrare l'elemento – scegliere un'icona",
