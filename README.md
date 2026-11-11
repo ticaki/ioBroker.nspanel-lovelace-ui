@@ -159,6 +159,7 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
     ### **WORK IN PROGRESS**
 -->
 ### **WORK IN PROGRESS**
+- (ticaki) developer tab: button "Create test states" creates the objects of the test environment (all channel roles, power, chart and trash data) below 0_userdata.0.NSPanelTest / alias.0.NSPanelTest, only the missing ones
 - (ticaki) pages: a long headline is shortened with … to the width of the title line of the panel model instead of being cut by the display
 - (ticaki) web panel: smartphone models `web-p` (portrait, 320x640) and `web-l` (landscape, 640x320) for standalone web panels; the menu cards, the screensaver and the popups show more items there, the admin shows the places per model
 - (ticaki) web panel: the two hardware buttons below the display can be switched off per web panel (off by default on the smartphone models)

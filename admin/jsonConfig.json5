@@ -1342,6 +1342,20 @@
                     "lg": 3,
                     "xl": 2
                 },
+                "_createTestStates": {
+                    "type": "sendTo",
+                    "label": "createTestStates",
+                    "help": "createTestStatesHelp",
+                    "command": "createTestStates",
+                    "showProcess": true,
+                    "variant": "outlined",
+                    "newLine": true,
+                    "xs": 12,
+                    "sm": 12,
+                    "md": 6,
+                    "lg": 4,
+                    "xl": 4
+                },
                 "_header1": {
                     "type": "header",
                     "label": "Danger Zone - only for users who know exactly what they are doing",
