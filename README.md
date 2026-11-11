@@ -171,6 +171,7 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
 - (ticaki) emulator: every negative berry driver version (e.g. -12 of future emulator drivers, absolute value = driver generation) is recognized as emulator, not only -1
 - (ticaki) navigation: the arrows of the service page no longer take over the navigation of another panel (warning "Didn't find a navigation node" with page names of another panel, or a wrong arrow target)
 - (ticaki) developer tab: button "Create test states" creates the objects of the test environment (all channel roles, power, chart and trash data) below 0_userdata.0.NSPanelTest / alias.0.NSPanelTest, only the missing ones
+- (ticaki) berry driver 12 and emulator berry: a message of the display split over two serial reads is put together again instead of being lost
 - (ticaki) pages: a long headline is shortened with … to the width of the title line of the panel model instead of being cut by the display
 - (ticaki) web panel: smartphone models `web-p` (portrait, 320x640) and `web-l` (landscape, 640x320) for standalone web panels; the menu cards, the screensaver and the popups show more items there, the admin shows the places per model
 - (ticaki) web panel: the two hardware buttons below the display can be switched off per web panel (off by default on the smartphone models)

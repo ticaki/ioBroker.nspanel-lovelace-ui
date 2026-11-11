@@ -9,6 +9,8 @@
 #
 # Changes taken over from driver generation 12 (TFT 6.1.0, display ack with crc):
 #  - crc16: table-driven CRC-16 Modbus (constant table, ~5x faster than bitwise)
+#  - every_100ms: frames (55 BB) are cut by their length field; an incomplete frame at the end
+#    of a read is kept for one more tick and joined with the next read, then dropped
 #  - CustomSend: optional precomputed CRC field '^XXXX^' (4 hex digits) at the start
 #    of the payload; the field is stripped and XXXX is used as CRC without computing it.
 #    The adapter sends the field to driver generation 12+, i.e. also to this emulator (-12);
@@ -29,6 +31,8 @@ class Nextion : Driver
 	var flash_current_byte
 	var tftd
 	var progress_percentage_last
+    var rx_rest                # incomplete frame of the last read, nil if none
+    static rx_max_len = 1024   # longer payloads are garbage, resync at the next 55 BB
 	static header = bytes('55BB')
 
     # CRC-16 Modbus lookup table (reflected poly 0xA001), precomputed constant
@@ -108,21 +112,6 @@ class Nextion : Driver
       return crc
     end
 	
-    def split_55(b)
-      var ret = []
-      var s = size(b)   
-      var i = s-2   # start from last
-      while i > 0
-        if b[i] == 0x55 && b[i+1] == 0xBB           
-          ret.push(b[i..s-1]) # push last msg to list
-          b = b[(0..i-1)]   # write the rest back to b
-        end
-        i -= 1
-      end
-      ret.push(b)
-      return ret
-    end
- 
 	# encode using custom protocol 55 BB [payload length] [payload length] [payload] [crc] [crc]
     def encode(payload)
       return self.encode_bytes(bytes().fromstring(payload), nil)
@@ -206,6 +195,100 @@ class Nextion : Driver
         end
     end
 		
+    # receive: a frame is 55 BB [len lo] [len hi] [len bytes payload] [crc lo] [crc hi] = len + 6 bytes.
+    # The length field decides where a frame ends (a 55 BB can also be in payload or crc). An
+    # incomplete frame at the end of a read is kept for exactly one more every_100ms tick and put in
+    # front of the next read; if it is still incomplete then, it is dropped. The crc is not checked.
+
+    # index of the next frame start (55 BB, or a 55 as last byte) from i on, size(b) if none
+    def rx_find(b, i)
+      var n = size(b)
+      while i < n
+        if b[i] == 0x55 && (i + 1 == n || b[i+1] == 0xBB)
+          return i
+        end
+        i += 1
+      end
+      return n
+    end
+
+    # a rest from the last tick and no data in this tick: the frame stays incomplete
+    def rx_drop_rest()
+      if self.rx_rest != nil
+        log("NSP: dropped incomplete message " + str(self.rx_rest), 3)
+        self.rx_rest = nil
+      end
+    end
+
+    # data that is not a 55 BB frame (nextion return codes)
+    def rx_other(msg)
+      import string
+      if msg == bytes('000000FFFFFF88FFFFFF')
+        log("NSP: Screen Initialized")
+      else
+        var jm = string.format("{\"nextion\":\"%s\"}",str(msg[0..-4]))
+        tasmota.publish_result(jm, "RESULT")
+      end
+    end
+
+    # one complete 55 BB frame
+    def rx_frame(msg)
+      import string
+      if size(msg) > 8
+        var jm = string.format("{\"CustomRecv\":\"%s\"}",msg[4..-3].asstring())
+        tasmota.publish_result(jm, "RESULT")
+      end
+    end
+
+    def rx_feed(msg)
+      import string
+      var had_rest = false
+      if self.rx_rest != nil
+        var r = self.rx_rest
+        self.rx_rest = nil
+        if size(r) == 1 && msg[0] != 0xBB
+          log("NSP: dropped incomplete message " + str(r), 3)
+        else
+          msg = r + msg
+          had_rest = true
+        end
+      end
+      var n = size(msg)
+      var p = 0
+      while p < n
+        var q = self.rx_find(msg, p)
+        if q > p
+          self.rx_other(msg[p..q-1])
+          p = q
+        end
+        if p >= n
+          break
+        end
+        var ok = n - p >= 4
+        var plen = 0
+        if ok
+          plen = msg[p+2] | (msg[p+3] << 8)
+        end
+        if ok && plen > self.rx_max_len
+          q = self.rx_find(msg, p + 2)
+          log(string.format("NSP: dropped message with bad length %d: %s", plen, str(msg[p..q-1])), 3)
+          p = q
+        elif ok && n - p >= plen + 6
+          self.rx_frame(msg[p..p+plen+5])
+          p += plen + 6
+        elif had_rest && p == 0
+          # kept since the last tick and still incomplete: drop it up to the next frame start
+          q = self.rx_find(msg, 2)
+          log("NSP: dropped incomplete message " + str(msg[0..q-1]), 3)
+          p = q
+        else
+          self.rx_rest = msg[p..n-1]
+          log("NSP: incomplete message kept for the next read " + str(self.rx_rest), 4)
+          p = n
+        end
+      end
+    end
+
     def every_100ms()
         import string
         try
@@ -216,27 +299,14 @@ class Nextion : Driver
                     if self.flash_mode==1
                         log("NSP: no flashing in this version")
                     else
-                        # a read can hold several frames (e.g. event,ack,<crc> right behind an event) - split them
                         # custom protocol 55 BB [payload length] [payload length] [payload] [crc] [crc]
-                        var msg_list = self.split_55(msg)
-                        for i:0..size(msg_list)-1
-                            msg = msg_list[i]
-                            if size(msg) > 0
-                                if msg == bytes('000000FFFFFF88FFFFFF')
-                                    log("NSP: Screen Initialized")
-                                elif size(msg)>=2 && msg[0]==0x55 && msg[1]==0xBB
-                                    if size(msg) > 8
-                                        var jm = string.format("{\"CustomRecv\":\"%s\"}",msg[4..-3].asstring())
-                                        tasmota.publish_result(jm, "RESULT")
-                                    end
-                                else
-                                    var jm = string.format("{\"nextion\":\"%s\"}",str(msg[0..-4]))
-                                    tasmota.publish_result(jm, "RESULT")
-                                end
-                            end
-                        end
+                        self.rx_feed(msg)
                     end
+                else
+                    self.rx_drop_rest()
                 end
+            else
+                self.rx_drop_rest()
             end
         except .. as e, m
             log("NSP: every_100ms EXCEPTION "+str(e)+" "+str(m), 1)
