@@ -56,7 +56,7 @@ Während und nach der Eingabe prüft der Admin den Kanal und zeigt das Ergebnis 
 |---|---|
 | Drehender Kreis | Die Prüfung läuft noch. Beim Tippen startet sie nach einer kurzen Pause, beim Verlassen des Feldes sofort. |
 | Rotes ✖ | **Fehlende Pflicht-Datenpunkte.** Der Tooltip nennt sie namentlich. Die Rolle verlangt Datenpunkte, die der Kanal nicht hat. |
-| Rotes ⚠ | **Doppelte Datenpunkte** — mehrere Datenpunkte des Kanals passen auf dieselbe Rolle, der Adapter kann sich nicht entscheiden. Der Tooltip nennt sie. Dasselbe Zeichen erscheint auch, wenn der Knopf am Fuß auf **Details…** steht. |
+| Rotes ⚠ | **Doppelte Datenpunkte** — mehrere Datenpunkte des Kanals passen auf dieselbe Rolle, der Adapter kann sich nicht entscheiden. Der Tooltip nennt sie. Dasselbe Zeichen erscheint auch, wenn der Knopf am Fuß auf **Details…** steht; dieser Fall hat Vorrang, der Tooltip nennt dann keine Datenpunkte mehr, sondern lautet *Knopf „Details...“ unten im Dialog drücken*. |
 
 Unter dem Feld steht zusätzlich eine Zeile Klartext: *ok (role=…)* wenn alles passt, *Objekt nicht in ioBroker gefunden*, *Fehlende ID*, der Hinweistext des benutzerdefinierten Knopfs, oder — wenn die Rolle keiner bekannten Kanalrolle entspricht — *Die Objekt-Rolle entspricht keinem bekannten Gerätetyp*. Im letzten Fall lässt sich das Pageitem nicht sinnvoll speichern; der Knopf am Fuß wird zu **Details…**.
 
