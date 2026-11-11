@@ -249,7 +249,6 @@ class ConfigManager extends import_library.BaseClass {
       messages = result.messages;
       if (screensaver && screensaver.config && (screensaver.config.card === "screensaver" || screensaver.config.card === "screensaver2" || screensaver.config.card === "screensaver3" || screensaver.config.card === "screensaver5") && config.advancedOptions) {
         screensaver.config.screensaverSwipe = !!config.advancedOptions.screensaverSwipe;
-        screensaver.config.screensaverIndicatorButtons = !!config.advancedOptions.screensaverIndicatorButtons;
       }
       panelConfig.pages.push(screensaver);
     } catch (error) {
@@ -4262,7 +4261,6 @@ class ConfigManager extends import_library.BaseClass {
         rotationTime: 0,
         model: "eu",
         data: void 0,
-        screensaverIndicatorButtons: false,
         screensaverSwipe: false
       },
       pageItems
