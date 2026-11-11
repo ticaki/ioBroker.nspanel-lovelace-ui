@@ -159,12 +159,13 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
     ### **WORK IN PROGRESS**
 -->
 ### **WORK IN PROGRESS**
+- (ticaki) screensaver: an indicator only acts when an action is configured (press, switch, cycle values, open page, popup, confirm); a writable state alone is no longer switched, also not with an older TFT (there a tap on an indicator without action opens the main page); the option "indicators act as buttons" is removed, a value in an older configuration or script is ignored
 - (ticaki) web panel: the adapter no longer crashes on the first connection of a new web panel (two startups of the browser ran at the same time)
 - (ticaki) alarm/unlock page: the status datapoint works on the first start of a new page (writes to it were ignored until the next restart)
 - (ticaki) log: the notes at startup that an admin page replaces a script page and that an optional data point falls back to another one are logged as debug instead of info
 - (ticaki) screensaver: a long press on an indicator (TFT 6.0.9, screensaver tiles and advanced) can get its own action - set a state, toggle a state or open a page (admin: "Action on long press"); without one it acts like a tap; every long press writes `buttons.indicatorLong-N`; the web panel sends the long press as well; the script templates know the long press fields (`ScreensaverEntityLongPress…`) and `ScreensaverEntityCycle`/`ScreensaverEntityCycleValues`
 - (ticaki) panel: a warning is logged when a message to the panel is longer than the 1017 bytes the display can receive
-- (ticaki) screensaver: with the new HMI (screensaver tiles and advanced) a tap on an indicator counts like a tap on the screensaver; an indicator without action (and, with "indicators act as buttons", without a state to switch) no longer leaves the screensaver at once but follows the double click setting, `buttons.indicator-N` is still written; the web panel counts the taps the same way
+- (ticaki) screensaver: with the new HMI (screensaver tiles and advanced) a tap on an indicator counts like a tap on the screensaver; an indicator without action no longer leaves the screensaver at once but follows the double click setting, `buttons.indicator-N` is still written; the web panel counts the taps the same way
 - (ticaki) screensaver tiles: the indicators can get their own icon font (admin field "icon font"); needs the new screensaver5 page of the HMI, the other screensavers ignore it
 - (tt-tom17) admin: the hint for a page name that already exists as a panel page describes what the adapter really does - a page from the script of the same panel wins, a global one or one of another panel is replaced
 - (tt-tom17) admin: the tooltip of the warning sign in the item dialog that asks to press Details... is translated

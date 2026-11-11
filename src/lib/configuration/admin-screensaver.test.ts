@@ -364,7 +364,7 @@ describe('lib/configuration - admin screensaver (entry -> script configuration)'
         expect(config.mrIcon1ScreensaverEntity).to.include({ ScreensaverEntity: 'm1' });
         expect(config.mrIcon2ScreensaverEntity).to.equal(undefined);
         expect(config.notifyScreensaverEntity).to.deep.equal([]);
-        expect(config.advancedOptions).to.deep.equal({ screensaverSwipe: true, screensaverIndicatorButtons: false });
+        expect(config.advancedOptions).to.deep.equal({ screensaverSwipe: true });
         expect(config.pages).to.deep.equal([]);
     });
 
@@ -537,7 +537,6 @@ describe('lib/configuration - admin screensaver (entry -> script configuration)'
                 rotationTime: 0,
                 model: 'eu',
                 data: undefined,
-                screensaverIndicatorButtons: false,
                 screensaverSwipe: false,
             },
             pageItems: [
@@ -572,11 +571,12 @@ describe('lib/configuration - admin screensaver (entry -> script configuration)'
         const entry: ScreensaverEntry = {
             ...emptyScreensaverEntry('Flur', 'easyview'),
             rotationTime: 10,
-            screensaverIndicatorButtons: true,
             clockFormat: '12h',
             weekdayFormat: 'long',
             yearFormat: 'numeric',
         };
+        // a stored entry of an older version: the removed option is ignored
+        Object.assign(entry, { screensaverIndicatorButtons: true });
         applyScreensaverEntry(page, entry);
         expect(page.uniqueID).to.equal(adminScreensaverPageId);
         expect(page.config).to.include({
@@ -584,8 +584,8 @@ describe('lib/configuration - admin screensaver (entry -> script configuration)'
             mode: 'easyview',
             rotationTime: 10,
             screensaverSwipe: false,
-            screensaverIndicatorButtons: true,
         });
+        expect(page.config).to.not.have.property('screensaverIndicatorButtons');
         const items = page.pageItems as unknown as {
             data: { entity2: { dateFormat: { constVal: { format: Intl.DateTimeFormatOptions } } } };
         }[];

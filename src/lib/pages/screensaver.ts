@@ -91,7 +91,6 @@ export class Screensaver extends Page {
     private step: number = 0;
     private blockButtons: ioBroker.Timeout | undefined;
     rotationTime: number = 300_000;
-    public screensaverIndicatorButtons: boolean = false;
     public screensaverSwipe: boolean = false;
     private _infoIcon: any = '';
     private timeoutRotation: ioBroker.Timeout | undefined = undefined;
@@ -185,9 +184,8 @@ export class Screensaver extends Page {
             }
         }
         options.alwaysOn = 'none';
-        // flag the page as screensaver - the page items ask for it (indicator buttons option)
+        // flag the page as screensaver - the page items ask for it (indicator taps)
         super(config, options, true);
-        this.screensaverIndicatorButtons = options.config.screensaverIndicatorButtons ?? false;
         this.screensaverSwipe = options.config.screensaverSwipe ?? false;
         this.clockTimer = options.config.clockTimer?.enabled ? options.config.clockTimer : undefined;
         this.rotationTime =
@@ -1569,8 +1567,8 @@ export class Screensaver extends Page {
     }
 
     /**
-     * true when a tap on the indicator does something itself: an action of the item (button, switch, cycle, page) or,
-     * with "indicators act as buttons", the state the item flips ({@link PageItem.onCommand}). A blind never moves.
+     * true when a tap on the indicator does something itself: an action configured at the item - button, switch,
+     * cycle values, page, popup or confirm. A state that is merely writable is no action (a blind never moves).
      *
      * @param item the indicator item
      */
@@ -1580,21 +1578,11 @@ export class Screensaver extends Page {
             return false;
         }
         const data = entry.data;
-        if (
+        return !!(
             data.setNavi ||
             data.setValue1?.writeable ||
             data.setValue2?.writeable ||
-            (entry.type === 'button' && data.setValue3?.writeable && data.valueList)
-        ) {
-            return true;
-        }
-        if (!this.screensaverIndicatorButtons || entry.role === 'blind') {
-            return false;
-        }
-        return !!(
-            data.entity1?.set?.writeable ||
-            data.entity1?.value?.writeable ||
-            (data.setTrue?.writeable && data.setFalse?.writeable) ||
+            (entry.type === 'button' && data.setValue3?.writeable && data.valueList) ||
             data.popup ||
             data.confirm
         );

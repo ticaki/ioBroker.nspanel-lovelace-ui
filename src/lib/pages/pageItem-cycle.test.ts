@@ -1,5 +1,6 @@
 import { expect } from 'chai';
 import { PageItem } from './pageItem';
+import { Screensaver } from './screensaver';
 import { Dataitem } from '../controller/data-item';
 
 interface CycleFixture {
@@ -44,7 +45,12 @@ function makeItem(opts: {
             info: noop,
             silly: noop,
         },
-        parent: { isScreensaver: true, screensaverIndicatorButtons: true },
+        parent: {
+            isScreensaver: true,
+            isIndicatorKey: Screensaver.prototype.isIndicatorKey,
+            // an older TFT: an indicator without an action jumps to the main page
+            basePanel: { navigation: { resetPosition: noop, setCurrentPage: async (): Promise<void> => undefined } },
+        },
         dataItems: {
             type: opts.pageItemType ?? 'button',
             role: 'indicator',

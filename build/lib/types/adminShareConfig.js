@@ -723,8 +723,7 @@ function emptyScreensaverEntry(name, mode = "standard") {
     mrIcon1: defaultRelayIcon("Relay.1"),
     mrIcon2: defaultRelayIcon("Relay.2"),
     rotationTime: 0,
-    screensaverSwipe: false,
-    screensaverIndicatorButtons: false
+    screensaverSwipe: false
   };
 }
 function emptyChannelValueConfig(valueStateId = "") {

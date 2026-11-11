@@ -1042,7 +1042,6 @@ export type ScreensaverEntry = {
     /** seconds between the pages of an area with more items than places, 0 = off */
     rotationTime?: number;
     screensaverSwipe?: boolean;
-    screensaverIndicatorButtons?: boolean;
 };
 
 export type ScreensaverConfig = ScreensaverEntry[];
@@ -1530,7 +1529,6 @@ export function emptyScreensaverEntry(name: string, mode: ScreensaverMode = 'sta
         mrIcon2: defaultRelayIcon('Relay.2'),
         rotationTime: 0,
         screensaverSwipe: false,
-        screensaverIndicatorButtons: false,
     };
 }
 

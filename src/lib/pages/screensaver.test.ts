@@ -20,11 +20,11 @@ type Fixture = {
     saver: Screensaver;
     writes: Writes;
     commands: string[];
-    /** which page is active - the command of the item navigates away when the option is off */
+    /** which page is active - the command of an item without an action navigates away (older TFT) */
     active: () => 'screensaver' | 'main';
 };
 
-function setup(indicatorButtons: boolean): Fixture {
+function setup(hasAction: boolean): Fixture {
     const writes: Writes = [];
     const commands: string[] = [];
     let active: 'screensaver' | 'main' = 'screensaver';
@@ -33,8 +33,8 @@ function setup(indicatorButtons: boolean): Fixture {
         config: modeScr ? { modeScr } : {},
         onCommand: async (action: string, value: string): Promise<boolean> => {
             commands.push(`${index}:${action}:${value}`);
-            if (!indicatorButtons) {
-                // PageItem.onCommand - option off: navigation.resetPosition() + setCurrentPage()
+            if (!hasAction) {
+                // PageItem.onCommand - no action: navigation.resetPosition() + setCurrentPage()
                 active = 'main';
             }
             return Promise.resolve(false);
@@ -51,7 +51,6 @@ function setup(indicatorButtons: boolean): Fixture {
     const noop = (): void => undefined;
     Object.assign(saver, {
         pageItems,
-        screensaverIndicatorButtons: indicatorButtons,
         unload: false,
         card: 'screensaver2',
         name: '#scr',
@@ -87,7 +86,7 @@ const tap: Types.IncomingEvent = {
 };
 
 describe('lib/pages/screensaver - indicator tap', () => {
-    it('writes buttons.indicator-N and runs the command once when the indicators are no buttons (navigates away)', async () => {
+    it('writes buttons.indicator-N and runs the command once for an indicator without an action (navigates away)', async () => {
         const f = setup(false);
         await tapLikeThePanel(f, tap);
 
@@ -96,7 +95,7 @@ describe('lib/pages/screensaver - indicator tap', () => {
         expect(f.active()).to.equal('main');
     });
 
-    it('runs the command exactly once when the indicators act as buttons', async () => {
+    it('runs the command exactly once for an indicator with an action', async () => {
         const f = setup(true);
         await tapLikeThePanel(f, tap);
 
@@ -245,7 +244,6 @@ describe('lib/pages/screensaver - mode of another adapter version', () => {
                 model: 'eu',
                 data: undefined,
                 screensaverSwipe: true,
-                screensaverIndicatorButtons: false,
             },
         }) as unknown as pages.PageBase;
 
@@ -469,7 +467,6 @@ describe('lib/pages/screensaver - timer instead of the clock', () => {
                 model: 'eu',
                 data: undefined,
                 screensaverSwipe: false,
-                screensaverIndicatorButtons: false,
                 clockTimer,
             },
         } as unknown as pages.PageBase;
@@ -1555,12 +1552,12 @@ describe('lib/pages/screensaver - tile tap of the TFT 6.0.8+ (taps counted)', ()
      * a screensaver with indicators 0..n-1 of the given data, `commands` collects what onCommand did
      *
      * @param entries type, role and data of the indicators
-     * @param buttons option "indicators act as buttons"
      */
-    function tileSaver(
-        entries: { type: string; role?: string; data: Record<string, unknown> }[],
-        buttons: boolean,
-    ): { saver: Screensaver; writes: Writes; commands: string[] } {
+    function tileSaver(entries: { type: string; role?: string; data: Record<string, unknown> }[]): {
+        saver: Screensaver;
+        writes: Writes;
+        commands: string[];
+    } {
         const writes: Writes = [];
         const commands: string[] = [];
         const noop = (): void => undefined;
@@ -1579,7 +1576,6 @@ describe('lib/pages/screensaver - tile tap of the TFT 6.0.8+ (taps counted)', ()
         }));
         Object.assign(saver, {
             pageItems,
-            screensaverIndicatorButtons: buttons,
             unload: false,
             activeNotification: false,
             log: { debug: noop, info: noop, warn: noop, error: noop },
@@ -1603,48 +1599,41 @@ describe('lib/pages/screensaver - tile tap of the TFT 6.0.8+ (taps counted)', ()
         opt,
     });
 
-    it('a configured action is a key with and without the option, it runs the command with the taps', async () => {
+    it('a configured action is a key, it runs the command with the taps', async () => {
         const calls: string[] = [];
-        for (const buttons of [false, true]) {
-            const { saver, writes, commands } = tileSaver(
-                [
-                    { type: 'button', data: { setNavi: { type: 'const' } } },
-                    { type: 'button', data: { setValue2: writable(calls, 'button') } },
-                    { type: 'button', data: { setValue1: writable(calls, 'switch') } },
-                    { type: 'button', data: { setValue3: writable(calls, 'cycle'), valueList: {} } },
-                ],
-                buttons,
-            );
-            for (const id of ['0', '1', '2', '3']) {
-                expect(await saver.onIndicatorTap(event(id, '2'))).to.equal(true);
-            }
-            expect(commands).to.deep.equal(['0:button:2', '1:button:2', '2:button:2', '3:button:2']);
-            expect(writes.map(w => w.id)).to.deep.equal([1, 2, 3, 4].map(n => `panels.A0.buttons.indicator-${n}`));
+        const { saver, writes, commands } = tileSaver([
+            { type: 'button', data: { setNavi: { type: 'const' } } },
+            { type: 'button', data: { setValue2: writable(calls, 'button') } },
+            { type: 'button', data: { setValue1: writable(calls, 'switch') } },
+            { type: 'button', data: { setValue3: writable(calls, 'cycle'), valueList: {} } },
+            { type: 'button', data: { popup: { setMessage: writable(calls, 'popup') } } },
+            { type: 'button', data: { confirm: { type: 'const' }, entity1: { value: writable(calls, 'state') } } },
+        ]);
+        for (const id of ['0', '1', '2', '3', '4', '5']) {
+            expect(await saver.onIndicatorTap(event(id, '2')), id).to.equal(true);
         }
+        expect(commands).to.deep.equal([0, 1, 2, 3, 4, 5].map(n => `${n}:button:2`));
+        expect(writes.map(w => w.id)).to.deep.equal([1, 2, 3, 4, 5, 6].map(n => `panels.A0.buttons.indicator-${n}`));
     });
 
-    it('a writable state is a key only with the option, a blind never; indicator-N is written anyway', async () => {
+    it('a merely writable state is no key, a blind neither; indicator-N is written anyway', async () => {
         const calls: string[] = [];
-        const entries = [
+        const { saver, writes, commands } = tileSaver([
             { type: 'button', data: { entity1: { value: writable(calls, 'state') } } },
+            { type: 'button', data: { entity1: { set: writable(calls, 'set') } } },
+            { type: 'button', data: { setTrue: writable(calls, 'true'), setFalse: writable(calls, 'false') } },
             { type: 'button', role: 'blind', data: { entity1: { value: writable(calls, 'blind') } } },
             { type: 'text', data: { entity1: { value: writable(calls, 'text') } } },
             { type: 'button', data: { entity1: { value: { writeable: false } } } },
-        ];
-        const off = tileSaver(entries, false);
-        for (const id of ['0', '1', '2', '3']) {
-            expect(await off.saver.onIndicatorTap(event(id)), `off ${id}`).to.equal(false);
+            // a state of an action that does not exist or is not writable gives no data item
+            { type: 'button', data: { setValue1: undefined } },
+        ]);
+        for (const id of ['0', '1', '2', '3', '4', '5', '6']) {
+            expect(await saver.onIndicatorTap(event(id)), id).to.equal(false);
         }
-        expect(off.commands).to.deep.equal([]);
-        expect(off.writes).to.have.length(4);
-
-        const on = tileSaver(entries, true);
-        expect(await on.saver.onIndicatorTap(event('0'))).to.equal(true);
-        for (const id of ['1', '2', '3']) {
-            expect(await on.saver.onIndicatorTap(event(id)), `on ${id}`).to.equal(false);
-        }
-        expect(on.commands).to.deep.equal(['0:button:1']);
-        expect(on.writes).to.have.length(4);
+        expect(commands).to.deep.equal([]);
+        expect(calls).to.deep.equal([]);
+        expect(writes).to.have.length(7);
     });
 
     /**
@@ -1664,14 +1653,11 @@ describe('lib/pages/screensaver - tile tap of the TFT 6.0.8+ (taps counted)', ()
 
     it('long press with an own long press: runs it, not the short action; indicatorLong-N only', async () => {
         const calls: string[] = [];
-        const { saver, writes, commands } = tileSaver(
-            [
-                { type: 'button', data: { setValue2: writable(calls, 'short'), longPress: writable(calls, 'long') } },
-                { type: 'button', data: { setNavi: { type: 'const' }, setNaviLongPress: { type: 'const' } } },
-                { type: 'button', data: { longPress: writable(calls, 'long') } },
-            ],
-            false,
-        );
+        const { saver, writes, commands } = tileSaver([
+            { type: 'button', data: { setValue2: writable(calls, 'short'), longPress: writable(calls, 'long') } },
+            { type: 'button', data: { setNavi: { type: 'const' }, setNaviLongPress: { type: 'const' } } },
+            { type: 'button', data: { longPress: writable(calls, 'long') } },
+        ]);
         for (const id of ['0', '1', '2']) {
             expect(await pressLikeThePanel(saver, longEvent(id, '3')), id).to.equal('long');
         }
@@ -1681,13 +1667,10 @@ describe('lib/pages/screensaver - tile tap of the TFT 6.0.8+ (taps counted)', ()
 
     it('long press without an own long press acts like a tap and writes indicatorLong-N and indicator-N', async () => {
         const calls: string[] = [];
-        const { saver, writes, commands } = tileSaver(
-            [
-                { type: 'button', data: { setValue2: writable(calls, 'short') } },
-                { type: 'button', data: { entity1: { value: writable(calls, 'state') } } },
-            ],
-            false,
-        );
+        const { saver, writes, commands } = tileSaver([
+            { type: 'button', data: { setValue2: writable(calls, 'short') } },
+            { type: 'button', data: { entity1: { value: writable(calls, 'state') } } },
+        ]);
         expect(await pressLikeThePanel(saver, longEvent('0', '2'))).to.equal('tap');
         // no key: the long press counts like a touch of the background
         expect(await pressLikeThePanel(saver, longEvent('1', '3'))).to.equal('bExit');
@@ -1702,17 +1685,16 @@ describe('lib/pages/screensaver - tile tap of the TFT 6.0.8+ (taps counted)', ()
 
     it('a short tap never runs the long press', async () => {
         const calls: string[] = [];
-        const { saver, writes, commands } = tileSaver(
-            [{ type: 'button', data: { setValue2: writable(calls, 'short'), longPress: writable(calls, 'long') } }],
-            false,
-        );
+        const { saver, writes, commands } = tileSaver([
+            { type: 'button', data: { setValue2: writable(calls, 'short'), longPress: writable(calls, 'long') } },
+        ]);
         expect(await pressLikeThePanel(saver, event('0', '1'))).to.equal('tap');
         expect(commands).to.deep.equal(['0:button:1']);
         expect(writes.map(w => w.id)).to.deep.equal(['panels.A0.buttons.indicator-1']);
     });
 
     it('knows the items of the page only', () => {
-        const { saver } = tileSaver([{ type: 'button', data: {} }], false);
+        const { saver } = tileSaver([{ type: 'button', data: {} }]);
         expect(saver.isIndicatorEvent(event('0'))).to.equal(true);
         expect(saver.isIndicatorEvent(event('5'))).to.equal(false);
         expect(saver.isIndicatorEvent({ ...event('0'), page: undefined })).to.equal(false);
@@ -1720,42 +1702,95 @@ describe('lib/pages/screensaver - tile tap of the TFT 6.0.8+ (taps counted)', ()
 });
 
 describe('lib/pages/pageItem - indicator command on the screensaver', () => {
-    function item(buttons: boolean): { item: PageItem; calls: string[] } {
+    /**
+     * a page item of the screensaver
+     *
+     * @param data data items of the indicator
+     * @param role role of the item
+     */
+    function item(
+        data: (calls: string[]) => Record<string, unknown>,
+        role?: string,
+    ): { item: PageItem; calls: string[] } {
         const calls: string[] = [];
         const noop = (): void => undefined;
+        const parent = {
+            isScreensaver: true,
+            isIndicatorKey: Screensaver.prototype.isIndicatorKey,
+            basePanel: {
+                navigation: {
+                    resetPosition: (): void => void calls.push('reset'),
+                    setCurrentPage: async (): Promise<void> => void calls.push('mainPage'),
+                    setTargetPageByName: async (name: string): Promise<void> => void calls.push(`navi:${name}`),
+                },
+            },
+        };
         const pageItem = Object.create(PageItem.prototype) as PageItem;
         Object.assign(pageItem, {
             id: 'x',
             log: { debug: noop, info: noop, warn: noop, error: noop },
-            dataItems: {
-                type: 'button',
-                data: {
-                    setValue2: { writeable: true, setStateTrue: async (): Promise<void> => void calls.push('button') },
-                },
-            },
-            parent: {
-                isScreensaver: true,
-                screensaverIndicatorButtons: buttons,
-                basePanel: {
-                    navigation: {
-                        resetPosition: (): void => void calls.push('reset'),
-                        setCurrentPage: async (): Promise<void> => void calls.push('mainPage'),
-                    },
-                },
-            },
+            dataItems: { type: 'button', role, data: data(calls) },
+            parent,
         });
         return { item: pageItem, calls };
     }
+    const state = (calls: string[], name: string, val = false): any => ({
+        writeable: true,
+        getBoolean: async (): Promise<boolean> => Promise.resolve(val),
+        getString: async (): Promise<string> => Promise.resolve(name),
+        setStateTrue: async (): Promise<void> => void calls.push(`${name}:true`),
+        setStateFlip: async (): Promise<void> => void calls.push(`${name}:flip`),
+        setState: async (v: unknown): Promise<void> => void calls.push(`${name}:${String(v)}`),
+    });
+    const button = (calls: string[]): Record<string, unknown> => ({ setValue2: state(calls, 'button') });
+    const writableOnly = (calls: string[]): Record<string, unknown> => ({
+        entity1: { value: state(calls, 'value'), set: state(calls, 'set') },
+        setTrue: state(calls, 'setTrue'),
+        setFalse: state(calls, 'setFalse'),
+    });
 
-    it('an older TFT (no taps) jumps to the main page with the option off', async () => {
-        const { item: i, calls } = item(false);
+    it('an older TFT (no taps): an indicator with an action runs it', async () => {
+        const { item: i, calls } = item(button);
+        await i.onCommand('button', '');
+        expect(calls).to.deep.equal(['button:true']);
+    });
+
+    it('an older TFT (no taps): an indicator without an action jumps to the main page and writes nothing', async () => {
+        const { item: i, calls } = item(writableOnly);
         await i.onCommand('button', '');
         expect(calls).to.deep.equal(['reset', 'mainPage']);
     });
 
-    it('with the taps of the TFT 6.0.8+ the action runs, the option is checked before (Screensaver.onIndicatorTap)', async () => {
-        const { item: i, calls } = item(false);
+    it('with the taps of the TFT 6.0.8+ the action runs (Screensaver.onIndicatorTap checks the key before)', async () => {
+        const { item: i, calls } = item(button);
         await i.onCommand('button', '1');
-        expect(calls).to.deep.equal(['button']);
+        expect(calls).to.deep.equal(['button:true']);
+    });
+
+    it('with the taps of the TFT 6.0.8+ a writable state alone is never switched', async () => {
+        const { item: i, calls } = item(writableOnly);
+        await i.onCommand('button', '1');
+        expect(calls).to.deep.equal([]);
+    });
+
+    it('a blind never moves, also on an older TFT', async () => {
+        const { item: i, calls } = item(c => ({ entity1: { value: state(c, 'blind') } }), 'blind');
+        await i.onCommand('button', '');
+        expect(calls).to.deep.equal(['reset', 'mainPage']);
+    });
+
+    it('an action next to a writable state: only the action runs', async () => {
+        const { item: i, calls } = item(c => ({ ...writableOnly(c), setNavi: state(c, 'page') }));
+        await i.onCommand('button', '');
+        expect(calls).to.deep.equal(['navi:page']);
+    });
+
+    it('a popup counts as action', async () => {
+        const { item: i, calls } = item(c => ({
+            ...writableOnly(c),
+            popup: { getMessage: state(c, 'msg'), setMessage: state(c, 'popup') },
+        }));
+        await i.onCommand('button', '');
+        expect(calls).to.deep.equal(['popup:{"headline":"","message":"msg"}']);
     });
 });
