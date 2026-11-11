@@ -22,6 +22,8 @@ import {
     TableHead,
     TableRow,
     TextField,
+    ToggleButton,
+    ToggleButtonGroup,
     Typography,
     type SelectChangeEvent,
 } from '@mui/material';
@@ -47,6 +49,9 @@ import {
 import {
     applyPanelImport,
     configDiff,
+    danglingNavigation,
+    panelOverwriteSummary,
+    scriptPagesFromMeta,
     importSecretPages,
     panelImportChanges,
     navigationDiff,
@@ -57,6 +62,9 @@ import {
     plannedScreensaverContent,
     SCREENSAVER_CHOICE_KEY,
     type ConfigDiffEntry,
+    type DanglingLink,
+    type PanelImportMode,
+    type PanelScriptPages,
     type ImportAction,
     type ImportChoice,
     type ImportNative,
@@ -106,7 +114,20 @@ interface PanelImportDialogState {
     /** key of the row waiting for the confirmation of "replace" */
     replaceFor: string | null;
     applying: boolean;
-    result: { report: PanelImportReport; statesWritten: string[]; statesSkipped: string[] } | null;
+    /** merge (default) or complete overwrite of the target */
+    mode: PanelImportMode;
+    /** script pages of the target, undefined = unknown */
+    script: PanelScriptPages | undefined;
+    /** safety confirmation of the complete overwrite is open */
+    confirmOverwrite: boolean;
+    /** list of the removed own pages in the confirmation is open */
+    showRemovedPages: boolean;
+    result: {
+        report: PanelImportReport;
+        statesWritten: string[];
+        statesSkipped: string[];
+        dangling: { links: DanglingLink[]; incomplete: boolean };
+    } | null;
 }
 
 const allGroups: Record<PanelConfigGroup, boolean> = { pages: true, screensaver: true, misc: true };
@@ -140,6 +161,10 @@ export default class PanelImportDialog extends React.Component<PanelImportDialog
             diffFor: null,
             replaceFor: null,
             applying: false,
+            mode: 'merge',
+            script: undefined,
+            confirmOverwrite: false,
+            showRemovedPages: false,
             result: null,
         };
     }
@@ -162,6 +187,10 @@ export default class PanelImportDialog extends React.Component<PanelImportDialog
             diffFor: null,
             replaceFor: null,
             applying: false,
+            mode: 'merge',
+            script: undefined,
+            confirmOverwrite: false,
+            showRemovedPages: false,
             result: null,
         });
     }
@@ -174,12 +203,27 @@ export default class PanelImportDialog extends React.Component<PanelImportDialog
         return panelConfigGroups.filter(g => this.state.groups[g]);
     }
 
+    /**
+     * @returns true when the complete overwrite can be chosen: it needs the pages of the file
+     */
+    private overwritePossible(): boolean {
+        return this.state.groups.pages && !!this.state.file?.groups.pages;
+    }
+
     private input(): PanelImportInput | null {
-        const { panel, file, choices } = this.state;
+        const { panel, file, choices, script } = this.state;
         if (!panel?.topic || !file) {
             return null;
         }
-        return { native: this.props.data, topic: panel.topic, file, groups: this.selectedGroups(), choices };
+        return {
+            native: this.props.data,
+            topic: panel.topic,
+            file,
+            groups: this.selectedGroups(),
+            choices,
+            mode: this.state.mode === 'overwrite' && this.overwritePossible() ? 'overwrite' : 'merge',
+            script,
+        };
     }
 
     private plan(): PanelImportPlan | null {
@@ -239,7 +283,32 @@ export default class PanelImportDialog extends React.Component<PanelImportDialog
             return;
         }
         const targetStates = this.state.panel?.id ? await this.readTargetStates(this.state.panel.id) : {};
-        this.setState({ file: parsed.file, targetStates, error: null, choices: {}, step: 'review' });
+        const script = await this.readScriptPages(this.state.panel?.topic ?? '');
+        this.setState({
+            file: parsed.file,
+            targetStates,
+            script,
+            error: null,
+            choices: {},
+            mode: 'merge',
+            step: 'review',
+        });
+    }
+
+    /**
+     * Reads the script pages of the target from the meta object of the instance - works while the adapter is
+     * stopped as well.
+     *
+     * @param topic topic of the target
+     * @returns the script pages, undefined when the meta object cannot be read
+     */
+    private async readScriptPages(topic: string): Promise<PanelScriptPages | undefined> {
+        try {
+            const obj = await this.props.socket.getObject(`${this.props.adapterName}.${this.props.instance}`);
+            return obj ? scriptPagesFromMeta(obj.native, topic) : undefined;
+        } catch {
+            return undefined;
+        }
     }
 
     /**
@@ -269,13 +338,22 @@ export default class PanelImportDialog extends React.Component<PanelImportDialog
         this.setState(prev => ({ choices: { ...prev.choices, [key]: { action: 'rename', name } } }));
     }
 
+    /** Importieren: a complete overwrite asks first */
+    private requestImport = (): void => {
+        if (this.input()?.mode === 'overwrite') {
+            this.setState({ confirmOverwrite: true, showRemovedPages: false });
+            return;
+        }
+        void this.handleImport();
+    };
+
     private handleImport = async (): Promise<void> => {
         const input = this.input();
         const plan = input ? planPanelImport(input) : null;
         if (!input || !plan?.valid || !this.state.panel?.id) {
             return;
         }
-        this.setState({ applying: true });
+        this.setState({ applying: true, confirmOverwrite: false });
         const result = applyPanelImport(input, plan);
         await this.props.onApplyNative(result.native);
         const statesWritten: string[] = [];
@@ -301,7 +379,12 @@ export default class PanelImportDialog extends React.Component<PanelImportDialog
         this.setState({
             applying: false,
             step: 'result',
-            result: { report: result.report, statesWritten, statesSkipped },
+            result: {
+                report: result.report,
+                statesWritten,
+                statesSkipped,
+                dangling: danglingNavigation(input, result),
+            },
         });
     };
 
@@ -393,6 +476,33 @@ export default class PanelImportDialog extends React.Component<PanelImportDialog
         return rows;
     }
 
+    /**
+     * @param r the row
+     * @returns a chip when a script page of the target has the name of the page, else null
+     */
+    private static renderScriptChip(r: ReviewRow): React.JSX.Element | null {
+        if (r.isScreensaver || !('scriptPage' in r.row) || !r.row.scriptPage) {
+            return null;
+        }
+        const kind = r.row.scriptPage;
+        const key =
+            kind === 'global'
+                ? 'importScriptGlobal'
+                : kind === 'local'
+                  ? 'importScriptLocal'
+                  : 'importScriptLocalBlocked';
+        return (
+            <Chip
+                size="small"
+                color={kind === 'localBlocked' ? 'warning' : 'info'}
+                variant="outlined"
+                label={I18n.t(key)}
+                data-script-page={kind}
+                sx={{ ml: 0.5 }}
+            />
+        );
+    }
+
     private renderStatusChip(r: ReviewRow): React.JSX.Element {
         const { row } = r;
         if (row.conflict === 'different') {
@@ -467,7 +577,10 @@ export default class PanelImportDialog extends React.Component<PanelImportDialog
         return (
             <TableRow key={r.key}>
                 <TableCell sx={{ wordBreak: 'break-word', maxWidth: 220 }}>{r.label}</TableCell>
-                <TableCell>{this.renderStatusChip(r)}</TableCell>
+                <TableCell>
+                    {this.renderStatusChip(r)}
+                    {PanelImportDialog.renderScriptChip(r)}
+                </TableCell>
                 <TableCell sx={{ minWidth: 260 }}>
                     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
                         <Select
@@ -514,9 +627,14 @@ export default class PanelImportDialog extends React.Component<PanelImportDialog
         // a hint only for groups that hold an own configuration of the target and that the import really changes
         const input = this.input();
         const changes = input ? panelImportChanges(input, plan, this.state.targetStates) : [];
-        const overwritten = panelConfiguredGroups(this.props.data, panel.topic ?? '', this.state.targetStates).filter(
-            g => changes.includes(g),
-        );
+        const overwrite = input?.mode === 'overwrite';
+        const overwritten = overwrite
+            ? []
+            : panelConfiguredGroups(this.props.data, panel.topic ?? '', this.state.targetStates).filter(g =>
+                  changes.includes(g),
+              );
+        const summary = overwrite && input ? panelOverwriteSummary(input, plan) : null;
+        const blocked = plan.pages.filter(p => p.scriptPage === 'localBlocked').map(p => p.name);
         const targetModel = panel.model || 'eu';
         // existing pages keep their secrets - only pages created by the import need them again
         const secretPages = input ? importSecretPages(input, plan) : [];
@@ -533,7 +651,14 @@ export default class PanelImportDialog extends React.Component<PanelImportDialog
                             .replace('%s', I18n.t(`${file.source.model}-Version`))
                             .replace('%s', file.exportedAt ? new Date(file.exportedAt).toLocaleString() : '-')}
                     </Typography>
+                    {this.renderModeSwitch()}
                     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, mb: 2 }}>
+                        {summary ? this.renderRemaining(summary.remainingAllPages, summary.remainingGlobalPages) : null}
+                        {blocked.length ? (
+                            <Alert severity="warning">
+                                {I18n.t('importScriptLocalBlockedHint').replace('%s', blocked.join(', '))}
+                            </Alert>
+                        ) : null}
                         {overwritten.length ? (
                             <Alert severity="warning">
                                 {I18n.t('importOverwriteHint').replace(
@@ -604,7 +729,10 @@ export default class PanelImportDialog extends React.Component<PanelImportDialog
                                         {plain.map(r => (
                                             <TableRow key={r.key}>
                                                 <TableCell sx={{ wordBreak: 'break-word' }}>{r.label}</TableCell>
-                                                <TableCell align="right">{this.renderStatusChip(r)}</TableCell>
+                                                <TableCell align="right">
+                                                    {PanelImportDialog.renderScriptChip(r)}
+                                                    {this.renderStatusChip(r)}
+                                                </TableCell>
                                             </TableRow>
                                         ))}
                                     </TableBody>
@@ -621,13 +749,225 @@ export default class PanelImportDialog extends React.Component<PanelImportDialog
                     <Button
                         variant="contained"
                         disabled={!plan.valid || this.state.applying}
-                        onClick={(): void => void this.handleImport()}
+                        color={overwrite ? 'error' : 'primary'}
+                        onClick={this.requestImport}
                         startIcon={this.state.applying ? <CircularProgress size={16} /> : undefined}
                     >
                         {I18n.t('importApply')}
                     </Button>
                 </DialogActions>
             </>
+        );
+    }
+
+    private renderModeSwitch(): React.JSX.Element {
+        const possible = this.overwritePossible();
+        const mode = this.state.mode === 'overwrite' && possible ? 'overwrite' : 'merge';
+        return (
+            <Box sx={{ mb: 2 }}>
+                <ToggleButtonGroup
+                    exclusive
+                    size="small"
+                    color={mode === 'overwrite' ? 'error' : 'primary'}
+                    value={mode}
+                    onChange={(_e, value: unknown): void => {
+                        if (value === 'merge' || value === 'overwrite') {
+                            this.setState({ mode: value });
+                        }
+                    }}
+                    aria-label={I18n.t('importModeLabel')}
+                >
+                    <ToggleButton
+                        value="merge"
+                        data-import-mode="merge"
+                    >
+                        {I18n.t('importModeMerge')}
+                    </ToggleButton>
+                    <ToggleButton
+                        value="overwrite"
+                        data-import-mode="overwrite"
+                        disabled={!possible}
+                    >
+                        {I18n.t('importModeOverwrite')}
+                    </ToggleButton>
+                </ToggleButtonGroup>
+                <Typography
+                    variant="body2"
+                    color="text.secondary"
+                    sx={{ mt: 0.5 }}
+                >
+                    {I18n.t(
+                        !possible
+                            ? 'importModeNeedsPages'
+                            : mode === 'overwrite'
+                              ? 'importModeOverwriteHint'
+                              : 'importModeMergeHint',
+                    )}
+                </Typography>
+            </Box>
+        );
+    }
+
+    /**
+     * What stays on the target besides the imported pages (complete overwrite).
+     *
+     * @param allPages pages for all panels that stay
+     * @param globalPages pages of the global script that stay, undefined = unknown
+     * @returns the box
+     */
+    private renderRemaining(allPages: string[], globalPages: string[] | undefined): React.JSX.Element {
+        return (
+            <Alert
+                severity="info"
+                data-import-remaining=""
+                sx={{ '& .MuiAlert-message': { minWidth: 0, wordBreak: 'break-word' } }}
+            >
+                <Typography
+                    variant="body2"
+                    sx={{ fontWeight: 600 }}
+                >
+                    {I18n.t('importRemainingTitle')}
+                </Typography>
+                {!allPages.length && globalPages && !globalPages.length ? (
+                    <Typography variant="body2">{I18n.t('importRemainingNone')}</Typography>
+                ) : null}
+                {allPages.length ? (
+                    <Typography variant="body2">
+                        {`${I18n.t('importRemainingAll').replace('%s', String(allPages.length))}: ${allPages.join(', ')}`}
+                    </Typography>
+                ) : null}
+                {globalPages === undefined ? (
+                    <Typography variant="body2">{I18n.t('importScriptUnknown')}</Typography>
+                ) : globalPages.length ? (
+                    <Typography variant="body2">
+                        {`${I18n.t('importRemainingGlobal').replace('%s', String(globalPages.length))}: ${globalPages.join(', ')}`}
+                    </Typography>
+                ) : null}
+            </Alert>
+        );
+    }
+
+    private renderOverwriteConfirm(): React.JSX.Element | null {
+        const input = this.state.confirmOverwrite ? this.input() : null;
+        const plan = input ? planPanelImport(input) : null;
+        const panel = this.state.panel;
+        if (!input || !plan || !panel) {
+            return null;
+        }
+        const sum = panelOverwriteSummary(input, plan);
+        const close = (): void => this.setState({ confirmOverwrite: false });
+        return (
+            <Dialog
+                open
+                onClose={close}
+                maxWidth="sm"
+                fullWidth
+                aria-labelledby="panel-overwrite-title"
+            >
+                <DialogTitle
+                    id="panel-overwrite-title"
+                    sx={{ wordBreak: 'break-word' }}
+                >
+                    {I18n.t('importOverwriteTitle').replace('%s', panel.name || panel.topic || '')}
+                </DialogTitle>
+                <DialogContent>
+                    <DialogContentText sx={{ mb: 2 }}>{I18n.t('importOverwriteIntro')}</DialogContentText>
+                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+                        <Alert
+                            severity="warning"
+                            data-overwrite="pages"
+                            sx={{ '& .MuiAlert-message': { minWidth: 0, width: '100%' } }}
+                        >
+                            {sum.removedOwnPages.length ? (
+                                <>
+                                    <Button
+                                        size="small"
+                                        color="inherit"
+                                        sx={{ p: 0, textTransform: 'none', textAlign: 'left' }}
+                                        onClick={(): void =>
+                                            this.setState(prev => ({ showRemovedPages: !prev.showRemovedPages }))
+                                        }
+                                        endIcon={this.state.showRemovedPages ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+                                    >
+                                        {I18n.t('importOverwriteRemoved').replace(
+                                            '%s',
+                                            String(sum.removedOwnPages.length),
+                                        )}
+                                    </Button>
+                                    <Collapse in={this.state.showRemovedPages}>
+                                        <Box
+                                            component="ul"
+                                            sx={{ mt: 0.5, mb: 0, pl: 3, wordBreak: 'break-word' }}
+                                        >
+                                            {sum.removedOwnPages.map(n => (
+                                                <li key={n}>{n}</li>
+                                            ))}
+                                        </Box>
+                                    </Collapse>
+                                </>
+                            ) : (
+                                I18n.t('importOverwriteRemovedNone')
+                            )}
+                        </Alert>
+                        <Alert
+                            severity="warning"
+                            data-overwrite="script"
+                            sx={{ '& .MuiAlert-message': { minWidth: 0, wordBreak: 'break-word' } }}
+                        >
+                            {!sum.scriptActive
+                                ? I18n.t('importOverwriteScriptOff')
+                                : sum.scriptPages === undefined
+                                  ? `${I18n.t('importOverwriteScriptNone')} ${I18n.t('importScriptUnknown')}`
+                                  : sum.scriptPages.length
+                                    ? `${I18n.t('importOverwriteScript').replace('%s', String(sum.scriptPages.length))} ${sum.scriptPages.join(', ')}`
+                                    : I18n.t('importOverwriteScriptNone')}
+                        </Alert>
+                        <Alert
+                            severity="warning"
+                            data-overwrite="overrides"
+                            sx={{ '& .MuiAlert-message': { minWidth: 0, wordBreak: 'break-word' } }}
+                        >
+                            <Typography variant="body2">
+                                {sum.overridesRemoved.length
+                                    ? I18n.t('importOverwriteOverrides')
+                                          .replace('%s', String(sum.overridesRemoved.length))
+                                          .replace('%s', sum.overridesRemoved.join(', '))
+                                    : I18n.t('importOverwriteOverridesNone')}
+                            </Typography>
+                            {sum.overridesImported.length ? (
+                                <Typography variant="body2">
+                                    {I18n.t('importOverwriteOverridesImported')
+                                        .replace('%s', String(sum.overridesImported.length))
+                                        .replace('%s', sum.overridesImported.join(', '))}
+                                </Typography>
+                            ) : null}
+                        </Alert>
+                        <Alert
+                            severity="info"
+                            data-overwrite="kept"
+                        >
+                            {I18n.t('importOverwriteKept')}
+                        </Alert>
+                        {this.renderRemaining(sum.remainingAllPages, sum.remainingGlobalPages)}
+                    </Box>
+                </DialogContent>
+                <DialogActions>
+                    <Button
+                        variant="contained"
+                        autoFocus
+                        onClick={close}
+                    >
+                        {I18n.t('importCancel')}
+                    </Button>
+                    <Button
+                        color="error"
+                        variant="outlined"
+                        onClick={(): void => void this.handleImport()}
+                    >
+                        {I18n.t('importOverwriteConfirm')}
+                    </Button>
+                </DialogActions>
+            </Dialog>
         );
     }
 
@@ -861,11 +1201,49 @@ export default class PanelImportDialog extends React.Component<PanelImportDialog
         if (!result) {
             return null;
         }
-        const { report } = result;
+        const { report, dangling } = result;
         const ss = report.screensaver;
         return (
             <>
                 <DialogContent>
+                    {report.scriptDisabled ? (
+                        <Alert
+                            severity="info"
+                            sx={{ mb: 2 }}
+                        >
+                            {I18n.t('importResultScriptDisabled')}
+                        </Alert>
+                    ) : null}
+                    {dangling.links.length ? (
+                        <Alert
+                            severity="warning"
+                            data-result="importResultDangling"
+                            sx={{ mb: 2, '& .MuiAlert-message': { minWidth: 0, wordBreak: 'break-word' } }}
+                        >
+                            <Typography
+                                variant="body2"
+                                sx={{ fontWeight: 600 }}
+                            >
+                                {I18n.t('importResultDangling').replace('%s', String(dangling.links.length))}
+                            </Typography>
+                            {dangling.links.map(l => (
+                                <Typography
+                                    key={`${l.page}-${l.link}`}
+                                    variant="body2"
+                                >
+                                    {`${l.page}${l.override ? ` ${I18n.t('importDanglingOverride')}` : ''} – ${fieldLabel(l.link)} → ${l.target}`}
+                                </Typography>
+                            ))}
+                            <Typography
+                                variant="caption"
+                                component="div"
+                                sx={{ mt: 0.5 }}
+                            >
+                                {I18n.t('importResultDanglingHint')}
+                                {dangling.incomplete ? ` ${I18n.t('importResultDanglingIncomplete')}` : ''}
+                            </Typography>
+                        </Alert>
+                    ) : null}
                     {report.secrets.length ? (
                         <Alert
                             severity="warning"
@@ -906,6 +1284,8 @@ export default class PanelImportDialog extends React.Component<PanelImportDialog
                                   : `${ss.name} (${I18n.t(actionLabel(ss.action))})`,
                           ])
                         : null}
+                    {this.resultSection('importResultOverridesRemoved', report.overridesRemoved)}
+                    {this.resultSection('importResultOverridesImported', report.overridesImported)}
                     {this.resultSection(
                         'importResultNotify',
                         report.notifyRenamed.map(r => `${r.from} → ${r.to}`),
@@ -965,6 +1345,7 @@ export default class PanelImportDialog extends React.Component<PanelImportDialog
                 </Dialog>
                 {this.renderDiff()}
                 {this.renderReplaceConfirm()}
+                {this.renderOverwriteConfirm()}
             </>
         );
     }

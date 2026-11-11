@@ -14,7 +14,17 @@
  *   which may make further pages different (fixpoint).
  * - Screensaver: the topic is removed from all entries, then the same rule (identical ignoring `panels` and
  *   `name` -> the topic is added to that entry).
- * - Misc: buttons, noScript and navigation overrides of the target are set exactly as in the file.
+ * - Misc: the hardware buttons and the settings states of the target are set exactly as in the file.
+ *
+ * The import is about admin pages: the pages of the panel script and its navigation overrides stay untouched
+ * when merging (Tim, 2026-11-11). Mode "overwrite" ({@link PanelImportMode}) replaces everything panel specific of
+ * the target: on top of the merge it switches the panel script off (`noScript`) and replaces the navigation
+ * overrides of the target by those of the file. Pages assigned to all panels and pages of the global script
+ * stay on the target with their navigation - "all panels are all panels". Other panels never change.
+ *
+ * Script pages: an admin page assigned to the target replaces a page of the global script with the same name; a
+ * page of the panel script only when the instance option `adminOverridesScriptPages` is set (the start page
+ * always) - otherwise the script page wins and the admin page does not show on the target.
  */
 import {
     ALL_PANELS_SPECIAL_ID,
@@ -317,7 +327,91 @@ export const panelSettingDefaults: Readonly<Record<string, PanelSettingValue>> =
 };
 
 /** the part of `native` the import reads and writes */
-export type ImportNative = ExportNative & { panels?: ExportPanel[] };
+export type ImportNative = ExportNative & { panels?: ExportPanel[]; adminOverridesScriptPages?: boolean };
+
+/** `merge` = add the admin pages of the file, `overwrite` = replace everything panel specific of the target */
+export type PanelImportMode = 'merge' | 'overwrite';
+
+/** names of the script pages that can show on the target */
+export type PanelScriptPages = {
+    /** pages of the own script of the target (pages and sub pages of its script configuration) */
+    panel: string[];
+    /** pages of the global script */
+    global: string[];
+};
+
+/**
+ * @param page a page of a script configuration
+ * @returns its name: `uniqueName`, a page linking a global page without own name has the global name
+ */
+function scriptPageName(page: unknown): string | undefined {
+    if (!isDict(page)) {
+        return undefined;
+    }
+    if (typeof page.uniqueName === 'string' && page.uniqueName) {
+        return page.uniqueName;
+    }
+    if (typeof page.uniqueID === 'string' && page.uniqueID) {
+        return page.uniqueID;
+    }
+    return typeof page.globalLink === 'string' && page.globalLink ? page.globalLink : undefined;
+}
+
+/**
+ * The script pages of a panel from the meta object of the instance (`native` of `<adapter>.<instance>`): the raw
+ * script configuration of the panel (`scriptConfigRaw`), else the converted one (`scriptConfig`, without the global
+ * pages and the screensaver), and the global script (`globalConfigRaw`). Readable while the adapter is stopped.
+ *
+ * @param metaNative `native` of the meta object
+ * @param topic topic of the target
+ * @returns the names, pages of the panel script that are global pages as well are left out of `panel`
+ */
+export function scriptPagesFromMeta(metaNative: unknown, topic: string): PanelScriptPages {
+    const native = isDict(metaNative) ? metaNative : {};
+    const global: string[] = [];
+    const globalRaw = native.globalConfigRaw;
+    if (isDict(globalRaw) && globalRaw.type === 'globalConfig' && Array.isArray(globalRaw.subPages)) {
+        for (const p of globalRaw.subPages) {
+            const name = scriptPageName(p);
+            if (name && !global.includes(name)) {
+                global.push(name);
+            }
+        }
+    }
+    const raw = Array.isArray(native.scriptConfigRaw)
+        ? native.scriptConfigRaw.find(r => isDict(r) && r.panelTopic === topic)
+        : undefined;
+    const conv = Array.isArray(native.scriptConfig)
+        ? native.scriptConfig.find(r => isDict(r) && r.topic === topic)
+        : undefined;
+    // pages of the converted configuration of the last adapter start, without the screensaver
+    const convPages =
+        isDict(conv) && Array.isArray(conv.pages)
+            ? conv.pages
+                  .filter(p => !(isDict(p) && isDict(p.config) && String(p.config.card).startsWith('screensaver')))
+                  .map(scriptPageName)
+                  .filter((n): n is string => !!n && n !== 'scr')
+            : [];
+    const globalIds = isDict(conv) && Array.isArray(conv.globalPageIds) ? conv.globalPageIds : [];
+    let local: string[] = [];
+    if (isDict(raw)) {
+        for (const list of [raw.pages, raw.subPages]) {
+            if (Array.isArray(list)) {
+                local.push(...list.map(scriptPageName).filter((n): n is string => !!n));
+            }
+        }
+    } else {
+        local = convPages.filter(n => !globalIds.includes(n));
+    }
+    // the global script puts more on the panel than its own list: renamed navigation copies of its pages - every
+    // page of the converted configuration that the panel script does not define comes from the global script
+    for (const n of convPages) {
+        if (!local.includes(n) && !global.includes(n)) {
+            global.push(n);
+        }
+    }
+    return { panel: [...new Set(local)].filter(n => !global.includes(n)), global };
+}
 
 /**
  * The groups of the target panel that hold a configuration the import would overwrite.
@@ -737,6 +831,12 @@ export type PlannedPage = {
     strippedSecrets: PageSecretField[];
     /** merge rows only: what changes on the target */
     status?: MergeStatus;
+    /**
+     * A script page of the target has the name of the page (the start page: `main`): `global` = the admin page
+     * replaces the page of the global script, `local` = it replaces the page of the panel script, `localBlocked` =
+     * the page of the panel script wins, the admin page does not show on the target.
+     */
+    scriptPage?: 'global' | 'local' | 'localBlocked';
 };
 
 export type PlannedScreensaver = {
@@ -759,6 +859,7 @@ export type ImportChoice = { action: ImportAction; name?: string };
 
 export type PanelImportPlan = {
     topic: string;
+    mode: PanelImportMode;
     /** groups that are imported */
     groups: PanelConfigGroup[];
     /** selected groups the file does not hold */
@@ -781,7 +882,20 @@ export type PanelImportInput = {
     groups: readonly PanelConfigGroup[];
     /** choices of the user, by original page name; the screensaver under {@link SCREENSAVER_CHOICE_KEY} */
     choices?: Readonly<Record<string, ImportChoice>>;
+    /** default `merge` */
+    mode?: PanelImportMode;
+    /** script pages of the target, undefined = unknown (meta object not readable) */
+    script?: PanelScriptPages;
 };
+
+/**
+ * @param native the instance configuration
+ * @param topic topic of the target
+ * @returns true when the target is marked "panel uses no script"
+ */
+function targetNoScript(native: ImportNative, topic: string): boolean {
+    return (native.panels ?? []).some(p => p && p.topic === topic && p.noScript === true);
+}
 
 /** key of the screensaver in {@link PanelImportInput.choices} (no page name can start with `///`) */
 export const SCREENSAVER_CHOICE_KEY = '///screensaver-entry';
@@ -899,8 +1013,10 @@ export function planPanelImport(input: PanelImportInput): PanelImportPlan {
     const { native, topic, file } = input;
     const choices = input.choices ?? {};
     const { present, missing } = splitImportGroups(file, input.groups);
+    const mode = input.mode ?? 'merge';
     const plan: PanelImportPlan = {
         topic,
+        mode,
         groups: present,
         missingGroups: missing,
         pages: [],
@@ -999,6 +1115,20 @@ export function planPanelImport(input: PanelImportInput): PanelImportPlan {
                 row.status = sameConfig(before.navigation ?? {}, remapNavigation(imp.navigation, renames) ?? {})
                     ? 'unchanged'
                     : 'navigation';
+            }
+        }
+        // script pages of the target with the same name (the start page shows as `main`)
+        const script = input.script;
+        const scriptActive = mode === 'merge' && !targetNoScript(native, topic);
+        for (const row of rows) {
+            if (!script || row.action === 'skip' || imported[row.index].assignment === 'none') {
+                continue;
+            }
+            const node = imported[row.index].page.isMainPage ? mainPageName : row.name;
+            if (scriptActive && script.panel.includes(node)) {
+                row.scriptPage = native.adminOverridesScriptPages || node === mainPageName ? 'local' : 'localBlocked';
+            } else if (script.global.includes(node)) {
+                row.scriptPage = 'global';
             }
         }
         plan.pages = rows;
@@ -1103,6 +1233,12 @@ export type PanelImportReport = {
     screensaver?: { action: ImportAction | 'removed' | 'unchanged'; name: string };
     /** notifications added under a new id because the id was taken by another notification */
     notifyRenamed: { from: string; to: string }[];
+    /** overwrite: the panel script of the target was switched off */
+    scriptDisabled: boolean;
+    /** overwrite: pages of the navigation overrides of the target that were removed */
+    overridesRemoved: string[];
+    /** overwrite: pages of the navigation overrides taken from the file */
+    overridesImported: string[];
 };
 
 export type PanelImportResult = {
@@ -1193,6 +1329,9 @@ export function applyPanelImport(input: PanelImportInput, plan: PanelImportPlan)
         mainPageRemoved: [],
         excludedAllPages: [],
         notifyRenamed: [],
+        scriptDisabled: false,
+        overridesRemoved: [],
+        overridesImported: [],
     };
     const result: PanelImportResult = { native: {}, states: {}, report };
     const itemIds = new Map<string, string>();
@@ -1225,8 +1364,8 @@ export function applyPanelImport(input: PanelImportInput, plan: PanelImportPlan)
                 if (imp.assignment !== 'none') {
                     const all = hasAll(ex);
                     // an identical page for all panels already shows on the target - an own assignment only
-                    // when the navigation of the target differs
-                    if (!all || !sameConfig(all.navigation ?? {}, navigation ?? {})) {
+                    // when the navigation of the target differs or it has to replace a page of the global script
+                    if (!all || !sameConfig(all.navigation ?? {}, navigation ?? {}) || row.scriptPage === 'global') {
                         ex.navigationAssignment = [
                             ...(ex.navigationAssignment ?? []),
                             all ? { topic, navigation: navigation ?? {} } : { topic, navigation },
@@ -1372,34 +1511,48 @@ export function applyPanelImport(input: PanelImportInput, plan: PanelImportPlan)
         result.native.screensaverConfig = entries;
     }
 
-    if (plan.groups.includes('misc') && file.groups.misc) {
-        const misc = file.groups.misc;
+    const miscFile = plan.groups.includes('misc') ? file.groups.misc : undefined;
+    const overwrite = plan.mode === 'overwrite';
+    if (miscFile || overwrite) {
         const panels = structuredClone(native.panels ?? []);
         const panel = panels.find(p => p && p.topic === topic);
         if (panel) {
-            for (const key of ['buttonLeft', 'buttonRight'] as const) {
-                if (key in misc && misc[key] !== undefined) {
-                    panel[key] = remapButton(misc[key], renames);
-                } else {
-                    delete panel[key];
+            if (miscFile) {
+                for (const key of ['buttonLeft', 'buttonRight'] as const) {
+                    if (key in miscFile && miscFile[key] !== undefined) {
+                        panel[key] = remapButton(miscFile[key], renames);
+                    } else {
+                        delete panel[key];
+                    }
                 }
             }
-            if (misc.noScript) {
+            // the panel script belongs to the target - overwrite switches it off, merge leaves it as it is
+            if (overwrite) {
+                report.scriptDisabled = panel.noScript !== true;
                 panel.noScript = true;
-            } else {
-                delete panel.noScript;
             }
             result.native.panels = panels;
         }
+    }
+    if (overwrite) {
+        // the navigation overrides of the target (script pages) are replaced by those of the file
+        const imported = (miscFile?.navigationOverrides ?? []).map(o => ({
+            panelTopic: topic,
+            page: o.page,
+            navigation: remapNavigation(o.navigation, renames) ?? {},
+            scriptLinks: structuredClone(o.scriptLinks ?? {}),
+        }));
+        report.overridesRemoved = (native.navigationOverrides ?? [])
+            .filter(o => o && o.panelTopic === topic)
+            .map(o => o.page);
+        report.overridesImported = imported.map(o => o.page);
         result.native.navigationOverrides = [
             ...structuredClone((native.navigationOverrides ?? []).filter(o => o && o.panelTopic !== topic)),
-            ...misc.navigationOverrides.map(o => ({
-                panelTopic: topic,
-                page: o.page,
-                navigation: remapNavigation(o.navigation, renames) ?? {},
-                scriptLinks: structuredClone(o.scriptLinks ?? {}),
-            })),
+            ...imported,
         ];
+    }
+    if (miscFile) {
+        const misc = miscFile;
         // an admin screensaver on the target sets version and rotation itself, the adapter overwrites both states
         const adminScreensaver = (result.native.screensaverConfig ?? native.screensaverConfig ?? []).some(
             e => e && Array.isArray(e.panels) && e.panels.includes(topic),
@@ -1572,7 +1725,7 @@ export function panelImportChanges(
     ) {
         out.push('screensaver');
     }
-    if (plan.groups.includes('misc')) {
+    if (plan.groups.includes('misc') || plan.mode === 'overwrite') {
         const panelView = (panels: readonly ExportPanel[] | undefined): unknown => {
             const p = (panels ?? []).find(x => x && x.topic === topic);
             return { buttonLeft: p?.buttonLeft, buttonRight: p?.buttonRight, noScript: !!p?.noScript };
@@ -1592,4 +1745,150 @@ export function panelImportChanges(
         }
     }
     return out;
+}
+
+// ---------------------------------------------------------------------------------------------------------------
+// overwrite summary and navigation check
+// ---------------------------------------------------------------------------------------------------------------
+
+/**
+ * @param pages pages of the instance
+ * @param topic topic of the target
+ * @returns names of the admin pages that show on the target and of their navigation nodes (start page: `main`)
+ */
+function adminNodesOnTarget(pages: readonly PageConfigEntry[], topic: string): Set<string> {
+    const out = new Set<string>();
+    for (const p of pages) {
+        if (p && effectivePageAssignment(p, topic)) {
+            out.add(p.uniqueName);
+            if (p.isMainPage) {
+                out.add(mainPageName);
+            }
+        }
+    }
+    return out;
+}
+
+/**
+ * @param pages pages of the instance
+ * @param topic topic of the target
+ * @returns navigation nodes of the admin pages with an own assignment of the target - only those replace a page of
+ * the global script
+ */
+function ownAdminNodes(pages: readonly PageConfigEntry[], topic: string): Set<string> {
+    const out = new Set<string>();
+    for (const p of pages) {
+        if (p && effectivePageAssignment(p, topic)?.kind === 'own') {
+            out.add(p.isMainPage ? mainPageName : p.uniqueName);
+        }
+    }
+    return out;
+}
+
+/** what "overwrite" does to the target - shown in the overview and in the safety confirmation */
+export type PanelOverwriteSummary = {
+    /** pages with an own assignment of the target that no longer show on it */
+    removedOwnPages: string[];
+    /** the panel script of the target is on now (it is switched off) */
+    scriptActive: boolean;
+    /** pages of the panel script that disappear from the target, undefined = unknown */
+    scriptPages?: string[];
+    /** pages of the navigation overrides of the target that are deleted */
+    overridesRemoved: string[];
+    /** pages of the navigation overrides that come from the file */
+    overridesImported: string[];
+    /** pages for all panels that stay on the target with their navigation */
+    remainingAllPages: string[];
+    /** pages of the global script that stay on the target (not replaced by an admin page), undefined = unknown */
+    remainingGlobalPages?: string[];
+};
+
+/**
+ * @param input target, file, groups, script pages (mode is taken as `overwrite`)
+ * @param plan the plan computed in mode `overwrite`
+ * @returns what the overwrite removes and what stays on the target
+ */
+export function panelOverwriteSummary(input: PanelImportInput, plan: PanelImportPlan): PanelOverwriteSummary {
+    const { native, topic } = input;
+    const result = applyPanelImport({ ...input, mode: 'overwrite' }, { ...plan, mode: 'overwrite' });
+    const before = (native.pageConfig ?? []).filter((p): p is PageConfigEntry => !!p);
+    const after = result.native.pageConfig ?? before;
+    const afterOn = adminNodesOnTarget(after, topic);
+    const scriptActive = !targetNoScript(native, topic);
+    const out: PanelOverwriteSummary = {
+        removedOwnPages: before
+            .filter(p => effectivePageAssignment(p, topic)?.kind === 'own' && !afterOn.has(p.uniqueName))
+            .map(p => p.uniqueName),
+        scriptActive,
+        overridesRemoved: result.report.overridesRemoved,
+        overridesImported: result.report.overridesImported,
+        remainingAllPages: after.filter(p => effectivePageAssignment(p, topic)?.kind === 'all').map(p => p.uniqueName),
+    };
+    if (input.script) {
+        out.scriptPages = scriptActive ? [...input.script.panel] : [];
+        const own = ownAdminNodes(after, topic);
+        out.remainingGlobalPages = input.script.global.filter(n => !own.has(n));
+    }
+    return out;
+}
+
+/** a link of the navigation of the target that points to a page not on the target */
+export type DanglingLink = {
+    /** page the link belongs to */
+    page: string;
+    link: keyof NavigationLinks;
+    target: string;
+    /** the link comes from a navigation override of a script page */
+    override?: boolean;
+};
+
+/**
+ * The links of the navigation of the target after the import that point to pages that do not show on the target -
+ * reported, not changed. Pages on the target: its admin pages, the global script pages and - while the panel
+ * script is on - the pages of the panel script. Without known script pages (`input.script` undefined) only the
+ * admin pages count; `incomplete` says so.
+ *
+ * @param input target, file, groups, mode and script pages
+ * @param result the result of {@link applyPanelImport}
+ * @returns the dangling links and whether script pages were unknown
+ */
+export function danglingNavigation(
+    input: PanelImportInput,
+    result: PanelImportResult,
+): { links: DanglingLink[]; incomplete: boolean } {
+    const { native, topic } = input;
+    const pages = (result.native.pageConfig ?? native.pageConfig ?? []).filter((p): p is PageConfigEntry => !!p);
+    const panels = result.native.panels ?? native.panels ?? [];
+    const scriptOn = !panels.some(p => p && p.topic === topic && p.noScript === true);
+    const known = adminNodesOnTarget(pages, topic);
+    for (const n of input.script?.global ?? []) {
+        known.add(n);
+    }
+    if (scriptOn) {
+        for (const n of input.script?.panel ?? []) {
+            known.add(n);
+        }
+    }
+    const ok = (target: string): boolean => !target || target.startsWith('///') || known.has(target);
+    const links: DanglingLink[] = [];
+    const check = (page: string, nav: NavigationLinks | undefined, override: boolean): void => {
+        for (const link of ['prev', 'next', 'home', 'parent'] as const) {
+            const target = nav?.[link];
+            if (typeof target === 'string' && !ok(target)) {
+                links.push(override ? { page, link, target, override } : { page, link, target });
+            }
+        }
+    };
+    for (const p of pages) {
+        const effective = effectivePageAssignment(p, topic);
+        if (effective) {
+            check(p.uniqueName, effective.navigation, false);
+        }
+    }
+    for (const o of result.native.navigationOverrides ?? native.navigationOverrides ?? []) {
+        if (o && o.panelTopic === topic && known.has(o.page)) {
+            check(o.page, o.navigation, true);
+        }
+    }
+    return { links, incomplete: !input.script };
 }

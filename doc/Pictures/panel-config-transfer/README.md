@@ -15,8 +15,12 @@ Die Datei enthält drei Teile:
 
 - **Seiten** – alle Seiten, die auf dem Panel zu sehen sind, mit ihrer Navigation (vor, zurück, hoch, Home);
 - **Screensaver** – der Screensaver des Panels mit seinen Benachrichtigungen;
-- **Sonstiges** – die Hardware-Tasten, „Panel benutzt kein Skript“, geänderte Navigation von Skript-Seiten
-  und die Einstellungen des Panels (z. B. Screensaver-Timeout, Helligkeit, Tastenkopplung).
+- **Sonstiges** – die Hardware-Tasten und die Einstellungen des Panels (z. B. Screensaver-Timeout, Helligkeit,
+  Tastenkopplung). Außerdem stehen „Panel benutzt kein Skript“ und die geänderte Navigation von Skript-Seiten
+  in der Datei; sie werden nur beim Import mit **Komplett überschreiben** übernommen.
+
+Export und Import betreffen die **Admin-Seiten**. Seiten aus Skripten (Panel-Skript, globales Skript) sind nicht
+in der Datei.
 
 ### Exportieren
 
@@ -48,7 +52,23 @@ Die Datei enthält drei Teile:
 
    Ist die Datei beschädigt oder keine Panel-Konfiguration, erscheint eine Fehlermeldung
    ([Beispiel](09-invalid-file.png)). Fehlt ein gewählter Teil in der Datei, wird er übersprungen und angezeigt.
-3. Es öffnet sich die **Übersicht**. Oben stehen Hinweise, z. B. dass vorhandene Einstellungen des Panels
+3. Es öffnet sich die **Übersicht**. Ganz oben wählen Sie den **Importmodus**:
+
+   - **Zusammenführen** (Vorgabe): Die Admin-Seiten der Datei kommen auf das Panel. Die bisher diesem Panel
+     zugeordneten Admin-Seiten werden vom Panel gelöst. Das Panel-Skript, seine Seiten und die geänderte
+     Navigation von Skript-Seiten bleiben, wie sie sind.
+   - **Komplett überschreiben**: Alles, was nur zu diesem Panel gehört, wird durch die Datei ersetzt – die
+     eigenen Seiten samt Navigation, ausgeblendete „Alle Panels“-Seiten, die geänderte Navigation von
+     Skript-Seiten. Das **Panel-Skript wird abgeschaltet** („Panel benutzt kein Skript“), seine Seiten
+     verschwinden vom Panel. Seiten, die „allen Panels“ zugeordnet sind, und Seiten des globalen Skripts
+     bleiben mit ihrer Navigation auf dem Panel – die Übersicht zeigt sie unter „Bleibt zusätzlich auf dem
+     Panel“. Andere Panels ändern sich nicht. Dieser Modus geht nur, wenn der Teil **Seiten** importiert wird.
+
+   ![Zusammenführen: Übersicht mit Skriptseiten-Hinweisen](11-mode-merge.png)
+
+   ![Komplett überschreiben: Übersicht mit „Bleibt zusätzlich auf dem Panel“](12-mode-overwrite.png)
+
+   Darunter stehen Hinweise, z. B. dass vorhandene Einstellungen des Panels
    ersetzt werden, dass die Datei von einem Panel mit anderem Modell stammt oder auf welchen Seiten Sie
    Passwörter neu eingeben müssen. Darunter steht jede Seite der Datei und der Screensaver mit dem, was mit
    ihr passiert:
@@ -63,6 +83,14 @@ Die Datei enthält drei Teile:
    | – umbenennen (Vorschlag) | Die Seite aus der Datei wird unter einem neuen Namen angelegt; den Namen können Sie ändern. Die vorhandene Seite bleibt, wie sie ist. |
    | – vorhandene ersetzen | Die vorhandene Seite bekommt den Inhalt aus der Datei. |
    | – überspringen | Die Seite aus der Datei wird nicht übernommen. |
+
+   Heißt eine Seite der Datei wie eine Seite aus einem Skript, steht ein zweiter Hinweis daneben:
+
+   | Anzeige | Bedeutung |
+   | --- | --- |
+   | **ersetzt globale Skriptseite** | Das globale Skript hat eine Seite mit diesem Namen. Auf diesem Panel zeigt sich die Admin-Seite statt der Skriptseite. Das ist kein Konflikt. |
+   | **ersetzt Skriptseite des Panels** | Die Admin-Seite tritt an die Stelle der gleichnamigen Seite des Panel-Skripts (gilt immer für die Startseite). |
+   | **Skriptseite des Panels hat Vorrang** | Das Panel-Skript hat eine Seite mit diesem Namen; die Skriptseite bleibt, die importierte Seite erscheint auf diesem Panel nicht. Abhilfe: umbenennen oder **Komplett überschreiben**. |
 
    Seiten ohne Konflikt sind zusammengeklappt („23 ohne Konflikt“), ein Klick zeigt sie an. Wird eine Seite
    umbenannt, ändern sich auch die Seiten, die auf sie verweisen – sie erscheinen dann ebenfalls als
@@ -80,7 +108,14 @@ Die Datei enthält drei Teile:
 
    ![Rückfrage beim Ersetzen](06-replace-confirm.png)
 
-4. Auf **Importieren** klicken. Im häufigsten Fall – Sicherung ins selbe Panel zurückspielen oder Import in ein
+4. Auf **Importieren** klicken. Bei **Komplett überschreiben** fragt der Admin vorher nach und zählt auf, was
+   wegfällt: welche eigenen Seiten vom Panel entfernt werden (aufklappbare Liste – die Seiten selbst bleiben
+   erhalten), dass das Panel-Skript abgeschaltet wird und welche Skriptseiten verschwinden, welche geänderte
+   Navigation gelöscht wird und was unverändert bleibt. Vorausgewählt ist **Abbrechen**.
+
+   ![Sicherheitsabfrage bei „Komplett überschreiben“](13-overwrite-confirm.png)
+
+   Im häufigsten Fall – Sicherung ins selbe Panel zurückspielen oder Import in ein
    leeres Panel – ist nichts zu entscheiden, ein Klick genügt.
 
    ![Sicherung ins selbe Panel](01-same-panel-review.png)
@@ -89,6 +124,12 @@ Die Datei enthält drei Teile:
    oder Passwort neu eingeben müssen.
 
    ![Zusammenfassung](07c-result-secrets.png)
+
+   Zeigt danach ein Navigationsverweis (vor, zurück, hoch, Home) auf eine Seite, die es auf diesem Panel nicht
+   gibt, listet die Zusammenfassung ihn unter „Navigation zeigt auf Seiten, die nicht auf diesem Panel sind“.
+   Der Admin korrigiert das nicht selbst – bitte die Navigation dieser Seiten prüfen.
+
+   ![Zusammenfassung nach „Komplett überschreiben“](14-overwrite-result.png)
 
 6. **Speichern** drücken. Seiten, Screensaver, Tasten und Navigation gelten erst nach dem Speichern. Die
    **Panel-Einstellungen** (Timeout, Helligkeit usw.) werden dagegen schon beim Importieren sofort
@@ -108,7 +149,10 @@ Die Datei enthält drei Teile:
   passen nicht immer gleich viele Elemente auf eine Seite bzw. in den Screensaver. Prüfen Sie die Seiten
   nach dem Import ([Beispiel](02-empty-panel-review.png)).
 - Vorher zugeordnete Seiten des Ziel-Panels, die nicht in der Datei stehen, werden nur vom Panel gelöst, nicht
-  gelöscht – sie bleiben in der Seitenliste.
+  gelöscht – sie bleiben in der Seitenliste. Das gilt für beide Modi.
+- **Skript wieder einschalten:** Nach **Komplett überschreiben** ist „Panel benutzt kein Skript“ gesetzt. Wer das
+  Panel-Skript zurückhaben will, entfernt den Haken in den Panel-Einstellungen; die Skriptkonfiguration ist
+  nicht gelöscht.
 
 ---
 
@@ -137,3 +181,7 @@ von `e2eLong`, `Unlock1` und `tom`).
 | `07c-result-secrets.png` | 7: Ergebnis mit „bitte neu eingeben“ | QR-Seite ohne Passwort; Umbenannt/Ersetzt/Unverändert getrennt |
 | `09-invalid-file.png`, `09b-foreign-file.png` | 9: kaputte bzw. fremde Datei | verständliche Fehlermeldung |
 | `10-dark-theme-review.png` | Konflikt-Übersicht im dunklen Theme (älterer Stand der Texte) | Kontraste |
+| `11-mode-merge.png` | Export von Webtest in Panel **emu** (Skript mit 3 eigenen Seiten), Modus „Zusammenführen“, Liste aufgeklappt | Umschalter oben, Hinweis „ersetzt globale Skriptseite“ bei `wecker`, `media`, `powerpage` usw. |
+| `12-mode-overwrite.png` | dieselbe Datei, Modus „Komplett überschreiben“ | Erklärtext, „Bleibt zusätzlich auf dem Panel“ nennt die globalen Skriptseiten ohne die überschriebenen; Importieren-Knopf rot |
+| `13-overwrite-confirm.png` | Sicherheitsabfrage, Liste der entfernten Seiten aufgeklappt | 12 eigene Seiten, Skript aus + Skriptseiten `entities1`, `entities2`, `thermo`, Overrides, „alle Panels“/global bleiben; Fokus auf Abbrechen |
+| `14-overwrite-result.png` | Ergebnis nach „Komplett überschreiben“ (nicht gespeichert) | „Panel-Skript abgeschaltet“, toter Verweis `testrole2 – weiter → telefon` |

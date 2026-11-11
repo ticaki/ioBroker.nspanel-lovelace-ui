@@ -1,0 +1,1 @@
+import{t as e}from"./virtual_mf-exposes___mfe_internal__AdminComponentEasyAccessSet__customComponents_js-9K8YgsUP.js";export{e as default};

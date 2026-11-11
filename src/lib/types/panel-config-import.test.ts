@@ -12,6 +12,9 @@ import { buildPanelConfigExport, type ExportPanel } from './panelConfigExport';
 import {
     applyPanelImport,
     configDiff,
+    danglingNavigation,
+    panelOverwriteSummary,
+    scriptPagesFromMeta,
     importSecretPages,
     panelImportChanges,
     navigationDiff,
@@ -339,7 +342,8 @@ describe('lib/types/panelConfigImport', () => {
             expect(r.report.secrets).to.deep.equal([]);
             expect(r.native.screensaverConfig).to.deep.equal(native.screensaverConfig);
             expect(r.native.screensaverNotify).to.deep.equal(native.screensaverNotify);
-            expect(r.native.navigationOverrides).to.deep.equal(native.navigationOverrides);
+            // merge leaves the navigation overrides (script pages) alone
+            expect(r.native.navigationOverrides).to.equal(undefined);
             expect(r.native.panels?.[0].buttonLeft).to.deep.equal({ mode: 'page', page: 'one' });
             expect(r.states).to.deep.equal({ 'screenSaver.timeout': 20 });
         });
@@ -508,7 +512,11 @@ describe('lib/types/panelConfigImport', () => {
             expect(ss?.panels).to.deep.equal([DST]);
             expect(ss?.indicator[0]?.action?.page).to.equal('a_dst');
             expect(r.native.panels?.[1].buttonRight).to.deep.equal({ mode: 'page', page: 'a_dst' });
-            expect(r.native.navigationOverrides).to.deep.equal([
+            expect(r.native.navigationOverrides).to.equal(undefined);
+            // overwrite takes the overrides of the file, renamed as well
+            const ow = { ...input(target, file), mode: 'overwrite' as const };
+            const rw = applyPanelImport(ow, planPanelImport(ow));
+            expect(rw.native.navigationOverrides).to.deep.equal([
                 { panelTopic: DST, page: 'script', navigation: { next: 'a_dst' }, scriptLinks: {} },
             ]);
             expect(r.report.renamed).to.deep.equal([
@@ -732,7 +740,7 @@ describe('lib/types/panelConfigImport', () => {
     });
 
     describe('misc', () => {
-        it('buttons exactly, noScript, overrides replaced, layout skipped with an admin screensaver', () => {
+        it('merge: buttons exactly, noScript and overrides untouched, layout skipped with an admin screensaver', () => {
             const source: ImportNative = {
                 panels: [{ ...panels[0], buttonLeft: null }],
                 screensaverConfig: [screensaver('ss', [SRC])],
@@ -753,10 +761,10 @@ describe('lib/types/panelConfigImport', () => {
             const dst = r.native.panels?.[1];
             expect(dst).to.have.property('buttonLeft', null);
             expect(dst).to.not.have.property('buttonRight');
-            expect(dst).to.not.have.property('noScript');
-            expect(r.native.navigationOverrides).to.deep.equal([
-                { panelTopic: OTHER, page: 'keep', navigation: {}, scriptLinks: {} },
-            ]);
+            // the script of the target is not the business of a merge
+            expect(dst).to.have.property('noScript', true);
+            expect(r.native.navigationOverrides).to.equal(undefined);
+            expect(r.report.scriptDisabled).to.equal(false);
             expect(r.states).to.deep.equal({ 'screenSaver.timeout': 40, mainNavigationPoint: 'main' });
         });
         it('only selected groups are touched', () => {
@@ -865,6 +873,200 @@ describe('lib/types/panelConfigImport', () => {
             const inp = input(native, file, DST);
             expect(panelConfiguredGroups(native, DST, {})).to.deep.equal([]);
             expect(panelImportChanges(inp, planPanelImport(inp), {})).to.include('pages');
+        });
+    });
+    describe('overwrite mode and script pages', () => {
+        const source: ImportNative = {
+            panels,
+            pageConfig: [
+                menu('one', [{ topic: SRC, navigation: { next: 'two' } }]),
+                menu('two', [{ topic: SRC, navigation: { prev: 'one', next: 'scriptp' } }]),
+                menu('wecker', [{ topic: SRC }]),
+                menu('allx', [{ topic: ALL_PANELS_SPECIAL_ID }, { topic: SRC }]),
+            ],
+            navigationOverrides: [{ panelTopic: SRC, page: 'heizung', navigation: { next: 'one' }, scriptLinks: {} }],
+        };
+        const file = exportOf(source);
+        const target: ImportNative = {
+            panels: [panels[0], { ...panels[1], buttonRight: { mode: 'page', page: 'x' } }, panels[2]],
+            pageConfig: [
+                menu('old', [{ topic: DST, navigation: { next: 'gone' } }]),
+                menu('shared', [
+                    { topic: DST, navigation: { next: 'old' } },
+                    { topic: OTHER, navigation: { next: 'x' } },
+                ]),
+                menu('allp', [{ topic: ALL_PANELS_SPECIAL_ID, navigation: { next: 'one', prev: 'gone' } }]),
+                menu('allx', [{ topic: ALL_PANELS_SPECIAL_ID }]),
+                menu('allEx2', [{ topic: ALL_PANELS_SPECIAL_ID }, { topic: DST }]),
+                menu('otherOnly', [{ topic: OTHER, navigation: { prev: 'shared' } }]),
+            ],
+            navigationOverrides: [
+                { panelTopic: DST, page: 'scriptp', navigation: { next: 'missing' }, scriptLinks: {} },
+                { panelTopic: OTHER, page: 'keep', navigation: {}, scriptLinks: {} },
+            ],
+        };
+        const script = { panel: ['scriptp', 'one'], global: ['wecker', 'heizung', 'media'] };
+        const overwrite = (): PanelImportInput => ({ ...input(target, file), mode: 'overwrite', script });
+        const merge = (extra: Partial<ImportNative> = {}): PanelImportInput => ({
+            ...input({ ...target, ...extra }, file),
+            script,
+        });
+
+        it('plan: same-named global script page is no conflict, the admin page replaces it', () => {
+            const plan = planPanelImport(overwrite());
+            expect(plan.mode).to.equal('overwrite');
+            const row = plan.pages.find(p => p.original === 'wecker');
+            expect(row).to.include({ conflict: 'none', action: 'add', scriptPage: 'global' });
+            // the panel script is switched off - its page of the same name does not matter
+            expect(plan.pages.find(p => p.original === 'one')?.scriptPage).to.equal(undefined);
+        });
+        it('plan (merge): a same-named page of the panel script wins unless admin pages override script pages', () => {
+            expect(planPanelImport(merge()).pages.find(p => p.original === 'one')?.scriptPage).to.equal('localBlocked');
+            expect(
+                planPanelImport(merge({ adminOverridesScriptPages: true })).pages.find(p => p.original === 'one')
+                    ?.scriptPage,
+            ).to.equal('local');
+            // panel script off already: only the global pages count
+            const off = merge({ panels: [panels[0], { ...panels[1], noScript: true }, panels[2]] });
+            expect(planPanelImport(off).pages.find(p => p.original === 'one')?.scriptPage).to.equal(undefined);
+            // script pages unknown: no status
+            const unknown = { ...merge(), script: undefined };
+            expect(planPanelImport(unknown).pages.every(p => p.scriptPage === undefined)).to.equal(true);
+        });
+        it('own assignments of the target go, all-panel pages stay and are not excluded, other panels unchanged', () => {
+            const r = applyPanelImport(overwrite(), planPanelImport(overwrite()));
+            const pages = r.native.pageConfig;
+            // unassigned pages stay as pages
+            expect(page(pages, 'old').navigationAssignment).to.deep.equal([]);
+            expect(page(pages, 'shared').navigationAssignment).to.deep.equal([
+                { topic: OTHER, navigation: { next: 'x' } },
+            ]);
+            expect(page(pages, 'allp').navigationAssignment).to.deep.equal([
+                { topic: ALL_PANELS_SPECIAL_ID, navigation: { next: 'one', prev: 'gone' } },
+            ]);
+            // exclusions of the target: exactly those of the file
+            expect(page(pages, 'allx').navigationAssignment).to.deep.equal([
+                { topic: ALL_PANELS_SPECIAL_ID },
+                { topic: DST },
+            ]);
+            expect(page(pages, 'allEx2').navigationAssignment).to.deep.equal([{ topic: ALL_PANELS_SPECIAL_ID }]);
+            expect(page(pages, 'otherOnly')).to.deep.equal(target.pageConfig?.[5]);
+            expect(page(pages, 'wecker').navigationAssignment).to.deep.equal([{ topic: DST, navigation: undefined }]);
+        });
+        it('panel script switched off, overrides of the target replaced, other panels keep theirs', () => {
+            const r = applyPanelImport(overwrite(), planPanelImport(overwrite()));
+            expect(r.native.panels?.[1]).to.have.property('noScript', true);
+            expect(r.native.panels?.[0]).to.not.have.property('noScript');
+            expect(r.native.panels?.[2]).to.deep.equal(panels[2]);
+            // buttons follow the file (misc selected)
+            expect(r.native.panels?.[1]).to.not.have.property('buttonRight');
+            expect(r.native.navigationOverrides).to.deep.equal([
+                { panelTopic: OTHER, page: 'keep', navigation: {}, scriptLinks: {} },
+                { panelTopic: DST, page: 'heizung', navigation: { next: 'one' }, scriptLinks: {} },
+            ]);
+            expect(r.report).to.include({ scriptDisabled: true });
+            expect(r.report.overridesRemoved).to.deep.equal(['scriptp']);
+            expect(r.report.overridesImported).to.deep.equal(['heizung']);
+        });
+        it('overrides are deleted when the misc group is not imported', () => {
+            const i = { ...overwrite(), groups: ['pages' as const] };
+            const r = applyPanelImport(i, planPanelImport(i));
+            expect(r.native.navigationOverrides).to.deep.equal([
+                { panelTopic: OTHER, page: 'keep', navigation: {}, scriptLinks: {} },
+            ]);
+            expect(r.native.panels?.[1]).to.have.property('noScript', true);
+            // buttons untouched without misc
+            expect(r.native.panels?.[1].buttonRight).to.deep.equal({ mode: 'page', page: 'x' });
+        });
+        it('summary for the confirmation', () => {
+            const sum = panelOverwriteSummary(overwrite(), planPanelImport(overwrite()));
+            expect(sum).to.deep.equal({
+                removedOwnPages: ['old', 'shared'],
+                scriptActive: true,
+                scriptPages: ['scriptp', 'one'],
+                overridesRemoved: ['scriptp'],
+                overridesImported: ['heizung'],
+                remainingAllPages: ['allp', 'allEx2'],
+                remainingGlobalPages: ['heizung', 'media'],
+            });
+            const unknown = { ...overwrite(), script: undefined };
+            const s2 = panelOverwriteSummary(unknown, planPanelImport(unknown));
+            expect(s2.scriptPages).to.equal(undefined);
+            expect(s2.remainingGlobalPages).to.equal(undefined);
+        });
+        it('dangling navigation after overwrite: links to script pages and missing pages', () => {
+            const i = overwrite();
+            const d = danglingNavigation(i, applyPanelImport(i, planPanelImport(i)));
+            expect(d.incomplete).to.equal(false);
+            expect(d.links).to.deep.equal([
+                { page: 'allp', link: 'prev', target: 'gone' },
+                { page: 'two', link: 'next', target: 'scriptp' },
+            ]);
+        });
+        it('dangling navigation after merge: script pages count, overrides of the target are checked', () => {
+            const i = merge();
+            const d = danglingNavigation(i, applyPanelImport(i, planPanelImport(i)));
+            expect(d.links).to.deep.equal([
+                { page: 'allp', link: 'prev', target: 'gone' },
+                { page: 'scriptp', link: 'next', target: 'missing', override: true },
+            ]);
+            const u = { ...merge(), script: undefined };
+            expect(danglingNavigation(u, applyPanelImport(u, planPanelImport(u))).incomplete).to.equal(true);
+        });
+        it('identical all-panel page with the name of a global script page gets an own assignment', () => {
+            const native: ImportNative = {
+                panels,
+                pageConfig: [menu('media', [{ topic: ALL_PANELS_SPECIAL_ID, navigation: { next: 'x' } }])],
+            };
+            const f = exportOf(native);
+            const i: PanelImportInput = { ...input(native, f), script: { panel: [], global: ['media'] } };
+            const plan = planPanelImport(i);
+            expect(plan.pages[0]).to.include({ action: 'merge', scriptPage: 'global' });
+            const r = applyPanelImport(i, plan);
+            expect(page(r.native.pageConfig, 'media').navigationAssignment).to.deep.equal([
+                { topic: ALL_PANELS_SPECIAL_ID, navigation: { next: 'x' } },
+                { topic: DST, navigation: { next: 'x' } },
+            ]);
+            // without the global page nothing is added
+            const r2 = applyPanelImport(input(native, f), planPanelImport(input(native, f)));
+            expect(page(r2.native.pageConfig, 'media').navigationAssignment).to.have.length(1);
+        });
+        it('script pages from the meta object', () => {
+            const meta = {
+                scriptConfigRaw: [
+                    {
+                        panelTopic: DST,
+                        pages: [{ uniqueName: 'main' }, { globalLink: 'wecker' }, { uniqueName: 'own' }],
+                        subPages: [{ uniqueName: 'sub' }, null],
+                    },
+                ],
+                scriptConfig: [
+                    {
+                        topic: OTHER,
+                        pages: [{ uniqueID: 'scr' }, { uniqueID: 'conv' }, { uniqueID: 'wecker' }],
+                        globalPageIds: ['wecker'],
+                    },
+                ],
+                globalConfigRaw: { type: 'globalConfig', subPages: [{ uniqueName: 'wecker' }, null] },
+            };
+            expect(scriptPagesFromMeta(meta, DST)).to.deep.equal({
+                panel: ['main', 'own', 'sub'],
+                global: ['wecker'],
+            });
+            expect(scriptPagesFromMeta(meta, OTHER)).to.deep.equal({ panel: ['conv'], global: ['wecker'] });
+            // a navigation copy of the global script shows up in the converted configuration only
+            const withCopy = {
+                ...meta,
+                scriptConfig: [
+                    ...meta.scriptConfig,
+                    { topic: DST, pages: [{ uniqueID: 'own' }, { uniqueID: 'copy' }] },
+                ],
+            };
+            expect(scriptPagesFromMeta(withCopy, DST)).to.deep.equal({
+                panel: ['main', 'own', 'sub'],
+                global: ['wecker', 'copy'],
+            });
+            expect(scriptPagesFromMeta(undefined, DST)).to.deep.equal({ panel: [], global: [] });
         });
     });
 });
