@@ -347,7 +347,6 @@ export const textTemplates: TemplateItems = {
                         constVal: Color.Green,
                     },
                 },
-                textSize: { type: 'const', constVal: 2 },
                 false: {
                     value: {
                         type: 'triggered',
@@ -472,7 +471,6 @@ export const textTemplates: TemplateItems = {
                     },
                     color: undefined,
                 },
-                textSize: { type: 'const', constVal: 2 },
                 false: {
                     value: {
                         type: 'triggered',

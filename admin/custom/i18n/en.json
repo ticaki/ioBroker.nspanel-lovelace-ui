@@ -1273,6 +1273,7 @@
     "screensaver_item_headline": "Headline (empty = name of the state)",
     "screensaver_item_iconFont": "Icon font",
     "screensaver_item_iconFontHint": "Only the screensaver 'Tiles' changes the font of the icon field. Empty = font of the panel.",
+    "screensaver_item_iconFontNoIcons": "no icons – default font",
     "screensaver_item_iconOff": "Icon off (false / 0)",
     "screensaver_item_iconOn": "Icon (on / value)",
     "screensaver_item_iconRequired": "Without an icon the panel cannot draw the item - please choose an icon",

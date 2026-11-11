@@ -26,8 +26,9 @@ describe('lib/templates - template info (screensaver item dialog)', () => {
     });
 
     it('names the constant icon font of a template, also from the base template', () => {
-        expect(byName.get('text.battery')?.iconTextSize).to.equal(2);
-        expect(byName.get('text.battery.bydhvs')?.iconTextSize).to.equal(2);
+        expect(byName.get('text.clock')?.iconTextSize).to.equal(1);
+        expect(byName.get('text.battery')?.iconTextSize).to.equal(undefined);
+        expect(byName.get('text.battery.bydhvs')?.iconTextSize).to.equal(undefined);
         expect(byName.get('text.window.isOpen')?.iconTextSize).to.equal(undefined);
         const infos = pageItemTemplateInfos({
             base: { type: 'text', role: '', adapter: '', data: { icon: { textSize: { type: 'const', constVal: 3 } } } },

@@ -33,6 +33,7 @@ __export(tools_exports, {
   buildScrollingText: () => buildScrollingText,
   deepAssign: () => deepAssign,
   default: () => tools_default,
+  dropIconFontWithoutGlyphs: () => dropIconFontWithoutGlyphs,
   formatHMS: () => formatHMS,
   formatInSelText: () => formatInSelText,
   getDecfromHue: () => getDecfromHue,
@@ -306,6 +307,14 @@ async function setScaledNumber(i, value) {
 }
 function stripIconFontSuffix(text) {
   return text.replace(/¬\d+$/, "");
+}
+const ICON_GLYPHS = /^[\uE000-\uFDFF]+$/;
+function dropIconFontWithoutGlyphs(text) {
+  const m = /^(.+)¬(\d+)$/s.exec(text);
+  if (!m || (0, import_adminShareConfig.isIconTextSize)(Number(m[2])) || !ICON_GLYPHS.test(m[1])) {
+    return text;
+  }
+  return m[1];
 }
 async function getIconEntryValue(i, on, def, defOff = null, getText = false) {
   var _a, _b;
@@ -1217,6 +1226,7 @@ function shortenHeadline(text, model) {
   alignText,
   buildScrollingText,
   deepAssign,
+  dropIconFontWithoutGlyphs,
   formatHMS,
   formatInSelText,
   getDecfromHue,
