@@ -23,3 +23,6 @@ src/lib/password.ts
 .gitignore
 .commitinfo
 _site/
+# Python caches
+__pycache__/
+*.pyc
