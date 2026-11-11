@@ -118,6 +118,7 @@ __export(adminShareConfig_exports, {
   migrateLegacyPower: () => migrateLegacyPower,
   migrateScreensaverNotify: () => migrateScreensaverNotify,
   nameIsPopupTitleCards: () => nameIsPopupTitleCards,
+  navigationErrorPageName: () => navigationErrorPageName,
   newItemId: () => newItemId,
   newScreensaverNotifyId: () => newScreensaverNotifyId,
   normalizeChannelId: () => normalizeChannelId,
@@ -202,6 +203,7 @@ const mainPageName = "main";
 const serviceNodeName = "///service";
 const servicePageName = "///unlock";
 const screensaverTargetPage = "///screensaver";
+const navigationErrorPageName = "///navigationError";
 const screensaverModes = ["standard", "alternate", "advanced", "easyview", "tiles"];
 const screensaverAreas = ["favorit", "alternate", "left", "bottom", "indicator"];
 const panelModels = ["eu", "us-l", "us-p", "web-p", "web-l"];
@@ -2268,6 +2270,7 @@ const CONVERT_GLOBAL_DEFAULT_DECISION = "keepAdmin";
   migrateLegacyPower,
   migrateScreensaverNotify,
   nameIsPopupTitleCards,
+  navigationErrorPageName,
   newItemId,
   newScreensaverNotifyId,
   normalizeChannelId,

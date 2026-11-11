@@ -146,6 +146,8 @@ export namespace NSPanel {
         | 'info/NotificationCounter'
         | 'cmd/popupNotification'
         | 'system/popupNotification'
+        | 'info/navigationErrorTarget'
+        | 'info/navigationErrorOrigin'
         | 'info/modelVersion'
         | 'info/displayVersion'
         | 'info/tasmotaVersion'

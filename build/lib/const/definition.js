@@ -2241,6 +2241,30 @@ const InternalStates = {
       },
       noTrigger: true
     },
+    "info/navigationErrorTarget": {
+      val: "",
+      ack: true,
+      common: {
+        name: "",
+        type: "string",
+        role: "text",
+        read: true,
+        write: false
+      },
+      noTrigger: true
+    },
+    "info/navigationErrorOrigin": {
+      val: "",
+      ack: true,
+      common: {
+        name: "",
+        type: "string",
+        role: "text",
+        read: true,
+        write: false
+      },
+      noTrigger: true
+    },
     "cmd/NotificationCleared": {
       val: false,
       ack: true,

@@ -1337,6 +1337,43 @@ const SystemOption = {
   ],
   items: void 0
 };
+function navigationErrorLine(icon, color, label, dp) {
+  return {
+    role: "",
+    type: "text",
+    dpInit: "",
+    data: {
+      icon: {
+        true: {
+          value: { type: "const", constVal: icon },
+          color: { type: "const", constVal: color }
+        },
+        false: void 0
+      },
+      entity1: { value: { type: "const", constVal: true } },
+      text: { true: { type: "const", constVal: label }, false: void 0 },
+      text1: dp ? { true: { type: "internal", dp }, false: void 0 } : void 0
+    }
+  };
+}
+const NavigationError = {
+  dpInit: "",
+  alwaysOn: "none",
+  uniqueID: import_adminShareConfig.navigationErrorPageName,
+  config: {
+    card: "cardEntities",
+    scrollType: "page",
+    data: {
+      headline: { type: "const", constVal: "navigationError_headline" }
+    }
+  },
+  pageItems: [
+    navigationErrorLine("link-variant-off", import_Color.Color.Red, "navigationError_target", "info/navigationErrorTarget"),
+    navigationErrorLine("arrow-left-bold", import_Color.Color.info, "navigationError_origin", "info/navigationErrorOrigin"),
+    navigationErrorLine("file-cog-outline", import_Color.Color.Yellow, "navigationError_hint", void 0)
+  ],
+  items: void 0
+};
 const systemPages = [
   popupNotification,
   popupNotification2,
@@ -1352,7 +1389,8 @@ const systemPages = [
   RelaisOption,
   DeviceOption,
   NetworkOption,
-  SystemOption
+  SystemOption,
+  NavigationError
 ];
 const systemNavigation = [
   {
@@ -1427,6 +1465,13 @@ const systemNavigation = [
     name: "///PopupInfo",
     page: "///PopupInfo",
     left: { double: "///Overview" }
+  },
+  {
+    name: import_adminShareConfig.navigationErrorPageName,
+    page: import_adminShareConfig.navigationErrorPageName,
+    // `left.single` is set at runtime by Navigation to the page the faulty link came from.
+    // Home button - resolved against the effective start page by Navigation.init().
+    right: { double: import_default_pages.mainPageName }
   }
 ];
 // Annotate the CommonJS export names for ESM import in node:

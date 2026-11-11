@@ -6,7 +6,7 @@ import type { Page } from './Page';
 import { getPayload, getPayloadRemoveTilde } from '../const/tools';
 import { genericStateObjects } from '../const/definition';
 import { mainPageName } from '../const/default-pages';
-import { screensaverTargetPage } from '../types/adminShareConfig';
+import { navigationErrorPageName, screensaverTargetPage } from '../types/adminShareConfig';
 
 /** index of the reserved target in the links of the database: it is no node of the navigation */
 export const SCREENSAVER_NAV_INDEX = -2;
@@ -102,6 +102,8 @@ export class Navigation extends BaseClass {
     /** object definition of `cmd.goToNavigationPoint` of this panel, built with its states on the first write */
     private navigationPointObject: ioBroker.StateObject | undefined;
     private infityCounter = 0;
+    /** links to a node without page that were already reported (`<origin>\u0000<target>`) - one warning per start */
+    private reportedMissingTargets = new Set<string>();
     public get currentItem(): number {
         return this._currentItem;
     }
@@ -228,6 +230,10 @@ export class Navigation extends BaseClass {
                     if (found) {
                         const idx = this.navigationConfig.indexOf(found);
                         i[nk][nk2] = idx;
+                        if (!this.database[idx]) {
+                            // the arrow stays: it leads to the system page that names the missing page
+                            this.reportMissingTarget(c.name, found.name);
+                        }
                     } else {
                         this.log.warn(`Didn't find a navigation node with name "${r2}".`);
                     }
@@ -265,6 +271,11 @@ export class Navigation extends BaseClass {
         }
         if (index !== -1 && index !== undefined) {
             const item = this.database[index];
+            if (!item && this.navigationConfig[index]) {
+                this.infityCounter = 0;
+                await this.showNavigationError(index);
+                return;
+            }
             if (item) {
                 this.currentItem = index;
                 if (this.panel.hideCards && item.page.hidden) {
@@ -290,6 +301,59 @@ export class Navigation extends BaseClass {
     }
     getDatabase(): NavigationItem[] {
         return this.database;
+    }
+
+    /**
+     * Logs a link to a node without page once per origin and target.
+     *
+     * @param origin Name of the node the link belongs to.
+     * @param target Name of the node without page.
+     */
+    private reportMissingTarget(origin: string, target: string): void {
+        const key = `${origin}\u0000${target}`;
+        if (this.reportedMissingTargets.has(key)) {
+            return;
+        }
+        this.reportedMissingTargets.add(key);
+        this.log.warn(
+            `Navigation of page "${origin}": target "${target}" has no page (script page dropped or admin page missing).`,
+        );
+    }
+
+    /**
+     * Shows the system page {@link navigationErrorPageName} for a link to a node without page: it names the
+     * missing target and the page the link came from, its back arrow leads to that page. Without the system
+     * page (or when the link comes from the system page itself) nothing happens but the warning.
+     *
+     * @param targetIndex Index of the node without page.
+     */
+    private async showNavigationError(targetIndex: number): Promise<void> {
+        const target = this.navigationConfig[targetIndex]?.name ?? String(targetIndex);
+        const errorIndex = this.navigationConfig.findIndex(a => a && a.name === navigationErrorPageName);
+        const errorItem = errorIndex === -1 ? undefined : this.database[errorIndex];
+        const originIndex = this.currentItem;
+        const origin = this.navigationConfig[originIndex]?.name ?? '';
+        this.reportMissingTarget(origin, target);
+        if (!errorItem) {
+            this.log.debug(`Navigation target "${target}" has no page and there is no system page to show it.`);
+            return;
+        }
+        // from the error page itself (e.g. its home without page) the way back stays the one it had
+        if (originIndex !== errorIndex && this.database[originIndex]) {
+            errorItem.left = { single: originIndex };
+            await this.panel.statesControler.setInternalState(
+                `${this.panel.name}/info/navigationErrorOrigin`,
+                origin,
+                false,
+            );
+        }
+        await this.panel.statesControler.setInternalState(
+            `${this.panel.name}/info/navigationErrorTarget`,
+            target,
+            false,
+        );
+        this.currentItem = errorIndex;
+        await this.panel.setActivePage(errorItem.page);
     }
 
     async setTargetPageByName(n: string): Promise<void> {

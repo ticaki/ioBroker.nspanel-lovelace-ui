@@ -39,6 +39,8 @@ export class ConfigManager extends BaseClass {
     colorDefault: RGB = Color.Off;
     dontWrite: boolean = false;
     extraConfigLogging: boolean = false;
+    /** script pages skipped on purpose by getPageConfig (the admin provides them) - their node is no mistake */
+    private pagesLeftToAdmin = new Set<string>();
 
     static readonly breakingVersion = '0.6.0';
 
@@ -362,7 +364,9 @@ export class ConfigManager extends BaseClass {
             return { messages, panelConfig: undefined };
         }
 
+        this.pagesLeftToAdmin.clear();
         ({ panelConfig, messages } = await this.getPageConfig(config, panelConfig, messages));
+        this.reportNodesWithoutPage(panelConfig);
 
         // Only report ids that really ended up as a page of this panel.
         panelConfig.globalPageIds = panelConfig.pages
@@ -557,6 +561,7 @@ export class ConfigManager extends BaseClass {
                     const msg = `Page: ${page.uniqueName} with card type ${page.type} is only supported in the admin configuration! Skipped!`;
                     messages.push(msg);
                     this.log.warn(msg);
+                    this.pagesLeftToAdmin.add(page.uniqueName);
                     continue;
                 }
                 if ((config.subPages || []).includes(page)) {
@@ -663,6 +668,7 @@ export class ConfigManager extends BaseClass {
                             `Power page ${page.uniqueName} gets its navigation in the admin (tab PageConfig) - remove it from the script. Skipped!`,
                         );
                         this.log.warn(messages[messages.length - 1]);
+                        this.pagesLeftToAdmin.add(page.uniqueName);
                         continue;
                     }
                     if (entry) {
@@ -691,6 +697,7 @@ export class ConfigManager extends BaseClass {
                             `Chart page ${page.uniqueName} gets its navigation in the admin (tab PageConfig) - remove it from the script. Skipped!`,
                         );
                         this.log.warn(messages[messages.length - 1]);
+                        this.pagesLeftToAdmin.add(page.uniqueName);
                         continue;
                     }
                     if (entry) {
@@ -748,6 +755,32 @@ export class ConfigManager extends BaseClass {
             }
         }
         return { panelConfig, messages };
+    }
+
+    /**
+     * Logs the navigation nodes of the script whose page was dropped during the conversion (e.g. an empty
+     * chart stub): the node stays, so links to it lead to the system page "navigation faulty". Pages the
+     * admin takes over on purpose are only logged as debug.
+     *
+     * @param panelConfig Converted configuration of the panel (pages and navigation of the script).
+     * @param panelConfig.pages Converted pages.
+     * @param panelConfig.navigation Navigation nodes of the script.
+     */
+    private reportNodesWithoutPage(panelConfig: { pages: pages.PageBase[]; navigation: NavigationItemConfig[] }): void {
+        for (const node of panelConfig.navigation) {
+            if (!node || panelConfig.pages.some(p => p && p.uniqueID === node.page)) {
+                continue;
+            }
+            if (this.pagesLeftToAdmin.has(node.page)) {
+                this.log.debug(
+                    `Script page '${node.page}' is left to the admin configuration - its navigation node stays.`,
+                );
+            } else {
+                this.log.warn(
+                    `Script page '${node.page}' was dropped during the conversion (see the message above) - its navigation node stays, links to it show the page "navigation faulty".`,
+                );
+            }
+        }
     }
 
     async getPageThermo(
