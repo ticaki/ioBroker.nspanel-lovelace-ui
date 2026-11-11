@@ -392,6 +392,28 @@ export class Panel extends BaseClass {
         return this.isVirtual && !!this.options.sourceTopic;
     }
 
+    /**
+     * The model of the panel configuration. An empty model is `eu` (the default of old configurations); a value
+     * that is no panel model (e.g. a hand-edited configuration) is reported and also replaced by `eu` - the web
+     * panel would otherwise draw every page in a geometry that does not fit the display.
+     *
+     * @param model the model of the configuration
+     * @param name name of the panel for the warning
+     * @param warn logs the warning
+     */
+    static checkedModel(model: unknown, name: string, warn: (msg: string) => void): Types.NSpanelModel {
+        if (model === undefined || model === null || model === '') {
+            return 'eu';
+        }
+        if (adminShareConfig.isPanelModel(model)) {
+            return model;
+        }
+        warn(
+            `Panel ${name}: unknown model ${JSON.stringify(model)} - using "eu". Valid models: ${adminShareConfig.panelModels.join(', ')}. Check the panel in the instance settings.`,
+        );
+        return 'eu';
+    }
+
     constructor(adapter: AdapterClassDefinition, options: panelConfigPartial) {
         super(adapter, options.name, options.friendlyName ?? options.name);
         this.channel = options.channel ?? options.controller.mqttClient;
@@ -410,7 +432,7 @@ export class Panel extends BaseClass {
         this.controller = options.controller;
         this.topic = options.topic;
         this.info.internal.scriptName = options.scriptName.split('.').slice(2).join('.') || options.scriptName;
-        this.info.nspanel.model = options.model || 'eu';
+        this.info.nspanel.model = Panel.checkedModel(options.model, this.friendlyName, msg => this.log.warn(msg));
         if (typeof this.panelSend.addMessage === 'function') {
             this.sendToPanelClass = this.panelSend.addMessage;
         }
@@ -492,9 +514,11 @@ export class Panel extends BaseClass {
         });
         this.info.internal.pageCount = options.pages.length;
         this.info.internal.servicePageCount = systemPages.length;
-        options.pages = options.pages.concat(systemPages);
+        // clones: pages and nodes are changed per panel (Page.init() replaces the item configs, Navigation
+        // patches the service node), the templates are shared by all panels
+        options.pages = options.pages.concat(structuredClone(systemPages));
         this.pageOrigins.classify(options.pages, 'system');
-        options.navigation = (options.navigation || []).concat(systemNavigation);
+        options.navigation = (options.navigation || []).concat(structuredClone(systemNavigation));
 
         let scsFound = 0;
         for (let a = 0; a < options.pages.length; a++) {

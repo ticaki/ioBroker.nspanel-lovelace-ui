@@ -26,7 +26,7 @@ const PageScheduleMessageDefault = {
   event: "entityUpd",
   headline: "Page Entities",
   navigation: "button~bSubPrev~~~~~button~bSubNext~~~~",
-  options: ["~~~~~", "~~~~~", "~~~~~", "~~~~~", "~~~~~", "~~~~~"]
+  options: []
 };
 class PageSchedule extends import_pageMenu.PageMenu {
   config;

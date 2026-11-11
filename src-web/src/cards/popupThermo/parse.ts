@@ -1,8 +1,19 @@
 import type { ParseContext } from '../CardContract';
 import { field, toNumber } from '../../protocol/split';
+import type { PanelModel } from '../../protocol/types';
 
 /** mode buttons per row of the HMI, the arrow at the end of a row shows the next three */
 export const MODES_PER_PAGE = 3;
+
+/**
+ * Modes per page of a row on a model: eu/us-l 3 like the HMI, 4 on the other models
+ * (web-l in one line, us-p/web-p in two lines of two)
+ *
+ * @param model the panel model the popup sees
+ */
+export function modesPerPage(model: PanelModel): number {
+    return model === 'eu' || model === 'us-l' ? MODES_PER_PAGE : 4;
+}
 /** rows of the popup */
 export const ROW_COUNT = 3;
 
@@ -46,9 +57,14 @@ export function splitList(list: string): string[] {
     return list === '' ? [] : list.split('?').map(normalizeEntry);
 }
 
-/** number of pages of three modes of a row */
-export function pageCount(row: ThermoModeRow): number {
-    return Math.max(1, Math.ceil(row.list.length / MODES_PER_PAGE));
+/**
+ * number of pages of a row
+ *
+ * @param row the row
+ * @param perPage modes per page ({@link modesPerPage})
+ */
+export function pageCount(row: ThermoModeRow, perPage: number = MODES_PER_PAGE): number {
+    return Math.max(1, Math.ceil(row.list.length / perPage));
 }
 
 /**
@@ -56,10 +72,15 @@ export function pageCount(row: ThermoModeRow): number {
  *
  * @param row the row
  * @param page 0 based page
+ * @param perPage modes per page ({@link modesPerPage})
  */
-export function pageModes(row: ThermoModeRow, page: number): { index: number; text: string }[] {
-    const start = page * MODES_PER_PAGE;
-    return row.list.slice(start, start + MODES_PER_PAGE).map((text, i) => ({ index: start + i, text }));
+export function pageModes(
+    row: ThermoModeRow,
+    page: number,
+    perPage: number = MODES_PER_PAGE,
+): { index: number; text: string }[] {
+    const start = page * perPage;
+    return row.list.slice(start, start + perPage).map((text, i) => ({ index: start + i, text }));
 }
 
 /** The popup never receives `entityUpd`; the model stays */

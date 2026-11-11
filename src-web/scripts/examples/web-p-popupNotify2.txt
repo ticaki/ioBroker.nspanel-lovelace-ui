@@ -1,0 +1,5 @@
+# popupNotify2: icon, three buttons and a long text in font 3; the adapter sends at most the
+# lines of the model (web-p 20/15/15/10/6/3, else 7/5/5/4/2/1), the browser wraps
+pageType~popupNotify2
+entityUpdateDetail~popupNotify~Waschküche~65535~Später~65535~Ignorieren~63488~OK~2016~Die Waschmaschine ist fertig. Bitte die Wäsche aufhängen, bevor sie anfängt zu riechen. Morgen wird es regnen, also lieber im Keller trocknen. Der Trockner ist noch belegt, die Handtücher brauchen etwa zwei Stunden. Danach bitte das Flusensieb reinigen und den Wassertank leeren. Im Bad tropft außerdem der Wasserhahn, der Klempner kommt am Donnerstag zwischen acht und zwölf Uhr. Bitte die Tür zum Heizungskeller offen lassen, damit er an die Leitungen kommt. Zum Schluss noch: der Müll wird morgen früh abgeholt, die gelbe Tonne steht schon an der Straße, die blaue Tonne fehlt noch. Danke!~65535~0~3~~65535
+@sleep 300

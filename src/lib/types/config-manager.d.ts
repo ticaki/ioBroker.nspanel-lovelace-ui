@@ -810,7 +810,6 @@ declare namespace ScriptConfig {
         navigation?: NavigationItemConfig[];
         advancedOptions?: {
             screensaverSwipe?: boolean;
-            screensaverIndicatorButtons?: boolean;
             extraConfigLogging?: boolean;
         };
     };

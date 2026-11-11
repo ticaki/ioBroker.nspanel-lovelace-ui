@@ -88,7 +88,7 @@ function blindItem(
     const parent: any = {
         card: 'screensaver5',
         isScreensaver: true,
-        screensaverIndicatorButtons: true,
+        isIndicatorKey: Screensaver.prototype.isIndicatorKey,
         basePanel: {
             navigation: {
                 setTargetPageByName: async (name: string): Promise<void> => {
@@ -172,7 +172,6 @@ describe('lib/pages - blind as screensaver element: indicator tap', () => {
         pageItems.push(item);
         Object.assign(saver, {
             pageItems,
-            screensaverIndicatorButtons: true,
             unload: false,
             card: 'screensaver5',
             name: '#scr',

@@ -2,6 +2,7 @@ import type { Controller } from '../controller/controller';
 import { BaseClass, type AdapterClassDefinition } from '../controller/library';
 import type { Panel, panelConfigPartial } from '../controller/panel';
 import type { NSpanelModel } from '../types/types';
+import { isWebModel, webButtonsVisible } from '../const/tools';
 import { VirtualPanelChannel } from './virtual-panel-channel';
 import type { ClientFrame, ServerFrame, WebPanelKind } from './web-protocol';
 
@@ -236,6 +237,13 @@ export class VirtualPanelManager extends BaseClass {
             friendlyName: panel.friendlyName,
             tftVersion: this.tftVersion(panel.info.nspanel.model),
             kind: entry.kind,
+            buttons:
+                entry.kind === 'clone'
+                    ? true
+                    : webButtonsVisible(
+                          panel.info.nspanel.model,
+                          this.adapter.config.panels.find(p => p.topic === entry.topic)?.webButtons,
+                      ),
         });
         this.log.debug(`Browser connected to ${panel.friendlyName} (${entry.clients.size} connected)`);
         return entry;
@@ -480,6 +488,10 @@ export class VirtualPanelManager extends BaseClass {
     }
 
     private tftVersion(model: NSpanelModel): string {
+        // the smartphone models have no TFT of their own
+        if (isWebModel(model)) {
+            return WEB_PANEL_FALLBACK_TFT_VERSION;
+        }
         const suffix = model === 'eu' ? '' : `-${model}`;
         const key = this.adapter.config.useBetaTFT ? `tft${suffix}-beta` : `tft${suffix}`;
         return this.controller.globalPanelInfo.availableTftFirmwareVersion[key] || WEB_PANEL_FALLBACK_TFT_VERSION;

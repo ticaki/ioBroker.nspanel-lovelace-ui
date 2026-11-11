@@ -1,10 +1,15 @@
 import type { ParseContext } from '../CardContract';
-import { initialMenuPage, parseMenuEntityUpd, type MenuPageModel } from '../cardEntities/shared/menuParse';
+import {
+    initialMenuPage,
+    maxMenuSlots,
+    parseMenuEntityUpd,
+    type MenuPageModel,
+} from '../cardEntities/shared/menuParse';
 
 export type CardGridModel = MenuPageModel;
 
-/** cardGrid2 on us-p sends 9 tiles, the other grids fewer */
-const MAX_ENTITIES = 9;
+/** cardGrid2 on web-p sends 15 tiles, the other grids and models fewer */
+const MAX_ENTITIES = maxMenuSlots('cardGrid', 'cardGrid2', 'cardGrid3');
 
 export function initial(): CardGridModel {
     return initialMenuPage();

@@ -93,6 +93,8 @@ export class TitleBar extends React.Component<TitleBarProps> {
                         fontWeight: 400,
                         whiteSpace: 'nowrap',
                         overflow: 'hidden',
+                        // a title wider than the room between the arrows ends with an ellipsis
+                        textOverflow: 'ellipsis',
                     }}
                 >
                     {title}

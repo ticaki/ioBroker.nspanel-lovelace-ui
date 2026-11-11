@@ -494,9 +494,8 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
                   break;
                 }
                 default: {
-                  message.optionalValue = this.library.getTranslation(
-                    (_J = (_I = await tools.getValueEntryString(item.entity2)) != null ? _I : await tools.getEntryTextOnOff(item.text1, value)) != null ? _J : ""
-                  );
+                  const optionalValue = (_J = (_I = await tools.getValueEntryString(item.entity2)) != null ? _I : await tools.getEntryTextOnOff(item.text1, value)) != null ? _J : "";
+                  message.optionalValue = entry.role === "textRawValue" ? optionalValue : this.library.getTranslation(optionalValue);
                 }
               }
             }
@@ -2164,15 +2163,15 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
         }
         break;
       case "button": {
+        if (this.parent.isScreensaver && !this.parent.isIndicatorKey(this)) {
+          if (eventValue === "") {
+            this.parent.basePanel.navigation.resetPosition();
+            await this.parent.basePanel.navigation.setCurrentPage();
+          }
+          break;
+        }
         if (entry.type === "button" || entry.type === "switch") {
           this.log.debug(`Button ${this.id} was pressed!`);
-          if (this.parent.isScreensaver) {
-            if (!this.parent.screensaverIndicatorButtons && eventValue === "") {
-              this.parent.basePanel.navigation.resetPosition();
-              await this.parent.basePanel.navigation.setCurrentPage();
-              break;
-            }
-          }
           if (entry.type === "button" && await this.writeNextCycleValue(entry.data.setValue3, entry.data.valueList)) {
             break;
           }
@@ -2279,11 +2278,12 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
             await this.parent.basePanel.navigation.setTargetPageByName(value2);
             nav = true;
           }
-          if (item.entity1 && item.entity1.set && item.entity1.set.writeable) {
+          const implicit = !this.parent.isScreensaver;
+          if (implicit && item.entity1 && item.entity1.set && item.entity1.set.writeable) {
             await item.entity1.set.setStateFlip();
             break;
           }
-          if (item.setTrue && item.setFalse && item.setTrue.writeable && item.setFalse.writeable) {
+          if (implicit && item.setTrue && item.setFalse && item.setTrue.writeable && item.setFalse.writeable) {
             value2 = (_n = item.entity1 && await ((_m = item.entity1.value) == null ? void 0 : _m.getBoolean())) != null ? _n : false;
             if (value2) {
               await item.setFalse.setStateTrue();
@@ -2300,7 +2300,7 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
             await item.setValue2.setStateTrue();
             break;
           }
-          if (nav || entry.role === "blind") {
+          if (nav || !implicit || entry.role === "blind") {
             break;
           }
           if ((_p = (_o = item.entity1) == null ? void 0 : _o.value) == null ? void 0 : _p.writeable) {

@@ -1483,7 +1483,7 @@ function weatherItemsOf(value) {
   return Object.keys(items).length ? items : void 0;
 }
 function convertScreensaver(input) {
-  var _a, _b, _c;
+  var _a, _b;
   const { raw, panel } = input;
   if ((0, import_admin_screensaver.findScreensaverEntry)(input.screensaverConfig, panel.topic).entry) {
     return { skipped: { reason: "screensaverExists" } };
@@ -1586,8 +1586,7 @@ function convertScreensaver(input) {
       bottom,
       indicator,
       rotationTime: 0,
-      screensaverSwipe: !!((_b = raw.advancedOptions) == null ? void 0 : _b.screensaverSwipe),
-      screensaverIndicatorButtons: !!((_c = raw.advancedOptions) == null ? void 0 : _c.screensaverIndicatorButtons)
+      screensaverSwipe: !!((_b = raw.advancedOptions) == null ? void 0 : _b.screensaverSwipe)
     };
     if (favorit) {
       entry.favorit = favorit;
@@ -2176,9 +2175,9 @@ function planScriptToAdmin(input) {
     if (cleanedRaw.advancedOptions) {
       cleanedRaw.advancedOptions = {
         ...cleanedRaw.advancedOptions,
-        screensaverSwipe: false,
-        screensaverIndicatorButtons: false
+        screensaverSwipe: false
       };
+      Reflect.deleteProperty(cleanedRaw.advancedOptions, "screensaverIndicatorButtons");
     }
   }
   for (const side of clearButtonsInScript) {

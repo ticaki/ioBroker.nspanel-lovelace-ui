@@ -185,6 +185,8 @@ export type DeviceRole =
     | 'text'
     | 'text.list'
     | 'textNotIcon'
+    /** text item whose value is a name (e.g. a page name): shown as it is, not looked up in the translations */
+    | 'textRawValue'
     | 'timer'
     | 'window'
     | 'info'
@@ -568,7 +570,6 @@ export type screensaverDataItemOptions = {
     rotationTime: number;
     model: NSPanel.NSpanelModel;
     screensaverSwipe: boolean;
-    screensaverIndicatorButtons: boolean;
     /** only from the admin: timer instead of the clock */
     clockTimer?: ScreensaverClockTimer;
     data: undefined;
@@ -786,7 +787,8 @@ export type PageMediaMessage = {
     onoffbuttonColor: string;
     shuffle_icon: AllIcons;
     logo: string;
-    options: [string?, string?, string?, string?, string?];
+    /** one payload per slot, `maxItems` of the card and model */
+    options: string[];
 };
 
 export type PagePowerMessage = {
@@ -866,7 +868,8 @@ export type PageGridMessage = {
     event: 'entityUpd';
     headline: string;
     navigation: string;
-    options: [string?, string?, string?, string?, string?, string?, string?, string?, string?];
+    /** one payload per slot, `maxItems` of the card and model */
+    options: string[];
 };
 
 export type PageNotifyMessage = {
@@ -905,14 +908,16 @@ export type PageEntitiesMessage = {
     event: 'entityUpd';
     headline: string;
     navigation: string;
-    options: [string?, string?, string?, string?, string?, string?, string?, string?];
+    /** one payload per slot, `maxItems` of the card and model */
+    options: string[];
 };
 
 export type PageScheduleMessage = {
     event: 'entityUpd';
     headline: string;
     navigation: string;
-    options: [string?, string?, string?, string?, string?, string?, string?, string?];
+    /** one payload per slot, `maxItems` of the card and model */
+    options: string[];
 };
 export type PageThermo2Message = {
     event: 'entityUpd';
@@ -925,28 +930,8 @@ export type PageThermo2Message = {
     tempStep: string; // *10
     unit: string;
     power: boolean;
-    options: [
-        /*Info*/
-        string?,
-        string?,
-        string?,
-        string?,
-        string?,
-        string?,
-        string?,
-        string?,
-        /** option */
-        string?,
-        /** Pageitems */
-        string?,
-        string?,
-        string?,
-        string?,
-        string?,
-        string?,
-        string?,
-        string?,
-    ];
+    /** 7 info entities, then `maxItems` (9) page item slots: 0-3 left, 4-7 right, 8 between minus and plus */
+    options: string[];
 };
 
 export type PageThermoMessage = {

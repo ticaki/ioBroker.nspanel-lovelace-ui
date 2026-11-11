@@ -174,7 +174,7 @@ export type DimMode = {
 
 export type ValueDateFormat = { local: string; format: any };
 
-export type NSpanelModel = 'eu' | 'us-p' | 'us-l';
+export type NSpanelModel = 'eu' | 'us-p' | 'us-l' | 'web-p' | 'web-l';
 
 export type DataItemstype = NSPanel.DataItemsOptions['type'];
 export type DataItemsMode = 'custom' | 'auto';

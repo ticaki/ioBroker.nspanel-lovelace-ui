@@ -313,6 +313,27 @@ class Panel extends import_library.BaseClass {
   get isClone() {
     return this.isVirtual && !!this.options.sourceTopic;
   }
+  /**
+   * The model of the panel configuration. An empty model is `eu` (the default of old configurations); a value
+   * that is no panel model (e.g. a hand-edited configuration) is reported and also replaced by `eu` - the web
+   * panel would otherwise draw every page in a geometry that does not fit the display.
+   *
+   * @param model the model of the configuration
+   * @param name name of the panel for the warning
+   * @param warn logs the warning
+   */
+  static checkedModel(model, name, warn) {
+    if (model === void 0 || model === null || model === "") {
+      return "eu";
+    }
+    if (adminShareConfig.isPanelModel(model)) {
+      return model;
+    }
+    warn(
+      `Panel ${name}: unknown model ${JSON.stringify(model)} - using "eu". Valid models: ${adminShareConfig.panelModels.join(", ")}. Check the panel in the instance settings.`
+    );
+    return "eu";
+  }
   constructor(adapter, options) {
     var _a, _b, _c;
     super(adapter, options.name, (_a = options.friendlyName) != null ? _a : options.name);
@@ -332,7 +353,7 @@ class Panel extends import_library.BaseClass {
     this.controller = options.controller;
     this.topic = options.topic;
     this.info.internal.scriptName = options.scriptName.split(".").slice(2).join(".") || options.scriptName;
-    this.info.nspanel.model = options.model || "eu";
+    this.info.nspanel.model = Panel.checkedModel(options.model, this.friendlyName, (msg) => this.log.warn(msg));
     if (typeof this.panelSend.addMessage === "function") {
       this.sendToPanelClass = this.panelSend.addMessage;
     }
@@ -388,9 +409,9 @@ class Panel extends import_library.BaseClass {
     });
     this.info.internal.pageCount = options.pages.length;
     this.info.internal.servicePageCount = import_system_templates.systemPages.length;
-    options.pages = options.pages.concat(import_system_templates.systemPages);
+    options.pages = options.pages.concat(structuredClone(import_system_templates.systemPages));
     this.pageOrigins.classify(options.pages, "system");
-    options.navigation = (options.navigation || []).concat(import_system_templates.systemNavigation);
+    options.navigation = (options.navigation || []).concat(structuredClone(import_system_templates.systemNavigation));
     let scsFound = 0;
     for (let a = 0; a < options.pages.length; a++) {
       const pageConfig = options.pages[a] ? Panel.getPage(options.pages[a], this) : options.pages[a];

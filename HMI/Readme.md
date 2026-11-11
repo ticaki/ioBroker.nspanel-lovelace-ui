@@ -7,8 +7,16 @@ You can issue this command through MQTT by sending messages to the `cmnd/XXX/Cus
 Messages from the Panel are send to the `tele/XXX/RESULT` Topic, encoded in json `{"CustomRecv":"message_from_screen"}`
 
 
+## Message size limits
+
+Measured 2026-11-08 (emulator, test HMI):
+
+- **To the display:** the Nextion receive buffer holds 1023 bytes. A frame adds 6 bytes (`55 BB`, length, CRC), so a `CustomSend` payload may be at most **1017 bytes**. Longer payloads stay incomplete in the buffer. Tasmota itself drops MQTT packets above 1200 bytes (payload ≤ 1195 − topic length). Several messages sent back to back (e.g. 5 × 300, 2 × 1000 bytes) all arrive.
+- **From the display:** payloads up to about 244 bytes arrive in one `CustomRecv`; from about 254 bytes on the berry driver splits the message and characters get lost. Keep events below ~250 bytes.
+
 # Table of contents
 
+  - [Message size limits](#message-size-limits)
   - [Startup](#startup)
     - [Some preperation before we are acually navigating away:](#some-preperation-before-we-are-acually-navigating-away)
     - [Navigate from the startup page to the screensaver, by sending this command to the CustomSend Topic.](#navigate-from-the-startup-page-to-the-screensaver-by-sending-this-command-to-the-customsend-topic)

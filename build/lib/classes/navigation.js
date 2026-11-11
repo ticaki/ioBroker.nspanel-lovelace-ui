@@ -80,6 +80,8 @@ class Navigation extends import_library.BaseClass {
   /** object definition of `cmd.goToNavigationPoint` of this panel, built with its states on the first write */
   navigationPointObject;
   infityCounter = 0;
+  /** links to a node without page that were already reported (`<origin>\u0000<target>`) - one warning per start */
+  reportedMissingTargets = /* @__PURE__ */ new Set();
   get currentItem() {
     return this._currentItem;
   }
@@ -100,7 +102,9 @@ class Navigation extends import_library.BaseClass {
   constructor(config) {
     super(config.adapter, `${config.panel.friendlyName}-navigation`);
     this.panel = config.panel;
-    this.navigationConfig = config.navigationConfig.filter((a) => a !== null && a != null);
+    this.navigationConfig = structuredClone(config.navigationConfig).filter(
+      (a) => a != null
+    );
   }
   async init() {
     var _a, _b;
@@ -149,11 +153,11 @@ class Navigation extends import_library.BaseClass {
     if (serviceID !== null) {
       const c = this.navigationConfig[serviceID];
       if (c) {
-        if (serviceLeft) {
-          c.left = { single: serviceLeft };
-        }
+        c.left = { single: serviceLeft || import_default_pages.mainPageName };
         if (serviceRight) {
           c.right = { single: serviceRight };
+        } else {
+          delete c.right;
         }
       }
     }
@@ -184,6 +188,9 @@ class Navigation extends import_library.BaseClass {
           if (found) {
             const idx = this.navigationConfig.indexOf(found);
             i[nk][nk2] = idx;
+            if (!this.database[idx]) {
+              this.reportMissingTarget(c.name, found.name);
+            }
           } else {
             this.log.warn(`Didn't find a navigation node with name "${r2}".`);
           }
@@ -218,6 +225,11 @@ class Navigation extends import_library.BaseClass {
     }
     if (index !== -1 && index !== void 0) {
       const item = this.database[index];
+      if (!item && this.navigationConfig[index]) {
+        this.infityCounter = 0;
+        await this.showNavigationError(index);
+        return;
+      }
       if (item) {
         this.currentItem = index;
         if (this.panel.hideCards && item.page.hidden) {
@@ -243,6 +255,57 @@ class Navigation extends import_library.BaseClass {
   }
   getDatabase() {
     return this.database;
+  }
+  /**
+   * Logs a link to a node without page once per origin and target.
+   *
+   * @param origin Name of the node the link belongs to.
+   * @param target Name of the node without page.
+   */
+  reportMissingTarget(origin, target) {
+    const key = `${origin}\0${target}`;
+    if (this.reportedMissingTargets.has(key)) {
+      return;
+    }
+    this.reportedMissingTargets.add(key);
+    this.log.warn(
+      `Navigation of page "${origin}": target "${target}" has no page (script page dropped or admin page missing).`
+    );
+  }
+  /**
+   * Shows the system page {@link navigationErrorPageName} for a link to a node without page: it names the
+   * missing target and the page the link came from, its back arrow leads to that page. Without the system
+   * page (or when the link comes from the system page itself) nothing happens but the warning.
+   *
+   * @param targetIndex Index of the node without page.
+   */
+  async showNavigationError(targetIndex) {
+    var _a, _b, _c, _d;
+    const target = (_b = (_a = this.navigationConfig[targetIndex]) == null ? void 0 : _a.name) != null ? _b : String(targetIndex);
+    const errorIndex = this.navigationConfig.findIndex((a) => a && a.name === import_adminShareConfig.navigationErrorPageName);
+    const errorItem = errorIndex === -1 ? void 0 : this.database[errorIndex];
+    const originIndex = this.currentItem;
+    const origin = (_d = (_c = this.navigationConfig[originIndex]) == null ? void 0 : _c.name) != null ? _d : "";
+    this.reportMissingTarget(origin, target);
+    if (!errorItem) {
+      this.log.debug(`Navigation target "${target}" has no page and there is no system page to show it.`);
+      return;
+    }
+    if (originIndex !== errorIndex && this.database[originIndex]) {
+      errorItem.left = { single: originIndex };
+      await this.panel.statesControler.setInternalState(
+        `${this.panel.name}/info/navigationErrorOrigin`,
+        origin,
+        false
+      );
+    }
+    await this.panel.statesControler.setInternalState(
+      `${this.panel.name}/info/navigationErrorTarget`,
+      target,
+      false
+    );
+    this.currentItem = errorIndex;
+    await this.panel.setActivePage(errorItem.page);
   }
   async setTargetPageByName(n) {
     if (n === import_adminShareConfig.screensaverTargetPage) {

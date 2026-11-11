@@ -1,0 +1,4 @@
+# popupSlider of the tile "Slider": three sliders
+pageType~popupSlider~4?5~Slider~~2047
+entityUpdateDetail~4?5~Helligkeit~~~30~0~100~~1~enable~Temperatur~~~21.5~5~30~~0.5~enable~Lautstärke~~~90~0~100~~1~enable
+@sleep 300

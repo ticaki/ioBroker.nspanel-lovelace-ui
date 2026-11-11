@@ -166,8 +166,7 @@ function buildScreensaverScriptConfig(entry, panelTopic, states = {}, notifyList
     buttonLeft: null,
     buttonRight: null,
     advancedOptions: {
-      screensaverSwipe: !!entry.screensaverSwipe,
-      screensaverIndicatorButtons: !!entry.screensaverIndicatorButtons
+      screensaverSwipe: !!entry.screensaverSwipe
     }
   };
   return config;
@@ -184,7 +183,6 @@ function applyScreensaverEntry(page, entry) {
   config.mode = entry.mode;
   config.rotationTime = typeof entry.rotationTime === "number" && entry.rotationTime > 0 ? entry.rotationTime : 0;
   config.screensaverSwipe = !!entry.screensaverSwipe;
-  config.screensaverIndicatorButtons = !!entry.screensaverIndicatorButtons;
   if ((_a = entry.clockTimer) == null ? void 0 : _a.enabled) {
     config.clockTimer = entry.clockTimer;
   }

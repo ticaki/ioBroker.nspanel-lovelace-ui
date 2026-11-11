@@ -1,0 +1,1775 @@
+{
+  "format": "nspanel-lovelace-ui.panelConfig",
+  "version": 1,
+  "secretsIncluded": false,
+  "exportedAt": "2026-11-11T12:38:42.108Z",
+  "source": {
+    "id": "web_7e57a0000002",
+    "topic": "test_usl",
+    "name": "Test US-L",
+    "model": "us-l",
+    "kind": "web"
+  },
+  "groups": {
+    "pages": {
+      "pages": [
+        {
+          "page": {
+            "hidden": false,
+            "alwaysOn": "none",
+            "card": "cardGrid",
+            "uniqueName": "usl_licht",
+            "headline": "Licht",
+            "pageItems": [
+              {
+                "channelId": {
+                  "valueStateId": "alias.0.NSPanelTest.Licht.Wohnzimmer_Decke",
+                  "unit": "",
+                  "prefix": "",
+                  "suffix": "",
+                  "dateFormat": ""
+                },
+                "name": "Deckenlicht"
+              },
+              {
+                "channelId": {
+                  "valueStateId": "alias.0.NSPanelTest.Licht.Stehlampe",
+                  "unit": "",
+                  "prefix": "",
+                  "suffix": "",
+                  "dateFormat": ""
+                },
+                "name": "Stehlampe"
+              },
+              {
+                "channelId": {
+                  "valueStateId": "alias.0.NSPanelTest.Licht.Kueche_Arbeitslicht",
+                  "unit": "",
+                  "prefix": "",
+                  "suffix": "",
+                  "dateFormat": ""
+                },
+                "name": "Arbeitslicht"
+              },
+              {
+                "channelId": {
+                  "valueStateId": "alias.0.NSPanelTest.Licht.Schlafzimmer_Farbe",
+                  "unit": "",
+                  "prefix": "",
+                  "suffix": "",
+                  "dateFormat": ""
+                },
+                "name": "Farblicht"
+              },
+              {
+                "channelId": {
+                  "valueStateId": "alias.0.NSPanelTest.Licht.LED_Leiste",
+                  "unit": "",
+                  "prefix": "",
+                  "suffix": "",
+                  "dateFormat": ""
+                },
+                "name": "LED-Leiste"
+              },
+              {
+                "channelId": {
+                  "valueStateId": "alias.0.NSPanelTest.Licht.Esszimmer_Hue",
+                  "unit": "",
+                  "prefix": "",
+                  "suffix": "",
+                  "dateFormat": ""
+                },
+                "name": "Esstisch"
+              }
+            ],
+            "isMainPage": true
+          },
+          "assignment": "own",
+          "navigation": {}
+        },
+        {
+          "page": {
+            "hidden": false,
+            "alwaysOn": "none",
+            "card": "cardGrid2",
+            "uniqueName": "usl_haus",
+            "headline": "Haus",
+            "pageItems": [
+              {
+                "channelId": {
+                  "valueStateId": "alias.0.NSPanelTest.Schalter.Steckdose_TV",
+                  "unit": "",
+                  "prefix": "",
+                  "suffix": "",
+                  "dateFormat": ""
+                },
+                "name": "Fernseher"
+              },
+              {
+                "channelId": {
+                  "valueStateId": "alias.0.NSPanelTest.Schalter.Steckdose_Buero",
+                  "unit": "",
+                  "prefix": "",
+                  "suffix": "",
+                  "dateFormat": ""
+                },
+                "name": "Schreibtisch"
+              },
+              {
+                "channelId": {
+                  "valueStateId": "alias.0.NSPanelTest.Schalter.Kaffeemaschine",
+                  "unit": "",
+                  "prefix": "",
+                  "suffix": "",
+                  "dateFormat": ""
+                },
+                "name": "Kaffeemaschine"
+              },
+              {
+                "channelId": {
+                  "valueStateId": "alias.0.NSPanelTest.Szene.Alles_aus",
+                  "unit": "",
+                  "prefix": "",
+                  "suffix": "",
+                  "dateFormat": ""
+                },
+                "name": "Alles aus"
+              },
+              {
+                "channelId": {
+                  "valueStateId": "alias.0.NSPanelTest.Szene.Kino",
+                  "unit": "",
+                  "prefix": "",
+                  "suffix": "",
+                  "dateFormat": ""
+                },
+                "name": "Kinoabend"
+              },
+              {
+                "channelId": {
+                  "valueStateId": "alias.0.NSPanelTest.Rollladen.Wohnzimmer",
+                  "unit": "",
+                  "prefix": "",
+                  "suffix": "",
+                  "dateFormat": ""
+                },
+                "name": "Rollo Wohnen"
+              },
+              {
+                "channelId": {
+                  "valueStateId": "alias.0.NSPanelTest.Tor.Garage",
+                  "unit": "",
+                  "prefix": "",
+                  "suffix": "",
+                  "dateFormat": ""
+                },
+                "name": "Garagentor"
+              },
+              {
+                "channelId": {
+                  "valueStateId": "alias.0.NSPanelTest.Info.Status",
+                  "unit": "",
+                  "prefix": "",
+                  "suffix": "",
+                  "dateFormat": ""
+                },
+                "isNavigation": true,
+                "targetPage": "usl_details",
+                "name": "Details"
+              }
+            ]
+          },
+          "assignment": "own",
+          "navigation": {
+            "prev": "main"
+          }
+        },
+        {
+          "page": {
+            "hidden": false,
+            "alwaysOn": "none",
+            "card": "cardGrid3",
+            "uniqueName": "usl_werte",
+            "headline": "Messwerte",
+            "pageItems": [
+              {
+                "channelId": {
+                  "valueStateId": "alias.0.NSPanelTest.Sensor.Wohnzimmer_Temperatur",
+                  "unit": "°C",
+                  "prefix": "",
+                  "suffix": "",
+                  "dateFormat": ""
+                },
+                "name": "Wohnen",
+                "useValue": true,
+                "scale": {
+                  "val_min": 0,
+                  "val_max": 35,
+                  "val_best": 21
+                }
+              },
+              {
+                "channelId": {
+                  "valueStateId": "alias.0.NSPanelTest.Sensor.Aussen_Temperatur",
+                  "unit": "°C",
+                  "prefix": "",
+                  "suffix": "",
+                  "dateFormat": ""
+                },
+                "name": "Außen",
+                "useValue": true,
+                "scale": {
+                  "val_min": -10,
+                  "val_max": 35,
+                  "val_best": 20
+                }
+              },
+              {
+                "channelId": {
+                  "valueStateId": "alias.0.NSPanelTest.Sensor.Wohnzimmer_Feuchte",
+                  "unit": "%",
+                  "prefix": "",
+                  "suffix": "",
+                  "dateFormat": ""
+                },
+                "name": "Feuchte",
+                "useValue": true,
+                "scale": {
+                  "val_min": 0,
+                  "val_max": 100,
+                  "val_best": 50
+                }
+              },
+              {
+                "channelId": {
+                  "valueStateId": "alias.0.NSPanelTest.Sensor.Keller_Feuchte",
+                  "unit": "%",
+                  "prefix": "",
+                  "suffix": "",
+                  "dateFormat": ""
+                },
+                "name": "Keller",
+                "useValue": true,
+                "scale": {
+                  "val_min": 0,
+                  "val_max": 100,
+                  "val_best": 50
+                }
+              }
+            ]
+          },
+          "assignment": "own",
+          "navigation": {
+            "prev": "usl_haus"
+          }
+        },
+        {
+          "page": {
+            "hidden": false,
+            "alwaysOn": "none",
+            "card": "cardEntities",
+            "uniqueName": "usl_rolllaeden",
+            "headline": "Rollläden & Tore",
+            "pageItems": [
+              {
+                "channelId": {
+                  "valueStateId": "alias.0.NSPanelTest.Rollladen.Wohnzimmer",
+                  "unit": "",
+                  "prefix": "",
+                  "suffix": "",
+                  "dateFormat": ""
+                },
+                "name": "Rollo Wohnen"
+              },
+              {
+                "channelId": {
+                  "valueStateId": "alias.0.NSPanelTest.Rollladen.Kueche",
+                  "unit": "",
+                  "prefix": "",
+                  "suffix": "",
+                  "dateFormat": ""
+                },
+                "name": "Rollo Küche"
+              },
+              {
+                "channelId": {
+                  "valueStateId": "alias.0.NSPanelTest.Rollladen.Schlafzimmer",
+                  "unit": "",
+                  "prefix": "",
+                  "suffix": "",
+                  "dateFormat": ""
+                },
+                "name": "Rollo Schlafen"
+              },
+              {
+                "channelId": {
+                  "valueStateId": "alias.0.NSPanelTest.Tor.Garage",
+                  "unit": "",
+                  "prefix": "",
+                  "suffix": "",
+                  "dateFormat": ""
+                },
+                "name": "Garagentor"
+              }
+            ]
+          },
+          "assignment": "own",
+          "navigation": {
+            "prev": "usl_werte"
+          }
+        },
+        {
+          "page": {
+            "hidden": false,
+            "alwaysOn": "none",
+            "card": "cardEntities",
+            "uniqueName": "usl_sensoren",
+            "headline": "Sensoren",
+            "pageItems": [
+              {
+                "channelId": {
+                  "valueStateId": "alias.0.NSPanelTest.Sensor.Fenster_Wohnzimmer",
+                  "unit": "",
+                  "prefix": "",
+                  "suffix": "",
+                  "dateFormat": ""
+                },
+                "name": "Fenster Wohnzimmer"
+              },
+              {
+                "channelId": {
+                  "valueStateId": "alias.0.NSPanelTest.Sensor.Haustuer",
+                  "unit": "",
+                  "prefix": "",
+                  "suffix": "",
+                  "dateFormat": ""
+                },
+                "name": "Haustür"
+              },
+              {
+                "channelId": {
+                  "valueStateId": "alias.0.NSPanelTest.Sensor.Bewegung_Flur",
+                  "unit": "",
+                  "prefix": "",
+                  "suffix": "",
+                  "dateFormat": ""
+                },
+                "name": "Bewegung Flur"
+              },
+              {
+                "channelId": {
+                  "valueStateId": "alias.0.NSPanelTest.Sensor.Unwetterwarnung",
+                  "unit": "",
+                  "prefix": "",
+                  "suffix": "",
+                  "dateFormat": ""
+                },
+                "name": "Unwetterwarnung"
+              }
+            ]
+          },
+          "assignment": "own",
+          "navigation": {
+            "prev": "usl_rolllaeden"
+          }
+        },
+        {
+          "page": {
+            "hidden": false,
+            "alwaysOn": "none",
+            "card": "cardEntities",
+            "uniqueName": "usl_steuerung",
+            "headline": "Steuerung",
+            "pageItems": [
+              {
+                "channelId": {
+                  "valueStateId": "alias.0.NSPanelTest.Medien.Lautstaerke",
+                  "unit": "",
+                  "prefix": "",
+                  "suffix": "",
+                  "dateFormat": ""
+                },
+                "name": "Lautstärke"
+              },
+              {
+                "channelId": {
+                  "valueStateId": "alias.0.NSPanelTest.Steuerung.Ventil_Fussbodenheizung",
+                  "unit": "",
+                  "prefix": "",
+                  "suffix": "",
+                  "dateFormat": ""
+                },
+                "name": "Fußboden"
+              },
+              {
+                "channelId": {
+                  "valueStateId": "alias.0.NSPanelTest.Steuerung.Haus_Modus",
+                  "unit": "",
+                  "prefix": "",
+                  "suffix": "",
+                  "dateFormat": ""
+                },
+                "name": "Hausmodus"
+              },
+              {
+                "channelId": {
+                  "valueStateId": "alias.0.NSPanelTest.Steuerung.Eieruhr",
+                  "unit": "",
+                  "prefix": "",
+                  "suffix": "",
+                  "dateFormat": ""
+                },
+                "name": "Eieruhr"
+              }
+            ]
+          },
+          "assignment": "own",
+          "navigation": {
+            "prev": "usl_sensoren"
+          }
+        },
+        {
+          "page": {
+            "hidden": false,
+            "alwaysOn": "none",
+            "card": "cardEntities",
+            "uniqueName": "usl_alle_rollen",
+            "headline": "Alle Rollen",
+            "pageItems": [
+              {
+                "channelId": {
+                  "valueStateId": "alias.0.NSPanelTest.Licht.Wohnzimmer_Decke",
+                  "unit": "",
+                  "prefix": "",
+                  "suffix": "",
+                  "dateFormat": ""
+                },
+                "name": "Deckenlicht"
+              },
+              {
+                "channelId": {
+                  "valueStateId": "alias.0.NSPanelTest.Licht.Stehlampe",
+                  "unit": "",
+                  "prefix": "",
+                  "suffix": "",
+                  "dateFormat": ""
+                },
+                "name": "Stehlampe"
+              },
+              {
+                "channelId": {
+                  "valueStateId": "alias.0.NSPanelTest.Licht.Kueche_Arbeitslicht",
+                  "unit": "",
+                  "prefix": "",
+                  "suffix": "",
+                  "dateFormat": ""
+                },
+                "name": "Arbeitslicht"
+              },
+              {
+                "channelId": {
+                  "valueStateId": "alias.0.NSPanelTest.Licht.Schlafzimmer_Farbe",
+                  "unit": "",
+                  "prefix": "",
+                  "suffix": "",
+                  "dateFormat": ""
+                },
+                "name": "Farblicht"
+              },
+              {
+                "channelId": {
+                  "valueStateId": "alias.0.NSPanelTest.Licht.LED_Leiste",
+                  "unit": "",
+                  "prefix": "",
+                  "suffix": "",
+                  "dateFormat": ""
+                },
+                "name": "LED-Leiste"
+              },
+              {
+                "channelId": {
+                  "valueStateId": "alias.0.NSPanelTest.Licht.Esszimmer_Hue",
+                  "unit": "",
+                  "prefix": "",
+                  "suffix": "",
+                  "dateFormat": ""
+                },
+                "name": "Esstisch"
+              },
+              {
+                "channelId": {
+                  "valueStateId": "alias.0.NSPanelTest.Schalter.Steckdose_TV",
+                  "unit": "",
+                  "prefix": "",
+                  "suffix": "",
+                  "dateFormat": ""
+                },
+                "name": "Fernseher"
+              },
+              {
+                "channelId": {
+                  "valueStateId": "alias.0.NSPanelTest.Szene.Alles_aus",
+                  "unit": "",
+                  "prefix": "",
+                  "suffix": "",
+                  "dateFormat": ""
+                },
+                "name": "Alles aus"
+              },
+              {
+                "channelId": {
+                  "valueStateId": "alias.0.NSPanelTest.Rollladen.Wohnzimmer",
+                  "unit": "",
+                  "prefix": "",
+                  "suffix": "",
+                  "dateFormat": ""
+                },
+                "name": "Rollo Wohnen"
+              },
+              {
+                "channelId": {
+                  "valueStateId": "alias.0.NSPanelTest.Tor.Garage",
+                  "unit": "",
+                  "prefix": "",
+                  "suffix": "",
+                  "dateFormat": ""
+                },
+                "name": "Garagentor"
+              },
+              {
+                "channelId": {
+                  "valueStateId": "alias.0.NSPanelTest.Tuer.Haustuer_Schloss",
+                  "unit": "",
+                  "prefix": "",
+                  "suffix": "",
+                  "dateFormat": ""
+                },
+                "name": "Haustür"
+              },
+              {
+                "channelId": {
+                  "valueStateId": "alias.0.NSPanelTest.Heizung.Wohnzimmer",
+                  "unit": "",
+                  "prefix": "",
+                  "suffix": "",
+                  "dateFormat": ""
+                },
+                "name": "Wohnzimmer"
+              },
+              {
+                "channelId": {
+                  "valueStateId": "alias.0.NSPanelTest.Klima.Buero",
+                  "unit": "",
+                  "prefix": "",
+                  "suffix": "",
+                  "dateFormat": ""
+                },
+                "name": "Klima Büro"
+              },
+              {
+                "channelId": {
+                  "valueStateId": "alias.0.NSPanelTest.Lueftung.Bad",
+                  "unit": "",
+                  "prefix": "",
+                  "suffix": "",
+                  "dateFormat": ""
+                },
+                "name": "Badlüfter"
+              },
+              {
+                "channelId": {
+                  "valueStateId": "alias.0.NSPanelTest.Sensor.Wohnzimmer_Temperatur",
+                  "unit": "",
+                  "prefix": "",
+                  "suffix": "",
+                  "dateFormat": ""
+                },
+                "name": "Temp. Wohnen"
+              },
+              {
+                "channelId": {
+                  "valueStateId": "alias.0.NSPanelTest.Sensor.Aussen_Temperatur",
+                  "unit": "",
+                  "prefix": "",
+                  "suffix": "",
+                  "dateFormat": ""
+                },
+                "name": "Außen"
+              },
+              {
+                "channelId": {
+                  "valueStateId": "alias.0.NSPanelTest.Sensor.Wohnzimmer_Feuchte",
+                  "unit": "",
+                  "prefix": "",
+                  "suffix": "",
+                  "dateFormat": ""
+                },
+                "name": "Feuchte Wohnen"
+              },
+              {
+                "channelId": {
+                  "valueStateId": "alias.0.NSPanelTest.Sensor.Keller_Feuchte",
+                  "unit": "",
+                  "prefix": "",
+                  "suffix": "",
+                  "dateFormat": ""
+                },
+                "name": "Feuchte Keller"
+              },
+              {
+                "channelId": {
+                  "valueStateId": "alias.0.NSPanelTest.Sensor.Fenster_Wohnzimmer",
+                  "unit": "",
+                  "prefix": "",
+                  "suffix": "",
+                  "dateFormat": ""
+                },
+                "name": "Fenster Wohnzimmer"
+              },
+              {
+                "channelId": {
+                  "valueStateId": "alias.0.NSPanelTest.Sensor.Haustuer",
+                  "unit": "",
+                  "prefix": "",
+                  "suffix": "",
+                  "dateFormat": ""
+                },
+                "name": "Haustür"
+              },
+              {
+                "channelId": {
+                  "valueStateId": "alias.0.NSPanelTest.Sensor.Bewegung_Flur",
+                  "unit": "",
+                  "prefix": "",
+                  "suffix": "",
+                  "dateFormat": ""
+                },
+                "name": "Bewegung Flur"
+              },
+              {
+                "channelId": {
+                  "valueStateId": "alias.0.NSPanelTest.Sensor.Unwetterwarnung",
+                  "unit": "",
+                  "prefix": "",
+                  "suffix": "",
+                  "dateFormat": ""
+                },
+                "name": "Unwetterwarnung"
+              },
+              {
+                "channelId": {
+                  "valueStateId": "alias.0.NSPanelTest.Medien.Lautstaerke",
+                  "unit": "",
+                  "prefix": "",
+                  "suffix": "",
+                  "dateFormat": ""
+                },
+                "name": "Lautstärke"
+              },
+              {
+                "channelId": {
+                  "valueStateId": "alias.0.NSPanelTest.Steuerung.Ventil_Fussbodenheizung",
+                  "unit": "",
+                  "prefix": "",
+                  "suffix": "",
+                  "dateFormat": ""
+                },
+                "name": "Fußboden"
+              },
+              {
+                "channelId": {
+                  "valueStateId": "alias.0.NSPanelTest.Steuerung.Haus_Modus",
+                  "unit": "",
+                  "prefix": "",
+                  "suffix": "",
+                  "dateFormat": ""
+                },
+                "name": "Hausmodus"
+              },
+              {
+                "channelId": {
+                  "valueStateId": "alias.0.NSPanelTest.Steuerung.Eieruhr",
+                  "unit": "",
+                  "prefix": "",
+                  "suffix": "",
+                  "dateFormat": ""
+                },
+                "name": "Eieruhr"
+              },
+              {
+                "channelId": {
+                  "valueStateId": "alias.0.NSPanelTest.Info.Status",
+                  "unit": "",
+                  "prefix": "",
+                  "suffix": "",
+                  "dateFormat": ""
+                },
+                "name": "Systemstatus"
+              },
+              {
+                "channelId": {
+                  "valueStateId": "alias.0.NSPanelTest.Fahrplan.Bus_Abfahrt1",
+                  "unit": "",
+                  "prefix": "",
+                  "suffix": "",
+                  "dateFormat": ""
+                },
+                "name": "Bus 1"
+              }
+            ],
+            "scrollPresentation": "arrow"
+          },
+          "assignment": "own",
+          "navigation": {
+            "prev": "usl_steuerung"
+          }
+        },
+        {
+          "page": {
+            "hidden": false,
+            "alwaysOn": "none",
+            "card": "cardSchedule",
+            "uniqueName": "usl_fahrplan",
+            "headline": "Abfahrten",
+            "pageItems": [
+              {
+                "channelId": {
+                  "valueStateId": "alias.0.NSPanelTest.Fahrplan.Tram_Abfahrt1",
+                  "unit": "",
+                  "prefix": "",
+                  "suffix": "",
+                  "dateFormat": ""
+                },
+                "name": "Straßenbahn 1"
+              },
+              {
+                "channelId": {
+                  "valueStateId": "alias.0.NSPanelTest.Fahrplan.Bus_Abfahrt1",
+                  "unit": "",
+                  "prefix": "",
+                  "suffix": "",
+                  "dateFormat": ""
+                },
+                "name": "Bus 1"
+              },
+              {
+                "channelId": {
+                  "valueStateId": "alias.0.NSPanelTest.Fahrplan.Tram_Abfahrt2",
+                  "unit": "",
+                  "prefix": "",
+                  "suffix": "",
+                  "dateFormat": ""
+                },
+                "name": "Straßenbahn 2"
+              },
+              {
+                "channelId": {
+                  "valueStateId": "alias.0.NSPanelTest.Fahrplan.Bus_Abfahrt2",
+                  "unit": "",
+                  "prefix": "",
+                  "suffix": "",
+                  "dateFormat": ""
+                },
+                "name": "Bus 2"
+              },
+              {
+                "channelId": {
+                  "valueStateId": "alias.0.NSPanelTest.Fahrplan.Bahn_Abfahrt1",
+                  "unit": "",
+                  "prefix": "",
+                  "suffix": "",
+                  "dateFormat": ""
+                },
+                "name": "S-Bahn"
+              },
+              {
+                "channelId": {
+                  "valueStateId": "alias.0.NSPanelTest.Fahrplan.Bahn_Abfahrt2",
+                  "unit": "",
+                  "prefix": "",
+                  "suffix": "",
+                  "dateFormat": ""
+                },
+                "name": "S-Bahn 2"
+              }
+            ]
+          },
+          "assignment": "own",
+          "navigation": {
+            "prev": "usl_alle_rollen"
+          }
+        },
+        {
+          "page": {
+            "card": "cardThermo",
+            "uniqueName": "usl_thermostat",
+            "headline": "Wohnzimmer",
+            "channelId": "alias.0.NSPanelTest.Heizung.Wohnzimmer",
+            "hidden": false,
+            "alwaysOn": "none",
+            "minValue": 5,
+            "maxValue": 30,
+            "stepValue": 0.5
+          },
+          "assignment": "own",
+          "navigation": {
+            "prev": "usl_fahrplan"
+          }
+        },
+        {
+          "page": {
+            "card": "cardThermo",
+            "uniqueName": "usl_klima",
+            "headline": "Klimaanlage",
+            "channelId": "alias.0.NSPanelTest.Klima.Buero",
+            "hidden": false,
+            "alwaysOn": "none"
+          },
+          "assignment": "own",
+          "navigation": {
+            "prev": "usl_thermostat"
+          }
+        },
+        {
+          "page": {
+            "card": "cardThermo2",
+            "uniqueName": "usl_heizkreise",
+            "thermoItems": [
+              {
+                "source": "alias",
+                "channelId": "alias.0.NSPanelTest.Heizung.Wohnzimmer",
+                "name": "Wohnzimmer"
+              },
+              {
+                "source": "alias",
+                "channelId": "alias.0.NSPanelTest.Heizung.Bad",
+                "name": "Bad"
+              },
+              {
+                "source": "alias",
+                "channelId": "alias.0.NSPanelTest.Heizung.Kinderzimmer",
+                "name": "Kinder"
+              },
+              {
+                "source": "states",
+                "channelId": "",
+                "name": "Schlafen",
+                "setState": "0_userdata.0.NSPanelTest.Heizung.Schlafzimmer.SET",
+                "actualState": "0_userdata.0.NSPanelTest.Heizung.Schlafzimmer.ACTUAL",
+                "humidityState": "0_userdata.0.NSPanelTest.Heizung.Schlafzimmer.HUMIDITY"
+              },
+              {
+                "source": "alias",
+                "channelId": "alias.0.NSPanelTest.Klima.Buero",
+                "name": "Büro Heizen",
+                "name2": "Büro Kühlen"
+              }
+            ],
+            "pageItems": [
+              {
+                "channelId": {
+                  "valueStateId": "alias.0.NSPanelTest.Sensor.Fenster_Wohnzimmer",
+                  "unit": "",
+                  "prefix": "",
+                  "suffix": "",
+                  "dateFormat": ""
+                },
+                "name": "Fenster Wohnzimmer"
+              },
+              {
+                "channelId": {
+                  "valueStateId": "alias.0.NSPanelTest.Lueftung.Bad",
+                  "unit": "",
+                  "prefix": "",
+                  "suffix": "",
+                  "dateFormat": ""
+                },
+                "name": "Badlüfter"
+              },
+              {
+                "channelId": {
+                  "valueStateId": "alias.0.NSPanelTest.Sensor.Wohnzimmer_Temperatur",
+                  "unit": "",
+                  "prefix": "",
+                  "suffix": "",
+                  "dateFormat": ""
+                },
+                "name": "Temp. Wohnen"
+              },
+              {
+                "channelId": {
+                  "valueStateId": "alias.0.NSPanelTest.Sensor.Wohnzimmer_Feuchte",
+                  "unit": "",
+                  "prefix": "",
+                  "suffix": "",
+                  "dateFormat": ""
+                },
+                "name": "Feuchte Wohnen"
+              },
+              {
+                "channelId": {
+                  "valueStateId": "alias.0.NSPanelTest.Sensor.Aussen_Temperatur",
+                  "unit": "",
+                  "prefix": "",
+                  "suffix": "",
+                  "dateFormat": ""
+                },
+                "name": "Außen"
+              },
+              {
+                "channelId": {
+                  "valueStateId": "alias.0.NSPanelTest.Lueftung.Deckenventilator",
+                  "unit": "",
+                  "prefix": "",
+                  "suffix": "",
+                  "dateFormat": ""
+                },
+                "name": "Deckenventilator"
+              },
+              {
+                "channelId": {
+                  "valueStateId": "alias.0.NSPanelTest.Sensor.Fenster_Kueche",
+                  "unit": "",
+                  "prefix": "",
+                  "suffix": "",
+                  "dateFormat": ""
+                },
+                "name": "Fenster Küche"
+              },
+              {
+                "channelId": {
+                  "valueStateId": "alias.0.NSPanelTest.Info.Strompreis",
+                  "unit": "",
+                  "prefix": "",
+                  "suffix": "",
+                  "dateFormat": ""
+                },
+                "name": "Strompreis"
+              },
+              {
+                "channelId": {
+                  "valueStateId": "alias.0.NSPanelTest.Szene.Alles_aus",
+                  "unit": "",
+                  "prefix": "",
+                  "suffix": "",
+                  "dateFormat": ""
+                },
+                "name": "Alles aus"
+              }
+            ],
+            "sortOrder": "V",
+            "hidden": false,
+            "alwaysOn": "none",
+            "headline": "Heizkreise"
+          },
+          "assignment": "own",
+          "navigation": {
+            "prev": "usl_klima"
+          }
+        },
+        {
+          "page": {
+            "card": "cardMedia",
+            "uniqueName": "usl_medien",
+            "mediaId": "squeezeboxrpc.0.Players.Familienzimmer",
+            "pageItems": [
+              {
+                "channelId": {
+                  "valueStateId": "alias.0.NSPanelTest.Szene.Kino",
+                  "unit": "",
+                  "prefix": "",
+                  "suffix": "",
+                  "dateFormat": ""
+                },
+                "name": "Kinoabend"
+              },
+              {
+                "channelId": {
+                  "valueStateId": "alias.0.NSPanelTest.Schalter.Steckdose_TV",
+                  "unit": "",
+                  "prefix": "",
+                  "suffix": "",
+                  "dateFormat": ""
+                },
+                "name": "Fernseher"
+              },
+              {
+                "channelId": {
+                  "valueStateId": "alias.0.NSPanelTest.Licht.LED_Leiste",
+                  "unit": "",
+                  "prefix": "",
+                  "suffix": "",
+                  "dateFormat": ""
+                },
+                "name": "LED-Leiste"
+              },
+              {
+                "channelId": {
+                  "valueStateId": "alias.0.NSPanelTest.Licht.Stehlampe",
+                  "unit": "",
+                  "prefix": "",
+                  "suffix": "",
+                  "dateFormat": ""
+                },
+                "name": "Stehlampe"
+              },
+              {
+                "channelId": {
+                  "valueStateId": "alias.0.NSPanelTest.Rollladen.Wohnzimmer",
+                  "unit": "",
+                  "prefix": "",
+                  "suffix": "",
+                  "dateFormat": ""
+                },
+                "name": "Rollo Wohnen"
+              }
+            ],
+            "hidden": false,
+            "alwaysOn": "none",
+            "minValue": 0,
+            "maxValue": 80,
+            "volumePresets": [
+              {
+                "name": "leise",
+                "value": 15
+              },
+              {
+                "name": "normal",
+                "value": 35
+              },
+              {
+                "name": "laut",
+                "value": 70
+              }
+            ]
+          },
+          "assignment": "own",
+          "navigation": {
+            "prev": "usl_heizkreise"
+          }
+        },
+        {
+          "page": {
+            "hidden": false,
+            "alwaysOn": "none",
+            "card": "cardPower",
+            "uniqueName": "usl_energie",
+            "headline": "Energiefluss",
+            "leftTop": {
+              "icon": "solar-power-variant",
+              "iconColor": "#ffd600",
+              "state": "0_userdata.0.NSPanelTest.Energie.PV",
+              "valueDecimal": 0,
+              "valueUnit": "W",
+              "entityHeadline": "PV",
+              "useColorScale": false,
+              "minColorScale": 0,
+              "maxColorScale": 10000,
+              "bestColorScale": 0,
+              "minSpeedScale": 0,
+              "maxSpeedScale": 5000,
+              "reverse": false
+            },
+            "leftMiddle": {
+              "icon": "battery-charging-70",
+              "iconColor": "#00c853",
+              "state": "0_userdata.0.NSPanelTest.Energie.Batterie",
+              "valueDecimal": 0,
+              "valueUnit": "W",
+              "entityHeadline": "Akku",
+              "useColorScale": false,
+              "minColorScale": 0,
+              "maxColorScale": 10000,
+              "bestColorScale": 0,
+              "minSpeedScale": 0,
+              "maxSpeedScale": 5000,
+              "reverse": true
+            },
+            "leftBottom": {
+              "icon": "transmission-tower",
+              "iconColor": "#90a4ae",
+              "state": "0_userdata.0.NSPanelTest.Energie.Netz",
+              "valueDecimal": 0,
+              "valueUnit": "W",
+              "entityHeadline": "Netz",
+              "useColorScale": false,
+              "minColorScale": 0,
+              "maxColorScale": 10000,
+              "bestColorScale": 0,
+              "minSpeedScale": 0,
+              "maxSpeedScale": 5000,
+              "reverse": false
+            },
+            "rightTop": {
+              "icon": "car-electric",
+              "iconColor": "#2196f3",
+              "state": "0_userdata.0.NSPanelTest.Energie.Wallbox",
+              "valueDecimal": 0,
+              "valueUnit": "W",
+              "entityHeadline": "Auto",
+              "useColorScale": false,
+              "minColorScale": 0,
+              "maxColorScale": 10000,
+              "bestColorScale": 0,
+              "minSpeedScale": 0,
+              "maxSpeedScale": 5000,
+              "reverse": false
+            },
+            "rightMiddle": {
+              "icon": "heat-pump",
+              "iconColor": "#ff7043",
+              "state": "0_userdata.0.NSPanelTest.Energie.Waermepumpe",
+              "valueDecimal": 0,
+              "valueUnit": "W",
+              "entityHeadline": "Wärme",
+              "useColorScale": false,
+              "minColorScale": 0,
+              "maxColorScale": 10000,
+              "bestColorScale": 0,
+              "minSpeedScale": 0,
+              "maxSpeedScale": 5000,
+              "reverse": false
+            },
+            "rightBottom": {
+              "icon": "washing-machine",
+              "iconColor": "#ab47bc",
+              "state": "0_userdata.0.NSPanelTest.Energie.Haushalt",
+              "valueDecimal": 0,
+              "valueUnit": "W",
+              "entityHeadline": "Haus",
+              "useColorScale": false,
+              "minColorScale": 0,
+              "maxColorScale": 10000,
+              "bestColorScale": 0,
+              "minSpeedScale": 0,
+              "maxSpeedScale": 5000,
+              "reverse": false
+            },
+            "homeTop": {
+              "state": "0_userdata.0.NSPanelTest.Energie.Batterie_SOC",
+              "valueDecimal": 0,
+              "valueUnit": "%"
+            },
+            "homeBot": {
+              "state": "0_userdata.0.NSPanelTest.Energie.Hausverbrauch",
+              "valueDecimal": 0,
+              "valueUnit": "W",
+              "selInternalCalculation": false
+            }
+          },
+          "assignment": "own",
+          "navigation": {
+            "prev": "usl_medien"
+          }
+        },
+        {
+          "page": {
+            "card": "cardChart",
+            "uniqueName": "usl_balken",
+            "headline": "Strom 24 h",
+            "chartColor": "#2196F3",
+            "txtLabelYAchse": "kWh",
+            "selChartType": "cardChart",
+            "selInstanceDataSource": 0,
+            "setStateForTicks": "0_userdata.0.NSPanelTest.Diagramm.Stromverbrauch.Ticks",
+            "setStateForValues": "0_userdata.0.NSPanelTest.Diagramm.Stromverbrauch.Werte",
+            "selInstance": "",
+            "setStateForDB": "",
+            "rangeHours": 24,
+            "maxXAxisTicks": 2,
+            "factorCardChart": 1,
+            "maxXAxisLabels": 4,
+            "hidden": false,
+            "alwaysOn": "none"
+          },
+          "assignment": "own",
+          "navigation": {
+            "prev": "usl_energie"
+          }
+        },
+        {
+          "page": {
+            "card": "cardChart",
+            "uniqueName": "usl_linie",
+            "headline": "Außentemperatur",
+            "chartColor": "#FF9800",
+            "txtLabelYAchse": "°C",
+            "selChartType": "cardLChart",
+            "selInstanceDataSource": 0,
+            "setStateForTicks": "0_userdata.0.NSPanelTest.Diagramm.Aussentemperatur.Ticks",
+            "setStateForValues": "0_userdata.0.NSPanelTest.Diagramm.Aussentemperatur.Werte",
+            "selInstance": "",
+            "setStateForDB": "",
+            "rangeHours": 24,
+            "maxXAxisTicks": 2,
+            "factorCardChart": 1,
+            "maxXAxisLabels": 4,
+            "hidden": false,
+            "alwaysOn": "none"
+          },
+          "assignment": "own",
+          "navigation": {
+            "prev": "usl_balken"
+          }
+        },
+        {
+          "page": {
+            "card": "cardPChart",
+            "uniqueName": "usl_kuchen",
+            "headline": "Energie heute",
+            "legendMode": 3,
+            "decimals": 1,
+            "selInstanceDataSource": 0,
+            "slots": [
+              {
+                "name": "Eigenverbrauch",
+                "state": "0_userdata.0.NSPanelTest.Energie.Heute.Eigenverbrauch",
+                "unit": "kWh",
+                "color": "#00E676"
+              },
+              {
+                "name": "Einspeisung",
+                "state": "0_userdata.0.NSPanelTest.Energie.Heute.Einspeisung",
+                "unit": "kWh",
+                "color": "#2196F3"
+              },
+              {
+                "name": "Netzbezug",
+                "state": "0_userdata.0.NSPanelTest.Energie.Heute.Netzbezug",
+                "unit": "kWh",
+                "color": "#F7596F"
+              },
+              {
+                "name": "Batterie",
+                "state": "0_userdata.0.NSPanelTest.Energie.Heute.Batterie",
+                "unit": "kWh",
+                "color": "#FFD600"
+              },
+              {
+                "name": "Wallbox",
+                "state": "0_userdata.0.NSPanelTest.Energie.Heute.Wallbox",
+                "unit": "kWh",
+                "color": "#AB47BC"
+              }
+            ],
+            "rangeKey": "current",
+            "rangeHours": 24,
+            "selInstance": "",
+            "setStateForValues": "",
+            "hidden": false,
+            "alwaysOn": "none"
+          },
+          "assignment": "own",
+          "navigation": {
+            "prev": "usl_linie"
+          }
+        },
+        {
+          "page": {
+            "hidden": false,
+            "alwaysOn": "none",
+            "card": "cardAlarm",
+            "uniqueName": "usl_alarm",
+            "headline": "Alarmanlage",
+            "alarmType": "alarm",
+            "button1": "Vollschutz",
+            "button2": "Außenhaut",
+            "button3": "Nacht",
+            "button4": "Urlaub",
+            "button5": "Unscharf",
+            "button6": "",
+            "button7": "",
+            "button8": "",
+            "pin": -1
+          },
+          "assignment": "own",
+          "navigation": {
+            "prev": "usl_kuchen"
+          }
+        },
+        {
+          "page": {
+            "hidden": false,
+            "alwaysOn": "none",
+            "card": "cardAlarm",
+            "uniqueName": "usl_tuer",
+            "headline": "Tür öffnen",
+            "alarmType": "unlock",
+            "button1": "",
+            "button2": "",
+            "button3": "",
+            "button4": "",
+            "button5": "",
+            "button6": "",
+            "button7": "",
+            "button8": "",
+            "pin": -1,
+            "setNavi": "usl_licht"
+          },
+          "assignment": "own",
+          "navigation": {
+            "prev": "usl_alarm"
+          }
+        },
+        {
+          "page": {
+            "hidden": false,
+            "alwaysOn": "none",
+            "card": "cardQR",
+            "uniqueName": "usl_gaeste_wlan",
+            "headline": "Gäste-WLAN",
+            "selType": 1,
+            "ssidUrlTel": "Gaeste",
+            "wlanhidden": false,
+            "wlantype": "nopass",
+            "pwdhidden": false,
+            "setState": "0_userdata.0.NSPanelTest.Gaeste_WLAN.Aktiv"
+          },
+          "assignment": "own",
+          "navigation": {
+            "prev": "usl_tuer"
+          }
+        },
+        {
+          "page": {
+            "hidden": false,
+            "alwaysOn": "none",
+            "card": "cardQR",
+            "uniqueName": "usl_qr_link",
+            "headline": "Anleitung",
+            "selType": 2,
+            "ssidUrlTel": "https://github.com/ticaki/ioBroker.nspanel-lovelace-ui/wiki",
+            "wlanhidden": false,
+            "pwdhidden": false,
+            "setState": ""
+          },
+          "assignment": "own",
+          "navigation": {
+            "prev": "usl_gaeste_wlan"
+          }
+        },
+        {
+          "page": {
+            "hidden": false,
+            "alwaysOn": "none",
+            "card": "cardTrash",
+            "uniqueName": "usl_abfall",
+            "headline": "Abfuhrtermine",
+            "countItems": 4,
+            "trashImport": true,
+            "trashState": "0_userdata.0.NSPanelTest.Abfall.Termine",
+            "trashFile": "",
+            "items": [
+              {
+                "textTrash": "Restmüll",
+                "customTrash": "",
+                "iconColor": "#9e9e9e",
+                "icon": ""
+              },
+              {
+                "textTrash": "Biotonne",
+                "customTrash": "",
+                "iconColor": "#795548",
+                "icon": ""
+              },
+              {
+                "textTrash": "Gelber Sack",
+                "customTrash": "",
+                "iconColor": "#ffd600",
+                "icon": ""
+              },
+              {
+                "textTrash": "Papiertonne",
+                "customTrash": "",
+                "iconColor": "#2196f3",
+                "icon": ""
+              },
+              {
+                "textTrash": "",
+                "customTrash": "",
+                "iconColor": "#d2d2d2",
+                "icon": ""
+              },
+              {
+                "textTrash": "",
+                "customTrash": "",
+                "iconColor": "#d2d2d2",
+                "icon": ""
+              }
+            ]
+          },
+          "assignment": "own",
+          "navigation": {
+            "prev": "usl_qr_link"
+          }
+        },
+        {
+          "page": {
+            "hidden": false,
+            "alwaysOn": "none",
+            "card": "pageLink",
+            "uniqueName": "usl_link",
+            "headline": "Licht (Seitenlink)",
+            "target": "usl_licht"
+          },
+          "assignment": "own",
+          "navigation": {
+            "prev": "usl_abfall",
+            "next": "main"
+          }
+        },
+        {
+          "page": {
+            "hidden": false,
+            "alwaysOn": "none",
+            "card": "cardEntities",
+            "uniqueName": "usl_details",
+            "headline": "Details",
+            "pageItems": [
+              {
+                "channelId": {
+                  "valueStateId": "alias.0.NSPanelTest.Info.Status",
+                  "unit": "",
+                  "prefix": "",
+                  "suffix": "",
+                  "dateFormat": ""
+                },
+                "name": "Systemstatus"
+              },
+              {
+                "channelId": {
+                  "valueStateId": "alias.0.NSPanelTest.Info.Anwesenheit",
+                  "unit": "",
+                  "prefix": "",
+                  "suffix": "",
+                  "dateFormat": ""
+                },
+                "name": "Jemand zu Hause"
+              },
+              {
+                "channelId": {
+                  "valueStateId": "alias.0.NSPanelTest.Info.Waschmaschine",
+                  "unit": "",
+                  "prefix": "",
+                  "suffix": "",
+                  "dateFormat": ""
+                },
+                "name": "Waschmaschine"
+              },
+              {
+                "channelId": {
+                  "valueStateId": "alias.0.NSPanelTest.Info.Strompreis",
+                  "unit": "",
+                  "prefix": "",
+                  "suffix": "",
+                  "dateFormat": ""
+                },
+                "name": "Strompreis"
+              }
+            ]
+          },
+          "assignment": "own",
+          "navigation": {
+            "parent": "usl_haus"
+          }
+        }
+      ],
+      "excludedAllPages": []
+    },
+    "screensaver": {
+      "entry": {
+        "name": "Test usl",
+        "mode": "advanced",
+        "panels": [],
+        "left": [
+          {
+            "state": "alias.0.NSPanelTest.Sensor.Aussen_Temperatur.ACTUAL",
+            "headline": "Außen",
+            "iconOn": "thermometer",
+            "unit": "°C",
+            "factor": 1,
+            "decimals": 1,
+            "colorScale": {
+              "val_min": -10,
+              "val_max": 35,
+              "val_best": 20
+            }
+          },
+          {
+            "state": "alias.0.NSPanelTest.Sensor.Wohnzimmer_Temperatur.ACTUAL",
+            "headline": "Innen",
+            "iconOn": "home-thermometer",
+            "unit": "°C",
+            "factor": 1,
+            "decimals": 1,
+            "colorScale": {
+              "val_min": 15,
+              "val_max": 28,
+              "val_best": 21
+            }
+          },
+          {
+            "state": "alias.0.NSPanelTest.Sensor.Wohnzimmer_Feuchte.ACTUAL",
+            "headline": "Feuchte",
+            "iconOn": "water-percent",
+            "unit": "%",
+            "factor": 1,
+            "decimals": 0,
+            "colorScale": {
+              "val_min": 0,
+              "val_max": 100,
+              "val_best": 50
+            }
+          }
+        ],
+        "bottom": [
+          {
+            "state": "0_userdata.0.NSPanelTest.Energie.PV",
+            "headline": "PV",
+            "iconOn": "solar-power-variant",
+            "unit": "W",
+            "factor": 1,
+            "decimals": 0,
+            "colorScale": {
+              "val_min": 0,
+              "val_max": 8000,
+              "val_best": 8000
+            }
+          },
+          {
+            "state": "0_userdata.0.NSPanelTest.Energie.Hausverbrauch",
+            "headline": "Haus",
+            "iconOn": "home-lightning-bolt",
+            "unit": "W",
+            "factor": 1,
+            "decimals": 0,
+            "colorScale": {
+              "val_min": 0,
+              "val_max": 6000,
+              "val_best": 0
+            }
+          },
+          {
+            "state": "0_userdata.0.NSPanelTest.Wetter.Wind",
+            "headline": "Wind",
+            "iconOn": "weather-windy",
+            "unit": "km/h",
+            "factor": 1,
+            "decimals": 0,
+            "colorOn": "#fdd835",
+            "colorOff": "#fd8000"
+          },
+          {
+            "state": "0_userdata.0.NSPanelTest.Wetter.Luftdruck",
+            "headline": "Druck",
+            "iconOn": "gauge",
+            "unit": "hPa",
+            "factor": 1,
+            "decimals": 0,
+            "colorOn": "#fdd835",
+            "colorOff": "#fd8000"
+          },
+          {
+            "state": "0_userdata.0.NSPanelTest.Wetter.Regen",
+            "headline": "Regen",
+            "iconOn": "weather-rainy",
+            "unit": "mm",
+            "factor": 1,
+            "decimals": 1,
+            "colorOn": "#fdd835",
+            "colorOff": "#fd8000"
+          },
+          {
+            "state": "0_userdata.0.NSPanelTest.Wetter.UV_Index",
+            "headline": "UV",
+            "iconOn": "weather-sunny-alert",
+            "unit": "",
+            "factor": 1,
+            "decimals": 0,
+            "colorScale": {
+              "val_min": 0,
+              "val_max": 10,
+              "val_best": 0
+            }
+          }
+        ],
+        "indicator": [
+          {
+            "state": "alias.0.NSPanelTest.Sensor.Fenster_Wohnzimmer.ACTUAL",
+            "headline": "Fenster",
+            "iconOn": "window-open-variant",
+            "iconOff": "window-closed-variant",
+            "colorOn": "#fdd835",
+            "colorOff": "#44739e"
+          },
+          {
+            "state": "alias.0.NSPanelTest.Sensor.Haustuer.ACTUAL",
+            "headline": "Haustür",
+            "iconOn": "door-open",
+            "iconOff": "door-closed",
+            "colorOn": "#fdd835",
+            "colorOff": "#44739e"
+          },
+          {
+            "state": "alias.0.NSPanelTest.Licht.Wohnzimmer_Decke.ON_ACTUAL",
+            "headline": "Licht",
+            "iconOn": "lightbulb",
+            "iconOff": "lightbulb-outline",
+            "colorOn": "#fdd835",
+            "colorOff": "#44739e",
+            "action": {
+              "kind": "switch",
+              "state": "alias.0.NSPanelTest.Licht.Wohnzimmer_Decke.SET"
+            },
+            "longPress": {
+              "kind": "navigate",
+              "page": "usl_licht"
+            }
+          },
+          {
+            "state": "alias.0.NSPanelTest.Sensor.Bewegung_Flur.ACTUAL",
+            "headline": "Bewegung",
+            "iconOn": "motion-sensor",
+            "iconOff": "motion-sensor-off",
+            "colorOn": "#fdd835",
+            "colorOff": "#44739e"
+          },
+          {
+            "state": "alias.0.NSPanelTest.Schalter.Steckdose_TV.ACTUAL",
+            "headline": "TV",
+            "iconOn": "television",
+            "iconOff": "television-off",
+            "colorOn": "#fdd835",
+            "colorOff": "#44739e",
+            "action": {
+              "kind": "switch",
+              "state": "alias.0.NSPanelTest.Schalter.Steckdose_TV.SET"
+            }
+          },
+          {
+            "state": "alias.0.NSPanelTest.Sensor.Fenster_Kueche.ACTUAL",
+            "headline": "Küche",
+            "iconOn": "window-open-variant",
+            "iconOff": "window-closed-variant",
+            "colorOn": "#fdd835",
+            "colorOff": "#44739e"
+          },
+          {
+            "state": "alias.0.NSPanelTest.Sensor.Terrassentuer.ACTUAL",
+            "headline": "Terrasse",
+            "iconOn": "door-open",
+            "iconOff": "door-closed",
+            "colorOn": "#fdd835",
+            "colorOff": "#44739e",
+            "longPress": {
+              "kind": "button",
+              "state": "alias.0.NSPanelTest.Szene.Alles_aus.SET"
+            }
+          }
+        ],
+        "mrIcon1": {
+          "entity": "alias.0.NSPanelTest.Licht.Wohnzimmer_Decke.ON_ACTUAL",
+          "iconOn": "lightbulb",
+          "iconOff": "lightbulb-outline",
+          "onColor": "#fdd835",
+          "offColor": "#44739e"
+        },
+        "mrIcon2": {
+          "entity": "alias.0.NSPanelTest.Schalter.Steckdose_TV.ACTUAL",
+          "iconOn": "power-socket-de",
+          "iconOff": "power-plug-off",
+          "onColor": "#fdd835",
+          "offColor": "#44739e",
+          "value": "0_userdata.0.NSPanelTest.Energie.Hausverbrauch",
+          "valueDecimals": 0,
+          "valueUnit": "W"
+        },
+        "rotationTime": 0,
+        "screensaverSwipe": false,
+        "screensaverIndicatorButtons": false,
+        "favorit": {
+          "state": "alias.0.NSPanelTest.Sensor.Aussen_Temperatur.ACTUAL",
+          "headline": "Außen",
+          "iconOn": "weather-partly-cloudy",
+          "unit": "°C",
+          "factor": 1,
+          "decimals": 1,
+          "colorOn": "#fdd835",
+          "colorOff": "#fd8000"
+        },
+        "alternate": [
+          {
+            "state": "alias.0.NSPanelTest.Sensor.Wohnzimmer_Temperatur.ACTUAL",
+            "headline": "Innen",
+            "iconOn": "home-thermometer",
+            "unit": "°C",
+            "factor": 1,
+            "decimals": 1,
+            "colorScale": {
+              "val_min": 15,
+              "val_max": 28,
+              "val_best": 21
+            }
+          }
+        ],
+        "notify": [
+          "nspaneltest_waesche",
+          "nspaneltest_fenster"
+        ],
+        "weatherEntity": ""
+      },
+      "notify": [
+        {
+          "id": "nspaneltest_waesche",
+          "name": "Test: Waschmaschine fertig",
+          "enabled": [
+            "0_userdata.0.NSPanelTest.Hinweis.Waschmaschine_fertig"
+          ],
+          "headline": "Waschmaschine",
+          "headlineIcon": "washing-machine",
+          "text": "Die Wäsche ist fertig.",
+          "priority": 10,
+          "dismissible": true
+        },
+        {
+          "id": "nspaneltest_fenster",
+          "name": "Test: Fenster offen",
+          "enabled": [
+            "0_userdata.0.NSPanelTest.Hinweis.Fenster_offen"
+          ],
+          "visibleCondition": "val > 0",
+          "headline": "0_userdata.0.NSPanelTest.Hinweis.Fenster_offen",
+          "headlinePrefix": "Offene Fenster: ",
+          "headlineIcon": "window-open-variant",
+          "text": "Bitte vor dem Verlassen schließen.",
+          "priority": 20
+        }
+      ]
+    },
+    "misc": {
+      "navigationOverrides": [],
+      "states": {
+        "activated": true,
+        "isBuzzerAllowed": true,
+        "hideCards": false,
+        "detachLeft": false,
+        "detachRight": false,
+        "mainNavigationPoint": "main",
+        "screenSaver.timeout": 15,
+        "screenSaver.layout": 2,
+        "screenSaver.rotationTime": 0,
+        "screenSaver.doubleClick": true,
+        "screenSaver.infoIcon": "",
+        "dim.standby": 15,
+        "dim.active": 80,
+        "dim.dayMode": true,
+        "dim.nightStandby": 0,
+        "dim.nightActive": 30,
+        "dim.nightHourStart": 22,
+        "dim.nightHourEnd": 7,
+        "dim.schedule": true
+      }
+    }
+  },
+  "adapterVersion": "2.1.0"
+}

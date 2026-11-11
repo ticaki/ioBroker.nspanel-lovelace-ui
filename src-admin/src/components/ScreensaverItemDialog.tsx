@@ -1312,13 +1312,6 @@ export class ScreensaverItemDialog extends React.Component<ScreensaverItemDialog
                         </Select>
                     </FormControl>
                 )}
-                <Typography
-                    variant="caption"
-                    color="text.secondary"
-                    sx={{ display: 'block' }}
-                >
-                    {this.getText('screensaver_item_action_hint')}
-                </Typography>
             </Box>
         );
     }

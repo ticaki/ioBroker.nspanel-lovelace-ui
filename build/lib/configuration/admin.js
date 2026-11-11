@@ -33,6 +33,7 @@ __export(admin_exports, {
   buildMediaScriptPage: () => buildMediaScriptPage,
   buildThermo2ScriptPage: () => buildThermo2ScriptPage,
   buildThermoScriptPage: () => buildThermoScriptPage,
+  navigationTargetProblem: () => navigationTargetProblem,
   qrUsesPassword: () => qrUsesPassword
 });
 module.exports = __toCommonJS(admin_exports);
@@ -61,6 +62,19 @@ function resolveNavigationTarget(name) {
 function belongsToPanel(option, page) {
   var _a;
   return option.navigation.some((b) => b && b.name === page.uniqueID) || (0, import_admin_screensaver.isScreensaverPage)(page) || !!((_a = option.generatedPageIds) == null ? void 0 : _a.includes(page.uniqueID));
+}
+function navigationTargetProblem(option, target) {
+  if (target === void 0 || systemNavigationNodeNames.has(target) || target === ShareConfig.screensaverTargetPage) {
+    return void 0;
+  }
+  const node = option.navigation.find((b) => (b == null ? void 0 : b.name) === target);
+  if (!node) {
+    return "not found";
+  }
+  if (!option.pages.some((p) => p && p.uniqueID === node.page)) {
+    return "has no page (script page dropped or admin page missing)";
+  }
+  return void 0;
 }
 function shallowDescribe(value) {
   if (value === null) {
@@ -881,13 +895,15 @@ Stack: ${stack}`
         }
       }
     }
-    const isUnresolved = (target) => target !== void 0 && !systemNavigationNodeNames.has(target) && !option.navigation.find((b) => (b == null ? void 0 : b.name) === target);
     for (const pending of pendingNavs) {
-      if (isUnresolved(pending.prev)) {
-        this.log.warn(`Navigation unresolved for '${pending.pageId}': prev page '${pending.prev}' not found.`);
-      }
-      if (isUnresolved(pending.next)) {
-        this.log.warn(`Navigation unresolved for '${pending.pageId}': next page '${pending.next}' not found.`);
+      for (const side of ["prev", "next"]) {
+        const target = pending[side];
+        const problem = navigationTargetProblem(option, target);
+        if (target !== void 0 && problem) {
+          this.log.warn(
+            `Navigation unresolved for '${pending.pageId}': ${side} page '${target}' ${problem}.`
+          );
+        }
       }
     }
   }
@@ -1313,6 +1329,7 @@ function dataForcardTrash(entry) {
   buildMediaScriptPage,
   buildThermo2ScriptPage,
   buildThermoScriptPage,
+  navigationTargetProblem,
   qrUsesPassword
 });
 //# sourceMappingURL=admin.js.map

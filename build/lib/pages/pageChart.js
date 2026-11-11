@@ -316,7 +316,7 @@ class PageChart extends import_Page.Page {
     result = { ...result, ..._message };
     return (0, import_tools.getPayload)(
       "entityUpd",
-      result.headline,
+      this.shortHeadline(result.headline),
       result.navigation,
       result.color,
       result.text,

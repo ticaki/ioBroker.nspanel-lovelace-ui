@@ -1,6 +1,8 @@
 import React from 'react';
 import { Icon } from '../../components/Icon';
+import type { PanelModel } from '../../protocol/types';
 import { theme } from '../../style/theme';
+import { closeCenter, popupFrame } from './layout';
 
 export interface PopupHeaderProps {
     title: string;
@@ -15,12 +17,12 @@ export interface PopupHeaderProps {
     titleAlign?: 'left' | 'center';
     /** the X at the right */
     onClose: () => void;
+    /** the panel model the popup sees: the X sits at the right edge of its stage */
+    model: PanelModel;
 }
 
 /** Height of the popup header in stage pixels */
 export const POPUP_HEADER_HEIGHT = 60;
-/** centre of the X of every popup on the HMI */
-export const CLOSE_CENTER = { x: 421, y: 34 } as const;
 /** centre of the entity icon of the popups with a left aligned title */
 export const HEADER_ICON_CENTER = { x: 33, y: 38 } as const;
 /** left edge of a left aligned title */
@@ -34,19 +36,26 @@ export const HEADER_ICON_SIZE = 28;
 /** tap area of the icon buttons */
 export const TAP_SIZE = 48;
 
+export interface CloseButtonProps {
+    onClose: () => void;
+    /** the panel model: the X sits 59 px left of the right edge of the stage */
+    model: PanelModel;
+}
+
 /**
  * The X of every popup, at the position of the HMI (the HMI sends `bExit` for it).
  */
-export class CloseButton extends React.Component<{ onClose: () => void }> {
+export class CloseButton extends React.Component<CloseButtonProps> {
     render(): React.JSX.Element {
+        const center = closeCenter(this.props.model);
         return (
             <div
                 data-close=""
                 onClick={this.props.onClose}
                 style={{
                     position: 'absolute',
-                    left: CLOSE_CENTER.x - TAP_SIZE / 2,
-                    top: CLOSE_CENTER.y - TAP_SIZE / 2,
+                    left: center.x - TAP_SIZE / 2,
+                    top: center.y - TAP_SIZE / 2,
                     width: TAP_SIZE,
                     height: TAP_SIZE,
                     display: 'flex',
@@ -67,12 +76,15 @@ export class CloseButton extends React.Component<{ onClose: () => void }> {
 
 /**
  * The head of a popup: entity icon at the left, name, X at the right - placed like on
- * the HMI (icon centre 33/38, title at x 90, X centre 421/34).
+ * the HMI (icon centre 33/38, title at x 90, X centre 421/34 on eu, at the right edge of the
+ * stage on the other models).
  */
 export class PopupHeader extends React.Component<PopupHeaderProps> {
     render(): React.JSX.Element {
-        const { title, icon, iconColor = theme.foreground, titleAlign = 'left', onClose } = this.props;
+        const { title, icon, iconColor = theme.foreground, titleAlign = 'left', onClose, model } = this.props;
         const centered = titleAlign === 'center';
+        const { width } = popupFrame(model);
+        const close = closeCenter(model);
         return (
             <div
                 data-popup-header=""
@@ -106,7 +118,7 @@ export class PopupHeader extends React.Component<PopupHeaderProps> {
                                   position: 'absolute',
                                   // the HMI centres the title at x 221 (a text box that leaves room for the X)
                                   left: 40,
-                                  width: 362,
+                                  width: width - 118,
                                   top: HEADER_TITLE_CENTER_Y - 18,
                                   height: 36,
                                   lineHeight: '36px',
@@ -120,7 +132,7 @@ export class PopupHeader extends React.Component<PopupHeaderProps> {
                             : {
                                   position: 'absolute',
                                   left: HEADER_TITLE_LEFT,
-                                  right: 480 - (CLOSE_CENTER.x - TAP_SIZE / 2),
+                                  right: width - (close.x - TAP_SIZE / 2),
                                   top: HEADER_TITLE_CENTER_Y - 14,
                                   height: 28,
                                   lineHeight: '28px',
@@ -134,7 +146,10 @@ export class PopupHeader extends React.Component<PopupHeaderProps> {
                 >
                     {title}
                 </div>
-                <CloseButton onClose={onClose} />
+                <CloseButton
+                    onClose={onClose}
+                    model={model}
+                />
             </div>
         );
     }

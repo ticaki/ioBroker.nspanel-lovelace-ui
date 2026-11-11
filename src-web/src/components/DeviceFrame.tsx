@@ -16,6 +16,8 @@ export interface DeviceFrameProps {
     /** called on every touch/click on the stage, resets the screensaver timeout */
     onTouch: () => void;
     onHardwareButton: (button: 1 | 2) => void;
+    /** shows the two hardware buttons below the stage (`hello.buttons`), default true */
+    showButtons?: boolean;
     children?: React.ReactNode;
 }
 
@@ -44,11 +46,15 @@ const BYE_TEXT: Record<'de' | 'en', Record<string, string>> = {
         'unknown panel': 'Unbekanntes Panel: die Adresse passt zu keinem Panel des Adapters.',
         'panel removed': 'Das Panel wurde aus dem Adapter entfernt.',
         shutdown: 'Der Adapter wurde beendet – warte auf Neustart …',
+        'unknown model':
+            'Unbekanntes Panel-Modell: Web-Ansicht und Adapter haben verschiedene Versionen (Browser-Cache leeren) oder das Modell des Panels in den Instanz-Einstellungen ist ungültig.',
     },
     en: {
         'unknown panel': 'Unknown panel: the address matches no panel of the adapter.',
         'panel removed': 'The panel was removed from the adapter.',
         shutdown: 'The adapter was stopped – waiting for the restart …',
+        'unknown model':
+            'Unknown panel model: web view and adapter have different versions (clear the browser cache) or the model of the panel in the instance settings is invalid.',
     },
 };
 const RELOAD_TEXT: Record<'de' | 'en', string> = {
@@ -144,6 +150,25 @@ export class DeviceFrame extends React.Component<DeviceFrameProps, DeviceFrameSt
         }
     };
 
+    /**
+     * Scale of the stage: as big as the viewport allows with the hardware buttons below it,
+     * the aspect ratio of the model stays (portrait and landscape alike).
+     *
+     * @param model the panel model
+     * @param viewportWidth width of the browser viewport in css pixels
+     * @param viewportHeight height of the browser viewport in css pixels
+     * @param buttonsHeight height of the hardware buttons below the stage, 0 without them
+     */
+    static stageScale(
+        model: PanelModel,
+        viewportWidth: number,
+        viewportHeight: number,
+        buttonsHeight: number = theme.hardwareButtonsHeight,
+    ): number {
+        const { width, height } = stageSize(model);
+        return Math.max(0.1, Math.min(viewportWidth / width, (viewportHeight - buttonsHeight) / height));
+    }
+
     /** css filter that mimics the dimmed display: brightness and contrast go down together */
     static dimFilter(brightness: number): string {
         const b = Math.max(0, Math.min(100, brightness)) / 100;
@@ -168,8 +193,9 @@ export class DeviceFrame extends React.Component<DeviceFrameProps, DeviceFrameSt
         const { model, brightness, status, byeReason, children } = this.props;
         const { width, height } = stageSize(model);
         const { viewportWidth, viewportHeight } = this.state;
-        const buttons = theme.hardwareButtonsHeight;
-        const scale = Math.max(0.1, Math.min(viewportWidth / width, (viewportHeight - buttons) / height));
+        const showButtons = this.props.showButtons !== false;
+        const buttons = showButtons ? theme.hardwareButtonsHeight : 0;
+        const scale = DeviceFrame.stageScale(model, viewportWidth, viewportHeight, buttons);
         const scaledWidth = width * scale;
         const scaledHeight = height * scale;
         const lang = language();
@@ -271,36 +297,38 @@ export class DeviceFrame extends React.Component<DeviceFrameProps, DeviceFrameSt
                         </div>
                     ) : null}
                 </div>
-                <div
-                    data-hardware-buttons=""
-                    style={{
-                        width: scaledWidth,
-                        height: buttons,
-                        display: 'flex',
-                        gap: 6,
-                        padding: '6px 0 0 0',
-                        boxSizing: 'border-box',
-                        flex: '0 0 auto',
-                    }}
-                >
-                    {([1, 2] as const).map(button => (
-                        <div
-                            key={button}
-                            data-hardware-button={button}
-                            aria-disabled={offline}
-                            onClick={(): void => this.onHardwareButtonClick(button)}
-                            style={{
-                                flex: '1 1 0',
-                                borderRadius: 4,
-                                background: offline ? '#1a1a1a' : 'linear-gradient(#2b2b2b, #161616)',
-                                border: `1px solid ${offline ? '#262626' : '#3a3a3a'}`,
-                                cursor: offline ? 'default' : 'pointer',
-                                opacity: offline ? 0.5 : 1,
-                                transition: 'opacity 0.3s ease',
-                            }}
-                        />
-                    ))}
-                </div>
+                {showButtons ? (
+                    <div
+                        data-hardware-buttons=""
+                        style={{
+                            width: scaledWidth,
+                            height: buttons,
+                            display: 'flex',
+                            gap: 6,
+                            padding: '6px 0 0 0',
+                            boxSizing: 'border-box',
+                            flex: '0 0 auto',
+                        }}
+                    >
+                        {([1, 2] as const).map(button => (
+                            <div
+                                key={button}
+                                data-hardware-button={button}
+                                aria-disabled={offline}
+                                onClick={(): void => this.onHardwareButtonClick(button)}
+                                style={{
+                                    flex: '1 1 0',
+                                    borderRadius: 4,
+                                    background: offline ? '#1a1a1a' : 'linear-gradient(#2b2b2b, #161616)',
+                                    border: `1px solid ${offline ? '#262626' : '#3a3a3a'}`,
+                                    cursor: offline ? 'default' : 'pointer',
+                                    opacity: offline ? 0.5 : 1,
+                                    transition: 'opacity 0.3s ease',
+                                }}
+                            />
+                        ))}
+                    </div>
+                ) : null}
             </div>
         );
     }
