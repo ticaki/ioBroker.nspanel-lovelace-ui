@@ -89,7 +89,11 @@ Wichtig zu wissen:
      Solange das Häkchen im Dialog nicht von Hand gesetzt wurde, folgt es beim Wechsel des Modells dessen
      Vorgabe.
 
-   <img alt="Dialog Web-Panel hinzufügen mit Name, Topic, Hardwaremodell und Adressvorschau" src="../Pictures/webPanel/webpanel-02-hinzufuegen.png" width="100%"/>
+   <img alt="Dialog Web-Panel hinzufügen mit Name, Topic, Adressvorschau und aufgeklappter Modellauswahl" src="../Pictures/webPanel/webpanel-02-hinzufuegen.png" width="100%"/>
+
+   Mit einem Smartphone-Modell ist das Häkchen der Hardware-Tasten ab Werk aus:
+
+   <img alt="Derselbe Dialog mit dem Modell Smartphone hochkant und ausgeschaltetem Häkchen für die Hardware-Tasten" src="../Pictures/webPanel/webpanel-06-smartphone-dialog.png" width="100%"/>
 
 3. Mit **Speichern** übernehmen, dann die Instanz-Einstellungen speichern.
 
@@ -126,6 +130,13 @@ Handy oder Tablet aus.
 Die Maße sind die feste Zeichenfläche, nicht die Auflösung des Geräts: Der Browser skaliert sie auf das
 Fenster. Die Smartphone-Modelle haben das Verhältnis 2:1 und lassen auf üblichen Handys (16:9 bis 20:9) nur
 schmale Ränder, während ein Panel-Format (3:2) auf demselben Gerät breite schwarze Balken übrig lässt.
+
+| Smartphone hochkant (`web-p`) | US-Hochformat (`us-p`) |
+|---|---|
+| <img alt="Dieselbe Seite auf dem Handy mit dem Modell Smartphone hochkant: bildschirmfüllend" src="../Pictures/webPanel/webpanel-08-handy-web-p.png" width="100%"/> | <img alt="Dieselbe Seite auf dem Handy mit dem Modell US-Hochformat: breite schwarze Balken" src="../Pictures/webPanel/webpanel-09-handy-us-p.png" width="100%"/> |
+
+Dasselbe Web-Panel mit derselben Seite auf demselben Handy: Links füllt das Smartphone-Modell den Bildschirm
+und zeigt zehn Plätze, rechts bleiben beim Panel-Format breite Balken und sechs Plätze übrig.
 
 **Die Ausrichtung gehört zum Modell.** Ein Web-Panel dreht sich **nicht** mit dem Gerät: Wer ein Panel mit
 *Smartphone hochkant* quer hält, sieht dasselbe Bild kleiner und mit Rändern. Wer beide Haltungen will,
@@ -179,6 +190,8 @@ Alles andere bleibt gleich: ein Platz für Favorit bzw. Wechselanzeige, zwei Sta
 Datum. Der [Bildschirmschoner-Editor](screensaver) zeichnet die Plätze des gewählten Modells und schreibt
 darüber „Plätze für Modell …“; ohne zugewiesenes Panel steht dort „die Plätze erscheinen, sobald ein Panel
 gewählt ist“.
+
+<img alt="Der Bildschirmschoner-Editor mit dem Modell Smartphone hochkant: acht Indikatoren über der Uhr, acht Plätze unten" src="../Pictures/webPanel/webpanel-07-screensaver-web-p.png" width="100%"/>
 
 ### Zeilen einer Benachrichtigung
 

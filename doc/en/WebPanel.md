@@ -89,7 +89,11 @@ Good to know:
      as the checkbox has not been set by hand in the dialog, it follows the default of the model when the
      model is changed.
 
-   <img alt="Add web panel dialog with name, topic, hardware model and address preview" src="../Pictures/webPanel/webpanel-02-hinzufuegen.png" width="100%"/>
+   <img alt="Add web panel dialog with name, topic, address preview and the opened model choice" src="../Pictures/webPanel/webpanel-02-hinzufuegen.png" width="100%"/>
+
+   With a smartphone model the checkbox of the hardware buttons is off by default:
+
+   <img alt="The same dialog with the model smartphone portrait and the checkbox of the hardware buttons switched off" src="../Pictures/webPanel/webpanel-06-smartphone-dialog.png" width="100%"/>
 
 3. Confirm with **Save**, then save the instance settings.
 
@@ -124,6 +128,13 @@ for standalone web panels: they do not imitate an NSPanel, they fill a phone or 
 The sizes are the fixed drawing area, not the resolution of the device: the browser scales it to the
 window. The smartphone models have a 2:1 ratio and leave only narrow margins on common phones (16:9 to
 20:9), while a panel format (3:2) leaves wide black bars on the same device.
+
+| Smartphone portrait (`web-p`) | US portrait (`us-p`) |
+|---|---|
+| <img alt="The same page on the phone with the model smartphone portrait: filling the screen" src="../Pictures/webPanel/webpanel-08-handy-web-p.png" width="100%"/> | <img alt="The same page on the phone with the model US portrait: wide black bars" src="../Pictures/webPanel/webpanel-09-handy-us-p.png" width="100%"/> |
+
+The same web panel with the same page on the same phone: on the left the smartphone model fills the screen
+and shows ten places, on the right the panel format leaves wide bars and six places.
 
 **The orientation belongs to the model.** A web panel does **not** rotate with the device: holding a panel
 with *Smartphone portrait* in landscape shows the same picture, smaller and with margins. For both ways of
@@ -176,6 +187,8 @@ Everything else stays the same: one place for the favourite or the alternate dis
 time and date. The [screensaver editor](screensaver) draws the places of the chosen model and writes
 "places for model …" above them; without an assigned panel it says "the places appear as soon as a panel is
 chosen".
+
+<img alt="The screensaver editor with the model smartphone portrait: eight indicators above the clock, eight places at the bottom" src="../Pictures/webPanel/webpanel-07-screensaver-web-p.png" width="100%"/>
 
 ### Lines of a notification
 
