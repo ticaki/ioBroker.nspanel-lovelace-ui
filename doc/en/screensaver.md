@@ -274,7 +274,9 @@ The option **Indicators act as buttons** only decides what happens *afterwards*:
 
 **The result appears at once.** Between two updates of the screensaver the adapter keeps a short pause. A press on an indicator ends it – the new icon and the new color go to the panel without a wait.
 
-**One press, one event.** Up to the TFT 6.0.7 an indicator reported its press twice, when the finger touched it and when it was lifted; a long press therefore switched twice. From the TFT 6.0.8 on it reports exactly one press – that concerns `screensaver5` on all models and `screensaver2` on the EU panel.
+**One press, one event.** Up to the TFT 6.0.7 an indicator reported its press twice, when the finger touched it and when it was lifted; a long press therefore switched twice. From the TFT 6.0.8 on it reports exactly one press – in both versions with indicators (**Tiles** `screensaver5` and **Advanced** `screensaver2`) and on all three models `eu`, `us-l` and `us-p`.
+
+**Advanced on `us-l` and `us-p`.** On the two US models the indicators of the version **Advanced** did nothing at all before: the fields of the page had neither code nor ids there, a press had no effect and wrote no state either. That is fixed with the TFT 6.0.8 as well. Both reach the panel with the beta **6.0.9** (see [Requirement: a TFT with the page screensaver5](#requirement-a-tft-with-the-page-screensaver5)).
 
 ## 9. Status icons
 
@@ -455,12 +457,12 @@ The version **Tiles** draws the screensaver as a grid of areas: a row of indicat
 
 ### Requirement: a TFT with the page screensaver5
 
-This version needs a TFT that holds the page `screensaver5`. The official `nspanel-v6.0.7.HMI` does not have it; it only sits in the project files of the repository (`HMI/nspanel-v6.0.8.screensaver5.HMI` and the same files under `HMI/us-l/` and `HMI/us-p/`). The version list of the adapter names **5.1.1** as the TFT (model `us-p`: 5.1.3) and **6.0.7** as the beta – neither of them has the page.
+This version needs a TFT that holds the page `screensaver5`. The stable TFT of the version list – **5.1.1**, model `us-p`: **5.1.3** – does not have it, and neither does the official `nspanel-v6.0.7.HMI`. The **beta 6.0.9** has it: the version list names it for all three models, and the TFT server holds `nspanel-v6.0.9.tft`, `nspanel-us-l-v6.0.9.tft` and `nspanel-us-p-v6.0.9.tft`. With the tick for the beta the **TFT UPDATE** therefore leads to a TFT with the page.
 
-- The **TFT UPDATE** in the tab [Maintain](Maintain) loads the file `nspanel[-model]-v<version>.tft` from the TFT server; the version comes from the version list, from the tick box *Beta firmware* or from the pinned version in the [Global Settings](globelSettings). Which published TFT holds the page `screensaver5` is not stated in the repository – with the versions named there the normal update path does not lead to it.
+- The **TFT UPDATE** in the tab [Maintain](Maintain) loads the file `nspanel[-model]-v<version>.tft` from the TFT server; the version comes from the version list, from the tick box *Beta firmware* or from the pinned version in the [Global Settings](globelSettings). For the tiles the beta has to be switched on – without it the update loads the stable 5.1.1 or 5.1.3 without the page.
 - The page `screensaver4` of the official HMI 6.0.7 is an unrelated animation and has nothing to do with this version.
 - The admin does **not** check the TFT: the version can be chosen even when the panel does not have the page. The adapter then sends `pageType~screensaver5` to a panel that does not know the page – what it shows afterwards is not documented.
-- 6.0.8 differs from 6.0.7 only in the version text and in this: an indicator reports its press exactly once (see [indicators and buttons](#8-indicators-and-buttons)).
+- The project files `nspanel[-model]-v6.0.8.screensaver5.HMI` in the repository (`HMI/`, `HMI/us-l/`, `HMI/us-p/`) are the preliminary stage: compared to 6.0.7 an indicator reports its press exactly once, and on `us-l`/`us-p` the indicators of the version Advanced react at all (see [indicators and buttons](#8-indicators-and-buttons)). A published TFT 6.0.8 does not exist; all of it reaches the panel with the 6.0.9.
 
 ### Setting it up
 

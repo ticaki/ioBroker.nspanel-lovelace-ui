@@ -274,7 +274,9 @@ Die Option **Indikatoren wirken als Tasten** entscheidet nur, was *danach* passi
 
 **Das Ergebnis erscheint sofort.** Zwischen zwei Aktualisierungen des Bildschirmschoners hält der Adapter eine kurze Pause ein. Ein Druck auf einen Indikator beendet sie – das neue Symbol und die neue Farbe gehen ohne Wartezeit an das Panel.
 
-**Ein Druck, ein Ereignis.** Bis zur TFT 6.0.7 meldete ein Indikator seinen Druck zweimal, beim Auflegen und beim Abheben des Fingers; ein langer Druck schaltete dadurch zweimal. Ab der TFT 6.0.8 meldet er genau einen Druck – das betrifft `screensaver5` auf allen Modellen und `screensaver2` auf dem EU-Panel.
+**Ein Druck, ein Ereignis.** Bis zur TFT 6.0.7 meldete ein Indikator seinen Druck zweimal, beim Auflegen und beim Abheben des Fingers; ein langer Druck schaltete dadurch zweimal. Ab der TFT 6.0.8 meldet er genau einen Druck – in beiden Versionen mit Indikatoren (**Kacheln** `screensaver5` und **Advanced** `screensaver2`) und auf allen drei Modellen `eu`, `us-l` und `us-p`.
+
+**Advanced auf `us-l` und `us-p`.** Auf den beiden US-Modellen taten die Indikatoren der Version **Advanced** vorher überhaupt nichts: Die Felder der Seite hatten dort weder Code noch Kennung, ein Druck blieb ohne Wirkung und schrieb auch keinen State. Auch das ist mit der TFT 6.0.8 behoben. Auf das Panel kommt beides mit der Beta **6.0.9** (siehe [Voraussetzung: eine TFT mit der Seite screensaver5](#voraussetzung-eine-tft-mit-der-seite-screensaver5)).
 
 ## 9. Statussymbole
 
@@ -455,12 +457,12 @@ Die Version **Kacheln** zeichnet den Bildschirmschoner als Raster von Flächen: 
 
 ### Voraussetzung: eine TFT mit der Seite screensaver5
 
-Diese Version braucht eine TFT, die die Seite `screensaver5` enthält. Die offizielle `nspanel-v6.0.7.HMI` hat sie nicht; sie steckt nur in den Projektdateien des Repositorys (`HMI/nspanel-v6.0.8.screensaver5.HMI` und dieselben Dateien unter `HMI/us-l/` und `HMI/us-p/`). Die Versionsliste des Adapters nennt als TFT **5.1.1** (Modell `us-p`: 5.1.3) und als Beta **6.0.7** – keine davon hat die Seite.
+Diese Version braucht eine TFT, die die Seite `screensaver5` enthält. Die stabile TFT der Versionsliste – **5.1.1**, Modell `us-p`: **5.1.3** – hat sie nicht, die offizielle `nspanel-v6.0.7.HMI` ebenso wenig. Die **Beta 6.0.9** hat sie: Die Versionsliste nennt sie für alle drei Modelle, und der TFT-Server hält `nspanel-v6.0.9.tft`, `nspanel-us-l-v6.0.9.tft` und `nspanel-us-p-v6.0.9.tft` bereit. Mit dem Haken für die Beta führt das **TFT UPDATE** also auf eine TFT mit der Seite.
 
-- Das **TFT UPDATE** im Tab [Maintain](Maintain) lädt die Datei `nspanel[-modell]-v<version>.tft` vom TFT-Server; die Version kommt aus der Versionsliste, aus dem Haken *Beta-Firmware* oder aus der festgenagelten Version in den [Global Settings](globelSettings). Welche veröffentlichte TFT die Seite `screensaver5` enthält, steht im Repository nicht – mit den dort genannten Versionen führt der normale Update-Weg nicht dorthin.
+- Das **TFT UPDATE** im Tab [Maintain](Maintain) lädt die Datei `nspanel[-modell]-v<version>.tft` vom TFT-Server; die Version kommt aus der Versionsliste, aus dem Haken *Beta-Firmware* oder aus der festgenagelten Version in den [Global Settings](globelSettings). Für die Kacheln muss die Beta eingeschaltet sein – ohne sie lädt das Update die stabile 5.1.1 bzw. 5.1.3 ohne die Seite.
 - Eine Seite `screensaver4` der offiziellen HMI 6.0.7 ist eine davon unabhängige Animation und hat mit dieser Version nichts zu tun.
 - Der Admin prüft die TFT **nicht**: Die Version lässt sich wählen, auch wenn das Panel die Seite nicht hat. Der Adapter schickt dann `pageType~screensaver5` an ein Panel, das die Seite nicht kennt – was es daraufhin anzeigt, ist nicht dokumentiert.
-- 6.0.8 unterscheidet sich von 6.0.7 nur im Versionstext und darin, dass ein Indikator seinen Druck genau einmal meldet (siehe [Indikatoren und Tasten](#8-indikatoren-und-tasten)).
+- Die Projektdateien `nspanel[-modell]-v6.0.8.screensaver5.HMI` im Repository (`HMI/`, `HMI/us-l/`, `HMI/us-p/`) sind die Vorstufe: Gegenüber 6.0.7 meldet ein Indikator seinen Druck genau einmal, und auf `us-l`/`us-p` reagieren die Indikatoren der Version Advanced überhaupt erst (siehe [Indikatoren und Tasten](#8-indikatoren-und-tasten)). Eine veröffentlichte TFT 6.0.8 gibt es nicht; auf das Panel kommt das alles mit der 6.0.9.
 
 ### Einrichten
 
