@@ -14,7 +14,7 @@ Schalter für die Fehlersuche und ein Bereich, in dem die fest hinterlegten Down
 | **debugLogMqtt** | Protokolliert den MQTT-Verkehr ausführlich — nützlich, wenn ein Panel sich nicht meldet. |
 | **debugLogStates** | Protokolliert Änderungen an Datenpunkten. |
 | **debugLogPages** | Protokolliert den Aufbau und den Wechsel von Seiten. |
-| **logUnknownTokens** | Meldet Platzhalter in Texten, die der Adapter nicht auflösen konnte. |
+| **logUnknownTokens** | Meldet Platzhalter in Texten, die der Adapter nicht auflösen konnte. Der Schalter steht in der Oberfläche weiter unten im Bereich **Not used**, wirkt aber. |
 
 Diese Schalter erzeugen viel Text im Protokoll. Für die Fehlersuche einschalten, danach wieder aus — und die Protokollebene der Instanz auf `debug` stellen, sonst bleibt das meiste unsichtbar.
 
@@ -25,6 +25,7 @@ Diese Schalter erzeugen viel Text im Protokoll. Für die Fehlersuche einschalten
 | **Fix zerbrochene gemeinsame Typen reparieren** | Einmalige Reparatur: Beim nächsten Start korrigiert der Adapter Alias-Objekte, deren Typ fälschlich `state` statt `mixed` ist (ein bekannter Fehler aus dem Geräte-Adapter). Danach setzt er den Haken selbst wieder zurück. |
 | **Pinned TFT firmware version** | Erzwingt eine bestimmte TFT-Version statt der online ermittelten. **Nur zum Testen**, ohne Unterstützung — der Adapter warnt beim Start, solange hier etwas steht. |
 | **hideDeveloperSymbols** | Blendet das Zahnrad aus, das der Bildschirmschoner anzeigt, wenn eine Entwicklerversion der Display-Firmware läuft. |
+| **Testdatenpunkte anlegen** | Legt die Datenpunkte der Testumgebung an — alle Kanalrollen auf einmal, ohne eigene Objekte. Vorhandenes bleibt unverändert. Siehe [Testumgebung](Testumgebung). |
 
 ## Danger Zone
 
@@ -38,4 +39,4 @@ Die Felder sind gesperrt, bis **Bearbeitung der URLs erlauben** eingeschaltet wi
 | Berry-Treiber | `…/ioBroker.nspanel-lovelace-ui/main/tasmota/berry` |
 | TFT-Server | `http://nspanel.de` |
 
-Wer hier etwas ändert, bekommt Firmware aus einer anderen Quelle — im Zweifel also die Standardwerte stehen lassen. Der Abschnitt darunter ist mit **Not used** überschrieben; die Felder dort haben derzeit keine Funktion.
+Wer hier etwas ändert, bekommt Firmware aus einer anderen Quelle — im Zweifel also die Standardwerte stehen lassen. Der Abschnitt darunter ist mit **Not used** überschrieben. Das trifft nicht auf alles dort zu: `myCustomAttribute` ist wirklich ohne Funktion, **`logUnknownTokens` dagegen wird ausgewertet** (siehe Protokollierung).

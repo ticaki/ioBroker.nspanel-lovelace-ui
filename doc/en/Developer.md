@@ -14,7 +14,7 @@ Switches for troubleshooting and an area where the built-in download addresses c
 | **debugLogMqtt** | Logs the MQTT traffic in detail — useful when a panel stays silent. |
 | **debugLogStates** | Logs changes to states. |
 | **debugLogPages** | Logs how pages are built and switched. |
-| **logUnknownTokens** | Reports placeholders in texts that the adapter could not resolve. |
+| **logUnknownTokens** | Reports placeholders in texts that the adapter could not resolve. In the user interface the switch sits further down under **Not used**, but it does take effect. |
 
 These switches produce a lot of log output. Turn them on for troubleshooting and off afterwards — and set the instance log level to `debug`, otherwise most of it stays invisible.
 
@@ -25,6 +25,7 @@ These switches produce a lot of log output. Turn them on for troubleshooting and
 | **Fix broken common types** | A one-off repair: on the next start the adapter corrects alias objects whose type is wrongly `state` instead of `mixed` (a known issue from the devices adapter). Afterwards it clears the tick itself. |
 | **Pinned TFT firmware version** | Forces a specific TFT version instead of the one determined online. **For testing only**, without support — the adapter warns on every start while something is entered here. |
 | **hideDeveloperSymbols** | Hides the cog the screensaver shows while a developer build of the display firmware is running. |
+| **Create test states** | Creates the states of the test environment — every channel role at once, without building objects yourself. Existing objects stay untouched. See [Test environment](Testumgebung). |
 
 ## Danger zone
 
@@ -38,4 +39,4 @@ The fields stay locked until **allow editing of the URLs** is switched on — a 
 | Berry driver | `…/ioBroker.nspanel-lovelace-ui/main/tasmota/berry` |
 | TFT server | `http://nspanel.de` |
 
-Changing anything here means firmware from a different source — when in doubt, leave the defaults. The section below is headed **Not used**; those fields currently have no function.
+Changing anything here means firmware from a different source — when in doubt, leave the defaults. The section below is headed **Not used**. That is not true for everything in it: `myCustomAttribute` really has no function, **whereas `logUnknownTokens` is evaluated** (see Logging).
