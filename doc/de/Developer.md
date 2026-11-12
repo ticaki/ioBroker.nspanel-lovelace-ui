@@ -4,7 +4,7 @@ Schalter für die Fehlersuche und ein Bereich, in dem die fest hinterlegten Down
 
 > **Der Tab ist nur im Expertenmodus sichtbar.** Umschalten über das Kopf-Symbol unten links in der Seitenleiste des Admin; die Einstellung gilt nur für die laufende Browsersitzung.
 
-<img alt="Developer-Tab im Expertenmodus" src="../Pictures/developer/developer-01-expertenmodus.png" width="100%"/>
+<img alt="Reiter Entwickler im Expertenmodus" src="../Pictures/testumgebung/01-entwickler-knopf.png" width="100%"/>
 
 ## Protokollierung
 

@@ -4,7 +4,7 @@ Switches for troubleshooting and an area where the built-in download addresses c
 
 > **The tab is only visible in expert mode.** Toggle it with the head icon at the bottom left of the admin sidebar; the setting applies to the current browser session only.
 
-<img alt="Developer tab in expert mode" src="../Pictures/developer/developer-01-expertenmodus.png" width="100%"/>
+<img alt="Developer tab in expert mode" src="../Pictures/testumgebung/01-entwickler-knopf.png" width="100%"/>
 
 ## Logging
 
