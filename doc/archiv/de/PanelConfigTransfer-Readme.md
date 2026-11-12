@@ -1,5 +1,10 @@
 # Panel-Konfiguration exportieren und importieren
 
+> **Archiviert am 12.11.2026.** Diese Datei war die Vorarbeit zur Doku-Seite
+> [Panel-Konfiguration übertragen](../../de/panelConfigTransfer.md) und liegt hier nur noch zum Nachschlagen
+> der Prüftabelle. Maßgeblich ist die Doku-Seite — sie wurde am 12.11.2026 gegen den Code nachgezogen
+> (zehn Sachfehler, neunzehn Ergänzungen), deshalb können Angaben hier überholt sein.
+
 ## Anleitung
 
 ### Wofür
@@ -27,12 +32,12 @@ in der Datei.
 1. Im Admin auf den Reiter **Nspanel-Einstellungen** gehen.
 2. Auf der Kachel des Panels auf den **Export-Knopf** (Pfeil nach unten) klicken.
 
-   ![Export- und Import-Knopf auf der Kachel](00-tile-export-import-buttons.png)
+   ![Export- und Import-Knopf auf der Kachel](../../Pictures/panel-config-transfer/00-tile-export-import-buttons.png)
 
 3. Enthalten Seiten des Panels eine **PIN** (Alarm-/Entsperrseite) oder ein **WLAN-Passwort** (QR-Seite),
    fragt der Admin nach, ob diese mit in die Datei sollen:
 
-   ![Rückfrage zu PINs und Passwörtern](secrets-dialog.png)
+   ![Rückfrage zu PINs und Passwörtern](../../Pictures/panel-config-transfer/secrets-dialog.png)
 
    - **Ohne Passwörter exportieren** (Vorgabe): Die Datei enthält keine Geheimnisse und kann gefahrlos
      weitergegeben werden. Nach einem Import in ein anderes Panel geben Sie PIN bzw. Passwort dort neu ein.
@@ -48,10 +53,10 @@ in der Datei.
 2. Auswählen, welche Teile übernommen werden sollen – Seiten, Screensaver, Sonstiges –, dann
    **Datei auswählen**.
 
-   ![Teile auswählen](00b-import-groups.png)
+   ![Teile auswählen](../../Pictures/panel-config-transfer/00b-import-groups.png)
 
    Ist die Datei beschädigt oder keine Panel-Konfiguration, erscheint eine Fehlermeldung
-   ([Beispiel](09-invalid-file.png)). Fehlt ein gewählter Teil in der Datei, wird er übersprungen und angezeigt.
+   ([Beispiel](../../Pictures/panel-config-transfer/09-invalid-file.png)). Fehlt ein gewählter Teil in der Datei, wird er übersprungen und angezeigt.
 3. Es öffnet sich die **Übersicht**. Ganz oben wählen Sie den **Importmodus**:
 
    - **Zusammenführen** (Vorgabe): Die Admin-Seiten der Datei kommen auf das Panel. Die bisher diesem Panel
@@ -64,9 +69,9 @@ in der Datei.
      bleiben mit ihrer Navigation auf dem Panel – die Übersicht zeigt sie unter „Bleibt zusätzlich auf dem
      Panel“. Andere Panels ändern sich nicht. Dieser Modus geht nur, wenn der Teil **Seiten** importiert wird.
 
-   ![Zusammenführen: Übersicht mit Skriptseiten-Hinweisen](11-mode-merge.png)
+   ![Zusammenführen: Übersicht mit Skriptseiten-Hinweisen](../../Pictures/panel-config-transfer/11-mode-merge.png)
 
-   ![Komplett überschreiben: Übersicht mit „Bleibt zusätzlich auf dem Panel“](12-mode-overwrite.png)
+   ![Komplett überschreiben: Übersicht mit „Bleibt zusätzlich auf dem Panel“](../../Pictures/panel-config-transfer/12-mode-overwrite.png)
 
    Darunter stehen Hinweise, z. B. dass vorhandene Einstellungen des Panels
    ersetzt werden, dass die Datei von einem Panel mit anderem Modell stammt oder auf welchen Seiten Sie
@@ -96,40 +101,40 @@ in der Datei.
    umbenannt, ändern sich auch die Seiten, die auf sie verweisen – sie erscheinen dann ebenfalls als
    „unterschiedlich“.
 
-   ![Übersicht mit Konflikten](04-conflicts-review.png)
+   ![Übersicht mit Konflikten](../../Pictures/panel-config-transfer/04-conflicts-review.png)
 
    Ein Klick auf **unterschiedlich** zeigt, was sich genau unterscheidet, z. B. Überschrift, einzelne Elemente
    oder die Navigation:
 
-   ![Unterschiede einer Seite](05-diff-dialog.png)
+   ![Unterschiede einer Seite](../../Pictures/panel-config-transfer/05-diff-dialog.png)
 
    Wählen Sie **vorhandene ersetzen** für eine Seite, die auch andere Panels zeigen, fragt der Admin noch
    einmal nach und nennt diese Panels – sie ändern sich mit:
 
-   ![Rückfrage beim Ersetzen](06-replace-confirm.png)
+   ![Rückfrage beim Ersetzen](../../Pictures/panel-config-transfer/06-replace-confirm.png)
 
 4. Auf **Importieren** klicken. Bei **Komplett überschreiben** fragt der Admin vorher nach und zählt auf, was
    wegfällt: welche eigenen Seiten vom Panel entfernt werden (aufklappbare Liste – die Seiten selbst bleiben
    erhalten), dass das Panel-Skript abgeschaltet wird und welche Skriptseiten verschwinden, welche geänderte
    Navigation gelöscht wird und was unverändert bleibt. Vorausgewählt ist **Abbrechen**.
 
-   ![Sicherheitsabfrage bei „Komplett überschreiben“](13-overwrite-confirm.png)
+   ![Sicherheitsabfrage bei „Komplett überschreiben“](../../Pictures/panel-config-transfer/13-overwrite-confirm.png)
 
    Im häufigsten Fall – Sicherung ins selbe Panel zurückspielen oder Import in ein
    leeres Panel – ist nichts zu entscheiden, ein Klick genügt.
 
-   ![Sicherung ins selbe Panel](01-same-panel-review.png)
+   ![Sicherung ins selbe Panel](../../Pictures/panel-config-transfer/01-same-panel-review.png)
 
 5. Die **Zusammenfassung** zeigt, was angelegt, umbenannt, ersetzt oder übersprungen wurde und wo Sie PIN
    oder Passwort neu eingeben müssen.
 
-   ![Zusammenfassung](07c-result-secrets.png)
+   ![Zusammenfassung](../../Pictures/panel-config-transfer/07c-result-secrets.png)
 
    Zeigt danach ein Navigationsverweis (vor, zurück, hoch, Home) auf eine Seite, die es auf diesem Panel nicht
    gibt, listet die Zusammenfassung ihn unter „Navigation zeigt auf Seiten, die nicht auf diesem Panel sind“.
    Der Admin korrigiert das nicht selbst – bitte die Navigation dieser Seiten prüfen.
 
-   ![Zusammenfassung nach „Komplett überschreiben“](14-overwrite-result.png)
+   ![Zusammenfassung nach „Komplett überschreiben“](../../Pictures/panel-config-transfer/14-overwrite-result.png)
 
 6. **Speichern** drücken. Seiten, Screensaver, Tasten und Navigation gelten erst nach dem Speichern. Die
    **Panel-Einstellungen** (Timeout, Helligkeit usw.) werden dagegen schon beim Importieren sofort
@@ -147,7 +152,7 @@ in der Datei.
   „vorhandene ersetzen“ wirkt auch auf andere Panels – deshalb die Rückfrage.
 - **Anderes Modell:** Stammt die Datei von einem Panel mit anderem Modell (z. B. EU-Panel → Smartphone hochkant),
   passen nicht immer gleich viele Elemente auf eine Seite bzw. in den Screensaver. Prüfen Sie die Seiten
-  nach dem Import ([Beispiel](02-empty-panel-review.png)).
+  nach dem Import ([Beispiel](../../Pictures/panel-config-transfer/02-empty-panel-review.png)).
 - Vorher zugeordnete Seiten des Ziel-Panels, die nicht in der Datei stehen, werden nur vom Panel gelöst, nicht
   gelöscht – sie bleiben in der Seitenliste. Das gilt für beide Modi.
 - **Skript wieder einschalten:** Nach **Komplett überschreiben** ist „Panel benutzt kein Skript“ gesetzt. Wer das
