@@ -153,6 +153,11 @@ const _Screensaver = class _Screensaver extends import_Page.Page {
     __publicField(this, "colorsDropped", false);
     /** the HMI drops `weatherUpdate` while a notification is shown */
     __publicField(this, "weatherDropped", false);
+    /**
+     * The page was loaded again (`pageType~`): `time~` follows the content of the next update(), behind `color~` and
+     * `weatherUpdate~` - the HMI sets the clock from a global variable while loading the page, it is not urgent.
+     */
+    __publicField(this, "timeAfterRender", false);
     __publicField(this, "onTimerItemChange", () => {
       this.clockTimerListeners.forEach((listener) => listener());
       void this.onStateTriggerSuperDoNotOverride("timer", this);
@@ -906,6 +911,27 @@ const _Screensaver = class _Screensaver extends import_Page.Page {
     super.sendType(force);
   }
   /**
+   * The screensaver takes its first colors along with the pageType: `pageType~<card>~~<bg>?<time>?<ampm>?<date>`
+   * (the values of the fields 1-4 of `color~`). TFT 6.1.0+ sets them while loading the page, before it is drawn the
+   * first time - without them `color~` draws the whole page again. Older TFTs only read field 1 and keep field 3 in
+   * a variable the screensavers do not use. `color~` still follows for all other colors.
+   *
+   * @returns the pageType message with the colors
+   */
+  getPageTypePayload() {
+    const payload = super.getPageTypePayload();
+    if (!globals.isScreenSaverCardType(this.card)) {
+      return payload;
+    }
+    return `${payload}~~${this.pageTypeColors()}`;
+  }
+  /**
+   * @returns background, time, AM/PM and date color as RGB565, separated by `?`
+   */
+  pageTypeColors() {
+    return [import_Color.Color.background, this.timeColor(), import_Color.Color.fgTimeAmPm, import_Color.Color.fgDate].map((color) => import_Color.Color.rgb_dec565(color)).join("?");
+  }
+  /**
    * Every `pageType~` loads the page again on the HMI: empty values, default colors and no notification
    * (`vscope` 0, `txt` empty in tNotifyHead and tNotifyText, `load` hides both), whoever asked for it.
    * Everything follows with the next update(), each way that sends a pageType runs one.
@@ -924,6 +950,7 @@ const _Screensaver = class _Screensaver extends import_Page.Page {
       this.lastTimerPayload = "";
       this.notifyHidden = false;
       this.lastUpdateTs = 0;
+      this.timeAfterRender = true;
     }
     super.sendToPanelClass(payload, ackForType, force, opt);
   }
@@ -946,6 +973,8 @@ const _Screensaver = class _Screensaver extends import_Page.Page {
    * - At most one burst every 2 s: a change arriving earlier waits for one deferred update, which reads the values
    *   again. Time/date updates are not affected, a press on an item ends the pause.
    * - Status icons and notifications come along with every update that is not deferred, only when they changed.
+   * - After a `pageType~` the order is `color~` (draws the empty page with its background), `weatherUpdate~`,
+   *   `time~` and then everything else.
    */
   async update() {
     if (!this.visibility) {
@@ -954,7 +983,11 @@ const _Screensaver = class _Screensaver extends import_Page.Page {
     const run = ++this.updateRun;
     await super.update();
     const message = await this.getData(["left", "bottom", "indicator", "alternate", "favorit"]);
-    if (message === null || run !== this.updateRun || !this.visibility) {
+    if (run !== this.updateRun || !this.visibility) {
+      return;
+    }
+    if (message === null) {
+      await this.sendTimeAfterRender();
       return;
     }
     if (message.options.alternate.length > 0) {
@@ -978,14 +1011,26 @@ const _Screensaver = class _Screensaver extends import_Page.Page {
             void this.update();
           }, wait);
         }
+        await this.sendTimeAfterRender();
         return;
       }
       this.lastUpdateTs = now;
-      this.sendWeather(msg);
       this.sendColors();
+      this.sendWeather(msg);
     }
+    await this.sendTimeAfterRender();
     await this.HandleScreensaverStatusIcons();
     await this.HandleNotification();
+  }
+  /**
+   * Sends `time~` once after a `pageType~`, see {@link timeAfterRender}.
+   */
+  async sendTimeAfterRender() {
+    if (!this.timeAfterRender) {
+      return;
+    }
+    this.timeAfterRender = false;
+    await this.HandleTime();
   }
   async createPageItems(pageItemsConfig) {
     return await super.createPageItems(pageItemsConfig);
@@ -1040,9 +1085,10 @@ const _Screensaver = class _Screensaver extends import_Page.Page {
       this.timerTappedAway = false;
       this.lastTimerTap = 0;
       this.lastTimerPayload = "";
+      this.timeAfterRender = true;
       this.sendType();
-      await this.HandleTime();
       await this.restartRotationLoop();
+      await this.sendTimeAfterRender();
     } else {
       if (this.timeoutRotation) {
         this.adapter.clearTimeout(this.timeoutRotation);
@@ -1084,7 +1130,7 @@ const _Screensaver = class _Screensaver extends import_Page.Page {
       if (!this.adapter.config.hideDeveloperSymbols) {
         icon = `~${import_icon_mapping.Icons.GetIcon("cog-refresh-outline")}`;
       }
-    } else if (!icon && this.basePanel.info.nspanel.onlineVersion !== this.basePanel.info.nspanel.displayVersion) {
+    } else if (!icon && tools.isVersionOlder(this.basePanel.info.nspanel.displayVersion, this.basePanel.info.nspanel.onlineVersion)) {
       icon = `~${import_icon_mapping.Icons.GetIcon("wrench-clock")}`;
     }
     const colorsChanged = !!this.clockTimer && this.visibility && (this.colorTimerStatus !== timer.status || this.colorTimerShown !== showTimer);
@@ -1480,10 +1526,6 @@ const _Screensaver = class _Screensaver extends import_Page.Page {
     if (!init && this.visibility) {
       this.sendType();
       void this.update();
-      if (this.clockTimer) {
-        this.lastTimerPayload = "";
-        void this.HandleTime();
-      }
     }
   }
   static mapModeToNumber(mode) {

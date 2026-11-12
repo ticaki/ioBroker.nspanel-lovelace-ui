@@ -564,6 +564,24 @@ describe('lib/pages/screensaver - timer instead of the clock', () => {
             expect(timesOf(sent)).to.deep.equal([`time~0.0~${ALERT}`]);
         });
 
+        it('shows the update symbol only if the display has an older TFT', async () => {
+            const WRENCH = Icons.GetIcon('wrench-clock');
+            const cases: [string, string, string][] = [
+                ['6.0.8', '6.0.9', `time~12:34~${WRENCH}`],
+                ['6.0.9', '6.0.9', 'time~12:34'],
+                ['6.1.0', '6.0.9', 'time~12:34'],
+                ['', '6.0.9', 'time~12:34'],
+                ['6.0.8', '', 'time~12:34'],
+            ];
+            for (const [displayVersion, onlineVersion, expected] of cases) {
+                const f = await setup(simple, { 'x.0.on': false, 'x.0.ts': 0 });
+                f.saver.basePanel.isVirtual = false;
+                f.saver.basePanel.info.nspanel = { displayVersion, onlineVersion };
+                const sent = await f.during(() => f.saver.HandleTime());
+                expect(timesOf(sent), `${displayVersion} / ${onlineVersion}`).to.deep.equal([expected]);
+            }
+        });
+
         it('shows the clock with the info icon while the on/off state is off', async () => {
             const f = await setup(simple, { 'x.0.on': false, 'x.0.ts': NOW + 90_000 });
             f.saver._infoIcon = 'wrench';
@@ -649,6 +667,23 @@ describe('lib/pages/screensaver - timer instead of the clock', () => {
     });
 
     describe('color', () => {
+        it('the pageType carries background, time, AM/PM and date color of color~ (TFT 6.1.0)', async () => {
+            const f = await setup(simple, { 'x.0.on': true, 'x.0.ts': NOW + 120_000 });
+            await f.saver.HandleTime();
+            f.saver.basePanel.lastCard = 'cardGrid';
+            const sent = await f.during(async () => f.saver.sendType());
+            const pageType = sent.find(m => m.startsWith('pageType~'))!;
+            const fields = pageType.split('~');
+            // field 1 stays the page for older TFTs, field 2 is empty
+            expect(fields[1]).to.equal(f.saver.card);
+            expect(fields[2]).to.equal('');
+            const color = f.saver.colorPayload().split('~');
+            expect(fields[3]).to.equal(color.slice(1, 5).join('?'));
+            // the clock shows the running timer
+            expect(fields[3].split('?')[1]).to.equal(ORANGE);
+            expect(fields).to.have.length(4);
+        });
+
         it('holds the override and is sent once per change of the status, not per minute', async () => {
             const f = await setup(simple, { 'x.0.on': true, 'x.0.ts': NOW + 120_000 });
             const start = await f.during(() => f.saver.HandleTime());
@@ -1202,8 +1237,8 @@ describe('lib/pages/screensaver - timer instead of the clock', () => {
                 at(5000);
                 s.saver.resetLastMessage();
                 expect(s.kinds(await s.during(() => s.saver.update()))).to.deep.equal([
-                    'weatherUpdate',
                     'color',
+                    'weatherUpdate',
                     'statusUpdate',
                 ]);
             });
@@ -1303,14 +1338,48 @@ describe('lib/pages/screensaver - timer instead of the clock', () => {
                 const s = await scene({ notify: true });
                 await s.show();
                 const again = await s.show();
+                // color~ first (draws the empty page), then the content, the time and the rest
                 expect(s.kinds(again)).to.deep.equal([
                     'pageType',
-                    'time',
-                    'weatherUpdate',
                     'color',
+                    'weatherUpdate',
+                    'time',
                     'statusUpdate',
                     'notify',
                 ]);
+            });
+
+            it('a change of the mode sends the new page in the same order', async () => {
+                const s = await scene({ notify: true });
+                await s.show();
+                const sent = await s.during(async () => {
+                    s.saver.overwriteModel(4);
+                    for (let i = 0; i < 20; i++) {
+                        await new Promise(resolve => setImmediate(resolve));
+                    }
+                });
+                expect(s.kinds(sent)).to.deep.equal([
+                    'pageType',
+                    'color',
+                    'weatherUpdate',
+                    'time',
+                    'statusUpdate',
+                    'notify',
+                ]);
+            });
+
+            it('the time follows the content also when the update has nothing to send', async () => {
+                const s = await scene();
+                await s.show();
+                const getData = s.saver.getData.bind(s.saver);
+                // no data for the content, the time is there
+                s.saver.getData = async (places: string[]): Promise<unknown> =>
+                    places.includes('left') ? Promise.resolve(null) : getData(places);
+                const sent = await s.during(async () => {
+                    s.saver.sendType(true);
+                    await s.saver.update();
+                });
+                expect(s.kinds(sent)).to.deep.equal(['pageType', 'time']);
             });
 
             it('sends no empty notify', async () => {
@@ -1352,7 +1421,14 @@ describe('lib/pages/screensaver - timer instead of the clock', () => {
                 await s.saver.onTimerTap('bExit', '1');
                 expect(await s.during(() => s.saver.HandleNotification())).to.deep.equal([]);
                 const sent = await s.sleepReachedOnSamePage();
-                expect(s.kinds(sent)).to.deep.equal(['pageType', 'weatherUpdate', 'color', 'statusUpdate', 'notify']);
+                expect(s.kinds(sent)).to.deep.equal([
+                    'pageType',
+                    'color',
+                    'weatherUpdate',
+                    'time',
+                    'statusUpdate',
+                    'notify',
+                ]);
             });
 
             it('sleepReached on the active page sends the pageType also right behind another one', async () => {
@@ -1475,7 +1551,7 @@ describe('lib/pages/screensaver - timer instead of the clock', () => {
                 s.now.value = 'C';
                 s.saver.timeColor = (): RGB => Color.Red;
                 at(10_000);
-                expect(s.kinds(await s.during(() => s.saver.update()))).to.deep.equal(['weatherUpdate', 'color']);
+                expect(s.kinds(await s.during(() => s.saver.update()))).to.deep.equal(['color', 'weatherUpdate']);
                 expect(s.saver.weatherDropped).to.equal(false);
                 expect(s.saver.colorsDropped).to.equal(false);
                 // no repeat with the next touch, and none when the notification ends

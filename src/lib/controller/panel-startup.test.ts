@@ -21,6 +21,7 @@ function setup(kind: 'web' | 'mqtt'): { panel: Panel; runs: string[]; maxParalle
         initDone: true,
         _isOnline: false,
         screenSaver: {},
+        panelSend: { displayAck: false },
         startupInProgress: null,
         startupRepeat: null,
         log: { silly: noop, debug: noop, info: noop, warn: noop, error: noop },

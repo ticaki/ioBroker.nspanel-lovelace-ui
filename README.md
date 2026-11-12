@@ -160,10 +160,20 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
 -->
 ### **WORK IN PROGRESS**
 - (ticaki) screensaver tiles: an icon whose template asks for a font without icons (battery) is shown in the default font; admin marks fonts without icons
+- (ticaki) panel: with the TFT 6.1.0 the display confirms every message it processed, the adapter sends the next one right away instead of waiting a fixed 250 ms - pages, and the screensaver in particular, build up noticeably faster
+- (ticaki) screensaver: after the page is loaded the colors and the content are sent first, the time follows; with the TFT 6.1.0 the page takes its background and clock colors with the page change and is drawn only once, no black flash before the background color
+- (ticaki) screensaver advanced: with the TFT 6.1.0 it follows the colors of the color theme like the other screensavers
+- (ticaki) berry driver 12: the checksum of a message is computed about five times faster, and the adapter can hand it over ready-made - large messages reach the display about 0.2 s earlier
+- (ticaki) emulator berry (`tasmota/Emulator/autoexec.be`): brought up to driver 12 and reports the version -12 (emulator of generation 12, the maintain tab shows "Emulator (12)") - splits every read into single messages, so several acknowledgements of the TFT 6.1.0 in one read no longer arrive as raw `nextion` data, takes the ready-made checksum, uses the faster checksum and keeps running after an error; the raw traffic is now in the log at level 4 instead of the console
+- (ticaki) icons: the media players of cardMedia as normal icons `alexa`, `mpd`, `sonos`, `bose` and `volumio` (TFT 6.1.0, `spotify` and `dlna` already existed); the web panel draws the player logos with them
+- (ticaki) panel: a restart of the adapter during the first seconds of a TFT update no longer restarts Tasmota and breaks the update
+- (ticaki) screensaver: the update symbol next to the clock only shows when the TFT is older than the recommended one, not for a newer TFT
+- (ticaki) admin: the maintain tab shows the berry driver of every panel and offers an update like for TFT and script; Tasmota restarts after a successful download
 - (ticaki) battery templates no longer ask for a font without icons - the battery icon shows on cardGrid as well
 - (ticaki) emulator: every negative berry driver version (e.g. -12 of future emulator drivers, absolute value = driver generation) is recognized as emulator, not only -1
 - (ticaki) navigation: the arrows of the service page no longer take over the navigation of another panel (warning "Didn't find a navigation node" with page names of another panel, or a wrong arrow target)
 - (ticaki) developer tab: button "Create test states" creates the objects of the test environment (all channel roles, power, chart and trash data) below 0_userdata.0.NSPanelTest / alias.0.NSPanelTest, only the missing ones
+- (ticaki) berry driver 12 and emulator berry: a message of the display split over two serial reads is put together again instead of being lost
 - (ticaki) pages: a long headline is shortened with … to the width of the title line of the panel model instead of being cut by the display
 - (ticaki) web panel: smartphone models `web-p` (portrait, 320x640) and `web-l` (landscape, 640x320) for standalone web panels; the menu cards, the screensaver and the popups show more items there, the admin shows the places per model
 - (ticaki) web panel: the two hardware buttons below the display can be switched off per web panel (off by default on the smartphone models)

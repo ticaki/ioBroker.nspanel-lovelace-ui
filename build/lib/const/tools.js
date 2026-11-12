@@ -31,6 +31,7 @@ __export(tools_exports, {
   GetIconColor: () => GetIconColor,
   alignText: () => alignText,
   buildScrollingText: () => buildScrollingText,
+  compareVersions: () => compareVersions,
   deepAssign: () => deepAssign,
   default: () => tools_default,
   dropIconFontWithoutGlyphs: () => dropIconFontWithoutGlyphs,
@@ -70,6 +71,7 @@ __export(tools_exports, {
   isPortraitModel: () => isPortraitModel,
   isValidDate: () => isValidDate,
   isVersionGreaterOrEqual: () => isVersionGreaterOrEqual,
+  isVersionOlder: () => isVersionOlder,
   isWebModel: () => isWebModel,
   menuMaxItems: () => menuMaxItems,
   messageItemDefault: () => messageItemDefault,
@@ -1086,6 +1088,27 @@ function isVersionGreaterOrEqual(a, b) {
   const bNum = getVersionAsNumber(b);
   return aNum >= bNum;
 }
+function compareVersions(a, b) {
+  const parse = (v) => {
+    const m = typeof v === "string" ? v.match(/(\d+)\.(\d+)\.(\d+)/) : null;
+    return m ? [Number(m[1]), Number(m[2]), Number(m[3])] : null;
+  };
+  const pa = parse(a);
+  const pb = parse(b);
+  if (!pa || !pb) {
+    return null;
+  }
+  for (let i = 0; i < 3; i++) {
+    if (pa[i] !== pb[i]) {
+      return pa[i] - pb[i];
+    }
+  }
+  return 0;
+}
+function isVersionOlder(installed, available) {
+  const cmp = compareVersions(installed, available);
+  return cmp !== null && cmp < 0;
+}
 function buildScrollingText(title, options = {}) {
   var _a;
   const {
@@ -1225,6 +1248,7 @@ function shortenHeadline(text, model) {
   GetIconColor,
   alignText,
   buildScrollingText,
+  compareVersions,
   deepAssign,
   dropIconFontWithoutGlyphs,
   formatHMS,
@@ -1263,6 +1287,7 @@ function shortenHeadline(text, model) {
   isPortraitModel,
   isValidDate,
   isVersionGreaterOrEqual,
+  isVersionOlder,
   isWebModel,
   menuMaxItems,
   messageItemDefault,

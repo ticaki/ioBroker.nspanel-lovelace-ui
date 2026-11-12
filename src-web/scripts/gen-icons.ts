@@ -1,9 +1,12 @@
 /**
  * Generates the icon data of the web panel:
  *  - src/icons/glyph-map.json : HMI font glyph -> MDI icon name (from src/lib/const/icon_mapping.ts)
- *  - public/icons/mdi-paths.json : MDI icon name -> svg path (from @mdi/svg), only the names of the map,
+ *  - public/icons/mdi-paths.json : MDI icon name -> svg path (from `@mdi/svg`), only the names of the map,
  *    served as /icons/mdi-paths.json and fetched by src/icons/iconData.ts at startup. Names that MDI
  *    removed take the drawing of the HMI font from script/icons.json
+ *
+ * The media logos of cardMedia (`logo-alexa`, ...) are pictures in the HMI; the web panel draws the
+ * normal icon of the same player (`alexa`, ...) instead.
  *
  * Runs in `prebuild`. Names without an MDI icon are listed on stderr.
  */
@@ -19,6 +22,17 @@ const hmiIconsFile = path.join(webRoot, '..', 'script', 'icons.json');
 const outDir = path.join(webRoot, 'src', 'icons');
 // the svg paths are big (~2.4 MB) and fetched at runtime from /icons/mdi-paths.json
 const publicDir = path.join(webRoot, 'public', 'icons');
+
+/** media logos of cardMedia (the adapter sends the name itself as "glyph") -> icon of the player */
+const logoIcons: Readonly<Record<string, string>> = {
+    'logo-alexa': 'alexa',
+    'logo-bose': 'bose',
+    'logo-dnla': 'dlna',
+    'logo-mpd': 'mpd',
+    'logo-sonos': 'sonos',
+    'logo-spotify': 'spotify',
+    'logo-volumio': 'volumio',
+};
 
 function main(): void {
     const source = fs.readFileSync(mappingFile, 'utf8');
@@ -44,9 +58,10 @@ function main(): void {
     const paths: Record<string, string> = {};
     const missing: string[] = [];
     for (const name of [...names].sort()) {
-        const file = path.join(mdiSvgDir, `${name}.svg`);
+        const icon = logoIcons[name] ?? name;
+        const file = path.join(mdiSvgDir, `${icon}.svg`);
         if (!fs.existsSync(file)) {
-            const data = hmiPaths.get(name);
+            const data = hmiPaths.get(icon);
             if (data) {
                 paths[name] = data;
             } else {

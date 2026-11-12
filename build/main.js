@@ -1103,7 +1103,7 @@ class NspanelLovelaceUi extends utils.Adapter {
   //  * Using this method requires "common.messagebox" property to be set to true in io-package.json
   //  */
   async onMessage(obj) {
-    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _A, _B, _C, _D, _E, _F, _G, _H;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M;
     if (typeof obj === "object" && obj.message !== void 0 && obj.command) {
       this.log.debug((0, import_redact.stringifyForLog)(obj));
       if (obj.command === "tftInstallSendToMQTT") {
@@ -1592,6 +1592,32 @@ class NspanelLovelaceUi extends utils.Adapter {
                 const url = this.getBerryInstallUrl(obj.message.tasmotaIP, version);
                 this.log.info(`Installing berry on tasmota with IP ${obj.message.tasmotaIP}`);
                 await this.fetch(url);
+                if (obj.message.restart === true) {
+                  if (this.mqttClient && typeof obj.message.topic === "string" && obj.message.topic) {
+                    try {
+                      await this.mqttClient.waitTasmotaUrlFetch(obj.message.topic, 1e4);
+                    } catch {
+                      this.log.error(
+                        `Did not receive download confirmation from tasmota ${obj.message.tasmotaIP} after berry install - no restart.`
+                      );
+                      if (obj.callback) {
+                        this.sendTo(
+                          obj.from,
+                          obj.command,
+                          { error: "sendToRequestFailBerry" },
+                          obj.callback
+                        );
+                      }
+                      break;
+                    }
+                  } else {
+                    await this.delay(3e3);
+                  }
+                  this.log.info(
+                    `Restarting tasmota with IP ${obj.message.tasmotaIP} after berry install`
+                  );
+                  await this.fetch(this.getRestartTasmotaUrl(obj.message.tasmotaIP));
+                }
                 if (obj.callback) {
                   this.sendTo(obj.from, obj.command, [], obj.callback);
                 }
@@ -1632,6 +1658,9 @@ class NspanelLovelaceUi extends utils.Adapter {
                 }
                 const url = `http://${obj.message.tasmotaIP}/cm?${this.config.useTasmotaAdmin ? `user=admin&password=${this.config.tasmotaAdminPassword}` : ``}&cmnd=Backlog ${cmnd}`;
                 this.log.debug((0, import_redact.redactSecretsInText)(url));
+                await this.markTftFlashStarting(
+                  (_k = this.config.panels.find((p) => p && p.ip === obj.message.tasmotaIP)) == null ? void 0 : _k.id
+                );
                 await this.fetch(url);
                 if (obj.callback) {
                   this.sendTo(obj.from, obj.command, [], obj.callback);
@@ -1671,10 +1700,11 @@ class NspanelLovelaceUi extends utils.Adapter {
                   }
                   break;
                 }
-                if ((_k = this.controller) == null ? void 0 : _k.panels) {
+                if ((_l = this.controller) == null ? void 0 : _l.panels) {
                   const index = this.controller.panels.findIndex((a) => a.topic === obj.message.topic);
                   if (index !== -1) {
                     const panel = this.controller.panels[index];
+                    await this.markTftFlashStarting(panel.name);
                     panel.sendToTasmota(`${panel.topic}/cmnd/Backlog`, cmnd);
                     await this.delay(100);
                     panel.sendToTasmota(`${panel.topic}/cmnd/Backlog`, ``);
@@ -1823,7 +1853,15 @@ class NspanelLovelaceUi extends utils.Adapter {
             }
             return 0;
           };
-          if ((_l = this.controller) == null ? void 0 : _l.panels) {
+          let berryOnline = 0;
+          if ((_m = this.controller) == null ? void 0 : _m.panels.some((a) => !a.isVirtual)) {
+            const versions = await this.getVersionsJson();
+            const useBeta = typeof ((_n = obj.message) == null ? void 0 : _n.useBetaTFT) === "boolean" ? obj.message.useBetaTFT : !!this.config.useBetaTFT;
+            const entry = versions ? useBeta ? versions["berry-beta"] : versions.berry : void 0;
+            const parsed = entry ? parseInt(String(entry).split("_")[0]) : NaN;
+            berryOnline = Number.isFinite(parsed) && parsed > 0 ? parsed : 0;
+          }
+          if ((_o = this.controller) == null ? void 0 : _o.panels) {
             const updateText = this.library.getTranslation("updateAvailable");
             const downgradeText = this.library.getTranslation("downgradeAvailable");
             const checkText = this.library.getTranslation("check!");
@@ -1846,7 +1884,7 @@ class NspanelLovelaceUi extends utils.Adapter {
               const o = await this.getForeignObjectAsync(scriptId);
               const noScript = (0, import_no_script.isNoScriptPanel)(this.config.panels, a.topic);
               if (o && !noScript) {
-                const temp2 = (_n = (_m = o.common.source.match(/const.version.+'(\d+\.\d+\.\d+)';/)) == null ? void 0 : _m[1]) != null ? _n : "";
+                const temp2 = (_q = (_p = o.common.source.match(/const.version.+'(\d+\.\d+\.\d+)';/)) == null ? void 0 : _p[1]) != null ? _q : "";
                 if (temp2 !== version) {
                   check = true;
                   check_script = true;
@@ -1856,13 +1894,13 @@ class NspanelLovelaceUi extends utils.Adapter {
                 }
               }
               if (a.info) {
-                if ((_o = a.info.tasmota) == null ? void 0 : _o.firmwareversion) {
+                if ((_r = a.info.tasmota) == null ? void 0 : _r.firmwareversion) {
                   const temp2 = a.info.tasmota.firmwareversion.match(/([0-9]+\.[0-9]+\.[0-9]+)/);
                   if (temp2 && temp2[1]) {
                     tv = `${temp2[1]}`;
                   }
                 }
-                if (((_p = a.info.tasmota) == null ? void 0 : _p.onlineVersion) && tv) {
+                if (((_s = a.info.tasmota) == null ? void 0 : _s.onlineVersion) && tv) {
                   const temp2 = a.info.tasmota.onlineVersion.match(/([0-9]+\.[0-9]+\.[0-9]+)/);
                   if (temp2 && temp2[1]) {
                     const cmp = compareSemver(temp2[1], tv);
@@ -1877,13 +1915,13 @@ class NspanelLovelaceUi extends utils.Adapter {
                   }
                 }
                 tv = tv ? `v${tv}` : "";
-                if ((_q = a.info.nspanel) == null ? void 0 : _q.displayVersion) {
+                if ((_t = a.info.nspanel) == null ? void 0 : _t.displayVersion) {
                   const temp2 = a.info.nspanel.displayVersion.match(/([0-9]+\.[0-9]+\.[0-9]+)/);
                   if (temp2 && temp2[1]) {
                     nv = `${temp2[1]}`;
                   }
                 }
-                if (((_r = a.info.nspanel) == null ? void 0 : _r.onlineVersion) && nv) {
+                if (((_u = a.info.nspanel) == null ? void 0 : _u.onlineVersion) && nv) {
                   const temp2 = a.info.nspanel.onlineVersion.match(/([0-9]+\.[0-9]+\.[0-9]+)/);
                   if (temp2 && temp2[1]) {
                     const cmp = compareSemver(temp2[1], nv);
@@ -1904,24 +1942,46 @@ class NspanelLovelaceUi extends utils.Adapter {
                 }
                 nv = nv ? `v${nv}` : "";
               }
+              const bv = (0, import_berry_driver.parseDriverVersion)((_w = (_v = a.info) == null ? void 0 : _v.nspanel) == null ? void 0 : _w.berryDriverVersion);
+              const isEmulator = (0, import_berry_driver.isEmulatorDriverVersion)(bv);
+              const noBerry = a.isVirtual || isEmulator;
+              let check_berry = false;
+              let bvText = "???";
+              if (isEmulator) {
+                const gen = (0, import_berry_driver.driverGeneration)(bv);
+                bvText = gen > 1 ? `${gen}` : "";
+              } else if (noBerry) {
+                bvText = "---";
+              } else if (bv > 0) {
+                bvText = `${bv}`;
+                if (berryOnline > 0 && berryOnline !== bv) {
+                  bvText += ` (${berryOnline > bv ? updateText : downgradeText}: ${berryOnline})`;
+                  check = true;
+                  check_berry = true;
+                }
+              }
               added.push(a.topic);
               temp.push({
                 _check: check,
                 _check_tasmota: check_tasmota,
                 _check_tft: check_tft,
                 _check_script: check_script,
+                _check_berry: check_berry,
                 _Headline: `${a.friendlyName} (${ft ? ft : `${check ? checkText : `${a.isOnline ? "online" : a.flashing ? `flashing` : "offline"}`}`})`,
                 _name: a.friendlyName,
-                _ip: a.isVirtual ? "" : ((_u = (_t = (_s = a.info) == null ? void 0 : _s.tasmota) == null ? void 0 : _t.net) == null ? void 0 : _u.IPAddress) ? a.info.tasmota.net.IPAddress : "offline - waiting",
+                _ip: a.isVirtual ? "" : ((_z = (_y = (_x = a.info) == null ? void 0 : _x.tasmota) == null ? void 0 : _y.net) == null ? void 0 : _z.IPAddress) ? a.info.tasmota.net.IPAddress : "offline - waiting",
                 _online: a.isOnline && a.initDone ? "yes" : "no",
                 _flashing: a.flashing,
                 _topic: a.topic,
-                _id: ((_x = (_w = (_v = a.info) == null ? void 0 : _v.tasmota) == null ? void 0 : _w.net) == null ? void 0 : _x.Mac) ? a.info.tasmota.net.Mac : "",
+                _id: ((_C = (_B = (_A = a.info) == null ? void 0 : _A.tasmota) == null ? void 0 : _B.net) == null ? void 0 : _C.Mac) ? a.info.tasmota.net.Mac : "",
                 _tftVersion: nv ? nv : "???",
                 _tasmotaVersion: tv ? tv : "???",
+                _berryVersion: bvText,
+                _noBerry: noBerry,
+                _isEmulator: isEmulator,
                 _ScriptVersion: noScript ? "---" : sv ? `v${sv}` : "???",
                 _noScript: noScript,
-                _nsPanelModel: a.isVirtual ? a.info.nspanel.model : ((_z = (_y = a.info) == null ? void 0 : _y.nspanel) == null ? void 0 : _z.model) ? a.info.nspanel.model == "eu" ? "" : a.info.nspanel.model : ""
+                _nsPanelModel: a.isVirtual ? a.info.nspanel.model : ((_E = (_D = a.info) == null ? void 0 : _D.nspanel) == null ? void 0 : _E.model) ? a.info.nspanel.model == "eu" ? "" : a.info.nspanel.model : ""
               });
             }
             result = result.concat(temp);
@@ -1940,7 +2000,7 @@ class NspanelLovelaceUi extends utils.Adapter {
               );
               const o = await this.getForeignObjectAsync(scriptId);
               if (o) {
-                const temp3 = (_B = (_A = o.common.source.match(/const.version.+'(\d+\.\d+\.\d+)';/)) == null ? void 0 : _A[1]) != null ? _B : "";
+                const temp3 = (_G = (_F = o.common.source.match(/const.version.+'(\d+\.\d+\.\d+)';/)) == null ? void 0 : _F[1]) != null ? _G : "";
                 if (temp3 !== version) {
                   sv = temp3 ? temp3 : version;
                 }
@@ -1955,6 +2015,8 @@ class NspanelLovelaceUi extends utils.Adapter {
                 _id: "",
                 _tftVersion: "---",
                 _tasmotaVersion: "---",
+                _berryVersion: "---",
+                _noBerry: a.kind === "web",
                 _ScriptVersion: noScript ? "---" : sv ? `v${sv}` : "???",
                 _noScript: noScript,
                 _nsPanelModel: a.model
@@ -1975,7 +2037,7 @@ class NspanelLovelaceUi extends utils.Adapter {
           break;
         }
         case "createScript": {
-          if ((0, import_no_script.isNoScriptPanel)(this.config.panels, (_C = obj.message) == null ? void 0 : _C.topic)) {
+          if ((0, import_no_script.isNoScriptPanel)(this.config.panels, (_H = obj.message) == null ? void 0 : _H.topic)) {
             const panel = (0, import_no_script.findPanelEntry)(this.config.panels, obj.message.topic);
             const text = `Panel ${(panel == null ? void 0 : panel.name) || obj.message.topic} uses no script - no panel script is created or updated`;
             this.log.warn(text);
@@ -2026,7 +2088,7 @@ class NspanelLovelaceUi extends utils.Adapter {
           );
           if (tasmotaVersion) {
             const cmnd = `OtaUrl http://ota.tasmota.com/tasmota32/release-${tasmotaVersion}/tasmota32-${language.toUpperCase()}.bin; Upgrade 1`;
-            if ((_D = this.controller) == null ? void 0 : _D.panels) {
+            if ((_I = this.controller) == null ? void 0 : _I.panels) {
               const index = this.controller.panels.findIndex((a) => a.topic === obj.message.topic);
               if (index !== -1) {
                 const panel = this.controller.panels[index];
@@ -2071,7 +2133,7 @@ class NspanelLovelaceUi extends utils.Adapter {
           break;
         }
         case "screensaverNotify": {
-          if (((_E = obj.message) == null ? void 0 : _E.panel) && ((_F = this.controller) == null ? void 0 : _F.panels)) {
+          if (((_J = obj.message) == null ? void 0 : _J.panel) && ((_K = this.controller) == null ? void 0 : _K.panels)) {
             const panel = this.controller.panels.find((a) => a.topic === obj.message.topic);
             if (panel == null ? void 0 : panel.screenSaver) {
               if (typeof obj.message.heading === "string") {
@@ -2107,7 +2169,7 @@ class NspanelLovelaceUi extends utils.Adapter {
           break;
         }
         case "buzzer": {
-          if (((_G = obj.message) == null ? void 0 : _G.panel) && ((_H = this.controller) == null ? void 0 : _H.panels)) {
+          if (((_L = obj.message) == null ? void 0 : _L.panel) && ((_M = this.controller) == null ? void 0 : _M.panels)) {
             const panel = this.controller.panels.find((a) => a.topic === obj.message.panel);
             if (panel && typeof obj.message.command === "string" && obj.message.command.trim()) {
               await panel.statesControler.setInternalState(
@@ -2541,6 +2603,7 @@ class NspanelLovelaceUi extends utils.Adapter {
             return;
           }
           if (this.mqttClient) {
+            await this.markTftFlashStarting(session.item.id);
             await this.mqttClient.publish(`${topic}/cmnd/Backlog`, `${cmnd}`);
             await this.delay(100);
             await this.mqttClient.publish(`${topic}/cmnd/Backlog`, ``);
@@ -2720,6 +2783,24 @@ class NspanelLovelaceUi extends utils.Adapter {
     }
     this.log.debug(cmnd);
     return cmnd;
+  }
+  /**
+   * Sets `firmwareUpdate` to 0 right before a TFT flash is sent: the panel reports its first
+   * progress only after skipping the unchanged data (often 45 s or more), until then the value of
+   * the last flash (100) would let `onMqttConnect` restart Tasmota in the middle of the flash.
+   * The panel sets 100 again with `Flashing: done` or with its next startup event.
+   *
+   * @param panelId id of the panel (`panels.<id>`), nothing happens without one
+   */
+  async markTftFlashStarting(panelId) {
+    if (!panelId) {
+      return;
+    }
+    await this.library.writedp(
+      `panels.${panelId}.info.nspanel.firmwareUpdate`,
+      0,
+      definition.genericStateObjects.panel.panels.info.nspanel.firmwareUpdate
+    );
   }
   getBerryInstallUrl(tasmotaIP, version) {
     return `http://${tasmotaIP}/cm?${this.config.useTasmotaAdmin ? `user=admin&password=${this.config.tasmotaAdminPassword}` : ``}&cmnd=Backlog UfsDelete autoexec.old; UfsRename autoexec.be,autoexec.old; UrlFetch ${this.config.berryUrl}/${version}/autoexec.be`;

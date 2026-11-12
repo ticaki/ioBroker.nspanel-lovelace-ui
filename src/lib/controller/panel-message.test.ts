@@ -1,6 +1,7 @@
 import { expect } from 'chai';
 import sinon from 'sinon';
 import { PanelSend } from './panel-message';
+import { crcPrefix, panelFrameCrc } from '../tools/crc16';
 
 const TOPIC = 'tasmota/test';
 
@@ -303,6 +304,216 @@ describe('lib/controller/panel-message - PanelSend message size', () => {
         const { send, warnings } = setup({ isVirtual: true });
         send.addMessage('x'.repeat(2000), false);
         expect(warnings).to.have.length(0);
+        await send.delete();
+    });
+});
+
+describe('lib/controller/panel-message - PanelSend display ack mode', () => {
+    let clock: sinon.SinonFakeTimers;
+    let send: PanelSend;
+    let published: string[];
+
+    const done = (): Promise<void | boolean> => send.onMessage(`${TOPIC}/stat/RESULT`, '{"CustomSend":"Done"}');
+    const ack = (payload: string): void => send.onDisplayAck('ack', panelFrameCrc(payload));
+    const render = (payload: string): void => send.onDisplayAck('renderCurrentPage', panelFrameCrc(payload));
+
+    beforeEach(() => {
+        clock = sinon.useFakeTimers();
+        ({ send, published } = setup());
+    });
+    afterEach(async () => {
+        await send.delete();
+        clock.restore();
+    });
+
+    it('renderCurrentPage with the crc of the pageType switches the mode on and acks it, the next goes at once', async () => {
+        send.addMessage('pageType~screensaver5', true);
+        send.addMessage('color~1', false);
+        await clock.tickAsync(20);
+        expect(send.displayAck).to.equal(false);
+        render('pageType~screensaver5');
+        expect(send.displayAck).to.equal(true);
+        await clock.tickAsync(20);
+        expect(published).to.deep.equal(['pageType~screensaver5', 'color~1']);
+    });
+
+    it('an ack with the crc of the head acks it, an ack with another crc is ignored', async () => {
+        send.displayAck = true;
+        send.addMessage('a', false);
+        send.addMessage('b', false);
+        send.addMessage('c', false);
+        await clock.tickAsync(20);
+        ack('b');
+        await clock.tickAsync(20);
+        expect(published).to.deep.equal(['a']);
+        ack('a');
+        await clock.tickAsync(20);
+        expect(published).to.deep.equal(['a', 'b']);
+        ack('b');
+        await clock.tickAsync(20);
+        expect(published).to.deep.equal(['a', 'b', 'c']);
+    });
+
+    it('a pageType is only acked by renderCurrentPage with its crc', async () => {
+        send.displayAck = true;
+        send.addMessage('pageType~cardGrid', true);
+        send.addMessage('entityUpd~x', false);
+        await clock.tickAsync(20);
+        // Done, an ack with its crc, a page change without pageType (crc 0), another crc
+        await done();
+        ack('pageType~cardGrid');
+        send.onDisplayAck('renderCurrentPage', 0);
+        render('pageType~cardEntities');
+        await clock.tickAsync(1000);
+        expect(published).to.deep.equal(['pageType~cardGrid']);
+        render('pageType~cardGrid');
+        await clock.tickAsync(20);
+        expect(published).to.deep.equal(['pageType~cardGrid', 'entityUpd~x']);
+    });
+
+    it('a late ack of a resent message does not ack the next one', async () => {
+        send.displayAck = true;
+        send.addMessage('a', false);
+        send.addMessage('b', false);
+        send.addMessage('c', false);
+        await clock.tickAsync(20);
+        // no answer at all - resent after the losing delay
+        await clock.tickAsync(3100);
+        expect(published).to.deep.equal(['a', 'a']);
+        ack('a');
+        await clock.tickAsync(20);
+        expect(published).to.deep.equal(['a', 'a', 'b']);
+        // the ack and both Done of the transmissions of a
+        ack('a');
+        await done();
+        await done();
+        await clock.tickAsync(1000);
+        expect(published).to.deep.equal(['a', 'a', 'b']);
+        ack('b');
+        await clock.tickAsync(20);
+        expect(published).to.deep.equal(['a', 'a', 'b', 'c']);
+    });
+
+    it('Done without a display ack counts after 500 ms (pages without serial timer)', async () => {
+        send.displayAck = true;
+        send.addMessage('a', false);
+        send.addMessage('b', false);
+        await clock.tickAsync(20);
+        await done();
+        await clock.tickAsync(490);
+        expect(published).to.deep.equal(['a']);
+        await clock.tickAsync(20);
+        expect(published).to.deep.equal(['a', 'b']);
+    });
+
+    it('a display ack after the Done ends the wait at once and the fallback does not ack the next one', async () => {
+        send.displayAck = true;
+        send.addMessage('a', false);
+        send.addMessage('b', false);
+        send.addMessage('c', false);
+        await clock.tickAsync(20);
+        await done();
+        await clock.tickAsync(100);
+        ack('a');
+        await clock.tickAsync(20);
+        expect(published).to.deep.equal(['a', 'b']);
+        // b got neither Done nor ack - the timer of a must not ack it
+        await clock.tickAsync(600);
+        expect(published).to.deep.equal(['a', 'b']);
+    });
+
+    it('nothing at all: the losing logic sends the message again', async () => {
+        send.displayAck = true;
+        send.addMessage('a', false);
+        await clock.tickAsync(20);
+        await clock.tickAsync(3100);
+        expect(published).to.deep.equal(['a', 'a']);
+    });
+
+    it('acks are ignored while the mode is off, the old mode stays as it is', async () => {
+        send.addMessage('a', false);
+        send.addMessage('b', false);
+        await clock.tickAsync(20);
+        ack('a');
+        await clock.tickAsync(300);
+        expect(published).to.deep.equal(['a']);
+        await done();
+        await clock.tickAsync(200);
+        // the old pause after Done
+        expect(published).to.deep.equal(['a']);
+        await clock.tickAsync(100);
+        expect(published).to.deep.equal(['a', 'b']);
+    });
+
+    it('switching the mode off (display restart) goes back to the old mode', async () => {
+        send.displayAck = true;
+        send.displayAck = false;
+        send.addMessage('pageType~cardGrid', true);
+        send.addMessage('b', false);
+        await clock.tickAsync(20);
+        await send.onMessage(`${TOPIC}/stat/RESULT`, '{"CustomSend":"renderCurrentPage"}');
+        await clock.tickAsync(300);
+        expect(published).to.deep.equal(['pageType~cardGrid', 'b']);
+    });
+});
+
+describe('lib/controller/panel-message - PanelSend crc prefix for the Berry driver', () => {
+    let clock: sinon.SinonFakeTimers;
+
+    beforeEach(() => {
+        clock = sinon.useFakeTimers();
+    });
+    afterEach(() => {
+        clock.restore();
+    });
+
+    const panelWith = (berryDriverVersion: number, isVirtual = false): Record<string, unknown> => ({
+        isVirtual,
+        info: { nspanel: { berryDriverVersion } },
+    });
+
+    it('driver 12 or newer gets ^XXXX^ in front of the payload', async () => {
+        const { send, published } = setup(panelWith(12));
+        send.addMessage('time~12:00', false);
+        await clock.tickAsync(20);
+        expect(published).to.deep.equal([`${crcPrefix(panelFrameCrc('time~12:00'))}time~12:00`]);
+        expect(published[0]).to.match(/^\^[0-9A-F]{4}\^time~12:00$/);
+        await send.delete();
+    });
+
+    it('the emulator of generation 12 (-12) gets ^XXXX^ as well', async () => {
+        const { send, published } = setup(panelWith(-12));
+        send.addMessage('time~12:00', false);
+        await clock.tickAsync(20);
+        expect(published).to.deep.equal([`${crcPrefix(panelFrameCrc('time~12:00'))}time~12:00`]);
+        await send.delete();
+    });
+
+    it('driver 11, the old emulator (-1), an unknown driver and a web panel get the payload as it is', async () => {
+        for (const panel of [panelWith(11), panelWith(-1), panelWith(-11), panelWith(0), panelWith(12, true)]) {
+            const { send, published } = setup(panel);
+            send.addMessage('time~12:00', false);
+            await clock.tickAsync(20);
+            expect(published).to.deep.equal(['time~12:00']);
+            await send.delete();
+        }
+    });
+
+    it('dedupe and replace still work on the payload', async () => {
+        const { send, published } = setup(panelWith(12));
+        send.addMessage('a', false);
+        send.addMessage('entityUpd~1', false);
+        send.addMessage('entityUpd~2', false);
+        send.addMessage('entityUpd~2', false);
+        await clock.tickAsync(20);
+        await send.onMessage(`${TOPIC}/stat/RESULT`, '{"CustomSend":"Done"}');
+        await clock.tickAsync(300);
+        await send.onMessage(`${TOPIC}/stat/RESULT`, '{"CustomSend":"Done"}');
+        await clock.tickAsync(300);
+        expect(published).to.deep.equal([
+            `${crcPrefix(panelFrameCrc('a'))}a`,
+            `${crcPrefix(panelFrameCrc('entityUpd~2'))}entityUpd~2`,
+        ]);
         await send.delete();
     });
 });

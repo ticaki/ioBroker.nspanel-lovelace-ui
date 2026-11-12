@@ -75,7 +75,7 @@ import type { oldQRType } from './lib/types/types';
 import iCal from 'node-ical';
 import type { NSPanel } from './lib/types/NSPanel';
 import { getTasmotaVersionFromJson } from './lib/const/tools';
-import { isEmulatorDriverVersion } from './lib/const/berry-driver';
+import { driverGeneration, isEmulatorDriverVersion, parseDriverVersion } from './lib/const/berry-driver';
 
 /** Zwischenstand einer laufenden Panel-Einrichtung, siehe `nsPanelInitStep1` */
 interface NsPanelInitSession {
@@ -1899,6 +1899,36 @@ class NspanelLovelaceUi extends utils.Adapter {
 
                                 this.log.info(`Installing berry on tasmota with IP ${obj.message.tasmotaIP}`);
                                 await this.fetch(url);
+                                if (obj.message.restart === true) {
+                                    // the new driver only runs after a Tasmota restart (Maintain tab).
+                                    // Restart only after the download is confirmed - autoexec.be was
+                                    // renamed before the fetch, a restart without a new file leaves
+                                    // Tasmota without a driver.
+                                    if (this.mqttClient && typeof obj.message.topic === 'string' && obj.message.topic) {
+                                        try {
+                                            await this.mqttClient.waitTasmotaUrlFetch(obj.message.topic, 10_000);
+                                        } catch {
+                                            this.log.error(
+                                                `Did not receive download confirmation from tasmota ${obj.message.tasmotaIP} after berry install - no restart.`,
+                                            );
+                                            if (obj.callback) {
+                                                this.sendTo(
+                                                    obj.from,
+                                                    obj.command,
+                                                    { error: 'sendToRequestFailBerry' },
+                                                    obj.callback,
+                                                );
+                                            }
+                                            break;
+                                        }
+                                    } else {
+                                        await this.delay(3000);
+                                    }
+                                    this.log.info(
+                                        `Restarting tasmota with IP ${obj.message.tasmotaIP} after berry install`,
+                                    );
+                                    await this.fetch(this.getRestartTasmotaUrl(obj.message.tasmotaIP));
+                                }
                                 if (obj.callback) {
                                     this.sendTo(obj.from, obj.command, [], obj.callback);
                                 }
@@ -1942,6 +1972,9 @@ class NspanelLovelaceUi extends utils.Adapter {
                                     `${this.config.useTasmotaAdmin ? `user=admin&password=${this.config.tasmotaAdminPassword}` : ``}` +
                                     `&cmnd=Backlog ${cmnd}`;
                                 this.log.debug(redactSecretsInText(url));
+                                await this.markTftFlashStarting(
+                                    this.config.panels.find(p => p && p.ip === obj.message.tasmotaIP)?.id,
+                                );
                                 await this.fetch(url);
 
                                 if (obj.callback) {
@@ -1987,6 +2020,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                                     const index = this.controller.panels.findIndex(a => a.topic === obj.message.topic);
                                     if (index !== -1) {
                                         const panel = this.controller.panels[index];
+                                        await this.markTftFlashStarting(panel.name);
                                         panel.sendToTasmota(`${panel.topic}/cmnd/Backlog`, cmnd);
                                         await this.delay(100);
                                         panel.sendToTasmota(`${panel.topic}/cmnd/Backlog`, ``);
@@ -2150,6 +2184,19 @@ class NspanelLovelaceUi extends utils.Adapter {
                         return 0;
                     };
 
+                    // Berry driver generation online ("11" or "11_…"), only fetched if a Tasmota panel exists
+                    let berryOnline = 0;
+                    if (this.controller?.panels.some(a => !a.isVirtual)) {
+                        const versions = await this.getVersionsJson();
+                        const useBeta =
+                            typeof obj.message?.useBetaTFT === 'boolean'
+                                ? obj.message.useBetaTFT
+                                : !!this.config.useBetaTFT;
+                        const entry = versions ? (useBeta ? versions['berry-beta'] : versions.berry) : undefined;
+                        const parsed = entry ? parseInt(String(entry).split('_')[0]) : NaN;
+                        berryOnline = Number.isFinite(parsed) && parsed > 0 ? parsed : 0;
+                    }
+
                     if (this.controller?.panels) {
                         const updateText = this.library.getTranslation('updateAvailable');
                         const downgradeText = this.library.getTranslation('downgradeAvailable');
@@ -2233,6 +2280,27 @@ class NspanelLovelaceUi extends utils.Adapter {
                                 }
                                 nv = nv ? `v${nv}` : '';
                             }
+                            // Berry driver: integer generation from nlui_driver_version,
+                            // negative = emulator (absolute value = generation, -1 = old emulator), 0 = unknown
+                            const bv = parseDriverVersion(a.info?.nspanel?.berryDriverVersion);
+                            const isEmulator = isEmulatorDriverVersion(bv);
+                            const noBerry = a.isVirtual || isEmulator;
+                            let check_berry = false;
+                            let bvText = '???';
+                            if (isEmulator) {
+                                // generation of the emulator driver, empty for the old emulator (-1); no update hint
+                                const gen = driverGeneration(bv);
+                                bvText = gen > 1 ? `${gen}` : '';
+                            } else if (noBerry) {
+                                bvText = '---';
+                            } else if (bv > 0) {
+                                bvText = `${bv}`;
+                                if (berryOnline > 0 && berryOnline !== bv) {
+                                    bvText += ` (${berryOnline > bv ? updateText : downgradeText}: ${berryOnline})`;
+                                    check = true;
+                                    check_berry = true;
+                                }
+                            }
                             added.push(a.topic);
 
                             temp.push({
@@ -2240,6 +2308,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                                 _check_tasmota: check_tasmota,
                                 _check_tft: check_tft,
                                 _check_script: check_script,
+                                _check_berry: check_berry,
                                 _Headline: `${a.friendlyName} (${ft ? ft : `${check ? checkText : `${a.isOnline ? 'online' : a.flashing ? `flashing` : 'offline'}`}`})`,
                                 _name: a.friendlyName,
                                 _ip: a.isVirtual
@@ -2253,6 +2322,9 @@ class NspanelLovelaceUi extends utils.Adapter {
                                 _id: a.info?.tasmota?.net?.Mac ? a.info.tasmota.net.Mac : '',
                                 _tftVersion: nv ? nv : '???',
                                 _tasmotaVersion: tv ? tv : '???',
+                                _berryVersion: bvText,
+                                _noBerry: noBerry,
+                                _isEmulator: isEmulator,
                                 _ScriptVersion: noScript ? '---' : sv ? `v${sv}` : '???',
                                 _noScript: noScript,
                                 _nsPanelModel: a.isVirtual
@@ -2309,6 +2381,8 @@ class NspanelLovelaceUi extends utils.Adapter {
                                 _id: '',
                                 _tftVersion: '---',
                                 _tasmotaVersion: '---',
+                                _berryVersion: '---',
+                                _noBerry: a.kind === 'web',
                                 _ScriptVersion: noScript ? '---' : sv ? `v${sv}` : '???',
                                 _noScript: noScript,
                                 _nsPanelModel: a.model,
@@ -2952,6 +3026,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                         return;
                     }
                     if (this.mqttClient) {
+                        await this.markTftFlashStarting(session.item.id);
                         await this.mqttClient.publish(`${topic}/cmnd/Backlog`, `${cmnd}`);
                         await this.delay(100);
                         await this.mqttClient.publish(`${topic}/cmnd/Backlog`, ``);
@@ -3151,6 +3226,24 @@ class NspanelLovelaceUi extends utils.Adapter {
 
         this.log.debug(cmnd);
         return cmnd;
+    }
+    /**
+     * Sets `firmwareUpdate` to 0 right before a TFT flash is sent: the panel reports its first
+     * progress only after skipping the unchanged data (often 45 s or more), until then the value of
+     * the last flash (100) would let `onMqttConnect` restart Tasmota in the middle of the flash.
+     * The panel sets 100 again with `Flashing: done` or with its next startup event.
+     *
+     * @param panelId id of the panel (`panels.<id>`), nothing happens without one
+     */
+    private async markTftFlashStarting(panelId: string | undefined): Promise<void> {
+        if (!panelId) {
+            return;
+        }
+        await this.library.writedp(
+            `panels.${panelId}.info.nspanel.firmwareUpdate`,
+            0,
+            definition.genericStateObjects.panel.panels.info.nspanel.firmwareUpdate,
+        );
     }
     getBerryInstallUrl(tasmotaIP: string, version: string): string {
         return (
