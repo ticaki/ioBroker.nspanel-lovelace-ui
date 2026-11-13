@@ -165,6 +165,7 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
 - (tt-tom17) screensaver: a tap on a notification that cannot be dismissed no longer gets lost - the panel changes to the main page as usual; only a dismissible notification takes the tap
 - (tt-tom17) cardThermo: with `AUTO` in `common.states` the inactive mode icons no longer show the outline A of the automatic mode
 - (tt-tom17) cardThermo: without `common.states` at the MODE state the fan icon (`FAN_ONLY`) appears as well - seven modes instead of six
+- (tt-tom17) cardThermo2: the built-in mode list names the fan mode `FAN_ONLY`, like the mode search of the config manager and every description in the code; the panel shows the translated name as before
 
 ### 2.2.0 (2026-11-12)
 - (ticaki) web panel: smartphone models `web-p` and `web-l`, portrait layout for all cards, popups and screensavers on us-p/web-p, hardware buttons can be switched off, many layout fixes; no crash on the first connection, less log noise without browser
