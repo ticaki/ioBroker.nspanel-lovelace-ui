@@ -33,6 +33,7 @@ class SystemNotifications extends import_library.BaseClass {
     this.language = this.adapter.library.getLocalLanguage();
   }
   async init() {
+    await this.adapter.subscribeForeignStatesAsync("system.host.*.notifications.*");
     const obj = await this.adapter.getObjectAsync(`${this.adapter.namespace}.panels`);
     if (obj) {
       this.notifications = obj.native && obj.native.SystemNotifications || [];

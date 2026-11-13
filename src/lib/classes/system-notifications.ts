@@ -13,7 +13,9 @@ export class SystemNotifications extends BaseClass {
         this.language = this.adapter.library.getLocalLanguage();
     }
     public async init(): Promise<void> {
-        //await this.adapter.subscribeForeignStatesAsync('system.host.*.notifications.*');
+        // without this the adapter only sees the notifications of the host at its own start:
+        // a notification acknowledged in ioBroker stayed on the panel until the next restart
+        await this.adapter.subscribeForeignStatesAsync('system.host.*.notifications.*');
         const obj = await this.adapter.getObjectAsync(`${this.adapter.namespace}.panels`);
         if (obj) {
             this.notifications = (obj.native && obj.native.SystemNotifications) || [];

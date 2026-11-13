@@ -14,9 +14,11 @@ function makeAdapter(hostNotifications: Host[]): {
     adapter: any;
     sent: { command: string; message: any }[];
     panelsObject: any;
+    subscribed: string[];
 } {
     const noop = (): void => undefined;
     const sent: { command: string; message: any }[] = [];
+    const subscribed: string[] = [];
     const panelsObject: any = { native: {} };
     const adapter: any = {
         namespace: 'nspanel-lovelace-ui.0',
@@ -27,6 +29,9 @@ function makeAdapter(hostNotifications: Host[]): {
         controller: { notificationToPanel: async (): Promise<void> => undefined },
         setTimeout: (): undefined => undefined, // the delayed sort is not part of this test
         clearTimeout: noop,
+        subscribeForeignStatesAsync: async (pattern: string): Promise<void> => {
+            subscribed.push(pattern);
+        },
         getObjectAsync: async (): Promise<any> => panelsObject,
         setObjectAsync: async (): Promise<void> => undefined,
         getObjectViewAsync: async (): Promise<any> => ({ rows: [{ id: 'system.host.test' }] }),
@@ -47,7 +52,7 @@ function makeAdapter(hostNotifications: Host[]): {
             return { result };
         },
     };
-    return { adapter, sent, panelsObject };
+    return { adapter, sent, panelsObject, subscribed };
 }
 
 const CHANGE_ID = 'system.host.test.notifications.system';
@@ -125,5 +130,14 @@ describe('lib/classes/system-notifications - a stored list of an older version',
         const sn = new SystemNotifications(adapter);
         await sn.init(); // config.testCase stops before the host is asked
         expect(sn.getCount()).to.equal(0);
+    });
+});
+
+describe('lib/classes/system-notifications - the notifications of the host are subscribed', () => {
+    it('subscribes on init, so an acknowledgement in ioBroker reaches the adapter', async () => {
+        const { adapter, subscribed } = makeAdapter([]);
+        const sn = new SystemNotifications(adapter);
+        await sn.init();
+        expect(subscribed).to.deep.equal(['system.host.*.notifications.*']);
     });
 });
