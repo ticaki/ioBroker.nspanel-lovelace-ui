@@ -10,7 +10,11 @@ import { SystemNotifications } from './system-notifications';
 
 type Host = { scope: string; category: string; severity: string };
 
-function makeAdapter(hostNotifications: Host[]): { adapter: any; sent: { command: string; message: any }[]; panelsObject: any } {
+function makeAdapter(hostNotifications: Host[]): {
+    adapter: any;
+    sent: { command: string; message: any }[];
+    panelsObject: any;
+} {
     const noop = (): void => undefined;
     const sent: { command: string; message: any }[] = [];
     const panelsObject: any = { native: {} };
