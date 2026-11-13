@@ -493,7 +493,7 @@ export class PageThermo2 extends PageMenu {
                                 read: `return ${JSON.stringify(
                                     item.modeList
                                         ? item.modeList
-                                        : ['OFF', 'AUTO', 'COOL', 'HEAT', 'ECO', 'FAN', 'DRY'],
+                                        : ['OFF', 'AUTO', 'COOL', 'HEAT', 'ECO', 'FAN_ONLY', 'DRY'],
                                 )}[val] || val`,
                             };
                         }
@@ -549,7 +549,7 @@ export class PageThermo2 extends PageMenu {
                         'COOL',
                         'HEAT',
                         'ECO',
-                        'FAN',
+                        'FAN_ONLY',
                         'DRY',
                     ];
                     if (!item.modeList || !Array.isArray(item.modeList) || item.modeList.length < 1) {

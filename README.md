@@ -160,6 +160,15 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
 -->
 ### **WORK IN PROGRESS**
 - (tt-tom17) system notifications: an acknowledged notification of the ioBroker host no longer comes back - also when it was acknowledged in ioBroker itself
+- (tt-tom17) popup notification: the left button now writes the plain id to `setStateID` and the id with the panel name to `setGlobalID`, like the middle and right button - scripts that checked the local point for the prefixed value must look at the global point instead
+- (tt-tom17) popup notification: a missing `textSize` state falls back to size 3 instead of sending `undefined` to the panel
+- (tt-tom17) screensaver: a tap on a notification that cannot be dismissed no longer gets lost - the panel changes to the main page as usual; only a dismissible notification takes the tap
+- (tt-tom17) cardThermo: with `AUTO` in `common.states` the inactive mode icons no longer show the outline A of the automatic mode
+- (tt-tom17) cardThermo: without `common.states` at the MODE state the fan icon (`FAN_ONLY`) appears as well - seven modes instead of six
+- (tt-tom17) cardThermo2: the built-in mode list names the fan mode `FAN_ONLY`, like the mode search of the config manager and every description in the code; the panel shows the translated name as before
+- (tt-tom17) thermostat cards: the fan mode and the dry mode are named after what they do now, like heating and cooling - German says `Lüften` and `Trocknen`; all languages but English are corrected, where `Fan` and `Dry` are the usual names of these modes. `FAN` also said admirer (es), supporter (pt, uk) or hand fan (zh-cn) before
+- (tt-tom17) cardThermo: the mode row is now built when `common.states` of the MODE state is an object - the usual case in ioBroker, so far only an array worked; with a string MODE the mode name is compared instead of the position
+- (tt-tom17) cardThermo: a channel with a `MAINTAIN` datapoint showed the wrench twice - the block that builds it stood in the code twice, once in red and once in green
 
 ### 2.2.0 (2026-11-12)
 - (ticaki) web panel: smartphone models `web-p` and `web-l`, portrait layout for all cards, popups and screensavers on us-p/web-p, hardware buttons can be switched off, many layout fixes; no crash on the first connection, less log noise without browser

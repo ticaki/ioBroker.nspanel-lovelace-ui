@@ -1315,7 +1315,7 @@ class Panel extends import_library.BaseClass {
     this.sendToTasmota(`${this.topic}/cmnd/Rule3`, "1");
   }
   async onStateChange(id, state) {
-    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r, _s, _t, _u;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r, _s, _t, _u, _v;
     if (state.ack) {
       return;
     }
@@ -1595,12 +1595,12 @@ class Panel extends import_library.BaseClass {
               ((_n = this.library.readdb(`panels.${this.name}.cmd.pagePopup.colorButtonRight`)) == null ? void 0 : _n.val) || "#FFFFFF"
             ),
             icon: ((_o = this.library.readdb(`panels.${this.name}.cmd.pagePopup.icon`)) == null ? void 0 : _o.val) || void 0,
-            textSize: String((_p = this.library.readdb(`panels.${this.name}.cmd.pagePopup.textSize`)) == null ? void 0 : _p.val) || "3",
+            textSize: String((_q = (_p = this.library.readdb(`panels.${this.name}.cmd.pagePopup.textSize`)) == null ? void 0 : _p.val) != null ? _q : 3),
             iconColor: (0, import_tools.getRGBFromValue)(
-              ((_q = this.library.readdb(`panels.${this.name}.cmd.pagePopup.iconColor`)) == null ? void 0 : _q.val) || "#FFFFFF"
+              ((_r = this.library.readdb(`panels.${this.name}.cmd.pagePopup.iconColor`)) == null ? void 0 : _r.val) || "#FFFFFF"
             ),
-            alwaysOn: !!((_s = (_r = this.library.readdb(`panels.${this.name}.cmd.pagePopup.alwaysOn`)) == null ? void 0 : _r.val) != null ? _s : true),
-            buzzer: !!((_u = (_t = this.library.readdb(`panels.${this.name}.cmd.pagePopup.buzzer`)) == null ? void 0 : _t.val) != null ? _u : false)
+            alwaysOn: !!((_t = (_s = this.library.readdb(`panels.${this.name}.cmd.pagePopup.alwaysOn`)) == null ? void 0 : _s.val) != null ? _t : true),
+            buzzer: !!((_v = (_u = this.library.readdb(`panels.${this.name}.cmd.pagePopup.buzzer`)) == null ? void 0 : _u.val) != null ? _v : false)
           };
           let panels = [this];
           if (global) {

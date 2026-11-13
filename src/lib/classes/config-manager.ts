@@ -964,13 +964,49 @@ export class ConfigManager extends BaseClass {
             }
         } else if (foundedStates[role]?.MODE) {
             // airCondition with mode
-            let states: string[] | Record<string, string> = ['OFF', 'AUTO', 'COOL', 'HEAT', 'ECO', 'FAN', 'DRY'];
+            let states: string[] | Record<string, string> = ['OFF', 'AUTO', 'COOL', 'HEAT', 'ECO', 'FAN_ONLY', 'DRY'];
+            let modeType: ioBroker.CommonType | undefined = undefined;
             if (foundedStates[role].MODE.dp) {
                 const o = await this.adapter.getForeignObjectAsync(foundedStates[role].MODE.dp);
                 if (o?.common?.states) {
                     states = o.common.states;
                 }
+                modeType = o?.common?.type;
             }
+
+            /**
+             * Builds the literal the generated script has to compare MODE against.
+             *
+             * common.states has two shapes. As an array the position is the state value. As a
+             * record - the normal case in ioBroker - the key is the state value and the token is
+             * the value, so the record has to be searched by value and the key is the result.
+             * A key that is not a number has to be quoted, otherwise "return val == OFF" would be
+             * generated. If MODE is a string itself, the token is the state value.
+             *
+             * @param token mode token to look for, e.g. 'COOL'
+             * @returns the literal for the read/write script or undefined if the mode is unknown
+             */
+            const modeLiteral = (token: string): string | undefined => {
+                if (Array.isArray(states)) {
+                    const position = states.indexOf(token);
+                    if (position === -1) {
+                        return undefined;
+                    }
+                    return modeType === 'string' ? JSON.stringify(token) : String(position);
+                }
+                if (states && typeof states === 'object') {
+                    for (const key of Object.keys(states)) {
+                        if (states[key] === token) {
+                            return modeType !== 'string' && /^-?\d+(\.\d+)?$/.test(key) ? key : JSON.stringify(key);
+                        }
+                    }
+                    // tokens used as keys: then the token itself is the state value
+                    if (states[token] !== undefined) {
+                        return JSON.stringify(token);
+                    }
+                }
+                return undefined;
+            };
 
             const tempItem: NSPanel.PageItemDataItemsOptions = {
                 role: 'button',
@@ -988,117 +1024,40 @@ export class ConfigManager extends BaseClass {
                         },
                     },
                     entity1: {
-                        value: { ...foundedStates[role].MODE, read: `return val == index}` },
-                        set: { ...foundedStates[role].MODE, write: `return index}` },
+                        // placeholder, every mode below writes its own scripts
+                        value: { ...foundedStates[role].MODE, read: `return false` },
+                        set: { ...foundedStates[role].MODE, write: `return 0` },
                     },
                 },
             };
             if (tempItem?.data?.icon?.true && tempItem?.data?.icon?.false && tempItem?.data?.entity1) {
-                let index: any =
-                    typeof states == 'object'
-                        ? Array.isArray(states)
-                            ? states.findIndex(item => item === 'OFF')
-                            : states.OFF !== undefined
-                              ? 'OFF'
-                              : -1
-                        : -1;
-                if (index != -1) {
-                    tempItem.data.icon.true.value = { type: 'const', constVal: 'power-off' };
-                    tempItem.data.entity1.value = { ...foundedStates[role].MODE, read: `return val == ${index}` };
-                    tempItem.data.entity1.set = { ...foundedStates[role].MODE, write: `return ${index}` };
-                    gridItem.pageItems.push(JSON.parse(JSON.stringify(tempItem)));
-                }
-                index =
-                    typeof states == 'object'
-                        ? Array.isArray(states)
-                            ? states.findIndex(item => item === 'AUTO')
-                            : states.AUTO !== undefined
-                              ? 'AUTO'
-                              : -1
-                        : -1;
-                if (index != -1) {
-                    tempItem.data.icon.true.value = { type: 'const', constVal: 'alpha-a-circle' };
-                    tempItem.data.icon.false.value = { type: 'const', constVal: 'alpha-a-circle-outline' };
-                    tempItem.data.entity1.value = { ...foundedStates[role].MODE, read: `return val == ${index}` };
-                    tempItem.data.entity1.set = { ...foundedStates[role].MODE, write: `return ${index}` };
-                    gridItem.pageItems.push(JSON.parse(JSON.stringify(tempItem)));
-                }
-                index =
-                    typeof states == 'object'
-                        ? Array.isArray(states)
-                            ? states.findIndex(item => item === 'COOL')
-                            : states.COOL !== undefined
-                              ? 'COOL'
-                              : -1
-                        : -1;
-                if (index != -1) {
-                    tempItem.data.icon.true.value = { type: 'const', constVal: 'snowflake' };
-                    tempItem.data.entity1.value = { ...foundedStates[role].MODE, read: `return val == ${index}` };
-                    tempItem.data.entity1.set = { ...foundedStates[role].MODE, write: `return ${index}` };
-                    gridItem.pageItems.push(JSON.parse(JSON.stringify(tempItem)));
-                }
+                const iconActive = tempItem.data.icon.true;
+                const iconInactive = tempItem.data.icon.false;
+                const entity1 = tempItem.data.entity1;
+                const modeDatapoint = foundedStates[role].MODE;
+                const pageItems = gridItem.pageItems;
+                const pushMode = (token: string, icon: string): void => {
+                    const literal = modeLiteral(token);
+                    if (literal === undefined) {
+                        return;
+                    }
+                    iconActive.value = { type: 'const', constVal: icon };
+                    entity1.value = { ...modeDatapoint, read: `return val == ${literal}` };
+                    entity1.set = { ...modeDatapoint, write: `return ${literal}` };
+                    pageItems.push(JSON.parse(JSON.stringify(tempItem)));
+                };
 
-                let token = 'HEAT';
-                index =
-                    typeof states == 'object'
-                        ? Array.isArray(states)
-                            ? states.findIndex(item => item === token)
-                            : states[token] !== undefined
-                              ? token
-                              : -1
-                        : -1;
-                if (index != -1) {
-                    tempItem.data.icon.true.value = { type: 'const', constVal: 'fire' };
-                    tempItem.data.entity1.value = { ...foundedStates[role].MODE, read: `return val == ${index}` };
-                    tempItem.data.entity1.set = { ...foundedStates[role].MODE, write: `return ${index}` };
-                    gridItem.pageItems.push(JSON.parse(JSON.stringify(tempItem)));
-                }
-
-                token = 'ECO';
-                index =
-                    typeof states == 'object'
-                        ? Array.isArray(states)
-                            ? states.findIndex(item => item === token)
-                            : states[token] !== undefined
-                              ? token
-                              : -1
-                        : -1;
-                if (index != -1) {
-                    tempItem.data.icon.true.value = { type: 'const', constVal: 'alpha-e-circle-outline' };
-                    tempItem.data.entity1.value = { ...foundedStates[role].MODE, read: `return val == ${index}` };
-                    tempItem.data.entity1.set = { ...foundedStates[role].MODE, write: `return ${index}` };
-                    gridItem.pageItems.push(JSON.parse(JSON.stringify(tempItem)));
-                }
-                token = 'FAN_ONLY';
-                index =
-                    typeof states == 'object'
-                        ? Array.isArray(states)
-                            ? states.findIndex(item => item === token)
-                            : states[token] !== undefined
-                              ? token
-                              : -1
-                        : -1;
-                if (index != -1) {
-                    tempItem.data.icon.true.value = { type: 'const', constVal: 'fan' };
-                    tempItem.data.entity1.value = { ...foundedStates[role].MODE, read: `return val == ${index}` };
-                    tempItem.data.entity1.set = { ...foundedStates[role].MODE, write: `return ${index}` };
-                    gridItem.pageItems.push(JSON.parse(JSON.stringify(tempItem)));
-                }
-                token = 'DRY';
-                index =
-                    typeof states == 'object'
-                        ? Array.isArray(states)
-                            ? states.findIndex(item => item === token)
-                            : states[token] !== undefined
-                              ? token
-                              : -1
-                        : -1;
-                if (index != -1) {
-                    tempItem.data.icon.true.value = { type: 'const', constVal: 'water-percent' };
-                    tempItem.data.entity1.value = { ...foundedStates[role].MODE, read: `return val == ${index}` };
-                    tempItem.data.entity1.set = { ...foundedStates[role].MODE, write: `return ${index}` };
-                    gridItem.pageItems.push(JSON.parse(JSON.stringify(tempItem)));
-                }
+                pushMode('OFF', 'power-off');
+                // AUTO is the only mode with an inactive icon of its own
+                iconInactive.value = { type: 'const', constVal: 'alpha-a-circle-outline' };
+                pushMode('AUTO', 'alpha-a-circle');
+                // the other modes have no inactive icon of their own - do not inherit the outline A of AUTO
+                iconInactive.value = undefined;
+                pushMode('COOL', 'snowflake');
+                pushMode('HEAT', 'fire');
+                pushMode('ECO', 'alpha-e-circle-outline');
+                pushMode('FAN_ONLY', 'fan');
+                pushMode('DRY', 'water-percent');
             }
         }
         if (foundedStates[role].POWER) {
@@ -1236,28 +1195,6 @@ export class ConfigManager extends BaseClass {
                     },
                     entity1: {
                         value: foundedStates[role].UNREACH,
-                    },
-                },
-            });
-        }
-        if (foundedStates[role].MAINTAIN) {
-            gridItem.pageItems.push({
-                role: 'indicator',
-                type: 'button',
-                dpInit: '',
-                data: {
-                    icon: {
-                        true: {
-                            value: { type: 'const', constVal: 'account-wrench' },
-                            color: { type: 'const', constVal: Color.true },
-                        },
-                        false: {
-                            value: { type: 'const', constVal: 'account-wrench' },
-                            color: { type: 'const', constVal: Color.deactivated },
-                        },
-                    },
-                    entity1: {
-                        value: foundedStates[role].MAINTAIN,
                     },
                 },
             });
