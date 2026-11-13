@@ -158,6 +158,10 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
     Placeholder for the next version (at the beginning of the line):
     ### **WORK IN PROGRESS**
 -->
+### **WORK IN PROGRESS**
+- (tt-tom17) system notifications: an acknowledged notification of the ioBroker host no longer comes back - the check for an already known notification compared the wrong field, so every run stored another copy and lost the acknowledgement
+- (tt-tom17) system notifications: copies that an older version stored are merged when the adapter starts, an acknowledgement of one of them is kept
+
 ### 2.2.0 (2026-11-12)
 - (ticaki) web panel: smartphone models `web-p` and `web-l`, portrait layout for all cards, popups and screensavers on us-p/web-p, hardware buttons can be switched off, many layout fixes; no crash on the first connection, less log noise without browser
 - (ticaki) admin: export and import the configuration of one panel (merge or overwrite completely, conflict review, secrets only on request)
