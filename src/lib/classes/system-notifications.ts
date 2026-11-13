@@ -13,15 +13,42 @@ export class SystemNotifications extends BaseClass {
         this.language = this.adapter.library.getLocalLanguage();
     }
     public async init(): Promise<void> {
-        //await this.adapter.subscribeForeignStatesAsync('system.host.*.notifications.*');
+        // without this the adapter only sees the notifications of the host at its own start:
+        // a notification acknowledged in ioBroker stayed on the panel until the next restart
+        await this.adapter.subscribeForeignStatesAsync('system.host.*.notifications.*');
         const obj = await this.adapter.getObjectAsync(`${this.adapter.namespace}.panels`);
         if (obj) {
             this.notifications = (obj.native && obj.native.SystemNotifications) || [];
+            this.mergeDuplicates();
         }
         if (this.adapter.config.testCase) {
             return;
         }
         await this.handleIobrokerNotifications();
+    }
+    /**
+     * Keep one entry per host notification.
+     *
+     * An installation updated from an older version can hold the same notification several times:
+     * the check for a known notification compared the category of the stored entry with the scope
+     * of the new one, so every run appended a copy with `cleared: false`. The surviving entry
+     * counts as acknowledged when any of its copies was.
+     */
+    private mergeDuplicates(): void {
+        const seen = new Map<string, notification>();
+        this.notifications = this.notifications.filter(n => {
+            if (!n.scopeid || !n.categoryid) {
+                return true;
+            }
+            const key = `${n.host}|${n.scopeid}|${n.categoryid}`;
+            const first = seen.get(key);
+            if (!first) {
+                seen.set(key, n);
+                return true;
+            }
+            first.cleared = first.cleared || n.cleared;
+            return false;
+        });
     }
     async delete(): Promise<void> {
         await super.delete();
@@ -134,7 +161,7 @@ export class SystemNotifications extends BaseClass {
                     (!a.scopeid && a.id === notify.id && a.ts === notify.ts && a.severity == notify.severity) ||
                     (a.scopeid &&
                         a.scopeid === notify.scopeid &&
-                        a.categoryid === notify.scopeid &&
+                        a.categoryid === notify.categoryid &&
                         a.host === notify.host)
                 ) {
                     return true;

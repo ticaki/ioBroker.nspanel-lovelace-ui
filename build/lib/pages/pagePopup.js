@@ -378,7 +378,7 @@ ${message.text}`;
    * @returns Promise that resolves when the event has been handled.
    */
   async onButtonEvent(_event) {
-    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l;
     this.log.debug(`Popup notify button event: ${JSON.stringify(_event)}`);
     if (_event.action !== "notifyAction") {
       return;
@@ -444,13 +444,13 @@ ${message.text}`;
           }
           if (((_i = this.items) == null ? void 0 : _i.data.setStateID) && (entry == null ? void 0 : entry.id) != null) {
             await this.items.data.setStateID.setState(entry.id);
-            if (entry == null ? void 0 : entry.global) {
-              await this.items.data.setStateID.setState(`${this.basePanel.name}.${entry.id}`);
+            if ((entry == null ? void 0 : entry.global) && ((_j = this.items) == null ? void 0 : _j.data.setGlobalID)) {
+              await this.items.data.setGlobalID.setState(`${this.basePanel.name}.${entry.id}`);
             }
           }
-          if (((_j = this.items) == null ? void 0 : _j.data.setStateNo) && (entry == null ? void 0 : entry.id) != null) {
+          if (((_k = this.items) == null ? void 0 : _k.data.setStateNo) && (entry == null ? void 0 : entry.id) != null) {
             await this.items.data.setStateNo.setState(entry.id);
-            if ((entry == null ? void 0 : entry.global) && ((_k = this.items) == null ? void 0 : _k.data.setGlobalNo)) {
+            if ((entry == null ? void 0 : entry.global) && ((_l = this.items) == null ? void 0 : _l.data.setGlobalNo)) {
               await this.items.data.setGlobalNo.setState(`${entry.id}`);
             }
           }

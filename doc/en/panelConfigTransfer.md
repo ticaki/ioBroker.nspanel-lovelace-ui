@@ -28,9 +28,11 @@ The file is a JSON file. Its head holds a format marker, the format version, the
 
 | Part | Content |
 |---|---|
-| **Pages** | All admin pages the panel shows, each with the navigation that applies on this panel (*previous*, *next*, *up*, *home*). In addition the target pages of page links, even when they are not assigned to the panel itself — otherwise the link would be empty after the import. And the pages for "all panels" that this panel **hides**. |
+| **Pages** | All admin pages the panel shows, each with the navigation that applies on this panel (*previous*, *next*, *up*, *home*). In addition the target pages of **page links**, even when they are not assigned to the panel itself — otherwise the link would be empty after the import; this reaches **one level deep** only (the target of a target does not travel along) and covers real page links only, not pages that a mere item points to. Plus the "all panels" pages this panel **excludes**. |
 | **Screensaver** | The screensaver of the panel with the notifications it uses. The panel assignment of the screensaver does not travel along — on import it gets the target panel. |
-| **Other** | The two hardware buttons and the panel settings, that is the datapoints under `panels.<id>.cmd.`: screensaver timeout, layout, rotation time, double click, info icon, brightness (day, night, standby, schedule), temperature offset, buzzer, card display, detaching of the buttons and the navigation point of the start page. Plus `Panel uses no script` and the changed navigation of script pages (navigation overrides) — both only take effect on an import with **Overwrite completely**. |
+| **Other** | The two hardware buttons and the panel settings, that is the datapoints under `panels.<id>.cmd.`: **panel active**, screensaver timeout, layout, rotation time, double click, info icon, brightness (day, night, standby, schedule), temperature offset, buzzer, card display, detaching the buttons and the navigation point of the home page. Plus `panel uses no script` and the changed navigation of script pages (navigation overrides) — both only take effect when importing with **Overwrite completely**. |
+
+> **`Panel active` travels along.** If the file comes from a disabled panel, the import disables the target panel — immediately, because panel settings are datapoints. After importing a foreign backup, check that tick.
 
 The dialog texts of the three parts read *Pages assigned to the panel with their navigation*, *Screensaver of the panel with its notifications* and *Hardware buttons and panel settings (datapoints `cmd.*`); with "Overwrite completely" also the navigation overrides*.
 
@@ -44,9 +46,9 @@ Not in the file: the command datapoints of the panel (buzzer, relays, popups, pa
 <img alt="Panel card with the export and the import button" src="../Pictures/panel-config-transfer/00-tile-export-import-buttons.png" width="100%"/>
 
 3. If a page of the panel holds a PIN or a Wi-Fi password, the question from [section 3](#3-pins-and-wi-fi-passwords) comes up. Otherwise the admin writes the file right away.
-4. The browser downloads the file. The name follows the scheme `nspanel-<panel name>-<yyyy-mm-dd>.json`, for example `nspanel-Livingroom-2026-11-11.json`; characters other than `A–Z`, `a–z`, `0–9`, `_` and `-` become `_` in the panel name.
+4. The browser downloads the file. The name follows the scheme `nspanel-<panel name>-<yyyy-mm-dd>.json`, for example `nspanel-Livingroom-2026-11-11.json`; characters other than `A–Z`, `a–z`, `0–9`, `_` and `-` become `_` in the panel name. If the panel has no name, the topic takes its place; without one the file is called `nspanel-panel-<yyyy-mm-dd>.json`.
 
-Both buttons are locked as long as the panel has no id and no topic. The export does not need a running instance — with one exception: the panel settings are datapoints, and whatever the admin cannot read is left out of the file.
+Both buttons are locked as soon as **either one** is missing — id or topic. The export does not need a running instance — with one exception: the panel settings are datapoints, and whatever the admin cannot read is left out of the file.
 
 Afterwards a message appears above the cards:
 
@@ -67,11 +69,13 @@ The dialog is called **Export panel `<name>`: PINs and passwords** and says: *Th
 
 | Button | Effect |
 |---|---|
-| **Export without passwords** (default) | The fields are missing from the file — they are left out, not emptied. The file can be passed on safely. |
+| **Export without passwords** (default) | The fields are missing from the file — they are left out, not emptied. |
 | **Export with passwords** | PIN and Wi-Fi password are in the file in plain text. |
 | **Cancel** | Nothing is written. |
 
 A PIN that uses the **global password of the instance** is no secret: the page then holds no value of its own, only the reference to it. Such a PIN always travels along, and it does not trigger the question either. The same goes for an empty Wi-Fi password.
+
+> **"Without passwords" does not mean "without details".** Exactly two fields are left out: the own PIN of an alarm/unlock page and the Wi-Fi password of a QR page. The file still holds the SSID, URL or phone number of the QR page, the id of centrally stored credentials and **every state id and alias path** of your installation. Take a look inside before handing it to a stranger.
 
 When a file without secrets is imported, **newly created or renamed** pages get a safe substitute: alarm and unlock pages the global password of the instance, QR pages an empty Wi-Fi password. **Existing pages keep their secrets** — even when the rest of the page is replaced by the content of the file. Which pages need attention is shown in the review (*The import contains no PINs or passwords. After the import, please enter the passwords again on these pages: …*) and again in the result.
 
@@ -81,17 +85,17 @@ The import button opens the dialog **Import into panel `<name>`**. The first ste
 
 <img alt="First step of the import: selecting the three parts of the file" src="../Pictures/panel-config-transfer/00b-import-groups.png" width="100%"/>
 
-**Choose file** opens the file dialog (filter `.json`). The admin then checks the file:
+**Choose file** opens the file dialog (filter `.json`); as long as no part is ticked, the button stays locked. The admin then checks the file:
 
 - If it is damaged, not JSON or not a panel configuration of this adapter, the error message appears in the same step and nothing goes further — see [section 12](#12-error-cases).
 - If a **selected** part is missing from the file, it is skipped; at the top *Not in the file, skipped: `<parts>`* appears, and the result names it once more.
-- If the file holds nothing for the selected parts, the dialog says *The file holds no pages and no screensaver for the selected parts.*
+- If the file holds nothing for the selected parts, the message *The file holds no pages and no screensaver for the selected parts.* appears — unlike the errors above it only shows up in the review, so the dialog does continue.
 
 If the file is fine, the **review** opens. Up to here and in the review as well, nothing is changed.
 
 ## 5. The import mode
 
-At the very top of the review sits the switch **Import mode** with two positions.
+The review starts with the origin of the file, and directly below it sits the switch **Import mode** with two positions.
 
 | Mode | What it does |
 |---|---|
@@ -102,30 +106,30 @@ At the very top of the review sits the switch **Import mode** with two positions
 
 <img alt="Review in the mode Overwrite completely with the block Also stays on the panel" src="../Pictures/panel-config-transfer/12-mode-overwrite.png" width="100%"/>
 
-Both modes have in common that the admin pages assigned to **this panel** so far are **detached** from the panel first. The pages themselves are kept and stay in the page list; they are only no longer assigned to this panel. After that the pages of the file go onto the panel.
+Both modes have two things in common. First, the admin pages assigned to **this panel** so far are **detached** from the panel. The pages themselves are kept and stay in the page list; they are only no longer assigned to this panel. Afterwards the pages of the file go onto the panel. Second, the **exclusions** of the source apply: "all panels" pages the source panel excluded are excluded on the target as well — and an exclusion that only existed on the target is lifted. This happens in *both* modes, not only when overwriting.
 
 **Overwrite completely** goes further:
 
 | Affected | What happens |
 |---|---|
 | Own pages of the panel | All old assignments are gone; afterwards the panel holds exactly what the file brings. |
-| Hidden "all panels" pages | The exclusions of the source apply on the target as well; an exclusion that only existed on the target is lifted. |
+| *(Hidden "all panels" pages)* | No difference between the modes — see the paragraph above. |
 | Pages for "all panels" and pages of the **global** script | Stay on the panel with their navigation. The review lists them under **Also stays on the panel**; if there is nothing, it reads *nothing – the panel shows only the imported pages*. |
 | The **panel script** | Is switched off: the checkbox `Panel uses no script` is set, the pages of the panel script disappear from the panel. The script configuration is not deleted. |
 | Navigation overrides of the panel | Are deleted and replaced by those of the file. |
 | Other panels | Do not change. |
 
-The mode can **only be chosen together with the part "Pages"**; otherwise the button is locked and the note *"Overwrite completely" is only possible together with the group Pages.* stands next to it. In the mode **Overwrite completely** the **Import** button is red as well.
+The mode can **only be chosen together with the part "Pages"** — and only if the **file** actually brings pages along. If either is missing, the button is locked and the note *"Overwrite completely" is only possible together with the group Pages.* stands next to it. In the mode **Overwrite completely** the **Import** button is red as well.
 
 ## 6. The review
 
-Below the switch stands the origin of the file (*File of panel `<name>` (`<model>`), exported `<time>`*), then the notes that apply to this import:
+Above the switch stands the origin of the file (*File of panel `<name>` (`<model>`), exported `<time>`*), below it the notes that apply to this import:
 
 | Note | When |
 |---|---|
-| *The panel already has its own configuration that the import replaces: `<parts>`.* | Only for the parts that really are configured on the target **and** that the import actually changes. An unchanged backup going back into the same panel does not trigger the note. |
+| *The panel already has its own configuration that the import replaces: `<parts>`.* | **Only in Merge mode**, and only for the parts that really are configured on the target **and** that the import actually changes. An unchanged backup going back into the same panel does not trigger the note. With *Overwrite completely* the safety prompt takes over that job. |
 | *The file comes from a panel of another model (…, this panel: …). Pages and screensaver may show fewer or more elements.* | The model of the source does not match the target. The import is not blocked. |
-| *The import contains no PINs or passwords. …* | The file was exported without secrets. |
+| *The import contains no PINs or passwords. …* | There are pages that would need a secret and do not get one — newly created or renamed pages, and replaced pages without an existing value. A secret-free backup going back into the same panel does **not** show the note, because every page there keeps its value. |
 | *The panel settings (datapoints `cmd.*`) are written immediately when importing, the rest only takes effect after saving.* | The part **Other** is included. |
 | *These pages have the names of pages of the panel script. The script takes precedence, the imported pages do not appear on this panel: `<pages>`* | See [section 8](#8-pages-that-also-exist-in-a-script). |
 
@@ -137,7 +141,7 @@ Below that every page of the file — and, if imported as well, the screensaver 
 | **add assignment** | The page exists already with the same content, it is additionally assigned to this panel. |
 | **change navigation** | The page is on the panel already, but gets the navigation from the file. |
 | **remove assignment** | In the file the page was only the target of a page link, not a page of the source panel. It is not assigned on the target either. |
-| **create new** | The page does not exist yet. |
+| **create new** | The page does not exist yet. If it only came along as the target of a page link, it is created but assigned to **no panel** — it then sits in the page list and is reached through the link. |
 | **different** | A page with this name exists already, but with different content — see [section 7](#7-name-conflicts). |
 | **skip** | This page of the file is not taken over (only as the chosen resolution of a conflict). |
 
@@ -151,7 +155,7 @@ A conflict arises when the instance already holds a page of the same name whose 
 
 | Resolution | Effect |
 |---|---|
-| **rename** (default) | The page from the file is created under a new name; the existing page stays as it is. |
+| **rename** (default) | The page from the file is created under a new name; the existing page keeps its content. **One exception:** if the existing page is an "all panels" page, it is **excluded** on this panel — otherwise both would show up after the import. The summary then lists it under *"all panels" pages excluded on this panel*. |
 | **replace existing** | The existing page gets the content from the file. |
 | **skip** | The page from the file is not taken over. |
 
@@ -171,7 +175,7 @@ A conflict arises when the instance already holds a page of the same name whose 
 
 As long as a name is invalid, **Import** stays locked.
 
-**A look at the differences.** A click on the status **different** opens the dialog **Differences: `<page>`** with three columns — *What*, *Existing*, *In the file*. Fields are named as in the editor (*Headline*, *Item 3*, *Navigation: previous*), missing values read *missing*, new ones *added*.
+**A look at the differences.** A click on the status **different** opens the dialog **Differences: `<page>`** with three columns — *What*, *Existing*, *In the file*. Fields are named as in the editor (*Headline*, *Navigation: previous*), list items appear as *Item #3* with the item name in brackets when it is set. An empty field value shows as `–`. The words *missing*, *present* and *added* apply to whole items instead: *missing* when the file lacks an existing item, *present* for the other way round, *added* for an item only the file brings. Fields of a list are compared **by position** — an item inserted at the front therefore makes every following one look changed.
 
 <img alt="Dialog with the differences of one page" src="../Pictures/panel-config-transfer/05-diff-dialog.png" width="100%"/>
 
@@ -180,6 +184,13 @@ As long as a name is invalid, **Import** stays locked.
 **Replacing asks back.** If other panels use the existing page as well, the admin asks again with **Replace `<page>`?**: *The existing `<page>` is overwritten with the content of the file.* Below that stands *These panels use it as well and change too:* with the list (a page for "all panels" appears in it as **all panels**) or *No other panel uses it.* **Cancel** is preselected.
 
 <img alt="Confirmation before replacing a page that several panels use" src="../Pictures/panel-config-transfer/06-replace-confirm.png" width="100%"/>
+
+**The screensaver plays the same game.** It sits in the same table as the pages and offers the same three resolutions, including the name field, the prompt and the difference dialog (title *Screensaver: `<name>`*). Four deviations are worth knowing:
+
+- **Equal is equal, even under a different name.** If the admin finds an existing screensaver with the same content but a different name, the import counts as *unchanged* and the panel gets the existing entry — the review then shows that name, not the one from the file.
+- **The comparison ignores name and panel assignment**, but resolves the notifications.
+- **"replace existing" keeps the existing name**, not the one from the file.
+- **The name check is shorter:** for the screensaver only *empty* and *already exists* are checked; the other three rules from the table above do not apply here.
 
 ## 8. Pages that also exist in a script
 
@@ -191,7 +202,9 @@ If a page of the file carries the name of a page from a script, a second note st
 | **replaces page of the panel script** | The admin page takes the place of the page of the same name in the panel script. This always applies to the **start page**; for all other pages only when the instance option `adminOverridesScriptPages` is set (default: off, with no field of its own in the admin). |
 | **page of the panel script takes precedence** | The panel script has a page of this name and keeps it; the imported page does not appear on this panel. Remedy: rename it or use **Overwrite completely**. |
 
-The notes only exist in the mode **Merge** and only as long as the panel uses a script at all. After **Overwrite completely** the panel script is off, so only *replaces global script page* remains. If the admin cannot read the script configuration, *Script pages unknown (script configuration not readable).* is shown instead of the notes.
+The notes only exist in the mode **Merge** and only as long as the panel uses a script at all. After **Overwrite completely** the panel script is off, so only *replaces global script page* remains.
+
+If the admin **cannot read** the script configuration, the sentence *Script pages unknown (script configuration not readable).* appears — but only in the block *Also stays on the panel* and in the safety prompt, that is, exclusively with **Overwrite completely**. In *Merge* mode the script notes are then missing **entirely**; there is no placeholder. Only the summary mentions it again, with the addition *Script pages unknown – targets may be script pages too.* next to the dangling navigation links.
 
 ## 9. The confirmation for "Overwrite completely"
 
@@ -215,20 +228,22 @@ After the import the dialog shows **Import into panel `<name>`: result**. Every 
 | Section | Content |
 |---|---|
 | *The panel script was switched off ("panel uses no script").* | Only after **Overwrite completely**. |
-| *Navigation points to pages that are not on this panel (`n`)* | Per hit `<page> – <direction> → <target>`, entries from an override with the addition *(override)*. Plus *Not corrected automatically – please check the navigation of these pages.* |
+| *Navigation points to pages that are not on this panel (`n`)* | Per hit `<page> – <direction> → <target>`, entries from an override with the addition *(override)*. Plus *Not corrected automatically – please check the navigation of these pages.* If the script configuration was unreadable, it is followed by *Script pages unknown – targets may be script pages too.* |
 | *Please enter PIN / password again on these pages:* | Pages with a substitute value, see [section 3](#3-pins-and-wi-fi-passwords). |
 | *New pages* · *Renamed* (`old → new`) · *Replaced* · *Skipped* · *Unchanged* · *Assignment or navigation changed on existing pages* | The balance of the pages. |
 | *New start page of the panel* · *No longer the start page of this panel, other panels keep it* | Start page. |
 | *Pages for all panels hidden on this panel* | Exclusions. |
-| *Screensaver* | Name and action, or *none (the source panel has no screensaver of the admin)*. |
+| *Screensaver* | Name and action. If the file brings **no** screensaver from the admin, it says *none (the source panel has no screensaver of the admin)* — which is more than a piece of information, see the note below the table. |
 | *Notifications added under a new id* | Notifications of the screensaver whose id was taken already. |
 | *Navigation overrides deleted* · *Navigation overrides taken over* | Only after **Overwrite completely**. |
-| *Panel settings written* · *Panel settings not written, the datapoint does not exist yet* | The part **Other**. |
+| *Panel settings written* · *Panel settings not written, the datapoint does not exist yet* | The part **Other**. Only settings that really changed are counted — if the target value is already in place, nothing is written and nothing is reported. |
 | *Not in the file* | Parts that were selected but missing. |
 
 <img alt="Result with the note about passwords that have to be entered again" src="../Pictures/panel-config-transfer/07c-result-secrets.png" width="100%"/>
 
 <img alt="Result after Overwrite completely with the panel script switched off" src="../Pictures/panel-config-transfer/14-overwrite-result.png" width="100%"/>
+
+> **A file without an admin screensaver removes the one on the target.** If the part *Screensaver* is selected and the file brings none, the target panel is removed from **all** screensaver entries — it has none afterwards. The review shows **no** row for this; it only becomes visible here in the summary. To avoid it, untick *Screensaver*. This applies in both import modes.
 
 The section **Navigation points to pages that are not on this panel** deserves a second look: the admin does not correct such references, so the panel runs into an empty direction. More about how the references work together is under [navigation flow](naviFlow).
 
@@ -251,10 +266,15 @@ Two panel settings are deliberately left out when the target has a screensaver f
 | *The file is no panel configuration export of this adapter.* | The format marker is missing — for instance in an adapter backup or a foreign file. |
 | *The file is damaged or incomplete (at `<place>`).* | The structure is wrong; the place names the path at which the check failed. |
 | *The file was written by a newer adapter (format version `n`), please update the adapter.* | The file is younger than the adapter that is to read it. |
+| *The file is damaged or incomplete (at `version`).* | The format version is missing, not a whole number or smaller than 1. A version that is too **new** gets its own message above. |
 
 <img alt="Error message after choosing a damaged file" src="../Pictures/panel-config-transfer/09-invalid-file.png" width="100%"/>
 
-Not an error, only a warning is the **model mismatch**: if the file comes from a panel of another model — EU landscape against a smartphone in portrait, say — not always the same number of elements fits onto a page or into the screensaver. The import runs through anyway; the pages should be looked at afterwards.
+The place in brackets is the path where the check failed — `(at source)`, `(at groups)` or, when two pages of the file share a name, `(at groups.pages.pages[3].page.uniqueName)`.
+
+> **The adapter version in the file is not checked.** It sits in the header for traceability only: there is neither a warning nor a conversion when the file comes from an older or newer adapter version. Only the **format version** (currently 1) is checked.
+
+Not an error, only a warning is the **model mismatch**: if the file comes from a panel of another model — EU landscape against a smartphone in portrait, say — not always the same number of elements fits onto a page or into the screensaver. The import runs anyway; the pages should be reviewed afterwards. **Nothing is trimmed or converted** — surplus items stay in the configuration and are simply absent on the panel. Only the model is compared: whether the file comes from a real device or a web panel is **not** checked.
 
 <img alt="Import into an empty panel with the note about the differing model" src="../Pictures/panel-config-transfer/02-empty-panel-review.png" width="100%"/>
 
@@ -271,3 +291,9 @@ Not an error, only a warning is the **model mismatch**: if the file comes from a
 - **Dangling navigation references stay.** The result lists them, but does not correct them.
 - **Renaming creates follow-up conflicts.** A renamed page changes all pages that refer to it; those then appear as *different* as well. That is normal — the difference dialog says so.
 - **Another model is no obstacle, but a request to check.** The import runs through; whether all elements fit onto the page is decided on the panel.
+- **There is no undo.** The result step only offers *Close*. The only way back is **not** to save the instance settings — but the panel settings (`cmd.*`) have been written by then.
+- **Individual pages cannot be deselected.** Conflict-free rows are display only. To take over just a part, there are two levers: the three parts in the first step and *skip* on conflict rows.
+- **"All panels" does not survive the trip to another installation.** The export only records *that* a page applied to all panels; the import always assigns it to the target panel. Within the same installation this goes unnoticed, because the page already exists there — in a foreign installation an "all panels" page becomes a page of this one panel.
+- **The hardware buttons change silently.** They travel along and are **deleted** on the target when the file holds no button assignment. The summary says nothing about it — so check the tile after an import.
+- **Dangling links are only looked for in the navigation.** Checked are *previous*, *next*, *up* and *home* of the pages and the overrides. Target pages of items, the page after unlocking, screensaver actions and button targets are **not** counted, although they can point nowhere just as well.
+- **Whether the states of a page exist on this system is not checked.** When transferring to another installation the admin imports pages with unknown object ids without complaint; it only shows when the adapter builds the page.

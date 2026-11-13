@@ -59,6 +59,11 @@
 - [Farbthemen](colorTheme)  
 - [PanelStatusBadge (Komponente)](PanelStatusBadge)  
 
+**Entwickler**  
+- [Testumgebung](Testumgebung)  
+- [Testumgebung – Aufbau](Testumgebung-Aufbau)  
+- [Testumgebung – Bilder](Testumgebung-Bilder)  
+
 **Finde uns**  
 [![iobrokerLogo](../Pictures/iobrokerLogo.png)](https://forum.iobroker.net/topic/80055/alphatest-nspanel-lovelace-ui-v0-1-1)  
 

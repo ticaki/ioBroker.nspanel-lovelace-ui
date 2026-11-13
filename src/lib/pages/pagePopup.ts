@@ -458,8 +458,8 @@ export class PagePopup extends Page {
                     }
                     if (this.items?.data.setStateID && entry?.id != null) {
                         await this.items.data.setStateID.setState(entry.id);
-                        if (entry?.global) {
-                            await this.items.data.setStateID.setState(`${this.basePanel.name}.${entry.id}`);
+                        if (entry?.global && this.items?.data.setGlobalID) {
+                            await this.items.data.setGlobalID.setState(`${this.basePanel.name}.${entry.id}`);
                         }
                     }
                     if (this.items?.data.setStateNo && entry?.id != null) {

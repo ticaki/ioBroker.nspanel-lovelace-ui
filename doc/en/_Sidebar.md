@@ -59,7 +59,12 @@
 - [Color themes](colorTheme)  
 - [PanelStatusBadge (component)](PanelStatusBadge)  
 
+**Developer**  
+- [Test environment](Testumgebung)  
+- [Test environment – structure](Testumgebung-Aufbau)  
+- [Test environment – pictures](Testumgebung-Bilder)  
+
 **Find us**  
 [![iobrokerLogo](../Pictures/iobrokerLogo.png)](https://forum.iobroker.net/topic/80055/alphatest-nspanel-lovelace-ui-v0-1-1)  
 
-🔒 = only visible in expert mode*
+*🔒 = only visible in expert mode*
