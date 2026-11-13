@@ -168,6 +168,7 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
 - (tt-tom17) cardThermo2: the built-in mode list names the fan mode `FAN_ONLY`, like the mode search of the config manager and every description in the code; the panel shows the translated name as before
 - (tt-tom17) thermostat cards: the fan mode and the dry mode are named after what they do now, like heating and cooling - German says `Lüften` and `Trocknen`; all languages but English are corrected, where `Fan` and `Dry` are the usual names of these modes. `FAN` also said admirer (es), supporter (pt, uk) or hand fan (zh-cn) before
 - (tt-tom17) cardThermo: the mode row is now built when `common.states` of the MODE state is an object - the usual case in ioBroker, so far only an array worked; with a string MODE the mode name is compared instead of the position
+- (tt-tom17) cardThermo: a channel with a `MAINTAIN` datapoint showed the wrench twice - the block that builds it stood in the code twice, once in red and once in green
 
 ### 2.2.0 (2026-11-12)
 - (ticaki) web panel: smartphone models `web-p` and `web-l`, portrait layout for all cards, popups and screensavers on us-p/web-p, hardware buttons can be switched off, many layout fixes; no crash on the first connection, less log noise without browser
