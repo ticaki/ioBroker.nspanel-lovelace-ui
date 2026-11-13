@@ -159,9 +159,7 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
     ### **WORK IN PROGRESS**
 -->
 ### **WORK IN PROGRESS**
-- (tt-tom17) system notifications: an acknowledged notification of the ioBroker host no longer comes back - the check for an already known notification compared the wrong field, so every run stored another copy and lost the acknowledgement
-- (tt-tom17) system notifications: copies that an older version stored are merged when the adapter starts, an acknowledgement of one of them is kept
-- (tt-tom17) system notifications: the adapter follows the notifications of the host while it runs - a notification acknowledged in ioBroker is gone from the panel at once, it no longer waited for the next restart
+- (tt-tom17) system notifications: an acknowledged notification of the ioBroker host no longer comes back - also when it was acknowledged in ioBroker itself
 
 ### 2.2.0 (2026-11-12)
 - (ticaki) web panel: smartphone models `web-p` and `web-l`, portrait layout for all cards, popups and screensavers on us-p/web-p, hardware buttons can be switched off, many layout fixes; no crash on the first connection, less log noise without browser
