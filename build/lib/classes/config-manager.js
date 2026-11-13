@@ -660,7 +660,7 @@ class ConfigManager extends import_library.BaseClass {
     }
   }
   async getPageThermo(page, gridItem, messages) {
-    var _a, _b, _c, _d, _e, _f, _g;
+    var _a, _b, _c, _d, _e, _f, _g, _h;
     if (page.type !== "cardThermo" || !gridItem.config || gridItem.config.card !== "cardThermo") {
       return { gridItem, messages };
     }
@@ -826,12 +826,34 @@ class ConfigManager extends import_library.BaseClass {
       }
     } else if ((_a = foundedStates[role]) == null ? void 0 : _a.MODE) {
       let states = ["OFF", "AUTO", "COOL", "HEAT", "ECO", "FAN_ONLY", "DRY"];
+      let modeType = void 0;
       if (foundedStates[role].MODE.dp) {
         const o2 = await this.adapter.getForeignObjectAsync(foundedStates[role].MODE.dp);
         if ((_b = o2 == null ? void 0 : o2.common) == null ? void 0 : _b.states) {
           states = o2.common.states;
         }
+        modeType = (_c = o2 == null ? void 0 : o2.common) == null ? void 0 : _c.type;
       }
+      const modeLiteral = (token) => {
+        if (Array.isArray(states)) {
+          const position = states.indexOf(token);
+          if (position === -1) {
+            return void 0;
+          }
+          return modeType === "string" ? JSON.stringify(token) : String(position);
+        }
+        if (states && typeof states === "object") {
+          for (const key of Object.keys(states)) {
+            if (states[key] === token) {
+              return modeType !== "string" && /^-?\d+(\.\d+)?$/.test(key) ? key : JSON.stringify(key);
+            }
+          }
+          if (states[token] !== void 0) {
+            return JSON.stringify(token);
+          }
+        }
+        return void 0;
+      };
       const tempItem = {
         role: "button",
         type: "button",
@@ -848,67 +870,37 @@ class ConfigManager extends import_library.BaseClass {
             }
           },
           entity1: {
-            value: { ...foundedStates[role].MODE, read: `return val == index}` },
-            set: { ...foundedStates[role].MODE, write: `return index}` }
+            // placeholder, every mode below writes its own scripts
+            value: { ...foundedStates[role].MODE, read: `return false` },
+            set: { ...foundedStates[role].MODE, write: `return 0` }
           }
         }
       };
-      if (((_d = (_c = tempItem == null ? void 0 : tempItem.data) == null ? void 0 : _c.icon) == null ? void 0 : _d.true) && ((_f = (_e = tempItem == null ? void 0 : tempItem.data) == null ? void 0 : _e.icon) == null ? void 0 : _f.false) && ((_g = tempItem == null ? void 0 : tempItem.data) == null ? void 0 : _g.entity1)) {
-        let index = typeof states == "object" ? Array.isArray(states) ? states.findIndex((item2) => item2 === "OFF") : states.OFF !== void 0 ? "OFF" : -1 : -1;
-        if (index != -1) {
-          tempItem.data.icon.true.value = { type: "const", constVal: "power-off" };
-          tempItem.data.entity1.value = { ...foundedStates[role].MODE, read: `return val == ${index}` };
-          tempItem.data.entity1.set = { ...foundedStates[role].MODE, write: `return ${index}` };
-          gridItem.pageItems.push(JSON.parse(JSON.stringify(tempItem)));
-        }
-        index = typeof states == "object" ? Array.isArray(states) ? states.findIndex((item2) => item2 === "AUTO") : states.AUTO !== void 0 ? "AUTO" : -1 : -1;
-        if (index != -1) {
-          tempItem.data.icon.true.value = { type: "const", constVal: "alpha-a-circle" };
-          tempItem.data.icon.false.value = { type: "const", constVal: "alpha-a-circle-outline" };
-          tempItem.data.entity1.value = { ...foundedStates[role].MODE, read: `return val == ${index}` };
-          tempItem.data.entity1.set = { ...foundedStates[role].MODE, write: `return ${index}` };
-          gridItem.pageItems.push(JSON.parse(JSON.stringify(tempItem)));
-        }
-        tempItem.data.icon.false.value = void 0;
-        index = typeof states == "object" ? Array.isArray(states) ? states.findIndex((item2) => item2 === "COOL") : states.COOL !== void 0 ? "COOL" : -1 : -1;
-        if (index != -1) {
-          tempItem.data.icon.true.value = { type: "const", constVal: "snowflake" };
-          tempItem.data.entity1.value = { ...foundedStates[role].MODE, read: `return val == ${index}` };
-          tempItem.data.entity1.set = { ...foundedStates[role].MODE, write: `return ${index}` };
-          gridItem.pageItems.push(JSON.parse(JSON.stringify(tempItem)));
-        }
-        let token = "HEAT";
-        index = typeof states == "object" ? Array.isArray(states) ? states.findIndex((item2) => item2 === token) : states[token] !== void 0 ? token : -1 : -1;
-        if (index != -1) {
-          tempItem.data.icon.true.value = { type: "const", constVal: "fire" };
-          tempItem.data.entity1.value = { ...foundedStates[role].MODE, read: `return val == ${index}` };
-          tempItem.data.entity1.set = { ...foundedStates[role].MODE, write: `return ${index}` };
-          gridItem.pageItems.push(JSON.parse(JSON.stringify(tempItem)));
-        }
-        token = "ECO";
-        index = typeof states == "object" ? Array.isArray(states) ? states.findIndex((item2) => item2 === token) : states[token] !== void 0 ? token : -1 : -1;
-        if (index != -1) {
-          tempItem.data.icon.true.value = { type: "const", constVal: "alpha-e-circle-outline" };
-          tempItem.data.entity1.value = { ...foundedStates[role].MODE, read: `return val == ${index}` };
-          tempItem.data.entity1.set = { ...foundedStates[role].MODE, write: `return ${index}` };
-          gridItem.pageItems.push(JSON.parse(JSON.stringify(tempItem)));
-        }
-        token = "FAN_ONLY";
-        index = typeof states == "object" ? Array.isArray(states) ? states.findIndex((item2) => item2 === token) : states[token] !== void 0 ? token : -1 : -1;
-        if (index != -1) {
-          tempItem.data.icon.true.value = { type: "const", constVal: "fan" };
-          tempItem.data.entity1.value = { ...foundedStates[role].MODE, read: `return val == ${index}` };
-          tempItem.data.entity1.set = { ...foundedStates[role].MODE, write: `return ${index}` };
-          gridItem.pageItems.push(JSON.parse(JSON.stringify(tempItem)));
-        }
-        token = "DRY";
-        index = typeof states == "object" ? Array.isArray(states) ? states.findIndex((item2) => item2 === token) : states[token] !== void 0 ? token : -1 : -1;
-        if (index != -1) {
-          tempItem.data.icon.true.value = { type: "const", constVal: "water-percent" };
-          tempItem.data.entity1.value = { ...foundedStates[role].MODE, read: `return val == ${index}` };
-          tempItem.data.entity1.set = { ...foundedStates[role].MODE, write: `return ${index}` };
-          gridItem.pageItems.push(JSON.parse(JSON.stringify(tempItem)));
-        }
+      if (((_e = (_d = tempItem == null ? void 0 : tempItem.data) == null ? void 0 : _d.icon) == null ? void 0 : _e.true) && ((_g = (_f = tempItem == null ? void 0 : tempItem.data) == null ? void 0 : _f.icon) == null ? void 0 : _g.false) && ((_h = tempItem == null ? void 0 : tempItem.data) == null ? void 0 : _h.entity1)) {
+        const iconActive = tempItem.data.icon.true;
+        const iconInactive = tempItem.data.icon.false;
+        const entity1 = tempItem.data.entity1;
+        const modeDatapoint = foundedStates[role].MODE;
+        const pageItems = gridItem.pageItems;
+        const pushMode = (token, icon) => {
+          const literal = modeLiteral(token);
+          if (literal === void 0) {
+            return;
+          }
+          iconActive.value = { type: "const", constVal: icon };
+          entity1.value = { ...modeDatapoint, read: `return val == ${literal}` };
+          entity1.set = { ...modeDatapoint, write: `return ${literal}` };
+          pageItems.push(JSON.parse(JSON.stringify(tempItem)));
+        };
+        pushMode("OFF", "power-off");
+        iconInactive.value = { type: "const", constVal: "alpha-a-circle-outline" };
+        pushMode("AUTO", "alpha-a-circle");
+        iconInactive.value = void 0;
+        pushMode("COOL", "snowflake");
+        pushMode("HEAT", "fire");
+        pushMode("ECO", "alpha-e-circle-outline");
+        pushMode("FAN_ONLY", "fan");
+        pushMode("DRY", "water-percent");
       }
     }
     if (foundedStates[role].POWER) {
@@ -1042,28 +1034,6 @@ class ConfigManager extends import_library.BaseClass {
           },
           entity1: {
             value: foundedStates[role].UNREACH
-          }
-        }
-      });
-    }
-    if (foundedStates[role].MAINTAIN) {
-      gridItem.pageItems.push({
-        role: "indicator",
-        type: "button",
-        dpInit: "",
-        data: {
-          icon: {
-            true: {
-              value: { type: "const", constVal: "account-wrench" },
-              color: { type: "const", constVal: import_Color.Color.true }
-            },
-            false: {
-              value: { type: "const", constVal: "account-wrench" },
-              color: { type: "const", constVal: import_Color.Color.deactivated }
-            }
-          },
-          entity1: {
-            value: foundedStates[role].MAINTAIN
           }
         }
       });

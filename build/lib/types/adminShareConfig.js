@@ -1196,7 +1196,7 @@ const thermo2Defaults = {
   iconHeatCycleOffColor: "#888888",
   iconHeatCycleOnColor2: "#0000ff",
   iconHeatCycleOffColor2: "#50508c",
-  modeList: ["OFF", "AUTO", "COOL", "HEAT", "ECO", "FAN", "DRY"]
+  modeList: ["OFF", "AUTO", "COOL", "HEAT", "ECO", "FAN_ONLY", "DRY"]
 };
 function emptyThermo2Circuit() {
   return { source: "alias", channelId: "", name: "" };
