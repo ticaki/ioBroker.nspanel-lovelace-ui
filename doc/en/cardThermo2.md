@@ -150,7 +150,7 @@ Click the **mode text** below the ring.
 
 <img alt="Dialog Mode display with the list of mode texts" src="../Pictures/PageThermo2/admin-08-modus.png" width="100%"/>
 
-**Mode texts, one per line (line = value of the data point, starting at 0).** The hint below it names the precedence: *"Empty = common.states of the mode data point, otherwise the list of the adapter: OFF, AUTO, COOL, HEAT, ECO, FAN, DRY"*. The texts are translated as far as the adapter knows them.
+**Mode texts, one per line (line = value of the data point, starting at 0).** The hint below it names the precedence: *"Empty = common.states of the mode data point, otherwise the list of the adapter: OFF, AUTO, COOL, HEAT, ECO, FAN_ONLY, DRY"*. The texts are translated as far as the adapter knows them.
 
 The adapter reads the text from `MODE`; if that state is missing, `MODESET` takes its place. On the **Single data points** path the mode data point given there applies, and the same list determines the text; a value other than 0 means "on" there.
 

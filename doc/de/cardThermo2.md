@@ -150,7 +150,7 @@ Klick auf den **Modustext** unter dem Stellring.
 
 <img alt="Dialog Modusanzeige mit der Liste der Modustexte" src="../Pictures/PageThermo2/admin-08-modus.png" width="100%"/>
 
-**Modustexte, ein Eintrag je Zeile (Zeile = Wert des Datenpunkts, beginnend bei 0).** Der Hinweis darunter nennt die Rangfolge: *„Leer = common.states des Modus-Datenpunkts, sonst die Liste des Adapters: OFF, AUTO, COOL, HEAT, ECO, FAN, DRY"*. Die Texte werden übersetzt, soweit der Adapter sie kennt.
+**Modustexte, ein Eintrag je Zeile (Zeile = Wert des Datenpunkts, beginnend bei 0).** Der Hinweis darunter nennt die Rangfolge: *„Leer = common.states des Modus-Datenpunkts, sonst die Liste des Adapters: OFF, AUTO, COOL, HEAT, ECO, FAN_ONLY, DRY"*. Die Texte werden übersetzt, soweit der Adapter sie kennt.
 
 Den Text liest der Adapter aus `MODE`; fehlt der Datenpunkt, tritt `MODESET` an seine Stelle. Beim Weg über **Einzelne Datenpunkte** gilt der dort angegebene Modus-Datenpunkt, und dieselbe Liste bestimmt den Text; ein Wert ungleich 0 bedeutet dort „ein".
 
