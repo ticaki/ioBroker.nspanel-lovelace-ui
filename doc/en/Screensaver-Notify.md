@@ -94,7 +94,7 @@ The panel shows **one** notification at a time. If several are active at once, t
 
 > ⚠️ **Without** "Dismiss" the message stays as long as its states are on – it cannot be tapped away at the panel. For lasting states (an open window) that is intended, for events (a doorbell) usually not.
 
-> ⚠️ **The tap is used up.** While a message lies on the screensaver, it takes the tap for itself: with **Dismiss** it disappears, without **Dismiss** nothing visible happens – and in both cases the panel does **not** change to the main page. After dismissing, the next tap leads on normally again; with a message that cannot be dismissed the way through the tap stays blocked as long as its states are on.
+> ⚠️ **Only a dismissible message takes the tap.** While a message with **Dismiss** lies on the screensaver, the first tap – or swipe – is used up for it: it disappears, the panel stays in the screensaver, only the next tap leads to the main page. A message **without** Dismiss lets the tap through: the panel changes to the main page as usual, the message stays and lies on the screensaver again as soon as it returns. With double click switched on (`cmd.screenSaver.doubleClick`) the double tap counts each time. Up to and including 2.2.0 a message that could not be dismissed took every tap as well – the only ways out of the screensaver were an item with an action of its own, the hardware buttons or `cmd.goToNavigationPoint`.
 
 ## 6. Buzzer
 
@@ -144,7 +144,7 @@ On the panel this becomes a headline line (icon + prefix + value/text + unit) an
 - **The message never appears:** All states must be "on" at the same time. A state that does not exist counts as "off" – with several states the message silently disappears. If **only one** state is entered and it is missing, the adapter drops the whole notification and logs an error.
 - **A different message than expected appears:** Only one is ever visible – the one with the smallest priority number. An empty priority means 99.
 - **The message does not go away:** Without **Dismiss** it stays until its states go off.
-- **A tap on the screensaver does nothing:** A notification lies over it – the tap is used up for it, see [Dismissing](#5-dismissing-and-the-group-id).
+- **A tap on the screensaver does nothing:** A dismissible notification lay over it – the first tap dismissed it, the next one leads on. If the panel stays in the screensaver with a message that **cannot** be dismissed as well, it is still running 2.2.0 or older; see [Dismissing](#5-dismissing-and-the-group-id).
 - **A deleted notification turns up again:** Not deleted, only no longer ticked. A deleted screensaver does not take its notifications with it – they stay in the common list.
 - **Dismissing affects more than expected:** Notifications with the same **Group ID** are hidden together, on other panels as well.
 - **The buzzer stays silent:** Night mode, `cmd.isBuzzerAllowed` off – or the displayed message did not change at all.
