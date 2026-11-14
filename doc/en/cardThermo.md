@@ -95,7 +95,12 @@ Role `thermostat`. On the left **Temperature** (`ACTUAL`) and – if a `HUMIDITY
 
 ![Air conditioner](../Pictures/PageThermo/panel-02-klimaanlage.png)
 
-Role `airCondition` with a `MODE` state. The adapter derives the icons from `common.states` of that state – it has to be a **list** of the English keywords, and the position in the list is the value the slot writes. Recognised, in this order, are: `OFF` (`power-off`), `AUTO` (`alpha-a-circle`), `COOL` (`snowflake`), `HEAT` (`fire`), `ECO` (`alpha-e-circle-outline`), `FAN_ONLY` (`fan`), `DRY` (`water-percent`). Keywords missing from the list get no icon; a value → text mapping (`{"0": "off", "1": "automatic"}`) is not recognised by the adapter – then no mode icon appears at all. Without any `common.states` the built-in list `OFF, AUTO, COOL, HEAT, ECO, FAN, DRY` applies (index = value), which yields six icons (see [Pitfalls](#pitfalls)). After them follow the slots of the remaining states (`POWER`, `BOOST`, `MAINTAIN`, `UNREACH`, `ERROR`).
+Role `airCondition` with a `MODE` state. The adapter derives the icons from `common.states` of that state; the entries have to be the **English keywords**, and both shapes of `common.states` work:
+
+- **Value → keyword mapping** (`{"0": "OFF", "1": "AUTO", "2": "COOL"}`), the usual case in ioBroker: the slot writes the key under which its keyword stands. If the keywords themselves are the keys (`{"OFF": "off", "AUTO": "automatic"}`), the slot writes the keyword.
+- **List** (`["OFF", "AUTO", "COOL"]`): the slot writes the position in the list.
+
+If the `MODE` state is of type `string`, the slot writes the keyword itself in both cases. Recognised, in this order, are: `OFF` (`power-off`), `AUTO` (`alpha-a-circle`), `COOL` (`snowflake`), `HEAT` (`fire`), `ECO` (`alpha-e-circle-outline`), `FAN_ONLY` (`fan`), `DRY` (`water-percent`). Keywords missing from `common.states` get no icon; translated texts (`{"0": "off", "1": "automatic"}`) are not recognised by the adapter – then no mode icon appears at all. Without any `common.states` the built-in list `OFF, AUTO, COOL, HEAT, ECO, FAN_ONLY, DRY` applies (position = value) with all seven icons. Only `AUTO` has an icon of its own for the inactive state (the outlined A); the other modes show the same icon in the off colour when inactive. After them follow the slots of the remaining states (`POWER`, `BOOST`, `MAINTAIN`, `UNREACH`, `ERROR`).
 
 ### Air conditioner: two set points
 
@@ -114,20 +119,20 @@ Role `airCondition` whose `MODE` state lists only `OFF`, `AUTO`, `COOL` and `HEA
 The bar at the bottom has **exactly eight slots**. The adapter fills them in this order:
 
 1. the mode icons of an `airCondition` channel (`OFF`, `AUTO`, `COOL`, `HEAT`, `ECO`, `FAN_ONLY`, `DRY`),
-2. `POWER`, `BOOST`, `WINDOWOPEN`, `PARTY`, `MAINTAIN`, `UNREACH`, **`MAINTAIN` a second time**, `LOWBAT`, `ERROR`, `VACATION`, `WORKING` – each only if the state is present.
+2. `POWER`, `BOOST`, `WINDOWOPEN`, `PARTY`, `MAINTAIN`, `UNREACH`, `LOWBAT`, `ERROR`, `VACATION`, `WORKING` – each only if the state is present.
 
 It follows that:
 
 - **Up to eight slots** all appear. With seven or eight they start at the first place; with six and fewer the adapter indents them towards the middle.
 - **From the ninth slot on** the eighth place becomes the **paging arrow** (arrow to the right), and seven slots remain per page. The arrow is not configurable, cannot be moved and pages in a circle.
-- A fully equipped alias exceeds the eight places easily: `thermostat` can generate eleven slots, `airCondition` with seven modes thirteen. Then the bar always has two pages.
+- A fully equipped alias exceeds the eight places easily: `thermostat` can generate ten slots, `airCondition` with seven modes twelve. Then the bar always has two pages.
 - Every generated slot costs a place. Whoever wants to influence the order or the selection has to remove states from the alias – in the admin there are no own page items for this card.
 
 ![Eight slots: seven buttons and the paging arrow](../Pictures/PageThermo/panel-05-blaetterpfeil.png)
 
-The picture shows a complete `thermostat` alias: on/off, boost, window open (green, because it is open),
-party, maintenance, unreachable, maintenance once more — and on the eighth place the paging arrow. The
-two identical wrenches are the duplicated `MAINTAIN` block from the [Pitfalls](#pitfalls).
+The picture shows a complete `thermostat` alias: on/off, boost, window open (red, because it is open),
+party, maintenance, unreachable (red, because it is unreachable right now), battery (green, because it is full) — and on the eighth
+place the paging arrow; the second page shows the remaining three (`ERROR`, `VACATION`, `WORKING`).
 
 ## 7. Saving, panel assignment, navigation
 
@@ -155,8 +160,6 @@ The page is skipped – and thus left in the script – only when the admin entr
 - **An empty unit costs the unit of the actual temperature.** The big number then gets `common.unit` of the set temperature state, but the line of the actual temperature gets no unit at all. Whoever wants to see `°C` enters it.
 - **The unit of the humidity is fixed to `%`** and cannot be changed.
 - **The maximum determines the unit of all three numbers.** If only the maximum is left empty, minimum and step count as tenths of a degree while the maximum comes from the state – a `15` in the minimum thus becomes 1.5 °C. Either fill all three fields or leave all three empty.
-- **`MAINTAIN` occupies two places.** `getPageThermo` contains the block twice: a channel with `indicator.maintenance` generates two slots with the same wrench and the same state, differing only in the color of the active condition (known bug). Count it in when counting the eight places.
-- **Inactive mode icons can look wrong.** If `AUTO` is in `common.states`, the icons generated after it (`COOL`, `HEAT`, `ECO`, `FAN_ONLY`, `DRY`) show the outlined A of the automatic mode in their inactive condition instead of their own icon; only the active icon is correct (known bug). Without `AUTO` in the list this does not occur.
-- **Without `common.states` the fan icon is missing.** The built-in substitute list contains `FAN`, but the adapter looks for `FAN_ONLY` – six icons remain (`OFF`, `AUTO`, `COOL`, `HEAT`, `ECO`, `DRY`).
+- **Up to and including 2.2.0 the bar looked different.** `MAINTAIN` occupied two places (two wrenches), the mode icons after `AUTO` showed the outlined A of the automatic mode when inactive, without `common.states` the fan was missing (`FAN` instead of `FAN_ONLY` in the substitute list), and a value → keyword mapping produced no mode row at all – only a list did. The version after 2.2.0 fixes all four; when counting the eight places `MAINTAIN` counts once since then.
 - **`SET`, `SET2` and `VACATION` are found by name.** With an `airCondition` channel the set point states have to be named exactly `SET` and `SET2`, `VACATION` exactly `VACATION` (not `Vacation`). With the role `thermostat` the role `level.temperature` is enough for the set point.
 - **The bar cannot be sorted.** Order, icons and colors of the generated slots are fixed. Own slots and the mode popup are known to this card in a script configuration only; the [migration](Migration) does not take them along (see [section 8](#8-take-over-from-the-script)).
