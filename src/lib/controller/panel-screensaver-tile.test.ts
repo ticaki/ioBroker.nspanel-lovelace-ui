@@ -34,6 +34,7 @@ function setup(
             return Promise.resolve(false);
         },
         onScreensaverTap: async (): Promise<boolean> => Promise.resolve(false),
+        onExitTap: (): string => 'normal',
         onButtonPress3: async (): Promise<boolean> => {
             calls.push('press3');
             return Promise.resolve(false);
