@@ -94,7 +94,7 @@ Das Panel zeigt **immer nur eine** Benachrichtigung. Sind mehrere gleichzeitig a
 
 > ⚠️ **Ohne** „Quittieren“ bleibt die Meldung stehen, solange ihre Datenpunkte an sind – sie lässt sich am Panel nicht wegtippen. Für Dauerzustände (offenes Fenster) ist das gewollt, für Ereignisse (Türklingel) meist nicht.
 
-> ⚠️ **Der Tipp ist verbraucht.** Solange eine Meldung auf dem Bildschirmschoner liegt, nimmt sie den Tipp für sich: mit **Quittieren** verschwindet sie, ohne **Quittieren** passiert nichts Sichtbares – und in beiden Fällen wechselt das Panel **nicht** zur Hauptseite. Nach dem Quittieren führt der nächste Tipp wieder normal weiter; bei einer nicht quittierbaren Meldung bleibt der Weg über den Tipp versperrt, solange ihre Datenpunkte an sind.
+> ⚠️ **Nur eine quittierbare Meldung nimmt den Tipp.** Liegt eine Meldung mit **Quittieren** auf dem Bildschirmschoner, ist der erste Tipp – oder Wisch – für sie verbraucht: Sie verschwindet, das Panel bleibt im Bildschirmschoner, erst der nächste Tipp führt zur Hauptseite. Eine Meldung **ohne** Quittieren lässt den Tipp durch: Das Panel wechselt wie gewohnt zur Hauptseite, die Meldung bleibt stehen und liegt wieder auf dem Bildschirmschoner, sobald er zurückkommt. Bei eingeschaltetem Doppelklick (`cmd.screenSaver.doubleClick`) zählt jeweils der Doppeltipp. Bis einschließlich 2.2.0 nahm auch eine nicht quittierbare Meldung jeden Tipp – aus dem Bildschirmschoner kam man nur über ein Element mit eigener Aktion, die Hardware-Tasten oder `cmd.goToNavigationPoint`.
 
 ## 6. Summer
 
@@ -144,7 +144,7 @@ Auf dem Panel entsteht daraus eine Überschriftzeile (Symbol + Präfix + Wert/Te
 - **Die Meldung erscheint nie:** Alle Datenpunkte müssen gleichzeitig „an“ sein. Gibt es einen der Datenpunkte nicht, zählt er als „aus“ – bei mehreren Datenpunkten verschwindet die Meldung damit still. Ist **nur ein** Datenpunkt eingetragen und fehlt dieser, verwirft der Adapter die ganze Benachrichtigung und schreibt einen Fehler ins Log.
 - **Es erscheint eine andere Meldung als erwartet:** Es ist immer nur eine zu sehen – die mit der kleinsten Prioritätszahl. Leere Priorität heißt 99.
 - **Die Meldung geht nicht weg:** Ohne **Quittieren** bleibt sie, bis ihre Datenpunkte ausgehen.
-- **Ein Tipp auf den Bildschirmschoner tut nichts:** Es liegt eine Benachrichtigung darüber – der Tipp wird für sie verbraucht, siehe [Quittieren](#5-quittieren-und-gruppen-id).
+- **Ein Tipp auf den Bildschirmschoner tut nichts:** Es lag eine quittierbare Benachrichtigung darüber – der erste Tipp hat sie quittiert, der nächste führt weiter. Bleibt das Panel auch bei einer **nicht** quittierbaren Meldung im Bildschirmschoner, läuft noch 2.2.0 oder älter; siehe [Quittieren](#5-quittieren-und-gruppen-id).
 - **Eine gelöschte Benachrichtigung taucht wieder auf:** Nicht gelöscht, nur nicht mehr angehakt. Ein gelöschter Bildschirmschoner nimmt seine Benachrichtigungen nicht mit – sie stehen weiter in der gemeinsamen Liste.
 - **Quittieren wirkt auf mehr als gedacht:** Benachrichtigungen mit derselben **Gruppen-ID** werden gemeinsam ausgeblendet, auch auf anderen Panels.
 - **Der Summer bleibt still:** Nachtmodus, `cmd.isBuzzerAllowed` aus – oder die angezeigte Meldung hat gar nicht gewechselt.

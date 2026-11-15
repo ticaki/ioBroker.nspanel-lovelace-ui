@@ -108,25 +108,35 @@ Zahl steht vorn. Das Panel zeigt immer die vorderste.
 > **Höchstens zehn Popups** hält der Adapter je Panel vor; was darüber hinaus ankommt, fällt hinten weg.
 > Ein fehlerhaftes JSON wird **ohne Meldung verworfen** — kein Logeintrag, keine Reaktion am Panel.
 
-## Die Knöpfe, das X und die Rückmeldungen
+## Die drei Knöpfe, das X und die Rückmeldungen
 
-| Knopf | Wirkung |
-|---|---|
-| **links** | Blättert zur nächsten Meldung. Liegt mehr als eine an und ist das Feld leer, beschriftet der Adapter den Knopf selbst mit *Next*. |
-| **Mitte** | Nimmt die aktuelle Meldung aus der Warteschlange und kehrt zur vorherigen Seite zurück. |
-| **rechts** | Bestätigt und löscht. Bei `type: 'acknowledge'` ohne eigene Beschriftung steht dort **`ok`** — der Typ bleibt dabei `acknowledge`. |
-| **X** | Schließt die Meldung auf dem Panel, an dem gedrückt wurde. Bei `acknowledge` **und** `alwaysOn` kommt sie nach **fünf Minuten** von selbst wieder. |
+Die drei Knöpfe sind **Antwortknöpfe**: Beschriftung und Farbe kommen aus `buttonLeft`, `buttonMid`,
+`buttonRight` und `colorButton…` (ohne Farbangabe links gelb, Mitte rot, rechts grün); ein Knopf ohne
+Beschriftung erscheint nicht. Was ein Druck tut, ist fest – und bei jedem Knopf anders:
 
-Was gedrückt wurde, steht hinterher in Datenpunkten — **nicht** unter `cmd`:
+| Knopf | Warteschlange | Danach |
+|---|---|---|
+| **links** | Eine `acknowledge`-Meldung wandert **ans Ende** der Warteschlange („später noch einmal"); eine `information`-Meldung ist erledigt – bei `global` auch auf den anderen Panels. | Das Popup zeigt die nächste Meldung; ist keine mehr da, geht es zur vorherigen Seite zurück. Liegt mehr als eine Meldung an und ist das Feld leer, beschriftet der Adapter den Knopf selbst mit *Next*. |
+| **Mitte** | Die Meldung ist erledigt – aber **nur auf diesem Panel**; eine `global`-Meldung bleibt auf den anderen Panels stehen. | Das Popup schließt und geht zur vorherigen Seite zurück, auch wenn weitere Meldungen warten. |
+| **rechts** | Die Meldung ist erledigt, bei `global` auf **allen** Panels. Bei `type: 'acknowledge'` ohne eigene Beschriftung steht dort **`ok`**. | Das Popup zeigt die nächste Meldung; ist keine mehr da, geht es zur vorherigen Seite zurück. |
+| **X** | Eine `information`-Meldung ist erledigt; eine `acknowledge`-Meldung bleibt in der Warteschlange und kommt bei `alwaysOn` nach **fünf Minuten** von selbst wieder. | Schließt das Popup nur auf dem Panel, an dem gedrückt wurde. |
 
-- je Panel: `…panels.<Panel>.pagePopup.id`, `.buttonLeft`, `.buttonMid`, `.buttonRight`
-- für alle Panels zusammen: `nspanel-lovelace-ui.<Instanz>.pagePopup.id`, `.buttonLeft`, `.buttonMid`,
-  `.buttonRight`
+Einen Knopf „alle löschen" gibt es nicht – das erledigt ein Skript über die Felder oben: `id` leer lassen und
+`activate` auslösen leert die ganze Warteschlange, `priority` ≤ 0 nimmt die Meldung mit dieser `id` heraus,
+≤ −100 alle, deren `id` so beginnt (per `sendTo` genügt `{ id: 'test3', priority: -1 }`).
 
-> **Beim linken Knopf stimmt das nicht ganz:** Der Adapter schreibt dort den Wert **mit** vorangestelltem
-> Panelnamen in den **lokalen** Datenpunkt und den globalen gar nicht — bei Mitte und rechts ist es
-> umgekehrt richtig herum (lokal die reine `id`, global mit Panelnamen). Wer auf den linken Knopf reagiert,
-> prüft den Wert also besser mit „endet auf meine id".
+Was gedrückt wurde, steht hinterher in Datenpunkten – **nicht** unter `cmd`:
+
+- je Panel, immer: `…panels.<Panel>.pagePopup.id` bekommt die `id` der Meldung, dazu `.buttonLeft`,
+  `.buttonMid` oder `.buttonRight` – je nach Knopf – ebenfalls die `id`.
+- für alle Panels zusammen, **nur bei `global`**: `nspanel-lovelace-ui.<Instanz>.pagePopup.id` bekommt
+  `<Panel>.<id>` (mit dem Namen des Panels, an dem gedrückt wurde), `.buttonLeft`/`.buttonMid`/`.buttonRight`
+  die reine `id`.
+
+> Bis einschließlich 2.2.0 schrieb der **linke** Knopf den Wert mit vorangestelltem Panelnamen in den lokalen
+> Datenpunkt und den globalen gar nicht. Seit der Version danach verhält er sich wie die beiden anderen – ein
+> Skript, das bisher auf „endet auf meine id" geprüft hat, läuft weiter; eines, das den Panelnamen aus dem
+> lokalen Wert gelesen hat, muss auf den globalen Datenpunkt wechseln.
 
 ## Darstellung am Panel
 

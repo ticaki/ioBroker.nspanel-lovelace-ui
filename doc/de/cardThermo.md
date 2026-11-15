@@ -95,7 +95,12 @@ Rolle `thermostat`. Links **Temperatur** (`ACTUAL`) und – wenn ein `HUMIDITY`-
 
 ![Klimaanlage](../Pictures/PageThermo/panel-02-klimaanlage.png)
 
-Rolle `airCondition` mit einem `MODE`-Datenpunkt. Die Symbole leitet der Adapter aus `common.states` dieses Datenpunkts ab – es muss eine **Liste** der englischen Schlüsselwörter sein, die Position in der Liste ist der Wert, den die Fläche schreibt. Erkannt werden in dieser Reihenfolge: `OFF` (`power-off`), `AUTO` (`alpha-a-circle`), `COOL` (`snowflake`), `HEAT` (`fire`), `ECO` (`alpha-e-circle-outline`), `FAN_ONLY` (`fan`), `DRY` (`water-percent`). Schlüsselwörter, die in der Liste fehlen, bekommen kein Symbol; eine Zuordnung Wert → Text (`{"0": "Aus", "1": "Automatik"}`) erkennt der Adapter nicht – dann erscheint überhaupt kein Modus-Symbol. Fehlt `common.states` ganz, gilt die eingebaute Liste `OFF, AUTO, COOL, HEAT, ECO, FAN, DRY` (Index = Wert), die sechs Symbole ergibt (siehe [Fallstricke](#fallstricke)). Danach folgen die Flächen der übrigen Datenpunkte (`POWER`, `BOOST`, `MAINTAIN`, `UNREACH`, `ERROR`).
+Rolle `airCondition` mit einem `MODE`-Datenpunkt. Die Symbole leitet der Adapter aus `common.states` dieses Datenpunkts ab; die Einträge müssen die **englischen Schlüsselwörter** sein, und beide Schreibweisen von `common.states` gehen:
+
+- **Zuordnung Wert → Schlüsselwort** (`{"0": "OFF", "1": "AUTO", "2": "COOL"}`), der ioBroker-Normalfall: Die Fläche schreibt den Schlüssel, unter dem ihr Schlüsselwort steht. Stehen die Schlüsselwörter selbst als Schlüssel (`{"OFF": "Aus", "AUTO": "Automatik"}`), schreibt die Fläche das Schlüsselwort.
+- **Liste** (`["OFF", "AUTO", "COOL"]`): Die Fläche schreibt die Position in der Liste.
+
+Ist der `MODE`-Datenpunkt vom Typ `string`, schreibt die Fläche in beiden Fällen das Schlüsselwort selbst. Erkannt werden in dieser Reihenfolge: `OFF` (`power-off`), `AUTO` (`alpha-a-circle`), `COOL` (`snowflake`), `HEAT` (`fire`), `ECO` (`alpha-e-circle-outline`), `FAN_ONLY` (`fan`), `DRY` (`water-percent`). Schlüsselwörter, die in `common.states` fehlen, bekommen kein Symbol; übersetzte Texte (`{"0": "Aus", "1": "Automatik"}`) erkennt der Adapter nicht – dann erscheint überhaupt kein Modus-Symbol. Fehlt `common.states` ganz, gilt die eingebaute Liste `OFF, AUTO, COOL, HEAT, ECO, FAN_ONLY, DRY` (Position = Wert) mit allen sieben Symbolen. Nur `AUTO` hat ein eigenes Symbol für den inaktiven Zustand (das Umriss-A); die übrigen Modi zeigen inaktiv dasselbe Symbol in der Aus-Farbe. Danach folgen die Flächen der übrigen Datenpunkte (`POWER`, `BOOST`, `MAINTAIN`, `UNREACH`, `ERROR`).
 
 ### Klimaanlage: zwei Sollwerte
 
@@ -114,20 +119,20 @@ Rolle `airCondition`, deren `MODE`-Datenpunkt in `common.states` nur `OFF`, `AUT
 Die Leiste unten hat **genau acht Plätze**. Der Adapter füllt sie in dieser Reihenfolge:
 
 1. die Modus-Symbole eines `airCondition`-Channels (`OFF`, `AUTO`, `COOL`, `HEAT`, `ECO`, `FAN_ONLY`, `DRY`),
-2. `POWER`, `BOOST`, `WINDOWOPEN`, `PARTY`, `MAINTAIN`, `UNREACH`, **`MAINTAIN` ein zweites Mal**, `LOWBAT`, `ERROR`, `VACATION`, `WORKING` – jeweils nur, wenn der Datenpunkt vorhanden ist.
+2. `POWER`, `BOOST`, `WINDOWOPEN`, `PARTY`, `MAINTAIN`, `UNREACH`, `LOWBAT`, `ERROR`, `VACATION`, `WORKING` – jeweils nur, wenn der Datenpunkt vorhanden ist.
 
 Daraus folgt:
 
 - **Bis zu acht Flächen** erscheinen alle. Sind es sieben oder acht, beginnen sie am ersten Platz; bei sechs und weniger rückt der Adapter sie zur Mitte hin ein.
 - **Ab der neunten Fläche** wird der achte Platz zum **Blätterpfeil** (Pfeil nach rechts), und je Seite bleiben sieben Flächen. Der Pfeil ist nicht konfigurierbar, lässt sich nicht verschieben und blättert im Kreis.
-- Ein vollständig ausgestatteter Alias überschreitet die acht Plätze leicht: `thermostat` kann elf Flächen erzeugen, `airCondition` mit sieben Modi dreizehn. Dann ist die Leiste immer zweiseitig.
+- Ein vollständig ausgestatteter Alias überschreitet die acht Plätze leicht: `thermostat` kann zehn Flächen erzeugen, `airCondition` mit sieben Modi zwölf. Dann ist die Leiste immer zweiseitig.
 - Jede erzeugte Fläche kostet einen Platz. Wer die Reihenfolge oder die Auswahl beeinflussen will, muss Datenpunkte aus dem Alias entfernen – im Admin gibt es für diese Karte keine eigenen PageItems.
 
 ![Acht Plätze: sieben Flächen und der Blätterpfeil](../Pictures/PageThermo/panel-05-blaetterpfeil.png)
 
-Das Bild zeigt einen vollständigen `thermostat`-Alias: Ein/Aus, Boost, Fenster offen (grün, weil offen),
-Party, Wartung, nicht erreichbar, noch einmal Wartung — und auf dem achten Platz den Blätterpfeil. Die
-beiden gleichen Schraubenschlüssel sind der doppelte `MAINTAIN`-Block aus den [Fallstricken](#fallstricke).
+Das Bild zeigt einen vollständigen `thermostat`-Alias: Ein/Aus, Boost, Fenster offen (rot, weil offen),
+Party, Wartung, nicht erreichbar (rot, weil gerade nicht erreichbar), Batterie (grün, weil voll) — und auf dem achten
+Platz den Blätterpfeil; die zweite Seite zeigt die übrigen drei (`ERROR`, `VACATION`, `WORKING`).
 
 ## 7. Speichern, Panel-Zuweisung, Navigation
 
@@ -155,8 +160,6 @@ Die [Migration](Migration) macht aus einer `cardThermo`-Seite des Skripts einen 
 - **Eine leere Einheit kostet die Einheit der Ist-Temperatur.** Die große Zahl bekommt dann `common.unit` des Solltemperatur-Datenpunkts, die Zeile der Ist-Temperatur aber gar keine Einheit. Wer `°C` sehen will, trägt es ein.
 - **Die Einheit der Luftfeuchte ist fest `%`** und lässt sich nicht ändern.
 - **Das Maximum bestimmt die Einheit aller drei Zahlen.** Wird nur das Maximum leer gelassen, gelten Minimum und Schrittweite als Zehntelgrad, während das Maximum aus dem Datenpunkt kommt – eine `15` im Minimum wird so zu 1,5 °C. Entweder alle drei Felder füllen oder alle drei leer lassen.
-- **`MAINTAIN` belegt zwei Plätze.** `getPageThermo` enthält den Block zweimal: ein Channel mit `indicator.maintenance` erzeugt zwei Flächen mit demselben Schraubenschlüssel und demselben Datenpunkt, die sich nur in der Farbe des aktiven Zustands unterscheiden (bekannter Fehler). Beim Zählen der acht Plätze mitrechnen.
-- **Inaktive Modus-Symbole können falsch aussehen.** Steht `AUTO` in `common.states`, zeigen die danach erzeugten Symbole (`COOL`, `HEAT`, `ECO`, `FAN_ONLY`, `DRY`) im inaktiven Zustand das Umriss-A der Automatik statt ihres eigenen Symbols; nur das aktive Symbol ist richtig (bekannter Fehler). Ohne `AUTO` in der Liste tritt das nicht auf.
-- **Ohne `common.states` fehlt das Ventilator-Symbol.** Die eingebaute Ersatzliste enthält `FAN`, der Adapter sucht aber nach `FAN_ONLY` – es bleiben sechs Symbole (`OFF`, `AUTO`, `COOL`, `HEAT`, `ECO`, `DRY`).
+- **Bis einschließlich 2.2.0 sah die Leiste anders aus.** `MAINTAIN` belegte zwei Plätze (zwei Schraubenschlüssel), die Modus-Symbole nach `AUTO` zeigten inaktiv das Umriss-A der Automatik, ohne `common.states` fehlte der Ventilator (`FAN` statt `FAN_ONLY` in der Ersatzliste), und eine Zuordnung Wert → Schlüsselwort ergab gar keine Modusleiste – nur eine Liste. Die Version nach 2.2.0 hat alle vier Punkte behoben; beim Zählen der acht Plätze zählt `MAINTAIN` seitdem einmal.
 - **`SET`, `SET2` und `VACATION` werden über den Namen gefunden.** Bei einem `airCondition`-Channel müssen die Sollwert-Datenpunkte genau `SET` und `SET2` heißen, `VACATION` genau `VACATION` (nicht `Vacation`). Bei der Rolle `thermostat` genügt für den Sollwert die Rolle `level.temperature`.
 - **Die Leiste lässt sich nicht sortieren.** Reihenfolge, Symbole und Farben der erzeugten Flächen sind fest. Eigene Flächen und das Modus-Popup kennt diese Karte nur in einer Skript-Konfiguration; die [Migration](Migration) nimmt sie nicht mit (siehe [Abschnitt 8](#8-übernahme-aus-dem-skript)).

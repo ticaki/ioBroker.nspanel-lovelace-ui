@@ -107,25 +107,35 @@ first. The panel always shows the front one.
 > **At most ten popups** are kept per panel; anything beyond that is dropped. Broken JSON is **discarded
 > without a word** — no log entry, no reaction on the panel.
 
-## The buttons, the X and the feedback states
+## The three buttons, the X and the feedback states
 
-| Button | Effect |
-|---|---|
-| **left** | Moves to the next message. If more than one is waiting and the field is empty, the adapter labels the button *Next* by itself. |
-| **middle** | Takes the current message out of the queue and returns to the previous page. |
-| **right** | Confirms and deletes. With `type: 'acknowledge'` and no label of its own it reads **`ok`** — the type stays `acknowledge`. |
-| **X** | Closes the message on the panel where it was pressed. With `acknowledge` **and** `alwaysOn` it comes back by itself after **five minutes**. |
+The three buttons are **answer buttons**: label and colour come from `buttonLeft`, `buttonMid`,
+`buttonRight` and `colorButton…` (without a colour: left yellow, middle red, right green); a button without a
+label is not shown. What a press does is fixed – and different for each button:
 
-What was pressed ends up in states — **not** below `cmd`:
+| Button | Queue | Afterwards |
+|---|---|---|
+| **left** | An `acknowledge` message moves **to the end** of the queue ("later again"); an `information` message is done – with `global` on the other panels as well. | The popup shows the next message; if none is left it returns to the previous page. If more than one message is waiting and the field is empty, the adapter labels the button *Next* by itself. |
+| **middle** | The message is done – but **only on this panel**; a `global` message stays on the other panels. | The popup closes and returns to the previous page, even if further messages are waiting. |
+| **right** | The message is done, with `global` on **all** panels. With `type: 'acknowledge'` and no label of its own it reads **`ok`**. | The popup shows the next message; if none is left it returns to the previous page. |
+| **X** | An `information` message is done; an `acknowledge` message stays in the queue and, with `alwaysOn`, comes back by itself after **five minutes**. | Closes the popup only on the panel where it was pressed. |
 
-- per panel: `…panels.<panel>.pagePopup.id`, `.buttonLeft`, `.buttonMid`, `.buttonRight`
-- for all panels together: `nspanel-lovelace-ui.<instance>.pagePopup.id`, `.buttonLeft`, `.buttonMid`,
-  `.buttonRight`
+There is no "clear all" button – a script does that through the fields above: leaving `id` empty and triggering
+`activate` empties the whole queue, `priority` ≤ 0 takes the message with this `id` out, ≤ −100 all whose
+`id` starts like that (via `sendTo` `{ id: 'test3', priority: -1 }` is enough).
 
-> **For the left button this is not quite true:** there the adapter writes the value **with** the panel name
-> in front into the **local** state, and does not write the global one at all — for middle and right it is
-> the other way round and correct (local the plain `id`, global with the panel name). So a script reacting
-> to the left button is better off testing for „ends with my id".
+What was pressed ends up in states – **not** below `cmd`:
+
+- per panel, always: `…panels.<panel>.pagePopup.id` gets the `id` of the message, and `.buttonLeft`,
+  `.buttonMid` or `.buttonRight` – depending on the button – the `id` as well.
+- for all panels together, **only with `global`**: `nspanel-lovelace-ui.<instance>.pagePopup.id` gets
+  `<panel>.<id>` (with the name of the panel where it was pressed), `.buttonLeft`/`.buttonMid`/`.buttonRight`
+  the plain `id`.
+
+> Up to and including 2.2.0 the **left** button wrote the value with the panel name in front into the local
+> state and did not write the global one at all. Since the version after it behaves like the other two – a
+> script that tested for "ends with my id" keeps working; one that read the panel name from the local value has
+> to switch to the global state.
 
 ## How it looks on the panel
 
