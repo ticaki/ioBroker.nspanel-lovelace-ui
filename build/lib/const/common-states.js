@@ -61,8 +61,11 @@ function statesList(states, part) {
   }
   return part === "keys" ? Object.keys(record).map(String) : Object.values(record).map(String);
 }
+function isStatesList(states) {
+  return Array.isArray(states);
+}
 function resolveStatesToken(token, states, stateType) {
-  if (Array.isArray(states)) {
+  if (isStatesList(states)) {
     const position = states.indexOf(token);
     if (position === -1) {
       return void 0;
@@ -70,13 +73,12 @@ function resolveStatesToken(token, states, stateType) {
     return stateType === "string" ? token : position;
   }
   if (states && typeof states === "object") {
-    const record = states;
-    for (const key of Object.keys(record)) {
-      if (record[key] === token) {
+    for (const key of Object.keys(states)) {
+      if (states[key] === token) {
         return stateType !== "string" && NUMERIC_KEY.test(key) ? Number(key) : key;
       }
     }
-    if (record[token] !== void 0) {
+    if (states[token] !== void 0) {
       return token;
     }
   }

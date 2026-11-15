@@ -122,7 +122,7 @@ const _Dataitem = class _Dataitem extends import_library.BaseClass {
   }
   set writeable(b) {
     this._writeable = b;
-    __privateGet(this, _frozenCommon).write = b;
+    __privateSet(this, _frozenCommon, { ...__privateGet(this, _frozenCommon), write: b });
     __privateSet(this, _mergedCommon, void 0);
   }
   /**

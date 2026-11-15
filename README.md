@@ -159,7 +159,7 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
     ### **WORK IN PROGRESS**
 -->
 ### **WORK IN PROGRESS**
-- (ticaki) changed state texts (common.states) and other display values of a state (unit, min, max, step, name) now reach the panel without an adapter restart - also the mode texts of cardThermo2, the mode buttons of an air conditioner and the mode list of a fan
+- (ticaki) changed state texts (common.states) and other display values of a state (unit, min, max, step, name) are picked up with the next update without an adapter restart - also the mode texts of cardThermo2, the mode buttons of an air conditioner and the mode list of a fan
 - (ticaki) screensaver notification at standby brightness 0: the first tap only wakes the display, the second clears the notification, the third leaves the screensaver - also with the double click option
 - (tt-tom17) system notifications: an acknowledged notification of the ioBroker host no longer comes back - also when it was acknowledged in ioBroker itself
 - (tt-tom17) popup notification: the left button now writes the plain id to `setStateID` and the id with the panel name to `setGlobalID`, like the middle and right button - scripts that checked the local point for the prefixed value must look at the global point instead

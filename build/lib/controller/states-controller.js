@@ -50,19 +50,20 @@ class StatesControler extends import_library.BaseClass {
   intervalObjectDatabase;
   /** wait before the collected object subscriptions are sent - many triggers arrive at once on a startup */
   static OBJECT_SUBSCRIBE_DELAY_MS = 500;
-  /** wait for more object changes before the pages are redrawn - the admin saves an object several times */
-  static OBJECT_CHANGE_DEBOUNCE_MS = 500;
-  /** common fields the panel was built on - a change only takes effect after a restart */
+  /**
+   * An object subscription outlives its triggerDB entry this long: a page change removes the entries of the hidden
+   * page and the next visit brings them back - that must not unsubscribe and subscribe again every time.
+   */
+  static OBJECT_UNSUBSCRIBE_GRACE_MS = 18e4;
+  /** common fields the panel was built on - existing elements keep them, see onObjectChange */
   static STRUCTURE_COMMON_KEYS = ["role", "type", "write", "read"];
-  /** ids whose object is (or is about to be) subscribed - exactly the foreign ids of triggerDB */
+  /** ids whose object is subscribed (or about to be): the foreign ids of triggerDB plus those within the grace time */
   objectSubscriptions = /* @__PURE__ */ new Set();
   /** collected ids for the next {@link flushObjectSubscriptions} */
   objectSubscribeQueue = /* @__PURE__ */ new Set();
-  objectUnsubscribeQueue = /* @__PURE__ */ new Set();
   objectSubscribeTimeout;
-  /** ids with changed display fields, the receivers are redrawn after OBJECT_CHANGE_DEBOUNCE_MS */
-  objectRedrawQueue = /* @__PURE__ */ new Set();
-  objectRedrawTimeout;
+  /** ids that left triggerDB, still subscribed: since when - see {@link expireObjectSubscriptions} */
+  objectUnsubscribePending = /* @__PURE__ */ new Map();
   /** ids that were told once that a structure field changed / that the object was deleted */
   objectStructureReported = /* @__PURE__ */ new Set();
   objectDeletedReported = /* @__PURE__ */ new Set();
@@ -79,6 +80,7 @@ class StatesControler extends import_library.BaseClass {
       }
       this.objectDatabase = {};
       this.cleanupStateDB();
+      void this.expireObjectSubscriptions();
     }, 18e4);
   }
   deletePageLoop = async (f) => {
@@ -159,13 +161,16 @@ class StatesControler extends import_library.BaseClass {
       this.adapter.clearTimeout(this.objectSubscribeTimeout);
       this.objectSubscribeTimeout = void 0;
     }
-    if (this.objectRedrawTimeout) {
-      this.adapter.clearTimeout(this.objectRedrawTimeout);
-      this.objectRedrawTimeout = void 0;
-    }
+    const subscribed = [...this.objectSubscriptions].filter((id) => !this.objectSubscribeQueue.has(id));
+    this.objectSubscriptions.clear();
     this.objectSubscribeQueue.clear();
-    this.objectUnsubscribeQueue.clear();
-    this.objectRedrawQueue.clear();
+    this.objectUnsubscribePending.clear();
+    if (subscribed.length > 0) {
+      try {
+        await this.adapter.unsubscribeForeignObjectsAsync(subscribed);
+      } catch {
+      }
+    }
     this.targetToTriggerMap.clear();
     this.activeTriggerCount.clear();
   }
@@ -330,7 +335,8 @@ class StatesControler extends import_library.BaseClass {
       common: { name: id, type: "number", role: "state", write: false, read: true },
       triggerAllowed: [trigger],
       change: [change != null ? change : "ne"],
-      internal: false
+      internal: false,
+      placeholder: true
     };
     try {
       const obj = await this.getObjectAsync(id);
@@ -339,6 +345,7 @@ class StatesControler extends import_library.BaseClass {
         throw new Error(`Got invalid object for ${id}`);
       }
       this.triggerDB[id].common = obj.common;
+      delete this.triggerDB[id].placeholder;
       if (this.unload || this.adapter.unload) {
         return;
       }
@@ -611,7 +618,7 @@ class StatesControler extends import_library.BaseClass {
       return null;
     }
     let j = void 0;
-    if (this.triggerDB[id] !== void 0 && this.triggerDB[id].common) {
+    if (this.triggerDB[id] !== void 0 && this.triggerDB[id].common && !this.triggerDB[id].placeholder) {
       j = this.triggerDB[id].common.states;
     } else if (this.stateDB[id] !== void 0 && this.stateDB[id].common) {
       j = this.stateDB[id].common.states;
@@ -635,7 +642,7 @@ class StatesControler extends import_library.BaseClass {
    */
   getLiveCommon(id) {
     const trigger = this.triggerDB[id];
-    if (trigger && !trigger.internal && trigger.common) {
+    if (trigger && !trigger.internal && !trigger.placeholder && trigger.common) {
       return trigger.common;
     }
     const cached = this.stateDB[id];
@@ -651,36 +658,70 @@ class StatesControler extends import_library.BaseClass {
   /**
    * Subscribes the object of a foreign state of triggerDB - collected and sent as one call, see
    * {@link flushObjectSubscriptions}. Internal states (with '/') and the adapter's own states are left out.
+   * An id within the grace time is still subscribed, it only loses its mark.
    *
    * @param id state id
    */
   queueObjectSubscription(id) {
-    if (id.includes("/") || id.startsWith(this.adapter.namespace) || this.objectSubscriptions.has(id)) {
+    if (id.includes("/") || id.startsWith(this.adapter.namespace)) {
+      return;
+    }
+    this.objectUnsubscribePending.delete(id);
+    if (this.objectSubscriptions.has(id)) {
       return;
     }
     this.objectSubscriptions.add(id);
-    if (this.objectUnsubscribeQueue.has(id)) {
-      this.objectUnsubscribeQueue.delete(id);
-    } else {
-      this.objectSubscribeQueue.add(id);
-    }
+    this.objectSubscribeQueue.add(id);
     this.scheduleObjectSubscriptionFlush();
   }
   /**
-   * Ends the object subscription of an id that left triggerDB.
+   * An id left triggerDB: its object stays subscribed for {@link OBJECT_UNSUBSCRIBE_GRACE_MS}, a page change
+   * usually brings it back. {@link expireObjectSubscriptions} ends it later.
    *
    * @param id state id
    */
   releaseObjectSubscription(id) {
-    if (!this.objectSubscriptions.delete(id)) {
+    if (!this.objectSubscriptions.has(id)) {
       return;
     }
     if (this.objectSubscribeQueue.has(id)) {
       this.objectSubscribeQueue.delete(id);
-    } else {
-      this.objectUnsubscribeQueue.add(id);
+      this.objectSubscriptions.delete(id);
+      return;
     }
-    this.scheduleObjectSubscriptionFlush();
+    if (!this.objectUnsubscribePending.has(id)) {
+      this.objectUnsubscribePending.set(id, Date.now());
+    }
+  }
+  /**
+   * Ends the object subscriptions whose ids left triggerDB at least {@link OBJECT_UNSUBSCRIBE_GRACE_MS} ago and did
+   * not come back - one call with all ids. Runs with the periodic cleanup of the object cache.
+   *
+   * @param now current time
+   */
+  async expireObjectSubscriptions(now = Date.now()) {
+    const expired = [];
+    for (const [id, since] of this.objectUnsubscribePending) {
+      if (this.triggerDB[id]) {
+        this.objectUnsubscribePending.delete(id);
+        continue;
+      }
+      if (now - since >= StatesControler.OBJECT_UNSUBSCRIBE_GRACE_MS) {
+        expired.push(id);
+      }
+    }
+    if (expired.length === 0 || this.unload || this.adapter.unload) {
+      return;
+    }
+    for (const id of expired) {
+      this.objectUnsubscribePending.delete(id);
+      this.objectSubscriptions.delete(id);
+    }
+    try {
+      await this.adapter.unsubscribeForeignObjectsAsync(expired);
+    } catch (e) {
+      this.log.warn(`Cannot unsubscribe objects: ${e instanceof Error ? e.message : String(e)}`);
+    }
   }
   scheduleObjectSubscriptionFlush() {
     if (this.objectSubscribeTimeout || this.unload || this.adapter.unload) {
@@ -692,26 +733,17 @@ class StatesControler extends import_library.BaseClass {
     }, StatesControler.OBJECT_SUBSCRIBE_DELAY_MS);
   }
   /**
-   * Sends the collected object (un)subscriptions - one call each with all ids.
+   * Sends the collected object subscriptions - one call with all ids.
    */
   async flushObjectSubscriptions() {
     if (this.objectSubscribeTimeout) {
       this.adapter.clearTimeout(this.objectSubscribeTimeout);
       this.objectSubscribeTimeout = void 0;
     }
-    const unsubscribe = [...this.objectUnsubscribeQueue];
     const subscribe = [...this.objectSubscribeQueue];
-    this.objectUnsubscribeQueue.clear();
     this.objectSubscribeQueue.clear();
     if (this.unload || this.adapter.unload) {
       return;
-    }
-    if (unsubscribe.length > 0) {
-      try {
-        await this.adapter.unsubscribeForeignObjectsAsync(unsubscribe);
-      } catch (e) {
-        this.log.warn(`Cannot unsubscribe objects: ${e instanceof Error ? e.message : String(e)}`);
-      }
     }
     if (subscribe.length > 0) {
       try {
@@ -722,9 +754,12 @@ class StatesControler extends import_library.BaseClass {
     }
   }
   /**
-   * A subscribed object changed. The display fields ({@link DISPLAY_COMMON_KEYS}) of the caches follow it and the
-   * visible receivers are redrawn. The structure fields stay as the panel was built on them - a change is
-   * reported once. A deleted object changes nothing.
+   * A subscribed object changed. The display fields ({@link DISPLAY_COMMON_KEYS}) of the caches follow it and are
+   * shown with the next update that comes anyway - an object change triggers no redraw of its own. The structure
+   * fields of the caches stay as the existing elements were built on them - a change is reported once.
+   * The object cache gets the whole new object, so elements created later use the new structure.
+   * A deleted object changes nothing. Also an id within the grace time of its subscription is handled - without a
+   * triggerDB entry only the object cache and stateDB are updated.
    *
    * @param id object id
    * @param obj the new object, null if it was deleted
@@ -733,7 +768,8 @@ class StatesControler extends import_library.BaseClass {
     if (this.unload || this.adapter.unload) {
       return;
     }
-    const trigger = this.triggerDB[id] && !this.triggerDB[id].internal ? this.triggerDB[id] : void 0;
+    const entry = this.triggerDB[id];
+    const trigger = entry && !entry.internal && !entry.placeholder ? entry : void 0;
     const cached = this.stateDB[id];
     if (!trigger && !cached && !this.objectSubscriptions.has(id)) {
       return;
@@ -754,34 +790,22 @@ class StatesControler extends import_library.BaseClass {
     this.objectDeletedReported.delete(id);
     this.objectDatabase[id] = obj;
     const common = obj.common;
-    let displayChanged = false;
     let structureChanged = false;
-    for (const entry of [trigger, cached]) {
-      if (!entry) {
+    for (const cache of [trigger, cached]) {
+      if (!cache) {
         continue;
       }
-      const changes = StatesControler.compareCommon(entry.common, common);
+      const changes = StatesControler.compareCommon(cache.common, common);
       structureChanged || (structureChanged = changes.structure);
       if (changes.display) {
-        entry.common = StatesControler.withDisplayFields(entry.common, common);
-        displayChanged = true;
+        cache.common = StatesControler.withDisplayFields(cache.common, common);
       }
     }
     if (structureChanged && !this.objectStructureReported.has(id)) {
       this.objectStructureReported.add(id);
       this.log.info(
-        `Object ${id}: a change of ${StatesControler.STRUCTURE_COMMON_KEYS.join("/")} takes effect after the next configuration change or adapter restart`
+        `Object ${id}: changed ${StatesControler.STRUCTURE_COMMON_KEYS.join("/")} - elements already shown keep the old settings until they are created again (e.g. on the next page change), decisions made when the configuration was built stay until the adapter restarts`
       );
-    }
-    if (displayChanged && trigger) {
-      this.objectRedrawQueue.add(id);
-      if (this.objectRedrawTimeout) {
-        this.adapter.clearTimeout(this.objectRedrawTimeout);
-      }
-      this.objectRedrawTimeout = this.adapter.setTimeout(() => {
-        this.objectRedrawTimeout = void 0;
-        void this.redrawAfterObjectChange();
-      }, StatesControler.OBJECT_CHANGE_DEBOUNCE_MS);
     }
   }
   /**
@@ -816,44 +840,6 @@ class StatesControler extends import_library.BaseClass {
       }
     }
     return result;
-  }
-  /**
-   * Redraws the receivers of the objects that changed - like a state change, but without its filter on a changed
-   * value: the value is the same, only its display changed. Only active receivers are triggered, the pages
-   * themselves skip what is not visible.
-   */
-  async redrawAfterObjectChange() {
-    var _a, _b;
-    if (this.objectRedrawTimeout) {
-      this.adapter.clearTimeout(this.objectRedrawTimeout);
-      this.objectRedrawTimeout = void 0;
-    }
-    const ids = [...this.objectRedrawQueue];
-    this.objectRedrawQueue.clear();
-    for (const id of ids) {
-      const entry = this.triggerDB[id];
-      if (!entry || entry.internal) {
-        continue;
-      }
-      for (let i = 0; i < entry.to.length; i++) {
-        if (this.unload || this.adapter.unload) {
-          return;
-        }
-        const target = entry.to[i];
-        if (!target || target.unload) {
-          continue;
-        }
-        if (!(target.neverDeactivateTrigger || entry.subscribed[i]) || !entry.triggerAllowed[i]) {
-          continue;
-        }
-        const parent = target.parent;
-        if (parent && target.triggerParent && !parent.unload && !parent.sleep) {
-          await ((_a = parent.onStateTriggerSuperDoNotOverride) == null ? void 0 : _a.call(parent, id, target));
-        } else {
-          await ((_b = target.onStateTriggerSuperDoNotOverride) == null ? void 0 : _b.call(target, id, target));
-        }
-      }
-    }
   }
   isStateValue(v) {
     return v === null || v === void 0 || typeof v === "string" || typeof v === "number" || typeof v === "boolean";
