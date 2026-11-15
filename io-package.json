@@ -159,7 +159,7 @@
     ],
     "globalDependencies": [
       {
-        "admin": ">=8.3.5"
+        "admin": ">=8.1.0"
       }
     ],
     "ifInstalledDependencies": {
