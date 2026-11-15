@@ -137,6 +137,29 @@ export class BaseTriggeredPage extends BaseClass {
             return false;
         }
 
+        this.startThrottleTimer();
+        if (this.alwaysOnState) {
+            this.adapter.clearTimeout(this.alwaysOnState);
+        }
+        if (this.alwaysOn === 'action') {
+            if (this.unload || this.adapter.unload) {
+                return false;
+            }
+            this.alwaysOnState = this.adapter.setTimeout(
+                () => {
+                    this.basePanel.sendScreensaverTimeout(this.basePanel.timeout);
+                },
+                this.basePanel.timeout * 1000 || 5000,
+            );
+        }
+        await this.onStateTrigger(dp, from);
+        return true;
+    };
+
+    /**
+     * Starts the throttle: for minUpdateInterval triggers wait in pendingTriggers, then they run.
+     */
+    private startThrottleTimer(): void {
         if (this.minUpdateInterval > 0) {
             this.updateTimeout = this.adapter.setTimeout(async () => {
                 if (this.unload || this.adapter.unload) {
@@ -162,23 +185,29 @@ export class BaseTriggeredPage extends BaseClass {
                 }
             }, this.minUpdateInterval);
         }
-        if (this.alwaysOnState) {
-            this.adapter.clearTimeout(this.alwaysOnState);
+    }
+
+    /**
+     * Starts the throttle again for the full minUpdateInterval and drops the waiting triggers the caller is
+     * about to handle anyway - the other ones stay.
+     *
+     * @param isDone true for a source whose waiting trigger is handled by the caller
+     */
+    protected restartTriggerThrottle(isDone: (from: BaseTriggeredPage) => boolean): void {
+        if (this.unload || this.adapter.unload) {
+            return;
         }
-        if (this.alwaysOn === 'action') {
-            if (this.unload || this.adapter.unload) {
-                return false;
+        for (const from of [...this.pendingTriggers.keys()]) {
+            if (isDone(from)) {
+                this.pendingTriggers.delete(from);
             }
-            this.alwaysOnState = this.adapter.setTimeout(
-                () => {
-                    this.basePanel.sendScreensaverTimeout(this.basePanel.timeout);
-                },
-                this.basePanel.timeout * 1000 || 5000,
-            );
         }
-        await this.onStateTrigger(dp, from);
-        return true;
-    };
+        if (this.updateTimeout) {
+            this.adapter.clearTimeout(this.updateTimeout);
+            this.updateTimeout = undefined;
+        }
+        this.startThrottleTimer();
+    }
 
     private async runPendingTriggers(): Promise<void> {
         const pending = [...this.pendingTriggers];

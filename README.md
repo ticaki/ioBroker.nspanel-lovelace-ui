@@ -167,6 +167,7 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
 - (ticaki) dependencies updated: MQTT broker aedes 1.2.0 (security fixes), ws, node-ical and the admin libraries
 - (ticaki) screensaver notification at standby brightness 0: the first tap only wakes the display, the second clears the notification, the third leaves the screensaver - also with the double click option
 - (tt-tom17) system notifications: an acknowledged notification of the ioBroker host no longer comes back - also when it was acknowledged in ioBroker itself
+- (ticaki) screensaver: waits 5 ms before an update so changes arriving right after each other are taken along (e.g. an outdated value zigbee2mqtt sends right before the real one); the 1 s lock restarts after the pause; weatherUpdate at most once per second instead of every 2 s
 - (tt-tom17) popup notification: the left button now writes the plain id to `setStateID` and the id with the panel name to `setGlobalID`, like the middle and right button - scripts that checked the local point for the prefixed value must look at the global point instead
 - (tt-tom17) popup notification: a missing `textSize` state falls back to size 3 instead of sending `undefined` to the panel
 - (tt-tom17) screensaver: a tap on a notification that cannot be dismissed no longer gets lost - the panel changes to the main page as usual; only a dismissible notification takes the tap
