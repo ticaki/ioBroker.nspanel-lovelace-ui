@@ -3,6 +3,12 @@ import * as configManagerConst from '../const/config-manager-const';
 import { isScreensaverBlindPosition, pageItemDefaults, SHUTTER_POSITION_ICON } from '../const/page-item-defaults';
 import { mainPageName } from '../const/default-pages';
 import { normalizeCycleValues } from '../const/screensaver-cycle';
+import {
+    type CommonStatesValue,
+    DEFAULT_CLIMATE_MODES,
+    resolveStatesToken,
+    withCommonStates,
+} from '../const/common-states';
 import type { panelConfigPartial } from '../controller/panel';
 import { StatesControler } from '../controller/states-controller';
 import { PagePower } from '../pages/pagePower';
@@ -963,8 +969,9 @@ export class ConfigManager extends BaseClass {
                 });
             }
         } else if (foundedStates[role]?.MODE) {
-            // airCondition with mode
-            let states: string[] | Record<string, string> = ['OFF', 'AUTO', 'COOL', 'HEAT', 'ECO', 'FAN_ONLY', 'DRY'];
+            // airCondition with mode: which buttons exist is decided here, the value a button writes and compares
+            // against is resolved at runtime from the current common.states (Dataitem option commonStates)
+            let states: CommonStatesValue | readonly string[] = DEFAULT_CLIMATE_MODES;
             let modeType: ioBroker.CommonType | undefined = undefined;
             if (foundedStates[role].MODE.dp) {
                 const o = await this.adapter.getForeignObjectAsync(foundedStates[role].MODE.dp);
@@ -973,40 +980,6 @@ export class ConfigManager extends BaseClass {
                 }
                 modeType = o?.common?.type;
             }
-
-            /**
-             * Builds the literal the generated script has to compare MODE against.
-             *
-             * common.states has two shapes. As an array the position is the state value. As a
-             * record - the normal case in ioBroker - the key is the state value and the token is
-             * the value, so the record has to be searched by value and the key is the result.
-             * A key that is not a number has to be quoted, otherwise "return val == OFF" would be
-             * generated. If MODE is a string itself, the token is the state value.
-             *
-             * @param token mode token to look for, e.g. 'COOL'
-             * @returns the literal for the read/write script or undefined if the mode is unknown
-             */
-            const modeLiteral = (token: string): string | undefined => {
-                if (Array.isArray(states)) {
-                    const position = states.indexOf(token);
-                    if (position === -1) {
-                        return undefined;
-                    }
-                    return modeType === 'string' ? JSON.stringify(token) : String(position);
-                }
-                if (states && typeof states === 'object') {
-                    for (const key of Object.keys(states)) {
-                        if (states[key] === token) {
-                            return modeType !== 'string' && /^-?\d+(\.\d+)?$/.test(key) ? key : JSON.stringify(key);
-                        }
-                    }
-                    // tokens used as keys: then the token itself is the state value
-                    if (states[token] !== undefined) {
-                        return JSON.stringify(token);
-                    }
-                }
-                return undefined;
-            };
 
             const tempItem: NSPanel.PageItemDataItemsOptions = {
                 role: 'button',
@@ -1037,13 +1010,20 @@ export class ConfigManager extends BaseClass {
                 const modeDatapoint = foundedStates[role].MODE;
                 const pageItems = gridItem.pageItems;
                 const pushMode = (token: string, icon: string): void => {
-                    const literal = modeLiteral(token);
-                    if (literal === undefined) {
+                    if (resolveStatesToken(token, states, modeType) === undefined) {
+                        return;
+                    }
+                    const tokenItem = withCommonStates(modeDatapoint, {
+                        mode: 'token',
+                        token,
+                        defaultStates: [...DEFAULT_CLIMATE_MODES],
+                    });
+                    if (!tokenItem) {
                         return;
                     }
                     iconActive.value = { type: 'const', constVal: icon };
-                    entity1.value = { ...modeDatapoint, read: `return val == ${literal}` };
-                    entity1.set = { ...modeDatapoint, write: `return ${literal}` };
+                    entity1.value = tokenItem;
+                    entity1.set = tokenItem;
                     pageItems.push(JSON.parse(JSON.stringify(tempItem)));
                 };
 
@@ -4234,16 +4214,12 @@ export class ConfigManager extends BaseClass {
                         throw new Error(`DP: ${item.id} - Channel role ${role} not implemented yet!!`);
                     }
                     case 'level.mode.fan': {
-                        //let states: string[] | Record<string, string> = ['State 1', 'State 2', 'State 3'];
-                        let states: string[] | undefined;
-                        let keys: string[] | undefined;
-                        if (foundedStates[role].MODE?.dp) {
-                            const o = await this.adapter.getForeignObjectAsync(foundedStates[role].MODE.dp);
-                            if (o?.common?.states) {
-                                states = Object.values(o.common.states).map(String);
-                                keys = Object.keys(o.common.states).map(String);
-                            }
-                        }
+                        // keys and texts of common.states of MODE, read when the popup needs them
+                        const modeDp = foundedStates[role].MODE?.dp;
+                        const statesListItem = (part: 'keys' | 'values'): NSPanel.DataItemsOptions =>
+                            modeDp
+                                ? { type: 'state', dp: modeDp, commonStates: { mode: 'list', part } }
+                                : { type: 'const', constVal: [] };
 
                         itemConfig = {
                             role: 'fan',
@@ -4293,13 +4269,8 @@ export class ConfigManager extends BaseClass {
 
                                 valueList: item.modeList
                                     ? { type: 'const', constVal: item.modeList }
-                                    : {
-                                          type: 'const',
-                                          constVal: Array.isArray(keys) ? keys : [],
-                                      },
-                                valueList2: item.modeList
-                                    ? undefined
-                                    : { type: 'const', constVal: Array.isArray(states) ? states : [] },
+                                    : statesListItem('keys'),
+                                valueList2: item.modeList ? undefined : statesListItem('values'),
                                 /* valueList: {
                                     type: 'const',
                                     constVal: Array.isArray(states) ? states.join('?') : JSON.stringify(states),

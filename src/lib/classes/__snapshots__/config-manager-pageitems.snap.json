@@ -50210,20 +50210,20 @@
           }
         },
         "valueList": {
-          "type": "const",
-          "constVal": [
-            "0",
-            "1",
-            "2"
-          ]
+          "type": "state",
+          "dp": "alias.0.full.level_mode_fan.MODE",
+          "commonStates": {
+            "mode": "list",
+            "part": "keys"
+          }
         },
         "valueList2": {
-          "type": "const",
-          "constVal": [
-            "OFF",
-            "AUTO",
-            "COOL"
-          ]
+          "type": "state",
+          "dp": "alias.0.full.level_mode_fan.MODE",
+          "commonStates": {
+            "mode": "list",
+            "part": "values"
+          }
         }
       }
     },
@@ -50537,20 +50537,20 @@
           }
         },
         "valueList": {
-          "type": "const",
-          "constVal": [
-            "0",
-            "1",
-            "2"
-          ]
+          "type": "state",
+          "dp": "alias.0.ext.level_mode_fan.MODE",
+          "commonStates": {
+            "mode": "list",
+            "part": "keys"
+          }
         },
         "valueList2": {
-          "type": "const",
-          "constVal": [
-            "OFF",
-            "AUTO",
-            "COOL"
-          ]
+          "type": "state",
+          "dp": "alias.0.ext.level_mode_fan.MODE",
+          "commonStates": {
+            "mode": "list",
+            "part": "values"
+          }
         },
         "enabled": {
           "type": "triggered",
@@ -50872,20 +50872,20 @@
           }
         },
         "valueList": {
-          "type": "const",
-          "constVal": [
-            "0",
-            "1",
-            "2"
-          ]
+          "type": "state",
+          "dp": "alias.0.full.level_mode_fan.MODE",
+          "commonStates": {
+            "mode": "list",
+            "part": "keys"
+          }
         },
         "valueList2": {
-          "type": "const",
-          "constVal": [
-            "OFF",
-            "AUTO",
-            "COOL"
-          ]
+          "type": "state",
+          "dp": "alias.0.full.level_mode_fan.MODE",
+          "commonStates": {
+            "mode": "list",
+            "part": "values"
+          }
         }
       }
     },
@@ -51407,20 +51407,20 @@
           }
         },
         "valueList": {
-          "type": "const",
-          "constVal": [
-            "0",
-            "1",
-            "2"
-          ]
+          "type": "state",
+          "dp": "alias.0.full.level_mode_fan.MODE",
+          "commonStates": {
+            "mode": "list",
+            "part": "keys"
+          }
         },
         "valueList2": {
-          "type": "const",
-          "constVal": [
-            "OFF",
-            "AUTO",
-            "COOL"
-          ]
+          "type": "state",
+          "dp": "alias.0.full.level_mode_fan.MODE",
+          "commonStates": {
+            "mode": "list",
+            "part": "values"
+          }
         }
       }
     },
@@ -51527,20 +51527,20 @@
           }
         },
         "valueList": {
-          "type": "const",
-          "constVal": [
-            "0",
-            "1",
-            "2"
-          ]
+          "type": "state",
+          "dp": "alias.0.full.level_mode_fan.MODE",
+          "commonStates": {
+            "mode": "list",
+            "part": "keys"
+          }
         },
         "valueList2": {
-          "type": "const",
-          "constVal": [
-            "OFF",
-            "AUTO",
-            "COOL"
-          ]
+          "type": "state",
+          "dp": "alias.0.full.level_mode_fan.MODE",
+          "commonStates": {
+            "mode": "list",
+            "part": "values"
+          }
         }
       }
     },
@@ -51643,20 +51643,20 @@
           }
         },
         "valueList": {
-          "type": "const",
-          "constVal": [
-            "0",
-            "1",
-            "2"
-          ]
+          "type": "state",
+          "dp": "alias.0.full.level_mode_fan.MODE",
+          "commonStates": {
+            "mode": "list",
+            "part": "keys"
+          }
         },
         "valueList2": {
-          "type": "const",
-          "constVal": [
-            "OFF",
-            "AUTO",
-            "COOL"
-          ]
+          "type": "state",
+          "dp": "alias.0.full.level_mode_fan.MODE",
+          "commonStates": {
+            "mode": "list",
+            "part": "values"
+          }
         }
       }
     },
@@ -51754,20 +51754,20 @@
           }
         },
         "valueList": {
-          "type": "const",
-          "constVal": [
-            "0",
-            "1",
-            "2"
-          ]
+          "type": "state",
+          "dp": "alias.0.full.level_mode_fan.MODE",
+          "commonStates": {
+            "mode": "list",
+            "part": "keys"
+          }
         },
         "valueList2": {
-          "type": "const",
-          "constVal": [
-            "OFF",
-            "AUTO",
-            "COOL"
-          ]
+          "type": "state",
+          "dp": "alias.0.full.level_mode_fan.MODE",
+          "commonStates": {
+            "mode": "list",
+            "part": "values"
+          }
         },
         "enabled": {
           "type": "const",
@@ -51898,20 +51898,20 @@
           }
         },
         "valueList": {
-          "type": "const",
-          "constVal": [
-            "0",
-            "1",
-            "2"
-          ]
+          "type": "state",
+          "dp": "alias.0.full.level_mode_fan.MODE",
+          "commonStates": {
+            "mode": "list",
+            "part": "keys"
+          }
         },
         "valueList2": {
-          "type": "const",
-          "constVal": [
-            "OFF",
-            "AUTO",
-            "COOL"
-          ]
+          "type": "state",
+          "dp": "alias.0.full.level_mode_fan.MODE",
+          "commonStates": {
+            "mode": "list",
+            "part": "values"
+          }
         }
       }
     },
@@ -52261,20 +52261,20 @@
           }
         },
         "valueList": {
-          "type": "const",
-          "constVal": [
-            "0",
-            "1",
-            "2"
-          ]
+          "type": "state",
+          "dp": "alias.0.ext.level_mode_fan.MODE",
+          "commonStates": {
+            "mode": "list",
+            "part": "keys"
+          }
         },
         "valueList2": {
-          "type": "const",
-          "constVal": [
-            "OFF",
-            "AUTO",
-            "COOL"
-          ]
+          "type": "state",
+          "dp": "alias.0.ext.level_mode_fan.MODE",
+          "commonStates": {
+            "mode": "list",
+            "part": "values"
+          }
         },
         "enabled": {
           "type": "triggered",
@@ -52380,20 +52380,20 @@
           }
         },
         "valueList": {
-          "type": "const",
-          "constVal": [
-            "0",
-            "1",
-            "2"
-          ]
+          "type": "state",
+          "dp": "alias.0.full.level_mode_fan.MODE",
+          "commonStates": {
+            "mode": "list",
+            "part": "keys"
+          }
         },
         "valueList2": {
-          "type": "const",
-          "constVal": [
-            "OFF",
-            "AUTO",
-            "COOL"
-          ]
+          "type": "state",
+          "dp": "alias.0.full.level_mode_fan.MODE",
+          "commonStates": {
+            "mode": "list",
+            "part": "values"
+          }
         }
       }
     },
@@ -52495,20 +52495,20 @@
           }
         },
         "valueList": {
-          "type": "const",
-          "constVal": [
-            "0",
-            "1",
-            "2"
-          ]
+          "type": "state",
+          "dp": "alias.0.full.level_mode_fan.MODE",
+          "commonStates": {
+            "mode": "list",
+            "part": "keys"
+          }
         },
         "valueList2": {
-          "type": "const",
-          "constVal": [
-            "OFF",
-            "AUTO",
-            "COOL"
-          ]
+          "type": "state",
+          "dp": "alias.0.full.level_mode_fan.MODE",
+          "commonStates": {
+            "mode": "list",
+            "part": "values"
+          }
         }
       }
     },
@@ -52705,20 +52705,20 @@
           }
         },
         "valueList": {
-          "type": "const",
-          "constVal": [
-            "0",
-            "1",
-            "2"
-          ]
+          "type": "state",
+          "dp": "alias.0.full.level_mode_fan.MODE",
+          "commonStates": {
+            "mode": "list",
+            "part": "keys"
+          }
         },
         "valueList2": {
-          "type": "const",
-          "constVal": [
-            "OFF",
-            "AUTO",
-            "COOL"
-          ]
+          "type": "state",
+          "dp": "alias.0.full.level_mode_fan.MODE",
+          "commonStates": {
+            "mode": "list",
+            "part": "values"
+          }
         },
         "enabled": {
           "type": "const",
@@ -52849,20 +52849,20 @@
           }
         },
         "valueList": {
-          "type": "const",
-          "constVal": [
-            "0",
-            "1",
-            "2"
-          ]
+          "type": "state",
+          "dp": "alias.0.full.level_mode_fan.MODE",
+          "commonStates": {
+            "mode": "list",
+            "part": "keys"
+          }
         },
         "valueList2": {
-          "type": "const",
-          "constVal": [
-            "OFF",
-            "AUTO",
-            "COOL"
-          ]
+          "type": "state",
+          "dp": "alias.0.full.level_mode_fan.MODE",
+          "commonStates": {
+            "mode": "list",
+            "part": "values"
+          }
         }
       }
     },
@@ -52965,20 +52965,20 @@
           }
         },
         "valueList": {
-          "type": "const",
-          "constVal": [
-            "0",
-            "1",
-            "2"
-          ]
+          "type": "state",
+          "dp": "alias.0.full.level_mode_fan.MODE",
+          "commonStates": {
+            "mode": "list",
+            "part": "keys"
+          }
         },
         "valueList2": {
-          "type": "const",
-          "constVal": [
-            "OFF",
-            "AUTO",
-            "COOL"
-          ]
+          "type": "state",
+          "dp": "alias.0.full.level_mode_fan.MODE",
+          "commonStates": {
+            "mode": "list",
+            "part": "values"
+          }
         }
       }
     },
@@ -53080,20 +53080,20 @@
           }
         },
         "valueList": {
-          "type": "const",
-          "constVal": [
-            "0",
-            "1",
-            "2"
-          ]
+          "type": "state",
+          "dp": "alias.0.full.level_mode_fan.MODE",
+          "commonStates": {
+            "mode": "list",
+            "part": "keys"
+          }
         },
         "valueList2": {
-          "type": "const",
-          "constVal": [
-            "OFF",
-            "AUTO",
-            "COOL"
-          ]
+          "type": "state",
+          "dp": "alias.0.full.level_mode_fan.MODE",
+          "commonStates": {
+            "mode": "list",
+            "part": "values"
+          }
         }
       }
     },

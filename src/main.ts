@@ -1233,7 +1233,8 @@ class NspanelLovelaceUi extends utils.Adapter {
     }
 
     /**
-     * Is called if a subscribed object changes - only the central credentials are subscribed.
+     * Is called if a subscribed object changes - the central credentials and the objects of the
+     * datapoints the panels show. The latter go to the states controller, the rest is about credentials.
      *
      * A deletion is only reported: the adapter keeps running with the values it read at startup,
      * and after the next restart the fields of the instance settings apply again. A change is
@@ -1244,7 +1245,12 @@ class NspanelLovelaceUi extends utils.Adapter {
      * @param obj  The new object, null if it was deleted
      */
     private onObjectChange(id: string, obj: ioBroker.Object | null | undefined): void {
-        if (this.unload || !this.watchedCredentials.has(id)) {
+        if (this.unload) {
+            return;
+        }
+        // objects of the datapoints the panels show (states controller subscribes them)
+        this.controller?.statesControler?.onObjectChange(id, obj);
+        if (!this.watchedCredentials.has(id)) {
             return;
         }
         if (!obj) {
