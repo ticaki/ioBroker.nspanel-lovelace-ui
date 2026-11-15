@@ -1655,6 +1655,133 @@ describe('lib/pages/screensaver - timer instead of the clock', () => {
                 expect(sent.filter(m => m.startsWith('notify~'))).to.deep.equal(['notify~Head~Text']);
             });
         });
+
+        describe('notification at standby brightness 0', () => {
+            // what Panel.onScreensaverTouch does with a bExit, without the navigation
+            const exit = async (s: Scene, opt: string): Promise<{ kind: string; sent: string[] }> => {
+                let kind = '';
+                const sent = await s.during(async () => {
+                    kind = s.saver.onExitTap(opt);
+                    if (kind === 'normal') {
+                        if (!(await s.saver.onTimerTap('bExit', opt))) {
+                            await s.saver.onScreensaverTap();
+                        }
+                    } else if (kind === 'dismiss') {
+                        await s.saver.onScreensaverTap();
+                    }
+                });
+                return { kind, sent };
+            };
+            const dark = async (start: Partial<Scene['now']> = {}): Promise<Scene> => {
+                const s = await scene(start);
+                s.saver.basePanel.dim = { dayMode: true, standby: 0, nightStandby: 10 };
+                await s.show();
+                return s;
+            };
+
+            it('a dismissible one: the first tap only wakes, the second dismisses, the third leaves', async () => {
+                const s = await dark({ notify: true });
+                const first = await exit(s, '1');
+                expect(first.kind).to.equal('wake');
+                expect(first.sent).to.deep.equal([]);
+                expect(s.now.dismissed).to.equal(false);
+                expect(s.saver.activeNotification).to.equal(true);
+
+                const second = await exit(s, '2');
+                expect(second.kind).to.equal('dismiss');
+                expect(second.sent.filter(m => m.startsWith('notify~'))).to.deep.equal(['notify~~']);
+                expect(s.now.dismissed).to.equal(true);
+
+                // the notification is gone - the run still leaves the screensaver
+                expect((await exit(s, '3')).kind).to.equal('leave');
+                expect((await exit(s, '4')).kind).to.equal('leave');
+            });
+
+            it('one that cannot be dismissed: cleared by the HMI with the second tap, the third leaves', async () => {
+                const s = await dark({ notify: true });
+                s.notify().config.role = '';
+                expect((await exit(s, '1')).kind).to.equal('wake');
+                const second = await exit(s, '2');
+                expect(second.kind).to.equal('dismiss');
+                expect(s.kinds(second.sent)).to.not.include('notify');
+                // still active here, but no longer on the awake display
+                expect(s.saver.activeNotification).to.equal(true);
+                expect(s.saver.notifyHidden).to.equal(true);
+                expect((await exit(s, '3')).kind).to.equal('leave');
+            });
+
+            it('a later run on the dark display after the HMI cleared it is a normal tap', async () => {
+                const s = await dark({ notify: true });
+                s.notify().config.role = '';
+                await exit(s, '1');
+                await exit(s, '2');
+                // dimmed again: vaTap starts at 1, nothing stands on the display any more
+                expect((await exit(s, '1')).kind).to.equal('normal');
+            });
+
+            it('without a notification nothing changes', async () => {
+                const s = await dark();
+                expect((await exit(s, '1')).kind).to.equal('normal');
+                expect((await exit(s, '2')).kind).to.equal('normal');
+                expect((await exit(s, '3')).kind).to.equal('normal');
+            });
+
+            it('a manual notification counts as well', async () => {
+                const s = await dark();
+                s.saver.headingNotification = 'Manual';
+                s.saver.customNotification = true;
+                await s.saver.HandleNotification();
+                expect(s.saver.activeNotification).to.equal(true);
+                expect((await exit(s, '1')).kind).to.equal('wake');
+                expect((await exit(s, '2')).kind).to.equal('dismiss');
+                expect((await exit(s, '3')).kind).to.equal('leave');
+            });
+
+            it('with a standby brightness above 0 the first tap dismisses at once, as before', async () => {
+                const s = await scene({ notify: true });
+                await s.show();
+                const first = await exit(s, '1');
+                expect(first.kind).to.equal('normal');
+                expect(first.sent.filter(m => m.startsWith('notify~'))).to.deep.equal(['notify~~']);
+                expect(s.now.dismissed).to.equal(true);
+                expect((await exit(s, '2')).kind).to.equal('normal');
+            });
+
+            it('night mode uses the night standby brightness', async () => {
+                const night = await scene({ notify: true });
+                night.saver.basePanel.dim = { dayMode: false, standby: 10, nightStandby: 0 };
+                await night.show();
+                expect((await exit(night, '1')).kind).to.equal('wake');
+
+                const bright = await scene({ notify: true });
+                bright.saver.basePanel.dim = { dayMode: false, standby: 0, nightStandby: 10 };
+                await bright.show();
+                expect((await exit(bright, '1')).kind).to.equal('normal');
+                expect(bright.now.dismissed).to.equal(true);
+            });
+
+            it('a pageType ends the run, a tap without a number is a normal one', async () => {
+                const s = await dark({ notify: true });
+                s.notify().config.role = '';
+                expect((await exit(s, '1')).kind).to.equal('wake');
+                expect((await exit(s, '')).kind).to.equal('normal');
+                expect((await exit(s, '2')).kind).to.equal('normal');
+                // the reload shows the notification again and sets the counter of the HMI back
+                await s.sleepReachedOnSamePage();
+                expect((await exit(s, '1')).kind).to.equal('wake');
+                await s.sleepReachedOnSamePage();
+                expect((await exit(s, '2')).kind).to.equal('normal');
+            });
+
+            it('a tap with a counter above 1 hit an awake display: the HMI cleared the notification', async () => {
+                const s = await dark({ notify: true });
+                s.notify().config.role = '';
+                await s.saver.onTimerTap('bExit', '1');
+                expect(s.saver.notifyHidden).to.equal(false);
+                await s.saver.onTimerTap('bExit', '2');
+                expect(s.saver.notifyHidden).to.equal(true);
+            });
+        });
     });
 });
 

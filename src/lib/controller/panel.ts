@@ -8,7 +8,7 @@ import type {
 } from '../types/adminShareConfig';
 import { PanelSend } from './panel-message';
 
-import { Screensaver } from '../pages/screensaver';
+import { Screensaver, type ScreensaverExitTap } from '../pages/screensaver';
 import type * as Types from '../types/types';
 import type * as pages from '../types/pages';
 import * as globals from '../types/function-and-const';
@@ -1162,7 +1162,9 @@ export class Panel extends BaseClass {
     /**
      * A touch of the screensaver background (`buttonPress2,screensaver,<action>,<taps>`): timer tap, notification,
      * gestures, double click to the main page. A tile tap of the TFT 6.0.8+ that is no key of the indicator comes here
-     * as `bExit` as well ({@link Screensaver.onIndicatorTap}).
+     * as `bExit` as well ({@link Screensaver.onIndicatorTap}). With standby brightness 0 and a notification on the
+     * dark display {@link Screensaver.onExitTap} decides a `bExit` first: wake only, take the notification away, or
+     * leave the screensaver.
      *
      * @param event the event of the panel
      */
@@ -1170,8 +1172,13 @@ export class Panel extends BaseClass {
         if (!this.screenSaver) {
             return;
         }
+        const exitTap: ScreensaverExitTap = event.action === 'bExit' ? this.screenSaver.onExitTap(event.opt) : 'normal';
+        // the tap woke the dark display and shows the notification - nothing else
+        if (exitTap === 'wake') {
+            return;
+        }
         // before the gesture and notification states: this tap only switches the timer to the clock
-        if (await this.screenSaver.onTimerTap(event.action, event.opt)) {
+        if (exitTap === 'normal' && (await this.screenSaver.onTimerTap(event.action, event.opt))) {
             return;
         }
         await this.library.writedp(
@@ -1223,10 +1230,19 @@ export class Panel extends BaseClass {
                 }
             }
         }
-        if (await this.screenSaver.onScreensaverTap()) {
+        if (exitTap === 'dismiss') {
+            // takes the notification away, no navigation - also with double click
+            await this.screenSaver.onScreensaverTap();
             return;
         }
-        if ((this.screenSaverDoubleClick && parseInt(event.opt) > 1) || !this.screenSaverDoubleClick) {
+        if (exitTap === 'normal' && (await this.screenSaver.onScreensaverTap())) {
+            return;
+        }
+        if (
+            exitTap === 'leave' ||
+            (this.screenSaverDoubleClick && parseInt(event.opt) > 1) ||
+            !this.screenSaverDoubleClick
+        ) {
             if (this.lastSendTypeDate + this.blockScreensaverTouchEventsForMs > Date.now()) {
                 this.log.debug(
                     `Ignore event because of blockScreensaverTouchEventsForMs ${this.blockScreensaverTouchEventsForMs}ms`,

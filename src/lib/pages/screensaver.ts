@@ -86,6 +86,15 @@ export function resolveScreensaverOptions(options: pages.PageBase): {
 /** Messages of the screensaver that are only sent when their content changed */
 type FilteredMessage = 'weatherUpdate' | 'color' | 'statusUpdate' | 'notify';
 
+/**
+ * What a touch of the screensaver background (`bExit`) does, see {@link Screensaver.onExitTap}:
+ * - `wake`: it only woke the dark display, the tap is done.
+ * - `dismiss`: it takes the notification away (dismissible ones are dismissed), no navigation.
+ * - `leave`: it leaves the screensaver, whatever the double click option says.
+ * - `normal`: the usual way (timer tap, notification, gesture, double click).
+ */
+export type ScreensaverExitTap = 'wake' | 'dismiss' | 'leave' | 'normal';
+
 export class Screensaver extends Page {
     items: undefined;
     private step: number = 0;
@@ -110,6 +119,12 @@ export class Screensaver extends Page {
     public customNotification: boolean = false;
     private activeNotification: boolean = false;
     private activeNotifyId: string = '';
+    /**
+     * The current run of the tap counter of the HMI (`vaTap`, the opt of `bExit`) began with a tap on a dark display
+     * (standby brightness 0) while a notification stood on it, see {@link onExitTap}. Decided once with opt 1 and kept
+     * for the following taps of the run: the notification is gone after the second one, the third must still leave.
+     */
+    private wakeTapRun: boolean = false;
     /**
      * A tap that follows a tap on the timer is still the same double click up to this long after it (and the one
      * before, for more than two taps). The HMI has no limit of its own - all screensaver pages: `tc0` press does
@@ -951,15 +966,72 @@ export class Screensaver extends Page {
      * only hears of `bExit` or of the indicator. The notification stays active here and is not sent again: it comes
      * back with the next `pageType~` or a new content. What the HMI dropped behind it can go out now. With a standby
      * brightness of 0 the touch may have hit a dark display and cleared nothing: then what follows still counts as
-     * dropped and is repeated with the next touch or the end of the notification.
+     * dropped and is repeated with the next touch or the end of the notification. A tap with a counter above 1 always
+     * hit an awake display (the first tap of the run woke it), so the HMI cleared the notification then.
+     *
+     * @param taps taps counted by the HMI since it dimmed last (opt of the event), undefined when not known
      */
-    private onTouch(): void {
+    private onTouch(taps?: number): void {
         if (!this.activeNotification) {
             return;
         }
-        const dim = this.basePanel.dim;
-        this.notifyHidden = (dim.dayMode ? dim.standby : dim.nightStandby) > 0;
+        this.notifyHidden = (taps !== undefined && taps > 1) || !this.standbyDark();
         this.resendDropped();
+    }
+
+    /**
+     * @returns true when the active standby brightness (day or night) is 0: the display is dark in standby
+     */
+    private standbyDark(): boolean {
+        const dim = this.basePanel.dim;
+        return (dim.dayMode ? dim.standby : dim.nightStandby) <= 0;
+    }
+
+    /**
+     * @param opt opt of the event, the taps counted by the HMI
+     * @returns the number of taps, undefined when the event has none
+     */
+    private static tapCount(opt: string): number | undefined {
+        const taps = parseInt(opt, 10);
+        return isNaN(taps) ? undefined : taps;
+    }
+
+    /**
+     * Decides what a touch of the screensaver background (`bExit,<taps>`, also a tile that is no key) does when the
+     * standby brightness is 0. The HMI (`tc0` press) clears a shown notification by itself only when `dim!=0`, wakes
+     * the display and counts `vaTap` up to the next dimming. So on a dark display the first tap shows the notification
+     * that stood there unseen - it must not dismiss it at once.
+     *
+     * State: {@link wakeTapRun} is decided with every tap of opt 1 (the start of a run of the counter): standby
+     * brightness of the current mode is 0 and a notification stands on the HMI (active, not cleared by an earlier
+     * touch - configured or manual). Within such a run:
+     * - opt 1: `wake` - nothing is dismissed, no state is written, no navigation.
+     * - opt 2: `dismiss` - the tap on the notification of today, but never a navigation, also with double click.
+     * - opt 3 and more: `leave` - to the main page like a tap without notification, also with double click.
+     *
+     * The run is kept for its taps even when the notification is gone after opt 2 (dismissed, or cleared by the HMI
+     * when it cannot be dismissed). A tap without a number, a new run with opt 1 under other conditions and every
+     * `pageType~` (the HMI sets `vaTap` back with a reload) end it. Outside a run the result is `normal`.
+     * For `dismiss` and `leave` the touch is noted here ({@link onTouch}) - {@link onTimerTap} is not used for them.
+     *
+     * @param opt opt of the event, the taps counted by the HMI
+     * @returns what the tap does
+     */
+    onExitTap(opt: string): ScreensaverExitTap {
+        const taps = Screensaver.tapCount(opt);
+        if (taps === undefined) {
+            this.wakeTapRun = false;
+            return 'normal';
+        }
+        if (taps <= 1) {
+            this.wakeTapRun = this.standbyDark() && this.activeNotification && !this.notifyHidden;
+            return this.wakeTapRun ? 'wake' : 'normal';
+        }
+        if (!this.wakeTapRun) {
+            return 'normal';
+        }
+        this.onTouch(taps);
+        return taps === 2 ? 'dismiss' : 'leave';
     }
 
     /**
@@ -1037,6 +1109,7 @@ export class Screensaver extends Page {
             this.weatherDropped = false;
             this.lastTimerPayload = '';
             this.notifyHidden = false;
+            this.wakeTapRun = false;
             this.lastUpdateTs = 0;
             this.timeAfterRender = true;
         }
@@ -1515,7 +1588,7 @@ export class Screensaver extends Page {
      */
     async onTimerTap(action: string, opt: string): Promise<boolean> {
         // the first thing the panel does with each touch of the screensaver itself
-        this.onTouch();
+        this.onTouch(Screensaver.tapCount(opt));
         if (action !== 'bExit' || !this.clockTimer) {
             return false;
         }
@@ -1677,7 +1750,7 @@ export class Screensaver extends Page {
         if (!this.isIndicatorKey(item)) {
             return false;
         }
-        this.onTouch();
+        this.onTouch(Screensaver.tapCount(event.opt));
         // the result of this press goes out at once, also with a burst or a trigger just before it
         this.lastUpdateTs = 0;
         await this.releaseTriggerThrottle();
@@ -1717,7 +1790,7 @@ export class Screensaver extends Page {
         if (!this.hasIndicatorLongPress(item)) {
             return false;
         }
-        this.onTouch();
+        this.onTouch(Screensaver.tapCount(event.opt));
         // the result of this press goes out at once, also with a burst or a trigger just before it
         this.lastUpdateTs = 0;
         await this.releaseTriggerThrottle();

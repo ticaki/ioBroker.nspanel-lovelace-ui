@@ -973,7 +973,9 @@ class Panel extends import_library.BaseClass {
   /**
    * A touch of the screensaver background (`buttonPress2,screensaver,<action>,<taps>`): timer tap, notification,
    * gestures, double click to the main page. A tile tap of the TFT 6.0.8+ that is no key of the indicator comes here
-   * as `bExit` as well ({@link Screensaver.onIndicatorTap}).
+   * as `bExit` as well ({@link Screensaver.onIndicatorTap}). With standby brightness 0 and a notification on the
+   * dark display {@link Screensaver.onExitTap} decides a `bExit` first: wake only, take the notification away, or
+   * leave the screensaver.
    *
    * @param event the event of the panel
    */
@@ -981,7 +983,11 @@ class Panel extends import_library.BaseClass {
     if (!this.screenSaver) {
       return;
     }
-    if (await this.screenSaver.onTimerTap(event.action, event.opt)) {
+    const exitTap = event.action === "bExit" ? this.screenSaver.onExitTap(event.opt) : "normal";
+    if (exitTap === "wake") {
+      return;
+    }
+    if (exitTap === "normal" && await this.screenSaver.onTimerTap(event.action, event.opt)) {
       return;
     }
     await this.library.writedp(
@@ -1033,10 +1039,14 @@ class Panel extends import_library.BaseClass {
         }
       }
     }
-    if (await this.screenSaver.onScreensaverTap()) {
+    if (exitTap === "dismiss") {
+      await this.screenSaver.onScreensaverTap();
       return;
     }
-    if (this.screenSaverDoubleClick && parseInt(event.opt) > 1 || !this.screenSaverDoubleClick) {
+    if (exitTap === "normal" && await this.screenSaver.onScreensaverTap()) {
+      return;
+    }
+    if (exitTap === "leave" || this.screenSaverDoubleClick && parseInt(event.opt) > 1 || !this.screenSaverDoubleClick) {
       if (this.lastSendTypeDate + this.blockScreensaverTouchEventsForMs > Date.now()) {
         this.log.debug(
           `Ignore event because of blockScreensaverTouchEventsForMs ${this.blockScreensaverTouchEventsForMs}ms`
