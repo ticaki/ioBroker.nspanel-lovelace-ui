@@ -45,12 +45,19 @@ interface MaintainPanelInfo {
     _id: string;
     _tftVersion: string;
     _tasmotaVersion: string;
+    /** installed Berry driver generation (with update hint), '---' without driver */
+    _berryVersion?: string;
     _ScriptVersion: string;
     _nsPanelModel: string;
     _check?: boolean;
     _check_tasmota?: boolean;
     _check_tft?: boolean;
     _check_script?: boolean;
+    _check_berry?: boolean;
+    /** no Berry driver to maintain: virtual panel or emulator */
+    _noBerry?: boolean;
+    /** the emulator answers instead of a real panel */
+    _isEmulator?: boolean;
     /** "panel uses no script": no script version, no script update, no conversion */
     _noScript?: boolean;
 }
@@ -341,7 +348,7 @@ class MaintainPanel extends ConfigGeneric<ConfigGenericProps & MaintainPanelProp
             const result = await this.props.oContext.socket.sendTo(
                 `${this.adapterName}.${this.instance}`,
                 'refreshMaintainTable',
-                { internalServerIp: this.props.data.internalServerIp },
+                { internalServerIp: this.props.data.internalServerIp, useBetaTFT: !!this.props.data.useBetaTFT },
             );
             console.log('[Maintain] refreshMaintainTable result:', result);
 
@@ -454,6 +461,74 @@ class MaintainPanel extends ConfigGeneric<ConfigGenericProps & MaintainPanelProp
                     }
                 }
             },
+        );
+    }
+
+    private handleBerryInstall(panel: MaintainPanelInfo): void {
+        this.showConfirmDialog(
+            this.getText('berryUpdate'),
+            `${this.getText('berryUpdateText')}\n\nPanel: ${panel._name}\nBerry: ${panel._berryVersion ?? '???'}`,
+            async () => {
+                this.closeConfirmDialog();
+                if (this._isMounted) {
+                    this.setState({ processingPanel: panel._name });
+                }
+
+                try {
+                    const result = await this.props.oContext.socket.sendTo(
+                        `${this.adapterName}.${this.instance}`,
+                        'berryInstallSendTo',
+                        {
+                            tasmotaIP: panel._ip,
+                            topic: panel._topic,
+                            useBetaTFT: this.props.data.useBetaTFT || false,
+                            restart: true,
+                        },
+                    );
+                    if (!this._isMounted) {
+                        return;
+                    }
+                    if (result && typeof result === 'object' && 'error' in result) {
+                        this.setState({ error: this.getText(String(result.error)), processingPanel: null });
+                    } else {
+                        // Tasmota restarts now - the online state change refreshes the table again
+                        await this.refreshPanels();
+                        if (this._isMounted) {
+                            this.setState({ processingPanel: null });
+                        }
+                    }
+                } catch (err) {
+                    if (this._isMounted) {
+                        this.setState({ error: String(err), processingPanel: null });
+                    }
+                }
+            },
+        );
+    }
+
+    /**
+     * Text of the berry field for an emulator: "Emulator (12)" for an emulator driver of generation 12,
+     * the old emulator (-1) reports no generation.
+     *
+     * @param panel row of the maintain table
+     */
+    private getEmulatorBerryText(panel: MaintainPanelInfo): string {
+        return panel._berryVersion
+            ? `${this.getText('berryEmulatorShort')} (${panel._berryVersion})`
+            : this.getText('berryEmulator');
+    }
+
+    /**
+     * Berry driver install needs a reachable Tasmota (valid IP), the display itself may be offline -
+     * a missing or broken driver is exactly what keeps it offline.
+     *
+     * @param panel row of the maintain table
+     */
+    private isBerryInstallable(panel: MaintainPanelInfo): boolean {
+        return (
+            !panel._noBerry &&
+            !panel._flashing &&
+            /^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$/.test(panel._ip || '')
         );
     }
 
@@ -572,6 +647,7 @@ class MaintainPanel extends ConfigGeneric<ConfigGenericProps & MaintainPanelProp
         lightSurface: boolean;
         buttonTasmotaColor: string;
         buttonTftColor: string;
+        buttonBerryColor: string;
         buttonScriptColor: string;
     } {
         if (!this.state.alive) {
@@ -581,6 +657,7 @@ class MaintainPanel extends ConfigGeneric<ConfigGenericProps & MaintainPanelProp
                 lightSurface: true,
                 buttonTasmotaColor: 'primary',
                 buttonTftColor: 'primary',
+                buttonBerryColor: 'primary',
                 buttonScriptColor: 'primary',
             };
         }
@@ -591,6 +668,7 @@ class MaintainPanel extends ConfigGeneric<ConfigGenericProps & MaintainPanelProp
                 lightSurface: true,
                 buttonTasmotaColor: 'primary',
                 buttonTftColor: 'primary',
+                buttonBerryColor: 'primary',
                 buttonScriptColor: 'primary',
             };
         }
@@ -600,6 +678,7 @@ class MaintainPanel extends ConfigGeneric<ConfigGenericProps & MaintainPanelProp
                 borderColor: red[700],
                 buttonTasmotaColor: 'primary',
                 buttonTftColor: 'primary',
+                buttonBerryColor: 'primary',
                 buttonScriptColor: 'primary',
             };
         } */
@@ -610,6 +689,7 @@ class MaintainPanel extends ConfigGeneric<ConfigGenericProps & MaintainPanelProp
                 lightSurface: true,
                 buttonTasmotaColor: panel._check_tasmota ? blue[600] : blue[200],
                 buttonTftColor: panel._check_tft ? blue[600] : blue[200],
+                buttonBerryColor: panel._check_berry ? blue[600] : blue[200],
                 buttonScriptColor: panel._check_script ? blue[600] : blue[200],
             };
         }
@@ -619,6 +699,7 @@ class MaintainPanel extends ConfigGeneric<ConfigGenericProps & MaintainPanelProp
             lightSurface: false,
             buttonTasmotaColor: 'primary',
             buttonTftColor: 'primary',
+            buttonBerryColor: 'primary',
             buttonScriptColor: 'primary',
         };
     }
@@ -847,6 +928,50 @@ class MaintainPanel extends ConfigGeneric<ConfigGenericProps & MaintainPanelProp
                                                     <CircularProgress size={20} />
                                                 ) : (
                                                     this.getText('tftInstallSendToMQTT')
+                                                )}
+                                            </Button>
+                                        </Box>
+                                    )}
+
+                                    {/* Berry driver - not for web panels; the emulator has none */}
+                                    {isWebPanel || (panel._noBerry && !panel._isEmulator) ? null : (
+                                        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, alignItems: 'center' }}>
+                                            <TextField
+                                                label={this.getText('vBerry')}
+                                                value={
+                                                    panel._isEmulator
+                                                        ? this.getEmulatorBerryText(panel)
+                                                        : (panel._berryVersion ?? '???')
+                                                }
+                                                slotProps={{ input: { readOnly: true } }}
+                                                size="small"
+                                                sx={{ flex: '1 1 250px', minWidth: 200, maxWidth: 300 }}
+                                            />
+                                            <Button
+                                                variant="contained"
+                                                onClick={() => this.handleBerryInstall(panel)}
+                                                disabled={
+                                                    !this.isBerryInstallable(panel) ||
+                                                    processingPanel === panel._name ||
+                                                    !alive
+                                                }
+                                                size="small"
+                                                sx={{
+                                                    flex: '0 0 auto',
+                                                    minWidth: 200,
+                                                    ...(cardStyle.buttonBerryColor !== 'primary' && {
+                                                        backgroundColor: cardStyle.buttonBerryColor,
+                                                        '&:hover': {
+                                                            backgroundColor: cardStyle.buttonBerryColor,
+                                                            filter: 'brightness(0.9)',
+                                                        },
+                                                    }),
+                                                }}
+                                            >
+                                                {processingPanel === panel._name ? (
+                                                    <CircularProgress size={20} />
+                                                ) : (
+                                                    this.getText('berryUpdate')
                                                 )}
                                             </Button>
                                         </Box>

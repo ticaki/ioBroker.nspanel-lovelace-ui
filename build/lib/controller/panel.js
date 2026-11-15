@@ -2025,6 +2025,17 @@ class Panel extends import_library.BaseClass {
     this.resetDisplayDiagnosis();
     this.setSafeboot(false, "");
     this.isOnline = true;
+    if (!this.isClone) {
+      const fwState = this.library.readdb(`panels.${this.name}.info.nspanel.firmwareUpdate`);
+      if (fwState && typeof fwState.val === "number" && fwState.val < 100) {
+        this.flashing = false;
+        await this.library.writedp(
+          `panels.${this.name}.info.nspanel.firmwareUpdate`,
+          100,
+          definition.genericStateObjects.panel.panels.info.nspanel.firmwareUpdate
+        );
+      }
+    }
     this.info.nspanel.displayVersion = event.opt;
     if (this.isVirtual) {
       await this.setStatus("connected");
@@ -2092,6 +2103,7 @@ class Panel extends import_library.BaseClass {
     }
     switch (event.method) {
       case "startup": {
+        this.panelSend.displayAck = false;
         if (!this.initDone) {
           return;
         }
@@ -2180,10 +2192,19 @@ class Panel extends import_library.BaseClass {
         break;
       }
       case "renderCurrentPage": {
-        await this.panelSend.onMessage("/stat/RESULT", `{ "CustomSend": "${event.method}" }`);
+        const crc = Panel.parseDisplayAckCrc(event.id);
+        if (crc === null) {
+          await this.panelSend.onMessage("/stat/RESULT", `{ "CustomSend": "${event.method}" }`);
+        } else {
+          this.panelSend.onDisplayAck("renderCurrentPage", crc);
+        }
         break;
       }
       case "ack": {
+        const crc = Panel.parseDisplayAckCrc(event.id);
+        if (crc !== null) {
+          this.panelSend.onDisplayAck("ack", crc);
+        }
         break;
       }
       case "button1": {
@@ -2710,6 +2731,19 @@ ${this.info.tasmota.onlineVersion}`;
     }
     return null;
   };
+  /**
+   * The crc field of `event,ack,<crc>` and `event,renderCurrentPage,<crc>`.
+   *
+   * @param field the field after the method
+   * @returns the crc or null when the field is no crc (older TFT, web panel)
+   */
+  static parseDisplayAckCrc(field) {
+    if (field === void 0 || !/^\d{1,5}$/.test(field)) {
+      return null;
+    }
+    const crc = parseInt(field, 10);
+    return crc <= 65535 ? crc : null;
+  }
   /**
    * Convert incoming string to event msg object
    *

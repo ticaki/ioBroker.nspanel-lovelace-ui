@@ -15,3 +15,4 @@ Eine Nachschlagehilfe: Hier stehen alle Symbole, die der Adapter mitbringt, mit 
 - Die Sammlung ist groß (mehrere tausend Symbole); der Filter ist der schnellste Weg. Tippt man etwa `thermometer`, bleiben die Varianten für Temperatur übrig.
 - Die Symbole übernehmen die Textfarbe der Oberfläche, sind also auch im dunklen Erscheinungsbild zu erkennen. Welche Farbe ein Symbol auf dem Panel bekommt, wird dort eingestellt, wo es verwendet wird.
 - Solange dieser Tab offen ist, fängt `Strg + F` die Suche der Oberfläche ab — die Browsersuche steht erst wieder zur Verfügung, wenn man den Tab verlässt.
+- Neben den Material Design Icons gibt es einige eigene Symbole: Fenster- und Rollladen-Varianten (z. B. `window-tilt-variant`, `window-shutter-50`) und ab TFT 6.1.0 die Mediaplayer `alexa`, `mpd`, `sonos`, `bose` und `volumio` (`spotify` und `dlna` stammen aus MDI). Eine TFT vor 6.1.0 zeigt die Mediaplayer-Symbole nicht an.

@@ -19,6 +19,8 @@ import {
     isPortraitModel,
     isValidDate,
     isVersionGreaterOrEqual,
+    compareVersions,
+    isVersionOlder,
     isWebModel,
     menuMaxItems,
     notifyLines,
@@ -117,6 +119,37 @@ describe('lib/const/tools', () => {
         });
         it('returns false when a < b', () => {
             expect(isVersionGreaterOrEqual('0.17.7', '0.17.8')).to.equal(false);
+        });
+    });
+
+    describe('compareVersions', () => {
+        it('compares the parts as numbers, not as text', () => {
+            expect(compareVersions('6.0.9', '6.1.0')).to.be.lessThan(0);
+            expect(compareVersions('6.0.10', '6.0.9')).to.be.greaterThan(0);
+            expect(compareVersions('5.1.1', '5.1.1')).to.equal(0);
+        });
+        it('ignores text around the version', () => {
+            expect(compareVersions('v6.0.9', '6.0.9 beta')).to.equal(0);
+        });
+        it('returns null for an empty or unknown version', () => {
+            expect(compareVersions('', '6.0.9')).to.equal(null);
+            expect(compareVersions('6.0.9', undefined)).to.equal(null);
+            expect(compareVersions('6.0.9', null)).to.equal(null);
+            expect(compareVersions('6.0', '6.0.9')).to.equal(null);
+        });
+    });
+
+    describe('isVersionOlder', () => {
+        it('is true only for an older installed version', () => {
+            expect(isVersionOlder('6.0.8', '6.0.9')).to.equal(true);
+            expect(isVersionOlder('5.1.1', '6.0.9')).to.equal(true);
+            expect(isVersionOlder('6.0.9', '6.0.9')).to.equal(false);
+            expect(isVersionOlder('6.1.0', '6.0.9')).to.equal(false);
+        });
+        it('is false for unknown versions', () => {
+            expect(isVersionOlder('', '6.0.9')).to.equal(false);
+            expect(isVersionOlder('6.0.8', '')).to.equal(false);
+            expect(isVersionOlder(undefined, undefined)).to.equal(false);
         });
     });
 

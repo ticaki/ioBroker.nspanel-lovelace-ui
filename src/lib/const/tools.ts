@@ -1392,6 +1392,42 @@ export function isVersionGreaterOrEqual(a: string, b: string): boolean {
     const bNum = getVersionAsNumber(b);
     return aNum >= bNum;
 }
+/**
+ * Compares two versions like `6.0.9` by their numeric parts major.minor.patch.
+ * Text around the version (`v6.0.9`, `6.0.9 beta`) is ignored.
+ *
+ * @param a first version
+ * @param b second version
+ * @returns negative if a is older than b, positive if a is newer, 0 if equal, null if one of them is no version
+ */
+export function compareVersions(a: string | null | undefined, b: string | null | undefined): number | null {
+    const parse = (v: string | null | undefined): number[] | null => {
+        const m = typeof v === 'string' ? v.match(/(\d+)\.(\d+)\.(\d+)/) : null;
+        return m ? [Number(m[1]), Number(m[2]), Number(m[3])] : null;
+    };
+    const pa = parse(a);
+    const pb = parse(b);
+    if (!pa || !pb) {
+        return null;
+    }
+    for (let i = 0; i < 3; i++) {
+        if (pa[i] !== pb[i]) {
+            return pa[i] - pb[i];
+        }
+    }
+    return 0;
+}
+
+/**
+ * True only if both are versions and `installed` is older than `available` - unknown or empty versions give false.
+ *
+ * @param installed the installed version
+ * @param available the available version
+ */
+export function isVersionOlder(installed: string | null | undefined, available: string | null | undefined): boolean {
+    const cmp = compareVersions(installed, available);
+    return cmp !== null && cmp < 0;
+}
 export function buildScrollingText(
     title: string,
     options: {

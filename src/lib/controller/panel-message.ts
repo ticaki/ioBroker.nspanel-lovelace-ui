@@ -4,19 +4,40 @@ import { BaseClass, type AdapterClassDefinition } from './library';
 import type { callbackMessageType } from '../classes/mqtt';
 import type { PanelChannel } from '../classes/panel-channel';
 import type { Panel } from './panel';
+import { crcPrefix, panelFrameCrc } from '../tools/crc16';
+import { driverGeneration } from '../const/berry-driver';
 
 type QueuedMessage = {
     payload: string;
+    /** crc of the frame the display receives for this payload, see {@link panelFrameCrc} */
+    crc: number;
     opt?: IClientPublishOptions;
     ackForType: boolean;
     /** how often the message was handed to tasmota - 0 = not sent yet */
     sent: number;
-    /** 'Done' answers received while waiting for the renderCurrentPage ack of this message */
+    /**
+     * 'Done' answers received for this message - in the old mode only while waiting for the renderCurrentPage ack,
+     * in the display ack mode for every message
+     */
     done: number;
 };
 
+/** Kind of acknowledgement the display sends with the crc of the processed message */
+export type DisplayAckKind = 'ack' | 'renderCurrentPage';
+
 /** How long 'Done' answers of a message sent more than once are expected after its ack (ms) */
 const STALE_DONE_WINDOW = 1000;
+/** Pause after an ack in the old mode: gives the display time to process the message (ms) */
+const DONE_NEXT_DELAY = 250;
+/** Pause after an ack of the display: it has processed the message already (ms) */
+const DISPLAY_ACK_NEXT_DELAY = 0;
+/**
+ * Display ack mode: how long to wait for the display ack after Tasmota's 'Done' (ms). Pages without a serial
+ * timer (pageIcons, cardLChart2, pageSplash, pageTest) never answer - then the 'Done' is enough.
+ */
+export const DISPLAY_ACK_TIMEOUT = 500;
+/** Berry driver generation that takes a precomputed crc `^XXXX^` in front of the CustomSend payload */
+export const BERRY_DRIVER_CRC_PREFIX = 12;
 
 /**
  * Übernimmt das senden von Payloads an die mqtt Klasse - delay zwischen einzelnen Messages
@@ -38,9 +59,30 @@ export class PanelSend extends BaseClass {
     private topic: string = '';
     private configTopic: string = '';
     private losingMessageCount = 0;
+    /** Display ack mode: waits for the display ack after the 'Done' of the head of the queue */
+    private doneFallback: ioBroker.Timeout | undefined;
+    /**
+     * The display acknowledges every processed message with `event,ack,<crc>` and a page change with
+     * `event,renderCurrentPage,<crc>` (TFT 6.1.0+). Set by the first renderCurrentPage with a crc, reset by a
+     * restart of the display.
+     */
+    private _displayAck = false;
 
     private _losingDelay = 1000;
     panel: Panel | undefined = undefined;
+
+    get displayAck(): boolean {
+        return this._displayAck;
+    }
+    set displayAck(v: boolean) {
+        if (v !== this._displayAck) {
+            this.log.debug(`Display ack mode ${v ? 'on' : 'off'}`);
+        }
+        this._displayAck = v;
+        if (!v) {
+            this.clearDoneFallback();
+        }
+    }
 
     get losingDelay(): number {
         return this._losingDelay;
@@ -66,9 +108,118 @@ export class PanelSend extends BaseClass {
             this.adapter.clearTimeout(this.messageTimeout);
         }
         this.messageTimeout = undefined;
+        this.clearDoneFallback();
         this.losingMessageCount = 0;
         this._losingDelay = 1000;
         this.staleDone = 0;
+    }
+
+    private clearDoneFallback(): void {
+        if (this.doneFallback) {
+            this.adapter.clearTimeout(this.doneFallback);
+        }
+        this.doneFallback = undefined;
+    }
+
+    /**
+     * Acknowledgement from the display with the crc of the message it processed (TFT 6.1.0+).
+     * A `renderCurrentPage` with a crc switches to the display ack mode. Only an ack with the crc of the
+     * head of the queue counts: `renderCurrentPage` for a pageType, `ack` for every other message.
+     *
+     * @param kind `ack` or `renderCurrentPage`
+     * @param crc the crc the display sent
+     */
+    public onDisplayAck(kind: DisplayAckKind, crc: number): void {
+        if (this.unload || this.adapter.unload) {
+            return;
+        }
+        if (kind === 'renderCurrentPage') {
+            this.displayAck = true;
+        } else if (!this.displayAck) {
+            if (this.adapter.config.debugLogMqtt) {
+                this.log.debug(`Ignore display ack ${crc} - display ack mode is off`);
+            }
+            return;
+        }
+        const head = this.messageDb[0];
+        if (!head || head.sent === 0 || head.ackForType !== (kind === 'renderCurrentPage') || head.crc !== crc) {
+            if (this.adapter.config.debugLogMqtt) {
+                this.log.debug(
+                    `Ignore display ${kind} ${crc} - ${head ? `head ${JSON.stringify(head)}` : 'queue is empty'}`,
+                );
+            }
+            return;
+        }
+        this.acknowledgeHead(DISPLAY_ACK_NEXT_DELAY);
+    }
+
+    /**
+     * The head of the queue reached its goal: remove it and send the next message after `delay`.
+     *
+     * @param delay pause before the next message (ms)
+     */
+    private acknowledgeHead(delay: number): void {
+        if (this.messageTimeout) {
+            this.adapter.clearTimeout(this.messageTimeout);
+        }
+        this.clearDoneFallback();
+        this.losingMessageCount = 0;
+        this._losingDelay = 1000;
+        const oldMessage = this.messageDb.shift();
+        if (oldMessage) {
+            // every transmission is answered with 'Done' - the ones still on their way belong to this message
+            const expected = oldMessage.sent - (this.displayAck || oldMessage.ackForType ? oldMessage.done : 1);
+            if (expected > 0) {
+                this.staleDone = expected;
+                this.staleDoneUntil = Date.now() + STALE_DONE_WINDOW;
+            } else {
+                this.staleDone = 0;
+            }
+            if (oldMessage.payload === 'pageType~pageStartup') {
+                this.messageDb = [];
+            }
+            if (this.adapter.config.debugLogMqtt) {
+                this.log.debug(`Receive ack for ${JSON.stringify(oldMessage)}`);
+            }
+        }
+        if (this.unload || this.adapter.unload) {
+            this.messageTimeout = undefined;
+            return;
+        }
+        this.messageTimeout = this.adapter.setTimeout(this.sendMessageLoop, delay);
+    }
+
+    /**
+     * Display ack mode: Tasmota's 'Done' only tells that the bytes went to the display. Without a display ack
+     * within {@link DISPLAY_ACK_TIMEOUT} the message counts as done anyway.
+     *
+     * @param head the head of the queue the 'Done' belongs to
+     */
+    private onDoneInDisplayAckMode(head: QueuedMessage | undefined): void {
+        if (!head || head.sent === 0) {
+            if (this.adapter.config.debugLogMqtt) {
+                this.log.debug(`Ignore 'Done' - ${head ? `${JSON.stringify(head)} not sent yet` : 'queue is empty'}`);
+            }
+            return;
+        }
+        head.done++;
+        // a pageType is only acknowledged by its renderCurrentPage
+        if (head.ackForType || this.doneFallback) {
+            return;
+        }
+        if (this.unload || this.adapter.unload) {
+            return;
+        }
+        this.doneFallback = this.adapter.setTimeout(() => {
+            this.doneFallback = undefined;
+            if (this.messageDb[0] !== head) {
+                return;
+            }
+            if (this.adapter.config.debugLogMqtt) {
+                this.log.debug(`No display ack for ${JSON.stringify(head)} - 'Done' counts`);
+            }
+            this.acknowledgeHead(0);
+        }, DISPLAY_ACK_TIMEOUT);
     }
     onMessage: callbackMessageType = async (topic: string, message: string) => {
         if (this.unload || this.adapter.unload) {
@@ -96,6 +247,12 @@ export class PanelSend extends BaseClass {
                         return;
                     }
                 }
+                if (this.displayAck) {
+                    if (msg.CustomSend === 'Done') {
+                        this.onDoneInDisplayAckMode(head);
+                    }
+                    return;
+                }
                 if (
                     (ackForType && msg.CustomSend === 'renderCurrentPage') ||
                     (!ackForType && msg.CustomSend === 'Done')
@@ -110,31 +267,8 @@ export class PanelSend extends BaseClass {
                         }
                         return;
                     }
-                    if (this.messageTimeout) {
-                        this.adapter.clearTimeout(this.messageTimeout);
-                    }
-                    this.losingMessageCount = 0;
-                    this._losingDelay = 1000;
-                    const oldMessage = this.messageDb.shift();
-                    if (oldMessage) {
-                        // every transmission is answered with 'Done' - the ones still on their way belong to this message
-                        const expected = oldMessage.sent - (oldMessage.ackForType ? oldMessage.done : 1);
-                        if (expected > 0) {
-                            this.staleDone = expected;
-                            this.staleDoneUntil = Date.now() + STALE_DONE_WINDOW;
-                        } else {
-                            this.staleDone = 0;
-                        }
-                        if (oldMessage.payload === 'pageType~pageStartup') {
-                            this.messageDb = [];
-                        }
-                        if (this.adapter.config.debugLogMqtt) {
-                            this.log.debug(`Receive ack for ${JSON.stringify(oldMessage)}`);
-                        }
-                    }
-
                     // Give the Nextion time to render the previous frame before the next one hits its 1024-byte buffer
-                    this.messageTimeout = this.adapter.setTimeout(this.sendMessageLoop, 250);
+                    this.acknowledgeHead(DONE_NEXT_DELAY);
                 } else {
                     if (ackForType && head.sent > 0 && msg.CustomSend === 'Done') {
                         head.done++;
@@ -183,9 +317,17 @@ export class PanelSend extends BaseClass {
         const replaced = this.findReplaceable(payload, ackForType, opt, lastPageType);
         if (replaced) {
             replaced.payload = payload;
+            replaced.crc = panelFrameCrc(payload);
             return;
         }
-        this.messageDb.push({ payload: payload, opt: opt, ackForType: ackForType, sent: 0, done: 0 });
+        this.messageDb.push({
+            payload: payload,
+            crc: panelFrameCrc(payload),
+            opt: opt,
+            ackForType: ackForType,
+            sent: 0,
+            done: 0,
+        });
         if (this.messageTimeout === undefined) {
             void this.sendMessageLoop();
         }
@@ -282,8 +424,28 @@ export class PanelSend extends BaseClass {
             this.messageTimeout = this.adapter.setTimeout(this.sendMessageLoop, this.losingDelay);
         }
         msg.sent++;
-        this.addMessageTasmota(this.topic, msg.payload, msg.opt);
+        this.addMessageTasmota(this.topic, this.withCrcPrefix(msg), msg.opt);
     };
+
+    /**
+     * A Berry driver of generation {@link BERRY_DRIVER_CRC_PREFIX} or newer takes the crc from the adapter:
+     * `^XXXX^<payload>`. The emulator counts with its generation (-12 yes, -1 no).
+     * A web panel gets the payload as it is.
+     *
+     * @param msg the queued message
+     * @returns what goes to the CustomSend topic
+     */
+    private withCrcPrefix(msg: QueuedMessage): string {
+        const panel = this.panel;
+        if (
+            !panel ||
+            panel.isVirtual ||
+            !(driverGeneration(panel.info?.nspanel?.berryDriverVersion) >= BERRY_DRIVER_CRC_PREFIX)
+        ) {
+            return msg.payload;
+        }
+        return `${crcPrefix(msg.crc)}${msg.payload}`;
+    }
 
     /**
      * Logs a warning when the payload does not fit into the receive buffer of the display.
@@ -362,6 +524,7 @@ export class PanelSend extends BaseClass {
         if (this.messageTimeoutTasmota && this.messageTimeoutTasmota !== true) {
             this.adapter.clearTimeout(this.messageTimeoutTasmota);
         }
+        this.clearDoneFallback();
         (this as any).onMessage = async () => {};
         this.panel = undefined;
         this.messageDb = [];
