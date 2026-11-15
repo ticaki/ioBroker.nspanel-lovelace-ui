@@ -12,6 +12,29 @@ import type * as Types from '../types/types';
 
 const noop = (): void => undefined;
 
+/**
+ * Type guard for the bare panel of the fixtures.
+ *
+ * @param value the value to check
+ * @returns true if it is a Panel
+ */
+function isPanel(value: unknown): value is Panel {
+    return value instanceof Panel;
+}
+
+/**
+ * A Panel without its constructor - the fixtures set the fields and stubs they need.
+ *
+ * @returns the bare panel
+ */
+function barePanel(): Panel {
+    const created: unknown = Object.create(Panel.prototype);
+    if (!isPanel(created)) {
+        throw new Error('Object.create did not return a Panel');
+    }
+    return created;
+}
+
 type Fixture = {
     panel: Panel;
     sent: string[];
@@ -29,7 +52,7 @@ function setup(
     const startups: string[] = [];
     const debug: string[] = [];
     let restarts = 0;
-    const panel = Object.create(Panel.prototype) as Panel;
+    const panel = barePanel();
     Object.assign(panel, {
         name: 'p1',
         topic: 'nspanel/p1',
@@ -218,7 +241,7 @@ describe('lib/controller/panel - a slow startup runs once', () => {
         let unloadOnRemove = false;
         const timers = new Map<number, () => void>();
         const removed: string[] = [];
-        const panel: Panel = Object.create(Panel.prototype);
+        const panel = barePanel();
         Object.assign(panel, {
             name: 'p1',
             topic: 'nspanel/p1',
