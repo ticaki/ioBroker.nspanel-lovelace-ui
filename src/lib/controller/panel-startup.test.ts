@@ -18,7 +18,7 @@ function setup(kind: 'web' | 'mqtt'): { panel: Panel; runs: string[]; maxParalle
     Object.assign(panel, {
         name: 'web1',
         options: { kind },
-        initDone: true,
+        _initDone: true,
         _isOnline: false,
         screenSaver: {},
         panelSend: { displayAck: false },

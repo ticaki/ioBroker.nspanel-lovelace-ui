@@ -11,7 +11,7 @@ function setup(): { panel: Panel; logs: string[] } {
     const panel = Object.create(Panel.prototype) as Panel;
     Object.assign(panel, {
         name: 'test',
-        initDone: true,
+        _initDone: true,
         _isOnline: true,
         screenSaver: {},
         panelSend: { onDisplayAck: noop },

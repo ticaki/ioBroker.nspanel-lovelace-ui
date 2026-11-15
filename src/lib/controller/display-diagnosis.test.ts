@@ -174,7 +174,7 @@ describe('lib/controller/panel - safeboot', () => {
             options: {},
             info: { tasmota: { safeboot: false }, nspanel: { berryDriverVersion: 0 } },
             _isOnline: online,
-            initDone: true,
+            _initDone: true,
             flashing: false,
             channel: {},
             displayDiagnosis: { reported: false, lastQueryTs: 0, timeout: undefined, answers: undefined },

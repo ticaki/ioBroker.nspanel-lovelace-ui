@@ -147,7 +147,10 @@ export class Panel extends BaseClass {
     private readonly pageOrigins = new PageOriginTracker();
     private _activePage: Page | undefined = undefined;
     private data: Record<string, any> = {};
+    /** hardware panel: drops repeated startup events, see handleStartup */
     private blockStartup: ioBroker.Timeout | undefined = null;
+    /** hardware panel: a startup runs right now, see handleStartup */
+    private hardwareStartupRunning: boolean = false;
     /** web panel: the startup that is running, see handleVirtualStartup */
     private startupInProgress: Promise<void> | null = null;
     /** web panel: a startup that arrived while one was running and is done after it */
@@ -179,7 +182,9 @@ export class Panel extends BaseClass {
     public screenSaver: Screensaver | undefined;
     public lastCard: string = '';
     public notifyIndex: number = -1;
-    public initDone: boolean = false;
+    private _initDone: boolean = false;
+    /** The last startup event that arrived before {@link markInitDone} - handled right after it */
+    private pendingStartup: Types.IncomingEvent | null = null;
     public lightPopupV2: boolean = true; //  Enable Light Popup v2, created in 2025.
     public overrideLightPopup: boolean = true; //  Override light popup config type.
     public hideCards: boolean = false;
@@ -1979,6 +1984,50 @@ export class Panel extends BaseClass {
         this.sendToPanel(cmd, false);
     }
 
+    /** True once the controller has created the panel completely, see {@link markInitDone} */
+    get initDone(): boolean {
+        return this._initDone;
+    }
+
+    /**
+     * Called by the controller when the panel is created completely. A startup event that arrived before
+     * (the display restarted while the adapter was still creating its panels) is handled now - exactly once.
+     * Without one the loop offers `pageType~pageStartup` right away.
+     */
+    markInitDone(): void {
+        if (this._initDone) {
+            return;
+        }
+        this._initDone = true;
+        const pending = this.pendingStartup;
+        this.pendingStartup = null;
+        if (this.unload || this.adapter.unload) {
+            return;
+        }
+        if (pending) {
+            this.runStartup(pending).catch((e: unknown) => {
+                this.log.error(`Startup after init failed: ${String(e)}`);
+            });
+            return;
+        }
+        this.restartLoops();
+    }
+
+    /**
+     * Handles a startup event: a web panel one after the other, a hardware panel directly (its repeats are
+     * dropped while a startup runs and by blockStartup, see handleStartup).
+     *
+     * @param event the startup event
+     * @returns resolves when the startup is done
+     */
+    private async runStartup(event: Types.IncomingEvent): Promise<void> {
+        if (this.isVirtual) {
+            await this.handleVirtualStartup(event);
+        } else {
+            await this.handleStartup(event);
+        }
+    }
+
     restartLoops(): void {
         if (this.loopTimeout) {
             this.adapter.clearTimeout(this.loopTimeout);
@@ -1991,14 +2040,17 @@ export class Panel extends BaseClass {
         }, 200);
     }
 
-    loop = (): void => {
+    loop(): void {
         this.pages = this.pages.filter(a => a && !a.unload);
         let t = Math.random() * 30_000 + 10_000;
         if (!this.isOnline) {
             t = 5000;
             if (!this.flashing) {
                 this.panelSend.resetMessageDB();
-                this.offerStartupPage();
+                // before initDone a startup event could not be handled - markInitDone offers the page
+                if (this.initDone) {
+                    this.offerStartupPage();
+                }
             }
         }
         if (this.unload || this.adapter.unload) {
@@ -2013,7 +2065,7 @@ export class Panel extends BaseClass {
         this.loopTimeout = this.adapter.setTimeout(() => {
             this.loop();
         }, t);
-    };
+    }
 
     /** Offers `pageType~pageStartup` to a panel that can receive it */
     private offerStartupPage(): void {
@@ -2203,7 +2255,9 @@ export class Panel extends BaseClass {
         }
         if (this.blockStartup) {
             this.adapter.clearTimeout(this.blockStartup);
+            this.blockStartup = null;
         }
+        this.hardwareStartupRunning = false;
         this.resetDisplayDiagnosis();
         this.log.info('Goint offline because delete panel!');
         this.isOnline = false;
@@ -2325,25 +2379,67 @@ export class Panel extends BaseClass {
     /**
      * The startup event: the display (or browser) shows the startup page and waits for its first page.
      *
+     * A display repeats the startup event every few seconds while it shows the startup page - only the first
+     * one counts. For a hardware panel a startup event is dropped
+     * - while a startup runs (with many panels the adapter start can take longer than 10 s, the running
+     *   startup sends the first page anyway; this includes a startup remembered before initDone that
+     *   {@link markInitDone} runs through {@link runStartup}) and
+     * - for 10 s after the end of the last startup (the display may still send repeats it queued before it
+     *   got its page). The 10 s also start when the startup begins, as before.
+     *
+     * Every way out of a startup (model mismatch, unload, no start page, an error) clears the running flag
+     * and arms the 10 s block again (not on unload). A browser reloads at will, so a web panel takes every
+     * startup event (the page is rendered again) - one after the other, see handleVirtualStartup.
+     *
      * @param event the startup event
      */
     private async handleStartup(event: Types.IncomingEvent): Promise<void> {
-        // a display repeats the startup event every few seconds while it shows the startup
-        // page - only the first one counts. A browser reloads at will, so a web panel
-        // takes every startup event (the page is rendered again) - one after the other, see handleVirtualStartup.
-        if (this.blockStartup) {
-            if (!this.isVirtual) {
+        if (this.isVirtual) {
+            if (this.blockStartup) {
+                this.adapter.clearTimeout(this.blockStartup);
+                this.blockStartup = null;
+            }
+            if (this.unload || this.adapter.unload) {
                 return;
             }
-            this.adapter.clearTimeout(this.blockStartup);
-            this.blockStartup = null;
+            this.armBlockStartup();
+            await this.doStartup(event);
+            return;
+        }
+        if (this.blockStartup || this.hardwareStartupRunning) {
+            return;
         }
         if (this.unload || this.adapter.unload) {
             return;
         }
+        this.hardwareStartupRunning = true;
+        this.armBlockStartup();
+        try {
+            await this.doStartup(event);
+        } finally {
+            this.hardwareStartupRunning = false;
+            if (!this.unload && !this.adapter.unload) {
+                this.armBlockStartup();
+            }
+        }
+    }
+
+    /** (Re)starts the 10 s block for repeated startup events of a hardware panel, see handleStartup */
+    private armBlockStartup(): void {
+        if (this.blockStartup) {
+            this.adapter.clearTimeout(this.blockStartup);
+        }
         this.blockStartup = this.adapter.setTimeout(() => {
             this.blockStartup = null;
         }, 10_000);
+    }
+
+    /**
+     * The work of a startup, gated by {@link handleStartup}.
+     *
+     * @param event the startup event
+     */
+    private async doStartup(event: Types.IncomingEvent): Promise<void> {
         this.resetDisplayDiagnosis();
         // a display only answers through the normal firmware, in case its INFO1 got lost
         this.setSafeboot(false, '');
@@ -2430,11 +2526,18 @@ export class Panel extends BaseClass {
         if (this._activePage && this._activePage.card !== 'cardAlarm' && this.adapter.config.debugLogMqtt) {
             this.log.debug(`Receive message:${JSON.stringify(event)}`);
         }
-        this.log.debug(`Receive message:${JSON.stringify(event)}`);
         if (!this.screenSaver) {
             return;
         }
-        if (this.isOnline === false && event.method !== 'startup') {
+        // offline only the startup event counts. The display acks (`ack`, `renderCurrentPage`) answer the
+        // offered `pageType~pageStartup` - they go to the send queue and must not restart the loop, else
+        // the loop offers the startup page again at once and the display restarts its startup animation
+        if (
+            this.isOnline === false &&
+            event.method !== 'startup' &&
+            event.method !== 'ack' &&
+            event.method !== 'renderCurrentPage'
+        ) {
             void this.restartLoops();
             return;
         }
@@ -2444,13 +2547,11 @@ export class Panel extends BaseClass {
                 // a restarted display may run another TFT - it shows the ack mode again with its first renderCurrentPage
                 this.panelSend.displayAck = false;
                 if (!this.initDone) {
+                    // the panel is still being created: remember only the latest, markInitDone handles it
+                    this.pendingStartup = event;
                     return;
                 }
-                if (this.isVirtual) {
-                    await this.handleVirtualStartup(event);
-                } else {
-                    await this.handleStartup(event);
-                }
+                await this.runStartup(event);
                 break;
             }
             case 'sleepReached': {
