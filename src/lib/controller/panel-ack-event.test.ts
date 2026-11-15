@@ -14,6 +14,7 @@ function setup(): { panel: Panel; logs: string[] } {
         initDone: true,
         _isOnline: true,
         screenSaver: {},
+        panelSend: { onDisplayAck: noop },
         log: {
             silly: noop,
             debug: noop,
