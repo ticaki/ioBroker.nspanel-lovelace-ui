@@ -12,7 +12,9 @@ import {
     FormControl,
     Checkbox,
     FormControlLabel,
+    Tooltip,
 } from '@mui/material';
+import AddIcon from '@mui/icons-material/Add';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutlineOutlined';
 import LinkIcon from '@mui/icons-material/Link';
 import ConfirmDialog from './ConfirmDialog';
@@ -104,6 +106,55 @@ export function filterEntriesByCardType(entries: PageConfigEntry[], cardType: Pa
     }
 }
 
+/**
+ * Filters page names by the text of the name field: trimmed, case-insensitive substring match.
+ *
+ * @param names uniqueNames of the pages.
+ * @param filterText Text of the name field; empty means no filter.
+ * @returns The matching names.
+ */
+export function filterNamesByText(names: string[], filterText: string): string[] {
+    const needle = filterText.trim().toLowerCase();
+    if (!needle) {
+        return names;
+    }
+    return names.filter(n => n.toLowerCase().includes(needle));
+}
+
+/**
+ * Why the add button is disabled, as i18n key, or null if a page can be created.
+ * Order: adapter alive, concrete page type, name given, name not reserved, name not taken.
+ *
+ * @param alive Whether the adapter instance is running.
+ * @param cardType Selected page type.
+ * @param name Trimmed name from the name field.
+ * @param existingNames uniqueNames of all entries.
+ * @returns The i18n key of the first reason or null.
+ */
+export function getAddPageBlockReason(
+    alive: boolean,
+    cardType: PageCardType,
+    name: string,
+    existingNames: string[],
+): string | null {
+    if (!alive) {
+        return 'add_page_disabled_not_alive';
+    }
+    if (!canCreateForCardType(cardType)) {
+        return 'add_page_disabled_no_type';
+    }
+    if (!name) {
+        return 'add_page_disabled_no_name';
+    }
+    if (name === mainPageName) {
+        return 'add_page_disabled_reserved';
+    }
+    if (existingNames.includes(name)) {
+        return 'add_page_disabled_exists';
+    }
+    return null;
+}
+
 /** Sonderwert für den Panel-Filter: Seiten ohne Zuweisung */
 const PANEL_FILTER_UNASSIGNED = '___UNASSIGNED___';
 
@@ -136,11 +187,16 @@ interface PageConfigLayoutState {
     alive?: boolean;
     /** Gewählter Panel-Filterkey (leer = alle) */
     selectedPanelFilter: string;
+    /** Height of the name/filter input line in px - width of the square add button, unset until measured */
+    addButtonSize?: number;
 }
 
 export class PageConfigLayout extends React.Component<PageConfigLayoutProps, PageConfigLayoutState> {
     /** How many referencing pages the delete dialog names before it counts the rest. */
     private static readonly maxReferencesShown = 5;
+
+    /** Watches the height of the name/filter input line - the add button is as wide as it is high */
+    private inputLineObserver?: ResizeObserver;
 
     constructor(props: PageConfigLayoutProps) {
         super(props);
@@ -155,6 +211,7 @@ export class PageConfigLayout extends React.Component<PageConfigLayoutProps, Pag
     }
 
     componentWillUnmount(): void {
+        this.inputLineObserver?.disconnect();
         // Unsubscribe from alive state changes
         const instance = this.props.oContext.instance ?? '0';
         this.props.oContext.socket.unsubscribeState(
@@ -162,6 +219,26 @@ export class PageConfigLayout extends React.Component<PageConfigLayoutProps, Pag
             this.onAliveChanged,
         );
     }
+
+    /**
+     * Ref of the name/filter field: measures the height of its input line for the add button. CSS
+     * stretches the button to that height but cannot derive its width from it.
+     *
+     * @param element Root of the text field, `null` when it is unmounted.
+     */
+    private setInputLineRef = (element: HTMLDivElement | null): void => {
+        this.inputLineObserver?.disconnect();
+        if (!element) {
+            return;
+        }
+        this.inputLineObserver ??= new ResizeObserver(entries => {
+            const height = entries[entries.length - 1]?.target.getBoundingClientRect().height;
+            if (height && height !== this.state.addButtonSize) {
+                this.setState({ addButtonSize: height });
+            }
+        });
+        this.inputLineObserver.observe(element);
+    };
 
     async componentDidMount(): Promise<void> {
         // Get initial alive state and subscribe to changes
@@ -465,10 +542,12 @@ export class PageConfigLayout extends React.Component<PageConfigLayoutProps, Pag
 
         const filteredEntries = this.getVisibleEntries();
 
-        // Alphabetisch sortiert
-        const filteredUniqueNames = Array.from(new Set(filteredEntries.map(e => e.uniqueName)))
-            .filter(Boolean)
-            .sort((a, b) => a.localeCompare(b));
+        // Alphabetisch sortiert, zusätzlich nach dem Inhalt des Namensfelds gefiltert
+        const filteredUniqueNames = filterNamesByText(
+            Array.from(new Set(filteredEntries.map(e => e.uniqueName))).filter(Boolean),
+            newName,
+        ).sort((a, b) => a.localeCompare(b));
+        const addBlockReason = getAddPageBlockReason(!!this.state.alive, selectedCardType, newName, uniqueNames);
 
         const currentEntry = entries.find(e => e.uniqueName === selected);
         const currentAssignments = currentEntry?.navigationAssignment || [];
@@ -592,88 +671,82 @@ export class PageConfigLayout extends React.Component<PageConfigLayoutProps, Pag
                             </Select>
                         </FormControl>
                     </Paper>
-                    <Typography
-                        variant="h6"
-                        sx={{
-                            mt: 1,
-                            fontWeight: 600,
-                            color: 'primary.main',
-                            fontSize: '1rem',
-                        }}
+                    {/* Name field: filters the list and names a new page */}
+                    <Paper
+                        sx={{ p: 0, mb: 1, backgroundColor: 'transparent' }}
+                        elevation={0}
                     >
-                        {this.getText('pages')}
-                    </Typography>
-                    {/* Add new page - nur anzeigen wenn ein konkreter Kartentyp ausgewählt ist */}
-                    {canCreateForCardType(selectedCardType) && (
-                        <Paper
-                            sx={{ p: 0, backgroundColor: 'transparent' }}
-                            elevation={0}
+                        <FormControl
+                            fullWidth
+                            variant="standard"
                         >
-                            <Box sx={{ display: 'flex', gap: 1 }}>
+                            <Typography
+                                variant="h6"
+                                sx={{
+                                    mb: 1,
+                                    fontWeight: 600,
+                                    color: 'primary.main',
+                                    fontSize: '1rem',
+                                }}
+                            >
+                                {this.getText('pages')}
+                            </Typography>
+                            {/* stretch: the add button takes the height of the input line */}
+                            <Box sx={{ display: 'flex', gap: 1, alignItems: 'stretch' }}>
                                 <TextField
-                                    disabled={!this.state.alive}
+                                    ref={this.setInputLineRef}
                                     aria-label="new-name"
-                                    label={this.getText('new_page')}
                                     value={this.state.newName}
                                     onChange={e => {
                                         this.setState({ newName: e.target.value });
                                     }}
                                     variant="standard"
-                                    placeholder={this.getText('New item')}
+                                    placeholder={this.getText('page_name_filter_placeholder')}
                                     slotProps={{
                                         input: { sx: { backgroundColor: 'transparent', px: 1 } },
                                     }}
-                                    sx={{
-                                        flex: 1,
-                                        '& .MuiInput-underline:before': {
-                                            borderBottomColor: 'primary.main',
-                                        },
-                                        '& .MuiInput-underline:hover:before': {
-                                            borderBottomColor: 'primary.main',
-                                        },
-                                        '& .MuiInput-underline:after': {
-                                            borderBottomColor: 'primary.main',
-                                        },
-                                        '& .MuiInputLabel-root': {
-                                            color: 'primary.main',
-                                        },
-                                        '& .MuiInputLabel-root.Mui-focused': {
-                                            color: 'primary.main',
-                                        },
-                                    }}
+                                    sx={{ flex: 1 }}
                                 />
-                                <Button
-                                    size="small"
-                                    variant="contained"
-                                    onClick={this.handleAdd}
-                                    disabled={
-                                        !this.state.alive ||
-                                        !newName ||
-                                        newNameIsReserved ||
-                                        uniqueNames.includes(newName)
-                                    }
-                                >
-                                    +
-                                </Button>
+                                <Tooltip title={this.getText(addBlockReason ?? 'add_page_tooltip')}>
+                                    <span style={{ display: 'flex' }}>
+                                        <Button
+                                            size="small"
+                                            variant="contained"
+                                            onClick={this.handleAdd}
+                                            disabled={addBlockReason !== null}
+                                            aria-label={this.getText('add_page_tooltip')}
+                                            // height: stretched to the input line, width: its measured height
+                                            sx={{
+                                                width: this.state.addButtonSize ?? 32,
+                                                minWidth: 0,
+                                                p: 0,
+                                                // MUI's disabled colour is too faint for an icon-only button
+                                                '&.Mui-disabled': { color: 'text.secondary' },
+                                            }}
+                                        >
+                                            <AddIcon fontSize="small" />
+                                        </Button>
+                                    </span>
+                                </Tooltip>
                             </Box>
-                            {newNameIsReserved && (
-                                <Typography
-                                    variant="caption"
-                                    sx={{ display: 'block', mt: 0.5, px: 1, color: 'warning.main' }}
-                                >
-                                    {this.getText('page_name_main_reserved')}
-                                </Typography>
-                            )}
-                            {overridesExistingPage && (
-                                <Typography
-                                    variant="caption"
-                                    sx={{ display: 'block', mt: 0.5, px: 1, color: 'warning.main' }}
-                                >
-                                    {this.getText('page_overrides_script_page')}
-                                </Typography>
-                            )}
-                        </Paper>
-                    )}
+                        </FormControl>
+                        {newNameIsReserved && (
+                            <Typography
+                                variant="caption"
+                                sx={{ display: 'block', mt: 0.5, px: 1, color: 'warning.main' }}
+                            >
+                                {this.getText('page_name_main_reserved')}
+                            </Typography>
+                        )}
+                        {overridesExistingPage && canCreateForCardType(selectedCardType) && (
+                            <Typography
+                                variant="caption"
+                                sx={{ display: 'block', mt: 0.5, px: 1, color: 'warning.main' }}
+                            >
+                                {this.getText('page_overrides_script_page')}
+                            </Typography>
+                        )}
+                    </Paper>
                     {/* Pages list */}
                     <Paper
                         sx={{ overflow: 'auto', p: 0, backgroundColor: 'transparent' }}

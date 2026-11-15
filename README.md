@@ -160,6 +160,9 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
 -->
 ### **WORK IN PROGRESS**
 - (ticaki) Admin >= 8.1.0 required
+- (ticaki) admin page config: the name field above the page list is always shown and also filters the list; the + button stays visible and its tooltip tells why it is disabled
+- (ticaki) admin navigation flow: search field in the header highlights the pages whose name matches; a single match is centred in the view
+- (ticaki) admin navigation flow: the zoom buttons are readable in the dark theme
 - (ticaki) changed state texts (common.states) and other display values of a state (unit, min, max, step, name) are picked up with the next update without an adapter restart - also the mode texts of cardThermo2, the mode buttons of an air conditioner and the mode list of a fan
 - (ticaki) dependencies updated: MQTT broker aedes 1.2.0 (security fixes), ws, node-ical and the admin libraries
 - (ticaki) screensaver notification at standby brightness 0: the first tap only wakes the display, the second clears the notification, the third leaves the screensaver - also with the double click option

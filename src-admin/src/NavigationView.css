@@ -153,6 +153,11 @@
   z-index: 4;
 }
 
+/* Treffer der Seitensuche: Ring plus Schein in der Primaerfarbe des Themes */
+.node-box.node-search-match {
+  box-shadow: 0 0 0 3px var(--nav-search-color, #1976d2), 0 0 16px 6px var(--nav-search-glow, rgba(25, 118, 210, 0.55));
+}
+
 /* Editierbare Kante: Klick oeffnet das Menue */
 .edge-editable .custom-edge-hit {
   cursor: context-menu;

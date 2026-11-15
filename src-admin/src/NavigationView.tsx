@@ -244,7 +244,9 @@ import {
     Alert,
     Snackbar,
     ButtonGroup,
+    TextField,
 } from '@mui/material';
+import { filterNamesByText } from './components/PageConfigLayout';
 import NodePageInfoPanel from './components/NodePageInfoPanel';
 import { openPageConfig } from './pageConfigLink';
 import ConfirmDialog from './components/ConfirmDialog';
@@ -720,6 +722,43 @@ function shownBySwitches(showSystemPages: boolean, showStates: boolean): (node: 
 }
 
 /**
+ * Nodes matching the search text of the view - same match as the name filter of the page config
+ * (trimmed, case-insensitive substring), on the name shown in the node. Covers pages and the shown
+ * state nodes alike (for a state node the name shown is the one of its state).
+ *
+ * @param nodes Nodes shown right now.
+ * @param searchText Search text, empty for no search.
+ * @returns Ids of the matching nodes, empty without search text.
+ */
+function searchMatchIds(nodes: readonly FlowNode[], searchText: string): string[] {
+    if (!searchText.trim()) {
+        return [];
+    }
+    const matching = new Set(
+        filterNamesByText(
+            nodes.map(n => n.data.label),
+            searchText,
+        ),
+    );
+    return nodes.filter(n => matching.has(n.data.label)).map(n => n.id);
+}
+
+/** What the view needs of the React Flow instance: centring on a node */
+interface FlowViewport {
+    fitView: (options: {
+        nodes: { id: string }[];
+        minZoom: number;
+        maxZoom: number;
+        duration: number;
+    }) => Promise<boolean>;
+    getZoom: () => number;
+}
+
+/** Zoom range a single search match is shown in - the current zoom, if it lies within */
+const SEARCH_ZOOM_MIN = 0.8;
+const SEARCH_ZOOM_MAX = 1.5;
+
+/**
  * Positions to save: only nodes with a real position - provisionally placed nodes (and nodes in
  * collapsed sub trees that never got a position) are left out, so they are placed again next time
  * instead of being stored where they happen to stand (e.g. all at 0/0).
@@ -800,6 +839,8 @@ interface NavigationViewInternalState extends NavigationViewState {
      * fresh data) - React Flow then re-measures the handles, see {@link NodeInternalsRefresher}.
      */
     internalsToken: number;
+    /** Text of the page search - matching pages are highlighted */
+    searchText: string;
 }
 
 class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInternalState> {
@@ -845,6 +886,15 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
 
     /** Node the icons of the info panel are being read for, or were read for - each node once. */
     private iconValuesLoadedFor?: string;
+
+    /** React Flow instance of the current flow, from `onInit` - to centre on a search match */
+    private flowInstance?: FlowViewport;
+
+    /** The only node matching the search in the last render, `undefined` for none or several */
+    private searchSingleMatch?: string;
+
+    /** Node the current flow was last centred on for the search - centred again only when this changes */
+    private centeredSearchMatch?: string;
 
     // Schnelles Speichern beim Tabwechsel/Schließen über Beacon (kein await möglich)
     private saveNavigationBeacon = (): void => {
@@ -936,6 +986,7 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
             unplaced: new Set(),
             collapsed: new Set(),
             showHomeEdges: true,
+            searchText: '',
         };
         this.handleShowStatesChange = this.handleShowStatesChange.bind(this);
         this.fetchNavigation = this.fetchNavigation.bind(this);
@@ -1476,6 +1527,66 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
             // ignore
         }
     }
+
+    /**
+     * Centres the view on the only node matching the search - once when it becomes the only match,
+     * not again while it stays the only one. After a change of the panel the flow is a new one
+     * (keyed by the panel): the instance of the old flow is dropped here and `onFlowInit` centres
+     * the new one.
+     *
+     * @param _prevProps Props before the update.
+     * @param prevState State before the update.
+     */
+    componentDidUpdate(_prevProps: ConfigGenericProps, prevState: NavigationViewInternalState): void {
+        if (prevState.selectedPanel !== this.state.selectedPanel) {
+            this.flowInstance = undefined;
+            this.centeredSearchMatch = undefined;
+            return;
+        }
+        this.centerOnSearchMatch();
+    }
+
+    /** Centres the current flow on the only search match, unless it is centred on it already. */
+    private centerOnSearchMatch(): void {
+        const flow = this.flowInstance;
+        if (!flow) {
+            return;
+        }
+        const single = this.searchSingleMatch;
+        if (single === this.centeredSearchMatch) {
+            return;
+        }
+        this.centeredSearchMatch = single;
+        if (!single) {
+            return;
+        }
+        const zoom = Math.min(SEARCH_ZOOM_MAX, Math.max(SEARCH_ZOOM_MIN, flow.getZoom()));
+        void flow.fitView({ nodes: [{ id: single }], minZoom: zoom, maxZoom: zoom, duration: 400 });
+    }
+
+    /**
+     * Keeps the React Flow instance - a new one with every panel, the flow is keyed by the panel -
+     * and centres it on the only search match, even if that is the same as in the panel before.
+     * React Flow queues its `fitView` until the nodes are measured; a call here replaces the
+     * still queued initial fit of the whole flow (`fitView` prop) or, if that ran already, is
+     * applied after it - so the search match wins either way, without a timer.
+     *
+     * @param instance The instance.
+     */
+    private onFlowInit = (instance: FlowViewport): void => {
+        this.flowInstance = instance;
+        this.centeredSearchMatch = undefined;
+        this.centerOnSearchMatch();
+    };
+
+    /**
+     * Change of the search field.
+     *
+     * @param event The change.
+     */
+    private handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>): void => {
+        this.setState({ searchText: event.target.value });
+    };
 
     componentWillUnmount(): void {
         this.clearRestartTimer();
@@ -2707,7 +2818,13 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
         const shownNodes = nodes.filter(n => !hidden.has(n.id) && shownBy(n));
         const visibleNodeIds = new Set(shownNodes.map(n => n.id));
         const redirected = tree ? this.redirectCollapsedEdges(edges, tree, hidden, visibleNodeIds) : [];
-        const visibleNodes = this.decorateNodes(shownNodes, [...edges, ...redirected], collapse);
+        const searchMatches = searchMatchIds(shownNodes, this.state.searchText);
+        const searchMatchSet = new Set(searchMatches);
+        // read in componentDidUpdate, which centres the view on a single match
+        this.searchSingleMatch = searchMatches.length === 1 ? searchMatches[0] : undefined;
+        const visibleNodes = this.decorateNodes(shownNodes, [...edges, ...redirected], collapse).map(n =>
+            searchMatchSet.has(n.id) ? { ...n, data: { ...n.data, searchMatch: true } } : n,
+        );
         const showHomeEdges = this.state.showHomeEdges;
         // remove dangling edges that reference missing nodes (safety for stale state); home links to
         // main can be hidden - except those of the selected page and of pages with unsaved changes
@@ -2747,6 +2864,15 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
                     }}
                 >
                     <Typography variant="h6">{I18n.t('Panel_Navigation')}</Typography>
+                    <TextField
+                        variant="standard"
+                        size="small"
+                        value={this.state.searchText}
+                        onChange={this.handleSearchChange}
+                        placeholder={I18n.t('nav_search_page')}
+                        sx={{ width: 180 }}
+                        slotProps={{ htmlInput: { 'aria-label': I18n.t('nav_search_page') } }}
+                    />
                     <Box sx={{ flex: 1 }} />
                     <FormControlLabel
                         control={
@@ -3069,6 +3195,7 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
                                 onNodesChange={this.onNodesChange}
                                 onNodeClick={this.onNodeClick}
                                 onPaneClick={this.onPaneClick}
+                                onInit={this.onFlowInit}
                                 nodeTypes={NODE_TYPES}
                                 edgeTypes={EDGE_TYPES}
                                 edges={safeEdges.map(e => ({
@@ -3214,6 +3341,16 @@ function NodeInternalsRefresher(props: NodeInternalsRefresherProps): null {
     return null;
 }
 
+/** xyflow-Variablen der Zoom-Knöpfe, die {@link ThemeVarsProvider} im dunklen Theme setzt. */
+const XY_CONTROLS_VARS: readonly string[] = [
+    '--xy-controls-button-background-color',
+    '--xy-controls-button-background-color-hover',
+    '--xy-controls-button-color',
+    '--xy-controls-button-color-hover',
+    '--xy-controls-button-border-color',
+    '--xy-controls-box-shadow',
+];
+
 // Optional: ThemeVarsProvider — setzt CSS-Variablen aus dem aktuellen MUI-Theme
 export function ThemeVarsProvider({ children }: { children: React.ReactNode }): React.ReactElement {
     const theme = useTheme();
@@ -3238,9 +3375,33 @@ export function ThemeVarsProvider({ children }: { children: React.ReactNode }): 
         root.style.setProperty('--edge-collapsed-opacity', theme.palette.mode === 'dark' ? '0.85' : '0.6');
         // Kantenfarben (Primärfarbe als Default für Kanten)
         root.style.setProperty(EDGE_COLOR_VAR.default, theme.palette.primary.main || EDGE_COLOR_HEX.default);
+        // Treffer der Seitensuche: Primärfarbe als Ring, im dunklen Theme mit kräftigerem Schein
+        const searchColor = theme.palette.primary.main || EDGE_COLOR_HEX.default;
+        root.style.setProperty('--nav-search-color', searchColor);
+        root.style.setProperty('--nav-search-glow', alpha(searchColor, theme.palette.mode === 'dark' ? 0.75 : 0.55));
         // Die Kantenarten sollen KEINE Theme-Farben verwenden — feste Farben
         for (const kind of STATIC_EDGE_KINDS) {
             root.style.setProperty(EDGE_COLOR_VAR[kind], EDGE_COLOR_HEX[kind]);
+        }
+        // Zoom-Knöpfe (<Controls />): im dunklen Theme an das MUI-Theme anpassen, sonst wären es
+        // weiße Kästen mit geerbter heller Symbolfarbe. Im hellen Theme gelten die xyflow-Defaults.
+        if (theme.palette.mode === 'dark') {
+            const paper = theme.palette.background.paper;
+            const hover = theme.palette.action.hover;
+            root.style.setProperty('--xy-controls-button-background-color', paper);
+            // action.hover ist halbtransparent — über die Papierfarbe legen, damit der Knopf deckend bleibt
+            root.style.setProperty(
+                '--xy-controls-button-background-color-hover',
+                `linear-gradient(${hover}, ${hover}), ${paper}`,
+            );
+            root.style.setProperty('--xy-controls-button-color', theme.palette.text.primary);
+            root.style.setProperty('--xy-controls-button-color-hover', theme.palette.text.primary);
+            root.style.setProperty('--xy-controls-button-border-color', theme.palette.divider);
+            root.style.setProperty('--xy-controls-box-shadow', `0 0 0 1px ${theme.palette.divider}`);
+        } else {
+            for (const name of XY_CONTROLS_VARS) {
+                root.style.removeProperty(name);
+            }
         }
     }, [theme]);
     return <>{children}</>;

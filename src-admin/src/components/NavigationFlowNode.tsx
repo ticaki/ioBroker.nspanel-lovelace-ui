@@ -223,6 +223,9 @@ export default class NavigationFlowNode extends React.PureComponent<NodeProps<Na
         if (generated) {
             classes.push('node-generated');
         }
+        if (data.searchMatch) {
+            classes.push('node-search-match');
+        }
         return (
             <Box
                 className={classes.join(' ')}

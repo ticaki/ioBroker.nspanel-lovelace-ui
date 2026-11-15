@@ -167,6 +167,8 @@ export type NavigationFlowNodeData = {
     collapse?: { collapsed: boolean; hidden: number };
     /** Collapses or expands the sub pages of the node - set together with {@link collapse} */
     onToggleCollapse?: (nodeId: string) => void;
+    /** The page matches the search text of the view - drawn with a glow in the primary colour */
+    searchMatch?: boolean;
 };
 
 /** Node of the flow as kept in the view state */
