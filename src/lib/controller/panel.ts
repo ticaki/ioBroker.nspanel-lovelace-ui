@@ -147,7 +147,10 @@ export class Panel extends BaseClass {
     private readonly pageOrigins = new PageOriginTracker();
     private _activePage: Page | undefined = undefined;
     private data: Record<string, any> = {};
+    /** hardware panel: drops repeated startup events, see handleStartup */
     private blockStartup: ioBroker.Timeout | undefined = null;
+    /** hardware panel: a startup runs right now, see handleStartup */
+    private hardwareStartupRunning: boolean = false;
     /** web panel: the startup that is running, see handleVirtualStartup */
     private startupInProgress: Promise<void> | null = null;
     /** web panel: a startup that arrived while one was running and is done after it */
@@ -2012,7 +2015,7 @@ export class Panel extends BaseClass {
 
     /**
      * Handles a startup event: a web panel one after the other, a hardware panel directly (its repeats are
-     * dropped by blockStartup).
+     * dropped while a startup runs and by blockStartup, see handleStartup).
      *
      * @param event the startup event
      * @returns resolves when the startup is done
@@ -2252,7 +2255,9 @@ export class Panel extends BaseClass {
         }
         if (this.blockStartup) {
             this.adapter.clearTimeout(this.blockStartup);
+            this.blockStartup = null;
         }
+        this.hardwareStartupRunning = false;
         this.resetDisplayDiagnosis();
         this.log.info('Goint offline because delete panel!');
         this.isOnline = false;
@@ -2374,25 +2379,67 @@ export class Panel extends BaseClass {
     /**
      * The startup event: the display (or browser) shows the startup page and waits for its first page.
      *
+     * A display repeats the startup event every few seconds while it shows the startup page - only the first
+     * one counts. For a hardware panel a startup event is dropped
+     * - while a startup runs (with many panels the adapter start can take longer than 10 s, the running
+     *   startup sends the first page anyway; this includes a startup remembered before initDone that
+     *   {@link markInitDone} runs through {@link runStartup}) and
+     * - for 10 s after the end of the last startup (the display may still send repeats it queued before it
+     *   got its page). The 10 s also start when the startup begins, as before.
+     *
+     * Every way out of a startup (model mismatch, unload, no start page, an error) clears the running flag
+     * and arms the 10 s block again (not on unload). A browser reloads at will, so a web panel takes every
+     * startup event (the page is rendered again) - one after the other, see handleVirtualStartup.
+     *
      * @param event the startup event
      */
     private async handleStartup(event: Types.IncomingEvent): Promise<void> {
-        // a display repeats the startup event every few seconds while it shows the startup
-        // page - only the first one counts. A browser reloads at will, so a web panel
-        // takes every startup event (the page is rendered again) - one after the other, see handleVirtualStartup.
-        if (this.blockStartup) {
-            if (!this.isVirtual) {
+        if (this.isVirtual) {
+            if (this.blockStartup) {
+                this.adapter.clearTimeout(this.blockStartup);
+                this.blockStartup = null;
+            }
+            if (this.unload || this.adapter.unload) {
                 return;
             }
-            this.adapter.clearTimeout(this.blockStartup);
-            this.blockStartup = null;
+            this.armBlockStartup();
+            await this.doStartup(event);
+            return;
+        }
+        if (this.blockStartup || this.hardwareStartupRunning) {
+            return;
         }
         if (this.unload || this.adapter.unload) {
             return;
         }
+        this.hardwareStartupRunning = true;
+        this.armBlockStartup();
+        try {
+            await this.doStartup(event);
+        } finally {
+            this.hardwareStartupRunning = false;
+            if (!this.unload && !this.adapter.unload) {
+                this.armBlockStartup();
+            }
+        }
+    }
+
+    /** (Re)starts the 10 s block for repeated startup events of a hardware panel, see handleStartup */
+    private armBlockStartup(): void {
+        if (this.blockStartup) {
+            this.adapter.clearTimeout(this.blockStartup);
+        }
         this.blockStartup = this.adapter.setTimeout(() => {
             this.blockStartup = null;
         }, 10_000);
+    }
+
+    /**
+     * The work of a startup, gated by {@link handleStartup}.
+     *
+     * @param event the startup event
+     */
+    private async doStartup(event: Types.IncomingEvent): Promise<void> {
         this.resetDisplayDiagnosis();
         // a display only answers through the normal firmware, in case its INFO1 got lost
         this.setSafeboot(false, '');
