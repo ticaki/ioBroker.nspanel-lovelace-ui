@@ -36,6 +36,7 @@ var configManagerConst = __toESM(require("../const/config-manager-const"));
 var import_page_item_defaults = require("../const/page-item-defaults");
 var import_default_pages = require("../const/default-pages");
 var import_screensaver_cycle = require("../const/screensaver-cycle");
+var import_common_states = require("../const/common-states");
 var import_states_controller = require("../controller/states-controller");
 var import_pagePower = require("../pages/pagePower");
 var import_pageChart = require("../pages/pageChart");
@@ -825,7 +826,7 @@ class ConfigManager extends import_library.BaseClass {
         });
       }
     } else if ((_a = foundedStates[role]) == null ? void 0 : _a.MODE) {
-      let states = ["OFF", "AUTO", "COOL", "HEAT", "ECO", "FAN_ONLY", "DRY"];
+      let states = import_common_states.DEFAULT_CLIMATE_MODES;
       let modeType = void 0;
       if (foundedStates[role].MODE.dp) {
         const o2 = await this.adapter.getForeignObjectAsync(foundedStates[role].MODE.dp);
@@ -834,26 +835,6 @@ class ConfigManager extends import_library.BaseClass {
         }
         modeType = (_c = o2 == null ? void 0 : o2.common) == null ? void 0 : _c.type;
       }
-      const modeLiteral = (token) => {
-        if (Array.isArray(states)) {
-          const position = states.indexOf(token);
-          if (position === -1) {
-            return void 0;
-          }
-          return modeType === "string" ? JSON.stringify(token) : String(position);
-        }
-        if (states && typeof states === "object") {
-          for (const key of Object.keys(states)) {
-            if (states[key] === token) {
-              return modeType !== "string" && /^-?\d+(\.\d+)?$/.test(key) ? key : JSON.stringify(key);
-            }
-          }
-          if (states[token] !== void 0) {
-            return JSON.stringify(token);
-          }
-        }
-        return void 0;
-      };
       const tempItem = {
         role: "button",
         type: "button",
@@ -883,13 +864,20 @@ class ConfigManager extends import_library.BaseClass {
         const modeDatapoint = foundedStates[role].MODE;
         const pageItems = gridItem.pageItems;
         const pushMode = (token, icon) => {
-          const literal = modeLiteral(token);
-          if (literal === void 0) {
+          if ((0, import_common_states.resolveStatesToken)(token, states, modeType) === void 0) {
+            return;
+          }
+          const tokenItem = (0, import_common_states.withCommonStates)(modeDatapoint, {
+            mode: "token",
+            token,
+            defaultStates: [...import_common_states.DEFAULT_CLIMATE_MODES]
+          });
+          if (!tokenItem) {
             return;
           }
           iconActive.value = { type: "const", constVal: icon };
-          entity1.value = { ...modeDatapoint, read: `return val == ${literal}` };
-          entity1.set = { ...modeDatapoint, write: `return ${literal}` };
+          entity1.value = tokenItem;
+          entity1.set = tokenItem;
           pageItems.push(JSON.parse(JSON.stringify(tempItem)));
         };
         pushMode("OFF", "power-off");
@@ -2180,7 +2168,7 @@ class ConfigManager extends import_library.BaseClass {
     };
   }
   async getPageItemConfig(item, page, messages = []) {
-    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _A, _B, _C, _D;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _A, _B, _C;
     let itemConfig = void 0;
     this.normalizeColorScale(item);
     if (item.navigate) {
@@ -3494,15 +3482,8 @@ class ConfigManager extends import_library.BaseClass {
             throw new Error(`DP: ${item.id} - Channel role ${role} not implemented yet!!`);
           }
           case "level.mode.fan": {
-            let states;
-            let keys;
-            if ((_w = foundedStates[role].MODE) == null ? void 0 : _w.dp) {
-              const o = await this.adapter.getForeignObjectAsync(foundedStates[role].MODE.dp);
-              if ((_x = o == null ? void 0 : o.common) == null ? void 0 : _x.states) {
-                states = Object.values(o.common.states).map(String);
-                keys = Object.keys(o.common.states).map(String);
-              }
-            }
+            const modeDp = (_w = foundedStates[role].MODE) == null ? void 0 : _w.dp;
+            const statesListItem = (part) => modeDp ? { type: "state", dp: modeDp, commonStates: { mode: "list", part } } : { type: "const", constVal: [] };
             itemConfig = {
               role: "fan",
               type: "fan",
@@ -3546,11 +3527,8 @@ class ConfigManager extends import_library.BaseClass {
                  * valueList string[]/stringify oder string?string?string?string stelle korreliert mit setList  {input_sel}
                  */
                 //valueList: { type: 'const', constVal: '1?2?3?4?5' },
-                valueList: item.modeList ? { type: "const", constVal: item.modeList } : {
-                  type: "const",
-                  constVal: Array.isArray(keys) ? keys : []
-                },
-                valueList2: item.modeList ? void 0 : { type: "const", constVal: Array.isArray(states) ? states : [] }
+                valueList: item.modeList ? { type: "const", constVal: item.modeList } : statesListItem("keys"),
+                valueList2: item.modeList ? void 0 : statesListItem("values")
                 /* valueList: {
                     type: 'const',
                     constVal: Array.isArray(states) ? states.join('?') : JSON.stringify(states),
@@ -3561,7 +3539,7 @@ class ConfigManager extends import_library.BaseClass {
           }
           case "media": {
             const offIcon = item.icon2 || item.icon;
-            let id = ((_y = foundedStates[role].STATE) == null ? void 0 : _y.dp) || item.id;
+            let id = ((_x = foundedStates[role].STATE) == null ? void 0 : _x.dp) || item.id;
             let defaultColorOn = import_Color.Color[import_page_item_defaults.pageItemDefaults.media.colorOn];
             let defaultColorOff = import_Color.Color[import_page_item_defaults.pageItemDefaults.media.colorOff];
             let defaultIconOn = import_page_item_defaults.pageItemDefaults.media.iconOn;
@@ -3572,7 +3550,7 @@ class ConfigManager extends import_library.BaseClass {
             }
             if (!item.asControl) {
               const o = await this.adapter.getForeignObjectAsync(id);
-              if (!o || !((_z = o.common.alias) == null ? void 0 : _z.id)) {
+              if (!o || !((_y = o.common.alias) == null ? void 0 : _y.id)) {
                 throw new Error(`DP: ${item.id} - media STATE ${id} has no alias!`);
               }
               id = o.common.alias.id;
@@ -3653,19 +3631,19 @@ class ConfigManager extends import_library.BaseClass {
         if (item.filter != null && itemConfig) {
           itemConfig.filter = item.filter;
         }
-        if (item.targetPage && (itemConfig == null ? void 0 : itemConfig.type) === "button" && !((_A = itemConfig == null ? void 0 : itemConfig.data) == null ? void 0 : _A.setNavi)) {
+        if (item.targetPage && (itemConfig == null ? void 0 : itemConfig.type) === "button" && !((_z = itemConfig == null ? void 0 : itemConfig.data) == null ? void 0 : _z.setNavi)) {
           itemConfig.data = itemConfig.data || {};
           itemConfig.data.setNavi = await this.getFieldAsDataItemConfig(item.targetPage);
         }
-        if (item.targetPageLongPress && (itemConfig == null ? void 0 : itemConfig.type) === "button" && !((_B = itemConfig == null ? void 0 : itemConfig.data) == null ? void 0 : _B.setNaviLongPress)) {
+        if (item.targetPageLongPress && (itemConfig == null ? void 0 : itemConfig.type) === "button" && !((_A = itemConfig == null ? void 0 : itemConfig.data) == null ? void 0 : _A.setNaviLongPress)) {
           itemConfig.data = itemConfig.data || {};
           itemConfig.data.setNaviLongPress = await this.getFieldAsDataItemConfig(item.targetPageLongPress);
         }
-        if (item.longPress && (itemConfig == null ? void 0 : itemConfig.type) === "button" && !((_C = itemConfig == null ? void 0 : itemConfig.data) == null ? void 0 : _C.longPress)) {
+        if (item.longPress && (itemConfig == null ? void 0 : itemConfig.type) === "button" && !((_B = itemConfig == null ? void 0 : itemConfig.data) == null ? void 0 : _B.longPress)) {
           itemConfig.data = itemConfig.data || {};
           itemConfig.data.longPress = await this.getFieldAsDataItemConfig(item.longPress);
         }
-        if (item.fontSize != null && ((_D = itemConfig == null ? void 0 : itemConfig.data) == null ? void 0 : _D.icon)) {
+        if (item.fontSize != null && ((_C = itemConfig == null ? void 0 : itemConfig.data) == null ? void 0 : _C.icon)) {
           itemConfig.data.icon = {
             ...itemConfig.data.icon,
             textSize: { type: "const", constVal: item.fontSize }

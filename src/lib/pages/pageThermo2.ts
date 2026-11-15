@@ -6,6 +6,7 @@ import type * as Types from '../types/types';
 import type { ConfigManager } from '../classes/config-manager';
 import { PageMenu } from './pageMenu';
 import { Color } from '../const/Color';
+import { DEFAULT_CLIMATE_MODES, withCommonStates } from '../const/common-states';
 import * as configManagerConst from '../const/config-manager-const';
 import type { NSPanel } from '../types/NSPanel';
 
@@ -479,7 +480,8 @@ export class PageThermo2 extends PageMenu {
                     if (mode && mode.dp) {
                         const o2 = await adapter.getForeignObjectAsync(mode.dp);
                         if (o2?.common?.states) {
-                            mode = {
+                            // the text comes from the current common.states (see Dataitem option commonStates)
+                            mode = withCommonStates(mode, { mode: 'text', keepValue: true }) ?? {
                                 ...mode,
                                 read: `return ${JSON.stringify(o2.common.states)}[val] || val`,
                             };
@@ -543,24 +545,21 @@ export class PageThermo2 extends PageMenu {
                     continue;
                 }
                 if (item.modeId) {
-                    let states: string[] | Record<string, string> = [
-                        'OFF',
-                        'AUTO',
-                        'COOL',
-                        'HEAT',
-                        'ECO',
-                        'FAN_ONLY',
-                        'DRY',
-                    ];
                     if (!item.modeList || !Array.isArray(item.modeList) || item.modeList.length < 1) {
-                        const o = await adapter.getForeignObjectAsync(item.modeId);
-                        if (o?.common?.states) {
-                            states = o.common.states;
-                        }
+                        // the current common.states of the datapoint, the built-in list without one
+                        mode = {
+                            type: 'triggered',
+                            dp: item.modeId,
+                            commonStates: { mode: 'text', defaultStates: [...DEFAULT_CLIMATE_MODES] },
+                        };
                     } else {
-                        states = item.modeList;
+                        // the list of the user stays as configured
+                        mode = {
+                            type: 'triggered',
+                            dp: item.modeId,
+                            read: `return ${JSON.stringify(item.modeList)}[val]`,
+                        };
                     }
-                    mode = { type: 'triggered', dp: item.modeId, read: `return ${JSON.stringify(states)}[val]` };
                     power = { type: 'triggered', dp: item.modeId, read: `return val !== 0 ? 1 : 0;` };
                 }
                 set = item.set;

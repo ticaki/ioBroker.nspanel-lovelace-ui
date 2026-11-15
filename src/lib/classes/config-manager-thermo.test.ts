@@ -12,12 +12,17 @@
  *
  * The record shape is the normal case in ioBroker and used to build no mode row at all.
  * A key that is no number has to be quoted, otherwise `return val == off` would be generated.
+ *
+ * The buttons no longer carry generated scripts: they carry the token (option `commonStates`) and resolve it at
+ * runtime against the current common.states. The helpers below resolve the token against the object database
+ * and print it the way the generated script did, so the expected scripts stay the same as before.
  */
 import { expect } from 'chai';
 import { Color } from '../const/Color';
 import { StatesControler } from '../controller/states-controller';
 import type * as pages from '../types/pages';
 import { ConfigManager } from './config-manager';
+import { DEFAULT_CLIMATE_MODES, resolveStatesToken } from '../const/common-states';
 
 // ---------------------------------------------------------------------------------------------
 // fake object database
@@ -159,6 +164,9 @@ function resetStatesController(): void {
 // runner
 // ---------------------------------------------------------------------------------------------
 
+/** The option commonStates of a mode button */
+type TokenOption = { mode?: string; token?: string; defaultStates?: string[] };
+
 /** The part of a generated page item the mode row tests look at. */
 type ModeButton = {
     role?: string;
@@ -169,8 +177,8 @@ type ModeButton = {
             false?: { value?: { constVal?: unknown }; color?: { constVal?: unknown } };
         };
         entity1?: {
-            value?: { dp?: string; read?: string };
-            set?: { dp?: string; write?: string };
+            value?: { dp?: string; read?: string; commonStates?: TokenOption };
+            set?: { dp?: string; write?: string; commonStates?: TokenOption };
         };
     };
 };
@@ -212,7 +220,33 @@ async function runThermo(channel: string): Promise<{ items: ModeButton[]; messag
  * @returns The read script.
  */
 function readOf(item: ModeButton): string | undefined {
-    return item.data?.entity1?.value?.read;
+    const value = item.data?.entity1?.value;
+    expect(value?.read, 'no generated read script any more').to.equal(undefined);
+    const literal = tokenLiteral(value);
+    return literal === undefined ? undefined : `return val == ${literal}`;
+}
+
+/**
+ * Resolves the token of a mode button against the object database and prints the value as the
+ * generated script did - a number as it is, a string quoted.
+ *
+ * @param entry value or set of entity1.
+ * @returns The literal, undefined without a resolvable token.
+ */
+function tokenLiteral(entry: { dp?: string; commonStates?: TokenOption } | undefined): string | undefined {
+    const option = entry?.commonStates;
+    if (!entry?.dp || option?.mode !== 'token' || !option.token) {
+        return undefined;
+    }
+    expect(option.defaultStates).to.deep.equal(DEFAULT_CLIMATE_MODES);
+    const obj = DB[entry.dp];
+    const common = obj?.type === 'state' ? obj.common : undefined;
+    const resolved = resolveStatesToken(option.token, common?.states || option.defaultStates, common?.type);
+    return typeof resolved === 'number'
+        ? String(resolved)
+        : resolved === undefined
+          ? undefined
+          : JSON.stringify(resolved);
 }
 
 /**
@@ -222,7 +256,10 @@ function readOf(item: ModeButton): string | undefined {
  * @returns The write script.
  */
 function writeOf(item: ModeButton): string | undefined {
-    return item.data?.entity1?.set?.write;
+    const set = item.data?.entity1?.set;
+    expect(set?.write, 'no generated write script any more').to.equal(undefined);
+    const literal = tokenLiteral(set);
+    return literal === undefined ? undefined : `return ${literal}`;
 }
 
 /**

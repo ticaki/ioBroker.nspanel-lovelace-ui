@@ -34,6 +34,7 @@ module.exports = __toCommonJS(pageThermo2_exports);
 var tools = __toESM(require("../const/tools"));
 var import_pageMenu = require("./pageMenu");
 var import_Color = require("../const/Color");
+var import_common_states = require("../const/common-states");
 var configManagerConst = __toESM(require("../const/config-manager-const"));
 const PageThermo2MessageDefault = {
   event: "entityUpd",
@@ -437,11 +438,11 @@ class PageThermo2 extends import_pageMenu.PageMenu {
           if (mode && mode.dp) {
             const o2 = await adapter.getForeignObjectAsync(mode.dp);
             if ((_e = o2 == null ? void 0 : o2.common) == null ? void 0 : _e.states) {
-              mode = {
+              mode = (_f = (0, import_common_states.withCommonStates)(mode, { mode: "text", keepValue: true })) != null ? _f : {
                 ...mode,
                 read: `return ${JSON.stringify(o2.common.states)}[val] || val`
               };
-            } else if (((_f = o.common) == null ? void 0 : _f.type) === "string") {
+            } else if (((_g = o.common) == null ? void 0 : _g.type) === "string") {
               mode = {
                 ...mode
               };
@@ -492,24 +493,19 @@ class PageThermo2 extends import_pageMenu.PageMenu {
           continue;
         }
         if (item.modeId) {
-          let states = [
-            "OFF",
-            "AUTO",
-            "COOL",
-            "HEAT",
-            "ECO",
-            "FAN_ONLY",
-            "DRY"
-          ];
           if (!item.modeList || !Array.isArray(item.modeList) || item.modeList.length < 1) {
-            const o2 = await adapter.getForeignObjectAsync(item.modeId);
-            if ((_g = o2 == null ? void 0 : o2.common) == null ? void 0 : _g.states) {
-              states = o2.common.states;
-            }
+            mode = {
+              type: "triggered",
+              dp: item.modeId,
+              commonStates: { mode: "text", defaultStates: [...import_common_states.DEFAULT_CLIMATE_MODES] }
+            };
           } else {
-            states = item.modeList;
+            mode = {
+              type: "triggered",
+              dp: item.modeId,
+              read: `return ${JSON.stringify(item.modeList)}[val]`
+            };
           }
-          mode = { type: "triggered", dp: item.modeId, read: `return ${JSON.stringify(states)}[val]` };
           power = { type: "triggered", dp: item.modeId, read: `return val !== 0 ? 1 : 0;` };
         }
         set = item.set;

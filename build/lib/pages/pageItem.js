@@ -54,8 +54,6 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
   // use this to save some data while object is active
   confirmClick = "lock";
   timeouts = {};
-  // for select - force next read of common
-  updateCommon = { lastRequest: 0, counts: 0 };
   /** the screensaver this item listens to (`useScreensaverTimer`) */
   clockTimerSaver;
   /** index of the value a button with a value list wrote last, see {@link writeNextCycleValue} */
@@ -1675,24 +1673,11 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
           message.speedText = this.library.getTranslation(
             (_D = await tools.getEntryTextOnOff(item.text, value)) != null ? _D : ""
           );
-          let force = false;
-          if (this.updateCommon.counts < 4) {
-            if (Date.now() - this.updateCommon.lastRequest > 5e3) {
-              this.updateCommon.counts = 0;
-            } else {
-              this.updateCommon.counts++;
-            }
-          } else {
-            this.updateCommon.counts = 0;
-            this.updateCommon.lastRequest = Date.now();
-            force = true;
-          }
           const sList = item.entityInSel && await this.getListFromStates(
             item.entityInSel,
             item.valueList,
             entry.role,
-            "valueList2" in item ? item.valueList2 : void 0,
-            force
+            "valueList2" in item ? item.valueList2 : void 0
           );
           if (sList !== void 0 && sList.list !== void 0 && sList.value !== void 0 && sList.states !== void 0) {
             if (sList.list.length > 0) {
@@ -3127,7 +3112,7 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
     }
     return result;
   }
-  async getListFromStates(entityInSel, valueList, role, valueList2 = void 0, force = false) {
+  async getListFromStates(entityInSel, valueList, role, valueList2 = void 0) {
     var _a, _b, _c, _d, _e, _f, _g, _h;
     const list = {};
     if (entityInSel && entityInSel.value) {
@@ -3237,7 +3222,7 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
         }
       } else if (role === "spotify-speaker" || role === "spotify-playlist") {
         if (entityInSel.value.options.dp) {
-          const o = await entityInSel.value.getCommonStates(force);
+          const o = await entityInSel.value.getCommonStates();
           const v = await entityInSel.value.getString();
           const al = await (valueList == null ? void 0 : valueList.getObject());
           if (o) {
@@ -3277,7 +3262,7 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
             }
           }
         }
-      } else if (["string", "number"].indexOf((_g = entityInSel.value.type) != null ? _g : "") !== -1 && (await entityInSel.value.getCommonStates(force) || valueList2 != null)) {
+      } else if (["string", "number"].indexOf((_g = entityInSel.value.type) != null ? _g : "") !== -1 && (await entityInSel.value.getCommonStates() || valueList2 != null)) {
         let states = null;
         const value = await tools.getValueEntryString(entityInSel);
         switch (role) {
@@ -3316,7 +3301,7 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
             break;
           }
           default: {
-            states = await entityInSel.value.getCommonStates(force);
+            states = await entityInSel.value.getCommonStates();
           }
         }
         if (value !== null && states) {
