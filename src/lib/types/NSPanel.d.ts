@@ -403,6 +403,21 @@ export namespace NSPanel {
         read?: string | ((val: any) => any);
         write?: string | ((val: any) => any);
     };
+    /**
+     * Resolves the value of a state or triggered data item against the current common.states of its datapoint,
+     * so a changed common.states reaches the panel without a restart. Applied before `read`; a token replaces `write`.
+     *
+     * - `text`: the value becomes its text in common.states. `keepValue` shows an unknown value as it is (otherwise
+     *   undefined), `defaultStates` is used when the datapoint has no common.states.
+     * - `list`: the value becomes the list of the keys or the texts of common.states, the state itself is not read.
+     * - `token`: reading gives true when the state has the value the token (e.g. 'COOL') stands for, writing writes
+     *   that value - nothing is written when the token is unknown. `defaultStates` as for `text`.
+     */
+    export type DataItemCommonStates =
+        | { mode: 'text'; keepValue?: boolean; defaultStates?: string[] }
+        | { mode: 'list'; part: 'keys' | 'values' }
+        | { mode: 'token'; token: string; defaultStates?: string[] };
+
     type DataItemsOptionsState = (DataItemsOptionsAuto | DataItemsOptionsCustom) & {
         type: 'state';
         dp: string;
@@ -411,6 +426,7 @@ export namespace NSPanel {
         forceType?: 'string' | 'number' | 'boolean'; // force a type
         read?: string | ((val: any) => any);
         write?: string | ((val: any) => any);
+        commonStates?: DataItemCommonStates;
     };
     type DataItemsOptionsTriggered = (DataItemsOptionsAuto | DataItemsOptionsCustom) & {
         type: 'triggered';
@@ -421,6 +437,7 @@ export namespace NSPanel {
         read?: string | ((val: any) => any);
         write?: string | ((val: any) => any);
         change?: 'ts';
+        commonStates?: DataItemCommonStates;
         wirteable?: boolean;
     };
     interface State extends Omit<ioBroker.State, 'val'> {

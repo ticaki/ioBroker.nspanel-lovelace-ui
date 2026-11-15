@@ -4,6 +4,13 @@ import type { StatesControler } from './states-controller';
 import type { BaseTriggeredPage } from '../classes/baseClassPage';
 import type { NSPanel } from '../types/NSPanel';
 import { isIconColorScaleElement } from '../types/function-and-const';
+import { matchesStatesToken, resolveStatesText, resolveStatesToken, statesList } from '../const/common-states';
+
+/**
+ * Fields of common that show something on the panel. They follow a changed object at runtime, everything else
+ * (role, type, write, ...) stays as it was checked when the data item was created.
+ */
+export const DISPLAY_COMMON_KEYS = ['states', 'unit', 'min', 'max', 'step', 'name'] as const;
 
 export class Dataitem extends BaseClass {
     #compiledReadFn?: (
@@ -19,7 +26,14 @@ export class Dataitem extends BaseClass {
     stateDB: StatesControler;
     type: ioBroker.CommonType | undefined = undefined;
     parent: BaseTriggeredPage;
-    common: Partial<ioBroker.StateCommon> = {};
+    /** common as checked in isValidAndInit - the structure fields of {@link common} come from here */
+    #frozenCommon: Partial<ioBroker.StateCommon> = {};
+    /** last common of the datapoint the states controller handed out, source of the display fields */
+    #liveCommon: Partial<ioBroker.StateCommon> | undefined;
+    /** frozen structure plus live display fields, rebuilt when the states controller has a new common */
+    #mergedCommon: Partial<ioBroker.StateCommon> | undefined;
+    /** a token of `commonStates` could not be resolved when writing - warned once */
+    #tokenWarned = false;
     private _writeable: boolean = false;
     /**
      * Call isValidAndInit() after constructor and check return value - if false, this object is not configured correctly.
@@ -95,6 +109,49 @@ export class Dataitem extends BaseClass {
     }
     public set writeable(b: false) {
         this._writeable = b;
+        this.#frozenCommon.write = b;
+        this.#mergedCommon = undefined;
+    }
+
+    /**
+     * common of the datapoint. Structure fields (role, type, write, ...) stay as they were checked in
+     * isValidAndInit, the display fields ({@link DISPLAY_COMMON_KEYS}) follow the current object, which the states
+     * controller keeps up to date.
+     *
+     * @returns the common - do not change it
+     */
+    get common(): Partial<ioBroker.StateCommon> {
+        if (
+            (this.options.type === 'state' || this.options.type === 'triggered') &&
+            this.options.dp &&
+            typeof this.stateDB?.getLiveCommon === 'function'
+        ) {
+            const live = this.stateDB.getLiveCommon(this.options.dp);
+            if (live && live !== this.#liveCommon) {
+                this.#liveCommon = live;
+                this.#mergedCommon = undefined;
+            }
+        }
+        if (!this.#liveCommon) {
+            return this.#frozenCommon;
+        }
+        if (!this.#mergedCommon) {
+            const merged: Partial<ioBroker.StateCommon> = { ...this.#frozenCommon };
+            for (const key of DISPLAY_COMMON_KEYS) {
+                if (this.#liveCommon[key] !== undefined) {
+                    Object.assign(merged, { [key]: this.#liveCommon[key] });
+                } else {
+                    delete merged[key];
+                }
+            }
+            this.#mergedCommon = merged;
+        }
+        return this.#mergedCommon;
+    }
+    set common(common: Partial<ioBroker.StateCommon>) {
+        this.#frozenCommon = common;
+        this.#liveCommon = undefined;
+        this.#mergedCommon = undefined;
     }
     /**
      * Init and check dp is valid
@@ -124,7 +181,10 @@ export class Dataitem extends BaseClass {
                 this.type = this.type || obj.common.type;
                 this.options.role = obj.common.role;
                 this._writeable = !!obj.common.write;
-                this.common = obj.common;
+                // a copy for states: the cached object can be replaced or changed later, the structure stays frozen.
+                // Internal states keep the reference, nobody changes them from outside.
+                this.common =
+                    this.options.type === 'state' || this.options.type === 'triggered' ? { ...obj.common } : obj.common;
                 if (this.options.type == 'triggered') {
                     await this.stateDB.setTrigger(this.options.dp, this.parent, false, undefined, this.options.change);
                 } else if (this.options.type == 'internal') {
@@ -169,14 +229,70 @@ export class Dataitem extends BaseClass {
         return 'dp' in this.options ? (this.stateDB.getType(this.options.dp) ?? this.type) : this.type;
     }
 
-    async getCommonStates(force: boolean = false): Promise<Record<string, string> | null> {
-        return 'dp' in this.options ? this.stateDB.getCommonStates(this.options.dp, force) : null;
+    async getCommonStates(): Promise<Record<string, string> | null> {
+        return 'dp' in this.options ? this.stateDB.getCommonStates(this.options.dp) : null;
+    }
+
+    /**
+     * @returns the option commonStates of a state or triggered data item
+     */
+    private getCommonStatesOption(): NSPanel.DataItemCommonStates | undefined {
+        return this.options.type === 'state' || this.options.type === 'triggered'
+            ? this.options.commonStates
+            : undefined;
+    }
+
+    /**
+     * The value a token of the option commonStates stands for in the current common.states.
+     *
+     * @param option the token option
+     * @param option.token the token, e.g. 'COOL'
+     * @param option.defaultStates used when the datapoint has no common.states
+     * @returns the value or undefined if the token is unknown
+     */
+    private resolveToken(option: { token: string; defaultStates?: string[] }): string | number | undefined {
+        const states = this.common.states || option.defaultStates;
+        return resolveStatesToken(option.token, states, this.#frozenCommon.type);
+    }
+
+    /**
+     * Applies the option commonStates to a raw value (before `read`).
+     *
+     * @param option the option
+     * @param val the raw value
+     * @returns the resolved value
+     */
+    private applyCommonStates(
+        option: NSPanel.DataItemCommonStates,
+        val: NSPanel.StateValue,
+    ): NSPanel.StateValue | undefined {
+        switch (option.mode) {
+            case 'text':
+                // undefined for an unknown value without keepValue - as the generated `return <states>[val]` did
+                return resolveStatesText(this.common.states || option.defaultStates, val, !!option.keepValue);
+            case 'list':
+                return statesList(this.common.states, option.part);
+            case 'token': {
+                const resolved = this.resolveToken(option);
+                return resolved !== undefined && matchesStatesToken(val, resolved);
+            }
+        }
+        return val;
     }
 
     async getState(): Promise<NSPanel.State | null> {
-        let state = await this.getRawState();
+        const commonStates = this.getCommonStatesOption();
+        let state =
+            commonStates?.mode === 'list'
+                ? // only common.states counts, the value of the state is not needed
+                  { val: null, ack: true, ts: Date.now(), lc: Date.now(), from: '' }
+                : await this.getRawState();
         if (state) {
             state = structuredClone(state);
+            if (commonStates) {
+                // may be undefined like the result of a read script
+                state.val = this.applyCommonStates(commonStates, state.val) as NSPanel.StateValue;
+            }
             if (this.options.type !== 'const' && this.options.read) {
                 try {
                     if (typeof this.options.read === 'string') {
@@ -457,11 +573,22 @@ export class Dataitem extends BaseClass {
         if (this.options.type === 'const') {
             this.options.constVal = val;
         } else {
-            // in der Klasse
-
-            // ... im passenden Codepfad:
+            const commonStates = this.getCommonStatesOption();
             try {
-                if (this.options.write) {
+                if (commonStates?.mode === 'token') {
+                    // the token decides what is written - resolved against the current common.states
+                    const resolved = this.resolveToken(commonStates);
+                    if (resolved === undefined) {
+                        if (!this.#tokenWarned) {
+                            this.#tokenWarned = true;
+                            this.log.warn(
+                                `${this.options.dp}: '${commonStates.token}' is no longer in common.states - nothing is written`,
+                            );
+                        }
+                        return;
+                    }
+                    val = resolved;
+                } else if (this.options.write) {
                     if (typeof this.options.write === 'string') {
                         // compile once and cache
                         if (!this.#compiledWriteFn) {

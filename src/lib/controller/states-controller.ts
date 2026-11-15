@@ -1,6 +1,6 @@
 // BaseClass extends
 
-import { Dataitem } from './data-item';
+import { DISPLAY_COMMON_KEYS, Dataitem } from './data-item';
 import { BaseClass } from './library';
 import type { nsPanelState, nsPanelStateVal } from '../types/types';
 import { getRegExp } from '../const/tools';
@@ -60,6 +60,26 @@ export class StatesControler extends BaseClass {
     private stateDB: { [key: string]: { state: ioBroker.State; ts: number; common: ioBroker.StateCommon } } = {};
     objectDatabase: Record<string, ioBroker.Object | null> = {};
     intervalObjectDatabase: ioBroker.Interval | undefined;
+
+    /** wait before the collected object subscriptions are sent - many triggers arrive at once on a startup */
+    static readonly OBJECT_SUBSCRIBE_DELAY_MS = 500;
+    /** wait for more object changes before the pages are redrawn - the admin saves an object several times */
+    static readonly OBJECT_CHANGE_DEBOUNCE_MS = 500;
+    /** common fields the panel was built on - a change only takes effect after a restart */
+    static readonly STRUCTURE_COMMON_KEYS = ['role', 'type', 'write', 'read'] as const;
+
+    /** ids whose object is (or is about to be) subscribed - exactly the foreign ids of triggerDB */
+    private objectSubscriptions = new Set<string>();
+    /** collected ids for the next {@link flushObjectSubscriptions} */
+    private objectSubscribeQueue = new Set<string>();
+    private objectUnsubscribeQueue = new Set<string>();
+    private objectSubscribeTimeout: ioBroker.Timeout | undefined;
+    /** ids with changed display fields, the receivers are redrawn after OBJECT_CHANGE_DEBOUNCE_MS */
+    private objectRedrawQueue = new Set<string>();
+    private objectRedrawTimeout: ioBroker.Timeout | undefined;
+    /** ids that were told once that a structure field changed / that the object was deleted */
+    private objectStructureReported = new Set<string>();
+    private objectDeletedReported = new Set<string>();
 
     timespan: number;
 
@@ -140,6 +160,7 @@ export class StatesControler extends BaseClass {
 
             delete this.triggerDB[id];
             this.activeTriggerCount.delete(id);
+            this.releaseObjectSubscription(id);
         }
 
         while (this.blockedSubscriptions && this.blockedSubscriptions.length > 0) {
@@ -168,6 +189,17 @@ export class StatesControler extends BaseClass {
         if (this.deletePageInterval) {
             this.adapter.clearInterval(this.deletePageInterval);
         }
+        if (this.objectSubscribeTimeout) {
+            this.adapter.clearTimeout(this.objectSubscribeTimeout);
+            this.objectSubscribeTimeout = undefined;
+        }
+        if (this.objectRedrawTimeout) {
+            this.adapter.clearTimeout(this.objectRedrawTimeout);
+            this.objectRedrawTimeout = undefined;
+        }
+        this.objectSubscribeQueue.clear();
+        this.objectUnsubscribeQueue.clear();
+        this.objectRedrawQueue.clear();
 
         // Cleanup performance maps
         this.targetToTriggerMap.clear();
@@ -386,6 +418,7 @@ export class StatesControler extends BaseClass {
             if (this.unload || this.adapter.unload) {
                 return;
             }
+            this.queueObjectSubscription(id);
             if (this.blockedSubscriptions) {
                 if (!this.blockedSubscriptions.includes(id)) {
                     this.blockedSubscriptions.push(id);
@@ -416,6 +449,7 @@ export class StatesControler extends BaseClass {
         } catch (err) {
             // Rollback bei Fehlern
             delete this.triggerDB[id];
+            this.releaseObjectSubscription(id);
             throw err;
         }
     }
@@ -694,23 +728,12 @@ export class StatesControler extends BaseClass {
         return undefined;
     }
 
-    async getCommonStates(id: string | undefined, force: boolean = false): Promise<Record<string, string> | null> {
+    async getCommonStates(id: string | undefined): Promise<Record<string, string> | null> {
         if (!id) {
             return null;
         }
         let j: string | string[] | Record<string, string> | undefined = undefined;
-        if (force) {
-            const obj = await this.adapter.getForeignObjectAsync(id);
-            if (obj && obj.common && obj.common.states) {
-                j = obj.common.states;
-                if (this.triggerDB[id] !== undefined && this.triggerDB[id].common.states) {
-                    this.triggerDB[id].common.states = j;
-                }
-                if (this.stateDB[id] !== undefined && this.stateDB[id].common.states) {
-                    this.stateDB[id].common.states = j;
-                }
-            }
-        } else if (this.triggerDB[id] !== undefined && this.triggerDB[id].common) {
+        if (this.triggerDB[id] !== undefined && this.triggerDB[id].common) {
             j = this.triggerDB[id].common.states;
         } else if (this.stateDB[id] !== undefined && this.stateDB[id].common) {
             j = this.stateDB[id].common.states;
@@ -725,6 +748,251 @@ export class StatesControler extends BaseClass {
             j = a;
         }
         return j;
+    }
+
+    /**
+     * The most recent common the controller knows for a state - the display fields of a data item come from here.
+     * Its structure fields are not meant to be used, they can be newer than what the data item checked.
+     *
+     * @param id state id
+     * @returns the common or undefined if the state is not cached right now
+     */
+    getLiveCommon(id: string): ioBroker.StateCommon | undefined {
+        const trigger = this.triggerDB[id];
+        if (trigger && !trigger.internal && trigger.common) {
+            return trigger.common;
+        }
+        const cached = this.stateDB[id];
+        if (cached?.common) {
+            return cached.common;
+        }
+        const obj = this.objectDatabase[id];
+        if (obj && obj.type === 'state' && obj.common) {
+            return obj.common;
+        }
+        return undefined;
+    }
+
+    /**
+     * Subscribes the object of a foreign state of triggerDB - collected and sent as one call, see
+     * {@link flushObjectSubscriptions}. Internal states (with '/') and the adapter's own states are left out.
+     *
+     * @param id state id
+     */
+    private queueObjectSubscription(id: string): void {
+        if (id.includes('/') || id.startsWith(this.adapter.namespace) || this.objectSubscriptions.has(id)) {
+            return;
+        }
+        this.objectSubscriptions.add(id);
+        if (this.objectUnsubscribeQueue.has(id)) {
+            // removed and added again before the queue was sent: still subscribed at the adapter
+            this.objectUnsubscribeQueue.delete(id);
+        } else {
+            this.objectSubscribeQueue.add(id);
+        }
+        this.scheduleObjectSubscriptionFlush();
+    }
+
+    /**
+     * Ends the object subscription of an id that left triggerDB.
+     *
+     * @param id state id
+     */
+    private releaseObjectSubscription(id: string): void {
+        if (!this.objectSubscriptions.delete(id)) {
+            return;
+        }
+        if (this.objectSubscribeQueue.has(id)) {
+            // never sent to the adapter
+            this.objectSubscribeQueue.delete(id);
+        } else {
+            this.objectUnsubscribeQueue.add(id);
+        }
+        this.scheduleObjectSubscriptionFlush();
+    }
+
+    private scheduleObjectSubscriptionFlush(): void {
+        if (this.objectSubscribeTimeout || this.unload || this.adapter.unload) {
+            return;
+        }
+        this.objectSubscribeTimeout = this.adapter.setTimeout(() => {
+            this.objectSubscribeTimeout = undefined;
+            void this.flushObjectSubscriptions();
+        }, StatesControler.OBJECT_SUBSCRIBE_DELAY_MS);
+    }
+
+    /**
+     * Sends the collected object (un)subscriptions - one call each with all ids.
+     */
+    async flushObjectSubscriptions(): Promise<void> {
+        if (this.objectSubscribeTimeout) {
+            this.adapter.clearTimeout(this.objectSubscribeTimeout);
+            this.objectSubscribeTimeout = undefined;
+        }
+        const unsubscribe = [...this.objectUnsubscribeQueue];
+        const subscribe = [...this.objectSubscribeQueue];
+        this.objectUnsubscribeQueue.clear();
+        this.objectSubscribeQueue.clear();
+        if (this.unload || this.adapter.unload) {
+            return;
+        }
+        if (unsubscribe.length > 0) {
+            try {
+                await this.adapter.unsubscribeForeignObjectsAsync(unsubscribe);
+            } catch (e: unknown) {
+                this.log.warn(`Cannot unsubscribe objects: ${e instanceof Error ? e.message : String(e)}`);
+            }
+        }
+        if (subscribe.length > 0) {
+            try {
+                await this.adapter.subscribeForeignObjectsAsync(subscribe);
+            } catch (e: unknown) {
+                this.log.warn(`Cannot subscribe objects: ${e instanceof Error ? e.message : String(e)}`);
+            }
+        }
+    }
+
+    /**
+     * A subscribed object changed. The display fields ({@link DISPLAY_COMMON_KEYS}) of the caches follow it and the
+     * visible receivers are redrawn. The structure fields stay as the panel was built on them - a change is
+     * reported once. A deleted object changes nothing.
+     *
+     * @param id object id
+     * @param obj the new object, null if it was deleted
+     */
+    onObjectChange(id: string, obj: ioBroker.Object | null | undefined): void {
+        if (this.unload || this.adapter.unload) {
+            return;
+        }
+        const trigger = this.triggerDB[id] && !this.triggerDB[id].internal ? this.triggerDB[id] : undefined;
+        const cached = this.stateDB[id];
+        if (!trigger && !cached && !this.objectSubscriptions.has(id)) {
+            // not one of ours - e.g. a credential, main.ts handles it
+            return;
+        }
+        if (!obj) {
+            delete this.objectDatabase[id];
+            if (!this.objectDeletedReported.has(id)) {
+                this.objectDeletedReported.add(id);
+                this.log.warn(
+                    `Object ${id} was deleted - the panel keeps its last values until the configuration changes or the adapter restarts`,
+                );
+            }
+            return;
+        }
+        if (obj.type !== 'state' || !obj.common) {
+            return;
+        }
+        this.objectDeletedReported.delete(id);
+        this.objectDatabase[id] = obj;
+        const common = obj.common;
+
+        let displayChanged = false;
+        let structureChanged = false;
+        for (const entry of [trigger, cached]) {
+            if (!entry) {
+                continue;
+            }
+            const changes = StatesControler.compareCommon(entry.common, common);
+            structureChanged ||= changes.structure;
+            if (changes.display) {
+                entry.common = StatesControler.withDisplayFields(entry.common, common);
+                displayChanged = true;
+            }
+        }
+        if (structureChanged && !this.objectStructureReported.has(id)) {
+            this.objectStructureReported.add(id);
+            this.log.info(
+                `Object ${id}: a change of ${StatesControler.STRUCTURE_COMMON_KEYS.join('/')} takes effect after the next configuration change or adapter restart`,
+            );
+        }
+        if (displayChanged && trigger) {
+            this.objectRedrawQueue.add(id);
+            if (this.objectRedrawTimeout) {
+                this.adapter.clearTimeout(this.objectRedrawTimeout);
+            }
+            this.objectRedrawTimeout = this.adapter.setTimeout(() => {
+                this.objectRedrawTimeout = undefined;
+                void this.redrawAfterObjectChange();
+            }, StatesControler.OBJECT_CHANGE_DEBOUNCE_MS);
+        }
+    }
+
+    /**
+     * Which kind of fields differ between two commons.
+     *
+     * @param before common in the cache
+     * @param after common of the changed object
+     * @returns display: a display field differs, structure: a structure field differs
+     */
+    private static compareCommon(
+        before: Partial<ioBroker.StateCommon>,
+        after: Partial<ioBroker.StateCommon>,
+    ): { display: boolean; structure: boolean } {
+        const differs = (key: keyof ioBroker.StateCommon): boolean =>
+            JSON.stringify(before[key]) !== JSON.stringify(after[key]);
+        return {
+            display: DISPLAY_COMMON_KEYS.some(differs),
+            structure: StatesControler.STRUCTURE_COMMON_KEYS.some(differs),
+        };
+    }
+
+    /**
+     * A new common (new reference, so data items notice it) with the display fields of `source` and everything
+     * else of `target`.
+     *
+     * @param target cached common
+     * @param source common of the changed object
+     * @returns the new common
+     */
+    private static withDisplayFields(target: ioBroker.StateCommon, source: ioBroker.StateCommon): ioBroker.StateCommon {
+        const result: ioBroker.StateCommon = { ...target };
+        for (const key of DISPLAY_COMMON_KEYS) {
+            if (source[key] !== undefined) {
+                Object.assign(result, { [key]: source[key] });
+            } else {
+                delete result[key];
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Redraws the receivers of the objects that changed - like a state change, but without its filter on a changed
+     * value: the value is the same, only its display changed. Only active receivers are triggered, the pages
+     * themselves skip what is not visible.
+     */
+    async redrawAfterObjectChange(): Promise<void> {
+        if (this.objectRedrawTimeout) {
+            this.adapter.clearTimeout(this.objectRedrawTimeout);
+            this.objectRedrawTimeout = undefined;
+        }
+        const ids = [...this.objectRedrawQueue];
+        this.objectRedrawQueue.clear();
+        for (const id of ids) {
+            const entry = this.triggerDB[id];
+            if (!entry || entry.internal) {
+                continue;
+            }
+            for (let i = 0; i < entry.to.length; i++) {
+                if (this.unload || this.adapter.unload) {
+                    return;
+                }
+                const target = entry.to[i];
+                if (!target || target.unload) {
+                    continue;
+                }
+                if (!(target.neverDeactivateTrigger || entry.subscribed[i]) || !entry.triggerAllowed[i]) {
+                    continue;
+                }
+                const parent = target.parent;
+                if (parent && target.triggerParent && !parent.unload && !parent.sleep) {
+                    await parent.onStateTriggerSuperDoNotOverride?.(id, target);
+                } else {
+                    await target.onStateTriggerSuperDoNotOverride?.(id, target);
+                }
+            }
+        }
     }
 
     isStateValue(v: unknown): v is ioBroker.StateValue {
@@ -936,9 +1204,8 @@ export class StatesControler extends BaseClass {
                         this.log.error(
                             `Cannot write state ${item.options.dp} with value ${val}: ${typeof e === 'string' ? e : e.message}`,
                         );
-                        // prevent further write attempts
+                        // prevent further write attempts - also sets common.write of the item
                         item.writeable = false;
-                        item.common.write = false;
                         throw e;
                     }
                 } else {
