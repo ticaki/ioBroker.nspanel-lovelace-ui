@@ -572,7 +572,7 @@ export class Controller extends Library.BaseClass {
                 this.options.panels[known] = pristine;
             }
             this.panels.push(newPanel);
-            newPanel.initDone = true;
+            newPanel.markInitDone();
             this.log.debug(`Panel ${newPanel.name} created`);
             return true;
         }
@@ -643,7 +643,7 @@ export class Controller extends Library.BaseClass {
         if (await newPanel.isValid()) {
             await newPanel.init();
             this.panels.push(newPanel);
-            newPanel.initDone = true;
+            newPanel.markInitDone();
             this.log.debug(`Web panel ${newPanel.name} created`);
             return newPanel;
         }

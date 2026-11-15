@@ -183,6 +183,7 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
 - (tt-tom17) admin: navigation items with the roles airCondition, temperature, value.temperature and value.humidity offer the condition for the value, as the adapter evaluates it for them
 - (tt-tom17) admin: the color settings button of the item dialog no longer flickers while a channel id is typed and no longer shows the verdict of the previous channel
 - (tt-tom17) admin: in the item dialog "is a navigation" and "custom button" exclude each other, checking one takes the other back
+- (ticaki) adapter start: panels no longer restart their startup animation several times while the adapter starts - the acks of the display no longer trigger a new startup page offer, and a display that starts while its panel is still being created gets its startup once the panel is ready
 
 ### 2.2.0 (2026-11-12)
 - (ticaki) web panel: smartphone models `web-p` and `web-l`, portrait layout for all cards, popups and screensavers on us-p/web-p, hardware buttons can be switched off, many layout fixes; no crash on the first connection, less log noise without browser

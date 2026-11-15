@@ -22,7 +22,7 @@ function setup(
         name: 'A0',
         topic: 'nspanel/A0',
         _isOnline: true,
-        initDone: true,
+        _initDone: true,
         blockStartup: null,
         screenSaver: {},
         panelSend: {},
