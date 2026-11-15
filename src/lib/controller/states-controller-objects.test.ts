@@ -1,6 +1,7 @@
 /**
- * Live common of foreign states: object subscriptions per triggerDB entry, objectChange updates the display fields
- * of the caches, the structure stays frozen, the active receivers are redrawn although the value did not change.
+ * Live common of foreign states: object subscriptions per triggerDB entry (ended only after a grace time, so a page
+ * change does not unsubscribe and subscribe again), objectChange updates the display fields of the caches, the
+ * structure stays frozen, nothing is redrawn - the next update that comes anyway shows the new fields.
  */
 import { expect } from 'chai';
 import { StatesControler } from './states-controller';
@@ -23,7 +24,7 @@ type FakeTarget = {
     parent: FakeTarget | undefined;
     basePanel: { name: string; unload: boolean };
     calls: string[];
-    onStateTriggerSuperDoNotOverride: (dp: string, from: BaseTriggeredPage) => Promise<boolean>;
+    onStateTriggerSuperDoNotOverride: (dp: string) => Promise<boolean>;
     onStateChange: () => Promise<void>;
 };
 
@@ -39,6 +40,26 @@ type Env = {
     runTimers: () => Promise<void>;
     timers: Timer[];
 };
+
+/**
+ * Loose guard for the fake adapter: it has what the states controller and the data items use.
+ *
+ * @param v candidate
+ * @returns true if it can stand in for the adapter
+ */
+function isAdapter(v: unknown): v is NspanelLovelaceUi {
+    return typeof v === 'object' && v !== null && 'namespace' in v && 'setTimeout' in v && 'log' in v;
+}
+
+/**
+ * Loose guard for a fake receiver.
+ *
+ * @param v candidate
+ * @returns true if it can stand in for a page or page item
+ */
+function isPage(v: unknown): v is BaseTriggeredPage {
+    return typeof v === 'object' && v !== null && 'onStateTriggerSuperDoNotOverride' in v && 'basePanel' in v;
+}
 
 /**
  * Builds a state object.
@@ -68,9 +89,9 @@ function setupEnv(objects: Record<string, ioBroker.Object>, values: Record<strin
     const objectSubs: (string | string[])[] = [];
     const objectUnsubs: (string | string[])[] = [];
     const written: [string, unknown][] = [];
-    const logs = { info: [] as string[], warn: [] as string[], error: [] as string[] };
+    const logs: Env['logs'] = { info: [], warn: [], error: [] };
     const timers: Timer[] = [];
-    const adapter = {
+    const fake = {
         namespace: NS,
         unload: false,
         language: 'en',
@@ -90,9 +111,11 @@ function setupEnv(objects: Record<string, ioBroker.Object>, values: Record<strin
             timers.push(timer);
             return timer;
         },
-        clearTimeout: (t: Timer | undefined): void => {
-            if (t) {
-                t.cleared = true;
+        // also gets timers of other tests (static timeout of the states controller)
+        clearTimeout: (t: unknown): void => {
+            const timer = timers.find(entry => entry === t);
+            if (timer) {
+                timer.cleared = true;
             }
         },
         getForeignObjectAsync: async (id: string): Promise<ioBroker.Object | null> =>
@@ -104,7 +127,11 @@ function setupEnv(objects: Record<string, ioBroker.Object>, values: Record<strin
         subscribeForeignObjectsAsync: async (p: string | string[]): Promise<void> => void objectSubs.push(p),
         unsubscribeForeignObjectsAsync: async (p: string | string[]): Promise<void> => void objectUnsubs.push(p),
         setForeignStateAsync: async (id: string, val: unknown): Promise<void> => void written.push([id, val]),
-    } as unknown as NspanelLovelaceUi;
+    };
+    if (!isAdapter(fake)) {
+        throw new Error('fake adapter incomplete');
+    }
+    const adapter = fake;
     const states = new StatesControler(adapter);
     const runTimers = async (): Promise<void> => {
         for (const timer of [...timers]) {
@@ -151,7 +178,23 @@ function fakeTarget(name: string, options: Partial<FakeTarget> = {}): FakeTarget
  * @returns the fake as receiver type
  */
 function asPage(target: FakeTarget): BaseTriggeredPage {
-    return target as unknown as BaseTriggeredPage;
+    if (!isPage(target)) {
+        throw new Error('fake receiver incomplete');
+    }
+    return target;
+}
+
+/**
+ * The common of a state object of the fake database.
+ *
+ * @param obj object
+ * @returns its common
+ */
+function stateCommonOf(obj: ioBroker.Object | undefined): ioBroker.StateCommon {
+    if (obj?.type !== 'state') {
+        throw new Error('no state object');
+    }
+    return obj.common;
 }
 
 /**
@@ -160,13 +203,21 @@ function asPage(target: FakeTarget): BaseTriggeredPage {
  * @param env environment
  * @param id state id
  * @param common changed fields
+ * @param remove display fields to drop
  * @returns the new object
  */
-function changeObject(env: Env, id: string, common: Partial<ioBroker.StateCommon>): ioBroker.Object {
-    const obj = structuredClone(env.objects[id]);
-    obj.common = { ...obj.common, ...common } as ioBroker.StateCommon;
-    env.objects[id] = obj;
-    return structuredClone(obj);
+function changeObject(
+    env: Env,
+    id: string,
+    common: Partial<ioBroker.StateCommon>,
+    remove: (keyof ioBroker.StateCommon)[] = [],
+): ioBroker.Object {
+    const next: Partial<ioBroker.StateCommon> = { ...stateCommonOf(env.objects[id]), ...common };
+    for (const key of remove) {
+        delete next[key];
+    }
+    env.objects[id] = stateObject(id, next);
+    return structuredClone(env.objects[id]);
 }
 
 /**
@@ -180,6 +231,7 @@ function flat(list: (string | string[])[]): string[] {
 const A = 'hm-rpc.0.dev.MODE';
 const B = 'hm-rpc.0.dev.LEVEL';
 const C = 'alias.0.dev.TEXT';
+const GRACE = StatesControler.OBJECT_UNSUBSCRIBE_GRACE_MS;
 
 /**
  * @returns objects for the ids A, B, C
@@ -210,7 +262,7 @@ describe('lib/controller/states-controller - object subscriptions', () => {
         expect(env.objectSubs).to.have.length(1);
     });
 
-    it('unsubscribes when deletePageLoop removes the entry, not while another receiver is left', async () => {
+    it('unsubscribes only after the grace time once deletePageLoop removed the entry', async () => {
         const env = setupEnv(baseObjects(), { [A]: 0, [B]: 10 });
         const p1 = fakeTarget('p1');
         const p2 = fakeTarget('p2');
@@ -221,11 +273,42 @@ describe('lib/controller/states-controller - object subscriptions', () => {
         p1.unload = true;
         await env.states.deletePageLoop();
         await env.runTimers();
-        expect(flat(env.objectUnsubs)).to.deep.equal([B]);
+        await env.states.expireObjectSubscriptions(Date.now() + GRACE - 1000);
+        expect(env.objectUnsubs, 'within the grace time').to.deep.equal([]);
+        await env.states.expireObjectSubscriptions(Date.now() + GRACE);
+        expect(env.objectUnsubs, 'A still has a receiver').to.deep.equal([[B]]);
         p2.unload = true;
         await env.states.deletePageLoop();
-        await env.runTimers();
+        await env.states.expireObjectSubscriptions(Date.now() + GRACE);
         expect(flat(env.objectUnsubs)).to.deep.equal([B, A]);
+    });
+
+    it('a page change (item deleted, new item of the same id later) neither unsubscribes nor subscribes', async () => {
+        const env = setupEnv(baseObjects(), { [A]: 0 });
+        const first = fakeTarget('item on page 1');
+        await env.states.setTrigger(A, asPage(first));
+        await env.runTimers();
+        expect(env.objectSubs).to.deep.equal([[A]]);
+
+        // page hidden: the item is deleted, its entry leaves triggerDB
+        first.unload = true;
+        await env.states.deletePageLoop();
+        // more than the subscribe delay later the page is shown again with a new item
+        await env.runTimers();
+        const second = fakeTarget('item on page 1, again');
+        await env.states.setTrigger(A, asPage(second));
+        await env.runTimers();
+        await env.states.expireObjectSubscriptions(Date.now() + GRACE);
+        expect(env.objectSubs).to.deep.equal([[A]]);
+        expect(env.objectUnsubs).to.deep.equal([]);
+
+        // gone for good: exactly one unsubscribe after the grace time
+        second.unload = true;
+        await env.states.deletePageLoop();
+        await env.states.expireObjectSubscriptions(Date.now() + GRACE);
+        await env.states.expireObjectSubscriptions(Date.now() + 2 * GRACE);
+        expect(env.objectUnsubs).to.deep.equal([[A]]);
+        expect(env.objectSubs).to.have.length(1);
     });
 
     it('does not depend on activating and deactivating the receivers', async () => {
@@ -241,18 +324,32 @@ describe('lib/controller/states-controller - object subscriptions', () => {
         expect(env.objectUnsubs).to.deep.equal([]);
     });
 
-    it('a removed and added again id before the queue is sent causes no call', async () => {
+    it('an id removed before its subscription was sent is never sent', async () => {
         const env = setupEnv(baseObjects(), { [A]: 0 });
         const p1 = fakeTarget('p1');
         await env.states.setTrigger(A, asPage(p1));
-        await env.states.flushObjectSubscriptions();
         p1.unload = true;
         await env.states.deletePageLoop();
-        const p2 = fakeTarget('p2');
-        await env.states.setTrigger(A, asPage(p2));
         await env.runTimers();
-        expect(env.objectSubs).to.deep.equal([[A]]);
+        await env.states.expireObjectSubscriptions(Date.now() + GRACE);
+        expect(env.objectSubs).to.deep.equal([]);
         expect(env.objectUnsubs).to.deep.equal([]);
+    });
+
+    it('ends all subscriptions, also those within the grace time, on delete', async () => {
+        const env = setupEnv(baseObjects(), { [A]: 0, [B]: 1, [C]: 'x' });
+        const p1 = fakeTarget('p1');
+        const p2 = fakeTarget('p2');
+        await env.states.setTrigger(A, asPage(p1));
+        await env.states.setTrigger(B, asPage(p2));
+        await env.states.flushObjectSubscriptions();
+        await env.states.setTrigger(C, asPage(p2));
+        p1.unload = true;
+        await env.states.deletePageLoop();
+        await env.states.delete();
+        expect(env.objectUnsubs, 'C was never sent').to.deep.equal([[A, B]]);
+        await env.runTimers();
+        expect(env.objectSubs).to.deep.equal([[A, B]]);
     });
 
     it('subscribes no object of internal states and of the own namespace', async () => {
@@ -283,7 +380,11 @@ describe('lib/controller/states-controller - objectChange', () => {
 
         env.states.onObjectChange(A, changeObject(env, A, { states: { 0: 'Off', 1: 'On', 2: 'Auto' } }));
         expect(await env.states.getCommonStates(A)).to.deep.equal({ 0: 'Off', 1: 'On', 2: 'Auto' });
-        expect(env.states.objectDatabase[A]?.common.states).to.deep.equal({ 0: 'Off', 1: 'On', 2: 'Auto' });
+        expect(stateCommonOf(env.states.objectDatabase[A] ?? undefined).states).to.deep.equal({
+            0: 'Off',
+            1: 'On',
+            2: 'Auto',
+        });
 
         env.states.onObjectChange(B, changeObject(env, B, { unit: 'pct', max: 255, name: 'Level' }));
         const live = env.states.getLiveCommon(B);
@@ -295,9 +396,7 @@ describe('lib/controller/states-controller - objectChange', () => {
     it('removes a display field that is gone', async () => {
         const env = setupEnv(baseObjects(), { [A]: 0 });
         await env.states.setTrigger(A, asPage(fakeTarget('p1')));
-        const obj = changeObject(env, A, {});
-        delete (obj.common as Partial<ioBroker.StateCommon>).states;
-        env.states.onObjectChange(A, obj);
+        env.states.onObjectChange(A, changeObject(env, A, {}, ['states']));
         expect(await env.states.getCommonStates(A)).to.equal(null);
     });
 
@@ -309,7 +408,11 @@ describe('lib/controller/states-controller - objectChange', () => {
         expect(env.states.getType(A)).to.equal('number');
         expect(env.states.getLiveCommon(A)?.role).to.equal('level');
         expect(env.states.getLiveCommon(A)?.write).to.equal(true);
-        expect(env.logs.info.filter(m => m.includes(A))).to.have.length(1);
+        const infos = env.logs.info.filter(m => m.includes(A));
+        expect(infos).to.have.length(1);
+        expect(infos[0]).to.include('until they are created again');
+        // elements created later take the new structure from the object cache
+        expect(stateCommonOf(env.states.objectDatabase[A] ?? undefined).role).to.equal('value');
     });
 
     it('changes nothing for a deleted object and warns once', async () => {
@@ -333,48 +436,42 @@ describe('lib/controller/states-controller - objectChange', () => {
         expect(env.states.objectDatabase[A]).to.equal(undefined);
     });
 
-    it('redraws the active receivers once after several changes, although the value is the same', async () => {
+    it('takes a change within the grace time into the object cache', async () => {
+        const env = setupEnv(baseObjects(), { [A]: 0 });
+        const p1 = fakeTarget('p1');
+        await env.states.setTrigger(A, asPage(p1));
+        await env.states.flushObjectSubscriptions();
+        p1.unload = true;
+        await env.states.deletePageLoop();
+        env.states.objectDatabase = {};
+        env.states.onObjectChange(A, changeObject(env, A, { states: { 0: 'Neu' } }));
+        expect(stateCommonOf(env.states.objectDatabase[A] ?? undefined).states).to.deep.equal({ 0: 'Neu' });
+        // the next item of the page starts with it
+        await env.states.setTrigger(A, asPage(fakeTarget('p2')));
+        expect(await env.states.getCommonStates(A)).to.deep.equal({ 0: 'Neu' });
+    });
+
+    it('triggers and redraws nothing, although the receivers are active', async () => {
         const env = setupEnv(baseObjects(), { [A]: 0 });
         const active = fakeTarget('active');
-        const inactive = fakeTarget('inactive');
         const persistent = fakeTarget('persistent', { neverDeactivateTrigger: true });
         const parent = fakeTarget('page');
         const child = fakeTarget('child', { parent, triggerParent: true });
         await env.states.setTrigger(A, asPage(active));
-        await env.states.setTrigger(A, asPage(inactive));
         await env.states.setTrigger(A, asPage(persistent));
         await env.states.setTrigger(A, asPage(child));
         await env.states.activateTrigger(asPage(active));
         await env.states.activateTrigger(asPage(child));
         await env.states.flushObjectSubscriptions();
-
-        // a state change with the same value triggers nobody
-        await env.states.onStateChange(A, { val: 0, ack: true, ts: 1, lc: 1, from: '' });
-        expect([active, inactive, persistent, parent, child].flatMap(t => t.calls)).to.deep.equal([]);
+        const timersBefore = env.timers.length;
 
         env.states.onObjectChange(A, changeObject(env, A, { states: { 0: 'Off', 1: 'On' } }));
-        env.states.onObjectChange(A, changeObject(env, A, { states: { 0: 'Zu', 1: 'Auf' } }));
         env.states.onObjectChange(A, changeObject(env, A, { states: { 0: 'Zu', 1: 'Auf' }, unit: 'x' }));
-        const pending = env.timers.filter(t => !t.cleared && t.ms === StatesControler.OBJECT_CHANGE_DEBOUNCE_MS);
-        expect(pending, 'debounced to one timer').to.have.length(1);
-        expect(active.calls).to.deep.equal([]);
-
         await env.runTimers();
-        expect(active.calls).to.deep.equal([A]);
-        expect(persistent.calls).to.deep.equal([A]);
-        expect(parent.calls, 'the parent of a triggerParent item').to.deep.equal([A]);
-        expect(child.calls).to.deep.equal([]);
-        expect(inactive.calls).to.deep.equal([]);
-    });
-
-    it('does not redraw when only a structure field changed', async () => {
-        const env = setupEnv(baseObjects(), { [A]: 0 });
-        const active = fakeTarget('active');
-        await env.states.setTrigger(A, asPage(active));
-        await env.states.activateTrigger(asPage(active));
-        env.states.onObjectChange(A, changeObject(env, A, { role: 'value' }));
-        await env.runTimers();
-        expect(active.calls).to.deep.equal([]);
+        expect(env.timers, 'no timer for a redraw').to.have.length(timersBefore);
+        expect([active, persistent, parent, child].flatMap(t => t.calls)).to.deep.equal([]);
+        // the next update shows the new texts
+        expect(await env.states.getCommonStates(A)).to.deep.equal({ 0: 'Zu', 1: 'Auf' });
     });
 
     it('the periodic cleanup of the object cache does not lose a changed common', async () => {
@@ -395,8 +492,10 @@ describe('lib/controller/data-item - common', () => {
      */
     async function item(env: Env, options: NSPanel.DataItemsOptions, parent: FakeTarget): Promise<Dataitem> {
         const created = await Dataitem.create(env.adapter, options, asPage(parent), env.states);
-        expect(created, 'data item is valid').to.not.equal(null);
-        return created as Dataitem;
+        if (!created) {
+            throw new Error('data item is not valid');
+        }
+        return created;
     }
 
     it('keeps the structure frozen and shows the display fields live', async () => {
@@ -434,6 +533,22 @@ describe('lib/controller/data-item - common', () => {
         expect(dataitem.common.unit).to.equal('%');
         env.states.onObjectChange(B, changeObject(env, B, { unit: 'W' }));
         expect(dataitem.common.unit).to.equal('W');
+    });
+
+    it('ignores the placeholder of a trigger that still waits for its object', async () => {
+        const env = setupEnv({ [A]: stateObject(A, { states: { 0: 'OFF', 5: 'AUTO' }, unit: 'x' }) }, { [A]: 0 });
+        const set = await item(
+            env,
+            { type: 'state', dp: A, commonStates: { mode: 'token', token: 'AUTO', defaultStates: ['OFF', 'AUTO'] } },
+            fakeTarget('p1'),
+        );
+        // a second item of the same datapoint: setTrigger reserves its entry before it reads the object
+        const pending = env.states.setTrigger(A, asPage(fakeTarget('p2')));
+        expect(set.common.states).to.deep.equal({ 0: 'OFF', 5: 'AUTO' });
+        expect(set.common.unit).to.equal('x');
+        await set.setState(true);
+        await pending;
+        expect(env.written, 'not position 1 of the default list').to.deep.equal([[A, 5]]);
     });
 
     it('a failed write switches write off in common as before', async () => {
@@ -474,8 +589,10 @@ describe('lib/controller/data-item - option commonStates', () => {
             asPage(fakeTarget('item')),
             env.states,
         );
-        expect(created).to.not.equal(null);
-        return created as Dataitem;
+        if (!created) {
+            throw new Error('data item is not valid');
+        }
+        return created;
     }
 
     /**

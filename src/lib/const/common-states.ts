@@ -80,6 +80,16 @@ export function statesList(states: CommonStatesValue | null | undefined, part: '
 }
 
 /**
+ * Array.isArray does not narrow a readonly array away - this guard does.
+ *
+ * @param states common.states or a list
+ * @returns true for the list shape
+ */
+function isStatesList(states: CommonStatesValue | readonly string[] | null | undefined): states is readonly string[] {
+    return Array.isArray(states);
+}
+
+/**
  * The value a mode token (e.g. 'COOL') stands for in common.states.
  *
  * common.states has two shapes. As an array the position is the state value. As a record - the
@@ -98,7 +108,7 @@ export function resolveStatesToken(
     states: CommonStatesValue | readonly string[] | null | undefined,
     stateType: ioBroker.CommonType | undefined,
 ): string | number | undefined {
-    if (Array.isArray(states)) {
+    if (isStatesList(states)) {
         const position = states.indexOf(token);
         if (position === -1) {
             return undefined;
@@ -106,14 +116,13 @@ export function resolveStatesToken(
         return stateType === 'string' ? token : position;
     }
     if (states && typeof states === 'object') {
-        const record: Record<string, string> = states as Record<string, string>;
-        for (const key of Object.keys(record)) {
-            if (record[key] === token) {
+        for (const key of Object.keys(states)) {
+            if (states[key] === token) {
                 return stateType !== 'string' && NUMERIC_KEY.test(key) ? Number(key) : key;
             }
         }
         // tokens used as keys: then the token itself is the state value
-        if (record[token] !== undefined) {
+        if (states[token] !== undefined) {
             return token;
         }
     }

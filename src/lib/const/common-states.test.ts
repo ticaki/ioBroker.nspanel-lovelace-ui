@@ -64,6 +64,7 @@ const STATE_SHAPES: { name: string; states: States }[] = [
     { name: 'record with tokens as keys', states: { OFF: 'Aus', COOL: 'Kühlen', DRY: 'Trocknen' } },
     { name: 'default list', states: [...DEFAULT_CLIMATE_MODES] },
 ];
+const MODE_TYPES: ioBroker.CommonType[] = ['number', 'string', 'mixed'];
 const TOKENS = [...DEFAULT_CLIMATE_MODES, 'UNKNOWN'];
 const VALUES: unknown[] = [0, 1, 2, 3, 5, 6, 10, -1, 1.5, '0', '1', '2', '10', '-1', '1.5', 'off', 'cool', 'OFF'];
 VALUES.push('COOL', 'DRY', 'heat', true, false, null, '', 'x');
@@ -71,7 +72,7 @@ VALUES.push('COOL', 'DRY', 'heat', true, false, null, '', 'x');
 describe('lib/const/common-states', () => {
     describe('mode token of the airCondition buttons (config-manager)', () => {
         for (const shape of STATE_SHAPES) {
-            for (const modeType of ['number', 'string', 'mixed'] as ioBroker.CommonType[]) {
+            for (const modeType of MODE_TYPES) {
                 it(`${shape.name}, MODE ${modeType}: same buttons, same written value, same comparison`, () => {
                     for (const token of TOKENS) {
                         const literal = oldModeLiteral(token, shape.states, modeType);

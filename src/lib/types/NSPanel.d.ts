@@ -441,7 +441,8 @@ export namespace NSPanel {
         wirteable?: boolean;
     };
     interface State extends Omit<ioBroker.State, 'val'> {
-        val: StateValue;
+        /** undefined: a read script or the option commonStates found no value */
+        val: StateValue | undefined;
     }
     type StateValue = ioBroker.StateValue | object;
 

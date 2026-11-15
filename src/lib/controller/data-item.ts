@@ -109,7 +109,8 @@ export class Dataitem extends BaseClass {
     }
     public set writeable(b: false) {
         this._writeable = b;
-        this.#frozenCommon.write = b;
+        // a copy: internal data items share their common with the states controller
+        this.#frozenCommon = { ...this.#frozenCommon, write: b };
         this.#mergedCommon = undefined;
     }
 
@@ -264,7 +265,7 @@ export class Dataitem extends BaseClass {
      */
     private applyCommonStates(
         option: NSPanel.DataItemCommonStates,
-        val: NSPanel.StateValue,
+        val: NSPanel.StateValue | undefined,
     ): NSPanel.StateValue | undefined {
         switch (option.mode) {
             case 'text':
@@ -291,7 +292,7 @@ export class Dataitem extends BaseClass {
             state = structuredClone(state);
             if (commonStates) {
                 // may be undefined like the result of a read script
-                state.val = this.applyCommonStates(commonStates, state.val) as NSPanel.StateValue;
+                state.val = this.applyCommonStates(commonStates, state.val);
             }
             if (this.options.type !== 'const' && this.options.read) {
                 try {
