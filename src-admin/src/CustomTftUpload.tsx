@@ -7,6 +7,8 @@ import { UploadFile as UploadFileIcon } from '@mui/icons-material';
 const ALL_PANELS = '*';
 /** Raw bytes per upload message (base64 in the message, the adapter accepts up to 1 MB) */
 const CHUNK_SIZE = 512 * 1024;
+/** Waiting time for the panel list of the adapter */
+const PANELS_TIMEOUT_MS = 5000;
 
 /** A hardware panel of the adapter configuration that can receive a TFT */
 interface TftPanelOption {
@@ -15,6 +17,8 @@ interface TftPanelOption {
 }
 
 interface CustomTftUploadState extends ConfigGenericState {
+    /** flashable panels reported by the adapter, null = no answer (adapter not running) */
+    panels: TftPanelOption[] | null;
     file: File | null;
     target: string;
     busy: boolean;
@@ -24,23 +28,22 @@ interface CustomTftUploadState extends ConfigGenericState {
 }
 
 /**
- * Hardware panels (not web panels) of the configuration `panels`.
+ * Panel list of the adapter answer (`customTftPanels`).
  *
- * @param value `data.panels`
- * @returns name and topic of every hardware panel
+ * @param value answer of `sendTo`
+ * @returns name and topic of every flashable panel, undefined if the answer is not a list
  */
-function hardwarePanels(value: unknown): TftPanelOption[] {
-    if (!Array.isArray(value)) {
-        return [];
+function parsePanels(value: unknown): TftPanelOption[] | undefined {
+    if (typeof value !== 'object' || value === null || !('panels' in value) || !Array.isArray(value.panels)) {
+        return undefined;
     }
     const result: TftPanelOption[] = [];
-    for (const entry of value) {
+    for (const entry of value.panels) {
         if (typeof entry !== 'object' || entry === null || !('topic' in entry)) {
             continue;
         }
-        const kind = 'kind' in entry ? entry.kind : undefined;
         const name = 'name' in entry ? entry.name : undefined;
-        if (typeof entry.topic !== 'string' || !entry.topic || kind === 'web') {
+        if (typeof entry.topic !== 'string' || !entry.topic) {
             continue;
         }
         result.push({ topic: entry.topic, name: typeof name === 'string' && name ? name : entry.topic });
@@ -90,6 +93,7 @@ class CustomTftUpload extends ConfigGeneric<ConfigGenericProps, CustomTftUploadS
         super(props);
         this.state = {
             ...this.state,
+            panels: null,
             file: null,
             target: ALL_PANELS,
             busy: false,
@@ -101,6 +105,33 @@ class CustomTftUpload extends ConfigGeneric<ConfigGenericProps, CustomTftUploadS
     async componentDidMount(): Promise<void> {
         this.mounted = true;
         await super.componentDidMount();
+        await this.loadPanels();
+    }
+
+    /** Asks the running adapter for the panels that can flash a TFT. */
+    private async loadPanels(): Promise<void> {
+        let panels: TftPanelOption[] | undefined;
+        try {
+            const alive = await this.props.oContext.socket.getState(
+                `system.adapter.${this.adapterName}.${this.instance}.alive`,
+            );
+            if (alive?.val) {
+                let timer: ReturnType<typeof setTimeout> | undefined;
+                const answer: unknown = await Promise.race([
+                    this.props.oContext.socket.sendTo(`${this.adapterName}.${this.instance}`, 'customTftPanels', {}),
+                    new Promise<undefined>(resolve => {
+                        timer = setTimeout(() => resolve(undefined), PANELS_TIMEOUT_MS);
+                    }),
+                ]);
+                clearTimeout(timer);
+                panels = parsePanels(answer);
+            }
+        } catch {
+            panels = undefined;
+        }
+        if (this.mounted) {
+            this.setState({ panels: panels ?? null });
+        }
     }
 
     componentWillUnmount(): void {
@@ -187,7 +218,8 @@ class CustomTftUpload extends ConfigGeneric<ConfigGenericProps, CustomTftUploadS
 
     renderItem(_error: string, disabled: boolean, _defaultValue?: unknown): React.JSX.Element {
         const { file, target, busy, progress, result } = this.state;
-        const panels = hardwarePanels(this.props.data?.panels);
+        const panels = this.state.panels ?? [];
+        const noAdapter = this.state.panels === null;
         const selectedTarget = target === ALL_PANELS || panels.some(p => p.topic === target) ? target : ALL_PANELS;
         return (
             <Box sx={{ mt: 1, p: 2, border: 1, borderColor: 'divider', borderRadius: 1 }}>
@@ -229,7 +261,7 @@ class CustomTftUpload extends ConfigGeneric<ConfigGenericProps, CustomTftUploadS
                             labelId="custom-tft-target"
                             label={this.getText('customTftTarget')}
                             value={selectedTarget}
-                            disabled={disabled || busy}
+                            disabled={disabled || busy || noAdapter}
                             onChange={(e): void => this.setState({ target: String(e.target.value) })}
                         >
                             <MenuItem value={ALL_PANELS}>{this.getText('customTftAllPanels')}</MenuItem>
@@ -245,7 +277,7 @@ class CustomTftUpload extends ConfigGeneric<ConfigGenericProps, CustomTftUploadS
                     </FormControl>
                     <Button
                         variant="contained"
-                        disabled={disabled || busy || !file}
+                        disabled={disabled || busy || !file || noAdapter || panels.length === 0}
                         onClick={(): void => {
                             void this.start();
                         }}
@@ -253,6 +285,22 @@ class CustomTftUpload extends ConfigGeneric<ConfigGenericProps, CustomTftUploadS
                         {busy ? `${this.getText('customTftUploading')} ${progress} %` : this.getText('customTftStart')}
                     </Button>
                 </Box>
+                {noAdapter ? (
+                    <Alert
+                        severity="info"
+                        sx={{ mt: 2 }}
+                    >
+                        {this.getText('customTftNoAdapter')}
+                    </Alert>
+                ) : null}
+                {!noAdapter && panels.length === 0 ? (
+                    <Alert
+                        severity="info"
+                        sx={{ mt: 2 }}
+                    >
+                        {this.getText('customTftNoFlashablePanel')}
+                    </Alert>
+                ) : null}
                 {result ? (
                     <Alert
                         severity={result.severity}

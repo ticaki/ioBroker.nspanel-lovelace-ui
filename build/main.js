@@ -2135,6 +2135,12 @@ class NspanelLovelaceUi extends utils.Adapter {
           await this.customTftStart(obj);
           break;
         }
+        case "customTftPanels": {
+          this.answerMessage(obj, {
+            panels: this.customTftPanels().map((p) => ({ topic: p.topic, name: p.friendlyName || p.name }))
+          });
+          break;
+        }
         case "openTasmotaConsole":
         case "openLinkToTasmota": {
           if (obj.callback) {
@@ -2365,6 +2371,18 @@ class NspanelLovelaceUi extends utils.Adapter {
     return `http://${tasmotaIP}/cm?${this.config.useTasmotaAdmin ? `user=admin&password=${this.config.tasmotaAdminPassword}` : ``}&cmnd=${command}`;
   }
   /**
+   * Panels that can flash a custom TFT: hardware panels with the real berry driver (version > 0) -
+   * no web panels, no emulator (negative version) and no panel without a reported driver (0).
+   *
+   * @returns the panels
+   */
+  customTftPanels() {
+    var _a, _b;
+    return ((_b = (_a = this.controller) == null ? void 0 : _a.panels) != null ? _b : []).filter(
+      (p) => !p.isVirtual && (0, import_berry_driver.parseDriverVersion)(p.info.nspanel.berryDriverVersion) > 0
+    );
+  }
+  /**
    * Admin tab developer: serves an uploaded custom TFT on a free port and tells the selected
    * panel(s) to flash it - the same command as the regular TFT update (`FlashNextionAdv0 <url>`),
    * only with the URL of the local server. Only the start is reported, not the flash.
@@ -2375,7 +2393,6 @@ class NspanelLovelaceUi extends utils.Adapter {
    * @param obj the message from the admin
    */
   async customTftStart(obj) {
-    var _a, _b;
     const msg = (0, import_tft_server.parseTftStartMessage)(obj.message);
     if (!msg) {
       this.answerMessage(obj, { error: "sendToAnyError" });
@@ -2387,9 +2404,7 @@ class NspanelLovelaceUi extends utils.Adapter {
       this.answerMessage(obj, { error: "customTftNoServerIp" });
       return;
     }
-    const panels = ((_b = (_a = this.controller) == null ? void 0 : _a.panels) != null ? _b : []).filter(
-      (p) => !p.isVirtual && (msg.target === "*" || p.topic === msg.target)
-    );
+    const panels = this.customTftPanels().filter((p) => msg.target === "*" || p.topic === msg.target);
     if (panels.length === 0) {
       this.answerMessage(obj, { error: "customTftNoPanel" });
       return;

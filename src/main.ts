@@ -2506,6 +2506,12 @@ class NspanelLovelaceUi extends utils.Adapter {
                     await this.customTftStart(obj);
                     break;
                 }
+                case 'customTftPanels': {
+                    this.answerMessage(obj, {
+                        panels: this.customTftPanels().map(p => ({ topic: p.topic, name: p.friendlyName || p.name })),
+                    });
+                    break;
+                }
                 case 'openTasmotaConsole':
                 case 'openLinkToTasmota': {
                     if (obj.callback) {
@@ -2760,6 +2766,18 @@ class NspanelLovelaceUi extends utils.Adapter {
     }
 
     /**
+     * Panels that can flash a custom TFT: hardware panels with the real berry driver (version > 0) -
+     * no web panels, no emulator (negative version) and no panel without a reported driver (0).
+     *
+     * @returns the panels
+     */
+    private customTftPanels(): Panel[] {
+        return (this.controller?.panels ?? []).filter(
+            p => !p.isVirtual && parseDriverVersion(p.info.nspanel.berryDriverVersion) > 0,
+        );
+    }
+
+    /**
      * Admin tab developer: serves an uploaded custom TFT on a free port and tells the selected
      * panel(s) to flash it - the same command as the regular TFT update (`FlashNextionAdv0 <url>`),
      * only with the URL of the local server. Only the start is reported, not the flash.
@@ -2781,9 +2799,7 @@ class NspanelLovelaceUi extends utils.Adapter {
             this.answerMessage(obj, { error: 'customTftNoServerIp' });
             return;
         }
-        const panels = (this.controller?.panels ?? []).filter(
-            p => !p.isVirtual && (msg.target === '*' || p.topic === msg.target),
-        );
+        const panels = this.customTftPanels().filter(p => msg.target === '*' || p.topic === msg.target);
         if (panels.length === 0) {
             this.answerMessage(obj, { error: 'customTftNoPanel' });
             return;
