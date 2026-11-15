@@ -27,6 +27,7 @@ var __privateAdd = (obj, member, value) => member.has(obj) ? __typeError("Cannot
 var __privateSet = (obj, member, value, setter) => (__accessCheck(obj, member, "write to private field"), setter ? setter.call(obj, value) : member.set(obj, value), value);
 var data_item_exports = {};
 __export(data_item_exports, {
+  DISPLAY_COMMON_KEYS: () => DISPLAY_COMMON_KEYS,
   Dataitem: () => Dataitem,
   isDataItem: () => isDataItem
 });
@@ -34,7 +35,9 @@ module.exports = __toCommonJS(data_item_exports);
 var import_Color = require("../const/Color");
 var import_library = require("./library");
 var import_function_and_const = require("../types/function-and-const");
-var _compiledReadFn, _compiledWriteFn;
+var import_common_states = require("../const/common-states");
+var _compiledReadFn, _compiledWriteFn, _frozenCommon, _liveCommon, _mergedCommon, _tokenWarned;
+const DISPLAY_COMMON_KEYS = ["states", "unit", "min", "max", "step", "name"];
 const _Dataitem = class _Dataitem extends import_library.BaseClass {
   /**
    * Call isValidAndInit() after constructor and check return value - if false, this object is not configured correctly.
@@ -53,7 +56,14 @@ const _Dataitem = class _Dataitem extends import_library.BaseClass {
     __publicField(this, "stateDB");
     __publicField(this, "type");
     __publicField(this, "parent");
-    __publicField(this, "common", {});
+    /** common as checked in isValidAndInit - the structure fields of {@link common} come from here */
+    __privateAdd(this, _frozenCommon, {});
+    /** last common of the datapoint the states controller handed out, source of the display fields */
+    __privateAdd(this, _liveCommon);
+    /** frozen structure plus live display fields, rebuilt when the states controller has a new common */
+    __privateAdd(this, _mergedCommon);
+    /** a token of `commonStates` could not be resolved when writing - warned once */
+    __privateAdd(this, _tokenWarned, false);
     __publicField(this, "_writeable", false);
     this.options = options;
     this.stateDB = db;
@@ -112,6 +122,45 @@ const _Dataitem = class _Dataitem extends import_library.BaseClass {
   }
   set writeable(b) {
     this._writeable = b;
+    __privateGet(this, _frozenCommon).write = b;
+    __privateSet(this, _mergedCommon, void 0);
+  }
+  /**
+   * common of the datapoint. Structure fields (role, type, write, ...) stay as they were checked in
+   * isValidAndInit, the display fields ({@link DISPLAY_COMMON_KEYS}) follow the current object, which the states
+   * controller keeps up to date.
+   *
+   * @returns the common - do not change it
+   */
+  get common() {
+    var _a;
+    if ((this.options.type === "state" || this.options.type === "triggered") && this.options.dp && typeof ((_a = this.stateDB) == null ? void 0 : _a.getLiveCommon) === "function") {
+      const live = this.stateDB.getLiveCommon(this.options.dp);
+      if (live && live !== __privateGet(this, _liveCommon)) {
+        __privateSet(this, _liveCommon, live);
+        __privateSet(this, _mergedCommon, void 0);
+      }
+    }
+    if (!__privateGet(this, _liveCommon)) {
+      return __privateGet(this, _frozenCommon);
+    }
+    if (!__privateGet(this, _mergedCommon)) {
+      const merged = { ...__privateGet(this, _frozenCommon) };
+      for (const key of DISPLAY_COMMON_KEYS) {
+        if (__privateGet(this, _liveCommon)[key] !== void 0) {
+          Object.assign(merged, { [key]: __privateGet(this, _liveCommon)[key] });
+        } else {
+          delete merged[key];
+        }
+      }
+      __privateSet(this, _mergedCommon, merged);
+    }
+    return __privateGet(this, _mergedCommon);
+  }
+  set common(common) {
+    __privateSet(this, _frozenCommon, common);
+    __privateSet(this, _liveCommon, void 0);
+    __privateSet(this, _mergedCommon, void 0);
   }
   /**
    * Init and check dp is valid
@@ -141,7 +190,7 @@ const _Dataitem = class _Dataitem extends import_library.BaseClass {
         this.type = this.type || obj.common.type;
         this.options.role = obj.common.role;
         this._writeable = !!obj.common.write;
-        this.common = obj.common;
+        this.common = this.options.type === "state" || this.options.type === "triggered" ? { ...obj.common } : obj.common;
         if (this.options.type == "triggered") {
           await this.stateDB.setTrigger(this.options.dp, this.parent, false, void 0, this.options.change);
         } else if (this.options.type == "internal") {
@@ -185,13 +234,58 @@ const _Dataitem = class _Dataitem extends import_library.BaseClass {
     var _a;
     return "dp" in this.options ? (_a = this.stateDB.getType(this.options.dp)) != null ? _a : this.type : this.type;
   }
-  async getCommonStates(force = false) {
-    return "dp" in this.options ? this.stateDB.getCommonStates(this.options.dp, force) : null;
+  async getCommonStates() {
+    return "dp" in this.options ? this.stateDB.getCommonStates(this.options.dp) : null;
+  }
+  /**
+   * @returns the option commonStates of a state or triggered data item
+   */
+  getCommonStatesOption() {
+    return this.options.type === "state" || this.options.type === "triggered" ? this.options.commonStates : void 0;
+  }
+  /**
+   * The value a token of the option commonStates stands for in the current common.states.
+   *
+   * @param option the token option
+   * @param option.token the token, e.g. 'COOL'
+   * @param option.defaultStates used when the datapoint has no common.states
+   * @returns the value or undefined if the token is unknown
+   */
+  resolveToken(option) {
+    const states = this.common.states || option.defaultStates;
+    return (0, import_common_states.resolveStatesToken)(option.token, states, __privateGet(this, _frozenCommon).type);
+  }
+  /**
+   * Applies the option commonStates to a raw value (before `read`).
+   *
+   * @param option the option
+   * @param val the raw value
+   * @returns the resolved value
+   */
+  applyCommonStates(option, val) {
+    switch (option.mode) {
+      case "text":
+        return (0, import_common_states.resolveStatesText)(this.common.states || option.defaultStates, val, !!option.keepValue);
+      case "list":
+        return (0, import_common_states.statesList)(this.common.states, option.part);
+      case "token": {
+        const resolved = this.resolveToken(option);
+        return resolved !== void 0 && (0, import_common_states.matchesStatesToken)(val, resolved);
+      }
+    }
+    return val;
   }
   async getState() {
-    let state = await this.getRawState();
+    const commonStates = this.getCommonStatesOption();
+    let state = (commonStates == null ? void 0 : commonStates.mode) === "list" ? (
+      // only common.states counts, the value of the state is not needed
+      { val: null, ack: true, ts: Date.now(), lc: Date.now(), from: "" }
+    ) : await this.getRawState();
     if (state) {
       state = structuredClone(state);
+      if (commonStates) {
+        state.val = this.applyCommonStates(commonStates, state.val);
+      }
       if (this.options.type !== "const" && this.options.read) {
         try {
           if (typeof this.options.read === "string") {
@@ -438,8 +532,21 @@ const _Dataitem = class _Dataitem extends import_library.BaseClass {
     if (this.options.type === "const") {
       this.options.constVal = val;
     } else {
+      const commonStates = this.getCommonStatesOption();
       try {
-        if (this.options.write) {
+        if ((commonStates == null ? void 0 : commonStates.mode) === "token") {
+          const resolved = this.resolveToken(commonStates);
+          if (resolved === void 0) {
+            if (!__privateGet(this, _tokenWarned)) {
+              __privateSet(this, _tokenWarned, true);
+              this.log.warn(
+                `${this.options.dp}: '${commonStates.token}' is no longer in common.states - nothing is written`
+              );
+            }
+            return;
+          }
+          val = resolved;
+        } else if (this.options.write) {
           if (typeof this.options.write === "string") {
             if (!__privateGet(this, _compiledWriteFn)) {
               __privateSet(this, _compiledWriteFn, new Function("val", "Color", this.options.write));
@@ -460,6 +567,10 @@ const _Dataitem = class _Dataitem extends import_library.BaseClass {
 };
 _compiledReadFn = new WeakMap();
 _compiledWriteFn = new WeakMap();
+_frozenCommon = new WeakMap();
+_liveCommon = new WeakMap();
+_mergedCommon = new WeakMap();
+_tokenWarned = new WeakMap();
 let Dataitem = _Dataitem;
 function isDataItem(F) {
   if (F instanceof Dataitem) {
@@ -469,6 +580,7 @@ function isDataItem(F) {
 }
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
+  DISPLAY_COMMON_KEYS,
   Dataitem,
   isDataItem
 });
