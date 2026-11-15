@@ -2293,7 +2293,7 @@ class NspanelLovelaceUi extends utils.Adapter {
             this.log.info(`Update script ${scriptId}`);
             file = o.common.source.substring(0, indexTo) + baseFile.substring(indexFrom);
           } else {
-            this.log.warn(`Update script ${scriptId} something whent wrong!`);
+            this.log.error(`Update script ${scriptId} something whent wrong!`);
             return { error: `Update script ${scriptId} something whent wrong!` };
           }
           this.log.info(`Update global script ${scriptId}`);
@@ -2304,7 +2304,7 @@ class NspanelLovelaceUi extends utils.Adapter {
             this.log.info(`Update script ${scriptId}`);
             file = file.substring(0, indexTo) + baseFile.substring(indexFrom);
           } else {
-            this.log.warn(`Update script ${scriptId} something whent wrong!`);
+            this.log.error(`Update script ${scriptId} something whent wrong!`);
             return { error: `Update script ${scriptId} something whent wrong!` };
           }
           this.log.info(`Create global script ${scriptId}`);
@@ -2681,7 +2681,7 @@ class NspanelLovelaceUi extends utils.Adapter {
   }
   async createConfigurationScript(panelName, panelTopic) {
     var _a;
-    await this.createGlobalConfigurationScript();
+    const globalResult = await this.createGlobalConfigurationScript();
     const scriptPath = `script.js.${this.library.cleandp(this.namespace, false, true)}`;
     const folder = {
       type: "channel",
@@ -2733,7 +2733,7 @@ class NspanelLovelaceUi extends utils.Adapter {
           native: {}
         };
         await this.extendForeignObjectAsync(scriptId, script);
-        return [];
+        return (globalResult == null ? void 0 : globalResult.error) ? globalResult : [];
       }
     }
   }

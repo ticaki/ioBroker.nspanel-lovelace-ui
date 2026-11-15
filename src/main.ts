@@ -2683,7 +2683,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                         this.log.info(`Update script ${scriptId}`);
                         file = o.common.source.substring(0, indexTo) + baseFile.substring(indexFrom);
                     } else {
-                        this.log.warn(`Update script ${scriptId} something whent wrong!`);
+                        this.log.error(`Update script ${scriptId} something whent wrong!`);
                         return { error: `Update script ${scriptId} something whent wrong!` };
                     }
                     this.log.info(`Update global script ${scriptId}`);
@@ -2694,7 +2694,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                         this.log.info(`Update script ${scriptId}`);
                         file = file.substring(0, indexTo) + baseFile.substring(indexFrom);
                     } else {
-                        this.log.warn(`Update script ${scriptId} something whent wrong!`);
+                        this.log.error(`Update script ${scriptId} something whent wrong!`);
                         return { error: `Update script ${scriptId} something whent wrong!` };
                     }
                     this.log.info(`Create global script ${scriptId}`);
@@ -3108,7 +3108,8 @@ class NspanelLovelaceUi extends utils.Adapter {
     }
 
     async createConfigurationScript(panelName: string, panelTopic: string): Promise<any> {
-        await this.createGlobalConfigurationScript();
+        // the panel script is written in any case; a failed global script is reported at the end
+        const globalResult = await this.createGlobalConfigurationScript();
 
         const scriptPath = `script.js.${this.library.cleandp(this.namespace, false, true)}`;
 
@@ -3164,7 +3165,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                     native: {},
                 };
                 await this.extendForeignObjectAsync(scriptId, script);
-                return [];
+                return globalResult?.error ? globalResult : [];
             }
         }
     }

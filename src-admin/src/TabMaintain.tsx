@@ -584,13 +584,22 @@ class MaintainPanel extends ConfigGeneric<ConfigGenericProps & MaintainPanelProp
             this.setState({ processingPanel: 'all' });
         }
         try {
+            // the adapter answers { error } per panel - collect them, the loop goes on for the other panels
+            const failed: string[] = [];
             for (const panel of panels) {
-                await this.props.oContext.socket.sendTo(`${this.adapterName}.${this.instance}`, 'createScript', {
-                    name: panel._name,
-                    topic: panel._topic,
-                });
+                const result = await this.props.oContext.socket.sendTo(
+                    `${this.adapterName}.${this.instance}`,
+                    'createScript',
+                    { name: panel._name, topic: panel._topic },
+                );
+                if (result && typeof result === 'object' && 'error' in result) {
+                    failed.push(`${panel._name} (${String(result.error)})`);
+                }
             }
             await this.refreshPanels();
+            if (failed.length > 0 && this._isMounted) {
+                this.setState({ error: this.getText('updateAllScriptsFailed').replace('%s', failed.join('; ')) });
+            }
         } catch (err) {
             if (this._isMounted) {
                 this.setState({ error: String(err) });

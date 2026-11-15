@@ -800,6 +800,15 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
         const panels = this.props.data.panels || [];
         return panels.findIndex((panel: any) => panel.topic === this.state.localTasmotaTopic) !== -1;
     }
+    /**
+     * Whether the panel table differs from the saved instance configuration. The save at the end
+     * of the setup replaces the whole table with the state the adapter knows - such changes are lost.
+     *
+     * @returns `true` when the panel table has unsaved changes.
+     */
+    private hasUnsavedPanels(): boolean {
+        return JSON.stringify(this.props.data?.panels ?? []) !== JSON.stringify(this.props.originalData?.panels ?? []);
+    }
     // Öffnet den Bestätigungsdialog für die Initialisierung
     private handleInitClick = (): void => {
         // Lokale State-Werte nach props.data synchronisieren, damit handleConfirmStart
@@ -1496,6 +1505,7 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
                                 {...params}
                                 variant="standard"
                                 label={this.getText('timezone')}
+                                helperText={this.getText('timezoneHelp')}
                             />
                         )}
                     />
@@ -1804,6 +1814,14 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
                                 ? this.getText('NSPanel_configuration_update_text')
                                 : this.getText('NSPanel_configuration_text')}
                         </DialogContentText>
+                        {this.hasUnsavedPanels() ? (
+                            <Alert
+                                severity="warning"
+                                sx={{ mt: 2 }}
+                            >
+                                {this.getText('nsPanelInitUnsavedPanelsWarning')}
+                            </Alert>
+                        ) : null}
                     </DialogContent>
                     <DialogActions>
                         <Button onClick={this.handleConfirmClose}>{this.getText('Cancel')}</Button>
