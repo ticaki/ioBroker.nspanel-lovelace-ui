@@ -490,6 +490,8 @@
     "customTftReadError": "Não foi possível ler o ficheiro.",
     "customTftSelectFile": "Selecionar ficheiro TFT",
     "customTftServerError": "Não foi possível disponibilizar o TFT - consulte o registo do adaptador.",
+    "customTftServerIpHelp": "Endereço do host ioBroker a partir do qual os painéis descarregam o TFT.",
+    "customTftServerIpInSettings": "Com o servidor MQTT integrado, o campo está nas definições do NSPanel.",
     "customTftStart": "Instalar TFT",
     "customTftStarted": "Instalação iniciada - os painéis estão a transferir o TFT.",
     "customTftTarget": "Painel",
