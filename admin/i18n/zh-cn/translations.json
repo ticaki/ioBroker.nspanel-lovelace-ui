@@ -490,6 +490,8 @@
     "customTftReadError": "无法读取文件。",
     "customTftSelectFile": "选择 TFT 文件",
     "customTftServerError": "无法提供 TFT - 请查看适配器日志。",
+    "customTftServerIpHelp": "面板下载 TFT 时使用的 ioBroker 主机地址。",
+    "customTftServerIpInSettings": "使用内置 MQTT 服务器时，该字段位于 NSPanel 设置中。",
     "customTftStart": "刷入 TFT",
     "customTftStarted": "刷写已开始 - 面板正在下载 TFT。",
     "customTftTarget": "面板",

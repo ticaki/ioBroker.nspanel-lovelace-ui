@@ -490,6 +490,8 @@
     "customTftReadError": "Не вдалося прочитати файл.",
     "customTftSelectFile": "Вибрати файл TFT",
     "customTftServerError": "Не вдалося надати TFT - див. журнал адаптера.",
+    "customTftServerIpHelp": "Адреса хоста ioBroker, з якої панелі завантажують TFT.",
+    "customTftServerIpInSettings": "Із вбудованим MQTT-сервером поле знаходиться в налаштуваннях NSPanel.",
     "customTftStart": "Прошити TFT",
     "customTftStarted": "Прошивку запущено - панелі зараз завантажують TFT.",
     "customTftTarget": "Панель",
