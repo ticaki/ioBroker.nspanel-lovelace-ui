@@ -1,4 +1,5 @@
 import { expect } from 'chai';
+import sinon from 'sinon';
 import { resolveScreensaverOptions, Screensaver } from './screensaver';
 import { PageItem } from './pageItem';
 import type * as Types from '../types/types';
@@ -447,6 +448,10 @@ describe('lib/pages/screensaver - timer instead of the clock', () => {
             setTimeout: (fn: () => void, ms: number): unknown => {
                 const timer = { fn, ms, cleared: false };
                 timers.push(timer);
+                if (ms === 5) {
+                    // the short pause of update()/HandleScreensaverStatusIcons() runs by itself
+                    setImmediate(() => !timer.cleared && fn());
+                }
                 return timer;
             },
             clearTimeout: (timer: { cleared: boolean }): void => {
@@ -1101,7 +1106,8 @@ describe('lib/pages/screensaver - timer instead of the clock', () => {
                         f.saver.sendType(true);
                         await f.saver.update();
                     }),
-                lockTimers: () => f.timers.filter(t => t.ms <= 2000),
+                // the weatherUpdate pause - not the pause before an update (5) and the trigger throttle (1000)
+                lockTimers: () => f.timers.filter(t => t.ms > 5 && t.ms < 1000),
             };
         }
         const press = { page: 0, id: '0', action: 'button', opt: '' };
@@ -1120,17 +1126,17 @@ describe('lib/pages/screensaver - timer instead of the clock', () => {
                 expect(s.kinds(await s.during(() => s.saver.update()))).to.deep.equal(['weatherUpdate']);
             });
 
-            it('a change within the 2 s waits with one timer and reads the values again', async () => {
+            it('a change within the 1 s waits with one timer and reads the values again', async () => {
                 const s = await scene();
                 await s.show();
                 s.now.value = 'B';
-                at(1000);
+                at(500);
                 expect(await s.during(() => s.saver.update())).to.deep.equal([]);
                 s.now.value = 'C';
                 expect(await s.during(() => s.saver.update())).to.deep.equal([]);
                 const waiting = s.lockTimers();
-                expect(waiting.map(t => t.ms)).to.deep.equal([1000]);
-                at(2000);
+                expect(waiting.map(t => t.ms)).to.deep.equal([500]);
+                at(1000);
                 const sent = await s.during(async () => {
                     waiting[0].fn();
                     await new Promise(resolve => setImmediate(resolve));
@@ -1143,10 +1149,10 @@ describe('lib/pages/screensaver - timer instead of the clock', () => {
                 const s = await scene();
                 await s.show();
                 s.now.value = 'B';
-                at(1000);
+                at(500);
                 await s.saver.update();
                 s.now.value = 'A';
-                at(2000);
+                at(1000);
                 const sent = await s.during(async () => {
                     s.lockTimers()[0].fn();
                     await new Promise(resolve => setImmediate(resolve));
@@ -1210,7 +1216,7 @@ describe('lib/pages/screensaver - timer instead of the clock', () => {
                 s.now.value = 'B';
                 s.now.mr = 'other';
                 s.now.text = 'Other';
-                at(1000);
+                at(500);
                 expect(await s.during(() => s.saver.update())).to.deep.equal([]);
             });
 
@@ -1242,6 +1248,147 @@ describe('lib/pages/screensaver - timer instead of the clock', () => {
                     'statusUpdate',
                 ]);
             });
+        });
+
+        describe('pause before an update', () => {
+            let clock: sinon.SinonFakeTimers | undefined;
+            afterEach(() => {
+                clock?.restore();
+                clock = undefined;
+            });
+
+            /** a shown screensaver whose adapter timers run on the fake clock, no trigger throttle running */
+            async function paused(): Promise<Scene & { clock: sinon.SinonFakeTimers; updates: sinon.SinonSpy }> {
+                const s = await scene();
+                await s.show();
+                at(5000);
+                // show() started the trigger throttle with a fixture timer that never runs
+                await s.saver.releaseTriggerThrottle();
+                clock = sinon.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+                s.saver.adapter.setTimeout = (fn: () => void, ms: number): unknown => setTimeout(fn, ms);
+                s.saver.adapter.clearTimeout = (t: any): void => {
+                    // timers of the fixture from before (e.g. the refresh of Page.update) are not on the clock
+                    if (!('cleared' in t)) {
+                        clearTimeout(t);
+                    }
+                };
+                const updates = sinon.spy(s.saver, 'update');
+                return { ...s, clock, updates };
+            }
+            const weatherOf = (messages: string[]): string[] => messages.filter(m => m.startsWith('weatherUpdate'));
+
+            it('a trigger runs the update only after 5 ms', async () => {
+                const s = await paused();
+                const from = s.sent.length;
+                s.now.value = 'B';
+                void s.saver.onStateTriggerSuperDoNotOverride('x', s.indicator());
+                await s.clock.tickAsync(4);
+                expect(weatherOf(s.sent.slice(from))).to.deep.equal([]);
+                await s.clock.tickAsync(1);
+                const sent = weatherOf(s.sent.slice(from));
+                expect(sent).to.have.length(1);
+                expect(sent[0]).to.include('~B');
+            });
+
+            it('a trigger in the pause is taken along and dropped, no second run after the throttle', async () => {
+                const s = await paused();
+                const from = s.sent.length;
+                s.now.value = 'B';
+                void s.saver.onStateTriggerSuperDoNotOverride('x', s.indicator());
+                await s.clock.tickAsync(2);
+                s.now.value = 'C';
+                void s.saver.onStateTriggerSuperDoNotOverride('x', s.indicator());
+                await s.clock.tickAsync(3);
+                const sent = weatherOf(s.sent.slice(from));
+                expect(sent).to.have.length(1);
+                expect(sent[0]).to.include('~C');
+                await s.clock.tickAsync(3000);
+                expect(s.updates.callCount).to.equal(1);
+            });
+
+            it('a trigger while the values are read stays and runs after the throttle', async () => {
+                const s = await paused();
+                const original = s.indicator().getPageItemPayload;
+                let finish: () => void = () => undefined;
+                s.indicator().getPageItemPayload = async (): Promise<string> => {
+                    await new Promise<void>(resolve => {
+                        finish = resolve;
+                    });
+                    return original();
+                };
+                void s.saver.onStateTriggerSuperDoNotOverride('x', s.indicator());
+                await s.clock.tickAsync(5);
+                // the update reads the values now
+                void s.saver.onStateTriggerSuperDoNotOverride('x', s.indicator());
+                s.indicator().getPageItemPayload = original;
+                finish();
+                await s.clock.tickAsync(999);
+                expect(s.updates.callCount).to.equal(1);
+                await s.clock.tickAsync(1);
+                expect(s.updates.callCount).to.equal(2);
+            });
+
+            it('the throttle runs the full 1 s from the end of the pause', async () => {
+                const s = await paused();
+                void s.saver.onStateTriggerSuperDoNotOverride('x', s.indicator());
+                await s.clock.tickAsync(500);
+                void s.saver.onStateTriggerSuperDoNotOverride('x', s.indicator());
+                // the throttle started with the trigger at 0, after the pause at 5 again
+                await s.clock.tickAsync(504);
+                expect(s.updates.callCount).to.equal(1);
+                await s.clock.tickAsync(1);
+                expect(s.updates.callCount).to.equal(2);
+            });
+
+            it('a waiting trigger of an indicator outlives an update of the status icons only', async () => {
+                const s = await paused();
+                const icons = sinon.spy(s.saver, 'HandleScreensaverStatusIcons');
+                s.now.mr = 'other';
+                void s.saver.onStateTriggerSuperDoNotOverride('x', s.mricon());
+                await s.clock.tickAsync(2);
+                void s.saver.onStateTriggerSuperDoNotOverride('x', s.indicator());
+                await s.clock.tickAsync(3);
+                expect(icons.callCount).to.equal(1);
+                expect(s.updates.callCount).to.equal(0);
+                await s.clock.tickAsync(1000);
+                expect(s.updates.callCount).to.equal(1);
+            });
+
+            it('delete in the pause ends the waits without sending and leaves no timer', async () => {
+                const s = await paused();
+                const icons = sinon.spy(s.saver, 'HandleScreensaverStatusIcons');
+                const from = s.sent.length;
+                s.now.value = 'B';
+                s.now.mr = 'other';
+                void s.saver.onStateTriggerSuperDoNotOverride('x', s.indicator());
+                const iconsRun = s.saver.HandleScreensaverStatusIcons();
+                await s.clock.tickAsync(1);
+                expect(s.saver.collectWaits.size).to.equal(2);
+                await s.saver.delete();
+                // both waits are done without the clock moving on
+                await iconsRun;
+                await s.updates.firstCall.returnValue;
+                expect(icons.callCount).to.equal(1);
+                expect(s.saver.collectWaits.size).to.equal(0);
+                expect(s.clock.countTimers()).to.equal(0);
+                expect(s.sent.slice(from)).to.deep.equal([]);
+            });
+
+            for (const who of ['page', 'adapter']) {
+                it(`an unload of the ${who} in the pause sends nothing`, async () => {
+                    const s = await paused();
+                    const from = s.sent.length;
+                    s.now.value = 'B';
+                    void s.saver.onStateTriggerSuperDoNotOverride('x', s.indicator());
+                    if (who === 'page') {
+                        s.saver.unload = true;
+                    } else {
+                        s.saver.adapter.unload = true;
+                    }
+                    await s.clock.tickAsync(10);
+                    expect(s.sent.slice(from)).to.deep.equal([]);
+                });
+            }
         });
 
         describe('press', () => {

@@ -118,6 +118,10 @@ const _Screensaver = class _Screensaver extends import_Page.Page {
     __publicField(this, "updateThrottle");
     /** counts the runs of update(): only the newest may send, an older one read older values */
     __publicField(this, "updateRun", 0);
+    /** counts the runs of HandleScreensaverStatusIcons(): only the newest goes on after the pause */
+    __publicField(this, "statusIconsRun", 0);
+    /** running pauses of {@link waitForCollect}: delete() clears the timers and ends the waits */
+    __publicField(this, "collectWaits", /* @__PURE__ */ new Set());
     /** last sent message per type, see {@link sendIfChanged} */
     __publicField(this, "lastSent", /* @__PURE__ */ new Map());
     /** a touch cleared the active notification on the HMI: it takes `weatherUpdate` and `color~` again */
@@ -208,38 +212,32 @@ const _Screensaver = class _Screensaver extends import_Page.Page {
         await this.onTimerStatesChanged();
         return;
       }
-      if (from instanceof import_pageItem.PageItem && this.pageItems) {
-        const index = parseInt(from.id.split("?")[1]);
-        const item = this.pageItems[index];
-        if (item && item.config) {
-          const place = item.config.modeScr;
-          if (place !== void 0) {
-            switch (place) {
-              case "left":
-              case "bottom":
-              case "indicator":
-              case "alternate":
-              case "favorit": {
-                await this.update();
-                break;
-              }
-              case "mricon": {
-                await this.HandleScreensaverStatusIcons();
-                break;
-              }
-              case "time": {
-                await this.HandleTime();
-                break;
-              }
-              case "date": {
-                await this.HandleDate();
-                break;
-              }
-              case "notify": {
-                await this.HandleNotification();
-                break;
-              }
-            }
+      const place = this.placeOf(from);
+      if (place !== void 0) {
+        switch (place) {
+          case "left":
+          case "bottom":
+          case "indicator":
+          case "alternate":
+          case "favorit": {
+            await this.update();
+            break;
+          }
+          case "mricon": {
+            await this.HandleScreensaverStatusIcons();
+            break;
+          }
+          case "time": {
+            await this.HandleTime();
+            break;
+          }
+          case "date": {
+            await this.HandleDate();
+            break;
+          }
+          case "notify": {
+            await this.HandleNotification();
+            break;
           }
         }
       }
@@ -1031,7 +1029,9 @@ const _Screensaver = class _Screensaver extends import_Page.Page {
    * - Prepends an empty payload to 'alternate' if it contains entries
    * - Sends a 'weatherUpdate' payload with concatenated place arrays and the colors, only when they changed: the same
    *   content sends nothing and starts no pause
-   * - At most one burst every 2 s: a change arriving earlier waits for one deferred update, which reads the values
+   * - Waits {@link Screensaver.collectDelay} ms first, only the newest run goes on; then the trigger throttle starts
+   *   again and the waiting triggers of the places sent here are dropped.
+   * - At most one burst every 1 s: a change arriving earlier waits for one deferred update, which reads the values
    *   again. Time/date updates are not affected, a press on an item ends the pause.
    * - Status icons and notifications come along with every update that is not deferred, only when they changed.
    * - After a `pageType~` the order is `color~` (draws the empty page with its background), `weatherUpdate~`,
@@ -1042,6 +1042,13 @@ const _Screensaver = class _Screensaver extends import_Page.Page {
       return;
     }
     const run = ++this.updateRun;
+    if (!await this.waitForCollect() || run !== this.updateRun) {
+      return;
+    }
+    this.restartTriggerThrottle((from) => {
+      var _a;
+      return _Screensaver.updatePlaces.has((_a = this.placeOf(from)) != null ? _a : "");
+    });
     await super.update();
     const message = await this.getData(["left", "bottom", "indicator", "alternate", "favorit"]);
     if (run !== this.updateRun || !this.visibility) {
@@ -1080,8 +1087,44 @@ const _Screensaver = class _Screensaver extends import_Page.Page {
       this.sendWeather(msg);
     }
     await this.sendTimeAfterRender();
-    await this.HandleScreensaverStatusIcons();
+    await this.sendStatusIcons();
     await this.HandleNotification();
+  }
+  /**
+   * Waits {@link Screensaver.collectDelay} ms.
+   *
+   * @returns false when the page or the adapter unloads or the page is no longer visible
+   */
+  async waitForCollect() {
+    if (this.unload || this.adapter.unload) {
+      return false;
+    }
+    await new Promise((resolve) => {
+      const wait = {
+        timer: void 0,
+        resolve: () => {
+          this.collectWaits.delete(wait);
+          resolve();
+        }
+      };
+      this.collectWaits.add(wait);
+      wait.timer = this.adapter.setTimeout(wait.resolve, _Screensaver.collectDelay);
+    });
+    return !this.unload && !this.adapter.unload && this.visibility;
+  }
+  /**
+   * The place (modeScr) of the item that sent a trigger.
+   *
+   * @param from the source of the trigger
+   * @returns the place, undefined for anything but an item of this page (e.g. the time/timer of the page itself)
+   */
+  placeOf(from) {
+    var _a, _b;
+    if (!(from instanceof import_pageItem.PageItem) || !this.pageItems) {
+      return void 0;
+    }
+    const index = parseInt(from.id.split("?")[1]);
+    return (_b = (_a = this.pageItems[index]) == null ? void 0 : _a.config) == null ? void 0 : _b.modeScr;
   }
   /**
    * Sends `time~` once after a `pageType~`, see {@link timeAfterRender}.
@@ -1220,6 +1263,21 @@ const _Screensaver = class _Screensaver extends import_Page.Page {
     this.sendToPanel(`date~${message.options.date[0].split("~")[5]}`, false);
   }
   async HandleScreensaverStatusIcons() {
+    if (!this.visibility) {
+      return;
+    }
+    const run = ++this.statusIconsRun;
+    if (!await this.waitForCollect() || run !== this.statusIconsRun) {
+      return;
+    }
+    this.restartTriggerThrottle((from) => this.placeOf(from) === "mricon");
+    await this.sendStatusIcons();
+  }
+  /**
+   * Reads the status icons and sends `statusUpdate~` when it changed - without a pause, see
+   * {@link HandleScreensaverStatusIcons}.
+   */
+  async sendStatusIcons() {
     var _a, _b, _c, _d, _e, _f;
     if (!this.visibility) {
       return;
@@ -1514,6 +1572,12 @@ const _Screensaver = class _Screensaver extends import_Page.Page {
     if (this.blockButtons) {
       this.adapter.clearTimeout(this.blockButtons);
     }
+    for (const wait of [...this.collectWaits]) {
+      if (wait.timer) {
+        this.adapter.clearTimeout(wait.timer);
+      }
+      wait.resolve();
+    }
     this.clearTimerTick();
     this.clockTimerListeners.clear();
     (_a = this.timerItem) == null ? void 0 : _a.removeClockTimerSource(this.onTimerItemChange);
@@ -1626,7 +1690,22 @@ sendNotify_fn = function(enabled, heading = "", text = "") {
   }
 };
 /** Minimum pause between two weatherUpdate/color bursts - protects the Nextion serial buffer */
-__publicField(_Screensaver, "minUpdateInterval", 2e3);
+__publicField(_Screensaver, "minUpdateInterval", 1e3);
+/**
+ * ms update() and HandleScreensaverStatusIcons() wait before they read the values: changes that arrive right
+ * after the trigger (e.g. the real value after an outdated one) are taken along
+ */
+__publicField(_Screensaver, "collectDelay", 5);
+/** places update() reads and sends (also status icons and notification): their waiting triggers are dropped */
+__publicField(_Screensaver, "updatePlaces", /* @__PURE__ */ new Set([
+  "left",
+  "bottom",
+  "indicator",
+  "alternate",
+  "favorit",
+  "mricon",
+  "notify"
+]));
 /**
  * A tap that follows a tap on the timer is still the same double click up to this long after it (and the one
  * before, for more than two taps). The HMI has no limit of its own - all screensaver pages: `tc0` press does

@@ -104,12 +104,31 @@ export class Screensaver extends Page {
     private _infoIcon: any = '';
     private timeoutRotation: ioBroker.Timeout | undefined = undefined;
     /** Minimum pause between two weatherUpdate/color bursts - protects the Nextion serial buffer */
-    private static readonly minUpdateInterval = 2000;
+    private static readonly minUpdateInterval = 1000;
     /** time of the last burst that was really sent, a press on an item sets it back to 0 */
     private lastUpdateTs: number = 0;
     private updateThrottle: ioBroker.Timeout | undefined = undefined;
     /** counts the runs of update(): only the newest may send, an older one read older values */
     private updateRun: number = 0;
+    /** counts the runs of HandleScreensaverStatusIcons(): only the newest goes on after the pause */
+    private statusIconsRun: number = 0;
+    /**
+     * ms update() and HandleScreensaverStatusIcons() wait before they read the values: changes that arrive right
+     * after the trigger (e.g. the real value after an outdated one) are taken along
+     */
+    private static readonly collectDelay = 5;
+    /** running pauses of {@link waitForCollect}: delete() clears the timers and ends the waits */
+    private collectWaits: Set<{ timer: ioBroker.Timeout | undefined; resolve: () => void }> = new Set();
+    /** places update() reads and sends (also status icons and notification): their waiting triggers are dropped */
+    private static readonly updatePlaces: ReadonlySet<string> = new Set([
+        'left',
+        'bottom',
+        'indicator',
+        'alternate',
+        'favorit',
+        'mricon',
+        'notify',
+    ]);
     /** last sent message per type, see {@link sendIfChanged} */
     private lastSent: Map<FilteredMessage, string> = new Map();
     /** a touch cleared the active notification on the HMI: it takes `weatherUpdate` and `color~` again */
@@ -1134,7 +1153,9 @@ export class Screensaver extends Page {
      * - Prepends an empty payload to 'alternate' if it contains entries
      * - Sends a 'weatherUpdate' payload with concatenated place arrays and the colors, only when they changed: the same
      *   content sends nothing and starts no pause
-     * - At most one burst every 2 s: a change arriving earlier waits for one deferred update, which reads the values
+     * - Waits {@link Screensaver.collectDelay} ms first, only the newest run goes on; then the trigger throttle starts
+     *   again and the waiting triggers of the places sent here are dropped.
+     * - At most one burst every 1 s: a change arriving earlier waits for one deferred update, which reads the values
      *   again. Time/date updates are not affected, a press on an item ends the pause.
      * - Status icons and notifications come along with every update that is not deferred, only when they changed.
      * - After a `pageType~` the order is `color~` (draws the empty page with its background), `weatherUpdate~`,
@@ -1145,6 +1166,11 @@ export class Screensaver extends Page {
             return;
         }
         const run = ++this.updateRun;
+        if (!(await this.waitForCollect()) || run !== this.updateRun) {
+            return;
+        }
+        // from here the values are read: a trigger arriving from now on runs again after the throttle
+        this.restartTriggerThrottle(from => Screensaver.updatePlaces.has(this.placeOf(from) ?? ''));
         await super.update();
 
         const message = await this.getData(['left', 'bottom', 'indicator', 'alternate', 'favorit']);
@@ -1190,8 +1216,45 @@ export class Screensaver extends Page {
         }
         await this.sendTimeAfterRender();
         // not all of their data has a trigger: the filter of these messages sends only what changed
-        await this.HandleScreensaverStatusIcons();
+        await this.sendStatusIcons();
         await this.HandleNotification();
+    }
+
+    /**
+     * Waits {@link Screensaver.collectDelay} ms.
+     *
+     * @returns false when the page or the adapter unloads or the page is no longer visible
+     */
+    private async waitForCollect(): Promise<boolean> {
+        if (this.unload || this.adapter.unload) {
+            return false;
+        }
+        await new Promise<void>(resolve => {
+            const wait: { timer: ioBroker.Timeout | undefined; resolve: () => void } = {
+                timer: undefined,
+                resolve: (): void => {
+                    this.collectWaits.delete(wait);
+                    resolve();
+                },
+            };
+            this.collectWaits.add(wait);
+            wait.timer = this.adapter.setTimeout(wait.resolve, Screensaver.collectDelay);
+        });
+        return !this.unload && !this.adapter.unload && this.visibility;
+    }
+
+    /**
+     * The place (modeScr) of the item that sent a trigger.
+     *
+     * @param from the source of the trigger
+     * @returns the place, undefined for anything but an item of this page (e.g. the time/timer of the page itself)
+     */
+    private placeOf(from: BaseTriggeredPage): string | undefined {
+        if (!(from instanceof PageItem) || !this.pageItems) {
+            return undefined;
+        }
+        const index = parseInt(from.id.split('?')[1]);
+        return this.pageItems[index]?.config?.modeScr;
     }
 
     /**
@@ -1350,38 +1413,32 @@ export class Screensaver extends Page {
             await this.onTimerStatesChanged();
             return;
         }
-        if (from instanceof PageItem && this.pageItems) {
-            const index = parseInt(from.id.split('?')[1]);
-            const item = this.pageItems[index];
-            if (item && item.config) {
-                const place = item.config.modeScr;
-                if (place !== undefined) {
-                    switch (place) {
-                        case 'left':
-                        case 'bottom':
-                        case 'indicator':
-                        case 'alternate':
-                        case 'favorit': {
-                            await this.update();
-                            break;
-                        }
-                        case 'mricon': {
-                            await this.HandleScreensaverStatusIcons();
-                            break;
-                        }
-                        case 'time': {
-                            await this.HandleTime();
-                            break;
-                        }
-                        case 'date': {
-                            await this.HandleDate();
-                            break;
-                        }
-                        case 'notify': {
-                            await this.HandleNotification();
-                            break;
-                        }
-                    }
+        const place = this.placeOf(from);
+        if (place !== undefined) {
+            switch (place) {
+                case 'left':
+                case 'bottom':
+                case 'indicator':
+                case 'alternate':
+                case 'favorit': {
+                    await this.update();
+                    break;
+                }
+                case 'mricon': {
+                    await this.HandleScreensaverStatusIcons();
+                    break;
+                }
+                case 'time': {
+                    await this.HandleTime();
+                    break;
+                }
+                case 'date': {
+                    await this.HandleDate();
+                    break;
+                }
+                case 'notify': {
+                    await this.HandleNotification();
+                    break;
                 }
             }
         }
@@ -1462,6 +1519,23 @@ export class Screensaver extends Page {
     }
 
     async HandleScreensaverStatusIcons(): Promise<void> {
+        if (!this.visibility) {
+            return;
+        }
+        const run = ++this.statusIconsRun;
+        if (!(await this.waitForCollect()) || run !== this.statusIconsRun) {
+            return;
+        }
+        // from here the values are read: a trigger arriving from now on runs again after the throttle
+        this.restartTriggerThrottle(from => this.placeOf(from) === 'mricon');
+        await this.sendStatusIcons();
+    }
+
+    /**
+     * Reads the status icons and sends `statusUpdate~` when it changed - without a pause, see
+     * {@link HandleScreensaverStatusIcons}.
+     */
+    private async sendStatusIcons(): Promise<void> {
         if (!this.visibility) {
             return;
         }
@@ -1808,6 +1882,13 @@ export class Screensaver extends Page {
         }
         if (this.blockButtons) {
             this.adapter.clearTimeout(this.blockButtons);
+        }
+        // unload is set: the waiting update()/HandleScreensaverStatusIcons() end without sending
+        for (const wait of [...this.collectWaits]) {
+            if (wait.timer) {
+                this.adapter.clearTimeout(wait.timer);
+            }
+            wait.resolve();
         }
         this.clearTimerTick();
         this.clockTimerListeners.clear();

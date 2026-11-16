@@ -36,6 +36,7 @@ import { pageItemTemplateInfos } from './lib/templates/template-info';
 import { mediaPlayerInfo } from './lib/configuration/admin-media';
 import type { Panel, panelConfigPartial } from './lib/controller/panel';
 import { generateAliasDocumentation } from './lib/tools/readme';
+import { TftServer, isUsableServerIp, parseTftChunkMessage, parseTftStartMessage } from './lib/tools/tft-server';
 import { redactSecretsInText, stringifyForLog } from './lib/tools/redact';
 import {
     buildTestObjects,
@@ -101,6 +102,8 @@ class NspanelLovelaceUi extends utils.Adapter {
     webServer: WebServer | undefined;
     /** registered FIDO2 keys of the web panels (loaded on demand) */
     private fidoStore: FidoCredentialStore | undefined;
+    /** upload and short-lived HTTP server for a custom TFT (admin tab developer), created on demand */
+    private tftServer: TftServer | undefined;
     unload: boolean = false;
     testSuccessful: boolean = true;
     timeoutAdmin: ioBroker.Timeout | undefined;
@@ -1159,6 +1162,10 @@ class NspanelLovelaceUi extends utils.Adapter {
             if (this.webServer) {
                 await this.webServer.delete();
                 this.webServer = undefined;
+            }
+            if (this.tftServer) {
+                await this.tftServer.delete();
+                this.tftServer = undefined;
             }
             if (this.mqttClient) {
                 await this.mqttClient.destroy();
@@ -2480,6 +2487,31 @@ class NspanelLovelaceUi extends utils.Adapter {
                     }
                     break;
                 }
+                case 'customTftUpload': {
+                    const chunk = parseTftChunkMessage(obj.message);
+                    let error: string | undefined = 'sendToAnyError';
+                    if (chunk) {
+                        try {
+                            this.tftServer ??= new TftServer(this);
+                            error = await this.tftServer.addChunk(chunk);
+                        } catch (e) {
+                            this.log.warn(`Custom TFT: upload failed: ${String(e)}`);
+                            error = 'customTftUploadBroken';
+                        }
+                    }
+                    this.answerMessage(obj, error ? { error } : { result: 'ok' });
+                    break;
+                }
+                case 'customTftStart': {
+                    await this.customTftStart(obj);
+                    break;
+                }
+                case 'customTftPanels': {
+                    this.answerMessage(obj, {
+                        panels: this.customTftPanels().map(p => ({ topic: p.topic, name: p.friendlyName || p.name })),
+                    });
+                    break;
+                }
                 case 'openTasmotaConsole':
                 case 'openLinkToTasmota': {
                     if (obj.callback) {
@@ -2731,6 +2763,70 @@ class NspanelLovelaceUi extends utils.Adapter {
             `${this.config.useTasmotaAdmin ? `user=admin&password=${this.config.tasmotaAdminPassword}` : ``}` +
             `&cmnd=${command}`
         );
+    }
+
+    /**
+     * Panels that can flash a custom TFT: hardware panels with the real berry driver (version > 0) -
+     * no web panels, no emulator (negative version) and no panel without a reported driver (0).
+     *
+     * @returns the panels
+     */
+    private customTftPanels(): Panel[] {
+        return (this.controller?.panels ?? []).filter(
+            p => !p.isVirtual && parseDriverVersion(p.info.nspanel.berryDriverVersion) > 0,
+        );
+    }
+
+    /**
+     * Admin tab developer: serves an uploaded custom TFT on a free port and tells the selected
+     * panel(s) to flash it - the same command as the regular TFT update (`FlashNextionAdv0 <url>`),
+     * only with the URL of the local server. Only the start is reported, not the flash.
+     *
+     * Message: `{ uploadId, target ('*' = all panels or a topic), internalServerIp? }` - the file was
+     * sent before in chunks with `customTftUpload`.
+     *
+     * @param obj the message from the admin
+     */
+    private async customTftStart(obj: ioBroker.Message): Promise<void> {
+        const msg = parseTftStartMessage(obj.message);
+        if (!msg) {
+            this.answerMessage(obj, { error: 'sendToAnyError' });
+            return;
+        }
+        const serverIp = [msg.internalServerIp, this.config.internalServerIp].find(isUsableServerIp);
+        if (!serverIp) {
+            this.log.warn('Custom TFT: the IP of the ioBroker (internalServerIp) is not set');
+            this.answerMessage(obj, { error: 'customTftNoServerIp' });
+            return;
+        }
+        const panels = this.customTftPanels().filter(p => msg.target === '*' || p.topic === msg.target);
+        if (panels.length === 0) {
+            this.answerMessage(obj, { error: 'customTftNoPanel' });
+            return;
+        }
+        if (!this.tftServer) {
+            this.answerMessage(obj, { error: 'customTftUploadBroken' });
+            return;
+        }
+        try {
+            const served = await this.tftServer.serve(msg.uploadId);
+            if ('error' in served) {
+                this.answerMessage(obj, { error: served.error });
+                return;
+            }
+            const cmnd = `FlashNextionAdv0 http://${serverIp}:${served.port}${served.urlPath}`;
+            for (const panel of panels) {
+                this.log.info(`Custom TFT: sending '${cmnd}' to ${panel.topic}`);
+                await this.markTftFlashStarting(panel.name);
+                panel.sendToTasmota(`${panel.topic}/cmnd/Backlog`, cmnd);
+                await this.delay(100);
+                panel.sendToTasmota(`${panel.topic}/cmnd/Backlog`, ``);
+            }
+            this.answerMessage(obj, { result: 'ok', count: panels.length });
+        } catch (e) {
+            this.log.error(`Custom TFT: could not start the TFT server: ${String(e)}`);
+            this.answerMessage(obj, { error: 'customTftServerError' });
+        }
     }
 
     /**

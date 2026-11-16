@@ -37,6 +37,7 @@ var import_config_manager = require("./lib/classes/config-manager");
 var import_template_info = require("./lib/templates/template-info");
 var import_admin_media = require("./lib/configuration/admin-media");
 var import_readme = require("./lib/tools/readme");
+var import_tft_server = require("./lib/tools/tft-server");
 var import_redact = require("./lib/tools/redact");
 var import_test_states = require("./lib/tools/test-states");
 var import_credentials = require("./lib/credentials");
@@ -63,6 +64,8 @@ class NspanelLovelaceUi extends utils.Adapter {
   webServer;
   /** registered FIDO2 keys of the web panels (loaded on demand) */
   fidoStore;
+  /** upload and short-lived HTTP server for a custom TFT (admin tab developer), created on demand */
+  tftServer;
   unload = false;
   testSuccessful = true;
   timeoutAdmin;
@@ -949,6 +952,10 @@ class NspanelLovelaceUi extends utils.Adapter {
         await this.webServer.delete();
         this.webServer = void 0;
       }
+      if (this.tftServer) {
+        await this.tftServer.delete();
+        this.tftServer = void 0;
+      }
       if (this.mqttClient) {
         await this.mqttClient.destroy();
       }
@@ -1109,7 +1116,7 @@ class NspanelLovelaceUi extends utils.Adapter {
   //  * Using this method requires "common.messagebox" property to be set to true in io-package.json
   //  */
   async onMessage(obj) {
-    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _A, _B, _C, _D, _E, _F, _G, _H, _I, _J, _K, _L, _M, _N;
     if (typeof obj === "object" && obj.message !== void 0 && obj.command) {
       this.log.debug((0, import_redact.stringifyForLog)(obj));
       if (obj.command === "tftInstallSendToMQTT") {
@@ -2109,6 +2116,31 @@ class NspanelLovelaceUi extends utils.Adapter {
           }
           break;
         }
+        case "customTftUpload": {
+          const chunk = (0, import_tft_server.parseTftChunkMessage)(obj.message);
+          let error = "sendToAnyError";
+          if (chunk) {
+            try {
+              (_J = this.tftServer) != null ? _J : this.tftServer = new import_tft_server.TftServer(this);
+              error = await this.tftServer.addChunk(chunk);
+            } catch (e) {
+              this.log.warn(`Custom TFT: upload failed: ${String(e)}`);
+              error = "customTftUploadBroken";
+            }
+          }
+          this.answerMessage(obj, error ? { error } : { result: "ok" });
+          break;
+        }
+        case "customTftStart": {
+          await this.customTftStart(obj);
+          break;
+        }
+        case "customTftPanels": {
+          this.answerMessage(obj, {
+            panels: this.customTftPanels().map((p) => ({ topic: p.topic, name: p.friendlyName || p.name }))
+          });
+          break;
+        }
         case "openTasmotaConsole":
         case "openLinkToTasmota": {
           if (obj.callback) {
@@ -2139,7 +2171,7 @@ class NspanelLovelaceUi extends utils.Adapter {
           break;
         }
         case "screensaverNotify": {
-          if (((_J = obj.message) == null ? void 0 : _J.panel) && ((_K = this.controller) == null ? void 0 : _K.panels)) {
+          if (((_K = obj.message) == null ? void 0 : _K.panel) && ((_L = this.controller) == null ? void 0 : _L.panels)) {
             const panel = this.controller.panels.find((a) => a.topic === obj.message.topic);
             if (panel == null ? void 0 : panel.screenSaver) {
               if (typeof obj.message.heading === "string") {
@@ -2175,7 +2207,7 @@ class NspanelLovelaceUi extends utils.Adapter {
           break;
         }
         case "buzzer": {
-          if (((_L = obj.message) == null ? void 0 : _L.panel) && ((_M = this.controller) == null ? void 0 : _M.panels)) {
+          if (((_M = obj.message) == null ? void 0 : _M.panel) && ((_N = this.controller) == null ? void 0 : _N.panels)) {
             const panel = this.controller.panels.find((a) => a.topic === obj.message.panel);
             if (panel && typeof obj.message.command === "string" && obj.message.command.trim()) {
               await panel.statesControler.setInternalState(
@@ -2337,6 +2369,69 @@ class NspanelLovelaceUi extends utils.Adapter {
    */
   getTasmotaCommandUrl(tasmotaIP, command) {
     return `http://${tasmotaIP}/cm?${this.config.useTasmotaAdmin ? `user=admin&password=${this.config.tasmotaAdminPassword}` : ``}&cmnd=${command}`;
+  }
+  /**
+   * Panels that can flash a custom TFT: hardware panels with the real berry driver (version > 0) -
+   * no web panels, no emulator (negative version) and no panel without a reported driver (0).
+   *
+   * @returns the panels
+   */
+  customTftPanels() {
+    var _a, _b;
+    return ((_b = (_a = this.controller) == null ? void 0 : _a.panels) != null ? _b : []).filter(
+      (p) => !p.isVirtual && (0, import_berry_driver.parseDriverVersion)(p.info.nspanel.berryDriverVersion) > 0
+    );
+  }
+  /**
+   * Admin tab developer: serves an uploaded custom TFT on a free port and tells the selected
+   * panel(s) to flash it - the same command as the regular TFT update (`FlashNextionAdv0 <url>`),
+   * only with the URL of the local server. Only the start is reported, not the flash.
+   *
+   * Message: `{ uploadId, target ('*' = all panels or a topic), internalServerIp? }` - the file was
+   * sent before in chunks with `customTftUpload`.
+   *
+   * @param obj the message from the admin
+   */
+  async customTftStart(obj) {
+    const msg = (0, import_tft_server.parseTftStartMessage)(obj.message);
+    if (!msg) {
+      this.answerMessage(obj, { error: "sendToAnyError" });
+      return;
+    }
+    const serverIp = [msg.internalServerIp, this.config.internalServerIp].find(import_tft_server.isUsableServerIp);
+    if (!serverIp) {
+      this.log.warn("Custom TFT: the IP of the ioBroker (internalServerIp) is not set");
+      this.answerMessage(obj, { error: "customTftNoServerIp" });
+      return;
+    }
+    const panels = this.customTftPanels().filter((p) => msg.target === "*" || p.topic === msg.target);
+    if (panels.length === 0) {
+      this.answerMessage(obj, { error: "customTftNoPanel" });
+      return;
+    }
+    if (!this.tftServer) {
+      this.answerMessage(obj, { error: "customTftUploadBroken" });
+      return;
+    }
+    try {
+      const served = await this.tftServer.serve(msg.uploadId);
+      if ("error" in served) {
+        this.answerMessage(obj, { error: served.error });
+        return;
+      }
+      const cmnd = `FlashNextionAdv0 http://${serverIp}:${served.port}${served.urlPath}`;
+      for (const panel of panels) {
+        this.log.info(`Custom TFT: sending '${cmnd}' to ${panel.topic}`);
+        await this.markTftFlashStarting(panel.name);
+        panel.sendToTasmota(`${panel.topic}/cmnd/Backlog`, cmnd);
+        await this.delay(100);
+        panel.sendToTasmota(`${panel.topic}/cmnd/Backlog`, ``);
+      }
+      this.answerMessage(obj, { result: "ok", count: panels.length });
+    } catch (e) {
+      this.log.error(`Custom TFT: could not start the TFT server: ${String(e)}`);
+      this.answerMessage(obj, { error: "customTftServerError" });
+    }
   }
   /**
    * Antwortet auf eine sendTo-Nachricht, sofern sie einen Callback hat.

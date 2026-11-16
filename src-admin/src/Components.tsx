@@ -9,6 +9,7 @@ import TabPanelinfo from './TabPanelinfo';
 import PageMQTTSetting from './PageMQTTSetting';
 import PagePanelOverview from './PagePanelOverview';
 import WebFidoKeys from './WebFidoKeys';
+import CustomTftUpload from './CustomTftUpload';
 import { ChannelConfigDialogJsonConfig } from './components/ChannelConfigDialog';
 import { installLabelHover } from './labelHover';
 
@@ -26,5 +27,6 @@ export default {
     PageMQTTSetting,
     PagePanelOverview,
     WebFidoKeys,
+    CustomTftUpload,
     ChannelConfigDialog: ChannelConfigDialogJsonConfig,
 };
