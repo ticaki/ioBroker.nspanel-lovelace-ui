@@ -748,12 +748,12 @@ class MaintainPanel extends ConfigGeneric<ConfigGenericProps & MaintainPanelProp
 
                 {/* Link to wiki + Update all scripts button */}
                 <Box sx={{ mb: 2, display: 'flex', gap: 2, flexWrap: 'wrap', alignItems: 'center' }}>
+                    <DocButton topic="maintain.page" />
                     <DocButton
                         topic="maintain.installation"
                         label={this.getText('openLinkAdapterInstallation')}
                         sx={{ color: 'red' }}
                     />
-                    <DocButton topic="maintain.page" />
                     <Box sx={{ display: 'flex', alignItems: 'center' }}>
                         <Button
                             variant="text"
