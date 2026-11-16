@@ -25,7 +25,7 @@ Der Tab erscheint erst, wenn die MQTT-Angaben vollständig sind — eigener Serv
 | Element | Wirkung |
 |---|---|
 | **Hilfe zur Adapterinstallation** (roter Text-Knopf) | Öffnet die Wiki-Seite [Adapter-Installation](Adapter-Installation) in einem neuen Tab. |
-| **Skripte für alle Panels aktualisieren** | Dasselbe wie *SCRIPT UPDATE*, aber für alle Panels, deren Skriptversion von der mitgelieferten Vorlage abweicht. Panels mit dem Haken **Panel benutzt kein Skript** werden ausgelassen. Der Knopf ist orange, solange es etwas zu tun gibt, und grau, wenn nichts ansteht, die Instanz nicht läuft oder gerade ein anderer Vorgang läuft. |
+| **Skripte für alle Panels aktualisieren** | Dasselbe wie *SCRIPT UPDATE*, aber für alle Panels, deren Skriptversion von der mitgelieferten Vorlage abweicht. Panels mit dem Haken **Panel benutzt kein Skript** werden ausgelassen. Der Knopf ist orange, solange es etwas zu tun gibt, und grau, wenn nichts ansteht, die Instanz nicht läuft oder gerade ein anderer Vorgang läuft. Schlägt das Update einzelner Panels fehl, läuft der Sammellauf über die übrigen weiter und nennt am Ende die betroffenen Panels in der roten Fehlerzeile (*Für diese Panels ist das Skript-Update fehlgeschlagen: …*). |
 | Hinweis **Beta-Version in Verwendung** | Erscheint, solange *Beta-Firmware* in den [Global Settings](globelSettings) eingeschaltet ist. |
 | Rote Fehlerzeile | Meldung des Adapters zum letzten Vorgang; lässt sich schließen. |
 
@@ -65,7 +65,7 @@ Das Feld **Skriptversion** vergleicht die Version im Konfigurationsskript des Pa
 >
 > Das Panel-Skript hat eine Markierungszeile mit dem Text `END STOP END STOP END - No more configuration - END STOP END STOP END`. **Alles unterhalb davon wird ersetzt, alles darüber bleibt stehen** — eigene Ergänzungen überleben ein Update also nur, wenn sie **oberhalb** der Markierung liegen. Beim globalen Skript übernimmt die Zeile `stopScript(scriptName, undefined)` diese Rolle.
 >
-> ⚠️ Wer die Markierung aus dem Skript entfernt, kann es nicht mehr aktualisieren: Das Update bricht mit einer Fehlermeldung ab und das Skript bleibt unverändert. Fehlt die Marke nur im globalen Skript, steht der Fehler ausschließlich im Log — das Panel-Skript wird trotzdem geschrieben.
+> ⚠️ Wer die Markierung aus dem Skript entfernt, kann es nicht mehr aktualisieren: Das Update bricht mit einer Fehlermeldung ab und das Skript bleibt unverändert. Fehlt die Marke nur im globalen Skript, wird das Panel-Skript trotzdem geschrieben — der Fehler des globalen Skripts erscheint danach als Meldung im Admin, und *SCRIPT UPDATE* frischt die Karte in diesem Fall nicht auf (bis einschließlich 2.2.0 stand er nur im Log). Beim dritten Schritt der Panel-Einrichtung bleibt er weiterhin eine Logzeile.
 
 Weiter gilt:
 
@@ -169,7 +169,7 @@ Dieselben Werte stehen als Datenpunkte unter `panels.<Panel>.info.*`, siehe [Pan
 ## Fallstricke
 
 - **Eigene Ergänzungen im Skript gehören über die Markierung.** *SCRIPT UPDATE* ersetzt alles **unterhalb** von `END STOP END STOP END - No more configuration - END STOP END STOP END`; nur was darüber steht, bleibt. Wer die Markierung löscht, kann das Skript nicht mehr aktualisieren.
-- **Der Sammelknopf schweigt bei Fehlern.** *Skripte für alle Panels aktualisieren* zeigt keine Fehlermeldung einzelner Panels an. Wurde ein Skript nicht aufgefrischt, hilft der Knopf auf der Karte dieses Panels — oder das Log.
+- **Der Sammelknopf meldet Fehler erst am Ende.** *Skripte für alle Panels aktualisieren* läuft über alle Panels hinweg und nennt danach die, deren Skript nicht aufgefrischt wurde. Für die Ursache hilft der Knopf auf der Karte dieses Panels — oder das Log. (Bis einschließlich 2.2.0 schwieg der Knopf bei Fehlern.)
 - **Zwei Vorgänge gleichzeitig vermeiden.** Während der Sammellauf arbeitet, bleiben die Knöpfe der einzelnen Karten bedienbar; gesperrt wird nur, was zum gerade bearbeiteten Panel gehört.
 - **Panel umbenannt heißt Skript verwaist.** Der Tab prüft nur das Skript, das zum aktuellen Panelnamen passt. Das alte Skript läuft weiter und sendet weiter — es gehört deaktiviert oder gelöscht.
 - **Die Skriptversion eines ausgeschalteten Panels sieht aktuell aus.** Für Panels, die der Adapter nicht betreibt, zeigt das Feld die Version der mitgelieferten Vorlage, wenn gar kein Skript-Objekt existiert. Verlässlich ist die Anzeige nur bei verbundenen Panels.

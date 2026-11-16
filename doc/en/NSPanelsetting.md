@@ -36,11 +36,11 @@ Above the form sits the red link **Help for adapter installation** (opens the wi
 | **Panel name (unique)** | Name of the panel; it appears as the name of the states and of the configuration script. |
 | **Mqtt topic (unique)** | Topic of the panel. At least four characters, starts with a letter, then letters, digits, `_` and `/`. |
 | **NSPanel Hardwaremodel** | EU landscape, US landscape or US portrait. |
-| **Timezone** | A search field with all Tasmota time zones. The setting applies **instance-wide** and is transferred in the second setup step to the panel that is currently being set up. |
+| **Timezone** | A search field with all Tasmota time zones. The setting applies **instance-wide** and is transferred in the second setup step to the panel that is currently being set up. A help text below the field says so: the value is sent only during setup or update, and only the saved value — save first, then set up. |
 
 The button below reads **NSPanel initialisation** when the topic is new, and **NSPanel configuration update** when a panel with that topic already exists. It is only active while the instance is running and every field is valid — including the MQTT settings from the other tab.
 
-After the confirmation three steps run one after the other; the admin reports a milestone after each step. If the adapter does not answer for more than 30 seconds, the admin says so and the setup keeps running in the background — the instance log shows the progress. What the steps do in detail (MQTT access, basic settings and time zone, Berry driver, TFT firmware, scripts) is described under [adapter installation](Adapter-Installation).
+If the panel table has unsaved changes, the confirmation warns about it — the save at the end would discard them (see [Pitfalls](#pitfalls)). After the confirmation three steps run one after the other; the admin reports a milestone after each step. If the adapter does not answer for more than 30 seconds, the admin says so and the setup keeps running in the background — the instance log shows the progress. What the steps do in detail (MQTT access, basic settings and time zone, Berry driver, TFT firmware, scripts) is described under [adapter installation](Adapter-Installation).
 
 ⚠️ **At the end a dialog with "Save" and "Cancel" appears: only "Save" adds the panel to the configuration.** This saving sets the **whole panel table** to the state the adapter knows — see [Pitfalls](#pitfalls).
 
@@ -152,9 +152,9 @@ If the decoupling cannot be read — with the instance stopped, for instance —
 
 ## Pitfalls
 
-- **Save before the initialisation.** The "Save" in the success dialog sets the panel table to the list the **adapter** knows — that is, to the stored state plus the new panel. Changes in the cards that have not been saved yet (a *Panel uses no script* checkbox just set, a new button action, a web panel just created) are gone afterwards.
+- **Save before the initialisation.** The "Save" in the success dialog sets the panel table to the list the **adapter** knows — that is, to the stored state plus the new panel. Changes in the cards that have not been saved yet (a *Panel uses no script* checkbox just set, a new button action, a web panel just created) are gone afterwards. Since the version after 2.2.0 the confirmation warns before the start when such changes exist; before, there was no hint.
 - **Decoupling acts immediately, the action only after saving.** The switch writes a state; *Cancel* does not take it back. The action, by contrast, lives in the instance configuration and only takes hold once it is saved and the adapter has rebuilt the panel.
-- **The time zone only goes along during setup.** The adapter reads the **stored** time zone and sends it in the second step to exactly the panel that is being set up. So save a newly chosen time zone first; other panels set up long ago only get it through *NSPanel configuration update*.
+- **The time zone only goes along during setup.** The adapter reads the **stored** time zone and sends it in the second step to exactly the panel that is being set up. So save a newly chosen time zone first; other panels set up long ago only get it through *NSPanel configuration update*. The help text below the field says so itself by now.
 - **Topic already in use:** two panels must not share a topic. Otherwise the button switches to *NSPanel configuration update* and transfers to the existing panel. If IP and topic belong to different entries, the adapter stops with a message.
 - **The button does nothing although an action is configured:** if the given state does not exist when the panel starts (renamed, deleted, alias gone), the adapter discards the action silently — the button stays without effect. Second cause: the button is still on its relay, in which case the button on the card is orange.
 - **Wrong navigation point:** a name the navigation of the panel does not know only leads to a warning in the log; nothing happens on the panel. Better to pick it from the list than to type it.

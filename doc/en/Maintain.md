@@ -25,7 +25,7 @@ Above the cards sit:
 | Element | Effect |
 |---|---|
 | **Help for adapter installation** (red text button) | Opens the wiki page [adapter installation](Adapter-Installation) in a new tab. |
-| **Update scripts for all panels** | The same as *SCRIPT UPDATE*, but for every panel whose script version differs from the shipped template. Panels with the **Panel uses no script** checkbox are left out. The button is orange while there is something to do, and grey when nothing is pending, the instance is not running or another operation is in progress. |
+| **Update scripts for all panels** | The same as *SCRIPT UPDATE*, but for every panel whose script version differs from the shipped template. Panels with the **Panel uses no script** checkbox are left out. The button is orange while there is something to do, and grey when nothing is pending, the instance is not running or another operation is in progress. If the update fails for individual panels, the run continues with the others and names the affected panels in the red error line at the end (*The script update failed for these panels: …*). |
 | Note **Beta version in use** | Appears while *beta firmware* is switched on in the [Global Settings](globelSettings). |
 | Red error line | A message of the adapter about the last operation; it can be closed. |
 
@@ -65,7 +65,7 @@ The **Script version** field compares the version in the configuration script of
 >
 > The panel script has a marker line reading `END STOP END STOP END - No more configuration - END STOP END STOP END`. **Everything below it is replaced, everything above it stays** — so your own additions only survive an update if they live **above** the marker. In the global script the line `stopScript(scriptName, undefined)` takes that role.
 >
-> ⚠️ Removing the marker from the script makes it un-updatable: the update stops with an error message and the script stays unchanged. If the marker is only missing from the global script, the error appears in the log alone — the panel script is written all the same.
+> ⚠️ Removing the marker from the script makes it un-updatable: the update stops with an error message and the script stays unchanged. If the marker is only missing from the global script, the panel script is written all the same — the error of the global script then shows up as a message in the admin, and *SCRIPT UPDATE* does not refresh the card in that case (up to and including 2.2.0 it appeared in the log alone). In the third step of the panel setup it remains a log line.
 
 Furthermore:
 
@@ -169,7 +169,7 @@ The same values are available as states under `panels.<panel>.info.*`, see [Pane
 ## Pitfalls
 
 - **Your own additions to the script belong above the marker.** *SCRIPT UPDATE* replaces everything **below** `END STOP END STOP END - No more configuration - END STOP END STOP END`; only what stands above it stays. Deleting the marker makes the script un-updatable.
-- **The collective button stays silent about errors.** *Update scripts for all panels* shows no error message for individual panels. If a script was not refreshed, the button on the card of that panel helps — or the log.
+- **The collective button reports errors only at the end.** *Update scripts for all panels* runs through all panels and then names those whose script was not refreshed. For the cause, the button on the card of that panel helps — or the log. (Up to and including 2.2.0 the button stayed silent about errors.)
 - **Avoid two operations at once.** While the collective run works, the buttons of the individual cards stay operable; only what belongs to the panel currently being processed is locked.
 - **A renamed panel means an orphaned script.** The tab only checks the script matching the current panel name. The old script keeps running and keeps sending — it belongs deactivated or deleted.
 - **The script version of a switched-off panel looks up to date.** For panels the adapter is not operating, the field shows the version of the shipped template when no script object exists at all. The display is only reliable for connected panels.
