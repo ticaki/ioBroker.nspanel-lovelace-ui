@@ -14,10 +14,12 @@ export const maintainTopics = {
     'maintain.page': { page: 'Maintain' },
     'maintain.firmwareUpdate': {
         page: 'Maintain',
-        de: '3. Tasmota und TFT aktualisieren',
-        en: '3. Updating Tasmota and TFT',
+        de: '3. Tasmota, TFT und Berry-Treiber aktualisieren',
+        en: '3. Updating Tasmota, TFT and Berry driver',
     },
-    'maintain.berryUpdate': { page: 'Maintain', de: 'Der Berry-Treiber', en: 'The Berry driver' },
+    'maintain.tasmotaUpdate': { page: 'Maintain', de: 'TASMOTA UPDATE', en: 'TASMOTA UPDATE' },
+    'maintain.tftUpdate': { page: 'Maintain', de: 'TFT UPDATE', en: 'TFT UPDATE' },
+    'maintain.berryUpdate': { page: 'Maintain', de: 'BERRY UPDATE', en: 'BERRY UPDATE' },
     // tab Panelinfo
     'maintain.panelinfo': { page: 'Panelinfo' },
     // tab Global Settings

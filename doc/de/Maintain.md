@@ -5,8 +5,10 @@ Der erste Tab der Instanz-Einstellungen: Für jedes Panel der Tabelle zeigt er e
 Inhalt:
 - [Der Tab im Überblick](#1-der-tab-im-überblick)
 - [Die Karte eines Panels](#2-die-karte-eines-panels)
-- [Tasmota und TFT aktualisieren](#3-tasmota-und-tft-aktualisieren)
-  - [Der Berry-Treiber](#der-berry-treiber)
+- [Tasmota, TFT und Berry-Treiber aktualisieren](#3-tasmota-tft-und-berry-treiber-aktualisieren)
+  - [TASMOTA UPDATE](#tasmota-update)
+  - [TFT UPDATE](#tft-update)
+  - [BERRY UPDATE](#berry-update)
 - [Skriptversion und SCRIPT UPDATE](#4-skriptversion-und-script-update)
 - [Panels ohne Skript](#5-panels-ohne-skript)
 - [Web-Panels im Tab](#6-web-panels-im-tab)
@@ -48,24 +50,29 @@ Die Farbe der Karte sagt, ob etwas zu tun ist: **orange** heißt „es gibt eine
 
 Ein ausgeschaltetes Panel kennt der Adapter nicht mehr: Die Karte bleibt, die Versionsfelder zeigen aber nur noch `---` bzw. den Platzhalter (siehe [Abschnitt 9](#9-was-die-versionsfelder-sagen)).
 
-## 3. Tasmota und TFT aktualisieren
+## 3. Tasmota, TFT und Berry-Treiber aktualisieren
 
-Vor beiden Updates fragt der Admin nach und nennt die rund **40 Sekunden**, in denen das Panel nicht erreichbar ist.
+Drei Knöpfe, ein Muster: Jeder fragt vorher nach — bei Tasmota und TFT mit den rund **40 Sekunden**, in denen das Panel nicht erreichbar ist, beim Berry-Treiber mit Panel und gemeldeter Generation. Alle Befehle gehen nur an Panels, die der Adapter gerade betreibt; die Versionsfelder aktualisieren sich von selbst, sobald das Panel sich wieder meldet. Dieselben Werkzeuge gibt es — zusätzlich zum Neustart — im Tab [Tasmota-Tools](tasmotatools), dort über die IP statt über die Panel-Karte. Das **?** in der Rückfrage jedes Knopfs führt zu seinem Abschnitt hier.
 
-| Knopf | Was passiert |
-|---|---|
-| **TASMOTA UPDATE** | Der Adapter liest die empfohlene Tasmota-Version aus der Versionsliste und schickt dem Panel über MQTT den OTA-Befehl auf `tasmota32-<SPRACHE>.bin` von `ota.tasmota.com`. Die Sprache ist die des Admin (Chinesisch fällt auf Englisch zurück). Das Panel lädt selbst und startet neu. Ist in den [Global Settings](globelSettings) die *Beta-Firmware* eingeschaltet, nimmt der Adapter den Eintrag `tasmota-beta` der Versionsliste — fehlt er, die stabile Version; auch das Versionsfeld der Karte vergleicht dann gegen die Beta. |
-| **TFT UPDATE** | Der Adapter bestimmt die zum Hardwaremodell passende TFT-Datei (`nspanel[-modell]-v<version>.tft`), berücksichtigt dabei *Beta-Firmware* und eine festgenagelte Version aus den [Global Settings](globelSettings), und schickt dem Panel den Flash-Befehl. Das Panel lädt die Datei **selbst** vom TFT-Server (Internetzugang nötig) und startet neu; das dauert einige Minuten. |
+### TASMOTA UPDATE
 
-Beide Befehle gehen nur an Panels, die der Adapter gerade betreibt. Dieselben Werkzeuge gibt es — zusätzlich zum Neustart — im Tab [Tasmota-Tools](tasmotatools), dort über die IP statt über die Panel-Karte. Die Versionsfelder aktualisieren sich von selbst, sobald das Panel sich wieder meldet.
+Der Adapter liest die empfohlene Tasmota-Version aus der Versionsliste und schickt dem Panel über MQTT den OTA-Befehl auf `tasmota32-<SPRACHE>.bin` von `ota.tasmota.com`. Die Sprache ist die des Admin (Chinesisch fällt auf Englisch zurück). Das Panel lädt selbst und startet neu.
 
-### Der Berry-Treiber
+Ist in den [Global Settings](globelSettings) die *Beta-Firmware* eingeschaltet, nimmt der Adapter den Eintrag `tasmota-beta` der Versionsliste — fehlt er, die stabile Version; auch das Versionsfeld der Karte vergleicht dann gegen die Beta.
 
-![Die Karte eines Panels mit dem Feld Berry-Treiber, dem Knopf BERRY UPDATE und dem Hilfe-Fragezeichen — hier der Emulator, bei dem der Knopf grau bleibt](../Pictures/maintain/maintain-03-berry-treiber.png)
+### TFT UPDATE
+
+Der Adapter bestimmt die zum Hardwaremodell passende TFT-Datei (`nspanel[-modell]-v<version>.tft`), berücksichtigt dabei *Beta-Firmware* und eine festgenagelte Version aus den [Global Settings](globelSettings), und schickt dem Panel den Flash-Befehl. Das Panel lädt die Datei **selbst** vom TFT-Server (Internetzugang nötig) und startet neu; das dauert einige Minuten.
+
+Eine eigene, nicht vom TFT-Server stammende Firmware lässt sich im Tab [Developer](Developer) einspielen — der Adapter stellt die Datei dann selbst bereit.
+
+### BERRY UPDATE
+
+![Die Karte eines Panels mit dem Feld Berry-Treiber und dem Knopf BERRY UPDATE — hier der Emulator, bei dem der Knopf grau bleibt](../Pictures/maintain/maintain-03-berry-treiber.png)
 
 Seit 2.3.0 zeigt die Karte unter den Firmware-Feldern das Feld **Berry-Treiber** mit der Generation des Treibers, die das Panel gemeldet hat (`12`), und daneben den Knopf **BERRY UPDATE**. Weicht die Generation von der in der Versionsliste empfohlenen ab, steht das im Feld — `12 (Update verfügbar: 13)` bzw. `(Downgrade empfohlen: …)` —, die Karte wird orange und der Knopf kräftig blau, genau wie bei Tasmota und TFT.
 
-**BERRY UPDATE** fragt vorher nach und nennt Panel und gemeldete Generation. Danach schickt der Adapter dem Tasmota über dessen Weboberfläche (an die IP der Karte) den Auftrag, die bisherige `autoexec.be` nach `autoexec.old` umzubenennen und die neue Datei vom Berry-Server zu laden — das Panel lädt sie **selbst aus dem Internet**, ohne Internetzugang schlägt es fehl. Mit *Beta-Firmware* in den [Global Settings](globelSettings) nimmt der Adapter den Eintrag `berry-beta` der Versionsliste. Anders als der gleichnamige Knopf im Tab [Tasmota-Tools](tasmotatools) wartet der Adapter hier auf die Download-Bestätigung des Tasmota (höchstens zehn Sekunden) und **startet Tasmota danach neu** — erst damit läuft der neue Treiber; das Panel ist dabei einige Sekunden nicht erreichbar. Bleibt die Bestätigung aus, gibt es keinen Neustart, und die rote Fehlerzeile meldet *Keine Download-Bestätigung von Tasmota nach der Berry-Installation erhalten*. Der alte Treiber läuft dann noch, aber nur bis zum nächsten Neustart des Tasmota, denn seine Datei ist bereits umbenannt: *BERRY UPDATE* wiederholen, sobald das Panel ins Internet kommt.
+Nach der Rückfrage schickt der Adapter dem Tasmota über dessen Weboberfläche (an die IP der Karte) den Auftrag, die bisherige `autoexec.be` nach `autoexec.old` umzubenennen und die neue Datei vom Berry-Server zu laden — das Panel lädt sie **selbst aus dem Internet**, ohne Internetzugang schlägt es fehl. Mit *Beta-Firmware* in den [Global Settings](globelSettings) nimmt der Adapter den Eintrag `berry-beta` der Versionsliste. Anders als der gleichnamige Knopf im Tab [Tasmota-Tools](tasmotatools) wartet der Adapter hier auf die Download-Bestätigung des Tasmota (höchstens zehn Sekunden) und **startet Tasmota danach neu** — erst damit läuft der neue Treiber; das Panel ist dabei einige Sekunden nicht erreichbar. Bleibt die Bestätigung aus, gibt es keinen Neustart, und die rote Fehlerzeile meldet *Keine Download-Bestätigung von Tasmota nach der Berry-Installation erhalten*. Der alte Treiber läuft dann noch, aber nur bis zum nächsten Neustart des Tasmota, denn seine Datei ist bereits umbenannt: *BERRY UPDATE* wiederholen, sobald das Panel ins Internet kommt.
 
 Das Feld fehlt bei Web-Panels. Beim Emulator steht `Emulator (12)` — er hat keinen echten Treiber, der Knopf bleibt grau, und einen Update-Hinweis gibt es nicht.
 
@@ -174,7 +181,7 @@ Ein erneuter Klick nach der Übernahme zeigt *Nichts zu übernehmen* — außer 
 | `(Developer version!)` bei TFT `0.0.0` | Eine Entwicklerversion; der Adapter wertet das als „Update nötig". |
 | `???` bei Tasmota oder TFT | Das Panel hat noch nicht geantwortet. Nach einem Adapterstart dauert das einen Moment; bleibt es dabei, stimmt etwas mit der MQTT-Verbindung, dem Topic oder der Stromversorgung nicht. |
 | `12` beim Berry-Treiber | Die Generation des Treibers, die das Panel gemeldet hat; `12 (Update verfügbar: 13)`, wenn die Versionsliste eine andere empfiehlt. |
-| `???` beim Berry-Treiber | Das Panel hat noch keine Treiberversion gemeldet. Kurz nach dem Start normal; bleibt es dabei, läuft ein Treiber, der seine Version nicht kennt, oder gar keiner — dann hilft *BERRY UPDATE* ([Der Berry-Treiber](#der-berry-treiber)). |
+| `???` beim Berry-Treiber | Das Panel hat noch keine Treiberversion gemeldet. Kurz nach dem Start normal; bleibt es dabei, läuft ein Treiber, der seine Version nicht kennt, oder gar keiner — dann hilft *BERRY UPDATE* ([BERRY UPDATE](#berry-update)). |
 | `Emulator (12)` | Der Emulator mit dem Funktionsumfang der Generation 12; beim alten Emulator steht *Emulator - kein Berry-Treiber*. |
 | `???` bei der Skriptversion | Es gibt **kein Skript-Objekt** mit dem Namen des Panels — nie angelegt, oder das Panel wurde umbenannt. Mit dem Panel hat das nichts zu tun. |
 | `---` | Der Adapter betreibt dieses Panel gerade nicht (ausgeschaltet oder noch nie verbunden). |
@@ -189,7 +196,7 @@ Dieselben Werte stehen als Datenpunkte unter `panels.<Panel>.info.*`, siehe [Pan
 - **Zwei Vorgänge gleichzeitig vermeiden.** Während der Sammellauf arbeitet, bleiben die Knöpfe der einzelnen Karten bedienbar; gesperrt wird nur, was zum gerade bearbeiteten Panel gehört.
 - **Panel umbenannt heißt Skript verwaist.** Der Tab prüft nur das Skript, das zum aktuellen Panelnamen passt. Das alte Skript läuft weiter und sendet weiter — es gehört deaktiviert oder gelöscht.
 - **Die Skriptversion eines ausgeschalteten Panels sieht aktuell aus.** Für Panels, die der Adapter nicht betreibt, zeigt das Feld die Version der mitgelieferten Vorlage, wenn gar kein Skript-Objekt existiert. Verlässlich ist die Anzeige nur bei verbundenen Panels.
-- **BERRY UPDATE ohne Internet am Panel lässt den Treiber zurück.** Das Tasmota benennt auf Anweisung des Adapters die alte Datei um, bevor es die neue lädt. Schlägt der Download fehl, läuft das Panel nur noch bis zum nächsten Tasmota-Neustart mit Treiber — *BERRY UPDATE* wiederholen, sobald das Panel ins Internet kommt (siehe [Der Berry-Treiber](#der-berry-treiber)).
+- **BERRY UPDATE ohne Internet am Panel lässt den Treiber zurück.** Das Tasmota benennt auf Anweisung des Adapters die alte Datei um, bevor es die neue lädt. Schlägt der Download fehl, läuft das Panel nur noch bis zum nächsten Tasmota-Neustart mit Treiber — *BERRY UPDATE* wiederholen, sobald das Panel ins Internet kommt (siehe [BERRY UPDATE](#berry-update)).
 - **Ein empfohlenes Tasmota-Downgrade färbt die Karte nicht.** Es steht nur im Versionsfeld; die Karte bleibt unauffällig. Bei der TFT-Firmware wird sie dagegen orange.
 - **Der Hinweis bei Web-Panels endet falsch.** Er schließt mit „Nur das Skript gilt." — das stimmt seit 2.0.0 nicht mehr: Ein Web-Panel bekommt seine Seiten im Tab [PageConfig](PageConfig) und braucht kein Skript (siehe [WebPanel](WebPanel)).
 - **Die Tasmota-Konsole nimmt die eingetragene IP.** Steht in der Panel-Tabelle eine veraltete Adresse, öffnet der Knopf das falsche Gerät — auch wenn im Feld *Tasmota-Version* längst die richtige Adresse mitgelesen wurde.

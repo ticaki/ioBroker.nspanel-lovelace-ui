@@ -424,7 +424,7 @@ class MaintainPanel extends ConfigGeneric<ConfigGenericProps & MaintainPanelProp
                     }
                 }
             },
-            'maintain.firmwareUpdate',
+            'maintain.tasmotaUpdate',
         );
     }
 
@@ -470,7 +470,7 @@ class MaintainPanel extends ConfigGeneric<ConfigGenericProps & MaintainPanelProp
                     }
                 }
             },
-            'maintain.firmwareUpdate',
+            'maintain.tftUpdate',
         );
     }
 
@@ -999,7 +999,6 @@ class MaintainPanel extends ConfigGeneric<ConfigGenericProps & MaintainPanelProp
                                                     this.getText('berryUpdate')
                                                 )}
                                             </Button>
-                                            <DocHelp topic="maintain.berryUpdate" />
                                         </Box>
                                     )}
 
