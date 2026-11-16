@@ -1278,6 +1278,21 @@
             "label": "developer",
             "expertMode": true,
             "items": {
+                // documentation of the developer tab in the ioBroker system language (German -> de, else en)
+                "_developerDoc": {
+                    "type": "staticLink",
+                    "text": "documentation",
+                    "href": "https://ticaki.github.io/ioBroker.nspanel-lovelace-ui/${_system.language === 'de' ? 'de' : 'en'}/Developer.html",
+                    "icon": "info",
+                    "button": true,
+                    "variant": "text",
+                    "newLine": true,
+                    "xs": 12,
+                    "sm": 6,
+                    "md": 4,
+                    "lg": 3,
+                    "xl": 2
+                },
                 "additionalLog": {
                     "type": "checkbox",
                     "label": "additionalLog",
