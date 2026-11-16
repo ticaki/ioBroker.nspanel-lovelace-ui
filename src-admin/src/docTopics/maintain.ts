@@ -17,7 +17,7 @@ export const maintainTopics = {
         de: '3. Tasmota und TFT aktualisieren',
         en: '3. Updating Tasmota and TFT',
     },
-    'maintain.berryInstall': { page: 'tasmotatools', de: 'Die Werkzeuge', en: 'The tools' },
+    'maintain.berryUpdate': { page: 'Maintain', de: 'Der Berry-Treiber', en: 'The Berry driver' },
     // tab Panelinfo
     'maintain.panelinfo': { page: 'Panelinfo' },
     // tab Global Settings
@@ -49,4 +49,6 @@ export const maintainTopics = {
         de: '6. Zugang schützen: PIN, HTTPS, Sicherheitsschlüssel',
         en: '6. Protecting access: PIN, HTTPS, security key',
     },
+    // tab Developer
+    'maintain.customTft': { page: 'Developer', de: 'Eigene TFT einspielen', en: 'Flashing a custom TFT' },
 } satisfies Record<`maintain.${string}`, DocTopic>;

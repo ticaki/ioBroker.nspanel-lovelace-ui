@@ -2,6 +2,7 @@ import React from 'react';
 import { ConfigGeneric, type ConfigGenericProps, type ConfigGenericState } from '@iobroker/json-config';
 import { Alert, Box, Button, FormControl, InputLabel, MenuItem, Select, Typography } from '@mui/material';
 import { UploadFile as UploadFileIcon } from '@mui/icons-material';
+import { DocHelp } from './components/DocHelp';
 
 /** Value of the panel select for "all panels" */
 const ALL_PANELS = '*';
@@ -228,6 +229,7 @@ class CustomTftUpload extends ConfigGeneric<ConfigGenericProps, CustomTftUploadS
                     sx={{ mb: 1 }}
                 >
                     {this.getText('customTftTitle')}
+                    <DocHelp topic="maintain.customTft" />
                 </Typography>
                 <Typography
                     variant="body2"
