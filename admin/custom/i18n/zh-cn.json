@@ -188,6 +188,7 @@
     "channelConfigColor_colorMode_triGrad": "三色渐变（红绿）",
     "channelConfigColor_colorMode_triGradAnchor": "三梯度锚定",
     "channelConfigColor_colorSettings": "颜色设置",
+    "channelConfigColor_colorsUnusedInMode": "此模式下不使用颜色",
     "channelConfigColor_log10": "对数缩放",
     "channelConfigColor_log10_linear": "线性（无）",
     "channelConfigColor_log10_max": "Log10 至最大值",

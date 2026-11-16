@@ -1640,10 +1640,22 @@ var newColor = c.getBlendedColor(new Color('#ffffff'), 0.50);*/
                     factor = Color.logFromScale(scale, factor);
                     return func(_cfrom, _cto, factor, { swap });
                 } else if (value >= vBest) {
+                    // vMax === vBest only happens with value === vBest: avoid 0/0 and use the best point
+                    const raw = vMax === vBest ? 0 : (value - vBest) / (vMax - vBest);
+                    const clamped = Math.min(1, Math.max(0, raw));
+                    const isGradientMode =
+                        scale.mode === 'triGrad' ||
+                        scale.mode === 'triGradAnchor' ||
+                        scale.mode === 'quadriGrad' ||
+                        scale.mode === 'quadriGradAnchor';
+                    if (scale.color_best && !isGradientMode) {
+                        // with a best color the scale runs min color → best color → max color
+                        factor = Color.logFromScale(scale, clamped);
+                        return func(scale.color_best, _cto, factor, { swap });
+                    }
+                    // without a best color: _cto is the color at the best point, back to _cfrom towards the end
                     const effectiveCfrom = scale.val_best !== undefined && scale.color_best ? scale.color_best : _cfrom;
-                    factor = (value - vBest) / (vMax - vBest);
-                    factor = 1 - Math.min(1, Math.max(0, factor));
-                    factor = Color.logFromScale(scale, factor);
+                    factor = Color.logFromScale(scale, 1 - clamped);
                     return func(effectiveCfrom, _cto, factor, { swap, anchorHigh: true });
                 }
                 const effectiveCto = scale.val_best !== undefined && scale.color_best ? scale.color_best : _cto;

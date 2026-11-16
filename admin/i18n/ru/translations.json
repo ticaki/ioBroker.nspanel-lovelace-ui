@@ -188,6 +188,7 @@
     "channelConfigColor_colorMode_triGrad": "Трехградиентный (красный-зеленый)",
     "channelConfigColor_colorMode_triGradAnchor": "Трехградиентный закрепленный",
     "channelConfigColor_colorSettings": "Настройки цвета",
+    "channelConfigColor_colorsUnusedInMode": "В этом режиме цвета не используются",
     "channelConfigColor_log10": "Логарифмическое масштабирование",
     "channelConfigColor_log10_linear": "Линейный (нет)",
     "channelConfigColor_log10_max": "Лог10 до Макса",

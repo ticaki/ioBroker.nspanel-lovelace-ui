@@ -1539,10 +1539,15 @@ class Color extends ColorBase {
           factor = Color.logFromScale(scale, factor);
           return func(_cfrom, _cto, factor, { swap });
         } else if (value >= vBest) {
+          const raw = vMax === vBest ? 0 : (value - vBest) / (vMax - vBest);
+          const clamped = Math.min(1, Math.max(0, raw));
+          const isGradientMode = scale.mode === "triGrad" || scale.mode === "triGradAnchor" || scale.mode === "quadriGrad" || scale.mode === "quadriGradAnchor";
+          if (scale.color_best && !isGradientMode) {
+            factor = Color.logFromScale(scale, clamped);
+            return func(scale.color_best, _cto, factor, { swap });
+          }
           const effectiveCfrom = scale.val_best !== void 0 && scale.color_best ? scale.color_best : _cfrom;
-          factor = (value - vBest) / (vMax - vBest);
-          factor = 1 - Math.min(1, Math.max(0, factor));
-          factor = Color.logFromScale(scale, factor);
+          factor = Color.logFromScale(scale, 1 - clamped);
           return func(effectiveCfrom, _cto, factor, { swap, anchorHigh: true });
         }
         const effectiveCto = scale.val_best !== void 0 && scale.color_best ? scale.color_best : _cto;

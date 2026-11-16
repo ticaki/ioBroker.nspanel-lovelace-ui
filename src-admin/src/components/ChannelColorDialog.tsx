@@ -412,7 +412,18 @@ class ChannelColorDialog extends React.Component<ChannelColorDialogProps, Channe
         );
     }
 
+    /**
+     * The gradient modes compute their own colors and ignore Color Min/Max/Best.
+     *
+     * @param mode color scale mode
+     * @returns true for triGrad, triGradAnchor, quadriGrad and quadriGradAnchor
+     */
+    private static isGradientMode(mode: ChannelColorDialogState['colorMode']): boolean {
+        return mode === 'triGrad' || mode === 'triGradAnchor' || mode === 'quadriGrad' || mode === 'quadriGradAnchor';
+    }
+
     render(): React.JSX.Element {
+        const colorsUnused = this.state.useScale && ChannelColorDialog.isGradientMode(this.state.colorMode);
         const {
             open,
             useScale,
@@ -487,6 +498,7 @@ class ChannelColorDialog extends React.Component<ChannelColorDialogProps, Channe
                                             <Button
                                                 size="small"
                                                 variant="outlined"
+                                                disabled={colorsUnused}
                                                 onClick={() => {
                                                     const c = this.getRoleDefaultColors().off;
                                                     this.setState({
@@ -504,6 +516,7 @@ class ChannelColorDialog extends React.Component<ChannelColorDialogProps, Channe
                                                 variant="standard"
                                                 type="color"
                                                 label={I18n.t('channelConfigColor_colorMin')}
+                                                disabled={colorsUnused}
                                                 value={this.state.localFalseColor}
                                                 onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                                                     this.setState({ localFalseColor: e.target.value })
@@ -513,6 +526,7 @@ class ChannelColorDialog extends React.Component<ChannelColorDialogProps, Channe
                                             <Button
                                                 size="small"
                                                 variant="text"
+                                                disabled={colorsUnused}
                                                 onClick={() => this.setState({ localFalseColor: '' })}
                                                 sx={{ mt: 1 }}
                                             >
@@ -533,6 +547,7 @@ class ChannelColorDialog extends React.Component<ChannelColorDialogProps, Channe
                                             <Button
                                                 size="small"
                                                 variant="outlined"
+                                                disabled={colorsUnused}
                                                 onClick={() => {
                                                     const c = this.getRoleDefaultColors().on;
                                                     this.setState({
@@ -550,6 +565,7 @@ class ChannelColorDialog extends React.Component<ChannelColorDialogProps, Channe
                                                 variant="standard"
                                                 type="color"
                                                 label={I18n.t('channelConfigColor_colorMax')}
+                                                disabled={colorsUnused}
                                                 value={this.state.localTrueColor}
                                                 onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                                                     this.setState({ localTrueColor: e.target.value })
@@ -559,6 +575,7 @@ class ChannelColorDialog extends React.Component<ChannelColorDialogProps, Channe
                                             <Button
                                                 size="small"
                                                 variant="text"
+                                                disabled={colorsUnused}
                                                 onClick={() => this.setState({ localTrueColor: '' })}
                                                 sx={{ mt: 1 }}
                                             >
@@ -576,7 +593,7 @@ class ChannelColorDialog extends React.Component<ChannelColorDialogProps, Channe
                                             <Button
                                                 size="small"
                                                 variant="outlined"
-                                                disabled={!useScale}
+                                                disabled={!useScale || colorsUnused}
                                                 onClick={() => this.setState({ colorBest: '#ffaa00' })}
                                                 sx={{ mt: 1 }}
                                             >
@@ -590,7 +607,7 @@ class ChannelColorDialog extends React.Component<ChannelColorDialogProps, Channe
                                                 type="color"
                                                 label={I18n.t('channelConfigColor_colorBest')}
                                                 value={colorBest}
-                                                disabled={!useScale}
+                                                disabled={!useScale || colorsUnused}
                                                 onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                                                     this.setState({ colorBest: e.target.value })
                                                 }
@@ -599,7 +616,7 @@ class ChannelColorDialog extends React.Component<ChannelColorDialogProps, Channe
                                             <Button
                                                 size="small"
                                                 variant="text"
-                                                disabled={!useScale}
+                                                disabled={!useScale || colorsUnused}
                                                 onClick={() => this.setState({ colorBest: '' })}
                                                 sx={{ mt: 1 }}
                                             >
@@ -613,6 +630,18 @@ class ChannelColorDialog extends React.Component<ChannelColorDialogProps, Channe
                                     sx={{ alignSelf: 'flex-start', ml: 0, flexShrink: 0 }}
                                 />
                             </Box>
+
+                            {/* gradient modes ignore the colors - the line keeps its place in every mode */}
+                            <Typography
+                                variant="caption"
+                                sx={{
+                                    color: 'text.secondary',
+                                    mt: -1,
+                                    visibility: colorsUnused ? 'visible' : 'hidden',
+                                }}
+                            >
+                                {I18n.t('channelConfigColor_colorsUnusedInMode')}
+                            </Typography>
 
                             {/* val_min, val_max, val_best */}
                             <Box sx={{ display: 'flex', gap: 2 }}>

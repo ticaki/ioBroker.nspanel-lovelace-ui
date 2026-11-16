@@ -293,4 +293,90 @@ describe('lib/const/Color', () => {
             expect(Color.getThemeFromNative({ colorTheme: '5' })).to.equal(Color.defaultTheme);
         });
     });
+
+    describe('Color.computeNumberScaleColor', () => {
+        const GREEN: RGB = { r: 0, g: 255, b: 0 };
+        const DEF: RGB = { r: 1, g: 2, b: 3 };
+        // cto = max color (red), cfrom = min color (blue)
+        const compute = (value: number, scale: unknown): RGB =>
+            Color.computeNumberScaleColor(value, RED, BLUE, scale, DEF);
+
+        describe('mixed with color_best (#896)', () => {
+            const scale = { val_min: 5, val_max: 33, val_best: 25, color_best: GREEN, mode: 'mixed' };
+
+            it('runs min color → best color → max color', () => {
+                expect(compute(5, scale)).to.deep.equal(BLUE);
+                expect(compute(25, scale)).to.deep.equal(GREEN);
+                expect(compute(33, scale)).to.deep.equal(RED);
+            });
+
+            it('interpolates between the points', () => {
+                expect(compute(15, scale)).to.deep.equal(Color.mixColor(BLUE, GREEN, 0.5));
+                expect(compute(29, scale)).to.deep.equal(Color.mixColor(GREEN, RED, 0.5));
+            });
+
+            it('clamps values outside the scale', () => {
+                expect(compute(0, scale)).to.deep.equal(BLUE);
+                expect(compute(40, scale)).to.deep.equal(RED);
+            });
+
+            it('uses the same colors as mixed when no mode is set', () => {
+                const noMode = { val_min: 5, val_max: 33, val_best: 25, color_best: GREEN };
+                expect(compute(25, noMode)).to.deep.equal(GREEN);
+                expect(compute(33, noMode)).to.deep.equal(RED);
+                expect(compute(29, noMode)).to.deep.equal(Color.mixColor(GREEN, RED, 0.5));
+            });
+
+            it('keeps the configured ends with val_max < val_min', () => {
+                const swapped = { val_min: 33, val_max: 5, val_best: 25, color_best: GREEN, mode: 'mixed' };
+                expect(compute(33, swapped)).to.deep.equal(BLUE);
+                expect(compute(25, swapped)).to.deep.equal(GREEN);
+                expect(compute(5, swapped)).to.deep.equal(RED);
+                expect(compute(29, swapped)).to.deep.equal(Color.mixColor(GREEN, BLUE, 0.5));
+            });
+        });
+
+        describe('without color_best (unchanged V shape)', () => {
+            const scale = { val_min: 0, val_max: 100, val_best: 50, mode: 'mixed' };
+
+            it('is the true color at the best point and the false color at both ends', () => {
+                expect(compute(0, scale)).to.deep.equal(BLUE);
+                expect(compute(50, scale)).to.deep.equal(RED);
+                expect(compute(100, scale)).to.deep.equal(BLUE);
+                expect(compute(25, scale)).to.deep.equal(Color.mixColor(BLUE, RED, 0.5));
+                expect(compute(75, scale)).to.deep.equal(Color.mixColor(BLUE, RED, 0.5));
+            });
+        });
+
+        describe('triGrad with color_best (colors ignored, unchanged)', () => {
+            it('gives the same colors with and without color_best', () => {
+                const withBest = { val_min: 0, val_max: 100, val_best: 50, color_best: GREEN, mode: 'triGrad' };
+                const withoutBest = { val_min: 0, val_max: 100, val_best: 50, mode: 'triGrad' };
+                for (const v of [0, 25, 50, 75, 100]) {
+                    expect(compute(v, withBest)).to.deep.equal(compute(v, withoutBest));
+                }
+                expect(compute(0, withBest)).to.deep.equal({ r: 255, g: 0, b: 0 });
+                expect(compute(50, withBest)).to.deep.equal({ r: 0, g: 255, b: 0 });
+                expect(compute(100, withBest)).to.deep.equal({ r: 255, g: 0, b: 0 });
+            });
+        });
+
+        describe('val_best equal to val_max (no NaN)', () => {
+            it('returns the best color with color_best', () => {
+                const scale = { val_min: 0, val_max: 100, val_best: 100, color_best: GREEN, mode: 'mixed' };
+                expect(compute(100, scale)).to.deep.equal(GREEN);
+            });
+
+            it('returns the best-point color without color_best', () => {
+                const scale = { val_min: 0, val_max: 100, val_best: 100, mode: 'mixed' };
+                expect(compute(100, scale)).to.deep.equal(RED);
+            });
+
+            it('returns no NaN in a gradient mode', () => {
+                const scale = { val_min: 0, val_max: 100, val_best: 100, mode: 'triGrad' };
+                const rgb = compute(100, scale);
+                expect(Number.isNaN(rgb.r) || Number.isNaN(rgb.g) || Number.isNaN(rgb.b)).to.equal(false);
+            });
+        });
+    });
 });
