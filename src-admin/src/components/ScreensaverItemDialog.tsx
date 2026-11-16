@@ -32,6 +32,7 @@ import PaletteIcon from '@mui/icons-material/Palette';
 import TuneIcon from '@mui/icons-material/Tune';
 import { EntitySelector } from './EntitySelector';
 import { TemplateSelector } from './TemplateSelector';
+import { DocHelp } from './DocHelp';
 import { applyTemplateChoice, pageItemTemplateInfoOf } from '../templateList';
 import RawItemConfigDialog, { RawItemButton, RawItemNotice, type RawItemValue } from './RawItemConfigDialog';
 import ChannelColorDialog from './ChannelColorDialog';
@@ -1276,33 +1277,39 @@ export class ScreensaverItemDialog extends React.Component<ScreensaverItemDialog
         const kind = this.state.draft.action ? action.kind : 'none';
         return (
             <Box sx={{ mb: 2 }}>
-                <FormControl
-                    variant="standard"
-                    sx={{ minWidth: 260, mb: 2 }}
-                >
-                    <InputLabel>{this.getText('screensaver_item_action')}</InputLabel>
-                    <Select
-                        value={kind}
-                        onChange={e => {
-                            const v = String(e.target.value);
-                            if (v === 'none') {
-                                this.set('action', undefined);
-                                return;
-                            }
-                            const next: ScreensaverItemAction = { ...action, kind: v as ScreensaverItemAction['kind'] };
-                            if (next.kind !== 'cycle') {
-                                delete next.values;
-                            }
-                            this.set('action', next);
-                        }}
+                <Box sx={{ display: 'flex', alignItems: 'flex-end', mb: 2 }}>
+                    <FormControl
+                        variant="standard"
+                        sx={{ minWidth: 260 }}
                     >
-                        <MenuItem value="none">{this.getText('screensaver_item_action_none')}</MenuItem>
-                        <MenuItem value="button">{this.getText('screensaver_item_action_button')}</MenuItem>
-                        <MenuItem value="switch">{this.getText('screensaver_item_action_switch')}</MenuItem>
-                        <MenuItem value="cycle">{this.getText('screensaver_item_action_cycle')}</MenuItem>
-                        <MenuItem value="navigate">{this.getText('screensaver_item_action_navigate')}</MenuItem>
-                    </Select>
-                </FormControl>
+                        <InputLabel>{this.getText('screensaver_item_action')}</InputLabel>
+                        <Select
+                            value={kind}
+                            onChange={e => {
+                                const v = String(e.target.value);
+                                if (v === 'none') {
+                                    this.set('action', undefined);
+                                    return;
+                                }
+                                const next: ScreensaverItemAction = {
+                                    ...action,
+                                    kind: v as ScreensaverItemAction['kind'],
+                                };
+                                if (next.kind !== 'cycle') {
+                                    delete next.values;
+                                }
+                                this.set('action', next);
+                            }}
+                        >
+                            <MenuItem value="none">{this.getText('screensaver_item_action_none')}</MenuItem>
+                            <MenuItem value="button">{this.getText('screensaver_item_action_button')}</MenuItem>
+                            <MenuItem value="switch">{this.getText('screensaver_item_action_switch')}</MenuItem>
+                            <MenuItem value="cycle">{this.getText('screensaver_item_action_cycle')}</MenuItem>
+                            <MenuItem value="navigate">{this.getText('screensaver_item_action_navigate')}</MenuItem>
+                        </Select>
+                    </FormControl>
+                    <DocHelp topic="screensaver.indicators" />
+                </Box>
                 {kind === 'button' || kind === 'switch' || kind === 'cycle'
                     ? this.renderStateField(
                           this.getText(
@@ -1358,28 +1365,31 @@ export class ScreensaverItemDialog extends React.Component<ScreensaverItemDialog
                 sx={{ mb: 2 }}
                 data-ss="long-press"
             >
-                <FormControl
-                    variant="standard"
-                    sx={{ minWidth: 260, mb: 2 }}
-                >
-                    <InputLabel>{this.getText('screensaver_item_longPress')}</InputLabel>
-                    <Select
-                        value={kind}
-                        onChange={e => {
-                            const v = String(e.target.value);
-                            if (!isLongPressKind(v)) {
-                                this.set('longPress', undefined);
-                                return;
-                            }
-                            this.set('longPress', { ...longPress, kind: v });
-                        }}
+                <Box sx={{ display: 'flex', alignItems: 'flex-end', mb: 2 }}>
+                    <FormControl
+                        variant="standard"
+                        sx={{ minWidth: 260 }}
                     >
-                        <MenuItem value="none">{this.getText('screensaver_item_action_none')}</MenuItem>
-                        <MenuItem value="button">{this.getText('screensaver_item_action_button')}</MenuItem>
-                        <MenuItem value="switch">{this.getText('screensaver_item_action_switch')}</MenuItem>
-                        <MenuItem value="navigate">{this.getText('screensaver_item_action_navigate')}</MenuItem>
-                    </Select>
-                </FormControl>
+                        <InputLabel>{this.getText('screensaver_item_longPress')}</InputLabel>
+                        <Select
+                            value={kind}
+                            onChange={e => {
+                                const v = String(e.target.value);
+                                if (!isLongPressKind(v)) {
+                                    this.set('longPress', undefined);
+                                    return;
+                                }
+                                this.set('longPress', { ...longPress, kind: v });
+                            }}
+                        >
+                            <MenuItem value="none">{this.getText('screensaver_item_action_none')}</MenuItem>
+                            <MenuItem value="button">{this.getText('screensaver_item_action_button')}</MenuItem>
+                            <MenuItem value="switch">{this.getText('screensaver_item_action_switch')}</MenuItem>
+                            <MenuItem value="navigate">{this.getText('screensaver_item_action_navigate')}</MenuItem>
+                        </Select>
+                    </FormControl>
+                    <DocHelp topic="screensaver.longPress" />
+                </Box>
                 {kind === 'button' || kind === 'switch'
                     ? this.renderStateField(
                           this.getText(
@@ -1681,10 +1691,15 @@ export class ScreensaverItemDialog extends React.Component<ScreensaverItemDialog
                             .replace('%s', this.getText(`screensaver_area_${area}`))
                             .replace('%s', String(index + 1))
                             .replace('%s', String(count))}
+                        <DocHelp topic="screensaver.itemDialog" />
                     </Box>
                     <RawItemButton
                         active={!!draft.raw}
                         onClick={this.handleRawOpen}
+                    />
+                    <DocHelp
+                        topic="screensaver.raw"
+                        sx={{ ml: 0 }}
                     />
                 </DialogTitle>
                 <DialogContent dividers>

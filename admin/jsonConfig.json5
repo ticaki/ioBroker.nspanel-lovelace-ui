@@ -44,7 +44,8 @@
                 "_openLinkWikiColorThemes": {
                     "type": "staticLink",
                     "text": "openLinkWikiColorThemes",
-                    "href": "https://ticaki.github.io/ioBroker.nspanel-lovelace-ui/colorTheme",
+                    // documentation in the ioBroker system language: German -> de, everything else -> en
+                    "href": "https://ticaki.github.io/ioBroker.nspanel-lovelace-ui/${_system.language === 'de' ? 'de' : 'en'}/colorTheme.html",
                     "icon": "info",
                     "button": true,
                     "style": {
@@ -934,7 +935,8 @@
                 "_openLinkWikiTasmotaTools": {
                     "type": "staticLink",
                     "text": "openLinkWikiTasmotaTools",
-                    "href": "https://ticaki.github.io/ioBroker.nspanel-lovelace-ui/tasmotatools",
+                    // documentation in the ioBroker system language: German -> de, everything else -> en
+                    "href": "https://ticaki.github.io/ioBroker.nspanel-lovelace-ui/${_system.language === 'de' ? 'de' : 'en'}/tasmotatools.html",
                     "icon": "info",
                     "button": true,
                     "style": {
@@ -1109,6 +1111,21 @@
                     "type": "staticText",
                     "text": "webPanelInfo",
                     "xs": 12
+                },
+                // documentation of the web panels in the ioBroker system language (German -> de, else en)
+                "_webPanelDoc": {
+                    "type": "staticLink",
+                    "text": "documentation",
+                    "href": "https://ticaki.github.io/ioBroker.nspanel-lovelace-ui/${_system.language === 'de' ? 'de' : 'en'}/WebPanel.html",
+                    "icon": "info",
+                    "button": true,
+                    "variant": "text",
+                    "newLine": true,
+                    "xs": 12,
+                    "sm": 6,
+                    "md": 4,
+                    "lg": 3,
+                    "xl": 2
                 },
                 "webEnabled": {
                     "type": "checkbox",
@@ -1527,6 +1544,20 @@
                     "md": 6,
                     "lg": 4,
                     "xl": 3
+                },
+                // documentation of the icon overview in the ioBroker system language (German -> de, else en)
+                "_iconOverviewDoc": {
+                    "type": "staticLink",
+                    "text": "documentation",
+                    "href": "https://ticaki.github.io/ioBroker.nspanel-lovelace-ui/${_system.language === 'de' ? 'de' : 'en'}/symbolOverview.html",
+                    "icon": "info",
+                    "button": true,
+                    "variant": "text",
+                    "xs": 12,
+                    "sm": 6,
+                    "md": 3,
+                    "lg": 2,
+                    "xl": 2
                 },
                 "_iconGrid": {
                     "type": "custom",

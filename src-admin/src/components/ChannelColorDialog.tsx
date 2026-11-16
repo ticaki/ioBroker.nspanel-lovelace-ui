@@ -20,6 +20,7 @@ import { Color, type ColorThemenInterface, type RGB } from '../../../src/lib/con
 import { loadAdapterColorTheme, resolveThemeColor } from '../adapterColorTheme';
 import { type PageItemRoleDefaults } from '../../../src/lib/const/page-item-defaults';
 import { I18n } from '@iobroker/gui-components';
+import { DocHelp } from './DocHelp';
 import type { ChannelColorConfig, IconColorElement } from '../../../src/lib/types/adminShareConfig';
 
 export interface ChannelColorDialogProps {
@@ -435,7 +436,10 @@ class ChannelColorDialog extends React.Component<ChannelColorDialogProps, Channe
                 maxWidth="md"
                 fullWidth
             >
-                <DialogTitle>{I18n.t('channelConfigColor_optionsTitle')}</DialogTitle>
+                <DialogTitle sx={{ display: 'flex', alignItems: 'center' }}>
+                    {I18n.t('channelConfigColor_optionsTitle')}
+                    <DocHelp topic="dialogs.colorOptions" />
+                </DialogTitle>
                 <DialogContent>
                     {/* Farbeinstellungen & IconScaleElement */}
                     {

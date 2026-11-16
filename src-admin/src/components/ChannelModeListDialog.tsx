@@ -15,6 +15,7 @@ import { I18n, type ThemeType } from '@iobroker/gui-components';
 import type { ChannelModeListConfig } from '../../../src/lib/types/adminShareConfig';
 import { EntitySelector } from './EntitySelector';
 import ConfirmDialog from './ConfirmDialog';
+import { DocHelp } from './DocHelp';
 
 /** Maximum length of the joined mode list – the adapter truncates at this length (pageItem.ts). */
 const MODE_LIST_MAX_LENGTH = 900;
@@ -404,7 +405,10 @@ class ChannelModeListDialog extends React.Component<ChannelModeListDialogProps, 
                     maxWidth="md"
                     fullWidth
                 >
-                    <DialogTitle>{I18n.t('channelModeListDialog_title')}</DialogTitle>
+                    <DialogTitle sx={{ display: 'flex', alignItems: 'center' }}>
+                        {I18n.t('channelModeListDialog_title')}
+                        <DocHelp topic="dialogs.modeList" />
+                    </DialogTitle>
                     <DialogContent>
                         <Box
                             sx={{

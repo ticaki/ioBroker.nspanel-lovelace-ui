@@ -47,6 +47,8 @@ import { I18n } from '@iobroker/gui-components';
 import { rawItemListLabel } from './RawItemConfigDialog';
 import { ConfigGeneric, type ConfigGenericProps, type ConfigGenericState } from '@iobroker/json-config';
 import { EntitySelector } from './EntitySelector';
+import { DocHelp } from './DocHelp';
+import type { DocTopicKey } from '../docTopics';
 import ChannelConfigDialog from './ChannelConfigDialog';
 import IconSelect from '../IconSelect';
 import icons from '../icons.json';
@@ -66,6 +68,7 @@ import {
     emptyChannelValueConfig,
     requiredScriptDataPoints,
 } from '../../../src/lib/types/adminShareConfig';
+import { CardTypeBadge } from './CardTypeBadge';
 
 export interface PageThermo2EditorProps {
     entry: Thermo2Entry;
@@ -1264,6 +1267,13 @@ export class PageThermo2Editor extends ConfigGeneric<
             mode: 'thermo2_dialogMode',
             heat: 'thermo2_dialogHeat',
         };
+        const helpTopics: Record<DialogKind, DocTopicKey> = {
+            circuit: 'pages2.thermo2Circuit',
+            limits: 'pages2.thermo2Limits',
+            display: 'pages2.thermo2Display',
+            mode: 'pages2.thermo2Mode',
+            heat: 'pages2.thermo2HeatIcon',
+        };
 
         let content: React.JSX.Element;
         switch (dialog) {
@@ -1329,6 +1339,7 @@ export class PageThermo2Editor extends ConfigGeneric<
                                                 .map(a => a.key)
                                                 .join(', ') || '–',
                                         )}
+                                        <DocHelp topic="pages2.thermo2AliasButtons" />
                                     </Typography>
                                 )}
                             </Box>
@@ -1501,7 +1512,10 @@ export class PageThermo2Editor extends ConfigGeneric<
                 fullWidth
                 onClose={this.closeDialog}
             >
-                <DialogTitle>{this.getText(titles[dialog])}</DialogTitle>
+                <DialogTitle sx={{ display: 'flex', alignItems: 'center' }}>
+                    {this.getText(titles[dialog])}
+                    <DocHelp topic={helpTopics[dialog]} />
+                </DialogTitle>
                 <DialogContent dividers>{content}</DialogContent>
                 <DialogActions>
                     <Button onClick={this.closeDialog}>{this.getText('thermo2_cancel')}</Button>
@@ -1987,8 +2001,13 @@ export class PageThermo2Editor extends ConfigGeneric<
                         p: 1,
                         borderRadius: 1,
                         backgroundColor: 'action.hover',
+                        position: 'relative',
                     }}
                 >
+                    <CardTypeBadge
+                        card={entry.card}
+                        getText={key => this.getText(key)}
+                    />
                     <TextField
                         fullWidth
                         variant="standard"
@@ -2049,6 +2068,10 @@ export class PageThermo2Editor extends ConfigGeneric<
                             </IconButton>
                         </span>
                     </Tooltip>
+                    <DocHelp
+                        topic="pages2.thermo2Editor"
+                        sx={{ ml: 0 }}
+                    />
                 </Box>
                 {unusable > 0 && (
                     <Alert
@@ -2115,6 +2138,10 @@ export class PageThermo2Editor extends ConfigGeneric<
                             ))}
                         </Select>
                     </FormControl>
+                    <DocHelp
+                        topic="pages2.thermo2SortOrder"
+                        sx={{ ml: -1.5 }}
+                    />
                     <Button
                         size="small"
                         variant="outlined"
@@ -2148,6 +2175,7 @@ export class PageThermo2Editor extends ConfigGeneric<
                     sx={{ display: 'block', mt: 1 }}
                 >
                     {this.getText('thermo2_panelHint')} {this.getText('thermo2_moveHint')}
+                    <DocHelp topic="pages2.thermo2Items" />
                 </Typography>
 
                 {this.renderDialog()}

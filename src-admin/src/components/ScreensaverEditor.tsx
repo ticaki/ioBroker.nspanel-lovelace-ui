@@ -46,6 +46,8 @@ import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined';
 import { EntitySelector } from './EntitySelector';
+import { DocHelp } from './DocHelp';
+import type { DocTopicKey } from '../docTopics';
 import { ScreensaverItemDialog } from './ScreensaverItemDialog';
 import { trashPageNames } from '../templateList';
 import ScreensaverNotifyListDialog from './ScreensaverNotifyListDialog';
@@ -1354,26 +1356,34 @@ export class ScreensaverEditor extends React.Component<ScreensaverEditorProps, S
                             onChange={e => this.setTimer({ enabled: e.target.checked })}
                         />
                     }
-                    label={this.getText('screensaver_timer_show')}
+                    label={
+                        <span>
+                            {this.getText('screensaver_timer_show')}
+                            <DocHelp topic="screensaver.timer" />
+                        </span>
+                    }
                 />
                 {timer.enabled && (
                     <Box sx={{ mt: 1 }}>
-                        <TextField
-                            select
-                            fullWidth
-                            variant="standard"
-                            sx={{ mb: 1 }}
-                            label={this.getText('screensaver_timer_source')}
-                            value={fromItem ? 'item' : 'states'}
-                            onChange={e => {
-                                const useItem = e.target.value === 'item';
-                                this.setTimer({ itemId: useItem ? '' : undefined });
-                            }}
-                            slotProps={{ inputLabel: { shrink: true } }}
-                        >
-                            <MenuItem value="states">{this.getText('screensaver_timer_source_states')}</MenuItem>
-                            <MenuItem value="item">{this.getText('screensaver_timer_source_item')}</MenuItem>
-                        </TextField>
+                        <Box sx={{ display: 'flex', alignItems: 'flex-end', mb: 1 }}>
+                            <TextField
+                                select
+                                fullWidth
+                                variant="standard"
+                                sx={{ flex: 1 }}
+                                label={this.getText('screensaver_timer_source')}
+                                value={fromItem ? 'item' : 'states'}
+                                onChange={e => {
+                                    const useItem = e.target.value === 'item';
+                                    this.setTimer({ itemId: useItem ? '' : undefined });
+                                }}
+                                slotProps={{ inputLabel: { shrink: true } }}
+                            >
+                                <MenuItem value="states">{this.getText('screensaver_timer_source_states')}</MenuItem>
+                                <MenuItem value="item">{this.getText('screensaver_timer_source_item')}</MenuItem>
+                            </TextField>
+                            <DocHelp topic={fromItem ? 'screensaver.timerItem' : 'screensaver.timerStates'} />
+                        </Box>
                         {fromItem && this.renderTimerItemField()}
                         {!fromItem && this.renderTimerStateField('activeState', 'screensaver_timer_activeState')}
                         {!fromItem && this.renderTimerStateField('dataState', 'screensaver_timer_dataState')}
@@ -1461,7 +1471,10 @@ export class ScreensaverEditor extends React.Component<ScreensaverEditorProps, S
                 maxWidth="sm"
                 fullWidth
             >
-                <DialogTitle>{this.getText('screensaver_timer_slotsTitle')}</DialogTitle>
+                <DialogTitle sx={{ display: 'flex', alignItems: 'center' }}>
+                    {this.getText('screensaver_timer_slotsTitle')}
+                    <DocHelp topic="screensaver.timerStates" />
+                </DialogTitle>
                 <DialogContent dividers>
                     <Typography
                         variant="caption"
@@ -1630,6 +1643,13 @@ export class ScreensaverEditor extends React.Component<ScreensaverEditorProps, S
             date: this.getText('screensaver_date'),
             options: this.getText('screensaver_options'),
         };
+        const topics: Record<DialogKind, DocTopicKey> = {
+            mricon1: 'screensaver.statusIcons',
+            mricon2: 'screensaver.statusIcons',
+            time: 'screensaver.timeDate',
+            date: 'screensaver.timeDate',
+            options: 'screensaver.options',
+        };
         let content: React.JSX.Element | null = null;
         if ((dialog === 'mricon1' || dialog === 'mricon2') && draftIcon) {
             content = (
@@ -1785,7 +1805,10 @@ export class ScreensaverEditor extends React.Component<ScreensaverEditorProps, S
                 maxWidth="sm"
                 fullWidth
             >
-                <DialogTitle>{titles[dialog]}</DialogTitle>
+                <DialogTitle sx={{ display: 'flex', alignItems: 'center' }}>
+                    {titles[dialog]}
+                    <DocHelp topic={topics[dialog]} />
+                </DialogTitle>
                 <DialogContent dividers>{content}</DialogContent>
                 <DialogActions>
                     <Button onClick={this.closeDialog}>{this.getText('Cancel1')}</Button>
@@ -2412,6 +2435,7 @@ export class ScreensaverEditor extends React.Component<ScreensaverEditorProps, S
                     sx={{ mb: 1 }}
                 >
                     {this.getText('screensaver_weather')}
+                    <DocHelp topic="screensaver.weather" />
                 </Typography>
                 <FormControl
                     variant="standard"
@@ -2726,6 +2750,10 @@ export class ScreensaverEditor extends React.Component<ScreensaverEditorProps, S
                             ))}
                         </Select>
                     </FormControl>
+                    <DocHelp
+                        topic={entry.mode === 'tiles' ? 'screensaver.tiles' : 'screensaver.versionPanels'}
+                        sx={{ ml: -1.5 }}
+                    />
                     <FormControl
                         variant="standard"
                         sx={{ minWidth: 260, flex: 1 }}
@@ -2854,6 +2882,7 @@ export class ScreensaverEditor extends React.Component<ScreensaverEditorProps, S
                         {this.getText('screensaver_weather_pagingHint')
                             .replace('%s', String(own + weather))
                             .replace('%s', String(limit))}
+                        <DocHelp topic="screensaver.paging" />
                     </Typography>,
                 );
             } else if (limit > 0 && own > limit) {
@@ -2869,6 +2898,7 @@ export class ScreensaverEditor extends React.Component<ScreensaverEditorProps, S
                             .replace('%s', this.getText(`screensaver_area_${area}`))
                             .replace('%s', String(own))
                             .replace('%s', String(limit))}
+                        <DocHelp topic="screensaver.paging" />
                     </Typography>,
                 );
             }
@@ -2894,6 +2924,7 @@ export class ScreensaverEditor extends React.Component<ScreensaverEditorProps, S
                                 sx={{ display: 'block', mt: 1 }}
                             >
                                 {this.getText('screensaver_panelHint')}
+                                <DocHelp topic="screensaver.editor" />
                             </Typography>
                             {this.layout().areas.indicator && (
                                 <Typography
@@ -2902,6 +2933,7 @@ export class ScreensaverEditor extends React.Component<ScreensaverEditorProps, S
                                     sx={{ display: 'block', mt: 0.5 }}
                                 >
                                     {this.getText('screensaver_indicator_legend')}
+                                    <DocHelp topic="screensaver.indicators" />
                                 </Typography>
                             )}
                             {this.renderPagingHints()}
@@ -2914,6 +2946,7 @@ export class ScreensaverEditor extends React.Component<ScreensaverEditorProps, S
                     sx={{ mt: 1.5 }}
                 >
                     {this.getText('screensaver_adapterNote')}
+                    <DocHelp topic="screensaver.saving" />
                 </Alert>
 
                 {this.renderDialog()}

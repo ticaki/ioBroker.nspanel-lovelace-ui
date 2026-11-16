@@ -30,6 +30,7 @@ import SettingsIcon from '@mui/icons-material/Settings';
 import Tooltip from '@mui/material/Tooltip';
 import { ConfigGeneric, type ConfigGenericProps, type ConfigGenericState } from '@iobroker/json-config';
 import { I18n } from '@iobroker/gui-components';
+import { DocHelp } from './DocHelp';
 import type {
     PanelInfo,
     NavigationAssignmentList,
@@ -1378,6 +1379,7 @@ class NavigationAssignmentPanel extends ConfigGeneric<
                         sx={{ mb: 1 }}
                     >
                         {I18n.t('scroll_presentation')}
+                        <DocHelp topic="navigation.scroll" />
                     </Typography>
                     <RadioGroup
                         row
@@ -1696,6 +1698,10 @@ class NavigationAssignmentPanel extends ConfigGeneric<
                         sx={{ fontWeight: 600 }}
                     >
                         {I18n.t('navigation_panel')}
+                        <DocHelp
+                            topic={activeTab === 1 ? 'navigation.pageDetails' : 'navigation.assignment'}
+                            sx={{ color: 'inherit' }}
+                        />
                     </Typography>
                 </Box>
 
@@ -1725,6 +1731,7 @@ class NavigationAssignmentPanel extends ConfigGeneric<
                         }}
                     >
                         {I18n.t('navigation_panel')}
+                        <DocHelp topic={activeTab === 1 ? 'navigation.pageDetails' : 'navigation.assignment'} />
                     </Typography>
 
                     {/* Tabs */}

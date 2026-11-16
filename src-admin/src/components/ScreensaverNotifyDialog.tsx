@@ -28,6 +28,8 @@ import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
 import type { ThemeType } from '@iobroker/gui-components';
 import { EntitySelector } from './EntitySelector';
+import { DocHelp } from './DocHelp';
+import type { DocTopicKey } from '../docTopics';
 import { ScreensaverItemDialog, iconSrc } from './ScreensaverItemDialog';
 import IconSelect from '../IconSelect';
 import {
@@ -385,13 +387,14 @@ export default class ScreensaverNotifyDialog extends React.Component<
         );
     }
 
-    private renderSectionTitle(key: string): React.JSX.Element {
+    private renderSectionTitle(key: string, topic: DocTopicKey): React.JSX.Element {
         return (
             <Typography
                 variant="subtitle2"
                 sx={{ mt: 2, mb: 1 }}
             >
                 {this.getText(key)}
+                <DocHelp topic={topic} />
             </Typography>
         );
     }
@@ -417,6 +420,7 @@ export default class ScreensaverNotifyDialog extends React.Component<
                     color="text.secondary"
                 >
                     {this.getText('screensaver_preview')}
+                    <DocHelp topic="screensaver.notifyPreview" />
                 </Typography>
                 <Box
                     sx={{
@@ -445,7 +449,7 @@ export default class ScreensaverNotifyDialog extends React.Component<
         return (
             <Box>
                 {this.renderPreview()}
-                {this.renderSectionTitle('screensaver_notify_content')}
+                {this.renderSectionTitle('screensaver_notify_content', 'screensaver.notifyContent')}
                 <Typography
                     variant="caption"
                     color="text.secondary"
@@ -491,7 +495,7 @@ export default class ScreensaverNotifyDialog extends React.Component<
         const { draft } = this.state;
         return (
             <Box>
-                {this.renderSectionTitle('screensaver_notify_condition')}
+                {this.renderSectionTitle('screensaver_notify_condition', 'screensaver.notifyCondition')}
                 {draft.enabled.map((value, index) => (
                     <Box
                         key={index}
@@ -559,18 +563,24 @@ export default class ScreensaverNotifyDialog extends React.Component<
                         slotProps={{ inputLabel: { shrink: true } }}
                         sx={{ flex: 1, minWidth: 260 }}
                     />
-                    <TextField
-                        variant="standard"
-                        type="number"
-                        label={this.getText('screensaver_notify_priority')}
-                        placeholder="99"
-                        value={this.state.priority}
-                        error={this.invalidPriority()}
-                        onChange={e => this.setState({ priority: e.target.value })}
-                        helperText={this.getText('screensaver_notify_priorityHint')}
-                        slotProps={{ inputLabel: { shrink: true } }}
-                        sx={{ width: 220 }}
-                    />
+                    <Box sx={{ display: 'flex', alignItems: 'flex-start' }}>
+                        <TextField
+                            variant="standard"
+                            type="number"
+                            label={this.getText('screensaver_notify_priority')}
+                            placeholder="99"
+                            value={this.state.priority}
+                            error={this.invalidPriority()}
+                            onChange={e => this.setState({ priority: e.target.value })}
+                            helperText={this.getText('screensaver_notify_priorityHint')}
+                            slotProps={{ inputLabel: { shrink: true } }}
+                            sx={{ width: 220 }}
+                        />
+                        <DocHelp
+                            topic="screensaver.notifyPriority"
+                            sx={{ mt: 2 }}
+                        />
+                    </Box>
                 </Box>
             </Box>
         );
@@ -581,7 +591,7 @@ export default class ScreensaverNotifyDialog extends React.Component<
         const ids = this.props.knownIds.filter(id => id !== draft.dismissibleId);
         return (
             <Box>
-                {this.renderSectionTitle('screensaver_notify_dismiss')}
+                {this.renderSectionTitle('screensaver_notify_dismiss', 'screensaver.notifyDismiss')}
                 <FormControlLabel
                     control={
                         <Checkbox
@@ -617,7 +627,7 @@ export default class ScreensaverNotifyDialog extends React.Component<
         const { buzzerMode, buzzerSequence } = this.state;
         return (
             <Box>
-                {this.renderSectionTitle('screensaver_notify_buzzer')}
+                {this.renderSectionTitle('screensaver_notify_buzzer', 'screensaver.notifyBuzzer')}
                 <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', alignItems: 'flex-start' }}>
                     <FormControl
                         variant="standard"
@@ -669,8 +679,9 @@ export default class ScreensaverNotifyDialog extends React.Component<
                 maxWidth="md"
                 fullWidth
             >
-                <DialogTitle>
+                <DialogTitle sx={{ display: 'flex', alignItems: 'center' }}>
                     {this.getText(this.state.isNew ? 'screensaver_notify_new' : 'screensaver_notify_editTitle')}
+                    <DocHelp topic="screensaver.notifyPage" />
                 </DialogTitle>
                 <DialogContent dividers>
                     {this.props.sharedWith.length > 0 && (

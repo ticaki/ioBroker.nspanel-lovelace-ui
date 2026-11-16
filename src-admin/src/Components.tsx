@@ -12,21 +12,23 @@ import WebFidoKeys from './WebFidoKeys';
 import CustomTftUpload from './CustomTftUpload';
 import { ChannelConfigDialogJsonConfig } from './components/ChannelConfigDialog';
 import { installLabelHover } from './labelHover';
+import { withDocLanguage } from './components/DocHelp';
 
 installLabelHover();
 
+// withDocLanguage: hands the ioBroker system language to the documentation links (DocHelp/DocButton)
 export default {
-    NavigationView,
-    IconSelect,
-    IconOverview,
-    PageConfigManager,
-    ScreensaverConfigManager,
-    PageGlobalSettings,
-    TabMaintain,
-    TabPanelinfo,
-    PageMQTTSetting,
-    PagePanelOverview,
-    WebFidoKeys,
-    CustomTftUpload,
-    ChannelConfigDialog: ChannelConfigDialogJsonConfig,
+    NavigationView: withDocLanguage(NavigationView),
+    IconSelect: withDocLanguage(IconSelect),
+    IconOverview: withDocLanguage(IconOverview),
+    PageConfigManager: withDocLanguage(PageConfigManager),
+    ScreensaverConfigManager: withDocLanguage(ScreensaverConfigManager),
+    PageGlobalSettings: withDocLanguage(PageGlobalSettings),
+    TabMaintain: withDocLanguage(TabMaintain),
+    TabPanelinfo: withDocLanguage(TabPanelinfo),
+    PageMQTTSetting: withDocLanguage(PageMQTTSetting),
+    PagePanelOverview: withDocLanguage(PagePanelOverview),
+    WebFidoKeys: withDocLanguage(WebFidoKeys),
+    CustomTftUpload: withDocLanguage(CustomTftUpload),
+    ChannelConfigDialog: withDocLanguage(ChannelConfigDialogJsonConfig),
 };

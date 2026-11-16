@@ -1,6 +1,7 @@
 import React from 'react';
 import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from '@mui/material';
 import { I18n } from '@iobroker/gui-components';
+import { DocHelp } from './DocHelp';
 
 export interface NavigationScopeDialogProps {
     open: boolean;
@@ -33,7 +34,13 @@ export default class NavigationScopeDialog extends React.PureComponent<Navigatio
                 maxWidth="sm"
                 fullWidth
             >
-                <DialogTitle id="navigation-scope-dialog-title">{I18n.t('nav_edit_scope_title')}</DialogTitle>
+                <DialogTitle
+                    id="navigation-scope-dialog-title"
+                    sx={{ display: 'flex', alignItems: 'center' }}
+                >
+                    {I18n.t('nav_edit_scope_title')}
+                    <DocHelp topic="navigation.scope" />
+                </DialogTitle>
                 <DialogContent>
                     <DialogContentText id="navigation-scope-dialog-description">
                         {I18n.t('nav_edit_scope_text').replace('%s', pageName).replace('%p', panelName)}

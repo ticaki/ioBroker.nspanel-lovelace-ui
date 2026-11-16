@@ -248,6 +248,7 @@ import {
 } from '@mui/material';
 import { filterNamesByText } from './components/PageConfigLayout';
 import NodePageInfoPanel from './components/NodePageInfoPanel';
+import { DocButton, DocHelp } from './components/DocHelp';
 import { openPageConfig } from './pageConfigLink';
 import ConfirmDialog from './components/ConfirmDialog';
 import { alpha, useTheme } from '@mui/material/styles';
@@ -2863,7 +2864,10 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
                         '& .MuiFormControlLabel-label': { whiteSpace: 'nowrap' },
                     }}
                 >
-                    <Typography variant="h6">{I18n.t('Panel_Navigation')}</Typography>
+                    <Typography variant="h6">
+                        {I18n.t('Panel_Navigation')}
+                        <DocHelp topic="navigation.whatShown" />
+                    </Typography>
                     <TextField
                         variant="standard"
                         size="small"
@@ -2902,7 +2906,12 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
                                 size="small"
                             />
                         }
-                        label={I18n.t('show_home_edges')}
+                        label={
+                            <span>
+                                {I18n.t('show_home_edges')}
+                                <DocHelp topic="navigation.header" />
+                            </span>
+                        }
                     />
                     <FormControlLabel
                         control={
@@ -2913,7 +2922,12 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
                                 size="small"
                             />
                         }
-                        label={I18n.t('nav_edit_mode')}
+                        label={
+                            <span>
+                                {I18n.t('nav_edit_mode')}
+                                <DocHelp topic="navigation.edit" />
+                            </span>
+                        }
                     />
                     <Button
                         variant="outlined"
@@ -2941,6 +2955,10 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
                             <ArrowDropDownIcon />
                         </Button>
                     </ButtonGroup>
+                    <DocHelp
+                        topic="navigation.arrange"
+                        sx={{ ml: -1.5 }}
+                    />
                     <Menu
                         anchorEl={this.state.autoLayoutMenu}
                         open={!!this.state.autoLayoutMenu}
@@ -3052,6 +3070,7 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
                         >
                             {I18n.t('nav_edit_legend_override_stale')}
                         </Typography>
+                        <DocHelp topic="navigation.legend" />
                     </Box>
                     {editing ? (
                         <>
@@ -3074,6 +3093,7 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
                         sx={{ mb: 1 }}
                     >
                         {I18n.t('nav_edit_unsaved_hint')}
+                        <DocHelp topic="navigation.save" />
                     </Alert>
                 ) : null}
                 {restarting ? (
@@ -3127,6 +3147,8 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
                                     {I18n.t('touch_hint_buttons')}
                                 </Typography>
                             ) : null}
+                            <Box sx={{ flex: 1 }} />
+                            <DocButton topic="navigation.page" />
                         </Box>
                         <div className="reactflow-container">
                             {/* Global SVG defs for edge arrow markers (rendered once) */}

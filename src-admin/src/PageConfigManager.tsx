@@ -46,6 +46,7 @@ import { PageThermoEditor } from './components/PageThermoEditor';
 import { PageMediaEditor } from './components/PageMediaEditor';
 import type { PageCommonFields } from './components/NavigationAssignmentPanel';
 import { PageLinkEditor } from './components/PageLinkEditor';
+import { DocHelp } from './components/DocHelp';
 
 interface PageConfigManagerState extends ConfigGenericState {
     entries: PageConfigEntry[];
@@ -520,7 +521,10 @@ class PageConfigManager extends ConfigGeneric<ConfigGenericProps & { theme?: any
         if (!selected) {
             return (
                 <Box>
-                    <Typography variant="h6">{this.getText('select_item')}</Typography>
+                    <Typography variant="h6">
+                        {this.getText('select_item')}
+                        <DocHelp topic="pages1.overview" />
+                    </Typography>
                     <Box sx={{ mt: 2 }}>
                         <Typography
                             variant="body2"

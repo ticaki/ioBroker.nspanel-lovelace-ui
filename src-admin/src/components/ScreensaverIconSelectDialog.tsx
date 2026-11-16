@@ -21,6 +21,7 @@ import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
 import SortIcon from '@mui/icons-material/Sort';
 import IconSelect from '../IconSelect';
+import { DocHelp } from './DocHelp';
 
 export type ScreensaverIconSelectEntry = { value: number; icon: string };
 
@@ -240,7 +241,10 @@ export default class ScreensaverIconSelectDialog extends React.Component<
                 maxWidth="sm"
                 fullWidth
             >
-                <DialogTitle>{this.getText('screensaver_iconSelect_title')}</DialogTitle>
+                <DialogTitle sx={{ display: 'flex', alignItems: 'center' }}>
+                    {this.getText('screensaver_iconSelect_title')}
+                    <DocHelp topic="screensaver.itemDialog" />
+                </DialogTitle>
                 <DialogContent dividers>
                     <Typography
                         variant="caption"

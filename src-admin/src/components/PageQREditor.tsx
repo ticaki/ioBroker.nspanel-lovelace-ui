@@ -18,9 +18,11 @@ import {
 import { Visibility, VisibilityOff } from '@mui/icons-material';
 import { EntitySelector } from './EntitySelector';
 import { CredentialSelect } from './CredentialSelect';
+import { DocHelp } from './DocHelp';
 import { type QREntry, ADAPTER_NAME } from '../../../src/lib/types/adminShareConfig';
 import { isMainPageEntry } from '../../../src/lib/types/adminShareConfig';
 import { ConfigGeneric, type ConfigGenericProps, type ConfigGenericState } from '@iobroker/json-config';
+import { CardTypeBadge } from './CardTypeBadge';
 
 export interface PageQREditorProps {
     entry: QREntry;
@@ -104,8 +106,13 @@ export class PageQREditor extends ConfigGeneric<ConfigGenericProps & PageQREdito
                         p: 1,
                         borderRadius: 1,
                         backgroundColor: 'action.hover',
+                        position: 'relative',
                     }}
                 >
+                    <CardTypeBadge
+                        card={entry.card}
+                        getText={key => this.getText(key)}
+                    />
                     <TextField
                         fullWidth
                         variant="standard"
@@ -137,7 +144,10 @@ export class PageQREditor extends ConfigGeneric<ConfigGenericProps & PageQREdito
                         component="fieldset"
                         disabled={!this.state.alive}
                     >
-                        <FormLabel component="legend">{this.getText('qr_type')}</FormLabel>
+                        <FormLabel component="legend">
+                            {this.getText('qr_type')}
+                            <DocHelp topic="pages1.qrType" />
+                        </FormLabel>
                         <RadioGroup
                             row
                             value={entry.selType ?? 0}
@@ -223,30 +233,36 @@ export class PageQREditor extends ConfigGeneric<ConfigGenericProps & PageQREdito
                 {entry.selType === 1 && (
                     <Box sx={{ mb: 2 }}>
                         {/* WLAN Type */}
-                        <FormControl
-                            variant="standard"
-                            sx={{ mb: 2, minWidth: 240 }}
-                            disabled={!this.state.alive}
-                        >
-                            <InputLabel>{this.getText('qr_wlan_type')}</InputLabel>
-                            <Select
-                                value={entry.wlantype ?? 'WPA2'}
-                                onChange={e => {
-                                    const v = e.target.value;
-                                    this.handleFieldChange('wlantype', v);
-                                }}
+                        <Box sx={{ display: 'flex', alignItems: 'flex-end', mb: 2 }}>
+                            <FormControl
+                                variant="standard"
+                                sx={{ minWidth: 240 }}
+                                disabled={!this.state.alive}
                             >
-                                <MenuItem value="nopass">No Password</MenuItem>
-                                <MenuItem value="WPA">WPA</MenuItem>
-                                <MenuItem value="WPA2">WPA2</MenuItem>
-                                <MenuItem value="WPA3">WPA3</MenuItem>
-                                <MenuItem value="WEP">WEP</MenuItem>
-                            </Select>
-                        </FormControl>
+                                <InputLabel>{this.getText('qr_wlan_type')}</InputLabel>
+                                <Select
+                                    value={entry.wlantype ?? 'WPA2'}
+                                    onChange={e => {
+                                        const v = e.target.value;
+                                        this.handleFieldChange('wlantype', v);
+                                    }}
+                                >
+                                    <MenuItem value="nopass">No Password</MenuItem>
+                                    <MenuItem value="WPA">WPA</MenuItem>
+                                    <MenuItem value="WPA2">WPA2</MenuItem>
+                                    <MenuItem value="WPA3">WPA3</MenuItem>
+                                    <MenuItem value="WEP">WEP</MenuItem>
+                                </Select>
+                            </FormControl>
+                            <DocHelp
+                                topic="pages1.qrWifi"
+                                sx={{ mb: 0.5 }}
+                            />
+                        </Box>
 
                         {/* Central credential: the adapter reads the password from it, the entry only stores the id */}
                         {entry.wlantype !== 'nopass' && (
-                            <Box sx={{ mb: 2 }}>
+                            <Box sx={{ mb: 2, display: 'flex', alignItems: 'flex-start' }}>
                                 <CredentialSelect
                                     socket={oContext.socket}
                                     label={this.getText('credential_qr')}
@@ -257,6 +273,10 @@ export class PageQREditor extends ConfigGeneric<ConfigGenericProps & PageQREdito
                                     }}
                                     disabled={!this.state.alive}
                                     sx={{ minWidth: 240, maxWidth: 600 }}
+                                />
+                                <DocHelp
+                                    topic="pages1.qrCredential"
+                                    sx={{ mt: 2.5 }}
                                 />
                             </Box>
                         )}
@@ -328,29 +348,32 @@ export class PageQREditor extends ConfigGeneric<ConfigGenericProps & PageQREdito
                         </Box>
 
                         {/* Set State field */}
-                        <Box sx={{ mb: 2 }}>
-                            <EntitySelector
-                                label={this.getText('qr_set_state')}
-                                value={entry.setState ?? undefined}
-                                onChange={(v: string) => {
-                                    this.handleFieldChange('setState', v);
-                                }}
-                                socket={oContext.socket}
-                                theme={theme}
-                                themeType={theme?.palette?.mode || 'light'}
-                                dialogName="selectState"
-                                filterFunc={(obj: ioBroker.Object) => {
-                                    return !!(
-                                        obj &&
-                                        obj.type === 'state' &&
-                                        obj.common &&
-                                        obj.common.type === 'boolean' &&
-                                        obj.common.write &&
-                                        obj.common.read
-                                    );
-                                }}
-                                disabled={!this.state.alive}
-                            />
+                        <Box sx={{ mb: 2, display: 'flex', alignItems: 'flex-start' }}>
+                            <Box sx={{ flex: 1, minWidth: 0 }}>
+                                <EntitySelector
+                                    label={this.getText('qr_set_state')}
+                                    value={entry.setState ?? undefined}
+                                    onChange={(v: string) => {
+                                        this.handleFieldChange('setState', v);
+                                    }}
+                                    socket={oContext.socket}
+                                    theme={theme}
+                                    themeType={theme?.palette?.mode || 'light'}
+                                    dialogName="selectState"
+                                    filterFunc={(obj: ioBroker.Object) => {
+                                        return !!(
+                                            obj &&
+                                            obj.type === 'state' &&
+                                            obj.common &&
+                                            obj.common.type === 'boolean' &&
+                                            obj.common.write &&
+                                            obj.common.read
+                                        );
+                                    }}
+                                    disabled={!this.state.alive}
+                                />
+                            </Box>
+                            <DocHelp topic="pages1.qrSwitch" />
                         </Box>
                     </Box>
                 )}

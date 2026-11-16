@@ -20,6 +20,8 @@ import {
 } from '@mui/material';
 import { ConfigGeneric, type ConfigGenericProps, type ConfigGenericState } from '@iobroker/json-config';
 import { EntitySelector } from './EntitySelector';
+import { DocHelp } from './DocHelp';
+import type { DocTopicKey } from '../docTopics';
 import {
     adapterAliveStateId,
     loadDbInstances,
@@ -33,6 +35,7 @@ import {
     isMainPageEntry,
     isScriptNavigatedChart,
 } from '../../../src/lib/types/adminShareConfig';
+import { CardTypeBadge } from './CardTypeBadge';
 
 export interface PageChartEditorProps {
     entry: ChartEntry;
@@ -127,7 +130,12 @@ export class PageChartEditor extends ConfigGeneric<ConfigGenericProps & PageChar
         this.handleFieldChange(field, Number.isFinite(n) && n > 0 ? n : undefined);
     }
 
-    private renderNumberField(field: NumberField, labelKey: string, tooltipKey?: string): React.JSX.Element {
+    private renderNumberField(
+        field: NumberField,
+        labelKey: string,
+        tooltipKey?: string,
+        help?: DocTopicKey,
+    ): React.JSX.Element {
         const { entry } = this.props;
         const textField = (
             <TextField
@@ -149,10 +157,7 @@ export class PageChartEditor extends ConfigGeneric<ConfigGenericProps & PageChar
                 disabled={!this.state.alive}
             />
         );
-        if (!tooltipKey) {
-            return textField;
-        }
-        return (
+        const withTooltip = tooltipKey ? (
             <Tooltip
                 title={this.getText(tooltipKey)}
                 placement="top"
@@ -160,6 +165,21 @@ export class PageChartEditor extends ConfigGeneric<ConfigGenericProps & PageChar
             >
                 {textField}
             </Tooltip>
+        ) : (
+            textField
+        );
+        if (!help) {
+            return withTooltip;
+        }
+        // the input only takes half the row: the help icon sits in the free half, next to the field
+        return (
+            <Box sx={{ position: 'relative' }}>
+                {withTooltip}
+                <DocHelp
+                    topic={help}
+                    sx={{ position: 'absolute', left: '50%', top: 20 }}
+                />
+            </Box>
         );
     }
 
@@ -168,24 +188,28 @@ export class PageChartEditor extends ConfigGeneric<ConfigGenericProps & PageChar
         labelKey: string,
         dialogName: string,
         filterFunc: (obj: ioBroker.Object) => boolean,
+        help?: DocTopicKey,
     ): React.JSX.Element {
         const { entry, oContext, theme } = this.props;
         const themeType = oContext?.themeType ?? (theme?.palette?.mode || 'light');
         return (
-            <Box sx={{ mb: 2 }}>
-                <EntitySelector
-                    label={this.getText(labelKey)}
-                    value={entry[field] ?? undefined}
-                    onChange={(v: string) => {
-                        this.handleFieldChange(field, v);
-                    }}
-                    socket={oContext.socket}
-                    theme={theme}
-                    themeType={themeType}
-                    dialogName={dialogName}
-                    filterFunc={filterFunc}
-                    disabled={!this.state.alive}
-                />
+            <Box sx={{ mb: 2, display: 'flex', alignItems: 'flex-start' }}>
+                <Box sx={{ flex: 1, minWidth: 0 }}>
+                    <EntitySelector
+                        label={this.getText(labelKey)}
+                        value={entry[field] ?? undefined}
+                        onChange={(v: string) => {
+                            this.handleFieldChange(field, v);
+                        }}
+                        socket={oContext.socket}
+                        theme={theme}
+                        themeType={themeType}
+                        dialogName={dialogName}
+                        filterFunc={filterFunc}
+                        disabled={!this.state.alive}
+                    />
+                </Box>
+                {help && <DocHelp topic={help} />}
             </Box>
         );
     }
@@ -208,8 +232,13 @@ export class PageChartEditor extends ConfigGeneric<ConfigGenericProps & PageChar
                         p: 1,
                         borderRadius: 1,
                         backgroundColor: 'action.hover',
+                        position: 'relative',
                     }}
                 >
+                    <CardTypeBadge
+                        card={entry.card}
+                        getText={key => this.getText(key)}
+                    />
                     <TextField
                         fullWidth
                         variant="standard"
@@ -245,6 +274,7 @@ export class PageChartEditor extends ConfigGeneric<ConfigGenericProps & PageChar
                             '%s',
                             entry.scriptName ?? entry.uniqueName,
                         )}
+                        <DocHelp topic="pages1.chartOldTable" />
                     </Alert>
                 )}
 
@@ -254,7 +284,10 @@ export class PageChartEditor extends ConfigGeneric<ConfigGenericProps & PageChar
                         component="fieldset"
                         disabled={!alive}
                     >
-                        <FormLabel component="legend">{this.getText('chart_Type')}</FormLabel>
+                        <FormLabel component="legend">
+                            {this.getText('chart_Type')}
+                            <DocHelp topic="pages1.chartType" />
+                        </FormLabel>
                         <RadioGroup
                             row
                             value={chartType}
@@ -298,7 +331,7 @@ export class PageChartEditor extends ConfigGeneric<ConfigGenericProps & PageChar
                 />
 
                 {/* Chart color */}
-                <Box sx={{ mb: 2 }}>
+                <Box sx={{ mb: 2, display: 'flex', alignItems: 'flex-end' }}>
                     <TextField
                         fullWidth
                         variant="standard"
@@ -309,9 +342,14 @@ export class PageChartEditor extends ConfigGeneric<ConfigGenericProps & PageChar
                             this.handleFieldChange('chartColor', e.target.value);
                         }}
                         slotProps={{
-                            input: { sx: { backgroundColor: 'transparent', px: 1, width: '50%' } },
+                            input: { sx: { backgroundColor: 'transparent', px: 1 } },
                         }}
+                        sx={{ width: '50%' }}
                         disabled={!alive}
+                    />
+                    <DocHelp
+                        topic="pages1.chartLabels"
+                        sx={{ mb: 0.5 }}
                     />
                 </Box>
 
@@ -321,7 +359,10 @@ export class PageChartEditor extends ConfigGeneric<ConfigGenericProps & PageChar
                         component="fieldset"
                         disabled={!alive}
                     >
-                        <FormLabel component="legend">{this.getText('chart_DataSource')}</FormLabel>
+                        <FormLabel component="legend">
+                            {this.getText('chart_DataSource')}
+                            <DocHelp topic="pages1.chartSource" />
+                        </FormLabel>
                         <RadioGroup
                             row
                             value={dataSource}
@@ -345,7 +386,7 @@ export class PageChartEditor extends ConfigGeneric<ConfigGenericProps & PageChar
 
                 {/* DB instance (short form, e.g. influxdb.0) */}
                 {useDb && (
-                    <Box sx={{ mb: 2 }}>
+                    <Box sx={{ mb: 2, display: 'flex', alignItems: 'flex-end' }}>
                         <FormControl
                             variant="standard"
                             fullWidth
@@ -377,12 +418,22 @@ export class PageChartEditor extends ConfigGeneric<ConfigGenericProps & PageChar
                                 ))}
                             </Select>
                         </FormControl>
+                        <DocHelp
+                            topic="pages1.chartDb"
+                            sx={{ mb: 0.5 }}
+                        />
                     </Box>
                 )}
 
                 {/* Script source: states for ticks and values */}
                 {!useDb &&
-                    this.renderStateSelector('setStateForTicks', 'chart_StateTicks', 'selectStateTicks', isState)}
+                    this.renderStateSelector(
+                        'setStateForTicks',
+                        'chart_StateTicks',
+                        'selectStateTicks',
+                        isState,
+                        'pages1.chartScript',
+                    )}
                 {!useDb &&
                     this.renderStateSelector('setStateForValues', 'chart_StateValues', 'selectStateValues', isState)}
 
@@ -417,37 +468,49 @@ export class PageChartEditor extends ConfigGeneric<ConfigGenericProps & PageChar
                 {useDb && this.renderNumberField('rangeHours', 'chart_Hours')}
 
                 {useDb && chartType === 'cardChart' && (
-                    <Tooltip
-                        title={this.getText('chart_FactorTooltip')}
-                        placement="top"
-                        arrow
-                    >
-                        <FormControl
-                            variant="standard"
-                            sx={{ mb: 2, minWidth: 240 }}
-                            disabled={!alive}
+                    <Box sx={{ display: 'flex', alignItems: 'flex-end', mb: 2 }}>
+                        <Tooltip
+                            title={this.getText('chart_FactorTooltip')}
+                            placement="top"
+                            arrow
                         >
-                            <InputLabel>{this.getText('chart_Factor')}</InputLabel>
-                            <Select
-                                value={entry.factorCardChart ?? chartDefaults.factorCardChart}
-                                onChange={e => {
-                                    this.handleFieldChange('factorCardChart', Number(e.target.value));
-                                }}
+                            <FormControl
+                                variant="standard"
+                                sx={{ minWidth: 240 }}
+                                disabled={!alive}
                             >
-                                <MenuItem value={1}>1</MenuItem>
-                                <MenuItem value={10}>0,1</MenuItem>
-                                <MenuItem value={100}>0,01</MenuItem>
-                                <MenuItem value={1000}>0,001</MenuItem>
-                            </Select>
-                        </FormControl>
-                    </Tooltip>
+                                <InputLabel>{this.getText('chart_Factor')}</InputLabel>
+                                <Select
+                                    value={entry.factorCardChart ?? chartDefaults.factorCardChart}
+                                    onChange={e => {
+                                        this.handleFieldChange('factorCardChart', Number(e.target.value));
+                                    }}
+                                >
+                                    <MenuItem value={1}>1</MenuItem>
+                                    <MenuItem value={10}>0,1</MenuItem>
+                                    <MenuItem value={100}>0,01</MenuItem>
+                                    <MenuItem value={1000}>0,001</MenuItem>
+                                </Select>
+                            </FormControl>
+                        </Tooltip>
+                        <DocHelp
+                            topic="pages1.chartYAxis"
+                            sx={{ mb: 0.5 }}
+                        />
+                    </Box>
                 )}
 
                 {useDb &&
                     chartType === 'cardLChart' &&
                     this.renderNumberField('maxXAxisTicks', 'chart_XTicks', 'chart_XTicksTooltip')}
 
-                {useDb && this.renderNumberField('maxXAxisLabels', 'chart_XLabels', 'chart_XLabelsTooltip')}
+                {useDb &&
+                    this.renderNumberField(
+                        'maxXAxisLabels',
+                        'chart_XLabels',
+                        'chart_XLabelsTooltip',
+                        'pages1.chartTimeAxis',
+                    )}
             </Box>
         );
     }

@@ -28,6 +28,7 @@ import {
     mediaPlayerDefinitions,
 } from '../../../src/lib/types/adminShareConfig';
 import { MEDIA_LOGOS, localizedText, objectName } from './mediaPlayerShared';
+import { DocHelp } from './DocHelp';
 
 /** The only socket method this dialog uses; `AdminConnection` of the admin provides it. */
 export interface MediaPlayerSocket {
@@ -305,7 +306,10 @@ export class MediaPlayerSelectDialog extends React.Component<
                 maxWidth="sm"
                 fullWidth
             >
-                <DialogTitle>{getText('media_selectPlayerTitle')}</DialogTitle>
+                <DialogTitle sx={{ display: 'flex', alignItems: 'center' }}>
+                    {getText('media_selectPlayerTitle')}
+                    <DocHelp topic="pages2.mediaPlayer" />
+                </DialogTitle>
                 <DialogContent dividers>
                     {!loading && players.length > 0 && (
                         <TextField

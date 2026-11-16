@@ -22,6 +22,7 @@ import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
 import DeleteIcon from '@mui/icons-material/Delete';
 import DragIndicatorIcon from '@mui/icons-material/DragIndicator';
+import { DocHelp } from './DocHelp';
 import { cycleValueToState } from '../../../src/lib/const/screensaver-cycle';
 
 export interface ScreensaverCycleValuesDialogProps {
@@ -258,7 +259,10 @@ export default class ScreensaverCycleValuesDialog extends React.Component<
                 maxWidth="sm"
                 fullWidth
             >
-                <DialogTitle>{this.getText('screensaver_cycle_title')}</DialogTitle>
+                <DialogTitle sx={{ display: 'flex', alignItems: 'center' }}>
+                    {this.getText('screensaver_cycle_title')}
+                    <DocHelp topic="screensaver.indicators" />
+                </DialogTitle>
                 <DialogContent dividers>
                     <Typography
                         variant="caption"

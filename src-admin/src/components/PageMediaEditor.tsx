@@ -38,6 +38,8 @@ import { ConfigGeneric, type ConfigGenericProps, type ConfigGenericState } from 
 import { EntitySelector } from './EntitySelector';
 import ChannelConfigDialog from './ChannelConfigDialog';
 import { MediaPlayerSelectDialog } from './MediaPlayerSelectDialog';
+import { DocHelp } from './DocHelp';
+import type { DocTopicKey } from '../docTopics';
 import { MEDIA_LOGOS, objectName } from './mediaPlayerShared';
 import icons from '../icons.json';
 import { loadAdapterColorTheme, resolveThemeColor, rgbToHex } from '../adapterColorTheme';
@@ -62,6 +64,7 @@ import {
     mediaVolumeDefaults,
     normalizeChannelId,
 } from '../../../src/lib/types/adminShareConfig';
+import { CardTypeBadge } from './CardTypeBadge';
 
 export interface PageMediaEditorProps {
     entry: MediaEntry;
@@ -913,18 +916,22 @@ export class PageMediaEditor extends ConfigGeneric<ConfigGenericProps & PageMedi
             return null;
         }
         let title = '';
+        let help: DocTopicKey;
         let content: React.JSX.Element;
         switch (dialog) {
             case 'player':
                 title = this.getText('media_dialogPlayer');
+                help = 'pages2.mediaPlayer';
                 content = this.renderPlayerDialog(draft);
                 break;
             case 'colors':
                 title = this.getText('media_dialogColors');
+                help = 'pages2.mediaColors';
                 content = this.renderColorsDialog(draft);
                 break;
             case 'volume':
                 title = this.getText('media_dialogVolume');
+                help = 'pages2.mediaVolume';
                 content = this.renderVolumeDialog(draft);
                 break;
             case 'item':
@@ -932,6 +939,7 @@ export class PageMediaEditor extends ConfigGeneric<ConfigGenericProps & PageMedi
                     return null;
                 }
                 title = this.getText(`media_item_${dialogItem}`);
+                help = mediaListKinds.some(l => l === dialogItem) ? 'pages2.mediaLists' : 'pages2.mediaStandardItems';
                 content = this.renderItemDialog(draft, dialogItem);
                 break;
         }
@@ -943,7 +951,10 @@ export class PageMediaEditor extends ConfigGeneric<ConfigGenericProps & PageMedi
                 fullWidth
                 onClose={this.closeDialog}
             >
-                <DialogTitle>{title}</DialogTitle>
+                <DialogTitle sx={{ display: 'flex', alignItems: 'center' }}>
+                    {title}
+                    <DocHelp topic={help} />
+                </DialogTitle>
                 <DialogContent dividers>{content}</DialogContent>
                 <DialogActions>
                     <Button onClick={this.closeDialog}>{this.getText('media_cancel')}</Button>
@@ -1569,7 +1580,10 @@ export class PageMediaEditor extends ConfigGeneric<ConfigGenericProps & PageMedi
         const { alive } = this.state;
         return (
             <Box sx={{ mt: 1.5 }}>
-                <Typography variant="subtitle2">{this.getText('media_standardItems')}</Typography>
+                <Typography variant="subtitle2">
+                    {this.getText('media_standardItems')}
+                    <DocHelp topic="pages2.mediaStandardItems" />
+                </Typography>
                 <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.75, mt: 0.5 }}>
                     {mediaBackendFeatures[backend].items.map(item => {
                         const off =
@@ -1621,8 +1635,13 @@ export class PageMediaEditor extends ConfigGeneric<ConfigGenericProps & PageMedi
                         p: 1,
                         borderRadius: 1,
                         backgroundColor: 'action.hover',
+                        position: 'relative',
                     }}
                 >
+                    <CardTypeBadge
+                        card={entry.card}
+                        getText={key => this.getText(key)}
+                    />
                     <TextField
                         fullWidth
                         variant="standard"
@@ -1697,6 +1716,10 @@ export class PageMediaEditor extends ConfigGeneric<ConfigGenericProps & PageMedi
                     >
                         {this.getText('media_addItem')}
                     </Button>
+                    <DocHelp
+                        topic="pages2.mediaOwnItems"
+                        sx={{ ml: -0.5 }}
+                    />
                     <Button
                         size="small"
                         variant="outlined"
@@ -1728,6 +1751,7 @@ export class PageMediaEditor extends ConfigGeneric<ConfigGenericProps & PageMedi
                     sx={{ display: 'block', mt: 1 }}
                 >
                     {this.getText('media_panelHint')}
+                    <DocHelp topic="pages2.mediaEditor" />
                 </Typography>
 
                 {this.renderDialog()}

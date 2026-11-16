@@ -38,6 +38,8 @@ import {
 } from '../../../src/lib/types/adminShareConfig';
 import { isMainPageEntry } from '../../../src/lib/types/adminShareConfig';
 import { isDarkTheme } from '../themeUtils';
+import { DocHelp } from './DocHelp';
+import { CardTypeBadge } from './CardTypeBadge';
 
 const ICONS_LIST: { name: string; base64: string }[] = Array.isArray(iconsJson) ? iconsJson : [];
 
@@ -407,8 +409,9 @@ export class PagePowerEditor extends ConfigGeneric<ConfigGenericProps & PagePowe
                 maxWidth="md"
                 fullWidth
             >
-                <DialogTitle>
+                <DialogTitle sx={{ display: 'flex', alignItems: 'center' }}>
                     {`${this.getText('power_slot_edit')}: ${this.getText('power')} ${SLOT_INDICES[slot]}`}
+                    <DocHelp topic="pages2.powerFlow" />
                 </DialogTitle>
                 <DialogContent dividers>
                     <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2, mt: 1 }}>
@@ -516,7 +519,12 @@ export class PagePowerEditor extends ConfigGeneric<ConfigGenericProps & PagePowe
                                     onChange={(_e, checked) => this.updateSlot(slot, { useColorScale: checked })}
                                 />
                             }
-                            label={this.getText('power_useColorScale')}
+                            label={
+                                <span>
+                                    {this.getText('power_useColorScale')}
+                                    <DocHelp topic="pages2.powerColorScale" />
+                                </span>
+                            }
                         />
                     </Box>
 
@@ -561,6 +569,7 @@ export class PagePowerEditor extends ConfigGeneric<ConfigGenericProps & PagePowe
                         sx={{ mb: 1 }}
                     >
                         {this.getText('power_speed')}
+                        <DocHelp topic="pages2.powerSpeed" />
                     </Typography>
                     <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 2, alignItems: 'center' }}>
                         <TextField
@@ -606,7 +615,10 @@ export class PagePowerEditor extends ConfigGeneric<ConfigGenericProps & PagePowe
                 maxWidth="sm"
                 fullWidth
             >
-                <DialogTitle>{this.getText('power_home_top_edit')}</DialogTitle>
+                <DialogTitle sx={{ display: 'flex', alignItems: 'center' }}>
+                    {this.getText('power_home_top_edit')}
+                    <DocHelp topic="pages2.powerHomeValues" />
+                </DialogTitle>
                 <DialogContent dividers>
                     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 1 }}>
                         <EntitySelector
@@ -671,7 +683,10 @@ export class PagePowerEditor extends ConfigGeneric<ConfigGenericProps & PagePowe
                 maxWidth="sm"
                 fullWidth
             >
-                <DialogTitle>{this.getText('power_home_bot_edit')}</DialogTitle>
+                <DialogTitle sx={{ display: 'flex', alignItems: 'center' }}>
+                    {this.getText('power_home_bot_edit')}
+                    <DocHelp topic="pages2.powerHomeValues" />
+                </DialogTitle>
                 <DialogContent dividers>
                     <FormControlLabel
                         sx={{ mb: 2 }}
@@ -681,7 +696,12 @@ export class PagePowerEditor extends ConfigGeneric<ConfigGenericProps & PagePowe
                                 onChange={(_e, checked) => this.updateHomeBot({ selInternalCalculation: checked })}
                             />
                         }
-                        label={this.getText('power_internal_calculation')}
+                        label={
+                            <span>
+                                {this.getText('power_internal_calculation')}
+                                <DocHelp topic="pages2.powerInternalSum" />
+                            </span>
+                        }
                     />
                     {!data.selInternalCalculation ? (
                         <EntitySelector
@@ -765,7 +785,11 @@ export class PagePowerEditor extends ConfigGeneric<ConfigGenericProps & PagePowe
 
         return (
             <Box>
-                <Box sx={{ mb: 1, p: 1, borderRadius: 1, backgroundColor: 'action.hover' }}>
+                <Box sx={{ mb: 1, p: 1, borderRadius: 1, backgroundColor: 'action.hover', position: 'relative' }}>
+                    <CardTypeBadge
+                        card={entry.card}
+                        getText={key => this.getText(key)}
+                    />
                     <TextField
                         fullWidth
                         variant="standard"
@@ -807,6 +831,7 @@ export class PagePowerEditor extends ConfigGeneric<ConfigGenericProps & PagePowe
                             '%s',
                             entry.scriptName ?? entry.uniqueName,
                         )}
+                        <DocHelp topic="pages2.powerNavigation" />
                     </Alert>
                 )}
 

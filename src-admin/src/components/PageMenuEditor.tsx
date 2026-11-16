@@ -40,11 +40,13 @@ import {
 } from '../../../src/lib/types/adminShareConfig';
 import { isMainPageEntry } from '../../../src/lib/types/adminShareConfig';
 import ChannelConfigDialog from './ChannelConfigDialog';
+import { DocHelp } from './DocHelp';
 import icons from '../icons.json';
 import { I18n, type IobTheme, type ThemeName, type ThemeType } from '@iobroker/gui-components';
 import { rawItemListLabel } from './RawItemConfigDialog';
 import { getPageItemDefaultsByRole, getPageNaviItemDefaultsByRole } from '../../../src/lib/const/page-item-defaults';
 import { ConfigGeneric, type ConfigGenericProps, type ConfigGenericState } from '@iobroker/json-config';
+import { CardTypeBadge } from './CardTypeBadge';
 
 /** Elementzahl einer Karte für ein Panel-Modell */
 interface ModelItemCount {
@@ -1050,7 +1052,11 @@ export class PageMenuEditor extends ConfigGeneric<ConfigGenericProps & PageMenuE
         return (
             <Box>
                 {/* UniqueName */}
-                <Box sx={{ mb: 1, p: 1, borderRadius: 1, backgroundColor: 'action.hover' }}>
+                <Box sx={{ mb: 1, p: 1, borderRadius: 1, backgroundColor: 'action.hover', position: 'relative' }}>
+                    <CardTypeBadge
+                        card={entry.card}
+                        getText={key => this.getText(key)}
+                    />
                     <TextField
                         fullWidth
                         variant="standard"
@@ -1093,7 +1099,10 @@ export class PageMenuEditor extends ConfigGeneric<ConfigGenericProps & PageMenuE
                         component="fieldset"
                         disabled={!this.state.alive}
                     >
-                        <FormLabel component="legend">{this.getText('pageMenu_card_type')}</FormLabel>
+                        <FormLabel component="legend">
+                            {this.getText('pageMenu_card_type')}
+                            <DocHelp topic="pages1.menuVariants" />
+                        </FormLabel>
                         {/* die Modellangabe im Text darf die Auswahl nicht auseinanderziehen: nicht umbrechen */}
                         <Box
                             sx={{
@@ -1181,6 +1190,7 @@ export class PageMenuEditor extends ConfigGeneric<ConfigGenericProps & PageMenuE
                     >
                         {this.getText('pageMenu_items')} ({filledCount}/{totalRealSlots})
                         {this.renderModelHint(slotInfo)}
+                        <DocHelp topic="pages1.menuTiles" />
                     </Typography>
                     {Array.from({ length: totalPages }, (_, pageIdx) => {
                         const startIdx = pageIdx * effectiveSlots;
@@ -1224,7 +1234,7 @@ export class PageMenuEditor extends ConfigGeneric<ConfigGenericProps & PageMenuE
                 </Paper>
 
                 {/* Weitere Seite hinzufügen */}
-                <Box sx={{ display: 'flex', justifyContent: 'center', mt: 1 }}>
+                <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', mt: 1 }}>
                     <Button
                         variant="outlined"
                         size="small"
@@ -1234,6 +1244,7 @@ export class PageMenuEditor extends ConfigGeneric<ConfigGenericProps & PageMenuE
                     >
                         {this.getText('pageMenu_add_page')}
                     </Button>
+                    <DocHelp topic="pages1.menuMorePages" />
                 </Box>
 
                 {/* Kontextmenü für Kopieren / Einfügen */}

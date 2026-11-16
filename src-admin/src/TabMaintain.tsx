@@ -25,7 +25,8 @@ import { PanelStatusBadge } from './components/PanelStatusBadge';
 import ConvertScriptDialog from './components/ConvertScriptDialog';
 import { ThemeProvider } from '@mui/material/styles';
 import { getLightSurfaceTheme } from './themeUtils';
-import { docUrl } from './docLink';
+import { DocButton, DocHelp } from './components/DocHelp';
+import type { DocTopicKey } from './docTopics';
 import {
     defaultWebLinkSettings,
     loadWebLinkSettings,
@@ -97,6 +98,8 @@ interface ConfirmDialogState {
     title: string;
     text: string;
     onConfirm: () => void;
+    /** help topic shown as `?` next to the title */
+    help?: DocTopicKey;
 }
 
 class MaintainPanel extends ConfigGeneric<ConfigGenericProps & MaintainPanelProps, MaintainPanelState> {
@@ -369,12 +372,13 @@ class MaintainPanel extends ConfigGeneric<ConfigGenericProps & MaintainPanelProp
         }
     }
 
-    private showConfirmDialog(title: string, text: string, onConfirm: () => void): void {
+    private showConfirmDialog(title: string, text: string, onConfirm: () => void, help?: DocTopicKey): void {
         this.confirmDialog = {
             open: true,
             title,
             text,
             onConfirm,
+            help,
         };
         this.forceUpdate();
     }
@@ -385,38 +389,43 @@ class MaintainPanel extends ConfigGeneric<ConfigGenericProps & MaintainPanelProp
     }
 
     private handleTasmotaUpdate(panel: MaintainPanelInfo): void {
-        this.showConfirmDialog(this.getText('tasmotaUpdate'), this.getText('updateTasmotaText'), async () => {
-            this.closeConfirmDialog();
-            if (this._isMounted) {
-                this.setState({ processingPanel: panel._name });
-            }
-
-            try {
-                this.onPanelOnlineChanged('', null); // Trigger immediate refresh to update online status
-                const result = await this.props.oContext.socket.sendTo(
-                    `${this.adapterName}.${this.instance}`,
-                    'updateTasmota',
-                    { topic: panel._topic, useBetaTFT: this.props.data.useBetaTFT || false },
-                );
-
-                if (!this._isMounted) {
-                    return;
+        this.showConfirmDialog(
+            this.getText('tasmotaUpdate'),
+            this.getText('updateTasmotaText'),
+            async () => {
+                this.closeConfirmDialog();
+                if (this._isMounted) {
+                    this.setState({ processingPanel: panel._name });
                 }
 
-                if (result && typeof result === 'object' && 'error' in result) {
-                    this.setState({ error: String(result.error), processingPanel: null });
-                } else {
-                    await this.refreshPanels();
+                try {
+                    this.onPanelOnlineChanged('', null); // Trigger immediate refresh to update online status
+                    const result = await this.props.oContext.socket.sendTo(
+                        `${this.adapterName}.${this.instance}`,
+                        'updateTasmota',
+                        { topic: panel._topic, useBetaTFT: this.props.data.useBetaTFT || false },
+                    );
+
+                    if (!this._isMounted) {
+                        return;
+                    }
+
+                    if (result && typeof result === 'object' && 'error' in result) {
+                        this.setState({ error: String(result.error), processingPanel: null });
+                    } else {
+                        await this.refreshPanels();
+                        if (this._isMounted) {
+                            this.setState({ processingPanel: null });
+                        }
+                    }
+                } catch (err) {
                     if (this._isMounted) {
-                        this.setState({ processingPanel: null });
+                        this.setState({ error: String(err), processingPanel: null });
                     }
                 }
-            } catch (err) {
-                if (this._isMounted) {
-                    this.setState({ error: String(err), processingPanel: null });
-                }
-            }
-        });
+            },
+            'maintain.firmwareUpdate',
+        );
     }
 
     private handleTftInstall(panel: MaintainPanelInfo): void {
@@ -461,6 +470,7 @@ class MaintainPanel extends ConfigGeneric<ConfigGenericProps & MaintainPanelProp
                     }
                 }
             },
+            'maintain.firmwareUpdate',
         );
     }
 
@@ -503,6 +513,7 @@ class MaintainPanel extends ConfigGeneric<ConfigGenericProps & MaintainPanelProp
                     }
                 }
             },
+            'maintain.berryInstall',
         );
     }
 
@@ -731,29 +742,34 @@ class MaintainPanel extends ConfigGeneric<ConfigGenericProps & MaintainPanelProp
                         sx={{ mb: 2 }}
                     >
                         {this.getText('useBetaVersionText')}
+                        <DocHelp topic="maintain.firmwareUpdate" />
                     </Alert>
                 )}
 
                 {/* Link to wiki + Update all scripts button */}
-                <Box sx={{ mb: 2, display: 'flex', gap: 2, flexWrap: 'wrap' }}>
-                    <Button
-                        variant="text"
-                        color="primary"
-                        href={docUrl('Adapter-Installation')}
-                        target="_blank"
+                <Box sx={{ mb: 2, display: 'flex', gap: 2, flexWrap: 'wrap', alignItems: 'center' }}>
+                    <DocButton
+                        topic="maintain.installation"
+                        label={this.getText('openLinkAdapterInstallation')}
                         sx={{ color: 'red' }}
-                    >
-                        {this.getText('openLinkAdapterInstallation')}
-                    </Button>
-                    <Button
-                        variant="text"
-                        color="primary"
-                        disabled={!anyScriptNeedsUpdate || processingPanel !== null || !alive}
-                        onClick={() => void this.handleUpdateAllScripts()}
-                        sx={{ color: anyScriptNeedsUpdate ? 'orange' : undefined }}
-                    >
-                        {processingPanel === 'all' ? <CircularProgress size={20} /> : this.getText('updateAllScripts')}
-                    </Button>
+                    />
+                    <DocButton topic="maintain.page" />
+                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                        <Button
+                            variant="text"
+                            color="primary"
+                            disabled={!anyScriptNeedsUpdate || processingPanel !== null || !alive}
+                            onClick={() => void this.handleUpdateAllScripts()}
+                            sx={{ color: anyScriptNeedsUpdate ? 'orange' : undefined }}
+                        >
+                            {processingPanel === 'all' ? (
+                                <CircularProgress size={20} />
+                            ) : (
+                                this.getText('updateAllScripts')
+                            )}
+                        </Button>
+                        <DocHelp topic="maintain.scriptUpdate" />
+                    </Box>
                 </Box>
 
                 {/* Error display */}
@@ -1097,7 +1113,10 @@ class MaintainPanel extends ConfigGeneric<ConfigGenericProps & MaintainPanelProp
                         open={confirmDialog.open}
                         onClose={() => this.closeConfirmDialog()}
                     >
-                        <DialogTitle>{confirmDialog.title}</DialogTitle>
+                        <DialogTitle sx={{ display: 'flex', alignItems: 'center' }}>
+                            {confirmDialog.title}
+                            {confirmDialog.help ? <DocHelp topic={confirmDialog.help} /> : null}
+                        </DialogTitle>
                         <DialogContent>
                             <DialogContentText sx={{ whiteSpace: 'pre-line' }}>{confirmDialog.text}</DialogContentText>
                         </DialogContent>

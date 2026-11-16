@@ -13,6 +13,8 @@ import {
 } from '@mui/material';
 import { I18n, type ThemeType } from '@iobroker/gui-components';
 import { EntitySelector } from './EntitySelector';
+import { DocHelp } from './DocHelp';
+import type { DocTopicRef } from '../docTopics';
 import { emptyChannelValueConfig, type ChannelValueConfig } from '../../../src/lib/types/adminShareConfig';
 import { visibleValueConfig } from '../channelValueConfig';
 
@@ -77,6 +79,11 @@ type ChannelValueDialogProps = {
     mainValueTransformId?: (id: string) => string;
     /** Dialog title (translated), default: the value display title */
     title?: string;
+    /**
+     * Help link next to the title. Default: the dynamic name section when a custom title is given
+     * (only the dynamic name dialog sets one), otherwise the value display section.
+     */
+    docTopic?: DocTopicRef;
     /** Hint shown at the top of the dialog (translated) */
     hint?: string;
 };
@@ -484,7 +491,15 @@ class ChannelValueDialog extends React.Component<ChannelValueDialogProps, Channe
                 fullWidth
                 maxWidth="sm"
             >
-                <DialogTitle>{this.props.title ?? I18n.t('valueEntryDialog_title')}</DialogTitle>
+                <DialogTitle sx={{ display: 'flex', alignItems: 'center' }}>
+                    {this.props.title ?? I18n.t('valueEntryDialog_title')}
+                    <DocHelp
+                        topic={
+                            this.props.docTopic ??
+                            (this.props.title === undefined ? 'dialogs.valueDisplay' : 'dialogs.dynamicName')
+                        }
+                    />
+                </DialogTitle>
                 <DialogContent>
                     <Box
                         sx={{

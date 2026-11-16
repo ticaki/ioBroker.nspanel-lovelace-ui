@@ -13,6 +13,7 @@ import {
     Typography,
 } from '@mui/material';
 import { Delete as DeleteIcon, Refresh as RefreshIcon } from '@mui/icons-material';
+import { DocHelp } from './components/DocHelp';
 
 /** One registered key as the adapter reports it (`webFidoList`) */
 interface FidoKeySummary {
@@ -166,6 +167,7 @@ class WebFidoKeys extends ConfigGeneric<ConfigGenericProps, WebFidoKeysState> {
                         sx={{ flexGrow: 1 }}
                     >
                         {this.getText('webFidoKeys')}
+                        <DocHelp topic="maintain.webAccess" />
                     </Typography>
                     <Button
                         size="small"

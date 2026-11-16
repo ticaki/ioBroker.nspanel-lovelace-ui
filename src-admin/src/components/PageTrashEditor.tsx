@@ -25,8 +25,10 @@ import { ConfigGeneric, type ConfigGenericProps, type ConfigGenericState } from 
 import type { IobTheme, ThemeType, ThemeName } from '@iobroker/gui-components';
 import { EntitySelector } from './EntitySelector';
 import IconSelect from '../IconSelect';
+import { DocHelp } from './DocHelp';
 import type { TrashEntry, TrashItem } from '../../../src/lib/types/adminShareConfig';
 import { isMainPageEntry, normalizeTrashItems } from '../../../src/lib/types/adminShareConfig';
+import { CardTypeBadge } from './CardTypeBadge';
 
 /** Datalist id and swatches offered by the browser's native color picker: yellow, brown, blue, dark gray, green. */
 const TRASH_COLOR_PRESETS_ID = 'trash-color-presets';
@@ -332,8 +334,13 @@ export class PageTrashEditor extends ConfigGeneric<ConfigGenericProps & PageTras
                         p: 1,
                         borderRadius: 1,
                         backgroundColor: 'action.hover',
+                        position: 'relative',
                     }}
                 >
+                    <CardTypeBadge
+                        card={entry.card}
+                        getText={key => this.getText(key)}
+                    />
                     <TextField
                         fullWidth
                         variant="standard"
@@ -388,6 +395,10 @@ export class PageTrashEditor extends ConfigGeneric<ConfigGenericProps & PageTras
                         >
                             {this.getText('trash_number_of_entities')}
                         </Typography>
+                        <DocHelp
+                            topic="pages2.trashPanel"
+                            sx={{ ml: 0 }}
+                        />
                     </Box>
                     <Select
                         size="small"
@@ -409,7 +420,10 @@ export class PageTrashEditor extends ConfigGeneric<ConfigGenericProps & PageTras
                 {/* Option to choose between import via .ics file or ioBroker state */}
                 <Box sx={{ mb: 2 }}>
                     <FormControl component="fieldset">
-                        <FormLabel component="legend">{this.getText('trash_import_type')}</FormLabel>
+                        <FormLabel component="legend">
+                            {this.getText('trash_import_type')}
+                            <DocHelp topic="pages2.trashSource" />
+                        </FormLabel>
                         <RadioGroup
                             row
                             value={entry.trashImport}
@@ -466,7 +480,10 @@ export class PageTrashEditor extends ConfigGeneric<ConfigGenericProps & PageTras
                         {this.renderStatusAlert()}
                         {this.state.uploadedEvents.length > 0 && (
                             <Box sx={{ mt: 2 }}>
-                                <FormLabel>{this.getText('trash_found_events')}</FormLabel>
+                                <FormLabel>
+                                    {this.getText('trash_found_events')}
+                                    <DocHelp topic="pages2.trashEvents" />
+                                </FormLabel>
                                 <List
                                     sx={{
                                         maxHeight: 300,
@@ -555,7 +572,10 @@ export class PageTrashEditor extends ConfigGeneric<ConfigGenericProps & PageTras
                         {this.renderStatusAlert()}
                         {this.state.uploadedEvents.length > 0 && (
                             <Box sx={{ mt: 2 }}>
-                                <FormLabel>{this.getText('trash_select_events')}</FormLabel>
+                                <FormLabel>
+                                    {this.getText('trash_select_events')}
+                                    <DocHelp topic="pages2.trashEvents" />
+                                </FormLabel>
                                 <List
                                     sx={{
                                         maxHeight: 300,
@@ -710,6 +730,8 @@ export class PageTrashEditor extends ConfigGeneric<ConfigGenericProps & PageTras
                                 }}
                                 sx={{ flex: 1, minWidth: 200 }}
                             />
+                            {/* one help link for all six blocks, not one per block */}
+                            {index === 0 && <DocHelp topic="pages2.trashTypes" />}
                         </Box>
                     ))}
                 </Box>

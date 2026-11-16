@@ -24,6 +24,7 @@ import {
 import DataObjectIcon from '@mui/icons-material/DataObject';
 import FormatAlignLeftIcon from '@mui/icons-material/FormatAlignLeft';
 import { I18n, type ThemeType } from '@iobroker/gui-components';
+import { DocHelp } from './DocHelp';
 import Editor from '@iobroker/json-config/build/JsonConfigComponent/wrapper/Components/Editor';
 import {
     isRawItemObject,
@@ -172,7 +173,10 @@ class RawItemConfigDialog extends React.Component<RawItemConfigDialogProps, RawI
                 fullWidth
                 maxWidth="md"
             >
-                <DialogTitle>{I18n.t('rawItemDialog_title')}</DialogTitle>
+                <DialogTitle sx={{ display: 'flex', alignItems: 'center' }}>
+                    {I18n.t('rawItemDialog_title')}
+                    <DocHelp topic="dialogs.rawItem" />
+                </DialogTitle>
                 <DialogContent dividers>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flexWrap: 'wrap' }}>
                         <Typography variant="body2">{I18n.t('rawItemDialog_format')}</Typography>
@@ -315,6 +319,7 @@ export class RawItemNotice extends React.Component<RawItemNoticeProps> {
             >
                 <Typography variant="body2">
                     {I18n.t('rawItemDialog_active').replace('%s', I18n.t(`rawItemDialog_format_${value.format}`))}
+                    <DocHelp topic="dialogs.rawItem" />
                 </Typography>
                 {label && (
                     <Typography

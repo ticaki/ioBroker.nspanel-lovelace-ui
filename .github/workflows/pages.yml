@@ -12,6 +12,7 @@ on:
             - 'doc/**'
             - 'pages/**'
             - 'script/build-doc-page.ts'
+            - 'src-admin/src/docAnchors.ts'
             - 'script/build-icon-page.ts'
             - 'script/icons.json'
             - 'script/custom-icons.json'

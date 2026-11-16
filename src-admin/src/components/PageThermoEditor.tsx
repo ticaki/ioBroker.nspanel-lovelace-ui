@@ -14,12 +14,14 @@ import React from 'react';
 import { Alert, Box, TextField, Typography } from '@mui/material';
 import { ConfigGeneric, type ConfigGenericProps, type ConfigGenericState } from '@iobroker/json-config';
 import { EntitySelector } from './EntitySelector';
+import { DocHelp } from './DocHelp';
 import {
     type ThermoEntry,
     ADAPTER_NAME,
     isMainPageEntry,
     thermoChannelRoles,
 } from '../../../src/lib/types/adminShareConfig';
+import { CardTypeBadge } from './CardTypeBadge';
 
 export interface PageThermoEditorProps {
     entry: ThermoEntry;
@@ -190,8 +192,13 @@ export class PageThermoEditor extends ConfigGeneric<ConfigGenericProps & PageThe
                         p: 1,
                         borderRadius: 1,
                         backgroundColor: 'action.hover',
+                        position: 'relative',
                     }}
                 >
+                    <CardTypeBadge
+                        card={entry.card}
+                        getText={key => this.getText(key)}
+                    />
                     <TextField
                         fullWidth
                         variant="standard"
@@ -223,6 +230,7 @@ export class PageThermoEditor extends ConfigGeneric<ConfigGenericProps & PageThe
                     sx={{ mb: 2 }}
                 >
                     {this.getText('thermo_intro')}
+                    <DocHelp topic="pages2.thermoStates" />
                 </Typography>
 
                 {/* Headline */}
@@ -298,6 +306,7 @@ export class PageThermoEditor extends ConfigGeneric<ConfigGenericProps & PageThe
                         sx={{ mb: 1 }}
                     >
                         {this.getText('thermo2_dialogLimits')}
+                        <DocHelp topic="pages2.thermoLimits" />
                     </Typography>
                     {this.renderLimitField('minValue', 'thermo2_minValue')}
                     {this.renderLimitField('maxValue', 'thermo2_maxValue')}

@@ -15,6 +15,7 @@ import {
     type SelectChangeEvent,
     Tooltip,
 } from '@mui/material';
+import { DocHelp } from './components/DocHelp';
 
 interface WeatherEntity {
     label: string;
@@ -276,6 +277,7 @@ class PageGlobalSettings extends ConfigGeneric<ConfigGenericProps & { theme?: an
                         sx={{ color: useBetaTFT ? 'error.main' : 'inherit' }}
                     >
                         {this.getText('headeruseBetaTFT')}
+                        <DocHelp topic="maintain.globalSettings" />
                     </Typography>
                     <Tooltip
                         title={this.getText('useBetaVersionTooltip')}
@@ -334,6 +336,7 @@ class PageGlobalSettings extends ConfigGeneric<ConfigGenericProps & { theme?: an
                         gutterBottom
                     >
                         {this.getText('headerWeatherEntity')}
+                        <DocHelp topic="maintain.globalSettings" />
                     </Typography>
                     <FormControl
                         sx={{ m: 1, minWidth: 200 }}
@@ -437,6 +440,7 @@ class PageGlobalSettings extends ConfigGeneric<ConfigGenericProps & { theme?: an
                         gutterBottom
                     >
                         {this.getText('headerShutter')}
+                        <DocHelp topic="maintain.globalSettings" />
                     </Typography>
                     <FormControlLabel
                         control={
@@ -457,6 +461,7 @@ class PageGlobalSettings extends ConfigGeneric<ConfigGenericProps & { theme?: an
                         gutterBottom
                     >
                         {this.getText('headerCardThermo')}
+                        <DocHelp topic="maintain.thermo2Tenths" />
                     </Typography>
                     <FormControlLabel
                         control={
@@ -478,6 +483,7 @@ class PageGlobalSettings extends ConfigGeneric<ConfigGenericProps & { theme?: an
                         gutterBottom
                     >
                         Service-Pin
+                        <DocHelp topic="maintain.globalSettings" />
                     </Typography>
                     <TextField
                         id="service-pin-input"

@@ -16,10 +16,12 @@ import {
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutlineOutlined';
-import LinkIcon from '@mui/icons-material/Link';
 import ConfirmDialog from './ConfirmDialog';
+import { CardTypeIcon } from './CardTypeBadge';
 import NavigationAssignmentPanel from './NavigationAssignmentPanel';
-import { docUrl } from '../docLink';
+import { DocButton, DocHelp } from './DocHelp';
+import { cardDocTopic } from '../docTopics';
+import { pageTypeDocTopic } from '../docTopics/pages1';
 import type {
     AdminCardTypes,
     NavigationAssignmentList,
@@ -74,6 +76,38 @@ export type PageCardType =
     | 'pageMenu'; // 'pageMenu' = Gruppe für alle Menu-Kartentypen
 
 const MENU_CARD_TYPES: ReadonlyArray<string> = ['cardGrid', 'cardGrid2', 'cardGrid3', 'cardEntities', 'cardSchedule'];
+
+/** Entries of the page type select in display order, with the i18n key of their label. */
+const PAGE_TYPE_OPTIONS: ReadonlyArray<{ value: PageCardType; labelKey: string }> = [
+    { value: 'all', labelKey: 'page_type_all' },
+    { value: 'mainPages', labelKey: 'page_type_mainPages' },
+    { value: 'pageMenu', labelKey: 'page_type_pageMenu' },
+    { value: 'cardAlarm', labelKey: 'page_type_alarm' },
+    { value: 'cardQR', labelKey: 'page_type_qr' },
+    { value: 'cardPower', labelKey: 'page_type_power' },
+    { value: 'cardTrash', labelKey: 'page_type_trash' },
+    { value: 'cardChart', labelKey: 'page_type_chart' },
+    { value: 'cardPChart', labelKey: 'page_type_pchart' },
+    { value: 'cardThermo2', labelKey: 'page_type_thermo2' },
+    { value: 'cardThermo', labelKey: 'page_type_thermo' },
+    { value: 'cardMedia', labelKey: 'page_type_media' },
+    { value: pageLinkCard, labelKey: 'page_type_pageLink' },
+];
+
+/** Size of the type icon in front of each page in the list, in px. */
+const LIST_TYPE_ICON_SIZE = 16;
+/** Gap between the type icon and the name in the page list, in theme spacing units. */
+const LIST_TYPE_ICON_GAP = 0.75;
+
+/**
+ * Label key of a page type select value; the closed select shows only the label, without the help icon.
+ *
+ * @param value Selected page type.
+ * @returns The i18n key of its label.
+ */
+function pageTypeLabelKey(value: PageCardType): string {
+    return PAGE_TYPE_OPTIONS.find(option => option.value === value)?.labelKey ?? value;
+}
 
 /**
  * Whether new pages can be created for the given page type selection.
@@ -437,8 +471,8 @@ export class PageConfigLayout extends React.Component<PageConfigLayoutProps, Pag
     };
 
     /**
-     * Name of a list entry; a page link gets a link icon in front, in warning colour if its target
-     * is missing.
+     * Name of a list entry with the icon of its card type in front (tooltip: type name); a page link
+     * shows the link icon, in warning colour if its target is missing.
      *
      * @param name uniqueName of the entry
      * @returns The name element of the list row.
@@ -446,27 +480,35 @@ export class PageConfigLayout extends React.Component<PageConfigLayoutProps, Pag
     private renderEntryName(name: string): React.JSX.Element {
         const { entries } = this.props;
         const entry = entries.find(e => e.uniqueName === name);
-        const isLink = !!entry && isPageLinkEntry(entry);
         const broken = !!entry && isPageLinkEntry(entry) && !!pageLinkProblem(entry, entries);
         return (
             <Typography
                 variant="body2"
                 sx={{
                     flex: 1,
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
+                    minWidth: 0,
                     display: 'flex',
                     alignItems: 'center',
-                    gap: 0.5,
+                    gap: LIST_TYPE_ICON_GAP,
                 }}
             >
-                {isLink && (
-                    <LinkIcon
-                        fontSize="small"
-                        color={broken ? 'warning' : 'action'}
+                {entry ? (
+                    <CardTypeIcon
+                        card={entry.card}
+                        getText={this.props.getText}
+                        sx={{
+                            fontSize: LIST_TYPE_ICON_SIZE,
+                            flexShrink: 0,
+                            color: broken ? 'warning.main' : 'text.secondary',
+                        }}
                     />
-                )}
-                {entry ? getDisplayName(entry) : name}
+                ) : null}
+                <Box
+                    component="span"
+                    sx={{ minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
+                >
+                    {entry ? getDisplayName(entry) : name}
+                </Box>
             </Typography>
         );
     }
@@ -487,7 +529,13 @@ export class PageConfigLayout extends React.Component<PageConfigLayoutProps, Pag
         const target = entry.target;
         const broken = !!pageLinkProblem(entry, entries);
         return (
-            <Box sx={{ width: '100%', pl: 3.5, mt: 0.25 }}>
+            <Box
+                sx={theme => ({
+                    width: '100%',
+                    pl: `calc(${LIST_TYPE_ICON_SIZE}px + ${theme.spacing(LIST_TYPE_ICON_GAP)})`,
+                    mt: 0.25,
+                })}
+            >
                 <Typography
                     variant="caption"
                     title={broken ? undefined : this.getText('page_link_open_target')}
@@ -551,12 +599,8 @@ export class PageConfigLayout extends React.Component<PageConfigLayoutProps, Pag
 
         const currentEntry = entries.find(e => e.uniqueName === selected);
         const currentAssignments = currentEntry?.navigationAssignment || [];
-        const documentationUrl = docUrl(
-            !canCreateForCardType(selectedCardType)
-                ? currentEntry?.card
-                    ? currentEntry.card
-                    : 'PageConfig'
-                : selectedCardType,
+        const documentationTopic = cardDocTopic(
+            !canCreateForCardType(selectedCardType) ? currentEntry?.card : selectedCardType,
         );
         return (
             <Box
@@ -597,6 +641,7 @@ export class PageConfigLayout extends React.Component<PageConfigLayoutProps, Pag
                                     }}
                                 >
                                     {this.getText('panel_filter')}
+                                    <DocHelp topic="pages1.panelFilter" />
                                 </Typography>
                                 <Select
                                     value={selectedPanelFilter}
@@ -643,10 +688,12 @@ export class PageConfigLayout extends React.Component<PageConfigLayoutProps, Pag
                                 }}
                             >
                                 {this.getText('page_type')}
+                                <DocHelp topic="pages1.pageType" />
                             </Typography>
                             <Select
                                 disabled={!this.state.alive}
                                 value={selectedCardType}
+                                renderValue={value => this.getText(pageTypeLabelKey(value))}
                                 onChange={e => {
                                     onCardTypeChange(e.target.value);
                                 }}
@@ -655,19 +702,23 @@ export class PageConfigLayout extends React.Component<PageConfigLayoutProps, Pag
                                     px: 1,
                                 }}
                             >
-                                <MenuItem value="all">{this.getText('page_type_all')}</MenuItem>
-                                <MenuItem value="mainPages">{this.getText('page_type_mainPages')}</MenuItem>
-                                <MenuItem value="pageMenu">{this.getText('page_type_pageMenu')}</MenuItem>
-                                <MenuItem value="cardAlarm">{this.getText('page_type_alarm')}</MenuItem>
-                                <MenuItem value="cardQR">{this.getText('page_type_qr')}</MenuItem>
-                                <MenuItem value="cardPower">{this.getText('page_type_power')}</MenuItem>
-                                <MenuItem value="cardTrash">{this.getText('page_type_trash')}</MenuItem>
-                                <MenuItem value="cardChart">{this.getText('page_type_chart')}</MenuItem>
-                                <MenuItem value="cardPChart">{this.getText('page_type_pchart')}</MenuItem>
-                                <MenuItem value="cardThermo2">{this.getText('page_type_thermo2')}</MenuItem>
-                                <MenuItem value="cardThermo">{this.getText('page_type_thermo')}</MenuItem>
-                                <MenuItem value="cardMedia">{this.getText('page_type_media')}</MenuItem>
-                                <MenuItem value={pageLinkCard}>{this.getText('page_type_pageLink')}</MenuItem>
+                                {PAGE_TYPE_OPTIONS.map(option => {
+                                    const topic = pageTypeDocTopic(option.value);
+                                    return (
+                                        <MenuItem
+                                            key={option.value}
+                                            value={option.value}
+                                        >
+                                            {this.getText(option.labelKey)}
+                                            {topic && (
+                                                <DocHelp
+                                                    topic={topic}
+                                                    sx={{ ml: 'auto', pl: 1 }}
+                                                />
+                                            )}
+                                        </MenuItem>
+                                    );
+                                })}
                             </Select>
                         </FormControl>
                     </Paper>
@@ -690,6 +741,7 @@ export class PageConfigLayout extends React.Component<PageConfigLayoutProps, Pag
                                 }}
                             >
                                 {this.getText('pages')}
+                                <DocHelp topic="pages1.createDelete" />
                             </Typography>
                             {/* stretch: the add button takes the height of the input line */}
                             <Box sx={{ display: 'flex', gap: 1, alignItems: 'stretch' }}>
@@ -811,34 +863,9 @@ export class PageConfigLayout extends React.Component<PageConfigLayoutProps, Pag
                     </Paper>
                     <Divider sx={{ my: 1 }} />
                     {/* Documentation link */}
-                    {documentationUrl && (
-                        <Box sx={{ mb: 2 }}>
-                            <a
-                                href={documentationUrl}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                style={{
-                                    textDecoration: 'none',
-                                    color: 'inherit',
-                                    fontSize: '0.875rem',
-                                }}
-                            >
-                                <Typography
-                                    variant="body2"
-                                    sx={{
-                                        color: 'primary.main',
-                                        textDecoration: 'underline',
-                                        cursor: 'pointer',
-                                        '&:hover': {
-                                            opacity: 0.8,
-                                        },
-                                    }}
-                                >
-                                    {this.getText('documentation')}
-                                </Typography>
-                            </a>
-                        </Box>
-                    )}
+                    <Box sx={{ mb: 2 }}>
+                        <DocButton topic={documentationTopic} />
+                    </Box>
                 </Box>
 
                 <ConfirmDialog
