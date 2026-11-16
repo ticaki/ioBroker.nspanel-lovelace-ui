@@ -161,6 +161,8 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
 ### **WORK IN PROGRESS**
 - (ticaki) Admin: help links to the documentation at many settings, in the ioBroker system language
 - (tt-tom17) Admin, developer tab: flashing a custom TFT also works with an external MQTT broker - the box asks for the "IP of the ioBroker" itself
+- (ticaki) color scale: with a best value and a best color, the range above the best value is no longer inverted - the colors now run min color → best color → max color; no more invalid color when the best value equals the max value (fixed #896)
+- (ticaki) Admin, color options: in the gradient modes (triGrad, quadriGrad and their anchor variants) the color fields Min/Max/Best are disabled, as these modes do not use them
 
 ### 2.3.0 (2026-11-16)
 - (ticaki) panel: with the TFT 6.1.0 and the berry driver 12 the display confirms every message with its checksum and the adapter sends the next one right away instead of waiting 250 ms - pages and the screensaver build up noticeably faster; the screensaver takes its colors with the page change (no black flash), screensaver advanced follows the color theme

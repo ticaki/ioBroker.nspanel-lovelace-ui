@@ -188,6 +188,7 @@
     "channelConfigColor_colorMode_triGrad": "Триградієнт (червоно-зелений)",
     "channelConfigColor_colorMode_triGradAnchor": "Триградієнтний закріплений",
     "channelConfigColor_colorSettings": "Параметри кольору",
+    "channelConfigColor_colorsUnusedInMode": "У цьому режимі кольори не використовуються",
     "channelConfigColor_log10": "Логарифмічне масштабування",
     "channelConfigColor_log10_linear": "Лінійний (немає)",
     "channelConfigColor_log10_max": "Log10 до Макс",

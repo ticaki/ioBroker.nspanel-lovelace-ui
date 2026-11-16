@@ -188,6 +188,7 @@
     "channelConfigColor_colorMode_triGrad": "Trigradiente (rojo-verde)",
     "channelConfigColor_colorMode_triGradAnchor": "Anclado en trigradiente",
     "channelConfigColor_colorSettings": "Configuración de color",
+    "channelConfigColor_colorsUnusedInMode": "Los colores no se usan en este modo",
     "channelConfigColor_log10": "Escala logarítmica",
     "channelConfigColor_log10_linear": "Lineal (ninguno)",
     "channelConfigColor_log10_max": "Log10 a máx.",

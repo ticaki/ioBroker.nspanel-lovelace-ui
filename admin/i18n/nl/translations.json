@@ -188,6 +188,7 @@
     "channelConfigColor_colorMode_triGrad": "Tri-gradiënt (rood-groen)",
     "channelConfigColor_colorMode_triGradAnchor": "Tri-gradiënt verankerd",
     "channelConfigColor_colorSettings": "Kleurinstellingen",
+    "channelConfigColor_colorsUnusedInMode": "Kleuren worden in deze modus niet gebruikt",
     "channelConfigColor_log10": "Logaritmische schaling",
     "channelConfigColor_log10_linear": "Lineair (geen)",
     "channelConfigColor_log10_max": "Log10 tot Max",
