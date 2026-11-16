@@ -54,6 +54,8 @@ A panel switched off is no longer known to the adapter: the card stays, but the 
 
 Three buttons, one pattern: each asks for confirmation first — with Tasmota and TFT mentioning the roughly **40 seconds** in which the panel is unreachable, with the Berry driver naming the panel and the reported generation. All commands only go to panels the adapter is currently operating; the version fields refresh by themselves as soon as the panel reports back. The same tools — plus the restart — are available in the [Tasmota tools](tasmotatools) tab, there via the IP instead of via the panel card. The **?** in the confirmation of each button leads to its section here.
 
+![The confirmation before TFT UPDATE with the help question mark in the title](../Pictures/maintain/maintain-04-rueckfrage.png)
+
 ### TASMOTA UPDATE
 
 The adapter reads the recommended Tasmota version from the version list and sends the panel the OTA command for `tasmota32-<LANGUAGE>.bin` from `ota.tasmota.com` over MQTT. The language is the one of the admin (Chinese falls back to English). The panel downloads it itself and restarts.

@@ -54,6 +54,8 @@ Ein ausgeschaltetes Panel kennt der Adapter nicht mehr: Die Karte bleibt, die Ve
 
 Drei Knöpfe, ein Muster: Jeder fragt vorher nach — bei Tasmota und TFT mit den rund **40 Sekunden**, in denen das Panel nicht erreichbar ist, beim Berry-Treiber mit Panel und gemeldeter Generation. Alle Befehle gehen nur an Panels, die der Adapter gerade betreibt; die Versionsfelder aktualisieren sich von selbst, sobald das Panel sich wieder meldet. Dieselben Werkzeuge gibt es — zusätzlich zum Neustart — im Tab [Tasmota-Tools](tasmotatools), dort über die IP statt über die Panel-Karte. Das **?** in der Rückfrage jedes Knopfs führt zu seinem Abschnitt hier.
 
+![Die Rückfrage vor TFT UPDATE mit dem Hilfe-Fragezeichen im Titel](../Pictures/maintain/maintain-04-rueckfrage.png)
+
 ### TASMOTA UPDATE
 
 Der Adapter liest die empfohlene Tasmota-Version aus der Versionsliste und schickt dem Panel über MQTT den OTA-Befehl auf `tasmota32-<SPRACHE>.bin` von `ota.tasmota.com`. Die Sprache ist die des Admin (Chinesisch fällt auf Englisch zurück). Das Panel lädt selbst und startet neu.
