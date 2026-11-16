@@ -159,6 +159,7 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
     ### **WORK IN PROGRESS**
 -->
 ### **WORK IN PROGRESS**
+- (ticaki) send queue: a newer weatherUpdate/statusUpdate of the screensaver replaces an older one that was not sent yet, so outdated values no longer pile up
 - (ticaki) admin tab developer (expert mode): flash a custom TFT (.tft) on one or all panels - the adapter serves the file on a free port for the display update
 - (ticaki) Admin >= 8.1.0 required
 - (ticaki) admin page config: the name field above the page list is always shown and also filters the list; the + button stays visible and its tooltip tells why it is disabled

@@ -335,8 +335,11 @@ export class PanelSend extends BaseClass {
 
     /**
      * The panel only needs the newest state of a page or of a popup: a new `entityUpd` takes the place of an older one
-     * that was not sent yet, `entityUpdateDetail` per item id. Nothing moves in the queue. A message that was sent waits
-     * for its ack and stays as it is, so ack and retry only ever see what was really sent. A pageType ends the page.
+     * that was not sent yet, `entityUpdateDetail` per item id. The same holds for the screensaver's `weatherUpdate` and
+     * `statusUpdate`: without a display ack (TFT <= 6.0.x) every message takes about 0.6-0.8 s (Done + 250 ms) and the
+     * screensaver may send a weatherUpdate every second, so outdated ones would pile up in the queue. `color` is left
+     * out on purpose, it is sent only rarely. Nothing moves in the queue. A message that was sent waits for its ack and
+     * stays as it is, so ack and retry only ever see what was really sent. A pageType ends the page.
      *
      * @param payload the new message
      * @param ackForType kind of ack of the new message
@@ -351,7 +354,8 @@ export class PanelSend extends BaseClass {
         lastPageType: number,
     ): QueuedMessage | undefined {
         const fields = payload.split('~', 2);
-        const isPage = fields[0] === 'entityUpd';
+        // only the type counts, the newest message of this type is the only one the panel needs
+        const isPage = fields[0] === 'entityUpd' || fields[0] === 'weatherUpdate' || fields[0] === 'statusUpdate';
         const isDetail = fields[0] === 'entityUpdateDetail';
         if (!isPage && !isDetail) {
             return undefined;

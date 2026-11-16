@@ -264,6 +264,65 @@ describe('lib/controller/panel-message - PanelSend newest state only', () => {
         expect(published).to.deep.equal(['first', 'time~1', 'time~2', 'entityUpdateDetail~1~a', 'entityUpd~a']);
     });
 
+    it('a new weatherUpdate takes the place of an unsent one, nothing moves', async () => {
+        add('weatherUpdate~a');
+        add('other');
+        add('weatherUpdate~b');
+        await done();
+        await done();
+        await done();
+        expect(published).to.deep.equal(['first', 'weatherUpdate~b', 'other']);
+    });
+
+    it('a new statusUpdate takes the place of an unsent one, nothing moves', async () => {
+        add('statusUpdate~a');
+        add('other');
+        add('statusUpdate~b');
+        await done();
+        await done();
+        await done();
+        expect(published).to.deep.equal(['first', 'statusUpdate~b', 'other']);
+    });
+
+    it('a weatherUpdate on its way is not replaced', async () => {
+        add('weatherUpdate~a');
+        await done();
+        expect(published.at(-1)).to.equal('weatherUpdate~a');
+        add('weatherUpdate~b');
+        await done();
+        expect(published).to.deep.equal(['first', 'weatherUpdate~a', 'weatherUpdate~b']);
+    });
+
+    it('weatherUpdate and statusUpdate are not replaced across a pageType', async () => {
+        add('weatherUpdate~old');
+        add('statusUpdate~old');
+        add('pageType~screensaver');
+        add('weatherUpdate~new');
+        add('statusUpdate~new');
+        for (let i = 0; i < 5; i++) {
+            await done();
+        }
+        expect(published).to.deep.equal([
+            'first',
+            'weatherUpdate~old',
+            'statusUpdate~old',
+            'pageType~screensaver',
+            'weatherUpdate~new',
+            'statusUpdate~new',
+        ]);
+    });
+
+    it('a weatherUpdate does not take a statusUpdate and vice versa', async () => {
+        add('statusUpdate~a');
+        add('weatherUpdate~a');
+        add('statusUpdate~b');
+        add('weatherUpdate~b');
+        await done();
+        await done();
+        await done();
+        expect(published).to.deep.equal(['first', 'statusUpdate~b', 'weatherUpdate~b']);
+    });
+
     it('a message with an ack for its type is not replaced by one without', async () => {
         send.addMessage('entityUpd~a', true);
         add('entityUpd~b');
