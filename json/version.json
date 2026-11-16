@@ -3,10 +3,10 @@
     "tasmota-beta": "16.0.0",
     "berry": "11",
     "berry-beta": "12",
-    "tft": "5.1.1",
-    "tft-us-l": "5.1.1",
-    "tft-us-p": "5.1.3",
-    "tft-beta": "6.0.9",
-    "tft-us-l-beta": "6.0.9",
-    "tft-us-p-beta": "6.0.9"
+    "tft": "6.0.9",
+    "tft-us-l": "6.0.9",
+    "tft-us-p": "6.0.9",
+    "tft-beta": "6.1.0",
+    "tft-us-l-beta": "6.1.0",
+    "tft-us-p-beta": "6.1.0"
 }
