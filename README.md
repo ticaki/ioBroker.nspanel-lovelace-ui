@@ -158,46 +158,20 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
     Placeholder for the next version (at the beginning of the line):
     ### **WORK IN PROGRESS**
 -->
-### **WORK IN PROGRESS**
-- (ticaki) send queue: a newer weatherUpdate/statusUpdate of the screensaver replaces an older one that was not sent yet, so outdated values no longer pile up
-- (ticaki) admin tab developer (expert mode): flash a custom TFT (.tft) on one or all panels - the adapter serves the file on a free port for the display update
-- (ticaki) Admin >= 8.1.0 required
-- (ticaki) admin page config: the name field above the page list is always shown and also filters the list; the + button stays visible and its tooltip tells why it is disabled
-- (ticaki) admin navigation flow: search field in the header highlights the pages whose name matches; a single match is centred in the view
-- (ticaki) admin navigation flow: the zoom buttons are readable in the dark theme
-- (ticaki) changed state texts (common.states) and other display values of a state (unit, min, max, step, name) are picked up with the next update without an adapter restart - also the mode texts of cardThermo2, the mode buttons of an air conditioner and the mode list of a fan
-- (ticaki) dependencies updated: MQTT broker aedes 1.2.0 (security fixes), ws, node-ical and the admin libraries
-- (ticaki) screensaver notification at standby brightness 0: the first tap only wakes the display, the second clears the notification, the third leaves the screensaver - also with the double click option
-- (tt-tom17) system notifications: an acknowledged notification of the ioBroker host no longer comes back - also when it was acknowledged in ioBroker itself
-- (ticaki) screensaver: waits 5 ms before an update so changes arriving right after each other are taken along (e.g. an outdated value zigbee2mqtt sends right before the real one); the 1 s lock restarts after the pause; weatherUpdate at most once per second instead of every 2 s
-- (tt-tom17) popup notification: the left button now writes the plain id to `setStateID` and the id with the panel name to `setGlobalID`, like the middle and right button - scripts that checked the local point for the prefixed value must look at the global point instead
-- (tt-tom17) popup notification: a missing `textSize` state falls back to size 3 instead of sending `undefined` to the panel
-- (tt-tom17) screensaver: a tap on a notification that cannot be dismissed no longer gets lost - the panel changes to the main page as usual; only a dismissible notification takes the tap
-- (tt-tom17) cardThermo: with `AUTO` in `common.states` the inactive mode icons no longer show the outline A of the automatic mode
-- (tt-tom17) cardThermo: without `common.states` at the MODE state the fan icon (`FAN_ONLY`) appears as well - seven modes instead of six
-- (tt-tom17) cardThermo2: the built-in mode list names the fan mode `FAN_ONLY`, like the mode search of the config manager and every description in the code; the panel shows the translated name as before
-- (tt-tom17) thermostat cards: the fan mode and the dry mode are named after what they do now, like heating and cooling - German says `Lüften` and `Trocknen`; all languages but English are corrected, where `Fan` and `Dry` are the usual names of these modes. `FAN` also said admirer (es), supporter (pt, uk) or hand fan (zh-cn) before
-- (tt-tom17) cardThermo: the mode row is now built when `common.states` of the MODE state is an object - the usual case in ioBroker, so far only an array worked; with a string MODE the mode name is compared instead of the position
-- (tt-tom17) cardThermo: a channel with a `MAINTAIN` datapoint showed the wrench twice - the block that builds it stood in the code twice, once in red and once in green
-- (ticaki) panel: with the TFT 6.1.0 the display confirms every message it processed, the adapter sends the next one right away instead of waiting a fixed 250 ms - pages, and the screensaver in particular, build up noticeably faster
-- (ticaki) screensaver: after the page is loaded the colors and the content are sent first, the time follows; with the TFT 6.1.0 the page takes its background and clock colors with the page change and is drawn only once, no black flash before the background color
-- (ticaki) screensaver advanced: with the TFT 6.1.0 it follows the colors of the color theme like the other screensavers
-- (ticaki) berry driver 12: the checksum of a message is computed about five times faster, and the adapter can hand it over ready-made - large messages reach the display about 0.2 s earlier
-- (ticaki) emulator berry (`tasmota/Emulator/autoexec.be`): brought up to driver 12 and reports the version -12 (emulator of generation 12, the maintain tab shows "Emulator (12)") - splits every read into single messages, so several acknowledgements of the TFT 6.1.0 in one read no longer arrive as raw `nextion` data, takes the ready-made checksum, uses the faster checksum and keeps running after an error; the raw traffic is now in the log at level 4 instead of the console
-- (ticaki) icons: the media players of cardMedia as normal icons `alexa`, `mpd`, `sonos`, `bose` and `volumio` (TFT 6.1.0, `spotify` and `dlna` already existed); the web panel draws the player logos with them
-- (ticaki) panel: a restart of the adapter during the first seconds of a TFT update no longer restarts Tasmota and breaks the update
-- (ticaki) screensaver: the update symbol next to the clock only shows when the TFT is older than the recommended one, not for a newer TFT
-- (ticaki) admin: the maintain tab shows the berry driver of every panel and offers an update like for TFT and script; Tasmota restarts after a successful download
-- (ticaki) berry driver 12 and emulator berry: a message of the display split over two serial reads is put together again instead of being lost
-- (tt-tom17) admin: the color options of a page item have a checkbox for the color scale - apply without it stores no scale and removes an existing one, and the scale fields no longer keep the values of the item edited before
-- (tt-tom17) admin: navigation items with the roles airCondition, temperature, value.temperature and value.humidity offer the condition for the value, as the adapter evaluates it for them
-- (tt-tom17) admin: the color settings button of the item dialog no longer flickers while a channel id is typed and no longer shows the verdict of the previous channel
-- (tt-tom17) admin: in the item dialog "is a navigation" and "custom button" exclude each other, checking one takes the other back
-- (ticaki) adapter start: panels no longer restart their startup animation several times while the adapter starts - the acks of the display no longer trigger a new startup page offer, and a display that starts while its panel is still being created gets its startup once the panel is ready, and a slow startup is no longer run twice
-- (tt-tom17) admin: the summary of the start page in the navigation panel explains the resolved neighbours instead of asking to choose a value; the notice "page is not added on this panel" only appears when the panel row has no navigation at all - the only case in which the adapter leaves the page out
-- (tt-tom17) admin: "update scripts for all panels" in maintain reports the panels whose script update failed
-- (tt-tom17) admin: the timezone field explains when the value reaches a panel; the start dialog of the panel setup warns when the panel table has unsaved changes
-- (tt-tom17) maintain: a failed update of the global script is reported to the admin after the panel script was written and is logged as error
+### 2.3.0 (2026-11-16)
+- (ticaki) panel: with the TFT 6.1.0 and the berry driver 12 the display confirms every message with its checksum and the adapter sends the next one right away instead of waiting 250 ms - pages and the screensaver build up noticeably faster; the screensaver takes its colors with the page change (no black flash), screensaver advanced follows the color theme
+- (ticaki) berry driver 12 (also the emulator berry): faster checksum, takes it ready-made from the adapter, a message split over two serial reads is no longer lost; the maintain tab shows the berry driver of every panel and offers an update
+- (ticaki) screensaver: changes arriving right after each other are sent together, weatherUpdate at most once per second instead of every 2 s, outdated values no longer pile up in the send queue; the update symbol only shows for a TFT older than the recommended one
+- (ticaki) screensaver notification at standby brightness 0: the first tap wakes the display, the second clears the notification, the third leaves the screensaver
+- (ticaki) adapter start: one startup per panel instead of a startup storm; an adapter restart during a TFT update no longer breaks the update
+- (ticaki) changed state texts and display values (`common.states`, unit, min, max, step, name) are picked up at runtime without an adapter restart
+- (ticaki) icons: media player logos `alexa`, `mpd`, `sonos`, `bose` and `volumio` (TFT 6.1.0)
+- (ticaki) admin: flash a custom TFT on one or all panels (tab developer, expert mode); page name filter in the page config, search in the navigation flow, readable zoom buttons in the dark theme
+- (ticaki) Admin >= 8.1.0 required; dependencies updated (MQTT broker aedes 1.2.0 with security fixes)
+- (tt-tom17) popup notification: the left button writes the plain id to `setStateID` and the id with the panel name to `setGlobalID` like the other buttons - **check scripts that read the local datapoint**; a missing `textSize` falls back to 3
+- (tt-tom17) cardThermo/cardThermo2: mode row also with `common.states` as object, fan mode `FAN_ONLY` shown, no outline A on inactive modes, no doubled wrench; fan and dry mode translated by what they do (de: `Lüften`/`Trocknen`)
+- (tt-tom17) screensaver: a tap on a notification that cannot be dismissed is no longer lost; an acknowledged notification of the ioBroker host no longer comes back
+- (tt-tom17) admin: color scale checkbox for item colors, value condition for more navigation roles, "navigation" and "custom button" exclude each other, clearer start page summary and notices, failed script updates are reported, timezone hint, warning about unsaved panels
 
 ### 2.2.0 (2026-11-12)
 - (ticaki) web panel: smartphone models `web-p` and `web-l`, portrait layout for all cards, popups and screensavers on us-p/web-p, hardware buttons can be switched off, many layout fixes; no crash on the first connection, less log noise without browser
@@ -245,22 +219,6 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
 - (ticaki) admin: the "..." button of the media page player opens a list of all players found (alexa2 Echo devices, sonos speakers, squeezebox players, spotify-premium/mpd instances) grouped by adapter with search instead of the object tree; the id can still be typed by hand
 - (ticaki) admin: screensaver items show readable names (headline, object name or template name) instead of regex fragments; the full name is in the tooltip
 - (ticaki) admin: a script weather instance with a trailing dot (`pirate-weather.0.`) is recognized as installed and saved without the dot
-
-### 2.0.0 (2026-10-31)
-- (ticaki) maintain: new button "Take script over into admin" on every panel tile - converts the pages, the screensaver and the hardware buttons of a panel script into the admin configuration (preview with all problems, backup of the script, pages of the global script per panel, items the editor cannot express are taken over as raw data)
-- (ticaki) a configuration script is no longer required; new panel option "Panel uses no script" - the panel is configured in the admin only and a script sent for it is rejected
-- (ticaki) page configuration: new page types "Media player" (cardMedia), "Thermostat (classic)" (cardThermo) and "Page link"; paging of menu, thermostat and media pages can be set
-- (ticaki) page configuration: the old tabs "Page Power" and "Page Chart" are moved into the page configuration automatically at adapter start
-- (ticaki) item dialog: raw data (JSON) for page and screensaver items, many more fields (value conditions, slider ranges, `secondRow`, `colormode`, target page for buttons); long press is offered on grid pages only, like on the HMI
-- (tt-tom17) panel settings: the hardware buttons (relay decoupling and action) are configured in the panel tile
-- (ticaki) navigation flow: edit mode for prev/next/home/parent links (also for script pages, stored as override), auto layout, collapsible sub trees
-- (ticaki) icons: Material Design Icons 7.4.47 (546 new icons), own window and shutter icons, blinds show their position as icon - needs HMI/TFT 6.0.2 (beta TFT EU is 6.0.2)
-- (ticaki) global script: an admin page assigned to a panel replaces the global page of the same name
-- (ticaki, tt-tom17) web panel: tap and hold behave like on the HMI (grid tiles, cardMedia, cardThermo2, list rows), hardware buttons 20px higher
-- (ticaki) error in the log when Tasmota runs but the display never answers (hint to the NSPanel template / GPIO4)
-- (ticaki) fix: prefix and suffix of admin page item values were swapped - if you entered them the other way round, swap them back
-- (ticaki) fixes: `colorScale.color_best` ignored, font size lost while an item is off, long press also triggered the short press, media item of an admin page without media sub page, screensaver clock stopped, "show system pages" in the navigation flow
-- (tt-tom17) fixes: deactivated panels (`cmd.activated`) are left alone at adapter start and report `deactivated`, `cmd.hideCards` keeps its value at adapter start
 
 [Older changelogs can be found there](CHANGELOG_OLD.md)
 
