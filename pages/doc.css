@@ -45,6 +45,10 @@ body {
 a {
     color: var(--accent);
 }
+/* the sticky header must not cover the heading a #anchor jumps to; doc.js sets the exact header height */
+html {
+    scroll-padding-top: 72px;
+}
 .skip {
     position: absolute;
     left: -9999px;
@@ -372,6 +376,9 @@ body.start h1 {
 }
 
 @media (max-width: 860px) {
+    html {
+        scroll-padding-top: 160px;
+    }
     .iconbtn {
         display: inline-block;
     }

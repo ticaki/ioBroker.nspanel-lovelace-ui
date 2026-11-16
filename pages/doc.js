@@ -1,6 +1,42 @@
 /* Search and mobile navigation of the documentation site. No dependencies. */
 (function () {
     'use strict';
+    // keep #anchor targets below the sticky header, whose height depends on the window width
+    var header = document.querySelector('header');
+    function fitScrollPadding() {
+        if (header) {
+            document.documentElement.style.scrollPaddingTop = header.offsetHeight + 12 + 'px';
+        }
+    }
+    fitScrollPadding();
+    window.addEventListener('resize', fitScrollPadding);
+    // images above the target have no fixed size and load after the browser has jumped to the anchor,
+    // so they push the heading out of view again (Firefox) - jump once more when everything is loaded
+    function jumpToHash() {
+        if (location.hash) {
+            var target = document.getElementById(decodeURIComponent(location.hash.slice(1)));
+            if (target) {
+                target.scrollIntoView();
+            }
+        }
+    }
+    var userScrolled = false;
+    ['wheel', 'touchmove', 'keydown', 'mousedown'].forEach(function (type) {
+        window.addEventListener(
+            type,
+            function () {
+                userScrolled = true;
+            },
+            { once: true, passive: true },
+        );
+    });
+    jumpToHash();
+    window.addEventListener('load', function () {
+        if (!userScrolled) {
+            jumpToHash();
+        }
+    });
+
     var toggle = document.getElementById('navToggle');
     var sidebar = document.getElementById('sidebar');
     if (toggle && sidebar) {
