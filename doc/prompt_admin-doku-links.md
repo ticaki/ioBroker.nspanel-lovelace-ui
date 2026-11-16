@@ -4,6 +4,8 @@ Diese Datei ist ein Prompt für Claude. Sie beschreibt, wie der Admin (`src-admi
 (`doc/de`, `doc/en`) verlinkt ist. Lies sie vollständig, bevor du im Admin Felder, Dialoge oder Editoren
 anlegst oder änderst, und bevor du Überschriften in der Doku umbenennst, verschiebst oder einfügst.
 Beide Seiten hängen über die Überschriften zusammen, und ein Test schlägt fehl, sobald sie auseinanderlaufen.
+Abschnitt 7 fasst die Regeln für die Nutzerdoku selbst zusammen (Aufbau, Überschriften, Links, Bilder, Quellen),
+damit Maintainer und Doku-Pflege mit derselben Struktur arbeiten.
 
 ---
 
@@ -128,3 +130,99 @@ Ansehen im Admin:
 
 Bilder der Hilfe-Icons in allen Themen, eine kurze Nutzeranleitung und eine Prüftabelle liegen in
 `doc/Pictures/adminHelpLinks/`.
+
+## 7. Regeln für die Nutzerdoku (`doc/de`, `doc/en`)
+
+Diese Regeln gelten für jede Änderung an `doc/de` und `doc/en` — egal, ob sie wegen eines Hilfe-Links, einer
+neuen Funktion oder einer Korrektur passiert. Sie sind der gemeinsame Nenner von Maintainer und Doku-Pflege, damit
+beide Seiten dieselbe Struktur vorfinden.
+
+### Sprachen und Gliederung
+
+- **DE und EN sind ein Paar:** gleicher Dateiname, gleiche Gliederung, gleiche Reihenfolge der Überschriften und
+  Absätze. Beide im **selben Commit** ändern. Fehlt eine Seite in einer Sprache, entsteht sie mit — keine Stummel.
+- Der deutsche Text ist die Vorlage, der englische eine Übersetzung mit denselben Fachbegriffen
+  (Beschriftungen des Admin so, wie sie in `admin/i18n/<sprache>/translations.json` stehen).
+- **Kein Fachjargon, wo ein Alltagswort reicht.** Beispiele aus früheren Durchgängen: Die farbigen Verbindungen
+  im Navigation Flow heißen **Linie** (EN `line`), nicht „Kante“; **Knoten** darf bleiben, weil es so im Admin steht.
+- Reine Doku-Änderungen bekommen **keinen Changelog-Eintrag** im README.
+
+### Aufbau einer Seite
+
+1. `# Titel` — bei Kartentypen `# <Karte> – Konfiguration im Admin`.
+2. Ein bis drei Absätze Einleitung: Was die Seite/Funktion am Panel tut, wo sie im Admin angelegt wird, was sie
+   **nicht** kann. Gibt es keinen Skriptweg, steht das hier mit der Meldung aus dem Log.
+3. **„Inhalt:“-Liste** mit Ankern auf die nummerierten Abschnitte (Unterabschnitte eingerückt).
+4. **Nummerierte Abschnitte** `## 1. …`, `## 2. …` in der Reihenfolge, in der der Nutzer im Admin arbeitet
+   (anlegen → Felder → Besonderheiten → was am Panel passiert).
+5. Zum Schluss **`## Fallstricke`** (EN `## Pitfalls`), ohne Nummer: je ein fetter Merksatz plus Erklärung.
+   Bekannte Fehler und Abweichungen zwischen Oberfläche und Verhalten gehören hierhin, nicht in den Fließtext.
+
+- **Felder als Tabelle** `| Feld | Bedeutung |` — die Spalte *Feld* trägt die Beschriftung aus dem Admin in
+  Fettschrift. Was der Admin **nicht** anzeigt (Grenzen, Reihenfolge, Verhalten beim Speichern), steht in der
+  Spalte *Bedeutung*, nicht in einer Fußnote.
+- **Gleiche Dinge gleich bauen:** Mehrere Knöpfe oder Varianten derselben Art bekommen je einen Unterabschnitt mit
+  identischem Aufbau (Beispiel `Maintain.md` Abschnitt 3: `### TASMOTA UPDATE`, `### TFT UPDATE`,
+  `### BERRY UPDATE` — gemeinsame Einleitung davor, je Knopf: was passiert, Voraussetzungen, Fehlerfall).
+- Hinweise, die der Nutzer übersehen würde, als Zitatblock `> **Merksatz.** Erklärung …`.
+- **Der Admin ist der Weg.** Jede Karte, die der Admin kann, wird dort vollständig beschrieben — Klickweg **und** die
+  wegunabhängigen Sacherklärungen (Darstellung am Panel, Grenzen, Rollen, Datenpunkte). Das Konfigurationsskript ist
+  der zweite Weg für erfahrene Nutzer und wird nur grob beschrieben (Aufbau, Beispiele, keine Feldlisten). Admin und
+  Skript nie als gleichwertig nebeneinanderstellen; was im Admin fehlt, wird als Issue gemeldet, nicht im Skript
+  umgangen und auch nicht so dokumentiert.
+
+### Überschriften, Anker, Nummern
+
+- Überschriften sind **Verträge** (Abschnitt 4): Der Admin verlinkt auf ihren Wortlaut, der Anker entsteht per
+  `slug()` daraus. Vor jedem Umbenennen `grep -rn "<Überschrift>" src-admin/src/docTopics doc/`.
+- **Nummerierte Abschnitte nicht umnummerieren.** Neues kommt als Unterabschnitt (`###`) in den passenden
+  Abschnitt oder als neuer Abschnitt **hinten** dran — sonst verschieben sich die Anker `#3-…`, auf die fremde Seiten
+  und Topics zeigen. (`screensaver.md`: Kacheln wurden §16 hinter Timer §15 gehängt, nicht eingeschoben.)
+- Unterüberschriften nur dort, wo ein Link sie braucht oder die Gliederung sie trägt; keine Überschriften-Flut.
+- Ankerschreibweise: Kleinbuchstaben, Bindestriche, Umlaute bleiben (`#4-wlan-verschlüsselung-passwort-verstecktes-netz`),
+  Satzzeichen fallen weg (`3. Tasmota, TFT und …` → `#3-tasmota-tft-und-…`). Doppelte Überschriften bekommen `-1`, `-2`.
+
+### Links
+
+- **Wiki-Stil ohne `.md`:** `[Screensaver](screensaver)`, mit Anker `[Items](screensaver#4-items-der-item-dialog)`.
+  Dateinamen mit Klammern in spitzen Klammern: `[Developer News (Latest)](<Developer-News-(Latest)>)`.
+- Seitenintern `[Text](#anker)`. Auf die Sprache der Zielseite muss nicht geachtet werden — der Build löst
+  je Sprache auf.
+- Eine Seite, die noch nicht existiert, wird **nicht** verlinkt (in `_Sidebar.md`: `*(folgt)*`; `iA` = Seite da,
+  aber dünn). Keine toten Links, keine Platzhalterseiten.
+- Externe Links nur auf stabile Ziele (GitHub-Repo, ioBroker-Doku), nie auf Forum-Uploads.
+- Links in `admin/jsonConfig.json5` (`staticLink`) und in `src-admin/src/docTopics/*.ts` müssen beim Umbenennen
+  einer Seite von Hand nachgezogen werden (Abschnitt 5).
+
+### Bilder
+
+- Ablage `doc/Pictures/<thema>/<nr>-<kurzname>.png` — ein Ordner je Seite/Thema (`maintain`, `developer`,
+  `pageConfigDialoge`, `screensaverAdmin` …), fortlaufende Nummer, deutscher Kurzname, nur PNG.
+- **Ein Bild für beide Sprachen:** derselbe Pfad in DE und EN, nur der Alt-Text ist übersetzt.
+  Einbinden mit `![Alt-Text](../Pictures/<thema>/<datei>.png)`; Roh-`<img>` nur, wenn die Breite begrenzt werden muss.
+- Der Alt-Text beschreibt, **was zu sehen ist und warum** („Die Karte eines Panels mit dem Feld Berry-Treiber und
+  dem Knopf BERRY UPDATE — hier der Emulator, bei dem der Knopf grau bleibt“), nicht nur den Dateinamen.
+- Admin-Bilder sind **Ausschnitte**, keine Vollbilder: die Karte, der Dialog, der Kasten — mit etwas Rand
+  (ca. 600–1300 px breit). Aufgenommen im hellen Standard-Thema, Fensterbreite 1500 px, Sprache Deutsch.
+  Dialoge mit `.MuiDialog-paper` als Ausschnitt; bei zwei offenen Dialogen `.MuiDialog-root:last-of-type .MuiDialog-paper`.
+- Bilder zeigen den **aktuellen** Admin — nach einem Umbau der Oberfläche die betroffenen Bilder neu aufnehmen,
+  keine Bilder aus altem Wiki oder Forum übernehmen.
+- `doc/Pictures/**` wird unverändert auf die Pages-Seite kopiert; Ordner nur mit Bildern füllen (eine README wie in
+  `adminHelpLinks/` ist die Ausnahme für Prüftabellen).
+
+### Quellen
+
+Reihenfolge der Wahrheit: `src-admin/src/*.tsx` → `admin/jsonConfig.json5` → `src/lib/config-manager.d.ts` und
+`adapter-config.d.ts` → `src/lib/pages/*.ts`, `src/main.ts` → README-Changelog → alter Wiki-/Forum-Text nur als
+Rohmaterial. Jede Aussage über Verhalten (Grenzen, Reihenfolge, Fehlermeldungen) wird am Code geprüft, Meldungen
+werden **wörtlich** aus `admin/i18n/de/translations.json` übernommen. Versionsangaben („seit 2.3.0“) aus dem Changelog.
+
+### Prüfen und Commit
+
+```bash
+npx tsx script/build-doc-page.ts /tmp/docchk --strict && rm -rf /tmp/docchk   # tote Links und Anker in DE und EN
+npx mocha --config test/mocharc.custom.json src-admin/src/docTopics.test.ts   # Überschriften, auf die der Admin zeigt
+```
+
+`--strict` prüft **keine Bildpfade** — neue Bilder einmal in der gebauten Seite oder per `ls` gegen den Pfad prüfen.
+Commit-Betreff `docs(<Seite>): …`, DE und EN zusammen; Bilder im selben Commit wie der Text, der sie einbindet.
