@@ -25,6 +25,7 @@ Der Tab erscheint erst, wenn die MQTT-Angaben vollständig sind — eigener Serv
 
 | Element | Wirkung |
 |---|---|
+| **Dokumentation** | Öffnet diese Seite in einem neuen Tab. |
 | **Hilfe zur Adapterinstallation** (roter Text-Knopf) | Öffnet die Wiki-Seite [Adapter-Installation](Adapter-Installation) in einem neuen Tab. |
 | **Skripte für alle Panels aktualisieren** | Dasselbe wie *SCRIPT UPDATE*, aber für alle Panels, deren Skriptversion von der mitgelieferten Vorlage abweicht. Panels mit dem Haken **Panel benutzt kein Skript** werden ausgelassen. Der Knopf ist orange, solange es etwas zu tun gibt, und grau, wenn nichts ansteht, die Instanz nicht läuft oder gerade ein anderer Vorgang läuft. Schlägt das Update einzelner Panels fehl, läuft der Sammellauf über die übrigen weiter und nennt am Ende die betroffenen Panels in der roten Fehlerzeile (*Für diese Panels ist das Skript-Update fehlgeschlagen: …*). |
 | Hinweis **Beta-Version in Verwendung** | Erscheint, solange *Beta-Firmware* in den [Global Settings](globelSettings) eingeschaltet ist. |
@@ -59,6 +60,8 @@ Vor beiden Updates fragt der Admin nach und nennt die rund **40 Sekunden**, in d
 Beide Befehle gehen nur an Panels, die der Adapter gerade betreibt. Dieselben Werkzeuge gibt es — zusätzlich zum Neustart — im Tab [Tasmota-Tools](tasmotatools), dort über die IP statt über die Panel-Karte. Die Versionsfelder aktualisieren sich von selbst, sobald das Panel sich wieder meldet.
 
 ### Der Berry-Treiber
+
+![Die Karte eines Panels mit dem Feld Berry-Treiber, dem Knopf BERRY UPDATE und dem Hilfe-Fragezeichen — hier der Emulator, bei dem der Knopf grau bleibt](../Pictures/maintain/maintain-03-berry-treiber.png)
 
 Seit 2.3.0 zeigt die Karte unter den Firmware-Feldern das Feld **Berry-Treiber** mit der Generation des Treibers, die das Panel gemeldet hat (`12`), und daneben den Knopf **BERRY UPDATE**. Weicht die Generation von der in der Versionsliste empfohlenen ab, steht das im Feld — `12 (Update verfügbar: 13)` bzw. `(Downgrade empfohlen: …)` —, die Karte wird orange und der Knopf kräftig blau, genau wie bei Tasmota und TFT.
 

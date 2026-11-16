@@ -25,6 +25,7 @@ Above the cards sit:
 
 | Element | Effect |
 |---|---|
+| **Documentation** | Opens this page in a new tab. |
 | **Help for adapter installation** (red text button) | Opens the wiki page [adapter installation](Adapter-Installation) in a new tab. |
 | **Update scripts for all panels** | The same as *SCRIPT UPDATE*, but for every panel whose script version differs from the shipped template. Panels with the **Panel uses no script** checkbox are left out. The button is orange while there is something to do, and grey when nothing is pending, the instance is not running or another operation is in progress. If the update fails for individual panels, the run continues with the others and names the affected panels in the red error line at the end (*The script update failed for these panels: …*). |
 | Note **Beta version in use** | Appears while *beta firmware* is switched on in the [Global Settings](globelSettings). |
@@ -59,6 +60,8 @@ Before both updates the admin asks for confirmation and mentions the roughly **4
 Both commands only go to panels the adapter is currently operating. The same tools — plus the restart — are available in the [Tasmota tools](tasmotatools) tab, there via the IP instead of via the panel card. The version fields refresh by themselves as soon as the panel reports back.
 
 ### The Berry driver
+
+![The card of a panel with the Berry driver field, the BERRY UPDATE button and the help question mark — here the emulator, where the button stays grey](../Pictures/maintain/maintain-03-berry-treiber.png)
 
 Since 2.3.0 the card shows the field **Berry driver** below the firmware fields with the generation of the driver the panel has reported (`12`), and next to it the button **BERRY UPDATE**. If the generation differs from the one recommended in the version list, the field says so — `12 (Update available: 13)` or `(Downgrade recommended: …)` —, the card turns orange and the button a strong blue, exactly as with Tasmota and TFT.
 

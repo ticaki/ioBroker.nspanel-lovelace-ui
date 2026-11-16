@@ -6,6 +6,10 @@ Schalter für die Fehlersuche, das Einspielen einer eigenen Display-Firmware und
 
 <img alt="Reiter Entwickler im Expertenmodus" src="../Pictures/testumgebung/01-entwickler-knopf.png" width="100%"/>
 
+Oben im Tab steht der Knopf **Dokumentation** — er öffnet diese Seite in einem neuen Tab.
+
+![Der Kopf des Tabs Entwickler mit dem Knopf Dokumentation](../Pictures/developer/02-dokumentation-knopf.png)
+
 ## Protokollierung
 
 | Schalter | Wirkung |
@@ -28,6 +32,8 @@ Diese Schalter erzeugen viel Text im Protokoll. Für die Fehlersuche einschalten
 | **Testdatenpunkte anlegen** | Legt die Datenpunkte der Testumgebung an — alle Kanalrollen auf einmal, ohne eigene Objekte. Vorhandenes bleibt unverändert. Siehe [Testumgebung](Testumgebung). |
 
 ## Eigene TFT einspielen
+
+![Der Kasten Eigene TFT einspielen mit Dateiauswahl, Panel-Liste und dem Knopf TFT einspielen](../Pictures/developer/01-eigene-tft.png)
 
 Seit 2.3.0 steht unter den Werkzeugen der Kasten **Eigene TFT einspielen**: eine selbst gebaute oder anderswo bezogene Display-Firmware (`.tft`) auf ein Panel oder auf alle Panels bringen, ohne sie vorher auf einen Webserver legen zu müssen — das Bereitstellen übernimmt der Adapter.
 

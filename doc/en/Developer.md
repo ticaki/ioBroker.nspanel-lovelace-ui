@@ -6,6 +6,10 @@ Switches for troubleshooting, flashing your own display firmware, and an area wh
 
 <img alt="Developer tab in expert mode" src="../Pictures/testumgebung/01-entwickler-knopf.png" width="100%"/>
 
+At the top of the tab sits the button **Documentation** — it opens this page in a new tab.
+
+![The head of the developer tab with the Documentation button](../Pictures/developer/02-dokumentation-knopf.png)
+
 ## Logging
 
 | Switch | Effect |
@@ -28,6 +32,8 @@ These switches produce a lot of log output. Turn them on for troubleshooting and
 | **Create test states** | Creates the states of the test environment — every channel role at once, without building objects yourself. Existing objects stay untouched. See [Test environment](Testumgebung). |
 
 ## Flashing a custom TFT
+
+![The box Flash custom TFT with file selection, panel list and the Flash TFT button](../Pictures/developer/01-eigene-tft.png)
 
 Since 2.3.0 the box **Flash custom TFT** sits below the tools: it puts a display firmware (`.tft`) you built yourself or obtained elsewhere on one panel or on all panels, without having to place it on a web server first — the adapter serves it.
 
