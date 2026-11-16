@@ -3,6 +3,7 @@ import { ConfigGeneric, type ConfigGenericProps, type ConfigGenericState } from 
 import { Alert, Box, Button, FormControl, InputLabel, MenuItem, Select, Typography } from '@mui/material';
 import { UploadFile as UploadFileIcon } from '@mui/icons-material';
 import { DocHelp } from './components/DocHelp';
+import ConfigIP from './components/ConfigIP';
 
 /** Value of the panel select for "all panels" */
 const ALL_PANELS = '*';
@@ -66,6 +67,21 @@ function answerError(value: unknown): string | undefined {
 }
 
 /**
+ * IPv4 address the panels can reach the adapter on - the same rule as in the adapter
+ * (`isUsableServerIp` in `src/lib/tools/tft-server.ts`): not empty, not loopback, not 0.x.
+ *
+ * @param ip the "IP of the ioBroker" as entered in the admin
+ * @returns true if the flash URL can be built with it
+ */
+function isUsableServerIp(ip: unknown): ip is string {
+    if (typeof ip !== 'string' || !/^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$/.test(ip)) {
+        return false;
+    }
+    const parts = ip.split('.').map(Number);
+    return parts.every(n => n <= 255) && parts[0] !== 127 && parts[0] !== 0;
+}
+
+/**
  * Base64 of a part of a file.
  *
  * @param bytes the bytes
@@ -84,6 +100,9 @@ function toBase64(bytes: Uint8Array): string {
  * Admin tab developer: flashes a custom TFT (`.tft`) on one or all panels.
  * The file is sent to the adapter in chunks; the adapter serves it on a free port and sends
  * `FlashNextionAdv0 <url>` to the panels.
+ *
+ * The URL needs the "IP of the ioBroker" (`internalServerIp`). The NSPanel settings only show
+ * that field with the built-in MQTT server, so with an external broker the box offers it itself.
  */
 class CustomTftUpload extends ConfigGeneric<ConfigGenericProps, CustomTftUploadState> {
     private readonly instance = this.props.oContext.instance ?? '0';
@@ -222,6 +241,8 @@ class CustomTftUpload extends ConfigGeneric<ConfigGenericProps, CustomTftUploadS
         const panels = this.state.panels ?? [];
         const noAdapter = this.state.panels === null;
         const selectedTarget = target === ALL_PANELS || panels.some(p => p.topic === target) ? target : ALL_PANELS;
+        const useInternalServer = !!this.props.data?.mqttServer;
+        const serverIpOk = isUsableServerIp(this.props.data?.internalServerIp);
         return (
             <Box sx={{ mt: 1, p: 2, border: 1, borderColor: 'divider', borderRadius: 1 }}>
                 <Typography
@@ -238,6 +259,26 @@ class CustomTftUpload extends ConfigGeneric<ConfigGenericProps, CustomTftUploadS
                 >
                     {this.getText('customTftHelp')}
                 </Typography>
+                {!useInternalServer ? (
+                    // with an external broker the NSPanel settings do not show the field - the panels still need the address
+                    <Box sx={{ mb: 2 }}>
+                        <ConfigIP
+                            {...this.props}
+                            schema={
+                                // ConfigIP only reads its own schema fields - same cast as in PagePanelOverview
+                                {
+                                    sx: { minWidth: 220 },
+                                    label: 'internalServerIp',
+                                    help: 'customTftServerIpHelp',
+                                    noInternal: true,
+                                    onlyIp4: true,
+                                } as any
+                            }
+                            attr="internalServerIp"
+                            disabled={disabled || busy}
+                        />
+                    </Box>
+                ) : null}
                 <Box sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 2 }}>
                     <Button
                         component="label"
@@ -279,7 +320,7 @@ class CustomTftUpload extends ConfigGeneric<ConfigGenericProps, CustomTftUploadS
                     </FormControl>
                     <Button
                         variant="contained"
-                        disabled={disabled || busy || !file || noAdapter || panels.length === 0}
+                        disabled={disabled || busy || !file || noAdapter || panels.length === 0 || !serverIpOk}
                         onClick={(): void => {
                             void this.start();
                         }}
@@ -287,6 +328,15 @@ class CustomTftUpload extends ConfigGeneric<ConfigGenericProps, CustomTftUploadS
                         {busy ? `${this.getText('customTftUploading')} ${progress} %` : this.getText('customTftStart')}
                     </Button>
                 </Box>
+                {!serverIpOk ? (
+                    <Alert
+                        severity="warning"
+                        sx={{ mt: 2 }}
+                    >
+                        {this.getText('customTftNoServerIp')}
+                        {useInternalServer ? ` ${this.getText('customTftServerIpInSettings')}` : ''}
+                    </Alert>
+                ) : null}
                 {noAdapter ? (
                     <Alert
                         severity="info"

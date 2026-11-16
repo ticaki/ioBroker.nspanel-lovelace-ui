@@ -490,6 +490,8 @@
     "customTftReadError": "Nie można odczytać pliku.",
     "customTftSelectFile": "Wybierz plik TFT",
     "customTftServerError": "Nie można udostępnić pliku TFT - zobacz dziennik adaptera.",
+    "customTftServerIpHelp": "Adres hosta ioBroker, z którego panele pobierają TFT.",
+    "customTftServerIpInSettings": "Przy wbudowanym serwerze MQTT pole znajduje się w ustawieniach NSPanel.",
     "customTftStart": "Wgraj TFT",
     "customTftStarted": "Wgrywanie rozpoczęte - panele pobierają teraz plik TFT.",
     "customTftTarget": "Panel",

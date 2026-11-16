@@ -496,6 +496,8 @@
     "customTftReadError": "Die Datei konnte nicht gelesen werden.",
     "customTftSelectFile": "TFT-Datei auswählen",
     "customTftServerError": "Die TFT konnte nicht bereitgestellt werden - siehe Adapter-Log.",
+    "customTftServerIpHelp": "Adresse des ioBroker-Hosts, von der die Panels die TFT laden.",
+    "customTftServerIpInSettings": "Beim eingebauten MQTT-Server steht das Feld in den NSPanel-Einstellungen.",
     "customTftStart": "TFT einspielen",
     "customTftStarted": "Flash gestartet - die Panels laden jetzt die TFT.",
     "customTftTarget": "Panel",

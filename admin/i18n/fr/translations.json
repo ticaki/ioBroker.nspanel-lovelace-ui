@@ -490,6 +490,8 @@
     "customTftReadError": "Le fichier n'a pas pu être lu.",
     "customTftSelectFile": "Choisir le fichier TFT",
     "customTftServerError": "Le TFT n'a pas pu être mis à disposition - voir le journal de l'adaptateur.",
+    "customTftServerIpHelp": "Adresse de l'hôte ioBroker depuis laquelle les panneaux téléchargent le TFT.",
+    "customTftServerIpInSettings": "Avec le serveur MQTT intégré, le champ se trouve dans les paramètres du NSPanel.",
     "customTftStart": "Flasher le TFT",
     "customTftStarted": "Flash lancé - les panneaux téléchargent maintenant le TFT.",
     "customTftTarget": "Panneau",
