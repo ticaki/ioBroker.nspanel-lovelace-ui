@@ -68,6 +68,8 @@ squeezeboxrpc.0.Players.<Name>
 
 *„Ohne Instanznummer wird die kleinste Instanz verwendet."* — `spotify-premium` genügt also, `spotify` nicht.
 
+### Die Auswahlliste
+
 **Die Auswahlliste** (Knopf **…**) ist kein Objektbaum, sondern eine Suche: Sie liest die Objekte der fünf Adapter und zeigt alles, was als Player in Frage kommt, nach Adapter gruppiert und mit Logo-Marke.
 
 <img alt="Dialog Player auswählen mit Suchfeld und nach Adapter gruppierter Liste" src="../Pictures/cardMedia/media-03-player-auswahl.png" width="100%"/>
@@ -81,7 +83,9 @@ squeezeboxrpc.0.Players.<Name>
 
 Der Hinweis unter der Liste: *„Klick markiert einen Player, Doppelklick übernimmt ihn direkt. Die ID kann weiterhin von Hand in das Feld eingetragen werden."* Findet die Suche nichts, erscheint *„Kein unterstützter Mediaplayer gefunden – installiere und richte einen dieser Adapter ein: …"*; lassen sich die Objekte eines Adapters nicht lesen, steht *„Die Objekte dieser Adapter konnten nicht gelesen werden: …"*.
 
-**Die Prüfung.** Sobald eine ID eingetragen ist, fragt der Editor den Adapter. Der prüft die ID auf demselben Weg, auf dem er später die Seite baut, und liefert gleich die Namen für die drei Listen mit.
+### Die Prüfung
+
+Sobald eine ID eingetragen ist, fragt der Editor den Adapter. Der prüft die ID auf demselben Weg, auf dem er später die Seite baut, und liefert gleich die Namen für die drei Listen mit.
 
 | Rückmeldung | Bedeutung |
 |---|---|
@@ -92,6 +96,8 @@ Der Hinweis unter der Liste: *„Klick markiert einen Player, Doppelklick übern
 | *Der Adapter läuft nicht – …* | Die Instanz läuft nicht; es wird nicht geprüft. |
 
 **Erneut prüfen** wiederholt die Prüfung. Das ist nötig, weil der Editor sich das Ergebnis je ID merkt.
+
+### Überschrift
 
 **Überschrift** (Platzhalter *leer = Titel des Songs*) ist die Kopfzeile der Karte am Panel. Bleibt sie leer, baut der Adapter die Zeile selbst: aus dem Namen des Players und dem Titel des laufenden Songs, und wenn es keinen gibt, aus dem Namen des Dienstes (`Alexa`, `Sonos`, `Spotify`, `MPD`, `Squeezebox`).
 
@@ -133,6 +139,8 @@ Welche Elemente es gibt und in welcher Reihenfolge sie in die Leiste kommen, bes
 | **Spotify** | Offline-Anzeige · Lautsprecher · Playlisten · Titelliste · Uhr · Lautstärke-Voreinstellungen · Wiederholen |
 | **MPD** | Offline-Anzeige · Wiederholen · Uhr · Lautstärke-Voreinstellungen · Überblenden |
 | **Squeezebox (LMS)** | Offline-Anzeige · Lautsprecher · Favoriten · Playlisten · Uhr · Lautstärke-Voreinstellungen · Titelliste · Wiederholen |
+
+### Einstellungen eines Elements
 
 Ein Klick auf eine Marke oder auf den Platz in der Leiste öffnet die Einstellungen des Elements:
 

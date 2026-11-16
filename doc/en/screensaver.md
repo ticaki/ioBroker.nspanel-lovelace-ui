@@ -16,6 +16,7 @@ Contents:
 - [Status icons](#9-status-icons)
 - [Time and date](#10-time-and-date)
   - [Timer instead of the clock](#timer-instead-of-the-clock)
+  - [Date](#date)
 - [Weather](#11-weather)
 - [Options: rotation and swipe](#12-options-rotation-and-swipe)
 - [Notifications](#13-notifications)
@@ -105,17 +106,27 @@ A click on a free place opens the item dialog, a click on an occupied item edits
 | date/time (role `date`/`time`) | Icon, color, **Date format** (seven presets to choose from, preset *Adapter default (short date)*; in **expert mode** additionally *Custom (JSON)* with a field for free `Intl.DateTimeFormatOptions`) |
 | other (string …) | Icon, color |
 
+**Expert mode** (the icon at the bottom left of the admin bar) acts in the item dialog in one place only: with a date or time state the field **Date format** then additionally offers *Custom (JSON)* and below it a field for free `Intl.DateTimeFormatOptions`. All other fields are open without it.
+
 Depending on the place, fields are added or dropped: **Bottom** has the **Headline (empty = name of the state)**, **Indicators** show the icon only and have the **Action on press** instead (see [Indicators](#8-indicators-and-buttons)); value and text fields are dropped there.
 
-**Icon**: An item needs an icon – without an icon and without an icon list the panel cannot draw it, the dialog says *Without an icon the panel cannot draw the item - please choose an icon* and does not allow **Apply**. **Default icons are preset** from the role (and stay editable): the role of the channel above the state counts first (a `light` channel gives the bulb also for its `.ACTUAL`), otherwise the role of the state itself (`value.humidity`, `switch.light`, `sensor.door`, `value.temperature` …). The line "Role: …" names both. If the role knows no icons, the dialog says so.
+**Remove item** at the bottom left deletes the item from the place.
 
-**Color**: *fixed colors* (separate on/off for boolean, picker or hex value), for numbers alternatively *color scale by value* – **Edit scale…** opens the dialog with the scale, minimum/maximum, best value and mode (like the page items, see [PageConfig-Dialoge](PageConfig-Dialoge)):
+### Icon
+
+An item needs an icon – without an icon and without an icon list the panel cannot draw it, the dialog says *Without an icon the panel cannot draw the item - please choose an icon* and does not allow **Apply**. **Default icons are preset** from the role (and stay editable): the role of the channel above the state counts first (a `light` channel gives the bulb also for its `.ACTUAL`), otherwise the role of the state itself (`value.humidity`, `switch.light`, `sensor.door`, `value.temperature` …). The line "Role: …" names both. If the role knows no icons, the dialog says so.
+
+### Color
+
+*Fixed colors* (separate on/off for boolean, picker or hex value), for numbers alternatively *color scale by value* – **Edit scale…** opens the dialog with the scale, minimum/maximum, best value and mode (like the page items, see [PageConfig-Dialoge](PageConfig-Dialoge)):
 
 ![Number with a color scale](../Pictures/screensaverAdmin/admin-05-item-zahl-skala.png)
 
 Third choice *color from a state*: a state whose value is the color – `#rrggbb`, `{"r":…,"g":…,"b":…}` (also as a JSON string) or a decimal number. On on/off states it applies to "on", "off" takes the default color. The state has to exist and be a state.
 
 ![Color from a state](../Pictures/screensaverAdmin/admin-06-item-farbe-datenpunkt.png)
+
+### Icon per value range
 
 **Icon per value range** (numbers only): Instead of one fixed icon a list "up to value → icon" can be stored – the panel then changes the icon with the value. The button **Icon per value…** sits below the icon field as soon as the state is a number; expert mode is not needed for it. A stored list is shown next to it with its icons and the number of entries and can be deleted again with **Remove icon list** (bin).
 
@@ -126,7 +137,9 @@ Third choice *color from a state*: a state whose value is the color – `#rrggbb
 - **Apply** stays disabled while a started row is incomplete (*Every entry needs a numeric value and an icon*); rows without a value **and** without an icon are ignored. If a value appears twice, the dialog reports it – only one of those entries then takes effect, but it is not disabled because of it. An empty list removes the setting.
 - The list **replaces the icon** of the field above and counts as the icon: an item with an icon list needs no icon of its own. Color or color scale, unit, factor and decimals keep working as before.
 
-**Blind (position)**: If the chosen state is the position of a blind, the dialog treats it in its own way. A position is a **number** with the role `level.blind` or `value.blind` as well as a number below a channel or device with the role `blind` (the dialog then takes its `.ACTUAL` or `.SET`). A tilt (`tilt`) is no position.
+### Blind (position)
+
+If the chosen state is the position of a blind, the dialog treats it in its own way. A position is a **number** with the role `level.blind` or `value.blind` as well as a number below a channel or device with the role `blind` (the dialog then takes its `.ACTUAL` or `.SET`). A tilt (`tilt`) is no position.
 
 - Without an icon of its own **the icon follows the position** – five icons from closed to open. Such an item therefore needs no icon, **Apply** stays open. Icons of your own or an icon list keep working as before.
 - The value stands in **%** without decimals as long as **Unit** and **Decimals** stay empty. Whether 0 % means "closed" or "open" is decided by the **Shutter control** in the [Global Settings](globelSettings).
@@ -135,9 +148,13 @@ Third choice *color from a state*: a state whose value is the color – `#rrggbb
 
 ![An item with the position of a blind](../Pictures/screensaverAdmin/admin-27-item-rollladen.png)
 
+### Text instead of the value
+
 **Text instead of the value** (boolean): Instead of `true`/`false` the panel shows the **Text while true** or **Text while false**. Each field may also hold the **id of a state** – then its value is shown. An empty field keeps the raw value.
 
-**Visibility**: This block stands below the other fields as soon as the state is known (with a template, as soon as the template and – if needed – the object are entered). It needs **no expert mode** either. It has two fields:
+### Visibility
+
+This block stands below the other fields as soon as the state is known (with a template, as soon as the template and – if needed – the object are entered). It needs **no expert mode** either. It has two fields:
 
 | Field | Effect |
 |---|---|
@@ -147,10 +164,6 @@ Third choice *color from a state*: a state whose value is the color – `#rrggbb
 An item with a condition carries the eye icon in the panel picture and **takes no place on the panel** while the condition is not met – the other items move up.
 
 ![The complete item dialog with icon list and visibility](../Pictures/screensaverAdmin/admin-16-item-icon-und-sichtbarkeit.png)
-
-**Expert mode** (the icon at the bottom left of the admin bar) acts in the item dialog in one place only: with a date or time state the field **Date format** then additionally offers *Custom (JSON)* and below it a field for free `Intl.DateTimeFormatOptions`. All other fields are open without it.
-
-**Remove item** at the bottom left deletes the item from the place.
 
 ## 5. Templates as items
 
@@ -272,7 +285,7 @@ Which value comes next is read by the adapter from the state: it looks for the c
 
 **One state per indicator.** The adapter creates a state of its own for every indicator item: `panels.<panel>.buttons.indicator-1`, `-2`, `-3` … in the order in which the items stand in the area **Indicators**. The states are `boolean`, read-only and carry the role `button.press`. A tap on the indicator **always** writes `true` into its state – independently of the option. That makes them usable as triggers for own scripts, even without an action in the dialog. A long press writes a state of its own, see [action on long press](#action-on-long-press).
 
-**Only an action that is set has an effect.** An indicator switches nothing by itself: without an **Action on press** nothing happens to its state, even when that state is writable. A [blind](#4-items-the-item-dialog) is never moved by a tap.
+**Only an action that is set has an effect.** An indicator switches nothing by itself: without an **Action on press** nothing happens to its state, even when that state is writable. A [blind](#blind-position) is never moved by a tap.
 
 > Up to version 2.1.0 there was the option **Indicators act as buttons** for this. It is gone: a stored value is ignored, and a state that is merely writable is no longer switched by accident.
 
@@ -421,6 +434,8 @@ The remaining time stands in **minutes with a point**, so it cannot be mistaken 
 
 **Tapping:** The first tap on a shown timer switches to the clock – also without double click and before a notification is tapped away. It triggers neither a gesture nor a page change. The panel keeps counting the taps until the display dims, though: with the double click active (`cmd.screenSaver.doubleClick`) the next tap therefore leads to the main page as soon as it comes more than a second later. The timer appears again as soon as the screensaver starts anew or a new timer begins.
 
+### Date
+
 Click on the date: format of **Weekday**, **Month** and **Year** (long, short, numeric, two digits …). *Global setting* takes the format from the instance settings; a value here holds for this screensaver only. The preview shows the result with today's date.
 
 ![Date](../Pictures/screensaverAdmin/admin-11-datum.png)
@@ -544,7 +559,7 @@ The order of the items in the area **Indicators** decides the place. On `eu` and
 
 **No favorite:** Tiles has no favorite place. With it the current weather the other versions show there is gone as well – the ticked **Extra items at the bottom** from [weather](#11-weather), on the other hand, attach themselves behind the last own item in the area **Bottom** as usual.
 
-**Blind:** A blind can be used here as an indicator or at the bottom as in the other versions; without an icon of its own the icon follows the position, at the bottom the position stands in % (see [blind](#4-items-the-item-dialog)).
+**Blind:** A blind can be used here as an indicator or at the bottom as in the other versions; without an icon of its own the icon follows the position, at the bottom the position stands in % (see [blind](#blind-position)).
 
 ### Limits and changing the version
 

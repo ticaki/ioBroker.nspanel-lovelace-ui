@@ -160,7 +160,9 @@ Zwei Dinge werden getrennt gespeichert:
 
 Nach dem Speichern startet der Adapter neu. Der Tab bemerkt das selbst, zeigt „Adapter startet neu, Ansicht wird aktualisiert …" und liest die Navigation nach drei Sekunden neu, danach alle zwei Sekunden bis höchstens eine Minute. Die alte Ansicht bleibt in der Zwischenzeit stehen. Sobald die neuen Daten eine Änderung widerspiegeln, verliert die Seite ihre Markierung; bleiben Markierungen übrig, folgt automatisch ein weiterer Leseversuch.
 
-**Was der Adapter beim Bauen noch verändert** — wer die Linien danach nicht wiedererkennt, findet hier den Grund:
+### Was der Adapter beim Bauen noch verändert
+
+Wer die Linien danach nicht wiedererkennt, findet hier den Grund:
 
 - Eine Seite ohne jeden eigenen Verweis (und die nicht Startseite ist) bekommt `home` auf die Startseite — ein Notausgang, keine Navigation.
 - `home` oder `parent` auf die Seite selbst werden verworfen.

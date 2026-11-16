@@ -7,6 +7,7 @@ import React from 'react';
 import { Alert, Autocomplete, Box, Chip, TextField, Typography, createFilterOptions } from '@mui/material';
 import type { ThemeType } from '@iobroker/gui-components';
 import { EntitySelector } from './EntitySelector';
+import { DocHelp } from './DocHelp';
 import { objectName } from './mediaPlayerShared';
 import {
     type TemplateListEntry,
@@ -387,34 +388,37 @@ export class TemplateSelector extends React.Component<TemplateSelectorProps, Tem
                         {getText('screensaver_item_templatesPending')}
                     </Alert>
                 )}
-                <Autocomplete
-                    options={list.entries}
-                    value={list.selected}
-                    groupBy={o => o.template.name.split('.')[0]}
-                    getOptionLabel={o => o.label}
-                    getOptionKey={o => o.key}
-                    isOptionEqualToValue={(a, b) => a.key === b.key}
-                    filterOptions={filterTemplateEntries}
-                    renderOption={({ key, ...optionProps }, option) => (
-                        <li
-                            key={key}
-                            {...optionProps}
-                            title={option.technicalName}
-                        >
-                            {option.label}
-                        </li>
-                    )}
-                    onChange={(_e, v) => this.props.onTemplateChange(v?.template.name, v?.readOptions)}
-                    renderInput={params => (
-                        <TextField
-                            {...params}
-                            variant="standard"
-                            label={getText('screensaver_item_template')}
-                        />
-                    )}
-                    sx={{ mb: 2, maxWidth: 480 }}
-                    data-ss="template"
-                />
+                <Box sx={{ display: 'flex', alignItems: 'flex-end', mb: 2, maxWidth: 480 }}>
+                    <Autocomplete
+                        options={list.entries}
+                        value={list.selected}
+                        groupBy={o => o.template.name.split('.')[0]}
+                        getOptionLabel={o => o.label}
+                        getOptionKey={o => o.key}
+                        isOptionEqualToValue={(a, b) => a.key === b.key}
+                        filterOptions={filterTemplateEntries}
+                        renderOption={({ key, ...optionProps }, option) => (
+                            <li
+                                key={key}
+                                {...optionProps}
+                                title={option.technicalName}
+                            >
+                                {option.label}
+                            </li>
+                        )}
+                        onChange={(_e, v) => this.props.onTemplateChange(v?.template.name, v?.readOptions)}
+                        renderInput={params => (
+                            <TextField
+                                {...params}
+                                variant="standard"
+                                label={getText('screensaver_item_template')}
+                            />
+                        )}
+                        sx={{ flex: 1 }}
+                        data-ss="template"
+                    />
+                    <DocHelp topic="screensaver.templates" />
+                </Box>
                 {helpText && (
                     <Typography
                         variant="caption"

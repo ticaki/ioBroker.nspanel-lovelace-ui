@@ -4,6 +4,8 @@ These settings apply to **all panels of the instance** together — unlike the p
 
 <img alt="Global settings" src="../Pictures/globalSettings/global-01-uebersicht.png" width="100%"/>
 
+## Settings
+
 | Setting | Effect |
 |---|---|
 | **Beta firmware → use beta for TFT, Berry driver and Tasmota** | The tick switches all three firmware parts to their beta builds: *TFT UPDATE* in the [maintain](Maintain) tab installs the beta TFT instead of the stable one, the Berry install takes the beta driver (`berry-beta`), and *TASMOTA UPDATE* together with its version display follows the `tasmota-beta` entry of the version list — if that entry is missing, Tasmota stays on the stable version. Only usable in **expert mode**, and the box turns red while the tick is set — a deliberate warning. |

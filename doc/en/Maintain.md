@@ -1,11 +1,14 @@
 # Maintain
 
-The first tab of the instance settings: for every panel of the table it shows a **card** with the connection state, the **Tasmota version**, the **TFT firmware** and the **script version**, detects differences and triggers the updates. This is also where the **Panel active** switch sits and the **Take script over into admin** button, with which an existing script configuration moves into the admin.
+The first tab of the instance settings: for every panel of the table it shows a **card** with the connection state, the **Tasmota version**, the **TFT firmware**, the **Berry driver** and the **script version**, detects differences and triggers the updates. This is also where the **Panel active** switch sits and the **Take script over into admin** button, with which an existing script configuration moves into the admin.
 
 Contents:
 - [The tab at a glance](#1-the-tab-at-a-glance)
 - [The card of a panel](#2-the-card-of-a-panel)
-- [Updating Tasmota and TFT](#3-updating-tasmota-and-tft)
+- [Updating Tasmota, TFT and Berry driver](#3-updating-tasmota-tft-and-berry-driver)
+  - [TASMOTA UPDATE](#tasmota-update)
+  - [TFT UPDATE](#tft-update)
+  - [BERRY UPDATE](#berry-update)
 - [Script version and SCRIPT UPDATE](#4-script-version-and-script-update)
 - [Panels without a script](#5-panels-without-a-script)
 - [Web panels in the tab](#6-web-panels-in-the-tab)
@@ -24,6 +27,7 @@ Above the cards sit:
 
 | Element | Effect |
 |---|---|
+| **Documentation** | Opens this page in a new tab. |
 | **Help for adapter installation** (red text button) | Opens the wiki page [adapter installation](Adapter-Installation) in a new tab. |
 | **Update scripts for all panels** | The same as *SCRIPT UPDATE*, but for every panel whose script version differs from the shipped template. Panels with the **Panel uses no script** checkbox are left out. The button is orange while there is something to do, and grey when nothing is pending, the instance is not running or another operation is in progress. If the update fails for individual panels, the run continues with the others and names the affected panels in the red error line at the end (*The script update failed for these panels: …*). |
 | Note **Beta version in use** | Appears while *beta firmware* is switched on in the [Global Settings](globelSettings). |
@@ -35,7 +39,7 @@ The tab fetches the data from the adapter when it opens, on every return to the 
 
 The name is at the top, in brackets the short state: `online`, `offline`, `flashing`, while flashing the progress (`Update: 42%`) and **Check!** when something differs. Below it the status badge of the panel (the same states as in the panel overview, see [PanelStatusBadge](PanelStatusBadge) — here without an icon and without a tooltip).
 
-The colour of the card tells whether something needs doing: **orange** means "there is a difference" (Tasmota update available, TFT update or downgrade, developer version `0.0.0`, newer script version), **yellow** means "currently flashing", **grey** means the instance is not running. With a difference the button that fixes it is additionally coloured a strong blue.
+The colour of the card tells whether something needs doing: **orange** means "there is a difference" (Tasmota update available, TFT update or downgrade, developer version `0.0.0`, a Berry driver other than the recommended one, newer script version), **yellow** means "currently flashing", **grey** means the instance is not running. With a difference the button that fixes it is additionally coloured a strong blue.
 
 | Control | Effect |
 |---|---|
@@ -46,16 +50,33 @@ The colour of the card tells whether something needs doing: **orange** means "th
 
 A panel switched off is no longer known to the adapter: the card stays, but the version fields only show `---` or the placeholder (see [section 9](#9-what-the-version-fields-say)).
 
-## 3. Updating Tasmota and TFT
+## 3. Updating Tasmota, TFT and Berry driver
 
-Before both updates the admin asks for confirmation and mentions the roughly **40 seconds** in which the panel is unreachable.
+Three buttons, one pattern: each asks for confirmation first — with Tasmota and TFT mentioning the roughly **40 seconds** in which the panel is unreachable, with the Berry driver naming the panel and the reported generation. All commands only go to panels the adapter is currently operating; the version fields refresh by themselves as soon as the panel reports back. The same tools — plus the restart — are available in the [Tasmota tools](tasmotatools) tab, there via the IP instead of via the panel card. The **?** in the confirmation of each button leads to its section here.
 
-| Button | What happens |
-|---|---|
-| **TASMOTA UPDATE** | The adapter reads the recommended Tasmota version from the version list and sends the panel the OTA command for `tasmota32-<LANGUAGE>.bin` from `ota.tasmota.com` over MQTT. The language is the one of the admin (Chinese falls back to English). The panel downloads it itself and restarts. With *beta firmware* switched on in the [Global Settings](globelSettings) the adapter takes the `tasmota-beta` entry of the version list — if it is missing, the stable version; the version field of the card then compares against the beta as well. |
-| **TFT UPDATE** | The adapter determines the TFT file matching the hardware model (`nspanel[-model]-v<version>.tft`), taking *beta firmware* and a version pinned in the [Global Settings](globelSettings) into account, and sends the panel the flash command. The panel downloads the file **itself** from the TFT server (internet access needed) and restarts; that takes a few minutes. |
+![The confirmation before TFT UPDATE with the help question mark in the title](../Pictures/maintain/maintain-04-rueckfrage.png)
 
-Both commands only go to panels the adapter is currently operating. The same tools — plus the Berry installation and the restart — are available in the [Tasmota tools](tasmotatools) tab, there via the IP instead of via the panel card. The version fields refresh by themselves as soon as the panel reports back.
+### TASMOTA UPDATE
+
+The adapter reads the recommended Tasmota version from the version list and sends the panel the OTA command for `tasmota32-<LANGUAGE>.bin` from `ota.tasmota.com` over MQTT. The language is the one of the admin (Chinese falls back to English). The panel downloads it itself and restarts.
+
+With *beta firmware* switched on in the [Global Settings](globelSettings) the adapter takes the `tasmota-beta` entry of the version list — if it is missing, the stable version; the version field of the card then compares against the beta as well.
+
+### TFT UPDATE
+
+The adapter determines the TFT file matching the hardware model (`nspanel[-model]-v<version>.tft`), taking *beta firmware* and a version pinned in the [Global Settings](globelSettings) into account, and sends the panel the flash command. The panel downloads the file **itself** from the TFT server (internet access needed) and restarts; that takes a few minutes.
+
+A firmware of your own that does not come from the TFT server can be flashed in the [Developer](Developer) tab — the adapter then serves the file itself.
+
+### BERRY UPDATE
+
+![The card of a panel with the Berry driver field and the BERRY UPDATE button — here the emulator, where the button stays grey](../Pictures/maintain/maintain-03-berry-treiber.png)
+
+Since 2.3.0 the card shows the field **Berry driver** below the firmware fields with the generation of the driver the panel has reported (`12`), and next to it the button **BERRY UPDATE**. If the generation differs from the one recommended in the version list, the field says so — `12 (Update available: 13)` or `(Downgrade recommended: …)` —, the card turns orange and the button a strong blue, exactly as with Tasmota and TFT.
+
+After the confirmation the adapter tells the Tasmota via its web interface (at the IP of the card) to rename the existing `autoexec.be` to `autoexec.old` and to fetch the new file from the Berry server — the panel downloads it **itself from the internet**; without internet access this fails. With *beta firmware* switched on in the [Global Settings](globelSettings) the adapter takes the `berry-beta` entry of the version list. Unlike the button of the same name in the [Tasmota tools](tasmotatools) tab, the adapter here waits for the download confirmation of the Tasmota (ten seconds at most) and **restarts Tasmota afterwards** — only then does the new driver run; the panel is unreachable for a few seconds. If the confirmation does not arrive, there is no restart and the red error line reports *No download confirmation received from Tasmota after the Berry installation*. The old driver then still runs, but only until the next restart of the Tasmota, because its file has already been renamed: repeat *BERRY UPDATE* as soon as the panel gets internet access.
+
+The field is missing on web panels. On the emulator it reads `Emulator (12)` — it has no real driver, the button stays grey, and there is no update hint.
 
 ## 4. Script version and SCRIPT UPDATE
 
@@ -146,6 +167,7 @@ A further click after the take-over shows *Nothing to take over* — unless page
 |---|---|
 | **TASMOTA UPDATE** | A valid IP and a valid topic, complete MQTT settings (port and user/password, or with a foreign broker the central credential ID), with the own server additionally a usable *internal server IP* (not `127.0.0.1`), and a panel that is online and not currently flashing. |
 | **TFT UPDATE** | A reachable panel with an IP that is not currently flashing. |
+| **BERRY UPDATE** | A valid IP — the panel has reported its address — and no flash in progress. The display may be offline: a missing or broken driver is exactly what keeps it offline. On web panels the button does not exist, on the emulator it stays grey. |
 | **SCRIPT UPDATE** | Panel name and topic; if the *Panel uses no script* checkbox is set, the button is not there at all. |
 | **Take script over into admin** | A topic present and the *Panel uses no script* checkbox not set. |
 | all | The instance is running, and no other operation is in progress for **this** panel. |
@@ -160,6 +182,9 @@ A further click after the take-over shows *Nothing to take over* — unless page
 | `(Update available)` / `(Downgrade recommended)` | The version differs from the recommended one. |
 | `(Developer version!)` with TFT `0.0.0` | A developer version; the adapter treats that as "update needed". |
 | `???` for Tasmota or TFT | The panel has not answered yet. After an adapter start that takes a moment; if it stays that way, something is wrong with the MQTT connection, the topic or the power supply. |
+| `12` for the Berry driver | The generation of the driver the panel has reported; `12 (Update available: 13)` when the version list recommends a different one. |
+| `???` for the Berry driver | The panel has not reported a driver version yet. Normal shortly after the start; if it stays that way, a driver is running that does not know its version, or none at all — then *BERRY UPDATE* helps ([BERRY UPDATE](#berry-update)). |
+| `Emulator (12)` | The emulator with the feature set of generation 12; the old emulator reads *Emulator - no Berry driver*. |
 | `???` for the script version | There is **no script object** with the name of the panel — never created, or the panel was renamed. This has nothing to do with the panel. |
 | `---` | The adapter is not currently operating this panel (switched off, or never connected). |
 | `Script disabled` | The *Panel uses no script* checkbox is set ([section 5](#5-panels-without-a-script)). |
@@ -173,6 +198,7 @@ The same values are available as states under `panels.<panel>.info.*`, see [Pane
 - **Avoid two operations at once.** While the collective run works, the buttons of the individual cards stay operable; only what belongs to the panel currently being processed is locked.
 - **A renamed panel means an orphaned script.** The tab only checks the script matching the current panel name. The old script keeps running and keeps sending — it belongs deactivated or deleted.
 - **The script version of a switched-off panel looks up to date.** For panels the adapter is not operating, the field shows the version of the shipped template when no script object exists at all. The display is only reliable for connected panels.
+- **BERRY UPDATE without internet at the panel leaves the driver behind.** On the adapter's instruction the Tasmota renames the old file before it fetches the new one. If the download fails, the panel keeps running with a driver only until the next Tasmota restart — repeat *BERRY UPDATE* as soon as the panel gets internet access (see [BERRY UPDATE](#berry-update)).
 - **A recommended Tasmota downgrade does not colour the card.** It only appears in the version field; the card stays inconspicuous. With the TFT firmware it does turn orange.
 - **The note on web panels ends wrongly.** It closes with "Only the script applies." — which has not been true since 2.0.0: a web panel gets its pages in the [PageConfig](PageConfig) tab and needs no script (see [WebPanel](WebPanel)).
 - **The Tasmota console uses the IP that is entered.** If the panel table holds an outdated address, the button opens the wrong device — even when the right address has long been read along in the *Tasmota version* field.

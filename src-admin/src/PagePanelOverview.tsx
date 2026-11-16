@@ -60,7 +60,7 @@ import PanelExportSecretsDialog from './components/PanelExportSecretsDialog';
 import PanelImportDialog, { type PanelImportNativeValues } from './components/PanelImportDialog';
 import { PanelStatusBadge } from './components/PanelStatusBadge';
 import { resolveTasmotaTimeZone, uniqueTasmotaTimeZones, type TasmotaTimeZone } from './tasmotaTimeZones';
-import { docUrl } from './docLink';
+import { DocButton, DocHelp } from './components/DocHelp';
 
 interface PanelConfig {
     id?: string;
@@ -1369,15 +1369,15 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
                 )}
                 {/* Link to wiki */}
                 <Box sx={{ mb: 2 }}>
-                    <Button
-                        variant="text"
-                        color="primary"
-                        href={docUrl('Adapter-Installation')}
-                        target="_blank"
+                    <DocButton
+                        topic="maintain.installation"
+                        label={this.getText('openLinkAdapterInstallation')}
                         sx={{ color: 'red' }}
-                    >
-                        {this.getText('openLinkAdapterInstallation')}
-                    </Button>
+                    />
+                    <DocButton
+                        topic="navigation.panelSettings"
+                        sx={{ ml: 1 }}
+                    />
                 </Box>
                 <Box
                     component="fieldset"
@@ -1388,6 +1388,7 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
                         variant="h6"
                     >
                         {this.getText('nsPanelInitLabel')}
+                        <DocHelp topic="navigation.panelCreate" />
                     </Typography>
                     {/* IP-Adresse des internen Servers */}
                     {data.mqttServer && (
@@ -1528,6 +1529,7 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
                         sx={{ mt: 2 }}
                     >
                         {this.state.exportNotice.text}
+                        <DocHelp topic="navigation.export" />
                     </Alert>
                 )}
                 {/* Init/Update Button + Web panel button */}
@@ -1559,6 +1561,12 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
                             {this.getText('webPanelAdd')}
                         </Button>
                     ) : null}
+                    {webLink.enabled ? (
+                        <DocHelp
+                            topic="navigation.webPanelAdd"
+                            sx={{ alignSelf: 'center', ml: -1.5 }}
+                        />
+                    ) : null}
                 </Box>
 
                 {/* Meilenstein des laufenden Einrichtungsschritts */}
@@ -1570,6 +1578,15 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
                         {progressMessage}
                     </Alert>
                 )}
+
+                {/* help for the panel cards - once above the list, not repeated in every card */}
+                {panels.length > 0 ? (
+                    <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 0.5 }}>
+                        <DocHelp topic="navigation.panelCard" />
+                        <DocHelp topic="navigation.noScript" />
+                        <DocHelp topic="navigation.hwButtonColors" />
+                    </Box>
+                ) : null}
 
                 {/* Panels as Boxes */}
                 <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
@@ -1807,7 +1824,10 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
                     open={showConfirm}
                     onClose={this.handleConfirmClose}
                 >
-                    <DialogTitle>{isUpdate ? this.getText('nsPanelUpdate') : this.getText('nsPanelInit')}</DialogTitle>
+                    <DialogTitle sx={{ display: 'flex', alignItems: 'center' }}>
+                        {isUpdate ? this.getText('nsPanelUpdate') : this.getText('nsPanelInit')}
+                        <DocHelp topic="navigation.panelCreate" />
+                    </DialogTitle>
                     <DialogContent>
                         <DialogContentText>
                             {isUpdate
@@ -1864,7 +1884,10 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
                     open={showSuccessConfirm}
                     onClose={this.handleSuccessClose}
                 >
-                    <DialogTitle>{this.getText('Success')}</DialogTitle>
+                    <DialogTitle sx={{ display: 'flex', alignItems: 'center' }}>
+                        {this.getText('Success')}
+                        <DocHelp topic="navigation.panelCreate" />
+                    </DialogTitle>
                     <DialogContent>
                         <DialogContentText>{successMessage}</DialogContentText>
                     </DialogContent>
@@ -1888,8 +1911,9 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
                     fullWidth
                     maxWidth="xs"
                 >
-                    <DialogTitle>
+                    <DialogTitle sx={{ display: 'flex', alignItems: 'center' }}>
                         {webPanelDialog.editId === null ? this.getText('webPanelAdd') : this.getText('webPanelEdit')}
+                        <DocHelp topic="navigation.webPanelAdd" />
                     </DialogTitle>
                     <DialogContent>
                         <DialogContentText sx={{ mb: 1 }}>{this.getText('webPanelAddText')}</DialogContentText>
@@ -1924,28 +1948,32 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
                                         : this.getText('webPanelTopicHelp')
                                 }
                             />
-                            <FormControl
-                                size="small"
-                                variant="standard"
-                            >
-                                <InputLabel id="webpanel-model-label">{this.getText('nsPanelModel')}</InputLabel>
-                                <Select
-                                    labelId="webpanel-model-label"
-                                    label={this.getText('nsPanelModel')}
-                                    value={webPanelDialog.model}
-                                    onChange={this.handleWebPanelModelChange}
+                            <Box sx={{ display: 'flex', alignItems: 'flex-end', gap: 0.5 }}>
+                                <FormControl
+                                    size="small"
+                                    variant="standard"
+                                    sx={{ flex: 1 }}
                                 >
-                                    {/* a web panel offers the hardware models plus the smartphone models web-p and web-l */}
-                                    {panelModels.map(model => (
-                                        <MenuItem
-                                            key={model}
-                                            value={model}
-                                        >
-                                            {this.getText(`${model}-Version`)}
-                                        </MenuItem>
-                                    ))}
-                                </Select>
-                            </FormControl>
+                                    <InputLabel id="webpanel-model-label">{this.getText('nsPanelModel')}</InputLabel>
+                                    <Select
+                                        labelId="webpanel-model-label"
+                                        label={this.getText('nsPanelModel')}
+                                        value={webPanelDialog.model}
+                                        onChange={this.handleWebPanelModelChange}
+                                    >
+                                        {/* a web panel offers the hardware models plus the smartphone models web-p and web-l */}
+                                        {panelModels.map(model => (
+                                            <MenuItem
+                                                key={model}
+                                                value={model}
+                                            >
+                                                {this.getText(`${model}-Version`)}
+                                            </MenuItem>
+                                        ))}
+                                    </Select>
+                                </FormControl>
+                                <DocHelp topic="navigation.webPanelModel" />
+                            </Box>
                             <FormControlLabel
                                 control={
                                     <Checkbox

@@ -4,6 +4,8 @@ import { Link as LinkIcon } from '@mui/icons-material';
 import type { PageConfigEntry, PageLinkEntry } from '../../../src/lib/types/adminShareConfig';
 import { isMainPageEntry, isPageLinkEntry, pageLinkProblem } from '../../../src/lib/types/adminShareConfig';
 import { getDisplayName } from './PageConfigLayout';
+import { DocHelp } from './DocHelp';
+import { CardTypeBadge } from './CardTypeBadge';
 
 export interface PageLinkEditorProps {
     entry: PageLinkEntry;
@@ -46,8 +48,13 @@ export class PageLinkEditor extends React.Component<PageLinkEditorProps> {
                         p: 1,
                         borderRadius: 1,
                         backgroundColor: 'action.hover',
+                        position: 'relative',
                     }}
                 >
+                    <CardTypeBadge
+                        card={entry.card}
+                        getText={key => this.getText(key)}
+                    />
                     <TextField
                         fullWidth
                         required
@@ -67,9 +74,12 @@ export class PageLinkEditor extends React.Component<PageLinkEditorProps> {
                             },
                         }}
                         helperText={
-                            isMainPageEntry(entry)
-                                ? this.getText('page_name_main_locked')
-                                : this.getText('page_name_locked')
+                            <>
+                                {isMainPageEntry(entry)
+                                    ? this.getText('page_name_main_locked')
+                                    : this.getText('page_name_locked')}
+                                <DocHelp topic="pages1.nameFixed" />
+                            </>
                         }
                     />
                 </Box>
@@ -86,7 +96,12 @@ export class PageLinkEditor extends React.Component<PageLinkEditorProps> {
                         this.handleFieldChange('headline', e.target.value);
                     }}
                     placeholder={targetHeadline}
-                    helperText={this.getText('page_link_headline_hint')}
+                    helperText={
+                        <>
+                            {this.getText('page_link_headline_hint')}
+                            <DocHelp topic="pages1.linkFields" />
+                        </>
+                    }
                     slotProps={{
                         input: {
                             sx: { backgroundColor: 'transparent', px: 1, width: '50%' },
@@ -133,6 +148,10 @@ export class PageLinkEditor extends React.Component<PageLinkEditorProps> {
                             {this.getText('page_link_open_target')}
                         </Button>
                     )}
+                    <DocHelp
+                        topic="pages1.linkFields"
+                        sx={{ ml: -1.5, mb: 0.5 }}
+                    />
                 </Box>
 
                 {problem && (
@@ -143,6 +162,7 @@ export class PageLinkEditor extends React.Component<PageLinkEditorProps> {
                         {entry.target
                             ? this.getText('page_link_target_missing').replace('%s', entry.target)
                             : this.getText('page_link_target_required')}
+                        <DocHelp topic="pages1.linkErrors" />
                     </Alert>
                 )}
 
@@ -151,6 +171,7 @@ export class PageLinkEditor extends React.Component<PageLinkEditorProps> {
                     color="text.secondary"
                 >
                     {this.getText('page_link_description')}
+                    <DocHelp topic="pages1.linkPurpose" />
                 </Typography>
             </Box>
         );

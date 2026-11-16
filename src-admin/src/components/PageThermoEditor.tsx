@@ -14,12 +14,14 @@ import React from 'react';
 import { Alert, Box, TextField, Typography } from '@mui/material';
 import { ConfigGeneric, type ConfigGenericProps, type ConfigGenericState } from '@iobroker/json-config';
 import { EntitySelector } from './EntitySelector';
+import { DocHelp } from './DocHelp';
 import {
     type ThermoEntry,
     ADAPTER_NAME,
     isMainPageEntry,
     thermoChannelRoles,
 } from '../../../src/lib/types/adminShareConfig';
+import { CardTypeBadge } from './CardTypeBadge';
 
 export interface PageThermoEditorProps {
     entry: ThermoEntry;
@@ -190,8 +192,13 @@ export class PageThermoEditor extends ConfigGeneric<ConfigGenericProps & PageThe
                         p: 1,
                         borderRadius: 1,
                         backgroundColor: 'action.hover',
+                        position: 'relative',
                     }}
                 >
+                    <CardTypeBadge
+                        card={entry.card}
+                        getText={key => this.getText(key)}
+                    />
                     <TextField
                         fullWidth
                         variant="standard"
@@ -210,9 +217,12 @@ export class PageThermoEditor extends ConfigGeneric<ConfigGenericProps & PageThe
                             },
                         }}
                         helperText={
-                            isMainPageEntry(entry)
-                                ? this.getText('page_name_main_locked')
-                                : this.getText('page_name_locked')
+                            <>
+                                {isMainPageEntry(entry)
+                                    ? this.getText('page_name_main_locked')
+                                    : this.getText('page_name_locked')}
+                                <DocHelp topic="pages1.nameFixed" />
+                            </>
                         }
                     />
                 </Box>
@@ -223,6 +233,7 @@ export class PageThermoEditor extends ConfigGeneric<ConfigGenericProps & PageThe
                     sx={{ mb: 2 }}
                 >
                     {this.getText('thermo_intro')}
+                    <DocHelp topic="pages2.thermoStates" />
                 </Typography>
 
                 {/* Headline */}
@@ -278,18 +289,24 @@ export class PageThermoEditor extends ConfigGeneric<ConfigGenericProps & PageThe
                 </Box>
 
                 {/* Unit */}
-                <TextField
-                    variant="standard"
-                    type="text"
-                    autoComplete="off"
-                    label={this.getText('thermo2_unit')}
-                    value={entry.unit ?? ''}
-                    helperText={this.getText('thermo_unitHint')}
-                    onChange={e => this.handleFieldChange('unit', e.target.value)}
-                    slotProps={{ inputLabel: { shrink: true } }}
-                    sx={{ width: 160, mb: 2 }}
-                    disabled={!alive}
-                />
+                <Box sx={{ display: 'flex', alignItems: 'flex-start', mb: 2 }}>
+                    <TextField
+                        variant="standard"
+                        type="text"
+                        autoComplete="off"
+                        label={this.getText('thermo2_unit')}
+                        value={entry.unit ?? ''}
+                        helperText={this.getText('thermo_unitHint')}
+                        onChange={e => this.handleFieldChange('unit', e.target.value)}
+                        slotProps={{ inputLabel: { shrink: true } }}
+                        sx={{ width: 160 }}
+                        disabled={!alive}
+                    />
+                    <DocHelp
+                        topic="pages2.thermoFields"
+                        sx={{ mt: 2.5 }}
+                    />
+                </Box>
 
                 {/* Limits of the set temperature */}
                 <Box sx={{ mb: 1 }}>
@@ -298,6 +315,7 @@ export class PageThermoEditor extends ConfigGeneric<ConfigGenericProps & PageThe
                         sx={{ mb: 1 }}
                     >
                         {this.getText('thermo2_dialogLimits')}
+                        <DocHelp topic="pages2.thermoLimits" />
                     </Typography>
                     {this.renderLimitField('minValue', 'thermo2_minValue')}
                     {this.renderLimitField('maxValue', 'thermo2_maxValue')}

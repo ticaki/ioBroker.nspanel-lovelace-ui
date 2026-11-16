@@ -81,9 +81,15 @@ Direkt nach der Auswahl prüft der Editor das Objekt und zeigt darunter **Rolle:
 
 <img alt="Warnung bei falscher Rolle des Channels" src="../Pictures/PageThermo2/admin-05-falsche-rolle.png" width="100%"/>
 
-**Einzelne Datenpunkte:** Statt eines Alias werden vier Datenpunkte direkt angegeben – **Solltemperatur (schreibbar)**, **Ist-Temperatur**, **Luftfeuchte (optional)** und **Modus (optional, Zahl oder Text)**. Soll und Ist sind Pflicht, ein Heizkreis ohne beide wird nicht gespeichert. In diesem Modus erzeugt der Adapter keine Schaltflächen; Ein/Aus leitet er aus dem Modus-Datenpunkt ab (0 = aus).
+### Einzelne Datenpunkte
+
+Statt eines Alias werden vier Datenpunkte direkt angegeben – **Solltemperatur (schreibbar)**, **Ist-Temperatur**, **Luftfeuchte (optional)** und **Modus (optional, Zahl oder Text)**. Soll und Ist sind Pflicht, ein Heizkreis ohne beide wird nicht gespeichert. In diesem Modus erzeugt der Adapter keine Schaltflächen; Ein/Aus leitet er aus dem Modus-Datenpunkt ab (0 = aus).
+
+### Überschrift des Heizkreises
 
 **Überschrift (leer = Name des Channels):** Diese Überschrift zeigt das Panel über dem Stellring. Bei einem `airCondition`-Channel gibt es zusätzlich **Überschrift Kühlen (airCondition)** für den zweiten Reiter (leer = `COOLING`).
+
+### Reihenfolge, Entfernen, Übernehmen
 
 **Nach links / Nach rechts** ändert die Reihenfolge der Heizkreise – und damit die Nummern der Auswahlflächen; die Items wandern mit. **Heizkreis entfernen** löscht ihn samt der Items, die nur an ihn gebunden sind.
 

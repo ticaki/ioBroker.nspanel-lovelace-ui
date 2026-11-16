@@ -14,6 +14,7 @@ import {
     Typography,
 } from '@mui/material';
 import { I18n } from '@iobroker/gui-components';
+import { DocHelp } from './DocHelp';
 import type { NavigationLinks } from '../../../src/lib/types/adminShareConfig';
 import { navigationLinkKinds } from '../../../src/lib/types/navigationEdit';
 
@@ -90,7 +91,13 @@ export default class NavigationOverrideStaleDialog extends React.PureComponent<N
                 maxWidth="md"
                 fullWidth
             >
-                <DialogTitle id="navigation-override-stale-title">{I18n.t('nav_edit_stale_title')}</DialogTitle>
+                <DialogTitle
+                    id="navigation-override-stale-title"
+                    sx={{ display: 'flex', alignItems: 'center' }}
+                >
+                    {I18n.t('nav_edit_stale_title')}
+                    <DocHelp topic="navigation.override" />
+                </DialogTitle>
                 <DialogContent>
                     <DialogContentText id="navigation-override-stale-description">
                         {I18n.t('nav_edit_stale_text').replace('%p', panelName)}

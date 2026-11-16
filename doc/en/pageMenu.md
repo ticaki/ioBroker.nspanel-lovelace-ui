@@ -21,9 +21,11 @@ Contents:
 2. On the left pick the page type **Menu page**, enter a name, press **+**.
 3. The page is created as **Grid (6 slots)** — you switch the variant afterwards in the editor.
 
+### Headline and unique ID
+
 **Headline** is the header line on the panel; left empty, the panel uses the page name.
 
-> The **Unique ID** field is **read-only**: the name of a page is fixed once it exists, and the note below says so ("The name is fixed once the page exists - other pages refer to it."). If the page is the start page, its own notice stands there instead ("Start page - published under the id „main""); the start page is set through the **Start page (main)** mark in the page details, not through the name. Why the name is fixed, and how a page can still end up with another name, is explained under [PageConfig – Overview](PageConfig#creating-and-deleting-pages).
+> The **Unique ID** field is **read-only**: the name of a page is fixed once it exists, and the note below says so ("The name is fixed once the page exists - other pages refer to it."). If the page is the start page, its own notice stands there instead ("Start page - published under the id „main""); the start page is set through the **Start page (main)** mark in the page details, not through the name. Why the name is fixed, and how a page can still end up with another name, is explained under [PageConfig – Overview](PageConfig#the-name-is-fixed).
 
 ## 2. The five variants
 

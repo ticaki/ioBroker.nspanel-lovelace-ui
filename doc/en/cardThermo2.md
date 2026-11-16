@@ -81,9 +81,15 @@ Right after the selection the editor checks the object and shows **Role: …** a
 
 <img alt="Warning for a wrong role of the channel" src="../Pictures/PageThermo2/admin-05-falsche-rolle.png" width="100%"/>
 
-**Single data points:** instead of an alias, four data points are given directly – **Set temperature (writable)**, **Actual temperature**, **Humidity (optional)** and **Mode (optional, number or text)**. Set and actual are required, a heat circuit without both is not stored. In this mode the adapter generates no buttons; on/off is derived from the mode data point (0 = off).
+### Single data points
+
+Instead of an alias, four data points are given directly – **Set temperature (writable)**, **Actual temperature**, **Humidity (optional)** and **Mode (optional, number or text)**. Set and actual are required, a heat circuit without both is not stored. In this mode the adapter generates no buttons; on/off is derived from the mode data point (0 = off).
+
+### Headline of the heat circuit
 
 **Headline (empty = name of the channel):** this headline is shown by the panel above the ring. With an `airCondition` channel there is an additional **Headline cooling (airCondition)** for the second tab (empty = `COOLING`).
+
+### Order, removing, applying
 
 **Move left / Move right** changes the order of the heat circuits – and thus the numbers of the selector slots; the items move along. **Remove heat circuit** deletes it together with the items bound to it only.
 

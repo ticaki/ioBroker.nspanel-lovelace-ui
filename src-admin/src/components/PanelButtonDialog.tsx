@@ -29,6 +29,7 @@ import {
     type AdminButtonMode,
 } from '../../../src/lib/types/adminShareConfig';
 import { EntitySelector } from './EntitySelector';
+import { DocHelp } from './DocHelp';
 
 /** The two hardware buttons below the display. */
 export type PanelButtonSide = 'left' | 'right';
@@ -465,7 +466,10 @@ class PanelButtonDialog extends React.Component<PanelButtonDialogProps, PanelBut
                 maxWidth="sm"
                 fullWidth
             >
-                <DialogTitle>{I18n.t('panelButtonDialog_title', this.sideLabel(), panelName)}</DialogTitle>
+                <DialogTitle sx={{ display: 'flex', alignItems: 'center' }}>
+                    {I18n.t('panelButtonDialog_title', this.sideLabel(), panelName)}
+                    <DocHelp topic="dialogs.hwButton" />
+                </DialogTitle>
                 <DialogContent>
                     <Box sx={{ mt: 1, display: 'flex', flexDirection: 'column', gap: 2 }}>
                         {isWebPanel ? (
@@ -482,7 +486,12 @@ class PanelButtonDialog extends React.Component<PanelButtonDialogProps, PanelBut
                                                 disabled={!alive || detachBusy}
                                             />
                                         }
-                                        label={I18n.t('panelButtonDialog_detach')}
+                                        label={
+                                            <span>
+                                                {I18n.t('panelButtonDialog_detach')}
+                                                <DocHelp topic="dialogs.hwButtonDetach" />
+                                            </span>
+                                        }
                                     />
                                     <Typography
                                         variant="caption"
@@ -505,27 +514,30 @@ class PanelButtonDialog extends React.Component<PanelButtonDialogProps, PanelBut
 
                         {showAction && (
                             <>
-                                <FormControl fullWidth>
-                                    <InputLabel id="panelButtonDialogModeLabel">
-                                        {I18n.t('panelButtonDialog_mode')}
-                                    </InputLabel>
-                                    <Select
-                                        labelId="panelButtonDialogModeLabel"
-                                        label={I18n.t('panelButtonDialog_mode')}
-                                        value={mode}
-                                        onChange={this.handleModeChange}
-                                    >
-                                        <MenuItem value="none">{I18n.t('panelButtonDialog_modeNone')}</MenuItem>
-                                        {ADMIN_BUTTON_MODES.map(entry => (
-                                            <MenuItem
-                                                key={entry}
-                                                value={entry}
-                                            >
-                                                {I18n.t(`panelButtonDialog_mode_${entry}`)}
-                                            </MenuItem>
-                                        ))}
-                                    </Select>
-                                </FormControl>
+                                <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                                    <FormControl fullWidth>
+                                        <InputLabel id="panelButtonDialogModeLabel">
+                                            {I18n.t('panelButtonDialog_mode')}
+                                        </InputLabel>
+                                        <Select
+                                            labelId="panelButtonDialogModeLabel"
+                                            label={I18n.t('panelButtonDialog_mode')}
+                                            value={mode}
+                                            onChange={this.handleModeChange}
+                                        >
+                                            <MenuItem value="none">{I18n.t('panelButtonDialog_modeNone')}</MenuItem>
+                                            {ADMIN_BUTTON_MODES.map(entry => (
+                                                <MenuItem
+                                                    key={entry}
+                                                    value={entry}
+                                                >
+                                                    {I18n.t(`panelButtonDialog_mode_${entry}`)}
+                                                </MenuItem>
+                                            ))}
+                                        </Select>
+                                    </FormControl>
+                                    <DocHelp topic="dialogs.hwButtonAction" />
+                                </Box>
                                 {mode === 'none' && (
                                     <Typography
                                         variant="caption"

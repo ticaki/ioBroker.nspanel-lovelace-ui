@@ -20,6 +20,7 @@ import * as fs from 'node:fs';
 import * as path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import MarkdownIt from 'markdown-it';
+import { replaceHeadings, slug, uniqueAnchor } from '../src-admin/src/docAnchors';
 
 const root = path.join(path.dirname(fileURLToPath(import.meta.url)), '..');
 const args = process.argv.slice(2);
@@ -91,30 +92,6 @@ const LANGS: Lang[] = [
 
 const md = new MarkdownIt({ html: true, linkify: true, typographer: false });
 
-/** Resolves the entities markdown-it writes, so they do not end up inside an id. */
-function decodeEntities(text: string): string {
-    return text
-        .replace(/&quot;/g, '"')
-        .replace(/&#0?39;|&apos;/g, "'")
-        .replace(/&lt;/g, '<')
-        .replace(/&gt;/g, '>')
-        .replace(/&nbsp;/g, ' ')
-        .replace(/&#(\d+);/g, (_m, dec: string) => String.fromCodePoint(Number(dec)))
-        .replace(/&amp;/g, '&');
-}
-
-/** Header ids the way GitHub builds them, so the anchors of the wiki-style links keep working:
- *  lower case, punctuation dropped, every single blank turned into a hyphen (two blanks around a
- *  dash therefore give two hyphens), letters with diacritics and underscores kept. */
-function slug(text: string): string {
-    return decodeEntities(text.replace(/<[^>]*>/g, ''))
-        .trim()
-        .toLowerCase()
-        .replace(/[`*]/g, '')
-        .replace(/[^\p{L}\p{N} _\-]/gu, '')
-        .replace(/ /g, '-');
-}
-
 interface Page {
     /** file name without extension, e.g. `pageMenu` */
     name: string;
@@ -164,14 +141,7 @@ function readPages(lang: Lang): Page[] {
         // collect the headings first: the renderer needs the ids, the search needs the texts
         for (const m of src.matchAll(/^(#{1,6})[ \t]+(.+?)[ \t]*#*$/gm)) {
             const plain = m[2].replace(/[`*_]/g, '').trim();
-            let id = slug(m[2]);
-            const seen = used.get(id);
-            if (seen !== undefined) {
-                used.set(id, seen + 1);
-                id = `${id}-${seen + 1}`;
-            } else {
-                used.set(id, 0);
-            }
+            const id = uniqueAnchor(used, slug(m[2]));
             anchors.add(id);
             headings.push(plain);
             if (m[1] === '#' && title === name) {
@@ -198,19 +168,11 @@ function readPages(lang: Lang): Page[] {
 
 /** Renders one markdown file and gives the headings their ids. */
 function render(src: string, _name: string): string {
-    let html = md.render(src);
-    const used = new Map<string, number>();
-    html = html.replace(/<h([1-6])>(.*?)<\/h\1>/gs, (_all, level: string, inner: string) => {
-        let id = slug(inner);
-        const seen = used.get(id);
-        if (seen !== undefined) {
-            used.set(id, seen + 1);
-            id = `${id}-${seen + 1}`;
-        } else {
-            used.set(id, 0);
-        }
-        return `<h${level} id="${id}"><a class="anchor" href="#${id}" aria-hidden="true">#</a>${inner}</h${level}>`;
-    });
+    let html = replaceHeadings(
+        md.render(src),
+        (level, id, inner) =>
+            `<h${level} id="${id}"><a class="anchor" href="#${id}" aria-hidden="true">#</a>${inner}</h${level}>`,
+    );
     // GitHub alerts: > [!NOTE] / [!TIP] / [!IMPORTANT] / [!WARNING] / [!CAUTION]
     html = html.replace(
         /<blockquote>\s*<p>\[!(NOTE|TIP|IMPORTANT|WARNING|CAUTION)\]\s*(?:<br\s*\/?>)?\s*/g,

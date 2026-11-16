@@ -12,6 +12,7 @@ import {
 } from '@mui/material';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
 import { CredentialSelect } from './components/CredentialSelect';
+import { DocHelp } from './components/DocHelp';
 
 interface PageMQTTSettingState extends ConfigGenericState {
     // Define any additional state properties if needed
@@ -198,7 +199,15 @@ class PageMQTTSetting extends ConfigGeneric<ConfigGenericProps & { theme?: any }
                                 disabled={!alive}
                             />
                         }
-                        label={this.getText('mqttServer')}
+                        label={
+                            <span>
+                                {this.getText('mqttServer')}
+                                <DocHelp
+                                    topic="maintain.mqttBroker"
+                                    sx={{ ml: 0.25 }}
+                                />
+                            </span>
+                        }
                     />
                     {!data.mqttServer && (
                         <Typography
@@ -240,6 +249,10 @@ class PageMQTTSetting extends ConfigGeneric<ConfigGenericProps & { theme?: any }
                             onChange={this.handleTextChange('mqttPort')}
                             disabled={!alive || data.mqttServer}
                             sx={{ m: 1, maxWidth: '300px' }}
+                        />
+                        <DocHelp
+                            topic="maintain.mqttConnection"
+                            sx={{ alignSelf: 'center' }}
                         />
                     </Box>
                     {/* Zentrale Zugangsdaten (nur externer Broker): der Adapter liest Login und Passwort aus dem Credential */}
@@ -308,7 +321,15 @@ class PageMQTTSetting extends ConfigGeneric<ConfigGenericProps & { theme?: any }
                                 disabled={!alive}
                             />
                         }
-                        label={this.getText('useTasmotaAdmin')}
+                        label={
+                            <span>
+                                {this.getText('useTasmotaAdmin')}
+                                <DocHelp
+                                    topic="maintain.tasmotaPassword"
+                                    sx={{ ml: 0.25 }}
+                                />
+                            </span>
+                        }
                     />
                     {data.useTasmotaAdmin && (
                         <CredentialSelect

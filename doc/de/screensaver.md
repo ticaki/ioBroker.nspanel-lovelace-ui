@@ -16,6 +16,7 @@ Inhalt:
 - [Statussymbole](#9-statussymbole)
 - [Uhrzeit und Datum](#10-uhrzeit-und-datum)
   - [Timer statt Uhrzeit](#timer-statt-uhrzeit)
+  - [Datum](#datum)
 - [Wetter](#11-wetter)
 - [Optionen: Rotation und Wischen](#12-optionen-rotation-und-wischen)
 - [Benachrichtigungen](#13-benachrichtigungen)
@@ -105,17 +106,27 @@ Klick auf einen freien Platz öffnet den Item-Dialog, Klick auf ein belegtes Ite
 | Datum/Zeit (Rolle `date`/`time`) | Symbol, Farbe, **Datumsformat** (sieben Vorgaben zur Auswahl, Vorbelegung *Adapter-Standard (Datum kurz)*; im **Expertenmodus** zusätzlich *Eigenes (JSON)* mit einem Feld für freie `Intl.DateTimeFormatOptions`) |
 | sonst (string …) | Symbol, Farbe |
 
+Der **Expertenmodus** (Symbol unten links in der Admin-Leiste) wirkt im Item-Dialog nur noch an einer Stelle: bei einem Datums- oder Zeit-Datenpunkt bietet das Feld **Datumsformat** dann zusätzlich *Eigenes (JSON)* und darunter ein Feld für freie `Intl.DateTimeFormatOptions`. Alle anderen Felder stehen ohne ihn offen.
+
 Je nach Platz kommen Felder dazu oder fallen weg: **Unten** hat die **Überschrift (leer = Name des Datenpunkts)**, **Indikatoren** zeigen nur das Symbol und haben dafür die **Aktion beim Drücken** (siehe [Indikatoren](#8-indikatoren-und-tasten)); Wert- und Textfelder entfallen dort.
 
-**Symbol**: Ein Item braucht ein Symbol – ohne Symbol und ohne Icon-Liste kann das Panel es nicht darstellen, der Dialog meldet *Ohne Symbol kann das Panel das Item nicht darstellen* und lässt **Übernehmen** nicht zu. Aus der Rolle werden **Standardsymbole vorbelegt** (und bleiben änderbar): zuerst zählt die Rolle des Kanals über dem Datenpunkt (ein `light`-Kanal gibt die Glühbirne auch für seinen `.ACTUAL`), sonst die Rolle des Datenpunkts selbst (`value.humidity`, `switch.light`, `sensor.door`, `value.temperature` …). Die Zeile „Rolle: …“ nennt beides. Kennt die Rolle keine Symbole, sagt der Dialog es.
+**Item entfernen** links unten löscht das Item vom Platz.
 
-**Farbe**: *feste Farben* (bei boolean getrennt an/aus, Pipette oder Hex-Wert), bei Zahlen alternativ *Farbskala nach Wert* – **Skala bearbeiten…** öffnet den Dialog mit Skala, Minimum/Maximum, Bestwert und Modus (wie bei den Seiten-Items, siehe [PageConfig-Dialoge](PageConfig-Dialoge)):
+### Symbol
+
+Ein Item braucht ein Symbol – ohne Symbol und ohne Icon-Liste kann das Panel es nicht darstellen, der Dialog meldet *Ohne Symbol kann das Panel das Item nicht darstellen* und lässt **Übernehmen** nicht zu. Aus der Rolle werden **Standardsymbole vorbelegt** (und bleiben änderbar): zuerst zählt die Rolle des Kanals über dem Datenpunkt (ein `light`-Kanal gibt die Glühbirne auch für seinen `.ACTUAL`), sonst die Rolle des Datenpunkts selbst (`value.humidity`, `switch.light`, `sensor.door`, `value.temperature` …). Die Zeile „Rolle: …“ nennt beides. Kennt die Rolle keine Symbole, sagt der Dialog es.
+
+### Farbe
+
+*Feste Farben* (bei boolean getrennt an/aus, Pipette oder Hex-Wert), bei Zahlen alternativ *Farbskala nach Wert* – **Skala bearbeiten…** öffnet den Dialog mit Skala, Minimum/Maximum, Bestwert und Modus (wie bei den Seiten-Items, siehe [PageConfig-Dialoge](PageConfig-Dialoge)):
 
 ![Zahl mit Farbskala](../Pictures/screensaverAdmin/admin-05-item-zahl-skala.png)
 
 Dritte Möglichkeit *Farbe aus Datenpunkt*: ein State, dessen Wert die Farbe ist – `#rrggbb`, `{"r":…,"g":…,"b":…}` (auch als JSON-String) oder eine Dezimalzahl. Bei Ein/Aus-Datenpunkten gilt er für „an“, „aus“ nimmt die Standardfarbe. Der State muss existieren und ein Datenpunkt sein.
 
 ![Farbe aus Datenpunkt](../Pictures/screensaverAdmin/admin-06-item-farbe-datenpunkt.png)
+
+### Icon je Wertebereich
 
 **Icon je Wertebereich** (nur Zahlen): Statt eines festen Symbols kann eine Liste „bis Wert → Symbol“ hinterlegt werden – das Panel wechselt das Icon dann mit dem Wert. Der Knopf **Icon je Wert…** steht unter dem Symbolfeld, sobald der Datenpunkt eine Zahl ist; ein Expertenmodus ist dafür nicht nötig. Eine gespeicherte Liste wird daneben mit ihren Symbolen und der Zahl der Einträge angezeigt und lässt sich über **Icon-Liste entfernen** (Papierkorb) wieder löschen.
 
@@ -126,7 +137,9 @@ Dritte Möglichkeit *Farbe aus Datenpunkt*: ein State, dessen Wert die Farbe ist
 - **Übernehmen** bleibt gesperrt, solange eine angefangene Zeile unvollständig ist (*Jeder Eintrag braucht einen Zahlenwert und ein Symbol*); Zeilen ohne Wert **und** ohne Symbol werden ignoriert. Kommt ein Wert doppelt vor, meldet der Dialog es – wirksam ist dann nur einer der Einträge, gesperrt wird deswegen nicht. Eine leere Liste löscht die Einstellung.
 - Die Liste **ersetzt das Symbol** aus dem Feld darüber und zählt als Symbol: ein Item mit Icon-Liste braucht kein eigenes Symbol. Farbe bzw. Farbskala, Einheit, Faktor und Nachkommastellen gelten unverändert weiter.
 
-**Rollladen (Position)**: Ist der gewählte Datenpunkt die Position eines Rollladens, behandelt ihn der Dialog eigens. Als Position gilt eine **Zahl** mit der Rolle `level.blind` oder `value.blind` sowie eine Zahl unter einem Kanal oder Gerät mit der Rolle `blind` (dann nimmt der Dialog dessen `.ACTUAL` bzw. `.SET`). Eine Neigung (`tilt`) ist keine Position.
+### Rollladen (Position)
+
+Ist der gewählte Datenpunkt die Position eines Rollladens, behandelt ihn der Dialog eigens. Als Position gilt eine **Zahl** mit der Rolle `level.blind` oder `value.blind` sowie eine Zahl unter einem Kanal oder Gerät mit der Rolle `blind` (dann nimmt der Dialog dessen `.ACTUAL` bzw. `.SET`). Eine Neigung (`tilt`) ist keine Position.
 
 - Ohne eigenes Symbol **folgt das Symbol der Position** – fünf Symbole von zu bis offen. Ein solches Item braucht darum kein Symbol, **Übernehmen** bleibt frei. Eigene Symbole oder eine Icon-Liste gelten unverändert weiter.
 - Der Wert steht in **%** ohne Nachkommastellen, solange **Einheit** und **Nachkommastellen** leer bleiben. Ob 0 % „geschlossen“ oder „offen“ heißt, entscheidet die **Rollladensteuerung** in den [Global Settings](globelSettings).
@@ -135,9 +148,13 @@ Dritte Möglichkeit *Farbe aus Datenpunkt*: ein State, dessen Wert die Farbe ist
 
 ![Ein Item mit der Position eines Rollladens](../Pictures/screensaverAdmin/admin-27-item-rollladen.png)
 
+### Text statt Wert
+
 **Text statt Wert** (boolean): Statt `true`/`false` zeigt das Panel den **Text bei wahr** bzw. **Text bei falsch**. In jedes Feld kann auch die **ID eines Datenpunkts** – dann wird dessen Wert gezeigt. Ein leeres Feld lässt den Rohwert stehen.
 
-**Sichtbarkeit**: Dieser Block steht unter den übrigen Feldern, sobald der Datenpunkt bekannt ist (bei einem Template, sobald Vorlage und – falls nötig – Objekt eingetragen sind). Auch er braucht **keinen Expertenmodus**. Er hat zwei Felder:
+### Sichtbarkeit
+
+Dieser Block steht unter den übrigen Feldern, sobald der Datenpunkt bekannt ist (bei einem Template, sobald Vorlage und – falls nötig – Objekt eingetragen sind). Auch er braucht **keinen Expertenmodus**. Er hat zwei Felder:
 
 | Feld | Wirkung |
 |---|---|
@@ -147,10 +164,6 @@ Dritte Möglichkeit *Farbe aus Datenpunkt*: ein State, dessen Wert die Farbe ist
 Ein Item mit Bedingung trägt im Panelbild das Augen-Symbol und **belegt auf dem Panel keinen Platz**, solange die Bedingung nicht erfüllt ist – die übrigen Items rücken nach.
 
 ![Der vollständige Item-Dialog mit Icon-Liste und Sichtbarkeit](../Pictures/screensaverAdmin/admin-16-item-icon-und-sichtbarkeit.png)
-
-Der **Expertenmodus** (Symbol unten links in der Admin-Leiste) wirkt im Item-Dialog nur noch an einer Stelle: bei einem Datums- oder Zeit-Datenpunkt bietet das Feld **Datumsformat** dann zusätzlich *Eigenes (JSON)* und darunter ein Feld für freie `Intl.DateTimeFormatOptions`. Alle anderen Felder stehen ohne ihn offen.
-
-**Item entfernen** links unten löscht das Item vom Platz.
 
 ## 5. Templates als Item
 
@@ -272,7 +285,7 @@ Welcher Wert als nächster kommt, liest der Adapter am Datenpunkt ab: Er sucht d
 
 **Ein State je Indikator.** Der Adapter legt für jedes Indikator-Item einen eigenen Datenpunkt an: `panels.<Panel>.buttons.indicator-1`, `-2`, `-3` … in der Reihenfolge, in der die Items im Bereich **Indikatoren** stehen. Die States sind `boolean`, nur lesbar und tragen die Rolle `button.press`. Ein Tipp auf den Indikator schreibt **immer** `true` in seinen State – unabhängig von der Option. Damit taugen sie als Auslöser für eigene Skripte, auch ohne eine Aktion im Dialog. Der lange Druck schreibt einen eigenen State, siehe [Aktion bei langem Drücken](#aktion-bei-langem-drücken).
 
-**Nur eine eingestellte Aktion wirkt.** Ein Indikator schaltet nichts von sich aus: Ohne **Aktion beim Drücken** passiert an seinem Datenpunkt nichts, auch wenn dieser beschreibbar ist. Ein [Rollladen](#4-items-der-item-dialog) bewegt sich durch einen Tipp nie.
+**Nur eine eingestellte Aktion wirkt.** Ein Indikator schaltet nichts von sich aus: Ohne **Aktion beim Drücken** passiert an seinem Datenpunkt nichts, auch wenn dieser beschreibbar ist. Ein [Rollladen](#rollladen-position) bewegt sich durch einen Tipp nie.
 
 > In Versionen bis 2.1.0 gab es dafür die Option **Indikatoren wirken als Tasten**. Sie ist entfallen: Ein gespeicherter Wert wird ignoriert, und ein nur beschreibbarer Datenpunkt wird seitdem nicht mehr versehentlich umgeschaltet.
 
@@ -421,6 +434,8 @@ Die Restzeit steht in **Minuten mit Punkt**, damit sie sich nicht mit der Uhrzei
 
 **Tippen:** Der erste Tipp auf einen angezeigten Timer schaltet auf die Uhrzeit um – auch ohne Doppelklick und noch vor dem Wegtippen einer Benachrichtigung. Er löst weder eine Geste noch einen Seitenwechsel aus. Das Panel zählt die Tipps aber weiter, bis das Display abdunkelt: Ist der Doppelklick aktiv (`cmd.screenSaver.doubleClick`), führt deshalb der nächste Tipp zur Hauptseite, sobald er mehr als eine Sekunde später kommt. Der Timer erscheint wieder, sobald der Bildschirmschoner neu startet oder ein neuer Timer beginnt.
 
+### Datum
+
 Klick auf das Datum: Format von **Wochentag**, **Monat** und **Jahr** (lang, kurz, numerisch, zweistellig …). *Globale Einstellung* nimmt das Format aus den Instanzeinstellungen; ein Wert hier gilt nur für diesen Bildschirmschoner. Die Vorschau zeigt das Ergebnis mit dem heutigen Datum.
 
 ![Datum](../Pictures/screensaverAdmin/admin-11-datum.png)
@@ -544,7 +559,7 @@ Die Reihenfolge der Items im Bereich **Indikatoren** bestimmt den Platz. Auf `eu
 
 **Kein Favorit:** Kacheln hat keinen Favorit-Platz. Damit entfällt auch das aktuelle Wetter, das die anderen Versionen dort zeigen – die angehakten **Zusatz-Items unten** aus [Wetter](#11-wetter) hängen sich dagegen wie gewohnt hinter das letzte eigene Item im Bereich **Unten**.
 
-**Rollladen:** Ein Rollladen lässt sich hier wie in den anderen Versionen als Indikator oder unten verwenden; ohne eigenes Symbol folgt das Symbol der Position, unten steht die Position in % (siehe [Rollladen](#4-items-der-item-dialog)).
+**Rollladen:** Ein Rollladen lässt sich hier wie in den anderen Versionen als Indikator oder unten verwenden; ohne eigenes Symbol folgt das Symbol der Position, unten steht die Position in % (siehe [Rollladen](#rollladen-position)).
 
 ### Grenzen und Versionswechsel
 

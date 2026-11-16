@@ -20,6 +20,7 @@ import {
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 import { ConfigGeneric, type ConfigGenericProps, type ConfigGenericState } from '@iobroker/json-config';
 import { EntitySelector } from './EntitySelector';
+import { DocHelp } from './DocHelp';
 import {
     adapterAliveStateId,
     isLoggedByInstance,
@@ -41,6 +42,7 @@ import {
     type PChartRangeKey,
     type PChartSlotConfig,
 } from '../../../src/lib/types/adminShareConfig';
+import { CardTypeBadge } from './CardTypeBadge';
 
 export interface PagePChartEditorProps {
     entry: PChartEntry;
@@ -245,7 +247,11 @@ export class PagePChartEditor extends ConfigGeneric<ConfigGenericProps & PagePCh
     private renderUniqueName(): React.JSX.Element {
         const { entry } = this.props;
         return (
-            <Box sx={{ mb: 1, p: 1, borderRadius: 1, backgroundColor: 'action.hover' }}>
+            <Box sx={{ mb: 1, p: 1, borderRadius: 1, backgroundColor: 'action.hover', position: 'relative' }}>
+                <CardTypeBadge
+                    card={entry.card}
+                    getText={key => this.getText(key)}
+                />
                 <TextField
                     fullWidth
                     variant="standard"
@@ -259,9 +265,12 @@ export class PagePChartEditor extends ConfigGeneric<ConfigGenericProps & PagePCh
                         },
                     }}
                     helperText={
-                        isMainPageEntry(entry)
-                            ? this.getText('page_name_main_locked')
-                            : this.getText('page_name_locked')
+                        <>
+                            {isMainPageEntry(entry)
+                                ? this.getText('page_name_main_locked')
+                                : this.getText('page_name_locked')}
+                            <DocHelp topic="pages1.nameFixed" />
+                        </>
                     }
                 />
             </Box>
@@ -331,33 +340,43 @@ export class PagePChartEditor extends ConfigGeneric<ConfigGenericProps & PagePCh
                         ))}
                     </Select>
                 </FormControl>
+                <DocHelp
+                    topic="pages1.pchartCreate"
+                    sx={{ alignSelf: 'flex-end', ml: -1.5, mb: 0.5 }}
+                />
             </Box>
         );
     }
 
     private renderSourceSelect(source: number): React.JSX.Element {
         return (
-            <FormControl
-                variant="standard"
-                sx={{ mb: 2, minWidth: 280 }}
-                disabled={!this.state.alive}
-            >
-                <InputLabel>{this.getText('pchart_DataSource')}</InputLabel>
-                <Select
-                    value={source}
-                    onChange={e => {
-                        this.handleFieldChange(
-                            'selInstanceDataSource',
-                            Number(e.target.value) === PCHART_SOURCE_SCRIPT
-                                ? PCHART_SOURCE_SCRIPT
-                                : PCHART_SOURCE_SLOTS,
-                        );
-                    }}
+            <Box sx={{ display: 'flex', alignItems: 'flex-end', mb: 2 }}>
+                <FormControl
+                    variant="standard"
+                    sx={{ minWidth: 280 }}
+                    disabled={!this.state.alive}
                 >
-                    <MenuItem value={PCHART_SOURCE_SLOTS}>{this.getText('pchart_SourceSlots')}</MenuItem>
-                    <MenuItem value={PCHART_SOURCE_SCRIPT}>{this.getText('pchart_SourceScript')}</MenuItem>
-                </Select>
-            </FormControl>
+                    <InputLabel>{this.getText('pchart_DataSource')}</InputLabel>
+                    <Select
+                        value={source}
+                        onChange={e => {
+                            this.handleFieldChange(
+                                'selInstanceDataSource',
+                                Number(e.target.value) === PCHART_SOURCE_SCRIPT
+                                    ? PCHART_SOURCE_SCRIPT
+                                    : PCHART_SOURCE_SLOTS,
+                            );
+                        }}
+                    >
+                        <MenuItem value={PCHART_SOURCE_SLOTS}>{this.getText('pchart_SourceSlots')}</MenuItem>
+                        <MenuItem value={PCHART_SOURCE_SCRIPT}>{this.getText('pchart_SourceScript')}</MenuItem>
+                    </Select>
+                </FormControl>
+                <DocHelp
+                    topic={source === PCHART_SOURCE_SCRIPT ? 'pages1.pchartScript' : 'pages1.pchartValues'}
+                    sx={{ mb: 0.5 }}
+                />
+            </Box>
         );
     }
 
@@ -397,6 +416,10 @@ export class PagePChartEditor extends ConfigGeneric<ConfigGenericProps & PagePCh
                             ))}
                         </Select>
                     </FormControl>
+                    <DocHelp
+                        topic="pages1.pchartRange"
+                        sx={{ alignSelf: 'flex-end', ml: -1.5, mb: 0.5 }}
+                    />
                     {rangeKey === 'custom' && (
                         <TextField
                             variant="standard"
@@ -573,6 +596,7 @@ export class PagePChartEditor extends ConfigGeneric<ConfigGenericProps & PagePCh
                     sx={{ mb: 1 }}
                 >
                     {this.getText('pchart_Slices')}
+                    <DocHelp topic="pages1.pchartSlices" />
                 </Typography>
                 {slotsOf(this.props.entry).map((slot, index) => this.renderSlot(slot, index))}
                 <Typography

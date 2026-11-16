@@ -161,6 +161,8 @@ Ein Konflikt entsteht, wenn in der Instanz schon eine Seite mit demselben Namen 
 
 <img alt="Übersicht mit mehreren Konflikten und vorgeschlagenen neuen Namen" src="../Pictures/panel-config-transfer/04-conflicts-review.png" width="100%"/>
 
+### Der Namensvorschlag
+
 **Der Namensvorschlag** lautet `<Originalname>_<Topic>`, wobei nur der letzte Abschnitt des Ziel-Topics genommen und auf `A–Z`, `a–z`, `0–9`, `_` und `-` reduziert wird — aus `e2eLong` wird auf dem Panel mit dem Topic `nspanel/webtest` also `e2eLong_webtest`. Ist auch der vergeben, hängt der Admin `_2`, `_3` … an. Das Feld **Neuer Name** lässt sich frei überschreiben, wird aber geprüft:
 
 | Meldung | Grund |
@@ -175,17 +177,25 @@ Ein Konflikt entsteht, wenn in der Instanz schon eine Seite mit demselben Namen 
 
 Solange ein Name ungültig ist, bleibt **Importieren** gesperrt.
 
-**Der Blick in die Unterschiede.** Ein Klick auf den Status **unterschiedlich** öffnet den Dialog **Unterschiede: `<Seite>`** mit drei Spalten — *Was*, *Vorhanden*, *In der Datei*. Felder stehen mit ihrer Bezeichnung aus dem Editor da (*Überschrift*, *Navigation: zurück*), Listenelemente als *Element #3* mit dem Elementnamen in Klammern, falls er gesetzt ist. Ein leerer Feldwert erscheint als `–`. Die Wörter *fehlt*, *vorhanden* und *hinzugefügt* gelten dagegen ganzen Elementen: *fehlt*, wenn die Datei ein vorhandenes Element nicht hat, *vorhanden* für die Gegenseite, *hinzugefügt* für ein Element, das nur die Datei mitbringt. Felder einer Liste werden **der Reihe nach** verglichen — ein vorn eingefügtes Element lässt deshalb alle folgenden als geändert erscheinen.
+### Der Blick in die Unterschiede
+
+Ein Klick auf den Status **unterschiedlich** öffnet den Dialog **Unterschiede: `<Seite>`** mit drei Spalten — *Was*, *Vorhanden*, *In der Datei*. Felder stehen mit ihrer Bezeichnung aus dem Editor da (*Überschrift*, *Navigation: zurück*), Listenelemente als *Element #3* mit dem Elementnamen in Klammern, falls er gesetzt ist. Ein leerer Feldwert erscheint als `–`. Die Wörter *fehlt*, *vorhanden* und *hinzugefügt* gelten dagegen ganzen Elementen: *fehlt*, wenn die Datei ein vorhandenes Element nicht hat, *vorhanden* für die Gegenseite, *hinzugefügt* für ein Element, das nur die Datei mitbringt. Felder einer Liste werden **der Reihe nach** verglichen — ein vorn eingefügtes Element lässt deshalb alle folgenden als geändert erscheinen.
 
 <img alt="Dialog mit den Unterschieden einer Seite" src="../Pictures/panel-config-transfer/05-diff-dialog.png" width="100%"/>
 
-**Umbenennungen ziehen Kreise.** Wird eine Seite umbenannt, zieht der Admin den neuen Namen in allen Verweisen der importierten Daten nach: Navigation (*zurück*, *weiter*, *hoch*, *Home*), Zielseiten von Verknüpfungen und Elementen, die Seite nach dem Entsperren, Screensaver-Aktionen, die Ziele der Hardware-Tasten und der Navigationspunkt der Startseite. Seiten, die auf eine umbenannte Seite verweisen, werden dadurch selbst **unterschiedlich** — der Unterschiedsdialog sagt in diesem Fall *Nur Verweise auf umbenannte Seiten unterscheiden sich.* Das wiederholt sich, bis sich nichts mehr ändert; auch ein von Hand gewählter Name wird so weitergereicht.
+### Umbenennungen ziehen Kreise
 
-**Ersetzen fragt nach.** Nutzt die vorhandene Seite auch andere Panels, fragt der Admin mit **`<Seite>` ersetzen?** noch einmal nach: *Das vorhandene `<Seite>` wird mit dem Inhalt der Datei überschrieben.* Darunter steht *Diese Panels nutzen es ebenfalls und ändern sich mit:* mit der Liste (eine Seite für „alle Panels" erscheint darin als **alle Panels**) oder *Kein anderes Panel nutzt es.* Vorausgewählt ist **Abbrechen**.
+Wird eine Seite umbenannt, zieht der Admin den neuen Namen in allen Verweisen der importierten Daten nach: Navigation (*zurück*, *weiter*, *hoch*, *Home*), Zielseiten von Verknüpfungen und Elementen, die Seite nach dem Entsperren, Screensaver-Aktionen, die Ziele der Hardware-Tasten und der Navigationspunkt der Startseite. Seiten, die auf eine umbenannte Seite verweisen, werden dadurch selbst **unterschiedlich** — der Unterschiedsdialog sagt in diesem Fall *Nur Verweise auf umbenannte Seiten unterscheiden sich.* Das wiederholt sich, bis sich nichts mehr ändert; auch ein von Hand gewählter Name wird so weitergereicht.
+
+### Ersetzen fragt nach
+
+Nutzt die vorhandene Seite auch andere Panels, fragt der Admin mit **`<Seite>` ersetzen?** noch einmal nach: *Das vorhandene `<Seite>` wird mit dem Inhalt der Datei überschrieben.* Darunter steht *Diese Panels nutzen es ebenfalls und ändern sich mit:* mit der Liste (eine Seite für „alle Panels" erscheint darin als **alle Panels**) oder *Kein anderes Panel nutzt es.* Vorausgewählt ist **Abbrechen**.
 
 <img alt="Rückfrage vor dem Ersetzen einer Seite, die mehrere Panels nutzen" src="../Pictures/panel-config-transfer/06-replace-confirm.png" width="100%"/>
 
-**Der Screensaver spielt dasselbe Spiel.** Er steht in derselben Tabelle wie die Seiten und kennt dieselben drei Auflösungen, samt Namensfeld, Rückfrage und Unterschiedsdialog (Titel *Screensaver: `<Name>`*). Vier Abweichungen lohnen die Kenntnis:
+### Der Screensaver spielt dasselbe Spiel
+
+Er steht in derselben Tabelle wie die Seiten und kennt dieselben drei Auflösungen, samt Namensfeld, Rückfrage und Unterschiedsdialog (Titel *Screensaver: `<Name>`*). Vier Abweichungen lohnen die Kenntnis:
 
 - **Gleich ist gleich, auch unter anderem Namen.** Findet der Admin einen vorhandenen Screensaver mit gleichem Inhalt, aber anderem Namen, gilt der Import als *unverändert* und das Panel bekommt den vorhandenen Eintrag — die Übersicht zeigt dann dessen Namen, nicht den aus der Datei.
 - **Verglichen wird ohne Name und Panelzuweisung**, dafür mit aufgelösten Benachrichtigungen.

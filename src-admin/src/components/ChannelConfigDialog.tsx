@@ -70,6 +70,8 @@ import { adminPageItemToScriptItem } from '../../../src/lib/configuration/admin-
 import ChannelColorDialog from './ChannelColorDialog';
 import ChannelModeListDialog from './ChannelModeListDialog';
 import FormatListBulletedIcon from '@mui/icons-material/FormatListBulleted';
+import { DocButton, DocHelp } from './DocHelp';
+import { pageitemsTopicsOfRole } from '../docTopics/pageitems';
 
 /**
  * Channel roles for which the adapter evaluates `modeList` (config-manager.ts): the light roles also use
@@ -1292,14 +1294,16 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
      * @param maxKey state field of the upper end
      * @param hintKey i18n key of the helper text
      * @param disabled whether the fields are disabled
+     * @param withHelp whether the hint carries the help link (once per group of light fields)
      */
     private renderLightRange(
         minKey: LightRangeKey,
         maxKey: LightRangeKey,
         hintKey: string,
         disabled: boolean,
+        withHelp: boolean,
     ): React.JSX.Element {
-        const field = (key: LightRangeKey, label: string, hint: string | undefined): React.JSX.Element => (
+        const field = (key: LightRangeKey, label: string, hint: React.ReactNode): React.JSX.Element => (
             <TextField
                 variant="standard"
                 type="number"
@@ -1315,7 +1319,14 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
         return (
             <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2, flexWrap: 'wrap' }}>
                 {field(minKey, `channelConfigDialog_${minKey}`, undefined)}
-                {field(maxKey, `channelConfigDialog_${maxKey}`, I18n.t(hintKey))}
+                {field(
+                    maxKey,
+                    `channelConfigDialog_${maxKey}`,
+                    <>
+                        {I18n.t(hintKey)}
+                        {withHelp && <DocHelp topic="pageitems.roleFields" />}
+                    </>,
+                )}
             </Box>
         );
     }
@@ -1569,6 +1580,7 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                     sx={{ color: isTrue ? 'success.main' : 'error.main', fontWeight: 'bold' }}
                 >
                     {label}
+                    {isTrue && <DocHelp topic="pageitems.trueFalse" />}
                 </Typography>
 
                 {/* Icon-Auswahl */}
@@ -1861,7 +1873,16 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                                 >
                                     ({titleSuffix})
                                 </Typography>
+                                {/* type-dependent help: the documentation of exactly this role */}
+                                {!rawMode &&
+                                    pageitemsTopicsOfRole(channelRole).map(topic => (
+                                        <DocHelp
+                                            key={topic}
+                                            topic={topic}
+                                        />
+                                    ))}
                             </Typography>
+                            {rawMode && <DocHelp topic="pageitems.rawData" />}
                             <RawItemButton
                                 active={rawMode}
                                 onClick={this.handleRawOpen}
@@ -1911,38 +1932,49 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                                             </Typography>
                                         }
                                     />
+                                    <DocHelp
+                                        topic="pageitems.basicCases"
+                                        sx={{ alignSelf: 'center' }}
+                                    />
                                 </Box>
                                 {/* Zielseiten-Selector – nur sichtbar wenn isNavigation aktiv */}
                                 {isNavigation && (
-                                    <Autocomplete
-                                        options={loadingPages ? [] : this.targetPageOptions(availablePages)}
-                                        getOptionLabel={this.targetPageLabel}
-                                        value={targetPage || null}
-                                        onChange={(_e, val) => this.handleTargetPageChange(val ?? '')}
-                                        onInputChange={(_e, val) => this.handleTargetPageChange(val)}
-                                        disabled={loadingPages}
-                                        freeSolo
-                                        forcePopupIcon
-                                        renderInput={params => (
-                                            <TextField
-                                                {...params}
-                                                variant="standard"
-                                                label={I18n.t('channelConfigDialog_targetPage')}
-                                                slotProps={{
-                                                    ...params.slotProps,
-                                                    input: {
-                                                        ...params.slotProps.input,
-                                                        endAdornment: (
-                                                            <>
-                                                                {loadingPages && <CircularProgress size={16} />}
-                                                                {params.slotProps.input.endAdornment}
-                                                            </>
-                                                        ),
-                                                    },
-                                                }}
-                                            />
-                                        )}
-                                    />
+                                    <Box sx={{ display: 'flex', alignItems: 'flex-end' }}>
+                                        <Autocomplete
+                                            sx={{ flex: 1 }}
+                                            options={loadingPages ? [] : this.targetPageOptions(availablePages)}
+                                            getOptionLabel={this.targetPageLabel}
+                                            value={targetPage || null}
+                                            onChange={(_e, val) => this.handleTargetPageChange(val ?? '')}
+                                            onInputChange={(_e, val) => this.handleTargetPageChange(val)}
+                                            disabled={loadingPages}
+                                            freeSolo
+                                            forcePopupIcon
+                                            renderInput={params => (
+                                                <TextField
+                                                    {...params}
+                                                    variant="standard"
+                                                    label={I18n.t('channelConfigDialog_targetPage')}
+                                                    slotProps={{
+                                                        ...params.slotProps,
+                                                        input: {
+                                                            ...params.slotProps.input,
+                                                            endAdornment: (
+                                                                <>
+                                                                    {loadingPages && <CircularProgress size={16} />}
+                                                                    {params.slotProps.input.endAdornment}
+                                                                </>
+                                                            ),
+                                                        },
+                                                    }}
+                                                />
+                                            )}
+                                        />
+                                        <DocHelp
+                                            topic="pageitems.targetPage"
+                                            sx={{ flexShrink: 0, mb: 0.5 }}
+                                        />
+                                    </Box>
                                 )}
 
                                 {/* ioBroker-Channel-Auswahl + Validierungsicons */}
@@ -2028,6 +2060,10 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                                             sx={{ flexShrink: 0 }}
                                         />
                                     )}
+                                    <DocHelp
+                                        topic="pageitems.channel"
+                                        sx={{ ml: 0, flexShrink: 0 }}
+                                    />
                                 </Box>
                                 {/* Validierungshinweis Channel */}
                                 {channelId.valueStateId !== '' && channelExists === false && !checkingChannel && (
@@ -2133,6 +2169,10 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                                             </Button>
                                         </span>
                                     </Tooltip>
+                                    <DocHelp
+                                        topic="pageitems.name"
+                                        sx={{ ml: 0, flexShrink: 0 }}
+                                    />
                                 </Box>
                                 {/* useValue Checkbox + TextSize */}
                                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flexWrap: 'wrap' }}>
@@ -2225,6 +2265,12 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                                             />
                                         </Tooltip>
                                     )}
+                                    {this.isTextSizeVisible() && (
+                                        <DocHelp
+                                            topic="pageitems.textSize"
+                                            sx={{ ml: -1.5 }}
+                                        />
+                                    )}
                                     {this.state.isGridCard && !isCustom && (
                                         <FormControl
                                             component="fieldset"
@@ -2246,6 +2292,13 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                                             />
                                         </FormControl>
                                     )}
+                                    {((this.props.heatCircuits && this.props.heatCircuits.length > 0) ||
+                                        (this.state.isGridCard && !isCustom)) && (
+                                        <DocHelp
+                                            topic="pageitems.cardFields"
+                                            sx={{ ml: -1.5 }}
+                                        />
+                                    )}
                                 </Box>
                                 {useValueConditionsVisible && (
                                     <TextField
@@ -2255,7 +2308,12 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                                         value={this.state.useValueConditions}
                                         onChange={e => this.setState({ useValueConditions: e.target.value })}
                                         disabled={fieldsDisabled}
-                                        helperText={I18n.t('channelConfigDialog_useValueConditionsHint')}
+                                        helperText={
+                                            <>
+                                                {I18n.t('channelConfigDialog_useValueConditionsHint')}
+                                                <DocHelp topic="pageitems.roleFields" />
+                                            </>
+                                        }
                                         placeholder="val && val < 100"
                                         slotProps={{
                                             inputLabel: { shrink: true },
@@ -2286,7 +2344,12 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                                                 this.setState({ maxValue: this.parseRangeInput(e.target.value) })
                                             }
                                             disabled={fieldsDisabled}
-                                            helperText={I18n.t('channelConfigDialog_valueRangeHint')}
+                                            helperText={
+                                                <>
+                                                    {I18n.t('channelConfigDialog_valueRangeHint')}
+                                                    <DocHelp topic="pageitems.roleFields" />
+                                                </>
+                                            }
                                             sx={{ width: 160 }}
                                             slotProps={{ inputLabel: { shrink: true }, htmlInput: { step: 'any' } }}
                                         />
@@ -2300,7 +2363,12 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                                         value={this.state.secondRow}
                                         onChange={e => this.setState({ secondRow: e.target.value })}
                                         disabled={fieldsDisabled}
-                                        helperText={I18n.t('channelConfigDialog_secondRowHint')}
+                                        helperText={
+                                            <>
+                                                {I18n.t('channelConfigDialog_secondRowHint')}
+                                                <DocHelp topic="pageitems.roleFields" />
+                                            </>
+                                        }
                                         slotProps={{ inputLabel: { shrink: true } }}
                                     />
                                 )}
@@ -2331,6 +2399,7 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                                                     ? 'channelConfigDialog_useScreensaverTimerLocked'
                                                     : 'channelConfigDialog_useScreensaverTimerHint',
                                             )}
+                                            <DocHelp topic="pageitems.screensaverTimer" />
                                         </Typography>
                                     </Box>
                                 )}
@@ -2340,6 +2409,7 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                                         'maxValueBrightness',
                                         'channelConfigDialog_brightnessRange',
                                         fieldsDisabled,
+                                        true,
                                     )}
                                 {colorTempVisible &&
                                     this.renderLightRange(
@@ -2347,6 +2417,7 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                                         'maxValueColorTemp',
                                         'channelConfigDialog_colorTempRange',
                                         fieldsDisabled,
+                                        false,
                                     )}
                                 {brightnessVisible && (
                                     <FormControlLabel
@@ -2362,40 +2433,44 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                                 )}
                                 {/* Zielseite nach dem Drücken – nur normale Items der Rolle button */}
                                 {buttonTargetPageVisible && (
-                                    <Tooltip
-                                        title={I18n.t('channelConfigDialog_buttonTargetPageTooltip')}
-                                        placement="top"
-                                    >
-                                        <Autocomplete
-                                            options={loadingPages ? [] : this.targetPageOptions(availablePages)}
-                                            getOptionLabel={this.targetPageLabel}
-                                            value={targetPage || null}
-                                            onChange={(_e, val) => this.handleTargetPageChange(val ?? '')}
-                                            onInputChange={(_e, val) => this.handleTargetPageChange(val)}
-                                            disabled={loadingPages || fieldsDisabled}
-                                            freeSolo
-                                            forcePopupIcon
-                                            renderInput={params => (
-                                                <TextField
-                                                    {...params}
-                                                    variant="standard"
-                                                    label={I18n.t('channelConfigDialog_buttonTargetPage')}
-                                                    slotProps={{
-                                                        ...params.slotProps,
-                                                        input: {
-                                                            ...params.slotProps.input,
-                                                            endAdornment: (
-                                                                <>
-                                                                    {loadingPages && <CircularProgress size={16} />}
-                                                                    {params.slotProps.input.endAdornment}
-                                                                </>
-                                                            ),
-                                                        },
-                                                    }}
-                                                />
-                                            )}
-                                        />
-                                    </Tooltip>
+                                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                                        <Tooltip
+                                            title={I18n.t('channelConfigDialog_buttonTargetPageTooltip')}
+                                            placement="top"
+                                        >
+                                            <Autocomplete
+                                                options={loadingPages ? [] : this.targetPageOptions(availablePages)}
+                                                getOptionLabel={this.targetPageLabel}
+                                                value={targetPage || null}
+                                                onChange={(_e, val) => this.handleTargetPageChange(val ?? '')}
+                                                onInputChange={(_e, val) => this.handleTargetPageChange(val)}
+                                                disabled={loadingPages || fieldsDisabled}
+                                                freeSolo
+                                                forcePopupIcon
+                                                sx={{ flex: 1 }}
+                                                renderInput={params => (
+                                                    <TextField
+                                                        {...params}
+                                                        variant="standard"
+                                                        label={I18n.t('channelConfigDialog_buttonTargetPage')}
+                                                        slotProps={{
+                                                            ...params.slotProps,
+                                                            input: {
+                                                                ...params.slotProps.input,
+                                                                endAdornment: (
+                                                                    <>
+                                                                        {loadingPages && <CircularProgress size={16} />}
+                                                                        {params.slotProps.input.endAdornment}
+                                                                    </>
+                                                                ),
+                                                            },
+                                                        }}
+                                                    />
+                                                )}
+                                            />
+                                        </Tooltip>
+                                        <DocHelp topic="pageitems.roleFields" />
+                                    </Box>
                                 )}
                                 {/* Zweispaltiger Bereich: Wahr / Unwahr */}
                                 <Box
@@ -2424,38 +2499,41 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                                             minWidth: 0,
                                         }}
                                     >
-                                        <Tooltip
-                                            title={
-                                                <Box>
-                                                    <Typography
-                                                        variant="caption"
-                                                        sx={{ display: 'block' }}
-                                                    >
-                                                        {I18n.t('channelConfigDialog_longPressHint1')}
-                                                    </Typography>
-                                                    <Typography
-                                                        variant="caption"
-                                                        sx={{ display: 'block' }}
-                                                    >
-                                                        {I18n.t('channelConfigDialog_longPressHint2')}
-                                                    </Typography>
-                                                    <Typography
-                                                        variant="caption"
-                                                        sx={{ display: 'block' }}
-                                                    >
-                                                        {I18n.t('channelConfigDialog_longPressHint3')}
-                                                    </Typography>
-                                                </Box>
-                                            }
+                                        <Typography
+                                            component="legend"
+                                            variant="caption"
+                                            sx={{ color: 'text.secondary', px: 0.5 }}
                                         >
-                                            <Typography
-                                                component="legend"
-                                                variant="caption"
-                                                sx={{ color: 'text.secondary', px: 0.5, cursor: 'help' }}
+                                            <Tooltip
+                                                title={
+                                                    <Box>
+                                                        <Typography
+                                                            variant="caption"
+                                                            sx={{ display: 'block' }}
+                                                        >
+                                                            {I18n.t('channelConfigDialog_longPressHint1')}
+                                                        </Typography>
+                                                        <Typography
+                                                            variant="caption"
+                                                            sx={{ display: 'block' }}
+                                                        >
+                                                            {I18n.t('channelConfigDialog_longPressHint2')}
+                                                        </Typography>
+                                                        <Typography
+                                                            variant="caption"
+                                                            sx={{ display: 'block' }}
+                                                        >
+                                                            {I18n.t('channelConfigDialog_longPressHint3')}
+                                                        </Typography>
+                                                    </Box>
+                                                }
                                             >
-                                                {I18n.t('channelConfigDialog_longPressTitle')}
-                                            </Typography>
-                                        </Tooltip>
+                                                <span style={{ cursor: 'help' }}>
+                                                    {I18n.t('channelConfigDialog_longPressTitle')}
+                                                </span>
+                                            </Tooltip>
+                                            <DocHelp topic="pageitems.longPress" />
+                                        </Typography>
                                         {targetPageLongPress == null && (
                                             <EntitySelector
                                                 label={I18n.t('channelConfigDialog_LongPressChannelId')}
@@ -2539,6 +2617,12 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                                         {I18n.t('channelConfigDialog_colorSettings')}
                                     </Button>
                                 )}
+                                {!internColorFieldsDisabled && (
+                                    <DocHelp
+                                        topic="pageitems.colorOptions"
+                                        sx={{ alignSelf: 'center', ml: 0, flexShrink: 0 }}
+                                    />
+                                )}
                                 {modeListVisible && (
                                     <Button
                                         size="small"
@@ -2551,10 +2635,20 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                                         {I18n.t('channelConfigDialog_modeListSettings')}
                                     </Button>
                                 )}
+                                {modeListVisible && (
+                                    <DocHelp
+                                        topic="pageitems.modeList"
+                                        sx={{ alignSelf: 'center', ml: 0, flexShrink: 0 }}
+                                    />
+                                )}
                             </Box>
                         )}
                         {/* Untere Zeile: Abbrechen + Speichern rechts */}
                         <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1 }}>
+                            <DocButton
+                                topic="pageitems.dialog"
+                                sx={{ mr: 'auto' }}
+                            />
                             {/* Abbrechen-Button immer anzeigen, Speichern-Button nur mit gültiger Konfiguration (Rohdaten oder Standardfelder) */}
                             <Button onClick={this.handleClose}>{I18n.t('channelConfigDialog_cancel')}</Button>
                             <Button
@@ -2666,10 +2760,11 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                     maxWidth="md"
                     fullWidth
                 >
-                    <DialogTitle>
+                    <DialogTitle sx={{ display: 'flex', alignItems: 'center' }}>
                         {this.state.checkResultIsError
                             ? I18n.t('channelConfigDialog_checkError_title')
                             : I18n.t('channelConfigDialog_checkLog_title')}
+                        <DocHelp topic="pageitems.applyCheck" />
                     </DialogTitle>
                     <DialogContent>
                         <Alert

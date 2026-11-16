@@ -38,6 +38,8 @@ import {
 } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { I18n } from '@iobroker/gui-components';
+import { DocButton, DocHelp } from './DocHelp';
+import type { DocTopicRef } from '../docTopics';
 import {
     ALL_PANELS_SPECIAL_ID,
     CONVERT_GLOBAL_DECISIONS,
@@ -459,13 +461,20 @@ class ConvertScriptDialog extends React.Component<ConvertScriptDialogProps, Conv
         this.setState({ phase: 'error', error: I18n.t('convertScript_invalidResponse'), refreshing: false });
     }
 
-    private renderSectionTitle(text: string): React.JSX.Element {
+    /**
+     * heading of a block of the dialog
+     *
+     * @param text heading
+     * @param topic help topic shown as a small "?" behind the heading
+     */
+    private renderSectionTitle(text: string, topic?: DocTopicRef): React.JSX.Element {
         return (
             <Typography
                 variant="subtitle2"
                 sx={{ mt: 2, mb: 0.5 }}
             >
                 {text}
+                {topic ? <DocHelp topic={topic} /> : null}
             </Typography>
         );
     }
@@ -612,7 +621,7 @@ class ConvertScriptDialog extends React.Component<ConvertScriptDialogProps, Conv
         if (!hasProblems(plan)) {
             return (
                 <>
-                    {this.renderSectionTitle(I18n.t('convertScript_problems'))}
+                    {this.renderSectionTitle(I18n.t('convertScript_problems'), 'navigation.migrationReasons')}
                     <Typography
                         variant="body2"
                         color="text.secondary"
@@ -668,7 +677,7 @@ class ConvertScriptDialog extends React.Component<ConvertScriptDialogProps, Conv
         }
         return (
             <>
-                {this.renderSectionTitle(I18n.t('convertScript_problems'))}
+                {this.renderSectionTitle(I18n.t('convertScript_problems'), 'navigation.migrationReasons')}
                 <List
                     dense
                     disablePadding
@@ -713,7 +722,10 @@ class ConvertScriptDialog extends React.Component<ConvertScriptDialogProps, Conv
                 severity="info"
                 sx={{ mt: 2 }}
             >
-                <AlertTitle>{I18n.t('convertScript_rawItems')}</AlertTitle>
+                <AlertTitle>
+                    {I18n.t('convertScript_rawItems')}
+                    <DocHelp topic="navigation.migrationPreview" />
+                </AlertTitle>
                 <Typography variant="body2">{I18n.t('convertScript_rawItemsHint')}</Typography>
                 <List
                     dense
@@ -749,7 +761,10 @@ class ConvertScriptDialog extends React.Component<ConvertScriptDialogProps, Conv
                 severity="info"
                 sx={{ mt: 2 }}
             >
-                <AlertTitle>{I18n.t('convertScript_longPressDropped')}</AlertTitle>
+                <AlertTitle>
+                    {I18n.t('convertScript_longPressDropped')}
+                    <DocHelp topic="navigation.migrationPreview" />
+                </AlertTitle>
                 <Typography variant="body2">{I18n.t('convertScript_longPressDroppedHint')}</Typography>
                 <List
                     dense
@@ -784,7 +799,7 @@ class ConvertScriptDialog extends React.Component<ConvertScriptDialogProps, Conv
         const disabled = !editable || this.state.refreshing;
         return (
             <>
-                {this.renderSectionTitle(I18n.t('convertScript_conflicts'))}
+                {this.renderSectionTitle(I18n.t('convertScript_conflicts'), 'navigation.migrationPreview')}
                 <Typography
                     variant="body2"
                     color="text.secondary"
@@ -909,7 +924,7 @@ class ConvertScriptDialog extends React.Component<ConvertScriptDialogProps, Conv
         const { name, mode, itemCount, notifyCount } = plan.screensaver;
         return (
             <>
-                {this.renderSectionTitle(I18n.t('convertScript_screensaver'))}
+                {this.renderSectionTitle(I18n.t('convertScript_screensaver'), 'navigation.migrationScreensaver')}
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
                     <Typography
                         component="span"
@@ -964,7 +979,7 @@ class ConvertScriptDialog extends React.Component<ConvertScriptDialogProps, Conv
         }
         return (
             <>
-                {this.renderSectionTitle(I18n.t('convertScript_buttons'))}
+                {this.renderSectionTitle(I18n.t('convertScript_buttons'), 'navigation.migrationButtons')}
                 <List
                     dense
                     disablePadding
@@ -1000,7 +1015,7 @@ class ConvertScriptDialog extends React.Component<ConvertScriptDialogProps, Conv
                 <AccordionDetails sx={{ pt: 0 }}>
                     {plan.pages.length > 0 ? (
                         <>
-                            {this.renderSectionTitle(I18n.t('convertScript_pages'))}
+                            {this.renderSectionTitle(I18n.t('convertScript_pages'), 'navigation.migrationPages')}
                             <List
                                 dense
                                 disablePadding
@@ -1129,7 +1144,10 @@ class ConvertScriptDialog extends React.Component<ConvertScriptDialogProps, Conv
                         severity="warning"
                         sx={{ mb: 1 }}
                     >
-                        <AlertTitle>{I18n.t('convertScript_partial')}</AlertTitle>
+                        <AlertTitle>
+                            {I18n.t('convertScript_partial')}
+                            <DocHelp topic="navigation.migrationErrors" />
+                        </AlertTitle>
                         <Box>
                             {result.backupId
                                 ? I18n.t('convertScript_backupCreated', result.backupId)
@@ -1172,7 +1190,7 @@ class ConvertScriptDialog extends React.Component<ConvertScriptDialogProps, Conv
                     </Alert>
                 ) : null}
 
-                {this.renderSectionTitle(I18n.t('convertScript_scriptSection'))}
+                {this.renderSectionTitle(I18n.t('convertScript_scriptSection'), 'navigation.migrationScript')}
                 <Typography
                     variant="body2"
                     color="text.secondary"
@@ -1212,7 +1230,10 @@ class ConvertScriptDialog extends React.Component<ConvertScriptDialogProps, Conv
                         severity="warning"
                         sx={{ mt: 1 }}
                     >
-                        <AlertTitle>{I18n.t('convertScript_scriptNotes')}</AlertTitle>
+                        <AlertTitle>
+                            {I18n.t('convertScript_scriptNotes')}
+                            <DocHelp topic="navigation.migrationSource" />
+                        </AlertTitle>
                         <List
                             dense
                             disablePadding
@@ -1235,7 +1256,10 @@ class ConvertScriptDialog extends React.Component<ConvertScriptDialogProps, Conv
                         severity="warning"
                         sx={{ mt: 2 }}
                     >
-                        <AlertTitle>{I18n.t('convertScript_reloadTitle')}</AlertTitle>
+                        <AlertTitle>
+                            {I18n.t('convertScript_reloadTitle')}
+                            <DocHelp topic="navigation.migrationCourse" />
+                        </AlertTitle>
                         {I18n.t('convertScript_reloadHint')} {I18n.t('convertScript_reloadRestartHint')}
                     </Alert>
                 ) : null}
@@ -1260,7 +1284,10 @@ class ConvertScriptDialog extends React.Component<ConvertScriptDialogProps, Conv
                 return (
                     <>
                         <Alert severity="error">
-                            <AlertTitle>{I18n.t('convertScript_errorTitle')}</AlertTitle>
+                            <AlertTitle>
+                                {I18n.t('convertScript_errorTitle')}
+                                <DocHelp topic="navigation.migrationErrors" />
+                            </AlertTitle>
                             {I18n.t('convertScript_errorIntro')}
                             <Box
                                 component="pre"
@@ -1314,9 +1341,17 @@ class ConvertScriptDialog extends React.Component<ConvertScriptDialogProps, Conv
                 maxWidth="md"
                 fullWidth
             >
-                <DialogTitle>{I18n.t('convertScript_title', panelName || panelTopic)}</DialogTitle>
+                <DialogTitle sx={{ display: 'flex', alignItems: 'center' }}>
+                    {I18n.t('convertScript_title', panelName || panelTopic)}
+                    <DocHelp topic="navigation.migrationPreview" />
+                </DialogTitle>
                 <DialogContent dividers>{this.renderContent()}</DialogContent>
                 <DialogActions>
+                    <DocButton
+                        topic="navigation.migration"
+                        sx={{ mr: 'auto' }}
+                    />
+
                     <Button
                         onClick={this.close}
                         disabled={busy}

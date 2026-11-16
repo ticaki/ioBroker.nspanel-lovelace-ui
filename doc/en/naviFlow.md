@@ -160,7 +160,9 @@ Two things are saved separately:
 
 After saving, the adapter restarts. The tab notices this itself, shows "Adapter is restarting, the view will be refreshed …" and reads the navigation again after three seconds, then every two seconds for at most one minute. The old view stays in the meantime. As soon as the new data reflects a change, the page loses its mark; if marks are left over, another read attempt follows automatically.
 
-**What the adapter still changes while building** — whoever does not recognise the lines afterwards finds the reason here:
+### What the adapter still changes while building
+
+Whoever does not recognise the lines afterwards finds the reason here:
 
 - A page without any link of its own (and that is not the start page) gets `home` to the start page — an emergency exit, not navigation.
 - `home` or `parent` pointing at the page itself are dropped.

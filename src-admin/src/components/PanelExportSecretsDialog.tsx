@@ -12,6 +12,7 @@ import {
     ListItemText,
 } from '@mui/material';
 import { I18n } from '@iobroker/gui-components';
+import { DocHelp } from './DocHelp';
 import type { PageSecretField } from '../../../src/lib/types/panelConfigExport';
 
 export interface PanelExportSecretsDialogProps {
@@ -49,8 +50,12 @@ export default class PanelExportSecretsDialog extends React.Component<PanelExpor
                 fullWidth
                 aria-labelledby="panel-export-secrets-title"
             >
-                <DialogTitle id="panel-export-secrets-title">
+                <DialogTitle
+                    id="panel-export-secrets-title"
+                    sx={{ display: 'flex', alignItems: 'center' }}
+                >
                     {I18n.t('exportSecretsTitle').replace('%s', panelName)}
+                    <DocHelp topic="navigation.exportSecrets" />
                 </DialogTitle>
                 <DialogContent>
                     <DialogContentText>{I18n.t('exportSecretsText')}</DialogContentText>

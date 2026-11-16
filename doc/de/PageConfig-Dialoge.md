@@ -42,6 +42,8 @@ Zwei Haken am Kopf des Dialogs entscheiden, welche Art von Element entsteht:
 
 **Die beiden Haken schließen sich aus.** Wer den einen setzt, nimmt den anderen zurück — ein Pageitem ist entweder Navigation oder benutzerdefinierter Knopf. (Bis einschließlich 2.2.0 ließen sich beide setzen; der Adapter nahm dann die Navigation.)
 
+#### Die Zielseite
+
 Ist *Ist eine Navigation* gesetzt, erscheint das Feld **Zielseite**. Es listet die Seiten auf, die dieses Panel kennt — die eigene Seite ist aus der Liste genommen, `main` steht vorn, der Rest alphabetisch. Das Feld nimmt auch einen frei getippten Namen an; praktisch für eine Seite, die erst noch entsteht, aber auch die Stelle, an der ein Tippfehler unbemerkt bleibt.
 
 Am Ende der Liste steht der Eintrag **Screensaver**: Die Fläche zeigt dann sofort den Bildschirmschoner, so als wäre der Timeout des Panels abgelaufen (siehe [Bildschirmschoner sofort anzeigen](screensaver#15-bildschirmschoner-sofort-anzeigen)). Derselbe Eintrag steht in der Zielseite des langen Drucks und in der *Zielseite nach dem Drücken*.
@@ -82,6 +84,8 @@ Diese Felder erscheinen nur dort, wo der Adapter sie auswertet:
 | **Text-/Icongröße** | auf den drei Grid-Varianten, auf der Thermostat- und auf der Mediaplayer-Seite — **nicht** bei *Entities* und *Schedule* | Die Nextion-Schrift, mit der das Panel Symbol oder Wert dieses Elements zeichnet (siehe unten). |
 | **Wert statt Icon verwenden** | dieselben fünf Kartentypen, nicht beim benutzerdefinierten Knopf | Die Fläche zeigt den Wert als Text statt des Symbols. Der Adapter macht das nur, wenn der `ACTUAL`-Datenpunkt eine Zahl, eine Zeichenkette oder `mixed` ist; sonst bleibt es beim Symbol. |
 | **Langer Druck** | **nur** auf den drei Grid-Varianten, und nur bei Navigation, benutzerdefiniertem Knopf oder `role=button` | Zweite Funktion derselben Fläche. |
+
+#### Langer Druck
 
 **Langer Druck** ist mit Absicht so eng gefasst: Von den Seiten melden nur die Grid-Seiten dem Adapter überhaupt einen langen Druck (seit der TFT 6.0.9 außerdem die Indikatoren des [Bildschirmschoners](screensaver#aktion-bei-langem-drücken)), und nur Items ohne eigenes Popup können ihn gebrauchen — bei allen anderen würde er mit dem Popup kollidieren. Er kann **entweder** einen Datenpunkt schalten **oder** auf eine Seite springen, nie beides; darum verschwindet das jeweils andere Feld, sobald eines gefüllt ist. Der Datenpunkt muss `type=boolean` und `write=true` haben, die Objektauswahl zeigt von vornherein nur solche. Ist das Feldbündel nicht sichtbar, speichert der Dialog auch keinen alten Wert mehr mit.
 
@@ -147,18 +151,24 @@ Unten rechts stehen **Abbrechen** und **Übernehmen**. Während der Prüfung hei
 
 Der Knopf **`{ }`** rechts in der Titelzeile der Pageitem-Konfiguration (Tooltip *„Item als Rohdaten (JSON) eingeben"*) öffnet den Dialog **Rohdaten des Items**. Er ist **immer** da — kein Expertenmodus nötig. Hier wird das Pageitem als rohes JSON eingegeben, für Einstellungen, für die es noch keine Oberfläche gibt. Denselben Knopf hat der Item-Dialog des [Bildschirmschoners](screensaver#4-items-der-item-dialog).
 
-**Format** — zwei Möglichkeiten, die der Hinweiskasten im Dialog jeweils erklärt:
+### Das Format: native oder script
+
+Zwei Möglichkeiten, die der Hinweiskasten im Dialog jeweils erklärt:
 
 | Format | Bedeutung |
 |---|---|
 | **native (Laufzeit-Item)** | Das Item, wie der Adapter es zur Laufzeit verwendet (z. B. `{ "template": …, "dpInit": … }`). Es wird **unverändert** übernommen und hat keine Navigationsfelder. Entspricht `{ native: { … } }` im Skript. |
 | **script (wie im Skript)** | Das Seiten-Item genau so, wie es in einem Konfigurationsskript stünde, z. B. `{ "id": …, "icon": …, "confirm": … }` oder `{ "native": { … }, "navigate": true, "targetPage": … }`. Der Adapter wandelt es um wie ein Item des Skripts. |
 
+### Der JSON-Editor
+
 - Der Dialog **prüft laufend**: Ist der Text kein JSON-Objekt, wird der Rahmen rot, der Grund steht darunter (*„Ungültiges JSON: …"* oder *„Die Konfiguration muss ein JSON-Objekt { … } sein"*) und **Übernehmen** ist gesperrt.
 - Das Symbol über dem Editor (**JSON formatieren**) rückt gültiges JSON neu ein.
 - Beim ersten Öffnen steht nicht `{}` da, sondern ein **Vorschlag**: das Skript-Item, das der Adapter aus den bereits gefüllten Feldern bauen würde, im Format *script*. Nur wenn weder eine Kanal-ID noch ein Navigationsziel gesetzt ist, startet der Dialog leer im Format *native*.
 - **Rohdaten entfernen (zurück zum Standard)** (links unten, nur bei bereits aktivem Rohmodus) bringt das Item zu den Feldern des Dialogs zurück. Die Standardfelder bleiben nämlich im Hintergrund erhalten, solange der Rohmodus läuft.
 - Im Format *script* gelten die Felder des Konfigurationsskripts. Drei davon gehören zu den Timer-Funktionen: `"targetPage": "///screensaver"` (auch für `prev`, `next`, `parent` und `home` einer Seite) zeigt den Bildschirmschoner sofort; `"useScreensaverTimer": true` lässt ein `level.timer`-Item den Timer des Bildschirmschoners nutzen; `"itemId"` braucht nur ein Skript-Item, das ein Bildschirmschoner als Quelle seines Timers nutzen soll — der Wert muss in der Instanz eindeutig sein. Im Admin vergibt der Adapter diese Kennung selbst.
+
+### Solange Rohdaten aktiv sind
 
 **Solange Rohdaten aktiv sind**, ist der `{ }`-Knopf **orange**, und der ganze Inhalt der Pageitem-Konfiguration ist durch einen Warnkasten ersetzt: *„Rohkonfiguration aktiv (Format …)"*, darunter die erkennbare ID bzw. das Template und der Satz *„Das Item wird allein aus den Rohdaten gebaut, die Felder dieses Dialogs werden nicht verwendet."* Ein Knopf **Rohdaten bearbeiten** führt zurück in den JSON-Editor. Ein Rohdaten-Item braucht **keine Kanal-ID** — **Übernehmen** ist deshalb auch ohne Kanal möglich, und die Rollen- und Datenpunktprüfungen entfallen.
 
@@ -221,13 +231,15 @@ Das **Zahnrad** am Kanalfeld öffnet den Dialog *Wertanzeige-Konfiguration* (Too
 >
 > Das betrifft die Felder **Präfix** und **Suffix** hinter dem **Zahnrad der Kanal-ID**, bei allen im Admin konfigurierten Seiten-Items. Wer sie auch am [dynamischen Namen](#4-dynamischer-name) verdreht gefüllt hat, prüft sie dort mit. Wer sie immer so ausgefüllt hat, wie sie heißen, muss nichts tun. Außer im Changelog stand diese Änderung bisher nirgends.
 
+> **Die Einheit kommt auch an eine Zeichenkette.** Der Adapter hängt sie an jeden Wert an, egal ob Zahl oder Text; nur die **Vorschau** im Admin lässt sie bei allem, was keine Zahl ist, weg — und weil ein Kanal keinen Typ hat, zeigt die Vorschau am Zahnrad sie nie. Was wirklich am Panel steht, zeigt also erst das Panel.
+
+### Datumsformat
+
 **Datumsformat** im Einzelnen:
 
 - **Sprachraum (Locale)** — z. B. `de-DE`. Wird aus dem Browser vorbelegt.
 - **Formatoptionen (JSON)** — die Optionen von `Intl.DateTimeFormat`, z. B. `{"dateStyle": "short"}`. Das Feld wird **sofort geprüft**: Ungültiges JSON färbt es rot (*„Ungültige Formatoptionen"*). Leer lassen schaltet die Datumsformatierung ab.
 - Eine **Zahl** wird als Zeitstempel in Millisekunden gelesen, eine **Zeichenkette** als Datumstext.
-
-> **Die Einheit kommt auch an eine Zeichenkette.** Der Adapter hängt sie an jeden Wert an, egal ob Zahl oder Text; nur die **Vorschau** im Admin lässt sie bei allem, was keine Zahl ist, weg — und weil ein Kanal keinen Typ hat, zeigt die Vorschau am Zahnrad sie nie. Was wirklich am Panel steht, zeigt also erst das Panel.
 
 ## 6. Farboptionen
 
@@ -235,9 +247,15 @@ Das **Zahnrad** am Kanalfeld öffnet den Dialog *Wertanzeige-Konfiguration* (Too
 
 Titel *Farboptionen*. Hier wird aus einem Zahlenwert eine Farbe — ein Symbol, das von Blau nach Rot läuft, je wärmer der Messwert ist.
 
-**Farbeinstellungen aktivieren** — der Haken ganz oben schaltet die **Farbskala** ein. Ohne Haken sind *Farbe Best*, Min-/Max-Wert, Bester Wert, Farbmodus und logarithmische Skalierung gesperrt, und *Übernehmen* speichert **keine** Skala — eine vorhandene wird dabei entfernt, der Knopf *Farbeinstellungen* im Pageitem-Dialog ist danach nicht mehr grün. *Farbe Min* und *Farbe Max* gehen auch ohne Haken, sie sind die Farben für *unwahr* und *wahr*. Ein Item ohne Skala öffnet den Dialog mit Haken aus und den Startwerten der Felder (0–100, *Gemischt*, kein Bestwert); ein Item mit Skala öffnet ihn mit Haken an und seinen Werten.
+### Farbeinstellungen aktivieren
+
+Der Haken ganz oben schaltet die **Farbskala** ein. Ohne Haken sind *Farbe Best*, Min-/Max-Wert, Bester Wert, Farbmodus und logarithmische Skalierung gesperrt, und *Übernehmen* speichert **keine** Skala — eine vorhandene wird dabei entfernt, der Knopf *Farbeinstellungen* im Pageitem-Dialog ist danach nicht mehr grün. *Farbe Min* und *Farbe Max* gehen auch ohne Haken, sie sind die Farben für *unwahr* und *wahr*. Ein Item ohne Skala öffnet den Dialog mit Haken aus und den Startwerten der Felder (0–100, *Gemischt*, kein Bestwert); ein Item mit Skala öffnet ihn mit Haken an und seinen Werten.
+
+### Die drei Farbfelder
 
 **Die drei Farbfelder:** **Farbe Min**, **Farbe Max** und **Farbe Best**. *Farbe Min* und *Farbe Max* sind **dieselben Werte** wie *Farbe* in den Spalten *Bedingung ist unwahr* bzw. *wahr* — eine Änderung hier ändert sie auch dort. Solange keine eigene Farbe gesetzt ist, steht *Keine Farbe* bzw. die Standardfarbe als Vorschau da, und **Farbe festlegen** übernimmt genau diesen Standardwert als Startpunkt. **Zurücksetzen** gibt die Farbe an Rolle und [Farbthema](colorTheme) zurück.
+
+### Wertebereich, Farbmodus und Skalierung
 
 | Feld | Bedeutung |
 |---|---|
@@ -262,7 +280,11 @@ Titel *Modusliste (inSel_Alias / modeList)*. Damit bekommt ein Pageitem eine **A
 | **Modi (einer pro Zeile)** | Die Einträge, einer je Zeile. Leerzeilen werden verworfen. |
 | **Liste aus Datenpunkt übernehmen** | Füllt die Liste aus `common.states` des Datenpunkts. Der Knopf ist gesperrt, wenn kein Datenpunkt gewählt ist oder er keine `common.states` hat — der Tooltip sagt, welches von beidem. |
 
+### Die Prüfung des Auswahl-Datenpunkts
+
 **Der Auswahl-Datenpunkt wird geprüft**, und das Ergebnis steht als farbige Meldung im Dialog: *Datenpunkt vorhanden, Typ string, beschreibbar* (grün), oder eine Warnung — *existiert nicht* (der Adapter ignoriert ihn dann), *kein State*, falscher Typ, *nicht beschreibbar*. Beim Übernehmen mit fehlgeschlagener Prüfung kommt die Rückfrage **Prüfung fehlgeschlagen — trotzdem übernehmen?**; der Weg bleibt also offen, aber nicht versehentlich.
+
+### Grenzen, die der Dialog mitzählt
 
 **Grenzen, die der Dialog mitzählt** (unter dem Textfeld steht laufend „*n* Einträge, ca. *x* von 900 Zeichen"):
 

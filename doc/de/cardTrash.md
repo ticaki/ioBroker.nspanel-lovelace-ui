@@ -75,11 +75,15 @@ Unter **Importtyp** stehen zwei Wege:
 | **Import über iCal Adapter State** | Ein Datenpunkt des ical-Adapters mit der Termintabelle. |
 | **Import über .ics-Datei** | Eine Kalenderdatei, die in den Dateibereich der Instanz hochgeladen wird. |
 
-**Weg 1 — ical-Adapter.** Das Feld **JSON State** nimmt den Datenpunkt mit der Terminliste; der ical-Adapter liefert sie üblicherweise unter `ical.<n>.data.table`. Der Inhalt muss ein JSON-Array sein (als Text oder als Objekt), und jeder Eintrag braucht die Felder **`_date`** (Termindatum) und **`event`** (Ereignisname). Termine vor dem heutigen Tag (0 Uhr) werden verworfen; sortiert wird **nicht** — es gilt die Reihenfolge, die der Adapter liefert.
+### Weg 1: ical-Adapter
+
+Das Feld **JSON State** nimmt den Datenpunkt mit der Terminliste; der ical-Adapter liefert sie üblicherweise unter `ical.<n>.data.table`. Der Inhalt muss ein JSON-Array sein (als Text oder als Objekt), und jeder Eintrag braucht die Felder **`_date`** (Termindatum) und **`event`** (Ereignisname). Termine vor dem heutigen Tag (0 Uhr) werden verworfen; sortiert wird **nicht** — es gilt die Reihenfolge, die der Adapter liefert.
 
 > Die Objektauswahl zeigt **nur Datenpunkte, deren ID mit `ical.` beginnt**. Wer seine Termine über ein Skript oder in `0_userdata` bereitstellt, findet seinen Datenpunkt im Dialog nicht und muss die ID **von Hand in das Feld eintragen** — das funktioniert, nur weist nichts darauf hin. Die Beschriftung *JSON State* ist in allen Sprachen gleich und nennt nicht, dass die Termintabelle des ical-Adapters gemeint ist.
 
-**Weg 2 — `.ics`-Datei.** **Datei hochladen** öffnet die Dateiauswahl (nur `.ics`). Die Datei wandert unter ihrem Namen in den **Dateibereich der Instanz** (`nspanel-lovelace-ui.0`), ihr Name trägt sich danach selbst in das Feld **.ics-Datei inkl. Pfad** ein. Eine Statuszeile meldet das Ergebnis:
+### Weg 2: .ics-Datei
+
+**Datei hochladen** öffnet die Dateiauswahl (nur `.ics`). Die Datei wandert unter ihrem Namen in den **Dateibereich der Instanz** (`nspanel-lovelace-ui.0`), ihr Name trägt sich danach selbst in das Feld **.ics-Datei inkl. Pfad** ein. Eine Statuszeile meldet das Ergebnis:
 
 - *„'datei.ics' hochgeladen – 24 Termine gefunden. Bitte die anzuzeigenden auswählen."*
 - *„'datei.ics' hochgeladen, aber in der Datei wurden keine Termine gefunden."*

@@ -31,6 +31,7 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import UploadFileIcon from '@mui/icons-material/UploadFile';
 import { I18n } from '@iobroker/gui-components';
+import { DocButton, DocHelp } from './DocHelp';
 import {
     ALL_PANELS_SPECIAL_ID,
     type NavigationOverride,
@@ -397,7 +398,10 @@ export default class PanelImportDialog extends React.Component<PanelImportDialog
         return (
             <>
                 <DialogContent>
-                    <DialogContentText sx={{ mb: 1 }}>{I18n.t('importGroupsText')}</DialogContentText>
+                    <DialogContentText sx={{ mb: 1 }}>
+                        {I18n.t('importGroupsText')}
+                        <DocHelp topic="navigation.importGroups" />
+                    </DialogContentText>
                     <FormGroup>
                         {panelConfigGroups.map(g => (
                             <FormControlLabel
@@ -433,6 +437,7 @@ export default class PanelImportDialog extends React.Component<PanelImportDialog
                             sx={{ mt: 1 }}
                         >
                             {this.state.error}
+                            <DocHelp topic="navigation.importErrors" />
                         </Alert>
                     ) : null}
                     <input
@@ -444,6 +449,10 @@ export default class PanelImportDialog extends React.Component<PanelImportDialog
                     />
                 </DialogContent>
                 <DialogActions>
+                    <DocButton
+                        topic="navigation.transfer"
+                        sx={{ mr: 'auto' }}
+                    />
                     <Button onClick={this.close}>{I18n.t('importCancel')}</Button>
                     <Button
                         variant="contained"
@@ -657,6 +666,7 @@ export default class PanelImportDialog extends React.Component<PanelImportDialog
                         {blocked.length ? (
                             <Alert severity="warning">
                                 {I18n.t('importScriptLocalBlockedHint').replace('%s', blocked.join(', '))}
+                                <DocHelp topic="navigation.importScriptPages" />
                             </Alert>
                         ) : null}
                         {overwritten.length ? (
@@ -668,7 +678,10 @@ export default class PanelImportDialog extends React.Component<PanelImportDialog
                             </Alert>
                         ) : null}
                         {plan.groups.includes('misc') ? (
-                            <Alert severity="info">{I18n.t('importStatesImmediate')}</Alert>
+                            <Alert severity="info">
+                                {I18n.t('importStatesImmediate')}
+                                <DocHelp topic="navigation.importTiming" />
+                            </Alert>
                         ) : null}
                         {file.source.model !== targetModel ? (
                             <Alert severity="warning">
@@ -698,6 +711,7 @@ export default class PanelImportDialog extends React.Component<PanelImportDialog
                                 sx={{ fontWeight: 600 }}
                             >
                                 {I18n.t('importConflicts').replace('%s', String(conflicts.length))}
+                                <DocHelp topic="navigation.importConflicts" />
                             </Typography>
                             <Table
                                 size="small"
@@ -706,8 +720,14 @@ export default class PanelImportDialog extends React.Component<PanelImportDialog
                                 <TableHead>
                                     <TableRow>
                                         <TableCell>{I18n.t('importColName')}</TableCell>
-                                        <TableCell>{I18n.t('importColStatus')}</TableCell>
-                                        <TableCell>{I18n.t('importAction')}</TableCell>
+                                        <TableCell>
+                                            {I18n.t('importColStatus')}
+                                            <DocHelp topic="navigation.importReview" />
+                                        </TableCell>
+                                        <TableCell>
+                                            {I18n.t('importAction')}
+                                            <DocHelp topic="navigation.importNewName" />
+                                        </TableCell>
                                     </TableRow>
                                 </TableHead>
                                 <TableBody>{conflicts.map(r => this.renderConflictRow(r))}</TableBody>
@@ -791,6 +811,7 @@ export default class PanelImportDialog extends React.Component<PanelImportDialog
                         {I18n.t('importModeOverwrite')}
                     </ToggleButton>
                 </ToggleButtonGroup>
+                <DocHelp topic="navigation.importMode" />
                 <Typography
                     variant="body2"
                     color="text.secondary"
@@ -866,9 +887,10 @@ export default class PanelImportDialog extends React.Component<PanelImportDialog
             >
                 <DialogTitle
                     id="panel-overwrite-title"
-                    sx={{ wordBreak: 'break-word' }}
+                    sx={{ wordBreak: 'break-word', display: 'flex', alignItems: 'center' }}
                 >
                     {I18n.t('importOverwriteTitle').replace('%s', panel.name || panel.topic || '')}
+                    <DocHelp topic="navigation.importOverwrite" />
                 </DialogTitle>
                 <DialogContent>
                     <DialogContentText sx={{ mb: 2 }}>{I18n.t('importOverwriteIntro')}</DialogContentText>
@@ -1039,8 +1061,13 @@ export default class PanelImportDialog extends React.Component<PanelImportDialog
                 maxWidth="md"
                 fullWidth
             >
-                <DialogTitle sx={{ wordBreak: 'break-word' }}>
+                <DialogTitle sx={{ wordBreak: 'break-word', display: 'flex', alignItems: 'center' }}>
                     {I18n.t('importDiffTitle').replace('%s', title)}
+                    <DocHelp
+                        topic={
+                            key === SCREENSAVER_CHOICE_KEY ? 'navigation.importScreensaver' : 'navigation.importDiff'
+                        }
+                    />
                 </DialogTitle>
                 <DialogContent>
                     {entries.length ? (
@@ -1084,7 +1111,10 @@ export default class PanelImportDialog extends React.Component<PanelImportDialog
                             </TableBody>
                         </Table>
                     ) : (
-                        <Typography>{I18n.t('importDiffNone')}</Typography>
+                        <Typography>
+                            {I18n.t('importDiffNone')}
+                            <DocHelp topic="navigation.importRenameRipples" />
+                        </Typography>
                     )}
                 </DialogContent>
                 <DialogActions>
@@ -1110,8 +1140,13 @@ export default class PanelImportDialog extends React.Component<PanelImportDialog
                 maxWidth="sm"
                 fullWidth
             >
-                <DialogTitle sx={{ wordBreak: 'break-word' }}>
+                <DialogTitle sx={{ wordBreak: 'break-word', display: 'flex', alignItems: 'center' }}>
                     {I18n.t('importReplaceTitle').replace('%s', name)}
+                    <DocHelp
+                        topic={
+                            key === SCREENSAVER_CHOICE_KEY ? 'navigation.importScreensaver' : 'navigation.importReplace'
+                        }
+                    />
                 </DialogTitle>
                 <DialogContent>
                     <DialogContentText>{I18n.t('importReplaceText').replace('%s', name)}</DialogContentText>
@@ -1335,9 +1370,18 @@ export default class PanelImportDialog extends React.Component<PanelImportDialog
                 >
                     <DialogTitle
                         id="panel-import-title"
-                        sx={{ wordBreak: 'break-word' }}
+                        sx={{ wordBreak: 'break-word', display: 'flex', alignItems: 'center' }}
                     >
                         {title}
+                        <DocHelp
+                            topic={
+                                step === 'result'
+                                    ? 'navigation.importResult'
+                                    : step === 'review'
+                                      ? 'navigation.importReview'
+                                      : 'navigation.importGroups'
+                            }
+                        />
                     </DialogTitle>
                     {step === 'groups' ? this.renderGroups() : null}
                     {step === 'review' ? this.renderReview() : null}

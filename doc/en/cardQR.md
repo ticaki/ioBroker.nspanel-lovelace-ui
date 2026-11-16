@@ -67,7 +67,11 @@ Three things the adapter does with the texts, worth knowing when a code does not
 
 These fields only appear for the type **WiFi**, in this order: WiFi Encryption, central credentials, WiFi Password, the two checkboxes, switch.
 
+### WiFi Encryption
+
 **WiFi Encryption** — the choices are *No Password*, *WPA*, *WPA2*, *WPA3* and *WEP*. A new page is created with **WPA2**, and exactly that value goes into the QR code. The same applies to pages without a stored encryption, for instance from the old table (see [section 9](#9-taken-over-from-the-old-table)): interface and code both read `WPA2`. A WPA-only or WEP network therefore needs a deliberate choice.
+
+### WiFi Password
 
 **WiFi Password** — the password in clear text; the eye icon toggles the display. The field falls away when the encryption is set to *No Password*, and it is locked while an entry is selected under *Wifi password from the central credentials* (see [section 5](#5-the-password-from-the-central-credentials)).
 
@@ -75,7 +79,11 @@ These fields only appear for the type **WiFi**, in this order: WiFi Encryption, 
 
 > ℹ️ **`No Password` takes the password off the panel, not out of the configuration.** The adapter only resolves the password when it belongs to the code: a WiFi code **and** an encryption other than *No Password*. With *No Password* the second line of the card stays empty and the code carries an empty password field (`WIFI:T:nopass;S:<ssid>;P:;H:;`); with the types free text, url and telephone the password plays no role at all any more. **The value stays stored though:** pick an encryption again later and the old password is back - so switching destroys nothing. Whoever wants to get rid of it for good clears the field while the type is WiFi and the encryption is not *No Password*.
 
+### Hidden Network
+
 **Hidden Network** — writes `H:true` into the code so the scanner also connects to a network that does not broadcast its name. Without the checkbox the string ends with `H:;`.
+
+### Do not show the password on the panel
 
 **Do not show the password on the panel** — leaves the password line on the panel empty. Below it the hint reads *The QR code still contains the password.*
 

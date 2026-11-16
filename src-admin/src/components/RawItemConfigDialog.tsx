@@ -24,6 +24,7 @@ import {
 import DataObjectIcon from '@mui/icons-material/DataObject';
 import FormatAlignLeftIcon from '@mui/icons-material/FormatAlignLeft';
 import { I18n, type ThemeType } from '@iobroker/gui-components';
+import { DocHelp } from './DocHelp';
 import Editor from '@iobroker/json-config/build/JsonConfigComponent/wrapper/Components/Editor';
 import {
     isRawItemObject,
@@ -172,7 +173,10 @@ class RawItemConfigDialog extends React.Component<RawItemConfigDialogProps, RawI
                 fullWidth
                 maxWidth="md"
             >
-                <DialogTitle>{I18n.t('rawItemDialog_title')}</DialogTitle>
+                <DialogTitle sx={{ display: 'flex', alignItems: 'center' }}>
+                    {I18n.t('rawItemDialog_title')}
+                    <DocHelp topic="dialogs.rawItem" />
+                </DialogTitle>
                 <DialogContent dividers>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flexWrap: 'wrap' }}>
                         <Typography variant="body2">{I18n.t('rawItemDialog_format')}</Typography>
@@ -190,6 +194,10 @@ class RawItemConfigDialog extends React.Component<RawItemConfigDialogProps, RawI
                                 />
                             ))}
                         </RadioGroup>
+                        <DocHelp
+                            topic="dialogs.rawItemFormat"
+                            sx={{ ml: -1.5 }}
+                        />
                     </Box>
                     <Alert
                         severity="info"
@@ -197,7 +205,11 @@ class RawItemConfigDialog extends React.Component<RawItemConfigDialogProps, RawI
                     >
                         {I18n.t(`rawItemDialog_help_${kindKey}_${format}`)}
                     </Alert>
-                    <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 0.5 }}>
+                    <Box sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', mb: 0.5 }}>
+                        <DocHelp
+                            topic="dialogs.rawItemEditor"
+                            sx={{ mr: 0.5 }}
+                        />
                         <Tooltip title={I18n.t('rawItemDialog_beautify')}>
                             <span>
                                 <IconButton
@@ -315,6 +327,7 @@ export class RawItemNotice extends React.Component<RawItemNoticeProps> {
             >
                 <Typography variant="body2">
                     {I18n.t('rawItemDialog_active').replace('%s', I18n.t(`rawItemDialog_format_${value.format}`))}
+                    <DocHelp topic="dialogs.rawItemActive" />
                 </Typography>
                 {label && (
                     <Typography

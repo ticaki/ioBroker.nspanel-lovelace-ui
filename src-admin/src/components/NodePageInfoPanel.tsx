@@ -1,6 +1,7 @@
 import React from 'react';
 import { Paper, Box, Button, Typography } from '@mui/material';
 import { I18n } from '@iobroker/gui-components';
+import { DocHelp } from './DocHelp';
 
 export interface NodePageInfoPanelProps {
     open: boolean;
@@ -50,6 +51,11 @@ export default function NodePageInfoPanel(props: NodePageInfoPanelProps): React.
         >
             <Box sx={{ display: 'flex', alignItems: 'center' }}>
                 <Typography variant="subtitle2">{title ?? I18n.t('Page Info')}</Typography>
+                {/* the panel itself is click-through, the help link must not be */}
+                <DocHelp
+                    topic="navigation.details"
+                    sx={{ pointerEvents: 'auto' }}
+                />
             </Box>
 
             <Box sx={{ mt: 1 }}>

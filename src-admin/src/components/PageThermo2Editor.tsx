@@ -47,6 +47,8 @@ import { I18n } from '@iobroker/gui-components';
 import { rawItemListLabel } from './RawItemConfigDialog';
 import { ConfigGeneric, type ConfigGenericProps, type ConfigGenericState } from '@iobroker/json-config';
 import { EntitySelector } from './EntitySelector';
+import { DocHelp } from './DocHelp';
+import type { DocTopicKey } from '../docTopics';
 import ChannelConfigDialog from './ChannelConfigDialog';
 import IconSelect from '../IconSelect';
 import icons from '../icons.json';
@@ -66,6 +68,7 @@ import {
     emptyChannelValueConfig,
     requiredScriptDataPoints,
 } from '../../../src/lib/types/adminShareConfig';
+import { CardTypeBadge } from './CardTypeBadge';
 
 export interface PageThermo2EditorProps {
     entry: Thermo2Entry;
@@ -1166,15 +1169,11 @@ export class PageThermo2Editor extends ConfigGeneric<
     private renderIconField(field: IconField, labelKey: string, placeholder: string): React.JSX.Element {
         const { oContext, themeName } = this.props;
         const value = this.state.draft?.[field] ?? '';
+        const label = placeholder
+            ? `${this.getText(labelKey)} (${this.getText('thermo2_defaultIs').replace('%s', placeholder)})`
+            : this.getText(labelKey);
         return (
-            <Box sx={{ mb: 2 }}>
-                <Typography
-                    variant="caption"
-                    color="text.secondary"
-                >
-                    {this.getText(labelKey)}{' '}
-                    {placeholder ? `(${this.getText('thermo2_defaultIs').replace('%s', placeholder)})` : ''}
-                </Typography>
+            <Box sx={{ mb: 2, pt: 1 }}>
                 <IconSelect
                     oContext={oContext}
                     alive={true}
@@ -1185,7 +1184,7 @@ export class PageThermo2Editor extends ConfigGeneric<
                     data={{ [field]: value }}
                     originalData={{ [field]: value }}
                     onError={() => {}}
-                    schema={{ type: 'custom', name: 'IconSelect', url: '', label: this.getText(labelKey), i18n: false }}
+                    schema={{ type: 'custom', name: 'IconSelect', url: '', label, i18n: false }}
                     custom
                     onChange={(attrOrData, val, cb): void => {
                         let icon = '';
@@ -1264,6 +1263,13 @@ export class PageThermo2Editor extends ConfigGeneric<
             mode: 'thermo2_dialogMode',
             heat: 'thermo2_dialogHeat',
         };
+        const helpTopics: Record<DialogKind, DocTopicKey> = {
+            circuit: 'pages2.thermo2Circuit',
+            limits: 'pages2.thermo2Limits',
+            display: 'pages2.thermo2Display',
+            mode: 'pages2.thermo2Mode',
+            heat: 'pages2.thermo2HeatIcon',
+        };
 
         let content: React.JSX.Element;
         switch (dialog) {
@@ -1290,7 +1296,12 @@ export class PageThermo2Editor extends ConfigGeneric<
                                 <FormControlLabel
                                     value="states"
                                     control={<Radio />}
-                                    label={this.getText('thermo2_sourceStates')}
+                                    label={
+                                        <>
+                                            {this.getText('thermo2_sourceStates')}
+                                            <DocHelp topic="pages2.thermo2States" />
+                                        </>
+                                    }
                                 />
                             </RadioGroup>
                         </FormControl>
@@ -1329,6 +1340,7 @@ export class PageThermo2Editor extends ConfigGeneric<
                                                 .map(a => a.key)
                                                 .join(', ') || '–',
                                         )}
+                                        <DocHelp topic="pages2.thermo2AliasButtons" />
                                     </Typography>
                                 )}
                             </Box>
@@ -1341,7 +1353,13 @@ export class PageThermo2Editor extends ConfigGeneric<
                                 {this.renderStateField('modeState', 'thermo2_modeState', isModeState)}
                             </Box>
                         )}
-                        {this.renderTextField('name', 'thermo2_name', id ? this.state.objectNames[id] || '' : '')}
+                        <Box sx={{ display: 'flex', alignItems: 'flex-start' }}>
+                            {this.renderTextField('name', 'thermo2_name', id ? this.state.objectNames[id] || '' : '')}
+                            <DocHelp
+                                topic="pages2.thermo2CircuitName"
+                                sx={{ mt: 2.5 }}
+                            />
+                        </Box>
                         {isAir && this.renderTextField('name2', 'thermo2_name2', 'COOLING')}
                         {!this.circuitPlausible(draft) && (
                             <Alert
@@ -1369,6 +1387,7 @@ export class PageThermo2Editor extends ConfigGeneric<
                                 >
                                     {this.getText('thermo2_moveRight')}
                                 </Button>
+                                <DocHelp topic="pages2.thermo2CircuitOrder" />
                                 <Box sx={{ flex: 1 }} />
                                 <Button
                                     size="small"
@@ -1501,7 +1520,10 @@ export class PageThermo2Editor extends ConfigGeneric<
                 fullWidth
                 onClose={this.closeDialog}
             >
-                <DialogTitle>{this.getText(titles[dialog])}</DialogTitle>
+                <DialogTitle sx={{ display: 'flex', alignItems: 'center' }}>
+                    {this.getText(titles[dialog])}
+                    <DocHelp topic={helpTopics[dialog]} />
+                </DialogTitle>
                 <DialogContent dividers>{content}</DialogContent>
                 <DialogActions>
                     <Button onClick={this.closeDialog}>{this.getText('thermo2_cancel')}</Button>
@@ -1987,8 +2009,13 @@ export class PageThermo2Editor extends ConfigGeneric<
                         p: 1,
                         borderRadius: 1,
                         backgroundColor: 'action.hover',
+                        position: 'relative',
                     }}
                 >
+                    <CardTypeBadge
+                        card={entry.card}
+                        getText={key => this.getText(key)}
+                    />
                     <TextField
                         fullWidth
                         variant="standard"
@@ -2007,9 +2034,12 @@ export class PageThermo2Editor extends ConfigGeneric<
                             },
                         }}
                         helperText={
-                            isMainPageEntry(entry)
-                                ? this.getText('page_name_main_locked')
-                                : this.getText('page_name_locked')
+                            <>
+                                {isMainPageEntry(entry)
+                                    ? this.getText('page_name_main_locked')
+                                    : this.getText('page_name_locked')}
+                                <DocHelp topic="pages1.nameFixed" />
+                            </>
                         }
                     />
                 </Box>
@@ -2049,6 +2079,10 @@ export class PageThermo2Editor extends ConfigGeneric<
                             </IconButton>
                         </span>
                     </Tooltip>
+                    <DocHelp
+                        topic="pages2.thermo2Editor"
+                        sx={{ ml: 0 }}
+                    />
                 </Box>
                 {unusable > 0 && (
                     <Alert
@@ -2115,6 +2149,10 @@ export class PageThermo2Editor extends ConfigGeneric<
                             ))}
                         </Select>
                     </FormControl>
+                    <DocHelp
+                        topic="pages2.thermo2SortOrder"
+                        sx={{ ml: -1.5 }}
+                    />
                     <Button
                         size="small"
                         variant="outlined"
@@ -2148,6 +2186,7 @@ export class PageThermo2Editor extends ConfigGeneric<
                     sx={{ display: 'block', mt: 1 }}
                 >
                     {this.getText('thermo2_panelHint')} {this.getText('thermo2_moveHint')}
+                    <DocHelp topic="pages2.thermo2Items" />
                 </Typography>
 
                 {this.renderDialog()}

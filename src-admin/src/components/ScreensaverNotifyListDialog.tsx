@@ -24,6 +24,7 @@ import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import ConfirmDialog from './ConfirmDialog';
+import { DocButton, DocHelp } from './DocHelp';
 import ScreensaverNotifyDialog from './ScreensaverNotifyDialog';
 import {
     type ScreensaverEntry,
@@ -330,7 +331,10 @@ export default class ScreensaverNotifyListDialog extends React.Component<
                     maxWidth="sm"
                     fullWidth
                 >
-                    <DialogTitle>{this.getText('screensaver_notify')}</DialogTitle>
+                    <DialogTitle sx={{ display: 'flex', alignItems: 'center' }}>
+                        {this.getText('screensaver_notify')}
+                        <DocHelp topic="screensaver.notifyList" />
+                    </DialogTitle>
                     <DialogContent dividers>
                         <Alert
                             severity="info"
@@ -358,6 +362,10 @@ export default class ScreensaverNotifyListDialog extends React.Component<
                         </Button>
                     </DialogContent>
                     <DialogActions>
+                        <DocButton
+                            topic="screensaver.notifyPage"
+                            sx={{ mr: 'auto' }}
+                        />
                         <Button onClick={this.close}>{this.getText('Cancel1')}</Button>
                         <Button
                             variant="contained"

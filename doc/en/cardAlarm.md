@@ -48,6 +48,8 @@ The **unlock page is not a page type of its own** — it is created right here, 
 
 **Switching later** only hides the fields of the other mode; values you entered stay in the configuration and are still taken into the page. Effective is only what belongs to the chosen mode — the button texts and *Approved* with *Alarm*, the jump target with *Unlock*. One exception is the checkbox *Shared status for all panels*: it is visible in the mode *Alarm* only, but the adapter reads it in **both** modes (see [section 7](#7-one-state-for-several-panels)).
 
+### Headline
+
 **Headline** is the header line on the panel. Creating the page fills in the page name.
 
 > ⚠️ **An empty headline yields the word `Unlock` on the panel** — even on an alarm page and in every language. The adapter inserts this substitute value when building the page; the page name does not appear.

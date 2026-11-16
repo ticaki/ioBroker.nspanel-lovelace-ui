@@ -75,11 +75,15 @@ Under **Import type** there are two ways:
 | **Import via iCal Adapter State** | A state of the ical adapter holding the table of dates. |
 | **Import via .ics file** | A calendar file uploaded into the file area of the instance. |
 
-**Way 1 — ical adapter.** The field **JSON State** takes the state with the list of dates; the ical adapter usually provides it under `ical.<n>.data.table`. The content has to be a JSON array (as text or as an object), and every entry needs the fields **`_date`** (date of the appointment) and **`event`** (event name). Dates before today (midnight) are discarded; there is **no** sorting — the order the adapter delivers applies.
+### Way 1: ical adapter
+
+The field **JSON State** takes the state with the list of dates; the ical adapter usually provides it under `ical.<n>.data.table`. The content has to be a JSON array (as text or as an object), and every entry needs the fields **`_date`** (date of the appointment) and **`event`** (event name). Dates before today (midnight) are discarded; there is **no** sorting — the order the adapter delivers applies.
 
 > The object picker only shows **states whose ID begins with `ical.`**. If you provide your dates through a script or in `0_userdata`, you will not find your state in the dialog and have to **type the ID into the field by hand** — that works, but nothing tells you so. The label *JSON State* reads the same in every language and does not say that the ical adapter's table of dates is meant.
 
-**Way 2 — `.ics` file.** **Upload file** opens the file picker (`.ics` only). The file goes under its name into the **file area of the instance** (`nspanel-lovelace-ui.0`), and its name then enters itself into the field **.ics file including path**. A status line reports the result:
+### Way 2: .ics file
+
+**Upload file** opens the file picker (`.ics` only). The file goes under its name into the **file area of the instance** (`nspanel-lovelace-ui.0`), and its name then enters itself into the field **.ics file including path**. A status line reports the result:
 
 - *"'file.ics' uploaded – 24 appointments found. Please select the ones to display."*
 - *"'file.ics' uploaded, but no appointments were found in the file."*

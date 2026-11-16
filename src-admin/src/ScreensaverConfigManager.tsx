@@ -9,7 +9,7 @@ import DeleteOutlineIcon from '@mui/icons-material/DeleteOutlineOutlined';
 import { ConfigGeneric, type ConfigGenericProps, type ConfigGenericState } from '@iobroker/json-config';
 import ConfirmDialog from './components/ConfirmDialog';
 import { ScreensaverEditor } from './components/ScreensaverEditor';
-import { docUrl } from './docLink';
+import { DocButton, DocHelp } from './components/DocHelp';
 import type {
     AdminPanelConfig,
     ScreensaverEntry,
@@ -320,6 +320,7 @@ class ScreensaverConfigManager extends ConfigGeneric<
                     sx={{ fontWeight: 600, color: 'primary.main', fontSize: '1rem' }}
                 >
                     {this.getText('screensaver_tab_title')}
+                    <DocHelp topic="screensaver.create" />
                 </Typography>
                 <Paper
                     sx={{ p: 0, backgroundColor: 'transparent' }}
@@ -446,24 +447,7 @@ class ScreensaverConfigManager extends ConfigGeneric<
                     </Typography>
                 )}
                 <Divider sx={{ my: 1 }} />
-                <a
-                    href={docUrl('screensaver')}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    style={{ textDecoration: 'none', color: 'inherit', fontSize: '0.875rem' }}
-                >
-                    <Typography
-                        variant="body2"
-                        sx={{
-                            color: 'primary.main',
-                            textDecoration: 'underline',
-                            cursor: 'pointer',
-                            '&:hover': { opacity: 0.8 },
-                        }}
-                    >
-                        {this.getText('documentation')}
-                    </Typography>
-                </a>
+                <DocButton topic="screensaver.page" />
             </Box>
         );
     }

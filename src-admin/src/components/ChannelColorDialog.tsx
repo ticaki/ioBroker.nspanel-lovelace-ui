@@ -20,6 +20,7 @@ import { Color, type ColorThemenInterface, type RGB } from '../../../src/lib/con
 import { loadAdapterColorTheme, resolveThemeColor } from '../adapterColorTheme';
 import { type PageItemRoleDefaults } from '../../../src/lib/const/page-item-defaults';
 import { I18n } from '@iobroker/gui-components';
+import { DocHelp } from './DocHelp';
 import type { ChannelColorConfig, IconColorElement } from '../../../src/lib/types/adminShareConfig';
 
 export interface ChannelColorDialogProps {
@@ -435,7 +436,10 @@ class ChannelColorDialog extends React.Component<ChannelColorDialogProps, Channe
                 maxWidth="md"
                 fullWidth
             >
-                <DialogTitle>{I18n.t('channelConfigColor_optionsTitle')}</DialogTitle>
+                <DialogTitle sx={{ display: 'flex', alignItems: 'center' }}>
+                    {I18n.t('channelConfigColor_optionsTitle')}
+                    <DocHelp topic="dialogs.colorOptions" />
+                </DialogTitle>
                 <DialogContent>
                     {/* Farbeinstellungen & IconScaleElement */}
                     {
@@ -452,17 +456,23 @@ class ChannelColorDialog extends React.Component<ChannelColorDialogProps, Channe
                             }}
                         >
                             {/* Color scale on/off - Color Best and the scale fields below belong to it, Color Min/Max stay */}
-                            <FormControlLabel
-                                control={
-                                    <Checkbox
-                                        checked={useScale}
-                                        onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                                            this.setState({ useScale: e.target.checked })
-                                        }
-                                    />
-                                }
-                                label={I18n.t('channelConfigColor_useColorLabel')}
-                            />
+                            <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                                <FormControlLabel
+                                    control={
+                                        <Checkbox
+                                            checked={useScale}
+                                            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                                                this.setState({ useScale: e.target.checked })
+                                            }
+                                        />
+                                    }
+                                    label={I18n.t('channelConfigColor_useColorLabel')}
+                                />
+                                <DocHelp
+                                    topic="dialogs.colorScale"
+                                    sx={{ ml: -1 }}
+                                />
+                            </Box>
 
                             {/* Farbfelder */}
                             <Box sx={{ display: 'flex', gap: 2 }}>
@@ -598,6 +608,10 @@ class ChannelColorDialog extends React.Component<ChannelColorDialogProps, Channe
                                         </>
                                     )}
                                 </Box>
+                                <DocHelp
+                                    topic="dialogs.colorFields"
+                                    sx={{ alignSelf: 'flex-start', ml: 0, flexShrink: 0 }}
+                                />
                             </Box>
 
                             {/* val_min, val_max, val_best */}
@@ -636,6 +650,10 @@ class ChannelColorDialog extends React.Component<ChannelColorDialogProps, Channe
                                     }}
                                     placeholder={I18n.t('channelConfigColor_valBestPlaceholder')}
                                     fullWidth
+                                />
+                                <DocHelp
+                                    topic="dialogs.colorRange"
+                                    sx={{ alignSelf: 'flex-end', ml: 0, flexShrink: 0 }}
                                 />
                             </Box>
 

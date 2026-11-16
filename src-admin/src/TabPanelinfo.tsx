@@ -33,6 +33,7 @@ import { type IobTheme, type ThemeName, type ThemeType } from '@iobroker/gui-com
 import { PanelStatusBadge } from './components/PanelStatusBadge';
 import { ThemeProvider } from '@mui/material/styles';
 import { getLightSurfaceTheme } from './themeUtils';
+import { DocButton } from './components/DocHelp';
 
 interface PanelinfoInfo {
     _Headline: string;
@@ -1116,6 +1117,9 @@ class TabPanelinfo extends ConfigGeneric<ConfigGenericProps & PanelinfoProps, Pa
                             card
                         );
                     })}
+                </Box>
+                <Box sx={{ mt: 2 }}>
+                    <DocButton topic="maintain.panelinfo" />
                 </Box>
             </Box>
         );

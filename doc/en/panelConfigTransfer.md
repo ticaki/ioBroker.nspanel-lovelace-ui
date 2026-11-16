@@ -161,6 +161,8 @@ A conflict arises when the instance already holds a page of the same name whose 
 
 <img alt="Review with several conflicts and proposed new names" src="../Pictures/panel-config-transfer/04-conflicts-review.png" width="100%"/>
 
+### The proposed name
+
 **The proposed name** is `<original name>_<topic>`, where only the last section of the target topic is taken and reduced to `A–Z`, `a–z`, `0–9`, `_` and `-` — so `e2eLong` becomes `e2eLong_webtest` on the panel with the topic `nspanel/webtest`. If that one is taken too, the admin appends `_2`, `_3` … The field **New name** can be overwritten freely, but is checked:
 
 | Message | Reason |
@@ -175,17 +177,25 @@ A conflict arises when the instance already holds a page of the same name whose 
 
 As long as a name is invalid, **Import** stays locked.
 
-**A look at the differences.** A click on the status **different** opens the dialog **Differences: `<page>`** with three columns — *What*, *Existing*, *In the file*. Fields are named as in the editor (*Headline*, *Navigation: previous*), list items appear as *Item #3* with the item name in brackets when it is set. An empty field value shows as `–`. The words *missing*, *present* and *added* apply to whole items instead: *missing* when the file lacks an existing item, *present* for the other way round, *added* for an item only the file brings. Fields of a list are compared **by position** — an item inserted at the front therefore makes every following one look changed.
+### A look at the differences
+
+A click on the status **different** opens the dialog **Differences: `<page>`** with three columns — *What*, *Existing*, *In the file*. Fields are named as in the editor (*Headline*, *Navigation: previous*), list items appear as *Item #3* with the item name in brackets when it is set. An empty field value shows as `–`. The words *missing*, *present* and *added* apply to whole items instead: *missing* when the file lacks an existing item, *present* for the other way round, *added* for an item only the file brings. Fields of a list are compared **by position** — an item inserted at the front therefore makes every following one look changed.
 
 <img alt="Dialog with the differences of one page" src="../Pictures/panel-config-transfer/05-diff-dialog.png" width="100%"/>
 
-**Renaming ripples.** When a page is renamed, the admin carries the new name through all references of the imported data: navigation (*previous*, *next*, *up*, *home*), target pages of page links and of items, the page after unlocking, screensaver actions, the targets of the hardware buttons and the navigation point of the start page. Pages that refer to a renamed page therefore become **different** themselves — in that case the difference dialog says *Only references to renamed pages differ.* This repeats until nothing changes any more; a name typed by hand is passed on in the same way.
+### Renaming ripples
 
-**Replacing asks back.** If other panels use the existing page as well, the admin asks again with **Replace `<page>`?**: *The existing `<page>` is overwritten with the content of the file.* Below that stands *These panels use it as well and change too:* with the list (a page for "all panels" appears in it as **all panels**) or *No other panel uses it.* **Cancel** is preselected.
+When a page is renamed, the admin carries the new name through all references of the imported data: navigation (*previous*, *next*, *up*, *home*), target pages of page links and of items, the page after unlocking, screensaver actions, the targets of the hardware buttons and the navigation point of the start page. Pages that refer to a renamed page therefore become **different** themselves — in that case the difference dialog says *Only references to renamed pages differ.* This repeats until nothing changes any more; a name typed by hand is passed on in the same way.
+
+### Replacing asks back
+
+If other panels use the existing page as well, the admin asks again with **Replace `<page>`?**: *The existing `<page>` is overwritten with the content of the file.* Below that stands *These panels use it as well and change too:* with the list (a page for "all panels" appears in it as **all panels**) or *No other panel uses it.* **Cancel** is preselected.
 
 <img alt="Confirmation before replacing a page that several panels use" src="../Pictures/panel-config-transfer/06-replace-confirm.png" width="100%"/>
 
-**The screensaver plays the same game.** It sits in the same table as the pages and offers the same three resolutions, including the name field, the prompt and the difference dialog (title *Screensaver: `<name>`*). Four deviations are worth knowing:
+### The screensaver plays the same game
+
+It sits in the same table as the pages and offers the same three resolutions, including the name field, the prompt and the difference dialog (title *Screensaver: `<name>`*). Four deviations are worth knowing:
 
 - **Equal is equal, even under a different name.** If the admin finds an existing screensaver with the same content but a different name, the import counts as *unchanged* and the panel gets the existing entry — the review then shows that name, not the one from the file.
 - **The comparison ignores name and panel assignment**, but resolves the notifications.

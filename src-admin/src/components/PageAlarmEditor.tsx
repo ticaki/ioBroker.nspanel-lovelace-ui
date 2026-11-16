@@ -17,6 +17,8 @@ import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
 import { type UnlockEntry, ADAPTER_NAME } from '../../../src/lib/types/adminShareConfig';
 import { isMainPageEntry } from '../../../src/lib/types/adminShareConfig';
+import { DocHelp } from './DocHelp';
+import { CardTypeBadge } from './CardTypeBadge';
 
 export interface PageAlarmEditorProps {
     entry: UnlockEntry;
@@ -132,8 +134,13 @@ export class PageAlarmEditor extends React.Component<PageAlarmEditorProps, PageA
                         p: 1,
                         borderRadius: 1,
                         backgroundColor: 'action.hover',
+                        position: 'relative',
                     }}
                 >
+                    <CardTypeBadge
+                        card={entry.card}
+                        getText={key => this.getText(key)}
+                    />
                     <TextField
                         fullWidth
                         variant="standard"
@@ -152,9 +159,12 @@ export class PageAlarmEditor extends React.Component<PageAlarmEditorProps, PageA
                             },
                         }}
                         helperText={
-                            isMainPageEntry(entry)
-                                ? this.getText('page_name_main_locked')
-                                : this.getText('page_name_locked')
+                            <>
+                                {isMainPageEntry(entry)
+                                    ? this.getText('page_name_main_locked')
+                                    : this.getText('page_name_locked')}
+                                <DocHelp topic="pages1.nameFixed" />
+                            </>
                         }
                     />
                 </Box>
@@ -170,6 +180,7 @@ export class PageAlarmEditor extends React.Component<PageAlarmEditorProps, PageA
                             sx={{ mb: 1 }}
                         >
                             {this.getText('unlock_type')}
+                            <DocHelp topic="pages1.alarmMode" />
                         </Typography>
                         <RadioGroup
                             row
@@ -204,14 +215,21 @@ export class PageAlarmEditor extends React.Component<PageAlarmEditorProps, PageA
                         this.handleFieldChange('headline', e.target.value);
                     }}
                     slotProps={{
-                        input: { sx: { backgroundColor: 'transparent', px: 1, width: '50%' } },
+                        input: {
+                            sx: { backgroundColor: 'transparent', px: 1, width: '50%' },
+                            endAdornment: (
+                                <InputAdornment position="end">
+                                    <DocHelp topic="pages1.alarmHeadline" />
+                                </InputAdornment>
+                            ),
+                        },
                     }}
                     sx={{ mb: 2 }}
                     disabled={!this.state.alive}
                 />
 
                 {/* PIN field */}
-                <Box sx={{ mt: 2 }}>
+                <Box sx={{ mt: 2, display: 'flex', alignItems: 'flex-end' }}>
                     <TextField
                         variant="standard"
                         label={this.getText('unlock_pin')}
@@ -248,6 +266,10 @@ export class PageAlarmEditor extends React.Component<PageAlarmEditorProps, PageA
                         }}
                         disabled={!this.state.alive}
                     />
+                    <DocHelp
+                        topic="pages1.alarmPin"
+                        sx={{ mb: 0.5 }}
+                    />
                 </Box>
 
                 {/* REMOVED: Common fields (hidden, alwaysOn) - now in NavigationAssignmentPanel */}
@@ -269,6 +291,7 @@ export class PageAlarmEditor extends React.Component<PageAlarmEditorProps, PageA
                                     sx={{ mb: 1 }}
                                 >
                                     {this.getText('unlock_armed_header')}
+                                    <DocHelp topic="pages1.alarmButtons" />
                                 </Typography>
                                 <Box sx={{ display: 'grid', gap: 2 }}>
                                     {[1, 2, 3, 4].map(i => {
@@ -325,6 +348,7 @@ export class PageAlarmEditor extends React.Component<PageAlarmEditorProps, PageA
                                     sx={{ mb: 1 }}
                                 >
                                     {this.getText('unlock_disarmed_header')}
+                                    <DocHelp topic="pages1.alarmButtons" />
                                 </Typography>
                                 <Box sx={{ display: 'grid', gap: 2 }}>
                                     {[5, 6, 7, 8].map(i => {
@@ -389,6 +413,10 @@ export class PageAlarmEditor extends React.Component<PageAlarmEditorProps, PageA
                                 }
                                 label={this.getText('unlock_approved')}
                             />
+                            <DocHelp
+                                topic="pages1.alarmApproved"
+                                sx={{ ml: -1 }}
+                            />
                         </Box>
                         <Box sx={{ mt: 1 }}>
                             <FormControlLabel
@@ -409,6 +437,7 @@ export class PageAlarmEditor extends React.Component<PageAlarmEditorProps, PageA
                                             sx={{ display: 'block', mt: 1 }}
                                         >
                                             {this.getText('unlock_global')}
+                                            <DocHelp topic="pages1.alarmGlobal" />
                                         </Box>
                                         <Box
                                             component="span"
@@ -432,6 +461,7 @@ export class PageAlarmEditor extends React.Component<PageAlarmEditorProps, PageA
                             sx={{ mb: 0.5 }}
                         >
                             {this.getText('unlock_setnavi_hint')}
+                            <DocHelp topic="pages1.alarmUnlockTarget" />
                         </Typography>
                         <Select
                             variant="standard"
