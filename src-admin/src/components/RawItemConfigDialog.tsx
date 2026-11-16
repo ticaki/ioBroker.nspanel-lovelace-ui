@@ -194,6 +194,10 @@ class RawItemConfigDialog extends React.Component<RawItemConfigDialogProps, RawI
                                 />
                             ))}
                         </RadioGroup>
+                        <DocHelp
+                            topic="dialogs.rawItemFormat"
+                            sx={{ ml: -1.5 }}
+                        />
                     </Box>
                     <Alert
                         severity="info"
@@ -201,7 +205,11 @@ class RawItemConfigDialog extends React.Component<RawItemConfigDialogProps, RawI
                     >
                         {I18n.t(`rawItemDialog_help_${kindKey}_${format}`)}
                     </Alert>
-                    <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 0.5 }}>
+                    <Box sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', mb: 0.5 }}>
+                        <DocHelp
+                            topic="dialogs.rawItemEditor"
+                            sx={{ mr: 0.5 }}
+                        />
                         <Tooltip title={I18n.t('rawItemDialog_beautify')}>
                             <span>
                                 <IconButton
@@ -319,7 +327,7 @@ export class RawItemNotice extends React.Component<RawItemNoticeProps> {
             >
                 <Typography variant="body2">
                     {I18n.t('rawItemDialog_active').replace('%s', I18n.t(`rawItemDialog_format_${value.format}`))}
-                    <DocHelp topic="dialogs.rawItem" />
+                    <DocHelp topic="dialogs.rawItemActive" />
                 </Typography>
                 {label && (
                     <Typography

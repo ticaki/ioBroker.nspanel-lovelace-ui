@@ -802,9 +802,12 @@ export class PagePowerEditor extends ConfigGeneric<ConfigGenericProps & PagePowe
                             },
                         }}
                         helperText={
-                            isMainPageEntry(entry)
-                                ? this.getText('page_name_main_locked')
-                                : this.getText('page_name_locked')
+                            <>
+                                {isMainPageEntry(entry)
+                                    ? this.getText('page_name_main_locked')
+                                    : this.getText('page_name_locked')}
+                                <DocHelp topic="pages1.nameFixed" />
+                            </>
                         }
                     />
                 </Box>
@@ -857,6 +860,7 @@ export class PagePowerEditor extends ConfigGeneric<ConfigGenericProps & PagePowe
                             justifyContent: 'center',
                             minHeight: 90,
                             backgroundColor: 'transparent',
+                            position: 'relative',
                         }}
                     >
                         <HomeIcon
@@ -864,6 +868,10 @@ export class PagePowerEditor extends ConfigGeneric<ConfigGenericProps & PagePowe
                                 fontSize: 56,
                                 color: isDark ? '#ffffff' : '#000000',
                             }}
+                        />
+                        <DocHelp
+                            topic="pages2.powerGrid"
+                            sx={{ position: 'absolute', top: 0, right: 0, ml: 0 }}
                         />
                     </Paper>
                     {this.renderSlotPaper('rightMiddle')}

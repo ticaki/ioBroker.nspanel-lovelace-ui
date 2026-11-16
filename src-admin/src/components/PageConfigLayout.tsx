@@ -401,8 +401,14 @@ export class PageConfigLayout extends React.Component<PageConfigLayoutProps, Pag
         const name = this.state.confirmDeleteName;
         const question = this.getText('delete_confirm_text') + (name ? `: ${name}` : '');
         const references = this.deleteReferences();
+        const help = <DocHelp topic="pages1.delete" />;
         if (!references.length) {
-            return question;
+            return (
+                <>
+                    {question}
+                    {help}
+                </>
+            );
         }
         const shown = references.slice(0, PageConfigLayout.maxReferencesShown);
         let list = shown.map(reference => reference.uniqueName).join(', ');
@@ -413,6 +419,7 @@ export class PageConfigLayout extends React.Component<PageConfigLayoutProps, Pag
         return (
             <>
                 {question}
+                {help}
                 <Box
                     component="span"
                     sx={{ display: 'block', mt: 1, fontWeight: 600 }}

@@ -13,6 +13,8 @@ export const pages1Topics = {
         de: 'Seiten anlegen und löschen',
         en: 'Creating and deleting pages',
     },
+    'pages1.nameFixed': { page: 'PageConfig', de: 'Der Name ist fest', en: 'The name is fixed' },
+    'pages1.delete': { page: 'PageConfig', de: 'Löschen', en: 'Deleting' },
 
     // whole card pages, one per entry of the page type select (see pageTypeDocTopic)
     'pages1.type.pageMenu': { page: 'pageMenu' },
@@ -35,6 +37,12 @@ export const pages1Topics = {
         de: '6. Mehr Einträge: weitere Seiten',
         en: '6. More entries: further pages',
     },
+    'pages1.menuHeadline': { page: 'pageMenu', de: 'Überschrift und Eindeutige ID', en: 'Headline and unique ID' },
+    'pages1.menuCopy': {
+        page: 'pageMenu',
+        de: '5. Flächen kopieren und einfügen',
+        en: '5. Copying and pasting tiles',
+    },
 
     // page link editor
     'pages1.linkPurpose': { page: 'pageLink', de: '1. Wozu dieser Seitentyp', en: '1. What this page type is for' },
@@ -51,6 +59,7 @@ export const pages1Topics = {
         de: '2. Betriebsart: Alarm oder Entsperren',
         en: '2. Operating mode: alarm or unlock',
     },
+    'pages1.alarmHeadline': { page: 'cardAlarm', de: 'Überschrift', en: 'Headline' },
     'pages1.alarmPin': { page: 'cardAlarm', de: '3. PIN', en: '3. PIN' },
     'pages1.alarmButtons': {
         page: 'cardAlarm',
@@ -75,10 +84,14 @@ export const pages1Topics = {
 
     // QR editor
     'pages1.qrType': { page: 'cardQR', de: '2. QR-Code-Typ', en: '2. QR code type' },
-    'pages1.qrWifi': {
+    'pages1.qrContent': { page: 'cardQR', de: '3. Überschrift und Inhalt', en: '3. Headline and content' },
+    'pages1.qrWifiEncryption': { page: 'cardQR', de: 'WLAN-Verschlüsselung', en: 'WiFi Encryption' },
+    'pages1.qrWifiPassword': { page: 'cardQR', de: 'WLAN-Passwort', en: 'WiFi Password' },
+    'pages1.qrWifiHidden': { page: 'cardQR', de: 'Verstecktes Netzwerk', en: 'Hidden Network' },
+    'pages1.qrPwdHidden': {
         page: 'cardQR',
-        de: '4. WLAN: Verschlüsselung, Passwort, verstecktes Netz',
-        en: '4. WiFi: encryption, password, hidden network',
+        de: 'Passwort nicht am Panel anzeigen',
+        en: 'Do not show the password on the panel',
     },
     'pages1.qrCredential': {
         page: 'cardQR',

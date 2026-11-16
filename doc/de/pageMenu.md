@@ -21,9 +21,11 @@ Inhalt:
 2. Links als Seitentyp **Menü-Seite** wählen, einen Namen eintragen, **+** drücken.
 3. Die Seite entsteht als **Grid (6 Felder)** — die Variante stellt man anschließend im Editor um.
 
+### Überschrift und Eindeutige ID
+
 **Überschrift** ist die Kopfzeile am Panel; bleibt sie leer, nimmt das Panel den Seitennamen.
 
-> Das Feld **Eindeutige ID** ist **nur lesbar**: Der Name einer Seite ist nach dem Anlegen fest, der Hinweis darunter sagt das auch („Der Name ist nach dem Anlegen fest – andere Seiten verweisen darauf."). Ist die Seite die Startseite, steht dort stattdessen ihr eigener Hinweis („Startseite – wird unter der ID `main` veröffentlicht"); die Startseite wird über die Markierung **Startseite (main)** in den Seitendetails gesetzt, nicht über den Namen. Warum der Name fest ist und wie eine Seite trotzdem anders heißen kann, steht unter [PageConfig – Übersicht](PageConfig#seiten-anlegen-und-löschen).
+> Das Feld **Eindeutige ID** ist **nur lesbar**: Der Name einer Seite ist nach dem Anlegen fest, der Hinweis darunter sagt das auch („Der Name ist nach dem Anlegen fest – andere Seiten verweisen darauf."). Ist die Seite die Startseite, steht dort stattdessen ihr eigener Hinweis („Startseite – wird unter der ID `main` veröffentlicht"); die Startseite wird über die Markierung **Startseite (main)** in den Seitendetails gesetzt, nicht über den Namen. Warum der Name fest ist und wie eine Seite trotzdem anders heißen kann, steht unter [PageConfig – Übersicht](PageConfig#der-name-ist-fest).
 
 ## 2. Die fünf Varianten
 ![Editor einer Menü-Seite mit den fünf Varianten](../Pictures/pageMenu/menu-01-editor.png)

@@ -65,7 +65,11 @@ Drei Dinge, die der Adapter mit den Texten macht und die man wissen muss, wenn e
 
 Diese Felder erscheinen nur beim Typ **WLAN**, in dieser Reihenfolge: WLAN-Verschlüsselung, zentrale Zugangsdaten, WLAN-Passwort, die beiden Haken, Schalter.
 
+### WLAN-Verschlüsselung
+
 **WLAN-Verschlüsselung** — zur Wahl stehen *No Password*, *WPA*, *WPA2*, *WPA3* und *WEP*. Die Einträge sind in der Oberfläche englisch, auch in der deutschen Fassung. Eine neue Seite wird mit **WPA2** angelegt; genau dieser Wert steht dann auch im QR-Code. Dasselbe gilt für Seiten ohne gespeicherte Verschlüsselung, etwa aus der alten Tabelle (siehe [Abschnitt 9](#9-übernahme-aus-der-alten-tabelle)): Oberfläche und Code zeigen `WPA2`. Ein reines WPA- oder WEP-Netz braucht also eine bewusste Wahl.
+
+### WLAN-Passwort
 
 **WLAN-Passwort** — das Passwort im Klartext; das Augensymbol schaltet die Anzeige um. Das Feld entfällt, wenn als Verschlüsselung *No Password* gewählt ist, und ist gesperrt, solange unter *WLAN-Passwort aus den zentralen Zugangsdaten* ein Eintrag gewählt ist (siehe [Abschnitt 5](#5-das-passwort-aus-den-zentralen-zugangsdaten)).
 
@@ -73,7 +77,11 @@ Diese Felder erscheinen nur beim Typ **WLAN**, in dieser Reihenfolge: WLAN-Versc
 
 > ℹ️ **`No Password` nimmt das Passwort vom Panel, nicht aus der Konfiguration.** Der Adapter löst das Passwort nur auf, wenn es zum Code gehört: WLAN-Code **und** eine Verschlüsselung außer *No Password*. Bei *No Password* bleibt die zweite Zeile der Karte leer und der Code trägt ein leeres Passwortfeld (`WIFI:T:nopass;S:<SSID>;P:;H:;`); bei den Typen Freitext, URL und Telefon spielt das Passwort ohnehin keine Rolle mehr. **Gespeichert bleibt der Wert aber:** Wird später wieder eine Verschlüsselung gewählt, ist das alte Passwort da — ein Umschalten zerstört also nichts. Wer es endgültig los werden will, leert das Feld, solange der Typ auf WLAN und die Verschlüsselung nicht auf *No Password* steht.
 
+### Verstecktes Netzwerk
+
 **Verstecktes Netzwerk** — schreibt `H:true` in den Code, damit sich der Scanner auch mit einem Netz verbindet, das seinen Namen nicht aussendet. Ohne den Haken endet die Zeichenkette auf `H:;`.
+
+### Passwort nicht am Panel anzeigen
 
 **Passwort nicht am Panel anzeigen** — lässt die Passwortzeile am Panel leer. Darunter steht als Hinweis *Der QR-Code enthält das Passwort weiterhin.*
 

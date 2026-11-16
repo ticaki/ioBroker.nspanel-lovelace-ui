@@ -1527,13 +1527,7 @@ export class ScreensaverEditor extends React.Component<ScreensaverEditorProps, S
         const { oContext, themeName } = this.props;
         const value = this.state.draftIcon?.[field] ?? '';
         return (
-            <Box sx={{ mb: 2 }}>
-                <Typography
-                    variant="caption"
-                    color="text.secondary"
-                >
-                    {this.getText(labelKey)}
-                </Typography>
+            <Box sx={{ mb: 2, pt: 1 }}>
                 <IconSelect
                     oContext={oContext}
                     alive={true}
@@ -1647,7 +1641,7 @@ export class ScreensaverEditor extends React.Component<ScreensaverEditorProps, S
             mricon1: 'screensaver.statusIcons',
             mricon2: 'screensaver.statusIcons',
             time: 'screensaver.timeDate',
-            date: 'screensaver.timeDate',
+            date: 'screensaver.date',
             options: 'screensaver.options',
         };
         let content: React.JSX.Element | null = null;

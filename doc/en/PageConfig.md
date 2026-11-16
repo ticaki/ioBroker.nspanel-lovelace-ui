@@ -90,15 +90,21 @@ In addition:
 
 > **Two cases the note does not mention.** The **start page** always replaces a `main` from the script. And a page of the **global** script configuration is only replaced when the panel is assigned to the admin page **by name** — an assignment of *(all)* is not enough. When the admin page loses against the page from the script of this panel, that stands in the log alone: *"Page with name … already exists, skipping!"*. To replace a script page, remove it from the script — or take the script over completely, see [Migration](Migration).
 
-**The name is fixed.** There is no renaming: the **Unique ID** field in the editor only shows the name. It is read-only and carries the note *"The name is fixed once the page exists - other pages refer to it."*; on the start page its own note stands there (*"Start page - published under the id \"main\" …"*). The value can still be selected and copied.
+### The name is fixed
+
+There is no renaming: the **Unique ID** field in the editor only shows the name. It is read-only and carries the note *"The name is fixed once the page exists - other pages refer to it."*; on the start page its own note stands there (*"Start page - published under the id \"main\" …"*). The value can still be selected and copied.
 
 > **Why fixed?** The ID is what hangs together: the navigation targets *prev*, *next*, *parent* and *home* **of other pages**, navigation targets on page items, [page links](pageLink), the remembered page list of the assigned panels and every reference from a configuration script. Renaming carried only part of that along; the rest led nowhere silently and showed up in the adapter log at best (*"Navigation unresolved for …"*). If a page is to have a different name, the way is: create a new page with the new name, move the contents over, delete the old page — and take the references the confirmation names with you while deleting. There is no page duplicate.
+
+### Order and copying
 
 **Order:** the list is always sorted alphabetically; there is no manual order, and none is needed — what the panel shows follows from the navigation, not from the position in the list. In the select lists of the navigation targets `main` comes first, the rest alphabetically.
 
 **Copy:** a whole page can**not** be duplicated. If the same content is to appear at two places of the navigation, the [page link](pageLink) is the way. What can be copied are **single page items of a menu page**: right-click the slot, *Copy item*, right-click the target slot, *Paste item* — also from one menu page into another. There is no way by tap or keyboard shortcut, so on tablet and phone the function is out of reach. The details are under [Menu page](pageMenu#5-copying-and-pasting-tiles).
 
-**Delete:** via the bin icon in the row — on the desktop it appears when hovering the row, on a touch screen it is always there. The confirmation *Delete item?* with the name of the page follows. It **names the pages that point at this one**: the navigation targets *prev*, *next*, *parent* and *home* from all assignment rows, [page links](pageLink) with this page as their target and page items navigating here. More than five are counted (*"… and n more"*).
+### Deleting
+
+Via the bin icon in the row — on the desktop it appears when hovering the row, on a touch screen it is always there. The confirmation *Delete item?* with the name of the page follows. It **names the pages that point at this one**: the navigation targets *prev*, *next*, *parent* and *home* from all assignment rows, [page links](pageLink) with this page as their target and page items navigating here. More than five are counted (*"… and n more"*).
 
 If a *prev* or *next* points at the page, the checkbox **Connect the previous and the next page** appears below. With it set, the neighbours take over the *prev* or *next* of the deleted page — `A → B → C` becomes `A → C`; if the deleted page has no neighbour of its own on that panel, the link is removed instead of moved. The checkbox is **not** preselected, and every assignment row is handled on its own, so every panel keeps its own chain. Afterwards the list selects the first page of the current filter.
 
@@ -112,7 +118,9 @@ The first tab of the right-hand column decides **on which panel** a page appears
 
 ![The Navigation/Panel column with panel assignment, the four targets and the summary](../Pictures/pageConfig/pageconfig-05-navigation.png)
 
-**Assign a panel:** choose a panel in the select field and add it with **+**. There is also the entry **(all)** — the page then applies to every panel, including ones added later. Panels already assigned disappear from the selection. The bin icon next to an assignment removes it; the **first click only marks** it (the icon gets a dark red background), the second deletes it, and after three seconds without a second click the marking expires.
+### Assigning a panel
+
+Choose a panel in the select field and add it with **+**. There is also the entry **(all)** — the page then applies to every panel, including ones added later. Panels already assigned disappear from the selection. The bin icon next to an assignment removes it; the **first click only marks** it (the icon gets a dark red background), the second deletes it, and after three seconds without a second click the marking expires.
 
 > A page **without** a panel assignment is never built and does not exist on the panel. That is the most common reason for "the page is gone" — the *Not assigned* panel filter shows everyone affected.
 
@@ -120,7 +128,9 @@ The first tab of the right-hand column decides **on which panel** a page appears
 
 > **Once touched, the row stays.** The exclusion depends on the panel row carrying **no** navigation at all. Setting a target there and removing it again leaves an empty but existing navigation — the page is built again, and the note *Page will not be added* disappears accordingly (up to and including 2.2.0 it kept showing because it only looked at the empty *prev* and *next* fields). The only safe way out is to remove the panel and assign it again.
 
-**Navigation targets:** there are four fields for the panel **clicked** in the list. They match the swipe gestures on the panel:
+### Navigation targets
+
+There are four fields for the panel **clicked** in the list. They match the swipe gestures on the panel:
 
 | Field | Gesture on the panel |
 |---|---|

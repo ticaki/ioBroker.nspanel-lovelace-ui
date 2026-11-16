@@ -359,9 +359,12 @@ export class PageTrashEditor extends ConfigGeneric<ConfigGenericProps & PageTras
                             },
                         }}
                         helperText={
-                            isMainPageEntry(entry)
-                                ? this.getText('page_name_main_locked')
-                                : this.getText('page_name_locked')
+                            <>
+                                {isMainPageEntry(entry)
+                                    ? this.getText('page_name_main_locked')
+                                    : this.getText('page_name_locked')}
+                                <DocHelp topic="pages1.nameFixed" />
+                            </>
                         }
                     />
                 </Box>
@@ -477,6 +480,10 @@ export class PageTrashEditor extends ConfigGeneric<ConfigGenericProps & PageTras
                         >
                             {this.getText('trash_search_events')}
                         </Button>
+                        <DocHelp
+                            topic="pages2.trashSourceState"
+                            sx={{ mt: 1 }}
+                        />
                         {this.renderStatusAlert()}
                         {this.state.uploadedEvents.length > 0 && (
                             <Box sx={{ mt: 2 }}>
@@ -561,6 +568,10 @@ export class PageTrashEditor extends ConfigGeneric<ConfigGenericProps & PageTras
                             >
                                 {this.getText('upload_file')}
                             </Button>
+                            <DocHelp
+                                topic="pages2.trashSourceFile"
+                                sx={{ mb: 1, ml: -1.5 }}
+                            />
                         </Box>
                         <input
                             ref={this.fileInputRef}

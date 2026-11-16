@@ -21,7 +21,7 @@ export const maintainTopics = {
     // tab Panelinfo
     'maintain.panelinfo': { page: 'Panelinfo' },
     // tab Global Settings
-    'maintain.globalSettings': { page: 'globelSettings' },
+    'maintain.globalSettings': { page: 'globelSettings', de: 'Einstellungen', en: 'Settings' },
     'maintain.thermo2Tenths': {
         page: 'cardThermo2',
         de: '5. Solltemperatur: Minimum, Maximum, Schrittweite',

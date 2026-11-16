@@ -217,9 +217,12 @@ export class PageThermoEditor extends ConfigGeneric<ConfigGenericProps & PageThe
                             },
                         }}
                         helperText={
-                            isMainPageEntry(entry)
-                                ? this.getText('page_name_main_locked')
-                                : this.getText('page_name_locked')
+                            <>
+                                {isMainPageEntry(entry)
+                                    ? this.getText('page_name_main_locked')
+                                    : this.getText('page_name_locked')}
+                                <DocHelp topic="pages1.nameFixed" />
+                            </>
                         }
                     />
                 </Box>
@@ -286,18 +289,24 @@ export class PageThermoEditor extends ConfigGeneric<ConfigGenericProps & PageThe
                 </Box>
 
                 {/* Unit */}
-                <TextField
-                    variant="standard"
-                    type="text"
-                    autoComplete="off"
-                    label={this.getText('thermo2_unit')}
-                    value={entry.unit ?? ''}
-                    helperText={this.getText('thermo_unitHint')}
-                    onChange={e => this.handleFieldChange('unit', e.target.value)}
-                    slotProps={{ inputLabel: { shrink: true } }}
-                    sx={{ width: 160, mb: 2 }}
-                    disabled={!alive}
-                />
+                <Box sx={{ display: 'flex', alignItems: 'flex-start', mb: 2 }}>
+                    <TextField
+                        variant="standard"
+                        type="text"
+                        autoComplete="off"
+                        label={this.getText('thermo2_unit')}
+                        value={entry.unit ?? ''}
+                        helperText={this.getText('thermo_unitHint')}
+                        onChange={e => this.handleFieldChange('unit', e.target.value)}
+                        slotProps={{ inputLabel: { shrink: true } }}
+                        sx={{ width: 160 }}
+                        disabled={!alive}
+                    />
+                    <DocHelp
+                        topic="pages2.thermoFields"
+                        sx={{ mt: 2.5 }}
+                    />
+                </Box>
 
                 {/* Limits of the set temperature */}
                 <Box sx={{ mb: 1 }}>

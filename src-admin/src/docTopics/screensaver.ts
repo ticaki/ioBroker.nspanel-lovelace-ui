@@ -6,6 +6,12 @@ import type { DocTopic } from './types';
 export const screensaverTopics = {
     'screensaver.page': { page: 'screensaver' },
     'screensaver.itemDialog': { page: 'screensaver', de: '4. Items: der Item-Dialog', en: '4. Items: the item dialog' },
+    'screensaver.itemIcon': { page: 'screensaver', de: 'Symbol', en: 'Icon' },
+    'screensaver.itemColor': { page: 'screensaver', de: 'Farbe', en: 'Color' },
+    'screensaver.itemIconSelect': { page: 'screensaver', de: 'Icon je Wertebereich', en: 'Icon per value range' },
+    'screensaver.itemBlind': { page: 'screensaver', de: 'Rollladen (Position)', en: 'Blind (position)' },
+    'screensaver.itemText': { page: 'screensaver', de: 'Text statt Wert', en: 'Text instead of the value' },
+    'screensaver.itemVisibility': { page: 'screensaver', de: 'Sichtbarkeit', en: 'Visibility' },
     'screensaver.create': { page: 'screensaver', de: '1. Bildschirmschoner anlegen', en: '1. Creating a screensaver' },
     'screensaver.editor': { page: 'screensaver', de: '2. Der Editor im Überblick', en: '2. The editor at a glance' },
     'screensaver.versionPanels': { page: 'screensaver', de: '3. Version und Panels', en: '3. Version and panels' },
@@ -22,6 +28,7 @@ export const screensaverTopics = {
     'screensaver.timeDate': { page: 'screensaver', de: '10. Uhrzeit und Datum', en: '10. Time and date' },
     'screensaver.timer': { page: 'screensaver', de: 'Timer statt Uhrzeit', en: 'Timer instead of the clock' },
     'screensaver.timerStates': { page: 'screensaver', de: 'Quelle: zwei Datenpunkte', en: 'Source: two states' },
+    'screensaver.date': { page: 'screensaver', de: 'Datum', en: 'Date' },
     'screensaver.timerItem': {
         page: 'screensaver',
         de: 'Quelle: Pageitem mit Timer-Popup',

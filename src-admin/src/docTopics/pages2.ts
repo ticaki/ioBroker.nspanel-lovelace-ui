@@ -11,6 +11,11 @@ export const pages2Topics = {
     },
 
     // cardPower
+    'pages2.powerGrid': {
+        page: 'cardPower',
+        de: '2. Das Raster: sechs Flächen um das Haus',
+        en: '2. The grid: six tiles around the house',
+    },
     'pages2.powerFlow': { page: 'cardPower', de: '3. Einen Fluss einrichten', en: '3. Setting up a flow' },
     'pages2.powerColorScale': {
         page: 'cardPower',
@@ -31,6 +36,7 @@ export const pages2Topics = {
     },
 
     // cardThermo
+    'pages2.thermoFields': { page: 'cardThermo', de: '3. Die Felder des Editors', en: '3. The fields of the editor' },
     'pages2.thermoStates': {
         page: 'cardThermo',
         de: '5. Was der Adapter aus den Datenpunkten baut',
@@ -48,6 +54,17 @@ export const pages2Topics = {
         page: 'cardThermo2',
         de: '3. Heizkreis: Datenquelle und Überschrift',
         en: '3. Heat circuit: data source and headline',
+    },
+    'pages2.thermo2States': { page: 'cardThermo2', de: 'Einzelne Datenpunkte', en: 'Single data points' },
+    'pages2.thermo2CircuitName': {
+        page: 'cardThermo2',
+        de: 'Überschrift des Heizkreises',
+        en: 'Headline of the heat circuit',
+    },
+    'pages2.thermo2CircuitOrder': {
+        page: 'cardThermo2',
+        de: 'Reihenfolge, Entfernen, Übernehmen',
+        en: 'Order, removing, applying',
     },
     'pages2.thermo2AliasButtons': {
         page: 'cardThermo2',
@@ -75,6 +92,8 @@ export const pages2Topics = {
 
     // cardTrash
     'pages2.trashSource': { page: 'cardTrash', de: '4. Woher die Termine kommen', en: '4. Where the dates come from' },
+    'pages2.trashSourceState': { page: 'cardTrash', de: 'Weg 1: ical-Adapter', en: 'Way 1: ical adapter' },
+    'pages2.trashSourceFile': { page: 'cardTrash', de: 'Weg 2: .ics-Datei', en: 'Way 2: .ics file' },
     'pages2.trashEvents': {
         page: 'cardTrash',
         de: '5. Ereignisse suchen und übernehmen',
@@ -99,6 +118,9 @@ export const pages2Topics = {
         de: '3. Player, Prüfung und Überschrift',
         en: '3. Player, check and headline',
     },
+    'pages2.mediaPlayerSelect': { page: 'cardMedia', de: 'Die Auswahlliste', en: 'The selection list' },
+    'pages2.mediaPlayerCheck': { page: 'cardMedia', de: 'Die Prüfung', en: 'The check' },
+    'pages2.mediaHeadline': { page: 'cardMedia', de: 'Überschrift', en: 'Headline' },
     'pages2.mediaColors': { page: 'cardMedia', de: '4. Farben', en: '4. Colors' },
     'pages2.mediaVolume': {
         page: 'cardMedia',
@@ -109,6 +131,11 @@ export const pages2Topics = {
         page: 'cardMedia',
         de: '6. Standard-Elemente des Players',
         en: '6. Standard items of the player',
+    },
+    'pages2.mediaItemSettings': {
+        page: 'cardMedia',
+        de: 'Einstellungen eines Elements',
+        en: 'Settings of an item',
     },
     'pages2.mediaLists': {
         page: 'cardMedia',

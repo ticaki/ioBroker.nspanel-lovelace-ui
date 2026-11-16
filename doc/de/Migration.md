@@ -109,7 +109,9 @@ Nicht übernommen wird der Screensaver, wenn
 
 **Backup.** Bevor der Adapter das Skript anfasst, legt er eine **deaktivierte** Kopie als `<Skript>_1_backup` an. Vorhandene Backups rücken eine Nummer weiter (`_1_backup` → `_2_backup` …), höchstens vier bleiben, ältere werden gelöscht. Die Kopie behält alles außer Name, Id und Zustand; ihr Name ist `<Skriptname> backup <n>`.
 
-**Quelltext.** Danach ändert der Adapter den Quelltext:
+### Quelltext
+
+Danach ändert der Adapter den Quelltext:
 
 - Die übernommenen Seiten werden aus `pages` bzw. `subPages` des Konfigurationsobjekts entfernt.
 - Steht die Seite dort als Variable, wird ihre **Definition auskommentiert** — aber nur, wenn die Variable nirgends sonst im Skript benutzt wird. Der Kommentar trägt eine Markierung mit Datum (`NSPanel: converted to the admin page configuration on <Datum>`).

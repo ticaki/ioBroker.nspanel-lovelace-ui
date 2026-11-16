@@ -1939,35 +1939,42 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                                 </Box>
                                 {/* Zielseiten-Selector – nur sichtbar wenn isNavigation aktiv */}
                                 {isNavigation && (
-                                    <Autocomplete
-                                        options={loadingPages ? [] : this.targetPageOptions(availablePages)}
-                                        getOptionLabel={this.targetPageLabel}
-                                        value={targetPage || null}
-                                        onChange={(_e, val) => this.handleTargetPageChange(val ?? '')}
-                                        onInputChange={(_e, val) => this.handleTargetPageChange(val)}
-                                        disabled={loadingPages}
-                                        freeSolo
-                                        forcePopupIcon
-                                        renderInput={params => (
-                                            <TextField
-                                                {...params}
-                                                variant="standard"
-                                                label={I18n.t('channelConfigDialog_targetPage')}
-                                                slotProps={{
-                                                    ...params.slotProps,
-                                                    input: {
-                                                        ...params.slotProps.input,
-                                                        endAdornment: (
-                                                            <>
-                                                                {loadingPages && <CircularProgress size={16} />}
-                                                                {params.slotProps.input.endAdornment}
-                                                            </>
-                                                        ),
-                                                    },
-                                                }}
-                                            />
-                                        )}
-                                    />
+                                    <Box sx={{ display: 'flex', alignItems: 'flex-end' }}>
+                                        <Autocomplete
+                                            sx={{ flex: 1 }}
+                                            options={loadingPages ? [] : this.targetPageOptions(availablePages)}
+                                            getOptionLabel={this.targetPageLabel}
+                                            value={targetPage || null}
+                                            onChange={(_e, val) => this.handleTargetPageChange(val ?? '')}
+                                            onInputChange={(_e, val) => this.handleTargetPageChange(val)}
+                                            disabled={loadingPages}
+                                            freeSolo
+                                            forcePopupIcon
+                                            renderInput={params => (
+                                                <TextField
+                                                    {...params}
+                                                    variant="standard"
+                                                    label={I18n.t('channelConfigDialog_targetPage')}
+                                                    slotProps={{
+                                                        ...params.slotProps,
+                                                        input: {
+                                                            ...params.slotProps.input,
+                                                            endAdornment: (
+                                                                <>
+                                                                    {loadingPages && <CircularProgress size={16} />}
+                                                                    {params.slotProps.input.endAdornment}
+                                                                </>
+                                                            ),
+                                                        },
+                                                    }}
+                                                />
+                                            )}
+                                        />
+                                        <DocHelp
+                                            topic="pageitems.targetPage"
+                                            sx={{ flexShrink: 0, mb: 0.5 }}
+                                        />
+                                    </Box>
                                 )}
 
                                 {/* ioBroker-Channel-Auswahl + Validierungsicons */}
@@ -2525,7 +2532,7 @@ class ChannelConfigDialog extends React.Component<ChannelConfigDialogProps, Chan
                                                     {I18n.t('channelConfigDialog_longPressTitle')}
                                                 </span>
                                             </Tooltip>
-                                            <DocHelp topic="pageitems.cardFields" />
+                                            <DocHelp topic="pageitems.longPress" />
                                         </Typography>
                                         {targetPageLongPress == null && (
                                             <EntitySelector

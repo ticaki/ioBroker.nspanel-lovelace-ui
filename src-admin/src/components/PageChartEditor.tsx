@@ -17,6 +17,7 @@ import {
     Select,
     MenuItem,
     Tooltip,
+    InputAdornment,
 } from '@mui/material';
 import { ConfigGeneric, type ConfigGenericProps, type ConfigGenericState } from '@iobroker/json-config';
 import { EntitySelector } from './EntitySelector';
@@ -257,9 +258,12 @@ export class PageChartEditor extends ConfigGeneric<ConfigGenericProps & PageChar
                             },
                         }}
                         helperText={
-                            isMainPageEntry(entry)
-                                ? this.getText('page_name_main_locked')
-                                : this.getText('page_name_locked')
+                            <>
+                                {isMainPageEntry(entry)
+                                    ? this.getText('page_name_main_locked')
+                                    : this.getText('page_name_locked')}
+                                <DocHelp topic="pages1.nameFixed" />
+                            </>
                         }
                     />
                 </Box>
@@ -458,14 +462,21 @@ export class PageChartEditor extends ConfigGeneric<ConfigGenericProps & PageChar
                         this.handleFieldChange('txtLabelYAchse', e.target.value);
                     }}
                     slotProps={{
-                        input: { sx: { backgroundColor: 'transparent', px: 1 } },
+                        input: {
+                            sx: { backgroundColor: 'transparent', px: 1 },
+                            endAdornment: (
+                                <InputAdornment position="end">
+                                    <DocHelp topic="pages1.chartLabels" />
+                                </InputAdornment>
+                            ),
+                        },
                     }}
                     sx={{ mb: 2 }}
                     disabled={!alive}
                 />
 
                 {/* DB source only: range, factor (bar), x ticks (line), x labels */}
-                {useDb && this.renderNumberField('rangeHours', 'chart_Hours')}
+                {useDb && this.renderNumberField('rangeHours', 'chart_Hours', undefined, 'pages1.chartDb')}
 
                 {useDb && chartType === 'cardChart' && (
                     <Box sx={{ display: 'flex', alignItems: 'flex-end', mb: 2 }}>
@@ -502,7 +513,12 @@ export class PageChartEditor extends ConfigGeneric<ConfigGenericProps & PageChar
 
                 {useDb &&
                     chartType === 'cardLChart' &&
-                    this.renderNumberField('maxXAxisTicks', 'chart_XTicks', 'chart_XTicksTooltip')}
+                    this.renderNumberField(
+                        'maxXAxisTicks',
+                        'chart_XTicks',
+                        'chart_XTicksTooltip',
+                        'pages1.chartTimeAxis',
+                    )}
 
                 {useDb &&
                     this.renderNumberField(

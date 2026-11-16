@@ -90,15 +90,21 @@ Dazu:
 
 > **Zwei Fälle nennt der Hinweis nicht.** Die **Startseite** ersetzt eine `main` aus dem Skript immer. Und eine Seite der **globalen** Skript-Konfiguration wird nur ersetzt, wenn das Panel der Admin-Seite **namentlich** zugewiesen ist — eine Zuweisung *(alle)* genügt dafür nicht. Verliert die Admin-Seite gegen die Seite aus dem Skript dieses Panels, steht das allein im Log: *„Page with name … already exists, skipping!"*. Wer eine Skriptseite ersetzen will, entfernt sie aus dem Skript — oder übernimmt das Skript gleich ganz, siehe [Migration](Migration).
 
-**Der Name ist fest.** Umbenennen gibt es nicht: Das Feld **Eindeutige ID** im Editor zeigt den Namen nur an. Es ist nur lesbar und trägt den Hinweis *„Der Name ist nach dem Anlegen fest – andere Seiten verweisen darauf."*; bei der Startseite steht dort ihr eigener Hinweis (*„Startseite – wird unter der ID „main" veröffentlicht …"*). Markieren und kopieren lässt sich der Wert weiterhin.
+### Der Name ist fest
+
+Umbenennen gibt es nicht: Das Feld **Eindeutige ID** im Editor zeigt den Namen nur an. Es ist nur lesbar und trägt den Hinweis *„Der Name ist nach dem Anlegen fest – andere Seiten verweisen darauf."*; bei der Startseite steht dort ihr eigener Hinweis (*„Startseite – wird unter der ID „main" veröffentlicht …"*). Markieren und kopieren lässt sich der Wert weiterhin.
 
 > **Warum fest?** An der ID hängen die Navigationsziele *prev*, *next*, *parent* und *home* **anderer** Seiten, Navigationsziele an Pageitems, [Verknüpfungen](pageLink), die gemerkte Seitenliste der zugewiesenen Panels und Verweise aus jedem Konfigurationsskript. Ein Umbenennen zog davon nur einen Teil mit; der Rest lief still ins Leere und fiel erst im Adapterlog auf (*„Navigation unresolved for …"*). Soll eine Seite anders heißen, ist der Weg: neue Seite mit dem neuen Namen anlegen, Inhalte übertragen, alte Seite löschen — und beim Löschen die Verweise mitnehmen, die die Rückfrage nennt. Ein Seitenduplikat gibt es nicht.
+
+### Reihenfolge und Kopieren
 
 **Reihenfolge:** Die Liste ist immer alphabetisch sortiert; eine eigene Reihenfolge gibt es nicht und ist auch nicht nötig — was das Panel anzeigt, ergibt sich aus der Navigation, nicht aus der Listenposition. In den Auswahllisten der Navigationsziele steht `main` vorn, der Rest alphabetisch.
 
 **Kopieren:** Eine ganze Seite lässt sich **nicht** duplizieren. Soll derselbe Inhalt an zwei Stellen der Navigation auftauchen, ist die [Verknüpfung](pageLink) der Weg. Kopierbar sind **einzelne Pageitems einer Menü-Seite**: Rechtsklick auf die Fläche, *Element kopieren*, Rechtsklick auf die Zielfläche, *Element einfügen* — auch von einer Menü-Seite in eine andere. Einen Weg per Tipp oder Tastenkürzel gibt es nicht, auf Tablet und Telefon ist die Funktion damit nicht erreichbar. Die Einzelheiten stehen unter [Menü-Seiten](pageMenu#5-flächen-kopieren-und-einfügen).
 
-**Löschen:** über das Papierkorb-Symbol in der Zeile — auf dem Schreibtisch erscheint es beim Überfahren der Zeile, auf einem Berührungsschirm steht es immer da. Es folgt die Rückfrage *Element löschen?* mit dem Namen der Seite. Sie **nennt die Seiten, die auf diese zeigen**: die Navigationsziele *prev*, *next*, *parent* und *home* aus allen Zuweisungszeilen, [Verknüpfungen](pageLink) mit dieser Seite als Ziel und Pageitems, die hierher navigieren. Mehr als fünf werden gezählt (*„… und n weitere"*).
+### Löschen
+
+Über das Papierkorb-Symbol in der Zeile — auf dem Schreibtisch erscheint es beim Überfahren der Zeile, auf einem Berührungsschirm steht es immer da. Es folgt die Rückfrage *Element löschen?* mit dem Namen der Seite. Sie **nennt die Seiten, die auf diese zeigen**: die Navigationsziele *prev*, *next*, *parent* und *home* aus allen Zuweisungszeilen, [Verknüpfungen](pageLink) mit dieser Seite als Ziel und Pageitems, die hierher navigieren. Mehr als fünf werden gezählt (*„… und n weitere"*).
 
 Zeigt ein *prev* oder *next* auf die Seite, steht darunter zusätzlich das Häkchen **Vor- und Nachseite miteinander verbinden**. Gesetzt übernehmen die Nachbarn beim Löschen den *prev* bzw. *next* der gelöschten Seite — aus `A → B → C` wird `A → C`; hat die gelöschte Seite auf diesem Panel selbst keinen Nachbarn, wird der Verweis entfernt statt umgehängt. Das Häkchen ist **nicht** vorbelegt, und jede Zuweisungszeile wird für sich behandelt, jedes Panel behält also seine eigene Kette. Danach wählt die Liste die erste Seite des aktuellen Filters aus.
 
@@ -112,7 +118,9 @@ Der erste Reiter der rechten Spalte bestimmt, **auf welchem Panel** eine Seite e
 
 ![Die Spalte Navigation/Panel mit Panelzuweisung, den vier Zielen und der Zusammenfassung](../Pictures/pageConfig/pageconfig-05-navigation.png)
 
-**Panel zuweisen:** im Auswahlfeld ein Panel wählen und mit **+** hinzufügen. Zusätzlich gibt es den Eintrag **(alle)** — damit gilt die Seite für jedes Panel, auch für später hinzugekommene. Bereits zugewiesene Panels verschwinden aus der Auswahl. Ein zugewiesenes Panel entfernt das Papierkorb-Symbol daneben; der **erste Klick markiert nur** (das Symbol wird dunkelrot hinterlegt), der zweite löscht, und nach drei Sekunden ohne zweiten Klick verfällt die Markierung.
+### Panel zuweisen
+
+Im Auswahlfeld ein Panel wählen und mit **+** hinzufügen. Zusätzlich gibt es den Eintrag **(alle)** — damit gilt die Seite für jedes Panel, auch für später hinzugekommene. Bereits zugewiesene Panels verschwinden aus der Auswahl. Ein zugewiesenes Panel entfernt das Papierkorb-Symbol daneben; der **erste Klick markiert nur** (das Symbol wird dunkelrot hinterlegt), der zweite löscht, und nach drei Sekunden ohne zweiten Klick verfällt die Markierung.
 
 > Eine Seite **ohne** Panelzuweisung wird gar nicht erst gebaut und ist am Panel nicht vorhanden. Das ist der häufigste Grund für „die Seite ist weg" — der Panel-Filter *Nicht zugewiesen* zeigt alle Betroffenen.
 
@@ -120,7 +128,9 @@ Der erste Reiter der rechten Spalte bestimmt, **auf welchem Panel** eine Seite e
 
 > **Einmal angefasst, bleibt die Zeile bestehen.** Der Ausschluss hängt daran, dass die Panelzeile **gar keine** Navigation trägt. Wer dort ein Ziel setzt und später wieder entfernt, hat eine leere, aber vorhandene Navigation — die Seite wird dann wieder gebaut, und der Hinweis *Seite wird nicht hinzugefügt* verschwindet entsprechend (bis einschließlich 2.2.0 blieb er stehen, weil er nur die leeren Felder *prev* und *next* ansah). Sicher ausschließen lässt sich das Panel dann nur, indem man es entfernt und neu zuweist.
 
-**Navigationsziele:** Für das in der Liste **angeklickte** Panel gibt es vier Felder. Sie entsprechen den Wischgesten am Panel:
+### Navigationsziele
+
+Für das in der Liste **angeklickte** Panel gibt es vier Felder. Sie entsprechen den Wischgesten am Panel:
 
 | Feld | Geste am Panel |
 |---|---|

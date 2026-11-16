@@ -68,6 +68,8 @@ squeezeboxrpc.0.Players.<name>
 
 *„Without instance number the lowest instance is used."* — so `spotify-premium` is enough, `spotify` is not.
 
+### The selection list
+
 **The selection list** (button **…**) is not an object tree but a search: it reads the objects of the five adapters and shows everything that qualifies as a player, grouped by adapter and with a logo chip.
 
 <img alt="Select player dialog with search field and the list grouped by adapter" src="../Pictures/cardMedia/media-03-player-auswahl.png" width="100%"/>
@@ -81,7 +83,9 @@ squeezeboxrpc.0.Players.<name>
 
 The hint below the list: *„Click marks a player, double-click takes it over directly. The id can still be typed into the field by hand."* If the search finds nothing, *„No supported media player found - install and set up one of these adapters: …"* appears; if the objects of an adapter cannot be read, it says *„The objects of these adapters could not be read: …"*.
 
-**The check.** As soon as an ID is entered, the editor asks the adapter. It checks the ID on the same path on which it later builds the page, and delivers the names for the three lists along with it.
+### The check
+
+As soon as an ID is entered, the editor asks the adapter. It checks the ID on the same path on which it later builds the page, and delivers the names for the three lists along with it.
 
 | Feedback | Meaning |
 |---|---|
@@ -92,6 +96,8 @@ The hint below the list: *„Click marks a player, double-click takes it over di
 | *The adapter is not running - …* | The instance is not running; nothing is checked. |
 
 **Check again** repeats the check. That is necessary because the editor remembers the result per ID.
+
+### Headline
 
 **Headline** (placeholder *empty = title of the song*) is the header line of the card on the panel. If it stays empty, the adapter builds the line itself: from the name of the player and the title of the running song, and if there is none, from the name of the service (`Alexa`, `Sonos`, `Spotify`, `MPD`, `Squeezebox`).
 
@@ -133,6 +139,8 @@ Which items there are and in which order they go into the bar is decided by the 
 | **Spotify** | Offline indicator · Speakers · Playlists · Track list · Clock · Volume presets · Repeat |
 | **MPD** | Offline indicator · Repeat · Clock · Volume presets · Crossfade |
 | **Squeezebox (LMS)** | Offline indicator · Speakers · Favorites · Playlists · Clock · Volume presets · Track list · Repeat |
+
+### Settings of an item
 
 A click on a chip or on the place in the bar opens the settings of the item:
 

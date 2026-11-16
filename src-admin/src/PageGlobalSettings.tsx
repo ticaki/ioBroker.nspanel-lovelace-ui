@@ -307,6 +307,7 @@ class PageGlobalSettings extends ConfigGeneric<ConfigGenericProps & { theme?: an
                         gutterBottom
                     >
                         {this.getText('headerColorTheme')}
+                        <DocHelp topic="maintain.globalSettings" />
                     </Typography>
                     <FormControl
                         sx={{ m: 1, minWidth: 120 }}
@@ -392,6 +393,7 @@ class PageGlobalSettings extends ConfigGeneric<ConfigGenericProps & { theme?: an
                         gutterBottom
                     >
                         {this.getText('headerDateFormat')}
+                        <DocHelp topic="maintain.globalSettings" />
                     </Typography>
                     <FormControlLabel
                         control={
@@ -511,7 +513,15 @@ class PageGlobalSettings extends ConfigGeneric<ConfigGenericProps & { theme?: an
                                 disabled={!alive}
                             />
                         }
-                        label={this.getText('rememberLastSite')}
+                        label={
+                            <span>
+                                {this.getText('rememberLastSite')}
+                                <DocHelp
+                                    topic="maintain.globalSettings"
+                                    sx={{ ml: 0.25 }}
+                                />
+                            </span>
+                        }
                     />
                     <FormHelperText>{this.getText('rememberLastSiteHint')}</FormHelperText>
                 </Box>

@@ -243,7 +243,7 @@ export default class ScreensaverIconSelectDialog extends React.Component<
             >
                 <DialogTitle sx={{ display: 'flex', alignItems: 'center' }}>
                     {this.getText('screensaver_iconSelect_title')}
-                    <DocHelp topic="screensaver.itemDialog" />
+                    <DocHelp topic="screensaver.itemIconSelect" />
                 </DialogTitle>
                 <DialogContent dividers>
                     <Typography

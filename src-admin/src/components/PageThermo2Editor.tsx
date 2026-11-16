@@ -1169,15 +1169,11 @@ export class PageThermo2Editor extends ConfigGeneric<
     private renderIconField(field: IconField, labelKey: string, placeholder: string): React.JSX.Element {
         const { oContext, themeName } = this.props;
         const value = this.state.draft?.[field] ?? '';
+        const label = placeholder
+            ? `${this.getText(labelKey)} (${this.getText('thermo2_defaultIs').replace('%s', placeholder)})`
+            : this.getText(labelKey);
         return (
-            <Box sx={{ mb: 2 }}>
-                <Typography
-                    variant="caption"
-                    color="text.secondary"
-                >
-                    {this.getText(labelKey)}{' '}
-                    {placeholder ? `(${this.getText('thermo2_defaultIs').replace('%s', placeholder)})` : ''}
-                </Typography>
+            <Box sx={{ mb: 2, pt: 1 }}>
                 <IconSelect
                     oContext={oContext}
                     alive={true}
@@ -1188,7 +1184,7 @@ export class PageThermo2Editor extends ConfigGeneric<
                     data={{ [field]: value }}
                     originalData={{ [field]: value }}
                     onError={() => {}}
-                    schema={{ type: 'custom', name: 'IconSelect', url: '', label: this.getText(labelKey), i18n: false }}
+                    schema={{ type: 'custom', name: 'IconSelect', url: '', label, i18n: false }}
                     custom
                     onChange={(attrOrData, val, cb): void => {
                         let icon = '';
@@ -1300,7 +1296,12 @@ export class PageThermo2Editor extends ConfigGeneric<
                                 <FormControlLabel
                                     value="states"
                                     control={<Radio />}
-                                    label={this.getText('thermo2_sourceStates')}
+                                    label={
+                                        <>
+                                            {this.getText('thermo2_sourceStates')}
+                                            <DocHelp topic="pages2.thermo2States" />
+                                        </>
+                                    }
                                 />
                             </RadioGroup>
                         </FormControl>
@@ -1352,7 +1353,13 @@ export class PageThermo2Editor extends ConfigGeneric<
                                 {this.renderStateField('modeState', 'thermo2_modeState', isModeState)}
                             </Box>
                         )}
-                        {this.renderTextField('name', 'thermo2_name', id ? this.state.objectNames[id] || '' : '')}
+                        <Box sx={{ display: 'flex', alignItems: 'flex-start' }}>
+                            {this.renderTextField('name', 'thermo2_name', id ? this.state.objectNames[id] || '' : '')}
+                            <DocHelp
+                                topic="pages2.thermo2CircuitName"
+                                sx={{ mt: 2.5 }}
+                            />
+                        </Box>
                         {isAir && this.renderTextField('name2', 'thermo2_name2', 'COOLING')}
                         {!this.circuitPlausible(draft) && (
                             <Alert
@@ -1380,6 +1387,7 @@ export class PageThermo2Editor extends ConfigGeneric<
                                 >
                                     {this.getText('thermo2_moveRight')}
                                 </Button>
+                                <DocHelp topic="pages2.thermo2CircuitOrder" />
                                 <Box sx={{ flex: 1 }} />
                                 <Button
                                     size="small"
@@ -2026,9 +2034,12 @@ export class PageThermo2Editor extends ConfigGeneric<
                             },
                         }}
                         helperText={
-                            isMainPageEntry(entry)
-                                ? this.getText('page_name_main_locked')
-                                : this.getText('page_name_locked')
+                            <>
+                                {isMainPageEntry(entry)
+                                    ? this.getText('page_name_main_locked')
+                                    : this.getText('page_name_locked')}
+                                <DocHelp topic="pages1.nameFixed" />
+                            </>
                         }
                     />
                 </Box>

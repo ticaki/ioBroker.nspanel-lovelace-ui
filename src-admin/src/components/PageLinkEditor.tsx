@@ -74,9 +74,12 @@ export class PageLinkEditor extends React.Component<PageLinkEditorProps> {
                             },
                         }}
                         helperText={
-                            isMainPageEntry(entry)
-                                ? this.getText('page_name_main_locked')
-                                : this.getText('page_name_locked')
+                            <>
+                                {isMainPageEntry(entry)
+                                    ? this.getText('page_name_main_locked')
+                                    : this.getText('page_name_locked')}
+                                <DocHelp topic="pages1.nameFixed" />
+                            </>
                         }
                     />
                 </Box>
@@ -93,7 +96,12 @@ export class PageLinkEditor extends React.Component<PageLinkEditorProps> {
                         this.handleFieldChange('headline', e.target.value);
                     }}
                     placeholder={targetHeadline}
-                    helperText={this.getText('page_link_headline_hint')}
+                    helperText={
+                        <>
+                            {this.getText('page_link_headline_hint')}
+                            <DocHelp topic="pages1.linkFields" />
+                        </>
+                    }
                     slotProps={{
                         input: {
                             sx: { backgroundColor: 'transparent', px: 1, width: '50%' },

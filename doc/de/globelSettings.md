@@ -4,6 +4,8 @@ Diese Einstellungen gelten für **alle Panels der Instanz** gemeinsam — anders
 
 <img alt="Global Settings" src="../Pictures/globalSettings/global-01-uebersicht.png" width="100%"/>
 
+## Einstellungen
+
 | Einstellung | Wirkung |
 |---|---|
 | **Beta-Firmware → Beta für TFT, Berry-Treiber und Tasmota verwenden** | Der Haken schaltet alle drei Firmware-Teile auf ihre Beta-Stände: Das *TFT UPDATE* im Tab [Maintain](Maintain) installiert die Beta-TFT statt der stabilen, die Berry-Installation nimmt den Beta-Treiber (`berry-beta`), und das *TASMOTA UPDATE* samt Versionsanzeige folgt dem Eintrag `tasmota-beta` der Versionsliste — fehlt der Eintrag, bleibt Tasmota auf der stabilen Version. Nur im **Expertenmodus** bedienbar, und der Kasten färbt sich rot, solange der Haken sitzt — eine bewusste Warnung. |

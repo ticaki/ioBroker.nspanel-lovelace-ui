@@ -109,7 +109,9 @@ The screensaver is not taken over when
 
 **Backup.** Before the adapter touches the script, it creates a **disabled** copy as `<script>_1_backup`. Existing backups move up one number (`_1_backup` → `_2_backup` …), at most four are kept, older ones are deleted. The copy keeps everything except the name, the id and the state; its name is `<script name> backup <n>`.
 
-**Source code.** After that the adapter changes the source code:
+### Source code
+
+After that the adapter changes the source code:
 
 - The pages taken over are removed from `pages` or `subPages` of the configuration object.
 - If the page stands there as a variable, its **definition is commented out** — but only if the variable is used nowhere else in the script. The comment carries a mark with the date (`NSPanel: converted to the admin page configuration on <date>`).

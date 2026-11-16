@@ -1878,6 +1878,7 @@ class NavigationAssignmentPanel extends ConfigGeneric<
                                 >
                                     +
                                 </Button>
+                                <DocHelp topic="navigation.assignPanel" />
                             </Box>
 
                             {/* growing list of added items */}
@@ -2045,7 +2046,12 @@ class NavigationAssignmentPanel extends ConfigGeneric<
                                 );
                             })()}
 
-                            <Divider sx={{ my: 1 }} />
+                            <Divider
+                                textAlign="right"
+                                sx={{ my: 1 }}
+                            >
+                                <DocHelp topic="navigation.targets" />
+                            </Divider>
 
                             {/* navigation selectors for the selected added panel (labels only, options removed) */}
                             <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1, mt: 1 }}>

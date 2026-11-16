@@ -597,18 +597,29 @@ export class PageMediaEditor extends ConfigGeneric<ConfigGenericProps & PageMedi
                             {this.getText('media_checkAgain')}
                         </Button>
                     )}
+                    {status && (
+                        <DocHelp
+                            topic="pages2.mediaPlayerCheck"
+                            sx={{ ml: 0 }}
+                        />
+                    )}
                 </Box>
-                <TextField
-                    fullWidth
-                    variant="standard"
-                    autoComplete="off"
-                    label={this.getText('media_name')}
-                    value={draft.name ?? ''}
-                    placeholder={this.getText('media_namePlaceholder')}
-                    onChange={e => this.setDraft({ name: e.target.value })}
-                    slotProps={{ inputLabel: { shrink: true } }}
-                    sx={{ mb: 1 }}
-                />
+                <Box sx={{ display: 'flex', alignItems: 'flex-start', mb: 1 }}>
+                    <TextField
+                        fullWidth
+                        variant="standard"
+                        autoComplete="off"
+                        label={this.getText('media_name')}
+                        value={draft.name ?? ''}
+                        placeholder={this.getText('media_namePlaceholder')}
+                        onChange={e => this.setDraft({ name: e.target.value })}
+                        slotProps={{ inputLabel: { shrink: true } }}
+                    />
+                    <DocHelp
+                        topic="pages2.mediaHeadline"
+                        sx={{ mt: 2.5 }}
+                    />
+                </Box>
             </>
         );
     }
@@ -939,7 +950,7 @@ export class PageMediaEditor extends ConfigGeneric<ConfigGenericProps & PageMedi
                     return null;
                 }
                 title = this.getText(`media_item_${dialogItem}`);
-                help = mediaListKinds.some(l => l === dialogItem) ? 'pages2.mediaLists' : 'pages2.mediaStandardItems';
+                help = mediaListKinds.some(l => l === dialogItem) ? 'pages2.mediaLists' : 'pages2.mediaItemSettings';
                 content = this.renderItemDialog(draft, dialogItem);
                 break;
         }
@@ -1660,9 +1671,12 @@ export class PageMediaEditor extends ConfigGeneric<ConfigGenericProps & PageMedi
                             },
                         }}
                         helperText={
-                            isMainPageEntry(entry)
-                                ? this.getText('page_name_main_locked')
-                                : this.getText('page_name_locked')
+                            <>
+                                {isMainPageEntry(entry)
+                                    ? this.getText('page_name_main_locked')
+                                    : this.getText('page_name_locked')}
+                                <DocHelp topic="pages1.nameFixed" />
+                            </>
                         }
                     />
                 </Box>

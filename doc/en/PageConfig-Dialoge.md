@@ -42,6 +42,8 @@ Two checkboxes at the head of the dialog decide which kind of element you get:
 
 **The two checkboxes exclude each other.** Ticking one takes the other back — a page item is either a navigation or a custom button. (Up to and including 2.2.0 both could be ticked; the adapter then took the navigation.)
 
+#### The target page
+
 With *Is a navigation* ticked, the field **Target page** appears. It lists the pages this panel knows about — the page itself is taken out of the list, `main` comes first, the rest alphabetically. The field also accepts a freely typed name; handy for a page that does not exist yet, and also the place where a typo goes unnoticed.
 
 At the end of the list stands the entry **Screensaver**: the slot then shows the screensaver at once, as if the timeout of the panel had run out (see [showing the screensaver at once](screensaver#15-showing-the-screensaver-at-once)). The same entry stands in the target page of the long press and in the *Target page after pressing*.
@@ -82,6 +84,8 @@ These fields only appear where the adapter evaluates them:
 | **Text Size** | on the three grid variants, on the thermostat and on the media player page — **not** on *Entities* and *Schedule* | The Nextion font the panel uses to draw the icon or the value of this item (see below). |
 | **Use Value Instead of Icon** | the same five card types, not for a custom button | The slot shows the value as text instead of the icon. The adapter only does that when the `ACTUAL` state is a number, a string or `mixed`; otherwise the icon stays. |
 | **Long press** | **only** on the three grid variants, and only for a navigation, a custom button or `role=button` | A second function on the same slot. |
+
+#### Long press
 
 **Long press** is deliberately kept that narrow: of the pages only the grid pages report a long press to the adapter at all (since the TFT 6.0.9 the indicators of the [screensaver](screensaver#action-on-long-press) do as well), and only items without a popup of their own can make use of it — on all others it would collide with the popup. It can **either** switch a state **or** jump to a page, never both; that is why the other field disappears as soon as one of them is filled. The state has to be `type=boolean` and `write=true`; the object picker only offers such states in the first place. If the group of fields is not visible, the dialog no longer stores an old value along with the item either.
 
@@ -147,18 +151,24 @@ At the bottom right there are **Cancel** and **Apply**. During the check the rig
 
 The **`{ }`** button on the right of the title row of the Pageitem Configuration (tooltip *"Enter the item as raw data (JSON)"*) opens the dialog **Raw data of the item**. It is **always** there — no expert mode needed. Here the page item is entered as raw JSON, for settings that have no interface yet. The item dialog of the [screensaver](screensaver#4-items-the-item-dialog) has the same button.
 
-**Format** — two possibilities, each explained by the note box in the dialog:
+### The format: native or script
+
+Two possibilities, each explained by the note box in the dialog:
 
 | Format | Meaning |
 |---|---|
 | **native (runtime item)** | The item as the adapter uses it at runtime (e.g. `{ "template": …, "dpInit": … }`). It is taken over **unchanged** and has no navigation fields. Corresponds to `{ native: { … } }` in the script. |
 | **script (as in the script)** | The page item exactly as it would stand in a configuration script, e.g. `{ "id": …, "icon": …, "confirm": … }` or `{ "native": { … }, "navigate": true, "targetPage": … }`. The adapter converts it like an item from the script. |
 
+### The JSON editor
+
 - The dialog **checks continuously**: if the text is not a JSON object, the frame turns red, the reason is written below (*"Invalid JSON: …"* or *"The configuration has to be a JSON object { ... }"*) and **Apply** is disabled.
 - The icon above the editor (**Format JSON**) re-indents valid JSON.
 - On first opening it does not read `{}` but shows a **suggestion**: the script item the adapter would build from the fields already filled in, in the *script* format. Only when neither a channel ID nor a navigation target is set does the dialog start empty in the *native* format.
 - **Remove raw data (back to standard)** (bottom left, only with raw mode already active) brings the item back to the fields of the dialog. The standard fields are in fact kept in the background while raw mode runs.
 - In the format *script* the fields of the configuration script apply. Three of them belong to the timer functions: `"targetPage": "///screensaver"` (also for `prev`, `next`, `parent` and `home` of a page) shows the screensaver at once; `"useScreensaverTimer": true` lets a `level.timer` item use the timer of the screensaver; `"itemId"` is only needed by a script item a screensaver is to use as the source of its timer — the value has to be unique within the instance. In the admin the adapter assigns this id itself.
+
+### While raw data is active
 
 **While raw data is active**, the `{ }` button is **orange** and the whole content of the Pageitem Configuration is replaced by a warning box: *"Raw configuration active (format …)"*, below it the recognisable ID or the template and the sentence *"The item is built from the raw data alone, the fields of this dialog are not used."* A button **Edit raw data** leads back into the JSON editor. A raw data item needs **no channel ID** — **Apply** is therefore possible without a channel, and the role and state checks are skipped.
 
@@ -221,13 +231,15 @@ The **gear** at the channel field opens the dialog *Value Display Configuration*
 >
 > This concerns the fields **Prefix** and **Suffix** behind the **gear of the channel ID**, for every page item configured in the admin. If you filled them the wrong way round at the [dynamic name](#4-dynamic-name) as well, check them there too. If you always filled them as their names say, there is nothing to do. Apart from the changelog this change has not been documented anywhere so far.
 
+> **The unit is appended to a string as well.** The adapter appends it to every value, no matter whether number or text; only the **preview** in the admin leaves it out for everything that is not a number — and because a channel has no type, the preview at the gear never shows it. What really appears on the panel is therefore only shown by the panel.
+
+### Date Format
+
 **Date Format** in detail:
 
 - **Locale** — e.g. `de-DE`. Pre-filled from the browser.
 - **Format options (JSON)** — the options of `Intl.DateTimeFormat`, e.g. `{"dateStyle": "short"}`. The field is **checked immediately**: invalid JSON turns it red (*"Invalid format options"*). Leaving it empty switches date formatting off.
 - A **number** is read as a timestamp in milliseconds, a **string** as a date text.
-
-> **The unit is appended to a string as well.** The adapter appends it to every value, no matter whether number or text; only the **preview** in the admin leaves it out for everything that is not a number — and because a channel has no type, the preview at the gear never shows it. What really appears on the panel is therefore only shown by the panel.
 
 ## 6. Color Options
 
@@ -235,9 +247,15 @@ The **gear** at the channel field opens the dialog *Value Display Configuration*
 
 Title *Color Options*. This turns a numeric value into a colour — an icon that runs from blue to red the warmer the reading gets.
 
-**Enable Color Settings** — the checkbox at the very top switches the **colour scale** on. Without it, *Color Best*, Min/Max Value, Best Value, Color Mode and Logarithmic Scaling are disabled, and *Apply* stores **no** scale — an existing one is removed, and the *Color Settings* button in the page item dialog is no longer green afterwards. *Color Min* and *Color Max* work without the checkbox, they are the colours for *false* and *true*. An item without a scale opens the dialog with the checkbox off and the fields at their defaults (0–100, *Mixed*, no best value); an item with a scale opens it with the checkbox on and its values.
+### Enable Color Settings
+
+The checkbox at the very top switches the **colour scale** on. Without it, *Color Best*, Min/Max Value, Best Value, Color Mode and Logarithmic Scaling are disabled, and *Apply* stores **no** scale — an existing one is removed, and the *Color Settings* button in the page item dialog is no longer green afterwards. *Color Min* and *Color Max* work without the checkbox, they are the colours for *false* and *true*. An item without a scale opens the dialog with the checkbox off and the fields at their defaults (0–100, *Mixed*, no best value); an item with a scale opens it with the checkbox on and its values.
+
+### The three colour fields
 
 **The three colour fields:** **Color Min**, **Color Max** and **Color Best**. *Color Min* and *Color Max* are **the same values** as *Color* in the columns *Condition is false* respectively *true* — a change here changes them there as well. As long as no colour of your own is set, it says *No color* or shows the default colour as a preview, and **Set color** takes exactly that default as a starting point. **Reset** hands the colour back to role and [colour theme](colorTheme).
+
+### Value range, colour mode and scaling
 
 | Field | Meaning |
 |---|---|
@@ -262,7 +280,11 @@ Title *Mode list (inSel_Alias / modeList)*. This gives a page item a **selection
 | **Modes (one per line)** | The entries, one per line. Blank lines are discarded. |
 | **Take list from datapoint** | Fills the list from `common.states` of the state. The button is disabled when no state is selected or it has no `common.states` — the tooltip tells you which of the two. |
 
+### The check of the selection datapoint
+
 **The selection datapoint is checked**, and the result appears as a coloured message in the dialog: *Datapoint exists, type string, writable* (green), or a warning — *does not exist* (the adapter then ignores it), *not a state*, wrong type, *not writable*. Applying with a failed check brings up the question **Check failed — apply anyway?**; the way stays open, but not by accident.
+
+### Limits the dialog keeps counting
 
 **Limits the dialog keeps counting** (below the text field it continuously says "*n* entries, approx. *x* of 900 characters"):
 

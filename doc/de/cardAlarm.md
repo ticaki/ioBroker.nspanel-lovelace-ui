@@ -48,6 +48,8 @@ Die **Entsperrseite ist kein eigener Seitentyp** — sie entsteht genau hier, au
 
 **Umschalten später** blendet die Felder der anderen Betriebsart nur aus; eingetragene Werte bleiben in der Konfiguration stehen und werden weiter in die Seite übernommen. Wirksam ist jeweils nur, was zur gewählten Betriebsart gehört — die Schaltflächentexte und *Genehmigt* bei *Alarm*, das Sprungziel bei *Entsperren*. Eine Ausnahme ist die Checkbox *Status für alle Panels gemeinsam*: Sie ist nur im Modus *Alarm* sichtbar, der Adapter liest sie aber in **beiden** Betriebsarten (siehe [Abschnitt 7](#7-ein-zustand-für-mehrere-panels)).
 
+### Überschrift
+
 **Überschrift** ist die Kopfzeile am Panel. Beim Anlegen wird der Seitenname eingetragen.
 
 > ⚠️ **Eine leere Überschrift ergibt am Panel das Wort `Unlock`** — auch bei einer Alarmseite und in jeder Sprache. Der Adapter setzt diesen Ersatzwert beim Bauen der Seite ein; der Seitenname erscheint nicht.

@@ -351,13 +351,7 @@ export default class ScreensaverNotifyDialog extends React.Component<
         const value = this.state.draft.headlineIcon ?? '';
         const label = this.getText('screensaver_notify_headlineIcon');
         return (
-            <Box sx={{ flex: 1, minWidth: 220 }}>
-                <Typography
-                    variant="caption"
-                    color="text.secondary"
-                >
-                    {label}
-                </Typography>
+            <Box sx={{ flex: 1, minWidth: 220, pt: 1 }}>
                 <IconSelect
                     oContext={oContext}
                     alive={true}

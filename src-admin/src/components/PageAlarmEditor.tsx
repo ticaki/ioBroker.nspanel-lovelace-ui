@@ -159,9 +159,12 @@ export class PageAlarmEditor extends React.Component<PageAlarmEditorProps, PageA
                             },
                         }}
                         helperText={
-                            isMainPageEntry(entry)
-                                ? this.getText('page_name_main_locked')
-                                : this.getText('page_name_locked')
+                            <>
+                                {isMainPageEntry(entry)
+                                    ? this.getText('page_name_main_locked')
+                                    : this.getText('page_name_locked')}
+                                <DocHelp topic="pages1.nameFixed" />
+                            </>
                         }
                     />
                 </Box>
@@ -212,7 +215,14 @@ export class PageAlarmEditor extends React.Component<PageAlarmEditorProps, PageA
                         this.handleFieldChange('headline', e.target.value);
                     }}
                     slotProps={{
-                        input: { sx: { backgroundColor: 'transparent', px: 1, width: '50%' } },
+                        input: {
+                            sx: { backgroundColor: 'transparent', px: 1, width: '50%' },
+                            endAdornment: (
+                                <InputAdornment position="end">
+                                    <DocHelp topic="pages1.alarmHeadline" />
+                                </InputAdornment>
+                            ),
+                        },
                     }}
                     sx={{ mb: 2 }}
                     disabled={!this.state.alive}
@@ -338,6 +348,7 @@ export class PageAlarmEditor extends React.Component<PageAlarmEditorProps, PageA
                                     sx={{ mb: 1 }}
                                 >
                                     {this.getText('unlock_disarmed_header')}
+                                    <DocHelp topic="pages1.alarmButtons" />
                                 </Typography>
                                 <Box sx={{ display: 'grid', gap: 2 }}>
                                     {[5, 6, 7, 8].map(i => {

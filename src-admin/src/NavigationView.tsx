@@ -3103,6 +3103,7 @@ class NavigationView extends ConfigGeneric<ConfigGenericProps, NavigationViewInt
                         sx={{ mb: 1 }}
                     >
                         {I18n.t('nav_restart_waiting')}
+                        <DocHelp topic="navigation.save" />
                     </Alert>
                 ) : null}
                 {loading ? (

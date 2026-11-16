@@ -34,6 +34,8 @@ export const navigationTopics = {
         de: 'Panelzuweisung und Navigation',
         en: 'Panel assignment and navigation',
     },
+    'navigation.assignPanel': { page: 'PageConfig', de: 'Panel zuweisen', en: 'Assigning a panel' },
+    'navigation.targets': { page: 'PageConfig', de: 'Navigationsziele', en: 'Navigation targets' },
     'navigation.pageDetails': { page: 'PageConfig', de: 'Seitendetails', en: 'Page details' },
     'navigation.scroll': {
         page: 'pageMenu',
@@ -54,6 +56,11 @@ export const navigationTopics = {
         de: '5. Panel benutzt kein Skript',
         en: '5. Panel uses no script',
     },
+    'navigation.hwButtonColors': {
+        page: 'NSPanelsetting',
+        de: '9. Farbe der Knöpfe in der Kachel',
+        en: '9. Colour of the buttons on the card',
+    },
 
     // web panels
     'navigation.webPanelAdd': {
@@ -69,6 +76,7 @@ export const navigationTopics = {
 
     // panel configuration export / import
     'navigation.transfer': { page: 'panelConfigTransfer' },
+    'navigation.export': { page: 'panelConfigTransfer', de: '2. Exportieren', en: '2. Exporting' },
     'navigation.exportSecrets': {
         page: 'panelConfigTransfer',
         de: '3. PINs und WLAN-Passwörter',
@@ -82,6 +90,27 @@ export const navigationTopics = {
     'navigation.importMode': { page: 'panelConfigTransfer', de: '5. Der Importmodus', en: '5. The import mode' },
     'navigation.importReview': { page: 'panelConfigTransfer', de: '6. Die Übersicht', en: '6. The review' },
     'navigation.importConflicts': { page: 'panelConfigTransfer', de: '7. Namenskonflikte', en: '7. Name conflicts' },
+    'navigation.importNewName': {
+        page: 'panelConfigTransfer',
+        de: 'Der Namensvorschlag',
+        en: 'The proposed name',
+    },
+    'navigation.importDiff': {
+        page: 'panelConfigTransfer',
+        de: 'Der Blick in die Unterschiede',
+        en: 'A look at the differences',
+    },
+    'navigation.importRenameRipples': {
+        page: 'panelConfigTransfer',
+        de: 'Umbenennungen ziehen Kreise',
+        en: 'Renaming ripples',
+    },
+    'navigation.importReplace': { page: 'panelConfigTransfer', de: 'Ersetzen fragt nach', en: 'Replacing asks back' },
+    'navigation.importScreensaver': {
+        page: 'panelConfigTransfer',
+        de: 'Der Screensaver spielt dasselbe Spiel',
+        en: 'The screensaver plays the same game',
+    },
     'navigation.importScriptPages': {
         page: 'panelConfigTransfer',
         de: '8. Seiten, die auch in einem Skript vorkommen',
@@ -116,6 +145,7 @@ export const navigationTopics = {
         de: '5. Was mit dem Skript passiert',
         en: '5. What happens to the script',
     },
+    'navigation.migrationSource': { page: 'Migration', de: 'Quelltext', en: 'Source code' },
     'navigation.migrationCourse': {
         page: 'Migration',
         de: '6. Ablauf der Übernahme',

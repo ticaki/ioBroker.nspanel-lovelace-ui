@@ -16,6 +16,7 @@ import {
     MenuItem,
     ListItemIcon,
     ListItemText,
+    InputAdornment,
 } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
@@ -1070,9 +1071,12 @@ export class PageMenuEditor extends ConfigGeneric<ConfigGenericProps & PageMenuE
                             },
                         }}
                         helperText={
-                            isMainPageEntry(entry)
-                                ? this.getText('page_name_main_locked')
-                                : this.getText('page_name_locked')
+                            <>
+                                {isMainPageEntry(entry)
+                                    ? this.getText('page_name_main_locked')
+                                    : this.getText('page_name_locked')}
+                                <DocHelp topic="pages1.nameFixed" />
+                            </>
                         }
                     />
                 </Box>
@@ -1088,7 +1092,16 @@ export class PageMenuEditor extends ConfigGeneric<ConfigGenericProps & PageMenuE
                     onChange={e => {
                         this.props.onEntryChange({ ...entry, headline: e.target.value });
                     }}
-                    slotProps={{ input: { sx: { backgroundColor: 'transparent', px: 1, width: '50%' } } }}
+                    slotProps={{
+                        input: {
+                            sx: { backgroundColor: 'transparent', px: 1, width: '50%' },
+                            endAdornment: (
+                                <InputAdornment position="end">
+                                    <DocHelp topic="pages1.menuHeadline" />
+                                </InputAdornment>
+                            ),
+                        },
+                    }}
                     sx={{ mb: 2 }}
                     disabled={!this.state.alive}
                 />
@@ -1260,6 +1273,10 @@ export class PageMenuEditor extends ConfigGeneric<ConfigGenericProps & PageMenuE
                                     <ContentCopyIcon fontSize="small" />
                                 </ListItemIcon>
                                 <ListItemText>{I18n.t('pageMenu_copy_item')}</ListItemText>
+                                <DocHelp
+                                    topic="pages1.menuCopy"
+                                    sx={{ ml: 1 }}
+                                />
                             </MenuItem>
                         )}
                     <MenuItem

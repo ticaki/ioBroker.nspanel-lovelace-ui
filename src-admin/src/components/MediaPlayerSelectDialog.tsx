@@ -308,7 +308,7 @@ export class MediaPlayerSelectDialog extends React.Component<
             >
                 <DialogTitle sx={{ display: 'flex', alignItems: 'center' }}>
                     {getText('media_selectPlayerTitle')}
-                    <DocHelp topic="pages2.mediaPlayer" />
+                    <DocHelp topic="pages2.mediaPlayerSelect" />
                 </DialogTitle>
                 <DialogContent dividers>
                     {!loading && players.length > 0 && (

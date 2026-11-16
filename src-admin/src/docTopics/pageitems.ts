@@ -22,11 +22,13 @@ export const pageitemsTopics = {
         en: 'The ioBroker channel and its check marks',
     },
     'pageitems.name': { page: 'PageConfig-Dialoge', de: 'Name und dynamischer Name', en: 'Name and dynamic name' },
+    'pageitems.targetPage': { page: 'PageConfig-Dialoge', de: 'Die Zielseite', en: 'The target page' },
     'pageitems.cardFields': {
         page: 'PageConfig-Dialoge',
         de: 'Weitere Felder, je nach Kartentyp',
         en: 'Further fields, depending on the card type',
     },
+    'pageitems.longPress': { page: 'PageConfig-Dialoge', de: 'Langer Druck', en: 'Long press' },
     'pageitems.roleFields': {
         page: 'PageConfig-Dialoge',
         de: 'Felder, die nur bestimmte Rollen auswerten',

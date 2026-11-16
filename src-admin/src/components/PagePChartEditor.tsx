@@ -265,9 +265,12 @@ export class PagePChartEditor extends ConfigGeneric<ConfigGenericProps & PagePCh
                         },
                     }}
                     helperText={
-                        isMainPageEntry(entry)
-                            ? this.getText('page_name_main_locked')
-                            : this.getText('page_name_locked')
+                        <>
+                            {isMainPageEntry(entry)
+                                ? this.getText('page_name_main_locked')
+                                : this.getText('page_name_locked')}
+                            <DocHelp topic="pages1.nameFixed" />
+                        </>
                     }
                 />
             </Box>

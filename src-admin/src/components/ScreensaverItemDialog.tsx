@@ -900,13 +900,7 @@ export class ScreensaverItemDialog extends React.Component<ScreensaverItemDialog
         const { oContext, themeName } = this.props;
         const value = this.state.draft[field] ?? '';
         return (
-            <Box sx={{ flex: 1, minWidth: 220 }}>
-                <Typography
-                    variant="caption"
-                    color="text.secondary"
-                >
-                    {this.getText(labelKey)}
-                </Typography>
+            <Box sx={{ flex: 1, minWidth: 220, pt: 1 }}>
                 <IconSelect
                     oContext={oContext}
                     alive={true}
@@ -1191,7 +1185,10 @@ export class ScreensaverItemDialog extends React.Component<ScreensaverItemDialog
         return (
             <Box sx={{ mb: 2 }}>
                 <FormControl component="fieldset">
-                    <FormLabel component="legend">{this.getText('screensaver_item_color')}</FormLabel>
+                    <FormLabel component="legend">
+                        {this.getText('screensaver_item_color')}
+                        <DocHelp topic="screensaver.itemColor" />
+                    </FormLabel>
                     <RadioGroup
                         row
                         value={mode}
@@ -1512,6 +1509,10 @@ export class ScreensaverItemDialog extends React.Component<ScreensaverItemDialog
                 >
                     {this.getText('screensaver_iconSelect_edit')}
                 </Button>
+                <DocHelp
+                    topic="screensaver.itemIconSelect"
+                    sx={{ ml: 0 }}
+                />
                 {list?.length ? (
                     <>
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
@@ -1816,6 +1817,7 @@ export class ScreensaverItemDialog extends React.Component<ScreensaverItemDialog
                                 sx={{ mb: 1 }}
                             >
                                 {this.getText('screensaver_item_icons')}
+                                <DocHelp topic="screensaver.itemIcon" />
                             </Typography>
                             <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', mb: 2 }}>
                                 {this.renderIconField(
@@ -1837,6 +1839,7 @@ export class ScreensaverItemDialog extends React.Component<ScreensaverItemDialog
                                             ? 'screensaver_item_blindPositionIcons'
                                             : 'screensaver_item_blindPosition',
                                     )}
+                                    <DocHelp topic="screensaver.itemBlind" />
                                 </Alert>
                             )}
                             {iconMissing && (
@@ -1899,6 +1902,7 @@ export class ScreensaverItemDialog extends React.Component<ScreensaverItemDialog
                                 sx={{ mb: 1 }}
                             >
                                 {this.getText('screensaver_item_text')}
+                                <DocHelp topic="screensaver.itemText" />
                             </Typography>
                             <Box sx={{ display: 'flex', flexWrap: 'wrap' }}>
                                 {this.renderText('textOn', 'screensaver_item_textOn')}
@@ -1917,6 +1921,7 @@ export class ScreensaverItemDialog extends React.Component<ScreensaverItemDialog
                                 sx={{ mb: 1 }}
                             >
                                 {this.getText('screensaver_item_visibility')}
+                                <DocHelp topic="screensaver.itemVisibility" />
                             </Typography>
                             {this.renderStateField(
                                 this.getText('screensaver_item_enabled'),

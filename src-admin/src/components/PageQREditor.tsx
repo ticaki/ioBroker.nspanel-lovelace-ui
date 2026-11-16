@@ -131,9 +131,12 @@ export class PageQREditor extends ConfigGeneric<ConfigGenericProps & PageQREdito
                             },
                         }}
                         helperText={
-                            isMainPageEntry(entry)
-                                ? this.getText('page_name_main_locked')
-                                : this.getText('page_name_locked')
+                            <>
+                                {isMainPageEntry(entry)
+                                    ? this.getText('page_name_main_locked')
+                                    : this.getText('page_name_locked')}
+                                <DocHelp topic="pages1.nameFixed" />
+                            </>
                         }
                     />
                 </Box>
@@ -192,7 +195,14 @@ export class PageQREditor extends ConfigGeneric<ConfigGenericProps & PageQREdito
                         this.handleFieldChange('headline', e.target.value);
                     }}
                     slotProps={{
-                        input: { sx: { backgroundColor: 'transparent', px: 1, width: '50%' } },
+                        input: {
+                            sx: { backgroundColor: 'transparent', px: 1, width: '50%' },
+                            endAdornment: (
+                                <InputAdornment position="end">
+                                    <DocHelp topic="pages1.qrContent" />
+                                </InputAdornment>
+                            ),
+                        },
                     }}
                     sx={{ mb: 2 }}
                     disabled={!this.state.alive}
@@ -223,7 +233,14 @@ export class PageQREditor extends ConfigGeneric<ConfigGenericProps & PageQREdito
                         this.handleFieldChange('ssidUrlTel', e.target.value);
                     }}
                     slotProps={{
-                        input: { sx: { backgroundColor: 'transparent', px: 1 } },
+                        input: {
+                            sx: { backgroundColor: 'transparent', px: 1 },
+                            endAdornment: (
+                                <InputAdornment position="end">
+                                    <DocHelp topic="pages1.qrContent" />
+                                </InputAdornment>
+                            ),
+                        },
                     }}
                     sx={{ mb: 2 }}
                     disabled={!this.state.alive}
@@ -255,7 +272,7 @@ export class PageQREditor extends ConfigGeneric<ConfigGenericProps & PageQREdito
                                 </Select>
                             </FormControl>
                             <DocHelp
-                                topic="pages1.qrWifi"
+                                topic="pages1.qrWifiEncryption"
                                 sx={{ mb: 0.5 }}
                             />
                         </Box>
@@ -297,6 +314,10 @@ export class PageQREditor extends ConfigGeneric<ConfigGenericProps & PageQREdito
                                         sx: { backgroundColor: 'transparent', px: 1 },
                                         endAdornment: (
                                             <InputAdornment position="end">
+                                                <DocHelp
+                                                    topic="pages1.qrWifiPassword"
+                                                    sx={{ mr: 1 }}
+                                                />
                                                 <IconButton
                                                     aria-label="toggle password visibility"
                                                     onClick={() => {
@@ -317,18 +338,24 @@ export class PageQREditor extends ConfigGeneric<ConfigGenericProps & PageQREdito
 
                         {/* Hidden checkboxes */}
                         <Box sx={{ display: 'flex', gap: 2 }}>
-                            <FormControlLabel
-                                control={
-                                    <Checkbox
-                                        checked={!!entry.wlanhidden}
-                                        onChange={(_e, checked) => {
-                                            this.handleFieldChange('wlanhidden', checked);
-                                        }}
-                                    />
-                                }
-                                label={this.getText('qr_wlan_hidden')}
-                                disabled={!this.state.alive}
-                            />
+                            <Box>
+                                <FormControlLabel
+                                    control={
+                                        <Checkbox
+                                            checked={!!entry.wlanhidden}
+                                            onChange={(_e, checked) => {
+                                                this.handleFieldChange('wlanhidden', checked);
+                                            }}
+                                        />
+                                    }
+                                    label={this.getText('qr_wlan_hidden')}
+                                    disabled={!this.state.alive}
+                                />
+                                <DocHelp
+                                    topic="pages1.qrWifiHidden"
+                                    sx={{ ml: -1 }}
+                                />
+                            </Box>
                             <Box>
                                 <FormControlLabel
                                     control={
@@ -341,6 +368,10 @@ export class PageQREditor extends ConfigGeneric<ConfigGenericProps & PageQREdito
                                     }
                                     label={this.getText('qr_pwd_hidden')}
                                     disabled={!this.state.alive}
+                                />
+                                <DocHelp
+                                    topic="pages1.qrPwdHidden"
+                                    sx={{ ml: -1 }}
                                 />
                                 {/* the checkbox only clears the text line on the panel, the code keeps the password */}
                                 <FormHelperText sx={{ mt: -0.5 }}>{this.getText('qr_pwd_hidden_hint')}</FormHelperText>

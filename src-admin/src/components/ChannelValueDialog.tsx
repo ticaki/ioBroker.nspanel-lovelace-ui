@@ -598,6 +598,7 @@ class ChannelValueDialog extends React.Component<ChannelValueDialogProps, Channe
                             >
                                 <Typography variant="subtitle2">
                                     {I18n.t('valueEntryDialog_dateFormatSection')}
+                                    <DocHelp topic="dialogs.dateFormat" />
                                 </Typography>
                                 <TextField
                                     variant="standard"

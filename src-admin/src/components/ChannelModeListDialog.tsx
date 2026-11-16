@@ -449,6 +449,7 @@ class ChannelModeListDialog extends React.Component<ChannelModeListDialogProps, 
                                             sx={{ color: 'text.secondary' }}
                                         >
                                             {I18n.t('channelModeListDialog_aliasHint')}
+                                            <DocHelp topic="dialogs.modeListCheck" />
                                         </Typography>
                                     </Box>
                                     {this.renderAliasStatus()}
@@ -482,6 +483,7 @@ class ChannelModeListDialog extends React.Component<ChannelModeListDialogProps, 
                                 sx={{ color: tooLong || tooMany ? 'error.main' : 'text.secondary' }}
                             >
                                 {I18n.t('channelModeListDialog_count', list.length, joinedLength, MODE_LIST_MAX_LENGTH)}
+                                <DocHelp topic="dialogs.modeListLimits" />
                             </Typography>
                             {entriesWithQuestionMark.length > 0 && (
                                 <Alert severity="warning">

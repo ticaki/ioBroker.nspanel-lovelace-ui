@@ -1529,6 +1529,7 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
                         sx={{ mt: 2 }}
                     >
                         {this.state.exportNotice.text}
+                        <DocHelp topic="navigation.export" />
                     </Alert>
                 )}
                 {/* Init/Update Button + Web panel button */}
@@ -1583,6 +1584,7 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
                     <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 0.5 }}>
                         <DocHelp topic="navigation.panelCard" />
                         <DocHelp topic="navigation.noScript" />
+                        <DocHelp topic="navigation.hwButtonColors" />
                     </Box>
                 ) : null}
 
@@ -1822,7 +1824,10 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
                     open={showConfirm}
                     onClose={this.handleConfirmClose}
                 >
-                    <DialogTitle>{isUpdate ? this.getText('nsPanelUpdate') : this.getText('nsPanelInit')}</DialogTitle>
+                    <DialogTitle sx={{ display: 'flex', alignItems: 'center' }}>
+                        {isUpdate ? this.getText('nsPanelUpdate') : this.getText('nsPanelInit')}
+                        <DocHelp topic="navigation.panelCreate" />
+                    </DialogTitle>
                     <DialogContent>
                         <DialogContentText>
                             {isUpdate
@@ -1879,7 +1884,10 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
                     open={showSuccessConfirm}
                     onClose={this.handleSuccessClose}
                 >
-                    <DialogTitle>{this.getText('Success')}</DialogTitle>
+                    <DialogTitle sx={{ display: 'flex', alignItems: 'center' }}>
+                        {this.getText('Success')}
+                        <DocHelp topic="navigation.panelCreate" />
+                    </DialogTitle>
                     <DialogContent>
                         <DialogContentText>{successMessage}</DialogContentText>
                     </DialogContent>

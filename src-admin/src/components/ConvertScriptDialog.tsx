@@ -722,7 +722,10 @@ class ConvertScriptDialog extends React.Component<ConvertScriptDialogProps, Conv
                 severity="info"
                 sx={{ mt: 2 }}
             >
-                <AlertTitle>{I18n.t('convertScript_rawItems')}</AlertTitle>
+                <AlertTitle>
+                    {I18n.t('convertScript_rawItems')}
+                    <DocHelp topic="navigation.migrationPreview" />
+                </AlertTitle>
                 <Typography variant="body2">{I18n.t('convertScript_rawItemsHint')}</Typography>
                 <List
                     dense
@@ -758,7 +761,10 @@ class ConvertScriptDialog extends React.Component<ConvertScriptDialogProps, Conv
                 severity="info"
                 sx={{ mt: 2 }}
             >
-                <AlertTitle>{I18n.t('convertScript_longPressDropped')}</AlertTitle>
+                <AlertTitle>
+                    {I18n.t('convertScript_longPressDropped')}
+                    <DocHelp topic="navigation.migrationPreview" />
+                </AlertTitle>
                 <Typography variant="body2">{I18n.t('convertScript_longPressDroppedHint')}</Typography>
                 <List
                     dense
@@ -793,7 +799,7 @@ class ConvertScriptDialog extends React.Component<ConvertScriptDialogProps, Conv
         const disabled = !editable || this.state.refreshing;
         return (
             <>
-                {this.renderSectionTitle(I18n.t('convertScript_conflicts'))}
+                {this.renderSectionTitle(I18n.t('convertScript_conflicts'), 'navigation.migrationPreview')}
                 <Typography
                     variant="body2"
                     color="text.secondary"
@@ -1224,7 +1230,10 @@ class ConvertScriptDialog extends React.Component<ConvertScriptDialogProps, Conv
                         severity="warning"
                         sx={{ mt: 1 }}
                     >
-                        <AlertTitle>{I18n.t('convertScript_scriptNotes')}</AlertTitle>
+                        <AlertTitle>
+                            {I18n.t('convertScript_scriptNotes')}
+                            <DocHelp topic="navigation.migrationSource" />
+                        </AlertTitle>
                         <List
                             dense
                             disablePadding
