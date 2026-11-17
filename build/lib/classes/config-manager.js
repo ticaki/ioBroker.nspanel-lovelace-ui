@@ -2182,17 +2182,7 @@ class ConfigManager extends import_library.BaseClass {
       set: internal && set && setDp ? { ...set, dp: setDp, type: "triggered" } : set
     };
   }
-  /**
-   * Page item of the script / admin as runtime item.
-   *
-   * @param item page item of the script
-   * @param page page of the item
-   * @param messages receives the messages of the check
-   * @param options internal choices of the caller - `preferShutter2`: a blind becomes `shutter2` (popupShutter2) also
-   * with tilt states, used for the popup of a screensaver indicator
-   * @param options.preferShutter2 see above
-   */
-  async getPageItemConfig(item, page, messages = [], options = {}) {
+  async getPageItemConfig(item, page, messages = []) {
     var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _A, _B, _C, _D, _E;
     let itemConfig = void 0;
     this.normalizeColorScale(item);
@@ -2679,7 +2669,7 @@ class ConfigManager extends import_library.BaseClass {
           }
           case "blind": {
             const blindIconOn = item.icon || (item.icon2 || item.icon3 || globals.isPartialIconSelectScaleElement(item.colorScale) ? import_page_item_defaults.pageItemDefaults.blind.iconOn : import_page_item_defaults.SHUTTER_POSITION_ICON);
-            if (!options.preferShutter2 && (foundedStates[role].TILT_OPEN || foundedStates[role].TILT_CLOSE || foundedStates[role].TILT_STOP)) {
+            if (foundedStates[role].TILT_OPEN || foundedStates[role].TILT_CLOSE || foundedStates[role].TILT_STOP) {
               const tempItem = {
                 type: "shutter",
                 role: "blind",
@@ -4618,7 +4608,7 @@ class ConfigManager extends import_library.BaseClass {
         return null;
       }
       const page = { type: "cardEntities", uniqueName: "", heading: "", items: [] };
-      const { itemConfig } = await this.getPageItemConfig({ id: channelId }, page, [], { preferShutter2: true });
+      const { itemConfig } = await this.getPageItemConfig({ id: channelId }, page);
       const type = itemConfig == null ? void 0 : itemConfig.type;
       if (itemConfig && typeof type === "string" && ConfigManager.screensaverPopupItemTypes.has(type)) {
         return itemConfig;
