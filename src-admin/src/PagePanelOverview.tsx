@@ -56,6 +56,7 @@ import {
     panelSettingStateIds,
     type PageSecretField,
 } from '../../src/lib/types/panelConfigExport';
+import { migratePanelTopic } from '../../src/lib/types/panelTopicMigration';
 import PanelExportSecretsDialog from './components/PanelExportSecretsDialog';
 import PanelImportDialog, { type PanelImportNativeValues } from './components/PanelImportDialog';
 import { PanelStatusBadge } from './components/PanelStatusBadge';
@@ -177,6 +178,11 @@ interface PagePanelOverviewState extends ConfigGenericState {
     showSuccessConfirm: boolean;
     successMessage: string;
     pendingPanels: PanelConfig[] | null;
+    /**
+     * Tasmota panel opened with "edit" (id and topic at that moment) - when the setup gives it another topic, its
+     * pages, screensaver and navigation overrides follow on save (#899). null = no panel being edited.
+     */
+    editedPanel: { id: string; topic: string } | null;
     // Map of panel IDs to their online status
     panelOnlineStates: Record<string, boolean>;
     /**
@@ -229,6 +235,7 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
             showSuccessConfirm: false,
             successMessage: '',
             pendingPanels: null,
+            editedPanel: null,
             panelOnlineStates: {},
             panelDetachStates: {},
             isBlinking: false,
@@ -298,6 +305,44 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
         await new Promise<void>(resolve => this.props.onChange(data, undefined, resolve));
         this.forceUpdate();
     };
+
+    /**
+     * Hands a new panel table to the admin. When a panel got a new topic, its pages, screensavers and navigation
+     * overrides move to it in the same change (two onChange calls in a row would lose the first one).
+     *
+     * @param panels the new panel table
+     * @param moved old and new topic of the changed panel, undefined = no topic changed
+     * @param moved.from previous topic
+     * @param moved.to new topic
+     */
+    private async savePanelsWithTopicMigration(
+        panels: PanelConfig[],
+        moved: { from: string; to: string } | undefined,
+    ): Promise<void> {
+        const data = JSON.parse(JSON.stringify(this.props.data ?? {}));
+        ConfigGeneric.setValue(data, 'panels', panels);
+        if (moved) {
+            const changed = migratePanelTopic(data, moved.from, moved.to);
+            for (const [key, value] of Object.entries(changed)) {
+                if (value !== undefined) {
+                    ConfigGeneric.setValue(data, key, value);
+                }
+            }
+        }
+        await new Promise<void>(resolve => this.props.onChange(data, undefined, resolve));
+    }
+
+    /**
+     * @param before topic of the panel before the change, undefined = new panel
+     * @param after topic of the panel after the change
+     * @returns old and new topic when the topic changed, otherwise undefined
+     */
+    private static topicChange(
+        before: string | undefined,
+        after: string | undefined,
+    ): { from: string; to: string } | undefined {
+        return before && after && before !== after ? { from: before, to: after } : undefined;
+    }
 
     /**
      * Export button of a tile: asks first when pages of the panel hold PINs or passwords, else exports at once.
@@ -781,6 +826,7 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
     private isFormValid(): boolean {
         const data = this.props.data;
         const { localTasmotaIP, localTasmotaName, localTasmotaTopic } = this.state;
+        const conflicts = this.tasmotaFormConflicts();
 
         return (
             !!localTasmotaIP &&
@@ -788,6 +834,8 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
             !!localTasmotaTopic &&
             this.validateTopic(localTasmotaTopic) &&
             !!localTasmotaName &&
+            conflicts.topic === null &&
+            conflicts.name === null &&
             (!!data.mqttServer || !!data.mqttIp) &&
             !!data.mqttPort &&
             // the login comes either from the fields or, for an external broker, from a central credential (resolved by the adapter)
@@ -795,6 +843,51 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
             (!data.mqttServer || (!!data.internalServerIp && this.isValidCompleteIp(data.internalServerIp)))
         );
     }
+    /**
+     * Normalized panel name for the uniqueness check in the admin - the adapter compares exactly
+     * (as the id of the configuration script).
+     *
+     * @param name name of a panel
+     * @returns trimmed name in lower case
+     */
+    private static normalizePanelName(name: string | undefined): string {
+        return (name ?? '').trim().toLowerCase();
+    }
+
+    /**
+     * Topic and name of the setup form against the configured panels (#899).
+     *
+     * With a panel opened by "edit" every other panel counts (a Tasmota entry with the same id is the same device).
+     * Without it an existing Tasmota panel may be set up again by typing in its data: only the topic or name of a web
+     * panel, and topic and name of two different Tasmota panels, are errors - the adapter decides by the MAC.
+     *
+     * @returns translation key of the error per field, null = fine
+     */
+    private tasmotaFormConflicts(): { topic: string | null; name: string | null } {
+        const panels: PanelConfig[] = this.props.data.panels || [];
+        const { editedPanel, localTasmotaTopic, localTasmotaName } = this.state;
+        const topic = localTasmotaTopic;
+        const name = PagePanelOverview.normalizePanelName(localTasmotaName);
+        const hasName = (p: PanelConfig): boolean =>
+            name !== '' && PagePanelOverview.normalizePanelName(p.name) === name;
+        const hasTopic = (p: PanelConfig): boolean => topic !== '' && p.topic === topic;
+        if (editedPanel) {
+            const others = panels.filter(p => p.kind === 'web' || p.id !== editedPanel.id);
+            return {
+                topic: others.some(hasTopic) ? 'sendToTopicInUse' : null,
+                name: others.some(hasName) ? 'sendToNameInUse' : null,
+            };
+        }
+        const topicOwner = panels.find(hasTopic);
+        const nameOwners = panels.filter(hasName);
+        const topicError = topicOwner?.kind === 'web' ? 'sendToTopicInUse' : null;
+        if (nameOwners.some(p => p.kind === 'web')) {
+            return { topic: topicError, name: 'sendToNameInUse' };
+        }
+        const otherOwner = topicOwner && topicOwner.kind !== 'web' && nameOwners.some(p => p.id !== topicOwner.id);
+        return { topic: topicError, name: otherOwner ? 'panelNameOfOtherPanel' : null };
+    }
+
     // Prüft, ob das Panel bereits konfiguriert ist (basierend auf dem Topic)
     private isPanelAlreadyConfigured(): boolean {
         const panels = this.props.data.panels || [];
@@ -1111,8 +1204,30 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
         return null;
     }
 
+    /**
+     * Validates the name of the dialog: it must be unique among all panels (#899).
+     *
+     * @returns translation key of the error, null when the name is fine or still empty
+     */
+    private webPanelNameError(): string | null {
+        const { name, editId } = this.state.webPanelDialog;
+        const normalized = PagePanelOverview.normalizePanelName(name);
+        if (normalized === '') {
+            return null;
+        }
+        const panels: PanelConfig[] = this.props.data.panels || [];
+        const taken = panels.some(
+            p => !(p.kind === 'web' && p.id === editId) && PagePanelOverview.normalizePanelName(p.name) === normalized,
+        );
+        return taken ? 'webPanelNameDuplicate' : null;
+    }
+
     private isWebPanelDialogValid(): boolean {
-        return this.state.webPanelDialog.name.trim() !== '' && this.webPanelTopicError() === null;
+        return (
+            this.state.webPanelDialog.name.trim() !== '' &&
+            this.webPanelNameError() === null &&
+            this.webPanelTopicError() === null
+        );
     }
 
     /** appends a new web panel to the table or updates the edited one, then hands the table to the admin */
@@ -1127,8 +1242,11 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
             editId === null
                 ? [...panels, { ...values, kind: 'web' as const, id: newWebPanelId(panels), ip: '' }]
                 : panels.map(p => (p.id === editId ? { ...p, ...values, kind: 'web' as const } : p));
+        const before = editId === null ? undefined : panels.find(p => p.id === editId)?.topic;
 
-        void this.onChange('panels', updatedPanels).then(() => this.forceUpdate());
+        void this.savePanelsWithTopicMigration(updatedPanels, PagePanelOverview.topicChange(before, values.topic)).then(
+            () => this.forceUpdate(),
+        );
         this.setState({ webPanelDialog: closedWebPanelDialog });
     };
 
@@ -1150,6 +1268,7 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
 
         // Lokalen State synchronisieren
         this.setState({
+            editedPanel: panel.id && panel.topic ? { id: panel.id, topic: panel.topic } : null,
             localTasmotaIP: panel.ip || '',
             localTasmotaName: panel.name || '',
             localTasmotaTopic: panel.topic || '',
@@ -1202,8 +1321,14 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
             return;
         }
         console.log('[PagePanelOverview] Deleting panel:', panelToDelete);
-        const panels = this.props.data.panels || [];
-        const updatedPanels = panels.filter((p: PanelConfig) => p.id !== panelToDelete.id);
+        // only the chosen entry - a duplicate with the same id stays and can be removed on its own (#899)
+        const panels: PanelConfig[] = this.props.data.panels || [];
+        const index = panels.indexOf(panelToDelete);
+        if (index === -1) {
+            this.setState({ showDeleteConfirm: false, panelToDelete: null });
+            return;
+        }
+        const updatedPanels = panels.filter((_p, i) => i !== index);
 
         void this.onChange('panels', updatedPanels);
         this.setState({ showDeleteConfirm: false, panelToDelete: null });
@@ -1212,16 +1337,21 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
     // Schließt den Success-Dialog ohne Speichern
     private handleSuccessClose = (): void => {
         console.log('[PagePanelOverview] Success dialog cancelled');
-        this.setState({ showSuccessConfirm: false, successMessage: '', pendingPanels: null });
+        this.setState({ showSuccessConfirm: false, successMessage: '', pendingPanels: null, editedPanel: null });
     };
 
     // Speichert die Config nach erfolgreicher Initialisierung
     private handleSuccessSave = async (): Promise<void> => {
         console.log('[PagePanelOverview] Saving config after success');
-        const { pendingPanels } = this.state;
+        const { pendingPanels, editedPanel } = this.state;
 
         if (pendingPanels) {
-            await this.onChange('panels', pendingPanels);
+            // the edited panel (same id = same device) got another topic: its admin configuration follows
+            const after = editedPanel ? pendingPanels.find(p => p.id === editedPanel.id)?.topic : undefined;
+            await this.savePanelsWithTopicMigration(
+                pendingPanels,
+                PagePanelOverview.topicChange(editedPanel?.topic, after),
+            );
 
             // Lösche temporäre Laufzeit-Variablen
             this.props.data._tasmotaIP = '';
@@ -1232,6 +1362,7 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
                 showSuccessConfirm: false,
                 successMessage: '',
                 pendingPanels: null,
+                editedPanel: null,
                 localTasmotaIP: '',
                 localTasmotaName: '',
                 localTasmotaTopic: '',
@@ -1337,6 +1468,8 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
             webPanelDialog,
         } = this.state;
         const webPanelTopicError = this.webPanelTopicError();
+        const webPanelNameError = this.webPanelNameError();
+        const tasmotaConflicts = this.tasmotaFormConflicts();
 
         // Setze Standardwert für _nsPanelModel, falls nicht vorhanden (EU als Standard)
         const panelModel = data._nsPanelModel || 'eu';
@@ -1435,6 +1568,8 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
                         onChange={this.handleTextChange('_tasmotaName')}
                         onBlur={this.handleFieldSync}
                         onKeyDown={this.handleFieldKeyDown}
+                        error={tasmotaConflicts.name !== null}
+                        helperText={tasmotaConflicts.name !== null ? this.getText(tasmotaConflicts.name) : ''}
                     />
                     <TextField
                         sx={{ m: 1, minWidth: 200 }}
@@ -1446,7 +1581,11 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
                         onChange={this.handleTextChange('_tasmotaTopic')}
                         onBlur={this.handleFieldSync}
                         onKeyDown={this.handleFieldKeyDown}
-                        error={!!this.state.localTasmotaTopic && !this.validateTopic(this.state.localTasmotaTopic)}
+                        error={
+                            (!!this.state.localTasmotaTopic && !this.validateTopic(this.state.localTasmotaTopic)) ||
+                            tasmotaConflicts.topic !== null
+                        }
+                        helperText={tasmotaConflicts.topic !== null ? this.getText(tasmotaConflicts.topic) : ''}
                     />
                     {/* Panel Model Select */}
                     <FormControl
@@ -1586,7 +1725,7 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
                         const rightColor = this.buttonTileColor(panel, 'right');
                         return (
                             <Box
-                                key={panel.id || index}
+                                key={`${index}-${panel.id ?? ''}`}
                                 sx={{
                                     width: 'fit-content',
                                     maxWidth: '100%',
@@ -1958,7 +2097,11 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
                                 label={this.getText('panelName')}
                                 value={webPanelDialog.name}
                                 onChange={this.handleWebPanelFieldChange('name')}
-                                error={webPanelDialog.name !== '' && webPanelDialog.name.trim() === ''}
+                                error={
+                                    (webPanelDialog.name !== '' && webPanelDialog.name.trim() === '') ||
+                                    webPanelNameError !== null
+                                }
+                                helperText={webPanelNameError !== null ? this.getText(webPanelNameError) : undefined}
                             />
                             <TextField
                                 size="small"

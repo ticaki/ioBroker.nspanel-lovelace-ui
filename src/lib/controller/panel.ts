@@ -104,6 +104,11 @@ export interface panelConfigPartial extends Partial<panelConfigTop> {
     channel?: PanelChannel;
     /** Web panel only: topic of the real panel this one is a clone of */
     sourceTopic?: string;
+    /**
+     * Built from the empty script template ("panel uses no script" or no script configuration at all) -
+     * its pages and screensaver are placeholders of the adapter, not delivered by a script.
+     */
+    withoutScript?: boolean;
 }
 
 const DefaultOptions = {

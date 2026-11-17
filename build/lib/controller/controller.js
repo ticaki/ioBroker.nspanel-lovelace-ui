@@ -41,6 +41,7 @@ var import_Color = require("../const/Color");
 var import_pageTrash = require("../pages/tools/pageTrash");
 var definition = __toESM(require("../const/definition"));
 var adminShareConfig = __toESM(require("../types/adminShareConfig"));
+var import_panel_setup = require("../tools/panel-setup");
 class Controller extends Library.BaseClass {
   mqttClient;
   statesControler;
@@ -339,6 +340,7 @@ class Controller extends Library.BaseClass {
     return null;
   };
   async init(panels) {
+    var _a;
     await this.statesControler.setInternalState(
       "///time",
       await this.getCurrentTime(),
@@ -447,10 +449,32 @@ class Controller extends Library.BaseClass {
     }
     void this.systemNotification.init();
     await this.initTrashPagesState();
+    const configured = (_a = this.adapter.config.panels) != null ? _a : [];
+    const skippedTopics = /* @__PURE__ */ new Set();
+    const onceTopics = /* @__PURE__ */ new Set();
+    for (const index of (0, import_panel_setup.duplicatePanelIdIndexes)(configured)) {
+      const entry = configured[index];
+      this.log.warn(
+        `Panel ${entry.name} (topic ${entry.topic}, id ${entry.id}) uses the id of another panel entry and is not started - remove the duplicate in the admin!`
+      );
+      if (configured.findIndex((p) => (p == null ? void 0 : p.topic) === entry.topic) === index) {
+        skippedTopics.add(entry.topic);
+      } else {
+        onceTopics.add(entry.topic);
+      }
+    }
+    const startedTopics = /* @__PURE__ */ new Set();
     const tasks = [];
     for (const panelConfig of panels) {
       if (panelConfig === void 0) {
         continue;
+      }
+      const topic = panelConfig.topic;
+      if (topic !== void 0) {
+        if (skippedTopics.has(topic) || onceTopics.has(topic) && startedTopics.has(topic)) {
+          continue;
+        }
+        startedTopics.add(topic);
       }
       tasks.push(this.addPanel(structuredClone(panelConfig)));
     }
@@ -611,7 +635,14 @@ class Controller extends Library.BaseClass {
     if (id === this.mqttClient.clientId) {
       return true;
     }
-    const index = this.panels.findIndex((p) => !p.isVirtual && id.startsWith(this.library.cleandp(p.friendlyName)));
+    const index = (0, import_panel_setup.panelIndexForMqttClient)(
+      id,
+      this.panels.map((p) => ({
+        clientName: this.library.cleandp(p.friendlyName),
+        macId: p.name,
+        isVirtual: p.isVirtual
+      }))
+    );
     if (index !== -1) {
       void this.panels[index].setStatus("connected");
       if (this.panels[index].initDone) {

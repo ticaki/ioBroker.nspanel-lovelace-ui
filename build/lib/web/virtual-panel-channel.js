@@ -18,27 +18,11 @@ var __copyProps = (to, from, except, desc) => {
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 var virtual_panel_channel_exports = {};
 __export(virtual_panel_channel_exports, {
-  VirtualPanelChannel: () => VirtualPanelChannel,
-  mqttTopicMatches: () => mqttTopicMatches
+  VirtualPanelChannel: () => VirtualPanelChannel
 });
 module.exports = __toCommonJS(virtual_panel_channel_exports);
+var import_mqtt = require("../classes/mqtt");
 var import_library = require("../controller/library");
-function mqttTopicMatches(filter, topic) {
-  const f = filter.split("/");
-  const t = topic.split("/");
-  for (let i = 0; i < f.length; i++) {
-    if (f[i] === "#") {
-      return true;
-    }
-    if (i >= t.length) {
-      return false;
-    }
-    if (f[i] !== "+" && f[i] !== t[i]) {
-      return false;
-    }
-  }
-  return f.length === t.length;
-}
 class VirtualPanelChannel extends import_library.BaseClass {
   topic;
   subscriptions = [];
@@ -153,7 +137,7 @@ class VirtualPanelChannel extends import_library.BaseClass {
       return;
     }
     for (const s of [...this.subscriptions]) {
-      if (!mqttTopicMatches(s.filter, topic)) {
+      if (!(0, import_mqtt.mqttTopicMatches)(s.filter, topic)) {
         continue;
       }
       try {
@@ -169,7 +153,6 @@ class VirtualPanelChannel extends import_library.BaseClass {
 }
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
-  VirtualPanelChannel,
-  mqttTopicMatches
+  VirtualPanelChannel
 });
 //# sourceMappingURL=virtual-panel-channel.js.map

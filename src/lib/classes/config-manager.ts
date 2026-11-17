@@ -38,6 +38,21 @@ import { getVersionAsNumber } from '../const/tools';
 import { recordGeneratedPage } from '../configuration/navigation-overrides';
 import { mergeGlobalConfig } from '../configuration/global-config-merge';
 
+/** Message for an adapter start without any panel configured. */
+export const NO_PANELS_CONFIGURED_MESSAGE =
+    'No panels configured yet - set up a panel in the admin. Adapter paused until then.';
+
+/**
+ * Thrown by {@link ConfigManager.getConfig} when no panel is configured at all. This is not an error of the
+ * configuration - the adapter just has nothing to do until a panel is set up in the admin.
+ */
+export class NoPanelsConfiguredError extends Error {
+    constructor() {
+        super(NO_PANELS_CONFIGURED_MESSAGE);
+        this.name = 'NoPanelsConfiguredError';
+    }
+}
+
 export class ConfigManager extends BaseClass {
     //private test: ConfigManager.DeviceState;
     //colorOn: RGB = Color.On;
@@ -249,7 +264,13 @@ export class ConfigManager extends BaseClass {
         let panelConfig: Omit<Partial<panelConfigPartial>, 'pages' | 'navigation'> & {
             navigation: NavigationItemConfig[];
             pages: pages.PageBase[];
-        } = { pages: [], navigation: [], scriptVersion: config.version, scriptName: config.scriptName || 'missing' };
+        } = {
+            pages: [],
+            navigation: [],
+            scriptVersion: config.version,
+            scriptName: config.scriptName || 'missing',
+            withoutScript,
+        };
 
         if (!config.panelTopic) {
             this.log.error(`Required field panelTopic is missing in ${config.panelName || 'unknown'}!`);
@@ -5899,15 +5920,23 @@ export class ConfigManager extends BaseClass {
     ): Promise<panelConfigPartial[]> {
         const result: panelConfigPartial[] = [];
         if (scriptConfig.length === 0) {
-            const topics = (adapter.config.panels || [])
-                .map(p => p?.topic)
-                .filter(Boolean)
-                .join(', ');
-            if (!adapter.config.testCase) {
-                adapter.log.error(`No compatible config found for topics: ${topics}. Adapter paused!`);
-                throw new Error(`No compatible config found for topics: ${topics}. Adapter paused!`);
+            const panels = (adapter.config.panels || []).filter(p => !!p?.topic);
+            if (panels.length === 0) {
+                if (!adapter.config.testCase) {
+                    // nothing set up yet - not an error, the caller logs the message as info
+                    throw new NoPanelsConfiguredError();
+                }
+                adapter.log.warn(`${NO_PANELS_CONFIGURED_MESSAGE} Continuing due to testCase=true.`);
+            } else {
+                const panelsText = panels.map(p => `${p.name || p.topic} (${p.topic})`).join(', ');
+                if (!adapter.config.testCase) {
+                    // the caller logs the error - no own log here, otherwise it appears twice
+                    throw new Error(`No usable config found for the configured panels: ${panelsText}. Adapter paused!`);
+                }
+                adapter.log.warn(
+                    `No usable config found for the configured panels: ${panelsText}. Continuing due to testCase=true.`,
+                );
             }
-            adapter.log.warn(`No compatible config found for topics: ${topics}. Continuing due to testCase=true.`);
         }
         if (scriptConfig) {
             // merge all pages into every pages array

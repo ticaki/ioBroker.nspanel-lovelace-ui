@@ -31,7 +31,8 @@ __export(mqtt_exports, {
   MQTTClientClass: () => MQTTClientClass,
   MQTTServerClass: () => MQTTServerClass,
   minimalMqttFilters: () => minimalMqttFilters,
-  mqttFilterCovers: () => mqttFilterCovers
+  mqttFilterCovers: () => mqttFilterCovers,
+  mqttTopicMatches: () => mqttTopicMatches
 });
 module.exports = __toCommonJS(mqtt_exports);
 var import_mqtt = __toESM(require("mqtt"));
@@ -42,6 +43,23 @@ var import_library = require("../controller/library");
 var import_aedes = require("aedes");
 var import_node_crypto = require("node:crypto");
 var forge = __toESM(require("node-forge"));
+var import_berry_install = require("../tools/berry-install");
+function mqttTopicMatches(filter, topic) {
+  const f = filter.split("/");
+  const t = topic.split("/");
+  for (let i = 0; i < f.length; i++) {
+    if (f[i] === "#") {
+      return true;
+    }
+    if (i >= t.length) {
+      return false;
+    }
+    if (f[i] !== "+" && f[i] !== t[i]) {
+      return false;
+    }
+  }
+  return f.length === t.length;
+}
 function mqttFilterCovers(filter, other) {
   const a = filter.split("/");
   const b = other.split("/");
@@ -118,7 +136,7 @@ class MQTTClientClass extends import_library.BaseClass {
         if (strMessage.startsWith('{"T1":')) {
           return;
         }
-        const callbacks = this.subscriptDB.filter((entry) => topic2.startsWith(entry.topic.replace("/#", "")));
+        const callbacks = this.subscriptDB.filter((entry) => mqttTopicMatches(entry.topic, topic2));
         if (this.adapter.config.debugLogMqtt) {
           this.log.debug(
             `MQTT message: matched ${callbacks.length} handler(s) | topic="${topic2}" | payload="${message2.toString()}"`
@@ -189,6 +207,13 @@ class MQTTClientClass extends import_library.BaseClass {
       });
     });
   }
+  /**
+   * Waits for the `UrlFetch` answer of Tasmota on `stat/RESULT`.
+   *
+   * @param _topic panel topic
+   * @param timeout ms, 0 = no timeout
+   * @returns resolves with `{"UrlFetch":"Done"}`, rejects with any other UrlFetch answer (`Failed`) or on timeout
+   */
   async waitTasmotaUrlFetch(_topic, timeout) {
     return new Promise((resolve, reject) => {
       const topic = `${_topic}/stat/RESULT`;
@@ -200,12 +225,17 @@ class MQTTClientClass extends import_library.BaseClass {
         }, timeout);
       }
       void this.subscribe(topic, async (_topic2, _message) => {
-        const payload = JSON.parse(_message);
-        if (payload.UrlFetch !== "Done") {
+        const result = (0, import_berry_install.parseUrlFetchResult)(_message);
+        if (result === "none") {
           return false;
         }
         if (ref) {
           this.adapter.clearTimeout(ref);
+        }
+        if (result === "failed") {
+          this.log.debug(`Tasmota berry download failed: ${_topic2} with message: ${_message}`);
+          reject(new Error(`UrlFetch failed: ${_message}`));
+          return true;
         }
         this.log.debug(`Tasmota install berry detected: ${_topic2} with message: ${_message}`);
         resolve();
@@ -555,6 +585,7 @@ class MQTTServerClass extends import_library.BaseClass {
   MQTTClientClass,
   MQTTServerClass,
   minimalMqttFilters,
-  mqttFilterCovers
+  mqttFilterCovers,
+  mqttTopicMatches
 });
 //# sourceMappingURL=mqtt.js.map

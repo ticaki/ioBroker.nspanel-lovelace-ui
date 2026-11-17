@@ -10,6 +10,7 @@ import { type Server } from 'node:net';
 import { randomUUID } from 'node:crypto';
 import * as forge from 'node-forge';
 import type { Controller } from '../controller/controller';
+import { parseUrlFetchResult } from '../tools/berry-install';
 
 /**
  * Callback invoked when an MQTT message arrives on a subscribed topic.
@@ -22,6 +23,32 @@ export type callbackMessageType = (topic: string, message: string) => Promise<vo
  * Callback invoked once when the MQTT connection is (re-)established.
  */
 export type callbackConnectType = () => Promise<void>;
+
+/**
+ * Does the MQTT topic filter match the topic? Supports `+` (one level) and `#` (the rest including
+ * the parent level, `a/#` matches `a` too). Compared level by level, so `a/b` does not match `a/bc`
+ * and `a/#` does not match `ab/c`; the panel topic itself may contain `/`.
+ *
+ * @param filter topic filter
+ * @param topic concrete topic
+ * @returns true if the topic matches the filter
+ */
+export function mqttTopicMatches(filter: string, topic: string): boolean {
+    const f = filter.split('/');
+    const t = topic.split('/');
+    for (let i = 0; i < f.length; i++) {
+        if (f[i] === '#') {
+            return true;
+        }
+        if (i >= t.length) {
+            return false;
+        }
+        if (f[i] !== '+' && f[i] !== t[i]) {
+            return false;
+        }
+    }
+    return f.length === t.length;
+}
 
 /**
  * Does the subscription `filter` receive every message `other` receives?
@@ -135,7 +162,6 @@ export class MQTTClientClass extends BaseClass {
 
         this.client.on('message', (topic, message) => {
             const _helper = async (topic: string, message: Buffer): Promise<void> => {
-                // NOTE: Simple prefix match with '/#' trimming, unchanged semantics
                 const strMessage = message.toString();
 
                 // Guard: Tasmota sends this specific payload as a background status message on connect
@@ -147,7 +173,7 @@ export class MQTTClientClass extends BaseClass {
                     return;
                 }
 
-                const callbacks = this.subscriptDB.filter(entry => topic.startsWith(entry.topic.replace('/#', '')));
+                const callbacks = this.subscriptDB.filter(entry => mqttTopicMatches(entry.topic, topic));
 
                 if (this.adapter.config.debugLogMqtt) {
                     this.log.debug(
@@ -238,6 +264,13 @@ export class MQTTClientClass extends BaseClass {
         });
     }
 
+    /**
+     * Waits for the `UrlFetch` answer of Tasmota on `stat/RESULT`.
+     *
+     * @param _topic panel topic
+     * @param timeout ms, 0 = no timeout
+     * @returns resolves with `{"UrlFetch":"Done"}`, rejects with any other UrlFetch answer (`Failed`) or on timeout
+     */
     async waitTasmotaUrlFetch(_topic: string, timeout: number): Promise<void> {
         return new Promise((resolve, reject) => {
             const topic = `${_topic}/stat/RESULT`;
@@ -250,14 +283,17 @@ export class MQTTClientClass extends BaseClass {
             }
 
             void this.subscribe(topic, async (_topic, _message) => {
-                const payload = JSON.parse(_message) as {
-                    UrlFetch?: string;
-                };
-                if (payload.UrlFetch !== 'Done') {
-                    return false; // keep listener,
+                const result = parseUrlFetchResult(_message);
+                if (result === 'none') {
+                    return false; // keep listener, answer of another command
                 }
                 if (ref) {
                     this.adapter.clearTimeout(ref);
+                }
+                if (result === 'failed') {
+                    this.log.debug(`Tasmota berry download failed: ${_topic} with message: ${_message}`);
+                    reject(new Error(`UrlFetch failed: ${_message}`));
+                    return true; // remove this one-shot listener
                 }
                 this.log.debug(`Tasmota install berry detected: ${_topic} with message: ${_message}`);
                 resolve();
