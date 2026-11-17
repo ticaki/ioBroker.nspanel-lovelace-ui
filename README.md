@@ -164,6 +164,7 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
 - (ticaki) Admin, Panelinfo: a long panel title no longer widens the card
 - (ticaki) panel setup recognizes an existing panel by its MAC address, so changing topic, name or IP updates it instead of creating a duplicate (#899)
 - (ticaki) changing the topic or name of a panel now also moves its pages, screensaver and navigation assignments, its script configuration and renames its configuration script (#899)
+- (ticaki) log: no error when no panel is configured yet, no "Update detected" message on every MQTT connect, panel name instead of id in the screensaver message, clearer script update errors
 
 ### 2.3.1 (2026-11-16)
 - (ticaki) Admin: help links to the documentation at many settings, in the ioBroker system language

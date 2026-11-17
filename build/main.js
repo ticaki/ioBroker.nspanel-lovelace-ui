@@ -567,7 +567,11 @@ class NspanelLovelaceUi extends utils.Adapter {
       try {
         this.mainConfiguration = await import_config_manager.ConfigManager.getConfig(this, config);
       } catch (e) {
-        this.log.error(`Error in configuration: ${e.message}`);
+        if (e instanceof import_config_manager.NoPanelsConfiguredError) {
+          this.log.info(e.message);
+        } else {
+          this.log.error(`Error in configuration: ${e.message}`);
+        }
         this.mainConfiguration = [];
         pauseAdapter = true;
       }
@@ -850,7 +854,7 @@ class NspanelLovelaceUi extends utils.Adapter {
             `http://${tasmota.ip}/cm?${this.config.useTasmotaAdmin ? `user=admin&password=${this.config.tasmotaAdminPassword}` : ``}&cmnd=Restart 1`
           );
         } else {
-          this.log.info(`Update detected on the Nspanel with the ip ${tasmota.ip}!!`);
+          this.log.debug(`Panel with ip ${tasmota.ip}: no pending firmware update, no restart needed`);
         }
       } catch (e) {
         this.log.warn(
@@ -2291,6 +2295,19 @@ class NspanelLovelaceUi extends utils.Adapter {
     }
     await this.setForeignStateAsync(dp, val, false);
   }
+  /**
+   * Message for a script update that cannot find the token which separates the user configuration from the
+   * script code - names where the token is missing.
+   *
+   * @param scriptId id of the script
+   * @param token name of the token for the message
+   * @param places where the token was searched and whether it was found
+   * @returns the message
+   */
+  scriptTokenError(scriptId, token, places) {
+    const missing = places.filter((p) => !p.found).map((p) => p.where).join(" and ");
+    return `Update script ${scriptId} failed: the ${token} line was not found in ${missing}`;
+  }
   async createGlobalConfigurationScript() {
     var _a;
     const scriptPath = `script.js.${this.library.cleandp(this.namespace, false, true)}`;
@@ -2326,8 +2343,12 @@ class NspanelLovelaceUi extends utils.Adapter {
             this.log.info(`Update script ${scriptId}`);
             file = o.common.source.substring(0, indexTo) + baseFile.substring(indexFrom);
           } else {
-            this.log.error(`Update script ${scriptId} something whent wrong!`);
-            return { error: `Update script ${scriptId} something whent wrong!` };
+            const error = this.scriptTokenError(scriptId, token, [
+              { found: indexFrom !== -1, where: "the template example_sendTo_script_iobroker.ts" },
+              { found: indexTo !== -1, where: "the existing script" }
+            ]);
+            this.log.error(error);
+            return { error };
           }
           this.log.info(`Update global script ${scriptId}`);
         } else {
@@ -2337,8 +2358,12 @@ class NspanelLovelaceUi extends utils.Adapter {
             this.log.info(`Update script ${scriptId}`);
             file = file.substring(0, indexTo) + baseFile.substring(indexFrom);
           } else {
-            this.log.error(`Update script ${scriptId} something whent wrong!`);
-            return { error: `Update script ${scriptId} something whent wrong!` };
+            const error = this.scriptTokenError(scriptId, token, [
+              { found: indexFrom !== -1, where: "the template example_sendTo_script_iobroker.ts" },
+              { found: indexTo !== -1, where: "the template globalPageConfig.ts" }
+            ]);
+            this.log.error(error);
+            return { error };
           }
           this.log.info(`Create global script ${scriptId}`);
         }
@@ -2476,7 +2501,7 @@ class NspanelLovelaceUi extends utils.Adapter {
    * @param obj - die sendTo-Nachricht aus dem Admin
    */
   async nsPanelInitStep1(obj) {
-    var _a, _b, _c, _d;
+    var _a, _b, _c, _d, _e;
     const msg = obj.message;
     const useInternalServer = !((msg == null ? void 0 : msg.mqttServer) == null || msg.mqttServer === false || msg.mqttServer === "false");
     if (!useInternalServer && (0, import_credentials.isCredentialId)(msg == null ? void 0 : msg.mqttCredentialId)) {
@@ -2502,7 +2527,7 @@ class NspanelLovelaceUi extends utils.Adapter {
     }
     msg.mqttServer = useInternalServer;
     const topic = msg.tasmotaTopic;
-    let panel = void 0;
+    let panel = (_a = this.controller) == null ? void 0 : _a.panels.find((a) => a.topic === topic);
     try {
       if (!await this.getVersionsJson()) {
         this.log.error(
@@ -2518,20 +2543,23 @@ class NspanelLovelaceUi extends utils.Adapter {
       if (!(0, import_function_and_const.isTasmotaStatusNet)(r) || !r || !r.StatusNET || !r.StatusNET.Mac) {
         this.log.warn(`Device with topic ${topic} not found!`);
         this.answerMessage(obj, { error: "sendToDeviceNotFound" });
+        if (panel) {
+          void panel.setStatus("error");
+        }
         return;
       }
-      const panels = (_a = this.config.panels) != null ? _a : [];
+      const panels = (_b = this.config.panels) != null ? _b : [];
       const match = (0, import_panel_setup.matchPanelForSetup)(panels, this.library.cleandp(r.StatusNET.Mac), topic);
       if ("error" in match) {
         this.log.error(
-          `The topic ${topic} is already used by the panel ${(_c = (_b = panels[match.conflictIndex]) == null ? void 0 : _b.name) != null ? _c : ""}!`
+          `The topic ${topic} is already used by the panel ${(_d = (_c = panels[match.conflictIndex]) == null ? void 0 : _c.name) != null ? _d : ""}!`
         );
         this.answerMessage(obj, { error: match.error });
         return;
       }
       const item = match.isNew ? { name: "", ip: "", topic: "", id: "", model: "eu" } : panels[match.index];
       const panelTopic = match.isNew ? topic : item.topic;
-      panel = (_d = this.controller) == null ? void 0 : _d.panels.find((a) => a.topic === panelTopic);
+      panel = (_e = this.controller) == null ? void 0 : _e.panels.find((a) => a.topic === panelTopic);
       if (panel) {
         void panel.setStatus("setup");
       }
@@ -2939,8 +2967,12 @@ class NspanelLovelaceUi extends utils.Adapter {
             this.log.info(`Update script ${scriptId}`);
             file = o.common.source.substring(0, indexTo) + file.substring(indexFrom);
           } else {
-            this.log.warn(`Update script ${scriptId} something whent wrong!`);
-            return { error: `Update script ${scriptId} something whent wrong!` };
+            const error = this.scriptTokenError(scriptId, "END STOP", [
+              { found: indexFrom !== -1, where: "the template example_sendTo_script_iobroker.ts" },
+              { found: indexTo !== -1, where: "the existing script" }
+            ]);
+            this.log.warn(error);
+            return { error };
           }
         } else {
           this.log.info(`Create script ${scriptId}`);

@@ -29,11 +29,13 @@ var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: tru
 var admin_exports = {};
 __export(admin_exports, {
   AdminConfiguration: () => AdminConfiguration,
+  adminScreensaverMessage: () => adminScreensaverMessage,
   alarmButtonData: () => alarmButtonData,
   buildMediaScriptPage: () => buildMediaScriptPage,
   buildThermo2ScriptPage: () => buildThermo2ScriptPage,
   buildThermoScriptPage: () => buildThermoScriptPage,
   navigationTargetProblem: () => navigationTargetProblem,
+  panelLabel: () => panelLabel,
   qrUsesPassword: () => qrUsesPassword
 });
 module.exports = __toCommonJS(admin_exports);
@@ -75,6 +77,13 @@ function navigationTargetProblem(option, target) {
     return "has no page (script page dropped or admin page missing)";
   }
   return void 0;
+}
+function panelLabel(option) {
+  return option.friendlyName || option.name;
+}
+function adminScreensaverMessage(entry, option) {
+  const replacesScript = option.withoutScript !== true && option.pages.some((p) => (0, import_admin_screensaver.isScreensaverPage)(p));
+  return `Screensaver '${entry.name}' (${entry.mode}) from the admin configuration ${replacesScript ? "replaces the script screensaver of" : "is used by"} panel '${panelLabel(option)}'`;
 }
 function shallowDescribe(value) {
   if (value === null) {
@@ -170,7 +179,7 @@ Stack: ${stack}`
     }
     if (others.length > 0) {
       this.log.warn(
-        `Panel '${option.name}' (${option.topic}) is listed in several screensavers (${[entry.name, ...others].join(", ")}) - '${entry.name}' is used`
+        `Panel '${panelLabel(option)}' (${option.topic}) is listed in several screensavers (${[entry.name, ...others].join(", ")}) - '${entry.name}' is used`
       );
     }
     const lang = this.adapter.language || "en";
@@ -203,12 +212,10 @@ Stack: ${stack}`
     }
     const page = result.configArray;
     (0, import_admin_screensaver.applyScreensaverEntry)(page, entry);
-    const scriptPages = option.pages.filter((p) => (0, import_admin_screensaver.isScreensaverPage)(p)).length;
+    const message = adminScreensaverMessage(entry, option);
     option.pages = option.pages.filter((p) => !(0, import_admin_screensaver.isScreensaverPage)(p));
     option.pages.push(page);
-    this.log.info(
-      `Screensaver '${entry.name}' (${entry.mode}) from the admin configuration ${scriptPages > 0 ? "replaces the script screensaver of" : "is used by"} panel '${option.name}'`
-    );
+    this.log.info(message);
   }
   /**
    * Builds the runtime page of a cardThermo2 entry.
@@ -1325,11 +1332,13 @@ function dataForcardTrash(entry) {
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
   AdminConfiguration,
+  adminScreensaverMessage,
   alarmButtonData,
   buildMediaScriptPage,
   buildThermo2ScriptPage,
   buildThermoScriptPage,
   navigationTargetProblem,
+  panelLabel,
   qrUsesPassword
 });
 //# sourceMappingURL=admin.js.map

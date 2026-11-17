@@ -22,6 +22,7 @@ import {
     screensaverNotifyToScript,
 } from './admin-screensaver';
 import type * as pages from '../types/pages';
+import { adminScreensaverMessage } from './admin';
 
 describe('lib/configuration - admin screensaver (entry -> script configuration)', () => {
     it('converts the admin colors to the RGB object of the script', () => {
@@ -622,5 +623,38 @@ describe('lib/configuration - admin screensaver (entry -> script configuration)'
         expect(isScreensaverPage({ config: { card: 'screensaver2' } })).to.equal(true);
         expect(isScreensaverPage({ config: { card: 'cardGrid' } })).to.equal(false);
         expect(isScreensaverPage(undefined)).to.equal(false);
+    });
+});
+
+describe('lib/configuration - admin screensaver log message', () => {
+    const entry = { name: 'Living', mode: 'standard' };
+    const screensaver = { uniqueID: 'screensaver', config: { card: 'screensaver' } } as unknown as pages.PageBase;
+
+    it('names the panel by its name, not by its id', () => {
+        const message = adminScreensaverMessage(entry, {
+            name: 'aabbccddeeff',
+            friendlyName: 'nspanel-wz',
+            pages: [screensaver],
+        });
+        expect(message).to.contain(`panel 'nspanel-wz'`);
+        expect(message).to.not.contain('aabbccddeeff');
+    });
+
+    it('falls back to the id when the panel has no name', () => {
+        expect(adminScreensaverMessage(entry, { name: 'aabbccddeeff', pages: [] })).to.contain(`panel 'aabbccddeeff'`);
+    });
+
+    it('replaces the screensaver only when a script delivers one', () => {
+        const withScript = adminScreensaverMessage(entry, { name: 'a', friendlyName: 'A', pages: [screensaver] });
+        expect(withScript).to.contain('replaces the script screensaver of');
+        // panel without script: the screensaver of the empty script template is a placeholder
+        const withoutScript = adminScreensaverMessage(entry, {
+            name: 'a',
+            friendlyName: 'A',
+            withoutScript: true,
+            pages: [screensaver],
+        });
+        expect(withoutScript).to.contain('is used by');
+        expect(withoutScript).to.not.contain('replaces');
     });
 });

@@ -31,7 +31,7 @@ import { FidoService } from './lib/web/fido';
 import { FidoCredentialStore } from './lib/web/fido-store';
 import { Icons } from './lib/const/icon_mapping';
 import * as definition from './lib/const/definition';
-import { ConfigManager } from './lib/classes/config-manager';
+import { ConfigManager, NoPanelsConfiguredError } from './lib/classes/config-manager';
 import { pageItemTemplateInfos } from './lib/templates/template-info';
 import { mediaPlayerInfo } from './lib/configuration/admin-media';
 import type { Panel, panelConfigPartial } from './lib/controller/panel';
@@ -713,7 +713,11 @@ class NspanelLovelaceUi extends utils.Adapter {
             try {
                 this.mainConfiguration = await ConfigManager.getConfig(this, config);
             } catch (e: any) {
-                this.log.error(`Error in configuration: ${e.message}`);
+                if (e instanceof NoPanelsConfiguredError) {
+                    this.log.info(e.message);
+                } else {
+                    this.log.error(`Error in configuration: ${e.message}`);
+                }
                 this.mainConfiguration = [];
                 pauseAdapter = true;
             }
@@ -1062,7 +1066,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                             `&cmnd=Restart 1`,
                     );
                 } else {
-                    this.log.info(`Update detected on the Nspanel with the ip ${tasmota.ip}!!`);
+                    this.log.debug(`Panel with ip ${tasmota.ip}: no pending firmware update, no restart needed`);
                 }
             } catch (e: any) {
                 this.log.warn(
@@ -2693,6 +2697,23 @@ class NspanelLovelaceUi extends utils.Adapter {
         }
         await this.setForeignStateAsync(dp, val, false);
     }
+    /**
+     * Message for a script update that cannot find the token which separates the user configuration from the
+     * script code - names where the token is missing.
+     *
+     * @param scriptId id of the script
+     * @param token name of the token for the message
+     * @param places where the token was searched and whether it was found
+     * @returns the message
+     */
+    private scriptTokenError(scriptId: string, token: string, places: { found: boolean; where: string }[]): string {
+        const missing = places
+            .filter(p => !p.found)
+            .map(p => p.where)
+            .join(' and ');
+        return `Update script ${scriptId} failed: the ${token} line was not found in ${missing}`;
+    }
+
     async createGlobalConfigurationScript(): Promise<any> {
         const scriptPath = `script.js.${this.library.cleandp(this.namespace, false, true)}`;
 
@@ -2731,8 +2752,12 @@ class NspanelLovelaceUi extends utils.Adapter {
                         this.log.info(`Update script ${scriptId}`);
                         file = o.common.source.substring(0, indexTo) + baseFile.substring(indexFrom);
                     } else {
-                        this.log.error(`Update script ${scriptId} something whent wrong!`);
-                        return { error: `Update script ${scriptId} something whent wrong!` };
+                        const error = this.scriptTokenError(scriptId, token, [
+                            { found: indexFrom !== -1, where: 'the template example_sendTo_script_iobroker.ts' },
+                            { found: indexTo !== -1, where: 'the existing script' },
+                        ]);
+                        this.log.error(error);
+                        return { error };
                     }
                     this.log.info(`Update global script ${scriptId}`);
                 } else {
@@ -2742,8 +2767,12 @@ class NspanelLovelaceUi extends utils.Adapter {
                         this.log.info(`Update script ${scriptId}`);
                         file = file.substring(0, indexTo) + baseFile.substring(indexFrom);
                     } else {
-                        this.log.error(`Update script ${scriptId} something whent wrong!`);
-                        return { error: `Update script ${scriptId} something whent wrong!` };
+                        const error = this.scriptTokenError(scriptId, token, [
+                            { found: indexFrom !== -1, where: 'the template example_sendTo_script_iobroker.ts' },
+                            { found: indexTo !== -1, where: 'the template globalPageConfig.ts' },
+                        ]);
+                        this.log.error(error);
+                        return { error };
                     }
                     this.log.info(`Create global script ${scriptId}`);
                 }
@@ -2917,7 +2946,9 @@ class NspanelLovelaceUi extends utils.Adapter {
         msg.mqttServer = useInternalServer;
 
         const topic: string = msg.tasmotaTopic;
-        let panel: Panel | undefined = undefined;
+        // Until the device is assigned by its MAC, the running panel instance with the topic of the request
+        // receives the error status; after the assignment it is the instance of the matched entry.
+        let panel: Panel | undefined = this.controller?.panels.find(a => a.topic === topic);
         try {
             if (!(await this.getVersionsJson())) {
                 this.log.error(
@@ -2934,6 +2965,9 @@ class NspanelLovelaceUi extends utils.Adapter {
             if (!isTasmotaStatusNet(r) || !r || !r.StatusNET || !r.StatusNET.Mac) {
                 this.log.warn(`Device with topic ${topic} not found!`);
                 this.answerMessage(obj, { error: 'sendToDeviceNotFound' });
+                if (panel) {
+                    void panel.setStatus('error');
+                }
                 return;
             }
 
@@ -3402,8 +3436,12 @@ class NspanelLovelaceUi extends utils.Adapter {
                         this.log.info(`Update script ${scriptId}`);
                         file = o.common.source.substring(0, indexTo) + file.substring(indexFrom);
                     } else {
-                        this.log.warn(`Update script ${scriptId} something whent wrong!`);
-                        return { error: `Update script ${scriptId} something whent wrong!` };
+                        const error = this.scriptTokenError(scriptId, 'END STOP', [
+                            { found: indexFrom !== -1, where: 'the template example_sendTo_script_iobroker.ts' },
+                            { found: indexTo !== -1, where: 'the existing script' },
+                        ]);
+                        this.log.warn(error);
+                        return { error };
                     }
                 } else {
                     this.log.info(`Create script ${scriptId}`);
