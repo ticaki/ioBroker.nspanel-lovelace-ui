@@ -30,6 +30,19 @@
 - Logging: `adapter.log.*` – kein `console.*` im Produktivcode.
 - Adapter-Timer nutzen (`adapter.setTimeout/setInterval`), keine globalen.
 
+## E2E-Test vor dem Push (Pflicht bei Codeänderungen)
+
+Bevor eine Änderung gepusht wird, die **Code berührt** (`src/`, `src-admin/`, `src-web/`, `package.json`/Abhängigkeiten,
+Tests), muss der lokale End-to-End-Test grün sein:
+```
+npm run build
+npm run test:e2e
+```
+Nicht nötig bei reinen Änderungen an Doku (`*.md`, `doc/`), HMI-Dateien, Bildern, Übersetzungen ohne Codebezug o. Ä.
+Der Test läuft nur lokal (nicht in der CI); Details in `test/e2e/README.md`. Schlägt er fehl: nicht pushen, Ursache klären.
+Weicht nur ein Snapshot wegen einer **gewollten** Änderung ab: `UPDATE_SNAPSHOTS=1 npm run test:e2e`, den Diff von
+`test/e2e/__snapshots__/e2e.snap.json` Eintrag für Eintrag prüfen und mitcommitten – nie blind neu aufnehmen.
+
 ## Changelog
 
 Jede für den Endnutzer relevante Änderung bekommt einen kurzen Eintrag in `README.md` unter `## Changelog` → `### **WORK IN PROGRESS**`:
