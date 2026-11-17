@@ -101,7 +101,23 @@ describe('lib/configuration - admin screensaver (entry -> script configuration)'
             ScreensaverEntityIconOff: null,
             ScreensaverEntityOnText: null,
             ScreensaverEntityOffText: null,
+            ScreensaverEntityFillIfBelowMin: false,
         });
+    });
+
+    it('writes the fill option always - not set keeps a hidden item hidden, the runtime default would fill', () => {
+        const item = { state: 's', iconOn: 'lightbulb' };
+        expect(screensaverItemToScript(item, 'left')).to.include({ ScreensaverEntityFillIfBelowMin: false });
+        expect(screensaverItemToScript({ ...item, fillIfBelowMin: false }, 'bottom')).to.include({
+            ScreensaverEntityFillIfBelowMin: false,
+        });
+        expect(screensaverItemToScript({ ...item, fillIfBelowMin: true }, 'indicator')).to.include({
+            ScreensaverEntityFillIfBelowMin: true,
+        });
+        // a template element has no such field - the runtime does not fill with hidden templates
+        expect(
+            screensaverItemToScript({ state: 'x', template: 'text.window.isOpen', fillIfBelowMin: true }, 'left'),
+        ).to.not.have.property('ScreensaverEntityFillIfBelowMin');
     });
 
     it('takes the default icons of the role when the item has none, the fallback icon without a known role', () => {

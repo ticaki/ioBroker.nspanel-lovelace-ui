@@ -1311,6 +1311,7 @@
     "screensaver_item_dpInit_none": "This template needs no object - it brings its own data",
     "screensaver_item_enabled": "State that hides the item while false",
     "screensaver_item_factor": "Factor",
+    "screensaver_item_fillIfBelowMin": "Fill free slots even when hidden",
     "screensaver_item_headline": "Headline (empty = name of the state)",
     "screensaver_item_iconFont": "Icon font",
     "screensaver_item_iconFontHint": "Only the screensaver 'Tiles' changes the font of the icon field. Empty = font of the panel.",

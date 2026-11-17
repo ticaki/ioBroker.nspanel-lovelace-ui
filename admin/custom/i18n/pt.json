@@ -1277,6 +1277,7 @@
     "screensaver_item_dpInit_none": "Este template não precisa de objeto – traz os seus próprios dados",
     "screensaver_item_enabled": "Estado que oculta o item se falso",
     "screensaver_item_factor": "Fator",
+    "screensaver_item_fillIfBelowMin": "Preencher espaços livres mesmo quando oculto",
     "screensaver_item_headline": "Título (vazio = nome do estado)",
     "screensaver_item_iconFont": "Fonte do ícone",
     "screensaver_item_iconFontHint": "Apenas o protetor de tela 'Blocos' altera a fonte do campo de ícone. Vazio = fonte do painel.",

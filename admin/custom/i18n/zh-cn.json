@@ -1277,6 +1277,7 @@
     "screensaver_item_dpInit_none": "此模板不需要对象——它自带数据",
     "screensaver_item_enabled": "为假时隐藏该项目的状态",
     "screensaver_item_factor": "系数",
+    "screensaver_item_fillIfBelowMin": "即使隐藏也填充空位",
     "screensaver_item_headline": "标题（留空 = 状态名称）",
     "screensaver_item_iconFont": "图标字体",
     "screensaver_item_iconFontHint": "只有屏保“磁贴”会更改图标字段的字体。留空 = 面板字体。",

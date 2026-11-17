@@ -1277,6 +1277,7 @@
     "screensaver_item_dpInit_none": "Questo template non ha bisogno di un oggetto – porta i propri dati",
     "screensaver_item_enabled": "Stato che nasconde l’elemento se falso",
     "screensaver_item_factor": "Fattore",
+    "screensaver_item_fillIfBelowMin": "Riempire i posti liberi anche se nascosto",
     "screensaver_item_headline": "Titolo (vuoto = nome dello stato)",
     "screensaver_item_iconFont": "Carattere dell'icona",
     "screensaver_item_iconFontHint": "Solo lo screensaver 'Riquadri' cambia il carattere del campo icona. Vuoto = carattere del pannello.",
