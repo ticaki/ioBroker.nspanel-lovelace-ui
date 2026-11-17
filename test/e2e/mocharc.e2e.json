@@ -1,0 +1,5 @@
+{
+    "spec": ["test/e2e/index.js"],
+    "timeout": 60000,
+    "exit": true
+}

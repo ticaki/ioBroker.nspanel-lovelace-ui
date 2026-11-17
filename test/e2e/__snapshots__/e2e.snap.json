@@ -1,0 +1,1332 @@
+{
+  "01 Startup › NSPanel (MQTT) › asks Tasmota for status, relays and driver version": {
+    "nspanel": {},
+    "web": {},
+    "states": {
+      "0_userdata.0.e2e.blind.ACTUAL": 50,
+      "0_userdata.0.e2e.blind.CLOSE": false,
+      "0_userdata.0.e2e.blind.OPEN": false,
+      "0_userdata.0.e2e.blind.SET": 50,
+      "0_userdata.0.e2e.blind.STOP": false,
+      "0_userdata.0.e2e.humidity": 48,
+      "0_userdata.0.e2e.light.ON_SET": false,
+      "0_userdata.0.e2e.light.SET": 40,
+      "0_userdata.0.e2e.power": 1234,
+      "0_userdata.0.e2e.socket.SET": false,
+      "0_userdata.0.e2e.socket2.SET": false,
+      "0_userdata.0.e2e.temperature": 21.5,
+      "0_userdata.0.e2e.window": false
+    }
+  },
+  "01 Startup › NSPanel (MQTT) › goes online and stores the Tasmota / driver infos": {
+    "nspanel": {},
+    "web": {},
+    "states": {
+      "0_userdata.0.e2e.blind.ACTUAL": 50,
+      "0_userdata.0.e2e.blind.CLOSE": false,
+      "0_userdata.0.e2e.blind.OPEN": false,
+      "0_userdata.0.e2e.blind.SET": 50,
+      "0_userdata.0.e2e.blind.STOP": false,
+      "0_userdata.0.e2e.humidity": 48,
+      "0_userdata.0.e2e.light.ON_SET": false,
+      "0_userdata.0.e2e.light.SET": 40,
+      "0_userdata.0.e2e.power": 1234,
+      "0_userdata.0.e2e.socket.SET": false,
+      "0_userdata.0.e2e.socket2.SET": false,
+      "0_userdata.0.e2e.temperature": 21.5,
+      "0_userdata.0.e2e.window": false
+    }
+  },
+  "01 Startup › NSPanel (MQTT) › is offered the startup page, then gets the start page with its items": {
+    "nspanel": {
+      "dimmode": "dimmode~<dim>~<dim>~0~65535",
+      "entityUpd": "entityUpd~E2E Main~button~bSubPrev~{U+E730}~65535~~~button~bSubNext~{U+E733}~65535~~~switch~0?0~{U+E905}~64512~E2E Socket~0~light2~0?1~{U+E335}~46486~E2E Light~0~shutter2~0?2~{U+FD43}~63488~E2E Blind~{U+E05C}|{U+E4DA}|{U+E044}|enable|enable|enable~button~0?3~{U+F2A7}~65504~E2E To Sub~1~~~~~~~~~~~~",
+      "pageType": "pageType~cardGrid",
+      "timeout": "timeout~2"
+    },
+    "web": {
+      "dimmode": "dimmode~<dim>~<dim>~0~65535",
+      "entityUpd": "entityUpd~E2E Main~button~bSubPrev~{U+E730}~65535~~~button~bSubNext~{U+E733}~65535~~~switch~0?0~{U+E905}~64512~E2E Socket~0~light2~0?1~{U+E335}~46486~E2E Light~0~shutter2~0?2~{U+FD43}~63488~E2E Blind~{U+E05C}|{U+E4DA}|{U+E044}|enable|enable|enable~button~0?3~{U+F2A7}~65504~E2E To Sub~1~~~~~~~~~~~~",
+      "pageType": "pageType~cardGrid",
+      "timeout": "timeout~2"
+    },
+    "states": {
+      "0_userdata.0.e2e.blind.ACTUAL": 50,
+      "0_userdata.0.e2e.blind.CLOSE": false,
+      "0_userdata.0.e2e.blind.OPEN": false,
+      "0_userdata.0.e2e.blind.SET": 50,
+      "0_userdata.0.e2e.blind.STOP": false,
+      "0_userdata.0.e2e.humidity": 48,
+      "0_userdata.0.e2e.light.ON_SET": false,
+      "0_userdata.0.e2e.light.SET": 40,
+      "0_userdata.0.e2e.power": 1234,
+      "0_userdata.0.e2e.socket.SET": false,
+      "0_userdata.0.e2e.socket2.SET": false,
+      "0_userdata.0.e2e.temperature": 21.5,
+      "0_userdata.0.e2e.window": false
+    }
+  },
+  "01 Startup › NSPanel (MQTT) › sends the display settings (dimmode, timeout)": {
+    "nspanel": {},
+    "web": {},
+    "states": {
+      "0_userdata.0.e2e.blind.ACTUAL": 50,
+      "0_userdata.0.e2e.blind.CLOSE": false,
+      "0_userdata.0.e2e.blind.OPEN": false,
+      "0_userdata.0.e2e.blind.SET": 50,
+      "0_userdata.0.e2e.blind.STOP": false,
+      "0_userdata.0.e2e.humidity": 48,
+      "0_userdata.0.e2e.light.ON_SET": false,
+      "0_userdata.0.e2e.light.SET": 40,
+      "0_userdata.0.e2e.power": 1234,
+      "0_userdata.0.e2e.socket.SET": false,
+      "0_userdata.0.e2e.socket2.SET": false,
+      "0_userdata.0.e2e.temperature": 21.5,
+      "0_userdata.0.e2e.window": false
+    }
+  },
+  "01 Startup › Web panel (WebSocket) › gets hello with topic, id and model of the admin table": {
+    "nspanel": {},
+    "web": {},
+    "states": {
+      "0_userdata.0.e2e.blind.ACTUAL": 50,
+      "0_userdata.0.e2e.blind.CLOSE": false,
+      "0_userdata.0.e2e.blind.OPEN": false,
+      "0_userdata.0.e2e.blind.SET": 50,
+      "0_userdata.0.e2e.blind.STOP": false,
+      "0_userdata.0.e2e.humidity": 48,
+      "0_userdata.0.e2e.light.ON_SET": false,
+      "0_userdata.0.e2e.light.SET": 40,
+      "0_userdata.0.e2e.power": 1234,
+      "0_userdata.0.e2e.socket.SET": false,
+      "0_userdata.0.e2e.socket2.SET": false,
+      "0_userdata.0.e2e.temperature": 21.5,
+      "0_userdata.0.e2e.window": false
+    }
+  },
+  "01 Startup › Web panel (WebSocket) › goes online": {
+    "nspanel": {},
+    "web": {},
+    "states": {
+      "0_userdata.0.e2e.blind.ACTUAL": 50,
+      "0_userdata.0.e2e.blind.CLOSE": false,
+      "0_userdata.0.e2e.blind.OPEN": false,
+      "0_userdata.0.e2e.blind.SET": 50,
+      "0_userdata.0.e2e.blind.STOP": false,
+      "0_userdata.0.e2e.humidity": 48,
+      "0_userdata.0.e2e.light.ON_SET": false,
+      "0_userdata.0.e2e.light.SET": 40,
+      "0_userdata.0.e2e.power": 1234,
+      "0_userdata.0.e2e.socket.SET": false,
+      "0_userdata.0.e2e.socket2.SET": false,
+      "0_userdata.0.e2e.temperature": 21.5,
+      "0_userdata.0.e2e.window": false
+    }
+  },
+  "01 Startup › Web panel (WebSocket) › receives the start page as cmd frames and acknowledges every seq": {
+    "nspanel": {
+      "dimmode": "dimmode~<dim>~<dim>~0~65535",
+      "entityUpd": "entityUpd~E2E Main~button~bSubPrev~{U+E730}~65535~~~button~bSubNext~{U+E733}~65535~~~switch~0?0~{U+E905}~64512~E2E Socket~0~light2~0?1~{U+E335}~46486~E2E Light~0~shutter2~0?2~{U+FD43}~63488~E2E Blind~{U+E05C}|{U+E4DA}|{U+E044}|enable|enable|enable~button~0?3~{U+F2A7}~65504~E2E To Sub~1~~~~~~~~~~~~",
+      "pageType": "pageType~cardGrid",
+      "timeout": "timeout~2"
+    },
+    "web": {
+      "dimmode": "dimmode~<dim>~<dim>~0~65535",
+      "entityUpd": "entityUpd~E2E Main~button~bSubPrev~{U+E730}~65535~~~button~bSubNext~{U+E733}~65535~~~switch~0?0~{U+E905}~64512~E2E Socket~0~light2~0?1~{U+E335}~46486~E2E Light~0~shutter2~0?2~{U+FD43}~63488~E2E Blind~{U+E05C}|{U+E4DA}|{U+E044}|enable|enable|enable~button~0?3~{U+F2A7}~65504~E2E To Sub~1~~~~~~~~~~~~",
+      "pageType": "pageType~cardGrid",
+      "timeout": "timeout~2"
+    },
+    "states": {
+      "0_userdata.0.e2e.blind.ACTUAL": 50,
+      "0_userdata.0.e2e.blind.CLOSE": false,
+      "0_userdata.0.e2e.blind.OPEN": false,
+      "0_userdata.0.e2e.blind.SET": 50,
+      "0_userdata.0.e2e.blind.STOP": false,
+      "0_userdata.0.e2e.humidity": 48,
+      "0_userdata.0.e2e.light.ON_SET": false,
+      "0_userdata.0.e2e.light.SET": 40,
+      "0_userdata.0.e2e.power": 1234,
+      "0_userdata.0.e2e.socket.SET": false,
+      "0_userdata.0.e2e.socket2.SET": false,
+      "0_userdata.0.e2e.temperature": 21.5,
+      "0_userdata.0.e2e.window": false
+    }
+  },
+  "02 Navigation › NSPanel › main page shows a next arrow": {
+    "nspanel": {},
+    "web": {},
+    "states": {
+      "0_userdata.0.e2e.blind.ACTUAL": 50,
+      "0_userdata.0.e2e.blind.CLOSE": false,
+      "0_userdata.0.e2e.blind.OPEN": false,
+      "0_userdata.0.e2e.blind.SET": 50,
+      "0_userdata.0.e2e.blind.STOP": false,
+      "0_userdata.0.e2e.humidity": 48,
+      "0_userdata.0.e2e.light.ON_SET": false,
+      "0_userdata.0.e2e.light.SET": 40,
+      "0_userdata.0.e2e.power": 1234,
+      "0_userdata.0.e2e.socket.SET": false,
+      "0_userdata.0.e2e.socket2.SET": false,
+      "0_userdata.0.e2e.temperature": 21.5,
+      "0_userdata.0.e2e.window": false
+    }
+  },
+  "02 Navigation › NSPanel › navigation item → sub page with an up arrow": {
+    "nspanel": {
+      "entityUpd": "entityUpd~E2E Sub~button~bUp~{U+E736}~65535~~~~~~~~~switch~2?0~{U+E905}~64512~E2E Socket 2~0~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~",
+      "timeout": "timeout~15"
+    },
+    "web": {},
+    "states": {
+      "0_userdata.0.e2e.blind.ACTUAL": 50,
+      "0_userdata.0.e2e.blind.CLOSE": false,
+      "0_userdata.0.e2e.blind.OPEN": false,
+      "0_userdata.0.e2e.blind.SET": 50,
+      "0_userdata.0.e2e.blind.STOP": false,
+      "0_userdata.0.e2e.humidity": 48,
+      "0_userdata.0.e2e.light.ON_SET": false,
+      "0_userdata.0.e2e.light.SET": 40,
+      "0_userdata.0.e2e.power": 1234,
+      "0_userdata.0.e2e.socket.SET": false,
+      "0_userdata.0.e2e.socket2.SET": false,
+      "0_userdata.0.e2e.temperature": 21.5,
+      "0_userdata.0.e2e.window": false
+    }
+  },
+  "02 Navigation › NSPanel › next → entities page": {
+    "nspanel": {
+      "entityUpd": "entityUpd~E2E Entities~button~bSubPrev~{U+E730}~65535~~~button~bSubNext~{U+E733}~65535~~~switch~1?0~{U+E905}~64512~E2E Socket~0~shutter2~1?1~{U+FD43}~63488~E2E Blind~{U+E05C}|{U+E4DA}|{U+E044}|enable|enable|enable~~~~~~~~~~~~",
+      "pageType": "pageType~cardEntities",
+      "timeout": "timeout~15"
+    },
+    "web": {},
+    "states": {
+      "0_userdata.0.e2e.blind.ACTUAL": 50,
+      "0_userdata.0.e2e.blind.CLOSE": false,
+      "0_userdata.0.e2e.blind.OPEN": false,
+      "0_userdata.0.e2e.blind.SET": 50,
+      "0_userdata.0.e2e.blind.STOP": false,
+      "0_userdata.0.e2e.humidity": 48,
+      "0_userdata.0.e2e.light.ON_SET": false,
+      "0_userdata.0.e2e.light.SET": 40,
+      "0_userdata.0.e2e.power": 1234,
+      "0_userdata.0.e2e.socket.SET": false,
+      "0_userdata.0.e2e.socket2.SET": false,
+      "0_userdata.0.e2e.temperature": 21.5,
+      "0_userdata.0.e2e.window": false
+    }
+  },
+  "02 Navigation › NSPanel › prev → main page": {
+    "nspanel": {
+      "entityUpd": "entityUpd~E2E Main~button~bSubPrev~{U+E730}~65535~~~button~bSubNext~{U+E733}~65535~~~switch~0?0~{U+E905}~64512~E2E Socket~0~light2~0?1~{U+E335}~46486~E2E Light~0~shutter2~0?2~{U+FD43}~63488~E2E Blind~{U+E05C}|{U+E4DA}|{U+E044}|enable|enable|enable~button~0?3~{U+F2A7}~65504~E2E To Sub~1~~~~~~~~~~~~",
+      "pageType": "pageType~cardGrid",
+      "timeout": "timeout~15"
+    },
+    "web": {},
+    "states": {
+      "0_userdata.0.e2e.blind.ACTUAL": 50,
+      "0_userdata.0.e2e.blind.CLOSE": false,
+      "0_userdata.0.e2e.blind.OPEN": false,
+      "0_userdata.0.e2e.blind.SET": 50,
+      "0_userdata.0.e2e.blind.STOP": false,
+      "0_userdata.0.e2e.humidity": 48,
+      "0_userdata.0.e2e.light.ON_SET": false,
+      "0_userdata.0.e2e.light.SET": 40,
+      "0_userdata.0.e2e.power": 1234,
+      "0_userdata.0.e2e.socket.SET": false,
+      "0_userdata.0.e2e.socket2.SET": false,
+      "0_userdata.0.e2e.temperature": 21.5,
+      "0_userdata.0.e2e.window": false
+    }
+  },
+  "02 Navigation › NSPanel › up → main page": {
+    "nspanel": {
+      "entityUpd": "entityUpd~E2E Main~button~bSubPrev~{U+E730}~65535~~~button~bSubNext~{U+E733}~65535~~~switch~0?0~{U+E905}~64512~E2E Socket~0~light2~0?1~{U+E335}~46486~E2E Light~0~shutter2~0?2~{U+FD43}~63488~E2E Blind~{U+E05C}|{U+E4DA}|{U+E044}|enable|enable|enable~button~0?3~{U+F2A7}~65504~E2E To Sub~1~~~~~~~~~~~~",
+      "timeout": "timeout~15"
+    },
+    "web": {},
+    "states": {
+      "0_userdata.0.e2e.blind.ACTUAL": 50,
+      "0_userdata.0.e2e.blind.CLOSE": false,
+      "0_userdata.0.e2e.blind.OPEN": false,
+      "0_userdata.0.e2e.blind.SET": 50,
+      "0_userdata.0.e2e.blind.STOP": false,
+      "0_userdata.0.e2e.humidity": 48,
+      "0_userdata.0.e2e.light.ON_SET": false,
+      "0_userdata.0.e2e.light.SET": 40,
+      "0_userdata.0.e2e.power": 1234,
+      "0_userdata.0.e2e.socket.SET": false,
+      "0_userdata.0.e2e.socket2.SET": false,
+      "0_userdata.0.e2e.temperature": 21.5,
+      "0_userdata.0.e2e.window": false
+    }
+  },
+  "02 Navigation › Web panel › main page shows a next arrow": {
+    "nspanel": {},
+    "web": {},
+    "states": {
+      "0_userdata.0.e2e.blind.ACTUAL": 50,
+      "0_userdata.0.e2e.blind.CLOSE": false,
+      "0_userdata.0.e2e.blind.OPEN": false,
+      "0_userdata.0.e2e.blind.SET": 50,
+      "0_userdata.0.e2e.blind.STOP": false,
+      "0_userdata.0.e2e.humidity": 48,
+      "0_userdata.0.e2e.light.ON_SET": false,
+      "0_userdata.0.e2e.light.SET": 40,
+      "0_userdata.0.e2e.power": 1234,
+      "0_userdata.0.e2e.socket.SET": false,
+      "0_userdata.0.e2e.socket2.SET": false,
+      "0_userdata.0.e2e.temperature": 21.5,
+      "0_userdata.0.e2e.window": false
+    }
+  },
+  "02 Navigation › Web panel › navigation item → sub page with an up arrow": {
+    "nspanel": {},
+    "web": {
+      "entityUpd": "entityUpd~E2E Sub~button~bUp~{U+E736}~65535~~~~~~~~~switch~2?0~{U+E905}~64512~E2E Socket 2~0~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~",
+      "timeout": "timeout~15"
+    },
+    "states": {
+      "0_userdata.0.e2e.blind.ACTUAL": 50,
+      "0_userdata.0.e2e.blind.CLOSE": false,
+      "0_userdata.0.e2e.blind.OPEN": false,
+      "0_userdata.0.e2e.blind.SET": 50,
+      "0_userdata.0.e2e.blind.STOP": false,
+      "0_userdata.0.e2e.humidity": 48,
+      "0_userdata.0.e2e.light.ON_SET": false,
+      "0_userdata.0.e2e.light.SET": 40,
+      "0_userdata.0.e2e.power": 1234,
+      "0_userdata.0.e2e.socket.SET": false,
+      "0_userdata.0.e2e.socket2.SET": false,
+      "0_userdata.0.e2e.temperature": 21.5,
+      "0_userdata.0.e2e.window": false
+    }
+  },
+  "02 Navigation › Web panel › next → entities page": {
+    "nspanel": {},
+    "web": {
+      "entityUpd": "entityUpd~E2E Entities~button~bSubPrev~{U+E730}~65535~~~button~bSubNext~{U+E733}~65535~~~switch~1?0~{U+E905}~64512~E2E Socket~0~shutter2~1?1~{U+FD43}~63488~E2E Blind~{U+E05C}|{U+E4DA}|{U+E044}|enable|enable|enable~~~~~~~~~~~~",
+      "pageType": "pageType~cardEntities",
+      "timeout": "timeout~15"
+    },
+    "states": {
+      "0_userdata.0.e2e.blind.ACTUAL": 50,
+      "0_userdata.0.e2e.blind.CLOSE": false,
+      "0_userdata.0.e2e.blind.OPEN": false,
+      "0_userdata.0.e2e.blind.SET": 50,
+      "0_userdata.0.e2e.blind.STOP": false,
+      "0_userdata.0.e2e.humidity": 48,
+      "0_userdata.0.e2e.light.ON_SET": false,
+      "0_userdata.0.e2e.light.SET": 40,
+      "0_userdata.0.e2e.power": 1234,
+      "0_userdata.0.e2e.socket.SET": false,
+      "0_userdata.0.e2e.socket2.SET": false,
+      "0_userdata.0.e2e.temperature": 21.5,
+      "0_userdata.0.e2e.window": false
+    }
+  },
+  "02 Navigation › Web panel › prev → main page": {
+    "nspanel": {},
+    "web": {
+      "entityUpd": "entityUpd~E2E Main~button~bSubPrev~{U+E730}~65535~~~button~bSubNext~{U+E733}~65535~~~switch~0?0~{U+E905}~64512~E2E Socket~0~light2~0?1~{U+E335}~46486~E2E Light~0~shutter2~0?2~{U+FD43}~63488~E2E Blind~{U+E05C}|{U+E4DA}|{U+E044}|enable|enable|enable~button~0?3~{U+F2A7}~65504~E2E To Sub~1~~~~~~~~~~~~",
+      "pageType": "pageType~cardGrid",
+      "timeout": "timeout~15"
+    },
+    "states": {
+      "0_userdata.0.e2e.blind.ACTUAL": 50,
+      "0_userdata.0.e2e.blind.CLOSE": false,
+      "0_userdata.0.e2e.blind.OPEN": false,
+      "0_userdata.0.e2e.blind.SET": 50,
+      "0_userdata.0.e2e.blind.STOP": false,
+      "0_userdata.0.e2e.humidity": 48,
+      "0_userdata.0.e2e.light.ON_SET": false,
+      "0_userdata.0.e2e.light.SET": 40,
+      "0_userdata.0.e2e.power": 1234,
+      "0_userdata.0.e2e.socket.SET": false,
+      "0_userdata.0.e2e.socket2.SET": false,
+      "0_userdata.0.e2e.temperature": 21.5,
+      "0_userdata.0.e2e.window": false
+    }
+  },
+  "02 Navigation › Web panel › up → main page": {
+    "nspanel": {},
+    "web": {
+      "entityUpd": "entityUpd~E2E Main~button~bSubPrev~{U+E730}~65535~~~button~bSubNext~{U+E733}~65535~~~switch~0?0~{U+E905}~64512~E2E Socket~0~light2~0?1~{U+E335}~46486~E2E Light~0~shutter2~0?2~{U+FD43}~63488~E2E Blind~{U+E05C}|{U+E4DA}|{U+E044}|enable|enable|enable~button~0?3~{U+F2A7}~65504~E2E To Sub~1~~~~~~~~~~~~",
+      "timeout": "timeout~15"
+    },
+    "states": {
+      "0_userdata.0.e2e.blind.ACTUAL": 50,
+      "0_userdata.0.e2e.blind.CLOSE": false,
+      "0_userdata.0.e2e.blind.OPEN": false,
+      "0_userdata.0.e2e.blind.SET": 50,
+      "0_userdata.0.e2e.blind.STOP": false,
+      "0_userdata.0.e2e.humidity": 48,
+      "0_userdata.0.e2e.light.ON_SET": false,
+      "0_userdata.0.e2e.light.SET": 40,
+      "0_userdata.0.e2e.power": 1234,
+      "0_userdata.0.e2e.socket.SET": false,
+      "0_userdata.0.e2e.socket2.SET": false,
+      "0_userdata.0.e2e.temperature": 21.5,
+      "0_userdata.0.e2e.window": false
+    }
+  },
+  "03 Switching › NSPanel, entities page › state false from outside → row shows off": {
+    "nspanel": {
+      "entityUpd": "entityUpd~E2E Entities~button~bSubPrev~{U+E730}~65535~~~button~bSubNext~{U+E733}~65535~~~switch~1?0~{U+E905}~64512~E2E Socket~0~shutter2~1?1~{U+FD43}~63488~E2E Blind~{U+E05C}|{U+E4DA}|{U+E044}|enable|enable|enable~~~~~~~~~~~~"
+    },
+    "web": {
+      "entityUpd": "entityUpd~E2E Main~button~bSubPrev~{U+E730}~65535~~~button~bSubNext~{U+E733}~65535~~~switch~0?0~{U+E905}~64512~E2E Socket~0~light2~0?1~{U+E335}~46486~E2E Light~0~shutter2~0?2~{U+FD43}~63488~E2E Blind~{U+E05C}|{U+E4DA}|{U+E044}|enable|enable|enable~button~0?3~{U+F2A7}~65504~E2E To Sub~1~~~~~~~~~~~~"
+    },
+    "states": {
+      "0_userdata.0.e2e.blind.ACTUAL": 50,
+      "0_userdata.0.e2e.blind.CLOSE": false,
+      "0_userdata.0.e2e.blind.OPEN": false,
+      "0_userdata.0.e2e.blind.SET": 50,
+      "0_userdata.0.e2e.blind.STOP": false,
+      "0_userdata.0.e2e.humidity": 48,
+      "0_userdata.0.e2e.light.ON_SET": false,
+      "0_userdata.0.e2e.light.SET": 40,
+      "0_userdata.0.e2e.power": 1234,
+      "0_userdata.0.e2e.socket.SET": false,
+      "0_userdata.0.e2e.socket2.SET": false,
+      "0_userdata.0.e2e.temperature": 21.5,
+      "0_userdata.0.e2e.window": false
+    }
+  },
+  "03 Switching › NSPanel, entities page › tap → state true, row shows on": {
+    "nspanel": {
+      "entityUpd": "entityUpd~E2E Entities~button~bSubPrev~{U+E730}~65535~~~button~bSubNext~{U+E733}~65535~~~switch~1?0~{U+E424}~65222~E2E Socket~1~shutter2~1?1~{U+FD43}~63488~E2E Blind~{U+E05C}|{U+E4DA}|{U+E044}|enable|enable|enable~~~~~~~~~~~~"
+    },
+    "web": {
+      "entityUpd": "entityUpd~E2E Main~button~bSubPrev~{U+E730}~65535~~~button~bSubNext~{U+E733}~65535~~~switch~0?0~{U+E424}~65222~E2E Socket~1~light2~0?1~{U+E335}~46486~E2E Light~0~shutter2~0?2~{U+FD43}~63488~E2E Blind~{U+E05C}|{U+E4DA}|{U+E044}|enable|enable|enable~button~0?3~{U+F2A7}~65504~E2E To Sub~1~~~~~~~~~~~~"
+    },
+    "states": {
+      "0_userdata.0.e2e.blind.ACTUAL": 50,
+      "0_userdata.0.e2e.blind.CLOSE": false,
+      "0_userdata.0.e2e.blind.OPEN": false,
+      "0_userdata.0.e2e.blind.SET": 50,
+      "0_userdata.0.e2e.blind.STOP": false,
+      "0_userdata.0.e2e.humidity": 48,
+      "0_userdata.0.e2e.light.ON_SET": false,
+      "0_userdata.0.e2e.light.SET": 40,
+      "0_userdata.0.e2e.power": 1234,
+      "0_userdata.0.e2e.socket.SET": true,
+      "0_userdata.0.e2e.socket2.SET": false,
+      "0_userdata.0.e2e.temperature": 21.5,
+      "0_userdata.0.e2e.window": false
+    }
+  },
+  "03 Switching › NSPanel, grid page › socket item shows off": {
+    "nspanel": {},
+    "web": {},
+    "states": {
+      "0_userdata.0.e2e.blind.ACTUAL": 50,
+      "0_userdata.0.e2e.blind.CLOSE": false,
+      "0_userdata.0.e2e.blind.OPEN": false,
+      "0_userdata.0.e2e.blind.SET": 50,
+      "0_userdata.0.e2e.blind.STOP": false,
+      "0_userdata.0.e2e.humidity": 48,
+      "0_userdata.0.e2e.light.ON_SET": false,
+      "0_userdata.0.e2e.light.SET": 40,
+      "0_userdata.0.e2e.power": 1234,
+      "0_userdata.0.e2e.socket.SET": false,
+      "0_userdata.0.e2e.socket2.SET": false,
+      "0_userdata.0.e2e.temperature": 21.5,
+      "0_userdata.0.e2e.window": false
+    }
+  },
+  "03 Switching › NSPanel, grid page › state false from outside → item shows off again": {
+    "nspanel": {
+      "entityUpd": "entityUpd~E2E Main~button~bSubPrev~{U+E730}~65535~~~button~bSubNext~{U+E733}~65535~~~switch~0?0~{U+E905}~64512~E2E Socket~0~light2~0?1~{U+E335}~46486~E2E Light~0~shutter2~0?2~{U+FD43}~63488~E2E Blind~{U+E05C}|{U+E4DA}|{U+E044}|enable|enable|enable~button~0?3~{U+F2A7}~65504~E2E To Sub~1~~~~~~~~~~~~"
+    },
+    "web": {
+      "entityUpd": "entityUpd~E2E Main~button~bSubPrev~{U+E730}~65535~~~button~bSubNext~{U+E733}~65535~~~switch~0?0~{U+E905}~64512~E2E Socket~0~light2~0?1~{U+E335}~46486~E2E Light~0~shutter2~0?2~{U+FD43}~63488~E2E Blind~{U+E05C}|{U+E4DA}|{U+E044}|enable|enable|enable~button~0?3~{U+F2A7}~65504~E2E To Sub~1~~~~~~~~~~~~"
+    },
+    "states": {
+      "0_userdata.0.e2e.blind.ACTUAL": 50,
+      "0_userdata.0.e2e.blind.CLOSE": false,
+      "0_userdata.0.e2e.blind.OPEN": false,
+      "0_userdata.0.e2e.blind.SET": 50,
+      "0_userdata.0.e2e.blind.STOP": false,
+      "0_userdata.0.e2e.humidity": 48,
+      "0_userdata.0.e2e.light.ON_SET": false,
+      "0_userdata.0.e2e.light.SET": 40,
+      "0_userdata.0.e2e.power": 1234,
+      "0_userdata.0.e2e.socket.SET": false,
+      "0_userdata.0.e2e.socket2.SET": false,
+      "0_userdata.0.e2e.temperature": 21.5,
+      "0_userdata.0.e2e.window": false
+    }
+  },
+  "03 Switching › NSPanel, grid page › tap with 0 → state false": {
+    "nspanel": {
+      "entityUpd": "entityUpd~E2E Main~button~bSubPrev~{U+E730}~65535~~~button~bSubNext~{U+E733}~65535~~~switch~0?0~{U+E905}~64512~E2E Socket~0~light2~0?1~{U+E335}~46486~E2E Light~0~shutter2~0?2~{U+FD43}~63488~E2E Blind~{U+E05C}|{U+E4DA}|{U+E044}|enable|enable|enable~button~0?3~{U+F2A7}~65504~E2E To Sub~1~~~~~~~~~~~~"
+    },
+    "web": {
+      "entityUpd": "entityUpd~E2E Main~button~bSubPrev~{U+E730}~65535~~~button~bSubNext~{U+E733}~65535~~~switch~0?0~{U+E905}~64512~E2E Socket~0~light2~0?1~{U+E335}~46486~E2E Light~0~shutter2~0?2~{U+FD43}~63488~E2E Blind~{U+E05C}|{U+E4DA}|{U+E044}|enable|enable|enable~button~0?3~{U+F2A7}~65504~E2E To Sub~1~~~~~~~~~~~~"
+    },
+    "states": {
+      "0_userdata.0.e2e.blind.ACTUAL": 50,
+      "0_userdata.0.e2e.blind.CLOSE": false,
+      "0_userdata.0.e2e.blind.OPEN": false,
+      "0_userdata.0.e2e.blind.SET": 50,
+      "0_userdata.0.e2e.blind.STOP": false,
+      "0_userdata.0.e2e.humidity": 48,
+      "0_userdata.0.e2e.light.ON_SET": false,
+      "0_userdata.0.e2e.light.SET": 40,
+      "0_userdata.0.e2e.power": 1234,
+      "0_userdata.0.e2e.socket.SET": false,
+      "0_userdata.0.e2e.socket2.SET": false,
+      "0_userdata.0.e2e.temperature": 21.5,
+      "0_userdata.0.e2e.window": false
+    }
+  },
+  "03 Switching › NSPanel, grid page › tap → state true, item shows on with another icon color": {
+    "nspanel": {
+      "entityUpd": "entityUpd~E2E Main~button~bSubPrev~{U+E730}~65535~~~button~bSubNext~{U+E733}~65535~~~switch~0?0~{U+E424}~65222~E2E Socket~1~light2~0?1~{U+E335}~46486~E2E Light~0~shutter2~0?2~{U+FD43}~63488~E2E Blind~{U+E05C}|{U+E4DA}|{U+E044}|enable|enable|enable~button~0?3~{U+F2A7}~65504~E2E To Sub~1~~~~~~~~~~~~"
+    },
+    "web": {
+      "entityUpd": "entityUpd~E2E Main~button~bSubPrev~{U+E730}~65535~~~button~bSubNext~{U+E733}~65535~~~switch~0?0~{U+E424}~65222~E2E Socket~1~light2~0?1~{U+E335}~46486~E2E Light~0~shutter2~0?2~{U+FD43}~63488~E2E Blind~{U+E05C}|{U+E4DA}|{U+E044}|enable|enable|enable~button~0?3~{U+F2A7}~65504~E2E To Sub~1~~~~~~~~~~~~"
+    },
+    "states": {
+      "0_userdata.0.e2e.blind.ACTUAL": 50,
+      "0_userdata.0.e2e.blind.CLOSE": false,
+      "0_userdata.0.e2e.blind.OPEN": false,
+      "0_userdata.0.e2e.blind.SET": 50,
+      "0_userdata.0.e2e.blind.STOP": false,
+      "0_userdata.0.e2e.humidity": 48,
+      "0_userdata.0.e2e.light.ON_SET": false,
+      "0_userdata.0.e2e.light.SET": 40,
+      "0_userdata.0.e2e.power": 1234,
+      "0_userdata.0.e2e.socket.SET": true,
+      "0_userdata.0.e2e.socket2.SET": false,
+      "0_userdata.0.e2e.temperature": 21.5,
+      "0_userdata.0.e2e.window": false
+    }
+  },
+  "03 Switching › Web panel, grid page › state false from outside → item shows off": {
+    "nspanel": {
+      "entityUpd": "entityUpd~E2E Entities~button~bSubPrev~{U+E730}~65535~~~button~bSubNext~{U+E733}~65535~~~switch~1?0~{U+E905}~64512~E2E Socket~0~shutter2~1?1~{U+FD43}~63488~E2E Blind~{U+E05C}|{U+E4DA}|{U+E044}|enable|enable|enable~~~~~~~~~~~~"
+    },
+    "web": {
+      "entityUpd": "entityUpd~E2E Main~button~bSubPrev~{U+E730}~65535~~~button~bSubNext~{U+E733}~65535~~~switch~0?0~{U+E905}~64512~E2E Socket~0~light2~0?1~{U+E335}~46486~E2E Light~0~shutter2~0?2~{U+FD43}~63488~E2E Blind~{U+E05C}|{U+E4DA}|{U+E044}|enable|enable|enable~button~0?3~{U+F2A7}~65504~E2E To Sub~1~~~~~~~~~~~~"
+    },
+    "states": {
+      "0_userdata.0.e2e.blind.ACTUAL": 50,
+      "0_userdata.0.e2e.blind.CLOSE": false,
+      "0_userdata.0.e2e.blind.OPEN": false,
+      "0_userdata.0.e2e.blind.SET": 50,
+      "0_userdata.0.e2e.blind.STOP": false,
+      "0_userdata.0.e2e.humidity": 48,
+      "0_userdata.0.e2e.light.ON_SET": false,
+      "0_userdata.0.e2e.light.SET": 40,
+      "0_userdata.0.e2e.power": 1234,
+      "0_userdata.0.e2e.socket.SET": false,
+      "0_userdata.0.e2e.socket2.SET": false,
+      "0_userdata.0.e2e.temperature": 21.5,
+      "0_userdata.0.e2e.window": false
+    }
+  },
+  "03 Switching › Web panel, grid page › tap → state true, item shows on": {
+    "nspanel": {
+      "entityUpd": "entityUpd~E2E Entities~button~bSubPrev~{U+E730}~65535~~~button~bSubNext~{U+E733}~65535~~~switch~1?0~{U+E424}~65222~E2E Socket~1~shutter2~1?1~{U+FD43}~63488~E2E Blind~{U+E05C}|{U+E4DA}|{U+E044}|enable|enable|enable~~~~~~~~~~~~"
+    },
+    "web": {
+      "entityUpd": "entityUpd~E2E Main~button~bSubPrev~{U+E730}~65535~~~button~bSubNext~{U+E733}~65535~~~switch~0?0~{U+E424}~65222~E2E Socket~1~light2~0?1~{U+E335}~46486~E2E Light~0~shutter2~0?2~{U+FD43}~63488~E2E Blind~{U+E05C}|{U+E4DA}|{U+E044}|enable|enable|enable~button~0?3~{U+F2A7}~65504~E2E To Sub~1~~~~~~~~~~~~"
+    },
+    "states": {
+      "0_userdata.0.e2e.blind.ACTUAL": 50,
+      "0_userdata.0.e2e.blind.CLOSE": false,
+      "0_userdata.0.e2e.blind.OPEN": false,
+      "0_userdata.0.e2e.blind.SET": 50,
+      "0_userdata.0.e2e.blind.STOP": false,
+      "0_userdata.0.e2e.humidity": 48,
+      "0_userdata.0.e2e.light.ON_SET": false,
+      "0_userdata.0.e2e.light.SET": 40,
+      "0_userdata.0.e2e.power": 1234,
+      "0_userdata.0.e2e.socket.SET": true,
+      "0_userdata.0.e2e.socket2.SET": false,
+      "0_userdata.0.e2e.temperature": 21.5,
+      "0_userdata.0.e2e.window": false
+    }
+  },
+  "04 Popups › NSPanel, blind row of the entities page › down → CLOSE true": {
+    "nspanel": {},
+    "web": {},
+    "states": {
+      "0_userdata.0.e2e.blind.ACTUAL": 80,
+      "0_userdata.0.e2e.blind.CLOSE": true,
+      "0_userdata.0.e2e.blind.OPEN": true,
+      "0_userdata.0.e2e.blind.SET": 30,
+      "0_userdata.0.e2e.blind.STOP": true,
+      "0_userdata.0.e2e.humidity": 48,
+      "0_userdata.0.e2e.light.ON_SET": false,
+      "0_userdata.0.e2e.light.SET": 20,
+      "0_userdata.0.e2e.power": 1234,
+      "0_userdata.0.e2e.socket.SET": false,
+      "0_userdata.0.e2e.socket2.SET": false,
+      "0_userdata.0.e2e.temperature": 21.5,
+      "0_userdata.0.e2e.window": false
+    }
+  },
+  "04 Popups › NSPanel, blind row of the entities page › stop → STOP true": {
+    "nspanel": {},
+    "web": {},
+    "states": {
+      "0_userdata.0.e2e.blind.ACTUAL": 80,
+      "0_userdata.0.e2e.blind.CLOSE": true,
+      "0_userdata.0.e2e.blind.OPEN": true,
+      "0_userdata.0.e2e.blind.SET": 30,
+      "0_userdata.0.e2e.blind.STOP": true,
+      "0_userdata.0.e2e.humidity": 48,
+      "0_userdata.0.e2e.light.ON_SET": false,
+      "0_userdata.0.e2e.light.SET": 20,
+      "0_userdata.0.e2e.power": 1234,
+      "0_userdata.0.e2e.socket.SET": false,
+      "0_userdata.0.e2e.socket2.SET": false,
+      "0_userdata.0.e2e.temperature": 21.5,
+      "0_userdata.0.e2e.window": false
+    }
+  },
+  "04 Popups › NSPanel, blind row of the entities page › up → OPEN true": {
+    "nspanel": {},
+    "web": {},
+    "states": {
+      "0_userdata.0.e2e.blind.ACTUAL": 80,
+      "0_userdata.0.e2e.blind.CLOSE": true,
+      "0_userdata.0.e2e.blind.OPEN": true,
+      "0_userdata.0.e2e.blind.SET": 30,
+      "0_userdata.0.e2e.blind.STOP": true,
+      "0_userdata.0.e2e.humidity": 48,
+      "0_userdata.0.e2e.light.ON_SET": false,
+      "0_userdata.0.e2e.light.SET": 20,
+      "0_userdata.0.e2e.power": 1234,
+      "0_userdata.0.e2e.socket.SET": false,
+      "0_userdata.0.e2e.socket2.SET": false,
+      "0_userdata.0.e2e.temperature": 21.5,
+      "0_userdata.0.e2e.window": false
+    }
+  },
+  "04 Popups › NSPanel, light popup › brightness slider → dimmer state": {
+    "nspanel": {
+      "entityUpdateDetail": "entityUpdateDetail~0?1~{U+E334}~65535~1~75~disable~disable~~~Brightness~disable"
+    },
+    "web": {
+      "entityUpd": "entityUpd~E2E Main~button~bSubPrev~{U+E730}~65535~~~button~bSubNext~{U+E733}~65535~~~switch~0?0~{U+E905}~64512~E2E Socket~0~light2~0?1~{U+E334}~57083~E2E Light~1~shutter2~0?2~{U+FD43}~63488~E2E Blind~{U+E05C}|{U+E4DA}|{U+E044}|enable|enable|enable~button~0?3~{U+F2A7}~65504~E2E To Sub~1~~~~~~~~~~~~"
+    },
+    "states": {
+      "0_userdata.0.e2e.blind.ACTUAL": 50,
+      "0_userdata.0.e2e.blind.CLOSE": false,
+      "0_userdata.0.e2e.blind.OPEN": false,
+      "0_userdata.0.e2e.blind.SET": 50,
+      "0_userdata.0.e2e.blind.STOP": false,
+      "0_userdata.0.e2e.humidity": 48,
+      "0_userdata.0.e2e.light.ON_SET": true,
+      "0_userdata.0.e2e.light.SET": 75,
+      "0_userdata.0.e2e.power": 1234,
+      "0_userdata.0.e2e.socket.SET": false,
+      "0_userdata.0.e2e.socket2.SET": false,
+      "0_userdata.0.e2e.temperature": 21.5,
+      "0_userdata.0.e2e.window": false
+    }
+  },
+  "04 Popups › NSPanel, light popup › close (bExit) → back to the grid": {
+    "nspanel": {
+      "entityUpd": "entityUpd~E2E Main~button~bSubPrev~{U+E730}~65535~~~button~bSubNext~{U+E733}~65535~~~switch~0?0~{U+E905}~64512~E2E Socket~0~light2~0?1~{U+E335}~42292~E2E Light~0~shutter2~0?2~{U+FD43}~63488~E2E Blind~{U+E05C}|{U+E4DA}|{U+E044}|enable|enable|enable~button~0?3~{U+F2A7}~65504~E2E To Sub~1~~~~~~~~~~~~",
+      "pageType": "pageType~cardGrid"
+    },
+    "web": {},
+    "states": {
+      "0_userdata.0.e2e.blind.ACTUAL": 50,
+      "0_userdata.0.e2e.blind.CLOSE": false,
+      "0_userdata.0.e2e.blind.OPEN": false,
+      "0_userdata.0.e2e.blind.SET": 50,
+      "0_userdata.0.e2e.blind.STOP": false,
+      "0_userdata.0.e2e.humidity": 48,
+      "0_userdata.0.e2e.light.ON_SET": false,
+      "0_userdata.0.e2e.light.SET": 20,
+      "0_userdata.0.e2e.power": 1234,
+      "0_userdata.0.e2e.socket.SET": false,
+      "0_userdata.0.e2e.socket2.SET": false,
+      "0_userdata.0.e2e.temperature": 21.5,
+      "0_userdata.0.e2e.window": false
+    }
+  },
+  "04 Popups › NSPanel, light popup › dimmer state from outside → popup follows": {
+    "nspanel": {
+      "entityUpdateDetail": "entityUpdateDetail~0?1~{U+E334}~65535~1~20~disable~disable~~~Brightness~disable"
+    },
+    "web": {
+      "entityUpd": "entityUpd~E2E Main~button~bSubPrev~{U+E730}~65535~~~button~bSubNext~{U+E733}~65535~~~switch~0?0~{U+E905}~64512~E2E Socket~0~light2~0?1~{U+E334}~42292~E2E Light~1~shutter2~0?2~{U+FD43}~63488~E2E Blind~{U+E05C}|{U+E4DA}|{U+E044}|enable|enable|enable~button~0?3~{U+F2A7}~65504~E2E To Sub~1~~~~~~~~~~~~"
+    },
+    "states": {
+      "0_userdata.0.e2e.blind.ACTUAL": 50,
+      "0_userdata.0.e2e.blind.CLOSE": false,
+      "0_userdata.0.e2e.blind.OPEN": false,
+      "0_userdata.0.e2e.blind.SET": 50,
+      "0_userdata.0.e2e.blind.STOP": false,
+      "0_userdata.0.e2e.humidity": 48,
+      "0_userdata.0.e2e.light.ON_SET": true,
+      "0_userdata.0.e2e.light.SET": 20,
+      "0_userdata.0.e2e.power": 1234,
+      "0_userdata.0.e2e.socket.SET": false,
+      "0_userdata.0.e2e.socket2.SET": false,
+      "0_userdata.0.e2e.temperature": 21.5,
+      "0_userdata.0.e2e.window": false
+    }
+  },
+  "04 Popups › NSPanel, light popup › opens: entityUpdateDetail with state and brightness of the light": {
+    "nspanel": {
+      "entityUpdateDetail": "entityUpdateDetail~0?1~{U+E335}~65535~0~40~disable~disable~~~Brightness~disable"
+    },
+    "web": {},
+    "states": {
+      "0_userdata.0.e2e.blind.ACTUAL": 50,
+      "0_userdata.0.e2e.blind.CLOSE": false,
+      "0_userdata.0.e2e.blind.OPEN": false,
+      "0_userdata.0.e2e.blind.SET": 50,
+      "0_userdata.0.e2e.blind.STOP": false,
+      "0_userdata.0.e2e.humidity": 48,
+      "0_userdata.0.e2e.light.ON_SET": false,
+      "0_userdata.0.e2e.light.SET": 40,
+      "0_userdata.0.e2e.power": 1234,
+      "0_userdata.0.e2e.socket.SET": false,
+      "0_userdata.0.e2e.socket2.SET": false,
+      "0_userdata.0.e2e.temperature": 21.5,
+      "0_userdata.0.e2e.window": false
+    }
+  },
+  "04 Popups › NSPanel, light popup › switch off → ON_SET false": {
+    "nspanel": {
+      "entityUpdateDetail": "entityUpdateDetail~0?1~{U+E335}~65535~0~20~disable~disable~~~Brightness~disable"
+    },
+    "web": {
+      "entityUpd": "entityUpd~E2E Main~button~bSubPrev~{U+E730}~65535~~~button~bSubNext~{U+E733}~65535~~~switch~0?0~{U+E905}~64512~E2E Socket~0~light2~0?1~{U+E335}~42292~E2E Light~0~shutter2~0?2~{U+FD43}~63488~E2E Blind~{U+E05C}|{U+E4DA}|{U+E044}|enable|enable|enable~button~0?3~{U+F2A7}~65504~E2E To Sub~1~~~~~~~~~~~~"
+    },
+    "states": {
+      "0_userdata.0.e2e.blind.ACTUAL": 50,
+      "0_userdata.0.e2e.blind.CLOSE": false,
+      "0_userdata.0.e2e.blind.OPEN": false,
+      "0_userdata.0.e2e.blind.SET": 50,
+      "0_userdata.0.e2e.blind.STOP": false,
+      "0_userdata.0.e2e.humidity": 48,
+      "0_userdata.0.e2e.light.ON_SET": false,
+      "0_userdata.0.e2e.light.SET": 20,
+      "0_userdata.0.e2e.power": 1234,
+      "0_userdata.0.e2e.socket.SET": false,
+      "0_userdata.0.e2e.socket2.SET": false,
+      "0_userdata.0.e2e.temperature": 21.5,
+      "0_userdata.0.e2e.window": false
+    }
+  },
+  "04 Popups › NSPanel, light popup › switch on → ON_SET true, popup shows on": {
+    "nspanel": {
+      "entityUpdateDetail": "entityUpdateDetail~0?1~{U+E334}~65535~1~40~disable~disable~~~Brightness~disable"
+    },
+    "web": {
+      "entityUpd": "entityUpd~E2E Main~button~bSubPrev~{U+E730}~65535~~~button~bSubNext~{U+E733}~65535~~~switch~0?0~{U+E905}~64512~E2E Socket~0~light2~0?1~{U+E334}~46486~E2E Light~1~shutter2~0?2~{U+FD43}~63488~E2E Blind~{U+E05C}|{U+E4DA}|{U+E044}|enable|enable|enable~button~0?3~{U+F2A7}~65504~E2E To Sub~1~~~~~~~~~~~~"
+    },
+    "states": {
+      "0_userdata.0.e2e.blind.ACTUAL": 50,
+      "0_userdata.0.e2e.blind.CLOSE": false,
+      "0_userdata.0.e2e.blind.OPEN": false,
+      "0_userdata.0.e2e.blind.SET": 50,
+      "0_userdata.0.e2e.blind.STOP": false,
+      "0_userdata.0.e2e.humidity": 48,
+      "0_userdata.0.e2e.light.ON_SET": true,
+      "0_userdata.0.e2e.light.SET": 40,
+      "0_userdata.0.e2e.power": 1234,
+      "0_userdata.0.e2e.socket.SET": false,
+      "0_userdata.0.e2e.socket2.SET": false,
+      "0_userdata.0.e2e.temperature": 21.5,
+      "0_userdata.0.e2e.window": false
+    }
+  },
+  "04 Popups › NSPanel, shutter popup › close (bExit) → back to the grid": {
+    "nspanel": {
+      "entityUpd": "entityUpd~E2E Main~button~bSubPrev~{U+E730}~65535~~~button~bSubNext~{U+E733}~65535~~~switch~0?0~{U+E905}~64512~E2E Socket~0~light2~0?1~{U+E335}~42292~E2E Light~0~shutter2~0?2~{U+FD44}~63488~E2E Blind~{U+E05C}|{U+E4DA}|{U+E044}|enable|enable|enable~button~0?3~{U+F2A7}~65504~E2E To Sub~1~~~~~~~~~~~~",
+      "pageType": "pageType~cardGrid"
+    },
+    "web": {},
+    "states": {
+      "0_userdata.0.e2e.blind.ACTUAL": 80,
+      "0_userdata.0.e2e.blind.CLOSE": true,
+      "0_userdata.0.e2e.blind.OPEN": true,
+      "0_userdata.0.e2e.blind.SET": 30,
+      "0_userdata.0.e2e.blind.STOP": true,
+      "0_userdata.0.e2e.humidity": 48,
+      "0_userdata.0.e2e.light.ON_SET": false,
+      "0_userdata.0.e2e.light.SET": 20,
+      "0_userdata.0.e2e.power": 1234,
+      "0_userdata.0.e2e.socket.SET": false,
+      "0_userdata.0.e2e.socket2.SET": false,
+      "0_userdata.0.e2e.temperature": 21.5,
+      "0_userdata.0.e2e.window": false
+    }
+  },
+  "04 Popups › NSPanel, shutter popup › down → CLOSE true": {
+    "nspanel": {},
+    "web": {},
+    "states": {
+      "0_userdata.0.e2e.blind.ACTUAL": 80,
+      "0_userdata.0.e2e.blind.CLOSE": true,
+      "0_userdata.0.e2e.blind.OPEN": true,
+      "0_userdata.0.e2e.blind.SET": 30,
+      "0_userdata.0.e2e.blind.STOP": true,
+      "0_userdata.0.e2e.humidity": 48,
+      "0_userdata.0.e2e.light.ON_SET": false,
+      "0_userdata.0.e2e.light.SET": 20,
+      "0_userdata.0.e2e.power": 1234,
+      "0_userdata.0.e2e.socket.SET": false,
+      "0_userdata.0.e2e.socket2.SET": false,
+      "0_userdata.0.e2e.temperature": 21.5,
+      "0_userdata.0.e2e.window": false
+    }
+  },
+  "04 Popups › NSPanel, shutter popup › opens: entityUpdateDetail with the position": {
+    "nspanel": {
+      "entityUpdateDetail": "entityUpdateDetail~0?2~50~~~~{U+E05C}~{U+E4DA}~{U+E044}~enable~enable~enable~~~disable~~~disable~~~disable~shutter~0"
+    },
+    "web": {},
+    "states": {
+      "0_userdata.0.e2e.blind.ACTUAL": 50,
+      "0_userdata.0.e2e.blind.CLOSE": false,
+      "0_userdata.0.e2e.blind.OPEN": false,
+      "0_userdata.0.e2e.blind.SET": 50,
+      "0_userdata.0.e2e.blind.STOP": false,
+      "0_userdata.0.e2e.humidity": 48,
+      "0_userdata.0.e2e.light.ON_SET": false,
+      "0_userdata.0.e2e.light.SET": 20,
+      "0_userdata.0.e2e.power": 1234,
+      "0_userdata.0.e2e.socket.SET": false,
+      "0_userdata.0.e2e.socket2.SET": false,
+      "0_userdata.0.e2e.temperature": 21.5,
+      "0_userdata.0.e2e.window": false
+    }
+  },
+  "04 Popups › NSPanel, shutter popup › position from outside → popup follows": {
+    "nspanel": {
+      "entityUpdateDetail": "entityUpdateDetail~0?2~80~~~~{U+E05C}~{U+E4DA}~{U+E044}~enable~enable~enable~~~disable~~~disable~~~disable~shutter~0"
+    },
+    "web": {
+      "entityUpd": "entityUpd~E2E Main~button~bSubPrev~{U+E730}~65535~~~button~bSubNext~{U+E733}~65535~~~switch~0?0~{U+E905}~64512~E2E Socket~0~light2~0?1~{U+E335}~42292~E2E Light~0~shutter2~0?2~{U+FD44}~63488~E2E Blind~{U+E05C}|{U+E4DA}|{U+E044}|enable|enable|enable~button~0?3~{U+F2A7}~65504~E2E To Sub~1~~~~~~~~~~~~"
+    },
+    "states": {
+      "0_userdata.0.e2e.blind.ACTUAL": 80,
+      "0_userdata.0.e2e.blind.CLOSE": false,
+      "0_userdata.0.e2e.blind.OPEN": false,
+      "0_userdata.0.e2e.blind.SET": 30,
+      "0_userdata.0.e2e.blind.STOP": false,
+      "0_userdata.0.e2e.humidity": 48,
+      "0_userdata.0.e2e.light.ON_SET": false,
+      "0_userdata.0.e2e.light.SET": 20,
+      "0_userdata.0.e2e.power": 1234,
+      "0_userdata.0.e2e.socket.SET": false,
+      "0_userdata.0.e2e.socket2.SET": false,
+      "0_userdata.0.e2e.temperature": 21.5,
+      "0_userdata.0.e2e.window": false
+    }
+  },
+  "04 Popups › NSPanel, shutter popup › position slider → SET": {
+    "nspanel": {},
+    "web": {},
+    "states": {
+      "0_userdata.0.e2e.blind.ACTUAL": 50,
+      "0_userdata.0.e2e.blind.CLOSE": false,
+      "0_userdata.0.e2e.blind.OPEN": false,
+      "0_userdata.0.e2e.blind.SET": 30,
+      "0_userdata.0.e2e.blind.STOP": false,
+      "0_userdata.0.e2e.humidity": 48,
+      "0_userdata.0.e2e.light.ON_SET": false,
+      "0_userdata.0.e2e.light.SET": 20,
+      "0_userdata.0.e2e.power": 1234,
+      "0_userdata.0.e2e.socket.SET": false,
+      "0_userdata.0.e2e.socket2.SET": false,
+      "0_userdata.0.e2e.temperature": 21.5,
+      "0_userdata.0.e2e.window": false
+    }
+  },
+  "04 Popups › NSPanel, shutter popup › stop → STOP true": {
+    "nspanel": {},
+    "web": {},
+    "states": {
+      "0_userdata.0.e2e.blind.ACTUAL": 80,
+      "0_userdata.0.e2e.blind.CLOSE": false,
+      "0_userdata.0.e2e.blind.OPEN": true,
+      "0_userdata.0.e2e.blind.SET": 30,
+      "0_userdata.0.e2e.blind.STOP": true,
+      "0_userdata.0.e2e.humidity": 48,
+      "0_userdata.0.e2e.light.ON_SET": false,
+      "0_userdata.0.e2e.light.SET": 20,
+      "0_userdata.0.e2e.power": 1234,
+      "0_userdata.0.e2e.socket.SET": false,
+      "0_userdata.0.e2e.socket2.SET": false,
+      "0_userdata.0.e2e.temperature": 21.5,
+      "0_userdata.0.e2e.window": false
+    }
+  },
+  "04 Popups › NSPanel, shutter popup › up → OPEN true": {
+    "nspanel": {},
+    "web": {},
+    "states": {
+      "0_userdata.0.e2e.blind.ACTUAL": 80,
+      "0_userdata.0.e2e.blind.CLOSE": false,
+      "0_userdata.0.e2e.blind.OPEN": true,
+      "0_userdata.0.e2e.blind.SET": 30,
+      "0_userdata.0.e2e.blind.STOP": false,
+      "0_userdata.0.e2e.humidity": 48,
+      "0_userdata.0.e2e.light.ON_SET": false,
+      "0_userdata.0.e2e.light.SET": 20,
+      "0_userdata.0.e2e.power": 1234,
+      "0_userdata.0.e2e.socket.SET": false,
+      "0_userdata.0.e2e.socket2.SET": false,
+      "0_userdata.0.e2e.temperature": 21.5,
+      "0_userdata.0.e2e.window": false
+    }
+  },
+  "04 Popups › Web panel, light popup › opens, switches on and dims": {
+    "nspanel": {},
+    "web": {
+      "entityUpd": "entityUpd~E2E Main~button~bSubPrev~{U+E730}~65535~~~button~bSubNext~{U+E733}~65535~~~switch~0?0~{U+E905}~64512~E2E Socket~0~light2~0?1~{U+E334}~50744~E2E Light~1~shutter2~0?2~{U+FD44}~63488~E2E Blind~{U+E05C}|{U+E4DA}|{U+E044}|enable|enable|enable~button~0?3~{U+F2A7}~65504~E2E To Sub~1~~~~~~~~~~~~",
+      "entityUpdateDetail": "entityUpdateDetail~0?1~{U+E334}~65535~1~40~disable~disable~~~Brightness~disable",
+      "pageType": "pageType~cardGrid"
+    },
+    "states": {
+      "0_userdata.0.e2e.blind.ACTUAL": 80,
+      "0_userdata.0.e2e.blind.CLOSE": true,
+      "0_userdata.0.e2e.blind.OPEN": true,
+      "0_userdata.0.e2e.blind.SET": 30,
+      "0_userdata.0.e2e.blind.STOP": true,
+      "0_userdata.0.e2e.humidity": 48,
+      "0_userdata.0.e2e.light.ON_SET": true,
+      "0_userdata.0.e2e.light.SET": 55,
+      "0_userdata.0.e2e.power": 1234,
+      "0_userdata.0.e2e.socket.SET": false,
+      "0_userdata.0.e2e.socket2.SET": false,
+      "0_userdata.0.e2e.temperature": 21.5,
+      "0_userdata.0.e2e.window": false
+    }
+  },
+  "05 Screensaver ⇄ page › a single tap does not leave the screensaver (double click is on)": {
+    "nspanel": {},
+    "web": {},
+    "states": {
+      "0_userdata.0.e2e.blind.ACTUAL": 50,
+      "0_userdata.0.e2e.blind.CLOSE": false,
+      "0_userdata.0.e2e.blind.OPEN": false,
+      "0_userdata.0.e2e.blind.SET": 50,
+      "0_userdata.0.e2e.blind.STOP": false,
+      "0_userdata.0.e2e.humidity": 48,
+      "0_userdata.0.e2e.light.ON_SET": false,
+      "0_userdata.0.e2e.light.SET": 40,
+      "0_userdata.0.e2e.power": 1234,
+      "0_userdata.0.e2e.socket.SET": false,
+      "0_userdata.0.e2e.socket2.SET": false,
+      "0_userdata.0.e2e.temperature": 21.5,
+      "0_userdata.0.e2e.window": false
+    }
+  },
+  "05 Screensaver ⇄ page › automatic return with a short timeout › cmd.screenSaver.timeout = 2 → timeout~2 to the display": {
+    "nspanel": {
+      "timeout": "timeout~2"
+    },
+    "web": {},
+    "states": {
+      "0_userdata.0.e2e.blind.ACTUAL": 50,
+      "0_userdata.0.e2e.blind.CLOSE": false,
+      "0_userdata.0.e2e.blind.OPEN": false,
+      "0_userdata.0.e2e.blind.SET": 50,
+      "0_userdata.0.e2e.blind.STOP": false,
+      "0_userdata.0.e2e.humidity": 48,
+      "0_userdata.0.e2e.light.ON_SET": false,
+      "0_userdata.0.e2e.light.SET": 40,
+      "0_userdata.0.e2e.power": 1234,
+      "0_userdata.0.e2e.socket.SET": false,
+      "0_userdata.0.e2e.socket2.SET": false,
+      "0_userdata.0.e2e.temperature": 21.5,
+      "0_userdata.0.e2e.window": false
+    }
+  },
+  "05 Screensaver ⇄ page › automatic return with a short timeout › page → screensaver by the display timeout, without any further action": {
+    "nspanel": {
+      "color": "color~6371~65535~65363~54938~65535~54938~54938~54938~54938~54938~54938~54938~54938~54938~65363~1374",
+      "entityUpd": "entityUpd~E2E Entities~button~bSubPrev~{U+E730}~65535~~~button~bSubNext~{U+E733}~65535~~~switch~1?0~{U+E905}~64512~E2E Socket~0~shutter2~1?1~{U+FD43}~63488~E2E Blind~{U+E05C}|{U+E4DA}|{U+E044}|enable|enable|enable~~~~~~~~~~~~",
+      "pageType": "pageType~screensaver~~6371?65535?65363?54938",
+      "statusUpdate": "statusUpdate~~~~~~",
+      "timeout": "timeout~2",
+      "weatherUpdate": "weatherUpdate~~~{U+E50E}~65222~Temperature~21,5°C~~~{U+E58D}~65222~Hum~48%~~~{U+E50E}~65222~Temp~21,5°C~~~{U+E624}~65222~Pow~1234W~~~{U+F1DA}~64512~Win~closed"
+    },
+    "web": {},
+    "states": {
+      "0_userdata.0.e2e.blind.ACTUAL": 50,
+      "0_userdata.0.e2e.blind.CLOSE": false,
+      "0_userdata.0.e2e.blind.OPEN": false,
+      "0_userdata.0.e2e.blind.SET": 50,
+      "0_userdata.0.e2e.blind.STOP": false,
+      "0_userdata.0.e2e.humidity": 48,
+      "0_userdata.0.e2e.light.ON_SET": false,
+      "0_userdata.0.e2e.light.SET": 40,
+      "0_userdata.0.e2e.power": 1234,
+      "0_userdata.0.e2e.socket.SET": false,
+      "0_userdata.0.e2e.socket2.SET": false,
+      "0_userdata.0.e2e.temperature": 21.5,
+      "0_userdata.0.e2e.window": false
+    }
+  },
+  "05 Screensaver ⇄ page › display timeout on the entities page → screensaver with its content": {
+    "nspanel": {
+      "color": "color~6371~65535~65363~54938~65535~54938~54938~54938~54938~54938~54938~54938~54938~54938~65363~1374",
+      "entityUpd": "entityUpd~E2E Entities~button~bSubPrev~{U+E730}~65535~~~button~bSubNext~{U+E733}~65535~~~switch~1?0~{U+E905}~64512~E2E Socket~0~shutter2~1?1~{U+FD43}~63488~E2E Blind~{U+E05C}|{U+E4DA}|{U+E044}|enable|enable|enable~~~~~~~~~~~~",
+      "pageType": "pageType~screensaver~~6371?65535?65363?54938",
+      "statusUpdate": "statusUpdate~~~~~~",
+      "timeout": "timeout~15",
+      "weatherUpdate": "weatherUpdate~~~{U+E50E}~65222~Temperature~21,5°C~~~{U+E58D}~65222~Hum~48%~~~{U+E50E}~65222~Temp~21,5°C~~~{U+E624}~65222~Pow~1234W~~~{U+F1DA}~64512~Win~closed"
+    },
+    "web": {},
+    "states": {
+      "0_userdata.0.e2e.blind.ACTUAL": 50,
+      "0_userdata.0.e2e.blind.CLOSE": false,
+      "0_userdata.0.e2e.blind.OPEN": false,
+      "0_userdata.0.e2e.blind.SET": 50,
+      "0_userdata.0.e2e.blind.STOP": false,
+      "0_userdata.0.e2e.humidity": 48,
+      "0_userdata.0.e2e.light.ON_SET": false,
+      "0_userdata.0.e2e.light.SET": 40,
+      "0_userdata.0.e2e.power": 1234,
+      "0_userdata.0.e2e.socket.SET": false,
+      "0_userdata.0.e2e.socket2.SET": false,
+      "0_userdata.0.e2e.temperature": 21.5,
+      "0_userdata.0.e2e.window": false
+    }
+  },
+  "05 Screensaver ⇄ page › double tap → start page (not the page before), display timeout is sent": {
+    "nspanel": {
+      "entityUpd": "entityUpd~E2E Main~button~bSubPrev~{U+E730}~65535~~~button~bSubNext~{U+E733}~65535~~~switch~0?0~{U+E905}~64512~E2E Socket~0~light2~0?1~{U+E335}~46486~E2E Light~0~shutter2~0?2~{U+FD43}~63488~E2E Blind~{U+E05C}|{U+E4DA}|{U+E044}|enable|enable|enable~button~0?3~{U+F2A7}~65504~E2E To Sub~1~~~~~~~~~~~~",
+      "pageType": "pageType~cardGrid",
+      "timeout": "timeout~15"
+    },
+    "web": {},
+    "states": {
+      "0_userdata.0.e2e.blind.ACTUAL": 50,
+      "0_userdata.0.e2e.blind.CLOSE": false,
+      "0_userdata.0.e2e.blind.OPEN": false,
+      "0_userdata.0.e2e.blind.SET": 50,
+      "0_userdata.0.e2e.blind.STOP": false,
+      "0_userdata.0.e2e.humidity": 48,
+      "0_userdata.0.e2e.light.ON_SET": false,
+      "0_userdata.0.e2e.light.SET": 40,
+      "0_userdata.0.e2e.power": 1234,
+      "0_userdata.0.e2e.socket.SET": false,
+      "0_userdata.0.e2e.socket2.SET": false,
+      "0_userdata.0.e2e.temperature": 21.5,
+      "0_userdata.0.e2e.window": false
+    }
+  },
+  "05 Screensaver ⇄ page › screensaver content follows its state": {
+    "nspanel": {
+      "weatherUpdate": "weatherUpdate~~~{U+E50E}~65222~Temperature~21,5°C~~~{U+E58D}~65222~Hum~48%~~~{U+E50E}~65222~Temp~21,5°C~~~{U+E624}~65222~Pow~1234W~~~{U+F1DA}~64512~Win~closed"
+    },
+    "web": {},
+    "states": {
+      "0_userdata.0.e2e.blind.ACTUAL": 50,
+      "0_userdata.0.e2e.blind.CLOSE": false,
+      "0_userdata.0.e2e.blind.OPEN": false,
+      "0_userdata.0.e2e.blind.SET": 50,
+      "0_userdata.0.e2e.blind.STOP": false,
+      "0_userdata.0.e2e.humidity": 48,
+      "0_userdata.0.e2e.light.ON_SET": false,
+      "0_userdata.0.e2e.light.SET": 40,
+      "0_userdata.0.e2e.power": 1234,
+      "0_userdata.0.e2e.socket.SET": false,
+      "0_userdata.0.e2e.socket2.SET": false,
+      "0_userdata.0.e2e.temperature": 21.5,
+      "0_userdata.0.e2e.window": false
+    }
+  },
+  "06 Screensaver modes › NSPanel › back on a page and into the screensaver again: the switched version stays": {
+    "nspanel": {
+      "color": "color~6371~65535~65363~54938~65535~54938~54938~54938~54938~54938~54938~54938~54938~54938~65363~1374",
+      "entityUpd": "entityUpd~E2E Main~button~bSubPrev~{U+E730}~65535~~~button~bSubNext~{U+E733}~65535~~~switch~0?0~{U+E905}~64512~E2E Socket~0~light2~0?1~{U+E335}~46486~E2E Light~0~shutter2~0?2~{U+FD43}~63488~E2E Blind~{U+E05C}|{U+E4DA}|{U+E044}|enable|enable|enable~button~0?3~{U+F2A7}~65504~E2E To Sub~1~~~~~~~~~~~~",
+      "pageType": "pageType~screensaver2~~6371?65535?65363?54938",
+      "statusUpdate": "statusUpdate~~~~~~",
+      "timeout": "timeout~15",
+      "weatherUpdate": "weatherUpdate~~~{U+E50E}~65222~Temperature~21,5°C~~~{U+E624}~65222~LPow~1234W~~~{U+E58D}~65222~LHum~48%~~~~~~~~~{U+E58D}~65222~Hum~48%~~~{U+E50E}~65222~Temp~21,5°C~~~{U+E624}~65222~Pow~1234W~~~{U+F1DA}~64512~Win~closed~~~~~~~~~~~~~~3?8~{U+E901}~64512~switch~0~~3?9~{U+E5AD}~2016~Window~0~~~~~~~~~~~~~~~~~~"
+    },
+    "web": {},
+    "states": {
+      "0_userdata.0.e2e.blind.ACTUAL": 50,
+      "0_userdata.0.e2e.blind.CLOSE": false,
+      "0_userdata.0.e2e.blind.OPEN": false,
+      "0_userdata.0.e2e.blind.SET": 50,
+      "0_userdata.0.e2e.blind.STOP": false,
+      "0_userdata.0.e2e.humidity": 48,
+      "0_userdata.0.e2e.light.ON_SET": false,
+      "0_userdata.0.e2e.light.SET": 40,
+      "0_userdata.0.e2e.power": 1234,
+      "0_userdata.0.e2e.socket.SET": false,
+      "0_userdata.0.e2e.socket2.SET": false,
+      "0_userdata.0.e2e.temperature": 21.5,
+      "0_userdata.0.e2e.window": false
+    }
+  },
+  "06 Screensaver modes › NSPanel › layout 0 (standard) → pageType~screensaver": {
+    "nspanel": {
+      "weatherUpdate": "weatherUpdate~~~{U+E50E}~65222~Temperature~21,5°C~~~{U+E58D}~65222~Hum~48%~~~{U+E50E}~65222~Temp~21,5°C~~~{U+E624}~65222~Pow~1234W~~~{U+F1DA}~64512~Win~closed"
+    },
+    "web": {},
+    "states": {
+      "0_userdata.0.e2e.blind.ACTUAL": 50,
+      "0_userdata.0.e2e.blind.CLOSE": false,
+      "0_userdata.0.e2e.blind.OPEN": false,
+      "0_userdata.0.e2e.blind.SET": 50,
+      "0_userdata.0.e2e.blind.STOP": false,
+      "0_userdata.0.e2e.humidity": 48,
+      "0_userdata.0.e2e.light.ON_SET": false,
+      "0_userdata.0.e2e.light.SET": 40,
+      "0_userdata.0.e2e.power": 1234,
+      "0_userdata.0.e2e.socket.SET": false,
+      "0_userdata.0.e2e.socket2.SET": false,
+      "0_userdata.0.e2e.temperature": 21.5,
+      "0_userdata.0.e2e.window": false
+    }
+  },
+  "06 Screensaver modes › NSPanel › layout 1 (alternate) → pageType~screensaver": {
+    "nspanel": {
+      "color": "color~6371~65535~65363~54938~65535~54938~54938~54938~54938~54938~54938~54938~54938~54938~65363~1374",
+      "pageType": "pageType~screensaver~~6371?65535?65363?54938",
+      "statusUpdate": "statusUpdate~~~~~~",
+      "weatherUpdate": "weatherUpdate~~~{U+E50E}~65222~Temperature~21,5°C~~~{U+E58D}~65222~Hum~48%~~~{U+E50E}~65222~Temp~21,5°C~~~{U+E624}~65222~Pow~1234W~~~~~~~~~{U+E58D}~65222~Alt~48%"
+    },
+    "web": {},
+    "states": {
+      "0_userdata.0.e2e.blind.ACTUAL": 50,
+      "0_userdata.0.e2e.blind.CLOSE": false,
+      "0_userdata.0.e2e.blind.OPEN": false,
+      "0_userdata.0.e2e.blind.SET": 50,
+      "0_userdata.0.e2e.blind.STOP": false,
+      "0_userdata.0.e2e.humidity": 48,
+      "0_userdata.0.e2e.light.ON_SET": false,
+      "0_userdata.0.e2e.light.SET": 40,
+      "0_userdata.0.e2e.power": 1234,
+      "0_userdata.0.e2e.socket.SET": false,
+      "0_userdata.0.e2e.socket2.SET": false,
+      "0_userdata.0.e2e.temperature": 21.5,
+      "0_userdata.0.e2e.window": false
+    }
+  },
+  "06 Screensaver modes › NSPanel › layout 2 (advanced) → pageType~screensaver2": {
+    "nspanel": {
+      "color": "color~6371~65535~65363~54938~65535~54938~54938~54938~54938~54938~54938~54938~54938~54938~65363~1374",
+      "pageType": "pageType~screensaver2~~6371?65535?65363?54938",
+      "statusUpdate": "statusUpdate~~~~~~",
+      "weatherUpdate": "weatherUpdate~~~{U+E50E}~65222~Temperature~21,5°C~~~{U+E624}~65222~LPow~1234W~~~{U+E58D}~65222~LHum~48%~~~~~~~~~{U+E58D}~65222~Hum~48%~~~{U+E50E}~65222~Temp~21,5°C~~~{U+E624}~65222~Pow~1234W~~~{U+F1DA}~64512~Win~closed~~~~~~~~~~~~~~3?8~{U+E901}~64512~switch~0~~3?9~{U+E5AD}~2016~Window~0~~~~~~~~~~~~~~~~~~"
+    },
+    "web": {},
+    "states": {
+      "0_userdata.0.e2e.blind.ACTUAL": 50,
+      "0_userdata.0.e2e.blind.CLOSE": false,
+      "0_userdata.0.e2e.blind.OPEN": false,
+      "0_userdata.0.e2e.blind.SET": 50,
+      "0_userdata.0.e2e.blind.STOP": false,
+      "0_userdata.0.e2e.humidity": 48,
+      "0_userdata.0.e2e.light.ON_SET": false,
+      "0_userdata.0.e2e.light.SET": 40,
+      "0_userdata.0.e2e.power": 1234,
+      "0_userdata.0.e2e.socket.SET": false,
+      "0_userdata.0.e2e.socket2.SET": false,
+      "0_userdata.0.e2e.temperature": 21.5,
+      "0_userdata.0.e2e.window": false
+    }
+  },
+  "06 Screensaver modes › NSPanel › layout 3 (easyview) → pageType~screensaver3": {
+    "nspanel": {
+      "color": "color~6371~65535~65363~54938~65535~54938~54938~54938~54938~54938~54938~54938~54938~54938~65363~1374",
+      "pageType": "pageType~screensaver3~~6371?65535?65363?54938",
+      "statusUpdate": "statusUpdate~~~~~~",
+      "weatherUpdate": "weatherUpdate~~~{U+E50E}~65222~Temperature~21,5°C~~~{U+E58D}~65222~Hum~48%~~~{U+E50E}~65222~Temp~21,5°C~~~{U+E624}~65222~Pow~1234W"
+    },
+    "web": {},
+    "states": {
+      "0_userdata.0.e2e.blind.ACTUAL": 50,
+      "0_userdata.0.e2e.blind.CLOSE": false,
+      "0_userdata.0.e2e.blind.OPEN": false,
+      "0_userdata.0.e2e.blind.SET": 50,
+      "0_userdata.0.e2e.blind.STOP": false,
+      "0_userdata.0.e2e.humidity": 48,
+      "0_userdata.0.e2e.light.ON_SET": false,
+      "0_userdata.0.e2e.light.SET": 40,
+      "0_userdata.0.e2e.power": 1234,
+      "0_userdata.0.e2e.socket.SET": false,
+      "0_userdata.0.e2e.socket2.SET": false,
+      "0_userdata.0.e2e.temperature": 21.5,
+      "0_userdata.0.e2e.window": false
+    }
+  },
+  "06 Screensaver modes › NSPanel › layout 4 (tiles) → pageType~screensaver5": {
+    "nspanel": {
+      "color": "color~6371~65535~65363~54938~65535~54938~54938~54938~54938~54938~54938~54938~54938~54938~65363~1374",
+      "pageType": "pageType~screensaver5~~6371?65535?65363?54938",
+      "statusUpdate": "statusUpdate~~~~~~",
+      "weatherUpdate": "weatherUpdate~~~{U+E58D}~65222~Hum~48%~~~{U+E50E}~65222~Temp~21,5°C~~~{U+E624}~65222~Pow~1234W~~~{U+F1DA}~64512~Win~closed~~~~~~~~3?8~{U+E901}~64512~switch~0~~3?9~{U+E5AD}~2016~Window~0~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+    },
+    "web": {},
+    "states": {
+      "0_userdata.0.e2e.blind.ACTUAL": 50,
+      "0_userdata.0.e2e.blind.CLOSE": false,
+      "0_userdata.0.e2e.blind.OPEN": false,
+      "0_userdata.0.e2e.blind.SET": 50,
+      "0_userdata.0.e2e.blind.STOP": false,
+      "0_userdata.0.e2e.humidity": 48,
+      "0_userdata.0.e2e.light.ON_SET": false,
+      "0_userdata.0.e2e.light.SET": 40,
+      "0_userdata.0.e2e.power": 1234,
+      "0_userdata.0.e2e.socket.SET": false,
+      "0_userdata.0.e2e.socket2.SET": false,
+      "0_userdata.0.e2e.temperature": 21.5,
+      "0_userdata.0.e2e.window": false
+    }
+  },
+  "06 Screensaver modes › Web panel › back on a page and into the screensaver again: the switched version stays": {
+    "nspanel": {},
+    "web": {
+      "color": "color~6371~65535~65363~54938~65535~54938~54938~54938~54938~54938~54938~54938~54938~54938~65363~1374",
+      "entityUpd": "entityUpd~E2E Main~button~bSubPrev~{U+E730}~65535~~~button~bSubNext~{U+E733}~65535~~~switch~0?0~{U+E905}~64512~E2E Socket~0~light2~0?1~{U+E335}~46486~E2E Light~0~shutter2~0?2~{U+FD43}~63488~E2E Blind~{U+E05C}|{U+E4DA}|{U+E044}|enable|enable|enable~button~0?3~{U+F2A7}~65504~E2E To Sub~1~~~~~~~~~~~~",
+      "pageType": "pageType~screensaver2~~6371?65535?65363?54938",
+      "statusUpdate": "statusUpdate~~~~~~",
+      "timeout": "timeout~15",
+      "weatherUpdate": "weatherUpdate~~~{U+E50E}~65222~Temperature~21,5°C~~~{U+E624}~65222~LPow~1234W~~~{U+E58D}~65222~LHum~48%~~~~~~~~~{U+E58D}~65222~Hum~48%~~~{U+E50E}~65222~Temp~21,5°C~~~{U+E624}~65222~Pow~1234W~~~{U+F1DA}~64512~Win~closed~~~~~~~~~~~~~~3?8~{U+E901}~64512~switch~0~~3?9~{U+E5AD}~2016~Window~0~~~~~~~~~~~~~~~~~~"
+    },
+    "states": {
+      "0_userdata.0.e2e.blind.ACTUAL": 50,
+      "0_userdata.0.e2e.blind.CLOSE": false,
+      "0_userdata.0.e2e.blind.OPEN": false,
+      "0_userdata.0.e2e.blind.SET": 50,
+      "0_userdata.0.e2e.blind.STOP": false,
+      "0_userdata.0.e2e.humidity": 48,
+      "0_userdata.0.e2e.light.ON_SET": false,
+      "0_userdata.0.e2e.light.SET": 40,
+      "0_userdata.0.e2e.power": 1234,
+      "0_userdata.0.e2e.socket.SET": false,
+      "0_userdata.0.e2e.socket2.SET": false,
+      "0_userdata.0.e2e.temperature": 21.5,
+      "0_userdata.0.e2e.window": false
+    }
+  },
+  "06 Screensaver modes › Web panel › layout 0 (standard) → pageType~screensaver": {
+    "nspanel": {},
+    "web": {
+      "weatherUpdate": "weatherUpdate~~~{U+E50E}~65222~Temperature~21,5°C~~~{U+E58D}~65222~Hum~48%~~~{U+E50E}~65222~Temp~21,5°C~~~{U+E624}~65222~Pow~1234W~~~{U+F1DA}~64512~Win~closed"
+    },
+    "states": {
+      "0_userdata.0.e2e.blind.ACTUAL": 50,
+      "0_userdata.0.e2e.blind.CLOSE": false,
+      "0_userdata.0.e2e.blind.OPEN": false,
+      "0_userdata.0.e2e.blind.SET": 50,
+      "0_userdata.0.e2e.blind.STOP": false,
+      "0_userdata.0.e2e.humidity": 48,
+      "0_userdata.0.e2e.light.ON_SET": false,
+      "0_userdata.0.e2e.light.SET": 40,
+      "0_userdata.0.e2e.power": 1234,
+      "0_userdata.0.e2e.socket.SET": false,
+      "0_userdata.0.e2e.socket2.SET": false,
+      "0_userdata.0.e2e.temperature": 21.5,
+      "0_userdata.0.e2e.window": false
+    }
+  },
+  "06 Screensaver modes › Web panel › layout 1 (alternate) → pageType~screensaver": {
+    "nspanel": {},
+    "web": {
+      "color": "color~6371~65535~65363~54938~65535~54938~54938~54938~54938~54938~54938~54938~54938~54938~65363~1374",
+      "pageType": "pageType~screensaver~~6371?65535?65363?54938",
+      "statusUpdate": "statusUpdate~~~~~~",
+      "weatherUpdate": "weatherUpdate~~~{U+E50E}~65222~Temperature~21,5°C~~~{U+E58D}~65222~Hum~48%~~~{U+E50E}~65222~Temp~21,5°C~~~{U+E624}~65222~Pow~1234W~~~~~~~~~{U+E58D}~65222~Alt~48%"
+    },
+    "states": {
+      "0_userdata.0.e2e.blind.ACTUAL": 50,
+      "0_userdata.0.e2e.blind.CLOSE": false,
+      "0_userdata.0.e2e.blind.OPEN": false,
+      "0_userdata.0.e2e.blind.SET": 50,
+      "0_userdata.0.e2e.blind.STOP": false,
+      "0_userdata.0.e2e.humidity": 48,
+      "0_userdata.0.e2e.light.ON_SET": false,
+      "0_userdata.0.e2e.light.SET": 40,
+      "0_userdata.0.e2e.power": 1234,
+      "0_userdata.0.e2e.socket.SET": false,
+      "0_userdata.0.e2e.socket2.SET": false,
+      "0_userdata.0.e2e.temperature": 21.5,
+      "0_userdata.0.e2e.window": false
+    }
+  },
+  "06 Screensaver modes › Web panel › layout 2 (advanced) → pageType~screensaver2": {
+    "nspanel": {},
+    "web": {
+      "color": "color~6371~65535~65363~54938~65535~54938~54938~54938~54938~54938~54938~54938~54938~54938~65363~1374",
+      "pageType": "pageType~screensaver2~~6371?65535?65363?54938",
+      "statusUpdate": "statusUpdate~~~~~~",
+      "weatherUpdate": "weatherUpdate~~~{U+E50E}~65222~Temperature~21,5°C~~~{U+E624}~65222~LPow~1234W~~~{U+E58D}~65222~LHum~48%~~~~~~~~~{U+E58D}~65222~Hum~48%~~~{U+E50E}~65222~Temp~21,5°C~~~{U+E624}~65222~Pow~1234W~~~{U+F1DA}~64512~Win~closed~~~~~~~~~~~~~~3?8~{U+E901}~64512~switch~0~~3?9~{U+E5AD}~2016~Window~0~~~~~~~~~~~~~~~~~~"
+    },
+    "states": {
+      "0_userdata.0.e2e.blind.ACTUAL": 50,
+      "0_userdata.0.e2e.blind.CLOSE": false,
+      "0_userdata.0.e2e.blind.OPEN": false,
+      "0_userdata.0.e2e.blind.SET": 50,
+      "0_userdata.0.e2e.blind.STOP": false,
+      "0_userdata.0.e2e.humidity": 48,
+      "0_userdata.0.e2e.light.ON_SET": false,
+      "0_userdata.0.e2e.light.SET": 40,
+      "0_userdata.0.e2e.power": 1234,
+      "0_userdata.0.e2e.socket.SET": false,
+      "0_userdata.0.e2e.socket2.SET": false,
+      "0_userdata.0.e2e.temperature": 21.5,
+      "0_userdata.0.e2e.window": false
+    }
+  },
+  "06 Screensaver modes › Web panel › layout 3 (easyview) → pageType~screensaver3": {
+    "nspanel": {},
+    "web": {
+      "color": "color~6371~65535~65363~54938~65535~54938~54938~54938~54938~54938~54938~54938~54938~54938~65363~1374",
+      "pageType": "pageType~screensaver3~~6371?65535?65363?54938",
+      "statusUpdate": "statusUpdate~~~~~~",
+      "weatherUpdate": "weatherUpdate~~~{U+E50E}~65222~Temperature~21,5°C~~~{U+E58D}~65222~Hum~48%~~~{U+E50E}~65222~Temp~21,5°C~~~{U+E624}~65222~Pow~1234W"
+    },
+    "states": {
+      "0_userdata.0.e2e.blind.ACTUAL": 50,
+      "0_userdata.0.e2e.blind.CLOSE": false,
+      "0_userdata.0.e2e.blind.OPEN": false,
+      "0_userdata.0.e2e.blind.SET": 50,
+      "0_userdata.0.e2e.blind.STOP": false,
+      "0_userdata.0.e2e.humidity": 48,
+      "0_userdata.0.e2e.light.ON_SET": false,
+      "0_userdata.0.e2e.light.SET": 40,
+      "0_userdata.0.e2e.power": 1234,
+      "0_userdata.0.e2e.socket.SET": false,
+      "0_userdata.0.e2e.socket2.SET": false,
+      "0_userdata.0.e2e.temperature": 21.5,
+      "0_userdata.0.e2e.window": false
+    }
+  },
+  "06 Screensaver modes › Web panel › layout 4 (tiles) → pageType~screensaver5": {
+    "nspanel": {},
+    "web": {
+      "color": "color~6371~65535~65363~54938~65535~54938~54938~54938~54938~54938~54938~54938~54938~54938~65363~1374",
+      "pageType": "pageType~screensaver5~~6371?65535?65363?54938",
+      "statusUpdate": "statusUpdate~~~~~~",
+      "weatherUpdate": "weatherUpdate~~~{U+E58D}~65222~Hum~48%~~~{U+E50E}~65222~Temp~21,5°C~~~{U+E624}~65222~Pow~1234W~~~{U+F1DA}~64512~Win~closed~~~~~~~~3?8~{U+E901}~64512~switch~0~~3?9~{U+E5AD}~2016~Window~0~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+    },
+    "states": {
+      "0_userdata.0.e2e.blind.ACTUAL": 50,
+      "0_userdata.0.e2e.blind.CLOSE": false,
+      "0_userdata.0.e2e.blind.OPEN": false,
+      "0_userdata.0.e2e.blind.SET": 50,
+      "0_userdata.0.e2e.blind.STOP": false,
+      "0_userdata.0.e2e.humidity": 48,
+      "0_userdata.0.e2e.light.ON_SET": false,
+      "0_userdata.0.e2e.light.SET": 40,
+      "0_userdata.0.e2e.power": 1234,
+      "0_userdata.0.e2e.socket.SET": false,
+      "0_userdata.0.e2e.socket2.SET": false,
+      "0_userdata.0.e2e.temperature": 21.5,
+      "0_userdata.0.e2e.window": false
+    }
+  }
+}

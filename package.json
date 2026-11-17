@@ -85,6 +85,7 @@
     "test:unit": "npm run test:ts",
     "test:package": "mocha test/package --exit",
     "test:integration": "mocha test/integration --exit",
+    "test:e2e": "mocha --config test/e2e/mocharc.e2e.json",
     "test": "npm run test:ts && npm run test:package",
     "check": "tsc --noEmit",
     "coverage": "nyc npm run test:ts",
