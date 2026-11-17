@@ -160,6 +160,7 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
 -->
 ### **WORK IN PROGRESS**
 - (ticaki) Screensaver notifications: tapping away a dismissible notification with a group ID writes that ID to `panels.<panel>.screensaverNotify.id` and `screensaverNotify.id`
+- (ticaki) sendTo `screensaverNotify` finds the panel given in `panel` (topic) again and answers with `result: 'ok'` on success
 - (ticaki) Screensaver indicators (Advanced and Tiles, TFT 6.0.9+): new long press action "Open popup" – opens the popup of the light, shutter, fan, selection or timer channel above the state and returns to the screensaver afterwards (script: `ScreensaverEntityLongPressPopup: true`)
 - (ticaki) Admin, screensaver items: new option to fill free slots even while hidden; default is hidden – before, a hidden item still filled a free slot
 - (ticaki) Temperature offset changed directly in Tasmota (console `TempOffset`) is now taken over into the state instead of being overwritten on the next reconnect
