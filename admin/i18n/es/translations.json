@@ -1279,6 +1279,7 @@
     "screensaver_item_dpInit_none": "Esta plantilla no necesita objeto – aporta sus propios datos",
     "screensaver_item_enabled": "Estado que oculta el elemento si es falso",
     "screensaver_item_factor": "Factor",
+    "screensaver_item_fillIfBelowMin": "Rellenar huecos libres aunque esté oculto",
     "screensaver_item_headline": "Título (vacío = nombre del estado)",
     "screensaver_item_iconFont": "Fuente del icono",
     "screensaver_item_iconFontHint": "Solo el salvapantallas 'Mosaicos' cambia la fuente del campo de icono. Vacío = fuente del panel.",

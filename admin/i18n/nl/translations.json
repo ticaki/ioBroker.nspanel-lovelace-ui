@@ -1279,6 +1279,7 @@
     "screensaver_item_dpInit_none": "Dit template heeft geen object nodig – het brengt zijn eigen gegevens mee",
     "screensaver_item_enabled": "Status die het item verbergt bij onwaar",
     "screensaver_item_factor": "Factor",
+    "screensaver_item_fillIfBelowMin": "Vrije plaatsen opvullen, ook wanneer verborgen",
     "screensaver_item_headline": "Kop (leeg = naam van de status)",
     "screensaver_item_iconFont": "Lettertype van het icoon",
     "screensaver_item_iconFontHint": "Alleen de schermbeveiliging 'Tegels' wijzigt het lettertype van het icoonveld. Leeg = lettertype van het paneel.",

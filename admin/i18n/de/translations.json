@@ -1313,6 +1313,7 @@
     "screensaver_item_dpInit_none": "Dieses Template braucht kein Objekt – es bringt seine Daten selbst mit",
     "screensaver_item_enabled": "Datenpunkt, der das Item bei false ausblendet",
     "screensaver_item_factor": "Faktor",
+    "screensaver_item_fillIfBelowMin": "Freie Plätze auffüllen, auch wenn ausgeblendet",
     "screensaver_item_headline": "Überschrift (leer = Name des Datenpunkts)",
     "screensaver_item_iconFont": "Icon-Schrift",
     "screensaver_item_iconFontHint": "Nur der Bildschirmschoner 'Kacheln' ändert die Schrift des Icon-Felds. Leer = Schrift des Panels.",

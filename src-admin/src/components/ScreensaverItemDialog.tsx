@@ -9,6 +9,7 @@ import {
     Alert,
     Box,
     Button,
+    Checkbox,
     Dialog,
     DialogActions,
     DialogContent,
@@ -1932,6 +1933,24 @@ export class ScreensaverItemDialog extends React.Component<ScreensaverItemDialog
                             {this.renderText('visibleCondition', 'screensaver_item_visibleCondition', 'val > 0', {
                                 minWidth: 300,
                             })}
+                            {!template && (
+                                <FormControlLabel
+                                    sx={{ display: 'flex' }}
+                                    data-ss="fill-if-below-min"
+                                    control={
+                                        <Checkbox
+                                            checked={draft.fillIfBelowMin === true}
+                                            onChange={e => this.set('fillIfBelowMin', e.target.checked || undefined)}
+                                        />
+                                    }
+                                    label={
+                                        <span>
+                                            {this.getText('screensaver_item_fillIfBelowMin')}
+                                            <DocHelp topic="screensaver.itemFillIfBelowMin" />
+                                        </span>
+                                    }
+                                />
+                            )}
                         </Box>
                     )}
                 </DialogContent>

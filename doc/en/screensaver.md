@@ -154,16 +154,30 @@ If the chosen state is the position of a blind, the dialog treats it in its own 
 
 ### Visibility
 
-This block stands below the other fields as soon as the state is known (with a template, as soon as the template and – if needed – the object are entered). It needs **no expert mode** either. It has two fields:
+This block stands below the other fields as soon as the state is known (with a template, as soon as the template and – if needed – the object are entered). It needs **no expert mode** either. It has two fields and – with state items only – a checkbox:
 
 | Field | Effect |
 |---|---|
 | **State that hides the item while false** | While this state is `false`, the item does not appear on the panel. |
 | **Condition over val (shown while true)** | JavaScript expression over `val`, the value of the item's state – so `val > 0` shows the item for positive values only. |
+| **Fill free slots even when hidden** | A hidden item steps in when a place in the area would otherwise stay empty. Default: off. Templates do not have this checkbox. See [Filling free slots](#filling-free-slots). |
 
 An item with a condition carries the eye icon in the panel picture and **takes no place on the panel** while the condition is not met – the other items move up.
 
 ![The complete item dialog with icon list and visibility](../Pictures/screensaverAdmin/admin-16-item-icon-und-sichtbarkeit.png)
+
+#### Filling free slots
+
+The checkbox **Fill free slots even when hidden** stands right below the condition. It exists for state items only, not for templates. It concerns items that are hidden at the moment – by the state that hides the item while false, or by the condition.
+
+- **Off (default):** A hidden item stays hidden, even if a place stays empty because of it.
+- **On:** If the area has fewer visible items than places, the hidden item steps in as a gap filler. It shows its normal content – icon, color and text just as usual.
+
+Only as many items step in as there are free places, in the order of the list. A gap filler stands at its own position in the list, not appended at the end.
+
+**Example:** The area **Indicators** has 5 places on an EU panel. It holds 6 items, 3 of them are hidden at the moment, and all 3 have the checkbox. 3 items are visible, so 2 places are free. The first 2 hidden items of the list fill these places, the third one stays away. Without the checkbox, 2 places would stay empty.
+
+In the script this setting is called `ScreensaverEntityFillIfBelowMin`. There it is **on** when not given. When [taking over from the script](Migration#screensaver), only an explicit `true` becomes a ticked checkbox. If the script has no entry, the checkbox is off afterwards – hidden items then no longer fill gaps. If you want the old behavior, tick the checkbox at the items concerned.
 
 ## 5. Templates as items
 
@@ -249,7 +263,7 @@ The editor draws the list areas **Left**, **Bottom**, **Indicators** and **Alter
 - **Moving items between windows**: Drag an item over an arrow – the editor pages on while doing so (about one window per three quarters of a second) and the item can be dropped in the target window.
 - **Note below the panel picture**: one line per area with more items than places, for example *Bottom: 7 items on 4 places - only visible items (condition met) take places, the panel pages through them. Here the arrows next to the places page.*
 - **Paging on the panel**: The panel changes the window at the beat of the **rotation time** (see [Options](#12-options-rotation-and-swipe)).
-- **Conditional items take no place**: An item whose visibility condition is not met drops out completely – the number of windows on the panel follows the visible items only.
+- **Conditional items take no place**: An item whose visibility condition is not met drops out completely – the number of windows on the panel follows the visible items only. Exception: an item with [Filling free slots](#filling-free-slots), as long as the area would otherwise have gaps.
 
 Surplus items are therefore **not an error**. The warning *… item(s) have no place in this version* only concerns areas the chosen version **does not have at all** – indicators after switching from Advanced to Standard, for example.
 
@@ -579,6 +593,8 @@ The order of the items in the area **Indicators** decides the place. On `eu` and
 - **The panel shows the script screensaver:** The panel stands in no entry, or it stands in a second entry further down (the first wins) – see the log.
 - **The panel always shows the same items although more are created:** With **rotation time 0** the panel does not page – it stays on the first window. Set a rotation time for surplus items.
 - **An item is missing on the panel but has a place in the editor:** If it carries the eye icon, its condition is not met – the tooltip of the place names it.
+- **A hidden item still stands on the panel:** **Fill free slots even when hidden** is ticked for it, and the area has fewer visible items than places. Untick it if the item should really disappear – see [Filling free slots](#filling-free-slots).
+- **Places stay empty after taking over the script:** In the script, hidden items filled free places on their own; in the admin only with the checkbox. Tick **Fill free slots even when hidden** at these items.
 - **Items are reported after a version change:** They lie in areas the new version does not have (message at the top of the editor); switch the version back or **Remove them**. More items than places **in an existing** area does not trigger this message.
 - **Easyview has no favorite:** For Easyview the editor only draws the area **Bottom**. A favorite item from another version is therefore reported as an item without a place on the change.
 - **Tiles is chosen, the panel does not show it:** The TFT of the panel does not have the page `screensaver5`. The admin does not warn about it – see [Tiles](#16-tiles).

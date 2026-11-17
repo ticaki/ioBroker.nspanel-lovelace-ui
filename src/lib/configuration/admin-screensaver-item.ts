@@ -152,6 +152,8 @@ export function screensaverItemToScript(
     if (item.visibleCondition) {
         element.ScreensaverEntityVisibleCondition = item.visibleCondition;
     }
+    // always explicit: without the field the runtime fills free places with hidden items (default true)
+    element.ScreensaverEntityFillIfBelowMin = item.fillIfBelowMin === true;
     if (area === 'indicator' && item.action) {
         setScreensaverIndicatorAction(element, item.action);
     }

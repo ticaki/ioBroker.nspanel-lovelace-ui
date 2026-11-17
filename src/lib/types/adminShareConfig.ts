@@ -778,6 +778,12 @@ export type ScreensaverItemConfig = {
     /** expression over `val` that hides the item while false (ScreensaverEntityVisibleCondition) */
     visibleCondition?: string;
     /**
+     * state item only: a hidden item still fills a free place while the area has fewer shown items than places
+     * (ScreensaverEntityFillIfBelowMin). Not set = hidden items stay hidden - the admin writes `false` then,
+     * the runtime default of a script element is `true`.
+     */
+    fillIfBelowMin?: boolean;
+    /**
      * font of the icon field (ScreensaverEntityIconTextSize), empty = font of the HMI field. Only the screensaver
      * `tiles` (HMI page screensaver5) reads it, in the area indicator ({@link screensaverItemHasIconFont}); state
      * and template items. A value stored on another area is ignored.
