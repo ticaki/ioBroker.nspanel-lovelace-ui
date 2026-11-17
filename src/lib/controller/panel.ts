@@ -1152,7 +1152,7 @@ export class Panel extends BaseClass {
             return;
         }
         if (!targetSleep) {
-            this.log.warn(
+            this.log.debug(
                 `setActivePage called but nothing changed! Resending active page to panel. Page: ${
                     this._activePage.name
                 } - Sleep: ${this._activePage.sleep}`,

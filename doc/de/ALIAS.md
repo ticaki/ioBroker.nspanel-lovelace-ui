@@ -99,7 +99,7 @@
 ### gate
 | Channel role | State ID | common.type | common.role | required | common.write | description |
 | :---: | :--- | :--- | :--- | :---: | :---: | :--- |
-| **gate** | ~~ACTUAL~~ | number | value.blind |  |  |  |
+| **gate** | ~~ACTUAL~~ | number, boolean | value.blind, sensor.gate, value.gate |  |  |  |
 | " | ~~SET~~ | boolean | switch.gate | X | X |  |
 | " | ~~STOP~~ | boolean | button.stop |  | X |  |
 

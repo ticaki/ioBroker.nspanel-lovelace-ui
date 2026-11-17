@@ -553,7 +553,14 @@ const requiredScriptDataPoints = {
     name: "gate",
     description: "",
     data: {
-      ACTUAL: { role: "value.blind", type: "number", required: false, writeable: false, trigger: true },
+      ACTUAL: {
+        role: ["value.blind", "sensor.gate", "value.gate"],
+        type: ["number", "boolean"],
+        required: false,
+        writeable: false,
+        trigger: true,
+        alternate: "SET"
+      },
       SET: { role: "switch.gate", type: "boolean", required: true, writeable: true, trigger: true },
       STOP: { role: "button.stop", type: "boolean", required: false, writeable: true, trigger: true }
     }

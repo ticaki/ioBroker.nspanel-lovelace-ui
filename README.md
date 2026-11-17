@@ -159,6 +159,8 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
     ### **WORK IN PROGRESS**
 -->
 ### **WORK IN PROGRESS**
+- (ticaki) gate channel: a boolean status (`sensor.gate`) or a channel with only SET is shown, up/down work again
+- (ticaki) "setActivePage called but nothing changed" is logged as debug instead of warning
 - (ticaki) Temperature offset changed directly in Tasmota (console `TempOffset`) is now taken over into the state instead of being overwritten on the next reconnect
 - (ticaki) Admin, panel cards (Maintain, Panelinfo, panel overview): one small "?" per card for the card documentation, buttons and fields with their own documentation section show a help link in their tooltip; removed the clustered "?" above the panel cards and next to "Update scripts for all panels"
 - (ticaki) Admin, Panelinfo: a long panel title no longer widens the card

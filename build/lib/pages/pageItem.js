@@ -339,8 +339,10 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
               optionalValueC[i + 3] = "disable";
             }
           });
-          optionalValueC[3] = value === 100 ? "disable" : optionalValueC[3];
-          optionalValueC[5] = value === 0 ? "disable" : optionalValueC[5];
+          const isOpen = typeof value === "boolean" ? value : value === 100;
+          const isClosed = typeof value === "boolean" ? !value : value === 0;
+          optionalValueC[3] = isOpen ? "disable" : optionalValueC[3];
+          optionalValueC[5] = isClosed ? "disable" : optionalValueC[5];
           message.optionalValue = optionalValueC.join("|");
           message.displayName = this.library.getTranslation(
             (_r = (_q = await tools.getEntryTextOnOff(item.headline, !!value)) != null ? _q : message.displayName) != null ? _r : ""

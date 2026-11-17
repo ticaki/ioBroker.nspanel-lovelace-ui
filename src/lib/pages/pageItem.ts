@@ -418,8 +418,11 @@ export class PageItem extends BaseTriggeredPage {
                         }
                     });
 
-                    optionalValueC[3] = value === 100 ? 'disable' : optionalValueC[3];
-                    optionalValueC[5] = value === 0 ? 'disable' : optionalValueC[5];
+                    // boolean status: true = open (up disabled), false = closed (down disabled)
+                    const isOpen = typeof value === 'boolean' ? value : value === 100;
+                    const isClosed = typeof value === 'boolean' ? !value : value === 0;
+                    optionalValueC[3] = isOpen ? 'disable' : optionalValueC[3];
+                    optionalValueC[5] = isClosed ? 'disable' : optionalValueC[5];
                     message.optionalValue = optionalValueC.join('|');
                     message.displayName = this.library.getTranslation(
                         (await tools.getEntryTextOnOff(item.headline, !!value)) ?? message.displayName ?? '',

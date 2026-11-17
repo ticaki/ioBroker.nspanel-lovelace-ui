@@ -982,4 +982,47 @@ describe('lib/classes/config-manager - page items (golden master)', function () 
             }
         });
     });
+    describe('gate: boolean status and SET only', () => {
+        type GateData = { entity1: { value?: unknown }; up?: unknown; down?: unknown };
+        const gateData = async (
+            channel: string,
+            states: Record<string, Partial<ioBroker.StateCommon>>,
+        ): Promise<GateData> => {
+            addChannel(DB.objects, channel, 'gate', 'gate');
+            for (const key of Object.keys(states)) {
+                addState(DB.objects, `${channel}.${key}`, states[key]);
+            }
+            try {
+                const result = await run('item', { id: channel }, PAGES.entities);
+                expect(result.error).to.equal(undefined);
+                return (result.itemConfig as { data: GateData }).data;
+            } finally {
+                delete DB.objects[channel];
+                for (const key of Object.keys(states)) {
+                    delete DB.objects[`${channel}.${key}`];
+                }
+            }
+        };
+
+        it('boolean ACTUAL with role sensor.gate is the status, SET gives up (true) and down (false)', async () => {
+            const channel = 'alias.0.boolgate.gate';
+            const data = await gateData(channel, {
+                ACTUAL: { role: 'sensor.gate', type: 'boolean', write: false },
+                SET: { role: 'switch.gate', type: 'boolean', write: true },
+            });
+            expect(data.entity1.value).to.include({ type: 'triggered', dp: `${channel}.ACTUAL` });
+            expect(data.up).to.include({ type: 'state', dp: `${channel}.SET`, write: 'return true;' });
+            expect(data.down).to.include({ type: 'state', dp: `${channel}.SET`, write: 'return false;' });
+        });
+
+        it('only SET: SET is the status as well', async () => {
+            const channel = 'alias.0.setonlygate.gate';
+            const data = await gateData(channel, {
+                SET: { role: 'switch.gate', type: 'boolean', write: true },
+            });
+            expect(data.entity1.value).to.include({ type: 'triggered', dp: `${channel}.SET` });
+            expect(data.up).to.include({ type: 'state', dp: `${channel}.SET`, write: 'return true;' });
+            expect(data.down).to.include({ type: 'state', dp: `${channel}.SET`, write: 'return false;' });
+        });
+    });
 });

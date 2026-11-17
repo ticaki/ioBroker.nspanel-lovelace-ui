@@ -3425,7 +3425,8 @@ export class ConfigManager extends BaseClass {
                                     },
                                     entity2: undefined,
                                     up:
-                                        foundedStates[role].SET?.type === 'state'
+                                        foundedStates[role].SET?.type === 'state' ||
+                                        foundedStates[role].SET?.type === 'triggered'
                                             ? {
                                                   ...foundedStates[role].SET,
                                                   type: 'state',
@@ -3434,7 +3435,8 @@ export class ConfigManager extends BaseClass {
                                               }
                                             : undefined,
                                     down:
-                                        foundedStates[role].SET?.type === 'state'
+                                        foundedStates[role].SET?.type === 'state' ||
+                                        foundedStates[role].SET?.type === 'triggered'
                                             ? {
                                                   ...foundedStates[role].SET,
                                                   type: 'state',
