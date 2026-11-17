@@ -12,6 +12,7 @@ export const screensaverTopics = {
     'screensaver.itemBlind': { page: 'screensaver', de: 'Rollladen (Position)', en: 'Blind (position)' },
     'screensaver.itemText': { page: 'screensaver', de: 'Text statt Wert', en: 'Text instead of the value' },
     'screensaver.itemVisibility': { page: 'screensaver', de: 'Sichtbarkeit', en: 'Visibility' },
+    'screensaver.itemFillIfBelowMin': { page: 'screensaver', de: 'Freie Plätze auffüllen', en: 'Filling free slots' },
     'screensaver.create': { page: 'screensaver', de: '1. Bildschirmschoner anlegen', en: '1. Creating a screensaver' },
     'screensaver.editor': { page: 'screensaver', de: '2. Der Editor im Überblick', en: '2. The editor at a glance' },
     'screensaver.versionPanels': { page: 'screensaver', de: '3. Version und Panels', en: '3. Version and panels' },

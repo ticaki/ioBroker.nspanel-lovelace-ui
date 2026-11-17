@@ -1943,7 +1943,12 @@ export class ScreensaverItemDialog extends React.Component<ScreensaverItemDialog
                                             onChange={e => this.set('fillIfBelowMin', e.target.checked || undefined)}
                                         />
                                     }
-                                    label={this.getText('screensaver_item_fillIfBelowMin')}
+                                    label={
+                                        <span>
+                                            {this.getText('screensaver_item_fillIfBelowMin')}
+                                            <DocHelp topic="screensaver.itemFillIfBelowMin" />
+                                        </span>
+                                    }
                                 />
                             )}
                         </Box>
