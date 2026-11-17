@@ -1367,8 +1367,12 @@ async function expectEquivalent(
     if (result.screensaverEntry) {
         const scriptPage = script.pages.find(p => isScreensaverPage(p));
         const adminPage = admin.pages.find(p => isScreensaverPage(p));
+        // deliberate difference: a script element without ScreensaverEntityFillIfBelowMin fills free places with
+        // hidden items (runtime default true), the admin item without the option keeps them hidden
         expect(
-            differences(normalizePage(adminPage), normalizePage(scriptPage)),
+            differences(normalizePage(adminPage), normalizePage(scriptPage)).filter(
+                d => !/\.fillIfBelowMin: false vs true$/.test(d),
+            ),
             'screensaver (admin vs script)',
         ).to.deep.equal([]);
     }
@@ -2996,6 +3000,23 @@ describe('lib/configuration - planScriptToAdmin: screensaver', () => {
         }
     });
 
+    it('takes ScreensaverEntityFillIfBelowMin true over, false and a missing field keep the admin default (hidden)', () => {
+        const item = templateConfig().leftScreensaverEntity[0] as Extract<
+            ScriptConfig.ScreenSaverElement,
+            { type: 'script' }
+        >;
+        const stored = (element: typeof item): ShareConfig.ScreensaverItemConfig => {
+            const result = plan(baseConfig({ leftScreensaverEntity: [element] }));
+            expect(result.plan.screensaver!.rawItems ?? [], 'no raw item').to.deep.equal([]);
+            return result.screensaverEntry!.left[0]!;
+        };
+        expect(stored({ ...item, ScreensaverEntityFillIfBelowMin: true }).fillIfBelowMin).to.equal(true);
+        expect(stored({ ...item, ScreensaverEntityFillIfBelowMin: false })).to.not.have.property('fillIfBelowMin');
+        const missing = { ...item };
+        delete missing.ScreensaverEntityFillIfBelowMin;
+        expect(stored(missing)).to.not.have.property('fillIfBelowMin');
+    });
+
     it('takes an element the admin cannot express over as raw item, the default colors of the script written in', () => {
         const item = templateConfig().leftScreensaverEntity[0] as Extract<
             ScriptConfig.ScreenSaverElement,
@@ -3008,7 +3029,10 @@ describe('lib/configuration - planScriptToAdmin: screensaver', () => {
                 { ...item, ScreensaverEntityOffColor: null as unknown as ScriptConfig.RGB },
                 'null (no off color) is not available in the admin',
             ],
-            [{ ...item, ScreensaverEntityFillIfBelowMin: false }, 'not available in the admin'],
+            [
+                { ...item, ScreensaverEntityFillIfBelowMin: 'yes' as unknown as boolean },
+                'ScreensaverEntityFillIfBelowMin: expected true or false',
+            ],
             [{ ...item, ScreensaverEntityEnabled: ['a'] as unknown as string }, 'expected a state id'],
         ];
         const red = { red: 200, green: 0, blue: 0 };

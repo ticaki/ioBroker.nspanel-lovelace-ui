@@ -87,6 +87,8 @@ The screensaver is not taken over when
 - an item cannot be expressed (a status icon without a state and without a value, for example),
 - or it is empty and has default settings only (*nothing to take over*, not a problem).
 
+`ScreensaverEntityFillIfBelowMin` is taken over only as an explicit `true`. If the entry is missing or `false`, the admin default applies: hidden items stay hidden and no longer fill free places – in the script they did so without an entry. See [Filling free slots](screensaver#filling-free-slots).
+
 ### Hardware buttons
 
 `buttonLeft` and `buttonRight` move into the panel card under `NSPanelsetting` (**HW button left** / **HW button right**). A button is skipped when it is **already configured** in the admin ("no action" counts as configured too) or when the action cannot be expressed in the admin. A script button without an action is no issue — there is nothing to take over there.

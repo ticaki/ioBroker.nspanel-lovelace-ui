@@ -1254,8 +1254,11 @@ function convertScreensaverItem(element, area, where, defaults) {
     item.visibleCondition = condition;
   }
   const fill = element.ScreensaverEntityFillIfBelowMin;
-  if (fill !== void 0 && fill !== null && fill !== true) {
-    throw new ConvertError(reason, `${where}.ScreensaverEntityFillIfBelowMin: not available in the admin`);
+  if (fill !== void 0 && fill !== null && typeof fill !== "boolean") {
+    throw new ConvertError(reason, `${where}.ScreensaverEntityFillIfBelowMin: expected true or false`);
+  }
+  if (fill === true) {
+    item.fillIfBelowMin = true;
   }
   if (area === "indicator") {
     const action = convertIndicatorAction(element, reason, where);

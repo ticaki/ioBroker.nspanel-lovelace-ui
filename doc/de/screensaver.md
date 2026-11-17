@@ -154,16 +154,30 @@ Ist der gewählte Datenpunkt die Position eines Rollladens, behandelt ihn der Di
 
 ### Sichtbarkeit
 
-Dieser Block steht unter den übrigen Feldern, sobald der Datenpunkt bekannt ist (bei einem Template, sobald Vorlage und – falls nötig – Objekt eingetragen sind). Auch er braucht **keinen Expertenmodus**. Er hat zwei Felder:
+Dieser Block steht unter den übrigen Feldern, sobald der Datenpunkt bekannt ist (bei einem Template, sobald Vorlage und – falls nötig – Objekt eingetragen sind). Auch er braucht **keinen Expertenmodus**. Er hat zwei Felder und – nur bei Items mit Datenpunkt – ein Häkchen:
 
 | Feld | Wirkung |
 |---|---|
 | **Datenpunkt, der das Item bei false ausblendet** | Solange dieser State `false` ist, erscheint das Item nicht auf dem Panel. |
 | **Bedingung über val (sichtbar, solange wahr)** | JavaScript-Ausdruck über `val`, den Wert des Item-Datenpunkts – `val > 0` zeigt das Item also nur bei positiven Werten. |
+| **Freie Plätze auffüllen, auch wenn ausgeblendet** | Ein ausgeblendetes Item springt ein, wenn im Bereich sonst ein Platz leer bliebe. Standard: aus. Bei Templates fehlt das Häkchen. Siehe [Freie Plätze auffüllen](#freie-plätze-auffüllen). |
 
 Ein Item mit Bedingung trägt im Panelbild das Augen-Symbol und **belegt auf dem Panel keinen Platz**, solange die Bedingung nicht erfüllt ist – die übrigen Items rücken nach.
 
 ![Der vollständige Item-Dialog mit Icon-Liste und Sichtbarkeit](../Pictures/screensaverAdmin/admin-16-item-icon-und-sichtbarkeit.png)
+
+#### Freie Plätze auffüllen
+
+Das Häkchen **Freie Plätze auffüllen, auch wenn ausgeblendet** steht direkt unter der Bedingung. Es gibt es nur bei Items mit Datenpunkt, nicht bei Templates. Es betrifft Items, die gerade ausgeblendet sind – durch den Datenpunkt, der das Item bei false ausblendet, oder durch die Bedingung.
+
+- **Aus (Standard):** Ein ausgeblendetes Item bleibt ausgeblendet, auch wenn dadurch ein Platz leer bleibt.
+- **An:** Hat der Bereich weniger sichtbare Items als Plätze, springt das ausgeblendete Item als Lückenfüller ein. Es zeigt dabei seinen normalen Inhalt – Symbol, Farbe und Text wie sonst auch.
+
+Es springen nur so viele Items ein, wie Plätze frei sind, und zwar in der Reihenfolge der Liste. Ein Lückenfüller steht an seiner eigenen Stelle in der Liste, nicht hinten angehängt.
+
+**Beispiel:** Der Bereich **Indikatoren** hat auf einem EU-Panel 5 Plätze. Darin stehen 6 Items, 3 davon sind gerade ausgeblendet, und alle 3 haben das Häkchen. Sichtbar sind 3 Items, also sind 2 Plätze frei. Die ersten 2 ausgeblendeten Items der Liste füllen diese Plätze, das dritte bleibt weg. Ohne Häkchen blieben 2 Plätze leer.
+
+Im Skript heißt diese Einstellung `ScreensaverEntityFillIfBelowMin`. Dort ist sie ohne Angabe **an**. Bei der [Übernahme aus dem Skript](Migration#screensaver) wird nur ein ausdrückliches `true` als Häkchen übernommen. Fehlt der Eintrag im Skript, ist das Häkchen danach aus – ausgeblendete Items füllen dann keine Lücken mehr. Wer das alte Verhalten möchte, setzt das Häkchen bei den betroffenen Items.
 
 ## 5. Templates als Item
 
@@ -249,7 +263,7 @@ Die Listenbereiche **Links**, **Unten**, **Indikatoren** und **Alternate** zeich
 - **Items zwischen Fenstern verschieben**: Ein Item über einen Pfeil ziehen – der Editor blättert dabei weiter (etwa ein Fenster pro Dreivierteltelsekunde) und das Item lässt sich im Zielfenster ablegen.
 - **Hinweis unter dem Panelbild**: Je Bereich mit mehr Items als Plätzen eine Zeile, z. B. *Unten: 7 Items auf 4 Plätzen – nur sichtbare Einträge (Bedingung erfüllt) belegen Plätze, das Panel blättert durch. Hier blättern die Pfeile neben den Plätzen.*
 - **Blättern auf dem Panel**: Das Panel wechselt das Fenster im Takt der **Rotationszeit** (siehe [Optionen](#12-optionen-rotation-und-wischen)).
-- **Bedingte Items belegen keinen Platz**: Ein Item, dessen Sichtbarkeits-Bedingung nicht erfüllt ist, fällt ganz heraus – die Zahl der Fenster auf dem Panel richtet sich nur nach den sichtbaren Items.
+- **Bedingte Items belegen keinen Platz**: Ein Item, dessen Sichtbarkeits-Bedingung nicht erfüllt ist, fällt ganz heraus – die Zahl der Fenster auf dem Panel richtet sich nur nach den sichtbaren Items. Ausnahme: ein Item mit [Freie Plätze auffüllen](#freie-plätze-auffüllen), solange der Bereich sonst Lücken hätte.
 
 Überzählige Items sind damit **kein Fehler**. Die Warnung *… Item(s) haben in dieser Version keinen Platz* gilt nur für Bereiche, die die gewählte Version **gar nicht hat** – etwa Indikatoren nach dem Wechsel von Advanced auf Standard.
 
@@ -579,6 +593,8 @@ Die Reihenfolge der Items im Bereich **Indikatoren** bestimmt den Platz. Auf `eu
 - **Panel zeigt den Skript-Screensaver:** Das Panel steht in keinem Eintrag, oder es steht in einem zweiten Eintrag weiter unten (der erste gewinnt) – siehe Log.
 - **Das Panel zeigt immer dieselben Items, obwohl mehr angelegt sind:** Bei **Rotationszeit 0** blättert das Panel nicht – es bleibt beim ersten Fenster. Für überzählige Items eine Rotationszeit setzen.
 - **Ein Item fehlt auf dem Panel, hat im Editor aber einen Platz:** Trägt es das Augen-Symbol, ist seine Bedingung nicht erfüllt – der Tooltip des Platzes nennt sie.
+- **Ein ausgeblendetes Item steht trotzdem auf dem Panel:** Bei ihm ist **Freie Plätze auffüllen, auch wenn ausgeblendet** angehakt, und der Bereich hat weniger sichtbare Items als Plätze. Häkchen entfernen, wenn das Item wirklich verschwinden soll – siehe [Freie Plätze auffüllen](#freie-plätze-auffüllen).
+- **Nach der Übernahme aus dem Skript bleiben Plätze leer:** Im Skript füllten ausgeblendete Items freie Plätze von selbst, im Admin nur mit Häkchen. Bei diesen Items **Freie Plätze auffüllen, auch wenn ausgeblendet** setzen.
 - **Items werden nach einem Versionswechsel gemeldet:** Sie liegen in Bereichen, die die neue Version nicht hat (Meldung oben im Editor); Version zurückstellen oder **Entfernen**. Mehr Items als Plätze **in einem vorhandenen** Bereich löst diese Meldung nicht aus.
 - **Easyview hat keinen Favoriten:** Der Editor zeichnet für Easyview nur den Bereich **Unten**. Ein Favorit-Item aus einer anderen Version wird darum beim Wechsel als Item ohne Platz gemeldet.
 - **Kacheln sind gewählt, das Panel zeigt sie nicht:** Die TFT des Panels hat die Seite `screensaver5` nicht. Der Admin warnt davor nicht – siehe [Kacheln](#16-kacheln).

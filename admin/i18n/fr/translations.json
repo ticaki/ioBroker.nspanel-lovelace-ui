@@ -1279,6 +1279,7 @@
     "screensaver_item_dpInit_none": "Ce modèle n'a pas besoin d'objet – il apporte ses propres données",
     "screensaver_item_enabled": "État qui masque l’élément si faux",
     "screensaver_item_factor": "Facteur",
+    "screensaver_item_fillIfBelowMin": "Remplir les emplacements libres même si masqué",
     "screensaver_item_headline": "Titre (vide = nom de l’état)",
     "screensaver_item_iconFont": "Police de l'icône",
     "screensaver_item_iconFontHint": "Seul l'économiseur d'écran 'Tuiles' modifie la police du champ d'icône. Vide = police du panneau.",

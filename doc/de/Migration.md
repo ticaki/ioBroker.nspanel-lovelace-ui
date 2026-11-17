@@ -87,6 +87,8 @@ Nicht übernommen wird der Screensaver, wenn
 - ein Element nicht abbildbar ist (z. B. ein Statusicon ohne Datenpunkt und ohne Wert),
 - oder er leer ist und nur Standardeinstellungen hat (*nichts zu übernehmen*, kein Problem).
 
+`ScreensaverEntityFillIfBelowMin` wird nur als ausdrückliches `true` übernommen. Fehlt der Eintrag oder ist er `false`, gilt der Admin-Standard: Ausgeblendete Elemente bleiben ausgeblendet und füllen keine freien Plätze mehr – im Skript taten sie das ohne Eintrag. Siehe [Freie Plätze auffüllen](screensaver#freie-plätze-auffüllen).
+
 ### Hardware-Buttons
 
 `buttonLeft` und `buttonRight` wandern in die Panel-Kachel unter `NSPanelsetting` (**HW-Button links** / **HW-Button rechts**). Ein Button wird übersprungen, wenn er im Admin **bereits konfiguriert** ist (auch „keine Aktion" zählt als konfiguriert) oder wenn die Aktion im Admin nicht abbildbar ist. Ein Skript-Button ohne Aktion ist kein Thema — dort gibt es nichts zu übernehmen.

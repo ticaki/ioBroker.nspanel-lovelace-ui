@@ -1277,6 +1277,7 @@
     "screensaver_item_dpInit_none": "Ten szablon nie potrzebuje obiektu – ma własne dane",
     "screensaver_item_enabled": "Stan ukrywający element gdy fałsz",
     "screensaver_item_factor": "Mnożnik",
+    "screensaver_item_fillIfBelowMin": "Wypełniaj wolne miejsca, nawet gdy ukryty",
     "screensaver_item_headline": "Nagłówek (pusty = nazwa stanu)",
     "screensaver_item_iconFont": "Czcionka ikony",
     "screensaver_item_iconFontHint": "Tylko wygaszacz ekranu 'Kafelki' zmienia czcionkę pola ikony. Puste = czcionka panelu.",

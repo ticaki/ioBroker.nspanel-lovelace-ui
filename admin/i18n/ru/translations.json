@@ -1279,6 +1279,7 @@
     "screensaver_item_dpInit_none": "Этому шаблону объект не нужен — он приносит свои данные сам",
     "screensaver_item_enabled": "Состояние, скрывающее элемент при false",
     "screensaver_item_factor": "Множитель",
+    "screensaver_item_fillIfBelowMin": "Заполнять свободные места, даже если скрыт",
     "screensaver_item_headline": "Заголовок (пусто = имя состояния)",
     "screensaver_item_iconFont": "Шрифт значка",
     "screensaver_item_iconFontHint": "Шрифт поля значка меняет только заставка 'Плитки'. Пусто = шрифт панели.",
