@@ -159,8 +159,6 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
     ### **WORK IN PROGRESS**
 -->
 ### **WORK IN PROGRESS**
-- (ticaki) gate channel: a boolean status (`sensor.gate`) or a channel with only SET is shown, up/down work again and write to the found SET state; with a boolean status up is disabled when open and down when closed (list and popup), stop no longer depends on the status
-- (ticaki) "setActivePage called but nothing changed" is logged as debug instead of warning
 - (ticaki) Temperature offset changed directly in Tasmota (console `TempOffset`) is now taken over into the state instead of being overwritten on the next reconnect
 - (ticaki) Admin, panel cards (Maintain, Panelinfo, panel overview): one small "?" per card for the card documentation, buttons and fields with their own documentation section show a help link in their tooltip; removed the clustered "?" above the panel cards and next to "Update scripts for all panels"
 - (ticaki) Admin, Panelinfo: a long panel title no longer widens the card
@@ -170,6 +168,8 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
 - (ticaki) Admin: panel names and topics must be unique, orphaned panel assignments of pages and screensavers are marked and can be removed, a duplicated panel entry can be deleted on its own and is skipped with a warning on start (#899)
 - (ticaki) internal MQTT server: a panel whose name starts with the name of another panel is no longer taken for that one when it connects; MQTT messages are matched to subscriptions exactly
 - (ticaki) Berry driver install: a failed download restores the previous driver instead of leaving the panel without autoexec.be
+- (ticaki) gate channel: a boolean status (`sensor.gate`) or a channel with only SET is shown, up/down work again and write to the found SET state; with a boolean status up is disabled when open and down when closed (list and popup), stop no longer depends on the status
+- (ticaki) "setActivePage called but nothing changed" is logged as debug instead of warning
 
 ### 2.3.1 (2026-11-16)
 - (ticaki) Admin: help links to the documentation at many settings, in the ioBroker system language
