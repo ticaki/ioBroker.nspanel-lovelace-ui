@@ -271,7 +271,7 @@ Surplus items are therefore **not an error**. The warning *… item(s) have no p
 
 The indicators (versions Advanced and [Tiles](#16-tiles)) show an icon only. For them the item dialog has the **Action on press**:
 
-![Indicator with an action](../Pictures/screensaverAdmin/admin-08-indikator-aktion.png)
+![The item dialog of an indicator with the choice “Action on press” opened: none, button, switch, values to cycle through, open a page](../Pictures/screensaverAdmin/admin-08-indikator-aktion.png)
 
 | Action | Effect |
 |---|---|
@@ -330,20 +330,56 @@ In the item dialog of an indicator a second block **Action on long press** stand
 | **button (writes true)** | writes `true` into the chosen state. |
 | **switch (toggles)** | toggles the chosen state between `true` and `false`. |
 | **open a page** | opens the chosen page of the instance. |
+| **Open popup** | opens the popup of the device the indicator belongs to. Only in the choice when the device has one, see [Open popup](#open-popup). |
 
-![An indicator with a switch on a short tap and a page on a long press](../Pictures/screensaverAdmin/admin-29-item-langer-druck.png)
+![The item dialog of a dimmer indicator with the choice “Action on long press” opened – here with “Open popup”, because the channel is a dimmer](../Pictures/screensaverAdmin/admin-29-item-langer-druck.png)
 
 - The long press fires after **500 ms**, while the finger is still down; the release sends nothing after that. With an action set **only** that action runs – the action of the short press stays out.
 - **Values to cycle through** does not exist for the long press.
 - Button and switch need a **writable** state; otherwise the dialog says the same as for the action of the short press and does not allow applying. If the state is missing at runtime or is not writable, the adapter warns in the log (*the long press state … does not exist or is not writable - a long press acts like a tap*), and the long press acts like a short one.
 - A [template](#5-templates-as-items) on an indicator place gets the long press as well.
-- In the [raw data](#6-raw-data-json) and in the configuration script the fields are called `ScreensaverEntityLongPressButton`, `ScreensaverEntityLongPressSwitch` and `ScreensaverEntityLongPressNaviToPage`; with several of them set, that is the order.
+- In the [raw data](#6-raw-data-json) and in the configuration script the fields are called `ScreensaverEntityLongPressButton`, `ScreensaverEntityLongPressSwitch`, `ScreensaverEntityLongPressNaviToPage` and `ScreensaverEntityLongPressPopup` (`true`); with several of them set, that is the order.
 
 > **Example:** An indicator **Light** switches the light on a short tap (**switch**) and opens a page on a long press (**open a page**) – two functions on the same tile.
 
 **A state of its own.** Every long press writes `true` into `panels.<panel>.buttons.indicatorLong-<n>` – the same order as `indicator-<n>`, type `boolean`, read-only, role `button.long`. It is written **always**, even without an action set; without an action the long press acts like a tap on top of that, so **both** states arrive. That makes the long press usable as a trigger for own scripts even without an action in the dialog.
 
 The indicator tiles of the [web panel](WebPanel) send the long press as well.
+
+#### Open popup
+
+With **Open popup** a long press operates the device behind the indicator straight from the screensaver: the panel opens the same popup as on a card page, for example the light popup of a lamp or the shutter popup. There is no extra field for it – which device is meant follows from the state of the item:
+
+- If the state (for a [template](#5-templates-as-items) the object) is itself a **channel** or **device**, the popup belongs to it.
+- If it is a **state**, the popup belongs to the channel or device directly above it.
+
+![A shutter indicator with “Open popup” as action on long press; the channel above the state has the role blind](../Pictures/screensaverAdmin/admin-30-item-popup-oeffnen.png)
+
+The dialog offers **Open popup** only when the role of this channel or device leads to a popup:
+
+| Role of the channel | Popup |
+|---|---|
+| `light`, `dimmer`, `ct`, `rgb`, `rgbSingle`, `hue` | light |
+| `blind` | shutter: with tilt states (`TILT_OPEN`, `TILT_CLOSE`, `TILT_STOP`) `popupShutter`, without them `popupShutter2` – the popup only for roller shutters without tilt |
+| `lock` | shutter (`popupShutter`) |
+| `level.mode.fan` | fan |
+| `select` | selection list |
+| `level.timer` | [timer](popupTimer) |
+
+All other roles have no popup that can be opened from the screensaver – a gate (`gate`) neither; then the entry is missing from the choice. If an item with **Open popup** later changes to a state without a matching channel, the choice shows **none** again, and the long press is dropped on applying.
+
+On the panel:
+
+- The long press opens the popup above the screensaver. It is operated like on a card page.
+- **Back** closes the popup, and so does the end of the panel timeout (`cmd.screenSaver.timeout`, see [Panel info](Panelinfo)). After that the screensaver is back, completely redrawn. With a timeout of `0` the popup stays open until **Back** is pressed – like on a card page.
+- The short tap is unchanged: it runs the **Action on press** or acts like a tap on the background.
+- `buttons.indicatorLong-<n>` is written on every long press here as well.
+- If the adapter finds no popup for the indicator at startup – there is no channel or device above the state, or its role leads to no popup –, it writes a warning to the log (*Screensaver indicator …: no channel or device above the state for the popup - a long press acts like a tap* or *… has no popup - a long press acts like a tap*), and the long press acts like a short tap.
+- The [web panel](WebPanel) opens the popup as well.
+
+In the configuration script this is `ScreensaverEntityLongPressPopup: true` on the indicator. If a button, a switch or a page is set for the long press as well, that one takes precedence – the popup only opens without them.
+
+> **Example:** An indicator shows the state `on` of a light channel (role `light`). The short tap switches the light (**switch**), the long press opens the light popup (**Open popup**) – for the brightness, for example.
 ## 9. Status icons
 
 The two status icons (`mrIcon1`, `mrIcon2`) each follow one state: **Icon on** while `true`, otherwise **Icon off**, each with a **Color on** / **Color off** of its own. An optional second **State shown as value (optional)** next to it is shown with **Decimals** and **Unit**. Without a state the icon stays unused and is grey in the panel picture. A newly created entry fills both status icons with the relays of the panel (`Relay.1` and `Relay.2`, bulb on/off) – so the panel shows a color from the start; both can be changed or switched off by emptying the state.
@@ -602,6 +638,8 @@ The order of the items in the area **Indicators** decides the place. On `eu` and
 - **A status icon looks empty with Tiles:** Only its color is visible there; without a state the bar stays black.
 - **A tap on the indicator does nothing:** Then no **Action on press** is set – a writable state alone is not enough. The state `panels.<panel>.buttons.indicator-<n>` arrives nevertheless; from the TFT 6.0.9 on the tap acts like one on the background, with an older TFT the panel jumps to the main page.
 - **The long press does nothing:** It needs the **TFT 6.0.9** (the dialog says so). `buttons.indicatorLong-<n>` stays empty then. If the state of the action is not writable or does not exist, the log warns and the long press acts like a tap.
+- **"Open popup" is missing from the choice:** The channel or device of the item has no role that leads to a popup – or the item is a state without a channel above it. Which roles work is listed under [Open popup](#open-popup); a gate (`gate`) is deliberately not among them.
+- **The long press opens no popup but acts like a tap:** At startup the adapter found no popup for the channel – the log names the reason. Or in the script a button, a switch or a page is set for the long press as well; those take precedence.
 - **The indicator always writes the same value:** The list of the action **Values to cycle through** has one entry only – or something else keeps setting the state to a value that is not in the list; then every press starts with the first entry again.
 - **`buttons.screensaverGesture` stays empty:** Either **Swipe gestures on the screensaver** is off or the state `cmd.screenSaver.doubleClick` of the panel is.
 - **After "Remove raw data" the item is empty:** The standard fields come back, not the contents of the JSON – an item originally created as raw data has to be filled in anew afterwards. Save the JSON before removing it.
