@@ -24,6 +24,32 @@ export type callbackMessageType = (topic: string, message: string) => Promise<vo
 export type callbackConnectType = () => Promise<void>;
 
 /**
+ * Does the MQTT topic filter match the topic? Supports `+` (one level) and `#` (the rest including
+ * the parent level, `a/#` matches `a` too). Compared level by level, so `a/b` does not match `a/bc`
+ * and `a/#` does not match `ab/c`; the panel topic itself may contain `/`.
+ *
+ * @param filter topic filter
+ * @param topic concrete topic
+ * @returns true if the topic matches the filter
+ */
+export function mqttTopicMatches(filter: string, topic: string): boolean {
+    const f = filter.split('/');
+    const t = topic.split('/');
+    for (let i = 0; i < f.length; i++) {
+        if (f[i] === '#') {
+            return true;
+        }
+        if (i >= t.length) {
+            return false;
+        }
+        if (f[i] !== '+' && f[i] !== t[i]) {
+            return false;
+        }
+    }
+    return f.length === t.length;
+}
+
+/**
  * Does the subscription `filter` receive every message `other` receives?
  * Both are MQTT topic filters (`+` one level, `#` the rest including the parent level).
  *
@@ -135,7 +161,6 @@ export class MQTTClientClass extends BaseClass {
 
         this.client.on('message', (topic, message) => {
             const _helper = async (topic: string, message: Buffer): Promise<void> => {
-                // NOTE: Simple prefix match with '/#' trimming, unchanged semantics
                 const strMessage = message.toString();
 
                 // Guard: Tasmota sends this specific payload as a background status message on connect
@@ -147,7 +172,7 @@ export class MQTTClientClass extends BaseClass {
                     return;
                 }
 
-                const callbacks = this.subscriptDB.filter(entry => topic.startsWith(entry.topic.replace('/#', '')));
+                const callbacks = this.subscriptDB.filter(entry => mqttTopicMatches(entry.topic, topic));
 
                 if (this.adapter.config.debugLogMqtt) {
                     this.log.debug(

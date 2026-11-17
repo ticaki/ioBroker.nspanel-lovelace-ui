@@ -22,6 +22,7 @@ __export(panel_setup_exports, {
   duplicatePanelIdIndexes: () => duplicatePanelIdIndexes,
   matchPanelForSetup: () => matchPanelForSetup,
   migrateScriptConfigTopic: () => migrateScriptConfigTopic,
+  panelIndexForMqttClient: () => panelIndexForMqttClient,
   replacePanelTopicInScript: () => replacePanelTopicInScript
 });
 module.exports = __toCommonJS(panel_setup_exports);
@@ -114,12 +115,32 @@ function migrateScriptConfigTopic(native, oldTopic, newTopic, script) {
   result.scriptConfig = moveList(native.scriptConfig, "topic");
   return result;
 }
+function panelIndexForMqttClient(clientId, panels) {
+  const exact = [];
+  panels.forEach((p, i) => {
+    if (p.isVirtual || !p.clientName || clientId.length !== p.clientName.length + 7) {
+      return;
+    }
+    if (clientId.startsWith(`${p.clientName}-`) && /^[0-9a-f]{6}$/i.test(clientId.slice(-6))) {
+      exact.push(i);
+    }
+  });
+  if (exact.length > 0) {
+    const hex = clientId.slice(-6).toLowerCase();
+    const byMac = exact.find(
+      (i) => panels[i].macId.replace(/[^0-9a-f]/gi, "").toLowerCase().endsWith(hex)
+    );
+    return byMac != null ? byMac : exact[0];
+  }
+  return panels.findIndex((p) => !p.isVirtual && clientId.startsWith(p.clientName));
+}
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
   SCRIPT_END_STOP_TOKEN,
   duplicatePanelIdIndexes,
   matchPanelForSetup,
   migrateScriptConfigTopic,
+  panelIndexForMqttClient,
   replacePanelTopicInScript
 });
 //# sourceMappingURL=panel-setup.js.map

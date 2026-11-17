@@ -635,7 +635,14 @@ class Controller extends Library.BaseClass {
     if (id === this.mqttClient.clientId) {
       return true;
     }
-    const index = this.panels.findIndex((p) => !p.isVirtual && id.startsWith(this.library.cleandp(p.friendlyName)));
+    const index = (0, import_panel_setup.panelIndexForMqttClient)(
+      id,
+      this.panels.map((p) => ({
+        clientName: this.library.cleandp(p.friendlyName),
+        macId: p.name,
+        isVirtual: p.isVirtual
+      }))
+    );
     if (index !== -1) {
       void this.panels[index].setStatus("connected");
       if (this.panels[index].initDone) {

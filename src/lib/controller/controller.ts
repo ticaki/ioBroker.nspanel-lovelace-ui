@@ -15,7 +15,7 @@ import * as definition from '../const/definition';
 import * as adminShareConfig from '../types/adminShareConfig';
 import type { PanelChannel } from '../classes/panel-channel';
 import type { VirtualPanelManager } from '../web/virtual-panel-manager';
-import { duplicatePanelIdIndexes } from '../tools/panel-setup';
+import { duplicatePanelIdIndexes, panelIndexForMqttClient } from '../tools/panel-setup';
 
 export type ControllerOptions = {
     mqttClient: MQTT.MQTTClientClass;
@@ -684,7 +684,14 @@ export class Controller extends Library.BaseClass {
         if (id === this.mqttClient.clientId) {
             return true;
         }
-        const index = this.panels.findIndex(p => !p.isVirtual && id.startsWith(this.library.cleandp(p.friendlyName)));
+        const index = panelIndexForMqttClient(
+            id,
+            this.panels.map(p => ({
+                clientName: this.library.cleandp(p.friendlyName),
+                macId: p.name,
+                isVirtual: p.isVirtual,
+            })),
+        );
         if (index !== -1) {
             void this.panels[index].setStatus('connected');
             if (this.panels[index].initDone) {

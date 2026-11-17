@@ -3,6 +3,8 @@ import {
     duplicatePanelIdIndexes,
     matchPanelForSetup,
     migrateScriptConfigTopic,
+    panelIndexForMqttClient,
+    type MqttClientPanelCandidate,
     replacePanelTopicInScript,
     SCRIPT_END_STOP_TOKEN,
     type PanelSetupEntry,
@@ -340,5 +342,62 @@ describe('lib/tools/panel-setup', () => {
                 migrateScriptConfigTopic({ scriptConfigRaw: 'x', scriptConfig: [null, 1] }, 'a/old', 'a/new').moved,
             ).to.equal(0);
         });
+    });
+});
+
+describe('lib/tools/panel-setup - panelIndexForMqttClient', () => {
+    const panel = (clientName: string, macId: string, isVirtual = false): MqttClientPanelCandidate => ({
+        clientName,
+        macId,
+        isVirtual,
+    });
+
+    it('does not take Küche2 for Küche, in either order', () => {
+        const a = [panel('K_che', 'A0_B7_65_00_00_01'), panel('K_che2', 'A0_B7_65_00_00_02')];
+        expect(panelIndexForMqttClient('K_che2-000002', a)).to.equal(1);
+        expect(panelIndexForMqttClient('K_che-000001', a)).to.equal(0);
+        const b = [a[1], a[0]];
+        expect(panelIndexForMqttClient('K_che2-000002', b)).to.equal(0);
+        expect(panelIndexForMqttClient('K_che-000001', b)).to.equal(1);
+    });
+
+    it('ignores the case of the hex digits', () => {
+        const panels = [panel('Flur', 'a0_b7_65_54_c0_70'), panel('Flur2', 'A0_B7_65_54_C0_71')];
+        expect(panelIndexForMqttClient('Flur2-54c071', panels)).to.equal(1);
+        expect(panelIndexForMqttClient('Flur-54C070', panels)).to.equal(0);
+    });
+
+    it('prefers the panel whose MAC ends with the digits when several fit exactly', () => {
+        const panels = [panel('Bad', 'A0_B7_65_54_C0_70'), panel('Bad', 'A0_B7_65_54_C0_71')];
+        expect(panelIndexForMqttClient('Bad-54C071', panels)).to.equal(1);
+        expect(panelIndexForMqttClient('Bad-54c070', panels)).to.equal(0);
+        expect(panelIndexForMqttClient('Bad-FFFFFF', panels)).to.equal(0);
+    });
+
+    it('falls back to the name prefix for other client ids', () => {
+        const panels = [panel('Wohnzimmer', 'A0_B7_65_54_C0_70')];
+        expect(panelIndexForMqttClient('Wohnzimmer', panels)).to.equal(0);
+        expect(panelIndexForMqttClient('Wohnzimmer_alt', panels)).to.equal(0);
+        expect(panelIndexForMqttClient('Wohnzimmer-XYZ123', panels)).to.equal(0);
+        expect(panelIndexForMqttClient('Keller-54C070', panels)).to.equal(-1);
+    });
+
+    it('falls back to the first prefix match, as before, if nothing fits exactly', () => {
+        const panels = [panel('K_che', 'A0_B7_65_00_00_01'), panel('K_che2', 'A0_B7_65_00_00_02')];
+        expect(panelIndexForMqttClient('K_che2', panels)).to.equal(0);
+    });
+
+    it('handles a panel without friendly name like before (empty prefix)', () => {
+        const panels = [panel('', 'A0_B7_65_54_C0_70'), panel('Flur', 'A0_B7_65_54_C0_71')];
+        expect(panelIndexForMqttClient('Flur-54C071', panels)).to.equal(1);
+        expect(panelIndexForMqttClient('-54C070', panels)).to.equal(0);
+        expect(panelIndexForMqttClient('Other', panels)).to.equal(0);
+    });
+
+    it('never returns a virtual panel', () => {
+        const panels = [panel('Flur', 'A0_B7_65_54_C0_70', true), panel('Flur', 'A0_B7_65_54_C0_71')];
+        expect(panelIndexForMqttClient('Flur-54C070', panels)).to.equal(1);
+        expect(panelIndexForMqttClient('Web-123456', [panel('Web', 'web_1', true)])).to.equal(-1);
+        expect(panelIndexForMqttClient('Web', [panel('Web', 'web_1', true)])).to.equal(-1);
     });
 });

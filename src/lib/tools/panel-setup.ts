@@ -196,3 +196,48 @@ export function migrateScriptConfigTopic(
     result.scriptConfig = moveList(native.scriptConfig, 'topic');
     return result;
 }
+
+/** What `panelIndexForMqttClient` needs to know about a running panel */
+export interface MqttClientPanelCandidate {
+    /** `cleandp(friendlyName)` - the first part of the MQTT client id the setup writes to Tasmota */
+    clientName: string;
+    /** panel id, `cleandp` of the MAC, e.g. `A0_B7_65_54_C0_70` */
+    macId: string;
+    /** virtual (web) panels never connect to the MQTT server themselves */
+    isVirtual: boolean;
+}
+
+/**
+ * Which panel belongs to the MQTT client that just connected?
+ *
+ * The setup writes `MqttClient <cleandp(name)>-<last 6 hex digits of the MAC>` to Tasmota. A client id of
+ * exactly that form is matched first, so `Küche2-ABCDEF` is never taken for the panel `Küche`; if several
+ * panels fit, the one whose MAC ends with these digits wins. Only if no panel fits exactly, the first panel
+ * whose name is a prefix of the client id is taken (older or hand-made client ids).
+ *
+ * @param clientId - the id of the connected MQTT client
+ * @param panels - the running panels
+ * @returns index into `panels`, or -1
+ */
+export function panelIndexForMqttClient(clientId: string, panels: readonly MqttClientPanelCandidate[]): number {
+    const exact: number[] = [];
+    panels.forEach((p, i) => {
+        if (p.isVirtual || !p.clientName || clientId.length !== p.clientName.length + 7) {
+            return;
+        }
+        if (clientId.startsWith(`${p.clientName}-`) && /^[0-9a-f]{6}$/i.test(clientId.slice(-6))) {
+            exact.push(i);
+        }
+    });
+    if (exact.length > 0) {
+        const hex = clientId.slice(-6).toLowerCase();
+        const byMac = exact.find(i =>
+            panels[i].macId
+                .replace(/[^0-9a-f]/gi, '')
+                .toLowerCase()
+                .endsWith(hex),
+        );
+        return byMac ?? exact[0];
+    }
+    return panels.findIndex(p => !p.isVirtual && clientId.startsWith(p.clientName));
+}
