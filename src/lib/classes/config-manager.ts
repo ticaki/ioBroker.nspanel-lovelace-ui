@@ -4446,6 +4446,8 @@ export class ConfigManager extends BaseClass {
         } = {},
     ): Promise<{ configArray: pages.PageBase; messages: string[] }> {
         let pageItems: NSPanel.PageItemDataItemsOptions[] = [];
+        /** indicator -> the page item whose popup its long press opens (getScreensaverIndicatorPopup) */
+        const indicatorPopups = new Map<NSPanel.PageItemDataItemsOptions, NSPanel.PageItemDataItemsOptions>();
 
         const loadElementSection = async (
             items: ScriptConfig.ScreenSaverElement[] | undefined,
@@ -4498,12 +4500,20 @@ export class ConfigManager extends BaseClass {
                 if (!item) {
                     return Promise.resolve<NSPanel.PageItemDataItemsOptions | null>(null);
                 }
-                return this.getEntityData(item, mode, config).catch(err => {
-                    const msg = `${errorLabel} - ${String(err)}`;
-                    messages.push(msg);
-                    this.log.error(msg);
-                    return null;
-                });
+                return this.getEntityData(item, mode, config)
+                    .then(async result => {
+                        const popup = mode === 'indicator' ? await this.getScreensaverIndicatorPopup(item) : null;
+                        if (popup) {
+                            indicatorPopups.set(result, popup);
+                        }
+                        return result;
+                    })
+                    .catch(err => {
+                        const msg = `${errorLabel} - ${String(err)}`;
+                        messages.push(msg);
+                        this.log.error(msg);
+                        return null;
+                    });
             });
             const res = await Promise.all(tasks);
             return res.filter((r): r is NSPanel.PageItemDataItemsOptions => !!r);
@@ -5021,6 +5031,12 @@ export class ConfigManager extends BaseClass {
             },
         ]);
         pageItems = pageItems.concat(config.nativePageItems || []);
+        // the items whose popup a long press of an indicator opens: behind all others and without a place, so they
+        // are never drawn - the indicator knows its item by the index
+        for (const [indicator, popup] of indicatorPopups) {
+            indicator.longPressPopup = pageItems.length;
+            pageItems.push(popup);
+        }
 
         const configArray: pages.PageBase = {
             dpInit: '',
@@ -5429,6 +5445,73 @@ export class ConfigManager extends BaseClass {
         return null;
     }
 
+    /** types of a page item with a popup of the HMI that a long press of an indicator can open */
+    private static readonly screensaverPopupItemTypes: ReadonlySet<string> = new Set([
+        'light',
+        'light2',
+        'shutter',
+        'shutter2',
+        'fan',
+        'input_sel',
+        'timer',
+    ]);
+
+    /**
+     * The page item whose popup a long press of an indicator opens (ScreensaverEntityLongPressPopup, TFT 6.0.9+): the
+     * item of the channel / device of the element (script: ScreensaverEntity, template: dpInit) - the object itself
+     * when it is a channel / device, else the channel / device above the state - built like a page item of that
+     * channel ({@link getPageItemConfig}). Button, switch and page of a long press come
+     * first.
+     *
+     * @param entity element of the script (script or template)
+     * @returns the page item, null when the element asks for no popup or the channel has none (a warning tells why,
+     * a long press acts like a tap then)
+     */
+    async getScreensaverIndicatorPopup(
+        entity: ScriptConfig.ScreenSaverElement,
+    ): Promise<NSPanel.PageItemDataItemsOptions | null> {
+        if (
+            entity.type === 'native' ||
+            entity.ScreensaverEntityLongPressPopup !== true ||
+            entity.ScreensaverEntityLongPressButton ||
+            entity.ScreensaverEntityLongPressSwitch ||
+            entity.ScreensaverEntityLongPressNaviToPage
+        ) {
+            return null;
+        }
+        const stateId = (entity.type === 'template' ? entity.dpInit : entity.ScreensaverEntity) ?? '';
+        try {
+            // a channel / device is the device of the popup itself, a state takes the channel / device above it
+            const own = stateId && !stateId.endsWith('.') ? await this.adapter.getForeignObjectAsync(stateId) : null;
+            const isDevice = (o: ioBroker.Object | null | undefined): o is ioBroker.Object =>
+                !!o && (o.type === 'channel' || o.type === 'device');
+            const channelId = isDevice(own) ? stateId : stateId ? screensaverChannelIdOf(stateId) : '';
+            const channel = isDevice(own)
+                ? own
+                : channelId
+                  ? await this.adapter.getForeignObjectAsync(channelId)
+                  : null;
+            if (!isDevice(channel)) {
+                this.log.warn(
+                    `Screensaver indicator ${stateId}: no channel or device above the state for the popup - a long press acts like a tap`,
+                );
+                return null;
+            }
+            const page: ScriptConfig.PageEntities = { type: 'cardEntities', uniqueName: '', heading: '', items: [] };
+            const { itemConfig } = await this.getPageItemConfig({ id: channelId }, page);
+            const type = itemConfig?.type;
+            if (itemConfig && typeof type === 'string' && ConfigManager.screensaverPopupItemTypes.has(type)) {
+                return itemConfig;
+            }
+            this.log.warn(
+                `Screensaver indicator ${stateId}: the channel ${channelId} (role ${String(channel.common?.role)}) has no popup - a long press acts like a tap`,
+            );
+        } catch (err) {
+            this.log.warn(`Screensaver indicator ${stateId}: no popup - ${String(err)} - a long press acts like a tap`);
+        }
+        return null;
+    }
+
     /**
      * Font of the icon field of a screensaver element as data item of `icon.textSize` (tools.getIconEntryValue
      * appends `¬<id>` to the icon). Place indicator only; the screensaver page strips the suffix
@@ -5534,6 +5617,7 @@ export class ConfigManager extends BaseClass {
                 'ScreensaverEntityLongPressNaviToPage',
                 'ScreensaverEntityLongPressButton',
                 'ScreensaverEntityLongPressSwitch',
+                'ScreensaverEntityLongPressPopup',
             ]) {
                 delete (temp as Record<string, unknown>)[key];
             }
