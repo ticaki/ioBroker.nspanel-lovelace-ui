@@ -53,6 +53,7 @@ import {
     type ScreensaverTemplateNeed,
     isIconTextSize,
     isRawItemObject,
+    isScreensaverPopupChannelRole,
     screensaverChannelIdOf,
     screensaverDateFormats,
     screensaverItemFields,
@@ -131,7 +132,7 @@ let iconMap: Map<string, string> | null = null;
  * @param value value of the select
  */
 function isLongPressKind(value: string): value is ScreensaverItemLongPressAction['kind'] {
-    return value === 'button' || value === 'switch' || value === 'navigate';
+    return value === 'button' || value === 'switch' || value === 'navigate' || value === 'popup';
 }
 
 /**
@@ -504,18 +505,32 @@ export class ScreensaverItemDialog extends React.Component<ScreensaverItemDialog
     /**
      * the long press of the draft as it is stored
      *
-     * @returns the long press, undefined when the place has none or the state / page is missing
+     * @returns the long press, undefined when the place has none, the state / page is missing or the item has no popup
      */
     private completeLongPress(): ScreensaverItemLongPressAction | undefined {
         const longPress = this.state.draft.longPress;
-        if (
-            !screensaverItemFields(this.props.area).action ||
-            !longPress ||
-            (longPress.kind === 'navigate' ? !longPress.page : !longPress.state)
-        ) {
+        if (!screensaverItemFields(this.props.area).action || !longPress) {
+            return undefined;
+        }
+        if (longPress.kind === 'popup') {
+            return this.popupSupported() ? { kind: 'popup' } : undefined;
+        }
+        if (longPress.kind === 'navigate' ? !longPress.page : !longPress.state) {
             return undefined;
         }
         return longPress;
+    }
+
+    /**
+     * true when a long press can open a popup: the object itself when it is a channel / device, else the channel /
+     * device above the state has a role whose page item has one (light, shutter, fan, selection, timer)
+     */
+    private popupSupported(): boolean {
+        const { objKind, objRole, channelRole } = this.state;
+        if (objKind === 'channel' || objKind === 'device') {
+            return isScreensaverPopupChannelRole(objRole);
+        }
+        return objKind === 'state' && isScreensaverPopupChannelRole(channelRole);
     }
 
     /**
@@ -1353,11 +1368,14 @@ export class ScreensaverItemDialog extends React.Component<ScreensaverItemDialog
     }
 
     /**
-     * the long press of an indicator (TFT 6.0.9+): button, switch or page - without one a long press acts like a tap
+     * the long press of an indicator (TFT 6.0.9+): button, switch, page or the popup of the channel above the state
+     * (only offered when it has one) - without one a long press acts like a tap
      */
     private renderLongPressSection(): React.JSX.Element {
         const longPress: ScreensaverItemLongPressAction = this.state.draft.longPress ?? { kind: 'button' };
-        const kind = this.state.draft.longPress ? longPress.kind : 'none';
+        const popupSupported = this.popupSupported();
+        const kind =
+            !this.state.draft.longPress || (longPress.kind === 'popup' && !popupSupported) ? 'none' : longPress.kind;
         return (
             <Box
                 sx={{ mb: 2 }}
@@ -1377,13 +1395,16 @@ export class ScreensaverItemDialog extends React.Component<ScreensaverItemDialog
                                     this.set('longPress', undefined);
                                     return;
                                 }
-                                this.set('longPress', { ...longPress, kind: v });
+                                this.set('longPress', v === 'popup' ? { kind: v } : { ...longPress, kind: v });
                             }}
                         >
                             <MenuItem value="none">{this.getText('screensaver_item_action_none')}</MenuItem>
                             <MenuItem value="button">{this.getText('screensaver_item_action_button')}</MenuItem>
                             <MenuItem value="switch">{this.getText('screensaver_item_action_switch')}</MenuItem>
                             <MenuItem value="navigate">{this.getText('screensaver_item_action_navigate')}</MenuItem>
+                            {popupSupported && (
+                                <MenuItem value="popup">{this.getText('screensaver_item_longPress_popup')}</MenuItem>
+                            )}
                         </Select>
                     </FormControl>
                     <DocHelp topic="screensaver.longPress" />

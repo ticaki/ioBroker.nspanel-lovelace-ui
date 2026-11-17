@@ -94,6 +94,7 @@ __export(adminShareConfig_exports, {
   isPanelModel: () => isPanelModel,
   isRawItemFormat: () => isRawItemFormat,
   isRawItemObject: () => isRawItemObject,
+  isScreensaverPopupChannelRole: () => isScreensaverPopupChannelRole,
   isScriptNavigatedChart: () => isScriptNavigatedChart,
   isScriptNavigatedPower: () => isScriptNavigatedPower,
   isScrollCard: () => isScrollCard,
@@ -415,6 +416,22 @@ function screensaverItemHasIconFont(mode, area) {
 function screensaverChannelIdOf(stateId) {
   const parts = stateId.split(".");
   return parts.length > 3 ? parts.slice(0, -1).join(".") : "";
+}
+const screensaverPopupChannelRoles = /* @__PURE__ */ new Set([
+  "light",
+  "dimmer",
+  "ct",
+  "rgb",
+  "rgbSingle",
+  "hue",
+  "blind",
+  "lock",
+  "level.mode.fan",
+  "select",
+  "level.timer"
+]);
+function isScreensaverPopupChannelRole(role) {
+  return !!role && screensaverPopupChannelRoles.has(role);
 }
 function screensaverItemSource(item) {
   return (item == null ? void 0 : item.template) ? "template" : "state";
@@ -2252,6 +2269,7 @@ const CONVERT_GLOBAL_DEFAULT_DECISION = "keepAdmin";
   isPanelModel,
   isRawItemFormat,
   isRawItemObject,
+  isScreensaverPopupChannelRole,
   isScriptNavigatedChart,
   isScriptNavigatedPower,
   isScrollCard,

@@ -210,7 +210,7 @@ Der Browser bricht den Text selbst um; eine feste Zeichenzahl pro Zeile gibt es 
 - **Halten** (ab etwa 0,6 Sekunden) ist der lange Druck: Auf einer Kachel einer Menüseite schaltet ein
   kurzer Druck, Halten öffnet das Detail-Popup — wie am echten Panel. Auf einem **Indikator des
   Bildschirmschoners** löst das Halten nach 0,5 Sekunden die [Aktion bei langem Drücken](screensaver#aktion-bei-langem-drücken)
-  aus; anders als am echten Panel bricht eine Bewegung von mehr als etwa 20 Pixeln den langen Druck ab.
+  aus, auch [Popup öffnen](screensaver#popup-öffnen); anders als am echten Panel bricht eine Bewegung von mehr als etwa 20 Pixeln den langen Druck ab.
 - **Die zwei Hardwaretasten** liegen als Leisten unter dem Display. Sie lösen die Aktion aus, die für die
   Tasten eingestellt ist, und setzen `panels.<Panel>.buttons.left`/`right`. **Relais schalten sie nicht.**
   Beim Browser-Bild eines echten Panels sind die Leisten immer da; bei einem eigenständigen Web-Panel

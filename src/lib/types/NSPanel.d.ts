@@ -1508,6 +1508,11 @@ export namespace NSPanel {
         filter?: pages.filterType;
         /** If true, this entity is used to fill up to the minimum required number of visible screensaver items. */
         fillIfBelowMin?: boolean;
+        /**
+         * screensaver indicator: index (in the items of the screensaver) of the internal page item whose popup a long
+         * press opens - an item without modeScr that is never drawn (config-manager getScreensaverConfig)
+         */
+        longPressPopup?: number;
     };
 
     type ColorEntryType = Record<BooleanUnion, RGB | undefined> & { scale?: IconScaleElement };

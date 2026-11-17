@@ -3682,6 +3682,7 @@ class ConfigManager extends import_library.BaseClass {
   async getScreensaverConfig(config, messages = [], options = {}) {
     var _a, _b, _c, _d, _e, _f;
     let pageItems = [];
+    const indicatorPopups = /* @__PURE__ */ new Map();
     const loadElementSection = async (items, mode, errorLabel) => {
       if (!items || items.length === 0) {
         return [];
@@ -3720,7 +3721,13 @@ class ConfigManager extends import_library.BaseClass {
         if (!item) {
           return Promise.resolve(null);
         }
-        return this.getEntityData(item, mode, config).catch((err) => {
+        return this.getEntityData(item, mode, config).then(async (result) => {
+          const popup = mode === "indicator" ? await this.getScreensaverIndicatorPopup(item) : null;
+          if (popup) {
+            indicatorPopups.set(result, popup);
+          }
+          return result;
+        }).catch((err) => {
           const msg = `${errorLabel} - ${String(err)}`;
           messages.push(msg);
           this.log.error(msg);
@@ -4213,6 +4220,10 @@ class ConfigManager extends import_library.BaseClass {
       }
     ]);
     pageItems = pageItems.concat(config.nativePageItems || []);
+    for (const [indicator, popup] of indicatorPopups) {
+      indicator.longPressPopup = pageItems.length;
+      pageItems.push(popup);
+    }
     const configArray = {
       dpInit: "",
       alwaysOn: "none",
@@ -4558,6 +4569,58 @@ class ConfigManager extends import_library.BaseClass {
     }
     return null;
   }
+  /** types of a page item with a popup of the HMI that a long press of an indicator can open */
+  static screensaverPopupItemTypes = /* @__PURE__ */ new Set([
+    "light",
+    "light2",
+    "shutter",
+    "shutter2",
+    "fan",
+    "input_sel",
+    "timer"
+  ]);
+  /**
+   * The page item whose popup a long press of an indicator opens (ScreensaverEntityLongPressPopup, TFT 6.0.9+): the
+   * item of the channel / device of the element (script: ScreensaverEntity, template: dpInit) - the object itself
+   * when it is a channel / device, else the channel / device above the state - built like a page item of that
+   * channel ({@link getPageItemConfig}). Button, switch and page of a long press come
+   * first.
+   *
+   * @param entity element of the script (script or template)
+   * @returns the page item, null when the element asks for no popup or the channel has none (a warning tells why,
+   * a long press acts like a tap then)
+   */
+  async getScreensaverIndicatorPopup(entity) {
+    var _a, _b;
+    if (entity.type === "native" || entity.ScreensaverEntityLongPressPopup !== true || entity.ScreensaverEntityLongPressButton || entity.ScreensaverEntityLongPressSwitch || entity.ScreensaverEntityLongPressNaviToPage) {
+      return null;
+    }
+    const stateId = (_a = entity.type === "template" ? entity.dpInit : entity.ScreensaverEntity) != null ? _a : "";
+    try {
+      const own = stateId && !stateId.endsWith(".") ? await this.adapter.getForeignObjectAsync(stateId) : null;
+      const isDevice = (o) => !!o && (o.type === "channel" || o.type === "device");
+      const channelId = isDevice(own) ? stateId : stateId ? (0, import_adminShareConfig.screensaverChannelIdOf)(stateId) : "";
+      const channel = isDevice(own) ? own : channelId ? await this.adapter.getForeignObjectAsync(channelId) : null;
+      if (!isDevice(channel)) {
+        this.log.warn(
+          `Screensaver indicator ${stateId}: no channel or device above the state for the popup - a long press acts like a tap`
+        );
+        return null;
+      }
+      const page = { type: "cardEntities", uniqueName: "", heading: "", items: [] };
+      const { itemConfig } = await this.getPageItemConfig({ id: channelId }, page);
+      const type = itemConfig == null ? void 0 : itemConfig.type;
+      if (itemConfig && typeof type === "string" && ConfigManager.screensaverPopupItemTypes.has(type)) {
+        return itemConfig;
+      }
+      this.log.warn(
+        `Screensaver indicator ${stateId}: the channel ${channelId} (role ${String((_b = channel.common) == null ? void 0 : _b.role)}) has no popup - a long press acts like a tap`
+      );
+    } catch (err) {
+      this.log.warn(`Screensaver indicator ${stateId}: no popup - ${String(err)} - a long press acts like a tap`);
+    }
+    return null;
+  }
   /**
    * Font of the icon field of a screensaver element as data item of `icon.textSize` (tools.getIconEntryValue
    * appends `¬<id>` to the icon). Place indicator only; the screensaver page strips the suffix
@@ -4644,7 +4707,8 @@ class ConfigManager extends import_library.BaseClass {
         "ScreensaverEntityCycleValues",
         "ScreensaverEntityLongPressNaviToPage",
         "ScreensaverEntityLongPressButton",
-        "ScreensaverEntityLongPressSwitch"
+        "ScreensaverEntityLongPressSwitch",
+        "ScreensaverEntityLongPressPopup"
       ]) {
         delete temp[key];
       }

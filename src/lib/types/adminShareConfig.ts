@@ -721,11 +721,12 @@ export type ScreensaverItemAction = {
 };
 
 /**
- * what an indicator does when it is held (TFT 6.0.9+; ScreensaverEntityLongPressButton / ...Switch / ...NaviToPage
- * of the script). Without one a long press acts like a tap.
+ * what an indicator does when it is held (TFT 6.0.9+; ScreensaverEntityLongPressButton / ...Switch / ...NaviToPage /
+ * ...Popup of the script). Without one a long press acts like a tap.
  */
 export type ScreensaverItemLongPressAction = {
-    kind: 'button' | 'switch' | 'navigate';
+    /** popup: the popup of the channel / device itself or the one above the state ({@link isScreensaverPopupChannelRole}) */
+    kind: 'button' | 'switch' | 'navigate' | 'popup';
     /** state written on a long press (button: true, switch: toggled) */
     state?: string;
     /** page opened on a long press */
@@ -820,6 +821,34 @@ export function screensaverItemHasIconFont(mode: ScreensaverMode | undefined, ar
 export function screensaverChannelIdOf(stateId: string): string {
     const parts = stateId.split('.');
     return parts.length > 3 ? parts.slice(0, -1).join('.') : '';
+}
+
+/**
+ * Channel roles whose page item has a popup of the HMI a long press of an indicator can open: the type of the page
+ * item config-manager getPageItemConfig builds for the role - light (popupLight / popupLight2), shutter (popupShutter
+ * / popupShutter2: blind, lock), fan (popupFan), selection (popupInSel) and timer (popupTimer).
+ */
+const screensaverPopupChannelRoles: ReadonlySet<string> = new Set([
+    'light',
+    'dimmer',
+    'ct',
+    'rgb',
+    'rgbSingle',
+    'hue',
+    'blind',
+    'lock',
+    'level.mode.fan',
+    'select',
+    'level.timer',
+]);
+
+/**
+ * true when the page item of a channel with this role has a popup an indicator can open by a long press
+ *
+ * @param role common.role of the channel / device above the state of the indicator
+ */
+export function isScreensaverPopupChannelRole(role: string | undefined): boolean {
+    return !!role && screensaverPopupChannelRoles.has(role);
 }
 
 /** what an item is built from: one state with its own fields or a page item template */
