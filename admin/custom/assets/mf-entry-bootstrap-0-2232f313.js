@@ -26,7 +26,7 @@ const __mfImport = (src) =>
 
 
 (async () => {
-  const __mfHostInit = await __mfImport("./hostInit-DV511Y19.js");
+  const __mfHostInit = await __mfImport("./hostInit-DvOy3j-P.js");
   await __mfHostInit.__tla;
   const { initHost } = __mfHostInit;
   await initHost();
@@ -37,4 +37,4 @@ const __mfImport = (src) =>
   if (__mfReactServerModuleCache?.pendingShareLoads) {
     await Promise.all(__mfReactServerModuleCache.pendingShareLoads);
   }
-})().then(() => __mfImport("./index-wZ-L0KYp.js"));
+})().then(() => __mfImport("./index-BfxauZBy.js"));

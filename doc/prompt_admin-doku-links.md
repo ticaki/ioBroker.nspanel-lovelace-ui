@@ -28,7 +28,7 @@ dafür keine Rolle.
 
 | Datei | Aufgabe |
 |---|---|
-| `src-admin/src/components/DocHelp.tsx` | `DocHelp` (das ?), `DocButton` (Button für die ganze Seite), `withDocLanguage` (gibt die Systemsprache weiter) |
+| `src-admin/src/components/DocHelp.tsx` | `DocHelp` (das ?, `size="tiny"` für die Kachel-Ecke), `DocButton` (Button für die ganze Seite), `DocTooltip` (Hilfe-Link im Tooltip eines Knopfes/Feldes in Kacheln, für Elemente mit eigenem Abschnitt), `DocPageThemeContext` (Seiten-Theme für Tooltips in Kacheln mit eigenem `ThemeProvider`), `withDocLanguage` (gibt die Systemsprache weiter) |
 | `src-admin/src/docTopics/types.ts` | Typ `DocTopic = { page, de?, en? }` |
 | `src-admin/src/docTopics/<bereich>.ts` | die Topics eines Admin-Bereichs: `screensaver`, `pages1`, `pages2`, `pageitems`, `dialogs`, `navigation`, `maintain` |
 | `src-admin/src/docTopics/index.ts` | führt alle Bereiche zusammen (`DOC_TOPICS`, `DocTopicKey`), `docTopicUrl`, `cardDocTopic(card)` und `CARD_DOC_PAGES` für die Karten-Seiten |
@@ -58,13 +58,17 @@ dafür keine Rolle.
 **Im Admin:**
 
 ```tsx
-import { DocButton, DocHelp } from './DocHelp'; // aus src-admin/src/components
+import { DocButton, DocHelp, DocTooltip } from './DocHelp'; // aus src-admin/src/components
 <Typography>{this.getText('screensaver_item_color')}<DocHelp topic="screensaver.itemColor" /></Typography>
 <DocButton topic="screensaver.page" />
 <DocHelp topic={cardDocTopic(entry.card)} /> // ein Topic-Objekt geht auch
+// in einer Kachel: Link im Tooltip, beim grauen Knopf zusätzlich „Wenn ein Knopf grau bleibt“
+<DocTooltip topic={disabled ? ['maintain.tftUpdate', 'maintain.greyButton'] : 'maintain.tftUpdate'} sx={{ flex: '0 0 auto' }}>
+    <Button disabled={disabled}>…</Button>
+</DocTooltip>
 ```
 
-`DocHelp` stoppt die Weitergabe des Klicks. Ein ? in einem Checkbox-Label, einem Akkordeon-Kopf oder einem
+`DocHelp` und der Link in `DocTooltip` stoppen die Weitergabe des Klicks. Ein ? in einem Checkbox-Label, einem Akkordeon-Kopf oder einem
 Menüeintrag schaltet deshalb nichts mit um.
 
 ## 3. Regeln für neue Links
@@ -72,8 +76,41 @@ Menüeintrag schaltet deshalb nichts mit um.
 1. **Nur dort, wo die Doku einen passenden Abschnitt hat.** Die Überschrift muss genau diese Einstellung
    erklären. Ein Unterabschnitt ist besser als ein Link auf die ganze Seite.
 2. **Ruhig bleiben, aber reichlich:** Mehr als 5 ? pro Ansicht sind erlaubt. Kein ? in Zeilen, die sich
-   wiederholen, also nicht in Listen, Tabellenzeilen, je Panel-Kachel, je Slot oder je Knoten im
-   Navigationsgraphen. Dann lieber ein ? an der Überschrift der Liste.
+   wiederholen, also nicht in Listen, Tabellenzeilen, je Slot oder je Knoten im Navigationsgraphen. Hat die
+   Liste eine eigene Überschrift, darf dort **ein** ? stehen, das genau diese Überschrift erklärt – kein
+   Sammelplatz für die Hilfe der Listeneinträge.
+   **Kacheln** (Panel-Kacheln in Maintain, Panelinfo, Panel-Übersicht): **Ein kleines ? pro Kachel in der oberen rechten
+   Ecke** (`<DocHelp size="tiny" sx={{ position: 'absolute', top: '1px', right: '2px', m: 0 }} />`, Kachel mit
+   `position: 'relative'`): Es sitzt im Innenabstand über den Symbolen der Kopfzeile, schiebt nichts nach unten
+   und vergrößert die Kachel nicht. Ziel ist der allgemeine Kachel-Abschnitt der Ansicht (Übersicht
+   „4. Die Panelkachel“, Maintain „2. Die Karte eines Panels“, Panelinfo „Was die Kachel zeigt“). Das ist
+   ausdrücklich erlaubt. Elemente der Kachel, die **einen eigenen, abweichenden Abschnitt** haben (Updates,
+   Versionsfelder, Übernahme, Export/Import, kein Skript, HW-Buttons, Temperaturoffset …), bekommen die Hilfe
+   per `DocTooltip` in den Tooltip des Knopfes oder Feldes. **Nie derselbe Link mehrfach in einer Kachel:**
+   Ein Element, das nur der allgemeine Kachel-Abschnitt erklärt, bekommt kein `DocTooltip`; sein eigener
+   `title` bleibt, und in einem Tooltip mit mehreren Links fehlt der allgemeine.
+   `DocTooltip`: ein optionaler Hinweistext (z. B. warum ein Knopf grau ist) und darunter je Topic ein Link
+   „Hilfe: <Überschrift>“ mit kleinem Pfeil. Der Tooltip ist interaktiv (die Maus darf hinein), ein deaktivierter
+   Knopf zeigt ihn dank des `span`-Wrappers trotzdem. Graue Knöpfe dürfen zusätzlich auf den Abschnitt „Wenn ein
+   Knopf grau bleibt“ zeigen (`topic` als Liste). Auf Touch-Geräten öffnet ein **langer Druck** den Tooltip mit
+   dem Link; `leaveTouchDelay={3000}` lässt danach 3 s Zeit zum Tippen. Kein eigenes Kontextmenü bauen. Ein
+   vorhandenes `title` oder ein eigener Tooltip am Element wandert als `hint` in den `DocTooltip`, damit es nicht
+   doppelt aufgeht.
+   Der Tooltip von `DocTooltip` hat **Popover-Stil** (`background.paper`, `text.primary`, 2px Rand in
+   `primary.main`, Schatten), nicht den grauen MUI-Tooltip: Auf dem grauen Tooltip hat die Linkfarbe des Themas
+   keinen Kontrast (`primary.main` 1.6–3.6:1). Auf paper hat der Link die normale Linkfarbe (`primary.main`) und
+   sieht aus wie jeder Link im Admin; im dunklen Thema ist paper dunkel. Der Link ist immer unterstrichen – er
+   ist das einzige Klickziel im Tooltip. Keine feste Farbe setzen.
+   **Immer in den Farben der Seite, nicht der Kachel:** Setzt eine Ansicht um ihre Kacheln einen eigenen
+   `ThemeProvider` (Signalfarben in Maintain und Panelinfo, `getLightSurfaceTheme`), muss sie die Kacheln in
+   `<DocPageThemeContext.Provider value={this.props.theme}>` hüllen. `DocTooltip` zeichnet den Inhalt dann mit
+   dem Seiten-Theme; sonst bekäme er z. B. hellorange Fläche mit der Linkfarbe des dunklen Themas.
+   Beispiel Panel-Übersicht: Das `?` neben „Web-Panel hinzufügen“ ist entfallen; der Knopf trägt `DocTooltip`,
+   sein Flex-Verhalten (`flex: '1 1 0'`) liegt am Wrapper (`sx`), der Knopf selbst ist `fullWidth`.
+   **Nie mehrere ? nebeneinander oder gesammelt in einer Ecke.** Jedes ? steht direkt an dem Element, das es
+   erklärt (Überschrift, Label, Feld). Braucht ein Element mehrere Abschnitte, bekommt es ein `DocTooltip` mit
+   mehreren Links statt mehrerer ?. (Anlass: Die Zeile mit drei ? über der Panel-Übersicht wirkte „wie in die
+   Ecke gefegt, zusammenhanglos“ und ist entfallen.)
 3. **Platzierung:** Inline neben eine Überschrift, einen Dialogtitel, ein Label oder ein Feld. Nie in das
    Label-Element eines TextField, das zerschneidet das Label. Kein Layout verschieben und keinen Umbruch erzeugen.
 4. **Farbe aus dem Thema:** Keine feste Farbe setzen. DocHelp nutzt Theme-Farben mit Opacity 0.55, beim Hover 1.

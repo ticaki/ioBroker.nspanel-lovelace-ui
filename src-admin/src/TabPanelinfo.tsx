@@ -33,7 +33,8 @@ import { type IobTheme, type ThemeName, type ThemeType } from '@iobroker/gui-com
 import { PanelStatusBadge } from './components/PanelStatusBadge';
 import { ThemeProvider } from '@mui/material/styles';
 import { getLightSurfaceTheme } from './themeUtils';
-import { DocButton } from './components/DocHelp';
+import { DocButton, DocHelp, DocPageThemeContext, DocTooltip } from './components/DocHelp';
+import type { DocTopicKey } from './docTopics';
 
 interface PanelinfoInfo {
     _Headline: string;
@@ -761,8 +762,67 @@ class TabPanelinfo extends ConfigGeneric<ConfigGenericProps & PanelinfoProps, Pa
         }
     }
 
-    // Render state control based on object data
+    /**
+     * Help topic of a value of the card, if a section explains it more precisely than "What the card shows"
+     * (that one is the `?` in the head of the card).
+     *
+     * @param statePath State below `panels.<panel>.`.
+     * @param writable Whether the state is a control.
+     * @param noScript "panel uses no script" is set.
+     * @returns The topic for `DocTooltip`, or null for none.
+     */
+    private stateDocTopic(statePath: string, writable: boolean, noScript: boolean): DocTopicKey | null {
+        switch (statePath) {
+            case 'cmd.activated':
+                return null;
+            case 'cmd.screenSaver.layout':
+                return 'screensaver.versionPanels';
+            case 'cmd.tempOffset':
+            case 'info.tasmota.sensors.ANALOG.Temperature1':
+                return 'maintain.panelinfoTempOffset';
+            case 'info.internal.scriptName':
+                return noScript ? 'maintain.migrationNoScript' : null;
+            case 'info.nspanel.firmwareUpdate':
+                return 'maintain.tftUpdate';
+            default:
+                return writable ? 'maintain.panelinfoOperate' : null;
+        }
+    }
+
+    /**
+     * Control of a state with its help tooltip.
+     *
+     * @param panelId Id of the panel.
+     * @param statePath State below `panels.<panel>.`.
+     * @param noScript "panel uses no script" is set.
+     * @returns The control, or null while the state is not loaded.
+     */
     private renderStateControl(
+        panelId: string,
+        statePath: string,
+        noScript: boolean = false,
+    ): React.JSX.Element | null {
+        const control = this.renderStateControlInner(panelId, statePath, noScript);
+        const common = this.state.panelStates[panelId]?.states[statePath]?.object.common;
+        const topic = common ? this.stateDocTopic(statePath, !!common.write, noScript) : null;
+        if (!control || !common || !topic) {
+            return control;
+        }
+        // switches and check marks keep their own width, fields and buttons span the card
+        const fullWidth = common.type !== 'boolean' || (common.write && !!common.role?.startsWith('button'));
+        return (
+            <DocTooltip
+                key={statePath}
+                topic={topic}
+                sx={fullWidth ? { display: 'flex', width: '100%' } : { alignSelf: 'flex-start' }}
+            >
+                {control}
+            </DocTooltip>
+        );
+    }
+
+    // Render state control based on object data
+    private renderStateControlInner(
         panelId: string,
         statePath: string,
         noScript: boolean = false,
@@ -987,37 +1047,45 @@ class TabPanelinfo extends ConfigGeneric<ConfigGenericProps & PanelinfoProps, Pa
                     </Alert>
                 )}
 
-                {/* Panels as Boxes */}
-                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
-                    {panelsInfo.map((panel, index) => {
-                        const cardStyle = this.getPanelCardStyle(panel);
-                        const panelConfig = panelsConfig.find(p => p.topic === panel._topic);
-                        // a web panel has no Tasmota: no sensors, no wifi signal, no firmware, no console
-                        const isWebPanel = panelConfig?.kind === 'web';
-                        const isShown = (statePath: string): boolean =>
-                            !isWebPanel || !tasmotaOnlyStates.has(statePath);
-                        const card = (
-                            <Box
-                                key={panel._id || index}
-                                sx={{
-                                    width: 'fit-content',
-                                    maxWidth: '100%',
-                                    minWidth: 320,
-                                    border: 3,
-                                    borderColor: cardStyle.borderColor,
-                                    backgroundColor: cardStyle.backgroundColor,
-                                    // Überschrift, Schalterbeschriftungen und Icons erben ihre Farbe -
-                                    // ohne diese Angabe blieben sie in einem dunklen Theme weiß
-                                    color: 'text.primary',
-                                    opacity: !alive ? 0.6 : 1,
-                                    p: 2,
-                                    borderRadius: 1,
-                                }}
-                            >
-                                <Box sx={{ display: 'flex', alignItems: 'center', mb: 2, gap: 1 }}>
-                                    {/* Left side: Name and Badge vertically stacked */}
-                                    {/* Panel Name and Status Badge */}
-                                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, mb: 2 }}>
+                {/* tooltips in the cards keep the colours of the page, not of the card */}
+                <DocPageThemeContext.Provider value={this.props.theme}>
+                    {/* Panels as Boxes */}
+                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
+                        {panelsInfo.map((panel, index) => {
+                            const cardStyle = this.getPanelCardStyle(panel);
+                            const panelConfig = panelsConfig.find(p => p.topic === panel._topic);
+                            // a web panel has no Tasmota: no sensors, no wifi signal, no firmware, no console
+                            const isWebPanel = panelConfig?.kind === 'web';
+                            const isShown = (statePath: string): boolean =>
+                                !isWebPanel || !tasmotaOnlyStates.has(statePath);
+                            const card = (
+                                <Box
+                                    key={panel._id || index}
+                                    sx={{
+                                        width: 'fit-content',
+                                        maxWidth: '100%',
+                                        minWidth: 320,
+                                        border: 3,
+                                        borderColor: cardStyle.borderColor,
+                                        backgroundColor: cardStyle.backgroundColor,
+                                        // Überschrift, Schalterbeschriftungen und Icons erben ihre Farbe -
+                                        // ohne diese Angabe blieben sie in einem dunklen Theme weiß
+                                        color: 'text.primary',
+                                        opacity: !alive ? 0.6 : 1,
+                                        p: 2,
+                                        position: 'relative',
+                                        borderRadius: 1,
+                                    }}
+                                >
+                                    {/* one help link per card for the card as a whole, small in the top right corner */}
+                                    <DocHelp
+                                        topic="maintain.panelinfoCard"
+                                        size="tiny"
+                                        sx={{ position: 'absolute', top: '1px', right: '2px', m: 0 }}
+                                    />
+                                    {/* Title alone in the first line, in full length; status badge and symbols share
+                                        the second line, so the symbols no longer widen the card */}
+                                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, mb: 4 }}>
                                         <Typography
                                             variant="h6"
                                             sx={{
@@ -1026,98 +1094,117 @@ class TabPanelinfo extends ConfigGeneric<ConfigGenericProps & PanelinfoProps, Pa
                                         >
                                             {panel._Headline}
                                         </Typography>
-                                        <PanelStatusBadge
-                                            panelId={panelConfig?.id || panel._id}
-                                            oContext={this.props.oContext}
-                                            disableTooltip={true}
-                                            showIcon={false}
-                                            alive={alive}
-                                        />
+                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                            <PanelStatusBadge
+                                                panelId={panelConfig?.id || panel._id}
+                                                oContext={this.props.oContext}
+                                                disableTooltip={true}
+                                                showIcon={false}
+                                                alive={alive}
+                                            />
+                                            <Box sx={{ flex: 1 }} />
+                                            {isWebPanel ? (
+                                                <DocTooltip topic="maintain.webPanelLimits">
+                                                    <Chip
+                                                        label={this.getText('webPanelKind')}
+                                                        size="small"
+                                                        color="info"
+                                                        variant="outlined"
+                                                    />
+                                                </DocTooltip>
+                                            ) : null}
+                                            {webLink.enabled && panel._topic ? (
+                                                <DocTooltip
+                                                    topic={
+                                                        isWebPanel
+                                                            ? 'maintain.webPanelBrowser'
+                                                            : 'maintain.webPanelReal'
+                                                    }
+                                                    hint={this.getText('openWebPanel')}
+                                                >
+                                                    <IconButton
+                                                        size="small"
+                                                        color="primary"
+                                                        onClick={(): void => openWebPanel(webLink, panel._topic)}
+                                                        aria-label={this.getText('openWebPanel')}
+                                                    >
+                                                        <OpenInNewIcon />
+                                                    </IconButton>
+                                                </DocTooltip>
+                                            ) : null}
+                                            <DocTooltip
+                                                topic="maintain.panelinfo"
+                                                hint={this.getText('settingPanel')}
+                                            >
+                                                <IconButton
+                                                    size="small"
+                                                    color={panel._check ? 'primary' : 'default'}
+                                                    onClick={() => this.handleSettingsPanel()}
+                                                    disabled={!alive}
+                                                    aria-label={this.getText('settingPanel')}
+                                                >
+                                                    <SettingsOutlinedIcon />
+                                                </IconButton>
+                                            </DocTooltip>
+                                        </Box>
                                     </Box>
-                                    {isWebPanel ? (
-                                        <Chip
-                                            label={this.getText('webPanelKind')}
-                                            size="small"
-                                            color="info"
-                                            variant="outlined"
-                                        />
-                                    ) : null}
-                                    {webLink.enabled && panel._topic ? (
-                                        <IconButton
-                                            size="small"
-                                            color="primary"
-                                            onClick={(): void => openWebPanel(webLink, panel._topic)}
-                                            title={this.getText('openWebPanel')}
-                                        >
-                                            <OpenInNewIcon />
-                                        </IconButton>
-                                    ) : null}
-                                    <IconButton
-                                        size="small"
-                                        color={panel._check ? 'primary' : 'default'}
-                                        onClick={() => this.handleSettingsPanel()}
-                                        disabled={!alive}
-                                        title={this.getText('settingPanel')}
-                                    >
-                                        <SettingsOutlinedIcon />
-                                    </IconButton>
-                                </Box>
 
-                                {/* Panel States */}
-                                {panelStates[panelConfig?.id || panel._id] && (
-                                    <Box sx={{ mb: 2, display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-                                        {displayStates
-                                            .filter(isShown)
-                                            .map(statePath =>
-                                                this.renderStateControl(
-                                                    panelConfig?.id || panel._id,
-                                                    statePath,
-                                                    panelConfig?.noScript === true,
-                                                ),
-                                            )}
-                                        {optionalDisplayStates
-                                            .filter(
-                                                optState =>
-                                                    isShown(optState.id) &&
-                                                    this.shouldDisplayOptionalState(
+                                    {/* Panel States */}
+                                    {panelStates[panelConfig?.id || panel._id] && (
+                                        <Box sx={{ mb: 2, display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+                                            {displayStates
+                                                .filter(isShown)
+                                                .map(statePath =>
+                                                    this.renderStateControl(
                                                         panelConfig?.id || panel._id,
-                                                        optState.id,
+                                                        statePath,
+                                                        panelConfig?.noScript === true,
                                                     ),
-                                            )
-                                            .map(optState =>
-                                                this.renderStateControl(panelConfig?.id || panel._id, optState.id),
-                                            )}
-                                    </Box>
-                                )}
+                                                )}
+                                            {optionalDisplayStates
+                                                .filter(
+                                                    optState =>
+                                                        isShown(optState.id) &&
+                                                        this.shouldDisplayOptionalState(
+                                                            panelConfig?.id || panel._id,
+                                                            optState.id,
+                                                        ),
+                                                )
+                                                .map(optState =>
+                                                    this.renderStateControl(panelConfig?.id || panel._id, optState.id),
+                                                )}
+                                        </Box>
+                                    )}
 
-                                {/* Console Button */}
-                                {isWebPanel ? null : (
-                                    <Button
-                                        variant="contained"
-                                        fullWidth
-                                        onClick={() => this.handleOpenTasmotaConsole(panelConfig)}
-                                        disabled={!panelConfig?.ip || !alive}
-                                        size="small"
-                                    >
-                                        {this.getText('openTasmotaConsole')}
-                                    </Button>
-                                )}
-                            </Box>
-                        );
-                        // Eine eingefärbte Karte trägt in jedem Theme dieselbe helle Signalfarbe -
-                        // ihr Inhalt wird deshalb unabhängig vom Theme hell gethemt.
-                        return cardStyle.lightSurface ? (
-                            <ThemeProvider
-                                key={panel._id || index}
-                                theme={getLightSurfaceTheme(this.props.theme, cardStyle.backgroundColor)}
-                            >
-                                {card}
-                            </ThemeProvider>
-                        ) : (
-                            card
-                        );
-                    })}
-                </Box>
+                                    {/* Console Button */}
+                                    {isWebPanel ? null : (
+                                        <Button
+                                            variant="contained"
+                                            fullWidth
+                                            onClick={() => this.handleOpenTasmotaConsole(panelConfig)}
+                                            disabled={!panelConfig?.ip || !alive}
+                                            size="small"
+                                        >
+                                            {this.getText('openTasmotaConsole')}
+                                        </Button>
+                                    )}
+                                </Box>
+                            );
+                            // Eine eingefärbte Karte trägt in jedem Theme dieselbe helle Signalfarbe -
+                            // ihr Inhalt wird deshalb unabhängig vom Theme hell gethemt.
+                            return cardStyle.lightSurface ? (
+                                <ThemeProvider
+                                    key={panel._id || index}
+                                    theme={getLightSurfaceTheme(this.props.theme, cardStyle.backgroundColor)}
+                                >
+                                    {card}
+                                </ThemeProvider>
+                            ) : (
+                                card
+                            );
+                        })}
+                    </Box>
+                </DocPageThemeContext.Provider>
                 <Box sx={{ mt: 2 }}>
                     <DocButton topic="maintain.panelinfo" />
                 </Box>

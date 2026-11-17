@@ -30,6 +30,21 @@ der Dokumentation, im Seiten-Editor die Seite zum gewählten Kartentyp.
 
 ![Seiten-Editor mit Dokumentation-Knopf](modernLight-pageconfig-seite.png)
 
+## Hilfe in den Panel-Kacheln
+
+In den Kacheln, die es für jedes Panel einmal gibt (Tab **Maintain**, **Schnellzugriff/Panelinfo** und die
+Panel-Übersicht im Tab **Nspanel-Einstellungen**), sitzt ein kleines **?** ganz oben rechts in der Ecke. Es
+führt zur Beschreibung der ganzen Kachel.
+
+Knöpfe und Felder, zu denen es einen eigenen Abschnitt gibt (z. B. die Update-Knöpfe, die Versionsfelder,
+„Skript in Admin übernehmen“, Export/Import, die HW-Buttons oder der Temperaturoffset), zeigen beim Darüberfahren
+einen Hinweis mit einem unterstrichenen Link „Hilfe: …“ und einem kleinen Pfeil – ein Kasten in den Farben der
+Seite mit farbigem Rand und Schatten, im dunklen Thema dunkel. Mit der Maus kannst du in den Hinweis
+hineinfahren, er bleibt offen, und ein Klick auf den Link öffnet die Dokumentation in einem neuen Tab. Ist ein
+Knopf grau, steht zusätzlich ein Link auf „Wenn ein Knopf grau bleibt“ dabei. Auch der Knopf **Web-Panel
+hinzufügen** hat seine Hilfe im Hinweis. Auf Tablet und Smartphone öffnet ein **langer Druck** den Hinweis;
+danach bleiben drei Sekunden, um auf den Link zu tippen.
+
 ## Sprache
 
 Die Dokumentation gibt es auf Deutsch und Englisch. Welche geöffnet wird, richtet sich nach der
@@ -54,4 +69,8 @@ sichtbar.
 | `<thema>-pageitem-dialog.png` | Pageitem-Dialog des ersten Eintrags (Rolle `button`), je Thema | **?** neben dem Titel (Rolle), an Kanal, Name, Zielseite, „Bedingung ist wahr“; Knopf „Dokumentation“ unten links |
 | `<thema>-screensaver-editor.png` | Screensaver, Eintrag „Test eu“ (Advanced, EU) gewählt, je Thema | **?** an Version, Wetter, den Hinweistexten unter dem Bild und im blauen Infokasten; Knopf „Dokumentation“ unter der Liste |
 | `modernDark-screensaver-uhrzeit-dialog.png` | Screensaver, Klick auf die Uhrzeit | **?** im Dialogtitel und bei „Timer anzeigen“; Klick auf das **?** setzt den Haken nicht |
-| `modernDark-panel-uebersicht.png` | Tab Nspanel-Einstellungen | Knöpfe „Dokumentation“ und **?** bei Panel anlegen / Karten |
+| `modernDark-panel-uebersicht.png` | Tab Nspanel-Einstellungen | Knöpfe „Dokumentation“ und **?** bei Panel anlegen; je Karte ein kleines **?** in der oberen rechten Ecke, keine **?**-Zeile über den Karten, kein **?** neben „Web-Panel hinzufügen“ (Hilfe im Tooltip) |
+| *(nur geprüft)* | Maintain, Maus auf **TASMOTA UPDATE** (grau), Thema light und dark | Tooltip mit „Hilfe: TASMOTA UPDATE“ und „Hilfe: 8. Wenn ein Knopf grau bleibt“; Tooltip in den Farben der Seite (paper, 2px Rand in `primary.main`, Schatten), auch auf orange/grauer Karte; Link in Linkfarbe und unterstrichen, Pfeil-Symbol in Linkfarbe; Maus in den Tooltip → bleibt offen; Klick öffnet neuen Tab |
+| *(nur geprüft)* | Maintain: TFT/BERRY/SCRIPT UPDATE, „Skript in Admin übernehmen“, Versionsfelder, Kennzeichen **Web**, blauer Web-Hinweis, Symbol „Web-Panel öffnen“ | je ein Link auf den eigenen Abschnitt; der Übernahme-Knopf bei „Panel benutzt kein Skript“ zeigt weiter den Grund als Text über dem Link; „Panel aktiv“ und Tasmota-Konsole ohne Tooltip-Link (das ? der Kachel deckt sie ab); kleines **?** oben rechts in der Ecke → „2. Die Karte eines Panels“; das **?** neben „Skripte für alle Panels aktualisieren“ ist entfallen |
+| *(nur geprüft)* | Schnellzugriff (Panelinfo), Maus auf **Temperaturoffset**, light und dark | Link „Hilfe: Temperaturoffset“; Layout, Timeout, Tagesmodus, Zeitplan, Temperature1, Skriptname bei „kein Skript“ mit eigenem Link; Panel aktiv, Panelmodell, Seitenzahl, Signal, Skriptname und Konsole ohne Link; kleines **?** in der Ecke über dem Zahnrad → „Was die Kachel zeigt“ |
+| *(nur geprüft)* | Nspanel-Einstellungen, Maus auf **HW-Button links**, light und dark | bisheriger Hinweistext des Knopfes plus zwei Links (Hardware-Taster, Farbe der Knöpfe); Export, Import, „kein Skript“, Kennzeichen **Web** mit eigenem Link; Stift, Papierkorb, Web öffnen, Felder und Konsole nur mit ihrem normalen Hinweis; kleines **?** in der Ecke über den Symbolen → „4. Die Panelkachel“ |

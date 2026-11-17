@@ -25,7 +25,7 @@ import { PanelStatusBadge } from './components/PanelStatusBadge';
 import ConvertScriptDialog from './components/ConvertScriptDialog';
 import { ThemeProvider } from '@mui/material/styles';
 import { getLightSurfaceTheme } from './themeUtils';
-import { DocButton, DocHelp } from './components/DocHelp';
+import { DocButton, DocHelp, DocPageThemeContext, DocTooltip } from './components/DocHelp';
 import type { DocTopicKey } from './docTopics';
 import {
     defaultWebLinkSettings,
@@ -724,6 +724,17 @@ class MaintainPanel extends ConfigGeneric<ConfigGenericProps & MaintainPanelProp
         };
     }
 
+    /**
+     * Help topics of a card button: its own section, for a grey button also "When a button stays grey".
+     *
+     * @param topic Section of the button.
+     * @param disabled Whether the button is grey.
+     * @returns The topics for `DocTooltip`.
+     */
+    private buttonTopics(topic: DocTopicKey, disabled: boolean): DocTopicKey[] {
+        return disabled ? [topic, 'maintain.greyButton'] : [topic];
+    }
+
     renderItem(_error: string, _disabled: boolean, _defaultValue?: unknown): React.JSX.Element {
         // Expert Mode from props (provided by json-config system)
         //const isExpertMode = this.props.expertMode ?? false;
@@ -754,22 +765,15 @@ class MaintainPanel extends ConfigGeneric<ConfigGenericProps & MaintainPanelProp
                         label={this.getText('openLinkAdapterInstallation')}
                         sx={{ color: 'red' }}
                     />
-                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                        <Button
-                            variant="text"
-                            color="primary"
-                            disabled={!anyScriptNeedsUpdate || processingPanel !== null || !alive}
-                            onClick={() => void this.handleUpdateAllScripts()}
-                            sx={{ color: anyScriptNeedsUpdate ? 'orange' : undefined }}
-                        >
-                            {processingPanel === 'all' ? (
-                                <CircularProgress size={20} />
-                            ) : (
-                                this.getText('updateAllScripts')
-                            )}
-                        </Button>
-                        <DocHelp topic="maintain.scriptUpdate" />
-                    </Box>
+                    <Button
+                        variant="text"
+                        color="primary"
+                        disabled={!anyScriptNeedsUpdate || processingPanel !== null || !alive}
+                        onClick={() => void this.handleUpdateAllScripts()}
+                        sx={{ color: anyScriptNeedsUpdate ? 'orange' : undefined }}
+                    >
+                        {processingPanel === 'all' ? <CircularProgress size={20} /> : this.getText('updateAllScripts')}
+                    </Button>
                 </Box>
 
                 {/* Error display */}
@@ -783,320 +787,382 @@ class MaintainPanel extends ConfigGeneric<ConfigGenericProps & MaintainPanelProp
                     </Alert>
                 )}
 
-                {/* Panels as Boxes */}
-                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
-                    {panelsInfo.map((panel, index) => {
-                        const cardStyle = this.getPanelCardStyle(panel);
-                        const panelConfig = panelsConfig.find(p => p.topic === panel._topic);
-                        // a web panel has no Tasmota: no firmware, no TFT flash, no console
-                        const isWebPanel = panelConfig?.kind === 'web';
-                        const card = (
-                            <Box
-                                key={panel._id || index}
-                                sx={{
-                                    width: 'fit-content',
-                                    maxWidth: '100%',
-                                    minWidth: 320,
-                                    border: 3,
-                                    borderColor: cardStyle.borderColor,
-                                    backgroundColor: cardStyle.backgroundColor,
-                                    // Überschrift, Schalterbeschriftungen und Icons erben ihre Farbe -
-                                    // ohne diese Angabe blieben sie in einem dunklen Theme weiß
-                                    color: 'text.primary',
-                                    opacity: !alive ? 0.6 : 1,
-                                    p: 2,
-                                    borderRadius: 1,
-                                }}
-                            >
-                                {/* Panel Name and Status Badge */}
-                                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, mb: 2 }}>
-                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                        <Typography
-                                            variant="h6"
-                                            sx={{
-                                                fontWeight: panel._check ? 'bold' : 'normal',
-                                                flex: 1,
-                                            }}
-                                        >
-                                            {panel._Headline}
-                                        </Typography>
-                                        {isWebPanel ? (
-                                            <Chip
-                                                label={this.getText('webPanelKind')}
-                                                size="small"
-                                                color="info"
-                                                variant="outlined"
-                                            />
-                                        ) : null}
-                                        {webLink.enabled && panel._topic ? (
-                                            <IconButton
-                                                size="small"
-                                                color="primary"
-                                                onClick={(): void => openWebPanel(webLink, panel._topic)}
-                                                title={this.getText('openWebPanel')}
-                                            >
-                                                <OpenInNewIcon />
-                                            </IconButton>
-                                        ) : null}
-                                    </Box>
-                                    <PanelStatusBadge
-                                        panelId={panelConfig?.id || panel._id}
-                                        oContext={this.props.oContext}
-                                        disableTooltip={true}
-                                        showIcon={false}
-                                        alive={alive}
+                {/* tooltips in the cards keep the colours of the page, not of the card */}
+                <DocPageThemeContext.Provider value={this.props.theme}>
+                    {/* Panels as Boxes */}
+                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
+                        {panelsInfo.map((panel, index) => {
+                            const cardStyle = this.getPanelCardStyle(panel);
+                            const panelConfig = panelsConfig.find(p => p.topic === panel._topic);
+                            // a web panel has no Tasmota: no firmware, no TFT flash, no console
+                            const isWebPanel = panelConfig?.kind === 'web';
+                            const busy = processingPanel === panel._name || !alive;
+                            const tasmotaDisabled = !this.isPanelUpdateable(panel) || busy;
+                            const tftDisabled = panel._online === 'no' || panel._flashing || !panel._ip || busy;
+                            const berryDisabled = !this.isBerryInstallable(panel) || busy;
+                            const scriptDisabled = !panel._name || !panel._topic || busy;
+                            const convertDisabled = !panel._topic || panel._noScript === true || busy;
+                            const card = (
+                                <Box
+                                    key={panel._id || index}
+                                    sx={{
+                                        width: 'fit-content',
+                                        maxWidth: '100%',
+                                        minWidth: 320,
+                                        border: 3,
+                                        borderColor: cardStyle.borderColor,
+                                        backgroundColor: cardStyle.backgroundColor,
+                                        // Überschrift, Schalterbeschriftungen und Icons erben ihre Farbe -
+                                        // ohne diese Angabe blieben sie in einem dunklen Theme weiß
+                                        color: 'text.primary',
+                                        opacity: !alive ? 0.6 : 1,
+                                        p: 2,
+                                        position: 'relative',
+                                        borderRadius: 1,
+                                    }}
+                                >
+                                    {/* one help link per card for the card as a whole, small in the top right corner */}
+                                    <DocHelp
+                                        topic="maintain.card"
+                                        size="tiny"
+                                        sx={{ position: 'absolute', top: '1px', right: '2px', m: 0 }}
                                     />
-                                    {/* Activated toggle */}
-                                    <FormControlLabel
-                                        control={
-                                            <Switch
-                                                checked={this.state.activatedMap[panelConfig?.id || panel._id] ?? true}
-                                                onChange={e => {
-                                                    void this.writeActivated(
-                                                        panelConfig?.id || panel._id,
-                                                        e.target.checked,
-                                                    );
-                                                }}
-                                                disabled={!alive}
-                                                size="small"
-                                            />
-                                        }
-                                        label={this.getText('panelActivated')}
-                                    />
-                                </Box>
-
-                                {/* Version Info with Flexbox */}
-                                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-                                    {/* Web panel: no firmware to maintain */}
-                                    {isWebPanel ? (
-                                        <Alert
-                                            severity="info"
-                                            sx={{ maxWidth: 460 }}
-                                        >
-                                            {this.getText('webPanelNoTasmotaMaintain')}
-                                        </Alert>
-                                    ) : null}
-                                    {/* Tasmota */}
-                                    {isWebPanel ? null : (
-                                        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, alignItems: 'center' }}>
-                                            <TextField
-                                                label={this.getText('vTasmota')}
-                                                value={panel._tasmotaVersion}
-                                                slotProps={{ input: { readOnly: true } }}
-                                                size="small"
-                                                sx={{ flex: '1 1 250px', minWidth: 200, maxWidth: 300 }}
-                                            />
-                                            <Button
-                                                variant="contained"
-                                                onClick={() => this.handleTasmotaUpdate(panel)}
-                                                disabled={
-                                                    !this.isPanelUpdateable(panel) ||
-                                                    processingPanel === panel._name ||
-                                                    !alive
-                                                }
-                                                size="small"
+                                    {/* Panel Name and Status Badge */}
+                                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, mb: 2 }}>
+                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                            <Typography
+                                                variant="h6"
                                                 sx={{
-                                                    flex: '0 0 auto',
-                                                    minWidth: 200,
-                                                    ...(cardStyle.buttonTasmotaColor !== 'primary' && {
-                                                        backgroundColor: cardStyle.buttonTasmotaColor,
-                                                        '&:hover': {
-                                                            backgroundColor: cardStyle.buttonTasmotaColor,
-                                                            filter: 'brightness(0.9)',
-                                                        },
-                                                    }),
+                                                    fontWeight: panel._check ? 'bold' : 'normal',
+                                                    flex: 1,
                                                 }}
                                             >
-                                                {processingPanel === panel._name ? (
-                                                    <CircularProgress size={20} />
-                                                ) : (
-                                                    this.getText('tasmotaUpdate')
-                                                )}
-                                            </Button>
+                                                {panel._Headline}
+                                            </Typography>
+                                            {isWebPanel ? (
+                                                <DocTooltip topic="maintain.webPanels">
+                                                    <Chip
+                                                        label={this.getText('webPanelKind')}
+                                                        size="small"
+                                                        color="info"
+                                                        variant="outlined"
+                                                    />
+                                                </DocTooltip>
+                                            ) : null}
+                                            {webLink.enabled && panel._topic ? (
+                                                <DocTooltip
+                                                    topic={
+                                                        isWebPanel
+                                                            ? 'maintain.webPanelBrowser'
+                                                            : 'maintain.webPanelReal'
+                                                    }
+                                                    hint={this.getText('openWebPanel')}
+                                                >
+                                                    <IconButton
+                                                        size="small"
+                                                        color="primary"
+                                                        onClick={(): void => openWebPanel(webLink, panel._topic)}
+                                                        aria-label={this.getText('openWebPanel')}
+                                                    >
+                                                        <OpenInNewIcon />
+                                                    </IconButton>
+                                                </DocTooltip>
+                                            ) : null}
                                         </Box>
-                                    )}
-
-                                    {/* TFT */}
-                                    {isWebPanel ? null : (
-                                        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, alignItems: 'center' }}>
-                                            <TextField
-                                                label={this.getText('vTFT')}
-                                                value={panel._tftVersion}
-                                                slotProps={{ input: { readOnly: true } }}
-                                                size="small"
-                                                sx={{ flex: '1 1 250px', minWidth: 200, maxWidth: 300 }}
-                                            />
-                                            <Button
-                                                variant="contained"
-                                                onClick={() => this.handleTftInstall(panel)}
-                                                disabled={
-                                                    panel._online === 'no' ||
-                                                    panel._flashing ||
-                                                    !panel._ip ||
-                                                    processingPanel === panel._name ||
-                                                    !alive
-                                                }
-                                                size="small"
-                                                sx={{
-                                                    flex: '0 0 auto',
-                                                    minWidth: 200,
-                                                    ...(cardStyle.buttonTftColor !== 'primary' && {
-                                                        backgroundColor: cardStyle.buttonTftColor,
-                                                        '&:hover': {
-                                                            backgroundColor: cardStyle.buttonTftColor,
-                                                            filter: 'brightness(0.9)',
-                                                        },
-                                                    }),
-                                                }}
-                                            >
-                                                {processingPanel === panel._name ? (
-                                                    <CircularProgress size={20} />
-                                                ) : (
-                                                    this.getText('tftInstallSendToMQTT')
-                                                )}
-                                            </Button>
-                                        </Box>
-                                    )}
-
-                                    {/* Berry driver - not for web panels; the emulator has none */}
-                                    {isWebPanel || (panel._noBerry && !panel._isEmulator) ? null : (
-                                        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, alignItems: 'center' }}>
-                                            <TextField
-                                                label={this.getText('vBerry')}
-                                                value={
-                                                    panel._isEmulator
-                                                        ? this.getEmulatorBerryText(panel)
-                                                        : (panel._berryVersion ?? '???')
-                                                }
-                                                slotProps={{ input: { readOnly: true } }}
-                                                size="small"
-                                                sx={{ flex: '1 1 250px', minWidth: 200, maxWidth: 300 }}
-                                            />
-                                            <Button
-                                                variant="contained"
-                                                onClick={() => this.handleBerryInstall(panel)}
-                                                disabled={
-                                                    !this.isBerryInstallable(panel) ||
-                                                    processingPanel === panel._name ||
-                                                    !alive
-                                                }
-                                                size="small"
-                                                sx={{
-                                                    flex: '0 0 auto',
-                                                    minWidth: 200,
-                                                    ...(cardStyle.buttonBerryColor !== 'primary' && {
-                                                        backgroundColor: cardStyle.buttonBerryColor,
-                                                        '&:hover': {
-                                                            backgroundColor: cardStyle.buttonBerryColor,
-                                                            filter: 'brightness(0.9)',
-                                                        },
-                                                    }),
-                                                }}
-                                            >
-                                                {processingPanel === panel._name ? (
-                                                    <CircularProgress size={20} />
-                                                ) : (
-                                                    this.getText('berryUpdate')
-                                                )}
-                                            </Button>
-                                        </Box>
-                                    )}
-
-                                    {/* Script */}
-                                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, alignItems: 'center' }}>
-                                        <TextField
-                                            label={this.getText('vScript')}
-                                            value={
-                                                panel._noScript
-                                                    ? this.getText('panelNoScriptVersion')
-                                                    : panel._ScriptVersion
-                                            }
-                                            slotProps={{ input: { readOnly: true } }}
-                                            size="small"
-                                            sx={{ flex: '1 1 250px', minWidth: 200, maxWidth: 300 }}
+                                        <PanelStatusBadge
+                                            panelId={panelConfig?.id || panel._id}
+                                            oContext={this.props.oContext}
+                                            disableTooltip={true}
+                                            showIcon={false}
+                                            alive={alive}
                                         />
-                                        {panel._noScript ? null : (
+                                        {/* Activated toggle */}
+                                        <FormControlLabel
+                                            control={
+                                                <Switch
+                                                    checked={
+                                                        this.state.activatedMap[panelConfig?.id || panel._id] ?? true
+                                                    }
+                                                    onChange={e => {
+                                                        void this.writeActivated(
+                                                            panelConfig?.id || panel._id,
+                                                            e.target.checked,
+                                                        );
+                                                    }}
+                                                    disabled={!alive}
+                                                    size="small"
+                                                />
+                                            }
+                                            label={this.getText('panelActivated')}
+                                        />
+                                    </Box>
+
+                                    {/* Version Info with Flexbox */}
+                                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+                                        {/* Web panel: no firmware to maintain */}
+                                        {isWebPanel ? (
+                                            <DocTooltip topic="maintain.webPanels">
+                                                <Alert
+                                                    severity="info"
+                                                    sx={{ maxWidth: 460 }}
+                                                >
+                                                    {this.getText('webPanelNoTasmotaMaintain')}
+                                                </Alert>
+                                            </DocTooltip>
+                                        ) : null}
+                                        {/* Tasmota */}
+                                        {isWebPanel ? null : (
+                                            <Box
+                                                sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, alignItems: 'center' }}
+                                            >
+                                                <DocTooltip
+                                                    topic="maintain.versionFields"
+                                                    sx={{ flex: '1 1 250px', minWidth: 200, maxWidth: 300 }}
+                                                >
+                                                    <TextField
+                                                        label={this.getText('vTasmota')}
+                                                        value={panel._tasmotaVersion}
+                                                        slotProps={{ input: { readOnly: true } }}
+                                                        size="small"
+                                                        fullWidth
+                                                    />
+                                                </DocTooltip>
+                                                <DocTooltip
+                                                    topic={this.buttonTopics('maintain.tasmotaUpdate', tasmotaDisabled)}
+                                                    sx={{ flex: '0 0 auto' }}
+                                                >
+                                                    <Button
+                                                        variant="contained"
+                                                        onClick={() => this.handleTasmotaUpdate(panel)}
+                                                        disabled={tasmotaDisabled}
+                                                        size="small"
+                                                        sx={{
+                                                            flex: '0 0 auto',
+                                                            minWidth: 200,
+                                                            ...(cardStyle.buttonTasmotaColor !== 'primary' && {
+                                                                backgroundColor: cardStyle.buttonTasmotaColor,
+                                                                '&:hover': {
+                                                                    backgroundColor: cardStyle.buttonTasmotaColor,
+                                                                    filter: 'brightness(0.9)',
+                                                                },
+                                                            }),
+                                                        }}
+                                                    >
+                                                        {processingPanel === panel._name ? (
+                                                            <CircularProgress size={20} />
+                                                        ) : (
+                                                            this.getText('tasmotaUpdate')
+                                                        )}
+                                                    </Button>
+                                                </DocTooltip>
+                                            </Box>
+                                        )}
+
+                                        {/* TFT */}
+                                        {isWebPanel ? null : (
+                                            <Box
+                                                sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, alignItems: 'center' }}
+                                            >
+                                                <DocTooltip
+                                                    topic="maintain.versionFields"
+                                                    sx={{ flex: '1 1 250px', minWidth: 200, maxWidth: 300 }}
+                                                >
+                                                    <TextField
+                                                        label={this.getText('vTFT')}
+                                                        value={panel._tftVersion}
+                                                        slotProps={{ input: { readOnly: true } }}
+                                                        size="small"
+                                                        fullWidth
+                                                    />
+                                                </DocTooltip>
+                                                <DocTooltip
+                                                    topic={this.buttonTopics('maintain.tftUpdate', tftDisabled)}
+                                                    sx={{ flex: '0 0 auto' }}
+                                                >
+                                                    <Button
+                                                        variant="contained"
+                                                        onClick={() => this.handleTftInstall(panel)}
+                                                        disabled={tftDisabled}
+                                                        size="small"
+                                                        sx={{
+                                                            flex: '0 0 auto',
+                                                            minWidth: 200,
+                                                            ...(cardStyle.buttonTftColor !== 'primary' && {
+                                                                backgroundColor: cardStyle.buttonTftColor,
+                                                                '&:hover': {
+                                                                    backgroundColor: cardStyle.buttonTftColor,
+                                                                    filter: 'brightness(0.9)',
+                                                                },
+                                                            }),
+                                                        }}
+                                                    >
+                                                        {processingPanel === panel._name ? (
+                                                            <CircularProgress size={20} />
+                                                        ) : (
+                                                            this.getText('tftInstallSendToMQTT')
+                                                        )}
+                                                    </Button>
+                                                </DocTooltip>
+                                            </Box>
+                                        )}
+
+                                        {/* Berry driver - not for web panels; the emulator has none */}
+                                        {isWebPanel || (panel._noBerry && !panel._isEmulator) ? null : (
+                                            <Box
+                                                sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, alignItems: 'center' }}
+                                            >
+                                                <DocTooltip
+                                                    topic="maintain.versionFields"
+                                                    sx={{ flex: '1 1 250px', minWidth: 200, maxWidth: 300 }}
+                                                >
+                                                    <TextField
+                                                        label={this.getText('vBerry')}
+                                                        value={
+                                                            panel._isEmulator
+                                                                ? this.getEmulatorBerryText(panel)
+                                                                : (panel._berryVersion ?? '???')
+                                                        }
+                                                        slotProps={{ input: { readOnly: true } }}
+                                                        size="small"
+                                                        fullWidth
+                                                    />
+                                                </DocTooltip>
+                                                <DocTooltip
+                                                    topic={this.buttonTopics('maintain.berryUpdate', berryDisabled)}
+                                                    sx={{ flex: '0 0 auto' }}
+                                                >
+                                                    <Button
+                                                        variant="contained"
+                                                        onClick={() => this.handleBerryInstall(panel)}
+                                                        disabled={berryDisabled}
+                                                        size="small"
+                                                        sx={{
+                                                            flex: '0 0 auto',
+                                                            minWidth: 200,
+                                                            ...(cardStyle.buttonBerryColor !== 'primary' && {
+                                                                backgroundColor: cardStyle.buttonBerryColor,
+                                                                '&:hover': {
+                                                                    backgroundColor: cardStyle.buttonBerryColor,
+                                                                    filter: 'brightness(0.9)',
+                                                                },
+                                                            }),
+                                                        }}
+                                                    >
+                                                        {processingPanel === panel._name ? (
+                                                            <CircularProgress size={20} />
+                                                        ) : (
+                                                            this.getText('berryUpdate')
+                                                        )}
+                                                    </Button>
+                                                </DocTooltip>
+                                            </Box>
+                                        )}
+
+                                        {/* Script */}
+                                        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, alignItems: 'center' }}>
+                                            <DocTooltip
+                                                topic="maintain.versionFields"
+                                                sx={{ flex: '1 1 250px', minWidth: 200, maxWidth: 300 }}
+                                            >
+                                                <TextField
+                                                    label={this.getText('vScript')}
+                                                    value={
+                                                        panel._noScript
+                                                            ? this.getText('panelNoScriptVersion')
+                                                            : panel._ScriptVersion
+                                                    }
+                                                    slotProps={{ input: { readOnly: true } }}
+                                                    size="small"
+                                                    fullWidth
+                                                />
+                                            </DocTooltip>
+                                            {panel._noScript ? null : (
+                                                <DocTooltip
+                                                    topic={this.buttonTopics('maintain.scriptUpdate', scriptDisabled)}
+                                                    sx={{ flex: '0 0 auto' }}
+                                                >
+                                                    <Button
+                                                        variant="contained"
+                                                        onClick={() => this.handleCreateScript(panel)}
+                                                        disabled={scriptDisabled}
+                                                        size="small"
+                                                        sx={{
+                                                            flex: '0 0 auto',
+                                                            minWidth: 200,
+                                                            ...(cardStyle.buttonScriptColor !== 'primary' && {
+                                                                backgroundColor: cardStyle.buttonScriptColor,
+                                                                '&:hover': {
+                                                                    backgroundColor: cardStyle.buttonScriptColor,
+                                                                    filter: 'brightness(0.9)',
+                                                                },
+                                                            }),
+                                                        }}
+                                                    >
+                                                        {processingPanel === panel._name ? (
+                                                            <CircularProgress size={20} />
+                                                        ) : (
+                                                            this.getText('createScript')
+                                                        )}
+                                                    </Button>
+                                                </DocTooltip>
+                                            )}
+                                            <DocTooltip
+                                                topic={
+                                                    panel._noScript
+                                                        ? ['maintain.convertScript', 'maintain.noScript']
+                                                        : this.buttonTopics('maintain.convertScript', convertDisabled)
+                                                }
+                                                hint={
+                                                    panel._noScript
+                                                        ? this.getText('convertScript_noScriptPanel')
+                                                        : undefined
+                                                }
+                                                sx={{ flex: '0 0 auto' }}
+                                            >
+                                                <Button
+                                                    variant="outlined"
+                                                    startIcon={<MoveDownIcon />}
+                                                    onClick={() => this.handleConvertScript(panel)}
+                                                    disabled={convertDisabled}
+                                                    size="small"
+                                                    sx={{ flex: '0 0 auto', minWidth: 200 }}
+                                                >
+                                                    {this.getText('convertScript_button')}
+                                                </Button>
+                                            </DocTooltip>
+                                        </Box>
+
+                                        {/* Console Button */}
+                                        {isWebPanel ? null : (
                                             <Button
                                                 variant="contained"
-                                                onClick={() => this.handleCreateScript(panel)}
-                                                disabled={
-                                                    !panel._name ||
-                                                    !panel._topic ||
-                                                    processingPanel === panel._name ||
-                                                    !alive
-                                                }
+                                                fullWidth
+                                                onClick={() => this.handleOpenTasmotaConsole(panelConfig)}
+                                                disabled={!panelConfig?.ip || !alive}
                                                 size="small"
-                                                sx={{
-                                                    flex: '0 0 auto',
-                                                    minWidth: 200,
-                                                    ...(cardStyle.buttonScriptColor !== 'primary' && {
-                                                        backgroundColor: cardStyle.buttonScriptColor,
-                                                        '&:hover': {
-                                                            backgroundColor: cardStyle.buttonScriptColor,
-                                                            filter: 'brightness(0.9)',
-                                                        },
-                                                    }),
-                                                }}
+                                                sx={{ mt: 1 }}
                                             >
-                                                {processingPanel === panel._name ? (
-                                                    <CircularProgress size={20} />
-                                                ) : (
-                                                    this.getText('createScript')
-                                                )}
+                                                {this.getText('openTasmotaConsole')}
                                             </Button>
                                         )}
-                                        <Button
-                                            variant="outlined"
-                                            startIcon={<MoveDownIcon />}
-                                            onClick={() => this.handleConvertScript(panel)}
-                                            disabled={
-                                                !panel._topic ||
-                                                panel._noScript === true ||
-                                                processingPanel === panel._name ||
-                                                !alive
-                                            }
-                                            title={
-                                                panel._noScript
-                                                    ? this.getText('convertScript_noScriptPanel')
-                                                    : undefined
-                                            }
-                                            size="small"
-                                            sx={{ flex: '0 0 auto', minWidth: 200 }}
-                                        >
-                                            {this.getText('convertScript_button')}
-                                        </Button>
                                     </Box>
-
-                                    {/* Console Button */}
-                                    {isWebPanel ? null : (
-                                        <Button
-                                            variant="contained"
-                                            fullWidth
-                                            onClick={() => this.handleOpenTasmotaConsole(panelConfig)}
-                                            disabled={!panelConfig?.ip || !alive}
-                                            size="small"
-                                            sx={{ mt: 1 }}
-                                        >
-                                            {this.getText('openTasmotaConsole')}
-                                        </Button>
-                                    )}
                                 </Box>
-                            </Box>
-                        );
-                        // Eine eingefärbte Karte trägt in jedem Theme dieselbe helle Signalfarbe -
-                        // ihr Inhalt wird deshalb unabhängig vom Theme hell gethemt.
-                        return cardStyle.lightSurface ? (
-                            <ThemeProvider
-                                key={panel._id || index}
-                                theme={getLightSurfaceTheme(this.props.theme, cardStyle.backgroundColor)}
-                            >
-                                {card}
-                            </ThemeProvider>
-                        ) : (
-                            card
-                        );
-                    })}
-                </Box>
+                            );
+                            // Eine eingefärbte Karte trägt in jedem Theme dieselbe helle Signalfarbe -
+                            // ihr Inhalt wird deshalb unabhängig vom Theme hell gethemt.
+                            return cardStyle.lightSurface ? (
+                                <ThemeProvider
+                                    key={panel._id || index}
+                                    theme={getLightSurfaceTheme(this.props.theme, cardStyle.backgroundColor)}
+                                >
+                                    {card}
+                                </ThemeProvider>
+                            ) : (
+                                card
+                            );
+                        })}
+                    </Box>
+                </DocPageThemeContext.Provider>
 
                 {/* Conversion of a panel's script into the admin page configuration */}
                 <ConvertScriptDialog

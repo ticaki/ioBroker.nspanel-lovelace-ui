@@ -60,7 +60,7 @@ import PanelExportSecretsDialog from './components/PanelExportSecretsDialog';
 import PanelImportDialog, { type PanelImportNativeValues } from './components/PanelImportDialog';
 import { PanelStatusBadge } from './components/PanelStatusBadge';
 import { resolveTasmotaTimeZone, uniqueTasmotaTimeZones, type TasmotaTimeZone } from './tasmotaTimeZones';
-import { DocButton, DocHelp } from './components/DocHelp';
+import { DocButton, DocHelp, DocTooltip } from './components/DocHelp';
 
 interface PanelConfig {
     id?: string;
@@ -1551,21 +1551,20 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
                     {/* a web panel is a pure config entry - no adapter interaction, so it does not need alive;
                         it only makes sense while the web server is enabled */}
                     {webLink.enabled ? (
-                        <Button
-                            variant="outlined"
-                            startIcon={<AddIcon />}
-                            onClick={(): void => this.handleWebPanelDialogOpen()}
-                            disabled={processing}
+                        <DocTooltip
+                            topic="navigation.webPanelAdd"
                             sx={{ flex: '1 1 0', minWidth: 200 }}
                         >
-                            {this.getText('webPanelAdd')}
-                        </Button>
-                    ) : null}
-                    {webLink.enabled ? (
-                        <DocHelp
-                            topic="navigation.webPanelAdd"
-                            sx={{ alignSelf: 'center', ml: -1.5 }}
-                        />
+                            <Button
+                                variant="outlined"
+                                startIcon={<AddIcon />}
+                                onClick={(): void => this.handleWebPanelDialogOpen()}
+                                disabled={processing}
+                                fullWidth
+                            >
+                                {this.getText('webPanelAdd')}
+                            </Button>
+                        </DocTooltip>
                     ) : null}
                 </Box>
 
@@ -1578,15 +1577,6 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
                         {progressMessage}
                     </Alert>
                 )}
-
-                {/* help for the panel cards - once above the list, not repeated in every card */}
-                {panels.length > 0 ? (
-                    <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 0.5 }}>
-                        <DocHelp topic="navigation.panelCard" />
-                        <DocHelp topic="navigation.noScript" />
-                        <DocHelp topic="navigation.hwButtonColors" />
-                    </Box>
-                ) : null}
 
                 {/* Panels as Boxes */}
                 <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
@@ -1604,9 +1594,16 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
                                     border: 3,
                                     opacity: !alive ? 0.6 : 1,
                                     p: 2,
+                                    position: 'relative',
                                     borderRadius: 1,
                                 }}
                             >
+                                {/* one help link per card for the card as a whole, small in the top right corner */}
+                                <DocHelp
+                                    topic="navigation.panelCard"
+                                    size="tiny"
+                                    sx={{ position: 'absolute', top: '1px', right: '2px', m: 0 }}
+                                />
                                 {/* Panel Name as Title with Edit, Delete and Status Badge */}
                                 <Box sx={{ display: 'flex', alignItems: 'center', mb: 2, gap: 1 }}>
                                     {/* Left side: Name and Badge vertically stacked */}
@@ -1614,12 +1611,14 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
                                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                                             <Typography variant="h6">{panel.name}</Typography>
                                             {isWebPanel ? (
-                                                <Chip
-                                                    label={this.getText('webPanelKind')}
-                                                    size="small"
-                                                    color="info"
-                                                    variant="outlined"
-                                                />
+                                                <DocTooltip topic="navigation.webPanelAdd">
+                                                    <Chip
+                                                        label={this.getText('webPanelKind')}
+                                                        size="small"
+                                                        color="info"
+                                                        variant="outlined"
+                                                    />
+                                                </DocTooltip>
                                             ) : null}
                                         </Box>
                                         {panel.id && (
@@ -1638,37 +1637,47 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
                                             size="small"
                                             color="primary"
                                             onClick={(): void => openWebPanel(webLink, panel.topic ?? '')}
+                                            aria-label={this.getText('openWebPanel')}
                                             title={this.getText('openWebPanel')}
                                         >
                                             <OpenInNewIcon />
                                         </IconButton>
                                     ) : null}
-                                    <IconButton
-                                        size="small"
-                                        color="primary"
-                                        onClick={(): void => this.handleExportPanel(panel)}
-                                        disabled={!panel.id || !panel.topic}
-                                        title={this.getText('exportPanel')}
-                                        aria-label={this.getText('exportPanel')}
+                                    <DocTooltip
+                                        topic="navigation.export"
+                                        hint={this.getText('exportPanel')}
                                     >
-                                        <FileDownloadIcon />
-                                    </IconButton>
-                                    <IconButton
-                                        size="small"
-                                        color="primary"
-                                        onClick={(): void => this.importDialogRef.current?.openFor(panel)}
-                                        disabled={!panel.id || !panel.topic}
-                                        title={this.getText('importPanel')}
-                                        aria-label={this.getText('importPanel')}
+                                        <IconButton
+                                            size="small"
+                                            color="primary"
+                                            onClick={(): void => this.handleExportPanel(panel)}
+                                            disabled={!panel.id || !panel.topic}
+                                            aria-label={this.getText('exportPanel')}
+                                        >
+                                            <FileDownloadIcon />
+                                        </IconButton>
+                                    </DocTooltip>
+                                    <DocTooltip
+                                        topic="navigation.importGroups"
+                                        hint={this.getText('importPanel')}
                                     >
-                                        <FileUploadIcon />
-                                    </IconButton>
+                                        <IconButton
+                                            size="small"
+                                            color="primary"
+                                            onClick={(): void => this.importDialogRef.current?.openFor(panel)}
+                                            disabled={!panel.id || !panel.topic}
+                                            aria-label={this.getText('importPanel')}
+                                        >
+                                            <FileUploadIcon />
+                                        </IconButton>
+                                    </DocTooltip>
                                     <IconButton
                                         size="small"
                                         color="primary"
                                         onClick={() => this.handleEditPanel(panel)}
-                                        disabled={!alive && !isWebPanel}
+                                        aria-label={this.getText('editPanel')}
                                         title={this.getText('editPanel')}
+                                        disabled={!alive && !isWebPanel}
                                     >
                                         <EditIcon />
                                     </IconButton>
@@ -1676,8 +1685,9 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
                                         size="small"
                                         color="error"
                                         onClick={() => this.handleDeleteClick(panel)}
-                                        disabled={!alive}
+                                        aria-label={this.getText('deletePanel')}
                                         title={this.getText('deletePanel')}
+                                        disabled={!alive}
                                     >
                                         <DeleteIcon />
                                     </IconButton>
@@ -1732,45 +1742,60 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
                                     </Box>
 
                                     {/* Panel uses no script (native.panels[].noScript) */}
-                                    <FormControlLabel
-                                        control={
-                                            <Checkbox
-                                                size="small"
-                                                checked={panel.noScript === true}
-                                                disabled={!panel.id}
-                                                onChange={(event: React.ChangeEvent<HTMLInputElement>): void =>
-                                                    this.handleNoScriptChange(panel.id ?? '', event.target.checked)
-                                                }
-                                            />
-                                        }
-                                        label={this.getText('panelNoScript')}
-                                        title={this.getText('panelNoScriptTooltip')}
-                                    />
+                                    <DocTooltip
+                                        topic="navigation.noScript"
+                                        hint={this.getText('panelNoScriptTooltip')}
+                                        sx={{ alignSelf: 'flex-start' }}
+                                    >
+                                        <FormControlLabel
+                                            control={
+                                                <Checkbox
+                                                    size="small"
+                                                    checked={panel.noScript === true}
+                                                    disabled={!panel.id}
+                                                    onChange={(event: React.ChangeEvent<HTMLInputElement>): void =>
+                                                        this.handleNoScriptChange(panel.id ?? '', event.target.checked)
+                                                    }
+                                                />
+                                            }
+                                            label={this.getText('panelNoScript')}
+                                        />
+                                    </DocTooltip>
 
                                     {/* Hardware buttons below the display */}
                                     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, mt: 1 }}>
-                                        <Button
-                                            variant="outlined"
-                                            color={leftColor}
-                                            size="small"
-                                            onClick={() => this.handleButtonConfigOpen(panel, 'left')}
-                                            disabled={!panel.id}
-                                            fullWidth
-                                            title={this.buttonTileTitle(panel, 'left')}
+                                        <DocTooltip
+                                            topic={['dialogs.hwButton', 'navigation.hwButtonColors']}
+                                            hint={this.buttonTileTitle(panel, 'left')}
+                                            sx={{ display: 'flex', width: '100%' }}
                                         >
-                                            {this.getText('hwButtonLeft')}
-                                        </Button>
-                                        <Button
-                                            variant="outlined"
-                                            color={rightColor}
-                                            size="small"
-                                            onClick={() => this.handleButtonConfigOpen(panel, 'right')}
-                                            disabled={!panel.id}
-                                            fullWidth
-                                            title={this.buttonTileTitle(panel, 'right')}
+                                            <Button
+                                                variant="outlined"
+                                                color={leftColor}
+                                                size="small"
+                                                onClick={() => this.handleButtonConfigOpen(panel, 'left')}
+                                                disabled={!panel.id}
+                                                fullWidth
+                                            >
+                                                {this.getText('hwButtonLeft')}
+                                            </Button>
+                                        </DocTooltip>
+                                        <DocTooltip
+                                            topic={['dialogs.hwButton', 'navigation.hwButtonColors']}
+                                            hint={this.buttonTileTitle(panel, 'right')}
+                                            sx={{ display: 'flex', width: '100%' }}
                                         >
-                                            {this.getText('hwButtonRight')}
-                                        </Button>
+                                            <Button
+                                                variant="outlined"
+                                                color={rightColor}
+                                                size="small"
+                                                onClick={() => this.handleButtonConfigOpen(panel, 'right')}
+                                                disabled={!panel.id}
+                                                fullWidth
+                                            >
+                                                {this.getText('hwButtonRight')}
+                                            </Button>
+                                        </DocTooltip>
                                     </Box>
 
                                     {/* Console Button (Tasmota only) */}
