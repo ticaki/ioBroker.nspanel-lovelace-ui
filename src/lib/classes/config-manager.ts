@@ -2524,10 +2524,21 @@ export class ConfigManager extends BaseClass {
         };
     }
 
+    /**
+     * Page item of the script / admin as runtime item.
+     *
+     * @param item page item of the script
+     * @param page page of the item
+     * @param messages receives the messages of the check
+     * @param options internal choices of the caller - `preferShutter2`: a blind becomes `shutter2` (popupShutter2) also
+     * with tilt states, used for the popup of a screensaver indicator
+     * @param options.preferShutter2 see above
+     */
     async getPageItemConfig(
         item: ScriptConfig.PageItem,
         page: ScriptConfig.PageType,
         messages: string[] = [],
+        options: { preferShutter2?: boolean } = {},
     ): Promise<{
         itemConfig: NSPanel.PageItemDataItemsOptions | undefined;
         messages: string[];
@@ -3159,9 +3170,10 @@ export class ConfigManager extends BaseClass {
                                 ? pageItemDefaults.blind.iconOn
                                 : SHUTTER_POSITION_ICON);
                         if (
-                            foundedStates[role].TILT_OPEN ||
-                            foundedStates[role].TILT_CLOSE ||
-                            foundedStates[role].TILT_STOP
+                            !options.preferShutter2 &&
+                            (foundedStates[role].TILT_OPEN ||
+                                foundedStates[role].TILT_CLOSE ||
+                                foundedStates[role].TILT_STOP)
                         ) {
                             const tempItem: NSPanel.PageItemDataItemsOptions = {
                                 type: 'shutter',
@@ -5498,7 +5510,8 @@ export class ConfigManager extends BaseClass {
                 return null;
             }
             const page: ScriptConfig.PageEntities = { type: 'cardEntities', uniqueName: '', heading: '', items: [] };
-            const { itemConfig } = await this.getPageItemConfig({ id: channelId }, page);
+            // a blind always gets the new popup (popupShutter2), also with tilt states
+            const { itemConfig } = await this.getPageItemConfig({ id: channelId }, page, [], { preferShutter2: true });
             const type = itemConfig?.type;
             if (itemConfig && typeof type === 'string' && ConfigManager.screensaverPopupItemTypes.has(type)) {
                 return itemConfig;

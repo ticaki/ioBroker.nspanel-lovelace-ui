@@ -825,8 +825,8 @@ export function screensaverChannelIdOf(stateId: string): string {
 
 /**
  * Channel roles whose page item has a popup of the HMI a long press of an indicator can open: the type of the page
- * item config-manager getPageItemConfig builds for the role - light (popupLight / popupLight2), shutter (popupShutter
- * / popupShutter2: blind, lock), fan (popupFan), selection (popupInSel) and timer (popupTimer).
+ * item config-manager getPageItemConfig builds for the role - light (popupLight / popupLight2), shutter (blind:
+ * always popupShutter2, lock: popupShutter), fan (popupFan), selection (popupInSel) and timer (popupTimer).
  */
 const screensaverPopupChannelRoles: ReadonlySet<string> = new Set([
     'light',

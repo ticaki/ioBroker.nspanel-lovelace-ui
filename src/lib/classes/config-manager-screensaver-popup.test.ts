@@ -36,6 +36,9 @@ function database(): ObjectDB {
         [`${BLIND}.CLOSE`]: state(`${BLIND}.CLOSE`, { role: 'button.close.blind', type: 'boolean' }),
         [`${BLIND}.OPEN`]: state(`${BLIND}.OPEN`, { role: 'button.open.blind', type: 'boolean' }),
         [`${BLIND}.STOP`]: state(`${BLIND}.STOP`, { role: 'button.stop.blind', type: 'boolean' }),
+        [`${BLIND}.TILT_OPEN`]: state(`${BLIND}.TILT_OPEN`, { role: 'button.open.tilt', type: 'boolean' }),
+        [`${BLIND}.TILT_CLOSE`]: state(`${BLIND}.TILT_CLOSE`, { role: 'button.close.tilt', type: 'boolean' }),
+        [`${BLIND}.TILT_STOP`]: state(`${BLIND}.TILT_STOP`, { role: 'button.stop.tilt', type: 'boolean' }),
         [LIGHT]: channel(LIGHT, 'light', 'Licht Küche'),
         [`${LIGHT}.SET`]: state(`${LIGHT}.SET`, { role: 'switch.light', type: 'boolean' }),
         [`${LIGHT}.ON_ACTUAL`]: state(`${LIGHT}.ON_ACTUAL`, { role: 'sensor.light', type: 'boolean', write: false }),
@@ -121,6 +124,17 @@ describe('lib/classes/config-manager - popup on a long press of an indicator', (
             ),
         ).to.equal(null);
         expect(warnings.some(w => w.includes(`the channel ${INFO} `))).to.equal(true);
+    });
+
+    it('a blind with tilt states: the new popup (shutter2) for the indicator, a page item stays shutter', async () => {
+        const item: any = await manager().getScreensaverIndicatorPopup(
+            script({ ScreensaverEntity: `${BLIND}.ACTUAL`, ScreensaverEntityLongPressPopup: true }),
+        );
+        expect(item?.type).to.equal('shutter2');
+        expect(item?.role).to.equal('blind');
+        const page: ScriptConfig.PageEntities = { type: 'cardEntities', uniqueName: '', heading: '', items: [] };
+        const { itemConfig } = await manager().getPageItemConfig({ id: BLIND }, page);
+        expect(itemConfig?.type).to.equal('shutter');
     });
 
     it('a template element takes the channel above dpInit', async () => {
