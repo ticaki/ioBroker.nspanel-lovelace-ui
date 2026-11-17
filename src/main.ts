@@ -77,7 +77,12 @@ import iCal from 'node-ical';
 import type { NSPanel } from './lib/types/NSPanel';
 import { getTasmotaVersionFromJson } from './lib/const/tools';
 import { driverGeneration, isEmulatorDriverVersion, parseDriverVersion } from './lib/const/berry-driver';
-import { matchPanelForSetup } from './lib/tools/panel-setup';
+import {
+    matchPanelForSetup,
+    migrateScriptConfigTopic,
+    replacePanelTopicInScript,
+    SCRIPT_END_STOP_TOKEN,
+} from './lib/tools/panel-setup';
 
 /** Zwischenstand einer laufenden Panel-Einrichtung, siehe `nsPanelInitStep1` */
 interface NsPanelInitSession {
@@ -90,6 +95,11 @@ interface NsPanelInitSession {
      * Topic aus der Konfiguration (es kann sich bei der Einrichtung ändern), sonst das neue
      */
     panelTopic: string;
+    /**
+     * Name des Panels vor der Einrichtung - bei einem bestehenden Panel der bisherige Name aus der Konfiguration,
+     * sonst leer. Schritt 2 überschreibt den Namen in `item`, für das Umbenennen des Skripts wird er hier gesichert.
+     */
+    panelName: string;
     /** true, wenn statt eines Panels der Emulator antwortet - dann entfallen Berry und TFT */
     isEmulator: boolean;
     /** Zeitpunkt des letzten Schritts, für das Aufräumen abgebrochener Einrichtungen */
@@ -2970,6 +2980,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                 item,
                 isNew: match.isNew,
                 panelTopic,
+                panelName: match.isNew ? '' : item.name,
                 isEmulator: false,
                 ts: Date.now(),
             });
@@ -3155,11 +3166,23 @@ class NspanelLovelaceUi extends utils.Adapter {
                 );
             }
 
+            // bestehendes Panel: was am alten Topic oder Namen hängt, zieht mit (#899)
+            const previous = session.isNew ? undefined : { name: session.panelName, topic: session.panelTopic };
+            let renamedScript: { from: string; to: string } | undefined;
             if (session.item.noScript === true) {
                 // "panel uses no script": only the global script is kept up to date
                 await this.createGlobalConfigurationScript();
             } else {
+                if (previous) {
+                    renamedScript = await this.moveConfigurationScript(previous, {
+                        name: session.item.name,
+                        topic: session.item.topic,
+                    });
+                }
                 await this.createConfigurationScript(session.item.name, session.item.topic);
+            }
+            if (previous && (previous.topic !== session.item.topic || renamedScript)) {
+                await this.migrateScriptConfigOfPanel(previous.topic, session.item.topic, renamedScript);
             }
 
             const panels = this.config.panels ?? [];
@@ -3210,11 +3233,143 @@ class NspanelLovelaceUi extends utils.Adapter {
         );
     }
 
+    /**
+     * @returns id of the folder the configuration scripts of this instance are created in
+     */
+    private configurationScriptFolder(): string {
+        return `script.js.${this.library.cleandp(this.namespace, false, true)}`;
+    }
+
+    /**
+     * @param panelName name of the panel
+     * @returns id of the configuration script of the panel
+     */
+    private configurationScriptId(panelName: string): string {
+        return this.library.cleandp(
+            `${this.configurationScriptFolder()}.${this.library.cleandp(panelName, false, true)}`,
+        );
+    }
+
+    /**
+     * Setup of an existing panel with a new name and/or topic (#899): prepares its configuration script before
+     * `createConfigurationScript` brings the template part up to date.
+     *
+     * - Topic changed: `panelTopic` in the user part of the script gets the new topic.
+     * - Name changed (other script id): when the script of the old name exists and none of the new name, the script
+     *   is moved to the new id (user part kept, `common.name` = new name, other common fields such as `enabled`
+     *   taken over) and the old object is deleted. When the script of the new name exists already, nothing is
+     *   moved or deleted (warning). Without a script of the old name nothing happens here.
+     *
+     * @param previous name and topic of the panel before the setup
+     * @param previous.name name before the setup
+     * @param previous.topic topic before the setup
+     * @param next name and topic of the panel after the setup
+     * @param next.name name after the setup
+     * @param next.topic topic after the setup
+     * @returns old and new script id when the script was moved, otherwise undefined
+     */
+    private async moveConfigurationScript(
+        previous: { name: string; topic: string },
+        next: { name: string; topic: string },
+    ): Promise<{ from: string; to: string } | undefined> {
+        if (!previous.name || !next.name || !next.topic) {
+            return undefined;
+        }
+        const topicChanged = previous.topic !== next.topic;
+        const fromId = this.configurationScriptId(previous.name);
+        const toId = this.configurationScriptId(next.name);
+        try {
+            const from = await this.getForeignObjectAsync(fromId);
+            if (!from || from.type !== 'script' || typeof from.common?.source !== 'string') {
+                return undefined;
+            }
+            const retopic = (source: string): string => {
+                if (!topicChanged) {
+                    return source;
+                }
+                const r = replacePanelTopicInScript(source, previous.topic, next.topic);
+                if (r.count === 0) {
+                    this.log.warn(
+                        `Script ${fromId}: no panelTopic '${previous.topic}' found in the configuration part - set the new topic '${next.topic}' there by hand!`,
+                    );
+                }
+                return r.source;
+            };
+
+            if (fromId === toId) {
+                const source = retopic(from.common.source);
+                if (source !== from.common.source) {
+                    await this.extendForeignObjectAsync(fromId, { common: { source } });
+                    this.log.info(`Script ${fromId}: panelTopic changed from ${previous.topic} to ${next.topic}`);
+                }
+                return undefined;
+            }
+
+            if (await this.getForeignObjectAsync(toId)) {
+                this.log.warn(
+                    `Panel renamed from ${previous.name} to ${next.name}, but the script ${toId} exists already - ${fromId} is kept, check both scripts!`,
+                );
+                return undefined;
+            }
+
+            const script: ioBroker.ScriptObject = {
+                _id: toId,
+                type: 'script',
+                common: { ...from.common, name: next.name, source: retopic(from.common.source) },
+                native: from.native ?? {},
+            };
+            await this.setForeignObjectAsync(toId, script);
+            await this.delForeignObjectAsync(fromId);
+            this.log.info(`Panel renamed from ${previous.name} to ${next.name}: script ${fromId} moved to ${toId}`);
+            return { from: fromId, to: toId };
+        } catch (e: unknown) {
+            this.log.error(`Error while moving the script ${fromId} to ${toId}: ${String(e)}`);
+            return undefined;
+        }
+    }
+
+    /**
+     * Moves the script configuration of a panel in the meta object to its new topic and/or script id
+     * (see `migrateScriptConfigTopic`).
+     *
+     * @param oldTopic topic before the setup
+     * @param newTopic topic after the setup
+     * @param script old and new script id when the configuration script was moved
+     */
+    private async migrateScriptConfigOfPanel(
+        oldTopic: string,
+        newTopic: string,
+        script: { from: string; to: string } | undefined,
+    ): Promise<void> {
+        try {
+            const meta = await this.getForeignObjectAsync(this.namespace);
+            if (!meta?.native) {
+                return;
+            }
+            const r = migrateScriptConfigTopic(meta.native, oldTopic, newTopic, script);
+            if (!r.scriptConfigRaw && !r.scriptConfig) {
+                return;
+            }
+            if (r.scriptConfigRaw) {
+                meta.native.scriptConfigRaw = r.scriptConfigRaw;
+            }
+            if (r.scriptConfig) {
+                meta.native.scriptConfig = r.scriptConfig;
+            }
+            await this.setForeignObjectAsync(this.namespace, meta);
+            const dropped = r.dropped ? `, ${r.dropped} old entries of ${newTopic} dropped` : '';
+            const renamed = script ? `, script ${script.from} -> ${script.to}` : '';
+            this.log.info(`Script configuration moved from ${oldTopic} to ${newTopic}${renamed}${dropped}`);
+        } catch (e: unknown) {
+            this.log.error(`Error while moving the script configuration from ${oldTopic} to ${newTopic}: ${String(e)}`);
+        }
+    }
+
     async createConfigurationScript(panelName: string, panelTopic: string): Promise<any> {
         // the panel script is written in any case; a failed global script is reported at the end
         const globalResult = await this.createGlobalConfigurationScript();
 
-        const scriptPath = `script.js.${this.library.cleandp(this.namespace, false, true)}`;
+        const scriptPath = this.configurationScriptFolder();
 
         const folder: ioBroker.ChannelObject = {
             type: 'channel',
@@ -3228,7 +3383,7 @@ class NspanelLovelaceUi extends utils.Adapter {
         await this.extendForeignObjectAsync(scriptPath, folder);
 
         // Skript erstellen
-        const scriptId = this.library.cleandp(`${scriptPath}.${this.library.cleandp(panelName, false, true)}`);
+        const scriptId = this.configurationScriptId(panelName);
         this.log.debug(`Create script ${scriptId}`);
         if (fs.existsSync(path.join(__dirname, '../script')) && panelName && panelTopic) {
             let file = fs.readFileSync(path.join(__dirname, '../script/example_sendTo_script_iobroker.ts'), 'utf8');
@@ -3240,7 +3395,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                     `await sendToAsync('${this.namespace}', 'ScriptConfig',`,
                 );
                 if (o) {
-                    const token = '*  END STOP END STOP END - No more configuration - END STOP END STOP END       *';
+                    const token = SCRIPT_END_STOP_TOKEN;
                     const indexFrom = file.indexOf(token);
                     const indexTo = o.common.source.indexOf(token);
                     if (indexFrom !== -1 && indexTo !== -1) {

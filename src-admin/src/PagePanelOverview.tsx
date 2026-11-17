@@ -56,6 +56,7 @@ import {
     panelSettingStateIds,
     type PageSecretField,
 } from '../../src/lib/types/panelConfigExport';
+import { migratePanelTopic } from '../../src/lib/types/panelTopicMigration';
 import PanelExportSecretsDialog from './components/PanelExportSecretsDialog';
 import PanelImportDialog, { type PanelImportNativeValues } from './components/PanelImportDialog';
 import { PanelStatusBadge } from './components/PanelStatusBadge';
@@ -177,6 +178,11 @@ interface PagePanelOverviewState extends ConfigGenericState {
     showSuccessConfirm: boolean;
     successMessage: string;
     pendingPanels: PanelConfig[] | null;
+    /**
+     * Tasmota panel opened with "edit" (id and topic at that moment) - when the setup gives it another topic, its
+     * pages, screensaver and navigation overrides follow on save (#899). null = no panel being edited.
+     */
+    editedPanel: { id: string; topic: string } | null;
     // Map of panel IDs to their online status
     panelOnlineStates: Record<string, boolean>;
     /**
@@ -229,6 +235,7 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
             showSuccessConfirm: false,
             successMessage: '',
             pendingPanels: null,
+            editedPanel: null,
             panelOnlineStates: {},
             panelDetachStates: {},
             isBlinking: false,
@@ -298,6 +305,44 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
         await new Promise<void>(resolve => this.props.onChange(data, undefined, resolve));
         this.forceUpdate();
     };
+
+    /**
+     * Hands a new panel table to the admin. When a panel got a new topic, its pages, screensavers and navigation
+     * overrides move to it in the same change (two onChange calls in a row would lose the first one).
+     *
+     * @param panels the new panel table
+     * @param moved old and new topic of the changed panel, undefined = no topic changed
+     * @param moved.from previous topic
+     * @param moved.to new topic
+     */
+    private async savePanelsWithTopicMigration(
+        panels: PanelConfig[],
+        moved: { from: string; to: string } | undefined,
+    ): Promise<void> {
+        const data = JSON.parse(JSON.stringify(this.props.data ?? {}));
+        ConfigGeneric.setValue(data, 'panels', panels);
+        if (moved) {
+            const changed = migratePanelTopic(data, moved.from, moved.to);
+            for (const [key, value] of Object.entries(changed)) {
+                if (value !== undefined) {
+                    ConfigGeneric.setValue(data, key, value);
+                }
+            }
+        }
+        await new Promise<void>(resolve => this.props.onChange(data, undefined, resolve));
+    }
+
+    /**
+     * @param before topic of the panel before the change, undefined = new panel
+     * @param after topic of the panel after the change
+     * @returns old and new topic when the topic changed, otherwise undefined
+     */
+    private static topicChange(
+        before: string | undefined,
+        after: string | undefined,
+    ): { from: string; to: string } | undefined {
+        return before && after && before !== after ? { from: before, to: after } : undefined;
+    }
 
     /**
      * Export button of a tile: asks first when pages of the panel hold PINs or passwords, else exports at once.
@@ -1127,8 +1172,11 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
             editId === null
                 ? [...panels, { ...values, kind: 'web' as const, id: newWebPanelId(panels), ip: '' }]
                 : panels.map(p => (p.id === editId ? { ...p, ...values, kind: 'web' as const } : p));
+        const before = editId === null ? undefined : panels.find(p => p.id === editId)?.topic;
 
-        void this.onChange('panels', updatedPanels).then(() => this.forceUpdate());
+        void this.savePanelsWithTopicMigration(updatedPanels, PagePanelOverview.topicChange(before, values.topic)).then(
+            () => this.forceUpdate(),
+        );
         this.setState({ webPanelDialog: closedWebPanelDialog });
     };
 
@@ -1150,6 +1198,7 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
 
         // Lokalen State synchronisieren
         this.setState({
+            editedPanel: panel.id && panel.topic ? { id: panel.id, topic: panel.topic } : null,
             localTasmotaIP: panel.ip || '',
             localTasmotaName: panel.name || '',
             localTasmotaTopic: panel.topic || '',
@@ -1212,16 +1261,21 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
     // Schließt den Success-Dialog ohne Speichern
     private handleSuccessClose = (): void => {
         console.log('[PagePanelOverview] Success dialog cancelled');
-        this.setState({ showSuccessConfirm: false, successMessage: '', pendingPanels: null });
+        this.setState({ showSuccessConfirm: false, successMessage: '', pendingPanels: null, editedPanel: null });
     };
 
     // Speichert die Config nach erfolgreicher Initialisierung
     private handleSuccessSave = async (): Promise<void> => {
         console.log('[PagePanelOverview] Saving config after success');
-        const { pendingPanels } = this.state;
+        const { pendingPanels, editedPanel } = this.state;
 
         if (pendingPanels) {
-            await this.onChange('panels', pendingPanels);
+            // the edited panel (same id = same device) got another topic: its admin configuration follows
+            const after = editedPanel ? pendingPanels.find(p => p.id === editedPanel.id)?.topic : undefined;
+            await this.savePanelsWithTopicMigration(
+                pendingPanels,
+                PagePanelOverview.topicChange(editedPanel?.topic, after),
+            );
 
             // Lösche temporäre Laufzeit-Variablen
             this.props.data._tasmotaIP = '';
@@ -1232,6 +1286,7 @@ class PagePanelOverview extends ConfigGeneric<ConfigGenericProps & { theme?: any
                 showSuccessConfirm: false,
                 successMessage: '',
                 pendingPanels: null,
+                editedPanel: null,
                 localTasmotaIP: '',
                 localTasmotaName: '',
                 localTasmotaTopic: '',

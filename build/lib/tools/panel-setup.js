@@ -18,7 +18,10 @@ var __copyProps = (to, from, except, desc) => {
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 var panel_setup_exports = {};
 __export(panel_setup_exports, {
-  matchPanelForSetup: () => matchPanelForSetup
+  SCRIPT_END_STOP_TOKEN: () => SCRIPT_END_STOP_TOKEN,
+  matchPanelForSetup: () => matchPanelForSetup,
+  migrateScriptConfigTopic: () => migrateScriptConfigTopic,
+  replacePanelTopicInScript: () => replacePanelTopicInScript
 });
 module.exports = __toCommonJS(panel_setup_exports);
 function matchPanelForSetup(panels, macId, topic) {
@@ -30,8 +33,71 @@ function matchPanelForSetup(panels, macId, topic) {
   const index = panels.findIndex(isSameDevice);
   return index === -1 ? { isNew: true, index: -1 } : { isNew: false, index };
 }
+const SCRIPT_END_STOP_TOKEN = "*  END STOP END STOP END - No more configuration - END STOP END STOP END       *";
+function replacePanelTopicInScript(source, oldTopic, newTopic) {
+  if (!oldTopic || oldTopic === newTopic) {
+    return { source, count: 0 };
+  }
+  const end = source.indexOf(SCRIPT_END_STOP_TOKEN);
+  const head = end === -1 ? source : source.substring(0, end);
+  const tail = end === -1 ? "" : source.substring(end);
+  const pattern = /(?<![\w$])(["']?)panelTopic\1(\s*:\s*)(["'`])((?:(?!\3)[^\\\n])*)\3/g;
+  let count = 0;
+  const lines = head.split("\n").map((line) => {
+    if (line.trimStart().startsWith("//")) {
+      return line;
+    }
+    return line.replace(pattern, (match, keyQuote, colon, quote, value) => {
+      if (value.trim() !== oldTopic) {
+        return match;
+      }
+      count++;
+      const escaped = newTopic.replaceAll("\\", "\\\\").replaceAll(quote, `\\${quote}`);
+      return `${keyQuote}panelTopic${keyQuote}${colon}${quote}${escaped}${quote}`;
+    });
+  });
+  return count === 0 ? { source, count } : { source: lines.join("\n") + tail, count };
+}
+function migrateScriptConfigTopic(native, oldTopic, newTopic, script) {
+  const result = { moved: 0, dropped: 0 };
+  const isEntry = (value) => !!value && typeof value === "object" && !Array.isArray(value);
+  const sameTopic = oldTopic === newTopic;
+  const renames = (entry) => !!script && entry.scriptName === script.from;
+  const moveList = (list, key) => {
+    if (!Array.isArray(list) || !list.some((e) => isEntry(e) && e[key] === oldTopic && (!sameTopic || renames(e)))) {
+      return void 0;
+    }
+    const out = [];
+    for (const entry of list) {
+      if (!sameTopic && isEntry(entry) && entry[key] === newTopic) {
+        result.dropped++;
+        continue;
+      }
+      if (isEntry(entry) && entry[key] === oldTopic) {
+        result.moved++;
+        const moved = { ...entry, [key]: newTopic };
+        if (script && renames(entry)) {
+          moved.scriptName = script.to;
+        }
+        out.push(moved);
+        continue;
+      }
+      out.push(entry);
+    }
+    return out;
+  };
+  if (!oldTopic || !newTopic || sameTopic && !script) {
+    return result;
+  }
+  result.scriptConfigRaw = moveList(native.scriptConfigRaw, "panelTopic");
+  result.scriptConfig = moveList(native.scriptConfig, "topic");
+  return result;
+}
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
-  matchPanelForSetup
+  SCRIPT_END_STOP_TOKEN,
+  matchPanelForSetup,
+  migrateScriptConfigTopic,
+  replacePanelTopicInScript
 });
 //# sourceMappingURL=panel-setup.js.map
