@@ -271,7 +271,7 @@ Die Listenbereiche **Links**, **Unten**, **Indikatoren** und **Alternate** zeich
 
 Die Indikatoren (Versionen Advanced und [Kacheln](#16-kacheln)) zeigen nur ein Symbol. Im Item-Dialog gibt es dafür die **Aktion beim Drücken**:
 
-![Indikator mit Aktion](../Pictures/screensaverAdmin/admin-08-indikator-aktion.png)
+![Der Item-Dialog eines Indikators mit geöffneter Auswahl „Aktion beim Drücken“: keine, Taste, Schalter, Werte zum Umschalten, Seite öffnen](../Pictures/screensaverAdmin/admin-08-indikator-aktion.png)
 
 | Aktion | Wirkung |
 |---|---|
@@ -332,7 +332,7 @@ Im Item-Dialog eines Indikators steht unter der **Aktion beim Drücken** ein zwe
 | **Seite öffnen** | öffnet die gewählte Seite der Instanz. |
 | **Popup öffnen** | öffnet das Popup des Geräts, zu dem der Indikator gehört. Steht nur in der Auswahl, wenn das Gerät eines hat, siehe [Popup öffnen](#popup-öffnen). |
 
-![Ein Indikator mit Schalter beim kurzen Tipp und einer Seite beim langen Druck](../Pictures/screensaverAdmin/admin-29-item-langer-druck.png)
+![Der Item-Dialog eines Dimmer-Indikators mit geöffneter Auswahl „Aktion bei langem Drücken“ – hier mit „Popup öffnen“, weil der Kanal ein Dimmer ist](../Pictures/screensaverAdmin/admin-29-item-langer-druck.png)
 
 - Der lange Druck löst nach **500 ms** aus, noch während der Finger liegt; das Loslassen sendet danach nichts mehr. Ist eine Aktion eingestellt, läuft **nur** sie – die Aktion des kurzen Drucks bleibt aus.
 - **Werte zum Umschalten** gibt es beim langen Druck nicht.
@@ -353,12 +353,15 @@ Mit **Popup öffnen** bedient ein langer Druck das Gerät hinter dem Indikator d
 - Ist der Datenpunkt (bei einem [Template](#5-templates-als-item) das Objekt) selbst ein **Kanal** oder **Gerät**, gehört das Popup zu ihm.
 - Ist er ein **State**, gehört das Popup zum Kanal oder Gerät direkt darüber.
 
+![Ein Rollladen-Indikator mit „Popup öffnen“ als Aktion bei langem Drücken; der Kanal über dem Datenpunkt hat die Rolle blind](../Pictures/screensaverAdmin/admin-30-item-popup-oeffnen.png)
+
 Der Dialog bietet **Popup öffnen** nur an, wenn die Rolle dieses Kanals oder Geräts zu einem Popup führt:
 
 | Rolle des Kanals | Popup |
 |---|---|
 | `light`, `dimmer`, `ct`, `rgb`, `rgbSingle`, `hue` | Licht |
-| `blind`, `lock` | Rollladen |
+| `blind` | Rollladen: mit Lamellen-Datenpunkten (`TILT_OPEN`, `TILT_CLOSE`, `TILT_STOP`) `popupShutter`, ohne sie `popupShutter2` – das Popup nur für Rollläden ohne Lamellen |
+| `lock` | Rollladen (`popupShutter`) |
 | `level.mode.fan` | Lüfter |
 | `select` | Auswahlliste |
 | `level.timer` | [Timer](popupTimer) |

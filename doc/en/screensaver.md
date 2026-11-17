@@ -271,7 +271,7 @@ Surplus items are therefore **not an error**. The warning *… item(s) have no p
 
 The indicators (versions Advanced and [Tiles](#16-tiles)) show an icon only. For them the item dialog has the **Action on press**:
 
-![Indicator with an action](../Pictures/screensaverAdmin/admin-08-indikator-aktion.png)
+![The item dialog of an indicator with the choice “Action on press” opened: none, button, switch, values to cycle through, open a page](../Pictures/screensaverAdmin/admin-08-indikator-aktion.png)
 
 | Action | Effect |
 |---|---|
@@ -332,7 +332,7 @@ In the item dialog of an indicator a second block **Action on long press** stand
 | **open a page** | opens the chosen page of the instance. |
 | **Open popup** | opens the popup of the device the indicator belongs to. Only in the choice when the device has one, see [Open popup](#open-popup). |
 
-![An indicator with a switch on a short tap and a page on a long press](../Pictures/screensaverAdmin/admin-29-item-langer-druck.png)
+![The item dialog of a dimmer indicator with the choice “Action on long press” opened – here with “Open popup”, because the channel is a dimmer](../Pictures/screensaverAdmin/admin-29-item-langer-druck.png)
 
 - The long press fires after **500 ms**, while the finger is still down; the release sends nothing after that. With an action set **only** that action runs – the action of the short press stays out.
 - **Values to cycle through** does not exist for the long press.
@@ -353,12 +353,15 @@ With **Open popup** a long press operates the device behind the indicator straig
 - If the state (for a [template](#5-templates-as-items) the object) is itself a **channel** or **device**, the popup belongs to it.
 - If it is a **state**, the popup belongs to the channel or device directly above it.
 
+![A shutter indicator with “Open popup” as action on long press; the channel above the state has the role blind](../Pictures/screensaverAdmin/admin-30-item-popup-oeffnen.png)
+
 The dialog offers **Open popup** only when the role of this channel or device leads to a popup:
 
 | Role of the channel | Popup |
 |---|---|
 | `light`, `dimmer`, `ct`, `rgb`, `rgbSingle`, `hue` | light |
-| `blind`, `lock` | shutter |
+| `blind` | shutter: with tilt states (`TILT_OPEN`, `TILT_CLOSE`, `TILT_STOP`) `popupShutter`, without them `popupShutter2` – the popup only for roller shutters without tilt |
+| `lock` | shutter (`popupShutter`) |
 | `level.mode.fan` | fan |
 | `select` | selection list |
 | `level.timer` | [timer](popupTimer) |
