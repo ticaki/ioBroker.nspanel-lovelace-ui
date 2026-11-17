@@ -26,7 +26,9 @@ function makeStore(): { store: PanelStore; sent: string[]; log: string[] } {
         pageStartup: testModule(['pageStartup']),
         cardGrid: testModule(['cardGrid']),
         screensaver: testModule(['screensaver']),
+        screensaver2: testModule(['screensaver2']),
         popupNotify: testModule(['popupNotify']),
+        popupLight: testModule(['popupLight']),
     };
     const store = new PanelStore({
         registry,
@@ -197,6 +199,34 @@ describe('PanelStore', () => {
         store.dispatch('pageType~screensaver');
         store.press('popupInSel', 'bExit');
         expect(store.getSnapshot().page.pageType).toBe('screensaver');
+    });
+
+    it('opens a popup sent by the adapter like the HMI: args to the popup, pageOpenDetail after the ack', () => {
+        const { store, sent } = makeStore();
+        store.dispatch('timeout~20');
+        store.dispatch('pageType~screensaver2');
+        sent.length = 0;
+        store.dispatch('pageType~popupLight~Wohnzimmer~0?12~\u{F0335}', 4);
+        expect(sent).toEqual(['ack:4', 'recv:event,pageOpenDetail,popupLight,0?12']);
+        let page = store.getSnapshot().page;
+        expect(page.pageType).toBe('popupLight');
+        expect(page.pageArgs).toEqual(['0?12', 'Wohnzimmer', '\u{F0335}', '']);
+        expect(store.getSnapshot().global.sleeping).toBe(false);
+        // the timeout closes it with bExit, the adapter sends the screensaver again
+        sent.length = 0;
+        vi.advanceTimersByTime(20_000);
+        expect(sent).toEqual(['recv:event,buttonPress2,0?12,bExit']);
+        store.dispatch('pageType~screensaver2');
+        page = store.getSnapshot().page;
+        expect(page.pageType).toBe('screensaver2');
+    });
+
+    it('shows popupLight2 of the adapter as popupLight without the name, like the HMI page', () => {
+        const { store, sent } = makeStore();
+        store.dispatch('pageType~popupLight2~Wohnzimmer~0?12~x');
+        expect(sent).toEqual(['ack', 'recv:event,pageOpenDetail,popupLight,0?12']);
+        expect(store.getSnapshot().page.pageType).toBe('popupLight');
+        expect(store.getSnapshot().page.pageArgs).toEqual(['0?12', '', 'x', '']);
     });
 
     it('stores the icon colour of the entity as pageArgs[3]', () => {

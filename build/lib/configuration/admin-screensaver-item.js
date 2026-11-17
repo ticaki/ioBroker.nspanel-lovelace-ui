@@ -161,6 +161,9 @@ function setScreensaverIndicatorLongPress(element, longPress) {
     case "navigate":
       element.ScreensaverEntityLongPressNaviToPage = longPress.page || null;
       break;
+    case "popup":
+      element.ScreensaverEntityLongPressPopup = true;
+      break;
   }
 }
 function screensaverRawToScript(raw, area) {

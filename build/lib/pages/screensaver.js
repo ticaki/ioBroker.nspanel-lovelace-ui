@@ -132,6 +132,11 @@ const _Screensaver = class _Screensaver extends import_Page.Page {
     __publicField(this, "activeNotification", false);
     __publicField(this, "activeNotifyId", "");
     /**
+     * The page item whose popup a long press of an indicator opened ({@link openIndicatorPopup}), until the screensaver
+     * is shown again ({@link onVisibilityChange}).
+     */
+    __publicField(this, "indicatorPopup");
+    /**
      * The current run of the tap counter of the HMI (`vaTap`, the opt of `bExit`) began with a tap on a dark display
      * (standby brightness 0) while a notification stood on it, see {@link onExitTap}. Decided once with opt 1 and kept
      * for the following taps of the run: the notification is gone after the second one, the third must still leave.
@@ -1000,6 +1005,9 @@ const _Screensaver = class _Screensaver extends import_Page.Page {
    * @param opt see {@link BaseTriggeredPage.sendToPanelClass}
    */
   sendToPanelClass(payload, ackForType, force, opt) {
+    if (this.indicatorPopup && this.sleep && !payload.startsWith("entityUpdateDetail") && !payload.startsWith("pageType~popup")) {
+      return;
+    }
     if (payload.startsWith("pageType~")) {
       this.lastSent.clear();
       this.activeNotification = false;
@@ -1182,6 +1190,7 @@ const _Screensaver = class _Screensaver extends import_Page.Page {
     return status !== "off" && !this.timerTappedAway;
   }
   async onVisibilityChange(v) {
+    this.closeIndicatorPopup();
     this.step = 0;
     if (v) {
       this.lastUpdateTs = 0;
@@ -1427,16 +1436,21 @@ const _Screensaver = class _Screensaver extends import_Page.Page {
    * @param event the incoming event
    */
   async onPopupRequest(id, popup, action, value, event = null) {
-    var _a, _b, _c;
+    var _a, _b;
     if (action === "button") {
       return;
     }
-    if ((popup === "popupShutter" || popup === "popupShutter2") && ((_c = (_b = (_a = this.pageItems) == null ? void 0 : _a[Number(id)]) == null ? void 0 : _b.dataItems) == null ? void 0 : _c.role) === "blind") {
+    const item = (_a = this.pageItems) == null ? void 0 : _a[Number(id)];
+    if ((popup === "popupShutter" || popup === "popupShutter2") && ((_b = item == null ? void 0 : item.dataItems) == null ? void 0 : _b.role) === "blind" && !this.isLongPressPopupItem(item)) {
       return;
     }
     await super.onPopupRequest(id, popup, action, value, event);
   }
   async onButtonEvent(event) {
+    var _a;
+    if (this.isLongPressPopupItem((_a = this.pageItems) == null ? void 0 : _a[Number(event.id)])) {
+      return;
+    }
     if (event.page !== void 0 && event.id && this.pageItems && this.pageItems[event.id]) {
       if (this.blockButtons || this.unload || this.adapter.unload) {
         return;
@@ -1523,12 +1537,73 @@ const _Screensaver = class _Screensaver extends import_Page.Page {
     return true;
   }
   /**
+   * The page item whose popup a long press of the indicator opens (`longPressPopup`, config-manager
+   * getScreensaverIndicatorPopup)
+   *
+   * @param item the indicator item
+   * @returns the page item, undefined when the indicator has none
+   */
+  longPressPopupItem(item) {
+    var _a, _b;
+    const index = (_a = item == null ? void 0 : item.config) == null ? void 0 : _a.longPressPopup;
+    if (typeof index !== "number" || !this.pageItems) {
+      return void 0;
+    }
+    const popupItem = this.pageItems[index];
+    return popupItem && !((_b = popupItem.config) == null ? void 0 : _b.modeScr) ? popupItem : void 0;
+  }
+  /**
+   * true for a page item whose popup a long press of an indicator opens
+   *
+   * @param item an item of this screensaver
+   */
+  isLongPressPopupItem(item) {
+    var _a;
+    return !!item && !!((_a = this.pageItems) == null ? void 0 : _a.some((p) => p !== void 0 && this.longPressPopupItem(p) === item));
+  }
+  /**
+   * Opens the popup of a page item from the screensaver like a card page does: `pageType~<popup>~<name>~<id>~<icon>`
+   * - the HMI takes name, id and icon into the popup and asks for its content (`pageOpenDetail`, answered by
+   * {@link onPopupRequest}). Back (`bExit`, also after the timeout) shows the screensaver again with a new pageType.
+   *
+   * @param popupItem the page item of the popup
+   * @returns false when the item has no popup (then a long press acts like a tap)
+   */
+  async openIndicatorPopup(popupItem) {
+    var _a, _b;
+    const fields = (await popupItem.getPageItemPayload(true)).split("~");
+    const popup = _Screensaver.popupOfItemType[fields[0]];
+    if (!popup) {
+      this.log.warn(
+        `Screensaver indicator: the page item ${popupItem.id} (type ${fields[0]}) has no popup - a long press acts like a tap`
+      );
+      return false;
+    }
+    this.indicatorPopup = popupItem;
+    this.sleep = true;
+    this.basePanel.lastCard = "";
+    this.sendToPanel(tools.getPayload("pageType", popup, (_a = fields[4]) != null ? _a : "", popupItem.id, (_b = fields[2]) != null ? _b : ""), false);
+    return true;
+  }
+  /**
+   * The popup of a long press is gone (the screensaver is shown again or left): the page item no longer draws it.
+   */
+  closeIndicatorPopup() {
+    if (this.indicatorPopup) {
+      this.indicatorPopup.lastPopupType = void 0;
+      this.indicatorPopup = void 0;
+    }
+  }
+  /**
    * true when the indicator has a long press of its own (`setNaviLongPress` or `longPress`,
-   * config-manager getScreensaverIndicatorLongPress)
+   * config-manager getScreensaverIndicatorLongPress, or a popup: {@link longPressPopupItem})
    *
    * @param item the indicator item
    */
   hasIndicatorLongPress(item) {
+    if (this.longPressPopupItem(item)) {
+      return true;
+    }
     const entry = item == null ? void 0 : item.dataItems;
     if (!entry || entry.type !== "button" && entry.type !== "switch") {
       return false;
@@ -1538,7 +1613,8 @@ const _Screensaver = class _Screensaver extends import_Page.Page {
   /**
    * A long press on a tile of the TFT 6.0.9+ (`buttonPress3,<page>?<n>,button,<taps>`, sent while the finger is
    * still down): `buttons.indicatorLong-N` is always written; an indicator with a long press of its own runs it
-   * ({@link PageItem.onCommandLongPress}) - the short press is not run then.
+   * ({@link PageItem.onCommandLongPress}) or opens its popup ({@link openIndicatorPopup}) - the short press is not
+   * run then.
    *
    * @param event the event of the panel
    * @returns true when the long press of the item ran, false: the caller treats it like a tap
@@ -1551,6 +1627,10 @@ const _Screensaver = class _Screensaver extends import_Page.Page {
       return false;
     }
     await this.writeIndicatorButton(item, "indicatorLong");
+    const popupItem = this.longPressPopupItem(item);
+    if (popupItem) {
+      return this.openIndicatorPopup(popupItem);
+    }
     if (!this.hasIndicatorLongPress(item)) {
       return false;
     }
@@ -1706,6 +1786,16 @@ __publicField(_Screensaver, "updatePlaces", /* @__PURE__ */ new Set([
   "mricon",
   "notify"
 ]));
+/** the popup of the HMI for the type of a page item (the first field of its payload), as a card page opens it */
+__publicField(_Screensaver, "popupOfItemType", {
+  light: "popupLight",
+  light2: "popupLight2",
+  shutter: "popupShutter",
+  shutter2: "popupShutter2",
+  fan: "popupFan",
+  input_sel: "popupInSel",
+  timer: "popupTimer"
+});
 /**
  * A tap that follows a tap on the timer is still the same double click up to this long after it (and the one
  * before, for more than two taps). The HMI has no limit of its own - all screensaver pages: `tc0` press does

@@ -49,6 +49,20 @@ const OWN_TIMEOUT = new Set(['popupNotify', 'popupNotify2']);
 
 const POPUP_EVENT_PREFIX = 'event,pageOpenDetail,';
 
+/**
+ * Popups the adapter opens itself with `pageType~<popup>~<name>~<id>~<icon>` (long press of a screensaver
+ * indicator), with the page that shows them here - the HMI page popupLight2 is popupLight on the web panel.
+ */
+const ADAPTER_POPUPS: Readonly<Record<string, string>> = {
+    popupLight: 'popupLight',
+    popupLight2: 'popupLight',
+    popupShutter: 'popupShutter',
+    popupShutter2: 'popupShutter2',
+    popupFan: 'popupFan',
+    popupInSel: 'popupInSel',
+    popupTimer: 'popupTimer',
+};
+
 export function initialGlobalState(model: PanelModel = 'eu'): GlobalState {
     return {
         model,
@@ -261,10 +275,23 @@ export class PanelStore {
     dispatch(payload: string, seq?: number): void {
         const { cmd, args } = parseCommand(payload);
         let renderAck: string | undefined;
+        let openDetail: string | undefined;
         let startup = false;
         switch (cmd) {
             case 'pageType': {
                 const pageType = args[0] ?? '';
+                const popup = ADAPTER_POPUPS[pageType];
+                const id = args[2] ?? '';
+                if (popup && id) {
+                    // like the HMI: name (not taken by popupLight2), id and icon go into the popup, which asks for
+                    // its content when it is loaded - it sends no renderCurrentPage
+                    this.enterPage(popup, [id, pageType === 'popupLight2' ? '' : (args[1] ?? ''), args[3] ?? '', '']);
+                    openDetail = pageOpenDetailEvent(popup, id);
+                    if (!this.page.module) {
+                        this.options.log?.(`unknown popup ${popup}`);
+                    }
+                    break;
+                }
                 this.enterPage(pageType, args.slice(1));
                 if (!NO_RENDER_ACK.has(pageType)) {
                     renderAck = renderCurrentPageEvent(pageType);
@@ -326,6 +353,9 @@ export class PanelStore {
         this.options.ack(seq);
         if (renderAck) {
             this.options.recv(renderAck);
+        }
+        if (openDetail) {
+            this.options.recv(openDetail);
         }
         if (startup) {
             this.sendStartupEvent();

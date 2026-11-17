@@ -3227,6 +3227,39 @@ describe('lib/configuration - planScriptToAdmin: screensaver', () => {
         expect(screensaverItemToScript(entry.indicator[2]!, 'indicator')).to.deep.equal(template);
     });
 
+    it('takes the popup of a long press over, after button, switch and page (script and template)', () => {
+        const base = templateConfig().indicatorScreensaverEntity[0] as Extract<
+            ScriptConfig.ScreenSaverElement,
+            { type: 'script' }
+        >;
+        const template: ScriptConfig.ScreenSaverElement = {
+            type: 'template',
+            template: 'text.battery.bydhvs',
+            dpInit: 'bydhvs.0',
+            modeScr: 'indicator',
+            ScreensaverEntityLongPressPopup: true,
+        };
+        const result = plan(
+            baseConfig({
+                indicatorScreensaverEntity: [
+                    { ...base, ScreensaverEntityLongPressPopup: true },
+                    { ...base, ScreensaverEntityLongPressPopup: true, ScreensaverEntityLongPressNaviToPage: 'main' },
+                    { ...base, ScreensaverEntityLongPressPopup: false },
+                    template,
+                ],
+            }),
+        );
+        const entry = result.screensaverEntry!;
+        expect(entry.indicator.slice(0, 4).map(i => i?.longPress)).to.deep.equal([
+            { kind: 'popup' },
+            { kind: 'navigate', page: 'main' },
+            undefined,
+            { kind: 'popup' },
+        ]);
+        // round trip: the admin builds the same template element again
+        expect(screensaverItemToScript(entry.indicator[3]!, 'indicator')).to.deep.equal(template);
+    });
+
     it('converts a cycle to the admin action: values as texts in their order, after button and switch', () => {
         const base = templateConfig().indicatorScreensaverEntity[0] as Extract<
             ScriptConfig.ScreenSaverElement,

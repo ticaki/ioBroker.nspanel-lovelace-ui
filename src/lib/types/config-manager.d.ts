@@ -827,7 +827,8 @@ declare namespace ScriptConfig {
         ScreensaverEntityCycleValues?: (string | number | boolean)[] | null;
     };
     /**
-     * what an element does when held (TFT 6.0.9+) - indicator place only, the first of button, switch and page counts.
+     * what an element does when held (TFT 6.0.9+) - indicator place only, the first of button, switch, page and popup
+     * counts.
      * Without one a long press acts like a tap.
      */
     export type ScreenSaverIndicatorLongPress = {
@@ -837,6 +838,13 @@ declare namespace ScriptConfig {
         ScreensaverEntityLongPressButton?: string | null;
         /** state toggled on a long press */
         ScreensaverEntityLongPressSwitch?: string | null;
+        /**
+         * true: a long press opens the popup of the channel / device of the element (script element:
+         * ScreensaverEntity, template element: dpInit): the object itself when it is a channel / device, else the
+         * one above the state - built like a page item of that channel; only a light,
+         * shutter, fan, selection or timer has one. Counts after button, switch and page.
+         */
+        ScreensaverEntityLongPressPopup?: boolean | null;
     };
     export type ScreenSaverElement = { type: ScreenSaverType } & (
         | ({
