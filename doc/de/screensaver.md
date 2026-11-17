@@ -330,6 +330,7 @@ Im Item-Dialog eines Indikators steht unter der **Aktion beim Drücken** ein zwe
 | **Taste (schreibt true)** | schreibt `true` in den gewählten Datenpunkt. |
 | **Schalter (wechselt)** | kippt den gewählten Datenpunkt zwischen `true` und `false`. |
 | **Seite öffnen** | öffnet die gewählte Seite der Instanz. |
+| **Popup öffnen** | öffnet das Popup des Geräts, zu dem der Indikator gehört. Steht nur in der Auswahl, wenn das Gerät eines hat, siehe [Popup öffnen](#popup-öffnen). |
 
 ![Ein Indikator mit Schalter beim kurzen Tipp und einer Seite beim langen Druck](../Pictures/screensaverAdmin/admin-29-item-langer-druck.png)
 
@@ -337,13 +338,45 @@ Im Item-Dialog eines Indikators steht unter der **Aktion beim Drücken** ein zwe
 - **Werte zum Umschalten** gibt es beim langen Druck nicht.
 - Taste und Schalter brauchen einen **beschreibbaren** Datenpunkt; sonst meldet der Dialog dasselbe wie bei der Aktion des kurzen Drucks und lässt nicht übernehmen. Fehlt der Datenpunkt zur Laufzeit oder ist er nicht beschreibbar, warnt der Adapter im Log (*the long press state … does not exist or is not writable – a long press acts like a tap*), und der lange Druck wirkt wie ein kurzer.
 - Auch ein [Template](#5-templates-als-item) auf einem Indikator-Platz bekommt den langen Druck.
-- In den [Rohdaten](#6-rohdaten-json) und im Konfigurationsskript heißen die Felder `ScreensaverEntityLongPressButton`, `ScreensaverEntityLongPressSwitch` und `ScreensaverEntityLongPressNaviToPage`; sind mehrere gesetzt, gilt diese Reihenfolge.
+- In den [Rohdaten](#6-rohdaten-json) und im Konfigurationsskript heißen die Felder `ScreensaverEntityLongPressButton`, `ScreensaverEntityLongPressSwitch`, `ScreensaverEntityLongPressNaviToPage` und `ScreensaverEntityLongPressPopup` (`true`); sind mehrere gesetzt, gilt diese Reihenfolge.
 
 > **Beispiel:** Ein Indikator **Licht** schaltet beim kurzen Tipp das Licht (**Schalter**) und öffnet beim langen Druck eine Seite (**Seite öffnen**) – zwei Funktionen auf derselben Kachel.
 
 **Ein eigener State.** Jeder lange Druck schreibt `true` in `panels.<Panel>.buttons.indicatorLong-<n>` – dieselbe Reihenfolge wie bei `indicator-<n>`, Typ `boolean`, nur lesbar, Rolle `button.long`. Geschrieben wird er **immer**, auch ohne eingestellte Aktion; ohne Aktion wirkt der lange Druck zusätzlich wie ein Tipp, dann kommen **beide** States. So lässt er sich auch ohne Aktion im Dialog als Auslöser für eigene Skripte nutzen.
 
 Die Indikator-Kacheln im [Web-Panel](WebPanel) senden den langen Druck ebenfalls.
+
+#### Popup öffnen
+
+Mit **Popup öffnen** bedient ein langer Druck das Gerät hinter dem Indikator direkt vom Bildschirmschoner aus: Das Panel öffnet dasselbe Popup wie auf einer Kartenseite, zum Beispiel das Licht-Popup einer Lampe oder das Rollladen-Popup. Ein weiteres Feld gibt es dafür nicht – welches Gerät gemeint ist, ergibt sich aus dem Datenpunkt des Items:
+
+- Ist der Datenpunkt (bei einem [Template](#5-templates-als-item) das Objekt) selbst ein **Kanal** oder **Gerät**, gehört das Popup zu ihm.
+- Ist er ein **State**, gehört das Popup zum Kanal oder Gerät direkt darüber.
+
+Der Dialog bietet **Popup öffnen** nur an, wenn die Rolle dieses Kanals oder Geräts zu einem Popup führt:
+
+| Rolle des Kanals | Popup |
+|---|---|
+| `light`, `dimmer`, `ct`, `rgb`, `rgbSingle`, `hue` | Licht |
+| `blind`, `lock` | Rollladen |
+| `level.mode.fan` | Lüfter |
+| `select` | Auswahlliste |
+| `level.timer` | [Timer](popupTimer) |
+
+Alle anderen Rollen haben kein Popup, das sich vom Bildschirmschoner aus öffnen lässt – auch ein Tor (`gate`) nicht; dann fehlt der Eintrag in der Auswahl. Wechselt ein Item mit **Popup öffnen** später auf einen Datenpunkt ohne passenden Kanal, zeigt die Auswahl wieder **keine**, und beim Übernehmen entfällt der lange Druck.
+
+Am Panel:
+
+- Der lange Druck öffnet das Popup über dem Bildschirmschoner. Es wird bedient wie auf einer Kartenseite.
+- **Zurück** schließt das Popup, ebenso der Ablauf des Panel-Timeouts (`cmd.screenSaver.timeout`, siehe [Panelinfo](Panelinfo)). Danach steht der Bildschirmschoner wieder da, vollständig neu gezeichnet. Ist der Timeout `0`, bleibt das Popup offen, bis **Zurück** gedrückt wird – wie auf einer Kartenseite.
+- Der kurze Tipp bleibt unverändert: Er führt die **Aktion beim Drücken** aus oder wirkt wie ein Tipp auf den Hintergrund.
+- `buttons.indicatorLong-<n>` wird auch hier bei jedem langen Druck geschrieben.
+- Findet der Adapter beim Start für den Indikator kein Popup – über dem State liegt kein Kanal oder Gerät, oder dessen Rolle führt zu keinem Popup –, schreibt er eine Warnung ins Log (*Screensaver indicator …: no channel or device above the state for the popup - a long press acts like a tap* bzw. *… has no popup - a long press acts like a tap*), und der lange Druck wirkt wie ein kurzer Tipp.
+- Das [Web-Panel](WebPanel) öffnet das Popup ebenfalls.
+
+Im Konfigurationsskript steht dafür `ScreensaverEntityLongPressPopup: true` am Indikator. Ist zusätzlich eine Taste, ein Schalter oder eine Seite für den langen Druck gesetzt, hat diese Vorrang – das Popup öffnet sich nur ohne sie.
+
+> **Beispiel:** Ein Indikator zeigt den State `on` eines Licht-Kanals (Rolle `light`). Der kurze Tipp schaltet das Licht (**Schalter**), der lange Druck öffnet das Licht-Popup (**Popup öffnen**) – zum Beispiel für die Helligkeit.
 ## 9. Statussymbole
 
 Die beiden Statussymbole (`mrIcon1`, `mrIcon2`) folgen je einem Datenpunkt: **Symbol an** bei `true`, sonst **Symbol aus**, jeweils mit eigener **Farbe an** / **Farbe aus**. Ein optionaler zweiter **Datenpunkt als Wert daneben** wird mit **Nachkommastellen** und **Einheit** gezeigt. Ohne Datenpunkt bleibt das Symbol ungenutzt und steht im Panelbild grau. Ein neu angelegter Eintrag belegt beide Statussymbole mit den Relais des Panels (`Relay.1` und `Relay.2`, Glühbirne an/aus) – so zeigt das Panel von Anfang an eine Farbe; beides lässt sich ändern oder durch Leeren des Datenpunkts abschalten.
@@ -602,6 +635,8 @@ Die Reihenfolge der Items im Bereich **Indikatoren** bestimmt den Platz. Auf `eu
 - **Ein Statussymbol wirkt bei Kacheln leer:** Dort ist von ihm nur die Farbe zu sehen; ohne Datenpunkt bleibt der Balken schwarz.
 - **Ein Tipp auf den Indikator tut nichts:** Dann ist keine **Aktion beim Drücken** eingestellt – ein beschreibbarer Datenpunkt allein genügt nicht. Der State `panels.<Panel>.buttons.indicator-<n>` kommt trotzdem; ab der TFT 6.0.9 wirkt der Tipp wie einer auf den Hintergrund, mit älterer TFT springt das Panel auf die Hauptseite.
 - **Der lange Druck tut nichts:** Er braucht die **TFT 6.0.9** (im Dialog steht der Hinweis). `buttons.indicatorLong-<n>` bleibt dann leer. Ist der State der Aktion nicht beschreibbar oder gar nicht vorhanden, warnt das Log und der lange Druck wirkt wie ein Tipp.
+- **„Popup öffnen“ fehlt in der Auswahl:** Der Kanal oder das Gerät des Items hat keine Rolle, die zu einem Popup führt – oder das Item ist ein State ohne Kanal darüber. Welche Rollen gehen, steht unter [Popup öffnen](#popup-öffnen); ein Tor (`gate`) ist bewusst nicht dabei.
+- **Der lange Druck öffnet kein Popup, sondern wirkt wie ein Tipp:** Beim Start hat der Adapter zu dem Kanal kein Popup gefunden – das Log nennt den Grund. Oder im Skript ist zusätzlich eine Taste, ein Schalter oder eine Seite für den langen Druck gesetzt; die haben Vorrang.
 - **Der Indikator schreibt immer denselben Wert:** Die Liste der Aktion **Werte zum Umschalten** hat nur einen Eintrag – oder etwas anderes setzt den Datenpunkt laufend auf einen Wert, der nicht in der Liste steht; dann beginnt jeder Druck wieder beim ersten Eintrag.
 - **`buttons.screensaverGesture` bleibt leer:** Entweder ist **Wischgesten auf dem Bildschirmschoner** aus oder der State `cmd.screenSaver.doubleClick` des Panels.
 - **Nach „Rohdaten entfernen“ ist das Item leer:** Die Standardfelder kommen zurück, nicht die Inhalte des JSON – ein ursprünglich als Rohdaten angelegtes Item muss danach neu ausgefüllt werden. Vor dem Entfernen das JSON sichern.
