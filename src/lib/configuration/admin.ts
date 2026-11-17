@@ -99,6 +99,35 @@ export function navigationTargetProblem(option: panelConfigPartial, target: stri
     return undefined;
 }
 
+/**
+ * Name of the panel for the log: the name from the admin panel list, the id (MAC) when it has none.
+ *
+ * @param option Panel configuration partial.
+ * @returns The name to show.
+ */
+export function panelLabel(option: Pick<panelConfigPartial, 'name' | 'friendlyName'>): string {
+    return option.friendlyName || option.name;
+}
+
+/**
+ * Log message for a screensaver of the admin configuration that is put onto a panel. "Replaces the script
+ * screensaver" only when a script delivers one - a configuration without script carries the placeholder
+ * screensaver of the empty script template, which is no script screensaver.
+ *
+ * @param entry Name and mode of the admin screensaver entry.
+ * @param entry.name Name of the entry.
+ * @param entry.mode Screensaver version of the entry.
+ * @param option Panel configuration partial before the admin screensaver is put in.
+ * @returns The message.
+ */
+export function adminScreensaverMessage(
+    entry: { name: string; mode: string },
+    option: Pick<panelConfigPartial, 'name' | 'friendlyName' | 'withoutScript' | 'pages'>,
+): string {
+    const replacesScript = option.withoutScript !== true && option.pages.some(p => isScreensaverPage(p));
+    return `Screensaver '${entry.name}' (${entry.mode}) from the admin configuration ${replacesScript ? 'replaces the script screensaver of' : 'is used by'} panel '${panelLabel(option)}'`;
+}
+
 function shallowDescribe(value: unknown): string {
     if (value === null) {
         return 'null';
@@ -195,7 +224,7 @@ export class AdminConfiguration extends BaseClass {
         }
         if (others.length > 0) {
             this.log.warn(
-                `Panel '${option.name}' (${option.topic}) is listed in several screensavers (${[entry.name, ...others].join(', ')}) - '${entry.name}' is used`,
+                `Panel '${panelLabel(option)}' (${option.topic}) is listed in several screensavers (${[entry.name, ...others].join(', ')}) - '${entry.name}' is used`,
             );
         }
         const lang = this.adapter.language || 'en';
@@ -233,12 +262,10 @@ export class AdminConfiguration extends BaseClass {
         }
         const page = result.configArray;
         applyScreensaverEntry(page, entry);
-        const scriptPages = option.pages.filter(p => isScreensaverPage(p)).length;
+        const message = adminScreensaverMessage(entry, option);
         option.pages = option.pages.filter(p => !isScreensaverPage(p));
         option.pages.push(page);
-        this.log.info(
-            `Screensaver '${entry.name}' (${entry.mode}) from the admin configuration ${scriptPages > 0 ? 'replaces the script screensaver of' : 'is used by'} panel '${option.name}'`,
-        );
+        this.log.info(message);
     }
 
     /**

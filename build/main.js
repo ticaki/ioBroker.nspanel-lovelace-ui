@@ -39,6 +39,7 @@ var import_admin_media = require("./lib/configuration/admin-media");
 var import_readme = require("./lib/tools/readme");
 var import_tft_server = require("./lib/tools/tft-server");
 var import_redact = require("./lib/tools/redact");
+var import_berry_install = require("./lib/tools/berry-install");
 var import_test_states = require("./lib/tools/test-states");
 var import_credentials = require("./lib/credentials");
 var import_node_url = require("node:url");
@@ -54,6 +55,7 @@ var import_function_and_const = require("./lib/types/function-and-const");
 var import_node_ical = __toESM(require("node-ical"));
 var import_tools = require("./lib/const/tools");
 var import_berry_driver = require("./lib/const/berry-driver");
+var import_panel_setup = require("./lib/tools/panel-setup");
 const NS_PANEL_INIT_SESSION_TTL = 6e5;
 class NspanelLovelaceUi extends utils.Adapter {
   library;
@@ -566,7 +568,11 @@ class NspanelLovelaceUi extends utils.Adapter {
       try {
         this.mainConfiguration = await import_config_manager.ConfigManager.getConfig(this, config);
       } catch (e) {
-        this.log.error(`Error in configuration: ${e.message}`);
+        if (e instanceof import_config_manager.NoPanelsConfiguredError) {
+          this.log.info(e.message);
+        } else {
+          this.log.error(`Error in configuration: ${e.message}`);
+        }
         this.mainConfiguration = [];
         pauseAdapter = true;
       }
@@ -849,7 +855,7 @@ class NspanelLovelaceUi extends utils.Adapter {
             `http://${tasmota.ip}/cm?${this.config.useTasmotaAdmin ? `user=admin&password=${this.config.tasmotaAdminPassword}` : ``}&cmnd=Restart 1`
           );
         } else {
-          this.log.info(`Update detected on the Nspanel with the ip ${tasmota.ip}!!`);
+          this.log.debug(`Panel with ip ${tasmota.ip}: no pending firmware update, no restart needed`);
         }
       } catch (e) {
         this.log.warn(
@@ -1602,34 +1608,46 @@ class NspanelLovelaceUi extends utils.Adapter {
                   break;
                 }
                 const version = obj.message.useBetaTFT ? result[`berry-beta`].split("_")[0] : result.berry.split("_")[0];
-                const url = this.getBerryInstallUrl(obj.message.tasmotaIP, version);
-                this.log.info(`Installing berry on tasmota with IP ${obj.message.tasmotaIP}`);
-                await this.fetch(url);
-                if (obj.message.restart === true) {
-                  if (this.mqttClient && typeof obj.message.topic === "string" && obj.message.topic) {
-                    try {
-                      await this.mqttClient.waitTasmotaUrlFetch(obj.message.topic, 1e4);
-                    } catch {
-                      this.log.error(
-                        `Did not receive download confirmation from tasmota ${obj.message.tasmotaIP} after berry install - no restart.`
+                const tasmotaIP = obj.message.tasmotaIP;
+                const topic = this.mqttClient ? (0, import_berry_install.findBerryInstallTopic)(obj.message.topic, tasmotaIP, this.config.panels) : void 0;
+                const restart = obj.message.restart === true;
+                this.log.info(`Installing berry on tasmota with IP ${tasmotaIP}`);
+                if (this.mqttClient && topic) {
+                  await this.fetch(this.getBerryInstallUrl(tasmotaIP, version));
+                  try {
+                    await this.mqttClient.waitTasmotaUrlFetch(topic, 1e4);
+                  } catch (e) {
+                    this.log.error(
+                      `Did not receive download confirmation from tasmota ${tasmotaIP} after berry install${restart ? " - no restart" : ""}: ${String(e)}`
+                    );
+                    await this.finishBerryInstall(tasmotaIP, false, false);
+                    if (obj.callback) {
+                      this.sendTo(
+                        obj.from,
+                        obj.command,
+                        { error: "sendToRequestFailBerry" },
+                        obj.callback
                       );
-                      if (obj.callback) {
-                        this.sendTo(
-                          obj.from,
-                          obj.command,
-                          { error: "sendToRequestFailBerry" },
-                          obj.callback
-                        );
-                      }
-                      break;
                     }
-                  } else {
-                    await this.delay(3e3);
+                    break;
                   }
-                  this.log.info(
-                    `Restarting tasmota with IP ${obj.message.tasmotaIP} after berry install`
+                  if (restart) {
+                    this.log.info(`Restarting tasmota with IP ${tasmotaIP} after berry install`);
+                  }
+                  await this.finishBerryInstall(tasmotaIP, true, restart);
+                } else {
+                  await this.fetch(
+                    (0, import_berry_install.getTasmotaCommandUrl)(
+                      tasmotaIP,
+                      (0, import_berry_install.getBerryLegacyInstallCommand)(this.config.berryUrl, version),
+                      this.getTasmotaLogin()
+                    )
                   );
-                  await this.fetch(this.getRestartTasmotaUrl(obj.message.tasmotaIP));
+                  if (restart) {
+                    await this.delay(3e3);
+                    this.log.info(`Restarting tasmota with IP ${tasmotaIP} after berry install`);
+                    await this.fetch(this.getRestartTasmotaUrl(tasmotaIP));
+                  }
                 }
                 if (obj.callback) {
                   this.sendTo(obj.from, obj.command, [], obj.callback);
@@ -2290,6 +2308,19 @@ class NspanelLovelaceUi extends utils.Adapter {
     }
     await this.setForeignStateAsync(dp, val, false);
   }
+  /**
+   * Message for a script update that cannot find the token which separates the user configuration from the
+   * script code - names where the token is missing.
+   *
+   * @param scriptId id of the script
+   * @param token name of the token for the message
+   * @param places where the token was searched and whether it was found
+   * @returns the message
+   */
+  scriptTokenError(scriptId, token, places) {
+    const missing = places.filter((p) => !p.found).map((p) => p.where).join(" and ");
+    return `Update script ${scriptId} failed: the ${token} line was not found in ${missing}`;
+  }
   async createGlobalConfigurationScript() {
     var _a;
     const scriptPath = `script.js.${this.library.cleandp(this.namespace, false, true)}`;
@@ -2325,8 +2356,12 @@ class NspanelLovelaceUi extends utils.Adapter {
             this.log.info(`Update script ${scriptId}`);
             file = o.common.source.substring(0, indexTo) + baseFile.substring(indexFrom);
           } else {
-            this.log.error(`Update script ${scriptId} something whent wrong!`);
-            return { error: `Update script ${scriptId} something whent wrong!` };
+            const error = this.scriptTokenError(scriptId, token, [
+              { found: indexFrom !== -1, where: "the template example_sendTo_script_iobroker.ts" },
+              { found: indexTo !== -1, where: "the existing script" }
+            ]);
+            this.log.error(error);
+            return { error };
           }
           this.log.info(`Update global script ${scriptId}`);
         } else {
@@ -2336,8 +2371,12 @@ class NspanelLovelaceUi extends utils.Adapter {
             this.log.info(`Update script ${scriptId}`);
             file = file.substring(0, indexTo) + baseFile.substring(indexFrom);
           } else {
-            this.log.error(`Update script ${scriptId} something whent wrong!`);
-            return { error: `Update script ${scriptId} something whent wrong!` };
+            const error = this.scriptTokenError(scriptId, token, [
+              { found: indexFrom !== -1, where: "the template example_sendTo_script_iobroker.ts" },
+              { found: indexTo !== -1, where: "the template globalPageConfig.ts" }
+            ]);
+            this.log.error(error);
+            return { error };
           }
           this.log.info(`Create global script ${scriptId}`);
         }
@@ -2475,7 +2514,7 @@ class NspanelLovelaceUi extends utils.Adapter {
    * @param obj - die sendTo-Nachricht aus dem Admin
    */
   async nsPanelInitStep1(obj) {
-    var _a, _b;
+    var _a, _b, _c, _d, _e, _f;
     const msg = obj.message;
     const useInternalServer = !((msg == null ? void 0 : msg.mqttServer) == null || msg.mqttServer === false || msg.mqttServer === "false");
     if (!useInternalServer && (0, import_credentials.isCredentialId)(msg == null ? void 0 : msg.mqttCredentialId)) {
@@ -2501,30 +2540,14 @@ class NspanelLovelaceUi extends utils.Adapter {
     }
     msg.mqttServer = useInternalServer;
     const topic = msg.tasmotaTopic;
-    let panel = void 0;
+    let panel = (_a = this.controller) == null ? void 0 : _a.panels.find((a) => a.topic === topic);
     try {
-      this.log.info(
-        `Sending mqtt config & base config to tasmota: ${msg.tasmotaIP} with user ${msg.mqttUsername} && ***`
-      );
-      const panels = (_a = this.config.panels) != null ? _a : [];
-      const index = panels.findIndex((a) => a.topic === topic);
-      const item = index === -1 ? { name: "", ip: "", topic: "", id: "", model: "eu" } : panels[index];
-      const ipIndex = panels.findIndex((a) => a.ip === msg.tasmotaIP);
       if (!await this.getVersionsJson()) {
         this.log.error(
           "Could not fetch version json! Check your internet connection and the url in the adapter configuration!"
         );
         this.answerMessage(obj, { error: "sendToVersionJsonFetchFailed" });
         return;
-      }
-      if (index !== -1 && ipIndex !== index) {
-        this.log.error("Topic and ip are not on the same panel!");
-        this.answerMessage(obj, { error: "sendToIpTopicDifferent" });
-        return;
-      }
-      panel = (_b = this.controller) == null ? void 0 : _b.panels.find((a) => a.topic === topic);
-      if (panel) {
-        void panel.setStatus("setup");
       }
       let u = new import_node_url.URL(this.getTasmotaCommandUrl(msg.tasmotaIP, `status 5`));
       this.log.debug(`Requesting tasmota status 5 with url: ${(0, import_redact.redactSecretsInText)(u.href)}`);
@@ -2538,6 +2561,28 @@ class NspanelLovelaceUi extends utils.Adapter {
         }
         return;
       }
+      const panels = (_b = this.config.panels) != null ? _b : [];
+      const match = (0, import_panel_setup.matchPanelForSetup)(
+        panels,
+        this.library.cleandp(r.StatusNET.Mac),
+        topic,
+        msg.tasmotaName,
+        (name) => this.configurationScriptId(name)
+      );
+      if ("error" in match) {
+        const other = panels[match.conflictIndex];
+        this.log.error(
+          match.error === "sendToNameInUse" ? `The name ${msg.tasmotaName} is already used by the panel ${(_c = other == null ? void 0 : other.name) != null ? _c : ""} (${(_d = other == null ? void 0 : other.topic) != null ? _d : ""}) - choose another name!` : `The topic ${topic} is already used by the panel ${(_e = other == null ? void 0 : other.name) != null ? _e : ""}!`
+        );
+        this.answerMessage(obj, { error: match.error });
+        return;
+      }
+      const item = match.isNew ? { name: "", ip: "", topic: "", id: "", model: "eu" } : panels[match.index];
+      const panelTopic = match.isNew ? topic : item.topic;
+      panel = (_f = this.controller) == null ? void 0 : _f.panels.find((a) => a.topic === panelTopic);
+      if (panel) {
+        void panel.setStatus("setup");
+      }
       const appendix = r.StatusNET.Mac.replace(/:/g, "").slice(-6);
       const mqttClientId = `${this.library.cleandp(msg.tasmotaName)}-${appendix}`;
       const url = ` MqttHost ${msg.mqttServer ? msg.internalServerIp : msg.mqttIp}; MqttPort ${msg.mqttPort}; MqttUser ${msg.mqttUsername}; MqttPassword ${msg.mqttPassword}; FullTopic ${`${topic}/%prefix%/`.replaceAll("//", "/")}; MqttRetry 10; FriendlyName1 ${msg.tasmotaName}; Hostname ${msg.tasmotaName.replaceAll(/[^a-zA-Z0-9_-]/g, "_")}; MqttClient ${mqttClientId}; ${msg.mqttServer ? "SetOption132 1; SetOption103 1 " : "SetOption132 0; SetOption103 0"}; Restart 1`;
@@ -2545,12 +2590,17 @@ class NspanelLovelaceUi extends utils.Adapter {
       this.log.debug(
         `Sending mqtt config & base config to tasmota with IP ${msg.tasmotaIP} and name ${msg.tasmotaName}.`
       );
+      this.log.info(
+        `Sending mqtt config & base config to tasmota: ${msg.tasmotaIP} with user ${msg.mqttUsername} && ***`
+      );
       await this.fetch(u.href);
       this.mqttClient && await this.mqttClient.waitPanelConnectAsync(topic, 6e4);
       this.purgeNsPanelInitSessions();
       this.nsPanelInitSessions.set(topic, {
         item,
-        isNew: index === -1,
+        isNew: match.isNew,
+        panelTopic,
+        panelName: match.isNew ? "" : item.name,
         isEmulator: false,
         ts: Date.now()
       });
@@ -2578,7 +2628,7 @@ class NspanelLovelaceUi extends utils.Adapter {
     }
     const { topic, session } = found;
     const msg = obj.message;
-    const panel = (_a = this.controller) == null ? void 0 : _a.panels.find((a) => a.topic === topic);
+    const panel = (_a = this.controller) == null ? void 0 : _a.panels.find((a) => a.topic === session.panelTopic);
     try {
       let u = new import_node_url.URL(
         this.getTasmotaCommandUrl(
@@ -2643,7 +2693,7 @@ class NspanelLovelaceUi extends utils.Adapter {
     }
     const { topic, session } = found;
     const msg = obj.message;
-    const panel = (_a = this.controller) == null ? void 0 : _a.panels.find((a) => a.topic === topic);
+    const panel = (_a = this.controller) == null ? void 0 : _a.panels.find((a) => a.topic === session.panelTopic);
     try {
       const versionsJson = await this.getVersionsJson();
       if (!session.isEmulator) {
@@ -2664,21 +2714,21 @@ class NspanelLovelaceUi extends utils.Adapter {
             return;
           }
           const version = msg.useBetaTFT ? versionsJson[`berry-beta`].split("_")[0] : versionsJson.berry.split("_")[0];
-          let url = this.getBerryInstallUrl(msg.tasmotaIP, version);
+          const url = this.getBerryInstallUrl(msg.tasmotaIP, version);
           this.log.info(`Installing berry on tasmota with IP ${msg.tasmotaIP}, name ${msg.tasmotaName}.`);
           this.log.debug(`URL: ${(0, import_redact.redactSecretsInText)(url)}`);
           await this.fetch(url);
           try {
             this.mqttClient && await this.mqttClient.waitTasmotaUrlFetch(topic, 5e3);
-          } catch {
+          } catch (e) {
             this.log.error(
-              `Did not receive download confirmation from tasmota ${msg.tasmotaIP} after berry install.`
+              `Did not receive download confirmation from tasmota ${msg.tasmotaIP} after berry install: ${String(e)}`
             );
+            await this.finishBerryInstall(msg.tasmotaIP, false, false);
             this.answerMessage(obj, { error: "sendToRequestFailBerry" });
             return;
           }
-          url = this.getRestartTasmotaUrl(msg.tasmotaIP);
-          await this.fetch(url);
+          await this.finishBerryInstall(msg.tasmotaIP, true, true);
           this.mqttClient && await this.mqttClient.waitPanelConnectAsync(topic, 2e4);
           await this.delay(1e3);
         } catch (e) {
@@ -2723,10 +2773,21 @@ class NspanelLovelaceUi extends utils.Adapter {
           `Emulator detected on tasmota with IP ${msg.tasmotaIP} and name ${msg.tasmotaName}, skipping berry install.`
         );
       }
+      const previous = session.isNew ? void 0 : { name: session.panelName, topic: session.panelTopic };
+      let renamedScript;
       if (session.item.noScript === true) {
         await this.createGlobalConfigurationScript();
       } else {
+        if (previous) {
+          renamedScript = await this.moveConfigurationScript(previous, {
+            name: session.item.name,
+            topic: session.item.topic
+          });
+        }
         await this.createConfigurationScript(session.item.name, session.item.topic);
+      }
+      if (previous && (previous.topic !== session.item.topic || renamedScript)) {
+        await this.migrateScriptConfigOfPanel(previous.topic, session.item.topic, renamedScript);
       }
       const panels = (_b = this.config.panels) != null ? _b : [];
       if (session.isNew && !panels.includes(session.item)) {
@@ -2774,10 +2835,129 @@ class NspanelLovelaceUi extends utils.Adapter {
       `Error in nsPanelInit step ${step} while sending config to tasmota (${tasmotaIP != null ? tasmotaIP : "unknown IP"}): ${stack}`
     );
   }
+  /**
+   * @returns id of the folder the configuration scripts of this instance are created in
+   */
+  configurationScriptFolder() {
+    return `script.js.${this.library.cleandp(this.namespace, false, true)}`;
+  }
+  /**
+   * @param panelName name of the panel
+   * @returns id of the configuration script of the panel
+   */
+  configurationScriptId(panelName) {
+    return this.library.cleandp(
+      `${this.configurationScriptFolder()}.${this.library.cleandp(panelName, false, true)}`
+    );
+  }
+  /**
+   * Setup of an existing panel with a new name and/or topic (#899): prepares its configuration script before
+   * `createConfigurationScript` brings the template part up to date.
+   *
+   * - Topic changed: `panelTopic` in the user part of the script gets the new topic.
+   * - Name changed (other script id): when the script of the old name exists and none of the new name, the script
+   *   is moved to the new id (user part kept, `common.name` = new name, other common fields such as `enabled`
+   *   taken over) and the old object is deleted. When the script of the new name exists already, nothing is
+   *   moved or deleted (warning). Without a script of the old name nothing happens here.
+   *
+   * @param previous name and topic of the panel before the setup
+   * @param previous.name name before the setup
+   * @param previous.topic topic before the setup
+   * @param next name and topic of the panel after the setup
+   * @param next.name name after the setup
+   * @param next.topic topic after the setup
+   * @returns old and new script id when the script was moved, otherwise undefined
+   */
+  async moveConfigurationScript(previous, next) {
+    var _a, _b;
+    if (!previous.name || !next.name || !next.topic) {
+      return void 0;
+    }
+    const topicChanged = previous.topic !== next.topic;
+    const fromId = this.configurationScriptId(previous.name);
+    const toId = this.configurationScriptId(next.name);
+    try {
+      const from = await this.getForeignObjectAsync(fromId);
+      if (!from || from.type !== "script" || typeof ((_a = from.common) == null ? void 0 : _a.source) !== "string") {
+        return void 0;
+      }
+      const retopic = (source) => {
+        if (!topicChanged) {
+          return source;
+        }
+        const r = (0, import_panel_setup.replacePanelTopicInScript)(source, previous.topic, next.topic);
+        if (r.count === 0) {
+          this.log.warn(
+            `Script ${fromId}: no panelTopic '${previous.topic}' found in the configuration part - set the new topic '${next.topic}' there by hand!`
+          );
+        }
+        return r.source;
+      };
+      if (fromId === toId) {
+        const source = retopic(from.common.source);
+        if (source !== from.common.source) {
+          await this.extendForeignObjectAsync(fromId, { common: { source } });
+          this.log.info(`Script ${fromId}: panelTopic changed from ${previous.topic} to ${next.topic}`);
+        }
+        return void 0;
+      }
+      if (await this.getForeignObjectAsync(toId)) {
+        this.log.warn(
+          `Panel renamed from ${previous.name} to ${next.name}, but the script ${toId} exists already - ${fromId} is kept, check both scripts!`
+        );
+        return void 0;
+      }
+      const script = {
+        _id: toId,
+        type: "script",
+        common: { ...from.common, name: next.name, source: retopic(from.common.source) },
+        native: (_b = from.native) != null ? _b : {}
+      };
+      await this.setForeignObjectAsync(toId, script);
+      await this.delForeignObjectAsync(fromId);
+      this.log.info(`Panel renamed from ${previous.name} to ${next.name}: script ${fromId} moved to ${toId}`);
+      return { from: fromId, to: toId };
+    } catch (e) {
+      this.log.error(`Error while moving the script ${fromId} to ${toId}: ${String(e)}`);
+      return void 0;
+    }
+  }
+  /**
+   * Moves the script configuration of a panel in the meta object to its new topic and/or script id
+   * (see `migrateScriptConfigTopic`).
+   *
+   * @param oldTopic topic before the setup
+   * @param newTopic topic after the setup
+   * @param script old and new script id when the configuration script was moved
+   */
+  async migrateScriptConfigOfPanel(oldTopic, newTopic, script) {
+    try {
+      const meta = await this.getForeignObjectAsync(this.namespace);
+      if (!(meta == null ? void 0 : meta.native)) {
+        return;
+      }
+      const r = (0, import_panel_setup.migrateScriptConfigTopic)(meta.native, oldTopic, newTopic, script);
+      if (!r.scriptConfigRaw && !r.scriptConfig) {
+        return;
+      }
+      if (r.scriptConfigRaw) {
+        meta.native.scriptConfigRaw = r.scriptConfigRaw;
+      }
+      if (r.scriptConfig) {
+        meta.native.scriptConfig = r.scriptConfig;
+      }
+      await this.setForeignObjectAsync(this.namespace, meta);
+      const dropped = r.dropped ? `, ${r.dropped} old entries of ${newTopic} dropped` : "";
+      const renamed = script ? `, script ${script.from} -> ${script.to}` : "";
+      this.log.info(`Script configuration moved from ${oldTopic} to ${newTopic}${renamed}${dropped}`);
+    } catch (e) {
+      this.log.error(`Error while moving the script configuration from ${oldTopic} to ${newTopic}: ${String(e)}`);
+    }
+  }
   async createConfigurationScript(panelName, panelTopic) {
     var _a;
     const globalResult = await this.createGlobalConfigurationScript();
-    const scriptPath = `script.js.${this.library.cleandp(this.namespace, false, true)}`;
+    const scriptPath = this.configurationScriptFolder();
     const folder = {
       type: "channel",
       _id: scriptPath,
@@ -2788,7 +2968,7 @@ class NspanelLovelaceUi extends utils.Adapter {
       native: {}
     };
     await this.extendForeignObjectAsync(scriptPath, folder);
-    const scriptId = this.library.cleandp(`${scriptPath}.${this.library.cleandp(panelName, false, true)}`);
+    const scriptId = this.configurationScriptId(panelName);
     this.log.debug(`Create script ${scriptId}`);
     if (fs.existsSync(import_node_path.default.join(__dirname, "../script")) && panelName && panelTopic) {
       let file = fs.readFileSync(import_node_path.default.join(__dirname, "../script/example_sendTo_script_iobroker.ts"), "utf8");
@@ -2800,15 +2980,19 @@ class NspanelLovelaceUi extends utils.Adapter {
           `await sendToAsync('${this.namespace}', 'ScriptConfig',`
         );
         if (o) {
-          const token = "*  END STOP END STOP END - No more configuration - END STOP END STOP END       *";
+          const token = import_panel_setup.SCRIPT_END_STOP_TOKEN;
           const indexFrom = file.indexOf(token);
           const indexTo = o.common.source.indexOf(token);
           if (indexFrom !== -1 && indexTo !== -1) {
             this.log.info(`Update script ${scriptId}`);
             file = o.common.source.substring(0, indexTo) + file.substring(indexFrom);
           } else {
-            this.log.warn(`Update script ${scriptId} something whent wrong!`);
-            return { error: `Update script ${scriptId} something whent wrong!` };
+            const error = this.scriptTokenError(scriptId, "END STOP", [
+              { found: indexFrom !== -1, where: "the template example_sendTo_script_iobroker.ts" },
+              { found: indexTo !== -1, where: "the existing script" }
+            ]);
+            this.log.warn(error);
+            return { error };
           }
         } else {
           this.log.info(`Create script ${scriptId}`);
@@ -2903,8 +3087,50 @@ class NspanelLovelaceUi extends utils.Adapter {
       definition.genericStateObjects.panel.panels.info.nspanel.firmwareUpdate
     );
   }
+  /** @returns login of the Tasmota web interface from the adapter config */
+  getTasmotaLogin() {
+    return { useAdmin: this.config.useTasmotaAdmin, password: this.config.tasmotaAdminPassword };
+  }
+  /**
+   * Url of the first berry install step: the running `autoexec.be` is renamed to `autoexec.bak`,
+   * then the new driver is downloaded. Must be followed by `finishBerryInstall`.
+   *
+   * @param tasmotaIP ip of the Tasmota device
+   * @param version driver version to download
+   * @returns the url
+   */
   getBerryInstallUrl(tasmotaIP, version) {
-    return `http://${tasmotaIP}/cm?${this.config.useTasmotaAdmin ? `user=admin&password=${this.config.tasmotaAdminPassword}` : ``}&cmnd=Backlog UfsDelete autoexec.old; UfsRename autoexec.be,autoexec.old; UrlFetch ${this.config.berryUrl}/${version}/autoexec.be`;
+    return (0, import_berry_install.getTasmotaCommandUrl)(
+      tasmotaIP,
+      (0, import_berry_install.getBerryDownloadCommand)(this.config.berryUrl, version),
+      this.getTasmotaLogin()
+    );
+  }
+  /**
+   * Second berry install step after the `UrlFetch` result.
+   * Success: `autoexec.bak` becomes `autoexec.old`, optional restart in the same backlog.
+   * Failure: a partial `autoexec.be` is deleted and `autoexec.bak` is restored as `autoexec.be`.
+   *
+   * @param tasmotaIP ip of the Tasmota device
+   * @param success true when Tasmota confirmed the download
+   * @param restart true: restart Tasmota after a successful install
+   */
+  async finishBerryInstall(tasmotaIP, success, restart) {
+    const login = this.getTasmotaLogin();
+    if (success) {
+      await this.fetch((0, import_berry_install.getTasmotaCommandUrl)(tasmotaIP, (0, import_berry_install.getBerryCommitCommand)(restart), login));
+      return;
+    }
+    try {
+      await this.fetch((0, import_berry_install.getTasmotaCommandUrl)(tasmotaIP, (0, import_berry_install.getBerryRestoreCommand)(), login));
+      this.log.warn(
+        `Berry driver download on tasmota ${tasmotaIP} failed - the previous autoexec.be was restored.`
+      );
+    } catch (e) {
+      this.log.error(
+        `Berry driver download on tasmota ${tasmotaIP} failed and restoring autoexec.bak to autoexec.be failed too: ${String(e)}`
+      );
+    }
   }
   getRestartTasmotaUrl(tasmotaIP) {
     return `http://${tasmotaIP}/cm?${this.config.useTasmotaAdmin ? `user=admin&password=${this.config.tasmotaAdminPassword}` : ``}&cmnd=Restart%201`;

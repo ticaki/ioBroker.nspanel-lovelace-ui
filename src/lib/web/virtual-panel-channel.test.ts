@@ -1,5 +1,6 @@
 import { expect } from 'chai';
-import { VirtualPanelChannel, mqttTopicMatches } from './virtual-panel-channel';
+import { mqttTopicMatches } from '../classes/mqtt';
+import { VirtualPanelChannel } from './virtual-panel-channel';
 
 const TOPIC = 'nspanel/web/abc';
 

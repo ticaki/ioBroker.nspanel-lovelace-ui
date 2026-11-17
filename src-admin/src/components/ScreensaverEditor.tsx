@@ -2699,6 +2699,8 @@ export class ScreensaverEditor extends React.Component<ScreensaverEditorProps, S
         const nameTaken = entries.some(e => e !== entry && e.name === entry.name);
         const mixed = this.mixedModels();
         const duplicates = this.duplicates();
+        // topics no configured panel has any more (#899) - listed in the menu so they can be unticked
+        const orphaned = selected.filter(t => !this.panelOf(t));
         return (
             <Box sx={{ mb: 1 }}>
                 <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', alignItems: 'flex-end', mb: 1 }}>
@@ -2796,7 +2798,27 @@ export class ScreensaverEditor extends React.Component<ScreensaverEditorProps, S
                                     </Tooltip>
                                 </MenuItem>
                             ))}
-                            {panels.length === 0 && (
+                            {orphaned.map(t => (
+                                <MenuItem
+                                    key={`orphaned-${t}`}
+                                    value={t}
+                                >
+                                    <Checkbox
+                                        size="small"
+                                        checked
+                                    />
+                                    <Tooltip
+                                        title={this.getText('screensaver_panel_orphaned').replace('%s', t)}
+                                        placement="right"
+                                    >
+                                        <ListItemText
+                                            primary={t}
+                                            slotProps={{ primary: { sx: { color: 'warning.main' } } }}
+                                        />
+                                    </Tooltip>
+                                </MenuItem>
+                            ))}
+                            {panels.length === 0 && orphaned.length === 0 && (
                                 <MenuItem disabled>{this.getText('screensaver_no_panels')}</MenuItem>
                             )}
                         </Select>
@@ -2824,6 +2846,14 @@ export class ScreensaverEditor extends React.Component<ScreensaverEditorProps, S
                         sx={{ mt: 1 }}
                     >
                         {this.getText('screensaver_panels_none')}
+                    </Alert>
+                )}
+                {orphaned.length > 0 && (
+                    <Alert
+                        severity="warning"
+                        sx={{ mt: 1 }}
+                    >
+                        {this.getText('screensaver_panels_orphaned').replace('%s', orphaned.join(', '))}
                     </Alert>
                 )}
                 {mixed.length > 0 && (

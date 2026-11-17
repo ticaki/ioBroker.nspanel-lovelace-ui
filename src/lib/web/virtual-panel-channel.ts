@@ -1,34 +1,10 @@
 import type { IClientPublishOptions } from 'mqtt';
-import type { callbackMessageType } from '../classes/mqtt';
+import { mqttTopicMatches, type callbackMessageType } from '../classes/mqtt';
 import type { PanelChannel } from '../classes/panel-channel';
 import { BaseClass, type AdapterClassDefinition } from '../controller/library';
 
 /** Listener for CustomSend payloads and buzzer commands going to the browser */
 export type VirtualChannelListener = (payload: string) => void;
-
-/**
- * Does the MQTT topic filter match the topic? Supports `+` (one level) and `#` (rest).
- *
- * @param filter topic filter
- * @param topic concrete topic
- * @returns true if the topic matches the filter
- */
-export function mqttTopicMatches(filter: string, topic: string): boolean {
-    const f = filter.split('/');
-    const t = topic.split('/');
-    for (let i = 0; i < f.length; i++) {
-        if (f[i] === '#') {
-            return true;
-        }
-        if (i >= t.length) {
-            return false;
-        }
-        if (f[i] !== '+' && f[i] !== t[i]) {
-            return false;
-        }
-    }
-    return f.length === t.length;
-}
 
 /**
  * In-process `PanelChannel` for exactly one web panel.

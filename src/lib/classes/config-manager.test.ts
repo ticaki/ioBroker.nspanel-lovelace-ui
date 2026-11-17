@@ -2,7 +2,7 @@ import { expect } from 'chai';
 import type { panelConfigPartial } from '../controller/panel';
 import type { PageBase } from '../types/pages';
 import { isConfig } from '../const/config-manager-const';
-import { ConfigManager } from './config-manager';
+import { ConfigManager, NoPanelsConfiguredError } from './config-manager';
 
 /**
  * Minimal adapter stub - ConfigManager.getConfig() only uses `config.panels`,
@@ -96,6 +96,45 @@ describe('lib/classes/config-manager - getConfig', () => {
     });
 });
 
+describe('lib/classes/config-manager - getConfig without any usable config', () => {
+    it('reports "no panels configured" without an error log when the panel list is empty', async () => {
+        const adapter = fakeAdapter([]);
+        const errors: string[] = [];
+        adapter.log.error = (m: string): void => {
+            errors.push(m);
+        };
+        let thrown: unknown;
+        try {
+            await ConfigManager.getConfig(adapter, []);
+        } catch (e) {
+            thrown = e;
+        }
+        expect(thrown).to.be.instanceOf(NoPanelsConfiguredError);
+        expect((thrown as Error).message).to.contain('No panels configured yet');
+        expect(errors).to.have.length(0);
+    });
+
+    it('names the configured panels when none of them has a usable config', async () => {
+        const adapter = fakeAdapter(['panel/a']);
+        adapter.config.panels[0].name = 'Kitchen';
+        const errors: string[] = [];
+        adapter.log.error = (m: string): void => {
+            errors.push(m);
+        };
+        let thrown: unknown;
+        try {
+            await ConfigManager.getConfig(adapter, []);
+        } catch (e) {
+            thrown = e;
+        }
+        expect(thrown).to.be.instanceOf(Error);
+        expect(thrown).to.not.be.instanceOf(NoPanelsConfiguredError);
+        expect((thrown as Error).message).to.contain('Kitchen (panel/a)');
+        // the caller logs the error - logged here too it would appear twice
+        expect(errors).to.have.length(0);
+    });
+});
+
 /**
  * Adapter stub for ConfigManager.setScriptConfig() with a stored global configuration.
  *
@@ -152,6 +191,7 @@ describe('lib/classes/config-manager - setScriptConfig with a global configurati
         expect(headline?.constVal).to.equal('local main');
         expect(panelConfig?.globalPageIds).to.not.include('main');
         expect(panelConfig?.globalPageIds).to.include('shared');
+        expect(panelConfig?.withoutScript).to.equal(false);
         await manager.delete();
     });
 });
@@ -210,6 +250,8 @@ describe('lib/classes/config-manager - getDefaultScriptConfig', () => {
         expect(result.messages[0]).to.match(/^Panel .* without script - admin configuration only$/);
         expect(result.messages.some(m => /Update|too low|higher/.test(m))).to.equal(false);
         expect((result.panelConfig?.pages ?? []).map(p => p.uniqueID)).to.include('main');
+        // its screensaver is a placeholder, not one of a script
+        expect(result.panelConfig?.withoutScript).to.equal(true);
         await manager.delete();
     });
 

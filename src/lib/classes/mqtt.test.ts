@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import { MQTTClientClass, minimalMqttFilters, mqttFilterCovers } from './mqtt';
+import { MQTTClientClass, minimalMqttFilters, mqttFilterCovers, mqttTopicMatches } from './mqtt';
 
 describe('lib/classes/mqtt - mqttFilterCovers', () => {
     it('exact filters cover each other', () => {
@@ -104,5 +104,35 @@ describe('lib/classes/mqtt - broker subscriptions', () => {
         client.removeByFunction(cb2);
         await new Promise(resolve => setImmediate(resolve));
         expect(calls).to.deep.equal(['unsub p/stat/RESULT']);
+    });
+});
+
+describe('lib/classes/mqtt - mqttTopicMatches', () => {
+    it('matches an exact subscription only exactly', () => {
+        expect(mqttTopicMatches('X/stat/RESULT', 'X/stat/RESULT')).to.equal(true);
+        expect(mqttTopicMatches('X/stat/RESULT', 'X/stat/RESULTfoo')).to.equal(false);
+        expect(mqttTopicMatches('X/stat/RESULT', 'X/stat/RESULT/sub')).to.equal(false);
+        expect(mqttTopicMatches('X/tele/RESULT', 'X/stat/RESULT')).to.equal(false);
+    });
+
+    it('matches /# on whole levels only, including the parent level', () => {
+        expect(mqttTopicMatches('X/tele/#', 'X/tele/RESULT')).to.equal(true);
+        expect(mqttTopicMatches('X/tele/#', 'X/tele/INFO1')).to.equal(true);
+        expect(mqttTopicMatches('X/tele/#', 'X/tele')).to.equal(true);
+        expect(mqttTopicMatches('X/tele/#', 'X/teleFoo')).to.equal(false);
+        expect(mqttTopicMatches('X/tele/#', 'X/teleFoo/RESULT')).to.equal(false);
+        expect(mqttTopicMatches('X/tele/#', 'XY/tele/RESULT')).to.equal(false);
+    });
+
+    it('works with panel topics that contain a slash', () => {
+        expect(mqttTopicMatches('home/nspanel/kitchen/stat/#', 'home/nspanel/kitchen/stat/RESULT')).to.equal(true);
+        expect(mqttTopicMatches('home/nspanel/kitchen/stat/#', 'home/nspanel/kitchen2/stat/RESULT')).to.equal(false);
+        expect(mqttTopicMatches('home/nspanel/kitchen/stat/RESULT', 'home/nspanel/kitchen/stat/RESULT')).to.equal(true);
+        expect(mqttTopicMatches('home/nspanel/kitchen/tele/#', 'home/nspanel/kitchen/stat/RESULT')).to.equal(false);
+    });
+
+    it('supports + for one level', () => {
+        expect(mqttTopicMatches('X/+/RESULT', 'X/stat/RESULT')).to.equal(true);
+        expect(mqttTopicMatches('X/+/RESULT', 'X/a/b/RESULT')).to.equal(false);
     });
 });

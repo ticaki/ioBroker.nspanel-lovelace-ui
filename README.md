@@ -159,10 +159,16 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
     ### **WORK IN PROGRESS**
 -->
 ### **WORK IN PROGRESS**
+- (ticaki) Admin, screensaver items: new option to fill free slots even while hidden; default is hidden – before, a hidden item still filled a free slot
 - (ticaki) Temperature offset changed directly in Tasmota (console `TempOffset`) is now taken over into the state instead of being overwritten on the next reconnect
 - (ticaki) Admin, panel cards (Maintain, Panelinfo, panel overview): one small "?" per card for the card documentation, buttons and fields with their own documentation section show a help link in their tooltip; removed the clustered "?" above the panel cards and next to "Update scripts for all panels"
 - (ticaki) Admin, Panelinfo: a long panel title no longer widens the card
-- (ticaki) Admin, screensaver items: new option to fill free slots even while hidden; default is hidden – before, a hidden item still filled a free slot
+- (ticaki) panel setup recognizes an existing panel by its MAC address, so changing topic, name or IP updates it instead of creating a duplicate (#899)
+- (ticaki) changing the topic or name of a panel now also moves its pages, screensaver and navigation assignments, its script configuration and renames its configuration script (#899)
+- (ticaki) log: no error when no panel is configured yet, no "Update detected" message on every MQTT connect, panel name instead of id in the screensaver message, clearer script update errors
+- (ticaki) Admin: panel names and topics must be unique, orphaned panel assignments of pages and screensavers are marked and can be removed, a duplicated panel entry can be deleted on its own and is skipped with a warning on start (#899)
+- (ticaki) internal MQTT server: a panel whose name starts with the name of another panel is no longer taken for that one when it connects; MQTT messages are matched to subscriptions exactly
+- (ticaki) Berry driver install: a failed download restores the previous driver instead of leaving the panel without autoexec.be
 
 ### 2.3.1 (2026-11-16)
 - (ticaki) Admin: help links to the documentation at many settings, in the ioBroker system language
