@@ -158,22 +158,16 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
     Placeholder for the next version (at the beginning of the line):
     ### **WORK IN PROGRESS**
 -->
-### **WORK IN PROGRESS**
-- (ticaki) Screensaver notifications: tapping away a dismissible notification with a group ID writes that ID to `panels.<panel>.screensaverNotify.id` and `screensaverNotify.id`
-- (ticaki) sendTo `screensaverNotify` finds the panel given in `panel` (topic) again and answers with `result: 'ok'` on success
-- (ticaki) Screensaver indicators (Advanced and Tiles, TFT 6.0.9+): new long press action "Open popup" – opens the popup of the light, shutter, fan, selection or timer channel above the state and returns to the screensaver afterwards (script: `ScreensaverEntityLongPressPopup: true`)
-- (ticaki) Admin, screensaver items: new option to fill free slots even while hidden; default is hidden – before, a hidden item still filled a free slot
-- (ticaki) Temperature offset changed directly in Tasmota (console `TempOffset`) is now taken over into the state instead of being overwritten on the next reconnect
-- (ticaki) Admin, panel cards (Maintain, Panelinfo, panel overview): one small "?" per card for the card documentation, buttons and fields with their own documentation section show a help link in their tooltip; removed the clustered "?" above the panel cards and next to "Update scripts for all panels"
-- (ticaki) Admin, Panelinfo: a long panel title no longer widens the card
-- (ticaki) panel setup recognizes an existing panel by its MAC address, so changing topic, name or IP updates it instead of creating a duplicate (#899)
-- (ticaki) changing the topic or name of a panel now also moves its pages, screensaver and navigation assignments, its script configuration and renames its configuration script (#899)
-- (ticaki) log: no error when no panel is configured yet, no "Update detected" message on every MQTT connect, panel name instead of id in the screensaver message, clearer script update errors
-- (ticaki) Admin: panel names and topics must be unique, orphaned panel assignments of pages and screensavers are marked and can be removed, a duplicated panel entry can be deleted on its own and is skipped with a warning on start (#899)
-- (ticaki) internal MQTT server: a panel whose name starts with the name of another panel is no longer taken for that one when it connects; MQTT messages are matched to subscriptions exactly
-- (ticaki) Berry driver install: a failed download restores the previous driver instead of leaving the panel without autoexec.be
-- (ticaki) gate channel: a boolean status (`sensor.gate`) or a channel with only SET is shown, up/down work again and write to the found SET state; with a boolean status up is disabled when open and down when closed (list and popup), stop no longer depends on the status
-- (ticaki) "setActivePage called but nothing changed" is logged as debug instead of warning
+### 2.4.0 (2026-11-17)
+- (ticaki) screensaver: new long press action "Open popup" for indicators (Advanced and Tiles, TFT 6.0.9+) - opens the popup of the light, shutter, fan, selection or timer channel and returns to the screensaver afterwards (script: `ScreensaverEntityLongPressPopup: true`)
+- (ticaki) screensaver notifications: tapping away a dismissible notification with a group ID writes that ID to `panels.<panel>.screensaverNotify.id` and `screensaverNotify.id`; sendTo `screensaverNotify` finds the panel given in `panel` (topic) again and answers with `result: 'ok'`
+- (ticaki) panel setup: an existing panel is recognized by its MAC address - changing topic, name or IP updates it instead of creating a duplicate and moves its pages, screensaver and navigation assignments, its script configuration and its configuration script along (fixed #899)
+- (ticaki) admin: panel names and topics must be unique, orphaned panel assignments of pages and screensavers are marked and can be removed, a duplicated panel entry can be deleted on its own and is skipped with a warning on start
+- (ticaki) admin, screensaver items: new option to fill free slots even while hidden - by default a hidden item no longer fills a free slot
+- (ticaki) admin, panel cards (Maintain, Panelinfo, panel overview): one "?" per card for its documentation, buttons and fields link their help in the tooltip; a long panel title no longer widens the Panelinfo card
+- (ticaki) gate channel: a boolean status (`sensor.gate`) or a channel with only SET is shown, up/down work again; with a boolean status up is disabled when open and down when closed, stop no longer depends on the status
+- (ticaki) fixes: a temperature offset set in Tasmota (`TempOffset`) is taken over instead of overwritten; the internal MQTT server matches topics exactly and no longer mistakes a panel whose name starts with the name of another one; a failed Berry driver download restores the previous driver
+- (ticaki) log: no error without configured panels, no "Update detected" on every MQTT connect, panel name in the screensaver message, clearer script update errors, "setActivePage called but nothing changed" only as debug
 
 ### 2.3.1 (2026-11-16)
 - (ticaki) Admin: help links to the documentation at many settings, in the ioBroker system language
@@ -229,13 +223,6 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
 - (ticaki) the beta option now also applies to Tasmota: update and update indicator use the `tasmota-beta` version
 - (tt-tom17) admin: the two hardware button buttons of a panel tile sit one below the other and show the relay state in their color, with a tooltip
 - (tt-tom17) documentation: rewritten for the admin, complete in English as well and published on GitHub Pages, the admin links point there; missing translations of the page configuration are filled in
-
-### 2.0.2 (2026-11-01)
-- (ticaki) admin: page item text size shows the pixel size of each font; icons only offer fonts 1, 3 and 4 (the others have no icons), font 5 is marked "ASCII only"
-- (ticaki) admin: the "..." button next to the item name is now "Dynamic name" (used only while the name is empty) and no longer offers unit and date format, which were ignored
-- (ticaki) admin: on cardThermo2 and cardMedia the name field notes that the name is only the popup title
-- (ticaki) admin: screensaver item dialog: "icon per value range" and the visibility settings are available without expert mode
-- (ticaki) web panel: the font `¬<n>` of page items works on every card; cardThermo2 uses the slot sizes and positions of the HMI
 
 [Older changelogs can be found there](CHANGELOG_OLD.md)
 

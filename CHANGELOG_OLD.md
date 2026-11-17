@@ -1,4 +1,11 @@
 # Older changes
+## 2.0.2 (2026-11-01)
+- (ticaki) admin: page item text size shows the pixel size of each font; icons only offer fonts 1, 3 and 4 (the others have no icons), font 5 is marked "ASCII only"
+- (ticaki) admin: the "..." button next to the item name is now "Dynamic name" (used only while the name is empty) and no longer offers unit and date format, which were ignored
+- (ticaki) admin: on cardThermo2 and cardMedia the name field notes that the name is only the popup title
+- (ticaki) admin: screensaver item dialog: "icon per value range" and the visibility settings are available without expert mode
+- (ticaki) web panel: the font `¬<n>` of page items works on every card; cardThermo2 uses the slot sizes and positions of the HMI
+
 ## 2.0.1 (2026-11-01)
 - (ticaki) screensaver editor: areas with more items than places page with arrows instead of hiding the extra items, they are no longer reported as "no place in this version"; items with a condition (enabled / visible condition, also in raw data) are marked
 - (ticaki) admin: the "..." button of the media page player opens a list of all players found (alexa2 Echo devices, sonos speakers, squeezebox players, spotify-premium/mpd instances) grouped by adapter with search instead of the object tree; the id can still be typed by hand
