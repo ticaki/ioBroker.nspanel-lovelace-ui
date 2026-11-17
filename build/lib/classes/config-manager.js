@@ -28,7 +28,9 @@ var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__ge
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 var config_manager_exports = {};
 __export(config_manager_exports, {
-  ConfigManager: () => ConfigManager
+  ConfigManager: () => ConfigManager,
+  NO_PANELS_CONFIGURED_MESSAGE: () => NO_PANELS_CONFIGURED_MESSAGE,
+  NoPanelsConfiguredError: () => NoPanelsConfiguredError
 });
 module.exports = __toCommonJS(config_manager_exports);
 var import_Color = require("../const/Color");
@@ -54,6 +56,13 @@ var import_type_pageItem = require("../types/type-pageItem");
 var import_tools = require("../const/tools");
 var import_navigation_overrides = require("../configuration/navigation-overrides");
 var import_global_config_merge = require("../configuration/global-config-merge");
+const NO_PANELS_CONFIGURED_MESSAGE = "No panels configured yet - set up a panel in the admin. Adapter paused until then.";
+class NoPanelsConfiguredError extends Error {
+  constructor() {
+    super(NO_PANELS_CONFIGURED_MESSAGE);
+    this.name = "NoPanelsConfiguredError";
+  }
+}
 class ConfigManager extends import_library.BaseClass {
   //private test: ConfigManager.DeviceState;
   //colorOn: RGB = Color.On;
@@ -227,7 +236,13 @@ class ConfigManager extends import_library.BaseClass {
     config.subPages = config.subPages.filter(
       (item) => config.pages.findIndex((item2) => item.uniqueName === item2.uniqueName) === -1
     );
-    let panelConfig = { pages: [], navigation: [], scriptVersion: config.version, scriptName: config.scriptName || "missing" };
+    let panelConfig = {
+      pages: [],
+      navigation: [],
+      scriptVersion: config.version,
+      scriptName: config.scriptName || "missing",
+      withoutScript
+    };
     if (!config.panelTopic) {
       this.log.error(`Required field panelTopic is missing in ${config.panelName || "unknown"}!`);
       messages.push("Required field panelTopic is missing");
@@ -4943,12 +4958,21 @@ class ConfigManager extends import_library.BaseClass {
   static async getConfig(adapter, scriptConfig) {
     const result = [];
     if (scriptConfig.length === 0) {
-      const topics = (adapter.config.panels || []).map((p) => p == null ? void 0 : p.topic).filter(Boolean).join(", ");
-      if (!adapter.config.testCase) {
-        adapter.log.error(`No compatible config found for topics: ${topics}. Adapter paused!`);
-        throw new Error(`No compatible config found for topics: ${topics}. Adapter paused!`);
+      const panels = (adapter.config.panels || []).filter((p) => !!(p == null ? void 0 : p.topic));
+      if (panels.length === 0) {
+        if (!adapter.config.testCase) {
+          throw new NoPanelsConfiguredError();
+        }
+        adapter.log.warn(`${NO_PANELS_CONFIGURED_MESSAGE} Continuing due to testCase=true.`);
+      } else {
+        const panelsText = panels.map((p) => `${p.name || p.topic} (${p.topic})`).join(", ");
+        if (!adapter.config.testCase) {
+          throw new Error(`No usable config found for the configured panels: ${panelsText}. Adapter paused!`);
+        }
+        adapter.log.warn(
+          `No usable config found for the configured panels: ${panelsText}. Continuing due to testCase=true.`
+        );
       }
-      adapter.log.warn(`No compatible config found for topics: ${topics}. Continuing due to testCase=true.`);
     }
     if (scriptConfig) {
       for (let b = 0; b < scriptConfig.length; b++) {
@@ -5017,6 +5041,8 @@ function isScreensaverPageItemDataItemsOptions(obj) {
 }
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
-  ConfigManager
+  ConfigManager,
+  NO_PANELS_CONFIGURED_MESSAGE,
+  NoPanelsConfiguredError
 });
 //# sourceMappingURL=config-manager.js.map
