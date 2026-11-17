@@ -39,6 +39,15 @@ import { generateAliasDocumentation } from './lib/tools/readme';
 import { TftServer, isUsableServerIp, parseTftChunkMessage, parseTftStartMessage } from './lib/tools/tft-server';
 import { redactSecretsInText, stringifyForLog } from './lib/tools/redact';
 import {
+    getBerryCommitCommand,
+    findBerryInstallTopic,
+    getBerryDownloadCommand,
+    getBerryLegacyInstallCommand,
+    getBerryRestoreCommand,
+    getTasmotaCommandUrl,
+    type TasmotaLogin,
+} from './lib/tools/berry-install';
+import {
     buildTestObjects,
     createTestObjects,
     CREATE_TEST_STATES_COMMAND,
@@ -1928,39 +1937,52 @@ class NspanelLovelaceUi extends utils.Adapter {
                                 const version = obj.message.useBetaTFT
                                     ? result[`berry-beta`].split('_')[0]
                                     : result.berry.split('_')[0];
-                                const url = this.getBerryInstallUrl(obj.message.tasmotaIP, version);
+                                const tasmotaIP: string = obj.message.tasmotaIP;
+                                const topic = this.mqttClient
+                                    ? findBerryInstallTopic(obj.message.topic, tasmotaIP, this.config.panels)
+                                    : undefined;
+                                const restart = obj.message.restart === true;
 
-                                this.log.info(`Installing berry on tasmota with IP ${obj.message.tasmotaIP}`);
-                                await this.fetch(url);
-                                if (obj.message.restart === true) {
-                                    // the new driver only runs after a Tasmota restart (Maintain tab).
-                                    // Restart only after the download is confirmed - autoexec.be was
-                                    // renamed before the fetch, a restart without a new file leaves
-                                    // Tasmota without a driver.
-                                    if (this.mqttClient && typeof obj.message.topic === 'string' && obj.message.topic) {
-                                        try {
-                                            await this.mqttClient.waitTasmotaUrlFetch(obj.message.topic, 10_000);
-                                        } catch {
-                                            this.log.error(
-                                                `Did not receive download confirmation from tasmota ${obj.message.tasmotaIP} after berry install - no restart.`,
+                                this.log.info(`Installing berry on tasmota with IP ${tasmotaIP}`);
+                                if (this.mqttClient && topic) {
+                                    // safe install: autoexec.be -> autoexec.bak, download, then commit or restore
+                                    await this.fetch(this.getBerryInstallUrl(tasmotaIP, version));
+                                    try {
+                                        await this.mqttClient.waitTasmotaUrlFetch(topic, 10_000);
+                                    } catch (e: unknown) {
+                                        this.log.error(
+                                            `Did not receive download confirmation from tasmota ${tasmotaIP} after berry install${restart ? ' - no restart' : ''}: ${String(e)}`,
+                                        );
+                                        await this.finishBerryInstall(tasmotaIP, false, false);
+                                        if (obj.callback) {
+                                            this.sendTo(
+                                                obj.from,
+                                                obj.command,
+                                                { error: 'sendToRequestFailBerry' },
+                                                obj.callback,
                                             );
-                                            if (obj.callback) {
-                                                this.sendTo(
-                                                    obj.from,
-                                                    obj.command,
-                                                    { error: 'sendToRequestFailBerry' },
-                                                    obj.callback,
-                                                );
-                                            }
-                                            break;
                                         }
-                                    } else {
-                                        await this.delay(3000);
+                                        break;
                                     }
-                                    this.log.info(
-                                        `Restarting tasmota with IP ${obj.message.tasmotaIP} after berry install`,
+                                    if (restart) {
+                                        this.log.info(`Restarting tasmota with IP ${tasmotaIP} after berry install`);
+                                    }
+                                    // renames autoexec.bak to autoexec.old (and restarts) in one backlog
+                                    await this.finishBerryInstall(tasmotaIP, true, restart);
+                                } else {
+                                    // no topic known - no confirmation possible: old command sequence and behavior
+                                    await this.fetch(
+                                        getTasmotaCommandUrl(
+                                            tasmotaIP,
+                                            getBerryLegacyInstallCommand(this.config.berryUrl, version),
+                                            this.getTasmotaLogin(),
+                                        ),
                                     );
-                                    await this.fetch(this.getRestartTasmotaUrl(obj.message.tasmotaIP));
+                                    if (restart) {
+                                        await this.delay(3000);
+                                        this.log.info(`Restarting tasmota with IP ${tasmotaIP} after berry install`);
+                                        await this.fetch(this.getRestartTasmotaUrl(tasmotaIP));
+                                    }
                                 }
                                 if (obj.callback) {
                                     this.sendTo(obj.from, obj.command, [], obj.callback);
@@ -3148,22 +3170,23 @@ class NspanelLovelaceUi extends utils.Adapter {
                     const version = msg.useBetaTFT
                         ? versionsJson[`berry-beta`].split('_')[0]
                         : versionsJson.berry.split('_')[0];
-                    let url = this.getBerryInstallUrl(msg.tasmotaIP, version);
+                    const url = this.getBerryInstallUrl(msg.tasmotaIP, version);
                     this.log.info(`Installing berry on tasmota with IP ${msg.tasmotaIP}, name ${msg.tasmotaName}.`);
                     this.log.debug(`URL: ${redactSecretsInText(url)}`);
                     await this.fetch(url);
                     try {
                         this.mqttClient && (await this.mqttClient.waitTasmotaUrlFetch(topic, 5000));
-                    } catch {
+                    } catch (e: unknown) {
                         this.log.error(
-                            `Did not receive download confirmation from tasmota ${msg.tasmotaIP} after berry install.`,
+                            `Did not receive download confirmation from tasmota ${msg.tasmotaIP} after berry install: ${String(e)}`,
                         );
+                        await this.finishBerryInstall(msg.tasmotaIP, false, false);
                         this.answerMessage(obj, { error: 'sendToRequestFailBerry' });
                         return;
                     }
 
-                    url = this.getRestartTasmotaUrl(msg.tasmotaIP);
-                    await this.fetch(url);
+                    // renames autoexec.bak to autoexec.old and restarts Tasmota in one backlog
+                    await this.finishBerryInstall(msg.tasmotaIP, true, true);
                     this.mqttClient && (await this.mqttClient.waitPanelConnectAsync(topic, 20_000));
                     await this.delay(1000);
                 } catch (e: unknown) {
@@ -3558,12 +3581,50 @@ class NspanelLovelaceUi extends utils.Adapter {
             definition.genericStateObjects.panel.panels.info.nspanel.firmwareUpdate,
         );
     }
+    /** @returns login of the Tasmota web interface from the adapter config */
+    private getTasmotaLogin(): TasmotaLogin {
+        return { useAdmin: this.config.useTasmotaAdmin, password: this.config.tasmotaAdminPassword };
+    }
+    /**
+     * Url of the first berry install step: the running `autoexec.be` is renamed to `autoexec.bak`,
+     * then the new driver is downloaded. Must be followed by `finishBerryInstall`.
+     *
+     * @param tasmotaIP ip of the Tasmota device
+     * @param version driver version to download
+     * @returns the url
+     */
     getBerryInstallUrl(tasmotaIP: string, version: string): string {
-        return (
-            `http://${tasmotaIP}/cm?` +
-            `${this.config.useTasmotaAdmin ? `user=admin&password=${this.config.tasmotaAdminPassword}` : ``}` +
-            `&cmnd=Backlog UfsDelete autoexec.old; UfsRename autoexec.be,autoexec.old; UrlFetch ${this.config.berryUrl}/${version}/autoexec.be`
+        return getTasmotaCommandUrl(
+            tasmotaIP,
+            getBerryDownloadCommand(this.config.berryUrl, version),
+            this.getTasmotaLogin(),
         );
+    }
+    /**
+     * Second berry install step after the `UrlFetch` result.
+     * Success: `autoexec.bak` becomes `autoexec.old`, optional restart in the same backlog.
+     * Failure: a partial `autoexec.be` is deleted and `autoexec.bak` is restored as `autoexec.be`.
+     *
+     * @param tasmotaIP ip of the Tasmota device
+     * @param success true when Tasmota confirmed the download
+     * @param restart true: restart Tasmota after a successful install
+     */
+    private async finishBerryInstall(tasmotaIP: string, success: boolean, restart: boolean): Promise<void> {
+        const login = this.getTasmotaLogin();
+        if (success) {
+            await this.fetch(getTasmotaCommandUrl(tasmotaIP, getBerryCommitCommand(restart), login));
+            return;
+        }
+        try {
+            await this.fetch(getTasmotaCommandUrl(tasmotaIP, getBerryRestoreCommand(), login));
+            this.log.warn(
+                `Berry driver download on tasmota ${tasmotaIP} failed - the previous autoexec.be was restored.`,
+            );
+        } catch (e: unknown) {
+            this.log.error(
+                `Berry driver download on tasmota ${tasmotaIP} failed and restoring autoexec.bak to autoexec.be failed too: ${String(e)}`,
+            );
+        }
     }
     getRestartTasmotaUrl(tasmotaIP: string): string {
         return (

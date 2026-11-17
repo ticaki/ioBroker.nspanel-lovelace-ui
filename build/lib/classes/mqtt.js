@@ -43,6 +43,7 @@ var import_library = require("../controller/library");
 var import_aedes = require("aedes");
 var import_node_crypto = require("node:crypto");
 var forge = __toESM(require("node-forge"));
+var import_berry_install = require("../tools/berry-install");
 function mqttTopicMatches(filter, topic) {
   const f = filter.split("/");
   const t = topic.split("/");
@@ -206,6 +207,13 @@ class MQTTClientClass extends import_library.BaseClass {
       });
     });
   }
+  /**
+   * Waits for the `UrlFetch` answer of Tasmota on `stat/RESULT`.
+   *
+   * @param _topic panel topic
+   * @param timeout ms, 0 = no timeout
+   * @returns resolves with `{"UrlFetch":"Done"}`, rejects with any other UrlFetch answer (`Failed`) or on timeout
+   */
   async waitTasmotaUrlFetch(_topic, timeout) {
     return new Promise((resolve, reject) => {
       const topic = `${_topic}/stat/RESULT`;
@@ -217,12 +225,17 @@ class MQTTClientClass extends import_library.BaseClass {
         }, timeout);
       }
       void this.subscribe(topic, async (_topic2, _message) => {
-        const payload = JSON.parse(_message);
-        if (payload.UrlFetch !== "Done") {
+        const result = (0, import_berry_install.parseUrlFetchResult)(_message);
+        if (result === "none") {
           return false;
         }
         if (ref) {
           this.adapter.clearTimeout(ref);
+        }
+        if (result === "failed") {
+          this.log.debug(`Tasmota berry download failed: ${_topic2} with message: ${_message}`);
+          reject(new Error(`UrlFetch failed: ${_message}`));
+          return true;
         }
         this.log.debug(`Tasmota install berry detected: ${_topic2} with message: ${_message}`);
         resolve();

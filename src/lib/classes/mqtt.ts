@@ -10,6 +10,7 @@ import { type Server } from 'node:net';
 import { randomUUID } from 'node:crypto';
 import * as forge from 'node-forge';
 import type { Controller } from '../controller/controller';
+import { parseUrlFetchResult } from '../tools/berry-install';
 
 /**
  * Callback invoked when an MQTT message arrives on a subscribed topic.
@@ -263,6 +264,13 @@ export class MQTTClientClass extends BaseClass {
         });
     }
 
+    /**
+     * Waits for the `UrlFetch` answer of Tasmota on `stat/RESULT`.
+     *
+     * @param _topic panel topic
+     * @param timeout ms, 0 = no timeout
+     * @returns resolves with `{"UrlFetch":"Done"}`, rejects with any other UrlFetch answer (`Failed`) or on timeout
+     */
     async waitTasmotaUrlFetch(_topic: string, timeout: number): Promise<void> {
         return new Promise((resolve, reject) => {
             const topic = `${_topic}/stat/RESULT`;
@@ -275,14 +283,17 @@ export class MQTTClientClass extends BaseClass {
             }
 
             void this.subscribe(topic, async (_topic, _message) => {
-                const payload = JSON.parse(_message) as {
-                    UrlFetch?: string;
-                };
-                if (payload.UrlFetch !== 'Done') {
-                    return false; // keep listener,
+                const result = parseUrlFetchResult(_message);
+                if (result === 'none') {
+                    return false; // keep listener, answer of another command
                 }
                 if (ref) {
                     this.adapter.clearTimeout(ref);
+                }
+                if (result === 'failed') {
+                    this.log.debug(`Tasmota berry download failed: ${_topic} with message: ${_message}`);
+                    reject(new Error(`UrlFetch failed: ${_message}`));
+                    return true; // remove this one-shot listener
                 }
                 this.log.debug(`Tasmota install berry detected: ${_topic} with message: ${_message}`);
                 resolve();
