@@ -8,6 +8,8 @@ export interface PanelSetupEntry {
     id: string;
     /** MQTT topic */
     topic: string;
+    /** name of the panel - its configuration script is named after it */
+    name?: string;
     /** missing = Tasmota panel */
     kind?: 'tasmota' | 'web';
 }
@@ -18,28 +20,64 @@ export type PanelSetupMatch =
     | { isNew: false; index: number }
     /** the device is not configured yet */
     | { isNew: true; index: -1 }
-    /** the requested topic belongs to another entry - nothing may be sent to the device */
-    | { error: 'sendToTopicInUse'; conflictIndex: number };
+    /** the requested topic or name belongs to another entry - nothing may be sent to the device */
+    | { error: 'sendToTopicInUse' | 'sendToNameInUse'; conflictIndex: number };
 
 /**
  * Finds the configured entry of the device being set up via its MAC address.
  *
- * Name, topic and IP of a found entry may change. The requested topic must not belong to another
- * entry (another id, or any web panel). With several Tasmota entries of the same MAC the first one wins.
+ * Name, topic and IP of a found entry may change. The requested topic and the requested name must not belong to
+ * another entry (another id, or any web panel). Names are compared after `normalizeName` - two names that give the
+ * same configuration script collide. With several Tasmota entries of the same MAC the first one wins.
  *
  * @param panels - the configured panels
  * @param macId - the cleaned MAC address of the device (`cleandp(StatusNET.Mac)`)
  * @param topic - the requested MQTT topic
- * @returns the entry to update, a new panel or the conflict
+ * @param name - the requested name of the panel
+ * @param normalizeName - maps a name to the value that has to be unique (e.g. the id of the configuration script)
+ * @returns the entry to update, a new panel or the conflict (topic before name)
  */
-export function matchPanelForSetup(panels: readonly PanelSetupEntry[], macId: string, topic: string): PanelSetupMatch {
+export function matchPanelForSetup(
+    panels: readonly PanelSetupEntry[],
+    macId: string,
+    topic: string,
+    name: string,
+    normalizeName: (name: string) => string,
+): PanelSetupMatch {
     const isSameDevice = (p: PanelSetupEntry): boolean => p.kind !== 'web' && p.id === macId;
     const conflictIndex = panels.findIndex(p => p.topic === topic && !isSameDevice(p));
     if (conflictIndex !== -1) {
         return { error: 'sendToTopicInUse', conflictIndex };
     }
+    const wanted = normalizeName(name);
+    const nameConflictIndex = panels.findIndex(p => !!p.name && !isSameDevice(p) && normalizeName(p.name) === wanted);
+    if (nameConflictIndex !== -1) {
+        return { error: 'sendToNameInUse', conflictIndex: nameConflictIndex };
+    }
     const index = panels.findIndex(isSameDevice);
     return index === -1 ? { isNew: true, index: -1 } : { isNew: false, index };
+}
+
+/**
+ * Indexes of the entries whose id is already used by an earlier entry - only the first entry of an id may run.
+ *
+ * @param panels - the configured panels
+ * @returns indexes of the later entries with an id seen before, in order
+ */
+export function duplicatePanelIdIndexes(panels: readonly (Pick<PanelSetupEntry, 'id'> | undefined)[]): number[] {
+    const seen = new Set<string>();
+    const duplicates: number[] = [];
+    panels.forEach((p, i) => {
+        if (!p?.id) {
+            return;
+        }
+        if (seen.has(p.id)) {
+            duplicates.push(i);
+        } else {
+            seen.add(p.id);
+        }
+    });
+    return duplicates;
 }
 
 /** Marks the end of the user part of a configuration script - everything below comes from the template */

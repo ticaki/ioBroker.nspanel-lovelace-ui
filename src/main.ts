@@ -2973,10 +2973,20 @@ class NspanelLovelaceUi extends utils.Adapter {
 
             // Das Gerät wird über seine MAC wiedererkannt - Name, Topic und IP dürfen sich ändern.
             const panels = this.config.panels ?? [];
-            const match = matchPanelForSetup(panels, this.library.cleandp(r.StatusNET.Mac), topic);
+            // Namen kollidieren, wenn sie dieselbe Skript-ID ergeben.
+            const match = matchPanelForSetup(
+                panels,
+                this.library.cleandp(r.StatusNET.Mac),
+                topic,
+                msg.tasmotaName,
+                name => this.configurationScriptId(name),
+            );
             if ('error' in match) {
+                const other = panels[match.conflictIndex];
                 this.log.error(
-                    `The topic ${topic} is already used by the panel ${panels[match.conflictIndex]?.name ?? ''}!`,
+                    match.error === 'sendToNameInUse'
+                        ? `The name ${msg.tasmotaName} is already used by the panel ${other?.name ?? ''} (${other?.topic ?? ''}) - choose another name!`
+                        : `The topic ${topic} is already used by the panel ${other?.name ?? ''}!`,
                 );
                 this.answerMessage(obj, { error: match.error });
                 return;

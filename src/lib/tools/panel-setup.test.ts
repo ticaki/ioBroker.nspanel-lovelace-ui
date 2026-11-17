@@ -1,42 +1,72 @@
 import { expect } from 'chai';
 import {
+    duplicatePanelIdIndexes,
     matchPanelForSetup,
     migrateScriptConfigTopic,
     replacePanelTopicInScript,
     SCRIPT_END_STOP_TOKEN,
     type PanelSetupEntry,
+    type PanelSetupMatch,
 } from './panel-setup';
 
 interface TestPanel extends PanelSetupEntry {
     ip: string;
 }
 
-const kitchen: TestPanel = { id: 'AABBCCDDEEFF', topic: 'nspanel/kitchen', ip: '192.168.1.10' };
-const living: TestPanel = { id: '112233445566', topic: 'nspanel/living', ip: '192.168.1.11' };
-const web: TestPanel = { id: 'web_1', topic: 'web/browser', ip: '', kind: 'web' };
+const kitchen: TestPanel = { id: 'AABBCCDDEEFF', topic: 'nspanel/kitchen', name: 'Kitchen', ip: '192.168.1.10' };
+const living: TestPanel = { id: '112233445566', topic: 'nspanel/living', name: 'Living', ip: '192.168.1.11' };
+const web: TestPanel = { id: 'web_1', topic: 'web/browser', name: 'Browser', ip: '', kind: 'web' };
+
+/**
+ * like `configurationScriptId` in main.ts: the cleaned name below the script folder
+ *
+ * @param name name of the panel
+ * @returns the script id
+ */
+const scriptId = (name: string): string => `script.js.nspanel.${name.replace(/[^0-9A-Za-z_-]/g, '_')}`;
+
+/**
+ * another Tasmota panel with the given name
+ *
+ * @param name name of the panel
+ * @returns the panel
+ */
+const named = (name: string): TestPanel => ({ id: '665544332211', topic: 'nspanel/other', name, ip: '' });
+
+/**
+ * `matchPanelForSetup` with the script id normalization
+ *
+ * @param panels configured panels
+ * @param macId MAC of the device
+ * @param topic requested topic
+ * @param name requested name
+ * @returns the match
+ */
+const match = (panels: TestPanel[], macId: string, topic: string, name = 'New panel'): PanelSetupMatch =>
+    matchPanelForSetup(panels, macId, topic, name, scriptId);
 
 describe('lib/tools/panel-setup', () => {
     describe('matchPanelForSetup', () => {
         it('creates a new panel for an unknown device with a free topic', () => {
-            expect(matchPanelForSetup([kitchen, living, web], '0A0B0C0D0E0F', 'nspanel/bath')).to.deep.equal({
+            expect(match([kitchen, living, web], '0A0B0C0D0E0F', 'nspanel/bath')).to.deep.equal({
                 isNew: true,
                 index: -1,
             });
         });
 
         it('creates a new panel when nothing is configured', () => {
-            expect(matchPanelForSetup([], kitchen.id, kitchen.topic)).to.deep.equal({ isNew: true, index: -1 });
+            expect(match([], kitchen.id, kitchen.topic)).to.deep.equal({ isNew: true, index: -1 });
         });
 
         it('updates the entry with the same MAC and the same topic', () => {
-            expect(matchPanelForSetup([kitchen, living], living.id, living.topic)).to.deep.equal({
+            expect(match([kitchen, living], living.id, living.topic)).to.deep.equal({
                 isNew: false,
                 index: 1,
             });
         });
 
         it('updates the entry with the same MAC and a new topic', () => {
-            expect(matchPanelForSetup([kitchen, living], living.id, 'nspanel/office')).to.deep.equal({
+            expect(match([kitchen, living], living.id, 'nspanel/office')).to.deep.equal({
                 isNew: false,
                 index: 1,
             });
@@ -44,28 +74,28 @@ describe('lib/tools/panel-setup', () => {
 
         it('updates the entry with the same MAC and a new IP (the IP is not checked)', () => {
             const moved: TestPanel = { ...kitchen, ip: '192.168.1.99' };
-            expect(matchPanelForSetup([moved, living], kitchen.id, kitchen.topic)).to.deep.equal({
+            expect(match([moved, living], kitchen.id, kitchen.topic)).to.deep.equal({
                 isNew: false,
                 index: 0,
             });
         });
 
         it('rejects a new device with the topic of another panel', () => {
-            expect(matchPanelForSetup([kitchen, living], '0A0B0C0D0E0F', living.topic)).to.deep.equal({
+            expect(match([kitchen, living], '0A0B0C0D0E0F', living.topic)).to.deep.equal({
                 error: 'sendToTopicInUse',
                 conflictIndex: 1,
             });
         });
 
         it('rejects a known device that takes over the topic of another panel', () => {
-            expect(matchPanelForSetup([kitchen, living], kitchen.id, living.topic)).to.deep.equal({
+            expect(match([kitchen, living], kitchen.id, living.topic)).to.deep.equal({
                 error: 'sendToTopicInUse',
                 conflictIndex: 1,
             });
         });
 
         it('rejects the topic of a web panel', () => {
-            expect(matchPanelForSetup([kitchen, web], '0A0B0C0D0E0F', web.topic)).to.deep.equal({
+            expect(match([kitchen, web], '0A0B0C0D0E0F', web.topic)).to.deep.equal({
                 error: 'sendToTopicInUse',
                 conflictIndex: 1,
             });
@@ -73,7 +103,7 @@ describe('lib/tools/panel-setup', () => {
 
         it('does not take a web panel with the same id as the device', () => {
             const webSameId: TestPanel = { ...web, id: kitchen.id };
-            expect(matchPanelForSetup([webSameId], kitchen.id, 'nspanel/kitchen')).to.deep.equal({
+            expect(match([webSameId], kitchen.id, 'nspanel/kitchen')).to.deep.equal({
                 isNew: true,
                 index: -1,
             });
@@ -81,10 +111,98 @@ describe('lib/tools/panel-setup', () => {
 
         it('takes the first of several entries with the same MAC', () => {
             const duplicate: TestPanel = { ...kitchen, topic: 'nspanel/kitchen2' };
-            expect(matchPanelForSetup([living, kitchen, duplicate], kitchen.id, 'nspanel/kitchen2')).to.deep.equal({
+            expect(match([living, kitchen, duplicate], kitchen.id, 'nspanel/kitchen2')).to.deep.equal({
                 isNew: false,
                 index: 1,
             });
+        });
+
+        it('rejects a new device with the name of another panel', () => {
+            expect(match([kitchen, living], '0A0B0C0D0E0F', 'nspanel/bath', 'Living')).to.deep.equal({
+                error: 'sendToNameInUse',
+                conflictIndex: 1,
+            });
+        });
+
+        it('rejects a name that gives the same script id as another panel', () => {
+            expect(
+                matchPanelForSetup(
+                    [kitchen, named('Living Room')],
+                    '0A0B0C0D0E0F',
+                    'nspanel/bath',
+                    'Living/Room',
+                    scriptId,
+                ),
+            ).to.deep.equal({ error: 'sendToNameInUse', conflictIndex: 1 });
+            expect(
+                matchPanelForSetup([named('Wohn zimmer')], '0A0B0C0D0E0F', 'nspanel/bath', 'Wohn.zimmer', scriptId),
+            ).to.deep.equal({ error: 'sendToNameInUse', conflictIndex: 0 });
+        });
+
+        it('compares the names exactly as the normalization does (case-sensitive here)', () => {
+            expect(match([kitchen, living], '0A0B0C0D0E0F', 'nspanel/bath', 'living')).to.deep.equal({
+                isNew: true,
+                index: -1,
+            });
+        });
+
+        it('rejects the name of a web panel', () => {
+            expect(match([kitchen, web], '0A0B0C0D0E0F', 'nspanel/bath', 'Browser')).to.deep.equal({
+                error: 'sendToNameInUse',
+                conflictIndex: 1,
+            });
+        });
+
+        it('keeps the name of the same device', () => {
+            expect(match([kitchen, living], kitchen.id, 'nspanel/kitchen2', 'Kitchen')).to.deep.equal({
+                isNew: false,
+                index: 0,
+            });
+        });
+
+        it('lets a known device take a new free name', () => {
+            expect(match([kitchen, living], kitchen.id, kitchen.topic, 'Office')).to.deep.equal({
+                isNew: false,
+                index: 0,
+            });
+        });
+
+        it('rejects a known device that takes over the name of another panel', () => {
+            expect(match([kitchen, living], kitchen.id, kitchen.topic, 'Living')).to.deep.equal({
+                error: 'sendToNameInUse',
+                conflictIndex: 1,
+            });
+        });
+
+        it('reports the topic conflict before the name conflict', () => {
+            expect(match([kitchen, living], '0A0B0C0D0E0F', living.topic, 'Kitchen')).to.deep.equal({
+                error: 'sendToTopicInUse',
+                conflictIndex: 1,
+            });
+        });
+
+        it('ignores entries without a name', () => {
+            const nameless: TestPanel = { ...living, name: '' };
+            expect(match([nameless], '0A0B0C0D0E0F', 'nspanel/bath', '')).to.deep.equal({
+                isNew: true,
+                index: -1,
+            });
+        });
+    });
+
+    describe('duplicatePanelIdIndexes', () => {
+        it('finds no duplicates in distinct ids', () => {
+            expect(duplicatePanelIdIndexes([kitchen, living, web])).to.deep.equal([]);
+        });
+
+        it('returns the later entries of an id, the first one stays', () => {
+            expect(
+                duplicatePanelIdIndexes([kitchen, living, { ...kitchen, topic: 'x' }, { ...kitchen }, { ...living }]),
+            ).to.deep.equal([2, 3, 4]);
+        });
+
+        it('skips missing entries and empty ids', () => {
+            expect(duplicatePanelIdIndexes([undefined, { id: '' }, { id: '' }, kitchen])).to.deep.equal([]);
         });
     });
 

@@ -19,19 +19,40 @@ var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: tru
 var panel_setup_exports = {};
 __export(panel_setup_exports, {
   SCRIPT_END_STOP_TOKEN: () => SCRIPT_END_STOP_TOKEN,
+  duplicatePanelIdIndexes: () => duplicatePanelIdIndexes,
   matchPanelForSetup: () => matchPanelForSetup,
   migrateScriptConfigTopic: () => migrateScriptConfigTopic,
   replacePanelTopicInScript: () => replacePanelTopicInScript
 });
 module.exports = __toCommonJS(panel_setup_exports);
-function matchPanelForSetup(panels, macId, topic) {
+function matchPanelForSetup(panels, macId, topic, name, normalizeName) {
   const isSameDevice = (p) => p.kind !== "web" && p.id === macId;
   const conflictIndex = panels.findIndex((p) => p.topic === topic && !isSameDevice(p));
   if (conflictIndex !== -1) {
     return { error: "sendToTopicInUse", conflictIndex };
   }
+  const wanted = normalizeName(name);
+  const nameConflictIndex = panels.findIndex((p) => !!p.name && !isSameDevice(p) && normalizeName(p.name) === wanted);
+  if (nameConflictIndex !== -1) {
+    return { error: "sendToNameInUse", conflictIndex: nameConflictIndex };
+  }
   const index = panels.findIndex(isSameDevice);
   return index === -1 ? { isNew: true, index: -1 } : { isNew: false, index };
+}
+function duplicatePanelIdIndexes(panels) {
+  const seen = /* @__PURE__ */ new Set();
+  const duplicates = [];
+  panels.forEach((p, i) => {
+    if (!(p == null ? void 0 : p.id)) {
+      return;
+    }
+    if (seen.has(p.id)) {
+      duplicates.push(i);
+    } else {
+      seen.add(p.id);
+    }
+  });
+  return duplicates;
 }
 const SCRIPT_END_STOP_TOKEN = "*  END STOP END STOP END - No more configuration - END STOP END STOP END       *";
 function replacePanelTopicInScript(source, oldTopic, newTopic) {
@@ -96,6 +117,7 @@ function migrateScriptConfigTopic(native, oldTopic, newTopic, script) {
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
   SCRIPT_END_STOP_TOKEN,
+  duplicatePanelIdIndexes,
   matchPanelForSetup,
   migrateScriptConfigTopic,
   replacePanelTopicInScript

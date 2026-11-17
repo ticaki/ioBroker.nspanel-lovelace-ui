@@ -2501,7 +2501,7 @@ class NspanelLovelaceUi extends utils.Adapter {
    * @param obj - die sendTo-Nachricht aus dem Admin
    */
   async nsPanelInitStep1(obj) {
-    var _a, _b, _c, _d, _e;
+    var _a, _b, _c, _d, _e, _f;
     const msg = obj.message;
     const useInternalServer = !((msg == null ? void 0 : msg.mqttServer) == null || msg.mqttServer === false || msg.mqttServer === "false");
     if (!useInternalServer && (0, import_credentials.isCredentialId)(msg == null ? void 0 : msg.mqttCredentialId)) {
@@ -2549,17 +2549,24 @@ class NspanelLovelaceUi extends utils.Adapter {
         return;
       }
       const panels = (_b = this.config.panels) != null ? _b : [];
-      const match = (0, import_panel_setup.matchPanelForSetup)(panels, this.library.cleandp(r.StatusNET.Mac), topic);
+      const match = (0, import_panel_setup.matchPanelForSetup)(
+        panels,
+        this.library.cleandp(r.StatusNET.Mac),
+        topic,
+        msg.tasmotaName,
+        (name) => this.configurationScriptId(name)
+      );
       if ("error" in match) {
+        const other = panels[match.conflictIndex];
         this.log.error(
-          `The topic ${topic} is already used by the panel ${(_d = (_c = panels[match.conflictIndex]) == null ? void 0 : _c.name) != null ? _d : ""}!`
+          match.error === "sendToNameInUse" ? `The name ${msg.tasmotaName} is already used by the panel ${(_c = other == null ? void 0 : other.name) != null ? _c : ""} (${(_d = other == null ? void 0 : other.topic) != null ? _d : ""}) - choose another name!` : `The topic ${topic} is already used by the panel ${(_e = other == null ? void 0 : other.name) != null ? _e : ""}!`
         );
         this.answerMessage(obj, { error: match.error });
         return;
       }
       const item = match.isNew ? { name: "", ip: "", topic: "", id: "", model: "eu" } : panels[match.index];
       const panelTopic = match.isNew ? topic : item.topic;
-      panel = (_e = this.controller) == null ? void 0 : _e.panels.find((a) => a.topic === panelTopic);
+      panel = (_f = this.controller) == null ? void 0 : _f.panels.find((a) => a.topic === panelTopic);
       if (panel) {
         void panel.setStatus("setup");
       }

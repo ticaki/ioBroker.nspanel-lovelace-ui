@@ -15,6 +15,7 @@ import * as definition from '../const/definition';
 import * as adminShareConfig from '../types/adminShareConfig';
 import type { PanelChannel } from '../classes/panel-channel';
 import type { VirtualPanelManager } from '../web/virtual-panel-manager';
+import { duplicatePanelIdIndexes } from '../tools/panel-setup';
 
 export type ControllerOptions = {
     mqttClient: MQTT.MQTTClientClass;
@@ -475,10 +476,36 @@ export class Controller extends Library.BaseClass {
         void this.systemNotification.init();
         await this.initTrashPagesState();
 
+        // A second entry with an id already in use (#899) does not start - only the first entry of an id runs.
+        // addPanel takes the first entry of a topic: a topic that first belongs to a duplicate is skipped, the topic
+        // of an earlier entry (exact copy) starts only once.
+        const configured = this.adapter.config.panels ?? [];
+        const skippedTopics = new Set<string>();
+        const onceTopics = new Set<string>();
+        for (const index of duplicatePanelIdIndexes(configured)) {
+            const entry = configured[index];
+            this.log.warn(
+                `Panel ${entry.name} (topic ${entry.topic}, id ${entry.id}) uses the id of another panel entry and is not started - remove the duplicate in the admin!`,
+            );
+            if (configured.findIndex(p => p?.topic === entry.topic) === index) {
+                skippedTopics.add(entry.topic);
+            } else {
+                onceTopics.add(entry.topic);
+            }
+        }
+        const startedTopics = new Set<string>();
+
         const tasks: Promise<boolean>[] = [];
         for (const panelConfig of panels) {
             if (panelConfig === undefined) {
                 continue;
+            }
+            const topic = panelConfig.topic;
+            if (topic !== undefined) {
+                if (skippedTopics.has(topic) || (onceTopics.has(topic) && startedTopics.has(topic))) {
+                    continue;
+                }
+                startedTopics.add(topic);
             }
 
             tasks.push(this.addPanel(structuredClone(panelConfig)));

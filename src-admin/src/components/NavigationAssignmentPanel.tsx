@@ -27,6 +27,7 @@ import {
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutlineOutlined';
 import NavigationIcon from '@mui/icons-material/Navigation';
 import SettingsIcon from '@mui/icons-material/Settings';
+import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 import Tooltip from '@mui/material/Tooltip';
 import { ConfigGeneric, type ConfigGenericProps, type ConfigGenericState } from '@iobroker/json-config';
 import { I18n } from '@iobroker/gui-components';
@@ -1261,6 +1262,16 @@ class NavigationAssignmentPanel extends ConfigGeneric<
     }
 
     /**
+     * Whether an assignment points to a topic no configured panel has any more (e.g. after a topic change, #899).
+     *
+     * @param topic topic of the assignment
+     * @returns true for an orphaned assignment
+     */
+    private isOrphanedTopic(topic: string): boolean {
+        return topic !== ALL_PANELS_SPECIAL_ID && !this.state.available.some(p => p.panelTopic === topic);
+    }
+
+    /**
      * Anzeigename eines Panels anhand seines Topics.
      *
      * @param topic Panel-Topic.
@@ -1898,6 +1909,9 @@ class NavigationAssignmentPanel extends ConfigGeneric<
                                                     {this.state.added.map(a => {
                                                         const topic = a.panelTopic;
                                                         const isPending = this.state.pendingDelete === topic;
+                                                        // an orphaned assignment can always be removed, also from the main page
+                                                        const orphaned = this.isOrphanedTopic(topic);
+                                                        const locked = lockAssignment && !orphaned;
                                                         // only render list item here; notices are shown in the lower summary
                                                         return (
                                                             <React.Fragment key={topic}>
@@ -1911,18 +1925,13 @@ class NavigationAssignmentPanel extends ConfigGeneric<
                                                                     }}
                                                                     secondaryAction={
                                                                         <IconButton
-                                                                            disabled={
-                                                                                !this.state.alive || lockAssignment
-                                                                            }
+                                                                            disabled={!this.state.alive || locked}
                                                                             className="delete-icon"
                                                                             edge="end"
                                                                             aria-label="delete"
                                                                             size="small"
                                                                             onClick={e => {
-                                                                                if (
-                                                                                    !this.state.alive ||
-                                                                                    lockAssignment
-                                                                                ) {
+                                                                                if (!this.state.alive || locked) {
                                                                                     return;
                                                                                 }
                                                                                 e.stopPropagation();
@@ -2013,6 +2022,21 @@ class NavigationAssignmentPanel extends ConfigGeneric<
                                                                         }}
                                                                         disabled={!this.state.alive}
                                                                     >
+                                                                        {orphaned && (
+                                                                            <Tooltip
+                                                                                title={I18n.t(
+                                                                                    'nav_assignment_orphaned',
+                                                                                )}
+                                                                            >
+                                                                                <WarningAmberIcon
+                                                                                    fontSize="small"
+                                                                                    sx={{
+                                                                                        color: 'warning.main',
+                                                                                        mr: 1,
+                                                                                    }}
+                                                                                />
+                                                                            </Tooltip>
+                                                                        )}
                                                                         <ListItemText
                                                                             primary={
                                                                                 topic === ALL_PANELS_SPECIAL_ID
@@ -2024,6 +2048,9 @@ class NavigationAssignmentPanel extends ConfigGeneric<
                                                                                     sx: {
                                                                                         fontSize: '1.05rem', // anpassen: z.B. '1.2rem' oder '16px'
                                                                                         lineHeight: 1.2,
+                                                                                        color: orphaned
+                                                                                            ? 'warning.main'
+                                                                                            : undefined,
                                                                                     },
                                                                                 },
                                                                             }}
