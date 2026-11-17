@@ -29342,12 +29342,37 @@
         "entity1": {
           "value": {
             "type": "triggered",
-            "role": "value.blind",
+            "role": [
+              "value.blind",
+              "sensor.gate",
+              "value.gate"
+            ],
             "dp": "alias.0.full.gate.ACTUAL",
             "mode": "done",
             "writeable": false,
-            "commonType": "number"
+            "commonType": [
+              "number",
+              "boolean"
+            ]
           }
+        },
+        "up": {
+          "type": "state",
+          "role": "switch.gate",
+          "dp": "alias.0.full.gate.SET",
+          "mode": "done",
+          "writeable": true,
+          "commonType": "boolean",
+          "write": "return true;"
+        },
+        "down": {
+          "type": "state",
+          "role": "switch.gate",
+          "dp": "alias.0.full.gate.SET",
+          "mode": "done",
+          "writeable": true,
+          "commonType": "boolean",
+          "write": "return false;"
         },
         "stop": {
           "type": "triggered",
@@ -29460,12 +29485,37 @@
         "entity1": {
           "value": {
             "type": "triggered",
-            "role": "value.blind",
+            "role": [
+              "value.blind",
+              "sensor.gate",
+              "value.gate"
+            ],
             "dp": "alias.0.full.gate.ACTUAL",
             "mode": "done",
             "writeable": false,
-            "commonType": "number"
+            "commonType": [
+              "number",
+              "boolean"
+            ]
           }
+        },
+        "up": {
+          "type": "state",
+          "role": "switch.gate",
+          "dp": "alias.0.full.gate.SET",
+          "mode": "done",
+          "writeable": true,
+          "commonType": "boolean",
+          "write": "return true;"
+        },
+        "down": {
+          "type": "state",
+          "role": "switch.gate",
+          "dp": "alias.0.full.gate.SET",
+          "mode": "done",
+          "writeable": true,
+          "commonType": "boolean",
+          "write": "return false;"
         },
         "stop": {
           "type": "triggered",
@@ -29637,12 +29687,37 @@
         "entity1": {
           "value": {
             "type": "triggered",
-            "role": "value.blind",
+            "role": [
+              "value.blind",
+              "sensor.gate",
+              "value.gate"
+            ],
             "dp": "alias.0.ext.gate.ACTUAL",
             "mode": "done",
             "writeable": false,
-            "commonType": "number"
+            "commonType": [
+              "number",
+              "boolean"
+            ]
           }
+        },
+        "up": {
+          "type": "state",
+          "role": "switch.gate",
+          "dp": "alias.0.ext.gate.SET",
+          "mode": "done",
+          "writeable": true,
+          "commonType": "boolean",
+          "write": "return true;"
+        },
+        "down": {
+          "type": "state",
+          "role": "switch.gate",
+          "dp": "alias.0.ext.gate.SET",
+          "mode": "done",
+          "writeable": true,
+          "commonType": "boolean",
+          "write": "return false;"
         },
         "stop": {
           "type": "triggered",
@@ -29759,12 +29834,37 @@
         "entity1": {
           "value": {
             "type": "triggered",
-            "role": "value.blind",
+            "role": [
+              "value.blind",
+              "sensor.gate",
+              "value.gate"
+            ],
             "dp": "alias.0.ext.gate.ACTUAL",
             "mode": "done",
             "writeable": false,
-            "commonType": "number"
+            "commonType": [
+              "number",
+              "boolean"
+            ]
           }
+        },
+        "up": {
+          "type": "state",
+          "role": "switch.gate",
+          "dp": "alias.0.ext.gate.SET",
+          "mode": "done",
+          "writeable": true,
+          "commonType": "boolean",
+          "write": "return true;"
+        },
+        "down": {
+          "type": "state",
+          "role": "switch.gate",
+          "dp": "alias.0.ext.gate.SET",
+          "mode": "done",
+          "writeable": true,
+          "commonType": "boolean",
+          "write": "return false;"
         },
         "stop": {
           "type": "triggered",
@@ -29940,12 +30040,37 @@
         "entity1": {
           "value": {
             "type": "triggered",
-            "role": "value.blind",
+            "role": [
+              "value.blind",
+              "sensor.gate",
+              "value.gate"
+            ],
             "dp": "alias.0.full.gate.ACTUAL",
             "mode": "done",
             "writeable": false,
-            "commonType": "number"
+            "commonType": [
+              "number",
+              "boolean"
+            ]
           }
+        },
+        "up": {
+          "type": "state",
+          "role": "switch.gate",
+          "dp": "alias.0.full.gate.SET",
+          "mode": "done",
+          "writeable": true,
+          "commonType": "boolean",
+          "write": "return true;"
+        },
+        "down": {
+          "type": "state",
+          "role": "switch.gate",
+          "dp": "alias.0.full.gate.SET",
+          "mode": "done",
+          "writeable": true,
+          "commonType": "boolean",
+          "write": "return false;"
         },
         "stop": {
           "type": "triggered",
@@ -30014,10 +30139,42 @@
           "type": "const",
           "constVal": "min gate (de)"
         },
-        "entity1": {}
+        "entity1": {
+          "value": {
+            "type": "triggered",
+            "role": "switch.gate",
+            "dp": "alias.0.min.gate.SET",
+            "mode": "done",
+            "writeable": true,
+            "commonType": [
+              "number",
+              "boolean"
+            ]
+          }
+        },
+        "up": {
+          "type": "state",
+          "role": "switch.gate",
+          "dp": "alias.0.min.gate.SET",
+          "mode": "done",
+          "writeable": true,
+          "commonType": "boolean",
+          "write": "return true;"
+        },
+        "down": {
+          "type": "state",
+          "role": "switch.gate",
+          "dp": "alias.0.min.gate.SET",
+          "mode": "done",
+          "writeable": true,
+          "commonType": "boolean",
+          "write": "return false;"
+        }
       }
     },
-    "messages": [],
+    "messages": [
+      "Optional: ACTUAL: alias.0.min.gate, channel role: gate - not found, using SET instead (searching for type: [\"number\",\"boolean\"], role: [\"value.blind\",\"sensor.gate\",\"value.gate\"])"
+    ],
     "logs": [],
     "itemAfter": {
       "id": "alias.0.min.gate"
@@ -30114,11 +30271,43 @@
           "type": "const",
           "constVal": "On"
         },
-        "entity1": {}
+        "entity1": {
+          "value": {
+            "type": "triggered",
+            "role": "switch.gate",
+            "dp": "alias.0.min.gate.SET",
+            "mode": "done",
+            "writeable": true,
+            "commonType": [
+              "number",
+              "boolean"
+            ]
+          }
+        },
+        "up": {
+          "type": "state",
+          "role": "switch.gate",
+          "dp": "alias.0.min.gate.SET",
+          "mode": "done",
+          "writeable": true,
+          "commonType": "boolean",
+          "write": "return true;"
+        },
+        "down": {
+          "type": "state",
+          "role": "switch.gate",
+          "dp": "alias.0.min.gate.SET",
+          "mode": "done",
+          "writeable": true,
+          "commonType": "boolean",
+          "write": "return false;"
+        }
       },
       "filter": 2
     },
-    "messages": [],
+    "messages": [
+      "Optional: ACTUAL: alias.0.min.gate, channel role: gate - not found, using SET instead (searching for type: [\"number\",\"boolean\"], role: [\"value.blind\",\"sensor.gate\",\"value.gate\"])"
+    ],
     "logs": [],
     "itemAfter": {
       "name": "Kitchen",
@@ -30298,14 +30487,46 @@
           "type": "triggered",
           "dp": "alias.0.helper.text"
         },
-        "entity1": {},
+        "entity1": {
+          "value": {
+            "type": "triggered",
+            "role": "switch.gate",
+            "dp": "alias.0.min.gate.SET",
+            "mode": "done",
+            "writeable": true,
+            "commonType": [
+              "number",
+              "boolean"
+            ]
+          }
+        },
+        "up": {
+          "type": "state",
+          "role": "switch.gate",
+          "dp": "alias.0.min.gate.SET",
+          "mode": "done",
+          "writeable": true,
+          "commonType": "boolean",
+          "write": "return true;"
+        },
+        "down": {
+          "type": "state",
+          "role": "switch.gate",
+          "dp": "alias.0.min.gate.SET",
+          "mode": "done",
+          "writeable": true,
+          "commonType": "boolean",
+          "write": "return false;"
+        },
         "enabled": {
           "type": "const",
           "constVal": false
         }
       }
     },
-    "messages": [],
+    "messages": [
+      "Optional: ACTUAL: alias.0.min.gate, channel role: gate - not found, using SET instead (searching for type: [\"number\",\"boolean\"], role: [\"value.blind\",\"sensor.gate\",\"value.gate\"])"
+    ],
     "logs": [],
     "itemAfter": {
       "name": "alias.0.helper.text",
@@ -30394,12 +30615,37 @@
         "entity1": {
           "value": {
             "type": "triggered",
-            "role": "value.blind",
+            "role": [
+              "value.blind",
+              "sensor.gate",
+              "value.gate"
+            ],
             "dp": "alias.0.full.gate.ACTUAL",
             "mode": "done",
             "writeable": false,
-            "commonType": "number"
+            "commonType": [
+              "number",
+              "boolean"
+            ]
           }
+        },
+        "up": {
+          "type": "state",
+          "role": "switch.gate",
+          "dp": "alias.0.full.gate.SET",
+          "mode": "done",
+          "writeable": true,
+          "commonType": "boolean",
+          "write": "return true;"
+        },
+        "down": {
+          "type": "state",
+          "role": "switch.gate",
+          "dp": "alias.0.full.gate.SET",
+          "mode": "done",
+          "writeable": true,
+          "commonType": "boolean",
+          "write": "return false;"
         },
         "stop": {
           "type": "triggered",
@@ -30476,12 +30722,37 @@
         "entity1": {
           "value": {
             "type": "triggered",
-            "role": "value.blind",
+            "role": [
+              "value.blind",
+              "sensor.gate",
+              "value.gate"
+            ],
             "dp": "alias.0.full.gate.ACTUAL",
             "mode": "done",
             "writeable": false,
-            "commonType": "number"
+            "commonType": [
+              "number",
+              "boolean"
+            ]
           }
+        },
+        "up": {
+          "type": "state",
+          "role": "switch.gate",
+          "dp": "alias.0.full.gate.SET",
+          "mode": "done",
+          "writeable": true,
+          "commonType": "boolean",
+          "write": "return true;"
+        },
+        "down": {
+          "type": "state",
+          "role": "switch.gate",
+          "dp": "alias.0.full.gate.SET",
+          "mode": "done",
+          "writeable": true,
+          "commonType": "boolean",
+          "write": "return false;"
         },
         "stop": {
           "type": "triggered",
@@ -30554,12 +30825,37 @@
         "entity1": {
           "value": {
             "type": "triggered",
-            "role": "value.blind",
+            "role": [
+              "value.blind",
+              "sensor.gate",
+              "value.gate"
+            ],
             "dp": "alias.0.full.gate.ACTUAL",
             "mode": "done",
             "writeable": false,
-            "commonType": "number"
+            "commonType": [
+              "number",
+              "boolean"
+            ]
           }
+        },
+        "up": {
+          "type": "state",
+          "role": "switch.gate",
+          "dp": "alias.0.full.gate.SET",
+          "mode": "done",
+          "writeable": true,
+          "commonType": "boolean",
+          "write": "return true;"
+        },
+        "down": {
+          "type": "state",
+          "role": "switch.gate",
+          "dp": "alias.0.full.gate.SET",
+          "mode": "done",
+          "writeable": true,
+          "commonType": "boolean",
+          "write": "return false;"
         },
         "stop": {
           "type": "triggered",
@@ -30655,12 +30951,37 @@
         "entity1": {
           "value": {
             "type": "triggered",
-            "role": "value.blind",
+            "role": [
+              "value.blind",
+              "sensor.gate",
+              "value.gate"
+            ],
             "dp": "alias.0.full.gate.ACTUAL",
             "mode": "done",
             "writeable": false,
-            "commonType": "number"
+            "commonType": [
+              "number",
+              "boolean"
+            ]
           }
+        },
+        "up": {
+          "type": "state",
+          "role": "switch.gate",
+          "dp": "alias.0.full.gate.SET",
+          "mode": "done",
+          "writeable": true,
+          "commonType": "boolean",
+          "write": "return true;"
+        },
+        "down": {
+          "type": "state",
+          "role": "switch.gate",
+          "dp": "alias.0.full.gate.SET",
+          "mode": "done",
+          "writeable": true,
+          "commonType": "boolean",
+          "write": "return false;"
         },
         "stop": {
           "type": "triggered",
@@ -30761,12 +31082,37 @@
         "entity1": {
           "value": {
             "type": "triggered",
-            "role": "value.blind",
+            "role": [
+              "value.blind",
+              "sensor.gate",
+              "value.gate"
+            ],
             "dp": "alias.0.full.gate.ACTUAL",
             "mode": "done",
             "writeable": false,
-            "commonType": "number"
+            "commonType": [
+              "number",
+              "boolean"
+            ]
           }
+        },
+        "up": {
+          "type": "state",
+          "role": "switch.gate",
+          "dp": "alias.0.full.gate.SET",
+          "mode": "done",
+          "writeable": true,
+          "commonType": "boolean",
+          "write": "return true;"
+        },
+        "down": {
+          "type": "state",
+          "role": "switch.gate",
+          "dp": "alias.0.full.gate.SET",
+          "mode": "done",
+          "writeable": true,
+          "commonType": "boolean",
+          "write": "return false;"
         },
         "stop": {
           "type": "triggered",
@@ -30879,12 +31225,37 @@
         "entity1": {
           "value": {
             "type": "triggered",
-            "role": "value.blind",
+            "role": [
+              "value.blind",
+              "sensor.gate",
+              "value.gate"
+            ],
             "dp": "alias.0.full.gate.ACTUAL",
             "mode": "done",
             "writeable": false,
-            "commonType": "number"
+            "commonType": [
+              "number",
+              "boolean"
+            ]
           }
+        },
+        "up": {
+          "type": "state",
+          "role": "switch.gate",
+          "dp": "alias.0.full.gate.SET",
+          "mode": "done",
+          "writeable": true,
+          "commonType": "boolean",
+          "write": "return true;"
+        },
+        "down": {
+          "type": "state",
+          "role": "switch.gate",
+          "dp": "alias.0.full.gate.SET",
+          "mode": "done",
+          "writeable": true,
+          "commonType": "boolean",
+          "write": "return false;"
         },
         "stop": {
           "type": "triggered",
@@ -31014,6 +31385,10 @@
         "[StatesDB] Dont finds states for alias.0.empty.gate. dpinit is string"
       ],
       [
+        "warn",
+        "[StatesDB] Dont finds states for alias.0.empty.gate. dpinit is string"
+      ],
+      [
         "error",
         "[config-manager] Required: SET: alias.0.empty.gate, channel role: gate - missing - searching for type: \"boolean\", role: \"switch.gate\", common.write: true"
       ],
@@ -31080,12 +31455,37 @@
         "entity1": {
           "value": {
             "type": "triggered",
-            "role": "value.blind",
+            "role": [
+              "value.blind",
+              "sensor.gate",
+              "value.gate"
+            ],
             "dp": "alias.0.ext.gate.ACTUAL",
             "mode": "done",
             "writeable": false,
-            "commonType": "number"
+            "commonType": [
+              "number",
+              "boolean"
+            ]
           }
+        },
+        "up": {
+          "type": "state",
+          "role": "switch.gate",
+          "dp": "alias.0.ext.gate.SET",
+          "mode": "done",
+          "writeable": true,
+          "commonType": "boolean",
+          "write": "return true;"
+        },
+        "down": {
+          "type": "state",
+          "role": "switch.gate",
+          "dp": "alias.0.ext.gate.SET",
+          "mode": "done",
+          "writeable": true,
+          "commonType": "boolean",
+          "write": "return false;"
         },
         "stop": {
           "type": "triggered",
@@ -31161,12 +31561,37 @@
         "entity1": {
           "value": {
             "type": "triggered",
-            "role": "value.blind",
+            "role": [
+              "value.blind",
+              "sensor.gate",
+              "value.gate"
+            ],
             "dp": "alias.0.full.gate.ACTUAL",
             "mode": "done",
             "writeable": false,
-            "commonType": "number"
+            "commonType": [
+              "number",
+              "boolean"
+            ]
           }
+        },
+        "up": {
+          "type": "state",
+          "role": "switch.gate",
+          "dp": "alias.0.full.gate.SET",
+          "mode": "done",
+          "writeable": true,
+          "commonType": "boolean",
+          "write": "return true;"
+        },
+        "down": {
+          "type": "state",
+          "role": "switch.gate",
+          "dp": "alias.0.full.gate.SET",
+          "mode": "done",
+          "writeable": true,
+          "commonType": "boolean",
+          "write": "return false;"
         },
         "stop": {
           "type": "triggered",
@@ -31238,12 +31663,37 @@
         "entity1": {
           "value": {
             "type": "triggered",
-            "role": "value.blind",
+            "role": [
+              "value.blind",
+              "sensor.gate",
+              "value.gate"
+            ],
             "dp": "alias.0.full.gate.ACTUAL",
             "mode": "done",
             "writeable": false,
-            "commonType": "number"
+            "commonType": [
+              "number",
+              "boolean"
+            ]
           }
+        },
+        "up": {
+          "type": "state",
+          "role": "switch.gate",
+          "dp": "alias.0.full.gate.SET",
+          "mode": "done",
+          "writeable": true,
+          "commonType": "boolean",
+          "write": "return true;"
+        },
+        "down": {
+          "type": "state",
+          "role": "switch.gate",
+          "dp": "alias.0.full.gate.SET",
+          "mode": "done",
+          "writeable": true,
+          "commonType": "boolean",
+          "write": "return false;"
         },
         "stop": {
           "type": "triggered",
@@ -31314,10 +31764,42 @@
           "type": "const",
           "constVal": "min gate (de)"
         },
-        "entity1": {}
+        "entity1": {
+          "value": {
+            "type": "triggered",
+            "role": "switch.gate",
+            "dp": "alias.0.min.gate.SET",
+            "mode": "done",
+            "writeable": true,
+            "commonType": [
+              "number",
+              "boolean"
+            ]
+          }
+        },
+        "up": {
+          "type": "state",
+          "role": "switch.gate",
+          "dp": "alias.0.min.gate.SET",
+          "mode": "done",
+          "writeable": true,
+          "commonType": "boolean",
+          "write": "return true;"
+        },
+        "down": {
+          "type": "state",
+          "role": "switch.gate",
+          "dp": "alias.0.min.gate.SET",
+          "mode": "done",
+          "writeable": true,
+          "commonType": "boolean",
+          "write": "return false;"
+        }
       }
     },
-    "messages": [],
+    "messages": [
+      "Optional: ACTUAL: alias.0.min.gate, channel role: gate - not found, using SET instead (searching for type: [\"number\",\"boolean\"], role: [\"value.blind\",\"sensor.gate\",\"value.gate\"])"
+    ],
     "logs": [],
     "itemAfter": {
       "id": "alias.0.min.gate"
@@ -31401,12 +31883,37 @@
         "entity1": {
           "value": {
             "type": "triggered",
-            "role": "value.blind",
+            "role": [
+              "value.blind",
+              "sensor.gate",
+              "value.gate"
+            ],
             "dp": "alias.0.full.gate.ACTUAL",
             "mode": "done",
             "writeable": false,
-            "commonType": "number"
+            "commonType": [
+              "number",
+              "boolean"
+            ]
           }
+        },
+        "up": {
+          "type": "state",
+          "role": "switch.gate",
+          "dp": "alias.0.full.gate.SET",
+          "mode": "done",
+          "writeable": true,
+          "commonType": "boolean",
+          "write": "return true;"
+        },
+        "down": {
+          "type": "state",
+          "role": "switch.gate",
+          "dp": "alias.0.full.gate.SET",
+          "mode": "done",
+          "writeable": true,
+          "commonType": "boolean",
+          "write": "return false;"
         },
         "stop": {
           "type": "triggered",
@@ -31507,12 +32014,37 @@
         "entity1": {
           "value": {
             "type": "triggered",
-            "role": "value.blind",
+            "role": [
+              "value.blind",
+              "sensor.gate",
+              "value.gate"
+            ],
             "dp": "alias.0.full.gate.ACTUAL",
             "mode": "done",
             "writeable": false,
-            "commonType": "number"
+            "commonType": [
+              "number",
+              "boolean"
+            ]
           }
+        },
+        "up": {
+          "type": "state",
+          "role": "switch.gate",
+          "dp": "alias.0.full.gate.SET",
+          "mode": "done",
+          "writeable": true,
+          "commonType": "boolean",
+          "write": "return true;"
+        },
+        "down": {
+          "type": "state",
+          "role": "switch.gate",
+          "dp": "alias.0.full.gate.SET",
+          "mode": "done",
+          "writeable": true,
+          "commonType": "boolean",
+          "write": "return false;"
         },
         "stop": {
           "type": "triggered",
@@ -31585,12 +32117,37 @@
         "entity1": {
           "value": {
             "type": "triggered",
-            "role": "value.blind",
+            "role": [
+              "value.blind",
+              "sensor.gate",
+              "value.gate"
+            ],
             "dp": "alias.0.full.gate.ACTUAL",
             "mode": "done",
             "writeable": false,
-            "commonType": "number"
+            "commonType": [
+              "number",
+              "boolean"
+            ]
           }
+        },
+        "up": {
+          "type": "state",
+          "role": "switch.gate",
+          "dp": "alias.0.full.gate.SET",
+          "mode": "done",
+          "writeable": true,
+          "commonType": "boolean",
+          "write": "return true;"
+        },
+        "down": {
+          "type": "state",
+          "role": "switch.gate",
+          "dp": "alias.0.full.gate.SET",
+          "mode": "done",
+          "writeable": true,
+          "commonType": "boolean",
+          "write": "return false;"
         },
         "stop": {
           "type": "triggered",
@@ -31662,12 +32219,37 @@
         "entity1": {
           "value": {
             "type": "triggered",
-            "role": "value.blind",
+            "role": [
+              "value.blind",
+              "sensor.gate",
+              "value.gate"
+            ],
             "dp": "alias.0.full.gate.ACTUAL",
             "mode": "done",
             "writeable": false,
-            "commonType": "number"
+            "commonType": [
+              "number",
+              "boolean"
+            ]
           }
+        },
+        "up": {
+          "type": "state",
+          "role": "switch.gate",
+          "dp": "alias.0.full.gate.SET",
+          "mode": "done",
+          "writeable": true,
+          "commonType": "boolean",
+          "write": "return true;"
+        },
+        "down": {
+          "type": "state",
+          "role": "switch.gate",
+          "dp": "alias.0.full.gate.SET",
+          "mode": "done",
+          "writeable": true,
+          "commonType": "boolean",
+          "write": "return false;"
         },
         "stop": {
           "type": "triggered",
@@ -31771,11 +32353,18 @@
         "entity1": {
           "value": {
             "type": "triggered",
-            "role": "value.blind",
+            "role": [
+              "value.blind",
+              "sensor.gate",
+              "value.gate"
+            ],
             "dp": "alias.0.full.gate.ACTUAL",
             "mode": "done",
             "writeable": false,
-            "commonType": "number"
+            "commonType": [
+              "number",
+              "boolean"
+            ]
           },
           "minScale": {
             "type": "const",
@@ -31987,11 +32576,18 @@
         "entity1": {
           "value": {
             "type": "triggered",
-            "role": "value.blind",
+            "role": [
+              "value.blind",
+              "sensor.gate",
+              "value.gate"
+            ],
             "dp": "alias.0.ext.gate.ACTUAL",
             "mode": "done",
             "writeable": false,
-            "commonType": "number"
+            "commonType": [
+              "number",
+              "boolean"
+            ]
           },
           "minScale": {
             "type": "const",
@@ -32165,11 +32761,18 @@
         "entity1": {
           "value": {
             "type": "triggered",
-            "role": "value.blind",
+            "role": [
+              "value.blind",
+              "sensor.gate",
+              "value.gate"
+            ],
             "dp": "alias.0.full.gate.ACTUAL",
             "mode": "done",
             "writeable": false,
-            "commonType": "number"
+            "commonType": [
+              "number",
+              "boolean"
+            ]
           },
           "minScale": {
             "type": "const",
@@ -32237,11 +32840,18 @@
         "entity1": {
           "value": {
             "type": "triggered",
-            "role": "value.blind",
+            "role": [
+              "value.blind",
+              "sensor.gate",
+              "value.gate"
+            ],
             "dp": "alias.0.full.gate.ACTUAL",
             "mode": "done",
             "writeable": false,
-            "commonType": "number"
+            "commonType": [
+              "number",
+              "boolean"
+            ]
           },
           "minScale": {
             "type": "const",
@@ -32310,11 +32920,18 @@
         "entity1": {
           "value": {
             "type": "triggered",
-            "role": "value.blind",
+            "role": [
+              "value.blind",
+              "sensor.gate",
+              "value.gate"
+            ],
             "dp": "alias.0.full.gate.ACTUAL",
             "mode": "done",
             "writeable": false,
-            "commonType": "number"
+            "commonType": [
+              "number",
+              "boolean"
+            ]
           },
           "minScale": {
             "type": "const",
@@ -32411,11 +33028,18 @@
         "entity1": {
           "value": {
             "type": "triggered",
-            "role": "value.blind",
+            "role": [
+              "value.blind",
+              "sensor.gate",
+              "value.gate"
+            ],
             "dp": "alias.0.full.gate.ACTUAL",
             "mode": "done",
             "writeable": false,
-            "commonType": "number"
+            "commonType": [
+              "number",
+              "boolean"
+            ]
           },
           "minScale": {
             "type": "const",
@@ -32564,11 +33188,18 @@
         "entity1": {
           "value": {
             "type": "triggered",
-            "role": "value.blind",
+            "role": [
+              "value.blind",
+              "sensor.gate",
+              "value.gate"
+            ],
             "dp": "alias.0.full.gate.ACTUAL",
             "mode": "done",
             "writeable": false,
-            "commonType": "number"
+            "commonType": [
+              "number",
+              "boolean"
+            ]
           },
           "minScale": {
             "type": "const",
@@ -32738,11 +33369,18 @@
         "entity1": {
           "value": {
             "type": "triggered",
-            "role": "value.blind",
+            "role": [
+              "value.blind",
+              "sensor.gate",
+              "value.gate"
+            ],
             "dp": "alias.0.ext.gate.ACTUAL",
             "mode": "done",
             "writeable": false,
-            "commonType": "number"
+            "commonType": [
+              "number",
+              "boolean"
+            ]
           },
           "minScale": {
             "type": "const",
@@ -32814,11 +33452,18 @@
         "entity1": {
           "value": {
             "type": "triggered",
-            "role": "value.blind",
+            "role": [
+              "value.blind",
+              "sensor.gate",
+              "value.gate"
+            ],
             "dp": "alias.0.full.gate.ACTUAL",
             "mode": "done",
             "writeable": false,
-            "commonType": "number"
+            "commonType": [
+              "number",
+              "boolean"
+            ]
           },
           "minScale": {
             "type": "const",
@@ -32895,11 +33540,18 @@
         "entity1": {
           "value": {
             "type": "triggered",
-            "role": "value.blind",
+            "role": [
+              "value.blind",
+              "sensor.gate",
+              "value.gate"
+            ],
             "dp": "alias.0.full.gate.ACTUAL",
             "mode": "done",
             "writeable": false,
-            "commonType": "number"
+            "commonType": [
+              "number",
+              "boolean"
+            ]
           },
           "minScale": {
             "type": "const",
@@ -32969,11 +33621,18 @@
         "entity1": {
           "value": {
             "type": "triggered",
-            "role": "value.blind",
+            "role": [
+              "value.blind",
+              "sensor.gate",
+              "value.gate"
+            ],
             "dp": "alias.0.full.gate.ACTUAL",
             "mode": "done",
             "writeable": false,
-            "commonType": "number"
+            "commonType": [
+              "number",
+              "boolean"
+            ]
           },
           "minScale": {
             "type": "const",
@@ -33044,6 +33703,17 @@
           }
         },
         "entity1": {
+          "value": {
+            "type": "triggered",
+            "role": "switch.gate",
+            "dp": "alias.0.min.gate.SET",
+            "mode": "done",
+            "writeable": true,
+            "commonType": [
+              "number",
+              "boolean"
+            ]
+          },
           "minScale": {
             "type": "const",
             "constVal": 100
@@ -33110,11 +33780,18 @@
         "entity1": {
           "value": {
             "type": "triggered",
-            "role": "value.blind",
+            "role": [
+              "value.blind",
+              "sensor.gate",
+              "value.gate"
+            ],
             "dp": "alias.0.full.gate.ACTUAL",
             "mode": "done",
             "writeable": false,
-            "commonType": "number"
+            "commonType": [
+              "number",
+              "boolean"
+            ]
           },
           "minScale": {
             "type": "const",
@@ -33187,11 +33864,18 @@
         "entity1": {
           "value": {
             "type": "triggered",
-            "role": "value.blind",
+            "role": [
+              "value.blind",
+              "sensor.gate",
+              "value.gate"
+            ],
             "dp": "alias.0.full.gate.ACTUAL",
             "mode": "done",
             "writeable": false,
-            "commonType": "number"
+            "commonType": [
+              "number",
+              "boolean"
+            ]
           },
           "minScale": {
             "type": "const",
@@ -33260,11 +33944,18 @@
         "entity1": {
           "value": {
             "type": "triggered",
-            "role": "value.blind",
+            "role": [
+              "value.blind",
+              "sensor.gate",
+              "value.gate"
+            ],
             "dp": "alias.0.full.gate.ACTUAL",
             "mode": "done",
             "writeable": false,
-            "commonType": "number"
+            "commonType": [
+              "number",
+              "boolean"
+            ]
           },
           "minScale": {
             "type": "const",
