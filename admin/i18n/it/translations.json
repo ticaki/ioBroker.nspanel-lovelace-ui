@@ -1496,6 +1496,7 @@
     "sendToInitSessionLost": "La configurazione è stata interrotta, avviarla di nuovo",
     "sendToInvalidResponse": "Risposta non valida dall'adattatore",
     "sendToIpTopicDifferent": "L'indirizzo IP e il topic appartengono a pannelli diversi",
+    "sendToTopicInUse": "Questo topic MQTT è già utilizzato da un altro pannello.",
     "sendToNSPanelInitDataSuccess": "Il pannello è stato inizializzato con successo",
     "sendToNSPanelInitStep1Done": "Passo 1 di 3 completato: accesso MQTT trasferito, il pannello è stato riavviato",
     "sendToNSPanelInitStep2Done": "Passo 2 di 3 completato: impostazioni di base e fuso orario trasferiti",

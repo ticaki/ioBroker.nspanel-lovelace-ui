@@ -1496,6 +1496,7 @@
     "sendToInitSessionLost": "Konfiguracja została przerwana, uruchom ją ponownie",
     "sendToInvalidResponse": "Nieprawidłowa odpowiedź adaptera",
     "sendToIpTopicDifferent": "Adres IP i temat należą do różnych paneli",
+    "sendToTopicInUse": "Ten temat MQTT jest już używany przez inny panel.",
     "sendToNSPanelInitDataSuccess": "Panel został pomyślnie zainicjowany",
     "sendToNSPanelInitStep1Done": "Krok 1 z 3 zakończony: dostęp MQTT przesłany, panel został zrestartowany",
     "sendToNSPanelInitStep2Done": "Krok 2 z 3 zakończony: ustawienia podstawowe i strefa czasowa przesłane",

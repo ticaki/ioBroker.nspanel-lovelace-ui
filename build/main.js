@@ -54,6 +54,7 @@ var import_function_and_const = require("./lib/types/function-and-const");
 var import_node_ical = __toESM(require("node-ical"));
 var import_tools = require("./lib/const/tools");
 var import_berry_driver = require("./lib/const/berry-driver");
+var import_panel_setup = require("./lib/tools/panel-setup");
 const NS_PANEL_INIT_SESSION_TTL = 6e5;
 class NspanelLovelaceUi extends utils.Adapter {
   library;
@@ -2475,7 +2476,7 @@ class NspanelLovelaceUi extends utils.Adapter {
    * @param obj - die sendTo-Nachricht aus dem Admin
    */
   async nsPanelInitStep1(obj) {
-    var _a, _b;
+    var _a, _b, _c, _d;
     const msg = obj.message;
     const useInternalServer = !((msg == null ? void 0 : msg.mqttServer) == null || msg.mqttServer === false || msg.mqttServer === "false");
     if (!useInternalServer && (0, import_credentials.isCredentialId)(msg == null ? void 0 : msg.mqttCredentialId)) {
@@ -2503,28 +2504,12 @@ class NspanelLovelaceUi extends utils.Adapter {
     const topic = msg.tasmotaTopic;
     let panel = void 0;
     try {
-      this.log.info(
-        `Sending mqtt config & base config to tasmota: ${msg.tasmotaIP} with user ${msg.mqttUsername} && ***`
-      );
-      const panels = (_a = this.config.panels) != null ? _a : [];
-      const index = panels.findIndex((a) => a.topic === topic);
-      const item = index === -1 ? { name: "", ip: "", topic: "", id: "", model: "eu" } : panels[index];
-      const ipIndex = panels.findIndex((a) => a.ip === msg.tasmotaIP);
       if (!await this.getVersionsJson()) {
         this.log.error(
           "Could not fetch version json! Check your internet connection and the url in the adapter configuration!"
         );
         this.answerMessage(obj, { error: "sendToVersionJsonFetchFailed" });
         return;
-      }
-      if (index !== -1 && ipIndex !== index) {
-        this.log.error("Topic and ip are not on the same panel!");
-        this.answerMessage(obj, { error: "sendToIpTopicDifferent" });
-        return;
-      }
-      panel = (_b = this.controller) == null ? void 0 : _b.panels.find((a) => a.topic === topic);
-      if (panel) {
-        void panel.setStatus("setup");
       }
       let u = new import_node_url.URL(this.getTasmotaCommandUrl(msg.tasmotaIP, `status 5`));
       this.log.debug(`Requesting tasmota status 5 with url: ${(0, import_redact.redactSecretsInText)(u.href)}`);
@@ -2533,10 +2518,22 @@ class NspanelLovelaceUi extends utils.Adapter {
       if (!(0, import_function_and_const.isTasmotaStatusNet)(r) || !r || !r.StatusNET || !r.StatusNET.Mac) {
         this.log.warn(`Device with topic ${topic} not found!`);
         this.answerMessage(obj, { error: "sendToDeviceNotFound" });
-        if (panel) {
-          void panel.setStatus("error");
-        }
         return;
+      }
+      const panels = (_a = this.config.panels) != null ? _a : [];
+      const match = (0, import_panel_setup.matchPanelForSetup)(panels, this.library.cleandp(r.StatusNET.Mac), topic);
+      if ("error" in match) {
+        this.log.error(
+          `The topic ${topic} is already used by the panel ${(_c = (_b = panels[match.conflictIndex]) == null ? void 0 : _b.name) != null ? _c : ""}!`
+        );
+        this.answerMessage(obj, { error: match.error });
+        return;
+      }
+      const item = match.isNew ? { name: "", ip: "", topic: "", id: "", model: "eu" } : panels[match.index];
+      const panelTopic = match.isNew ? topic : item.topic;
+      panel = (_d = this.controller) == null ? void 0 : _d.panels.find((a) => a.topic === panelTopic);
+      if (panel) {
+        void panel.setStatus("setup");
       }
       const appendix = r.StatusNET.Mac.replace(/:/g, "").slice(-6);
       const mqttClientId = `${this.library.cleandp(msg.tasmotaName)}-${appendix}`;
@@ -2545,12 +2542,16 @@ class NspanelLovelaceUi extends utils.Adapter {
       this.log.debug(
         `Sending mqtt config & base config to tasmota with IP ${msg.tasmotaIP} and name ${msg.tasmotaName}.`
       );
+      this.log.info(
+        `Sending mqtt config & base config to tasmota: ${msg.tasmotaIP} with user ${msg.mqttUsername} && ***`
+      );
       await this.fetch(u.href);
       this.mqttClient && await this.mqttClient.waitPanelConnectAsync(topic, 6e4);
       this.purgeNsPanelInitSessions();
       this.nsPanelInitSessions.set(topic, {
         item,
-        isNew: index === -1,
+        isNew: match.isNew,
+        panelTopic,
         isEmulator: false,
         ts: Date.now()
       });
@@ -2578,7 +2579,7 @@ class NspanelLovelaceUi extends utils.Adapter {
     }
     const { topic, session } = found;
     const msg = obj.message;
-    const panel = (_a = this.controller) == null ? void 0 : _a.panels.find((a) => a.topic === topic);
+    const panel = (_a = this.controller) == null ? void 0 : _a.panels.find((a) => a.topic === session.panelTopic);
     try {
       let u = new import_node_url.URL(
         this.getTasmotaCommandUrl(
@@ -2643,7 +2644,7 @@ class NspanelLovelaceUi extends utils.Adapter {
     }
     const { topic, session } = found;
     const msg = obj.message;
-    const panel = (_a = this.controller) == null ? void 0 : _a.panels.find((a) => a.topic === topic);
+    const panel = (_a = this.controller) == null ? void 0 : _a.panels.find((a) => a.topic === session.panelTopic);
     try {
       const versionsJson = await this.getVersionsJson();
       if (!session.isEmulator) {

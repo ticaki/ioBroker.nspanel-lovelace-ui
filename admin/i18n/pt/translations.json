@@ -1496,6 +1496,7 @@
     "sendToInitSessionLost": "A configuração foi interrompida, inicie-a novamente",
     "sendToInvalidResponse": "Resposta inválida do adaptador",
     "sendToIpTopicDifferent": "O endereço IP e o tópico pertencem a painéis diferentes",
+    "sendToTopicInUse": "Este tópico MQTT já está a ser utilizado por outro painel.",
     "sendToNSPanelInitDataSuccess": "O painel foi inicializado com sucesso",
     "sendToNSPanelInitStep1Done": "Passo 1 de 3 concluído: acesso MQTT transferido, o painel reiniciou",
     "sendToNSPanelInitStep2Done": "Passo 2 de 3 concluído: definições básicas e fuso horário transferidos",

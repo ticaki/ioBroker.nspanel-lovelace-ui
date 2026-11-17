@@ -162,6 +162,7 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
 - (ticaki) Temperature offset changed directly in Tasmota (console `TempOffset`) is now taken over into the state instead of being overwritten on the next reconnect
 - (ticaki) Admin, panel cards (Maintain, Panelinfo, panel overview): one small "?" per card for the card documentation, buttons and fields with their own documentation section show a help link in their tooltip; removed the clustered "?" above the panel cards and next to "Update scripts for all panels"
 - (ticaki) Admin, Panelinfo: a long panel title no longer widens the card
+- (ticaki) panel setup recognizes an existing panel by its MAC address, so changing topic, name or IP updates it instead of creating a duplicate (#899)
 
 ### 2.3.1 (2026-11-16)
 - (ticaki) Admin: help links to the documentation at many settings, in the ioBroker system language

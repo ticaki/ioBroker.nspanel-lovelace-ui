@@ -1496,6 +1496,7 @@
     "sendToInitSessionLost": "Настройка была прервана, запустите её заново",
     "sendToInvalidResponse": "Неверный ответ адаптера",
     "sendToIpTopicDifferent": "IP-адрес и топик принадлежат разным панелям",
+    "sendToTopicInUse": "Этот MQTT-топик уже используется другой панелью.",
     "sendToNSPanelInitDataSuccess": "Панель успешно инициализирована",
     "sendToNSPanelInitStep1Done": "Шаг 1 из 3 выполнен: доступ MQTT передан, панель перезапущена",
     "sendToNSPanelInitStep2Done": "Шаг 2 из 3 выполнен: базовые настройки и часовой пояс переданы",

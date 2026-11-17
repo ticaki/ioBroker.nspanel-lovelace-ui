@@ -77,6 +77,7 @@ import iCal from 'node-ical';
 import type { NSPanel } from './lib/types/NSPanel';
 import { getTasmotaVersionFromJson } from './lib/const/tools';
 import { driverGeneration, isEmulatorDriverVersion, parseDriverVersion } from './lib/const/berry-driver';
+import { matchPanelForSetup } from './lib/tools/panel-setup';
 
 /** Zwischenstand einer laufenden Panel-Einrichtung, siehe `nsPanelInitStep1` */
 interface NsPanelInitSession {
@@ -84,6 +85,11 @@ interface NsPanelInitSession {
     item: ioBroker.AdapterConfig['panels'][number];
     /** true, wenn das Panel noch nicht in der Konfiguration steht */
     isNew: boolean;
+    /**
+     * Topic, unter dem die laufende Panel-Instanz bekannt ist - bei einem bestehenden Panel das bisherige
+     * Topic aus der Konfiguration (es kann sich bei der Einrichtung ändern), sonst das neue
+     */
+    panelTopic: string;
     /** true, wenn statt eines Panels der Emulator antwortet - dann entfallen Berry und TFT */
     isEmulator: boolean;
     /** Zeitpunkt des letzten Schritts, für das Aufräumen abgebrochener Einrichtungen */
@@ -2903,31 +2909,12 @@ class NspanelLovelaceUi extends utils.Adapter {
         const topic: string = msg.tasmotaTopic;
         let panel: Panel | undefined = undefined;
         try {
-            this.log.info(
-                `Sending mqtt config & base config to tasmota: ${msg.tasmotaIP} with user ${msg.mqttUsername} && ***`,
-            );
-            const panels = this.config.panels ?? [];
-            const index = panels.findIndex(a => a.topic === topic);
-            const item: (typeof panels)[number] =
-                index === -1 ? { name: '', ip: '', topic: '', id: '', model: 'eu' } : panels[index];
-            const ipIndex = panels.findIndex(a => a.ip === msg.tasmotaIP);
-
             if (!(await this.getVersionsJson())) {
                 this.log.error(
                     'Could not fetch version json! Check your internet connection and the url in the adapter configuration!',
                 );
                 this.answerMessage(obj, { error: 'sendToVersionJsonFetchFailed' });
                 return;
-            }
-
-            if (index !== -1 && ipIndex !== index) {
-                this.log.error('Topic and ip are not on the same panel!');
-                this.answerMessage(obj, { error: 'sendToIpTopicDifferent' });
-                return;
-            }
-            panel = this.controller?.panels.find(a => a.topic === topic);
-            if (panel) {
-                void panel.setStatus('setup');
             }
 
             let u = new URL(this.getTasmotaCommandUrl(msg.tasmotaIP, `status 5`));
@@ -2937,10 +2924,26 @@ class NspanelLovelaceUi extends utils.Adapter {
             if (!isTasmotaStatusNet(r) || !r || !r.StatusNET || !r.StatusNET.Mac) {
                 this.log.warn(`Device with topic ${topic} not found!`);
                 this.answerMessage(obj, { error: 'sendToDeviceNotFound' });
-                if (panel) {
-                    void panel.setStatus('error');
-                }
                 return;
+            }
+
+            // Das Gerät wird über seine MAC wiedererkannt - Name, Topic und IP dürfen sich ändern.
+            const panels = this.config.panels ?? [];
+            const match = matchPanelForSetup(panels, this.library.cleandp(r.StatusNET.Mac), topic);
+            if ('error' in match) {
+                this.log.error(
+                    `The topic ${topic} is already used by the panel ${panels[match.conflictIndex]?.name ?? ''}!`,
+                );
+                this.answerMessage(obj, { error: match.error });
+                return;
+            }
+            const item: (typeof panels)[number] = match.isNew
+                ? { name: '', ip: '', topic: '', id: '', model: 'eu' }
+                : panels[match.index];
+            const panelTopic = match.isNew ? topic : item.topic;
+            panel = this.controller?.panels.find(a => a.topic === panelTopic);
+            if (panel) {
+                void panel.setStatus('setup');
             }
 
             const appendix = r.StatusNET.Mac.replace(/:/g, '').slice(-6);
@@ -2956,13 +2959,17 @@ class NspanelLovelaceUi extends utils.Adapter {
             this.log.debug(
                 `Sending mqtt config & base config to tasmota with IP ${msg.tasmotaIP} and name ${msg.tasmotaName}.`,
             );
+            this.log.info(
+                `Sending mqtt config & base config to tasmota: ${msg.tasmotaIP} with user ${msg.mqttUsername} && ***`,
+            );
             await this.fetch(u.href);
             this.mqttClient && (await this.mqttClient.waitPanelConnectAsync(topic, 60_000));
 
             this.purgeNsPanelInitSessions();
             this.nsPanelInitSessions.set(topic, {
                 item,
-                isNew: index === -1,
+                isNew: match.isNew,
+                panelTopic,
                 isEmulator: false,
                 ts: Date.now(),
             });
@@ -2990,7 +2997,7 @@ class NspanelLovelaceUi extends utils.Adapter {
         }
         const { topic, session } = found;
         const msg = obj.message;
-        const panel = this.controller?.panels.find(a => a.topic === topic);
+        const panel = this.controller?.panels.find(a => a.topic === session.panelTopic);
         try {
             let u = new URL(
                 this.getTasmotaCommandUrl(
@@ -3062,7 +3069,7 @@ class NspanelLovelaceUi extends utils.Adapter {
         }
         const { topic, session } = found;
         const msg = obj.message;
-        const panel = this.controller?.panels.find(a => a.topic === topic);
+        const panel = this.controller?.panels.find(a => a.topic === session.panelTopic);
         try {
             const versionsJson = await this.getVersionsJson();
             if (!session.isEmulator) {

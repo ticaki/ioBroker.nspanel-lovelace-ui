@@ -1530,6 +1530,7 @@
     "sendToInitSessionLost": "The setup was interrupted, please start it again",
     "sendToInvalidResponse": "Invalid response from adapter",
     "sendToIpTopicDifferent": "IP address and topic belong to different panels",
+    "sendToTopicInUse": "This MQTT topic is already used by another panel.",
     "sendToNSPanelInitDataSuccess": "Panel was successfully initialized",
     "sendToNSPanelInitStep1Done": "Step 1 of 3 done: MQTT access transferred, the panel has restarted",
     "sendToNSPanelInitStep2Done": "Step 2 of 3 done: base settings and time zone transferred",

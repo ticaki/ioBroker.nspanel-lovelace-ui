@@ -1496,6 +1496,7 @@
     "sendToInitSessionLost": "De installatie is onderbroken, start deze opnieuw",
     "sendToInvalidResponse": "Ongeldig antwoord van de adapter",
     "sendToIpTopicDifferent": "IP-adres en topic horen bij verschillende panelen",
+    "sendToTopicInUse": "Dit MQTT-topic wordt al door een ander paneel gebruikt.",
     "sendToNSPanelInitDataSuccess": "Paneel is succesvol geïnitialiseerd",
     "sendToNSPanelInitStep1Done": "Stap 1 van 3 klaar: MQTT-toegang overgedragen, het paneel is opnieuw opgestart",
     "sendToNSPanelInitStep2Done": "Stap 2 van 3 klaar: basisinstellingen en tijdzone overgedragen",

@@ -1530,6 +1530,7 @@
     "sendToInitSessionLost": "Die Einrichtung wurde unterbrochen, bitte erneut starten",
     "sendToInvalidResponse": "Ungültige Antwort vom Adapter",
     "sendToIpTopicDifferent": "IP-Adresse und Topic gehören zu unterschiedlichen Panels",
+    "sendToTopicInUse": "Dieses MQTT-Topic wird bereits von einem anderen Panel verwendet.",
     "sendToNSPanelInitDataSuccess": "Panel wurde erfolgreich initialisiert",
     "sendToNSPanelInitStep1Done": "Schritt 1 von 3 erledigt: MQTT-Zugang übertragen, das Panel ist neu gestartet",
     "sendToNSPanelInitStep2Done": "Schritt 2 von 3 erledigt: Grundeinstellungen und Zeitzone übertragen",

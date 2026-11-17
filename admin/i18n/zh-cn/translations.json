@@ -1496,6 +1496,7 @@
     "sendToInitSessionLost": "设置已中断，请重新开始",
     "sendToInvalidResponse": "适配器返回了无效的响应",
     "sendToIpTopicDifferent": "IP地址和主题属于不同的面板",
+    "sendToTopicInUse": "此 MQTT 主题已被另一个面板使用。",
     "sendToNSPanelInitDataSuccess": "面板初始化成功",
     "sendToNSPanelInitStep1Done": "第 1 步（共 3 步）完成：MQTT 访问已传输，面板已重启",
     "sendToNSPanelInitStep2Done": "第 2 步（共 3 步）完成：基本设置和时区已传输",
