@@ -98,6 +98,9 @@ export const genericStateObjects: {
                 buttonMid: ioBroker.StateObject;
                 buttonLeft: ioBroker.StateObject;
             };
+            screensaverNotify: customChannelType & {
+                id: ioBroker.StateObject;
+            };
             info: customChannelType & {
                 status: ioBroker.StateObject;
             } & ChangeTypeOfKeysForState<Required<types.PanelInfo>, ioBroker.StateObject>;
@@ -216,6 +219,29 @@ export const genericStateObjects: {
                     type: 'state',
                     common: {
                         name: 'Button left',
+                        type: 'string',
+                        role: 'text',
+                        read: true,
+                        write: false,
+                        def: '',
+                    },
+                    native: {},
+                },
+            },
+            screensaverNotify: {
+                _channel: {
+                    _id: '',
+                    type: 'channel',
+                    common: {
+                        name: 'StateObjects.screensaverNotify',
+                    },
+                    native: {},
+                },
+                id: {
+                    _id: '',
+                    type: 'state',
+                    common: {
+                        name: 'StateObjects.screensaverNotify.id',
                         type: 'string',
                         role: 'text',
                         read: true,

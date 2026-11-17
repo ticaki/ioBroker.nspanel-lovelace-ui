@@ -720,6 +720,16 @@ export class Panel extends BaseClass {
             undefined,
             definition.genericStateObjects.panel.panels.cmd.pagePopup._channel,
         );
+        await this.library.writedp(
+            `panels.${this.name}.screensaverNotify`,
+            undefined,
+            definition.genericStateObjects.panel.panels.screensaverNotify._channel,
+        );
+        await this.library.writedp(
+            `panels.${this.name}.screensaverNotify.id`,
+            undefined,
+            definition.genericStateObjects.panel.panels.screensaverNotify.id,
+        );
 
         for (const key of Object.keys(definition.genericStateObjects.panel.panels.pagePopup)) {
             if (key !== '_channel') {

@@ -2585,8 +2585,9 @@ class NspanelLovelaceUi extends utils.Adapter {
                 }
                 case 'screensaverNotify': {
                     // sendTo('nspanel-lovelace-ui.0', 'screensaverNotify', { panel: 'panelTopic', heading: 'Heading', text: 'Text', enabled: true });
+                    let notifySent = false;
                     if (obj.message?.panel && this.controller?.panels) {
-                        const panel = this.controller.panels.find(a => a.topic === obj.message.topic);
+                        const panel = this.controller.panels.find(a => a.topic === obj.message.panel);
                         if (panel?.screenSaver) {
                             if (typeof obj.message.heading === 'string') {
                                 await panel.statesControler.setInternalState(
@@ -2607,6 +2608,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                                 !!obj.message.enabled,
                                 false,
                             );
+                            notifySent = true;
                             //panel.screenSaver.textNotification = obj.message.text || '';
                             //panel.screenSaver.sendNotify(!!obj.message.enabled);
                         } else {
@@ -2617,10 +2619,7 @@ class NspanelLovelaceUi extends utils.Adapter {
                             `Missing panel in screensaverNotify: ${JSON.stringify(obj.message)} or controller not ready!`,
                         );
                     }
-                    // Send response in callback if required
-                    if (obj.callback) {
-                        this.sendTo(obj.from, obj.command, { error: 'sendToAnyError' }, obj.callback);
-                    }
+                    this.answerMessage(obj, notifySent ? { result: 'ok' } : { error: 'sendToAnyError' });
                     break;
                 }
                 case 'buzzer': {

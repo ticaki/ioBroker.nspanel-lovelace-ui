@@ -473,6 +473,16 @@ export class Controller extends Library.BaseClass {
                 );
             }
         }
+        await this.library.writedp(
+            `screensaverNotify`,
+            undefined,
+            genericStateObjects.panel.panels.screensaverNotify._channel,
+        );
+        await this.library.writedp(
+            `screensaverNotify.id`,
+            undefined,
+            genericStateObjects.panel.panels.screensaverNotify.id,
+        );
         void this.systemNotification.init();
         await this.initTrashPagesState();
 

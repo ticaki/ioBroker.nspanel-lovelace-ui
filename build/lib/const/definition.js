@@ -164,6 +164,29 @@ const genericStateObjects = {
           native: {}
         }
       },
+      screensaverNotify: {
+        _channel: {
+          _id: "",
+          type: "channel",
+          common: {
+            name: "StateObjects.screensaverNotify"
+          },
+          native: {}
+        },
+        id: {
+          _id: "",
+          type: "state",
+          common: {
+            name: "StateObjects.screensaverNotify.id",
+            type: "string",
+            role: "text",
+            read: true,
+            write: false,
+            def: ""
+          },
+          native: {}
+        }
+      },
       buttons: {
         _channel: {
           _id: "",
