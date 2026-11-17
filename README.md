@@ -158,6 +158,9 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
     Placeholder for the next version (at the beginning of the line):
     ### **WORK IN PROGRESS**
 -->
+### **WORK IN PROGRESS**
+- (ticaki) Temperature offset changed directly in Tasmota (console `TempOffset`) is now taken over into the state instead of being overwritten on the next reconnect
+
 ### 2.3.1 (2026-11-16)
 - (ticaki) Admin: help links to the documentation at many settings, in the ioBroker system language
 - (tt-tom17) Admin, developer tab: flashing a custom TFT also works with an external MQTT broker - the box asks for the "IP of the ioBroker" itself

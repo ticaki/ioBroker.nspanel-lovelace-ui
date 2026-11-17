@@ -140,6 +140,27 @@ function readConstString(data: Record<string, any> | undefined | null, field: st
     return value && value.type === 'const' && typeof value.constVal === 'string' ? value.constVal : undefined;
 }
 
+/**
+ * Temperature offset from a Tasmota result message.
+ *
+ * Tasmota answers `TempOffset` with `{"TempOffset":5.0}`, the lower case key is accepted as well.
+ * The value may be a number or a numeric string and is clamped to the Tasmota range ±12.6.
+ *
+ * @param msg Parsed result message.
+ * @returns The offset, `null` if the message carries no finite offset.
+ */
+export function readTempOffset(msg: unknown): number | null {
+    if (typeof msg !== 'object' || msg === null) {
+        return null;
+    }
+    const raw: unknown = 'TempOffset' in msg ? msg.TempOffset : 'tempOffset' in msg ? msg.tempOffset : undefined;
+    const value = typeof raw === 'number' ? raw : typeof raw === 'string' && raw.trim() !== '' ? Number(raw) : NaN;
+    if (!Number.isFinite(value)) {
+        return null;
+    }
+    return Math.max(-12.6, Math.min(12.6, value));
+}
+
 export class Panel extends BaseClass {
     private loopTimeout: ioBroker.Timeout | undefined;
     private pages: (Page | undefined)[] = [];
@@ -1393,15 +1414,21 @@ export class Panel extends BaseClass {
                         await this.setStatus('offline');
                     }
                     return;
-                } else if ('tempOffset' in msg) {
+                } else if ('TempOffset' in msg || 'tempOffset' in msg) {
+                    // Tasmota answers with `{"TempOffset":5.0}`, the lower case key is accepted as well
+                    const offset = readTempOffset(msg);
+                    if (offset === null) {
+                        this.log.debug(`Received invalid TempOffset ${message} from panel, ignored.`);
+                        return;
+                    }
                     const def = structuredClone(definition.genericStateObjects.panel.panels.cmd.tempOffset);
                     if (this.info.tasmota.sensors?.TempUnit === 'F') {
                         def.common.unit = '°F';
                     } else {
                         def.common.unit = '°C';
                     }
-                    await this.library.writedp(`panels.${this.name}.cmd.tempOffset`, parseFloat(msg.tempOffset), def);
-                    this.log.debug(`Received tempOffset ${msg.tempOffset} from panel, write to state.`);
+                    await this.library.writedp(`panels.${this.name}.cmd.tempOffset`, offset, def);
+                    this.log.debug(`Received TempOffset ${offset} from panel, write to state.`);
                     return;
                 } else if ('nextion' in msg && typeof msg.nextion === 'string') {
                     // Raw Nextion return codes forwarded by the berry driver, e.g. "bytes('24')" or "bytes('24FFFFFF24')".

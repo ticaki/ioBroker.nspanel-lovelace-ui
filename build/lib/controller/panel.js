@@ -28,7 +28,8 @@ var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__ge
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 var panel_exports = {};
 __export(panel_exports, {
-  Panel: () => Panel
+  Panel: () => Panel,
+  readTempOffset: () => readTempOffset
 });
 module.exports = __toCommonJS(panel_exports);
 var import_panel_message = require("./panel-message");
@@ -79,6 +80,17 @@ const DefaultOptions = {
 function readConstString(data, field) {
   const value = data && field in data ? data[field] : void 0;
   return value && value.type === "const" && typeof value.constVal === "string" ? value.constVal : void 0;
+}
+function readTempOffset(msg) {
+  if (typeof msg !== "object" || msg === null) {
+    return null;
+  }
+  const raw = "TempOffset" in msg ? msg.TempOffset : "tempOffset" in msg ? msg.tempOffset : void 0;
+  const value = typeof raw === "number" ? raw : typeof raw === "string" && raw.trim() !== "" ? Number(raw) : NaN;
+  if (!Number.isFinite(value)) {
+    return null;
+  }
+  return Math.max(-12.6, Math.min(12.6, value));
 }
 class Panel extends import_library.BaseClass {
   loopTimeout;
@@ -1190,15 +1202,20 @@ class Panel extends import_library.BaseClass {
             await this.setStatus("offline");
           }
           return;
-        } else if ("tempOffset" in msg) {
+        } else if ("TempOffset" in msg || "tempOffset" in msg) {
+          const offset = readTempOffset(msg);
+          if (offset === null) {
+            this.log.debug(`Received invalid TempOffset ${message} from panel, ignored.`);
+            return;
+          }
           const def = structuredClone(definition.genericStateObjects.panel.panels.cmd.tempOffset);
           if (((_a = this.info.tasmota.sensors) == null ? void 0 : _a.TempUnit) === "F") {
             def.common.unit = "\xB0F";
           } else {
             def.common.unit = "\xB0C";
           }
-          await this.library.writedp(`panels.${this.name}.cmd.tempOffset`, parseFloat(msg.tempOffset), def);
-          this.log.debug(`Received tempOffset ${msg.tempOffset} from panel, write to state.`);
+          await this.library.writedp(`panels.${this.name}.cmd.tempOffset`, offset, def);
+          this.log.debug(`Received TempOffset ${offset} from panel, write to state.`);
           return;
         } else if ("nextion" in msg && typeof msg.nextion === "string") {
           const codes = msg.nextion.replace(/^bytes\('|'\)$/g, "").split("FFFFFF");
@@ -3158,6 +3175,7 @@ ${this.info.tasmota.onlineVersion}`;
 }
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
-  Panel
+  Panel,
+  readTempOffset
 });
 //# sourceMappingURL=panel.js.map
