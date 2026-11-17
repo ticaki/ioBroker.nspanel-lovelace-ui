@@ -92,6 +92,8 @@ The panel shows **one** notification at a time. If several are active at once, t
 | **Dismiss** | A tap on the screensaver hides the notification – until its state switches off and on again. |
 | **Group ID** | Only with the tick box set. Notifications with the same group ID are dismissed together, and that **on all panels**. |
 
+**Feedback for scripts:** When a notification with a group ID is tapped away, the adapter writes the ID to `nspanel-lovelace-ui.0.panels.<panel>.screensaverNotify.id` (the panel that was tapped) and to `nspanel-lovelace-ui.0.screensaverNotify.id`. The state is written with every dismiss, also when the same ID comes again – so a script reacts to every update (not only to changes). Without a group ID there is no feedback.
+
 > ⚠️ **Without** "Dismiss" the message stays as long as its states are on – it cannot be tapped away at the panel. For lasting states (an open window) that is intended, for events (a doorbell) usually not.
 
 > ⚠️ **Only a dismissible message takes the tap.** While a message with **Dismiss** lies on the screensaver, the first tap – or swipe – is used up for it: it disappears, the panel stays in the screensaver, only the next tap leads to the main page. A message **without** Dismiss lets the tap through: the panel changes to the main page as usual, the message stays and lies on the screensaver again as soon as it returns. With double click switched on (`cmd.screenSaver.doubleClick`) the double tap counts each time. Up to and including 2.2.0 a message that could not be dismissed took every tap as well – the only ways out of the screensaver were an item with an action of its own, the hardware buttons or `cmd.goToNavigationPoint`.

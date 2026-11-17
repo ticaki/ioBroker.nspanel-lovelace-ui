@@ -589,6 +589,16 @@ class Panel extends import_library.BaseClass {
       void 0,
       definition.genericStateObjects.panel.panels.cmd.pagePopup._channel
     );
+    await this.library.writedp(
+      `panels.${this.name}.screensaverNotify`,
+      void 0,
+      definition.genericStateObjects.panel.panels.screensaverNotify._channel
+    );
+    await this.library.writedp(
+      `panels.${this.name}.screensaverNotify.id`,
+      void 0,
+      definition.genericStateObjects.panel.panels.screensaverNotify.id
+    );
     for (const key of Object.keys(definition.genericStateObjects.panel.panels.pagePopup)) {
       if (key !== "_channel") {
         await this.library.writedp(

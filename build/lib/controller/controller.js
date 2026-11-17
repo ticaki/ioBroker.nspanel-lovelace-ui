@@ -447,6 +447,16 @@ class Controller extends Library.BaseClass {
         );
       }
     }
+    await this.library.writedp(
+      `screensaverNotify`,
+      void 0,
+      import_definition.genericStateObjects.panel.panels.screensaverNotify._channel
+    );
+    await this.library.writedp(
+      `screensaverNotify.id`,
+      void 0,
+      import_definition.genericStateObjects.panel.panels.screensaverNotify.id
+    );
     void this.systemNotification.init();
     await this.initTrashPagesState();
     const configured = (_a = this.adapter.config.panels) != null ? _a : [];

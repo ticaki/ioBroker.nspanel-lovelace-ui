@@ -1358,6 +1358,17 @@ const _Screensaver = class _Screensaver extends import_Page.Page {
     await this.HandleNotification();
   }
   /**
+   * Reports the id of a dismissed notification to `panels.<name>.screensaverNotify.id` and to the global
+   * `screensaverNotify.id`. Written with every dismiss - also when the same id comes again - so scripts see an update.
+   *
+   * @param id global id of the dismissed notification
+   */
+  async reportNotifyDismiss(id) {
+    const definition = Definition.genericStateObjects.panel.panels.screensaverNotify;
+    await this.library.writedp(`panels.${this.basePanel.name}.screensaverNotify.id`, id, definition.id, true, true);
+    await this.library.writedp(`screensaverNotify.id`, id, definition.id, true, true);
+  }
+  /**
    * A tap on the shown notification dismisses it when it can be dismissed.
    *
    * @returns true when the tap did something - it dismissed the notification or nothing is left to show.
@@ -1376,6 +1387,7 @@ const _Screensaver = class _Screensaver extends import_Page.Page {
           const globalId = item.getGlobalDismissibleID();
           if (globalId) {
             await this.controller.setGlobalNotificationDismiss(globalId);
+            await this.reportNotifyDismiss(globalId);
           }
         }
       }
