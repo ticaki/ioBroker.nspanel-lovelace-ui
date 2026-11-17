@@ -1365,7 +1365,7 @@
     "screensaver_notify_dismiss": "关闭",
     "screensaver_notify_dismissible": "点击屏幕保护可隐藏通知，直到其状态关闭后再次开启",
     "screensaver_notify_dismissibleId": "组 ID",
-    "screensaver_notify_dismissibleIdHint": "具有相同组 ID 的通知会一起隐藏——在所有面板上。点击关闭通知时，ID 会写入状态 panels.<面板>.screensaverNotify.id 和 screensaverNotify.id。",
+    "screensaver_notify_dismissibleIdHint": "具有相同组 ID 的通知会一起隐藏——在所有面板上。点击关闭通知时，组 ID 会写入状态 panels.<面板>.screensaverNotify.id 和 screensaverNotify.id。",
     "screensaver_notify_duplicate": "复制",
     "screensaver_notify_edit": "编辑",
     "screensaver_notify_editTitle": "通知",

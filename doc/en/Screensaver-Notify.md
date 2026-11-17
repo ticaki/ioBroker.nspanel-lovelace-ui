@@ -92,7 +92,7 @@ The panel shows **one** notification at a time. If several are active at once, t
 | **Dismiss** | A tap on the screensaver hides the notification – until its state switches off and on again. |
 | **Group ID** | Only with the tick box set. Notifications with the same group ID are dismissed together, and that **on all panels**. |
 
-**Feedback for scripts:** When a notification with a group ID is tapped away, the adapter writes the ID to `nspanel-lovelace-ui.0.panels.<panel>.screensaverNotify.id` (the panel that was tapped) and to `nspanel-lovelace-ui.0.screensaverNotify.id`. The state is written with every dismiss, also when the same ID comes again – so a script reacts to every update (not only to changes). Without a group ID there is no feedback.
+**Feedback for scripts:** When a notification with a group ID is dismissed, the adapter writes the **group ID** (not the single entry) to `nspanel-lovelace-ui.0.panels.<panel>.screensaverNotify.id` (the panel that was tapped) and to `nspanel-lovelace-ui.0.screensaverNotify.id`. Every dismiss writes the state again, also with the same group ID – so trigger the script on update, not on value change. Without a group ID there is no feedback.
 
 > ⚠️ **Without** "Dismiss" the message stays as long as its states are on – it cannot be tapped away at the panel. For lasting states (an open window) that is intended, for events (a doorbell) usually not.
 

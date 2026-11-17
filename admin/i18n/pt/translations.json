@@ -1365,7 +1365,7 @@
     "screensaver_notify_dismiss": "Dispensar",
     "screensaver_notify_dismissible": "Um toque no protetor de tela oculta a notificação até que o seu estado desligue e volte a ligar",
     "screensaver_notify_dismissibleId": "ID do grupo",
-    "screensaver_notify_dismissibleIdHint": "Notificações com o mesmo ID de grupo são ocultadas juntas - em todos os painéis. Ao dispensar com um toque, o ID é escrito nos estados panels.<painel>.screensaverNotify.id e screensaverNotify.id.",
+    "screensaver_notify_dismissibleIdHint": "Notificações com o mesmo ID de grupo são ocultadas juntas - em todos os painéis. Ao dispensar com um toque, o ID do grupo é escrito nos estados panels.<painel>.screensaverNotify.id e screensaverNotify.id.",
     "screensaver_notify_duplicate": "Duplicar",
     "screensaver_notify_edit": "Editar",
     "screensaver_notify_editTitle": "Notificação",

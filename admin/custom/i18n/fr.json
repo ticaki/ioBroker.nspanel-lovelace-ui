@@ -1365,7 +1365,7 @@
     "screensaver_notify_dismiss": "Acquitter",
     "screensaver_notify_dismissible": "Un appui sur l'économiseur d'écran masque la notification jusqu'à ce que son état se désactive puis se réactive",
     "screensaver_notify_dismissibleId": "ID de groupe",
-    "screensaver_notify_dismissibleIdHint": "Les notifications ayant le même ID de groupe sont masquées ensemble - sur tous les panneaux. Un appui qui masque la notification écrit l'ID dans les états panels.<panneau>.screensaverNotify.id et screensaverNotify.id.",
+    "screensaver_notify_dismissibleIdHint": "Les notifications ayant le même ID de groupe sont masquées ensemble - sur tous les panneaux. Un appui qui masque la notification écrit l'ID de groupe dans les états panels.<panneau>.screensaverNotify.id et screensaverNotify.id.",
     "screensaver_notify_duplicate": "Dupliquer",
     "screensaver_notify_edit": "Modifier",
     "screensaver_notify_editTitle": "Notification",

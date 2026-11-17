@@ -92,7 +92,7 @@ Das Panel zeigt **immer nur eine** Benachrichtigung. Sind mehrere gleichzeitig a
 | **Quittieren** | Tippen auf den Bildschirmschoner blendet die Benachrichtigung aus – bis ihr Datenpunkt aus- und wieder angeht. |
 | **Gruppen-ID** | Nur bei gesetztem Häkchen. Benachrichtigungen mit derselben Gruppen-ID werden gemeinsam quittiert, und zwar **auf allen Panels**. |
 
-**Rückmeldung an Skripte:** Wird eine Benachrichtigung mit Gruppen-ID weggetippt, schreibt der Adapter die ID nach `nspanel-lovelace-ui.0.panels.<Panel>.screensaverNotify.id` (das Panel, auf dem getippt wurde) und nach `nspanel-lovelace-ui.0.screensaverNotify.id`. Der Datenpunkt wird bei jedem Wegtippen neu geschrieben, auch wenn dieselbe ID erneut kommt – ein Skript reagiert also auf jede Aktualisierung (nicht nur auf Wertänderungen). Ohne Gruppen-ID gibt es keine Rückmeldung.
+**Rückmeldung an Skripte:** Wird eine Benachrichtigung mit Gruppen-ID quittiert, schreibt der Adapter die **Gruppen-ID** (nicht den einzelnen Eintrag) nach `nspanel-lovelace-ui.0.panels.<Panel>.screensaverNotify.id` (das Panel, auf dem getippt wurde) und nach `nspanel-lovelace-ui.0.screensaverNotify.id`. Jede Quittung schreibt den Datenpunkt neu, auch bei derselben Gruppen-ID – im Skript daher auf Aktualisierung triggern, nicht auf Wertänderung. Ohne Gruppen-ID gibt es keine Rückmeldung.
 
 > ⚠️ **Ohne** „Quittieren“ bleibt die Meldung stehen, solange ihre Datenpunkte an sind – sie lässt sich am Panel nicht wegtippen. Für Dauerzustände (offenes Fenster) ist das gewollt, für Ereignisse (Türklingel) meist nicht.
 

@@ -1365,7 +1365,7 @@
     "screensaver_notify_dismiss": "Wegklikken",
     "screensaver_notify_dismissible": "Een tik op de schermbeveiliging verbergt de melding totdat het datapunt uit en weer aan gaat",
     "screensaver_notify_dismissibleId": "Groeps-ID",
-    "screensaver_notify_dismissibleIdHint": "Meldingen met dezelfde groeps-ID worden samen verborgen - op alle panelen. Bij het wegtikken wordt de ID naar de datapunten panels.<paneel>.screensaverNotify.id en screensaverNotify.id geschreven.",
+    "screensaver_notify_dismissibleIdHint": "Meldingen met dezelfde groeps-ID worden samen verborgen - op alle panelen. Bij het wegtikken wordt de groeps-ID naar de datapunten panels.<paneel>.screensaverNotify.id en screensaverNotify.id geschreven.",
     "screensaver_notify_duplicate": "Dupliceren",
     "screensaver_notify_edit": "Bewerken",
     "screensaver_notify_editTitle": "Melding",

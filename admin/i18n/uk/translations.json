@@ -1365,7 +1365,7 @@
     "screensaver_notify_dismiss": "Приховування",
     "screensaver_notify_dismissible": "Дотик до заставки приховує сповіщення, доки його стан не вимкнеться й знову не увімкнеться",
     "screensaver_notify_dismissibleId": "ID групи",
-    "screensaver_notify_dismissibleIdHint": "Сповіщення з однаковим ID групи приховуються разом — на всіх панелях. Під час закриття дотиком ID записується в стани panels.<panel>.screensaverNotify.id і screensaverNotify.id.",
+    "screensaver_notify_dismissibleIdHint": "Сповіщення з однаковим ID групи приховуються разом — на всіх панелях. Під час закриття дотиком ID групи записується в стани panels.<panel>.screensaverNotify.id і screensaverNotify.id.",
     "screensaver_notify_duplicate": "Дублювати",
     "screensaver_notify_edit": "Редагувати",
     "screensaver_notify_editTitle": "Сповіщення",

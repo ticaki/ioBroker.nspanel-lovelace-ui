@@ -1399,7 +1399,7 @@
     "screensaver_notify_dismiss": "Dismiss",
     "screensaver_notify_dismissible": "A tap on the screensaver hides the notification until its state switches off and on again",
     "screensaver_notify_dismissibleId": "Group ID",
-    "screensaver_notify_dismissibleIdHint": "Notifications with the same group ID are hidden together - on all panels. A tap that hides the notification reports the ID to the states panels.<panel>.screensaverNotify.id and screensaverNotify.id.",
+    "screensaver_notify_dismissibleIdHint": "Notifications with the same group ID are hidden together - on all panels. Dismissing reports the group ID to the states panels.<panel>.screensaverNotify.id and screensaverNotify.id.",
     "screensaver_notify_duplicate": "Duplicate",
     "screensaver_notify_edit": "Edit",
     "screensaver_notify_editTitle": "Notification",
