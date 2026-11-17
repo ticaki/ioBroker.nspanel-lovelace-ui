@@ -31,7 +31,7 @@ beschreiben noch vier Versionen. Es geht nur um die Konfiguration im Adapter, ni
 4. **Nach weiteren Änderungen suchen.** Dieser Prompt kann älter sein als der Code. Suche deshalb selbst nach Änderungen
    am Modus und am Screensaver, die hier fehlen, und arbeite sie mit ein:
    - Liste die Commits seit diesem Prompt:
-     `git log --oneline "$(git log -1 --format=%H -- doc/prompt_doku-screensaver-kacheln.md)"..HEAD -- src/lib/pages/screensaver.ts src/lib/pages/pageItem.ts src/lib/classes/config-manager.ts src/lib/const/definition.ts src/lib/types/adminShareConfig.ts src-admin/src/components/ScreensaverEditor.tsx src-admin/src/components/ScreensaverItemDialog.tsx HMI/tools json/version.json`.
+     `git log --oneline 10fa4ae6..HEAD -- src/lib/pages/screensaver.ts src/lib/pages/pageItem.ts src/lib/classes/config-manager.ts src/lib/const/definition.ts src/lib/types/adminShareConfig.ts src-admin/src/components/ScreensaverEditor.tsx src-admin/src/components/ScreensaverItemDialog.tsx HMI/tools json/version.json`.
      Lies bei allem, was den Screensaver betrifft, auch den Diff.
    - Lies in `README.md` unter `## Changelog` den Abschnitt `WORK IN PROGRESS` und die Einträge der Versionen ab dem
      Eintrag „new mode tiles“ auf Screensaver, Kacheln, Tiles und `screensaver5`.

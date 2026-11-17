@@ -44,7 +44,7 @@ Es geht nur um die Konfiguration und das Verhalten im Adapter, nicht um das Baue
 4. **Nach weiteren Änderungen suchen.** Dieser Prompt kann älter sein als der Code. Suche deshalb selbst nach Änderungen
    an Indikatoren und Screensaver, die hier fehlen, und arbeite sie mit ein:
    - Liste die Commits seit diesem Prompt:
-     `git log --oneline "$(git log -1 --format=%H -- doc/prompt_doku-indikator-long-press.md)"..HEAD -- src/lib/pages/screensaver.ts src/lib/pages/pageItem.ts src/lib/controller/panel.ts src/lib/classes/config-manager.ts src/lib/const/definition.ts src/lib/types/adminShareConfig.ts src-admin/src/components/ScreensaverEditor.tsx src-admin/src/components/ScreensaverItemDialog.tsx src-web/src/cards/screensaver HMI/tools json/version.json`.
+     `git log --oneline cf39a9b4..HEAD -- src/lib/pages/screensaver.ts src/lib/pages/pageItem.ts src/lib/controller/panel.ts src/lib/classes/config-manager.ts src/lib/const/definition.ts src/lib/types/adminShareConfig.ts src-admin/src/components/ScreensaverEditor.tsx src-admin/src/components/ScreensaverItemDialog.tsx src-web/src/cards/screensaver HMI/tools json/version.json`.
      Lies bei allem, was den Screensaver betrifft, auch den Diff. Lies auch den Commit
      `feat(screensaver): icon font for tiles indicators and tap counter on indicator taps (#849)`, der den Tipp-Zähler
      eingeführt hat.
