@@ -3430,7 +3430,6 @@ export class ConfigManager extends BaseClass {
                                             ? {
                                                   ...foundedStates[role].SET,
                                                   type: 'state',
-                                                  dp: `${item.id}.SET`,
                                                   write: 'return true;',
                                               }
                                             : undefined,
@@ -3440,7 +3439,6 @@ export class ConfigManager extends BaseClass {
                                             ? {
                                                   ...foundedStates[role].SET,
                                                   type: 'state',
-                                                  dp: `${item.id}.SET`,
                                                   write: 'return false;',
                                               }
                                             : undefined,

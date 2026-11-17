@@ -382,8 +382,10 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
               optionalValueC[i + 3] = "disable";
             }
           });
-          optionalValueC[3] = value === 100 ? "disable" : optionalValueC[3];
-          optionalValueC[5] = value === 0 ? "disable" : optionalValueC[5];
+          const isOpen = typeof value === "boolean" ? value : value === 100;
+          const isClosed = typeof value === "boolean" ? !value : value === 0;
+          optionalValueC[3] = isOpen ? "disable" : optionalValueC[3];
+          optionalValueC[5] = isClosed ? "disable" : optionalValueC[5];
           message.optionalValue = optionalValueC.join("|");
           message.displayName = this.library.getTranslation(
             (_t = (_s = await tools.getEntryTextOnOff(item.headline, !!value)) != null ? _s : message.displayName) != null ? _t : ""
@@ -1866,15 +1868,9 @@ class PageItem extends import_baseClassPage.BaseTriggeredPage {
             message.iconL1 = optionalValueC[0];
             message.iconM1 = optionalValueC[1];
             message.iconR1 = optionalValueC[2];
-            if (this.config.role == "gate") {
-              message.statusL1 = (typeof pos === "boolean" ? false : pos === 100) ? "disable" : optionalValueC[3];
-              message.statusM1 = (typeof pos === "boolean" ? pos : pos === "disabled") ? "disable" : optionalValueC[4];
-              message.statusR1 = (typeof pos === "boolean" ? !pos : pos === 0) ? "disable" : optionalValueC[5];
-            } else {
-              message.statusL1 = (typeof pos === "boolean" ? false : pos === 100) ? "disable" : optionalValueC[3];
-              message.statusM1 = (typeof pos === "boolean" ? pos : pos === "disabled") ? "disable" : optionalValueC[4];
-              message.statusR1 = (typeof pos === "boolean" ? !pos : pos === 0) ? "disable" : optionalValueC[5];
-            }
+            message.statusL1 = (typeof pos === "boolean" ? pos : pos === 100) ? "disable" : optionalValueC[3];
+            message.statusM1 = (typeof pos === "boolean" ? false : pos === "disabled") ? "disable" : optionalValueC[4];
+            message.statusR1 = (typeof pos === "boolean" ? !pos : pos === 0) ? "disable" : optionalValueC[5];
           } else {
             message.pos2 = typeof pos === "boolean" ? "disable" : String(pos);
             message.pos2text = (__ = await tools.getEntryTextOnOff(item.text2, true)) != null ? __ : "";

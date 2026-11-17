@@ -1015,6 +1015,17 @@ describe('lib/classes/config-manager - page items (golden master)', function () 
             expect(data.down).to.include({ type: 'state', dp: `${channel}.SET`, write: 'return false;' });
         });
 
+        it('SET with another name: up and down write to the found state', async () => {
+            const channel = 'alias.0.namedgate.gate';
+            const data = await gateData(channel, {
+                STATUS: { role: 'sensor.gate', type: 'boolean', write: false },
+                COMMAND: { role: 'switch.gate', type: 'boolean', write: true },
+            });
+            expect(data.entity1.value).to.include({ type: 'triggered', dp: `${channel}.STATUS` });
+            expect(data.up).to.include({ type: 'state', dp: `${channel}.COMMAND`, write: 'return true;' });
+            expect(data.down).to.include({ type: 'state', dp: `${channel}.COMMAND`, write: 'return false;' });
+        });
+
         it('only SET: SET is the status as well', async () => {
             const channel = 'alias.0.setonlygate.gate';
             const data = await gateData(channel, {

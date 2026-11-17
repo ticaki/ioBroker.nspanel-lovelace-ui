@@ -2895,13 +2895,11 @@ class ConfigManager extends import_library.BaseClass {
                   up: ((_q = foundedStates[role].SET) == null ? void 0 : _q.type) === "state" || ((_r = foundedStates[role].SET) == null ? void 0 : _r.type) === "triggered" ? {
                     ...foundedStates[role].SET,
                     type: "state",
-                    dp: `${item.id}.SET`,
                     write: "return true;"
                   } : void 0,
                   down: ((_s = foundedStates[role].SET) == null ? void 0 : _s.type) === "state" || ((_t = foundedStates[role].SET) == null ? void 0 : _t.type) === "triggered" ? {
                     ...foundedStates[role].SET,
                     type: "state",
-                    dp: `${item.id}.SET`,
                     write: "return false;"
                   } : void 0,
                   stop: foundedStates[role].STOP
