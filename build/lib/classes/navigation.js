@@ -232,22 +232,22 @@ class Navigation extends import_library.BaseClass {
         return;
       }
       if (item) {
+        if (this.panel.hideCards && item.page.hidden && !d) {
+          await this.showLockedPage(item.page.name);
+          return;
+        }
         this.currentItem = index;
-        if (this.panel.hideCards && item.page.hidden) {
-          if (d) {
-            this.infityCounter++;
-            if (this.infityCounter > 10) {
-              this.log.error(
-                `Infinite loop detected in navigation: hidden - ${item.page.id} - ${item.page.name} - set navigation to main page.`
-              );
-              await this.setTargetPageByName(this.mainPage);
-              this.infityCounter = 0;
-              return;
-            }
-            this.go(d);
-          } else {
-            await this.showLockedPage(item.page.name);
+        if (this.panel.hideCards && item.page.hidden && d) {
+          this.infityCounter++;
+          if (this.infityCounter > 10) {
+            this.log.error(
+              `Infinite loop detected in navigation: hidden - ${item.page.id} - ${item.page.name} - set navigation to main page.`
+            );
+            await this.setTargetPageByName(this.mainPage);
+            this.infityCounter = 0;
+            return;
           }
+          this.go(d);
           return;
         }
         this.infityCounter = 0;

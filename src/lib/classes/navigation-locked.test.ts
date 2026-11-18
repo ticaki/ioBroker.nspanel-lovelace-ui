@@ -118,6 +118,33 @@ describe('lib/classes/navigation - locked (hidden) page', () => {
         expect(f.popups).to.have.length(0);
     });
 
+    it('after a locked target the next arrow starts from the page shown', async () => {
+        const f = setup(chain(), ['geheim'], true);
+        await f.nav.init();
+        await f.nav.setTargetPageByName('main');
+        const main = indexOf(f.nav, 'main');
+        expect(f.nav.currentItem).to.equal(main);
+        await f.nav.setTargetPageByName('geheim');
+        expect(f.nav.currentItem).to.equal(main);
+        // left of main is wecker - left of the locked page would be main again
+        f.nav.goLeft(true);
+        await tick();
+        expect(f.shown).to.deep.equal(['main', 'wecker']);
+        expect(f.nav.currentItem).to.equal(indexOf(f.nav, 'wecker'));
+    });
+
+    it('swiping over a locked page goes on from it', async () => {
+        const f = setup(chain(), ['geheim'], true);
+        await f.nav.init();
+        f.nav.currentItem = indexOf(f.nav, 'wecker');
+        // left of wecker is the locked page, its left is main
+        f.nav.goLeft(true);
+        await tick();
+        await tick();
+        expect(f.shown).to.deep.equal(['main']);
+        expect(f.popups).to.have.length(0);
+    });
+
     it('without hideCards hidden has no effect', async () => {
         const f = setup(chain(), ['geheim'], false);
         await f.nav.init();
