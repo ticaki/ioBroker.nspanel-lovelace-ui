@@ -221,75 +221,43 @@ async function getTemperaturColorFromValue(i, dimmer = 100) {
   }
   return null;
 }
+const CT_DEFAULT_RANGE = { kelvin: { min: 2200, max: 6500 }, mired: { min: 153, max: 500 } };
+async function getSliderCTRange(i) {
+  var _a;
+  const mired = i.mode !== void 0 && await i.mode.getString() === "mired";
+  let range = mired ? CT_DEFAULT_RANGE.mired : CT_DEFAULT_RANGE.kelvin;
+  const minScale = i.minScale !== void 0 ? await i.minScale.getNumber() : null;
+  const maxScale = i.maxScale !== void 0 ? await i.maxScale.getNumber() : null;
+  const common = (_a = i.value) == null ? void 0 : _a.common;
+  if (minScale !== null && maxScale !== null) {
+    range = { min: minScale, max: maxScale };
+  } else if (common && typeof common.min === "number" && typeof common.max === "number") {
+    range = { min: common.min, max: common.max };
+  }
+  return mired ? { cold: range.min, warm: range.max } : { cold: range.max, warm: range.min };
+}
 async function getSliderCTFromValue(i) {
-  if (!i) {
+  if (!i || !i.value) {
     return null;
   }
-  const nval = i.value && await i.value.getNumber();
-  const mode = i.mode && await i.mode.getString();
-  let r = 3500;
-  if (nval !== null && nval !== void 0) {
-    if (i.minScale !== void 0 && i.maxScale !== void 0) {
-      const min = await i.minScale.getNumber();
-      const max = await i.maxScale.getNumber();
-      if (min !== null && max !== null) {
-        if (mode === "mired") {
-          r = Math.round(import_Color.Color.scale(nval, min, max, 0, 100));
-        } else {
-          r = Math.round(import_Color.Color.scale(nval, min, max, 100, 0));
-        }
-      }
-    } else if (i.value && i.value.common && i.value.common.min !== void 0 && i.value.common.max !== void 0) {
-      if (mode === "mired") {
-        r = Math.round(import_Color.Color.scale(nval, i.value.common.min, i.value.common.max, 0, 100));
-      } else {
-        r = Math.round(import_Color.Color.scale(nval, i.value.common.min, i.value.common.max, 100, 0));
-      }
-    } else {
-      if (mode === "mired") {
-        r = Math.round(import_Color.Color.scale(nval, 153, 500, 0, 100));
-      } else {
-        r = Math.round(import_Color.Color.scale(nval, 2200, 6500, 100, 0));
-      }
-    }
-    return r !== null ? String(r) : null;
+  const nval = await i.value.getNumber();
+  if (nval === null || nval === void 0) {
+    return null;
   }
-  return null;
+  const { cold, warm } = await getSliderCTRange(i);
+  const r = Math.round(import_Color.Color.scale(nval, cold, warm, 0, 100));
+  if (!Number.isFinite(r)) {
+    return null;
+  }
+  return String(Math.max(0, Math.min(100, r)));
 }
 async function setSliderCTFromValue(i, value) {
-  if (!i || !i.value) {
+  if (!i || !i.value || !Number.isFinite(value)) {
     return;
   }
-  const mode = i.mode && await i.mode.getString();
-  let r = value;
-  if (i.minScale !== void 0 && i.maxScale !== void 0) {
-    const min = await i.minScale.getNumber();
-    const max = await i.maxScale.getNumber();
-    if (min !== null && max !== null) {
-      if (mode === "mired") {
-        r = Math.round(import_Color.Color.scale(r, 0, 100, min, max));
-      } else {
-        r = Math.round(import_Color.Color.scale(r, 0, 100, max, min));
-      }
-    }
-  } else if (i.value && i.value.common && i.value.common.min !== void 0 && i.value.common.max !== void 0) {
-    if (mode === "mired") {
-      r = Math.round(import_Color.Color.scale(r, 0, 100, i.value.common.max, i.value.common.min));
-    } else {
-      r = Math.round(import_Color.Color.scale(r, 0, 100, i.value.common.min, i.value.common.max));
-    }
-  } else {
-    if (mode === "mired") {
-      r = Math.round(import_Color.Color.scale(r, 0, 100, 153, 500));
-    } else {
-      r = Math.round(import_Color.Color.scale(r, 0, 100, 6500, 2200));
-    }
-  }
-  if (i.set && i.set.writeable) {
-    await i.value.setState(r);
-  } else {
-    await i.value.setState(r);
-  }
+  const { cold, warm } = await getSliderCTRange(i);
+  const slider = Math.max(0, Math.min(100, value));
+  await i.value.setState(Math.round(import_Color.Color.scale(slider, 0, 100, cold, warm)));
 }
 async function setScaledNumber(i, value) {
   var _a, _b, _c, _d, _e, _f;

@@ -169,6 +169,9 @@ The buzzer command follows Tasmota's format: `tone,duration,count,frequency`
 - (ticaki) Web panel: the long press of a screensaver indicator no longer operates the popup it opens (releasing the finger moved the shutter or picked a color)
 - (ticaki) screensaver: TFT 6.2.0 and web panel send the long press of an indicator only when the finger is lifted - after 500 ms the time blinks red/yellow as a sign to let go; letting go earlier is a short tap, a swipe drops both
 - (ticaki) admin developer: download the configuration of a single page with its page items (stored and runtime) for support
+- (ticaki) web panel: colour temperature slider of the light popup was inverted
+- (ticaki) colour temperature with min/max of the state was set mirrored
+- (ticaki) colour temperature: fallback to the state's min/max or the defaults when the scale is missing, values outside are limited
 
 ### 2.4.0 (2026-11-17)
 - (ticaki) screensaver: new long press action "Open popup" for indicators (Advanced and Tiles, TFT 6.0.9+) - opens the popup of the light, shutter, fan, selection or timer channel and returns to the screensaver afterwards (script: `ScreensaverEntityLongPressPopup: true`)
