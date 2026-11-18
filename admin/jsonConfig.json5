@@ -1406,6 +1406,16 @@
                     "newLine": true,
                     "xs": 12
                 },
+                "_pageDump": {
+                    "type": "custom",
+                    "guiApi": 2,
+                    "i18n": true,
+                    "url": "custom/customComponents.js",
+                    "name": "AdminComponentTemplateSet/Components/PageDump",
+                    "bundlerType": "module",
+                    "newLine": true,
+                    "xs": 12
+                },
                 "_header1": {
                     "type": "header",
                     "label": "Danger Zone - only for users who know exactly what they are doing",

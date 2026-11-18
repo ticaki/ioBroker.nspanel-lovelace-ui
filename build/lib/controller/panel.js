@@ -2996,6 +2996,102 @@ ${this.info.tasmota.onlineVersion}`;
     }
     return void 0;
   }
+  /**
+   * Pages of the panel for the page dump of the admin (tab developer): the screensaver first, then every page
+   * of the navigation.
+   *
+   * @returns name, kind and card of each page
+   */
+  getPageDumpPages() {
+    var _a, _b;
+    const out = [];
+    if (this.screenSaver) {
+      out.push({ page: this.screenSaver.name, kind: "screensaver", card: this.screenSaver.card });
+    }
+    for (const nav of (_b = (_a = this.navigation) == null ? void 0 : _a.getDatabase()) != null ? _b : []) {
+      if (nav == null ? void 0 : nav.page) {
+        out.push({ page: nav.page.name, kind: "page", card: nav.page.card });
+      }
+    }
+    return out;
+  }
+  /**
+   * @param pageName name of the page (or of the screensaver page)
+   * @returns where the page comes from; placeholder pages of a panel without script count as system pages
+   */
+  pageDumpOrigin(pageName) {
+    var _a;
+    const origin = (_a = this.pageOrigins.get(pageName)) != null ? _a : "script";
+    return origin === "script" && this.options.withoutScript ? "system" : origin;
+  }
+  /**
+   * The runtime configuration of a page or of the screensaver for the page dump of the admin (tab developer).
+   *
+   * @param kind page or screensaver
+   * @param pageName name of the page
+   * @returns the configuration the page works with, undefined when the panel has no such page
+   */
+  getPageDumpRuntime(kind, pageName) {
+    var _a, _b, _c;
+    if (kind === "screensaver") {
+      const scs = this.screenSaver;
+      if (!scs || scs.name !== pageName) {
+        return void 0;
+      }
+      return {
+        name: scs.name,
+        kind,
+        card: scs.card,
+        origin: this.pageDumpOrigin(scs.name),
+        mode: scs.mode,
+        config: scs.config,
+        pageItems: scs.pageItemConfig
+      };
+    }
+    const db = (_b = (_a = this.navigation) == null ? void 0 : _a.getDatabase()) != null ? _b : [];
+    const nav = db.find((n) => {
+      var _a2;
+      return ((_a2 = n == null ? void 0 : n.page) == null ? void 0 : _a2.name) === pageName;
+    });
+    if (!nav) {
+      return void 0;
+    }
+    const page = nav.page;
+    const nameOf = (index) => {
+      if (typeof index !== "number") {
+        return void 0;
+      }
+      if (index === import_navigation.SCREENSAVER_NAV_INDEX) {
+        return adminShareConfig.screensaverTargetPage;
+      }
+      const n = db[index];
+      return (n == null ? void 0 : n.page) ? n.page.name : void 0;
+    };
+    const origin = this.pageDumpOrigin(page.name);
+    const out = {
+      name: page.name,
+      kind,
+      card: page.card,
+      origin,
+      hidden: page.hidden,
+      alwaysOn: page.alwaysOn,
+      navigation: {
+        prev: nameOf(nav.left.single),
+        next: nameOf(nav.right.single),
+        parent: nameOf(nav.left.double),
+        home: nameOf(nav.right.double)
+      },
+      config: page.config,
+      pageItems: page.pageItemConfig
+    };
+    if (origin === "admin") {
+      out.adminPageName = this.getAdminPageName(page.name);
+    }
+    if ((_c = this.options.generatedPageIds) == null ? void 0 : _c.includes(page.name)) {
+      out.generated = true;
+    }
+    return out;
+  }
   async getNavigationArrayForFlow() {
     var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k;
     const res = {
