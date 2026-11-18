@@ -334,7 +334,7 @@ In the item dialog of an indicator a second block **Action on long press** stand
 
 ![The item dialog of a dimmer indicator with the choice “Action on long press” opened – here with “Open popup”, because the channel is a dimmer](../Pictures/screensaverAdmin/admin-29-item-langer-druck.png)
 
-- The long press fires after **500 ms**, while the finger is still down; the release sends nothing after that. With an action set **only** that action runs – the action of the short press stays out.
+- From the TFT **6.2.0** on the long press fires only when the finger is **lifted**: after **500 ms** of holding the time blinks red and yellow – you can let go now; afterwards the time gets its colour back. Letting go earlier is a short tap; a swipe drops the long press too. With the TFT 6.0.9 to 6.1.x it fires after 500 ms, while the finger is still down. With an action set **only** that action runs – the action of the short press stays out.
 - **Values to cycle through** does not exist for the long press.
 - Button and switch need a **writable** state; otherwise the dialog says the same as for the action of the short press and does not allow applying. If the state is missing at runtime or is not writable, the adapter warns in the log (*the long press state … does not exist or is not writable - a long press acts like a tap*), and the long press acts like a short one.
 - A [template](#5-templates-as-items) on an indicator place gets the long press as well.

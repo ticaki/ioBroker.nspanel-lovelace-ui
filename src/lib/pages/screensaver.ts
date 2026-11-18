@@ -1956,8 +1956,8 @@ export class Screensaver extends Page {
     }
 
     /**
-     * A long press on a tile of the TFT 6.0.9+ (`buttonPress3,<page>?<n>,button,<taps>`, sent while the finger is
-     * still down): `buttons.indicatorLong-N` is always written; an indicator with a long press of its own runs it
+     * A long press on a tile of the TFT 6.0.9+ (`buttonPress3,<page>?<n>,button,<taps>`; TFT 6.0.9 to 6.1.x send it
+     * while the finger is still down, the TFT 6.2.0 and the web panel when it is lifted): `buttons.indicatorLong-N` is always written; an indicator with a long press of its own runs it
      * ({@link PageItem.onCommandLongPress}) or opens its popup ({@link openIndicatorPopup}) - the short press is not
      * run then.
      *

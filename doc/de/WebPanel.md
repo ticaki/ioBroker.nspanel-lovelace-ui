@@ -209,8 +209,8 @@ Der Browser bricht den Text selbst um; eine feste Zeichenzahl pro Zeile gibt es 
 - **Tippen oder Klicken** wirkt wie ein Druck aufs Display — mit Maus und Touch gleich.
 - **Halten** (ab etwa 0,6 Sekunden) ist der lange Druck: Auf einer Kachel einer Menüseite schaltet ein
   kurzer Druck, Halten öffnet das Detail-Popup — wie am echten Panel. Auf einem **Indikator des
-  Bildschirmschoners** löst das Halten nach 0,5 Sekunden die [Aktion bei langem Drücken](screensaver#aktion-bei-langem-drücken)
-  aus, auch [Popup öffnen](screensaver#popup-öffnen); anders als am echten Panel bricht eine Bewegung von mehr als etwa 20 Pixeln den langen Druck ab.
+  Bildschirmschoners** blinkt nach 0,5 Sekunden Halten die Uhrzeit rot und gelb, und das Loslassen löst die
+  [Aktion bei langem Drücken](screensaver#aktion-bei-langem-drücken) aus, auch [Popup öffnen](screensaver#popup-öffnen) – wie am Panel mit der TFT 6.2.0; anders als am echten Panel bricht eine Bewegung von mehr als etwa 20 Pixeln den langen Druck ab.
 - **Die zwei Hardwaretasten** liegen als Leisten unter dem Display. Sie lösen die Aktion aus, die für die
   Tasten eingestellt ist, und setzen `panels.<Panel>.buttons.left`/`right`. **Relais schalten sie nicht.**
   Beim Browser-Bild eines echten Panels sind die Leisten immer da; bei einem eigenständigen Web-Panel

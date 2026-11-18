@@ -334,7 +334,7 @@ Im Item-Dialog eines Indikators steht unter der **Aktion beim Drücken** ein zwe
 
 ![Der Item-Dialog eines Dimmer-Indikators mit geöffneter Auswahl „Aktion bei langem Drücken“ – hier mit „Popup öffnen“, weil der Kanal ein Dimmer ist](../Pictures/screensaverAdmin/admin-29-item-langer-druck.png)
 
-- Der lange Druck löst nach **500 ms** aus, noch während der Finger liegt; das Loslassen sendet danach nichts mehr. Ist eine Aktion eingestellt, läuft **nur** sie – die Aktion des kurzen Drucks bleibt aus.
+- Ab der TFT **6.2.0** löst der lange Druck erst beim **Loslassen** aus: Liegt der Finger **500 ms**, blinkt die Uhrzeit rot und gelb – jetzt kann man loslassen; danach bekommt die Uhrzeit ihre Farbe zurück. Wer vorher loslässt, tippt kurz; eine Wischgeste verwirft auch den langen Druck. Mit der TFT 6.0.9 bis 6.1.x löst er nach 500 ms aus, noch während der Finger liegt. Ist eine Aktion eingestellt, läuft **nur** sie – die Aktion des kurzen Drucks bleibt aus.
 - **Werte zum Umschalten** gibt es beim langen Druck nicht.
 - Taste und Schalter brauchen einen **beschreibbaren** Datenpunkt; sonst meldet der Dialog dasselbe wie bei der Aktion des kurzen Drucks und lässt nicht übernehmen. Fehlt der Datenpunkt zur Laufzeit oder ist er nicht beschreibbar, warnt der Adapter im Log (*the long press state … does not exist or is not writable – a long press acts like a tap*), und der lange Druck wirkt wie ein kurzer.
 - Auch ein [Template](#5-templates-als-item) auf einem Indikator-Platz bekommt den langen Druck.
