@@ -1,4 +1,25 @@
 # Older changes
+## 2.1.0 (2026-11-05)
+- (ticaki) screensaver: a timer can replace the clock - from an on/off and a data state, from patterns for timers in changing slots or from a page item with a timer popup; it shows the remaining minutes in the color of the timer, the first tap switches to the clock; all screensaver modes and the web panel
+- (ticaki) popupTimer repaired: an internal timer shows its time in the list, stays at 00:00 with Finish until confirmed and can be controlled through SET and STATUS; external timers count in seconds (ms with unit ms), the alarm clock uses local time and On/Off; a `level.timer` item can use the timer of the screensaver of its panel
+- (ticaki) screensaver: new mode tiles with 5 values, 7 indicators (portrait panel: 4 values, 8 indicators), a larger clock, the info icon and two status bars; needs a TFT with the page screensaver5; the web panel draws the mode as well
+- (ticaki) screensaver: a blind can be used as element - it shows one of 5 position icons and its position in %; tapping it as indicator only runs the configured action, it never moves the blind
+- (ticaki) screensaver: new target "Screensaver" for page items and for prev, next, parent and home of a page (`///screensaver` in the script), new state `panels.<panel>.cmd.screenSaver.activate` shows it at once
+- (ticaki) screensaver: a mode this adapter version does not know (e.g. after a downgrade) falls back to `standard` with a warning instead of breaking the screensaver, the stored configuration stays unchanged
+- (ticaki) cardPChart: new page type "Pie chart" in the page configuration (needs the beta TFT 6.0.5 or newer on the EU panel) - up to five slices from numeric states with name, unit and color, optionally the average over a time range from a history/sql/influxdb instance, alternatively a script data point with the finished text; the web panel renders the card as well
+- (ticaki) admin screensaver: page item templates can be configured per place, with the instances of the adapter as suggestions and template options (e.g. SOC limits of `text.battery.bydhvs`); on an indicator a template can act on tap; a new screensaver starts with two status icons coupled to the relays of the panel
+- (ticaki) admin screensaver: uniform paging arrows for all areas except favorit, the alternate area can hold several items the panel rotates through, the notifications and options buttons moved below the panel picture; items of areas the chosen version does not show are no longer reported as a problem
+- (ticaki) admin navigation: a start page no longer has a prev/next/parent of its own, its neighbours follow from the pages pointing at it (stored values are kept and apply again without the flag); a page named `main` without the flag counts as start page and asks for the flag in the log; empty fields show the neighbours the adapter resolved, a click on the label opens the target page, conflicting links get a warning; an explicit `next` is no longer overwritten when other pages chain in behind it
+- (tt-tom17) page configuration: the unique id of a page is fixed once it was created, because renaming left the navigation of other pages pointing at the old name; the delete confirmation names the pages pointing at the page and offers to connect its previous and next page
+- (tt-tom17) cardQR: a page with "No Password" (or free text, url or telephone code) no longer sends the stored wifi password to the panel - it was shown in clear text and was part of the scanned code
+- (tt-tom17) cardThermo: the set temperature reached the panel multiplied by the step width (19.0 °C became 79.0 °C with a step of 0.5 °C)
+- (tt-tom17) cardThermo2: the humidity row uses its own unit, the unit of the first row also applies to the set temperature
+- (tt-tom17) cardAlarm: the disarm buttons also work without an arm button in the same row; a new page starts with "Arm" and "Disarm" filled in, the top button of both columns is mandatory, because the card cannot be left without them (the type "unlock" still needs one button only)
+- (ticaki) panel: fewer page updates (at most one list update per 2 s for running timers, at least 1 s between updates of a page)
+- (ticaki) the beta option now also applies to Tasmota: update and update indicator use the `tasmota-beta` version
+- (tt-tom17) admin: the two hardware button buttons of a panel tile sit one below the other and show the relay state in their color, with a tooltip
+- (tt-tom17) documentation: rewritten for the admin, complete in English as well and published on GitHub Pages, the admin links point there; missing translations of the page configuration are filled in
+
 ## 2.0.2 (2026-11-01)
 - (ticaki) admin: page item text size shows the pixel size of each font; icons only offer fonts 1, 3 and 4 (the others have no icons), font 5 is marked "ASCII only"
 - (ticaki) admin: the "..." button next to the item name is now "Dynamic name" (used only while the name is empty) and no longer offers unit and date format, which were ignored
