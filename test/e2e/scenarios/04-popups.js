@@ -75,8 +75,15 @@ module.exports = ctx => {
             });
 
             step('brightness slider → dimmer state', async () => {
-                await press(ctx.nspanel, buttonPress(lightId, 'brightnessSlider', 75));
+                const mark = await press(ctx.nspanel, buttonPress(lightId, 'brightnessSlider', 75));
                 await ctx.waitForValue(IDS.lightDimmer, 75);
+                await ctx.nspanel.waitFor(
+                    p =>
+                        detailOf(lightId)(p) &&
+                        parseLightDetail(p).brightness === '75' &&
+                        parseLightDetail(p).count === 11,
+                    { since: mark, what: 'entityUpdateDetail light brightness 75' },
+                );
             });
 
             step('dimmer state from outside → popup follows', async () => {
@@ -95,8 +102,12 @@ module.exports = ctx => {
             });
 
             step('switch off → ON_SET false', async () => {
-                await press(ctx.nspanel, buttonPress(lightId, 'OnOff', 0));
+                const mark = await press(ctx.nspanel, buttonPress(lightId, 'OnOff', 0));
                 await ctx.waitForValue(IDS.lightOn, false);
+                await ctx.nspanel.waitFor(
+                    p => detailOf(lightId)(p) && parseLightDetail(p).on === '0' && parseLightDetail(p).count === 11,
+                    { since: mark, what: 'entityUpdateDetail light off' },
+                );
             });
 
             step('close (bExit) → back to the grid', async () => {
@@ -216,8 +227,17 @@ module.exports = ctx => {
                 expect(d.brightness).to.equal('40');
                 await press(ctx.web, buttonPress(lightId, 'OnOff', 1));
                 await ctx.waitForValue(IDS.lightOn, true);
-                await press(ctx.web, buttonPress(lightId, 'brightnessSlider', 55));
+                mark = await press(ctx.web, buttonPress(lightId, 'brightnessSlider', 55));
                 await ctx.waitForValue(IDS.lightDimmer, 55);
+                // close only after the popup shows the new brightness - otherwise its update can come after bExit
+                await ctx.web.waitFor(
+                    p =>
+                        detailOf(lightId)(p) &&
+                        parseLightDetail(p).on === '1' &&
+                        parseLightDetail(p).brightness === '55' &&
+                        parseLightDetail(p).count === 11,
+                    { since: mark, what: 'entityUpdateDetail light on, brightness 55' },
+                );
                 mark = await press(ctx.web, buttonPress('popupLight', 'bExit'));
                 await ctx.web.waitFor(isMenuUpdate(HEADLINES.main), { since: mark });
             });

@@ -74,8 +74,12 @@ module.exports = ctx => {
                     },
                 );
                 const item = lastItem(ctx.nspanel, HEADLINES.main, NAMES.socket);
-                await press(ctx.nspanel, buttonPress(item.id, 'OnOff', 0));
+                const tap = await press(ctx.nspanel, buttonPress(item.id, 'OnOff', 0));
                 await ctx.waitForValue(IDS.socketSet, false);
+                await ctx.nspanel.waitFor(
+                    menuItemAt(HEADLINES.main, 0, NAMES.socket, i => i.value === '0'),
+                    { since: tap, what: 'socket item value 0' },
+                );
             });
         });
 
