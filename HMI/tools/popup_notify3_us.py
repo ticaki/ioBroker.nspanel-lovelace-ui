@@ -32,6 +32,9 @@ Unlike EU there is no prepared base: the script adds the page and the font itsel
      tText  x 8..311, y 304..399 (h 96), isbr 1, centered, ycen top: font 3 (48) 2 lines, font 2 (32) 3 lines,
             font 0 (24) 4 lines - fixed, also without buttons (the button strip then stays empty)
      b1/b2  x 8..155 / 164..311, y 404..471 (148 x 68), icon from font 3 centered, white, without icon invisible
+4. Overlap fix screensaver3 (popup_notify3.fix_overlap, docstring point 8 there): us-l tMainIconAlt2 x 0 -> 3;
+   us-p has neither tMainTextAlt2 nor tMainIconAlt2 - skipped. us-p only: cardEntities btOnOff1/2/4 1 px up
+   (popup_notify3.fix_entities_overlap).
 """
 import os
 import re
@@ -43,8 +46,8 @@ sys.path.insert(0, HERE)
 from hmi import Hmi  # noqa: E402
 from pagefile import Page  # noqa: E402
 from popup_notify3 import (BUTTON_FONT, BUTTON_FONT_SECTION, CLOSE, FONT_ID, FONT_SECTION, HEIGHT,  # noqa: E402
-                           LIGHT_GRAY, NAME, TEXT_FONT, WHITE, add_page_switch, build_page, fix_sleep, font_ids,
-                           layout_eu, patch_release, ram)
+                           ENTITIES_PAGE, LIGHT_GRAY, NAME, OVERLAP_PAGE, TEXT_FONT, WHITE, add_page_switch, build_page,
+                           fix_entities_overlap, fix_overlap, fix_sleep, font_ids, layout_eu, patch_release, ram)
 from screensaver5 import insert_entry  # noqa: E402
 from zilib import Zi  # noqa: E402
 
@@ -224,6 +227,7 @@ def main(source, target):
     changes = {'main.HMI': main_hmi}
     switched = []
     renumbered = []
+    overlap = entities = None
     for name, (sec, p) in list(pages.items()) + [(NAME, (section, page))]:
         moved = renumber_clock(p) if corners_section else []
         renumbered += [f'{name} ({sec}) {m}' for m in moved]
@@ -236,9 +240,14 @@ def main(source, target):
             switched.append(name)
         if name == 'pageStartup':
             patch_release(p)
+        if name == OVERLAP_PAGE:
+            overlap = fix_overlap(p, 0)
+        if name == ENTITIES_PAGE and model == 'us-p':
+            entities = fix_entities_overlap(p)
         if p is page:
             continue
-        if n or moved or name in ('pageStartup', 'popupNotify'):
+        if n or moved or overlap and name == OVERLAP_PAGE or entities and name == ENTITIES_PAGE \
+                or name in ('pageStartup', 'popupNotify'):
             changes[sec] = p.bytes()
             Page(changes[sec])  # round trip
     added[section] = (page.bytes(), source_section)
@@ -263,6 +272,9 @@ def main(source, target):
     print('font ids:', ', '.join(f'{i} {s}' for i, s in enumerate(new_fonts)))
     print(f'pageType branch {NAME} added on {len(switched)} pages: {", ".join(sorted(switched))}')
     print('sleepValue fix:', '; '.join(fixed))
+    print('overlap fix:', overlap or f'{OVERLAP_PAGE}: no such objects, skipped')
+    if entities:
+        print('overlap fix:', entities)
     print(f'changed sections: {", ".join(sorted(changes))}; new: {", ".join(sorted(added))}')
     print(f'{target}: {len(hmi.d)} -> {len(out)} bytes')
 

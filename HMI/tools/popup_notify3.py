@@ -64,6 +64,14 @@ What the script does:
      pageType           sleepValue=0 behind sleepTimeout=vaOldSleepT.val
    b0/b1/b2(/b3) down restore sleepTimeout=vaOldSleepT.val as before (the timeout clicks b0, exitPopup too).
    The other popups are not changed.
+8. Overlap fix screensaver3 (EU, us-l; us-p has no such objects): tMainTextAlt2 and tMainIconAlt2 lie exactly on top
+   of each other since 6.1.0 (EU x 1, us-l x 0; y 265, w 2, h 45 - parked, 2 px wide, draw nothing) and the editor
+   warns "Component overlap". tMainIconAlt2 moves 3 px to the right (x and endx), side by side instead of on top.
+   Stops on another geometry; checked that the moved object overlaps nothing it did not overlap before.
+   us-p only (popup_notify3_us.py): cardEntities, rows 1, 2, 4 - btOnOff<n> and bDown<n> (alternative widgets, one
+   is shown depending on the item type) have exactly the same rectangle (x 265, y 87/155/289, 50 x 50) and the
+   editor warns; it only warns on exactly the same position (row 3: btOnOff3 1 px higher, no warning). btOnOff1/2/4
+   move 1 px up like row 3 (fix_entities_overlap). Rows 5/6 (x 268, y 358/424) are the same case but not changed.
 """
 import json
 import os
@@ -491,6 +499,72 @@ def fix_sleep(page):
     return f'{name}: load +sleepValue=0/vaOldSleepT, entityUpdateDetail -vaOldSleepT +sleepValue=0, pageType +sleepValue=0'
 
 
+OVERLAP_PAGE = 'screensaver3'
+OVERLAP_KEEP, OVERLAP_MOVE = 'tMainTextAlt2', 'tMainIconAlt2'
+OVERLAP_SHIFT = 3
+
+
+def rect(o):
+    return o.get('x'), o.get('y'), o.get('w'), o.get('h')
+
+
+def overlapping(o, objs):
+    """names of the objects of objs whose rectangle shares a pixel with o"""
+    x, y, w, h = rect(o)
+    out = set()
+    for other in objs:
+        if other is o or not all(other.has(a) for a in ('x', 'y', 'w', 'h')):
+            continue
+        ox, oy, ow, oh = rect(other)
+        if x <= ox + ow - 1 and ox <= x + w - 1 and y <= oy + oh - 1 and oy <= y + h - 1:
+            out.add(other.name)
+    return out
+
+
+def fix_overlap(page, x):
+    """overlap fix screensaver3 (docstring point 8): x = the expected x of both objects (EU 1, us-l 0); returns a
+    short description, None without the objects (us-p)"""
+    names = {o.name for o in page.objs}
+    present = [n for n in (OVERLAP_KEEP, OVERLAP_MOVE) if n in names]
+    if not present:
+        return None
+    if len(present) != 2:
+        raise SystemExit(f'{OVERLAP_PAGE}: only {present}')
+    keep, move = page.obj(OVERLAP_KEEP), page.obj(OVERLAP_MOVE)
+    for o in (keep, move):
+        if rect(o) != (x, 265, 2, 45) or o.get('endx') != x + 1 or o.get('endy') != 309:
+            raise SystemExit(f'{OVERLAP_PAGE}.{o.name}: unexpected geometry {rect(o)}')
+    before = overlapping(move, page.objs[1:])
+    move.geometry(x + OVERLAP_SHIFT, 265, 2, 45)
+    after = overlapping(move, page.objs[1:])
+    if after - before or OVERLAP_KEEP in after:
+        raise SystemExit(f'{OVERLAP_PAGE}.{OVERLAP_MOVE}: new overlap with {sorted(after - before)}')
+    return f'{OVERLAP_PAGE}.{OVERLAP_MOVE} x {x} -> {x + OVERLAP_SHIFT} (still overlaps {", ".join(sorted(after))})'
+
+
+ENTITIES_PAGE = 'cardEntities'
+ENTITIES_ROWS = {1: (265, 87), 2: (265, 155), 4: (265, 289)}  # us-p
+
+
+def fix_entities_overlap(page):
+    """us-p cardEntities (docstring point 8): btOnOff1/2/4 1 px up; returns a short description"""
+    done = []
+    for n, (x, y) in ENTITIES_ROWS.items():
+        down, button = page.obj(f'bDown{n}'), page.obj(f'btOnOff{n}')
+        for o in (down, button):
+            if rect(o) != (x, y, 50, 50) or o.get('endx') != x + 49 or o.get('endy') != y + 49:
+                raise SystemExit(f'{ENTITIES_PAGE}.{o.name}: unexpected geometry {rect(o)}')
+        before = overlapping(button, page.objs[1:])
+        button.geometry(x, y - 1, 50, 50)
+        after = overlapping(button, page.objs[1:])
+        if after - before:
+            raise SystemExit(f'{ENTITIES_PAGE}.{button.name}: new overlap with {sorted(after - before)}')
+        if any(o is not button and o.has('x') and rect(o) == rect(button) for o in page.objs[1:]):
+            raise SystemExit(f'{ENTITIES_PAGE}.{button.name}: same rectangle as another object')
+        done.append(f'{button.name} y {y} -> {y - 1}')
+    return f'{ENTITIES_PAGE}: ' + ', '.join(done)
+
+
 def patch_release(page):
     o = page.obj('tRelease')
     if o.get('txt') != OLD_RELEASE:
@@ -529,6 +603,7 @@ def main(source, target):
     fixed.append(fix_sleep(pages['popupNotify'][1]))
 
     switched, without = [], []
+    overlap = None
     for name, (sec, p) in pages.items():
         n = 0
         for o in p.objs:
@@ -541,10 +616,16 @@ def main(source, target):
             without.append(name)
         if name == 'pageStartup':
             patch_release(p)
-        if n or name in ('pageStartup', OLD_NAME, 'popupNotify'):
+        if name == OVERLAP_PAGE:
+            overlap = fix_overlap(p, 1)
+            if overlap is None:
+                raise SystemExit(f'{OVERLAP_PAGE}: no {OVERLAP_MOVE}')
+        if n or name in ('pageStartup', OLD_NAME, 'popupNotify', OVERLAP_PAGE):
             changes[sec] = p.bytes()
             Page(changes[sec])  # round trip
 
+    if overlap is None:
+        raise SystemExit(f'no page {OVERLAP_PAGE}')
     font, cps = build_font(hmi)
     changes[FONT_SECTION] = font
 
@@ -561,6 +642,7 @@ def main(source, target):
           f'{len(hmi.files[FONT_SECTION])} -> {len(font)} bytes')
     print('sleepValue fix:', '; '.join(fixed))
     print(f'tRelease {OLD_RELEASE} -> {NEW_RELEASE}')
+    print('overlap fix:', overlap)
     print(f'changed sections: {", ".join(sorted(changes))}')
     print(f'{target}: {len(hmi.d)} -> {len(out)} bytes')
 
