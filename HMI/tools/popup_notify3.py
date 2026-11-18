@@ -324,28 +324,9 @@ def load_lines(old):
     ]
 
 
-def build_page(page):
-    names = [o.name for o in page.objs]
-    if names != EXPECTED:
-        raise SystemExit(f'{OLD_NAME} is not the expected copy of popupNotify: {names}')
-    if bytes(page.head[0x18:0x28]).split(b'\0')[0] != OLD_NAME.encode():
-        raise SystemExit('page header does not name page0')
-    for o in page.objs:
-        for item in o.items:
-            if item[0] == 'code' and any(re.search(r'\bb\[', line) for line in item[2]):
-                raise SystemExit(f'{o.name} addresses objects by id - objects cannot be removed')
-    page.objs[0].set('objname', NAME)
-    page.head[0x18:0x28] = NAME.encode().ljust(16, b'\0')
-    removed = [o for o in page.objs if o.name in REMOVE]
-    page.objs = [o for o in page.objs if o.name not in REMOVE]
-
-    head = page.objs[0]
-    head.set_code('load', load_lines(head.code('load')))
-
+def layout_eu(page):
+    """geometry of popupNotify3 on 480 x 320 (EU, us-l), docstring point 4"""
     b0 = page.obj('b0')
-    down = b0.code('down')
-    i = find(down, 'tSend.txt="event,buttonPress2,popupNotify,bExit"')
-    down[i] = f'tSend.txt="event,buttonPress2,{NAME},bExit"'
     b0.set('txt', CLOSE)
     b0.set('font', BUTTON_FONT)
     b0.geometry(414, 0, 66, 80)
@@ -362,12 +343,6 @@ def build_page(page):
         b.set('ycen', 1)
         b.set('pco', WHITE)
         b.set('pco2', WHITE)
-        down = b.code('down')
-        if down[2] != f'tSend.txt="event,buttonPress2,"+entn.txt+",notifyAction,button{name[1]}"':
-            raise SystemExit(f'{name}: unexpected event')
-        if name == 'b2':
-            # right = yes button like popupNotify (button3), button2 (middle) stays unused
-            down[2] = 'tSend.txt="event,buttonPress2,"+entn.txt+",notifyAction,button3"'
 
     icon = page.obj('tIcon')
     icon.geometry(96, 0, 288, HEIGHT)
@@ -383,6 +358,40 @@ def build_page(page):
     text.set('xcen', 1)
     text.set('ycen', 0)
     text.set('isbr', 1)
+
+
+def build_page(page, old_name=OLD_NAME, layout=layout_eu):
+    """page: the copy of popupNotify named old_name (EU: Tim's page0 made in the editor)"""
+    names = [o.name for o in page.objs]
+    if names != [old_name] + EXPECTED[1:]:
+        raise SystemExit(f'{old_name} is not the expected copy of popupNotify: {names}')
+    if bytes(page.head[0x18:0x28]).split(b'\0')[0] != old_name.encode():
+        raise SystemExit(f'page header does not name {old_name}')
+    for o in page.objs:
+        for item in o.items:
+            if item[0] == 'code' and any(re.search(r'\bb\[', line) for line in item[2]):
+                raise SystemExit(f'{o.name} addresses objects by id - objects cannot be removed')
+    page.objs[0].set('objname', NAME)
+    page.head[0x18:0x28] = NAME.encode().ljust(16, b'\0')
+    removed = [o for o in page.objs if o.name in REMOVE]
+    page.objs = [o for o in page.objs if o.name not in REMOVE]
+
+    head = page.objs[0]
+    head.set_code('load', load_lines(head.code('load')))
+
+    down = page.obj('b0').code('down')
+    i = find(down, 'tSend.txt="event,buttonPress2,popupNotify,bExit"')
+    down[i] = f'tSend.txt="event,buttonPress2,{NAME},bExit"'
+
+    for name in ('b1', 'b2'):
+        down = page.obj(name).code('down')
+        if down[2] != f'tSend.txt="event,buttonPress2,"+entn.txt+",notifyAction,button{name[1]}"':
+            raise SystemExit(f'{name}: unexpected event')
+        if name == 'b2':
+            # right = yes button like popupNotify (button3), button2 (middle) stays unused
+            down[2] = 'tSend.txt="event,buttonPress2,"+entn.txt+",notifyAction,button3"'
+
+    layout(page)
 
     ids = {o.name: i for i, o in enumerate(page.objs)}
     if not ids['b0'] < ids['b2']:
