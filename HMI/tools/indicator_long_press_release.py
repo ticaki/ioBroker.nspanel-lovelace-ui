@@ -1,5 +1,5 @@
 """HMI 6.2.0 (stays 6.2.0): the long press of an indicator of screensaver2/screensaver5 is sent on release, the clock
-blinks yellow/green while it is armed.
+blinks red/yellow while it is armed.
 
 Usage (from the repository root):
   PYTHONDONTWRITEBYTECODE=1 python3 HMI/tools/indicator_long_press_release.py HMI/nspanel-v6.2.0.HMI <out.HMI>
@@ -14,7 +14,7 @@ element of the new page (e.g. the slider of a popup).
 
 Fix, per page:
   tmLP 'timer'  sends nothing. First run (after 500 ms): vaLPOn=1, the colour of the clock goes to vaLPCol,
-                tTime.pco yellow (65504), tmLP.tim=200. Every further run toggles tTime.pco yellow <-> green (2016):
+                tTime.pco red (63488), tmLP.tim=200. Every further run toggles tTime.pco red <-> yellow (65504):
                 the clock blinks 200 ms per phase - 'you can let go now'.
   tc0 'up'      with a remembered id: stops tmLP; a swipe (tSend has its text) drops the tap as before - now also the
                 long one; otherwise event,buttonPress3,<id>,button,<vaTap> when vaLPOn==1, else
@@ -45,7 +45,8 @@ PAGES = ('screensaver5', 'screensaver2')
 COL, ON = 'vaLPCol', 'vaLPOn'
 TEMPLATE = 'vaTap'
 VAR_TYPE = 52
-YELLOW, GREEN = 65504, 2016
+# red first, then yellow: on no background colour are both invisible at the same time
+RED, YELLOW = 63488, 65504
 BLINK_TIME = 200
 
 COLOR_IF = 'if(tInstruction.txt=="color"&&tNotifyHead.txt==""&&tNotifyText.txt=="")'
@@ -82,14 +83,14 @@ def new_timer_lines():
         f'  // {LP_TIME} ms are over: the release sends the long press, the clock blinks until then',
         f'  {ON}.val=1',
         f'  {COL}.val=tTime.pco',
-        f'  tTime.pco={YELLOW}',
+        f'  tTime.pco={RED}',
         f'  {LP_TIMER}.tim={BLINK_TIME}',
-        f'}}else if(tTime.pco=={YELLOW})',
+        f'}}else if(tTime.pco=={RED})',
         '{',
-        f'  tTime.pco={GREEN}',
+        f'  tTime.pco={YELLOW}',
         '}else',
         '{',
-        f'  tTime.pco={YELLOW}',
+        f'  tTime.pco={RED}',
         '}',
     ]
 
