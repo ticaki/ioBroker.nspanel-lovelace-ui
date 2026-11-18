@@ -9,8 +9,16 @@ Unlike EU there is no prepared base: the script adds the page and the font itsel
    byte for byte and added as last font (screensaver5.add_clock_font: new zi section, entry in main.HMI behind the
    last font). The adapter sends font id 9 on every model, so the model must have exactly 9 fonts (ids 0..8)
    before - otherwise the script stops (no reordering). Fonts 3 and 4 (text, cross, button icons) must be the
-   ones of EU; 0 and 2 may have more characters but the same metrics for the common ones (checked).
-   us-l 6.1.1: 9 fonts, us-p 6.1.1: 8 fonts (no 'corners1') -> us-p stops.
+   ones of EU; 0 and 2 may have more characters but the same metrics for the common ones (checked; not on us-p:
+   its fonts 0/2 are another face, the adapter has its own us-p width tables - only a note).
+   us-l 6.1.1: 9 fonts. us-p 6.1.1: 8 fonts (no 'corners1', id 7 = Clock96). With exactly this structure (8 fonts,
+   the last one byte for byte clock96.zi) the font ids are made the same as EU: the EU font 8.zi 'corners1' (id 7
+   there, 3 characters, 272 bytes) is taken byte for byte (next free <n>.zi) and its entry in main.HMI goes in front
+   of the Clock96 entry -> corners1 id 7, Clock96 id 8 (as EU), the icon font behind Clock96 -> id 9. Every use of
+   font 7 then moves to 8: object attribute font (screensaver5.tTime), '.font=7' and xstr with font 7 (5th
+   parameter) in code that is not commented out. Commented lines keep 7 (popupLight2 '//xstr ...,7,...,"a"': the
+   corner glyphs, font 7 = corners1 as in EU). Font ids set at runtime (.font=sys0/sys1, values from the adapter)
+   are not touched. Any other structure stops.
 2. Page: a copy of popupNotify appended as last page (new <n>.pa, like screensaver5 adds its copy), then the same
    changes as EU (popup_notify3.build_page: objects, protocol, events, buffers), sleepValue fix (fix_sleep) on
    popupNotify3 and popupNotify, the popupNotify3 branch behind every popupNotify branch of a pageType switch,
@@ -26,6 +34,7 @@ Unlike EU there is no prepared base: the script adds the page and the font itsel
      b1/b2  x 8..155 / 164..311, y 404..471 (148 x 68), icon from font 3 centered, white, without icon invisible
 """
 import os
+import re
 import struct
 import sys
 
@@ -40,6 +49,10 @@ from screensaver5 import insert_entry  # noqa: E402
 from zilib import Zi  # noqa: E402
 
 EU = os.path.join(HERE, '..', 'nspanel-v6.2.0.HMI')
+CLOCK_FONT = os.path.join(HERE, 'clock96.zi')
+CORNERS_ID = 7  # 8.zi 'corners1' in EU; us-p: the old id of Clock96
+CLOCK_ID = 8  # Clock96 in EU
+CORNERS_NAME = b'corners1'
 
 
 def layout_usp(page):
@@ -82,10 +95,56 @@ def layout_usp(page):
 LAYOUTS = {(480, 320): ('us-l', layout_eu), (320, 480): ('us-p', layout_usp)}
 
 
+def corners_placeholder(hmi, eu, fonts, eu_fonts):
+    """us-p: 8 fonts, the last one Clock96 -> the EU font 'corners1' as placeholder for id 7, else None"""
+    clock = open(CLOCK_FONT, 'rb').read()
+    if len(fonts) != FONT_ID - 1 or hmi.files[fonts[-1]] != clock:
+        return None
+    if eu.files[eu_fonts[CLOCK_ID]] != clock:
+        raise SystemExit(f'EU: font {CLOCK_ID} is not Clock96')
+    font = eu.files[eu_fonts[CORNERS_ID]]
+    if font[0x2c:0x2c + len(CORNERS_NAME)] != CORNERS_NAME:
+        raise SystemExit(f'EU: font {CORNERS_ID} is not {CORNERS_NAME.decode()}')
+    return font
+
+
+FONT_SET = re.compile(r'(\.font\s*=\s*)(\d+)\b')
+
+
+def renumber_clock(page):
+    """us-p: font id CORNERS_ID (old Clock96) -> CLOCK_ID in the object attributes and in code that is not
+    commented out; returns the changed places"""
+    done = []
+    for o in page.objs:
+        if o.has('font') and o.get('font') == CORNERS_ID:
+            o.set('font', CLOCK_ID)
+            done.append(f'{o.name}.font (attribute)')
+        for item in o.items:
+            if item[0] != 'code':
+                continue
+            lines = item[2]
+            for i, line in enumerate(lines):
+                if line.strip().startswith('//'):
+                    continue
+                new = FONT_SET.sub(lambda m: m.group(1) + (str(CLOCK_ID) if m.group(2) == str(CORNERS_ID)
+                                                           else m.group(2)), line)
+                stripped = new.lstrip()
+                if stripped.startswith('xstr '):
+                    args = stripped[5:].split(',')
+                    if len(args) > 4 and args[4].strip() == str(CORNERS_ID):
+                        args[4] = str(CLOCK_ID)
+                        new = new[:len(new) - len(stripped)] + 'xstr ' + ','.join(args)
+                if new != line:
+                    lines[i] = new
+                    done.append(f'{o.name} {item[1]}: {line.strip()} -> {new.strip()}')
+    return done
+
+
 def check_fonts(hmi, eu):
-    """the fonts of the model against EU; returns the EU icon font"""
+    """the fonts of the model against EU; returns the fonts, the EU icon font and the placeholder font (or None)"""
     fonts, eu_fonts = font_ids(hmi.files['main.HMI']), font_ids(eu.files['main.HMI'])
-    if len(fonts) != FONT_ID:
+    placeholder = corners_placeholder(hmi, eu, fonts, eu_fonts)
+    if len(fonts) != FONT_ID and placeholder is None:
         raise SystemExit(f'{len(fonts)} fonts (ids 0..{len(fonts) - 1}): the icon font would get id {len(fonts)}, '
                          f'not {FONT_ID} - stop, fonts {fonts}')
     if fonts[BUTTON_FONT] != BUTTON_FONT_SECTION:
@@ -93,14 +152,17 @@ def check_fonts(hmi, eu):
     for fid in (TEXT_FONT, BUTTON_FONT):
         if hmi.files[fonts[fid]] != eu.files[eu_fonts[fid]]:
             raise SystemExit(f'font {fid} differs from EU')
-    for fid in (0, 2):
-        a, b = Zi(eu.files[eu_fonts[fid]]), Zi(hmi.files[fonts[fid]])
-        if a.h != b.h or any(a.chars[c][:3] != b.chars[c][:3] for c in set(a.chars) & set(b.chars)) \
-                or not set(a.chars) <= set(b.chars):
-            raise SystemExit(f'font {fid} is not compatible with EU')
+    if placeholder is not None:
+        print('note: us-p fonts 0/2 differ from EU - the adapter uses its own us-p width tables')
+    else:
+        for fid in (0, 2):
+            a, b = Zi(eu.files[eu_fonts[fid]]), Zi(hmi.files[fonts[fid]])
+            if a.h != b.h or any(a.chars[c][:3] != b.chars[c][:3] for c in set(a.chars) & set(b.chars)) \
+                    or not set(a.chars) <= set(b.chars):
+                raise SystemExit(f'font {fid} is not compatible with EU')
     if eu_fonts[FONT_ID] != FONT_SECTION:
         raise SystemExit('EU: unexpected font order')
-    return fonts, eu.files[FONT_SECTION]
+    return fonts, eu.files[FONT_SECTION], placeholder
 
 
 def main(source, target):
@@ -109,7 +171,7 @@ def main(source, target):
     hmi = Hmi(open(source, 'rb').read())
     hmi.check()
     eu = Hmi(open(EU, 'rb').read())
-    fonts, font = check_fonts(hmi, eu)
+    fonts, font, placeholder = check_fonts(hmi, eu)
 
     pages = {}
     for section, data in hmi.files.items():
@@ -122,14 +184,30 @@ def main(source, target):
     size = (popup.objs[0].get('w'), popup.objs[0].get('h'))
     model, layout = LAYOUTS[size]
 
-    # main.HMI: the font behind the last font, the page behind the last page (like the EU page 35.pa)
+    # main.HMI: (us-p: the placeholder and) the font behind the last font, the page behind the last page (like
+    # the EU page 35.pa)
+    main_hmi = hmi.files['main.HMI']
+    added = {}
+    last_font = fonts[-1]
+    corners_section = None
+    if placeholder is not None:
+        n = 0
+        while f'{n}.zi' in hmi.files:
+            n += 1
+        corners_section = f'{n}.zi'
+        main_hmi = insert_entry(main_hmi, 'zi', corners_section, fonts[-2])  # in front of Clock96
+        added[corners_section] = (placeholder, fonts[-1])
     font_section = f'{FONT_ID}.zi'
-    if font_section in hmi.files:
+    if font_section in hmi.files or font_section in added:
         raise SystemExit(f'{font_section} exists')
-    main_hmi = insert_entry(hmi.files['main.HMI'], 'zi', font_section, fonts[-1])
-    added = {font_section: (font, fonts[-1])}
-    if font_ids(main_hmi).index(font_section) != FONT_ID:
+    main_hmi = insert_entry(main_hmi, 'zi', font_section, last_font)
+    added[font_section] = (font, fonts[-1])
+    new_fonts = font_ids(main_hmi)
+    if new_fonts.index(font_section) != FONT_ID:
         raise SystemExit('icon font did not get id 9')
+    expected = fonts[:-1] + [corners_section, fonts[-1]] if corners_section else list(fonts)
+    if new_fonts != expected + [font_section]:
+        raise SystemExit(f'unexpected font order {new_fonts}')
     head = struct.unpack_from('<I', main_hmi, 4)[0]
     count = struct.unpack_from('<I', main_hmi, 28)[0]
     last_page = [main_hmi[head + 16 * i + 8:head + 16 * i + 16].split(b'\0')[0].decode() for i in range(count)
@@ -145,7 +223,10 @@ def main(source, target):
 
     changes = {'main.HMI': main_hmi}
     switched = []
+    renumbered = []
     for name, (sec, p) in list(pages.items()) + [(NAME, (section, page))]:
+        moved = renumber_clock(p) if corners_section else []
+        renumbered += [f'{name} ({sec}) {m}' for m in moved]
         n = 0
         for o in p.objs:
             for item in o.items:
@@ -157,7 +238,7 @@ def main(source, target):
             patch_release(p)
         if p is page:
             continue
-        if n or name in ('pageStartup', 'popupNotify'):
+        if n or moved or name in ('pageStartup', 'popupNotify'):
             changes[sec] = p.bytes()
             Page(changes[sec])  # round trip
     added[section] = (page.bytes(), source_section)
@@ -171,8 +252,15 @@ def main(source, target):
     print(f'new page {section}: copy of popupNotify ({source_section}) -> {NAME}, behind {last_page}, '
           f'objects {before[1]} -> {after[1]}, text buffers {before[0]} -> {after[0]} bytes')
     print('object ids:', ', '.join(f'{n} {i}' for n, i in ids.items()))
+    if corners_section:
+        print(f'new font {corners_section}: id {CORNERS_ID}, {CORNERS_NAME.decode()}, {len(placeholder)} bytes '
+              f'(EU font {CORNERS_ID} byte for byte), in front of {fonts[-1]} (Clock96 {CORNERS_ID} -> {CLOCK_ID})')
+        print(f'font {CORNERS_ID} -> {CLOCK_ID} ({len(renumbered)}):')
+        for m in renumbered:
+            print('  ' + m)
     print(f'new font {font_section}: id {FONT_ID}, {len(font)} bytes (EU {FONT_SECTION} byte for byte), '
-          f'behind {fonts[-1]}')
+          f'behind {last_font}')
+    print('font ids:', ', '.join(f'{i} {s}' for i, s in enumerate(new_fonts)))
     print(f'pageType branch {NAME} added on {len(switched)} pages: {", ".join(sorted(switched))}')
     print('sleepValue fix:', '; '.join(fixed))
     print(f'changed sections: {", ".join(sorted(changes))}; new: {", ".join(sorted(added))}')
