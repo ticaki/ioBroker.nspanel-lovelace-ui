@@ -130,7 +130,9 @@ der Test-States `0_userdata.0.e2e.*`. Vor dem Abschluss wartet der Schritt 1,2 s
 Screensaver-Drosselung von 1 s).
 
 - Normalisiert: `time~` und `date~` fehlen ganz (Inhalt und Zeitpunkt hängen an der Uhr), die Helligkeiten von
-  `dimmode~` (Tag/Nacht) werden `<dim>`, Icon-Glyphen stehen als `{U+E50E}` im Snapshot.
+  `dimmode~` (Tag/Nacht) werden `<dim>`, Icon-Glyphen stehen als `{U+E50E}` im Snapshot. Ein `dimmode~`, das
+  zwischen xx:00:00 und xx:00:10 ankommt, fehlt: der Adapter schickt es zur vollen Stunde an alle Panels
+  (`minuteLoop`, `minute === 0`), egal welcher Schritt gerade läuft. Alle anderen `dimmode~` bleiben im Vergleich.
 - Name = Titelpfad unter `E2E` (`05 Screensaver ⇄ page › …`), ein einzelner Schritt per `--grep` vergleicht mit
   demselben Eintrag. „Snapshot › has no stale entries“ prüft nur bei einem vollen Lauf.
 - Fehlt ein Eintrag, schlägt der Schritt mit Hinweis fehl.
